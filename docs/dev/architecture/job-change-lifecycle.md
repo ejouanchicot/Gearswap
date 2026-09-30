@@ -359,7 +359,8 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `<char>/config/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:42`) | 8.0; fallback table in each entry (e.g. `Tetsouo_PLD.lua:37-44`). Its only setting (`job_change_delay` and `cooldown`, read by nothing, were removed on 2026-09-29) |
 | `<char>/config/UI_CONFIG.lua` (dofile) | `init_delay` for `smart_init` | 5.0 (`config_loader.lua:52`) |
 | `<char>/config/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug` | disabled main (`DualBoxManager.initialize`) |
-| `<char>/config/CRAFT_CONFIG.lua` | `craft_lockstyle`, `fish_lockstyle` | 19 / 17 (`craft_commands.lua:25-26`) |
+| `<char>/config/CRAFT_CONFIG.lua` | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`craft_commands.lua`) |
+| `<char>/config/REFILL_CONFIG.lua` | `source_bags`, `store_bag` | Case, Sack, Satchel / Case (`config_resolver.lua`) |
 | `<char>/sets/<name>_sets.lua` | craft/fish sets | `craft_manager.lua` |
 | `data/.dressup_disabled` | file presence = DressUp management off | `lockstyle_manager.lua:22` |
 | `<char>/config/<job>/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | styles and books per subjob (and per alt job) | fallbacks in the factories |

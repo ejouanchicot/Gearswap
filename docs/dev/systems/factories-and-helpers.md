@@ -26,8 +26,9 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/movement/automove.lua` | Movement detection loop, `state.Moving`, `gs c update` |
 | `shared/utils/craft/craft_commands.lua` | `//gs c craft/fish/uncraft` handlers, gear diffing, slot locking |
 | `shared/utils/craft/craft_manager.lua` | Craft set file loading and resolution, session flag, unlock; exported as `_G.CraftManager` |
-| `_master/config_global/CRAFT_CONFIG.lua` | Craft / fish lockstyle numbers (19 / 17), deployed as `<char>/config/CRAFT_CONFIG.lua` |
-| `_master/Tetsouo/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Craft set files (multi-variant / single) |
+| `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17), deployed as `<char>/config/CRAFT_CONFIG.lua` |
+| `_master/sets/craft_sets.lua` | Generic craft set file, every slot empty: `hq`, `nq`, `success` and one variant per sub-craft (the 8 crafts) |
+| `_master/Tetsouo/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000 (WAR, DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | `//gs c jump` (manual Jump chain) |
 | `shared/utils/dnc/waltz_manager.lua` | Curing / Divine Waltz tier selection |
@@ -310,7 +311,7 @@ flowchart TD
     L --> M
 ```
 
-- **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). `craft` always uses `bonecraft`, `fish` always `fishing`.
+- **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). Which file: `craft_file` / `fish_file` in `<char>/config/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
 - **Resolution** (`resolve`). A multi-variant file uses `default` when no argument is given, then tries a direct lower-case key lookup, then an alias scan. A single-set file returns the whole table and ignores the argument.
 - **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
 - **Locking.** `equip_craft_gear` uses GearSwap's synchronous `enable()` rather than `gs enable all`, because the command would land after `equip()`. The lock is applied 2.0 s later (`lock_after_delay`); that coroutine carries no session check. When a variant switch changes nothing, only the lock is re-asserted.
@@ -336,7 +337,7 @@ return {
 }
 ```
 
-`bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, `smith` and `leather`, built from a shared base with a local `set_with()` helper. Only the Tetsouo overlay has craft set files.
+Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, `smith` and `leather`, built from a shared base with a local `set_with()` helper. The generic `_master/sets/craft_sets.lua` (copied by `clone_character.py` to every character, with the other set files of `sets/` that belong to no job; the overlay wins) has `hq`, `nq`, `success` and a variant per sub-craft from its `SUB_CRAFTS` table (`wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook`, each with aliases): HQ plus that craft's neck piece. Its `set_with` skips slots left `""`, so a player only fills in names.
 
 ### Public API
 
@@ -354,8 +355,8 @@ return {
 
 | Source | Keys | Default |
 |---|---|---|
-| `<char>/config/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_lockstyle`, `fish_lockstyle` | 19 / 17 (`DEFAULT_CRAFT_LOCKSTYLE` / `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`) |
-| `<char>/sets/bonecraft_sets.lua`, `fishing_sets.lua` | see shapes above | none (error message) |
+| `<char>/config/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
+| `<char>/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
 | `<char>/config/craft/CRAFT_REFILL.lua` | refill list while crafting | the job's refill list |
 
 `ModuleCache` caches the set files and `CRAFT_CONFIG` per sandbox, so an edit needs a reload.
@@ -611,7 +612,7 @@ The module returns a function: `local live_tp = require('shared/utils/core/live_
 |---|---|---|---|
 | `//gs c lockstyle`, `ls` | - | `select_default_lockstyle()` + `SyncIPC.broadcast('ls')` | `COMMON_COMMANDS.lua` `handle_lockstyle` |
 | `//gs c dressup` | - | `LockstyleManager.toggle_dressup()`, persisted | `handle_dressup` |
-| `//gs c craft` | `[variant \| off \| stop \| uncraft]` | Equip or switch a bonecraft variant, lock slots, craft lockstyle; `off` / `stop` / `uncraft` = uncraft | `CraftCommands.handle_craft` |
+| `//gs c craft` | `[variant \| off \| stop \| uncraft]` | Equip or switch a variant of the craft file (`craft_file`), lock slots, craft lockstyle; `off` / `stop` / `uncraft` = uncraft | `CraftCommands.handle_craft` |
 | `//gs c fish`, `fishing` | `[variant]` (ignored for single sets) | Equip the fishing set, lock slots, fish lockstyle | `CraftCommands.handle_fish` |
 | `//gs c uncraft` | - | `CraftManager.unequip()` + job lockstyle | `CraftCommands.handle_uncraft` |
 | `//gs c jump` | - | `DRGJumpManager.execute_jump()` | `handle_jump` |

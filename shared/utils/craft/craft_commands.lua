@@ -6,8 +6,12 @@
 ---   sub-module re-exposed via aliases on CommonCommands.
 ---
 ---   Public API (called by COMMON_COMMANDS.handle_command dispatcher):
----     CraftCommands.handle_craft(variant)   - equip bonecraft set + lock slots
----     CraftCommands.handle_fish(variant)    - equip fishing set + lock slots
+---     CraftCommands.handle_craft(variant)   - equip the craft set + lock slots
+---     CraftCommands.handle_fish(variant)    - equip the fishing set + lock slots
+---
+---   Which set file each one reads is the player's choice, in
+---   <charname>/config/CRAFT_CONFIG.lua: craft_file (sets/<craft_file>_sets.lua,
+---   'bonecraft' when unset) and fish_file ('fishing' when unset).
 ---     CraftCommands.handle_uncraft()        - unlock, normal gear and job
 ---                                             lockstyle resume
 ---
@@ -21,9 +25,12 @@ local CraftCommands = {}
 
 local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
--- Default lockstyle numbers (overridden by per-character CRAFT_CONFIG.lua if present)
+-- Defaults when the character's CRAFT_CONFIG.lua does not set them. The file
+-- names are the ones //gs c craft and fish always read before craft_file /
+-- fish_file existed, so an older CRAFT_CONFIG.lua keeps working.
 local DEFAULT_CRAFT_LOCKSTYLE = 19
 local DEFAULT_FISH_LOCKSTYLE  = 17
+local DEFAULT_FILES = { craft_file = 'bonecraft', fish_file = 'fishing' }
 
 -- Slot names accepted in set files, mapped to the names `player.equipment` uses.
 local SLOT_ALIASES = {
@@ -35,19 +42,37 @@ local SLOT_ALIASES = {
     lring    = 'left_ring', rring    = 'right_ring',
 }
 
+--- The character's CRAFT_CONFIG.lua, or nil.
+--- @return table|nil
+local function load_craft_config()
+    local char_name = player and player.name
+    if not char_name then return nil end
+    local ok, CraftConfig = pcall(require, char_name .. '/config/CRAFT_CONFIG')
+    return (ok and type(CraftConfig) == 'table') and CraftConfig or nil
+end
+
 --- Resolve the lockstyle number from per-character config, with fallback.
 --- @param key string 'craft_lockstyle' or 'fish_lockstyle'
 --- @param fallback number Default value if config missing
 --- @return number
 local function get_configured_lockstyle(key, fallback)
-    local char_name = player and player.name
-    if not char_name then return fallback end
-
-    local ok, CraftConfig = pcall(require, char_name .. '/config/CRAFT_CONFIG')
-    if ok and CraftConfig and type(CraftConfig[key]) == 'number' then
+    local CraftConfig = load_craft_config()
+    if CraftConfig and type(CraftConfig[key]) == 'number' then
         return CraftConfig[key]
     end
     return fallback
+end
+
+--- The set file a command reads (without _sets.lua), from CRAFT_CONFIG.lua.
+--- @param key string 'craft_file' or 'fish_file'
+--- @return string e.g. 'bonecraft', 'goldsmithing'
+local function configured_file(key)
+    local CraftConfig = load_craft_config()
+    local name = CraftConfig and CraftConfig[key]
+    if type(name) == 'string' and name ~= '' then
+        return (name:lower():gsub('_sets%.lua$', ''):gsub('_sets$', ''))
+    end
+    return DEFAULT_FILES[key]
 end
 
 --- Apply a specific lockstyle (DressUp-aware).
@@ -239,8 +264,8 @@ end
 ---   COMMAND HANDLERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle //gs c craft [variant] (bonecraft_sets.lua; no variant = the file's
---- `default`). 'off' / 'stop' / 'uncraft' close the session instead.
+--- Handle //gs c craft [variant] (the craft_file of CRAFT_CONFIG.lua; no
+--- variant = the file's `default`). 'off' / 'stop' / 'uncraft' close the session instead.
 --- @param variant string|nil Variant key or alias, nil for the file default
 --- @return boolean True when the set was applied
 function CraftCommands.handle_craft(variant)
@@ -254,35 +279,37 @@ function CraftCommands.handle_craft(variant)
         return true
     end
 
-    local entry, err = m.resolve_set('bonecraft', variant)
+    local file = configured_file('craft_file')
+    local entry, err = m.resolve_set(file, variant)
     if not entry then
         local MF = require('shared/utils/messages/message_formatter')
         MF.show_error('[Craft] ' .. (err or 'Unknown craft set'))
         return false
     end
 
-    local applied = equip_craft_gear(entry, 'bonecraft', m.active_gear())
-    m.mark_active(entry.description or 'bonecraft', applied)
+    local applied = equip_craft_gear(entry, file, m.active_gear())
+    m.mark_active(entry.description or file, applied)
     apply_lockstyle(get_configured_lockstyle('craft_lockstyle', DEFAULT_CRAFT_LOCKSTYLE))
     return true
 end
 
---- Handle //gs c fish [variant]    (loads fishing_sets.lua).
+--- Handle //gs c fish [variant] (the fish_file of CRAFT_CONFIG.lua).
 --- @param variant string|nil Variant key or alias, nil for the file default
 --- @return boolean True when the set was applied
 function CraftCommands.handle_fish(variant)
     local m = load_craft_manager()
     if not m then return false end
 
-    local entry, err = m.resolve_set('fishing', variant)
+    local file = configured_file('fish_file')
+    local entry, err = m.resolve_set(file, variant)
     if not entry then
         local MF = require('shared/utils/messages/message_formatter')
         MF.show_error('[Craft] ' .. (err or 'Unknown fishing set'))
         return false
     end
 
-    local applied = equip_craft_gear(entry, 'fishing', m.active_gear())
-    m.mark_active(entry.description or 'fishing', applied)
+    local applied = equip_craft_gear(entry, file, m.active_gear())
+    m.mark_active(entry.description or file, applied)
     apply_lockstyle(get_configured_lockstyle('fish_lockstyle', DEFAULT_FISH_LOCKSTYLE))
     return true
 end

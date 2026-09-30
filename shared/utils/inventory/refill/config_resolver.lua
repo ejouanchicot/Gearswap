@@ -7,7 +7,10 @@
 ---   Each file returns a table with:
 ---     .default = { {name='X', target=N}, ... }
 ---     .subjobs = { DNC = { {name=..., target=...}, ... }, ... }  -- optional
----     .store_bag = 'case' | 'sack' | 'satchel'                   -- optional
+---     .store_bag   = 'case'                   -- optional, where surplus goes
+---     .source_bags = {'case', 'sack'}         -- optional, where pulls come from
+---   Bags: case, sack, satchel, wardrobe1..wardrobe8. Both fields can also
+---   sit in <charname>/config/REFILL_CONFIG.lua, for every list at once.
 ---
 ---   Item `name` can be a string (single item) or a list of strings:
 ---     { name = {'Squid Sushi +1', 'Squid Sushi'}, target = 12 }
@@ -45,16 +48,31 @@ local FALLBACK_LIST = {
     {name = 'Silent Oil', target = 12}
 }
 
---- Bag-key -> {id, display} resolver for store_bag overrides.
+--- The bags a refill can use: every bag the game opens away from the Mog
+--- House (Mog Safe, Storage and Locker only open there). Name as written in
+--- a config -> {key in windower.ffxi.get_items(), id, display}.
+--- Wardrobes only hold equipment (ammo, for instance): the game refuses
+--- anything else there.
 local BAG_INFO = {
-    case = {id = 7, display = 'Case'},
-    sack = {id = 6, display = 'Sack'},
-    satchel = {id = 5, display = 'Satchel'}
+    case      = {key = 'case',      id = 7,  display = 'Case'},
+    sack      = {key = 'sack',      id = 6,  display = 'Sack'},
+    satchel   = {key = 'satchel',   id = 5,  display = 'Satchel'},
+    wardrobe  = {key = 'wardrobe',  id = 8,  display = 'Wardrobe'},
+    wardrobe1 = {key = 'wardrobe',  id = 8,  display = 'Wardrobe'},
+    wardrobe2 = {key = 'wardrobe2', id = 10, display = 'Wardrobe 2'},
+    wardrobe3 = {key = 'wardrobe3', id = 11, display = 'Wardrobe 3'},
+    wardrobe4 = {key = 'wardrobe4', id = 12, display = 'Wardrobe 4'},
+    wardrobe5 = {key = 'wardrobe5', id = 13, display = 'Wardrobe 5'},
+    wardrobe6 = {key = 'wardrobe6', id = 14, display = 'Wardrobe 6'},
+    wardrobe7 = {key = 'wardrobe7', id = 15, display = 'Wardrobe 7'},
+    wardrobe8 = {key = 'wardrobe8', id = 16, display = 'Wardrobe 8'},
 }
 
---- Default destination bag for SURPLUS items (count > target -> move back).
---- Configs may override via `<config>.store_bag = 'sack' | 'case' | 'satchel'`.
+--- Where SURPLUS and foreign items go, and where missing items are taken
+--- from (in order), unless the player's configs say otherwise: the list file
+--- (<JOB>_REFILL.lua, CRAFT_REFILL.lua) first, then config/REFILL_CONFIG.lua.
 local DEFAULT_STORE_BAG = 'case'
+local DEFAULT_SOURCE_BAGS = {'case', 'sack', 'satchel'}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INTERNAL HELPERS
@@ -179,6 +197,60 @@ function ConfigResolver.build_foreign_items_set(char_name, current_list)
     return foreign
 end
 
+--- The character's config/REFILL_CONFIG.lua (bags for every list), or nil.
+--- @param char string Character name
+--- @return table|nil
+local function load_refill_config(char)
+    local ok, cfg = pcall(require, char .. '/config/REFILL_CONFIG')
+    return (ok and type(cfg) == 'table') and cfg or nil
+end
+
+--- A bag named in a config, or nil when the name is not a usable bag.
+local function bag(name)
+    return type(name) == 'string' and BAG_INFO[name:lower():gsub('%s', '')] or nil
+end
+
+--- The bags one refill uses: `store_bag` and `source_bags` from the list
+--- file, else from REFILL_CONFIG.lua, else Case / Case, Sack, Satchel.
+--- Unknown bag names are skipped.
+--- @param list_cfg table|nil The <JOB>_REFILL / CRAFT_REFILL table
+--- @param global_cfg table|nil REFILL_CONFIG.lua
+--- @return table {id, display, sources = {{key, id, display}, ...}}
+local function resolve_bags(list_cfg, global_cfg)
+    local function pick(field)
+        if list_cfg and list_cfg[field] ~= nil then return list_cfg[field] end
+        return global_cfg and global_cfg[field]
+    end
+    local store = bag(pick('store_bag')) or BAG_INFO[DEFAULT_STORE_BAG]
+    local sources = {}
+    local wanted = pick('source_bags')
+    for _, name in ipairs(type(wanted) == 'table' and wanted or DEFAULT_SOURCE_BAGS) do
+        sources[#sources + 1] = bag(name)
+    end
+    if #sources == 0 then
+        for _, name in ipairs(DEFAULT_SOURCE_BAGS) do sources[#sources + 1] = BAG_INFO[name] end
+    end
+    return {id = store.id, display = store.display, sources = sources}
+end
+
+--- The craft list while a craft session runs (//gs c craft / fish), or nil.
+--- @param char string Character name
+--- @return table|nil list, string label, table cfg
+local function craft_list(char)
+    local CraftManager = _G.CraftManager
+    if not (CraftManager and CraftManager.is_active()) then return nil end
+    local ok, cfg = pcall(require, char .. '/config/craft/CRAFT_REFILL')
+    if not (ok and type(cfg) == 'table' and cfg.default) then return nil end
+    local name = CraftManager.active_name()
+    return cfg.default, name and ('CRAFT (' .. name .. ')') or 'CRAFT', cfg
+end
+
+--- The source bags used when nothing names any: Case, Sack, Satchel.
+--- @return table {{key, id, display}, ...}
+function ConfigResolver.default_sources()
+    return resolve_bags(nil, nil).sources
+end
+
 --- Resolve the refill list for the current player (job + subjob).
 --- Looks for <charname>/config/<job>/<JOB>_REFILL.lua. Picks subjobs[<sub>]
 --- entry if defined, else .default. Falls back to FALLBACK_LIST.
@@ -188,58 +260,37 @@ end
 --- locked the slots), uses <charname>/config/craft/CRAFT_REFILL.lua instead
 --- so the inventory gets craft-relevant food.
 ---
---- @return table list, string source_label, table store_info {id, display}
+--- @return table list, string source_label, table bags {id, display, sources}
+    ---   (id / display: where surplus goes; sources: where pulls come from)
 function ConfigResolver.resolve_list_for_player()
     local p = windower.ffxi.get_player()
-    local store_info = BAG_INFO[DEFAULT_STORE_BAG]
     if not p or not p.main_job or p.main_job == 'NON' then
-        return FALLBACK_LIST, 'fallback (no player)', store_info
+        return FALLBACK_LIST, 'fallback (no player)', resolve_bags(nil, nil)
     end
     local char = p.name
+    local global_cfg = load_refill_config(char)
 
-    -- Craft mode override: ask craft_manager, which owns the session state.
-    local CraftManager = _G.CraftManager
-    if CraftManager and CraftManager.is_active() then
-        local craft_path = char .. '/config/craft/CRAFT_REFILL'
-        local ok_c, cfg_c = pcall(require, craft_path)
-        if ok_c and type(cfg_c) == 'table' then
-            if cfg_c.store_bag and BAG_INFO[cfg_c.store_bag] then
-                store_info = BAG_INFO[cfg_c.store_bag]
-            end
-            if cfg_c.default then
-                local label = 'CRAFT'
-                local name = CraftManager.active_name()
-                if name then
-                    label = label .. ' (' .. name .. ')'
-                end
-                return cfg_c.default, label, store_info
-            end
-        end
-        -- If craft refill file missing, fall through to job-based logic
-    end
+    -- Craft mode: craft_manager owns the session state. A missing
+    -- CRAFT_REFILL.lua falls through to the job's list.
+    local list, label, craft_cfg = craft_list(char)
+    if list then return list, label, resolve_bags(craft_cfg, global_cfg) end
 
     local job = p.main_job:upper()
     local sub = (p.sub_job and p.sub_job ~= 'NON') and p.sub_job:upper() or nil
-
-    -- Build require path: <charname>/config/<lowerjob>/<JOB>_REFILL
     local mod_path = char .. '/config/' .. job:lower() .. '/' .. job .. '_REFILL'
     local ok, cfg = pcall(require, mod_path)
     if not ok or type(cfg) ~= 'table' then
-        return FALLBACK_LIST, ('fallback (no %s)'):format(mod_path), store_info
+        return FALLBACK_LIST, ('fallback (no %s)'):format(mod_path), resolve_bags(nil, global_cfg)
     end
 
-    -- Top-level store_bag override (default = Case)
-    if cfg.store_bag and BAG_INFO[cfg.store_bag] then
-        store_info = BAG_INFO[cfg.store_bag]
-    end
-
+    local bags = resolve_bags(cfg, global_cfg)
     if sub and cfg.subjobs and cfg.subjobs[sub] then
-        return cfg.subjobs[sub], ('%s/%s'):format(job, sub), store_info
+        return cfg.subjobs[sub], ('%s/%s'):format(job, sub), bags
     end
     if cfg.default then
-        return cfg.default, ('%s/default'):format(job), store_info
+        return cfg.default, ('%s/default'):format(job), bags
     end
-    return FALLBACK_LIST, ('fallback (%s has no .default)'):format(mod_path), store_info
+    return FALLBACK_LIST, ('fallback (%s has no .default)'):format(mod_path), bags
 end
 
 return ConfigResolver

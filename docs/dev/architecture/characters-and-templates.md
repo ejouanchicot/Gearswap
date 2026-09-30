@@ -20,7 +20,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `_master/sets/<job>_sets.lua` | yes, 17 files | Generic flat set files, same 17 jobs (`pup_sets.lua` is a skeleton) |
 | `_master/config/<job>/` | yes, 16 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
 | `_master/config/alt/` | yes, 33 files | Dual-box alt command tables (22 `_ALT_COMMANDS`, 5 `_ALT_CUSTOM`, 6 `.lua.example`). Deployed only to a character cloned as MAIN |
-| `_master/config_global/` | yes, 13 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WEAPON_CONFIG` |
+| `_master/config_global/` | yes, 14 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WEAPON_CONFIG` |
 | `_master/Tetsouo/` | no, 78 files | Tetsouo overlay: 9 entries (BLM BRD BST COR DNC PLD SMN THF WAR, with the modular set include), `config/<job>/` for those jobs plus `config/craft/`, `config_global/{DUALBOX_CONFIG,REGION_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
 | `_master/Kaories/` | no, 38 files | Kaories overlay: 4 entries (COR GEO PLD RDM), 4 flat set files, `config/{cor,geo,pld,rdm}/`, `config_global/{combat_mode,COMMON_KEYBINDS,DUALBOX_CONFIG,REGION_CONFIG,WARDROBE_CONFIG}.lua` |
 | `_master/Gabvanstronger/` | no, 23 files | No entries (the generic ones are used), `config/{blu,rdm,thf}/`, `config_global/{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,WEAPON_CONFIG}.lua`, flat sets + `sets/0_AugGear_Gabvanstronger.lua` |
@@ -206,7 +206,10 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `config/STEALTH_CONFIG.lua` | `shared/utils/stealth/stealth_config.lua` | step 4c; kept on re-clone | `//gs c stealth ...` |
 | `config/combat_mode.lua`, `config/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
 | `config/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` | step 4c (overlay only) | - |
-| `config/CRAFT_CONFIG.lua` (defaults craft 19 / fish 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
+| `config/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
+| `config/REFILL_CONFIG.lua` (refill bags) | `shared/utils/inventory/refill/config_resolver.lua` | step 4c | - |
+| `config/craft/CRAFT_REFILL.lua` (template: empty list) | `config_resolver.lua` | step 4 | Tetsouo's |
+| `sets/craft_sets.lua` and the overlay's loose set files | `craft_commands.lua` | step 3 | Tetsouo's `bonecraft_sets.lua`, `fishing_sets.lua`; Gab's `goldsmithing_sets.lua` |
 | `config/DUALBOX_CONFIG.lua` | `DualBoxManager.initialize` | step 6 (generated) | - |
 | `config/REGION_CONFIG.lua` | entries, `message_colors.lua` | step 6 (generated) | - |
 | `config/alt/<JOB>_ALT_COMMANDS.lua`, `<JOB>_ALT_CUSTOM.lua` | `load_job_config` in `alt_commands.lua` (MAIN only, `_master/config/alt/` as fallback) | step 4b, MAIN only | - |

@@ -684,15 +684,20 @@ class SmartCharacterCloner:
 
         # Files the modular sets and the craft/fish commands need, whatever
         # the jobs: sets/common/ (shared rings) and loose sets at the root of
-        # the overlay's sets/ (bonecraft_sets.lua, fishing_sets.lua).
-        if self.override_dir is not None and (self.override_dir / 'sets').is_dir():
-            overlay_sets = self.override_dir / 'sets'
-            if (overlay_sets / 'common').is_dir():
-                shutil.copytree(overlay_sets / 'common', target_dir / 'sets' / 'common', dirs_exist_ok=True)
-                print(self.t['copy_ok'].format("sets/common/"))
-            for loose in sorted(overlay_sets.glob('*.lua')):
-                self._copy(loose, target_dir / 'sets' / loose.name)
-                print(self.t['copy_ok'].format(f"sets/{loose.name}"))
+        # sets/ that belong to no job (craft_sets.lua from the template,
+        # bonecraft_sets.lua, fishing_sets.lua...). Same rule: the overlay wins.
+        job_set_names = {f'{j.lower()}_sets.lua' for j in ALL_VALID_JOBS}
+        loose_names = set()
+        for d in (self.master_dir / 'sets',
+                  self.override_dir / 'sets' if self.override_dir else None):
+            if d and d.is_dir():
+                loose_names.update(f.name for f in d.glob('*.lua') if f.name not in job_set_names)
+        for name in sorted(loose_names):
+            self._copy(self._resolve_src(('sets', name)), target_dir / 'sets' / name)
+            print(self.t['copy_ok'].format(f"sets/{name}"))
+        if self.override_dir is not None and (self.override_dir / 'sets' / 'common').is_dir():
+            shutil.copytree(self.override_dir / 'sets' / 'common', target_dir / 'sets' / 'common', dirs_exist_ok=True)
+            print(self.t['copy_ok'].format("sets/common/"))
 
         # ── Step 4: Copy configs (job-specific + global) ──────────────
         print(self.t['step_configs'].format(len(jobs)))

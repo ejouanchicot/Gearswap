@@ -1,10 +1,11 @@
 ---============================================================================
---- Refill Manager - Restock consumables from Mog Case/Sack/Satchel (Facade)
+--- Refill Manager - Restock consumables from the player's bags (Facade)
 ---============================================================================
---- Scans inventory for consumable items and pulls from Mog Case, Mog Sack
---- then Mog Satchel
---- to maintain target quantities. Items above target are pushed back to a
---- configurable store_bag (default Case). Items belonging to OTHER jobs'
+--- Scans inventory for consumable items and pulls them from the bags the
+--- player chose (source_bags; default Case, Sack, Satchel) to maintain target
+--- quantities. Items above target are pushed back to store_bag (default
+--- Case). Both are set in the list file or config/REFILL_CONFIG.lua
+--- (refill/config_resolver.lua). Items belonging to OTHER jobs'
 --- refill lists are detected as "foreign" and pushed back too.
 ---
 --- Usage: //gs c refill  (or //gs c rf)
@@ -34,13 +35,6 @@ local RefillManager = {}
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   ORCHESTRATION CONSTANTS
 ---  ═══════════════════════════════════════════════════════════════════════════
-
---- Source bags scanned in priority order (Case, then Sack, then Satchel)
-local SOURCE_BAGS = {
-    {key = 'case', id = 7, display = 'Case'},
-    {key = 'sack', id = 6, display = 'Sack'},
-    {key = 'satchel', id = 5, display = 'Satchel'}
-}
 
 local INVENTORY_BAG_ID = 0
 
@@ -77,14 +71,14 @@ end
 --- `target = 'all'` means take everything there is rather than stop at a
 --- number, so it resolves to what is held plus what the other bags can give.
 --- @return number Effective target
-local function effective_target(refill_item, variants, inv_count, items_data)
+local function effective_target(refill_item, variants, inv_count, items_data, sources)
     if refill_item.target ~= 'all' then
         return refill_item.target
     end
 
     local available = 0
     for _, v in ipairs(variants) do
-        for _, source in ipairs(SOURCE_BAGS) do
+        for _, source in ipairs(sources) do
             available = available + BagScanner.count_item_in_bag(items_data, source.key, v.id)
         end
     end
@@ -113,18 +107,18 @@ local function queue_surplus(variants, surplus, items_data, store_info)
     return moves, surplus - remaining
 end
 
---- Moves that pull the shortfall out of Case, Sack and Satchel.
+--- Moves that pull the shortfall out of the source bags, in their order.
 ---
 --- Variants are tried in order, so the preferred spelling is taken first and
 --- the lesser one only makes up the difference.
 --- @return table moves, number pulled, number still short, string sources, table pulled variant names
-local function queue_deficit(variants, deficit, items_data)
+local function queue_deficit(variants, deficit, items_data, source_bags)
     local moves, sources, pulled_variants = {}, {}, {}
     local remaining, moved = deficit, 0
 
     for _, v in ipairs(variants) do
         if remaining <= 0 then break end
-        for _, source in ipairs(SOURCE_BAGS) do
+        for _, source in ipairs(source_bags) do
             if remaining <= 0 then break end
             local available, slots = BagScanner.count_item_in_bag(items_data, source.key, v.id)
             if available > 0 then
@@ -153,6 +147,7 @@ end
 --- Plan one line of the refill list.
 --- @return table result row, table moves to queue
 local function plan_item(refill_item, items_data, store_info)
+    local source_bags = store_info.sources or ConfigResolver.default_sources()
     local variants = ItemResolver.resolve_variants(refill_item.name)
 
     if #variants == 0 then
@@ -167,7 +162,7 @@ local function plan_item(refill_item, items_data, store_info)
     end
 
     local inv_count, present_variant = count_held(variants, items_data)
-    local target = effective_target(refill_item, variants, inv_count, items_data)
+    local target = effective_target(refill_item, variants, inv_count, items_data, source_bags)
     local deficit = target - inv_count
 
     local result = {
@@ -184,7 +179,7 @@ local function plan_item(refill_item, items_data, store_info)
         result.surplus = pushed
         result.surplus_dest = store_info.display
     elseif deficit > 0 then
-        local pull_moves, moved, short, sources, pulled = queue_deficit(variants, deficit, items_data)
+        local pull_moves, moved, short, sources, pulled = queue_deficit(variants, deficit, items_data, source_bags)
         moves = pull_moves
         result.moved, result.short, result.source = moved, short, sources
 
@@ -246,7 +241,7 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Execute the full refill operation: scan inventory, compute deficits,
---- push surplus, pull from Case/Sack/Satchel, push foreign items, display report.
+--- push surplus, pull from the source bags, push foreign items, display report.
 --- @return boolean Success
 function RefillManager.refill()
     if not player then

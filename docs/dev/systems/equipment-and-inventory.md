@@ -240,22 +240,27 @@ sequenceDiagram
    - No player or main job `NON`: `FALLBACK_LIST` (`:39`, six medicines at 12).
    - Craft mode (`_G.CraftManager.is_active()`; `craft_manager.lua` owns the session state):
      `require('<Char>/config/craft/CRAFT_REFILL')`; its `.default` is used (label `CRAFT (<name>)`)
-     and its `store_bag` applies. Without the file or without `.default`, resolution falls through to
+     and its bag fields apply. Without the file or without `.default`, resolution falls through to
      the job.
    - Job: `require('<Char>/config/<job>/<JOB>_REFILL')`. If the require throws (missing file or error
      in the file) the fallback list is used with label `fallback (no <path>)`. `subjobs[<SUB>]`
      replaces `.default` entirely when present; otherwise `.default`; otherwise the fallback.
-   - `store_bag` (`case` default, `sack`, `satchel`; `BAG_INFO` `:49` and `DEFAULT_STORE_BAG` `:57`)
-     only sets where surplus and foreign items go. Pulls always come from Case, then Sack, then
-     Satchel (`SOURCE_BAGS`, `refill_manager.lua:38`; the Satchel since 2026-09-30).
+   - Bags (`resolve_bags`), the player's choice since 2026-09-30: `store_bag` (where surplus and
+     foreign items go) and `source_bags` (where pulls come from, in order) are read from the list file
+     (`<JOB>_REFILL` / `CRAFT_REFILL`), else from `<Char>/config/REFILL_CONFIG.lua`, else `case` and
+     `{'case', 'sack', 'satchel'}` (`DEFAULT_STORE_BAG`, `DEFAULT_SOURCE_BAGS`). Names: `case`,
+     `sack`, `satchel`, `wardrobe1`..`wardrobe8` (`wardrobe` = `wardrobe1`), case and spaces ignored
+     (`BAG_INFO`): every bag the game opens away from the Mog House. Unknown names are skipped; a
+     `source_bags` with none left falls back to the default. The third return value carries both:
+     `{id, display, sources = {{key, id, display}, ...}}`.
 4. Planning (`plan_item`, `refill_manager.lua:153`), for each list entry:
    - `ItemResolver.resolve_variants(name)` keeps the variants whose name resolves in `res.items`
      through `en`/`enl`/`name`/`name_log` (`ItemIndex.id`, `shared/utils/equipment/item_index.lua`). If none
      resolves, the row is reported with `current = 0` and `short = target` (printed as "Out of stock").
    - Held count = sum of all variants in the inventory (`count_held`, `:60`). Target: the number, or for
-     `target = 'all'` the held count plus everything of every variant in Case, Sack and Satchel
+     `target = 'all'` the held count plus everything of every variant in the source bags
      (`effective_target`, `:78`).
-   - Deficit > 0: pull moves, variants in list order, Case, then Sack, then Satchel, stack by stack
+   - Deficit > 0: pull moves, variants in list order, source bags in order, stack by stack
      (`queue_deficit`, `:119`).
    - Deficit < 0: push moves of the surplus to the store bag, variants in list order (`queue_surplus`,
      `:94`); the preferred variant is pushed first.
@@ -606,11 +611,12 @@ Refill file schema (reference comment at the top of `_master/Tetsouo/config/war/
 
 ```lua
 local M = {}
-M.store_bag = 'case'            -- 'case' (default) | 'sack' | 'satchel'; unknown values are ignored
+M.store_bag = 'case'            -- where surplus goes; unknown values are ignored
+M.source_bags = {'case', 'sack', 'satchel'}   -- where pulls come from, in order (optional)
 M.default = {                   -- used when no subjobs[<SUB>] entry exists
     {name = 'Panacea', target = 12},
     {name = {'Sublime Sushi +1', 'Sublime Sushi'}, target = 12},  -- variants share one target
-    {name = 'Pet Food Theta', target = 'all'},                    -- take everything Case/Sack/Satchel hold
+    {name = 'Pet Food Theta', target = 'all'},                    -- take everything the source bags hold
 }
 M.subjobs = {                   -- optional; a subjob list REPLACES default
     DNC = { ... },
@@ -624,9 +630,12 @@ return M
   `addons/libs/`) wrapped by the project's `ModuleCache` (`shared/utils/core/module_cache.lua`). The
   directory scan for foreign detection uses `windower.addon_path .. 'data/'` only
   (`load_char_refill_configs`, `load_all_refill_configs`).
-- Craft list: `<Char>/config/craft/CRAFT_REFILL.lua`, only `.default` and `.store_bag` are read.
+- Craft list: `<Char>/config/craft/CRAFT_REFILL.lua`, only `.default`, `.store_bag` and `.source_bags`
+  are read (template `_master/config/craft/CRAFT_REFILL.lua`, empty list).
+- Bags for every list: `<Char>/config/REFILL_CONFIG.lua` (`store_bag`, `source_bags`; template
+  `_master/config_global/REFILL_CONFIG.lua`). A list file's own fields win.
 - Weapon resolver: `<Char>/config/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
-- Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` (`:57`),
+- Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
   thresholds in the aftercast callers, `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`),
   `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `CHARACTERS`,

@@ -5,6 +5,8 @@
 ---     <charname>/sets/<name>_sets.lua  -> one file per craft kind
 ---       e.g. Tetsouo/sets/bonecraft_sets.lua
 ---            Tetsouo/sets/fishing_sets.lua
+---   Which file //gs c craft / fish read: craft_file / fish_file in
+---   <charname>/config/CRAFT_CONFIG.lua (craft_commands.lua).
 ---
 ---   Two file shapes are supported:
 ---
@@ -24,10 +26,10 @@
 ---        }
 ---
 ---   Commands (wired in COMMON_COMMANDS):
----     //gs c craft           -> default variant of bonecraft_sets.lua
----     //gs c craft nq        -> the 'nq' variant of bonecraft_sets.lua
----     //gs c craft success   -> the 'success' variant of bonecraft_sets.lua
----     //gs c fish            -> fishing_sets.lua (single set)
+---     //gs c craft           -> default variant of the craft file
+---     //gs c craft nq        -> the 'nq' variant of the craft file
+---     //gs c craft success   -> the 'success' variant of the craft file
+---     //gs c fish            -> the fishing file
 ---     //gs c uncraft         -> unlock slots, normal gear resumes
 ---
 ---   @file    shared/utils/craft/craft_manager.lua
@@ -85,7 +87,7 @@ local function resolve(file_name, variant)
     local cfg = load_craft_file(file_name)
     if not cfg then
         local p = windower.ffxi.get_player()
-        return nil, ('No set file %s/sets/%s_sets.lua'):format(
+        return nil, ('No set file %s/sets/%s_sets.lua (create it, or name another file in config/CRAFT_CONFIG.lua)'):format(
             (p and p.name) or '?', file_name:lower())
     end
 
