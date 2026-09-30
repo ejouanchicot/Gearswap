@@ -12,7 +12,7 @@
 ---   Left out, they read bonecraft_sets.lua and fishing_sets.lua.
 ---
 ---   craft_lockstyle / fish_lockstyle: the lockstyle set shown while crafting
----   or fishing (defaults 19 and 17).
+---   or fishing (defaults 19 and 17); false: the job's lockstyle stays.
 ---
 ---   The food and items the refill keeps while crafting are in
 ---   common/inventory/CRAFT_REFILL.lua; the bags it uses in common/inventory/REFILL_CONFIG.lua.

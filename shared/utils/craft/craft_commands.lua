@@ -54,9 +54,12 @@ end
 --- Resolve the lockstyle number from per-character config, with fallback.
 --- @param key string 'craft_lockstyle' or 'fish_lockstyle'
 --- @param fallback number Default value if config missing
---- @return number
+--- @return number|false false: the config turns the lockstyle off
 local function get_configured_lockstyle(key, fallback)
     local CraftConfig = load_craft_config()
+    if CraftConfig and CraftConfig[key] == false then
+        return false
+    end
     if CraftConfig and type(CraftConfig[key]) == 'number' then
         return CraftConfig[key]
     end
@@ -75,9 +78,10 @@ local function configured_file(key)
     return DEFAULT_FILES[key]
 end
 
---- Apply a specific lockstyle (DressUp-aware).
---- @param style number Lockstyle number to apply
+--- Apply a specific lockstyle (DressUp-aware); false leaves the current one.
+--- @param style number|false Lockstyle number to apply
 local function apply_lockstyle(style)
+    if type(style) ~= 'number' then return end
     local ok, LockstyleManager = pcall(require, 'shared/utils/lockstyle/lockstyle_manager')
     if ok and LockstyleManager and LockstyleManager.apply_style then
         LockstyleManager.apply_style(style)

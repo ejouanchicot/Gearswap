@@ -8,7 +8,9 @@
 --- So the alt reports instead, the same way it already reports its job:
 ---
 ---   ALT gains/loses a tracked buff -> send <main> gs c altbuff <Buff> 1|0
----   MAIN receives                  -> _G.AltBuffState['<Buff>'] = true|false
+---   MAIN receives                  -> _G.AltBuffState['<buff>'] = true|false
+---                                     (keyed in lowercase: a tracked_buffs
+---                                     name written in any case still matches)
 ---
 --- Entrust is the exception: per the GEO alt config (verified in game),
 --- buff_change fires for it only on loss, so the main learns of the gain from
@@ -19,7 +21,7 @@
 --- instead of broadcasting every Regen tick.
 ---
 --- Read it from an alt command config with:
----   (_G.AltBuffState or {})['Entrust']
+---   AltBuffReporter.active('Entrust')
 ---
 --- @file shared/utils/dualbox/alt_buff_reporter.lua
 --- @author ejouanchicot
@@ -223,7 +225,7 @@ function AltBuffReporter.receive(args)
     end
 
     local value = args[#args]
-    local buff = table.concat(args, ' ', 1, #args - 1):gsub('"', '')
+    local buff = table.concat(args, ' ', 1, #args - 1):gsub('"', ''):lower()
 
     if buff == '' then
         return false
@@ -290,6 +292,7 @@ function AltBuffReporter.assume(buff, seconds)
     if not buff then
         return false
     end
+    buff = buff:lower()
 
     if windower._alt_buff_reporting then
         trace(string.format('%s not assumed - the alt reports for real', buff))
@@ -312,6 +315,7 @@ function AltBuffReporter.consume(buff)
     if not buff then
         return
     end
+    buff = buff:lower()
     if _G.AltBuffState then
         _G.AltBuffState[buff] = false
     end
@@ -326,6 +330,7 @@ end
 --- @param buff string Buff name
 --- @return boolean
 function AltBuffReporter.active(buff)
+    buff = type(buff) == 'string' and buff:lower() or buff
     if not _G.AltBuffState or _G.AltBuffState[buff] ~= true then
         return false
     end

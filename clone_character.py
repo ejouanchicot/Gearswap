@@ -920,7 +920,7 @@ DualBoxConfig.debug = false
 -- DualBoxConfig.report_on_load = true
 
 -- Buffs this box reports to the main when it is the alt (the main's alt
--- commands read them), spelled as the game does: Entrust, Composure and
+-- commands read them), in any case: Entrust, Composure and
 -- Bolter's Roll by default
 -- DualBoxConfig.tracked_buffs = {{'Entrust', 'Composure', "Bolter's Roll"}}
 
