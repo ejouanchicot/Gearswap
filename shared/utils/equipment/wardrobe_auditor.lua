@@ -52,7 +52,7 @@ end
 --- Recursively walk a directory tree and return all .lua file paths.
 --- Defined here (instead of further down) because discover_job_files() needs
 --- it. The modular sets layout (2026-05) puts gear definitions under subfolders
---- (e.g. Tetsouo/common/sets/rings.lua, Tetsouo/brd/sets/armor.lua), so a
+--- (e.g. Tetsouo/_common/sets/rings.lua, Tetsouo/brd/sets/armor.lua), so a
 --- flat scan would miss them.
 --- Heuristic: entries ending in `.lua` are files; everything else is a subdir
 --- (windower API doesn't expose is_dir).
@@ -109,7 +109,7 @@ local function layout_set_files()
             end
         end
     end
-    for _, sub in ipairs({'common/sets/', 'common/', 'common/craft/'}) do
+    for _, sub in ipairs({'_common/sets/', '_common/', 'common/sets/', 'common/', 'common/craft/'}) do
         for _, name in ipairs(windower.get_dir(dir .. sub) or {}) do
             if name:match('^[%l%d].*%.lua$') then table.insert(common, dir .. sub .. name) end
         end

@@ -6,7 +6,8 @@
 ---
 --- Layout since 2026-09-30:
 ---   <Char>/<Char>_<JOB>.lua      one-line entry (GearSwap needs this name)
----   <Char>/common/               settings for the whole character, by theme
+---   <Char>/_common/              settings for the whole character, by theme
+---                                (the _ puts it first in the folder list)
 ---       display/                 HUD, colours, region, lockstyle delay
 ---       keys/                    common keys, Combat Mode / Treasure Mode keys
 ---       dualbox/                 dual-box settings; alt/ = the alt's own commands
@@ -28,10 +29,12 @@
 --- Older layouts, still read: config/<FILE>, config/<job>/, config/alt/,
 --- config/craft/, sets/<job>_sets.lua, sets/<job>/, files at the root of the
 --- character folder, and the first form of this layout (sets and gear files
---- next to the settings, common/craft/). Every lookup tries the new place first, then the old
+--- next to the settings, common/craft/, then common/ without the _). Every
+--- lookup tries the new place first, then the old
 --- ones, so a character that was not moved (a frozen clone) keeps working.
 --- A file that exists nowhere yet is created where that character's layout
---- puts it: its new place once the folder has common/, else the old place, so
+--- puts it: its new place once the folder has _common/ (or common/), else the
+--- old place, so
 --- a folder that was not moved never gets new folders.
 ---
 --- @file    shared/utils/core/char_paths.lua
@@ -45,17 +48,19 @@ local CharPaths = {}
 --- Places of each kind of file, relative to the character folder, newest
 --- first. %s is the file name, %j the job in lower case.
 local LAYOUT = {
-    common = {'common/%s', 'config/%s'},
-    alt    = {'common/dualbox/alt/%s', 'common/alt/%s', 'config/alt/%s'},
-    craft  = {'common/inventory/%s', 'common/%s', 'common/craft/%s', 'config/craft/%s'},
-    gear   = {'common/sets/%s', 'common/craft/%s', 'common/%s', 'sets/common/%s', 'sets/%s'},
+    common = {'_common/%s', 'common/%s', 'config/%s'},
+    alt    = {'_common/dualbox/alt/%s', 'common/dualbox/alt/%s', 'common/alt/%s', 'config/alt/%s'},
+    craft  = {'_common/inventory/%s', '_common/%s', 'common/inventory/%s', 'common/%s',
+              'common/craft/%s', 'config/craft/%s'},
+    gear   = {'_common/sets/%s', 'common/sets/%s', 'common/craft/%s', 'common/%s',
+              'sets/common/%s', 'sets/%s'},
     job    = {'%j/%s', 'config/%j/%s'},
     sets   = {'%j/sets/%s', '%j/%s', 'sets/%j/%s', 'sets/%s'},
     saved  = {'saved/%s', 'config/%s', '%s'},
 }
 
---- Theme folder of each character setting in common/. A file not listed
---- here stays at the root of common/.
+--- Theme folder of each character setting in _common/. A file not listed
+--- here stays at the root of _common/.
 local COMMON_GROUPS = {
     ['UI_CONFIG.lua'] = 'display', ['UI_COLOR_CONFIG.lua'] = 'display',
     ['REGION_CONFIG.lua'] = 'display', ['LOCKSTYLE_CONFIG.lua'] = 'display',
@@ -122,8 +127,9 @@ end
 local layout_cache = {}
 local function new_layout(char)
     if layout_cache[char] == nil then
-        local dir = data_dir() .. char .. '/common'
-        layout_cache[char] = (windower.dir_exists and windower.dir_exists(dir)) and true or false
+        local base = data_dir() .. char
+        layout_cache[char] = windower.dir_exists and (windower.dir_exists(base .. '/_common')
+            or windower.dir_exists(base .. '/common')) and true or false
     end
     return layout_cache[char]
 end
@@ -135,7 +141,7 @@ local function legacy_default(kind, file, job)
 end
 
 --- Candidate paths of one file, relative to the character folder.
---- @param kind string common (its theme folder from COMMON_GROUPS) | alt | craft (CRAFT_REFILL) | gear (common/sets/:
+--- @param kind string common (its theme folder from COMMON_GROUPS) | alt | craft (CRAFT_REFILL) | gear (_common/sets/:
 ---   shared gear, craft sets) | job | sets (a job's gear) | saved
 --- @param file string File name (with .lua for files, without for modules)
 --- @param job string|nil Job code, for job and sets
@@ -143,7 +149,8 @@ end
 local function candidates(kind, file, job)
     local out = {}
     if kind == 'common' and COMMON_GROUPS[file] then
-        out[1] = 'common/' .. COMMON_GROUPS[file] .. '/' .. file
+        out[1] = '_common/' .. COMMON_GROUPS[file] .. '/' .. file
+        out[2] = 'common/' .. COMMON_GROUPS[file] .. '/' .. file
     elseif kind == 'job' and CharPaths.job_group(file) then
         out[1] = (job or ''):lower() .. '/' .. CharPaths.job_group(file) .. '/' .. file
     end

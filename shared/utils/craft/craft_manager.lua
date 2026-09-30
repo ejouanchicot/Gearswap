@@ -3,8 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   File layout (per character):
 ---     <charname>/sets/<name>_sets.lua  -> one file per craft kind
----       e.g. Tetsouo/common/sets/bonecraft_sets.lua
----            Tetsouo/common/sets/fishing_sets.lua
+---       e.g. Tetsouo/_common/sets/bonecraft_sets.lua
+---            Tetsouo/_common/sets/fishing_sets.lua
 ---   Which file //gs c craft / fish read: craft_file / fish_file in
 ---   <charname>/config/CRAFT_CONFIG.lua (craft_commands.lua).
 ---
@@ -87,7 +87,7 @@ local function resolve(file_name, variant)
     local cfg = load_craft_file(file_name)
     if not cfg then
         local p = windower.ffxi.get_player()
-        return nil, ('No set file %s/common/sets/%s_sets.lua (create it, or name another file in common/inventory/CRAFT_CONFIG.lua)'):format(
+        return nil, ('No set file %s/_common/sets/%s_sets.lua (create it, or name another file in _common/inventory/CRAFT_CONFIG.lua)'):format(
             (p and p.name) or '?', file_name:lower())
     end
 
@@ -121,7 +121,7 @@ local function resolve(file_name, variant)
     end
 
     local p = windower.ffxi.get_player()
-    return nil, ('%s/common/sets/%s_sets.lua: invalid format (no .gear or .variants)'):format(
+    return nil, ('%s/_common/sets/%s_sets.lua: invalid format (no .gear or .variants)'):format(
         (p and p.name) or '?', file_name:lower())
 end
 

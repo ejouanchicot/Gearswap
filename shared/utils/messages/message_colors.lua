@@ -11,7 +11,7 @@
 ---   EU Region (BQJS): Code 003 = Orange equivalent for EU
 ---   JP Region: Code 057 = Orange
 ---
---- Region is configured in <Char>/common/display/REGION_CONFIG.lua (exposed by the
+--- Region is configured in <Char>/_common/display/REGION_CONFIG.lua (exposed by the
 --- entry point as _G.RegionConfig). Users add their character name to that
 --- file to set their region.
 ---
@@ -54,7 +54,7 @@ local function get_region_orange()
         end
     end
 
-    -- Priority 3: <Char>/common/display/REGION_CONFIG.lua
+    -- Priority 3: <Char>/_common/display/REGION_CONFIG.lua
     local RegionConfig = region_config()
     if RegionConfig.get_region and player and player.name then
         local region = RegionConfig.get_region(player.name)

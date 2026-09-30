@@ -2,7 +2,8 @@
 Move a character folder to the layout of 2026-09-30.
 
     <Char>/<Char>_<JOB>.lua   one-line entry (shared/entry/<job>.lua does the work)
-    <Char>/common/            settings of the whole character, by theme:
+    <Char>/_common/           settings of the whole character, by theme
+                              (the _ puts it first in the folder list):
         display/ keys/ dualbox/ (+ alt/) inventory/ combat/
         sets/                 gear shared by jobs (rings.lua...), craft and fishing sets
     <Char>/<job>/             one job, by theme:
@@ -18,7 +19,8 @@ A full copy of the folder is made first in data/_backups/<Character>_<date>/.
 Nothing is ever overwritten: a file whose new place is taken is left where it
 is and listed at the end. The shared code reads the old layouts too, so a
 folder left half-moved still works. clone_character.py runs the same moves at
-the end of every clone.
+the end of every clone. Each run also writes <Character>/WHERE-IS-WHAT.txt
+(where_is_what.py): every file of the folder and what it holds.
 
 @author ejouanchicot
 @date   Created: 2026-09-30
@@ -110,8 +112,16 @@ def new_place(rel):
 
     Returns the new relative path, None when the file is dropped (the
     generated alt tables, now in shared/data/alt/, and the .example copies),
-    or the path unchanged when it is already in place.
+    or the path unchanged when it is already in place. The common folder is
+    _common/ (its first name, common/, is moved too).
     """
+    place = _place(rel)
+    if place and place.startswith('common/'):
+        return '_' + place
+    return place
+
+
+def _place(rel):
     parts = rel.split('/')
     top = parts[0]
     if top == 'config':
@@ -146,11 +156,11 @@ def plan_moves(char_dir):
         if dst != rel:
             moves.append((rel, dst))
 
-    for top in ('config', 'sets', 'atelier', 'common/craft', 'common/alt'):
+    for top in ('config', 'sets', 'atelier', 'common'):
         for root, _, files in os.walk(os.path.join(char_dir, top)):
             for f in files:
                 add(os.path.relpath(os.path.join(root, f), char_dir).replace('\\', '/'))
-    for top in JOBS + ['common']:
+    for top in JOBS:
         folder = os.path.join(char_dir, top)
         if os.path.isdir(folder):
             for f in os.listdir(folder):
@@ -175,10 +185,11 @@ def rewrite_paths(text, char, moved):
                       lambda m: m.group(1) + new + m.group(2), text)
     # old-style names of files that were already moved or never existed here
     c, jobs = re.escape(char), '|'.join(JOBS)
-    text = re.sub("(['\"])%s/sets/common/" % c, "\\1%s/common/sets/" % char, text)
+    text = re.sub("(['\"])%s/sets/common/" % c, "\\1%s/_common/sets/" % char, text)
+    text = re.sub("(['\"])%s/common/" % c, "\\1%s/_common/" % char, text)
     text = re.sub("(['\"])%s/sets/(%s)/" % (c, jobs), "\\1%s/\\2/sets/" % char, text)
     text = re.sub("(['\"])%s/config/(%s)/" % (c, jobs), "\\1%s/\\2/" % char, text)
-    text = re.sub("(['\"])%s/config/" % c, "\\1%s/common/" % char, text)
+    text = re.sub("(['\"])%s/config/" % c, "\\1%s/_common/" % char, text)
     text = re.sub("(['\"])config/(%s)/" % jobs, "\\1\\2/", text)
 
     def include_sets(m):
@@ -195,7 +206,8 @@ def rewrite_comment_paths(text, char):
     def fix(m):
         new = new_place(m.group(2))
         return m.group(1) + new if new else m.group(0)
-    return re.sub(r"(%s/)((?:config|sets)/[\w./-]+\.lua)" % re.escape(char), fix, text)
+    text = re.sub(r"(%s/)((?:config|sets)/[\w./-]+\.lua)" % re.escape(char), fix, text)
+    return re.sub(r"(%s/)common/" % re.escape(char), r"\1_common/", text)
 
 
 def stub_for(char, job):
@@ -260,12 +272,14 @@ def migrate(char, dry_run=False, backup=True, quiet=False, base_dir=HERE):
         with open(os.path.join(char_dir, name), 'w', encoding='utf-8', newline='\n') as f:
             f.write(stub_for(char, job))
 
-    for old in ('config', 'sets', 'atelier', 'common/craft', 'common/alt'):
+    for old in ('config', 'sets', 'atelier', 'common'):
         for root, _, _ in os.walk(os.path.join(char_dir, old), topdown=False):
             if not os.listdir(root):
                 os.rmdir(root)
-    for folder in ('common', 'saved'):
+    for folder in ('_common', 'saved'):
         os.makedirs(os.path.join(char_dir, folder), exist_ok=True)
+    import where_is_what
+    where_is_what.write(char, base_dir)
 
     say('Moved %d, dropped %d (generated alt tables and examples), %d entries shortened.'
         % (done, dropped, len(entries)))

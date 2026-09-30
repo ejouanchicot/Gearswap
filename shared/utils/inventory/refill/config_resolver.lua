@@ -10,14 +10,14 @@
 ---     .store_bag   = 'case'                   -- optional, where surplus goes
 ---     .source_bags = {'case', 'sack'}         -- optional, where pulls come from
 ---   Bags: case, sack, satchel, wardrobe1..wardrobe8. Both fields can also
----   sit in <charname>/common/REFILL_CONFIG.lua, for every list at once.
+---   sit in <charname>/_common/inventory/REFILL_CONFIG.lua, for every list at once.
 ---
 ---   Item `name` can be a string (single item) or a list of strings:
 ---     { name = {'Squid Sushi +1', 'Squid Sushi'}, target = 12 }
 ---   The list is tried in order: prefer +1, fall back to base.
 ---
 ---   CRAFT MODE override: when CraftManager.is_active() is true, uses
----   <charname>/common/craft/CRAFT_REFILL.lua instead so inventory gets
+---   <charname>/_common/inventory/CRAFT_REFILL.lua instead so inventory gets
 ---   craft-relevant items and everything else is detected as foreign.
 ---
 ---   Public API:
@@ -90,7 +90,7 @@ local function load_char_refill_configs(char_name)
     end
     local configs, seen = {}, {}
     local base = windower.addon_path .. 'data/' .. char_name .. '/'
-    local folders = {'common/inventory', 'common/craft'}
+    local folders = {'_common/inventory', 'common/inventory', 'common/craft'}
     for _, root in ipairs({'', 'config/'}) do
         for _, entry in ipairs(windower.get_dir(base .. root) or {}) do
             if not entry:match('%.') then
