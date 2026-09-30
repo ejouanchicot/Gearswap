@@ -915,6 +915,15 @@ DualBoxConfig.enabled = {enabled}
 DualBoxConfig.timeout = 30
 DualBoxConfig.debug = false
 
+-- Ask every box for its automation state (sm report) at each load. Needs
+-- the local StateReport addition of the automation addon; false: never sent
+-- DualBoxConfig.report_on_load = true
+
+-- Buffs this box reports to the main when it is the alt (the main's alt
+-- commands read them), spelled as the game does: Entrust, Composure and
+-- Bolter's Roll by default
+-- DualBoxConfig.tracked_buffs = {{'Entrust', 'Composure', "Bolter's Roll"}}
+
 -- Legacy aliases
 DualBoxConfig.main_name = DualBoxConfig.character_name
 DualBoxConfig.alt_name = DualBoxConfig.{'alt_character' if role == 'main' else 'main_character'}

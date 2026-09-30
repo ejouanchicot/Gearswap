@@ -14,6 +14,11 @@
 ---   2. Self-echo suppression uses a per-message flag with a short TTL
 ---      (the broadcaster's own listener fires too).
 ---
+--- Only the characters of this box group act on it (AltGroup.get_alts:
+--- DUALBOX_CONFIG.lua group, or the main/alt names; nobody when the dual-box
+--- is off): another window of the same PC, outside the group, ignores it.
+--- The message carries the sender's name for that: tetsouo_sync_<cmd> <name>.
+---
 --- Current hooks (registered by INIT_SYSTEMS on every load):
 ---   ls / lockstyle  ->  select_default_lockstyle()
 ---   rf / refill     ->  RefillManager.refill()
@@ -82,10 +87,11 @@ function DualBoxSyncIPC.broadcast(cmd)
     -- Mark our own broadcast so our own listener can drop the echo.
     -- Stored on `windower` table so it persists across `gs reload` (which
     -- wipes `_G`) - critical because send + receive can straddle a reload.
-    windower._sync_ipc_last_sent      = IPC_PREFIX .. lower_cmd
+    local msg = IPC_PREFIX .. lower_cmd .. ' ' .. ((player and player.name) or '')
+    windower._sync_ipc_last_sent      = msg
     windower._sync_ipc_last_sent_time = os.clock()
 
-    windower.send_ipc_message(IPC_PREFIX .. lower_cmd)
+    windower.send_ipc_message(msg)
     return true
 end
 
@@ -102,6 +108,19 @@ local function is_self_echo(msg)
     return (os.clock() - sent_at) < BROADCAST_TTL
 end
 
+--- Whether `sender` belongs to this character's box group.
+--- @param sender string Name carried by the message
+--- @return boolean
+local function from_group(sender)
+    if sender == '' then return false end
+    local ok, AltGroup = pcall(require, 'shared/utils/dualbox/alt_group')
+    if not ok or not AltGroup then return false end
+    for _, name in ipairs(AltGroup.get_alts()) do
+        if name:lower() == sender:lower() then return true end
+    end
+    return false
+end
+
 -- Debounce state (per-instance, ephemeral).
 local last_msg, last_msg_time = '', 0
 
@@ -113,12 +132,17 @@ function DualBoxSyncIPC._on_ipc_message(msg)
 
     if is_self_echo(msg) then return end
 
+    -- Before the debounce: a message refused here must not hold back the
+    -- same order from a member of the group
+    local cmd, sender = msg:sub(#IPC_PREFIX + 1):match('^(%S+)%s*(%S*)$')
+    if not cmd or not from_group(sender) then return end
+    cmd = cmd:lower()
+
     -- Drop duplicate messages within the debounce window.
     local now = os.clock()
     if msg == last_msg and (now - last_msg_time) < IPC_DEBOUNCE then return end
     last_msg, last_msg_time = msg, now
 
-    local cmd  = msg:sub(#IPC_PREFIX + 1):lower()
     local hook = _G.DUALBOX_SYNC_HOOKS[cmd]
     if not hook then return end
 

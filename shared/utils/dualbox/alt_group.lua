@@ -387,7 +387,10 @@ end
 --- Ask every box of the group (this one too) for its state: called at each
 --- load, since reports sent while GearSwap was reloading are lost. Does
 --- nothing visible when the addon lacks the StateReport addition.
+--- DUALBOX_CONFIG.lua report_on_load = false: never sent.
 function AltGroup.request_report()
+    local cfg = _G.DualBoxConfig
+    if cfg and cfg.report_on_load == false then return end
     local alts = AltGroup.get_alts()
     if #alts == 0 then return end
     send_command('sm report')

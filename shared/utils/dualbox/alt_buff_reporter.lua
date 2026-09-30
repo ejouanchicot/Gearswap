@@ -14,7 +14,8 @@
 --- buff_change fires for it only on loss, so the main learns of the gain from
 --- the resync that `altentrust` requests (sync_after -> altbuffsync).
 ---
---- Only buffs in TRACKED are reported, so this stays quiet during a fight
+--- Only the tracked buffs are reported (the alt's DUALBOX_CONFIG.lua
+--- tracked_buffs, else DEFAULT_TRACKED), so this stays quiet during a fight
 --- instead of broadcasting every Regen tick.
 ---
 --- Read it from an alt command config with:
@@ -28,13 +29,25 @@
 
 local AltBuffReporter = {}
 
---- Buffs worth telling the main about, keyed by the name GearSwap reports.
---- Add an entry here to make a buff visible to the alt command configs.
-local TRACKED = {
-    ['Entrust'] = true,          -- GEO: redirects the next Indi- onto an ally
-    ['Composure'] = true,        -- RDM: extends enhancing duration on others
-    ["Bolter's Roll"] = true,    -- COR
+--- Buffs worth telling the main about when the alt's DUALBOX_CONFIG.lua
+--- sets no tracked_buffs list.
+local DEFAULT_TRACKED = {
+    'Entrust',          -- GEO: redirects the next Indi- onto an ally
+    'Composure',        -- RDM: extends enhancing duration on others
+    "Bolter's Roll",    -- COR
 }
+
+--- The tracked buffs, lowercase name -> name as written.
+--- @return table
+local function tracked()
+    local cfg = _G.DualBoxConfig
+    local list = cfg and type(cfg.tracked_buffs) == 'table' and cfg.tracked_buffs or DEFAULT_TRACKED
+    local by_lower = {}
+    for _, name in ipairs(list) do
+        if type(name) == 'string' then by_lower[name:lower()] = name end
+    end
+    return by_lower
+end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   ALT SIDE - report
@@ -118,7 +131,7 @@ function AltBuffReporter.report(buff, gained)
         return false
     end
 
-    if not TRACKED[buff] then
+    if not tracked()[buff:lower()] then
         -- Traced anyway: seeing untracked buffs proves buff_change fires at all,
         -- which is the first thing to check when nothing reaches the main.
         trace(string.format('buff_change %s %s - not tracked, ignored',
@@ -163,7 +176,7 @@ function AltBuffReporter.report_all()
     end
 
     local count = 0
-    for buff in pairs(TRACKED) do
+    for _, buff in pairs(tracked()) do
         -- buffactive returns a count or `false`, never nil-vs-value, so coerce.
         local up = buffactive[buff] and true or false
         if AltBuffReporter.report(buff, up) then
