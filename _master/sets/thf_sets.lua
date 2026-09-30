@@ -792,6 +792,12 @@ sets.precast.WS['Circle Blade'] = {
 --                   PRECAST: RANGED ATTACK                   --
 -- ============================================================--
 
+-- //gs c range pulls with the range and ammo of sets.RangeLock, else with
+-- those of sets.precast.RA below. It never fires Rare/Ex ammo, or ammo the
+-- weapon cannot shoot. A set of its own, when the pull weapon is not the
+-- one of your ranged attack set:
+-- sets.RangeLock = {range = 'Exalted Crossbow', ammo = 'Acid Bolt'}
+
 sets.precast.RA = {
     range = 'Exalted Crossbow',
     ammo = 'Acid Bolt',

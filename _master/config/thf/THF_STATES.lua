@@ -9,7 +9,7 @@
 ---   • Weapon selection (MainWeapon: 7 options, SubWeapon: 3 options)
 ---   • Abyssea proc system (AbyProc: On/Off, AbyWeapon: 7 weapon types)
 ---   • Treasure Hunter modes (TreasureMode: Tag/SATA/Full)
----   • Ranged weapon lock (RangeLock: On/Off for Exalted Crossbow + Acid Bolt)
+---   • Ranged weapon lock (RangeLock: On/Off, range + ammo slots)
 ---   • Default state values for optimal safety
 ---   • Validation API for state verification
 ---
@@ -111,7 +111,8 @@ function THFStates.configure()
     -- RANGED WEAPON LOCK
     -- ========================================
 
-    -- RangeLock: Lock ranged weapons (Exalted Crossbow + Acid Bolt)
+    -- RangeLock: Lock the range + ammo slots (the weapon: sets.RangeLock,
+    -- else sets.precast.RA)
     -- Enabled via //gs c range command (auto-equip + lock + /ra)
     state.RangeLock = M(false, 'Range Lock')
 

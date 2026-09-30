@@ -125,8 +125,8 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
   so the crossbow and bolts stay on when the idle or engaged set comes back.
   Range Lock Off (`^numpad6`) frees them. A reload, a job or subjob change, or
   `//gs c wo` frees them too.
-- `//gs c range` puts on Exalted Crossbow and Acid Bolt (names written in the
-  code, not a set), locks them and shoots at a target you pick.
+- `//gs c range` puts on the range and ammo of `sets.RangeLock` (else those of `sets.precast.RA`), locks them and shoots at a target you pick. It does not shoot when the ammo is not ammo that weapon fires (a stat piece such as Coiste Bodhar, bolts in a gun) or is precious (Rare, or one per stack such as Hauksbok ammo): it tells you why instead. Write `sets.RangeLock = {range = ..., ammo = ...}` when your
+  pull weapon is not the one of your ranged attack set.
 - After a shot, the quiver of the bolts you wear (Acid Bolt -> Ac. Bolt Quiver)
   is opened from your inventory when 5 or fewer are left.
 

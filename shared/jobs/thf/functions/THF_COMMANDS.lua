@@ -161,18 +161,10 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Range weapon lock with auto-attack (one-way, no toggle)
+    -- Pull: the player's ranged weapon (sets.RangeLock, else sets.precast.RA),
+    -- range + ammo locked, /ra on the sub-target unless the ammo is unsafe
     if command == 'range' then
-        -- CRITICAL ORDER: Equip >> Lock (+ state, UI) >> Attack
-        -- 1. Equip ranged setup FIRST (before locking slots)
-        equip({ range = "Exalted Crossbow", ammo = "Acid Bolt" })
-
-        -- 2. Lock slots AFTER equipping (prevents future swaps), RangeLock ON
-        RangeLock.engage()
-
-        -- 3. Auto-attack sub-target (0.1s delay - minimal for equipment swap)
-        send_command('wait 0.1; input /ra <stnpc>')
-
+        RangeLock.pull()
         eventArgs.handled = true
         return
     end

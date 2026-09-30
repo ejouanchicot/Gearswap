@@ -20,7 +20,7 @@ Thief with the provided template gives you:
   or weaponskill that uses it, and `.SA` / `.TA` / `.SATA` versions of your
   weaponskill sets.
 - **Range lock**: every ranged attack locks the range and ammo slots;
-  `//gs c range` equips a crossbow and shoots.
+  `//gs c range` equips your pull weapon and shoots.
 - **One-key chains**: `smartbuff` (by subjob), `fbc` (Feint, Bully,
   Conspirator), `steal` (Steal, Mug, Despoil).
 
@@ -77,7 +77,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | `smartbuff` | Common command: /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning |
 | `fbc` | Feint, Bully, Conspirator: the ready ones whose buff is not already up, 1 s apart |
 | `steal` | Steal, Mug, Despoil on your target, the ready ones, 1 s apart. Only on a living monster |
-| `range` | Equips Exalted Crossbow and Acid Bolt, locks range and ammo, shoots `/ra <stnpc>` |
+| `range` | Equips the range and ammo of `sets.RangeLock` (else `sets.precast.RA`), locks them, shoots `/ra <stnpc>`; never fires Rare or one-per-stack ammo, nor ammo the weapon cannot shoot |
 | `th` | Treasure Mode status (mode, TH set found, mobs tagged); `th clear` forgets the tagged mobs; `th hide` / `show` / `key <key>` |
 
 **Common commands that work on THF**

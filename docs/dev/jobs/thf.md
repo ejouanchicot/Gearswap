@@ -279,10 +279,15 @@ The paths that lock:
   `action_type == 'Ranged Attack'`, `RangeLock.engage()`:
   `disable('range','ammo')`, and when `RangeLock` was Off, `:set(true)` plus a
   HUD refresh (`M:set` does not call `job_state_change`).
-- `//gs c range` (`THF_COMMANDS.lua` `job_self_command`): equips the
-  hard-coded `Exalted Crossbow` + `Acid Bolt`, `RangeLock.engage()`, then sends
-  `wait 0.1; input /ra <stnpc>`. The equip is queued before the lock, so it is
-  still sent.
+- `//gs c range` (`THF_COMMANDS.lua` -> `RangeLock.pull()`, `logic/range_lock.lua`): the pull set is
+  `sets.RangeLock` when it has a `range`, else `{range, ammo}` of `sets.precast.RA`; none: lock what is
+  worn and warn. It equips that range + ammo, `RangeLock.engage()` (the equip is queued before the
+  lock, so it is still sent), then sends `wait 0.1; input /ra <stnpc>` unless the ammo is unsafe
+  (`RangeLock.unsafe_ammo`): not found among the ranged items of `res.items` (a stat piece such as
+  Coiste Bodhar), an `ammo_type` the weapon's `range_type` does not fire (Crossbow -> Bolt, Bow ->
+  Arrow, Gun / Cannon -> Bullet), or precious: Rare, or `stack` 1 (Hauksbok). Ex alone is allowed
+  (Chrono, Quelling, Eminent are Ex and sold by 99). Names match the short or long English name,
+  case ignored (`Exalted C.bow` / `Exalted Crossbow`).
 - `job_state_change` (built with `LifecycleManager.state_change(on_state_change)`)
   matches `RangeLock` as key or description (spaces stripped; Mote's `toggle`
   passes the description), reads `state.RangeLock.value` and calls
@@ -455,7 +460,7 @@ changes nothing.
 | `debugmidcast` | Toggle MidcastManager debug | `job_self_command` |
 | `cyclestate <State>` | `CycleHandler.handle_cyclestate` (every bind except the two `toggle`s) | `job_self_command` |
 | `fbc` | `SmartbuffManager.apply_fbc()` | `job_self_command` |
-| `range` | Equip crossbow + bolts, `RangeLock.engage()`, `/ra <stnpc>` | `job_self_command` |
+| `range` | Equip the pull set (`sets.RangeLock`, else `sets.precast.RA`), `RangeLock.engage()`, `/ra <stnpc>` unless the ammo is unsafe | `job_self_command` -> `RangeLock.pull` |
 | `toggle AbyProc` / `toggle RangeLock` | Mote `handle_toggle` -> `job_state_change` + `handle_update` | Mote |
 
 ## Set names the code looks up
@@ -509,7 +514,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 | `<char>/_common/keys/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
 | `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
-| Hard-coded | crossbow/bolt names (`range`), quiver threshold (`job_aftercast`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
+| Hard-coded | quiver threshold (`job_aftercast`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
 
 ## State & lifetime
 

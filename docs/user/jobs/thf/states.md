@@ -36,7 +36,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | `//gs c smartbuff` | Common command, by subjob. /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning. |
 | `//gs c fbc` | Feint, Bully, Conspirator: the ones that are ready (and whose buff is not already up), 1 s apart. |
 | `//gs c steal` | Steal, Mug, Despoil (the ready ones) on your target. Does nothing unless the target is a living monster. |
-| `//gs c range` | Equips Exalted Crossbow and Acid Bolt (names fixed in the code), locks range and ammo, then shoots `/ra <stnpc>`. |
+| `//gs c range` | Equips the range and ammo of `sets.RangeLock` (else `sets.precast.RA`), locks range and ammo, then shoots `/ra <stnpc>`, except with Rare or one-per-stack ammo, or ammo the weapon cannot fire (it says why). |
 
 ## Notes
 
