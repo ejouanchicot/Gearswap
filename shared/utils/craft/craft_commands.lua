@@ -117,7 +117,8 @@ local function canonical_gear(gear)
     local out = {}
     if type(gear) ~= 'table' then return out end
     for slot, item in pairs(gear) do
-        if type(slot) == 'string' then
+        -- A slot left "" in the set file is not touched
+        if type(slot) == 'string' and item ~= '' then
             out[SLOT_ALIASES[slot:lower()] or slot:lower()] = item
         end
     end
