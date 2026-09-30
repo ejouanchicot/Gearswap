@@ -82,6 +82,28 @@ local cure_lock_until = 0
 --- Name of the item the lock is waiting on.
 local cure_in_flight = nil
 
+--- Seconds between two requests to a partner for the same debuff: the key
+--- may be pressed several times while the partner's spell comes.
+local PARTNER_ASK_EVERY = 10
+
+--- No item left: ask a partner that may have the spell (Paralyna, Silena) to
+--- cast it on this character (cleanse.lua), at most every PARTNER_ASK_EVERY
+--- seconds per debuff. The action does not wait for it. AUTOCURE_CONFIG.lua
+--- ask_partner = false: never.
+--- @param key string 'silence' or 'paralysis'
+--- @return table|nil names asked this time
+local function ask_partner(key)
+    if AutoCureConfig.ask_partner == false then return nil end
+    windower._auto_medicine_asked = windower._auto_medicine_asked or {}
+    if (windower._auto_medicine_asked[key] or 0) > os.clock() then return nil end
+    local ok, Cleanse = pcall(require, 'shared/utils/debuff/cleanse')
+    if not (ok and Cleanse and Cleanse.ask_partners_for) then return nil end
+    local names = Cleanse.ask_partners_for(key)
+    if #names == 0 then return nil end
+    windower._auto_medicine_asked[key] = os.clock() + PARTNER_ASK_EVERY
+    return names
+end
+
 --- try_cure_debuff outcomes. Callers must tell BUSY from SENT: with Silence and
 --- Paralysis at once, the Echo Drops in flight do nothing for the Paralysis,
 --- and treating that as "handled" cancelled the JA without a word.
@@ -234,7 +256,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
                 cure_status = try_cure_silence(spell.name, debuff_message)
                 if cure_status == CURE_NONE then
                     eventArgs.cancel = true
-                    MessageDebuffs.show_no_silence_cure(spell.name, debuff_message, SILENCE_CURE_ITEMS)
+                    MessageDebuffs.show_no_silence_cure(spell.name, debuff_message, SILENCE_CURE_ITEMS, ask_partner('silence'))
                     return true
                 end
             elseif cure_type == "paralysis"
@@ -250,7 +272,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
                 cure_status = try_cure_paralysis(spell.name, debuff_message)
                 if cure_status == CURE_NONE then
                     -- No Remedy left: the ability goes (it may still land)
-                    MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message, PARALYSIS_CURE_ITEMS)
+                    MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message, PARALYSIS_CURE_ITEMS, ask_partner('paralysis'))
                     return false
                 end
             end
@@ -310,7 +332,7 @@ function PrecastGuard.check_magic(spell, eventArgs)
                 return true
             elseif cure_status == CURE_NONE then
                 eventArgs.cancel = true
-                MessageDebuffs.show_no_silence_cure(spell.name, debuff_message, SILENCE_CURE_ITEMS)
+                MessageDebuffs.show_no_silence_cure(spell.name, debuff_message, SILENCE_CURE_ITEMS, ask_partner('silence'))
                 return true
             end
             -- CURE_BUSY falls through to the plain blocked message below.
@@ -363,7 +385,7 @@ function PrecastGuard.check_ja(spell, eventArgs)
                 return true
             elseif cure_status == CURE_NONE then
                 -- No Remedy left: the ability goes (it may still land)
-                MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message, PARALYSIS_CURE_ITEMS)
+                MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message, PARALYSIS_CURE_ITEMS, ask_partner('paralysis'))
                 return false
             end
             -- CURE_BUSY falls through to the plain blocked message below.

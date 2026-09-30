@@ -47,6 +47,10 @@ DebuffAutoCureConfig.silence_cure_items   = {
 ---   PARALYSIS (Blocks JA/WS)
 ---  ─────────────────────────────────────────────────────────────────────────
 DebuffAutoCureConfig.auto_cure_paralysis  = true
+
+-- No item left: a partner that may have Paralyna / Silena is asked to cast it
+-- (precast_guard.lua ask_partner, through shared/utils/debuff/cleanse.lua)
+DebuffAutoCureConfig.ask_partner          = true
 DebuffAutoCureConfig.paralysis_cure_items = {
     { name = "Remedy",     id = 4155 }   -- cures Paralysis (ID 4) + Paralyzed (ID 566)
 }

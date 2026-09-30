@@ -24,6 +24,17 @@ local Colors = MessageCore.COLORS
 --- @param item_color string
 --- @param text_color string
 --- @return string
+--- "Asked Kaories for Paralyna", when partners were asked.
+--- @param asked table|nil names
+--- @param spell string
+local function send_asked(asked, spell)
+    if not asked or #asked == 0 then return end
+    local success_color = MessageCore.create_color_code(Colors.SUCCESS)
+    local spell_color = MessageCore.create_color_code(Colors.SPELL)
+    MessageRenderer.send(string.format("%sAsked %s for %s%s",
+        success_color, table.concat(asked, ', '), spell_color, spell), 1)
+end
+
 local function items_label(items, default, item_color, text_color)
     local names = {}
     for _, item in ipairs(type(items) == 'table' and items or {}) do
@@ -260,7 +271,8 @@ end
 --- @param spell_name string The spell that was blocked
 --- @param debuff_message string The debuff blocking the spell (e.g., "Silenced")
 --- @param items table|nil Cure list tried ({name, id}); names shown
-function MessageDebuffs.show_no_silence_cure(spell_name, debuff_message, items)
+--- @param asked table|nil Partners asked for Silena
+function MessageDebuffs.show_no_silence_cure(spell_name, debuff_message, items, asked)
     local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
     local error_color = MessageCore.create_color_code(Colors.ERROR)
     local spell_color = MessageCore.create_color_code(Colors.SPELL)
@@ -291,6 +303,7 @@ function MessageDebuffs.show_no_silence_cure(spell_name, debuff_message, items)
 
     MessageRenderer.send(line1, 1)
     MessageRenderer.send(line2, 1)
+    send_asked(asked, 'Silena')
     M.send('DEBUFFS', 'separator')
 end
 
@@ -336,7 +349,8 @@ end
 --- @param action_name string The ability
 --- @param debuff_message string The debuff (e.g., "Paralyzed")
 --- @param items table|nil Cure list tried ({name, id}); names shown
-function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message, items)
+--- @param asked table|nil Partners asked for Paralyna
+function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message, items, asked)
     local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
     local error_color = MessageCore.create_color_code(Colors.ERROR)
     local ability_color = MessageCore.create_color_code(Colors.JA)
@@ -367,6 +381,7 @@ function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message, item
 
     MessageRenderer.send(line1, 1)
     MessageRenderer.send(line2, 1)
+    send_asked(asked, 'Paralyna')
     M.send('DEBUFFS', 'separator')
 end
 

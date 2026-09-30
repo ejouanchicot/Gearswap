@@ -114,6 +114,21 @@ local function ask_partners(names, spell)
     end
 end
 
+--- Ask the partners that may have the spell of a debuff to cast it on this
+--- character (Auto Medicine with no item left, precast_guard.lua).
+--- @param key string DEBUFF_REMOVAL key ('silence', 'paralysis')
+--- @return table names asked (empty when nobody may have it)
+function Cleanse.ask_partners_for(key)
+    for _, entry in ipairs(require('shared/data/debuffs/DEBUFF_REMOVAL')) do
+        if entry.key == key and entry.spell then
+            local names = partners_for(entry.spell)
+            ask_partners(names, entry.spell)
+            return names
+        end
+    end
+    return {}
+end
+
 ---============================================================================
 --- PLAN: what to do for each debuff (used by the key and by check)
 ---============================================================================

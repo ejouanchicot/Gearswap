@@ -22,6 +22,10 @@ return {
     -- Paralysis: cured before a job ability (a weaponskill goes through as is)
     auto_cure_paralysis = true,
 
+    -- No item left: ask the other box, if it may have the spell (Paralyna,
+    -- Silena), to cast it on you. Your action does not wait for it
+    ask_partner = true,
+
     -- Auto Medicine when the game starts: 'On' or 'Off' (after that, a job
     -- change keeps what you set)
     auto_medicine_start = 'On',
