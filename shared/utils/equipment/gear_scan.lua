@@ -26,6 +26,11 @@
 
 local GearScan = {}
 
+-- Game data: the global `res` is not there for a command, the library is
+local function resources()
+    return rawget(_G, 'res') or require('resources')
+end
+
 local FILE = 'gear_augments.lua'
 
 --- Bags never read (items only passing through). The others come from
@@ -51,7 +56,7 @@ function GearScan.load()
 end
 
 --- Augments of one bag item, or nil when it is not augmented equipment.
-local function item_augments(item, extdata)
+local function item_augments(item, extdata, res)
     local info = res.items[item.id]
     if not (info and (info.category == 'Armor' or info.category == 'Weapon')) then return nil, info end
     local ok, ext = pcall(extdata.decode, item)
@@ -68,13 +73,14 @@ end
 --- @return number pieces Equipment pieces read
 --- @return table shorts Short names seen (the summary counts each piece once)
 local function collect(extdata, hp_mp)
+    local res = resources()
     local copies, pieces, shorts = {}, 0, {}
     for bag_id, bag_info in pairs(res.bags) do
         local bag = not SKIPPED[bag_info.api or ''] and windower.ffxi.get_items(bag_id)
         if bag and bag.enabled ~= false then
             for _, item in ipairs(bag) do
                 if type(item) == 'table' and (item.id or 0) > 0 then
-                    local augments, info = item_augments(item, extdata)
+                    local augments, info = item_augments(item, extdata, res)
                     if info and (info.category == 'Armor' or info.category == 'Weapon') then pieces = pieces + 1 end
                     if augments then
                         local hp, mp = hp_mp(augments)
