@@ -140,6 +140,8 @@ end
 ---   Aftermath Lv.3 (buff ID: 272) + Weapon with AM3 = Use specialized AM3 set
 ---
 ---   Priority order:
+---   0. The weapon's own sets.engaged.<Weapon>AFM3 while its Aftermath is up
+---      (weapon_aftermath.lua, any weapon)
 ---   1. Aftermath Lv.3 + Masamune/Kogarasumaru >> sets.engaged.AM3
 ---   2. OffenseMode node >> its HybridMode variant, else sets.engaged[HybridMode]
 ---   3. Fallback >> base_set
@@ -147,6 +149,11 @@ end
 ---   @param base_set table Base engaged set from sam_sets.lua
 ---   @return table Selected engaged set (AM3 if conditions met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
+    local weapon_am = require('shared/utils/equipment/weapon_aftermath').set(state.MainWeapon and state.MainWeapon.current)
+    if weapon_am then
+        return weapon_am
+    end
+
     -- Check for Aftermath Lv.3 (buff ID 272) + Mythic/Empyrean weapon
     if buffactive[272] then
         local am3_weapons = {

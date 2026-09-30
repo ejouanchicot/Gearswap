@@ -43,6 +43,8 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 ---   Aftermath Lv.3 (buff ID: 272) + Liberator = Use specialized AM3 set
 ---
 ---   Priority order:
+---   0. The weapon's own sets.engaged.<Weapon>AFM3 while its Aftermath is up
+---      (weapon_aftermath.lua, any weapon)
 ---   1. Aftermath Lv.3 + Liberator      >> sets.engaged.AM3
 ---   2. HybridMode = 'PDT'              >> sets.engaged.PDT
 ---   3. HybridMode = 'Accu'             >> sets.engaged.Accu, else sets.engaged
@@ -51,6 +53,11 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 ---   @param hybrid_mode string Current HybridMode ('PDT' or 'Accu')
 ---   @return table Selected engaged set
 function DRKSetBuilder.select_engaged_base(weapon_name, hybrid_mode)
+    local weapon_am = require('shared/utils/equipment/weapon_aftermath').set(weapon_name)
+    if weapon_am then
+        return weapon_am
+    end
+
     -- PRIORITY 1: Check for Aftermath Lv.3 (buff ID 272) + Liberator
     if buffactive[272] and weapon_name == 'Liberator' then
         if sets.engaged.AM3 then

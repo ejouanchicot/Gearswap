@@ -42,10 +42,17 @@ local TreasureHunter = require('shared/jobs/thf/functions/logic/treasure_hunter'
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Select engaged base set with Aftermath Lv.3 detection
+---   The weapon's own sets.engaged.<Weapon>AFM3 while its Aftermath is up
+---   (weapon_aftermath.lua, any weapon), else
 ---   Aftermath Lv.3 (buff ID 272) + Vajra = Use PDTAFM3 set
 ---   @param base_set table Base engaged set
 ---   @return table Selected engaged set (PDTAFM3 if conditions met, otherwise base)
 function SetBuilder.select_engaged_base(base_set)
+    local weapon_am = require('shared/utils/equipment/weapon_aftermath').set(state.MainWeapon and state.MainWeapon.current)
+    if weapon_am then
+        return weapon_am
+    end
+
     -- Check for Aftermath Lv.3 (buff ID 272) + Vajra
     if buffactive[272] and state.MainWeapon and state.MainWeapon.current == 'Vajra' then
         -- Use specialized Aftermath Lv.3 set (works for both PDT and Normal modes)
