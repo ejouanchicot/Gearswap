@@ -1,16 +1,21 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Config Resolver - Load per-character refill configs and resolve foreign items
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Per-character config files at:
----     <charname>/<job>/<JOB>_REFILL.lua (config/<job>/ before 2026-09-30)
----
----   Each file returns a table with:
----     .default = { {name='X', target=N}, ... }
----     .subjobs = { DNC = { {name=..., target=...}, ... }, ... }  -- optional
----     .store_bag   = 'case'                   -- optional, where surplus goes
----     .source_bags = {'case', 'sack'}         -- optional, where pulls come from
----   Bags: case, sack, satchel, wardrobe1..wardrobe8. Both fields can also
----   sit in <charname>/_common/inventory/REFILL_CONFIG.lua, for every list at once.
+---   The list a refill uses, first match:
+---     1. the craft list while a craft session runs (CRAFT_REFILL.lua)
+---     2. the job's list, <charname>/<job>/inventory/<JOB>_REFILL.lua:
+---          .subjobs[<sub>]  its list for that subjob
+---          .default         its own list, in place of the common one
+---          .extra           added to the common list (same name: its target)
+---     3. the common list, <charname>/_common/inventory/REFILL_CONFIG.lua:
+---          .subjobs[<sub>]  the common list for that subjob
+---          .default_list    the common list
+---     4. FALLBACK_LIST below (a character with neither file)
+---   A job file whose lines are all comments (the template) uses the common
+---   list. Both files may also set:
+---     .store_bag   = 'case'                   -- where surplus goes
+---     .source_bags = {'case', 'sack'}         -- where pulls come from
+---   Bags: case, sack, satchel, wardrobe1..wardrobe8; the job file wins.
 ---
 ---   Item `name` can be a string (single item) or a list of strings:
 ---     { name = {'Squid Sushi +1', 'Squid Sushi'}, target = 12 }
@@ -38,7 +43,8 @@ local ConfigResolver = {}
 ---   CONSTANTS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Hardcoded fallback list, used if no config file is found for the active job.
+--- Last resort, for a character with no list anywhere (neither a job list nor
+--- REFILL_CONFIG.default_list): the list the project always used.
 local FALLBACK_LIST = {
     {name = 'Panacea', target = 12},
     {name = 'Antacid', target = 12},
@@ -102,7 +108,8 @@ local function load_char_refill_configs(char_name)
     for _, folder in ipairs(folders) do
         for _, fname in ipairs(windower.get_dir(base .. folder .. '/') or {}) do
             local job = fname:match('^(%w+)_REFILL%.lua$')
-            local mod = job and (char_name .. '/' .. folder .. '/' .. job .. '_REFILL')
+            if fname == 'REFILL_CONFIG.lua' then job = 'COMMON' end
+            local mod = job and (char_name .. '/' .. folder .. '/' .. fname:gsub('%.lua$', ''))
             if mod and not seen[mod] then
                 seen[mod] = true
                 local ok, cfg = pcall(require, mod)
@@ -143,11 +150,14 @@ local function load_all_refill_configs()
     return configs
 end
 
---- Iterate all entries in a config (default + every subjob list) and call fn(entry).
+--- Iterate all entries in a config (default, extra, default_list and every
+--- subjob list) and call fn(entry).
 local function iterate_config_entries(cfg, fn)
-    if cfg.default then
-        for _, e in ipairs(cfg.default) do
-            fn(e)
+    for _, key in ipairs({'default', 'extra', 'default_list'}) do
+        if type(cfg[key]) == 'table' then
+            for _, e in ipairs(cfg[key]) do
+                fn(e)
+            end
         end
     end
     if cfg.subjobs then
@@ -253,15 +263,44 @@ function ConfigResolver.default_sources()
     return resolve_bags(nil, nil).sources
 end
 
---- Resolve the refill list for the current player (job + subjob).
---- Looks for <charname>/config/<job>/<JOB>_REFILL.lua. Picks subjobs[<sub>]
---- entry if defined, else .default. Falls back to FALLBACK_LIST.
---- Also resolves the store_bag override (top-level cfg.store_bag).
----
---- CRAFT MODE: if a craft set is currently active (//gs c craft / //gs c fish
---- locked the slots), uses <charname>/config/craft/CRAFT_REFILL.lua instead
---- so the inventory gets craft-relevant food.
----
+--- Key of a list entry, to match an extra with a common entry: its name, or
+--- the first of its variants, lower case.
+local function entry_key(entry)
+    local n = type(entry.name) == 'table' and entry.name[1] or entry.name
+    return tostring(n or ''):lower()
+end
+
+--- The common list with a job's extras: an extra naming an item already in
+--- the list replaces that entry (its target wins), the others are added.
+--- @return table New list
+local function with_extra(common, extra)
+    local out, index = {}, {}
+    for _, e in ipairs(common) do
+        out[#out + 1] = e
+        index[entry_key(e)] = #out
+    end
+    for _, e in ipairs(extra) do
+        local at = index[entry_key(e)]
+        if at then out[at] = e else out[#out + 1] = e end
+    end
+    return out
+end
+
+--- The common list (REFILL_CONFIG.lua) for a subjob, else FALLBACK_LIST.
+--- @return table list, string label
+local function common_list(global_cfg, sub)
+    local subjobs = global_cfg and global_cfg.subjobs
+    if sub and type(subjobs) == 'table' and type(subjobs[sub]) == 'table' then
+        return subjobs[sub], 'common/' .. sub
+    end
+    if global_cfg and type(global_cfg.default_list) == 'table' then
+        return global_cfg.default_list, 'common'
+    end
+    return FALLBACK_LIST, 'fallback'
+end
+
+--- Resolve the refill list for the current player (job + subjob), in the
+--- order given in the file header.
 --- @return table list, string source_label, table bags {id, display, sources}
     ---   (id / display: where surplus goes; sources: where pulls come from)
 function ConfigResolver.resolve_list_for_player()
@@ -281,18 +320,20 @@ function ConfigResolver.resolve_list_for_player()
     local sub = (p.sub_job and p.sub_job ~= 'NON') and p.sub_job:upper() or nil
     local mod_path = require('shared/utils/core/char_paths').module('job', job .. '_REFILL', job, char)
     local ok, cfg = pcall(require, mod_path)
-    if not ok or type(cfg) ~= 'table' then
-        return FALLBACK_LIST, ('fallback (no %s)'):format(mod_path), resolve_bags(nil, global_cfg)
-    end
+    if not ok or type(cfg) ~= 'table' then cfg = nil end
 
     local bags = resolve_bags(cfg, global_cfg)
-    if sub and cfg.subjobs and cfg.subjobs[sub] then
+    if cfg and sub and type(cfg.subjobs) == 'table' and type(cfg.subjobs[sub]) == 'table' then
         return cfg.subjobs[sub], ('%s/%s'):format(job, sub), bags
     end
-    if cfg.default then
+    if cfg and type(cfg.default) == 'table' then
         return cfg.default, ('%s/default'):format(job), bags
     end
-    return FALLBACK_LIST, ('fallback (%s has no .default)'):format(mod_path), bags
+    local common, common_label = common_list(global_cfg, sub)
+    if cfg and type(cfg.extra) == 'table' then
+        return with_extra(common, cfg.extra), ('%s + %s extra'):format(common_label, job), bags
+    end
+    return common, common_label, bags
 end
 
 return ConfigResolver

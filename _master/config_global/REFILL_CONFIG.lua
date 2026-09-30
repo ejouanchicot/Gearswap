@@ -17,10 +17,13 @@
 ---   store_bag: where extra and other jobs' items are put back (one bag).
 ---       RefillConfig.store_bag = 'case'
 ---
----   These apply to every job. A job's own list (<job>/<JOB>_REFILL.lua)
----   or the craft list (common/inventory/CRAFT_REFILL.lua) can set its own
+---   These apply to every job. A job's own list (<job>/inventory/<JOB>_REFILL.lua)
+---   or the craft list (_common/inventory/CRAFT_REFILL.lua) can set its own
 ---   source_bags / store_bag the same way; its values win over these.
----   What to refill is in those list files, not here.
+---
+---   default_list: what every job refills (below); a job's file adds to it
+---   (M.extra), replaces it (M.default) or sets a list per subjob
+---   (M.subjobs). subjobs: the common list per subjob.
 ---
 ---   @file    common/inventory/REFILL_CONFIG.lua
 ---   @author  ejouanchicot
@@ -35,5 +38,29 @@ RefillConfig.source_bags = {'case', 'sack', 'satchel'}
 
 -- Where extra items are put back
 RefillConfig.store_bag = 'case'
+
+-- The common list: what every job keeps in the inventory, unless its own
+-- file (<job>/inventory/<JOB>_REFILL.lua) adds to it (M.extra) or replaces
+-- it (M.default). An item: {name = 'Remedy', target = 12}; variants, best
+-- first: {name = {'Sublime Sushi +1', 'Sublime Sushi'}, target = 12}.
+RefillConfig.default_list = {
+    {name = 'Panacea', target = 12},
+    {name = 'Antacid', target = 12},
+    {name = 'Holy Water', target = 12},
+    {name = 'Remedy', target = 12},
+    {name = 'Prism Powder', target = 12},
+    {name = 'Silent Oil', target = 12},
+}
+
+-- The common list for a subjob, for every job without a list of its own for
+-- it. /DNC has Spectral Jig: no Powder / Oil.
+-- RefillConfig.subjobs = {
+--     DNC = {
+--         {name = 'Panacea', target = 12},
+--         {name = 'Antacid', target = 12},
+--         {name = 'Holy Water', target = 12},
+--         {name = 'Remedy', target = 12},
+--     },
+-- }
 
 return RefillConfig
