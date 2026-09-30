@@ -3,9 +3,11 @@
 ---============================================================================
 --- shared/config/DEBUFF_AUTOCURE_CONFIG.lua holds the defaults (replaced by
 --- every update). A character's _common/combat/AUTOCURE_CONFIG.lua overrides
---- them key by key: which debuffs are cured, with which items, the state
---- Auto Medicine starts in. An item may be given by name only
---- ('Echo Drops'); its id is looked up in the game data.
+--- them key by key: which debuffs are cured, the state Auto Medicine starts
+--- in. The items come from one place for Auto Medicine and //gs c cleanse:
+--- the `items` of _common/combat/CLEANSE_CONFIG.lua (silence, paralysis),
+--- else the defaults of shared/data/debuffs/DEBUFF_REMOVAL.lua. An item is
+--- its name; its id is looked up in the game data.
 ---
 --- @file shared/utils/debuff/autocure_settings.lua
 --- @author ejouanchicot
@@ -63,7 +65,24 @@ local function normalise(list, ids)
     return out
 end
 
---- The settings: shared defaults, the character's file over them.
+--- The items of a debuff from CLEANSE_CONFIG.lua / DEBUFF_REMOVAL.lua, or
+--- nil when they cannot be read (the shared defaults stay then).
+--- @param key string 'silence' or 'paralysis'
+--- @return table|nil names
+local function cleanse_items(key)
+    local ok, names = pcall(function()
+        local Methods = require('shared/utils/debuff/cleanse_methods')
+        for _, entry in ipairs(require('shared/data/debuffs/DEBUFF_REMOVAL')) do
+            if entry.key == key then return Methods.items_for(entry, Methods.settings()) end
+        end
+    end)
+    return (ok and type(names) == 'table') and names or nil
+end
+
+local CLEANSE_KEYS = { silence_cure_items = 'silence', paralysis_cure_items = 'paralysis' }
+
+--- The settings: shared defaults, the character's file over them, the items
+--- from CLEANSE_CONFIG.lua.
 --- @return table
 function AutoCureSettings.load()
     local ok, base = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
@@ -74,6 +93,9 @@ function AutoCureSettings.load()
     local merged = {}
     for k, v in pairs(base) do merged[k] = v end
     for k, v in pairs((ok_u and type(user) == 'table') and user or {}) do merged[k] = v end
+    for list_key, debuff in pairs(CLEANSE_KEYS) do
+        merged[list_key] = cleanse_items(debuff) or merged[list_key]
+    end
     local ids = known_ids(base)
     for _, key in ipairs(ITEM_LISTS) do merged[key] = normalise(merged[key], ids) end
     return merged

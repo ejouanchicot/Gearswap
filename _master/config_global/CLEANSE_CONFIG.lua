@@ -35,7 +35,8 @@ return {
     first = {},
 
     -- Items per debuff, tried in order. `erasable` covers every debuff Erase
-    -- takes off (Slow, Weight, Bind, Addle, the Downs, Bio, Dia...)
+    -- takes off (Slow, Weight, Bind, Addle, the Downs, Bio, Dia...).
+    -- Auto Medicine (AUTOCURE_CONFIG.lua) uses silence and paralysis too.
     items = {
         doom      = {'Holy Water'},
         curse     = {'Holy Water'},

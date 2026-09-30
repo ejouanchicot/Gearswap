@@ -24,8 +24,8 @@
 --- (`cancel <buff>`, Cancel addon): a Sneak or Invisible already on blocks
 --- the new cast. A box covered by another's Accession cancels its own. Spectral Jig gives both buffs, so it is skipped
 --- only when both have that much left. Actions go out one after the other,
---- each given its cast time plus `delay` seconds (queue on `windower`, a
---- newer load drops an older queue).
+--- each given its cast time plus `delay` seconds (the queue shared with
+--- //gs c cleanse: shared/utils/core/action_queue.lua).
 ---
 --- @file shared/utils/stealth/stealth.lua
 --- @author ejouanchicot
