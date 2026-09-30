@@ -46,21 +46,21 @@ THFMacroConfig.solo = {
 ---============================================================================
 
 THFMacroConfig.dualbox = {
-    -- Kaories playing RDM
+    -- The alt playing RDM
     ['RDM'] = {
         ['WAR'] = {book = 1, page = 1}, -- THF/WAR + RDM alt
         ['DNC'] = {book = 1, page = 1}, -- THF/DNC + RDM alt
         ['NIN'] = {book = 1, page = 1}, -- THF/NIN + RDM alt
     },
 
-    -- Kaories playing GEO
+    -- The alt playing GEO
     ['GEO'] = {
         ['WAR'] = {book = 2, page = 1}, -- THF/WAR + GEO alt
         ['DNC'] = {book = 2, page = 1}, -- THF/DNC + GEO alt
         ['NIN'] = {book = 2, page = 1}, -- THF/NIN + GEO alt
     },
 
-    -- Kaories playing COR
+    -- The alt playing COR
     ['COR'] = {
         ['WAR'] = {book = 3, page = 1}, -- THF/WAR + COR alt
         ['DNC'] = {book = 3, page = 1}, -- THF/DNC + COR alt

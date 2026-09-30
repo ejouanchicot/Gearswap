@@ -213,7 +213,7 @@ const T = {
     modesKeyed:'Modes avec une touche', modesOther:'Autres modes (sans touche)', atLoad:'La valeur encadrée est celle au chargement du job.',
     noKey:'aucune touche', macro:'Macrobook', lockstyle:'Lockstyle', bookPage:'Livre {b}, page {p}', bySub:'Par sub', byDual:'En dual-box (job de l\'autre perso)',
     style:'Set {s}', functionsTitle:'Interrupteurs de ce job', on:'On', off:'Off', mock:'Données écrites par le jeu (//gs c atelier). Pour les mettre à jour : recharge le job en jeu, puis cette page.', inBags:'dans tes sacs', none:'Pas encore de données. En jeu, tape //gs c atelier (le job chargé) ou //gs c atelier on (chaque job à son chargement), puis recharge cette page.',
-    placeholder:'Pas encore exporté : charge ce job en jeu avec //gs c atelier on actif, ou tape //gs c atelier.', seeTetsouo:'Voir les jobs de Tetsouo', drawerInh:'Cette pièce vient de {b}. La changer ici l\'ajoute à ce set seulement ; {b} ne bouge pas.',
+    placeholder:'Pas encore exporté : charge ce job en jeu avec //gs c atelier on actif, ou tape //gs c atelier.', seeOther:'Voir les jobs de {c}', drawerInh:'Cette pièce vient de {b}. La changer ici l\'ajoute à ce set seulement ; {b} ne bouge pas.',
     drawerOwn:'Pièce écrite dans ce set : elle sera remplacée à cet endroit du fichier.', drawerEmpty:'Aucune pièce : ce que tu portes déjà reste.',
     drawerShared:'Ce set est aussi utilisé sous {n} autre(s) nom(s). Tu pourras modifier pour tous ou séparer celui-ci.',
     yourItems:'Tes objets vus pour cet emplacement', seenIn:'vu dans {n} set(s)', close:'Fermer', apply:'Appliquer (maquette)',
@@ -234,7 +234,7 @@ const T = {
     modesKeyed:'Modes with a key', modesOther:'Other modes (no key)', atLoad:'The framed value is the one at job load.',
     noKey:'no key', macro:'Macro book', lockstyle:'Lockstyle', bookPage:'Book {b}, page {p}', bySub:'By subjob', byDual:'Dual-box (other character\'s job)',
     style:'Set {s}', functionsTitle:'Switches on this job', on:'On', off:'Off', mock:'Data written by the game (//gs c atelier). To refresh: reload the job in game, then this page.', inBags:'in your bags', none:'No data yet. In game, type //gs c atelier (the loaded job) or //gs c atelier on (every job as it loads), then reload this page.',
-    placeholder:'Not exported yet: load this job in game with //gs c atelier on, or type //gs c atelier.', seeTetsouo:'See Tetsouo\'s jobs', drawerInh:'This piece comes from {b}. Changing it here adds it to this set only; {b} stays as it is.',
+    placeholder:'Not exported yet: load this job in game with //gs c atelier on, or type //gs c atelier.', seeOther:'See {c}\'s jobs', drawerInh:'This piece comes from {b}. Changing it here adds it to this set only; {b} stays as it is.',
     drawerOwn:'Piece written in this set: it is replaced at that spot in the file.', drawerEmpty:'No piece: what you already wear stays.',
     drawerShared:'This set is also used under {n} other name(s). You will choose: all of them, or split this one.',
     yourItems:'Your items seen for this slot', seenIn:'seen in {n} set(s)', close:'Close', apply:'Apply (mock-up)',
@@ -260,13 +260,15 @@ const TAB_ORDER = JOBS.map(j => j[0]).sort();
 let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
-let S = {char:'Tetsouo', job:null, section:'sets', family:'all', variant:{}, lang:'fr', theme:null};
+let S = {char:'', job:null, section:'sets', family:'all', variant:{}, lang:'fr', theme:null};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null}); } catch(e) {}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const t = (k, v={}) => { let s = k.split('.').reduce((o,p) => o && o[p], T[S.lang]) ?? k; for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; };
 const role = c => JOBS.find(j => j[0]===c)[2];
 const plays = c => CHARS[S.char].jobs.includes(c);
+// Another character with exported jobs, offered when this one has none for the job
+const otherChar = () => Object.keys(CHARS).find(c => c !== S.char);
 const data = () => (DATA[S.char] || {})[S.job];
 function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme})); } catch(e) {} }
 
@@ -428,7 +430,7 @@ function renderJob(){
   const c = S.job, j = JOBS.find(x => x[0]===c), d = data();
   const r = j[2];
   let body, sections = '';
-  if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${S.char!=='Tetsouo'?`<button class="btn ghost" data-char="Tetsouo">${t('seeTetsouo')}</button>`:''}</div>`;
+  if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
     const list = [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),d.keys.filter(k=>k.key).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),'']];
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;

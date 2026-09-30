@@ -30,7 +30,7 @@ local CureManager = {}
 
 -- Load configuration (character-aware: supports Tetsouo + cloned characters)
 -- Module is lazy-required from WHM_PRECAST.lua, so `player` is defined at load time.
-local char_name = (player and player.name) or 'Tetsouo'
+local char_name = require('shared/utils/core/char_paths').name() or 'Tetsouo'
 local config_success, WHMCureConfig = require('shared/utils/core/char_paths').load('job', 'WHM_CURE_CONFIG', 'WHM', char_name)
 if not config_success or type(WHMCureConfig) ~= 'table' then
     -- The template's tiers (_master/config/whm/WHM_CURE_CONFIG.lua): without

@@ -58,7 +58,7 @@ WARMacroConfig.solo = {
 
 WARMacroConfig.dualbox = {
     ---========================================================================
-    --- WAR + RDM (Kaories Red Mage)
+    --- WAR + RDM (alt on Red Mage)
     ---========================================================================
     ['RDM'] = {
         ['SAM'] = { book = 22, page = 1 },  -- WAR/SAM + RDM alt
@@ -67,7 +67,7 @@ WARMacroConfig.dualbox = {
     },
 
     ---========================================================================
-    --- WAR + GEO (Kaories Geomancer)
+    --- WAR + GEO (alt on Geomancer)
     ---========================================================================
     ['GEO'] = {
         ['SAM'] = { book = 23, page = 1 },  -- WAR/SAM + GEO alt (with Indi/Geo buff macros)
@@ -76,7 +76,7 @@ WARMacroConfig.dualbox = {
     },
 
     ---========================================================================
-    --- WAR + COR (Kaories Corsair)
+    --- WAR + COR (alt on Corsair)
     ---========================================================================
     ['COR'] = {
         ['SAM'] = { book = 24, page = 1 },  -- WAR/SAM + COR alt (with roll request macros)

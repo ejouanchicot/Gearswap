@@ -51,19 +51,19 @@ RUNMacroConfig.solo = {
 ---============================================================================
 
 RUNMacroConfig.dualbox = {
-    -- Kaories playing RDM
+    -- The alt playing RDM
     ['RDM'] = {
         ['default'] = {book = 15, page = 1}, -- any other subjob + RDM alt
         ['BLU'] = {book = 18, page = 1}, -- RUN/BLU + RDM alt
     },
 
-    -- Kaories playing COR
+    -- The alt playing COR
     ['COR'] = {
         ['default'] = {book = 17, page = 1}, -- any other subjob + COR alt
         ['BLU'] = {book = 20, page = 1}, -- RUN/BLU + COR alt
     },
 
-    -- Kaories playing GEO
+    -- The alt playing GEO
     ['GEO'] = {
         ['default'] = {book = 16, page = 1}, -- any other subjob + GEO alt
         ['BLU'] = {book = 19, page = 1}, -- RUN/BLU + GEO alt

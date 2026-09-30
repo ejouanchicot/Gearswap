@@ -96,7 +96,7 @@ local function ensure_modules_loaded()
     MessageBLMMidcast = mbm
     mark('MessageBLMMidcast')
 
-    local char_name = (player and player.name) or 'Tetsouo'
+    local char_name = require('shared/utils/core/char_paths').name() or 'Tetsouo'
 
     BLMMPConfig = load_blm_config(char_name, 'BLM_MP_CONFIG',
         { mp_threshold = 1000 })

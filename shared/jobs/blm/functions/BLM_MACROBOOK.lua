@@ -24,7 +24,7 @@ local function get_macrobook_module()
             MacrobookManager = require('shared/utils/macrobook/macrobook_manager')
         end
         -- Character-aware config path (supports Tetsouo, Kaories, Hysoka, etc.)
-        local char_name = (player and player.name) or 'Tetsouo'
+        local char_name = require('shared/utils/core/char_paths').name() or 'Tetsouo'
         macrobook_module = MacrobookManager.create(
             'BLM',                                            -- job_code
             char_name .. '/config/blm/BLM_MACROBOOK',         -- config_path

@@ -50,7 +50,7 @@ local ConfigLoader = {}
 function ConfigLoader.load_ui_config(char_name, job_name)
     if not char_name or char_name == '' then
         MessageCore.show_config_error('ConfigLoader', 'Error: char_name is required')
-        char_name = 'Tetsouo'  -- Fallback
+        char_name = require('shared/utils/core/char_paths').name() or 'Tetsouo'  -- Fallback: the game's own name
     end
 
     if not job_name or job_name == '' then

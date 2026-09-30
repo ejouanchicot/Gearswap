@@ -40,8 +40,8 @@ UIConfig.show_footer = false
 
 -- Default position (X, Y), used until config/ui_settings.lua saves one
 UIConfig.default_position = {
-    x = 1857,
-    y = -24
+    x = 1600,
+    y = 300
 }
 
 ---============================================================================

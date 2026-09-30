@@ -74,10 +74,7 @@ function DualBoxManager.initialize(config)
     -- Load config if not already loaded
     if not _G.DualBoxConfig then
         -- Detect character name dynamically
-        local char_name = "Tetsouo"  -- Default fallback
-        if player and player.name then
-            char_name = player.name
-        end
+        local char_name = require('shared/utils/core/char_paths').name() or "Tetsouo"
 
         local config_path = require('shared/utils/core/char_paths').module('common', 'DUALBOX_CONFIG', nil, char_name)
         local success, loaded_config = pcall(require, config_path)

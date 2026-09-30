@@ -560,7 +560,7 @@ function AltCommands.list(filter, runs_locally)
     local MessageAlt = require('shared/utils/messages/formatters/ui/message_alt_commands')
     local _, subjob = get_alt_jobs()
     MessageAlt.show_list(alt, job, names, commands, filter, subjob,
-        (player and player.name) or 'Tetsouo', shadowed)
+        require('shared/utils/core/char_paths').name() or '', shadowed)
     return true
 end
 

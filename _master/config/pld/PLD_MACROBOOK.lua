@@ -50,19 +50,19 @@ PLDMacroConfig.solo = {
 ---============================================================================
 
 PLDMacroConfig.dualbox = {
-    -- Kaories playing RDM
+    -- The alt playing RDM
     ['RDM'] = {
         ['RUN'] = {book = 15, page = 1}, -- PLD/RUN + RDM alt
         ['BLU'] = {book = 18, page = 1}, -- PLD/BLU + RDM alt
     },
 
-    -- Kaories playing COR
+    -- The alt playing COR
     ['COR'] = {
         ['RUN'] = {book = 17, page = 1}, -- PLD/RUN + COR alt
         ['BLU'] = {book = 20, page = 1}, -- PLD/BLU + COR alt
     },
 
-    -- Kaories playing GEO
+    -- The alt playing GEO
     ['GEO'] = {
         ['RUN'] = {book = 16, page = 1}, -- PLD/RUN + GEO alt
         ['BLU'] = {book = 19, page = 1}, -- PLD/BLU + GEO alt

@@ -43,7 +43,7 @@ local UISettings = {}
 ---   _G.UIConfig right before it requires this module. Entries that require
 ---   UI_MANAGER before config_loader (WAR, BST, PUP) reach this file first, so
 ---   the fallback is used there. The fallback visibility flags match
----   UI_CONFIG.lua, but the position (1600, 300) does not.
+---   UI_CONFIG.lua, and so does the position (1600, 300).
 
 local function compute_defaults()
     local uc  = _G.UIConfig or {}
