@@ -869,6 +869,7 @@ copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/com
 | `silence_cure_items` | from `CLEANSE_CONFIG.lua` `items.silence` (Echo Drops 4151, Remedy 4155) | `precast_guard.lua` |
 | `auto_cure_paralysis` | `true` | `precast_guard.lua` |
 | `paralysis_cure_items` | from `CLEANSE_CONFIG.lua` `items.paralysis` (Remedy 4155; Panacea does not cure Paralysis) | `precast_guard.lua` |
+| `ask_partner` | `true` | `precast_guard.lua` `ask_partner`: on `CURE_NONE`, `Cleanse.ask_partners_for('silence' / 'paralysis')` (partners that may have Silena / Paralyna, `cleanse cast <spell> <name>`), at most once per debuff every 10 s (`windower._auto_medicine_asked`); the names go to `show_no_*_cure` (4th argument, an "Asked ... for ..." line) |
 | `auto_medicine_start` | absent (= `'On'`) | `auto_medicine.lua`, cold load only; a job change keeps the current value |
 | `auto_cure_poison`, `auto_cure_blind` | `false` | nothing |
 | `debug` | `false` | test-mode messages in PrecastGuard |
