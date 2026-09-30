@@ -430,6 +430,7 @@ local COMMANDS_HELP = {
             {'//gs c reload', '', 'Force job reload'},
             {'//gs c checksets', '', 'Validate equipment sets'},
             {'//gs c gearscan', '', 'Read gear augments (HP order)'},
+            {'//gs c hporder', '', 'Show the HP order of each swap'},
             {'//gs c lockstyle | ls', '', 'Reapply lockstyle'},
             {'//gs c dressup', '', 'Toggle DressUp management'},
             {'//gs c naked | equip naked', '', 'Strip all equipment'},

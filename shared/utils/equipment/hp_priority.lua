@@ -200,6 +200,42 @@ local function ranked_copy(set, st)
     return out
 end
 
+--- //gs c hporder: print the order of each swap (the flag is on windower,
+--- so it stays on across job loads until turned off).
+--- @param ranked table The ranked copies passed to equip()
+local function show_order(ranked)
+    local rows = {}
+    for _, set in ipairs(ranked) do
+        for key, value in pairs(set) do
+            local name = SLOTS[key] and name_of(value)
+            local worn = player and player.equipment and player.equipment[WORN_SLOT[key] or key]
+            if name and name:lower() ~= tostring(worn or ''):lower() then
+                rows[#rows + 1] = { name = name, priority = type(value) == 'table' and tonumber(value.priority) or 0 }
+            end
+        end
+    end
+    if #rows == 0 then return end
+    table.sort(rows, function(a, b) return a.priority > b.priority end)
+    local parts = {}
+    for _, row in ipairs(rows) do
+        parts[#parts + 1] = ('%s %s%d'):format(row.name, row.priority > 0 and '+' or '', row.priority)
+    end
+    require('shared/utils/messages/message_formatter').show_debug('HP order', table.concat(parts, ' > '))
+end
+
+--- Turn the //gs c hporder display on or off.
+--- @return boolean The new state
+function HPPriority.toggle_order_display()
+    windower._hp_order_debug = not windower._hp_order_debug
+    local MessageFormatter = require('shared/utils/messages/message_formatter')
+    if windower._hp_order_debug then
+        MessageFormatter.show_info('HP order: ON - each gear change lists its pieces, first to last, with the HP each gains (+) or loses (-) against what you wear. //gs c hporder again to stop.')
+    else
+        MessageFormatter.show_info('HP order: OFF')
+    end
+    return windower._hp_order_debug
+end
+
 --- equip() of GearSwap with the ranks of this swap laid on the sets.
 local function wrap_equip()
     local wrapper = rawget(_G, '_hp_priority_equip')
@@ -210,9 +246,14 @@ local function wrap_equip()
         local st = rawget(_G, state_key)
         if not st then return raw_equip(...) end
         local args = { ... }
+        local ranked = {}
         for i = 1, select('#', ...) do
-            if type(args[i]) == 'table' then args[i] = ranked_copy(args[i], st) end
+            if type(args[i]) == 'table' then
+                args[i] = ranked_copy(args[i], st)
+                ranked[#ranked + 1] = args[i]
+            end
         end
+        if windower._hp_order_debug then pcall(show_order, ranked) end
         return raw_equip((table.unpack or unpack)(args, 1, select("#", ...)))
     end
     _G._hp_priority_equip = wrapper

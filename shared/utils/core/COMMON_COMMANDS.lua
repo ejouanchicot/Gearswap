@@ -664,6 +664,9 @@ function CommonCommands.handle_command(command, job_name, ...)
         return require('shared/utils/smartbuff/subjob_buffs').apply()
     elseif cmd == 'gearscan' then
         return require('shared/utils/equipment/gear_scan').run()
+    elseif cmd == 'hporder' then
+        require('shared/utils/equipment/hp_priority').toggle_order_display()
+        return true
     elseif cmd == 'debugsubjob' or cmd == 'dsj' then
         return CommonCommands.handle_debugsubjob()
     elseif cmd == 'debugwarp' then
@@ -743,7 +746,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'altsync' or cmd == 'altbuffsync' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
-        cmd == 'aoewaltz' or cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' or cmd == 'smartbuff' or cmd == 'gearscan' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
+        cmd == 'aoewaltz' or cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' or cmd == 'smartbuff' or cmd == 'gearscan' or cmd == 'hporder' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
         cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
         cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or
         cmd == 'fulltest' or cmd == 'ft' or
