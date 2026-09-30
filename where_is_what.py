@@ -1,5 +1,5 @@
 """
-Write <Character>/WHERE-IS-WHAT.txt: every file of a character folder, what
+Write <Character>/_WHERE-IS-WHAT.txt: every file of a character folder, what
 it holds, and the command that changes it when there is one. Built from the
 files really there, so it stays true after a file is added or moved.
 
@@ -17,7 +17,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FILE_NAME = 'WHERE-IS-WHAT.txt'
+FILE_NAME = '_WHERE-IS-WHAT.txt'
 
 # Files of _common/, by name
 COMMON = {

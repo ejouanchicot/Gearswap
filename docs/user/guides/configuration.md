@@ -31,7 +31,7 @@ see [installation](../getting-started/installation.md)). After an edit,
 Settings are files, gear is always in a `sets/` folder. The `_` in front of
 `_common/` puts it first in the folder list.
 
-`WHERE-IS-WHAT.txt`, at the top of your folder, lists every file of it and
+`_WHERE-IS-WHAT.txt`, at the top of your folder, lists every file of it and
 what it holds. The clone and `migrate_layout.py` write it; after you add a
 file, `python where_is_what.py <YourName>` (in the `data` folder) writes it
 again.

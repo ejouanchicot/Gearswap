@@ -19,7 +19,7 @@ A full copy of the folder is made first in data/_backups/<Character>_<date>/.
 Nothing is ever overwritten: a file whose new place is taken is left where it
 is and listed at the end. The shared code reads the old layouts too, so a
 folder left half-moved still works. clone_character.py runs the same moves at
-the end of every clone. Each run also writes <Character>/WHERE-IS-WHAT.txt
+the end of every clone. Each run also writes <Character>/_WHERE-IS-WHAT.txt
 (where_is_what.py): every file of the folder and what it holds.
 
 @author ejouanchicot
