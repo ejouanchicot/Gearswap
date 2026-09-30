@@ -200,27 +200,60 @@ local function ranked_copy(set, st)
     return out
 end
 
---- //gs c hporder: print the order of each swap (the flag is on windower,
---- so it stays on across job loads until turned off).
---- @param ranked table The ranked copies passed to equip()
-local function show_order(ranked)
+--- //gs c hporder: the pieces of each gear change, first to last, as an
+--- InfoBlock (chat width and colours of the message system). Mote often puts
+--- one change on in several equip() calls (the base set, then overlays), so
+--- the calls of one frame are gathered and shown as one block, the last call
+--- winning a slot as it does in GearSwap. The flag is on windower, so it
+--- stays on across job loads until turned off.
+local pending = nil
+
+local function flush_order()
     local rows = {}
+    for _, row in pairs(pending or {}) do rows[#rows + 1] = row end
+    pending = nil
+    if #rows == 0 then return end
+    table.sort(rows, function(a, b) return a.priority > b.priority end)
+    local fields = {}
+    for i, row in ipairs(rows) do
+        local value, kind
+        if row.fixed then
+            value, kind = 'priority ' .. row.priority .. ' (written in the set)', 'warn'
+        else
+            value = ('%+d HP'):format(row.hp) .. (row.mp ~= 0 and ('  %+d MP'):format(row.mp) or '')
+            kind = row.priority > 0 and 'good' or (row.priority < 0 and 'bad' or 'dim')
+        end
+        fields[i] = { ('%d. %s'):format(i, row.name), value, kind }
+    end
+    require('shared/utils/messages/info_block').show({
+        tag = 'HP ORDER', title = #rows .. ' piece' .. (#rows > 1 and 's' or '') .. ', first to last',
+        fields = fields,
+    })
+end
+
+--- Note the changing pieces of one equip() call for the next block.
+--- @param ranked table The ranked copies passed to equip()
+--- @param st table Load state
+local function show_order(ranked, st)
     for _, set in ipairs(ranked) do
         for key, value in pairs(set) do
             local name = SLOTS[key] and name_of(value)
-            local worn = player and player.equipment and player.equipment[WORN_SLOT[key] or key]
+            local slot = WORN_SLOT[key] or key
+            local worn = player and player.equipment and player.equipment[slot]
             if name and name:lower() ~= tostring(worn or ''):lower() then
-                rows[#rows + 1] = { name = name, priority = type(value) == 'table' and tonumber(value.priority) or 0 }
+                local hp, mp = value_hp_mp(value, st)
+                local worn_hp, worn_mp = value_hp_mp(worn, st)
+                local priority = type(value) == 'table' and tonumber(value.priority) or 0
+                if not pending then
+                    pending = {}
+                    coroutine.schedule(function() pcall(flush_order) end, 0)
+                end
+                pending[slot] = { name = name, priority = priority, hp = hp - worn_hp, mp = mp - worn_mp,
+                    fixed = type(value) == 'table' and value.priority ~= nil
+                        and priority ~= (st.weigh_mp and ((hp - worn_hp) * MP_WEIGHT + (mp - worn_mp)) or (hp - worn_hp)) }
             end
         end
     end
-    if #rows == 0 then return end
-    table.sort(rows, function(a, b) return a.priority > b.priority end)
-    local parts = {}
-    for _, row in ipairs(rows) do
-        parts[#parts + 1] = ('%s %s%d'):format(row.name, row.priority > 0 and '+' or '', row.priority)
-    end
-    require('shared/utils/messages/message_formatter').show_debug('HP order', table.concat(parts, ' > '))
 end
 
 --- Turn the //gs c hporder display on or off.
@@ -253,7 +286,7 @@ local function wrap_equip()
                 ranked[#ranked + 1] = args[i]
             end
         end
-        if windower._hp_order_debug then pcall(show_order, ranked) end
+        if windower._hp_order_debug then pcall(show_order, ranked, st) end
         return raw_equip((table.unpack or unpack)(args, 1, select("#", ...)))
     end
     _G._hp_priority_equip = wrapper
