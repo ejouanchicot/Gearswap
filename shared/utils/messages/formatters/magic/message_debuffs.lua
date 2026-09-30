@@ -315,9 +315,10 @@ function MessageDebuffs.show_paralysis_cure_success(item_name, action_name, debu
     M.send('DEBUFFS', 'separator')
 end
 
---- Display message when no paralysis cure items are available
---- @param action_name string The action that was blocked (JA or WS)
---- @param debuff_message string The debuff blocking the action (e.g., "Paralyzed")
+--- Display message when no paralysis cure item is left: the ability goes
+--- anyway (paralysis only makes it fail some of the time)
+--- @param action_name string The ability
+--- @param debuff_message string The debuff (e.g., "Paralyzed")
 function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message)
     local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
     local error_color = MessageCore.create_color_code(Colors.ERROR)
@@ -327,9 +328,9 @@ function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message)
 
     M.send('DEBUFFS', 'separator')
 
-    -- First line: [Action] Cannot use [Debuff]
+    -- First line: [Action] goes anyway [Debuff]
     local line1 = string.format(
-        "%s[%s%s%s] %sCannot use %s[%s%s%s]",
+        "%s[%s%s%s] %sgoes anyway %s[%s%s%s]",
         separator_color,
         ability_color, action_name,
         separator_color,
@@ -349,6 +350,28 @@ function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message)
 
     MessageRenderer.send(line1, 1)
     MessageRenderer.send(line2, 1)
+    M.send('DEBUFFS', 'separator')
+end
+
+--- Display once that a cure item did not take a debuff off (an aura keeps
+--- it on): no more item for it while it stays
+--- @param debuff_name string Debuff (e.g., "paralysis")
+--- @param item_name string Item that was used up
+function MessageDebuffs.show_debuff_uncurable(debuff_name, item_name)
+    local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
+    local error_color = MessageCore.create_color_code(Colors.ERROR)
+    local debuff_color = MessageCore.create_color_code(Colors.DEBUFF)
+    local item_color = MessageCore.create_color_code(Colors.ITEM_COLOR)
+
+    M.send('DEBUFFS', 'separator')
+    MessageRenderer.send(string.format(
+        "%s[%s%s%s] %sdid not remove %s[%s%s%s] %s(aura?)",
+        separator_color, item_color, item_name or '?', separator_color,
+        error_color,
+        separator_color, debuff_color, debuff_name or '?', separator_color,
+        error_color
+    ), 1)
+    MessageRenderer.send(string.format("%sNo more item for it while it stays", error_color), 1)
     M.send('DEBUFFS', 'separator')
 end
 

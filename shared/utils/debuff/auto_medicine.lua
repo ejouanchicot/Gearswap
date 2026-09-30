@@ -174,6 +174,10 @@ function AutoMedicine.handle_command(arg)
     local value = arg and arg:lower() or nil
     local enabled
 
+    if value == 'debuffs' then
+        return AutoMedicine.show_debuffs()
+    end
+
     if value == 'on' then
         enabled = AutoMedicine.set(true)
     elseif value == 'off' then
@@ -186,6 +190,24 @@ function AutoMedicine.handle_command(arg)
 
     local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
     MessageDebuffs.show_auto_medicine_toggled(enabled)
+    return true
+end
+
+--- //gs c am debuffs: the buffs on you with their ids (a Paralysis from a
+--- geomancy aura is id 566, the usual one 4), and the debuffs Auto Medicine
+--- no longer uses an item on (uncurable_debuffs.lua).
+--- @return boolean true
+function AutoMedicine.show_debuffs()
+    local Uncurable = require('shared/utils/debuff/uncurable_debuffs')
+    local fields = {}
+    for _, buff in ipairs(Uncurable.active_buffs()) do
+        fields[#fields + 1] = {tostring(buff.id), buff.name}
+    end
+    if #fields == 0 then fields[1] = {'Buffs', 'none', 'dim'} end
+    for _, mark in ipairs(Uncurable.marked()) do
+        fields[#fields + 1] = {'No item', mark.name .. ' (' .. mark.seconds .. ' s)', 'bad'}
+    end
+    require('shared/utils/messages/info_block').show({tag = 'MEDICINE', title = 'Buffs and ids', fields = fields})
     return true
 end
 

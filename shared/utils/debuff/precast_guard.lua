@@ -6,9 +6,9 @@
 ---
 ---   @file    shared/utils/debuff/precast_guard.lua
 ---   @author  ejouanchicot
----   @version 1.4 - Cure lock remembers its item, so a second debuff is not
----                  silently swallowed while a cure for the first is in flight
----   @date    Created: 2025-10-02 | Updated: 2026-09-18
+---   @version 1.5 - A debuff the item did not take off (an aura) gets no more
+---                  item; Paralysis without a cure lets the ability go
+---   @date    Created: 2025-10-02 | Updated: 2026-10-01
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageCore = require('shared/utils/messages/message_core')
@@ -18,6 +18,7 @@ local PrecastGuard = {}
 local DebuffChecker = require('shared/utils/debuff/debuff_checker')
 local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
 local AutoMedicine = require('shared/utils/debuff/auto_medicine')
+local UncurableDebuffs = require('shared/utils/debuff/uncurable_debuffs')
 
 -- Shared defaults with the character's _common/combat/AUTOCURE_CONFIG.lua
 -- over them (autocure_settings.lua)
@@ -113,8 +114,10 @@ end
 --- @param action_name string The action that was blocked
 --- @param debuff_message string The debuff message to display
 --- @param success_msg_func function Message function to call on success
+--- @param debuff_key string Lowercase debuff the item is for ('silence'...),
+---   watched afterwards (uncurable_debuffs.lua: an aura keeps it on)
 --- @return string status CURE_SENT, CURE_PENDING, CURE_BUSY or CURE_NONE
-local function try_cure_debuff(cure_items, action_name, debuff_message, success_msg_func)
+local function try_cure_debuff(cure_items, action_name, debuff_message, success_msg_func, debuff_key)
     if cure_pending() then
         -- Stay quiet only when the item on its way fixes this debuff too.
         if cure_list_has(cure_items, cure_in_flight) then
@@ -134,6 +137,8 @@ local function try_cure_debuff(cure_items, action_name, debuff_message, success_
             )
 
             success_msg_func(cure_item.name, action_name, debuff_message)
+            UncurableDebuffs.watch(debuff_key, cure_item, CURE_INPUT_DELAY,
+                MessageDebuffs.show_debuff_uncurable)
 
             return CURE_SENT
         end
@@ -147,7 +152,7 @@ end
 --- @param debuff_message string The debuff message to display (e.g., "Silenced")
 --- @return string status See try_cure_debuff
 local function try_cure_silence(spell_name, debuff_message)
-    return try_cure_debuff(SILENCE_CURE_ITEMS, spell_name, debuff_message, MessageDebuffs.show_silence_cure_success)
+    return try_cure_debuff(SILENCE_CURE_ITEMS, spell_name, debuff_message, MessageDebuffs.show_silence_cure_success, 'silence')
 end
 
 --- Try to use paralysis cure item (Remedy)
@@ -155,7 +160,7 @@ end
 --- @param debuff_message string The debuff message to display (e.g., "Paralyzed")
 --- @return string status See try_cure_debuff
 local function try_cure_paralysis(action_name, debuff_message)
-    return try_cure_debuff(PARALYSIS_CURE_ITEMS, action_name, debuff_message, MessageDebuffs.show_paralysis_cure_success)
+    return try_cure_debuff(PARALYSIS_CURE_ITEMS, action_name, debuff_message, MessageDebuffs.show_paralysis_cure_success, 'paralysis')
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -213,6 +218,14 @@ function PrecastGuard.check_and_block(spell, eventArgs)
 
         -- AutoMedicine Off only skips the item use - the action stays blocked,
         -- since firing a JA while paralyzed burns its recast on a failed use.
+        -- A debuff an item did not take off (an aura): no item; Paralysis
+        -- lets the ability go, Silence stays blocked (uncurable_debuffs.lua).
+        if should_auto_cure and AutoMedicine.is_enabled() and UncurableDebuffs.is_marked(cure_type) then
+            if cure_type == "paralysis" then
+                return false
+            end
+            should_auto_cure = false
+        end
         if should_auto_cure and AutoMedicine.is_enabled() then
             local cure_status = nil
 
@@ -235,9 +248,9 @@ function PrecastGuard.check_and_block(spell, eventArgs)
                 -- guards the fallback path for action types we do not know.
                 cure_status = try_cure_paralysis(spell.name, debuff_message)
                 if cure_status == CURE_NONE then
-                    eventArgs.cancel = true
+                    -- No Remedy left: the ability goes (it may still land)
                     MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message)
-                    return true
+                    return false
                 end
             end
 
@@ -289,7 +302,7 @@ function PrecastGuard.check_magic(spell, eventArgs)
             end
         end
 
-        if should_auto_cure and AutoMedicine.is_enabled() then
+        if should_auto_cure and AutoMedicine.is_enabled() and not UncurableDebuffs.is_marked('silence') then
             local cure_status = try_cure_silence(spell.name, debuff_message)
             if cure_status == CURE_SENT or cure_status == CURE_PENDING then
                 eventArgs.cancel = true  -- Cancel this attempt, player can retry after cure
@@ -339,14 +352,18 @@ function PrecastGuard.check_ja(spell, eventArgs)
         end
 
         if should_auto_cure and AutoMedicine.is_enabled() then
+            -- An item did not take it off (an aura): the ability goes
+            if debuff_lower == "paralysis" and UncurableDebuffs.is_marked('paralysis') then
+                return false
+            end
             local cure_status = try_cure_paralysis(spell.name, debuff_message)
             if cure_status == CURE_SENT or cure_status == CURE_PENDING then
                 eventArgs.cancel = true  -- Cancel this attempt, player can retry after cure
                 return true
             elseif cure_status == CURE_NONE then
-                eventArgs.cancel = true
+                -- No Remedy left: the ability goes (it may still land)
                 MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message)
-                return true
+                return false
             end
             -- CURE_BUSY falls through to the plain blocked message below.
         end
