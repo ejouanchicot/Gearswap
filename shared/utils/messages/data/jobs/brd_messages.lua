@@ -162,17 +162,17 @@ return {
     ---========================================================================
 
     lullaby_cast = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{type} Lullaby II",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{spell}",
         color = 1
     },
 
     elegy_cast = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}Carnage Elegy",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{spell}",
         color = 1
     },
 
     requiem_cast = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}Foe Requiem VII",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{spell}",
         color = 1
     },
 

@@ -355,28 +355,28 @@ function job_self_command(cmdParams, eventArgs)
 
     if command == 'lullaby' then
         send_command('input /ma "' .. debuff_songs.lullaby .. '" <stnpc>')
-        MessageFormatter.show_lullaby_cast('Horde')
+        MessageFormatter.show_lullaby_cast(debuff_songs.lullaby)
         eventArgs.handled = true
         return
     end
 
     if command == 'lullaby2' or command == 'foe' then
         send_command('input /ma "' .. debuff_songs.lullaby2 .. '" <stnpc>')
-        MessageFormatter.show_lullaby_cast('Foe')
+        MessageFormatter.show_lullaby_cast(debuff_songs.lullaby2)
         eventArgs.handled = true
         return
     end
 
     if command == 'elegy' then
         send_command('input /ma "' .. debuff_songs.elegy .. '" <stnpc>')
-        MessageFormatter.show_elegy_cast()
+        MessageFormatter.show_elegy_cast(debuff_songs.elegy)
         eventArgs.handled = true
         return
     end
 
     if command == 'requiem' then
         send_command('input /ma "' .. debuff_songs.requiem .. '" <stnpc>')
-        MessageFormatter.show_requiem_cast()
+        MessageFormatter.show_requiem_cast(debuff_songs.requiem)
         eventArgs.handled = true
         return
     end

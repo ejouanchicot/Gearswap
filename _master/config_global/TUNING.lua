@@ -33,4 +33,8 @@ return {
     -- BRD debuff song commands (//gs c lullaby, lullaby2, elegy, requiem)
     -- brd_debuff_songs = {lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II',
     --                     elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'},
+
+    -- SCH / BLM stratagems: seconds for the whole pool to come back (the
+    -- charges shown are read from it; lower with the job-point gift)
+    -- stratagem_full_recharge = 240,
 }

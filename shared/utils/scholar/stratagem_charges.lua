@@ -25,8 +25,13 @@ local StratagemCharges = {}
 --- Every stratagem shares this recast slot.
 local STRATAGEM_RECAST_ID = 231
 
---- Seconds to regenerate the whole pool, without merits.
-local FULL_RECHARGE = 240
+--- Seconds to regenerate the whole pool, without merits. With the job-point
+--- gift, set yours in _common/combat/TUNING.lua stratagem_full_recharge.
+local DEFAULT_FULL_RECHARGE = 240
+
+local function full_recharge()
+    return require('shared/utils/core/tuning').get('stratagem_full_recharge', DEFAULT_FULL_RECHARGE)
+end
 
 --- Charge count granted at each Scholar level breakpoint, highest first.
 local CHARGE_TIERS = {
@@ -72,7 +77,7 @@ function StratagemCharges.available()
     local recast = windower.ffxi.get_ability_recasts()[STRATAGEM_RECAST_ID] or 0
     if recast <= 0 then return max_charges end
 
-    local charges = math.floor(max_charges - max_charges * recast / FULL_RECHARGE)
+    local charges = math.floor(max_charges - max_charges * recast / full_recharge())
 
     return math.max(0, charges)
 end
@@ -94,7 +99,7 @@ function StratagemCharges.next_charge_minutes()
 
     -- The pool refills one charge at a time; the next one lands when the
     -- remaining time drops to the next whole-charge boundary.
-    local per_charge = FULL_RECHARGE / max_charges
+    local per_charge = full_recharge() / max_charges
     local charging = math.ceil(recast / per_charge)
     local next_charge_seconds = recast - (charging - 1) * per_charge
 

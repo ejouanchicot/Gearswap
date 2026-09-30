@@ -177,7 +177,8 @@ function DNCStates.configure()
         ['description'] = 'Samba',
         'Haste Samba',    -- Haste +5% (350 TP)
         'Drain Samba II', -- HP drain on hit (250 TP)
-        'Aspir Samba'     -- MP drain on hit (100 TP)
+        'Aspir Samba',    -- MP drain on hit (100 TP)
+        'Off'             -- no samba from //gs c smartbuff
     }
     state.Samba:set('Haste Samba')  -- Default: Haste Samba
 

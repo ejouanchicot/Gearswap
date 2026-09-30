@@ -292,25 +292,29 @@ end
 --- DEBUFF SONG MESSAGES
 ---============================================================================
 
---- @param lullaby_type string "Horde" or "Foe"
-function BRDMessages.show_lullaby_cast(lullaby_type)
+--- @param spell string The lullaby sent (TUNING.lua brd_debuff_songs)
+function BRDMessages.show_lullaby_cast(spell)
     M.job('BRD', 'lullaby_cast', {
         job = get_job_tag(),
-        type = lullaby_type
+        spell = spell or 'Lullaby'
     })
 end
 
 --- Show the BRD.elegy_cast message
-function BRDMessages.show_elegy_cast()
+--- @param spell string The elegy sent
+function BRDMessages.show_elegy_cast(spell)
     M.job('BRD', 'elegy_cast', {
-        job = get_job_tag()
+        job = get_job_tag(),
+        spell = spell or 'Elegy'
     })
 end
 
 --- Show the BRD.requiem_cast message
-function BRDMessages.show_requiem_cast()
+--- @param spell string The requiem sent
+function BRDMessages.show_requiem_cast(spell)
     M.job('BRD', 'requiem_cast', {
-        job = get_job_tag()
+        job = get_job_tag(),
+        spell = spell or 'Requiem'
     })
 end
 
