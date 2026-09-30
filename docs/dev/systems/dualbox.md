@@ -11,11 +11,11 @@ MAIN (Tetsouo) and an ALT (Kaories). It has four independent parts:
    the MAIN, when no command of the MAIN answers that name, becomes `send Kaories input /ma "Spell" <laststid>`. The command set comes from the
    ALT's current main job plus its subjob, and each spell tier is picked from the level the ALT reported.
 3. **Alt buff reporter** (`alt_buff_reporter.lua`). The ALT reports a small list of tracked
-   buffs (Entrust, Composure, Bolter's Roll) to the MAIN, and the MAIN keeps them in `_G.AltBuffState`
+   buffs (its `DUALBOX_CONFIG.lua` `tracked_buffs`; by default Entrust, Composure, Bolter's Roll) to the MAIN, and the MAIN keeps them in `_G.AltBuffState`
    so alt commands can re-target (GEO Indi- under Entrust).
 4. **Sync IPC** (`dualbox_sync_ipc.lua`). This is a Windower-IPC side channel that replays
-   `//gs c ls` and `//gs c rf` on every other GearSwap instance. It is not gated on
-   `DUALBOX_CONFIG` at all.
+   `//gs c ls` and `//gs c rf` on the other characters of the box group. Every GearSwap instance of the
+   machine receives the message; only a member of the sender's group (`AltGroup.get_alts()`) acts on it.
 
 Parts 1 to 3 travel over the Windower **`send` addon** (`send <Name> gs c ...`) and arrive as
 ordinary `//gs c` commands. Part 4 uses `windower.send_ipc_message` and an `ipc message` event.
@@ -23,7 +23,7 @@ On top of these, the **box group** (`alt_group.lua`, `dualbox_role.lua`, `alt_wi
 orders to every other member (`//gs c alts`), swaps roles at runtime (`//gs c main`) and shows the
 alts' state on the main, and **roll sharing** (`roll_share.lua`) shows a COR alt's roll results on the main.
 
-Verified against the code on 2026-09-28. Functions are cited by name; line numbers only where
+Verified against the code on 2026-09-28 (config keys, buff list and sync filter on 2026-09-30). Functions are cited by name; line numbers only where
 a name would not locate the spot (they move often in this folder).
 
 ## Files
@@ -33,9 +33,9 @@ a name would not locate the spot (they move often in this folder).
 | `shared/utils/dualbox/dualbox_manager.lua` | 478 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
 | `shared/utils/dualbox/alt_states.lua` | 188 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
 | `shared/utils/dualbox/alt_commands.lua` | 573 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
-| `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
-| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
-| `shared/utils/dualbox/alt_group.lua` | 474 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `altreport`, `altmirror`, `altlead`, `main`, `setalt` |
+| `shared/utils/dualbox/alt_buff_reporter.lua` | 349 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
+| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 183 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
+| `shared/utils/dualbox/alt_group.lua` | 477 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `altreport`, `altmirror`, `altlead`, `main`, `setalt` |
 | `shared/utils/dualbox/alt_window.lua` | 368 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/saved/dualbox_role.lua` |
 | `shared/utils/dualbox/roll_share.lua` | 110 | A COR alt's roll results and busts sent to the main (`gs c rollshow`) and shown there in the same format |
@@ -101,7 +101,7 @@ The body does this:
 7. The **ALT** role also calls `AltBuffReporter.report_all()`.
 8. Both roles call `AltWindow.start()` (the window shows itself on the main only) and
    `AltGroup.request_report()` (asks every box's automation addon for its state; reports sent during
-   the reload were lost).
+   the reload were lost). Skipped when `DUALBOX_CONFIG.lua` sets `report_on_load = false`.
 
 Until step 4 runs, `_G.DualBoxConfig` is nil. This window lasts 2 s at minimum after every reload. During it:
 
@@ -176,7 +176,7 @@ sequenceDiagram
     A->>M: send Tetsouo gs c altjobupdate COR DNC 99 53 Kaories Gun
     A->>M: send Tetsouo gs c requestjob
     Note over M: both dropped if MAIN has not run its own initialize() yet
-    A->>M: send Tetsouo gs c altbuff Entrust 0 (one per TRACKED buff)
+    A->>M: send Tetsouo gs c altbuff Entrust 0 (one per tracked buff)
     M->>M: run_auto_init: initialize(), send_job_update(), request_alt_job()
     M->>A: send Kaories gs c altjobupdate WAR SAM 99 53 Tetsouo GreatAxe
     A->>A: receive_alt_job: _G.AltJobState (the MAIN's job)
@@ -290,12 +290,14 @@ A reported level of `0` (older two-argument payload) drops every entry that has 
 
 **On the ALT:**
 
-- `report(buff, gained)` (`:116-152`) only sends for buffs listed in `TRACKED`
-  (`:33-37`: `Entrust`, `Composure`, `Bolter's Roll`), and only when role is `alt` and dual-boxing is enabled.
+- The tracked buffs are the ALT's `DualBoxConfig.tracked_buffs` list, or `DEFAULT_TRACKED` when it is
+  not a table (`Entrust`, `Composure`, `Bolter's Roll`). `tracked()` rebuilds them at each call, keyed
+  by lowercase name, so the match ignores case.
+- `report(buff, gained)` only sends for a tracked buff, and only when role is `alt` and dual-boxing is enabled.
 - It sends `send <main> gs c altbuff <Buff Name> <1|0>` without quotes, because Mote does not strip
-  quotes (`:149`).
-- The only live-event caller is `GEO_BUFFS.lua:36`. `report_all()` (`:160`) sends every
-  TRACKED buff, up or down. It runs at ALT auto-init (`run_auto_init`), after a
+  quotes.
+- The only live-event caller is `GEO_BUFFS.lua:36`. `report_all()` sends every
+  tracked buff, up or down, under the name as written in the list. It runs at ALT auto-init (`run_auto_init`), after a
   received `setalt`, and on
   `//gs c altbuffsync`.
 
@@ -333,13 +335,16 @@ states that FFXI fires `buff_change` for Entrust only on loss. The 3 s resync is
   `SyncIPC.init_listener()`.
 - **Broadcast.** `broadcast(cmd)` is called only from `CommonCommands.handle_refill`
   (`'rf'`) and `handle_lockstyle` (`'ls'`). It sends
-  `tetsouo_sync_<cmd>` if a hook with that name exists locally, and records it on
+  `tetsouo_sync_<cmd> <sender name>` if a hook with that name exists locally, and records it on
   `windower._sync_ipc_last_sent(_time)` for self-echo suppression.
 - **Receive.** `_on_ipc_message` ignores other prefixes. It then drops self-echo within
-  `BROADCAST_TTL = 1.5` s and duplicates within `IPC_DEBOUNCE = 1.0` s, and runs the hook under `pcall`.
+  `BROADCAST_TTL = 1.5` s, then any message whose sender is not in this box's `AltGroup.get_alts()`
+  (`from_group`, case-insensitive; empty sender or dual-box disabled: refused), then duplicates within
+  `IPC_DEBOUNCE = 1.0` s, and runs the hook under `pcall`. The group check comes before the debounce, so
+  a refused message does not hold back the same order from a member of the group.
   The receiving side calls the hook directly, never `handle_lockstyle`, so there is no re-broadcast loop.
-- **Scope.** Windower IPC reaches every other instance of the GearSwap addon on the machine, whatever
-  `DUALBOX_CONFIG` says.
+- **Scope.** Windower IPC reaches every other instance of the GearSwap addon on the machine; a window
+  outside the group (or with dual-box disabled) receives the message and ignores it.
 
 ### Every box's job and weapon (`alt_states.lua`)
 
@@ -418,7 +423,8 @@ listener under `pcall`. Two listeners exist: `dualbox` (`watch_weapon`, sends `a
   on the box that sends it). `receive_mirror` keeps steps and results in
   `windower._alt_mirror` (results shown 8 s, a step never cleared dropped after 120 s).
   `request_report` sends `sm report` here and to each alt at every load
-  (`run_auto_init`), since reports sent during a reload are lost. Each report writes an
+  (`run_auto_init`), since reports sent during a reload are lost; `report_on_load = false` in
+  `DUALBOX_CONFIG.lua` stops it (nothing is sent either when the box has no alt). Each report writes an
   `ALTS` line to `trace.log`. Tested offline with stubs; in game, Auto/Follow/Mirror reports were
   seen in the trace on 2026-09-26.
 - **Alt window after a reload** (2026-09-27): GearSwap destroys the old load's texts while that load's
@@ -521,8 +527,8 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 |---|---|---|
 | `register_hook(cmd, fn)` | `_G.DUALBOX_SYNC_HOOKS[cmd:lower()] = fn` | INIT_SYSTEMS sync IPC block |
 | `unregister_hook(cmd)` | Removes a hook | none |
-| `broadcast(cmd)` | Sends `tetsouo_sync_<cmd>` via Windower IPC | `CommonCommands.handle_refill`, `handle_lockstyle` |
-| `_on_ipc_message(msg)` | Listener body | registered by `init_listener` |
+| `broadcast(cmd)` | Sends `tetsouo_sync_<cmd> <player.name>` via Windower IPC | `CommonCommands.handle_refill`, `handle_lockstyle` |
+| `_on_ipc_message(msg)` | Listener body: self-echo, group filter, debounce, hook | registered by `init_listener` |
 | `init_listener()` | Unregisters `windower._sync_ipc_event_id` (pcall) only if it was registered in this same load (`windower._sync_ipc_event_load == windower._gs_reload_count`), registers `ipc message`, stores id and load | INIT_SYSTEMS sync IPC block |
 
 ### `AltGroup`, `DualBoxRole`, `AltWindow`
@@ -531,12 +537,12 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 |---|---|---|
 | `AltGroup.route(cmd, args)` | `alts` -> `handle`, `altreport` / `altmirror` -> `receive_report` / `receive_mirror`, `altlead` -> `receive_lead`, `main` -> `become_main`, anything else (`setalt`) -> `become_alt` | `CommonCommands.handle_command` |
 | `AltGroup.handle(args)` | `help`/`on`/`off`/`toggle`/`follow`/`do`/`mirror`/`window` | `route` |
-| `AltGroup.get_alts()` | Other members of the group (empty when disabled) | `handle`, `request_alt_job`, `alt_window.lua`, `state_from_reports` |
+| `AltGroup.get_alts()` | Other members of the group (empty when disabled) | `handle`, `request_alt_job`, `alt_window.lua`, `state_from_reports`, `from_group` in `dualbox_sync_ipc.lua` |
 | `AltGroup.state()` / `note(changes)` | Auto / Follow / Mirror shown / record orders sent elsewhere | `alt_window.lua`, `sortie_commands.lua` |
 | `AltGroup.receive_lead(args)` | Saved follow state = the new leader (or off) | `route` (`altlead`) |
 | `AltGroup.receive_report(args)` / `receive_mirror(args)` | Real state and mirror progress reported by the addon addition | `route` (`altreport`, `altmirror`) |
 | `AltGroup.mirror_progress()` | Steps per box and results of the mirror in progress | `alt_window.lua` |
-| `AltGroup.request_report()` | `sm report` here and to each alt | `run_auto_init` |
+| `AltGroup.request_report()` | `sm report` here and to each alt; nothing when `report_on_load == false` or no alt | `run_auto_init` |
 | `DualBoxRole.become_main()` / `become_alt(args)` / `apply_saved()` | Role switch and persistence | `route`, `DualBoxManager.initialize` |
 | `AltWindow.start()` / `refresh()` / `toggle()` / `is_shown()` | Window loop, redraw, show/hide, quiet chat while shown | `run_auto_init`, `receive_alt_job`, `alt_group.lua`, `dualbox_role.lua` |
 
@@ -551,7 +557,7 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 | `//gs c altcmds [group\|search]`, `altlist` | MAIN | `AltCommands.handle` -> `list` | Overview by group, or filtered view; names that run locally are listed apart under `//gs c alt <name>` |
 | `//gs c <name> [args]` | MAIN | Mote's `selfCommandMaps` `__index` (`AltCommands.install_fallback`) | Any key of the alt's current config that nothing on the MAIN answers (job, common, warp or Mote command) |
 | `//gs c altbuff <Buff Name> <1\|0>` | MAIN | `CommonCommands.handle_command` | Record a buff state. Sent by the ALT |
-| `//gs c altbuffsync` | ALT | `CommonCommands.handle_command` | Resend all TRACKED buffs |
+| `//gs c altbuffsync` | ALT | `CommonCommands.handle_command` | Resend all tracked buffs |
 | `//gs c altsync` | MAIN | `CommonCommands.handle_command` | Send `altbuffsync` to the ALT (error if not main/enabled) |
 | `//gs c altbuffs` | MAIN | `CommonCommands.handle_command` | Print `_G.AltBuffState`, guesses and reporting status |
 | `//gs c alts <on\|off\|toggle\|follow [name\|off]\|do <command>\|mirror\|window>` | either | `CommonCommands.handle_command` then `AltGroup.route` | Orders to every other member of the group (see above) |
@@ -561,8 +567,8 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 | `//gs c altlead <leader\|off>` | other boxes | `AltGroup.receive_lead` | Sent by `alts follow`; updates the saved follow state |
 | `//gs c altreport ...`, `altmirror ...` | any box | `AltGroup.receive_report` / `receive_mirror` | Sent by the automation addon's StateReport addition |
 | `//gs c rollshow <result\|bust> ...` | MAIN | `RollShare.receive` | Sent by a COR alt |
-| `//gs c ls`, `lockstyle` | either | `CommonCommands.handle_command`, then `handle_lockstyle` | Local lockstyle plus IPC `ls` broadcast |
-| `//gs c rf`, `refill` | either | `CommonCommands.handle_command`, then `handle_refill` | Local refill plus IPC `rf` broadcast |
+| `//gs c ls`, `lockstyle` | either | `CommonCommands.handle_command`, then `handle_lockstyle` | Local lockstyle plus IPC `ls` broadcast (acted on by the group only) |
+| `//gs c rf`, `refill` | either | `CommonCommands.handle_command`, then `handle_refill` | Local refill plus IPC `rf` broadcast (acted on by the group only) |
 
 All `alt*` names, `alts`, `main`, `setalt`, `altreport`, `altmirror`, `altlead` and `rollshow` are in the `is_common_command` list.
 `altjobupdate`/`requestjob` are not: every job's `job_self_command` handles them before the common check.
@@ -584,6 +590,8 @@ Loaded with `require(player.name .. '/config/DUALBOX_CONFIG')` (`DualBoxManager.
 | `enabled` | `true` | `true` | every entry point |
 | `timeout` | `30` | `30` | `is_alt_online`, default 30 |
 | `debug` | `false` | `false` | verbose `MessageDualbox` output |
+| `report_on_load` | absent (on) | absent (on) | `AltGroup.request_report`: only `false` stops the `sm report` sent at each load |
+| `tracked_buffs` | absent | absent | `tracked()` in `alt_buff_reporter.lua`, on the ALT: list of buff names to report; not a table means `DEFAULT_TRACKED` |
 
 Defaults when the file is missing (`initialize`): `enabled=false, role="main", main_name=<player>,
 alt_name="Unknown", timeout=30, debug=false`.
@@ -591,7 +599,7 @@ alt_name="Unknown", timeout=30, debug=false`.
 Clones: `clone_character.py` generates `DUALBOX_CONFIG.lua` from its interactive answers
 (`ask_dualbox`, `_create_dualbox_config`), after the overlay files are copied, so a generated file
 always replaces the overlay's. It includes `DualBoxConfig.group = {"<char>", "<partner>"}`
-when dual-boxing is enabled. `dualbox_role.lua` is deliberately **not** kept across a re-clone (it
+when dual-boxing is enabled, and `report_on_load` / `tracked_buffs` as commented lines. `dualbox_role.lua` is deliberately **not** kept across a re-clone (it
 would override the role the clone just wrote); `alt_state.lua` and `alt_window.lua` are.
 
 ### Alt command configs (`<player.name>/config/alt/`)
@@ -735,8 +743,13 @@ Behaviour per event:
   names.
 - Two alt command steps are joined with `; wait N; ` on the MAIN's console. A `<laststid>` in a later step
   is resolved when that step runs, not when the command is typed.
-- Sync IPC is not gated on `DualBoxConfig`: a third GearSwap instance on the machine also mirrors `ls`/`rf`.
-- `report_all` on the ALT always sends all three TRACKED buffs, whatever the ALT's job.
+- Sync IPC reaches every GearSwap instance of the machine; only the group filter on the receiving side
+  keeps a window outside the group from mirroring `ls`/`rf`. A message without a sender name (sent by
+  code older than 2026-09-30) is refused.
+- `report_all` on the ALT always sends every tracked buff, whatever the ALT's job.
+- The ALT matches tracked names ignoring case, but the MAIN stores and reads `_G.AltBuffState` by exact
+  name: a list entry written in another case (`'entrust'`) is sent that way by `report_all` and is not
+  found by `AltBuffReporter.active('Entrust')`.
 
 ## For maintainers / AI
 
@@ -784,7 +797,8 @@ Behaviour per event:
   MAIN runs only as `//gs c alt <key>` (see above). `//gs c altcmds <key>` shows the result after `gs reload`.
 - **Rule over a family of commands.** Export `M.refine(entry, name)` from the CUSTOM file. It receives a
   copy after the tier/level filtering.
-- **New tracked buff.** Add it to `TRACKED` (`alt_buff_reporter.lua:33-37`). Make sure the ALT job's
+- **New tracked buff.** Add it to the ALT's `DualBoxConfig.tracked_buffs` (spelled as the game does), or to
+  `DEFAULT_TRACKED` in `alt_buff_reporter.lua` for every character. Make sure the ALT job's
   `*_BUFFS.lua` calls `AltBuffReporter.report(buff, gain)`, because today only `GEO_BUFFS.lua` does. Read it on the
   MAIN with `AltBuffReporter.active(name)`.
 - **New IPC-mirrored command.** Call `SyncIPC.register_hook('<cmd>', fn)` in `INIT_SYSTEMS.lua`, next to the
@@ -815,7 +829,7 @@ Still open:
 - `altlight`/`altdark` send tier I spells when the MAIN is BLM - `_master/config/alt/GEO_ALT_CUSTOM.lua` `altlight` / `altdark` (same in BLM/RDM/SCH CUSTOM)
 - Dead API: `unregister_hook`, `clear_cache` - `dualbox_sync_ipc.lua`, `alt_commands.lua`. Fixed 2026-09-28: `DualBoxManager.show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update` removed (their `MessageDualbox.show_status_*` / `show_not_initialized` formatters are now uncalled, see [messages-catalog.md](messages-catalog.md)). `RollShare.receive` returns true, so `rollshow` counts as handled.
 - `_G.DUALBOX_SYNC_DEBUG` is never set, so sync hook errors are always silent (the comment now says so) - `_on_ipc_message`, `shared/utils/dualbox/dualbox_sync_ipc.lua`
-- `Composure` and `Bolter's Roll` are tracked but never reported on change and never read - `TRACKED`, `shared/utils/dualbox/alt_buff_reporter.lua`
+- `Composure` and `Bolter's Roll` are tracked by default but never reported on change and never read - `DEFAULT_TRACKED`, `shared/utils/dualbox/alt_buff_reporter.lua`
 - `//gs c alt <unknown>` prints nothing - `AltCommands.execute`, `shared/utils/dualbox/alt_commands.lua`
 - The overlays' `DUALBOX_CONFIG.lua` are always replaced by the generated file on a clone - `_master/Kaories/config_global/DUALBOX_CONFIG.lua`
 - Two implementations of "the other members of the group", and a copied `messages()` helper: `others()` in `dualbox_role.lua` (ignores `enabled`) vs `AltGroup.get_alts()` (role-aware, respects `enabled`); without `group` the two lists can differ (z06 P3-9, not fixed: needs a game test of `//gs c main`) - `others` in `shared/utils/dualbox/dualbox_role.lua`, `AltGroup.get_alts` in `shared/utils/dualbox/alt_group.lua`

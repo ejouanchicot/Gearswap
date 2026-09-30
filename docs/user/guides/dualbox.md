@@ -13,8 +13,9 @@ Two characters on the same PC, both running this setup, one **main** and one
 - **Role swap**: `//gs c main` makes the current character the main.
 - **Alt window** on the main: each alt's job and whether it is in your party,
   and the time left on its Sneak and Invisible.
-- `//gs c rf`, `//gs c ls` and the warp `...all` commands also run on the
-  other GearSwap instances of the PC.
+- `//gs c rf` and `//gs c ls` also run on the other characters of the group
+  (another window of the PC outside the group ignores them); the warp
+  `...all` commands run on the other GearSwap instances of the PC.
 
 ## Requirements
 
@@ -56,9 +57,15 @@ On the alt, `role = "alt"` and `main_character = "Bob"` instead of
 | `enabled` | `false` turns dual-box off for this character |
 | `timeout` | Seconds without news from the partner before it counts as offline (for the macro book choice) |
 | `debug` | More chat output |
+| `report_on_load` | `false` stops the `sm report` sent to every box at each load (it asks the automation addon's StateReport addition for its state, see [the alt window](#the-alt-window)). On when absent |
+| `tracked_buffs` | On the alt: the buffs it reports to the main, spelled as the game does. Default `{'Entrust', 'Composure', "Bolter's Roll"}` |
+
+The clone script writes the last two commented out: remove the `--` to use
+them.
 
 The job exchange and the alt commands work with one partner; the `alts`
-orders and the alt window work with every member of `group`.
+orders, the alt window and the `rf` / `ls` mirroring work with every member
+of `group`.
 
 Only the main gets `_common/dualbox/alt/` (the alt command files) from the clone
 script.
@@ -288,9 +295,10 @@ With tracing on, the alt prints a line for every buff change, including
 untracked ones. Seeing those confirms `buff_change` fires at all; seeing
 nothing means the module is not loaded on that side.
 
-Buffs are reported only if listed in `TRACKED`
-(`shared/utils/dualbox/alt_buff_reporter.lua`) — currently Entrust, Composure
-and Bolter's Roll. Add a line there to expose another one.
+Buffs are reported only if listed in the alt's `tracked_buffs`
+(`DUALBOX_CONFIG.lua`, see [Setup](#setup)); without it, Entrust, Composure
+and Bolter's Roll. Case is ignored when matching, but write each name as the
+game does: the main looks it up exactly.
 
 **Mirror one of your own states.** `spell_from_state` reads a Mote state on the
 MAIN, so the alt follows what you have selected:
@@ -326,6 +334,7 @@ entrusthaste = {
 | Alt commands unknown on the main | The alt must have reported its job: reload the alt (`//gs c reload`) so it sends it; check the `send` addon is loaded on both |
 | An alt command runs on the main | A local command has that name: use `//gs c alt <name>` |
 | `alts follow` does nothing | Your automation addon must answer `sm follow <name>` |
+| `rf` / `ls` not mirrored on a box | Both characters must be in each other's group (`group`, or main / alt names) with `enabled = true` |
 | Wrong character leads after a swap | `//gs c main` on the right one, or delete `<Name>/saved/dualbox_role.lua` |
 
 Tracing: `//gs c altdebug` (alt buff reports, on both characters), and

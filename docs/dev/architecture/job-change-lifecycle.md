@@ -30,8 +30,8 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | `shared/utils/keybinds/keybind_manager.lua` | 442 | `bind_all` (unbind only what is no longer wanted, then bind), `show_intro` |
 | `shared/utils/ui/UI_MANAGER.lua`, `ui_lifecycle.lua`, `ui_update_orchestrator.lua` | 167 / 202 / 277 | Keybind HUD state, `smart_init`, `destroy`, `update` |
 | `shared/utils/dualbox/dualbox_manager.lua` | 478 | Job exchange between the boxes, auto-init 2 s after load |
-| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | IPC mirror of `ls`/`rf` between instances |
-| `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | Alt reports tracked buffs to the main |
+| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 183 | IPC mirror of `ls`/`rf` between the instances of the box group |
+| `shared/utils/dualbox/alt_buff_reporter.lua` | 349 | Alt reports tracked buffs to the main |
 | `shared/utils/craft/craft_manager.lua`, `craft_commands.lua` | 200 / 302 | Craft/fish session and slot locks |
 | `shared/utils/wardrobe/wardrobe_organizer.lua` | 713 | `//gs c wo` phase chain, `job_changed()` guard |
 | `shared/utils/debuff/doom_manager.lua` | 157 | Doom gear + slot locks, death safety unlock |
@@ -271,7 +271,7 @@ Roles come from `<Character>/_common/dualbox/DUALBOX_CONFIG.lua`, overridden by 
 - **Either box reloads or changes job**: its new environment's auto-init runs the same steps for both roles (`:501-502`): `send_job_update()` sends `send <other> gs c altjobupdate <job> <sub> <lvl> <sublvl> <sender>` (an identical payload less than 1.5 s after the previous send is dropped, `windower._dualbox_last_send_payload/_time`, `:180-186`), then `request_alt_job()` sends `send <other> gs c requestjob`. The alt also runs `AltBuffReporter.report_all()` (`:504-511`).
 - **On the receiving box** the job's COMMANDS module routes `altjobupdate` to `receive_alt_job()` (e.g. `shared/jobs/pld/functions/PLD_COMMANDS.lua`), which records every sender in `alt_states.lua` and stops there for a sender that is not its tracked partner, stores `_G.AltJobState` and corrects `_G.cor_party_jobs` for the other character; only when the job or subjob differs from what it already held does it print the update and schedule `select_default_macro_book()` 0.5 s later, so the dual-box book is picked (`DualBoxManager.receive_alt_job`, `dualbox_config` in `macrobook_manager.lua`). It routes `requestjob` to `handle_job_request()`, which answers with `send_job_update(true)`: a forced reply that skips the de-dup window.
 - So a reload of either box restores both sides: the reloaded box learns the other's job from the forced reply, and the other box receives the reloaded box's job (stored silently when unchanged). Nothing asks the alt to resend its buffs after a reload of the main (see Known issues).
-- **IPC mirror (`ls`, `rf`)**: each load registers the hooks on its `_G.DUALBOX_SYNC_HOOKS` and an `ipc message` listener (INIT_SYSTEMS sync IPC block, `DualBoxSyncIPC.init_listener`). The listener id is kept on `windower._sync_ipc_event_id` with the load that registered it (`windower._sync_ipc_event_load`); `init_listener` unregisters it only when it comes from the same load, because the engine has already removed an older one and its id may now belong to another listener. Between the engine's unregister at the start of `load_user_files` and `INIT_SYSTEMS` in the new `get_sets`, the box has no listener and drops broadcasts. Self-echo suppression state is on `windower._sync_ipc_last_sent/_time` (`broadcast`) so it spans a reload.
+- **IPC mirror (`ls`, `rf`)**: each load registers the hooks on its `_G.DUALBOX_SYNC_HOOKS` and an `ipc message` listener (INIT_SYSTEMS sync IPC block, `DualBoxSyncIPC.init_listener`). The listener id is kept on `windower._sync_ipc_event_id` with the load that registered it (`windower._sync_ipc_event_load`); `init_listener` unregisters it only when it comes from the same load, because the engine has already removed an older one and its id may now belong to another listener. Between the engine's unregister at the start of `load_user_files` and `INIT_SYSTEMS` in the new `get_sets`, the box has no listener and drops broadcasts. Self-echo suppression state is on `windower._sync_ipc_last_sent/_time` (`broadcast`) so it spans a reload. The message carries the sender's name and a box acts only on a sender of its `AltGroup.get_alts()`, which is empty until `_G.DualBoxConfig` is loaded (2 s after the load) and when the dual-box is disabled.
 - `DualBoxManager.is_alt_online()` turns false 30 s after the last `altjobupdate` (`:346-360`); `dualbox_config` in `macrobook_manager.lua` therefore uses the dual-box book only for macrobook selections made within 30 s of an update. `get_alt_jobs` in `alt_commands.lua` reads `_G.AltJobState` directly to avoid that timeout.
 
 ### Per-job differences
@@ -329,7 +329,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `KeybindUI.smart_init(job, max_wait)` / `destroy()` | `ui_lifecycle.lua:113` / `:178` | `smart_init_id` supersedes older polls; `windower._ui_live_state` stops polls from an older load |
 | `KeybindGuard.schedule()` | `keybind_guard.lua` | re-sends the binds after 2 s; `windower._keybind_guard_seq` drops an older load's pass |
 | `DualBoxManager.send_job_update / request_alt_job / handle_job_request / receive_alt_job` | `dualbox_manager.lua` | see scenario 12 |
-| `DualBoxSyncIPC.register_hook / broadcast / init_listener` | `dualbox_sync_ipc.lua:47`, `:71`, `:146` | listener id on `windower._sync_ipc_event_id`, stamped with its load in `windower._sync_ipc_event_load` |
+| `DualBoxSyncIPC.register_hook / broadcast / init_listener` | `dualbox_sync_ipc.lua:52`, `:76`, `:170` | listener id on `windower._sync_ipc_event_id`, stamped with its load in `windower._sync_ipc_event_load` |
 | `CraftManager.mark_active / active_gear / unequip / is_active` | `craft_manager.lua` | state on `_G.__CraftManagerState` |
 | `WardrobeOrganizer.organize / reset / recover` | `wardrobe_organizer.lua:540`, `:670`, `:680` | module-local `IS_RUNNING` |
 | `DoomManager.handle_buff_change / handle_status_change` | `doom_manager.lua:67`, `:112` | via `LifecycleManager` |
@@ -358,7 +358,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 |---|---|---|
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:42`) | 8.0; fallback table in each entry (e.g. `Tetsouo_PLD.lua:37-44`). Its only setting (`job_change_delay` and `cooldown`, read by nothing, were removed on 2026-09-29) |
 | `<char>/_common/display/UI_CONFIG.lua` (dofile) | `init_delay` for `smart_init` | 5.0 (`config_loader.lua:52`) |
-| `<char>/_common/dualbox/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug` | disabled main (`DualBoxManager.initialize`) |
+| `<char>/_common/dualbox/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug`, `report_on_load`, `tracked_buffs` | disabled main (`DualBoxManager.initialize`) |
 | `<char>/_common/inventory/CRAFT_CONFIG.lua` | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`craft_commands.lua`) |
 | `<char>/_common/inventory/REFILL_CONFIG.lua` | `source_bags`, `store_bag`, `default_list`, `subjobs` | Case, Sack, Satchel / Case; without a common list (and no job list) `FALLBACK_LIST` (`config_resolver.lua`) |
 | `<char>/_common/sets/<name>_sets.lua` | craft/fish sets | `craft_manager.lua` |
@@ -404,7 +404,7 @@ Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 p
 
 | Event | Registered at | Unregister path (besides the engine at every load) |
 |---|---|---|
-| `ipc message` (dual-box sync) | `init_listener`, `dualbox_sync_ipc.lua:146` | `windower._sync_ipc_event_id` at a second `init_listener` of the same load |
+| `ipc message` (dual-box sync) | `init_listener`, `dualbox_sync_ipc.lua:170` | `windower._sync_ipc_event_id` at a second `init_listener` of the same load |
 | `ipc message` (warp register) | `warp_ipc_register.lua:49` | `windower._warp_ipc_register_event_id` at a second include in the same load |
 | `ipc message` (warp IPC) | `WarpIPC.init` (no caller) | `windower._warp_ipc_event_id` |
 | `action` (warp detector, raw since 2026-09-25) | `init_action_listener` in `warp_detector.lua` | `windower._warp_detector_event_id` at a second `init_action_listener` of the same load (registered on every load) |

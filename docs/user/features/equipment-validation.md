@@ -79,7 +79,7 @@ puts the surplus back. The list is the common one of
 character), which each job's `<job>/inventory/<JOB>_REFILL.lua` can add to or
 replace (every line commented at first; see
 [configuration](../guides/configuration.md#refill-job_refilllua)). `rf` is
-also sent to your other GearSwap instances.
+also sent to the other characters of your dual-box group.
 
 ## When to use them
 

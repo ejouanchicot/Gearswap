@@ -249,12 +249,12 @@ sequenceDiagram
     RM->>W: first move now, then one move every 0.6 s
     RM-->>U: report after the last move
     CC->>IPC: broadcast rf
-    IPC-->>RM: partner instance hook calls refill()
+    IPC-->>RM: group member's hook calls refill()
 ```
 
 1. Entry points. `//gs c refill` / `//gs c rf` -> `CommonCommands.handle_command` ->
    `CommonCommands.handle_refill` (`COMMON_COMMANDS.lua:234`), which calls `RefillManager.refill()` and
-   then, whatever it returned, `DualBoxSyncIPC.broadcast('rf')`. The partner instance runs
+   then, whatever it returned, `DualBoxSyncIPC.broadcast('rf')`. Every other instance whose box group holds the sender runs
    `refill_hook`, registered for `rf` and `refill` in the dual-box block of `INIT_SYSTEMS.lua`; it calls
    `RefillManager.refill()` directly and does not broadcast again. `gs c rf` is also sent
    automatically: 2.5 s after any craft set is equipped (`lock_after_delay` in `craft_commands.lua`),
