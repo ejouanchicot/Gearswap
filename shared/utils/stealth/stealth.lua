@@ -159,6 +159,12 @@ local function use_own(kind)
     return true
 end
 
+--- Whether DNC is the main job (Chocobo Jig shares Spectral Jig's recast).
+--- @return boolean
+local function main_dnc()
+    return player ~= nil and player.main_job == 'DNC'
+end
+
 --- This character's part for the kinds asked (a list of 'sneak' / 'invi').
 --- `alone`: nothing asked of the other boxes when it has no way of its own.
 local function handle_self(kinds, alone)
@@ -171,9 +177,11 @@ local function handle_self(kinds, alone)
         end
     end
     if #wanted == 0 then return end
-    -- A dancer only ever uses Spectral Jig: on recast, nothing else (no
-    -- oil, powder or spell), it is used again on the next press once ready
-    if Methods.has_jig() and not Methods.can_jig() then
+    -- A /DNC only ever uses Spectral Jig: on recast, nothing else (no oil,
+    -- powder or spell), it is used again on the next press once ready. A
+    -- main DNC shares the recast with Chocobo Jig (recast_id 218, level 55,
+    -- main only): on recast it goes its other ways (items, spell) below.
+    if Methods.has_jig() and not Methods.can_jig() and not main_dnc() then
         trace('%s: Spectral Jig on recast, %ds', table.concat(wanted, '+'), Methods.jig_recast())
         if msg() then msg().show_jig_recast(Timers.format(Methods.jig_recast())) end
         return
@@ -349,8 +357,13 @@ local function planned(kind, covering)
     if covering[kind] then return 'Accession for the group', 'good' end
     if Methods.has_jig() then
         local wait = Methods.jig_recast()
-        if wait > 0 then return ('Spectral Jig in %s (nothing else)'):format(Timers.format(wait)), 'warn' end
-        return 'Spectral Jig', 'good'
+        if wait == 0 then return 'Spectral Jig', 'good' end
+        if not main_dnc() then
+            return ('Spectral Jig in %s (nothing else)'):format(Timers.format(wait)), 'warn'
+        end
+        local way = Methods.best_own(kind)
+        if way then return ('%s (Spectral Jig in %s)'):format(way.name, Timers.format(wait)), 'good' end
+        return ('Spectral Jig in %s, nothing else: asks the others'):format(Timers.format(wait)), 'warn'
     end
     local way = Methods.best_own(kind)
     if way then return way.name, 'good' end
