@@ -74,7 +74,7 @@ and arguments: [commands guide](../../guides/commands.md).
 
 | Command | What it does |
 |---|---|
-| `smartbuff` | /DNC: Haste Samba (needs 350 TP). /WAR: Berserk, Aggressor, Warcry, the ready ones, 2 s apart. /NIN: Utsusemi: Ni, else Ichi. Other subjobs: a warning |
+| `smartbuff` | Common command: /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning |
 | `fbc` | Feint, Bully, Conspirator: the ready ones whose buff is not already up, 1 s apart |
 | `steal` | Steal, Mug, Despoil on your target, the ready ones, 1 s apart. Only on a living monster |
 | `range` | Equips Exalted Crossbow and Acid Bolt, locks range and ammo, shoots `/ra <stnpc>` |

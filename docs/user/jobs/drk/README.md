@@ -85,6 +85,8 @@ DRK has no command of its own. The common commands that work on DRK:
 | `jump` | /DRG: Jump / High Jump |
 | `waltz`, `aoewaltz` | /DNC: Curing Waltz on `<stpc>`, Divine Waltz |
 | `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
+| `smartbuff` | /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning |
+| `!numpad-` | Jump Auto on / off, shown on /DRG only (see [commands](../../guides/commands.md#combat-helpers)) |
 | `watchdog ...`, `debugmidcast` | Midcast watchdog, midcast debug (shows which Dark Magic set each spell used) |
 | `stealth sneak` / `invi` / `both` ... | Sneak / Invisible on you and your alts |
 | `alts ...`, `main`, `altcmds`, `alt <name>` | Dual-box group |

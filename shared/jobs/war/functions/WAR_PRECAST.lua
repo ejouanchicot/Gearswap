@@ -4,7 +4,6 @@
 ---   Handles all precast actions for Warrior job:
 ---   • Weaponskills preparation & TP gear optimization
 ---   • Cooldown check for abilities and spells
----   • Auto-Jump before a weaponskill on /DRG (AutoJump)
 ---   • Security layers (debuff guard, range checks, validation)
 ---   Job ability and Fast Cast sets are left to Mote-Include.
 ---
@@ -15,7 +14,7 @@
 ---   @author  ejouanchicot
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-09-29 | Updated: 2025-11-15
----   @requires PrecastGuard, CooldownChecker, WSPrecastHandler, AutoJump
+---   @requires PrecastGuard, CooldownChecker, WSPrecastHandler
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -25,7 +24,6 @@
 local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
-local AutoJump = nil
 
 -- WAR TP configuration (_G.WARTPConfig, set by the entry file)
 local WARTPConfig = nil
@@ -52,10 +50,6 @@ local function ensure_modules_loaded()
     if not wph_ok then wph = nil end
     WSPrecastHandler = wph
 
-    local aj_ok, aj = pcall(require, 'shared/utils/drg/auto_jump')
-    if not aj_ok then aj = nil end
-    AutoJump = aj
-
     -- Load job TP config
     WARTPConfig = _G.WARTPConfig or {}
 
@@ -70,10 +64,8 @@ end
 ---   Processing order:
 ---   1. PrecastGuard     >> Block if Amnesia/Silence/Stun/etc.
 ---   2. CooldownChecker  >> Block if ability/spell on cooldown
----   3. WSPrecastHandler.validate >> Range/validity only (a WS out of range
----                                   must not spend a Jump)
----   4. AutoJump (/DRG)  >> Cancel the WS, Jump for TP, replay it
----   5. WSPrecastHandler >> Range/validity, TP check, TP bonus calculation
+---   3. WSPrecastHandler >> Range/validity, auto-Jump on /DRG, TP check,
+---                          TP bonus calculation
 ---
 ---   @param spell     table  Spell/ability data from GearSwap
 ---   @param action    string Action type (not used)
@@ -104,23 +96,6 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     if eventArgs.cancel then
         return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- AUTO-JUMP (WAR/DRG) - build TP before the WS when short
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Between the range check and the TP check: Jump is there to build the
-    -- TP the WS lacks, so the 1000 TP check must not reject it first, but a WS
-    -- out of range must not spend a Jump either.
-    if spell.type == 'WeaponSkill' and WSPrecastHandler
-       and not WSPrecastHandler.validate(spell, eventArgs) then
-        return
-    end
-    if spell.type == 'WeaponSkill' and AutoJump then
-        AutoJump.auto_trigger_jump(spell, eventArgs)
-        if eventArgs.cancel then
-            return
-        end
     end
 
     -- ══════════════════════════════════════════════════════════════════════════

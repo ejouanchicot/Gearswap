@@ -1,11 +1,18 @@
 ---============================================================================
 --- Auto Jump - Trigger Jump before a Weapon Skill when TP is short
 ---============================================================================
---- Shared by every job that can sub /DRG. When a WS is attempted below the TP
+--- Every job on /DRG. When a WS is attempted below the TP
 --- threshold, the WS is cancelled, Jump (then High Jump if still short) is
 --- fired to build TP, and the original WS is replayed automatically.
 ---
---- Gated by state.JumpAuto ('On' / 'Off') on the calling job.
+--- Called by WSPrecastHandler.handle, after the range check and before the
+--- TP check, so no job wires it by hand.
+---
+--- Gated by state.JumpAuto: fires only when it is 'On'. Every job gets the
+--- state (attach, called by KeybindManager.create): Off by default, its row in
+--- the HUD and its key shown only on /DRG. A job whose STATES file defines
+--- JumpAuto keeps its own default; a job whose KEYBINDS file has a JumpAuto
+--- row keeps its own key.
 ---
 --- Features:
 ---   • Chaining: Jump >> High Jump when TP is still under the threshold
@@ -25,6 +32,10 @@
 ---============================================================================
 
 local AutoJump = {}
+
+--- Key of the Jump Auto row on a job whose keybind file has none (free on
+--- every job of the project).
+local DEFAULT_KEY = '!numpad-'
 
 -- is_recast_ready resolved as a global from RECAST_CONFIG.lua
 -- (loaded by the entry point before job functions). Do not redeclare locally.
@@ -147,7 +158,7 @@ end
 --- @param spell table     Spell data from job_precast
 --- @param eventArgs table Event args (.cancel is set when the sequence starts)
 function AutoJump.auto_trigger_jump(spell, eventArgs)
-    if state and state.JumpAuto and state.JumpAuto.value == 'Off' then
+    if not (state and state.JumpAuto and state.JumpAuto.value == 'On') then
         return
     end
 
@@ -174,6 +185,30 @@ function AutoJump.auto_trigger_jump(spell, eventArgs)
     coroutine.schedule(function()
         chain_second_jump(jump_ability, ws_name, ws_target)
     end, JUMP_ANIMATION_DELAY)
+end
+
+---============================================================================
+--- STATE AND KEY
+---============================================================================
+
+--- Give the job its Jump Auto state and row. Creates state.JumpAuto (Off)
+--- when the job's STATES file has none, adds a row with DEFAULT_KEY when the
+--- job's KEYBINDS file has none, and shows the row only on /DRG.
+--- @param job string Job code (unused, same signature as the other attach)
+--- @param binds table The job's bind list
+function AutoJump.attach(job, binds)
+    if state and not rawget(state, 'JumpAuto') then
+        state.JumpAuto = M {['description'] = 'Jump Auto', 'Off', 'On'}
+    end
+    local entry = nil
+    for _, bind in ipairs(binds) do
+        if type(bind) == 'table' and bind.state == 'JumpAuto' then entry = bind break end
+    end
+    if not entry then
+        entry = {key = DEFAULT_KEY, command = 'cyclestate JumpAuto', desc = 'Jump Auto', state = 'JumpAuto'}
+        binds[#binds + 1] = entry
+    end
+    entry.subjob = entry.subjob or 'DRG'
 end
 
 ---============================================================================

@@ -5,7 +5,7 @@
 ---   • Mote refine_waltz override (waltzes are never re-tiered or blocked)
 ---   • Samba TP cost check (cancels a Samba the player cannot pay for)
 ---   • Climactic Flourish timestamp (read by ws_variant_selector)
----   • Auto-Jump before WS on /DRG (shared/utils/drg/auto_jump.lua)
+---   • Auto-Jump before WS on /DRG (auto_jump.lua, run by WSPrecastHandler)
 ---   • Auto-Climactic Flourish before configured WS (logic/climactic_manager)
 ---   • WS variant from dance/Climactic buffs, then TP bonus gear (post-precast)
 ---
@@ -13,9 +13,9 @@
 ---   1. Debuff guard (PrecastGuard)
 ---   2. Cooldown check (CooldownChecker; Utsusemi excluded)
 ---   3. Samba TP cost, Climactic timestamp
----   4. WS only: WSPrecastHandler.validate (range), Auto-Jump (builds TP, so
----      before the TP check), WSPrecastHandler.handle (TP), Auto-Climactic
----      (needs 1000 TP). Jump and Climactic may cancel and replay the WS.
+---   4. WS only: WSPrecastHandler.handle (range, Auto-Jump on /DRG, TP),
+---      Auto-Climactic (needs 1000 TP). Jump and Climactic may cancel and
+---      replay the WS.
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_PRECAST.lua
 ---   @author  ejouanchicot
@@ -33,7 +33,6 @@ local PrecastGuard = nil
 local WSPrecastHandler = nil
 local ClimaticManager = nil
 local WSVariantSelector = nil
-local JumpManager = nil
 local DNCTPConfig = nil
 
 local modules_loaded = false
@@ -64,9 +63,6 @@ local function ensure_modules_loaded()
     local wsv_ok, wsv = pcall(require, 'shared/jobs/dnc/functions/logic/ws_variant_selector')
     if not wsv_ok then wsv = nil end
     WSVariantSelector = wsv
-    local jm_ok, jm = pcall(require, 'shared/utils/drg/auto_jump')
-    if not jm_ok then jm = nil end
-    JumpManager = jm
 
     DNCTPConfig = _G.DNCTPConfig or {}
 
@@ -110,26 +106,13 @@ local function job_precast_samba(spell, eventArgs)
     end
 end
 
---- Weaponskill: range check, Jump (/DRG), full check (TP), Climactic.
---- Jump sits between the range check and the TP check (it builds the TP the
---- WS lacks); Climactic needs 1000 TP anyway and runs once the WS is
---- accepted. A WS out of range spends neither. Either ability may cancel the
---- WS and replay it once it has landed; a WS taken over that way is not
---- TP-checked now (the check would print a false "Not enough TP").
+--- Weaponskill: WSPrecastHandler (range, auto-Jump on /DRG, TP), then
+--- Climactic, which needs 1000 TP anyway and runs once the WS is accepted.
+--- A WS out of range spends neither. Either ability may cancel the WS and
+--- replay it once it has landed.
 --- @param spell table Spell information from GearSwap
 --- @param eventArgs table Event args (eventArgs.cancel for cancellation)
 local function job_precast_weaponskill(spell, eventArgs)
-    if WSPrecastHandler and not WSPrecastHandler.validate(spell, eventArgs) then
-        return
-    end
-
-    if JumpManager then
-        JumpManager.auto_trigger_jump(spell, eventArgs)
-        if eventArgs.cancel then
-            return
-        end
-    end
-
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, DNCTPConfig) then
         return
     end

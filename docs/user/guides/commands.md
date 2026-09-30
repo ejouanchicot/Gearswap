@@ -97,6 +97,8 @@ main bags and 3-6 and 8 the overflow (wardrobe 7 is never touched).
 | `lightarts` / `darkarts` | Light / Dark Arts, then the Addendum on the next press. SCH main or sub (without it, your dual-box alt's command of that name if it is on SCH) |
 | `aoe sneak` / `aoe invi` / `aoe erase` | The spell on the party through Light Arts and Accession (and Addendum: White for Erase) as charges allow. SCH main or sub |
 | `jump` | /DRG jumps |
+| `smartbuff` | The self-buffs of your subjob, every job: /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning. DNC main has its own (dance and samba first, see the DNC page) |
+| (state) | Jump Auto (`JumpAuto`, **Off**, On), key `!numpad-` (Alt+Numpad-) unless your job's keybind file gives one; its HUD row and key show on /DRG only. On: a weaponskill pressed under 1000 TP is held back, Jump (then High Jump if TP is still short) goes out, then the weaponskill is sent again. Every job |
 | `watchdog` | Midcast watchdog status; `on`, `off`, `buffer <s>`, `fallback <s>`, `clear`, `stats`... see [watchdog](../features/watchdog.md) |
 | `debugmidcast` | Print which midcast set each spell uses (again to stop) |
 

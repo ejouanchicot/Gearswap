@@ -117,6 +117,8 @@ One line each; details in the [commands guide](../../guides/commands.md).
 | `mount` | Random mount, or dismount |
 | `waltz` / `aoewaltz` | /DNC only: Curing Waltz / Divine Waltz |
 | `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
+| `smartbuff` | /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning |
+| `!numpad-` | Jump Auto on / off, shown on /DRG only (see [commands](../../guides/commands.md#combat-helpers)) |
 | `jump` | /DRG only: jumps |
 | `stealth sneak/invi/both [self]`, `stealth check/status/...` | Sneak / Invisible on you and every alt |
 | `alts on/off/toggle/follow/mirror/do/window` | Orders to your alts |

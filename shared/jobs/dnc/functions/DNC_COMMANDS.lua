@@ -95,6 +95,14 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Smartbuff: DNC's own (dance, samba, then the subjob buffs). Ahead of the
+    -- common commands, whose smartbuff casts the subjob buffs only
+    if command == 'smartbuff' or command == 'buffself' then
+        SmartbuffManager.apply()
+        eventArgs.handled = true
+        return
+    end
+
     -- Common commands (reload, checksets, etc.)
     if CommonCommands.is_common_command(command) then
         -- Pass all arguments after command
@@ -143,11 +151,6 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DNC-specific commands
-    if command == 'smartbuff' or command == 'buffself' then
-        SmartbuffManager.apply()
-        eventArgs.handled = true
-        return
-    end
 
     -- Step command with Presto integration
     if command == 'step' then

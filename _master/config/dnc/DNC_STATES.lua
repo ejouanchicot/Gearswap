@@ -135,7 +135,7 @@ function DNCStates.configure()
         'On',   -- Auto-trigger Jump before WS if TP < 1000 (DRG subjob only)
         'Off'   -- Manual Jump only
     }
-    state.JumpAuto:set('On')  -- Default: Auto-trigger enabled
+    state.JumpAuto:set('Off')  -- Default: off, the player turns it on (key shown on /DRG only)
 
     -- ==========================================================================
     -- TP BONUS MODE (MOONSHADE EARRING LOGIC)

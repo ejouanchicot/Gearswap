@@ -85,7 +85,7 @@ TIMER('DNC_MOVEMENT')
 ---   • step_manager.lua         - Step + Presto management
 ---   • ws_variant_selector.lua  - WS variant from dance/Climactic buffs
 ---
----   Auto-Jump before WS on /DRG lives in shared/utils/drg/auto_jump.lua.
+---   Auto-Jump before WS on /DRG: shared/utils/drg/auto_jump.lua, run by WSPrecastHandler for every job.
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════

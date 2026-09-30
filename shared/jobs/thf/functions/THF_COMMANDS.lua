@@ -6,14 +6,14 @@
 ---   Features:
 ---   • Common commands (reload, checksets, etc. via COMMON_COMMANDS)
 ---   • UI commands (ui toggle, visibility via UI_COMMANDS)
----   • THF-specific commands (smartbuff, fbc, steal, range)
+---   • THF-specific commands (fbc, steal, range)
 ---   • Ranged weapon lock with auto-attack (one-way: equip >> lock >> /ra)
 ---   • State change: UI refresh, range/ammo lock when RangeLock changes
 ---
 ---   Commands:
 ---   • //gs c reload         - Reload THF configuration
 ---   • //gs c checksets      - Validate equipment sets
----   • //gs c smartbuff      - Apply subjob-specific buffs
+---   • //gs c smartbuff      - Subjob buffs (common command, subjob_buffs.lua)
 ---   • //gs c fbc            - Feint / Bully / Conspirator opener
 ---   • //gs c steal          - Steal / Mug / Despoil on <t>
 ---   • //gs c range          - Equip + lock ranged + attack <stnpc> (one-way)
@@ -154,13 +154,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- THF-specific commands
-    if command == 'smartbuff' then
-        SmartbuffManager.apply()
-        eventArgs.handled = true
-        return
-    end
-
+    -- THF-specific commands (smartbuff is a common command)
     if command == 'fbc' then
         SmartbuffManager.apply_fbc()
         eventArgs.handled = true

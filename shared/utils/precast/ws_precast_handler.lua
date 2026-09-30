@@ -4,7 +4,8 @@
 --- Single weaponskill entry point for every [JOB]_PRECAST.lua:
 ---   validate()      - range/validity check only (WSValidator), no TP check:
 ---                     for an automation that builds TP before the WS (Jump)
----   handle()        - range/validity check (WSValidator), TP bonus gear
+---   handle()        - range/validity check (WSValidator), auto-Jump on
+---                     /DRG (AutoJump, state.JumpAuto), TP bonus gear
 ---                     calculation (TPBonusHandler), 1000 TP minimum check
 ---   apply_tp_gear() - equips the stored TP bonus gear in job_post_precast
 ---
@@ -24,6 +25,7 @@ local WSPrecastHandler = {}
 local MessageFormatter = nil
 local WSValidator = nil
 local TPBonusHandler = nil
+local AutoJump = nil
 
 local modules_loaded = false
 
@@ -41,6 +43,9 @@ local function ensure_modules_loaded()
     local tph_ok, tph = pcall(require, 'shared/utils/precast/tp_bonus_handler')
     if not tph_ok then tph = nil end
     TPBonusHandler = tph
+
+    local aj_ok, aj = pcall(require, 'shared/utils/drg/auto_jump')
+    AutoJump = aj_ok and aj or nil
 
     modules_loaded = true
 end
@@ -71,6 +76,14 @@ function WSPrecastHandler.handle(spell, eventArgs, tp_config)
 
     if WSValidator and not WSValidator.validate(spell, eventArgs) then
         return false
+    end
+
+    -- After the range check (a WS out of range must not spend a Jump), before
+    -- the TP check (Jump builds the TP the WS lacks). A WS taken over this way
+    -- is replayed once the jumps land, and is not TP-checked now.
+    if AutoJump then
+        AutoJump.auto_trigger_jump(spell, eventArgs)
+        if eventArgs.cancel then return false end
     end
 
     if TPBonusHandler and tp_config then

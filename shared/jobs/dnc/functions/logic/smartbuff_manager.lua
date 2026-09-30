@@ -7,10 +7,8 @@
 ---   Features:
 ---   • Selected dance always first (state.Dance: Saber Dance / Fan Dance)
 ---   • Selected samba (state.Samba) when TP covers its cost
----   • WAR subjob buffs (Berserk, Aggressor, Warcry - priority order)
----   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
----   • SAM subjob buffs (Hasso)
----   • Any other subjob (DRG, THF, etc.) - dance only
+---   • Then the subjob buffs of every job's smartbuff
+---     (shared/utils/smartbuff/subjob_buffs.lua: /WAR, /SAM, /NIN)
 ---   • Recast checking (is_recast_ready from RECAST_CONFIG)
 ---   • Sequential casting (CAST_SPACING seconds apart)
 ---   • Status display (active/cooldown with time remaining)
@@ -27,7 +25,7 @@ local SmartbuffManager = {}
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local MessageBuffs     = require('shared/utils/messages/formatters/magic/message_buffs')
-local SubjobWarBuffs   = require('shared/utils/smartbuff/subjob_war_buffs')
+local SubjobBuffs      = require('shared/utils/smartbuff/subjob_buffs')
 
 -- is_recast_ready resolved as a global from RECAST_CONFIG.lua
 -- (loaded by entry point before job functions). Do not redeclare locally.
@@ -175,66 +173,6 @@ function SmartbuffManager.collect_samba()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   SUBJOB BUFF COLLECTORS
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Collect NIN subjob buffs (Utsusemi Ni first, Ichi fallback)
----   @return table abilities_to_cast, table status_data
-function SmartbuffManager.collect_nin_buffs()
-    local abilities_to_cast, status_data = {}, {}
-    local spell_recasts = windower.ffxi.get_spell_recasts()
-    local ni_recast = (spell_recasts[339] or 0) / 100  -- Convert centiseconds to seconds
-    local ichi_recast = (spell_recasts[338] or 0) / 100
-
-    if is_recast_ready(ni_recast) then
-        table.insert(abilities_to_cast, { name = 'Utsusemi: Ni', magic = true })
-    elseif is_recast_ready(ichi_recast) then
-        table.insert(abilities_to_cast, { name = 'Utsusemi: Ichi', magic = true })
-    else
-        table.insert(status_data, { name = 'Utsusemi: Ni', status = 'cooldown', time = math.ceil(ni_recast) })
-        table.insert(status_data, { name = 'Utsusemi: Ichi', status = 'cooldown', time = math.ceil(ichi_recast) })
-    end
-
-    return abilities_to_cast, status_data
-end
-
----   Collect SAM subjob buffs (Hasso)
----   @return table abilities_to_cast, table status_data
-function SmartbuffManager.collect_sam_buffs()
-    local abilities_to_cast, status_data = {}, {}
-    local hasso_recast = windower.ffxi.get_ability_recasts()[138] or 0
-
-    if buffactive['Hasso'] then
-        table.insert(status_data, { name = 'Hasso', status = 'active' })
-    elseif is_recast_ready(hasso_recast) then
-        table.insert(abilities_to_cast, { name = 'Hasso' })
-    else
-        table.insert(status_data, { name = 'Hasso', status = 'cooldown', time = math.ceil(hasso_recast) })
-    end
-
-    return abilities_to_cast, status_data
-end
-
----   Collect buffs for the current subjob (empty when the subjob has none)
----   Subjobs are capped at level 49, so only low-level JAs are reachable.
----   /THF is deliberately absent: at 49 it only gets Steal/Mug/SA/TA/Flee/Hide,
----   none of which is a self-buff (Conspirator, Feint and Bully are main-only).
----   @param subjob string Current subjob code
----   @return table abilities_to_cast, table status_data
-function SmartbuffManager.collect_subjob_buffs(subjob)
-    if subjob == 'WAR' then
-        return SubjobWarBuffs.collect()
-    elseif subjob == 'NIN' then
-        return SmartbuffManager.collect_nin_buffs()
-    elseif subjob == 'SAM' then
-        return SmartbuffManager.collect_sam_buffs()
-    end
-
-    -- Any other subjob (DRG, THF, etc.): dance only
-    return {}, {}
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   MAIN ENTRY POINT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -254,7 +192,7 @@ function SmartbuffManager.apply()
     append_all(abilities_to_cast, samba_abilities)
     append_all(status_data, samba_status)
 
-    local sub_abilities, sub_status = SmartbuffManager.collect_subjob_buffs(subjob)
+    local sub_abilities, sub_status = SubjobBuffs.collect(subjob)
     append_all(abilities_to_cast, sub_abilities)
     append_all(status_data, sub_status)
 

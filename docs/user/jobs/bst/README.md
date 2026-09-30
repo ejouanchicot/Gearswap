@@ -111,6 +111,8 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 | `stealth sneak / invi / both` | Sneak and Invisible on every box |
 | `waltz` / `aoewaltz` | Curing / Divine Waltz, with /DNC only |
 | `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
+| `smartbuff` | /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning |
+| `!numpad-` | Jump Auto on / off, shown on /DRG only (see [commands](../../guides/commands.md#combat-helpers)) |
 | `jump` | /DRG jumps |
 | `dw [auto / none / haste / haste2 / max]` | Dual Wield tier (with /NIN or /DNC; needs `sets.DW` in your sets) |
 | `belt` | Obi / Orpheus status (used on Primal Rend and Cloudsplitter) |
