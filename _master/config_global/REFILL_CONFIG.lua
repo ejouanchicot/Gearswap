@@ -64,8 +64,8 @@ RefillConfig.default_list = {
 -- }
 
 -- The ammo's quiver / pouch is opened after a ranged attack when the ammo
--- left (inventory + wardrobes) is at or under this, per job. Defaults below;
+-- left (inventory + wardrobes) is at or under this, per job (the defaults);
 -- false: that job never opens one.
--- RefillConfig.quiver_open_at = {COR = 15, THF = 5, RNG = 15}
+RefillConfig.quiver_open_at = {COR = 15, THF = 5, RNG = 15}
 
 return RefillConfig

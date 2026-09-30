@@ -35,11 +35,11 @@ return {
     blu_unbridled = false,
     blu_expiacion_window = false,
 
-    -- sam_third_eye_ws = true,
-    -- pld_divine_emblem = true,
-    -- pld_majesty = true,
-    -- blm_dark_arts = true,
-    -- blm_klimaform = true,
-    -- dnc_presto = true,
-    -- war_retaliation_cancel = true,
+    sam_third_eye_ws = true,
+    pld_divine_emblem = true,
+    pld_majesty = true,
+    blm_dark_arts = true,
+    blm_klimaform = true,
+    dnc_presto = true,
+    war_retaliation_cancel = true,
 }
