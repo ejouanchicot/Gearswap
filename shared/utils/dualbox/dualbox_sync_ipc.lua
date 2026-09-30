@@ -121,6 +121,12 @@ local function from_group(sender)
     return false
 end
 
+--- One line in //gs c trace (tag SYNC): what arrived and what became of it.
+local function trace(fmt, ...)
+    local args = {...}
+    pcall(function() require('shared/utils/debug/trace_log').log('SYNC', fmt, unpack(args)) end)
+end
+
 -- Debounce state (per-instance, ephemeral).
 local last_msg, last_msg_time = '', 0
 
@@ -135,7 +141,10 @@ function DualBoxSyncIPC._on_ipc_message(msg)
     -- Before the debounce: a message refused here must not hold back the
     -- same order from a member of the group
     local cmd, sender = msg:sub(#IPC_PREFIX + 1):match('^(%S+)%s*(%S*)$')
-    if not cmd or not from_group(sender) then return end
+    if not cmd or not from_group(sender) then
+        trace('%s refused: %s is not in the box group', tostring(cmd), tostring(sender))
+        return
+    end
     cmd = cmd:lower()
 
     -- Drop duplicate messages within the debounce window.
@@ -144,12 +153,17 @@ function DualBoxSyncIPC._on_ipc_message(msg)
     last_msg, last_msg_time = msg, now
 
     local hook = _G.DUALBOX_SYNC_HOOKS[cmd]
-    if not hook then return end
+    if not hook then
+        trace('%s from %s: no hook here', cmd, sender)
+        return
+    end
+    trace('%s from %s: run', cmd, sender)
 
     -- Run hook in pcall so a buggy hook doesn't kill the IPC listener
     -- (the event handler would be lost until next reload).
     -- Note: nothing sets _G.DUALBOX_SYNC_DEBUG today, so errors stay silent.
     local ok, err = pcall(hook)
+    if not ok then trace('%s from %s: error %s', cmd, sender, tostring(err)) end
     if not ok and _G.DUALBOX_SYNC_DEBUG then
         local MessageFormatter = require('shared/utils/messages/message_formatter')
         MessageFormatter.show_error('[SyncIPC] hook "' .. cmd .. '" error: ' .. tostring(err))

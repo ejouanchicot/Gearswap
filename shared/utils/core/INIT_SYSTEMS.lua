@@ -202,12 +202,16 @@ end
 -- GearSwap globals for the current job.
 local sync_ok, SyncIPC = pcall(require, 'shared/utils/dualbox/dualbox_sync_ipc')
 if sync_ok and SyncIPC then
-    SyncIPC.register_hook('ls', function()
-        if select_default_lockstyle then select_default_lockstyle() end
-    end)
-    SyncIPC.register_hook('lockstyle', function()
-        if select_default_lockstyle then select_default_lockstyle() end
-    end)
+    -- The same "reapplying" line as the box that pressed the key, so this
+    -- window shows the order arrived (the style itself may not change)
+    local lockstyle_hook = function()
+        if not select_default_lockstyle then return end
+        local ok, MessageCommands = pcall(require, 'shared/utils/messages/formatters/ui/message_commands')
+        if ok and MessageCommands then MessageCommands.show_lockstyle_reapplying() end
+        select_default_lockstyle()
+    end
+    SyncIPC.register_hook('ls', lockstyle_hook)
+    SyncIPC.register_hook('lockstyle', lockstyle_hook)
     -- Refill: each instance pulls its own consumables from Case/Sack.
     local refill_hook = function()
         local ok, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
