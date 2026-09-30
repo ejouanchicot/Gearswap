@@ -25,6 +25,7 @@ COMMON = {
     'UI_COLOR_CONFIG.lua': 'HUD and chat colours of this character',
     'REGION_CONFIG.lua': 'Your game region (which chat colours exist)',
     'LOCKSTYLE_CONFIG.lua': 'Delays before the lockstyle is applied after a load or a job change',
+    'ADDONS_CONFIG.lua': 'Windower addons a job loads / unloads for you (rolltracker, bst-hud, pettp, AzureSets)',
     'COMMON_KEYBINDS.lua': 'Keys every job gets (Auto Medicine, alts follow / mirror, Sneak / Invisible, your own)',
     'combat_mode.lua': 'Combat Mode: which jobs show it and its key (written by //gs c combatmode)',
     'treasure_mode.lua': 'Treasure Mode: which jobs show it and its key (written by //gs c th)',

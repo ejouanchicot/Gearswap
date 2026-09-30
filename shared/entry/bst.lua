@@ -209,7 +209,10 @@ function user_setup()
         if _G.bst_hud_load_id ~= my_hud_id then return end
         -- Guard 2: Only load if still on BST (handles main job change)
         if player and player.main_job ~= 'BST' then return end
-        -- Guard 3: Always unload first, then load after delay
+        -- Guard 3: bst-hud = false in _common/display/ADDONS_CONFIG.lua
+        local JobAddons = require('shared/utils/core/job_addons')
+        if not JobAddons.allowed('bst-hud') then return end
+        -- Guard 4: Always unload first, then load after delay
         windower.send_command('lua unload bst-hud')
         coroutine.schedule(function()
             if _G.bst_hud_load_id ~= my_hud_id then return end
@@ -382,8 +385,8 @@ function file_unload()
     -- Invalidate any pending BST-HUD load coroutines (prevents double-load)
     _G.bst_hud_load_id = (_G.bst_hud_load_id or 0) + 1
 
-    -- Unload BST HUD addon
-    windower.send_command('lua unload bst-hud')
+    -- Unload BST HUD addon (unless ADDONS_CONFIG.lua leaves it alone)
+    require('shared/utils/core/job_addons').run('unload', 'bst-hud')
 
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')

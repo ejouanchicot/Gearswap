@@ -46,7 +46,7 @@ COMMON_SETTINGS = {'combat_mode.lua', 'treasure_mode.lua'}
 # shared/utils/core/char_paths.lua)
 COMMON_GROUPS = {
     'UI_CONFIG.lua': 'display', 'UI_COLOR_CONFIG.lua': 'display',
-    'REGION_CONFIG.lua': 'display', 'LOCKSTYLE_CONFIG.lua': 'display',
+    'REGION_CONFIG.lua': 'display', 'LOCKSTYLE_CONFIG.lua': 'display', 'ADDONS_CONFIG.lua': 'display',
     'COMMON_KEYBINDS.lua': 'keys', 'combat_mode.lua': 'keys', 'treasure_mode.lua': 'keys',
     'DUALBOX_CONFIG.lua': 'dualbox',
     'REFILL_CONFIG.lua': 'inventory', 'CRAFT_CONFIG.lua': 'inventory',

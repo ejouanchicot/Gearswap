@@ -169,7 +169,8 @@ function user_setup()
     -- ==========================================================================
     -- ADDON LOADING - PetTP for Luopan management (Always executed after reload)
     -- ==========================================================================
-    send_command('lua load pettp')
+    -- (pettp = false in _common/display/ADDONS_CONFIG.lua: left alone)
+    require('shared/utils/core/job_addons').run('load', 'pettp')
     -- Silent load - PetTP addon handles its own messaging
 
     -- ==========================================================================
@@ -268,7 +269,7 @@ function file_unload()
     end
 
     -- Unload PetTP addon (external addon, must be unloaded manually)
-    send_command('lua unload pettp')
+    require('shared/utils/core/job_addons').run('unload', 'pettp')
     -- Silent unload - addon handles its own messaging
 
     -- Unbind all keybinds (Windower binds persist across gs reload)

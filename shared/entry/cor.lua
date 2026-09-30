@@ -192,7 +192,8 @@ function get_sets()
 
     -- Unload external rolltracker addon (prevents conflict with integrated roll tracker)
     -- Will be reloaded automatically in file_unload() when changing away from COR
-    send_command('lua unload rolltracker')
+    -- (both skipped with rolltracker = false in _common/display/ADDONS_CONFIG.lua)
+    require('shared/utils/core/job_addons').run('unload', 'rolltracker')
 
     -- Load job-specific functions (AutoMove loaded via INIT_SYSTEMS)
     include('../shared/jobs/cor/functions/cor_functions.lua')
@@ -380,7 +381,7 @@ function file_unload()
     -- Reload external rolltracker addon when changing away from COR
     -- (COR unloads it on load to prevent conflicts with integrated tracker)
     -- If the user doesn't have rolltracker, this will fail silently
-    send_command('lua load rolltracker')
+    require('shared/utils/core/job_addons').run('load', 'rolltracker')
 
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
