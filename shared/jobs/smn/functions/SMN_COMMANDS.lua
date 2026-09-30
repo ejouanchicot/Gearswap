@@ -122,7 +122,8 @@ local JA_SHORTCUTS = {
 local SKILLUP_STATE = {
     active  = false,
     counter = 0,    -- incremented every stop to invalidate scheduled coroutines
-    -- Tunable timing knobs:
+    -- Tunable (set at each start from TUNING.lua smn_skillup):
+    avatar = 'Siren',
     cast_to_release_delay  = 5.0,  -- summon cast time + buffer
     release_to_next_delay  = 1.5,  -- recast is near-instant after Release, just buffer the queue
 }
@@ -142,7 +143,7 @@ end
 local function skillup_iteration(my_counter)
     if not skillup_valid(my_counter) then return end
 
-    send_command('input /ma "Siren" <me>')
+    send_command('input /ma "' .. SKILLUP_STATE.avatar .. '" <me>')
 
     -- Release after the summon has resolved, then chain into the next cycle
     coroutine.schedule(function()
@@ -163,10 +164,14 @@ local function start_skillup()
     SKILLUP_STATE.active = true
     SKILLUP_STATE.counter = SKILLUP_STATE.counter + 1
     local my_counter = SKILLUP_STATE.counter
+    -- _common/combat/TUNING.lua smn_skillup
+    local tuning = require('shared/utils/core/tuning').get('smn_skillup', {avatar = 'Siren', release_after = 5.0})
+    SKILLUP_STATE.avatar = type(tuning.avatar) == 'string' and tuning.avatar or 'Siren'
+    SKILLUP_STATE.cast_to_release_delay = tonumber(tuning.release_after) or 5.0
 
     local cycle = SKILLUP_STATE.cast_to_release_delay + SKILLUP_STATE.release_to_next_delay
     MessageFormatter.show_success(
-        '[SMN] Skillup loop started (Siren -> Release every ~'
+        '[SMN] Skillup loop started (' .. SKILLUP_STATE.avatar .. ' -> Release every ~'
         .. string.format('%.1f', cycle) .. 's, '
         .. tostring(SKILLUP_STATE.release_to_next_delay) .. 's after release). '
         .. '//gs c skillup stop to halt.'

@@ -62,10 +62,12 @@ function SetBuilder.build_idle_set(base_set)
     end
 
     -- Then HP: Weak (HP < 50%), else Regen (HP < 80%), on top
+    -- (_common/combat/TUNING.lua sam_idle_hp)
     if player then
-        if player.hpp < 50 and sets.idle and sets.idle.Weak then
+        local hp = require('shared/utils/core/tuning').get('sam_idle_hp', {weak_below = 50, regen_below = 80})
+        if player.hpp < hp.weak_below and sets.idle and sets.idle.Weak then
             result = set_combine(result, sets.idle.Weak)
-        elseif player.hpp < 80 and sets.idle and sets.idle.Regen then
+        elseif player.hpp < hp.regen_below and sets.idle and sets.idle.Regen then
             result = set_combine(result, sets.idle.Regen)
         end
     end

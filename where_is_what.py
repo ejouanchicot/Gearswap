@@ -41,6 +41,7 @@ COMMON = {
     'WEAPON_CONFIG.lua': 'How the weapon states equip a weapon that has no set',
     'STEALTH_CONFIG.lua': 'Sneak / Invisible on you and your alts (//gs c stealth)',
     'AUTOCURE_CONFIG.lua': 'Auto Medicine: debuffs cured, the items used, On or Off at start',
+    'TUNING.lua': 'Thresholds and names some jobs use (SAM idle HP, refresh MP, waltz tiers, SMN skill-up, GEO escort, BRD debuff songs)',
     'SORTIE_CONFIG.lua': '//gs c sortie: the alt, its Silmaril profiles, your stances per target',
     'HP_PRIORITY.lua': 'Order the pieces go on in, so max HP never dips (Unity rank, MP jobs)',
     'rings.lua': 'Rings you own twice, each pinned to its wardrobe; the job sets use them',

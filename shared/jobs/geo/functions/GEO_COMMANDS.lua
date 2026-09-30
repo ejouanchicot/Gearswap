@@ -216,7 +216,7 @@ function job_self_command(cmdParams, eventArgs)
     -- cast. Without a luopan the Indi- goes out at once, since waiting after
     -- a Full Circle that has nothing to dismiss only delays it.
     if command == 'escort' then
-        local indi = cmdParams[2] or 'Indi-Regen'
+        local indi = cmdParams[2] or require('shared/utils/core/tuning').get('geo_escort_indi', 'Indi-Regen')
         local leader = cmdParams[3]
         local cast = 'input /ma "' .. indi .. '" <me>'
         local cast_start = 0

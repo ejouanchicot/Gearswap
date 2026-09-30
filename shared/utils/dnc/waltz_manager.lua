@@ -88,13 +88,25 @@ end
 -- Each curing tier owns a band of missing HP. The bands are contiguous and the
 -- top one is open-ended; the bottom one has no floor, so a target that somehow
 -- reads as negative still lands on Tier I rather than on nothing.
-local CURING_HP_BRACKET = {
-    ["Curing Waltz"]     = { max = 200 },
-    ["Curing Waltz II"]  = { min = 200,  max = 600 },
-    ["Curing Waltz III"] = { min = 600,  max = 1100 },
-    ["Curing Waltz IV"]  = { min = 1100, max = 1500 },
-    ["Curing Waltz V"]   = { min = 1500 },
+-- Where each tier starts: _common/combat/TUNING.lua waltz_from.
+local CURING_TIERS = {"Curing Waltz", "Curing Waltz II", "Curing Waltz III",
+                      "Curing Waltz IV", "Curing Waltz V"}
+local DEFAULT_WALTZ_FROM = {
+    ["Curing Waltz II"] = 200, ["Curing Waltz III"] = 600,
+    ["Curing Waltz IV"] = 1100, ["Curing Waltz V"] = 1500,
 }
+
+--- The band of each tier, from where each one starts.
+--- @return table name -> {min, max}
+local function curing_hp_brackets()
+    local from = require('shared/utils/core/tuning').get('waltz_from', DEFAULT_WALTZ_FROM)
+    local brackets = {}
+    for i, name in ipairs(CURING_TIERS) do
+        local next_name = CURING_TIERS[i + 1]
+        brackets[name] = {min = i > 1 and from[name] or nil, max = next_name and from[next_name] or nil}
+    end
+    return brackets
+end
 
 --- Missing HP of whoever the waltz will land on, when that can be known.
 --- The <stpc> prompt only fires AFTER /ja is sent, so there is no 'st' target
@@ -127,12 +139,13 @@ end
 --- @param missing_hp number|nil
 --- @return table|nil Entry from WALTZ_CONFIG.curing
 local function preferred_curing_waltz(effective_level, missing_hp)
+    local brackets = curing_hp_brackets()
     for _, waltz in ipairs(WALTZ_CONFIG.curing) do
         if effective_level >= waltz.level then
             if not missing_hp then
                 return waltz
             end
-            local bracket = CURING_HP_BRACKET[waltz.name]
+            local bracket = brackets[waltz.name]
             if bracket
                 and (not bracket.min or missing_hp >= bracket.min)
                 and (not bracket.max or missing_hp < bracket.max) then

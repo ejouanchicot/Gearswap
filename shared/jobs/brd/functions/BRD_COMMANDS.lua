@@ -349,29 +349,33 @@ function job_self_command(cmdParams, eventArgs)
     --- DEBUFF SONGS
     ---══════════════════════════════════════════════════════════════════════════
 
+    -- The spell of each command: _common/combat/TUNING.lua brd_debuff_songs
+    local debuff_songs = require('shared/utils/core/tuning').get('brd_debuff_songs', {lullaby = 'Horde Lullaby',
+        lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'})
+
     if command == 'lullaby' then
-        send_command('input /ma "Horde Lullaby" <stnpc>')
+        send_command('input /ma "' .. debuff_songs.lullaby .. '" <stnpc>')
         MessageFormatter.show_lullaby_cast('Horde')
         eventArgs.handled = true
         return
     end
 
     if command == 'lullaby2' or command == 'foe' then
-        send_command('input /ma "Foe Lullaby II" <stnpc>')
+        send_command('input /ma "' .. debuff_songs.lullaby2 .. '" <stnpc>')
         MessageFormatter.show_lullaby_cast('Foe')
         eventArgs.handled = true
         return
     end
 
     if command == 'elegy' then
-        send_command('input /ma "Carnage Elegy" <stnpc>')
+        send_command('input /ma "' .. debuff_songs.elegy .. '" <stnpc>')
         MessageFormatter.show_elegy_cast()
         eventArgs.handled = true
         return
     end
 
     if command == 'requiem' then
-        send_command('input /ma "Foe Requiem VII" <stnpc>')
+        send_command('input /ma "' .. debuff_songs.requiem .. '" <stnpc>')
         MessageFormatter.show_requiem_cast()
         eventArgs.handled = true
         return

@@ -130,8 +130,10 @@ function SetBuilder.build_idle_set(base_set)
     end
 
     -- Step 5: Apply Refresh gear if MP low. max_mp > 0: a subjob without MP
-    -- (NIN, DNC, WAR) must not read as "MP low".
-    if player and (player.max_mp or 0) > 0 and player.mpp and player.mpp < 50 then
+    -- (NIN, DNC, WAR) must not read as "MP low". Threshold: TUNING.lua
+    -- refresh_mp_below.COR
+    local mp_below = require('shared/utils/core/tuning').get('refresh_mp_below', {COR = 50}).COR or 50
+    if player and (player.max_mp or 0) > 0 and player.mpp and player.mpp < mp_below then
         if sets.idle.Refresh then
             local success, combined = pcall(set_combine, result, sets.idle.Refresh)
             if success then
