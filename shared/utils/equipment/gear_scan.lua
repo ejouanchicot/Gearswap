@@ -15,8 +15,9 @@
 --- decide; if those still differ, the entry is marked `differ` and not used:
 --- the set has to name the augments to pick a copy anyway.
 ---
---- Path pieces (Nyame, ...) decode as 'Path: A' only, without the stats of
---- the path: those HP are not counted.
+--- Path pieces (Odyssey gear, JSE necks...) decode as 'Path: A' only, without
+--- the stats of the path: those HP are not counted. Their path and rank are
+--- kept in the file (path = 'A', rank = 25) for whoever needs them.
 ---
 --- @file    shared/utils/equipment/gear_scan.lua
 --- @author  ejouanchicot
@@ -56,6 +57,7 @@ function GearScan.load()
 end
 
 --- Augments of one bag item, or nil when it is not augmented equipment.
+--- @return table|nil augments, table|nil info (res.items), table|nil ext (decoded)
 local function item_augments(item, extdata, res)
     local info = res.items[item.id]
     if not (info and (info.category == 'Armor' or info.category == 'Weapon')) then return nil, info end
@@ -65,7 +67,12 @@ local function item_augments(item, extdata, res)
     for _, augment in ipairs(ext.augments) do
         if type(augment) == 'string' and augment ~= '' and augment ~= 'none' then list[#list + 1] = augment end
     end
-    return (#list > 0) and list or nil, info
+    return (#list > 0) and list or nil, info, ext
+end
+
+--- Text that tells two copies apart (augments, path and rank).
+local function copy_key(copy)
+    return table.concat(copy.augments, '|') .. '#' .. tostring(copy.path) .. '#' .. tostring(copy.rank)
 end
 
 --- Every augmented equipment copy, by lower-case name (short and long).
@@ -80,11 +87,12 @@ local function collect(extdata, hp_mp)
         if bag and bag.enabled ~= false then
             for _, item in ipairs(bag) do
                 if type(item) == 'table' and (item.id or 0) > 0 then
-                    local augments, info = item_augments(item, extdata, res)
+                    local augments, info, ext = item_augments(item, extdata, res)
                     if info and (info.category == 'Armor' or info.category == 'Weapon') then pieces = pieces + 1 end
                     if augments then
                         local hp, mp = hp_mp(augments)
-                        local copy = {hp = hp, mp = mp, augments = augments, equippable = bag_info.equippable == true}
+                        local copy = {hp = hp, mp = mp, augments = augments, equippable = bag_info.equippable == true,
+                            path = ext.path, rank = ext.path and tonumber(ext.rank) or nil}
                         local short, long = info.en and info.en:lower(), info.enl and info.enl:lower()
                         if short then shorts[short] = true end
                         for _, n in ipairs({short, long ~= short and long or nil}) do
@@ -106,11 +114,11 @@ local function resolve(list)
     if #pool == 0 then pool = list end
     local first = pool[1]
     for _, copy in ipairs(pool) do
-        if table.concat(copy.augments, '|') ~= table.concat(first.augments, '|') then
+        if copy_key(copy) ~= copy_key(first) then
             return {differ = true, copies = #pool}
         end
     end
-    return {hp = first.hp, mp = first.mp, augments = first.augments}
+    return {hp = first.hp, mp = first.mp, augments = first.augments, path = first.path, rank = first.rank}
 end
 
 local function quote(s) return string.format('%q', s) end
@@ -125,6 +133,7 @@ local function render(entries)
         '-- upgraded gear. Augments of your equipment, read from every bag; the HP',
         '-- priority adds the HP / MP of a piece your sets name without augments.',
         '-- differ = copies with different augments: the set names the augments.',
+        '-- path / rank: pieces upgraded by path (Odyssey gear...), their stats are not here.',
         'return {',
     }
     for _, name in ipairs(names) do
@@ -134,8 +143,9 @@ local function render(entries)
         else
             local augs = {}
             for _, a in ipairs(e.augments) do augs[#augs + 1] = quote(a) end
-            out[#out + 1] = ('    [%s] = {hp = %d, mp = %d, augments = {%s}},'):format(
-                quote(name), e.hp, e.mp, table.concat(augs, ', '))
+            local ranked = e.path and (', path = %s, rank = %d'):format(quote(e.path), e.rank or 0) or ''
+            out[#out + 1] = ('    [%s] = {hp = %d, mp = %d, augments = {%s}%s},'):format(
+                quote(name), e.hp, e.mp, table.concat(augs, ', '), ranked)
         end
     end
     out[#out + 1] = '}'
