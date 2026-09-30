@@ -48,7 +48,7 @@ Type `//gs c <command>`. `//gs c help` prints the built-in help.
 | Command | Effect |
 |---|---|
 | `checksets` | Set items you do not have in inventory or wardrobes |
-| `rf` | Restock consumables from the Mog Case / Sack (lists in `config/<job>/<JOB>_REFILL.lua`, see [configuration](../guides/configuration.md)) |
+| `rf` | Restock consumables from the Mog Case / Sack / Satchel (lists in `config/<job>/<JOB>_REFILL.lua`, see [configuration](../guides/configuration.md)) |
 | `wo` | Wardrobe organizer: the gear of the loaded job goes to wardrobes 1-2 |
 | `ls` | Lockstyle again |
 | `warp`, `ret`, `esc`, `tph`... | Go home, Retrace, Escape, teleports |

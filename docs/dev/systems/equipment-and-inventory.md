@@ -11,7 +11,7 @@ The area holds three kinds of code:
   compares the item names it finds against the eight wardrobes, and writes the unused ones to
   `data/wardrobe_audit.txt` (`wardrobe_auditor.lua`); the same file also feeds the wardrobe organizer
   with item-usage and bag-pin maps. `//gs c rf` restocks consumables in the inventory from the Mog
-  Case and Mog Sack according to a per-character, per-job Lua config, pushes surplus and "foreign"
+  Case, Mog Sack and Mog Satchel according to a per-character, per-job Lua config, pushes surplus and "foreign"
   consumables back, and prints a report (`refill_manager.lua` plus four helpers under `refill/`).
   `QuiverManager` opens an ammo quiver or pouch from THF and COR aftercast when the ammo stack runs
   low (`quiver_manager.lua`). None of these four is loaded at job load: each is `pcall(require, ...)`-ed
@@ -246,16 +246,16 @@ sequenceDiagram
      in the file) the fallback list is used with label `fallback (no <path>)`. `subjobs[<SUB>]`
      replaces `.default` entirely when present; otherwise `.default`; otherwise the fallback.
    - `store_bag` (`case` default, `sack`, `satchel`; `BAG_INFO` `:49` and `DEFAULT_STORE_BAG` `:57`)
-     only sets where surplus and foreign items go. Pulls always come from Case, then Sack
-     (`SOURCE_BAGS`, `refill_manager.lua:38`).
+     only sets where surplus and foreign items go. Pulls always come from Case, then Sack, then
+     Satchel (`SOURCE_BAGS`, `refill_manager.lua:38`; the Satchel since 2026-09-30).
 4. Planning (`plan_item`, `refill_manager.lua:153`), for each list entry:
    - `ItemResolver.resolve_variants(name)` keeps the variants whose name resolves in `res.items`
      through `en`/`enl`/`name`/`name_log` (`ItemIndex.id`, `shared/utils/equipment/item_index.lua`). If none
      resolves, the row is reported with `current = 0` and `short = target` (printed as "Out of stock").
    - Held count = sum of all variants in the inventory (`count_held`, `:60`). Target: the number, or for
-     `target = 'all'` the held count plus everything of every variant in Case and Sack
+     `target = 'all'` the held count plus everything of every variant in Case, Sack and Satchel
      (`effective_target`, `:78`).
-   - Deficit > 0: pull moves, variants in list order, Case before Sack, stack by stack
+   - Deficit > 0: pull moves, variants in list order, Case, then Sack, then Satchel, stack by stack
      (`queue_deficit`, `:119`).
    - Deficit < 0: push moves of the surplus to the store bag, variants in list order (`queue_surplus`,
      `:94`); the preferred variant is pushed first.
@@ -594,7 +594,7 @@ open until the stance is selected again. The registry is emptied on every job lo
 |---|---|---|---|
 | `//gs c checksets` | none | Walks `sets`, prints missing and storage slots and a summary | `handle_command` -> `CommonCommands.handle_checksets` -> `EquipmentChecker.check_job_equipment` |
 | `//gs c wardrobeaudit`, `//gs c wa` | none | Writes `data/wardrobe_audit.txt`, prints per-wardrobe unused counts | `handle_command` -> `CommonCommands.handle_wardrobeaudit` -> `WardrobeAuditor.audit` |
-| `//gs c refill`, `//gs c rf` | none | Restock from Case/Sack, push surplus and foreign items, then broadcast `rf` to the partner | `handle_command` -> `CommonCommands.handle_refill` -> `RefillManager.refill` |
+| `//gs c refill`, `//gs c rf` | none | Restock from Case/Sack/Satchel, push surplus and foreign items, then broadcast `rf` to the partner | `handle_command` -> `CommonCommands.handle_refill` -> `RefillManager.refill` |
 | `//gs c belt`, `//gs c dw ...`, `//gs c th ...` | see page | Belt status, Dual Wield tier, Treasure Mode | [factories-and-helpers.md](factories-and-helpers.md) |
 
 The three inventory command names are listed in `CommonCommands.is_common_command`. There is no
@@ -610,7 +610,7 @@ M.store_bag = 'case'            -- 'case' (default) | 'sack' | 'satchel'; unknow
 M.default = {                   -- used when no subjobs[<SUB>] entry exists
     {name = 'Panacea', target = 12},
     {name = {'Sublime Sushi +1', 'Sublime Sushi'}, target = 12},  -- variants share one target
-    {name = 'Pet Food Theta', target = 'all'},                    -- take everything Case/Sack hold
+    {name = 'Pet Food Theta', target = 'all'},                    -- take everything Case/Sack/Satchel hold
 }
 M.subjobs = {                   -- optional; a subjob list REPLACES default
     DNC = { ... },
@@ -831,9 +831,6 @@ Still open:
   `config_resolver.lua:192`
 - Refill has no in-progress guard; overlapping runs replay stale slot moves - `RefillManager.refill`,
   `refill_manager.lua:249`
-- `store_bag = 'satchel'` is accepted, but pulls only read Case and Sack (`SOURCE_BAGS`,
-  `refill_manager.lua:38`), so surplus pushed to the Satchel is never pulled back and later reads as
-  "Out of stock" (no current config uses it)
 - Tetsouo plays SMN live but `Tetsouo/config/smn/` holds no refill file: `rf` on SMN uses
   `FALLBACK_LIST` and pushes every food, Echo Drops and quiver named in any list to the Case as foreign
 - With no player the auditor falls back to Tetsouo's sets folder, on any character; `wo` reaches it

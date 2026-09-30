@@ -58,7 +58,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `wo alt` | Variant for a character with 4 wardrobes: every job's sets count, overflow goes to Sack / Case / Satchel |
 | `wo global` / `wo global preview` | Same as `wo` / `wo preview` (older names) |
 | `wo recover` (`unlock`) / `wo reset` | Release the slots if a run was interrupted / clear a run stuck after a crash and release the slots |
-| `rf` (`refill`) | Restock consumables from the Mog Case and Mog Sack, put the surplus back; also sent to your other boxes |
+| `rf` (`refill`) | Restock consumables from the Mog Case, Sack and Satchel, put the surplus back; also sent to your other boxes |
 | `naked` (or `equip naked`) | Remove every piece. A locked slot (Combat Mode, craft, `gs disable`) keeps its piece |
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |

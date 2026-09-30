@@ -216,7 +216,7 @@ function RefillPanels.show_report(results)
         kv('Pushed out', total_surplus .. ' item(s) (surplus)')
     end
     if total_short > 0 then
-        kv('Missing', total_short .. ' item(s) - restock Case/Sack!')
+        kv('Missing', total_short .. ' item(s) - restock Case/Sack/Satchel!')
     end
     if total_moved == 0 and total_short == 0 and total_surplus == 0 then
         kv('Status', 'Inventory already complete')

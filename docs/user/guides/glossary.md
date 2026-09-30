@@ -41,7 +41,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Mote**, **Mote-Include** | The GearSwap library (by Motenten) every job file of this setup is built on: it picks sets by name and provides modes and F9-F12 keys |
 | **Obi**, **Orpheus** | Hachirin-no-Obi and Orpheus's Sash: belts that raise elemental damage (by day / weather, or by distance). Put on by themselves when they help (`//gs c belt`) |
 | **Precast** | The moment you press an action: checks, then the start set (Fast Cast for spells, the ability or weaponskill set). See [how it works](how-it-works.md#1-precast-checks-then-the-start-set) |
-| **Refill** | `//gs c rf`: consumables taken from the Mog Case / Sack up to a target count, the surplus put back |
+| **Refill** | `//gs c rf`: consumables taken from the Mog Case / Sack / Satchel up to a target count, the surplus put back |
 | **Set** | A table of gear, one item per slot, under a name (`sets.idle`, `sets.precast.WS['Savage Blade']`). A slot a set leaves out keeps what you wear. See [set names](sets.md) |
 | **`set_combine`** | Builds a set from another: `set_combine(sets.idle, { feet = "..." })` = the idle set with other feet |
 | **Slot** | One of the 16 gear places: main, sub, range, ammo, head, neck, ear1, ear2, body, hands, ring1, ring2, back, waist, legs, feet |

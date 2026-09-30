@@ -58,7 +58,8 @@ runs a full organize. The bags are set in `config/WARDROBE_CONFIG.lua`, see
 
 ## `//gs c rf` - refill
 
-Tops up the consumables in your inventory from the Mog Case and Mog Sack, and
+Tops up the consumables in your inventory from the Mog Case, Mog Sack and Mog
+Satchel (in that order), and
 puts the surplus back. The list comes from
 `config/<job>/<JOB>_REFILL.lua` (you write it; see
 [configuration](../guides/configuration.md#refill-job_refilllua)). `rf` is

@@ -1,7 +1,8 @@
 ---============================================================================
---- Refill Manager - Restock consumables from Mog Case/Sack (Facade)
+--- Refill Manager - Restock consumables from Mog Case/Sack/Satchel (Facade)
 ---============================================================================
---- Scans inventory for consumable items and pulls from Mog Case / Mog Sack
+--- Scans inventory for consumable items and pulls from Mog Case, Mog Sack
+--- then Mog Satchel
 --- to maintain target quantities. Items above target are pushed back to a
 --- configurable store_bag (default Case). Items belonging to OTHER jobs'
 --- refill lists are detected as "foreign" and pushed back too.
@@ -34,10 +35,11 @@ local RefillManager = {}
 ---   ORCHESTRATION CONSTANTS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Source bags scanned in priority order (Case first, then Sack)
+--- Source bags scanned in priority order (Case, then Sack, then Satchel)
 local SOURCE_BAGS = {
     {key = 'case', id = 7, display = 'Case'},
-    {key = 'sack', id = 6, display = 'Sack'}
+    {key = 'sack', id = 6, display = 'Sack'},
+    {key = 'satchel', id = 5, display = 'Satchel'}
 }
 
 local INVENTORY_BAG_ID = 0
@@ -111,7 +113,7 @@ local function queue_surplus(variants, surplus, items_data, store_info)
     return moves, surplus - remaining
 end
 
---- Moves that pull the shortfall out of Case and Sack.
+--- Moves that pull the shortfall out of Case, Sack and Satchel.
 ---
 --- Variants are tried in order, so the preferred spelling is taken first and
 --- the lesser one only makes up the difference.
@@ -244,7 +246,7 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Execute the full refill operation: scan inventory, compute deficits,
---- push surplus, pull from Case/Sack, push foreign items, display report.
+--- push surplus, pull from Case/Sack/Satchel, push foreign items, display report.
 --- @return boolean Success
 function RefillManager.refill()
     if not player then

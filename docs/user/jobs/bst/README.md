@@ -101,7 +101,7 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 | `am [on/off]` | Auto Medicine |
 | `checksets` | Set items you do not have with you |
 | `wa` / `wo` | Wardrobe audit / wardrobe organizer |
-| `rf` | Refill consumables from your Mog Case and Sack (your `BST_REFILL.lua` if you have one, a default list otherwise) |
+| `rf` | Refill consumables from your Mog Case, Sack and Satchel (your `BST_REFILL.lua` if you have one, a default list otherwise) |
 | `naked` | Remove every piece |
 | `reload` | Reload the job file |
 | `ls` / `dressup` | Lockstyle again / DressUp handling |
