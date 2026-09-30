@@ -497,7 +497,7 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
   weaponskill into the next sandbox.
 - `wait` chains (`cast_sequentially`) sit in the Windower command queue and survive
   a reload.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - Slot locks: under a Hoxne stance the ammo slot is locked through `AmpullaLock`;
   `file_unload` releases it first, and `//gs c wo` releases it at the end of its run
   (after its own `gs enable all`), so after `wo` it stays off until the stance is

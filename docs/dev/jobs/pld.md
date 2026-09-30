@@ -608,12 +608,12 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
   `AbilityHelper` its replay marker in `windower._ability_replay`).
 - GearSwap slot lock: `disable('ammo')` under Hoxne survives reloads and job
   changes; released by `file_unload`, `user_setup`, a stance change and `//gs c wo`.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`; `bind_all` unbinds only
-  keys that are no longer wanted and overwrites the rest.
+- Keybinds: bound in `user_setup`, kept at `file_unload`; `bind_all` unbinds only
+  keys that are no longer wanted and sends only keys that changed.
 - Coroutines: the 8 s lockstyle from `user_setup` (not cancelled by a reload), the
   AmpullaLock poll (sequence-guarded, module-local), the AbilityHelper and Scholar
   chain polls. `send_command` waits sit in the Windower queue and survive a reload.
-- States reset on every load. Every subjob change ends in a `gs reload` (0.5 s,
+- States reset on every load. Every subjob change ends in a `gs reload` (2.0 s,
   JobChangeManager), so HybridMode goes back to PDT (Tanking on /SCH) and the
   Sortie profile to standard. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).

@@ -460,7 +460,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `ALTS` | alt group reports |
   | `CYCLE` | `cyclestate` decisions |
   | `CUSTOM` | CUSTOM pieces applied |
-  | `LOAD` | every load's steps: entry file (`config_loader`), keys bound / unbind all (`KeybindManager`, so a job file unloading shows), HUD and alt window text objects created / destroyed, `INIT_SYSTEMS` start and end, lockstyle sent, job change seen, pending job-change work cancelled. Added 2026-09-29 to find where a client crash happens |
+  | `LOAD` | every load's steps: entry file (`config_loader`), keys wanted / sent and kept at unload (`KeybindManager`, so a job file unloading shows), deferred load work skipped (`LoadGate`), HUD and alt window text objects created / destroyed, `INIT_SYSTEMS` start and end, lockstyle sent, job change seen, pending job-change work cancelled. Added 2026-09-29 to find where a client crash happens |
   | `ALIVE` | every 1 s while tracing (`TraceLog.start_heartbeat`, from `INIT_SYSTEMS` and `trace on`; the latest load's loop only, generation counter `windower._trace_heartbeat_gen`): sub job, Lua memory of the addon (`mem NKB`, GearSwap's own `collectgarbage`, absent from the sandbox), zone id, status, then the frequent events counted since the previous beat. After a crash the last line tells a crash during a load from one in play |
   | `REQ` | `trace_hooks.lua`: a module read from disk (`ModuleCache` miss, through `_G.__require_miss_hook`); cache hits are not written |
   | `INC` | `trace_hooks.lua`: every `include()` of the load (Mote, set files, hooks, facades) |

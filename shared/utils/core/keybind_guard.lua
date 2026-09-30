@@ -18,10 +18,14 @@
 ---   load where nothing was lost pays a few silent commands and changes
 ---   nothing.
 ---
+---   Since 2026-09-30 only the keys the load actually sent are re-sent (the
+---   others were already down and untouched), through the paced queue
+---   (command_queue.lua), after it has emptied.
+---
 ---   @file    shared/utils/core/keybind_guard.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2026-09-22
+---   @version 1.1
+---   @date    Created: 2026-09-22 | Updated: 2026-09-30
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local KeybindGuard = {}
@@ -36,23 +40,24 @@ local REASSERT_DELAY = 2.0
 --- down the previous job's keys over the new ones.
 windower._keybind_guard_seq = windower._keybind_guard_seq or 0
 
---- The binds the job wants down right now: get_active_binds() when the job's
---- keybind module has it (every job built on KeybindManager: subjob filters,
---- key conflicts), else the whole list. Either way the same answer its own
---- bind_all() would give.
---- @param keybinds table The job's keybind module
---- @return table|nil List of {key, command} entries
-local function desired_binds(keybinds)
-    if type(keybinds.get_active_binds) == 'function' then
-        local ok, list = pcall(keybinds.get_active_binds)
-        if ok and type(list) == 'table' then
-            return list
-        end
+--- Send again the keys this load sent (KeybindManager records them), once
+--- the paced queue has gone quiet. Keys a load did not touch were already
+--- down and are left alone: re-sending every key was a burst of its own.
+--- @param my_seq number Guard generation that scheduled this
+local function reassert(my_seq)
+    if my_seq ~= windower._keybind_guard_seq then return end
+    local Queue = require('shared/utils/core/command_queue')
+    if Queue.pending() > 0 then
+        coroutine.schedule(function() reassert(my_seq) end, 1.0)
+        return
     end
-    if type(keybinds.binds) == 'table' then
-        return keybinds.binds
+    for key, line in pairs(windower._keybind_sent_this_load or {}) do
+        -- The key may have been unbound or re-bound since: only what is still
+        -- recorded as down, with this command, goes out again.
+        local down = windower._keybind_manager_bound or {}
+        if down[key] == line then Queue.push(key, 'bind ' .. key .. ' ' .. line) end
     end
-    return nil
+    windower._keybind_sent_this_load = {}
 end
 
 --- Schedule one silent re-assert of the current job's keybinds.
@@ -68,30 +73,7 @@ function KeybindGuard.schedule()
             return
         end
 
-        local job = player and player.main_job
-        if not job then
-            return
-        end
-
-        local keybinds = _G[job .. 'Keybinds']
-        if type(keybinds) ~= 'table' then
-            return
-        end
-
-        local list = desired_binds(keybinds)
-        if not list then
-            return
-        end
-
-        for _, bind in ipairs(list) do
-            -- A row with no key (HUD only, or `combatmode / th key none`) is
-            -- skipped, as KeybindManager does: it would send `bind  gs c ...`.
-            if bind.key and bind.key ~= '' and bind.command then
-                local KM = rawget(_G, 'KeybindManager')
-                local line = KM and KM.bind_line(bind) or ('gs c ' .. bind.command)
-                pcall(send_command, 'bind ' .. bind.key .. ' ' .. line)
-            end
-        end
+        reassert(my_seq)
     end, REASSERT_DELAY)
 end
 

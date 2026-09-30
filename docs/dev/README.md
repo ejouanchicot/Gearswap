@@ -204,12 +204,13 @@ no midcast, no aftercast.
 - **Subjob change** (0x061, same sandbox): Mote's `sub_job_change` runs
   `user_setup()` again, then `job_sub_job_change` → `JobChangeManager.on_job_change`
   tears down AutoMove, watchdog and HUD, bumps a counter and schedules
-  `gs reload` after 0.5 s (3.0 s if the main job differs from the seed). A
+  `gs reload` after 2.0 s (3.0 s if the main job differs from the seed). A
   newer change invalidates the older one through the counter. A round trip
   (WAR → DNC → WAR) still reloads, on purpose: the teardown has already run
   (`job_change_manager.lua:157-165`).
 - **Main job change**: the engine loads the new file directly; the old file's
-  `file_unload` cancels pending lockstyles and unbinds keys.
+  `file_unload` cancels pending lockstyles; keys stay down and the new load
+  sends only the difference, through a paced queue.
 - **Refused or reordered request**: `JobSyncWatchdog` compares the file's job
   with `windower.ffxi.get_player().main_job` every 5 s and reloads after two
   confirmations (30 s floor).

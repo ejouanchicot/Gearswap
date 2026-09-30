@@ -478,8 +478,8 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   (states reset, keybinds rebound), then `job_sub_job_change` hands over to
   `JobChangeManager.on_job_change`, which schedules a `gs reload`. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).
-- Main job change: `file_unload` cancels `JobChangeManager` timers and
-  unbinds.
+- Main job change: `file_unload` cancels `JobChangeManager` timers; keys
+  stay down for the next load.
 
 ## Interactions
 

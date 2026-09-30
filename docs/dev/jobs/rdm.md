@@ -438,7 +438,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   `select_default_macro_book`, plus the factory exports.
 - `windower.*`: `_ability_replay` (Saboteur replay marker, shared helper);
   RDM registers no event.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - Slot locks: `disable('main', 'sub', 'range')` lives in GearSwap's
   `disable_table` and survives `gs reload`. The shared Combat Mode records it in
   `windower._combat_mode_locked`, frees it on the next load's `attach` and lays
@@ -448,7 +448,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   reload.
 - Subjob change: Mote calls `user_setup()` (states reset, Storm created or
   dropped), then `job_sub_job_change` (re-runs `configure_storm`, then
-  `JobChangeManager.on_job_change`, which reloads 0.5 s later,
+  `JobChangeManager.on_job_change`, which reloads 2.0 s later,
   [job change lifecycle](../architecture/job-change-lifecycle.md)).
 
 ## Interactions

@@ -466,7 +466,7 @@ the clone script.
   (Unbridled replay marker, shared helper).
 - Coroutines: the lockstyle in `user_setup`; the AzureSets hint (3 s) and the
   unload check (2 s); the Unbridled `follow_up` poll.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - Subjob change: Mote calls `user_setup()` again, then `job_sub_job_change`
   hands over to `JobChangeManager.on_job_change`
   ([job change lifecycle](../architecture/job-change-lifecycle.md)).

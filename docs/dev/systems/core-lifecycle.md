@@ -65,7 +65,7 @@ Consequences that the rest of this page relies on:
 - `windower` inside project code is GearSwap's `user_windower` proxy (`user_functions.lua:418-423`): a plain table with `__index = windower` and no `__newindex`. `windower._foo = x` therefore stores `_foo` in that proxy table, which GearSwap creates once when the addon loads. It survives every sandbox rebuild and dies only with `//lua reload gearswap` / `//lua unload gearswap`.
 - Coroutines scheduled with `coroutine.schedule` are not tracked by GearSwap. A callback scheduled by an old sandbox still runs after the rebuild, with the old sandbox as its environment (it keeps that sandbox reachable in memory while pending).
 - `include_user` binds every file it loads to whatever `user_env` is current at call time (`setfenv(f,user_env)`, `user_functions.lua:327`), not to the caller's sandbox. A `require` issued by a callback of a dead sandbox loads the module into the live one.
-- Keybinds (`send_command('bind ...')`) and slot locks (`disable()`) are not tracked: each entry's `file_unload` unbinds its keys, and slot locks survive until an explicit `enable()`.
+- Keybinds (`bind ...` console commands) and slot locks (`disable()`) are not tracked: keys stay down across loads (the next load sends only the difference, see [keybinds-and-custom.md](keybinds-and-custom.md)) and are removed when GearSwap unloads; slot locks survive until an explicit `enable()`.
 - `equip()` outside an event only fills `equip_list`, which the next event empties (`flow.lua:60`). From a coroutine, send `gs c update` instead.
 
 When is `load_user_files` called:
@@ -128,7 +128,7 @@ Step by step, with the WAR template (`_master/entry/Tetsouo_WAR.lua`, 313 lines)
 | 11 | `get_sets`, `:125-127` | `JobChangeManager.cancel_all()`. In a fresh sandbox this only bumps a brand-new counter and walks an empty registry (see Known issues). |
 | 12 | `get_sets`, `:130` | Facade `war_functions.lua`: includes every `WAR_*.lua` hook module, defines `select_default_lockstyle` / `cancel_war_lockstyle_operations` (lazy `LockstyleManager.create`), requires `dualbox_manager` (cache hit). |
 | 13 | `get_sets`, `:134-136` | `register_lockstyle_cancel("WAR", cancel_war_lockstyle_operations)`. |
-| 14 | `file_unload`, `:277-295` | `AmpullaLock.release()` first (slot locks outlive the file), `JobChangeManager.cancel_all()`, `WARKeybinds.unbind_all()`. |
+| 14 | `file_unload`, `:277-295` | `AmpullaLock.release()` first (slot locks outlive the file), `JobChangeManager.cancel_all()`, `WARKeybinds.unbind_all()` (keeps the keys for the next load). |
 
 ### INIT_SYSTEMS.lua, in execution order
 
@@ -215,13 +215,13 @@ Where each layer is documented: belt, Dual Wield and TH in [equipment-and-invent
 
 ### Keybind guard
 
-`KeybindGuard.schedule()` (`shared/utils/core/keybind_guard.lua`) re-sends the current job's binds 2 s after the load. Mote has already run `user_setup()` by the time INIT_SYSTEMS is included, so `bind_all()` has fired; this is a second, silent pass for the case where it did not stick.
+`KeybindGuard.schedule()` (`shared/utils/core/keybind_guard.lua`) re-sends, 2 s after the load and once the paced command queue is empty, the keys this load sent. Mote has already run `user_setup()` by the time INIT_SYSTEMS is included, so `bind_all()` has fired; this is a second, silent pass for the case where it did not stick.
 
-It exists because a bind that never lands is invisible: the job loads, `//gs c` answers, the HUD shows the row, and only the key is dead. The race is not ours to win: a load fires the whole bind list as console commands while the outgoing job file has just queued its own unbind burst from `file_unload`, and the order in which a dying sandbox's commands and a new one's reach Windower is decided in `Hook.dll`. Binding an already-bound key overwrites it, so a load where nothing was lost pays a few silent commands.
+It exists because a bind that never lands is invisible: the job loads, `//gs c` answers, the HUD shows the row, and only the key is dead. The race is not ours to win: a load used to fire the whole bind list as console commands while the outgoing job file had just queued its own unbind burst from `file_unload`, and the order in which a dying sandbox's commands and a new one's reach Windower is decided in `Hook.dll`. Binding an already-bound key overwrites it, so a load where nothing was lost pays a few silent commands.
 
-When it fires it reads `_G[<main job>..'Keybinds']`, asks it for `get_active_binds()` (every keybind module has it since `KeybindManager.create`), falls back to `.binds`, and sends `bind <key> <KeybindManager.bind_line(bind)>` for each entry.
+When it fires it reads `windower._keybind_sent_this_load` (written by `bind_all`) and re-queues every key still recorded in `windower._keybind_manager_bound` with the same line, then clears the list. While the queue still holds commands it checks again every second.
 
-The other half of the fix is in `KeybindManager.bind_all()`: it unbinds only the keys that will *not* be bound back (`clear_unwanted`), so no key is ever unbound and rebound in the same burst. Full rules, `bind_line` and the common keys: [keybinds-and-custom.md](keybinds-and-custom.md).
+The other half of the fix is in `KeybindManager`: `bind_all()` unbinds only the keys that will *not* be bound back (`clear_unwanted`) and skips keys already down with the same line, `unbind_all()` in `file_unload` sends nothing, and every command goes through the paced queue (`command_queue.lua`, 5 per 0.25 s). Full rules, `bind_line` and the common keys: [keybinds-and-custom.md](keybinds-and-custom.md).
 
 ## Job and subjob changes
 
@@ -242,7 +242,7 @@ sequenceDiagram
     JCM-->>JCM: counter + 1, schedule reload after 0.5 s or 3.0 s
     Mote->>GS: send_command gs c update
     JCM->>GS: after the delay, if the counter is unchanged, gs reload
-    GS->>GS: file_unload runs JCM.cancel_all() and unbinds keys, then a new sandbox
+    GS->>GS: file_unload runs JCM.cancel_all() (keys kept), then a new sandbox
 ```
 
 `JobChangeManager.on_job_change(main_job, sub_job)`:
@@ -251,10 +251,10 @@ sequenceDiagram
 2. `LagDebugger.on_job_change`, then `cleanup_all_systems()` immediately, before any delay: `AutoMove.stop()`, `_G.MidcastWatchdog.stop()`, `KeybindUI.destroy()`, clears `_G.keybind_ui_display`, `_G.keybind_ui_visible`, resets `_G.ui_manager_state` job fields and bumps `smart_init_id` so a pending UI init aborts, `LagDebugger.on_cleanup()`.
 3. Stores `target_main_job` / `target_sub_job` (only read by debug displays).
 4. `debounce_counter += 1`, captures `my_counter`.
-5. Delay: 0.5 s when `STATE.current_main_job == main_job`, else 3.0 s. `current_main_job` is the job seeded when this sandbox ran `user_setup()` the first time.
+5. Delay: 2.0 s when `STATE.current_main_job == main_job`, else 3.0 s (0.5 s until 2026-09-30: cycling subjobs quickly reloaded after each one). `current_main_job` is the job seeded when this sandbox ran `user_setup()` the first time.
 6. Schedules the reload. When it fires it aborts if `my_counter ~= debounce_counter`; otherwise it records the new current jobs and sends `gs reload`.
 
-Every subjob change inside the debounce window bumps the counter, so only the last one reloads. A round trip (SAM/WAR -> SAM/DNC -> SAM/WAR) still reloads once after 0.5 s: `cleanup_all_systems()` has already torn the UI and AutoMove down, so the reload has to happen.
+Every subjob change inside the debounce window bumps the counter, so only the last one reloads. A round trip (SAM/WAR -> SAM/DNC -> SAM/WAR) still reloads once after 2.0 s: `cleanup_all_systems()` has already torn the UI and AutoMove down, so the reload has to happen.
 
 The 3.0 s branch is reached only when `player.main_job` at the subjob event differs from the job seeded in this sandbox. A normal main job change never reaches `on_job_change` (GearSwap reloads on the 0x100 request itself), so in practice this branch is taken in a sandbox whose file does not match the client's job (the situation `JobSyncWatchdog` also corrects).
 
@@ -264,7 +264,7 @@ How a pending reload is cancelled: the old sandbox's `file_unload` calls `cancel
 
 ### Main job change
 
-GearSwap reloads on the outgoing request (0x100), so `JobChangeManager` is not involved. The old sandbox gets `file_unload` (JCM `cancel_all`, keybind unbind, the job's own slot-lock releases). AutoMove's and JobSyncWatchdog's old loops die at their next tick because the new sandbox bumps `windower._automove_seq` / `windower._job_sync_seq`; the old `MidcastWatchdog` loop keeps scanning until the new sandbox's `start()`, 2 s into the load, bumps `windower._midcast_wd_seq`.
+GearSwap reloads on the outgoing request (0x100), so `JobChangeManager` is not involved. The old sandbox gets `file_unload` (JCM `cancel_all`, the job's own slot-lock releases; keys are kept for the new load). AutoMove's and JobSyncWatchdog's old loops die at their next tick because the new sandbox bumps `windower._automove_seq` / `windower._job_sync_seq`; the old `MidcastWatchdog` loop keeps scanning until the new sandbox's `start()`, 2 s into the load, bumps `windower._midcast_wd_seq`.
 
 ### Refused or reordered job change: JobSyncWatchdog
 
@@ -519,7 +519,8 @@ Nothing on this page reads a config file except `AutoOptions` (`AUTO_ABILITIES.l
 
 | Constant | Value | Where |
 |---|---|---|
-| Subjob / main debounce | 0.5 s / 3.0 s | `JobChangeManager.on_job_change` |
+| Subjob / main debounce | 2.0 s / 3.0 s | `JobChangeManager.on_job_change` |
+| Keybind command pace | 5 per 0.25 s | `command_queue.lua` (`BATCH`, `INTERVAL`) |
 | `CHECK_INTERVAL`, `CONFIRMATIONS`, `RELOAD_COOLDOWN`, `FIRST_CHECK` | 5.0 s, 2, 30.0 s, 8.0 s | `job_sync_watchdog.lua` TUNING block |
 | `WATCHDOG_BUFFER` | 1.5 s (runtime: `watchdog buffer`) | `midcast_watchdog.lua` |
 | `WATCHDOG_FALLBACK_TIMEOUT` | 5.0 s (runtime: `watchdog fallback`) | `midcast_watchdog.lua` |
@@ -592,7 +593,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 |---|---|---|---|---|---|---|
 | Cold load / `//lua reload gearswap` | new (addon state also new) | fresh STATE, seeded in `user_setup` | starts | starts at +2 s | installed by `config_loader` | laid by INIT |
 | `//gs reload`, `//gs c reload`, JSW correction | new | old reload cancelled by `file_unload` | old loop superseded | old loop superseded at +2 s | new cache | re-laid on Mote's fresh functions |
-| Subjob change | same, then new after 0.5 s | cleanup + debounced reload | superseded after reload | stopped by cleanup, restarted at +2 s | new cache | re-laid |
+| Subjob change | same, then new after 2.0 s | cleanup + debounced reload | superseded after reload | stopped by cleanup, restarted at +2 s | new cache | re-laid |
 | Main job change / zone-in on another job | new | not involved | superseded | superseded at +2 s | new cache | re-laid |
 | Main job change to a job with no file | none | not involved | old loop keeps running and forces one reload | old loop keeps running | none | none |
 | Zone on same job, death, raise | same | nothing | nothing | nothing | same | same |

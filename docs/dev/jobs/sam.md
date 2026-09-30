@@ -334,7 +334,7 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 - Coroutines: the 8 s lockstyle; the `follow_up` poll (it survives a reload,
   but a newer `follow_up` invalidates it). The auto-Seigan chain is a `wait`
   chain in the Windower command queue and survives a reload.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 
 ## Interactions
 

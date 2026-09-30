@@ -299,7 +299,7 @@ once per second (`os.clock`), inside a `pcall`:
 It does not touch `state.Moving` (AutoMove owns it). Start: `user_setup`
 schedules it after 3 s; the closure returns if the main job is no longer BST or
 `_G.start_pet_monitoring` is nil, which is how a closure from a dying
-environment (a subjob change reloads after 0.5 s and `file_unload` clears the
+environment (a subjob change reloads after 2.0 s and `file_unload` clears the
 global) is stopped. A second call in the same environment is harmless
 (`monitor_event_id` guard).
 
@@ -530,11 +530,11 @@ or /DNC, shields included (its comment now says so).
   6 s, 6.5 s).
 - `windower.*`: BST writes nothing. The external `BST-HUD` addon stays loaded
   across `gs reload` and is unloaded by `file_unload`.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - Subjob change: Mote runs `user_setup()` again in the old environment (states
   reset, ecosystem back to its default, HUD reload and monitor start
   scheduled), then `job_sub_job_change` -> `JobChangeManager.on_job_change`
-  -> `gs reload` after 0.5 s. See
+  -> `gs reload` after 2.0 s. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).
 
 ## Interactions

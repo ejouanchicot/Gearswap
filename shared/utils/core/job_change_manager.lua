@@ -3,8 +3,9 @@
 ---============================================================================
 --- Called from every job's job_sub_job_change(). Tears the running systems
 --- down at once (AutoMove, MidcastWatchdog, UI), then sends `gs reload` after
---- a debounce: 0.5 s when the main job is the one this environment was loaded
---- for, 3.0 s otherwise. Every new change bumps debounce_counter, so only the
+--- a debounce: 2.0 s when the main job is the one this environment was loaded
+--- for, 3.0 s otherwise (0.5 s for a subjob until 2026-09-30: a quick second
+--- change then reloaded twice, each load a burst of commands). Every new change bumps debounce_counter, so only the
 --- last change of a burst reloads. A normal main job change never reaches
 --- on_job_change(): GearSwap reloads the job file by itself.
 ---
@@ -162,7 +163,7 @@ function JobChangeManager.on_job_change(main_job, sub_job)
     -- already torn the UI and AutoMove down.
     local delay = 3.0
     if STATE.current_main_job == main_job then
-        delay = 0.5
+        delay = 2.0
     end
 
     -- Clearing the handle does not stop a queued coroutine; the counter above does.

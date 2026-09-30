@@ -140,12 +140,20 @@ local function key_map(binds)
     return map
 end
 
+-- Every bind / unbind goes through the paced queue (command_queue.lua): a
+-- newer command for the same key replaces the one still waiting.
 local function send_bind(key, line)
-    return pcall(send_command, 'bind ' .. key .. ' ' .. line)
+    return pcall(require('shared/utils/core/command_queue').push, key, 'bind ' .. key .. ' ' .. line)
 end
 
 local function send_unbind(key)
-    pcall(send_command, 'unbind ' .. key)
+    pcall(require('shared/utils/core/command_queue').push, key, 'unbind ' .. key)
+end
+
+--- Keys sent by the latest load, for KeybindGuard's re-assert.
+local function sent_this_load()
+    windower._keybind_sent_this_load = windower._keybind_sent_this_load or {}
+    return windower._keybind_sent_this_load
 end
 
 ---============================================================================
@@ -220,23 +228,29 @@ local function clear_unwanted(ctx, desired)
     end
 end
 
---- Bind the keyed entries of `active`, in file order.
---- @return number Keys bound
+--- Bind the keyed entries of `active`, in file order. A key already down
+--- with the same command (recorded on `windower`, which outlives the job
+--- file) is not sent again: a subjob change re-binds only what changed.
+--- @return number Keys wanted, number keys sent
 local function lay_down(active, desired)
-    local bound = 0
+    local wanted, sent = 0, 0
     for _, b in ipairs(active) do
         local line = b.command and KeybindManager.bind_line(b)
         if line and desired[b.key] == line then
-            local ok, err = send_bind(b.key, line)
-            if ok then
-                bound = bound + 1
-                bound_keys()[b.key] = line
-            else
-                MessageFormatter.show_bind_failed_error(b.key, tostring(err or 'Command execution failed'))
+            wanted = wanted + 1
+            if bound_keys()[b.key] ~= line then
+                local ok, err = send_bind(b.key, line)
+                if ok then
+                    sent = sent + 1
+                    bound_keys()[b.key] = line
+                    sent_this_load()[b.key] = line
+                else
+                    MessageFormatter.show_bind_failed_error(b.key, tostring(err or 'Command execution failed'))
+                end
             end
         end
     end
-    return bound
+    return wanted, sent
 end
 
 --- Bind every applicable key.
@@ -255,10 +269,11 @@ local function bind_all(ctx, silent)
     end
     if note_conflicts(ctx, active, yielded) then redraw_hud() end
     local desired = key_map(active)
+    windower._keybind_sent_this_load = {}
     clear_unwanted(ctx, desired)
-    local bound = lay_down(active, desired)
+    local bound, sent = lay_down(active, desired)
     ctx.applied = desired
-    require('shared/utils/debug/trace_log').log('LOAD', 'keys %s: %d bound', ctx.job, bound)
+    require('shared/utils/debug/trace_log').log('LOAD', 'keys %s: %d wanted, %d sent', ctx.job, bound, sent)
     if bound > 0 then
         if not silent then ctx.api.show_intro() end
         return true
@@ -302,14 +317,15 @@ local function refresh(ctx)
     return sent
 end
 
---- Unbind every key of this job, and whatever this manager left down.
+--- The job file unloads (file_unload): its keys stay down. The next load
+--- compares them with what it wants and sends only the difference
+--- (clear_unwanted + lay_down), instead of every key unbound here and bound
+--- again a moment later: that burst is where the traced client crashes hit.
 --- @return boolean
 local function unbind_all(ctx)
     if not ctx.module.binds then return false end
-    require('shared/utils/debug/trace_log').log('LOAD', 'keys %s: unbind all', ctx.job)
-    clear_unwanted(ctx, {})
+    require('shared/utils/debug/trace_log').log('LOAD', 'keys %s: kept for the next load', ctx.job)
     ctx.applied = {}
-    MessageFormatter.show_success(ctx.job .. ' keybinds unloaded.')
     return true
 end
 
@@ -395,6 +411,15 @@ function KeybindManager.create(job, module)
     module.unbind_all = bind(unbind_all)
     module.show_intro = bind(show_intro)
     module.show_binds = bind(show_binds)
+    -- A job change keeps the keys (unbind_all); GearSwap itself unloading
+    -- clears them. file_unload cannot tell the two apart, the addon's unload
+    -- event can: GearSwap drops this handler at the next file load.
+    pcall(windower.raw_register_event, 'unload', function()
+        local lines = {}
+        for key in pairs(bound_keys()) do lines[#lines + 1] = 'unbind ' .. key end
+        if #lines > 0 then windower.send_command(table.concat(lines, '; ')) end
+        windower._keybind_manager_bound = {}
+    end)
     if type(module.binds) == 'table' then
         local ok_c, CombatMode = pcall(require, 'shared/utils/core/combat_mode')
         if ok_c and CombatMode then CombatMode.attach(job, module.binds) end

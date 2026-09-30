@@ -122,7 +122,7 @@ compiles `"{red}Error: {message}"` (colour tag -> `ChatPalette.tag('red')`, i.e.
   caches, renderer config and statistics, handler DB caches, duplicate-suppression timestamps) is
   rebuilt on every `gs reload`, main-job change and `//lua reload gearswap`. A subjob change is first
   handled inside the same sandbox (Mote `sub_job_change` -> `user_setup`), then JobChangeManager sends
-  `gs reload` 0.5 s later (`JobChangeManager.on_job_change`), which rebuilds it as well. Zoning does
+  `gs reload` 2.0 s later (`JobChangeManager.on_job_change`), which rebuilds it as well. Zoning does
   not reload the file.
 - `config_loader.lua` also requires `message_core.lua` at load, so the chat-line filter (see "The chat-line filter") is
   installed at entry-file top level, before any job message is printed.

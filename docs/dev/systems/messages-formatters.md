@@ -486,7 +486,7 @@ and the command lists in the help screens.
   `get_ability_recasts` are read by `message_cooldowns.lua`. No formatter writes a global.
 - Module-level state: the facade's upvalue caches, `JAConfig` in `message_ja_buffs.lua`, the geomancy
   tables in `message_geo.lua`. All live in the sandbox and are rebuilt when GearSwap drops `user_env`
-  on `gs reload` or a main-job change. A subjob change is followed by a `gs reload` 0.5 s later
+  on `gs reload` or a main-job change. A subjob change is followed by a `gs reload` 2.0 s later
   (`JobChangeManager.on_job_change`), which rebuilds them too.
 - The renderer's `_stats.by_color` gains one entry per distinct colour-first message (path C above)
   until the next reload.

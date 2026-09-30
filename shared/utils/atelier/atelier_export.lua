@@ -309,7 +309,7 @@ end
 --- keys are all in place a few seconds later.
 function AtelierExport.after_load()
     if not AtelierExport.enabled() then return end
-    coroutine.schedule(function() pcall(AtelierExport.export) end, 4)
+    require('shared/utils/core/load_gate').defer(4, function() pcall(AtelierExport.export) end, 'atelier export')
 end
 
 ---============================================================================

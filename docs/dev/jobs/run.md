@@ -321,8 +321,8 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
   `RECAST_CONFIG`, `RegionConfig`, `BluMagicConfig`, `RUNTPConfig`, the factory
   wrappers and exports, `temp_tp_bonus_gear` (WS only). Nothing on `windower.*`, no
   events.
-- Keybinds: bound 0.5 s after `user_setup`, unbound in `file_unload`. `bind_all`
-  unbinds only keys that no longer apply, then binds.
+- Keybinds: bound 0.5 s after `user_setup`, kept at `file_unload`. `bind_all`
+  unbinds only keys that no longer apply, then sends only keys that changed.
 - Coroutines: the 0.5 s keybind load and the 0.2 s macro/lockstyle gate have no
   generation guard and are not cancelled by a reload, so a reload inside those
   0.5 s binds from the old sandbox (still open; no managed character plays RUN).

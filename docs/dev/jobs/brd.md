@@ -480,7 +480,7 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
   slot refresh, `nt`, `forceidle`, Marcato's `wait 2`, the song queue timers
   (each checks the queue sequence) and the AutoNitro chain. None is cancelled
   by a reload.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - Subjob change: Mote re-runs `user_setup()`, then `job_sub_job_change` hands
   over to `JobChangeManager` (reload). See
   [job change lifecycle](../architecture/job-change-lifecycle.md).

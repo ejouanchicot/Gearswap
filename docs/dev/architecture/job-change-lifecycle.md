@@ -147,7 +147,7 @@ No template sets `_G.DISABLE_AUTOMOVE` any more (removed for BST in commit 0563f
 
 `//gs reload` -> `refresh_user_env()` (`gearswap.lua:209-210`) reads the job from `windower.ffxi.get_player().main_job_id` (`refresh.lua:659`) -> `load_user_files`. `//gs c reload` (`CommonCommands.handle_reload`) calls `JobChangeManager.force_reload()`, which bumps the counter and sends `gs reload` immediately. Neither path calls `cleanup_all_systems()`.
 
-- Old environment: `file_unload` cancels (the JCM counter and a pending lockstyle, through the registered cancel), releases the locks it owns (Scenario 11) and unbinds keys. Its MidcastWatchdog loop keeps scanning until the new environment's `start()` at +2 s bumps `windower._midcast_wd_seq`. Its AutoMove chain runs until the new environment calls `AutoMove.start()` at +0.5 s; while engaged it only tracks position (`track_while_engaged`, `automove.lua:201`).
+- Old environment: `file_unload` cancels (the JCM counter and a pending lockstyle, through the registered cancel), releases the locks it owns (Scenario 11) and keeps the keys for the new environment. Its MidcastWatchdog loop keeps scanning until the new environment's `start()` at +2 s bumps `windower._midcast_wd_seq`. Its AutoMove chain runs until the new environment calls `AutoMove.start()` at +0.5 s; while engaged it only tracks position (`track_while_engaged`, `automove.lua:201`).
 - Engine: the action in flight, if any, stays in `command_registry` (only 0x100 and 0x00A reset it), so its aftercast is delivered to the new environment.
 - New environment: nothing re-equips on load. Mote states return to their configured defaults (they are `_G` state). Gear changes on the next event (`status change`, action, or an AutoMove `gs c update`). COR's old attempt to re-equip from a coroutine was removed on 2026-09-25.
 
@@ -168,7 +168,7 @@ sequenceDiagram
     A->>E: send_command('gs c update') (Mote-Include.lua:990)
     E->>A: gs c update -> job_update -> KeybindUI.update -> safe_init (HUD recreated)
     Note over A: +0.5 s: counter matches -> windower.send_command('gs reload')
-    E->>A: file_unload (JCM.cancel_all, lock releases, unbind_all)
+    E->>A: file_unload (JCM.cancel_all, lock releases; keys kept)
     E->>E: unregister events, delete texts (HUD gone)
     E->>B: chunk + get_sets (user_setup, INIT_SYSTEMS, facade)
     Note over A: still running later: macro at +1.5 s, lockstyle select at +8 s
@@ -178,24 +178,30 @@ Details:
 
 1. `packet_parsing.lua:419-428` updates `player.sub_job_id` then calls `equip_sets('sub_job_change', nil, new, old)`.
 2. Mote runs `user_setup()`, `job_sub_job_change()`, then `send_command('gs c update')` in the **old** environment (`Mote-Include.lua:981-991`). The entry's `job_sub_job_change` (`Tetsouo_PLD.lua:145-155`) only calls `on_job_change(player.main_job, newSubjob)`. Until 2026-09-25 most templates also called `JobChangeManager.initialize({...})` there; that call was removed (the argument was ignored and `user_setup` already seeds).
-3. `JobChangeManager.on_job_change`: runs `cleanup_all_systems()` (`AutoMove.stop()`, `MidcastWatchdog.stop()`, `KeybindUI.destroy()`, clears `_G.keybind_ui_display`, resets `_G.ui_manager_state` fields, bumps `smart_init_id`), bumps `debounce_counter`, picks `delay = 0.5` because `STATE.current_main_job == main_job`, schedules the reload.
+3. `JobChangeManager.on_job_change`: runs `cleanup_all_systems()` (`AutoMove.stop()`, `MidcastWatchdog.stop()`, `KeybindUI.destroy()`, clears `_G.keybind_ui_display`, resets `_G.ui_manager_state` fields, bumps `smart_init_id`), bumps `debounce_counter`, picks `delay = 2.0` because `STATE.current_main_job == main_job`, schedules the reload.
 4. The queued `gs c update` lands in the old environment before the reload and re-creates the HUD through `KeybindUI.update()` -> `safe_init()` (`ui_update_orchestrator.lua:50-55`). The engine deletes that text at the reload.
-5. At +0.5 s the coroutine checks `my_counter == STATE.debounce_counter`, writes `STATE.current_*` (dead writes, the environment is about to go) and sends `gs reload`.
+5. At +2.0 s the coroutine checks `my_counter == STATE.debounce_counter`, writes `STATE.current_*` (dead writes, the environment is about to go) and sends `gs reload`.
 6. New environment: full load. `JobChangeManager.initialize()` seeds `STATE` from `player`, which already holds the new subjob.
 
-What the old environment's second `user_setup()` leaves behind: a `set_macro_page` at +1.5 s and a `select_default_lockstyle()` at +8 s, both running in the dead environment after the reload, on top of the new environment's own pair. They read `player` (engine object, already SAM/DNC), so they apply the right book and style; the effect is a duplicated DressUp unload/`/lockstyleset`/load sequence about 0.5 s apart. The old environment's delayed HUD inits (`smart_init` polls, `force_reinit`) no longer create a HUD after the reload: since 2026-09-25 `try_init` and the `force_reinit` callback return when `windower._ui_live_state` is not their own state table (`ui_lifecycle.lua:136`, `ui_update_orchestrator.lua:76`). An identity test was chosen over a counter because `UI_MANAGER` could run twice in one load (required before and after `ModuleCache`, until the cache moved to `config_loader` on 2026-09-27), and a counter would cancel the load's own init.
+What the old environment's second `user_setup()` leaves behind: a macro book selection (+1.5 s) and a `select_default_lockstyle()` (+8 s), both firing in the dead environment after the reload. Since 2026-09-30 both are dropped: they go through `LoadGate.defer` keyed on the load that created their module (`ctx.load_gen`), and the reload started a newer one (see [LoadGate](#loadgate) below). Before, they doubled the new environment's own pair (a second DressUp unload/`/lockstyleset`/load sequence). The old environment's delayed HUD inits (`smart_init` polls, `force_reinit`) no longer create a HUD after the reload: since 2026-09-25 `try_init` and the `force_reinit` callback return when `windower._ui_live_state` is not their own state table (`ui_lifecycle.lua:136`, `ui_update_orchestrator.lua:76`). An identity test was chosen over a counter because `UI_MANAGER` could run twice in one load (required before and after `ModuleCache`, until the cache moved to `config_loader` on 2026-09-27), and a counter would cancel the load's own init.
 
-What survives: slot locks (`disable_table`), all `windower._x` fields, keybinds re-bound by the new `bind_all` (and re-sent by `KeybindGuard` 2 s later), loaded external addons.
+What survives: slot locks (`disable_table`), all `windower._x` fields, keybinds (the new `bind_all` sends only what changed, through the paced queue; `KeybindGuard` re-sends those once the queue is empty), loaded external addons.
+
+### LoadGate
+
+`shared/utils/core/load_gate.lua` (since 2026-09-30). A load schedules work for later, and GearSwap never cancels a scheduled coroutine; a counter kept on the sandbox `_G` is replaced by the next load, so it cannot cancel anything across a reload. `LoadGate.begin()`, called first thing by `config_loader` on every load, bumps `windower._load_gen`. `LoadGate.defer(delay, fn, label, gen)` runs `fn` only if, when it fires, no newer load has started and the game still reports the main job and subjob of the moment it was scheduled (the subjob is compared only when both name one). A dropped task writes `LOAD <label> skipped (newer load | job changed | subjob changed)` to the trace.
+
+Users: the four `INIT_SYSTEMS` blocks (warp/AutoMove +0.5 s, watchdog +2 s, critical-module check +3 s, global probe +5 s), the macro book (`ctx.load_gen`), the lockstyle (`ctx.load_gen`), the first dual-box auto-init and the Atelier export (+4 s). The macro book and lockstyle pass the number of the load that created their module, so a call made in a dead environment after the reload (the entry's raw +8 s `select_default_lockstyle`) is dropped too.
 
 ### Scenario 4 - rapid round trip SAM/WAR -> SAM/DNC -> SAM/WAR (< 1 s)
 
 Both 0x061 packets arrive while the old environment is still loaded:
 
-- First: `on_job_change('SAM','DNC')` -> counter N, reload scheduled at +0.5 s.
-- Second (say +0.3 s): Mote runs `user_setup()` again (the HUD is re-created by `smart_init` because `cleanup_all_systems` destroyed it), then `on_job_change('SAM','WAR')` -> `cleanup_all_systems()` again, counter N+1, reload at +0.8 s.
-- At +0.5 s the first coroutine sees `N ~= N+1` and aborts (the counter test at the top of the scheduled closure). At +0.8 s the second sends `gs reload`.
+- First: `on_job_change('SAM','DNC')` -> counter N, reload scheduled at +2.0 s.
+- Second (say +0.3 s): Mote runs `user_setup()` again (the HUD is re-created by `smart_init` because `cleanup_all_systems` destroyed it), then `on_job_change('SAM','WAR')` -> `cleanup_all_systems()` again, counter N+1, reload at +2.3 s.
+- At +2.0 s the first coroutine sees `N ~= N+1` and aborts (the counter test at the top of the scheduled closure). At +2.3 s the second sends `gs reload`.
 
-The delay is keyed on the main job only, so the round trip still reloads, at 0.5 s. The comment above the delay in `on_job_change` gives the reason: `cleanup_all_systems()` has already torn down the HUD and AutoMove, so the reload has to happen.
+The delay is keyed on the main job only, so the round trip still reloads, at 2.0 s. The comment above the delay in `on_job_change` gives the reason: `cleanup_all_systems()` has already torn down the HUD and AutoMove, so the reload has to happen.
 
 ### Scenario 5 - main job change PLD -> BLM
 
@@ -288,7 +294,7 @@ The nine Tetsouo overlay entries are identical to live; they differ from the gen
 | Function | Behaviour | Callers |
 |---|---|---|
 | `initialize(config)` (`:118-128`) | Seeds `STATE.current_main_job/sub_job` from `player` only when nil. `config` is ignored (its `@param` says so; only the frozen clones Hysoka and Gabvanstronger still pass a table). | every `user_setup` |
-| `on_job_change(main, sub)` (`:134-191`) | Returns if either is nil. `cleanup_all_systems()`, counter++, schedules `gs reload` after 0.5 s (same main job) or 3.0 s. | every `job_sub_job_change` |
+| `on_job_change(main, sub)` (`:134-191`) | Returns if either is nil. `cleanup_all_systems()`, counter++, schedules `gs reload` after 2.0 s (same main job) or 3.0 s. | every `job_sub_job_change` |
 | `force_reload(main, sub)` (`:196-215`) | Counter++, immediate `gs reload`. No cleanup. | `CommonCommands.handle_reload` |
 | `cancel_all()` (`:219-227`) | Counter++; `pcall` every function in `STATE.lockstyle_cancel_registry`. | every `get_sets` and `file_unload` |
 | `register_lockstyle_cancel(job, fn)` (`:232-234`) | Stores `fn` in the registry. | every `get_sets` |
@@ -358,7 +364,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `data/.dressup_disabled` | file presence = DressUp management off | `lockstyle_manager.lua:22` |
 | `<char>/config/<job>/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | styles and books per subjob (and per alt job) | fallbacks in the factories |
 
-Timing constants: JCM 0.5 s / 3.0 s (`on_job_change`); JobSyncWatchdog 8/5/2/30 (TUNING block of `job_sync_watchdog.lua`); dual-box auto-init 2 s + 1 s x 8 (`INIT_FIRST_DELAY`, `INIT_RETRY_DELAY`, `INIT_MAX_ATTEMPTS` in `dualbox_manager.lua`); AutoMove `job_change_cooldown` 2.0 s (`automove.lua:59`); lockstyle select delay 2.0 s, DressUp 0.3 s / 3.0 s (`lockstyle_manager.lua:128-178`); macrobook 1.5 s (`macrobook_manager.lua:98`); KeybindGuard 2.0 s (`REASSERT_DELAY`).
+Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 per 0.25 s (`command_queue.lua`); JobSyncWatchdog 8/5/2/30 (TUNING block of `job_sync_watchdog.lua`); dual-box auto-init 2 s + 1 s x 8 (`INIT_FIRST_DELAY`, `INIT_RETRY_DELAY`, `INIT_MAX_ATTEMPTS` in `dualbox_manager.lua`); AutoMove `job_change_cooldown` 2.0 s (`automove.lua:59`); lockstyle select delay 2.0 s, DressUp 0.3 s / 3.0 s (`lockstyle_manager.lua:128-178`); macrobook 1.5 s (`macrobook_manager.lua:98`); KeybindGuard 2.0 s (`REASSERT_DELAY`).
 
 ## State & lifetime
 
@@ -441,7 +447,7 @@ The engine removes all of these at the next `load_user_files` (`refresh.lua:69-7
 6. **Only the subjob path runs `cleanup_all_systems()`.** Main job changes, zone job changes and every manual or watchdog reload skip it.
 7. **Mote's `gs c update` after `job_sub_job_change` lands in the old environment** and re-creates the HUD that `cleanup_all_systems()` just destroyed; the engine deletes it at the reload.
 8. **GearSwap does not dispatch `status_change` for Dead / Engaged dead / Event** (`gearswap.lua:323-328`).
-9. **`JobChangeManager.initialize()` seeds, it does not assign** (`JobChangeManager.initialize`); assigning broke the 0.5 s subjob path because Mote calls `user_setup()` before `job_sub_job_change()`.
+9. **`JobChangeManager.initialize()` seeds, it does not assign** (`JobChangeManager.initialize`); assigning broke the subjob path because Mote calls `user_setup()` before `job_sub_job_change()`.
 10. **`bind_all()` runs on every `user_setup()`, including the old environment's.** `KeybindManager` unbinds only the keys that are no longer wanted (job list, `retired_keys`, keys it bound earlier) and lets a bind overwrite a key that stays; unbinding everything first opened the window in which a key went dead after a reload (comment above `clear_unwanted`). `KeybindGuard` re-sends the binds 2 s later.
 
 ## For maintainers / AI

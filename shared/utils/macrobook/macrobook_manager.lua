@@ -88,6 +88,7 @@ end
 ---     ctx.default_book    number
 ---     ctx.default_page    number
 ---     ctx.MACROBOOKS      table  - { solo = {...}, dualbox = {...} }
+---     ctx.load_gen        number - LoadGate number of the load that made it
 
 --- Select macro book with delay to prevent FFXI erasure bug
 --- @param ctx table Per-job context
@@ -103,10 +104,12 @@ local function set_macro_with_delay(ctx, book, page, delay)
     _G._macrobook_schedule_id = (_G._macrobook_schedule_id or 0) + 1
     local my_id = _G._macrobook_schedule_id
 
-    coroutine.schedule(function()
+    -- LoadGate also drops it when a newer load than the one that made ctx,
+    -- or a job change, came first
+    require('shared/utils/core/load_gate').defer(delay, function()
         if my_id ~= _G._macrobook_schedule_id then return end
         set_macro_page(page, book)
-    end, delay)
+    end, 'macro book', ctx.load_gen)
 end
 
 --- Which book the alt's job asks for, if an alt is online and configured.
@@ -234,6 +237,7 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
         default_book   = default_book,
         default_page   = default_page,
         MACROBOOKS     = load_macrobooks(config_path, default_subjob, default_book, default_page),
+        load_gen       = windower._load_gen,
     }
 
     local function bind(fn) return function(...) return fn(ctx, ...) end end

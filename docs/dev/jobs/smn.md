@@ -346,10 +346,10 @@ it stays on after the first cast.
   coroutine is not cancelled by a reload.
 - Subjob change: Mote runs `user_setup()` in the current sandbox (states reset,
   keybinds rebound, a Carbuncle coroutine scheduled), then
-  `job_sub_job_change` calls `on_job_change`, which reloads 0.5 s later; the
+  `job_sub_job_change` calls `on_job_change`, which reloads 2.0 s later; the
   new sandbox's `user_setup` schedules a second Carbuncle coroutine.
-- `file_unload` stops the skill-up loop, cancels `JobChangeManager` timers and
-  unbinds.
+- `file_unload` stops the skill-up loop, cancels `JobChangeManager` timers; keys
+  stay down for the next load.
 
 ## Interactions
 

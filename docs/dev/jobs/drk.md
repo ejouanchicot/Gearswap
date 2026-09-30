@@ -318,7 +318,7 @@ invisible to Mote.
   `RECAST_CONFIG`, `RegionConfig`, `temp_tp_bonus_gear`.
 - `windower.*`: nothing. No events, no job coroutines besides the 8 s
   lockstyle.
-- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - The pending flags live in the sandbox `_G`: the buff's loss or a
   `gs reload` (every subjob change ends in one) resets them.
 

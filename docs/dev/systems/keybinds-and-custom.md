@@ -103,7 +103,7 @@ Set by the project, not by the file: `_common` (a common entry) and `custom` (a 
 | starts with `/` | `input <command>`: a game command | `/p Ready!` -> `input /p Ready!` |
 | anything else | `gs c <command>` | `cyclestate HybridMode` -> `gs c cyclestate HybridMode` |
 
-The same function is used by `bind_all`, `refresh` and KeybindGuard, so a key laid down by the guard sends the same line.
+The same function builds the line `bind_all` and `refresh` send; KeybindGuard re-sends the recorded line.
 
 ### `bind_all`, `refresh`, `unbind_all`
 
@@ -114,15 +114,21 @@ The same function is used by `bind_all`, `refresh` and KeybindGuard, so a key la
 3. Reports live conflicts (`note_conflicts`, once per conflict per load) and redraws the HUD when the keys in conflict changed.
 4. Builds `desired` (key -> line) from the active entries. A key used twice keeps the **last** entry.
 5. `clear_unwanted`: unbinds every key that is not wanted now and is either in the file, in `retired_keys` or in `windower._keybind_manager_bound`. A key about to be bound is **not** unbound first: a bind overwrites (see [Dead keys after a reload](#dead-keys-after-a-reload)).
-6. Sends `bind <key> <line>` for each wanted key and records it in `windower._keybind_manager_bound`.
-7. Shows the intro when at least one key went down. When no key went down although some should have, prints `<JOB> keybinds: none applied - keys will not respond`.
+6. `lay_down`: for each wanted key, skips it when `windower._keybind_manager_bound` already holds the same line (the key is down from an earlier load); otherwise queues `bind <key> <line>` and records it there and in `windower._keybind_sent_this_load` (for KeybindGuard). The trace logs `keys <JOB>: <wanted> wanted, <sent> sent`.
+7. Shows the intro when at least one key is wanted. When no key went down although some should have, prints `<JOB> keybinds: none applied - keys will not respond`.
 
 **`refresh()`** sends only the difference since the last `bind_all` / `refresh`, for `visible`, `alt` and `weapon` entries and for optional-state changes. A key that stays but changes command is only re-bound, never unbound first. `refresh` redraws the HUD when it sent anything or the conflicts moved. Callers:
 
 - PLD's state-change hook (`PLD_COMMANDS.lua`, after a stance change: `/SCH` Tanking hides `MainWeapon`);
 - `KeybindManager.refresh_active()`, which calls `refresh` on `_G._keybind_active`. It runs whenever `alt_states.lua` records a new job, subjob or weapon type for a box, whenever this character's main hand changes weapon type (entries with `weapon`), and after every `//gs c combatmode|th show|hide|key` (`optional_state_commands.lua` `refresh`).
 
-**`unbind_all()`** runs `clear_unwanted` with nothing wanted, so it also removes keys that another job file of this manager left down. It then prints `<JOB> keybinds unloaded.`. Every entry file calls it from `file_unload()`.
+**`unbind_all()`** is called by every entry file from `file_unload()`. Since 2026-09-30 it sends nothing: the keys stay down for the next load, whose `bind_all` sends only the difference (unwanted keys unbound, changed keys re-bound). It logs `keys <JOB>: kept for the next load` and empties `ctx.applied`. Before, a subjob change unbound every key and bound them all again a moment later, about 390 console commands in a second; both client crashes traced on Gab's side hit inside that burst.
+
+The keys are still removed when GearSwap itself unloads (`//lua unload gearswap`, `//lua reload gearswap`): `create` registers a raw `unload` event that sends one `unbind` per key recorded in `windower._keybind_manager_bound`, joined with `; ` into a single command, then empties the record. `file_unload` cannot tell a job change from the addon unloading; the addon's `unload` event only fires for the latter, and GearSwap drops the handler at the next file load (`refresh.lua`), so only the live file's handler is registered.
+
+### The paced queue
+
+Every `bind` / `unbind` goes through `shared/utils/core/command_queue.lua` instead of `send_command`. The queue lives on `windower._command_queue` (it outlives the job file) and sends 5 commands every 0.25 s. It is keyed by key: a newer command for a key replaces the one still waiting, so a key bound then unbound inside the window costs one command, and a job left before its keys went out never sends them. One drain loop runs at a time (`running` flag and a generation number); GearSwap never cancels a coroutine, so a loop started by an older job file keeps emptying the queue after a reload. Windower's tracker proposed such a flow-controlled queue ([Windower/Lua #179](https://github.com/Windower/Lua/issues/179)); a burst of commands crashing the client at random is [Windower/Lua #1493](https://github.com/Windower/Lua/issues/1493).
 
 ### The key validator
 
@@ -479,8 +485,10 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 
 | What | Lives in | Lifetime |
 |---|---|---|
-| Windower binds | the engine | survive every load; removed by `unbind_all` in `file_unload`, or by the next `bind_all` |
-| Keys this manager laid down | `windower._keybind_manager_bound` | survives loads, so a key removed from a file is unbound at the next load |
+| Windower binds | the engine | survive every load; changed or removed by the next `bind_all`; all removed when GearSwap unloads |
+| Keys this manager laid down | `windower._keybind_manager_bound` | survives loads: a key removed from a file is unbound at the next load, an unchanged key is not sent again; emptied when GearSwap unloads |
+| Keys sent by the latest load | `windower._keybind_sent_this_load` | reset by every `bind_all`, cleared by KeybindGuard once re-sent |
+| Commands waiting to be sent | `windower._command_queue` | until drained (5 per 0.25 s) |
 | Pending guard re-bind | `windower._keybind_guard_seq` | a newer load cancels the older one |
 | `ctx.applied`, `ctx.conflicts_told` | module local | one sandbox |
 | Job module for refresh / conflicts | `_G._keybind_active` | one sandbox |
@@ -491,14 +499,15 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 | Custom locks | `windower._custom_locked` | until released by the next load's `CustomStates.load` |
 | Temporary binds | `<Char>/temp_binds.lua` + Windower binds | until `tb del` / `clear`, or the game restarts |
 
-A subjob change reruns `user_setup()` in the same sandbox, so `bind_all` runs again (the module is cached, so custom files are not read a second time), then JobChangeManager reloads. `unbind_all` does not touch `tb` keys unless the job file also uses them.
+A subjob change reruns `user_setup()` in the same sandbox, so `bind_all` runs again (the module is cached, so custom files are not read a second time), then JobChangeManager reloads. Both passes send only what the new subjob changes. The addon-unload handler removes only this manager's keys, never `tb` keys unless the job file also uses them.
 
 ### Dead keys after a reload
 
-A key could stay dead after a reload while `//gs c` still worked. The binds were sent. But binds are Windower console commands, and a load sends its whole list in one burst, on top of the unbind burst from the outgoing file's `file_unload`. Two things handle it:
+A key could stay dead after a reload while `//gs c` still worked. The binds were sent. But binds are Windower console commands, and a load used to send its whole list in one burst, on top of the unbind burst from the outgoing file's `file_unload`. What handles it:
 
-- `bind_all` no longer unbinds a key it is about to bind (`clear_unwanted`);
-- `KeybindGuard.schedule()`, called from `INIT_SYSTEMS` on every load, re-sends the current job's active binds 2 s later, through `bind_line`. A load where nothing was lost pays a few silent commands. The coroutine checks `windower._keybind_guard_seq`, so an older sandbox's re-bind never lays the previous job's keys over the new ones.
+- `bind_all` never unbinds a key it is about to bind (`clear_unwanted`), and does not re-send a key already down with the same line;
+- `file_unload` no longer unbinds, and every command goes through the paced queue (above);
+- `KeybindGuard.schedule()`, called from `INIT_SYSTEMS` on every load, waits 2 s, then until the queue is empty (checking every second), and re-queues the keys this load sent that are still recorded down with the same line. Keys the load did not touch are left alone. The coroutine checks `windower._keybind_guard_seq`, so an older sandbox's re-bind never lays the previous job's keys over the new ones.
 
 ## Invariants & gotchas
 

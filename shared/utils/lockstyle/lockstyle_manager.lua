@@ -106,9 +106,10 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---     ctx.default_subjob     string  - 'SAM', 'RUN', ...
 ---     ctx.LockstyleConfig    table   - per-job config (with .default + .get_style)
 ---     ctx.STATE              table   - mutable per-job runtime state
+---     ctx.load_gen           number  - LoadGate number of the load that made it
 ---
 ---   STATE shape:
----     enabled, is_processing, current_coroutines, dressup_state,
+---     enabled, is_processing, dressup_state,
 ---     last_dressup_command_time, operation_id
 
 --- @return boolean True when DressUp is cycled around each lockstyle
@@ -119,9 +120,8 @@ end
 --- Bump operation_id so any in-flight coroutine.schedule callback aborts on its
 --- next `operation_id ~= STATE.operation_id` check.
 local function cancel_pending_operations(ctx)
-    ctx.STATE.operation_id      = ctx.STATE.operation_id + 1
-    ctx.STATE.current_coroutines = {}
-    ctx.STATE.is_processing      = false
+    ctx.STATE.operation_id  = ctx.STATE.operation_id + 1
+    ctx.STATE.is_processing = false
 end
 
 --- Send the lockstyleset command now, cycling DressUp if configured to.
@@ -172,10 +172,13 @@ local function set_lockstyle_with_delay(ctx, style, delay)
     cancel_pending_operations(ctx)
     ctx.STATE.is_processing = true
     local current_operation = ctx.STATE.operation_id
-    local coro = coroutine.schedule(function()
+    -- LoadGate: operation_id lives in this job file's memory, which a reload
+    -- replaces. Keyed on the load that made ctx, so the entry's raw +8 s
+    -- select_default_lockstyle, still firing in the old file after a reload,
+    -- is dropped too
+    require('shared/utils/core/load_gate').defer(delay, function()
         apply_lockstyle_immediate(ctx, style, current_operation)
-    end, delay)
-    table.insert(ctx.STATE.current_coroutines, coro)
+    end, 'lockstyle', ctx.load_gen)
 end
 
 --- Compute the lockstyle for the active (job, subjob) pair.
@@ -284,10 +287,10 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
             default_lockstyle = default_lockstyle,
             default_subjob    = default_subjob,
             LockstyleConfig   = load_config_or_fallback(config_path, default_lockstyle),
+            load_gen          = windower._load_gen,
             STATE = {
                 enabled                   = true,
                 is_processing             = false,
-                current_coroutines        = {},
                 dressup_state             = 'unknown',
                 last_dressup_command_time = 0,
                 operation_id              = 0,

@@ -125,8 +125,12 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MIDCAST WATCHDOG (+2.0 s, kept off the cold-load path)
 ---  ═══════════════════════════════════════════════════════════════════════════
+-- Deferred load work goes through LoadGate: a newer load or a job change
+-- in the meantime cancels it (shared/utils/core/load_gate.lua)
+local LoadGate = require('shared/utils/core/load_gate')
 
-coroutine.schedule(function()
+
+LoadGate.defer(2.0, function()
     local watchdog_success, MidcastWatchdog = pcall(require, 'shared/utils/core/midcast_watchdog')
 
     if watchdog_success and MidcastWatchdog then
@@ -136,7 +140,7 @@ coroutine.schedule(function()
     else
         ensure_message_init().show_module_load_failed('Watchdog', MidcastWatchdog)
     end
-end, 2.0)
+end, 'watchdog')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   IMMEDIATE: AUTO MEDICINE STATE
@@ -208,7 +212,7 @@ end
 ---   DEFERRED SYSTEMS (+0.5 s, kept off the cold-load path)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-coroutine.schedule(function()
+LoadGate.defer(0.5, function()
     ---  ─────────────────────────────────────────────────────────────────────────
     ---   WARP SYSTEM (with IPC multi-boxing support)
     ---  ─────────────────────────────────────────────────────────────────────────
@@ -257,7 +261,7 @@ coroutine.schedule(function()
     else
         ensure_message_init().show_module_load_failed('State Display Override', StateDisplayOverride)
     end
-end, 0.5)
+end, 'deferred systems')
 
 -- Template for adding a new universal system:
 --
@@ -382,7 +386,7 @@ end)
 -- inline: ModuleCache means this require is the same one the job will get, so
 -- an answer here is the answer there, and waiting keeps the cost of loading
 -- the chain off the cold-load path.
-coroutine.schedule(function()
+LoadGate.defer(3.0, function()
     local critical = {
         { 'PrecastGuard',     'shared/utils/debuff/precast_guard' },
         { 'CooldownChecker',  'shared/utils/precast/cooldown_checker' },
@@ -394,7 +398,7 @@ coroutine.schedule(function()
             ensure_message_init().show_module_load_failed(entry[1], mod)
         end
     end
-end, 3.0)
+end, 'critical modules check')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GLOBAL PROBE BASELINE (last, so it sees everything the load created)
@@ -415,9 +419,9 @@ end)
 -- //gs c atelier on: export this job for data/atelier.html once it is loaded
 pcall(function() require('shared/utils/atelier/atelier_export').after_load() end)
 
-coroutine.schedule(function()
+LoadGate.defer(5.0, function()
     local ok, GlobalProbe = pcall(require, 'shared/utils/debug/global_probe')
     if ok and GlobalProbe then
         GlobalProbe.snapshot()
     end
-end, 5.0)
+end, 'global probe')

@@ -305,7 +305,7 @@ is empty when `chat.job_tag` is false.
   `ModuleCache` (installed by `config_loader` before `user_setup`, see
   [core-lifecycle.md](core-lifecycle.md)) caches modules on the sandbox `_G`, so one engine instance
   and one copy of each data file exist per sandbox. The sandbox is rebuilt whenever GearSwap loads
-  the job file (`gs reload`, main job change, and the `gs reload` JobChangeManager sends 0.5 s after
+  the job file (`gs reload`, main job change, and the `gs reload` JobChangeManager sends 2.0 s after
   a subjob change); every namespace is re-read on the first message after that. Zoning keeps it.
 - No event, keybind, coroutine or text object is created by any file in scope.
 

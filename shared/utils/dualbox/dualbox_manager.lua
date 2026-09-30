@@ -469,7 +469,8 @@ local function run_auto_init(attempt)
     if grp_ok and AltGroup then AltGroup.request_report() end
 end
 
-coroutine.schedule(function() run_auto_init(1) end, INIT_FIRST_DELAY)
+-- LoadGate: a newer load or a job change before it runs drops this one
+require('shared/utils/core/load_gate').defer(INIT_FIRST_DELAY, function() run_auto_init(1) end, 'dual-box init')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

@@ -378,7 +378,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   shared `combat_mode.lua` at the next load.
 - Subjob change: Mote's `sub_job_change` runs `user_setup()` (states reset),
   then `job_sub_job_change` -> `JobChangeManager.on_job_change`, which reloads
-  0.5 s later.
+  2.0 s later.
 
 ## Interactions
 
