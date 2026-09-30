@@ -79,7 +79,6 @@ TIMER('WAR_MOVEMENT')
 ---   logic/smartbuff_manager.lua
 ---     • WAR core abilities (Berserk, Aggressor, Warcry, etc.)
 ---     • SAM subjob automation (Hasso/Seigan + Third Eye, Meditate)
----     • DNC subjob Haste Samba folded into the buff chain
 ---     • DRG subjob TP building (shared DRG jump manager)
 ---
 ---   logic/set_builder.lua

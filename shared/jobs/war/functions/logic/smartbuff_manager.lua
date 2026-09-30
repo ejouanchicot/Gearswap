@@ -8,7 +8,8 @@
 ---   • Subjob abilities folded into the main chain, so //gs c berserk and
 ---     //gs c defender are the only two macros needed:
 ---       /SAM -> Hasso + Third Eye  (Seigan + Third Eye under Defender)
----       /DNC -> Haste Samba
+---     (/DNC Haste Samba was in the chain until 2026-09-30; the player did
+---     not want it sent with every berserk)
 ---
 ---   Features:
 ---   • Mutual exclusion handling (Berserk vs Defender)
@@ -107,7 +108,6 @@ local SAM_STANCE = {
 }
 
 local THIRD_EYE   = { name = 'Third Eye',   id = 133 }
-local HASTE_SAMBA = { name = 'Haste Samba', id = 216, tp_cost = 350 }
 local MEDITATE    = { name = 'Meditate',    id = 134 }
 
 --- Queue one ability unless it is already up or still on cooldown.
@@ -132,8 +132,6 @@ end
 --- The SAM stance follows `param`, NOT buffactive: at this point the Berserk or
 --- Defender cast is still queued, so its buff is not up yet and reading
 --- buffactive would always pick Hasso.
---- Haste Samba is skipped silently below its 350 TP cost - it is a bonus on top
---- of the WAR chain, and a warning on every macro press would be noise.
 --- @param param   string 'Berserk' or 'Defender'
 --- @param recasts table get_ability_recasts() output
 --- @param buffs   table buffactive snapshot
@@ -145,8 +143,6 @@ local function collect_subjob_abilities(param, recasts, buffs, to_cast, status)
     if sub == 'SAM' then
         collect_ability(SAM_STANCE[param] or SAM_STANCE.Berserk, recasts, buffs, to_cast, status)
         collect_ability(THIRD_EYE, recasts, buffs, to_cast, status)
-    elseif sub == 'DNC' and require('shared/utils/core/live_tp')() >= HASTE_SAMBA.tp_cost then
-        collect_ability(HASTE_SAMBA, recasts, buffs, to_cast, status)
     end
 end
 

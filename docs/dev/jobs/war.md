@@ -10,8 +10,7 @@ What WAR adds on top of the shared pipeline:
 
 - **Two-macro buff chains**: `//gs c berserk` and `//gs c defender` cast the WAR job
   abilities (Berserk or Defender, Aggressor, Retaliation, Restraint, Warcry or Blood
-  Rage) and fold in the subjob part (/SAM Hasso or Seigan + Third Eye, /DNC Haste
-  Samba). `thirdeye` and `tp` (Meditate on /SAM, the Jump rotation on /DRG)
+  Rage) and fold in the subjob part (/SAM Hasso or Seigan + Third Eye). `thirdeye` and `tp` (Meditate on /SAM, the Jump rotation on /DRG)
   complete the set.
 - **Weaponskill slots**: `//gs c ws1` .. `ws5` fire whatever the current
   `MainWeapon` puts in that slot (`WAR_WS_CONFIG.lua`), backed by real Mote states
@@ -243,8 +242,8 @@ hold any weaponskill of the weapon.
    up; Blood Rage (11) only when Warcry is not up **and** Warcry is on cooldown.
 4. `collect_subjob_abilities`: /SAM queues the stance paired with `param`
    (`SAM_STANCE`: Hasso 138 for Berserk, Seigan 139 for Defender) and Third Eye
-   (133); /DNC queues Haste Samba (216) only when the live TP is at least 350,
-   silently skipped otherwise. The stance follows `param`, not `buffactive`,
+   (133). Nothing for /DNC: Haste Samba was queued here until 2026-09-30,
+   removed because the player did not want it on every press. The stance follows `param`, not `buffactive`,
    because the Berserk / Defender cast is still queued at that point.
 5. `MessageBuffs.show_buff_status(status)` if anything is active or on cooldown,
    then `cast_sequentially`: first `/ja` now, the *i*-th after `2 * (i - 1)` seconds,

@@ -12,8 +12,7 @@ every shared feature that works on WAR, and the files you can edit.
 WAR is set up as a damage dealer. A weapon mode picks the weapon set, and after each
 load it is set to the weapon you are actually holding. Five weaponskill slots follow the
 weapon, so five macros cover every weapon. `//gs c berserk` and `//gs c defender` fire
-the whole Warrior buff chain (plus Hasso / Seigan and Third Eye on /SAM, Haste Samba on
-/DNC) in one press. On /DRG, a weaponskill pressed under 1000 TP is held back while
+the whole Warrior buff chain (plus Hasso / Seigan and Third Eye on /SAM) in one press. On /DRG, a weaponskill pressed under 1000 TP is held back while
 Jump builds the TP. Retaliation is cancelled by itself after 5 seconds of running out
 of combat.
 
@@ -68,7 +67,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Command | Does |
 |---|---|
 | `ws1` ... `ws5` | Uses the weaponskill in that slot for the current weapon, on `<t>`. `ws6`...`ws9` only warn |
-| `berserk` | Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is on recast), the ready ones, 2 s apart; /SAM adds Hasso and Third Eye, /DNC Haste Samba at 350 TP or more |
+| `berserk` | Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is on recast), the ready ones, 2 s apart; /SAM adds Hasso and Third Eye |
 | `defender` | The same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso |
 | `thirdeye` | /SAM: Hasso (Seigan if Defender is up) and Third Eye. On another subjob: a warning, nothing is sent |
 | `tp` | /SAM: Meditate. /DRG: Jump, then High Jump if TP is still under 1000. Other subjobs: a warning |

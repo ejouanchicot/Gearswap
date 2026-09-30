@@ -33,7 +33,7 @@ end of the weapon's list shows `None`.
 | Command | What it does |
 |---|---|
 | `//gs c ws1` … `ws5` | Uses the weaponskill in that slot on `<t>`. |
-| `//gs c berserk` | Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is down and on recast), the ready ones, 2 s apart. Defender is left out. /SAM adds Hasso and Third Eye; /DNC adds Haste Samba at 350 TP or more. |
+| `//gs c berserk` | Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is down and on recast), the ready ones, 2 s apart. Defender is left out. /SAM adds Hasso and Third Eye. |
 | `//gs c defender` | Same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. |
 | `//gs c thirdeye` | /SAM only: Hasso (or Seigan if Defender is up) and Third Eye. On another subjob it warns and sends nothing. |
 | `//gs c tp` | /SAM: Meditate. /DRG: same as `//gs c jump` (Jump or High Jump, then the other one if TP is still under 1000). Other subjobs: a warning. |
