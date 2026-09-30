@@ -16,7 +16,7 @@ Set names and automatic gear: [sets.md](sets.md).
 | `^numpad1` | Main Weapon (`MainWeapon`) | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic | Weapon set (`sets.<Weapon>`) in idle and engaged. No fixed default: after loading, the mode is set to the weapon you are holding (Ukonvasara if it matches no set). NaeglingKC = Naegling with Kraken Club. |
 | `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | Idle and engaged base: `sets.idle.PDT` / `sets.engaged.PDT`, or the Normal ones (the template has no `sets.idle.Normal`, so Normal idles in `sets.idle`). Engaged, a Kraken Club, Aftermath or weapon set can win over it: see Notes. |
 | `^numpad0` | Aftermath Set (`AftermathSet`) | **AFM3**, FastTP | Shown only with a weapon that has its own Aftermath set (`sets.engaged.<Weapon>AFM3`, e.g. Laphria). AFM3: that set while the Aftermath is up (DPS). FastTP: the weapon's TP set (`sets.engaged.<Weapon>`) even under Aftermath. |
-| `^numpad2` | Jump Auto (`JumpAuto`) | **On**, Off | Acts on /DRG only (the key is bound on every subjob). On: a weaponskill pressed under 1000 TP is held back, Jump (then High Jump if TP is still short) goes out, then the weaponskill is sent again. |
+| `^numpad2` | Jump Auto (`JumpAuto`) | **On**, Off | On /DRG only: the row and the key are hidden on other subjobs. On: a weaponskill pressed under 1000 TP is held back, Jump (then High Jump if TP is still short) goes out, then the weaponskill is sent again. |
 | `^numpad3` … `^numpad7` | WS Slot 1-5 (`WS1` … `WS5`) | The weaponskills of your current weapon | Each slot holds one weaponskill; the key picks which. `//gs c ws1` … `ws5` fires the slot on `<t>`. The slots are rebuilt when you change weapon. |
 
 The weaponskill list per weapon is in `WAR_WS_CONFIG.lua`. A slot past the
@@ -61,8 +61,7 @@ Ikenga or Loxotic the game refuses them and their turn in the chain is lost.
 - Every mode except `AutoMedicine` goes back to its default on each job change,
   subjob change or reload (the weapon is read again from your hands).
 - The author's own files differ: Hybrid Mode also has `SubtleBlow` and `Hoxne`
-  (Hoxne puts the Hoxne Ampulla on and locks the ammo slot on it), and its `WAR_CUSTOM.lua`
-  adds a `FullEmpy` On/Off mode on `^numpad8`.
+  (Hoxne puts the Hoxne Ampulla on and locks the ammo slot on it).
 
 ## Files
 

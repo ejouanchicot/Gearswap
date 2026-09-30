@@ -91,7 +91,7 @@ return {
     -- {
     --     state  = 'TPMode',
     --     desc   = 'TP Mode',
-    --     key    = '^numpad0',
+    --     key    = '^numpad.',
     --     values = {'Normal', 'Acc'},
     --     Acc    = {
     --         engaged = { head = "Nyame Helm", ring1 = "Chirich Ring +1" },

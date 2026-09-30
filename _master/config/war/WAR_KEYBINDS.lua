@@ -32,7 +32,8 @@ WARKeybinds.binds = { -- Weapon Management
     key = "^numpad2",
     command = "cyclestate JumpAuto",
     desc = "Jump Auto",
-    state = "JumpAuto"
+    state = "JumpAuto",
+    subjob = "DRG"  -- the jumps only exist on /DRG
 },
 {
     key = "^numpad3",

@@ -25,7 +25,7 @@ the keys that are bound now, with the current value of each mode.
 |---|---|---|
 | `^numpad1` | Cycle `MainWeapon` (Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic) | After loading: the weapon in your hands (Ukonvasara if it matches no set) |
 | `^numpad9` | Cycle `HybridMode` (PDT, Normal) | Default PDT |
-| `^numpad2` | Cycle `JumpAuto` (On, Off) | Default On. Bound on every subjob, acts on /DRG only |
+| `^numpad2` | Cycle `JumpAuto` (On, Off) | Default On. /DRG only (hidden on other subjobs) |
 | `^numpad3` | Cycle `WS1`: the weaponskill of `//gs c ws1` | The list follows the weapon |
 | `^numpad4` | Cycle `WS2` (`//gs c ws2`) | Same |
 | `^numpad5` | Cycle `WS3` (`//gs c ws3`) | Same |

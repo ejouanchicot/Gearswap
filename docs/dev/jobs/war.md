@@ -80,8 +80,8 @@ character overlay) and live copies (gitignored, identical to the overlay):
 reads the character name), `init_gear_sets` includes `sets/war/war_sets.lua`, and
 `job_update` also calls `_G.LagDebugger.on_job_update()`. `config/war/`:
 `WAR_MACROBOOK` uses book 3 instead of 22-30; `WAR_STATES` adds `SubtleBlow` and
-`Hoxne` to `HybridMode` and lists `Chango` second; `WAR_CUSTOM` adds a `FullEmpy`
-on/off mode on `^numpad8`; `WAR_REFILL` exists only there. Sets are modular:
+`Hoxne` to `HybridMode` and lists `Chango` second; `WAR_CUSTOM` holds only the
+commented examples (the `FullEmpy` test mode was removed on 2026-09-30); `WAR_REFILL` exists only there. Sets are modular:
 `sets/war/{war_sets,armor,capes,weapons}.lua`; weapon sets are created by a loop in
 `war_sets.lua`. `Kaories/` and `_master/Kaories/` contain no WAR files.
 
@@ -388,11 +388,10 @@ change ends in a `gs reload`), so all values reset to their defaults. Keys from
 |-------|--------|---------|-----|---------|
 | `HybridMode` (replaced by a new `M{}`) | PDT, Normal (overlay: + SubtleBlow, Hoxne) | PDT | `^numpad9` | `set_builder.lua` `select_stance_engaged`, `select_engaged_base`, `select_idle_base`; `job_state_change` (`AmpullaLock.apply`); Mote `get_melee_set` |
 | `MainWeapon` | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic (overlay order: Chango second) | the weapon in hand, set by `sync_weapon_with_hand()` after the sets load; first option (`Ukonvasara`) when it matches no set | `^numpad1` | `set_builder.lua` `ukonvasara_am3`, `select_weapon_engaged`, `apply_weapon`; `job_state_change` (WS slots) |
-| `JumpAuto` | On, Off | On | `^numpad2` (no subjob filter) | `auto_jump.lua` `auto_trigger_jump` |
+| `JumpAuto` | On, Off | On | `^numpad2`, /DRG only (`subjob = "DRG"`) | `auto_jump.lua` `auto_trigger_jump` |
 | `WS1`..`WS5` | the weapon's WS list, or `None` | entry *i* of the list | `^numpad3`..`^numpad7` | `WSSlots.get` / `cast`; HUD |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` (never reached for WAR) |
 | `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
-| `FullEmpy` (overlay `WAR_CUSTOM.lua`) | Off, On | Off | `^numpad8` | `custom_states` gear rule |
 
 Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
 `TreasureMode` (hidden, `!numpad.`), see
@@ -466,7 +465,7 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 |------------|---------|-------------------------|---------|
 | `<char>/config/war/WAR_STATES.lua` | see states | file itself | entry `user_setup` (path hard-coded `Tetsouo/...`, replaced by the clone script) |
 | `<char>/config/war/WAR_KEYBINDS.lua` | 8 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload`, HUD |
-| `<char>/config/war/WAR_CUSTOM.lua` | template: examples only; overlay: `FullEmpy` | file | `KeybindManager` via `custom_states` |
+| `<char>/config/war/WAR_CUSTOM.lua` | examples only (template and overlay) | file | `KeybindManager` via `custom_states` |
 | `<char>/config/war/WAR_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
 | `<char>/config/war/WAR_WS_CONFIG.lua` `max_slots`, `by_weapon` | 5, 7 weapons | file (no pcall: a missing file aborts `get_sets`) | `WSSlots` via `_G.WARWSConfig` |
 | `<char>/config/war/WAR_TP_CONFIG.lua` | 5 merits, Agoge, 20 JP gifts | file | `WSPrecastHandler` via `_G.WARTPConfig` (captured on first action) |
