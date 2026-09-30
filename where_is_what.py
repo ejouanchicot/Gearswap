@@ -64,6 +64,7 @@ JOB_SUFFIXES = [
     ('_ECOSYSTEM_DATA', 'Jug pets by ecosystem'),
     ('_ELEMENTAL_CONFIG', 'Nuke settings (automatic belt, storm / day / weather checks)'),
     ('_MP_CONFIG', 'MP threshold of the job'),
+    ('_WEAPONS', 'Shield per weapon and mode, the weapon a stance forces, grips'),
     ('_TIMING_CONFIG', 'Song rotation timings (//gs c songs, //gs c dummy)'),
 ]
 GEAR = {
