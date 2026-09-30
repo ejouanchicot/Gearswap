@@ -61,6 +61,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | Path | Lines | Role |
 |---|---|---|
 | `shared/data/equipment/ITEM_HP_MP.lua` | 6 534 (6 529 entries) | Generated HP/MP table read by `hp_priority.lua` (do not edit by hand) |
+| `shared/data/equipment/PATH_RANK_GEAR.lua` | 2 598 (67 entries) | Stats of path / rank gear per path and rank, read by hand from BG-Wiki (page link and notes per entry); read by `gear_scan.lua` at `//gs c gearscan` |
 | `scripts/item_db/build_item_db.py` | 379 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
 | `scripts/item_db/find_items.py` | 94 | Query tool over the generated SQLite (`--stat hp --slot Head --job WAR --top 10`) |
 | `_master/Tetsouo/<job>/inventory/<JOB>_REFILL.lua` | 20-54 | Refill templates for Tetsouo (BLM BRD BST COR DNC PLD THF WAR) |
@@ -486,8 +487,14 @@ its base HP and MP. `//gs c gearscan` (`COMMON_COMMANDS.lua` router -> `GearScan
    once) and *File*, then "Used from the next job load."
 
 `GearScan.load()` is what `hp_priority.lua` calls at each job load: a `pcall(dofile, ...)` of that
-file, `{}` when there is none; nothing is scanned at load. Path pieces (Nyame, ...) decode as
-`Path: X` only, without the stats of the path, so those HP are not counted. `clone_character.py`
+file, `{}` when there is none; nothing is scanned at load. Path pieces (Odyssey, Unity +1, JSE
+necks...) decode as `Path: X` only; the scan keeps their `path` and `rank` and looks them up in
+`shared/data/equipment/PATH_RANK_GEAR.lua` (by long, then short name; the path letter, else
+`unspecified`): the `by_rank` row of that rank (or the highest row below it), else the `at_max` box
+once `rank >= max_rank`. Those stats are written as `rank_stats` (`HP +100` normalised to `HP+100`)
+and their HP / MP added to the entry's. On 2026-09-30 only four pieces of the table give HP that way
+(Unmoving Collar +1, Gelatinous Ring +1, War. Beads +2 and Kgt. Beads +2, the two necks only at max
+rank since their pages show no per-rank table). `clone_character.py`
 keeps `saved/gear_augments.lua` on a re-clone (`KEPT_ON_RECLONE`).
 
 ### ITEM_HP_MP.lua and its generator
@@ -907,8 +914,9 @@ Still open:
 - `wa` chat summary counts wardrobe 7 items as used while the text report does not -
   `show_ingame_summary`, `wardrobe_auditor.lua:448`
 - Duplicated code: `build_frequency_map` and `collect_all_used_names` identical (`:590`, `:686`)
-- The gear scan does not count the stats of path augments (Nyame and other path pieces decode as
-  `Path: X` only), and the cache stays as last written until `//gs c gearscan` is run again after new
-  or upgraded gear - `gear_scan.lua`
+- The gear scan counts path / rank stats only for the pieces of `PATH_RANK_GEAR.lua` (hand-read from
+  BG-Wiki, 67 pieces), and a piece whose page gives only max-rank values counts nothing below max rank;
+  the cache stays as last written until `//gs c gearscan` is run again after new or upgraded gear -
+  `gear_scan.lua`
 - User docs contradict the code: `docs/user/features/equipment-validation.md`,
   `docs/user/guides/configuration.md`, `README.md` (refill section)

@@ -15,9 +15,13 @@
 --- decide; if those still differ, the entry is marked `differ` and not used:
 --- the set has to name the augments to pick a copy anyway.
 ---
---- Path pieces (Odyssey gear, JSE necks...) decode as 'Path: A' only, without
---- the stats of the path: those HP are not counted. Their path and rank are
---- kept in the file (path = 'A', rank = 25) for whoever needs them.
+--- Path pieces (Odyssey gear, Unity +1, JSE necks...) decode as 'Path: A'
+--- only, without the stats of the path. Their path and rank are kept in the
+--- file (path = 'A', rank = 25), and what that rank gives is read from
+--- shared/data/equipment/PATH_RANK_GEAR.lua (BG-Wiki values): the stats of
+--- the rank when the page lists every rank, the max-rank stats when the piece
+--- is at max rank and the page gives only those. Those stats go to
+--- `rank_stats` and their HP / MP are added to the piece's.
 ---
 --- @file    shared/utils/equipment/gear_scan.lua
 --- @author  ejouanchicot
@@ -33,6 +37,7 @@ local function resources()
 end
 
 local FILE = 'gear_augments.lua'
+local RANK_TABLE = 'data/shared/data/equipment/PATH_RANK_GEAR.lua'
 
 --- Bags never read (items only passing through). The others come from
 --- res.bags, whose `equippable` flag marks the bags GearSwap equips from.
@@ -70,6 +75,41 @@ local function item_augments(item, extdata, res)
     return (#list > 0) and list or nil, info, ext
 end
 
+--- PATH_RANK_GEAR by long and by short name, or {} when it cannot be read.
+local function rank_table()
+    local ok, data = pcall(dofile, windower.addon_path .. RANK_TABLE)
+    if not (ok and type(data) == 'table') then return {} end
+    local out = {}
+    for long, entry in pairs(data) do
+        out[long] = entry
+        if entry.short then out[entry.short] = entry end
+    end
+    return out
+end
+
+--- Stats a path and rank give, from the table: the row of that rank (or the
+--- highest row below it), else the max-rank box once the rank is reached.
+--- 'HP +100' is written 'HP+100' so the HP / MP reading finds it.
+--- @return table|nil List of stat strings
+local function rank_stats(entry, path, rank)
+    local paths = entry and entry.paths
+    local p = paths and (paths[path] or paths.unspecified)
+    if not (p and rank) then return nil end
+    local stats
+    if type(p.by_rank) == 'table' then
+        local best = -1
+        for r, row in pairs(p.by_rank) do
+            if r <= rank and r > best then best, stats = r, row end
+        end
+    elseif p.at_max and p.max_rank and rank >= p.max_rank then
+        stats = p.at_max
+    end
+    if not stats then return nil end
+    local out = {}
+    for _, stat in ipairs(stats) do out[#out + 1] = (stat:gsub('^([HM]P) ([%+%-])', '%1%2')) end
+    return out
+end
+
 --- Text that tells two copies apart (augments, path and rank).
 local function copy_key(copy)
     return table.concat(copy.augments, '|') .. '#' .. tostring(copy.path) .. '#' .. tostring(copy.rank)
@@ -81,6 +121,7 @@ end
 --- @return table shorts Short names seen (the summary counts each piece once)
 local function collect(extdata, hp_mp)
     local res = resources()
+    local ranks = rank_table()
     local copies, pieces, shorts = {}, 0, {}
     for bag_id, bag_info in pairs(res.bags) do
         local bag = not SKIPPED[bag_info.api or ''] and windower.ffxi.get_items(bag_id)
@@ -93,6 +134,14 @@ local function collect(extdata, hp_mp)
                         local hp, mp = hp_mp(augments)
                         local copy = {hp = hp, mp = mp, augments = augments, equippable = bag_info.equippable == true,
                             path = ext.path, rank = ext.path and tonumber(ext.rank) or nil}
+                        if copy.path then
+                            local entry = ranks[(info.enl or ''):lower()] or ranks[(info.en or ''):lower()]
+                            copy.rank_stats = rank_stats(entry, copy.path, copy.rank)
+                            if copy.rank_stats then
+                                local rhp, rmp = hp_mp(copy.rank_stats)
+                                copy.hp, copy.mp = copy.hp + rhp, copy.mp + rmp
+                            end
+                        end
                         local short, long = info.en and info.en:lower(), info.enl and info.enl:lower()
                         if short then shorts[short] = true end
                         for _, n in ipairs({short, long ~= short and long or nil}) do
@@ -118,7 +167,8 @@ local function resolve(list)
             return {differ = true, copies = #pool}
         end
     end
-    return {hp = first.hp, mp = first.mp, augments = first.augments, path = first.path, rank = first.rank}
+    return {hp = first.hp, mp = first.mp, augments = first.augments, path = first.path, rank = first.rank,
+        rank_stats = first.rank_stats}
 end
 
 local function quote(s) return string.format('%q', s) end
@@ -133,7 +183,8 @@ local function render(entries)
         '-- upgraded gear. Augments of your equipment, read from every bag; the HP',
         '-- priority adds the HP / MP of a piece your sets name without augments.',
         '-- differ = copies with different augments: the set names the augments.',
-        '-- path / rank: pieces upgraded by path (Odyssey gear...), their stats are not here.',
+        '-- path / rank: pieces upgraded by path (Odyssey gear...); rank_stats: what that rank',
+        '-- gives (PATH_RANK_GEAR.lua, BG-Wiki), already counted in hp / mp.',
         'return {',
     }
     for _, name in ipairs(names) do
@@ -144,6 +195,11 @@ local function render(entries)
             local augs = {}
             for _, a in ipairs(e.augments) do augs[#augs + 1] = quote(a) end
             local ranked = e.path and (', path = %s, rank = %d'):format(quote(e.path), e.rank or 0) or ''
+            if e.rank_stats then
+                local st = {}
+                for _, a in ipairs(e.rank_stats) do st[#st + 1] = quote(a) end
+                ranked = ranked .. ', rank_stats = {' .. table.concat(st, ', ') .. '}'
+            end
             out[#out + 1] = ('    [%s] = {hp = %d, mp = %d, augments = {%s}%s},'):format(
                 quote(name), e.hp, e.mp, table.concat(augs, ', '), ranked)
         end

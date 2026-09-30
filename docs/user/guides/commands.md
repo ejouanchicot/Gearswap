@@ -50,7 +50,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | Command | Effect |
 |---|---|
 | `checksets` | Lists set items you do not have in inventory or wardrobes (`STORAGE` = in another bag, `MISSING` = nowhere) |
-| `gearscan` | Reads the augments of all your gear, in every bag, and saves them (`saved/gear_augments.lua`) so the HP priority also counts the HP / MP of pieces your sets name without augments. Run it once, and again after new or upgraded gear; used from the next job load |
+| `gearscan` | Reads the augments of all your gear, in every bag, and saves them (`saved/gear_augments.lua`) so the HP priority also counts the HP / MP of pieces your sets name without augments, and the HP that some pieces get from their rank (Unmoving Collar +1, Gelatinous Ring +1, War. / Kgt. Beads +2). Run it once, and again after new or upgraded gear; used from the next job load |
 | `wa` (`wardrobeaudit`) | Wardrobe items no set file uses; report written to `data/wardrobe_audit.txt` |
 | `wo` (`worganize`) | Wardrobe organizer: moves the gear you use into the first wardrobes, the rest into overflow bags |
 | `wo preview` | What it would move, without moving |
