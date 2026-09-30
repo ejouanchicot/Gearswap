@@ -38,16 +38,21 @@ A character exists in up to four places:
 1. **Generic templates**: `_master/entry`, `_master/sets`, `_master/config/<job>`, `_master/config/alt`, `_master/config_global`. Since 2026-09-30 an entry template is one line, `include('../shared/entry/<job>.lua')`: the code of every entry lives in `shared/entry/<job>.lua`, the same for every character, and finds the character's files through `shared/utils/core/char_paths.lua` (`CharPaths.module('job', 'PLD_STATES', 'PLD')`, `CharPaths.relative('sets', 'pld_sets.lua', 'PLD')`, `ConfigLoader.load_ui_config(CharPaths.name(), 'PLD')`). An update of `shared/` updates every entry, with no re-clone. The overlays no longer have `entry/` folders (moved to `data/_backups/overlay_entries_20260930/`).
 2. **Overlay** `_master/<Name>/`: files with the same relative path as a generic file replace it during a clone, and files with no generic counterpart are added. An overlay is used to build the character it belongs to, or for any target when `--source <Name>` names it (see [Source selection](#source-selection)). It can hold a modular set tree `sets/<job>/`, which then replaces the generic flat `sets/<job>_sets.lua`, plus `sets/common/` and loose set files. An overlay may omit `entry/`: the generic entry is then used and renamed.
 3. **Live folder** `data/<Name>/`: what GearSwap loads. Gitignored.
-4. **Runtime-written files** inside the live folder, written by in-game commands: in `saved/`, `ui_settings.lua` (HUD position), `message_modes.lua`, `WARP_ITEMS_OWNED.lua`, `dualbox_role.lua`, `alt_state.lua`, `alt_window.lua`, `temp_binds.lua`, the trace files (`trace.log`, `trace.on`) and `atelier/`; settings the player also edits, rewritten by commands: `common/combat_mode.lua`, `common/treasure_mode.lua`, `common/STEALTH_CONFIG.lua`, `common/UI_CONFIG.lua` (some lines), `<job>/<JOB>_HUD.lua` (HUD row order).
+4. **Runtime-written files** inside the live folder, written by in-game commands: in `saved/`, `ui_settings.lua` (HUD position), `message_modes.lua`, `WARP_ITEMS_OWNED.lua`, `dualbox_role.lua`, `alt_state.lua`, `alt_window.lua`, `temp_binds.lua`, the trace files (`trace.log`, `trace.on`) and `atelier/`; settings the player also edits, rewritten by commands: `common/keys/combat_mode.lua`, `common/keys/treasure_mode.lua`, `common/combat/STEALTH_CONFIG.lua`, `common/display/UI_CONFIG.lua` (some lines), `<job>/<JOB>_HUD.lua` (HUD row order).
 
 ### Layout of a character folder (since 2026-09-30)
 
 ```
 data/<Char>/
     <Char>_<JOB>.lua    one line: include('../shared/entry/<job>.lua')
-    common/             settings of the whole character (UI_CONFIG, DUALBOX_CONFIG, REFILL_CONFIG,
-                        CRAFT_CONFIG, CRAFT_REFILL, WARDROBE_CONFIG, COMMON_KEYBINDS...)
-        alt/            <JOB>_ALT_CUSTOM.lua only (the generated tables are shared/data/alt/)
+    common/             settings of the whole character, one folder per theme
+        display/        UI_CONFIG, UI_COLOR_CONFIG, REGION_CONFIG, LOCKSTYLE_CONFIG
+        keys/           COMMON_KEYBINDS, combat_mode, treasure_mode
+        dualbox/        DUALBOX_CONFIG
+            alt/        <JOB>_ALT_CUSTOM.lua only (the generated tables are shared/data/alt/)
+        inventory/      REFILL_CONFIG, CRAFT_CONFIG, CRAFT_REFILL, WARDROBE_CONFIG
+        combat/         AUTO_ABILITIES, RECAST_CONFIG, DW_CONFIG, ELEMENTAL_BELT, WEAPON_CONFIG,
+                        STEALTH_CONFIG
         sets/           gear shared by jobs (rings.lua, 0_AugGear_<Name>.lua), craft and
                         fishing set files
     <job>/              settings of one job: <JOB>_STATES, _KEYBINDS, _CUSTOM, _HUD, _LOCKSTYLE,
@@ -56,7 +61,7 @@ data/<Char>/
     saved/              files the game writes (see 4.)
 ```
 
-Every path goes through `shared/utils/core/char_paths.lua`: kinds `common`, `alt`, `craft` (CRAFT_REFILL), `gear` (`common/sets/`), `job`, `sets` (`<job>/sets/`), `saved`. Settings files are upper-case, gear files lower-case. A lookup tries the new place first, then the old ones (`config/<FILE>`, `config/<job>/`, `config/alt/`, `config/craft/`, `sets/<job>_sets.lua`, `sets/<job>/`, files at the folder root, and the first form of this layout that kept gear next to the settings and had `common/craft/`), so a folder in the old layout (Hysoka, frozen) keeps working. A file that exists nowhere is created where the folder's layout puts it: the new place once the folder has `common/`, else the old place, and no folder is ever created in an old-layout folder. `CharPaths.legacy_module` translates the old-style names still passed by the 44 `<JOB>_LOCKSTYLE/_MACROBOOK` modules (`'config/war/WAR_LOCKSTYLE'`).
+Every path goes through `shared/utils/core/char_paths.lua`: kinds `common` (its theme folder from `COMMON_GROUPS`, a file not listed stays at the root of `common/`; `migrate_layout.py` has the same table), `alt`, `craft` (CRAFT_REFILL), `gear` (`common/sets/`), `job`, `sets` (`<job>/sets/`), `saved`. Settings files are upper-case, gear files lower-case. A lookup tries the new place first, then the old ones (`config/<FILE>`, `config/<job>/`, `config/alt/`, `config/craft/`, `sets/<job>_sets.lua`, `sets/<job>/`, files at the folder root, and the first form of this layout that kept gear next to the settings and had `common/craft/`), so a folder in the old layout (Hysoka, frozen) keeps working. A file that exists nowhere is created where the folder's layout puts it: the new place once the folder has `common/`, else the old place, and no folder is ever created in an old-layout folder. `CharPaths.legacy_module` translates the old-style names still passed by the 44 `<JOB>_LOCKSTYLE/_MACROBOOK` modules (`'config/war/WAR_LOCKSTYLE'`).
 
 `migrate_layout.py <Char>` (in `data/`) moves an old-layout folder: backup in `data/_backups/<Char>_<date>/`, moves by `new_place()`, drops `config/alt/*_ALT_COMMANDS.lua` and `*.example`, rewrites the `require`/`include` paths inside the character's files (`'<Char>/sets/war/armor'` -> `'<Char>/war/sets/armor'`, `include('sets/0_AugGear_X.lua')` -> `include('common/0_AugGear_X.lua')`), shortens the entries, never overwrites (a taken new place leaves the file where it is, listed). Tetsouo was moved on 2026-09-30.
 
@@ -214,27 +219,27 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `<job>/<JOB>_HUD.lua` | `shared/utils/ui/hud_job_config.lua` | - | `//gs c ui roworder`; kept on re-clone |
 | `<job>/<JOB>_REFILL.lua` | `resolve_list_for_player` (`shared/utils/inventory/refill/config_resolver.lua`) | step 4a, when an overlay or template has it | - |
 | `whm/WHM_CURE_CONFIG.lua` | `shared/utils/whm/cure_manager.lua` | step 4a | - |
-| `common/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua` | entries (file level / `get_sets`) | step 4c | - |
-| `common/COMMON_KEYBINDS.lua` | `shared/utils/keybinds/common_keybinds.lua` | step 4c | - |
-| `common/UI_CONFIG.lua` | `ConfigLoader.load_ui_config` (dofile) | step 4c | - |
-| `common/UI_COLOR_CONFIG.lua` | `shared/utils/ui/COLOR_SYSTEM.lua` | step 4c | - |
+| `common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua` | entries (file level / `get_sets`) | step 4c | - |
+| `common/keys/COMMON_KEYBINDS.lua` | `shared/utils/keybinds/common_keybinds.lua` | step 4c | - |
+| `common/display/UI_CONFIG.lua` | `ConfigLoader.load_ui_config` (dofile) | step 4c | - |
+| `common/display/UI_COLOR_CONFIG.lua` | `shared/utils/ui/COLOR_SYSTEM.lua` | step 4c | - |
 | `saved/ui_settings.lua` | `shared/config/ui_settings.lua` | step 4c; kept on re-clone | same module |
 | `saved/message_modes.lua` | `shared/config/message_settings.lua` | step 4c; kept on re-clone | same module |
-| `common/AUTO_ABILITIES.lua` | `AutoOptions.on` (`shared/utils/core/auto_options.lua`) | step 4c | - |
-| `common/DW_CONFIG.lua` | `shared/utils/equipment/dual_wield.lua` | step 4c | - |
-| `common/ELEMENTAL_BELT.lua` | `shared/utils/equipment/elemental_belt.lua` | step 4c | - |
-| `common/WEAPON_CONFIG.lua` | `shared/utils/equipment/weapon_resolver.lua`, BLU `set_builder.lua` | step 4c | - |
-| `common/STEALTH_CONFIG.lua` | `shared/utils/stealth/stealth_config.lua` | step 4c; kept on re-clone | `//gs c stealth ...` |
-| `common/combat_mode.lua`, `common/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
-| `common/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` | step 4c (overlay only) | - |
-| `common/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
-| `common/REFILL_CONFIG.lua` (refill bags) | `shared/utils/inventory/refill/config_resolver.lua` | step 4c | - |
-| `common/CRAFT_REFILL.lua` (template: empty list) | `config_resolver.lua` | step 4 | Tetsouo's |
+| `common/combat/AUTO_ABILITIES.lua` | `AutoOptions.on` (`shared/utils/core/auto_options.lua`) | step 4c | - |
+| `common/combat/DW_CONFIG.lua` | `shared/utils/equipment/dual_wield.lua` | step 4c | - |
+| `common/combat/ELEMENTAL_BELT.lua` | `shared/utils/equipment/elemental_belt.lua` | step 4c | - |
+| `common/combat/WEAPON_CONFIG.lua` | `shared/utils/equipment/weapon_resolver.lua`, BLU `set_builder.lua` | step 4c | - |
+| `common/combat/STEALTH_CONFIG.lua` | `shared/utils/stealth/stealth_config.lua` | step 4c; kept on re-clone | `//gs c stealth ...` |
+| `common/keys/combat_mode.lua`, `common/keys/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
+| `common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` | step 4c (overlay only) | - |
+| `common/inventory/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
+| `common/inventory/REFILL_CONFIG.lua` (refill bags) | `shared/utils/inventory/refill/config_resolver.lua` | step 4c | - |
+| `common/inventory/CRAFT_REFILL.lua` (template: empty list) | `config_resolver.lua` | step 4 | Tetsouo's |
 | `common/sets/craft_sets.lua` and the overlay's loose set files | `craft_commands.lua` | step 3 | Tetsouo's `bonecraft_sets.lua`, `fishing_sets.lua`; Gab's `goldsmithing_sets.lua` |
-| `common/DUALBOX_CONFIG.lua` | `DualBoxManager.initialize` | step 6 (generated) | - |
-| `common/REGION_CONFIG.lua` | entries, `message_colors.lua` | step 6 (generated) | - |
-| `common/alt/<JOB>_ALT_COMMANDS.lua`, `<JOB>_ALT_CUSTOM.lua` | `load_job_config` in `alt_commands.lua` (MAIN only, `_master/config/alt/` as fallback) | step 4b, MAIN only | - |
-| `common/CRAFT_REFILL.lua` | `config_resolver.lua` | step 4b | - |
+| `common/dualbox/DUALBOX_CONFIG.lua` | `DualBoxManager.initialize` | step 6 (generated) | - |
+| `common/display/REGION_CONFIG.lua` | entries, `message_colors.lua` | step 6 (generated) | - |
+| `common/dualbox/alt/<JOB>_ALT_COMMANDS.lua`, `<JOB>_ALT_CUSTOM.lua` | `load_job_config` in `alt_commands.lua` (MAIN only, `_master/config/alt/` as fallback) | step 4b, MAIN only | - |
+| `common/inventory/CRAFT_REFILL.lua` | `config_resolver.lua` | step 4b | - |
 | `common/sets/<craft>_sets.lua` | `shared/utils/craft/craft_manager.lua` | step 3 (loose overlay sets) | - |
 | `saved/WARP_ITEMS_OWNED.lua` | `WarpOwned.load` (`shared/utils/wardrobe/lib/warp_owned.lua`) | kept on re-clone | `//gs c wo scan`, `WarpOwned.save` |
 | `saved/dualbox_role.lua` | `DualBoxRole.apply_saved` | never (deliberately not kept) | `//gs c main` on either box |

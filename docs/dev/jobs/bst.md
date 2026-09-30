@@ -399,7 +399,7 @@ flowchart TD
 Created by `BSTStates.configure()` on every `user_setup()`; `species` and
 `ammoSet` are created by `EcosystemManager`. Keys from `BST_KEYBINDS.lua`;
 `^` = Ctrl, `#` = Apps. Common keys come from the character's
-`common/COMMON_KEYBINDS.lua`.
+`common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -500,8 +500,8 @@ carried, overwritten at load and read by nothing, were removed on 2026-09-28).
 | `<Char>/bst/BST_TP_CONFIG.lua` -> `_G.BSTTPConfig` | Moonshade 250, `fencer_jp_gifts = 4` | file | `WSPrecastHandler` -> `tp_bonus_calculator.lua`; plain `require` in `get_sets` |
 | `<Char>/bst/BST_ECOSYSTEM_DATA.lua` | correlation matrix | file | **nothing** |
 | `<Char>/bst/BST_REFILL.lua` (overlay only) | medicines, Pet Food Theta (`all`), food; `/DNC` variant | file; refill fallback list without it | refill system ([equipment and inventory](../systems/equipment-and-inventory.md)) |
-| `<Char>/common/LOCKSTYLE_CONFIG.lua` | `initial_load_delay 8` | entry fallback table | entry |
-| `<Char>/common/RECAST_CONFIG.lua` (plain `require`), `REGION_CONFIG.lua`, `UI_CONFIG.lua` | - | shared | entry |
+| `<Char>/common/display/LOCKSTYLE_CONFIG.lua` | `initial_load_delay 8` | entry fallback table | entry |
+| `<Char>/common/combat/RECAST_CONFIG.lua` (plain `require`), `REGION_CONFIG.lua`, `UI_CONFIG.lua` | - | shared | entry |
 
 `BSTTPConfig.get_fencer_bonus` treats any sub item as dual-wielding under /NIN
 or /DNC, shields included (its comment now says so).

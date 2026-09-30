@@ -391,7 +391,7 @@ change ends in a `gs reload`), so all values reset to their defaults. Keys from
 | `JumpAuto` | On, Off | On | `^numpad2`, /DRG only (`subjob = "DRG"`) | `auto_jump.lua` `auto_trigger_jump` |
 | `WS1`..`WS5` | the weapon's WS list, or `None` | entry *i* of the list | `^numpad3`..`^numpad7` | `WSSlots.get` / `cast`; HUD |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` (never reached for WAR) |
-| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `common/COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
+| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `common/keys/COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
 
 Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
 `TreasureMode` (hidden, `!numpad.`), see
@@ -472,8 +472,8 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 | `<char>/war/WAR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 4 (all subjobs) | file; factory fallback 4 (`WAR_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
 | `<char>/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
 | `<char>/war/WAR_REFILL.lua` | not in the template (overlay only) | player-created | `//gs c refill` (fallback list without it) |
-| `<char>/common/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
-| `<char>/common/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
+| `<char>/common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
+| `<char>/common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
 

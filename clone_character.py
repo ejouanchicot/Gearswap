@@ -318,8 +318,11 @@ KEPT_ON_RECLONE = [
     ('saved', 'alt_state.lua'),
     ('saved', 'WARP_ITEMS_OWNED.lua'),
     ('saved', 'temp_binds.lua'),
-    ('common', 'combat_mode.lua'),
-    ('common', 'treasure_mode.lua'),  # //gs c th show | hide | key
+    ('common', 'keys', 'combat_mode.lua'),
+    ('common', 'keys', 'treasure_mode.lua'),  # //gs c th show | hide | key
+    ('common', 'combat', 'STEALTH_CONFIG.lua'),
+    ('common', 'combat_mode.lua'),    # first form of the layout
+    ('common', 'treasure_mode.lua'),
     ('common', 'STEALTH_CONFIG.lua'),
     ('*', '*_HUD.lua'),             # per-job HUD row order (//gs c ui roworder)
     # the same files in a folder cloned before

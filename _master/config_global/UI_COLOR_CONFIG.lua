@@ -12,7 +12,7 @@
 ---   2. Reload GearSwap (//lua reload gearswap) to apply changes
 ---   3. Colors defined here take precedence over default shared colors
 ---
---- @file config/UI_COLOR_CONFIG.lua
+--- @file common/display/UI_COLOR_CONFIG.lua
 --- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-10-03 | Updated: 2025-11-10

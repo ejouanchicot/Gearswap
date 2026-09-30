@@ -232,7 +232,7 @@ equipped after the variant, on any weaponskill (since 2026-09-29).
 
 Then, with Saber Dance up, `sets.buff['Saber Dance']` is combined on top
 (since 2026-09-29), then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
-set, main + sub; with `equip_without_set` in `common/WEAPON_CONFIG.lua`, a
+set, main + sub; with `equip_without_set` in `common/combat/WEAPON_CONFIG.lua`, a
 value with no set but a weapon name gives `{main = value}`), then, when
 `SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. That field
 is written into `result`, which is a fresh table only when the weapon set was
@@ -308,7 +308,7 @@ from `shared/hooks/init_spell_messages.lua`.
 
 Created by `DNCStates.configure()` on every `user_setup()`. Keybinds from
 `_master/config/dnc/DNC_KEYBINDS.lua`, all `cyclestate`; `#numpad0`
-(AutoMedicine) comes from the character's `common/COMMON_KEYBINDS.lua`. No bind
+(AutoMedicine) comes from the character's `common/keys/COMMON_KEYBINDS.lua`. No bind
 is filtered by subjob.
 
 | State | Values | Default | Key | Read by |

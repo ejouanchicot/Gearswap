@@ -71,7 +71,7 @@ lists are in [states.md](states.md).
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `BLM_CUSTOM.lua` (empty in the template) | yes |
 
-The common keys come from `<YourName>/common/COMMON_KEYBINDS.lua`: edit that
+The common keys come from `<YourName>/common/keys/COMMON_KEYBINDS.lua`: edit that
 file to change them for every job at once. Combat Mode needs no extra key on
 BLM: it is native here, on Ctrl+Numpad8.
 

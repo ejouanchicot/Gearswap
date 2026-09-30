@@ -6,8 +6,13 @@
 ---
 --- Layout since 2026-09-30:
 ---   <Char>/<Char>_<JOB>.lua      one-line entry (GearSwap needs this name)
----   <Char>/common/               settings for the whole character
----       alt/                     the dual-box alt's own commands (*_ALT_CUSTOM)
+---   <Char>/common/               settings for the whole character, by theme
+---       display/                 HUD, colours, region, lockstyle delay
+---       keys/                    common keys, Combat Mode / Treasure Mode keys
+---       dualbox/                 dual-box settings; alt/ = the alt's own commands
+---       inventory/               refill, craft, wardrobe organizer
+---       combat/                  automatic abilities, recasts, Dual Wield, belt,
+---                                weapons, Sneak / Invisible
 ---       sets/                    gear shared by jobs (rings.lua...), craft and
 ---                                fishing sets
 ---   <Char>/<job>/                settings of one job
@@ -36,13 +41,27 @@ local CharPaths = {}
 --- first. %s is the file name, %j the job in lower case.
 local LAYOUT = {
     common = {'common/%s', 'config/%s'},
-    alt    = {'common/alt/%s', 'config/alt/%s'},
-    craft  = {'common/%s', 'common/craft/%s', 'config/craft/%s'},
+    alt    = {'common/dualbox/alt/%s', 'common/alt/%s', 'config/alt/%s'},
+    craft  = {'common/inventory/%s', 'common/%s', 'common/craft/%s', 'config/craft/%s'},
     gear   = {'common/sets/%s', 'common/craft/%s', 'common/%s', 'sets/common/%s', 'sets/%s'},
     job    = {'%j/%s', 'config/%j/%s'},
     sets   = {'%j/sets/%s', '%j/%s', 'sets/%j/%s', 'sets/%s'},
     saved  = {'saved/%s', 'config/%s', '%s'},
 }
+
+--- Theme folder of each character setting in common/. A file not listed
+--- here stays at the root of common/.
+local COMMON_GROUPS = {
+    ['UI_CONFIG.lua'] = 'display', ['UI_COLOR_CONFIG.lua'] = 'display',
+    ['REGION_CONFIG.lua'] = 'display', ['LOCKSTYLE_CONFIG.lua'] = 'display',
+    ['COMMON_KEYBINDS.lua'] = 'keys', ['combat_mode.lua'] = 'keys', ['treasure_mode.lua'] = 'keys',
+    ['DUALBOX_CONFIG.lua'] = 'dualbox',
+    ['REFILL_CONFIG.lua'] = 'inventory', ['CRAFT_CONFIG.lua'] = 'inventory',
+    ['CRAFT_REFILL.lua'] = 'inventory', ['WARDROBE_CONFIG.lua'] = 'inventory',
+    ['AUTO_ABILITIES.lua'] = 'combat', ['RECAST_CONFIG.lua'] = 'combat', ['DW_CONFIG.lua'] = 'combat',
+    ['ELEMENTAL_BELT.lua'] = 'combat', ['WEAPON_CONFIG.lua'] = 'combat', ['STEALTH_CONFIG.lua'] = 'combat',
+}
+CharPaths.COMMON_GROUPS = COMMON_GROUPS
 
 --- Old place of a file that exists nowhere yet, per kind (the path the code
 --- used before 2026-09-30).
@@ -93,13 +112,16 @@ local function legacy_default(kind, file, job)
 end
 
 --- Candidate paths of one file, relative to the character folder.
---- @param kind string common | alt | craft (CRAFT_REFILL) | gear (common/sets/:
+--- @param kind string common (its theme folder from COMMON_GROUPS) | alt | craft (CRAFT_REFILL) | gear (common/sets/:
 ---   shared gear, craft sets) | job | sets (a job's gear) | saved
 --- @param file string File name (with .lua for files, without for modules)
 --- @param job string|nil Job code, for job and sets
 --- @return table
 local function candidates(kind, file, job)
     local out = {}
+    if kind == 'common' and COMMON_GROUPS[file] then
+        out[1] = 'common/' .. COMMON_GROUPS[file] .. '/' .. file
+    end
     for _, pattern in ipairs(LAYOUT[kind] or {}) do
         out[#out + 1] = fill(pattern, file, job)
     end

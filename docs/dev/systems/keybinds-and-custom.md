@@ -4,7 +4,7 @@ Six pieces decide what a key does and what extra gear goes on:
 
 1. **KeybindManager** (`shared/utils/keybinds/keybind_manager.lua`). Every job's `<JOB>_KEYBINDS.lua` is a plain data file that ends with `return require('shared/utils/keybinds/keybind_manager').create('<JOB>', module)`. The factory attaches the functions that the entry file, the HUD and KeybindGuard call: `get_active_binds`, `bind_all`, `refresh`, `unbind_all`, `show_intro` and `show_binds`.
 2. **Optional states** (`shared/utils/core/optional_state.lua`). These are modes the project adds to every job, each shown or hidden per job: Combat Mode (`combat_mode.lua`) and Treasure Mode (`treasure_hunter.lua`). `create` attaches their HUD rows and keys to each job's bind list.
-3. **Common keys** (`shared/utils/keybinds/common_keybinds.lua`). Keys that every job of a character gets, from `<Character>/common/COMMON_KEYBINDS.lua`.
+3. **Common keys** (`shared/utils/keybinds/common_keybinds.lua`). Keys that every job of a character gets, from `<Character>/common/keys/COMMON_KEYBINDS.lua`.
 4. **Key conflicts** (`shared/utils/keybinds/key_conflicts.lua`). When two entries want the same key, the conflict is reported, never resolved.
 5. **Player modes and gear rules** (`shared/utils/custom/*.lua`). An optional `<Character>/<job>/<JOB>_CUSTOM.lua` adds Mote states with a key, and gear that goes on last, over what the job picked.
 6. **Temporary binds** (`//gs c tb`, `shared/utils/keybinds/temp_binds.lua`). Keys made in game for a repetitive task, on Ctrl/Alt+F1-F8.
@@ -214,7 +214,7 @@ Every change rewrites the whole settings file, starting with the mode's `header`
 |---|---|---|
 | Module | `shared/utils/core/combat_mode.lua` | `shared/utils/equipment/treasure_hunter.lua` (`TreasureHunter.optional`) |
 | State / values | `CombatMode`: `Off`, `On` | `TreasureMode`: `Off`, `Tag`, `Full` (THF's own STATES: `Tag`, `SATA`, `Full`) |
-| Settings file | `<Character>/common/combat_mode.lua` | `<Character>/common/treasure_mode.lua` |
+| Settings file | `<Character>/common/keys/combat_mode.lua` | `<Character>/common/keys/treasure_mode.lua` |
 | Native (shown by default) | BLM, GEO, RDM, WHM | THF |
 | Key when native | the job file's own entry: BLM `^numpad8`, GEO `^numpad0`, RDM `^numpad5`, WHM `^numpad2` | THF `^numpad3` |
 | Default key elsewhere | `!numpad0` (free on every job file) | `!numpad.` |
@@ -476,8 +476,8 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 | File | Content |
 |---|---|
 | `<Char>/<job>/<JOB>_KEYBINDS.lua` | the job's entries, `retired_keys` |
-| `<Char>/common/COMMON_KEYBINDS.lua` | `CommonKeybinds.binds`, same entry format (+ `override`) |
-| `<Char>/common/combat_mode.lua`, `treasure_mode.lua` | `{shown, hidden, keys}` per job; rewritten by the commands, header included |
+| `<Char>/common/keys/COMMON_KEYBINDS.lua` | `CommonKeybinds.binds`, same entry format (+ `override`) |
+| `<Char>/common/keys/combat_mode.lua`, `treasure_mode.lua` | `{shown, hidden, keys}` per job; rewritten by the commands, header included |
 | `<Char>/<job>/<JOB>_CUSTOM.lua` | modes and rules; the templates are fully commented and return `{}` |
 | `<Char>/temp_binds.lua` | written by `tb`, not edited by hand |
 

@@ -23,7 +23,7 @@ in town too.
 - Add a weapon: add its name to `MainWeapon` or `SubWeapon` in `BRD_STATES.lua` and a
   set with that exact name.
 - A value with no set of that name forces no weapon. If your
-  `common/WEAPON_CONFIG.lua` has `equip_without_set = true`, a value that is an exact
+  `common/combat/WEAPON_CONFIG.lua` has `equip_without_set = true`, a value that is an exact
   weapon name is put in its hand without a set.
 - Buff songs swap your weapons (see [Songs](#songs)); the weapon sets come back as soon
   as the song is over and your idle or engaged gear is put back.

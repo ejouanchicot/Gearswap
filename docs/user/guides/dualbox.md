@@ -33,7 +33,7 @@ Two characters on the same PC, both running this setup, one **main** and one
 3. Load both characters. About 2 seconds after the load, each box sends its
    job to the other.
 
-The script writes `<Name>/common/DUALBOX_CONFIG.lua`. On the main:
+The script writes `<Name>/common/dualbox/DUALBOX_CONFIG.lua`. On the main:
 
 ```lua
 DualBoxConfig.role = "main"
@@ -60,7 +60,7 @@ On the alt, `role = "alt"` and `main_character = "Bob"` instead of
 The job exchange and the alt commands work with one partner; the `alts`
 orders and the alt window work with every member of `group`.
 
-Only the main gets `common/alt/` (the alt command files) from the clone
+Only the main gets `common/dualbox/alt/` (the alt command files) from the clone
 script.
 
 ## Box group orders (`//gs c alts`)
@@ -187,7 +187,7 @@ spell name**, lowercase, no spaces - `//gs c haste`, `//gs c dia`,
 
 ### Changing the commands
 
-The command files are in the MAIN's folder, `<Main>/common/alt/`.
+The command files are in the MAIN's folder, `<Main>/common/dualbox/alt/`.
 `<JOB>_ALT_COMMANDS.lua` is **generated** from the game data and gets rebuilt
 whenever the spell list changes - anything you write in it is lost.
 
@@ -198,7 +198,7 @@ regenerated, and it is merged on top of the generated file. A commented
 `_ALT_CUSTOM.lua` in use.
 
 ```
-<Main>/common/alt/RDM_ALT_CUSTOM.lua
+<Main>/common/dualbox/alt/RDM_ALT_CUSTOM.lua
 ```
 
 Three things it can do:

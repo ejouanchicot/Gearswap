@@ -35,7 +35,7 @@
 ---   //gs c dw auto                     back to the estimate
 --- After editing this file: //gs reload.
 ---
---- @file    config/DW_CONFIG.lua
+--- @file    common/combat/DW_CONFIG.lua
 --- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-28

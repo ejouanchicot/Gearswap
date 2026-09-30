@@ -11,7 +11,7 @@
 ---   that slot; keep one for an augmented weapon (two copies with different
 ---   augments cannot be told apart by name).
 ---
---- @file config/WEAPON_CONFIG.lua
+--- @file common/combat/WEAPON_CONFIG.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25

@@ -11,7 +11,7 @@
 ---                  TP, Expiacion is cancelled once; pressed again within 3 s,
 ---                  it goes
 ---
---- @file config/AUTO_ABILITIES.lua
+--- @file common/combat/AUTO_ABILITIES.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25

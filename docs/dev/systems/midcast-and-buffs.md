@@ -371,7 +371,7 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 | `//gs c dispel` | BLM, GEO | `cast_under_black_addendum('Dispel', ...)` |
 | `//gs c smartbuff` | THF, DNC (also `buffself`) | Job smartbuff, using `SubjobWarBuffs` for /WAR |
 
-`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/common/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
+`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/common/dualbox/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
 
 ### Scholar commands
 

@@ -13,7 +13,7 @@
 --- Loaded by every job entry file (pcall require) and exposed as
 --- _G.LockstyleConfig. Its one setting is initial_load_delay.
 ---
---- @file config/LOCKSTYLE_CONFIG.lua
+--- @file common/display/LOCKSTYLE_CONFIG.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-03

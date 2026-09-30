@@ -359,7 +359,7 @@ flowchart TD
 
 Created by `BRDStates.configure()` on every `user_setup()`. Keys from
 `_master/config/brd/BRD_KEYBINDS.lua`; `^` = Ctrl, `#` = Apps. `#numpad0`
-(AutoMedicine) comes from the character's `common/COMMON_KEYBINDS.lua`.
+(AutoMedicine) comes from the character's `common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|

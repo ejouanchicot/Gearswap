@@ -58,7 +58,7 @@ function, not a line number.
 | `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | `refine_spell` / `refine_and_cast` for the nuke commands |
 | `shared/jobs/geo/functions/logic/set_builder.lua` | HybridMode / `sets.luopan` selection, town, weapons, movement |
 | `shared/data/spells/NUKE_TIERS.lua` | Tier table for Fire..Water (V-base), the -ra (III-base) and Aspir (III-base), shared with RDM |
-| `shared/utils/core/auto_options.lua` | Reads `<Character>/common/AUTO_ABILITIES.lua` |
+| `shared/utils/core/auto_options.lua` | Reads `<Character>/common/combat/AUTO_ABILITIES.lua` |
 | `_master/config/geo/GEO_STATES.lua` | All states (`GEOStates.configure()`) |
 | `_master/config/geo/GEO_KEYBINDS.lua` | 12 binds, data only; `KeybindManager.create('GEO', ...)` ([keybinds](../systems/keybinds-and-custom.md)) |
 | `_master/config/geo/GEO_CUSTOM.lua` | Player modes and gear rules (all examples commented out) |
@@ -288,7 +288,7 @@ diagnostic.)
 
 Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 `GEO_KEYBINDS.lua`; `#numpad0` (AutoMedicine) comes from the character's
-`common/COMMON_KEYBINDS.lua`.
+`common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -361,9 +361,9 @@ T = in `_master/sets/geo_sets.lua`.
 | `<char>/geo/GEO_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 5 | `LockstyleManager` via `get_style` (factory fallback 1) |
 | `<char>/geo/GEO_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 5 page 1; `dualbox` empty | `MacrobookManager` (factory fallback book 1) |
 | `<char>/geo/GEO_TP_CONFIG.lua` -> `_G.GEOTPConfig` | Moonshade 250 in `pieces` | TP bonus calculator |
-| `<char>/common/AUTO_ABILITIES.lua` `geo_entrust`, `geo_full_circle` | false, false | `AutoOptions.on` from `GeoAutoAbilities.apply` |
+| `<char>/common/combat/AUTO_ABILITIES.lua` `geo_entrust`, `geo_full_circle` | false, false | `AutoOptions.on` from `GeoAutoAbilities.apply` |
 | `<char>/geo/GEO_REFILL.lua` | none in the template (the alt overlay has one) | refill system (`FALLBACK_LIST` without it) |
-| `<char>/common/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
+| `<char>/common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
 | PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` |
 
 ## State & lifetime

@@ -62,7 +62,7 @@ the job.
 | `^-` / `^=` | Mote: NPC target selection on / off, party target mode | always | not on the HUD |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | once you make one | listed by `tb list` |
 
-- The six common keys come from your `common/COMMON_KEYBINDS.lua`; the rows
+- The six common keys come from your `common/keys/COMMON_KEYBINDS.lua`; the rows
   above are the template's. The Alt+Numpad7-9 keys matter only when you
   dual-box.
 - A key with `weapon = "Sword"` (or `"Club"`, `"Great Katana"`...) is bound
@@ -126,10 +126,10 @@ Checked in the code for BLU:
 | Feature | Effect on BLU |
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, paralysis, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
-| Recast check | An ability or spell on recast is cancelled with its time left (before Unbridled Learning is considered). Optional party message per action in `common/RECAST_CONFIG.lua` |
+| Recast check | An ability or spell on recast is cancelled with its time left (before Unbridled Learning is considered). Optional party message per action in `common/combat/RECAST_CONFIG.lua` |
 | Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `BLU_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
-| Automatic abilities | `blu_unbridled` and `blu_expiacion_window` in `common/AUTO_ABILITIES.lua`, both off: see [states.md](states.md#automatic-abilities) |
-| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Magical Blue Magic, Sanguine Blade and the other elemental weaponskills when they add at least 5 % (`common/ELEMENTAL_BELT.lua`, `//gs c belt`) |
+| Automatic abilities | `blu_unbridled` and `blu_expiacion_window` in `common/combat/AUTO_ABILITIES.lua`, both off: see [states.md](states.md#automatic-abilities) |
+| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Magical Blue Magic, Sanguine Blade and the other elemental weaponskills when they add at least 5 % (`common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) |
 | Combat Mode | Hidden; `//gs c combatmode show`, then `!numpad0`: On locks main, sub and range |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
 | Dual Wield tiers | With two weapons and engaged, `sets.DW.<tier>` on top by your magic haste. The template has it commented out |
@@ -143,7 +143,7 @@ Checked in the code for BLU:
 | Keybind HUD, key guard | The HUD shows every mode; the keys are sent again 2 s after each load |
 | Dual-box | Job exchange with your other boxes, alt commands, macro book per alt job |
 | Chat messages | Ability / spell / weaponskill messages, set with `jamsg`, `spellmsg`, `wsmsg` |
-| Plain weapon names | With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a weapon value that is a real weapon name needs no set |
+| Plain weapon names | With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a weapon value that is a real weapon name needs no set |
 | HP priority | Gear swap order by HP: only for the characters the code lists, not for a new clone |
 
 ## Configuration files for this job

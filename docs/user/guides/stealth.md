@@ -15,7 +15,7 @@ alone.
 - The Windower **`Cancel`** addon: a Sneak or Invisible still up blocks a new
   one, so it is removed with `cancel Sneak` / `cancel Invisible` just before
   the new cast.
-- `common/STEALTH_CONFIG.lua` in your character folder. The clone script
+- `common/combat/STEALTH_CONFIG.lua` in your character folder. The clone script
   copies it; without it the defaults below apply and changes made in game are
   not saved.
 
@@ -35,9 +35,9 @@ alone.
 | `//gs c stealth alerts on` / `off` | Wear-off warnings in chat (default on) |
 | `//gs c stealth delay <s>` | Pause after each action before the next one (default 3.0) |
 
-The keys are in `common/COMMON_KEYBINDS.lua`, so every job gets them (see
+The keys are in `common/keys/COMMON_KEYBINDS.lua`, so every job gets them (see
 [keybinds](keybinds.md#common-keys)). The five settings are saved in
-`common/STEALTH_CONFIG.lua` as soon as you change them.
+`common/combat/STEALTH_CONFIG.lua` as soon as you change them.
 
 ## What each character uses
 
@@ -124,7 +124,7 @@ until then; it still counts as up for the key.
   measured flat, without height, the same way as the automation addon's own
   box.
 
-## Settings (`common/STEALTH_CONFIG.lua`)
+## Settings (`common/combat/STEALTH_CONFIG.lua`)
 
 ```lua
 return {

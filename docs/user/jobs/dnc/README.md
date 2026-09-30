@@ -33,7 +33,7 @@ reload.
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
 the provided template; after cloning, yours are in `<YourName>/dnc/`
-and `<YourName>/common/COMMON_KEYBINDS.lua`, and those files win. No DNC key
+and `<YourName>/common/keys/COMMON_KEYBINDS.lua`, and those files win. No DNC key
 depends on the subjob (Jump Auto only acts on /DRG).
 
 | Key | Does | When | Shown in the HUD |
@@ -131,7 +131,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
 | Treasure Mode | Off and hidden. `//gs c th show` to use it: the template already has `sets.TreasureHunter` |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Your own modes | `DNC_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Utsusemi (/NIN) | Utsusemi: Ichi removes your old shadows 2.3 s into the cast so the new ones take (shared with every job; needs Windower's Cancel addon) |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key) |

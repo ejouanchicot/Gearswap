@@ -64,7 +64,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `_master/Tetsouo/<job>/<JOB>_REFILL.lua` | 20-54 | Refill templates for Tetsouo (BLM BRD BST COR DNC PLD THF WAR) |
 | `_master/Tetsouo/common/sets/CRAFT_REFILL.lua` | 34 | Refill list used while a craft set is active |
 | `_master/Kaories/<job>/<JOB>_REFILL.lua` | 22-42 | Refill templates for Kaories (COR GEO PLD RDM) |
-| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/common/WEAPON_CONFIG.lua` (`equip_without_set`) |
+| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/common/combat/WEAPON_CONFIG.lua` (`equip_without_set`) |
 | `_master/config_global/ELEMENTAL_BELT.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
 
 Live copies (gitignored): `Tetsouo/common/{blm,brd,bst,cor,craft,dnc,pld,thf,war}/*_REFILL.lua`,
@@ -247,7 +247,7 @@ sequenceDiagram
      replaces `.default` entirely when present; otherwise `.default`; otherwise the fallback.
    - Bags (`resolve_bags`), the player's choice since 2026-09-30: `store_bag` (where surplus and
      foreign items go) and `source_bags` (where pulls come from, in order) are read from the list file
-     (`<JOB>_REFILL` / `CRAFT_REFILL`), else from `<Char>/common/REFILL_CONFIG.lua`, else `case` and
+     (`<JOB>_REFILL` / `CRAFT_REFILL`), else from `<Char>/common/inventory/REFILL_CONFIG.lua`, else `case` and
      `{'case', 'sack', 'satchel'}` (`DEFAULT_STORE_BAG`, `DEFAULT_SOURCE_BAGS`). Names: `case`,
      `sack`, `satchel`, `wardrobe1`..`wardrobe8` (`wardrobe` = `wardrobe1`), case and spaces ignored
      (`BAG_INFO`): every bag the game opens away from the Mog House. Unknown names are skipped; a
@@ -353,7 +353,7 @@ Every set builder that applies `state.MainWeapon` / `state.SubWeapon` asks
 THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-28; before, it read
 `sets[weapon]` directly and `equip_without_set` had no effect on DRK.
 
-- **Default** (no `<Char>/common/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
+- **Default** (no `<Char>/common/combat/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
   `sets[value]`, exactly the old lookup. Tetsouo and Kaories have no `WEAPON_CONFIG.lua`, so nothing
   changed for them. Tetsouo's BLM relies on `Hvergelmir` having no set, so its idle and engaged sets
   keep their own staves.
@@ -632,9 +632,9 @@ return M
   (`load_char_refill_configs`, `load_all_refill_configs`).
 - Craft list: `<Char>/common/sets/CRAFT_REFILL.lua`, only `.default`, `.store_bag` and `.source_bags`
   are read (template `_master/config/craft/CRAFT_REFILL.lua`, empty list).
-- Bags for every list: `<Char>/common/REFILL_CONFIG.lua` (`store_bag`, `source_bags`; template
+- Bags for every list: `<Char>/common/inventory/REFILL_CONFIG.lua` (`store_bag`, `source_bags`; template
   `_master/config_global/REFILL_CONFIG.lua`). A list file's own fields win.
-- Weapon resolver: `<Char>/common/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
+- Weapon resolver: `<Char>/common/combat/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
   thresholds in the aftercast callers, `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`),

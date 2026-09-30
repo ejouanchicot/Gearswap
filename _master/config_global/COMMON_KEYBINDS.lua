@@ -11,7 +11,7 @@
 --- The //gs c alts commands reach the other characters of the box group
 --- (DualBoxConfig.group in config/DUALBOX_CONFIG.lua), whoever is main.
 ---
---- @file config/COMMON_KEYBINDS.lua
+--- @file common/keys/COMMON_KEYBINDS.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-24

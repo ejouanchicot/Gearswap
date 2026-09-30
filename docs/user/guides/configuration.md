@@ -9,8 +9,14 @@ see [installation](../getting-started/installation.md)). After an edit,
 ```
 <YourName>/
     <YourName>_WAR.lua ...   one line per job: nothing to change there
-    common/                  settings of the whole character (HUD, keys, dual-box, refill, craft...)
-        alt/                 your own commands for the dual-box alt (optional)
+    common/                  settings of the whole character, by theme:
+        display/             HUD, colours, region, lockstyle delay
+        keys/                keys every job gets, Combat Mode / Treasure Mode keys
+        dualbox/             dual-box settings
+            alt/             your own commands for the dual-box alt (optional)
+        inventory/           refill, craft, wardrobe organizer
+        combat/              automatic abilities, recasts, Dual Wield, belt, weapons,
+                             Sneak / Invisible
         sets/                gear shared by your jobs (rings...), your craft and fishing sets
     war/, blm/ ...           one folder per job you play: its settings
         sets/                the gear of that job (war_sets.lua...)
@@ -25,9 +31,10 @@ the layout above, after a full backup in `data/_backups/`.
 
 ## What is in `<YourName>/common/`
 
-The clone script copies every file of `_master/config_global/` here, writes
-`DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua` from your answers, and copies one
-folder per job. Some files are written by the game session (by a command, or
+The clone script copies every file of `_master/config_global/` here, each in
+its theme folder (the table below gives the file name; its folder is in the
+tree above), writes `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua` from your
+answers, and copies one folder per job. Some files are written by the game session (by a command, or
 when you drag a window): they are marked "written in game" below, and a
 re-clone copies them back from the old folder (see
 [installation](../getting-started/installation.md#3-create-your-character)).
@@ -79,7 +86,8 @@ role you give the script applies.
 
 | Folder | Content |
 |---|---|
-| `alt/` | Alt commands, main character only ([dual-box](dualbox.md#alt-commands-drive-the-alt-from-the-main)) |
+| `display/`, `keys/`, `dualbox/`, `inventory/`, `combat/` | The settings files above, by theme |
+| `dualbox/alt/` | Alt commands, main character only ([dual-box](dualbox.md#alt-commands-drive-the-alt-from-the-main)) |
 | `sets/` | Gear used by several jobs (for instance `rings.lua`), your craft and fishing sets (`craft_sets.lua`...) |
 | `<job>/` | One folder per job, below |
 
@@ -156,7 +164,7 @@ subjob]` is used; otherwise `solo[your subjob]`, then `solo.default`, then
 ## Refill (`<JOB>_REFILL.lua`)
 
 `//gs c rf` tops up the consumables in your inventory from your bags (Case,
-Sack, then Satchel unless `common/REFILL_CONFIG.lua` says otherwise), and puts
+Sack, then Satchel unless `common/inventory/REFILL_CONFIG.lua` says otherwise), and puts
 the surplus back. The lists are per character and per job,
 and only the author's characters ship with them: **create
 `<YourName>/<job>/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
@@ -178,7 +186,7 @@ return M
 ```
 
 Consumables named only in another job's list (of any character folder in `data/`) are put back too. While a craft
-set is on, `common/CRAFT_REFILL.lua` is used instead: same format, empty
+set is on, `common/inventory/CRAFT_REFILL.lua` is used instead: same format, empty
 until you fill it; it can set its own `source_bags` / `store_bag` too.
 
 ## Wardrobes (`WARDROBE_CONFIG.lua`, optional)

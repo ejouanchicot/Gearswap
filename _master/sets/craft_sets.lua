@@ -1,7 +1,7 @@
 ---============================================================================
 --- Craft Equipment Sets
 ---============================================================================
---- Read by //gs c craft when common/CRAFT_CONFIG.lua says
+--- Read by //gs c craft when common/inventory/CRAFT_CONFIG.lua says
 --- craft_file = 'craft'. To keep one file per craft, copy this one as
 --- common/sets/<craft>_sets.lua (goldsmithing_sets.lua, woodworking_sets.lua...)
 --- and name it in craft_file.

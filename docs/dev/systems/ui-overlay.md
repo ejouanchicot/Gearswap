@@ -1,6 +1,6 @@
 # Keybind HUD (UI overlay)
 
-The keybind HUD is the on-screen text box that lists, for the current job, every state-cycling keybind with its key, a short description and the live value of the Mote state it cycles (for example `^numpad9    Hybrid Mode    ● PDT`). It is a single Windower `texts` object, rebuilt from four inputs: the job's keybind module (`<job>/<JOB>_KEYBINDS.lua`, made by `KeybindManager.create`), the player's look options (`UI_CONFIG.lua` `layout` / `colors`, and the job's own `<job>/<JOB>_HUD.lua`), a name-pattern classifier that sorts each bind into a section, and the live `state` table. Every job entry file creates it from `user_setup()` through `KeybindUI.smart_init()`. It is repainted from `job_update`, `job_state_change`, the `cyclestate` handler and some job commands; a diff over all state values skips repaints that would change nothing. Position and display flags are saved per character in `data/<char>/saved/ui_settings.lua`, look options in `data/<char>/common/UI_CONFIG.lua`. Users control it with `//gs c ui ...`.
+The keybind HUD is the on-screen text box that lists, for the current job, every state-cycling keybind with its key, a short description and the live value of the Mote state it cycles (for example `^numpad9    Hybrid Mode    ● PDT`). It is a single Windower `texts` object, rebuilt from four inputs: the job's keybind module (`<job>/<JOB>_KEYBINDS.lua`, made by `KeybindManager.create`), the player's look options (`UI_CONFIG.lua` `layout` / `colors`, and the job's own `<job>/<JOB>_HUD.lua`), a name-pattern classifier that sorts each bind into a section, and the live `state` table. Every job entry file creates it from `user_setup()` through `KeybindUI.smart_init()`. It is repainted from `job_update`, `job_state_change`, the `cyclestate` handler and some job commands; a diff over all state values skips repaints that would change nothing. Position and display flags are saved per character in `data/<char>/saved/ui_settings.lua`, look options in `data/<char>/common/display/UI_CONFIG.lua`. Users control it with `//gs c ui ...`.
 
 Scope of this page: everything under `shared/utils/ui/` (22 files), the settings store `shared/config/ui_settings.lua`, the loader `shared/utils/config/config_loader.lua` (UI part), the override `shared/utils/core/state_display_override.lua`, the per-character config files (`UI_CONFIG.lua`, `UI_COLOR_CONFIG.lua`, `ui_settings.lua`, `<JOB>_HUD.lua`), and the HUD side of the two optional states (Combat Mode, Treasure Mode). The chat side of the `UI_CONFIG.lua` `chat` block (palette, separators, job tag, width) is owned by [messages.md](messages.md#colours-palette-and-chat-options); the keybind engine by [keybinds-and-custom.md](keybinds-and-custom.md).
 
@@ -36,7 +36,7 @@ Line counts re-measured on 2026-09-28 (`wc -l`).
 | `shared/utils/core/state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (see Interactions) |
 | `shared/utils/core/optional_state.lua` | 142 | `OptionalState.create{...}`: a Mote state the project adds to jobs, with a HUD row and key shown or hidden per job (Combat Mode, Treasure Mode) |
 | `shared/utils/core/optional_state_commands.lua` | 147 | `//gs c <mode> [show\|hide\|key <key>\|help]` for an optional state; rewrites its settings file |
-| `_master/config_global/UI_CONFIG.lua` | 533 | Template for `data/<char>/common/UI_CONFIG.lua` (display defaults, 36 presets, `layout` / `colors` / `chat` / `rolls` blocks) |
+| `_master/config_global/UI_CONFIG.lua` | 533 | Template for `data/<char>/common/display/UI_CONFIG.lua` (display defaults, 36 presets, `layout` / `colors` / `chat` / `rolls` blocks) |
 | `_master/config_global/UI_COLOR_CONFIG.lua` | 275 | Template for the per-character value-colour overrides |
 | `_master/config_global/ui_settings.lua` | 36 | Starting settings for a new character (position 1600, 300). A re-clone keeps the character's existing file (`clone_character.py` `KEPT_ON_RECLONE`, which also keeps `combat_mode.lua`, `treasure_mode.lua` and `config/*/*_HUD.lua`) |
 
@@ -95,7 +95,7 @@ sequenceDiagram
     LC->>LC: cached_states = capture_current_states()
 ```
 
-1. `ConfigLoader.load_ui_config(char_name, job_name)` runs `dofile` on `<windower>/addons/GearSwap/data/<char>/common/UI_CONFIG.lua`. On failure it substitutes a small table (`init_delay` 5.0, position 1600/300, every flag `true`) and prints `MessageCore.show_config_error(job, 'UIConfig load failed, using defaults')`. It then fills `_G.ui_display_config` from the persisted store.
+1. `ConfigLoader.load_ui_config(char_name, job_name)` runs `dofile` on `<windower>/addons/GearSwap/data/<char>/common/display/UI_CONFIG.lua`. On failure it substitutes a small table (`init_delay` 5.0, position 1600/300, every flag `true`) and prints `MessageCore.show_config_error(job, 'UIConfig load failed, using defaults')`. It then fills `_G.ui_display_config` from the persisted store.
 2. Load order: every `_master/entry/*`, `_master/Tetsouo/entry/*`, live `Tetsouo/` and `Kaories/` entry now requires `config_loader` before `UI_MANAGER` (checked 2026-09-28). WAR, BST and SMN require `UI_MANAGER` at file level right after it, the others inside `user_setup()`. The `UI_MANAGER.lua` stub therefore only fills keys missing from a real `UI_CONFIG.lua`; its comment still names WAR/BST/PUP as entries that load it first (stale comment).
 3. `smart_init(job_name, max_wait_time)` bumps `smart_init_id`, then calls `init()` at once if `are_states_ready()`. Otherwise it schedules `try_init` every 0.2 s. A newer `smart_init` (or `JobChangeManager` `cleanup_all_systems`) invalidates the poll, and so does a newer file load (`windower._ui_live_state` no longer its own state table). After `max_wait_time` (= `UIConfig.init_delay`, 5.0 in the template) it calls `init()` anyway. Anchor states (`are_states_ready`): BRD `SongMode`, BLM `MainLightSpell`, BST `Ecosystem`, THF `TreasureMode`, WAR/PLD `HybridMode` (Mote built-in, always present), DNC `MainStep`, RDM `MainLightSpell`, DRG `WeaponSet` (no DRG job exists), RUN `RuneElement` (no RUN state has that name, see Known issues), GEO `MainIndi`, BLU `MainWeapon`. Every other job counts as ready.
 4. `init()` loads `_G.keybind_saved_settings` once, returns when `_G.ui_display_config.enabled` is false or a display already exists, builds the settings with `create_ui_settings()` (re-reads the store), calls `texts.new`, shows the object and renders once. The first render is **not** wrapped in `pcall`.
@@ -162,7 +162,7 @@ Two Mote states are added by the project, not by the job files: `CombatMode` (`O
 
 - **Attach**. `KeybindManager.create(job, module)` calls `CombatMode.attach(job, module.binds)` then `TreasureHunter.optional.attach(job, module.binds)` before the custom states and common keys are merged. `attach` records once per load whether the job's own STATES file defined the state (`_G._<id>_native`; the first attach wins because the HUD's second require sees the state already created), creates `state.<State> = M{description, values...}` when missing, reuses the job's own bind for that state or appends `{key = default_key, command = 'cyclestate <State>', desc, state}`, applies the per-job key from settings, and wraps `entry.visible` so the row and key exist only while `is_shown(job)` (and the bind's own `visible`, if any) is true. Default keys: Combat Mode `!numpad0`, Treasure Mode `!numpad.`.
 - **Shown or not** (`is_shown(job)`): `hidden[job]` -> no; `shown[job]` or (`shown.all` and not `hidden.all`) -> yes; `hidden.all` -> no; otherwise yes only when the job defines the state natively. Natively: Combat Mode on BLM, GEO, RDM, WHM; Treasure Mode on THF. So on every other job the state exists (value `Off`) but has no row and no key.
-- **Settings file**: `<Char>/common/combat_mode.lua` / `treasure_mode.lua`, `return {shown = {JOB = true}, hidden = {...}, keys = {JOB = '!f10', all = '~f9'}}`; job codes are upper-cased on read, `ALL` / `all` accepted. Read once per load (`_G._<id>_settings`).
+- **Settings file**: `<Char>/common/keys/combat_mode.lua` / `treasure_mode.lua`, `return {shown = {JOB = true}, hidden = {...}, keys = {JOB = '!f10', all = '~f9'}}`; job codes are upper-cased on read, `ALL` / `all` accepted. Read once per load (`_G._<id>_settings`).
 - **Commands** (`OptionalStateCommands.create`): `//gs c combatmode` / `//gs c th` (status InfoBlock: Shown, mode fields, Key), `... show`, `... hide` (also resets the state to its first value), `... key <key>|none` (validated by `key_validator.is_valid_key`), `... help` (HelpScreen); `th clear` forgets tagged mobs. Each command rewrites the whole settings file with its explanatory header, then `KeybindManager.refresh_active()`, `Display.update_display()` and `gs c update`, so the HUD row appears or disappears at once.
 
 ### Rendering pipeline
@@ -377,7 +377,7 @@ Related commands outside `ui`: `//gs c combatmode ...` and `//gs c th ...` (opti
 
 ## Configuration
 
-### `data/<char>/common/UI_CONFIG.lua` (template `_master/config_global/UI_CONFIG.lua`)
+### `data/<char>/common/display/UI_CONFIG.lua` (template `_master/config_global/UI_CONFIG.lua`)
 
 | Key | Template value | Read by |
 |---|---|---|
@@ -421,11 +421,11 @@ Keys: `pos_x, pos_y, enabled, show_header, show_legend, show_column_headers, sho
 
 `return {section_order = {...}, row_order = {...}}` with an explanatory header and the job's state names as a comment. An empty or missing list means the `UI_CONFIG.lua` default. Kept on re-clone.
 
-### `data/<char>/common/combat_mode.lua`, `treasure_mode.lua`
+### `data/<char>/common/keys/combat_mode.lua`, `treasure_mode.lua`
 
 `return {shown = {...}, hidden = {...}, keys = {...}}`, rewritten whole (with header) by `//gs c combatmode ...` / `//gs c th ...`. Deleting the file restores the defaults (native jobs only).
 
-### `data/<char>/common/UI_COLOR_CONFIG.lua`
+### `data/<char>/common/display/UI_COLOR_CONFIG.lua`
 
 Takes effect: `elements`, `stats`, `modes`, `special.true/false/unknown`, `spells.en`, `spells.spikes`, `spells.storms`, `jobs.quick_draw`. No effect: `bar_spells.ailment` (stored in `special_colors.bar_ailment`, which nothing reads), `special.default` (the fallback is the constant `DEFAULT_COLOR`), `jobs.runes` (empty). The helper functions at the bottom of the file have no callers, and `get_bar_element_color` would error because `bar_spells.element` does not exist.
 

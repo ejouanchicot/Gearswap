@@ -352,7 +352,7 @@ end of precast by `ElementalBelt` ([factories and helpers](../systems/factories-
 
 Created by `CORStates.configure()` on every `user_setup()`. Keys from
 `_master/config/cor/COR_KEYBINDS.lua`; `#numpad0` (AutoMedicine) comes from the
-character's `common/COMMON_KEYBINDS.lua`.
+character's `common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -433,8 +433,8 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 | `<char>/cor/COR_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 3 page 1 (factory fallback book 1) | `MacrobookManager` (`get_macrobook` is not called) |
 | `<char>/cor/COR_TP_CONFIG.lua` -> `_G.CORTPConfig` | Moonshade 250; `ranged_weapons` | `TPBonusCalculator` through `get_weapon_bonus`, called with the main and sub weapons (`tp_bonus_handler.lua` `calculate_tp_gear`), never the ranged one |
 | `<char>/cor/COR_REFILL.lua` | none in the template | refill system |
-| `<char>/common/RECAST_CONFIG.lua` `party_announce['Phantom Roll']` | none | `recast_announce.lua` |
-| `<char>/common/UI_CONFIG.lua` `rolls` block | full style, remote `same`, every detail on (template lines commented) | `roll_messages.lua` (`//gs c ui roll...`) |
+| `<char>/common/combat/RECAST_CONFIG.lua` `party_announce['Phantom Roll']` | none | `recast_announce.lua` |
+| `<char>/common/display/UI_CONFIG.lua` `rolls` block | full style, remote `same`, every detail on (template lines commented) | `roll_messages.lua` (`//gs c ui roll...`) |
 | Constants | duplicate window 0.5 s, Crooked window 60 s, Double-Up window 45 s, party TTL 600 s, `ROLL_MAX_DURATION` 600 s, `HOLD_MAX` 5 s, pouch threshold 15 | `roll_tracker.lua` (`is_duplicate_report`, `crooked_applies`), `roll_display.lua` (`display_double_up_status`), `roll_party.lua` (`drop_departed_and_expired`), `roll_hold.lua`, `COR_AFTERCAST.lua` |
 
 ## State & lifetime
@@ -533,7 +533,7 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
 - The template `COR_KEYBINDS.lua` leaves `^numpad7`, `^numpad8` and `^numpad0`
   free; one character overlay uses `^numpad7` for `RangedMode`.
 - A new command name must be checked against the common commands and every
-  `common/alt/*_ALT_COMMANDS.lua` key: the job command wins over an alt command
+  `common/dualbox/alt/*_ALT_COMMANDS.lua` key: the job command wins over an alt command
   of the same name, which stays reachable as `//gs c alt <name>`.
 - Changing a roll set's `main` or `range` costs the player's TP in game; the
   template roll set holds Rostam and Compensator on purpose.

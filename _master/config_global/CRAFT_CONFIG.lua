@@ -15,9 +15,9 @@
 ---   or fishing (defaults 19 and 17).
 ---
 ---   The food and items the refill keeps while crafting are in
----   common/CRAFT_REFILL.lua; the bags it uses in common/REFILL_CONFIG.lua.
+---   common/inventory/CRAFT_REFILL.lua; the bags it uses in common/inventory/REFILL_CONFIG.lua.
 ---
----   @file    common/CRAFT_CONFIG.lua
+---   @file    common/inventory/CRAFT_CONFIG.lua
 ---   @author  ejouanchicot
 ---   @version 1.1 - craft_file / fish_file
 ---   @date    Created: 2026-05-11 | Updated: 2026-09-30

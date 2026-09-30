@@ -242,7 +242,7 @@ Created by `RUNStates.configure()` on every `user_setup()`. Keys from
 | `SubWeapon` | Utu, Refined | Refined | `^numpad2` | `set_builder.lua` `apply_grip` |
 | `RuneMode` | Ignis .. Tenebrae (8) | Ignis | `^numpad3` | `rune_manager.lua` `execute_rune` |
 | `FastCast` | 0..80 step 10 | 30 | none | `midcast_watchdog.lua` (fallback cast time) |
-| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `common/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` at the end of `configure()` |
+| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `common/keys/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` at the end of `configure()` |
 
 Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
 `TreasureMode` (hidden, `!numpad.`), see

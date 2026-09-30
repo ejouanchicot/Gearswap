@@ -59,7 +59,7 @@ the sets files (structure and set names only).
 | `shared/jobs/blu/functions/logic/expiacion_guard.lua` | 80 | Option `blu_expiacion_window`: `BLUExpiacionGuard.check` |
 | `shared/jobs/blu/functions/logic/azure_sets.lua` | 49 | `BLUAzureSets.load` / `unload` of the AzureSets addon, flag on `windower._blu_azuresets_loaded` |
 | `shared/data/magic/BLU_SPELL_DATABASE.lua` (+ `blu/**/*.lua`) | - | Blue Magic spell data; BLU reads `get_spell_data(name).category` (unlisted spells) and `.unbridled` |
-| `shared/utils/core/auto_options.lua` | - | `AutoOptions.on(name)`: reads `common/AUTO_ABILITIES.lua` once per load (`== true`) |
+| `shared/utils/core/auto_options.lua` | - | `AutoOptions.on(name)`: reads `common/combat/AUTO_ABILITIES.lua` once per load (`== true`) |
 | `_master/config/blu/BLU_STATES.lua` | 66 | Mote mode options, `MainWeapon` / `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/blu/BLU_KEYBINDS.lua` | 34 | Data only: 6 entries (+ 2 commented per-weapon examples) handed to `KeybindManager.create('BLU', ...)` |
 | `_master/config/blu/BLU_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
@@ -68,7 +68,7 @@ the sets files (structure and set names only).
 | `_master/config/blu/BLU_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |
 | `_master/config/blu/BLU_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/blu/BLU_TP_CONFIG.lua` | 39 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.BLUTPConfig` |
-| `_master/config_global/AUTO_ABILITIES.lua` | - | Template of `<Character>/common/AUTO_ABILITIES.lua`: both BLU options `false` |
+| `_master/config_global/AUTO_ABILITIES.lua` | - | Template of `<Character>/common/combat/AUTO_ABILITIES.lua`: both BLU options `false` |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |
 | `_master/sets/blu_sets.lua` | 182 | Template sets: every set the code reads, all empty |
 | `_master/Gabvanstronger/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)) |
@@ -276,7 +276,7 @@ A weapon cycle re-equips through Mote's `handle_update`.
 ### Automatic abilities
 
 Both options are read by `AutoOptions.on(name)`: `true` only if the character's
-`common/AUTO_ABILITIES.lua` sets it `true`, read once per load. The template
+`common/combat/AUTO_ABILITIES.lua` sets it `true`, read once per load. The template
 file has both `false`; `clone_character.py` copies `config_global/*.lua` to
 `<Character>/common/`.
 
@@ -424,8 +424,8 @@ and a few sets nothing reaches, each marked so in the file.
 | `<char>/blu/BLU_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` and `get_style` only, so `by_subjob` is never read |
 | `<char>/blu/BLU_MACROBOOK.lua` | book 1 page 1 | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
 | `<char>/blu/BLU_TP_CONFIG.lua` -> `_G.BLUTPConfig` | Moonshade ear1 +250, no weapon | file | `WSPrecastHandler` / TP bonus calculator |
-| `<char>/common/AUTO_ABILITIES.lua` `blu_unbridled`, `blu_expiacion_window` | `false` | `AutoOptions.on` (`== true`) | `BLUUnbridled.apply`, `BLUExpiacionGuard.check` |
-| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | `false` | file | `WeaponResolver` |
+| `<char>/common/combat/AUTO_ABILITIES.lua` `blu_unbridled`, `blu_expiacion_window` | `false` | `AutoOptions.on` (`== true`) | `BLUUnbridled.apply`, `BLUExpiacionGuard.check` |
+| `<char>/common/combat/WEAPON_CONFIG.lua` `equip_without_set` | `false` | file | `WeaponResolver` |
 | Hard-coded | Unbridled delay 1.5 s (`SPELL_DELAY`); Expiacion window 3 s, thresholds 1000 / 3000 TP, weapon `Tizona`; AzureSets delays 2 s / 3 s; overlay buffs (`BLUE_MAGIC_BUFFS`) | code | - |
 
 ## Character overlay

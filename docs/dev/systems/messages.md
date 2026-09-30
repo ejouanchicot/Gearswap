@@ -292,7 +292,7 @@ timestamp=false`.
 ### Colours, palette and chat options
 
 Three modules decide a colour code, all reading the player's `chat` table of
-`<Char>/common/UI_CONFIG.lua`, resolved and checked by `UIStyle.get().chat`
+`<Char>/common/display/UI_CONFIG.lua`, resolved and checked by `UIStyle.get().chat`
 (`shared/utils/ui/ui_style.lua`, local `resolve_chat`; cached per `_G.UIConfig` table, so re-read on
 every job load and after `UIStyle.invalidate()`):
 
@@ -340,7 +340,7 @@ caller).
    does not exist).
 3. `_G.RegionConfig.get_orange_code(_G.RegionConfig.get_region(player.name))`, read at each use
    (`rawget(_G, 'RegionConfig')`). Each entry file sets `_G.RegionConfig` from
-   `<Char>/common/REGION_CONFIG.lua` at file level. Live values: Tetsouo EU -> 3, Kaories EU -> 2.
+   `<Char>/common/display/REGION_CONFIG.lua` at file level. Live values: Tetsouo EU -> 3, Kaories EU -> 2.
 4. Default 57.
 
 The first time `WARNING` is read after `RegionConfig` exists, `trace_region` writes the orange it
@@ -771,9 +771,9 @@ All message commands are listed in `CommonCommands.is_common_command`.
 | Source | Keys / values | Default and where it lives |
 |---|---|---|
 | `<Char>/saved/message_modes.lua` | `spell_mode`, `ja_mode`, `ws_mode` in `full/on/off` | `'on'` each when the file is missing; clone seed has `ja_mode='full'` |
-| `<Char>/common/UI_CONFIG.lua` `UIConfig.chat` | `separators`, `separator_char`, `separator_color`, `width`, `job_tag`, `colors` (see "Colours, palette and chat options") | template `_master/config_global/UI_CONFIG.lua` block `CHAT`; standard look when absent |
-| `<Char>/common/UI_CONFIG.lua` `UIConfig.rolls` | COR roll display (`style`, `remote_style`, details, order) | see [messages-formatters.md](messages-formatters.md) (`roll_messages.lua`) and [ui-overlay.md](ui-overlay.md) |
-| `<Char>/common/REGION_CONFIG.lua` via `_G.RegionConfig` | `get_region(name)`, `get_orange_code(region)` | orange 57 when absent |
+| `<Char>/common/display/UI_CONFIG.lua` `UIConfig.chat` | `separators`, `separator_char`, `separator_color`, `width`, `job_tag`, `colors` (see "Colours, palette and chat options") | template `_master/config_global/UI_CONFIG.lua` block `CHAT`; standard look when absent |
+| `<Char>/common/display/UI_CONFIG.lua` `UIConfig.rolls` | COR roll display (`style`, `remote_style`, details, order) | see [messages-formatters.md](messages-formatters.md) (`roll_messages.lua`) and [ui-overlay.md](ui-overlay.md) |
+| `<Char>/common/display/REGION_CONFIG.lua` via `_G.RegionConfig` | `get_region(name)`, `get_orange_code(region)` | orange 57 when absent |
 | `_G.PERFORMANCE_PROFILING.enabled` | prints hook lazy-load time | written by `shared/utils/debug/performance_profiler.lua` |
 | Renderer `_config` | `enabled`, `filter_level`, `color_mode`, `timestamp`, `prefix_style` (never read) | module local, reset per sandbox |
 

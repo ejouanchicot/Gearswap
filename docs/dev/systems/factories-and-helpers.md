@@ -22,11 +22,11 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua` (17 files) | Lazy wrapper: `select_default_macro_book` |
 | `<char>/<job>/<JOB>_LOCKSTYLE.lua` | Per-job style numbers (`default`, `by_subjob`, optional `get_style`) |
 | `<char>/<job>/<JOB>_MACROBOOK.lua` | Per-job books (`solo`, `dualbox`, `default`) |
-| `_master/config_global/LOCKSTYLE_CONFIG.lua` | Global lockstyle timing, deployed as `<char>/common/LOCKSTYLE_CONFIG.lua` |
+| `_master/config_global/LOCKSTYLE_CONFIG.lua` | Global lockstyle timing, deployed as `<char>/common/display/LOCKSTYLE_CONFIG.lua` |
 | `shared/utils/movement/automove.lua` | Movement detection loop, `state.Moving`, `gs c update` |
 | `shared/utils/craft/craft_commands.lua` | `//gs c craft/fish/uncraft` handlers, gear diffing, slot locking |
 | `shared/utils/craft/craft_manager.lua` | Craft set file loading and resolution, session flag, unlock; exported as `_G.CraftManager` |
-| `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17), deployed as `<char>/common/CRAFT_CONFIG.lua` |
+| `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17), deployed as `<char>/common/inventory/CRAFT_CONFIG.lua` |
 | `_master/sets/craft_sets.lua` | Generic craft set file, every slot empty: `hq`, `nq`, `success` and one variant per sub-craft (the 8 crafts) |
 | `_master/Tetsouo/common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000 (WAR, DNC) |
@@ -43,7 +43,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/core/optional_state.lua`, `optional_state_commands.lua` | Base of Combat Mode and Treasure Mode: shown / hidden / key per job, commands (see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)) |
 | `shared/utils/core/live_tp.lua` | TP read from the game, not from GearSwap's copy |
 | `shared/utils/core/gear_hold.lua` | `GearHold.active()`: whether a COR roll holds the idle / engaged gear; asked by DualWield, TreasureHunter (engaged overlay) and the custom gear hook (see [core-lifecycle.md](core-lifecycle.md#gearhold)) |
-| `shared/utils/core/auto_options.lua` | Opt-in automatic job abilities (`common/AUTO_ABILITIES.lua`) |
+| `shared/utils/core/auto_options.lua` | Opt-in automatic job abilities (`common/combat/AUTO_ABILITIES.lua`) |
 | `_master/config_global/DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `AUTO_ABILITIES.lua` | Templates of the per-character settings of the helpers above |
 
 Other helpers in `shared/utils/equipment/` are documented elsewhere:
@@ -311,7 +311,7 @@ flowchart TD
     L --> M
 ```
 
-- **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). Which file: `craft_file` / `fish_file` in `<char>/common/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
+- **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). Which file: `craft_file` / `fish_file` in `<char>/common/inventory/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
 - **Resolution** (`resolve`). A multi-variant file uses `default` when no argument is given, then tries a direct lower-case key lookup, then an alias scan. A single-set file returns the whole table and ignores the argument.
 - **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
 - **Locking.** `equip_craft_gear` uses GearSwap's synchronous `enable()` rather than `gs enable all`, because the command would land after `equip()`. The lock is applied 2.0 s later (`lock_after_delay`); that coroutine carries no session check. When a variant switch changes nothing, only the lock is re-asserted.
@@ -355,7 +355,7 @@ Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, 
 
 | Source | Keys | Default |
 |---|---|---|
-| `<char>/common/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
+| `<char>/common/inventory/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
 | `<char>/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
 | `<char>/common/sets/CRAFT_REFILL.lua` | refill list while crafting | the job's refill list |
 
@@ -437,7 +437,7 @@ The recast ids match `res/job_abilities.lua`. The project's own `shared/data/job
 
 | Function | Behaviour |
 |---|---|
-| `settings()` | `{enabled, min_bonus}` from `<Character>/common/ELEMENTAL_BELT.lua` (`dofile`, cached in `_G._elemental_belt_settings`), defaults `true` / 5; template `_master/config_global/ELEMENTAL_BELT.lua` |
+| `settings()` | `{enabled, min_bonus}` from `<Character>/common/combat/ELEMENTAL_BELT.lua` (`dofile`, cached in `_G._elemental_belt_settings`), defaults `true` / 5; template `_master/config_global/ELEMENTAL_BELT.lua` |
 | `owned()` | `{[OBI] = bool, [ORPHEUS] = bool}` from the inventory and wardrobes 1-8 (bags 0, 8, 10-16), read through `gearswap.res`; cached 60 s in `_G._elemental_belt_owned` |
 | `applies(spell, phase)` | Precast: weaponskills of `WEAPONSKILLS` (magical and hybrid) and Quick Draw except Light / Dark Shot. A spell's precast is its Fast Cast set, left alone. Midcast: Elemental Magic except the DoTs (`DOTS`), Banish / Holy, `<X>ton: Ichi\|Ni\|San`, and Blue Magic of a `Magical*` category (`blu/functions/logic/spell_map.lua`) |
 | `choose(spell)` | `ElementalBonus.for_action`, then the owned belt with the higher bonus, provided that bonus reaches `min_bonus`; returns `belt, bonus, obi, orpheus`. Below `min_bonus`, the set's own belt stays |
@@ -461,7 +461,7 @@ Callers: `ElementalBelt`, and the CUSTOM conditions `obi_better`, `orpheus_bette
 
 ## TreasureHunter
 
-`shared/utils/equipment/treasure_hunter.lua` makes Treasure Hunter shared by every job. `TreasureMode` is an optional state (`TreasureHunter.optional`, file `common/treasure_mode.lua`, default key `!numpad.`). THF defines it in its STATES file (Tag / SATA / Full) and shows it; every other job gets it with values Off / Tag / Full, set to Off and hidden until `//gs c th show` (`treasure_commands.lua`). A job without `sets.TreasureHunter` gets no TH gear, whatever the mode. The DNC and THF templates define that set.
+`shared/utils/equipment/treasure_hunter.lua` makes Treasure Hunter shared by every job. `TreasureMode` is an optional state (`TreasureHunter.optional`, file `common/keys/treasure_mode.lua`, default key `!numpad.`). THF defines it in its STATES file (Tag / SATA / Full) and shows it; every other job gets it with values Off / Tag / Full, set to Off and hidden until `//gs c th show` (`treasure_commands.lua`). A job without `sets.TreasureHunter` gets no TH gear, whatever the mode. The DNC and THF templates define that set.
 
 Modes:
 
@@ -510,7 +510,7 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 - **Tiers.** `sets.DW.NoHaste`, `Haste` (15 %), `HasteII` (30 %), `MaxHaste` (43.75 %). A missing tier falls back to the one below, which means more DW. No `sets.DW` at all: nothing happens. The templates of BLU, BRD, BST, COR, DNC, RDM and THF end with a commented example.
 - **Magic haste estimate** (`magic_haste()`):
   - buffs from `get_player().buffs`: 33 Haste, 580 Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March (up to 2);
-  - the value of each from `<Character>/common/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
+  - the value of each from `<Character>/common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
   - Haste vs Haste II (same buff) and which March come from a raw `action` listener: spells 57 / 511 / 710 (Erratic Flutter) and 417 / 419 / 420, landing on this character, kept on `windower._dw_tracked`.
 - **Not counted**: JA haste, Slow (buff 13) and Elegy (194). Their strength is unknown, and they are rare and short on a player. The config header tells the player to force `//gs c dw none` while slowed.
 - **Re-dress.** On `gain buff` / `lose buff` of those buffs, after 0.3 s, it sends `gs c update` when the tier changed and the player is engaged (token `windower._dw_update_token`).
@@ -594,7 +594,7 @@ The module returns a function: `local live_tp = require('shared/utils/core/live_
 
 ### `AutoOptions` (`shared/utils/core/auto_options.lua`)
 
-`AutoOptions.on(name)` -> boolean reads `<Character>/common/AUTO_ABILITIES.lua` once per sandbox (`pcall(require, 'config/AUTO_ABILITIES')`, cached in `_G._auto_options`, template in `_master/config_global/`). Every option is off unless the file sets it true:
+`AutoOptions.on(name)` -> boolean reads `<Character>/common/combat/AUTO_ABILITIES.lua` once per sandbox (`pcall(require, 'config/AUTO_ABILITIES')`, cached in `_G._auto_options`, template in `_master/config_global/`). Every option is off unless the file sets it true:
 
 | Option | Job | Effect | Reader |
 |---|---|---|---|

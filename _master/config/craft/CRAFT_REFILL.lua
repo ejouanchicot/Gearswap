@@ -13,11 +13,11 @@
 --- to the store bag; items in no list (your materials) are never touched.
 --- An empty list moves nothing but those.
 ---
---- The bags: common/REFILL_CONFIG.lua, or here for crafting only:
+--- The bags: common/inventory/REFILL_CONFIG.lua, or here for crafting only:
 ---     M.source_bags = {'satchel', 'case'}
 ---     M.store_bag   = 'satchel'
 ---
---- @file    common/CRAFT_REFILL.lua
+--- @file    common/inventory/CRAFT_REFILL.lua
 --- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-30

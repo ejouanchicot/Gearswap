@@ -59,7 +59,7 @@ the job.
 | `f12` | Mote: put your current gear back on and print the modes | always | not on the HUD |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | once you make one | listed by `tb list` |
 
-- The six common keys come from your `common/COMMON_KEYBINDS.lua`.
+- The six common keys come from your `common/keys/COMMON_KEYBINDS.lua`.
 - Your own keys from `PUP_CUSTOM.lua` are added on top (the template file has
   only commented examples). `//gs c kc` lists every key conflict.
 

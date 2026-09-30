@@ -63,7 +63,7 @@ the other roll (the game always doubles the last roll).
   end of a fight) waits, so the "Phantom Roll +" piece is worn when the roll takes
   effect.
 - A roll pressed while Phantom Roll is on recast can tell the party when it will be
-  ready: in `common/RECAST_CONFIG.lua`,
+  ready: in `common/combat/RECAST_CONFIG.lua`,
   `RECAST_CONFIG.party_announce = { ['Phantom Roll'] = "{action} : roll ready in <recast=Phantom Roll>" }`
   (`{action}` = the roll tried; see [configuration](../../guides/configuration.md)).
 

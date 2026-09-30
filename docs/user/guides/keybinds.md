@@ -167,7 +167,7 @@ return {
   Add `skill = 'Elemental Magic'` or `spell = {...}` to the `when` to limit
   which actions it applies to. A belt you do not have (not in the inventory
   or wardrobes) never triggers its rule. You rarely need these rules now:
-  the automatic belt (`common/ELEMENTAL_BELT.lua`, `//gs c belt`) makes the
+  the automatic belt (`common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) makes the
   same choice on every job; a rule of yours still goes on after it.
 - Latent refresh: `{ when = { mp_below = 51 }, idle = { waist = "Fucho-no-Obi" } }`.
 - Your pieces go on last, on top of the job's choice. Some slots are left
@@ -202,7 +202,7 @@ another job, its key is Alt+Numpad0 unless you pick one.
 | `//gs c combatmode show` / `hide` | Use it on this job or not (HUD row, key, lock) |
 | `//gs c combatmode key <key>` / `key none` | Its key on this job |
 
-Saved per character in `common/combat_mode.lua`; the file explains itself at
+Saved per character in `common/keys/combat_mode.lua`; the file explains itself at
 the top. The GearSwap adds Combat Mode by itself: no job file defines it, so
 this file is the place to look. Examples:
 
@@ -237,7 +237,7 @@ its key is Alt+Numpad. (`!numpad.`) unless you pick one. A job without
 | `//gs c th key <key>` / `key none` | Its key on this job |
 | `//gs c th clear` | Forget the mobs already tagged |
 
-Saved per character in `common/treasure_mode.lua`, same format as
+Saved per character in `common/keys/treasure_mode.lua`, same format as
 `combat_mode.lua`. A tag is forgotten when the mob dies, when you zone, or
 after 3 minutes without any action from or on it.
 

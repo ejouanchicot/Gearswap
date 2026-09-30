@@ -2,8 +2,8 @@
 Move a character folder to the layout of 2026-09-30.
 
     <Char>/<Char>_<JOB>.lua   one-line entry (shared/entry/<job>.lua does the work)
-    <Char>/common/            settings of the whole character
-        alt/                  the alt's own commands (*_ALT_CUSTOM)
+    <Char>/common/            settings of the whole character, by theme:
+        display/ keys/ dualbox/ (+ alt/) inventory/ combat/
         sets/                 gear shared by jobs (rings.lua...), craft and fishing sets
     <Char>/<job>/             settings of one job
         sets/                 its gear: <job>_sets.lua, armor.lua...
@@ -38,6 +38,23 @@ SAVED_CONFIG = {'alt_state.lua', 'alt_window.lua', 'dualbox_role.lua', 'ui_setti
 SAVED_ROOT = {'temp_binds.lua', 'trace.log', 'trace.old.log', 'trace.on', 'atelier.on'}
 # Lower-case files of common/ that are settings, not gear
 COMMON_SETTINGS = {'combat_mode.lua', 'treasure_mode.lua'}
+# Theme folder of each setting in common/ (same table as COMMON_GROUPS in
+# shared/utils/core/char_paths.lua)
+COMMON_GROUPS = {
+    'UI_CONFIG.lua': 'display', 'UI_COLOR_CONFIG.lua': 'display',
+    'REGION_CONFIG.lua': 'display', 'LOCKSTYLE_CONFIG.lua': 'display',
+    'COMMON_KEYBINDS.lua': 'keys', 'combat_mode.lua': 'keys', 'treasure_mode.lua': 'keys',
+    'DUALBOX_CONFIG.lua': 'dualbox',
+    'REFILL_CONFIG.lua': 'inventory', 'CRAFT_CONFIG.lua': 'inventory',
+    'CRAFT_REFILL.lua': 'inventory', 'WARDROBE_CONFIG.lua': 'inventory',
+    'AUTO_ABILITIES.lua': 'combat', 'RECAST_CONFIG.lua': 'combat', 'DW_CONFIG.lua': 'combat',
+    'ELEMENTAL_BELT.lua': 'combat', 'WEAPON_CONFIG.lua': 'combat', 'STEALTH_CONFIG.lua': 'combat',
+}
+
+
+def _common(name):
+    group = COMMON_GROUPS.get(name)
+    return 'common/%s/%s' % (group, name) if group else 'common/' + name
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GEAR_NAME = re.compile(r'^[a-z0-9]')   # gear files are lower-case, settings upper-case
@@ -45,16 +62,16 @@ GEAR_NAME = re.compile(r'^[a-z0-9]')   # gear files are lower-case, settings upp
 
 def _config_place(parts):
     if len(parts) == 2:
-        return ('saved/' if parts[1] in SAVED_CONFIG else 'common/') + parts[1]
+        return 'saved/' + parts[1] if parts[1] in SAVED_CONFIG else _common(parts[1])
     sub, rest = parts[1], '/'.join(parts[2:])
     if sub in JOBS:
         return sub + '/' + rest
     if sub == 'alt':
         if rest.endswith('_ALT_COMMANDS.lua') or rest.endswith('.example'):
             return None
-        return 'common/alt/' + rest
+        return 'common/dualbox/alt/' + rest
     if sub == 'craft':
-        return ('common/sets/' if rest.endswith('_sets.lua') else 'common/') + rest
+        return 'common/sets/' + rest if rest.endswith('_sets.lua') else _common(rest)
     return 'common/' + sub + '/' + rest
 
 
@@ -93,8 +110,12 @@ def new_place(rel):
     if top == 'common' and len(parts) == 2 and GEAR_NAME.match(parts[1]) \
             and parts[1] not in COMMON_SETTINGS:
         return 'common/sets/' + parts[1]
+    if top == 'common' and len(parts) == 2:
+        return _common(parts[1])
     if top == 'common' and len(parts) == 3 and parts[1] == 'craft':
-        return ('common/sets/' if parts[2].endswith('_sets.lua') else 'common/') + parts[2]
+        return 'common/sets/' + parts[2] if parts[2].endswith('_sets.lua') else _common(parts[2])
+    if top == 'common' and len(parts) >= 3 and parts[1] == 'alt':
+        return 'common/dualbox/alt/' + '/'.join(parts[2:])
     return rel
 
 
@@ -107,7 +128,7 @@ def plan_moves(char_dir):
         if dst != rel:
             moves.append((rel, dst))
 
-    for top in ('config', 'sets', 'atelier', 'common/craft'):
+    for top in ('config', 'sets', 'atelier', 'common/craft', 'common/alt'):
         for root, _, files in os.walk(os.path.join(char_dir, top)):
             for f in files:
                 add(os.path.relpath(os.path.join(root, f), char_dir).replace('\\', '/'))
@@ -211,7 +232,7 @@ def migrate(char, dry_run=False, backup=True, quiet=False, base_dir=HERE):
         with open(os.path.join(char_dir, name), 'w', encoding='utf-8', newline='\n') as f:
             f.write(stub_for(char, job))
 
-    for old in ('config', 'sets', 'atelier', 'common/craft'):
+    for old in ('config', 'sets', 'atelier', 'common/craft', 'common/alt'):
         for root, _, _ in os.walk(os.path.join(char_dir, old), topdown=False):
             if not os.listdir(root):
                 os.rmdir(root)

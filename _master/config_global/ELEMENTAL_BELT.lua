@@ -30,7 +30,7 @@
 --- In game: //gs c belt shows the belts found, today's day / weather and
 --- what each belt would add now. After editing this file: //gs reload.
 ---
---- @file    config/ELEMENTAL_BELT.lua
+--- @file    common/combat/ELEMENTAL_BELT.lua
 --- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-28

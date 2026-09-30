@@ -59,7 +59,7 @@ been reported missing from the HUD; the key works either way.
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `SMN_CUSTOM.lua` (examples only in the template) | yes |
 
-The common keys come from `<YourName>/common/COMMON_KEYBINDS.lua`.
+The common keys come from `<YourName>/common/keys/COMMON_KEYBINDS.lua`.
 
 ### Mote-Include keys (always bound, not on the HUD)
 

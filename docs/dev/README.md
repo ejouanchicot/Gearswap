@@ -250,7 +250,7 @@ Consequences worth remembering:
 - `clone_character.py` copies templates + overlay into `data/<Name>/`,
   substitutes the name, and generates `DUALBOX_CONFIG.lua` (with
   `DualBoxConfig.group` when dual-box is on) / `REGION_CONFIG.lua`. It copies
-  `common/sets/` always and `common/alt/` only for a MAIN. The overlay applies
+  `common/sets/` always and `common/dualbox/alt/` only for a MAIN. The overlay applies
   only to its own character or with `--source`. An existing folder is moved to
   `addons/GearSwap/clone_backups/` after the final confirmation, never deleted,
   and the files written in game (`KEPT_ON_RECLONE`: HUD position, message

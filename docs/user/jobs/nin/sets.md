@@ -16,7 +16,7 @@ spell, which set was chosen and why.
 | `sets['<Weapon>']` | Main Weapon (`^numpad1`) or Sub Weapon (`^numpad2`) is that value: one set per value you add in `NIN_STATES.lua`, named exactly like the value (`sets['Heishi Shorinken'] = {main = "Heishi Shorinken"}`, `sets['Kunimitsu'] = {sub = "Kunimitsu"}`) |
 
 - The value `Free` (default) has no set: you keep the weapon you wear.
-- With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a value that is
+- With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a value that is
   a real weapon name needs no set.
 - The weapon sets go on top of the idle and engaged sets, in town too.
 - Combat Mode (hidden, `//gs c combatmode show`) locks main, sub and range:

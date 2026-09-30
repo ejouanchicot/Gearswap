@@ -38,7 +38,7 @@ reload.
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
 the provided template; after cloning, yours are in `<YourName>/brd/`
-and `<YourName>/common/COMMON_KEYBINDS.lua`, and those files win. No BRD key
+and `<YourName>/common/keys/COMMON_KEYBINDS.lua`, and those files win. No BRD key
 depends on the subjob.
 
 | Key | Does | When | Shown in the HUD |
@@ -157,7 +157,7 @@ starts, after its recast check, never by the command.
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC) |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none) |
 | Combat Mode | Off and hidden. **On BRD it also locks the instrument slot**: no instrument can change, dummy songs use whatever you wear, and Honor March / Aria of Passion are refused unless Marsyas / Loughnashade is already on. Leave it hidden unless you want exactly that |
-| Weapon without a set | With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
 | Your own modes | `BRD_CUSTOM.lua`: extra modes, keys and gear rules without code. Your rules never touch the instrument or ammo while you sing |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key, default 80) |
 | Lockstyle, macro book | Set on load and on each subjob change |

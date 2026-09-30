@@ -78,8 +78,9 @@ local DEFAULT_SOURCE_BAGS = {'case', 'sack', 'satchel'}
 ---   INTERNAL HELPERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Scan a character folder for every *_REFILL.lua: <job>/ and common/craft/
---- (layout since 2026-09-30), config/<job>/ and config/craft/ (before).
+--- Scan a character folder for every *_REFILL.lua: <job>/ and
+--- common/inventory/ (layout since 2026-09-30), config/<job>/ and
+--- config/craft/ (before).
 --- Returns a list of loaded config tables, regardless of which job they target.
 --- @param char_name string
 --- @return table list of {char=string, job=string, cfg=table}
@@ -89,7 +90,7 @@ local function load_char_refill_configs(char_name)
     end
     local configs, seen = {}, {}
     local base = windower.addon_path .. 'data/' .. char_name .. '/'
-    local folders = {'common/craft'}
+    local folders = {'common/inventory', 'common/craft'}
     for _, root in ipairs({'', 'config/'}) do
         for _, entry in ipairs(windower.get_dir(base .. root) or {}) do
             if not entry:match('%.') then folders[#folders + 1] = root .. entry end

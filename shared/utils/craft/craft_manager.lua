@@ -87,7 +87,7 @@ local function resolve(file_name, variant)
     local cfg = load_craft_file(file_name)
     if not cfg then
         local p = windower.ffxi.get_player()
-        return nil, ('No set file %s/common/sets/%s_sets.lua (create it, or name another file in common/CRAFT_CONFIG.lua)'):format(
+        return nil, ('No set file %s/common/sets/%s_sets.lua (create it, or name another file in common/inventory/CRAFT_CONFIG.lua)'):format(
             (p and p.name) or '?', file_name:lower())
     end
 

@@ -375,7 +375,7 @@ that outlives the sandbox.
 | `RDM_PRECAST.lua` `stage_saboteur` | Saboteur (`try_ability_smart`, `RDMSaboteurConfig.wait_time`) | enfeebles in `RDMSaboteurConfig.auto_trigger_spells` when `state.SaboteurMode` is On |
 | `dnc/functions/logic/climactic_manager.lua` `auto_trigger` | Climactic Flourish (`try_ability_ws`, 1 s) | `state.ClimacticAuto` not Off, configured WS, live TP >= max(`min_tp`, 1000), target HP above `min_target_hpp`, 3 or more Finishing Moves |
 | `blu/functions/logic/unbridled.lua` | Unbridled Learning (`try_ability`) | an Unbridled spell, unless Unbridled Wisdom is up |
-| `geo/functions/logic/geo_auto_abilities.lua` `apply` | Entrust (`try_ability`, 1.5 s) | Indi- on an ally when turned on in `common/AUTO_ABILITIES.lua` |
+| `geo/functions/logic/geo_auto_abilities.lua` `apply` | Entrust (`try_ability`, 1.5 s) | Indi- on an ally when turned on in `common/combat/AUTO_ABILITIES.lua` |
 | `blm_functions.lua` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
 | `dnc/functions/logic/step_manager.lua` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
 | `SAM_PRECAST.lua` | Third Eye (`follow_up`) | before Third Eye-gated actions |
@@ -703,7 +703,7 @@ cooldown. Callers: all 17 `[JOB]_PRECAST.lua`, always gated by `spell.action_typ
 
 `on_refused(spell, recast_id)`: see above. Caller: `CooldownChecker` (`announce`, under `pcall`).
 
-### RECAST_CONFIG (`<Character>/common/RECAST_CONFIG.lua`, template `_master/config_global/RECAST_CONFIG.lua`)
+### RECAST_CONFIG (`<Character>/common/combat/RECAST_CONFIG.lua`, template `_master/config_global/RECAST_CONFIG.lua`)
 
 `RECAST_CONFIG.is_ready(recast, custom_tolerance)`: `nil` -> false; if `enabled` is
 false, `recast == 0`; else `recast <= tolerance`. `RECAST_CONFIG.on_cooldown(...)` is
@@ -777,7 +777,7 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 | Command | Args | Effect | Handler |
 |---|---|---|---|
 | `//gs c automedicine` / `//gs c am` | optional `on` / `off` | toggle or force `state.AutoMedicine`, persist, repaint HUD, print | `COMMON_COMMANDS.lua` `handle_command` -> `CommonCommands.handle_automedicine` -> `AutoMedicine.handle_command` |
-| `//gs c cyclestate AutoMedicine` | - | Mote cycle through the wrapped `cycle` (persists) | bound to `#numpad0` by `common/COMMON_KEYBINDS.lua` (template `_master/config_global/COMMON_KEYBINDS.lua`) |
+| `//gs c cyclestate AutoMedicine` | - | Mote cycle through the wrapped `cycle` (persists) | bound to `#numpad0` by `common/keys/COMMON_KEYBINDS.lua` (template `_master/config_global/COMMON_KEYBINDS.lua`) |
 | `//gs c ws1` .. `//gs c ws9` (WAR), `ws`, `ws1`.. (PLD) | - | fire the weaponskill held by slot N | `WAR_COMMANDS.lua`, `PLD_COMMANDS.lua` -> `WSSlots.cast` |
 | `//gs c debugprecast` | - | toggle `_G.PrecastDebugState` (read by RDM, BRD, RUN precast debug output), persisted in `windower._gs_debug.PRECAST` | `DebugCommands.handle_debugprecast` |
 | `//gs c trace on` / `off` | - | trace log: `PRECAST`, `WSTP`, `TP`, `BELT`, `MIDCAST` lines in `<Character>/trace.log` | see [commands-and-debug.md](commands-and-debug.md) |
@@ -812,7 +812,7 @@ lists are then empty.
 | `party_announce` | `{}` | name / shared recast name -> `true` or text (RecastAnnounce) |
 | `party_announce_every` | `1` | seconds between two announces of one key |
 
-Each entry point loads it with `_G.RECAST_CONFIG = require('<Char>/common/RECAST_CONFIG')`
+Each entry point loads it with `_G.RECAST_CONFIG = require('<Char>/common/combat/RECAST_CONFIG')`
 in `get_sets()`, before the job modules.
 
 ### TP configs
@@ -927,7 +927,7 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
   `TierRefiner.refine`, and route the job's spell to `refine` **instead of** the
   cooldown check.
 - **New party announce**: add the key to `party_announce` in the character's
-  `common/RECAST_CONFIG.lua`; no code change.
+  `common/combat/RECAST_CONFIG.lua`; no code change.
 - **New cleanup overlay**: write an `install()` that wraps `cleanup_precast` /
   `cleanup_midcast` once per sandbox (flag on `_G`), tests `eventArgs.cancel`, and call
   it from `INIT_SYSTEMS.lua` at the right place in the order above.

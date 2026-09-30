@@ -472,7 +472,7 @@ flowchart TD
 
 Created by `PLDStates.configure()` on every `user_setup()`. Keys from
 `PLD_KEYBINDS.lua`; `^` = Ctrl, `#` = Apps. `#numpad0` (AutoMedicine) comes from
-the character's `common/COMMON_KEYBINDS.lua`.
+the character's `common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -583,7 +583,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 | `<char>/pld/PLD_TP_CONFIG.lua` -> `_G.PLDTPConfig` | Moonshade 250, Sequence 500 | file | `PLD_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
 | `<char>/pld/PLD_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | `aoe_manager.lua` (captured when the module is first required) |
 | `<char>/pld/PLD_REFILL.lua` | not in the template (overlay only) | player-created | refill system (fallback list without it) |
-| `<char>/common/RECAST_CONFIG.lua` | tolerance | shared | `is_on_cooldown` in aoe/rune managers, `is_recast_ready` in AbilityHelper |
+| `<char>/common/combat/RECAST_CONFIG.lua` | tolerance | shared | `is_on_cooldown` in aoe/rune managers, `is_recast_ready` in AbilityHelper |
 | `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry |
 
 ## State & lifetime

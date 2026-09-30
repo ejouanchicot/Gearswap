@@ -18,7 +18,7 @@ The diagnostic handlers live in `DEBUG_COMMANDS.lua`, and the tools themselves u
 | `shared/utils/equipment/treasure_commands.lua` | `//gs c th`, built on `optional_state_commands.lua` |
 | `shared/utils/core/optional_state_commands.lua` | Shared command builder for Combat Mode and Treasure Mode (status, `show`, `hide`, `key`, `help`, `extra`) |
 | `shared/utils/commands/info_command.lua` | `//gs c info <name>`: looks up a JA, spell or WS in the project databases and prints its fields |
-| `shared/utils/config/config_loader.lua` | Installs `ModuleCache` at file level; `ConfigLoader.load_ui_config(char, job)` loads `<char>/common/UI_CONFIG.lua` |
+| `shared/utils/config/config_loader.lua` | Installs `ModuleCache` at file level; `ConfigLoader.load_ui_config(char, job)` loads `<char>/common/display/UI_CONFIG.lua` |
 | `shared/utils/debug/debug_logger.lua` | `DebugLogger`: one-line flag-gated debug output through `MessageFormatter.show_debug` |
 | `shared/utils/debug/full_test.lua` | `FullTest`: syscheck + module loads + `_G` hooks + `sets` structure, scored, optional file export |
 | `shared/utils/debug/global_probe.lua` | `GlobalProbe`: snapshots `_G`, reports globals created afterwards and missing Mote hooks |
@@ -189,8 +189,8 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | `dressup` | - | `LockstyleManager.toggle_dressup()` (persisted in `data/.dressup_disabled`) | `handle_dressup` |
 | `belt` | none | Obi / Orpheus status: on/off, `min_bonus`, belts found, day / weather, bonus per element now, Orpheus at the current target's distance. Also drops the owned-belt cache | `ElementalBelt.show_status`, see [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
 | `dw` | `auto`, `none`, `haste`, `haste2`, `max` (lower-cased), none = status | Dual Wield tier: shows the magic haste estimate; a tier word forces that tier (`windower._dw_forced`) and sends `gs c update`; `auto` clears the force. Any other word sends `gs c update` and shows the status | `DualWield.command`, see [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
-| `th` | none = status, `show`, `hide`, `key <key>\|none`, `clear`, `help` | Treasure Mode on this job: status, show / hide (rewrites `common/treasure_mode.lua`), key, forget the tags | `treasure_commands.handle` -> `OptionalStateCommands`, see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode) |
-| `combatmode` | none = status, `show`, `hide`, `key <key>\|none`, `help` | Combat Mode (weapon lock) on this job: same scheme, file `common/combat_mode.lua` | `combat_mode_commands.handle` |
+| `th` | none = status, `show`, `hide`, `key <key>\|none`, `clear`, `help` | Treasure Mode on this job: status, show / hide (rewrites `common/keys/treasure_mode.lua`), key, forget the tags | `treasure_commands.handle` -> `OptionalStateCommands`, see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode) |
+| `combatmode` | none = status, `show`, `hide`, `key <key>\|none`, `help` | Combat Mode (weapon lock) on this job: same scheme, file `common/keys/combat_mode.lua` | `combat_mode_commands.handle` |
 
 **Jobs and actions**
 
@@ -202,7 +202,7 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | `aoewaltz` | - | Same guard, then `cast_divine_waltz()` | `handle_aoewaltz` |
 | `lightarts`, `darkarts` | - | SCH main or sub: Arts, then the Addendum on the next press. Without SCH: the alt's command of that name when its config has one, else an error | `scholar/scholar_actions.lua` `handle_command` |
 | `aoe` | `sneak`/`invi`/`invisible`/`erase` | SCH main or sub: Light Arts + Accession (+ Addendum: White for Erase) as charges allow, then the spell; the job's `SneakInviAOE` when it has one. PLD and RUN answer the bare `aoe` first (Blue Magic rotation) | same |
-| `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`, `help`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group, timers, settings in `<Character>/common/STEALTH_CONFIG.lua` | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
+| `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`, `help`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group, timers, settings in `<Character>/common/combat/STEALTH_CONFIG.lua` | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
 | `sortie` | `<target>` (Sortie targets; `gab` was removed on 2026-09-29 with the alt's `Kaories/Gab` profile, `farm` now assists Gabvanstronger), `escort [Indi-X]`, `off`, `judgment`, `fullcircle`, `list`, `help` | Stance for this character plus a Silmaril profile for a GEO alt (`sm load` names a folder; Silmaril picks the file of the alt's current subjob there, `GEO_WHM_` or `GEO_DRK_Kaories.xml`). On a job that has `state.PhalanxSIRD` (PLD) it also sets that mode (`Off` for targets with `phalanx_sird = false`, `On` otherwise; checked with `rawget(state, 'PhalanxSIRD')`). A value the job's state lacks prints a warning and the rest still runs. `escort` also turns PLD's `Regen` On, only on /SCH (since 2026-09-28) | `sortie/sortie_commands.lua` `SortieCommands.handle` |
 
 **Box group and alt**
@@ -493,10 +493,10 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 | Warp aliases | `shared/utils/warp/warp_command_registry.lua` `COMMANDS` | Single list shared with `warp_ipc.lua` |
 | Alt command definitions | `<main char>/config/alt/<JOB>_ALT_COMMANDS.lua` + `<JOB>_ALT_CUSTOM.lua` | Loaded by `alt_commands.lua` `load_job_config` with the main's `player.name`; each file falls back to `_master/config/alt/` |
 | Message modes | `<char>/saved/message_modes.lua` via `shared/config/message_settings.lua` | Written by `jamsg` / `spellmsg` / `wsmsg`; defaults `on` |
-| Combat Mode / Treasure Mode | `<char>/common/combat_mode.lua`, `<char>/common/treasure_mode.lua` | Rewritten whole by `combatmode` / `th`; kept across a re-clone (`clone_character.py` `KEPT_ON_RECLONE`) |
-| Dual Wield values | `<char>/common/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`) | Read by `dw` and the DW hook |
-| Belt settings | `<char>/common/ELEMENTAL_BELT.lua` (template in `_master/config_global/`) | Shown by `belt` |
-| UI config | `<char>/common/UI_CONFIG.lua` | Fallback in `config_loader.lua` |
+| Combat Mode / Treasure Mode | `<char>/common/keys/combat_mode.lua`, `<char>/common/keys/treasure_mode.lua` | Rewritten whole by `combatmode` / `th`; kept across a re-clone (`clone_character.py` `KEPT_ON_RECLONE`) |
+| Dual Wield values | `<char>/common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`) | Read by `dw` and the DW hook |
+| Belt settings | `<char>/common/combat/ELEMENTAL_BELT.lua` (template in `_master/config_global/`) | Shown by `belt` |
+| UI config | `<char>/common/display/UI_CONFIG.lua` | Fallback in `config_loader.lua` |
 | Profiler switch | `data/.profiler_enabled` | Absent = off |
 | DressUp switch | `data/.dressup_disabled` | Present = DressUp not managed |
 | Trace | `<char>/trace.log` (older part in `<char>/trace.old.log`), marker `<char>/trace.on` | Absent marker = off |
@@ -575,7 +575,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 - Put it after the common block of the job's `job_self_command`.
 - Pick a name that is not a common name, a warp alias or `<alias>all`.
 - Set `eventArgs.handled = true` on **every** path, including error paths, then `return`. A path that forgets it falls through to Mote and then to the alt's command of the same name.
-- A name that is also a key in `<char>/common/alt/*.lua` runs locally; the alt's version stays reachable as `//gs c alt <name>`.
+- A name that is also a key in `<char>/common/dualbox/alt/*.lua` runs locally; the alt's version stays reachable as `//gs c alt <name>`.
 
 ### Forwarding arguments
 

@@ -44,7 +44,7 @@ default on each job change, subjob change and reload.
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
 the provided template; after cloning, yours are in `<YourName>/cor/`
-and `<YourName>/common/COMMON_KEYBINDS.lua`, and those files win. No COR key
+and `<YourName>/common/keys/COMMON_KEYBINDS.lua`, and those files win. No COR key
 depends on the subjob.
 
 | Key | Does | When | Shown in the HUD |
@@ -146,7 +146,7 @@ checks as a macro: debuff guard, recast check, roll gear, Luzaf's Ring.
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC). Held back while a roll is under way |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none). In a fight, its pieces wait while a roll is under way |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked, so the knife and gun of your roll set are not swapped in either |
-| Weapon without a set | With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name (the gun still needs its set) |
+| Weapon without a set | With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name (the gun still needs its set) |
 | Your own modes | `COR_CUSTOM.lua`: extra modes, keys and gear rules without code. Idle / engaged gear rules wait while a roll is under way |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key) |
 | Lockstyle, macro book | Set on load and on each subjob change |

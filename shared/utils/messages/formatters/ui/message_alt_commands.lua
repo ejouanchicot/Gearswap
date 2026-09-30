@@ -194,7 +194,7 @@ local function show_overview(alt, job, subjob, names, commands, char)
     return {
         '//gs c <name>: ' .. alt .. ' casts it (name = spell).',
         'Search: //gs c altcmds haste',
-        'Edit: ' .. (char or '<Character>') .. '/common/alt/' .. job .. '_ALT_CUSTOM.lua',
+        'Edit: ' .. (char or '<Character>') .. '/common/dualbox/alt/' .. job .. '_ALT_CUSTOM.lua',
     }
 end
 

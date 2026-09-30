@@ -320,7 +320,7 @@ flowchart TD
 
 Created by `BLMStates.configure()` on every `user_setup()`. Keys from
 `BLM_KEYBINDS.lua`; `^` = Ctrl, `#` = Apps. `#numpad0` (AutoMedicine) comes from
-the character's `common/COMMON_KEYBINDS.lua`.
+the character's `common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -437,11 +437,11 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 | `<char>/blm/BLM_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 8 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/blm/BLM_MP_CONFIG.lua` `mp_threshold` | 1000 | file; fallback in `BLM_MIDCAST.lua` `ensure_modules_loaded` | `apply_mp_conservation` |
 | `<char>/blm/BLM_ELEMENTAL_CONFIG.lua` | all true | file; same fallback | `apply_elemental_match` (only when `ElementalBelt` is off) |
-| `<char>/common/ELEMENTAL_BELT.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
-| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
+| `<char>/common/combat/ELEMENTAL_BELT.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
+| `<char>/common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
 | `<char>/blm/BLM_TP_CONFIG.lua` -> `_G.BLMTPConfig` | `moonshade = {name, tp_bonus = 250}` | file | `WSPrecastHandler` -> TP calculator, which reads `pieces` / `get_weapon_bonus`, neither defined |
 | `<char>/blm/BLM_REFILL.lua` | none in the template | - | `refill/config_resolver.lua` (`FALLBACK_LIST` without it) |
-| `<char>/common/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | - | entry fallbacks | entry |
+| `<char>/common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
 
