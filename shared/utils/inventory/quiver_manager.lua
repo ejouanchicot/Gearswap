@@ -8,6 +8,9 @@
 ---   shuriken works.
 ---
 ---   Typical use: QuiverManager.after_ranged_attack() from job_aftercast.
+---   The threshold a job passes can be changed per character in
+---   _common/inventory/REFILL_CONFIG.lua: quiver_open_at = {THF = 10}, or
+---   false for a job that never opens one.
 ---
 ---   Constraints:
 ---     • FFXI's `/item` command only works on inventory items, so the quiver
@@ -63,6 +66,22 @@ end
 --- @return number|nil Item id
 local function resolve_id(name)
     return require('shared/utils/equipment/item_index').id(name)
+end
+
+--- The threshold of the main job: REFILL_CONFIG.lua quiver_open_at[job]
+--- when set (a number, or false: never), else the job's own default.
+--- @param default number The job's threshold
+--- @return number|false
+local function job_threshold(default)
+    local ok, cfg = pcall(function()
+        return require('shared/utils/core/char_paths').optional('common', 'REFILL_CONFIG')
+    end)
+    local by_job = ok and type(cfg) == 'table' and cfg.quiver_open_at
+    local job = player and player.main_job
+    if type(by_job) ~= 'table' or not job then return default end
+    local value = by_job[job]
+    if value == false then return false end
+    return tonumber(value) or default
 end
 
 --- Check if a quiver should be opened, and open it if so.
@@ -136,6 +155,10 @@ end
 --- @return boolean True when a check was scheduled
 function QuiverManager.after_ranged_attack(spell, ammo_name, quiver_name, threshold)
     if not spell or spell.action_type ~= 'Ranged Attack' or spell.interrupted then
+        return false
+    end
+    threshold = job_threshold(threshold)
+    if not threshold then
         return false
     end
 
