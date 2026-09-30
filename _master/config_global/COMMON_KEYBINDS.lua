@@ -5,6 +5,8 @@
 --- that uses the same key keeps it: the job wins.
 ---
 --- Keys: ^ = Ctrl, ! = Alt, @ = Win, # = Apps, ~ = Shift.
+--- A letter is the key's place on a QWERTY keyboard: on AZERTY, "!z" is
+--- Alt + your W (and "!w" Alt + your Z; A and Q swap too).
 --- Numpad only, like the job files (.claude/rules/keybinds.md). F9-F12
 --- belong to Mote-Include, Ctrl/Alt+F1-F8 to //gs c tb.
 ---

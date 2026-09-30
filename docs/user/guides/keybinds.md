@@ -63,6 +63,10 @@ the common key disappears on that job.
 
 ## The file format
 
+A letter key names its place on a QWERTY keyboard, whatever is printed on
+yours: on an AZERTY keyboard `"!z"` is Alt + your W, `"!w"` Alt + your Z,
+and A and Q swap the same way (Windower reads the key position).
+
 A job's keybind file (here WAR, shortened):
 
 ```lua
