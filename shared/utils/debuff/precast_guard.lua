@@ -19,24 +19,9 @@ local DebuffChecker = require('shared/utils/debuff/debuff_checker')
 local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
 local AutoMedicine = require('shared/utils/debuff/auto_medicine')
 
-local config_success, AutoCureConfig = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
-if not config_success then
-    AutoCureConfig = {
-        test_mode = false,
-        test_debuff = "Berserk",
-        auto_cure_silence = true,
-        auto_cure_paralysis = true,
-        silence_cure_items = {
-            { name = "Echo Drops", id = 4151 },
-            { name = "Remedy", id = 4155 }
-        },
-        paralysis_cure_items = {
-            { name = "Remedy", id = 4155 },
-            { name = "Panacea", id = 4145 }
-        },
-        debug = false
-    }
-end
+-- Shared defaults with the character's _common/combat/AUTOCURE_CONFIG.lua
+-- over them (autocure_settings.lua)
+local AutoCureConfig = require('shared/utils/debuff/autocure_settings').load()
 
 -- Cure item lists, tried in order (empty list when the config omits them)
 local SILENCE_CURE_ITEMS = AutoCureConfig.silence_cure_items or {}

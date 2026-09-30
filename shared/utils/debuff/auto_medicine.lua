@@ -36,11 +36,22 @@ local function mote_state()
     return Mote.state or _G.state
 end
 
---- Read the value that survived the last job change.
---- @return string 'On' or 'Off' (defaults to 'On' on a cold load)
+--- Read the value that survived the last job change. On a cold load (no
+--- value yet), the character's AUTOCURE_CONFIG.lua auto_medicine_start
+--- ('On' or 'Off', default 'On').
+--- @return string 'On' or 'Off'
 local function load_persisted_value()
     if windower._auto_medicine == false then
         return OFF
+    end
+    if windower._auto_medicine == nil then
+        local ok, settings = pcall(function()
+            return require('shared/utils/debuff/autocure_settings').load()
+        end)
+        local start = ok and settings and settings.auto_medicine_start
+        if start == false or tostring(start):lower() == 'off' then
+            return OFF
+        end
     end
     return ON
 end

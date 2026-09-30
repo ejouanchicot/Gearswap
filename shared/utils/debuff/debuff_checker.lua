@@ -19,7 +19,9 @@
 
 local DebuffChecker = {}
 
-local config_success, AutoCureConfig = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
+local config_success, AutoCureConfig = pcall(function()
+    return require('shared/utils/debuff/autocure_settings').load()
+end)
 local TEST_MODE = config_success and AutoCureConfig.test_mode or false
 
 ---  ═══════════════════════════════════════════════════════════════════════════
