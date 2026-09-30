@@ -429,6 +429,7 @@ local COMMANDS_HELP = {
         {title = 'SYSTEM', rows = {
             {'//gs c reload', '', 'Force job reload'},
             {'//gs c checksets', '', 'Validate equipment sets'},
+            {'//gs c gearscan', '', 'Read gear augments (HP order)'},
             {'//gs c lockstyle | ls', '', 'Reapply lockstyle'},
             {'//gs c dressup', '', 'Toggle DressUp management'},
             {'//gs c naked | equip naked', '', 'Strip all equipment'},
@@ -501,6 +502,7 @@ local COMMANDS_HELP = {
             {'//gs c lightarts', '', 'Light Arts, then Addendum: White (SCH)'},
             {'//gs c darkarts', '', 'Dark Arts, then Addendum: Black (SCH)'},
             {'//gs c aoe ', '<sneak|invi|erase>', 'Accession + the spell, party-wide (SCH)'},
+            {'//gs c smartbuff', '', 'Self-buffs of the subjob (WAR SAM NIN DNC)'},
         }},
         {title = 'WARP', note = '50+ commands, warp help', rows = {
             {'//gs c warp status', '', 'Warp lock status'},

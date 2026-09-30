@@ -70,6 +70,7 @@ local COMMON_GROUPS = {
     ['CRAFT_REFILL.lua'] = 'inventory', ['WARDROBE_CONFIG.lua'] = 'inventory',
     ['AUTO_ABILITIES.lua'] = 'combat', ['RECAST_CONFIG.lua'] = 'combat', ['DW_CONFIG.lua'] = 'combat',
     ['ELEMENTAL_BELT.lua'] = 'combat', ['WEAPON_CONFIG.lua'] = 'combat', ['STEALTH_CONFIG.lua'] = 'combat',
+    ['HP_PRIORITY.lua'] = 'combat',
 }
 CharPaths.COMMON_GROUPS = COMMON_GROUPS
 

@@ -39,6 +39,7 @@ COMMON = {
     'ELEMENTAL_BELT.lua': 'Hachirin-no-Obi / Orpheus\'s Sash picked automatically',
     'WEAPON_CONFIG.lua': 'How the weapon states equip a weapon that has no set',
     'STEALTH_CONFIG.lua': 'Sneak / Invisible on you and your alts (//gs c stealth)',
+    'HP_PRIORITY.lua': 'Order the pieces go on in, so max HP never dips (Unity rank, MP jobs)',
     'rings.lua': 'Rings you own twice, each pinned to its wardrobe; the job sets use them',
 }
 
@@ -71,7 +72,8 @@ GEAR = {
     'instruments.lua': 'Instruments the song sets use',
     'pets.lua': 'Pet gear the sets use',
 }
-SAVED = 'Written by GearSwap itself (window positions, HUD and chat settings, dual-box role, traces). No need to edit.'
+SAVED = ('Written by GearSwap itself (window positions, HUD and chat settings, dual-box role, '
+         'gear augments of //gs c gearscan, traces). No need to edit.')
 
 
 def describe_job_file(job, name):

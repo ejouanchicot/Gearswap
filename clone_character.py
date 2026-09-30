@@ -318,6 +318,7 @@ KEPT_ON_RECLONE = [
     ('saved', 'alt_state.lua'),
     ('saved', 'WARP_ITEMS_OWNED.lua'),
     ('saved', 'temp_binds.lua'),
+    ('saved', 'gear_augments.lua'),  # //gs c gearscan
     ('_common', 'keys', 'combat_mode.lua'),
     ('_common', 'keys', 'treasure_mode.lua'),  # //gs c th show | hide | key
     ('_common', 'combat', 'STEALTH_CONFIG.lua'),

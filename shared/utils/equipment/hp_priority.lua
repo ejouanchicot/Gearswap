@@ -12,14 +12,20 @@
 ---     • an advanced entry {name=..., augments=...} gets its priority field
 ---   HP and MP come from shared/data/equipment/ITEM_HP_MP.lua (generated from
 ---   game data by scripts/item_db/build_item_db.py), plus the item's own
----   'HP+N' / 'MP+N' augments as written in the set, plus its Unity bonus.
+---   'HP+N' / 'MP+N' augments as written in the set (a piece the set names
+---   without augments: the ones //gs c gearscan read in the bags, from
+---   <Char>/saved/gear_augments.lua, see gear_scan.lua), plus its Unity bonus.
+---
+---   Settings: <Char>/_common/combat/HP_PRIORITY.lua (every key optional):
+---     enabled   = true           false turns the whole system off
+---     unity     = 'min'          'max' when your Unity leader is rank 1
+---     mp_jobs   = {'BLM', ...}   priority = HP * 1000 + MP on these jobs
+---     skip_jobs = {'PLD'}        jobs left alone (their sets set priorities)
 ---
 ---   Rules:
 ---     • priority = HP                      (all jobs)
----     • priority = HP * 1000 + MP          (MP_JOBS: HP first, MP breaks ties)
+---     • priority = HP * 1000 + MP          (mp_jobs: HP first, MP breaks ties)
 ---     • a piece that already has a priority is never touched
----     • SKIP_JOBS keep their own hand-tuned scheme (PLD: HP deltas per set)
----     • only CHARACTERS are processed; frozen clones stay as they are
 ---
 ---   @file    shared/utils/equipment/hp_priority.lua
 ---   @author  ejouanchicot
@@ -38,19 +44,15 @@ local HPPriority = {}
 --- the one walk at job load.
 local DATA_FILE = 'data/shared/data/equipment/ITEM_HP_MP.lua'
 
---- Characters processed, with the Unity bonus they get. Unity rank is the
---- rank of the character's Unity leader: rank 1 gets the top of the range.
-local CHARACTERS = {
-    Tetsouo = { unity = 'max' },
-    Kaories = { unity = 'min' },
+--- Defaults of HP_PRIORITY.lua. Unity rank is the rank of the character's
+--- Unity leader: rank 1 gets the top of the range ('max').
+local DEFAULTS = {
+    enabled = true,
+    unity = 'min',
+    mp_jobs = { 'BLM', 'RDM', 'GEO' },
+    skip_jobs = { 'PLD' },
 }
-
---- Jobs whose priority also weighs MP (HP still comes first).
-local MP_JOBS = { BLM = true, RDM = true, GEO = true }
 local MP_WEIGHT = 1000
-
---- Jobs with their own priority scheme, left untouched.
-local SKIP_JOBS = { PLD = true }
 
 local SLOTS = {
     main = true, sub = true, range = true, ranged = true, ammo = true,
@@ -103,10 +105,15 @@ end
 --- @param name string Item name as written in the set
 --- @param augments table|nil Augments as written in the set
 --- @param unity string 'max' or 'min'
+--- @param scanned table|nil gear_augments.lua (used when the set names no augments)
 --- @return number hp, number mp
-local function piece_hp_mp(data, name, augments, unity)
+local function piece_hp_mp(data, name, augments, unity, scanned)
     local entry = data[name:lower()]
     local hp, mp = augment_hp_mp(augments)
+    local seen = augments == nil and scanned and scanned[name:lower()]
+    if type(seen) == 'table' and not seen.differ then
+        hp, mp = hp + (tonumber(seen.hp) or 0), mp + (tonumber(seen.mp) or 0)
+    end
     if entry then
         local u = unity == 'max' and 1 or 0
         hp = hp + entry[1] + (entry[3 + u] or 0)
@@ -133,7 +140,7 @@ local function priority_of(value, ctx)
     if not name or name == '' or name:lower() == 'empty' then
         return nil
     end
-    local hp, mp = piece_hp_mp(ctx.data, name, augments, ctx.unity)
+    local hp, mp = piece_hp_mp(ctx.data, name, augments, ctx.unity, ctx.scanned)
     local priority = ctx.weigh_mp and (hp * MP_WEIGHT + mp) or hp
     return priority ~= 0 and priority or nil
 end
@@ -169,27 +176,57 @@ end
 ---   PUBLIC API
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- A list of job codes as a set ({'BLM'} -> {BLM = true}).
+local function job_set(list)
+    local out = {}
+    for _, job in ipairs(type(list) == 'table' and list or {}) do out[tostring(job):upper()] = true end
+    return out
+end
+
+--- The character's HP_PRIORITY.lua over the defaults.
+--- @return table {enabled, unity, mp_jobs (set), skip_jobs (set)}
+function HPPriority.settings()
+    local ok, user = pcall(function()
+        return require('shared/utils/core/char_paths').optional('common', 'HP_PRIORITY')
+    end)
+    user = (ok and type(user) == 'table') and user or {}
+    local function pick(key) if user[key] == nil then return DEFAULTS[key] end return user[key] end
+    return {
+        enabled = pick('enabled') ~= false,
+        unity = pick('unity') == 'max' and 'max' or 'min',
+        mp_jobs = job_set(pick('mp_jobs')),
+        skip_jobs = job_set(pick('skip_jobs')),
+    }
+end
+
 --- Apply HP priorities to the loaded sets of the current character and job.
 --- Safe to call when the data file, the player or the sets are missing.
 --- @return number Number of pieces given a priority
 function HPPriority.apply()
-    local who = player and CHARACTERS[player.name]
     local job = player and player.main_job
-    if not (who and job and type(_G.sets) == 'table') or SKIP_JOBS[job] then
+    if not (job and type(_G.sets) == 'table') then
+        return 0
+    end
+    local cfg = HPPriority.settings()
+    if not cfg.enabled or cfg.skip_jobs[job] then
         return 0
     end
     local ok, data = pcall(dofile, windower.addon_path .. DATA_FILE)
     if not ok or type(data) ~= 'table' then
         return 0
     end
-    local ctx = { data = data, unity = who.unity, weigh_mp = MP_JOBS[job] == true, count = 0 }
+    local ok_s, GearScan = pcall(require, 'shared/utils/equipment/gear_scan')
+    local ctx = { data = data, unity = cfg.unity, weigh_mp = cfg.mp_jobs[job] == true, count = 0,
+        scanned = ok_s and GearScan and GearScan.load() or nil }
     walk(_G.sets, ctx, {})
     return ctx.count
 end
 
--- Exposed for offline checks (scripts) that run the same arithmetic.
+-- Exposed for offline checks (scripts) that run the same arithmetic, and for
+-- gear_scan.lua, which reads augments the same way.
 HPPriority._piece_hp_mp = piece_hp_mp
-HPPriority._config = { CHARACTERS = CHARACTERS, MP_JOBS = MP_JOBS, MP_WEIGHT = MP_WEIGHT, SKIP_JOBS = SKIP_JOBS }
+HPPriority._augment_hp_mp = augment_hp_mp
+HPPriority._config = { DEFAULTS = DEFAULTS, MP_WEIGHT = MP_WEIGHT }
 
 _G.HPPriority = HPPriority
 
