@@ -2,16 +2,16 @@
 
 `//gs c cleanse` takes the debuffs off this character and every other member of the box group. Like `//gs c stealth` ([stealth.md](stealth.md)), each box handles itself: the key box sends `cleanse local <name>` to the others, and each one reads its own buff ids from the game, walks its debuffs most urgent first (`DEBUFF_REMOVAL.lua` order, changed by `CLEANSE_CONFIG.lua`) and, per debuff, uses its own spell when it can cast it now, else asks the partners that may have the spell (`cleanse cast <spell> <name>`) and uses its item if the debuff is still on `partner_wait` seconds later, else its own item. Every action goes through the shared action queue (`shared/utils/core/action_queue.lua`). Each box sends a one-line summary back to the key box (`cleanse report <name> <body>`), which shows one `CLEANSE` block per box.
 
-Verified against the code on 2026-10-01 (system added 2026-10-01, commit `7950cf8`). Not yet tested in game.
+Verified against the code on 2026-10-01 (system added 2026-10-01, commit `7950cf8`; aura marks, per-turn decisions, Doom retries in front and the report separator fixed the same day, commit `295e701`). Not yet tested in game.
 
 ## Files
 
 | Path | Lines | Role |
 |---|---:|---|
-| `shared/utils/debuff/cleanse.lua` | 262 | Command router (`Cleanse.handle`), plan per debuff (`plan_one`, `plan`), `run_self`, partner request (`partners_for`, `ask_partners`, `cast_for`), item use with aura watch and Doom retries (`use_item`), reports (`report_to`, `receive_report`, `show`) |
+| `shared/utils/debuff/cleanse.lua` | 283 | Command router (`Cleanse.handle`), plan per debuff (`plan_one`, `plan`), `run_self`, partner request (`partners_for`, `ask_partners`, `cast_for`), item use with aura watch and Doom retries (`use_item`), aura mark name (`mark_name`), reports (`report_to`, `receive_report`, `show`) |
 | `shared/utils/debuff/cleanse_methods.lua` | 238 | Settings merge (`settings`), debuff order (`ordered`, `active`, `is_up`), items (`items_for`, `item_count`, `first_item`, `cast_time`), spells (`can_cast`, `partner_may_cast`, `SPELLS`) |
 | `shared/data/debuffs/DEBUFF_REMOVAL.lua` | 104 | Every debuff: `key`, `name`, buff `ids`, `spell`, default `items`, `no_action`; list order = default removal order |
-| `shared/utils/core/action_queue.lua` | 137 | Shared one-action-at-a-time queue (stealth and cleanse) |
+| `shared/utils/core/action_queue.lua` | 151 | Shared one-action-at-a-time queue (stealth and cleanse), `push` and `push_next` |
 | `_master/config_global/CLEANSE_CONFIG.lua` | 48 | Settings template, copied to `<Character>/_common/combat/` by the clone |
 
 Integration points:
@@ -63,8 +63,8 @@ sequenceDiagram
 
 Returns `{text, tone, run, later}`; `run` acts now, `later` runs after the partner wait. First match wins:
 
-1. `UncurableDebuffs.is_marked(entry.key)`: `left alone (item had no effect: aura?)`, nothing done.
-2. Own spell: `entry.spell`, `use_spells ~= false`, not `no_action`, `Methods.can_cast(spell)` -> queue `/ma "<spell>" <me>` with a longest wait of cast time + `WAIT_MARGIN` (3 s).
+1. `UncurableDebuffs.is_marked(mark_name(entry))`: `left alone (item had no effect: aura?)`, nothing done. `mark_name(entry)` = `entry.name:lower()` (`attack down`, `magic atk. down`), the name `uncurable_debuffs.lua` resolves to buff ids through `res.buffs[id].en:lower()`; every `name` of `DEBUFF_REMOVAL.lua` is a `res.buffs` name.
+2. Own spell: `entry.spell`, `use_spells ~= false`, not `no_action`, `Methods.can_cast(spell)` -> `run` queues a function step (wait 0.05 s) that, when its turn comes, checks `Methods.is_up(entry)` and only then `ActionQueue.push_next`es `/ma "<spell>" <me>` with a longest wait of cast time + `WAIT_MARGIN` (3 s). An Erase, a Panacea or a partner's spell that went earlier in the queue may have taken the debuff off: then nothing is cast.
 3. Partner: `entry.spell` and `ask_partner ~= false` and `partners_for(spell)` not empty -> `run` sends `gs c cleanse cast <spell> <me>` to each partner; `later` (only when an item exists) uses the item if `Methods.is_up(entry)` still. Text `<spell> from <names>[, else <item>]`.
 4. Own item (`first_item(items_for(entry, settings))`, not for `no_action`) -> `use_item`.
 5. Nothing: `cannot act, no partner can help` (`no_action`), `no item, no spell` (the entry has a spell or items but none is usable), else `nothing removes it`.
@@ -75,13 +75,22 @@ Returns `{text, tone, run, later}`; `run` acts now, `later` runs after the partn
 
 1. `plan()` walks `Methods.active(settings)` and calls `run` of every step in order: all queue pushes and partner requests go out at once.
 2. **Single partner_wait step**: when at least one step has a `later`, one empty function step is pushed with a longest wait of `partner_wait` (default 5), then one function step (wait 0.1 s) that calls every `later` in order. A function step runs first and then waits, so the empty one holds the queue for `partner_wait` and the checks run after it. This wait is shared by every debuff a partner was asked for, not one per debuff.
-3. `from` set and not this character: `report_to(from, steps)` sends `cleanse report <me> <body>`, body = `<debuff name>=<text>` per step, spaces as `_`, steps joined with `;`, `none` when empty. Otherwise the block is shown here.
+3. `from` set and not this character: `report_to(from, steps)` sends `cleanse report <me> <body>`, body = `<debuff name>=<text>` per step, spaces as `_`, steps joined with `|`, `none` when empty (not `;`: Windower's console ends a command at `;`, so only the first line reached the key box before 2026-10-01). `receive_report` splits on `|` and turns `_` back into spaces. Otherwise the block is shown here.
 
-### Items (`use_item(entry, item, tries, settings)`)
+The plan (and so the report and `check`) is made at the press, before anything goes: it names the way chosen for each debuff, not what was finally used. With three erasable debuffs it says `Panacea` three times, although the first Panacea takes all three off and the next two steps use nothing.
 
-- Not Doom: a function step first (wait 0.05 s) calls `UncurableDebuffs.watch(entry.key, item, 0, on_marked)`, so the watch starts when the item really goes, not when an earlier item of the queue does. `watch` counts the item in the inventory, and 4 s later marks the debuff when the count dropped and the debuff is still on (60 s at most; the mark is dropped as soon as the debuff is gone). `on_marked` prints `MessageDebuffs.show_debuff_uncurable`.
-- Then `/item "<name>" <me>`, longest wait `ITEM_CAST` (1 s) + `WAIT_MARGIN`.
-- **Doom retries**: while `tries < doom_tries`, a function step (wait 0.1 s) checks `Methods.is_up(entry)`; Doom still on and an item still in the inventory -> `use_item` again with `tries + 1`. So `doom_tries` is the total number of Holy Waters. Doom is never watched for an aura (Holy Water fails two times in three).
+### Items (`use_item(entry, item, tries, settings, front)`)
+
+Each item is decided when its turn comes, not at the press. `use_item` queues one function step (wait 0.05 s; with `front`, through `push_next`, else `push`). When that step runs:
+
+1. `Methods.is_up(entry)` false -> nothing (the debuff is gone: one Panacea takes every erasable debuff off, or a partner's spell or an earlier step landed). So three erasable debuffs spend one Panacea, not three.
+2. Not Doom: `UncurableDebuffs.watch(mark_name(entry), item, 0, on_marked)`, so the watch starts when this item really goes, not when an earlier item of the queue does. `watch` counts the item in the inventory, and 4 s later marks the debuff when the count dropped and the debuff is still on (60 s at most; the mark is dropped as soon as the debuff is gone). `on_marked` prints `MessageDebuffs.show_debuff_uncurable`. Doom is never watched for an aura (Holy Water fails two times in three).
+3. Doom and `tries < doom_tries`: `push_next` of a retry function step (wait 0.1 s).
+4. `push_next` of `/item "<name>" <me>`, longest wait `ITEM_CAST` (1 s) + `WAIT_MARGIN`.
+
+Steps 3 and 4 both go to the front, in reverse order, so the item goes next and the retry right after it. The retry checks `Methods.is_up(entry)` and the first item still in the inventory, and calls `use_item(..., tries + 1, settings, true)`: with `front` it goes before the other debuffs still queued, so Holy Waters follow one another while Doom stays. `doom_tries` is the total number of Holy Waters.
+
+`later` (partner fallback) calls `use_item` without `front`: the item step joins the end of the queue.
 
 ### What this character has (`cleanse_methods.lua`)
 
@@ -119,20 +128,21 @@ Returns `{text, tone, run, later}`; `run` acts now, `later` runs after the partn
 
 ## Shared action queue
 
-`shared/utils/core/action_queue.lua` (moved out of `stealth.lua` on 2026-10-01): one queue per character on `windower._action_queue`, generation `windower._action_gen_queue`, raw `action` listener `_G._action_queue_listener` registered once per load from `push`. `ActionQueue.push(command, wait, {delay, tag})`; cleanse passes `delay = 1.0` (`DELAY`) and `tag = 'CLEANSE'`, stealth its `delay` setting and `STEALTH`. A command step ends on the game's end-of-action for this character plus `delay`, or its longest wait; a function step runs first, then only its longest wait ends it; a refused `/ma` or `/item` is sent again (3 sends at most). Full description: [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua).
+`shared/utils/core/action_queue.lua` (moved out of `stealth.lua` on 2026-10-01): one queue per character on `windower._action_queue`, generation `windower._action_gen_queue`, raw `action` listener `_G._action_queue_listener` registered once per load from `push`. `ActionQueue.push(command, wait, {delay, tag})`; cleanse passes `delay = 1.0` (`DELAY`) and `tag = 'CLEANSE'`, stealth its `delay` setting and `STEALTH`. A command step ends on the game's end-of-action for this character plus `delay`, or its longest wait; a function step runs first, then only its longest wait ends it; a refused `/ma` or `/item` is sent again (3 sends at most). `ActionQueue.push_next(command, wait, opts)` puts a step at the front (next to go), or starts the queue like `push` when it is idle; cleanse's local `push_next` passes the same `delay` and tag. The queue lives on `windower`, so a cleanse under way goes on across a job change. Full description: [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua).
 
 ## State & lifetime
 
 | Where | What | Lifetime |
 |---|---|---|
 | `windower._action_queue`, `_action_gen_queue` | Shared queue (also stealth) | Until `//lua reload gearswap` |
-| `windower._uncurable_debuffs` | Aura marks per debuff key (shared with Auto Medicine) | Same; each mark 60 s at most |
+| `windower._uncurable_debuffs` | Aura marks per lowercase buff name (`mark_name`; shared with Auto Medicine) | Same; each mark 60 s at most |
 | `_G._action_queue_listener` | Raw `action` event id | Per load |
 | `ITEM_IDS` (module local) | Item ids, including the ones looked up | Per load |
 
 ## Invariants & gotchas
 
-- Buff state always from `get_player().buffs`, never `buffactive`: `later` and the Doom retry run inside queued function steps.
+- Buff state always from `get_player().buffs`, never `buffactive`: `later`, the own-spell and item checks and the Doom retry run inside queued function steps.
+- An own spell or item is decided in a function step that then `push_next`es the action: the `is_up` check and the action are next to each other in the queue, whatever was queued between the press and that turn.
 - `no_action` entries never use the character's own spell or item: only a partner (`Cure` for Sleep / Lullaby, `Stona` for Petrification). Stun, Terror, Charm have no spell: nothing is done.
 - Silence has a spell (Silena) the silenced character cannot cast on itself (`NO_SPELLS`): its partner is asked, else Echo Drops / Remedy.
 - The partner request has no claim: every partner that can cast answers, so two able partners both cast (same as `stealth cast`).
@@ -140,9 +150,12 @@ Returns `{text, tone, run, later}`; `run` acts now, `later` runs after the partn
 
 ## Known issues
 
-Found while writing this page; not fixed.
+- The report and `check` show the plan made at the press (`Panacea` for each erasable debuff), not what was finally used; see [One box's run](#one-boxs-run-run_selffrom).
 
-- **Aura marks never set for multi-word keys.** `UncurableDebuffs.watch` / `is_marked` take a lowercase *buff name* and resolve its ids by matching `res.buffs[id].en:lower()`. Cleanse passes `entry.key`, which matches for one-word debuffs (`silence`, `slow`, `bio`...) but not for `max_hp_down`, `attack_down`, `magic_atk_down`, `inhibit_tp`, `str_down`... (the game names are `max hp down`, `attack down`, `magic atk. down`...): no id is found, `debuff_up` is false, so an aura debuff of those kinds is never marked and an item is spent on every press.
-- **One Panacea per erasable debuff.** Each erasable debuff on the character queues its own Panacea (`use_item` does not check the debuff again before the item), although one Panacea removes them all: three erasable debuffs spend three Panaceas.
-- **`;` in the report.** `report_to` joins the lines with `;` inside `send_command('send <name> gs c cleanse report ...')`. Windower's console treats `;` as a command separator, so with two debuffs or more only the first probably reaches the key box and the rest runs as a local console command. Not verified in game.
-- The header of `action_queue.lua` says "a newer load drops an older queue"; the generation changes only when an idle queue starts ([stealth.md](stealth.md#known-issues)).
+Fixed on 2026-10-01 (commit `295e701`):
+
+- Aura marks were set and read by `entry.key` (`attack_down`), which `uncurable_debuffs.lua` could not match to a buff for multi-word keys: an aura debuff of those kinds was never marked and an item was spent on every press. They now go by `mark_name(entry)`, the game's name in lowercase.
+- One Panacea was queued per erasable debuff. Each item and own spell is now decided when its turn comes (`is_up` check), so one Panacea covers every erasable debuff.
+- Doom retries were appended at the end of the queue; they now go in front (`ActionQueue.push_next`).
+- The report joined its lines with `;`, which ends a console command: only the first line reached the key box. `|` now.
+- The `action_queue.lua` header said "a newer load drops an older queue"; it now says a queue under way goes on across a job change ([stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua)).

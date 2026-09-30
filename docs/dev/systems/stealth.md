@@ -2,13 +2,13 @@
 
 `//gs c stealth sneak | invi | both` (Alt+Z / Alt+X by default) puts Sneak or Invisible on this character and on every other member of the box group. A Scholar that needs the buff itself and has a stratagem charge covers the whole group with Accession and announces it; every other box picks its own best way from what the game says it can do right now (Spectral Jig > spell > ninjutsu with a tool > Silent Oil / Prism Powder > Evanessence > a partner casts it). A buff still up is cancelled (Cancel addon) before the new cast, since an active Sneak or Invisible blocks a new one. Actions go out through the shared action queue (`shared/utils/core/action_queue.lua`, also used by `//gs c cleanse`), which advances on the action's real end (raw `action` event) plus a delay, with a timed fallback and a resend when the game silently refused a spell or item. Each box reads the end time of its own two buffs from packet 0x063 order 9 and sends it to the group; a one-second loop warns before a buff wears off and redraws the alt window, which shows a Sneak and an Invi row per alt.
 
-Verified against the code on 2026-09-28 (system added 2026-09-26, trace module added 2026-09-28); queue section re-verified 2026-10-01, when the queue moved to `action_queue.lua`. The page names functions rather than line numbers; a line is given only where the line itself matters.
+Verified against the code on 2026-09-28 (system added 2026-09-26, trace module added 2026-09-28); queue section re-verified 2026-10-01, when the queue moved to `action_queue.lua` and gained `push_next`; main-DNC Jig rule verified 2026-10-01 (commit `ce45482`). The page names functions rather than line numbers; a line is given only where the line itself matters.
 
 ## Files
 
 | Path | Lines | Role |
 |---|---:|---|
-| `shared/utils/stealth/stealth.lua` | 442 | Command router (`Stealth.handle`), `push` into the shared queue, per-box decision (`handle_self`), claim handling (`request` / `decide`), `status`, `check` |
+| `shared/utils/stealth/stealth.lua` | 455 | Command router (`Stealth.handle`), `push` into the shared queue, per-box decision (`handle_self`), claim handling (`request` / `decide`), `status`, `check` |
 | `shared/utils/stealth/stealth_methods.lua` | 181 | Which ways this character has now: `has_jig`, `jig_recast`, `can_jig`, `can_cast`, `best_own`, `has_spell`, `item_count`, `cast_time`; fixed id tables |
 | `shared/utils/stealth/stealth_aoe.lua` | 148 | One Scholar for the group: `coverable`, claims (`record` / `winner` / `clear`), `status`, flat `distance`, `trace_distances`, `chain_time` |
 | `shared/utils/stealth/stealth_timers.lua` | 184 | Packet 0x063 order 9 listener, end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
@@ -84,7 +84,7 @@ sequenceDiagram
 ### One box's own way (`handle_self(kinds, alone)`)
 
 1. `wanted` = the kinds that `needs()`: false while a request of that kind is pending (`PENDING_FOR` = 12 s, `mark_pending`); true while `forced` (see `keep_invisible`); true with `overwrite`; else, when an end time is known, true below `refresh_below`; else true when the buff is not up. `is_up` reads buff ids 71 (Sneak) / 69 (Invisible) from `windower.ffxi.get_player().buffs`, because `buffactive` can lag in a scheduled function. A kind not wanted prints `show_skipped` (time left, or "up (time unknown)") and a trace line.
-2. `Methods.has_jig()` and Jig on recast -> nothing is used (no spell, item or partner), `show_jig_recast` gives the time left. `Methods.can_jig()` -> cancel both buffs if up, `/ja "Spectral Jig" <me>`, both pending. Jig is used as soon as one of the asked kinds is wanted.
+2. `Methods.has_jig()`, Jig on recast and **not** `main_dnc()` (a /DNC) -> nothing is used (no spell, item or partner), `show_jig_recast` gives the time left: nothing else spends recast 218 on a /DNC, so the Jig is soon back. A main DNC (`main_dnc()`: `player.main_job == 'DNC'`) shares recast 218 with Chocobo Jig and Chocobo Jig II (level 55, main job only), so a Jig on recast falls through to step 3 (own spell, ninjutsu, items), then step 4 (partners). `Methods.can_jig()` -> cancel both buffs if up, `/ja "Spectral Jig" <me>`, both pending. Jig is used as soon as one of the asked kinds is wanted.
 3. Otherwise, per kind: `use_own(kind)` takes `Methods.best_own(kind)`, cancels the buff if up (both when the way gives both), sends `/ma "<name>" <me>` or `/item "<name>" <me>`, marks pending (both for Evanessence). A kind already covered by an earlier item that gives both is skipped (`needs` false).
 4. No way of its own: with `alone` (the `self` flag) print `show_no_way` and stop. Otherwise cancel its own buff if up, send `stealth cast <kind> <me>` to every other member, `show_asked`. Each receiver with the spell learned and the level (`has_spell`, whatever its MP or recast) queues `/ma "<spell>" <name>` (`cast_for`).
 
@@ -126,7 +126,9 @@ flowchart TD
 - A **function step runs first, then waits**: `run_next` calls it at once and `arm` leaves `waiting` nil, so only its longest wait ends it. Stealth's Scholar chain is one (it sends several actions of its own); cleanse uses an empty one to hold the queue for `partner_wait`.
 - `listen()` registers the `action` listener with `raw_register_event` once per load (`_G._action_queue_listener`): a plain `register_event` from a job file runs GearSwap's `refresh_globals` and `equip_sets` on every action packet. It is called from `push`, so a load registers it only when its first step is queued.
 - Refused actions: for a step that is a spell (`input /ma`) or an item (`input /item`) (`refusable`), `arm()` checks `START_CHECK` (1.5 s) later that it started (`CastTracker.started_since(sent_at)` for a spell, `acted_since(sent_at)` for an item). Not started (and the token and queue generation unchanged): the game refused it (sent too soon after the previous action), so it is sent again with a fresh token and a fresh longest wait, up to `MAX_TRIES` (3) sends; each resend writes a trace line under the step's tag, `not started, sent again: <command>`.
+- `ActionQueue.push_next(command, wait, {delay, tag})` puts a step at the front of `steps` (next to go) when the queue is busy, else it is `push` (append and start). Its use: a function step decides at the last moment and then acts right after itself, since the running step is already off `steps` when it runs. Cleanse uses it for every own spell and item (the step checks the debuff is still up, then `push_next`es the `/ma` or `/item`) and for Doom retries ([cleanse.md](cleanse.md#items-use_itementry-item-tries-settings-front)). Several `push_next` from one step end up in reverse order: the last one goes first. Stealth does not use it. `push_next` does not call `listen()`: the `push` that started the queue did.
 - `ActionQueue.busy()` tells whether steps are still waiting; no caller today.
+- Generation: `windower._action_gen_queue` goes up only when `push` starts an idle queue, never on a load. A queue under way therefore goes on across a job change or `gs reload` (its steps are on `windower`, its coroutines check the generation, which has not changed); a queue started after it is idle gets a new generation. The `action_queue.lua` header says so since 2026-10-01 (commit `295e701`).
 
 ### Timers (`stealth_timers.lua`)
 
@@ -143,11 +145,11 @@ Flat: `sqrt(dx^2 + dy^2)` from `get_mob_by_name(name)` and `get_mob_by_target('m
 
 ### `check` (`show_check`)
 
-InfoBlock `STEALTH :: Check (nothing is cast)`: jobs; per kind the buff state (`m:ss`, `up (time unknown)`, `not up`) and `key would` (`planned`: `nothing, <left> left`, `nothing, up (time unknown)`, `Accession for the group`, `Spectral Jig`, `Spectral Jig in m:ss (nothing else)`, the `best_own` name, or `none of its own: asks the others`); `Accession` (`accession_text` over `Aoe.status()`: `no (no Scholar)`, `no (SneakInviAOE Off)`, `no (no stratagem charge)`, `yes (<n> charge[s])`); each other member's flat distance and timers; the settings line.
+InfoBlock `STEALTH :: Check (nothing is cast)`: jobs; per kind the buff state (`m:ss`, `up (time unknown)`, `not up`) and `key would` (`planned`: `nothing, <left> left`, `nothing, up (time unknown)`, `Accession for the group`, `Spectral Jig`, `Spectral Jig in m:ss (nothing else)` for a /DNC; for a main DNC with the Jig on recast `<best_own name> (Spectral Jig in m:ss)` or `Spectral Jig in m:ss, nothing else: asks the others`; the `best_own` name, or `none of its own: asks the others`); `Accession` (`accession_text` over `Aoe.status()`: `no (no Scholar)`, `no (SneakInviAOE Off)`, `no (no stratagem charge)`, `yes (<n> charge[s])`); each other member's flat distance and timers; the settings line.
 
 ### Trace
 
-With `//gs c trace on`, `trace()` (`stealth.lua`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `invi: up, recast after sneak (an action breaks it)`, `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `sneak+invi: Spectral Jig on recast, <n>s`, `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`, `not started, sent again: <command>`.
+With `//gs c trace on`, `trace()` (`stealth.lua`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `invi: up, recast after sneak (an action breaks it)`, `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `sneak+invi: Spectral Jig on recast, <n>s` (a /DNC only), `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`, `not started, sent again: <command>`.
 
 What the game did afterwards (`stealth_trace.lua`, trace on only, checked with `TraceLog.enabled()`), on every box: `buff Sneak gained, <n> s left` / `refreshed` / `lost` (own buff end times from packet 0x063, via `StealthTimers`), and, when this character finishes casting Sneak or Invisible (raw `action`, category 4, spell 137 / 136), one `<spell> landed: <member> at <d> y` line for **every** group member (reached or not), then `<spell> landed[ with Accession]: reached <names>; missed <names (d y)>` from the targets of the action packet. `with Accession` reads buff 366 from `get_player().buffs`. The `Accession: ... yalms` line above is measured at the key press, several seconds before the cast.
 
@@ -369,7 +371,7 @@ The missing `STEALTH_CONFIG.lua` makes `StealthConfig.get()` fall back to the de
 
 Open:
 
-- The headers of `stealth.lua` and `action_queue.lua` say "a newer load drops an older queue"; the queue generation changes only when an idle queue starts (`push`), not on a load (see gotchas).
+- The header of `stealth.lua` still says "a newer load drops an older queue"; the queue generation changes only when an idle queue starts (`push`), not on a load (see gotchas). The `action_queue.lua` header was corrected on 2026-10-01.
 - A partner request (`stealth cast`) is answered by every box that has the spell: with two such partners the character gets two casts (`cast_for`; no claim for partner casts).
 - Two Scholar boxes that both qualify both cast Accession: `request` casts at once without recording its own claim, so the alphabetical `winner` rule never stops a box that has already cast.
 - `windower._stealth_warned` gains one key per buff end time and is never pruned before `//lua reload gearswap` (`stealth_timers.lua` `tick_once`).
@@ -380,4 +382,5 @@ Fixed:
 
 - The headers of `stealth.lua` and `stealth_aoe.lua` said a box waits one second for a claim; they now say half a second, matching `CLAIM_WAIT`.
 - The comment of `alt_window.lua` `stealth_lines` named a non-existent `//gs c stealth timers`; it now names `stealth_timers.lua`.
-- A DNC with Spectral Jig on recast fell back to oils and powders; it now waits for the Jig (`show_jig_recast`, 2026-09-27).
+- A DNC with Spectral Jig on recast fell back to oils and powders; it now waits for the Jig (`show_jig_recast`, 2026-09-27). Since 2026-10-01 (`ce45482`) that wait is for a /DNC only: a main DNC, whose Jig recast can be taken by Chocobo Jig / Chocobo Jig II (shared recast 218), goes its other ways.
+- The `action_queue.lua` header said "a newer load drops an older queue"; it now says a queue under way goes on across a job change and a queue started after it gets a new generation (2026-10-01).

@@ -31,7 +31,9 @@ There is no key for it by default: bind one with `//gs c tb` or in
 Each character sends what it did back to the one where you typed the command,
 which shows one `CLEANSE` block per character: each debuff and the way chosen
 (`Paralyna`, `Paralyna from Kaories, else Remedy`, `Echo Drops`...), or
-`Debuffs: none`.
+`Debuffs: none`. The block is the plan made when you press: with three
+erasable debuffs it says `Panacea` three times, but only one is used (see
+below).
 
 ## What each character does, per debuff
 
@@ -50,6 +52,13 @@ In the order of the table below (or yours, see `first`):
    goes.
 3. **Its own item**, the first of the list it has in its inventory.
    **Doom**: Holy Water again while Doom stays, up to `doom_tries` (5) in all.
+   Each new Holy Water goes right after the previous one, before the other
+   debuffs.
+
+Its own spell and its item are decided when their turn comes: if the debuff
+is already gone by then (a Panacea took every erasable debuff off, an Erase
+or a partner's spell landed), nothing is used for it. So one Panacea covers
+all the erasable debuffs.
 
 Asleep, petrified, stunned, terrified or charmed, a character cannot act:
 only a partner can help (Cure wakes, Stona). A debuff with no spell and no item

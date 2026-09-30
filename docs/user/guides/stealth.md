@@ -45,10 +45,15 @@ When you press the key, each character looks at what it can do right now
 (abilities known, spells learned and off recast, level, MP, items in the
 inventory) and uses the first that works:
 
-1. **Spectral Jig** (DNC main or sub): gives both buffs. A character that has
-   Spectral Jig uses nothing else: when it is on recast, the key says
-   `Spectral Jig : ready in m:ss, press again then` and uses no oil, powder or
-   spell.
+1. **Spectral Jig** (DNC main or sub): gives both buffs. When it is on recast:
+   - **DNC sub**: nothing else is used. The key says
+     `Spectral Jig : ready in m:ss, press again then` and uses no oil, powder
+     or spell (nothing else spends that recast, so it is back soon).
+   - **DNC main**: Chocobo Jig and Chocobo Jig II (level 55, main only) share
+     the Jig's recast, so it may be long. The character goes down the rest of
+     this list: the spell or ninjutsu of its subjob, Silent Oil / Prism
+     Powder, Evanessence, else a partner. `//gs c stealth check` shows it, e.g.
+     `Silent Oil (Spectral Jig in 0:45)`.
 2. **The spell** on itself: Sneak or Invisible (WHM, RDM, SCH, main or sub,
    with the level).
 3. **Ninjutsu** (NIN): Monomi: Ichi for Sneak, Tonko: Ni then Tonko: Ichi for
@@ -116,8 +121,10 @@ until then; it still counts as up for the key.
 `//gs c stealth check` prints, without casting anything:
 
 - your jobs, the state of each buff and what the key would do for it
-  (`Spectral Jig`, `Sneak`, `Silent Oil`, `Accession for the group`,
-  `nothing, 4:12 left`, or `none of its own: asks the others`);
+  (`Spectral Jig`, `Spectral Jig in 0:45 (nothing else)` on a /DNC,
+  `Silent Oil (Spectral Jig in 0:45)` on a DNC main, `Sneak`, `Silent Oil`,
+  `Accession for the group`, `nothing, 4:12 left`, or
+  `none of its own: asks the others`);
 - whether Accession is possible, and if not why (no Scholar, `SneakInviAOE`
   Off, no charge);
 - each other character's distance in yalms and its timers. The distance is
