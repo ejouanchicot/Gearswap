@@ -51,7 +51,7 @@ local DEBUFF_DEFINITIONS = {
     Impairment = { category = "ja", priority = 2, message = "Impaired" },
 
     -- Paralysis blocking (blocks JA and WS, two IDs use same buffactive name)
-    Paralysis = { category = "paralysis", priority = 1, message = "Paralyzed" },      -- ID 4 and ID 566 (both curable)
+    Paralysis = { category = "paralysis", priority = 1, message = "Paralyzed" },      -- ID 4, and 566 (likely a geomancy aura: uncurable_debuffs.lua)
 
     -- Universal blocking (blocks EVERYTHING: spells, JA, WS, items, ranged)
     Stun = { category = "universal", priority = 1, message = "Stunned" },        -- Highest priority
@@ -102,7 +102,7 @@ else
     JA_BLOCKING_DEBUFFS = {
         ['amnesia'] = { priority = 1, message = "Amnesia" },
         ['impairment'] = { priority = 2, message = "Impaired" },
-        ['paralysis'] = { priority = 3, message = "Paralyzed" }     -- ID 4 and ID 566 (both curable)
+        ['paralysis'] = { priority = 3, message = "Paralyzed" }     -- ID 4, and 566 (likely a geomancy aura: uncurable_debuffs.lua)
     }
 
     -- Universal blocking debuffs (checked FIRST for all action types)
@@ -116,7 +116,7 @@ else
     WS_BLOCKING_DEBUFFS = {
         ['amnesia'] = { priority = 1, message = "Amnesia" },
         ['impairment'] = { priority = 2, message = "Impaired" },
-        ['paralysis'] = { priority = 3, message = "Paralyzed" }     -- ID 4 and ID 566 (both curable)
+        ['paralysis'] = { priority = 3, message = "Paralyzed" }     -- ID 4, and 566 (likely a geomancy aura: uncurable_debuffs.lua)
     }
 
     ITEM_BLOCKING_DEBUFFS = {
