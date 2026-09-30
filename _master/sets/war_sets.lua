@@ -23,27 +23,22 @@
 -- ============================================================--
 local SouvHead = {
     name = 'Souv. Schaller +1',
-    priority = 24,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
 local SouvBody = {
     name = 'Souv. Cuirass +1',
-    priority = 3,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
 local SouvHands = {
     name = 'Souv. Handsch. +1',
-    priority = 23,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
 local SouvLegs = {
     name = 'Souv. Diechlings +1',
-    priority = 16,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
 local SouvFeet = {
     name = 'Souveran Schuhs +1',
-    priority = 22,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
 

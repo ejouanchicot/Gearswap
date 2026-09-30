@@ -64,7 +64,7 @@ end)
 ---   HP PRIORITY (the sets are loaded: Mote ran init_gear_sets before this file)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Every HP piece gets priority = its HP, so a swap never dips max HP.
+-- Each swap ranks its pieces by the HP they gain over the worn ones (HPPriority).
 pcall(function()
     local ok, HPPriority = pcall(require, 'shared/utils/equipment/hp_priority')
     if ok and HPPriority then

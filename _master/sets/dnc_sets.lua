@@ -51,24 +51,20 @@ sets = {}
 -- • Chirich Rings (wardrobe management)
 local ChirichRing1 = {
     name = 'Chirich Ring +1',
-    priority = 0,
     bag = 'wardrobe 1'
 }
 local ChirichRing2 = {
     name = 'Chirich Ring +1',
-    priority = 0,
     bag = 'wardrobe 2'
 }
 
 -- • Moonlight Rings (wardrobe management)
 local Moonlight1 = {
     name = 'Moonlight Ring',
-    priority = 13,
     bag = 'wardrobe 1'
 }
 local Moonlight2 = {
     name = 'Moonlight Ring',
-    priority = 12,
     bag = 'wardrobe 2'
 }
 
