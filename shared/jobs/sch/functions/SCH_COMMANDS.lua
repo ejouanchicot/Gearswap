@@ -13,8 +13,9 @@
 ---                      (Sneak / Invisible follow Sneak/Invi AOE)
 ---     strat            Arts, stratagem charges, next charge, effects up
 ---     schhelp          the list above
----   Arts and aoe chains are the shared ScholarActions (the same as BLM,
----   GEO, PLD on /SCH); nuke / helix / storm are logic/spell_commands.lua.
+---   lightarts, darkarts and aoe are common commands (ScholarActions, the
+---   same on every job with /SCH); nuke / helix / storm are
+---   logic/spell_commands.lua.
 ---
 ---   Order: dual-box (altjobupdate, requestjob) >> job commands >> watchdog
 ---   >> common (reload, checksets, warp...) >> UI >> debugmidcast >>
@@ -71,14 +72,7 @@ end
 --- @param cmdParams table Command parameters
 --- @return boolean
 local function handle_job_command(command, cmdParams)
-    local ScholarActions = require('shared/utils/scholar/scholar_actions')
-    if command == 'lightarts' then
-        ScholarActions.light_arts()
-    elseif command == 'darkarts' then
-        ScholarActions.dark_arts()
-    elseif command == 'aoe' then
-        return ScholarActions.try_aoe_subcommand(cmdParams[2], state.SneakInviAOE)
-    elseif command == 'nuke' or command == 'helix' or command == 'storm' then
+    if command == 'nuke' or command == 'helix' or command == 'storm' then
         require('shared/jobs/sch/functions/logic/spell_commands').cast(command)
     elseif command == 'strat' or command == 'stratagems' then
         require('shared/jobs/sch/functions/logic/spell_commands').show_stratagems()

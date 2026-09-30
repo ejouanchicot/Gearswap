@@ -2,7 +2,7 @@
 ---   GEO Commands Module - Self Command Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles custom commands for Geomancer job (indi, geo, escort, entrust,
----   nukes with tier fallback, /SCH arts and aoe, dispel).
+---   nukes with tier fallback, dispel).
 ---   Integrates with CommonCommands for shared functionality (reload, checksets).
 ---   Integrates with UICommands for UI management.
 ---
@@ -325,51 +325,8 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- ══════════════════════════════════════════════════════════════════════════
-    -- SCH SUBJOB COMMANDS (Arts / Addendum / Accession-based utility)
+    -- SCH SUBJOB COMMANDS (lightarts, darkarts, aoe are common commands)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- Same pattern as BLM/SCH: intelligent toggles for Light/Dark Arts and
-    -- party-wide Sneak/Invi via Accession. Will fail gracefully in-game if
-    -- subjob is not /SCH (FFXI will reject the JA).
-
-    -- LightArts: toggle Light Arts / Addendum: White
-    -- NOTE: Addendum: White REPLACES the Light Arts buff icon (mutually exclusive
-    -- in buffactive), so we check Addendum FIRST to avoid re-casting Light Arts.
-    if command == 'lightarts' then
-        if buffactive and buffactive['Addendum: White'] then
-            local MC = require('shared/utils/messages/message_core')
-            MC.info('Light Arts + Addendum: White already active')
-        elseif buffactive and buffactive['Light Arts'] then
-            send_command('input /ja "Addendum: White" <me>')
-        else
-            send_command('input /ja "Light Arts" <me>')
-        end
-        eventArgs.handled = true
-        return
-    end
-
-    -- DarkArts: toggle Dark Arts / Addendum: Black (same logic as lightarts)
-    if command == 'darkarts' then
-        if buffactive and buffactive['Addendum: Black'] then
-            local MC = require('shared/utils/messages/message_core')
-            MC.info('Dark Arts + Addendum: Black already active')
-        elseif buffactive and buffactive['Dark Arts'] then
-            send_command('input /ja "Addendum: Black" <me>')
-        else
-            send_command('input /ja "Dark Arts" <me>')
-        end
-        eventArgs.handled = true
-        return
-    end
-
-    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide
-    -- ('//gs c aoe sneak', '//gs c aoe invi').
-    if command == 'aoe' then
-        local ScholarActions = require('shared/utils/scholar/scholar_actions')
-        if ScholarActions.try_aoe_subcommand(cmdParams[2], nil) then
-            eventArgs.handled = true
-        end
-        return
-    end
 
     -- Dispel: GEO needs /SCH (Addendum: Black) or /RDM for native Dispel.
     --   /RDM                          -> direct cast

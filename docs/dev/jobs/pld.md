@@ -24,7 +24,8 @@ What PLD adds on top of the shared pipeline:
   instead of `sets.FullEnmity`; Hoxne locks the ammo slot on the Hoxne Ampulla.
 - **Weaponskill slots** `WS1` / `WS2` that follow the weapon actually in hand.
 - **Subjob helpers**: BLU AOE enmity rotation (`aoe`), rune casting (`rune`),
-  and the shared /SCH Accession chains (`aoe sneak|invi|erase`, `lightarts`).
+  and the /SCH commands (`lightarts`, `darkarts`, `aoe sneak|invi|erase`),
+  which are common commands.
 
 Player-facing pages: [PLD hub](../../user/jobs/pld/README.md),
 [modes](../../user/jobs/pld/states.md), [sets](../../user/jobs/pld/sets.md).
@@ -503,8 +504,7 @@ Mote defaults also exist: `OffenseMode`, `IdleMode`, `CastingMode`,
 order: watchdog, dual-box internals, **CommonCommands** (built-in names and warp
 aliases), `ui`, `debugmidcast`, `cyclestate`, then PLD commands. A name none of
 them answers goes to Mote, whose last lookup is the dual-box partner's alt config,
-so `lightarts` runs here even when the partner has SCH; `//gs c alt lightarts`
-sends the alt's. See
+and `//gs c alt <name>` sends the alt's. See
 [commands and debug](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing).
 
 | Command | Effect | Handler |
@@ -515,11 +515,10 @@ sends the alt's. See
 | `ui ...` | HUD | `UICommands.handle_ui_command` |
 | `debugmidcast` | Toggle MidcastManager debug | `MidcastManager.toggle_debug` |
 | `cyclestate <State> [reverse]` | UI-aware cycle (all keybinds) | `CycleHandler.handle_cyclestate` |
-| `aoe` | BLU rotation: first castable spell of `BluMagicConfig.get_rotation()` on `<stnpc>`, 5 s anti-spam per spell; otherwise recast list and `/target <stnpc>`. Refuses with "AOE needs the BLU subjob (PLD/BLU)" when the subjob is not BLU | `aoe_manager.lua` `execute_aoe` |
-| `aoe sneak` / `invi` / `invisible` / `erase` | /SCH chain: Light Arts + Addendum: White (Erase) + Accession as charges allow; the spell leaves once every stratagem it queued is up, and is cancelled with a message if they never come; `SneakInviAOE` Off casts on `<stal>` without Accession | `ScholarActions.try_aoe_subcommand` -> `cast_with_stratagems` |
+| `aoe` (bare word, checked before the common commands) | BLU rotation: first castable spell of `BluMagicConfig.get_rotation()` on `<stnpc>`, 5 s anti-spam per spell; otherwise recast list and `/target <stnpc>`. Refuses with "AOE needs the BLU subjob (PLD/BLU)" when the subjob is not BLU | `aoe_manager.lua` `execute_aoe` |
+| `aoe sneak` / `invi` / `invisible` / `erase` | common command (/SCH chain): Light Arts + Addendum: White (Erase) + Accession as charges allow; the spell leaves once every stratagem it queued is up, and is cancelled with a message if they never come; `SneakInviAOE` Off casts on `<stal>` without Accession | `ScholarActions.handle_command` -> `cast_with_stratagems` |
 | `ws` / `ws1` / `ws2` | Fire the weaponskill that slot holds for the weapon in hand (`ws` = slot 1; `ws3`..`ws9` warn) | `WSSlots.cast` |
 | `rune` | `/ja "<RuneMode>" <me>` unless on recast (no subjob check) | `rune_manager.lua` `execute_rune` |
-| `lightarts` | Light Arts, then Addendum: White on the next press | `ScholarActions.light_arts` |
 
 BLU rotation detail: `PLD_BLU_MAGIC.get_rotation()` keeps the spells of
 `aoe_spell_database` it finds among `windower.ffxi.get_mjob_data().spells`, sorted

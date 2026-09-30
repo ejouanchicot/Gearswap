@@ -498,6 +498,9 @@ local COMMANDS_HELP = {
             {'//gs c jump', '', 'High Jump (DRG sub)'},
             {'//gs c waltz', '', 'Curing Waltz III <stpc> (DNC sub)'},
             {'//gs c aoewaltz', '', 'Divine Waltz <me> (DNC sub)'},
+            {'//gs c lightarts', '', 'Light Arts, then Addendum: White (SCH)'},
+            {'//gs c darkarts', '', 'Dark Arts, then Addendum: Black (SCH)'},
+            {'//gs c aoe ', '<sneak|invi|erase>', 'Accession + the spell, party-wide (SCH)'},
         }},
         {title = 'WARP', note = '50+ commands, warp help', rows = {
             {'//gs c warp status', '', 'Warp lock status'},

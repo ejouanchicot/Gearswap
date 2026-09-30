@@ -350,7 +350,8 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 | `run_chain(steps, on_done, finish_anyway)` | sends each step only once the previous one's buff is actually up (poll every `POLL_INTERVAL` 0.5 s, give up after `POLL_GRACE` 6 s per step), then runs `on_done`; `finish_anyway` decides what a step that never lands means | BLM `klima` |
 | `cast_with_stratagems(spell, aoe_state, needs_addendum)` | target `<me>` when `is_on(aoe_state)`, else `<stal>`. With `needs_addendum` and Addendum: White not up, Addendum takes the first charge; Accession takes the next when the target is `<me>` and Accession is not up. A stratagem that cannot be paid shows `warn_no_charge` and is dropped. With nothing to wait for the spell goes out at once; otherwise Light Arts (only if neither Light Arts nor Addendum: White is up) and the stratagems run through `run_steps`, then `cast_when_ready` waits until every required buff is up and casts, or warns "`<spell>` cancelled: `<buff>` never came up" | `try_aoe_subcommand`, `//gs c stealth` ([stealth.md](stealth.md)) |
 | `cast_under_black_addendum(spell, target)` | Dark Arts, then Addendum: Black, then the spell, skipping what is already up, each step through `AbilityHelper.follow_up` | BLM and GEO `dispel` |
-| `try_aoe_subcommand(word, aoe_state)` | maps `sneak`, `invi`, `invisible` (use the state) and `erase` (ignores the state, needs Addendum) through `AOE_SPELLS` | BLM, PLD, GEO `aoe` |
+| `try_aoe_subcommand(word, aoe_state)` | maps `sneak`, `invi`, `invisible` (use the state) and `erase` (ignores the state, needs Addendum) through `AOE_SPELLS` | `handle_command` |
+| `handle_command(cmd, arg)` | `lightarts` / `darkarts` / `aoe <word>` for every job, routed by `CommonCommands`. Without SCH as main or subjob: the dual-box alt's command of that name when its config has one, else `<cmd> requires SCH main or subjob`. `aoe` passes the job's `state.SneakInviAOE` (nil counts as On) | `COMMON_COMMANDS.lua` |
 
 - `buff_up(name)` (local): Light Arts, Dark Arts, Addendum: White / Black, Accession and Manifestation are read from `windower.ffxi.get_player().buffs` by id (`BUFF_IDS`: 358, 359, 401, 402, 366, 367); any other name falls back to `buffactive`. The chains poll from scheduled functions, where GearSwap's `buffactive` can lag behind a buff just gained.
 - Every new cast bumps `windower._sch_cast_seq`; a pending chain from an older cast (or an older sandbox) sees the mismatch and stops.
@@ -363,14 +364,18 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 | `//gs c debugmidcast` | 17 job COMMANDS files (see Debug mode) | Toggle `windower._midcast_debug` / `_G.MidcastManagerDebugState` |
 | `//gs c trace on` / `off` | `CommonCommands` | `MIDCAST` trace lines (and every other trace tag) |
 | `//gs c buff` / `buffs` / `buffself` / `selfbuff` (BLM) | `BLM_COMMANDS.lua` `job_self_command` | `SelfBuffManager` queue |
-| `//gs c lightarts` | BLM, PLD -> `ScholarActions.light_arts()`; GEO `GEO_COMMANDS.lua` (own copy) | Light Arts, then Addendum: White |
-| `//gs c darkarts` | BLM -> `ScholarActions.dark_arts()`; GEO (own copy) | Dark Arts, then Addendum: Black |
-| `//gs c aoe sneak\|invi\|invisible\|erase` | BLM (`state.SneakInviAOE`), PLD (same state; bare `aoe` runs the PLD Blue Magic rotation, which refuses without /BLU), GEO (no state, always AoE) | `cast_with_stratagems` |
+| `//gs c lightarts` | every job, common command -> `ScholarActions.handle_command` | Light Arts, then Addendum: White |
+| `//gs c darkarts` | every job, common command | Dark Arts, then Addendum: Black |
+| `//gs c aoe sneak\|invi\|invisible\|erase` | every job, common command, with the job's `state.SneakInviAOE` when it has one (BLM, PLD, SCH). PLD and RUN answer the bare `aoe` themselves, ahead of the common commands: their Blue Magic rotation | `cast_with_stratagems` |
 | `//gs c klima` / `klimaform` | BLM | Dark Arts if not up and ready, Manifestation if `KlimaformAOE` is on and a charge exists, then Klimaform (`run_chain` with `finish_anyway`) |
 | `//gs c dispel` | BLM, GEO | `cast_under_black_addendum('Dispel', ...)` |
 | `//gs c smartbuff` | THF, DNC (also `buffself`) | Job smartbuff, using `SubjobWarBuffs` for /WAR |
 
-`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/config/alt/`). The local handlers above still answer those words: the dual-box alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `//gs c alt lightarts` sends the alt's version. Commit `d10783b` moved Sneak/Invisible/Erase under `aoe` when the alt keys still took precedence over job commands.
+`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/config/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
+
+### Scholar commands
+
+Until 2026-09-30 `lightarts`, `darkarts` and `aoe` were wired by hand in BLM, PLD, GEO (its own copy) and SCH, so the 18 other jobs on /SCH had none of them. They are now common commands, like `waltz` for /DNC: `CommonCommands.is_common_command` names them and routes them to `ScholarActions.handle_command`. Commit `d10783b` moved Sneak/Invisible/Erase under `aoe` when the alt keys still took precedence over job commands.
 
 ## Configuration
 

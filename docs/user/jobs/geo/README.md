@@ -138,7 +138,7 @@ One line each; details in the [commands guide](../../guides/commands.md).
 | `help`, `commands` | Built-in help and command list |
 | `syscheck`, `fulltest`, `trace`, `debugsubjob`, `debugstate`, `testcolors` | Diagnostics |
 
-`entrust`, `dispel`, `lightarts` and `darkarts` run on this character even
+`entrust` and `dispel` run on this character even
 when your dual-box alt has commands of the same name; `//gs c alt <name>` sends
 the alt's version.
 

@@ -122,7 +122,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Command | Does |
 |---|---|
 | `alts on` / `off` / `toggle` / `follow` / `mirror` / `do <cmd>` / `window`, `main` | Box group orders |
-| `altcmds`, `alt <name>`, `altsync`, `altbuffs` | The alt's commands and buff reports. `lightarts` runs on PLD even if your alt has a command of that name: use `alt lightarts` for the alt's |
+| `altcmds`, `alt <name>`, `altsync`, `altbuffs` | The alt's commands and buff reports. `lightarts` runs on PLD when you have /SCH, and goes to your alt otherwise: `alt lightarts` always sends it to the alt's |
 | `tb <key> <action> [target]`, `tb list` / `del` / `clear` / `help` | Temporary keys |
 | `kc` (`keyconflicts`) | Every key conflict PLD can meet |
 | `info <name>` | Ability, spell or weaponskill details |

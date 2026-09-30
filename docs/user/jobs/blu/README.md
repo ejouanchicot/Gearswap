@@ -106,6 +106,7 @@ AzureSets addon, loaded with the job: `//aset setlist`, `//aset spellset <name>`
 | `mount` | Random mount, or dismount |
 | `stealth sneak\|invi\|both [self]`, `stealth status\|check...` | Sneak / Invisible on you and your other boxes |
 | `waltz` / `aoewaltz` | Curing / Divine Waltz (/DNC) |
+| `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
 | `jump` | /DRG jumps |
 | `watchdog [on\|off\|stats\|...]` | Midcast watchdog ([watchdog](../../features/watchdog.md)) |
 | `debugmidcast` | Print which midcast set each spell uses (again to stop) |

@@ -228,7 +228,7 @@ flowchart TD
 | HybridMode | PDT, MDT, Sortie (/SCH: DPS, Tanking, Hoxne); profile hook in `job_state_change` | PDT, MDT; HUD refresh only |
 | Subjob-filtered binds | Xp (/RDM), RuneMode (/RUN), Regen / Phalanx SIRD (/SCH) | none |
 | WS slots | `WS1`, `WS2` | none |
-| /SCH helpers | `aoe sneak` / `invi` / `erase`, `lightarts` | none |
+| /SCH helpers | `aoe sneak` / `invi` / `erase`, `lightarts`, `darkarts`: common commands on every job; RUN answers the bare `aoe` (BLU rotation) before them | none |
 
 ## Mote states
 

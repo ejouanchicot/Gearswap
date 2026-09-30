@@ -323,8 +323,6 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 | `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
 | `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` |
 | `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` (broken) |
-| `lightarts` / `darkarts` | Arts, then Addendum on the next press; GEO's own copy of `ScholarActions.light_arts` / `dark_arts`, using `buffactive` and `MessageCore.info` |
-| `aoe sneak` / `invi` / `invisible` / `erase` | `ScholarActions.try_aoe_subcommand(cmdParams[2], nil)` (no state: always the Accession version) |
 | `dispel` | /RDM: `/ma "Dispel" <stnpc>`; /SCH: `ScholarActions.cast_under_black_addendum('Dispel', '<stnpc>')`; else a warning |
 
 `job_state_change` is `LifecycleManager.state_change()`: it ignores the state
@@ -425,9 +423,10 @@ T = in `_master/sets/geo_sets.lua`.
   set: `=` makes one table under two names, and editing one edits both.
 - A midcast branch that equips without `select_set` must call
   `MidcastFallback.skip(spell)`, or the fallback lays the Geomancy chain over it.
-- Commands that depend on the subjob (`lightarts`, `aoe`, `dispel`) do not
-  check it; the game refuses the actions.
-- `lightarts`, `darkarts`, `dispel`, `entrust` run here even when the dual-box
+- `lightarts`, `darkarts` and `aoe sneak|invi|erase` are common commands since 2026-09-30, the same on every job ([midcast and buffs](../systems/midcast-and-buffs.md#scholar-commands)); GEO has no
+  `SneakInviAOE`, so `aoe` always uses Accession.
+- `dispel` checks the subjob itself.
+- `dispel`, `entrust` run here even when the dual-box
   alt's config has those names; `//gs c alt <name>` sends the alt's
   ([commands and debug](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing)).
 - The `aoe <spell>` form exists because the alt configs claim `sneak` /
@@ -519,8 +518,6 @@ T = in `_master/sets/geo_sets.lua`.
   `sets.luopan.idle`.
 - Initial macrobook / lockstyle depend on `KeybindManager.show_intro`
   requiring the wrappers.
-- `lightarts` / `darkarts` duplicate `ScholarActions.light_arts` / `dark_arts`
-  and read `buffactive` (the shared version reads the game's buff list).
 - Stale comment: `set_builder.lua` `apply_weapon` says Combat Mode locks
   through `disable()` in `job_update()`; the lock is `combat_mode.lua`'s.
 - Dead code: `GEO_LOCKSTYLE.style` (`SetBuilder.apply_buff_gear` was removed on 2026-09-29).

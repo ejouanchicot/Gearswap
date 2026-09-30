@@ -24,8 +24,9 @@ What SCH adds on top of the shared pipeline:
   typed Dark / Light; Magic Burst mode on nukes, helices and Kaustra.
 - **Sublimation idle layer** while it charges; the buff is in
   `LifecycleManager`'s `GEAR_BUFFS`.
-- Job commands: `lightarts`, `darkarts` (shared `ScholarActions`), `nuke`,
-  `helix`, `storm` (from the Element mode), `aoe`, `strat`, `schhelp`.
+- Job commands: `nuke`, `helix`, `storm` (from the Element mode), `strat`,
+  `schhelp`. `lightarts`, `darkarts` and `aoe` are common commands, the same on
+  every job with /SCH (`ScholarActions.handle_command`).
 
 ## Files
 
@@ -165,8 +166,8 @@ watchdog, common (`table.unpack` forwarding), UI, `debugmidcast`,
 `cyclestate`. `nuke` / `helix` / `storm` send `input /ma "<name>" <t|me>` from
 `state.Element` (`nuke` also `state.NukeTier`; tier I is the base spell);
 helix and storm always ask for tier II and precast drops them to I when II is
-not learned. Light / Dark have no nuke: a warning, nothing sent. `aoe` is
-`ScholarActions.try_aoe_subcommand(sub, state.SneakInviAOE)`. `strat` is an
+not learned. Light / Dark have no nuke: a warning, nothing sent. `aoe` (common
+command) reads `state.SneakInviAOE`. `strat` is an
 `InfoBlock`.
 
 ## Mechanics relied on (BG-Wiki)

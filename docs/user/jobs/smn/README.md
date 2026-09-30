@@ -116,6 +116,7 @@ One line each; details in the [commands guide](../../guides/commands.md).
 | `warp fix` / `warp help` / `warp status` | Release the ring slot / help / state |
 | `mount` | Random mount, or dismount |
 | `waltz` / `aoewaltz` | /DNC only: Curing Waltz / Divine Waltz |
+| `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
 | `jump` | /DRG only: jumps |
 | `stealth sneak/invi/both [self]`, `stealth check/status/...` | Sneak / Invisible on you and every alt |
 | `alts on/off/toggle/follow/mirror/do/window` | Orders to your alts |

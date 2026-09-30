@@ -128,6 +128,7 @@ starts, after its recast check, never by the command.
 | `craft`, `fish`, `uncraft` | Crafting / fishing sets (write your own set file) |
 | `warp`, `w2`, `tph`... , `<command>all`, `mount` | Travel |
 | `waltz`, `aoewaltz` | /DNC: Curing Waltz on `<stpc>`, Divine Waltz |
+| `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
 | `jump` | /DRG: Jump / High Jump |
 | `watchdog ...`, `debugmidcast`, `debugprecast` | Midcast watchdog, midcast debug, precast set display |
 | `stealth sneak` / `invi` / `both` ... | Sneak / Invisible on you and your alts |

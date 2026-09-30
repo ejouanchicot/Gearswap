@@ -108,6 +108,7 @@ with the same name; `//gs c alt berserk` sends the alt's.
 | Command | Does |
 |---|---|
 | `waltz`, `aoewaltz` | Curing Waltz / Divine Waltz (needs /DNC) |
+| `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
 | `jump` | Jump, then High Jump (needs /DRG) |
 | `stealth sneak` / `invi` / `both` (+ `self`, `check`, `status`...) | Sneak / Invisible on the whole group (Alt+Z / Alt+X) |
 | `watchdog` (+ `on`, `off`, `buffer`, `stats`...) | Midcast watchdog (WAR does not feed it: no effect on WAR's own casts) |

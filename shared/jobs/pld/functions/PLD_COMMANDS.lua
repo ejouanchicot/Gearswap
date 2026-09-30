@@ -5,7 +5,8 @@
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (toggle, update, reload UI)
 ---   • PLD-specific commands (aoe, rune)
----   • SCH subjob commands (lightarts, aoe sneak/invi/erase)
+---   • SCH subjob commands (lightarts, darkarts, aoe sneak/invi/erase) are
+---     common commands
 ---   • Weaponskill slots (ws, ws1, ws2)
 ---   • State change hook (HybridMode profile, WS slots, Hoxne ammo lock)
 ---
@@ -31,7 +32,6 @@ local MessageCommands = nil
 -- PLD logic modules
 local AOEManager = nil
 local RuneManager = nil
-local ScholarActions = nil
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -44,7 +44,6 @@ local function ensure_commands_loaded()
         -- PLD logic modules
         AOEManager = require('shared/jobs/pld/functions/logic/aoe_manager')
         RuneManager = require('shared/jobs/pld/functions/logic/rune_manager')
-        ScholarActions = require('shared/utils/scholar/scholar_actions')
     end
 end
 
@@ -68,12 +67,6 @@ end
 ---   PLD-specific commands:
 ---   • aoe            - Execute Blue Magic AOE spell rotation (PLD/BLU)
 ---   • rune           - Execute Rune ability (PLD/RUN)
----
----   SCH subjob commands:
----   • lightarts      - Light Arts, then Addendum: White
----   • aoe sneak      - Sneak (Light Arts + Accession when SneakInviAOE is On)
----   • aoe invi       - Invisible (Light Arts + Accession when SneakInviAOE is On)
----   • aoe erase      - Erase (Light Arts + Accession whenever a charge is left)
 ---
 ---   Weaponskill slots:
 ---   • ws / ws1 / ws2 - Fire the weaponskill the weapon in hand put in that slot
@@ -116,6 +109,16 @@ function job_self_command(cmdParams, eventArgs)
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
         eventArgs.handled = true
+        return
+    end
+
+    -- AOE: the bare word runs the Blue Magic rotation (PLD/BLU). Ahead of
+    -- the common commands, which answer `aoe sneak|invi|erase` (/SCH)
+    if command == 'aoe' and not cmdParams[2] then
+        if AOEManager then
+            AOEManager.execute_aoe()
+            eventArgs.handled = true
+        end
         return
     end
 
@@ -175,36 +178,12 @@ function job_self_command(cmdParams, eventArgs)
     -- PLD-SPECIFIC COMMANDS
     -- ══════════════════════════════════════════════════════════════════════════
 
-    -- AOE: bare word runs the Blue Magic rotation (PLD/BLU); followed by
-    -- sneak/invi/erase it runs the /SCH Accession chain instead.
-    if command == 'aoe' then
-        if ScholarActions.try_aoe_subcommand(cmdParams[2], state.SneakInviAOE) then
-            eventArgs.handled = true
-            return
-        end
-        if AOEManager then
-            AOEManager.execute_aoe()
-            eventArgs.handled = true
-        end
-        return
-    end
-
     -- Rune: Execute Rune ability (PLD/RUN)
     if command == 'rune' then
         if RuneManager then
             RuneManager.execute_rune()
             eventArgs.handled = true
         end
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- SCH SUBJOB COMMANDS
-    -- ══════════════════════════════════════════════════════════════════════════
-
-    if command == 'lightarts' then
-        ScholarActions.light_arts()
-        eventArgs.handled = true
         return
     end
 

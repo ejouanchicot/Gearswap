@@ -110,6 +110,7 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 | `mount` | Random mount, or dismount |
 | `stealth sneak / invi / both` | Sneak and Invisible on every box |
 | `waltz` / `aoewaltz` | Curing / Divine Waltz, with /DNC only |
+| `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
 | `jump` | /DRG jumps |
 | `dw [auto / none / haste / haste2 / max]` | Dual Wield tier (with /NIN or /DNC; needs `sets.DW` in your sets) |
 | `belt` | Obi / Orpheus status (used on Primal Rend and Cloudsplitter) |

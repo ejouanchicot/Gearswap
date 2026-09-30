@@ -358,7 +358,8 @@ internals (`altjobupdate`, `requestjob`), `watchdog`, **CommonCommands**
 answers goes to Mote's `selfCommandMaps`, whose last lookup is the dual-box
 alt config ([commands and debug](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing)),
 so a BLM command keeps its name even when the alt config has the same key
-(`lightarts`, `darkarts`, `klimaform`, `dispel`).
+(`klimaform`, `dispel`). `lightarts`, `darkarts` and `aoe sneak|invi|erase` are
+common commands since 2026-09-30, the same on every job ([midcast and buffs](../systems/midcast-and-buffs.md#scholar-commands)).
 
 | Command | Effect | Handler |
 |---------|--------|---------|
@@ -372,8 +373,6 @@ so a BLM command keeps its name even when the alt config has the same key
 | `cyclemainlight` / `cyclemaindark` / `cyclesublight` / `cyclesubdark` | Cycle with a coloured message | `handle_blm_cycle_commands` |
 | `cycle Storm` | Cycle `Storm` with a coloured message (other `cycle X` go to Mote) | `handle_blm_standard_cycles` |
 | `buff` / `buffs` / `buffself` / `selfbuff` | `BuffSelf()`: Stoneskin (8 s delay), Blink, Aquaveil, Ice Spikes through `SelfBuffManager` | router |
-| `lightarts` / `darkarts` | `ScholarActions.light_arts()` / `dark_arts()` | router |
-| `aoe sneak` / `invi` / `invisible` / `erase` | `ScholarActions.try_aoe_subcommand(sub, state.SneakInviAOE)` | router |
 | `klima` / `klimaform` | Steps Dark Arts (down and ready), Manifestation (`KlimaformAOE` On and a charge), then Klimaform, through `ScholarActions.run_chain(..., finish_anyway = true)` | router |
 | `dispel` | /RDM: `/ma "Dispel" <stnpc>`; /SCH: `ScholarActions.cast_under_black_addendum`; else a warning | router |
 | `light` / `dark` / `sublight` / `subdark` | `cast_from_states(element, SpellTier, build_nuke_name)` -> `windower.chat.input('/ma "<name>" <stnpc>')` | router |

@@ -108,6 +108,16 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- AOE: the bare word runs the Blue Magic rotation (RUN/BLU). Ahead of
+    -- the common commands, which answer `aoe sneak|invi|erase` (/SCH)
+    if command == 'aoe' and not cmdParams[2] then
+        if AOEManager then
+            AOEManager.execute_aoe()
+            eventArgs.handled = true
+        end
+        return
+    end
+
     -- ══════════════════════════════════════════════════════════════════════════
     -- COMMON COMMANDS (reload, checksets, waltz, etc.)
     -- ══════════════════════════════════════════════════════════════════════════
@@ -163,15 +173,6 @@ function job_self_command(cmdParams, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- RUN-SPECIFIC COMMANDS
     -- ══════════════════════════════════════════════════════════════════════════
-
-    -- AOE: Execute Blue Magic AOE spell rotation (RUN/BLU)
-    if command == 'aoe' then
-        if AOEManager then
-            AOEManager.execute_aoe()
-            eventArgs.handled = true
-        end
-        return
-    end
 
     -- Rune: cast the rune selected in state.RuneMode
     if command == 'rune' then

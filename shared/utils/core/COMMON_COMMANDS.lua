@@ -658,6 +658,8 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_waltz()
     elseif cmd == 'aoewaltz' then
         return CommonCommands.handle_aoewaltz()
+    elseif cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' then
+        return require('shared/utils/scholar/scholar_actions').handle_command(cmd, args[1])
     elseif cmd == 'debugsubjob' or cmd == 'dsj' then
         return CommonCommands.handle_debugsubjob()
     elseif cmd == 'debugwarp' then
@@ -737,7 +739,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'altsync' or cmd == 'altbuffsync' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
-        cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
+        cmd == 'aoewaltz' or cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
         cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
         cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or
         cmd == 'fulltest' or cmd == 'ft' or

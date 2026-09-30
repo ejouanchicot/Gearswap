@@ -1,7 +1,9 @@
 ---============================================================================
 --- Scholar Actions - /SCH utility chains shared across jobs
 ---============================================================================
---- For any job that subs Scholar:
+--- For any job with Scholar as main job or subjob. The commands
+--- (lightarts, darkarts, aoe) are common commands (COMMON_COMMANDS.lua ->
+--- handle_command below), so every job has them without wiring its own:
 ---   * Light Arts / Addendum: White and Dark Arts / Addendum: Black toggles
 ---   * the party Sneak / Invisible / Erase chain (Arts + stratagems + spell)
 ---   * casting a spell that needs Addendum: Black
@@ -10,8 +12,8 @@
 ---
 --- @file    shared/utils/scholar/scholar_actions.lua
 --- @author  ejouanchicot
---- @version 1.0
---- @date    Created: 2026-09-17
+--- @version 1.1 - common commands for every job (handle_command)
+--- @date    Created: 2026-09-17 | Updated: 2026-09-30
 ---============================================================================
 
 local ScholarActions = {}
@@ -361,6 +363,36 @@ function ScholarActions.try_aoe_subcommand(subcommand, aoe_state)
     ScholarActions.cast_with_stratagems(
         entry.spell, entry.toggle and aoe_state or nil, entry.addendum)
     return true
+end
+
+local ARTS_COMMANDS = {
+    lightarts = ScholarActions.light_arts,
+    darkarts  = ScholarActions.dark_arts,
+}
+
+--- //gs c lightarts | darkarts | aoe <sneak|invi|erase>, on any job with
+--- Scholar as main job or subjob. The job's SneakInviAOE mode, when it has
+--- one, decides whether Sneak / Invisible spend Accession.
+---
+--- Without Scholar here, a dual-box alt on SCH that offers the command gets
+--- it, as the bare name did before it became a common command.
+--- @param cmd string 'lightarts', 'darkarts' or 'aoe'
+--- @param arg string|nil Word after `aoe`
+--- @return boolean True when the command was answered
+function ScholarActions.handle_command(cmd, arg)
+    if player and player.main_job ~= 'SCH' and player.sub_job ~= 'SCH' then
+        local ok, AltCommands = pcall(require, 'shared/utils/dualbox/alt_commands')
+        if ok and AltCommands and AltCommands.is_alt_command(cmd) then
+            return AltCommands.execute(cmd, {arg})
+        end
+        get_formatter().show_error(cmd .. ' requires SCH main or subjob')
+        return true
+    end
+    if ARTS_COMMANDS[cmd] then
+        ARTS_COMMANDS[cmd]()
+        return true
+    end
+    return ScholarActions.try_aoe_subcommand(arg, rawget(_G, 'state') and state.SneakInviAOE)
 end
 
 return ScholarActions

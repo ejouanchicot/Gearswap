@@ -98,6 +98,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | `warp`, `w2`, `tph`... , `<command>all`, `mount` | Travel |
 | `jump` | /DRG: Jump / High Jump |
 | `waltz`, `aoewaltz` | /DNC: Curing Waltz on `<stpc>`, Divine Waltz |
+| `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
 | `watchdog ...`, `debugmidcast` | Midcast watchdog, midcast debug |
 | `stealth sneak` / `invi` / `both` ... | Sneak / Invisible on you and your alts |
 | `alts ...`, `main`, `altcmds`, `alt <name>` | Dual-box group |

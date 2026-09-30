@@ -94,6 +94,8 @@ main bags and 3-6 and 8 the overflow (wardrobe 7 is never touched).
 |---|---|
 | `waltz` | Curing Waltz on `<stpc>`: the tier comes from the missing HP of your current target when it is you or a party member, else the highest you can use. DNC main or sub |
 | `aoewaltz` | Divine Waltz II, else Divine Waltz. DNC main or sub |
+| `lightarts` / `darkarts` | Light / Dark Arts, then the Addendum on the next press. SCH main or sub (without it, your dual-box alt's command of that name if it is on SCH) |
+| `aoe sneak` / `aoe invi` / `aoe erase` | The spell on the party through Light Arts and Accession (and Addendum: White for Erase) as charges allow. SCH main or sub |
 | `jump` | /DRG jumps |
 | `watchdog` | Midcast watchdog status; `on`, `off`, `buffer <s>`, `fallback <s>`, `clear`, `stats`... see [watchdog](../features/watchdog.md) |
 | `debugmidcast` | Print which midcast set each spell uses (again to stop) |

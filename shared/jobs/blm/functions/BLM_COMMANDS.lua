@@ -6,8 +6,8 @@
 ---   • UI commands (ui toggle, reload UI)
 ---   • BLM element cycling (MainLight, MainDark, SubLight, SubDark)
 ---   • BLM spell cycling (Storm)
----   • BLM-specific commands (buff, storm, klima, dispel, lightarts, darkarts,
----     aoe sneak/invi, light/dark/aoe nukes)
+---   • BLM-specific commands (buff, storm, klima, dispel, light/dark/aoe nukes);
+---     lightarts, darkarts and aoe sneak/invi are common commands
 ---   • CombatMode weapon lock (job_state_change)
 ---   • State change UI synchronization with colored element messages
 ---
@@ -214,10 +214,6 @@ end
 ---
 ---   BLM-specific commands:
 ---   • buff           - Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
----   • lightarts      - Smart Light Arts / Addendum: White (SCH subjob)
----   • darkarts       - Smart Dark Arts / Addendum: Black (SCH subjob)
----   • aoe sneak      - Party-wide Sneak (Light Arts + Accession + Sneak)
----   • invi           - Party-wide Invisible (Light Arts + Accession + Invisible)
 ---   • klima          - Dark Arts + Manifestation + Klimaform (charge-aware)
 ---   • dispel         - Dispel via /RDM, or via Addendum: Black on /SCH
 ---   • storm          - Current Storm state, with Klimaform (CastStorm)
@@ -351,28 +347,6 @@ function job_self_command(cmdParams, eventArgs)
             eventArgs.handled = true
         else
             BLMMessages.show_buffself_error()
-        end
-        return
-    end
-
-    -- LightArts / DarkArts: Arts, then Addendum on the next press (SCH subjob)
-    if command == 'lightarts' then
-        ScholarActions.light_arts()
-        eventArgs.handled = true
-        return
-    end
-
-    if command == 'darkarts' then
-        ScholarActions.dark_arts()
-        eventArgs.handled = true
-        return
-    end
-
-    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide
-    -- ('//gs c aoe sneak', '//gs c aoe invi').
-    if command == 'aoe' then
-        if ScholarActions.try_aoe_subcommand(cmdParams[2], state.SneakInviAOE) then
-            eventArgs.handled = true
         end
         return
     end
