@@ -6,9 +6,10 @@ and uses the best way it has at that moment: its own spell, a partner's
 spell, or an item.
 
 Works for every job. With no box group (no dual-box), it covers you alone.
-There is no key for it by default: bind one with `//gs c tb` or in
-`_common/keys/COMMON_KEYBINDS.lua` ([keybinds](../guides/keybinds.md)), or put
-`/console gs c cleanse` in a macro.
+There is no key for it by default: put `/console gs c cleanse` in a macro, or
+remove the `--` of the Alt+C line already written (commented) in
+`_common/keys/COMMON_KEYBINDS.lua` ([keybinds](../guides/keybinds.md)), or bind
+one with `//gs c tb`.
 
 ## Requirements
 
