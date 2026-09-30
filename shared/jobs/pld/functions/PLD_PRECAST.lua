@@ -127,8 +127,11 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- PLD-SPECIFIC: Auto-abilities (Majesty, Divine Emblem)
-    if spell.action_type == 'Magic' and auto_abilities[spell.name] and AbilityHelper then
+    -- PLD-SPECIFIC: Auto-abilities (Majesty, Divine Emblem), each one an
+    -- option of AUTO_ABILITIES.lua (on unless set false)
+    local option = spell.name == 'Flash' and 'pld_divine_emblem' or 'pld_majesty'
+    if spell.action_type == 'Magic' and auto_abilities[spell.name] and AbilityHelper
+        and require('shared/utils/core/auto_options').enabled(option, true) then
         auto_abilities[spell.name](spell, eventArgs)
     end
 

@@ -66,7 +66,8 @@ function StepManager.execute_step()
     local presto_recast = ability_recasts[236] or 0
     local presto_available = is_recast_ready(presto_recast) and
                              not buffactive['Presto'] and
-                             player.main_job_level >= 77
+                             player.main_job_level >= 77 and
+                             require('shared/utils/core/auto_options').enabled('dnc_presto', true)
 
     -- Execute: Presto+Step if available, otherwise Step only
     if presto_available then

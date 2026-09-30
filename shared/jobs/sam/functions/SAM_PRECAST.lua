@@ -108,6 +108,9 @@ local function try_third_eye_ws(spell, eventArgs)
     if spell.type ~= 'WeaponSkill' or buffactive['Third Eye'] then
         return false
     end
+    if not require('shared/utils/core/auto_options').enabled('sam_third_eye_ws', true) then
+        return false
+    end
     local AbilityHelper = require('shared/utils/precast/ability_helper')
     if not (AbilityHelper.can_use_ability('Third Eye') and AbilityHelper.is_ability_ready('Third Eye')) then
         return false

@@ -242,6 +242,10 @@ function checkArts(spell, eventArgs)
         return
     end
 
+    if not require('shared/utils/core/auto_options').enabled('blm_dark_arts', true) then
+        return
+    end
+
     if dark_arts_active() or not dark_arts_ready() then
         return
     end

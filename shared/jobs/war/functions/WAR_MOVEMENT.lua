@@ -51,6 +51,10 @@ coroutine.schedule(function()
 
     -- AutoMove is available - register Retaliation callback (silent init)
     AutoMove.register_callback(function(is_moving, distance, player_status)
+        -- AUTO_ABILITIES.lua war_retaliation_cancel = false: never cancelled
+        if not require('shared/utils/core/auto_options').enabled('war_retaliation_cancel', true) then
+            return
+        end
 
         -- Check for Retaliation buff using both methods (for compatibility)
         local has_retaliation = false
