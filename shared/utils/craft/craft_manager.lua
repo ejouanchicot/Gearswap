@@ -3,8 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   File layout (per character):
 ---     <charname>/sets/<name>_sets.lua  -> one file per craft kind
----       e.g. Tetsouo/sets/bonecraft_sets.lua
----            Tetsouo/sets/fishing_sets.lua
+---       e.g. Tetsouo/common/sets/bonecraft_sets.lua
+---            Tetsouo/common/sets/fishing_sets.lua
 ---   Which file //gs c craft / fish read: craft_file / fish_file in
 ---   <charname>/config/CRAFT_CONFIG.lua (craft_commands.lua).
 ---

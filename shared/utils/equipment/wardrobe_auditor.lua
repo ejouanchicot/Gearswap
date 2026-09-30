@@ -52,7 +52,7 @@ end
 --- Recursively walk a directory tree and return all .lua file paths.
 --- Defined here (instead of further down) because discover_job_files() needs
 --- it. The modular sets layout (2026-05) puts gear definitions under subfolders
---- (e.g. Tetsouo/sets/common/rings.lua, Tetsouo/sets/brd/armor.lua), so a
+--- (e.g. Tetsouo/common/sets/rings.lua, Tetsouo/brd/sets/armor.lua), so a
 --- flat scan would miss them.
 --- Heuristic: entries ending in `.lua` are files; everything else is a subdir
 --- (windower API doesn't expose is_dir).

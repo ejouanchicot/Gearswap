@@ -8,7 +8,7 @@
 --- stake.
 ---
 --- `//gs c wo scan` walks every bag, keeps the intersection, and writes it to
---- data/<char>/config/WARP_ITEMS_OWNED.lua. The organizer prefers that list
+--- data/<char>/saved/WARP_ITEMS_OWNED.lua. The organizer prefers that list
 --- when it exists and falls back to the full database when it does not, so a
 --- character who never scans behaves exactly as before.
 ---

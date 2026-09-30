@@ -48,7 +48,7 @@ local CYCLE_THRESHOLD  = Config.TRULY_STUCK_THRESHOLD
 -- NOTE: Bag lists (PRIMARY_BAGS / OVERFLOW_BAGS / FILL_FALLBACK / ALT_*) are
 -- read directly from Config.X inside each function. They get refreshed by
 -- Config.refresh() at the start of every command, so per-character overrides
--- (data/<char>/config/WARDROBE_CONFIG.lua) take effect immediately.
+-- (data/<char>/common/inventory/WARDROBE_CONFIG.lua) take effect immediately.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PHASE 0  -  UNEQUIP / RE-ENABLE

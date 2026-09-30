@@ -25,7 +25,7 @@
 --- Loaded by the BST entry file into _G.BSTBeastPetData.
 ---
 --- @usage
----   local BSTBeastPetData = require('Tetsouo/config/bst/BST_PET_DATA')
+---   local BSTBeastPetData = require('Tetsouo/bst/combat/BST_PET_DATA')
 ---   local pet_info = BSTBeastPetData.pets[pet_name]
 ---
 --- @see shared/jobs/bst/functions/logic/ecosystem_manager.lua for ecosystem management

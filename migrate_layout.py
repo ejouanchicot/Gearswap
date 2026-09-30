@@ -185,7 +185,17 @@ def rewrite_paths(text, char, moved):
         old = 'sets/' + m.group(2)
         return m.group(1) + (moved.get(old) or new_place(old) or old) + m.group(3)
     text = re.sub("(include\\(\\s*['\"])sets/([^'\"]+)(['\"])", include_sets, text)
-    return text
+    return rewrite_comment_paths(text, char)
+
+
+def rewrite_comment_paths(text, char):
+    """Point the <Char>/config/... and <Char>/sets/... paths written in
+    comments (file headers, "defined in" notes) at the new places, so a reader
+    who follows them finds the file."""
+    def fix(m):
+        new = new_place(m.group(2))
+        return m.group(1) + new if new else m.group(0)
+    return re.sub(r"(%s/)((?:config|sets)/[\w./-]+\.lua)" % re.escape(char), fix, text)
 
 
 def stub_for(char, job):

@@ -36,7 +36,7 @@ local modules_loaded = false
 --- clone has none until the player writes one, and the defaults have to be
 --- good enough to play with.
 --- @param char_name string Character whose config directory to read
---- @param config_name string File under <char>/config/blm/
+--- @param config_name string File under <char>/blm/combat/
 --- @param fallback table Defaults when the file is absent or fails to load
 --- @return table
 local function load_blm_config(char_name, config_name, fallback)

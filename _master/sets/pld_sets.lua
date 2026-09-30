@@ -699,7 +699,7 @@ sets.midcast['Enhancing Magic'] =
 -- where the swap ends, and FFXI trims current HP to every dip without giving
 -- it back - so gains go first, the heaviest loss goes last. Recompute them
 -- whenever either set changes; a character whose FC set differs will not have
--- the same order (see Tetsouo/sets/pld/pld_sets.lua for one that does not).
+-- the same order (see Tetsouo/pld/sets/pld_sets.lua for one that does not).
 --
 -- body and waist are the two heaviest losses and both sit at 0; GearSwap
 -- breaks that tie by slot order, which puts body before waist - the order we

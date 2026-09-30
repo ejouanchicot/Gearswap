@@ -3,7 +3,7 @@
 ---============================================================================
 --- Character-specific color overrides for UI elements.
 --- Colors defined here override the default colors in shared/utils/ui/COLOR_SYSTEM.lua,
---- which requires this file as <Char>/config/UI_COLOR_CONFIG and reads only the
+--- which requires this file as <Char>/common/display/UI_COLOR_CONFIG and reads only the
 --- tables below (elements, stats, modes, bar_spells.ailment, special,
 --- spells.en/spikes/storms, jobs.quick_draw).
 ---
