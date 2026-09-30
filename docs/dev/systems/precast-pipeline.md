@@ -455,7 +455,7 @@ piece is not overwritten.
 TP bonus from pieces already in the WS set is not part of step 1; only the unused
 `get_final_tp` counts equipped pieces.
 
-TP config schema (per job, `<Character>/<job>/<JOB>_TP_CONFIG.lua`, loaded
+TP config schema (per job, `<Character>/<job>/combat/<JOB>_TP_CONFIG.lua`, loaded
 into `_G.<JOB>TPConfig` by the entry point): `pieces = { {slot, name, bonus}, ... }`
 plus optional `get_weapon_bonus(weapon)`, `get_warcry_bonus()`,
 `get_hagakure_bonus()`, `get_fencer_bonus(weapon, sub)`. The BLM config
@@ -817,7 +817,7 @@ in `get_sets()`, before the job modules.
 
 ### TP configs
 
-`<Character>/<job>/<JOB>_TP_CONFIG.lua` (templates in `_master/config/<job>/`),
+`<Character>/<job>/combat/<JOB>_TP_CONFIG.lua` (templates in `_master/config/<job>/`),
 schema above. Jobs pass `_G.<JOB>TPConfig or {}`; an empty config yields no TP gear.
 
 ## State & lifetime

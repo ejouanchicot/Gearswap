@@ -61,7 +61,7 @@ runs a full organize. The bags are set in `common/inventory/WARDROBE_CONFIG.lua`
 Tops up the consumables in your inventory from the Mog Case, Mog Sack and Mog
 Satchel (in that order), and
 puts the surplus back. The list comes from
-`<job>/<JOB>_REFILL.lua` (you write it; see
+`<job>/inventory/<JOB>_REFILL.lua` (you write it; see
 [configuration](../guides/configuration.md#refill-job_refilllua)). `rf` is
 also sent to your other GearSwap instances.
 

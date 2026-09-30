@@ -81,7 +81,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/inventory/quiver_manager.lua` | 161 | `after_ranged_attack` -> `check_and_refill` |
 | `shared/data/job_abilities/COR_JA_DATABASE.lua` | 21 | Factory with the roll modules |
 
-Character overlays: `_master/<Character>/cor/COR_REFILL.lua` for the
+Character overlays: `_master/<Character>/cor/inventory/COR_REFILL.lua` for the
 characters that ship refill lists, and one full overlay
 (`_master/<Character>/entry/<Character>_COR.lua`, `cor/*`,
 `cor/sets/cor_sets.lua`) that adds a `RangedMode` (`Normal`, `Acc`) with a

@@ -164,7 +164,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, GEO may cover your whole group with Accession when a charge is left (GEO has no switch to stop it) |
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
-| Refill | `//gs c rf` restocks from `<YourName>/geo/GEO_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
+| Refill | `//gs c rf` restocks from `<YourName>/geo/inventory/GEO_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft`; Combat Mode Off does not free what a craft set holds |
 | PetTP addon | Loaded when GEO loads, unloaded when you leave GEO |
 | Dual-box | As an alt, GEO tells the main when Entrust goes up or down, so the main's alt commands can aim an Indi- at the party |

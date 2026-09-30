@@ -18,7 +18,12 @@ see [installation](../getting-started/installation.md)). After an edit,
         combat/              automatic abilities, recasts, Dual Wield, belt, weapons,
                              Sneak / Invisible
         sets/                gear shared by your jobs (rings...), your craft and fishing sets
-    war/, blm/ ...           one folder per job you play: its settings
+    war/, blm/ ...           one folder per job you play, by the same themes:
+        display/             WAR_HUD, WAR_LOCKSTYLE, WAR_MACROBOOK
+        keys/                WAR_KEYBINDS, WAR_STATES, WAR_CUSTOM
+        combat/              WAR_TP_CONFIG, WAR_WS_CONFIG and the job's own settings
+                             (BRD songs, RDM Saboteur, WHM cures, BST pets...)
+        inventory/           WAR_REFILL
         sets/                the gear of that job (war_sets.lua...)
     saved/                   written by the game (window positions, HUD settings...): leave it
 ```
@@ -75,7 +80,7 @@ re-clone copies them back from the old folder (see
 | `alt_window.lua` | Dragging the alt window (main only) |
 | `alt_state.lua` | The `alts` orders: who follows whom, automation on / off, kept across GearSwap reloads |
 | `WARP_ITEMS_OWNED.lua` | `//gs c wo scan`: the warp items you own |
-| `<job>/<JOB>_HUD.lua` | `//gs c ui order` / `roworder` (see the per-job table below) |
+| `<job>/display/<JOB>_HUD.lua` | `//gs c ui order` / `roworder` (see the per-job table below) |
 | `../temp_binds.lua` | `//gs c tb` (in `<YourName>/`, not in `config/`) |
 
 `dualbox_role.lua` is written by `//gs c main` and `setalt`: it wins over the
@@ -167,7 +172,7 @@ subjob]` is used; otherwise `solo[your subjob]`, then `solo.default`, then
 Sack, then Satchel unless `common/inventory/REFILL_CONFIG.lua` says otherwise), and puts
 the surplus back. The lists are per character and per job,
 and only the author's characters ship with them: **create
-`<YourName>/<job>/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
+`<YourName>/<job>/inventory/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
 short built-in list (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent
 Oil, 12 each). Format:
 

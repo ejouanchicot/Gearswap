@@ -47,8 +47,8 @@ the sets file (structure and set names only).
 | `shared/jobs/whm/functions/WHM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/whm/functions/WHM_COMMANDS.lua` | 235 | `job_self_command` router, `job_state_change` (`Melee ON` lock, HUD) |
 | `shared/jobs/whm/functions/WHM_MOVEMENT.lua` | 39 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'whm/WHM_LOCKSTYLE', 1, 'SAM')` |
-| `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'whm/WHM_MACROBOOK', 'SAM', 1, 1)` |
+| `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'whm/display/WHM_LOCKSTYLE', 1, 'SAM')` |
+| `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'whm/display/WHM_MACROBOOK', 'SAM', 1, 1)` |
 | `shared/jobs/whm/functions/logic/set_builder.lua` | 90 | Idle: town, latent refresh, movement; engaged: unchanged |
 | `shared/utils/whm/cure_manager.lua` | 392 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
 | `shared/utils/whm/whm_message_formatter.lua` | 438 | Cure tier / Afflatus messages and CureManager debug lines (direct `add_to_chat`, a documented exception: it is a formatter stored outside `utils/messages/`) |
@@ -81,7 +81,7 @@ facade and the lockstyle cancel registration.
 `user_setup()`:
 
 1. `WHMStates.configure()` (see [Mote states](#mote-states)).
-2. `pcall(require, '<Character>/whm/WHM_KEYBINDS')` into the global
+2. `pcall(require, '<Character>/whm/keys/WHM_KEYBINDS')` into the global
    `WHMKeybinds`, then `bind_all()` (ends with `show_intro()`, whose requires of
    `WHM_MACROBOOK.lua` and `WHM_LOCKSTYLE.lua` define
    `select_default_macro_book` and `select_default_lockstyle`). A failed

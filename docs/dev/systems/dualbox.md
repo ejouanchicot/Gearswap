@@ -707,7 +707,7 @@ Behaviour per event:
 
 - [Common commands](commands-and-debug.md): `COMMON_COMMANDS.lua` owns the routing and the `alt*` verbs.
 - [Macrobook factory](factories-and-helpers.md): `macrobook_manager.lua` `dualbox_config` reads `is_alt_online()`/`get_alt_job()`.
-  Per-job `MACROBOOKS.dualbox[<alt job>][<own subjob>]` tables exist in `Tetsouo/<job>/<JOB>_MACROBOOK.lua`.
+  Per-job `MACROBOOKS.dualbox[<alt job>][<own subjob>]` tables exist in `Tetsouo/<job>/display/<JOB>_MACROBOOK.lua`.
 - [Job change manager](../architecture/job-change-lifecycle.md): a subjob change reloads GearSwap, which re-runs the auto-init.
 - [INIT_SYSTEMS](core-lifecycle.md): `windower._gs_reload_count`, module cache,
   sync IPC hooks.

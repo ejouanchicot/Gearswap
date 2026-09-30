@@ -88,7 +88,7 @@ end
 --- Files in `common/` (e.g. rings.lua) apply to every discovered job because
 --- they typically declare equipment shared across all jobs.
 --- @return table {[job_lower] = {file_path, file_path, ...}}
---- Set files of the current layout: <job>/sets/ and <job>/<JOB>_CUSTOM.lua
+--- Set files of the current layout: <job>/sets/ and <job>/keys/<JOB>_CUSTOM.lua
 --- (its gear rules); common/sets/ (rings.lua, craft sets). The first form of
 --- the layout kept them next to the settings: the lower-case files of <job>/,
 --- common/ and common/craft/ are read too. Upper-case files are settings.
@@ -100,7 +100,7 @@ local function layout_set_files()
         return name:match('^[%l%d].*%.lua$') or name:match('_CUSTOM%.lua$')
     end
     for job in pairs(VALID_JOBS) do
-        for _, sub in ipairs({job .. '/', job .. '/sets/'}) do
+        for _, sub in ipairs({job .. '/', job .. '/sets/', job .. '/keys/'}) do
             for _, name in ipairs(windower.get_dir(dir .. sub) or {}) do
                 if gear_file(name) then
                     jobs[job] = jobs[job] or {}

@@ -141,7 +141,7 @@ job's modes are on its page ([jobs](../jobs/README.md)).
   key does, you can type or put in a macro (`/console gs c ...`).
 - Every mode goes back to its default on each load (job change, subjob
   change, reload), except Auto Medicine. Change a default in
-  `<job>/<JOB>_STATES.lua`.
+  `<job>/keys/<JOB>_STATES.lua`.
 - Your own modes, with their own key and gear, go in `<JOB>_CUSTOM.lua`
   ([keybinds](keybinds.md#your-own-modes-job_customlua)).
 

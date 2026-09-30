@@ -79,15 +79,15 @@ clone of any other character printed
 | `shared/jobs/smn/functions/SMN_BUFFS.lua` | `DoomManager` + Avatar's Favor state sync |
 | `shared/jobs/smn/functions/SMN_COMMANDS.lua` | `job_self_command`, skill-up loop, `job_state_change` (`LifecycleManager.state_change()`), `_G.cancel_smn_skillup_loop` |
 | `shared/jobs/smn/functions/SMN_MOVEMENT.lua` | Empty `job_handle_equipping_gear` (movement gear is in `SMN_IDLE`) |
-| `shared/jobs/smn/functions/SMN_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('SMN', 'smn/SMN_LOCKSTYLE', 1, 'WHM')` |
+| `shared/jobs/smn/functions/SMN_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('SMN', 'smn/display/SMN_LOCKSTYLE', 1, 'WHM')` |
 | `shared/jobs/smn/functions/SMN_MACROBOOK.lua` | Lazy `MacrobookManager.create('SMN', ..., 'WHM', 1, 1)` |
 | `shared/jobs/smn/functions/logic/blood_pact_classifier.lua` | Seven name sets, `classify`, `get_set`, `resolve` |
-| `smn/SMN_STATES.lua` | `IdleMode`, `CastingMode`, `AvatarFavor`, `Moving`, `FastCast`, AutoMedicine |
-| `smn/SMN_KEYBINDS.lua` | 3 binds handed to `KeybindManager.create('SMN', ...)` |
-| `smn/SMN_CUSTOM.lua` | Player modes and gear rules, commented examples only |
-| `smn/SMN_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
-| `smn/SMN_LOCKSTYLE.lua` | `default = 1`, `by_subjob` (all 1), `get_style` |
-| `smn/SMN_MACROBOOK.lua` | Book 1; page per subjob (WHM 1, SCH 2, RDM 3, BLM 4); empty `dualbox` |
+| `smn/keys/SMN_STATES.lua` | `IdleMode`, `CastingMode`, `AvatarFavor`, `Moving`, `FastCast`, AutoMedicine |
+| `smn/keys/SMN_KEYBINDS.lua` | 3 binds handed to `KeybindManager.create('SMN', ...)` |
+| `smn/keys/SMN_CUSTOM.lua` | Player modes and gear rules, commented examples only |
+| `smn/display/SMN_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
+| `smn/display/SMN_LOCKSTYLE.lua` | `default = 1`, `by_subjob` (all 1), `get_style` |
+| `smn/display/SMN_MACROBOOK.lua` | Book 1; page per subjob (WHM 1, SCH 2, RDM 3, BLM 4); empty `dualbox` |
 | `smn/sets/smn_sets.lua` (generic, flat; `smn/sets/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
 | `shared/data/magic/SMN_SPELL_DATABASE.lua` + `summoning/*.lua` | Avatar / pact data for messages and `//gs c info` (SMN logic does not read it) |
 
@@ -324,12 +324,12 @@ it stays on after the first cast.
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `smn/SMN_STATES.lua` | see states | entry `user_setup` |
-| `smn/SMN_KEYBINDS.lua` | 3 binds (+ `COMMON_KEYBINDS.lua`) | entry `user_setup`, `file_unload` |
-| `smn/SMN_CUSTOM.lua` | examples only | `KeybindManager` via `custom_states` |
-| `smn/SMN_HUD.lua` | empty | HUD section / row order |
-| `smn/SMN_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 1 everywhere | `LockstyleManager` (uses `get_style`) |
-| `smn/SMN_MACROBOOK.lua` | book 1, pages 1-4 | `MacrobookManager` |
+| `smn/keys/SMN_STATES.lua` | see states | entry `user_setup` |
+| `smn/keys/SMN_KEYBINDS.lua` | 3 binds (+ `COMMON_KEYBINDS.lua`) | entry `user_setup`, `file_unload` |
+| `smn/keys/SMN_CUSTOM.lua` | examples only | `KeybindManager` via `custom_states` |
+| `smn/display/SMN_HUD.lua` | empty | HUD section / row order |
+| `smn/display/SMN_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 1 everywhere | `LockstyleManager` (uses `get_style`) |
+| `smn/display/SMN_MACROBOOK.lua` | book 1, pages 1-4 | `MacrobookManager` |
 | `SKILLUP_STATE` knobs in `SMN_COMMANDS.lua` | 5.0 s cast-to-release, 1.5 s release-to-next | the loop; `skillup <n>` changes the second |
 | Carbuncle auto-summon delay | `initial_load_delay + 2.0` (10 s) | entry `user_setup` |
 | Refill | none: `FALLBACK_LIST` in `shared/utils/inventory/refill/config_resolver.lua` | `refill` |

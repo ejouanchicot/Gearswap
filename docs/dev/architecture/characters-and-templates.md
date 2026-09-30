@@ -38,7 +38,7 @@ A character exists in up to four places:
 1. **Generic templates**: `_master/entry`, `_master/sets`, `_master/config/<job>`, `_master/config/alt`, `_master/config_global`. Since 2026-09-30 an entry template is one line, `include('../shared/entry/<job>.lua')`: the code of every entry lives in `shared/entry/<job>.lua`, the same for every character, and finds the character's files through `shared/utils/core/char_paths.lua` (`CharPaths.module('job', 'PLD_STATES', 'PLD')`, `CharPaths.relative('sets', 'pld_sets.lua', 'PLD')`, `ConfigLoader.load_ui_config(CharPaths.name(), 'PLD')`). An update of `shared/` updates every entry, with no re-clone. The overlays no longer have `entry/` folders (moved to `data/_backups/overlay_entries_20260930/`).
 2. **Overlay** `_master/<Name>/`: files with the same relative path as a generic file replace it during a clone, and files with no generic counterpart are added. An overlay is used to build the character it belongs to, or for any target when `--source <Name>` names it (see [Source selection](#source-selection)). It can hold a modular set tree `sets/<job>/`, which then replaces the generic flat `sets/<job>_sets.lua`, plus `sets/common/` and loose set files. An overlay may omit `entry/`: the generic entry is then used and renamed.
 3. **Live folder** `data/<Name>/`: what GearSwap loads. Gitignored.
-4. **Runtime-written files** inside the live folder, written by in-game commands: in `saved/`, `ui_settings.lua` (HUD position), `message_modes.lua`, `WARP_ITEMS_OWNED.lua`, `dualbox_role.lua`, `alt_state.lua`, `alt_window.lua`, `temp_binds.lua`, the trace files (`trace.log`, `trace.on`) and `atelier/`; settings the player also edits, rewritten by commands: `common/keys/combat_mode.lua`, `common/keys/treasure_mode.lua`, `common/combat/STEALTH_CONFIG.lua`, `common/display/UI_CONFIG.lua` (some lines), `<job>/<JOB>_HUD.lua` (HUD row order).
+4. **Runtime-written files** inside the live folder, written by in-game commands: in `saved/`, `ui_settings.lua` (HUD position), `message_modes.lua`, `WARP_ITEMS_OWNED.lua`, `dualbox_role.lua`, `alt_state.lua`, `alt_window.lua`, `temp_binds.lua`, the trace files (`trace.log`, `trace.on`) and `atelier/`; settings the player also edits, rewritten by commands: `common/keys/combat_mode.lua`, `common/keys/treasure_mode.lua`, `common/combat/STEALTH_CONFIG.lua`, `common/display/UI_CONFIG.lua` (some lines), `<job>/display/<JOB>_HUD.lua` (HUD row order).
 
 ### Layout of a character folder (since 2026-09-30)
 
@@ -55,8 +55,12 @@ data/<Char>/
                         STEALTH_CONFIG
         sets/           gear shared by jobs (rings.lua, 0_AugGear_<Name>.lua), craft and
                         fishing set files
-    <job>/              settings of one job: <JOB>_STATES, _KEYBINDS, _CUSTOM, _HUD, _LOCKSTYLE,
-                        _MACROBOOK, _TP_CONFIG, _WS_CONFIG, _REFILL...
+    <job>/              one job, by theme (CharPaths.job_group, from the end of the file name)
+        display/        <JOB>_HUD, _LOCKSTYLE, _MACROBOOK
+        keys/           <JOB>_KEYBINDS, _STATES, _CUSTOM
+        combat/         <JOB>_TP_CONFIG, _WS_CONFIG and every other job setting
+                        (_SONG_CONFIG, _SABOTEUR_CONFIG, _CURE_CONFIG, _PET_DATA, _BLU_MAGIC...)
+        inventory/      <JOB>_REFILL
         sets/           its gear: <job>_sets.lua (+ the modular armor/capes/weapons.lua)
     saved/              files the game writes (see 4.)
 ```
@@ -213,12 +217,12 @@ What `clone_character.py` actually reads (`parse_character_db`):
 |---|---|---|---|
 | `<Name>_<JOB>.lua` | GearSwap `load_user_files` (`refresh.lua:98-105`) | step 2 | - |
 | `<job>/sets/<job>_sets.lua` or `<job>/...` + `common/` | entry `init_gear_sets()` | step 3 | - |
-| `<job>/<JOB>_STATES/_KEYBINDS/_TP_CONFIG/...` | entries (`user_setup`, `get_sets`) | step 4a | - |
-| `<job>/<JOB>_CUSTOM.lua` | `KeybindManager` / custom states, see [keybinds-and-custom.md](../systems/keybinds-and-custom.md) | step 4a | - |
-| `<job>/<JOB>_LOCKSTYLE/_MACROBOOK` | LockstyleManager / MacrobookManager factories, see [factories-and-helpers.md](../systems/factories-and-helpers.md) | step 4a | - |
-| `<job>/<JOB>_HUD.lua` | `shared/utils/ui/hud_job_config.lua` | - | `//gs c ui roworder`; kept on re-clone |
-| `<job>/<JOB>_REFILL.lua` | `resolve_list_for_player` (`shared/utils/inventory/refill/config_resolver.lua`) | step 4a, when an overlay or template has it | - |
-| `whm/WHM_CURE_CONFIG.lua` | `shared/utils/whm/cure_manager.lua` | step 4a | - |
+| `<job>/keys/<JOB>_STATES/_KEYBINDS/_TP_CONFIG/...` | entries (`user_setup`, `get_sets`) | step 4a | - |
+| `<job>/keys/<JOB>_CUSTOM.lua` | `KeybindManager` / custom states, see [keybinds-and-custom.md](../systems/keybinds-and-custom.md) | step 4a | - |
+| `<job>/display/<JOB>_LOCKSTYLE/_MACROBOOK` | LockstyleManager / MacrobookManager factories, see [factories-and-helpers.md](../systems/factories-and-helpers.md) | step 4a | - |
+| `<job>/display/<JOB>_HUD.lua` | `shared/utils/ui/hud_job_config.lua` | - | `//gs c ui roworder`; kept on re-clone |
+| `<job>/inventory/<JOB>_REFILL.lua` | `resolve_list_for_player` (`shared/utils/inventory/refill/config_resolver.lua`) | step 4a, when an overlay or template has it | - |
+| `whm/combat/WHM_CURE_CONFIG.lua` | `shared/utils/whm/cure_manager.lua` | step 4a | - |
 | `common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua` | entries (file level / `get_sets`) | step 4c | - |
 | `common/keys/COMMON_KEYBINDS.lua` | `shared/utils/keybinds/common_keybinds.lua` | step 4c | - |
 | `common/display/UI_CONFIG.lua` | `ConfigLoader.load_ui_config` (dofile) | step 4c | - |
@@ -295,7 +299,7 @@ Full redeploy (`clone_character.py` on an existing character):
 ## How to add a job to the templates
 
 1. `_master/entry/Tetsouo_<JOB>.lua`: copy a similar job and keep the `'Tetsouo/config/...'` path convention so step 5 can substitute it. Require `config_loader` first among shared modules (it installs the require cache) and include INIT_SYSTEMS right after Mote-Include; see [core-lifecycle.md](../systems/core-lifecycle.md#how-a-job-file-boots).
-2. `_master/sets/<job>_sets.lua` (flat) and `_master/config/<job>/`, with **every** file the entry `require`s without `pcall`. The PUP entry requires `pup/PUP_PET_DATA`, `PUP_TP_CONFIG` and `PUP_STATES`, and none of them exists.
+2. `_master/sets/<job>_sets.lua` (flat) and `_master/config/<job>/`, with **every** file the entry `require`s without `pcall`. The PUP entry requires `pup/combat/PUP_PET_DATA`, `PUP_TP_CONFIG` and `PUP_STATES`, and none of them exists.
 3. Add the code to `ALL_VALID_JOBS` in `clone_character.py` and to `ALL_JOBS` / a character / `ARCHIVE_JOBS` in `character_db.lua`.
 4. Add the shared modules under `shared/jobs/<job>/` (see [core-lifecycle.md](../systems/core-lifecycle.md) and [job-change-lifecycle.md](./job-change-lifecycle.md)).
 

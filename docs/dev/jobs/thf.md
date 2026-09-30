@@ -75,8 +75,8 @@ function; line numbers are deliberately not used.
 Author overlay (`_master/Tetsouo/`, tracked; deployed only by a clone to that
 character): `entry/Tetsouo_THF.lua` (same as the template except the header and
 `init_gear_sets`, which includes `thf/sets/thf_sets.lua`),
-`thf/THF_MACROBOOK.lua`, `thf/THF_STATES.lua` (adds
-`'Telop Knife'` to `SubWeapon`), `thf/THF_REFILL.lua` (includes
+`thf/display/THF_MACROBOOK.lua`, `thf/keys/THF_STATES.lua` (adds
+`'Telop Knife'` to `SubWeapon`), `thf/inventory/THF_REFILL.lua` (includes
 `Ac. Bolt Quiver`), and `thf/{thf_sets,armor,capes,weapons}.lua`
 (modular; the weapon sets are copied from `weapons.lua` by a loop in
 `thf_sets.lua`). `_master/Kaories/` has no THF files.
@@ -114,7 +114,7 @@ sequenceDiagram
 1. `THFStates.configure()` creates every state (see [Mote states](#mote-states)),
    then `RangeLock.sync_state()` turns `RangeLock` back on when the range/ammo
    lock is still held (subjob change, same sandbox).
-2. `require('<Character>/thf/THF_KEYBINDS')` into the global
+2. `require('<Character>/thf/keys/THF_KEYBINDS')` into the global
    `THFKeybinds`, then `bind_all()` (`keybind_manager.lua`), which unbinds the
    keys that no longer apply, binds those of the current subjob (the two
    Abyssea keys only on /WAR) and calls `show_intro()`. `KeybindManager.create`
@@ -657,5 +657,5 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 - `job_post_midcast` skeleton is duplicated with DNC.
 - `job_buff_change` re-implements `LifecycleManager.buff_change`.
 - The author overlay files (`_master/Tetsouo/entry/Tetsouo_THF.lua`,
-  `thf/THF_STATES.lua`) still carry `@author Tetsouo`, against the
+  `thf/keys/THF_STATES.lua`) still carry `@author Tetsouo`, against the
   project rule (`@author ejouanchicot`).

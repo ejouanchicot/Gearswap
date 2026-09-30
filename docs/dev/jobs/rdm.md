@@ -58,8 +58,8 @@ the sets files (structure and set names only).
 | `shared/jobs/rdm/functions/RDM_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/rdm/functions/RDM_COMMANDS.lua` | 439 | `job_self_command` router (cast-by-name resolved from `res`), `job_state_change` (HUD refresh) |
 | `shared/jobs/rdm/functions/RDM_MOVEMENT.lua` | 42 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
-| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'rdm/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
+| `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'rdm/display/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
+| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'rdm/display/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
 | `shared/jobs/rdm/functions/logic/set_builder.lua` | 241 | Idle / engaged construction: mode sets, single vs dual wield (off-hand item and subjob), weapons, town, movement |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table of 11 enfeeble families (`RDM_ENFEEBLE_TIERS.get`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tier table (`NUKE_TIERS.get`), shared with GEO |
@@ -116,7 +116,7 @@ sequenceDiagram
 
 1. `RDMStates.configure()` creates every state (see [Mote states](#mote-states)),
    including `Storm` when the subjob is SCH.
-2. `pcall(require, '<Character>/rdm/RDM_KEYBINDS')`, stored in the
+2. `pcall(require, '<Character>/rdm/keys/RDM_KEYBINDS')`, stored in the
    global `RDMKeybinds`, then `bind_all()`: keys of the file that no longer
    apply are unbound, the entries `get_active_binds()` keeps are bound, then
    `show_intro()`. `show_intro` requires `RDM_MACROBOOK.lua` and

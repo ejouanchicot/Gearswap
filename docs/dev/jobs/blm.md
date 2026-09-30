@@ -73,8 +73,8 @@ function, not a line number.
 
 Character copies are gitignored. The author's overlay `_master/Tetsouo/`
 holds its own `entry/Tetsouo_BLM.lua` (includes the modular
-`blm/sets/blm_sets.lua`), `blm/BLM_MACROBOOK.lua` (book 7),
-`blm/BLM_REFILL.lua` and `blm/{blm_sets,armor,capes,weapons}.lua`.
+`blm/sets/blm_sets.lua`), `blm/display/BLM_MACROBOOK.lua` (book 7),
+`blm/inventory/BLM_REFILL.lua` and `blm/{blm_sets,armor,capes,weapons}.lua`.
 No other overlay has BLM files.
 
 ## How it works
@@ -108,7 +108,7 @@ sequenceDiagram
 
 1. `BLMStates.configure()` creates every state (all values reset on every load
    and every subjob change).
-2. `require('Tetsouo/blm/BLM_KEYBINDS')` returns
+2. `require('Tetsouo/blm/keys/BLM_KEYBINDS')` returns
    `KeybindManager.create('BLM', ...)` (the player's `BLM_CUSTOM.lua` keys and
    the character's `COMMON_KEYBINDS.lua` keys are appended there), stored in
    the global `BLMKeybinds`, then `bind_all()`, which validates, binds and

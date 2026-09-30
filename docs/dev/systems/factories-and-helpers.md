@@ -681,7 +681,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 |---|---|---|
 | Warp commands | `CommonCommands` + `WarpInit.init()` on every load | [warp.md](warp.md) |
 | Stealth (`//gs c stealth`, Alt+Z / Alt+X) | `CommonCommands` + `StealthTimers.start()` | [stealth.md](stealth.md) |
-| Refill (`//gs c rf`) | `CommonCommands` | the list comes from `<Char>/<job>/<JOB>_REFILL.lua` (overlays only) |
+| Refill (`//gs c rf`) | `CommonCommands` | the list comes from `<Char>/<job>/inventory/<JOB>_REFILL.lua` (overlays only) |
 | AutoMedicine | `AutoMedicine.ensure()` + common key `#numpad0` | |
 | Doom handling | `debuff/doom_manager.lua` from each job's STATUS / BUFFS module, or through `LifecycleManager` (BLU) | |
 | Recast announce (party message on a refused recast) | `CooldownChecker` -> `precast/recast_announce.lua`, per `RECAST_CONFIG.party_announce` | every job calls CooldownChecker |

@@ -33,7 +33,7 @@ every job and, on top of that, per job:
 | Where | What |
 |---|---|
 | `UI_CONFIG.lua`, `layout.section_order` / `layout.row_order` | The default of every job |
-| `<job>/<JOB>_HUD.lua`, `section_order` / `row_order` | That job only: a list that is not empty replaces the default on that job |
+| `<job>/display/<JOB>_HUD.lua`, `section_order` / `row_order` | That job only: a list that is not empty replaces the default on that job |
 
 Each `<JOB>_HUD.lua` explains itself at the top and lists the states of its
 job (the names to use). Row names are the states as in the `_KEYBINDS` file,

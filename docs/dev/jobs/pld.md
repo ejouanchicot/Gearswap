@@ -50,7 +50,7 @@ numbers are avoided because they drift.
 | `shared/jobs/pld/functions/PLD_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/pld/functions/PLD_COMMANDS.lua` | 306 | `job_self_command` router (incl. `ws`/`wsN`), local `rebuild_ws_slots` (exported `_G.pld_rebuild_ws_slots`), `job_state_change` (profile, WS slots, ammo lock, keybind refresh) |
 | `shared/jobs/pld/functions/PLD_MOVEMENT.lua` | 23 | Placeholder for the 12-module layout (comments only) |
-| `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'pld/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
+| `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'pld/display/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/pld/functions/PLD_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('PLD', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/pld/functions/logic/set_builder.lua` | 376 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, Regen, movement, town; `current_weapon()` is the authority on what is in hand |
 | `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
@@ -115,14 +115,14 @@ sequenceDiagram
 `user_setup()` (`Tetsouo_PLD.lua`):
 
 1. `_G.PLDWSConfig = require(... PLD_WS_CONFIG)`, then
-   `require('Tetsouo/pld/PLD_STATES').configure()` creates every state and
+   `require('Tetsouo/pld/keys/PLD_STATES').configure()` creates every state and
    ends with `apply_hybrid_profile(state.HybridMode.value)`.
    `_G.pld_rebuild_ws_slots()` runs only when the job modules already exist (a
    subjob change re-runs `user_setup` in the same sandbox); on a cold load
    `get_sets` calls it after including the facade. Then
    `AmpullaLock.apply(state.HybridMode.value)` gives back an ammo lock left by a
    stance that is no longer selected.
-2. `require('Tetsouo/pld/PLD_KEYBINDS')` (a `KeybindManager` module) into
+2. `require('Tetsouo/pld/keys/PLD_KEYBINDS')` (a `KeybindManager` module) into
    the global `PLDKeybinds`, then `bind_all()`: `KeybindManager` clears keys no
    longer wanted, binds the ones whose `subjob` / `exclude_subjob` / `visible`
    rules apply, then `show_intro()`. A failed require prints

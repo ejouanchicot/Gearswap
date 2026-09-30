@@ -127,7 +127,7 @@ slot would show `N/A`.
 2. `AmpullaLock.apply(state.HybridMode.value)`: `configure()` has just reset
    `HybridMode`, so an ammo lock left by a Hoxne stance of the previous load is
    released here.
-3. `require('Tetsouo/war/WAR_KEYBINDS')`, stored in the global `WARKeybinds`,
+3. `require('Tetsouo/war/keys/WAR_KEYBINDS')`, stored in the global `WARKeybinds`,
    then `bind_all()`, which calls `show_intro()`. The `KeybindManager` intro
    requires `WAR_MACROBOOK.lua` and `WAR_LOCKSTYLE.lua`; both return nothing, but the
    requires define `select_default_macro_book` / `select_default_lockstyle` as a

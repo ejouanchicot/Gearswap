@@ -85,7 +85,7 @@ when it exists (`sets.precast.FC['Blue Magic'].Resistant`).
 At the start of every spell `sets.midcast.FastRecast` goes on first, under the
 spell's set: a spell set that leaves slots empty keeps FastRecast pieces there.
 
-Each spell has a **category**, read from your `blu/BLU_SPELL_MAP.lua`;
+Each spell has a **category**, read from your `blu/combat/BLU_SPELL_MAP.lua`;
 a spell the map does not list takes the broad category of the project's Blue
 Magic list: `Physical`, `Magical`, `Buff`, `Breath`, `Healing`, or
 `MagicAccuracy` for a debuff. Order, first found wins:

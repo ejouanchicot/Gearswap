@@ -57,8 +57,8 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `shared/jobs/bst/functions/BST_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/bst/functions/BST_COMMANDS.lua` | 479 | `job_self_command` router, local `display_broth_count`; `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/bst/functions/BST_MOVEMENT.lua` | 41 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/bst/functions/BST_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('BST', 'bst/BST_LOCKSTYLE', 1, 'SAM')` wrappers |
-| `shared/jobs/bst/functions/BST_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('BST', 'bst/BST_MACROBOOK', 'SAM', 1, 1)` wrapper |
+| `shared/jobs/bst/functions/BST_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('BST', 'bst/display/BST_LOCKSTYLE', 1, 'SAM')` wrappers |
+| `shared/jobs/bst/functions/BST_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('BST', 'bst/display/BST_MACROBOOK', 'SAM', 1, 1)` wrapper |
 | `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 262 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs`, `cycle_ammo` (dead) |
 | `shared/jobs/bst/functions/logic/pet_manager.lua` | 318 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache), `check_and_engage_pet` and `monitor_pet_status` (PUP template only) |
 | `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 283 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
@@ -72,7 +72,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_PET_DATA.lua` | 179 | 25 jug pets (broth, species, ecosystem, job), `ecosystems` index, three list getters -> `_G.BSTBeastPetData` |
 | `_master/config/bst/BST_TP_CONFIG.lua` | 172 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 178 | Ecosystem correlation matrix; **no reader anywhere** (its header says so) |
-| `_master/Tetsouo/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
+| `_master/Tetsouo/bst/inventory/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
 | `_master/Tetsouo/entry/Tetsouo_BST.lua` | 400 | Character overlay entry: the template plus `LagDebugger.on_job_update()` in `job_update` and the modular sets path |
 | `_master/sets/bst_sets.lua` | 834 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 546 + 271 | BST chat messages; several facade wrappers have no caller (see the [catalog](../systems/messages-catalog.md)) |
@@ -121,7 +121,7 @@ sequenceDiagram
 2. `EcosystemManager.initialize()` builds `state.species` and `state.ammoSet`
    from `state.Ecosystem` and schedules `equip_pet_broth()` 0.2 s later. It
    must run before the HUD so `species` exists when the HUD first reads it.
-3. `pcall(require, 'Tetsouo/bst/BST_KEYBINDS')` (the clone script
+3. `pcall(require, 'Tetsouo/bst/keys/BST_KEYBINDS')` (the clone script
    replaces `Tetsouo` with the character), stored in the global `BSTKeybinds`,
    then `bind_all()` (7 BST binds, the optional-state entries, `_CUSTOM` keys,
    common keys, then `show_intro()`). A failed require prints the Lua error.
@@ -490,16 +490,16 @@ carried, overwritten at load and read by nothing, were removed on 2026-09-28).
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<Char>/bst/BST_STATES.lua` | see states | file | entry `user_setup` (plain `require`: a broken file aborts the load) |
-| `<Char>/bst/BST_KEYBINDS.lua` | 7 binds | file | entry `user_setup` (`pcall`), `file_unload`, HUD |
-| `<Char>/bst/BST_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<Char>/bst/BST_HUD.lua` | empty lists | file | HUD ([UI overlay](../systems/ui-overlay.md)) |
-| `<Char>/bst/BST_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 6 everywhere | file; factory fallback 1 | `LockstyleManager` ([factories](../systems/factories-and-helpers.md)) |
-| `<Char>/bst/BST_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 12 page 1 (GEO/DNC 13, COR/DNC 14) | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<Char>/bst/BST_PET_DATA.lua` -> `_G.BSTBeastPetData` | 25 pets | file | `ecosystem_manager.lua` (`job` field unused); plain `require` in `get_sets` |
-| `<Char>/bst/BST_TP_CONFIG.lua` -> `_G.BSTTPConfig` | Moonshade 250, `fencer_jp_gifts = 4` | file | `WSPrecastHandler` -> `tp_bonus_calculator.lua`; plain `require` in `get_sets` |
-| `<Char>/bst/BST_ECOSYSTEM_DATA.lua` | correlation matrix | file | **nothing** |
-| `<Char>/bst/BST_REFILL.lua` (overlay only) | medicines, Pet Food Theta (`all`), food; `/DNC` variant | file; refill fallback list without it | refill system ([equipment and inventory](../systems/equipment-and-inventory.md)) |
+| `<Char>/bst/keys/BST_STATES.lua` | see states | file | entry `user_setup` (plain `require`: a broken file aborts the load) |
+| `<Char>/bst/keys/BST_KEYBINDS.lua` | 7 binds | file | entry `user_setup` (`pcall`), `file_unload`, HUD |
+| `<Char>/bst/keys/BST_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<Char>/bst/display/BST_HUD.lua` | empty lists | file | HUD ([UI overlay](../systems/ui-overlay.md)) |
+| `<Char>/bst/display/BST_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 6 everywhere | file; factory fallback 1 | `LockstyleManager` ([factories](../systems/factories-and-helpers.md)) |
+| `<Char>/bst/display/BST_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 12 page 1 (GEO/DNC 13, COR/DNC 14) | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<Char>/bst/combat/BST_PET_DATA.lua` -> `_G.BSTBeastPetData` | 25 pets | file | `ecosystem_manager.lua` (`job` field unused); plain `require` in `get_sets` |
+| `<Char>/bst/combat/BST_TP_CONFIG.lua` -> `_G.BSTTPConfig` | Moonshade 250, `fencer_jp_gifts = 4` | file | `WSPrecastHandler` -> `tp_bonus_calculator.lua`; plain `require` in `get_sets` |
+| `<Char>/bst/combat/BST_ECOSYSTEM_DATA.lua` | correlation matrix | file | **nothing** |
+| `<Char>/bst/inventory/BST_REFILL.lua` (overlay only) | medicines, Pet Food Theta (`all`), food; `/DNC` variant | file; refill fallback list without it | refill system ([equipment and inventory](../systems/equipment-and-inventory.md)) |
 | `<Char>/common/display/LOCKSTYLE_CONFIG.lua` | `initial_load_delay 8` | entry fallback table | entry |
 | `<Char>/common/combat/RECAST_CONFIG.lua` (plain `require`), `REGION_CONFIG.lua`, `UI_CONFIG.lua` | - | shared | entry |
 

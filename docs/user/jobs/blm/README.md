@@ -173,7 +173,7 @@ What the project's shared systems do on BLM, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, `SneakInviAOE` Off stops it from spending a stratagem on your group |
 | Warp | Every warp command. BLM casts Warp, Warp II, Escape and Retrace itself; the other destinations use rings and items |
-| Refill | `//gs c rf` restocks from `<YourName>/blm/BLM_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
+| Refill | `//gs c rf` restocks from `<YourName>/blm/inventory/BLM_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft`; turning Combat Mode Off does not free the slots a craft set holds |
 | Your own modes and gear rules | `BLM_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Weapons without a set | `MainWeapon` / `SubWeapon` (Hvergelmir / Alber Strap) do nothing unless you write `sets.Hvergelmir` / `sets['Alber Strap']`, or turn on `equip_without_set` in `WEAPON_CONFIG.lua` |

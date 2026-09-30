@@ -52,7 +52,7 @@ its weaponskill gear goes on ([PUP modes](../pup/states.md#pet-ws)).
 
 ## Files
 
-- Per job: `<Char>/<job>/<JOB>_TP_CONFIG.lua`
+- Per job: `<Char>/<job>/combat/<JOB>_TP_CONFIG.lua`
 - Code: `shared/utils/precast/ws_precast_handler.lua`,
   `shared/utils/precast/tp_bonus_handler.lua`,
   `shared/utils/weaponskill/tp_bonus_calculator.lua`

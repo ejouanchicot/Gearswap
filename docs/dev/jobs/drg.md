@@ -40,8 +40,8 @@ What DRG adds on top of the shared pipeline:
 | `shared/jobs/drg/functions/DRG_BUFFS.lua` | 23 | `LifecycleManager.buff_change` + `refresh_after_buff` (Spirit Surge) |
 | `shared/jobs/drg/functions/DRG_COMMANDS.lua` | 125 | `job_self_command` router (+ `jump`), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/drg/functions/DRG_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/drg/functions/DRG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('DRG', 'drg/DRG_LOCKSTYLE', 1, 'SAM')` wrappers |
-| `shared/jobs/drg/functions/DRG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('DRG', 'drg/DRG_MACROBOOK', 'SAM', 1, 1)` wrapper |
+| `shared/jobs/drg/functions/DRG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('DRG', 'drg/display/DRG_LOCKSTYLE', 1, 'SAM')` wrappers |
+| `shared/jobs/drg/functions/DRG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('DRG', 'drg/display/DRG_MACROBOOK', 'SAM', 1, 1)` wrapper |
 | `shared/jobs/drg/functions/logic/set_builder.lua` | 156 | Idle and engaged: base, town / HybridMode, wyvern layer, Spirit Surge, Mote layers, weapons, movement |
 | `shared/jobs/drg/functions/logic/wyvern.lua` | 71 | `TRIGGER_HPP` by subjob, `trigger_line`, `spell_triggers_breath`, `breath_set` |
 | `shared/jobs/drg/functions/logic/jumps.lua` | 81 | `order`, `pick`, `execute` (`//gs c jump`) |

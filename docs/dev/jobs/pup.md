@@ -44,8 +44,8 @@ What PUP adds on top of the shared pipeline:
 | `shared/jobs/pup/functions/PUP_BUFFS.lua` | 23 | `LifecycleManager.buff_change` + `refresh_after_buff` (Overdrive) |
 | `shared/jobs/pup/functions/PUP_COMMANDS.lua` | 158 | `job_self_command` router (+ `petmode`), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/pup/functions/PUP_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/pup/functions/PUP_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('PUP', 'pup/PUP_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/pup/functions/PUP_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('PUP', 'pup/PUP_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/pup/functions/PUP_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('PUP', 'pup/display/PUP_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/pup/functions/PUP_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('PUP', 'pup/display/PUP_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/pup/functions/logic/automaton.lua` | 151 | Live reads: pet out / fighting / TP; head and frame; `refresh_mode` |
 | `shared/jobs/pup/functions/logic/pet_ws.lua` | 117 | `is_due`, `threshold`, the poll (`ensure_running`, `stop`) |
 | `shared/jobs/pup/functions/logic/set_builder.lua` | 181 | Idle and engaged: master base, town, pet layers, Overdrive, pet WS, Mote layers, weapon, movement |

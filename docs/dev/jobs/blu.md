@@ -16,7 +16,7 @@ What BLU adds on top of the shared pipeline:
 
 - **Blue Magic by category**: each Blue Magic spell is given a gear category
   (`PhysicalDex`, `Magical`, `MagicAccuracy`, ... 24 categories) by the
-  character's `blu/BLU_SPELL_MAP.lua` (else the broad category of the
+  character's `blu/combat/BLU_SPELL_MAP.lua` (else the broad category of the
   Blue Magic database), and `MidcastManager` picks
   `sets.midcast['Blue Magic'][category][CastingMode]` and its fallbacks. The
   same category is handed to Mote as the spell map, so Mote's own precast and
@@ -51,8 +51,8 @@ the sets files (structure and set names only).
 | `shared/jobs/blu/functions/BLU_BUFFS.lua` | 22 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/blu/functions/BLU_COMMANDS.lua` | 115 | `job_self_command` router (shared commands only), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/blu/functions/BLU_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout; no `job_handle_equipping_gear` |
-| `shared/jobs/blu/functions/BLU_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('BLU', 'blu/BLU_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'blu/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/blu/functions/BLU_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('BLU', 'blu/display/BLU_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'blu/display/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/blu/functions/logic/spell_map.lua` | 117 | `BLUSpellMap.category(name)` from the character's map, else the database category; `is_unbridled(name)` |
 | `shared/jobs/blu/functions/logic/set_builder.lua` | 156 | Idle and engaged: `.SW` detection, `[OffenseMode]`, Mote defense / Kiting layers, weapons, town, movement |
 | `shared/jobs/blu/functions/logic/unbridled.lua` | 41 | Option `blu_unbridled`: `BLUUnbridled.apply` -> `AbilityHelper.try_ability` |
@@ -107,7 +107,7 @@ sequenceDiagram
 `user_setup()`:
 
 1. `BLUStates.configure()` creates the states (see [Mote states](#mote-states)).
-2. `pcall(require, '<Character>/blu/BLU_KEYBINDS')` into the global
+2. `pcall(require, '<Character>/blu/keys/BLU_KEYBINDS')` into the global
    `BLUKeybinds`, then `bind_all()`; a failed require prints
    `[BLU] Keybinds failed to load: <error>`. `bind_all` ends with
    `show_intro()`, which requires `BLU_MACROBOOK` and `BLU_LOCKSTYLE`; neither
@@ -216,7 +216,7 @@ leaves Mote's own map), so Mote's precast and midcast walks use the same name.
 #### The spell map
 
 `logic/spell_map.lua` builds `spell name -> category` once per load, on the
-first `category` call, from `require('blu/BLU_SPELL_MAP')`. GearSwap's
+first `category` call, from `require('blu/combat/BLU_SPELL_MAP')`. GearSwap's
 `require` searches `data/<player name>/` before `data/`, so the character's own
 file is read.
 
@@ -519,7 +519,7 @@ the clone script.
 
 - Syntax: `python scripts/check_syntax.py` (runs `lua5.1`, live folders
   included), or `luac5.1 -p shared/jobs/blu/functions/BLU_MIDCAST.lua`.
-- Spell map with `lua5.1` from `data/`: stub `package.loaded['blu/BLU_SPELL_MAP']`
+- Spell map with `lua5.1` from `data/`: stub `package.loaded['blu/combat/BLU_SPELL_MAP']`
   (a `dofile` of the template) and the message formatter, `dofile` the module,
   call `category('Sound Blast')`; add a duplicate to check the warning.
 - Midcast chain: stub `sets.midcast`, `equip`, `buffactive`, `state.CastingMode`,

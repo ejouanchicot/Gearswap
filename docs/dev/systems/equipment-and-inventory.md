@@ -61,9 +61,9 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/data/equipment/ITEM_HP_MP.lua` | 6 534 (6 529 entries) | Generated HP/MP table read by `hp_priority.lua` (do not edit by hand) |
 | `scripts/item_db/build_item_db.py` | 379 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
 | `scripts/item_db/find_items.py` | 94 | Query tool over the generated SQLite (`--stat hp --slot Head --job WAR --top 10`) |
-| `_master/Tetsouo/<job>/<JOB>_REFILL.lua` | 20-54 | Refill templates for Tetsouo (BLM BRD BST COR DNC PLD THF WAR) |
+| `_master/Tetsouo/<job>/inventory/<JOB>_REFILL.lua` | 20-54 | Refill templates for Tetsouo (BLM BRD BST COR DNC PLD THF WAR) |
 | `_master/Tetsouo/common/sets/CRAFT_REFILL.lua` | 34 | Refill list used while a craft set is active |
-| `_master/Kaories/<job>/<JOB>_REFILL.lua` | 22-42 | Refill templates for Kaories (COR GEO PLD RDM) |
+| `_master/Kaories/<job>/inventory/<JOB>_REFILL.lua` | 22-42 | Refill templates for Kaories (COR GEO PLD RDM) |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/common/combat/WEAPON_CONFIG.lua` (`equip_without_set`) |
 | `_master/config_global/ELEMENTAL_BELT.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
 
@@ -242,7 +242,7 @@ sequenceDiagram
      `require('<Char>/common/sets/CRAFT_REFILL')`; its `.default` is used (label `CRAFT (<name>)`)
      and its bag fields apply. Without the file or without `.default`, resolution falls through to
      the job.
-   - Job: `require('<Char>/<job>/<JOB>_REFILL')`. If the require throws (missing file or error
+   - Job: `require('<Char>/<job>/inventory/<JOB>_REFILL')`. If the require throws (missing file or error
      in the file) the fallback list is used with label `fallback (no <path>)`. `subjobs[<SUB>]`
      replaces `.default` entirely when present; otherwise `.default`; otherwise the fallback.
    - Bags (`resolve_bags`), the player's choice since 2026-09-30: `store_bag` (where surplus and
@@ -607,7 +607,7 @@ command for the quiver manager, HP priority, the weapon resolver or the Ampulla 
 
 ## Configuration
 
-Refill file schema (reference comment at the top of `_master/Tetsouo/war/WAR_REFILL.lua`):
+Refill file schema (reference comment at the top of `_master/Tetsouo/war/inventory/WAR_REFILL.lua`):
 
 ```lua
 local M = {}
@@ -729,7 +729,7 @@ return M
 
 ## Extending
 
-- New refill list: add `<Char>/<job>/<JOB>_REFILL.lua` (and the template under
+- New refill list: add `<Char>/<job>/inventory/<JOB>_REFILL.lua` (and the template under
   `_master/<Char>/<job>/`), then `gs reload`. Check the effect on other characters: every item it
   names becomes foreign for every list that does not name it.
 - New quiver pair: call `QuiverManager.after_ranged_attack(spell, ammo, quiver, threshold)` from the
@@ -833,7 +833,7 @@ Still open:
 - Refill surplus pushes the preferred variant back first and keeps the lesser one - `queue_surplus`,
   `refill_manager.lua:94`
 - Tetsouo's COR list lacks `Brz. Bull. Pouch`, so the global foreign sweep pushes the pouches
-  COR_AFTERCAST needs - `_master/Tetsouo/cor/COR_REFILL.lua` (Kaories' list has it)
+  COR_AFTERCAST needs - `_master/Tetsouo/cor/inventory/COR_REFILL.lua` (Kaories' list has it)
 - Unresolvable refill item names are reported as "Out of stock" - `plan_item`, `refill_manager.lua:153`
 - A refill config that fails to load (syntax error) silently falls back to `FALLBACK_LIST` with the
   label "no <path>", and its food then counts as foreign - `resolve_list_for_player`,

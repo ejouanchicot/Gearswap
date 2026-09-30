@@ -15,7 +15,12 @@
 ---                                weapons, Sneak / Invisible
 ---       sets/                    gear shared by jobs (rings.lua...), craft and
 ---                                fishing sets
----   <Char>/<job>/                settings of one job
+---   <Char>/<job>/                one job, by theme (job_group below)
+---       display/                 <JOB>_HUD, _LOCKSTYLE, _MACROBOOK
+---       keys/                    <JOB>_KEYBINDS, _STATES, _CUSTOM
+---       combat/                  <JOB>_TP_CONFIG, _WS_CONFIG and the job's own
+---                                settings (songs, Saboteur, cures, pets...)
+---       inventory/               <JOB>_REFILL
 ---       sets/                    its gear: <job>_sets.lua, armor.lua...
 ---   <Char>/saved/                files the game writes (window positions,
 ---                                dual-box role, HUD settings, traces...)
@@ -62,6 +67,24 @@ local COMMON_GROUPS = {
     ['ELEMENTAL_BELT.lua'] = 'combat', ['WEAPON_CONFIG.lua'] = 'combat', ['STEALTH_CONFIG.lua'] = 'combat',
 }
 CharPaths.COMMON_GROUPS = COMMON_GROUPS
+
+--- Theme folder of a job settings file, from the end of its name.
+local JOB_GROUP_SUFFIXES = {
+    {'_HUD', 'display'}, {'_LOCKSTYLE', 'display'}, {'_MACROBOOK', 'display'},
+    {'_KEYBINDS', 'keys'}, {'_STATES', 'keys'}, {'_CUSTOM', 'keys'},
+    {'_REFILL', 'inventory'},
+}
+
+--- @param file string e.g. 'WAR_STATES.lua'
+--- @return string|nil display | keys | inventory | combat; nil for a gear file
+function CharPaths.job_group(file)
+    if not file:match('^%u') then return nil end
+    local base = file:gsub('%.lua$', '')
+    for _, entry in ipairs(JOB_GROUP_SUFFIXES) do
+        if base:sub(-#entry[1]) == entry[1] then return entry[2] end
+    end
+    return 'combat'
+end
 
 --- Old place of a file that exists nowhere yet, per kind (the path the code
 --- used before 2026-09-30).
@@ -121,6 +144,8 @@ local function candidates(kind, file, job)
     local out = {}
     if kind == 'common' and COMMON_GROUPS[file] then
         out[1] = 'common/' .. COMMON_GROUPS[file] .. '/' .. file
+    elseif kind == 'job' and CharPaths.job_group(file) then
+        out[1] = (job or ''):lower() .. '/' .. CharPaths.job_group(file) .. '/' .. file
     end
     for _, pattern in ipairs(LAYOUT[kind] or {}) do
         out[#out + 1] = fill(pattern, file, job)

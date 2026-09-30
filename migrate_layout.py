@@ -5,7 +5,8 @@ Move a character folder to the layout of 2026-09-30.
     <Char>/common/            settings of the whole character, by theme:
         display/ keys/ dualbox/ (+ alt/) inventory/ combat/
         sets/                 gear shared by jobs (rings.lua...), craft and fishing sets
-    <Char>/<job>/             settings of one job
+    <Char>/<job>/             one job, by theme:
+        display/ keys/ combat/ inventory/
         sets/                 its gear: <job>_sets.lua, armor.lua...
     <Char>/saved/             files the game writes (window positions, traces...)
 
@@ -56,6 +57,22 @@ def _common(name):
     group = COMMON_GROUPS.get(name)
     return 'common/%s/%s' % (group, name) if group else 'common/' + name
 
+
+# Theme folder of a job settings file, from the end of its name (same rule as
+# CharPaths.job_group in shared/utils/core/char_paths.lua)
+JOB_GROUP_SUFFIXES = [('_HUD', 'display'), ('_LOCKSTYLE', 'display'), ('_MACROBOOK', 'display'),
+                      ('_KEYBINDS', 'keys'), ('_STATES', 'keys'), ('_CUSTOM', 'keys'),
+                      ('_REFILL', 'inventory')]
+
+
+def _job(job, name):
+    """New place of a file of a job folder (gear goes to sets/)."""
+    if re.match(r'^[a-z0-9]', name):
+        return '%s/sets/%s' % (job, name)
+    base = name[:-4] if name.endswith('.lua') else name
+    group = next((g for suffix, g in JOB_GROUP_SUFFIXES if base.endswith(suffix)), 'combat')
+    return '%s/%s/%s' % (job, group, name)
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 GEAR_NAME = re.compile(r'^[a-z0-9]')   # gear files are lower-case, settings upper-case
 
@@ -65,7 +82,7 @@ def _config_place(parts):
         return 'saved/' + parts[1] if parts[1] in SAVED_CONFIG else _common(parts[1])
     sub, rest = parts[1], '/'.join(parts[2:])
     if sub in JOBS:
-        return sub + '/' + rest
+        return _job(sub, rest) if '/' not in rest else sub + '/' + rest
     if sub == 'alt':
         if rest.endswith('_ALT_COMMANDS.lua') or rest.endswith('.example'):
             return None
@@ -105,8 +122,8 @@ def new_place(rel):
     if len(parts) == 1 and rel in SAVED_ROOT:
         return 'saved/' + rel
     # First form of this layout (2026-09-30 morning): gear next to the settings
-    if top in JOBS and len(parts) == 2 and GEAR_NAME.match(parts[1]):
-        return top + '/sets/' + parts[1]
+    if top in JOBS and len(parts) == 2:
+        return _job(top, parts[1])
     if top == 'common' and len(parts) == 2 and GEAR_NAME.match(parts[1]) \
             and parts[1] not in COMMON_SETTINGS:
         return 'common/sets/' + parts[1]

@@ -18,7 +18,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Clone script** | `clone_character.py` (`CLONE_CHARACTER.bat`): builds your `<YourName>/` folder from the templates ([installation](../getting-started/installation.md)) |
 | **Combat Mode** | This setup: On keeps your weapons where they are (no set swaps them), so you keep your TP. `//gs c combatmode` |
 | **Cooldown**, **recast** | FFXI: the wait before an ability or spell can be used again. An action on recast is cancelled before any gear moves |
-| **CUSTOM file** | `<job>/<JOB>_CUSTOM.lua`: your own modes, keys and gear rules without code. Its gear goes on last ([keybinds](keybinds.md#your-own-modes-job_customlua)) |
+| **CUSTOM file** | `<job>/keys/<JOB>_CUSTOM.lua`: your own modes, keys and gear rules without code. Its gear goes on last ([keybinds](keybinds.md#your-own-modes-job_customlua)) |
 | **Debuff** | FFXI: a harmful status (Silence, Paralysis, Doom...). Some block actions: see [how it works](how-it-works.md#1-precast-checks-then-the-start-set) |
 | **Doom** | FFXI: a countdown that kills when it ends. `sets.buff.Doom` goes on and neck, rings and waist stay locked until it is gone |
 | **Dual-box** | Playing two (or more) characters on one PC. This setup exchanges jobs, sends alt commands and group orders ([dual-box](dualbox.md)) |

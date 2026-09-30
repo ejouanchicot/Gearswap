@@ -4,8 +4,8 @@ Three places give you keys, plus temporary keys made in game:
 
 | File (in `<YourName>/common/`) | Keys |
 |---|---|
-| `<job>/<JOB>_KEYBINDS.lua` | The job's keys |
-| `<job>/<JOB>_CUSTOM.lua` | Your own modes, with their key (empty by default) |
+| `<job>/keys/<JOB>_KEYBINDS.lua` | The job's keys |
+| `<job>/keys/<JOB>_CUSTOM.lua` | Your own modes, with their key (empty by default) |
 | `COMMON_KEYBINDS.lua` | Keys every job of this character gets |
 | `//gs c tb` (in game) | Temporary keys on Ctrl/Alt+F1-F8 |
 

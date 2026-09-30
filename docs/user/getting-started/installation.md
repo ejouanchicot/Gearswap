@@ -66,7 +66,7 @@ deleted), a fresh one is built, and these files, written in game, are copied
 back from the backup: `saved/ui_settings.lua` (HUD), `saved/message_modes.lua`,
 `saved/alt_window.lua`, `saved/alt_state.lua`, `saved/WARP_ITEMS_OWNED.lua`,
 `common/keys/combat_mode.lua`, `common/keys/treasure_mode.lua`,
-`common/combat/STEALTH_CONFIG.lua`, every `<job>/<JOB>_HUD.lua` and
+`common/combat/STEALTH_CONFIG.lua`, every `<job>/display/<JOB>_HUD.lua` and
 `temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom
 files) is only in the backup: copy it back yourself.
 
@@ -100,7 +100,7 @@ Then check:
 ## Lockstyle and DressUp
 
 The lockstyle is sent as `/lockstyleset <number>`, using the number in
-`<job>/<JOB>_LOCKSTYLE.lua`. DressUp is not needed. By default the
+`<job>/display/<JOB>_LOCKSTYLE.lua`. DressUp is not needed. By default the
 setup unloads DressUp just before `/lockstyleset` and loads it again 3 seconds
 later. If you do not use DressUp,
 turn that off once with `//gs c dressup` (the choice is kept, for every

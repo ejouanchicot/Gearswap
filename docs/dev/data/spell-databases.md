@@ -402,7 +402,7 @@ The databases read no config file. Related knobs:
 - `_G.DATA_DEBUG` gates the three `DebugLogger.logf_if('DATA_DEBUG', ...)` lines in `data_loader.lua`
   (`:146`, `:218`, `:249`). No command sets it.
 - `state.EnfeebleTier` (RDM) switches the enfeeble tier table off.
-- The character's `blu/BLU_SPELL_MAP.lua` takes precedence over the BLU database category.
+- The character's `blu/combat/BLU_SPELL_MAP.lua` takes precedence over the BLU database category.
 
 ## State & lifetime
 

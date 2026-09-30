@@ -6,7 +6,7 @@ Six pieces decide what a key does and what extra gear goes on:
 2. **Optional states** (`shared/utils/core/optional_state.lua`). These are modes the project adds to every job, each shown or hidden per job: Combat Mode (`combat_mode.lua`) and Treasure Mode (`treasure_hunter.lua`). `create` attaches their HUD rows and keys to each job's bind list.
 3. **Common keys** (`shared/utils/keybinds/common_keybinds.lua`). Keys that every job of a character gets, from `<Character>/common/keys/COMMON_KEYBINDS.lua`.
 4. **Key conflicts** (`shared/utils/keybinds/key_conflicts.lua`). When two entries want the same key, the conflict is reported, never resolved.
-5. **Player modes and gear rules** (`shared/utils/custom/*.lua`). An optional `<Character>/<job>/<JOB>_CUSTOM.lua` adds Mote states with a key, and gear that goes on last, over what the job picked.
+5. **Player modes and gear rules** (`shared/utils/custom/*.lua`). An optional `<Character>/<job>/keys/<JOB>_CUSTOM.lua` adds Mote states with a key, and gear that goes on last, over what the job picked.
 6. **Temporary binds** (`//gs c tb`, `shared/utils/keybinds/temp_binds.lua`). Keys made in game for a repetitive task, on Ctrl/Alt+F1-F8.
 
 Two helpers sit beside them: `key_validator.lua` names keys that cannot work, and `shared/utils/core/keybind_guard.lua` re-sends the job's binds 2 s after each load.
@@ -47,7 +47,7 @@ PUP got its `_KEYBINDS` and `_CUSTOM` templates with its rewrite on 2026-09-29 (
 The entry file's `user_setup()` requires the keybind file after the states are configured, keeps it in a global named `<JOB>Keybinds` and calls `bind_all()`. From `_master/entry/Tetsouo_WAR.lua` `user_setup`:
 
 ```lua
-local kb_success, keybinds = pcall(require, 'Tetsouo/war/WAR_KEYBINDS')
+local kb_success, keybinds = pcall(require, 'Tetsouo/war/keys/WAR_KEYBINDS')
 if kb_success and keybinds then
     WARKeybinds = keybinds
     WARKeybinds.bind_all()
@@ -66,7 +66,7 @@ Requiring the file runs `KeybindManager.create(job, module)`, which does the fol
 4. Appends the common keys (`CommonKeybinds.merge_into`).
 5. When at least one entry has a `weapon` field, registers `AltStates.on_weapon_change('keybinds', refresh_active)` (local `watch_own_weapon`).
 
-The HUD loads the same file a second time, under another module name: `UI_LOADER.lua` requires `<job>/<JOB>_KEYBINDS`, while the entry requires `<Char>/common/...`. So `create` runs twice per load. The first module stays `_G._keybind_active`: that is the module `bind_all` lays the keys with, and the one `refresh_active`, `conflict_keys` and `show_possible_conflicts` use. `CustomStates.load` keeps its result in `_G._custom_state_cache` and hands the same bind entries to the second call, so the file is read, and its warnings shown, only once. The optional states record their "native" flag on the first `attach` of the sandbox for the same reason.
+The HUD loads the same file a second time, under another module name: `UI_LOADER.lua` requires `<job>/keys/<JOB>_KEYBINDS`, while the entry requires `<Char>/common/...`. So `create` runs twice per load. The first module stays `_G._keybind_active`: that is the module `bind_all` lays the keys with, and the one `refresh_active`, `conflict_keys` and `show_possible_conflicts` use. `CustomStates.load` keeps its result in `_G._custom_state_cache` and hands the same bind entries to the second call, so the file is read, and its warnings shown, only once. The optional states record their "native" flag on the first `attach` of the sandbox for the same reason.
 
 ### Bind entries
 
@@ -475,10 +475,10 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 
 | File | Content |
 |---|---|
-| `<Char>/<job>/<JOB>_KEYBINDS.lua` | the job's entries, `retired_keys` |
+| `<Char>/<job>/keys/<JOB>_KEYBINDS.lua` | the job's entries, `retired_keys` |
 | `<Char>/common/keys/COMMON_KEYBINDS.lua` | `CommonKeybinds.binds`, same entry format (+ `override`) |
 | `<Char>/common/keys/combat_mode.lua`, `treasure_mode.lua` | `{shown, hidden, keys}` per job; rewritten by the commands, header included |
-| `<Char>/<job>/<JOB>_CUSTOM.lua` | modes and rules; the templates are fully commented and return `{}` |
+| `<Char>/<job>/keys/<JOB>_CUSTOM.lua` | modes and rules; the templates are fully commented and return `{}` |
 | `<Char>/temp_binds.lua` | written by `tb`, not edited by hand |
 
 ## State & lifetime

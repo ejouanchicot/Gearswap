@@ -42,8 +42,8 @@ What RNG adds on top of the shared pipeline:
 | `shared/jobs/rng/functions/RNG_BUFFS.lua` | 22 | `job_buff_change = LifecycleManager.buff_change()` (no `refresh_after_buff`: no RNG buff swaps idle / engaged gear) |
 | `shared/jobs/rng/functions/RNG_COMMANDS.lua` | 115 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/rng/functions/RNG_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/rng/functions/RNG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('RNG', 'rng/RNG_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/rng/functions/RNG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('RNG', 'rng/RNG_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/rng/functions/RNG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('RNG', 'rng/display/RNG_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/rng/functions/RNG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('RNG', 'rng/display/RNG_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/rng/functions/logic/ranged.lua` | 85 | `PRECAST_LAYERS`, `MIDCAST_LAYERS`, `layers`, `equip_layers`, `prepare_precast` (Flurry groups), `start` (Flurry listener) |
 | `shared/jobs/rng/functions/logic/set_builder.lua` | 117 | Idle and engaged: HybridMode, town, Mote layers, weapons (main, sub, range), movement |
 | `_master/config/rng/RNG_STATES.lua` | 80 | Mote mode options, `RangeWeapon`, `MainWeapon`, `SubWeapon`, `FastCast`, `AutoMedicine` |
