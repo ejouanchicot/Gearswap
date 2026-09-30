@@ -182,6 +182,22 @@ greataxe_ws.weaponskills = {
     },
 
     ---========================================================================
+    --- SORTIE WEAPON SKILLS (Laphria)
+    ---========================================================================
+
+    ['Disaster'] = {
+        description         = 'Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 60, VIT = 60},
+        element             = nil,
+        skillchain          = {'Transfixion', 'Scission', 'Gravitation'},
+        ftp                 = {[1000] = 3.05, [2000] = 9.15},
+        skill_required      = 1,
+        jobs                = {WAR = 99},
+        special_notes       = 'Laphria (Sortie great axe) weapon skill. Laphria grants a Prime Aftermath. Hits and fTP at 3000 TP not documented on BG-Wiki (2026-09-30).'
+    },
+
+    ---========================================================================
     --- RELIC WEAPON SKILLS (Bravura)
     ---========================================================================
 
