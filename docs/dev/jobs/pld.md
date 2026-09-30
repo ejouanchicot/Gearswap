@@ -69,7 +69,7 @@ numbers are avoided because they drift.
 | `_master/config/pld/PLD_MACROBOOK.lua` | 76 | Book 15/18/20 per subjob, dual-box table |
 | `_master/config/pld/PLD_TP_CONFIG.lua` | 75 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
 | `_master/config/pld/PLD_BLU_MAGIC.lua` | 203 | `_G.BluMagicConfig`: AOE spell table, dynamic / manual rotation |
-| `_master/sets/pld_sets.lua` | 848 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
+| `_master/sets/pld_sets.lua` | 835 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
 | `_master/Kaories/pld/pld_sets.lua` | 777 | Kaories overlay sets (no Sortie or /SCH sets, see Known issues) |
 | `shared/data/job_abilities/PLD_JA_DATABASE.lua` + `pld/*.lua` | 13 + 194 | JA descriptions for `ability_message_handler` (messages only) |
 
@@ -626,8 +626,9 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 - Set building: `BaseSetBuilder` (movement, town), AutoMove (`state.Moving`).
   Shared hooks added by `INIT_SYSTEMS` apply on PLD too: ElementalBelt, DualWield,
   TreasureHunter, CombatMode, CustomStates ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
-  HP priority skips PLD by default (`skip_jobs` setting of `_common/combat/HP_PRIORITY.lua`,
-  default `{'PLD'}` in `hp_priority.lua` `DEFAULTS`).
+  HP priority ranks PLD's swaps like every job's (`skip_jobs` of `_common/combat/HP_PRIORITY.lua`
+  is empty by default in `hp_priority.lua` `DEFAULTS`); the template sets carry no hand-written
+  `priority` since 2026-09-30 ([equipment and inventory](../systems/equipment-and-inventory.md#hp-priority)).
 - Commands: `CommonCommands`, `UICommands`, `WatchdogCommands`, `CycleHandler`,
   `LifecycleManager` ([commands and debug](../systems/commands-and-debug.md),
   [core lifecycle](../systems/core-lifecycle.md)); `ScholarActions` and

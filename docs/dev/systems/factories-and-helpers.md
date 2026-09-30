@@ -693,7 +693,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Treasure Mode gear (`TreasureHunter`) | hooks | needs `sets.TreasureHunter` and the mode shown |
 | CUSTOM states | hooks + `<JOB>_CUSTOM.lua` | templates for all 17 jobs |
 | Combat Mode lock | hook | needs the state shown |
-| HP priority | `HPPriority.apply()` | every character; every job except the `skip_jobs` of `_common/combat/HP_PRIORITY.lua` (default PLD) |
+| HP priority | `HPPriority.apply()` at load, then the wrapped `equip()` at every swap | every character; every job except the `skip_jobs` of `_common/combat/HP_PRIORITY.lua` (default none) |
 | Lockstyle / macrobook factories | wrappers | |
 | KeybindGuard, common keys, key conflicts | KeybindManager | every job |
 | AutoMove loop (`state.Moving`) | `INIT_SYSTEMS` +0.5 s | the gear depends on the set builder (column below) |
@@ -713,7 +713,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | DNC | yes | optional | optional | yes | commented | yes (Climactic Flourish, Presto) | yes | yes (`smartbuff`, `buffself`) | | WaltzManager |
 | DRK | yes (own builder) | optional | optional | | | | | | | weapons through `WeaponResolver` (`equip_without_set`) since 2026-09-28 |
 | GEO | yes | native (`^numpad0`) | optional | | | yes (Entrust, Full Circle) | | | `geo_entrust`, `geo_full_circle` | |
-| PLD | yes | optional | optional | | | yes (Divine Emblem, Majesty) | | | | no HP priority (own scheme) |
+| PLD | yes | optional | optional | | | yes (Divine Emblem, Majesty) | | | | |
 | PUP | yes (base builder, idle, outside town) | optional | optional | commented | | | | | | CooldownChecker exempts the maneuvers (charges); `LifecycleManager.refresh_after_buff` for Overdrive |
 | RDM | yes | native (`^numpad5`) | optional | | commented | yes (Saboteur) | | | | SpellGearLock (Dispelga); set builder skips weapon states while Combat Mode is On |
 | RUN | yes | optional | optional | | | | | | | |

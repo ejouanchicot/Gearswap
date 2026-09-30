@@ -254,7 +254,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 
 When `player` is nil, nine shared modules fall back to the name `'Tetsouo'` (`grep -rln "or 'Tetsouo'\|or \"Tetsouo\"" shared`), including `ui_settings.lua`, `message_settings.lua`, `dualbox_manager.lua` and `alt_commands.lua`.
 
-`shared/utils/equipment/hp_priority.lua` processes every character; its settings come from the character's `_common/combat/HP_PRIORITY.lua` (defaults in the code when the file is missing: on, Unity `'min'`, MP counted on BLM/RDM/GEO, PLD skipped).
+`shared/utils/equipment/hp_priority.lua` processes every character; its settings come from the character's `_common/combat/HP_PRIORITY.lua` (defaults in the code when the file is missing: on, Unity `'min'`, MP counted on BLM/RDM/GEO, no job skipped).
 
 ## Live vs template divergence
 

@@ -209,9 +209,10 @@ the `//gs c aoe` rotation).
 - **TP bonus**: a Moonshade Earring is added to a weaponskill only when it reaches the
   next TP step; Sequence counts as +500 when held
   ([TP bonus gear](../war/tp-bonus.md)).
-- **No automatic HP ordering on PLD**: the `priority` values you write in the set file
-  are kept as they are (the provided Stoneskin set orders its pieces so max HP never
-  dips during the swap).
+- **Automatic HP ordering on PLD too**: at each swap the pieces are ranked by the HP
+  they gain over what you wear, so max HP never dips mid-swap
+  ([configuration](../../guides/configuration.md), `HP_PRIORITY.lua`). You do not need
+  to write `priority` values; one you write on a piece is kept as it is.
 
 ## Sets in the provided file that nothing reads
 

@@ -141,7 +141,7 @@ For a template entry such as `_master/entry/Tetsouo_WAR.lua`:
 |---|---|---|
 | sync | debug flags restored from `windower._gs_debug`, `windower._gs_reload_count++` | `:35-44` |
 | sync | `ModuleCache.install()` — makes `require` cache per sandbox | `:54-56` |
-| sync | `HPPriority.apply()` — HP pieces get `priority` = HP (the sets exist: Mote ran `init_gear_sets` first) | `:65-70` |
+| sync | `HPPriority.apply()` — indexes the HP / MP of the pieces the sets name (they exist: Mote ran `init_gear_sets` first) and wraps `equip()`: each swap ranks its pieces by HP gained over the gear worn | `:65-70` |
 | sync | LagDebugger, `AutoMedicine.ensure()`, `JobSyncWatchdog.start()`, dual-box sync IPC listener and its `ls` / `rf` hooks | `:78-201` |
 | sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `ElementalBelt.install()` (Obi / Orpheus on elemental damage), `DualWield.install()` (DW tier pieces on `handle_equipping_gear`), `TreasureHunter.install()` (TH on the engaged set and on the first action against an untagged mob), `MidcastFallback.install()` (subjob magic through MidcastManager), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules), in that order: each wraps Mote's `cleanup_precast` / `cleanup_midcast` around the previous one, so the set goes on, then the belt, then the custom gear | `:277-305` |
 | +0.5 s | WarpInit, AutoMove (unless `_G.DISABLE_AUTOMOVE`), StateDisplayOverride | `:208-257` |

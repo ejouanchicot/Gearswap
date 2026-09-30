@@ -72,7 +72,7 @@ numbers are avoided because they drift.
 | `_master/config/war/WAR_TP_CONFIG.lua` | 195 | `_G.WARTPConfig`: Savagery / Agoge, Fencer JP, pieces, weapons, Fencer detection |
 | `_master/config/war/WAR_LOCKSTYLE.lua` | 71 | `default = 4`, `by_subjob`, `get_style` |
 | `_master/config/war/WAR_MACROBOOK.lua` | 106 | `solo[sub]`, `dualbox[alt_job][sub]`, `default` (book 22 page 1) |
-| `_master/sets/war_sets.lua` | 546 | Template sets (flat) |
+| `_master/sets/war_sets.lua` | 541 | Template sets (flat) |
 | `shared/data/job_abilities/WAR_JA_DATABASE.lua` + `war/war_{mainjob,subjob,sp}.lua` | 13 + ... | JA data for the ability message hooks (not read by WAR logic) |
 | `shared/utils/messages/formatters/magic/message_buffs.lua` | - | `show_buff_status` used by the buff chains (WAR has no job formatter) |
 

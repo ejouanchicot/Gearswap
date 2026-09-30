@@ -139,7 +139,7 @@ The file runs top to bottom once per load. "sync" blocks run during the `include
 | 35-41 | sync | Restore `_G.UPDATE_DEBUG`, `_G.AUTOMOVE_DEBUG`, `_G.WARP_DEBUG`, `_G.PrecastDebugState`, `_G.JOBCHANGE_DEBUG`, each from its own `windower._gs_debug.*` field | reads `windower._gs_debug` |
 | 44 | sync | `windower._gs_reload_count += 1` (counts INIT runs, i.e. sandboxes that got this far) | `windower._gs_reload_count` |
 | 54-59 | sync | `ModuleCache.install()`. Normally a no-op (returns false): `config_loader` installed it at file level. Kept for an entry that does not load `config_loader` | `_G.require` |
-| 66-71 | sync | `HPPriority.apply()`: every HP piece of the loaded sets gets `priority` = its HP (Mote has already run `init_gear_sets`), see [equipment-and-inventory.md](equipment-and-inventory.md) | `sets` entries |
+| 66-71 | sync | `HPPriority.apply()`: indexes the HP / MP of the pieces the loaded sets name (Mote has already run `init_gear_sets`) and wraps `equip()` so each swap ranks its pieces against the gear worn, see [equipment-and-inventory.md](equipment-and-inventory.md#hp-priority) | `_G._hp_priority_state`, `_G.equip` |
 | 79-88 | sync | Load `LagDebugger` if absent, `on_reload_complete(job, sub, windower._automove_seq)` | `_G.LagDebugger` |
 | 106-121 | sync | Define `ensure_message_init()` (lazy `message_init`, never returns nil) | local |
 | 127-137 | +2.0 s | `require midcast_watchdog`, `_G.MidcastWatchdog = ...`, `start()` | `_G.MidcastWatchdog`, `_G.MIDCAST_WATCHDOG_TIMER`, `windower._midcast_wd_seq` |

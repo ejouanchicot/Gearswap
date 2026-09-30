@@ -17,8 +17,8 @@ The area holds three kinds of code:
   low (`quiver_manager.lua`). None of these four is loaded at job load: each is `pcall(require, ...)`-ed
   on first use by its caller.
 - **Load-time and per-action gear passes installed for every job.** `HPPriority` runs once per job
-  load from `INIT_SYSTEMS` and gives every HP piece of the loaded sets an equip `priority`
-  ([HP priority](#hp-priority)); `//gs c gearscan` writes the augments it reads for pieces the sets
+  load from `INIT_SYSTEMS` and wraps GearSwap's `equip()` so that every swap ranks its pieces by the
+  HP they gain over the gear worn ([HP priority](#hp-priority)); `//gs c gearscan` writes the augments it reads for pieces the sets
   name without augments ([Gear scan](#gear-scan)). `ElementalBelt`, `DualWield` and `TreasureHunter` are installed by
   `INIT_SYSTEMS` on Mote's hooks; they are documented in
   [factories-and-helpers.md](factories-and-helpers.md) and only summarised here.
@@ -37,7 +37,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 |---|---|---|---|---|
 | `shared/utils/equipment/equipment_checker.lua` | 489 | `//gs c checksets`: name -> location cache of owned items, walk of `sets`, report of unavailable slots | `CommonCommands.handle_checksets`, on demand | this page |
 | `shared/utils/equipment/wardrobe_auditor.lua` | 695 | `//gs c wa` report; text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `reports.lua`, `orchestrator_alt.lua` | this page |
-| `shared/utils/equipment/hp_priority.lua` | 233 | Load-time pass: `priority = HP` (HP*1000+MP on the `mp_jobs`, default BLM/RDM/GEO) on every HP piece of `_G.sets`; settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, HP PRIORITY block, every load | this page |
+| `shared/utils/equipment/hp_priority.lua` | 313 | At load, keeps the HP / MP of the pieces the sets name and wraps `equip()`: each set goes on as a copy whose pieces carry `priority` = HP gained over the piece worn in that slot (dHP*1000+dMP on the `mp_jobs`, default BLM/RDM/GEO); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, HP PRIORITY block, every load; then every `equip()` call | this page |
 | `shared/utils/equipment/gear_scan.lua` | 175 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
 | `shared/utils/equipment/weapon_resolver.lua` | 119 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
 | `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
@@ -68,7 +68,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `_master/Tetsouo/_common/sets/CRAFT_REFILL.lua` | 34 | Refill list used while a craft set is active |
 | `_master/Kaories/<job>/inventory/<JOB>_REFILL.lua` | 22-42 | Refill templates for Kaories (COR GEO PLD RDM) |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/_common/combat/WEAPON_CONFIG.lua` (`equip_without_set`) |
-| `_master/config_global/HP_PRIORITY.lua` | 33 | Template of `<Char>/_common/combat/HP_PRIORITY.lua` (`enabled`, `unity = 'min'`, `mp_jobs`, `skip_jobs`) |
+| `_master/config_global/HP_PRIORITY.lua` | 36 | Template of `<Char>/_common/combat/HP_PRIORITY.lua` (`enabled`, `unity = 'min'`, `mp_jobs`, `skip_jobs`) |
 | `_master/config_global/ELEMENTAL_BELT.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
 
 Live copies (gitignored): `Tetsouo/_common/{blm,brd,bst,cor,craft,dnc,pld,thf,war}/*_REFILL.lua`,
@@ -434,36 +434,61 @@ normally installed earlier, by `shared/utils/config/config_loader.lua`, which ev
 at file level; the INIT_SYSTEMS call is a no-op then.)
 
 GearSwap sends the pieces of a set from the highest `priority` to the lowest, pieces without one
-counting as 0. Giving every piece its own HP as priority makes HP pieces go on before HP-less ones
-replace the others, so max HP never dips mid-swap and current HP is not lost. `HPPriority.apply()`:
+counting as 0 (so a negative priority goes on after them). An action goes through several swaps
+(idle or engaged > precast > midcast > aftercast > idle or engaged), each starting from what the one
+before put on, so a rank fixed once per piece cannot be right at every step. The rank is therefore set
+at each swap: a piece's priority is the HP it gains over the piece worn in that slot right now. Pieces
+that raise max HP go on first, those that lower it last, so max HP never dips mid-swap and current HP
+is not lost. The sets themselves are never modified.
 
-1. Returns 0 unless `player.main_job` is known and `_G.sets` is a table; every character is
-   processed. It then reads the settings (`HPPriority.settings()`): the character's
-   `_common/combat/HP_PRIORITY.lua` through `CharPaths.optional('common', 'HP_PRIORITY')`, every key
-   optional, over `DEFAULTS` = `{enabled = true, unity = 'min', mp_jobs = {'BLM', 'RDM', 'GEO'},
-   skip_jobs = {'PLD'}}` (`unity` is `'max'` only when written so; the two job lists become sets of
-   upper-case job codes). It returns 0 when `enabled` is `false` or the job is in `skip_jobs` (by
-   default `PLD`, which keeps its hand-tuned HP deltas).
+`HPPriority.apply()`:
+
+1. Clears `_G._hp_priority_state`, then returns 0 unless `player.main_job` is known and `_G.sets` is a
+   table; every character is processed. It reads the settings (`HPPriority.settings()`): the
+   character's `_common/combat/HP_PRIORITY.lua` through `CharPaths.optional('common', 'HP_PRIORITY')`,
+   every key optional, over `DEFAULTS` = `{enabled = true, unity = 'min', mp_jobs = {'BLM', 'RDM',
+   'GEO'}, skip_jobs = {}}` (`unity` is `'max'` only when written so; the two job lists become sets of
+   upper-case job codes). It returns 0 when `enabled` is `false` or the job is in `skip_jobs` (empty
+   by default: PLD is ranked like every other job).
 2. Loads `ITEM_HP_MP.lua` with `pcall(dofile, windower.addon_path .. 'data/shared/data/equipment/ITEM_HP_MP.lua')`:
    `dofile`, not `require`, so the module cache does not keep the 6 529-entry table for the whole
    session.
-3. Walks `_G.sets` (`walk`) with a `visited` table, since sets reference each other. For every key in
-   `SLOTS` (GearSwap's slot names and aliases, `ranged`/`lear`/`rring` included) whose value is a plain
-   name or a table with a string `name` and no `priority`, it computes HP and MP (`piece_hp_mp`): the
-   table entry, plus the Unity bonus for the `unity` setting (`'max'`: top of the range, `'min'`:
-   bottom), plus the `HP+N` / `MP+N` augments written in the set (augments starting `Pet:`, `Avatar:`,
-   `Automaton:`, `Wyvern:`, `Luopan:` are ignored, `augment_hp_mp`). For a piece the set names without
-   augments (a plain name, or a table with no `augments` field) it also adds the `hp` / `mp` of the
-   matching entry of the gear scan cache (`GearScan.load()`, read once per `apply()`, see
-   [Gear scan](#gear-scan)), unless that entry is marked `differ`. A table with a `name` field is a piece and is not walked into; any other
-   table is.
-4. `priority = HP`, or `HP * 1000 + MP` on the `mp_jobs` (default BLM, RDM, GEO). A priority of 0 is not written.
-   A plain name becomes `{name = ..., priority = n}`; a table gets its `priority` field. A piece that
-   already has a `priority` is never touched.
+3. Builds an index (`build_index`) holding only the entries of the pieces the sets name and of the
+   pieces worn now (`player.equipment`); the full table is then dropped. It walks `_G.sets` with a
+   `visited` table, since sets reference each other: the value of every key in `SLOTS` (GearSwap's
+   slot names and aliases, `ranged`/`lear`/`rring` included) is a piece; a table with a `name` field
+   is a piece and is not walked into; any other table is.
+4. Stores the load state on `_G._hp_priority_state` = `{index, unity, weigh_mp, scanned}`
+   (`weigh_mp`: the job is in `mp_jobs`; `scanned`: the gear scan cache, `GearScan.load()`, read once
+   per `apply()`, see [Gear scan](#gear-scan)).
+5. Wraps the global `equip()` (`wrap_equip`). The wrapper is kept on `_G._hp_priority_equip` and is not
+   installed twice on the same `_G`; with no load state (system off, job skipped) it calls the
+   original `equip()` unchanged.
 
-It returns the number of pieces changed and prints nothing. `HPPriority._piece_hp_mp` and
-`HPPriority._config` are exposed for offline scripts that reproduce the arithmetic;
-`HPPriority._augment_hp_mp` is also used by `gear_scan.lua`, so both read augments the same way.
+At each `equip(...)` call the wrapper passes every table argument on as a copy (`ranked_copy`); the
+set given is not touched. For each key of the set that is in `SLOTS` (`priority_of`):
+
+- A table that already has a `priority` is kept as it is, as is a value that is not a piece (neither a
+  string nor a table with a string `name`).
+- The worn piece is `player.equipment[slot]`, the set's slot name mapped to `player.equipment`'s own
+  by `WORN_SLOT` (`ear1`/`lear` -> `left_ear`, `ear2`/`rear` -> `right_ear`, `ring1`/`lring` ->
+  `left_ring`, `ring2`/`rring` -> `right_ring`, `ranged` -> `range`). `player.equipment` holds the gear
+  GearSwap has sent, so at midcast it is the precast gear.
+- HP and MP of the new piece and of the worn one (`piece_hp_mp`; an empty slot or `empty` is 0 / 0):
+  the index entry, plus the Unity bonus for the `unity` setting (`'max'`: top of the range, `'min'`:
+  bottom), plus the `HP+N` / `MP+N` augments written in the set (augments starting `Pet:`, `Avatar:`,
+  `Automaton:`, `Wyvern:`, `Luopan:` are ignored, `augment_hp_mp`). For a piece named without augments
+  (a plain name, a table with no `augments` field, and always the worn piece, which is a name) it also
+  adds the `hp` / `mp` of the matching gear scan entry, unless that entry is marked `differ`.
+- `priority = dHP`, or `dHP * 1000 + dMP` on the `mp_jobs` (default BLM, RDM, GEO), d being new minus
+  worn. A priority of 0 leaves the piece without one; otherwise a plain name becomes
+  `{name = ..., priority = n}` and a table is copied with its `priority` field set.
+
+`apply()` returns the number of pieces whose HP / MP is known (entries of the index) and prints
+nothing. `HPPriority._piece_hp_mp`, `HPPriority._config` and `HPPriority._ranked_copy(set)` (the copy
+the wrapper would pass on now, with the load state of the last `apply()`) are exposed for offline
+scripts; `HPPriority._augment_hp_mp` is also used by `gear_scan.lua`, so both read augments the same
+way.
 
 ### Gear scan
 
@@ -547,11 +572,13 @@ Everything else is local. The module has no `_G` export.
 
 | Member | Returns | Callers |
 |---|---|---|
-| `apply()` | number of pieces given a priority (0 when skipped) | `INIT_SYSTEMS.lua`, HP PRIORITY block |
+| `apply()` | number of pieces whose HP / MP is known (0 when off or skipped); sets `_G._hp_priority_state` and wraps `equip()` | `INIT_SYSTEMS.lua`, HP PRIORITY block |
 | `settings()` | `{enabled, unity, mp_jobs, skip_jobs}` (job lists as sets): `HP_PRIORITY.lua` over `DEFAULTS` | `apply()` |
 | `_piece_hp_mp(data, name, augments, unity, scanned)` | `hp, mp` (`scanned`: gear scan cache, optional) | offline scripts only |
 | `_augment_hp_mp(augments)` | `hp, mp` of a list of augment strings | `gear_scan.lua` |
 | `_config` | `{DEFAULTS, MP_WEIGHT}` | offline scripts only |
+| `_ranked_copy(set)` | the copy of `set` the wrapped `equip()` would pass on now | offline scripts only |
+| `toggle_order_display()` | flips `windower._hp_order_debug`; while on, the wrapped `equip()` prints each swap's changing pieces by priority (`//gs c hporder`) | `COMMON_COMMANDS` |
 
 Exported as `_G.HPPriority` and returned.
 
@@ -699,8 +726,8 @@ return M
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
   thresholds in the aftercast callers, `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`),
-  `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `MP_WEIGHT`
-  and `SLOTS`. None of them is read from a config file.
+  `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `MP_WEIGHT`,
+  `SLOTS` and `WORN_SLOT`. None of them is read from a config file.
 - Templates and deployment: `clone_character.py` (`clone()`, step 4) copies `<job>/` per file,
   taking the overlay `_master/<Source>/<job>/<file>` when an overlay is selected and has the
   file, and `_master/config/<job>/<file>` otherwise (`_resolve_src`). The overlay is selected only when
@@ -717,8 +744,9 @@ return M
   rebuilt after every `gs reload` and job change (GearSwap drops `user_env` in `load_user_files`).
 - Globals read: `sets` (checker, `HPPriority`, `WeaponResolver`), `player` (refill, `HPPriority`,
   `AmpullaLock`), `_G.CraftManager` (config resolver), `state.Moving`, `world`, `areas`
-  (`BaseSetBuilder`), `world` (`ElementalBonus`). Globals written: `priority` fields into `_G.sets` and
-  `_G.HPPriority` (HP priority), `_G.ampulla_ammo_locked` (Ampulla lock). The only `windower.*` field
+  (`BaseSetBuilder`), `world` (`ElementalBonus`). Globals written: `_G.HPPriority`,
+  `_G._hp_priority_state`, `_G._hp_priority_equip` and `_G.equip` (HP priority; `_G.sets` is not
+  written), `_G.ampulla_ammo_locked` (Ampulla lock). The only `windower.*` field
   written is the Ampulla lock's record in `windower._weapon_locks` (through `CombatMode.hold` /
   `release`, since 2026-09-29).
 - Config caching: refill configs and `WEAPON_CONFIG.lua` are cached by `ModuleCache` like modules, so
@@ -781,7 +809,10 @@ return M
 - The quiver must stay in the inventory, and the character's refill list for the job must name it, or
   the next refill pushes it away as foreign.
 - HP priority never overwrites an explicit `priority`; a set that must keep a hand-set order gives each
-  piece its own `priority`.
+  piece its own `priority`. The computed priorities it sits among are HP differences (dHP*1000+dMP on
+  the `mp_jobs`), so its scale matters.
+- The HP / MP of a piece come from the index built at load: a piece that no set names and that was not
+  worn at load (put on by hand later) counts only its scanned augments, not its base HP / MP.
 - `WeaponResolver.set_for` returns the raw `sets[value]` when `equip_without_set` is off, including a
   set that names other slots than the one asked for; that is the historical behaviour the jobs rely on.
   The only change it makes to that set (a copy) is the off-hand swap when Dual Wield is not there.
@@ -816,8 +847,10 @@ Invariants to keep:
 
 - The four inventory tools are lazy: never `require` them from an entry file, `user_setup` or
   `INIT_SYSTEMS`; the router loads them on first use.
-- `HPPriority` must run after Mote's `init_gear_sets()` (it walks the loaded `_G.sets`), and
-  `ITEM_HP_MP.lua` must stay out of the require cache (`dofile`).
+- `HPPriority` must run after Mote's `init_gear_sets()` (it indexes the pieces of the loaded
+  `_G.sets`), and `ITEM_HP_MP.lua` must stay out of the require cache (`dofile`). It never writes into
+  `_G.sets`: the ranks depend on the gear worn at each swap, so they live only on the copies the
+  `equip()` wrapper passes on.
 - `ITEM_HP_MP.lua` is generated. Change the generator (`build_item_db.py`) and re-run it; never edit
   the table by hand, the next regeneration would erase the edit.
 - `ElementalBonus` is pure: no equip, no message, no state. Keep game rules there and the decision in
@@ -850,7 +883,8 @@ Offline testing with Lua 5.1 (`C:/ProgramData/chocolatey/bin/lua5.1.exe`), from 
 with `package.path = '<repo>/?.lua;' .. package.path`:
 
 - `hp_priority.lua`: stub `player = {name = 'Tetsouo', main_job = 'WAR'}`,
-  `windower = {addon_path = '<GearSwap>/'}`, build a small `_G.sets` and call `HPPriority.apply()`
+  `windower = {addon_path = '<GearSwap>/'}`, a stub `equip` (it gets wrapped), build a small `_G.sets`,
+  call `HPPriority.apply()`, set `player.equipment` and read `HPPriority._ranked_copy(set)`
   (settings and the gear scan cache go through `char_paths.lua`; when either read fails, the
   `DEFAULTS` apply and no scanned augments are added); or call
   `HPPriority._piece_hp_mp(dofile('<repo>/shared/data/equipment/ITEM_HP_MP.lua'), name, augments, 'max', scanned)`

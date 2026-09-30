@@ -70,7 +70,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/dnc/DNC_MACROBOOK.lua` | 78 | Book/page per subjob and per dual-box partner job |
 | `_master/config/dnc/DNC_TP_CONFIG.lua` | 68 | Moonshade piece, weapon TP bonus table (Aeneas, Centovente), `_G.DNCTPConfig` |
 | `_master/config/dnc/DNC_WS_CONFIG.lua` | 71 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25, `should_use_climactic` |
-| `_master/sets/dnc_sets.lua` | 1035 | Template sets (flat; data, size not a defect) |
+| `_master/sets/dnc_sets.lua` | 1040 | Template sets (flat; data, size not a defect) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
 Character overlay: `_master/<Character>/dnc/` holds `DNC_MACROBOOK.lua`
