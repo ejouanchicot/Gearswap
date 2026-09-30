@@ -448,7 +448,7 @@ listener under `pcall`. Two listeners exist: `dualbox` (`watch_weapon`, sends `a
   (fixed 2026-09-25). a drag is saved by the 5 s loop, not a
   `mouse` event: an event registered from a job file runs GearSwap's `refresh_globals` +
   `equip_sets` on every call, which made dragging lag.
-- **Not role-aware:** `//gs c sortie` targets `ALT = 'Kaories'` and her Silmaril profiles by design.
+- **Not role-aware:** `//gs c sortie` sends to the `alt` named in the character's `_common/combat/SORTIE_CONFIG.lua` (Tetsouo's: Kaories and her Silmaril profiles), not to `DualBoxConfig`. A character without that file has no sortie command ([commands-and-debug](commands-and-debug.md#sortie-config)).
 
 ### COR rolls on the main (`roll_share.lua`, 2026-09-27)
 
@@ -715,7 +715,7 @@ Behaviour per event:
 - [COR](../jobs/cor.md): `roll_party.lua` treats `_G.AltJobState.job` as present in the party for
   the roll job bonus. `receive_alt_job` patches `_G.cor_party_jobs`.
 - [GEO](../jobs/geo.md): `GEO_BUFFS.lua` reports buffs.
-- Sortie: `//gs c sortie` (`shared/utils/sortie/sortie_commands.lua`) orders Kaories and records its orders with `AltGroup.note`; an unknown mode value now warns instead of raising (fixed 2026-09-25). `GEO_ALT_CUSTOM.lua` retargets Indi- under Entrust.
+- Sortie: `//gs c sortie` (`shared/utils/sortie/sortie_commands.lua`) orders the `alt` of the character's `SORTIE_CONFIG.lua` (Kaories for Tetsouo) and records its orders with `AltGroup.note`; an unknown mode value now warns instead of raising (fixed 2026-09-25). `GEO_ALT_CUSTOM.lua` retargets Indi- under Entrust.
 - Windower `send` addon: required on both boxes for everything except sync IPC.
 
 ## Invariants & gotchas

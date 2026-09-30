@@ -482,7 +482,7 @@ the character's `_common/keys/COMMON_KEYBINDS.lua`.
 | `Xp` | Off, On | Off | `^numpad4` (/RDM only) | `set_builder.lua` build functions; `PLD_MIDCAST.lua` `midcast_phalanx` |
 | `RuneMode` | Ignis .. Tenebrae (8); Sortie profile: Ignis, Tenebrae, Sulpor, Flabra, Unda | Ignis | `^numpad3` (/RUN only) | `rune_manager.lua` `execute_rune` |
 | `SneakInviAOE` | On, Off | On; set On again whenever the /SCH profile installs | none (retired `^numpad7`) | `PLD_COMMANDS.lua` `aoe` -> `scholar_actions.lua` (missing state counts as On); `stealth_aoe.lua` (`Off` = no Accession for the box group, see [stealth](../systems/stealth.md)) |
-| `PhalanxSIRD` | Off, On | Off; **On** on the /SCH and Sortie profiles | `^numpad2` except /SCH; `^numpad3` under /SCH | `PLD_MIDCAST.lua` `midcast_phalanx`; required by `apply_hybrid_profile`. `//gs c sortie aminon` / `aminontest` set it Off, every other Sortie target On; `gab` (a target without stance) leaves it alone (`sortie_commands.lua` `engage_target`) |
+| `PhalanxSIRD` | Off, On | Off; **On** on the /SCH and Sortie profiles | `^numpad2` except /SCH; `^numpad3` under /SCH | `PLD_MIDCAST.lua` `midcast_phalanx`; required by `apply_hybrid_profile`. `//gs c sortie <target>` sets it from the character's `SORTIE_CONFIG.lua` (`target_states`, a target's own `states`; Tetsouo's: Off for `aminon` / `aminontest`, On for every other target; `sortie_commands.lua` `engage_target`) |
 | `Regen` | Off, On | Off; forced Off by the standard and Sortie profiles | `^numpad2` under /SCH, or `gs c set Regen On\|Off` | `set_builder.lua` `build_idle_set` (step 6b): lays `sets.idleRegen` over the idle set |
 | `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`), or `None` | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` or `HybridMode` change |
 | `FastCast` | 0..80 step 10 | 80 | none | `midcast_watchdog.lua` (fallback cast time) |
@@ -634,7 +634,8 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
   `LifecycleManager` ([commands and debug](../systems/commands-and-debug.md),
   [core lifecycle](../systems/core-lifecycle.md)); `ScholarActions` and
   `StratagemCharges` (shared with [BLM](blm.md) and GEO); `SortieCommands` sets
-  `HybridMode`, `MainWeapon`, `Regen` and `PhalanxSIRD` on PLD.
+  the states named in the character's `_common/combat/SORTIE_CONFIG.lua` (Tetsouo's:
+  `HybridMode`, `MainWeapon`, `Regen` and `PhalanxSIRD` on PLD).
 - Messages: generic `MessageFormatter` / `MessageCooldowns`; JA descriptions from
   `PLD_JA_DATABASE` through `ability_message_handler`.
 - Lockstyle / macrobook factories, JobChangeManager, UI
@@ -768,7 +769,7 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
   `res.spells`; with the /BLU guard the counter only catches a typo in the config.
 - `rune` sends the JA on any subjob (`rune_manager.lua` `execute_rune`).
 - Fixed 2026-09-28: `//gs c sortie escort` sets `Regen` On only on /SCH
-  (`sortie_commands.lua` `escort`); before, it did so on any subjob, where the
+  (since 2026-09-30 through `escort.states.SCH` of Tetsouo's `SORTIE_CONFIG.lua`); before, it did so on any subjob, where the
   Regen row and key are hidden.
 - Atonement is in no WS database, so in `wsmsg full` it prints no WS line
   (`UNIVERSAL_WS_DATABASE.lua`, `UniversalWS.resolve`).

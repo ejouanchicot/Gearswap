@@ -41,7 +41,8 @@ opens on Naegling and `PhalanxSIRD` starts On (Ctrl+Numpad3 turns it Off). Leavi
 Sortie stance for PDT or MDT restores the full lists and turns `PhalanxSIRD` Off;
 PDT <-> MDT keeps every choice.
 
-`//gs c sortie <target>` (the author's Sortie orders) sets the /SCH stance for the
+`//gs c sortie <target>` (Sortie orders, only on a character with a `SORTIE_CONFIG.lua`;
+with Tetsouo's, the example) sets the /SCH stance for the
 target (DPS or Tanking; without /SCH it only warns) and `PhalanxSIRD`: Off for `aminon`
 and `aminontest` (Phalanx potency matters more there), On for every other target.
 

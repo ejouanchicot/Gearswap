@@ -123,7 +123,7 @@ One line each; details in the [commands guide](../../guides/commands.md).
 | `stealth sneak/invi/both [self]`, `stealth check/status/...` | Sneak / Invisible on you and every alt |
 | `alts on/off/toggle/follow/mirror/do/window` | Orders to your alts |
 | `main`, `altcmds`, `alt <name>`, `altsync`, `altbuffs` | Dual-box roles and alt commands |
-| `sortie ...` | The author's Sortie orders |
+| `sortie ...` | Sortie orders, only on a character with a `SORTIE_CONFIG.lua` (Tetsouo's is the example) |
 | `tb ...` | Temporary keys |
 | `kc` (`keyconflicts`) | Every key conflict this job can meet |
 | `watchdog [on/off/...]` | Midcast watchdog |

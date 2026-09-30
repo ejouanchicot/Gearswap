@@ -206,7 +206,22 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | `aoe` | `sneak`/`invi`/`invisible`/`erase` | SCH main or sub: Light Arts + Accession (+ Addendum: White for Erase) as charges allow, then the spell; the job's `SneakInviAOE` when it has one. PLD and RUN answer the bare `aoe` first (Blue Magic rotation) | same |
 | `smartbuff` | - | The current subjob's self-buffs not up and ready, 2 s apart: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni else Ichi; /DNC Haste Samba (350 TP). Other subjobs, or a level-0 subjob: a warning. DNC answers `smartbuff` (and `buffself`) first with its own (dance, samba, then these) | `smartbuff/subjob_buffs.lua` `SubjobBuffs.apply`, see [midcast-and-buffs.md](midcast-and-buffs.md#subjobbuffs) |
 | `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`, `help`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group, timers, settings in `<Character>/_common/combat/STEALTH_CONFIG.lua` | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
-| `sortie` | `<target>` (Sortie targets; `gab` was removed on 2026-09-29 with the alt's `Kaories/Gab` profile, `farm` now assists Gabvanstronger), `escort [Indi-X]`, `off`, `judgment`, `fullcircle`, `list`, `help` | Stance for this character plus a Silmaril profile for a GEO alt (`sm load` names a folder; Silmaril picks the file of the alt's current subjob there, `GEO_WHM_` or `GEO_DRK_Kaories.xml`). On a job that has `state.PhalanxSIRD` (PLD) it also sets that mode (`Off` for targets with `phalanx_sird = false`, `On` otherwise; checked with `rawget(state, 'PhalanxSIRD')`). A value the job's state lacks prints a warning and the rest still runs. `escort` also turns PLD's `Regen` On, only on /SCH (since 2026-09-28) | `sortie/sortie_commands.lua` `SortieCommands.handle` |
+| `sortie` | `<target>` (the `targets` or `aliases` of the config), `escort [Indi-X]`, the `orders` (`off`, `judgment`, `fullcircle` in Tetsouo's), `list` (also with no argument), `help` | Only for a character with `_common/combat/SORTIE_CONFIG.lua` (see [Sortie config](#sortie-config)); without it every `sortie` word prints the warning `sortie: not set up for this character (_common/combat/SORTIE_CONFIG.lua)`. A target sets this character's stance and the target states, then tells the alt `sm load <profile_root><profile>`, `sm follow off`, `sm on` and its Indi- (`sm load` names a folder; Silmaril picks the file of the alt's current job and subjob there). A value the job's state lacks prints a warning and the rest still runs | `sortie/sortie_commands.lua` `SortieCommands.handle` |
+
+#### Sortie config
+
+All the data of `//gs c sortie` is the character's `_common/combat/SORTIE_CONFIG.lua` (since 2026-09-30; before, it was written in `sortie_commands.lua` for Tetsouo and Kaories). It is read at each command through `CharPaths.optional('common', 'SORTIE_CONFIG')` (`COMMON_GROUPS` in `char_paths.lua` and `migrate_layout.py` puts it in `combat/`). `SortieCommands.available()` is true only when the file exists and has a `targets` table. Without it, `sortie` answers the "not set up" warning, and `available_rows` in `message_commands.lua` removes every row starting with `//gs c sortie` from `QUICK_HELP` (`//gs c help`) and `COMMANDS_HELP` (`//gs c commands`). Only Tetsouo has the file (live, untracked; a copy in the untracked overlay `_master/Tetsouo/config_global/`); Kaories, Gabvanstronger, Blodykiller and a new clone have no sortie command.
+
+| Key | Form | Use |
+|---|---|---|
+| `alt` | name | Character the orders go to (`send <alt> ...`) |
+| `profile_root` | path | Prefix of every `sm load` (relative to `Windower/Settings`; Tetsouo: `Kaories/Sortie/GEO/`) |
+| `stances` | `{name = {"State Value", ...}}` | This character's states for a stance (Tetsouo: `dps`, `tank`), set like `gs c set` without Mote's chat line; an unknown state falls back to `gs c set` |
+| `target_states` | `{"State Value", ...}` | Set for every target, only the states this job has (`rawget(state, ...)`), others skipped silently. Tetsouo: `PhalanxSIRD On`, so only PLD is affected |
+| `targets` | `{name = {profile, indi, stance, summary, states?}}` | One per target: the alt's profile folder, the Indi- it casts on load, the stance, the text shown; `states` replaces the same state of `target_states` (Tetsouo's `aminon` / `aminontest`: `PhalanxSIRD Off`) |
+| `aliases` | `{alias = target}` | Bosses fought the same way (Tetsouo: `degei`, `skomora`, `ghatjot`, `dhartok` -> `melee`) |
+| `escort` | `{indi, states = {SUB = {...}}}` | `sortie escort [Indi-X]`: `indi` is the default Indi- (`Indi-Regen` when missing); `states` per subjob of this character, set first (Tetsouo: `SCH = {'Regen on'}`, PLD's /SCH Regen). Then the alt gets `sm off` and `gs c escort <Indi> <me>` |
+| `orders` | `{name = {command, action?}}` | One-shot console command to the alt; `action` is the text shown, none = "Silmaril OFF". A `sm off` order also records Silmaril off in the alts window (`AltGroup.note`) |
 
 **Box group and alt**
 
@@ -499,6 +514,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 | Combat Mode / Treasure Mode | `<char>/_common/keys/combat_mode.lua`, `<char>/_common/keys/treasure_mode.lua` | Rewritten whole by `combatmode` / `th`; kept across a re-clone (`clone_character.py` `KEPT_ON_RECLONE`) |
 | Dual Wield values | `<char>/_common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`) | Read by `dw` and the DW hook |
 | Belt settings | `<char>/_common/combat/ELEMENTAL_BELT.lua` (template in `_master/config_global/`) | Shown by `belt` |
+| Sortie data | `<char>/_common/combat/SORTIE_CONFIG.lua` (no generic template; Tetsouo's only) | Read at every `sortie` command; missing = no sortie command, rows hidden from the help ([Sortie config](#sortie-config)) |
 | UI config | `<char>/_common/display/UI_CONFIG.lua` | Fallback in `config_loader.lua` |
 | Profiler switch | `data/.profiler_enabled` | Absent = off |
 | DressUp switch | `data/.dressup_disabled` | Present = DressUp not managed |

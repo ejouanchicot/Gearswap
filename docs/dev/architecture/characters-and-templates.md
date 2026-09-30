@@ -21,7 +21,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `_master/config/<job>/` | yes, 16 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
 | `_master/config/alt/` | yes, 33 files | Dual-box alt command tables (22 `_ALT_COMMANDS`, 5 `_ALT_CUSTOM`, 6 `.lua.example`). Deployed only to a character cloned as MAIN |
 | `_master/config_global/` | yes, 16 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WARDROBE_CONFIG` (since 2026-09-30: every key commented out, so a clone runs on the organizer defaults until the player uncomments one), `WEAPON_CONFIG` |
-| `_master/Tetsouo/` | no, 78 files | Tetsouo overlay: 9 entries (BLM BRD BST COR DNC PLD SMN THF WAR, with the modular set include), `config/<job>/` for those jobs plus `config/craft/`, `config_global/{DUALBOX_CONFIG,REGION_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
+| `_master/Tetsouo/` | no, 78 files | Tetsouo overlay: 9 entries (BLM BRD BST COR DNC PLD SMN THF WAR, with the modular set include), `config/<job>/` for those jobs plus `config/craft/`, `config_global/{DUALBOX_CONFIG,REGION_CONFIG,SORTIE_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
 | `_master/Kaories/` | no, 38 files | Kaories overlay: 4 entries (COR GEO PLD RDM), 4 flat set files, `config/{cor,geo,pld,rdm}/`, `config_global/{combat_mode,COMMON_KEYBINDS,DUALBOX_CONFIG,REGION_CONFIG,WARDROBE_CONFIG}.lua` |
 | `_master/Gabvanstronger/` | no, 23 files | No entries (the generic ones are used), `config/{blu,rdm,thf}/`, `config_global/{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,WEAPON_CONFIG}.lua`, flat sets + `sets/0_AugGear_Gabvanstronger.lua` |
 | `_master/Blodykiller/` | no, 19 files | No entries, `config/{brd,cor}/`, same four `config_global` files, flat sets + `sets/0_AugGear_Blodykiller.lua` |
@@ -52,7 +52,7 @@ data/<Char>/
             alt/        <JOB>_ALT_CUSTOM.lua only (the generated tables are shared/data/alt/)
         inventory/      REFILL_CONFIG, CRAFT_CONFIG, CRAFT_REFILL, WARDROBE_CONFIG
         combat/         AUTO_ABILITIES, RECAST_CONFIG, DW_CONFIG, ELEMENTAL_BELT, WEAPON_CONFIG,
-                        STEALTH_CONFIG, HP_PRIORITY
+                        STEALTH_CONFIG, HP_PRIORITY, SORTIE_CONFIG (only when the character has one)
         sets/           gear shared by jobs (rings.lua, 0_AugGear_<Name>.lua), craft and
                         fishing set files
     <job>/              one job, by theme (CharPaths.job_group, from the end of the file name)
@@ -235,6 +235,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `_common/combat/WEAPON_CONFIG.lua` | `shared/utils/equipment/weapon_resolver.lua`, BLU `set_builder.lua` | step 4c | - |
 | `_common/combat/STEALTH_CONFIG.lua` | `shared/utils/stealth/stealth_config.lua` | step 4c; kept on re-clone | `//gs c stealth ...` |
 | `_common/combat/HP_PRIORITY.lua` | `HPPriority.settings()` in `shared/utils/equipment/hp_priority.lua` | step 4c | - |
+| `_common/combat/SORTIE_CONFIG.lua` (alt, Silmaril profiles, stances, targets, orders of `//gs c sortie`) | `shared/utils/sortie/sortie_commands.lua` through `CharPaths.optional('common', 'SORTIE_CONFIG')` | step 4c from the overlay only (no generic template; Tetsouo's overlay has it). Without it the character has no sortie command and the help hides it | - |
 | `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
 | `_common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` (also the auditor, `wardrobe_auditor.lua` `config_exclusions`) | step 4c (generic template since 2026-09-30; Tetsouo and Kaories overlays replace it) | - |
 | `_common/inventory/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |

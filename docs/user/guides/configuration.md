@@ -16,7 +16,7 @@ see [installation](../getting-started/installation.md)). After an edit,
             alt/             your own commands for the dual-box alt (optional)
         inventory/           refill, craft, wardrobe organizer
         combat/              automatic abilities, recasts, Dual Wield, belt, weapons,
-                             Sneak / Invisible, HP priority
+                             Sneak / Invisible, HP priority, Sortie (if you have one)
         sets/                gear shared by your jobs (rings...), your craft and fishing sets
     war/, blm/ ...           one folder per job you play, by the same themes:
         display/             WAR_HUD, WAR_LOCKSTYLE, WAR_MACROBOOK
@@ -75,6 +75,12 @@ re-clone copies them back from the old folder (see
 |---|---|
 | `DUALBOX_CONFIG.lua` | Role, partner, group ([dual-box](dualbox.md)) |
 | `REGION_CONFIG.lua` | Your region (US / EU / JP): some chat colour codes differ by region |
+
+**Only if you write it (no template):**
+
+| File | What it sets |
+|---|---|
+| `SORTIE_CONFIG.lua` (in `combat/`) | `//gs c sortie`: your alt, where its Silmaril profiles are, your stances and the states set per target, the targets and their aliases, `escort` and the one-shot orders to the alt. Without it the character has no sortie command (it says it is not set up, and the help does not list it). The author's, `Tetsouo/_common/combat/SORTIE_CONFIG.lua`, is the example; its header explains every key |
 
 **Written in game (kept on a re-clone):**
 

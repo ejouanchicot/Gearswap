@@ -203,7 +203,7 @@ the `//gs c aoe` rotation).
 - **Phalanx SIRD**: `PhalanxSIRD` On or `Xp` On casts Phalanx in
   `sets.midcast.SIRDPhalanx`. `PhalanxSIRD` turns On by itself when you enter Sortie or
   /SCH and Off when you go back to PDT/MDT. `//gs c sortie <target>` also sets it
-  (Off for Aminon, On for the others).
+  when your `SORTIE_CONFIG.lua` says so (Tetsouo's: Off for Aminon, On for the others).
 - **Weaponskill slots follow the weapon actually in hand** (Burtgang in Tanking,
   whatever `MainWeapon` says).
 - **TP bonus**: a Moonshade Earring is added to a weaponskill only when it reaches the

@@ -119,7 +119,7 @@ AzureSets addon, loaded with the job: `//aset setlist`, `//aset spellset <name>`
 | `jamsg` / `spellmsg` / `wsmsg [full\|on\|off]` | How much chat abilities / spells / weaponskills print |
 | `help`, `commands` | Built-in help and command list |
 | `syscheck`, `fulltest`, `trace on\|off`, `debugsubjob`, `debugstate`, `testcolors` | Diagnostics (`trace` also logs each Blue Magic category and each Unbridled / Expiacion decision) |
-| `sortie ...` | The author's Sortie orders (written for his own pair of characters) |
+| `sortie ...` | Sortie orders, only on a character with a `SORTIE_CONFIG.lua` (Tetsouo's is the example) |
 
 ## Shared features on this job
 

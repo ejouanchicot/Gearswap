@@ -27,7 +27,7 @@ Mote-Include:
   `KeybindManager`, per-character common keys, `//gs c tb`) and the keybind
   HUD, player modes from `<JOB>_CUSTOM.lua`, HP equip priority, dual-box (job
   exchange, alt commands, `alts` / `main`, alt window), Sneak / Invisible on
-  the box group (`//gs c stealth`), Sortie commands, warp,
+  the box group (`//gs c stealth`), Sortie commands (per-character `SORTIE_CONFIG.lua`), warp,
   wardrobe organizer, refill, watchdogs, factories for lockstyle and macrobook.
 - **Data** under `shared/data/`: spell, job ability and weaponskill databases,
   and the generated equipment HP/MP table (`shared/data/equipment/ITEM_HP_MP.lua`).
