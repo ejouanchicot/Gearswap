@@ -511,6 +511,9 @@ function CommonCommands.handle_command(command, job_name, ...)
     if cmd == 'stealth' then
         return require('shared/utils/stealth/stealth').handle(args)
     end
+    if cmd == 'cleanse' then
+        return require('shared/utils/debuff/cleanse').handle(args)
+    end
 
     -- Combat Mode: weapon lock, shown or hidden per job
     if cmd == 'combatmode' then
@@ -754,7 +757,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'lagdebug' or cmd == 'ldb' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
         cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
-        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'altlead' or cmd == 'rollshow' or cmd == 'stealth' or cmd == 'tb' or cmd == 'trace' or cmd == 'atelier' or
+        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'altlead' or cmd == 'rollshow' or cmd == 'stealth' or cmd == 'cleanse' or cmd == 'tb' or cmd == 'trace' or cmd == 'atelier' or
         cmd == 'combatmode' or cmd == 'keyconflicts' or cmd == 'kc' or cmd == 'belt' or cmd == 'dw' or cmd == 'th' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end

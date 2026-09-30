@@ -39,6 +39,7 @@ local Methods = require('shared/utils/stealth/stealth_methods')
 local Timers = require('shared/utils/stealth/stealth_timers')
 local Config = require('shared/utils/stealth/stealth_config')
 local Aoe = require('shared/utils/stealth/stealth_aoe')
+local ActionQueue = require('shared/utils/core/action_queue')
 
 local KINDS = {sneak = true, invi = true}
 local PENDING_FOR = 12  -- seconds a buff just asked for counts as coming
@@ -65,108 +66,10 @@ local function wait_after(kind, name)
     return Methods.cast_time(name) + Config.get().delay
 end
 
-local function queue()
-    windower._stealth_queue = windower._stealth_queue or {steps = {}, busy = false}
-    return windower._stealth_queue
-end
-
--- Every step gets a token: the next step goes when the game reports this
--- character's action ended (see on_action) plus `delay` seconds, or after
--- the step's longest wait, whichever comes first.
-local run_next
-
-local START_CHECK = 1.5  -- seconds for the game to start a spell / item once sent
-local MAX_TRIES = 3      -- sends of one step before giving up on it
-
---- Whether the game can refuse the command without a word: a spell or an
---- item sent too soon after the previous action ("unable to cast spells at
---- this time") simply never starts.
-local function refusable(command)
-    return type(command) == 'string' and (command:find('^input /ma') or command:find('^input /item')) ~= nil
-end
-
---- Arm the step's longest wait and, for a spell or an item, a check that it
---- really started (cast_tracker.lua). Not started after START_CHECK: the
---- game refused it, it is sent again with a fresh token and a fresh longest
---- wait, up to MAX_TRIES sends.
-local function arm(q, step, gen, tries)
-    q.token = (q.token or 0) + 1
-    local token = q.token
-    q.waiting = type(step.command) ~= 'function' and {gen = gen, token = token} or nil
-    local sent_at = os.clock()
-    coroutine.schedule(function()
-        if q.token == token then run_next(gen) end
-    end, step.wait)
-    if not refusable(step.command) or tries >= MAX_TRIES then return end
-    coroutine.schedule(function()
-        if q.token ~= token or gen ~= windower._stealth_gen_queue then return end
-        local ok, CastTracker = pcall(require, 'shared/utils/core/cast_tracker')
-        if not (ok and CastTracker) then return end
-        local started
-        if step.command:find('^input /ma') then
-            started = CastTracker.started_since(sent_at)
-        else
-            started = CastTracker.acted_since(sent_at)
-        end
-        if started then return end
-        pcall(function() require('shared/utils/debug/trace_log').log('STEALTH', 'not started, sent again: %s', step.command) end)
-        send_command(step.command)
-        arm(q, step, gen, tries + 1)
-    end, START_CHECK)
-end
-
-run_next = function(gen)
-    local q = queue()
-    if gen ~= windower._stealth_gen_queue then return end
-    local step = table.remove(q.steps, 1)
-    if not step then
-        q.busy = false
-        q.waiting = nil
-        return
-    end
-    -- A function step (the Scholar chain) sends several actions of its own:
-    -- only its longest wait ends it.
-    if type(step.command) == 'function' then
-        pcall(step.command)
-    else
-        send_command(step.command)
-    end
-    arm(q, step, gen, 1)
-end
-
--- Action categories that end this character's action: 3 weapon skill,
--- 4 spell finished, 5 item finished, 6 job ability; 8 with param 28787 is
--- an interrupted cast.
-local ENDS = {[3] = true, [4] = true, [5] = true, [6] = true}
-
-local function on_action(act)
-    local q = windower._stealth_queue
-    local waiting = q and q.waiting
-    if not (waiting and act and player and act.actor_id == player.id) then return end
-    if not (ENDS[act.category] or (act.category == 8 and act.param == 28787)) then return end
-    q.waiting = nil
-    coroutine.schedule(function()
-        if q.token == waiting.token then run_next(waiting.gen) end
-    end, Config.get().delay)
-end
-
---- Listen for this character's own actions, once per load (a raw event:
---- a plain one from a job file runs GearSwap's refresh on every action).
-local function listen()
-    if rawget(_G, '_stealth_action_listener') then return end
-    _G._stealth_action_listener = windower.raw_register_event('action', on_action)
-end
-
---- Add an action (a console command, or a function); starts the queue when
---- it was idle.
+--- Add an action to this character's queue (shared with //gs c cleanse:
+--- shared/utils/core/action_queue.lua), `delay` seconds after each action.
 local function push(command, wait)
-    listen()
-    local q = queue()
-    q.steps[#q.steps + 1] = {command = command, wait = wait}
-    if q.busy then return end
-    q.busy = true
-    windower._stealth_gen_queue = (windower._stealth_gen_queue or 0) + 1
-    run_next(windower._stealth_gen_queue)
+    ActionQueue.push(command, wait, {delay = Config.get().delay, tag = 'STEALTH'})
 end
 
 ---============================================================================
