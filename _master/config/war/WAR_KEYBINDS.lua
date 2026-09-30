@@ -63,6 +63,17 @@ WARKeybinds.binds = { -- Weapon Management
     command = "cyclestate WS5",
     desc = "WS Slot 5",
     state = "WS5"
+}, -- Aftermath set: only a weapon with its own AFM3 set has the choice
+{
+    key = "^numpad0",
+    command = "cyclestate AftermathSet",
+    desc = "Aftermath Set",
+    state = "AftermathSet",
+    visible = function()
+        local weapon = state and state.MainWeapon and state.MainWeapon.current
+        return weapon ~= nil and sets ~= nil and sets.engaged ~= nil
+            and sets.engaged[weapon .. 'AFM3'] ~= nil
+    end
 }}
 
 return require('shared/utils/keybinds/keybind_manager').create('WAR', WARKeybinds)

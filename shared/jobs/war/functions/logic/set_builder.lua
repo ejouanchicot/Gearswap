@@ -47,9 +47,13 @@ end
 
 ---   The current weapon's own Aftermath set (sets.engaged.<Weapon>AFM3, e.g.
 ---   LaphriaAFM3) while an Aftermath is up: "Aftermath: Lv.3" (272) or the
----   plain "Aftermath" (273), the name a Prime weapon's may carry.
+---   plain "Aftermath" (273), the name a Prime weapon's may carry. None when
+---   the player chose AftermathSet = FastTP: the weapon's TP set stays on.
 ---   @return table|nil
 local function weapon_am3_set()
+    if state.AftermathSet and state.AftermathSet.value == 'FastTP' then
+        return nil
+    end
     local weapon = state.MainWeapon and state.MainWeapon.current
     local set = weapon and sets.engaged[weapon .. 'AFM3']
     if set and (buffactive[272] ~= nil or buffactive[273] ~= nil) then

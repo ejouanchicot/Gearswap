@@ -293,6 +293,10 @@ function job_state_change(stateField, newValue, oldValue)
         if ok and WSSlots and _G.WARWSConfig then
             WSSlots.rebuild(_G.WARWSConfig.get(newValue), _G.WARWSConfig.max_slots)
         end
+        -- The Aftermath Set key only shows for a weapon with its own AFM3 set
+        if _G.WARKeybinds and type(_G.WARKeybinds.refresh) == 'function' then
+            _G.WARKeybinds.refresh()
+        end
     end
 
     -- The Hoxne stance holds the ammo slot on its Ampulla; every other

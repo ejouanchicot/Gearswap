@@ -339,7 +339,10 @@ has no effect on WAR.
      Aftermath Lv.3 when it exists, else `sets.engaged[<stance>]`;
   3. `sets.engaged[MainWeapon .. 'AFM3']` (e.g. `LaphriaAFM3`) when it exists and
      `buffactive[272]` (Aftermath: Lv.3) or `buffactive[273]` (plain "Aftermath",
-     the name a Prime weapon's may carry) is up (`weapon_am3_set`, 2026-09-30);
+     the name a Prime weapon's may carry) is up and `state.AftermathSet` is not
+     `FastTP` (`weapon_am3_set`, 2026-09-30; the `^numpad0` key is `visible` only
+     for a weapon with such a set, re-asked through `WARKeybinds.refresh()` on a
+     MainWeapon change in `job_state_change`);
      else `sets.engaged.PDTAFM3` when `buffactive[272]` and
      `MainWeapon == 'Ukonvasara'` (`ukonvasara_am3`);
   4. `sets.engaged[MainWeapon]` (`select_weapon_engaged`; the overlay defines

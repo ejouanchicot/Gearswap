@@ -55,7 +55,7 @@ The first line that matches wins, then the weapon set goes on top:
 | `sets.engaged.PDTKC` | `MainWeapon` NaeglingKC, **or a Kraken Club in your off hand** when the chosen weapon set has no `sub` of its own, whatever the mode |
 | `sets.engaged.SubtleBlow` / `sets.engaged.Hoxne` | `HybridMode` SubtleBlow / Hoxne, if you add those values (not in the provided states). Under Aftermath: Lv.3 with Ukonvasara, `sets.engaged.SubtleBlowAFM3` / `sets.engaged.HoxneAFM3` first |
 | `sets.engaged.PDTAFM3` | Aftermath: Lv.3 up with Ukonvasara, **in PDT and in Normal** |
-| `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.LaphriaAFM3`) | Aftermath up (Lv.3, or the plain "Aftermath" of a Prime weapon) with that weapon; wins over `PDTAFM3` when it exists |
+| `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.LaphriaAFM3`) | Aftermath up (Lv.3, or the plain "Aftermath" of a Prime weapon) with that weapon, while `AftermathSet` is AFM3 (the default); wins over `PDTAFM3` when it exists. With `AftermathSet` FastTP, `sets.engaged.<Weapon>` stays on |
 | `sets.engaged.<Weapon>` | A set named after the weapon mode (`sets.engaged.Naegling`, `sets.engaged.Ukonvasara`...). None in the provided file |
 | `sets.engaged.PDT` / `sets.engaged.Normal` | `HybridMode` PDT / Normal |
 | `sets.engaged` | None of the above exists |
