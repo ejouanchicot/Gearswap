@@ -1,6 +1,6 @@
 # Midcast selection, set building and buff helpers
 
-`MidcastManager` picks the midcast set for a spell from nested `sets.midcast` tables. Every job's `job_post_midcast` calls it (directly or through a router) after Mote-Include's default midcast has already equipped its own guess, and `MidcastFallback` routes the spells a job does not (a subjob's magic) from Mote's `cleanup_midcast`. `MidcastTrace` writes each choice to the trace log, `UtsusemiShadows` lets Utsusemi: Ichi replace shadows already up, and `MidcastDeps` lazy-loads the manager for the subjob-magic jobs. Alongside them sit the helpers every job `set_builder.lua` uses for idle movement and town gear (`BaseSetBuilder`), and three action helpers that send `/ja`/`/ma` from `//gs c` commands: the `//gs c buff` self-buff queue (`SelfBuffManager`), the /WAR subjob buff list shared by DNC and THF (`SubjobWarBuffs`), and the /SCH Arts, Accession and Addendum chains (`ScholarActions`, `StratagemCharges`).
+`MidcastManager` picks the midcast set for a spell from nested `sets.midcast` tables. Every job's `job_post_midcast` calls it (directly or through a router) after Mote-Include's default midcast has already equipped its own guess, and `MidcastFallback` routes the spells a job does not (a subjob's magic) from Mote's `cleanup_midcast`. `MidcastTrace` writes each choice to the trace log, `UtsusemiShadows` lets Utsusemi: Ichi replace shadows already up, and `MidcastDeps` lazy-loads the manager for the subjob-magic jobs. Alongside them sit the helpers every job `set_builder.lua` uses for idle movement and town gear (`BaseSetBuilder`), and three action helpers that send `/ja`/`/ma` from `//gs c` commands: the `//gs c buff` self-buff queue (`SelfBuffManager`), the `//gs c smartbuff` subjob buff list of every job (`SubjobBuffs`), and the /SCH Arts, Accession and Addendum chains (`ScholarActions`, `StratagemCharges`).
 
 The whole action lifecycle (precast -> midcast -> aftercast -> status rebuild, with the cleanup wrapper order) is on [precast-pipeline.md](precast-pipeline.md#action-lifecycle-end-to-end); this page details the midcast half.
 
@@ -20,7 +20,7 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 259 | Factory: resolves a list of spells/abilities and queues the missing ones (only BLM uses it) |
-| `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting for DNC and THF subbing /WAR |
+| `shared/utils/smartbuff/subjob_buffs.lua` | 185 | `//gs c smartbuff` on every job: collection and casting of the subjob's self-buffs (/WAR, /SAM, /NIN, /DNC); DNC uses `collect` in its own smartbuff |
 | `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 104 | Stratagem charge count derived from recast id 231 |
 
@@ -320,11 +320,27 @@ Typical order (PLD `build_idle_set`): town base -> main weapon -> shield -> (ret
 
 Only caller: `shared/jobs/blm/functions/logic/buff_manager.lua` (Stoneskin with `delay = 8`, Blink, Aquaveil, Ice Spikes), reached by `//gs c buff|buffs|buffself|selfbuff` (`BLM_COMMANDS.lua` -> global `BuffSelf()` in `blm_functions.lua`). The anti-spam table is per manager instance, created when `buff_manager.lua` loads.
 
-## SubjobWarBuffs
+## SubjobBuffs
 
-`SubjobWarBuffs.collect()` walks Berserk (recast 1), Aggressor (4), Warcry (2): an active buff goes to `status_data` as `active`; a ready recast (`is_recast_ready`, the global defined by `RECAST_CONFIG.lua` and loaded by each entry file's `get_sets`) goes to `abilities_to_cast`; otherwise `status_data` gets `cooldown` with `math.ceil(recast)`. Returns `abilities_to_cast, status_data`. `SubjobWarBuffs.cast(list)` sends the first `/ja` at once and each next one `CAST_SPACING * (i - 1)` = `2 * (i - 1)` seconds later. Defender is left out on purpose (Attack -25%).
+`shared/utils/smartbuff/subjob_buffs.lua` replaced `subjob_war_buffs.lua` and the THF / DNC subjob collectors on 2026-09-30. `smartbuff` is a common command: `COMMON_COMMANDS.lua` lists it in `is_common_command` and routes it to `SubjobBuffs.apply()`.
 
-It does not check the subjob. Callers: THF `SmartbuffManager.apply_war_buffs()` (uses both `collect` and `cast`) and DNC `collect_subjob_buffs('WAR')` (uses `collect` only and casts through its own queue). Entry commands: `//gs c smartbuff` (THF), `//gs c smartbuff|buffself` (DNC).
+`SubjobBuffs.collect(sub)` (default: `player.sub_job`) returns `abilities_to_cast, status_data`, both empty for a subjob without a collector or when `player.sub_job_level` is 0. One collector per subjob (`COLLECTORS`):
+
+| Subjob | What it queues |
+|---|---|
+| WAR | Berserk (recast 1), Aggressor (4), Warcry (2). Defender is left out on purpose (Attack -25%) |
+| SAM | Hasso (138) only when the main hand holds a two-handed weapon (`res.items` `skill` 4, 6, 7, 8, 10 or 12; an item not found counts as two-handed, the game refuses Hasso itself), then Third Eye (133) |
+| NIN | Utsusemi: Ni (spell recast 339), else Ichi (338), as `/ma`; both on recast gives two `cooldown` lines |
+| DNC | Haste Samba (shared samba recast 216) when the live TP is at least 350; below that, a `tp` status entry |
+
+For a job ability: an active buff goes to `status_data` as `active`; a ready recast (`is_recast_ready`, the global defined by `RECAST_CONFIG.lua` and loaded by each entry file's `get_sets`) goes to `abilities_to_cast`; otherwise `status_data` gets `cooldown` with `math.ceil(recast)`.
+
+- `SubjobBuffs.handles(sub)`: whether `sub` has a collector.
+- `SubjobBuffs.cast(queue)` sends the first `/ja` (or `/ma` for an entry marked `magic`) at once and each next one `CAST_SPACING * (i - 1)` = `2 * (i - 1)` seconds later (`wait` chains).
+- `SubjobBuffs.show_status(status)` shows the `active` / `cooldown` lines through `MessageBuffs.show_buff_status`, then the short TP through `MessageFormatter.show_multi_status`.
+- `SubjobBuffs.apply()` warns (`MessageFormatter.show_warning`) and returns false for a subjob without a collector, or for a level-0 subjob (Sheol Gaol); otherwise `collect`, `show_status`, `cast`.
+
+DNC answers `smartbuff` / `buffself` in `DNC_COMMANDS.lua` before its common-commands block: its own `SmartbuffManager.apply()` queues the dance and the samba, then appends `SubjobBuffs.collect(subjob)` and casts through its own queue. THF has no smartbuff of its own any more (its `smartbuff_manager.lua` keeps `fbc` and `steal`). WAR main keeps `berserk` / `defender` / `thirdeye` / `tp` in its own `smartbuff_manager.lua`; its `smartbuff` is the common one.
 
 ## ScholarActions and StratagemCharges
 
@@ -369,9 +385,9 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 | `//gs c aoe sneak\|invi\|invisible\|erase` | every job, common command, with the job's `state.SneakInviAOE` when it has one (BLM, PLD, SCH). PLD and RUN answer the bare `aoe` themselves, ahead of the common commands: their Blue Magic rotation | `cast_with_stratagems` |
 | `//gs c klima` / `klimaform` | BLM | Dark Arts if not up and ready, Manifestation if `KlimaformAOE` is on and a charge exists, then Klimaform (`run_chain` with `finish_anyway`) |
 | `//gs c dispel` | BLM, GEO | `cast_under_black_addendum('Dispel', ...)` |
-| `//gs c smartbuff` | THF, DNC (also `buffself`) | Job smartbuff, using `SubjobWarBuffs` for /WAR |
+| `//gs c smartbuff` | every job, common command -> `SubjobBuffs.apply()`; DNC answers it (and `buffself`) first with its own | Subjob self-buffs (/WAR, /SAM, /NIN, /DNC) |
 
-`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/common/dualbox/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
+`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/_common/dualbox/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
 
 ### Scholar commands
 
@@ -415,7 +431,7 @@ No config file is read by these modules. Inputs are:
 - `target_func` values must match the keys in the set file exactly. PLD/RUN return `'Self'`/`'Other'`; no PLD or RUN set defines those keys. RDM's `sets.midcast.CureSelf` has no selector.
 - Singing Step 1.5 removes every space: "Aria of Passion" looks up `AriaofPassion`, not the `AriaPassion` defined in the BRD sets.
 - `get_enhancing_target` only returns something with Composure up (a RDM main); for every other job it is `nil`.
-- `SubjobWarBuffs.collect` needs the global `is_recast_ready`, which exists only after the entry file has required `RECAST_CONFIG`.
+- `SubjobBuffs.collect` needs the global `is_recast_ready`, which exists only after the entry file has required `RECAST_CONFIG`.
 - `StratagemCharges` returns 0 when Scholar is neither main nor sub; `ScholarActions` then warns "No charges available (next charge: 0.0m)" for each stratagem it wanted.
 - The debug flag outlives job changes on purpose (it is there to trace them); remember to turn it off.
 - `MidcastFallback` identifies "already routed" by table identity (`_G._midcast_routed == spell`). A router that passes a copy of the spell to `select_set` would be routed twice.

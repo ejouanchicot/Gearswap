@@ -427,7 +427,7 @@ have no effect.
 - `//gs c info`, `spellmsg`: [../systems/commands-and-debug.md](../systems/commands-and-debug.md).
 - Module cache and sandbox lifetime: [../systems/core-lifecycle.md](../systems/core-lifecycle.md),
   [../architecture/job-change-lifecycle.md](../architecture/job-change-lifecycle.md).
-- Dual-box alt commands: the generated `common/dualbox/alt/<JOB>_ALT_COMMANDS.lua` files state they are built
+- Dual-box alt commands: the generated `_common/dualbox/alt/<JOB>_ALT_COMMANDS.lua` files state they are built
   from `shared/data/magic/` and `res`; the generator itself is not in the repository. See
   [../systems/dualbox.md](../systems/dualbox.md).
 

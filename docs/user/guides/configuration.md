@@ -9,7 +9,7 @@ see [installation](../getting-started/installation.md)). After an edit,
 ```
 <YourName>/
     <YourName>_WAR.lua ...   one line per job: nothing to change there
-    common/                  settings of the whole character, by theme:
+    _common/                 settings of the whole character, by theme:
         display/             HUD, colours, region, lockstyle delay
         keys/                keys every job gets, Combat Mode / Treasure Mode keys
         dualbox/             dual-box settings
@@ -28,13 +28,19 @@ see [installation](../getting-started/installation.md)). After an edit,
     saved/                   written by the game (window positions, HUD settings...): leave it
 ```
 
-Settings are files, gear is always in a `sets/` folder.
+Settings are files, gear is always in a `sets/` folder. The `_` in front of
+`_common/` puts it first in the folder list.
+
+`WHERE-IS-WHAT.txt`, at the top of your folder, lists every file of it and
+what it holds. The clone and `migrate_layout.py` write it; after you add a
+file, `python where_is_what.py <YourName>` (in the `data` folder) writes it
+again.
 
 A folder made before 2026-09-30 has `config/` and `sets/` instead; it still
 works. `python migrate_layout.py <YourName>` (in the `data` folder) moves it to
 the layout above, after a full backup in `data/_backups/`.
 
-## What is in `<YourName>/common/`
+## What is in `<YourName>/_common/`
 
 The clone script copies every file of `_master/config_global/` here, each in
 its theme folder (the table below gives the file name; its folder is in the
@@ -55,7 +61,7 @@ re-clone copies them back from the old folder (see
 | `RECAST_CONFIG.lua` | `tolerance` = 2.0 s: an ability or spell whose recast is at or under this counts as ready. `party_announce`: a party message when an action is refused on recast, e.g. `['Phantom Roll'] = true` sends `/p Phantom Roll ready in <recast=Phantom Roll>` (the game shows the time left); a text of your own works too, where `{action}` becomes what you tried (`'{action} : roll ready in <recast=Phantom Roll>'` sends `Bolter's Roll : roll ready in ...`). One message per second at most (`party_announce_every` = 1) |
 | `AUTO_ABILITIES.lua` | Job abilities used for you, all `false` (off) by default: `sam_hasso` (SAM: your chosen stance, Hasso or Seigan, when you engage, unless one is up), `geo_entrust` (an Indi- spell cast on a party member gets Entrust first), `geo_full_circle` (a Geo- spell cast while a luopan is out gets Full Circle first), `blu_unbridled` (an unbridled spell gets Unbridled Learning first), `blu_expiacion_window` (see [BLU](../jobs/blu/states.md)) |
 | `WEAPON_CONFIG.lua` | `equip_without_set` (default `false`): with `true`, a weapon mode value that has no set of that name equips the weapon of that name directly, so a plain weapon needs no set. Keep a set for an augmented weapon |
-| `CRAFT_CONFIG.lua` | Which set file `craft` and `fish` use (`craft_file = 'craft'` reads `common/sets/craft_sets.lua`; `'goldsmithing'` reads `common/sets/goldsmithing_sets.lua`...) and their lockstyle numbers (19 and 17) |
+| `CRAFT_CONFIG.lua` | Which set file `craft` and `fish` use (`craft_file = 'craft'` reads `_common/sets/craft_sets.lua`; `'goldsmithing'` reads `_common/sets/goldsmithing_sets.lua`...) and their lockstyle numbers (19 and 17) |
 | `REFILL_CONFIG.lua` | The bags `rf` uses, for every job: `source_bags` (where missing items are taken from, in order; default `{'case', 'sack', 'satchel'}`) and `store_bag` (where extra items go; default `'case'`). Bags: `case`, `sack`, `satchel`, `wardrobe1` to `wardrobe8` (wardrobes only hold equipment, ammo for instance). The Mog Safe, Storage and Locker only open in the Mog House |
 | `DW_CONFIG.lua` | Dual Wield tiers: while you hold two weapons and are engaged, the pieces of `sets.DW.NoHaste` / `Haste` / `HasteII` / `MaxHaste` (in your job's set file) go on top of your engaged set, chosen by your magic haste (estimated from your buffs). `enabled`, and the % each buff counts for. No `sets.DW` in a job file: nothing changes. `//gs c dw` shows the estimate, `//gs c dw none\|haste\|haste2\|max` forces a tier, `//gs c dw auto` goes back. Slow / Elegy on you are not counted: while slowed, `//gs c dw none` |
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
@@ -169,7 +175,7 @@ subjob]` is used; otherwise `solo[your subjob]`, then `solo.default`, then
 ## Refill (`<JOB>_REFILL.lua`)
 
 `//gs c rf` tops up the consumables in your inventory from your bags (Case,
-Sack, then Satchel unless `common/inventory/REFILL_CONFIG.lua` says otherwise), and puts
+Sack, then Satchel unless `_common/inventory/REFILL_CONFIG.lua` says otherwise), and puts
 the surplus back. The lists are per character and per job,
 and only the author's characters ship with them: **create
 `<YourName>/<job>/inventory/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
@@ -191,7 +197,7 @@ return M
 ```
 
 Consumables named only in another job's list (of any character folder in `data/`) are put back too. While a craft
-set is on, `common/inventory/CRAFT_REFILL.lua` is used instead: same format, empty
+set is on, `_common/inventory/CRAFT_REFILL.lua` is used instead: same format, empty
 until you fill it; it can set its own `source_bags` / `store_bag` too.
 
 ## Wardrobes (`WARDROBE_CONFIG.lua`, optional)
@@ -214,7 +220,7 @@ The author's own files are not published.
 
 ## Sets (`<YourName>/<job>/sets/`)
 
-`<job>/sets/<job>_sets.lua` holds your gear for that job; `common/sets/` holds
+`<job>/sets/<job>_sets.lua` holds your gear for that job; `_common/sets/` holds
 gear several jobs use and your craft sets. Item names must match the game exactly,
 augmented items need their exact `augments`, and a second copy of an item is
 told apart with `bag = 'wardrobe 2'` and so on. Check with `//gs c checksets`.
@@ -225,7 +231,7 @@ names are on its `sets.md` page ([jobs](../jobs/README.md)).
 
 | Symptom | Try |
 |---|---|
-| An edit does nothing | `//gs c reload`; look for a Lua error in the chat or console; check you edited `<YourName>/common/...`, not `_master/` |
+| An edit does nothing | `//gs c reload`; look for a Lua error in the chat or console; check you edited `<YourName>/_common/...`, not `_master/` |
 | Lockstyle ignores the subjob | The job's `_LOCKSTYLE.lua` has no `get_style` (see above) |
 | Macro book does not change | Check the book and page exist in game, and the subjob spelling (`'SAM'`) |
 | `//gs c wo` interrupted, slots locked | `//gs c wo recover` |

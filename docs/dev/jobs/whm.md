@@ -345,7 +345,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 | `<char>/whm/WHM_LOCKSTYLE.lua` `default`, `by_subjob` | 3 | file; factory argument 1 | `default` only (no `get_style`) |
 | `<char>/whm/WHM_MACROBOOK.lua` | book 11: page 1 RDM, 2 SCH, 3 BLM, 4 BLU, 5 GEO | file; factory fallback 1/1 | `MacrobookManager` |
 | `<char>/whm/WHM_TP_CONFIG.lua` -> `_G.WHMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` |
-| `<char>/common/keys/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
+| `<char>/_common/keys/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
 
 ## State & lifetime
 

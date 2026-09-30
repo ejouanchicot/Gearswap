@@ -128,7 +128,9 @@ flowchart TD
   change nothing except keeping base FC slots that a specific FC child does
   not define.
 - `job_post_precast` equips the TP bonus gear.
-- No AutoJump on DRK; `//gs c jump` (/DRG) works through `DRGJumpManager`
+- Auto-Jump on DRK/DRG comes from `WSPrecastHandler.handle`, as on every job
+  (`state.JumpAuto`, created Off by `AutoJump.attach`, key `!numpad-` shown on
+  /DRG only); `//gs c jump` (/DRG) works through `DRGJumpManager`
   because the entry loads `RECAST_CONFIG`.
 
 ### Dark Magic midcast
@@ -229,7 +231,7 @@ the template defines none, so the flags have no visible effect out of the box.
 
 Created by `DRKStates.configure()` on every load. Keybinds from
 `DRK_KEYBINDS.lua`; `#numpad0` (AutoMedicine) and the other common keys come
-from the character's `common/keys/COMMON_KEYBINDS.lua`.
+from the character's `_common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -299,9 +301,9 @@ invisible to Mote.
 | `<char>/drk/DRK_TP_CONFIG.lua` | Moonshade ear1 +250; Anguta +500 (not a `MainWeapon` value) | file | `WSPrecastHandler` via `_G.DRKTPConfig` (captured on first action) |
 | `<char>/drk/DRK_LOCKSTYLE.lua` | default 1; SAM/WAR 1, NIN 2, DNC 3 | file; factory fallback 1 | `LockstyleManager` through `get_style` |
 | `<char>/drk/DRK_MACROBOOK.lua` | book 1, page 1 (SAM), 2 (WAR), 3 (NIN), 4 (DNC); dual-box RDM book 2, COR 3, GEO 4 | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry |
-| `<char>/common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry chunk |
-| `<char>/common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
+| `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry |
+| `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry chunk |
+| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
 
 ## State & lifetime
 

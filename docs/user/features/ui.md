@@ -85,8 +85,8 @@ in place, and saves.
 | File | Content |
 |---|---|
 | `<YourName>/saved/ui_settings.lua` | What `//gs c ui ...` changes: position, shown parts, background, font. Written by the commands; it wins over `UI_CONFIG.lua`. Delete it to go back to the `UI_CONFIG.lua` values. Kept by a re-clone |
-| `<YourName>/common/display/UI_CONFIG.lua` | Defaults used when `ui_settings.lua` does not exist, plus the background presets, text outline, `flags` and `init_delay`, always read |
-| `<YourName>/common/display/UI_COLOR_CONFIG.lua` | Colours of the values (elements, modes...) |
+| `<YourName>/_common/display/UI_CONFIG.lua` | Defaults used when `ui_settings.lua` does not exist, plus the background presets, text outline, `flags` and `init_delay`, always read |
+| `<YourName>/_common/display/UI_COLOR_CONFIG.lua` | Colours of the values (elements, modes...) |
 
 Defaults in the template `UI_CONFIG.lua`:
 

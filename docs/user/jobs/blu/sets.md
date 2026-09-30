@@ -16,7 +16,7 @@ spell, which set was chosen and why.
 | `sets['<Weapon>']` | Main Weapon (`^numpad1`) or Sub Weapon (`^numpad2`) is that value: one set per value you add in `BLU_STATES.lua`, named exactly like the value (`sets['Naegling'] = {main = "Naegling"}`, `sets['Thibron'] = {sub = "Thibron"}`) |
 
 - The value `Free` (default) has no set: you keep the weapon you wear.
-- With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a value that is
+- With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a value that is
   a real weapon name needs no set.
 - The weapon sets go on top of the idle and engaged sets, in town too.
 - A weapon set chosen as the Sub Weapon only moves the off hand, even if it
@@ -189,7 +189,7 @@ name: `sets.precast.JA['Chain Affinity']`, `['Burst Affinity']`, `['Diffusion']`
 - **Single wield** picks the `.SW` engaged sets by itself from your off hand.
 - **Weapons**: Main / Sub Weapon sets on top of idle and engaged.
 - **Unbridled Learning before an unbridled spell** and **the Expiacion
-  window**: off unless turned on in `common/combat/AUTO_ABILITIES.lua`, see
+  window**: off unless turned on in `_common/combat/AUTO_ABILITIES.lua`, see
   [states.md](states.md#automatic-abilities). They change no gear.
 - **AzureSets addon** loaded with BLU, unloaded when you leave it.
 

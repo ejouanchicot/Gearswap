@@ -27,7 +27,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load | here |
 | `state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled) | here |
 | `cast_tracker.lua` | 58 | Raw `action` listener: did this character start a cast / act since time t | here |
-| `auto_options.lua` | 35 | Reads `<Character>/common/combat/AUTO_ABILITIES.lua` (automatic JA options) | here |
+| `auto_options.lua` | 35 | Reads `<Character>/_common/combat/AUTO_ABILITIES.lua` (automatic JA options) | here |
 | `live_tp.lua` | 30 | TP read from the game instead of GearSwap's stale copy | here (API), [factories-and-helpers.md](factories-and-helpers.md) (users) |
 | `gear_hold.lua` | 25 | `GearHold.active()`: true while a COR roll holds the idle / engaged gear (`_G.cor_roll_hold`, written by `cor/functions/logic/roll_hold.lua`); asked by the Dual Wield, Treasure Hunter and custom-gear layers of the hook chain (2026-09-28) | here ([GearHold](#gearhold)), [cor.md](../jobs/cor.md) |
 | `WATCHDOG_COMMANDS.lua` | 113 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |
@@ -42,7 +42,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 
 | Path | Role |
 |---|---|
-| `shared/utils/config/config_loader.lua` | Required at file level by every entry. Its first statement installs `ModuleCache`; `load_ui_config(char, job)` `dofile`s `<char>/common/display/UI_CONFIG.lua` and fills `_G.UIConfig` / `_G.ui_display_config` (details in [ui-overlay.md](ui-overlay.md)) |
+| `shared/utils/config/config_loader.lua` | Required at file level by every entry. Its first statement installs `ModuleCache`; `load_ui_config(char, job)` `dofile`s `<char>/_common/display/UI_CONFIG.lua` and fills `_G.UIConfig` / `_G.ui_display_config` (details in [ui-overlay.md](ui-overlay.md)) |
 | `_master/entry/Tetsouo_<JOB>.lua` (16) | Entry templates; see [characters-and-templates.md](../architecture/characters-and-templates.md) |
 
 Engine files referenced (outside the repo, read-only): `addons/GearSwap/refresh.lua`, `user_functions.lua`, `packet_parsing.lua`, `gearswap.lua`, `flow.lua`, `libs/Mote-Include.lua`, `libs/Mote-SelfCommands.lua`, `libs/Modes.lua`.
@@ -469,7 +469,7 @@ Callers: all 17 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
 
 | Function | Params | Returns | Callers |
 |---|---|---|---|
-| `on(name)` | option name | true only when `<Character>/common/combat/AUTO_ABILITIES.lua` sets it to `true` | `SAM_STATUS.lua` (`sam_hasso`), `geo_auto_abilities.lua` (`geo_entrust`, `geo_full_circle`), BLU `unbridled.lua` (`blu_unbridled`), `expiacion_guard.lua` (`blu_expiacion_window`) |
+| `on(name)` | option name | true only when `<Character>/_common/combat/AUTO_ABILITIES.lua` sets it to `true` | `SAM_STATUS.lua` (`sam_hasso`), `geo_auto_abilities.lua` (`geo_entrust`, `geo_full_circle`), BLU `unbridled.lua` (`blu_unbridled`), `expiacion_guard.lua` (`blu_expiacion_window`) |
 
 The file is `require('config/AUTO_ABILITIES')` (relative, so the logged-in character's folder), read once per sandbox and cached in `_G._auto_options`; a missing file means every option is off. Template: `_master/config_global/AUTO_ABILITIES.lua`.
 

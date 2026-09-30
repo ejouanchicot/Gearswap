@@ -31,7 +31,7 @@ reload.
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
 the provided template; after cloning, yours are in `<YourName>/thf/`
-and `<YourName>/common/keys/COMMON_KEYBINDS.lua`, and those files win.
+and `<YourName>/_common/keys/COMMON_KEYBINDS.lua`, and those files win.
 
 | Key | Does | When | Shown in the HUD |
 |---|---|---|---|
@@ -118,7 +118,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge, ...) and damaging spells when the day, weather or distance gives enough (`//gs c belt`) |
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
-| Weapon without a set | With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
 | Your own modes | `THF_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |
@@ -158,7 +158,7 @@ In `<YourName>/thf/`:
 | `THF_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
 | `THF_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used |
 
-In `<YourName>/common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
+In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
 `combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:

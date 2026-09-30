@@ -22,7 +22,7 @@ after the mode's value is laid on top of idle and engaged.
 - A new value you add to `MainWeapon` or `RangeWeapon` in `COR_STATES.lua` needs a set
   of the same name: `sets['Fomalhaut'] = { range = "Fomalhaut" }`. Without it, nothing
   is equipped for that value. (For the main weapon only, `equip_without_set` in
-  `common/combat/WEAPON_CONFIG.lua` lets a plain weapon name work without a set; the gun
+  `_common/combat/WEAPON_CONFIG.lua` lets a plain weapon name work without a set; the gun
   always needs one.)
 - Changing either mode re-equips at once.
 - Sheol Gaol and similar events set your subjob to level 0: it keeps its name (/NIN) but

@@ -16,8 +16,10 @@ What WAR adds on top of the shared pipeline:
   `MainWeapon` puts in that slot (`WAR_WS_CONFIG.lua`), backed by real Mote states
   `WS1`..`WS5` shown on the HUD (`ws6`..`ws9` only warn).
 - **Weapon read from the hands** after each load (`sync_weapon_with_hand`).
-- **Auto-Jump** on /DRG: a weaponskill pressed below 1000 TP is cancelled, Jump
-  (then High Jump) builds the TP, and the weaponskill is replayed.
+- **Auto-Jump** on /DRG (`JumpAuto`, Off in the template, WAR's own key
+  `^numpad2`): a weaponskill pressed below 1000 TP is cancelled, Jump (then High
+  Jump) builds the TP, and the weaponskill is replayed. Shared: it runs in
+  `WSPrecastHandler.handle` for every job on /DRG.
 - **TP bonus configuration** with Warcry / Savagery, Fencer and Chango bonuses.
 - **Engaged set selection** by weapon, stance and buff, first match wins: Kraken
   Club (the `NaeglingKC` choice, or a club already in the off hand when the chosen
@@ -44,7 +46,7 @@ numbers are avoided because they drift.
 |------|------:|------|
 | `_master/entry/Tetsouo_WAR.lua` | 313 | Entry point (template): config preload, `get_sets`, `init_gear_sets` + `sync_weapon_with_hand`, `job_sub_job_change`, `user_setup` (+ `AmpullaLock.apply`), `job_update`, `file_unload` (+ `AmpullaLock.release`), `show_keybind_error` |
 | `shared/jobs/war/functions/war_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/war/functions/WAR_PRECAST.lua` | 156 | `job_precast` / `job_post_precast`: guard, cooldown, AutoJump, WS handler, TP gear |
+| `shared/jobs/war/functions/WAR_PRECAST.lua` | 138 | `job_precast` / `job_post_precast`: guard, cooldown, WS handler (which runs AutoJump), TP gear |
 | `shared/jobs/war/functions/WAR_MIDCAST.lua` | 74 | `job_midcast` (empty) / `job_post_midcast`: Healing and Enhancing routed to `MidcastManager` |
 | `shared/jobs/war/functions/WAR_AFTERCAST.lua` | 37 | `job_aftercast`: empty |
 | `shared/jobs/war/functions/WAR_IDLE.lua` | 57 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
@@ -58,11 +60,11 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/logic/set_builder.lua` | 230 | Engaged base selection (KC through `BaseSetBuilder.kraken_in_offhand`, stance, AM3, weapon set, HybridMode), weapon layer (`BaseSetBuilder.lay_weapon`), stance ammo (`apply_stance_ammo` = `AmpullaLock.stance_ammo`), town / movement idle |
 | `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 287 | `buff_war`, `buff_sam_sub`, `build_tp` |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
-| `shared/utils/drg/auto_jump.lua` | 228 | Auto-Jump before a WS on /DRG (shared with DNC) |
+| `shared/utils/drg/auto_jump.lua` | 263 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 88 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | TP bonus piece selection (shared) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
-| `_master/config/war/WAR_STATES.lua` | 116 | All WAR states (`WARStates.configure()`) |
+| `_master/config/war/WAR_STATES.lua` | 124 | All WAR states (`WARStates.configure()`) |
 | `_master/config/war/WAR_KEYBINDS.lua` | 68 | Data only: 8 bind entries handed to `KeybindManager.create('WAR', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/war/WAR_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/war/WAR_HUD.lua` | 31 | HUD section / row order for WAR (empty lists = the default) |
@@ -164,24 +166,19 @@ flowchart TD
     E --> F
     F -- yes --> Z
     F -- no --> G{WeaponSkill}
-    G -- yes --> G2{WSPrecastHandler.validate: range}
-    G2 -- refused --> Z
-    G2 -- ok --> H[AutoJump.auto_trigger_jump]
-    H --> I{eventArgs.cancel}
-    I -- yes --> Z
-    I -- no --> J[WSPrecastHandler.handle with WARTPConfig]
+    G -- yes --> J[WSPrecastHandler.handle with WARTPConfig: range, AutoJump, TP]
     G -- no --> J
 ```
 
 - All modules are loaded lazily on the first action (`ensure_modules_loaded`);
   `WARTPConfig` is captured from `_G.WARTPConfig` at that moment.
-- AutoJump runs between `WSPrecastHandler.validate` (range, weapon) and
-  `WSPrecastHandler.handle` (TP): the TP check would reject the weaponskill
-  below 1000 TP before the jump could build it, while a weaponskill out of
-  range must not spend a Jump.
 - `WSPrecastHandler.handle` returns `true` at once for non-weaponskills; for a
-  weaponskill it validates range and Amnesia (`ws_validator`), computes the TP
-  bonus gear and cancels below 1000 TP read from the game. See
+  weaponskill it validates range and Amnesia (`ws_validator`), runs AutoJump
+  (/DRG, `state.JumpAuto` On; it returns false when the jump takes the
+  weaponskill over), computes the TP bonus gear and cancels below 1000 TP read
+  from the game. AutoJump sits after the range check (a weaponskill out of range
+  spends no Jump) and before the TP check (the jump builds the TP the check
+  would ask for). WAR_PRECAST no longer wires AutoJump itself. See
   [precast pipeline](../systems/precast-pipeline.md#weaponskill-chain).
 - `job_post_precast` only equips the stored TP bonus gear
   (`WSPrecastHandler.apply_tp_gear`).
@@ -264,8 +261,8 @@ recast ids above match Windower's `res/job_abilities.lua`.
 
 ### Auto-Jump (/DRG)
 
-`AutoJump.auto_trigger_jump` (`auto_jump.lua`) is a no-op when `state.JumpAuto` is
-`'Off'`, while a sequence is running (`_G.AUTO_JUMP_SEQUENCE_ACTIVE`), or unless the
+`AutoJump.auto_trigger_jump` (`auto_jump.lua`, called by `WSPrecastHandler.handle`)
+is a no-op unless `state.JumpAuto` is `'On'`, while a sequence is running (`_G.AUTO_JUMP_SEQUENCE_ACTIVE`), or unless the
 subjob is DRG with level > 0, the live TP is under 1000 and Jump or High Jump is
 ready (`should_auto_jump`). It then cancels the weaponskill, fires the jump on
 `<t>`, the other jump after the animation delay if TP is still short
@@ -388,10 +385,10 @@ change ends in a `gs reload`), so all values reset to their defaults. Keys from
 |-------|--------|---------|-----|---------|
 | `HybridMode` (replaced by a new `M{}`) | PDT, Normal (overlay: + SubtleBlow, Hoxne) | PDT | `^numpad9` | `set_builder.lua` `select_stance_engaged`, `select_engaged_base`, `select_idle_base`; `job_state_change` (`AmpullaLock.apply`); Mote `get_melee_set` |
 | `MainWeapon` | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic (overlay order: Chango second) | the weapon in hand, set by `sync_weapon_with_hand()` after the sets load; first option (`Ukonvasara`) when it matches no set | `^numpad1` | `set_builder.lua` `ukonvasara_am3`, `select_weapon_engaged`, `apply_weapon`; `job_state_change` (WS slots) |
-| `JumpAuto` | On, Off | On | `^numpad2`, /DRG only (`subjob = "DRG"`) | `auto_jump.lua` `auto_trigger_jump` |
+| `JumpAuto` | On, Off | Off (overlay: On) | `^numpad2`, /DRG only (`subjob = "DRG"`) | `auto_jump.lua` `auto_trigger_jump` (through `WSPrecastHandler.handle`) |
 | `WS1`..`WS5` | the weapon's WS list, or `None` | entry *i* of the list | `^numpad3`..`^numpad7` | `WSSlots.get` / `cast`; HUD |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` (never reached for WAR) |
-| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `common/keys/COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
+| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `_common/keys/COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
 
 Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
 `TreasureMode` (hidden, `!numpad.`), see
@@ -472,8 +469,8 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 | `<char>/war/WAR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 4 (all subjobs) | file; factory fallback 4 (`WAR_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
 | `<char>/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
 | `<char>/war/WAR_REFILL.lua` | not in the template (overlay only) | player-created | `//gs c refill` (fallback list without it) |
-| `<char>/common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
-| `<char>/common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
+| `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
+| `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
 
@@ -510,15 +507,18 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 
 ## Interactions
 
-- Precast: `PrecastGuard`, `CooldownChecker`, `AutoJump`, `WSPrecastHandler`,
-  `TPBonusCalculator` ([precast pipeline](../systems/precast-pipeline.md)). AutoJump
-  is shared with [DNC](dnc.md).
+- Precast: `PrecastGuard`, `CooldownChecker`, `WSPrecastHandler` (which runs
+  `AutoJump`), `TPBonusCalculator` ([precast pipeline](../systems/precast-pipeline.md)).
+  AutoJump runs for every job on /DRG.
 - Midcast: `MidcastManager` via `MidcastDeps`, `midcast_fallback`
   ([midcast and buffs](../systems/midcast-and-buffs.md)).
 - `DRGJumpManager` for `tp` on /DRG and `//gs c jump`
   ([factories and helpers](../systems/factories-and-helpers.md#drg-jumps)).
-- `SubjobWarBuffs` (`shared/utils/smartbuff/subjob_war_buffs.lua`) is the THF / DNC
-  version of the Berserk / Aggressor / Warcry collection; WAR keeps its own.
+- `SubjobBuffs` (`shared/utils/smartbuff/subjob_buffs.lua`) answers the common
+  `//gs c smartbuff` on every job, WAR included (the self-buffs of the subjob:
+  /SAM Hasso and Third Eye, /NIN Utsusemi, /DNC Haste Samba; on /WAR its own
+  Berserk / Aggressor / Warcry list). WAR's `berserk` / `defender` / `thirdeye` /
+  `tp` stay in its own `smartbuff_manager.lua`.
 - Shared hooks from `INIT_SYSTEMS` (ElementalBelt, DualWield, TreasureHunter,
   CombatMode, CustomStates, HP priority) apply as on every job
   ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).

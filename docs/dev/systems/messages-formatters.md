@@ -58,7 +58,7 @@ caller; they are listed per module under Public API.
 | `formatters/system/message_warp.lua` | 711 | 81 | Warp/teleport system: casting lines, status/test blocks, help, item_user and IPC debug |
 | `formatters/system/message_watchdog.lua` | 289 | 30 | Midcast watchdog status/stats/config/debug/alert/test/help |
 | `formatters/ui/message_alt_commands.lua` | 237 | 1 | `//gs c altcmds` listing |
-| `formatters/ui/message_commands.lua` | 527 | 42 | Output of common/debug commands, `//gs c help` and `//gs c commands` |
+| `formatters/ui/message_commands.lua` | 527 | 42 | Output of _common/debug commands, `//gs c help` and `//gs c commands` |
 | `formatters/ui/message_dualbox.lua` | 190 | 23 | Dual-box role/job sync/status lines |
 | `formatters/ui/message_info.lua` | 66 | 3 | `//gs c info <name>` card, usage, not found |
 | `formatters/ui/message_keybinds.lua` | 119 | 6 | Keybind list line format and bind errors |
@@ -337,7 +337,7 @@ formatter file. `(dead)` means no reachable caller was found (2026-09-28 scan, s
 | `show_cooldown_message(job_name, action_type, name, remaining, status, no_separators)` | core line, path C | `message_buffs.lua`, PLD and RUN `aoe_manager.lua` |
 | `show_spell_cooldown(spell_name, remaining_centiseconds, job_name)` | centiseconds | `precast/cooldown_checker.lua`, BLM `refiner/recast_display.lua`, `refiner/special_handlers.lua` |
 | `show_ability_cooldown(ability_name, remaining_seconds, job_name)` | seconds | `cooldown_checker.lua`, DNC `step_manager.lua`, PLD and RUN `rune_manager.lua` |
-| `show_multi_status(messages, job_name)` | block | BLM `spell_refiner.lua`, `storm_manager.lua`, `recast_display.lua`, DNC/THF `smartbuff_manager.lua`, `dnc/waltz_manager.lua`, `drg/DRG_JUMP_MANAGER.lua`, `precast/tier_refiner.lua` |
+| `show_multi_status(messages, job_name)` | block | BLM `spell_refiner.lua`, `storm_manager.lua`, `recast_display.lua`, `smartbuff/subjob_buffs.lua`, `dnc/waltz_manager.lua`, `drg/DRG_JUMP_MANAGER.lua`, `precast/tier_refiner.lua` |
 | `get_ability_recast_seconds(id)`, `get_spell_recast_seconds(id)` | exported fields (read `windower.ffxi.get_*_recasts`) | `get_ability_recast_seconds`: `cooldown_checker.lua` via the facade; `get_spell_recast_seconds`: internal only |
 | `format_recast_duration(recast)` | used internally only | |
 | `show_ws_cooldown`, `show_item_recast`, `show_stratagem_cooldown`, `show_song_duration`, `show_compact_status`, `show_spell_cooldown_by_id`, `show_ability_cooldown_by_id` | | (dead) |
@@ -382,7 +382,7 @@ lines only when `TPBonusCalculator.config.debug_mode`).
 
 | Module | Live | Dead |
 |---|---|---|
-| message_buffs | `show_buff_status(buffs_data, action_type)`: DNC/THF/WAR `smartbuff_manager.lua`, `buffs/self_buff_manager.lua` | none |
+| message_buffs | `show_buff_status(buffs_data, action_type)`: DNC/THF/WAR `smartbuff_manager.lua`, `smartbuff/subjob_buffs.lua`, `buffs/self_buff_manager.lua` | none |
 | message_debuffs | `show_spell_blocked`, `show_ja_blocked`, `show_ws_blocked`, `show_item_blocked` (`(name, debuff_name)`), `show_action_blocked(action_name, action_type, debuff_name)`, `show_no_silence_cure(spell_name, debuff_message)`, `show_no_paralysis_cure(action_name, debuff_message)` (`debuff/precast_guard.lua`); `show_silence_cure_success(item_name, spell_name, debuff_message)`, `show_paralysis_cure_success(item_name, action_name, debuff_message)` (passed as callbacks by `precast_guard.lua`); `show_auto_medicine_toggled(enabled)` (`debuff/auto_medicine.lua`) | `show_incapacitated(debuff_name)` |
 | message_midcast | `show_debug_enabled`, `show_debug_disabled`, `show_debug_header(spell, skill, target)`, `show_debug_step(step, label, status, value)`, `show_priorities_header`, `show_priority_check(priority, label, found)`, `show_result_header`, `show_result(set_type, is_fallback)`, `show_equipment_line(slot1, item1, slot2, item2)` (`midcast/midcast_manager.lua`) | `show_target_details_header`, `show_target_property(property, value)` |
 | message_precast | all 7: `show_debug_enabled`, `show_debug_disabled` (`DebugCommands.handle_debugprecast`), `show_debug_header(action, action_type)`, `show_debug_step(step, label, status, value)`, `show_completion`, `show_equipped_set(set_type)`, `show_equipment(gear_set)` (`BRD_PRECAST.lua`, `BST_PRECAST.lua`, `RDM_PRECAST.lua`, `RUN_PRECAST.lua`) | none |

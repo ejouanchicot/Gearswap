@@ -387,7 +387,7 @@ There is no per-character warp configuration. All tuning is constants:
 - `spell_caster.lua:24-42` spell levels; `warp_detector.lua:41-59` (`WARP_SPELLS`) spell names and durations, `:32-38` name patterns; `cast_helpers.lua:72-83` ring ids.
 - `mount_manager.lua:28-39` fallback mount, packet id and offset, mounted statuses.
 
-`WARP_ITEMS_OWNED.lua` (`data/<char>/common/`) is written by `WarpOwned.save()` (`wardrobe/lib/warp_owned.lua:98`) and read by `WarpOwned.load()` (`:39`) for the wardrobe organizer's keep list. The warp system itself never reads it. Live today: Tetsouo `Delegate's Garb`, `Dim. Ring (Holla)`, `Instant Warp`, `Nexus Cape`, `Warp Ring`; Kaories `Dim. Ring (Holla)`, `Nexus Cape`, `Warp Ring`.
+`WARP_ITEMS_OWNED.lua` (`data/<char>/_common/`) is written by `WarpOwned.save()` (`wardrobe/lib/warp_owned.lua:98`) and read by `WarpOwned.load()` (`:39`) for the wardrobe organizer's keep list. The warp system itself never reads it. Live today: Tetsouo `Delegate's Garb`, `Dim. Ring (Holla)`, `Instant Warp`, `Nexus Cape`, `Warp Ring`; Kaories `Dim. Ring (Holla)`, `Nexus Cape`, `Warp Ring`.
 
 Destination database (first entry is what the command uses; `act` is the database `cast_delay`; the code only adds it to the post-use window, `use_now` in `item_user.lua`, while the wait reads the activation delay from extdata):
 

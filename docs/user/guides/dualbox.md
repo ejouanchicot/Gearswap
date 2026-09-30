@@ -60,7 +60,7 @@ On the alt, `role = "alt"` and `main_character = "Bob"` instead of
 The job exchange and the alt commands work with one partner; the `alts`
 orders and the alt window work with every member of `group`.
 
-Only the main gets `common/dualbox/alt/` (the alt command files) from the clone
+Only the main gets `_common/dualbox/alt/` (the alt command files) from the clone
 script.
 
 ## Box group orders (`//gs c alts`)

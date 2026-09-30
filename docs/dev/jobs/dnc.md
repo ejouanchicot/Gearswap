@@ -3,9 +3,10 @@
 The DNC job area has 11 hook modules, the facade and 5 logic modules under
 `shared/jobs/dnc/functions/` (1 625 lines), one entry point per character,
 eight config files and one sets file. It also owns, or is the main user of,
-four shared helpers: `shared/utils/dnc/waltz_manager.lua`,
-`shared/utils/drg/auto_jump.lua`, `shared/utils/precast/ability_helper.lua` and
-`shared/utils/smartbuff/subjob_war_buffs.lua`. GearSwap loads it when the main
+two shared helpers: `shared/utils/dnc/waltz_manager.lua` and
+`shared/utils/precast/ability_helper.lua`; it uses two more that serve every
+job, `shared/utils/drg/auto_jump.lua` (through `WSPrecastHandler.handle`) and
+`shared/utils/smartbuff/subjob_buffs.lua`. GearSwap loads it when the main
 job becomes DNC. From then on Mote-Include calls its hooks on every action, on
 status and buff changes, on `//gs c` commands and on state cycles.
 
@@ -15,7 +16,8 @@ Player-facing pages: [start page](../../user/jobs/dnc/README.md),
 What DNC adds on top of the shared pipeline:
 
 - **Weaponskill auto-triggers**: Jump / High Jump when TP is short on /DRG
-  (`AutoJump`, after the range check), then Climactic Flourish before
+  (`AutoJump`, run by `WSPrecastHandler.handle` after the range check, as on
+  every job), then Climactic Flourish before
   configured weaponskills (`ClimaticManager` -> `AbilityHelper.try_ability_ws`,
   after the full check), each cancelling the WS and replaying it. A WS out of
   range spends neither (2026-09-28).
@@ -24,7 +26,8 @@ What DNC adds on top of the shared pipeline:
   `.SaberDance`, `.FanDance`, `.Clim` and their combinations, applied before the
   TP-bonus earring.
 - **Dancer commands**: `step` (Presto + MainStep/AltStep rotation), `dance`,
-  `smartbuff` (dance + samba + subjob buffs), plus the shared `waltz` /
+  `smartbuff` (dance + samba + the subjob buffs of `SubjobBuffs`, answered
+  before the common `smartbuff`), plus the shared `waltz` /
   `aoewaltz` (WaltzManager).
 - **Mote overrides**: `refine_waltz` becomes a no-op and
   `cancel_conflicting_buffs` keeps only the Sneak / Spectral Jig / Stoneskin
@@ -39,26 +42,26 @@ function; line numbers are given only where no function name fits.
 |------|------:|------|
 | `_master/entry/Tetsouo_DNC.lua` | 294 | Entry point (template): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/dnc/functions/dnc_functions.lua` | 107 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 225 | `refine_waltz` override, `job_precast` (guard, cooldown, `job_precast_samba`, Climactic timestamp, `job_precast_weaponskill`, WS handler), `job_post_precast` (WS variant, TP gear) |
+| `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 206 | `refine_waltz` override, `job_precast` (guard, cooldown, `job_precast_samba`, Climactic timestamp, `job_precast_weaponskill`, WS handler), `job_post_precast` (WS variant, TP gear) |
 | `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 89 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
 | `shared/jobs/dnc/functions/DNC_AFTERCAST.lua` | 38 | `job_aftercast`: watchdog tick only (exported to `_G` only) |
 | `shared/jobs/dnc/functions/DNC_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/dnc/functions/DNC_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/dnc/functions/DNC_STATUS.lua` | 19 | `LifecycleManager.status_change()` |
 | `shared/jobs/dnc/functions/DNC_BUFFS.lua` | 43 | `LifecycleManager.buff_change(on_dance_change)`: Doom, then a gear refresh on Saber/Fan Dance gain or loss |
-| `shared/jobs/dnc/functions/DNC_COMMANDS.lua` | 187 | `job_self_command` router; `job_state_change = LifecycleManager.state_change()` |
+| `shared/jobs/dnc/functions/DNC_COMMANDS.lua` | 190 | `job_self_command` router (its own `smartbuff` ahead of the common commands); `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/dnc/functions/DNC_MOVEMENT.lua` | 13 | Header only, kept for the 12-module layout |
 | `shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DNC', ...)` wrappers |
 | `shared/jobs/dnc/functions/DNC_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DNC', ...)` wrapper |
 | `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 84 | `ClimaticManager.auto_trigger`, `has_three_finishing_moves`, `WS_MIN_TP` 1000 |
 | `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 121 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
 | `shared/jobs/dnc/functions/logic/step_manager.lua` | 96 | `execute_step`: recast check, Presto, Main/Alt rotation |
-| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 273 | `apply` (dance, samba, subjob buffs), `apply_dance` |
+| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 211 | `apply` (dance, samba, then `SubjobBuffs.collect`), `apply_dance` |
 | `shared/jobs/dnc/functions/logic/set_builder.lua` | 167 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
 | `shared/utils/dnc/waltz_manager.lua` | 261 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
-| `shared/utils/drg/auto_jump.lua` | 228 | Jump before WS on /DRG (shared with WAR) |
+| `shared/utils/drg/auto_jump.lua` | 263 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
 | `shared/utils/precast/ability_helper.lua` | 409 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
-| `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | /WAR buffs (shared with THF) |
+| `shared/utils/smartbuff/subjob_buffs.lua` | 185 | Subjob buffs (/WAR, /SAM, /NIN, /DNC) of every job's `smartbuff`; DNC uses `collect` |
 | `_master/config/dnc/DNC_STATES.lua` | 211 | All Mote states |
 | `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 10 binds, data only; `KeybindManager.create('DNC', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/dnc/DNC_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -145,7 +148,7 @@ flowchart TD
     I -- yes --> J[_G.dnc_climactic_timestamp = os.time]
     I -- no --> K
     J --> K{WeaponSkill}
-    K -- yes --> L["job_precast_weaponskill: WSPrecastHandler.validate (range), AutoJump, WSPrecastHandler.handle (TP), ClimaticManager"]
+    K -- yes --> L["job_precast_weaponskill: WSPrecastHandler.handle (range, AutoJump, TP), ClimaticManager"]
     K -- no --> Z3[done]
 ```
 
@@ -153,12 +156,13 @@ flowchart TD
   (`shared/utils/core/live_tp.lua`) is below its own `spell.tp_cost`
   (resources: Drain Samba 100, II 250, III 400, Aspir Samba 100, II 250, Haste
   Samba 350), and lets every samba through under Trance.
-- `job_precast_weaponskill`: `WSPrecastHandler.validate` (range and weapon,
-  no TP) first, so a WS out of range spends no Jump; then AutoJump (it builds
-  the TP the WS lacks, so it must come before the TP check); a WS AutoJump
-  took over returns before `WSPrecastHandler.handle` (no false "Not enough
-  TP"); then `handle`; then Climactic, which needs 1000 TP anyway. Until
-  2026-09-28 both helpers ran before any check.
+- `job_precast_weaponskill`: `WSPrecastHandler.handle`, which checks range
+  first (a WS out of range spends no Jump), then runs AutoJump (it builds the
+  TP the WS lacks, so it comes before the TP check; a WS it took over makes
+  `handle` return false, with no false "Not enough TP"), then the TP check;
+  then Climactic, which needs 1000 TP anyway. Until 2026-09-28 both helpers
+  ran before any check; until 2026-09-30 DNC called `WSPrecastHandler.validate`
+  and AutoJump itself.
 - Utsusemi Ichi / Ni skip the spell cooldown check.
 - `job_post_precast`: `WSVariantSelector.apply_variant` first, then
   `WSPrecastHandler.apply_tp_gear`, so the Moonshade Earring survives the
@@ -175,12 +179,15 @@ flowchart TD
 sequenceDiagram
     participant U as Player
     participant P as job_precast
+    participant W as WSPrecastHandler
     participant J as AutoJump
     participant C as ClimaticManager
     participant H as AbilityHelper
     U->>P: /ws Rudra's Storm (TP 700, /DRG)
-    P->>J: auto_trigger_jump: cancel, /ja Jump <t>, replay WS
+    P->>W: handle: range ok
+    W->>J: auto_trigger_jump: cancel, /ja Jump <t>, replay WS
     U->>P: replayed /ws (TP now >= 1000)
+    P->>W: handle: range, TP ok
     P->>C: auto_trigger: ClimacticAuto On, live TP >= max(min_tp, 1000), target HP > 25%, 3+ Finishing Moves, whitelisted WS
     C->>H: try_ability_ws(spell, eventArgs, 'Climactic Flourish', 1)
     H->>H: ready and buff down -> cancel, /ja Climactic Flourish <me>
@@ -232,7 +239,7 @@ equipped after the variant, on any weaponskill (since 2026-09-29).
 
 Then, with Saber Dance up, `sets.buff['Saber Dance']` is combined on top
 (since 2026-09-29), then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
-set, main + sub; with `equip_without_set` in `common/combat/WEAPON_CONFIG.lua`, a
+set, main + sub; with `equip_without_set` in `_common/combat/WEAPON_CONFIG.lua`, a
 value with no set but a weapon name gives `{main = value}`), then, when
 `SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. That field
 is written into `result`, which is a fresh table only when the weapon set was
@@ -272,8 +279,15 @@ deadline), else `input /ja "<step>" <t>`; flips `CurrentStep` when alternating.
    `Drain Samba`), or the live TP is below its cost (`SAMBAS`) without Trance
    (under Trance the cost is not checked, since 2026-09-28). The queued samba
    then passes `job_precast_samba`, which applies the same rule.
-3. Subjob (`collect_subjob_buffs`): /WAR `SubjobWarBuffs` (Berserk, Aggressor,
-   Warcry), /NIN Utsusemi Ni then Ichi, /SAM Hasso (138); others nothing.
+3. Subjob (`SubjobBuffs.collect(subjob)`, the list of the common `smartbuff`,
+   see [midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)): /WAR
+   Berserk, Aggressor, Warcry; /NIN Utsusemi Ni then Ichi; /SAM Hasso (138,
+   only with a two-handed weapon) then Third Eye (133); others, or a level-0
+   subjob, nothing.
+
+`smartbuff` / `buffself` are answered in `job_self_command` before the common
+commands block, so DNC never reaches the common `smartbuff` (subjob buffs
+only).
 
 `dance` / `fandance` (`apply_dance`) casts `state.Dance` even when active.
 
@@ -308,7 +322,7 @@ from `shared/hooks/init_spell_messages.lua`.
 
 Created by `DNCStates.configure()` on every `user_setup()`. Keybinds from
 `_master/config/dnc/DNC_KEYBINDS.lua`, all `cyclestate`; `#numpad0`
-(AutoMedicine) comes from the character's `common/keys/COMMON_KEYBINDS.lua`. No bind
+(AutoMedicine) comes from the character's `_common/keys/COMMON_KEYBINDS.lua`. No bind
 is filtered by subjob.
 
 | State | Values | Default | Key | Read by |
@@ -321,7 +335,7 @@ is filtered by subjob.
 | `UseAltStep` | On, Off | On | `^numpad5` | `execute_step` |
 | `CurrentStep` | Main, Alt | Main | none | `execute_step` |
 | `ClimacticAuto` | On, Off | On | `^numpad6` | `ClimaticManager.auto_trigger` |
-| `JumpAuto` | On, Off | On | `^numpad7` | `auto_jump.lua` |
+| `JumpAuto` | On, Off | Off | `^numpad7`, /DRG only (`subjob = 'DRG'` set by `AutoJump.attach`) | `auto_jump.lua` (through `WSPrecastHandler.handle`) |
 | `Dance` | Saber Dance, Fan Dance | Saber Dance | `^numpad8` | `collect_dance`, `collect_samba` |
 | `Samba` | Haste Samba, Drain Samba II, Aspir Samba | Haste Samba | `^numpad0` | `collect_samba` |
 | `CombatWeaponMode` | Normal, TPBonus, Clim, ClimTPBonus | Normal | none | nothing |
@@ -335,7 +349,7 @@ Step values are the resource names (`Quickstep`, not `Quick Step`).
 ## Commands
 
 `job_self_command` (`DNC_COMMANDS.lua`): `altjobupdate`, `requestjob`,
-watchdog, CommonCommands (`table.unpack(args)`), `ui`, `debugmidcast`,
+watchdog, `smartbuff` / `buffself`, CommonCommands (`table.unpack(args)`), `ui`, `debugmidcast`,
 `cyclestate`, then DNC commands. `fandance` is also a key of the DNC alt
 command config; the DNC command answers first, so it runs here even when the
 dual-box partner plays DNC (`//gs c alt fandance` sends the partner's).
@@ -344,7 +358,7 @@ dual-box partner plays DNC (`//gs c alt fandance` sends the partner's).
 |---------|--------|
 | `waltz` / `aoewaltz` | WaltzManager (common command) |
 | `jump` | `DRGJumpManager.execute_jump` (common command, no WS replay) |
-| `smartbuff` / `buffself` | `SmartbuffManager.apply()` |
+| `smartbuff` / `buffself` | `SmartbuffManager.apply()` (DNC's own, ahead of the common `smartbuff`) |
 | `step` | `StepManager.execute_step()` |
 | `dance` / `fandance` | `SmartbuffManager.apply_dance()` |
 
@@ -407,8 +421,8 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 
 ## Interactions
 
-- Precast: `PrecastGuard`, `CooldownChecker`, `WSPrecastHandler`,
-  `AbilityHelper`, `AutoJump` ([precast pipeline](../systems/precast-pipeline.md),
+- Precast: `PrecastGuard`, `CooldownChecker`, `WSPrecastHandler` (which runs
+  `AutoJump`), `AbilityHelper` ([precast pipeline](../systems/precast-pipeline.md),
   [factories and helpers](../systems/factories-and-helpers.md#drg-jumps)).
 - Midcast: `MidcastManager`, `MidcastDeps`, `MidcastFallback`,
   `MidcastWatchdog`, `UtsusemiShadows`
@@ -418,7 +432,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
   shown), `CombatMode`, `CustomStates`
   ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
 - `WaltzManager` and `DRGJumpManager` serve every job with DNC or DRG as
-  subjob; `SubjobWarBuffs` is shared with [THF](thf.md).
+  subjob; `SubjobBuffs` answers `smartbuff` on every other job.
 - Messages: `message_buffs`, `show_ability_tp_error`, `show_ability_cooldown`,
   `show_waltz_heal`, `show_multi_status` ([messages](../systems/messages.md)).
 
@@ -426,10 +440,10 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 
 - `user_setup()` runs before the DNC hook files; the Mote overrides are
   installed in `get_sets` after it.
-- A helper that cancels a WS (`AutoJump`, `try_ability_ws`) stops
-  `job_precast` through the `eventArgs.cancel` checks in
-  `job_precast_weaponskill` and `job_precast`; code added there must keep
-  them.
+- A helper that cancels a WS (`AutoJump` inside `WSPrecastHandler.handle`,
+  `try_ability_ws`) stops `job_precast` through the `handle` return value and
+  the `eventArgs.cancel` checks in `job_precast_weaponskill` and
+  `job_precast`; code added there must keep them.
 - The WS variant must be equipped before the TP piece (`job_post_precast`).
 - Saber Dance blocks waltzes and Fan Dance blocks sambas in game; DNC does not
   cancel them for manual macros (only `//gs c waltz` cancels Saber Dance).
@@ -482,15 +496,14 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   `state.Samba`.
 - New step: add the resource name to `MainStep` / `AltStep` and a
   `sets.precast.Step['<name>']`.
-- New smartbuff subjob: a `collect_<sub>_buffs` returning
-  `(abilities, status)` and a branch in `collect_subjob_buffs`.
+- New smartbuff subjob: a collector returning `(abilities, status)` in
+  `shared/utils/smartbuff/subjob_buffs.lua` (`COLLECTORS`); DNC and every
+  other job pick it up.
 
 ## Known issues
 
 - The override drops Mote's Monomi Sneak cancel (entry,
   `cancel_conflicting_buffs`).
-- /SAM smartbuff queues Hasso, which needs a two-handed weapon
-  (`collect_sam_buffs`); a DNC holds daggers.
 - Fixed 2026-09-28: `collect_samba` skips its TP test under Trance, like
   `job_precast_samba`, so smartbuff no longer leaves out a samba the game
   allows for free.

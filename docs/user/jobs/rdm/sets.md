@@ -18,7 +18,7 @@ spell, which set was chosen and why.
 
 - To add a weapon: add the value to `MainWeapon` / `SubWeapon` in `RDM_STATES.lua`
   and a set of the same name. With `equip_without_set = true` in
-  `common/combat/WEAPON_CONFIG.lua`, a value that is a real weapon name needs no set.
+  `_common/combat/WEAPON_CONFIG.lua`, a value that is a real weapon name needs no set.
 - The weapon sets go on top of the idle and engaged sets (in town too).
 - `sets.CombatMode`, if you define it (the provided file has none), is put on
   when you turn Combat Mode On, just before the lock.

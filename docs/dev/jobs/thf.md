@@ -26,9 +26,11 @@ What THF adds on top of the shared pipeline:
   (`shared/utils/equipment/treasure_hunter.lua`) does the tagging and the
   action overlay; the THF layer adds the `SATA` mode and builds the engaged
   TH itself.
-- **Subjob smartbuff** (`//gs c smartbuff`: /DNC Haste Samba, /WAR Berserk,
-  Aggressor, Warcry, /NIN Utsusemi), the **Feint-Bully-Conspirator** opener
-  (`//gs c fbc`), and Steal / Mug / Despoil on `<t>` (`//gs c steal`).
+- The **Feint-Bully-Conspirator** opener (`//gs c fbc`) and Steal / Mug /
+  Despoil on `<t>` (`//gs c steal`). `//gs c smartbuff` (subjob buffs) is the
+  common command of every job since 2026-09-30 (`SubjobBuffs`, see
+  [midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)); THF no
+  longer has its own.
 
 THF has no spell refinement, no midcast overrides and no job-specific message
 formatter.
@@ -50,18 +52,18 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/THF_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/thf/functions/THF_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/thf/functions/THF_BUFFS.lua` | 71 | `job_buff_change`: DoomManager, SA/TA pending reset, `gs c update` on SA/TA loss while engaged, Aftermath Lv.3 refresh (`LifecycleManager.refresh_after_buff`) |
-| `shared/jobs/thf/functions/THF_COMMANDS.lua` | 224 | `job_self_command` router, `job_state_change` (`LifecycleManager.state_change` + RangeLock lock/unlock) |
+| `shared/jobs/thf/functions/THF_COMMANDS.lua` | 218 | `job_self_command` router, `job_state_change` (`LifecycleManager.state_change` + RangeLock lock/unlock) |
 | `shared/jobs/thf/functions/THF_MOVEMENT.lua` | 18 | Header only, kept for the 12-module layout |
 | `shared/jobs/thf/functions/THF_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('THF', ...)` wrappers |
 | `shared/jobs/thf/functions/THF_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('THF', ...)` wrapper |
 | `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 95 | `apply_variant`: WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
 | `shared/jobs/thf/functions/logic/set_builder.lua` | 250 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, `sata_th_layer` (laid again after Dual Wield), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
-| `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 263 | `apply` per subjob, `apply_fbc`, `apply_steal` |
+| `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 145 | `apply_fbc`, `apply_steal` |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 68 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`, plus Combat Mode's lock registry (`'thf_range'`); `release` at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 52 | THF layer over the shared module: `sata_overlay`, and `init` hands the shared wrapper the SA/TA + TH layer |
 | `shared/utils/equipment/treasure_hunter.lua` | 290 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
 | `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
-| `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting (shared with DNC) |
+| `shared/utils/smartbuff/subjob_buffs.lua` | 185 | `//gs c smartbuff` of every job (common command): /WAR, /SAM, /NIN, /DNC self-buffs |
 | `_master/config/thf/THF_STATES.lua` | 145 | All Mote states (`THFStates.configure()`) |
 | `_master/config/thf/THF_KEYBINDS.lua` | 37 | Data only: 7 binds (2 only on /WAR) handed to `KeybindManager.create('THF', ...)` |
 | `_master/config/thf/THF_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -238,7 +240,7 @@ sequenceDiagram
    read directly); otherwise `WeaponResolver.set_for('main', MainWeapon)` then
    `set_for('sub', SubWeapon)`, each through `pcall(set_combine)`. By default
    `set_for` returns `sets[value]`; with `equip_without_set = true` in the
-   character's `common/combat/WEAPON_CONFIG.lua` it returns the set only when it names
+   character's `_common/combat/WEAPON_CONFIG.lua` it returns the set only when it names
    that slot (for `sub`, only its `sub` piece), else `{main = value}` /
    `{sub = value}` when `value` is a weapon name in `res.items`. A missing
    weapon set is skipped silently.
@@ -323,7 +325,7 @@ Two layers:
 
 THF's own STATES file defines `TreasureMode` as `Tag`, `SATA`, `Full` (default
 `Tag`, no `Off`). `OptionalState.attach` records it as native, so it is shown
-unless `hidden.THF` is set in the character's `common/keys/treasure_mode.lua`.
+unless `hidden.THF` is set in the character's `_common/keys/treasure_mode.lua`.
 
 | Mode | Engaged set | SA/TA overlay | Action overlay |
 |------|-------------|---------------|----------------|
@@ -355,14 +357,11 @@ unless `hidden.THF` is set in the character's `common/keys/treasure_mode.lua`.
 
 ### Smartbuff, FBC and Steal
 
-`SmartbuffManager.apply()` by `player.sub_job`:
-
-| Subjob | Behaviour |
-|--------|-----------|
-| DNC | Haste Samba if not active, ready and live TP >= 350, else a grouped TP message, or a cooldown line. Reads recast id 216, shared by all sambas |
-| WAR | `SubjobWarBuffs.collect()` then `.cast()` 2 s apart (Berserk, Aggressor, Warcry); status lines only when nothing is cast |
-| NIN | Utsusemi: Ni if ready, else Ichi, else both cooldowns (spell recasts 339 / 338); uses `windower.send_command` |
-| other | warning "No smartbuff configured for /<sub>" |
+`//gs c smartbuff` is no longer a THF command: the common command
+(`SubjobBuffs.apply()`, [midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs))
+answers it on THF as on every job (/DNC Haste Samba at 350 TP, /WAR Berserk,
+Aggressor, Warcry, /NIN Utsusemi: Ni else Ichi, /SAM Hasso with a two-handed
+weapon and Third Eye; other subjobs: a warning).
 
 `apply_fbc()` and `apply_steal()` share one runner, `run_sequence`: `triage`
 sorts a list into "cast" and "status", and `cast_sequence` sends the ones to
@@ -439,7 +438,7 @@ selected; `sets.idle.PDT` comes from `HybridMode` (see above). `state.Moving` co
 `job_self_command` lowercases the first word and tests, in order:
 `altjobupdate`, `requestjob`, `steal`, `watchdog`, CommonCommands (forwarded
 with `table.unpack(args)`), `ui`, `debugmidcast`, `cyclestate`, then
-`smartbuff`, `fbc`, `range`. A name none of them answers goes to Mote, whose
+`fbc`, `range` (`smartbuff` is a common command). A name none of them answers goes to Mote, whose
 last lookup is the dual-box partner's alt config (see
 [commands](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing)).
 `steal` is tested before the common commands, but it is not one, so the order
@@ -454,7 +453,6 @@ changes nothing.
 | `ui ...` | UI toggles | `UICommands` |
 | `debugmidcast` | Toggle MidcastManager debug | `job_self_command` |
 | `cyclestate <State>` | `CycleHandler.handle_cyclestate` (every bind except the two `toggle`s) | `job_self_command` |
-| `smartbuff` | `SmartbuffManager.apply()` | `job_self_command` |
 | `fbc` | `SmartbuffManager.apply_fbc()` | `job_self_command` |
 | `range` | Equip crossbow + bolts, `RangeLock.engage()`, `/ra <stnpc>` | `job_self_command` |
 | `toggle AbyProc` / `toggle RangeLock` | Mote `handle_toggle` -> `job_state_change` + `handle_update` | Mote |
@@ -507,9 +505,9 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 | `<char>/thf/THF_MACROBOOK.lua` | book 1 page 1 solo; dual-box RDM 1, GEO 2, COR 3 | file; factory fallback 1/1 | `MacrobookManager` |
 | `<char>/thf/THF_TP_CONFIG.lua` -> `_G.THFTPConfig` | Moonshade ear1 +250; weapons Aeneas 500, Centovente 1000 | file | `TPBonusHandler` -> `TPBonusCalculator` (main and sub weapon) |
 | `<char>/thf/THF_REFILL.lua` | none in the template (built-in list) | overlay only | `refill/config_resolver.lua` |
-| `<char>/common/keys/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
-| `<char>/common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
-| `<char>/common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
+| `<char>/_common/keys/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
+| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
+| `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
 | Hard-coded | crossbow/bolt names (`range`), quiver threshold (`job_aftercast`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
 
 ## State & lifetime
@@ -540,13 +538,14 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 - Precast: `PrecastGuard`, `CooldownChecker`, `WSPrecastHandler`,
   `TPBonusCalculator` ([precast pipeline](../systems/precast-pipeline.md)).
 - Midcast: `MidcastManager`, `MidcastDeps`, `MidcastWatchdog`,
-  `MidcastFallback` ([midcast and buffs](../systems/midcast-and-buffs.md));
-  `SubjobWarBuffs` is shared with [DNC](dnc.md).
+  `MidcastFallback` ([midcast and buffs](../systems/midcast-and-buffs.md)).
+- `//gs c smartbuff`: `SubjobBuffs`, common command
+  ([midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)).
 - Gear hooks installed by `INIT_SYSTEMS`: `ElementalBelt` (Aeolian Edge and
   other elemental WS, elemental ninjutsu), `DualWield` (needs `sets.DW`),
   `TreasureHunter` (action overlay; the engaged wrapper steps aside),
   `CustomStates`, `CastTime`, `CombatMode` ([factories and helpers](../systems/factories-and-helpers.md)).
-- Messages: `message_buffs` (`show_buff_status`), `show_multi_status`,
+- Messages: `message_buffs` (`show_buff_status`),
   `show_success`, cooldown messages ([messages](../systems/messages.md)).
 - `QuiverManager` ([equipment and inventory](../systems/equipment-and-inventory.md)),
   `BaseSetBuilder`, `WeaponResolver`, `LifecycleManager`, `DoomManager`,
@@ -554,7 +553,9 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   `CycleHandler` ([commands and debug](../systems/commands-and-debug.md)),
   dual-box ([dualbox](../systems/dualbox.md)).
 - `//gs c waltz` / `jump` on THF/DNC and THF/DRG go through the common
-  commands (`WaltzManager`, `DRGJumpManager`); THF has no AutoJump.
+  commands (`WaltzManager`, `DRGJumpManager`). On /DRG, Auto-Jump before a
+  weaponskill comes from `WSPrecastHandler.handle`, as on every job
+  (`state.JumpAuto` created Off by `AutoJump.attach`, key `!numpad-`).
 
 ## For maintainers / AI
 
@@ -600,8 +601,8 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   `.TA`, `.SATA`; no code change.
 - New weapon: add a state value in `THF_STATES.lua` and a `sets['<value>']`
   (or rely on `equip_without_set`).
-- New smartbuff subjob: add an `apply_<sub>_buffs` function and a branch in
-  `SmartbuffManager.apply()`; reuse the `SubjobWarBuffs` collect/cast style.
+- New smartbuff subjob: add a collector to `COLLECTORS` in
+  `shared/utils/smartbuff/subjob_buffs.lua` (every job gets it).
 - New command: add a branch after the CommonCommands block. A name that is
   also an alt config key then runs here; the alt's version stays reachable as
   `//gs c alt <name>`.

@@ -359,7 +359,7 @@ flowchart TD
 
 Created by `BRDStates.configure()` on every `user_setup()`. Keys from
 `_master/config/brd/BRD_KEYBINDS.lua`; `^` = Ctrl, `#` = Apps. `#numpad0`
-(AutoMedicine) comes from the character's `common/keys/COMMON_KEYBINDS.lua`.
+(AutoMedicine) comes from the character's `_common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -379,6 +379,7 @@ Created by `BRDStates.configure()` on every `user_setup()`. Keys from
 | `FastCast` | 0..80 step 10 | 80 | none | `MidcastWatchdog` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (common key) | `PrecastGuard` |
 | `CombatMode`, `TreasureMode` (optional states) | Off/On, Off/Tag/Full | Off, hidden | `!numpad0`, `!numpad.` once shown | `combat_mode.lua`, `treasure_hunter.lua` |
+| `JumpAuto` (created by `AutoJump.attach`) | Off, On | Off | `!numpad-`, shown on /DRG only | `auto_jump.lua`, through `WSPrecastHandler.handle` |
 
 Mote defaults also exist: `OffenseMode`, `HybridMode`, `CastingMode`,
 `RangedMode`, `WeaponskillMode` (all `Normal` only). `^numpad9` is left empty.

@@ -63,14 +63,14 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
-| `craft [variant]`, `craft off` | Crafting set from the file named in `common/inventory/CRAFT_CONFIG.lua` (`craft_file`, default `common/sets/craft_sets.lua`, empty until you fill it). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook` |
-| `fish` (`fishing`) | Fishing set from `common/sets/fishing_sets.lua` (same) |
+| `craft [variant]`, `craft off` | Crafting set from the file named in `_common/inventory/CRAFT_CONFIG.lua` (`craft_file`, default `_common/sets/craft_sets.lua`, empty until you fill it). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook` |
+| `fish` (`fishing`) | Fishing set from `_common/sets/fishing_sets.lua` (same) |
 | `uncraft` | Leave the craft / fishing set |
 
 `wo` details: it unequips everything and locks your slots while it runs,
 then releases them and sends `ls` and `rf`. Its words are lowercase only: an
 unknown word (even `Preview`) runs a full organize. The bags it uses come from
-`common/inventory/WARDROBE_CONFIG.lua` if you have one; otherwise wardrobes 1-2 are the
+`_common/inventory/WARDROBE_CONFIG.lua` if you have one; otherwise wardrobes 1-2 are the
 main bags and 3-6 and 8 the overflow (wardrobe 7 is never touched).
 
 ## Travel
@@ -161,8 +161,8 @@ and partner job ([HUD](../features/ui.md#key-conflicts)).
 | `debugstate` (`ds`) | Internal counters |
 | `commands` (`cmds`) | The built-in list of commands, grouped |
 | `help` (`?`) | Where each system's own help is (`tb help`, `stealth help`, `combatmode help`...) |
-| `dw` [`auto` \| `none` \| `haste` \| `haste2` \| `max`] | Dual Wield tier: estimated magic haste and its sources, tier, `sets.DW.<tier>` used; a word forces a tier, `auto` goes back to the estimate (`common/combat/DW_CONFIG.lua`) |
-| `belt` | Obi / Orpheus: automatic on or off, belts found, today's day and weather, what each belt adds now (`common/combat/ELEMENTAL_BELT.lua`) |
+| `dw` [`auto` \| `none` \| `haste` \| `haste2` \| `max`] | Dual Wield tier: estimated magic haste and its sources, tier, `sets.DW.<tier>` used; a word forces a tier, `auto` goes back to the estimate (`_common/combat/DW_CONFIG.lua`) |
+| `belt` | Obi / Orpheus: automatic on or off, belts found, today's day and weather, what each belt adds now (`_common/combat/ELEMENTAL_BELT.lua`) |
 | `atelier` / `atelier on` / `atelier off` | Write the loaded job's sets, keys, modes, macro book and lockstyle for the **Atelier** page: open `data/atelier.html` in your browser. `on`: also after every job load (per character). Files: `<YourName>/atelier/<JOB>.js` |
 | `trace on` / `off` / `clear` | Record what the game returns to `<YourName>/trace.log` (keeps recording across restarts until `trace off`). Also writes each load's steps, every file loaded, every command sent, every GearSwap event and a line every second: after a game crash, the last line shows what was going on. Past 10 MB the file becomes `trace.old.log` (send both) |
 | `testcolors` (`colors`) | Chat colour codes |

@@ -33,7 +33,7 @@ reload.
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
 the provided template; after cloning, yours are in `<YourName>/dnc/`
-and `<YourName>/common/keys/COMMON_KEYBINDS.lua`, and those files win. No DNC key
+and `<YourName>/_common/keys/COMMON_KEYBINDS.lua`, and those files win. No DNC key
 depends on the subjob (Jump Auto only acts on /DRG).
 
 | Key | Does | When | Shown in the HUD |
@@ -44,7 +44,7 @@ depends on the subjob (Jump Auto only acts on /DRG).
 | `^numpad4` | Cycle Alt Step: Quickstep, Box Step, Feather Step | always | yes |
 | `^numpad5` | Use Alt Step On / Off | always | yes |
 | `^numpad6` | Climactic Auto On / Off | always | yes |
-| `^numpad7` | Jump Auto On / Off, default Off (acts on /DRG only) | always | yes |
+| `^numpad7` | Jump Auto On / Off, default Off | /DRG only | /DRG only |
 | `^numpad8` | Cycle Dance: Saber Dance, Fan Dance | always | yes |
 | `^numpad0` | Cycle Samba: Haste Samba, Drain Samba II, Aspir Samba | always | yes |
 | `^numpad9` | Cycle Hybrid Mode: PDT, Normal | always | yes |
@@ -131,7 +131,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
 | Treasure Mode | Off and hidden. `//gs c th show` to use it: the template already has `sets.TreasureHunter` |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Your own modes | `DNC_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Utsusemi (/NIN) | Utsusemi: Ichi removes your old shadows 2.3 s into the cast so the new ones take (shared with every job; needs Windower's Cancel addon) |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key) |
@@ -155,7 +155,7 @@ In `<YourName>/dnc/`:
 | `DNC_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
 | `DNC_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
-In `<YourName>/common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
+In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
 `combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:

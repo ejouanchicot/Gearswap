@@ -71,7 +71,7 @@ lists are in [states.md](states.md).
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `BLM_CUSTOM.lua` (empty in the template) | yes |
 
-The common keys come from `<YourName>/common/keys/COMMON_KEYBINDS.lua`: edit that
+The common keys come from `<YourName>/_common/keys/COMMON_KEYBINDS.lua`: edit that
 file to change them for every job at once. Combat Mode needs no extra key on
 BLM: it is native here, on Ctrl+Numpad8.
 
@@ -211,7 +211,7 @@ In `<YourName>/blm/`:
 | `BLM_TP_CONFIG.lua` | Moonshade Earring entry; not read by the weaponskill TP code today |
 | `BLM_REFILL.lua` | Optional, not in the template: items `//gs c rf` keeps in your inventory |
 
-Shared by every job, in `<YourName>/common/`: `COMMON_KEYBINDS.lua`,
+Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua` and `treasure_mode.lua` (written by their commands),
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
 `DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`. Your sets are in

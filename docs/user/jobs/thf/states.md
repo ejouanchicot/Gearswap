@@ -33,7 +33,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 | Command | What it does |
 |---|---|
-| `//gs c smartbuff` | By subjob. /DNC: Haste Samba if it is down, ready and you have 350 TP. /WAR: Berserk, Aggressor, Warcry (the ready ones, 2 s apart). /NIN: Utsusemi: Ni, else Ichi. |
+| `//gs c smartbuff` | Common command, by subjob. /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning. |
 | `//gs c fbc` | Feint, Bully, Conspirator: the ones that are ready (and whose buff is not already up), 1 s apart. |
 | `//gs c steal` | Steal, Mug, Despoil (the ready ones) on your target. Does nothing unless the target is a living monster. |
 | `//gs c range` | Equips Exalted Crossbow and Acid Bolt (names fixed in the code), locks range and ammo, then shoots `/ra <stnpc>`. |
@@ -54,7 +54,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   `//gs c th` shows the status; `//gs c th hide` turns Treasure Hunter off on
   THF and removes its key, `//gs c th show` brings it back.
 - **Weapons without a set**: with `equip_without_set = true` in
-  `common/combat/WEAPON_CONFIG.lua`, a Main or Sub Weapon value that has no
+  `_common/combat/WEAPON_CONFIG.lua`, a Main or Sub Weapon value that has no
   `sets.<Weapon>` equips the weapon of that name directly.
 - **Sneak Attack / Trick Attack.** While the buff is up and you are engaged,
   `sets.buff['Sneak Attack']` / `['Trick Attack']` go on top; they come off

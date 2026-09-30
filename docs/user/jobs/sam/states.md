@@ -57,7 +57,7 @@ are useful with a subjob:
   gear, then weaponskill gear. Only a weaponskill in range and with 1000 TP
   does this: a refused one does not use Third Eye.
 - **Auto stance** (off by default): `sam_hasso = true` in
-  `<YourName>/common/combat/AUTO_ABILITIES.lua` uses your chosen stance (Hasso, or
+  `<YourName>/_common/combat/AUTO_ABILITIES.lua` uses your chosen stance (Hasso, or
   Seigan after `//gs c seigan`) when you engage, if neither Hasso nor Seigan
   is up and it is ready.
 - **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` otherwise
@@ -71,7 +71,7 @@ are useful with a subjob:
   (the provided file has no `sets.idle.Town`), you get that set on top of the idle set
   plus your weapon, nothing else.
 - **Weapons without a set**: with `equip_without_set = true` in
-  `common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no `sets.<Weapon>`
+  `_common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no `sets.<Weapon>`
   equips the weapon of that name directly.
 - Sekkanoki and Meikyo Shisui add `sets.buff.Sekkanoki` /
   `sets.buff['Meikyo Shisui']` to the weaponskill when the buff is up.

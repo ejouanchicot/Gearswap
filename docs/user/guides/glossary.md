@@ -48,7 +48,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Slot lock** | A slot GearSwap leaves alone whatever the set says (Combat Mode, Doom, craft...) |
 | **Subjob** | FFXI: your second job (`/NIN`, `/SAM`...). A subjob change reloads the job file 0.5 s later |
 | **Tag** | Treasure Hunter: a mob is tagged once one of your actions lands on it with TH gear on; after that your normal gear can come back |
-| **Template** | The files in `_master/` the clone script copies from. The game reads them only for the alt commands, when your `common/dualbox/alt/` lacks a file |
+| **Template** | The files in `_master/` the clone script copies from. The game reads them only for the alt commands, when your `_common/dualbox/alt/` lacks a file |
 | **TH** (Treasure Hunter) | FFXI: raises the drop rate of the mob it is applied to. `sets.TreasureHunter` and Treasure Mode (`//gs c th`) |
 | **Town set** | `sets.idle.Town` (or `sets.Adoulin`), worn idle in a town on top of the idle set |
 | **TP** (Tactical Points) | FFXI: built by fighting, spent by weaponskills (1000 minimum, 3000 maximum). TP bonus gear adds to the TP a weaponskill counts |

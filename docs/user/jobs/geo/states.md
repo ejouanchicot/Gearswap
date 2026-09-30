@@ -65,7 +65,7 @@ you lack the MP, the highest lower tier you know that can go out is cast instead
 ## Notes
 
 - All modes go back to their default on every job change, subjob change and reload.
-- Two automatic abilities are available, off by default, in `<YourName>/common/combat/AUTO_ABILITIES.lua`:
+- Two automatic abilities are available, off by default, in `<YourName>/_common/combat/AUTO_ABILITIES.lua`:
   `geo_entrust = true` puts Entrust up before an Indi- you cast on a party member, and
   `geo_full_circle = true` uses Full Circle before a Geo- cast while a luopan is out.
 - The author's alt overlay uses the same modes and keys, with one

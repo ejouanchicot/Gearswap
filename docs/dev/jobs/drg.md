@@ -104,9 +104,10 @@ does nothing.
 
 ### Jumps
 
-`shared/utils/drg/` serves `/DRG` only and was not changed:
+`shared/utils/drg/` serves `/DRG` only and was not changed for the DRG job:
 `DRG_JUMP_MANAGER.execute_jump` (the common `//gs c jump`) and
-`AutoJump.auto_trigger_jump` (WAR / DNC precast) both return at once when
+`AutoJump.auto_trigger_jump` (run by `WSPrecastHandler.handle` for every job
+since 2026-09-30) both return at once when
 `player.sub_job ~= 'DRG'`, and use Jump / High Jump only (recast ids 158 /
 159). On a Dragoon main job `DRG_COMMANDS` takes `jump` before the common
 commands and runs `logic/jumps.lua`:
@@ -213,6 +214,7 @@ Created by `DRGStates.configure()` on every `user_setup()`.
 | `AutoMedicine` | ON, OFF | persisted | `#numpad0` (common key) | `AutoMedicine.init` |
 | `IdleMode`, `CastingMode`, `RangedMode` (Mote) | Normal | Normal | Mote's F-keys | Mote only |
 | `CombatMode`, `TreasureMode` (optional states) | | Off | hidden | shared hooks |
+| `JumpAuto` (created by `AutoJump.attach`) | Off, On | Off | `!numpad-`, shown on /DRG only, so never on DRG main | `auto_jump.lua` (no effect on DRG main) |
 
 DRG has no signature state yet (like DRK and SAM): `^numpad3` holds Offense
 Mode.
@@ -269,8 +271,10 @@ T = `_master/sets/drg_sets.lua`. Player version:
   `CommonCommands.handle_jump` comment says "DRG main or sub" but
   `DRG_JUMP_MANAGER` refuses anything but /DRG: on DRG main the job's own
   `jump` answers first.
-- No automatic jump before a weaponskill on DRG main (`state.JumpAuto`):
-  `auto_jump.lua` is /DRG-only and not extended here.
+- No automatic jump before a weaponskill on DRG main: `auto_jump.lua` (run by
+  `WSPrecastHandler.handle`) is /DRG-only and not extended here; the
+  `JumpAuto` state `AutoJump.attach` gives every job exists on DRG main but its
+  row and key stay hidden.
 
 ## Left out on purpose (later options)
 

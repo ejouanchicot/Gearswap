@@ -184,8 +184,8 @@ flowchart TD
     F --> G
     D -- "other" --> G
     G -- yes --> X
-    G -- no --> H["job logic + AbilityHelper (Majesty, Saboteur, Climactic, AutoJump...)"]
-    H --> I{"WSPrecastHandler.handle"}
+    G -- no --> H["job logic + AbilityHelper (Majesty, Saboteur, Climactic...)"]
+    H --> I{"WSPrecastHandler.handle (range, AutoJump on /DRG, TP)"}
     I -- "false (cancelled)" --> X
     I -- "true" --> J["job-specific precast gear"]
     J --> K["Mote default_precast (unless handled)"]
@@ -199,8 +199,7 @@ The `action_type` dispatch in front of `CooldownChecker` is repeated in all 17
 
 | Job | Deviation (function) |
 |---|---|
-| WAR | `WSPrecastHandler.validate` (range) then `AutoJump.auto_trigger_jump` (`shared/utils/drg/auto_jump.lua`, /DRG) **before** `WSPrecastHandler.handle` (TP): it cancels a WS short on TP, Jumps, and replays the WS |
-| DNC | Utsusemi: Ichi/Ni excluded from the spell cooldown check; `job_precast_samba` checks `spell.tp_cost` against `live_tp()` (skipped under Trance); Climactic timestamp; `job_precast_weaponskill` runs `WSPrecastHandler.validate` (range), `JumpManager.auto_trigger_jump`, `WSPrecastHandler.handle` (TP), then `ClimaticManager.auto_trigger` (`AbilityHelper.try_ability_ws`, gated by `state.ClimacticAuto`). `job_post_precast` applies `WSVariantSelector.apply_variant` **then** the TP gear. `refine_waltz` is overridden with a no-op |
+| DNC | Utsusemi: Ichi/Ni excluded from the spell cooldown check; `job_precast_samba` checks `spell.tp_cost` against `live_tp()` (skipped under Trance); Climactic timestamp; `job_precast_weaponskill` runs `WSPrecastHandler.handle` (range, AutoJump, TP), then `ClimaticManager.auto_trigger` (`AbilityHelper.try_ability_ws`, gated by `state.ClimacticAuto`). `job_post_precast` applies `WSVariantSelector.apply_variant` **then** the TP gear. `refine_waltz` is overridden with a no-op |
 | BLM | `check_recast_or_refine`: abilities in `BLM_SPELL_FILTERS.CHARGE_ABILITIES` skip the cooldown check; tiered spells go to BLM's own `refine_various_spells` (`logic/refiner/`, which calls `TierRefiner.find_available_tier`); others take the plain spell check |
 | BRD | `SongRefinement.refine_song` **before** the cooldown check; after the cancel check `job_precast_bardsong` (Pianissimo through `AbilityHelper.follow_up_or_abort`) and `try_marcato`; `WSPrecastHandler`; instrument lock for Honor March / Aria of Passion (`InstrumentLockConfig.requires_lock`) |
 | WHM | `retier_cure` **before** the cooldown check: a Cure/Curaga that `CureManager.select_cure_tier` swaps is cancelled and re-sent under the new name; a cure left as it is goes on to the cooldown check. `paralyna_on_self` sets `handled` (no swap) for Paralyna while paralyzed. See [factories and helpers](factories-and-helpers.md#whm-curemanager) |
@@ -375,7 +374,7 @@ that outlives the sandbox.
 | `RDM_PRECAST.lua` `stage_saboteur` | Saboteur (`try_ability_smart`, `RDMSaboteurConfig.wait_time`) | enfeebles in `RDMSaboteurConfig.auto_trigger_spells` when `state.SaboteurMode` is On |
 | `dnc/functions/logic/climactic_manager.lua` `auto_trigger` | Climactic Flourish (`try_ability_ws`, 1 s) | `state.ClimacticAuto` not Off, configured WS, live TP >= max(`min_tp`, 1000), target HP above `min_target_hpp`, 3 or more Finishing Moves |
 | `blu/functions/logic/unbridled.lua` | Unbridled Learning (`try_ability`) | an Unbridled spell, unless Unbridled Wisdom is up |
-| `geo/functions/logic/geo_auto_abilities.lua` `apply` | Entrust (`try_ability`, 1.5 s) | Indi- on an ally when turned on in `common/combat/AUTO_ABILITIES.lua` |
+| `geo/functions/logic/geo_auto_abilities.lua` `apply` | Entrust (`try_ability`, 1.5 s) | Indi- on an ally when turned on in `_common/combat/AUTO_ABILITIES.lua` |
 | `blm_functions.lua` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
 | `dnc/functions/logic/step_manager.lua` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
 | `SAM_PRECAST.lua` | Third Eye (`follow_up`) | before Third Eye-gated actions |
@@ -404,6 +403,7 @@ sequenceDiagram
     M->>M: validate_weaponskill (Amnesia) then range formula
     V->>M: validate_weaponskill(spell.name) again
     V-->>H: false -> eventArgs.cancel (range failure also cancel_spell())
+    H->>H: AutoJump.auto_trigger_jump (JumpAuto On, /DRG, TP short, a jump ready) -> cancel, return false
     H->>T: calculate_tp_gear(spell, tp_config) on live_tp()
     T-->>H: _G.temp_tp_bonus_gear = gear or nil
     H->>H: live_tp() < 1000 -> cancel + "Not enough TP"
@@ -413,7 +413,15 @@ sequenceDiagram
 ```
 
 - `WSPrecastHandler`'s local `ensure_modules_loaded` loads MessageFormatter,
-  WSValidator and TPBonusHandler under `pcall`. It loads no WS database; only the WS
+  WSValidator, TPBonusHandler and AutoJump (`shared/utils/drg/auto_jump.lua`)
+  under `pcall`.
+- **AutoJump runs inside `handle`** (since 2026-09-30), after the range check and
+  before the TP gear and the 1000 TP check: a WS out of range spends no Jump, and the
+  TP check would otherwise refuse the WS the Jump is there to make possible. It acts
+  only with `state.JumpAuto.value == 'On'` on /DRG (level above 0) with TP below 1000
+  and Jump or High Jump ready; it then cancels the WS, jumps and replays it, and
+  `handle` returns false. Every job gets it; no `[JOB]_PRECAST.lua` calls it. Details:
+  [factories-and-helpers.md](factories-and-helpers.md#drg-jumps). It loads no WS database; only the WS
   message hook reads one.
 - `ws_validator.lua` `include()`s `weaponskill_manager.lua`, which sets
   `_G.WeaponSkillManager`. With ModuleCache the validator (and so the include) runs
@@ -614,10 +622,10 @@ custom -> action completes -> aftercast -> idle/engaged set rebuilt.
 
 **Weaponskill: Savage Blade, WAR main with /DRG, 900 TP.**
 guard -> `check_ability_cooldown` (WS has no `recast_id`, returns) ->
-`WSPrecastHandler.validate` (range) -> `AutoJump` cancels the WS, Jumps, replays it
-(`eventArgs.cancel`, return) -> cleanup only. The replayed WS: guard -> cooldown ->
-validate -> AutoJump (TP now enough) -> `WSPrecastHandler.handle`:
-range, Amnesia, TP gear computed, `live_tp() >= 1000` -> `default_precast`:
+`WSPrecastHandler.handle`: range, Amnesia -> `AutoJump` cancels the WS, Jumps,
+replays it (`handle` returns false) -> cleanup only. The replayed WS: guard ->
+cooldown -> `WSPrecastHandler.handle`: range, Amnesia, AutoJump (TP now enough),
+TP gear computed, `live_tp() >= 1000` -> `default_precast`:
 `sets.precast.WS['Savage Blade'][ws_mode]` -> `user_post_precast`: WS message (TP from
 the game) -> `job_post_precast`: TP gear equipped over the WS set -> cleanup chain ->
 midcast: Mote finds nothing under `sets.midcast` for a WS, so the WS set stays ->
@@ -703,13 +711,13 @@ cooldown. Callers: all 17 `[JOB]_PRECAST.lua`, always gated by `spell.action_typ
 
 `on_refused(spell, recast_id)`: see above. Caller: `CooldownChecker` (`announce`, under `pcall`).
 
-### RECAST_CONFIG (`<Character>/common/combat/RECAST_CONFIG.lua`, template `_master/config_global/RECAST_CONFIG.lua`)
+### RECAST_CONFIG (`<Character>/_common/combat/RECAST_CONFIG.lua`, template `_master/config_global/RECAST_CONFIG.lua`)
 
 `RECAST_CONFIG.is_ready(recast, custom_tolerance)`: `nil` -> false; if `enabled` is
 false, `recast == 0`; else `recast <= tolerance`. `RECAST_CONFIG.on_cooldown(...)` is
 its negation. Globals `is_recast_ready(recast)` and `is_on_cooldown(recast)` are
 exported with `_G.RECAST_CONFIG` and used directly by `waltz_manager.lua`,
-`drg/auto_jump.lua`, `drg/DRG_JUMP_MANAGER.lua`, `smartbuff/subjob_war_buffs.lua`, the
+`drg/auto_jump.lua`, `drg/DRG_JUMP_MANAGER.lua`, `smartbuff/subjob_buffs.lua`, the
 DNC/THF/WAR smartbuff managers, the DNC step manager, the PLD/RUN aoe and rune
 managers and `BLM_COMMANDS.lua`.
 
@@ -732,11 +740,12 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 ### Weaponskill modules
 
 - `WSPrecastHandler.validate(spell, eventArgs) -> boolean` (2026-09-28): range and
-  weapon only (`WSValidator`), no TP check, no TP gear. Callers: DNC and WAR, before
-  AutoJump.
+  weapon only (`WSValidator`), no TP check, no TP gear. No caller since 2026-09-30
+  (DNC and WAR called it before AutoJump, which now runs inside `handle`).
 - `WSPrecastHandler.handle(spell, eventArgs, tp_config) -> boolean`: `true` for non-WS
-  or a WS that may proceed; `tp_config = nil` skips the TP gear. `apply_tp_gear(spell)`.
-  Callers: all 17 `[JOB]_PRECAST.lua` (`job_precast` / `job_post_precast`).
+  or a WS that may proceed; `false` when refused or taken over by AutoJump;
+  `tp_config = nil` skips the TP gear. `apply_tp_gear(spell)`.
+  Callers: all 22 `[JOB]_PRECAST.lua` (`job_precast` / `job_post_precast`).
 - `WSValidator.validate(spell, eventArgs) -> boolean`. Callers: `WSPrecastHandler.handle` and `.validate`.
 - `WeaponSkillManager.check_weaponskill_range(spell)`, `validate_weaponskill(ws_name)`,
   `initialize()` (no caller), `config` (`distance_check_enabled` is never read).
@@ -777,7 +786,7 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 | Command | Args | Effect | Handler |
 |---|---|---|---|
 | `//gs c automedicine` / `//gs c am` | optional `on` / `off` | toggle or force `state.AutoMedicine`, persist, repaint HUD, print | `COMMON_COMMANDS.lua` `handle_command` -> `CommonCommands.handle_automedicine` -> `AutoMedicine.handle_command` |
-| `//gs c cyclestate AutoMedicine` | - | Mote cycle through the wrapped `cycle` (persists) | bound to `#numpad0` by `common/keys/COMMON_KEYBINDS.lua` (template `_master/config_global/COMMON_KEYBINDS.lua`) |
+| `//gs c cyclestate AutoMedicine` | - | Mote cycle through the wrapped `cycle` (persists) | bound to `#numpad0` by `_common/keys/COMMON_KEYBINDS.lua` (template `_master/config_global/COMMON_KEYBINDS.lua`) |
 | `//gs c ws1` .. `//gs c ws9` (WAR), `ws`, `ws1`.. (PLD) | - | fire the weaponskill held by slot N | `WAR_COMMANDS.lua`, `PLD_COMMANDS.lua` -> `WSSlots.cast` |
 | `//gs c debugprecast` | - | toggle `_G.PrecastDebugState` (read by RDM, BRD, RUN precast debug output), persisted in `windower._gs_debug.PRECAST` | `DebugCommands.handle_debugprecast` |
 | `//gs c trace on` / `off` | - | trace log: `PRECAST`, `WSTP`, `TP`, `BELT`, `MIDCAST` lines in `<Character>/trace.log` | see [commands-and-debug.md](commands-and-debug.md) |
@@ -812,7 +821,7 @@ lists are then empty.
 | `party_announce` | `{}` | name / shared recast name -> `true` or text (RecastAnnounce) |
 | `party_announce_every` | `1` | seconds between two announces of one key |
 
-Each entry point loads it with `_G.RECAST_CONFIG = require('<Char>/common/combat/RECAST_CONFIG')`
+Each entry point loads it with `_G.RECAST_CONFIG = require('<Char>/_common/combat/RECAST_CONFIG')`
 in `get_sets()`, before the job modules.
 
 ### TP configs
@@ -886,8 +895,9 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
   uses `shared/utils/core/live_tp.lua` too; GearSwap's copy is never refreshed inside
   a `coroutine.schedule` callback.
 - An ability fired before a weaponskill belongs after the checks: SAM's Third Eye
-  and DNC's Climactic run after `WSPrecastHandler.handle`, WAR/DNC Jump after
-  `WSPrecastHandler.validate` (range) but before the TP check it exists to satisfy.
+  and DNC's Climactic run after `WSPrecastHandler.handle`, AutoJump (every job on
+  /DRG) inside `handle`, after the range check but before the TP check it exists to
+  satisfy.
   Until 2026-09-28 all three ran first, so a WS out of range spent the ability.
 - `WSValidator` calls `validate_weaponskill` twice on the success path, and
   PrecastGuard has already blocked Amnesia before it runs.
@@ -927,7 +937,7 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
   `TierRefiner.refine`, and route the job's spell to `refine` **instead of** the
   cooldown check.
 - **New party announce**: add the key to `party_announce` in the character's
-  `common/combat/RECAST_CONFIG.lua`; no code change.
+  `_common/combat/RECAST_CONFIG.lua`; no code change.
 - **New cleanup overlay**: write an `install()` that wraps `cleanup_precast` /
   `cleanup_midcast` once per sandbox (flag on `_G`), tests `eventArgs.cancel`, and call
   it from `INIT_SYSTEMS.lua` at the right place in the order above.

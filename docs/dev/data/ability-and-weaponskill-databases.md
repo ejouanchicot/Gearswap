@@ -8,7 +8,7 @@ behaviour of its own. They are read at runtime by three consumers: the JA announ
 `action_type` is `'Ability'`), the WS announcement hook (`shared/hooks/init_ws_messages.lua`, on every
 weapon skill), and the `//gs c info <name>` viewer (through `shared/utils/data/data_loader.lua`). RDM's
 command fallback reads neither: it resolves names from the game resources. Offline, the job-ability
-module files are the input of the generator that produced `common/dualbox/alt/<JOB>_ALT_COMMANDS.lua`
+module files are the input of the generator that produced `_common/dualbox/alt/<JOB>_ALT_COMMANDS.lua`
 (dual-box alt commands); that generator is not in the repository.
 
 Nothing in this area registers events, keybinds, coroutines or `windower.*` fields. All state is
@@ -188,7 +188,7 @@ not read these databases: cooldowns come from `spell.recast_id`, `AbilityHelper`
 | `description` | string | all 334 entries | `ability_message_handler.lua` (only in `ja_mode == 'full'`), `info_command.lua` |
 | `level` | number | all | `info_command.lua`; offline alt-commands generator |
 | `recast` | number, seconds (SCH stratagems and rolls use `0`) | all | `info_command.lua` |
-| `main_job_only` | boolean | all | offline alt-commands generator only (`main_only` in `common/dualbox/alt/*_ALT_COMMANDS.lua`) |
+| `main_job_only` | boolean | all | offline alt-commands generator only (`main_only` in `_common/dualbox/alt/*_ALT_COMMANDS.lua`) |
 | `cumulative_enmity`, `volatile_enmity` | number | all except the 31 rolls and `Assassin's Charge` | none |
 | `fm_cost` | number | DNC flourishes | none |
 | `lucky`, `unlucky` | number | COR rolls | none |
@@ -470,7 +470,7 @@ defaults are `ja_mode = 'on'`, `ws_mode = 'on'`.
 sub, else `_mainjob` or `_sp`) with the standard fields (`description`, `level`, `recast`,
 `main_job_only`, `cumulative_enmity`, `volatile_enmity`), keyed by the exact `res/job_abilities.lua`
 `en` name. Nothing else is needed for announcements or `info`. The generated
-`common/dualbox/alt/<JOB>_ALT_COMMANDS.lua` does not pick it up (the generator is not in the repository); add
+`_common/dualbox/alt/<JOB>_ALT_COMMANDS.lua` does not pick it up (the generator is not in the repository); add
 it to `<JOB>_ALT_CUSTOM.lua` if the alt should use it.
 
 **Add a module file to a job**: create `<job>/<job>_<suffix>.lua` with `.abilities`, then add the suffix

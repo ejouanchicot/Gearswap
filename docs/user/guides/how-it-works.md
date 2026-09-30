@@ -45,7 +45,7 @@ is **cancelled**: no gear moves and a chat line says why.
    Panacea for Paralysis before an ability.
 2. **Is it ready?** An ability or spell still on recast is cancelled with the
    time left. A recast of 2 s or less counts as ready (the game and GearSwap
-   do not agree to the tenth of a second: `common/combat/RECAST_CONFIG.lua`).
+   do not agree to the tenth of a second: `_common/combat/RECAST_CONFIG.lua`).
    Some jobs step a spell down instead of cancelling it: a Cure, a nuke or an
    enfeeble on recast (or too expensive) becomes a lower tier
    ([auto-tier](../features/auto-tier-system.md)).
@@ -62,7 +62,7 @@ is **cancelled**: no gear moves and a chat line says why.
 
 Some jobs also fire a job ability for you just before the action (for
 example Entrust before an Indi- spell on a party member). Most of these are
-off until you turn them on in `common/combat/AUTO_ABILITIES.lua`.
+off until you turn them on in `_common/combat/AUTO_ABILITIES.lua`.
 
 ### 2. Midcast: the effect set (spells and ranged attacks)
 

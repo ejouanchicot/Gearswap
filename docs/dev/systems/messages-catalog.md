@@ -182,7 +182,7 @@ Colour tokens (the keys of `COLOR_CODES` in `core/message_engine.lua`, standard 
 
 An alias follows its base colour unless the player sets the alias itself in `chat.colors`
 (`ChatPalette.code`). `orange` is `MessageColors.region_orange()`: 57 by default, or the code
-returned by `<Char>/common/display/REGION_CONFIG.lua` through `_G.RegionConfig` (see
+returned by `<Char>/_common/display/REGION_CONFIG.lua` through `_G.RegionConfig` (see
 [messages.md](messages.md)). It is read at each render, so the frozen-orange behaviour described in
 earlier revisions of this page no longer exists.
 
@@ -416,7 +416,7 @@ their line in the data file; they have no path from any caller (see Known issues
 
 - File: `data/systems/dualbox_messages.lua` - 27, 15 reachable. Sender: `formatters/ui/message_dualbox.lua`. Caller: `shared/utils/dualbox/dualbox_manager.lua`. Colours 122 (x24), 167 (x3).
 - Unreachable since 2026-09-28 (12): `not_initialized` and the `status_*` keys (`status_header`, `status_role`, `status_alt_this`, `status_alt_target`, `status_main_this`, `status_main_target`, `status_enabled`, `status_alt_online`, `status_alt_job`, `status_last_update`, `status_footer`). Their only sender, `DualBoxManager.show_status`, had no caller and was removed; the `MessageDualbox.show_not_initialized` / `show_status_*` functions remain, uncalled.
-- Keys: `config_loaded`, `config_not_found` (config_path); `role`, `status_role` (role); `alt_info_this`, `main_info_this`, `status_alt_this`, `status_main_this` (this_char); `alt_info_target`, `main_info_target`, `status_alt_target`, `status_main_target` (target_char); `alt_role_detected`, `main_role_detected`, `reloading_macrobook`, `target_error`, `not_initialized`, `status_header`, `status_footer`; `job_update_sent` (target_name, main_job, sub_job); `job_request_received`, `requesting_job` (target_name); `job_update_received` (role, main_job, sub_job); `status_enabled` (enabled); `status_alt_online` (online); `status_alt_job` (job, subjob); `status_last_update` (seconds). `not_initialized` tells the user to "Check dualbox_config.lua"; the loader reads `<char>/common/dualbox/DUALBOX_CONFIG`.
+- Keys: `config_loaded`, `config_not_found` (config_path); `role`, `status_role` (role); `alt_info_this`, `main_info_this`, `status_alt_this`, `status_main_this` (this_char); `alt_info_target`, `main_info_target`, `status_alt_target`, `status_main_target` (target_char); `alt_role_detected`, `main_role_detected`, `reloading_macrobook`, `target_error`, `not_initialized`, `status_header`, `status_footer`; `job_update_sent` (target_name, main_job, sub_job); `job_request_received`, `requesting_job` (target_name); `job_update_received` (role, main_job, sub_job); `status_enabled` (enabled); `status_alt_online` (online); `status_alt_job` (job, subjob); `status_last_update` (seconds). `not_initialized` tells the user to "Check dualbox_config.lua"; the loader reads `<char>/_common/dualbox/DUALBOX_CONFIG`.
 
 ### `EQUIPMENT`
 
@@ -445,7 +445,7 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `KEYBINDS`
 
-- File: `data/systems/keybinds_messages.lua` - 7 templates. Sender: `formatters/ui/message_keybinds.lua`. Callers: `shared/utils/keybinds/keybind_manager.lua` (every job's keybinds go through it) and the frozen `Gabvanstronger/common/*/<JOB>_KEYBINDS.lua` files (`show_keybind_list`).
+- File: `data/systems/keybinds_messages.lua` - 7 templates. Sender: `formatters/ui/message_keybinds.lua`. Callers: `shared/utils/keybinds/keybind_manager.lua` (every job's keybinds go through it) and the frozen `Gabvanstronger/_common/*/<JOB>_KEYBINDS.lua` files (`show_keybind_list`).
 - Reachable: `keybind_header_separator` (separator); `keybind_header_title` (padded_title); `no_binds_error` (job_name); `bind_failed_error` (bind_key); `bind_failed_error_reason` (bind_key, reason).
 - Unreachable: `keybind_line`:28 (`format_keybind_line` builds the line itself), `invalid_bind_error`:42.
 

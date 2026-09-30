@@ -73,7 +73,7 @@ the job.
 | `^-` / `^=` | Mote: NPC target selection on / off, party target mode | always | not on the HUD |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | once you make one | listed by `tb list` |
 
-- The six common keys come from your `common/keys/COMMON_KEYBINDS.lua`; the rows
+- The six common keys come from your `_common/keys/COMMON_KEYBINDS.lua`; the rows
   above are the template's. The Alt+Numpad7-9 keys matter only when you
   dual-box.
 - Combat Mode is native on RDM: its key is `^numpad5` above. Treasure Mode is
@@ -156,9 +156,9 @@ Checked in the code for RDM:
 | Feature | Effect on RDM |
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, paralysis, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
-| Recast check | An ability or spell on recast is cancelled with its time left. Tiered nukes, and tiered enfeebles while Enfeeble Tier is On, use the tier step-down instead. Optional party message per action in `common/combat/RECAST_CONFIG.lua` |
+| Recast check | An ability or spell on recast is cancelled with its time left. Tiered nukes, and tiered enfeebles while Enfeeble Tier is On, use the tier step-down instead. Optional party message per action in `_common/combat/RECAST_CONFIG.lua` |
 | Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `RDM_TP_CONFIG.lua` are handled by the TP bonus calculation ([TP bonus](../war/tp-bonus.md)) |
-| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on nukes and on Sanguine Blade / Seraph Blade when they add at least 5 % (`common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) |
+| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on nukes and on Sanguine Blade / Seraph Blade when they add at least 5 % (`_common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) |
 | Combat Mode | Native on RDM (`^numpad5`): On puts on `sets.CombatMode` if you define one, then locks main, sub and range, so no set swaps your weapons |
 | Dispelga with Daybreak | `//gs c dispelga`: Daybreak for the cast, your weapon back after, even through Combat Mode |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
@@ -191,7 +191,7 @@ In `<YourName>/rdm/`:
 | `RDM_HUD.lua` | Order of this job's HUD sections and rows |
 | `RDM_REFILL.lua` | Consumables for `//gs c rf` (not in the template: you create it) |
 
-In `<YourName>/common/`, the files every job reads that matter here:
+In `<YourName>/_common/`, the files every job reads that matter here:
 `COMMON_KEYBINDS.lua` (common keys), `combat_mode.lua` / `treasure_mode.lua`
 (written by `combatmode` / `th`), `RECAST_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `DW_CONFIG.lua`, `WEAPON_CONFIG.lua` (`equip_without_set`: a weapon value

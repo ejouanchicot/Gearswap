@@ -34,7 +34,7 @@ reload.
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
 the provided template; after cloning, yours are in `<YourName>/drk/`
-and `<YourName>/common/keys/COMMON_KEYBINDS.lua`, and those files win.
+and `<YourName>/_common/keys/COMMON_KEYBINDS.lua`, and those files win.
 
 | Key | Does | When | Shown in the HUD |
 |---|---|---|---|
@@ -112,7 +112,7 @@ DRK has no command of its own. The common commands that work on DRK:
 | Obi / Orpheus | Added to elemental weaponskills (Sanguine Blade, Dark Harvest, Shadow of Death, Infernal Scythe, ...) and damaging spells (Elemental Magic, ...) when the day, weather or distance gives enough (`//gs c belt`) |
 | Treasure Hunter | Off and hidden. Needs `//gs c th show` and a `sets.TreasureHunter` you add |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | With `equip_without_set = true` in `common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Dual Wield tiers | Only while holding two weapons with a `sets.DW`: not the case with the DRK weapons of the template |
 | Your own modes | `DRK_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |
@@ -135,7 +135,7 @@ In `<YourName>/drk/`:
 | `DRK_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
 | `DRK_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used |
 
-In `<YourName>/common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
+In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and
 `treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
 `combatmode`). Gear: `<YourName>/drk/drk_sets.lua`. See

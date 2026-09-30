@@ -207,7 +207,7 @@ All in `<YourName>/bst/` (plain Lua files; `//gs c reload` after an edit).
 
 Your sets are in `<YourName>/bst/bst_sets.lua`. Files shared by every job
 (common keys, Combat Mode, Treasure Mode, belts, Dual Wield...) are in
-`<YourName>/common/`: see the [configuration guide](../../guides/configuration.md).
+`<YourName>/_common/`: see the [configuration guide](../../guides/configuration.md).
 
 ## See also
 

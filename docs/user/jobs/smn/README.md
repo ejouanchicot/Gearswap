@@ -59,7 +59,7 @@ been reported missing from the HUD; the key works either way.
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `SMN_CUSTOM.lua` (examples only in the template) | yes |
 
-The common keys come from `<YourName>/common/keys/COMMON_KEYBINDS.lua`.
+The common keys come from `<YourName>/_common/keys/COMMON_KEYBINDS.lua`.
 
 ### Mote-Include keys (always bound, not on the HUD)
 
@@ -188,7 +188,7 @@ In `<YourName>/smn/`:
 | `SMN_MACROBOOK.lua` | Macro book and page per subjob; dual-box block empty |
 | `SMN_REFILL.lua` | Optional, not provided: items `//gs c rf` keeps in your inventory |
 
-Shared by every job, in `<YourName>/common/`: `COMMON_KEYBINDS.lua`,
+Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua` and `treasure_mode.lua` (written by their commands),
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
 `DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`. Your sets are in

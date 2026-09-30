@@ -60,7 +60,7 @@ the job.
 | `f12` | Mote: put your current gear back on and print the modes | always | not on the HUD |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | once you make one | listed by `tb list` |
 
-- The six common keys come from your `common/keys/COMMON_KEYBINDS.lua`.
+- The six common keys come from your `_common/keys/COMMON_KEYBINDS.lua`.
 - Your own keys from `DRG_CUSTOM.lua` are added on top (the template file has
   only commented examples). `//gs c kc` lists every key conflict.
 
@@ -116,6 +116,6 @@ Sets: `<YourName>/drg/drg_sets.lua`, see [sets.md](sets.md).
 ## Not done by the job
 
 No automatic Call Wyvern, Spirit Link or Restoring Breath, and no automatic
-jump before a weaponskill (the Jump Auto mode of WAR and DNC works only with
+jump before a weaponskill (the Jump Auto mode every job has works only with
 /DRG). Steady Wing has no set: its barrier counts the wyvern HP gear you wore
 a moment before, so keep wyvern HP pieces in your idle or engaged sets.

@@ -166,8 +166,8 @@ no midcast, no aftercast.
   auto-abilities) → WSPrecastHandler → job gear**. PrecastGuard blocks on
   debuffs and can send Echo Drops / Remedy / Panacea (AutoMedicine).
   CooldownChecker cancels on recast (tolerance 2.0 s from `RECAST_CONFIG`).
-  WSPrecastHandler validates range, computes TP-bonus gear and cancels below
-  1000 TP, reading the TP from game memory (`TPBonusHandler.live_tp()`), not
+  WSPrecastHandler validates range, runs Auto-Jump on /DRG (`state.JumpAuto`
+  On), computes TP-bonus gear and cancels below 1000 TP, reading the TP from game memory (`TPBonusHandler.live_tp()`), not
   GearSwap's lagging `player.vitals.tp` copy. Exceptions: BRD songs, BLM/RDM tiered spells and WHM cures are
   refined before the recast check (BLM and RDM replace the check with tier
   refinement for tiered spells; a cure WHM leaves as it is still gets the check).
@@ -250,7 +250,7 @@ Consequences worth remembering:
 - `clone_character.py` copies templates + overlay into `data/<Name>/`,
   substitutes the name, and generates `DUALBOX_CONFIG.lua` (with
   `DualBoxConfig.group` when dual-box is on) / `REGION_CONFIG.lua`. It copies
-  `common/sets/` always and `common/dualbox/alt/` only for a MAIN. The overlay applies
+  `_common/sets/` always and `_common/dualbox/alt/` only for a MAIN. The overlay applies
   only to its own character or with `--source`. An existing folder is moved to
   `addons/GearSwap/clone_backups/` after the final confirmation, never deleted,
   and the files written in game (`KEPT_ON_RECLONE`: HUD position, message
@@ -258,7 +258,7 @@ Consequences worth remembering:
   `STEALTH_CONFIG.lua`, `temp_binds.lua`) are
   copied back from that backup.
 - Live Tetsouo uses **modular sets** (`<job>/{armor,capes,weapons}.lua` +
-  `common/sets/rings.lua`); the generic templates are flat. The modular trees
+  `_common/sets/rings.lua`); the generic templates are flat. The modular trees
   are versioned in `_master/Tetsouo/<job>/` and, since `f6f1683`, the
   clone deploys an overlay's `<job>/` tree in place of the flat file, plus
   its `common/` and the loose craft/fishing sets.

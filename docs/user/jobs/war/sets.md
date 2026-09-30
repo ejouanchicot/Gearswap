@@ -22,7 +22,7 @@ value, over your idle and engaged gear (in town too):
 
 Give each weapon set both `main` and `sub`. A weapon you add to `MainWeapon` in
 `WAR_STATES.lua` works the same way (also add its weaponskills to
-`WAR_WS_CONFIG.lua`). If `common/combat/WEAPON_CONFIG.lua` has `equip_without_set = true`, a
+`WAR_WS_CONFIG.lua`). If `_common/combat/WEAPON_CONFIG.lua` has `equip_without_set = true`, a
 value that is an exact weapon name is put in the main hand without a set.
 
 **The weapon you hold at load picks the mode.** After every load, reload or job change,

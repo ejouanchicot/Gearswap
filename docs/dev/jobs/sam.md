@@ -225,7 +225,7 @@ no midcast set in the template).
 
 `SAM_STATUS.lua` `auto_hasso(newStatus)`: on `Engaged`, when
 `AutoOptions.on('sam_hasso')` is true (the character's
-`common/combat/AUTO_ABILITIES.lua`) and neither Hasso nor Seigan is up, it sends the
+`_common/combat/AUTO_ABILITIES.lua`) and neither Hasso nor Seigan is up, it sends the
 chosen stance (`state.Stance`: Seigan when Seigan, else Hasso) once
 `AbilityHelper.is_ability_ready` says it is ready. The option keeps its old
 name. Until 2026-09-28 it always sent Hasso, which then switched a Seigan
@@ -312,10 +312,10 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 | `<char>/sam/SAM_TP_CONFIG.lua` | `hagakure_jp_gifts = 0`; Moonshade +250, Mpaca's Cap +200; Dojikiri Yasutsuna +500 | file | `WSPrecastHandler` via `_G.SAMTPConfig`; `TPBonusCalculator` adds `get_hagakure_bonus()` (1000 + 10 x gifts while Hagakure is up) |
 | `<char>/sam/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager` uses `default` only (no `get_style`) |
 | `<char>/sam/SAM_MACROBOOK.lua` | book 2 page 1 for every listed subjob | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/common/combat/AUTO_ABILITIES.lua` `sam_hasso` | false | file | `SAM_STATUS.lua` `auto_hasso` |
-| `<char>/common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
-| `<char>/common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
-| `<char>/common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | `CooldownChecker`, `is_recast_ready` |
+| `<char>/_common/combat/AUTO_ABILITIES.lua` `sam_hasso` | false | file | `SAM_STATUS.lua` `auto_hasso` |
+| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
+| `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
+| `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | `CooldownChecker`, `is_recast_ready` |
 
 ## State & lifetime
 

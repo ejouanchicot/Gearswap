@@ -22,14 +22,15 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua` (17 files) | Lazy wrapper: `select_default_macro_book` |
 | `<char>/<job>/<JOB>_LOCKSTYLE.lua` | Per-job style numbers (`default`, `by_subjob`, optional `get_style`) |
 | `<char>/<job>/<JOB>_MACROBOOK.lua` | Per-job books (`solo`, `dualbox`, `default`) |
-| `_master/config_global/LOCKSTYLE_CONFIG.lua` | Global lockstyle timing, deployed as `<char>/common/display/LOCKSTYLE_CONFIG.lua` |
+| `_master/config_global/LOCKSTYLE_CONFIG.lua` | Global lockstyle timing, deployed as `<char>/_common/display/LOCKSTYLE_CONFIG.lua` |
 | `shared/utils/movement/automove.lua` | Movement detection loop, `state.Moving`, `gs c update` |
 | `shared/utils/craft/craft_commands.lua` | `//gs c craft/fish/uncraft` handlers, gear diffing, slot locking |
 | `shared/utils/craft/craft_manager.lua` | Craft set file loading and resolution, session flag, unlock; exported as `_G.CraftManager` |
-| `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17), deployed as `<char>/common/inventory/CRAFT_CONFIG.lua` |
+| `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17), deployed as `<char>/_common/inventory/CRAFT_CONFIG.lua` |
 | `_master/sets/craft_sets.lua` | Generic craft set file, every slot empty: `hq`, `nq`, `success` and one variant per sub-craft (the 8 crafts) |
-| `_master/Tetsouo/common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
-| `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000 (WAR, DNC) |
+| `_master/Tetsouo/_common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
+| `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000, every job on /DRG (run by `WSPrecastHandler.handle`); `attach` gives every job `state.JumpAuto` and its row |
+| `shared/utils/smartbuff/subjob_buffs.lua` | `//gs c smartbuff` on every job: the self-buffs of the current subjob (/WAR, /SAM, /NIN, /DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | `//gs c jump` (manual Jump chain) |
 | `shared/utils/dnc/waltz_manager.lua` | Curing / Divine Waltz tier selection |
 | `shared/utils/whm/cure_manager.lua` | Cure / Curaga tier selection with recast fallback |
@@ -43,7 +44,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/core/optional_state.lua`, `optional_state_commands.lua` | Base of Combat Mode and Treasure Mode: shown / hidden / key per job, commands (see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)) |
 | `shared/utils/core/live_tp.lua` | TP read from the game, not from GearSwap's copy |
 | `shared/utils/core/gear_hold.lua` | `GearHold.active()`: whether a COR roll holds the idle / engaged gear; asked by DualWield, TreasureHunter (engaged overlay) and the custom gear hook (see [core-lifecycle.md](core-lifecycle.md#gearhold)) |
-| `shared/utils/core/auto_options.lua` | Opt-in automatic job abilities (`common/combat/AUTO_ABILITIES.lua`) |
+| `shared/utils/core/auto_options.lua` | Opt-in automatic job abilities (`_common/combat/AUTO_ABILITIES.lua`) |
 | `_master/config_global/DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `AUTO_ABILITIES.lua` | Templates of the per-character settings of the helpers above |
 
 Other helpers in `shared/utils/equipment/` are documented elsewhere:
@@ -132,7 +133,7 @@ The per-job config is `<char>/<job>/<JOB>_LOCKSTYLE.lua`. GearSwap's `pathsearch
 | `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, RDM, SAM, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
 | `style` | no | "backward compatibility" field, no reader |
 
-`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/common/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `_master/entry/Tetsouo_WAR.lua`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
+`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `_master/entry/Tetsouo_WAR.lua`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
 
 DressUp management flag: `_G.DRESSUP_MANAGEMENT_ENABLED`. It is initialised on each module load from the presence of `windower.addon_path .. 'data/.dressup_disabled'` (file present = off; `read_dressup_state`). The file is gitignored.
 
@@ -311,12 +312,12 @@ flowchart TD
     L --> M
 ```
 
-- **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). Which file: `craft_file` / `fish_file` in `<char>/common/inventory/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
+- **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). Which file: `craft_file` / `fish_file` in `<char>/_common/inventory/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
 - **Resolution** (`resolve`). A multi-variant file uses `default` when no argument is given, then tries a direct lower-case key lookup, then an alias scan. A single-set file returns the whole table and ignores the argument.
 - **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
 - **Locking.** `equip_craft_gear` uses GearSwap's synchronous `enable()` rather than `gs enable all`, because the command would land after `equip()`. The lock is applied 2.0 s later (`lock_after_delay`); that coroutine carries no session check. When a variant switch changes nothing, only the lock is re-asserted.
 - **Session flag.** While it is set (`CraftManager.is_active()`, read through the `_G.CraftManager` export):
-  - refill switches to `<char>/common/sets/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
+  - refill switches to `<char>/_common/sets/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
   - Combat Mode does not enable the weapon slots it locked (`combat_mode.lua` local `craft_active`);
   - WHM's own `OffenseMode` `Melee ON` weapon lock (`WHM_COMMANDS.lua` `job_state_change`, and the WHM entry's `file_unload`) skips its `enable()`;
   - Combat Mode's wrapper does not lay the `hold()` locks again after an update (`combat_mode.lua` `reassert_holds`: WHM `Melee ON`, THF `RangeLock`, the Hoxne Ampulla).
@@ -355,9 +356,9 @@ Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, 
 
 | Source | Keys | Default |
 |---|---|---|
-| `<char>/common/inventory/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
+| `<char>/_common/inventory/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
 | `<char>/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
-| `<char>/common/sets/CRAFT_REFILL.lua` | refill list while crafting | the job's refill list |
+| `<char>/_common/sets/CRAFT_REFILL.lua` | refill list while crafting | the job's refill list |
 
 `ModuleCache` caches the set files and `CRAFT_CONFIG` per sandbox, so an edit needs a reload.
 
@@ -369,14 +370,16 @@ Two modules implement the same Jump -> High Jump chain: recast ids 158 / 159, 10
 
 ### AutoJump (`shared/utils/drg/auto_jump.lua`)
 
-`AutoJump.auto_trigger_jump(spell, eventArgs)` is used by `WAR_PRECAST.lua`, before `WSPrecastHandler`, and by `DNC_PRECAST.lua`, inside `job_precast_weaponskill`. It is gated by `state.JumpAuto` (`On` / `Off`, default `On`, defined in the WAR and DNC STATES templates; keybinds WAR `^numpad2`, DNC `^numpad7`).
+`AutoJump.auto_trigger_jump(spell, eventArgs)` is called by `WSPrecastHandler.handle` (`shared/utils/precast/ws_precast_handler.lua`), after the range check (`WSValidator`) and before the TP bonus calculation and the 1000 TP check, so every job whose precast calls `handle` (all of them) gets it on /DRG; when it cancels the WS, `handle` returns false. No job precast calls it directly. It fires only when `state.JumpAuto.value == 'On'`: a job without the state never jumps.
+
+`AutoJump.attach(job, binds)` is called by `KeybindManager.create` (`shared/utils/keybinds/keybind_manager.lua`), next to the Combat Mode and Treasure Mode attach. It creates `state.JumpAuto = M{'Off', 'On'}` (default `Off`) when the job's STATES file has none, adds a row `!numpad-` (`cyclestate JumpAuto`, desc "Jump Auto") when the job's KEYBINDS file has none, and sets `subjob = 'DRG'` on the row (unless it already has a `subjob`), so the HUD row and the key show on /DRG only. The WAR and DNC STATES templates define their own `JumpAuto` (`On` / `Off`, default `Off`) and their KEYBINDS their own row (WAR `^numpad2`, DNC `^numpad7`).
 
 ```mermaid
 sequenceDiagram
-    participant P as "job_precast (WS)"
+    participant P as "WSPrecastHandler.handle (WS)"
     participant J as "AutoJump"
     participant G as "game"
-    P->>J: auto_trigger_jump(spell, eventArgs)
+    P->>J: "WSPrecastHandler.handle -> auto_trigger_jump(spell, eventArgs)"
     J->>J: "JumpAuto On, no sequence running, /DRG level > 0, TP below 1000, a jump ready"
     J->>P: "eventArgs.cancel = true, _G.AUTO_JUMP_SEQUENCE_ACTIVE = true"
     J->>G: "/ja Jump on current target (else High Jump)"
@@ -437,7 +440,7 @@ The recast ids match `res/job_abilities.lua`. The project's own `shared/data/job
 
 | Function | Behaviour |
 |---|---|
-| `settings()` | `{enabled, min_bonus}` from `<Character>/common/combat/ELEMENTAL_BELT.lua` (`dofile`, cached in `_G._elemental_belt_settings`), defaults `true` / 5; template `_master/config_global/ELEMENTAL_BELT.lua` |
+| `settings()` | `{enabled, min_bonus}` from `<Character>/_common/combat/ELEMENTAL_BELT.lua` (`dofile`, cached in `_G._elemental_belt_settings`), defaults `true` / 5; template `_master/config_global/ELEMENTAL_BELT.lua` |
 | `owned()` | `{[OBI] = bool, [ORPHEUS] = bool}` from the inventory and wardrobes 1-8 (bags 0, 8, 10-16), read through `gearswap.res`; cached 60 s in `_G._elemental_belt_owned` |
 | `applies(spell, phase)` | Precast: weaponskills of `WEAPONSKILLS` (magical and hybrid) and Quick Draw except Light / Dark Shot. A spell's precast is its Fast Cast set, left alone. Midcast: Elemental Magic except the DoTs (`DOTS`), Banish / Holy, `<X>ton: Ichi\|Ni\|San`, and Blue Magic of a `Magical*` category (`blu/functions/logic/spell_map.lua`) |
 | `choose(spell)` | `ElementalBonus.for_action`, then the owned belt with the higher bonus, provided that bonus reaches `min_bonus`; returns `belt, bonus, obi, orpheus`. Below `min_bonus`, the set's own belt stays |
@@ -461,7 +464,7 @@ Callers: `ElementalBelt`, and the CUSTOM conditions `obi_better`, `orpheus_bette
 
 ## TreasureHunter
 
-`shared/utils/equipment/treasure_hunter.lua` makes Treasure Hunter shared by every job. `TreasureMode` is an optional state (`TreasureHunter.optional`, file `common/keys/treasure_mode.lua`, default key `!numpad.`). THF defines it in its STATES file (Tag / SATA / Full) and shows it; every other job gets it with values Off / Tag / Full, set to Off and hidden until `//gs c th show` (`treasure_commands.lua`). A job without `sets.TreasureHunter` gets no TH gear, whatever the mode. The DNC and THF templates define that set.
+`shared/utils/equipment/treasure_hunter.lua` makes Treasure Hunter shared by every job. `TreasureMode` is an optional state (`TreasureHunter.optional`, file `_common/keys/treasure_mode.lua`, default key `!numpad.`). THF defines it in its STATES file (Tag / SATA / Full) and shows it; every other job gets it with values Off / Tag / Full, set to Off and hidden until `//gs c th show` (`treasure_commands.lua`). A job without `sets.TreasureHunter` gets no TH gear, whatever the mode. The DNC and THF templates define that set.
 
 Modes:
 
@@ -510,7 +513,7 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 - **Tiers.** `sets.DW.NoHaste`, `Haste` (15 %), `HasteII` (30 %), `MaxHaste` (43.75 %). A missing tier falls back to the one below, which means more DW. No `sets.DW` at all: nothing happens. The templates of BLU, BRD, BST, COR, DNC, RDM and THF end with a commented example.
 - **Magic haste estimate** (`magic_haste()`):
   - buffs from `get_player().buffs`: 33 Haste, 580 Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March (up to 2);
-  - the value of each from `<Character>/common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
+  - the value of each from `<Character>/_common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
   - Haste vs Haste II (same buff) and which March come from a raw `action` listener: spells 57 / 511 / 710 (Erratic Flutter) and 417 / 419 / 420, landing on this character, kept on `windower._dw_tracked`.
 - **Not counted**: JA haste, Slow (buff 13) and Elegy (194). Their strength is unknown, and they are rare and short on a player. The config header tells the player to force `//gs c dw none` while slowed.
 - **Re-dress.** On `gain buff` / `lose buff` of those buffs, after 0.3 s, it sends `gs c update` when the tier changed and the player is engaged (token `windower._dw_update_token`).
@@ -594,7 +597,7 @@ The module returns a function: `local live_tp = require('shared/utils/core/live_
 
 ### `AutoOptions` (`shared/utils/core/auto_options.lua`)
 
-`AutoOptions.on(name)` -> boolean reads `<Character>/common/combat/AUTO_ABILITIES.lua` once per sandbox (`pcall(require, 'config/AUTO_ABILITIES')`, cached in `_G._auto_options`, template in `_master/config_global/`). Every option is off unless the file sets it true:
+`AutoOptions.on(name)` -> boolean reads `<Character>/_common/combat/AUTO_ABILITIES.lua` once per sandbox (`pcall(require, 'config/AUTO_ABILITIES')`, cached in `_G._auto_options`, template in `_master/config_global/`). Every option is off unless the file sets it true:
 
 | Option | Job | Effect | Reader |
 |---|---|---|---|
@@ -695,10 +698,12 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | KeybindGuard, common keys, key conflicts | KeybindManager | every job |
 | AutoMove loop (`state.Moving`) | `INIT_SYSTEMS` +0.5 s | the gear depends on the set builder (column below) |
 | `waltz` / `aoewaltz` / `jump` commands | `CommonCommands` | need DNC main or sub / DRG sub |
+| `smartbuff` command | `CommonCommands` -> `SubjobBuffs.apply()` | /WAR, /SAM, /NIN, /DNC; DNC main answers it first with its own |
+| Jump Auto (`state.JumpAuto`, before a WS) | `WSPrecastHandler.handle` + `AutoJump.attach` from KeybindManager | /DRG only; Off unless the job's STATES file says otherwise |
 
 **Per job:**
 
-| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | AutoJump (`JumpAuto`) | SmartBuff | AUTO_ABILITIES options | Other job-specific shared use |
+| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | Own `JumpAuto` state and key (AutoJump itself: every job) | Own smartbuff (the common `smartbuff`: every job) | AUTO_ABILITIES options | Other job-specific shared use |
 |---|---|---|---|---|---|---|---|---|---|---|
 | BLM | yes (base builder) | native (`^numpad8`) | optional | | | yes (`follow_up` Dark Arts) | | | | ElementalMatcher defers to ElementalBelt |
 | BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | Combat Mode On keeps the worn weapons because their slots are locked (`apply_weapon` itself does not test the mode) |
@@ -714,7 +719,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | RUN | yes | optional | optional | | | | | | | |
 | SAM | yes (base builder, idle; since 2026-09-28) | optional | optional | | | yes (Third Eye, Hasso check) | | | `sam_hasso` | |
 | SMN | yes | optional | optional | | | | | | | |
-| THF | yes | optional | native (`^numpad3`, Tag / SATA / Full) | yes (+ SA / TA / SATA / RA variants) | commented | | | yes (`smartbuff`) | | THF builds its engaged TH itself |
+| THF | yes | optional | native (`^numpad3`, Tag / SATA / Full) | yes (+ SA / TA / SATA / RA variants) | commented | | | | | THF builds its engaged TH itself |
 | WAR | yes | optional | optional | | | | yes | yes (buff hook, subjob TP ability) | | AutoMove callback (Retaliation) |
 | WHM | yes | native (`^numpad2`) | optional | | | | | | | CureManager; `Melee ON` weapon lock with a craft-session guard |
 
@@ -752,7 +757,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 ## For maintainers / AI
 
 - **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand (CODE_QUALITY section 3).
-- **New craft.** Add `<char>/common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
+- **New craft.** Add `<char>/_common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
 - **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_HP_BRACKET`. Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
 - **New AutoMove consumer.** Read `state.Moving.value` in the set builder (or go through `base_set_builder.lua`), or register a callback from a coroutine scheduled after 0.5 s.
 - **New belt weaponskill.** Add it to `WEAPONSKILLS` in `elemental_belt.lua`. A new damaging spell family goes in `applies`.
@@ -794,6 +799,6 @@ Fixed:
 - Macrobook: the load message could announce the solo book while the dual-box book was selected. `resolve_config` is now shared by selection and `get_macro_info`.
 - Comments claiming cross-reload persistence or invalidation in `macrobook_manager.lua` and `lockstyle_manager.lua` were rewritten; they now say the list and counter live on the sandbox `_G`.
 - LOCKSTYLE_CONFIG described a DressUp sequence and a 15 s throttle that the code does not have. Its comments were rewritten.
-- Craft's "invalid format" error named `common/sets/<name>.lua`; it now names the set file actually read.
+- Craft's "invalid format" error named `_common/sets/<name>.lua`; it now names the set file actually read.
 - `lockstyle_manager.lua`: a dead `else` branch and the unused `MessageCore.show_lockstyle_status` were removed.
 - The job-level Combat Mode locks (BLM, WHM, RDM, GEO `job_state_change` / `job_update` / `file_unload`) were replaced by the single `combat_mode.lua` hook, so the craft guards they carried went with them.

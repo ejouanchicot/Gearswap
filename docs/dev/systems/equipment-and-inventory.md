@@ -7,7 +7,7 @@ The area holds three kinds of code:
 
 - **Player-triggered inventory tools.** `//gs c checksets` walks the live `sets` table of the loaded
   job and reports every set slot whose item is not in an equippable bag (`equipment_checker.lua`).
-  `//gs c wa` reads as text the set files of every job of the logged-in character (plus `common/`),
+  `//gs c wa` reads as text the set files of every job of the logged-in character (plus `_common/`),
   compares the item names it finds against the eight wardrobes, and writes the unused ones to
   `data/wardrobe_audit.txt` (`wardrobe_auditor.lua`); the same file also feeds the wardrobe organizer
   with item-usage and bag-pin maps. `//gs c rf` restocks consumables in the inventory from the Mog
@@ -62,13 +62,13 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `scripts/item_db/build_item_db.py` | 379 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
 | `scripts/item_db/find_items.py` | 94 | Query tool over the generated SQLite (`--stat hp --slot Head --job WAR --top 10`) |
 | `_master/Tetsouo/<job>/inventory/<JOB>_REFILL.lua` | 20-54 | Refill templates for Tetsouo (BLM BRD BST COR DNC PLD THF WAR) |
-| `_master/Tetsouo/common/sets/CRAFT_REFILL.lua` | 34 | Refill list used while a craft set is active |
+| `_master/Tetsouo/_common/sets/CRAFT_REFILL.lua` | 34 | Refill list used while a craft set is active |
 | `_master/Kaories/<job>/inventory/<JOB>_REFILL.lua` | 22-42 | Refill templates for Kaories (COR GEO PLD RDM) |
-| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/common/combat/WEAPON_CONFIG.lua` (`equip_without_set`) |
+| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/_common/combat/WEAPON_CONFIG.lua` (`equip_without_set`) |
 | `_master/config_global/ELEMENTAL_BELT.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
 
-Live copies (gitignored): `Tetsouo/common/{blm,brd,bst,cor,craft,dnc,pld,thf,war}/*_REFILL.lua`,
-`Kaories/common/{cor,geo,pld,rdm}/*_REFILL.lua`. On 2026-09-25 every live refill file was identical to
+Live copies (gitignored): `Tetsouo/_common/{blm,brd,bst,cor,craft,dnc,pld,thf,war}/*_REFILL.lua`,
+`Kaories/_common/{cor,geo,pld,rdm}/*_REFILL.lua`. On 2026-09-25 every live refill file was identical to
 its template (`diff --strip-trailing-cr`).
 
 Related code outside this area: the command router `shared/utils/core/COMMON_COMMANDS.lua`, the
@@ -170,7 +170,7 @@ flowchart TD
 3. `discover_job_files` (`:84`) maps each file to a job: `<job>_sets.lua` at the root (flat layout,
    Kaories and the templates) or anything under `<job>/` (modular layout, Tetsouo live). Only the 22
    codes in `VALID_JOBS` (`:29`) count, so root files such as `bonecraft_sets.lua` and
-   `fishing_sets.lua` are skipped. Every file under `common/` is appended to every discovered job.
+   `fishing_sets.lua` are skipped. Every file under `_common/` is appended to every discovered job.
    `parse_job_sets` calls `discover_job_files()` again for each job, so the tree is walked once per job
    plus once for the job list.
 4. `extract_items_from_text` (`:200`) removes `--` line comments, then collects every single- or
@@ -195,7 +195,7 @@ Organizer helpers (same text parser, no report):
 
 - `build_pinned_bags()` (`:619`) scans every `.lua` under the sets folder and records `name` + `bag`
   pairs. It repeatedly removes the innermost `{...}` block (at most 200 passes per file), which handles
-  `{name=..., augments={...}, bag=...}` and nested maps such as `common/sets/rings.lua`. The name pattern
+  `{name=..., augments={...}, bag=...}` and nested maps such as `_common/sets/rings.lua`. The name pattern
   `name%s*=%s*['"]([^'"]+)['"]` stops at the first quote character of either kind. Bag strings are
   mapped by `BAG_NAME_TO_ID` (`:599`, `wardrobe`/`wardrobe 1`/`wardrobe1` -> 8, `wardrobe N` ->
   10..16); any other bag string is ignored. Caller: `wardrobe/lib/state.lua`.
@@ -239,7 +239,7 @@ sequenceDiagram
 3. List resolution (`ConfigResolver.resolve_list_for_player`, `config_resolver.lua:192`):
    - No player or main job `NON`: `FALLBACK_LIST` (`:39`, six medicines at 12).
    - Craft mode (`_G.CraftManager.is_active()`; `craft_manager.lua` owns the session state):
-     `require('<Char>/common/sets/CRAFT_REFILL')`; its `.default` is used (label `CRAFT (<name>)`)
+     `require('<Char>/_common/sets/CRAFT_REFILL')`; its `.default` is used (label `CRAFT (<name>)`)
      and its bag fields apply. Without the file or without `.default`, resolution falls through to
      the job.
    - Job: `require('<Char>/<job>/inventory/<JOB>_REFILL')`. If the require throws (missing file or error
@@ -247,7 +247,7 @@ sequenceDiagram
      replaces `.default` entirely when present; otherwise `.default`; otherwise the fallback.
    - Bags (`resolve_bags`), the player's choice since 2026-09-30: `store_bag` (where surplus and
      foreign items go) and `source_bags` (where pulls come from, in order) are read from the list file
-     (`<JOB>_REFILL` / `CRAFT_REFILL`), else from `<Char>/common/inventory/REFILL_CONFIG.lua`, else `case` and
+     (`<JOB>_REFILL` / `CRAFT_REFILL`), else from `<Char>/_common/inventory/REFILL_CONFIG.lua`, else `case` and
      `{'case', 'sack', 'satchel'}` (`DEFAULT_STORE_BAG`, `DEFAULT_SOURCE_BAGS`). Names: `case`,
      `sack`, `satchel`, `wardrobe1`..`wardrobe8` (`wardrobe` = `wardrobe1`), case and spaces ignored
      (`BAG_INFO`): every bag the game opens away from the Mog House. Unknown names are skipped; a
@@ -353,7 +353,7 @@ Every set builder that applies `state.MainWeapon` / `state.SubWeapon` asks
 THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-28; before, it read
 `sets[weapon]` directly and `equip_without_set` had no effect on DRK.
 
-- **Default** (no `<Char>/common/combat/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
+- **Default** (no `<Char>/_common/combat/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
   `sets[value]`, exactly the old lookup. Tetsouo and Kaories have no `WEAPON_CONFIG.lua`, so nothing
   changed for them. Tetsouo's BLM relies on `Hvergelmir` having no set, so its idle and engaged sets
   keep their own staves.
@@ -624,17 +624,17 @@ M.subjobs = {                   -- optional; a subjob list REPLACES default
 return M
 ```
 
-- Lookup path: `<Char>/common/<job lower>/<JOB>_REFILL` through the sandbox `require`, which is
+- Lookup path: `<Char>/_common/<job lower>/<JOB>_REFILL` through the sandbox `require`, which is
   GearSwap's `include_user` path search (*(engine)* `refresh.lua`, `pathsearch`: `libs-dev/`, `libs/`,
   `data/<player>/`, `data/common/`, `data/`, then `%APPDATA%/Windower/GearSwap/...`, then
   `addons/libs/`) wrapped by the project's `ModuleCache` (`shared/utils/core/module_cache.lua`). The
   directory scan for foreign detection uses `windower.addon_path .. 'data/'` only
   (`load_char_refill_configs`, `load_all_refill_configs`).
-- Craft list: `<Char>/common/sets/CRAFT_REFILL.lua`, only `.default`, `.store_bag` and `.source_bags`
+- Craft list: `<Char>/_common/sets/CRAFT_REFILL.lua`, only `.default`, `.store_bag` and `.source_bags`
   are read (template `_master/config/craft/CRAFT_REFILL.lua`, empty list).
-- Bags for every list: `<Char>/common/inventory/REFILL_CONFIG.lua` (`store_bag`, `source_bags`; template
+- Bags for every list: `<Char>/_common/inventory/REFILL_CONFIG.lua` (`store_bag`, `source_bags`; template
   `_master/config_global/REFILL_CONFIG.lua`). A list file's own fields win.
-- Weapon resolver: `<Char>/common/combat/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
+- Weapon resolver: `<Char>/_common/combat/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
   thresholds in the aftercast callers, `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`),
@@ -703,8 +703,8 @@ return M
 - `checksets` never sees items under the `ranged` key, which BRD sets use for Linos.
 - STORAGE means "owned but not in inventory or wardrobe 1-8": safe, safe2, storage, locker, satchel,
   sack, case, temporary, or a storage slip.
-- `wa` treats any quoted string after `=` in any set file of the job, plus all of `common/`, as a used
-  item; a ring declared in `common/sets/rings.lua` is used by every job even if no set references it.
+- `wa` treats any quoted string after `=` in any set file of the job, plus all of `_common/`, as a used
+  item; a ring declared in `_common/sets/rings.lua` is used by every job even if no set references it.
 - Wardrobe 7 is never judged by `wa` for any character.
 - A refill `subjobs` list replaces the default list. Items of the default that are missing from the
   subjob list are foreign on that subjob and are pushed out.
@@ -811,7 +811,7 @@ Fixed since the page was first written (night cleanup `85ad22b`, 2026-09-24, unl
   in the checker and auditor, the `build_frequency_map` docstring.
 - `SLOT_NAMES` in `wardrobe_auditor.lua` removed.
 - PLD template SCH/RDM lists now carry Echo Drops (template = live); Kaories has its own PLD overlay.
-- `common/sets/` is deployed by the clone (`2557885`).
+- `_common/sets/` is deployed by the clone (`2557885`).
 - Refill and wardrobe panels now follow the player's chat separator options (`64a0c20`, 2026-09-27).
 - 2026-09-29 (checked offline, not yet in game): after `//po` the Hoxne ammo lock stayed open while
   the stance still showed Hoxne. `AmpullaLock.set_slot` now records the lock with `CombatMode.hold`,

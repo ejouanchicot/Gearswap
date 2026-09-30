@@ -65,7 +65,7 @@ The full value lists are in [states.md](states.md).
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `GEO_CUSTOM.lua` (empty in the template) | yes |
 
-The common keys come from `<YourName>/common/keys/COMMON_KEYBINDS.lua`. Combat Mode
+The common keys come from `<YourName>/_common/keys/COMMON_KEYBINDS.lua`. Combat Mode
 needs no extra key on GEO: it is native here, on Ctrl+Numpad0.
 
 ### Mote-Include keys (always bound, not on the HUD)
@@ -156,7 +156,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your GEO set file |
 | Obi / Orpheus | The shared automatic belt (`ELEMENTAL_BELT.lua`, `//gs c belt`) goes on after your nuke set when it helps. GEO has no belt rule of its own |
 | Tier step-down | A nuke (Fire V...), -ra or Aspir cast from a macro that is on recast or short of MP goes out as the highest lower tier you know that can; nothing castable: stopped, recasts shown ([auto-tier](../../features/auto-tier-system.md)) |
-| Automatic abilities | Off by default, in `<YourName>/common/combat/AUTO_ABILITIES.lua`: `geo_entrust = true` (an Indi- cast on a party member waits for Entrust first, when it is ready), `geo_full_circle = true` (a Geo- cast while a luopan is out uses Full Circle first, then the Geo- 2 s later) |
+| Automatic abilities | Off by default, in `<YourName>/_common/combat/AUTO_ABILITIES.lua`: `geo_entrust = true` (an Indi- cast on a party member waits for Entrust first, when it is ready), `geo_full_circle = true` (a Geo- cast while a luopan is out uses Full Circle first, then the Geo- 2 s later) |
 | Entrust set | An Indi- on a party member while Entrust is up (or just used) wears `sets.midcast.Indi.Entrust` for the whole cast |
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for abilities and for spells that do not step down |
 | Doom | `sets.buff.Doom` while Doomed; its slots stay locked until Doom is gone |
@@ -190,7 +190,7 @@ In `<YourName>/geo/`:
 | `GEO_TP_CONFIG.lua` | TP bonus pieces (Moonshade Earring) for weaponskill gear |
 | `GEO_REFILL.lua` | Optional, not in the template: items `//gs c rf` keeps in your inventory |
 
-Shared by every job, in `<YourName>/common/`: `AUTO_ABILITIES.lua` (the two
+Shared by every job, in `<YourName>/_common/`: `AUTO_ABILITIES.lua` (the two
 GEO options), `COMMON_KEYBINDS.lua`, `combat_mode.lua` and `treasure_mode.lua`
 (written by their commands), `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`.

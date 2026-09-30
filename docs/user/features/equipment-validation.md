@@ -53,7 +53,7 @@ the loaded job's gear in wardrobes 1-2, the rest pushed to wardrobes 8, 6, 5,
 | `wo reset` | Clear a run left stuck after a crash, and release the slots |
 
 Type the words in lowercase: anything it does not recognise (even `Preview`)
-runs a full organize. The bags are set in `common/inventory/WARDROBE_CONFIG.lua`, see
+runs a full organize. The bags are set in `_common/inventory/WARDROBE_CONFIG.lua`, see
 [configuration](../guides/configuration.md#wardrobes-wardrobe_configlua-optional).
 
 ## `//gs c rf` - refill

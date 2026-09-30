@@ -292,6 +292,7 @@ Created by `PUPStates.configure()` on every `user_setup()`.
 | `AutoMedicine` | ON, OFF | persisted | `#numpad0` (common key) | `AutoMedicine.init` |
 | `IdleMode`, `CastingMode`, `WeaponskillMode`, `RangedMode` (Mote) | Normal | Normal | Mote's F-keys | Mote only (`CastingMode` refines Mote's pet spell set) |
 | `CombatMode`, `TreasureMode` (optional states) | | Off | hidden | shared hooks |
+| `JumpAuto` (created by `AutoJump.attach`) | Off, On | Off | `!numpad-`, shown on /DRG only | `auto_jump.lua`, through `WSPrecastHandler.handle` |
 
 ## Commands
 
