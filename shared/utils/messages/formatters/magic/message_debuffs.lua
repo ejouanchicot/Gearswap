@@ -18,6 +18,23 @@ local MessageCore = require('shared/utils/messages/message_core')
 local MessageRenderer = require('shared/utils/messages/core/message_renderer')
 local Colors = MessageCore.COLORS
 
+--- "Echo Drops or Remedy", each name in the item colour.
+--- @param items table|nil {name, id} list from AUTOCURE_CONFIG
+--- @param default table Names when the list is empty
+--- @param item_color string
+--- @param text_color string
+--- @return string
+local function items_label(items, default, item_color, text_color)
+    local names = {}
+    for _, item in ipairs(type(items) == 'table' and items or {}) do
+        names[#names + 1] = item.name
+    end
+    if #names == 0 then names = default end
+    local parts = {}
+    for _, name in ipairs(names) do parts[#parts + 1] = item_color .. name end
+    return table.concat(parts, text_color .. ' or ')
+end
+
 ---============================================================================
 --- BLOCKED ACTION MESSAGES
 ---============================================================================
@@ -242,7 +259,8 @@ end
 --- Display message when no silence cure items are available
 --- @param spell_name string The spell that was blocked
 --- @param debuff_message string The debuff blocking the spell (e.g., "Silenced")
-function MessageDebuffs.show_no_silence_cure(spell_name, debuff_message)
+--- @param items table|nil Cure list tried ({name, id}); names shown
+function MessageDebuffs.show_no_silence_cure(spell_name, debuff_message, items)
     local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
     local error_color = MessageCore.create_color_code(Colors.ERROR)
     local spell_color = MessageCore.create_color_code(Colors.SPELL)
@@ -263,13 +281,11 @@ function MessageDebuffs.show_no_silence_cure(spell_name, debuff_message)
         separator_color
     )
 
-    -- Second line: No Echo Drops or Remedy Available
+    -- Second line: No <the configured items> Available
     local line2 = string.format(
-        "%sNo %s%s %sor %s%s %sAvailable",
+        "%sNo %s %sAvailable",
         error_color,
-        item_color, "Echo Drops",
-        error_color,
-        item_color, "Remedy",
+        items_label(items, {"Echo Drops", "Remedy"}, item_color, error_color),
         error_color
     )
 
@@ -319,7 +335,8 @@ end
 --- anyway (paralysis only makes it fail some of the time)
 --- @param action_name string The ability
 --- @param debuff_message string The debuff (e.g., "Paralyzed")
-function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message)
+--- @param items table|nil Cure list tried ({name, id}); names shown
+function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message, items)
     local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
     local error_color = MessageCore.create_color_code(Colors.ERROR)
     local ability_color = MessageCore.create_color_code(Colors.JA)
@@ -340,11 +357,11 @@ function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message)
         separator_color
     )
 
-    -- Second line: No Remedy Available
+    -- Second line: No <the configured items> Available
     local line2 = string.format(
-        "%sNo %s%s %sAvailable",
+        "%sNo %s %sAvailable",
         error_color,
-        item_color, "Remedy",
+        items_label(items, {"Remedy"}, item_color, error_color),
         error_color
     )
 

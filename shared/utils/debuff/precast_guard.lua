@@ -218,6 +218,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
 
         -- AutoMedicine Off only skips the item use - the action stays blocked,
         -- since firing a JA while paralyzed burns its recast on a failed use.
+        -- AutoMedicine On with no item left for Paralysis: the ability goes.
         -- A debuff an item did not take off (an aura): no item; Paralysis
         -- lets the ability go, Silence stays blocked (uncurable_debuffs.lua).
         if should_auto_cure and AutoMedicine.is_enabled() and UncurableDebuffs.is_marked(cure_type) then
@@ -233,7 +234,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
                 cure_status = try_cure_silence(spell.name, debuff_message)
                 if cure_status == CURE_NONE then
                     eventArgs.cancel = true
-                    MessageDebuffs.show_no_silence_cure(spell.name, debuff_message)
+                    MessageDebuffs.show_no_silence_cure(spell.name, debuff_message, SILENCE_CURE_ITEMS)
                     return true
                 end
             elseif cure_type == "paralysis"
@@ -249,7 +250,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
                 cure_status = try_cure_paralysis(spell.name, debuff_message)
                 if cure_status == CURE_NONE then
                     -- No Remedy left: the ability goes (it may still land)
-                    MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message)
+                    MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message, PARALYSIS_CURE_ITEMS)
                     return false
                 end
             end
@@ -309,7 +310,7 @@ function PrecastGuard.check_magic(spell, eventArgs)
                 return true
             elseif cure_status == CURE_NONE then
                 eventArgs.cancel = true
-                MessageDebuffs.show_no_silence_cure(spell.name, debuff_message)
+                MessageDebuffs.show_no_silence_cure(spell.name, debuff_message, SILENCE_CURE_ITEMS)
                 return true
             end
             -- CURE_BUSY falls through to the plain blocked message below.
@@ -362,7 +363,7 @@ function PrecastGuard.check_ja(spell, eventArgs)
                 return true
             elseif cure_status == CURE_NONE then
                 -- No Remedy left: the ability goes (it may still land)
-                MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message)
+                MessageDebuffs.show_no_paralysis_cure(spell.name, debuff_message, PARALYSIS_CURE_ITEMS)
                 return false
             end
             -- CURE_BUSY falls through to the plain blocked message below.
