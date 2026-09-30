@@ -88,10 +88,10 @@ end
 --- Files in `common/` (e.g. rings.lua) apply to every discovered job because
 --- they typically declare equipment shared across all jobs.
 --- @return table {[job_lower] = {file_path, file_path, ...}}
---- Set files of the current layout: in <job>/, the set files (lower-case
---- names: war_sets.lua, armor.lua...) and <JOB>_CUSTOM.lua (its gear); in
---- common/ and common/craft/, the lower-case files (rings.lua, craft sets).
---- The upper-case files around them are settings, not gear.
+--- Set files of the current layout: <job>/sets/ and <job>/<JOB>_CUSTOM.lua
+--- (its gear rules); common/sets/ (rings.lua, craft sets). The first form of
+--- the layout kept them next to the settings: the lower-case files of <job>/,
+--- common/ and common/craft/ are read too. Upper-case files are settings.
 --- @return table jobs {[job_lower] = {paths}}, table common {paths}
 local function layout_set_files()
     local dir, jobs, common = char_dir(), {}, {}
@@ -100,14 +100,16 @@ local function layout_set_files()
         return name:match('^[%l%d].*%.lua$') or name:match('_CUSTOM%.lua$')
     end
     for job in pairs(VALID_JOBS) do
-        for _, name in ipairs(windower.get_dir(dir .. job .. '/') or {}) do
-            if gear_file(name) then
-                jobs[job] = jobs[job] or {}
-                table.insert(jobs[job], dir .. job .. '/' .. name)
+        for _, sub in ipairs({job .. '/', job .. '/sets/'}) do
+            for _, name in ipairs(windower.get_dir(dir .. sub) or {}) do
+                if gear_file(name) then
+                    jobs[job] = jobs[job] or {}
+                    table.insert(jobs[job], dir .. sub .. name)
+                end
             end
         end
     end
-    for _, sub in ipairs({'common/', 'common/craft/'}) do
+    for _, sub in ipairs({'common/sets/', 'common/', 'common/craft/'}) do
         for _, name in ipairs(windower.get_dir(dir .. sub) or {}) do
             if name:match('^[%l%d].*%.lua$') then table.insert(common, dir .. sub .. name) end
         end
@@ -605,7 +607,7 @@ function WardrobeAuditor.audit()
 
     if loaded_count == 0 then
         add_to_chat(167, red .. "[WARDROBE AUDIT] Failed to load any job sets")
-        add_to_chat(167, red .. "[WARDROBE AUDIT] Scanned: " .. tostring(char_dir()) .. " (<job>/, common/, sets/)")
+        add_to_chat(167, red .. "[WARDROBE AUDIT] Scanned: " .. tostring(char_dir()) .. " (<job>/sets/, common/sets/, sets/)")
         return false
     end
 

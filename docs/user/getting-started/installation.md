@@ -49,7 +49,7 @@ It creates:
 ```
 data/<Name>/
 ├── <Name>_<JOB>.lua      one entry file per job
-├── <job>/<job>_sets.lua   one set file per job
+├── <job>/sets/<job>_sets.lua   one set file per job
 └── config/
     ├── <job>/            keys, modes, lockstyle, macro book... per job
     ├── alt/              alt commands (main only)

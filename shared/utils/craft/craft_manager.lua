@@ -72,7 +72,7 @@ local _state = _G.__CraftManagerState
 local function load_craft_file(name)
     local p = windower.ffxi.get_player()
     if not p or not p.name then return nil end
-    local mod_path = require('shared/utils/core/char_paths').module('craft', name:lower() .. '_sets', nil, p.name)
+    local mod_path = require('shared/utils/core/char_paths').module('gear', name:lower() .. '_sets', nil, p.name)
     local ok, cfg = pcall(require, mod_path)
     if not ok or type(cfg) ~= 'table' then return nil end
     return cfg
@@ -87,7 +87,7 @@ local function resolve(file_name, variant)
     local cfg = load_craft_file(file_name)
     if not cfg then
         local p = windower.ffxi.get_player()
-        return nil, ('No set file %s/common/craft/%s_sets.lua (create it, or name another file in common/CRAFT_CONFIG.lua)'):format(
+        return nil, ('No set file %s/common/sets/%s_sets.lua (create it, or name another file in common/CRAFT_CONFIG.lua)'):format(
             (p and p.name) or '?', file_name:lower())
     end
 
@@ -121,7 +121,7 @@ local function resolve(file_name, variant)
     end
 
     local p = windower.ffxi.get_player()
-    return nil, ('%s/common/craft/%s_sets.lua: invalid format (no .gear or .variants)'):format(
+    return nil, ('%s/common/sets/%s_sets.lua: invalid format (no .gear or .variants)'):format(
         (p and p.name) or '?', file_name:lower())
 end
 

@@ -84,7 +84,7 @@ function; line numbers are given only where no function name fits.
 Character overlays: `_master/<Character>/cor/COR_REFILL.lua` for the
 characters that ship refill lists, and one full overlay
 (`_master/<Character>/entry/<Character>_COR.lua`, `cor/*`,
-`cor/cor_sets.lua`) that adds a `RangedMode` (`Normal`, `Acc`) with a
+`cor/sets/cor_sets.lua`) that adds a `RangedMode` (`Normal`, `Acc`) with a
 `^numpad7` key and Quick Draw damage sets. Its headers still say
 `@author Tetsouo`. Live folders are gitignored; the author's live COR uses the
 modular `cor/{cor_sets,armor,capes,weapons}.lua` (flat templates vs

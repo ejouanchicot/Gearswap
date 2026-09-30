@@ -84,7 +84,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup(): states, keybinds, UI, JCM, macrobook/lockstyle, dualbox
-    M->>E: init_gear_sets() -> include sam/sam_sets.lua
+    M->>E: init_gear_sets() -> include sam/sets/sam_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.UIConfig, _G.RECAST_CONFIG, _G.SAMTPConfig
     E->>E: JobChangeManager.cancel_all()

@@ -73,7 +73,7 @@ function, not a line number.
 
 Character copies are gitignored. The author's overlay `_master/Tetsouo/`
 holds its own `entry/Tetsouo_BLM.lua` (includes the modular
-`blm/blm_sets.lua`), `blm/BLM_MACROBOOK.lua` (book 7),
+`blm/sets/blm_sets.lua`), `blm/BLM_MACROBOOK.lua` (book 7),
 `blm/BLM_REFILL.lua` and `blm/{blm_sets,armor,capes,weapons}.lua`.
 No other overlay has BLM files.
 
@@ -96,7 +96,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include('Mote-Include.lua')
     M->>E: user_setup(): states, keybinds (+ show_intro), HUD, JobChangeManager, macro book, lockstyle in 8 s, dualbox_manager
-    M->>E: init_gear_sets(): include('blm/blm_sets.lua')
+    M->>E: init_gear_sets(): include('blm/sets/blm_sets.lua')
     E->>E: INIT_SYSTEMS, data_loader, spell / ability / WS message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, require BLM_TP_CONFIG
     E->>E: JobChangeManager.cancel_all()

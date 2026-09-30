@@ -73,7 +73,7 @@ There is no `WHM_REFILL.lua` in `_master/`, and no live copy is maintained.
 Same shape as every job ([core lifecycle](../systems/core-lifecycle.md#how-a-job-file-boots)):
 the entry chunk loads `LOCKSTYLE_CONFIG`, the UI config and `REGION_CONFIG`;
 `get_sets()` includes Mote-Include, which runs `user_setup()` and
-`init_gear_sets()` (`include('whm/whm_sets.lua')`) before `INIT_SYSTEMS`,
+`init_gear_sets()` (`include('whm/sets/whm_sets.lua')`) before `INIT_SYSTEMS`,
 `data_loader` and the message hooks; then `_G.LockstyleConfig`,
 `_G.RECAST_CONFIG`, `_G.WHMTPConfig`, `JobChangeManager.cancel_all()`, the
 facade and the lockstyle cancel registration.

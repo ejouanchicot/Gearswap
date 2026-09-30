@@ -76,7 +76,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup(): states, keybinds, UI, JCM, macrobook/lockstyle, dualbox
-    M->>E: init_gear_sets() -> include drk/drk_sets.lua
+    M->>E: init_gear_sets() -> include drk/sets/drk_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, require DRK_TP_CONFIG
     E->>E: JobChangeManager.cancel_all()

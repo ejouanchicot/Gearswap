@@ -17,12 +17,12 @@
 ---   store_bag: where extra and other jobs' items are put back (one bag).
 ---       RefillConfig.store_bag = 'case'
 ---
----   These apply to every job. A job's own list (config/<job>/<JOB>_REFILL.lua)
----   or the craft list (config/craft/CRAFT_REFILL.lua) can set its own
+---   These apply to every job. A job's own list (<job>/<JOB>_REFILL.lua)
+---   or the craft list (common/CRAFT_REFILL.lua) can set its own
 ---   source_bags / store_bag the same way; its values win over these.
 ---   What to refill is in those list files, not here.
 ---
----   @file    config/REFILL_CONFIG.lua
+---   @file    common/REFILL_CONFIG.lua
 ---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-30

@@ -77,7 +77,7 @@ numbers are avoided because they drift.
 Tetsouo overlay (`_master/Tetsouo/`, gitignored since 2026-09-27 like every
 character overlay) and live copies (gitignored, identical to the overlay):
 `Tetsouo_WAR.lua` differs from the template in the header comment (`@author` still
-reads the character name), `init_gear_sets` includes `war/war_sets.lua`, and
+reads the character name), `init_gear_sets` includes `war/sets/war_sets.lua`, and
 `job_update` also calls `_G.LagDebugger.on_job_update()`. `war/`:
 `WAR_MACROBOOK` uses book 3 instead of 22-30; `WAR_STATES` adds `SubtleBlow` and
 `Hoxne` to `HybridMode` and lists `Chango` second; `WAR_CUSTOM` holds only the
@@ -105,7 +105,7 @@ sequenceDiagram
     E->>E: _G.WARWSConfig = require WAR_WS_CONFIG
     E->>M: include Mote-Include
     M->>E: user_setup(): states + WS slots, AmpullaLock.apply, keybinds, UI, JCM, macrobook/lockstyle, dualbox
-    M->>E: init_gear_sets() -> include war/war_sets.lua, then sync_weapon_with_hand()
+    M->>E: init_gear_sets() -> include war/sets/war_sets.lua, then sync_weapon_with_hand()
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.UIConfig, _G.RECAST_CONFIG, _G.WARTPConfig
     E->>E: JobChangeManager.cancel_all()

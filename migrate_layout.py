@@ -2,8 +2,11 @@
 Move a character folder to the layout of 2026-09-30.
 
     <Char>/<Char>_<JOB>.lua   one-line entry (shared/entry/<job>.lua does the work)
-    <Char>/common/            settings of the whole character, alt/ and craft/
-    <Char>/<job>/             everything of one job: its settings and its sets
+    <Char>/common/            settings of the whole character
+        alt/                  the alt's own commands (*_ALT_CUSTOM)
+        sets/                 gear shared by jobs (rings.lua...), craft and fishing sets
+    <Char>/<job>/             settings of one job
+        sets/                 its gear: <job>_sets.lua, armor.lua...
     <Char>/saved/             files the game writes (window positions, traces...)
 
 Usage (from the data folder):
@@ -12,9 +15,9 @@ Usage (from the data folder):
 
 A full copy of the folder is made first in data/_backups/<Character>_<date>/.
 Nothing is ever overwritten: a file whose new place is taken is left where it
-is and listed at the end. The shared code reads both layouts, so a folder left
-half-moved still works. clone_character.py runs the same moves at the end of
-every clone.
+is and listed at the end. The shared code reads the old layouts too, so a
+folder left half-moved still works. clone_character.py runs the same moves at
+the end of every clone.
 
 @author ejouanchicot
 @date   Created: 2026-09-30
@@ -33,8 +36,38 @@ SAVED_CONFIG = {'alt_state.lua', 'alt_window.lua', 'dualbox_role.lua', 'ui_setti
                 'message_modes.lua', 'WARP_ITEMS_OWNED.lua'}
 # Files at the root of the character folder that the game writes
 SAVED_ROOT = {'temp_binds.lua', 'trace.log', 'trace.old.log', 'trace.on', 'atelier.on'}
+# Lower-case files of common/ that are settings, not gear
+COMMON_SETTINGS = {'combat_mode.lua', 'treasure_mode.lua'}
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+GEAR_NAME = re.compile(r'^[a-z0-9]')   # gear files are lower-case, settings upper-case
+
+
+def _config_place(parts):
+    if len(parts) == 2:
+        return ('saved/' if parts[1] in SAVED_CONFIG else 'common/') + parts[1]
+    sub, rest = parts[1], '/'.join(parts[2:])
+    if sub in JOBS:
+        return sub + '/' + rest
+    if sub == 'alt':
+        if rest.endswith('_ALT_COMMANDS.lua') or rest.endswith('.example'):
+            return None
+        return 'common/alt/' + rest
+    if sub == 'craft':
+        return ('common/sets/' if rest.endswith('_sets.lua') else 'common/') + rest
+    return 'common/' + sub + '/' + rest
+
+
+def _sets_place(parts):
+    if len(parts) == 2:
+        m = re.match(r'^(\w+)_sets\.lua$', parts[1])
+        if m and m.group(1) in JOBS:
+            return m.group(1) + '/sets/' + parts[1]
+        return 'common/sets/' + parts[1]
+    sub, rest = parts[1], '/'.join(parts[2:])
+    if sub in JOBS:
+        return sub + '/sets/' + rest
+    return 'common/sets/' + (rest if sub == 'common' else sub + '/' + rest)
 
 
 def new_place(rel):
@@ -42,69 +75,77 @@ def new_place(rel):
 
     Returns the new relative path, None when the file is dropped (the
     generated alt tables, now in shared/data/alt/, and the .example copies),
-    or the path unchanged when it is not part of the old layout.
+    or the path unchanged when it is already in place.
     """
     parts = rel.split('/')
     top = parts[0]
     if top == 'config':
-        if len(parts) == 2:
-            return ('saved/' if parts[1] in SAVED_CONFIG else 'common/') + parts[1]
-        sub, rest = parts[1], '/'.join(parts[2:])
-        if sub in JOBS:
-            return sub + '/' + rest
-        if sub == 'alt':
-            if rest.endswith('_ALT_COMMANDS.lua') or rest.endswith('.example'):
-                return None
-            return 'common/alt/' + rest
-        if sub == 'craft':
-            return 'common/craft/' + rest
-        return 'common/' + sub + '/' + rest
+        return _config_place(parts)
     if top == 'sets':
-        if len(parts) == 2:
-            name = parts[1]
-            m = re.match(r'^(\w+)_sets\.lua$', name)
-            if m and m.group(1) in JOBS:
-                return m.group(1) + '/' + name
-            return ('common/craft/' if name.endswith('_sets.lua') else 'common/') + name
-        sub, rest = parts[1], '/'.join(parts[2:])
-        if sub in JOBS:
-            return sub + '/' + rest
-        return 'common/' + rest if sub == 'common' else 'common/' + sub + '/' + rest
+        return _sets_place(parts)
     if top == 'atelier':
         return 'saved/' + rel
     if len(parts) == 1 and rel in SAVED_ROOT:
         return 'saved/' + rel
+    # First form of this layout (2026-09-30 morning): gear next to the settings
+    if top in JOBS and len(parts) == 2 and GEAR_NAME.match(parts[1]):
+        return top + '/sets/' + parts[1]
+    if top == 'common' and len(parts) == 2 and GEAR_NAME.match(parts[1]) \
+            and parts[1] not in COMMON_SETTINGS:
+        return 'common/sets/' + parts[1]
+    if top == 'common' and len(parts) == 3 and parts[1] == 'craft':
+        return ('common/sets/' if parts[2].endswith('_sets.lua') else 'common/') + parts[2]
     return rel
 
 
 def plan_moves(char_dir):
-    """List of (source, destination or None to delete) relative to char_dir."""
+    """List of (source, destination or None to drop) relative to char_dir."""
     moves = []
-    for top in ('config', 'sets', 'atelier'):
+
+    def add(rel):
+        dst = new_place(rel)
+        if dst != rel:
+            moves.append((rel, dst))
+
+    for top in ('config', 'sets', 'atelier', 'common/craft'):
         for root, _, files in os.walk(os.path.join(char_dir, top)):
             for f in files:
-                rel = os.path.relpath(os.path.join(root, f), char_dir).replace('\\', '/')
-                moves.append((rel, new_place(rel)))
+                add(os.path.relpath(os.path.join(root, f), char_dir).replace('\\', '/'))
+    for top in JOBS + ['common']:
+        folder = os.path.join(char_dir, top)
+        if os.path.isdir(folder):
+            for f in os.listdir(folder):
+                if os.path.isfile(os.path.join(folder, f)):
+                    add(top + '/' + f)
     for name in sorted(os.listdir(char_dir)):
         if name in SAVED_ROOT and os.path.isfile(os.path.join(char_dir, name)):
-            moves.append((name, new_place(name)))
+            add(name)
     return moves
 
 
 def rewrite_paths(text, char, moved):
     """Point the require/include paths inside a character file at the new places."""
-    c = re.escape(char)
-    jobs = '|'.join(JOBS)
-    text = re.sub(r"(['\"])%s/sets/common/" % c, r"\1%s/common/" % char, text)
-    text = re.sub(r"(['\"])%s/sets/(%s)/" % (c, jobs), r"\1%s/\2/" % char, text)
-    text = re.sub(r"(['\"])%s/config/(%s)/" % (c, jobs), r"\1%s/\2/" % char, text)
-    text = re.sub(r"(['\"])%s/config/" % c, r"\1%s/common/" % char, text)
-    text = re.sub(r"(['\"])config/(%s)/" % jobs, r"\1\2/", text)
+    # every moved file, by its exact old name
+    for old, new in moved.items():
+        if not (old.endswith('.lua') and new):
+            continue
+        old_mod, new_mod = old[:-4], new[:-4]
+        text = re.sub("(['\"])" + re.escape(char + '/' + old_mod) + "(['\"])",
+                      lambda m: m.group(1) + char + '/' + new_mod + m.group(2), text)
+        text = re.sub("(include\\(\\s*['\"])" + re.escape(old) + "(['\"])",
+                      lambda m: m.group(1) + new + m.group(2), text)
+    # old-style names of files that were already moved or never existed here
+    c, jobs = re.escape(char), '|'.join(JOBS)
+    text = re.sub("(['\"])%s/sets/common/" % c, "\\1%s/common/sets/" % char, text)
+    text = re.sub("(['\"])%s/sets/(%s)/" % (c, jobs), "\\1%s/\\2/sets/" % char, text)
+    text = re.sub("(['\"])%s/config/(%s)/" % (c, jobs), "\\1%s/\\2/" % char, text)
+    text = re.sub("(['\"])%s/config/" % c, "\\1%s/common/" % char, text)
+    text = re.sub("(['\"])config/(%s)/" % jobs, "\\1\\2/", text)
 
     def include_sets(m):
         old = 'sets/' + m.group(2)
         return m.group(1) + (moved.get(old) or new_place(old) or old) + m.group(3)
-    text = re.sub(r"(include\(\s*['\"])sets/([^'\"]+)(['\"])", include_sets, text)
+    text = re.sub("(include\\(\\s*['\"])sets/([^'\"]+)(['\"])", include_sets, text)
     return text
 
 
@@ -128,7 +169,7 @@ def migrate(char, dry_run=False, backup=True, quiet=False, base_dir=HERE):
             entries.append((name, m.group(1)))
 
     moved = {src: dst for src, dst in moves if dst}
-    kept, done, deleted = [], 0, 0
+    kept, done, dropped = [], 0, 0
     say('%s: %d files to move, %d entry files to shorten' % (char, len(moved), len(entries)))
     if dry_run:
         for src, dst in moves:
@@ -144,7 +185,7 @@ def migrate(char, dry_run=False, backup=True, quiet=False, base_dir=HERE):
         src_full = os.path.join(char_dir, src)
         if dst is None:
             os.remove(src_full)
-            deleted += 1
+            dropped += 1
             continue
         dst_full = os.path.join(char_dir, dst)
         if os.path.exists(dst_full):
@@ -170,7 +211,7 @@ def migrate(char, dry_run=False, backup=True, quiet=False, base_dir=HERE):
         with open(os.path.join(char_dir, name), 'w', encoding='utf-8', newline='\n') as f:
             f.write(stub_for(char, job))
 
-    for old in ('config', 'sets', 'atelier'):
+    for old in ('config', 'sets', 'atelier', 'common/craft'):
         for root, _, _ in os.walk(os.path.join(char_dir, old), topdown=False):
             if not os.listdir(root):
                 os.rmdir(root)
@@ -178,7 +219,7 @@ def migrate(char, dry_run=False, backup=True, quiet=False, base_dir=HERE):
         os.makedirs(os.path.join(char_dir, folder), exist_ok=True)
 
     say('Moved %d, dropped %d (generated alt tables and examples), %d entries shortened.'
-        % (done, deleted, len(entries)))
+        % (done, dropped, len(entries)))
     if kept:
         say('Left in place (the new place already has a file):')
         for src, dst in kept:

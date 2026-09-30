@@ -8,14 +8,17 @@
 ---   <Char>/<Char>_<JOB>.lua      one-line entry (GearSwap needs this name)
 ---   <Char>/common/               settings for the whole character
 ---       alt/                     the dual-box alt's own commands (*_ALT_CUSTOM)
----       craft/                   craft / fishing sets and CRAFT_REFILL
----   <Char>/<job>/                everything of one job: its settings and sets
+---       sets/                    gear shared by jobs (rings.lua...), craft and
+---                                fishing sets
+---   <Char>/<job>/                settings of one job
+---       sets/                    its gear: <job>_sets.lua, armor.lua...
 ---   <Char>/saved/                files the game writes (window positions,
 ---                                dual-box role, HUD settings, traces...)
 ---
---- Older layout, still read: config/<FILE>, config/<job>/, config/alt/,
---- config/craft/, sets/<job>_sets.lua, sets/<job>/, and files at the root of
---- the character folder. Every lookup tries the new place first, then the old
+--- Older layouts, still read: config/<FILE>, config/<job>/, config/alt/,
+--- config/craft/, sets/<job>_sets.lua, sets/<job>/, files at the root of the
+--- character folder, and the first form of this layout (sets and gear files
+--- next to the settings, common/craft/). Every lookup tries the new place first, then the old
 --- ones, so a character that was not moved (a frozen clone) keeps working.
 --- A file that exists nowhere yet is created where that character's layout
 --- puts it: its new place once the folder has common/, else the old place, so
@@ -34,9 +37,10 @@ local CharPaths = {}
 local LAYOUT = {
     common = {'common/%s', 'config/%s'},
     alt    = {'common/alt/%s', 'config/alt/%s'},
-    craft  = {'common/craft/%s', 'config/craft/%s', 'sets/%s'},
+    craft  = {'common/%s', 'common/craft/%s', 'config/craft/%s'},
+    gear   = {'common/sets/%s', 'common/craft/%s', 'common/%s', 'sets/common/%s', 'sets/%s'},
     job    = {'%j/%s', 'config/%j/%s'},
-    sets   = {'%j/%s', 'sets/%j/%s', 'sets/%s'},
+    sets   = {'%j/sets/%s', '%j/%s', 'sets/%j/%s', 'sets/%s'},
     saved  = {'saved/%s', 'config/%s', '%s'},
 }
 
@@ -44,6 +48,7 @@ local LAYOUT = {
 --- used before 2026-09-30).
 local LEGACY_DEFAULT = {
     common = 'config/%s', alt = 'config/alt/%s', job = 'config/%j/%s', sets = 'sets/%s',
+    craft = 'config/craft/%s', gear = 'sets/%s',
 }
 local ROOT_SAVED = {['temp_binds.lua'] = true, ['trace.log'] = true, ['trace.old.log'] = true,
     ['trace.on'] = true, ['atelier.on'] = true}
@@ -84,12 +89,12 @@ end
 --- Where a file that exists nowhere yet goes, for a folder in the old layout.
 local function legacy_default(kind, file, job)
     if kind == 'saved' then return ROOT_SAVED[file] and file or ('config/' .. file) end
-    if kind == 'craft' then return file:match('_sets%.lua$') and ('sets/' .. file) or ('config/craft/' .. file) end
     return LEGACY_DEFAULT[kind] and fill(LEGACY_DEFAULT[kind], file, job) or nil
 end
 
 --- Candidate paths of one file, relative to the character folder.
---- @param kind string common | alt | craft | job | sets | saved
+--- @param kind string common | alt | craft (CRAFT_REFILL) | gear (common/sets/:
+---   shared gear, craft sets) | job | sets (a job's gear) | saved
 --- @param file string File name (with .lua for files, without for modules)
 --- @param job string|nil Job code, for job and sets
 --- @return table

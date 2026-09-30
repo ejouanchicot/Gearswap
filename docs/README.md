@@ -79,7 +79,7 @@ Written from the code, for anyone who changes it.
 ```
 <YourName>/
 ├── <YourName>_<JOB>.lua     one file per job, loaded by GearSwap
-├── <job>/<job>_sets.lua      your gear
+├── <job>/sets/<job>_sets.lua      your gear
 ├── temp_binds.lua           temporary keys (//gs c tb), written in game
 └── config/
     ├── COMMON_KEYBINDS.lua, UI_CONFIG.lua, LOCKSTYLE_CONFIG.lua, RECAST_CONFIG.lua,

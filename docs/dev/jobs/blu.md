@@ -95,7 +95,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup() (states, keybinds + intro, HUD, JCM, macrobook/lockstyle, AzureSets, dualbox)
-    M->>E: init_gear_sets() -> include blu/blu_sets.lua
+    M->>E: init_gear_sets() -> include blu/sets/blu_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.BLUTPConfig
     E->>E: JobChangeManager.cancel_all()

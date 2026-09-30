@@ -10,7 +10,7 @@ it. Words you do not know are in the [glossary](glossary.md).
 GearSwap is a Windower addon that changes your equipment for you. It reads
 one file per job, `<YourName>/<YourName>_<JOB>.lua`, which loads:
 
-- **your files** in `<YourName>/`: your gear (`<job>/<job>_sets.lua`) and your
+- **your files** in `<YourName>/`: your gear (`<job>/sets/<job>_sets.lua`) and your
   settings (`config/`);
 - **the shared code** in `shared/`, the same for every character and every
   job: it decides which of your sets to wear, and when.

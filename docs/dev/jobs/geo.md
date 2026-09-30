@@ -77,7 +77,7 @@ function, not a line number.
 Character copies are gitignored. The alt's overlay (`_master/<Alt>/`) holds
 `entry/<Alt>_GEO.lua` (same code, its own paths),
 `geo/{GEO_CUSTOM,GEO_KEYBINDS,GEO_LOCKSTYLE,GEO_MACROBOOK,GEO_REFILL,GEO_STATES,GEO_TP_CONFIG}.lua`
-(`GEO_STATES` differs by `CombatMode` defaulting to On) and `geo/geo_sets.lua`
+(`GEO_STATES` differs by `CombatMode` defaulting to On) and `geo/sets/geo_sets.lua`
 (differs only in the Exudation weaponskill neck / waist). The author's main
 overlay has no GEO files.
 
@@ -95,7 +95,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include('Mote-Include.lua')
     M->>E: user_setup(): states, lua load pettp, keybinds (+ show_intro), HUD, JobChangeManager, macro book, lockstyle in 8 s, dualbox_manager
-    M->>E: init_gear_sets(): include('geo/geo_sets.lua')
+    M->>E: init_gear_sets(): include('geo/sets/geo_sets.lua')
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.GEOTPConfig
     E->>E: JobChangeManager.cancel_all()

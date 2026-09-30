@@ -63,8 +63,8 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
-| `craft [variant]`, `craft off` | Crafting set from the file named in `common/CRAFT_CONFIG.lua` (`craft_file`, default `common/craft/craft_sets.lua`, empty until you fill it). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook` |
-| `fish` (`fishing`) | Fishing set from `common/craft/fishing_sets.lua` (same) |
+| `craft [variant]`, `craft off` | Crafting set from the file named in `common/CRAFT_CONFIG.lua` (`craft_file`, default `common/sets/craft_sets.lua`, empty until you fill it). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook` |
+| `fish` (`fishing`) | Fishing set from `common/sets/fishing_sets.lua` (same) |
 | `uncraft` | Leave the craft / fishing set |
 
 `wo` details: it unequips everything and locks your slots while it runs,

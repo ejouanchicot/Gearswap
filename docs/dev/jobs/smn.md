@@ -3,7 +3,7 @@
 SMN is the 16th job area, added on 2026-07-29: the facade plus 12 hook
 modules and one logic module under `shared/jobs/smn/functions/` (about 1 300
 lines). Like every other job it has a generic template in `_master/`
-(entry, `smn/`, flat `smn/smn_sets.lua`), offered by the clone script
+(entry, `smn/`, flat `smn/sets/smn_sets.lua`), offered by the clone script
 since 2026-09-28. Until then the entry, configs and sets existed only in the
 author's gitignored live folder and overlay `_master/Tetsouo/`; the overlay
 still keeps its own copy (modular set path), which wins for that character.
@@ -50,7 +50,7 @@ Verified on 2026-09-28:
 | Generic entry `_master/entry/Tetsouo_SMN.lua` | repo | yes |
 | Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK` in `_master/config/smn/` | repo | yes |
 | Generic flat sets `_master/sets/smn_sets.lua` | repo | yes |
-| Author's copies: entry, `smn/`, modular `smn/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
+| Author's copies: entry, `smn/`, modular `smn/sets/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
 | `SMN_REFILL.lua`, `SMN_TP_CONFIG.lua`, `SMN_JA_DATABASE.lua`, SMN message formatter | nowhere | - |
 | `clone_character.py` `ALL_VALID_JOBS` | 16 jobs, SMN included (no PUP) | yes |
 
@@ -59,7 +59,7 @@ selection offers it). A clone to the author's character, or any clone with
 `--source Tetsouo`, takes the overlay's copies instead (the overlay's
 `<job>/` tree wins over the generic flat file). The generic files are
 the overlay's with `@author ejouanchicot` and the flat set include
-`include('smn/smn_sets.lua')`; the gear is the same. Until 2026-09-28 a
+`include('smn/sets/smn_sets.lua')`; the gear is the same. Until 2026-09-28 a
 clone of any other character printed
 `[WARN] No entry file for: SMN - these jobs will not load`.
 
@@ -88,7 +88,7 @@ clone of any other character printed
 | `smn/SMN_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
 | `smn/SMN_LOCKSTYLE.lua` | `default = 1`, `by_subjob` (all 1), `get_style` |
 | `smn/SMN_MACROBOOK.lua` | Book 1; page per subjob (WHM 1, SCH 2, RDM 3, BLM 4); empty `dualbox` |
-| `smn/smn_sets.lua` (generic, flat; `smn/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
+| `smn/sets/smn_sets.lua` (generic, flat; `smn/sets/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
 | `shared/data/magic/SMN_SPELL_DATABASE.lua` + `summoning/*.lua` | Avatar / pact data for messages and `//gs c info` (SMN logic does not read it) |
 
 The `config/` and `sets/` rows are relative to a character folder; their
@@ -104,7 +104,7 @@ The entry chunk loads `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and the UI config,
 `INIT_SYSTEMS` installs `ModuleCache`, so those two are pre-cache instances
 ([core lifecycle](../systems/core-lifecycle.md)). `get_sets()` includes
 Mote-Include (which runs `user_setup()` and `init_gear_sets()` =
-`include('smn/smn_sets.lua')`), then `INIT_SYSTEMS`, `data_loader` and
+`include('smn/sets/smn_sets.lua')`), then `INIT_SYSTEMS`, `data_loader` and
 the message hooks, sets `_G.LockstyleConfig`, `_G.UIConfig`,
 `_G.RECAST_CONFIG`, calls `JobChangeManager.cancel_all()`, includes the facade
 and registers the lockstyle cancel. It also marks each step for
@@ -287,7 +287,7 @@ refreshes the HUD. It sends no `gs c update`: Mote's state commands and
 
 ## Set names the code looks up
 
-In the author's `smn/smn_sets.lua`, every set except `sets.precast.FC`
+In the author's `smn/sets/smn_sets.lua`, every set except `sets.precast.FC`
 is `empty_set()`, which returns `{}` (it returned all 16 slots set to `""`
 until 2026-09-29).
 

@@ -75,7 +75,7 @@ numbers are avoided because they drift.
 
 Live copies (gitignored): `Tetsouo/Tetsouo_PLD.lua` differs from the template only in
 comments, `@file` / `@author`, the keybind error text and `init_gear_sets`, which
-includes `pld/pld_sets.lua`; `_master/Tetsouo/entry/Tetsouo_PLD.lua` is
+includes `pld/sets/pld_sets.lua`; `_master/Tetsouo/entry/Tetsouo_PLD.lua` is
 identical to it. `Tetsouo/pld/` is modular (`pld_sets.lua` + `armor`, `capes`,
 `weapons`, mirrored in `_master/Tetsouo/pld/`). `_master/Tetsouo/pld/`
 holds only `PLD_MACROBOOK.lua` (other book numbers) and `PLD_REFILL.lua`.
@@ -103,7 +103,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup() (PLDWSConfig, states, WS slots if modules exist, ammo lock, keybinds, UI, JCM, macrobook/lockstyle, dualbox)
-    M->>E: init_gear_sets() -> include pld/pld_sets.lua
+    M->>E: init_gear_sets() -> include pld/sets/pld_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, PLD_TP_CONFIG (sets _G.PLDTPConfig), _G.BluMagicConfig
     E->>E: JobChangeManager.cancel_all()
@@ -530,7 +530,7 @@ above the `RECAST_CONFIG` tolerance (global `is_on_cooldown`).
 ## Set names the code looks up
 
 T = `_master/sets/pld_sets.lua`, K = `_master/Kaories/pld/pld_sets.lua`,
-L = `Tetsouo/pld/pld_sets.lua` (weapon sets in `Tetsouo/pld/weapons.lua`).
+L = `Tetsouo/pld/pld_sets.lua` (weapon sets in `Tetsouo/pld/sets/weapons.lua`).
 The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 
 | Set | Looked up by | T | K | L |

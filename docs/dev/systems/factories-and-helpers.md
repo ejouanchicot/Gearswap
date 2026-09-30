@@ -28,7 +28,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/craft/craft_manager.lua` | Craft set file loading and resolution, session flag, unlock; exported as `_G.CraftManager` |
 | `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17), deployed as `<char>/common/CRAFT_CONFIG.lua` |
 | `_master/sets/craft_sets.lua` | Generic craft set file, every slot empty: `hq`, `nq`, `success` and one variant per sub-craft (the 8 crafts) |
-| `_master/Tetsouo/common/craft/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
+| `_master/Tetsouo/common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000 (WAR, DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | `//gs c jump` (manual Jump chain) |
 | `shared/utils/dnc/waltz_manager.lua` | Curing / Divine Waltz tier selection |
@@ -316,7 +316,7 @@ flowchart TD
 - **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
 - **Locking.** `equip_craft_gear` uses GearSwap's synchronous `enable()` rather than `gs enable all`, because the command would land after `equip()`. The lock is applied 2.0 s later (`lock_after_delay`); that coroutine carries no session check. When a variant switch changes nothing, only the lock is re-asserted.
 - **Session flag.** While it is set (`CraftManager.is_active()`, read through the `_G.CraftManager` export):
-  - refill switches to `<char>/common/craft/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
+  - refill switches to `<char>/common/sets/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
   - Combat Mode does not enable the weapon slots it locked (`combat_mode.lua` local `craft_active`);
   - WHM's own `OffenseMode` `Melee ON` weapon lock (`WHM_COMMANDS.lua` `job_state_change`, and the WHM entry's `file_unload`) skips its `enable()`;
   - Combat Mode's wrapper does not lay the `hold()` locks again after an update (`combat_mode.lua` `reassert_holds`: WHM `Melee ON`, THF `RangeLock`, the Hoxne Ampulla).
@@ -357,7 +357,7 @@ Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, 
 |---|---|---|
 | `<char>/common/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
 | `<char>/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
-| `<char>/common/craft/CRAFT_REFILL.lua` | refill list while crafting | the job's refill list |
+| `<char>/common/sets/CRAFT_REFILL.lua` | refill list while crafting | the job's refill list |
 
 `ModuleCache` caches the set files and `CRAFT_CONFIG` per sandbox, so an edit needs a reload.
 
@@ -752,7 +752,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 ## For maintainers / AI
 
 - **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand (CODE_QUALITY section 3).
-- **New craft.** Add `<char>/common/craft/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
+- **New craft.** Add `<char>/common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
 - **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_HP_BRACKET`. Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
 - **New AutoMove consumer.** Read `state.Moving.value` in the set builder (or go through `base_set_builder.lua`), or register a callback from a coroutine scheduled after 0.5 s.
 - **New belt weaponskill.** Add it to `WEAPONSKILLS` in `elemental_belt.lua`. A new damaging spell family goes in `applies`.
@@ -794,6 +794,6 @@ Fixed:
 - Macrobook: the load message could announce the solo book while the dual-box book was selected. `resolve_config` is now shared by selection and `get_macro_info`.
 - Comments claiming cross-reload persistence or invalidation in `macrobook_manager.lua` and `lockstyle_manager.lua` were rewritten; they now say the list and counter live on the sandbox `_G`.
 - LOCKSTYLE_CONFIG described a DressUp sequence and a 15 s throttle that the code does not have. Its comments were rewritten.
-- Craft's "invalid format" error named `common/craft/<name>.lua`; it now names the set file actually read.
+- Craft's "invalid format" error named `common/sets/<name>.lua`; it now names the set file actually read.
 - `lockstyle_manager.lua`: a dead `else` branch and the unused `MessageCore.show_lockstyle_status` were removed.
 - The job-level Combat Mode locks (BLM, WHM, RDM, GEO `job_state_change` / `job_update` / `file_unload`) were replaced by the single `combat_mode.lua` hook, so the craft guards they carried went with them.

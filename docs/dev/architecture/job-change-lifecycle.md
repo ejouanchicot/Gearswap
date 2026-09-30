@@ -361,7 +361,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `<char>/common/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug` | disabled main (`DualBoxManager.initialize`) |
 | `<char>/common/CRAFT_CONFIG.lua` | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`craft_commands.lua`) |
 | `<char>/common/REFILL_CONFIG.lua` | `source_bags`, `store_bag` | Case, Sack, Satchel / Case (`config_resolver.lua`) |
-| `<char>/common/craft/<name>_sets.lua` | craft/fish sets | `craft_manager.lua` |
+| `<char>/common/sets/<name>_sets.lua` | craft/fish sets | `craft_manager.lua` |
 | `data/.dressup_disabled` | file presence = DressUp management off | `lockstyle_manager.lua:22` |
 | `<char>/<job>/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | styles and books per subjob (and per alt job) | fallbacks in the factories |
 

@@ -82,7 +82,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup(): states, schedule keybinds +0.5 s, UI, JCM, schedule macro/lockstyle gate +0.2 s, dualbox
-    M->>E: init_gear_sets() -> include run/run_sets.lua
+    M->>E: init_gear_sets() -> include run/sets/run_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.BluMagicConfig = RUN_BLU_MAGIC, require RUN_TP_CONFIG (sets _G.RUNTPConfig)
     E->>E: JobChangeManager.cancel_all()

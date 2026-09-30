@@ -74,7 +74,7 @@ function; line numbers are deliberately not used.
 
 Author overlay (`_master/Tetsouo/`, tracked; deployed only by a clone to that
 character): `entry/Tetsouo_THF.lua` (same as the template except the header and
-`init_gear_sets`, which includes `thf/thf_sets.lua`),
+`init_gear_sets`, which includes `thf/sets/thf_sets.lua`),
 `thf/THF_MACROBOOK.lua`, `thf/THF_STATES.lua` (adds
 `'Telop Knife'` to `SubWeapon`), `thf/THF_REFILL.lua` (includes
 `Ac. Bolt Quiver`), and `thf/{thf_sets,armor,capes,weapons}.lua`
