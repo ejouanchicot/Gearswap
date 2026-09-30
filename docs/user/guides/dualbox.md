@@ -60,8 +60,7 @@ On the alt, `role = "alt"` and `main_character = "Bob"` instead of
 | `report_on_load` | `false` stops the `sm report` sent to every box at each load (it asks the automation addon's StateReport addition for its state, see [the alt window](#the-alt-window)). On when absent |
 | `tracked_buffs` | On the alt: the buffs it reports to the main (any case works). Default `{'Entrust', 'Composure', "Bolter's Roll"}` |
 
-The clone script writes the last two commented out: remove the `--` to use
-them.
+The clone script writes the last two with their default values.
 
 The job exchange and the alt commands work with one partner; the `alts`
 orders, the alt window and the `rf` / `ls` mirroring work with every member
