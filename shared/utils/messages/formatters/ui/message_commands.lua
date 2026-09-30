@@ -394,6 +394,29 @@ end
 ---============================================================================
 
 --- //gs c help: where every help is (HelpScreen, the look of every help).
+--- A help screen without the rows of the commands this character does not
+--- have (//gs c sortie without a SORTIE_CONFIG.lua).
+--- @param spec table Help screen spec
+--- @return table
+local function available_rows(spec)
+    local ok, Sortie = pcall(require, 'shared/utils/sortie/sortie_commands')
+    local hide_sortie = not (ok and Sortie and Sortie.available and Sortie.available())
+    if not hide_sortie then return spec end
+    local out = {}
+    for k, v in pairs(spec) do out[k] = v end
+    out.groups = {}
+    for _, group in ipairs(spec.groups or {}) do
+        local g = {}
+        for k, v in pairs(group) do g[k] = v end
+        g.rows = {}
+        for _, row in ipairs(group.rows or {}) do
+            if not tostring(row[1]):find('^//gs c sortie') then g.rows[#g.rows + 1] = row end
+        end
+        out.groups[#out.groups + 1] = g
+    end
+    return out
+end
+
 local QUICK_HELP = {
     title = 'GEARSWAP HELP', subtitle = 'Quick reference',
     groups = {
@@ -419,7 +442,7 @@ local QUICK_HELP = {
 
 --- Display the quick help (//gs c help)
 function MessageCommands.show_help()
-    require('shared/utils/messages/help_screen').show(QUICK_HELP)
+    require('shared/utils/messages/help_screen').show(available_rows(QUICK_HELP))
 end
 
 --- //gs c commands: every universal command, grouped.
@@ -523,7 +546,7 @@ local COMMANDS_HELP = {
 
 --- Display the list of universal commands (//gs c commands)
 function MessageCommands.show_commands_list()
-    require('shared/utils/messages/help_screen').show(COMMANDS_HELP)
+    require('shared/utils/messages/help_screen').show(available_rows(COMMANDS_HELP))
 end
 
 ---============================================================================

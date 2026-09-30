@@ -2,13 +2,17 @@
 --- Sortie Commands - one GearSwap command per Sortie target
 ---============================================================================
 --- //gs c sortie <target> puts this character in the stance the target needs,
---- then tells the GEO alt which Silmaril profile to load and starts it.
---- Silmaril runs the fight from there (bubbles, BoG, Entrust, positioning,
---- weaponskill); the per-target settings live in its profiles under
---- Settings/Kaories/Sortie/GEO/.
+--- then tells the alt which Silmaril profile to load and starts it. Silmaril
+--- runs the fight from there; the per-target settings live in its profiles.
+---
+--- Everything personal (the alt, the profile folder, the stances, the
+--- targets, the orders) is in the character's _common/combat/
+--- SORTIE_CONFIG.lua (see Tetsouo's for every key). A character without that
+--- file has no sortie command: it answers "not set up" and is hidden from
+--- the help (SortieCommands.available).
 ---
 --- Commands:
----   //gs c sortie <target>          stance + alt profile (see TARGETS)
+---   //gs c sortie <target>          stance + alt profile (targets of the config)
 ---   //gs c sortie escort [Indi-X]   alt stops Silmaril, dismisses its luopan
 ---                                   if any, casts the Indi (default
 ---                                   Indi-Regen) and follows this character
@@ -26,44 +30,23 @@
 local SortieCommands = {}
 
 ---============================================================================
---- DATA
+--- CONFIG
 ---============================================================================
 
---- The GEO alt driven by Silmaril, and where its Sortie profiles live
---- (relative to Windower/Settings, the path `sm load` expects). `sm load` names
---- a folder: Silmaril picks the file of the alt's current job and subjob in it
---- (GEO_WHM_Kaories.xml or GEO_DRK_Kaories.xml), so one target serves both.
-local ALT = 'Kaories'
-local PROFILE_ROOT = 'Kaories/Sortie/GEO/'
+--- The character's SORTIE_CONFIG.lua, or nil.
+--- @return table|nil
+local function config()
+    local ok, cfg = pcall(function()
+        return require('shared/utils/core/char_paths').optional('common', 'SORTIE_CONFIG')
+    end)
+    return (ok and type(cfg) == 'table' and type(cfg.targets) == 'table') and cfg or nil
+end
 
---- This character's stances, as "<state> <value>" pairs.
-local STANCES = {
-    dps  = {'HybridMode DPS', 'Regen Off', 'MainWeapon Naegling'},
-    tank = {'HybridMode Tanking', 'Regen Off'},
-}
-
---- Target -> Silmaril profile of the alt, its Indi- (must match the one set
---- in that profile), this character's stance, and the summary shown.
---- `phalanx_sird = false` turns Phalanx SIRD Off for that target (PLD); every
---- other target turns it On.
---- The Indi- is cast on load because Silmaril only recasts one when the new
---- profile's Indi- differs from the previous profile's, not from the one
---- actually up: Farm -> escort (Indi-Regen) -> Farm left Indi-Regen running
---- until it was 30 s from expiring.
-local TARGETS = {
-    farm       = {profile = 'Farm',       indi = 'Indi-Acumen',  stance = 'dps',  summary = 'assists Gabvanstronger: Geo-Malaise, tags each mob (Stun, Absorb-TP), fire magic bursts'},
-    umbril     = {profile = 'Umbril',     indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, melee (Tetsouo engaged), Judgment'},
-    melee      = {profile = 'Melee',      indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty'},
-    triboulex  = {profile = 'Triboulex',  indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, Life Cycle + Dematerialize (no BoG)'},
-    leshonn    = {profile = 'Leshonn',    indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
-    gartell    = {profile = 'Gartell',    indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Precision'},
-    aita       = {profile = 'Aita',       indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
-    aminon     = {profile = 'Aminon',     indi = 'Indi-Fury',    stance = 'tank', summary = 'Geo-Frailty + BoG behind (Hysoka engaged), Entrust Precision; /DRK: Absorb-TP', phalanx_sird = false},
-    aminontest = {profile = 'AminonTest', indi = 'Indi-Fury',    stance = 'tank', summary = 'test on Vampire Leech (Tetsouo engaged)', phalanx_sird = false},
-}
-
---- Bosses fought exactly the same way share one profile.
-local ALIASES = {degei = 'melee', skomora = 'melee', ghatjot = 'melee', dhartok = 'melee'}
+--- True when the character has a Sortie config (the help shows the command).
+--- @return boolean
+function SortieCommands.available()
+    return config() ~= nil
+end
 
 ---============================================================================
 --- HELPERS
@@ -88,9 +71,10 @@ local function me()
 end
 
 --- Send a command to the alt's console.
+--- @param cfg table Sortie config
 --- @param command string
-local function to_alt(command)
-    send_command('send ' .. ALT .. ' ' .. command)
+local function to_alt(cfg, command)
+    send_command('send ' .. cfg.alt .. ' ' .. command)
 end
 
 --- Tell the alt window what was just ordered (on / follow).
@@ -101,12 +85,13 @@ local function note(changes)
 end
 
 --- One entry per target, sorted by name, with the aliases that share it.
+--- @param cfg table Sortie config
 --- @return table Array of {name, aliases, indi, summary}
-local function list_entries()
+local function list_entries(cfg)
     local entries = {}
-    for name, target in pairs(TARGETS) do
+    for name, target in pairs(cfg.targets) do
         local aliases = {}
-        for alias, key in pairs(ALIASES) do
+        for alias, key in pairs(cfg.aliases or {}) do
             if key == name then aliases[#aliases + 1] = alias end
         end
         table.sort(aliases)
@@ -150,67 +135,89 @@ local function set_states(settings)
     if changed and handle_update then handle_update({'auto'}) end
 end
 
+--- Set the states of a list the job has, silently skipping the others.
+--- @param settings table Array of "<state> <value>" strings
+local function set_known_states(settings)
+    local known = {}
+    for _, setting in ipairs(settings) do
+        local field = setting:match('^(%S+)')
+        if field and state and rawget(state, field) then known[#known + 1] = setting end
+    end
+    if #known > 0 then set_states(known) end
+end
+
+--- The per-target states: the config's target_states, a target's own
+--- `states` replacing the same state.
+--- @return table Array of "<state> <value>"
+local function target_states(cfg, target)
+    local order, value = {}, {}
+    for _, list in ipairs({cfg.target_states or {}, target.states or {}}) do
+        for _, setting in ipairs(list) do
+            local field, v = setting:match('^(%S+)%s+(.+)$')
+            if field then
+                if value[field] == nil then order[#order + 1] = field end
+                value[field] = v
+            end
+        end
+    end
+    local out = {}
+    for _, field in ipairs(order) do out[#out + 1] = field .. ' ' .. value[field] end
+    return out
+end
+
 ---============================================================================
 --- ACTIONS
 ---============================================================================
 
 --- Stance for this character, profile for the alt, Silmaril on.
+--- @param cfg table Sortie config
 --- @param name string Target as typed
 --- @return boolean handled
-local function engage_target(name)
-    local key = ALIASES[name] or name
-    local target = TARGETS[key]
+local function engage_target(cfg, name)
+    local key = (cfg.aliases or {})[name] or name
+    local target = cfg.targets[key]
     if not target then
         if messages() then messages().show_unknown_target(name) end
         return true
     end
-    set_states(STANCES[target.stance])
-    -- Only on a job that has the mode: set_states would otherwise send
+    set_states((cfg.stances or {})[target.stance] or {})
+    -- Only the states this job has: set_states would otherwise send
     -- `gs c set` and print Mote's unknown-state error.
-    if state and rawget(state, 'PhalanxSIRD') then
-        set_states({'PhalanxSIRD ' .. (target.phalanx_sird == false and 'Off' or 'On')})
-    end
-    to_alt('sm load ' .. PROFILE_ROOT .. target.profile)
-    to_alt('sm follow off')
-    to_alt('sm on')
+    set_known_states(target_states(cfg, target))
+    to_alt(cfg, 'sm load ' .. (cfg.profile_root or '') .. target.profile)
+    to_alt(cfg, 'sm follow off')
+    to_alt(cfg, 'sm on')
     note({on = true, follow = false})
-    to_alt('/ma "' .. target.indi .. '" <me>')
+    if target.indi then to_alt(cfg, '/ma "' .. target.indi .. '" <me>') end
     if messages() then
         local shown = key ~= name
             and (name:sub(1, 1):upper() .. name:sub(2) .. ' (' .. target.profile .. ')')
             or target.profile
-        messages().show_target_loaded(shown, ALT, target.indi, target.summary)
+        messages().show_target_loaded(shown, cfg.alt, target.indi, target.summary)
     end
     return true
 end
 
 --- Escort: alt stops Silmaril, casts an Indi (its GearSwap dismisses the
 --- luopan first only when there is one) and follows this character.
+--- @param cfg table Sortie config
 --- @param args table Words after "escort"
 --- @return boolean handled
-local function escort(args)
-    local indi = args[1] or 'Indi-Regen'
-    -- PLD's Regen mode (sets.idleRegen) is a /SCH mode, hidden on the other
-    -- subjobs: turned On there it would dress the idle set out of sight.
-    if player and player.sub_job == 'SCH' then
-        set_states({'Regen on'})
-    end
-    to_alt('sm off')
+local function escort(cfg, args)
+    local settings = cfg.escort or {}
+    local indi = args[1] or settings.indi or 'Indi-Regen'
+    -- States per subjob (PLD's Regen mode is a /SCH mode, hidden on the
+    -- other subjobs: turned On there it would dress the idle set out of sight)
+    local by_sub = settings.states and player and settings.states[player.sub_job]
+    if by_sub then set_states(by_sub) end
+    to_alt(cfg, 'sm off')
     note({on = false, follow = me()})
     -- The alt starts following only once its Indi- is cast: moving would
     -- interrupt it. Its escort command schedules the follow itself.
-    to_alt('gs c escort ' .. indi .. ' ' .. me())
-    if messages() then messages().show_escort(ALT, indi, me()) end
+    to_alt(cfg, 'gs c escort ' .. indi .. ' ' .. me())
+    if messages() then messages().show_escort(cfg.alt, indi, me()) end
     return true
 end
-
---- One-shot orders for the alt: console command and the action shown
---- (nil action = Silmaril OFF message).
-local SIMPLE = {
-    off        = {command = 'sm off'},
-    judgment   = {command = '/ws "Judgment" <bt>',    action = 'Judgment'},
-    fullcircle = {command = '/ja "Full Circle" <me>', action = 'Full Circle'},
-}
 
 ---============================================================================
 --- PUBLIC API
@@ -220,28 +227,38 @@ local SIMPLE = {
 --- @param args table Words after "sortie"
 --- @return boolean handled
 function SortieCommands.handle(args)
+    local cfg = config()
+    if not cfg then
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then
+            MessageFormatter.show_warning('sortie: not set up for this character (_common/combat/SORTIE_CONFIG.lua)')
+        end
+        return true
+    end
+    cfg.alt = cfg.alt or ''
     local sub = args[1] and args[1]:lower() or 'list'
     local rest = {}
     for i = 2, #args do rest[#rest + 1] = args[i] end
 
+    local orders = cfg.orders or {}
     if sub == 'list' then
-        if messages() then messages().show_target_list(list_entries()) end
+        if messages() then messages().show_target_list(list_entries(cfg)) end
         return true
     elseif sub == 'help' then
-        if messages() then messages().show_help(list_entries(), ALT) end
+        if messages() then messages().show_help(list_entries(cfg), cfg.alt) end
         return true
     elseif sub == 'escort' then
-        return escort(rest)
-    elseif SIMPLE[sub] then
-        local order = SIMPLE[sub]
-        to_alt(order.command)
+        return escort(cfg, rest)
+    elseif orders[sub] then
+        local order = orders[sub]
+        to_alt(cfg, order.command)
         if order.command == 'sm off' then note({on = false}) end
         if messages() then
-            if order.action then messages().show_alt_action(ALT, order.action) else messages().show_alt_off(ALT) end
+            if order.action then messages().show_alt_action(cfg.alt, order.action) else messages().show_alt_off(cfg.alt) end
         end
         return true
     end
-    return engage_target(sub)
+    return engage_target(cfg, sub)
 end
 
 _G.SortieCommands = SortieCommands
