@@ -11,7 +11,10 @@
 --- step's `delay`, or after its longest wait, whichever comes first. A spell
 --- or an item the game refused without a word ("unable to cast spells at
 --- this time") is sent again, up to MAX_TRIES sends (cast_tracker.lua).
---- The queue lives on `windower`; a newer load drops an older queue.
+--- The queue lives on `windower`, so a queue under way goes on across a job
+--- change; a queue started after it gets a new generation.
+--- push_next puts a step in front: a function step uses it to act right
+--- after itself (decide at the last moment, then act).
 ---
 --- @file shared/utils/core/action_queue.lua
 --- @author ejouanchicot
@@ -126,6 +129,17 @@ function ActionQueue.push(command, wait, opts)
     q.busy = true
     windower._action_gen_queue = (windower._action_gen_queue or 0) + 1
     run_next(windower._action_gen_queue)
+end
+
+--- Put a step in front of the queue (next to go), or start the queue.
+--- @param command string|function
+--- @param wait number Longest wait, in seconds
+--- @param opts table|nil {delay, tag}
+function ActionQueue.push_next(command, wait, opts)
+    local q = queue()
+    if not q.busy then return ActionQueue.push(command, wait, opts) end
+    opts = opts or {}
+    table.insert(q.steps, 1, {command = command, wait = wait, delay = opts.delay, tag = opts.tag})
 end
 
 --- Whether steps are still waiting to go.

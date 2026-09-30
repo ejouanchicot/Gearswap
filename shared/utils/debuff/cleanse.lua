@@ -46,6 +46,16 @@ local function push(command, wait)
     ActionQueue.push(command, wait, {delay = DELAY, tag = 'CLEANSE'})
 end
 
+local function push_next(command, wait)
+    ActionQueue.push_next(command, wait, {delay = DELAY, tag = 'CLEANSE'})
+end
+
+--- Name the aura marks go by: the game's buff name in lowercase, as
+--- uncurable_debuffs.lua looks it up ('attack down', 'max hp down').
+local function mark_name(entry)
+    return entry.name:lower()
+end
+
 local function info_block(block)
     local ok, InfoBlock = pcall(require, 'shared/utils/messages/info_block')
     if ok and InfoBlock then InfoBlock.show(block) end
@@ -59,26 +69,31 @@ end
 --- ACTIONS
 ---============================================================================
 
---- Use an item, watched for an aura; Doom: again while it stays.
-local function use_item(entry, item, tries, settings)
-    -- The aura check starts when the item really goes (the step just before
-    -- it), so an earlier item of the queue is not counted. Not for Doom:
-    -- Holy Water fails two times in three, which says nothing of an aura.
-    if entry.key ~= 'doom' then
-        push(function()
-            uncurable().watch(entry.key, item, 0, function(name, item_name)
+--- Use an item, decided when its turn comes: the debuff may be gone by
+--- then (one Panacea takes every erasable debuff off, a partner's spell
+--- landed). The aura watch starts as the item goes, so an earlier item of
+--- the queue is not counted; not for Doom, whose Holy Water fails two times
+--- in three, which says nothing of an aura. Doom: again while it stays.
+local function use_item(entry, item, tries, settings, front)
+    -- a Doom retry goes right away, before the other debuffs
+    local add = front and push_next or push
+    add(function()
+        if not Methods.is_up(entry) then return end
+        if entry.key ~= 'doom' then
+            uncurable().watch(mark_name(entry), item, 0, function(name, item_name)
                 local ok, MessageDebuffs = pcall(require, 'shared/utils/messages/formatters/magic/message_debuffs')
                 if ok then MessageDebuffs.show_debuff_uncurable(name, item_name) end
             end)
-        end, 0.05)
-    end
-    push(('input /item "%s" <me>'):format(item.name), Methods.cast_time(item.name) + WAIT_MARGIN)
-    if entry.key ~= 'doom' or tries >= (settings.doom_tries or 1) then return end
-    push(function()
-        if not Methods.is_up(entry) then return end
-        local again = Methods.first_item(Methods.items_for(entry, settings))
-        if again then use_item(entry, again, tries + 1, settings) end
-    end, 0.1)
+        end
+        -- In front, in reverse: the item goes next, then the Doom retry
+        if entry.key == 'doom' and tries < (settings.doom_tries or 1) then
+            push_next(function()
+                local again = Methods.is_up(entry) and Methods.first_item(Methods.items_for(entry, settings))
+                if again then use_item(entry, again, tries + 1, settings, true) end
+            end, 0.1)
+        end
+        push_next(('input /item "%s" <me>'):format(item.name), Methods.cast_time(item.name) + WAIT_MARGIN)
+    end, 0.05)
 end
 
 --- The partners that may cast the spell (jobs known from the dual-box
@@ -105,13 +120,19 @@ end
 
 --- One debuff: the way chosen, as {text, tone, run}. `run` does it.
 local function plan_one(entry, settings)
-    if uncurable().is_marked(entry.key) then
+    if uncurable().is_marked(mark_name(entry)) then
         return {text = 'left alone (item had no effect: aura?)', tone = 'warn'}
     end
     local item = not entry.no_action and Methods.first_item(Methods.items_for(entry, settings)) or nil
     if entry.spell and settings.use_spells ~= false and not entry.no_action and Methods.can_cast(entry.spell) then
         return {text = entry.spell, tone = 'good', run = function()
-            push(('input /ma "%s" <me>'):format(entry.spell), Methods.cast_time(entry.spell) + WAIT_MARGIN)
+            -- decided when its turn comes: an earlier Erase or item may have
+            -- taken it off already
+            push(function()
+                if Methods.is_up(entry) then
+                    push_next(('input /ma "%s" <me>'):format(entry.spell), Methods.cast_time(entry.spell) + WAIT_MARGIN)
+                end
+            end, 0.05)
         end}
     end
     local partners = (entry.spell and settings.ask_partner ~= false) and partners_for(entry.spell) or {}
@@ -152,13 +173,13 @@ end
 ---============================================================================
 
 --- Send a line per debuff to the box that pressed the key (spaces as _,
---- lines separated by ;).
+--- lines separated by | : a ; would end the console command).
 local function report_to(name, steps)
     local parts = {}
     for _, step in ipairs(steps) do
         parts[#parts + 1] = (step.entry.name .. '=' .. step.text):gsub(' ', '_')
     end
-    local body = #parts > 0 and table.concat(parts, ';') or 'none'
+    local body = #parts > 0 and table.concat(parts, '|') or 'none'
     send_command(('send %s gs c cleanse report %s %s'):format(name, player.name, body))
 end
 
@@ -176,7 +197,7 @@ local function receive_report(name, body)
     if not name then return end
     local fields = {}
     if body and body ~= 'none' then
-        for line in body:gmatch('[^;]+') do
+        for line in body:gmatch('[^|]+') do
             local debuff, text = line:match('^([^=]+)=(.*)$')
             if debuff then fields[#fields + 1] = {debuff:gsub('_', ' '), (text:gsub('_', ' '))} end
         end
