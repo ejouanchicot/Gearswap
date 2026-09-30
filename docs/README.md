@@ -44,6 +44,7 @@ New here? Read, in this order: [installation](user/getting-started/installation.
 | [Auto-tier](user/features/auto-tier-system.md) | WHM Cure and DNC Waltz tier from missing HP; BLM, RDM and GEO spells stepping down a tier |
 | [Job changes](user/features/job-change-manager.md) | What happens when you change job or subjob |
 | [Midcast watchdog](user/features/watchdog.md) | Gear recovery when a cast is never confirmed |
+| [Cleanse](user/features/cleanse.md) | `//gs c cleanse`: debuffs off you and your box group, every debuff and what removes it |
 
 ## Jobs
 
@@ -70,7 +71,7 @@ Written from the code, for anyone who changes it.
 | [Developer start page](dev/README.md) | The project in one page: layers, boot sequence, life of an action, state and lifetime, map of every developer page, glossary |
 | [Maintainer guide](dev/maintainer-guide.md) | How to change the project safely: workflows, checks, conventions |
 | [Architecture](dev/README.md#architecture) | [Job change lifecycle](dev/architecture/job-change-lifecycle.md), [characters and templates](dev/architecture/characters-and-templates.md) |
-| [Systems](dev/README.md#systems) | [Core lifecycle](dev/systems/core-lifecycle.md), [precast pipeline](dev/systems/precast-pipeline.md), [midcast and buffs](dev/systems/midcast-and-buffs.md), [commands and debug](dev/systems/commands-and-debug.md), [keybinds and CUSTOM](dev/systems/keybinds-and-custom.md), [HUD](dev/systems/ui-overlay.md), [messages](dev/systems/messages.md) ([catalog](dev/systems/messages-catalog.md), [formatters](dev/systems/messages-formatters.md)), [dual-box](dev/systems/dualbox.md), [stealth](dev/systems/stealth.md), [equipment and inventory](dev/systems/equipment-and-inventory.md), [wardrobe organizer](dev/systems/wardrobe-organizer.md), [warp](dev/systems/warp.md), [factories and helpers](dev/systems/factories-and-helpers.md) |
+| [Systems](dev/README.md#systems) | [Core lifecycle](dev/systems/core-lifecycle.md), [precast pipeline](dev/systems/precast-pipeline.md), [midcast and buffs](dev/systems/midcast-and-buffs.md), [commands and debug](dev/systems/commands-and-debug.md), [keybinds and CUSTOM](dev/systems/keybinds-and-custom.md), [HUD](dev/systems/ui-overlay.md), [messages](dev/systems/messages.md) ([catalog](dev/systems/messages-catalog.md), [formatters](dev/systems/messages-formatters.md)), [dual-box](dev/systems/dualbox.md), [stealth](dev/systems/stealth.md), [cleanse](dev/systems/cleanse.md), [equipment and inventory](dev/systems/equipment-and-inventory.md), [wardrobe organizer](dev/systems/wardrobe-organizer.md), [warp](dev/systems/warp.md), [factories and helpers](dev/systems/factories-and-helpers.md) |
 | [Data](dev/README.md#data) | [Spell databases](dev/data/spell-databases.md), [ability and weaponskill databases](dev/data/ability-and-weaponskill-databases.md) |
 | [Jobs](dev/README.md#jobs) | [BLM](dev/jobs/blm.md) · [BLU](dev/jobs/blu.md) · [BRD](dev/jobs/brd.md) · [BST](dev/jobs/bst.md) · [COR](dev/jobs/cor.md) · [DNC](dev/jobs/dnc.md) · [DRG](dev/jobs/drg.md) · [DRK](dev/jobs/drk.md) · [GEO](dev/jobs/geo.md) · [PLD](dev/jobs/pld.md) · [PUP](dev/jobs/pup.md) · [RDM](dev/jobs/rdm.md) · [RUN](dev/jobs/run.md) · [SAM](dev/jobs/sam.md) · [SCH](dev/jobs/sch.md) · [SMN](dev/jobs/smn.md) · [THF](dev/jobs/thf.md) · [WAR](dev/jobs/war.md) · [WHM](dev/jobs/whm.md) |
 

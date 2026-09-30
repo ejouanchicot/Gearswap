@@ -1,14 +1,14 @@
 # Stealth system (`//gs c stealth`, Sneak / Invisible on the box group)
 
-`//gs c stealth sneak | invi | both` (Alt+Z / Alt+X by default) puts Sneak or Invisible on this character and on every other member of the box group. A Scholar that needs the buff itself and has a stratagem charge covers the whole group with Accession and announces it; every other box picks its own best way from what the game says it can do right now (Spectral Jig > spell > ninjutsu with a tool > Silent Oil / Prism Powder > Evanessence > a partner casts it). A buff still up is cancelled (Cancel addon) before the new cast, since an active Sneak or Invisible blocks a new one. Actions go out through a queue that advances on the action's real end (raw `action` event) plus a delay, with a timed fallback and a resend when the game silently refused a spell or item. Each box reads the end time of its own two buffs from packet 0x063 order 9 and sends it to the group; a one-second loop warns before a buff wears off and redraws the alt window, which shows a Sneak and an Invi row per alt.
+`//gs c stealth sneak | invi | both` (Alt+Z / Alt+X by default) puts Sneak or Invisible on this character and on every other member of the box group. A Scholar that needs the buff itself and has a stratagem charge covers the whole group with Accession and announces it; every other box picks its own best way from what the game says it can do right now (Spectral Jig > spell > ninjutsu with a tool > Silent Oil / Prism Powder > Evanessence > a partner casts it). A buff still up is cancelled (Cancel addon) before the new cast, since an active Sneak or Invisible blocks a new one. Actions go out through the shared action queue (`shared/utils/core/action_queue.lua`, also used by `//gs c cleanse`), which advances on the action's real end (raw `action` event) plus a delay, with a timed fallback and a resend when the game silently refused a spell or item. Each box reads the end time of its own two buffs from packet 0x063 order 9 and sends it to the group; a one-second loop warns before a buff wears off and redraws the alt window, which shows a Sneak and an Invi row per alt.
 
-Verified against the code on 2026-09-28 (system added 2026-09-26, trace module added 2026-09-28). The page names functions rather than line numbers; a line is given only where the line itself matters.
+Verified against the code on 2026-09-28 (system added 2026-09-26, trace module added 2026-09-28); queue section re-verified 2026-10-01, when the queue moved to `action_queue.lua`. The page names functions rather than line numbers; a line is given only where the line itself matters.
 
 ## Files
 
 | Path | Lines | Role |
 |---|---:|---|
-| `shared/utils/stealth/stealth.lua` | 539 | Command router (`Stealth.handle`), action queue, per-box decision (`handle_self`), claim handling (`request` / `decide`), `status`, `check` |
+| `shared/utils/stealth/stealth.lua` | 442 | Command router (`Stealth.handle`), `push` into the shared queue, per-box decision (`handle_self`), claim handling (`request` / `decide`), `status`, `check` |
 | `shared/utils/stealth/stealth_methods.lua` | 181 | Which ways this character has now: `has_jig`, `jig_recast`, `can_jig`, `can_cast`, `best_own`, `has_spell`, `item_count`, `cast_time`; fixed id tables |
 | `shared/utils/stealth/stealth_aoe.lua` | 148 | One Scholar for the group: `coverable`, claims (`record` / `winner` / `clear`), `status`, flat `distance`, `trace_distances`, `chain_time` |
 | `shared/utils/stealth/stealth_timers.lua` | 184 | Packet 0x063 order 9 listener, end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
@@ -26,6 +26,7 @@ Integration points outside the folder:
 - `shared/utils/dualbox/alt_window.lua` `stealth_lines` (called from `alt_lines`): a Sneak and an Invi row per alt.
 - `clone_character.py`: `('config', 'STEALTH_CONFIG.lua')` is in `KEPT_ON_RECLONE`, so a re-clone copies the player's file back from the backup. The template itself reaches `config/` through the `config_global` copy loop (overlay-aware, every `*.lua` of `_master/config_global/` and the overlay's `config_global/`).
 - `shared/utils/messages/formatters/ui/message_commands.lua`: `//gs c commands` lists `stealth help` and `stealth sneak | invi | both`, `stealth check`. `help` is not a subcommand: it falls to the usage screen like any unknown word.
+- `shared/utils/core/action_queue.lua` (137 lines, since 2026-10-01): the action queue, shared with `//gs c cleanse` ([cleanse.md](cleanse.md)).
 - `shared/utils/core/cast_tracker.lua`: `started_since(t)` / `acted_since(t)` tell the queue whether a sent spell / item started.
 - `shared/utils/scholar/scholar_actions.lua` `cast_with_stratagems` and `shared/utils/scholar/stratagem_charges.lua` `available`: the Accession chain and the charge count.
 - `shared/utils/dualbox/alt_group.lua` `get_alts()` (group members) and `shared/utils/dualbox/alt_states.lua` `get(name)` (their known jobs).
@@ -99,29 +100,33 @@ sequenceDiagram
 
 **Fixed ids, no `res` lookups** (`SPELLS`, `ITEMS`): the five spells (id, MP, cast time, levels per job id) and six items are copied from `res/spells.lua` and `res/items.lua`. Looking them up by name walked 976 spells and 23 555 items several times per key press and could load the item list on the first one. Values: Sneak 137 (12 MP, 3 s), Invisible 136 (15 MP, 3 s), Monomi: Ichi 318, Tonko: Ichi 353, Tonko: Ni 354 (1.5 s), Silent Oil 4165, Prism Powder 4164, Evanessence 6699 (items 1 s, `ITEM_CAST`), Sanjaku-Tenugui 2553, Shinobi-Tabi 1194, Shikanofuda 2972, Spectral Jig 196 (recast 218), buffs Sneak 71 / Invisible 69. Inventory counts (bag 0 only, items are used from there) are cached for one second (`counts`, `bag_cache`).
 
-### Action queue (`stealth.lua`, section ACTION QUEUE)
+### Action queue (`shared/utils/core/action_queue.lua`)
+
+Since 2026-10-01 the queue is its own module, shared by stealth and `//gs c cleanse` ([cleanse.md](cleanse.md)): one queue per character, so a stealth and a cleanse pressed together run one after the other instead of stepping on each other. `stealth.lua` keeps only a local `push(command, wait)` that calls `ActionQueue.push(command, wait, {delay = Config.get().delay, tag = 'STEALTH'})`.
 
 ```mermaid
 flowchart TD
-    P["push(command, wait)"] --> B{"queue busy?"}
+    P["ActionQueue.push(command, wait, {delay, tag})"] --> B{"queue busy?"}
     B -- yes --> A["append step"]
-    B -- no --> G["busy = true, windower._stealth_gen_queue + 1, run_next(gen)"]
-    G --> R["run_next: pop step, send it (or pcall the function)"]
+    B -- no --> G["busy = true, windower._action_gen_queue + 1, run_next(gen)"]
+    G --> R["run_next: pop step; function: pcall it, else send_command"]
     R --> AR["arm(q, step, gen, 1): token + 1"]
-    AR --> W["q.waiting = {gen, token} (command steps only)"]
+    AR --> W["q.waiting = {gen, token, delay} (command steps only)"]
     AR --> F["coroutine: after step.wait, run_next if the token is unchanged"]
     AR --> C{"/ma or /item and tries < 3?"}
     C -- yes --> CK["after START_CHECK 1.5 s: CastTracker says started?"]
     CK -- no --> RS["send again, arm(tries + 1)"]
     W --> E{"raw 'action': actor = me, category 3/4/5/6, or 8 with param 28787?"}
-    E -- yes --> D["after delay: run_next if the token is unchanged"]
+    E -- yes --> D["after the step's delay: run_next if the token is unchanged"]
 ```
 
-- The queue lives on `windower._stealth_queue` (`{steps, busy, token, waiting}`), so it survives a reload.
-- A step ends on whichever comes first: the game reporting this character's action finished (`on_action`: category 3 weapon skill, 4 spell, 5 item, 6 job ability, or 8 with param 28787 = interrupted cast) followed by `delay` seconds, or its longest wait. The longest wait is `wait_after(kind, name)`: the base cast time from the fixed table plus `delay` (Fast Cast not counted: on the safe side). `cancel` steps wait 0.5 s.
-- A function step (the Scholar chain) sends several actions of its own, so `arm` leaves `waiting` nil and it ends only on its longest wait.
-- `listen()` registers the `action` listener with `raw_register_event` once per load (`_G._stealth_action_listener`): a plain `register_event` from a job file runs GearSwap's `refresh_globals` and `equip_sets` on every action packet. It is called from `push`, so a load registers it only when its first step is queued.
-- Refused actions: for a step that is a spell (`input /ma`) or an item (`input /item`) (`refusable`), `arm()` checks `START_CHECK` (1.5 s) later that it started (`CastTracker.started_since(sent_at)` for a spell, `acted_since(sent_at)` for an item). Not started (and the token and queue generation unchanged): the game refused it (sent too soon after the previous action), so it is sent again with a fresh token and a fresh longest wait, up to `MAX_TRIES` (3) sends; each resend writes a `STEALTH` trace line `not started, sent again: <command>`.
+- The queue lives on `windower._action_queue` (`{steps, busy, token, waiting}`), its generation on `windower._action_gen_queue`, so both survive a reload.
+- Each step carries its own `delay` and `tag` (`opts` of `push`): stealth passes its `delay` setting and `STEALTH`, cleanse 1.0 s and `CLEANSE`.
+- A command step ends on whichever comes first: the game reporting this character's action finished (`on_action`: category 3 weapon skill, 4 spell, 5 item, 6 job ability, or 8 with param 28787 = interrupted cast) followed by the step's `delay`, or its longest wait. Stealth's longest wait is `wait_after(kind, name)`: the base cast time from the fixed table plus `delay` (Fast Cast not counted: on the safe side). `cancel` steps wait 0.5 s.
+- A **function step runs first, then waits**: `run_next` calls it at once and `arm` leaves `waiting` nil, so only its longest wait ends it. Stealth's Scholar chain is one (it sends several actions of its own); cleanse uses an empty one to hold the queue for `partner_wait`.
+- `listen()` registers the `action` listener with `raw_register_event` once per load (`_G._action_queue_listener`): a plain `register_event` from a job file runs GearSwap's `refresh_globals` and `equip_sets` on every action packet. It is called from `push`, so a load registers it only when its first step is queued.
+- Refused actions: for a step that is a spell (`input /ma`) or an item (`input /item`) (`refusable`), `arm()` checks `START_CHECK` (1.5 s) later that it started (`CastTracker.started_since(sent_at)` for a spell, `acted_since(sent_at)` for an item). Not started (and the token and queue generation unchanged): the game refused it (sent too soon after the previous action), so it is sent again with a fresh token and a fresh longest wait, up to `MAX_TRIES` (3) sends; each resend writes a trace line under the step's tag, `not started, sent again: <command>`.
+- `ActionQueue.busy()` tells whether steps are still waiting; no caller today.
 
 ### Timers (`stealth_timers.lua`)
 
@@ -156,7 +161,7 @@ None of these is exported to `_G`; every caller `require`s the module (inside `p
 |---|---|---|---|
 | `handle(args)` | `args`: words after `stealth` | Command router above; returns `true` | `COMMON_COMMANDS.lua` `handle_command` |
 
-Everything else in the file (`push`, `run_next`, `arm`, `on_action`, `needs`, `handle_self`, `request`, `decide`, `cast_for`, `cast_aoe`, `keep_invisible`, `show_status`, `show_check`...) is local.
+Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `request`, `decide`, `cast_for`, `cast_aoe`, `keep_invisible`, `show_status`, `show_check`...) is local.
 
 ### `StealthMethods` (`stealth_methods.lua`)
 
@@ -256,7 +261,7 @@ Everything else in the file (`push`, `run_next`, `arm`, `on_action`, `needs`, `h
 
 | Where | What | Lifetime |
 |---|---|---|
-| `windower._stealth_queue`, `_stealth_gen_queue` | Action queue and its generation | Survive `gs reload` and job changes; reset by `//lua reload gearswap` |
+| `windower._action_queue`, `_action_gen_queue` | Shared action queue and its generation (`action_queue.lua`, also cleanse) | Survive `gs reload` and job changes; reset by `//lua reload gearswap` |
 | `windower._stealth_pending` | `os.clock()` until which a kind counts as coming | same |
 | `windower._stealth_claims` | Claims per kind | same; cleared per kind by `decide` |
 | `windower._stealth_timers` | End times per character | same |
@@ -265,7 +270,7 @@ Everything else in the file (`push`, `run_next`, `arm`, `on_action`, `needs`, `h
 | `forced` (module local, `stealth.lua`) | Kinds to recast although up, until `os.clock()` | Per load |
 | `bag_cache` (module local, `stealth_methods.lua`) | Inventory counts, 1 s | Per load |
 | `_G._stealth_settings` | Settings read from the file | Per load |
-| `_G._stealth_listener`, `_G._stealth_action_listener`, `_G._stealth_trace_listener` | Raw event ids (0x063, queue `action`, trace `action`) | Per load; the engine removes raw events recorded in `registered_user_events` at the next load |
+| `_G._stealth_listener`, `_G._action_queue_listener`, `_G._stealth_trace_listener` | Raw event ids (0x063, shared queue `action`, trace `action`) | Per load; the engine removes raw events recorded in `registered_user_events` at the next load |
 
 Coroutines: the one-second loop (stopped by generation), the queue's fallback waits, post-action delays and start checks (stopped by the token and queue generation), the 0.5 s claim wait (not cancellable).
 
@@ -294,7 +299,7 @@ Coroutines: the one-second loop (stopped by generation), the queue's fallback wa
 | Invariant | Why | Where |
 |---|---|---|
 | No `res` lookup at run time; ids and cast times are copied constants | Walking `res.items` per key press was slow and could load the item list | `stealth_methods.lua` `SPELLS`, `ITEMS`, `SPECTRAL_JIG*`; `stealth.lua` / `stealth_timers.lua` `BUFF_IDS`; `stealth_trace.lua` `SPELLS`, `ACCESSION` |
-| Every Windower listener is `raw_register_event`, guarded by an `_G._stealth_*` id | A plain `register_event` runs `refresh_globals` + `equip_sets` per packet; the `_G` guard makes it once per load | `listen`, `StealthTimers.start`, `StealthTrace.start` |
+| Every Windower listener is `raw_register_event`, guarded by an `_G` id (`_stealth_*`, `_action_queue_listener`) | A plain `register_event` runs `refresh_globals` + `equip_sets` per packet; the `_G` guard makes it once per load | `ActionQueue` `listen`, `StealthTimers.start`, `StealthTrace.start` |
 | Buff state in scheduled code comes from `windower.ffxi.get_player().buffs`, never `buffactive` | `buffactive` lags inside `coroutine.schedule` | `is_up`, `accession_up` |
 | Cross-load state lives on `windower._stealth_*`; per-load state on `_G` or module locals | `_G` is rebuilt at every load; `windower.*` survives until `//lua reload gearswap` | State table above |
 | Every scheduled callback checks a token or generation before acting | Coroutines are never cancelled by a reload | `arm`, `on_action`, `tick` |
@@ -320,11 +325,11 @@ Coroutines: the one-second loop (stopped by generation), the queue's fallback wa
 | Settings and known timers | `//gs c stealth status` | `-` = no end time received yet (0x063 not seen, or the alt did not broadcast) |
 | Decisions and results | `//gs c trace on`, press the key, then read `<Character>/trace.log` | `STEALTH` lines: decision at the press, `not started, sent again`, `buff ... gained/lost`, `<spell> landed ... reached ...; missed ...` |
 | Cross-box relay | trace on every box | the relayed key and claims appear on each box's own trace |
-| Stuck queue | `//lua reload gearswap` | resets `windower._stealth_queue`; a `gs reload` does not |
+| Stuck queue | `//lua reload gearswap` | resets `windower._action_queue` (stealth and cleanse); a `gs reload` does not |
 
 ### Offline testing with lua5.1
 
-Syntax check (all six files pass as of 2026-09-28):
+Syntax check (all six files passed on 2026-09-28; `shared/utils/core/action_queue.lua` is loaded by `stealth.lua` too):
 
 ```bash
 cd "D:/Windower Tetsouo/addons/GearSwap/data"
@@ -364,7 +369,7 @@ The missing `STEALTH_CONFIG.lua` makes `StealthConfig.get()` fall back to the de
 
 Open:
 
-- The header of `stealth.lua` says "a newer load drops an older queue"; the queue generation changes only when an idle queue starts (`push`), not on a load (see gotchas).
+- The headers of `stealth.lua` and `action_queue.lua` say "a newer load drops an older queue"; the queue generation changes only when an idle queue starts (`push`), not on a load (see gotchas).
 - A partner request (`stealth cast`) is answered by every box that has the spell: with two such partners the character gets two casts (`cast_for`; no claim for partner casts).
 - Two Scholar boxes that both qualify both cast Accession: `request` casts at once without recording its own claim, so the alphabetical `winner` rule never stops a box that has already cast.
 - `windower._stealth_warned` gains one key per buff end time and is never pruned before `//lua reload gearswap` (`stealth_timers.lua` `tick_once`).

@@ -171,6 +171,7 @@ width):
 | The name of a job ability, spell or weaponskill, with details | What you just used. `//gs c jamsg` / `spellmsg` / `wsmsg` `full`, `on` (name only) or `off` choose how much, per character |
 | A line with a time (`ready in 0:42`) | The action was refused on recast |
 | A line naming a debuff | The action was blocked (silence, amnesia...), and what Auto Medicine did |
+| A `CLEANSE` block per character | What `//gs c cleanse` did for each debuff ([Cleanse](../features/cleanse.md)) |
 | `Not enough TP` | A weaponskill below 1000 TP was cancelled |
 | A `KEYS` block | Two actions share a key on this job / subjob / partner job |
 | A `<JOB> keybinds: ...` or `<JOB>_CUSTOM: ...` line | A mistake in your keybind or custom file, with the entry |

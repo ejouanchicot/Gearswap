@@ -6,7 +6,7 @@ every job shares. Each job's own commands are on its page:
 [jobs](../jobs/README.md).
 
 `//gs c help` prints where each system's own help is (`ui help`, `warp help`,
-`tb help`, `stealth help`...) and `//gs c commands` the built-in list of the
+`tb help`, `stealth help`, `cleanse help`...) and `//gs c commands` the built-in list of the
 commands below, grouped. Several commands have a short alias, given in
 parentheses here.
 
@@ -143,6 +143,19 @@ See the [dual-box guide](dualbox.md).
 | `stealth help` | Help |
 
 See [Sneak and Invisible](stealth.md).
+
+## Cleanse
+
+| Command | Effect |
+|---|---|
+| `cleanse` | Debuffs off you and every other character of the group: each uses its own spell, else asks a partner, else an item |
+| `cleanse self` | You only |
+| `cleanse check` | What it would do now, per debuff; nothing is used |
+| `cleanse help` | Help |
+
+The boxes also send each other `cleanse local`, `cleanse cast` and
+`cleanse report`. See [Cleanse](../features/cleanse.md), settings in
+`_common/combat/CLEANSE_CONFIG.lua`.
 
 ## Temporary keys
 

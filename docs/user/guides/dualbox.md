@@ -13,6 +13,10 @@ Two characters on the same PC, both running this setup, one **main** and one
 - **Role swap**: `//gs c main` makes the current character the main.
 - **Alt window** on the main: each alt's job and whether it is in your party,
   and the time left on its Sneak and Invisible.
+- `//gs c stealth` (Sneak / Invisible, [guide](stealth.md)) and `//gs c cleanse`
+  (debuffs, [Cleanse](../features/cleanse.md)) run on every character of the
+  group: each box handles itself, may ask the others to cast a spell on it,
+  and reports back.
 - `//gs c rf` and `//gs c ls` also run on the other characters of the group
   (another window of the PC outside the group ignores them); the warp
   `...all` commands run on the other GearSwap instances of the PC.
@@ -342,5 +346,6 @@ Tracing: `//gs c altdebug` (alt buff reports, on both characters), and
 ## Further reading
 
 - [Commands](commands.md#dual-box)
+- [Cleanse](../features/cleanse.md)
 - [Keybinds](keybinds.md)
 - Developer page: [dualbox.md](../../dev/systems/dualbox.md)

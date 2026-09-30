@@ -94,6 +94,7 @@ In all 17 files, `altjobupdate` passes the sender's name (its 5th word, `cmdPara
    | `alts`, `main`, `setalt`, `altreport`, `altmirror`, `altlead` | `AltGroup.route(cmd, args)` |
    | `rollshow` | `RollShare.receive(args)` |
    | `stealth` | `Stealth.handle(args)` |
+   | `cleanse` | `Cleanse.handle(args)` |
    | `combatmode` | `combat_mode_commands.handle(args)` |
    | `keyconflicts`, `kc` | `KeybindManager.show_possible_conflicts()` |
    | `th` | `treasure_commands.handle(args)` |
@@ -206,6 +207,7 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | `aoe` | `sneak`/`invi`/`invisible`/`erase` | SCH main or sub: Light Arts + Accession (+ Addendum: White for Erase) as charges allow, then the spell; the job's `SneakInviAOE` when it has one. PLD and RUN answer the bare `aoe` first (Blue Magic rotation) | same |
 | `smartbuff` | - | The current subjob's self-buffs not up and ready, 2 s apart: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni else Ichi; /DNC Haste Samba (350 TP). Other subjobs, or a level-0 subjob: a warning. DNC answers `smartbuff` (and `buffself`) first with its own (dance, samba, then these) | `smartbuff/subjob_buffs.lua` `SubjobBuffs.apply`, see [midcast-and-buffs.md](midcast-and-buffs.md#subjobbuffs) |
 | `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`, `help`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group, timers, settings in `<Character>/_common/combat/STEALTH_CONFIG.lua` | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
+| `cleanse` | none, `self`, `check`, `help` (any other word); internal `local <name>`, `cast <spell> <name>`, `report <name> <body>` | Debuffs off this character and every other member of the box group (own spell, partner, item), settings in `<Character>/_common/combat/CLEANSE_CONFIG.lua` | `debuff/cleanse.lua` `Cleanse.handle`, see [cleanse.md](cleanse.md) |
 | `sortie` | `<target>` (the `targets` or `aliases` of the config), `escort [Indi-X]`, the `orders` (`off`, `judgment`, `fullcircle` in Tetsouo's), `list` (also with no argument), `help` | Only for a character with `_common/combat/SORTIE_CONFIG.lua` (see [Sortie config](#sortie-config)); without it every `sortie` word prints the warning `sortie: not set up for this character (_common/combat/SORTIE_CONFIG.lua)`. A target sets this character's stance and the target states, then tells the alt `sm load <profile_root><profile>`, `sm follow off`, `sm on` and its Indi- (`sm load` names a folder; Silmaril picks the file of the alt's current job and subjob there). A value the job's state lacks prints a warning and the rest still runs | `sortie/sortie_commands.lua` `SortieCommands.handle` |
 
 #### Sortie config
@@ -478,6 +480,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `PRECAST` | the set chosen per press |
   | `WSTP`, `TP` | TP read and TP bonus gear per weaponskill |
   | `STEALTH` | `//gs c stealth` decisions, own Sneak / Invisible gained / lost, who each cast reached, see [stealth.md](stealth.md#trace) |
+  | `CLEANSE` | shared action queue (`action_queue.lua`): a `//gs c cleanse` spell or item sent again, `not started, sent again: <command>` (see [cleanse.md](cleanse.md)) |
   | `ALTS` | alt group reports |
   | `CYCLE` | `cyclestate` decisions |
   | `CUSTOM` | CUSTOM pieces applied |

@@ -845,7 +845,8 @@ Terms (sandbox, entry file, facade, hook module, Mote state, template / overlay
 | [systems/commands-and-debug.md](systems/commands-and-debug.md) | Command routing, command inventory, debug tools |
 | [systems/dualbox.md](systems/dualbox.md) | Dual-box |
 | [systems/warp.md](systems/warp.md) | Warp |
-| [systems/stealth.md](systems/stealth.md) | Sneak / Invisible on the box group |
+| [systems/stealth.md](systems/stealth.md) | Sneak / Invisible on the box group, shared action queue |
+| [systems/cleanse.md](systems/cleanse.md) | Debuff removal on the box group |
 | [systems/equipment-and-inventory.md](systems/equipment-and-inventory.md) | checksets, wardrobe audit, refill, HP priority |
 | [systems/wardrobe-organizer.md](systems/wardrobe-organizer.md) | Wardrobe organizer |
 | [data/spell-databases.md](data/spell-databases.md) | Magic databases |

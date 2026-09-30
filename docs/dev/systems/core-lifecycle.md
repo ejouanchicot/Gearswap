@@ -317,7 +317,7 @@ With Mote's `state.EquipStop` set to `midcast`, `filter_aftercast` cancels the a
 
 `shared/utils/core/cast_tracker.lua`, started by INIT_SYSTEMS. `start()` registers one raw `action` listener per sandbox (guard `_G._cast_tracker_listening`; the engine drops the listener at the next load). For every action packet whose actor is this character it stamps `windower._cast_tracker.last_action = os.clock()`, and `last_start` too for category 8 / param 24931 (a spell starts casting). The store lives on `windower`, so it survives a reload.
 
-Callers: the BRD song queue (`shared/jobs/brd/functions/logic/song_queue.lua`) and `shared/utils/stealth/stealth.lua`, to tell within a second or two that a `/ma` the game refused never started, instead of waiting for a timeout.
+Callers: the BRD song queue (`shared/jobs/brd/functions/logic/song_queue.lua`) and the shared action queue `shared/utils/core/action_queue.lua` (used by `//gs c stealth` and `//gs c cleanse`), to tell within a second or two that a `/ma` the game refused never started, instead of waiting for a timeout.
 
 ## ModuleCache
 
@@ -464,7 +464,7 @@ Callers: all 17 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
 | Function | Params | Returns | Callers |
 |---|---|---|---|
 | `start()` | | nil | INIT_SYSTEMS |
-| `started_since(since)` | `os.clock()` value | true if a spell of this character started casting at or after `since` | BRD `song_queue.lua`, `stealth.lua` |
+| `started_since(since)` | `os.clock()` value | true if a spell of this character started casting at or after `since` | BRD `song_queue.lua`, `action_queue.lua` |
 | `acted_since(since)` | `os.clock()` value | true if this character performed any action at or after `since` | same |
 
 ### AutoOptions (returned only)

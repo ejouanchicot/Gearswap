@@ -27,7 +27,8 @@ Mote-Include:
   `KeybindManager`, per-character common keys, `//gs c tb`) and the keybind
   HUD, player modes from `<JOB>_CUSTOM.lua`, HP equip priority, dual-box (job
   exchange, alt commands, `alts` / `main`, alt window), Sneak / Invisible on
-  the box group (`//gs c stealth`), Sortie commands (per-character `SORTIE_CONFIG.lua`), warp,
+  the box group (`//gs c stealth`), debuff removal on the box group
+  (`//gs c cleanse`), Sortie commands (per-character `SORTIE_CONFIG.lua`), warp,
   wardrobe organizer, refill, watchdogs, factories for lockstyle and macrobook.
 - **Data** under `shared/data/`: spell, job ability and weaponskill databases,
   and the generated equipment HP/MP table (`shared/data/equipment/ITEM_HP_MP.lua`).
@@ -223,7 +224,7 @@ Full scenario-by-scenario trace:
 | Where it lives | Lifetime | Examples |
 |---|---|---|
 | Sandbox `_G`, module locals, `ModuleCache`, Mote states | Until the next load (job, subjob, `gs reload`) | `state.*` (all modes reset to defaults on every load), `_G.AltJobState`, `_G.DualBoxConfig`, `_G.UI_SETTINGS`, `_G.MidcastManagerDebugState` |
-| `windower.*` written from the sandbox (a module-level proxy table, `user_functions.lua:418-419`) | Survives every load; reset by `//lua reload gearswap` | `_gs_reload_count`, `_gs_debug`, `_job_sync_*`, `_automove_seq`, `_dualbox_*`, `_sync_ipc_*`, `_warp_*`, `_stealth_*`, `_auto_medicine`, `_hook_wraps`, `_lagdebug` |
+| `windower.*` written from the sandbox (a module-level proxy table, `user_functions.lua:418-419`) | Survives every load; reset by `//lua reload gearswap` | `_gs_reload_count`, `_gs_debug`, `_job_sync_*`, `_automove_seq`, `_dualbox_*`, `_sync_ipc_*`, `_warp_*`, `_stealth_*`, `_action_queue`, `_action_gen_queue`, `_uncurable_debuffs`, `_auto_medicine`, `_hook_wraps`, `_lagdebug` |
 | Engine state | Survives every load, including a **main job change** | `disable_table` (slot locks from Doom, craft, organizer, warp ring), `command_registry`, Windower keybinds, loaded addons |
 | Scheduled coroutines and `send_command('wait …')` chains | Never cancelled; keep running against the dead sandbox | AutoMove and watchdog loops (guarded by `windower._x_seq` counters where it matters), lockstyle timers, organizer phases |
 | Removed by the engine at each load | — | Events registered through the sandbox `windower.register_event`, `windower.text` / `prim` objects |
@@ -292,7 +293,8 @@ including what a re-clone would overwrite today.
 | [systems/commands-and-debug.md](systems/commands-and-debug.md) | `//gs c` routing, command inventory (incl. `trace`, `tb`, `alts`, `main`, `sortie`, `info`), diagnostic tools |
 | [systems/dualbox.md](systems/dualbox.md) | Main/alt job exchange, alt commands, `alts` / `main` / `setalt`, alt window, alt buff reporting, sync IPC |
 | [systems/warp.md](systems/warp.md) | Warp commands, spells, rings, items, IPC "warp all" |
-| [systems/stealth.md](systems/stealth.md) | `//gs c stealth` (Alt+Z / Alt+X): Sneak / Invisible on the box group, Accession claims, action queue, 0x063 timers, wear-off alerts |
+| [systems/stealth.md](systems/stealth.md) | `//gs c stealth` (Alt+Z / Alt+X): Sneak / Invisible on the box group, Accession claims, the shared action queue (`action_queue.lua`), 0x063 timers, wear-off alerts |
+| [systems/cleanse.md](systems/cleanse.md) | `//gs c cleanse`: debuffs off the box group (own spell, partner request, item), `DEBUFF_REMOVAL.lua`, `CLEANSE_CONFIG.lua`, Doom retries, aura marks |
 | [systems/equipment-and-inventory.md](systems/equipment-and-inventory.md) | `checksets`, wardrobe audit, refill, quiver, HP equip priority and how `ITEM_HP_MP.lua` is regenerated |
 | [systems/wardrobe-organizer.md](systems/wardrobe-organizer.md) | `//gs c wo`: phases, pins and placement rules (`WARDROBE_CONFIG.lua`), `wo alt` |
 
