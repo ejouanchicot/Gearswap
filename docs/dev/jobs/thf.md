@@ -231,8 +231,7 @@ sequenceDiagram
 
 1. `select_engaged_base`: `WeaponAftermath.set(MainWeapon)` first
    ([WeaponAftermath](../systems/factories-and-helpers.md#weaponaftermath), since 2026-09-30); else Aftermath Lv.3 (`buffactive[272]`) with
-   `MainWeapon == 'Vajra'` -> `sets.engaged.PDTAFM3` (Mote's set when it is
-   missing: the `HybridMode` step is in the `elseif`); otherwise
+   `MainWeapon == 'Vajra'` -> `sets.engaged.PDTAFM3` when it exists; otherwise
    `sets.engaged[HybridMode]` if it exists; otherwise Mote's set. This replaces
    Mote's own selection, so Mote's defense and kiting layers never reach THF
    engaged gear. Gaining or losing Aftermath Lv.3 rebuilds the gear about 0.1 s

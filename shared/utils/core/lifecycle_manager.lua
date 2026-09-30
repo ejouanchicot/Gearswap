@@ -75,6 +75,7 @@ end
 --- PDTAFM3..., and the jobs' buff layers named below).
 local GEAR_BUFFS = {
     ['Aftermath: Lv.3'] = true,
+    ['Aftermath'] = true,  -- a Prime weapon's (weapon_aftermath.lua)
     ['Overdrive'] = true,  -- PUP
     ['Spirit Surge'] = true,  -- DRG
     ['Sublimation: Activated'] = true,  -- SCH: sets.buff.Sublimation while it charges

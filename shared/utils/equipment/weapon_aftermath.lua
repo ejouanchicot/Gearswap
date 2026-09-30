@@ -1,7 +1,9 @@
 ---============================================================================
 --- Weapon Aftermath - the engaged set of a weapon while its Aftermath is up
 ---============================================================================
---- Any job: sets.engaged.<Weapon>AFM3 (the weapon's name as the job's weapon
+--- Read by the engaged set builders of WAR, SAM, DRK and THF (the jobs whose
+--- builder picks an Aftermath set): sets.engaged.<Weapon>AFM3 (the weapon's
+--- name as the job's weapon
 --- state knows it: LaphriaAFM3, MasamuneAFM3, LiberatorAFM3...) goes on
 --- while "Aftermath: Lv.3" (272) or the plain "Aftermath" (273, the name a
 --- Prime weapon's may carry) is up. A job with an AftermathSet state set to

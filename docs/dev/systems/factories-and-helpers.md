@@ -561,7 +561,7 @@ Wired on RDM only. Another job that casts Dispelga needs the same four calls.
 | `drk/functions/logic/set_builder.lua` `select_engaged_base` | first | `AM3` (Liberator, 272) |
 | `thf/functions/logic/set_builder.lua` `select_engaged_base` | first | `PDTAFM3` (Vajra, 272) |
 
-No other job calls it. The gear rebuild on a buff change (`LifecycleManager.refresh_after_buff`, `GEAR_BUFFS`) lists `Aftermath: Lv.3` only: the plain `Aftermath` (273) is picked up at the next gear update, not when it starts or ends.
+No other job calls it. The gear rebuild on a buff change (`LifecycleManager.refresh_after_buff`, `GEAR_BUFFS`) lists both `Aftermath: Lv.3` and the plain `Aftermath` (273), so the gear changes when either starts or ends.
 
 ---
 

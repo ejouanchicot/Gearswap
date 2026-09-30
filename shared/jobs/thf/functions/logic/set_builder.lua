@@ -59,7 +59,9 @@ function SetBuilder.select_engaged_base(base_set)
         if sets.engaged.PDTAFM3 then
             return sets.engaged.PDTAFM3
         end
-    elseif state.HybridMode and state.HybridMode.current then
+    end
+    -- No Aftermath set: the HybridMode set (Vajra included)
+    if state.HybridMode and state.HybridMode.current then
         -- Normal HybridMode logic (PDT or Normal)
         local hybrid_set = sets.engaged[state.HybridMode.current]
         if hybrid_set then
