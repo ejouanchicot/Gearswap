@@ -25,13 +25,14 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/debuff/precast_guard.lua` | 460 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy |
+| `shared/utils/debuff/precast_guard.lua` | 477 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy |
+| `shared/utils/debuff/uncurable_debuffs.lua` | 158 | UncurableDebuffs: 4 s after each cure item, marks a debuff the item did not take off (an aura keeps it on); no more item for it while marked (60 s at most) |
 | `shared/utils/debuff/debuff_checker.lua` | 290 | Blocking-debuff tables (production and test mode) and lookups |
-| `shared/utils/debuff/auto_medicine.lua` | 213 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`; cold-load value from `auto_medicine_start` |
+| `shared/utils/debuff/auto_medicine.lua` | 235 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`, `//gs c am debuffs`; cold-load value from `auto_medicine_start` |
 | `shared/utils/debuff/doom_manager.lua` | 157 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
 | `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Shared defaults: auto-cure switches, cure item lists, test mode |
-| `shared/utils/debuff/autocure_settings.lua` | 61 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTOCURE_CONFIG.lua` over them, key by key; item names resolved to ids |
-| `_master/config_global/AUTOCURE_CONFIG.lua` | 26 | Template of `<Char>/_common/combat/AUTOCURE_CONFIG.lua` (every key commented out, showing the defaults) |
+| `shared/utils/debuff/autocure_settings.lua` | 82 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTOCURE_CONFIG.lua` over them, key by key; item names resolved to ids |
+| `_master/config_global/AUTOCURE_CONFIG.lua` | 28 | Template of `<Char>/_common/combat/AUTOCURE_CONFIG.lua` (every key written with its default value) |
 | `shared/utils/precast/cooldown_checker.lua` | 146 | CooldownChecker: ability and spell recast checks with tolerance |
 | `shared/utils/precast/recast_announce.lua` | 83 | Party message (`/p`) for an action refused on recast, per `RECAST_CONFIG.party_announce` |
 | `_master/config_global/RECAST_CONFIG.lua` | 115 | Recast tolerance (2.0 s), party announce list, global `is_recast_ready` / `is_on_cooldown` |
@@ -220,10 +221,10 @@ The `action_type` dispatch in front of `CooldownChecker` is repeated in all 17
 | `spell.type` | Handler | Debuffs checked (`debuff_checker.lua`) | Auto-cure |
 |---|---|---|---|
 | `WeaponSkill` | `check_ws` | universal + amnesia/impairment/paralysis | none; if the highest-priority hit is paralysis the WS is let through |
-| `JobAbility`, `Ability`, `PetCommand` | `check_ja` | universal + amnesia/impairment/paralysis | paralysis -> Remedy |
+| `JobAbility`, `Ability`, `PetCommand` | `check_ja` | universal + amnesia/impairment/paralysis | paralysis -> Remedy; no Remedy left, or Paralysis marked uncurable: the ability goes |
 | `Magic` | `check_magic` | universal + silence/mute/omerta | never reached, see gotchas |
 | `Item` | `check_item` | universal + encumbrance | none |
-| anything else (all real spells, CorsairRoll, Waltz, Samba, Step, Flourish, Jig, Scholar, Rune, Ward, Effusion, Blood Pacts, Monster, `/ra`) | `check_and_block` with `spell.action_type` | `Magic` -> magic list; `Ability` -> JA list; `Ranged Attack` -> universal only (`check_action_blocked`) | `Magic`+silence -> Echo Drops, Remedy; `Ability`+paralysis -> Remedy |
+| anything else (all real spells, CorsairRoll, Waltz, Samba, Step, Flourish, Jig, Scholar, Rune, Ward, Effusion, Blood Pacts, Monster, `/ra`) | `check_and_block` with `spell.action_type` | `Magic` -> magic list; `Ability` -> JA list; `Ranged Attack` -> universal only (`check_action_blocked`) | `Magic`+silence -> Echo Drops, Remedy (marked uncurable: blocked, no item); `Ability`+paralysis -> Remedy (none left, or marked uncurable: the ability goes) |
 
 Universal debuffs (checked first for every list): stun, sleep, petrification,
 terror. Within a list the lowest `priority` wins (`get_active_blocking_debuff`),
@@ -241,13 +242,16 @@ show_item_blocked / show_action_blocked`
 flowchart TD
     A["blocked by silence (Magic) or paralysis (Ability)"] --> B{"auto_cure_* in config AND AutoMedicine.is_enabled()"}
     B -- no --> Z["cancel + plain blocked message"]
-    B -- yes --> C{"cure_pending(): os.clock() < cure_lock_until"}
+    B -- yes --> M{"UncurableDebuffs.is_marked(debuff)?"}
+    M -- "yes, paralysis" --> G["the ability goes, no item"]
+    M -- "yes, silence" --> Z
+    M -- no --> C{"cure_pending(): os.clock() < cure_lock_until"}
     C -- yes --> D{"item in flight is in this debuff's list?"}
     D -- yes --> P["CURE_PENDING: cancel silently"]
     D -- no --> Q["CURE_BUSY: cancel + plain blocked message"]
     C -- no --> E{"first listed item present in inventory?"}
-    E -- yes --> S["lock 3.0 s, send 'wait 0.4; input /item X <me>', success message; CURE_SENT: cancel"]
-    E -- no --> N["CURE_NONE: cancel + 'no cure item' message"]
+    E -- yes --> S["lock 3.0 s, send 'wait 0.4; input /item X <me>', success message, UncurableDebuffs.watch; CURE_SENT: cancel"]
+    E -- no --> N["CURE_NONE: silence: cancel + 'no cure item' message; paralysis: 'goes anyway' message, the ability goes"]
 ```
 
 - `try_cure_debuff` walks the configured list in order and uses the first item with
@@ -263,6 +267,39 @@ flowchart TD
 - The cure item is itself sent through `input /item`, so it goes through GearSwap
   precast and `PrecastGuard.check_item` like any other item.
 - AutoMedicine Off does not unblock the action: it only stops the item use.
+  Silence and Paralysis stay blocked, marked or not.
+- `try_cure_debuff(cure_items, action_name, debuff_message, success_msg_func, debuff_key)`:
+  `debuff_key` (`'silence'` / `'paralysis'`) is the debuff handed to
+  `UncurableDebuffs.watch` once the `/item` line is sent.
+
+#### Debuffs an item did not take off (`uncurable_debuffs.lua`)
+
+An aura keeps its debuff on while you stand in it, so each press used to spend
+another Echo Drops or Remedy. After each `CURE_SENT`, `UncurableDebuffs.watch`
+counts the item in the main inventory, then looks again `CURE_INPUT_DELAY` +
+`CHECK_AFTER` (0.4 + 4.0 s) later:
+
+- the item was used up (count went down) and the debuff is still on: the debuff
+  is marked, `MessageDebuffs.show_debuff_uncurable` prints once, and no item is
+  tried for it while the mark lasts;
+- the item was not used up (moving, interrupted), or the debuff is gone: nothing
+  is marked, the next press tries again.
+
+A mark is polled every `POLL_EVERY` (2 s) and dropped when the debuff is gone, or
+after `GIVE_UP_AFTER` (60 s) at most (`is_marked` also drops an expired mark). The
+debuff is read from `windower.ffxi.get_player().buffs`, matching every buff id whose
+`res.buffs` name is the debuff's (Paralysis: id 4, and id 566, very likely a
+geomancy aura's since ids 539-567 follow the GEO spell order; not verified in game).
+Marks live in `windower._uncurable_debuffs`, so they survive `gs reload` and a job
+change.
+
+While a debuff is marked (Auto Medicine On only): Paralysis lets the ability go
+(`check_ja` and `check_and_block` return false; paralysis only makes it fail some of
+the time); Silence stays blocked, with the plain blocked message and no item. With
+no Remedy left (`CURE_NONE`) the ability also goes, after `show_no_paralysis_cure`.
+`//gs c am debuffs` lists the buffs on you with their ids, then the marked debuffs
+with their seconds left (`AutoMedicine.show_debuffs`, an `InfoBlock` tagged
+`MEDICINE`).
 
 ### Recast check
 
@@ -694,7 +731,17 @@ outside this module chain.
 | `ensure()` | `init()` if the state is missing | `INIT_SYSTEMS.lua` (AutoMedicine block) |
 | `is_enabled()` | `state.AutoMedicine.value == 'On'`, else persisted value | PrecastGuard |
 | `toggle()`, `set(enabled)` | change and persist | `handle_command` |
-| `handle_command(arg)` | `on`/`off`/toggle, repaint the HUD if visible, print | `CommonCommands.handle_automedicine` |
+| `handle_command(arg)` | `on`/`off`/toggle, repaint the HUD if visible, print; `debuffs` -> `show_debuffs()` | `CommonCommands.handle_automedicine` |
+| `show_debuffs()` | `InfoBlock` `MEDICINE`: active buff ids and names, then the marked debuffs (`No item`, seconds left) | `handle_command('debuffs')` |
+
+### UncurableDebuffs (`shared/utils/debuff/uncurable_debuffs.lua`)
+
+| Function | Effect | Callers |
+|---|---|---|
+| `watch(name, item, send_delay, on_marked)` | checks `send_delay` + 4 s later; marks `name` and calls `on_marked(name, item.name)` when the item count went down and the debuff is still on | `precast_guard.lua` `try_cure_debuff` |
+| `is_marked(name)` | `true` while a live mark exists; drops an expired one | `precast_guard.lua` `check_and_block`, `check_magic`, `check_ja` |
+| `active_buffs()` | list of `{id, name}` from `get_player().buffs` | `AutoMedicine.show_debuffs` |
+| `marked()` | list of `{name, seconds}` | `AutoMedicine.show_debuffs` |
 
 ### DoomManager (`shared/utils/debuff/doom_manager.lua`)
 
@@ -805,7 +852,7 @@ defaults only). An entry of `silence_cure_items` / `paralysis_cure_items` may be
 plain name (`'Echo Drops'`) or `{ name, id }`; a name without id is looked up in
 `res.items`, and an entry whose id stays unknown is dropped. A list given by the
 character replaces the default list whole. The template
-`_master/config_global/AUTOCURE_CONFIG.lua` has every key commented out; the clone
+`_master/config_global/AUTOCURE_CONFIG.lua` has every key written with its default value; the clone
 copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/combat/`.
 
 | Key | Default | Read by |
@@ -862,13 +909,15 @@ schema above. Jobs pass `_G.<JOB>TPConfig or {}`; an empty config yields no TP g
 | `_G.RECAST_CONFIG`, `_G.is_recast_ready`, `_G.is_on_cooldown` | `RECAST_CONFIG.lua` | sandbox globals, set by the entry point |
 | `_G.WeaponSkillManager`, `_G.TPBonusCalculator`, `_G.AutoMedicine` | their modules | sandbox globals |
 | `windower._auto_medicine` | `auto_medicine.lua` | survives `gs reload` and job change |
+| `windower._uncurable_debuffs` | `uncurable_debuffs.lua` (debuff name -> `until_time`, `os.clock()`) | survives `gs reload` and job change; a mark ends when the debuff is gone or after 60 s |
 | `state.AutoMedicine`, `state.WS1..n` | `auto_medicine.lua`, `ws_slots.lua` `rebuild` | Mote states; recreated by `user_setup` on each load and subjob change |
 | GearSwap `disable_table` (Doom lock) | `doom_manager.lua` | GearSwap global, survives reload |
 
 Registered events: FlurryTracker's raw `action` listener (removed by the engine at the
 next load). Deferred work: Windower `wait` chains in `send_command` (PrecastGuard's
 cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
-`gs reload`, and the AbilityHelper poll (`coroutine.schedule`, invalidated by
+`gs reload`, the UncurableDebuffs check and poll (`coroutine.schedule`, working on
+`windower._uncurable_debuffs`), and the AbilityHelper poll (`coroutine.schedule`, invalidated by
 `windower._ability_follow_seq`).
 
 ## Interactions
@@ -894,8 +943,9 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
 - A `/ws` has `action_type == 'Ability'`; code that dispatches on `action_type` must
   test `spell.type == 'WeaponSkill'` first if it matters. `check_ability_cooldown` is
   harmless on a WS only because WS resources have no `recast_id`.
-- Weaponskills are never blocked by Paralysis alone, job abilities always are, and
-  spells never are.
+- Weaponskills are never blocked by Paralysis alone, and spells never are. Job
+  abilities are, except with Auto Medicine On when no Remedy is left or Paralysis is
+  marked uncurable: then the ability goes.
 - The Silence/Paralysis cure lock is shared on purpose; `CURE_BUSY` makes the second
   debuff visible instead of silent.
 - Auto-cure item uses are themselves `/item` commands and pass through `check_item`.

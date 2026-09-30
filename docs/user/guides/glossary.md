@@ -11,7 +11,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Alt** | In a [dual-box](dualbox.md), the character driven from the main: it receives alt commands and `alts` orders. The opposite of **main** |
 | **Alt command** | A short `//gs c <name>` typed on the main that the alt performs (`//gs c haste`). Listed by `//gs c altcmds` |
 | **Augments** | FFXI: extra stats on a piece of gear. A set must give them exactly (`augments = {...}`) for GearSwap to pick the right copy |
-| **Auto Medicine** | This setup: an Echo Drops or Remedy used for you when a debuff blocks your action. `//gs c am`, Apps+Numpad0 |
+| **Auto Medicine** | This setup: an Echo Drops or Remedy used for you when a debuff blocks your action; not again on a debuff the item did not take off (an aura). `//gs c am`, `//gs c am debuffs`, Apps+Numpad0 |
 | **Bag** | FFXI: an inventory container. Gear can be worn from the inventory and the 8 wardrobes only, not from the Mog Safe, Storage, Locker, Satchel, Sack or Case |
 | **Box**, **box group** | One game window (one character). The box group is every character of your dual-box setup (`group` in `DUALBOX_CONFIG.lua`) |
 | **Casting Mode** | A Mote-Include mode. Its value `Resistant` picks the `.Resistant` child of a spell set ([set names](sets.md#casting-mode-resistant-children)) |
