@@ -62,10 +62,10 @@ function WARStates.configure()
     --- AftermathSet: the engaged set of a weapon that has its own Aftermath
     --- set (sets.engaged.<Weapon>AFM3, e.g. LaphriaAFM3) while an Aftermath
     --- is up.
+    ---   • 'FastTP' - the weapon's TP set (sets.engaged.<Weapon>) all the time (default)
     ---   • 'AFM3'   - the weapon's AFM3 set while the Aftermath lasts (DPS)
-    ---   • 'FastTP' - the weapon's TP set (sets.engaged.<Weapon>) all the time
     --- Keybind: Ctrl+Numpad0, shown only with such a weapon in hand (WAR_KEYBINDS.lua)
-    state.AftermathSet = M{['description']='Aftermath Set', 'AFM3', 'FastTP'}
+    state.AftermathSet = M{['description']='Aftermath Set', 'FastTP', 'AFM3'}
 
     -- ==========================================================================
     -- WEAPONSKILL SLOTS
