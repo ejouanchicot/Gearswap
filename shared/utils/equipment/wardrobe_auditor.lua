@@ -177,13 +177,33 @@ local WARDROBE_BAGS = {
     'wardrobe5', 'wardrobe6', 'wardrobe7', 'wardrobe8'
 }
 
--- Wardrobes whose contents are intentionally NOT in any job's gear sets:
---   wardrobe7 = craft gear + utility items (Warp Ring, Nexus Cape, etc.)
--- These bags are still scanned for total counts but their items are NEVER
--- flagged as "unused" in the report.
-local IGNORED_WARDROBES = {
-    wardrobe7 = true,
+-- Bag id of each wardrobe name above (WARDROBE_CONFIG.lua gives ids).
+local WARDROBE_IDS = {
+    wardrobe = 8, wardrobe2 = 10, wardrobe3 = 11, wardrobe4 = 12,
+    wardrobe5 = 13, wardrobe6 = 14, wardrobe7 = 15, wardrobe8 = 16,
 }
+
+--- Wardrobes the running audit does not judge (set by audit()).
+local current_ignored = {}
+
+--- What the character's WARDROBE_CONFIG.lua says the audit must not judge:
+--- the NEVER_TOUCH wardrobes (their contents are there on purpose, craft
+--- gear for instance: still counted, never flagged "unused"), and the KEEP /
+--- NEVER_MOVE items, counted as used.
+--- @return table ignored {[wardrobe name] = true}
+--- @return table kept {[item name lower] = true}
+local function config_exclusions()
+    local ignored, kept = {}, {}
+    local ok, Config = pcall(require, 'shared/utils/wardrobe/lib/config')
+    if not (ok and Config and Config.refresh) then return ignored, kept end
+    pcall(Config.refresh)
+    for name, id in pairs(WARDROBE_IDS) do
+        if (Config.PROTECTED or {})[id] then ignored[name] = true end
+    end
+    for _, name in ipairs(Config.KEEP_ITEMS or {}) do kept[tostring(name):lower()] = true end
+    for name in pairs((Config.RULES or {}).never_move or {}) do kept[name] = true end
+    return ignored, kept
+end
 
 local BAG_DISPLAY = {
     wardrobe  = 'Wardrobe',
@@ -424,8 +444,8 @@ local function write_report_body(lines, unused)
         local bag_unused = unused[bag_name]
         table.insert(lines, "--- " .. (BAG_DISPLAY[bag_name] or bag_name) .. " ---")
 
-        if IGNORED_WARDROBES[bag_name] then
-            table.insert(lines, "  (ignored - reserved for craft/utility)")
+        if current_ignored[bag_name] then
+            table.insert(lines, "  (not judged - NEVER_TOUCH in WARDROBE_CONFIG.lua)")
         elseif bag_unused and #bag_unused > 0 then
             for _, item_name in ipairs(bag_unused) do
                 table.insert(lines, "  " .. item_name)
@@ -457,7 +477,7 @@ end
 --- Build and write the audit report
 --- @param unused table {bag_name = {item_name, ...}}
 --- @param total_items number Total wardrobe items
---- @param total_ignored number Items in IGNORED_WARDROBES (not counted as used/unused)
+--- @param total_ignored number Items in NEVER_TOUCH wardrobes (not counted as used/unused)
 --- @param used_items table Master used items set
 --- @param jobs_loaded table {job_upper = true}
 --- @param jobs_failed table {job_upper = error_msg}
@@ -561,18 +581,18 @@ end
 --- file may spell a piece out in full ("Spaekona's Coat +4") where the
 --- resource gives the abbreviation ("Spae. Coat +4").
 --- @return table [bag_name] = { item names }
-local function find_unused_items(wardrobe_contents, used_items)
+local function find_unused_items(wardrobe_contents, used_items, ignored, kept)
     local unused = {}
 
     for _, bag_name in ipairs(WARDROBE_BAGS) do
         unused[bag_name] = {}
         -- Ignored wardrobes hold gear deliberately absent from every job's
         -- sets - craft gear, utility items - so nothing there is "unused".
-        if not IGNORED_WARDROBES[bag_name] then
+        if not ignored[bag_name] then
             for _, item in ipairs(wardrobe_contents[bag_name] or {}) do
                 local is_used = false
                 for _, variant in ipairs(item.all_names) do
-                    if used_items[variant] then
+                    if used_items[variant] or kept[variant] then
                         is_used = true
                         break
                     end
@@ -588,9 +608,9 @@ local function find_unused_items(wardrobe_contents, used_items)
 end
 
 --- @return number Items sitting in wardrobes the audit does not judge
-local function count_ignored_items(wardrobe_contents)
+local function count_ignored_items(wardrobe_contents, ignored)
     local total = 0
-    for bag_name in pairs(IGNORED_WARDROBES) do
+    for bag_name in pairs(ignored) do
         local bag_items = wardrobe_contents[bag_name]
         if bag_items then
             total = total + #bag_items
@@ -621,8 +641,10 @@ function WardrobeAuditor.audit()
         return false
     end
 
-    local unused = find_unused_items(wardrobe_contents, used_items)
-    local total_ignored = count_ignored_items(wardrobe_contents)
+    local ignored, kept = config_exclusions()
+    current_ignored = ignored
+    local unused = find_unused_items(wardrobe_contents, used_items, ignored, kept)
+    local total_ignored = count_ignored_items(wardrobe_contents, ignored)
 
     local export_path = export_report(unused, total_items, total_ignored, used_items,
         jobs_loaded, jobs_failed)

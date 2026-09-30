@@ -9,7 +9,7 @@
 ---   lib/moves.lua            - Move primitives (pull_slot, push_slot, space_in)
 ---   lib/state.lua            - State recensement (build_state, pin assignment)
 ---   lib/phases.lua           - Phase 0 unequip + Phase 2/3/3.5/4 algorithms
----   lib/orchestrator_alt.lua - All-jobs flow (//gs c wo alt, SCOPE = 'all_jobs')
+---   lib/rules.lua            - PLACE / JOBS / TYPES of the config turned into pins
 ---   lib/reports.lua          - Read-only reports (//gs c wo scan, //gs c wo keep)
 ---   lib/warp_owned.lua       - Warp items owned by the character (wo scan)
 ---
@@ -22,8 +22,9 @@
 --- Algorithm summary:
 ---   Phase 0    //gs c naked, verify, then lock all slots
 ---   Phase 1    Build state (recensement)
----   Phase 2    Empty W1/W2 of unused items   (overflow order: Config.OVERFLOW_BAGS)
----   Phase 3    Fill W1/W2 with used items    (from overflow)
+---   Phase 2    Empty the used bags (USED) of what goes elsewhere (UNUSED, rules)
+---   Phase 3    Fill the used bags, and the rules' bags (from the other bags)
+---   (//gs c wo alt runs the same flow on every job: Config.use_all_jobs_layout)
 ---   Phase 3.5  Pack the job into the first primary bag before the next
 ---   Phase 4    Cleanup any leftover inventory gear (with retries)
 ---   ----       Re-enable all slots, snapshot final state, auto-retry if needed
@@ -102,6 +103,24 @@ local function map_bag_names(bags)
     local out = {}
     for _, b in ipairs(bags) do table.insert(out, Log.bag_name(b)) end
     return out
+end
+
+--- 'W1 12, W2 30': the free slots of each bag of a list.
+--- @param bags table Bag ids
+--- @param free table {[bag] = n} (state.wardrobe_free)
+--- @return string
+local function free_of(bags, free)
+    local out = {}
+    for _, b in ipairs(bags or {}) do
+        out[#out + 1] = Log.bag_name(b) .. ' ' .. tostring(free[b] or 0)
+    end
+    return #out > 0 and table.concat(out, ', ') or '-'
+end
+
+--- 'W1/W2': the names of the used-gear bags, for phase titles.
+local function primary_label()
+    local names = map_bag_names(Config.PRIMARY_BAGS or {})
+    return #names > 0 and table.concat(names, '/') or 'used bags'
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -234,15 +253,11 @@ local function print_summary(final, misplaced, inv_gear, truly_stuck)
     Chat.banner('Wardrobe Organize - Complete')
     Chat.detail('Iterations',     outer_iteration)
     Chat.detail('Inventory free', final.inv_free)
-    Chat.detail('W1 / W2 free',   string.format('%d / %d',
-        final.wardrobe_free[8] or 0, final.wardrobe_free[10] or 0))
-    Chat.detail('W3-W6 free',     string.format('%d / %d / %d / %d',
-        final.wardrobe_free[11] or 0, final.wardrobe_free[12] or 0,
-        final.wardrobe_free[13] or 0, final.wardrobe_free[14] or 0))
-    Chat.detail('W8 free',        final.wardrobe_free[16] or 0)
+    Chat.detail('Used bags free',  free_of(Config.PRIMARY_BAGS, final.wardrobe_free))
+    Chat.detail('Other bags free', free_of(Config.OVERFLOW_BAGS, final.wardrobe_free))
     if inv_gear > 0 then Chat.detail('Stuck in inventory', inv_gear) end
     if misplaced == 0 then
-        Chat.detail('Layout', 'OK (all job items in W1/W2)')
+        Chat.detail('Layout', 'OK (every item where the config puts it)')
     elseif truly_stuck then
         Chat.detail('Layout', string.format('%d items stuck (no progress %dx, gave up)',
             misplaced, Config.TRULY_STUCK_THRESHOLD))
@@ -410,7 +425,7 @@ end
 
 --- Phase 3: promote used items from overflow to W1/W2.
 local function start_phase3(state)
-    Chat.phase(3, 'Fill W1/W2', string.format('%d items', #state.w3w6_used))
+    Chat.phase(3, 'Fill ' .. primary_label(), string.format('%d items', #state.w3w6_used))
     Phases.fill_w1w2(state, function()
         coroutine.schedule(function()
             start_phase_pack(state, function() start_phase4(state) end)
@@ -438,7 +453,7 @@ end
 
 --- Phase 2: evict unused items from W1/W2.
 local function start_phase2(state)
-    Chat.phase(2, 'Empty W1/W2', string.format('%d items', #state.w1w2_unused))
+    Chat.phase(2, 'Empty ' .. primary_label(), string.format('%d items', #state.w1w2_unused))
     Phases.empty_w1w2(state, function()
         coroutine.schedule(function() rebuild_then_phase3(state) end, Config.PHASE_DELAY)
     end)
@@ -512,8 +527,14 @@ start_organize = function()
         Chat.banner('Wardrobe Organize - Started')
         Chat.detail('Active job', start_job_tag)
         Chat.detail('Config',     Config.LOADED_CHAR_CONFIG and 'per-character' or 'defaults')
-        Chat.detail('Primary',    table.concat(map_bag_names(Config.PRIMARY_BAGS), ', '))
-        Chat.detail('Overflow',   table.concat(map_bag_names(Config.OVERFLOW_BAGS), ', '))
+        Chat.detail('Gear of',    Config.SCOPE == 'all_jobs' and 'every job' or 'the job loaded')
+        Chat.detail('Used',       table.concat(map_bag_names(Config.PRIMARY_BAGS), ', '))
+        Chat.detail('Unused',     table.concat(map_bag_names(Config.OVERFLOW_BAGS), ', '))
+        local never = {}
+        for b in pairs(Config.PROTECTED or {}) do never[#never + 1] = b end
+        table.sort(never)
+        if #never > 0 then Chat.detail('Never touched', table.concat(map_bag_names(never), ', ')) end
+        for _, warning in ipairs(Config.WARNINGS or {}) do Chat.warn('Config: ' .. warning) end
         Chat.alert('PROCESSING - please wait. Do NOT move, zone or change job.')
     else
         if job_changed() then
@@ -535,9 +556,10 @@ end
 ---   PUBLIC API
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Run the per-job wardrobe organize flow (//gs c wo). Delegates to
---- organize_alt() when the character config sets SCOPE = 'all_jobs'.
-function WardrobeOrganizer.organize()
+--- Run the wardrobe organize flow (//gs c wo) on the character's config:
+--- the job loaded, or every job when its SCOPE is 'all_jobs'.
+--- @param all_jobs boolean|nil True for //gs c wo alt (every job, ALT bags)
+function WardrobeOrganizer.organize(all_jobs)
     if IS_RUNNING then
         Chat.warn('Organize already in progress (use //gs c wo reset to clear).')
         return
@@ -547,13 +569,7 @@ function WardrobeOrganizer.organize()
         return
     end
     Config.refresh()  -- load per-character WARDROBE_CONFIG.lua overrides
-
-    -- Which flow a character wants is a property of the character, not of the
-    -- command typed: `//gs c wo` now asks the config rather than the player to
-    -- remember. `//gs c wo alt` still forces the all-jobs flow either way.
-    if Config.SCOPE == 'all_jobs' then
-        return WardrobeOrganizer.organize_alt()
-    end
+    if all_jobs then Config.use_all_jobs_layout() end
 
     reset_module_state()
     local ok, err = pcall(start_organize)
@@ -591,23 +607,14 @@ function WardrobeOrganizer.preview()
         end
     end
 
-    Chat.banner('Wardrobe Preview (active job)')
+    Chat.banner(Config.SCOPE == 'all_jobs' and 'Wardrobe Preview (every job)' or 'Wardrobe Preview (job loaded)')
     Chat.detail('Inventory free', state.inv_free)
-    Chat.detail('W1 / W2 free', string.format('%d / %d', state.wardrobe_free[8] or 0, state.wardrobe_free[10] or 0))
-    Chat.detail(
-        'W3-W6 free',
-        string.format(
-            '%d / %d / %d / %d',
-            state.wardrobe_free[11] or 0,
-            state.wardrobe_free[12] or 0,
-            state.wardrobe_free[13] or 0,
-            state.wardrobe_free[14] or 0
-        )
-    )
-    Chat.detail('W8 free', state.wardrobe_free[16] or 0)
-    Chat.detail('Evict from W1/W2', #state.w1w2_unused)
-    Chat.detail('Promote from W3-W6', #state.w3w6_used)
-    Chat.detail('Pinned moves', pinned_total)
+    Chat.detail('Used bags free', free_of(Config.PRIMARY_BAGS, state.wardrobe_free))
+    Chat.detail('Other bags free', free_of(Config.OVERFLOW_BAGS, state.wardrobe_free))
+    Chat.detail('Out of ' .. primary_label(), #state.w1w2_unused)
+    Chat.detail('Into their bag', #state.w3w6_used)
+    Chat.detail('Placed by a rule', pinned_total)
+    for _, warning in ipairs(Config.WARNINGS or {}) do Chat.warn('Config: ' .. warning) end
     Chat.separator()
     Chat.info('Run //gs c wo to execute. Details in wardrobe_debug.log.')
 
@@ -628,7 +635,7 @@ function WardrobeOrganizer.preview()
         )
     end
     for _, e in ipairs(state.w3w6_used) do
-        local tgt = e.is_pinned and Log.bag_name(e.target) or 'W1/W2'
+        local tgt = e.is_pinned and Log.bag_name(e.target) or primary_label()
         dlog(
             ('  PROMOTE: %s @%s[%d] -> %s%s'):format(
                 e.name,
@@ -656,11 +663,11 @@ function WardrobeOrganizer.verify_global()
     if total == 0 then
         Chat.detail('Layout', 'OK')
         Chat.separator()
-        Chat.success('All job items are in W1/W2.')
+        Chat.success('Every item is where the config puts it.')
     else
         Chat.detail('Misplaced (total)', total)
-        Chat.detail('Unused in W1/W2', misplaced_w1w2)
-        Chat.detail('Used still in W3-W6', misplaced_w3w6)
+        Chat.detail('To leave ' .. primary_label(), misplaced_w1w2)
+        Chat.detail('Not in their bag', misplaced_w3w6)
         Chat.separator()
         Chat.warn('Run //gs c wo to fix.')
     end
@@ -689,26 +696,6 @@ WardrobeOrganizer.organize_global = WardrobeOrganizer.organize
 WardrobeOrganizer.preview_global = WardrobeOrganizer.preview
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   ALT MODE  (all jobs; default W1-W4 + Sack/Case/Satchel)
----  ═══════════════════════════════════════════════════════════════════════════
----   Implementation lives in lib/orchestrator_alt.lua. The factory below wires
----   in this module's mutable state (IS_RUNNING / start_job_tag) and shared
----   helpers via dependency injection.
-
-local AltOrchestrator = require('shared/utils/wardrobe/lib/orchestrator_alt').create({
-    set_running        = function(v) IS_RUNNING = v end,
-    set_start_job_tag  = function(v) start_job_tag = v end,
-    active_job_tag     = active_job_tag,
-    job_changed        = job_changed,
-    reset_module_state = reset_module_state,
-    clean_exit         = clean_exit,
-    release_locks      = release_stance_locks,
-    abort_run          = abort_run,
-    map_bag_names      = map_bag_names,
-    schedule_lockstyle = schedule_lockstyle,
-})
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   READ-ONLY REPORTS  (//gs c wo scan, //gs c wo keep) - lib/reports.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -717,23 +704,10 @@ local Reports = require('shared/utils/wardrobe/lib/reports')
 WardrobeOrganizer.scan_warp_items = Reports.scan_warp_items
 WardrobeOrganizer.show_kept = Reports.show_kept
 
---- Run the all-jobs wardrobe organize flow (Config.ALT_* bag lists).
---- Considers items used by ANY job, not just the active one.
+--- //gs c wo alt: every job at once, on the USED_WHEN_ALL / UNUSED_WHEN_ALL
+--- bags (the regular ones when the config gives none).
 function WardrobeOrganizer.organize_alt()
-    if IS_RUNNING then
-        Chat.warn('Organize already in progress (use //gs c wo reset to clear).')
-        return
-    end
-    Config.refresh()  -- load per-character WARDROBE_CONFIG.lua overrides
-    reset_module_state()
-    local ok, err = pcall(AltOrchestrator.start)
-    if not ok then
-        IS_RUNNING = false
-        reset_module_state()
-        Phases.enable_slots()
-        Chat.error('organize_alt crashed: ' .. tostring(err))
-        dlog('FATAL: ' .. tostring(err))
-    end
+    return WardrobeOrganizer.organize(true)
 end
 
 return WardrobeOrganizer

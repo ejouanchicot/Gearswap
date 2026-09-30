@@ -7,10 +7,10 @@
 --- Public functions:
 ---   Items.item_names(item_id)           - all name variants lowercase
 ---   Items.display_name(item_id)         - canonical English name (or 'id:N')
----   Items.is_equipment(item_id)         - true if has wearable slot bits
+---   Items.is_equipment(item_id)         - true if the organizer may move it
 ---   Items.is_used_name(id, used_set)    - true if any name variant is in used_set
 ---   Items.add_always_kept(used)         - adds KEEP_ITEMS and, if needed, warp items
----   Items.collect_used_names()          - walks _G.sets, returns {[name_lower]=true}
+---   Items.collect_used_names()          - used names of the scope (Config.SCOPE)
 ---
 --- @file shared/utils/wardrobe/lib/items.lua
 --- @author ejouanchicot
@@ -49,13 +49,21 @@ function Items.display_name(item_id)
     return (d and d.en) or ('id:' .. tostring(item_id))
 end
 
---- True if the item has at least one wearable slot bit set.
---- This filters out consumables, food, key items, currency etc.
+--- True for equipment the organizer may move: at least one wearable slot bit
+--- (not consumables, key items...), and not a NEVER_MOVE item of the config,
+--- which the organizer then never sees.
 --- @param item_id number Item id
 --- @return boolean
 function Items.is_equipment(item_id)
     local d = res.items[item_id]
-    return (d and d.slots and d.slots ~= 0) or false
+    if not (d and d.slots and d.slots ~= 0) then return false end
+    local frozen = Config.RULES and Config.RULES.never_move
+    if frozen and next(frozen) then
+        for _, n in ipairs(Items.item_names(item_id)) do
+            if frozen[n] then return false end
+        end
+    end
+    return true
 end
 
 --- Check if any name variant of `item_id` appears in the `used_names` set.
@@ -155,7 +163,8 @@ function Items.add_always_kept(used)
     return used
 end
 
---- Walk the active job's _G.sets table and return a set of used item names.
+--- Used item names of the scope: the active job's _G.sets ('active_job'),
+--- or every job's set files ('all_jobs'), plus KEEP and the warp items.
 --- Returns nil if no sets table is loaded (e.g. no job active).
 --- @return table|nil Set {[name_lower] = true}
 function Items.collect_used_names()
@@ -163,6 +172,12 @@ function Items.collect_used_names()
         return nil
     end
     local used = {}
+    if Config.SCOPE == 'all_jobs' then
+        local ok, Auditor = pcall(require, 'shared/utils/equipment/wardrobe_auditor')
+        if ok and Auditor and Auditor.collect_all_used_names then
+            for name in pairs(Auditor.collect_all_used_names()) do used[name] = true end
+        end
+    end
     walk_sets(_G.sets, used)
     return Items.add_always_kept(used)
 end

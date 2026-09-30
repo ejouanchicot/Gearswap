@@ -184,13 +184,15 @@ function State.build_state()
         return nil, 'no sets table found (run from a job-loaded GearSwap context)'
     end
 
-    -- Load pinned bags map (item_name_lower -> { bag_id, ... }) from Auditor
-    local pinned_bags = {}
+    -- Pins (item_name_lower -> { bag_id, ... }): the sets' own `bag =`,
+    -- merged with PLACE / JOBS / TYPES of the character's config (rules.lua)
+    local set_pins = {}
     local ok, Auditor = pcall(require, 'shared/utils/equipment/wardrobe_auditor')
     if ok and Auditor and Auditor.build_pinned_bags then
         local ok2, pb = pcall(Auditor.build_pinned_bags)
-        if ok2 and type(pb) == 'table' then pinned_bags = pb end
+        if ok2 and type(pb) == 'table' then set_pins = pb end
     end
+    local pinned_bags = require('shared/utils/wardrobe/lib/rules').pins(set_pins, used_names)
 
     local state = {
         used_names    = used_names,

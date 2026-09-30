@@ -206,7 +206,7 @@ function CommonCommands.handle_wardrobeorganize(arg, arg2)
     elseif arg == 'recover' or arg == 'unlock' then
         if WardrobeOrganizer.recover then WardrobeOrganizer.recover() end
     elseif arg == 'alt' or arg == 'kaories' then
-        -- Alt-character mode: 4 wardrobes + Sack/Case, scans ALL jobs in sets/
+        -- Every job at once (USED_WHEN_ALL / UNUSED_WHEN_ALL, else USED / UNUSED)
         if WardrobeOrganizer.organize_alt then
             WardrobeOrganizer.organize_alt()
         else

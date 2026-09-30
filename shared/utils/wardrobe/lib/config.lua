@@ -1,12 +1,16 @@
 ---============================================================================
 --- Wardrobe Organizer - Configuration Constants
 ---============================================================================
---- Defaults for the organizer, plus Config.refresh() which overlays the
---- character's WARDROBE_CONFIG.lua on them.
+--- Defaults for the organizer, plus Config.refresh() which reads the
+--- character's _common/inventory/WARDROBE_CONFIG.lua (see the file template,
+--- _master/config_global/WARDROBE_CONFIG.lua, for every key). Bags are given
+--- by name ('wardrobe 2', 'case') or by FFXI id:
+---   0=inventory, 5=satchel, 6=sack, 7=case, 8=wardrobe1, 10=wardrobe2,
+---   11..16=wardrobe3..8.
 ---
---- FFXI bag IDs:
----   0=inventory, 8=wardrobe1, 10=wardrobe2, 11..14=wardrobe3..6,
----   15=wardrobe7 (craft), 16=wardrobe8.
+--- Without a config the layout follows the wardrobes the character has
+--- unlocked: W1 and W2 hold the used gear, the other unlocked wardrobes the
+--- rest, nothing is protected.
 ---
 --- @file shared/utils/wardrobe/lib/config.lua
 --- @author ejouanchicot
@@ -40,35 +44,29 @@ Config.SCOPE = 'active_job'
 ---   merely out of the way.
 Config.KEEP_ITEMS = {}
 
-Config.PRIMARY_BAGS = {8, 10} -- W1, W2 (target = active job)
+-- Bag lists the phases read. Config.refresh() sets them from the character's
+-- config, else from the wardrobes the character has unlocked:
+--   PRIMARY_BAGS   where the used gear goes, in fill order        (USED)
+--   OVERFLOW_BAGS  where the rest goes, in push order             (UNUSED)
+--   FILL_FALLBACK  where used gear waits when the primary is full
+--   PROTECTED      {[bag] = true}, never touched                  (NEVER_TOUCH)
+--   ALL_WARDROBES  every bag the organizer scans
+--   ALT_*          the same for //gs c wo alt (every job at once)
+Config.PRIMARY_BAGS = {8, 10}
+Config.OVERFLOW_BAGS = {11, 12, 13, 14, 15, 16}
+Config.FILL_FALLBACK = {11, 12, 13, 14, 15, 16}
+Config.PROTECTED = {}
+Config.ALL_WARDROBES = {8, 10, 11, 12, 13, 14, 15, 16}
+Config.ALT_PRIMARY_BAGS  = {8, 10, 11, 12}
+Config.ALT_OVERFLOW_BAGS = {13, 14, 15, 16}
+Config.ALT_ALL_BAGS      = {8, 10, 11, 12, 13, 14, 15, 16}
 
--- Overflow priority (push order): W8 first, then W6 > W5 > W4 > W3.
--- Push tries each in order and stops at the first with space, so W8 fills up
--- entirely before the algorithm starts using W6 etc. This keeps the
--- "regular" wardrobes (W6-W3) cleaner. Phase 3 also iterates this list to
--- find used items needing promotion.
-Config.OVERFLOW_BAGS = {16, 14, 13, 12, 11} -- W8, W6, W5, W4, W3
-Config.FILL_FALLBACK = {16, 14, 13, 12, 11} -- Used items fallback: same order
--- Bags the organizer never touches: Config.refresh() takes them out of every
--- bag list below, even one where a character config lists them by mistake.
-Config.PROTECTED = {[15] = true} -- ONLY W7 (craft) is protected
-
--- All wardrobes touched by the algorithm
-Config.ALL_WARDROBES = {8, 10, 11, 12, 13, 14, 16}
-
----  ═══════════════════════════════════════════════════════════════════════════
----   ALT MODE  (4-wardrobe characters, e.g. Kaories)
----  ═══════════════════════════════════════════════════════════════════════════
----   Uses W1-W4 as primary (where used items live) and Sack/Case/Satchel as
----   overflow (where unused items get stored). Scope is "items used by ANY job
----   in data/<charname>/sets/", not just the active job.
----
----   FFXI bag IDs: 5=satchel, 6=sack, 7=case
----   Push order Sack > Case > Satchel  (Satchel last so we don't disrupt
----   any storage slips PorterPacker might keep there).
-Config.ALT_PRIMARY_BAGS  = {8, 10, 11, 12}            -- W1, W2, W3, W4
-Config.ALT_OVERFLOW_BAGS = {6, 7, 5}                   -- Sack, Case, Satchel
-Config.ALT_ALL_BAGS      = {8, 10, 11, 12, 6, 7, 5}    -- all bags scanned in alt mode
+-- Placement rules of the character's config (Config.refresh):
+--   place       {[item lower] = {bag, ...}}   PLACE
+--   jobs        {[JOB] = {bag, ...}}          JOBS
+--   types       {[type] = {bag, ...}}         TYPES (weapons, ammo, armor, accessories)
+--   never_move  {[item lower] = true}         NEVER_MOVE
+Config.RULES = {place = {}, jobs = {}, types = {}, never_move = {}}
 
 -- Slot keys whose values are item names in sets tables
 Config.SLOT_KEYS = {
@@ -149,36 +147,142 @@ Config.SEP_LEN = 69  -- same as MessageCore.SEPARATOR_WIDTH
 Config.EQUIP_SLOTS = 'main sub range ammo head body hands legs feet neck waist back ear1 ear2 ring1 ring2'
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PER-CHARACTER OVERRIDE  (data/<charname>/config/WARDROBE_CONFIG.lua)
+---   PER-CHARACTER CONFIG  (<Char>/_common/inventory/WARDROBE_CONFIG.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Loaded by Config.refresh(). The char file may define any subset of:
----     SCOPE, KEEP_ITEMS, PRIMARY_BAGS, OVERFLOW_BAGS, FILL_FALLBACK,
----     PROTECTED, ALL_WARDROBES, ALT_PRIMARY_BAGS, ALT_OVERFLOW_BAGS,
----     ALT_ALL_BAGS
----   Missing keys keep their default values (defined above).
----
----   A config that sets SCOPE = 'all_jobs' need not repeat its bag lists under
----   ALT_*: those mirror PRIMARY_BAGS / OVERFLOW_BAGS unless stated otherwise.
----   The ALT_* keys remain for a character who wants `//gs c wo alt` to use a
----   different layout from its own `//gs c wo`.
+---   Keys (every one optional; the template explains each with examples):
+---     SCOPE        'active_job' | 'all_jobs'
+---     USED         bags for the used gear, in fill order
+---     UNUSED       bags for the rest, in push order (wardrobes or Sack/Case/Satchel)
+---     NEVER_TOUCH  bags the organizer never touches
+---     KEEP         items counted as used although no set names them
+---     NEVER_MOVE   items left where they are
+---     PLACE        {['Item'] = bag or {bags}}   an item always in these bags
+---     JOBS         {WAR = {bags}}               a job's gear in these bags
+---     TYPES        {weapons = {bags}}           used gear of a type in these bags
+---     USED_WHEN_ALL / UNUSED_WHEN_ALL           bags for //gs c wo alt
+---   The names of the first version still work: PRIMARY_BAGS (USED),
+---   OVERFLOW_BAGS (UNUSED), PROTECTED (NEVER_TOUCH), KEEP_ITEMS (KEEP),
+---   FILL_FALLBACK, ALL_WARDROBES, ALT_PRIMARY_BAGS, ALT_OVERFLOW_BAGS,
+---   ALT_ALL_BAGS.
 
---- Bag lists the organizer reads; protected bags are taken out of each.
-local BAG_LIST_KEYS = {
-    'PRIMARY_BAGS', 'OVERFLOW_BAGS', 'FILL_FALLBACK', 'ALL_WARDROBES',
-    'ALT_PRIMARY_BAGS', 'ALT_OVERFLOW_BAGS', 'ALT_ALL_BAGS',
+local BAG_IDS = {
+    inventory = 0, satchel = 5, sack = 6, case = 7,
+    wardrobe = 8, wardrobe1 = 8, wardrobe2 = 10, wardrobe3 = 11, wardrobe4 = 12,
+    wardrobe5 = 13, wardrobe6 = 14, wardrobe7 = 15, wardrobe8 = 16,
+    w1 = 8, w2 = 10, w3 = 11, w4 = 12, w5 = 13, w6 = 14, w7 = 15, w8 = 16,
 }
+local WARDROBES = {8, 10, 11, 12, 13, 14, 15, 16}
+local TYPE_NAMES = {weapons = true, ammo = true, armor = true, accessories = true}
 
---- Take every PROTECTED bag out of the organizer's bag lists (new tables:
---- the character file's own tables are left as written).
+--- Snapshot of the defaults, put back before each character config is read.
+local DEFAULTS = {}
+for _, key in ipairs({'SCOPE', 'KEEP_ITEMS', 'PRIMARY_BAGS', 'OVERFLOW_BAGS', 'FILL_FALLBACK',
+        'PROTECTED', 'ALL_WARDROBES', 'ALT_PRIMARY_BAGS', 'ALT_OVERFLOW_BAGS', 'ALT_ALL_BAGS'}) do
+    DEFAULTS[key] = Config[key]
+end
+
+--- Messages about the config (unknown bag names...), shown by the organizer.
+Config.WARNINGS = {}
+
+--- Bag id of a name ('wardrobe 2', 'W2', 'case') or of an id.
+--- @param v string|number
+--- @return number|nil
+function Config.bag_id(v)
+    if type(v) == 'number' then return v end
+    if type(v) ~= 'string' then return nil end
+    local id = BAG_IDS[v:lower():gsub('[%s_]', '')]
+    if not id then Config.WARNINGS[#Config.WARNINGS + 1] = 'unknown bag: ' .. v end
+    return id
+end
+
+--- A bag, or a list of bags, as a list of ids (unknown names dropped).
+--- @return table|nil nil when `v` is nil
+local function bag_list(v)
+    if v == nil then return nil end
+    if type(v) ~= 'table' then v = {v} end
+    local out, seen = {}, {}
+    for _, b in ipairs(v) do
+        local id = Config.bag_id(b)
+        if id and not seen[id] then seen[id] = true; out[#out + 1] = id end
+    end
+    return out
+end
+
+--- Wardrobes the character has unlocked (all of them when the game does not say).
+local function unlocked_wardrobes()
+    local out = {}
+    for _, id in ipairs(WARDROBES) do
+        local bag = windower.ffxi.get_items and windower.ffxi.get_items(id)
+        if not bag or bag.enabled ~= false then out[#out + 1] = id end
+    end
+    return out
+end
+
+local function contains(list, v)
+    for _, x in ipairs(list or {}) do if x == v then return true end end
+    return false
+end
+
+--- `list` followed by the items of `more` it does not have yet.
+local function union(list, more)
+    local out = {}
+    for _, b in ipairs(list or {}) do if not contains(out, b) then out[#out + 1] = b end end
+    for _, b in ipairs(more or {}) do if not contains(out, b) then out[#out + 1] = b end end
+    return out
+end
+
+--- The placement rules of the config, names lower-cased and bags as ids.
+local function read_rules(cfg)
+    local rules = {place = {}, jobs = {}, types = {}, never_move = {}}
+    for name, bags in pairs(type(cfg.PLACE) == 'table' and cfg.PLACE or {}) do
+        local list = bag_list(bags)
+        if list and #list > 0 then rules.place[tostring(name):lower()] = list end
+    end
+    for job, bags in pairs(type(cfg.JOBS) == 'table' and cfg.JOBS or {}) do
+        local list = bag_list(bags)
+        if list and #list > 0 then rules.jobs[tostring(job):upper()] = list end
+    end
+    for kind, bags in pairs(type(cfg.TYPES) == 'table' and cfg.TYPES or {}) do
+        local list = bag_list(bags)
+        kind = tostring(kind):lower()
+        if not TYPE_NAMES[kind] then
+            Config.WARNINGS[#Config.WARNINGS + 1] = 'unknown type: ' .. kind .. ' (weapons, ammo, armor, accessories)'
+        elseif list and #list > 0 then
+            rules.types[kind] = list
+        end
+    end
+    for _, name in ipairs(type(cfg.NEVER_MOVE) == 'table' and cfg.NEVER_MOVE or {}) do
+        rules.never_move[tostring(name):lower()] = true
+    end
+    return rules
+end
+
+--- Bags the rules send gear to.
+local function rule_bags(rules)
+    local out = {}
+    for _, group in ipairs({rules.place, rules.jobs, rules.types}) do
+        for _, list in pairs(group) do out = union(out, list) end
+    end
+    return out
+end
+
+--- Take every PROTECTED bag out of the bag lists and the rules.
 local function strip_protected()
-    for _, key in ipairs(BAG_LIST_KEYS) do
-        local list = Config[key]
-        if type(list) == 'table' then
+    for _, key in ipairs({'PRIMARY_BAGS', 'OVERFLOW_BAGS', 'FILL_FALLBACK', 'ALL_WARDROBES',
+            'ALT_PRIMARY_BAGS', 'ALT_OVERFLOW_BAGS', 'ALT_ALL_BAGS'}) do
+        local kept = {}
+        for _, bag in ipairs(Config[key] or {}) do
+            if not Config.PROTECTED[bag] then kept[#kept + 1] = bag end
+        end
+        Config[key] = kept
+    end
+    for _, group in pairs({Config.RULES.place, Config.RULES.jobs, Config.RULES.types}) do
+        for key, list in pairs(group) do
             local kept = {}
             for _, bag in ipairs(list) do
                 if not Config.PROTECTED[bag] then kept[#kept + 1] = bag end
             end
-            Config[key] = kept
+            group[key] = #kept > 0 and kept or nil
         end
     end
 end
@@ -186,67 +290,77 @@ end
 -- Path of the last loaded char config (for the chat banner / debug log).
 Config.LOADED_CHAR_CONFIG = nil
 
---- Reload character-specific overrides from data/<charname>/config/WARDROBE_CONFIG.lua.
---- Called at the start of every public command (organize/preview/verify/etc.)
---- so a relog or job change picks up the right config without addon reload.
---- @return string|nil Path of the file actually loaded (nil if none / error)
-function Config.refresh()
+--- The character's config file as a table ({} when there is none).
+local function read_char_config()
     local p = windower.ffxi.get_player()
-    if not p or not p.name then return nil end
+    if not p or not p.name then return {}, nil end
     local path = require('shared/utils/core/char_paths').file('common', 'WARDROBE_CONFIG.lua', nil, p.name)
-    if not windower.file_exists(path) then
-        Config.LOADED_CHAR_CONFIG = nil
-        return nil
+    if not (path and windower.file_exists(path)) then return {}, nil end
+    local ok, cfg = pcall(dofile, path)
+    if not ok or type(cfg) ~= 'table' then
+        Config.WARNINGS[#Config.WARNINGS + 1] = 'WARDROBE_CONFIG.lua could not be read: ' .. tostring(cfg)
+        return {}, nil
     end
-    local ok, char_cfg = pcall(dofile, path)
-    if not ok or type(char_cfg) ~= 'table' then
-        Config.LOADED_CHAR_CONFIG = nil
-        return nil
-    end
+    return cfg, path
+end
 
-    -- Apply overrides (only those defined in the char file)
-    if char_cfg.SCOPE             then Config.SCOPE             = char_cfg.SCOPE             end
-    if char_cfg.KEEP_ITEMS        then Config.KEEP_ITEMS        = char_cfg.KEEP_ITEMS        end
-    if char_cfg.PRIMARY_BAGS      then Config.PRIMARY_BAGS      = char_cfg.PRIMARY_BAGS      end
-    if char_cfg.OVERFLOW_BAGS     then Config.OVERFLOW_BAGS     = char_cfg.OVERFLOW_BAGS     end
-    if char_cfg.FILL_FALLBACK     then Config.FILL_FALLBACK     = char_cfg.FILL_FALLBACK     end
-    if char_cfg.ALL_WARDROBES     then Config.ALL_WARDROBES     = char_cfg.ALL_WARDROBES     end
-    if char_cfg.ALT_PRIMARY_BAGS  then Config.ALT_PRIMARY_BAGS  = char_cfg.ALT_PRIMARY_BAGS  end
-    if char_cfg.ALT_OVERFLOW_BAGS then Config.ALT_OVERFLOW_BAGS = char_cfg.ALT_OVERFLOW_BAGS end
-    if char_cfg.ALT_ALL_BAGS      then Config.ALT_ALL_BAGS      = char_cfg.ALT_ALL_BAGS      end
+--- Read the character's WARDROBE_CONFIG.lua over the defaults. Called at the
+--- start of every public command (organize/preview/verify/etc.), so a relog
+--- or job change picks up the right config without an addon reload.
+--- @return string|nil Path of the file read (nil if none / error)
+function Config.refresh()
+    Config.WARNINGS = {}
+    for key, value in pairs(DEFAULTS) do Config[key] = value end
+    local cfg, path = read_char_config()
+    local unlocked = unlocked_wardrobes()
 
-    -- PROTECTED is given as an array in the char file; convert to set
-    if char_cfg.PROTECTED then
-        local set = {}
-        for _, b in ipairs(char_cfg.PROTECTED) do set[b] = true end
-        Config.PROTECTED = set
-    end
+    Config.SCOPE = cfg.SCOPE or DEFAULTS.SCOPE
+    Config.KEEP_ITEMS = cfg.KEEP or cfg.KEEP_ITEMS or {}
+    Config.RULES = read_rules(cfg)
 
-    -- If FILL_FALLBACK was not explicitly set in the char file, mirror OVERFLOW_BAGS
-    -- so push order stays consistent.
-    if not char_cfg.FILL_FALLBACK then
-        Config.FILL_FALLBACK = Config.OVERFLOW_BAGS
-    end
+    local protected = bag_list(cfg.NEVER_TOUCH or cfg.PROTECTED) or {}
+    Config.PROTECTED = {}
+    for _, b in ipairs(protected) do Config.PROTECTED[b] = true end
 
-    -- A character organising on 'all_jobs' has one layout, not two: unless it
-    -- says otherwise, the alt flow uses the bags it already declared.
-    if Config.SCOPE == 'all_jobs' then
-        if not char_cfg.ALT_PRIMARY_BAGS  then Config.ALT_PRIMARY_BAGS  = Config.PRIMARY_BAGS  end
-        if not char_cfg.ALT_OVERFLOW_BAGS then Config.ALT_OVERFLOW_BAGS = Config.OVERFLOW_BAGS end
+    -- Used gear: the config's bags, else W1 and W2 when unlocked
+    local used = bag_list(cfg.USED or cfg.PRIMARY_BAGS)
+    if not used then
+        used = {}
+        for _, b in ipairs({8, 10}) do if contains(unlocked, b) then used[#used + 1] = b end end
     end
+    -- The rest: the config's bags, else every other unlocked wardrobe not
+    -- reserved by a rule (a JOBS / TYPES / PLACE bag keeps its own gear)
+    local reserved = rule_bags(Config.RULES)
+    local unused = bag_list(cfg.UNUSED or cfg.OVERFLOW_BAGS)
+    if not unused then
+        unused = {}
+        for _, b in ipairs(unlocked) do
+            if not contains(used, b) and not contains(reserved, b) then unused[#unused + 1] = b end
+        end
+    end
+    Config.PRIMARY_BAGS, Config.OVERFLOW_BAGS = used, unused
+    Config.FILL_FALLBACK = bag_list(cfg.FILL_FALLBACK) or unused
+    Config.ALL_WARDROBES = bag_list(cfg.ALL_WARDROBES) or union(union(used, unused), reserved)
 
-    -- If ALT_ALL_BAGS was not set, derive it from ALT_PRIMARY + ALT_OVERFLOW
-    if not char_cfg.ALT_ALL_BAGS and Config.ALT_PRIMARY_BAGS and Config.ALT_OVERFLOW_BAGS then
-        local all = {}
-        for _, b in ipairs(Config.ALT_PRIMARY_BAGS)  do table.insert(all, b) end
-        for _, b in ipairs(Config.ALT_OVERFLOW_BAGS) do table.insert(all, b) end
-        Config.ALT_ALL_BAGS = all
-    end
+    -- //gs c wo alt: its own bags when given, else the same as //gs c wo
+    Config.ALT_PRIMARY_BAGS = bag_list(cfg.USED_WHEN_ALL or cfg.ALT_PRIMARY_BAGS) or used
+    Config.ALT_OVERFLOW_BAGS = bag_list(cfg.UNUSED_WHEN_ALL or cfg.ALT_OVERFLOW_BAGS) or unused
+    Config.ALT_ALL_BAGS = bag_list(cfg.ALT_ALL_BAGS)
+        or union(union(Config.ALT_PRIMARY_BAGS, Config.ALT_OVERFLOW_BAGS), reserved)
 
     strip_protected()
-
     Config.LOADED_CHAR_CONFIG = path
     return path
+end
+
+--- For //gs c wo alt: every job at once, on the ALT bag lists. Call after
+--- refresh().
+function Config.use_all_jobs_layout()
+    Config.SCOPE = 'all_jobs'
+    Config.PRIMARY_BAGS = Config.ALT_PRIMARY_BAGS
+    Config.OVERFLOW_BAGS = Config.ALT_OVERFLOW_BAGS
+    Config.FILL_FALLBACK = Config.ALT_OVERFLOW_BAGS
+    Config.ALL_WARDROBES = Config.ALT_ALL_BAGS
 end
 
 -- Bag id -> human label (used by Log.bag_name and chat)
