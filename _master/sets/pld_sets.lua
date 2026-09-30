@@ -242,8 +242,9 @@ sets.engaged.MDT = sets.idle.MDT -- Already has Aegis shield
 -- • Sortie (HybridMode 'Sortie', subjobs other than /SCH)
 -- Mitigation body/head/legs kept, accessories traded for Store TP: the mode is
 -- meant to hold hate while still feeding weaponskills.
--- No sub slot on purpose: in Sortie the shield follows the weapon
--- (Burtgang > Aegis, Naegling > Blurred Shield +1), decided by SetBuilder.
+-- No sub slot: the shield can follow the weapon in this mode
+-- (pld/combat/PLD_WEAPONS.lua shields.Sortie); without it, write a sub here.
+-- Otherwise the off hand stays what is worn.
 sets.engaged.TP =
     set_combine(
     EngagedBase,
@@ -266,8 +267,8 @@ sets.engaged.TP =
 -- that swapping into this set raises the HP pool before it touches the slots
 -- that add none. 770 HP across eight pieces; the other five carry none.
 --
--- No sub slot on purpose: the stance names its shield (Duban), applied by
--- SetBuilder alongside the weapon.
+-- No sub slot: the shield can follow the weapon in this stance
+-- (PLD_WEAPONS.lua shields.DPS); without it, write a sub here.
 sets.engaged.DPS =
     set_combine(
     EngagedBase,
@@ -297,8 +298,9 @@ sets.engaged.DPS =
 -- that add none. A tank that equips its empty slots first spends the swap at
 -- a lower maximum HP than either end of it intends.
 --
--- No sub slot on purpose: the stance names its shield (Duban), applied by
--- SetBuilder alongside the weapon, which also holds the ammo on the Ampulla.
+-- No sub slot: the shield can follow the weapon in this stance
+-- (PLD_WEAPONS.lua shields.Hoxne); without it, write a sub here. SetBuilder
+-- also holds the ammo on the Ampulla.
 sets.engaged.Hoxne =
     set_combine(
     EngagedBase,

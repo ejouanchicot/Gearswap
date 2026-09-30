@@ -17,16 +17,18 @@ value, in idle and engaged:
 | `sets.KC` | `MainWeapon` KC |
 | `sets.BurtgangKC` | `MainWeapon` BurtgangKC (the provided one is Burtgang + Kraken Club in the off hand) |
 | `sets.Naegling` | `MainWeapon` Naegling |
-| `sets.Shining` | `MainWeapon` Shining (a polearm: the off hand gets `sets.Alber`) |
+| `sets.Shining` | `MainWeapon` Shining (a polearm: the off hand gets the Alber Strap grip) |
 | `sets.Malevo` | `MainWeapon` Malevo |
-| `sets.Alber` | With Shining, in place of a shield (grip) |
 
 A weapon you add to the list in `PLD_STATES.lua` works the same way: name its set after
 the value. PLD always needs the set: `equip_without_set` in `WEAPON_CONFIG.lua` does not
 apply to it.
 
 **The shield** normally comes from the stance's set (`sub` in `sets.idle.PDT`,
-`sets.engaged.MDT`...). Two exceptions decide it by the weapon and win over the set:
+`sets.engaged.MDT`...). `PLD_WEAPONS.lua` (in `<YourName>/pld/combat/`) can decide it
+by the weapon in given stances instead, and then wins over the set. The provided file
+has every line commented: nothing is forced, each stance wears its set's `sub`. The
+author's file has:
 
 | Stance | Weapon | Shield put on |
 |---|---|---|
@@ -35,8 +37,23 @@ apply to it.
 | DPS, Tanking, Hoxne (/SCH) | Excalibur or Naegling | Duban |
 | DPS, Tanking, Hoxne (/SCH) | Burtgang | Aegis |
 
-These shield names are written in the job's code, not in your set file: a `sub` in a
-Sortie or /SCH set is ignored.
+```lua
+return {
+    shields = {                  -- [stance] = {[weapon] = shield}
+        Sortie  = {Burtgang = 'Aegis', Naegling = 'Blurred Shield +1'},
+        Tanking = {Excalibur = 'Duban', Naegling = 'Duban', Burtgang = 'Aegis'},
+    },
+    stance_weapon = {Tanking = 'Burtgang'},  -- the weapon a stance holds
+    grips = {Shining = 'Alber Strap'},       -- two-handed weapons and their grip
+}
+```
+
+Weapons are `MainWeapon` values (your weapon set names), shields and grips are item
+names. In a stance listed under `shields`, the weapon named there gets that shield and
+the `sub` of the stance's set is ignored; another weapon keeps the set's `sub`.
+`stance_weapon` puts that weapon in hand in that stance, whatever `MainWeapon` says.
+Without `grips`, Shining takes Alber Strap; a `grips` list replaces that default, so
+keep Shining in it. The file is read when the job loads: reload after an edit.
 
 ## Idle
 
@@ -49,12 +66,12 @@ Sortie or /SCH set is ignored.
 | `sets.idleRegen` | `Regen` On (/SCH only, Ctrl+Numpad2): laid over the idle set |
 
 Order in which idle is built: town set or stance set, then the weapon, then `sets.idleXp`,
-then `sets.idleRegen`, then `sets.MoveSpeed` when running, then the Sortie / /SCH shield
-and the Hoxne ammo.
+then `sets.idleRegen`, then `sets.MoveSpeed` when running, then the stance's shield from
+`PLD_WEAPONS.lua` and the Hoxne ammo.
 
 **In town**, PLD wears `sets.idle` with `sets.idle.Town` on top (`sets.Adoulin` in Adoulin) plus your weapon and the
-shield of your stance's idle set (Alber Strap with Shining; the Sortie / /SCH shield
-and the Hoxne ammo still apply), and nothing else: no stance set, no `Xp`, no `Regen`,
+shield of your stance's idle set (Alber Strap with Shining; the stance's shield from
+`PLD_WEAPONS.lua` and the Hoxne ammo still apply), and nothing else: no stance set, no `Xp`, no `Regen`,
 no `sets.MoveSpeed`. In the provided file `sets.idle.Town` is only the movement-speed
 legs, so the other slots keep your `sets.idle` pieces.
 
@@ -71,8 +88,8 @@ legs, so the other slots keep your `sets.idle` pieces.
 | `sets.engaged` | Only if the stance's set above is missing |
 | `sets.meleeXp` | `Xp` On: laid over the engaged set |
 
-Order: stance set (or BurtgangKC), then the weapon, then `sets.Alber` for Shining, then
-`sets.meleeXp`, then the Sortie / /SCH shield and the Hoxne ammo.
+Order: stance set (or BurtgangKC), then the weapon, then the grip for Shining, then
+`sets.meleeXp`, then the stance's shield from `PLD_WEAPONS.lua` and the Hoxne ammo.
 
 ## Weaponskills
 
@@ -184,14 +201,17 @@ the `//gs c aoe` rotation).
   put on by hand). Leaving the BurtgangKC weapon mode for a weapon whose set has its own
   shield puts that weapon, its shield and the normal engaged set on at once.
 - **Shining One**: the stance's shield is removed from your idle and engaged sets and
-  `sets.Alber` is worn in its place. BurtgangKC also keeps its off hand in idle.
-- **Sortie stance**: the shield follows the weapon (Aegis with Burtgang, Blurred Shield
-  +1 with Naegling); abilities add `sets.EnmityMax`'s shield; spells worn in
+  the Alber Strap is worn in its place (a weapon listed under `grips` in
+  `PLD_WEAPONS.lua`, with its grip). BurtgangKC also keeps its off hand in idle.
+- **Sortie stance**: with the author's `PLD_WEAPONS.lua`, the shield follows the weapon
+  (Aegis with Burtgang, Blurred Shield +1 with Naegling); abilities add
+  `sets.EnmityMax`'s shield; spells worn in
   `sets.FullEnmity` are cast in `sets.EnmityMax`. The weapon and rune lists shrink and
   `PhalanxSIRD` turns On ([states.md](states.md)).
-- **/SCH stances**: Tanking always wields Burtgang (weapon mode ignored) with Aegis and
-  gets the same `sets.EnmityMax` treatment as Sortie; DPS and Hoxne wield your weapon
-  mode with Duban and do not use `sets.EnmityMax`.
+- **/SCH stances**: Tanking gets the same `sets.EnmityMax` treatment as Sortie; DPS and
+  Hoxne wield your weapon mode and do not use `sets.EnmityMax`. With the author's
+  `PLD_WEAPONS.lua`, Tanking always wields Burtgang (weapon mode ignored) with Aegis,
+  DPS and Hoxne take Duban.
 - **Hoxne stance (/SCH)**: Hoxne Ampulla is put in the ammo slot of your idle and
   engaged sets, then the **ammo slot is locked** once the Ampulla is actually worn, so
   weaponskill, spell and ability sets cannot swap it out. If it is not worn within
@@ -204,8 +224,9 @@ the `//gs c aoe` rotation).
   `sets.midcast.SIRDPhalanx`. `PhalanxSIRD` turns On by itself when you enter Sortie or
   /SCH and Off when you go back to PDT/MDT. `//gs c sortie <target>` also sets it
   when your `SORTIE_CONFIG.lua` says so (Tetsouo's: Off for Aminon, On for the others).
-- **Weaponskill slots follow the weapon actually in hand** (Burtgang in Tanking,
-  whatever `MainWeapon` says).
+- **Weaponskill slots follow the weapon actually in hand** (the `stance_weapon` of
+  `PLD_WEAPONS.lua`, Burtgang in Tanking with the author's file, whatever `MainWeapon`
+  says).
 - **TP bonus**: a Moonshade Earring is added to a weaponskill only when it reaches the
   next TP step; Sequence counts as +500 when held
   ([TP bonus gear](../war/tp-bonus.md)).
@@ -216,8 +237,9 @@ the `//gs c aoe` rotation).
 
 ## Sets in the provided file that nothing reads
 
-- `sets.Duban`, `sets.Aegis`, `sets['Blurred Shield +1']`: shields come from the stance
-  sets or from the code (table above). Use them in your own sets if you like.
+- `sets.Duban`, `sets.Aegis`, `sets['Blurred Shield +1']`, `sets.Alber`: shields come
+  from the stance sets or from `PLD_WEAPONS.lua`, the grip from its `grips` (table
+  above). Use them in your own sets if you like.
 - `sets.precast.WS.TPBonus` and every `sets.precast.WS['Name'].TPBonus`: TP bonus gear
   comes from `PLD_TP_CONFIG.lua`, not from these.
 - `sets.idleNormal`, `sets.midcast.SIRDEnmity`, `sets.midcast.PhalanxPotency`,

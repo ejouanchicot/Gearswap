@@ -356,7 +356,7 @@ function SetBuilder.build_idle_set(base_set)
     -- Step 7: Apply movement speed
     result = SetBuilder.apply_movement(result)
 
-    -- Step 8: Mode shield (Sortie weapon-driven, /SCH stance-driven)
+    -- Step 8: Mode shield (PLD_WEAPONS.lua shields, weapon-driven)
     result = SetBuilder.apply_mode_shield(result)
     result = SetBuilder.apply_mode_ammo(result)
 

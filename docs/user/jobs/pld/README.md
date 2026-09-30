@@ -9,8 +9,8 @@ every shared feature that works on PLD, and the files you can edit.
 ## Overview
 
 PLD is set up as a tank. A stance mode (`HybridMode`) chooses your idle and engaged
-sets; a weapon mode chooses the sword, and in Sortie and under /SCH the shield follows
-the weapon. Two weaponskill slots follow the weapon in hand, so two macros cover every
+sets; a weapon mode chooses the sword, and in the stances you list in `PLD_WEAPONS.lua`
+the shield follows the weapon (the author's file: Sortie and the /SCH stances). Two weaponskill slots follow the weapon in hand, so two macros cover every
 sword. GearSwap also fires Divine Emblem before Flash and Majesty before Protect III-V
 and Cure III / IV, picks your cure set by target, and swaps to a SIRD Phalanx set when
 you ask for it.
@@ -20,7 +20,7 @@ The stance list depends on your subjob:
 | Subjob | Stances (default in **bold**) | Notes |
 |---|---|---|
 | Any but /SCH | **PDT**, MDT, Sortie | Sortie narrows the weapon and rune lists and turns Phalanx SIRD On |
-| /SCH | DPS, **Tanking**, Hoxne | A Sortie-only setup: Tanking always holds Burtgang + Aegis, Hoxne keeps the Hoxne Ampulla in the ammo slot |
+| /SCH | DPS, **Tanking**, Hoxne | A Sortie-only setup: with the author's `PLD_WEAPONS.lua` Tanking always holds Burtgang + Aegis; Hoxne keeps the Hoxne Ampulla in the ammo slot |
 
 ## All keys on this job
 
@@ -163,6 +163,7 @@ In `<YourName>/pld/`:
 | `PLD_CUSTOM.lua` | Your own modes, keys and gear rules (empty by default) |
 | `PLD_HUD.lua` | Order of the HUD sections and rows on PLD (also written by `//gs c ui order` / `roworder`) |
 | `PLD_WS_CONFIG.lua` | The weaponskills of each weapon for the two slots |
+| `PLD_WEAPONS.lua` | The shield each weapon takes in given stances, the weapon a stance holds, the grip of a two-handed weapon; every line commented at first (each stance wears its set's shield, Shining its Alber Strap) ([sets.md](sets.md#weapons)) |
 | `PLD_BLU_MAGIC.lua` | Blue Magic rotation for `//gs c aoe` |
 | `PLD_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (3 in the template) |
 | `PLD_MACROBOOK.lua` | Macro book and page per subjob, and per dual-box alt job |

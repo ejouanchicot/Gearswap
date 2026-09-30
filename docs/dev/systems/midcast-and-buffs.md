@@ -303,7 +303,7 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 | SAM | `select_idle_base_town` called directly | `apply_movement` outside town |
 | PUP | `select_idle_base_town` called directly, then the automaton layer on top | `apply_movement` outside town |
 
-Typical order (PLD `build_idle_set`): town base -> main weapon -> shield -> (return early in town) -> HybridMode set -> Xp set -> movement -> Sortie shield. Engaged (`build_engaged_set`): BurtgangKC / Kraken Club / HybridMode base -> weapon -> Alber Strap -> Xp -> Sortie shield.
+Typical order (PLD `build_idle_set`): town base -> main weapon -> shield -> (return early in town) -> HybridMode set -> Xp set -> Regen set -> movement -> mode shield (`PLD_WEAPONS.lua` `shields`) -> mode ammo. Engaged (`build_engaged_set`): BurtgangKC / Kraken Club / HybridMode base -> weapon -> grip of a two-handed weapon (`PLD_WEAPONS.lua` `grips`, default Shining: Alber Strap) -> Xp -> mode shield -> mode ammo.
 
 ## SelfBuffManager
 

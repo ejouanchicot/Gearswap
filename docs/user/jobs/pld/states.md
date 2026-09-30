@@ -23,7 +23,7 @@ Set names and automatic gear: [sets.md](sets.md).
 
 ### Stances (`HybridMode`)
 
-| Stance | Engaged set | Idle set | Shield | Notes |
+| Stance | Engaged set | Idle set | Shield (with the author's `PLD_WEAPONS.lua`) | Notes |
 |---|---|---|---|---|
 | PDT | `sets.engaged.PDT` | `sets.idle.PDT` | from the set | |
 | MDT | `sets.engaged.MDT` | `sets.idle.MDT` | from the set | |
@@ -32,11 +32,17 @@ Set names and automatic gear: [sets.md](sets.md).
 | Tanking (/SCH) | `sets.engaged.MDT` | `sets.idle.MDT` | Aegis | Always Burtgang, whatever `MainWeapon` says (its key is hidden). Enmity spells and abilities use `sets.EnmityMax` |
 | Hoxne (/SCH) | `sets.engaged.Hoxne` | `sets.idle.MDT` | Duban | Swings `MainWeapon`, wears the Hoxne Ampulla and locks the ammo slot while the stance is on |
 
+The shields of Sortie and the /SCH stances, and Burtgang in Tanking, come from
+`PLD_WEAPONS.lua` (see [sets.md](sets.md#weapons)). The provided file forces none of
+them: each stance then wears the `sub` of its own set and swings `MainWeapon`, Tanking
+included (its weapon key stays hidden).
+
 A Shining One (`Shining`) always takes the Alber Strap grip, and `BurtgangKC` (or a
 Kraken Club already in your off hand, when the chosen weapon set has no off hand of
 its own) uses `sets.engaged.BurtgangKC` in every stance.
 
-Under /SCH the weapon list is Naegling and Excalibur (both with Duban), the weapon
+Under /SCH the weapon list is Naegling and Excalibur (both with Duban in the author's
+`PLD_WEAPONS.lua`), the weapon
 opens on Naegling and `PhalanxSIRD` starts On (Ctrl+Numpad3 turns it Off). Leaving the
 Sortie stance for PDT or MDT restores the full lists and turns `PhalanxSIRD` Off;
 PDT <-> MDT keeps every choice.
@@ -87,6 +93,7 @@ In `<YourChar>/pld/`:
 | `PLD_CUSTOM.lua` | Your own modes, keys and gear rules, without code (empty by default) |
 | `PLD_HUD.lua` | Order of the HUD sections and rows on PLD |
 | `PLD_WS_CONFIG.lua` | Weaponskills per weapon for the WS slots |
+| `PLD_WEAPONS.lua` | Shield per weapon in given stances, the weapon a stance holds, grips of two-handed weapons |
 | `PLD_BLU_MAGIC.lua` | Blue Magic enmity rotation for `//gs c aoe` |
 | `PLD_LOCKSTYLE.lua` | Lockstyle number (3 in the template) |
 | `PLD_MACROBOOK.lua` | Macro book/page per subjob, and per dual-box alt job |
