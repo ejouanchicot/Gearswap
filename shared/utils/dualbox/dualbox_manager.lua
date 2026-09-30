@@ -79,7 +79,7 @@ function DualBoxManager.initialize(config)
             char_name = player.name
         end
 
-        local config_path = char_name .. '/config/DUALBOX_CONFIG'
+        local config_path = require('shared/utils/core/char_paths').module('common', 'DUALBOX_CONFIG', nil, char_name)
         local success, loaded_config = pcall(require, config_path)
 
         if success and loaded_config then

@@ -35,8 +35,8 @@ reload.
 ## All keys on this job
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
-the provided template; after cloning, yours are in `<YourName>/config/sam/`
-and `<YourName>/config/COMMON_KEYBINDS.lua`, and those files win.
+the provided template; after cloning, yours are in `<YourName>/sam/`
+and `<YourName>/common/COMMON_KEYBINDS.lua`, and those files win.
 
 | Key | Does | When | Shown in the HUD |
 |---|---|---|---|
@@ -116,7 +116,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Feature | On SAM |
 |---|---|
 | Third Eye / Seigan automation | SAM's own, see [states.md](states.md#notes) |
-| Auto stance (off by default) | With `sam_hasso = true` in `config/AUTO_ABILITIES.lua`: your chosen stance (Hasso, or Seigan after `//gs c seigan`) when you engage, unless Hasso or Seigan is up and only when it is ready |
+| Auto stance (off by default) | With `sam_hasso = true` in `common/AUTO_ABILITIES.lua`: your chosen stance (Hasso, or Seigan after `//gs c seigan`) when you engage, unless Hasso or Seigan is up and only when it is ready |
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear from `SAM_TP_CONFIG.lua` is added (Hagakure counted while it is up) |
 | Recast check | An ability or spell still on recast is cancelled with the time left (`RECAST_CONFIG.lua`) |
 | Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
@@ -125,7 +125,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Obi / Orpheus | Added to elemental weaponskills (Tachi: Goten, Kagero, Jinpu, Koki, ...) and damaging spells when the day, weather or distance gives enough (`//gs c belt`) |
 | Treasure Hunter | Off and hidden. Needs `//gs c th show` and a `sets.TreasureHunter` you add |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | With `equip_without_set = true` in `config/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Dual Wield tiers | Only while holding two weapons with a `sets.DW`: not the case with great katanas |
 | Your own modes | `SAM_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |
@@ -135,7 +135,7 @@ and arguments: [commands guide](../../guides/commands.md).
 
 ## Configuration files for this job
 
-In `<YourName>/config/sam/`:
+In `<YourName>/sam/`:
 
 | File | Content |
 |---|---|
@@ -148,11 +148,11 @@ In `<YourName>/config/sam/`:
 | `SAM_TP_CONFIG.lua` | Hagakure job points, TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
 | `SAM_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used |
 
-In `<YourName>/config/`, shared with the other jobs: `AUTO_ABILITIES.lua`
+In `<YourName>/common/`, shared with the other jobs: `AUTO_ABILITIES.lua`
 (`sam_hasso`), `COMMON_KEYBINDS.lua`, `WEAPON_CONFIG.lua`,
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and
 `treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
-`combatmode`). Gear: `<YourName>/sets/sam_sets.lua`. See
+`combatmode`). Gear: `<YourName>/sam/sam_sets.lua`. See
 [configuration](../../guides/configuration.md).
 
 ## More

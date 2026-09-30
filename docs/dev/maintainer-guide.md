@@ -436,9 +436,9 @@ copy, not in the public repository). Its core, which reviews enforce:
 | `shared/jobs/<job>/functions/<job>_functions.lua` | Facade: includes the hook modules |
 | `shared/jobs/<job>/functions/<JOB>_PRECAST.lua` ... `_MACROBOOK.lua` | 11 hook modules (PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS, COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK), plus pet modules on BST/PUP/SMN |
 | `shared/jobs/<job>/functions/logic/` | Job logic called by the hook modules |
-| `data/<Char>/config/<job>/` (template `_master/config/<job>/`) | `<JOB>_STATES`, `_KEYBINDS`, `_LOCKSTYLE`, `_MACROBOOK`, `_CUSTOM`, `_HUD`, TP/WS configs |
-| `data/<Char>/config/` (template `_master/config_global/`) | Per-character files shared by all jobs: `UI_CONFIG`, `COMMON_KEYBINDS`, `RECAST_CONFIG`, ... |
-| `data/<Char>/sets/` (template `_master/sets/<job>_sets.lua`) | Equipment. Templates are flat; a character overlay may deploy a modular `sets/<job>/` tree |
+| `data/<Char>/<job>/` (template `_master/config/<job>/`) | `<JOB>_STATES`, `_KEYBINDS`, `_LOCKSTYLE`, `_MACROBOOK`, `_CUSTOM`, `_HUD`, TP/WS configs |
+| `data/<Char>/common/` (template `_master/config_global/`) | Per-character files shared by all jobs: `UI_CONFIG`, `COMMON_KEYBINDS`, `RECAST_CONFIG`, ... |
+| `data/<Char>/sets/` (template `_master/sets/<job>_sets.lua`) | Equipment. Templates are flat; a character overlay may deploy a modular `<job>/` tree |
 
 ### What git tracks
 
@@ -485,7 +485,7 @@ Use the `/new-job <JOB>` skill for the guided workflow. The files:
       Start from a similar job (templates: DNC_PRECAST, PLD_MIDCAST,
       WAR_COMMANDS). Pet jobs add pet modules.
 - [ ] `_master/entry/Tetsouo_<JOB>.lua`: copy a similar entry; keep the
-      `'Tetsouo/config/...'` path form (the clone substitutes it); require
+      `'Tetsouo/common/...'` path form (the clone substitutes it); require
       `config_loader` first, include INIT_SYSTEMS right after Mote-Include.
 - [ ] `_master/config/<job>/`: **every** file the entry requires without
       `pcall` must exist (PUP did not load until 2026-09-29 for that

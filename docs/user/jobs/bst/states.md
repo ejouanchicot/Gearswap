@@ -60,7 +60,7 @@ can still show the previous pet's moves for up to 30 s.
 
 ## Files
 
-`<YourName>/config/bst/`: `BST_STATES.lua`, `BST_KEYBINDS.lua`, `BST_CUSTOM.lua` (your
+`<YourName>/bst/`: `BST_STATES.lua`, `BST_KEYBINDS.lua`, `BST_CUSTOM.lua` (your
 own modes and keys, see [keybinds](../../guides/keybinds.md)), `BST_PET_DATA.lua`
 (pets, species, jugs), `BST_LOCKSTYLE.lua` (style 6), `BST_MACROBOOK.lua` (book 12
 page 1; book 13 or 14 with a GEO or COR partner while /DNC), `BST_TP_CONFIG.lua`,

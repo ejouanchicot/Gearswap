@@ -17,7 +17,7 @@ local CommonKeybinds = {}
 --- The character's common binds, or an empty list.
 --- @return table List of bind entries
 function CommonKeybinds.load()
-    local ok, config = pcall(require, 'config/COMMON_KEYBINDS')
+    local ok, config = require('shared/utils/core/char_paths').load('common', 'COMMON_KEYBINDS')
     if ok and type(config) == 'table' and type(config.binds) == 'table' then
         return config.binds
     end

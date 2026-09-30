@@ -39,7 +39,7 @@ local MAX_BYTES = 10 * 1024 * 1024
 
 local function file_path(name)
     if not (player and player.name and windower and windower.addon_path) then return nil end
-    return ('%sdata/%s/%s'):format(windower.addon_path, player.name, name or 'trace.log')
+    return require('shared/utils/core/char_paths').writable('saved', name or 'trace.log')
 end
 
 --- On/off lives on `windower` (outlives gs reload and job changes) and in a

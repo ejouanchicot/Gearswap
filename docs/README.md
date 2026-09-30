@@ -29,7 +29,7 @@ New here? Read, in this order: [installation](user/getting-started/installation.
 | [Commands](user/guides/commands.md) | Every `//gs c` command shared by all jobs |
 | [Keybinds](user/guides/keybinds.md) | The key layout, Mote-Include's F9-F12 keys, the keybind files, your own modes (`<JOB>_CUSTOM.lua`), Combat Mode, Treasure Mode, temporary keys (`//gs c tb`) |
 | [Set names](user/guides/sets.md) | Every set name any job understands: actions, subjob actions, Mote-Include layers, sets put on by themselves, per-job exceptions |
-| [Configuration](user/guides/configuration.md) | Every file of `<YourName>/config/`: what it sets, who writes it |
+| [Configuration](user/guides/configuration.md) | Every file of `<YourName>/common/`: what it sets, who writes it |
 | [Dual-box](user/guides/dualbox.md) | Main and alt, alt commands, box group orders, the alt window |
 | [Sneak and Invisible](user/guides/stealth.md) | Alt+Z / Alt+X on you and your other characters, timers, warnings |
 | [FAQ](user/guides/faq.md) | Common problems and their fix |
@@ -79,7 +79,7 @@ Written from the code, for anyone who changes it.
 ```
 <YourName>/
 ├── <YourName>_<JOB>.lua     one file per job, loaded by GearSwap
-├── sets/<job>_sets.lua      your gear
+├── <job>/<job>_sets.lua      your gear
 ├── temp_binds.lua           temporary keys (//gs c tb), written in game
 └── config/
     ├── COMMON_KEYBINDS.lua, UI_CONFIG.lua, LOCKSTYLE_CONFIG.lua, RECAST_CONFIG.lua,

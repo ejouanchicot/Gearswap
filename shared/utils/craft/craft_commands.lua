@@ -47,7 +47,7 @@ local SLOT_ALIASES = {
 local function load_craft_config()
     local char_name = player and player.name
     if not char_name then return nil end
-    local ok, CraftConfig = pcall(require, char_name .. '/config/CRAFT_CONFIG')
+    local ok, CraftConfig = require('shared/utils/core/char_paths').load('common', 'CRAFT_CONFIG', nil, char_name)
     return (ok and type(CraftConfig) == 'table') and CraftConfig or nil
 end
 

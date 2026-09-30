@@ -62,7 +62,7 @@ the job.
 | `f12` | Mote: put your current gear back on and print the modes | always | not on the HUD |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | once you make one | listed by `tb list` |
 
-- The six common keys come from your `config/COMMON_KEYBINDS.lua`.
+- The six common keys come from your `common/COMMON_KEYBINDS.lua`.
 - Your own keys from `NIN_CUSTOM.lua` are added on top (the template file has
   only commented examples). `//gs c kc` lists every key conflict.
 
@@ -98,7 +98,7 @@ engaged set chosen is logged, with the buff layers laid on top;
 
 ## Configuration files for this job
 
-In `<YourName>/config/nin/`:
+In `<YourName>/nin/`:
 
 | File | What it sets |
 |---|---|
@@ -110,7 +110,7 @@ In `<YourName>/config/nin/`:
 | `NIN_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |
 | `NIN_HUD.lua` | Order of this job's HUD sections and rows |
 
-Sets: `<YourName>/sets/nin_sets.lua`, see [sets.md](sets.md).
+Sets: `<YourName>/nin/nin_sets.lua`, see [sets.md](sets.md).
 
 ## Not done by the job
 

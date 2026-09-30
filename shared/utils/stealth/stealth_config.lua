@@ -26,7 +26,7 @@ StealthConfig.DEFAULTS = {
 --- @return string|nil
 function StealthConfig.path()
     if not (player and player.name) then return nil end
-    return ('%sdata/%s/config/STEALTH_CONFIG.lua'):format(windower.addon_path, player.name)
+    return require('shared/utils/core/char_paths').writable('common', 'STEALTH_CONFIG.lua')
 end
 
 --- The settings, read once per load.

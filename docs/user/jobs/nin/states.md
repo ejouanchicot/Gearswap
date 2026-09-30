@@ -53,7 +53,7 @@ Ninja has no command of its own. The common commands work as on every job:
 
 ## Files
 
-In `<YourChar>/config/nin/`: `NIN_STATES.lua` (modes and defaults),
+In `<YourChar>/nin/`: `NIN_STATES.lua` (modes and defaults),
 `NIN_KEYBINDS.lua` (keys), `NIN_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `NIN_TP_CONFIG.lua` (TP bonus),
 `NIN_LOCKSTYLE.lua` (lockstyle 1), `NIN_MACROBOOK.lua` (book 1, page 1). See

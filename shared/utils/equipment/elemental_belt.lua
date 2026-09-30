@@ -72,8 +72,7 @@ function ElementalBelt.settings()
     local cached = rawget(_G, '_elemental_belt_settings')
     if cached then return cached end
     local settings = {enabled = DEFAULTS.enabled, min_bonus = DEFAULTS.min_bonus}
-    local path = player and player.name and windower.addon_path
-        and ('%sdata/%s/config/ELEMENTAL_BELT.lua'):format(windower.addon_path, player.name)
+    local path = player and player.name and require('shared/utils/core/char_paths').file('common', 'ELEMENTAL_BELT.lua')
     local file = path and io.open(path, 'r')
     if file then
         file:close()

@@ -4,7 +4,7 @@ Every set name the Monk code reads, and everything the job puts on by itself.
 Modes and keys: [states.md](states.md). Names every job shares (subjob
 actions, movement, Doom, Treasure Hunter...): [set names](../../guides/sets.md).
 
-Your file: `<YourName>/sets/mnk_sets.lua`. The provided file has every set the
+Your file: `<YourName>/mnk/mnk_sets.lua`. The provided file has every set the
 code reads, empty: fill in your pieces. With `//gs c trace on`, each engaged
 set chosen is logged with the buff sets laid on top, and each weaponskill with
 its Impetus / Footwork layers.

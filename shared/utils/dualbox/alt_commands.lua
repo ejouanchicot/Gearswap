@@ -157,14 +157,14 @@ local function load_job_config(job, level, source)
         return nil
     end
 
-    local char = (player and player.name) or 'Tetsouo'
-    local base = char .. '/config/alt/' .. job:upper()
+    local CharPaths = require('shared/utils/core/char_paths')
+    local JOB = job:upper()
 
-    local ok, loaded = pcall(require, base .. '_ALT_COMMANDS')
+    -- The generated tables are game data, the same for everyone: shared/data/alt/.
+    -- A character folder cloned before 2026-09-30 still has its own copy.
+    local ok, loaded = pcall(require, 'shared/data/alt/' .. JOB .. '_ALT_COMMANDS')
     if not ok or type(loaded) ~= 'table' or type(loaded.commands) ~= 'table' then
-        -- A character that became main with //gs c main may have no alt
-        -- commands of its own yet: use the templates.
-        ok, loaded = pcall(require, '_master/config/alt/' .. job:upper() .. '_ALT_COMMANDS')
+        ok, loaded = CharPaths.load('alt', JOB .. '_ALT_COMMANDS')
         if not ok or type(loaded) ~= 'table' or type(loaded.commands) ~= 'table' then
             return nil
         end
@@ -180,11 +180,11 @@ local function load_job_config(job, level, source)
     end
 
     local refine
-    local ok_custom, custom = pcall(require, base .. '_ALT_CUSTOM')
+    local ok_custom, custom = CharPaths.load('alt', JOB .. '_ALT_CUSTOM')
     if not ok_custom then
         -- Same reason as above: a character promoted to main keeps the
         -- templates' hand-written commands until it has its own.
-        ok_custom, custom = pcall(require, '_master/config/alt/' .. job:upper() .. '_ALT_CUSTOM')
+        ok_custom, custom = pcall(require, '_master/config/alt/' .. JOB .. '_ALT_CUSTOM')
     end
     if ok_custom and type(custom) == 'table' then
         if type(custom.commands) == 'table' then

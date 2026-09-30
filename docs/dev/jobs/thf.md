@@ -74,10 +74,10 @@ function; line numbers are deliberately not used.
 
 Author overlay (`_master/Tetsouo/`, tracked; deployed only by a clone to that
 character): `entry/Tetsouo_THF.lua` (same as the template except the header and
-`init_gear_sets`, which includes `sets/thf/thf_sets.lua`),
-`config/thf/THF_MACROBOOK.lua`, `config/thf/THF_STATES.lua` (adds
-`'Telop Knife'` to `SubWeapon`), `config/thf/THF_REFILL.lua` (includes
-`Ac. Bolt Quiver`), and `sets/thf/{thf_sets,armor,capes,weapons}.lua`
+`init_gear_sets`, which includes `thf/thf_sets.lua`),
+`thf/THF_MACROBOOK.lua`, `thf/THF_STATES.lua` (adds
+`'Telop Knife'` to `SubWeapon`), `thf/THF_REFILL.lua` (includes
+`Ac. Bolt Quiver`), and `thf/{thf_sets,armor,capes,weapons}.lua`
 (modular; the weapon sets are copied from `weapons.lua` by a loop in
 `thf_sets.lua`). `_master/Kaories/` has no THF files.
 
@@ -114,7 +114,7 @@ sequenceDiagram
 1. `THFStates.configure()` creates every state (see [Mote states](#mote-states)),
    then `RangeLock.sync_state()` turns `RangeLock` back on when the range/ammo
    lock is still held (subjob change, same sandbox).
-2. `require('<Character>/config/thf/THF_KEYBINDS')` into the global
+2. `require('<Character>/thf/THF_KEYBINDS')` into the global
    `THFKeybinds`, then `bind_all()` (`keybind_manager.lua`), which unbinds the
    keys that no longer apply, binds those of the current subjob (the two
    Abyssea keys only on /WAR) and calls `show_intro()`. `KeybindManager.create`
@@ -238,7 +238,7 @@ sequenceDiagram
    read directly); otherwise `WeaponResolver.set_for('main', MainWeapon)` then
    `set_for('sub', SubWeapon)`, each through `pcall(set_combine)`. By default
    `set_for` returns `sets[value]`; with `equip_without_set = true` in the
-   character's `config/WEAPON_CONFIG.lua` it returns the set only when it names
+   character's `common/WEAPON_CONFIG.lua` it returns the set only when it names
    that slot (for `sub`, only its `sub` piece), else `{main = value}` /
    `{sub = value}` when `value` is a weapon name in `res.items`. A missing
    weapon set is skipped silently.
@@ -323,7 +323,7 @@ Two layers:
 
 THF's own STATES file defines `TreasureMode` as `Tag`, `SATA`, `Full` (default
 `Tag`, no `Off`). `OptionalState.attach` records it as native, so it is shown
-unless `hidden.THF` is set in the character's `config/treasure_mode.lua`.
+unless `hidden.THF` is set in the character's `common/treasure_mode.lua`.
 
 | Mode | Engaged set | SA/TA overlay | Action overlay |
 |------|-------------|---------------|----------------|
@@ -499,17 +499,17 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/thf/THF_STATES.lua` | see states | file | entry `user_setup` (path `Tetsouo/...` in the template, replaced by the clone script) |
-| `<char>/config/thf/THF_KEYBINDS.lua` | 7 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
-| `<char>/config/thf/THF_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
-| `<char>/config/thf/THF_HUD.lua` | empty orders | file | `hud_job_config.lua` |
-| `<char>/config/thf/THF_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory fallback 1 | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
-| `<char>/config/thf/THF_MACROBOOK.lua` | book 1 page 1 solo; dual-box RDM 1, GEO 2, COR 3 | file; factory fallback 1/1 | `MacrobookManager` |
-| `<char>/config/thf/THF_TP_CONFIG.lua` -> `_G.THFTPConfig` | Moonshade ear1 +250; weapons Aeneas 500, Centovente 1000 | file | `TPBonusHandler` -> `TPBonusCalculator` (main and sub weapon) |
-| `<char>/config/thf/THF_REFILL.lua` | none in the template (built-in list) | overlay only | `refill/config_resolver.lua` |
-| `<char>/config/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
-| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
-| `<char>/config/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
+| `<char>/thf/THF_STATES.lua` | see states | file | entry `user_setup` (path `Tetsouo/...` in the template, replaced by the clone script) |
+| `<char>/thf/THF_KEYBINDS.lua` | 7 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
+| `<char>/thf/THF_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
+| `<char>/thf/THF_HUD.lua` | empty orders | file | `hud_job_config.lua` |
+| `<char>/thf/THF_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory fallback 1 | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
+| `<char>/thf/THF_MACROBOOK.lua` | book 1 page 1 solo; dual-box RDM 1, GEO 2, COR 3 | file; factory fallback 1/1 | `MacrobookManager` |
+| `<char>/thf/THF_TP_CONFIG.lua` -> `_G.THFTPConfig` | Moonshade ear1 +250; weapons Aeneas 500, Centovente 1000 | file | `TPBonusHandler` -> `TPBonusCalculator` (main and sub weapon) |
+| `<char>/thf/THF_REFILL.lua` | none in the template (built-in list) | overlay only | `refill/config_resolver.lua` |
+| `<char>/common/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
+| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
+| `<char>/common/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
 | Hard-coded | crossbow/bolt names (`range`), quiver threshold (`job_aftercast`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
 
 ## State & lifetime
@@ -657,5 +657,5 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 - `job_post_midcast` skeleton is duplicated with DNC.
 - `job_buff_change` re-implements `LifecycleManager.buff_change`.
 - The author overlay files (`_master/Tetsouo/entry/Tetsouo_THF.lua`,
-  `config/thf/THF_STATES.lua`) still carry `@author Tetsouo`, against the
+  `thf/THF_STATES.lua`) still carry `@author Tetsouo`, against the
   project rule (`@author ejouanchicot`).

@@ -3,7 +3,7 @@
 SMN is the 16th job area, added on 2026-07-29: the facade plus 12 hook
 modules and one logic module under `shared/jobs/smn/functions/` (about 1 300
 lines). Like every other job it has a generic template in `_master/`
-(entry, `config/smn/`, flat `sets/smn_sets.lua`), offered by the clone script
+(entry, `smn/`, flat `smn/smn_sets.lua`), offered by the clone script
 since 2026-09-28. Until then the entry, configs and sets existed only in the
 author's gitignored live folder and overlay `_master/Tetsouo/`; the overlay
 still keeps its own copy (modular set path), which wins for that character.
@@ -50,16 +50,16 @@ Verified on 2026-09-28:
 | Generic entry `_master/entry/Tetsouo_SMN.lua` | repo | yes |
 | Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK` in `_master/config/smn/` | repo | yes |
 | Generic flat sets `_master/sets/smn_sets.lua` | repo | yes |
-| Author's copies: entry, `config/smn/`, modular `sets/smn/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
+| Author's copies: entry, `smn/`, modular `smn/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
 | `SMN_REFILL.lua`, `SMN_TP_CONFIG.lua`, `SMN_JA_DATABASE.lua`, SMN message formatter | nowhere | - |
 | `clone_character.py` `ALL_VALID_JOBS` | 16 jobs, SMN included (no PUP) | yes |
 
 Consequence: any clone can get SMN, from the generic template (manual job
 selection offers it). A clone to the author's character, or any clone with
 `--source Tetsouo`, takes the overlay's copies instead (the overlay's
-`sets/<job>/` tree wins over the generic flat file). The generic files are
+`<job>/` tree wins over the generic flat file). The generic files are
 the overlay's with `@author ejouanchicot` and the flat set include
-`include('sets/smn_sets.lua')`; the gear is the same. Until 2026-09-28 a
+`include('smn/smn_sets.lua')`; the gear is the same. Until 2026-09-28 a
 clone of any other character printed
 `[WARN] No entry file for: SMN - these jobs will not load`.
 
@@ -79,16 +79,16 @@ clone of any other character printed
 | `shared/jobs/smn/functions/SMN_BUFFS.lua` | `DoomManager` + Avatar's Favor state sync |
 | `shared/jobs/smn/functions/SMN_COMMANDS.lua` | `job_self_command`, skill-up loop, `job_state_change` (`LifecycleManager.state_change()`), `_G.cancel_smn_skillup_loop` |
 | `shared/jobs/smn/functions/SMN_MOVEMENT.lua` | Empty `job_handle_equipping_gear` (movement gear is in `SMN_IDLE`) |
-| `shared/jobs/smn/functions/SMN_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('SMN', 'config/smn/SMN_LOCKSTYLE', 1, 'WHM')` |
+| `shared/jobs/smn/functions/SMN_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('SMN', 'smn/SMN_LOCKSTYLE', 1, 'WHM')` |
 | `shared/jobs/smn/functions/SMN_MACROBOOK.lua` | Lazy `MacrobookManager.create('SMN', ..., 'WHM', 1, 1)` |
 | `shared/jobs/smn/functions/logic/blood_pact_classifier.lua` | Seven name sets, `classify`, `get_set`, `resolve` |
-| `config/smn/SMN_STATES.lua` | `IdleMode`, `CastingMode`, `AvatarFavor`, `Moving`, `FastCast`, AutoMedicine |
-| `config/smn/SMN_KEYBINDS.lua` | 3 binds handed to `KeybindManager.create('SMN', ...)` |
-| `config/smn/SMN_CUSTOM.lua` | Player modes and gear rules, commented examples only |
-| `config/smn/SMN_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
-| `config/smn/SMN_LOCKSTYLE.lua` | `default = 1`, `by_subjob` (all 1), `get_style` |
-| `config/smn/SMN_MACROBOOK.lua` | Book 1; page per subjob (WHM 1, SCH 2, RDM 3, BLM 4); empty `dualbox` |
-| `sets/smn_sets.lua` (generic, flat; `sets/smn/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
+| `smn/SMN_STATES.lua` | `IdleMode`, `CastingMode`, `AvatarFavor`, `Moving`, `FastCast`, AutoMedicine |
+| `smn/SMN_KEYBINDS.lua` | 3 binds handed to `KeybindManager.create('SMN', ...)` |
+| `smn/SMN_CUSTOM.lua` | Player modes and gear rules, commented examples only |
+| `smn/SMN_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
+| `smn/SMN_LOCKSTYLE.lua` | `default = 1`, `by_subjob` (all 1), `get_style` |
+| `smn/SMN_MACROBOOK.lua` | Book 1; page per subjob (WHM 1, SCH 2, RDM 3, BLM 4); empty `dualbox` |
+| `smn/smn_sets.lua` (generic, flat; `smn/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
 | `shared/data/magic/SMN_SPELL_DATABASE.lua` + `summoning/*.lua` | Avatar / pact data for messages and `//gs c info` (SMN logic does not read it) |
 
 The `config/` and `sets/` rows are relative to a character folder; their
@@ -104,7 +104,7 @@ The entry chunk loads `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and the UI config,
 `INIT_SYSTEMS` installs `ModuleCache`, so those two are pre-cache instances
 ([core lifecycle](../systems/core-lifecycle.md)). `get_sets()` includes
 Mote-Include (which runs `user_setup()` and `init_gear_sets()` =
-`include('sets/smn/smn_sets.lua')`), then `INIT_SYSTEMS`, `data_loader` and
+`include('smn/smn_sets.lua')`), then `INIT_SYSTEMS`, `data_loader` and
 the message hooks, sets `_G.LockstyleConfig`, `_G.UIConfig`,
 `_G.RECAST_CONFIG`, calls `JobChangeManager.cancel_all()`, includes the facade
 and registers the lockstyle cancel. It also marks each step for
@@ -287,7 +287,7 @@ refreshes the HUD. It sends no `gs c update`: Mote's state commands and
 
 ## Set names the code looks up
 
-In the author's `sets/smn/smn_sets.lua`, every set except `sets.precast.FC`
+In the author's `smn/smn_sets.lua`, every set except `sets.precast.FC`
 is `empty_set()`, which returns `{}` (it returned all 16 slots set to `""`
 until 2026-09-29).
 
@@ -324,12 +324,12 @@ it stays on after the first cast.
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `config/smn/SMN_STATES.lua` | see states | entry `user_setup` |
-| `config/smn/SMN_KEYBINDS.lua` | 3 binds (+ `COMMON_KEYBINDS.lua`) | entry `user_setup`, `file_unload` |
-| `config/smn/SMN_CUSTOM.lua` | examples only | `KeybindManager` via `custom_states` |
-| `config/smn/SMN_HUD.lua` | empty | HUD section / row order |
-| `config/smn/SMN_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 1 everywhere | `LockstyleManager` (uses `get_style`) |
-| `config/smn/SMN_MACROBOOK.lua` | book 1, pages 1-4 | `MacrobookManager` |
+| `smn/SMN_STATES.lua` | see states | entry `user_setup` |
+| `smn/SMN_KEYBINDS.lua` | 3 binds (+ `COMMON_KEYBINDS.lua`) | entry `user_setup`, `file_unload` |
+| `smn/SMN_CUSTOM.lua` | examples only | `KeybindManager` via `custom_states` |
+| `smn/SMN_HUD.lua` | empty | HUD section / row order |
+| `smn/SMN_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 1 everywhere | `LockstyleManager` (uses `get_style`) |
+| `smn/SMN_MACROBOOK.lua` | book 1, pages 1-4 | `MacrobookManager` |
 | `SKILLUP_STATE` knobs in `SMN_COMMANDS.lua` | 5.0 s cast-to-release, 1.5 s release-to-next | the loop; `skillup <n>` changes the second |
 | Carbuncle auto-summon delay | `initial_load_delay + 2.0` (10 s) | entry `user_setup` |
 | Refill | none: `FALLBACK_LIST` in `shared/utils/inventory/refill/config_resolver.lua` | `refill` |
@@ -385,7 +385,7 @@ it stays on after the first cast.
 
 ## Extending
 
-- Templating SMN is done (2026-09-28): generic entry, `config/smn/`, flat
+- Templating SMN is done (2026-09-28): generic entry, `smn/`, flat
   sets and `ALL_VALID_JOBS`. Still missing: an `SMN_REFILL.lua` list.
 - New Blood Pact: add the name to the right list in
   `blood_pact_classifier.lua` and to the reference doc.

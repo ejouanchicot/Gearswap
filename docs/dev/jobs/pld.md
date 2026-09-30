@@ -50,7 +50,7 @@ numbers are avoided because they drift.
 | `shared/jobs/pld/functions/PLD_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/pld/functions/PLD_COMMANDS.lua` | 306 | `job_self_command` router (incl. `ws`/`wsN`), local `rebuild_ws_slots` (exported `_G.pld_rebuild_ws_slots`), `job_state_change` (profile, WS slots, ammo lock, keybind refresh) |
 | `shared/jobs/pld/functions/PLD_MOVEMENT.lua` | 23 | Placeholder for the 12-module layout (comments only) |
-| `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'config/pld/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
+| `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'pld/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/pld/functions/PLD_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('PLD', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/pld/functions/logic/set_builder.lua` | 376 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, Regen, movement, town; `current_weapon()` is the authority on what is in hand |
 | `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
@@ -70,16 +70,16 @@ numbers are avoided because they drift.
 | `_master/config/pld/PLD_TP_CONFIG.lua` | 75 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
 | `_master/config/pld/PLD_BLU_MAGIC.lua` | 203 | `_G.BluMagicConfig`: AOE spell table, dynamic / manual rotation |
 | `_master/sets/pld_sets.lua` | 848 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
-| `_master/Kaories/sets/pld_sets.lua` | 777 | Kaories overlay sets (no Sortie or /SCH sets, see Known issues) |
+| `_master/Kaories/pld/pld_sets.lua` | 777 | Kaories overlay sets (no Sortie or /SCH sets, see Known issues) |
 | `shared/data/job_abilities/PLD_JA_DATABASE.lua` + `pld/*.lua` | 13 + 194 | JA descriptions for `ability_message_handler` (messages only) |
 
 Live copies (gitignored): `Tetsouo/Tetsouo_PLD.lua` differs from the template only in
 comments, `@file` / `@author`, the keybind error text and `init_gear_sets`, which
-includes `sets/pld/pld_sets.lua`; `_master/Tetsouo/entry/Tetsouo_PLD.lua` is
-identical to it. `Tetsouo/sets/pld/` is modular (`pld_sets.lua` + `armor`, `capes`,
-`weapons`, mirrored in `_master/Tetsouo/sets/pld/`). `_master/Tetsouo/config/pld/`
+includes `pld/pld_sets.lua`; `_master/Tetsouo/entry/Tetsouo_PLD.lua` is
+identical to it. `Tetsouo/pld/` is modular (`pld_sets.lua` + `armor`, `capes`,
+`weapons`, mirrored in `_master/Tetsouo/pld/`). `_master/Tetsouo/pld/`
 holds only `PLD_MACROBOOK.lua` (other book numbers) and `PLD_REFILL.lua`.
-`_master/Kaories/config/pld/` holds keybinds (with the old `^numpad7` SneakInviAOE
+`_master/Kaories/pld/` holds keybinds (with the old `^numpad7` SneakInviAOE
 bind on /SCH), lockstyle 4, macrobook, refill and an older `PLD_STATES.lua` without
 the weaponskill slots or the /SCH profile. Full comparison:
 [characters and templates](../architecture/characters-and-templates.md).
@@ -103,7 +103,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup() (PLDWSConfig, states, WS slots if modules exist, ammo lock, keybinds, UI, JCM, macrobook/lockstyle, dualbox)
-    M->>E: init_gear_sets() -> include sets/pld_sets.lua
+    M->>E: init_gear_sets() -> include pld/pld_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, PLD_TP_CONFIG (sets _G.PLDTPConfig), _G.BluMagicConfig
     E->>E: JobChangeManager.cancel_all()
@@ -115,14 +115,14 @@ sequenceDiagram
 `user_setup()` (`Tetsouo_PLD.lua`):
 
 1. `_G.PLDWSConfig = require(... PLD_WS_CONFIG)`, then
-   `require('Tetsouo/config/pld/PLD_STATES').configure()` creates every state and
+   `require('Tetsouo/pld/PLD_STATES').configure()` creates every state and
    ends with `apply_hybrid_profile(state.HybridMode.value)`.
    `_G.pld_rebuild_ws_slots()` runs only when the job modules already exist (a
    subjob change re-runs `user_setup` in the same sandbox); on a cold load
    `get_sets` calls it after including the facade. Then
    `AmpullaLock.apply(state.HybridMode.value)` gives back an ammo lock left by a
    stance that is no longer selected.
-2. `require('Tetsouo/config/pld/PLD_KEYBINDS')` (a `KeybindManager` module) into
+2. `require('Tetsouo/pld/PLD_KEYBINDS')` (a `KeybindManager` module) into
    the global `PLDKeybinds`, then `bind_all()`: `KeybindManager` clears keys no
    longer wanted, binds the ones whose `subjob` / `exclude_subjob` / `visible`
    rules apply, then `show_intro()`. A failed require prints
@@ -472,7 +472,7 @@ flowchart TD
 
 Created by `PLDStates.configure()` on every `user_setup()`. Keys from
 `PLD_KEYBINDS.lua`; `^` = Ctrl, `#` = Apps. `#numpad0` (AutoMedicine) comes from
-the character's `config/COMMON_KEYBINDS.lua`.
+the character's `common/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -529,8 +529,8 @@ above the `RECAST_CONFIG` tolerance (global `is_on_cooldown`).
 
 ## Set names the code looks up
 
-T = `_master/sets/pld_sets.lua`, K = `_master/Kaories/sets/pld_sets.lua`,
-L = `Tetsouo/sets/pld/pld_sets.lua` (weapon sets in `Tetsouo/sets/pld/weapons.lua`).
+T = `_master/sets/pld_sets.lua`, K = `_master/Kaories/pld/pld_sets.lua`,
+L = `Tetsouo/pld/pld_sets.lua` (weapon sets in `Tetsouo/pld/weapons.lua`).
 The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 
 | Set | Looked up by | T | K | L |
@@ -572,18 +572,18 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/pld/PLD_STATES.lua` | see states | file | entry `user_setup` (path hard-coded `Tetsouo/...`, rewritten by the clone script) |
+| `<char>/pld/PLD_STATES.lua` | see states | file | entry `user_setup` (path hard-coded `Tetsouo/...`, rewritten by the clone script) |
 | `SORTIE_RUNE_OPTIONS`, `SORTIE_WEAPON_OPTIONS`, `SCH_WEAPON_OPTIONS` | 5 runes, 2 weapons, 2 weapons | `PLD_STATES.lua` | `install_profile` |
-| `<char>/config/pld/PLD_KEYBINDS.lua` | 9 entries | file | entry `user_setup`, `file_unload`, HUD |
-| `<char>/config/pld/PLD_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/config/pld/PLD_HUD.lua` | empty lists | file | HUD ([UI overlay](../systems/ui-overlay.md)); rewritten by `//gs c ui order` / `roworder` |
-| `<char>/config/pld/PLD_WS_CONFIG.lua` -> `_G.PLDWSConfig` | 2 slots, 3 swords | file (no pcall: a missing file aborts `user_setup`) | `configure`, `rebuild_ws_slots` |
-| `<char>/config/pld/PLD_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (Kaories overlay 4) | file; factory fallback 1 (`PLD_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
-| `<char>/config/pld/PLD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt][sub]` | book 15 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/config/pld/PLD_TP_CONFIG.lua` -> `_G.PLDTPConfig` | Moonshade 250, Sequence 500 | file | `PLD_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
-| `<char>/config/pld/PLD_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | `aoe_manager.lua` (captured when the module is first required) |
-| `<char>/config/pld/PLD_REFILL.lua` | not in the template (overlay only) | player-created | refill system (fallback list without it) |
-| `<char>/config/RECAST_CONFIG.lua` | tolerance | shared | `is_on_cooldown` in aoe/rune managers, `is_recast_ready` in AbilityHelper |
+| `<char>/pld/PLD_KEYBINDS.lua` | 9 entries | file | entry `user_setup`, `file_unload`, HUD |
+| `<char>/pld/PLD_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/pld/PLD_HUD.lua` | empty lists | file | HUD ([UI overlay](../systems/ui-overlay.md)); rewritten by `//gs c ui order` / `roworder` |
+| `<char>/pld/PLD_WS_CONFIG.lua` -> `_G.PLDWSConfig` | 2 slots, 3 swords | file (no pcall: a missing file aborts `user_setup`) | `configure`, `rebuild_ws_slots` |
+| `<char>/pld/PLD_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (Kaories overlay 4) | file; factory fallback 1 (`PLD_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
+| `<char>/pld/PLD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt][sub]` | book 15 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/pld/PLD_TP_CONFIG.lua` -> `_G.PLDTPConfig` | Moonshade 250, Sequence 500 | file | `PLD_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
+| `<char>/pld/PLD_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | `aoe_manager.lua` (captured when the module is first required) |
+| `<char>/pld/PLD_REFILL.lua` | not in the template (overlay only) | player-created | refill system (fallback list without it) |
+| `<char>/common/RECAST_CONFIG.lua` | tolerance | shared | `is_on_cooldown` in aoe/rune managers, `is_recast_ready` in AbilityHelper |
 | `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry |
 
 ## State & lifetime

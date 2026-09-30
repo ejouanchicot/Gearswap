@@ -76,7 +76,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup(): states, keybinds, UI, JCM, macrobook/lockstyle, dualbox
-    M->>E: init_gear_sets() -> include sets/drk_sets.lua
+    M->>E: init_gear_sets() -> include drk/drk_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, require DRK_TP_CONFIG
     E->>E: JobChangeManager.cancel_all()
@@ -229,7 +229,7 @@ the template defines none, so the flags have no visible effect out of the box.
 
 Created by `DRKStates.configure()` on every load. Keybinds from
 `DRK_KEYBINDS.lua`; `#numpad0` (AutoMedicine) and the other common keys come
-from the character's `config/COMMON_KEYBINDS.lua`.
+from the character's `common/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -292,16 +292,16 @@ invisible to Mote.
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/drk/DRK_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/config/drk/DRK_KEYBINDS.lua` | 3 binds (+ common keys, optional states) | file | entry `user_setup`, `file_unload` |
-| `<char>/config/drk/DRK_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
-| `<char>/config/drk/DRK_HUD.lua` | empty orders | file | `hud_job_config.lua` |
-| `<char>/config/drk/DRK_TP_CONFIG.lua` | Moonshade ear1 +250; Anguta +500 (not a `MainWeapon` value) | file | `WSPrecastHandler` via `_G.DRKTPConfig` (captured on first action) |
-| `<char>/config/drk/DRK_LOCKSTYLE.lua` | default 1; SAM/WAR 1, NIN 2, DNC 3 | file; factory fallback 1 | `LockstyleManager` through `get_style` |
-| `<char>/config/drk/DRK_MACROBOOK.lua` | book 1, page 1 (SAM), 2 (WAR), 3 (NIN), 4 (DNC); dual-box RDM book 2, COR 3, GEO 4 | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/config/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry |
-| `<char>/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry chunk |
-| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
+| `<char>/drk/DRK_STATES.lua` | see states | file | entry `user_setup` |
+| `<char>/drk/DRK_KEYBINDS.lua` | 3 binds (+ common keys, optional states) | file | entry `user_setup`, `file_unload` |
+| `<char>/drk/DRK_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
+| `<char>/drk/DRK_HUD.lua` | empty orders | file | `hud_job_config.lua` |
+| `<char>/drk/DRK_TP_CONFIG.lua` | Moonshade ear1 +250; Anguta +500 (not a `MainWeapon` value) | file | `WSPrecastHandler` via `_G.DRKTPConfig` (captured on first action) |
+| `<char>/drk/DRK_LOCKSTYLE.lua` | default 1; SAM/WAR 1, NIN 2, DNC 3 | file; factory fallback 1 | `LockstyleManager` through `get_style` |
+| `<char>/drk/DRK_MACROBOOK.lua` | book 1, page 1 (SAM), 2 (WAR), 3 (NIN), 4 (DNC); dual-box RDM book 2, COR 3, GEO 4 | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/common/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry |
+| `<char>/common/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry chunk |
+| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
 
 ## State & lifetime
 

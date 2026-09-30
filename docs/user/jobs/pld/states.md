@@ -77,7 +77,7 @@ Savage Blade / Chant du Cygne.
 
 ## Files
 
-In `<YourChar>/config/pld/`:
+In `<YourChar>/pld/`:
 
 | File | Content |
 |---|---|

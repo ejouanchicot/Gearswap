@@ -27,7 +27,7 @@ Everything below was re-read on disk on 2026-09-28. Since the previous revision 
 | `shared/utils/warp/database/warp_database_cities_chocobo_conquest.lua` | 97 | Outpost cities, expansion cities, stables, conquest (16) |
 | `shared/utils/warp/database/warp_database_adoulin_special_mechanics.lua` | 109 | Adoulin frontier, special locations, Nexus Cape, Tidal Talisman (31) |
 | `shared/utils/mount/mount_manager.lua` | 160 | `//gs c mount`: dismount or summon a random owned mount |
-| `<Character>/config/WARP_ITEMS_OWNED.lua` (live, gitignored) | 10 (Tetsouo) | Owned warp items written by `//gs c wo scan`; read by the wardrobe organizer only |
+| `<Character>/saved/WARP_ITEMS_OWNED.lua` (live, gitignored) | 10 (Tetsouo) | Owned warp items written by `//gs c wo scan`; read by the wardrobe organizer only |
 
 Not owned by this area but on the path: `shared/utils/core/COMMON_COMMANDS.lua` (routing, `debugwarp`, `mount`), `shared/utils/core/INIT_SYSTEMS.lua` (the deferred +0.5 s block that calls `WarpInit.init()`), `shared/utils/core/DEBUG_COMMANDS.lua` (`handle_debugwarp`), `shared/utils/messages/formatters/system/message_warp.lua` (711 lines, every warp message; templates in `shared/utils/messages/data/systems/warp_messages.lua`), `shared/utils/wardrobe/lib/warp_owned.lua` (writes and reads `WARP_ITEMS_OWNED.lua`), `shared/utils/debug/system_checker.lua` (`check_warp`).
 
@@ -387,7 +387,7 @@ There is no per-character warp configuration. All tuning is constants:
 - `spell_caster.lua:24-42` spell levels; `warp_detector.lua:41-59` (`WARP_SPELLS`) spell names and durations, `:32-38` name patterns; `cast_helpers.lua:72-83` ring ids.
 - `mount_manager.lua:28-39` fallback mount, packet id and offset, mounted statuses.
 
-`WARP_ITEMS_OWNED.lua` (`data/<char>/config/`) is written by `WarpOwned.save()` (`wardrobe/lib/warp_owned.lua:98`) and read by `WarpOwned.load()` (`:39`) for the wardrobe organizer's keep list. The warp system itself never reads it. Live today: Tetsouo `Delegate's Garb`, `Dim. Ring (Holla)`, `Instant Warp`, `Nexus Cape`, `Warp Ring`; Kaories `Dim. Ring (Holla)`, `Nexus Cape`, `Warp Ring`.
+`WARP_ITEMS_OWNED.lua` (`data/<char>/common/`) is written by `WarpOwned.save()` (`wardrobe/lib/warp_owned.lua:98`) and read by `WarpOwned.load()` (`:39`) for the wardrobe organizer's keep list. The warp system itself never reads it. Live today: Tetsouo `Delegate's Garb`, `Dim. Ring (Holla)`, `Instant Warp`, `Nexus Cape`, `Warp Ring`; Kaories `Dim. Ring (Holla)`, `Nexus Cape`, `Warp Ring`.
 
 Destination database (first entry is what the command uses; `act` is the database `cast_delay`; the code only adds it to the post-use window, `use_now` in `item_user.lua`, while the wait reads the activation delay from extdata):
 

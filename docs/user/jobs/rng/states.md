@@ -62,7 +62,7 @@ Ranger has no command of its own. The common commands work as on every job:
 
 ## Files
 
-In `<YourChar>/config/rng/`: `RNG_STATES.lua` (modes and defaults),
+In `<YourChar>/rng/`: `RNG_STATES.lua` (modes and defaults),
 `RNG_KEYBINDS.lua` (keys), `RNG_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `RNG_TP_CONFIG.lua` (TP bonus),
 `RNG_LOCKSTYLE.lua` (lockstyle 1), `RNG_MACROBOOK.lua` (book 1, page 1). See

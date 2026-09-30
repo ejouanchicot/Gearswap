@@ -10,7 +10,7 @@ it. Words you do not know are in the [glossary](glossary.md).
 GearSwap is a Windower addon that changes your equipment for you. It reads
 one file per job, `<YourName>/<YourName>_<JOB>.lua`, which loads:
 
-- **your files** in `<YourName>/`: your gear (`sets/<job>_sets.lua`) and your
+- **your files** in `<YourName>/`: your gear (`<job>/<job>_sets.lua`) and your
   settings (`config/`);
 - **the shared code** in `shared/`, the same for every character and every
   job: it decides which of your sets to wear, and when.
@@ -45,7 +45,7 @@ is **cancelled**: no gear moves and a chat line says why.
    Panacea for Paralysis before an ability.
 2. **Is it ready?** An ability or spell still on recast is cancelled with the
    time left. A recast of 2 s or less counts as ready (the game and GearSwap
-   do not agree to the tenth of a second: `config/RECAST_CONFIG.lua`).
+   do not agree to the tenth of a second: `common/RECAST_CONFIG.lua`).
    Some jobs step a spell down instead of cancelling it: a Cure, a nuke or an
    enfeeble on recast (or too expensive) becomes a lower tier
    ([auto-tier](../features/auto-tier-system.md)).
@@ -62,7 +62,7 @@ is **cancelled**: no gear moves and a chat line says why.
 
 Some jobs also fire a job ability for you just before the action (for
 example Entrust before an Indi- spell on a party member). Most of these are
-off until you turn them on in `config/AUTO_ABILITIES.lua`.
+off until you turn them on in `common/AUTO_ABILITIES.lua`.
 
 ### 2. Midcast: the effect set (spells and ranged attacks)
 
@@ -141,7 +141,7 @@ job's modes are on its page ([jobs](../jobs/README.md)).
   key does, you can type or put in a macro (`/console gs c ...`).
 - Every mode goes back to its default on each load (job change, subjob
   change, reload), except Auto Medicine. Change a default in
-  `config/<job>/<JOB>_STATES.lua`.
+  `<job>/<JOB>_STATES.lua`.
 - Your own modes, with their own key and gear, go in `<JOB>_CUSTOM.lua`
   ([keybinds](keybinds.md#your-own-modes-job_customlua)).
 

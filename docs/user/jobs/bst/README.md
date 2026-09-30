@@ -8,7 +8,7 @@ command and every shared feature that works on BST, and where your files are.
 
 Keys are written Ctrl = `^`, Alt = `!`, Apps (the menu key) = `#`, Win = `@`.
 Everything below comes from the provided template. After cloning, your own copies
-live in `<YourName>/config/bst/`: if you changed them, your files win.
+live in `<YourName>/bst/`: if you changed them, your files win.
 
 ## Overview
 
@@ -188,7 +188,7 @@ its jug, `sets['Name (Species)'] = {ammo = '<jug>'}`, in your sets file.
 
 ## Configuration files for this job
 
-All in `<YourName>/config/bst/` (plain Lua files; `//gs c reload` after an edit).
+All in `<YourName>/bst/` (plain Lua files; `//gs c reload` after an edit).
 
 | File | What it holds |
 |---|---|
@@ -203,9 +203,9 @@ All in `<YourName>/config/bst/` (plain Lua files; `//gs c reload` after an edit)
 | `BST_REFILL.lua` | Optional: what `//gs c rf` restocks on BST (not in the generic template; without it a default list is used) |
 | `BST_ECOSYSTEM_DATA.lua` | Ecosystem strengths and weaknesses. Nothing reads it today |
 
-Your sets are in `<YourName>/sets/bst_sets.lua`. Files shared by every job
+Your sets are in `<YourName>/bst/bst_sets.lua`. Files shared by every job
 (common keys, Combat Mode, Treasure Mode, belts, Dual Wield...) are in
-`<YourName>/config/`: see the [configuration guide](../../guides/configuration.md).
+`<YourName>/common/`: see the [configuration guide](../../guides/configuration.md).
 
 ## See also
 

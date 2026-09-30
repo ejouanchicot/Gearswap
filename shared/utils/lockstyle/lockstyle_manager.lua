@@ -236,7 +236,7 @@ end
 --- Load per-job lockstyle config, or build a minimal fallback that always
 --- returns `default_lockstyle` so callers can rely on .default / .get_style.
 local function load_config_or_fallback(config_path, default_lockstyle)
-    local ok, cfg = pcall(require, config_path)
+    local ok, cfg = pcall(require, require('shared/utils/core/char_paths').legacy_module(config_path))
     if ok and cfg then return cfg end
     return {
         default   = default_lockstyle,

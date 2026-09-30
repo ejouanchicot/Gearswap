@@ -46,7 +46,7 @@ Both buffs are used up by the next dark spell, so the project follows them close
 
 | File | Role |
 |---|---|
-| `<YourChar>/sets/drk_sets.lua` | `sets.precast.JA`, `sets.buff['Dark Seal']`, `sets.buff['Nether Void']`, engaged variants |
+| `<YourChar>/drk/drk_sets.lua` | `sets.precast.JA`, `sets.buff['Dark Seal']`, `sets.buff['Nether Void']`, engaged variants |
 | `shared/jobs/drk/functions/DRK_PRECAST.lua` | Raises the pending flags |
 | `shared/jobs/drk/functions/DRK_AFTERCAST.lua` | Confirms or drops them |
 | `shared/jobs/drk/functions/DRK_BUFFS.lua` | Clears them when the buff wears |

@@ -58,7 +58,7 @@ pick `Tag` or `Full`. The job's set file needs a `sets.TreasureHunter`.
 
 **No lockstyle.**
 It is sent 8 s after a load. Check the number in
-`config/<job>/<JOB>_LOCKSTYLE.lua` exists in game (`/lockstyleset <n>` by
+`<job>/<JOB>_LOCKSTYLE.lua` exists in game (`/lockstyleset <n>` by
 hand). `//gs c ls` sends it again.
 
 **DressUp gets unloaded and loaded.**

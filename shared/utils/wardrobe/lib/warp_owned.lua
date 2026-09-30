@@ -31,7 +31,7 @@ local WarpOwned = {}
 function WarpOwned.path()
     local p = windower.ffxi.get_player()
     if not p or not p.name then return nil end
-    return windower.addon_path .. 'data/' .. p.name .. '/config/WARP_ITEMS_OWNED.lua'
+    return require('shared/utils/core/char_paths').writable('saved', 'WARP_ITEMS_OWNED.lua', nil, p.name)
 end
 
 --- Read the owned-items list written by save().

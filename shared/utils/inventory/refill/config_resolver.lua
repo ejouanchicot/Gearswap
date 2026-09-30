@@ -2,7 +2,7 @@
 ---   Config Resolver - Load per-character refill configs and resolve foreign items
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Per-character config files at:
----     <charname>/config/<job>/<JOB>_REFILL.lua
+---     <charname>/<job>/<JOB>_REFILL.lua (config/<job>/ before 2026-09-30)
 ---
 ---   Each file returns a table with:
 ---     .default = { {name='X', target=N}, ... }
@@ -10,14 +10,14 @@
 ---     .store_bag   = 'case'                   -- optional, where surplus goes
 ---     .source_bags = {'case', 'sack'}         -- optional, where pulls come from
 ---   Bags: case, sack, satchel, wardrobe1..wardrobe8. Both fields can also
----   sit in <charname>/config/REFILL_CONFIG.lua, for every list at once.
+---   sit in <charname>/common/REFILL_CONFIG.lua, for every list at once.
 ---
 ---   Item `name` can be a string (single item) or a list of strings:
 ---     { name = {'Squid Sushi +1', 'Squid Sushi'}, target = 12 }
 ---   The list is tried in order: prefer +1, fall back to base.
 ---
 ---   CRAFT MODE override: when CraftManager.is_active() is true, uses
----   <charname>/config/craft/CRAFT_REFILL.lua instead so inventory gets
+---   <charname>/common/craft/CRAFT_REFILL.lua instead so inventory gets
 ---   craft-relevant items and everything else is detected as foreign.
 ---
 ---   Public API:
@@ -78,7 +78,8 @@ local DEFAULT_SOURCE_BAGS = {'case', 'sack', 'satchel'}
 ---   INTERNAL HELPERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Scan <charname>/config/ for any *_REFILL.lua and load them.
+--- Scan a character folder for every *_REFILL.lua: <job>/ and common/craft/
+--- (layout since 2026-09-30), config/<job>/ and config/craft/ (before).
 --- Returns a list of loaded config tables, regardless of which job they target.
 --- @param char_name string
 --- @return table list of {char=string, job=string, cfg=table}
@@ -86,26 +87,23 @@ local function load_char_refill_configs(char_name)
     if not char_name then
         return {}
     end
-    local configs = {}
-    local config_dir = windower.addon_path .. 'data/' .. char_name .. '/config/'
-    local subdirs = windower.get_dir(config_dir)
-    if not subdirs then
-        return {}
+    local configs, seen = {}, {}
+    local base = windower.addon_path .. 'data/' .. char_name .. '/'
+    local folders = {'common/craft'}
+    for _, root in ipairs({'', 'config/'}) do
+        for _, entry in ipairs(windower.get_dir(base .. root) or {}) do
+            if not entry:match('%.') then folders[#folders + 1] = root .. entry end
+        end
     end
-
-    for _, entry in ipairs(subdirs) do
-        -- entry can be a subdir name (job folder) or a .lua file at root
-        local job_path = config_dir .. entry .. '/'
-        local files = windower.get_dir(job_path)
-        if files then
-            for _, fname in ipairs(files) do
-                local job = fname:match('^(%w+)_REFILL%.lua$')
-                if job then
-                    local mod = char_name .. '/config/' .. entry .. '/' .. job .. '_REFILL'
-                    local ok, cfg = pcall(require, mod)
-                    if ok and type(cfg) == 'table' then
-                        table.insert(configs, {char = char_name, job = job:upper(), cfg = cfg})
-                    end
+    for _, folder in ipairs(folders) do
+        for _, fname in ipairs(windower.get_dir(base .. folder .. '/') or {}) do
+            local job = fname:match('^(%w+)_REFILL%.lua$')
+            local mod = job and (char_name .. '/' .. folder .. '/' .. job .. '_REFILL')
+            if mod and not seen[mod] then
+                seen[mod] = true
+                local ok, cfg = pcall(require, mod)
+                if ok and type(cfg) == 'table' then
+                    table.insert(configs, {char = char_name, job = job:upper(), cfg = cfg})
                 end
             end
         end
@@ -201,7 +199,7 @@ end
 --- @param char string Character name
 --- @return table|nil
 local function load_refill_config(char)
-    local ok, cfg = pcall(require, char .. '/config/REFILL_CONFIG')
+    local ok, cfg = require('shared/utils/core/char_paths').load('common', 'REFILL_CONFIG', nil, char)
     return (ok and type(cfg) == 'table') and cfg or nil
 end
 
@@ -239,7 +237,7 @@ end
 local function craft_list(char)
     local CraftManager = _G.CraftManager
     if not (CraftManager and CraftManager.is_active()) then return nil end
-    local ok, cfg = pcall(require, char .. '/config/craft/CRAFT_REFILL')
+    local ok, cfg = require('shared/utils/core/char_paths').load('craft', 'CRAFT_REFILL', nil, char)
     if not (ok and type(cfg) == 'table' and cfg.default) then return nil end
     local name = CraftManager.active_name()
     return cfg.default, name and ('CRAFT (' .. name .. ')') or 'CRAFT', cfg
@@ -277,7 +275,7 @@ function ConfigResolver.resolve_list_for_player()
 
     local job = p.main_job:upper()
     local sub = (p.sub_job and p.sub_job ~= 'NON') and p.sub_job:upper() or nil
-    local mod_path = char .. '/config/' .. job:lower() .. '/' .. job .. '_REFILL'
+    local mod_path = require('shared/utils/core/char_paths').module('job', job .. '_REFILL', job, char)
     local ok, cfg = pcall(require, mod_path)
     if not ok or type(cfg) ~= 'table' then
         return FALLBACK_LIST, ('fallback (no %s)'):format(mod_path), resolve_bags(nil, global_cfg)

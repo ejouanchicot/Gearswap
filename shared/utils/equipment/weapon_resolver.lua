@@ -33,7 +33,7 @@ local config_loaded, plain_enabled = false, false
 local function enabled()
     if not config_loaded then
         config_loaded = true
-        local ok, cfg = pcall(require, 'config/WEAPON_CONFIG')
+        local ok, cfg = require('shared/utils/core/char_paths').load('common', 'WEAPON_CONFIG')
         plain_enabled = ok and type(cfg) == 'table' and cfg.equip_without_set == true
     end
     return plain_enabled

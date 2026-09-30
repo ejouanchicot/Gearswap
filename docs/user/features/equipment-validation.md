@@ -53,7 +53,7 @@ the loaded job's gear in wardrobes 1-2, the rest pushed to wardrobes 8, 6, 5,
 | `wo reset` | Clear a run left stuck after a crash, and release the slots |
 
 Type the words in lowercase: anything it does not recognise (even `Preview`)
-runs a full organize. The bags are set in `config/WARDROBE_CONFIG.lua`, see
+runs a full organize. The bags are set in `common/WARDROBE_CONFIG.lua`, see
 [configuration](../guides/configuration.md#wardrobes-wardrobe_configlua-optional).
 
 ## `//gs c rf` - refill
@@ -61,7 +61,7 @@ runs a full organize. The bags are set in `config/WARDROBE_CONFIG.lua`, see
 Tops up the consumables in your inventory from the Mog Case, Mog Sack and Mog
 Satchel (in that order), and
 puts the surplus back. The list comes from
-`config/<job>/<JOB>_REFILL.lua` (you write it; see
+`<job>/<JOB>_REFILL.lua` (you write it; see
 [configuration](../guides/configuration.md#refill-job_refilllua)). `rf` is
 also sent to your other GearSwap instances.
 

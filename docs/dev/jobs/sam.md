@@ -84,7 +84,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup(): states, keybinds, UI, JCM, macrobook/lockstyle, dualbox
-    M->>E: init_gear_sets() -> include sets/sam_sets.lua
+    M->>E: init_gear_sets() -> include sam/sam_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.UIConfig, _G.RECAST_CONFIG, _G.SAMTPConfig
     E->>E: JobChangeManager.cancel_all()
@@ -225,7 +225,7 @@ no midcast set in the template).
 
 `SAM_STATUS.lua` `auto_hasso(newStatus)`: on `Engaged`, when
 `AutoOptions.on('sam_hasso')` is true (the character's
-`config/AUTO_ABILITIES.lua`) and neither Hasso nor Seigan is up, it sends the
+`common/AUTO_ABILITIES.lua`) and neither Hasso nor Seigan is up, it sends the
 chosen stance (`state.Stance`: Seigan when Seigan, else Hasso) once
 `AbilityHelper.is_ability_ready` says it is ready. The option keeps its old
 name. Until 2026-09-28 it always sent Hasso, which then switched a Seigan
@@ -305,17 +305,17 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/sam/SAM_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/config/sam/SAM_KEYBINDS.lua` | 4 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
-| `<char>/config/sam/SAM_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
-| `<char>/config/sam/SAM_HUD.lua` | empty orders | file | `hud_job_config.lua` |
-| `<char>/config/sam/SAM_TP_CONFIG.lua` | `hagakure_jp_gifts = 0`; Moonshade +250, Mpaca's Cap +200; Dojikiri Yasutsuna +500 | file | `WSPrecastHandler` via `_G.SAMTPConfig`; `TPBonusCalculator` adds `get_hagakure_bonus()` (1000 + 10 x gifts while Hagakure is up) |
-| `<char>/config/sam/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager` uses `default` only (no `get_style`) |
-| `<char>/config/sam/SAM_MACROBOOK.lua` | book 2 page 1 for every listed subjob | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/config/AUTO_ABILITIES.lua` `sam_hasso` | false | file | `SAM_STATUS.lua` `auto_hasso` |
-| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
-| `<char>/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
-| `<char>/config/RECAST_CONFIG.lua` | tolerance 2.0 | shared | `CooldownChecker`, `is_recast_ready` |
+| `<char>/sam/SAM_STATES.lua` | see states | file | entry `user_setup` |
+| `<char>/sam/SAM_KEYBINDS.lua` | 4 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
+| `<char>/sam/SAM_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
+| `<char>/sam/SAM_HUD.lua` | empty orders | file | `hud_job_config.lua` |
+| `<char>/sam/SAM_TP_CONFIG.lua` | `hagakure_jp_gifts = 0`; Moonshade +250, Mpaca's Cap +200; Dojikiri Yasutsuna +500 | file | `WSPrecastHandler` via `_G.SAMTPConfig`; `TPBonusCalculator` adds `get_hagakure_bonus()` (1000 + 10 x gifts while Hagakure is up) |
+| `<char>/sam/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager` uses `default` only (no `get_style`) |
+| `<char>/sam/SAM_MACROBOOK.lua` | book 2 page 1 for every listed subjob | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/common/AUTO_ABILITIES.lua` `sam_hasso` | false | file | `SAM_STATUS.lua` `auto_hasso` |
+| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
+| `<char>/common/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
+| `<char>/common/RECAST_CONFIG.lua` | tolerance 2.0 | shared | `CooldownChecker`, `is_recast_ready` |
 
 ## State & lifetime
 

@@ -311,15 +311,27 @@ def parse_character_db(db_path):
 # re-clone writes DUALBOX_CONFIG.lua from the role asked for, and an old role
 # file would silently override it.
 KEPT_ON_RECLONE = [
+    # layout of 2026-09-30 (migrate_layout.py)
+    ('saved', 'ui_settings.lua'),
+    ('saved', 'message_modes.lua'),
+    ('saved', 'alt_window.lua'),
+    ('saved', 'alt_state.lua'),
+    ('saved', 'WARP_ITEMS_OWNED.lua'),
+    ('saved', 'temp_binds.lua'),
+    ('common', 'combat_mode.lua'),
+    ('common', 'treasure_mode.lua'),  # //gs c th show | hide | key
+    ('common', 'STEALTH_CONFIG.lua'),
+    ('*', '*_HUD.lua'),             # per-job HUD row order (//gs c ui roworder)
+    # the same files in a folder cloned before
     ('config', 'ui_settings.lua'),
     ('config', 'message_modes.lua'),
     ('config', 'alt_window.lua'),
     ('config', 'alt_state.lua'),
     ('config', 'WARP_ITEMS_OWNED.lua'),
     ('config', 'combat_mode.lua'),
-    ('config', 'treasure_mode.lua'),  # //gs c th show | hide | key
+    ('config', 'treasure_mode.lua'),
     ('config', 'STEALTH_CONFIG.lua'),
-    ('config', '*', '*_HUD.lua'),   # per-job HUD row order (//gs c ui roworder)
+    ('config', '*', '*_HUD.lua'),
     ('temp_binds.lua',),
 ]
 
@@ -436,12 +448,14 @@ class SmartCharacterCloner:
         return backup_dir
 
     def _restore_kept_files(self, backup_dir, target_dir):
-        """Copy the files written in game back from the backup."""
+        """Copy the files written in game back from the backup, to their place
+        in the current layout (a backup from an older clone uses the old one)."""
+        from migrate_layout import new_place
         for parts in KEPT_ON_RECLONE:
             for src in backup_dir.glob('/'.join(parts)):
                 if src.is_file():
                     rel = src.relative_to(backup_dir)
-                    dst = target_dir / rel
+                    dst = target_dir / (new_place(rel.as_posix()) or rel.as_posix())
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dst)
                     print(self.t['restored'].format(rel.as_posix()))
@@ -631,13 +645,9 @@ class SmartCharacterCloner:
         # template-name form first, then fall back to Tetsouo-prefixed form
         # (since the overlay's file may use the source name as the prefix).
         def find_entry_src(job_upper):
-            # Try overlay with TEMPLATE_NAME prefix
-            if self.override_dir is not None:
-                owner = self.override_dir.name
-                cand = self.override_dir / 'entry' / f'{owner}_{job_upper}.lua'
-                if cand.exists():
-                    return cand, f'{owner}_{job_upper}.lua'
-            # Try master with Tetsouo prefix (the canonical generic template)
+            # Every entry is the one-line template: the code is in
+            # shared/entry/<job>.lua, the same for every character, so an
+            # overlay has no entry of its own any more.
             cand = self.master_dir / 'entry' / f'{self.DEFAULT_SOURCE}_{job_upper}.lua'
             if cand.exists():
                 return cand, f'{self.DEFAULT_SOURCE}_{job_upper}.lua'
@@ -785,8 +795,14 @@ class SmartCharacterCloner:
         self._create_region_config(target_dir, target_name, region)
         self.count_configs += 2  # DUALBOX + REGION
 
-        # After the rename: these already carry the right names, including
-        # the other characters' (an alt_state follow leader, for instance).
+        # ── Step 7: Layout of 2026-09-30 (common/, <job>/, saved/) ─────
+        from migrate_layout import migrate
+        migrate(target_name, backup=False, quiet=True, base_dir=str(self.base_dir))
+        print(self.t['copy_ok'].format(f"{target_name}/common/, <job>/, saved/"))
+
+        # After the rename and the layout: these already carry the right
+        # names, including the other characters' (an alt_state follow
+        # leader, for instance).
         if backup_dir is not None:
             self._restore_kept_files(backup_dir, target_dir)
 

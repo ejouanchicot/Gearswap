@@ -58,7 +58,7 @@ the job.
 | `f12` | Mote: put your current gear back on and print the modes | always | not on the HUD |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | once you make one | listed by `tb list` |
 
-- The six common keys come from your `config/COMMON_KEYBINDS.lua`.
+- The six common keys come from your `common/COMMON_KEYBINDS.lua`.
 - Your own keys from `MNK_CUSTOM.lua` are added on top (the template file has
   only commented examples). `//gs c kc` lists every key conflict.
 
@@ -93,7 +93,7 @@ each weaponskill with its Impetus / Footwork layers.
 
 ## Configuration files for this job
 
-In `<YourName>/config/mnk/`:
+In `<YourName>/mnk/`:
 
 | File | What it sets |
 |---|---|
@@ -105,7 +105,7 @@ In `<YourName>/config/mnk/`:
 | `MNK_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |
 | `MNK_HUD.lua` | Order of this job's HUD sections and rows |
 
-Sets: `<YourName>/sets/mnk_sets.lua`, see [sets.md](sets.md).
+Sets: `<YourName>/mnk/mnk_sets.lua`, see [sets.md](sets.md).
 
 ## Not done by the job
 

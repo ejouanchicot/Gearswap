@@ -22,7 +22,7 @@ command casts the result on the target you pick. On top of that:
   have their own gear hook (see [sets.md](sets.md)).
 
 Everything below comes from the provided template. After cloning, your copies
-are in `<YourName>/config/blm/`; if you changed them, your files win.
+are in `<YourName>/blm/`; if you changed them, your files win.
 
 ## All keys on this job
 
@@ -71,7 +71,7 @@ lists are in [states.md](states.md).
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `BLM_CUSTOM.lua` (empty in the template) | yes |
 
-The common keys come from `<YourName>/config/COMMON_KEYBINDS.lua`: edit that
+The common keys come from `<YourName>/common/COMMON_KEYBINDS.lua`: edit that
 file to change them for every job at once. Combat Mode needs no extra key on
 BLM: it is native here, on Ctrl+Numpad8.
 
@@ -173,7 +173,7 @@ What the project's shared systems do on BLM, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, `SneakInviAOE` Off stops it from spending a stratagem on your group |
 | Warp | Every warp command. BLM casts Warp, Warp II, Escape and Retrace itself; the other destinations use rings and items |
-| Refill | `//gs c rf` restocks from `<YourName>/config/blm/BLM_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
+| Refill | `//gs c rf` restocks from `<YourName>/blm/BLM_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft`; turning Combat Mode Off does not free the slots a craft set holds |
 | Your own modes and gear rules | `BLM_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Weapons without a set | `MainWeapon` / `SubWeapon` (Hvergelmir / Alber Strap) do nothing unless you write `sets.Hvergelmir` / `sets['Alber Strap']`, or turn on `equip_without_set` in `WEAPON_CONFIG.lua` |
@@ -196,7 +196,7 @@ auto-tier (WHM).
 
 ## Configuration files for this job
 
-In `<YourName>/config/blm/`:
+In `<YourName>/blm/`:
 
 | File | What you set there |
 |---|---|
@@ -211,11 +211,11 @@ In `<YourName>/config/blm/`:
 | `BLM_TP_CONFIG.lua` | Moonshade Earring entry; not read by the weaponskill TP code today |
 | `BLM_REFILL.lua` | Optional, not in the template: items `//gs c rf` keeps in your inventory |
 
-Shared by every job, in `<YourName>/config/`: `COMMON_KEYBINDS.lua`,
+Shared by every job, in `<YourName>/common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua` and `treasure_mode.lua` (written by their commands),
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
 `DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`. Your sets are in
-`<YourName>/sets/blm_sets.lua`. See [configuration](../../guides/configuration.md).
+`<YourName>/blm/blm_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More
 

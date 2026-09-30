@@ -73,8 +73,8 @@ function, not a line number.
 
 Character copies are gitignored. The author's overlay `_master/Tetsouo/`
 holds its own `entry/Tetsouo_BLM.lua` (includes the modular
-`sets/blm/blm_sets.lua`), `config/blm/BLM_MACROBOOK.lua` (book 7),
-`config/blm/BLM_REFILL.lua` and `sets/blm/{blm_sets,armor,capes,weapons}.lua`.
+`blm/blm_sets.lua`), `blm/BLM_MACROBOOK.lua` (book 7),
+`blm/BLM_REFILL.lua` and `blm/{blm_sets,armor,capes,weapons}.lua`.
 No other overlay has BLM files.
 
 ## How it works
@@ -96,7 +96,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include('Mote-Include.lua')
     M->>E: user_setup(): states, keybinds (+ show_intro), HUD, JobChangeManager, macro book, lockstyle in 8 s, dualbox_manager
-    M->>E: init_gear_sets(): include('sets/blm_sets.lua')
+    M->>E: init_gear_sets(): include('blm/blm_sets.lua')
     E->>E: INIT_SYSTEMS, data_loader, spell / ability / WS message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, require BLM_TP_CONFIG
     E->>E: JobChangeManager.cancel_all()
@@ -108,7 +108,7 @@ sequenceDiagram
 
 1. `BLMStates.configure()` creates every state (all values reset on every load
    and every subjob change).
-2. `require('Tetsouo/config/blm/BLM_KEYBINDS')` returns
+2. `require('Tetsouo/blm/BLM_KEYBINDS')` returns
    `KeybindManager.create('BLM', ...)` (the player's `BLM_CUSTOM.lua` keys and
    the character's `COMMON_KEYBINDS.lua` keys are appended there), stored in
    the global `BLMKeybinds`, then `bind_all()`, which validates, binds and
@@ -320,7 +320,7 @@ flowchart TD
 
 Created by `BLMStates.configure()` on every `user_setup()`. Keys from
 `BLM_KEYBINDS.lua`; `^` = Ctrl, `#` = Apps. `#numpad0` (AutoMedicine) comes from
-the character's `config/COMMON_KEYBINDS.lua`.
+the character's `common/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -429,19 +429,19 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/blm/BLM_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/config/blm/BLM_KEYBINDS.lua` | 17 binds | file | entry `user_setup`, `file_unload` |
-| `<char>/config/blm/BLM_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
-| `<char>/config/blm/BLM_HUD.lua` | empty | file | HUD section / row order |
-| `<char>/config/blm/BLM_LOCKSTYLE.lua` `default`, `by_subjob` | 5 | file; factory fallback 1 (`BLM_LOCKSTYLE.lua` wrapper) | `LockstyleManager`: `default` only (no `get_style`) |
-| `<char>/config/blm/BLM_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 8 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/config/blm/BLM_MP_CONFIG.lua` `mp_threshold` | 1000 | file; fallback in `BLM_MIDCAST.lua` `ensure_modules_loaded` | `apply_mp_conservation` |
-| `<char>/config/blm/BLM_ELEMENTAL_CONFIG.lua` | all true | file; same fallback | `apply_elemental_match` (only when `ElementalBelt` is off) |
-| `<char>/config/ELEMENTAL_BELT.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
-| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
-| `<char>/config/blm/BLM_TP_CONFIG.lua` -> `_G.BLMTPConfig` | `moonshade = {name, tp_bonus = 250}` | file | `WSPrecastHandler` -> TP calculator, which reads `pieces` / `get_weapon_bonus`, neither defined |
-| `<char>/config/blm/BLM_REFILL.lua` | none in the template | - | `refill/config_resolver.lua` (`FALLBACK_LIST` without it) |
-| `<char>/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | - | entry fallbacks | entry |
+| `<char>/blm/BLM_STATES.lua` | see states | file | entry `user_setup` |
+| `<char>/blm/BLM_KEYBINDS.lua` | 17 binds | file | entry `user_setup`, `file_unload` |
+| `<char>/blm/BLM_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
+| `<char>/blm/BLM_HUD.lua` | empty | file | HUD section / row order |
+| `<char>/blm/BLM_LOCKSTYLE.lua` `default`, `by_subjob` | 5 | file; factory fallback 1 (`BLM_LOCKSTYLE.lua` wrapper) | `LockstyleManager`: `default` only (no `get_style`) |
+| `<char>/blm/BLM_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 8 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/blm/BLM_MP_CONFIG.lua` `mp_threshold` | 1000 | file; fallback in `BLM_MIDCAST.lua` `ensure_modules_loaded` | `apply_mp_conservation` |
+| `<char>/blm/BLM_ELEMENTAL_CONFIG.lua` | all true | file; same fallback | `apply_elemental_match` (only when `ElementalBelt` is off) |
+| `<char>/common/ELEMENTAL_BELT.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
+| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
+| `<char>/blm/BLM_TP_CONFIG.lua` -> `_G.BLMTPConfig` | `moonshade = {name, tp_bonus = 250}` | file | `WSPrecastHandler` -> TP calculator, which reads `pieces` / `get_weapon_bonus`, neither defined |
+| `<char>/blm/BLM_REFILL.lua` | none in the template | - | `refill/config_resolver.lua` (`FALLBACK_LIST` without it) |
+| `<char>/common/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
 

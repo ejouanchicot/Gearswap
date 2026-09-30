@@ -33,7 +33,7 @@ every job and, on top of that, per job:
 | Where | What |
 |---|---|
 | `UI_CONFIG.lua`, `layout.section_order` / `layout.row_order` | The default of every job |
-| `config/<job>/<JOB>_HUD.lua`, `section_order` / `row_order` | That job only: a list that is not empty replaces the default on that job |
+| `<job>/<JOB>_HUD.lua`, `section_order` / `row_order` | That job only: a list that is not empty replaces the default on that job |
 
 Each `<JOB>_HUD.lua` explains itself at the top and lists the states of its
 job (the names to use). Row names are the states as in the `_KEYBINDS` file,
@@ -84,9 +84,9 @@ in place, and saves.
 
 | File | Content |
 |---|---|
-| `<YourName>/config/ui_settings.lua` | What `//gs c ui ...` changes: position, shown parts, background, font. Written by the commands; it wins over `UI_CONFIG.lua`. Delete it to go back to the `UI_CONFIG.lua` values. Kept by a re-clone |
-| `<YourName>/config/UI_CONFIG.lua` | Defaults used when `ui_settings.lua` does not exist, plus the background presets, text outline, `flags` and `init_delay`, always read |
-| `<YourName>/config/UI_COLOR_CONFIG.lua` | Colours of the values (elements, modes...) |
+| `<YourName>/saved/ui_settings.lua` | What `//gs c ui ...` changes: position, shown parts, background, font. Written by the commands; it wins over `UI_CONFIG.lua`. Delete it to go back to the `UI_CONFIG.lua` values. Kept by a re-clone |
+| `<YourName>/common/UI_CONFIG.lua` | Defaults used when `ui_settings.lua` does not exist, plus the background presets, text outline, `flags` and `init_delay`, always read |
+| `<YourName>/common/UI_COLOR_CONFIG.lua` | Colours of the values (elements, modes...) |
 
 Defaults in the template `UI_CONFIG.lua`:
 

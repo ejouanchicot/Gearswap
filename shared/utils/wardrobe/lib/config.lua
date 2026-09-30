@@ -193,7 +193,7 @@ Config.LOADED_CHAR_CONFIG = nil
 function Config.refresh()
     local p = windower.ffxi.get_player()
     if not p or not p.name then return nil end
-    local path = windower.addon_path .. 'data/' .. p.name .. '/config/WARDROBE_CONFIG.lua'
+    local path = require('shared/utils/core/char_paths').file('common', 'WARDROBE_CONFIG.lua', nil, p.name)
     if not windower.file_exists(path) then
         Config.LOADED_CHAR_CONFIG = nil
         return nil

@@ -23,7 +23,7 @@ a key, then one command casts each (`indi`, `geo`, `entrust`). On top of that:
   member, Full Circle before a new Geo-.
 
 Everything below comes from the provided template. After cloning, your copies
-are in `<YourName>/config/geo/`; if you changed them, your files win.
+are in `<YourName>/geo/`; if you changed them, your files win.
 
 ## All keys on this job
 
@@ -65,7 +65,7 @@ The full value lists are in [states.md](states.md).
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `GEO_CUSTOM.lua` (empty in the template) | yes |
 
-The common keys come from `<YourName>/config/COMMON_KEYBINDS.lua`. Combat Mode
+The common keys come from `<YourName>/common/COMMON_KEYBINDS.lua`. Combat Mode
 needs no extra key on GEO: it is native here, on Ctrl+Numpad0.
 
 ### Mote-Include keys (always bound, not on the HUD)
@@ -156,7 +156,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your GEO set file |
 | Obi / Orpheus | The shared automatic belt (`ELEMENTAL_BELT.lua`, `//gs c belt`) goes on after your nuke set when it helps. GEO has no belt rule of its own |
 | Tier step-down | A nuke (Fire V...), -ra or Aspir cast from a macro that is on recast or short of MP goes out as the highest lower tier you know that can; nothing castable: stopped, recasts shown ([auto-tier](../../features/auto-tier-system.md)) |
-| Automatic abilities | Off by default, in `<YourName>/config/AUTO_ABILITIES.lua`: `geo_entrust = true` (an Indi- cast on a party member waits for Entrust first, when it is ready), `geo_full_circle = true` (a Geo- cast while a luopan is out uses Full Circle first, then the Geo- 2 s later) |
+| Automatic abilities | Off by default, in `<YourName>/common/AUTO_ABILITIES.lua`: `geo_entrust = true` (an Indi- cast on a party member waits for Entrust first, when it is ready), `geo_full_circle = true` (a Geo- cast while a luopan is out uses Full Circle first, then the Geo- 2 s later) |
 | Entrust set | An Indi- on a party member while Entrust is up (or just used) wears `sets.midcast.Indi.Entrust` for the whole cast |
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for abilities and for spells that do not step down |
 | Doom | `sets.buff.Doom` while Doomed; its slots stay locked until Doom is gone |
@@ -164,7 +164,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, GEO may cover your whole group with Accession when a charge is left (GEO has no switch to stop it) |
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
-| Refill | `//gs c rf` restocks from `<YourName>/config/geo/GEO_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
+| Refill | `//gs c rf` restocks from `<YourName>/geo/GEO_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft`; Combat Mode Off does not free what a craft set holds |
 | PetTP addon | Loaded when GEO loads, unloaded when you leave GEO |
 | Dual-box | As an alt, GEO tells the main when Entrust goes up or down, so the main's alt commands can aim an Indi- at the party |
@@ -177,7 +177,7 @@ Blood Pact gear (SMN), cure auto-tier (WHM).
 
 ## Configuration files for this job
 
-In `<YourName>/config/geo/`:
+In `<YourName>/geo/`:
 
 | File | What you set there |
 |---|---|
@@ -190,11 +190,11 @@ In `<YourName>/config/geo/`:
 | `GEO_TP_CONFIG.lua` | TP bonus pieces (Moonshade Earring) for weaponskill gear |
 | `GEO_REFILL.lua` | Optional, not in the template: items `//gs c rf` keeps in your inventory |
 
-Shared by every job, in `<YourName>/config/`: `AUTO_ABILITIES.lua` (the two
+Shared by every job, in `<YourName>/common/`: `AUTO_ABILITIES.lua` (the two
 GEO options), `COMMON_KEYBINDS.lua`, `combat_mode.lua` and `treasure_mode.lua`
 (written by their commands), `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`.
-Your sets are in `<YourName>/sets/geo_sets.lua`. See
+Your sets are in `<YourName>/geo/geo_sets.lua`. See
 [configuration](../../guides/configuration.md).
 
 ## More

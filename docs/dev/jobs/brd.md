@@ -76,10 +76,10 @@ function; line numbers are given only where no function name fits.
 | `shared/data/job_abilities/BRD_JA_DATABASE.lua` | 13 | `JA_DATABASE_FACTORY.create('BRD')` |
 | `shared/utils/core/cast_tracker.lua`, `shared/utils/precast/cast_time.lua` | 58, 241 | "Cast started" packets and the cast time computed at precast, read by the song queue; `cast_time.owned_ids()` also feeds `instrument_extra` |
 
-Character overlay: `_master/<Character>/config/brd/` holds `BRD_STATES.lua`
+Character overlay: `_master/<Character>/brd/` holds `BRD_STATES.lua`
 (the author's defaults: SongMode Madrigal, VictoryMarch Etude, other weapon
 lists), `BRD_MACROBOOK.lua` and `BRD_REFILL.lua`; the author's live BRD uses the
-modular `sets/brd/{brd_sets,armor,capes,instruments,weapons}.lua`.
+modular `brd/{brd_sets,armor,capes,instruments,weapons}.lua`.
 
 ## How it works
 
@@ -359,7 +359,7 @@ flowchart TD
 
 Created by `BRDStates.configure()` on every `user_setup()`. Keys from
 `_master/config/brd/BRD_KEYBINDS.lua`; `^` = Ctrl, `#` = Apps. `#numpad0`
-(AutoMedicine) comes from the character's `config/COMMON_KEYBINDS.lua`.
+(AutoMedicine) comes from the character's `common/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
@@ -447,16 +447,16 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/config/brd/BRD_STATES.lua` | see states | entry `user_setup` |
-| `<char>/config/brd/BRD_KEYBINDS.lua` | 12 binds | entry `user_setup`, `file_unload`, KeybindGuard |
-| `<char>/config/brd/BRD_CUSTOM.lua` | nothing active | `CustomStates`; `custom_guards.lua` keeps `range` / `ammo` out of every `BardSong` |
-| `<char>/config/brd/BRD_HUD.lua` | empty lists | HUD section / row order |
-| `<char>/config/brd/BRD_LOCKSTYLE.lua` `default`, `by_subjob` | 7 (factory fallback 1) | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
-| `<char>/config/brd/BRD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 40 page 1 (factory fallback book 1 page 1) | `MacrobookManager` |
-| `<char>/config/brd/BRD_SONG_CONFIG.lua` -> `_G.BRDSongConfig` | 11 packs, 5 dummies, Etudes, `VICTORY_MARCH_REPLACE`, `SHORT_NAMES`, `SONG_REFINE` | rotation manager, refinement, router (`is_dummy_song`), commands (`ETUDES`) |
-| `<char>/config/brd/BRD_TIMING_CONFIG.lua` -> `_G.BRDTimingConfig` | `after_song` 3.0, `after_locked_song` 1.0, `nt_combo_delay` 2.0 | song queue `gap()`, `//gs c nt` |
-| `<char>/config/brd/BRD_TP_CONFIG.lua` -> `_G.BRDTPConfig` | Moonshade 250; Aeneas 500, Centovente 1000 | `WSPrecastHandler` -> `TPBonusCalculator` (main **and** sub weapon) |
-| `<char>/config/brd/BRD_REFILL.lua` | none in the template | refill system |
+| `<char>/brd/BRD_STATES.lua` | see states | entry `user_setup` |
+| `<char>/brd/BRD_KEYBINDS.lua` | 12 binds | entry `user_setup`, `file_unload`, KeybindGuard |
+| `<char>/brd/BRD_CUSTOM.lua` | nothing active | `CustomStates`; `custom_guards.lua` keeps `range` / `ammo` out of every `BardSong` |
+| `<char>/brd/BRD_HUD.lua` | empty lists | HUD section / row order |
+| `<char>/brd/BRD_LOCKSTYLE.lua` `default`, `by_subjob` | 7 (factory fallback 1) | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
+| `<char>/brd/BRD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 40 page 1 (factory fallback book 1 page 1) | `MacrobookManager` |
+| `<char>/brd/BRD_SONG_CONFIG.lua` -> `_G.BRDSongConfig` | 11 packs, 5 dummies, Etudes, `VICTORY_MARCH_REPLACE`, `SHORT_NAMES`, `SONG_REFINE` | rotation manager, refinement, router (`is_dummy_song`), commands (`ETUDES`) |
+| `<char>/brd/BRD_TIMING_CONFIG.lua` -> `_G.BRDTimingConfig` | `after_song` 3.0, `after_locked_song` 1.0, `nt_combo_delay` 2.0 | song queue `gap()`, `//gs c nt` |
+| `<char>/brd/BRD_TP_CONFIG.lua` -> `_G.BRDTPConfig` | Moonshade 250; Aeneas 500, Centovente 1000 | `WSPrecastHandler` -> `TPBonusCalculator` (main **and** sub weapon) |
+| `<char>/brd/BRD_REFILL.lua` | none in the template | refill system |
 | Constants | `START_WINDOW` 2.5, `JA_FIRST_WAIT` 3.0, `END_MARGIN` 3.0, `CAST_TIMEOUT` 12, `MAX_RETRIES` 2 (`song_queue.lua`); `BASE_SLOTS` 2, `LEDGER_MAX_AGE` 1200 (`song_slots.lua`); Marcato recast id 48, `wait 2` (`try_marcato`) | code |
 
 ## State & lifetime

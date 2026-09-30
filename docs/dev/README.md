@@ -250,18 +250,18 @@ Consequences worth remembering:
 - `clone_character.py` copies templates + overlay into `data/<Name>/`,
   substitutes the name, and generates `DUALBOX_CONFIG.lua` (with
   `DualBoxConfig.group` when dual-box is on) / `REGION_CONFIG.lua`. It copies
-  `config/craft/` always and `config/alt/` only for a MAIN. The overlay applies
+  `common/craft/` always and `common/alt/` only for a MAIN. The overlay applies
   only to its own character or with `--source`. An existing folder is moved to
   `addons/GearSwap/clone_backups/` after the final confirmation, never deleted,
   and the files written in game (`KEPT_ON_RECLONE`: HUD position, message
   modes, alt window and alt state, owned warp items, `combat_mode.lua`,
   `STEALTH_CONFIG.lua`, `temp_binds.lua`) are
   copied back from that backup.
-- Live Tetsouo uses **modular sets** (`sets/<job>/{armor,capes,weapons}.lua` +
-  `sets/common/rings.lua`); the generic templates are flat. The modular trees
-  are versioned in `_master/Tetsouo/sets/<job>/` and, since `f6f1683`, the
-  clone deploys an overlay's `sets/<job>/` tree in place of the flat file, plus
-  its `sets/common/` and the loose craft/fishing sets.
+- Live Tetsouo uses **modular sets** (`<job>/{armor,capes,weapons}.lua` +
+  `common/rings.lua`); the generic templates are flat. The modular trees
+  are versioned in `_master/Tetsouo/<job>/` and, since `f6f1683`, the
+  clone deploys an overlay's `<job>/` tree in place of the flat file, plus
+  its `common/` and the loose craft/fishing sets.
 - `character_db.lua` is read only by the clone script.
 
 See [characters-and-templates.md](architecture/characters-and-templates.md),
@@ -371,5 +371,5 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 | Mote state | `state.X = M{...}` mode object from Mote-Include; cycled by keybinds |
 | Template / overlay / live | `_master/` generic file / `_master/<Name>/` replacement / `data/<Name>/` deployed copy |
 | Pin | A set entry with `bag=` that fixes which wardrobe a copy must sit in (wardrobe organizer) |
-| MAIN / ALT | Dual-box roles: by default Tetsouo drives and Kaories follows; `//gs c main` on a box makes it the MAIN and the others its alts (saved in `<Char>/config/dualbox_role.lua`) |
+| MAIN / ALT | Dual-box roles: by default Tetsouo drives and Kaories follows; `//gs c main` on a box makes it the MAIN and the others its alts (saved in `<Char>/saved/dualbox_role.lua`) |
 | Dual export | `_G.x = x` plus `return { x = x }`, so a module works with `include` and `require` |

@@ -32,8 +32,8 @@ reload.
 ## All keys on this job
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
-the provided template; after cloning, yours are in `<YourName>/config/dnc/`
-and `<YourName>/config/COMMON_KEYBINDS.lua`, and those files win. No DNC key
+the provided template; after cloning, yours are in `<YourName>/dnc/`
+and `<YourName>/common/COMMON_KEYBINDS.lua`, and those files win. No DNC key
 depends on the subjob (Jump Auto only acts on /DRG).
 
 | Key | Does | When | Shown in the HUD |
@@ -131,7 +131,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
 | Treasure Mode | Off and hidden. `//gs c th show` to use it: the template already has `sets.TreasureHunter` |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | With `equip_without_set = true` in `config/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Your own modes | `DNC_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Utsusemi (/NIN) | Utsusemi: Ichi removes your old shadows 2.3 s into the cast so the new ones take (shared with every job; needs Windower's Cancel addon) |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key) |
@@ -141,7 +141,7 @@ and arguments: [commands guide](../../guides/commands.md).
 
 ## Configuration files for this job
 
-In `<YourName>/config/dnc/`:
+In `<YourName>/dnc/`:
 
 | File | Content |
 |---|---|
@@ -155,11 +155,11 @@ In `<YourName>/config/dnc/`:
 | `DNC_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
 | `DNC_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
-In `<YourName>/config/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
+In `<YourName>/common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
 `combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
-`<YourName>/sets/dnc_sets.lua`. See [configuration](../../guides/configuration.md).
+`<YourName>/dnc/dnc_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More
 

@@ -50,7 +50,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 ## Files
 
-In `<YourChar>/config/smn/`, if you write them (not in the public repository):
+In `<YourChar>/smn/`, if you write them (not in the public repository):
 `SMN_STATES.lua` (modes and defaults), `SMN_KEYBINDS.lua` (keys),
 `SMN_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `SMN_HUD.lua` (HUD row order), `SMN_LOCKSTYLE.lua`,

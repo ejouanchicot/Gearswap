@@ -1,6 +1,6 @@
 # SAM — set names and automatic gear
 
-Every set name SAM reads in `<YourName>/sets/sam_sets.lua`, and everything the
+Every set name SAM reads in `<YourName>/sam/sam_sets.lua`, and everything the
 job does by itself. Keys and modes: [states.md](states.md). Names every job
 understands (Fast Cast, subjob actions, Doom, Treasure Hunter...):
 [set names](../../guides/sets.md).
@@ -99,7 +99,7 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 | `sets.Masamune`, `sets.Kusanagi`, `sets.Shining`, `sets.Dojikiri`, `sets.Soboro`, `sets.Norifusa` | The Main Weapon mode of that name, idle and engaged. Put the grip in the same set (`sub = 'Utu Grip'`): SAM has no Sub Weapon mode |
 
 - A weapon value with no set is skipped: the weapon you hold stays.
-- With `equip_without_set = true` in `<YourName>/config/WEAPON_CONFIG.lua`, a
+- With `equip_without_set = true` in `<YourName>/common/WEAPON_CONFIG.lua`, a
   value that is the exact name of a weapon is equipped without any set (main
   hand only, no grip).
 
@@ -125,7 +125,7 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 - **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %,
   on top of `sets.idle.PDT`.
 - **Your stance when you engage** (optional): `sam_hasso = true` in
-  `<YourName>/config/AUTO_ABILITIES.lua`. On engaging with neither Hasso nor
+  `<YourName>/common/AUTO_ABILITIES.lua`. On engaging with neither Hasso nor
   Seigan up, your chosen stance goes out (Hasso, or Seigan after
   `//gs c seigan`) once it is ready. Off by default.
 

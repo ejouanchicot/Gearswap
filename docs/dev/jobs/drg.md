@@ -40,8 +40,8 @@ What DRG adds on top of the shared pipeline:
 | `shared/jobs/drg/functions/DRG_BUFFS.lua` | 23 | `LifecycleManager.buff_change` + `refresh_after_buff` (Spirit Surge) |
 | `shared/jobs/drg/functions/DRG_COMMANDS.lua` | 125 | `job_self_command` router (+ `jump`), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/drg/functions/DRG_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/drg/functions/DRG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('DRG', 'config/drg/DRG_LOCKSTYLE', 1, 'SAM')` wrappers |
-| `shared/jobs/drg/functions/DRG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('DRG', 'config/drg/DRG_MACROBOOK', 'SAM', 1, 1)` wrapper |
+| `shared/jobs/drg/functions/DRG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('DRG', 'drg/DRG_LOCKSTYLE', 1, 'SAM')` wrappers |
+| `shared/jobs/drg/functions/DRG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('DRG', 'drg/DRG_MACROBOOK', 'SAM', 1, 1)` wrapper |
 | `shared/jobs/drg/functions/logic/set_builder.lua` | 156 | Idle and engaged: base, town / HybridMode, wyvern layer, Spirit Surge, Mote layers, weapons, movement |
 | `shared/jobs/drg/functions/logic/wyvern.lua` | 71 | `TRIGGER_HPP` by subjob, `trigger_line`, `spell_triggers_breath`, `breath_set` |
 | `shared/jobs/drg/functions/logic/jumps.lua` | 81 | `order`, `pick`, `execute` (`//gs c jump`) |
@@ -255,13 +255,13 @@ T = `_master/sets/drg_sets.lua`. Player version:
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/config/drg/DRG_STATES.lua` | see states | entry `user_setup` |
-| `<char>/config/drg/DRG_KEYBINDS.lua` | 5 entries | entry `user_setup`, `file_unload` |
-| `<char>/config/drg/DRG_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
-| `<char>/config/drg/DRG_TP_CONFIG.lua` `jumps` | Soul Jump, Spirit Jump, Jump, High Jump | `Jumps.order` |
-| `<char>/config/drg/DRG_CUSTOM.lua` | examples only | shared custom states |
-| `<char>/config/drg/DRG_HUD.lua` | empty | HUD |
-| `<char>/config/drg/DRG_LOCKSTYLE.lua`, `DRG_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
+| `<char>/drg/DRG_STATES.lua` | see states | entry `user_setup` |
+| `<char>/drg/DRG_KEYBINDS.lua` | 5 entries | entry `user_setup`, `file_unload` |
+| `<char>/drg/DRG_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
+| `<char>/drg/DRG_TP_CONFIG.lua` `jumps` | Soul Jump, Spirit Jump, Jump, High Jump | `Jumps.order` |
+| `<char>/drg/DRG_CUSTOM.lua` | examples only | shared custom states |
+| `<char>/drg/DRG_HUD.lua` | empty | HUD |
+| `<char>/drg/DRG_LOCKSTYLE.lua`, `DRG_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
 ## Known issues
 

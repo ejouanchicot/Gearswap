@@ -11,7 +11,7 @@ Re-checked against the code on 2026-09-28. No file under `shared/utils/wardrobe/
 | Path | Lines | Role |
 |---|---|---|
 | `shared/utils/wardrobe/wardrobe_organizer.lua` | 739 | Public API, active-job phase chain, outer retry loop, module run state (`IS_RUNNING`, iteration counters, `start_job_tag`), `release_stance_locks` |
-| `shared/utils/wardrobe/lib/config.lua` | 245 | Defaults (bag lists, timing, limits, log path) and `Config.refresh()` which overlays `data/<char>/config/WARDROBE_CONFIG.lua` |
+| `shared/utils/wardrobe/lib/config.lua` | 245 | Defaults (bag lists, timing, limits, log path) and `Config.refresh()` which overlays `data/<char>/common/WARDROBE_CONFIG.lua` |
 | `shared/utils/wardrobe/lib/phases.lua` | 798 | Phase 0 (unequip + lock), shared burst loop, Phase 2/3/3.5/4, alt phases A2/A3, `enable_slots`, `force_enable_all`, `count_unpacked` |
 | `shared/utils/wardrobe/lib/state.lua` | 277 | Snapshot of the bags into a state table, pin resolution (`pin_target_for`) |
 | `shared/utils/wardrobe/lib/moves.lua` | 196 | Packet primitives `pull_slot` / `push_slot`, `space_in`, pin-bag ordering (`unclaimed_pins_first`) |
@@ -21,8 +21,8 @@ Re-checked against the code on 2026-09-28. No file under `shared/utils/wardrobe/
 | `shared/utils/wardrobe/lib/warp_owned.lua` | 118 | Scan / load / save of the warp items the character owns (`WARP_ITEMS_OWNED.lua`) |
 | `shared/utils/wardrobe/lib/chat.lua` | 169 | Chat panel helpers. They call the sandbox `add_to_chat` directly (no `MessageFormatter`; listed as an allowed exception in `.claude/CODE_QUALITY.md` section 6). Since 2026-09-27 (`64a0c20`) that `add_to_chat` is the one `message_core.lua` wraps with `ChatSeparators.apply`, so the `=` rules follow the player's separator options; before, the helpers called `windower.add_to_chat` and bypassed them |
 | `shared/utils/wardrobe/lib/log.lua` | 48 | `wardrobe_debug.log` writer, `bag_name()` |
-| `_master/Tetsouo/config_global/WARDROBE_CONFIG.lua` | 59 | Tetsouo template, deployed as `Tetsouo/config/WARDROBE_CONFIG.lua` (identical on disk) |
-| `_master/Kaories/config_global/WARDROBE_CONFIG.lua` | 60 | Kaories template, deployed as `Kaories/config/WARDROBE_CONFIG.lua` (same values; the live copy has newer header and comments only) |
+| `_master/Tetsouo/config_global/WARDROBE_CONFIG.lua` | 59 | Tetsouo template, deployed as `Tetsouo/common/WARDROBE_CONFIG.lua` (identical on disk) |
+| `_master/Kaories/config_global/WARDROBE_CONFIG.lua` | 60 | Kaories template, deployed as `Kaories/common/WARDROBE_CONFIG.lua` (same values; the live copy has newer header and comments only) |
 
 External dependency: `shared/utils/equipment/wardrobe_auditor.lua` provides `build_pinned_bags()` (`:619`), `collect_all_used_names()` (`:686`) and `build_frequency_map()` (`:590`). All three parse set-file text found by the recursive walk of `data/<char>/sets/` (`walk_lua_files`), not the loaded `sets` table: `build_pinned_bags()` reads every `.lua` of the tree (root files such as `bonecraft_sets.lua` included), the other two only the files `discover_job_files()` maps to a job code, plus `common/`.
 
@@ -214,7 +214,7 @@ Differences from the active-job flow:
 - `preview()` (`wardrobe_organizer.lua:570`): refresh config, build the state, print counts (evict, promote, pinned moves), and log every planned move to `wardrobe_debug.log` (the log is truncated first).
 - `verify_global()` (`:645`): refresh config, build the state, report `w1w2_unused` and `w3w6_used`. Neither counts Phase 3.5 packing or inventory leftovers.
 - `Reports.show_kept()` (`reports.lua:212`): lists `KEEP_ITEMS` and, when overflow is not all equippable, the warp items and where the list came from.
-- `Reports.scan_warp_items()` (`reports.lua:170`): `WarpOwned.scan()` walks every bag of `windower.ffxi.get_items()` (storage included, `warp_owned.lua:55`), saves the names found to `data/<char>/config/WARP_ITEMS_OWNED.lua` (`WarpOwned.save`, `:98`), then writes `data/wardrobe_scan_<char>.txt` (`write_scan_report`, `reports.lua:61`): bag occupancy, warp items with their bag, and per-job "declared in the sets vs held" counts from `WardrobeAuditor.build_frequency_map()`.
+- `Reports.scan_warp_items()` (`reports.lua:170`): `WarpOwned.scan()` walks every bag of `windower.ffxi.get_items()` (storage included, `warp_owned.lua:55`), saves the names found to `data/<char>/saved/WARP_ITEMS_OWNED.lua` (`WarpOwned.save`, `:98`), then writes `data/wardrobe_scan_<char>.txt` (`write_scan_report`, `reports.lua:61`): bag occupancy, warp items with their bag, and per-job "declared in the sets vs held" counts from `WardrobeAuditor.build_frequency_map()`.
 
 ## Public API
 
@@ -320,7 +320,7 @@ The shared `Config` table is seen by all libs only because `require` is cached p
 | `KEEP_ITEMS` | `{}` | `{}` |
 | Warp items kept | no (overflow all equippable) | yes (overflow contains Sack/Case/Satchel) |
 
-The live `Tetsouo/config/WARDROBE_CONFIG.lua` is identical to its template; `Kaories/config/WARDROBE_CONFIG.lua` has the same values and differs from `_master/Kaories/config_global/` only in header and comments (live -> overlay copy still to do, see [characters-and-templates.md](../architecture/characters-and-templates.md)). Both characters also have a `config/WARP_ITEMS_OWNED.lua` generated by `wo scan`.
+The live `Tetsouo/common/WARDROBE_CONFIG.lua` is identical to its template; `Kaories/common/WARDROBE_CONFIG.lua` has the same values and differs from `_master/Kaories/config_global/` only in header and comments (live -> overlay copy still to do, see [characters-and-templates.md](../architecture/characters-and-templates.md)). Both characters also have a `saved/WARP_ITEMS_OWNED.lua` generated by `wo scan`.
 
 ## State & lifetime
 
@@ -329,8 +329,8 @@ Module state (locals of `wardrobe_organizer.lua:52-58`): `IS_RUNNING`, `outer_it
 - `_G`: reads `_G.sets` (`Items.collect_used_names`, `organize()`), the `player` global (`job_changed`, `active_job_tag`, `:76-99`) and `_G.ampulla_ammo_locked` / `_G.thf_range_locked`; `release_stance_locks` clears them through `AmpullaLock.release` / `RangeLock.release` and sets `state.RangeLock` to false.
 - `windower.*` persistent fields: none. Events: none registered. Keybinds, text or prim objects: none.
 - Scheduled coroutines: every phase step, phase transition, retry, snapshot and the post-run `gs c ls` / `gs c rf`. None is cancellable and none checks a run identifier; they stop only by reaching their own exit condition or a `job_changed()` guard.
-- Files written: `data/wardrobe_debug.log` (one fixed path for every character of this Windower install, `config.lua:141`; truncated at the start of each run and each preview, `Log.dlog_clear`, appended one line per event), `data/wardrobe_scan_<char>.txt`, `data/<char>/config/WARP_ITEMS_OWNED.lua`.
-- Files read: `data/<char>/config/WARDROBE_CONFIG.lua`, `data/<char>/config/WARP_ITEMS_OWNED.lua`, every `.lua` under `data/<char>/sets/` (through the auditor).
+- Files written: `data/wardrobe_debug.log` (one fixed path for every character of this Windower install, `config.lua:141`; truncated at the start of each run and each preview, `Log.dlog_clear`, appended one line per event), `data/wardrobe_scan_<char>.txt`, `data/<char>/saved/WARP_ITEMS_OWNED.lua`.
+- Files read: `data/<char>/common/WARDROBE_CONFIG.lua`, `data/<char>/saved/WARP_ITEMS_OWNED.lua`, every `.lua` under `data/<char>/sets/` (through the auditor).
 - Slot lock: `gs disable all` sets GearSwap's `disable_table` (`GearSwap/statics.lua:194`, `user_functions.lua:131-143`), which is GearSwap global state and survives `gs reload` and job changes. Only a `gs enable` clears it.
 
 Behaviour on lifecycle events during a run:

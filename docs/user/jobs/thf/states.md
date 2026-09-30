@@ -54,7 +54,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   `//gs c th` shows the status; `//gs c th hide` turns Treasure Hunter off on
   THF and removes its key, `//gs c th show` brings it back.
 - **Weapons without a set**: with `equip_without_set = true` in
-  `config/WEAPON_CONFIG.lua`, a Main or Sub Weapon value that has no
+  `common/WEAPON_CONFIG.lua`, a Main or Sub Weapon value that has no
   `sets.<Weapon>` equips the weapon of that name directly.
 - **Sneak Attack / Trick Attack.** While the buff is up and you are engaged,
   `sets.buff['Sneak Attack']` / `['Trick Attack']` go on top; they come off
@@ -74,7 +74,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 ## Files
 
-In `<Char>/config/thf/`: `THF_STATES.lua` (modes and defaults),
+In `<Char>/thf/`: `THF_STATES.lua` (modes and defaults),
 `THF_KEYBINDS.lua` (keys), `THF_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `THF_LOCKSTYLE.lua`, `THF_MACROBOOK.lua`,
 `THF_TP_CONFIG.lua`. See [configuration](../../guides/configuration.md).

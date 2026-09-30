@@ -68,7 +68,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 ## Files
 
-In `<YourName>/config/whm/`: `WHM_STATES.lua` (modes and defaults),
+In `<YourName>/whm/`: `WHM_STATES.lua` (modes and defaults),
 `WHM_KEYBINDS.lua` (keys), `WHM_CURE_CONFIG.lua` (cure tier thresholds),
 `WHM_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `WHM_LOCKSTYLE.lua`, `WHM_MACROBOOK.lua`,

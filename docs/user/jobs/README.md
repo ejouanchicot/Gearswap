@@ -4,7 +4,7 @@ One page per job: what each mode does (the HUD shows the current value, not
 what it means), the keys, and the job's own `//gs c` commands. All of it is
 taken from the templates in `_master/config/<job>/` (`<JOB>_STATES.lua`,
 `<JOB>_KEYBINDS.lua`) and the job's command code. After cloning, your copies
-are in `<YourName>/config/<job>/`: if you edited them, trust your files.
+are in `<YourName>/<job>/`: if you edited them, trust your files.
 
 Keys: Ctrl = `^`, Apps = `#`. Common to every job: Apps+Numpad0 (Auto
 Medicine) and Alt+Numpad7-9 (dual-box alts). See the

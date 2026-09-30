@@ -131,13 +131,13 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Refill | `//gs c rf` restocks from the list in `RUN_REFILL.lua`, a file you create; without it a default list is used ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 | Doom | `sets.buff.Doom` goes on and neck, rings and waist stay locked until Doom is gone |
 | Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
-| Recast announce | An action refused on recast can tell the party, per action, from `config/RECAST_CONFIG.lua` |
+| Recast announce | An action refused on recast can tell the party, per action, from `common/RECAST_CONFIG.lua` |
 | TP bonus | Moonshade Earring added to a weaponskill only when it reaches the next TP step; Lionheart counts +500 ([TP bonus](../war/tp-bonus.md)) |
 | Automatic abilities | None on RUN (no ability fired before a spell or weaponskill) |
 
 ## Configuration files for this job
 
-In `<YourName>/config/run/`:
+In `<YourName>/run/`:
 
 | File | What you change there |
 |---|---|
@@ -151,10 +151,10 @@ In `<YourName>/config/run/`:
 | `RUN_TP_CONFIG.lua` | TP bonus pieces and weapons |
 | `RUN_REFILL.lua` | Not provided: create it for `//gs c rf` |
 
-Files shared by every job are in `<YourName>/config/`: `COMMON_KEYBINDS.lua`,
+Files shared by every job are in `<YourName>/common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
 `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
-Your sets are in `<YourName>/sets/run_sets.lua`.
+Your sets are in `<YourName>/run/run_sets.lua`.
 
 ## See also
 

@@ -402,7 +402,7 @@ The databases read no config file. Related knobs:
 - `_G.DATA_DEBUG` gates the three `DebugLogger.logf_if('DATA_DEBUG', ...)` lines in `data_loader.lua`
   (`:146`, `:218`, `:249`). No command sets it.
 - `state.EnfeebleTier` (RDM) switches the enfeeble tier table off.
-- The character's `config/blu/BLU_SPELL_MAP.lua` takes precedence over the BLU database category.
+- The character's `blu/BLU_SPELL_MAP.lua` takes precedence over the BLU database category.
 
 ## State & lifetime
 
@@ -427,7 +427,7 @@ have no effect.
 - `//gs c info`, `spellmsg`: [../systems/commands-and-debug.md](../systems/commands-and-debug.md).
 - Module cache and sandbox lifetime: [../systems/core-lifecycle.md](../systems/core-lifecycle.md),
   [../architecture/job-change-lifecycle.md](../architecture/job-change-lifecycle.md).
-- Dual-box alt commands: the generated `config/alt/<JOB>_ALT_COMMANDS.lua` files state they are built
+- Dual-box alt commands: the generated `common/alt/<JOB>_ALT_COMMANDS.lua` files state they are built
   from `shared/data/magic/` and `res`; the generator itself is not in the repository. See
   [../systems/dualbox.md](../systems/dualbox.md).
 
@@ -543,7 +543,7 @@ Re-checked on 2026-09-28. Open:
   raises an error - `DIVINE_MAGIC_DATABASE.can_learn`
 - `ELEMENTAL_NO_TIERS` can never match; filter lists name spells that do not exist -
   `shared/data/spells/BLM_SPELL_FILTERS.lua`
-- `_master/sets/rdm_sets.lua` (and `_master/Kaories/sets/rdm_sets.lua`) say the enfeebling type comes
+- `_master/sets/rdm_sets.lua` (and `_master/Kaories/rdm/rdm_sets.lua`) say the enfeebling type comes
   from `RDM_SPELL_DATABASE`; it comes from `ENFEEBLING_MAGIC_DATABASE` (`RDM_MIDCAST.lua`)
 - Two conventions for Job Point spells: the string `"JP"` against numeric learn levels (`can_learn` of
   BLM/GEO handle it, the DIVINE one raises). Left as is (changing it changes helper behaviour).

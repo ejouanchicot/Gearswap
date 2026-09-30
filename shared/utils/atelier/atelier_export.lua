@@ -9,7 +9,8 @@
 ---   //gs c atelier on     also export after every job load (per character)
 ---   //gs c atelier off    stop exporting on load
 ---
---- Files: data/<Character>/atelier/<JOB>.js (one per job) and
+--- Files: data/<Character>/saved/atelier/<JOB>.js (one per job; atelier/ before
+--- 2026-09-30) and
 --- data/atelier/index.js (the list the page reads). They are JavaScript, not
 --- JSON, because a page opened from the disk may load scripts but not read
 --- files.
@@ -48,7 +49,7 @@ local function data_path(rel)
 end
 
 local function marker()
-    return player and player.name and data_path(player.name .. '/atelier.on')
+    return player and player.name and require('shared/utils/core/char_paths').writable('saved', 'atelier.on')
 end
 
 --- On/off per character: a marker file, read once per addon load.
@@ -203,12 +204,8 @@ end
 --- A job config table (MACROBOOK / LOCKSTYLE), from the character's folder.
 local function job_config(kind)
     local job = player.main_job
-    local rel = 'config/' .. job:lower() .. '/' .. job .. '_' .. kind
-    for _, path in ipairs({rel, player.name .. '/' .. rel}) do
-        local ok, cfg = pcall(require, path)
-        if ok and type(cfg) == 'table' then return cfg end
-    end
-    return nil
+    local ok, cfg = require('shared/utils/core/char_paths').load('job', job .. '_' .. kind, job)
+    return (ok and type(cfg) == 'table') and cfg or nil
 end
 
 --- Owned equippable items, by slot: {slot = {name, ...}}.
@@ -273,14 +270,20 @@ local function write(path, text)
     return true
 end
 
---- data/atelier/index.js: every <Character>/atelier/<JOB>.js on the disk.
+--- data/atelier/index.js: every <Character>/saved/atelier/<JOB>.js on the
+--- disk (and <Character>/atelier/, the folder before 2026-09-30).
 local function write_index()
     windower.create_dir(data_path('atelier'))
-    local entries = {}
+    local entries, seen = {}, {}
     for _, name in ipairs(windower.get_dir(data_path('')) or {}) do
-        for _, file in ipairs(windower.get_dir(data_path(name .. '/atelier/')) or {}) do
-            local job = file:match('^(%u%u%u)%.js$')
-            if job then entries[#entries + 1] = {char = name, job = job, file = name .. '/atelier/' .. file} end
+        for _, folder in ipairs({'/saved/atelier/', '/atelier/'}) do
+            for _, file in ipairs(windower.get_dir(data_path(name .. folder)) or {}) do
+                local job = file:match('^(%u%u%u)%.js$')
+                if job and not seen[name .. job] then
+                    seen[name .. job] = true
+                    entries[#entries + 1] = {char = name, job = job, file = name .. folder:sub(2) .. file}
+                end
+            end
         end
     end
     table.sort(entries, function(a, b) return a.char .. a.job < b.char .. b.job end)
@@ -296,8 +299,9 @@ function AtelierExport.export()
         sets = collect_sets(), keys = collect_keys(), modes = collect_modes(),
         macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'), items = collect_items(),
     }
-    windower.create_dir(data_path(player.name .. '/atelier'))
-    local rel = player.name .. '/atelier/' .. player.main_job .. '.js'
+    windower.create_dir(data_path(player.name .. '/saved'))
+    windower.create_dir(data_path(player.name .. '/saved/atelier'))
+    local rel = player.name .. '/saved/atelier/' .. player.main_job .. '.js'
     local text = ('window.ATELIER = window.ATELIER || {};\nATELIER[%s] = ATELIER[%s] || {};\nATELIER[%s][%s] = %s;\n')
         :format(json(player.name), json(player.name), json(player.name), json(player.main_job), json(data))
     if not write(data_path(rel), text) then return nil end

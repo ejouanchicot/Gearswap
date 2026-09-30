@@ -42,13 +42,13 @@ DRK has no job command of its own: the keys above run `//gs c cyclestate <Mode>`
 - Idle: your weapon set, plus `sets.MoveSpeed` whenever you move outside a
   town. In town `sets.idle.Town` goes on top of the idle set, then your weapon.
 - A weapon needs its `sets.<Weapon>`, unless `equip_without_set = true` in
-  `config/WEAPON_CONFIG.lua` (then a plain weapon is equipped by name). The template also has
+  `common/WEAPON_CONFIG.lua` (then a plain weapon is equipped by name). The template also has
   `sets.Tokko` (Tokko Chopper), with no Main Weapon value to reach it: add
   `'Tokko'` to the list in `DRK_STATES.lua` to use it.
 
 ## Files
 
-In `<YourChar>/config/drk/`:
+In `<YourChar>/drk/`:
 
 | File | Content |
 |---|---|

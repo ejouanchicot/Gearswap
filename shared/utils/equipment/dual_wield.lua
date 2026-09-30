@@ -57,8 +57,7 @@ function DualWield.settings()
     if cached then return cached end
     local settings = {}
     for k, v in pairs(DEFAULTS) do settings[k] = v end
-    local path = player and player.name and windower.addon_path
-        and ('%sdata/%s/config/DW_CONFIG.lua'):format(windower.addon_path, player.name)
+    local path = player and player.name and require('shared/utils/core/char_paths').file('common', 'DW_CONFIG.lua')
     local file = path and io.open(path, 'r')
     if file then
         file:close()

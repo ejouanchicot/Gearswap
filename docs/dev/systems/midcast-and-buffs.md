@@ -206,7 +206,7 @@ Checked by loading the real `midcast_manager.lua` under `lua5.1` with stubbed `s
 
 After `select_set`, the BRD router (`shared/jobs/brd/functions/logic/midcast_router.lua` `equip_normal_song`) forces `range = _G.locked_instrument` for a song that holds the instrument lock (Honor March, Aria of Passion) and otherwise puts the instrument chosen by `state.MainInstrument` in the range slot (`apply_main_instrument`): only the `range` of `sets.midcast.Songs[instrument]` is taken, so the family pieces stay (added in `002493f`).
 
-Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Tetsouo/sets/brd/brd_sets.lua`):
+Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Tetsouo/brd/brd_sets.lua`):
 
 - `sets.midcast.Songs` holds `Gjallarhorn` and `Daurdabla`, each `set_combine(sets.midcast.BardSong, {range = ...})`, and `Marsyas = {range = ...}`. There is no `Songs.Loughnashade` and no `Songs.Duration`, so the Troubadour layer never fires and Aria of Passion gets no instrument layer.
 - `Songs.Marsyas` is only the instrument, so layering it onto `HonorMarch` changes the range slot alone.
@@ -371,7 +371,7 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 | `//gs c dispel` | BLM, GEO | `cast_under_black_addendum('Dispel', ...)` |
 | `//gs c smartbuff` | THF, DNC (also `buffself`) | Job smartbuff, using `SubjobWarBuffs` for /WAR |
 
-`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/config/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
+`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/common/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
 
 ### Scholar commands
 
@@ -435,7 +435,7 @@ No config file is read by these modules. Inputs are:
 Open:
 
 - BLM Comet never uses the MagicBurst set: P0 returns `sets.midcast['Comet']`, which is the base Elemental table (`_master/sets/blm_sets.lua`, `sets.midcast['Comet'] = sets.midcast['Elemental Magic']`).
-- RDM self-cast Refresh/Regen wear only 2 midcast slots over the precast set (`_master/sets/rdm_sets.lua`, live `Kaories/sets/rdm_sets.lua`).
+- RDM self-cast Refresh/Regen wear only 2 midcast slots over the precast set (`_master/sets/rdm_sets.lua`, live `Kaories/rdm/rdm_sets.lua`).
 - `sets.midcast.AriaPassion` is unreachable by name (`song_by_name`, `_master/sets/brd_sets.lua`).
 - PLD Healing `select_set` calls always return `false` (no `sets.midcast['Healing Magic']`); Cure I-IV are dressed in `job_midcast` and skip `EnmityOverride.apply_midcast`.
 - Unused public API: `MidcastManager.debug`.

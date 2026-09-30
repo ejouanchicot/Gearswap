@@ -33,7 +33,7 @@ Two characters on the same PC, both running this setup, one **main** and one
 3. Load both characters. About 2 seconds after the load, each box sends its
    job to the other.
 
-The script writes `<Name>/config/DUALBOX_CONFIG.lua`. On the main:
+The script writes `<Name>/common/DUALBOX_CONFIG.lua`. On the main:
 
 ```lua
 DualBoxConfig.role = "main"
@@ -60,7 +60,7 @@ On the alt, `role = "alt"` and `main_character = "Bob"` instead of
 The job exchange and the alt commands work with one partner; the `alts`
 orders and the alt window work with every member of `group`.
 
-Only the main gets `config/alt/` (the alt command files) from the clone
+Only the main gets `common/alt/` (the alt command files) from the clone
 script.
 
 ## Box group orders (`//gs c alts`)
@@ -91,7 +91,7 @@ keys are in `COMMON_KEYBINDS.lua` ([keybinds](keybinds.md#common-keys)).
 Type `//gs c main` on the character that should lead. It becomes the main,
 the other members of the group become its alts (each is told with
 `gs c setalt <you>`), and the jobs are exchanged again. The role is saved in
-`<Name>/config/dualbox_role.lua` and wins over `DUALBOX_CONFIG.lua` until you
+`<Name>/saved/dualbox_role.lua` and wins over `DUALBOX_CONFIG.lua` until you
 delete that file or swap again.
 
 ## The alt window
@@ -187,7 +187,7 @@ spell name**, lowercase, no spaces - `//gs c haste`, `//gs c dia`,
 
 ### Changing the commands
 
-The command files are in the MAIN's folder, `<Main>/config/alt/`.
+The command files are in the MAIN's folder, `<Main>/common/alt/`.
 `<JOB>_ALT_COMMANDS.lua` is **generated** from the game data and gets rebuilt
 whenever the spell list changes - anything you write in it is lost.
 
@@ -198,7 +198,7 @@ regenerated, and it is merged on top of the generated file. A commented
 `_ALT_CUSTOM.lua` in use.
 
 ```
-<Main>/config/alt/RDM_ALT_CUSTOM.lua
+<Main>/common/alt/RDM_ALT_CUSTOM.lua
 ```
 
 Three things it can do:
@@ -326,7 +326,7 @@ entrusthaste = {
 | Alt commands unknown on the main | The alt must have reported its job: reload the alt (`//gs c reload`) so it sends it; check the `send` addon is loaded on both |
 | An alt command runs on the main | A local command has that name: use `//gs c alt <name>` |
 | `alts follow` does nothing | Your automation addon must answer `sm follow <name>` |
-| Wrong character leads after a swap | `//gs c main` on the right one, or delete `<Name>/config/dualbox_role.lua` |
+| Wrong character leads after a swap | `//gs c main` on the right one, or delete `<Name>/saved/dualbox_role.lua` |
 
 Tracing: `//gs c altdebug` (alt buff reports, on both characters), and
 `DualBoxConfig.debug = true` for more messages.

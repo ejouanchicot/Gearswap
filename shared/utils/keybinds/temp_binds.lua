@@ -57,7 +57,7 @@ local RESERVED = {
 
 local function file_path()
     if not (player and player.name) then return nil end
-    return ('%sdata/%s/temp_binds.lua'):format(windower.addon_path, player.name)
+    return require('shared/utils/core/char_paths').writable('saved', 'temp_binds.lua')
 end
 
 --- {key = command} for this game session.

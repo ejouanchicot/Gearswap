@@ -68,7 +68,7 @@ the job.
 | `^-` / `^=` | Mote: NPC target selection on / off, party target mode | always | not on the HUD |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | once you make one | listed by `tb list` |
 
-- The six common keys come from your `config/COMMON_KEYBINDS.lua`; the rows
+- The six common keys come from your `common/COMMON_KEYBINDS.lua`; the rows
   above are the template's. The Alt+Numpad7-9 keys matter only when you
   dual-box.
 - Combat Mode is native on WHM: its key is `^numpad2`. Treasure Mode is hidden
@@ -138,9 +138,9 @@ Checked in the code for WHM:
 | Feature | Effect on WHM |
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, paralysis, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
-| Recast check | An ability or spell on recast is cancelled with its time left (a Cure first gets a chance to change tier). Optional party message per action in `config/RECAST_CONFIG.lua` |
+| Recast check | An ability or spell on recast is cancelled with its time left (a Cure first gets a chance to change tier). Optional party message per action in `common/RECAST_CONFIG.lua` |
 | Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `WHM_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
-| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Banish, Holy, nukes and elemental weaponskills (Flash Nova...) when they add at least 5 % (`config/ELEMENTAL_BELT.lua`, `//gs c belt`) |
+| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Banish, Holy, nukes and elemental weaponskills (Flash Nova...) when they add at least 5 % (`common/ELEMENTAL_BELT.lua`, `//gs c belt`) |
 | Combat Mode | Native on WHM (`^numpad2`): On puts on `sets.CombatMode` if you define one, then locks main, sub, range and ammo |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
 | Movement speed | `sets.MoveSpeed` while you move, idle, in town too |
@@ -158,7 +158,7 @@ Checked in the code for WHM:
 
 ## Configuration files for this job
 
-In `<YourName>/config/whm/`:
+In `<YourName>/whm/`:
 
 | File | What it sets |
 |---|---|
@@ -175,12 +175,12 @@ In `<YourName>/config/whm/`:
 In `WHM_CURE_CONFIG.lua`, `auto_tier_enabled` and `message_color` are not
 read: the auto-tier switch is the Cure Auto-Tier mode.
 
-In `<YourName>/config/`, the files every job reads that matter here:
+In `<YourName>/common/`, the files every job reads that matter here:
 `COMMON_KEYBINDS.lua` (common keys), `combat_mode.lua` / `treasure_mode.lua`
 (written by `combatmode` / `th`), `RECAST_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `LOCKSTYLE_CONFIG.lua`. See [configuration](../../guides/configuration.md).
 
-Sets: `<YourName>/sets/whm_sets.lua`, see [sets.md](sets.md).
+Sets: `<YourName>/whm/whm_sets.lua`, see [sets.md](sets.md).
 
 ## Next
 

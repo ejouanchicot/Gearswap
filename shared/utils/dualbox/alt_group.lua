@@ -52,7 +52,7 @@ end
 
 local function state_file()
     local name = player and player.name
-    return name and (windower.addon_path .. 'data/' .. name .. '/config/alt_state.lua')
+    return name and require('shared/utils/core/char_paths').writable('saved', 'alt_state.lua', nil, name)
 end
 
 --- The orders saved by the last session of this game. Stamped with the wall

@@ -64,7 +64,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 
 ## Files
 
-`<Char>/config/blm/`: `BLM_STATES.lua` (modes), `BLM_KEYBINDS.lua` (keys), `BLM_CUSTOM.lua`
+`<Char>/blm/`: `BLM_STATES.lua` (modes), `BLM_KEYBINDS.lua` (keys), `BLM_CUSTOM.lua`
 (your own modes and keys, see [keybinds](../../guides/keybinds.md)), `BLM_LOCKSTYLE.lua`
 (style 5), `BLM_MACROBOOK.lua` (book 8 page 1 by default, other books per subjob and per
 dual-box partner job), `BLM_TP_CONFIG.lua`, `BLM_MP_CONFIG.lua`, `BLM_ELEMENTAL_CONFIG.lua` (BLM's own Obi rule, used only when the

@@ -30,8 +30,8 @@ reload.
 ## All keys on this job
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
-the provided template; after cloning, yours are in `<YourName>/config/thf/`
-and `<YourName>/config/COMMON_KEYBINDS.lua`, and those files win.
+the provided template; after cloning, yours are in `<YourName>/thf/`
+and `<YourName>/common/COMMON_KEYBINDS.lua`, and those files win.
 
 | Key | Does | When | Shown in the HUD |
 |---|---|---|---|
@@ -118,7 +118,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge, ...) and damaging spells when the day, weather or distance gives enough (`//gs c belt`) |
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
-| Weapon without a set | With `equip_without_set = true` in `config/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
 | Your own modes | `THF_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |
@@ -145,7 +145,7 @@ on it, on a reload or subjob change, or with `//gs c th clear`.
 
 ## Configuration files for this job
 
-In `<YourName>/config/thf/`:
+In `<YourName>/thf/`:
 
 | File | Content |
 |---|---|
@@ -158,11 +158,11 @@ In `<YourName>/config/thf/`:
 | `THF_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
 | `THF_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used |
 
-In `<YourName>/config/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
+In `<YourName>/common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
 `combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
-`<YourName>/sets/thf_sets.lua`. See [configuration](../../guides/configuration.md).
+`<YourName>/thf/thf_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More
 

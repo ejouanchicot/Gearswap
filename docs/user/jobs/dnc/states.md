@@ -56,7 +56,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 
 ## Files
 
-`<Char>/config/dnc/`: `DNC_STATES.lua`, `DNC_KEYBINDS.lua`, `DNC_CUSTOM.lua` (your own
+`<Char>/dnc/`: `DNC_STATES.lua`, `DNC_KEYBINDS.lua`, `DNC_CUSTOM.lua` (your own
 modes and keys, see [keybinds](../../guides/keybinds.md)), `DNC_WS_CONFIG.lua`
 (Climactic weaponskills, minimum TP, target HP), `DNC_HUD.lua` (HUD order),
 `DNC_LOCKSTYLE.lua` (style 2), `DNC_MACROBOOK.lua` (book 4 page 1 by default, /WAR book

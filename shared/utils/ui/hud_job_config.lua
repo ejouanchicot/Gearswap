@@ -57,7 +57,7 @@ local FIELDS = {'section_order', 'row_order'}
 --- @return string|nil
 function HudJobConfig.path(job)
     if not (job and player and player.name and windower and windower.addon_path) then return nil end
-    return ('%sdata/%s/config/%s/%s_HUD.lua'):format(windower.addon_path, player.name, job:lower(), job:upper())
+    return require('shared/utils/core/char_paths').writable('job', job:upper() .. '_HUD.lua', job)
 end
 
 local function cache()

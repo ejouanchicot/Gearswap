@@ -92,7 +92,7 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
 
 ## Files
 
-`<Char>/config/brd/`: `BRD_STATES.lua`, `BRD_KEYBINDS.lua`, `BRD_CUSTOM.lua` (your own
+`<Char>/brd/`: `BRD_STATES.lua`, `BRD_KEYBINDS.lua`, `BRD_CUSTOM.lua` (your own
 modes and keys, see [keybinds](../../guides/keybinds.md)), `BRD_SONG_CONFIG.lua` (packs,
 dummy songs, tier fallback), `BRD_TIMING_CONFIG.lua` (gap between songs), `BRD_HUD.lua`
 (HUD order), `BRD_LOCKSTYLE.lua` (style 7), `BRD_MACROBOOK.lua` (book 40 page 1 by

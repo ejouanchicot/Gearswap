@@ -70,7 +70,7 @@ them in `RDM_CUSTOM.lua`.
 
 ## Files
 
-In `<YourChar>/config/rdm/`:
+In `<YourChar>/rdm/`:
 
 | File | Content |
 |---|---|

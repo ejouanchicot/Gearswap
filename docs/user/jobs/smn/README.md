@@ -59,7 +59,7 @@ been reported missing from the HUD; the key works either way.
 | Ctrl+F1-F8, Alt+F1-F8 | Temporary keys you make with `//gs c tb` | only once you make one |
 | Your own keys | Modes you add in `SMN_CUSTOM.lua` (examples only in the template) | yes |
 
-The common keys come from `<YourName>/config/COMMON_KEYBINDS.lua`.
+The common keys come from `<YourName>/common/COMMON_KEYBINDS.lua`.
 
 ### Mote-Include keys (always bound, not on the HUD)
 
@@ -153,7 +153,7 @@ What the project's shared systems do on SMN, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, SMN may cover your whole group with Accession when a charge is left |
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
-| Refill | No `SMN_REFILL.lua`: `//gs c rf` uses the default list (Panacea, Remedy, Holy Water...). Write one in `<YourName>/config/smn/` to choose |
+| Refill | No `SMN_REFILL.lua`: `//gs c rf` uses the default list (Panacea, Remedy, Holy Water...). Write one in `<YourName>/smn/` to choose |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft` |
 | Your own modes and gear rules | `SMN_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Midcast watchdog | Puts your idle set back when the game never confirms the end of a cast ([watchdog](../../features/watchdog.md)); `FastCast` (0) is its fallback estimate |
@@ -174,7 +174,7 @@ No TP bonus config on SMN.
 
 ## Configuration files for this job
 
-In `<YourName>/config/smn/`:
+In `<YourName>/smn/`:
 
 | File | What you set there |
 |---|---|
@@ -186,11 +186,11 @@ In `<YourName>/config/smn/`:
 | `SMN_MACROBOOK.lua` | Macro book and page per subjob; dual-box block empty |
 | `SMN_REFILL.lua` | Optional, not provided: items `//gs c rf` keeps in your inventory |
 
-Shared by every job, in `<YourName>/config/`: `COMMON_KEYBINDS.lua`,
+Shared by every job, in `<YourName>/common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua` and `treasure_mode.lua` (written by their commands),
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
 `DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`. Your sets are in
-`<YourName>/sets/smn/smn_sets.lua`. See
+`<YourName>/smn/smn_sets.lua`. See
 [configuration](../../guides/configuration.md).
 
 ## More

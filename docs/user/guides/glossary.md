@@ -18,7 +18,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Clone script** | `clone_character.py` (`CLONE_CHARACTER.bat`): builds your `<YourName>/` folder from the templates ([installation](../getting-started/installation.md)) |
 | **Combat Mode** | This setup: On keeps your weapons where they are (no set swaps them), so you keep your TP. `//gs c combatmode` |
 | **Cooldown**, **recast** | FFXI: the wait before an ability or spell can be used again. An action on recast is cancelled before any gear moves |
-| **CUSTOM file** | `config/<job>/<JOB>_CUSTOM.lua`: your own modes, keys and gear rules without code. Its gear goes on last ([keybinds](keybinds.md#your-own-modes-job_customlua)) |
+| **CUSTOM file** | `<job>/<JOB>_CUSTOM.lua`: your own modes, keys and gear rules without code. Its gear goes on last ([keybinds](keybinds.md#your-own-modes-job_customlua)) |
 | **Debuff** | FFXI: a harmful status (Silence, Paralysis, Doom...). Some block actions: see [how it works](how-it-works.md#1-precast-checks-then-the-start-set) |
 | **Doom** | FFXI: a countdown that kills when it ends. `sets.buff.Doom` goes on and neck, rings and waist stay locked until it is gone |
 | **Dual-box** | Playing two (or more) characters on one PC. This setup exchanges jobs, sends alt commands and group orders ([dual-box](dualbox.md)) |
@@ -48,7 +48,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Slot lock** | A slot GearSwap leaves alone whatever the set says (Combat Mode, Doom, craft...) |
 | **Subjob** | FFXI: your second job (`/NIN`, `/SAM`...). A subjob change reloads the job file 0.5 s later |
 | **Tag** | Treasure Hunter: a mob is tagged once one of your actions lands on it with TH gear on; after that your normal gear can come back |
-| **Template** | The files in `_master/` the clone script copies from. The game reads them only for the alt commands, when your `config/alt/` lacks a file |
+| **Template** | The files in `_master/` the clone script copies from. The game reads them only for the alt commands, when your `common/alt/` lacks a file |
 | **TH** (Treasure Hunter) | FFXI: raises the drop rate of the mob it is applied to. `sets.TreasureHunter` and Treasure Mode (`//gs c th`) |
 | **Town set** | `sets.idle.Town` (or `sets.Adoulin`), worn idle in a town on top of the idle set |
 | **TP** (Tactical Points) | FFXI: built by fighting, spent by weaponskills (1000 minimum, 3000 maximum). TP bonus gear adds to the TP a weaponskill counts |

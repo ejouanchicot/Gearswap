@@ -50,7 +50,7 @@ end
 
 local function prefs_file()
     local name = player and player.name
-    return name and (windower.addon_path .. 'data/' .. name .. '/config/alt_window.lua')
+    return name and require('shared/utils/core/char_paths').writable('saved', 'alt_window.lua', nil, name)
 end
 
 local function load_prefs()

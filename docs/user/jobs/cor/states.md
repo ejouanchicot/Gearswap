@@ -63,7 +63,7 @@ the other roll (the game always doubles the last roll).
   end of a fight) waits, so the "Phantom Roll +" piece is worn when the roll takes
   effect.
 - A roll pressed while Phantom Roll is on recast can tell the party when it will be
-  ready: in `config/RECAST_CONFIG.lua`,
+  ready: in `common/RECAST_CONFIG.lua`,
   `RECAST_CONFIG.party_announce = { ['Phantom Roll'] = "{action} : roll ready in <recast=Phantom Roll>" }`
   (`{action}` = the roll tried; see [configuration](../../guides/configuration.md)).
 
@@ -90,7 +90,7 @@ GearSwap.
 
 ## Files
 
-`<Char>/config/cor/`: `COR_STATES.lua`, `COR_KEYBINDS.lua`, `COR_CUSTOM.lua` (your own
+`<Char>/cor/`: `COR_STATES.lua`, `COR_KEYBINDS.lua`, `COR_CUSTOM.lua` (your own
 modes and keys, see [keybinds](../../guides/keybinds.md)), `COR_HUD.lua` (HUD order),
 `COR_LOCKSTYLE.lua` (style 3), `COR_MACROBOOK.lua` (book 3 page 1), `COR_TP_CONFIG.lua`,
 and `COR_REFILL.lua` if you create one. What each file holds: [README.md](README.md#configuration-files-for-this-job).

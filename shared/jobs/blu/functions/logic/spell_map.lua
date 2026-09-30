@@ -55,7 +55,7 @@ end
 --- Build spell -> category from the character's map.
 local function build()
     by_spell = {}
-    local ok, map = pcall(require, 'config/blu/BLU_SPELL_MAP')
+    local ok, map = require('shared/utils/core/char_paths').load('job', 'BLU_SPELL_MAP', 'BLU')
     if not ok or type(map) ~= 'table' then
         local mf_ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if mf_ok and MessageFormatter then

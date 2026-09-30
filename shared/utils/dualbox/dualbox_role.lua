@@ -32,7 +32,7 @@ local function my_name()
 end
 
 local function role_file(name)
-    return windower.addon_path .. 'data/' .. name .. '/config/dualbox_role.lua'
+    return require('shared/utils/core/char_paths').writable('saved', 'dualbox_role.lua', nil, name)
 end
 
 --- Everyone in the group but this character.

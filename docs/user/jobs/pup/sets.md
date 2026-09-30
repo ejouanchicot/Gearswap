@@ -4,7 +4,7 @@ Every set name the Puppetmaster code reads, and everything the job puts on by
 itself. Modes and keys: [states.md](states.md). Names every job shares (subjob
 actions, movement, Doom, Treasure Hunter...): [set names](../../guides/sets.md).
 
-Your file: `<YourName>/sets/pup_sets.lua`. The provided file has every set the
+Your file: `<YourName>/pup/pup_sets.lua`. The provided file has every set the
 code reads, empty: fill in your pieces. With `//gs c trace on`, each idle and
 engaged set chosen is logged with the layers laid on top.
 

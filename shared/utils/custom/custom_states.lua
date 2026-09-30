@@ -57,7 +57,7 @@ local Locks = require('shared/utils/custom/custom_locks')
 --- @return string|nil
 local function custom_path(job)
     if not (player and player.name and windower and windower.addon_path) then return nil end
-    return ('%sdata/%s/config/%s/%s_CUSTOM.lua'):format(windower.addon_path, player.name, job:lower(), job)
+    return require('shared/utils/core/char_paths').file('job', job .. '_CUSTOM.lua', job)
 end
 
 --- Read the job's custom file. Missing file = no custom states.

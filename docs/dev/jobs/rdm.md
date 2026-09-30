@@ -58,8 +58,8 @@ the sets files (structure and set names only).
 | `shared/jobs/rdm/functions/RDM_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/rdm/functions/RDM_COMMANDS.lua` | 439 | `job_self_command` router (cast-by-name resolved from `res`), `job_state_change` (HUD refresh) |
 | `shared/jobs/rdm/functions/RDM_MOVEMENT.lua` | 42 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'config/rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
-| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'config/rdm/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
+| `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
+| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'rdm/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
 | `shared/jobs/rdm/functions/logic/set_builder.lua` | 241 | Idle / engaged construction: mode sets, single vs dual wield (off-hand item and subjob), weapons, town, movement |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table of 11 enfeeble families (`RDM_ENFEEBLE_TIERS.get`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tier table (`NUKE_TIERS.get`), shared with GEO |
@@ -76,8 +76,8 @@ the sets files (structure and set names only).
 | `_master/config/rdm/RDM_SABOTEUR_CONFIG.lua` | 41 | `auto_trigger_spells` (Distract III, Gravity II), `wait_time = 2` |
 | `_master/config/rdm/RDM_TP_CONFIG.lua` | 75 | `pieces` (Moonshade 250), `get_weapon_bonus`; sets `_G.RDMTPConfig` itself |
 | `_master/sets/rdm_sets.lua` | 562 | Template sets (flat) |
-| `_master/Kaories/config/rdm/*`, `_master/Kaories/sets/rdm_sets.lua` | 7 files, 634 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; adds `RDM_REFILL.lua`; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |
-| `_master/Gabvanstronger/config/rdm/*`, `_master/Gabvanstronger/sets/rdm_sets.lua` | 5 files, 930 | Overlay: its own `EngagedMode` / `IdleMode` / weapon values, keys, custom modes, lockstyle and macro book |
+| `_master/Kaories/rdm/*`, `_master/Kaories/rdm/rdm_sets.lua` | 7 files, 634 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; adds `RDM_REFILL.lua`; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |
+| `_master/Gabvanstronger/rdm/*`, `_master/Gabvanstronger/rdm/rdm_sets.lua` | 5 files, 930 | Overlay: its own `EngagedMode` / `IdleMode` / weapon values, keys, custom modes, lockstyle and macro book |
 | `shared/utils/messages/formatters/jobs/message_rdm.lua` + `data/jobs/rdm_messages.lua` | 169 + 108 | RDM chat messages (errors, Phalanx swap, storm) |
 | `shared/utils/messages/formatters/jobs/message_rdm_midcast.lua` + `data/systems/rdm_midcast_messages.lua` | 203 + 25 | `debugmidcast` trace lines |
 
@@ -103,7 +103,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup() (states, keybinds, HUD, JCM, macrobook/lockstyle, dualbox)
-    M->>E: init_gear_sets() -> include sets/rdm_sets.lua
+    M->>E: init_gear_sets() -> include rdm/rdm_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, RDM_TP_CONFIG, _G.RDMSaboteurConfig
     E->>E: JobChangeManager.cancel_all()
@@ -116,7 +116,7 @@ sequenceDiagram
 
 1. `RDMStates.configure()` creates every state (see [Mote states](#mote-states)),
    including `Storm` when the subjob is SCH.
-2. `pcall(require, '<Character>/config/rdm/RDM_KEYBINDS')`, stored in the
+2. `pcall(require, '<Character>/rdm/RDM_KEYBINDS')`, stored in the
    global `RDMKeybinds`, then `bind_all()`: keys of the file that no longer
    apply are unbound, the entries `get_active_binds()` keeps are bound, then
    `show_intro()`. `show_intro` requires `RDM_MACROBOOK.lua` and
@@ -410,17 +410,17 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/rdm/RDM_STATES.lua` | see states | file | entry `user_setup`, `job_sub_job_change` (path substituted by the clone script) |
-| `<char>/config/rdm/RDM_KEYBINDS.lua` | 16 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
-| `<char>/config/rdm/RDM_CUSTOM.lua` | examples only | file | custom states ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/config/rdm/RDM_HUD.lua` | empty lists | file | HUD layout |
-| `<char>/config/rdm/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` (and `get_style`, absent); `by_subjob` is never read |
-| `<char>/config/rdm/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
-| `<char>/config/rdm/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
-| `<char>/config/rdm/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
-| `<char>/config/rdm/RDM_REFILL.lua` | none in the template | overlay / player | `//gs c rf` |
-| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` |
-| `<char>/config/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
+| `<char>/rdm/RDM_STATES.lua` | see states | file | entry `user_setup`, `job_sub_job_change` (path substituted by the clone script) |
+| `<char>/rdm/RDM_KEYBINDS.lua` | 16 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
+| `<char>/rdm/RDM_CUSTOM.lua` | examples only | file | custom states ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/rdm/RDM_HUD.lua` | empty lists | file | HUD layout |
+| `<char>/rdm/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` (and `get_style`, absent); `by_subjob` is never read |
+| `<char>/rdm/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
+| `<char>/rdm/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
+| `<char>/rdm/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
+| `<char>/rdm/RDM_REFILL.lua` | none in the template | overlay / player | `//gs c rf` |
+| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` |
+| `<char>/common/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua`, `NUKE_TIERS.lua` | 11 families, nukes | file | `get_spell_tiers` |
 
 ## State & lifetime

@@ -16,7 +16,7 @@ What BLU adds on top of the shared pipeline:
 
 - **Blue Magic by category**: each Blue Magic spell is given a gear category
   (`PhysicalDex`, `Magical`, `MagicAccuracy`, ... 24 categories) by the
-  character's `config/blu/BLU_SPELL_MAP.lua` (else the broad category of the
+  character's `blu/BLU_SPELL_MAP.lua` (else the broad category of the
   Blue Magic database), and `MidcastManager` picks
   `sets.midcast['Blue Magic'][category][CastingMode]` and its fallbacks. The
   same category is handed to Mote as the spell map, so Mote's own precast and
@@ -51,15 +51,15 @@ the sets files (structure and set names only).
 | `shared/jobs/blu/functions/BLU_BUFFS.lua` | 22 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/blu/functions/BLU_COMMANDS.lua` | 115 | `job_self_command` router (shared commands only), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/blu/functions/BLU_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout; no `job_handle_equipping_gear` |
-| `shared/jobs/blu/functions/BLU_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('BLU', 'config/blu/BLU_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'config/blu/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/blu/functions/BLU_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('BLU', 'blu/BLU_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'blu/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/blu/functions/logic/spell_map.lua` | 117 | `BLUSpellMap.category(name)` from the character's map, else the database category; `is_unbridled(name)` |
 | `shared/jobs/blu/functions/logic/set_builder.lua` | 156 | Idle and engaged: `.SW` detection, `[OffenseMode]`, Mote defense / Kiting layers, weapons, town, movement |
 | `shared/jobs/blu/functions/logic/unbridled.lua` | 41 | Option `blu_unbridled`: `BLUUnbridled.apply` -> `AbilityHelper.try_ability` |
 | `shared/jobs/blu/functions/logic/expiacion_guard.lua` | 80 | Option `blu_expiacion_window`: `BLUExpiacionGuard.check` |
 | `shared/jobs/blu/functions/logic/azure_sets.lua` | 49 | `BLUAzureSets.load` / `unload` of the AzureSets addon, flag on `windower._blu_azuresets_loaded` |
 | `shared/data/magic/BLU_SPELL_DATABASE.lua` (+ `blu/**/*.lua`) | - | Blue Magic spell data; BLU reads `get_spell_data(name).category` (unlisted spells) and `.unbridled` |
-| `shared/utils/core/auto_options.lua` | - | `AutoOptions.on(name)`: reads `config/AUTO_ABILITIES.lua` once per load (`== true`) |
+| `shared/utils/core/auto_options.lua` | - | `AutoOptions.on(name)`: reads `common/AUTO_ABILITIES.lua` once per load (`== true`) |
 | `_master/config/blu/BLU_STATES.lua` | 66 | Mote mode options, `MainWeapon` / `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/blu/BLU_KEYBINDS.lua` | 34 | Data only: 6 entries (+ 2 commented per-weapon examples) handed to `KeybindManager.create('BLU', ...)` |
 | `_master/config/blu/BLU_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
@@ -68,10 +68,10 @@ the sets files (structure and set names only).
 | `_master/config/blu/BLU_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |
 | `_master/config/blu/BLU_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/blu/BLU_TP_CONFIG.lua` | 39 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.BLUTPConfig` |
-| `_master/config_global/AUTO_ABILITIES.lua` | - | Template of `<Character>/config/AUTO_ABILITIES.lua`: both BLU options `false` |
+| `_master/config_global/AUTO_ABILITIES.lua` | - | Template of `<Character>/common/AUTO_ABILITIES.lua`: both BLU options `false` |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |
 | `_master/sets/blu_sets.lua` | 182 | Template sets: every set the code reads, all empty |
-| `_master/Gabvanstronger/config/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)) |
+| `_master/Gabvanstronger/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)) |
 | `_master/config/alt/BLU_ALT_COMMANDS.lua` | - | Dual-box commands for a BLU partner (read by the main's alt system, not by the BLU job file) |
 
 No live copy is tracked (live folders are gitignored).
@@ -95,7 +95,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup() (states, keybinds + intro, HUD, JCM, macrobook/lockstyle, AzureSets, dualbox)
-    M->>E: init_gear_sets() -> include sets/blu_sets.lua
+    M->>E: init_gear_sets() -> include blu/blu_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.BLUTPConfig
     E->>E: JobChangeManager.cancel_all()
@@ -107,7 +107,7 @@ sequenceDiagram
 `user_setup()`:
 
 1. `BLUStates.configure()` creates the states (see [Mote states](#mote-states)).
-2. `pcall(require, '<Character>/config/blu/BLU_KEYBINDS')` into the global
+2. `pcall(require, '<Character>/blu/BLU_KEYBINDS')` into the global
    `BLUKeybinds`, then `bind_all()`; a failed require prints
    `[BLU] Keybinds failed to load: <error>`. `bind_all` ends with
    `show_intro()`, which requires `BLU_MACROBOOK` and `BLU_LOCKSTYLE`; neither
@@ -216,7 +216,7 @@ leaves Mote's own map), so Mote's precast and midcast walks use the same name.
 #### The spell map
 
 `logic/spell_map.lua` builds `spell name -> category` once per load, on the
-first `category` call, from `require('config/blu/BLU_SPELL_MAP')`. GearSwap's
+first `category` call, from `require('blu/BLU_SPELL_MAP')`. GearSwap's
 `require` searches `data/<player name>/` before `data/`, so the character's own
 file is read.
 
@@ -276,9 +276,9 @@ A weapon cycle re-equips through Mote's `handle_update`.
 ### Automatic abilities
 
 Both options are read by `AutoOptions.on(name)`: `true` only if the character's
-`config/AUTO_ABILITIES.lua` sets it `true`, read once per load. The template
+`common/AUTO_ABILITIES.lua` sets it `true`, read once per load. The template
 file has both `false`; `clone_character.py` copies `config_global/*.lua` to
-`<Character>/config/`.
+`<Character>/common/`.
 
 **`blu_unbridled`** (`BLUUnbridled.apply`), precast step 3:
 
@@ -416,16 +416,16 @@ and a few sets nothing reaches, each marked so in the file.
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/blu/BLU_STATES.lua` | see states | file | entry `user_setup` (path substituted by the clone script) |
-| `<char>/config/blu/BLU_KEYBINDS.lua` | 6 entries (+ `COMMON_KEYBINDS.lua`, optional states, custom keys) | file | entry `user_setup`, `file_unload` |
-| `<char>/config/blu/BLU_CUSTOM.lua` | examples only | file | custom states |
-| `<char>/config/blu/BLU_SPELL_MAP.lua` | 24 categories | file; no map = base set only | `spell_map.lua` |
-| `<char>/config/blu/BLU_HUD.lua` | empty | file | HUD layout |
-| `<char>/config/blu/BLU_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` and `get_style` only, so `by_subjob` is never read |
-| `<char>/config/blu/BLU_MACROBOOK.lua` | book 1 page 1 | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
-| `<char>/config/blu/BLU_TP_CONFIG.lua` -> `_G.BLUTPConfig` | Moonshade ear1 +250, no weapon | file | `WSPrecastHandler` / TP bonus calculator |
-| `<char>/config/AUTO_ABILITIES.lua` `blu_unbridled`, `blu_expiacion_window` | `false` | `AutoOptions.on` (`== true`) | `BLUUnbridled.apply`, `BLUExpiacionGuard.check` |
-| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | `false` | file | `WeaponResolver` |
+| `<char>/blu/BLU_STATES.lua` | see states | file | entry `user_setup` (path substituted by the clone script) |
+| `<char>/blu/BLU_KEYBINDS.lua` | 6 entries (+ `COMMON_KEYBINDS.lua`, optional states, custom keys) | file | entry `user_setup`, `file_unload` |
+| `<char>/blu/BLU_CUSTOM.lua` | examples only | file | custom states |
+| `<char>/blu/BLU_SPELL_MAP.lua` | 24 categories | file; no map = base set only | `spell_map.lua` |
+| `<char>/blu/BLU_HUD.lua` | empty | file | HUD layout |
+| `<char>/blu/BLU_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` and `get_style` only, so `by_subjob` is never read |
+| `<char>/blu/BLU_MACROBOOK.lua` | book 1 page 1 | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
+| `<char>/blu/BLU_TP_CONFIG.lua` -> `_G.BLUTPConfig` | Moonshade ear1 +250, no weapon | file | `WSPrecastHandler` / TP bonus calculator |
+| `<char>/common/AUTO_ABILITIES.lua` `blu_unbridled`, `blu_expiacion_window` | `false` | `AutoOptions.on` (`== true`) | `BLUUnbridled.apply`, `BLUExpiacionGuard.check` |
+| `<char>/common/WEAPON_CONFIG.lua` `equip_without_set` | `false` | file | `WeaponResolver` |
 | Hard-coded | Unbridled delay 1.5 s (`SPELL_DELAY`); Expiacion window 3 s, thresholds 1000 / 3000 TP, weapon `Tizona`; AzureSets delays 2 s / 3 s; overlay buffs (`BLUE_MAGIC_BUFFS`) | code | - |
 
 ## Character overlay
@@ -519,7 +519,7 @@ the clone script.
 
 - Syntax: `python scripts/check_syntax.py` (runs `lua5.1`, live folders
   included), or `luac5.1 -p shared/jobs/blu/functions/BLU_MIDCAST.lua`.
-- Spell map with `lua5.1` from `data/`: stub `package.loaded['config/blu/BLU_SPELL_MAP']`
+- Spell map with `lua5.1` from `data/`: stub `package.loaded['blu/BLU_SPELL_MAP']`
   (a `dofile` of the template) and the message formatter, `dofile` the module,
   call `category('Sound Blast')`; add a duplicate to check the warning.
 - Midcast chain: stub `sets.midcast`, `equip`, `buffactive`, `state.CastingMode`,

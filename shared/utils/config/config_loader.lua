@@ -57,7 +57,7 @@ function ConfigLoader.load_ui_config(char_name, job_name)
         job_name = 'UNKNOWN'
     end
 
-    local config_path = windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/UI_CONFIG.lua'
+    local config_path = require('shared/utils/core/char_paths').file('common', 'UI_CONFIG.lua', nil, char_name)
 
     local success, UIConfig = pcall(function()
         return dofile(config_path)

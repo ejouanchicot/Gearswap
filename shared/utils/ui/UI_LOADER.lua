@@ -27,7 +27,7 @@ function KeybindLoader.get_job_keybinds(job)
     end
 
     -- Format: config/war/WAR_KEYBINDS.lua
-    local config_path = 'config/' .. job:lower() .. '/' .. job:upper() .. '_KEYBINDS'
+    local config_path = require('shared/utils/core/char_paths').module('job', job:upper() .. '_KEYBINDS', job)
 
     local success, keybind_config = pcall(require, config_path)
 
@@ -124,7 +124,7 @@ function KeybindLoader.config_exists(job)
         return false
     end
 
-    local config_path = 'config/' .. job:upper() .. '_KEYBINDS'
+    local config_path = require('shared/utils/core/char_paths').legacy_module('config/' .. job:upper() .. '_KEYBINDS')
     local success, config = pcall(require, config_path)
 
     return success and config ~= nil

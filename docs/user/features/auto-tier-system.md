@@ -20,7 +20,7 @@ Missing HP: exact for yourself; for a party or alliance member it is estimated
 from their HP % as if they had 2000 max HP. 50 HP are added as a safety
 margin before the lookup.
 
-Tiers, from `<YourName>/config/whm/WHM_CURE_CONFIG.lua` (edit them there):
+Tiers, from `<YourName>/whm/WHM_CURE_CONFIG.lua` (edit them there):
 
 | Missing HP | Cure | | Missing HP | Curaga |
 |---|---|---|---|---|

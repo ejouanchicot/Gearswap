@@ -61,14 +61,14 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/data/equipment/ITEM_HP_MP.lua` | 6 534 (6 529 entries) | Generated HP/MP table read by `hp_priority.lua` (do not edit by hand) |
 | `scripts/item_db/build_item_db.py` | 379 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
 | `scripts/item_db/find_items.py` | 94 | Query tool over the generated SQLite (`--stat hp --slot Head --job WAR --top 10`) |
-| `_master/Tetsouo/config/<job>/<JOB>_REFILL.lua` | 20-54 | Refill templates for Tetsouo (BLM BRD BST COR DNC PLD THF WAR) |
-| `_master/Tetsouo/config/craft/CRAFT_REFILL.lua` | 34 | Refill list used while a craft set is active |
-| `_master/Kaories/config/<job>/<JOB>_REFILL.lua` | 22-42 | Refill templates for Kaories (COR GEO PLD RDM) |
-| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/config/WEAPON_CONFIG.lua` (`equip_without_set`) |
+| `_master/Tetsouo/<job>/<JOB>_REFILL.lua` | 20-54 | Refill templates for Tetsouo (BLM BRD BST COR DNC PLD THF WAR) |
+| `_master/Tetsouo/common/craft/CRAFT_REFILL.lua` | 34 | Refill list used while a craft set is active |
+| `_master/Kaories/<job>/<JOB>_REFILL.lua` | 22-42 | Refill templates for Kaories (COR GEO PLD RDM) |
+| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/common/WEAPON_CONFIG.lua` (`equip_without_set`) |
 | `_master/config_global/ELEMENTAL_BELT.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
 
-Live copies (gitignored): `Tetsouo/config/{blm,brd,bst,cor,craft,dnc,pld,thf,war}/*_REFILL.lua`,
-`Kaories/config/{cor,geo,pld,rdm}/*_REFILL.lua`. On 2026-09-25 every live refill file was identical to
+Live copies (gitignored): `Tetsouo/common/{blm,brd,bst,cor,craft,dnc,pld,thf,war}/*_REFILL.lua`,
+`Kaories/common/{cor,geo,pld,rdm}/*_REFILL.lua`. On 2026-09-25 every live refill file was identical to
 its template (`diff --strip-trailing-cr`).
 
 Related code outside this area: the command router `shared/utils/core/COMMON_COMMANDS.lua`, the
@@ -239,15 +239,15 @@ sequenceDiagram
 3. List resolution (`ConfigResolver.resolve_list_for_player`, `config_resolver.lua:192`):
    - No player or main job `NON`: `FALLBACK_LIST` (`:39`, six medicines at 12).
    - Craft mode (`_G.CraftManager.is_active()`; `craft_manager.lua` owns the session state):
-     `require('<Char>/config/craft/CRAFT_REFILL')`; its `.default` is used (label `CRAFT (<name>)`)
+     `require('<Char>/common/craft/CRAFT_REFILL')`; its `.default` is used (label `CRAFT (<name>)`)
      and its bag fields apply. Without the file or without `.default`, resolution falls through to
      the job.
-   - Job: `require('<Char>/config/<job>/<JOB>_REFILL')`. If the require throws (missing file or error
+   - Job: `require('<Char>/<job>/<JOB>_REFILL')`. If the require throws (missing file or error
      in the file) the fallback list is used with label `fallback (no <path>)`. `subjobs[<SUB>]`
      replaces `.default` entirely when present; otherwise `.default`; otherwise the fallback.
    - Bags (`resolve_bags`), the player's choice since 2026-09-30: `store_bag` (where surplus and
      foreign items go) and `source_bags` (where pulls come from, in order) are read from the list file
-     (`<JOB>_REFILL` / `CRAFT_REFILL`), else from `<Char>/config/REFILL_CONFIG.lua`, else `case` and
+     (`<JOB>_REFILL` / `CRAFT_REFILL`), else from `<Char>/common/REFILL_CONFIG.lua`, else `case` and
      `{'case', 'sack', 'satchel'}` (`DEFAULT_STORE_BAG`, `DEFAULT_SOURCE_BAGS`). Names: `case`,
      `sack`, `satchel`, `wardrobe1`..`wardrobe8` (`wardrobe` = `wardrobe1`), case and spaces ignored
      (`BAG_INFO`): every bag the game opens away from the Mog House. Unknown names are skipped; a
@@ -265,7 +265,7 @@ sequenceDiagram
    - Deficit < 0: push moves of the surplus to the store bag, variants in list order (`queue_surplus`,
      `:94`); the preferred variant is pushed first.
 5. Foreign sweep (`sweep_foreign_items`, `:209`): `ConfigResolver.build_foreign_items_set`
-   (`config_resolver.lua:152`) loads every `*_REFILL.lua` found under `data/<Dir>/config/<sub>/` for
+   (`config_resolver.lua:152`) loads every `*_REFILL.lua` found under `data/<Dir>/common/<sub>/` for
    every directory of `data/` whose name starts with an uppercase letter (`load_all_refill_configs`,
    `:107`), i.e. all characters including frozen clones; the `char_name` argument is not used. Every
    item id named in any of those lists (defaults and all subjob lists) that is not a variant of the
@@ -353,7 +353,7 @@ Every set builder that applies `state.MainWeapon` / `state.SubWeapon` asks
 THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-28; before, it read
 `sets[weapon]` directly and `equip_without_set` had no effect on DRK.
 
-- **Default** (no `<Char>/config/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
+- **Default** (no `<Char>/common/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
   `sets[value]`, exactly the old lookup. Tetsouo and Kaories have no `WEAPON_CONFIG.lua`, so nothing
   changed for them. Tetsouo's BLM relies on `Hvergelmir` having no set, so its idle and engaged sets
   keep their own staves.
@@ -607,7 +607,7 @@ command for the quiver manager, HP priority, the weapon resolver or the Ampulla 
 
 ## Configuration
 
-Refill file schema (reference comment at the top of `_master/Tetsouo/config/war/WAR_REFILL.lua`):
+Refill file schema (reference comment at the top of `_master/Tetsouo/war/WAR_REFILL.lua`):
 
 ```lua
 local M = {}
@@ -624,24 +624,24 @@ M.subjobs = {                   -- optional; a subjob list REPLACES default
 return M
 ```
 
-- Lookup path: `<Char>/config/<job lower>/<JOB>_REFILL` through the sandbox `require`, which is
+- Lookup path: `<Char>/common/<job lower>/<JOB>_REFILL` through the sandbox `require`, which is
   GearSwap's `include_user` path search (*(engine)* `refresh.lua`, `pathsearch`: `libs-dev/`, `libs/`,
   `data/<player>/`, `data/common/`, `data/`, then `%APPDATA%/Windower/GearSwap/...`, then
   `addons/libs/`) wrapped by the project's `ModuleCache` (`shared/utils/core/module_cache.lua`). The
   directory scan for foreign detection uses `windower.addon_path .. 'data/'` only
   (`load_char_refill_configs`, `load_all_refill_configs`).
-- Craft list: `<Char>/config/craft/CRAFT_REFILL.lua`, only `.default`, `.store_bag` and `.source_bags`
+- Craft list: `<Char>/common/craft/CRAFT_REFILL.lua`, only `.default`, `.store_bag` and `.source_bags`
   are read (template `_master/config/craft/CRAFT_REFILL.lua`, empty list).
-- Bags for every list: `<Char>/config/REFILL_CONFIG.lua` (`store_bag`, `source_bags`; template
+- Bags for every list: `<Char>/common/REFILL_CONFIG.lua` (`store_bag`, `source_bags`; template
   `_master/config_global/REFILL_CONFIG.lua`). A list file's own fields win.
-- Weapon resolver: `<Char>/config/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
+- Weapon resolver: `<Char>/common/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
   thresholds in the aftercast callers, `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`),
   `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `CHARACTERS`,
   `MP_JOBS`, `MP_WEIGHT`, `SKIP_JOBS`. None of them is read from a config file.
-- Templates and deployment: `clone_character.py` (`clone()`, step 4) copies `config/<job>/` per file,
-  taking the overlay `_master/<Source>/config/<job>/<file>` when an overlay is selected and has the
+- Templates and deployment: `clone_character.py` (`clone()`, step 4) copies `<job>/` per file,
+  taking the overlay `_master/<Source>/<job>/<file>` when an overlay is selected and has the
   file, and `_master/config/<job>/<file>` otherwise (`_resolve_src`). The overlay is selected only when
   the target is the source character (default `Tetsouo`) or `--source` names it (`_select_overlay`).
   The shared config folders (`craft`, plus `alt` for a MAIN) are copied the same way. See
@@ -729,8 +729,8 @@ return M
 
 ## Extending
 
-- New refill list: add `<Char>/config/<job>/<JOB>_REFILL.lua` (and the template under
-  `_master/<Char>/config/<job>/`), then `gs reload`. Check the effect on other characters: every item it
+- New refill list: add `<Char>/<job>/<JOB>_REFILL.lua` (and the template under
+  `_master/<Char>/<job>/`), then `gs reload`. Check the effect on other characters: every item it
   names becomes foreign for every list that does not name it.
 - New quiver pair: call `QuiverManager.after_ranged_attack(spell, ammo, quiver, threshold)` from the
   job's `job_aftercast`, as THF and COR do, and add the quiver to that job's refill list of every
@@ -811,7 +811,7 @@ Fixed since the page was first written (night cleanup `85ad22b`, 2026-09-24, unl
   in the checker and auditor, the `build_frequency_map` docstring.
 - `SLOT_NAMES` in `wardrobe_auditor.lua` removed.
 - PLD template SCH/RDM lists now carry Echo Drops (template = live); Kaories has its own PLD overlay.
-- `config/craft/` is deployed by the clone (`2557885`).
+- `common/craft/` is deployed by the clone (`2557885`).
 - Refill and wardrobe panels now follow the player's chat separator options (`64a0c20`, 2026-09-27).
 - 2026-09-29 (checked offline, not yet in game): after `//po` the Hoxne ammo lock stayed open while
   the stance still showed Hoxne. `AmpullaLock.set_slot` now records the lock with `CombatMode.hold`,
@@ -833,14 +833,14 @@ Still open:
 - Refill surplus pushes the preferred variant back first and keeps the lesser one - `queue_surplus`,
   `refill_manager.lua:94`
 - Tetsouo's COR list lacks `Brz. Bull. Pouch`, so the global foreign sweep pushes the pouches
-  COR_AFTERCAST needs - `_master/Tetsouo/config/cor/COR_REFILL.lua` (Kaories' list has it)
+  COR_AFTERCAST needs - `_master/Tetsouo/cor/COR_REFILL.lua` (Kaories' list has it)
 - Unresolvable refill item names are reported as "Out of stock" - `plan_item`, `refill_manager.lua:153`
 - A refill config that fails to load (syntax error) silently falls back to `FALLBACK_LIST` with the
   label "no <path>", and its food then counts as foreign - `resolve_list_for_player`,
   `config_resolver.lua:192`
 - Refill has no in-progress guard; overlapping runs replay stale slot moves - `RefillManager.refill`,
   `refill_manager.lua:249`
-- Tetsouo plays SMN live but `Tetsouo/config/smn/` holds no refill file: `rf` on SMN uses
+- Tetsouo plays SMN live but `Tetsouo/smn/` holds no refill file: `rf` on SMN uses
   `FALLBACK_LIST` and pushes every food, Echo Drops and quiver named in any list to the Case as foreign
 - With no player the auditor falls back to Tetsouo's sets folder, on any character; `wo` reaches it
   through `build_pinned_bags` and `collect_all_used_names` - `sets_dir`, `wardrobe_auditor.lua:39`

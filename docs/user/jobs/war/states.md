@@ -65,7 +65,7 @@ Ikenga or Loxotic the game refuses them and their turn in the chain is lost.
 
 ## Files
 
-In `<Char>/config/war/`: `WAR_STATES.lua` (modes and defaults),
+In `<Char>/war/`: `WAR_STATES.lua` (modes and defaults),
 `WAR_KEYBINDS.lua` (keys), `WAR_HUD.lua` (HUD section and row order),
 `WAR_WS_CONFIG.lua` (weaponskills per weapon),
 `WAR_TP_CONFIG.lua` (TP bonus), `WAR_CUSTOM.lua` (your own modes and gear, see

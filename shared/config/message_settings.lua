@@ -35,11 +35,7 @@ local MessageSettings = {}
 --- Absolute path of the per-character settings file
 --- @return string Path to [CharName]/config/message_modes.lua
 local function get_settings_path()
-    local char_name = player and player.name or 'Tetsouo'
-
-    -- Save in character's own config directory (using dynamic path)
-    local base_path = windower.addon_path .. 'data/'
-    return base_path .. char_name .. '/config/message_modes.lua'
+    return require('shared/utils/core/char_paths').writable('saved', 'message_modes.lua')
 end
 
 --- Load settings from file

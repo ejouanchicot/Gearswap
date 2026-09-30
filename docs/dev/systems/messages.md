@@ -10,7 +10,7 @@ every chat line, whoever wrote it. Two shared renderers give multi-line output o
 `InfoBlock` for data blocks (status, stats, cards) and `HelpScreen` for help screens. On top of
 that, three include-time hooks wrap Mote-Include's `user_post_precast` / `user_post_midcast` so
 that every job ability, spell and weapon skill is announced automatically, with a per-character
-verbosity (`full` / `on` / `off`) persisted to `<Char>/config/message_modes.lua` and changed with
+verbosity (`full` / `on` / `off`) persisted to `<Char>/saved/message_modes.lua` and changed with
 `//gs c jamsg|spellmsg|wsmsg`.
 
 This page covers the core: facade, API, engine, renderer, colours and palette, chat options (width,
@@ -45,14 +45,14 @@ does not).
 | `shared/hooks/init_ability_messages.lua` | 97 | Wraps `user_post_precast` -> ability handler |
 | `shared/hooks/init_spell_messages.lua` | 97 | Wraps `user_post_midcast` -> spell handler |
 | `shared/hooks/init_ws_messages.lua` | 138 | Wraps `user_post_precast` -> WS line from `UNIVERSAL_WS_DATABASE` |
-| `shared/config/message_settings.lua` | 188 | Loads/saves `<Char>/config/message_modes.lua` into `_G.MESSAGE_SETTINGS` |
+| `shared/config/message_settings.lua` | 188 | Loads/saves `<Char>/saved/message_modes.lua` into `_G.MESSAGE_SETTINGS` |
 | `shared/config/message_mode_config.lua` | 82 | Factory `MessageModeConfig.create(opts)` that builds the four mode configs below |
 | `shared/config/JA_MESSAGES_CONFIG.lua` | 38 | `MessageModeConfig.create{...}` over `ja_mode` |
 | `shared/config/WS_MESSAGES_CONFIG.lua` | 37 | Same over `ws_mode` (short check `is_tp_only`) |
 | `shared/config/ENHANCING_MESSAGES_CONFIG.lua` | 37 | Same over `spell_mode` |
 | `shared/config/ENFEEBLING_MESSAGES_CONFIG.lua` | 37 | Same over the same `spell_mode` |
 | `shared/config/message_modes.lua` | 29 | Reference copy nothing loads (its header says so) |
-| `_master/config_global/message_modes.lua` | 12 | Seed copied by `clone_character.py` to `<Char>/config/message_modes.lua` |
+| `_master/config_global/message_modes.lua` | 12 | Seed copied by `clone_character.py` to `<Char>/saved/message_modes.lua` |
 
 Also part of the pipeline, documented elsewhere: formatters (`formatters/{combat,jobs,magic,system,ui}/`,
 `utilities/roll_messages.lua`, `utilities/party_messages.lua`) in
@@ -292,7 +292,7 @@ timestamp=false`.
 ### Colours, palette and chat options
 
 Three modules decide a colour code, all reading the player's `chat` table of
-`<Char>/config/UI_CONFIG.lua`, resolved and checked by `UIStyle.get().chat`
+`<Char>/common/UI_CONFIG.lua`, resolved and checked by `UIStyle.get().chat`
 (`shared/utils/ui/ui_style.lua`, local `resolve_chat`; cached per `_G.UIConfig` table, so re-read on
 every job load and after `UIStyle.invalidate()`):
 
@@ -340,7 +340,7 @@ caller).
    does not exist).
 3. `_G.RegionConfig.get_orange_code(_G.RegionConfig.get_region(player.name))`, read at each use
    (`rawget(_G, 'RegionConfig')`). Each entry file sets `_G.RegionConfig` from
-   `<Char>/config/REGION_CONFIG.lua` at file level. Live values: Tetsouo EU -> 3, Kaories EU -> 2.
+   `<Char>/common/REGION_CONFIG.lua` at file level. Live values: Tetsouo EU -> 3, Kaories EU -> 2.
 4. Default 57.
 
 The first time `WARNING` is read after `RegionConfig` exists, `trace_region` writes the orange it
@@ -583,7 +583,7 @@ flowchart LR
     DC -->|"set_display_mode"| CFG["JA / ENHANCING / WS _MESSAGES_CONFIG"]
     CFG -->|"set_*_mode"| MS["message_settings.lua"]
     MS --> G["_G.MESSAGE_SETTINGS"]
-    MS -->|"io.open w"| FILE["<Char>/config/message_modes.lua"]
+    MS -->|"io.open w"| FILE["<Char>/saved/message_modes.lua"]
     FILE -->|"dofile on first require per load"| MS
     HND["handlers and hooks"] -->|"is_enabled / show_description / is_tp_only"| CFG
     CFG -->|"get_*_mode"| G
@@ -607,7 +607,7 @@ flowchart LR
   on an invalid mode. The predicates read `MessageSettings` on every call, so a mode change applies to
   the next action without reload.
 - Seeds: `_master/config_global/message_modes.lua` (`ja_mode='full'`, others `'on'`) is copied to
-  `<Char>/config/` by `clone_character.py`; a re-clone keeps the character's own file
+  `<Char>/common/` by `clone_character.py`; a re-clone keeps the character's own file
   (`KEPT_ON_RECLONE`). `shared/config/message_modes.lua` is never read.
 
 ### Validator (`//gs c msgtests`)
@@ -770,10 +770,10 @@ All message commands are listed in `CommonCommands.is_common_command`.
 
 | Source | Keys / values | Default and where it lives |
 |---|---|---|
-| `<Char>/config/message_modes.lua` | `spell_mode`, `ja_mode`, `ws_mode` in `full/on/off` | `'on'` each when the file is missing; clone seed has `ja_mode='full'` |
-| `<Char>/config/UI_CONFIG.lua` `UIConfig.chat` | `separators`, `separator_char`, `separator_color`, `width`, `job_tag`, `colors` (see "Colours, palette and chat options") | template `_master/config_global/UI_CONFIG.lua` block `CHAT`; standard look when absent |
-| `<Char>/config/UI_CONFIG.lua` `UIConfig.rolls` | COR roll display (`style`, `remote_style`, details, order) | see [messages-formatters.md](messages-formatters.md) (`roll_messages.lua`) and [ui-overlay.md](ui-overlay.md) |
-| `<Char>/config/REGION_CONFIG.lua` via `_G.RegionConfig` | `get_region(name)`, `get_orange_code(region)` | orange 57 when absent |
+| `<Char>/saved/message_modes.lua` | `spell_mode`, `ja_mode`, `ws_mode` in `full/on/off` | `'on'` each when the file is missing; clone seed has `ja_mode='full'` |
+| `<Char>/common/UI_CONFIG.lua` `UIConfig.chat` | `separators`, `separator_char`, `separator_color`, `width`, `job_tag`, `colors` (see "Colours, palette and chat options") | template `_master/config_global/UI_CONFIG.lua` block `CHAT`; standard look when absent |
+| `<Char>/common/UI_CONFIG.lua` `UIConfig.rolls` | COR roll display (`style`, `remote_style`, details, order) | see [messages-formatters.md](messages-formatters.md) (`roll_messages.lua`) and [ui-overlay.md](ui-overlay.md) |
+| `<Char>/common/REGION_CONFIG.lua` via `_G.RegionConfig` | `get_region(name)`, `get_orange_code(region)` | orange 57 when absent |
 | `_G.PERFORMANCE_PROFILING.enabled` | prints hook lazy-load time | written by `shared/utils/debug/performance_profiler.lua` |
 | Renderer `_config` | `enabled`, `filter_level`, `color_mode`, `timestamp`, `prefix_style` (never read) | module local, reset per sandbox |
 
@@ -790,7 +790,7 @@ All message commands are listed in `CommonCommands.is_common_command`.
 | `windower._hook_wraps` | `init_*_messages.lua` | on GearSwap's persistent `user_windower` proxy: survives `gs reload` and job changes, reset by `//lua reload gearswap` |
 | `UIStyle` cache (chat options) | `ui_style.lua` | per `_G.UIConfig` table (re-resolved on each load and after `invalidate`) |
 | Engine `_template_cache`, `_message_data`; renderer `_config`, `_stats`; handler `JOB_DATABASES`, `db_cache`, `recent_messages`; hook `handler_loaded`/`modules_loaded`; `region_traced` | module locals | per sandbox |
-| Files written | `<Char>/config/message_modes.lua` (every mode change and first run), `data/message_validation.{json,txt}` (every `msgtests`) | disk |
+| Files written | `<Char>/saved/message_modes.lua` (every mode change and first run), `data/message_validation.{json,txt}` (every `msgtests`) | disk |
 
 No event is registered, no coroutine scheduled, no keybind or text object created by any file on this
 page, so nothing needs cleanup in `file_unload`.

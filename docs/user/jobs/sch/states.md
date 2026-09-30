@@ -72,7 +72,7 @@ your own in `SCH_CUSTOM.lua`.
 
 ## Files
 
-In `<YourChar>/config/sch/`: `SCH_STATES.lua` (modes and defaults),
+In `<YourChar>/sch/`: `SCH_STATES.lua` (modes and defaults),
 `SCH_KEYBINDS.lua` (keys), `SCH_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `SCH_TP_CONFIG.lua` (TP bonus),
 `SCH_LOCKSTYLE.lua` (lockstyle 1), `SCH_MACROBOOK.lua` (book 1, page 1). See

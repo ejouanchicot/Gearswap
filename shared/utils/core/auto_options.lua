@@ -26,7 +26,7 @@ local AutoOptions = {}
 function AutoOptions.on(name)
     local options = rawget(_G, '_auto_options')
     if options == nil then
-        local ok, cfg = pcall(require, 'config/AUTO_ABILITIES')
+        local ok, cfg = require('shared/utils/core/char_paths').load('common', 'AUTO_ABILITIES')
         options = (ok and type(cfg) == 'table') and cfg or {}
         _G._auto_options = options
     end

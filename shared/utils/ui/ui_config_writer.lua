@@ -140,7 +140,7 @@ end
 --- @return string|nil
 function UIConfigWriter.path()
     if not (player and player.name and windower and windower.addon_path) then return nil end
-    return windower.addon_path .. 'data/' .. player.name .. '/config/UI_CONFIG.lua'
+    return require('shared/utils/core/char_paths').file('common', 'UI_CONFIG.lua')
 end
 
 --- Save one option. value nil = comment the line out (back to standard).

@@ -49,7 +49,7 @@ It creates:
 ```
 data/<Name>/
 ├── <Name>_<JOB>.lua      one entry file per job
-├── sets/<job>_sets.lua   one set file per job
+├── <job>/<job>_sets.lua   one set file per job
 └── config/
     ├── <job>/            keys, modes, lockstyle, macro book... per job
     ├── alt/              alt commands (main only)
@@ -63,16 +63,16 @@ The template's character name inside the copied `.lua` files is replaced with yo
 **Running it again** for the same name: after the confirmation, the old
 folder is moved to `addons/GearSwap/clone_backups/<Name>_<date>/` (never
 deleted), a fresh one is built, and these files, written in game, are copied
-back from the backup: `config/ui_settings.lua` (HUD), `config/message_modes.lua`,
-`config/alt_window.lua`, `config/alt_state.lua`, `config/WARP_ITEMS_OWNED.lua`,
-`config/combat_mode.lua`, `config/treasure_mode.lua`,
-`config/STEALTH_CONFIG.lua`, every `config/<job>/<JOB>_HUD.lua` and
+back from the backup: `saved/ui_settings.lua` (HUD), `saved/message_modes.lua`,
+`saved/alt_window.lua`, `saved/alt_state.lua`, `saved/WARP_ITEMS_OWNED.lua`,
+`common/combat_mode.lua`, `common/treasure_mode.lua`,
+`common/STEALTH_CONFIG.lua`, every `<job>/<JOB>_HUD.lua` and
 `temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom
 files) is only in the backup: copy it back yourself.
 
 ## 4. Put in your gear
 
-Open `data/<Name>/sets/<job>_sets.lua`. It holds the author's gear; replace it
+Open `data/<Name>/<job>/<job>_sets.lua`. It holds the author's gear; replace it
 with yours.
 
 - Item names must match the game exactly.
@@ -100,7 +100,7 @@ Then check:
 ## Lockstyle and DressUp
 
 The lockstyle is sent as `/lockstyleset <number>`, using the number in
-`config/<job>/<JOB>_LOCKSTYLE.lua`. DressUp is not needed. By default the
+`<job>/<JOB>_LOCKSTYLE.lua`. DressUp is not needed. By default the
 setup unloads DressUp just before `/lockstyleset` and loads it again 3 seconds
 later. If you do not use DressUp,
 turn that off once with `//gs c dressup` (the choice is kept, for every

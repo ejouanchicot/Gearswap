@@ -1,6 +1,6 @@
 # Set names
 
-Your gear lives in `<YourName>/sets/<job>_sets.lua`. GearSwap picks a set by its
+Your gear lives in `<YourName>/<job>/<job>_sets.lua`. GearSwap picks a set by its
 **name**: write a set under the right name and it is used, with no code to touch.
 A set left out is simply not worn (the set above it stays on).
 

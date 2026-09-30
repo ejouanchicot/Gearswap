@@ -40,7 +40,7 @@ local modules_loaded = false
 --- @param fallback table Defaults when the file is absent or fails to load
 --- @return table
 local function load_blm_config(char_name, config_name, fallback)
-    local ok, config = pcall(require, char_name .. '/config/blm/' .. config_name)
+    local ok, config = require('shared/utils/core/char_paths').load('job', config_name, 'BLM', char_name)
     if ok and config then
         return config
     end

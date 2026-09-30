@@ -85,7 +85,7 @@ work as on every job: [README.md](README.md#all-commands-on-this-job).
 
 ## Files
 
-In `<YourChar>/config/pup/`: `PUP_STATES.lua` (modes and defaults),
+In `<YourChar>/pup/`: `PUP_STATES.lua` (modes and defaults),
 `PUP_KEYBINDS.lua` (keys), `PUP_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `PUP_TP_CONFIG.lua` (TP bonus, `pet_ws_tp`),
 `PUP_LOCKSTYLE.lua` (lockstyle 1), `PUP_MACROBOOK.lua` (book 1, page 1). See

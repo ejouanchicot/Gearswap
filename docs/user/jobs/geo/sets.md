@@ -129,7 +129,7 @@ The provided file has `sets.precast.JA['Bolster']`, `['Life Cycle']`,
 - **Entrust set.** An Indi- aimed at someone else right after Entrust wears
   `sets.midcast.Indi.Entrust` instead of the Geomancy set.
 - **Entrust first (option, off by default).** With `geo_entrust = true` in
-  `<YourName>/config/AUTO_ABILITIES.lua`, an Indi- cast on a party member
+  `<YourName>/common/AUTO_ABILITIES.lua`, an Indi- cast on a party member
   (not yourself) while Entrust is ready is held back: Entrust goes up, then
   the Indi- is cast again (and gets the Entrust set).
 - **Full Circle first (option, off by default).** With

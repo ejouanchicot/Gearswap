@@ -67,7 +67,7 @@ the job.
 | `!f10` | Mote: Kiting on / off: `sets.Kiting` over idle and engaged gear | always | not on the HUD |
 | `f12` | Mote: put your current gear back on and print the modes | always | not on the HUD |
 
-- The six common keys come from your `config/COMMON_KEYBINDS.lua`.
+- The six common keys come from your `common/COMMON_KEYBINDS.lua`.
 - Your own keys from `SCH_CUSTOM.lua` are added on top (the template file has
   only commented examples). `//gs c kc` lists every key conflict.
 
@@ -114,7 +114,7 @@ Type them as `//gs c <command>`, or `/console gs c <command>` in a macro.
 
 ## Configuration files for this job
 
-In `<YourName>/config/sch/`:
+In `<YourName>/sch/`:
 
 | File | What it sets |
 |---|---|
@@ -126,7 +126,7 @@ In `<YourName>/config/sch/`:
 | `SCH_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |
 | `SCH_HUD.lua` | Order of this job's HUD sections and rows |
 
-Sets: `<YourName>/sets/sch_sets.lua`, see [sets.md](sets.md).
+Sets: `<YourName>/sch/sch_sets.lua`, see [sets.md](sets.md).
 
 ## Not done by the job
 

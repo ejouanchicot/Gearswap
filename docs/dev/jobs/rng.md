@@ -42,8 +42,8 @@ What RNG adds on top of the shared pipeline:
 | `shared/jobs/rng/functions/RNG_BUFFS.lua` | 22 | `job_buff_change = LifecycleManager.buff_change()` (no `refresh_after_buff`: no RNG buff swaps idle / engaged gear) |
 | `shared/jobs/rng/functions/RNG_COMMANDS.lua` | 115 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/rng/functions/RNG_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/rng/functions/RNG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('RNG', 'config/rng/RNG_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/rng/functions/RNG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('RNG', 'config/rng/RNG_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/rng/functions/RNG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('RNG', 'rng/RNG_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/rng/functions/RNG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('RNG', 'rng/RNG_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/rng/functions/logic/ranged.lua` | 85 | `PRECAST_LAYERS`, `MIDCAST_LAYERS`, `layers`, `equip_layers`, `prepare_precast` (Flurry groups), `start` (Flurry listener) |
 | `shared/jobs/rng/functions/logic/set_builder.lua` | 117 | Idle and engaged: HybridMode, town, Mote layers, weapons (main, sub, range), movement |
 | `_master/config/rng/RNG_STATES.lua` | 80 | Mote mode options, `RangeWeapon`, `MainWeapon`, `SubWeapon`, `FastCast`, `AutoMedicine` |
@@ -238,12 +238,12 @@ T = `_master/sets/rng_sets.lua`. Player version:
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/config/rng/RNG_STATES.lua` | see states | entry `user_setup` |
-| `<char>/config/rng/RNG_KEYBINDS.lua` | 7 entries | entry `user_setup`, `file_unload` |
-| `<char>/config/rng/RNG_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
-| `<char>/config/rng/RNG_CUSTOM.lua` | examples only | shared custom states |
-| `<char>/config/rng/RNG_HUD.lua` | empty | HUD |
-| `<char>/config/rng/RNG_LOCKSTYLE.lua`, `RNG_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
+| `<char>/rng/RNG_STATES.lua` | see states | entry `user_setup` |
+| `<char>/rng/RNG_KEYBINDS.lua` | 7 entries | entry `user_setup`, `file_unload` |
+| `<char>/rng/RNG_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
+| `<char>/rng/RNG_CUSTOM.lua` | examples only | shared custom states |
+| `<char>/rng/RNG_HUD.lua` | empty | HUD |
+| `<char>/rng/RNG_LOCKSTYLE.lua`, `RNG_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
 Registries that list RNG: `clone_character.py` `ALL_VALID_JOBS`,
 `character_db.lua` `ALL_JOBS`, `UI_FORMATTER.lua` `job_titles`,

@@ -54,7 +54,7 @@ end
 --- @param default_page number Fallback page
 --- @return table MACROBOOKS
 local function load_macrobooks(config_path, default_subjob, default_book, default_page)
-    local success, MacroConfig = pcall(require, config_path)
+    local success, MacroConfig = pcall(require, require('shared/utils/core/char_paths').legacy_module(config_path))
     if not success or not MacroConfig then
         return fallback_macrobooks(default_subjob, default_book, default_page)
     end

@@ -1,6 +1,6 @@
 # THF — set names and automatic gear
 
-Every set name THF reads in `<YourName>/sets/thf_sets.lua`, and everything the
+Every set name THF reads in `<YourName>/thf/thf_sets.lua`, and everything the
 job puts on by itself. Keys and modes: [states.md](states.md). Names every job
 understands (Fast Cast, subjob actions, Doom, Dual Wield, movement...):
 [set names](../../guides/sets.md).
@@ -149,7 +149,7 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 | `sets.<Aby Weapon>` | Instead of both, while Aby Proc is On: `sets.Dagger2`, `sets.Sword`, `sets.Club`, `sets['Great Sword']`, `sets.Polearm`, `sets.Staff`, `sets.Scythe` (main and sub in one set) |
 
 - A weapon value with no set is skipped: the weapon you hold stays.
-- With `equip_without_set = true` in `<YourName>/config/WEAPON_CONFIG.lua`, a
+- With `equip_without_set = true` in `<YourName>/common/WEAPON_CONFIG.lua`, a
   value that is the exact name of a weapon is equipped without any set, and a
   main-hand set chosen as the Sub Weapon only moves the off hand.
 - To add a weapon: a value in `THF_STATES.lua` and a set of the same name.

@@ -23,7 +23,7 @@ local char_name = player and player.name or nil
 local custom_colors = nil
 
 if char_name then
-    local success, UIColorConfig = pcall(require, char_name .. '/config/UI_COLOR_CONFIG')
+    local success, UIColorConfig = require('shared/utils/core/char_paths').load('common', 'UI_COLOR_CONFIG', nil, char_name)
     if success and UIColorConfig then
         custom_colors = UIColorConfig
     end

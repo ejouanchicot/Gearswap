@@ -48,7 +48,7 @@ drift.
 | `shared/jobs/run/functions/RUN_BUFFS.lua` | 19 | `LifecycleManager.buff_change()` |
 | `shared/jobs/run/functions/RUN_COMMANDS.lua` | 202 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` (HUD refresh only) |
 | `shared/jobs/run/functions/RUN_MOVEMENT.lua` | 24 | Comments only |
-| `shared/jobs/run/functions/RUN_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('RUN', 'config/run/RUN_LOCKSTYLE', 1, 'SAM')` |
+| `shared/jobs/run/functions/RUN_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('RUN', 'run/RUN_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/run/functions/RUN_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('RUN', ..., 'SAM', 1, 1)` |
 | `shared/jobs/run/functions/logic/set_builder.lua` | 174 | Idle/engaged: HybridMode, weapon, grip, town, movement |
 | `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU) |
@@ -82,7 +82,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include
     M->>E: user_setup(): states, schedule keybinds +0.5 s, UI, JCM, schedule macro/lockstyle gate +0.2 s, dualbox
-    M->>E: init_gear_sets() -> include sets/run_sets.lua
+    M->>E: init_gear_sets() -> include run/run_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.BluMagicConfig = RUN_BLU_MAGIC, require RUN_TP_CONFIG (sets _G.RUNTPConfig)
     E->>E: JobChangeManager.cancel_all()
@@ -242,7 +242,7 @@ Created by `RUNStates.configure()` on every `user_setup()`. Keys from
 | `SubWeapon` | Utu, Refined | Refined | `^numpad2` | `set_builder.lua` `apply_grip` |
 | `RuneMode` | Ignis .. Tenebrae (8) | Ignis | `^numpad3` | `rune_manager.lua` `execute_rune` |
 | `FastCast` | 0..80 step 10 | 30 | none | `midcast_watchdog.lua` (fallback cast time) |
-| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` at the end of `configure()` |
+| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `common/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` at the end of `configure()` |
 
 Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
 `TreasureMode` (hidden, `!numpad.`), see
@@ -303,15 +303,15 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/run/RUN_STATES.lua` | see states | file | entry `user_setup` (hard-coded `Tetsouo/...`, rewritten by the clone script) |
-| `<char>/config/run/RUN_KEYBINDS.lua` | 4 entries (+ `COMMON_KEYBINDS.lua`) | file | entry (deferred), `file_unload`, HUD |
-| `<char>/config/run/RUN_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
-| `<char>/config/run/RUN_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
-| `<char>/config/run/RUN_LOCKSTYLE.lua` | 3 | file; factory fallback 1 | `LockstyleManager` (8 s after load) |
-| `<char>/config/run/RUN_MACROBOOK.lua` | book 15 page 1 | file; fallback book 1 page 1 | `MacrobookManager` (0.2 s after load, dual-box update) |
-| `<char>/config/run/RUN_TP_CONFIG.lua` -> `_G.RUNTPConfig` | Moonshade 250, Lionheart 500 | file | entry `get_sets` (`require`), `RUN_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
-| `<char>/config/run/RUN_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | entry `get_sets` -> `aoe_manager` (captured on first require) |
-| `<char>/config/run/RUN_REFILL.lua` | not in the template | player-created | refill system (fallback list without it) |
+| `<char>/run/RUN_STATES.lua` | see states | file | entry `user_setup` (hard-coded `Tetsouo/...`, rewritten by the clone script) |
+| `<char>/run/RUN_KEYBINDS.lua` | 4 entries (+ `COMMON_KEYBINDS.lua`) | file | entry (deferred), `file_unload`, HUD |
+| `<char>/run/RUN_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
+| `<char>/run/RUN_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
+| `<char>/run/RUN_LOCKSTYLE.lua` | 3 | file; factory fallback 1 | `LockstyleManager` (8 s after load) |
+| `<char>/run/RUN_MACROBOOK.lua` | book 15 page 1 | file; fallback book 1 page 1 | `MacrobookManager` (0.2 s after load, dual-box update) |
+| `<char>/run/RUN_TP_CONFIG.lua` -> `_G.RUNTPConfig` | Moonshade 250, Lionheart 500 | file | entry `get_sets` (`require`), `RUN_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
+| `<char>/run/RUN_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | entry `get_sets` -> `aoe_manager` (captured on first require) |
+| `<char>/run/RUN_REFILL.lua` | not in the template | player-created | refill system (fallback list without it) |
 | `RECAST_CONFIG`, `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry, `is_on_cooldown` |
 
 ## State & lifetime
@@ -383,7 +383,7 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 
 - RUN is untested in game in its current form: any change here has no player to
   confirm it. Prefer the offline checks below, and say so in the commit.
-- The entry's paths are hard-coded to `Tetsouo/config/run/...` in the template; the
+- The entry's paths are hard-coded to `Tetsouo/run/...` in the template; the
   clone script rewrites them. Do not "fix" them in `_master/entry/`.
 - Ripgrep skips the gitignored live folders (`Hysoka/` has RUN): confirm "no caller"
   claims with `grep -r`.

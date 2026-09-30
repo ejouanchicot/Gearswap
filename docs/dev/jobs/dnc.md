@@ -70,9 +70,9 @@ function; line numbers are given only where no function name fits.
 | `_master/sets/dnc_sets.lua` | 1035 | Template sets (flat; data, size not a defect) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
-Character overlay: `_master/<Character>/config/dnc/` holds `DNC_MACROBOOK.lua`
+Character overlay: `_master/<Character>/dnc/` holds `DNC_MACROBOOK.lua`
 and `DNC_REFILL.lua`; the author's live DNC uses the modular
-`sets/dnc/{dnc_sets,armor,capes,weapons}.lua`.
+`dnc/{dnc_sets,armor,capes,weapons}.lua`.
 
 ## How it works
 
@@ -232,7 +232,7 @@ equipped after the variant, on any weaponskill (since 2026-09-29).
 
 Then, with Saber Dance up, `sets.buff['Saber Dance']` is combined on top
 (since 2026-09-29), then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
-set, main + sub; with `equip_without_set` in `config/WEAPON_CONFIG.lua`, a
+set, main + sub; with `equip_without_set` in `common/WEAPON_CONFIG.lua`, a
 value with no set but a weapon name gives `{main = value}`), then, when
 `SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. That field
 is written into `result`, which is a fresh table only when the weapon set was
@@ -308,7 +308,7 @@ from `shared/hooks/init_spell_messages.lua`.
 
 Created by `DNCStates.configure()` on every `user_setup()`. Keybinds from
 `_master/config/dnc/DNC_KEYBINDS.lua`, all `cyclestate`; `#numpad0`
-(AutoMedicine) comes from the character's `config/COMMON_KEYBINDS.lua`. No bind
+(AutoMedicine) comes from the character's `common/COMMON_KEYBINDS.lua`. No bind
 is filtered by subjob.
 
 | State | Values | Default | Key | Read by |
@@ -377,15 +377,15 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/config/dnc/DNC_STATES.lua` | see states | entry `user_setup` |
-| `<char>/config/dnc/DNC_KEYBINDS.lua` | 10 binds | entry `user_setup`, `file_unload`, KeybindGuard |
-| `<char>/config/dnc/DNC_CUSTOM.lua` | nothing active | `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/config/dnc/DNC_HUD.lua` | empty lists | HUD section / row order |
-| `<char>/config/dnc/DNC_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 2 (factory fallback 1) | `LockstyleManager` through `get_style` |
-| `<char>/config/dnc/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 4 (WAR 5) (factory 1/1) | `MacrobookManager` |
-| `<char>/config/dnc/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | `TPBonusCalculator` (main and sub weapons) |
-| `<char>/config/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | `ClimaticManager` |
-| `<char>/config/dnc/DNC_REFILL.lua` | none in the template | refill system |
+| `<char>/dnc/DNC_STATES.lua` | see states | entry `user_setup` |
+| `<char>/dnc/DNC_KEYBINDS.lua` | 10 binds | entry `user_setup`, `file_unload`, KeybindGuard |
+| `<char>/dnc/DNC_CUSTOM.lua` | nothing active | `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/dnc/DNC_HUD.lua` | empty lists | HUD section / row order |
+| `<char>/dnc/DNC_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 2 (factory fallback 1) | `LockstyleManager` through `get_style` |
+| `<char>/dnc/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 4 (WAR 5) (factory 1/1) | `MacrobookManager` |
+| `<char>/dnc/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | `TPBonusCalculator` (main and sub weapons) |
+| `<char>/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | `ClimaticManager` |
+| `<char>/dnc/DNC_REFILL.lua` | none in the template | refill system |
 | Hard-coded | step recast 220, Presto 236 and level 77 (`execute_step`), samba costs (`SAMBAS`), `CAST_SPACING` 2 s, Climactic window 5 s, `WS_MIN_TP` 1000, auto-jump 1000 TP | code |
 
 ## State & lifetime

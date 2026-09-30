@@ -147,13 +147,13 @@ with the same name; `//gs c alt berserk` sends the alt's.
 | Refill | `//gs c rf` restocks from the list in `WAR_REFILL.lua`, a file you create; without it a default list is used ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 | Doom | `sets.buff.Doom` goes on and neck, rings and waist stay locked until Doom is gone |
 | Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
-| Recast announce | An action refused on recast can tell the party, per action, from `config/RECAST_CONFIG.lua` |
+| Recast announce | An action refused on recast can tell the party, per action, from `common/RECAST_CONFIG.lua` |
 | TP bonus | Moonshade Earring and Boii Cuisses +3 added only when they reach the next TP step; Chango, Warcry (Savagery merits) and Fencer counted ([TP bonus](tp-bonus.md)) |
 | Subjob spells | Cures and enhancing spells from /WHM or /RDM keep the gear you had on: the template has no Fast Cast or midcast set for them (add `sets.precast.FC`, `sets.midcast['Healing Magic']`...) |
 
 ## Configuration files for this job
 
-In `<YourName>/config/war/`:
+In `<YourName>/war/`:
 
 | File | What you change there |
 |---|---|
@@ -167,10 +167,10 @@ In `<YourName>/config/war/`:
 | `WAR_MACROBOOK.lua` | Macro book and page per subjob, and per dual-box alt job |
 | `WAR_REFILL.lua` | Not provided: create it for `//gs c rf` |
 
-Files shared by every job are in `<YourName>/config/`: `COMMON_KEYBINDS.lua`,
+Files shared by every job are in `<YourName>/common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
 `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
-Your sets are in `<YourName>/sets/war_sets.lua`.
+Your sets are in `<YourName>/war/war_sets.lua`.
 
 ## See also
 

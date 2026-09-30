@@ -77,12 +77,12 @@ numbers are avoided because they drift.
 Tetsouo overlay (`_master/Tetsouo/`, gitignored since 2026-09-27 like every
 character overlay) and live copies (gitignored, identical to the overlay):
 `Tetsouo_WAR.lua` differs from the template in the header comment (`@author` still
-reads the character name), `init_gear_sets` includes `sets/war/war_sets.lua`, and
-`job_update` also calls `_G.LagDebugger.on_job_update()`. `config/war/`:
+reads the character name), `init_gear_sets` includes `war/war_sets.lua`, and
+`job_update` also calls `_G.LagDebugger.on_job_update()`. `war/`:
 `WAR_MACROBOOK` uses book 3 instead of 22-30; `WAR_STATES` adds `SubtleBlow` and
 `Hoxne` to `HybridMode` and lists `Chango` second; `WAR_CUSTOM` holds only the
 commented examples (the `FullEmpy` test mode was removed on 2026-09-30); `WAR_REFILL` exists only there. Sets are modular:
-`sets/war/{war_sets,armor,capes,weapons}.lua`; weapon sets are created by a loop in
+`war/{war_sets,armor,capes,weapons}.lua`; weapon sets are created by a loop in
 `war_sets.lua`. `Kaories/` and `_master/Kaories/` contain no WAR files.
 
 ## How it works
@@ -105,7 +105,7 @@ sequenceDiagram
     E->>E: _G.WARWSConfig = require WAR_WS_CONFIG
     E->>M: include Mote-Include
     M->>E: user_setup(): states + WS slots, AmpullaLock.apply, keybinds, UI, JCM, macrobook/lockstyle, dualbox
-    M->>E: init_gear_sets() -> include sets/war_sets.lua, then sync_weapon_with_hand()
+    M->>E: init_gear_sets() -> include war/war_sets.lua, then sync_weapon_with_hand()
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.UIConfig, _G.RECAST_CONFIG, _G.WARTPConfig
     E->>E: JobChangeManager.cancel_all()
@@ -127,7 +127,7 @@ slot would show `N/A`.
 2. `AmpullaLock.apply(state.HybridMode.value)`: `configure()` has just reset
    `HybridMode`, so an ammo lock left by a Hoxne stance of the previous load is
    released here.
-3. `require('Tetsouo/config/war/WAR_KEYBINDS')`, stored in the global `WARKeybinds`,
+3. `require('Tetsouo/war/WAR_KEYBINDS')`, stored in the global `WARKeybinds`,
    then `bind_all()`, which calls `show_intro()`. The `KeybindManager` intro
    requires `WAR_MACROBOOK.lua` and `WAR_LOCKSTYLE.lua`; both return nothing, but the
    requires define `select_default_macro_book` / `select_default_lockstyle` as a
@@ -391,7 +391,7 @@ change ends in a `gs reload`), so all values reset to their defaults. Keys from
 | `JumpAuto` | On, Off | On | `^numpad2`, /DRG only (`subjob = "DRG"`) | `auto_jump.lua` `auto_trigger_jump` |
 | `WS1`..`WS5` | the weapon's WS list, or `None` | entry *i* of the list | `^numpad3`..`^numpad7` | `WSSlots.get` / `cast`; HUD |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` (never reached for WAR) |
-| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
+| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `common/COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
 
 Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
 `TreasureMode` (hidden, `!numpad.`), see
@@ -434,8 +434,8 @@ releases it otherwise); always refreshes the UI.
 
 ## Set names the code looks up
 
-T = `_master/sets/war_sets.lua`, L = `Tetsouo/sets/war/war_sets.lua` (same as the
-overlay `_master/Tetsouo/sets/war/war_sets.lua`; weapon sets come from `weapons.lua`
+T = `_master/sets/war_sets.lua`, L = `Tetsouo/war/war_sets.lua` (same as the
+overlay `_master/Tetsouo/war/war_sets.lua`; weapon sets come from `weapons.lua`
 through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/sets.md).
 
 | Set | Looked up by | T | L |
@@ -463,17 +463,17 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/war/WAR_STATES.lua` | see states | file itself | entry `user_setup` (path hard-coded `Tetsouo/...`, replaced by the clone script) |
-| `<char>/config/war/WAR_KEYBINDS.lua` | 8 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload`, HUD |
-| `<char>/config/war/WAR_CUSTOM.lua` | examples only (template and overlay) | file | `KeybindManager` via `custom_states` |
-| `<char>/config/war/WAR_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
-| `<char>/config/war/WAR_WS_CONFIG.lua` `max_slots`, `by_weapon` | 5, 7 weapons | file (no pcall: a missing file aborts `get_sets`) | `WSSlots` via `_G.WARWSConfig` |
-| `<char>/config/war/WAR_TP_CONFIG.lua` | 5 merits, Agoge, 20 JP gifts | file | `WSPrecastHandler` via `_G.WARTPConfig` (captured on first action) |
-| `<char>/config/war/WAR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 4 (all subjobs) | file; factory fallback 4 (`WAR_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
-| `<char>/config/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
-| `<char>/config/war/WAR_REFILL.lua` | not in the template (overlay only) | player-created | `//gs c refill` (fallback list without it) |
-| `<char>/config/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
-| `<char>/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
+| `<char>/war/WAR_STATES.lua` | see states | file itself | entry `user_setup` (path hard-coded `Tetsouo/...`, replaced by the clone script) |
+| `<char>/war/WAR_KEYBINDS.lua` | 8 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload`, HUD |
+| `<char>/war/WAR_CUSTOM.lua` | examples only (template and overlay) | file | `KeybindManager` via `custom_states` |
+| `<char>/war/WAR_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
+| `<char>/war/WAR_WS_CONFIG.lua` `max_slots`, `by_weapon` | 5, 7 weapons | file (no pcall: a missing file aborts `get_sets`) | `WSSlots` via `_G.WARWSConfig` |
+| `<char>/war/WAR_TP_CONFIG.lua` | 5 merits, Agoge, 20 JP gifts | file | `WSPrecastHandler` via `_G.WARTPConfig` (captured on first action) |
+| `<char>/war/WAR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 4 (all subjobs) | file; factory fallback 4 (`WAR_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
+| `<char>/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
+| `<char>/war/WAR_REFILL.lua` | not in the template (overlay only) | player-created | `//gs c refill` (fallback list without it) |
+| `<char>/common/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
+| `<char>/common/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
 

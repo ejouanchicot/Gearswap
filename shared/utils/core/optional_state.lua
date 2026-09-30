@@ -53,7 +53,7 @@ function OptionalState.create(cfg)
     --- Path of the character's settings file, or nil before the player is known.
     function S.settings_path()
         if not (player and player.name and windower and windower.addon_path) then return nil end
-        return ('%sdata/%s/config/%s'):format(windower.addon_path, player.name, cfg.file)
+        return require('shared/utils/core/char_paths').writable('common', cfg.file)
     end
 
     --- The character's settings, read once per load: {shown, hidden, keys}.

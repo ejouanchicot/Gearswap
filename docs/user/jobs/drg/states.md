@@ -50,7 +50,7 @@ your own in `DRG_CUSTOM.lua`.
 
 ## Files
 
-In `<YourChar>/config/drg/`: `DRG_STATES.lua` (modes and defaults),
+In `<YourChar>/drg/`: `DRG_STATES.lua` (modes and defaults),
 `DRG_KEYBINDS.lua` (keys), `DRG_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `DRG_TP_CONFIG.lua` (TP bonus, jump
 order), `DRG_LOCKSTYLE.lua` (lockstyle 1), `DRG_MACROBOOK.lua` (book 1,

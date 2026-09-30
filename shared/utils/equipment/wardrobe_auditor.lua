@@ -33,13 +33,20 @@ local VALID_JOBS = {
 }
 
 --- Resolve the active character's sets directory. Each char has its own
---- sets folder under data/<CharName>/sets/. Falls back to 'Tetsouo/sets/'
---- if no player info is available (rare race during init).
---- @return string Absolute path with trailing slash
+--- The character folder, data/<CharName>/ (nil before the player is known).
+--- Set files live in <job>/ and common/ since 2026-09-30 (char_paths.lua),
+--- in sets/ before.
+--- @return string|nil Absolute path with trailing slash
+local function char_dir()
+    local name = require('shared/utils/core/char_paths').name()
+    return name and (windower.addon_path .. 'data/' .. name .. '/') or nil
+end
+
+--- The old sets folder, data/<CharName>/sets/.
+--- @return string|nil
 local function sets_dir()
-    local p = windower.ffxi.get_player()
-    local char_name = (p and p.name) or 'Tetsouo'
-    return windower.addon_path .. 'data/' .. char_name .. '/sets/'
+    local dir = char_dir()
+    return dir and (dir .. 'sets/') or nil
 end
 
 --- Recursively walk a directory tree and return all .lua file paths.
@@ -81,12 +88,50 @@ end
 --- Files in `common/` (e.g. rings.lua) apply to every discovered job because
 --- they typically declare equipment shared across all jobs.
 --- @return table {[job_lower] = {file_path, file_path, ...}}
+--- Set files of the current layout: in <job>/, the set files (lower-case
+--- names: war_sets.lua, armor.lua...) and <JOB>_CUSTOM.lua (its gear); in
+--- common/ and common/craft/, the lower-case files (rings.lua, craft sets).
+--- The upper-case files around them are settings, not gear.
+--- @return table jobs {[job_lower] = {paths}}, table common {paths}
+local function layout_set_files()
+    local dir, jobs, common = char_dir(), {}, {}
+    if not dir then return jobs, common end
+    local function gear_file(name)
+        return name:match('^[%l%d].*%.lua$') or name:match('_CUSTOM%.lua$')
+    end
+    for job in pairs(VALID_JOBS) do
+        for _, name in ipairs(windower.get_dir(dir .. job .. '/') or {}) do
+            if gear_file(name) then
+                jobs[job] = jobs[job] or {}
+                table.insert(jobs[job], dir .. job .. '/' .. name)
+            end
+        end
+    end
+    for _, sub in ipairs({'common/', 'common/craft/'}) do
+        for _, name in ipairs(windower.get_dir(dir .. sub) or {}) do
+            if name:match('^[%l%d].*%.lua$') then table.insert(common, dir .. sub .. name) end
+        end
+    end
+    return jobs, common
+end
+
+--- Every file that can hold gear, old and new layout.
+--- @return table Absolute paths
+local function all_set_files()
+    local out = sets_dir() and walk_lua_files(sets_dir()) or {}
+    local jobs, common = layout_set_files()
+    for _, paths in pairs(jobs) do
+        for _, p in ipairs(paths) do table.insert(out, p) end
+    end
+    for _, p in ipairs(common) do table.insert(out, p) end
+    return out
+end
+
 local function discover_job_files()
     local dir = sets_dir()
-    local common = {}
-    local jobs = {}
+    local jobs, common = layout_set_files()
 
-    for _, path in ipairs(walk_lua_files(dir)) do
+    for _, path in ipairs(dir and walk_lua_files(dir) or {}) do
         local rel = path:sub(#dir + 1):gsub('\\', '/')
         if rel:match('^common/') then
             table.insert(common, path)
@@ -560,7 +605,7 @@ function WardrobeAuditor.audit()
 
     if loaded_count == 0 then
         add_to_chat(167, red .. "[WARDROBE AUDIT] Failed to load any job sets")
-        add_to_chat(167, red .. "[WARDROBE AUDIT] Scanned dir: " .. sets_dir())
+        add_to_chat(167, red .. "[WARDROBE AUDIT] Scanned: " .. tostring(char_dir()) .. " (<job>/, common/, sets/)")
         return false
     end
 
@@ -630,7 +675,7 @@ function WardrobeAuditor.build_pinned_bags()
         table.insert(pinned[key], bag_id)
     end
 
-    for _, path in ipairs(walk_lua_files(sets_dir())) do
+    for _, path in ipairs(all_set_files()) do
         local file = io.open(path, 'r')
         if file then
             local content = file:read('*all')

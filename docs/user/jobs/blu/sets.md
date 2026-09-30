@@ -5,7 +5,7 @@ by itself. Modes and keys: [states.md](states.md). Names every job shares
 (subjob actions, movement, Doom, Dual Wield tiers, Treasure Hunter, Obi and
 Orpheus): [set names](../../guides/sets.md).
 
-Your file: `<YourName>/sets/blu_sets.lua`. The provided file has every set the
+Your file: `<YourName>/blu/blu_sets.lua`. The provided file has every set the
 code reads, empty: fill in your pieces. `//gs c debugmidcast` shows, for each
 spell, which set was chosen and why.
 
@@ -16,7 +16,7 @@ spell, which set was chosen and why.
 | `sets['<Weapon>']` | Main Weapon (`^numpad1`) or Sub Weapon (`^numpad2`) is that value: one set per value you add in `BLU_STATES.lua`, named exactly like the value (`sets['Naegling'] = {main = "Naegling"}`, `sets['Thibron'] = {sub = "Thibron"}`) |
 
 - The value `Free` (default) has no set: you keep the weapon you wear.
-- With `equip_without_set = true` in `config/WEAPON_CONFIG.lua`, a value that is
+- With `equip_without_set = true` in `common/WEAPON_CONFIG.lua`, a value that is
   a real weapon name needs no set.
 - The weapon sets go on top of the idle and engaged sets, in town too.
 - A weapon set chosen as the Sub Weapon only moves the off hand, even if it
@@ -85,7 +85,7 @@ when it exists (`sets.precast.FC['Blue Magic'].Resistant`).
 At the start of every spell `sets.midcast.FastRecast` goes on first, under the
 spell's set: a spell set that leaves slots empty keeps FastRecast pieces there.
 
-Each spell has a **category**, read from your `config/blu/BLU_SPELL_MAP.lua`;
+Each spell has a **category**, read from your `blu/BLU_SPELL_MAP.lua`;
 a spell the map does not list takes the broad category of the project's Blue
 Magic list: `Physical`, `Magical`, `Buff`, `Breath`, `Healing`, or
 `MagicAccuracy` for a debuff. Order, first found wins:
@@ -189,7 +189,7 @@ name: `sets.precast.JA['Chain Affinity']`, `['Burst Affinity']`, `['Diffusion']`
 - **Single wield** picks the `.SW` engaged sets by itself from your off hand.
 - **Weapons**: Main / Sub Weapon sets on top of idle and engaged.
 - **Unbridled Learning before an unbridled spell** and **the Expiacion
-  window**: off unless turned on in `config/AUTO_ABILITIES.lua`, see
+  window**: off unless turned on in `common/AUTO_ABILITIES.lua`, see
   [states.md](states.md#automatic-abilities). They change no gear.
 - **AzureSets addon** loaded with BLU, unloaded when you leave it.
 

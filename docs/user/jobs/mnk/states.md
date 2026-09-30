@@ -51,7 +51,7 @@ your own in `MNK_CUSTOM.lua`.
 
 ## Files
 
-In `<YourChar>/config/mnk/`: `MNK_STATES.lua` (modes and defaults),
+In `<YourChar>/mnk/`: `MNK_STATES.lua` (modes and defaults),
 `MNK_KEYBINDS.lua` (keys), `MNK_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `MNK_TP_CONFIG.lua` (TP bonus),
 `MNK_LOCKSTYLE.lua` (lockstyle 1), `MNK_MACROBOOK.lua` (book 1, page 1). See
