@@ -848,10 +848,16 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 update). `AutoCureSettings.load()` (`shared/utils/debuff/autocure_settings.lua`)
 copies them, then lays the character's `_common/combat/AUTOCURE_CONFIG.lua` over
 them key by key (`CharPaths.optional('common', 'AUTOCURE_CONFIG')`; missing file =
-defaults only). An entry of `silence_cure_items` / `paralysis_cure_items` may be a
-plain name (`'Echo Drops'`) or `{ name, id }`; a name without id is looked up in
-`res.items`, and an entry whose id stays unknown is dropped. A list given by the
-character replaces the default list whole. The template
+defaults only). Since 2026-10-01 the item lists come from one place for Auto
+Medicine and `//gs c cleanse`: `silence_cure_items` / `paralysis_cure_items` are
+taken from the `items` of `_common/combat/CLEANSE_CONFIG.lua` (keys `silence`,
+`paralysis`) through `CleanseMethods.items_for`, else the defaults of
+`shared/data/debuffs/DEBUFF_REMOVAL.lua` (`cleanse_items` in
+`autocure_settings.lua`); the lists of `AUTOCURE_CONFIG.lua` and of the shared file
+are only used when those modules cannot be read. An entry may be a plain name
+(`'Echo Drops'`) or `{ name, id }`; a name without id takes the id of the shared
+lists, else is looked up in `res.items`, and an entry whose id stays unknown is
+dropped. See [cleanse.md](cleanse.md). The template
 `_master/config_global/AUTOCURE_CONFIG.lua` has every key written with its default value; the clone
 copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/combat/`.
 
@@ -860,9 +866,9 @@ copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/com
 | `test_mode` | `false` | `debuff_checker.lua` (at load, builds test tables), `precast_guard.lua` |
 | `test_debuff` | `"Berserk"` | only `check_magic`, which is unreachable |
 | `auto_cure_silence` | `true` | `precast_guard.lua` |
-| `silence_cure_items` | Echo Drops 4151, Remedy 4155 | `precast_guard.lua` |
+| `silence_cure_items` | from `CLEANSE_CONFIG.lua` `items.silence` (Echo Drops 4151, Remedy 4155) | `precast_guard.lua` |
 | `auto_cure_paralysis` | `true` | `precast_guard.lua` |
-| `paralysis_cure_items` | Remedy 4155 (Panacea does not cure Paralysis) | `precast_guard.lua` |
+| `paralysis_cure_items` | from `CLEANSE_CONFIG.lua` `items.paralysis` (Remedy 4155; Panacea does not cure Paralysis) | `precast_guard.lua` |
 | `auto_medicine_start` | absent (= `'On'`) | `auto_medicine.lua`, cold load only; a job change keeps the current value |
 | `auto_cure_poison`, `auto_cure_blind` | `false` | nothing |
 | `debug` | `false` | test-mode messages in PrecastGuard |
@@ -983,10 +989,10 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
 - **New blocking debuff**: add it to the right production table in
   `debuff_checker.lua` (lowercase name, `priority`, `message`) and to
   `DEBUFF_DEFINITIONS` if it should have a test-mode stand-in.
-- **New cure item**: add it (a name, or `{ name, id }`) to `silence_cure_items` or
-  `paralysis_cure_items`, in priority order: in `DEBUFF_AUTOCURE_CONFIG.lua` for
-  every character, in a character's `_common/combat/AUTOCURE_CONFIG.lua` for that
-  one only.
+- **New cure item**: add its name to `items.silence` or `items.paralysis`, in
+  priority order: in a character's `_common/combat/CLEANSE_CONFIG.lua` for that
+  one, or in the default `items` of `shared/data/debuffs/DEBUFF_REMOVAL.lua` for
+  every character (Auto Medicine and `//gs c cleanse` both read them).
   Auto-cure for a new debuff needs a new branch in `check_and_block` / `check_ja` and
   a message pair in `message_debuffs.lua`.
 - **New multi-charge ability**: add it to `MULTI_CHARGE_ABILITIES`
