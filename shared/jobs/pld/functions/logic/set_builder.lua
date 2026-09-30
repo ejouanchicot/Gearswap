@@ -3,10 +3,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Provides centralized set building for both engaged and idle states.
 ---   Handles complex PLD-specific gear logic:
----   • Main weapon selection (MainWeapon state, /SCH stance override)
----   • Shield selection (Duban, Aegis, Blurred Shield +1; weapon-driven in
----     Sortie and under /SCH)
----   • Shining exception (Alber Strap grip requirement)
+---   • Main weapon selection (MainWeapon state, a stance's own weapon)
+---   • Shield per weapon for the modes that own it, and the grip of a
+---     two-handed weapon: the player's PLD_WEAPONS.lua (weapons_config below)
 ---   • HybridMode application (PDT/MDT/Sortie, or DPS/Tanking/Hoxne
 ---     under /SCH, with shield awareness)
 ---   • XP mode support (idleXp/meleeXp sets)
@@ -62,46 +61,49 @@ local IDLE_SET_BY_MODE = {
     Hoxne   = 'MDT'
 }
 
---- In Sortie the shield follows the weapon instead of the mode's set: the
---- mitigation sets are shared with the other modes and carry their own sub,
---- so the sub is decided here rather than duplicated into every Sortie set.
-local SORTIE_SHIELD_BY_WEAPON = {
-    Burtgang = 'Aegis',
-    Naegling = 'Blurred Shield +1'
-}
+--- The player's pld/combat/PLD_WEAPONS.lua (see the template for examples):
+---   shields        {[HybridMode] = {[weapon] = shield}}: in those modes the
+---                  shield follows the weapon, winning over the set's sub
+---                  (Sortie shares the mitigation sets of the other modes,
+---                  which carry their own sub). Other modes: the set's sub.
+---   stance_weapon  {[HybridMode] = weapon}: the weapon a mode puts in hand
+---                  whatever MainWeapon says (the hate stance's weapon)
+---   grips          {[weapon] = grip}: two-handed weapons take a grip, not a
+---                  shield. Default {Shining = 'Alber Strap'}: a polearm has
+---                  to (a rule of the game, not a gear choice).
+--- Nothing forced when the file is missing, except the default grip.
+local DEFAULT_GRIPS = {Shining = 'Alber Strap'}
 
---- The /SCH stances. DPS and Hoxne swing whatever MainWeapon holds; Tanking
---- owns Burtgang outright, that weapon being what makes it the hate stance.
-local SCH_MODES = {
-    DPS     = true,
-    Tanking = true,
-    Hoxne   = true
-}
-
-local SCH_WEAPON_BY_MODE = {
-    Tanking = 'Burtgang'
-}
-
---- Which shield each /SCH weapon pairs with: the damage swords take Duban,
---- Burtgang takes Aegis. Keyed by weapon rather than by stance because that
---- is where the rule actually lives - a weapon added later brings its shield
---- with it. Every stance idles in sets.idle.MDT, which carries Aegis, so the
---- damage swords have to be corrected back to Duban here.
-local SCH_SHIELD_BY_WEAPON = {
-    Excalibur = 'Duban',
-    Naegling  = 'Duban',
-    Burtgang  = 'Aegis'
-}
-
----   The weapon a /SCH stance actually puts in hand, or nil outside /SCH
----   @return string|nil Weapon set name
-local function sch_weapon()
-    local mode = state.HybridMode and state.HybridMode.value
-    if not (mode and SCH_MODES[mode]) then
-        return nil
+--- The config, read once per load.
+local weapons_cfg = nil
+local function weapons_config()
+    if weapons_cfg == nil then
+        local ok, cfg = pcall(function()
+            return require('shared/utils/core/char_paths').optional('job', 'PLD_WEAPONS', 'PLD')
+        end)
+        weapons_cfg = (ok and type(cfg) == 'table') and cfg or false
     end
-    return SCH_WEAPON_BY_MODE[mode]
-        or (state.MainWeapon and state.MainWeapon.value)
+    return weapons_cfg or {}
+end
+
+local function current_mode()
+    return state.HybridMode and state.HybridMode.value
+end
+
+--- The weapon a stance puts in hand, or nil when the mode keeps MainWeapon.
+--- @return string|nil Weapon set name
+local function stance_weapon()
+    local mode = current_mode()
+    local by_mode = weapons_config().stance_weapon
+    return mode and type(by_mode) == 'table' and by_mode[mode] or nil
+end
+
+--- The grip of the weapon in hand, or nil for a one-handed weapon.
+--- @return string|nil
+local function grip_for(weapon)
+    local grips = weapons_config().grips
+    if type(grips) ~= 'table' then grips = DEFAULT_GRIPS end
+    return weapon and grips[weapon] or nil
 end
 
 
@@ -125,7 +127,7 @@ end
 ---   being swung - the weaponskill slots, not just the gear - asks here.
 ---   @return string|nil Weapon set name
 function SetBuilder.current_weapon()
-    return sch_weapon() or (state.MainWeapon and state.MainWeapon.value)
+    return stance_weapon() or (state.MainWeapon and state.MainWeapon.value)
 end
 
 ---   Apply main weapon to set
@@ -148,15 +150,15 @@ function SetBuilder.apply_weapon(result)
 end
 
 ---   Apply sub weapon (shield) to set
----   Uses shield sets defined in pld_sets.lua (sets.Duban, sets.Aegis, etc.)
----   Handles Shining exception (Alber Strap).
+---   A two-handed weapon takes its grip (PLD_WEAPONS.lua grips).
 ---   @param result table Current equipment set
 ---   @param in_town boolean Whether player is in town
 ---   @return table Set with shield applied
 function SetBuilder.apply_shield(result, in_town)
-    -- Exception 1: Shining always uses Alber Strap (Polearm needs grip)
-    if state.MainWeapon and state.MainWeapon.current == 'Shining' then
-        result = set_combine(result, sets.Alber)
+    -- Exception 1: a two-handed weapon takes its grip, not a shield
+    local grip = grip_for(state.MainWeapon and state.MainWeapon.current)
+    if grip then
+        result = set_combine(result, {sub = grip})
         return result
     end
 
@@ -180,27 +182,19 @@ end
 SetBuilder.apply_mode_ammo = require('shared/utils/equipment/ampulla_lock').stance_ammo
 
 ---   Force the shield the current mode calls for, where the mode owns it
----   Both Sortie and the /SCH stances read it off the weapon; every other mode
----   leaves the sub to its own set. Runs last so it wins over the sub carried
----   by that set.
+---   (PLD_WEAPONS.lua shields: the shield follows the weapon in hand); every
+---   other mode leaves the sub to its own set. Runs last so it wins over the
+---   sub carried by that set.
 ---   @param result table Current equipment set
 ---   @return table Set with the mode's shield applied
 function SetBuilder.apply_mode_shield(result)
-    local mode = state.HybridMode and state.HybridMode.value
-    if not mode then
-        return result
-    end
-
-    local shield = SCH_SHIELD_BY_WEAPON[sch_weapon() or '']
-    if not shield and mode == 'Sortie' then
-        local weapon = state.MainWeapon and state.MainWeapon.value
-        shield = weapon and SORTIE_SHIELD_BY_WEAPON[weapon]
-    end
-
+    local mode = current_mode()
+    local shields = weapons_config().shields
+    local by_weapon = mode and type(shields) == 'table' and shields[mode]
+    local shield = type(by_weapon) == 'table' and by_weapon[SetBuilder.current_weapon() or ''] or nil
     if shield then
         result = set_combine(result, {sub = shield})
     end
-
     return result
 end
 
@@ -245,8 +239,8 @@ function SetBuilder.select_engaged_base(base_set)
     -- PRIORITY 3: HybridMode set (ENGAGED_SET_BY_MODE)
     local mode_set = hybrid_set(sets.engaged, ENGAGED_SET_BY_MODE)
     if mode_set then
-        -- If Shining weapon, return HybridMode set WITHOUT sub (Alber will be applied after)
-        if state.MainWeapon and state.MainWeapon.current == 'Shining' then
+        -- A two-handed weapon: the HybridMode set WITHOUT sub (its grip goes on after)
+        if grip_for(state.MainWeapon and state.MainWeapon.current) then
             local hybrid_no_sub = {}
             for slot, item in pairs(mode_set) do
                 if slot ~= 'sub' then
@@ -275,16 +269,16 @@ function SetBuilder.build_engaged_set(base_set)
 
     -- Step 1: Select base set (BurtgangKC detection + HybridMode)
     local result = SetBuilder.select_engaged_base(base_set)
-    local is_shining = state.MainWeapon and state.MainWeapon.current == 'Shining'
+    local is_two_handed = grip_for(state.MainWeapon and state.MainWeapon.current) ~= nil
     local is_burtgang_kc = state.MainWeapon and state.MainWeapon.current == 'BurtgangKC'
 
     -- Step 2: Apply main weapon
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 3: Apply Alber Strap if Shining (overrides HybridMode shield)
+    -- Step 3: a two-handed weapon's grip (overrides HybridMode shield)
     -- SKIP if BurtgangKC (already has Kraken Club in sub)
-    if is_shining and not is_burtgang_kc then
-        result = set_combine(result, sets.Alber)
+    if is_two_handed and not is_burtgang_kc then
+        result = set_combine(result, {sub = grip_for(state.MainWeapon.current)})
     end
 
     -- Step 4: Apply XP mode (meleeXp set when Xp = On)
@@ -292,7 +286,7 @@ function SetBuilder.build_engaged_set(base_set)
         result = set_combine(result, sets.meleeXp)
     end
 
-    -- Step 5: Mode shield (Sortie weapon-driven, /SCH stance-driven)
+    -- Step 5: Mode shield (PLD_WEAPONS.lua shields, weapon-driven)
     result = SetBuilder.apply_mode_shield(result)
     result = SetBuilder.apply_mode_ammo(result)
 
@@ -313,13 +307,13 @@ function SetBuilder.build_idle_set(base_set)
 
     -- Step 1: Town detection - use town set as base
     local result, in_town = SetBuilder.select_idle_base(base_set)
-    local is_shining = state.MainWeapon and state.MainWeapon.current == 'Shining'
+    local is_two_handed = grip_for(state.MainWeapon and state.MainWeapon.current) ~= nil
     local is_burtgang_kc = state.MainWeapon and state.MainWeapon.current == 'BurtgangKC'
 
     -- Step 2: Apply main weapon (applies to both town and non-town)
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 3: Apply shield (handles town mode and Shining)
+    -- Step 3: Apply shield (handles town mode and the grip of a two-handed weapon)
     -- SKIP if BurtgangKC (already has Kraken Club in sub)
     if not is_burtgang_kc then
         result = SetBuilder.apply_shield(result, in_town)
@@ -330,11 +324,11 @@ function SetBuilder.build_idle_set(base_set)
         return SetBuilder.apply_mode_ammo(SetBuilder.apply_mode_shield(result))
     end
 
-    -- Step 5: Apply HybridMode set (IDLE_SET_BY_MODE) outside of town - SKIP sub if Shining or BurtgangKC
+    -- Step 5: Apply HybridMode set (IDLE_SET_BY_MODE) outside of town - SKIP sub if two-handed or BurtgangKC
     local mode_set = hybrid_set(sets.idle, IDLE_SET_BY_MODE)
     if mode_set then
-        if is_shining or is_burtgang_kc then
-            -- Shining/BurtgangKC: Apply HybridMode WITHOUT sub (keep Alber Strap/Kraken Club)
+        if is_two_handed or is_burtgang_kc then
+            -- Two-handed / BurtgangKC: HybridMode WITHOUT sub (keep the grip / Kraken Club)
             local hybrid_no_sub = {}
             for slot, item in pairs(mode_set) do
                 if slot ~= 'sub' then

@@ -56,9 +56,9 @@ local WEAPON_OPTIONS = {
     'Excalibur', 'Burtgang', 'KC', 'BurtgangKC', 'Naegling', 'Shining', 'Malevo'
 }
 
---- Sortie runs on two weapons only. Their shields are picked by SetBuilder
---- from the weapon itself (Burtgang > Aegis, Naegling > Blurred Shield +1),
---- so no Sortie set has to carry a sub slot.
+--- Sortie runs on two weapons only. Their shields can follow the weapon
+--- (pld/combat/PLD_WEAPONS.lua, shields.Sortie), so no Sortie set has to
+--- carry a sub slot.
 local SORTIE_WEAPON_OPTIONS = {
     'Burtgang', 'Naegling'
 }
