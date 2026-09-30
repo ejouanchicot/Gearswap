@@ -20,7 +20,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `_master/sets/<job>_sets.lua` | yes, 17 files | Generic flat set files, same 17 jobs (`pup_sets.lua` is a skeleton) |
 | `_master/config/<job>/` | yes, 16 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
 | `_master/config/alt/` | yes, 33 files | Dual-box alt command tables (22 `_ALT_COMMANDS`, 5 `_ALT_CUSTOM`, 6 `.lua.example`). Deployed only to a character cloned as MAIN |
-| `_master/config_global/` | yes, 14 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WEAPON_CONFIG` |
+| `_master/config_global/` | yes, 15 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WEAPON_CONFIG` |
 | `_master/Tetsouo/` | no, 78 files | Tetsouo overlay: 9 entries (BLM BRD BST COR DNC PLD SMN THF WAR, with the modular set include), `config/<job>/` for those jobs plus `config/craft/`, `config_global/{DUALBOX_CONFIG,REGION_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
 | `_master/Kaories/` | no, 38 files | Kaories overlay: 4 entries (COR GEO PLD RDM), 4 flat set files, `config/{cor,geo,pld,rdm}/`, `config_global/{combat_mode,COMMON_KEYBINDS,DUALBOX_CONFIG,REGION_CONFIG,WARDROBE_CONFIG}.lua` |
 | `_master/Gabvanstronger/` | no, 23 files | No entries (the generic ones are used), `config/{blu,rdm,thf}/`, `config_global/{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,WEAPON_CONFIG}.lua`, flat sets + `sets/0_AugGear_Gabvanstronger.lua` |
@@ -38,7 +38,7 @@ A character exists in up to four places:
 1. **Generic templates**: `_master/entry`, `_master/sets`, `_master/config/<job>`, `_master/config/alt`, `_master/config_global`. Since 2026-09-30 an entry template is one line, `include('../shared/entry/<job>.lua')`: the code of every entry lives in `shared/entry/<job>.lua`, the same for every character, and finds the character's files through `shared/utils/core/char_paths.lua` (`CharPaths.module('job', 'PLD_STATES', 'PLD')`, `CharPaths.relative('sets', 'pld_sets.lua', 'PLD')`, `ConfigLoader.load_ui_config(CharPaths.name(), 'PLD')`). An update of `shared/` updates every entry, with no re-clone. The overlays no longer have `entry/` folders (moved to `data/_backups/overlay_entries_20260930/`).
 2. **Overlay** `_master/<Name>/`: files with the same relative path as a generic file replace it during a clone, and files with no generic counterpart are added. An overlay is used to build the character it belongs to, or for any target when `--source <Name>` names it (see [Source selection](#source-selection)). It can hold a modular set tree `sets/<job>/`, which then replaces the generic flat `sets/<job>_sets.lua`, plus `sets/common/` and loose set files. An overlay may omit `entry/`: the generic entry is then used and renamed.
 3. **Live folder** `data/<Name>/`: what GearSwap loads. Gitignored.
-4. **Runtime-written files** inside the live folder, written by in-game commands: in `saved/`, `ui_settings.lua` (HUD position), `message_modes.lua`, `WARP_ITEMS_OWNED.lua`, `dualbox_role.lua`, `alt_state.lua`, `alt_window.lua`, `temp_binds.lua`, the trace files (`trace.log`, `trace.on`) and `atelier/`; settings the player also edits, rewritten by commands: `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua`, `_common/combat/STEALTH_CONFIG.lua`, `_common/display/UI_CONFIG.lua` (some lines), `<job>/display/<JOB>_HUD.lua` (HUD row order).
+4. **Runtime-written files** inside the live folder, written by in-game commands: in `saved/`, `ui_settings.lua` (HUD position), `message_modes.lua`, `WARP_ITEMS_OWNED.lua`, `dualbox_role.lua`, `alt_state.lua`, `alt_window.lua`, `temp_binds.lua`, `gear_augments.lua` (`//gs c gearscan`), the trace files (`trace.log`, `trace.on`) and `atelier/`; settings the player also edits, rewritten by commands: `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua`, `_common/combat/STEALTH_CONFIG.lua`, `_common/display/UI_CONFIG.lua` (some lines), `<job>/display/<JOB>_HUD.lua` (HUD row order).
 
 ### Layout of a character folder (since 2026-09-30)
 
@@ -52,7 +52,7 @@ data/<Char>/
             alt/        <JOB>_ALT_CUSTOM.lua only (the generated tables are shared/data/alt/)
         inventory/      REFILL_CONFIG, CRAFT_CONFIG, CRAFT_REFILL, WARDROBE_CONFIG
         combat/         AUTO_ABILITIES, RECAST_CONFIG, DW_CONFIG, ELEMENTAL_BELT, WEAPON_CONFIG,
-                        STEALTH_CONFIG
+                        STEALTH_CONFIG, HP_PRIORITY
         sets/           gear shared by jobs (rings.lua, 0_AugGear_<Name>.lua), craft and
                         fishing set files
     <job>/              one job, by theme (CharPaths.job_group, from the end of the file name)
@@ -141,7 +141,7 @@ Nothing is deleted before the final confirmation. Answering `y`/`o` to "Replace 
 | 7 | `<T>/common/`, `<T>/<job>/`, `<T>/saved/` | `migrate_layout.migrate(T, backup=False)`: the layout of 2026-09-30 | `clone` |
 | 8 | the files matched by `KEPT_ON_RECLONE` | copied back from the backup folder of a re-clone to their place in the new layout (`new_place()`; after step 5, so they keep their own names) | `_restore_kept_files` |
 
-`KEPT_ON_RECLONE` is `saved/{ui_settings,message_modes,alt_window,alt_state,WARP_ITEMS_OWNED,temp_binds}.lua`, `common/{combat_mode,treasure_mode,STEALTH_CONFIG}.lua`, `*/*_HUD.lua`, and the same files at their old places (`config/...`, `config/*/*_HUD.lua`, `temp_binds.lua`) for a backup made before 2026-09-30. `dualbox_role.lua` is left out on purpose: step 6 writes `DUALBOX_CONFIG.lua` from the role asked for, and an old role file would silently override it.
+`KEPT_ON_RECLONE` is `saved/{ui_settings,message_modes,alt_window,alt_state,WARP_ITEMS_OWNED,temp_binds,gear_augments}.lua`, `common/{combat_mode,treasure_mode,STEALTH_CONFIG}.lua`, `*/*_HUD.lua`, and the same files at their old places (`config/...`, `config/*/*_HUD.lua`, `temp_binds.lua`) for a backup made before 2026-09-30. `dualbox_role.lua` is left out on purpose: step 6 writes `DUALBOX_CONFIG.lua` from the role asked for, and an old role file would silently override it.
 
 Files are copied with `shutil.copy2` / `shutil.copytree`. `_copy` records every file that came from the generic layer (not from the overlay) in `_generic_files`. Step 5 rewrites a file only when its content changes. It uses `Path.write_text`, which on Windows writes CRLF line endings. Read or write errors are swallowed.
 
@@ -234,6 +234,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `_common/combat/ELEMENTAL_BELT.lua` | `shared/utils/equipment/elemental_belt.lua` | step 4c | - |
 | `_common/combat/WEAPON_CONFIG.lua` | `shared/utils/equipment/weapon_resolver.lua`, BLU `set_builder.lua` | step 4c | - |
 | `_common/combat/STEALTH_CONFIG.lua` | `shared/utils/stealth/stealth_config.lua` | step 4c; kept on re-clone | `//gs c stealth ...` |
+| `_common/combat/HP_PRIORITY.lua` | `HPPriority.settings()` in `shared/utils/equipment/hp_priority.lua` | step 4c | - |
 | `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
 | `_common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` | step 4c (overlay only) | - |
 | `_common/inventory/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
@@ -246,13 +247,14 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `_common/inventory/CRAFT_REFILL.lua` | `config_resolver.lua` | step 4b | - |
 | `_common/sets/<craft>_sets.lua` | `shared/utils/craft/craft_manager.lua` | step 3 (loose overlay sets) | - |
 | `saved/WARP_ITEMS_OWNED.lua` | `WarpOwned.load` (`shared/utils/wardrobe/lib/warp_owned.lua`) | kept on re-clone | `//gs c wo scan`, `WarpOwned.save` |
+| `saved/gear_augments.lua` | `GearScan.load` (`shared/utils/equipment/gear_scan.lua`), read by HP priority | kept on re-clone | `//gs c gearscan` |
 | `saved/dualbox_role.lua` | `DualBoxRole.apply_saved` | never (deliberately not kept) | `//gs c main` on either box |
 | `saved/alt_state.lua`, `saved/alt_window.lua` | `alt_group.lua`, `alt_window.lua` | kept on re-clone | `//gs c alts ...`, window drag / toggle |
 | `temp_binds.lua` | `shared/utils/keybinds/temp_binds.lua` | kept on re-clone | `//gs c tb` |
 
 When `player` is nil, nine shared modules fall back to the name `'Tetsouo'` (`grep -rln "or 'Tetsouo'\|or \"Tetsouo\"" shared`), including `ui_settings.lua`, `message_settings.lua`, `dualbox_manager.lua` and `alt_commands.lua`.
 
-`shared/utils/equipment/hp_priority.lua` processes only the characters of its own `CHARACTERS` table (Tetsouo, Kaories); others keep their sets as written.
+`shared/utils/equipment/hp_priority.lua` processes every character; its settings come from the character's `_common/combat/HP_PRIORITY.lua` (defaults in the code when the file is missing: on, Unity `'min'`, MP counted on BLM/RDM/GEO, PLD skipped).
 
 ## Live vs template divergence
 
@@ -266,7 +268,7 @@ Method: run the clone on a scratch copy (`SmartCharacterCloner(base_dir=...).clo
 | Kaories | clone adds `config/CRAFT_CONFIG.lua`, `config/pld/PLD_CUSTOM.lua`, `config/pld/PLD_WS_CONFIG.lua` that the live folder lacks | stale live (missing templates; harmless defaults) |
 | Kaories | `config/DUALBOX_CONFIG.lua` | hand-edited since generation; a re-clone regenerates it with `group` |
 
-Every template added since (the `config_global` files `AUTO_ABILITIES`, `DW_CONFIG`, `ELEMENTAL_BELT`, `STEALTH_CONFIG`, `WEAPON_CONFIG`) reaches a live folder only through a re-clone or a manual copy; each reader falls back to defaults when the file is missing.
+Every template added since (the `config_global` files `AUTO_ABILITIES`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `STEALTH_CONFIG`, `WEAPON_CONFIG`) reaches a live folder only through a re-clone or a manual copy; each reader falls back to defaults when the file is missing.
 
 The Kaories overlay duplicates the generic templates for most files of `_master/Kaories/config/`: every template edit has to be made twice, or Kaories's next redeploy gets the old copy.
 
@@ -292,7 +294,7 @@ Full redeploy (`clone_character.py` on an existing character):
 1. Add a block to `CHARACTERS` in `character_db.lua` in exactly this shape: `Name = { jobs = { 'WAR', 'PLD' }, role = 'main' },`, with `jobs` before `role` and no nested braces. If a job is also in `ARCHIVE_JOBS`, move it out.
 2. Optional: create `_master/<Name>/` with the same layout (`entry/<Name>_<JOB>.lua`, `sets/<job>_sets.lua` or `sets/<job>/`, `config/<job>/`, `config_global/`). Without `entry/`, the generic entries are used and renamed. It is picked up automatically when the target is `<Name>`.
 3. Run `CLONE_CHARACTER.bat`. Answer the role, partner and region prompts.
-4. Dual-box: a MAIN gets `config/alt/` from the clone; edit the partner's `config/DUALBOX_CONFIG.lua` (`alt_character` / `main_character` and `group`) to name the new character. Add the character to `CHARACTERS` in `shared/utils/equipment/hp_priority.lua` if its gear should get automatic HP priorities.
+4. Dual-box: a MAIN gets `config/alt/` from the clone; edit the partner's `config/DUALBOX_CONFIG.lua` (`alt_character` / `main_character` and `group`) to name the new character. For automatic HP priorities, set `unity = 'max'` in its `_common/combat/HP_PRIORITY.lua` if its Unity leader is rank 1, and run `//gs c gearscan` once in game.
 5. A character created without an overlay gets no `WARDROBE_CONFIG.lua` (organizer defaults) and no refill lists. Add them by hand, or save them in `_master/<Name>/` and re-clone.
 6. In game: `//lua r gearswap`, `//gs c checksets`, and `//gs c wo scan` if the warp-item list is wanted.
 
@@ -306,7 +308,7 @@ Full redeploy (`clone_character.py` on an existing character):
 ## Interactions
 
 - [dualbox.md](../systems/dualbox.md): reads the generated `DUALBOX_CONFIG.lua`, `config/alt/` (with `_master/config/alt/` as fallback) and the runtime role, state and window files.
-- [equipment-and-inventory.md](../systems/equipment-and-inventory.md): refill reads `<JOB>_REFILL.lua`, `config/craft/CRAFT_REFILL.lua` and every capitalised top-level folder under `data/`; HP priority lists the characters it processes.
+- [equipment-and-inventory.md](../systems/equipment-and-inventory.md): refill reads `<JOB>_REFILL.lua`, `config/craft/CRAFT_REFILL.lua` and every capitalised top-level folder under `data/`; HP priority reads `_common/combat/HP_PRIORITY.lua` and `saved/gear_augments.lua` (written by `//gs c gearscan`).
 - [wardrobe-organizer.md](../systems/wardrobe-organizer.md): reads `WARDROBE_CONFIG.lua` and writes `WARP_ITEMS_OWNED.lua`.
 - [ui-overlay.md](../systems/ui-overlay.md) and [messages.md](../systems/messages.md): read `UI_CONFIG`, `ui_settings`, `UI_COLOR_CONFIG`, `message_modes` and `REGION_CONFIG`.
 - [keybinds-and-custom.md](../systems/keybinds-and-custom.md): `COMMON_KEYBINDS.lua`, `<JOB>_CUSTOM.lua`, `temp_binds.lua`, `combat_mode.lua`.

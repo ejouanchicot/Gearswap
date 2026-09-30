@@ -65,6 +65,7 @@ folder is moved to `addons/GearSwap/clone_backups/<Name>_<date>/` (never
 deleted), a fresh one is built, and these files, written in game, are copied
 back from the backup: `saved/ui_settings.lua` (HUD), `saved/message_modes.lua`,
 `saved/alt_window.lua`, `saved/alt_state.lua`, `saved/WARP_ITEMS_OWNED.lua`,
+`saved/gear_augments.lua`,
 `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua`,
 `_common/combat/STEALTH_CONFIG.lua`, every `<job>/display/<JOB>_HUD.lua` and
 `temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom

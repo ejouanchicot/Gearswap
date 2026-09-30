@@ -626,7 +626,8 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 - Set building: `BaseSetBuilder` (movement, town), AutoMove (`state.Moving`).
   Shared hooks added by `INIT_SYSTEMS` apply on PLD too: ElementalBelt, DualWield,
   TreasureHunter, CombatMode, CustomStates ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
-  HP priority skips PLD (`hp_priority.lua` `SKIP_JOBS`).
+  HP priority skips PLD by default (`skip_jobs` setting of `_common/combat/HP_PRIORITY.lua`,
+  default `{'PLD'}` in `hp_priority.lua` `DEFAULTS`).
 - Commands: `CommonCommands`, `UICommands`, `WatchdogCommands`, `CycleHandler`,
   `LifecycleManager` ([commands and debug](../systems/commands-and-debug.md),
   [core lifecycle](../systems/core-lifecycle.md)); `ScholarActions` and

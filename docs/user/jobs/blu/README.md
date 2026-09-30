@@ -146,7 +146,7 @@ Checked in the code for BLU:
 | Dual-box | Job exchange with your other boxes, alt commands, macro book per alt job |
 | Chat messages | Ability / spell / weaponskill messages, set with `jamsg`, `spellmsg`, `wsmsg` |
 | Plain weapon names | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a weapon value that is a real weapon name needs no set |
-| HP priority | Gear swap order by HP: only for the characters the code lists, not for a new clone |
+| HP priority | Gear swap order by HP, every character; settings in `_common/combat/HP_PRIORITY.lua` ([configuration](../../guides/configuration.md)) |
 
 ## Configuration files for this job
 

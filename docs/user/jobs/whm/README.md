@@ -156,7 +156,7 @@ Checked in the code for WHM:
 | Dual-box | Job exchange with your other boxes, alt commands, macro book per alt job |
 | Chat messages | Ability / spell / weaponskill messages (`jamsg`, `spellmsg`, `wsmsg`), plus a line for each cure tier change |
 | Dual Wield tiers | Only with `sets.DW` in your set file (none in the template) |
-| HP priority | Gear swap order by HP: only for the characters the code lists, not for a new clone |
+| HP priority | Gear swap order by HP, every character; settings in `_common/combat/HP_PRIORITY.lua` ([configuration](../../guides/configuration.md)) |
 
 ## Configuration files for this job
 

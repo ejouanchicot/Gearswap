@@ -693,7 +693,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Treasure Mode gear (`TreasureHunter`) | hooks | needs `sets.TreasureHunter` and the mode shown |
 | CUSTOM states | hooks + `<JOB>_CUSTOM.lua` | templates for all 17 jobs |
 | Combat Mode lock | hook | needs the state shown |
-| HP priority | `HPPriority.apply()` | every job except PLD (`SKIP_JOBS`), and only for the characters listed in `CHARACTERS` |
+| HP priority | `HPPriority.apply()` | every character; every job except the `skip_jobs` of `_common/combat/HP_PRIORITY.lua` (default PLD) |
 | Lockstyle / macrobook factories | wrappers | |
 | KeybindGuard, common keys, key conflicts | KeybindManager | every job |
 | AutoMove loop (`state.Moving`) | `INIT_SYSTEMS` +0.5 s | the gear depends on the set builder (column below) |

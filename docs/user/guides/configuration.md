@@ -16,7 +16,7 @@ see [installation](../getting-started/installation.md)). After an edit,
             alt/             your own commands for the dual-box alt (optional)
         inventory/           refill, craft, wardrobe organizer
         combat/              automatic abilities, recasts, Dual Wield, belt, weapons,
-                             Sneak / Invisible
+                             Sneak / Invisible, HP priority
         sets/                gear shared by your jobs (rings...), your craft and fishing sets
     war/, blm/ ...           one folder per job you play, by the same themes:
         display/             WAR_HUD, WAR_LOCKSTYLE, WAR_MACROBOOK
@@ -66,6 +66,7 @@ re-clone copies them back from the old folder (see
 | `DW_CONFIG.lua` | Dual Wield tiers: while you hold two weapons and are engaged, the pieces of `sets.DW.NoHaste` / `Haste` / `HasteII` / `MaxHaste` (in your job's set file) go on top of your engaged set, chosen by your magic haste (estimated from your buffs). `enabled`, and the % each buff counts for. No `sets.DW` in a job file: nothing changes. `//gs c dw` shows the estimate, `//gs c dw none\|haste\|haste2\|max` forces a tier, `//gs c dw auto` goes back. Slow / Elegy on you are not counted: while slowed, `//gs c dw none` |
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 3.0 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
+| `HP_PRIORITY.lua` | The order your pieces go on in when a set changes: each piece gets its HP as priority, so the HP pieces go on first and your max HP never dips mid-swap. It changes the order only, never what you wear. `enabled` (default `true`), `unity` (`'min'`; `'max'` when your Unity leader is rank 1, for the Unity HP / MP of Unity gear), `mp_jobs` (default `{'BLM', 'RDM', 'GEO'}`: MP counts after HP), `skip_jobs` (default `{'PLD'}`: jobs left alone, their sets give their own priorities). A missing key keeps its default. For pieces your sets name without augments, run `//gs c gearscan` once (and again after new or upgraded gear): it saves their real augments in `saved/gear_augments.lua` |
 | `WARDROBE_CONFIG.lua` | Optional, not in the generic template: bags used by `//gs c wo` (below) |
 
 **Written from your clone answers:**
@@ -86,6 +87,7 @@ re-clone copies them back from the old folder (see
 | `alt_window.lua` | Dragging the alt window (main only) |
 | `alt_state.lua` | The `alts` orders: who follows whom, automation on / off, kept across GearSwap reloads |
 | `WARP_ITEMS_OWNED.lua` | `//gs c wo scan`: the warp items you own |
+| `gear_augments.lua` | `//gs c gearscan`: the augments of your gear, read by the HP priority |
 | `<job>/display/<JOB>_HUD.lua` | `//gs c ui order` / `roworder` (see the per-job table below) |
 | `../temp_binds.lua` | `//gs c tb` (in `<YourName>/`, not in `config/`) |
 
