@@ -14,9 +14,9 @@
 ---   How: at each job load (INIT_SYSTEMS, after Mote has loaded the sets),
 ---   apply() keeps the HP / MP of every piece the sets name (from
 ---   shared/data/equipment/ITEM_HP_MP.lua, generated from game data by
----   scripts/item_db/build_item_db.py, then dropped) and wraps GearSwap's
----   equip(): each set it is given is passed on as a copy whose pieces carry
----   their priority. The sets themselves are never changed.
+---   scripts/item_db/build_item_db.py, then dropped) and adds an equip hook
+---   (equip_hooks.lua): each set GearSwap is given goes on as a copy whose
+---   pieces carry their priority. The sets themselves are never changed.
 ---
 ---   HP / MP of a piece: its base, plus the 'HP+N' / 'MP+N' augments written in
 ---   the set (a piece named without augments, and the piece worn: the ones
@@ -269,28 +269,16 @@ function HPPriority.toggle_order_display()
     return windower._hp_order_debug
 end
 
---- equip() of GearSwap with the ranks of this swap laid on the sets.
-local function wrap_equip()
-    local wrapper = rawget(_G, '_hp_priority_equip')
-    if wrapper and rawget(_G, 'equip') == wrapper then return end
-    local raw_equip = rawget(_G, 'equip')
-    if type(raw_equip) ~= 'function' then return end
-    wrapper = function(...)
-        local st = rawget(_G, state_key)
-        if not st then return raw_equip(...) end
-        local args = { ... }
-        local ranked = {}
-        for i = 1, select('#', ...) do
-            if type(args[i]) == 'table' then
-                args[i] = ranked_copy(args[i], st)
-                ranked[#ranked + 1] = args[i]
-            end
-        end
-        if windower._hp_order_debug then pcall(show_order, ranked, st) end
-        return raw_equip((table.unpack or unpack)(args, 1, select("#", ...)))
-    end
-    _G._hp_priority_equip = wrapper
-    _G.equip = wrapper
+--- The equip hook: each set GearSwap is given goes on as a ranked copy
+--- (equip_hooks.lua, after the duplicate gear hook).
+--- @param set table
+--- @return table
+local function rank_hook(set)
+    local st = rawget(_G, state_key)
+    if not st then return set end
+    local ranked = ranked_copy(set, st)
+    if windower._hp_order_debug then pcall(show_order, { ranked }, st) end
+    return ranked
 end
 
 --- Keep the ITEM_HP_MP entries of every piece the sets name (and the pieces
@@ -353,6 +341,8 @@ end
 --- @return number Number of pieces whose HP / MP is known
 function HPPriority.apply()
     _G[state_key] = nil
+    local EquipHooks = require('shared/utils/equipment/equip_hooks')
+    EquipHooks.remove('hp_priority')
     local job = player and player.main_job
     if not (job and type(_G.sets) == 'table') then
         return 0
@@ -369,7 +359,7 @@ function HPPriority.apply()
     local index = build_index(data)
     _G[state_key] = { index = index, unity = cfg.unity, weigh_mp = cfg.mp_jobs[job] == true,
         scanned = ok_s and GearScan and GearScan.load() or nil }
-    wrap_equip()
+    EquipHooks.add('hp_priority', 20, rank_hook)
     local count = 0
     for _ in pairs(index) do count = count + 1 end
     return count

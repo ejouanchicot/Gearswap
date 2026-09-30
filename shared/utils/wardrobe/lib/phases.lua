@@ -12,7 +12,7 @@
 ---              count_unpacked   - how many items compact_primary would move
 ---   Phase 4    cleanup_inv      - flush leftover inventory gear (with retries)
 ---
---- Phases 2, 3, 3.5, A2 and A3 share `run_burst_loop()` (one mixed burst per
+--- Phases 2, 3 and 3.5 share `run_burst_loop()` (one mixed burst per
 --- step: pushes then pulls, with re-discovery + cycle detection). Each phase
 --- only supplies its own discover_pending() and discover_drainable() closures.
 ---
@@ -400,7 +400,15 @@ function Phases.fill_w1w2(state, on_done)
     local function discover_pending()
         local list = {}
         local claim_pool = {}
-        for _, b in ipairs(Config.OVERFLOW_BAGS) do
+        -- The rule bags too (JOBS / TYPES / PLACE bags outside USED and
+        -- UNUSED): gear no rule puts there is pulled out, and Phase 4 sends
+        -- it on (used gear to USED, the rest to UNUSED).
+        local rule_bag = {}
+        for _, b in ipairs(Config.RULE_BAGS or {}) do rule_bag[b] = true end
+        local scan = {}
+        for _, b in ipairs(Config.OVERFLOW_BAGS) do scan[#scan + 1] = b end
+        for _, b in ipairs(Config.RULE_BAGS or {}) do scan[#scan + 1] = b end
+        for _, b in ipairs(scan) do
             local items = windower.ffxi.get_items(b)
             if items then
                 for slot, it in ipairs(items) do
@@ -411,7 +419,7 @@ function Phases.fill_w1w2(state, on_done)
                         if pin and pin ~= b then
                             entry.target = pin
                             table.insert(list, entry)
-                        elseif not pin and used then
+                        elseif not pin and (used or rule_bag[b]) then
                             table.insert(list, entry)
                         end
                     end

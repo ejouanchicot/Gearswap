@@ -61,8 +61,14 @@ pcall(function()
 end)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   HP PRIORITY (the sets are loaded: Mote ran init_gear_sets before this file)
+---   GEAR HOOKS: doubled items, HP priority (the sets are loaded: Mote ran init_gear_sets before this file)
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Each side of a doubled ring / earring / weapon takes its own copy.
+pcall(function()
+    local ok, DuplicateGear = pcall(require, 'shared/utils/equipment/duplicate_gear')
+    if ok and DuplicateGear then DuplicateGear.install() end
+end)
 
 -- Each swap ranks its pieces by the HP they gain over the worn ones (HPPriority).
 pcall(function()

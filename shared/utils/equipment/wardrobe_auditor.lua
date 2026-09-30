@@ -466,7 +466,7 @@ local function write_report_summary(lines, total_items, total_unused, total_igno
     table.insert(lines, REPORT_SEP)
     table.insert(lines, string.format("  Total wardrobe items:     %d", total_items))
     if total_ignored > 0 then
-        table.insert(lines, string.format("  Ignored (craft/utility):  %d", total_ignored))
+        table.insert(lines, string.format("  Not judged (NEVER_TOUCH): %d", total_ignored))
     end
     table.insert(lines, string.format("  Used by at least 1 job:   %d",
         total_items - total_unused - total_ignored))

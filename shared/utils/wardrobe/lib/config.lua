@@ -68,6 +68,10 @@ Config.ALT_ALL_BAGS      = {8, 10, 11, 12, 13, 14, 15, 16}
 --   never_move  {[item lower] = true}         NEVER_MOVE
 Config.RULES = {place = {}, jobs = {}, types = {}, never_move = {}}
 
+-- Bags the rules send gear to that are in neither USED nor UNUSED: Phase 3
+-- also scans them, so what does not belong there comes out.
+Config.RULE_BAGS = {}
+
 -- Slot keys whose values are item names in sets tables
 Config.SLOT_KEYS = {
     main = true,
@@ -349,6 +353,12 @@ function Config.refresh()
         or union(union(Config.ALT_PRIMARY_BAGS, Config.ALT_OVERFLOW_BAGS), reserved)
 
     strip_protected()
+    Config.RULE_BAGS = {}
+    for _, b in ipairs(rule_bags(Config.RULES)) do
+        if not contains(Config.PRIMARY_BAGS, b) and not contains(Config.OVERFLOW_BAGS, b) then
+            Config.RULE_BAGS[#Config.RULE_BAGS + 1] = b
+        end
+    end
     Config.LOADED_CHAR_CONFIG = path
     return path
 end
@@ -361,6 +371,11 @@ function Config.use_all_jobs_layout()
     Config.OVERFLOW_BAGS = Config.ALT_OVERFLOW_BAGS
     Config.FILL_FALLBACK = Config.ALT_OVERFLOW_BAGS
     Config.ALL_WARDROBES = Config.ALT_ALL_BAGS
+    local kept = {}
+    for _, b in ipairs(Config.RULE_BAGS) do
+        if not contains(Config.PRIMARY_BAGS, b) and not contains(Config.OVERFLOW_BAGS, b) then kept[#kept + 1] = b end
+    end
+    Config.RULE_BAGS = kept
 end
 
 -- Bag id -> human label (used by Log.bag_name and chat)

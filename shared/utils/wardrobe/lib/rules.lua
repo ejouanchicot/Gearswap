@@ -5,7 +5,11 @@
 --- {[item name lower] = {bag, ...}} the organizer already honours for the
 --- `bag = 'wardrobe N'` written in the sets (one copy per listed bag, a copy
 --- already in one of them stays). The final map, strongest first:
----   PLACE  >  bag = '...' in the sets  >  JOBS  >  TYPES
+---   PLACE  >  bag = '...' in the sets  >  JOBS  >  TYPES  >  doubled items
+--- A used item owned in several copies is spread one copy per USED bag (then
+--- the next equippable FILL_FALLBACK bags), so GearSwap can tell the copies
+--- apart by bag (shared/utils/equipment/duplicate_gear.lua names that bag at
+--- each swap).
 --- NEVER_MOVE is not a pin: those items are invisible to the organizer
 --- (Items.is_equipment).
 ---
@@ -96,6 +100,55 @@ local function types_pins(used_names)
     return pins
 end
 
+--- True when a copy carries augments: GearSwap tells such copies apart by
+--- their augments, so they are not doubled items here.
+local function augmented(it, extdata)
+    if not extdata then return false end
+    local ok, ext = pcall(extdata.decode, it)
+    return ok and ext and type(ext.augments) == 'table' and #ext.augments > 0
+end
+
+--- Doubled used items (same item, no augments): one copy per USED bag, then
+--- the equippable fallbacks.
+local function duplicate_pins(used_names)
+    local count = {}
+    local ok_x, extdata = pcall(require, 'extdata')
+    if not ok_x then extdata = nil end
+    local bags = {Config.INV_BAG}
+    for _, b in ipairs(Config.ALL_WARDROBES) do bags[#bags + 1] = b end
+    for _, b in ipairs(Config.OVERFLOW_BAGS) do bags[#bags + 1] = b end
+    local seen_bag = {}
+    for _, bag in ipairs(bags) do
+        if not seen_bag[bag] then
+            seen_bag[bag] = true
+            for _, it in ipairs(windower.ffxi.get_items(bag) or {}) do
+                if type(it) == 'table' and (it.id or 0) > 0 and Items.is_equipment(it.id)
+                    and Items.is_used_name(it.id, used_names) and not augmented(it, extdata) then
+                    count[it.id] = (count[it.id] or 0) + 1
+                end
+            end
+        end
+    end
+    local res = require('resources')
+    local targets = {}
+    for _, b in ipairs(Config.PRIMARY_BAGS) do targets[#targets + 1] = b end
+    for _, b in ipairs(Config.FILL_FALLBACK) do
+        local info = res.bags[b]
+        if info and info.equippable then targets[#targets + 1] = b end
+    end
+    local pins = {}
+    for id, n in pairs(count) do
+        if n > 1 then
+            local list = {}
+            for i = 1, math.min(n, #targets) do list[i] = targets[i] end
+            if #list > 1 then
+                for _, name in ipairs(Items.item_names(id)) do pins[name] = list end
+            end
+        end
+    end
+    return pins
+end
+
 --- The pins of the organizer: the sets' own `bag =` pins merged with the
 --- config's rules, strongest last written.
 --- @param set_pins table {[name] = {bag, ...}} from WardrobeAuditor.build_pinned_bags
@@ -103,7 +156,8 @@ end
 --- @return table {[name] = {bag, ...}}
 function Rules.pins(set_pins, used_names)
     local out = {}
-    for _, layer in ipairs({types_pins(used_names), jobs_pins(), set_pins or {}, Config.RULES.place}) do
+    for _, layer in ipairs({duplicate_pins(used_names), types_pins(used_names), jobs_pins(), set_pins or {},
+            Config.RULES.place}) do
         for name, bags in pairs(layer) do out[name] = bags end
     end
     return out

@@ -2,9 +2,9 @@
 --- Wardrobe Organizer - State Recensement
 ---============================================================================
 --- Builds the algorithm's state table by scanning Config.ALL_WARDROBES
---- (default W1-W6 + W8) and categorizing each item as either "needs to leave
---- the primary bags" (w1w2_unused) or "needs to be promoted from overflow"
---- (w3w6_used). Honors `bag = 'wardrobe N'` pins via a greedy claim_pool
+--- (USED + UNUSED + the rules' bags) and categorizing each item as either
+--- "needs to leave the used bags" (w1w2_unused) or "needs to move from any
+--- other bag" (w3w6_used: promotion, a pin elsewhere, a rule bag emptied). Honors `bag = 'wardrobe N'` pins via a greedy claim_pool
 --- (multi-instance items each claim a different pin slot).
 ---
 --- Public functions:
@@ -231,8 +231,9 @@ function State.build_state()
     --   - Pinned and current_bag != target_bag
     --   - target_kind = 'primary' AND current_bag is in OVERFLOW (need to promote)
     --   - target_kind = 'overflow' AND current_bag is in PRIMARY (need to evict)
-    local PRIMARY_SET = {}
+    local PRIMARY_SET, RULE_SET = {}, {}
     for _, b in ipairs(Config.PRIMARY_BAGS) do PRIMARY_SET[b] = true end
+    for _, b in ipairs(Config.RULE_BAGS or {}) do RULE_SET[b] = true end
 
     for _, b in ipairs(Config.ALL_WARDROBES) do
         for _, e in ipairs(state.items_by_bag[b]) do
@@ -251,6 +252,9 @@ function State.build_state()
             elseif e.target_kind == 'overflow' then
                 if PRIMARY_SET[e.bag] then
                     table.insert(state.w1w2_unused, e)
+                elseif RULE_SET[e.bag] then
+                    -- A rule's bag holding gear no rule puts there: out it goes
+                    table.insert(state.w3w6_used, e)
                 end
                 -- Already in overflow → no move needed
             end

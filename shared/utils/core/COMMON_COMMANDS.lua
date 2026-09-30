@@ -173,12 +173,12 @@ end
 ---                                  WARDROBE_CONFIG sets SCOPE = 'all_jobs')
 ---   `//gs c wo preview|dry`      - dry-run of the same
 ---   `//gs c wo global [preview]` - same as `wo` / `wo preview` (aliases)
----   `//gs c wo verify|check`     - check the active job's items are in W1/W2
+---   `//gs c wo verify|check`     - check every item is where the config puts it
 ---   `//gs c wo scan|scanwarp`    - record owned warp items
 ---   `//gs c wo keep|kept|items`  - list what overflow keeps (read only)
 ---   `//gs c wo reset`, `recover|unlock`, `alt|kaories`
---- W7 (craft) is left alone because it is in none of the bag lists of
---- wardrobe/lib/config.lua; Config.PROTECTED bags are taken out of its bag lists.
+--- The bags come from the character's WARDROBE_CONFIG.lua (wardrobe/lib/
+--- config.lua); its NEVER_TOUCH bags are taken out of every bag list.
 --- @param arg string|nil Mode
 --- @param arg2 string|nil 'preview' / 'dry' after 'global'
 --- @return boolean False only if the organizer failed to load
