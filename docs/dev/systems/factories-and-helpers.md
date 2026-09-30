@@ -49,7 +49,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 
 Other helpers in `shared/utils/equipment/` are documented elsewhere:
 
-- `equip_hooks.lua`, `duplicate_gear.lua`, `hp_priority.lua`, `weapon_resolver.lua`, `equipment_checker.lua`, `wardrobe_auditor.lua`: [equipment-and-inventory.md](equipment-and-inventory.md);
+- `equip_hooks.lua`, `impact_lock.lua`, `duplicate_gear.lua`, `hp_priority.lua`, `weapon_resolver.lua`, `equipment_checker.lua`, `wardrobe_auditor.lua`: [equipment-and-inventory.md](equipment-and-inventory.md);
 - `ampulla_lock.lua`: [jobs/pld.md](../jobs/pld.md) and [jobs/war.md](../jobs/war.md).
 
 ---
@@ -693,6 +693,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Treasure Mode gear (`TreasureHunter`) | hooks | needs `sets.TreasureHunter` and the mode shown |
 | CUSTOM states | hooks + `<JOB>_CUSTOM.lua` | templates for all 17 jobs |
 | Combat Mode lock | hook | needs the state shown |
+| Impact's cloak kept on (`ImpactLock`) | wraps `precast` / `aftercast` / `cancel_spell` at load; equip hook (`equip_hooks.lua`, order 5) while Impact is cast | every character and job; the cloak (Crepuscular or Twilight) in `sets.precast.FC.Impact` / `sets.midcast.Impact`, or just owned in an equippable bag |
 | Doubled rings / earrings / weapons (`DuplicateGear`) | equip hook (`equip_hooks.lua`, order 10), registered at load | every character and job; copies must sit in different bags (`//gs c wo` spreads them) |
 | HP priority | `HPPriority.apply()` at load, then the equip hook (`equip_hooks.lua`, order 20) at every swap | every character; every job except the `skip_jobs` of `_common/combat/HP_PRIORITY.lua` (default none) |
 | Lockstyle / macrobook factories | wrappers | |

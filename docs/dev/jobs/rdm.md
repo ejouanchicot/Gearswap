@@ -241,7 +241,9 @@ with the template sets:
   the target is not the player).
 - **Enspells, Gains, Bar-spells, Spikes, Aquaveil**: P6 `sets.midcast[family]`
   (root family sets). Boost and Storm fall to the base.
-- **Temper, Stoneskin, Impact, Stun, Drain, Aspir**: P0/P1 by name.
+- **Temper, Stoneskin, Impact, Stun, Drain, Aspir**: P0/P1 by name. Impact's
+  cloak is kept on by the shared Impact lock (every job, since 2026-09-30;
+  [equipment-and-inventory.md](../systems/equipment-and-inventory.md#impact-lock)).
 - **Haste II on others with Composure**: P5 `base.Composure`.
 - **Cures**: P1 `sets.midcast.Cure` / `Curaga` (tier stripped), then
   `sets.midcast.CureSelf` on top for a Cure on oneself.

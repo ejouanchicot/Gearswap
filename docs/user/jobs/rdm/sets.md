@@ -200,8 +200,10 @@ others during the cast.
 | `sets.midcast['Elemental Magic']` | A nuke when the mode's set is missing |
 | `sets.midcast['Fire']`, `sets.midcast.Impact`... | A spell with a set of its own wins over the mode (`sets.midcast.Fire` covers Fire ... Fire V) |
 
-Impact needs the Twilight Cloak in body: nothing puts it on for you, write it in
-`sets.midcast.Impact`.
+Impact's cloak (Crepuscular or Twilight) is kept on for the whole cast by
+itself, as on every job ([set names](../../guides/sets.md#put-on-by-themselves)):
+put it in `sets.precast.FC.Impact` or `sets.midcast.Impact`, or just keep it in
+a wardrobe. A head piece in those sets is not worn (the cloak covers the head).
 
 ### Dark Magic
 

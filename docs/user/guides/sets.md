@@ -144,6 +144,14 @@ Hachirin-no-Obi and Orpheus's Sash need no set: they go on by themselves on
 elemental damage when they help ([configuration](configuration.md),
 `ELEMENTAL_BELT.lua`, `//gs c belt`).
 
+Impact's cloak (Crepuscular Cloak or Twilight Cloak) stays on by itself on every
+job, from the start of the cast to the end: whatever set goes on during the cast
+gets the cloak as body and no head piece (the cloak covers the head). The cloak
+is the body of `sets.precast.FC.Impact`, else of `sets.midcast.Impact`, when it
+is one of the two cloaks; with neither, the one in your inventory or wardrobes (Crepuscular
+first). Without one you get the message `Impact: no Crepuscular or Twilight
+Cloak in your Impact sets or your wardrobes`.
+
 Your own conditions (a piece at low HP, a ring at night, a state of your own)
 go in `<JOB>_CUSTOM.lua`, not in a set: see [keybinds](keybinds.md). They are
 put on last and win over everything above.

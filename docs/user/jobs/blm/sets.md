@@ -44,7 +44,7 @@ The shared rules apply (`sets.precast.FC['Spell name']`, then the skill, then
 | `sets.precast.FC['Enhancing Magic']` | Enhancing spells (a copy of `sets.precast.FC`) |
 | `sets.precast.FC.Stoneskin` | Stoneskin |
 | `sets.precast.FC.Cure`, `sets.precast.FC.Curaga` | Cures from /WHM, /RDM, /SCH |
-| `sets.precast.FC.Impact` | Impact. **Must hold `body = 'Twilight Cloak'`**: the code puts the cloak on, but this set is equipped right after and its body wins |
+| `sets.precast.FC.Impact` | Impact. Its body is the cloak kept on for the cast when it is Crepuscular or Twilight Cloak (see Impact below) |
 
 ## Spells
 
@@ -84,14 +84,15 @@ provided file names several:
 | `sets.midcast['Impact']` | Casting Impact. Missing: `sets.midcast['Elemental Magic']` |
 | `sets.midcast['Impact'].MagicBurst` | `MagicBurstMode` is On (not Acc: Acc uses the plain Impact set) |
 
-Twilight Cloak is put on the body whatever the set says, from the start of the
-cast to the end. No MP, belt-match or Quanpur set is added to Impact.
-
-**Known issue (found 2026-09-28, from the code, not tested in game):** a shared
-step that runs at the end of every midcast puts `sets.midcast['Impact']` back on
-after BLM's choice, so `.MagicBurst` is not worn and the cloak is only kept if
-`sets.midcast['Impact']` itself holds `body = 'Twilight Cloak'` (the provided
-file does). Keep the cloak in `sets.midcast['Impact']`.
+The cloak that grants Impact is put on the body whatever the set says, from the
+start of the cast to the end, and no head piece is worn meanwhile (the cloak
+covers the head). It is the body of `sets.precast.FC.Impact`, else of
+`sets.midcast['Impact']`, when it is Crepuscular Cloak or Twilight Cloak; with
+neither, the one in your inventory or wardrobes (Crepuscular first). Without one, the
+message `Impact: no Crepuscular or Twilight Cloak in your Impact sets or your
+wardrobes` shows and nothing is locked. This works the same on every job
+([set names](../../guides/sets.md#put-on-by-themselves)). No MP, belt-match or
+Quanpur set is added to Impact.
 
 ### Dark Magic
 
@@ -169,8 +170,9 @@ Any other ability by name under `sets.precast.JA`.
   account; the BLM rule ignores both.
 - **Quanpur Necklace.** On the Stone line only, `sets.midcast.QuanpurStone`
   goes on over the nuke set, when you add that set.
-- **Twilight Cloak for Impact.** The code puts Twilight Cloak on for the whole
-  Impact cast; keep it in `sets.precast.FC.Impact` too (see Precast).
+- **Impact's cloak.** Crepuscular or Twilight Cloak stays on for the whole
+  Impact cast: put it in `sets.precast.FC.Impact` or `sets.midcast['Impact']`,
+  or just keep it in a wardrobe (see Impact).
 - **Tier step-down.** A nuke on recast or too expensive becomes the next lower
   tier you can cast (Fire VI → Fire V ...; Firaja → Firaga III, II, then
   Firaga). Also for Sleep, Sleepga, Bind, Bio, Poison, Drain, Aspir, Burn,

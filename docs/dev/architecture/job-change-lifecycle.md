@@ -116,7 +116,7 @@ The full table (every block with its line range, and the seven-layer gear hook c
 
 | When (after the `include`) | What |
 |---|---|
-| sync | restore the five debug flags from `windower._gs_debug`; `windower._gs_reload_count += 1`; `ModuleCache.install()` (normally already done by `config_loader`); `DuplicateGear.install()` and `HPPriority.apply()` (equip hooks); LagDebugger |
+| sync | restore the five debug flags from `windower._gs_debug`; `windower._gs_reload_count += 1`; `ModuleCache.install()` (normally already done by `config_loader`); `ImpactLock.install()` (also wraps `precast`, `aftercast`, `cancel_spell`), `DuplicateGear.install()` and `HPPriority.apply()` (equip hooks); LagDebugger |
 | sync | `AutoMedicine.ensure()`; `JobSyncWatchdog.start(player.main_job)`; SyncIPC hooks `ls`, `lockstyle`, `rf`, `refill` + `init_listener()` |
 | sync (+2 s inside) | `KeybindGuard.schedule()`: re-sends the binds 2 s later unless a newer load bumped `windower._keybind_guard_seq` |
 | sync | `StealthTimers.start()` |

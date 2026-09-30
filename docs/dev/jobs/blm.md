@@ -1,7 +1,7 @@
 # BLM (Black Mage) job
 
 The BLM job area is the facade plus 11 hook modules and 11 logic modules
-under `shared/jobs/blm/functions/` (about 3 150 lines), an entry point per
+under `shared/jobs/blm/functions/` (about 3 030 lines), an entry point per
 character, nine config files and one sets file. GearSwap loads it when the main
 job becomes BLM. From then on Mote-Include calls its hooks on every action
 (precast, midcast, aftercast), on status and buff changes, on `//gs c`
@@ -14,8 +14,10 @@ What BLM adds on top of the shared pipeline:
   becomes Break), with a party-chat Magic Burst call.
 - **Midcast overrides** layered after `MidcastManager`: an MP conservation
   set, a Hachirin-no-Obi match (only when the shared automatic belt is off),
-  Quanpur Necklace for the Stone line, a Magic Burst accuracy variant, and a
-  Twilight Cloak lock for Impact.
+  Quanpur Necklace for the Stone line, a Magic Burst accuracy variant, and
+  its own Impact set. The cloak that grants Impact is kept on by the shared
+  Impact lock (`shared/utils/equipment/impact_lock.lua`, every job, since
+  2026-09-30), not by BLM code.
 - **Scholar subjob helpers**: Dark Arts put up automatically before a nuke,
   Klimaform + storm, `klima`, Arts toggles, party Sneak / Invisible, Dispel.
 - **State-driven nuke commands** (`//gs c light`, `aoedark`, ...) built from
@@ -24,7 +26,7 @@ What BLM adds on top of the shared pipeline:
 Player pages: [start page](../../user/jobs/blm/README.md),
 [modes](../../user/jobs/blm/states.md), [sets](../../user/jobs/blm/sets.md).
 
-Re-verified against the code on 2026-09-28. References name a file and a
+Re-verified against the code on 2026-09-28 (Impact parts on 2026-09-30, commit `1a25307`). References name a file and a
 function, not a line number.
 
 ## Files
@@ -33,15 +35,15 @@ function, not a line number.
 |------|------|
 | `_master/entry/Tetsouo_BLM.lua` | Entry point (template): config preload at file level, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD refresh only), `init_gear_sets`, `file_unload` |
 | `shared/jobs/blm/functions/blm_functions.lua` | Facade: includes the 11 hook files, lazy logic loaders, globals `BuffSelf`, `refine_various_spells`, `checkArts`, `CastStorm`, requires `dualbox_manager` |
-| `shared/jobs/blm/functions/BLM_PRECAST.lua` | `job_precast` (guard, `check_recast_or_refine`, `checkArts`, `lock_body_for_impact`, WS) / `job_post_precast` (TP gear) |
+| `shared/jobs/blm/functions/BLM_PRECAST.lua` | `job_precast` (guard, `check_recast_or_refine`, `checkArts`, WS) / `job_post_precast` (TP gear) |
 | `shared/jobs/blm/functions/BLM_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast`: builds a context and dispatches to the router |
-| `shared/jobs/blm/functions/BLM_AFTERCAST.lua` | `job_aftercast`: watchdog notify, clears the Impact lock |
+| `shared/jobs/blm/functions/BLM_AFTERCAST.lua` | `job_aftercast`: watchdog notify |
 | `shared/jobs/blm/functions/BLM_IDLE.lua` | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/blm/functions/BLM_ENGAGED.lua` | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/blm/functions/BLM_STATUS.lua` | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/blm/functions/BLM_BUFFS.lua` | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/blm/functions/BLM_COMMANDS.lua` | `job_self_command` router, BLM cycle handlers, `job_state_change` (HUD refresh) |
-| `shared/jobs/blm/functions/BLM_MOVEMENT.lua` | `job_handle_equipping_gear` (Impact body lock attempt) |
+| `shared/jobs/blm/functions/BLM_MOVEMENT.lua` | Empty module (`return {}`, 16 lines) kept for the 12-module layout; its `job_handle_equipping_gear` Impact hook was removed on 2026-09-30 |
 | `shared/jobs/blm/functions/BLM_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('BLM', ...)` wrappers |
 | `shared/jobs/blm/functions/BLM_MACROBOOK.lua` | Lazy `MacrobookManager.create('BLM', ...)` wrapper |
 | `shared/jobs/blm/functions/logic/midcast_router.lua` | `Router.handle_impact`, `handle_elemental`, `handle_dark`, `handle_enfeebling`, and the override helpers |
@@ -153,10 +155,8 @@ flowchart TD
     G -- no --> H{Elemental Magic}
     H -- yes --> I[checkArts]
     H -- no --> J
-    I --> J{Impact}
-    J -- yes --> K[lock_body_for_impact: Twilight Cloak, _G.casting_impact]
-    J -- no --> L
-    K --> L{WeaponSkill}
+    I --> L{WeaponSkill}
+    H -- no --> L
     L -- yes --> M[WSPrecastHandler.handle with BLMTPConfig]
 ```
 
@@ -177,13 +177,19 @@ flowchart TD
   `AbilityHelper.follow_up('Dark Arts', '/ma "<spell>" <t>', 2)`: the nuke is
   re-sent once Dark Arts registers. `_G.BLM_ARTS_LAST_CAST` is a 2 s guard.
   Because `eventArgs.cancel` stays false, Mote still runs `default_precast`
-  and `job_post_precast` for the cancelled cast, and `job_precast` continues
-  to the Impact lock.
+  and `job_post_precast` for the cancelled cast. The `cancel_spell()` call
+  also lifts the shared Impact lock (it wraps `cancel_spell`).
 - `job_post_precast` only calls `WSPrecastHandler.apply_tp_gear`.
 - Mote's default precast picks `sets.precast.FC[...]`, `sets.precast.JA[...]`
   or `sets.precast.WS` ([precast pipeline](../systems/precast-pipeline.md)).
-  The Impact cloak equipped in `job_precast` is overwritten by
-  `sets.precast.FC.Impact` unless that set holds the cloak too.
+  Impact's cloak is no longer handled in `job_precast`: the shared Impact
+  lock (`impact_lock.lua`, installed by `INIT_SYSTEMS` for every job) wraps the
+  global `precast` and, before Mote's precast runs, picks the cloak (body of
+  `sets.precast.FC.Impact`, else of `sets.midcast.Impact`, when it is
+  Crepuscular or Twilight Cloak; else the one owned in an equippable bag,
+  Crepuscular first) and locks it. Its equip hook then puts the cloak on every
+  set equipped, `sets.precast.FC.Impact` included, and drops their `head`. See
+  [equipment-and-inventory.md](../systems/equipment-and-inventory.md#impact-lock).
 
 ### Spell refinement
 
@@ -239,7 +245,7 @@ Treasure Hunter and the player's CUSTOM gear go on.
 flowchart TD
     A[job_post_midcast] --> B[MidcastWatchdog.on_midcast_start]
     B --> C{spell}
-    C -- Impact --> I[Router.handle_impact: Impact set or .MagicBurst, body re-equip; no select_set, MidcastFallback.skip]
+    C -- Impact --> I[Router.handle_impact: Impact set or .MagicBurst; no select_set, MidcastFallback.skip]
     C -- Elemental Magic --> EM[select_set Elemental Magic, mode_value MagicBurst if On or Acc]
     EM --> O1[MPConservation if MP below threshold]
     O1 --> O2[ElementalMatch, only when the shared belt is off]
@@ -263,9 +269,12 @@ flowchart TD
   `Router.handle_elemental` used to carry could never run and was removed on
   2026-09-28.
 - **Impact** is Elemental Magic. `Router.handle_impact` equips the Impact set
-  (or `.MagicBurst` when `MagicBurstMode` is On) and re-equips the cloak
-  without `select_set`, then calls `MidcastFallback.skip(spell)` (2026-09-28)
-  so the fallback does not route Impact again as Elemental Magic. The template's `Impact.MagicBurst` is the Impact set itself,
+  (or `.MagicBurst` when `MagicBurstMode` is On) without `select_set`, then
+  calls `MidcastFallback.skip(spell)` (2026-09-28) so the fallback does not
+  route Impact again as Elemental Magic. The body is not forced here any more
+  (2026-09-30): the shared Impact lock's equip hook swaps the cloak into that
+  set, and every other one equipped until the aftercast, and drops their head.
+  The template's `Impact.MagicBurst` is the Impact set itself,
   so the template gear is unchanged.
 - The context built in `job_post_midcast` carries `debug_enabled`
   (`_G.MidcastManagerDebugState`), the midcast message module,
@@ -296,8 +305,10 @@ flowchart TD
 
 ### Aftercast, idle, engaged, status, buffs
 
-- `job_aftercast` notifies `MidcastWatchdog` and clears `_G.casting_impact` /
-  `_G.impact_body` after Impact. Mote then returns to idle / engaged gear.
+- `job_aftercast` notifies `MidcastWatchdog`. The shared Impact lock is
+  lifted before any of the aftercast runs (`impact_lock.lua` wraps the global
+  `aftercast`), so Mote returns to idle / engaged gear with the sets' own body
+  and head.
 - `customize_idle_set` -> `SetBuilder.build_idle_set`: `mode_base` (DeathMode
   On -> `sets.idle.Death`, else HybridMode PDT -> `sets.idle.PDT`, each only
   when the set exists; otherwise Mote's set) -> `BaseSetBuilder.select_idle_base_town`
@@ -312,10 +323,9 @@ flowchart TD
 - `job_status_change` / `job_buff_change` are the shared `LifecycleManager`
   handlers (Doom, status hold during an action); see
   [core lifecycle](../systems/core-lifecycle.md).
-- `job_handle_equipping_gear` (`BLM_MOVEMENT.lua`) equips the Impact body
-  while the lock is set, but Mote equips the full status set right after it
-  (`handle_equipping_gear` -> `equip_gear_by_status`), so the lock does not
-  hold.
+- BLM defines no `job_handle_equipping_gear` since 2026-09-30. A status change
+  during Impact still keeps the cloak: the set Mote equips goes through the
+  Impact lock's equip hook.
 
 ## Mote states
 
@@ -410,7 +420,7 @@ T = in `_master/sets/blm_sets.lua`.
 | `sets.midcast['Elemental Magic']`, `.MagicBurst`, `.MagicBurst.acc` | `Router.handle_elemental` | yes |
 | `sets.midcast.MPConservation`, `.ElementalMatch` | `apply_mp_conservation`, `apply_elemental_match` | yes |
 | `sets.midcast.QuanpurStone` | `apply_quanpur` | **no** (overlay only) |
-| `sets.midcast['Impact']`, `.MagicBurst` (= itself) | `Router.handle_impact`, then `MidcastFallback` P0 | yes |
+| `sets.midcast['Impact']`, `.MagicBurst` (= itself) | `Router.handle_impact` (`MidcastFallback` skipped); its `body` also names the cloak the shared Impact lock keeps on | yes |
 | `sets.midcast['Death']` (= the Elemental base table) | Dark route, P0 exact name | yes |
 | `sets.midcast['Comet']`, `['Meteor']` (= the Elemental base table) | P0 exact name | yes |
 | `sets.midcast.Burn` and Rasp / Shock / Drown / Choke / Frost aliases | P0 exact name | yes |
@@ -454,9 +464,9 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`,
   `job_buff_change`, `customize_idle_set`, `customize_melee_set`,
-  `job_self_command`, `job_state_change`, `job_handle_equipping_gear`),
+  `job_self_command`, `job_state_change`),
   `BuffSelf`, `refine_various_spells`, `checkArts`, `CastStorm`,
-  `BLM_ARTS_LAST_CAST`, `casting_impact`, `impact_body`, `BLMTPConfig`,
+  `BLM_ARTS_LAST_CAST`, `BLMTPConfig`,
   `BLMKeybinds`, `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`,
   `select_default_lockstyle`, `cancel_blm_lockstyle_operations`,
   `select_default_macro_book`, plus the factory exports.
@@ -518,8 +528,11 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 - `MidcastManager` does nothing for a skill whose `sets.midcast[skill]` is
   missing; Mote's set stays.
 - A router branch that equips a set **without** calling `select_set` is
-  undone by `MidcastFallback` (Impact today). Either call `select_set` in the
-  branch, or set `eventArgs.handled`.
+  undone by `MidcastFallback` unless it calls `MidcastFallback.skip(spell)`
+  (as `handle_impact` does) or sets `eventArgs.handled`.
+- While Impact is cast, every set equipped (any job) gets the cloak as body
+  and loses its `head` (shared Impact lock); a `head` in the Impact sets is
+  never worn.
 - `spell.element`, `world.day_element` and `world.real_weather_element` use
   resource names (`Lightning`, not `Thunder`); `elemental_matcher.lua`
   compares by element id.
@@ -551,11 +564,11 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 ### Invariants to keep
 
 - Precast order: `PrecastGuard`, then `check_recast_or_refine` (refinement **in
-  place of** the cooldown check for tiered spells), then `checkArts`, Impact,
-  WS. Moving `CooldownChecker` before refinement cancels every tier
+  place of** the cooldown check for tiered spells), then `checkArts`, WS.
+  Impact's cloak lock is not part of it (shared `impact_lock.lua`). Moving `CooldownChecker` before refinement cancels every tier
   step-down.
 - Every midcast branch that equips gear must go through
-  `MidcastManager.select_set` (or set `eventArgs.handled`), otherwise
+  `MidcastManager.select_set` (or call `MidcastFallback.skip`, or set `eventArgs.handled`), otherwise
   `MidcastFallback` re-routes the spell after `job_post_midcast`.
 - BLM overrides are layered **after** `select_set` in `handle_elemental`;
   `MagicBurst.acc` is last on purpose.
@@ -604,20 +617,23 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   `windower = {}`, `S`, an `equip` that records slots, then require
   `midcast_manager` and `midcast_fallback`, set `_G.cleanup_midcast = function() end`
   and call `MidcastFallback.install()`. Build `sets.midcast`, equip the Impact
-  MagicBurst set as `handle_impact` does, call `cleanup_midcast(spell, nil, {})`
-  and read the recorded slots: the plain Impact set wins. The same harness
-  routes Death through `select_set({skill = 'Dark Magic', ...})`.
+  MagicBurst set as `handle_impact` does, call `MidcastFallback.skip(spell)`
+  then `cleanup_midcast(spell, nil, {})` and read the recorded slots: nothing
+  is routed again. The same harness routes Death through
+  `select_set({skill = 'Dark Magic', ...})`.
 - Refinement: `TierRefiner.find_available_tier` needs `resources` (stub
   `package.preload.resources` with a `spells` table that has `:with`) and
   `windower.ffxi.get_spells`.
 
 ## Known issues
 
-- **Impact MagicBurst variant and body re-equip are undone** by
-  `MidcastFallback` (`Router.handle_impact` never calls `select_set`); without
-  a `sets.midcast['Impact']`, the Elemental base ends the midcast without the
-  cloak. Found 2026-09-28 by code reading and an offline harness; not tested
-  in game.
+- Fixed 2026-09-28 (`0df37e4`): the Impact MagicBurst variant was undone by
+  `MidcastFallback` (`Router.handle_impact` never calls `select_set`);
+  `handle_impact` now calls `MidcastFallback.skip(spell)`. Not tested in game.
+- Fixed 2026-09-30 (`1a25307`): BLM forced `'Twilight Cloak'` by name at
+  precast, midcast and in `job_handle_equipping_gear` (which Mote overwrote);
+  a player with only Crepuscular Cloak lost his cloak. The shared Impact lock
+  replaces it. Not tested in game.
 - Fixed 2026-09-28 (dead code removed, midcast simulation identical before and
   after): `Router.handle_elemental`'s Death branch (Death is Dark Magic) and
   `ReplacementLogic.should_cancel` (it compared `replacement` with `''`, but
@@ -625,7 +641,6 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   still goes out and the game refuses it, as before.
 - `checkArts` re-sends the nuke on `<t>`, whatever target the original cast
   had.
-- The Impact body lock in `job_handle_equipping_gear` is overwritten by Mote.
 - Initial macrobook / lockstyle depend on a side effect of
   `KeybindManager.show_intro` requiring the wrappers.
 - The Magic Burst `/p` call is sent even when the cast is then cancelled or

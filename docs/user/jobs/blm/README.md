@@ -18,7 +18,7 @@ command casts the result on the target you pick. On top of that:
   in party chat;
 - with a Scholar subjob, Dark Arts is put up for you before a nuke, and the
   `storm`, `klima`, `aoe` and `dispel` commands chain the stratagems for you;
-- Death, Mana Wall, Impact (Twilight Cloak), low MP and the Stone family each
+- Death, Mana Wall, Impact, low MP and the Stone family each
   have their own gear hook (see [sets.md](sets.md)).
 
 Everything below comes from the provided template. After cloning, your copies
@@ -186,9 +186,6 @@ auto-tier (WHM).
 
 ## Known issues
 
-- **Impact Magic Burst set** (found 2026-09-28, from the code): the plain
-  `sets.midcast['Impact']` is put back at the end of the cast, so
-  `.MagicBurst` is never worn. Keep Twilight Cloak in `sets.midcast['Impact']`.
 - With /SCH, a nuke held back for Dark Arts is re-sent on `<t>` (your current
   target), not on the target you first picked.
 - The Magic Burst party call goes out even when the nuke is then stopped

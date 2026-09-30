@@ -18,7 +18,8 @@ The area holds three kinds of code:
   on first use by its caller.
 - **Load-time and per-action gear passes installed for every job.** `equip_hooks.lua` wraps
   GearSwap's `equip()` once per job load and passes every set through the registered hooks
-  ([Equip hooks](#equip-hooks)). Two hooks are registered from `INIT_SYSTEMS`: `DuplicateGear` gives
+  ([Equip hooks](#equip-hooks)). Three hooks are registered from `INIT_SYSTEMS`: `ImpactLock` keeps
+  the cloak that grants Impact on through the cast ([Impact lock](#impact-lock)), `DuplicateGear` gives
   each side of a doubled ring / earring / weapon its own copy ([Doubled gear](#doubled-gear)), then
   `HPPriority` ranks every swap's pieces by the HP they gain over the gear worn
   ([HP priority](#hp-priority)); `//gs c gearscan` writes the augments it reads for pieces the sets
@@ -30,7 +31,7 @@ The area holds three kinds of code:
   Hoxne ammo lock), `SpellGearLock` (Dispelga's Daybreak).
 
 Every claim below was checked against the code on 2026-09-28 (the equip hooks, doubled gear and HP
-priority sections on 2026-09-30, commit `2588c3c`). Line numbers are given for the files
+priority sections on 2026-09-30, commit `2588c3c`; the Impact lock on 2026-09-30, commit `1a25307`). Line numbers are given for the files
 that were re-read that day; elsewhere the function is named, which survives edits better.
 
 ## Files
@@ -41,7 +42,8 @@ that were re-read that day; elsewhere the function is named, which survives edit
 |---|---|---|---|---|
 | `shared/utils/equipment/equipment_checker.lua` | 489 | `//gs c checksets`: name -> location cache of owned items, walk of `sets`, report of unavailable slots | `CommonCommands.handle_checksets`, on demand | this page |
 | `shared/utils/equipment/wardrobe_auditor.lua` | 764 | `//gs c wa` report (skips the `NEVER_TOUCH` wardrobes of `WARDROBE_CONFIG.lua`); text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `items.lua`, `rules.lua`, `reports.lua` | this page |
-| `shared/utils/equipment/equip_hooks.lua` | 79 | Wraps GearSwap's `equip()` once per load (`_G._equip_hooks_wrapper`); every table argument goes through the registered hooks, lowest `order` first: 10 `duplicate_gear`, 20 `hp_priority` | `duplicate_gear.lua`, `hp_priority.lua` (`EquipHooks.add` / `remove`) | this page |
+| `shared/utils/equipment/equip_hooks.lua` | 80 | Wraps GearSwap's `equip()` once per load (`_G._equip_hooks_wrapper`); every table argument goes through the registered hooks, lowest `order` first: 5 `impact_lock`, 10 `duplicate_gear`, 20 `hp_priority` | `impact_lock.lua`, `duplicate_gear.lua`, `hp_priority.lua` (`EquipHooks.add` / `remove`) | this page |
+| `shared/utils/equipment/impact_lock.lua` | 159 | At the precast of Impact, picks the cloak that grants it (Crepuscular / Twilight Cloak) and locks it: the equip hook `impact_lock` (order 5) puts it on every set and drops their `head` until the aftercast, a cancel or 20 s | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`ImpactLock.install`), every load, every job | this page |
 | `shared/utils/equipment/duplicate_gear.lua` | 225 | Equip hook `duplicate_gear` (order 10): a ring, earring or main / sub piece named without bag or augments, owned in 2+ copies without augments, gets the `bag` of the copy that side takes | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`DuplicateGear.install`), every load; then every `equip()` call | this page |
 | `shared/utils/equipment/hp_priority.lua` | 377 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = HP gained over the piece worn in that slot (dHP*1000+dMP on the `mp_jobs`, default BLM/RDM/GEO); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
 | `shared/utils/equipment/gear_scan.lua` | 175 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
@@ -552,11 +554,50 @@ Hooks registered today:
 
 | Order | Name | Module | Registered by |
 |---|---|---|---|
-| 10 | `duplicate_gear` | `duplicate_gear.lua` ([Doubled gear](#doubled-gear)) | `DuplicateGear.install()`, `INIT_SYSTEMS.lua` GEAR HOOKS block |
-| 20 | `hp_priority` | `hp_priority.lua` ([HP priority](#hp-priority)) | `HPPriority.apply()`, same block, right after; only when the system is on for the job |
+| 5 | `impact_lock` | `impact_lock.lua` ([Impact lock](#impact-lock)) | `ImpactLock.install()`, `INIT_SYSTEMS.lua` GEAR HOOKS block (first); does nothing unless an Impact is being cast |
+| 10 | `duplicate_gear` | `duplicate_gear.lua` ([Doubled gear](#doubled-gear)) | `DuplicateGear.install()`, same block, right after |
+| 20 | `hp_priority` | `hp_priority.lua` ([HP priority](#hp-priority)) | `HPPriority.apply()`, same block, last; only when the system is on for the job |
 
-The doubled-gear hook runs first so that the HP rank is computed on the set as it will really be
-equipped. Hooks never write into `_G.sets`: the player's sets stay as written.
+The Impact hook runs first so that the cloak (and the missing head) are part of the set the other
+hooks see; the doubled-gear hook runs before HP priority so that the HP rank is computed on the set as
+it will really be equipped. Hooks never write into `_G.sets`: the player's sets stay as written.
+
+### Impact lock
+
+Impact can only be cast while a cloak that grants it is worn: Crepuscular Cloak (item id 23799) or
+Twilight Cloak (11363), a body piece that also covers the head slot. The spell fails if the body
+changes before it lands. `shared/utils/equipment/impact_lock.lua` (since 2026-09-30, replacing BLM's
+own `'Twilight Cloak'` lock) handles it for every job. `INIT_SYSTEMS.lua` calls `ImpactLock.install()`
+first in the GEAR HOOKS block, at each load:
+
+- `install()` lifts any lock left over, registers `ImpactLock.hook` as the equip hook `impact_lock`
+  (order 5), and wraps three globals once per load (`_G._impact_wrapped_<name>` remembers the
+  wrapper, so a second install does not wrap it twice): `precast`, `aftercast` and `cancel_spell`.
+  Each wrapper runs its step under `pcall`, then calls the original.
+- **Precast** (Mote's `precast`, so before `job_precast` and the precast set): for Impact,
+  `engage()` picks the cloak with `cloak()`:
+  1. the `body` of `sets.precast.FC.Impact`,
+  2. else the `body` of `sets.midcast.Impact`,
+     each only when its name (a string or `{name = ...}`, compared lower case) is one of the two
+     cloaks; the set's own value is kept, so its `bag` / `augments` / `priority` go with it;
+  3. else the first cloak found in an equippable bag (`res.bags[...].equippable`, read from
+     `windower.ffxi.get_items()`), Crepuscular first. The name is returned.
+
+  With a cloak, `_G._impact_lock = {body = <cloak>, at = os.time()}`. Without one: no lock, and
+  `MessageFormatter.show_warning('Impact: no Crepuscular or Twilight Cloak in your Impact sets or your
+  wardrobes')`. The precast of any other action lifts the lock.
+- **While locked**, `hook(set)` returns a copy of every set passed to `equip()` with `body` = the
+  cloak and no `head` (a head piece would push the cloak off). The player's sets are not written.
+  `current()` drops a lock older than `LOCK_SECONDS` (20) and returns nil, so a cast lost without an
+  aftercast does not keep the cloak forever.
+- **Lifted** (`release()`, `_G._impact_lock = nil`) before the aftercast of Impact runs (so the
+  aftercast sets go on whole), on any `cancel_spell()` call (Mote's own cancel on `eventArgs.cancel`,
+  or a job's direct call), at the precast of any other action, and after 20 s.
+
+`custom_guards.lua` keeps the player's CUSTOM gear off `body` and `head` during Impact
+([keybinds-and-custom.md](keybinds-and-custom.md)). BLM's `Router.handle_impact` only equips the
+Impact set; it no longer forces a body ([../jobs/blm.md](../jobs/blm.md)). `global_probe.lua` lists
+`_impact_lock` as an expected global (in place of BLM's former `casting_impact` / `impact_body`).
 
 ### Doubled gear
 
@@ -708,9 +749,22 @@ Exported as `_G.HPPriority` and returned.
 
 | Function | Effect | Callers |
 |---|---|---|
-| `add(name, order, fn)` | adds or replaces (by name) the hook `fn(set) -> set`, keeps the list sorted by `order`, then `install()` | `DuplicateGear.install`, `HPPriority.apply` |
+| `add(name, order, fn)` | adds or replaces (by name) the hook `fn(set) -> set`, keeps the list sorted by `order`, then `install()` | `ImpactLock.install`, `DuplicateGear.install`, `HPPriority.apply` |
 | `remove(name)` | takes the hook out | `HPPriority.apply` |
 | `install()` | wraps `equip()` once per load (`_G._equip_hooks_wrapper`); no-op when `equip` is already the wrapper or not a function | `add` |
+
+Returned only (no `_G` export).
+
+### ImpactLock (`impact_lock.lua`)
+
+| Function | Effect | Callers |
+|---|---|---|
+| `install()` | `release()`, registers `hook` as the equip hook `impact_lock`, order 5, and wraps `precast` / `aftercast` / `cancel_spell` once per load | `INIT_SYSTEMS.lua`, GEAR HOOKS block |
+| `cloak()` | the body of `sets.precast.FC.Impact` or `sets.midcast.Impact` when it is a cloak, else the name of a cloak owned in an equippable bag, else nil | `engage` |
+| `engage()` | locks the cloak (`_G._impact_lock = {body, at}`); true when one was found, else a warning and false | the `precast` wrapper (Impact) |
+| `current()` | the lock in force, or nil (none, or older than 20 s: then cleared) | `hook` |
+| `release()` | lifts the lock | `install`; the wrappers (other precast, Impact aftercast, `cancel_spell`) |
+| `hook(set)` | the set itself when unlocked, else a copy with `body` = the cloak and no `head` | the `equip()` wrapper |
 
 Returned only (no `_G` export).
 
@@ -911,7 +965,8 @@ return M
   `AmpullaLock`), `_G.CraftManager` (config resolver), `state.Moving`, `world`, `areas`
   (`BaseSetBuilder`), `world` (`ElementalBonus`). Globals written: `_G.HPPriority`,
   `_G._hp_priority_state` (HP priority), `_G._equip_hooks`, `_G._equip_hooks_wrapper` and `_G.equip`
-  (equip hooks; `_G.sets` is not written), `_G.ampulla_ammo_locked` (Ampulla lock). The `windower.*`
+  (equip hooks; `_G.sets` is not written), `_G._impact_lock`, `_G.precast`, `_G.aftercast`,
+  `_G.cancel_spell` and `_G._impact_wrapped_<name>` for each of them (Impact lock), `_G.ampulla_ammo_locked` (Ampulla lock). The `windower.*`
   fields written are the Ampulla lock's record in `windower._weapon_locks` (through `CombatMode.hold` /
   `release`, since 2026-09-29) and `windower._dup_gear_warned` (doubled items already warned about,
   kept for the session).
