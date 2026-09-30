@@ -16,7 +16,7 @@ return {
     -- auto_cure_silence = true,
     -- silence_cure_items = {'Echo Drops', 'Remedy'},
 
-    -- Paralysis: cured before an ability or a weaponskill
+    -- Paralysis: cured before a job ability (a weaponskill goes through as is)
     -- auto_cure_paralysis = true,
     -- paralysis_cure_items = {'Remedy', 'Panacea'},
 
