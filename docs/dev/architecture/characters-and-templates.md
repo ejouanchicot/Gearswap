@@ -18,6 +18,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `.gitignore` | no (ignores itself, line 78) | Ignores the live folders and, through the same patterns, the overlays |
 | `_master/entry/Tetsouo_<JOB>.lua` | yes, 17 files | Generic entry templates: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM RUN SAM SMN THF WAR WHM (SMN since 2026-09-28) |
 | `_master/sets/<job>_sets.lua` | yes, 17 files | Generic flat set files, same 17 jobs (`pup_sets.lua` is a skeleton) |
+| `_master/sets/craft_sets.lua`, `fishing_sets.lua` | yes, 2 files | Generic craft (multi-variant) and fishing (single set, since 2026-09-30) set files, every slot `""` (skipped by `craft_commands.lua`). Copied to every clone as loose sets (step 3) |
 | `_master/config/<job>/` | yes, 16 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
 | `_master/config/alt/` | yes, 33 files | Dual-box alt command tables (22 `_ALT_COMMANDS`, 5 `_ALT_CUSTOM`, 6 `.lua.example`). Deployed only to a character cloned as MAIN |
 | `_master/config_global/` | yes, 19 files | `ADDONS_CONFIG` (since 2026-09-30, every key commented out), `AUTOCURE_CONFIG` (since 2026-09-30, every key commented out), `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `TUNING` (since 2026-09-30, every key commented out), `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WARDROBE_CONFIG` (since 2026-09-30: every key commented out, so a clone runs on the organizer defaults until the player uncomments one), `WEAPON_CONFIG` |
@@ -133,7 +134,7 @@ Nothing is deleted before the final confirmation. Answering `y`/`o` to "Replace 
 |---|---|---|---|
 | 1 | `<T>/sets/`, `<T>/config/` directories (old layout while building; step 7 moves it) | - | `clone` |
 | 2 | `<T>/T_<JOB>.lua` per selected job | `_master/entry/Tetsouo_<JOB>.lua` (the one-line entry), else `[SKIP]` and a final `[WARN] No entry file for: <jobs> - these jobs will not load` | `find_entry_src` (nested in `clone`) |
-| 3 | `<T>/sets/<job>/` tree or `<T>/sets/<job>_sets.lua` per selected job | the overlay's `sets/<job>/` tree when it exists (the modular tree wins over the generic flat file), else overlay-first on `sets/<job>_sets.lua`, else `[SKIP]`. Then, whatever the jobs, the overlay's `sets/common/` and every loose `sets/*.lua` (`bonecraft_sets.lua`, `fishing_sets.lua`, `0_AugGear_<Name>.lua`) | `clone` |
+| 3 | `<T>/sets/<job>/` tree or `<T>/sets/<job>_sets.lua` per selected job | the overlay's `sets/<job>/` tree when it exists (the modular tree wins over the generic flat file), else overlay-first on `sets/<job>_sets.lua`, else `[SKIP]`. Then, whatever the jobs, the overlay's `sets/common/` and every loose `sets/*.lua` of `_master/sets/` and the overlay, overlay first (`craft_sets.lua`, `fishing_sets.lua`, `bonecraft_sets.lua`, `0_AugGear_<Name>.lua`) | `clone` |
 | 4a | `<T>/config/<job>/*.lua` per selected job | union of `*.lua` names in `_master/config/<job>/` and the overlay's `config/<job>/`, each overlay-first | `clone` |
 | 4b | `<T>/config/craft/`, and `<T>/config/alt/` for a MAIN | same per-file rule over `config/craft` and `config/alt` (`shared_dirs`); `alt` only when the role answered is `main` | `clone` |
 | 4c | `<T>/config/<file>.lua` | union of `*.lua` names in `_master/config_global/` and the overlay's `config_global/`, each overlay-first, flattened into `config/` | `clone` |
@@ -226,7 +227,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `whm/combat/WHM_CURE_CONFIG.lua` | `shared/utils/whm/cure_manager.lua` | step 4a | - |
 | `_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua` | entries (file level / `get_sets`) | step 4c | - |
 | `_common/keys/COMMON_KEYBINDS.lua` | `shared/utils/keybinds/common_keybinds.lua` | step 4c | - |
-| `_common/display/UI_CONFIG.lua` | `ConfigLoader.load_ui_config` (dofile) | step 4c | - |
+| `_common/display/UI_CONFIG.lua` (template `default_position` 1600, 300 since 2026-09-30, the code's own default) | `ConfigLoader.load_ui_config` (dofile) | step 4c | - |
 | `_common/display/UI_COLOR_CONFIG.lua` | `shared/utils/ui/COLOR_SYSTEM.lua` | step 4c | - |
 | `saved/ui_settings.lua` | `shared/config/ui_settings.lua` | step 4c; kept on re-clone | same module |
 | `saved/message_modes.lua` | `shared/config/message_settings.lua` | step 4c; kept on re-clone | same module |
@@ -238,14 +239,14 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `_common/combat/HP_PRIORITY.lua` | `HPPriority.settings()` in `shared/utils/equipment/hp_priority.lua` | step 4c | - |
 | `_common/combat/AUTOCURE_CONFIG.lua` (Auto Medicine: debuffs cured, items, `auto_medicine_start`) | `AutoCureSettings.load()` in `shared/utils/debuff/autocure_settings.lua` through `CharPaths.optional('common', 'AUTOCURE_CONFIG')`, over `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | step 4c | - |
 | `_common/display/ADDONS_CONFIG.lua` (addon name = `false`: the job never loads / unloads it) | `JobAddons.allowed` / `run` in `shared/utils/core/job_addons.lua` through `CharPaths.optional('common', 'ADDONS_CONFIG')`; callers: `shared/entry/cor.lua` (rolltracker), `bst.lua` (bst-hud), `geo.lua` (pettp), `blu/functions/logic/azure_sets.lua` (AzureSets). Names compared case-insensitively | step 4c | - |
-| `_common/combat/TUNING.lua` (`sam_idle_hp`, `refresh_mp_below`, `waltz_from`, `smn_skillup`, `geo_escort_indi`, `brd_debuff_songs`) | `Tuning.get(key, default)` in `shared/utils/core/tuning.lua` through `CharPaths.optional('common', 'TUNING')`, looked up at each use (the file itself is a cached `require`: an edit applies after a reload) | step 4c | - |
+| `_common/combat/TUNING.lua` (`sam_idle_hp`, `refresh_mp_below`, `waltz_from`, `smn_skillup`, `geo_escort_indi`, `brd_debuff_songs`, `stratagem_full_recharge`) | `Tuning.get(key, default)` in `shared/utils/core/tuning.lua` through `CharPaths.optional('common', 'TUNING')`, looked up at each use (the file itself is a cached `require`: an edit applies after a reload) | step 4c | - |
 | `_common/combat/SORTIE_CONFIG.lua` (alt, Silmaril profiles, stances, targets, orders of `//gs c sortie`) | `shared/utils/sortie/sortie_commands.lua` through `CharPaths.optional('common', 'SORTIE_CONFIG')` | step 4c from the overlay only (no generic template; Tetsouo's overlay has it). Without it the character has no sortie command and the help hides it | - |
 | `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
 | `_common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` (also the auditor, `wardrobe_auditor.lua` `config_exclusions`) | step 4c (generic template since 2026-09-30; Tetsouo and Kaories overlays replace it) | - |
 | `_common/inventory/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17, `false` = keep the job's) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
 | `_common/inventory/REFILL_CONFIG.lua` (refill bags, common list `default_list` / `subjobs`, `quiver_open_at`) | `shared/utils/inventory/refill/config_resolver.lua`; `quiver_open_at` by `job_threshold` in `shared/utils/inventory/quiver_manager.lua` | step 4c | - |
 | `_common/inventory/CRAFT_REFILL.lua` (template: empty list) | `config_resolver.lua` | step 4 | Tetsouo's |
-| `_common/sets/craft_sets.lua` and the overlay's loose set files | `craft_commands.lua` | step 3 | Tetsouo's `bonecraft_sets.lua`, `fishing_sets.lua`; Gab's `goldsmithing_sets.lua` |
+| `_common/sets/craft_sets.lua`, `fishing_sets.lua` (templates) and the overlay's loose set files | `craft_commands.lua` | step 3 | Tetsouo's `bonecraft_sets.lua`, `fishing_sets.lua`; Gab's `goldsmithing_sets.lua` |
 | `_common/dualbox/DUALBOX_CONFIG.lua` | `DualBoxManager.initialize` | step 6 (generated) | - |
 | `_common/display/REGION_CONFIG.lua` | entries, `message_colors.lua` | step 6 (generated) | - |
 | `_common/dualbox/alt/<JOB>_ALT_COMMANDS.lua`, `<JOB>_ALT_CUSTOM.lua` | `load_job_config` in `alt_commands.lua` (MAIN only, `_master/config/alt/` as fallback) | step 4b, MAIN only | - |

@@ -62,8 +62,9 @@ are useful with a subjob:
   is up and it is ready.
 - **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` otherwise
   (empty in the template until you fill it). `sets.bow` goes on with
-  Yoichinoyumi (empty too). `sets.engaged.AM3` replaces the engaged set under
-  Aftermath: Lv.3 with Masamune when you define it (not in the template),
+  Yoichinoyumi (empty too). Under Aftermath, `sets.engaged.<Weapon>AFM3` (any
+  weapon), else `sets.engaged.AM3` with Masamune under Aftermath: Lv.3, replaces
+  the engaged set when you define it (neither is in the template),
   about 0.1 s after the aftermath starts, and comes off the same way when it ends.
 - **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%, on top
   of `sets.idle.PDT` (in PDT they replace the PDT pieces they hold). The

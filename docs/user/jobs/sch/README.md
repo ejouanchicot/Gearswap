@@ -131,5 +131,7 @@ Sets: `<YourName>/sch/sch_sets.lua`, see [sets.md](sets.md).
 ## Not done by the job
 
 No automatic Arts before a spell, no Klimaform + storm chain, no Tabula Rasa
-or Enlightenment helper. The stratagem charge count is an estimate: with the
-550 JP gift (faster recharge) it can read high, never low.
+or Enlightenment helper. The stratagem charge count is an estimate read from
+the time the whole pool takes to come back, 240 s by default: with the 550 JP
+gift (faster recharge) it reads high unless you set `stratagem_full_recharge`
+in `_common/combat/TUNING.lua` to your value.

@@ -382,7 +382,7 @@ Related commands outside `ui`: `//gs c combatmode ...` and `//gs c th ...` (opti
 | Key | Template value | Read by |
 |---|---|---|
 | `enabled`, `show_header`, `show_legend`, `show_column_headers`, `show_footer` | true, false, true, false, false | only as `compute_defaults` input (settings file missing or lacking a key). At runtime the persisted values win |
-| `default_position {x,y}` | 1857, -24 | the same, defaults only |
+| `default_position {x,y}` | 1600, 300 (the code's own default, since 2026-09-30) | the same, defaults only |
 | `text.size`, `text.font` | 10, Consolas | defaults only. `text.stroke` is passed straight to `texts.new` on every init |
 | `background {r,g,b,a,visible}` | 15,15,35,180,true | defaults. `toggle_background` also flips `background.visible` at runtime |
 | `background_presets` | 36 named presets | `UI_COMMANDS.lua`, `set_background_preset`, `show_theme_list` |

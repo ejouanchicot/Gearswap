@@ -276,7 +276,8 @@ deadline), else `input /ja "<step>" <t>`; flips `CurrentStep` when alternating.
 
 1. The dance from `state.Dance` (Saber 219 / Fan 224) unless already active.
 2. The samba from `state.Samba` (shared recast 216) unless Fan Dance is the
-   selected dance, the samba buff is up (`Drain Samba II` grants
+   selected dance, the value is not in `SAMBAS` (the template's `Off`, since
+   2026-09-30), the samba buff is up (`Drain Samba II` grants
    `Drain Samba`), or the live TP is below its cost (`SAMBAS`) without Trance
    (under Trance the cost is not checked, since 2026-09-28). The queued samba
    then passes `job_precast_samba`, which applies the same rule.
@@ -339,7 +340,7 @@ is filtered by subjob.
 | `ClimacticAuto` | On, Off | On | `^numpad6` | `ClimaticManager.auto_trigger` |
 | `JumpAuto` | On, Off | Off | `^numpad7`, /DRG only (`subjob = 'DRG'` set by `AutoJump.attach`) | `auto_jump.lua` (through `WSPrecastHandler.handle`) |
 | `Dance` | Saber Dance, Fan Dance | Saber Dance | `^numpad8` | `collect_dance`, `collect_samba` |
-| `Samba` | Haste Samba, Drain Samba II, Aspir Samba | Haste Samba | `^numpad0` | `collect_samba` |
+| `Samba` | Haste Samba, Drain Samba II, Aspir Samba, Off | Haste Samba | `^numpad0` | `collect_samba` (`Off`, absent from `SAMBAS`: no samba) |
 | `CombatWeaponMode` | Normal, TPBonus, Clim, ClimTPBonus | Normal | none | nothing |
 | `FastCast` | 0..80 step 10 | 0 | none | `MidcastWatchdog` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (common key) | `PrecastGuard` |

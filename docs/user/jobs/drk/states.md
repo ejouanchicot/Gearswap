@@ -16,7 +16,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
 | `^numpad2` | `WeaponskillMode` | **Normal**, Acc | `sets.precast.WS['<name>'].Acc` when it exists, else `sets.precast.WS.Acc` for a weaponskill without its own set (a copy of the base WS set in the template) |
-| `^numpad9` | `HybridMode` | **PDT**, Accu | Idle outside town: `sets.idle.PDT` (or `sets.idle.Accu`) when it exists, else `sets.idle`. Engaged gear: `PDT` = `sets.engaged.PDT`; `Accu` = `sets.engaged.Accu` (a copy of the plain engaged set in the template, until you add accuracy pieces). With Liberator and Aftermath Lv.3 up, `sets.engaged.AM3` wins over both |
+| `^numpad9` | `HybridMode` | **PDT**, Accu | Idle outside town: `sets.idle.PDT` (or `sets.idle.Accu`) when it exists, else `sets.idle`. Engaged gear: `PDT` = `sets.engaged.PDT`; `Accu` = `sets.engaged.Accu` (a copy of the plain engaged set in the template, until you add accuracy pieces). `sets.engaged.<Weapon>AFM3` under its Aftermath, then `sets.engaged.AM3` with Liberator and Aftermath Lv.3, win over both |
 | `^numpad1` | `MainWeapon` | **Caladbolg**, Liberator, Redemption, Lycurgos, Loxotic | Weapon to wield (`sets.<Weapon>` in your set file). In the template the two-handers go with Utu Grip, Loxotic (club) with Blurred Shield +1 |
 
 Apocalypse, Foenaria and Naegling are listed in `DRK_STATES.lua` but commented out:

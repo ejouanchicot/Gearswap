@@ -349,7 +349,7 @@ DNC answers `smartbuff` / `buffself` in `DNC_COMMANDS.lua` before its common-com
 | Function | Behaviour |
 |---|---|
 | `get_max()` | Scholar level from main or sub job (`get_scholar_level`); capacity by tier 10/30/50/70/90 -> 1..5 charges (`CHARGE_TIERS`); 0 without Scholar |
-| `available()` | `floor(max - max * recast / 240)` using ability recast id 231, the shared stratagem slot. The 240 s full-recharge constant is the base value: the Scholar 550 Job Point gift shortens it, so the estimate is slightly optimistic for a SCH main with that gift and exact for a job subbing /SCH |
+| `available()` | `floor(max - max * recast / full)` using ability recast id 231, the shared stratagem slot. `full` is `Tuning.get('stratagem_full_recharge', 240)` (`_common/combat/TUNING.lua`, since 2026-09-30; `DEFAULT_FULL_RECHARGE`): the Scholar 550 Job Point gift shortens it, so left at 240 the estimate is slightly optimistic for a SCH main with that gift and exact for a job subbing /SCH |
 | `has_charge()` | `available() > 0`; caller BLM `klima` |
 | `next_charge_minutes()` | time until the next whole-charge boundary, in minutes; `0` when Scholar is neither main nor sub |
 
@@ -401,7 +401,7 @@ No config file is read by these modules. Inputs are:
 - Mote states: whatever a caller passes as `mode_state`; `state.Moving`; `state.MainInstrument` (BRD router).
 - Mote data: `classes.SpellMaps` and `job_get_spell_map` (P8b through `get_spell_map`).
 - Globals: `buffactive`, `player`, `world`, `areas.Cities`, `_G.SongRotationManager`, `is_recast_ready` (from `RECAST_CONFIG.lua`, tolerance 2.0 s).
-- Hard-coded constants: `CAST_COOLDOWN = 2.0`, `DEFAULT_DELAY = 6` (self buffs); `CAST_SPACING = 2` (/WAR buffs); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231`, `FULL_RECHARGE = 240` (stratagems); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
+- Hard-coded constants: `CAST_COOLDOWN = 2.0`, `DEFAULT_DELAY = 6` (self buffs); `CAST_SPACING = 2` (/WAR buffs); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `TUNING.lua` `stratagem_full_recharge`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
 
 ## State & lifetime
 

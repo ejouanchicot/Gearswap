@@ -6,7 +6,7 @@ This page covers two groups of code:
 - **The shared helpers** that apply to every job, or to several:
   - installed on Mote's hooks by `INIT_SYSTEMS.lua` on every load: ElementalBelt (Obi / Orpheus), DualWield (DW tiers by haste), TreasureHunter (Treasure Mode gear);
   - started by `INIT_SYSTEMS.lua` 0.5 s after load: AutoMove, which polls the player position with `coroutine.schedule`;
-  - run on demand: craft and fishing mode, the /DRG jumps, the DNC waltz tier selector, the WHM cure tier selector, SpellGearLock (Dispelga) and the small core helpers (`live_tp`, `AutoOptions`, `ElementalBonus`).
+  - run on demand: craft and fishing mode, the /DRG jumps, the DNC waltz tier selector, the WHM cure tier selector, SpellGearLock (Dispelga), WeaponAftermath (WAR / SAM / DRK / THF engaged sets) and the small core helpers (`live_tp`, `AutoOptions`, `ElementalBonus`).
 
 The page ends with a matrix of which shared system applies to which job.
 
@@ -28,6 +28,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/craft/craft_manager.lua` | Craft set file loading and resolution, session flag, unlock; exported as `_G.CraftManager` |
 | `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17; `false` keeps the job's), deployed as `<char>/_common/inventory/CRAFT_CONFIG.lua` |
 | `_master/sets/craft_sets.lua` | Generic craft set file, every slot empty: `hq`, `nq`, `success` and one variant per sub-craft (the 8 crafts) |
+| `_master/sets/fishing_sets.lua` | Generic fishing set file (single set, `description = 'Fishing'`), all 14 slots `""` |
 | `_master/Tetsouo/_common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000, every job on /DRG (run by `WSPrecastHandler.handle`); `attach` gives every job `state.JumpAuto` and its row |
 | `shared/utils/smartbuff/subjob_buffs.lua` | `//gs c smartbuff` on every job: the self-buffs of the current subjob (/WAR, /SAM, /NIN, /DNC) |
@@ -40,6 +41,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/equipment/dual_wield.lua` | Dual Wield tier pieces by magic haste on the engaged set, every job |
 | `shared/utils/equipment/treasure_hunter.lua` | Treasure Mode on every job (optional state), tagging by any action, engaged and action overlays |
 | `shared/utils/equipment/treasure_commands.lua` | `//gs c th` |
+| `shared/utils/equipment/weapon_aftermath.lua` | `sets.engaged.<Weapon>AFM3` while the weapon's Aftermath is up; called first by the engaged base selector of WAR, SAM, DRK and THF |
 | `shared/utils/equipment/spell_gear_lock.lua` | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
 | `shared/utils/core/optional_state.lua`, `optional_state_commands.lua` | Base of Combat Mode and Treasure Mode: shown / hidden / key per job, commands (see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)) |
 | `shared/utils/core/live_tp.lua` | TP read from the game, not from GearSwap's copy |
@@ -316,7 +318,7 @@ flowchart TD
 
 - **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). Which file: `craft_file` / `fish_file` in `<char>/_common/inventory/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
 - **Resolution** (`resolve`). A multi-variant file uses `default` when no argument is given, then tries a direct lower-case key lookup, then an alias scan. A single-set file returns the whole table and ignores the argument.
-- **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
+- **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `canonical_gear` also drops a slot whose item is `""`, so an empty slot is neither equipped nor locked (fishing and single-set files included). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
 - **Locking.** `equip_craft_gear` uses GearSwap's synchronous `enable()` rather than `gs enable all`, because the command would land after `equip()`. The lock is applied 2.0 s later (`lock_after_delay`); that coroutine carries no session check. When a variant switch changes nothing, only the lock is re-asserted.
 - **Session flag.** While it is set (`CraftManager.is_active()`, read through the `_G.CraftManager` export):
   - refill switches to `<char>/_common/inventory/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
@@ -327,7 +329,7 @@ flowchart TD
 ### Set file shapes
 
 ```lua
--- single set (fishing_sets.lua)
+-- single set (fishing_sets.lua; the _master template has every slot "")
 return { description = 'Fishing', gear = { range = 'Ebisu F. Rod +1', ... } }
 
 -- multi-variant (bonecraft_sets.lua)
@@ -340,7 +342,7 @@ return {
 }
 ```
 
-Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, `smith` and `leather`, built from a shared base with a local `set_with()` helper. The generic `_master/sets/craft_sets.lua` (copied by `clone_character.py` to every character, with the other set files of `sets/` that belong to no job; the overlay wins) has `hq`, `nq`, `success` and a variant per sub-craft from its `SUB_CRAFTS` table (`wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook`, each with aliases): HQ plus that craft's neck piece. Its `set_with` skips slots left `""`, so a player only fills in names.
+Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, `smith` and `leather`, built from a shared base with a local `set_with()` helper. The generic `_master/sets/craft_sets.lua` (copied by `clone_character.py` to every character, with the other set files of `sets/` that belong to no job; the overlay wins) has `hq`, `nq`, `success` and a variant per sub-craft from its `SUB_CRAFTS` table (`wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook`, each with aliases): HQ plus that craft's neck piece. Its `set_with` skips slots left `""`, so a player only fills in names. `_master/sets/fishing_sets.lua` is copied the same way (the overlay's file wins): a single set with its 14 slots `""`.
 
 ### Public API
 
@@ -548,6 +550,21 @@ Wired on RDM only. Another job that casts Dispelga needs the same four calls.
 
 ---
 
+## WeaponAftermath
+
+`shared/utils/equipment/weapon_aftermath.lua`. `WeaponAftermath.set(weapon)` -> the table `sets.engaged[weapon .. 'AFM3']`, or nil when: `weapon` is nil, `sets.engaged` or `buffactive` is missing, `state.AftermathSet.value == 'FastTP'` (only WAR has that state), the set does not exist, or neither buff 272 (Aftermath: Lv.3) nor 273 (plain Aftermath, a Prime weapon's) is up. `weapon` is the weapon state's value (`LaphriaAFM3`, `MasamuneAFM3`, `LiberatorAFM3`...).
+
+| Caller | Position | Named-weapon rule after it |
+|---|---|---|
+| `war/functions/logic/set_builder.lua` `weapon_am3_set` | after Kraken Club (`PDTKC`) and the SubtleBlow / Hoxne stance | `PDTAFM3` (Ukonvasara, 272) |
+| `sam/functions/logic/set_builder.lua` `select_engaged_base` | first | `AM3` (Masamune / Kogarasumaru, 272) |
+| `drk/functions/logic/set_builder.lua` `select_engaged_base` | first | `AM3` (Liberator, 272) |
+| `thf/functions/logic/set_builder.lua` `select_engaged_base` | first | `PDTAFM3` (Vajra, 272) |
+
+No other job calls it. The gear rebuild on a buff change (`LifecycleManager.refresh_after_buff`, `GEAR_BUFFS`) lists `Aftermath: Lv.3` only: the plain `Aftermath` (273) is picked up at the next gear update, not when it starts or ends.
+
+---
+
 ## WHM CureManager
 
 `WHM_PRECAST.ensure_modules_loaded()` loads it lazily. It is called from `retier_cure`, which runs after PrecastGuard and **before** CooldownChecker in `job_precast`.
@@ -614,8 +631,9 @@ The module returns a function: `local live_tp = require('shared/utils/core/live_
 `Tuning.get(key, default)` returns `<Character>/_common/combat/TUNING.lua`'s `key`
 (`CharPaths.optional('common', 'TUNING')` under pcall; missing file or key: `default`). A table
 default is copied and the file's keys are laid over it, so one key is enough; a table default given a
-non-table value, or a non-table default given a value of another type, keeps the default. The type of
-the values inside a table is not checked. Every reader calls it at the moment it needs the value.
+non-table value, or a non-table default given a value of another type, keeps the default. Inside a
+table, a file value whose key exists in the default with another type is skipped (`weak_below = '50'`
+keeps 50); a key the default lacks is kept as given. Every reader calls it at the moment it needs the value.
 
 | Key | Default | Reader |
 |---|---|---|
@@ -624,7 +642,8 @@ the values inside a table is not checked. Every reader calls it at the moment it
 | `waltz_from` | `{['Curing Waltz II'] = 200, ['Curing Waltz III'] = 600, ['Curing Waltz IV'] = 1100, ['Curing Waltz V'] = 1500}` | `shared/utils/dnc/waltz_manager.lua` `curing_hp_brackets`: tier N covers `[from[N], from[N+1])`, Curing Waltz has no floor, V no ceiling |
 | `smn_skillup` | `{avatar = 'Siren', release_after = 5.0}` | `smn/functions/SMN_COMMANDS.lua` `start_skillup` (read at each start into `SKILLUP_STATE.avatar` / `cast_to_release_delay`) |
 | `geo_escort_indi` | `'Indi-Regen'` | `geo/functions/GEO_COMMANDS.lua` `escort` when no Indi- is given |
-| `brd_debuff_songs` | `{lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}` | `brd/functions/BRD_COMMANDS.lua` (`lullaby`, `lullaby2` / `foe`, `elegy`, `requiem`) |
+| `brd_debuff_songs` | `{lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}` | `brd/functions/BRD_COMMANDS.lua` (`lullaby`, `lullaby2` / `foe`, `elegy`, `requiem`); the spell is also passed to the chat message |
+| `stratagem_full_recharge` | `240` (seconds, `DEFAULT_FULL_RECHARGE`) | `shared/utils/scholar/stratagem_charges.lua` `available` and `next_charge_minutes`: charges = `floor(max - max * recast / full)`, one charge every `full / max` s. Lower it with the job-point gift |
 
 A new key: give the job's value as `default` at the call, add a commented line with that default to
 `_master/config_global/TUNING.lua`, and list it here and in the player's configuration guide.
@@ -732,6 +751,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Impact's cloak kept on (`ImpactLock`) | wraps `precast` / `aftercast` / `cancel_spell` at load; equip hook (`equip_hooks.lua`, order 5) while Impact is cast | every character and job; the cloak (Crepuscular or Twilight) in `sets.precast.FC.Impact` / `sets.midcast.Impact`, or just owned in an equippable bag |
 | Doubled rings / earrings / weapons (`DuplicateGear`) | equip hook (`equip_hooks.lua`, order 10), registered at load | every character and job; copies must sit in different bags (`//gs c wo` spreads them) |
 | HP priority | `HPPriority.apply()` at load, then the equip hook (`equip_hooks.lua`, order 20) at every swap | every character; every job except the `skip_jobs` of `_common/combat/HP_PRIORITY.lua` (default none) |
+| Weapon Aftermath set (`WeaponAftermath`) | engaged base selector | WAR, SAM, DRK, THF: `sets.engaged.<Weapon>AFM3` |
 | Lockstyle / macrobook factories | wrappers | |
 | KeybindGuard, common keys, key conflicts | KeybindManager | every job |
 | AutoMove loop (`state.Moving`) | `INIT_SYSTEMS` +0.5 s | the gear depends on the set builder (column below) |

@@ -41,6 +41,7 @@ The base is the first of these that exists:
 
 | Set | Worn when |
 |---|---|
+| `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.MasamuneAFM3`) | Your Main Weapon mode's own Aftermath set, while Aftermath: Lv.3 or the plain "Aftermath" (a Prime weapon's) is up. Any weapon; not in the provided file |
 | `sets.engaged.AM3` | Aftermath: Lv.3 is up and your Main Weapon mode is Masamune (or Kogarasumaru, if you add it). Replaces the other base sets below. Not in the provided file: write a whole set, an empty one would drop your PDT gear |
 | `sets.engaged.<Offense>.<Hybrid>` | Both modes have a set, e.g. `sets.engaged.Acc.PDT` |
 | `sets.engaged.<Hybrid>` | Hybrid Mode PDT or MDT when the Offense Mode set has no version for it: `sets.engaged.PDT`, `sets.engaged.MDT` |
@@ -118,9 +119,11 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 - **Seigan gear.** While Seigan is up and you are engaged: `sets.thirdeye`
   (PDT) or `sets.seigan` (Normal, MDT).
 - **Sekkanoki / Meikyo Shisui pieces** on the weaponskill while the buff is up.
-- **Aftermath Lv.3** with Masamune: `sets.engaged.AM3` when you write it. It goes on
-  or off about 0.1 s after the aftermath starts or ends (not while Doomed; if a
-  spell or weaponskill is under way, when it ends).
+- **Aftermath**: `sets.engaged.<Weapon>AFM3` for any weapon, else
+  `sets.engaged.AM3` with Masamune, when you write them. Aftermath: Lv.3 starting
+  or ending re-dresses you about 0.1 s later (not while Doomed; if a spell or
+  weaponskill is under way, when it ends); the plain "Aftermath" takes effect at
+  your next gear change.
 - **Yoichinoyumi** in the range slot adds `sets.bow` while engaged.
 - **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %,
   on top of `sets.idle.PDT` (thresholds: `sam_idle_hp` in `_common/combat/TUNING.lua`).
@@ -140,7 +143,7 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 
 ## Names the code reads that the provided file lacks
 
-- `sets.engaged.AM3`.
+- `sets.engaged.AM3`, `sets.engaged.<Weapon>AFM3`.
 - Any `sets.engaged.<Offense>.MDT` (MDT wears `sets.engaged.MDT` whatever the
   Offense Mode).
 - `sets.idle.Town`, `sets.Adoulin`.

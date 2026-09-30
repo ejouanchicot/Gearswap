@@ -113,6 +113,10 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 The commands that need /SCH or /RDM do not check the subjob: the game refuses
 the ability or spell.
 
+The charges left are estimated from the time the whole stratagem pool takes to
+come back, 240 s by default: `stratagem_full_recharge` in
+`_common/combat/TUNING.lua` sets yours.
+
 ### Common commands that work here
 
 One line each; details in the [commands guide](../../guides/commands.md).

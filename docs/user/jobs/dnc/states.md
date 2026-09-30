@@ -24,7 +24,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Ctrl+Numpad6 `^numpad6` | `ClimacticAuto` | **On**, Off | On: before a weaponskill listed in `DNC_WS_CONFIG.lua` (Rudra's Storm, Ruthless Stroke, Shark Bite), with at least 1000 TP (or the file's `min_tp` if higher), the target above 25 % HP and 3 or more Finishing Moves, Climactic Flourish is used first when it is ready and the weaponskill follows once it is up. Tried once per weaponskill |
 | Ctrl+Numpad7 `^numpad7` | `JumpAuto` | On, **Off** | /DRG only: a weaponskill pressed below 1000 TP with Jump ready uses Jump first (then High Jump if still short), then the weaponskill again |
 | Ctrl+Numpad8 `^numpad8` | `Dance` | **Saber Dance**, Fan Dance | Dance put up by `//gs c smartbuff` (unless already up) and `//gs c dance` (always) |
-| Ctrl+Numpad0 `^numpad0` | `Samba` | **Haste Samba**, Drain Samba II, Aspir Samba | Samba put up by `//gs c smartbuff` when your TP covers it or Trance is up (never with Fan Dance) |
+| Ctrl+Numpad0 `^numpad0` | `Samba` | **Haste Samba**, Drain Samba II, Aspir Samba, Off | Samba put up by `//gs c smartbuff` when your TP covers it or Trance is up (never with Fan Dance). Off: `smartbuff` uses no samba |
 
 ## Other modes (no key)
 

@@ -25,6 +25,7 @@ What WAR adds on top of the shared pipeline:
   Club (the `NaeglingKC` choice, or a club already in the off hand when the chosen
   weapon set names no sub) -> `PDTKC`; an explicit stance (`HybridMode` `SubtleBlow` or `Hoxne`, not in
   the template) -> its set, or `<stance>AFM3` under Ukonvasara Aftermath Lv.3;
+  the weapon's own `<Weapon>AFM3` under its Aftermath (`AftermathSet` AFM3);
   Aftermath Lv.3 with Ukonvasara -> `PDTAFM3`; a set named after the weapon
   (`sets.engaged.Naegling`); otherwise the `HybridMode` set.
 - **Hoxne stance** (when the player adds it to `HybridMode`): the engaged and idle
@@ -338,7 +339,8 @@ has no effect on WAR.
   3. `sets.engaged[MainWeapon .. 'AFM3']` (e.g. `LaphriaAFM3`) when it exists and
      `buffactive[272]` (Aftermath: Lv.3) or `buffactive[273]` (plain "Aftermath",
      the name a Prime weapon's may carry) is up and `state.AftermathSet` is not
-     `FastTP` (`weapon_am3_set`, 2026-09-30; the `^numpad0` key is `visible` only
+     `FastTP` (`weapon_am3_set` -> [WeaponAftermath](../systems/factories-and-helpers.md#weaponaftermath), shared with SAM, DRK and THF since
+     2026-09-30; the `^numpad0` key is `visible` only
      for a weapon with such a set, re-asked through `WARKeybinds.refresh()` on a
      MainWeapon change in `job_state_change`);
      else `sets.engaged.PDTAFM3` when `buffactive[272]` and
@@ -440,6 +442,7 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 |-----|--------------|---|---|
 | `sets['Ukonvasara']`, `['Naegling']`, `['NaeglingKC']`, `['Shining']`, `['Chango']`, `['Ikenga']`, `['Loxotic']` | `apply_weapon`, `ws_slots.lua` `detect_weapon` | yes | loop |
 | `sets.engaged.PDTKC`, `.PDTAFM3` | `select_engaged_base` | yes | yes |
+| `sets.engaged.<Weapon>AFM3` (`LaphriaAFM3`...) | `weapon_am3_set` (`WeaponAftermath`) | absent | `LaphriaAFM3` |
 | `sets.engaged.SubtleBlow`, `.Hoxne`, `.HoxneAFM3` | `select_stance_engaged` (overlay `HybridMode` only) | absent | yes |
 | `sets.engaged.Naegling`, `.Ukonvasara` | `select_weapon_engaged` | absent | yes |
 | `sets.engaged.PDT` (alias of `PDTTP`), `.Normal` | `select_engaged_base` (HybridMode step) | yes | yes |

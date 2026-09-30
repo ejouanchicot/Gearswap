@@ -409,8 +409,10 @@ alt's version stays reachable as `//gs c alt <name>`).
 
 The four spells are defaults of `Tuning.get('brd_debuff_songs', ...)` (keys `lullaby`,
 `lullaby2`, `elegy`, `requiem`; `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)). The chat
-message does not follow: it still reads Casting Horde Lullaby II / Foe Lullaby II,
-Carnage Elegy, Foe Requiem VII (fixed templates in `brd_messages.lua`).
+message names the spell sent: `show_lullaby_cast` / `show_elegy_cast` /
+`show_requiem_cast(debuff_songs.<key>)` fill `{spell}` in the `brd_messages.lua`
+templates (since 2026-09-30; a SongRefinement tier change at precast is not
+reflected).
 | `songs` / `meleesong` / `melee` / `allsongs` `[full]` | `cast_songs_with_phases(false, '<me>', cmdParams[2] == 'full')` |
 | `songplan` | InfoBlock of `SongSlots.inputs()` and `plan()` |
 | `songstop` | `SongQueue.stop()` |
@@ -609,8 +611,8 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
   offline).
 - The refined Foe Requiem VI falls to `sets.midcast.BardSong` (no Requiem set
   in the template), weapons included.
-- `lullaby` prints "Casting Horde Lullaby II" while casting Horde Lullaby
-  (`brd_messages.lua` `lullaby_cast` template).
+- Fixed 2026-09-30: `lullaby` printed "Casting Horde Lullaby II" while casting
+  Horde Lullaby; the debuff song messages now take the spell sent.
 - `job_customize_midcast_set` is never called.
 - Three different "other player" tests: Marcato (`try_marcato`,
   `target.type == 'PLAYER'`), Pianissimo (`job_precast_bardsong`,

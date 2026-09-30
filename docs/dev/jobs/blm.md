@@ -506,7 +506,8 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   subs Scholar.
 - Scholar helpers: `shared/utils/scholar/scholar_actions.lua`,
   `stratagem_charges.lua` (also used by [GEO](geo.md), [PLD](pld.md) and
-  `//gs c stealth`). The chains read the Arts, Addendum, Accession and
+  `//gs c stealth`; full recharge from `TUNING.lua` `stratagem_full_recharge`,
+  default 240 s, see [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)). The chains read the Arts, Addendum, Accession and
   Manifestation buffs from `windower.ffxi.get_player().buffs` (`buff_up`),
   since `buffactive` lags in scheduled polls.
 - Lockstyle / macrobook factories, `JobChangeManager`, `LifecycleManager`, UI

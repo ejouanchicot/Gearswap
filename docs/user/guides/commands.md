@@ -65,8 +65,8 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
-| `craft [variant]`, `craft off` | Crafting set from the file named in `_common/inventory/CRAFT_CONFIG.lua` (`craft_file`, default `_common/sets/craft_sets.lua`, empty until you fill it). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook`. Also applies lockstyle 19 (`craft_lockstyle` in the same file; `false`: the job's lockstyle stays) |
-| `fish` (`fishing`) | Fishing set from `_common/sets/fishing_sets.lua` (same), lockstyle 17 (`fish_lockstyle`, `false` works the same way) |
+| `craft [variant]`, `craft off` | Crafting set from the file named in `_common/inventory/CRAFT_CONFIG.lua` (`craft_file`, default `_common/sets/craft_sets.lua`, empty until you fill it; a slot left `""` is not touched). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook`. Also applies lockstyle 19 (`craft_lockstyle` in the same file; `false`: the job's lockstyle stays) |
+| `fish` (`fishing`) | Fishing set from `_common/sets/fishing_sets.lua` (`fish_file` in the same file; empty until you fill it), lockstyle 17 (`fish_lockstyle`, `false` works the same way) |
 | `uncraft` | Leave the craft / fishing set |
 
 `wo` details: it unequips everything and locks your slots while it runs,
@@ -166,7 +166,7 @@ and partner job ([HUD](../features/ui.md#key-conflicts)).
 | `help` (`?`) | Where each system's own help is (`tb help`, `stealth help`, `combatmode help`...) |
 | `dw` [`auto` \| `none` \| `haste` \| `haste2` \| `max`] | Dual Wield tier: estimated magic haste and its sources, tier, `sets.DW.<tier>` used; a word forces a tier, `auto` goes back to the estimate (`_common/combat/DW_CONFIG.lua`) |
 | `belt` | Obi / Orpheus: automatic on or off, belts found, today's day and weather, what each belt adds now (`_common/combat/ELEMENTAL_BELT.lua`) |
-| `atelier` / `atelier on` / `atelier off` | Write the loaded job's sets, keys, modes, macro book and lockstyle for the **Atelier** page: open `data/atelier.html` in your browser. `on`: also after every job load (per character). Files: `<YourName>/atelier/<JOB>.js` |
+| `atelier` / `atelier on` / `atelier off` | Write the loaded job's sets, keys, modes, macro book and lockstyle for the **Atelier** page: open `data/atelier.html` in your browser (it opens on the first character exported; switch with the character buttons). `on`: also after every job load (per character). Files: `<YourName>/atelier/<JOB>.js` |
 | `trace on` / `off` / `clear` | Record what the game returns to `<YourName>/trace.log` (keeps recording across restarts until `trace off`). Also writes each load's steps, every file loaded, every command sent, every GearSwap event and a line every second: after a game crash, the last line shows what was going on. Past 10 MB the file becomes `trace.old.log` (send both) |
 | `testcolors` (`colors`) | Chat colour codes |
 | `perf`, `lagdebug`, `memcheck`, `debugprecast`, `debugjobchange`, `debugupdate`, `automovedebug`, `debugwarp`, `debugmsg`, `testmsg`, `msgtests` | Developer tools, see [commands-and-debug](../../dev/systems/commands-and-debug.md) |

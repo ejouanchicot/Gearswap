@@ -27,6 +27,7 @@ The base is the first of these that exists:
 
 | Set | Worn when |
 |---|---|
+| `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.LiberatorAFM3`) | Your Main Weapon mode's own Aftermath set, while Aftermath: Lv.3 or the plain "Aftermath" (a Prime weapon's) is up, whatever the Hybrid Mode. Any weapon; not in the provided file |
 | `sets.engaged.AM3` | Aftermath: Lv.3 is up and your Main Weapon mode is Liberator, whatever the Hybrid Mode |
 | `sets.engaged.PDT` | Hybrid Mode PDT (the default) |
 | `sets.engaged.Accu` | Hybrid Mode Accu (in the provided file, a copy of `sets.engaged` to fill with accuracy) |
@@ -38,7 +39,7 @@ read on DRK.
 
 When Aftermath: Lv.3 starts or ends, the engaged set is rebuilt about 0.1 s
 later (unless you are Doomed). If a spell or weaponskill is under way, it is rebuilt
-when that action ends.
+when that action ends. The plain "Aftermath" takes effect at your next gear change.
 
 ## Dark Seal and Nether Void
 
@@ -113,10 +114,10 @@ back to `sets.midcast['Dark Magic']`.
 - **Nether Void legs** on Absorb, Drain and Aspir spells while Nether Void is up.
 - **Dark Seal / Nether Void engaged versions**, from the press of the ability,
   when you write them.
-- **Aftermath Lv.3 with Liberator** swaps the engaged base to
-  `sets.engaged.AM3`, and the gear changes about 0.1 s after Aftermath starts
+- **Aftermath**: `sets.engaged.<Weapon>AFM3` for any weapon when you write it,
+  else, Lv.3 with Liberator, `sets.engaged.AM3`, swaps the engaged base, and the gear changes about 0.1 s after Aftermath starts
   or ends.
-  Remove `sets.engaged.AM3` to stop it.
+  Remove those sets to stop it.
 - **Weapon** re-equipped on every idle and engaged set.
 - **Movement gear** while running, outside a town.
 
@@ -134,5 +135,6 @@ DRK uses no ability by itself.
   `.DarkSealNetherVoid`.
 - `sets.midcast['Elemental Magic']`, `sets.midcast.Stun`.
 - `sets.idle.Weak`, `sets.idle.Accu`.
+- `sets.engaged.<Weapon>AFM3` (optional, see *Engaged*).
 - `.Acc` versions of the named weaponskills.
 - `sets.TreasureHunter` ([set names](../../guides/sets.md)).

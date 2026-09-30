@@ -11,7 +11,8 @@ What DRK adds on top of the shared pipeline:
 - **Dark Magic midcast routing** by spell: Dread Spikes and Absorb spells get
   their own pseudo-skills in `MidcastManager`, then Dark Seal (head) and Nether
   Void (legs) pieces are equipped while those buffs are up.
-- **Engaged set selection** in the style of WAR: Aftermath Lv.3 with Liberator
+- **Engaged set selection** in the style of WAR: the weapon's own
+  `sets.engaged.<Weapon>AFM3` under its Aftermath, else Aftermath Lv.3 with Liberator
   -> `sets.engaged.AM3`, `HybridMode` PDT -> `sets.engaged.PDT`, Accu ->
   `sets.engaged.Accu`, else the `sets.engaged` root; then the weapon set and
   optional Dark Seal / Nether Void engaged variants. Mote's own selection is
@@ -205,6 +206,7 @@ the template defines none, so the flags have no visible effect out of the box.
   `state.Moving.value == 'true'`.
 - `customize_melee_set` ignores Mote's `meleeSet` and calls
   `build_engaged_set(MainWeapon, HybridMode)`: `select_engaged_base` ->
+  `WeaponAftermath.set(weapon)` first ([WeaponAftermath](../systems/factories-and-helpers.md#weaponaftermath), since 2026-09-30), else
   `sets.engaged.AM3` when `buffactive[272]` and the weapon is Liberator,
   `sets.engaged.PDT` when `HybridMode == 'PDT'`, `sets.engaged.Accu` when
   `HybridMode == 'Accu'` and it exists, else the `sets.engaged` root; then
@@ -272,6 +274,7 @@ T = `_master/sets/drk_sets.lua` (no live copy in the repository).
 | `sets.Adoulin` | `select_idle_base_town` | no |
 | `sets.MoveSpeed` | `build_idle_set` (`BaseSetBuilder.apply_movement`, outside town) | yes |
 | `sets.engaged`, `.PDT`, `.Accu`, `.AM3` | `select_engaged_base` | yes |
+| `sets.engaged.<Weapon>AFM3` | `select_engaged_base` (`WeaponAftermath`) | no |
 | `sets.engaged[weapon][hybrid].DarkSeal` / `.NetherVoid` / `.DarkSealNetherVoid` | `apply_buff_variants` | **no** (feature inert) |
 | `sets.precast.JA` Jump, High Jump, Diabolic Eye, Arcane Circle, Nether Void, Souleater, Last Resort, Weapon Bash, Blood Weapon, Dark Seal | Mote default precast (+ `job_precast` for four) | yes |
 | `sets.precast.FC` | `job_precast`, Mote | yes |

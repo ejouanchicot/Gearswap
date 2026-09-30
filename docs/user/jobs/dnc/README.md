@@ -46,7 +46,7 @@ depends on the subjob (Jump Auto only acts on /DRG).
 | `^numpad6` | Climactic Auto On / Off | always | yes |
 | `^numpad7` | Jump Auto On / Off, default Off | /DRG only | /DRG only |
 | `^numpad8` | Cycle Dance: Saber Dance, Fan Dance | always | yes |
-| `^numpad0` | Cycle Samba: Haste Samba, Drain Samba II, Aspir Samba | always | yes |
+| `^numpad0` | Cycle Samba: Haste Samba, Drain Samba II, Aspir Samba, Off | always | yes |
 | `^numpad9` | Cycle Hybrid Mode: PDT, Normal | always | yes |
 | `#numpad0` | Auto Medicine on / off | always (common key) | yes |
 | `!numpad7` | Alts follow this character (press again to stop) | always (common key) | yes |

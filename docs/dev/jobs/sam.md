@@ -198,7 +198,9 @@ no midcast set in the template).
   `select_idle_base_town` reports "not in town" in every city and SAM builds
   its field idle there, `sets.MoveSpeed` included.
 - `customize_melee_set` -> `build_engaged_set`: the base is re-selected by
-  `select_engaged_base`: `sets.engaged.AM3` under Aftermath: Lv.3
+  `select_engaged_base`: first `WeaponAftermath.set(MainWeapon)` ([WeaponAftermath](../systems/factories-and-helpers.md#weaponaftermath):
+  `sets.engaged.<Weapon>AFM3` under buff 272 or 273, since 2026-09-30), else
+  `sets.engaged.AM3` under Aftermath: Lv.3
   (`buffactive[272]`) with Masamune or Kogarasumaru (no such set in the
   template; a commented example shows how), else the `OffenseMode` node
   (`sets.engaged.Normal/Mid/Acc/SuBlow`, falling back to `sets.engaged.Normal`)
@@ -285,6 +287,7 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 | `sets.engaged.Normal` | Mote base, `select_engaged_base` | yes |
 | `sets.engaged.PDT`, `.MDT` | `select_engaged_base` (HybridMode) | yes |
 | `sets.engaged.Mid`, `.Acc`, `.Acc.PDT`, `.SuBlow`, `.Mid.PDT`, `.SuBlow.PDT` (copies of `.PDT` since 2026-09-29) | `select_engaged_base` (OffenseMode) | yes |
+| `sets.engaged.<Weapon>AFM3` | `select_engaged_base` (`WeaponAftermath`) | no |
 | `sets.engaged.AM3` | `select_engaged_base` (Aftermath: Lv.3) | **no** (commented example) |
 | `sets.thirdeye` | `build_engaged_set` (Seigan, PDT) | yes |
 | `sets.seigan`, `sets.bow` | `build_engaged_set` Seigan (not PDT) and bow layers | yes, empty |

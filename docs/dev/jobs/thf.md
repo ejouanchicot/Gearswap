@@ -17,7 +17,7 @@ What THF adds on top of the shared pipeline:
 - **Weapon states** applied to idle and engaged sets (`MainWeapon`,
   `SubWeapon`, through `WeaponResolver`), an **Abyssea proc** mode that swaps
   in a proc weapon pair (`AbyProc`, `AbyWeapon`), and an **Aftermath** engaged
-  set (`PDTAFM3`).
+  set (`sets.engaged.<Weapon>AFM3`, else `PDTAFM3` with Vajra).
 - **Ranged lock**: every `/ra` locks the range and ammo slots; `//gs c range`
   equips a crossbow, locks and shoots; the `RangeLock` key locks/unlocks; the
   lock is released when the job file unloads.
@@ -229,8 +229,10 @@ sequenceDiagram
 
 `SetBuilder.build_engaged_set`:
 
-1. `select_engaged_base`: Aftermath Lv.3 (`buffactive[272]`) with
-   `MainWeapon == 'Vajra'` -> `sets.engaged.PDTAFM3`; otherwise
+1. `select_engaged_base`: `WeaponAftermath.set(MainWeapon)` first
+   ([WeaponAftermath](../systems/factories-and-helpers.md#weaponaftermath), since 2026-09-30); else Aftermath Lv.3 (`buffactive[272]`) with
+   `MainWeapon == 'Vajra'` -> `sets.engaged.PDTAFM3` (Mote's set when it is
+   missing: the `HybridMode` step is in the `elseif`); otherwise
    `sets.engaged[HybridMode]` if it exists; otherwise Mote's set. This replaces
    Mote's own selection, so Mote's defense and kiting layers never reach THF
    engaged gear. Gaining or losing Aftermath Lv.3 rebuilds the gear about 0.1 s
@@ -479,6 +481,7 @@ overlay has the same names (weapon sets in its `weapons.lua`).
 | `sets.engaged`, `sets.engaged.PDT` | Mote, `select_engaged_base` | yes |
 | `sets.engaged.Normal` | `select_engaged_base` (falls back to Mote's set) | no |
 | `sets.engaged.PDTAFM3` | `select_engaged_base` | yes |
+| `sets.engaged.<Weapon>AFM3` | `select_engaged_base` (`WeaponAftermath`) | no |
 | `sets[MainWeapon]` (7 names) | `WeaponResolver.set_for('main', ...)` | yes |
 | `sets[SubWeapon]` (Centovente, Tanmogayi, Kraken; Telop Knife in the overlay) | `WeaponResolver.set_for('sub', ...)` | yes (no Telop Knife) |
 | `sets[AbyWeapon]` (7 names) | `apply_weapon` (direct lookup) | yes |

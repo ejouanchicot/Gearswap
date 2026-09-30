@@ -26,6 +26,7 @@ The engaged set is chosen in this order, the first that exists wins:
 
 | Set | Worn when |
 |---|---|
+| `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.VajraAFM3`) | Your Main Weapon mode's own Aftermath set, while Aftermath: Lv.3 or the plain "Aftermath" (a Prime weapon's) is up, whatever the Hybrid Mode. Any weapon; not in the provided file |
 | `sets.engaged.PDTAFM3` | Aftermath: Lv.3 is up **and** your Main Weapon mode is Vajra. Used whatever the Hybrid Mode |
 | `sets.engaged.PDT` | Hybrid Mode PDT (the default) |
 | `sets.engaged.Normal` | Hybrid Mode Normal |
@@ -163,9 +164,11 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
   engaged part.
 - **Treasure Hunter** on new mobs, Tag mode by default, on the engaged set and
   on the first action against a mob. Off: `//gs c th hide`.
-- **Aftermath Lv.3 with Vajra** swaps the engaged base to `sets.engaged.PDTAFM3`,
-  whatever the Hybrid Mode, about 0.1 s after the aftermath starts or ends (not
-  while Doomed; if an action is under way, when it ends). Remove that set to stop it.
+- **Aftermath**: `sets.engaged.<Weapon>AFM3` for any weapon when you write it,
+  else, Lv.3 with Vajra, `sets.engaged.PDTAFM3`, swaps the engaged base whatever
+  the Hybrid Mode, about 0.1 s after Aftermath: Lv.3 starts or ends (not while
+  Doomed; if an action is under way, when it ends; the plain "Aftermath" at your
+  next gear change). Remove those sets to stop it.
 - **Range lock** after every ranged attack; **quiver opening** for the bolts you wear.
 - **Weapons** re-equipped on every idle and engaged set.
 - The chains `//gs c smartbuff`, `fbc` and `steal` send abilities only; their
@@ -188,6 +191,7 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 
 - `sets.engaged.Normal` (Hybrid Mode Normal wears `sets.engaged`), `sets.idle.Normal` (Hybrid Mode Normal wears `sets.idle`).
 - `.SA` / `.TA` / `.SATA` for Aeolian Edge and Circle Blade.
+- `sets.engaged.<Weapon>AFM3` (optional, see *Engaged*).
 - `sets.midcast.Ninjutsu`, `sets.midcast['Healing Magic']`,
   `sets.midcast['Enhancing Magic']`.
 - `sets.Adoulin` and `sets.idle.Town` are in the file; `sets.DW.*` is there
