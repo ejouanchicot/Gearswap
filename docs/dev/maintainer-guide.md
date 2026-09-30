@@ -437,7 +437,7 @@ copy, not in the public repository). Its core, which reviews enforce:
 | `shared/jobs/<job>/functions/<JOB>_PRECAST.lua` ... `_MACROBOOK.lua` | 11 hook modules (PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS, COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK), plus pet modules on BST/PUP/SMN |
 | `shared/jobs/<job>/functions/logic/` | Job logic called by the hook modules |
 | `data/<Char>/<job>/` (template `_master/config/<job>/`) | `<JOB>_STATES`, `_KEYBINDS`, `_LOCKSTYLE`, `_MACROBOOK`, `_CUSTOM`, `_HUD`, TP/WS configs |
-| `data/<Char>/_common/` (template `_master/config_global/`) | Per-character files shared by all jobs: `UI_CONFIG`, `COMMON_KEYBINDS`, `RECAST_CONFIG`, ... |
+| `data/<Char>/_common/` (template `_master/config_global/`) | Per-character files shared by all jobs: `UI_CONFIG`, `COMMON_KEYBINDS`, `RECAST_CONFIG`, `TUNING`, `ADDONS_CONFIG`, ... |
 | `data/<Char>/sets/` (template `_master/sets/<job>_sets.lua`) | Equipment. Templates are flat; a character overlay may deploy a modular `<job>/` tree |
 
 ### What git tracks
@@ -575,6 +575,12 @@ and [ui-overlay.md, For maintainers / AI](systems/ui-overlay.md#for-maintainers-
       the chosen set path in `trace.log`.
 
 ### Add a configuration file
+
+A single number or name a job fixes in its code needs no new file: read it with
+`require('shared/utils/core/tuning').get('<key>', <job default>)` and add the key,
+commented, to `_master/config_global/TUNING.lua`. Whether a job may load or unload a
+Windower addon goes through `shared/utils/core/job_addons.lua` (`ADDONS_CONFIG.lua`).
+See [factories and helpers](systems/factories-and-helpers.md#core-helpers).
 
 - [ ] Template in `_master/config_global/` (all jobs) or `_master/config/<job>/`.
 - [ ] Header first: what the file controls, where the feature comes from when

@@ -66,7 +66,8 @@ are useful with a subjob:
   Aftermath: Lv.3 with Masamune when you define it (not in the template),
   about 0.1 s after the aftermath starts, and comes off the same way when it ends.
 - **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%, on top
-  of `sets.idle.PDT` (in PDT they replace the PDT pieces they hold).
+  of `sets.idle.PDT` (in PDT they replace the PDT pieces they hold). The
+  thresholds are `sam_idle_hp` in `_common/combat/TUNING.lua`.
   `sets.MoveSpeed` goes on while you run. In a town with a `sets.idle.Town`
   (the provided file has no `sets.idle.Town`), you get that set on top of the idle set
   plus your weapon, nothing else.

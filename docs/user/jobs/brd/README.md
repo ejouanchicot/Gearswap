@@ -106,6 +106,9 @@ and arguments: [commands guide](../../guides/commands.md).
 | `lullaby2` (`foe`) | Foe Lullaby II on `<stnpc>` |
 | `elegy` | Carnage Elegy on `<stnpc>` |
 | `requiem` | Foe Requiem VII on `<stnpc>` |
+
+The spells of `lullaby`, `lullaby2`, `elegy` and `requiem` can be changed with
+`brd_debuff_songs` in `_common/combat/TUNING.lua` (for instance `{elegy = 'Battlefield Elegy'}`).
 | `nt` | Nightingale, then Troubadour 2 s later |
 | `sv` / `ni` / `tr` / `ma` / `pi` | Soul Voice / Nightingale / Troubadour / Marcato / Pianissimo (`soul_voice`, `nightingale`, `troubadour`, `marcato`, `pianissimo` work too) |
 | `forceidle` | Enables ring1 again and puts the idle set's left ring back on |

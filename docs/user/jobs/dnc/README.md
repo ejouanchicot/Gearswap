@@ -24,7 +24,7 @@ Dancer with the provided template gives you:
 - **One-key chains**: `step` (Presto first, main / alternate step),
   `smartbuff` (dance, samba, subjob buffs), `dance`.
 - **Waltzes**: `//gs c waltz` picks the Curing Waltz tier from the missing HP
-  of your target; `aoewaltz` uses Divine Waltz.
+  of your target (tier bands: `waltz_from` in `_common/combat/TUNING.lua`); `aoewaltz` uses Divine Waltz.
 
 Every mode goes back to its default on each job change, subjob change and
 reload.

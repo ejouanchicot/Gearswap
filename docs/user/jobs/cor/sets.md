@@ -36,7 +36,7 @@ after the mode's value is laid on top of idle and engaged.
 |---|---|
 | `sets.idle.Normal` | Standing, not fighting (the base) |
 | `sets.idle.PDT` | `HybridMode` is PDT (the default). Laid on top of `sets.idle.Normal` |
-| `sets.idle.Refresh` | Your MP is under 50 % and your subjob gives MP (not with /NIN, /DNC, /WAR...). Laid on top of everything above, **PDT included** |
+| `sets.idle.Refresh` | Your MP is under 50 % (`refresh_mp_below` in `_common/combat/TUNING.lua`) and your subjob gives MP (not with /NIN, /DNC, /WAR...). Laid on top of everything above, **PDT included** |
 | `sets.idle.Town` | In a town other than Adoulin (not in the provided file). Laid on top of `sets.idle.Normal`: no PDT, no Refresh, no `sets.MoveSpeed` there, only your weapons on top |
 | `sets.Adoulin` | In Western / Eastern Adoulin. Laid on top of `sets.idle.Normal` the same way |
 
@@ -184,6 +184,7 @@ midcast keeps whatever was on.
   used (Bronze Bullet -> `Brz. Bull. Pouch`, Eminent Bullet -> `Em. Bul. Pouch`...). No
   pouch in the inventory: a warning. Chrono, Living and Devastating Bullet pouches are
   waist equipment, not items you use from the inventory: they are not opened for you.
+  The 15 is `quiver_open_at` in `_common/inventory/REFILL_CONFIG.lua` (`false`: never).
 - **Gear rules of `COR_CUSTOM.lua`** leave ranged attacks alone (a rule never changes
   your gear during a shot).
 

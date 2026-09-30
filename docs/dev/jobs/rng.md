@@ -24,7 +24,8 @@ What RNG adds on top of the shared pipeline:
   Shot']`, `['Decoy Shot']`, `['Unlimited Shot']`, `['Double Shot']`,
   `.Barrage`, each while its buff is up. Velocity Shot is also laid on the aim.
 - **Ammo refill**: after a ranged attack, the worn ammo's quiver / pouch is
-  opened when 15 or fewer are left (`QuiverManager`, like COR and THF).
+  opened when 15 or fewer are left (`QuiverManager`, like COR and THF; per
+  character `REFILL_CONFIG.lua` `quiver_open_at.RNG`, `false` = off).
 - No job command.
 
 ## Files
@@ -154,7 +155,9 @@ enhancing gear listed, their layers are for the player's own choice.
 `QuiverManager.after_ranged_attack(spell, nil, nil, 15)`: after an
 uninterrupted ranged attack, the worn ammo's own container
 (`item_index.ammo_container`) is used when 15 or fewer of that ammo are left
-across inventory and wardrobes. The container must be in the inventory.
+across inventory and wardrobes. The container must be in the inventory. The
+character's `_common/inventory/REFILL_CONFIG.lua` `quiver_open_at.RNG` replaces
+the 15 (`false`: never), inside `QuiverManager`.
 
 ### Idle and engaged
 

@@ -28,6 +28,8 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled) | here |
 | `cast_tracker.lua` | 58 | Raw `action` listener: did this character start a cast / act since time t | here |
 | `auto_options.lua` | 35 | Reads `<Character>/_common/combat/AUTO_ABILITIES.lua` (automatic JA options) | here |
+| `tuning.lua` | 47 | `Tuning.get(key, default)`: a job threshold or name from `<Character>/_common/combat/TUNING.lua`, over the job's default | [factories-and-helpers.md](factories-and-helpers.md#tuning-sharedutilscoretuninglua) |
+| `job_addons.lua` | 45 | `JobAddons.allowed(addon)` / `run(action, addon)`: whether a job may load / unload a Windower addon, from `<Character>/_common/display/ADDONS_CONFIG.lua` | [factories-and-helpers.md](factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) |
 | `live_tp.lua` | 30 | TP read from the game instead of GearSwap's stale copy | here (API), [factories-and-helpers.md](factories-and-helpers.md) (users) |
 | `gear_hold.lua` | 25 | `GearHold.active()`: true while a COR roll holds the idle / engaged gear (`_G.cor_roll_hold`, written by `cor/functions/logic/roll_hold.lua`); asked by the Dual Wield, Treasure Hunter and custom-gear layers of the hook chain (2026-09-28) | here ([GearHold](#gearhold)), [cor.md](../jobs/cor.md) |
 | `WATCHDOG_COMMANDS.lua` | 113 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |

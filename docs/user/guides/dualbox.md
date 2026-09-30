@@ -58,7 +58,7 @@ On the alt, `role = "alt"` and `main_character = "Bob"` instead of
 | `timeout` | Seconds without news from the partner before it counts as offline (for the macro book choice) |
 | `debug` | More chat output |
 | `report_on_load` | `false` stops the `sm report` sent to every box at each load (it asks the automation addon's StateReport addition for its state, see [the alt window](#the-alt-window)). On when absent |
-| `tracked_buffs` | On the alt: the buffs it reports to the main, spelled as the game does. Default `{'Entrust', 'Composure', "Bolter's Roll"}` |
+| `tracked_buffs` | On the alt: the buffs it reports to the main (any case works). Default `{'Entrust', 'Composure', "Bolter's Roll"}` |
 
 The clone script writes the last two commented out: remove the `--` to use
 them.
@@ -297,8 +297,8 @@ nothing means the module is not loaded on that side.
 
 Buffs are reported only if listed in the alt's `tracked_buffs`
 (`DUALBOX_CONFIG.lua`, see [Setup](#setup)); without it, Entrust, Composure
-and Bolter's Roll. Case is ignored when matching, but write each name as the
-game does: the main looks it up exactly.
+and Bolter's Roll. Case is ignored on both sides: `'entrust'` works as well as
+`'Entrust'`.
 
 **Mirror one of your own states.** `spell_from_state` reads a Mote state on the
 MAIN, so the alt follows what you have selected:

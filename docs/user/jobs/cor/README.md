@@ -37,7 +37,8 @@ Corsair with the provided template gives you:
   gloves change anything).
 
 The `rolltracker` addon is unloaded while COR is loaded (this job reports
-rolls itself) and loaded again when you leave COR. Every mode goes back to its
+rolls itself) and loaded again when you leave COR; `rolltracker = false` in
+`_common/display/ADDONS_CONFIG.lua` leaves it alone. Every mode goes back to its
 default on each job change, subjob change and reload.
 
 ## All keys on this job
@@ -154,7 +155,7 @@ checks as a macro: debuff guard, recast check, roll gear, Luzaf's Ring.
 | Lockstyle, macro book | Set on load and on each subjob change |
 | Dual-box | Job exchange with your alt (its job counts for the roll job bonus), `alts` orders, macro book per alt job. A COR alt's roll results are also shown on the main |
 | Messages | Ability, spell and weaponskill lines in chat (`jamsg` / `spellmsg` / `wsmsg`); rolls have their own line |
-| Bullet pouch | After a ranged attack, the pouch of the bullets you wear (in your inventory) is opened when 15 or fewer are left |
+| Bullet pouch | After a ranged attack, the pouch of the bullets you wear (in your inventory) is opened when 15 or fewer are left (`quiver_open_at` in `_common/inventory/REFILL_CONFIG.lua`: another number, or `false` for never) |
 | Manual waltz (/DNC) | A Curing Waltz macro on yourself is re-tiered by Mote from your missing HP and TP |
 
 ## Configuration files for this job

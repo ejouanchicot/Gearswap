@@ -67,7 +67,8 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   your range and ammo go back on and are locked again the next time GearSwap
   changes your gear (an action, engaging, a mode change).
 - After a ranged attack, the quiver of the bolts you wear is opened from your
-  inventory when 5 or fewer are left.
+  inventory when 5 or fewer are left (`quiver_open_at` in
+  `_common/inventory/REFILL_CONFIG.lua`, `false`: never).
 - Idle: town and Adoulin sets in town, `sets.MoveSpeed` while moving outside town.
 - Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).
 - Every mode goes back to its default on each job change, subjob change or reload.

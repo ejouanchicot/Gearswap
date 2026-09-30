@@ -57,7 +57,7 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
 | `//gs c song1` … `song5` | Sings one song of the pack (after the Victory March replacement) |
 | `//gs c dummy` (`dummysongs`), `dummy1`, `dummy2` | Dummy songs only: as many as your dummy harp adds over your main instrument / the first / the second of the list |
 | `//gs c carol` / `etude` / `threnody` | Carol / Etude / Threnody from the modes above |
-| `//gs c lullaby`, `lullaby2` (`foe`), `elegy`, `requiem` | Horde Lullaby, Foe Lullaby II, Carnage Elegy, Foe Requiem VII on `<stnpc>` |
+| `//gs c lullaby`, `lullaby2` (`foe`), `elegy`, `requiem` | Horde Lullaby, Foe Lullaby II, Carnage Elegy, Foe Requiem VII on `<stnpc>` (other spells: `brd_debuff_songs` in `_common/combat/TUNING.lua`) |
 | `//gs c nt` | Nightingale, then Troubadour 2 s later (`BRD_TIMING_CONFIG.lua`) |
 | `//gs c sv` / `ni` / `tr` / `ma` / `pi` | Soul Voice / Nightingale / Troubadour / Marcato / Pianissimo (`soul_voice`, `nightingale`, `troubadour`, `marcato`, `pianissimo` work too) |
 | `//gs c forceidle` | Re-enables ring1 and puts the idle set's left ring back on |

@@ -406,6 +406,11 @@ alt's version stays reachable as `//gs c alt <name>`).
 | `lullaby` | `/ma "Horde Lullaby" <stnpc>` |
 | `lullaby2` / `foe` | `/ma "Foe Lullaby II" <stnpc>` |
 | `elegy`, `requiem` | Carnage Elegy / Foe Requiem VII on `<stnpc>` |
+
+The four spells are defaults of `Tuning.get('brd_debuff_songs', ...)` (keys `lullaby`,
+`lullaby2`, `elegy`, `requiem`; `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)). The chat
+message does not follow: it still reads Casting Horde Lullaby II / Foe Lullaby II,
+Carnage Elegy, Foe Requiem VII (fixed templates in `brd_messages.lua`).
 | `songs` / `meleesong` / `melee` / `allsongs` `[full]` | `cast_songs_with_phases(false, '<me>', cmdParams[2] == 'full')` |
 | `songplan` | InfoBlock of `SongSlots.inputs()` and `plan()` |
 | `songstop` | `SongQueue.stop()` |

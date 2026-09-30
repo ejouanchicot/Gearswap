@@ -84,7 +84,7 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `smn bp <pact>` | Uses a Blood Pact: on you for a Ward buff or heal, on your target for every other pact. Type the pact with its capitals (`Healing Ruby`): in lower case it is not recognised and goes on `<t>` |
 | `smn astralflow` / `astralconduit` / `apogee` / `siphon` / `manacede` / `favor` / `release` / `retreat` | That ability on you (`siphon` = Elemental Siphon, `favor` = Avatar's Favor) |
 | `smn assault` | Assault on your target |
-| `skillup` | Starts or stops the skill-up loop: Siren, Release 5 s later, next Siren 1.5 s after the Release |
+| `skillup` | Starts or stops the skill-up loop: Siren, Release 5 s later, next Siren 1.5 s after the Release (avatar and the 5 s: `smn_skillup` in `_common/combat/TUNING.lua`, read at each start) |
 | `skillup start` / `stop` / `status` | Start / stop / show the loop |
 | `skillup <1-60>` | Sets the wait after Release (seconds) and restarts the loop |
 

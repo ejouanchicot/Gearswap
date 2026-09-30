@@ -298,7 +298,8 @@ only).
 `handle_waltz_generic`): DNC main or sub only, `cancel Saber Dance` first, then
 `WaltzManager.cast_curing_waltz('<stpc>')` or `cast_divine_waltz()`. Tier from
 the missing HP of the current target (self exact; a party or alliance member
-estimated from its HP %), falling back through every tier by recast and TP.
+estimated from its HP %; tier bands 200 / 600 / 1100 / 1500 by default, `waltz_from`
+in `_common/combat/TUNING.lua`), falling back through every tier by recast and TP.
 Full description in
 [factories and helpers](../systems/factories-and-helpers.md#dnc-waltzmanager).
 

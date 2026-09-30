@@ -317,7 +317,8 @@ weaponskills only:
 `//aset`) loaded while the character is BLU:
 
 - `load()`, from `user_setup`: does nothing if `windower._blu_azuresets_loaded`
-  is set; otherwise sets it, sends `lua load AzureSets`, and 3 s later shows
+  is set, or if `JobAddons.allowed('AzureSets')` is false (`AzureSets = false` in
+  `_common/display/ADDONS_CONFIG.lua`, [JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)); otherwise sets it, sends `lua load AzureSets`, and 3 s later shows
   `AzureSets: //aset setlist | //aset spellset <name>`.
 - `unload()`, first thing in `file_unload` (GearSwap runs `file_unload` under
   one `pcall`, so an error further down would skip it): 2 s later reads

@@ -28,7 +28,8 @@ What BST adds on top of the shared pipeline:
   `rdylist` and `rdymove N` (numbered Ready moves with an automatic
   Fight/Heel sequence).
 - **BST-HUD**: the external `BST-HUD` addon is unloaded and reloaded on every
-  BST load and unloaded on `file_unload`.
+  BST load and unloaded on `file_unload`, unless `['bst-hud'] = false` in
+  `_common/display/ADDONS_CONFIG.lua` ([JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)).
 
 Player pages: [docs/user/jobs/bst/README.md](../../user/jobs/bst/README.md)
 (hub), [states.md](../../user/jobs/bst/states.md),
@@ -136,7 +137,9 @@ sequenceDiagram
    0.2 s coroutine) remains as a fallback.
 6. BST-HUD: bumps `_G.bst_hud_load_id`, then after 2 s sends
    `lua unload bst-hud` and after 1.5 s more `lua load bst-hud`, each step
-   guarded by the counter and `player.main_job == 'BST'`.
+   guarded by the counter and `player.main_job == 'BST'`, and first by
+   `JobAddons.allowed('bst-hud')` (checked when the 2 s timer fires). `file_unload`
+   sends the unload through `JobAddons.run('unload', 'bst-hud')`.
 7. Pet monitor start after 3 s, guarded by the main job and
    `_G.start_pet_monitoring`.
 8. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`: the module's

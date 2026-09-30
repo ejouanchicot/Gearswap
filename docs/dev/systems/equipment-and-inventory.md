@@ -13,7 +13,7 @@ The area holds three kinds of code:
   with item-usage and bag-pin maps. `//gs c rf` restocks consumables in the inventory from the Mog
   Case, Mog Sack and Mog Satchel according to a per-character list (a common list, per-job files that add to or replace it), pushes surplus and "foreign"
   consumables back, and prints a report (`refill_manager.lua` plus four helpers under `refill/`).
-  `QuiverManager` opens an ammo quiver or pouch from THF and COR aftercast when the ammo stack runs
+  `QuiverManager` opens an ammo quiver or pouch from THF, COR and RNG aftercast when the ammo stack runs
   low (`quiver_manager.lua`). None of these four is loaded at job load: each is `pcall(require, ...)`-ed
   on first use by its caller.
 - **Load-time and per-action gear passes installed for every job.** `equip_hooks.lua` wraps
@@ -62,7 +62,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/inventory/refill/item_resolver.lua` | 49 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
 | `shared/utils/inventory/refill/bag_scanner.lua` | 45 | Counts one item id in one bag and returns its slots | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/refill_panels.lua` | 227 | Chat output of the refill (banner, progress, report) | `refill_manager.lua` | this page |
-| `shared/utils/inventory/quiver_manager.lua` | 161 | After a ranged attack with the ammo worn (or a named one), uses a quiver/pouch with `/item` when the ammo count drops to a threshold | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua` | this page |
+| `shared/utils/inventory/quiver_manager.lua` | 184 | After a ranged attack with the ammo worn (or a named one), uses a quiver/pouch with `/item` when the ammo count drops to a threshold (per job overridable in `REFILL_CONFIG.lua` `quiver_open_at`) | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua`, `RNG_AFTERCAST.lua` | this page |
 
 ### Data, generator and configs
 
@@ -72,7 +72,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/data/equipment/PATH_RANK_GEAR.lua` | 2 598 (67 entries) | Stats of path / rank gear per path and rank, read by hand from BG-Wiki (page link and notes per entry); read by `gear_scan.lua` at `//gs c gearscan` |
 | `scripts/item_db/build_item_db.py` | 379 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
 | `scripts/item_db/find_items.py` | 94 | Query tool over the generated SQLite (`--stat hp --slot Head --job WAR --top 10`) |
-| `_master/config_global/REFILL_CONFIG.lua` | 66 | Template of `<Char>/_common/inventory/REFILL_CONFIG.lua`: bags, the common list `default_list` (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent Oil, 12 each) and a commented `subjobs` example |
+| `_master/config_global/REFILL_CONFIG.lua` | 71 | Template of `<Char>/_common/inventory/REFILL_CONFIG.lua`: bags, the common list `default_list` (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent Oil, 12 each), a commented `subjobs` example and a commented `quiver_open_at` line |
 | `_master/config/<job>/<JOB>_REFILL.lua` | 42 each | Generic job refill file for each of the 22 jobs: every line commented (`extra`, `default`, `subjobs` examples), so the common list applies |
 | `_master/config/craft/CRAFT_REFILL.lua` | 32 | Generic craft list (empty) |
 | `_master/Tetsouo/config/<job>/<JOB>_REFILL.lua` | 20-54 | Tetsouo's own job lists (BLM BRD BST COR DNC PLD THF WAR) |
@@ -354,9 +354,9 @@ complete`. Item names are coloured by keyword: food, ammo/quiver, everything els
 
 ### Quiver auto-open
 
-`THF_AFTERCAST.lua` (`job_aftercast`) and `COR_AFTERCAST.lua` (`job_aftercast`) require `QuiverManager`
-on every aftercast and call `QuiverManager.after_ranged_attack(spell, nil, nil, 5)` (THF) and
-`after_ranged_attack(spell, nil, nil, 15)` (COR). With no names, the ammo is the one worn and the
+`THF_AFTERCAST.lua`, `COR_AFTERCAST.lua` and `RNG_AFTERCAST.lua` (`job_aftercast`) require `QuiverManager`
+on every aftercast and call `QuiverManager.after_ranged_attack(spell, nil, nil, 5)` (THF),
+`after_ranged_attack(spell, nil, nil, 15)` (COR) and `(spell, nil, nil, AMMO_REFILL_AT)` (RNG, 15). With no names, the ammo is the one worn and the
 container is `ItemIndex.ammo_container(ammo)`: the `Usable` item whose log name is the ammo's plus
 ` pouch` / ` quiver` (`'s` dropped, ` arrow` -> ` quiver`), and only when that name is unique (the
 `Old Quiver` quest items are not a match). 95 ammo have one. Chrono / Living / Devastating Bullet
@@ -364,18 +364,22 @@ pouches and the Chrono Quiver are waist `Armor`: `/item` cannot use them from th
 they are left out. Explicit names still work (`after_ranged_attack(spell, 'Acid Bolt',
 'Ac. Bolt Quiver', 5)`).
 
-`after_ranged_attack` (`quiver_manager.lua:137`) returns `false` unless
+`after_ranged_attack` (`quiver_manager.lua:156`) returns `false` unless
 `spell.action_type == 'Ranged Attack'` (GearSwap gives `/ra` the `type` `'Misc'`) and the shot was not
-interrupted, and unless ammo is worn, is the tracked ammo (when one is named) and has a container, so a
+interrupted. It then replaces the caller's threshold through `job_threshold` (`:75`): the character's
+`_common/inventory/REFILL_CONFIG.lua` `quiver_open_at[player.main_job]` when set (`CharPaths.optional`
+under pcall); `false` there returns `false` (never opened), a number replaces the threshold, anything
+else, a missing table or a missing job keeps the caller's value. The template has the line commented
+out (`{COR = 15, THF = 5, RNG = 15}`). It also returns `false` unless ammo is worn, is the tracked ammo (when one is named) and has a container, so a
 shot with other ammo does not warn about a stack that is not in use. Otherwise it schedules `check_and_refill(ammo, quiver,
 threshold)` 1.0 s later, so FFXI has decremented the ammo count first, and returns `true`.
 
-`check_and_refill` (`quiver_manager.lua:73`):
+`check_and_refill` (`quiver_manager.lua:92`):
 1. Returns if the same quiver was used less than `OPEN_COOLDOWN = 8.0` s ago (`os.clock`, per-name
-   table `last_open`, `:36`).
+   table `last_open`, `:45`).
 2. Resolves both names through `resolve_id`, which reads the session-wide item index
    (`ItemIndex.id`, same fields and logic as `ItemResolver`).
-3. Counts the ammo in the inventory and wardrobes 1-8 (`AMMO_BAGS`, `:27`); returns if the total is
+3. Counts the ammo in the inventory and wardrobes 1-8 (`AMMO_BAGS`, `:33`); returns if the total is
    above the threshold.
 4. If no quiver is in the inventory it prints a warning (`<ammo>: n left, no <quiver> in inventory!`)
    and returns without setting the cooldown, so the warning repeats on every ranged attack while the
@@ -860,8 +864,8 @@ open until the stance is selected again. The registry is emptied on every job lo
 
 | Function | Returns | Callers |
 |---|---|---|
-| `after_ranged_attack(spell, ammo_name, quiver_name, threshold)` `quiver_manager.lua:137` | `true` when a check was scheduled | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua` (`job_aftercast`) |
-| `check_and_refill(ammo_name, quiver_name, threshold)` `quiver_manager.lua:73` | `true` when a use-item command was sent | `after_ranged_attack` |
+| `after_ranged_attack(spell, ammo_name, quiver_name, threshold)` `quiver_manager.lua:156` | `true` when a check was scheduled; `threshold` is replaced by `REFILL_CONFIG.lua` `quiver_open_at[main job]` when set | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua`, `RNG_AFTERCAST.lua` (`job_aftercast`) |
+| `check_and_refill(ammo_name, quiver_name, threshold)` `quiver_manager.lua:92` | `true` when a use-item command was sent | `after_ranged_attack` |
 
 ### Modules documented on other pages
 
@@ -904,6 +908,8 @@ RefillConfig.default_list = {                           -- the common list: what
 RefillConfig.subjobs = {                                -- optional (commented in the template):
     DNC = { ... },                                      -- the common list for that subjob
 }
+RefillConfig.quiver_open_at = {COR = 15, THF = 5, RNG = 15}  -- optional (commented): QuiverManager
+                                                        -- threshold per main job; false = never
 return RefillConfig
 ```
 
@@ -936,17 +942,17 @@ return M
   are read (template `_master/config/craft/CRAFT_REFILL.lua`, empty list).
 - Bags for every list and the common list: `<Char>/_common/inventory/REFILL_CONFIG.lua` (`store_bag`,
   `source_bags`, `default_list`, `subjobs`; template `_master/config_global/REFILL_CONFIG.lua`). A list
-  file's own bag fields win.
+  file's own bag fields win. The same file's `quiver_open_at` is read by `QuiverManager` only.
 - Weapon resolver: `<Char>/_common/combat/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
 - HP priority: `<Char>/_common/combat/HP_PRIORITY.lua` (template `_master/config_global/HP_PRIORITY.lua`),
   every key optional: `enabled` (`false` turns it off), `unity` (`'max'` when the Unity leader is
   rank 1, `'min'` otherwise), `mp_jobs`, `skip_jobs`. No file: `DEFAULTS`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:48`, used only when there is neither a job
   list nor a common list), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
-  `MOVE_DELAY = 0.6` (`refill_manager.lua:42`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
-  thresholds in the aftercast callers,
+  `MOVE_DELAY = 0.6` (`refill_manager.lua:42`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:42`), quiver
+  thresholds in the aftercast callers (the per-job override is `REFILL_CONFIG.lua` `quiver_open_at`),
   `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `MP_WEIGHT`,
-  `SLOTS` and `WORN_SLOT`. None of them is read from a config file.
+  `SLOTS` and `WORN_SLOT`. Apart from the quiver thresholds, none of them is read from a config file.
 - Templates and deployment: `clone_character.py` (`clone()`, step 4) copies `<job>/` per file,
   taking the overlay `_master/<Source>/<job>/<file>` when an overlay is selected and has the
   file, and `_master/config/<job>/<file>` otherwise (`_resolve_src`). The overlay is selected only when
@@ -1061,7 +1067,7 @@ return M
   re-clone), then `gs reload`. Check the effect on other characters: every item it
   names becomes foreign for every list that does not name it.
 - New quiver pair: call `QuiverManager.after_ranged_attack(spell, ammo, quiver, threshold)` from the
-  job's `job_aftercast`, as THF and COR do, and add the quiver to that job's refill list of every
+  job's `job_aftercast`, as THF, COR and RNG do, and add the quiver to that job's refill list of every
   character that plays it.
 - New slot alias for `checksets`: add the key to `VALID_SLOTS` (`equipment_checker.lua:51-72`).
 - A wardrobe `wa` must not judge: list it in `NEVER_TOUCH` of the character's

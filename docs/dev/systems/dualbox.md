@@ -303,14 +303,15 @@ A reported level of `0` (older two-argument payload) drops every entry that has 
 
 **On the MAIN:**
 
-- `receive(args)` (`:205`) treats the last word as the value (`'1'`/`'true'` means up) and joins the rest as
-  the buff name, stripping `"`.
-- It writes `_G.AltBuffState[buff]`, clears any `_G.AltBuffExpiry[buff]`, and sets
+- `receive(args)` (`:220`) treats the last word as the value (`'1'`/`'true'` means up) and joins the rest as
+  the buff name, stripping `"` and lowercasing it.
+- It writes `_G.AltBuffState[buff]` (keys always lowercase: `receive`, `assume`, `consume` and `active`
+  all lowercase the name, so a `tracked_buffs` entry written in any case still matches), clears any `_G.AltBuffExpiry[buff]`, and sets
   `windower._alt_buff_reporting = true`. That flag persists until `//lua reload gearswap`.
-- `assume(buff, seconds)` (`:276`) records a guess with an `os.clock()` expiry. It is used **only
+- `assume(buff, seconds)` (`:291`) records a guess with an `os.clock()` expiry. It is used **only
   while** `windower._alt_buff_reporting` is not set. It is called from alt commands that declare `sets_alt_buff`.
-- `consume(buff)` (`:298`) clears a buff.
-- `active(buff)` (`:315`) honours the expiry and clears expired guesses.
+- `consume(buff)` (`:314`) clears a buff.
+- `active(buff)` (`:332`) honours the expiry and clears expired guesses.
 
 GEO uses this in `_master/config/alt/GEO_ALT_CUSTOM.lua` (`indi_target` and `M.refine`): `refine` replaces the `me` target of
 every command whose name starts with `indi` by a function returning `'lastst'` while
@@ -747,9 +748,7 @@ Behaviour per event:
   keeps a window outside the group from mirroring `ls`/`rf`. A message without a sender name (sent by
   code older than 2026-09-30) is refused.
 - `report_all` on the ALT always sends every tracked buff, whatever the ALT's job.
-- The ALT matches tracked names ignoring case, but the MAIN stores and reads `_G.AltBuffState` by exact
-  name: a list entry written in another case (`'entrust'`) is sent that way by `report_all` and is not
-  found by `AltBuffReporter.active('Entrust')`.
+- `//gs c altbuffs` prints the buff names in lowercase (the keys of `_G.AltBuffState`).
 
 ## For maintainers / AI
 
@@ -797,7 +796,7 @@ Behaviour per event:
   MAIN runs only as `//gs c alt <key>` (see above). `//gs c altcmds <key>` shows the result after `gs reload`.
 - **Rule over a family of commands.** Export `M.refine(entry, name)` from the CUSTOM file. It receives a
   copy after the tier/level filtering.
-- **New tracked buff.** Add it to the ALT's `DualBoxConfig.tracked_buffs` (spelled as the game does), or to
+- **New tracked buff.** Add it to the ALT's `DualBoxConfig.tracked_buffs` (any case), or to
   `DEFAULT_TRACKED` in `alt_buff_reporter.lua` for every character. Make sure the ALT job's
   `*_BUFFS.lua` calls `AltBuffReporter.report(buff, gain)`, because today only `GEO_BUFFS.lua` does. Read it on the
   MAIN with `AltBuffReporter.active(name)`.

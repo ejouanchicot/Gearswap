@@ -27,7 +27,7 @@ Then SAM adds, in this order:
 In the provided file `sets.idle.Regen` and `sets.idle.Weak` are whole sets
 (built on `sets.idle.Normal`), so below 80 % HP they replace your PDT pieces.
 To keep your DT pieces at low HP, list only the pieces to change in `Regen` /
-`Weak`.
+`Weak`. The 50 % and 80 % are `sam_idle_hp` in `_common/combat/TUNING.lua`.
 
 In a town, Adoulin included, `sets.idle.Town` goes on top of the idle set,
 then your weapon, and nothing else: no Weak, Regen or PDT, no `sets.MoveSpeed`.
@@ -123,7 +123,7 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
   spell or weaponskill is under way, when it ends).
 - **Yoichinoyumi** in the range slot adds `sets.bow` while engaged.
 - **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %,
-  on top of `sets.idle.PDT`.
+  on top of `sets.idle.PDT` (thresholds: `sam_idle_hp` in `_common/combat/TUNING.lua`).
 - **Your stance when you engage** (optional): `sam_hasso = true` in
   `<YourName>/_common/combat/AUTO_ABILITIES.lua`. On engaging with neither Hasso nor
   Seigan up, your chosen stance goes out (Hasso, or Seigan after

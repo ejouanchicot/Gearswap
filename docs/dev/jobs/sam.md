@@ -24,7 +24,8 @@ What SAM adds on top of the shared pipeline:
 - **Set building**: engaged base re-selected from `OffenseMode` x
   `HybridMode` (Mote cannot reach `sets.engaged.PDT`), Aftermath Lv.3 set,
   Seigan / Third Eye layers, weapon set, bow layer; idle HybridMode PDT, then
-  by HP on top (Weak below 50 %, Regen below 80 %), then `sets.MoveSpeed` while
+  by HP on top (Weak below 50 %, Regen below 80 %; `sam_idle_hp` in
+  `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)), then `sets.MoveSpeed` while
   running. In a town with `sets.idle.Town` (or in Adoulin with
   `sets.Adoulin`), that set on top of the idle set plus the weapon, as on the
   other jobs; the provided file has neither.
@@ -190,8 +191,8 @@ no midcast set in the template).
   In town it returns that result plus `SetBuilder.apply_main_weapon`
   (`WeaponResolver.set_for('main', MainWeapon)`), without Weak, Regen, PDT or
   movement. Outside town: `sets.idle.PDT` when `HybridMode == 'PDT'`; then, on
-  top of it, `sets.idle.Weak` if `player.hpp < 50`, else `sets.idle.Regen` if
-  below 80 (order since 2026-09-29); then `apply_main_weapon`; then `BaseSetBuilder.apply_movement`
+  top of it, `sets.idle.Weak` if `player.hpp < weak_below` (50), else `sets.idle.Regen` if
+  below `regen_below` (80) (order since 2026-09-29; both from `Tuning.get('sam_idle_hp', ...)`); then `apply_main_weapon`; then `BaseSetBuilder.apply_movement`
   (`sets.MoveSpeed` while `state.Moving.value == 'true'`, since 2026-09-28).
   The provided file has no `sets.idle.Town` and no `sets.Adoulin`, so
   `select_idle_base_town` reports "not in town" in every city and SAM builds

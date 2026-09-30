@@ -307,7 +307,8 @@ The paths that lock:
   non-interrupted `Ranged Attack`, with the ammo worn and its quiver
   (`ItemIndex.ammo_container`),
   then 1 s later opens the quiver when 5 bolts or fewer are left (inventory +
-  wardrobes).
+  wardrobes). `REFILL_CONFIG.lua` `quiver_open_at.THF` replaces the 5 (`false`:
+  never), inside `QuiverManager`.
 - The shared TH wrapper on `cleanup_midcast` equips `sets.TreasureHunter` on a
   ranged attack against an untagged monster.
 
@@ -514,7 +515,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 | `<char>/_common/keys/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
 | `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
-| Hard-coded | quiver threshold (`job_aftercast`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
+| Hard-coded | quiver threshold (`job_aftercast`, 5; per character `REFILL_CONFIG.lua` `quiver_open_at.THF`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
 
 ## State & lifetime
 

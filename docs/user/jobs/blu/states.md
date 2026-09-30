@@ -101,7 +101,8 @@ in [README.md](README.md#all-commands-on-this-job), details in
   `sets.MoveSpeed` while moving outside a city.
 - **AzureSets.** The AzureSets addon (`//aset`) is loaded when BLU loads, and
   unloaded once you are no longer BLU (checked 2 s after the job file unloads, so a
-  subjob change or `//gs reload` keeps it).
+  subjob change or `//gs reload` keeps it). `AzureSets = false` in
+  `_common/display/ADDONS_CONFIG.lua`: BLU never loads it.
 - Weaponskill TP bonus: `BLU_TP_CONFIG.lua` (Moonshade Earring +250).
 - Every mode goes back to its default on each job change, subjob change or reload.
 

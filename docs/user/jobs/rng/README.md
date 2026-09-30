@@ -24,7 +24,8 @@ itself:
   Unlimited Shot, Double Shot or Barrage is up, its `sets.buff` set goes on
   top of the shot (Velocity Shot on the aim too).
 - **Ammo refill.** After a ranged attack, when 15 or fewer of the ammo you
-  wear are left, its quiver or pouch is opened (it must be in your inventory).
+  wear are left, its quiver or pouch is opened (it must be in your inventory;
+  the 15 is `quiver_open_at` in `_common/inventory/REFILL_CONFIG.lua`, `false`: never).
 - **Obi / Orpheus** on Trueflight and Wildfire, chosen by day, weather and
   distance, if you own them.
 - **Off hand only with Dual Wield.** Ranger has no Dual Wield of its own: an

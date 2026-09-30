@@ -22,7 +22,8 @@ you fill them in. The job does these things by itself:
   engaged set is `sets.engaged.SW` (then `.SW.<Offense Mode>`).
 - **Weapons from modes** (Main Weapon, Sub Weapon). The template has only
   `Free`: add your weapons in `BLU_STATES.lua`.
-- **AzureSets.** The AzureSets addon (`//aset`) is loaded while you are BLU.
+- **AzureSets.** The AzureSets addon (`//aset`) is loaded while you are BLU
+  (`AzureSets = false` in `_common/display/ADDONS_CONFIG.lua`: left alone).
 - **Two automatic abilities, off by default**: Unbridled Learning before a
   spell that needs it, and an Expiacion hold for Tizona's Aftermath: Lv.3.
 

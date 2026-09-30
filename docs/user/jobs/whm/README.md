@@ -33,7 +33,7 @@ the job does these things by itself:
   `Melee ON` (main, sub, range). Turning one off does not free the slots the
   other still holds.
 - **Latent refresh**: `sets.latent_refresh` on your idle set while your MP is
-  under 51 %.
+  under 51 % (`refresh_mp_below` in `_common/combat/TUNING.lua`).
 
 ## All keys on this job
 

@@ -49,7 +49,8 @@ A ranged attack (`/ra`) has two steps: the aim (precast) and the shot
 
 After the shot, when 15 or fewer of the ammo you wear are left (inventory and
 wardrobes), its quiver or pouch is used by itself. It must be in your
-inventory, else a warning says so.
+inventory, else a warning says so. The 15 is `quiver_open_at` in
+`_common/inventory/REFILL_CONFIG.lua` (`false`: never).
 
 ## Idle
 

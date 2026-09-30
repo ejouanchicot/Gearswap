@@ -89,7 +89,7 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `indi` | Casts `MainIndi` on you |
 | `geo` | Casts `MainGeo`: on a party member you pick for the 18 buff Geo- spells, on an enemy you pick for the others |
 | `entrust` | Entrust, then `MainIndi` on a party member you pick once Entrust is up; gives up with a warning if Entrust was refused |
-| `escort [Indi-X] [leader]` | Full Circle if a luopan is out, then the Indi- on you (Indi-Regen by default); with a leader name, `sm follow <leader>` once the cast is over (needs an addon that answers `sm follow`) |
+| `escort [Indi-X] [leader]` | Full Circle if a luopan is out, then the Indi- on you (Indi-Regen by default, `geo_escort_indi` in `_common/combat/TUNING.lua`); with a leader name, `sm follow <leader>` once the cast is over (needs an addon that answers `sm follow`) |
 | `lightspell` / `darkspell` | Nuke with the element mode and `SpellTier`, stepping down to a learned, ready tier |
 | `lightaoe` / `darkaoe` | Same with the -ra mode and `AOETier` |
 | `lightarts` / `darkarts` | /SCH: Light / Dark Arts, then the Addendum on the next press |
@@ -166,7 +166,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
 | Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua` (Panacea, Remedy, Holy Water... by default); `<YourName>/geo/inventory/GEO_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft`; Combat Mode Off does not free what a craft set holds |
-| PetTP addon | Loaded when GEO loads, unloaded when you leave GEO |
+| PetTP addon | Loaded when GEO loads, unloaded when you leave GEO; `pettp = false` in `_common/display/ADDONS_CONFIG.lua` leaves it alone |
 | Dual-box | As an alt, GEO tells the main when Entrust goes up or down, so the main's alt commands can aim an Indi- at the party |
 | Your own modes and gear rules | `GEO_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Midcast watchdog | Puts your idle / engaged set back when the game never confirms the end of a cast ([watchdog](../../features/watchdog.md)); `FastCast` (80) is its fallback estimate |

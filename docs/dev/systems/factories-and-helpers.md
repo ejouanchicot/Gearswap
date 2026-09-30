@@ -26,7 +26,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/movement/automove.lua` | Movement detection loop, `state.Moving`, `gs c update` |
 | `shared/utils/craft/craft_commands.lua` | `//gs c craft/fish/uncraft` handlers, gear diffing, slot locking |
 | `shared/utils/craft/craft_manager.lua` | Craft set file loading and resolution, session flag, unlock; exported as `_G.CraftManager` |
-| `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17), deployed as `<char>/_common/inventory/CRAFT_CONFIG.lua` |
+| `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17; `false` keeps the job's), deployed as `<char>/_common/inventory/CRAFT_CONFIG.lua` |
 | `_master/sets/craft_sets.lua` | Generic craft set file, every slot empty: `hq`, `nq`, `success` and one variant per sub-craft (the 8 crafts) |
 | `_master/Tetsouo/_common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000, every job on /DRG (run by `WSPrecastHandler.handle`); `attach` gives every job `state.JumpAuto` and its row |
@@ -45,7 +45,9 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/core/live_tp.lua` | TP read from the game, not from GearSwap's copy |
 | `shared/utils/core/gear_hold.lua` | `GearHold.active()`: whether a COR roll holds the idle / engaged gear; asked by DualWield, TreasureHunter (engaged overlay) and the custom gear hook (see [core-lifecycle.md](core-lifecycle.md#gearhold)) |
 | `shared/utils/core/auto_options.lua` | Opt-in automatic job abilities (`_common/combat/AUTO_ABILITIES.lua`) |
-| `_master/config_global/DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `AUTO_ABILITIES.lua` | Templates of the per-character settings of the helpers above |
+| `shared/utils/core/tuning.lua` | Job thresholds and names set per character (`_common/combat/TUNING.lua`) |
+| `shared/utils/core/job_addons.lua` | Whether a job may load / unload a Windower addon (`_common/display/ADDONS_CONFIG.lua`) |
+| `_master/config_global/DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `AUTO_ABILITIES.lua`, `TUNING.lua`, `ADDONS_CONFIG.lua` | Templates of the per-character settings of the helpers above (`TUNING` and `ADDONS_CONFIG`: every line commented out) |
 
 Other helpers in `shared/utils/equipment/` are documented elsewhere:
 
@@ -356,7 +358,7 @@ Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, 
 
 | Source | Keys | Default |
 |---|---|---|
-| `<char>/_common/inventory/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
+| `<char>/_common/inventory/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'`. A lockstyle key set to `false`: `get_configured_lockstyle` returns `false` and `apply_lockstyle` skips non-numbers, so the job's lockstyle stays; any other non-number falls back to the default |
 | `<char>/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
 | `<char>/_common/inventory/CRAFT_REFILL.lua` | refill list while crafting | the usual refill list (job, then common) |
 
@@ -417,7 +419,7 @@ It does not replay anything. Callers: `//gs c jump` (`COMMON_COMMANDS.lua` `hand
    - a party or alliance member (`in_party` / `in_alliance`, fields `get_mob_by_target` does carry): the estimate `hp / (hpp/100) - hp` (`get_missing_hp`);
    - a mob: unknown (`nil`);
    - no target: self.
-3. `preferred_curing_waltz`. With HP known, the tier whose band contains it (`CURING_HP_BRACKET`: I < 200, II 200-600, III 600-1100, IV 1100-1500, V ≥ 1500). With HP unknown, the highest tier the level allows.
+3. `preferred_curing_waltz`. With HP known, the tier whose band contains it (`curing_hp_brackets()`, rebuilt at each call from `DEFAULT_WALTZ_FROM` with `TUNING.lua` `waltz_from` over it, see [Tuning](#tuning-sharedutilscoretuninglua): I < 200, II 200-600, III 600-1100, IV 1100-1500, V ≥ 1500 by default). With HP unknown, the highest tier the level allows.
 4. `curing_priority`: the preferred tier first, then every other castable tier from highest down. The first one with its recast ready (`is_recast_ready`) and enough TP is sent as `/ja "<name>" <stpc>`, with `show_waltz_heal`.
 5. If none fires, `curing_blockers` builds one cooldown line per tier and one TP line, shown with `show_multi_status`.
 
@@ -607,6 +609,40 @@ The module returns a function: `local live_tp = require('shared/utils/core/live_
 | `blu_unbridled` | BLU | Unbridled Learning before an unbridled spell | `blu/functions/logic/unbridled.lua` |
 | `blu_expiacion_window` | BLU | Expiacion held once under 3000 TP without Aftermath: Lv.3 | `blu/functions/logic/expiacion_guard.lua` |
 
+### `Tuning` (`shared/utils/core/tuning.lua`)
+
+`Tuning.get(key, default)` returns `<Character>/_common/combat/TUNING.lua`'s `key`
+(`CharPaths.optional('common', 'TUNING')` under pcall; missing file or key: `default`). A table
+default is copied and the file's keys are laid over it, so one key is enough; a table default given a
+non-table value, or a non-table default given a value of another type, keeps the default. The type of
+the values inside a table is not checked. Every reader calls it at the moment it needs the value.
+
+| Key | Default | Reader |
+|---|---|---|
+| `sam_idle_hp` | `{weak_below = 50, regen_below = 80}` | `sam/functions/logic/set_builder.lua` `build_idle_set`: `sets.idle.Weak` under `weak_below` HP %, else `sets.idle.Regen` under `regen_below` |
+| `refresh_mp_below` | `{COR = 50, WHM = 51}` | `cor/functions/logic/set_builder.lua` (`sets.idle.Refresh`, only with `max_mp > 0`), `whm/functions/logic/set_builder.lua` (`sets.latent_refresh`) |
+| `waltz_from` | `{['Curing Waltz II'] = 200, ['Curing Waltz III'] = 600, ['Curing Waltz IV'] = 1100, ['Curing Waltz V'] = 1500}` | `shared/utils/dnc/waltz_manager.lua` `curing_hp_brackets`: tier N covers `[from[N], from[N+1])`, Curing Waltz has no floor, V no ceiling |
+| `smn_skillup` | `{avatar = 'Siren', release_after = 5.0}` | `smn/functions/SMN_COMMANDS.lua` `start_skillup` (read at each start into `SKILLUP_STATE.avatar` / `cast_to_release_delay`) |
+| `geo_escort_indi` | `'Indi-Regen'` | `geo/functions/GEO_COMMANDS.lua` `escort` when no Indi- is given |
+| `brd_debuff_songs` | `{lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}` | `brd/functions/BRD_COMMANDS.lua` (`lullaby`, `lullaby2` / `foe`, `elegy`, `requiem`) |
+
+A new key: give the job's value as `default` at the call, add a commented line with that default to
+`_master/config_global/TUNING.lua`, and list it here and in the player's configuration guide.
+
+### `JobAddons` (`shared/utils/core/job_addons.lua`)
+
+`JobAddons.allowed(addon)` is `false` only when `<Character>/_common/display/ADDONS_CONFIG.lua`
+(`CharPaths.optional('common', 'ADDONS_CONFIG')` under pcall) has that name, compared case-insensitively,
+set to `false`; missing file, missing name or any other value: `true`. `JobAddons.run(action, addon)`
+sends `lua <action> <addon>` when allowed and returns whether it did.
+
+| Addon | Job | Call |
+|---|---|---|
+| `rolltracker` | COR | `run('unload', ...)` in `shared/entry/cor.lua` `get_sets`, `run('load', ...)` in `file_unload` |
+| `bst-hud` | BST | `allowed` guard in the delayed load of `shared/entry/bst.lua` `user_setup`, `run('unload', ...)` in `file_unload` |
+| `pettp` | GEO | `run('load', ...)` in `shared/entry/geo.lua` `user_setup`, `run('unload', ...)` in `file_unload` |
+| `AzureSets` | BLU | `allowed` guard in `BLUAzureSets.load` (`blu/functions/logic/azure_sets.lua`), before the `windower._blu_azuresets_loaded` flag is set, so `unload` (which needs that flag) does nothing either |
+
 ---
 
 ## Commands
@@ -760,7 +796,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 - **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand (CODE_QUALITY section 3).
 - **New craft.** Add `<char>/_common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
-- **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_HP_BRACKET`. Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
+- **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_TIERS` / `DEFAULT_WALTZ_FROM` (and the `waltz_from` example of `_master/config_global/TUNING.lua`). Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
 - **New AutoMove consumer.** Read `state.Moving.value` in the set builder (or go through `base_set_builder.lua`), or register a callback from a coroutine scheduled after 0.5 s.
 - **New belt weaponskill.** Add it to `WEAPONSKILLS` in `elemental_belt.lua`. A new damaging spell family goes in `applies`.
 - **New spell that needs a piece.** Add it to `REQUIRED` in `spell_gear_lock.lua` and wire the four calls (`begin`, `hold` twice, `release`) plus a `cast` command on the job that casts it. Add its slots to `SLOTS_BY_SPELL` in `custom_guards.lua`.

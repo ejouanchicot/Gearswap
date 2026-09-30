@@ -128,7 +128,8 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 - `//gs c range` puts on the range and ammo of `sets.RangeLock` (else those of `sets.precast.RA`), locks them and shoots at a target you pick. It does not shoot when the ammo is not ammo that weapon fires (a stat piece such as Coiste Bodhar, bolts in a gun) or is precious (Rare, or one per stack such as Hauksbok ammo): it tells you why instead. Write `sets.RangeLock = {range = ..., ammo = ...}` when your
   pull weapon is not the one of your ranged attack set.
 - After a shot, the quiver of the bolts you wear (Acid Bolt -> Ac. Bolt Quiver)
-  is opened from your inventory when 5 or fewer are left.
+  is opened from your inventory when 5 or fewer are left (`quiver_open_at` in
+  `_common/inventory/REFILL_CONFIG.lua`, `false`: never).
 
 ## Spells
 

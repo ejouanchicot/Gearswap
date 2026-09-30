@@ -191,7 +191,8 @@ name: `sets.precast.JA['Chain Affinity']`, `['Burst Affinity']`, `['Diffusion']`
 - **Unbridled Learning before an unbridled spell** and **the Expiacion
   window**: off unless turned on in `_common/combat/AUTO_ABILITIES.lua`, see
   [states.md](states.md#automatic-abilities). They change no gear.
-- **AzureSets addon** loaded with BLU, unloaded when you leave it.
+- **AzureSets addon** loaded with BLU, unloaded when you leave it (unless
+  `AzureSets = false` in `_common/display/ADDONS_CONFIG.lua`).
 
 ## Sets in the provided file that nothing reads
 

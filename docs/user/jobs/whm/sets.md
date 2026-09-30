@@ -16,7 +16,7 @@ spell, which set was chosen and why.
 | `sets.idle.Refresh` | Idle Mode `Refresh` |
 | `sets.idle.Weak` | Weakened (after a Raise), outside a city, when you define it; the Idle Mode set under it (`sets.idle.Weak.PDT`) if you define that too |
 | `sets.idle.Town` | In a city (Dynamis excluded), whatever the Idle Mode. Adoulin counts as a city: WHM uses `sets.Adoulin` there only if you add one |
-| `sets.latent_refresh` | Idle with less than 51 % MP, on top of the idle set, in town too (empty in the provided file) |
+| `sets.latent_refresh` | Idle with less than 51 % MP (`refresh_mp_below` in `_common/combat/TUNING.lua`), on top of the idle set, in town too (empty in the provided file) |
 | `sets.MoveSpeed` | Moving, on top of the idle set. On WHM this also applies in town |
 | `sets.Kiting` | Mote's Kiting toggle (Alt+F10), on top of the idle and engaged sets outside a city |
 | `sets.resting` | Resting (`/heal`) (empty in the provided file) |

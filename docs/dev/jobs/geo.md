@@ -107,8 +107,8 @@ sequenceDiagram
 `user_setup()`:
 
 1. `GEOStates.configure()`.
-2. `send_command('lua load pettp')`: the PetTP addon, unloaded again in
-   `file_unload`. This runs on every `user_setup()`, so a subjob change loads
+2. `JobAddons.run('load', 'pettp')` ([JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)): the PetTP addon, unloaded again in
+   `file_unload` the same way; `pettp = false` in `_common/display/ADDONS_CONFIG.lua` skips both. This runs on every `user_setup()`, so a subjob change loads
    it in the old sandbox, unloads it in that sandbox's `file_unload`, and
    loads it again in the new one.
 3. `GEO_KEYBINDS` (which returns `KeybindManager.create('GEO', ...)`) ->
@@ -320,7 +320,7 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 |---------|--------|
 | `indi` | `/ma "<MainIndi>" <me>` |
 | `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS`, `<stnpc>` otherwise (`is_geo_buff`) |
-| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default Indi-Regen); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; `MessageSortie.show_alt_escort` |
+| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `Tuning.get('geo_escort_indi', 'Indi-Regen')`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; `MessageSortie.show_alt_escort` |
 | `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
 | `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` |
 | `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` (broken) |
@@ -365,7 +365,8 @@ T = in `_master/sets/geo_sets.lua`.
 | `<char>/_common/combat/AUTO_ABILITIES.lua` `geo_entrust`, `geo_full_circle` | false, false | `AutoOptions.on` from `GeoAutoAbilities.apply` |
 | `<char>/geo/GEO_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the alt overlay has its own list | refill system (the common list without a list in it) |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
-| PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` |
+| PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` (both skipped with `pettp = false` in `_common/display/ADDONS_CONFIG.lua`) |
+| `_common/combat/TUNING.lua` `geo_escort_indi` | `'Indi-Regen'` | `escort` without an Indi- |
 
 ## State & lifetime
 

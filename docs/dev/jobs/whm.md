@@ -26,7 +26,7 @@ What WHM adds on top of the shared pipeline:
   `MndEnfeebles` / `IntEnfeebles` by spell type.
 - **Pseudo-skill routing** through `MidcastManager`: `StatusRemoval`,
   `MndEnfeebles`, `IntEnfeebles` (and a `Repose` branch that is never used).
-- **Latent-refresh idle** below 51 % MP, an `afflatus` command, and an
+- **Latent-refresh idle** below 51 % MP (`refresh_mp_below.WHM` in `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)), an `afflatus` command, and an
   `OffenseMode = 'Melee ON'` weapon lock beside the shared Combat Mode.
 
 Every file in scope was read in full on 2026-09-28, except the gear content of
@@ -234,7 +234,7 @@ flowchart TD
   (no `sets.Adoulin` in the template, so Adoulin uses `sets.idle.Town`; the
   Town set goes on top of `sets.idle[IdleMode]`, rebuilt from Mote's town pick;
   with a defense or Kiting layer on, on top of Mote's layered Town set) -> `sets.latent_refresh`
-  when `player.mpp < 51` (empty in the template) -> `sets.MoveSpeed` while
+  when `player.mpp < Tuning.get('refresh_mp_below', {WHM = 51}).WHM` (51; empty in the template) -> `sets.MoveSpeed` while
   moving, in town too.
 - `customize_melee_set` returns Mote's set unchanged. Mote picks
   `sets.engaged[OffenseMode]` (no `None` or `Melee ON` set), then

@@ -33,7 +33,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | `//gs c smn bp <pact>` | Uses a Blood Pact on `<me>` for ward buffs and heals, on `<t>` for everything else. Type the name with its capitals (`Healing Ruby`): in lower case the pact is not recognised and goes on `<t>`. |
 | `//gs c smn astralflow` / `astralconduit` / `apogee` / `siphon` / `manacede` / `favor` / `release` / `retreat` | The matching ability on `<me>` (`siphon` = Elemental Siphon, `favor` = Avatar's Favor). |
 | `//gs c smn assault` | Assault on `<t>`. |
-| `//gs c skillup` | Starts or stops the skill-up loop: Siren, Release 5 s later, again 1.5 s after. `skillup start` / `stop` / `status`; `skillup <1-60>` sets the wait after Release and restarts. A reload or job change stops it. |
+| `//gs c skillup` | Starts or stops the skill-up loop: Siren, Release 5 s later, again 1.5 s after (avatar and the 5 s: `smn_skillup` in `_common/combat/TUNING.lua`). `skillup start` / `stop` / `status`; `skillup <1-60>` sets the wait after Release and restarts. A reload or job change stops it. |
 
 ## Notes
 

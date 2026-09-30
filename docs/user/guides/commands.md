@@ -65,8 +65,8 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
-| `craft [variant]`, `craft off` | Crafting set from the file named in `_common/inventory/CRAFT_CONFIG.lua` (`craft_file`, default `_common/sets/craft_sets.lua`, empty until you fill it). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook` |
-| `fish` (`fishing`) | Fishing set from `_common/sets/fishing_sets.lua` (same) |
+| `craft [variant]`, `craft off` | Crafting set from the file named in `_common/inventory/CRAFT_CONFIG.lua` (`craft_file`, default `_common/sets/craft_sets.lua`, empty until you fill it). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook`. Also applies lockstyle 19 (`craft_lockstyle` in the same file; `false`: the job's lockstyle stays) |
+| `fish` (`fishing`) | Fishing set from `_common/sets/fishing_sets.lua` (same), lockstyle 17 (`fish_lockstyle`, `false` works the same way) |
 | `uncraft` | Leave the craft / fishing set |
 
 `wo` details: it unequips everything and locks your slots while it runs,
@@ -95,7 +95,7 @@ unlocked wardrobes the rest, and no wardrobe is protected.
 
 | Command | Effect |
 |---|---|
-| `waltz` | Curing Waltz on `<stpc>`: the tier comes from the missing HP of your current target when it is you or a party member, else the highest you can use. DNC main or sub |
+| `waltz` | Curing Waltz on `<stpc>`: the tier comes from the missing HP of your current target when it is you or a party member, else the highest you can use. DNC main or sub. Where each tier starts: `waltz_from` in `_common/combat/TUNING.lua` ([auto-tier](../features/auto-tier-system.md)) |
 | `aoewaltz` | Divine Waltz II, else Divine Waltz. DNC main or sub |
 | `lightarts` / `darkarts` | Light / Dark Arts, then the Addendum on the next press. SCH main or sub (without it, your dual-box alt's command of that name if it is on SCH) |
 | `aoe sneak` / `aoe invi` / `aoe erase` | The spell on the party through Light Arts and Accession (and Addendum: White for Erase) as charges allow. SCH main or sub |
