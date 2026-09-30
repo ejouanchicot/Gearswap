@@ -1,0 +1,505 @@
+<title>GearSwap Atelier</title>
+<!-- GearSwap Atelier: open this file in a browser. Data: //gs c atelier in game. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus+SC&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#E8ECF3; --panel:#FFFFFF; --panel-2:#F3F5F9; --ink:#121A2C; --muted:#5B6579; --line:#CDD4E1;
+  --accent:#2B57C9; --accent-soft:#E2E9FB; --accent-ink:#FFFFFF; --gold:#9A6710; --gold-soft:#F6EBD5;
+  --tank:#3E6FA8; --melee:#B0432F; --ranged:#3C8453; --magic:#7351B0; --support:#A07A12;
+  --shadow:0 1px 2px rgba(18,26,44,.06),0 4px 14px rgba(18,26,44,.06);
+  --display:"Marcellus SC","Trajan Pro",Georgia,serif;
+  --sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0B1020; --panel:#141C33; --panel-2:#1A2442; --ink:#E7EBF4; --muted:#97A1B8; --line:#2B3757;
+  --accent:#86A6FF; --accent-soft:#1E2B52; --accent-ink:#0B1020; --gold:#E3B458; --gold-soft:#3A3020;
+  --tank:#7FA8DA; --melee:#E58A76; --ranged:#7CC896; --magic:#B49BEA; --support:#E2BE5C;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0B1020; --panel:#141C33; --panel-2:#1A2442; --ink:#E7EBF4; --muted:#97A1B8; --line:#2B3757;
+  --accent:#86A6FF; --accent-soft:#1E2B52; --accent-ink:#0B1020; --gold:#E3B458; --gold-soft:#3A3020;
+  --tank:#7FA8DA; --melee:#E58A76; --ranged:#7CC896; --magic:#B49BEA; --support:#E2BE5C;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--sans);margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.top .wrap{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand b{font-family:var(--display);font-size:20px;font-weight:400;letter-spacing:.04em}
+.brand span{color:var(--muted);font-size:12px}
+.pills{display:flex;gap:4px;flex-wrap:wrap}
+.pills button{border:1px solid var(--line);background:var(--panel-2);border-radius:999px;padding:4px 12px;font-size:13px}
+.pills button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--panel-2);padding:4px 10px;font-size:12px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.seg svg{display:block}
+
+.tabs{background:var(--panel);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:2px;overflow-x:auto;scrollbar-width:thin}
+.tab{border:0;background:none;padding:10px 10px 8px;font-family:var(--display);font-size:14px;letter-spacing:.05em;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab i{width:6px;height:6px;border-radius:50%;background:var(--role,var(--line))}
+.tab.off{opacity:.4}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab.home{font-family:var(--sans);font-size:13px;letter-spacing:0}
+
+main{padding-block:24px 48px}
+.hello{display:flex;flex-wrap:wrap;align-items:end;gap:12px 32px;margin-bottom:8px}
+.hello h1{font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.03em}
+.hello p{margin:2px 0 0;color:var(--muted)}
+.facts{display:flex;gap:24px;flex-wrap:wrap}
+.fact b{display:block;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.fact span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.role-group{margin-top:26px}
+.role-group h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--role);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.role-group h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid-jobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.jobcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;border-left:4px solid var(--role)}
+.jobcard:hover{border-color:var(--role);box-shadow:var(--shadow)}
+.jobcard .abbr{font-family:var(--display);font-size:24px;grid-row:span 2;line-height:1}
+.jobcard .name{font-weight:600;font-size:13px}
+.jobcard .meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.jobcard.off{background:var(--panel-2)}
+.jobcard.off .abbr{color:var(--muted)}
+
+.jobhead{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:end;margin-bottom:18px}
+.jobhead h1{font-family:var(--display);font-weight:400;font-size:40px;line-height:1;letter-spacing:.04em}
+.jobhead h1 small{font-family:var(--sans);font-size:15px;color:var(--muted);letter-spacing:0;margin-left:10px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);white-space:nowrap}
+.chip.role{color:var(--role);border-color:var(--role);background:transparent;text-transform:uppercase;letter-spacing:.06em}
+.quick{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+.quick div{font-size:12px;color:var(--muted)}
+.quick b{display:block;font-size:14px;color:var(--ink);font-weight:600}
+.sections{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:18px}
+.sections button{border:0;background:none;padding:8px 12px;border-bottom:2px solid transparent;color:var(--muted);font-weight:500}
+.sections button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--gold)}
+.sections .count{font-size:11px;color:var(--muted);margin-left:4px;font-variant-numeric:tabular-nums}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-right:auto}
+.filters button{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:4px 10px;font-size:13px}
+.filters button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.filters button small{color:var(--muted);margin-left:4px;font-variant-numeric:tabular-nums}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:7px 14px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn[disabled]{opacity:.4;cursor:default}
+
+.sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:14px}
+.setcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.setcard header{padding:12px 16px 10px;border-bottom:1px solid var(--line);display:grid;gap:4px}
+.setcard .title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.setcard h3{font-size:16px;font-weight:600}
+.setcard code{font-family:var(--mono);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.setcard .when{font-size:12.5px;color:var(--muted)}
+.variants{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;max-height:92px;overflow:auto}
+.variants button{border:1px solid var(--line);background:var(--panel-2);border-radius:6px;font-size:12px;padding:2px 9px}
+.variants button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line)}
+.slot{background:var(--panel);padding:8px 10px;min-height:62px;text-align:left;border:0;display:grid;align-content:start;gap:3px}
+.slot:hover{background:var(--accent-soft)}
+.slot .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.slot .item{font-size:13px;font-weight:500;overflow-wrap:anywhere}
+.slot.empty .item{color:var(--muted);font-weight:400}
+.slot.inh{background:var(--panel-2)}
+.slot.inh .item{color:var(--muted)}
+.tag{font-size:10.5px;padding:0 6px;border-radius:4px;border:1px solid var(--gold-soft);background:var(--gold-soft);color:var(--gold);font-family:var(--mono);overflow-wrap:anywhere}
+.setcard footer{padding:9px 16px;font-size:12px;color:var(--muted);display:flex;gap:6px 14px;flex-wrap:wrap;border-top:1px solid var(--line);background:var(--panel-2)}
+.setcard footer b{color:var(--ink);font-weight:600}
+@media (max-width:560px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.panel h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:12px 16px 8px}
+.rows{list-style:none;margin:0;padding:0 0 6px}
+.rows li{display:grid;grid-template-columns:minmax(120px,200px) 1fr auto;gap:12px;align-items:center;padding:7px 16px;border-top:1px solid var(--line)}
+.kbd{display:inline-flex;gap:3px;flex-wrap:wrap}
+.kbd kbd{font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.kbd.none{font-size:12px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start}
+.src{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap;font-family:var(--mono)}
+.src.job{color:var(--accent);border-color:var(--accent)}
+.src.common{color:var(--ranged);border-color:var(--ranged)}
+.src.custom{color:var(--magic);border-color:var(--magic)}
+.src.combat,.src.treasure{color:var(--gold);border-color:var(--gold)}
+.sub{font-size:11px;color:var(--muted);margin-left:6px}
+.values{display:flex;gap:4px;flex-wrap:wrap}
+.values span{font-size:12px;padding:1px 8px;border-radius:5px;background:var(--panel-2);border:1px solid var(--line)}
+.values span.def{background:var(--accent-soft);border-color:var(--accent);font-weight:600}
+details.more{margin-top:14px}
+details.more summary{cursor:pointer;color:var(--muted);font-size:13px;padding:6px 0}
+@media (max-width:560px){.rows li{grid-template-columns:1fr;gap:4px}}
+
+.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;align-items:start}
+.info{padding:6px 16px 14px;display:grid;gap:6px}
+.info .big{font-family:var(--display);font-size:30px;line-height:1}
+.info p{margin:0;color:var(--muted);font-size:13px}
+.mini{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.mini td,.mini th{padding:5px 16px;border-top:1px solid var(--line);text-align:left}
+.mini th{font-weight:500;color:var(--muted)}
+.switch{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line)}
+.switch .sw{width:34px;height:18px;border-radius:999px;background:var(--line);position:relative;flex:none}
+.switch .sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--panel)}
+.switch .sw.on{background:var(--accent)}
+.switch .sw.on::after{left:18px}
+.switch div{flex:1}
+.switch small{display:block;color:var(--muted);font-size:12px}
+.placeholder{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:32px;text-align:center;color:var(--muted)}
+
+.scrim{position:fixed;inset:0;background:rgba(8,12,24,.45);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:41;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.drawer header{padding:16px;border-bottom:1px solid var(--line)}
+.drawer header small{color:var(--muted);display:block}
+.drawer .body{padding:16px;overflow:auto;display:grid;gap:14px;align-content:start}
+.note{font-size:13px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:8px;padding:10px 12px}
+.choice{display:grid;gap:6px}
+.choice button{text-align:left;border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:8px 12px}
+.choice button:hover{border-color:var(--accent)}
+.choice button small{display:block;color:var(--muted);font-size:12px}
+.drawer footer{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,calc(100% - 32px));max-height:calc(100% - 48px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;z-index:41;box-shadow:var(--shadow)}
+.dialog header{padding:18px 20px 10px}
+.steps{display:flex;gap:6px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.steps span{padding:2px 8px;border-radius:999px;border:1px solid var(--line)}
+.steps span.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+.dialog .body{padding:6px 20px 18px;display:grid;gap:8px}
+.opt{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--panel-2);border-radius:8px;padding:9px 12px}
+.opt:hover{border-color:var(--accent)}
+.opt small{display:block;color:var(--muted);font-size:12px}
+.opt .state{font-size:11px;white-space:nowrap;color:var(--ranged)}
+.dialog footer{padding:12px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+.mock{font-size:12px;color:var(--muted);text-align:center;padding-block:24px 0}
+@media (prefers-reduced-motion:no-preference){.setcard,.jobcard{transition:box-shadow .15s,border-color .15s}}
+</style>
+
+<div class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 10 H22 M13 1 L9 10 L13 25 L17 10 Z" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/></svg>
+      <div><b>GearSwap Atelier</b><br><span id="tagline"></span></div>
+    </div>
+    <div class="pills" id="chars" role="group"></div>
+    <div class="seg" role="group" aria-label="Language"><button id="lang-fr" data-lang="fr">FR</button><button id="lang-en" data-lang="en">EN</button></div>
+    <div class="seg" role="group" id="theme-seg">
+      <button data-theme-set="light" id="th-light"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.3"><path d="M7 0.5v2M7 11.5v2M0.5 7h2M11.5 7h2M2.4 2.4l1.4 1.4M10.2 10.2l1.4 1.4M2.4 11.6l1.4-1.4M10.2 3.8l1.4-1.4"/></g></svg></button>
+      <button data-theme-set="dark" id="th-dark"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9.8 1.2a6 6 0 1 0 3 9.6A5 5 0 0 1 9.8 1.2z" fill="currentColor"/></svg></button>
+    </div>
+  </div>
+</div>
+<div class="tabs"><div class="wrap" id="tabs" role="tablist"></div></div>
+<main class="wrap" id="view"></main>
+<div id="overlay" hidden></div>
+
+<script src="atelier/index.js"></script>
+<script>
+let DATA = {};
+function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
+  const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
+const T = {
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', home:'Accueil', jobsPlayed:'jobs joués', sets:'sets', keys:'touches',
+    notPlayed:'Pas joué par {c}', toLoad:'Joué · données à charger', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
+    sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', playedBy:'Joué par {c}', add:'+ Ajouter un set', all:'Tous',
+    inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
+    sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', legend:'Claire : pièce définie dans ce set. Grisée : héritée du set de base. Doré : augments.',
+    modesKeyed:'Modes avec une touche', modesOther:'Autres modes (sans touche)', atLoad:'La valeur encadrée est celle au chargement du job.',
+    noKey:'aucune touche', macro:'Macrobook', lockstyle:'Lockstyle', bookPage:'Livre {b}, page {p}', bySub:'Par sub', byDual:'En dual-box (job de l\'autre perso)',
+    style:'Set {s}', functionsTitle:'Interrupteurs de ce job', on:'On', off:'Off', mock:'Données écrites par le jeu (//gs c atelier). Pour les mettre à jour : recharge le job en jeu, puis cette page.', inBags:'dans tes sacs', none:'Pas encore de données. En jeu, tape //gs c atelier (le job chargé) ou //gs c atelier on (chaque job à son chargement), puis recharge cette page.',
+    placeholder:'Pas encore exporté : charge ce job en jeu avec //gs c atelier on actif, ou tape //gs c atelier.', seeTetsouo:'Voir les jobs de Tetsouo', drawerInh:'Cette pièce vient de {b}. La changer ici l\'ajoute à ce set seulement ; {b} ne bouge pas.',
+    drawerOwn:'Pièce écrite dans ce set : elle sera remplacée à cet endroit du fichier.', drawerEmpty:'Aucune pièce : ce que tu portes déjà reste.',
+    drawerShared:'Ce set est aussi utilisé sous {n} autre(s) nom(s). Tu pourras modifier pour tous ou séparer celui-ci.',
+    yourItems:'Tes objets vus pour cet emplacement', seenIn:'vu dans {n} set(s)', close:'Fermer', apply:'Appliquer (maquette)',
+    addTitle:'Ajouter un set', step1:'Quand ?', step2:'Lequel ?', step3:'À partir de quoi ?', back:'Retour', cancel:'Annuler',
+    exists:'existe déjà', fromEmpty:'Vide', fromEmptyD:'Tu remplis chaque emplacement toi-même', fromCopy:'Copie de {b}', fromCopyD:'Hérite de tout, tu changes seulement ce qui diffère',
+    fromWorn:'Capture de l\'équipement porté', fromWornD:'Ce que tu portes en jeu devient le set', catalog:'Dans la version finale : les noms que le code du job lit, avec ceux qui manquent.',
+    source:{job:'{J}_KEYBINDS', common:'COMMON_KEYBINDS', custom:'{J}_CUSTOM', combat:'combat_mode', treasure:'treasure_mode'},
+    keyGroups:{job:'Touches du job', common:'Tous les jobs', custom:'Tes modes perso', combat:'Combat Mode', treasure:'Treasure Mode'},
+    fam:{idle:'Au repos',engaged:'En combat',fc:'Fast Cast',ws:'Weaponskills',ja:'Abilities',midcast:'Sorts & chansons',pet:'Familier',special:'Buffs & spéciaux',weapons:'Armes',other:'Autres'},
+    famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
+      midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
+    roles:{tank:'Tank',melee:'Mêlée',ranged:'Distance',magic:'Magie',support:'Soutien'}},
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', home:'Home', jobsPlayed:'jobs played', sets:'sets', keys:'keys',
+    notPlayed:'Not played by {c}', toLoad:'Played · data to load', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
+    sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', playedBy:'Played by {c}', add:'+ Add a set', all:'All',
+    inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
+    sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', legend:'Plain: piece set here. Greyed: inherited from the base set. Gold: augments.',
+    modesKeyed:'Modes with a key', modesOther:'Other modes (no key)', atLoad:'The framed value is the one at job load.',
+    noKey:'no key', macro:'Macro book', lockstyle:'Lockstyle', bookPage:'Book {b}, page {p}', bySub:'By subjob', byDual:'Dual-box (other character\'s job)',
+    style:'Set {s}', functionsTitle:'Switches on this job', on:'On', off:'Off', mock:'Data written by the game (//gs c atelier). To refresh: reload the job in game, then this page.', inBags:'in your bags', none:'No data yet. In game, type //gs c atelier (the loaded job) or //gs c atelier on (every job as it loads), then reload this page.',
+    placeholder:'Not exported yet: load this job in game with //gs c atelier on, or type //gs c atelier.', seeTetsouo:'See Tetsouo\'s jobs', drawerInh:'This piece comes from {b}. Changing it here adds it to this set only; {b} stays as it is.',
+    drawerOwn:'Piece written in this set: it is replaced at that spot in the file.', drawerEmpty:'No piece: what you already wear stays.',
+    drawerShared:'This set is also used under {n} other name(s). You will choose: all of them, or split this one.',
+    yourItems:'Your items seen for this slot', seenIn:'seen in {n} set(s)', close:'Close', apply:'Apply (mock-up)',
+    addTitle:'Add a set', step1:'When?', step2:'Which?', step3:'Starting from?', back:'Back', cancel:'Cancel',
+    exists:'already there', fromEmpty:'Empty', fromEmptyD:'You fill every slot yourself', fromCopy:'Copy of {b}', fromCopyD:'Inherits everything, you change only what differs',
+    fromWorn:'Capture what you wear', fromWornD:'Your in-game gear becomes the set', catalog:'In the real tool: the names the job code reads, missing ones included.',
+    source:{job:'{J}_KEYBINDS', common:'COMMON_KEYBINDS', custom:'{J}_CUSTOM', combat:'combat_mode', treasure:'treasure_mode'},
+    keyGroups:{job:'Job keys', common:'Every job', custom:'Your own modes', combat:'Combat Mode', treasure:'Treasure Mode'},
+    fam:{idle:'Idle',engaged:'Engaged',fc:'Fast Cast',ws:'Weaponskills',ja:'Abilities',midcast:'Spells & songs',pet:'Pet',special:'Buffs & special',weapons:'Weapons',other:'Other'},
+    famWhen:{idle:'When you are not fighting.',engaged:'When you are engaged.',fc:'At the start of each spell, to cast faster.',ws:'On your weaponskills.',ja:'When you use a job ability.',
+      midcast:'When the spell lands.',pet:'What you wear for your pet.',special:'Laid on top in some situations.',weapons:'Weapons picked by your weapon modes.',other:''},
+    roles:{tank:'Tank',melee:'Melee',ranged:'Ranged',magic:'Magic',support:'Support'}}
+};
+const SLOT_NAMES = {fr:{main:'Main',sub:'Sub',range:'Range',ammo:'Ammo',head:'Tête',neck:'Cou',ear1:'Oreille G',ear2:'Oreille D',body:'Corps',hands:'Mains',ring1:'Bague G',ring2:'Bague D',back:'Dos',waist:'Taille',legs:'Jambes',feet:'Pieds'},
+  en:{main:'Main',sub:'Sub',range:'Range',ammo:'Ammo',head:'Head',neck:'Neck',ear1:'Ear 1',ear2:'Ear 2',body:'Body',hands:'Hands',ring1:'Ring 1',ring2:'Ring 2',back:'Back',waist:'Waist',legs:'Legs',feet:'Feet'}};
+const SLOTS = ['main','sub','range','ammo','head','neck','ear1','ear2','body','hands','ring1','ring2','back','waist','legs','feet'];
+const ROLE_COLOR = {tank:'var(--tank)',melee:'var(--melee)',ranged:'var(--ranged)',magic:'var(--magic)',support:'var(--support)'};
+const JOBS = [['PLD','Paladin','tank'],['RUN','Rune Fencer','tank'],['WAR','Warrior','melee'],['MNK','Monk','melee'],['THF','Thief','melee'],['DRK','Dark Knight','melee'],
+  ['SAM','Samurai','melee'],['NIN','Ninja','melee'],['DRG','Dragoon','melee'],['DNC','Dancer','melee'],['BST','Beastmaster','melee'],['BLU','Blue Mage','melee'],['PUP','Puppetmaster','melee'],
+  ['RNG','Ranger','ranged'],['BLM','Black Mage','magic'],['RDM','Red Mage','magic'],['SCH','Scholar','magic'],['SMN','Summoner','magic'],
+  ['WHM','White Mage','support'],['BRD','Bard','support'],['COR','Corsair','support'],['GEO','Geomancer','support']];
+const TAB_ORDER = JOBS.map(j => j[0]).sort();
+let CHARS = {};
+const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
+
+let S = {char:'Tetsouo', job:null, section:'sets', family:'all', variant:{}, lang:'fr', theme:null};
+try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null}); } catch(e) {}
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const t = (k, v={}) => { let s = k.split('.').reduce((o,p) => o && o[p], T[S.lang]) ?? k; for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; };
+const role = c => JOBS.find(j => j[0]===c)[2];
+const plays = c => CHARS[S.char].jobs.includes(c);
+const data = () => (DATA[S.char] || {})[S.job];
+function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme})); } catch(e) {} }
+
+function keyLabel(k){
+  if (!k) return `<span class="kbd none">${t('noKey')}</span>`;
+  const mods = {'^':'Ctrl','!':'Alt','@':'Win','#':'Apps','~':'Shift'}; const parts = []; let i = 0;
+  while (mods[k[i]] && k.length > i+1) { parts.push(mods[k[i]]); i++; }
+  let rest = k.slice(i).replace(/^numpad/,'Num ').replace(/^f(\d+)$/,'F$1'); if (rest.length===1) rest = rest.toUpperCase();
+  parts.push(rest);
+  return '<span class="kbd">' + parts.map(p => '<kbd>'+esc(p)+'</kbd>').join('') + '</span>';
+}
+
+/* ---- set grouping ---- */
+function family(path, pieces){
+  const p = path;
+  const slots = Object.keys(pieces||{});
+  if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
+  if (/^sets\.(idle|Adoulin|Town|me\.idle|resting)/.test(p)) return 'idle';
+  if (/^sets\.(engaged|me\.engaged)/.test(p)) return 'engaged';
+  if (/^sets\.pet|Pet|pet_/.test(p)) return 'pet';
+  if (/^sets\.precast\.FC/.test(p)) return 'fc';
+  if (/^sets\.precast\.WS/.test(p)) return 'ws';
+  if (/^sets\.precast/.test(p)) return 'ja';
+  if (/^sets\.midcast/.test(p)) return 'midcast';
+  if (/^sets\.(buff|defense|Kiting|MoveSpeed|TreasureHunter|CombatMode|Doom|latent|FullEnmity|Enmity)/.test(p)) return 'special';
+  return 'other';
+}
+function segs(path){ return path.match(/\.[\w-]+|\["[^"]+"\]/g).map(s => s.startsWith('.') ? s.slice(1) : s.slice(2,-2)); }
+function topOf(path, fam){
+  const s = segs(path);
+  let n = 2;
+  if (['fc','ws','ja','midcast'].includes(fam)) n = s[0]==='precast' || s[0]==='midcast' ? (fam==='midcast' ? 2 : 2) : 2;
+  if (fam==='ws' || fam==='fc') n = 2;
+  if (fam==='ja') n = 3;
+  if (fam==='idle' || fam==='engaged') n = s[0]==='me' ? 2 : 1;
+  if (fam==='pet') n = s[0]==='pet' ? 2 : 2;
+  if (fam==='special') n = s[0]==='buff' ? 2 : 1;
+  if (fam==='weapons' || fam==='other') n = s.length;
+  return s.slice(0, Math.min(n, s.length));
+}
+function buildCards(d){
+  const bypath = {}; for (const s of d.sets) bypath[s.path] = s;
+  const cards = [], index = {};
+  for (const s of d.sets) {
+    const fam = family(s.path, s.pieces);
+    const top = topOf(s.path, fam); const key = fam + '|' + top.join('/');
+    if (!index[key]) { index[key] = {fam, name: top[top.length-1], top, variants:[]}; cards.push(index[key]); }
+    const rest = segs(s.path).slice(top.length).join(' · ');
+    index[key].variants.push({label: rest || 'Base', set: s});
+  }
+  for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));
+  const order = ['idle','engaged','fc','ws','ja','midcast','pet','special','weapons','other'];
+  cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || a.name.localeCompare(b.name));
+  return {cards, bypath};
+}
+function niceName(card){
+  const n = card.name;
+  const map = {idle:{fr:'Au repos',en:'Idle'}, engaged:{fr:'En combat',en:'Engaged'}, FC:{fr:'Fast Cast',en:'Fast Cast'}, WS:{fr:'Weaponskills',en:'Weaponskills'},
+    MoveSpeed:{fr:'Vitesse de course',en:'Movement speed'}, Doom:{fr:'Doom',en:'Doom'}, TreasureHunter:{fr:'Treasure Hunter',en:'Treasure Hunter'}};
+  return (map[n] && map[n][S.lang]) || n;
+}
+function shortPath(p){ return p ? p.replace(/^sets\./,'') : ''; }
+
+/* ---- render ---- */
+function renderTop(){
+  $('#tagline').textContent = t('tagline');
+  $('#chars').innerHTML = Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${c}">${c}</button>`).join('');
+  $('#lang-fr').setAttribute('aria-pressed', S.lang==='fr'); $('#lang-en').setAttribute('aria-pressed', S.lang==='en');
+  const dark = S.theme ? S.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  $('#th-light').setAttribute('aria-pressed', !dark); $('#th-dark').setAttribute('aria-pressed', dark);
+  $('#th-light').setAttribute('aria-label', S.lang==='fr'?'Mode jour':'Light mode'); $('#th-dark').setAttribute('aria-label', S.lang==='fr'?'Mode nuit':'Dark mode');
+  document.documentElement.lang = S.lang;
+  if (S.theme) document.documentElement.setAttribute('data-theme', S.theme);
+  const tabs = [`<button class="tab home" role="tab" aria-selected="${!S.job}" data-job="">${t('home')}</button>`];
+  for (const c of TAB_ORDER) tabs.push(`<button class="tab ${plays(c)?'':'off'}" role="tab" aria-selected="${S.job===c}" data-job="${c}" style="--role:${ROLE_COLOR[role(c)]}"><i></i>${c}</button>`);
+  $('#tabs').innerHTML = tabs.join('');
+}
+function counts(c){ const d = (DATA[S.char]||{})[c]; return d ? {sets:d.sets.length, keys:d.keys.filter(k=>k.key).length} : null; }
+function renderHome(){
+  const jobs = CHARS[S.char].jobs; let totS = 0, totK = 0;
+  for (const c of jobs) { const n = counts(c); if (n) { totS += n.sets; totK += n.keys; } }
+  let html = `<section class="hello"><div><h1>${S.char}</h1><p>${jobs.join(' · ')}</p></div><div class="facts">
+    <div class="fact"><b>${jobs.length}</b><span>${t('jobsPlayed')}</span></div>${totS?`<div class="fact"><b>${totS}</b><span>${t('sets')}</span></div><div class="fact"><b>${totK}</b><span>${t('keys')}</span></div>`:''}</div></section>`;
+  for (const r of ['tank','melee','ranged','magic','support']) {
+    html += `<section class="role-group" style="--role:${ROLE_COLOR[r]}"><h2>${t('roles.'+r)}</h2><div class="grid-jobs">` +
+      JOBS.filter(j => j[2]===r).map(([c,name]) => { const n = counts(c);
+        const meta = !plays(c) ? t('notPlayed',{c:S.char}) : n ? `${n.sets} ${t('sets')} · ${n.keys} ${t('keys')}` : t('toLoad');
+        return `<button class="jobcard ${plays(c)?'':'off'}" data-job="${c}" style="--role:${ROLE_COLOR[r]}"><span class="abbr">${c}</span><span class="name">${name}</span><span class="meta">${meta}</span></button>`; }).join('') + `</div></section>`;
+  }
+  return html + (DATA[S.char] ? `<p class="mock">${t('mock',{c:S.char})}</p>` : '');
+}
+function cardHTML(card, ci, bypath){
+  const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
+  const v = card.variants[vi]; const s = v.set; const base = s.base ? bypath[s.base] : null;
+  const own = new Set(s.own || Object.keys(s.pieces));
+  const slots = SLOTS.map(slot => {
+    const p = s.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
+    if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></button>`;
+    const inh = base && !own.has(slot);
+    return `<button class="slot ${inh?'inh':''}" data-card="${ci}" data-slot="${slot}"><span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>${p.aug?`<span class="tag">${esc(p.aug)}</span>`:''}</button>`;
+  }).join('');
+  const foot = [];
+  if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits',{b:'<b>'+esc(shortPath(s.base))+'</b>'})} · ${n?t('changed',{n}):t('nothingChanged')}`); }
+  else foot.push(t('defined',{n:'<b>'+Object.keys(s.pieces).length+'</b>'}));
+  if (s.aliases && s.aliases.length) foot.push(t('sharedBy',{l:s.aliases.map(a => esc(shortPath(a))).join(', ')}));
+  const variants = card.variants.length > 1 ? `<div class="variants">${card.variants.map((x,i) => `<button aria-pressed="${i===vi}" data-card="${ci}" data-variant="${i}">${esc(x.label)}</button>`).join('')}</div>` : '';
+  const when = t('famWhen.'+card.fam);
+  return `<article class="setcard"><header><div class="title"><h3>${esc(niceName(card))}</h3><code>${esc(s.path)}</code></div>${when?`<div class="when">${when}</div>`:''}${variants}</header>
+    <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer></article>`;
+}
+function renderSets(d){
+  const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
+  const fams = ['all', ...new Set(cards.map(c => c.fam))];
+  const filters = fams.map(f => { const n = f==='all' ? cards.length : cards.filter(c => c.fam===f).length;
+    return `<button aria-pressed="${S.family===f}" data-family="${f}">${f==='all'?t('all'):t('fam.'+f)}<small>${n}</small></button>`; }).join('');
+  if (!fams.includes(S.family)) S.family = 'all';
+  const html = cards.map((c,i) => (S.family==='all' || c.fam===S.family) ? cardHTML(c,i,bypath) : '').join('');
+  return `<div class="toolbar"><div class="filters">${filters}</div><button class="btn" data-action="add">${t('add')}</button></div><div class="sets">${html}</div><p class="mock">${t('legend')}</p>`;
+}
+function renderKeys(d){
+  const groups = {};
+  for (const k of d.keys) { if (!k.key) continue; (groups[k.src] = groups[k.src] || []).push(k); }
+  return `<div class="cols">` + ['job','custom','combat','treasure','common'].filter(g => groups[g]).map(g =>
+    `<section class="panel"><h3>${t('keyGroups.'+g)}</h3><ul class="rows">` + groups[g].map(k =>
+      `<li>${keyLabel(k.key)}<span>${esc(k.desc)}${k.subjob?`<span class="sub">/${esc(k.subjob)}</span>`:''}</span><span class="src ${g}">${t('source.'+g).replace('{J}', S.job)}.lua</span></li>`).join('') +
+    `</ul></section>`).join('') + `</div>`;
+}
+function modeRow(m, key){
+  return `<li><span><b>${esc(m.desc || m.name)}</b><br><small style="color:var(--muted);font-family:var(--mono)">state.${esc(m.name)}</small></span>
+    <span class="values">${m.values.map(v => `<span class="${v===m.current?'def':''}">${esc(v)}</span>`).join('')}</span>${keyLabel(key)}</li>`;
+}
+function renderModes(d){
+  const keyOf = {}; for (const k of d.keys) if (k.state && k.key && !keyOf[k.state]) keyOf[k.state] = k.key;
+  const shown = d.modes.filter(m => !HIDDEN_MODES.has(m.name) && !/^[A-Z]{3}Song\d$/.test(m.name));
+  const keyed = shown.filter(m => keyOf[m.name]), other = shown.filter(m => !keyOf[m.name]);
+  return `<section class="panel"><h3>${t('modesKeyed')}</h3><ul class="rows">${keyed.map(m => modeRow(m, keyOf[m.name])).join('')}</ul></section>
+    ${other.length?`<details class="more"><summary>${t('modesOther')} (${other.length})</summary><section class="panel"><ul class="rows">${other.map(m => modeRow(m,null)).join('')}</ul></section></details>`:''}
+    <p class="mock">${t('atLoad')}</p>`;
+}
+function renderMacro(d){
+  const m = d.macro || {}, l = d.lockstyle || {};
+  const rows = (obj, fmt) => Object.entries(obj||{}).map(([k,v]) => `<tr><th>${esc(k)}</th><td>${fmt(v)}</td></tr>`).join('');
+  const bp = v => v && v.book ? t('bookPage',{b:v.book,p:v.page}) : Object.entries(v||{}).map(([s,x]) => `/${esc(s)} ${x.book}·${x.page}`).join(' &nbsp; ');
+  const def = m.default ? `${m.default.book} · ${m.default.page}` : '—';
+  return `<div class="cardgrid">
+    <section class="panel"><h3>${t('macro')}</h3><div class="info"><span class="big">${def}</span><p>${m.default?t('bookPage',{b:m.default.book,p:m.default.page}):''}</p></div>
+      ${m.solo && Object.keys(m.solo).length?`<table class="mini"><tr><th colspan="2">${t('bySub')}</th></tr>${rows(m.solo, bp)}</table>`:''}
+      ${m.dualbox && Object.keys(m.dualbox).length?`<table class="mini"><tr><th colspan="2">${t('byDual')}</th></tr>${rows(m.dualbox, bp)}</table>`:''}</section>
+    <section class="panel"><h3>${t('lockstyle')}</h3><div class="info"><span class="big">${l.default ?? '—'}</span><p>${l.default?t('style',{s:l.default}):''}</p></div>
+      ${l.by_subjob && Object.keys(l.by_subjob).length?`<table class="mini"><tr><th colspan="2">${t('bySub')}</th></tr>${rows(l.by_subjob, v => t('style',{s:v}))}</table>`:''}</section></div>`;
+}
+function renderFunctions(d){
+  const keyOf = {}; for (const k of d.keys) if (k.state && k.key && !keyOf[k.state]) keyOf[k.state] = k.key;
+  const bools = d.modes.filter(m => m.values.length===2 && ((m.values.includes('on') && m.values.includes('off')) || (m.values.includes('On') && m.values.includes('Off'))) && !HIDDEN_MODES.has(m.name));
+  return `<section class="panel"><h3>${t('functionsTitle')}</h3>` + bools.map(m => { const on = m.current.toLowerCase()==='on';
+    return `<div class="switch"><span class="sw ${on?'on':''}" aria-hidden="true"></span><div><b>${esc(m.desc||m.name)}</b><small>${on?t('on'):t('off')} · ${keyOf[m.name]?'':t('noKey')}</small></div>${keyOf[m.name]?keyLabel(keyOf[m.name]):''}</div>`; }).join('') + `</section>`;
+}
+function renderJob(){
+  const c = S.job, j = JOBS.find(x => x[0]===c), d = data();
+  const r = j[2];
+  let body, sections = '';
+  if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${S.char!=='Tetsouo'?`<button class="btn ghost" data-char="Tetsouo">${t('seeTetsouo')}</button>`:''}</div>`;
+  else {
+    const list = [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),d.keys.filter(k=>k.key).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),'']];
+    sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;
+    body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions}[S.section](d);
+  }
+  const q = d ? `<div class="quick"><div>${t('macro')}<b>${d.macro&&d.macro.default?d.macro.default.book+' · '+d.macro.default.page:'—'}</b></div><div>${t('lockstyle')}<b>${d.lockstyle&&d.lockstyle.default||'—'}</b></div><div>Sub<b>${esc(d.sub)}</b></div>${d.at?`<div>Export<b>${esc(d.at)}</b></div>`:''}</div>` : '';
+  return `<section class="jobhead" style="--role:${ROLE_COLOR[r]}"><div><h1>${c}<small>${j[1]}</small></h1>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="chip role">${t('roles.'+r)}</span>${plays(c)?'<span class="chip">'+t('playedBy',{c:S.char})+'</span>':''}</div></div>${q}</section>${sections}${body}`;
+}
+function render(){ renderTop(); $('#view').innerHTML = S.job ? renderJob() : renderHome(); save(); }
+
+/* ---- drawer ---- */
+function openSlot(ci, slot){
+  const card = S._cards[ci]; const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
+  const s = card.variants[vi].set; const p = s.pieces[slot]; const own = new Set(s.own || Object.keys(s.pieces));
+  const label = SLOT_NAMES[S.lang][slot];
+  const seen = {}; for (const x of data().sets) { const q = x.pieces[slot]; if (q) seen[q.name] = (seen[q.name]||0)+1; }
+  const owned = (data().items || {})[slot];
+  const items = owned ? owned.map(n => [n, seen[n] || 0]) : Object.entries(seen).sort((a,b) => b[1]-a[1]);
+  let notes = !p ? t('drawerEmpty') : (s.base && !own.has(slot)) ? t('drawerInh',{b:shortPath(s.base)}) : t('drawerOwn');
+  let html = `<div class="note">${esc(notes)}</div>`;
+  if (s.aliases && s.aliases.length) html += `<div class="note">${esc(t('drawerShared',{n:s.aliases.length}))}</div>`;
+  html += `<div class="choice"><b style="font-size:13px">${t('yourItems')}</b>${items.map(([n,c]) => `<button type="button">${esc(n)}<small>${c ? t('seenIn',{n:c}) : t('inBags')}</small></button>`).join('')}</div>`;
+  $('#overlay').innerHTML = `<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="${label}">
+    <header><small>${esc(niceName(card))} · <span style="font-family:var(--mono)">${esc(s.path)}</span></small><h3>${label} : ${p?esc(p.name):'—'}</h3></header>
+    <div class="body">${html}</div><footer><button class="btn ghost" data-close>${t('close')}</button><button class="btn" data-close>${t('apply')}</button></footer></aside>`;
+  $('#overlay').hidden = false;
+}
+/* ---- add set ---- */
+let addStep = 0, addFam = null, addBase = null;
+function renderAdd(){
+  const cards = S._cards || buildCards(data()).cards;
+  const steps = [t('step1'),t('step2'),t('step3')].map((s,i) => `<span class="${i===addStep?'on':''}">${i+1}. ${s}</span>`).join('');
+  let body;
+  if (addStep===0) body = [...new Set(cards.map(c => c.fam))].map(f => `<button class="opt" data-addfam="${f}"><span>${t('fam.'+f)}<small>${t('famWhen.'+f)}</small></span><span>›</span></button>`).join('');
+  else if (addStep===1) body = cards.filter(c => c.fam===addFam).flatMap(c => c.variants.map(v => v.set.path)).map(p =>
+      `<button class="opt" data-addbase="${esc(p)}"><span style="font-family:var(--mono);font-size:13px">${esc(p)}</span><span class="state">${t('exists')}</span></button>`).join('') + `<p class="mock" style="text-align:left;padding:0">${t('catalog')}</p>`;
+  else body = [[t('fromEmpty'),t('fromEmptyD')],[t('fromCopy',{b:shortPath(addBase)}),t('fromCopyD')],[t('fromWorn'),t('fromWornD')]]
+      .map(([a,b]) => `<button class="opt" data-close><span>${esc(a)}<small>${esc(b)}</small></span><span>›</span></button>`).join('');
+  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog" role="dialog" aria-label="${t('addTitle')}"><header><h3>${t('addTitle')}</h3><div class="steps">${steps}</div></header>
+    <div class="body">${body}</div><footer><button class="btn ghost" data-back ${addStep===0?'disabled':''}>${t('back')}</button><button class="btn ghost" data-close>${t('cancel')}</button></footer></div>`;
+  $('#overlay').hidden = false;
+}
+function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button,[data-close]'); if (!b) return; const d = b.dataset;
+  if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
+  if (d.lang) { S.lang = d.lang; render(); return; }
+  if (d.themeSet) { S.theme = d.themeSet; render(); return; }
+  if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.family = 'all'; render(); scrollTo({top:0}); return; }
+  if (d.section) { S.section = d.section; render(); return; }
+  if (d.family) { S.family = d.family; render(); return; }
+  if (d.variant) { S.variant[S.job+'|'+d.card] = +d.variant; render(); return; }
+  if (d.slot) { openSlot(+d.card, d.slot); return; }
+  if (d.action==='add') { addStep = 0; renderAdd(); return; }
+  if (d.addfam) { addFam = d.addfam; addStep = 1; renderAdd(); return; }
+  if (d.addbase) { addBase = d.addbase; addStep = 2; renderAdd(); return; }
+  if ('back' in d) { addStep = Math.max(0, addStep-1); renderAdd(); return; }
+  if ('close' in d) closeOverlay();
+});
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeOverlay(); });
+function boot(){
+  const index = window.ATELIER_INDEX || [];
+  loadScripts(index.map(e => e.file), () => {
+    DATA = window.ATELIER || {}; CHARS = {};
+    for (const e of index) if (DATA[e.char] && DATA[e.char][e.job]) (CHARS[e.char] = CHARS[e.char] || {jobs:[]}).jobs.push(e.job);
+    if (!CHARS[S.char]) S.char = Object.keys(CHARS)[0];
+    if (!S.char) { $('#tagline').textContent = t('tagline'); $('#view').innerHTML = `<div class="placeholder"><p>${t('none')}</p></div>`; return; }
+    S.job = null; render();
+  });
+}
+boot();
+</script>

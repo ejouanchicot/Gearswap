@@ -159,6 +159,7 @@ and partner job ([HUD](../features/ui.md#key-conflicts)).
 | `help` (`?`) | Where each system's own help is (`tb help`, `stealth help`, `combatmode help`...) |
 | `dw` [`auto` \| `none` \| `haste` \| `haste2` \| `max`] | Dual Wield tier: estimated magic haste and its sources, tier, `sets.DW.<tier>` used; a word forces a tier, `auto` goes back to the estimate (`config/DW_CONFIG.lua`) |
 | `belt` | Obi / Orpheus: automatic on or off, belts found, today's day and weather, what each belt adds now (`config/ELEMENTAL_BELT.lua`) |
+| `atelier` / `atelier on` / `atelier off` | Write the loaded job's sets, keys, modes, macro book and lockstyle for the **Atelier** page: open `data/atelier.html` in your browser. `on`: also after every job load (per character). Files: `<YourName>/atelier/<JOB>.js` |
 | `trace on` / `off` / `clear` | Record what the game returns to `<YourName>/trace.log` (keeps recording across restarts until `trace off`). Also writes each load's steps, every file loaded, every command sent, every GearSwap event and a line every second: after a game crash, the last line shows what was going on. Past 10 MB the file becomes `trace.old.log` (send both) |
 | `testcolors` (`colors`) | Chat colour codes |
 | `perf`, `lagdebug`, `memcheck`, `debugprecast`, `debugjobchange`, `debugupdate`, `automovedebug`, `debugwarp`, `debugmsg`, `testmsg`, `msgtests` | Developer tools, see [commands-and-debug](../../dev/systems/commands-and-debug.md) |

@@ -412,6 +412,8 @@ pcall(function()
     TraceLog.log('LOAD', 'INIT_SYSTEMS end')
     if TraceLog.enabled() then TraceLog.start_heartbeat() end
 end)
+-- //gs c atelier on: export this job for data/atelier.html once it is loaded
+pcall(function() require('shared/utils/atelier/atelier_export').after_load() end)
 
 coroutine.schedule(function()
     local ok, GlobalProbe = pcall(require, 'shared/utils/debug/global_probe')

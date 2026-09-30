@@ -1,0 +1,346 @@
+---============================================================================
+--- Atelier Export - what the Atelier page shows, written by the game itself
+---============================================================================
+--- data/atelier.html (open it in a browser) shows every exported job of every
+--- character: sets, keys and where each comes from, modes, macro book,
+--- lockstyle. This module writes that data, as the game loaded it:
+---
+---   //gs c atelier        export the current job now
+---   //gs c atelier on     also export after every job load (per character)
+---   //gs c atelier off    stop exporting on load
+---
+--- Files: data/<Character>/atelier/<JOB>.js (one per job) and
+--- data/atelier/index.js (the list the page reads). They are JavaScript, not
+--- JSON, because a page opened from the disk may load scripts but not read
+--- files.
+---
+--- While the switch is on, set_combine is wrapped from the first line of each
+--- load (install, called by config_loader) to note which set every set was
+--- built from; the page greys what a set only inherits. Off, nothing is
+--- wrapped and a command export shows every piece as the set's own.
+---
+--- @file    shared/utils/atelier/atelier_export.lua
+--- @author  ejouanchicot
+--- @version 1.0
+--- @date    Created: 2026-09-30
+---============================================================================
+
+local AtelierExport = {}
+
+local SLOT_ALIAS = {
+    main = 'main', sub = 'sub', range = 'range', ranged = 'range', ammo = 'ammo', head = 'head', neck = 'neck',
+    ear1 = 'ear1', left_ear = 'ear1', lear = 'ear1', ear2 = 'ear2', right_ear = 'ear2', rear = 'ear2',
+    body = 'body', hands = 'hands', ring1 = 'ring1', left_ring = 'ring1', lring = 'ring1',
+    ring2 = 'ring2', right_ring = 'ring2', rring = 'ring2', back = 'back', waist = 'waist', legs = 'legs', feet = 'feet',
+}
+local SLOT_BY_ID = {[0] = 'main', 'sub', 'range', 'ammo', 'head', 'body', 'hands', 'legs', 'feet', 'neck', 'waist',
+    'ear1', 'ear2', 'ring1', 'ring2', 'back'}
+-- Bags GearSwap equips from: inventory, wardrobes 1-8
+local EQUIP_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16}
+local MAX_DEPTH = 7
+
+---============================================================================
+--- SWITCH AND PATHS
+---============================================================================
+
+local function data_path(rel)
+    return windower.addon_path .. 'data/' .. rel
+end
+
+local function marker()
+    return player and player.name and data_path(player.name .. '/atelier.on')
+end
+
+--- On/off per character: a marker file, read once per addon load.
+--- @return boolean
+function AtelierExport.enabled()
+    if windower._atelier_on == nil then
+        local path = marker()
+        local f = path and io.open(path, 'r')
+        windower._atelier_on = f ~= nil
+        if f then f:close() end
+    end
+    return windower._atelier_on == true
+end
+
+--- Wrap set_combine for this load when the switch is on (config_loader,
+--- before the set file runs).
+function AtelierExport.install()
+    if not AtelierExport.enabled() or rawget(_G, '__atelier_prov') then return end
+    local original = rawget(_G, 'set_combine')
+    if type(original) ~= 'function' then return end
+    local prov = setmetatable({}, {__mode = 'k'})
+    _G.__atelier_prov = prov
+    _G.set_combine = function(...)
+        local result = original(...)
+        prov[result] = {n = select('#', ...), ...}
+        return result
+    end
+end
+
+---============================================================================
+--- COLLECT
+---============================================================================
+
+local function child_path(path, key)
+    if type(key) == 'string' and key:match('^[%a_][%w_]*$') then return path .. '.' .. key end
+    return path .. '["' .. tostring(key):gsub('"', '\\"') .. '"]'
+end
+
+local function slot_of(key)
+    return type(key) == 'string' and SLOT_ALIAS[key:lower()]
+end
+
+--- A set's piece as {name, aug}.
+local function piece(value)
+    if type(value) == 'string' then return {name = value} end
+    if type(value) ~= 'table' or not value.name then return nil end
+    local aug
+    if type(value.augments) == 'table' and #value.augments > 0 then
+        local parts = {}
+        for i = 1, math.min(3, #value.augments) do parts[#parts + 1] = tostring(value.augments[i]) end
+        aug = table.concat(parts, ' · ')
+    end
+    return {name = value.name, aug = aug}
+end
+
+--- Gear slots of one table, or nil when it holds none.
+local function pieces_of(tbl)
+    local pieces, count = {}, 0
+    for key, value in pairs(tbl) do
+        local slot = slot_of(key)
+        local p = slot and piece(value)
+        if p then pieces[slot] = p count = count + 1 end
+    end
+    return count > 0 and pieces or nil
+end
+
+--- Every set under `sets`, first path wins; a table met again is an alias.
+local function walk_sets(root)
+    local path_of, out, order = {}, {}, {}
+    local function walk(tbl, path, depth)
+        if depth > MAX_DEPTH or type(tbl) ~= 'table' then return end
+        if path_of[tbl] then
+            local first = out[path_of[tbl]]
+            if first then first.aliases = first.aliases or {} first.aliases[#first.aliases + 1] = path end
+            return
+        end
+        path_of[tbl] = path
+        local pieces = pieces_of(tbl)
+        if pieces then out[path] = {path = path, pieces = pieces} order[#order + 1] = path end
+        local keys = {}
+        for key, value in pairs(tbl) do
+            if type(value) == 'table' and not slot_of(key) then keys[#keys + 1] = key end
+        end
+        table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+        for _, key in ipairs(keys) do walk(tbl[key], child_path(path, key), depth + 1) end
+    end
+    walk(root, 'sets', 0)
+    return path_of, out, order
+end
+
+--- Base set and own slots from the set_combine notes.
+local function add_provenance(path_of, out)
+    local prov = rawget(_G, '__atelier_prov')
+    if not prov then return end
+    for tbl, args in pairs(prov) do
+        local rec = path_of[tbl] and out[path_of[tbl]]
+        if rec then
+            local base = args[1]
+            if type(base) == 'table' and path_of[base] and out[path_of[base]] then rec.base = path_of[base] end
+            local own = {}
+            for i = rec.base and 2 or 1, args.n do
+                if type(args[i]) == 'table' then
+                    for key in pairs(args[i]) do if slot_of(key) then own[#own + 1] = slot_of(key) end end
+                end
+            end
+            rec.own = own
+        end
+    end
+end
+
+local function collect_sets()
+    local path_of, out, order = walk_sets(sets or {})
+    add_provenance(path_of, out)
+    local list = {}
+    for _, path in ipairs(order) do list[#list + 1] = out[path] end
+    return list
+end
+
+local function source_of(bind)
+    if bind._common then return 'common' end
+    if bind.custom then return 'custom' end
+    if bind.state == 'CombatMode' then return 'combat' end
+    if bind.state == 'TreasureMode' then return 'treasure' end
+    return 'job'
+end
+
+local function collect_keys()
+    local module = rawget(_G, '_keybind_active')
+    local keys = {}
+    for _, bind in ipairs(module and module.binds or {}) do
+        keys[#keys + 1] = {key = bind.key or '', desc = bind.desc or bind.command or '', state = bind.state,
+            src = source_of(bind), subjob = type(bind.subjob) == 'string' and bind.subjob or nil}
+    end
+    return keys
+end
+
+local function collect_modes()
+    local modes = {}
+    for name, mode in pairs(state or {}) do
+        local track = type(mode) == 'table' and rawget(mode, '_track')
+        if track and track._class == 'mode' and track._type ~= 'string' then
+            local values = {}
+            if track._type == 'boolean' then values = {'off', 'on'}
+            else for i = 1, track._count do values[#values + 1] = tostring(rawget(mode, i)) end end
+            modes[#modes + 1] = {name = name, desc = track._description, values = values, current = tostring(mode.current)}
+        end
+    end
+    table.sort(modes, function(a, b) return a.name < b.name end)
+    return modes
+end
+
+--- A job config table (MACROBOOK / LOCKSTYLE), from the character's folder.
+local function job_config(kind)
+    local job = player.main_job
+    local rel = 'config/' .. job:lower() .. '/' .. job .. '_' .. kind
+    for _, path in ipairs({rel, player.name .. '/' .. rel}) do
+        local ok, cfg = pcall(require, path)
+        if ok and type(cfg) == 'table' then return cfg end
+    end
+    return nil
+end
+
+--- Owned equippable items, by slot: {slot = {name, ...}}.
+local function collect_items()
+    local ok, res = pcall(require, 'resources')
+    if not ok or not res or not res.items then return nil end
+    local by_slot, seen = {}, {}
+    for _, bag in ipairs(EQUIP_BAGS) do
+        for _, item in ipairs(windower.ffxi.get_items(bag) or {}) do
+            local info = type(item) == 'table' and item.id and item.id > 0 and res.items[item.id]
+            if info and info.slots and type(info.slots) == 'table' and info.slots.it then
+                for slot_id in info.slots:it() do
+                    local slot = SLOT_BY_ID[slot_id]
+                    local key = slot and slot .. '|' .. info.en
+                    if key and not seen[key] then
+                        seen[key] = true
+                        by_slot[slot] = by_slot[slot] or {}
+                        table.insert(by_slot[slot], info.en)
+                    end
+                end
+            end
+        end
+    end
+    for _, names in pairs(by_slot) do table.sort(names) end
+    return by_slot
+end
+
+---============================================================================
+--- WRITE
+---============================================================================
+
+local function json(value)
+    local kind = type(value)
+    if kind == 'nil' or kind == 'function' then return 'null' end
+    if kind == 'boolean' or kind == 'number' then return tostring(value) end
+    if kind == 'string' then
+        return '"' .. value:gsub('[%c"\\]', function(c)
+            return ({['"'] = '\\"', ['\\'] = '\\\\', ['\n'] = '\\n'})[c] or string.format('\\u%04x', c:byte())
+        end) .. '"'
+    end
+    if #value > 0 or next(value) == nil then
+        local parts = {}
+        for i = 1, #value do parts[i] = json(value[i]) end
+        return '[' .. table.concat(parts, ',') .. ']'
+    end
+    local keys = {}
+    for key in pairs(value) do keys[#keys + 1] = key end
+    table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+    local parts = {}
+    for _, key in ipairs(keys) do
+        local text = json(value[key])
+        if text ~= 'null' then parts[#parts + 1] = json(tostring(key)) .. ':' .. text end
+    end
+    return '{' .. table.concat(parts, ',') .. '}'
+end
+
+local function write(path, text)
+    local file = io.open(path, 'w')
+    if not file then return false end
+    file:write(text)
+    file:close()
+    return true
+end
+
+--- data/atelier/index.js: every <Character>/atelier/<JOB>.js on the disk.
+local function write_index()
+    windower.create_dir(data_path('atelier'))
+    local entries = {}
+    for _, name in ipairs(windower.get_dir(data_path('')) or {}) do
+        for _, file in ipairs(windower.get_dir(data_path(name .. '/atelier/')) or {}) do
+            local job = file:match('^(%u%u%u)%.js$')
+            if job then entries[#entries + 1] = {char = name, job = job, file = name .. '/atelier/' .. file} end
+        end
+    end
+    table.sort(entries, function(a, b) return a.char .. a.job < b.char .. b.job end)
+    return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\n')
+end
+
+--- Export the current job. Returns the file written, or nil.
+--- @return string|nil
+function AtelierExport.export()
+    if not (player and player.name and player.main_job) then return nil end
+    local data = {
+        player = player.name, job = player.main_job, sub = player.sub_job, at = os.date('%Y-%m-%d %H:%M'),
+        sets = collect_sets(), keys = collect_keys(), modes = collect_modes(),
+        macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'), items = collect_items(),
+    }
+    windower.create_dir(data_path(player.name .. '/atelier'))
+    local rel = player.name .. '/atelier/' .. player.main_job .. '.js'
+    local text = ('window.ATELIER = window.ATELIER || {};\nATELIER[%s] = ATELIER[%s] || {};\nATELIER[%s][%s] = %s;\n')
+        :format(json(player.name), json(player.name), json(player.name), json(player.main_job), json(data))
+    if not write(data_path(rel), text) then return nil end
+    write_index()
+    return rel
+end
+
+--- After a load, when the switch is on (INIT_SYSTEMS): the job's modules and
+--- keys are all in place a few seconds later.
+function AtelierExport.after_load()
+    if not AtelierExport.enabled() then return end
+    coroutine.schedule(function() pcall(AtelierExport.export) end, 4)
+end
+
+---============================================================================
+--- COMMAND
+---============================================================================
+
+local function set_switch(on)
+    windower._atelier_on = on
+    local path = marker()
+    if not path then return end
+    if on then write(path, 'on') else os.remove(path) end
+end
+
+--- //gs c atelier [on|off]
+--- @param args table Words after "atelier"
+--- @return boolean handled
+function AtelierExport.handle(args)
+    local sub = args and args[1] and args[1]:lower() or ''
+    local MessageFormatter = require('shared/utils/messages/message_formatter')
+    if sub == 'on' or sub == 'off' then
+        set_switch(sub == 'on')
+        MessageFormatter.show_info(('Atelier: export after each job load %s (reload the job for inherited pieces)')
+            :format(sub == 'on' and 'ON' or 'OFF'))
+        return true
+    end
+    local rel = AtelierExport.export()
+    MessageFormatter.show_info(rel and ('Atelier: %s written, open data/atelier.html'):format(rel)
+        or 'Atelier: export failed (could not write the file)')
+    return true
+end
+
+_G.AtelierExport = AtelierExport
+
+return AtelierExport
