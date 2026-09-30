@@ -585,7 +585,7 @@ Re-checked on 2026-09-28. Open:
 - `message_songs.lua` has no caller; neither do the `show_song_*` and `*_new` facade keys.
 - About 138 formatter functions have no caller (tables above).
 - Colour tokens passed as parameters print literally (`MessageWarp.show_debug_toggle`, `BLMMessages.show_mp_conservation`, `MessageBST.show_auto_engage_status`, `show_pet_tp_status`, `show_pet_hp_status`); all on paths without callers today, and each function's comment says so.
-- "No cure" and AutoMedicine lines name fixed items, whatever the item lists of the settings (`message_debuffs.lua` `show_no_silence_cure`, `show_no_paralysis_cure`, `show_auto_medicine_toggled`).
+- The AutoMedicine toggle line names fixed items, whatever the item lists of the settings (`message_debuffs.lua` `show_auto_medicine_toggled`). The "No ... Available" lines list the items of the settings (`show_no_silence_cure`, `show_no_paralysis_cure`, third argument).
 - Fixed 2026-09-28: `MessageFormatter.show_error` was called with two arguments, dropping the reason (`DEBUG_COMMANDS.lua` `handle_memcheck`, `handle_debugmsg`); both now pass one message.
 - Five local `get_job_tag` copies and four element colour maps (`message_combat.lua` `get_element_color`, `ELEMENT_COLORS` in BLM/BRD/GEO); Ice is 210 in `message_combat.lua` and 30 in BLM/BRD/GEO.
 - `message_sortie.lua` and `message_commands.lua` build some colours from raw codes (`YELLOW`, `GRAY`, `LIGHTBLUE`; `generate_color_code`), which the player's `chat.colors` does not reach.
