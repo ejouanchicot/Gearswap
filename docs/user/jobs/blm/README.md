@@ -174,7 +174,7 @@ What the project's shared systems do on BLM, checked in the code.
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for abilities and for spells that do not step down (a tiered nuke steps down instead of being refused) |
 | Doom | `sets.buff.Doom` while Doomed; its slots stay locked until Doom is gone |
 | Dual Wield tiers | Only when you hold two weapons (with /NIN or /DNC): nothing with a staff |
-| Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
+| Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, `SneakInviAOE` Off stops it from spending a stratagem on your group |
 | Warp | Every warp command. BLM casts Warp, Warp II, Escape and Retrace itself; the other destinations use rings and items |
 | Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua` (Panacea, Remedy, Holy Water... by default); `<YourName>/blm/inventory/BLM_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |

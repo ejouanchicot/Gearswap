@@ -282,8 +282,8 @@ end
 --- PARALYSIS CURE MESSAGES
 ---============================================================================
 
---- Display paralysis cure success message (Remedy/Panacea used)
---- @param item_name string Item used (e.g., "Remedy", "Panacea")
+--- Display paralysis cure success message (Remedy used)
+--- @param item_name string Item used (e.g., "Remedy")
 --- @param action_name string Action that was blocked (JA or WS)
 --- @param debuff_message string Debuff being cured (e.g., "Paralyzed")
 function MessageDebuffs.show_paralysis_cure_success(item_name, action_name, debuff_message)

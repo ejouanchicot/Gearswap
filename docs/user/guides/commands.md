@@ -41,7 +41,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `cycle <Mode>` / `cycleback <Mode>` | Same, through Mote-Include (prints a chat line) |
 | `set <Mode> <Value>` / `toggle <Mode>` / `reset <Mode>` / `unset <Mode>` | Mote-Include |
 | `update` | Mote-Include: put your idle or engaged gear back on now (what F12 sends) |
-| `am` (`automedicine`) `[on/off]` | Auto Medicine: Echo Drops / Remedy / Panacea used when a debuff blocks your action. No argument (or any other word) toggles it; the value survives job changes. Its value when the game starts, and the items used, are in `_common/combat/AUTOCURE_CONFIG.lua` ([configuration](configuration.md)) |
+| `am` (`automedicine`) `[on/off]` | Auto Medicine: Echo Drops / Remedy used when a debuff blocks your action. No argument (or any other word) toggles it; the value survives job changes. Its value when the game starts, and the items used, are in `_common/combat/AUTOCURE_CONFIG.lua` ([configuration](configuration.md)) |
 | `combatmode` | Combat Mode on this job: status; `show` / `hide` its HUD row, key and lock; `key <key>` / `key none`; `help`. See [keybinds](keybinds.md#combat-mode-every-job) |
 | `th` | Treasure Mode on this job: status; `show` / `hide`, `key <key>` / `key none`, `clear` (forget the mobs tagged), `help`. THF has it by itself; other jobs start Off and hidden. Needs `sets.TreasureHunter` in the job set file. See [keybinds](keybinds.md#treasure-mode-every-job) |
 

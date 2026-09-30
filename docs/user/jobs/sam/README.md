@@ -121,7 +121,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Auto stance (off by default) | With `sam_hasso = true` in `_common/combat/AUTO_ABILITIES.lua`: your chosen stance (Hasso, or Seigan after `//gs c seigan`) when you engage, unless Hasso or Seigan is up and only when it is ready |
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear from `SAM_TP_CONFIG.lua` is added (Hagakure counted while it is up) |
 | Recast check | An ability or spell still on recast is cancelled with the time left (`RECAST_CONFIG.lua`) |
-| Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
+| Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move; not in a town once you add a `sets.idle.Town` (the provided file has no `sets.idle.Town`) |
 | Obi / Orpheus | Added to elemental weaponskills (Tachi: Goten, Kagero, Jinpu, Koki, ...) and damaging spells when the day, weather or distance gives enough (`//gs c belt`) |

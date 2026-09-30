@@ -61,7 +61,7 @@ All commands: [commands](../guides/commands.md).
 
 1. **Precast**: the action is cancelled if it cannot go off (silence,
    paralysis on a job ability, amnesia, recast not ready...). With Auto
-   Medicine on, an Echo Drops, Remedy or Panacea is used when it helps.
+   Medicine on, an Echo Drops or Remedy is used when it helps.
    Weaponskills are checked for range and 1000 TP, and TP bonus gear is added.
    Then the precast set goes on (Fast Cast, the ability's or weaponskill's set).
 2. **Midcast**: the set is chosen from your set file, from the most precise

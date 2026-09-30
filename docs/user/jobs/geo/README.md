@@ -161,7 +161,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for abilities and for spells that do not step down |
 | Doom | `sets.buff.Doom` while Doomed; its slots stay locked until Doom is gone |
 | Dual Wield tiers | Only when you hold two weapons (with /NIN or /DNC): nothing with a club and shield |
-| Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
+| Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, GEO may cover your whole group with Accession when a charge is left (GEO has no switch to stop it) |
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
 | Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua` (Panacea, Remedy, Holy Water... by default); `<YourName>/geo/inventory/GEO_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |

@@ -320,7 +320,7 @@ end
 
 --- Whether job abilities are blocked by a debuff PrecastGuard cannot cure.
 --- Paralysis is left out: the guard answers it on the ability itself with a
---- Remedy or Panacea, so the ability still gets its one attempt.
+--- Remedy, so the ability still gets its one attempt.
 --- @return boolean True under Amnesia, Impairment or a debuff blocking everything
 local function ja_blocked_without_cure()
     local ok, DebuffChecker = pcall(require, 'shared/utils/debuff/debuff_checker')

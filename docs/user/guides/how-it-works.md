@@ -41,8 +41,8 @@ is **cancelled**: no gear moves and a chat line says why.
    Impairment block abilities and weaponskills; Paralysis blocks abilities
    (not weaponskills: the game rolls for those); Stun, Sleep, Petrification
    and Terror block everything. With [Auto Medicine](commands.md#modes) on,
-   an Echo Drops or Remedy is used for Silence before a spell, a Remedy or
-   Panacea for Paralysis before an ability.
+   an Echo Drops or Remedy is used for Silence before a spell, a Remedy for
+   Paralysis before an ability.
 2. **Is it ready?** An ability or spell still on recast is cancelled with the
    time left. A recast of 2 s or less counts as ready (the game and GearSwap
    do not agree to the tenth of a second: `_common/combat/RECAST_CONFIG.lua`).

@@ -1002,7 +1002,7 @@ return M
   in `.claude/CODE_QUALITY.md` section 6, and both still go through `ChatSeparators`. `QuiverManager`
   uses `MessageFormatter.show_warning` / `show_success`; `AmpullaLock` uses
   `MessageFormatter.show_warning`.
-- Auto-medicine (`shared/utils/debuff/precast_guard.lua`) uses Echo Drops, Remedy and Panacea from the
+- Auto-medicine (`shared/utils/debuff/precast_guard.lua`) uses Echo Drops and Remedy from the
   inventory, which the refill lists stock: [precast-pipeline.md](precast-pipeline.md).
 - Craft: `craft_manager.lua` owns the session state (read through `CraftManager.is_active()`);
   `craft_commands.lua` and `craft_manager.lua` send `gs c rf`.

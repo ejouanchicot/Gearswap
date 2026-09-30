@@ -157,7 +157,7 @@ starts, after its recast check, never by the command.
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear (Moonshade...) from `BRD_TP_CONFIG.lua` is added, counting Aeneas / Centovente in either hand |
 | Recast check | An ability or spell still on recast is cancelled with the time left. Debuff songs that have another tier are handled first (tier fallback) |
 | Automatic abilities | Pianissimo before a song on another player (the song follows once Pianissimo is up), Marcato before the `MarcatoSong` song (the song follows 2 s later), Nightingale + Troubadour before a pack (`AutoNitro`, each waits for the previous buff) |
-| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
+| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns. Not while engaged |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge...) and subjob nukes when the day, weather or distance gives enough (`//gs c belt`). Songs never get it |

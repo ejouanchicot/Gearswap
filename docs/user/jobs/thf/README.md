@@ -113,7 +113,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Treasure Hunter | Native. See [Treasure Hunter](#treasure-hunter) below |
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear (Moonshade...) from `THF_TP_CONFIG.lua` is added |
 | Recast check | An ability or spell still on recast is cancelled with the time left (tolerance and party announce in `RECAST_CONFIG.lua`) |
-| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
+| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge, ...) and damaging spells when the day, weather or distance gives enough (`//gs c belt`) |

@@ -123,7 +123,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Automatic abilities | Climactic Flourish before the weaponskills of `DNC_WS_CONFIG.lua` (Climactic Auto: 1000 TP or more, target above 25 % HP, 3+ Finishing Moves, tried once per weaponskill); Presto before `step` |
 | Auto Jump (/DRG) | Below 1000 TP, a weaponskill is replaced by Jump (then High Jump if still short) and sent again (Jump Auto) |
 | Recast check | An ability or spell still on recast is cancelled with the time left (Utsusemi is left to the game). A samba you cannot pay for (TP below its cost, not under Trance) is cancelled with a message |
-| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
+| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Waltzes and dances | Manual waltz macros are never re-tiered nor blocked on full HP (so a waltz can wake a sleeping party member). A manual waltz under Saber Dance or a manual samba under Fan Dance is **not** cancelled for you: the game refuses it; `//gs c waltz` cancels Saber Dance itself |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns |

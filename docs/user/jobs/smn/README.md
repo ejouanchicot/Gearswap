@@ -152,7 +152,7 @@ What the project's shared systems do on SMN, checked in the code.
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for your abilities (Blood Pacts included) and spells refused on recast |
 | Doom | Doom slots are handled, but the provided file has no `sets.buff.Doom`: add one |
 | Dual Wield tiers | Only when you hold two weapons (with /NIN or /DNC) |
-| Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
+| Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, SMN may cover your whole group with Accession when a charge is left |
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
 | Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua` (Panacea, Remedy, Holy Water... by default); `<YourName>/smn/inventory/SMN_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |

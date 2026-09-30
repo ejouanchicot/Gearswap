@@ -25,7 +25,7 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/debuff/precast_guard.lua` | 460 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy/Panacea |
+| `shared/utils/debuff/precast_guard.lua` | 460 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy |
 | `shared/utils/debuff/debuff_checker.lua` | 290 | Blocking-debuff tables (production and test mode) and lookups |
 | `shared/utils/debuff/auto_medicine.lua` | 213 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`; cold-load value from `auto_medicine_start` |
 | `shared/utils/debuff/doom_manager.lua` | 157 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
@@ -220,10 +220,10 @@ The `action_type` dispatch in front of `CooldownChecker` is repeated in all 17
 | `spell.type` | Handler | Debuffs checked (`debuff_checker.lua`) | Auto-cure |
 |---|---|---|---|
 | `WeaponSkill` | `check_ws` | universal + amnesia/impairment/paralysis | none; if the highest-priority hit is paralysis the WS is let through |
-| `JobAbility`, `Ability`, `PetCommand` | `check_ja` | universal + amnesia/impairment/paralysis | paralysis -> Remedy, Panacea |
+| `JobAbility`, `Ability`, `PetCommand` | `check_ja` | universal + amnesia/impairment/paralysis | paralysis -> Remedy |
 | `Magic` | `check_magic` | universal + silence/mute/omerta | never reached, see gotchas |
 | `Item` | `check_item` | universal + encumbrance | none |
-| anything else (all real spells, CorsairRoll, Waltz, Samba, Step, Flourish, Jig, Scholar, Rune, Ward, Effusion, Blood Pacts, Monster, `/ra`) | `check_and_block` with `spell.action_type` | `Magic` -> magic list; `Ability` -> JA list; `Ranged Attack` -> universal only (`check_action_blocked`) | `Magic`+silence -> Echo Drops, Remedy; `Ability`+paralysis -> Remedy, Panacea |
+| anything else (all real spells, CorsairRoll, Waltz, Samba, Step, Flourish, Jig, Scholar, Rune, Ward, Effusion, Blood Pacts, Monster, `/ra`) | `check_and_block` with `spell.action_type` | `Magic` -> magic list; `Ability` -> JA list; `Ranged Attack` -> universal only (`check_action_blocked`) | `Magic`+silence -> Echo Drops, Remedy; `Ability`+paralysis -> Remedy |
 
 Universal debuffs (checked first for every list): stun, sleep, petrification,
 terror. Within a list the lowest `priority` wins (`get_active_blocking_debuff`),
@@ -317,7 +317,7 @@ sends a party message for a refused action when the character's
   an earlier attempt (`is_replay`, below), when `DebuffChecker.check_ja_blocked()`
   reports a debuff other than Paralysis (`ja_blocked_without_cure`: Amnesia,
   Impairment or a universal debuff; Paralysis keeps its attempt because PrecastGuard
-  answers it on the ability with a Remedy or Panacea), or when `can_use_ability` says
+  answers it on the ability with a Remedy), or when `can_use_ability` says
   the player does not have the ability.
 - `fire_then_replay` sets `eventArgs.handled`, runs `cancel_spell()`, sends
   `input /ja "<ability>" <me>`, writes the replay marker
@@ -815,7 +815,7 @@ copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/com
 | `auto_cure_silence` | `true` | `precast_guard.lua` |
 | `silence_cure_items` | Echo Drops 4151, Remedy 4155 | `precast_guard.lua` |
 | `auto_cure_paralysis` | `true` | `precast_guard.lua` |
-| `paralysis_cure_items` | Remedy 4155, Panacea 4145 | `precast_guard.lua` |
+| `paralysis_cure_items` | Remedy 4155 (Panacea does not cure Paralysis) | `precast_guard.lua` |
 | `auto_medicine_start` | absent (= `'On'`) | `auto_medicine.lua`, cold load only; a job change keeps the current value |
 | `auto_cure_poison`, `auto_cure_blind` | `false` | nothing |
 | `debug` | `false` | test-mode messages in PrecastGuard |

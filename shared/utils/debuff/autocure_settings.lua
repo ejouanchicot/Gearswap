@@ -20,7 +20,7 @@ local FALLBACK = {
     test_mode = false, test_debuff = 'Berserk',
     auto_cure_silence = true, auto_cure_paralysis = true,
     silence_cure_items = { { name = 'Echo Drops', id = 4151 }, { name = 'Remedy', id = 4155 } },
-    paralysis_cure_items = { { name = 'Remedy', id = 4155 }, { name = 'Panacea', id = 4145 } },
+    paralysis_cure_items = { { name = 'Remedy', id = 4155 } },
     auto_cure_poison = false, auto_cure_blind = false, debug = false,
 }
 

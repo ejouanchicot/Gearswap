@@ -142,7 +142,7 @@ checks as a macro: debuff guard, recast check, roll gear, Luzaf's Ring.
 |---|---|
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear (Moonshade...) from `COR_TP_CONFIG.lua` is added. The gun list in that file is not counted today (see [sets.md](sets.md#weaponskills)) |
 | Recast check | An ability or spell still on recast is cancelled with the time left. Quick Draw is left to the game (it has charges). A refused roll can also tell the party when Phantom Roll is back ([states.md](states.md#notes)) |
-| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
+| Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns (the provided file has no `sets.idle.Town`, so other towns count as the field) |
 | Obi / Orpheus | Added to damaging Quick Draws (not Light / Dark Shot), elemental weaponskills (Leaden Salute, Wildfire, Hot Shot, Aeolian Edge...) and subjob nukes, when the day, weather or distance gives enough (`//gs c belt`) |

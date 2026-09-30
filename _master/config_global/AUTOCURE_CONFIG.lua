@@ -17,9 +17,10 @@ return {
     auto_cure_silence = true,
     silence_cure_items = {'Echo Drops', 'Remedy'},
 
-    -- Paralysis: cured before a job ability (a weaponskill goes through as is)
+    -- Paralysis: cured before a job ability (a weaponskill goes through as is).
+    -- Panacea does not cure Paralysis (nor Silence)
     auto_cure_paralysis = true,
-    paralysis_cure_items = {'Remedy', 'Panacea'},
+    paralysis_cure_items = {'Remedy'},
 
     -- Auto Medicine when the game starts: 'On' or 'Off' (after that, a job
     -- change keeps what you set)

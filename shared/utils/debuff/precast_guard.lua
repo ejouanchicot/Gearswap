@@ -108,7 +108,7 @@ local function cure_list_has(cure_items, item_name)
     return false
 end
 
---- Try to use debuff cure item (Echo Drops, Remedy, Panacea, etc.)
+--- Try to use debuff cure item (Echo Drops, Remedy, etc.)
 --- @param cure_items table List of cure items to try (in priority order)
 --- @param action_name string The action that was blocked
 --- @param debuff_message string The debuff message to display
@@ -150,7 +150,7 @@ local function try_cure_silence(spell_name, debuff_message)
     return try_cure_debuff(SILENCE_CURE_ITEMS, spell_name, debuff_message, MessageDebuffs.show_silence_cure_success)
 end
 
---- Try to use paralysis cure item (Remedy or Panacea)
+--- Try to use paralysis cure item (Remedy)
 --- @param action_name string The action that was blocked (JA or WS)
 --- @param debuff_message string The debuff message to display (e.g., "Paralyzed")
 --- @return string status See try_cure_debuff
@@ -226,7 +226,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
             elseif cure_type == "paralysis"
                 and (action_type == "Ability" or action_type == "JobAbility")
                 and spell.type ~= "WeaponSkill" and spell.type ~= "Weaponskill" then
-                -- Remedy or Panacea for Paralysis, job abilities only.
+                -- Remedy for Paralysis, job abilities only.
                 -- The weaponskill test reads spell.type, not action_type:
                 -- weaponskills report action_type 'Ability' like any other, so
                 -- testing action_type for 'WeaponSkill' never matches anything.

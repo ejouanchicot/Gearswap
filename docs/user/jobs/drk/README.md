@@ -107,7 +107,7 @@ DRK has no command of its own. The common commands that work on DRK:
 | Dark Seal / Nether Void | DRK's own, see [abilities.md](abilities.md) |
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear from `DRK_TP_CONFIG.lua` is added |
 | Recast check | An ability or spell still on recast is cancelled with the time left (`RECAST_CONFIG.lua`) |
-| Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
+| Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed; the Aftermath gear change is skipped while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle whenever you move, outside a town. In town, `sets.idle.Town` goes on top of your idle set (the template makes it the movement set, legs only), then your weapon, and nothing else |
 | Obi / Orpheus | Added to elemental weaponskills (Sanguine Blade, Dark Harvest, Shadow of Death, Infernal Scythe, ...) and damaging spells (Elemental Magic, ...) when the day, weather or distance gives enough (`//gs c belt`) |

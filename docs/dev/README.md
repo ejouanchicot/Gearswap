@@ -164,7 +164,7 @@ no midcast, no aftercast.
 
 - **Precast** — every job follows **PrecastGuard → CooldownChecker → (job
   auto-abilities) → WSPrecastHandler → job gear**. PrecastGuard blocks on
-  debuffs and can send Echo Drops / Remedy / Panacea (AutoMedicine).
+  debuffs and can send Echo Drops / Remedy (AutoMedicine).
   CooldownChecker cancels on recast (tolerance 2.0 s from `RECAST_CONFIG`).
   WSPrecastHandler validates range, runs Auto-Jump on /DRG (`state.JumpAuto`
   On), computes TP-bonus gear and cancels below 1000 TP, reading the TP from game memory (`TPBonusHandler.live_tp()`), not

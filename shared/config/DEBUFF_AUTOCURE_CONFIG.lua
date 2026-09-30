@@ -6,18 +6,19 @@
 ---
 ---   Features:
 ---     • Auto-cure Silence (Echo Drops, Remedy)
----     • Auto-cure Paralysis (Remedy, Panacea)
+---     • Auto-cure Paralysis (Remedy)
 ---     • Test mode for development
 ---     • Debug logging support
 ---
 ---   Priority System:
 ---     • Silence: Echo Drops (Priority 1) → Remedy (Priority 2)
----     • Paralysis: Remedy (Priority 1) → Panacea (Priority 2)
+---     • Paralysis: Remedy (Panacea does not cure it: BG-Wiki lists Silence and
+---       Paralysis among what it leaves)
 ---
 ---   @file    shared/config/DEBUFF_AUTOCURE_CONFIG.lua
 ---   @author  ejouanchicot
----   @version 1.3 - Panacea added as paralysis fallback
----   @date    Updated: 2026-08-18
+---   @version 1.4 - Panacea removed: it does not cure Paralysis
+---   @date    Updated: 2026-10-01
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local DebuffAutoCureConfig = {}
@@ -47,8 +48,7 @@ DebuffAutoCureConfig.silence_cure_items   = {
 ---  ─────────────────────────────────────────────────────────────────────────
 DebuffAutoCureConfig.auto_cure_paralysis  = true
 DebuffAutoCureConfig.paralysis_cure_items = {
-    { name = "Remedy",     id = 4155 },  -- Priority 1: cures Paralysis (ID 4) + Paralyzed (ID 566)
-    { name = "Panacea",    id = 4145 }   -- Priority 2: fallback when Remedy runs out
+    { name = "Remedy",     id = 4155 }   -- cures Paralysis (ID 4) + Paralyzed (ID 566)
 }
 
 ---  ─────────────────────────────────────────────────────────────────────────
