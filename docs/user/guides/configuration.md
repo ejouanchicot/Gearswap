@@ -62,7 +62,7 @@ re-clone copies them back from the old folder (see
 | `AUTO_ABILITIES.lua` | Job abilities used for you, all `false` (off) by default: `sam_hasso` (SAM: your chosen stance, Hasso or Seigan, when you engage, unless one is up), `geo_entrust` (an Indi- spell cast on a party member gets Entrust first), `geo_full_circle` (a Geo- spell cast while a luopan is out gets Full Circle first), `blu_unbridled` (an unbridled spell gets Unbridled Learning first), `blu_expiacion_window` (see [BLU](../jobs/blu/states.md)) |
 | `WEAPON_CONFIG.lua` | `equip_without_set` (default `false`): with `true`, a weapon mode value that has no set of that name equips the weapon of that name directly, so a plain weapon needs no set. Keep a set for an augmented weapon |
 | `CRAFT_CONFIG.lua` | Which set file `craft` and `fish` use (`craft_file = 'craft'` reads `_common/sets/craft_sets.lua`; `'goldsmithing'` reads `_common/sets/goldsmithing_sets.lua`...) and their lockstyle numbers (19 and 17) |
-| `REFILL_CONFIG.lua` | The bags `rf` uses, for every job: `source_bags` (where missing items are taken from, in order; default `{'case', 'sack', 'satchel'}`) and `store_bag` (where extra items go; default `'case'`). Bags: `case`, `sack`, `satchel`, `wardrobe1` to `wardrobe8` (wardrobes only hold equipment, ammo for instance). The Mog Safe, Storage and Locker only open in the Mog House |
+| `REFILL_CONFIG.lua` | The common list `rf` keeps on every job, `default_list` (six medicines by default, see [Refill](#refill-job_refilllua)), and optionally `subjobs` (that list per subjob). The bags `rf` uses, for every job: `source_bags` (where missing items are taken from, in order; default `{'case', 'sack', 'satchel'}`) and `store_bag` (where extra items go; default `'case'`). Bags: `case`, `sack`, `satchel`, `wardrobe1` to `wardrobe8` (wardrobes only hold equipment, ammo for instance). The Mog Safe, Storage and Locker only open in the Mog House |
 | `DW_CONFIG.lua` | Dual Wield tiers: while you hold two weapons and are engaged, the pieces of `sets.DW.NoHaste` / `Haste` / `HasteII` / `MaxHaste` (in your job's set file) go on top of your engaged set, chosen by your magic haste (estimated from your buffs). `enabled`, and the % each buff counts for. No `sets.DW` in a job file: nothing changes. `//gs c dw` shows the estimate, `//gs c dw none\|haste\|haste2\|max` forces a tier, `//gs c dw auto` goes back. Slow / Elegy on you are not counted: while slowed, `//gs c dw none` |
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 3.0 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
@@ -115,7 +115,7 @@ Per job, `<YourName>/<job>/`:
 | `<JOB>_MACROBOOK.lua` | Macro book and page |
 | `<JOB>_TP_CONFIG.lua` | TP bonus pieces for weaponskills ([tp-bonus](../jobs/war/tp-bonus.md)) |
 | `<JOB>_HUD.lua` | This job's HUD section and row order, empty by default; written by `//gs c ui order` / `roworder` ([HUD](../features/ui.md#order-of-the-sections-and-rows)) |
-| `<JOB>_REFILL.lua` | Consumables for `//gs c rf` (you create it, see below) |
+| `<JOB>_REFILL.lua` | Consumables for `//gs c rf` on this job, added to the common list or replacing it; every line commented at first (see below) |
 | others | Job-specific: `BLM_ELEMENTAL_CONFIG`, `BLM_MP_CONFIG`, `BLU_SPELL_MAP`, `BRD_SONG_CONFIG`, `BRD_TIMING_CONFIG`, `BST_ECOSYSTEM_DATA`, `BST_PET_DATA`, `DNC_WS_CONFIG`, `PLD_BLU_MAGIC`, `PLD_WS_CONFIG`, `RDM_SABOTEUR_CONFIG`, `RUN_BLU_MAGIC`, `WAR_WS_CONFIG`, `WHM_CURE_CONFIG` (see the job's page) |
 
 ## Modes (`<JOB>_STATES.lua`)
@@ -178,27 +178,59 @@ subjob]` is used; otherwise `solo[your subjob]`, then `solo.default`, then
 
 `//gs c rf` tops up the consumables in your inventory from your bags (Case,
 Sack, then Satchel unless `_common/inventory/REFILL_CONFIG.lua` says otherwise), and puts
-the surplus back. The lists are per character and per job,
-and only the author's characters ship with them: **create
-`<YourName>/<job>/inventory/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
-short built-in list (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent
-Oil, 12 each). Format:
+the surplus back.
+
+**The common list**, for every job, is `default_list` in
+`<YourName>/_common/inventory/REFILL_CONFIG.lua`. A new character gets Panacea,
+Antacid, Holy Water, Remedy, Prism Powder and Silent Oil, 12 each. You can also
+give it a list per subjob (`subjobs`, an example is commented in the file):
+
+```lua
+RefillConfig.default_list = {
+    { name = 'Panacea', target = 12 },
+    { name = 'Remedy', target = 12 },
+}
+RefillConfig.subjobs = {        -- optional: the common list when your subjob is DNC
+    DNC = { { name = 'Remedy', target = 12 } },
+}
+```
+
+**Each job** has `<YourName>/<job>/inventory/<JOB>_REFILL.lua`. A new character
+gets it with every line commented, so that job uses the common list. Uncomment
+what you want:
 
 ```lua
 local M = {}
-M.store_bag = 'case'            -- where the surplus goes (optional: REFILL_CONFIG.lua otherwise)
-M.source_bags = {'satchel', 'case'}   -- where to take from, for this job only (optional)
-M.default = {
-    { name = 'Panacea', target = 12 },
+M.extra = {                     -- added to the common list
     { name = {'Sublime Sushi +1', 'Sublime Sushi'}, target = 12 },  -- +1 first, then the other
 }
-M.subjobs = {                   -- a different list for a subjob (optional)
-    DNC = { { name = 'Panacea', target = 12 } },
+M.default = {                   -- or: a list of its own, in place of the common one
+    { name = 'Remedy', target = 12 },
 }
+M.subjobs = {                   -- or: a list for one subjob (wins over both)
+    DNC = { { name = 'Remedy', target = 12 } },
+}
+M.store_bag = 'case'            -- where the surplus goes, this job only (optional)
+M.source_bags = {'satchel', 'case'}   -- where to take from, this job only (optional)
 return M
 ```
 
-Consumables named only in another job's list (of any character folder in `data/`) are put back too. While a craft
+An `extra` item that is already in the common list (same name, or same first
+name for variants) replaces it, so the `target` you write in `extra` wins.
+
+Which list `rf` uses, first match (the start of the `rf` report shows it as
+`Config`):
+
+1. The craft list, while a craft set is on (below).
+2. The job's `subjobs` list for your subjob (`WAR/DNC`), then its `default`
+   (`WAR/default`).
+3. The common list: its `subjobs` list for your subjob (`common/DNC`), else
+   `default_list` (`common`), plus the job's `extra` if it has one
+   (`common + WAR extra`).
+4. Only when neither file gives a list (no `REFILL_CONFIG.lua`, or no
+   `default_list` in it): the built-in six medicines (`fallback`).
+
+Consumables named only in another list (another job's, or any list of any character folder in `data/`) are put back too. While a craft
 set is on, `_common/inventory/CRAFT_REFILL.lua` is used instead: same format, empty
 until you fill it; it can set its own `source_bags` / `store_bag` too.
 

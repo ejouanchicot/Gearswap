@@ -173,7 +173,7 @@ What the project's shared systems do on BLM, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, `SneakInviAOE` Off stops it from spending a stratagem on your group |
 | Warp | Every warp command. BLM casts Warp, Warp II, Escape and Retrace itself; the other destinations use rings and items |
-| Refill | `//gs c rf` restocks from `<YourName>/blm/inventory/BLM_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
+| Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua` (Panacea, Remedy, Holy Water... by default); `<YourName>/blm/inventory/BLM_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft`; turning Combat Mode Off does not free the slots a craft set holds |
 | Your own modes and gear rules | `BLM_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Weapons without a set | `MainWeapon` / `SubWeapon` (Hvergelmir / Alber Strap) do nothing unless you write `sets.Hvergelmir` / `sets['Alber Strap']`, or turn on `equip_without_set` in `WEAPON_CONFIG.lua` |
@@ -209,7 +209,7 @@ In `<YourName>/blm/`:
 | `BLM_MP_CONFIG.lua` | `mp_threshold` (1000): under it, `sets.midcast.MPConservation` goes on a nuke |
 | `BLM_ELEMENTAL_CONFIG.lua` | BLM's own Obi rule (storm, day, weather); only used when the shared belt is off |
 | `BLM_TP_CONFIG.lua` | Moonshade Earring entry; not read by the weaponskill TP code today |
-| `BLM_REFILL.lua` | Optional, not in the template: items `//gs c rf` keeps in your inventory |
+| `BLM_REFILL.lua` | Items `//gs c rf` keeps in your inventory on BLM, on top of or in place of the common list; every line commented at first |
 
 Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua` and `treasure_mode.lua` (written by their commands),

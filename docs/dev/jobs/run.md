@@ -62,6 +62,7 @@ drift.
 | `_master/config/run/RUN_MACROBOOK.lua` | 76 | Books 15-20 (same numbers as PLD) |
 | `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig` (Moonshade piece, Lionheart weapon), loaded by the entry |
 | `_master/config/run/RUN_BLU_MAGIC.lua` | 203 | Copy of `PLD_BLU_MAGIC`; loaded by the entry as `_G.BluMagicConfig` |
+| `_master/config/run/RUN_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/run_sets.lua` | 432 | Template sets (flat) |
 | `shared/data/job_abilities/RUN_JA_DATABASE.lua` + `run/*.lua` | 13 + 276 | JA descriptions (runes, wards, SP) for `ability_message_handler` |
 
@@ -311,7 +312,7 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 | `<char>/run/RUN_MACROBOOK.lua` | book 15 page 1 | file; fallback book 1 page 1 | `MacrobookManager` (0.2 s after load, dual-box update) |
 | `<char>/run/RUN_TP_CONFIG.lua` -> `_G.RUNTPConfig` | Moonshade 250, Lionheart 500 | file | entry `get_sets` (`require`), `RUN_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
 | `<char>/run/RUN_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | entry `get_sets` -> `aoe_manager` (captured on first require) |
-| `<char>/run/RUN_REFILL.lua` | not in the template | player-created | refill system (fallback list without it) |
+| `<char>/run/RUN_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | file | refill system (the common list without a list in it) |
 | `RECAST_CONFIG`, `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry, `is_on_cooldown` |
 
 ## State & lifetime

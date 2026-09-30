@@ -71,6 +71,7 @@ function; line numbers are deliberately not used.
 | `_master/config/thf/THF_LOCKSTYLE.lua` | 40 | `default = 1`, `by_subjob`, no `get_style` |
 | `_master/config/thf/THF_MACROBOOK.lua` | 72 | Book/page per subjob and per dual-box partner job |
 | `_master/config/thf/THF_TP_CONFIG.lua` | 70 | Moonshade piece, weapon TP bonus table, `_G.THFTPConfig` |
+| `_master/config/thf/THF_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/thf_sets.lua` | 929 | Template sets (flat) |
 | `shared/data/job_abilities/THF_JA_DATABASE.lua` + `thf/*.lua` | | `JA_DATABASE_FACTORY.create('THF')`, read by the ability message handler (messages only) |
 
@@ -504,7 +505,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 | `<char>/thf/THF_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory fallback 1 | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
 | `<char>/thf/THF_MACROBOOK.lua` | book 1 page 1 solo; dual-box RDM 1, GEO 2, COR 3 | file; factory fallback 1/1 | `MacrobookManager` |
 | `<char>/thf/THF_TP_CONFIG.lua` -> `_G.THFTPConfig` | Moonshade ear1 +250; weapons Aeneas 500, Centovente 1000 | file | `TPBonusHandler` -> `TPBonusCalculator` (main and sub weapon) |
-| `<char>/thf/THF_REFILL.lua` | none in the template (built-in list) | overlay only | `refill/config_resolver.lua` |
+| `<char>/thf/THF_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `refill/config_resolver.lua` |
 | `<char>/_common/keys/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
 | `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |

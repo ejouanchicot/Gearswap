@@ -74,8 +74,10 @@ runs a full organize. The bags and rules are set in
 
 Tops up the consumables in your inventory from the Mog Case, Mog Sack and Mog
 Satchel (in that order), and
-puts the surplus back. The list comes from
-`<job>/inventory/<JOB>_REFILL.lua` (you write it; see
+puts the surplus back. The list is the common one of
+`_common/inventory/REFILL_CONFIG.lua` (`default_list`, six medicines on a new
+character), which each job's `<job>/inventory/<JOB>_REFILL.lua` can add to or
+replace (every line commented at first; see
 [configuration](../guides/configuration.md#refill-job_refilllua)). `rf` is
 also sent to your other GearSwap instances.
 

@@ -94,7 +94,7 @@ AzureSets addon, loaded with the job: `//aset setlist`, `//aset spellset <name>`
 | `checksets` | Set items missing from your inventory and wardrobes |
 | `wa` (`wardrobeaudit`) | Wardrobe items no set file uses |
 | `wo` (`worganize`) `[preview\|scan\|keep\|alt\|recover...]` | Wardrobe organizer |
-| `rf` (`refill`) | Restock consumables from `BLU_REFILL.lua` (you create it) |
+| `rf` (`refill`) | Restock consumables: the common list, plus or instead of `BLU_REFILL.lua` |
 | `naked` (or `equip naked`) | Remove every piece |
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again |
@@ -162,7 +162,7 @@ In `<YourName>/blu/`:
 | `BLU_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |
 | `BLU_TP_CONFIG.lua` | TP bonus pieces for weaponskills (Moonshade Earring +250) |
 | `BLU_HUD.lua` | Order of this job's HUD sections and rows |
-| `BLU_REFILL.lua` | Consumables for `//gs c rf` (not in the template: you create it) |
+| `BLU_REFILL.lua` | Consumables for `//gs c rf` on BLU, added to the common list or replacing it; every line commented at first ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, the files every job reads that matter here:
 `AUTO_ABILITIES.lua` (`blu_unbridled`, `blu_expiacion_window`),

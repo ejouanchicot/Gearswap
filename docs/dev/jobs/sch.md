@@ -56,6 +56,7 @@ What SCH adds on top of the shared pipeline:
 | `_master/config/sch/SCH_HUD.lua` | 32 | HUD section / row order (empty = default) |
 | `_master/config/sch/SCH_LOCKSTYLE.lua` | 27 | `default = 1` |
 | `_master/config/sch/SCH_MACROBOOK.lua` | 30 | Book 1 page 1 |
+| `_master/config/sch/SCH_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/sch_sets.lua` | 160 | Template sets: every set the code reads, all empty |
 
 Shared files changed for SCH (registries only):

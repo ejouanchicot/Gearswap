@@ -164,7 +164,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, GEO may cover your whole group with Accession when a charge is left (GEO has no switch to stop it) |
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
-| Refill | `//gs c rf` restocks from `<YourName>/geo/inventory/GEO_REFILL.lua` if you write one; without it, a default list (Panacea, Remedy, Holy Water...) |
+| Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua` (Panacea, Remedy, Holy Water... by default); `<YourName>/geo/inventory/GEO_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft`; Combat Mode Off does not free what a craft set holds |
 | PetTP addon | Loaded when GEO loads, unloaded when you leave GEO |
 | Dual-box | As an alt, GEO tells the main when Entrust goes up or down, so the main's alt commands can aim an Indi- at the party |
@@ -188,7 +188,7 @@ In `<YourName>/geo/`:
 | `GEO_LOCKSTYLE.lua` | Lockstyle number (5), per subjob through `get_style` |
 | `GEO_MACROBOOK.lua` | Macro book and page per subjob (book 5 page 1), and per dual-box partner job (empty) |
 | `GEO_TP_CONFIG.lua` | TP bonus pieces (Moonshade Earring) for weaponskill gear |
-| `GEO_REFILL.lua` | Optional, not in the template: items `//gs c rf` keeps in your inventory |
+| `GEO_REFILL.lua` | Items `//gs c rf` keeps in your inventory on GEO, on top of or in place of the common list; every line commented at first |
 
 Shared by every job, in `<YourName>/_common/`: `AUTO_ABILITIES.lua` (the two
 GEO options), `COMMON_KEYBINDS.lua`, `combat_mode.lua` and `treasure_mode.lua`

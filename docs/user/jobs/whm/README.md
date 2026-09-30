@@ -106,7 +106,7 @@ part off; `//gs c set CureAutoTier Off` does the same from a macro.
 | `checksets` | Set items missing from your inventory and wardrobes |
 | `wa` (`wardrobeaudit`) | Wardrobe items no set file uses |
 | `wo` (`worganize`) `[preview\|scan\|keep\|alt\|recover...]` | Wardrobe organizer |
-| `rf` (`refill`) | Restock consumables from `WHM_REFILL.lua` (you create it) |
+| `rf` (`refill`) | Restock consumables: the common list, plus or instead of `WHM_REFILL.lua` |
 | `naked` (or `equip naked`) | Remove every piece |
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again |
@@ -172,7 +172,7 @@ In `<YourName>/whm/`:
 | `WHM_MACROBOOK.lua` | Macro book and page per subjob (book 11, pages 1-5 by subjob in the template), and per alt job |
 | `WHM_TP_CONFIG.lua` | TP bonus pieces for weaponskills (Moonshade Earring +250) |
 | `WHM_HUD.lua` | Order of this job's HUD sections and rows |
-| `WHM_REFILL.lua` | Consumables for `//gs c rf` (not in the template: you create it) |
+| `WHM_REFILL.lua` | Consumables for `//gs c rf` on WHM, added to the common list or replacing it; every line commented at first ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `WHM_CURE_CONFIG.lua`, `auto_tier_enabled` and `message_color` are not
 read: the auto-tier switch is the Cure Auto-Tier mode.

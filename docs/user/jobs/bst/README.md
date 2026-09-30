@@ -101,7 +101,7 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 | `am [on/off]` | Auto Medicine |
 | `checksets` | Set items you do not have with you |
 | `wa` / `wo` | Wardrobe audit / wardrobe organizer |
-| `rf` | Refill consumables from your Mog Case, Sack and Satchel (your `BST_REFILL.lua` if you have one, a default list otherwise) |
+| `rf` | Refill consumables from your Mog Case, Sack and Satchel (the common list, plus or instead of your `BST_REFILL.lua`) |
 | `naked` | Remove every piece |
 | `reload` | Reload the job file |
 | `ls` / `dressup` | Lockstyle again / DressUp handling |
@@ -202,7 +202,7 @@ All in `<YourName>/bst/` (plain Lua files; `//gs c reload` after an edit).
 | `BST_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want |
 | `BST_MACROBOOK.lua` | Macro book and page, per subjob and per dual-box partner job |
 | `BST_HUD.lua` | Order of the HUD sections and rows on BST |
-| `BST_REFILL.lua` | Optional: what `//gs c rf` restocks on BST (not in the generic template; without it a default list is used) |
+| `BST_REFILL.lua` | What `//gs c rf` restocks on BST on top of or in place of the common list (every line commented in the generic template: the common list) |
 | `BST_ECOSYSTEM_DATA.lua` | Ecosystem strengths and weaknesses. Nothing reads it today |
 
 Your sets are in `<YourName>/bst/bst_sets.lua`. Files shared by every job

@@ -68,6 +68,7 @@ the sets files (structure and set names only).
 | `_master/config/blu/BLU_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |
 | `_master/config/blu/BLU_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/blu/BLU_TP_CONFIG.lua` | 39 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.BLUTPConfig` |
+| `_master/config/blu/BLU_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/config_global/AUTO_ABILITIES.lua` | - | Template of `<Character>/_common/combat/AUTO_ABILITIES.lua`: both BLU options `false` |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |
 | `_master/sets/blu_sets.lua` | 182 | Template sets: every set the code reads, all empty |

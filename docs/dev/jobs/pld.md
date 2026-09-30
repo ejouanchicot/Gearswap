@@ -69,6 +69,7 @@ numbers are avoided because they drift.
 | `_master/config/pld/PLD_MACROBOOK.lua` | 76 | Book 15/18/20 per subjob, dual-box table |
 | `_master/config/pld/PLD_TP_CONFIG.lua` | 75 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
 | `_master/config/pld/PLD_BLU_MAGIC.lua` | 203 | `_G.BluMagicConfig`: AOE spell table, dynamic / manual rotation |
+| `_master/config/pld/PLD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/pld_sets.lua` | 835 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
 | `_master/Kaories/pld/pld_sets.lua` | 777 | Kaories overlay sets (no Sortie or /SCH sets, see Known issues) |
 | `shared/data/job_abilities/PLD_JA_DATABASE.lua` + `pld/*.lua` | 13 + 194 | JA descriptions for `ability_message_handler` (messages only) |
@@ -582,7 +583,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 | `<char>/pld/PLD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt][sub]` | book 15 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/pld/PLD_TP_CONFIG.lua` -> `_G.PLDTPConfig` | Moonshade 250, Sequence 500 | file | `PLD_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
 | `<char>/pld/PLD_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | `aoe_manager.lua` (captured when the module is first required) |
-| `<char>/pld/PLD_REFILL.lua` | not in the template (overlay only) | player-created | refill system (fallback list without it) |
+| `<char>/pld/PLD_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); overlays have their own list | file | refill system (the common list without a list in it) |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance | shared | `is_on_cooldown` in aoe/rune managers, `is_recast_ready` in AbilityHelper |
 | `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry |
 

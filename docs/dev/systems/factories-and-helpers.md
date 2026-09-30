@@ -317,7 +317,7 @@ flowchart TD
 - **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
 - **Locking.** `equip_craft_gear` uses GearSwap's synchronous `enable()` rather than `gs enable all`, because the command would land after `equip()`. The lock is applied 2.0 s later (`lock_after_delay`); that coroutine carries no session check. When a variant switch changes nothing, only the lock is re-asserted.
 - **Session flag.** While it is set (`CraftManager.is_active()`, read through the `_G.CraftManager` export):
-  - refill switches to `<char>/_common/sets/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
+  - refill switches to `<char>/_common/inventory/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
   - Combat Mode does not enable the weapon slots it locked (`combat_mode.lua` local `craft_active`);
   - WHM's own `OffenseMode` `Melee ON` weapon lock (`WHM_COMMANDS.lua` `job_state_change`, and the WHM entry's `file_unload`) skips its `enable()`;
   - Combat Mode's wrapper does not lay the `hold()` locks again after an update (`combat_mode.lua` `reassert_holds`: WHM `Melee ON`, THF `RangeLock`, the Hoxne Ampulla).
@@ -358,7 +358,7 @@ Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, 
 |---|---|---|
 | `<char>/_common/inventory/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'` |
 | `<char>/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
-| `<char>/_common/sets/CRAFT_REFILL.lua` | refill list while crafting | the job's refill list |
+| `<char>/_common/inventory/CRAFT_REFILL.lua` | refill list while crafting | the usual refill list (job, then common) |
 
 `ModuleCache` caches the set files and `CRAFT_CONFIG` per sandbox, so an edit needs a reload.
 
@@ -684,7 +684,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 |---|---|---|
 | Warp commands | `CommonCommands` + `WarpInit.init()` on every load | [warp.md](warp.md) |
 | Stealth (`//gs c stealth`, Alt+Z / Alt+X) | `CommonCommands` + `StealthTimers.start()` | [stealth.md](stealth.md) |
-| Refill (`//gs c rf`) | `CommonCommands` | the list comes from `<Char>/<job>/inventory/<JOB>_REFILL.lua` (overlays only) |
+| Refill (`//gs c rf`) | `CommonCommands` | the common list of `<Char>/_common/inventory/REFILL_CONFIG.lua`, which `<Char>/<job>/inventory/<JOB>_REFILL.lua` can extend or replace (template: all comments) |
 | AutoMedicine | `AutoMedicine.ensure()` + common key `#numpad0` | |
 | Doom handling | `debuff/doom_manager.lua` from each job's STATUS / BUFFS module, or through `LifecycleManager` (BLU) | |
 | Recast announce (party message on a refused recast) | `CooldownChecker` -> `precast/recast_announce.lua`, per `RECAST_CONFIG.party_announce` | every job calls CooldownChecker |

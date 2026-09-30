@@ -97,5 +97,5 @@ modes and keys, see [keybinds](../../guides/keybinds.md)), `BRD_SONG_CONFIG.lua`
 dummy songs, tier fallback), `BRD_TIMING_CONFIG.lua` (gap between songs), `BRD_HUD.lua`
 (HUD order), `BRD_LOCKSTYLE.lua` (style 7), `BRD_MACROBOOK.lua` (book 40 page 1 by
 default, other books per subjob and per dual-box partner job), `BRD_TP_CONFIG.lua`, and
-`BRD_REFILL.lua` if you create one. What each file holds:
+`BRD_REFILL.lua` (every line commented at first: the common refill list applies). What each file holds:
 [README.md](README.md#configuration-files-for-this-job).

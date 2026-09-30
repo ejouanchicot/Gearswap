@@ -72,6 +72,7 @@ numbers are avoided because they drift.
 | `_master/config/war/WAR_TP_CONFIG.lua` | 195 | `_G.WARTPConfig`: Savagery / Agoge, Fencer JP, pieces, weapons, Fencer detection |
 | `_master/config/war/WAR_LOCKSTYLE.lua` | 71 | `default = 4`, `by_subjob`, `get_style` |
 | `_master/config/war/WAR_MACROBOOK.lua` | 106 | `solo[sub]`, `dualbox[alt_job][sub]`, `default` (book 22 page 1) |
+| `_master/config/war/WAR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/war_sets.lua` | 541 | Template sets (flat) |
 | `shared/data/job_abilities/WAR_JA_DATABASE.lua` + `war/war_{mainjob,subjob,sp}.lua` | 13 + ... | JA data for the ability message hooks (not read by WAR logic) |
 | `shared/utils/messages/formatters/magic/message_buffs.lua` | - | `show_buff_status` used by the buff chains (WAR has no job formatter) |
@@ -83,7 +84,7 @@ reads the character name), `init_gear_sets` includes `war/sets/war_sets.lua`, an
 `job_update` also calls `_G.LagDebugger.on_job_update()`. `war/`:
 `WAR_MACROBOOK` uses book 3 instead of 22-30; `WAR_STATES` adds `SubtleBlow` and
 `Hoxne` to `HybridMode` and lists `Chango` second; `WAR_CUSTOM` holds only the
-commented examples (the `FullEmpy` test mode was removed on 2026-09-30); `WAR_REFILL` exists only there. Sets are modular:
+commented examples (the `FullEmpy` test mode was removed on 2026-09-30); its `WAR_REFILL` holds a list (the template's is all comments). Sets are modular:
 `war/{war_sets,armor,capes,weapons}.lua`; weapon sets are created by a loop in
 `war_sets.lua`. `Kaories/` and `_master/Kaories/` contain no WAR files.
 
@@ -468,7 +469,7 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 | `<char>/war/WAR_TP_CONFIG.lua` | 5 merits, Agoge, 20 JP gifts | file | `WSPrecastHandler` via `_G.WARTPConfig` (captured on first action) |
 | `<char>/war/WAR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 4 (all subjobs) | file; factory fallback 4 (`WAR_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
 | `<char>/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
-| `<char>/war/WAR_REFILL.lua` | not in the template (overlay only) | player-created | `//gs c refill` (fallback list without it) |
+| `<char>/war/WAR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `//gs c refill` (the common list without a list in it) |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 

@@ -56,6 +56,7 @@ from `H2H_WS_DATABASE.lua`.
 | `_master/config/mnk/MNK_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/mnk/MNK_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |
 | `_master/config/mnk/MNK_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
+| `_master/config/mnk/MNK_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/mnk_sets.lua` | 142 | Template sets: every set the code reads, all empty |
 
 Shared files changed for MNK:

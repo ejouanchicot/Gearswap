@@ -52,6 +52,7 @@ What DRG adds on top of the shared pipeline:
 | `_master/config/drg/DRG_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/drg/DRG_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |
 | `_master/config/drg/DRG_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
+| `_master/config/drg/DRG_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/drg_sets.lua` | 160 | Template sets: every set the code reads, all empty |
 
 Already there before the job: `shared/data/job_abilities/DRG_JA_DATABASE.lua`

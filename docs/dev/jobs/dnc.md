@@ -70,6 +70,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/dnc/DNC_MACROBOOK.lua` | 78 | Book/page per subjob and per dual-box partner job |
 | `_master/config/dnc/DNC_TP_CONFIG.lua` | 68 | Moonshade piece, weapon TP bonus table (Aeneas, Centovente), `_G.DNCTPConfig` |
 | `_master/config/dnc/DNC_WS_CONFIG.lua` | 71 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25, `should_use_climactic` |
+| `_master/config/dnc/DNC_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/dnc_sets.lua` | 1040 | Template sets (flat; data, size not a defect) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
@@ -399,7 +400,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 | `<char>/dnc/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 4 (WAR 5) (factory 1/1) | `MacrobookManager` |
 | `<char>/dnc/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | `TPBonusCalculator` (main and sub weapons) |
 | `<char>/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | `ClimaticManager` |
-| `<char>/dnc/DNC_REFILL.lua` | none in the template | refill system |
+| `<char>/dnc/DNC_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | refill system |
 | Hard-coded | step recast 220, Presto 236 and level 77 (`execute_step`), samba costs (`SAMBAS`), `CAST_SPACING` 2 s, Climactic window 5 s, `WS_MIN_TP` 1000, auto-jump 1000 TP | code |
 
 ## State & lifetime

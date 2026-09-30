@@ -156,7 +156,7 @@ In `<YourName>/thf/`:
 | `THF_LOCKSTYLE.lua` | Lockstyle number (the template uses `default` only) |
 | `THF_MACROBOOK.lua` | Macro book / page per subjob and per dual-box alt job |
 | `THF_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
-| `THF_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used |
+| `THF_REFILL.lua` | What `//gs c rf` restocks on THF on top of or in place of the common list (every line commented at first: the common list; [configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,

@@ -122,7 +122,7 @@ The cast-by-name command runs only when no other command has that first word:
 | `checksets` | Set items missing from your inventory and wardrobes |
 | `wa` (`wardrobeaudit`) | Wardrobe items no set file uses |
 | `wo` (`worganize`) `[preview\|scan\|keep\|alt\|recover...]` | Wardrobe organizer |
-| `rf` (`refill`) | Restock consumables from `RDM_REFILL.lua` (you create it) |
+| `rf` (`refill`) | Restock consumables: the common list, plus or instead of `RDM_REFILL.lua` |
 | `naked` (or `equip naked`) | Remove every piece |
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again |
@@ -189,7 +189,7 @@ In `<YourName>/rdm/`:
 | `RDM_MACROBOOK.lua` | Macro book and page per subjob (book 2, page 1 in the template), and per alt job |
 | `RDM_TP_CONFIG.lua` | TP bonus pieces for weaponskills (Moonshade Earring +250) |
 | `RDM_HUD.lua` | Order of this job's HUD sections and rows |
-| `RDM_REFILL.lua` | Consumables for `//gs c rf` (not in the template: you create it) |
+| `RDM_REFILL.lua` | Consumables for `//gs c rf` on RDM, added to the common list or replacing it; every line commented at first ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, the files every job reads that matter here:
 `COMMON_KEYBINDS.lua` (common keys), `combat_mode.lua` / `treasure_mode.lua`

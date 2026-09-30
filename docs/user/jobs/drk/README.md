@@ -133,7 +133,7 @@ In `<YourName>/drk/`:
 | `DRK_LOCKSTYLE.lua` | Lockstyle number per subjob |
 | `DRK_MACROBOOK.lua` | Macro book / page per subjob and per dual-box alt job |
 | `DRK_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
-| `DRK_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used |
+| `DRK_REFILL.lua` | What `//gs c rf` restocks on DRK on top of or in place of the common list (every line commented at first: the common list; [configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and

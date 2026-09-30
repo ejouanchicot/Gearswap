@@ -66,6 +66,7 @@ function, not a line number.
 | `_master/config/geo/GEO_LOCKSTYLE.lua` | `default = 5`, `by_subjob`, `get_style`, dead `style` field |
 | `_master/config/geo/GEO_MACROBOOK.lua` | Book 5 page 1 for every subjob; dual-box block empty |
 | `_master/config/geo/GEO_TP_CONFIG.lua` | `_G.GEOTPConfig`: `pieces` (Moonshade 250), `weapons = {}` |
+| `_master/config/geo/GEO_REFILL.lua` | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/config_global/AUTO_ABILITIES.lua` | Template of the option file (`geo_entrust`, `geo_full_circle` false) |
 | `_master/sets/geo_sets.lua` | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_geo.lua` + `data/jobs/geo_messages.lua` | Indi / Geo cast line with element colour, nuke refinement messages |
@@ -362,7 +363,7 @@ T = in `_master/sets/geo_sets.lua`.
 | `<char>/geo/GEO_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 5 page 1; `dualbox` empty | `MacrobookManager` (factory fallback book 1) |
 | `<char>/geo/GEO_TP_CONFIG.lua` -> `_G.GEOTPConfig` | Moonshade 250 in `pieces` | TP bonus calculator |
 | `<char>/_common/combat/AUTO_ABILITIES.lua` `geo_entrust`, `geo_full_circle` | false, false | `AutoOptions.on` from `GeoAutoAbilities.apply` |
-| `<char>/geo/GEO_REFILL.lua` | none in the template (the alt overlay has one) | refill system (`FALLBACK_LIST` without it) |
+| `<char>/geo/GEO_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the alt overlay has its own list | refill system (the common list without a list in it) |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
 | PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` |
 

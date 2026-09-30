@@ -60,5 +60,5 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 modes and keys, see [keybinds](../../guides/keybinds.md)), `DNC_WS_CONFIG.lua`
 (Climactic weaponskills, minimum TP, target HP), `DNC_HUD.lua` (HUD order),
 `DNC_LOCKSTYLE.lua` (style 2), `DNC_MACROBOOK.lua` (book 4 page 1 by default, /WAR book
-5, other books per dual-box partner job), `DNC_TP_CONFIG.lua`, and `DNC_REFILL.lua` if
-you create one. What each file holds: [README.md](README.md#configuration-files-for-this-job).
+5, other books per dual-box partner job), `DNC_TP_CONFIG.lua`, and `DNC_REFILL.lua`
+(every line commented at first: the common refill list applies). What each file holds: [README.md](README.md#configuration-files-for-this-job).

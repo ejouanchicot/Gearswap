@@ -180,7 +180,7 @@ Without `--source`, `S = 'Tetsouo'`. `_select_overlay(T)`:
 | default source | any other name | none: generic `_master/` files only |
 | `--source Kaories` | any name | `_master/Kaories/` |
 
-- A new character cloned with the default source and no overlay gets no `<JOB>_REFILL.lua` files, because `_master/config/<job>/` has none; refill uses its fallback list. It does get `_common/inventory/WARDROBE_CONFIG.lua`, copied from the generic template `_master/config_global/WARDROBE_CONFIG.lua` (since 2026-09-30); every key there is commented out, so the wardrobe organizer runs on its defaults (`shared/utils/wardrobe/lib/config.lua`: W1/W2 for the used gear, the other unlocked wardrobes for the rest).
+- A new character cloned with the default source and no overlay gets the generic `<JOB>_REFILL.lua` of each of its jobs (`_master/config/<job>/`, since 2026-09-30: every line commented) and the `REFILL_CONFIG.lua` template, whose `default_list` holds the six medicines of the built-in list; so `rf` refills the common list on every job until the player edits one of these files. It also gets `_common/inventory/WARDROBE_CONFIG.lua`, copied from the generic template `_master/config_global/WARDROBE_CONFIG.lua` (since 2026-09-30); every key there is commented out, so the wardrobe organizer runs on its defaults (`shared/utils/wardrobe/lib/config.lua`: W1/W2 for the used gear, the other unlocked wardrobes for the rest).
 - Building Kaories with `--source Kaories` and without it gives the same folder except the `@author` lines of generic files.
 
 ## character_db.lua
@@ -221,7 +221,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `<job>/keys/<JOB>_CUSTOM.lua` | `KeybindManager` / custom states, see [keybinds-and-custom.md](../systems/keybinds-and-custom.md) | step 4a | - |
 | `<job>/display/<JOB>_LOCKSTYLE/_MACROBOOK` | LockstyleManager / MacrobookManager factories, see [factories-and-helpers.md](../systems/factories-and-helpers.md) | step 4a | - |
 | `<job>/display/<JOB>_HUD.lua` | `shared/utils/ui/hud_job_config.lua` | - | `//gs c ui roworder`; kept on re-clone |
-| `<job>/inventory/<JOB>_REFILL.lua` | `resolve_list_for_player` (`shared/utils/inventory/refill/config_resolver.lua`) | step 4a, when an overlay or template has it | - |
+| `<job>/inventory/<JOB>_REFILL.lua` | `resolve_list_for_player` (`shared/utils/inventory/refill/config_resolver.lua`) | step 4a (generic template: all comments, so the common list applies; an overlay's list wins) | - |
 | `whm/combat/WHM_CURE_CONFIG.lua` | `shared/utils/whm/cure_manager.lua` | step 4a | - |
 | `_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua` | entries (file level / `get_sets`) | step 4c | - |
 | `_common/keys/COMMON_KEYBINDS.lua` | `shared/utils/keybinds/common_keybinds.lua` | step 4c | - |
@@ -238,7 +238,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
 | `_common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` (also the auditor, `wardrobe_auditor.lua` `config_exclusions`) | step 4c (generic template since 2026-09-30; Tetsouo and Kaories overlays replace it) | - |
 | `_common/inventory/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
-| `_common/inventory/REFILL_CONFIG.lua` (refill bags) | `shared/utils/inventory/refill/config_resolver.lua` | step 4c | - |
+| `_common/inventory/REFILL_CONFIG.lua` (refill bags, common list `default_list` / `subjobs`) | `shared/utils/inventory/refill/config_resolver.lua` | step 4c | - |
 | `_common/inventory/CRAFT_REFILL.lua` (template: empty list) | `config_resolver.lua` | step 4 | Tetsouo's |
 | `_common/sets/craft_sets.lua` and the overlay's loose set files | `craft_commands.lua` | step 3 | Tetsouo's `bonecraft_sets.lua`, `fishing_sets.lua`; Gab's `goldsmithing_sets.lua` |
 | `_common/dualbox/DUALBOX_CONFIG.lua` | `DualBoxManager.initialize` | step 6 (generated) | - |
@@ -295,7 +295,7 @@ Full redeploy (`clone_character.py` on an existing character):
 2. Optional: create `_master/<Name>/` with the same layout (`entry/<Name>_<JOB>.lua`, `sets/<job>_sets.lua` or `sets/<job>/`, `config/<job>/`, `config_global/`). Without `entry/`, the generic entries are used and renamed. It is picked up automatically when the target is `<Name>`.
 3. Run `CLONE_CHARACTER.bat`. Answer the role, partner and region prompts.
 4. Dual-box: a MAIN gets `config/alt/` from the clone; edit the partner's `config/DUALBOX_CONFIG.lua` (`alt_character` / `main_character` and `group`) to name the new character. For automatic HP priorities, set `unity = 'max'` in its `_common/combat/HP_PRIORITY.lua` if its Unity leader is rank 1, and run `//gs c gearscan` once in game.
-5. A character created without an overlay gets the commented `WARDROBE_CONFIG.lua` template (organizer defaults until a key is uncommented) and no refill lists. Add the lists by hand, or save them in `_master/<Name>/` and re-clone.
+5. A character created without an overlay gets the commented `WARDROBE_CONFIG.lua` template (organizer defaults until a key is uncommented) and the commented `<JOB>_REFILL.lua` templates, so every job refills the common list of `REFILL_CONFIG.lua`. Edit those files by hand, or save the lists in `_master/<Name>/` and re-clone.
 6. In game: `//lua r gearswap`, `//gs c checksets`, and `//gs c wo scan` if the warp-item list is wanted.
 
 ## How to add a job to the templates
@@ -308,7 +308,7 @@ Full redeploy (`clone_character.py` on an existing character):
 ## Interactions
 
 - [dualbox.md](../systems/dualbox.md): reads the generated `DUALBOX_CONFIG.lua`, `config/alt/` (with `_master/config/alt/` as fallback) and the runtime role, state and window files.
-- [equipment-and-inventory.md](../systems/equipment-and-inventory.md): refill reads `<JOB>_REFILL.lua`, `config/craft/CRAFT_REFILL.lua` and every capitalised top-level folder under `data/`; HP priority reads `_common/combat/HP_PRIORITY.lua` and `saved/gear_augments.lua` (written by `//gs c gearscan`).
+- [equipment-and-inventory.md](../systems/equipment-and-inventory.md): refill reads `<JOB>_REFILL.lua`, `_common/inventory/REFILL_CONFIG.lua` (bags and the common list), `_common/inventory/CRAFT_REFILL.lua` and every capitalised top-level folder under `data/`; HP priority reads `_common/combat/HP_PRIORITY.lua` and `saved/gear_augments.lua` (written by `//gs c gearscan`).
 - [wardrobe-organizer.md](../systems/wardrobe-organizer.md): reads `WARDROBE_CONFIG.lua` and writes `WARP_ITEMS_OWNED.lua`.
 - [ui-overlay.md](../systems/ui-overlay.md) and [messages.md](../systems/messages.md): read `UI_CONFIG`, `ui_settings`, `UI_COLOR_CONFIG`, `message_modes` and `REGION_CONFIG`.
 - [keybinds-and-custom.md](../systems/keybinds-and-custom.md): `COMMON_KEYBINDS.lua`, `<JOB>_CUSTOM.lua`, `temp_binds.lua`, `combat_mode.lua`.
@@ -323,7 +323,7 @@ Full redeploy (`clone_character.py` on an existing character):
 - Step 6 always overwrites `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua`. A copy of them in an overlay has no effect.
 - `ALL_VALID_JOBS` (Python, 16) and `ALL_JOBS` (Lua, 17) are separate lists. DB jobs skip the Python list.
 - Overlays are untracked: back them up yourself before editing, and remember that `git diff` never shows them.
-- The refill foreign-item scan loads `*_REFILL.lua` from every top-level `data/` entry whose name starts with an uppercase letter. A new character, or a backup folder inside `data/`, joins it.
+- The refill foreign-item scan loads `*_REFILL.lua` and `REFILL_CONFIG.lua` from every top-level `data/` entry whose name starts with an uppercase letter. A new character, or a backup folder inside `data/`, joins it.
 - `.gitignore` ignores itself, so a fresh clone of the public repository has no ignore rules for live folders (by design, per its comment).
 
 ## For maintainers / AI

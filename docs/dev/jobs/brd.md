@@ -69,6 +69,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/brd/BRD_TP_CONFIG.lua` | 70 | `_G.BRDTPConfig` (Moonshade, Aeneas, Centovente) |
 | `_master/config/brd/BRD_LOCKSTYLE.lua` | 26 | `default = 7`, `by_subjob` (never read: no `get_style`) |
 | `_master/config/brd/BRD_MACROBOOK.lua` | 46 | Book/page per subjob and per dual-box partner job |
+| `_master/config/brd/BRD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/brd_sets.lua` | 519 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_brd.lua` + `data/jobs/brd_messages.lua` | 513 + 269 | BRD chat messages |
 | `shared/utils/messages/formatters/magic/message_precast.lua` | 135 | `debugprecast` output used by `job_post_precast` |
@@ -457,7 +458,7 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
 | `<char>/brd/BRD_SONG_CONFIG.lua` -> `_G.BRDSongConfig` | 11 packs, 5 dummies, Etudes, `VICTORY_MARCH_REPLACE`, `SHORT_NAMES`, `SONG_REFINE` | rotation manager, refinement, router (`is_dummy_song`), commands (`ETUDES`) |
 | `<char>/brd/BRD_TIMING_CONFIG.lua` -> `_G.BRDTimingConfig` | `after_song` 3.0, `after_locked_song` 1.0, `nt_combo_delay` 2.0 | song queue `gap()`, `//gs c nt` |
 | `<char>/brd/BRD_TP_CONFIG.lua` -> `_G.BRDTPConfig` | Moonshade 250; Aeneas 500, Centovente 1000 | `WSPrecastHandler` -> `TPBonusCalculator` (main **and** sub weapon) |
-| `<char>/brd/BRD_REFILL.lua` | none in the template | refill system |
+| `<char>/brd/BRD_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | refill system |
 | Constants | `START_WINDOW` 2.5, `JA_FIRST_WAIT` 3.0, `END_MARGIN` 3.0, `CAST_TIMEOUT` 12, `MAX_RETRIES` 2 (`song_queue.lua`); `BASE_SLOTS` 2, `LEDGER_MAX_AGE` 1200 (`song_slots.lua`); Marcato recast id 48, `wait 2` (`try_marcato`) | code |
 
 ## State & lifetime

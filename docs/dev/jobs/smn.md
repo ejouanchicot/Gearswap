@@ -48,10 +48,10 @@ Verified on 2026-09-28:
 | Alt command configs (`_master/config/alt/SMN_ALT_COMMANDS.lua`, `SMN_ALT_CUSTOM.lua`) | repo | yes |
 | `character_db.lua`: SMN in the author's roster and in the all-jobs list | repo | yes |
 | Generic entry `_master/entry/Tetsouo_SMN.lua` | repo | yes |
-| Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK` in `_master/config/smn/` | repo | yes |
+| Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK`, `SMN_REFILL` (all comments: the common list) in `_master/config/smn/` | repo | yes |
 | Generic flat sets `_master/sets/smn_sets.lua` | repo | yes |
 | Author's copies: entry, `smn/`, modular `smn/sets/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
-| `SMN_REFILL.lua`, `SMN_TP_CONFIG.lua`, `SMN_JA_DATABASE.lua`, SMN message formatter | nowhere | - |
+| `SMN_TP_CONFIG.lua`, `SMN_JA_DATABASE.lua`, SMN message formatter | nowhere | - |
 | `clone_character.py` `ALL_VALID_JOBS` | 16 jobs, SMN included (no PUP) | yes |
 
 Consequence: any clone can get SMN, from the generic template (manual job
@@ -332,7 +332,7 @@ it stays on after the first cast.
 | `smn/display/SMN_MACROBOOK.lua` | book 1, pages 1-4 | `MacrobookManager` |
 | `SKILLUP_STATE` knobs in `SMN_COMMANDS.lua` | 5.0 s cast-to-release, 1.5 s release-to-next | the loop; `skillup <n>` changes the second |
 | Carbuncle auto-summon delay | `initial_load_delay + 2.0` (10 s) | entry `user_setup` |
-| Refill | none: `FALLBACK_LIST` in `shared/utils/inventory/refill/config_resolver.lua` | `refill` |
+| Refill | `smn/inventory/SMN_REFILL.lua`, template all comments: the common list of `_common/inventory/REFILL_CONFIG.lua` (`shared/utils/inventory/refill/config_resolver.lua`) | `refill` |
 
 ## State & lifetime
 
@@ -386,7 +386,7 @@ it stays on after the first cast.
 ## Extending
 
 - Templating SMN is done (2026-09-28): generic entry, `smn/`, flat
-  sets and `ALL_VALID_JOBS`. Still missing: an `SMN_REFILL.lua` list.
+  sets and `ALL_VALID_JOBS`; a commented `SMN_REFILL.lua` since 2026-09-30.
 - New Blood Pact: add the name to the right list in
   `blood_pact_classifier.lua` and to the reference doc.
 - New Blood Pact category: a list and a branch in `classify`, and the set
@@ -463,8 +463,9 @@ it stays on after the first cast.
   loop was off, or raises under `pcall` when no `//gs c` command ran yet
   (`MessageFormatter` still nil in `SMN_COMMANDS.lua`).
 - `Raise II` is not classified and gets no Blood Pact set.
-- No `SMN_REFILL.lua`: `refill` uses the hard-coded `FALLBACK_LIST` and moves
-  anything else back to the Case.
+- The author's live `smn/` has no `SMN_REFILL.lua` (the template's is all
+  comments): `refill` uses the common list of `REFILL_CONFIG.lua` (the six
+  medicines) and moves anything else back to the Case.
 - No `SMN_JA_DATABASE.lua`; the ability message handler's job list has no SMN,
   so the first SMN job ability after a load walks every job database. Blood
   Pacts go straight to the SMN spell database by their type.

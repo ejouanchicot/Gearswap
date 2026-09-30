@@ -75,8 +75,9 @@ the sets files (structure and set names only).
 | `_master/config/rdm/RDM_MACROBOOK.lua` | 42 | `default` book 2 page 1, `solo[sub]`, empty `dualbox` |
 | `_master/config/rdm/RDM_SABOTEUR_CONFIG.lua` | 41 | `auto_trigger_spells` (Distract III, Gravity II), `wait_time = 2` |
 | `_master/config/rdm/RDM_TP_CONFIG.lua` | 75 | `pieces` (Moonshade 250), `get_weapon_bonus`; sets `_G.RDMTPConfig` itself |
+| `_master/config/rdm/RDM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/rdm_sets.lua` | 562 | Template sets (flat) |
-| `_master/Kaories/rdm/*`, `_master/Kaories/rdm/rdm_sets.lua` | 7 files, 634 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; adds `RDM_REFILL.lua`; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |
+| `_master/Kaories/rdm/*`, `_master/Kaories/rdm/rdm_sets.lua` | 7 files, 634 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; its own `RDM_REFILL.lua` list; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |
 | `_master/Gabvanstronger/rdm/*`, `_master/Gabvanstronger/rdm/rdm_sets.lua` | 5 files, 930 | Overlay: its own `EngagedMode` / `IdleMode` / weapon values, keys, custom modes, lockstyle and macro book |
 | `shared/utils/messages/formatters/jobs/message_rdm.lua` + `data/jobs/rdm_messages.lua` | 169 + 108 | RDM chat messages (errors, Phalanx swap, storm) |
 | `shared/utils/messages/formatters/jobs/message_rdm_midcast.lua` + `data/systems/rdm_midcast_messages.lua` | 203 + 25 | `debugmidcast` trace lines |
@@ -418,7 +419,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 | `<char>/rdm/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
 | `<char>/rdm/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
 | `<char>/rdm/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
-| `<char>/rdm/RDM_REFILL.lua` | none in the template | overlay / player | `//gs c rf` |
+| `<char>/rdm/RDM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | template / overlay / player | `//gs c rf` |
 | `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` |
 | `<char>/_common/keys/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua`, `NUKE_TIERS.lua` | 11 families, nukes | file | `get_spell_tiers` |

@@ -65,6 +65,7 @@ function, not a line number.
 | `_master/config/blm/BLM_MP_CONFIG.lua` | `mp_threshold = 1000` |
 | `_master/config/blm/BLM_ELEMENTAL_CONFIG.lua` | `auto_hachirin`, `check_storm`, `check_day`, `check_weather` |
 | `_master/config/blm/BLM_TP_CONFIG.lua` | `_G.BLMTPConfig` with a `moonshade` entry (see Known issues) |
+| `_master/config/blm/BLM_REFILL.lua` | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/blm_sets.lua` | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_blm.lua` + `data/jobs/blm_messages.lua` | BLM chat messages (cycles, refinement, errors) |
 | `shared/utils/messages/formatters/jobs/message_blm_midcast.lua` + `data/systems/blm_midcast_messages.lua` | `debugmidcast` trace lines for the router |
@@ -440,7 +441,7 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 | `<char>/_common/combat/ELEMENTAL_BELT.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
 | `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
 | `<char>/blm/BLM_TP_CONFIG.lua` -> `_G.BLMTPConfig` | `moonshade = {name, tp_bonus = 250}` | file | `WSPrecastHandler` -> TP calculator, which reads `pieces` / `get_weapon_bonus`, neither defined |
-| `<char>/blm/BLM_REFILL.lua` | none in the template | - | `refill/config_resolver.lua` (`FALLBACK_LIST` without it) |
+| `<char>/blm/BLM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | file; the common list without it | `refill/config_resolver.lua` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime

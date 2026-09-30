@@ -62,9 +62,10 @@ the sets file (structure and set names only).
 | `_master/config/whm/WHM_LOCKSTYLE.lua` | 52 | `default = 3`, `by_subjob` (never read) |
 | `_master/config/whm/WHM_MACROBOOK.lua` | 85 | `default` book 11 page 1, `solo[sub]` pages 1-5, empty `dualbox` |
 | `_master/config/whm/WHM_TP_CONFIG.lua` | 73 | `pieces` (Moonshade 250), `get_weapon_bonus`, sets `_G.WHMTPConfig` |
+| `_master/config/whm/WHM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/whm_sets.lua` | 820 | Template sets (flat) |
 
-There is no `WHM_REFILL.lua` in `_master/`, and no live copy is maintained.
+`WHM_REFILL.lua` is the commented template (the common list of `REFILL_CONFIG.lua` applies); no live copy is maintained.
 
 ## How it works
 

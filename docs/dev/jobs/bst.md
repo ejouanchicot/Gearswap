@@ -72,6 +72,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_PET_DATA.lua` | 179 | 25 jug pets (broth, species, ecosystem, job), `ecosystems` index, three list getters -> `_G.BSTBeastPetData` |
 | `_master/config/bst/BST_TP_CONFIG.lua` | 172 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 178 | Ecosystem correlation matrix; **no reader anywhere** (its header says so) |
+| `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/Tetsouo/bst/inventory/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
 | `_master/Tetsouo/entry/Tetsouo_BST.lua` | 400 | Character overlay entry: the template plus `LagDebugger.on_job_update()` in `job_update` and the modular sets path |
 | `_master/sets/bst_sets.lua` | 834 | Template sets (flat) |
@@ -500,7 +501,7 @@ carried, overwritten at load and read by nothing, were removed on 2026-09-28).
 | `<Char>/bst/combat/BST_PET_DATA.lua` -> `_G.BSTBeastPetData` | 25 pets | file | `ecosystem_manager.lua` (`job` field unused); plain `require` in `get_sets` |
 | `<Char>/bst/combat/BST_TP_CONFIG.lua` -> `_G.BSTTPConfig` | Moonshade 250, `fencer_jp_gifts = 4` | file | `WSPrecastHandler` -> `tp_bonus_calculator.lua`; plain `require` in `get_sets` |
 | `<Char>/bst/combat/BST_ECOSYSTEM_DATA.lua` | correlation matrix | file | **nothing** |
-| `<Char>/bst/inventory/BST_REFILL.lua` (overlay only) | medicines, Pet Food Theta (`all`), food; `/DNC` variant | file; refill fallback list without it | refill system ([equipment and inventory](../systems/equipment-and-inventory.md)) |
+| `<Char>/bst/inventory/BST_REFILL.lua` | overlay: medicines, Pet Food Theta (`all`), food; `/DNC` variant; template: all comments | file; the common list of `REFILL_CONFIG.lua` without a list in it | refill system ([equipment and inventory](../systems/equipment-and-inventory.md)) |
 | `<Char>/_common/display/LOCKSTYLE_CONFIG.lua` | `initial_load_delay 8` | entry fallback table | entry |
 | `<Char>/_common/combat/RECAST_CONFIG.lua` (plain `require`), `REGION_CONFIG.lua`, `UI_CONFIG.lua` | - | shared | entry |
 

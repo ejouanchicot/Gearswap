@@ -148,7 +148,7 @@ In `<YourName>/sam/`:
 | `SAM_LOCKSTYLE.lua` | Lockstyle number (the template uses `default` only) |
 | `SAM_MACROBOOK.lua` | Macro book / page per subjob (the dual-box table is empty) |
 | `SAM_TP_CONFIG.lua` | Hagakure job points, TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
-| `SAM_REFILL.lua` (optional) | What `//gs c rf` restocks; without it a built-in list is used |
+| `SAM_REFILL.lua` | What `//gs c rf` restocks on SAM on top of or in place of the common list (every line commented at first: the common list; [configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `AUTO_ABILITIES.lua`
 (`sam_hasso`), `COMMON_KEYBINDS.lua`, `WEAPON_CONFIG.lua`,

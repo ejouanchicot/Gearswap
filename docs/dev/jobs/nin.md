@@ -58,6 +58,7 @@ and spell messages (`NIN_JA_DATABASE`, `NINJUTSU_DATABASE`).
 | `_master/config/nin/NIN_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/nin/NIN_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |
 | `_master/config/nin/NIN_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
+| `_master/config/nin/NIN_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/nin_sets.lua` | 173 | Template sets: every set the code reads, all empty |
 
 Shared files changed for NIN (registries only):

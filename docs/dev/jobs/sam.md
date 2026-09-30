@@ -59,6 +59,7 @@ function; line numbers are deliberately not used.
 | `_master/config/sam/SAM_TP_CONFIG.lua` | 110 | `_G.SAMTPConfig`: `hagakure_jp_gifts`, pieces, weapons, `get_weapon_bonus`, `get_hagakure_bonus` |
 | `_master/config/sam/SAM_LOCKSTYLE.lua` | 32 | `default = 2`, `by_subjob` (no `get_style`) |
 | `_master/config/sam/SAM_MACROBOOK.lua` | 62 | `default`, `solo[sub]` (book 2 page 1), empty `dualbox` |
+| `_master/config/sam/SAM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/sam_sets.lua` | 524 | Template sets (flat) |
 | `_master/config_global/AUTO_ABILITIES.lua` | | `sam_hasso = false` (read through `shared/utils/core/auto_options.lua`) |
 | `shared/data/job_abilities/SAM_JA_DATABASE.lua` + `sam/sam_{mainjob,subjob,sp}.lua` | | JA data for the ability message hooks |

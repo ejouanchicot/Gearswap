@@ -155,7 +155,7 @@ What the project's shared systems do on SMN, checked in the code.
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, SMN may cover your whole group with Accession when a charge is left |
 | Warp | Every warp command. Warp spells only with a subjob that casts them (/BLM); otherwise rings and items |
-| Refill | No `SMN_REFILL.lua`: `//gs c rf` uses the default list (Panacea, Remedy, Holy Water...). Write one in `<YourName>/smn/` to choose |
+| Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua` (Panacea, Remedy, Holy Water... by default); `<YourName>/smn/inventory/SMN_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 | Craft / fishing | `//gs c craft`, `fish`: gear locked until `uncraft` |
 | Your own modes and gear rules | `SMN_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Midcast watchdog | Puts your idle set back when the game never confirms the end of a cast ([watchdog](../../features/watchdog.md)); `FastCast` (0) is its fallback estimate |
@@ -186,7 +186,7 @@ In `<YourName>/smn/`:
 | `SMN_HUD.lua` | Order of the HUD sections and rows on SMN (also written by `//gs c ui order`) |
 | `SMN_LOCKSTYLE.lua` | Lockstyle number (1), per subjob through `get_style` |
 | `SMN_MACROBOOK.lua` | Macro book and page per subjob; dual-box block empty |
-| `SMN_REFILL.lua` | Optional, not provided: items `//gs c rf` keeps in your inventory |
+| `SMN_REFILL.lua` | Items `//gs c rf` keeps in your inventory on SMN, on top of or in place of the common list; every line commented at first |
 
 Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua` and `treasure_mode.lua` (written by their commands),

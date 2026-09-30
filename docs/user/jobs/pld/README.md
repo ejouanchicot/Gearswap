@@ -146,7 +146,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Dual Wield tiers | Only with two weapons (/NIN or /DNC) and a `sets.DW` family, which the template does not have |
 | Obi / Orpheus | Automatic on elemental weaponskills (Sanguine Blade, Aeolian Edge...) and damaging spells (Banish, Banishga, magical Blue Magic) |
 | Your own modes (`PLD_CUSTOM.lua`) | Modes with a key and gear rules, without code; empty by default ([keybinds guide](../../guides/keybinds.md#your-own-modes-job_customlua)) |
-| Refill | `//gs c rf` restocks from the list in `PLD_REFILL.lua`, a file you create; without it a default list is used ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
+| Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua`; `PLD_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 | Doom | `sets.buff.Doom` goes on and neck, rings and waist stay locked until Doom is gone |
 | Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
 | Recast announce | An action refused on recast can tell the party, per action, from `_common/combat/RECAST_CONFIG.lua` |
@@ -167,7 +167,7 @@ In `<YourName>/pld/`:
 | `PLD_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (3 in the template) |
 | `PLD_MACROBOOK.lua` | Macro book and page per subjob, and per dual-box alt job |
 | `PLD_TP_CONFIG.lua` | TP bonus pieces and weapons |
-| `PLD_REFILL.lua` | Not provided: create it for `//gs c rf` |
+| `PLD_REFILL.lua` | Consumables for `//gs c rf` on PLD, added to the common list or replacing it; every line commented at first |
 
 Files shared by every job are in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,

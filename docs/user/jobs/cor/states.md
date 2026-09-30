@@ -93,4 +93,4 @@ GearSwap.
 `<Char>/cor/`: `COR_STATES.lua`, `COR_KEYBINDS.lua`, `COR_CUSTOM.lua` (your own
 modes and keys, see [keybinds](../../guides/keybinds.md)), `COR_HUD.lua` (HUD order),
 `COR_LOCKSTYLE.lua` (style 3), `COR_MACROBOOK.lua` (book 3 page 1), `COR_TP_CONFIG.lua`,
-and `COR_REFILL.lua` if you create one. What each file holds: [README.md](README.md#configuration-files-for-this-job).
+and `COR_REFILL.lua` (every line commented at first: the common refill list applies). What each file holds: [README.md](README.md#configuration-files-for-this-job).
