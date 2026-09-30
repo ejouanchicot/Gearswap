@@ -20,7 +20,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `_master/sets/<job>_sets.lua` | yes, 17 files | Generic flat set files, same 17 jobs (`pup_sets.lua` is a skeleton) |
 | `_master/config/<job>/` | yes, 16 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
 | `_master/config/alt/` | yes, 33 files | Dual-box alt command tables (22 `_ALT_COMMANDS`, 5 `_ALT_CUSTOM`, 6 `.lua.example`). Deployed only to a character cloned as MAIN |
-| `_master/config_global/` | yes, 16 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WARDROBE_CONFIG` (since 2026-09-30: every key commented out, so a clone runs on the organizer defaults until the player uncomments one), `WEAPON_CONFIG` |
+| `_master/config_global/` | yes, 17 files | `AUTOCURE_CONFIG` (since 2026-09-30, every key commented out), `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WARDROBE_CONFIG` (since 2026-09-30: every key commented out, so a clone runs on the organizer defaults until the player uncomments one), `WEAPON_CONFIG` |
 | `_master/Tetsouo/` | no, 78 files | Tetsouo overlay: 9 entries (BLM BRD BST COR DNC PLD SMN THF WAR, with the modular set include), `config/<job>/` for those jobs plus `config/craft/`, `config_global/{DUALBOX_CONFIG,REGION_CONFIG,SORTIE_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
 | `_master/Kaories/` | no, 38 files | Kaories overlay: 4 entries (COR GEO PLD RDM), 4 flat set files, `config/{cor,geo,pld,rdm}/`, `config_global/{combat_mode,COMMON_KEYBINDS,DUALBOX_CONFIG,REGION_CONFIG,WARDROBE_CONFIG}.lua` |
 | `_master/Gabvanstronger/` | no, 23 files | No entries (the generic ones are used), `config/{blu,rdm,thf}/`, `config_global/{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,WEAPON_CONFIG}.lua`, flat sets + `sets/0_AugGear_Gabvanstronger.lua` |
@@ -52,7 +52,8 @@ data/<Char>/
             alt/        <JOB>_ALT_CUSTOM.lua only (the generated tables are shared/data/alt/)
         inventory/      REFILL_CONFIG, CRAFT_CONFIG, CRAFT_REFILL, WARDROBE_CONFIG
         combat/         AUTO_ABILITIES, RECAST_CONFIG, DW_CONFIG, ELEMENTAL_BELT, WEAPON_CONFIG,
-                        STEALTH_CONFIG, HP_PRIORITY, SORTIE_CONFIG (only when the character has one)
+                        STEALTH_CONFIG, HP_PRIORITY, AUTOCURE_CONFIG, SORTIE_CONFIG (only when the
+                        character has one)
         sets/           gear shared by jobs (rings.lua, 0_AugGear_<Name>.lua), craft and
                         fishing set files
     <job>/              one job, by theme (CharPaths.job_group, from the end of the file name)
@@ -235,6 +236,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `_common/combat/WEAPON_CONFIG.lua` | `shared/utils/equipment/weapon_resolver.lua`, BLU `set_builder.lua` | step 4c | - |
 | `_common/combat/STEALTH_CONFIG.lua` | `shared/utils/stealth/stealth_config.lua` | step 4c; kept on re-clone | `//gs c stealth ...` |
 | `_common/combat/HP_PRIORITY.lua` | `HPPriority.settings()` in `shared/utils/equipment/hp_priority.lua` | step 4c | - |
+| `_common/combat/AUTOCURE_CONFIG.lua` (Auto Medicine: debuffs cured, items, `auto_medicine_start`) | `AutoCureSettings.load()` in `shared/utils/debuff/autocure_settings.lua` through `CharPaths.optional('common', 'AUTOCURE_CONFIG')`, over `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | step 4c | - |
 | `_common/combat/SORTIE_CONFIG.lua` (alt, Silmaril profiles, stances, targets, orders of `//gs c sortie`) | `shared/utils/sortie/sortie_commands.lua` through `CharPaths.optional('common', 'SORTIE_CONFIG')` | step 4c from the overlay only (no generic template; Tetsouo's overlay has it). Without it the character has no sortie command and the help hides it | - |
 | `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
 | `_common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` (also the auditor, `wardrobe_auditor.lua` `config_exclusions`) | step 4c (generic template since 2026-09-30; Tetsouo and Kaories overlays replace it) | - |
@@ -269,7 +271,7 @@ Method: run the clone on a scratch copy (`SmartCharacterCloner(base_dir=...).clo
 | Kaories | clone adds `config/CRAFT_CONFIG.lua`, `config/pld/PLD_CUSTOM.lua`, `config/pld/PLD_WS_CONFIG.lua` that the live folder lacks | stale live (missing templates; harmless defaults) |
 | Kaories | `config/DUALBOX_CONFIG.lua` | hand-edited since generation; a re-clone regenerates it with `group` |
 
-Every template added since (the `config_global` files `AUTO_ABILITIES`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `STEALTH_CONFIG`, `WEAPON_CONFIG`) reaches a live folder only through a re-clone or a manual copy; each reader falls back to defaults when the file is missing.
+Every template added since (the `config_global` files `AUTO_ABILITIES`, `AUTOCURE_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `STEALTH_CONFIG`, `WEAPON_CONFIG`) reaches a live folder only through a re-clone or a manual copy; each reader falls back to defaults when the file is missing.
 
 The Kaories overlay duplicates the generic templates for most files of `_master/Kaories/config/`: every template edit has to be made twice, or Kaories's next redeploy gets the old copy.
 

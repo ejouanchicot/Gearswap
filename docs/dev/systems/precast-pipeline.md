@@ -25,11 +25,13 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/debuff/precast_guard.lua` | 475 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy/Panacea |
-| `shared/utils/debuff/debuff_checker.lua` | 288 | Blocking-debuff tables (production and test mode) and lookups |
-| `shared/utils/debuff/auto_medicine.lua` | 202 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am` |
+| `shared/utils/debuff/precast_guard.lua` | 460 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy/Panacea |
+| `shared/utils/debuff/debuff_checker.lua` | 290 | Blocking-debuff tables (production and test mode) and lookups |
+| `shared/utils/debuff/auto_medicine.lua` | 213 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`; cold-load value from `auto_medicine_start` |
 | `shared/utils/debuff/doom_manager.lua` | 157 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
-| `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Auto-cure switches, cure item lists, test mode |
+| `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Shared defaults: auto-cure switches, cure item lists, test mode |
+| `shared/utils/debuff/autocure_settings.lua` | 61 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTOCURE_CONFIG.lua` over them, key by key; item names resolved to ids |
+| `_master/config_global/AUTOCURE_CONFIG.lua` | 26 | Template of `<Char>/_common/combat/AUTOCURE_CONFIG.lua` (every key commented out, showing the defaults) |
 | `shared/utils/precast/cooldown_checker.lua` | 146 | CooldownChecker: ability and spell recast checks with tolerance |
 | `shared/utils/precast/recast_announce.lua` | 83 | Party message (`/p`) for an action refused on recast, per `RECAST_CONFIG.party_announce` |
 | `_master/config_global/RECAST_CONFIG.lua` | 115 | Recast tolerance (2.0 s), party announce list, global `is_recast_ready` / `is_on_cooldown` |
@@ -688,7 +690,7 @@ outside this module chain.
 
 | Function | Effect | Callers |
 |---|---|---|
-| `init(state_table, mode_ctor)` | creates `state.AutoMedicine = M{'On','Off'}`, wraps `cycle/set/reset/toggle` to persist, restores the persisted value | every `[JOB]_STATES.lua` (`_master/config/*/`, live copies) |
+| `init(state_table, mode_ctor)` | creates `state.AutoMedicine = M{'On','Off'}`, wraps `cycle/set/reset/toggle` to persist, restores the persisted value (on a cold load, when `windower._auto_medicine` is nil: `auto_medicine_start` of the settings, `'Off'` or `false` = Off, anything else On) | every `[JOB]_STATES.lua` (`_master/config/*/`, live copies) |
 | `ensure()` | `init()` if the state is missing | `INIT_SYSTEMS.lua` (AutoMedicine block) |
 | `is_enabled()` | `state.AutoMedicine.value == 'On'`, else persisted value | PrecastGuard |
 | `toggle()`, `set(enabled)` | change and persist | `handle_command` |
@@ -793,7 +795,18 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 
 ## Configuration
 
-### `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` (shared, no per-character copy)
+### Auto-cure settings (`DEBUFF_AUTOCURE_CONFIG.lua` + the character's `AUTOCURE_CONFIG.lua`)
+
+`shared/config/DEBUFF_AUTOCURE_CONFIG.lua` holds the defaults (replaced by every
+update). `AutoCureSettings.load()` (`shared/utils/debuff/autocure_settings.lua`)
+copies them, then lays the character's `_common/combat/AUTOCURE_CONFIG.lua` over
+them key by key (`CharPaths.optional('common', 'AUTOCURE_CONFIG')`; missing file =
+defaults only). An entry of `silence_cure_items` / `paralysis_cure_items` may be a
+plain name (`'Echo Drops'`) or `{ name, id }`; a name without id is looked up in
+`res.items`, and an entry whose id stays unknown is dropped. A list given by the
+character replaces the default list whole. The template
+`_master/config_global/AUTOCURE_CONFIG.lua` has every key commented out; the clone
+copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/combat/`.
 
 | Key | Default | Read by |
 |---|---|---|
@@ -803,14 +816,15 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 | `silence_cure_items` | Echo Drops 4151, Remedy 4155 | `precast_guard.lua` |
 | `auto_cure_paralysis` | `true` | `precast_guard.lua` |
 | `paralysis_cure_items` | Remedy 4155, Panacea 4145 | `precast_guard.lua` |
+| `auto_medicine_start` | absent (= `'On'`) | `auto_medicine.lua`, cold load only; a job change keeps the current value |
 | `auto_cure_poison`, `auto_cure_blind` | `false` | nothing |
 | `debug` | `false` | test-mode messages in PrecastGuard |
 
-If the file fails to load, `precast_guard.lua` uses built-in defaults and
-`debuff_checker.lua` runs in production mode. Both modules read the config once at
-load; changes need a `gs reload`. Test mode maps WAR buffs to debuffs: Berserk ->
-Silence, Aggressor -> Amnesia, Warcry -> Stun, Defender -> Paralysis; the production
-lists are then empty.
+If the shared file fails to load, `autocure_settings.lua` uses built-in defaults
+(the same values). `precast_guard.lua` and `debuff_checker.lua` read the settings
+once at load; changes need a `gs reload`. Test mode maps WAR buffs to debuffs:
+Berserk -> Silence, Aggressor -> Amnesia, Warcry -> Stun, Defender -> Paralysis; the
+production lists are then empty.
 
 ### RECAST_CONFIG
 
@@ -919,8 +933,10 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
 - **New blocking debuff**: add it to the right production table in
   `debuff_checker.lua` (lowercase name, `priority`, `message`) and to
   `DEBUFF_DEFINITIONS` if it should have a test-mode stand-in.
-- **New cure item**: add `{ name, id }` to `silence_cure_items` or
-  `paralysis_cure_items` in `DEBUFF_AUTOCURE_CONFIG.lua`, in priority order.
+- **New cure item**: add it (a name, or `{ name, id }`) to `silence_cure_items` or
+  `paralysis_cure_items`, in priority order: in `DEBUFF_AUTOCURE_CONFIG.lua` for
+  every character, in a character's `_common/combat/AUTOCURE_CONFIG.lua` for that
+  one only.
   Auto-cure for a new debuff needs a new branch in `check_and_block` / `check_ja` and
   a message pair in `message_debuffs.lua`.
 - **New multi-charge ability**: add it to `MULTI_CHARGE_ABILITIES`

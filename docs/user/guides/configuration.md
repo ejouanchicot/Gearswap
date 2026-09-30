@@ -16,7 +16,8 @@ see [installation](../getting-started/installation.md)). After an edit,
             alt/             your own commands for the dual-box alt (optional)
         inventory/           refill, craft, wardrobe organizer
         combat/              automatic abilities, recasts, Dual Wield, belt, weapons,
-                             Sneak / Invisible, HP priority, Sortie (if you have one)
+                             Sneak / Invisible, HP priority, Auto Medicine,
+                             Sortie (if you have one)
         sets/                gear shared by your jobs (rings...), your craft and fishing sets
     war/, blm/ ...           one folder per job you play, by the same themes:
         display/             WAR_HUD, WAR_LOCKSTYLE, WAR_MACROBOOK
@@ -67,6 +68,7 @@ re-clone copies them back from the old folder (see
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 3.0 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
 | `HP_PRIORITY.lua` | The order your pieces go on in when a set changes. At each change (idle or engaged > precast > midcast > aftercast...) the pieces are ranked by the HP they gain over the ones you wear right then: those that raise your max HP go on first, those that lower it last, so your max HP never dips mid-swap. It changes the order only, never what you wear or your sets; a `priority` you write yourself on a piece is kept as it is. `enabled` (default `true`), `unity` (`'min'`; `'max'` when your Unity leader is rank 1, for the Unity HP / MP of Unity gear), `mp_jobs` (default `{'BLM', 'RDM', 'GEO'}`: MP counts after HP), `skip_jobs` (default `{}`: jobs left alone, their sets give their own priorities). A missing key keeps its default. For pieces your sets name without augments, run `//gs c gearscan` once (and again after new or upgraded gear): it saves their real augments in `saved/gear_augments.lua` |
+| `AUTOCURE_CONFIG.lua` | Auto Medicine: `auto_cure_silence` (default `true`) and `silence_cure_items` (default `{'Echo Drops', 'Remedy'}`, used before a spell), `auto_cure_paralysis` (default `true`) and `paralysis_cure_items` (default `{'Remedy', 'Panacea'}`, used before an ability; weaponskills are left to the game), tried in the order written; an item is just its name. `auto_medicine_start` (`'On'` by default, or `'Off'`): the value Auto Medicine has when the game starts; after that, a job change keeps what you set. Every line is commented out at first: the shared defaults apply, and a key you uncomment replaces only that one. A folder cloned before 2026-09-30 does not have it: copy `_master/config_global/AUTOCURE_CONFIG.lua` into `_common/combat/` |
 | `WARDROBE_CONFIG.lua` | Where `//gs c wo` puts your gear: used and unused bags, bags it never touches, and placement rules (below). Every line is commented out at first: the defaults apply |
 
 **Written from your clone answers:**
