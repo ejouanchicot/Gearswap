@@ -47,6 +47,7 @@ BuffConfig.DEFAULTS = {
         SAM = {'Hasso', 'Third Eye'},
         NIN = {'Utsusemi'},
         DNC = {'Haste Samba'},
+        WHM = {'Reraise'},
     },
     war_berserk  = {'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
     war_defender = {'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},

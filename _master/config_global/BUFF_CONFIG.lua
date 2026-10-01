@@ -64,6 +64,7 @@ return {
         SAM = {'Hasso', 'Third Eye'},
         NIN = {'Utsusemi'},
         DNC = {'Haste Samba'},
+        WHM = {'Reraise'},
     },
 
     -- WAR main: //gs c berserk and //gs c defender
