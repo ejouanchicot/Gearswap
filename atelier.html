@@ -1518,8 +1518,9 @@ function openSlot(ci, slot){
 // What the drawer offers for a slot: each copy in the bags the job can wear (with its own
 // augments), then the pieces the job's sets name and the bags do not hold; the most used first
 function pieceChoices(slot, current){
-  const seen = {}, d = data();
-  for (const x of d.sets) { const q = x.pieces[slot]; if (q) seen[q.name] = (seen[q.name] || 0) + 1; }
+  // how many sets use a piece: per copy (name and augments) when the sets name augments
+  const seen = {}, d = data(), copyKey = q => q.name + '|' + (q.augs || []).join('|');
+  for (const x of d.sets) { const q = x.pieces[slot]; if (q) { seen[q.name] = (seen[q.name] || 0) + 1; seen[copyKey(q)] = (seen[copyKey(q)] || 0) + 1; } }
   const owned = (ofAnySub('owned') || {})[slot], names = (ofAnySub('items') || {})[slot] || [];
   const list = owned ? owned.map(x => ({piece: {name: x.name, augs: x.augs}, owned: true}))
     : names.map(n => ({piece: {name: n}, owned: true}));
@@ -1527,7 +1528,7 @@ function pieceChoices(slot, current){
   for (const x of d.sets) { const q = x.pieces[slot];
     if (q && !have.has(q.name)) { have.add(q.name); list.push({piece: {name: q.name, augs: q.augs}, owned: false}); } }
   if (current && !have.has(current.name)) list.push({piece: current, owned: false});
-  for (const o of list) o.seen = seen[o.piece.name] || 0;
+  for (const o of list) o.seen = (o.piece.augs && o.piece.augs.length ? seen[copyKey(o.piece)] : seen[o.piece.name]) || 0;
   return list.sort((a, b) => (b.owned - a.owned) || (b.seen - a.seen) || a.piece.name.localeCompare(b.piece.name));
 }
 /* ---- pieces tried in the page ---- */

@@ -224,7 +224,10 @@ local function copy_augments(item)
 end
 
 --- Whether the main job can wear an item (res.items jobs: a set of job ids, or the raw bitmask).
+--- Every job can "wear" fishing bait (skill 48) and pet food (ammo with damage but no skill):
+--- neither is gear.
 local function wearable(info)
+    if info.skill == 48 or (info.skill == 0 and (info.damage or 0) > 0) then return false end
     local job = player and player.main_job_id
     if not (job and info.jobs) then return true end
     if type(info.jobs) == 'number' then return math.floor(info.jobs / 2 ^ job) % 2 == 1 end
