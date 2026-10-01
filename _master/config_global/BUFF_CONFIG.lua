@@ -27,15 +27,15 @@ return {
     -- (pets), DNC (its dance and samba come first anyway), WAR (berserk /
     -- defender below), BLU (the game does not tell which spells are set),
     -- DRG, THF. Add one if you like, e.g. BLU = {'Cocoon', 'Barrier Tusk'}.
-    -- '$GainSpell': the spell chosen in that state (RDM's GainSpell);
-    -- {'$EnSpell', '$EnSpell II'}: the first ready of the two, nothing if
-    -- one is already up. Tier I first: it hits every swing of the round
-    -- (tier II only the first one), so it does more with Temper II's triple
-    -- attack (BG-Wiki); it cannot overwrite a tier II already up.
+    -- '$GainSpell': the spell chosen in that state (RDM's GainSpell).
+    -- '$EnSpell': tier I only (Enfire...): it hits every swing of the round,
+    -- tier II only the first one, so tier I does more with Temper II's
+    -- triple attack (BG-Wiki). A list inside the list is a group, the first
+    -- ready goes: {'Refresh III', 'Refresh II'}.
     job = {
         BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
         RDM = {'Composure', 'Haste II', 'Haste', 'Refresh III', 'Refresh II', 'Refresh',
-               'Phalanx II', 'Phalanx', 'Temper II', 'Temper', '$GainSpell', {'$EnSpell', '$EnSpell II'},
+               'Phalanx II', 'Phalanx', 'Temper II', 'Temper', '$GainSpell', '$EnSpell',
                'Regen II', 'Regen', 'Protect V', 'Protect IV', 'Shell V', 'Shell IV',
                '$Barspell', '$BarAilment', 'Stoneskin', 'Blink', 'Aquaveil', '$Spike'},
         WHM = {'Afflatus Solace', 'Reraise IV', 'Reraise III', 'Haste', 'Protect V', 'Protect IV',
