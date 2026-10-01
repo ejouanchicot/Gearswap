@@ -253,8 +253,12 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   character (0x028 category 4, message 230 / 266) names its caster and the buff
   it gave; the instance that appears or is renewed is paired with it by buff id,
   in arrival order, either packet first, within 3 s. Ours when the caster is
-  this character; another bard's or a Trust's otherwise. One of ours whose end
-  time changes or that goes is dropped. Two songs of one family from two
+  this character; another bard's or a Trust's otherwise (seen in play: Joachim
+  and Ulmia, message 266). One of ours whose end time changes or that goes is
+  dropped. The game rounds one buff's end time differently from one packet to
+  the next (520, 521, 520... with no song sung): a shift of 2 s or less is the
+  same instance, and ownership follows it (also from the saved file after a
+  reload). Two songs of one family from two
   casters between two buff packets: the count is right, which instance is
   whose may be swapped. The instances of ours
   live on `windower._brd_song_owned` and in `<Character>/saved/brd_own_songs.lua`,
