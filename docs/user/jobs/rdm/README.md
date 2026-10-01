@@ -31,8 +31,9 @@ engaged and casting gear, the job does these things by itself:
 - **Cast commands** that read a mode (nuke element and tier, enspell, gain,
   bar-spell, spikes, storm) and a cast-by-name command for any action.
 - **`//gs c buff`** casts, in the RDM list (after Temper II), the
-  `GainSpell` mode's spell and the `EnSpell` mode's spell, tier II first
-  (Enfire II, else Enfire; nothing if one is up), whatever the weapon. Set in
+  `GainSpell` mode's spell and the `EnSpell` mode's spell, tier I first
+  (Enfire, else Enfire II; nothing if one is up): tier I hits every swing of
+  the round, tier II only the first, so tier I does more with Temper II, whatever the weapon. Set in
   `job.RDM` of `_common/combat/BUFF_CONFIG.lua`.
 
 ## All keys on this job
