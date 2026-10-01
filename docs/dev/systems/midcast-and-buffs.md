@@ -4,7 +4,7 @@
 
 The whole action lifecycle (precast -> midcast -> aftercast -> status rebuild, with the cleanup wrapper order) is on [precast-pipeline.md](precast-pipeline.md#action-lifecycle-end-to-end); this page details the midcast half.
 
-None of these modules registers a Windower event. `MidcastManager` keeps its debug flag on `windower._midcast_debug`, and `ScholarActions` polls buffs with `coroutine.schedule` under a `windower._sch_cast_seq` generation counter; everything else is module-local or on the sandbox `_G`, so it is rebuilt whenever GearSwap rebuilds the user environment (see [State & lifetime](#state--lifetime)).
+Only `BuffTimers` registers a Windower event (a raw `incoming chunk` listener for packet 0x063, started by `INIT_SYSTEMS.lua`). `MidcastManager` keeps its debug flag on `windower._midcast_debug`, and `ScholarActions` polls buffs with `coroutine.schedule` under a `windower._sch_cast_seq` generation counter; everything else is module-local or on the sandbox `_G`, so it is rebuilt whenever GearSwap rebuilds the user environment (see [State & lifetime](#state--lifetime)).
 
 References are to the code as of 2026-09-28. Functions are named (`file` `function`) where lines drift.
 
@@ -19,10 +19,12 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
-| `shared/utils/buffs/self_buff_manager.lua` | 385 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first; `$State` names, groups of alternatives), `cast(to_cast)` (shared action queue), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
+| `shared/utils/buffs/self_buff_manager.lua` | 427 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first; `$State` names, groups of alternatives; a buff under `refresh_below` recast), `cast(to_cast)` (shared action queue, `cancel_first`, buff guard), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
+| `shared/utils/buffs/buff_timers.lua` | 112 | `BuffTimers`: decodes packet 0x063 order 9 (`read`, also used by `stealth_timers.lua`), keeps each own buff's end time and full length, `left(id)`, `fraction_left(id)`, `start()` |
+| `shared/utils/buffs/buff_guard.lua` | 132 | `BuffGuard.check(step)`: the `ActionQueue` guard of each `//gs c buff` step (debuff landed: stop, skip, drop the spells, or cure first); `reset()` per press |
 | `shared/utils/buffs/buff_command.lua` | 70 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `weapon[<main hand>]`, then `subjob[sub]`) |
 | `shared/utils/buffs/buff_config.lua` | 89 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
-| `_master/config_global/BUFF_CONFIG.lua` | 66 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
+| `_master/config_global/BUFF_CONFIG.lua` | 90 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
 | `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 104 | Stratagem charge count derived from recast id 231 |
 
@@ -332,6 +334,8 @@ Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buff
 | `war_berserk` | `{'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Berserk')` (and any other `param`) |
 | `war_defender` | `{'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Defender')` |
 | `war_add_sam` | `true` | WAR `buff_war`: on /SAM, append the stance and Third Eye |
+| `refresh_below` | `10` | `collect` (`wearing_off`): a buff up with less than this percent of its length left is recast; `0` = never |
+| `cancel_first` | `{'Stoneskin'}` | `collect` / `cast`: such a buff, recast while up, gets a `cancel <buff>` step first (Cancel addon) |
 | `wait_after_spell` | `3.0` | `cast`: delay after a spell |
 | `wait_after_ability` | `0.5` | `cast`: delay after an ability |
 
@@ -342,7 +346,7 @@ Default `job` lists (`BuffConfig.DEFAULTS`, since 2026-10-01; names checked agai
 | Job | List |
 |---|---|
 | BLM | Stoneskin, Blink, Aquaveil, Ice Spikes |
-| RDM | Composure, Haste II, Haste, Refresh III, Refresh II, Refresh, Phalanx, Temper II, Temper, Protect V, Protect IV, Shell V, Shell IV, Stoneskin, Blink, Aquaveil |
+| RDM | Composure, Haste II, Haste, Refresh III, Refresh II, Refresh, Phalanx II, Phalanx, Temper II, Temper, `$GainSpell`, `$EnSpell` (tier I only), Regen II, Regen, Protect V, Protect IV, Shell V, Shell IV, `$Barspell`, `$BarAilment`, Stoneskin, Blink, Aquaveil, `$Spike` |
 | WHM | Afflatus Solace, Reraise IV, Reraise III, Haste, Protect V, Protect IV, Shell V, Shell IV, Auspice, Stoneskin, Blink, Aquaveil |
 | PLD | Majesty, Crusade, Reprisal, Enlight II, Enlight, Phalanx, Protect V, Protect IV, Shell IV |
 | RUN | Swordplay, Crusade, Temper, Phalanx, Regen IV, Refresh, Protect IV, Shell V, Shell IV, Foil, Aquaveil, Stoneskin, Blink |
@@ -364,7 +368,7 @@ No list on purpose (comment in `buff_config.lua` and the template): BRD (songs),
 - Entry forms: a name (`'Stoneskin'`), or a table `{name = ..., buff = ..., wait = ...}` (`delay` is read as `wait`); `{spell = ...}` looks only in `res.spells`, `{ability = ...}` only in `res.job_abilities`. A plain name is looked up as a job ability first, else a spell. Not found: skipped quietly.
 - Buff name: `entry.buff`, else the English name of the action's status (`res.buffs[data.status].en`: Enlight II gives Enlight), else the ability's own name; a spell without a status has no buff check.
 - Usable (`usable`), else skipped quietly: an ability must be in `windower.ffxi.get_abilities().job_abilities` (the game accounts for job and level); a spell must be learned (`get_spells()`) and listed for the main job at any level, or for the subjob at a level `<=` `player.sub_job_level`.
-- Then (`collect_item`, returns the outcome): buff in `buffactive` -> `active` line; recast not ready (`is_recast_ready`, the `RECAST_CONFIG.lua` global; spell recasts divided by 100) -> `cooldown` line with `math.ceil(recast)`; queued less than `CAST_COOLDOWN = 2.0` s ago (`os.clock`, double press) -> `spam`, skipped silently; else `queued`.
+- Then (`collect_item`, returns the outcome): buff in `buffactive` and not wearing off -> `active` line (wearing off: see [Refresh before the end](#refresh-before-the-end)); recast not ready (`is_recast_ready`, the `RECAST_CONFIG.lua` global; spell recasts divided by 100) -> `cooldown` line with `math.ceil(recast)`; queued less than `CAST_COOLDOWN = 2.0` s ago (`os.clock`, double press) -> `spam`, skipped silently; else `queued`.
 - Tiers (since 2026-10-01): `collect` keeps a `covered` table keyed by buff name. An entry whose buff is already covered is skipped before `collect_item` (no line in chat). After `collect_item`, an outcome `active`, `queued` or `spam` covers the item's buff; `cooldown` does not, so the next tier of the same buff is tried. An entry not found or not usable (not learned, level too low) covers nothing either. So with tiers written best first (Refresh III, Refresh II, Refresh) the first one learned, in reach and off recast goes. Tiers share their status in the game data (Haste II and Haste give Haste, Enlight II gives Enlight), which is what links them; an entry without a buff (a spell with no status) never covers or is covered. The check is `buffactive`, so the same buff put up by another player (Haste from a WHM) counts as `active` and no higher tier is cast over it. `SPECIAL` names are outside this rule.
 - Wait of a step: `entry.wait`, else the spell's `cast_time` (1 for an ability) + `WAIT_MARGIN = 3.0`.
 
@@ -378,6 +382,26 @@ Names with a rule of their own (`SPECIAL`, matched on the entry's name):
 | `Haste Samba` | the plain rule, plus a `tp` status entry (`value` = live TP, `extra` = 350) instead of the cast when `live_tp` is under 350 |
 
 `cast(to_cast)` sends each name once (a duplicate in the same call is dropped), stamps `last_use`, and pushes `input /ma "<name>" <me>` (a spell, `is_ability == false`, or an entry with `magic = true`) or `input /ja ...` onto the shared `ActionQueue` (`shared/utils/core/action_queue.lua`) with `{delay = <after>, tag = 'BUFF'}` and the step's wait plus that delay (an entry from `job_buff_extra` has no wait: 1 + 3 s), where `<after>` is BUFF_CONFIG `wait_after_spell` (default 3.0) for a spell and `wait_after_ability` (default 0.5) for an ability. In game a spell sent 1 s after the previous one ended was refused, then sent again by the queue (2026-10-01): hence the longer wait after a spell. The queue sends a step when the previous action has ended plus `delay`, or after the wait; a spell the game refused silently is sent again (see `action_queue.lua`). It is the same queue as `//gs c stealth` and `//gs c cleanse`.
+
+### Refresh before the end
+
+Since 2026-10-01 a buff that is up is not always `active`. `resolve` also keeps `buff_id` (the status id, or `res.buffs:with('en', buff)` for an `entry.buff` or an ability). `wearing_off(item, ctx)` is true when `refresh_below > 0`, the item has a `buff_id` and `BuffTimers.fraction_left(buff_id) * 100 < refresh_below`; an unknown time (nil) is never wearing off. Such an item goes on through the recast and double-press checks like a buff that is down. When its name is in `cancel_first` (case-insensitive), `item.cancel_first` is set and `cast` pushes `cancel <buff>` (wait 0.5 s, no delay, tag `BUFF`, no guard) right before it: Stoneskin by default, believed not to overwrite itself (to check in game). Needs the Cancel addon.
+
+`BuffTimers` (`buff_timers.lua`): `start()` registers a raw `incoming chunk` listener once per load (`_G._buff_timers_listener`), called from `INIT_SYSTEMS.lua` (block after the Stealth Timers one). On packet 0x063 with byte 5 = 9 it decodes the 32 buff ids (0x08, shorts) and end times (0x48, ints in 1/60 s since 2002-01-01 JST, wrap chosen nearest to now) with `read(data)` -> `{id, finish}`. The store `windower._buff_timers` (id -> `{finish, full}`) survives a reload: a new id, or an end time later than the known one by more than 3 s (`RENEWED`, a recast), sets `full = finish - now`; otherwise only `finish` moves; ids no longer in the packet are removed. The full length is not in the packet, so a buff already up when the listener first sees it counts from that moment (its `fraction_left` starts at 1). `left(id)` gives seconds left, `fraction_left(id)` 0 to 1, both nil when unknown.
+
+### Debuffs during the queue (`buff_guard.lua`)
+
+Since 2026-10-01 `cast` calls `BuffGuard.reset()` (clears `windower._buff_cure_tries`) when it has something to send, and pushes each buff step with `guard = BuffGuard.check` and `magic` (spell or not). The `ActionQueue` calls the guard just before the step goes ([stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua)). `check` reads the debuffs from `windower.ffxi.get_player().buffs` (`buffactive` lags in a coroutine):
+
+| Debuff (ids) | Step | Verdict |
+|---|---|---|
+| sleep (2, 19, 193), petrify (7), stun (10), terror (28), charm (14, 17) | any | `stop`: every `BUFF` step left is dropped, warning `<state>: the buffs left are dropped` |
+| Mute (29), Omerta (262) | spell | `stop_magic`: the spells left are dropped, the abilities go on |
+| Silence (6) | spell | first time this press: `before` the item of `CLEANSE_CONFIG.lua` (`Methods.best_item`, Echo Drops / Remedy), then the step; no item, an aura (`uncurable_debuffs`) or already tried: `stop_magic` |
+| Amnesia (16) | ability | `skip`: this ability is dropped |
+| Paralysis (4) | any (after the checks above) | first time this press: `before` Paralyna when `CleanseMethods.can_cast` says this character can cast it now (WHM, /WHM, SCH under Addendum: White; not when silenced / muted), else the item (Remedy); no way, an aura or already tried: the step goes anyway |
+
+A cure step is `input /ma "Paralyna" <me>` (wait cast time + 3 + 3 s, delay 3 s) or `input /item "<item>" <me>` (wait 5 s, delay 1 s), tag `BUFF`, without a guard; a warning `buff: <debuff>: <cure> first` goes to chat and a `BUFF` trace line to `trace.log`. One try per debuff and per press (`windower._buff_cure_tries`): if the cure did not take the debuff off, the rule without cure applies at the next step.
 
 `show_status(status, action_type)` shows the `active` / `cooldown` lines through `MessageBuffs.show_buff_status`, then the short-TP entries through `MessageFormatter.show_multi_status`.
 
@@ -450,7 +474,7 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 - Mote states: whatever a caller passes as `mode_state`; `state.Moving`; `state.MainInstrument` (BRD router).
 - Mote data: `classes.SpellMaps` and `job_get_spell_map` (P8b through `get_spell_map`).
 - Globals: `buffactive`, `player`, `world`, `areas.Cities`, `_G.SongRotationManager`, `is_recast_ready` (from `RECAST_CONFIG.lua`, tolerance 2.0 s).
-- Hard-coded constants: `CAST_COOLDOWN = 2.0`, `DEFAULT_AFTER_SPELL = 3.0`, `DEFAULT_AFTER_ABILITY = 0.5`, `WAIT_MARGIN = 3.0`, `HASTE_SAMBA_TP = 350` (buff engine); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `TUNING.lua` `stratagem_full_recharge`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
+- Hard-coded constants: `RENEWED = 3` (buff timers), `AFTER_SPELL = 3.0`, `AFTER_ITEM = 1.0` (buff guard cure steps), `CAST_COOLDOWN = 2.0`, `DEFAULT_AFTER_SPELL = 3.0`, `DEFAULT_AFTER_ABILITY = 0.5`, `WAIT_MARGIN = 3.0`, `HASTE_SAMBA_TP = 350` (buff engine); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `TUNING.lua` `stratagem_full_recharge`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
 
 ## State & lifetime
 
@@ -459,8 +483,9 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 - `MidcastTrace` `current`: module local, the spell last passed to `begin`.
 - `windower._sch_cast_seq`: generation of the latest scholar cast; pending polls of an older one stop.
 - `_G.SongRotationManager`: written by `BRD_MIDCAST.lua` on the first BRD midcast; read by `get_song_instrument`.
+- `windower._buff_timers` (own buff end times and lengths) and `windower._buff_cure_tries` (cure tries of the current `//gs c buff` press): survive a job change and `gs reload`, reset by `//lua reload gearswap`. `_G._buff_timers_listener`: raw event id, per load.
 - Module locals: `MidcastDeps` cache, `SelfBuffManager` `last_use` (double press), `ScholarActions` lazy `MessageFormatter`. All die with the user environment.
-- Coroutines: the `ScholarActions` buff polls (invalidated by `windower._sch_cast_seq`) and the `AbilityHelper.follow_up` polls it starts. The buff engine's steps wait in the shared `ActionQueue` on `windower._action_queue` (a queue under way goes on across a job change; a queue started after it gets a new generation). `send_command('wait N; ...')` chains (DNC `dance`, Utsusemi shadow cancel) are handed to Windower and cannot be cancelled by a reload or job change. No events, keybinds or text objects.
+- Coroutines: the `ScholarActions` buff polls (invalidated by `windower._sch_cast_seq`) and the `AbilityHelper.follow_up` polls it starts. The buff engine's steps wait in the shared `ActionQueue` on `windower._action_queue` (a queue under way goes on across a job change; a queue started after it gets a new generation). `send_command('wait N; ...')` chains (DNC `dance`, Utsusemi shadow cancel) are handed to Windower and cannot be cancelled by a reload or job change. No keybinds or text objects; one raw event (`BuffTimers`).
 
 ## Interactions
 
@@ -510,6 +535,9 @@ Open:
 - GEO keeps its own Light/Dark Arts toggles (`GEO_COMMANDS.lua`).
 - RDM's subjob-magic fallback is gated on `spell.type == 'Magic'` and never runs (`RDM_MIDCAST.lua` `route_midcast`); `MidcastFallback` covers those spells now, so the branch is dead code.
 - DRK passes the Enhancing database's `get_spell_family` as `database_func` for Enfeebling Magic (`DRK_MIDCAST.lua`).
+- `buff_guard.lua` checks Paralysis by id 4 only; `DEBUFF_REMOVAL.lua` also lists 566 for Paralysis, which the guard does not see.
+- A `cancel_first` step (`cancel Stoneskin`) has no guard: if Silence, Mute or Omerta lands before the recast, the buff is cancelled and the spell then dropped (`stop_magic`), so it ends down. Not seen in game, read from the code (2026-10-01).
+- Not checked in game yet (2026-10-01): `refresh_below` timings, Stoneskin not overwriting itself (`cancel_first`), the guard verdicts.
 - The `AOE_SPELLS` comment says `CommonCommands` answers `sneak`/`invi`/`erase` before the job block and sends them to the partner; since `53bf99f` alt keys are Mote's last lookup, so that reason no longer holds (`scholar_actions.lua`, above `AOE_SPELLS`).
 
 Fixed:

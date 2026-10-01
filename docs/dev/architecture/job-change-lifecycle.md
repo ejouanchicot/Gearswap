@@ -119,7 +119,7 @@ The full table (every block with its line range, and the seven-layer gear hook c
 | sync | restore the five debug flags from `windower._gs_debug`; `windower._gs_reload_count += 1`; `ModuleCache.install()` (normally already done by `config_loader`); `ImpactLock.install()` (also wraps `precast`, `aftercast`, `cancel_spell`), `DuplicateGear.install()` and `HPPriority.apply()` (equip hooks); LagDebugger |
 | sync | `AutoMedicine.ensure()`; `JobSyncWatchdog.start(player.main_job)`; SyncIPC hooks `ls`, `lockstyle`, `rf`, `refill` + `init_listener()` |
 | sync (+2 s inside) | `KeybindGuard.schedule()`: re-sends the binds 2 s later unless a newer load bumped `windower._keybind_guard_seq` |
-| sync | `StealthTimers.start()` |
+| sync | `StealthTimers.start()`; `BuffTimers.start()` (own buff end times, for `//gs c buff` `refresh_below`) |
 | sync | gear hook chain, innermost first: `ElementalBelt`, `DualWield`, `TreasureHunter`, `MidcastFallback`, `CustomStates` (the player's `<JOB>_CUSTOM.lua`), `CastTime` (+ `CastTracker.start()`), `CombatMode` |
 | +0.5 s | `WarpInit.init()`; `include` AutoMove + `AutoMove.start()` unless `_G.DISABLE_AUTOMOVE == true`; `StateDisplayOverride.init()` |
 | +2.0 s | `require` MidcastWatchdog, `_G.MidcastWatchdog`, `start()` |

@@ -151,6 +151,7 @@ The file runs top to bottom once per load. "sync" blocks run during the `include
 | 209-258 | +0.5 s | `WarpInit.init()`; AutoMove `include` + `start()` unless `_G.DISABLE_AUTOMOVE == true`; `StateDisplayOverride.init()` | `_G.AutoMove`, `_G.display_current_state` |
 | 278-283 | sync (fires +2.0 s) | `KeybindGuard.schedule()` re-sends the job's binds once the console is quiet | `windower._keybind_guard_seq` |
 | 287-292 | sync | `StealthTimers.start()`: raw `incoming chunk` listener for Sneak / Invisible end times, see [stealth.md](stealth.md) | `_G._stealth_listener`, `windower._stealth_*` |
+| 316-323 (2026-10-01) | sync | `BuffTimers.start()` (`shared/utils/buffs/buff_timers.lua`): raw `incoming chunk` listener for the end time and length of every own buff, read by `//gs c buff` for `refresh_below`, see [midcast-and-buffs.md](midcast-and-buffs.md#refresh-before-the-end); a load failure prints `show_module_load_failed('Buff Timers', ...)` | `_G._buff_timers_listener`, `windower._buff_timers` |
 | 301-306 | sync | `ElementalBelt.install()` (chain layer 1) | `cleanup_precast`, `cleanup_midcast` |
 | 311-316 | sync | `DualWield.install()` (layer 2) + raw `action`, `gain buff`, `lose buff` listeners | `handle_equipping_gear` |
 | 321-326 | sync | `TreasureHunter.install()` (layer 3) + `TreasureHunter.init()` (raw `action`, `incoming chunk`, `target change`, `zone change` listeners) | all three |
@@ -317,7 +318,7 @@ With Mote's `state.EquipStop` set to `midcast`, `filter_aftercast` cancels the a
 
 `shared/utils/core/cast_tracker.lua`, started by INIT_SYSTEMS. `start()` registers one raw `action` listener per sandbox (guard `_G._cast_tracker_listening`; the engine drops the listener at the next load). For every action packet whose actor is this character it stamps `windower._cast_tracker.last_action = os.clock()`, and `last_start` too for category 8 / param 24931 (a spell starts casting). The store lives on `windower`, so it survives a reload.
 
-Callers: the BRD song queue (`shared/jobs/brd/functions/logic/song_queue.lua`) and the shared action queue `shared/utils/core/action_queue.lua` (used by `//gs c stealth` and `//gs c cleanse`), to tell within a second or two that a `/ma` the game refused never started, instead of waiting for a timeout.
+Callers: the BRD song queue (`shared/jobs/brd/functions/logic/song_queue.lua`) and the shared action queue `shared/utils/core/action_queue.lua` (used by `//gs c stealth`, `//gs c cleanse` and `//gs c buff`; its steps may carry a `guard` checked just before they go, see [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua)), to tell within a second or two that a `/ma` the game refused never started, instead of waiting for a timeout.
 
 ## ModuleCache
 
@@ -577,7 +578,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 
 ### Events, texts, keybinds, coroutines
 
-- Listeners registered from this page's modules: `CastTracker` (raw `action`). Through INIT: DualWield (raw `action`, `gain buff`, `lose buff`), StealthTimers (raw `incoming chunk`), TreasureHunter (its trackers), DualBox sync IPC (`ipc message`), AutoMove and Warp. GearSwap unregisters all of them and deletes text/prim objects itself on every `load_user_files` (`refresh.lua:69-79`).
+- Listeners registered from this page's modules: `CastTracker` (raw `action`). Through INIT: DualWield (raw `action`, `gain buff`, `lose buff`), StealthTimers and BuffTimers (raw `incoming chunk`), TreasureHunter (its trackers), DualBox sync IPC (`ipc message`), AutoMove and Warp. GearSwap unregisters all of them and deletes text/prim objects itself on every `load_user_files` (`refresh.lua:69-79`).
 - Coroutines scheduled here and how each is invalidated:
 
 | Scheduled by | Callback | Invalidation |

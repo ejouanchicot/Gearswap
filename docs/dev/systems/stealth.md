@@ -2,7 +2,7 @@
 
 `//gs c stealth sneak | invi | both` (Alt+Z / Alt+X by default) puts Sneak or Invisible on this character and on every other member of the box group. A Scholar that needs the buff itself and has a stratagem charge covers the whole group with Accession and announces it; every other box picks its own best way from what the game says it can do right now (Spectral Jig > spell > ninjutsu with a tool > Silent Oil / Prism Powder > Evanessence > a partner casts it). A buff still up is cancelled (Cancel addon) before the new cast, since an active Sneak or Invisible blocks a new one. Actions go out through the shared action queue (`shared/utils/core/action_queue.lua`, also used by `//gs c cleanse`), which advances on the action's real end (raw `action` event) plus a delay, with a timed fallback and a resend when the game silently refused a spell or item. Each box reads the end time of its own two buffs from packet 0x063 order 9 and sends it to the group; a one-second loop warns before a buff wears off and redraws the alt window, which shows a Sneak and an Invi row per alt.
 
-Verified against the code on 2026-09-28 (system added 2026-09-26, trace module added 2026-09-28); queue section re-verified 2026-10-01, when the queue moved to `action_queue.lua` and gained `push_next`; main-DNC Jig rule verified 2026-10-01 (commit `ce45482`). The page names functions rather than line numbers; a line is given only where the line itself matters.
+Verified against the code on 2026-09-28 (system added 2026-09-26, trace module added 2026-09-28); queue section re-verified 2026-10-01, when the queue moved to `action_queue.lua` and gained `push_next`; main-DNC Jig rule verified 2026-10-01 (commit `ce45482`); step guard and the shared 0x063 decoding (`BuffTimers.read`) verified 2026-10-01. The page names functions rather than line numbers; a line is given only where the line itself matters.
 
 ## Files
 
@@ -11,7 +11,7 @@ Verified against the code on 2026-09-28 (system added 2026-09-26, trace module a
 | `shared/utils/stealth/stealth.lua` | 455 | Command router (`Stealth.handle`), `push` into the shared queue, per-box decision (`handle_self`), claim handling (`request` / `decide`), `status`, `check` |
 | `shared/utils/stealth/stealth_methods.lua` | 181 | Which ways this character has now: `has_jig`, `jig_recast`, `can_jig`, `can_cast`, `best_own`, `has_spell`, `item_count`, `cast_time`; fixed id tables |
 | `shared/utils/stealth/stealth_aoe.lua` | 148 | One Scholar for the group: `coverable`, claims (`record` / `winner` / `clear`), `status`, flat `distance`, `trace_distances`, `chain_time` |
-| `shared/utils/stealth/stealth_timers.lua` | 184 | Packet 0x063 order 9 listener, end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
+| `shared/utils/stealth/stealth_timers.lua` | 167 | Packet 0x063 order 9 listener (decoding by `BuffTimers.read`), end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
 | `shared/utils/stealth/stealth_trace.lua` | 103 | Trace only: own Sneak / Invisible gained / refreshed / lost, and who each Sneak / Invisible cast reached |
 | `shared/utils/stealth/stealth_config.lua` | 79 | Reads `<Character>/_common/combat/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
 | `shared/utils/messages/formatters/system/message_stealth.lua` | 98 | `show_skipped`, `show_covered`, `show_no_way`, `show_jig_recast`, `show_asked`, `show_wearing_off`, `show_setting`, `show_usage` |
@@ -26,7 +26,8 @@ Integration points outside the folder:
 - `shared/utils/dualbox/alt_window.lua` `stealth_lines` (called from `alt_lines`): a Sneak and an Invi row per alt.
 - `clone_character.py`: `('config', 'STEALTH_CONFIG.lua')` is in `KEPT_ON_RECLONE`, so a re-clone copies the player's file back from the backup. The template itself reaches `config/` through the `config_global` copy loop (overlay-aware, every `*.lua` of `_master/config_global/` and the overlay's `config_global/`).
 - `shared/utils/messages/formatters/ui/message_commands.lua`: `//gs c commands` lists `stealth help` and `stealth sneak | invi | both`, `stealth check`. `help` is not a subcommand: it falls to the usage screen like any unknown word.
-- `shared/utils/core/action_queue.lua` (137 lines, since 2026-10-01): the action queue, shared with `//gs c cleanse` ([cleanse.md](cleanse.md)).
+- `shared/utils/core/action_queue.lua` (180 lines, since 2026-10-01): the action queue, shared with `//gs c cleanse` ([cleanse.md](cleanse.md)) and `//gs c buff` ([midcast-and-buffs.md](midcast-and-buffs.md#buff-command-and-engine)).
+- `shared/utils/buffs/buff_timers.lua` `BuffTimers.read(data)`: the packet 0x063 decoding `read_packet` uses (moved there on 2026-10-01, shared with the buff refresh of `//gs c buff`).
 - `shared/utils/core/cast_tracker.lua`: `started_since(t)` / `acted_since(t)` tell the queue whether a sent spell / item started.
 - `shared/utils/scholar/scholar_actions.lua` `cast_with_stratagems` and `shared/utils/scholar/stratagem_charges.lua` `available`: the Accession chain and the charge count.
 - `shared/utils/dualbox/alt_group.lua` `get_alts()` (group members) and `shared/utils/dualbox/alt_states.lua` `get(name)` (their known jobs).
@@ -102,7 +103,7 @@ sequenceDiagram
 
 ### Action queue (`shared/utils/core/action_queue.lua`)
 
-Since 2026-10-01 the queue is its own module, shared by stealth and `//gs c cleanse` ([cleanse.md](cleanse.md)): one queue per character, so a stealth and a cleanse pressed together run one after the other instead of stepping on each other. `stealth.lua` keeps only a local `push(command, wait)` that calls `ActionQueue.push(command, wait, {delay = Config.get().delay, tag = 'STEALTH'})`.
+Since 2026-10-01 the queue is its own module, shared by stealth, `//gs c cleanse` ([cleanse.md](cleanse.md)) and `//gs c buff`: one queue per character, so a stealth and a cleanse pressed together run one after the other instead of stepping on each other. `stealth.lua` keeps only a local `push(command, wait)` that calls `ActionQueue.push(command, wait, {delay = Config.get().delay, tag = 'STEALTH'})`.
 
 ```mermaid
 flowchart TD
@@ -121,7 +122,8 @@ flowchart TD
 ```
 
 - The queue lives on `windower._action_queue` (`{steps, busy, token, waiting}`), its generation on `windower._action_gen_queue`, so both survive a reload.
-- Each step carries its own `delay` and `tag` (`opts` of `push`): stealth passes its `delay` setting and `STEALTH`, cleanse 1.0 s and `CLEANSE`.
+- Each step carries its own `delay` and `tag` (`opts` of `push`): stealth passes its `delay` setting and `STEALTH`, cleanse 1.0 s and `CLEANSE`, `//gs c buff` `wait_after_spell` / `wait_after_ability` and `BUFF`.
+- Guard (since 2026-10-01, `opts.guard`, `opts.magic`): `run_next` calls `step.guard(step)` under `pcall` just before the step goes. `nil` (or an error): the step goes. `'skip'`: this step is dropped. `'stop'`: this step and every waiting step with the same `tag` are dropped. `'stop_magic'`: the waiting steps of that tag with `magic` are dropped, and this step too when it is a spell (an ability is put back in front). `'before', steps`: those steps go first, then this one (its guard runs again then). Only `//gs c buff` sets a guard (`BuffGuard.check`, [midcast-and-buffs.md](midcast-and-buffs.md#debuffs-during-the-queue-buff_guardlua)); stealth and cleanse steps have none. `push_next` takes the same two options.
 - A command step ends on whichever comes first: the game reporting this character's action finished (`on_action`: category 3 weapon skill, 4 spell, 5 item, 6 job ability, or 8 with param 28787 = interrupted cast) followed by the step's `delay`, or its longest wait. Stealth's longest wait is `wait_after(kind, name)`: the base cast time from the fixed table plus `delay` (Fast Cast not counted: on the safe side). `cancel` steps wait 0.5 s.
 - A **function step runs first, then waits**: `run_next` calls it at once and `arm` leaves `waiting` nil, so only its longest wait ends it. Stealth's Scholar chain is one (it sends several actions of its own); cleanse uses an empty one to hold the queue for `partner_wait`.
 - `listen()` registers the `action` listener with `raw_register_event` once per load (`_G._action_queue_listener`): a plain `register_event` from a job file runs GearSwap's `refresh_globals` and `equip_sets` on every action packet. It is called from `push`, so a load registers it only when its first step is queued.
@@ -133,7 +135,7 @@ flowchart TD
 ### Timers (`stealth_timers.lua`)
 
 - `start()`, once per load (`_G._stealth_listener`): starts `StealthTrace.start()`, a raw `incoming chunk` listener for 0x063 with byte 5 = 9, and a one-second loop stopped by `windower._stealth_gen` when a newer load starts.
-- `read_packet`: 32 buff ids (u16 from offset 0x08) and 32 end times (u32 from 0x48), in 1/60 s since 2002-01-01 JST (`EPOCH` = 1009810800), wrapping every 2^32/60 s (about 2.27 years); `end_time` picks the wrap count nearest to now. Result in `os.time()` seconds, 0 = not up. A packet shorter than `0x48 + 128` bytes gives zeros.
+- `read_packet`: keeps Sneak (71) and Invisible (69) from `BuffTimers.read(data)` (`shared/utils/buffs/buff_timers.lua`, since 2026-10-01; the decoding was here before): 32 buff ids (u16 from offset 0x08) and 32 end times (u32 from 0x48), in 1/60 s since 2002-01-01 JST (`EPOCH` = 1009810800), wrapping every 2^32/60 s (about 2.27 years); `end_time` picks the wrap count nearest to now. Result in `os.time()` seconds, 0 = not up. A packet shorter than `0x48 + 128` bytes gives zeros. `BuffTimers` has its own listener on the same packet (all buffs, for `//gs c buff`).
 - `on_buffs` stores this character's entry in `windower._stealth_timers[name:lower()]` only when an end time changed, calls `StealthTrace.buff_change(old, entry, StealthTimers.left)` under `pcall`, then sends `send <alt> gs c stealth time <name> <sneak> <invi>` to every `AltGroup.get_alts()` member. Only one's own buffs come with a time, so each box reports its own.
 - `left(kind, name)`: seconds left, nil when unknown or past; `name` nil = this character.
 - `tick_once`: for every stored character and kind, when `alerts` is on and `left <= alert_before`, one `show_wearing_off` per end time (key `name..kind..end` in `windower._stealth_warned`); while any timer runs, `AltWindow.refresh()`.

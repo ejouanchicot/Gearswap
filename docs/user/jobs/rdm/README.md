@@ -30,11 +30,15 @@ engaged and casting gear, the job does these things by itself:
   from what is in your off hand and your subjob (dual wield on /NIN or /DNC).
 - **Cast commands** that read a mode (nuke element and tier, enspell, gain,
   bar-spell, spikes, storm) and a cast-by-name command for any action.
-- **`//gs c buff`** casts, in the RDM list (after Temper II), the
-  `GainSpell` mode's spell and the `EnSpell` mode's spell, tier I only
-  (Enfire...): tier I hits every swing of the round, tier II only the first,
-  so tier I does more with Temper II, whatever the weapon. Set in
-  `job.RDM` of `_common/combat/BUFF_CONFIG.lua`.
+- **`//gs c buff`** casts every self buff of the job: Composure, Haste II,
+  Refresh III, Phalanx II, Temper II, the `GainSpell` mode's spell, the
+  `EnSpell` mode's spell, Regen II, Protect V, Shell V, the `Barspell`,
+  `BarAilment` and `Spike` modes' spells, Stoneskin, Blink, Aquaveil (lower
+  tiers as fallbacks). Enspell is tier I only (Enfire...): tier I hits every
+  swing of the round, tier II only the first, so tier I does more with
+  Temper II, whatever the weapon. A buff with less than 10 % of its time left
+  is recast (`refresh_below`, Stoneskin cancelled first). Set in `job.RDM` of
+  `_common/combat/BUFF_CONFIG.lua`.
 
 ## All keys on this job
 
@@ -140,7 +144,7 @@ The cast-by-name command runs only when no other command has that first word:
 | `stealth sneak\|invi\|both [self]`, `stealth status\|check...` | Sneak / Invisible on you and your other boxes |
 | `waltz` / `aoewaltz` | Curing / Divine Waltz (/DNC) |
 | `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
-| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. Your list (`job.RDM`) by default: Composure, Haste II, Refresh III, Phalanx, Temper II, Protect V, Shell V, Stoneskin, Blink, Aquaveil, with the lower tiers behind (Haste; Refresh II, Refresh; Temper; Protect IV; Shell IV) for when the top one is not unlocked (Haste II level 96, Refresh III and Temper II 1200 job points) or is on recast. Of the tiers of one buff, the first one learned, in reach and off recast goes and the others are left out; a buff already up, even one cast by someone else, counts as up and gets no higher tier over it. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. Your list (`job.RDM`) by default: Composure, Haste II, Refresh III, Phalanx II, Temper II, the `GainSpell` mode's spell, the `EnSpell` mode's spell (tier I only), Regen II, Protect V, Shell V, the `Barspell` and `BarAilment` modes' spells, Stoneskin, Blink, Aquaveil, the `Spike` mode's spell, with the lower tiers behind (Haste; Refresh II, Refresh; Phalanx; Temper; Regen; Protect IV; Shell IV) for when the top one is not unlocked (Haste II level 96, Refresh III and Temper II 1200 job points) or is on recast. Of the tiers of one buff, the first one learned, in reach and off recast goes and the others are left out; a buff already up, even one cast by someone else, counts as up and gets no higher tier over it. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. A buff with less than 10 % of its time left is cast again (`refresh_below`; Stoneskin is cancelled first, Cancel addon); a debuff landing meanwhile is handled as in the [commands guide](../../guides/commands.md). No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
 | `!numpad-` | Jump Auto on / off, shown on /DRG only (see [commands](../../guides/commands.md#combat-helpers)) |
 | `jump` | /DRG jumps |
 | `watchdog [on\|off\|stats\|...]` | Midcast watchdog ([watchdog](../../features/watchdog.md)) |
