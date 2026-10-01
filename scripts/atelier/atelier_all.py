@@ -157,6 +157,16 @@ def item_ids():
     return ids
 
 
+def item_descs(wanted):
+    """The game's English description of these item ids (res/item_descriptions.lua)."""
+    path = os.path.join(os.path.dirname(RES_ITEMS), 'item_descriptions.lua')
+    texts = {}
+    for m in re.finditer(r'\[(\d+)\] = \{id=\d+,en="((?:[^"\\]|\\.)*)"', open(path, encoding='utf-8').read()):
+        if int(m.group(1)) in wanted:
+            texts[int(m.group(1))] = m.group(2).replace('\\n', '\n').replace('\\"', '"').replace('\\\\', '\\')
+    return texts
+
+
 def run_load(lua, ffxi, char, job, sub):
     proc = subprocess.run([lua, LOADER, char, job, sub, ffxi], cwd=DATA, capture_output=True, text=True)
     error = None if proc.returncode == 0 else ((proc.stderr or proc.stdout).strip().splitlines()[-1:] or ['?'])[0]
@@ -184,14 +194,17 @@ def add_icons(lua, ffxi, done, names):
         return
     ids = item_ids()
     found = {n: ids[n.lower()] for n in names if n.lower() in ids}
+    texts = item_descs(set(found.values()))
     for char, job, sub in done:
         data = read_export(export_path(char, job, sub))
         if data and data.get('items'):
-            icons = data.setdefault('icons', {})
+            icons, descs = data.setdefault('icons', {}), data.setdefault('descs', {})
             for slot_names in data['items'].values():
                 for n in slot_names:
                     if n in found:
                         icons.setdefault(n, found[n])
+                        if found[n] in texts:
+                            descs.setdefault(str(found[n]), texts[found[n]])
             write_export(export_path(char, job, sub), data)
     subprocess.run([lua, ICONS, ffxi, os.path.join(DATA, 'atelier', 'icons') + os.sep] + [str(i) for i in set(found.values())],
                    cwd=DATA)

@@ -160,6 +160,20 @@ button{font:inherit;color:inherit;cursor:pointer}
 .slot.hit{box-shadow:inset 0 0 0 2px var(--accent)}
 .detail footer{padding:12px 22px;font-size:13.5px;color:var(--muted);display:grid;gap:2px}
 .detail footer b{color:var(--ink);font-weight:600}
+.setstats{padding:14px 22px 16px;border-top:1px solid var(--line);display:grid;gap:10px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 28px}
+.statgrid h4{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:8px 0 4px}
+.statlist{list-style:none;margin:0;padding:0;font-size:13.5px}
+.statlist li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.statlist b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.statlist small{display:block;font-weight:400;font-size:11px;color:var(--faint)}
+.statlist li.over b{color:var(--r-dd)}
+.setstats p{margin:0;font-size:12.5px;color:var(--muted)}
+.conds summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.conds ul,.plain{margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.piecestats{display:grid;gap:6px}
+.piecestats .weapon{margin:0;font-weight:600}
+.piecestats .origin{margin:0;font-size:12.5px;color:var(--accent)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:12px;height:12px;border:1px solid var(--line-strong);background:var(--panel)}
@@ -279,7 +293,7 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques reçus (DT + PDT)', mdtEff:'Magiques reçus (DT + MDT)', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
@@ -304,7 +318,7 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical taken (DT + PDT)', mdtEff:'Magic taken (DT + MDT)', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
@@ -463,6 +477,239 @@ function cardMatch(card, q){
   return !q || card.variants.some(v => v.set.path.toLowerCase().includes(q) || Object.values(v.set.pieces).some(p => p.name.toLowerCase().includes(q)));
 }
 
+/* ---- item stats: read from the game's descriptions and the set's augments ---- */
+// key: [group, French label, English label, cap]. A stat not listed here is still
+// counted, under its own name ("Others"); "* skill" stats go to Skills.
+const STAT_DEF = {
+  hp:['def','HP','HP'], mp:['def','MP','MP'], def:['def','DEF','DEF'],
+  dt:['def','Dégâts reçus','Damage taken'], pdt:['def','Dégâts physiques reçus','Physical damage taken'],
+  mdt:['def','Dégâts magiques reçus','Magic damage taken'], pdt2:['def','Dégâts physiques reçus II','Physical damage taken II'],
+  mdt2:['def','Dégâts magiques reçus II','Magic damage taken II'], bdt:['def','Dégâts de souffle reçus','Breath damage taken'],
+  eva:['def','Évasion','Evasion'], meva:['def','Évasion magique','Magic evasion'], mdb:['def','Bonus déf. magique','Magic def. bonus'],
+  block:['def','Chance de blocage','Block chance'], sdb:['def','Bonus déf. bouclier','Shield def. bonus'],
+  ecrit:['def','Critiques ennemis','Enemy critical hit rate'], enmity:['def','Enmity','Enmity'], phalanx:['def','Phalanx','Phalanx'],
+  str:['attr','STR','STR'], dex:['attr','DEX','DEX'], vit:['attr','VIT','VIT'], agi:['attr','AGI','AGI'],
+  int:['attr','INT','INT'], mnd:['attr','MND','MND'], chr:['attr','CHR','CHR'],
+  acc:['off','Précision','Accuracy'], atk:['off','Attaque','Attack'], haste:['off','Haste','Haste',25],
+  da:['off','Double Attack','Double Attack'], ta:['off','Triple Attack','Triple Attack'], qa:['off','Quadruple Attack','Quadruple Attack'],
+  stp:['off','Store TP','Store TP'], crit:['off','Coups critiques','Critical hit rate'], critdmg:['off','Dégâts critiques','Critical hit damage'],
+  wsd:['off','Dégâts de WS','Weapon skill damage'], tpb:['off','TP Bonus','TP Bonus'], dw:['off','Dual Wield','Dual Wield'],
+  sb:['off','Subtle Blow','Subtle Blow'], sb2:['off','Subtle Blow II','Subtle Blow II'], scb:['off','Bonus skillchain','Skillchain bonus'],
+  pdl:['off','Limite dégâts physiques','Physical damage limit'], regain:['off','Regain','Regain'], counter:['off','Counter','Counter'],
+  racc:['off','Précision à distance','Ranged accuracy'], ratk:['off','Attaque à distance','Ranged attack'],
+  fc:['mag','Fast Cast','Fast Cast',80], macc:['mag','Précision magique','Magic accuracy'], mab:['mag','Bonus att. magique','Magic atk. bonus'],
+  mdmg:['mag','Dégâts magiques','Magic damage'], mbd:['mag','Dégâts magic burst','Magic burst damage',40],
+  mbd2:['mag','Dégâts magic burst II','Magic burst damage II'], cure:['mag','Cure potency','Cure potency',50],
+  cure2:['mag','Cure potency II','Cure potency II',30], curecast:['mag','Temps d\'incantation Cure','Cure casting time'],
+  cmp:['mag','Conserve MP','Conserve MP'], sird:['mag','Interruption réduite (SIRD)','Spell interruption down'],
+  enhdur:['mag','Durée renfort','Enhancing duration'], refresh:['mag','Refresh','Refresh'], regen:['mag','Regen','Regen'],
+  move:['mag','Vitesse de déplacement','Movement speed'], th:['mag','Treasure Hunter','Treasure Hunter'],
+};
+const STAT_GROUPS = [['def','Défense','Defense'], ['attr','Attributs','Attributes'], ['off','Combat','Combat'],
+  ['mag','Magie & divers','Magic & misc'], ['skill','Compétences','Skills'], ['other','Autres','Others']];
+// Every spelling met in the descriptions and augments, written as normName() gives it
+const STAT_ALIAS = {
+  'hp':'hp','mp':'mp','str':'str','dex':'dex','vit':'vit','agi':'agi','int':'int','mnd':'mnd','chr':'chr',
+  'accuracy':'acc','acc.':'acc','acc':'acc','attack':'atk','atk.':'atk',
+  'ranged accuracy':'racc','rng.acc.':'racc','ranged attack':'ratk','rng.atk.':'ratk',
+  'evasion':'eva','eva.':'eva','magic evasion':'meva','mag.eva.':'meva','mag.evasion':'meva','magic eva.':'meva',
+  'magic def.bonus':'mdb','m.def.b.':'mdb','mag.def.bns.':'mdb',
+  'magic accuracy':'macc','mag.acc.':'macc','mag.acc':'macc','magic atk.bonus':'mab','mag.atk.bns.':'mab','m.atk.b.':'mab',
+  'magic damage':'mdmg','mag.dmg.':'mdmg',
+  'damage taken':'dt','dt':'dt','physical damage taken':'pdt','phys.dmg.taken':'pdt','magic damage taken':'mdt','mag.dmg.taken':'mdt',
+  'physical damage taken ii':'pdt2','phys.dmg.taken ii':'pdt2','magic damage taken ii':'mdt2','mag.dmg.taken ii':'mdt2',
+  'breath damage taken':'bdt','breath dmg.taken':'bdt',
+  'haste':'haste','fast cast':'fc','double attack':'da','dbl.atk.':'da','triple attack':'ta','quadruple attack':'qa','quad attack':'qa',
+  'store tp':'stp','critical hit rate':'crit','crit.hit rate':'crit','critical hit damage':'critdmg','crit.hit damage':'critdmg',
+  'weapon skill damage':'wsd','tp bonus':'tpb','dual wield':'dw','subtle blow':'sb','subtle blow ii':'sb2',
+  'skillchain bonus':'scb','physical damage limit':'pdl','regain':'regain','counter':'counter',
+  'cure potency':'cure','cure potency ii':'cure2','cure spellcasting time':'curecast','conserve mp':'cmp',
+  'spell interruption rate down':'sird','spell interruption rate':'sird',
+  'enhancing magic duration':'enhdur','enh.mag.eff.dur.':'enhdur','phalanx':'phalanx','phalanx received':'phalanx',
+  'refresh':'refresh','regen':'regen','enmity':'enmity','magic burst damage':'mbd','magic burst damage ii':'mbd2',
+  'movement speed':'move','treasure hunter':'th','chance of successful block':'block',
+  'shield def.bonus':'sdb','enemy critical hit rate':'ecrit','trip.atk.':'ta','magic defense bonus':'mdb',
+  'mag.atk.bns':'mab','rng.acc':'racc','rng.atk':'ratk',
+};
+const normName = s => s.toLowerCase().replace(/["“”]/g, '').replace(/\.\s*/g, '.').replace(/\s+/g, ' ').replace(/^[\s/:]+|[\s/:]+$/g, '').trim();
+// A line that opens a condition (Set:, Latent effect:, Pet:, Unity ranking:...): what follows is not always on
+const COND = /^(?!DEF:|DMG:|Delay:)[A-Z][A-Za-z .()'\-]{1,30}:/;
+
+// The stat a phrase ends with: the longest known name at its end, the rest is free text
+function statOf(phrase){
+  const words = phrase.trim().split(/\s+/);
+  for (let k = 0; k < words.length; k++) {
+    const tail = normName(words.slice(k).join(' '));
+    const key = STAT_ALIAS[tail] || (/ skill$/.test(tail) && tail.split(' ').length <= 4 ? 'skill:' + tail : null);
+    if (key) return {key, label: words.slice(k).join(' ').replace(/^[\s/]+/, ''), rest: words.slice(0, k).join(' ')};
+  }
+  const short = words.length <= 5 && /[A-Za-z]/.test(phrase);
+  return short ? {key: 'x:' + normName(phrase), label: phrase.trim().replace(/^[\s/]+/, ''), rest: ''} : {key: null, rest: phrase.trim()};
+}
+const ATTRS = ['str','dex','vit','agi','int','mnd','chr'];
+// The keys of a phrase naming several stats for one value, or null
+function statsOf(phrase){
+  const name = normName(phrase);
+  if (name === 'all attr.' || name === 'all attributes') return ATTRS;
+  const parts = phrase.replace(/^[\s/]+/, '').split(/\s*(?:&|\/)\s*/).filter(Boolean);
+  if (parts.length < 2) return null;
+  const keys = parts.map(x => STAT_ALIAS[normName(x)]);
+  return keys.every(Boolean) ? keys : null;
+}
+// Stats of one line of text ("HP+145 MP+129 STR+36", "Eva.+20 /Mag. Eva.+20"): adds to out, returns free text
+function parseLine(line, out){
+  const free = [];
+  let last = 0;
+  for (const m of line.matchAll(/([+-])\s?(\d+)(%?)/g)) {
+    const phrase = line.slice(last, m.index);
+    last = m.index + m[0].length;
+    let v = (m[1] === '-' ? -1 : 1) * +m[2];
+    // several stats for one value (rank stats): "DEX & AGI +15", "INT/MND +25", "All Attr.+2"
+    const many = statsOf(phrase);
+    if (many) { for (const k of many) add(out, k, v, m[3], k); continue; }
+    const s = statOf(phrase);
+    if (!s.key) { free.push((s.rest + ' ' + m[0]).trim()); continue; }
+    if (s.rest) free.push(s.rest);
+    if (s.key === 'sird') v = Math.abs(v);
+    // "HP+10%" is not "HP+10": a stat counted in points elsewhere gets its own % line
+    const key = m[3] && FLAT.has(s.key) ? s.key + '%' : s.key;
+    add(out, key, v, m[3], s.label);
+  }
+  const tail = line.slice(last).trim();
+  if (tail) free.push(tail);
+  return free.join(' ').trim();
+}
+// Always in %, even where an augment leaves the sign out ("Fast Cast"+10)
+const PCT = new Set(['dt','pdt','mdt','pdt2','mdt2','bdt','haste','fc','da','ta','qa','crit','critdmg','wsd','sird','cure','cure2',
+  'curecast','enhdur','mbd','mbd2','ecrit','cmp','pdl']);
+function add(out, key, v, unit, label){
+  if (PCT.has(key)) unit = '%';
+  const e = out[key] || (out[key] = {v: 0, unit, label});
+  e.v += v; if (unit) e.unit = unit;
+}
+// Every stat of one piece: its description (always on part), then its augments
+const PIECE_CACHE = {};
+function pieceStats(p){
+  if (!p) return null;
+  const id = iconIds()[p.name], text = id ? descTexts()[id] : null;
+  const key = S.char + '|' + p.name + '|' + (p.augs || []).join('|');
+  if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
+  const r = {text, stats: {}, pet: {}, free: [], cond: [], path: null, weapon: null, known: !!text};
+  // after "Pet:" (or Avatar:, Wyvern:...) the lines are the pet's, after any other condition they only apply sometimes
+  let mode = null;
+  // the game wraps long phrases: a line starting in lower case goes on the previous one
+  const lines = (text || '').split('\n').reduce((acc, l) => { if (acc.length && /^[a-z]/.test(l)) acc[acc.length - 1] += ' ' + l; else acc.push(l); return acc; }, []);
+  for (const raw of lines) {
+    // "Converts 150 MP to HP" (Tuisto, Odnowa...): that much HP more, MP less
+    let line = raw.replace(/Converts (\d+) (MP|HP) to (HP|MP)/g, (_, n, from, to) => {
+      add(r.stats, to.toLowerCase(), +n, '', to); add(r.stats, from.toLowerCase(), -n, '', from); return ' '; });
+    if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
+    if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
+    if (mode === 'cond') { r.cond.push(line); continue; }
+    line = line.replace(/\b(DEF|DMG|Delay):\s?(\d+)/g, (_, k, n) => {
+      if (k === 'DEF') add(r.stats, 'def', +n, '', 'DEF'); else (r.weapon = r.weapon || {})[k] = +n; return ' '; });
+    const free = parseLine(line, r.stats);
+    if (free) r.free.push(free);
+  }
+  // Fast Cast the description only names ("Enhances "Fast Cast" effect"): its value, from BG-Wiki
+  const hidden = HIDDEN_FC[p.name];
+  if (hidden && r.free.some(f => /(Enhances|Increases) "Fast Cast" effect/.test(f))) {
+    add(r.stats, 'fc', hidden, '%', 'Fast Cast');
+    r.free = r.free.map(f => f.replace(/(Enhances|Increases) "Fast Cast" effect/, '').trim()).filter(Boolean);
+    r.hidden = true;
+  }
+  // The set's augments; without any, those //gs c gearscan read on the character's own copy
+  const scan = scanOf()[p.name];
+  let augs = p.augs;
+  if (!augs && scan && !scan.differ && scan.augments) { augs = scan.augments; r.scanned = true; }
+  for (const a of augs || []) {
+    const path = a.match(/^Path:\s*(\w+)/); if (path) { r.path = path[1]; continue; }
+    if (/^System:/.test(a)) continue;
+    addAugment(a, r);
+  }
+  // A path's rank stats (Odyssey gear), known when the scanned copy is on the same path
+  if (r.path && scan && scan.path === r.path && scan.rank_stats) {
+    r.rank = scan.rank;
+    for (const a of scan.rank_stats) addAugment(a, r);
+  }
+  return (PIECE_CACHE[key] = r);
+}
+function addAugment(a, r){
+  a = a.replace(/DMG:\s?\+?(\d+)/, (_, n) => { (r.weapon = r.weapon || {}).DMG = ((r.weapon || {}).DMG || 0) + +n; return ' '; });
+  for (const part of a.split(/(?=Pet:)/)) {
+    const pet = /^Pet:/.test(part);
+    const free = parseLine(part.replace(/^Pet:\s*/, ''), pet ? r.pet : r.stats);
+    if (free) r.free.push(free);
+  }
+}
+// Fast Cast hidden behind "Enhances "Fast Cast" effect" (BG-Wiki; Guide_Paladin gear_pld.py)
+const HIDDEN_FC = {"Loquac. Earring": 2, "Prolix Ring": 2, "Orunmila's Torque": 5};
+const scanOf = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.scan || {}));
+const descTexts = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.descs || {}));
+// Stats counted in points: a % of them (HP+10%) is its own line, key 'hp%'
+const FLAT = new Set(['hp','mp','def','str','dex','vit','agi','int','mnd','chr','acc','atk','racc','ratk','eva','meva','macc','mab','mdb','enmity','mdmg']);
+const baseKey = key => key.endsWith('%') ? key.slice(0, -1) : key;
+const statLabel = (key, e) => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][S.lang === 'fr' ? 1 : 2] + (key.endsWith('%') ? ' %' : '') : e.label;
+const statGroup = key => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][0] : key.startsWith('skill:') ? 'skill' : 'other';
+const fmtStat = e => (e.v > 0 ? '+' : e.v < 0 ? '−' : '') + Math.abs(e.v) + (e.unit ? ' %' : '');
+// One piece's stats as label / value rows, in the groups' order
+function statRows(stats){
+  const keys = Object.keys(stats).filter(k => stats[k].v);
+  return STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder))
+    .map(k => `<li><span>${esc(statLabel(k, stats[k]))}</span><b>${fmtStat(stats[k])}</b></li>`).join('');
+}
+const STAT_ORDER = Object.keys(STAT_DEF);
+const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.indexOf(b) + 1 || 999) || a.localeCompare(b);
+// What the set's gear brings: every piece added up, the caps shown where the game has one
+function setStats(s){
+  const total = {}, paths = [], unknown = [], cond = [];
+  for (const slot of SLOTS) {
+    const p = s.pieces[slot], r = pieceStats(p);
+    if (!r) continue;
+    if (!r.known) unknown.push(p.name);
+    if (r.path && !r.rank) paths.push(`${p.name} (Path ${r.path})`);
+    for (const [k, e] of Object.entries(r.stats)) add(total, k, e.v, e.unit, e.label);
+    for (const c of r.cond) cond.push(`${p.name} — ${c}`);
+  }
+  return {total, paths, unknown, cond};
+}
+function setStatsHTML(s){
+  const {total, paths, unknown, cond} = setStats(s);
+  const v = k => (total[k] || {}).v || 0;
+  const capped = (label, sum, cap, detail) => `<li class="${Math.abs(sum) > Math.abs(cap) ? 'over' : ''}"><span>${label}</span><b>${sum > 0 ? '+' : sum < 0 ? '−' : ''}${Math.abs(sum)} %` +
+    `<small>${detail} · cap ${cap > 0 ? '' : '−'}${Math.abs(cap)} %</small></b></li>`;
+  const groups = STAT_GROUPS.map(([g, fr, en]) => {
+    const keys = Object.keys(total).filter(k => total[k].v && statGroup(k) === g).sort(statOrder);
+    let rows = keys.map(k => { const cap = STAT_DEF[k] && STAT_DEF[k][3];
+      return cap ? capped(esc(statLabel(k, total[k])), total[k].v, cap, t('gearOnly'))
+                 : `<li><span>${esc(statLabel(k, total[k]))}</span><b>${fmtStat(total[k])}</b></li>`; }).join('');
+    // Damage taken: DT counts in both, physical and magic, up to -50 % together
+    if (g === 'def' && (v('dt') || v('pdt') || v('mdt')))
+      rows = capped(t('pdtEff'), Math.max(v('dt') + v('pdt'), -50), -50, `DT ${v('dt')} + PDT ${v('pdt')}`) +
+             capped(t('mdtEff'), Math.max(v('dt') + v('mdt'), -50), -50, `DT ${v('dt')} + MDT ${v('mdt')}`) + rows;
+    return rows ? `<section><h4>${S.lang === 'fr' ? fr : en}</h4><ul class="statlist">${rows}</ul></section>` : '';
+  }).join('');
+  const notes = [];
+  if (paths.length) notes.push(`<p>${t('pathNote')} ${paths.map(esc).join(', ')}</p>`);
+  if (unknown.length) notes.push(`<p>${t('unknownNote')} ${unknown.map(esc).join(', ')}</p>`);
+  const conds = cond.length ? `<details class="conds"><summary>${t('condTitle')} (${cond.length})</summary><ul>${cond.map(c => `<li>${esc(c)}</li>`).join('')}</ul></details>` : '';
+  return groups ? `<div class="setstats"><div class="kicker">${t('setStats')}</div><div class="statgrid">${groups}</div>${notes.join('')}${conds}</div>` : '';
+}
+// The drawer's view of one piece: its stats, its effects, what only applies sometimes
+function pieceStatsHTML(p){
+  const r = pieceStats(p);
+  if (!r) return '';
+  if (!r.known) return `<div class="note">${t('noDesc')}</div>`;
+  const w = r.weapon ? `<p class="weapon">${Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ')}</p>` : '';
+  const pet = Object.keys(r.pet).length ? `<div class="kicker">${t('petStats')}</div><ul class="statlist">${statRows(r.pet)}</ul>` : '';
+  const free = r.free.length ? `<div class="kicker">${t('effects')}</div><ul class="plain">${r.free.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : '';
+  const cond = r.cond.length ? `<div class="kicker">${t('condTitle')}</div><ul class="plain">${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : '';
+  const origin = [r.scanned ? t('fromScan') : '', r.rank ? t('rankKnown', {p: esc(r.path), r: r.rank}) : '', r.hidden ? t('hiddenFc') : '']
+    .filter(Boolean).map(x => `<p class="origin">${x}</p>`).join('');
+  const path = r.path && !r.rank ? `<div class="note">${t('pathOne', {p: esc(r.path)})}</div>` : '';
+  return `<div class="piecestats"><div class="kicker">${t('pieceStats')}</div>${w}<ul class="statlist">${statRows(r.stats)}</ul>${origin}${pet}${free}${cond}${path}</div>`;
+}
+
 /* ---- render ---- */
 function renderSide(){
   $('#chars').innerHTML = Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${esc(c)}">${esc(c)}</button>`).join('');
@@ -498,7 +745,8 @@ function slotHTML(s, ci, slot, own, q){
   const p = s.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
   if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></button>`;
   const inh = s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
-  return `<button class="slot ${inh?'inh':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}<span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>` +
+  const tip = [pieceStats(p).text, ...(p.augs || [])].filter(Boolean).join('\n');
+  return `<button class="slot ${inh?'inh':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}" title="${esc(tip)}">${icon(p.name)}<span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>` +
     `${p.aug?`<span class="aug">${esc(p.aug)}</span>`:''}${inh?`<span class="from">${esc(t('inhFrom',{b:shortPath(s.base)}))}</span>`:''}</button>`;
 }
 function cardHTML(card, ci, bypath, q){
@@ -513,7 +761,7 @@ function cardHTML(card, ci, bypath, q){
   const variants = card.variants.length > 1 ? `<div class="variants" role="group">${card.variants.map((x,i) => `<button aria-pressed="${i===vi}" data-card="${ci}" data-variant="${i}">${esc(x.label)}</button>`).join('')}</div>` : '';
   const when = t('famWhen.'+card.fam);
   return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}</div><h2>${esc(niceName(card))}</h2>${when?`<p class="when">${when}</p>`:''}<code class="path">${esc(s.path)}</code>${variants}</header>
-    <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>
+    <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${setStatsHTML(s)}
     <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="aug"></i>${t('legendAug')}</span></div></article>`;
 }
 function renderSets(d){
@@ -624,7 +872,7 @@ function openSlot(ci, slot){
   const owned = (ofAnySub('items') || {})[slot];
   const items = owned ? owned.map(n => [n, seen[n] || 0]) : Object.entries(seen).sort((a,b) => b[1]-a[1]);
   const notes = !p ? t('drawerEmpty') : (s.base && !own.has(slot)) ? t('drawerInh',{b:shortPath(s.base)}) : t('drawerOwn');
-  let html = `<div class="note">${esc(notes)}</div>`;
+  let html = `<div class="note">${esc(notes)}</div>${pieceStatsHTML(p)}`;
   if (s.aliases && s.aliases.length) html += `<div class="note">${esc(t('drawerShared',{n:s.aliases.length}))}</div>`;
   html += `<div class="choice"><div class="kicker">${t('yourItems')}</div>${items.map(([n,c]) => `<button type="button">${icon(n)}<span>${esc(n)}<small>${c ? t('seenIn',{n:c}) : t('inBags')}</small></span></button>`).join('')}</div>`;
   $('#overlay').innerHTML = `<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="${label}">

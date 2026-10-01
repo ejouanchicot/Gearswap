@@ -93,17 +93,18 @@ local function slot_of(key)
     return type(key) == 'string' and SLOT_ALIAS[key:lower()]
 end
 
---- A set's piece as {name, aug}.
+--- A set's piece as {name, aug, augs}: aug is the short line under the item
+--- (first 3 augments), augs every augment, which the page counts in the stats.
 local function piece(value)
     if type(value) == 'string' then return {name = value} end
     if type(value) ~= 'table' or not value.name then return nil end
-    local aug
+    local aug, augs
     if type(value.augments) == 'table' and #value.augments > 0 then
-        local parts = {}
-        for i = 1, math.min(3, #value.augments) do parts[#parts + 1] = tostring(value.augments[i]) end
-        aug = table.concat(parts, ' · ')
+        augs = {}
+        for i = 1, #value.augments do augs[i] = tostring(value.augments[i]) end
+        aug = table.concat(augs, ' · ', 1, math.min(3, #augs))
     end
-    return {name = value.name, aug = aug}
+    return {name = value.name, aug = aug, augs = augs}
 end
 
 --- Gear slots of one table, or nil when it holds none.
@@ -236,6 +237,40 @@ end
 
 --- Item id of every name the page shows ({name = id}), equippable items
 --- first: the page draws their icons from data/atelier/icons/<id>.bmp.
+--- The game's description of each item ({["id"] = text}, string keys so the JSON
+--- stays an object): the page reads every piece's stats from it.
+local function collect_descs(ids)
+    local ok, res = pcall(require, 'resources')
+    local book = ok and res and res.item_descriptions
+    if not book then return nil end
+    local descs = {}
+    for _, id in ipairs(ids) do
+        local entry = book[id]
+        if entry and entry.en then descs[tostring(id)] = entry.en end
+    end
+    return descs
+end
+
+--- What //gs c gearscan read on the character's own copies of these items
+--- (<Char>/saved/gear_augments.lua, shared/utils/equipment/gear_scan.lua):
+--- their real augments, and the path, rank and rank stats of Odyssey gear.
+--- The page counts them for a piece the set names without augments.
+local function collect_scan(icons)
+    local ok, GearScan = pcall(require, 'shared/utils/equipment/gear_scan')
+    if not (ok and GearScan) then return nil end
+    local found, all = pcall(GearScan.load)
+    if not found or type(all) ~= 'table' then return nil end
+    local scan = {}
+    for name in pairs(icons or {}) do
+        local entry = all[name:lower()]
+        if type(entry) == 'table' then
+            scan[name] = {augments = entry.augments, path = entry.path, rank = entry.rank,
+                rank_stats = entry.rank_stats, differ = entry.differ}
+        end
+    end
+    return scan
+end
+
 local function collect_icons(set_list, items)
     local ok, res = pcall(require, 'resources')
     if not ok or not res or not res.items then return nil end
@@ -335,6 +370,8 @@ function AtelierExport.export()
     data.icons = collect_icons(data.sets, data.items)
     local ids = {}
     for _, id in pairs(data.icons or {}) do ids[#ids + 1] = id end
+    data.descs = collect_descs(ids)
+    data.scan = collect_scan(data.icons)
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))
