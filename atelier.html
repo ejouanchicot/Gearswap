@@ -201,8 +201,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 }
 .meritbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:14px}
 .meritbar p{margin:0;max-width:760px;font-size:13.5px}
-.meritgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 28px}
-.meritgrid h4{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+/* columns, not a grid: each group stacks under the previous one, no row as tall as the longest group */
+.meritgrid{columns:300px;column-gap:28px}
+.meritgrid section{break-inside:avoid;margin-bottom:10px}
+.meritgrid h4{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.meritgrid section{padding-top:2px}
+.meritgrid section + section{margin-top:6px}
 .meritlist{list-style:none;margin:0;padding:0;font-size:13.5px}
 .meritlist li{display:grid;grid-template-columns:minmax(0,1fr) 54px 92px;align-items:center;column-gap:8px;padding:2px 0 2px 12px;border-bottom:1px dotted var(--line);position:relative}
 .meritlist span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help}
