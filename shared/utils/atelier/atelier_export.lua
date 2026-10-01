@@ -543,9 +543,10 @@ local function write_index()
     return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\n')
 end
 
---- Export the current job. Returns the file written, or nil.
---- @return string|nil
-function AtelierExport.export()
+--- The data of the loaded job, as the page reads it (the file of export(), the
+--- answer of the live link: shared/utils/atelier/atelier_live.lua). Nil outside a job.
+--- @return table|nil
+function AtelierExport.build()
     if not (player and player.name and player.main_job) then return nil end
     local data = {
         player = player.name, job = player.main_job, sub = player.sub_job, at = os.date('%Y-%m-%d %H:%M'),
@@ -579,6 +580,14 @@ function AtelierExport.export()
     local ok_s, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
     data.set_overrides = ok_s and SetOverrides.read() or nil
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
+    return data
+end
+
+--- Export the current job. Returns the file written, or nil.
+--- @return string|nil
+function AtelierExport.export()
+    local data = AtelierExport.build()
+    if not data then return nil end
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))
     -- one file per subjob: the modes, weapons and WS a job offers can depend on it
@@ -599,6 +608,8 @@ end
 --- keys are all in place a few seconds later.
 function AtelierExport.after_load()
     if not AtelierExport.enabled() then return end
+    -- the page's live link (shared/utils/atelier/atelier_live.lua): open while the switch is on
+    pcall(function() require('shared/utils/atelier/atelier_live').start() end)
     require('shared/utils/core/load_gate').defer(4, function() pcall(AtelierExport.export) end, 'atelier export')
 end
 
@@ -625,6 +636,12 @@ function AtelierExport.handle(args)
             :format(sub == 'on' and 'ON' or 'OFF'))
         return true
     end
+    if sub == 'live' then
+        local ok, port, err = pcall(function() return require('shared/utils/atelier/atelier_live').start() end)
+        MessageFormatter.show_info(ok and port and ('Atelier: live link open on 127.0.0.1:%d, reload data/atelier.html'):format(port)
+            or ('Atelier: live link not opened (%s)'):format(tostring(ok and err or port)))
+        return true
+    end
     local rel = AtelierExport.export()
     MessageFormatter.show_info(rel and ('Atelier: %s written, open data/atelier.html'):format(rel)
         or 'Atelier: export failed (could not write the file)')
@@ -632,5 +649,8 @@ function AtelierExport.handle(args)
 end
 
 _G.AtelierExport = AtelierExport
+
+--- The page's JSON writer (the live link answers with it).
+AtelierExport.json = json
 
 return AtelierExport
