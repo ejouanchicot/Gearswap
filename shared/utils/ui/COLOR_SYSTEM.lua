@@ -502,32 +502,4 @@ function ColorSystem.get_value_color(value, description)
     return color_from_value(value) or DEFAULT_COLOR
 end
 
----============================================================================
---- UTILITY FUNCTIONS
----============================================================================
-
---- @return table The live element color table (name -> color code). No caller in the repository.
-function ColorSystem.get_element_colors()
-    return element_colors
-end
-
---- @return table The live stat color table (STR..CHR -> color code). No caller in the repository.
-function ColorSystem.get_stat_colors()
-    return stat_colors
-end
-
---- Override one color at runtime. No caller in the repository.
---- @param pattern_type string 'element', 'stat' or 'special' (anything else is ignored)
---- @param pattern_name string Key in that table
---- @param color_code string Windower text color code, e.g. \cs(255,0,0)
-function ColorSystem.add_custom_color(pattern_type, pattern_name, color_code)
-    if pattern_type == "element" then
-        element_colors[pattern_name] = color_code
-    elseif pattern_type == "stat" then
-        stat_colors[pattern_name] = color_code
-    elseif pattern_type == "special" then
-        special_colors[pattern_name] = color_code
-    end
-end
-
 return ColorSystem

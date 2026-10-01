@@ -311,29 +311,6 @@ function UISettings.set_font(name, size)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   SETTINGS ACCESS - Sections
----  ═══════════════════════════════════════════════════════════════════════════
-
---- @return table {spells, enhancing, job_abilities, weapons, modes} booleans
-function UISettings.get_sections()
-    return {
-        spells = _G.UI_SETTINGS.section_spells ~= false,
-        enhancing = _G.UI_SETTINGS.section_enhancing ~= false,
-        job_abilities = _G.UI_SETTINGS.section_job_abilities ~= false,
-        weapons = _G.UI_SETTINGS.section_weapons ~= false,
-        modes = _G.UI_SETTINGS.section_modes ~= false
-    }
-end
-
---- @param section_name string Suffix of a section_* key (e.g. 'spells')
---- @param value boolean
-function UISettings.set_section(section_name, value)
-    local key = 'section_' .. section_name
-    _G.UI_SETTINGS[key] = value
-    save_to_file(_G.UI_SETTINGS)
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 

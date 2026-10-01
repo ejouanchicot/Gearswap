@@ -82,17 +82,6 @@ function UIFormatter.calculate_content_width(keybinds, key_column_width, functio
     return max_width + sp.right
 end
 
---- Calculate dynamic header/footer width based on content (no caller in the repository)
---- @param job string The job abbreviation
---- @return number Width for separators
-function UIFormatter.calculate_header_width(job)
-    local title = job_titles[job] or job .. " Settings"
-    local title_width = string.len(title) + 6  -- Add space for >> <<
-
-    -- Return exact width needed
-    return title_width
-end
-
 --- Create the UI header with title and legend
 --- @param job string The job abbreviation
 --- @param content_width number Total UI content width for centering
@@ -373,56 +362,6 @@ function UIFormatter.create_colored_section_header(title, content_width)
     -- the blank line under the title is dropped in the compact layout.
     local after = UIStyle.get().layout.spacing.title_gap and "\n" or ""
     return spacing .. UIStyle.color('section_title') .. centered_title .. "  \\cr\n" .. after
-end
-
---- Format empty state message (no caller in the repository)
---- @param category string The category name
---- @return string Formatted empty message
-function UIFormatter.format_empty_section(category)
-    return "\\cs(128,128,128) No " .. category .. " configured\\cr\n"
-end
-
----============================================================================
---- VALIDATION AND DIAGNOSTICS
----============================================================================
-
---- Validate formatter configuration (no caller in the repository)
---- @return boolean, table valid, issues
-function UIFormatter.validate_configuration()
-    local issues = {}
-
-    -- Check job titles completeness
-    local expected_jobs = { "BRD", "THF", "WAR", "PLD", "DNC", "BST", "BLM", "DRG", "RDM", "COR", "GEO", "RUN" }
-    for _, job in ipairs(expected_jobs) do
-        if not job_titles[job] then
-            table.insert(issues, "Missing job title for: " .. job)
-        end
-    end
-
-    -- Check ColorSystem availability
-    if not ColorSystem then
-        table.insert(issues, "ColorSystem dependency not available")
-    end
-
-    return #issues == 0, issues
-end
-
---- Get formatting statistics (no caller in the repository)
---- @return table Statistics about formatter configuration
-function UIFormatter.get_statistics()
-    -- Count job titles
-    local job_count = 0
-    for _ in pairs(job_titles) do
-        job_count = job_count + 1
-    end
-
-    return {
-        job_titles_count = job_count,
-        dependencies_loaded = {
-            ColorSystem = ColorSystem ~= nil,
-            UIConfig = UIConfig ~= nil
-        }
-    }
 end
 
 return UIFormatter

@@ -14,7 +14,7 @@
 ---   ui_section_toggles      - header/legend/column_headers/footer toggles
 ---   ui_visibility           - save_position/toggle/show/hide/enable/disable
 ---   ui_lifecycle            - init/smart_init/safe_init/destroy
----   ui_update_orchestrator  - update/force_reinit/schedule_update/status
+---   ui_update_orchestrator  - update/force_reinit
 ---   ui_settings_resolver    - position/font/background settings resolver
 ---
 --- Public API exposed on KeybindUI (used by the job entry files):
@@ -22,8 +22,7 @@
 ---   save_position, toggle, show, hide, is_visible, enable, disable
 ---   toggle_header, toggle_legend, toggle_column_headers, toggle_footer
 ---   set_background_preset, set_background_rgba, toggle_background, set_font
----   update, force_reinit, schedule_update, needs_reinit, get_status,
----   handle_job_configuration_change
+---   update, force_reinit
 ---
 --- Commands: //gs c ui (toggle), //gs c ui save (save position manually)
 ---
@@ -147,8 +146,7 @@ Lifecycle.attach(KeybindUI)
 -- Attach AFTER Lifecycle (enable() calls KeybindUI.init)
 Visibility.attach(KeybindUI)
 
--- Update orchestration: update, force_reinit, schedule_update, needs_reinit,
--- get_status, handle_job_configuration_change
+-- Update orchestration: update, force_reinit
 -- Attach AFTER Lifecycle (force_reinit calls KeybindUI.init/destroy)
 Orchestrator.attach(KeybindUI)
 

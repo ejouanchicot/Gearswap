@@ -1,17 +1,12 @@
 ---============================================================================
---- UI Update Orchestrator - Update / ForceReinit / Schedule / Status
+--- UI Update Orchestrator - Update / ForceReinit
 ---============================================================================
---- Coordinates UI redraws and reinits with debouncing, cancellation tokens
---- and state-change detection. The main entry points:
+--- Coordinates UI redraws and reinits with state-change detection:
 ---   • update()                       - state-aware redraw (skips if no change)
 ---   • force_reinit()                 - destroy + init with timeout polling
----   • schedule_update()              - debounced update with cancel token
----   • handle_job_configuration_change - schedules an update per change type
 ---
 --- Only update() has callers outside this file. force_reinit() is reached
---- from update() after repeated render failures; schedule_update(),
---- needs_reinit(), get_status() and handle_job_configuration_change() have
---- no caller in the repository.
+--- from update() after repeated render failures.
 ---
 --- @file shared/utils/ui/ui_update_orchestrator.lua
 --- @author ejouanchicot
@@ -170,84 +165,6 @@ function Orchestrator.attach(KeybindUI)
         return true -- Return immediately, actual result comes async
     end
 
-    --- Schedule a debounced UI update; a newer call cancels a pending one.
-    --- Reinits instead of updating when the job/subjob changed meanwhile.
-    --- @param reason string Change reason (unused)
-    --- @param delay number Delay in seconds (default 1.0)
-    function KeybindUI.schedule_update(reason, delay)
-        delay = delay or 1.0
-        local ui_state = _G.ui_manager_state
-
-        -- Increment update ID to cancel previous pending updates
-        ui_state.pending_update_id = ui_state.pending_update_id + 1
-        local my_update_id = ui_state.pending_update_id
-
-        -- Schedule the update
-        coroutine.schedule(function()
-            -- Check if this update is still valid
-            if ui_state.pending_update_id ~= my_update_id then
-                return
-            end
-
-            -- Check if job/subjob changed since scheduling
-            if player and (ui_state.current_job ~= player.main_job or ui_state.current_subjob ~= player.sub_job) then
-                ui_state.current_job = player.main_job
-                ui_state.current_subjob = player.sub_job
-
-                -- Force reinit for job change
-                KeybindUI.force_reinit(player.main_job, 5.0)
-            else
-                -- Just update the display
-                KeybindUI.update()
-            end
-
-            ui_state.last_update = os.clock()
-        end, delay)
-    end
-
-    --- Check if UI needs reinitialization
-    --- @param job string Main job to compare with the tracked job
-    --- @return boolean True if the job changed, the display is missing or >3 failures
-    function KeybindUI.needs_reinit(job)
-        local ui_state = _G.ui_manager_state
-
-        -- Check if job changed
-        if ui_state.current_job and ui_state.current_job ~= job then
-            return true
-        end
-
-        -- Check if UI doesn't exist
-        if not _G.keybind_ui_display then
-            return true
-        end
-
-        -- Check if we've had multiple consecutive failures
-        if ui_state.consecutive_failures > 3 then
-            return true
-        end
-
-        return false
-    end
-
-    --- Schedule an update for a job configuration change (0.5 s job, 1.0 s
-    --- subjob, 1.5 s otherwise).
-    --- @param change_data table { type = 'job_change'|'subjob_change'|... }
-    function KeybindUI.handle_job_configuration_change(change_data)
-        local change_type = change_data.type or 'unknown'
-        local reason = string.format('%s_change', change_type)
-
-        -- Schedule update with appropriate delay
-        if change_type == 'job_change' then
-            -- Job change needs full reinit
-            KeybindUI.schedule_update(reason, 0.5)
-        elseif change_type == 'subjob_change' then
-            -- Subjob change might need reinit for some jobs
-            KeybindUI.schedule_update(reason, 1.0)
-        else
-            -- Default update
-            KeybindUI.schedule_update(reason, 1.5)
-        end
-    end
 end
 
 return Orchestrator

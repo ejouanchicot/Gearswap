@@ -111,34 +111,6 @@ function KeybindLoader.add_job_specific_elements(job, keybinds)
 end
 
 ---============================================================================
---- UTILITY FUNCTIONS
----============================================================================
-
---- Check if a configuration file exists for the job.
---- NOTE: builds 'config/<JOB>_KEYBINDS' without the job subfolder, unlike
---- get_job_keybinds(). No caller in the repository.
---- @param job string The job abbreviation
---- @return boolean True if configuration exists
-function KeybindLoader.config_exists(job)
-    if not job then
-        return false
-    end
-
-    local config_path = require('shared/utils/core/char_paths').legacy_module('config/' .. job:upper() .. '_KEYBINDS')
-    local success, config = pcall(require, config_path)
-
-    return success and config ~= nil
-end
-
---- Get the configuration path for debugging.
---- NOTE: same subfolder-less path as config_exists(). No caller in the repository.
---- @param job string The job abbreviation
---- @return string The configuration path
-function KeybindLoader.get_config_path(job)
-    return 'config/' .. (job and job:upper() or "UNKNOWN") .. '_KEYBINDS'
-end
-
----============================================================================
 --- MODULE EXPORT
 ---============================================================================
 

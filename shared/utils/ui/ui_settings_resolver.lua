@@ -79,34 +79,4 @@ function UISettingsResolver.create_ui_settings()
     }
 end
 
----============================================================================
---- DEFAULT UI SETTINGS
----============================================================================
-
---- Return a static default settings table with hardcoded fallback values.
---- No caller in the repository (init() uses create_ui_settings()).
---- @return table Default settings table
-function UISettingsResolver.default_ui_settings()
-    return {
-        pos = {
-            x = 1600,
-            y = 300
-        },
-        text = {
-            size = 10,
-            font = 'Consolas',
-            stroke = { width = 2, alpha = 200, red = 0, green = 0, blue = 0 },
-            padding = 0
-        },
-        bg = {
-            red = 0,
-            green = 0,
-            blue = 0,
-            alpha = 150,
-            visible = true
-        },
-        flags = { draggable = true }
-    }
-end
-
 return UISettingsResolver
