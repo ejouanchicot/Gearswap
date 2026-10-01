@@ -44,6 +44,8 @@ local function target_of(kind)
     local ok, mob = pcall(G.valid_target, kind)
     if ok and type(mob) == 'table' and mob.type and mob.type ~= 'NONE' then return mob end
     if kind == '<me>' then return {type = 'SELF', name = player.name, raw = '<me>', id = player.id, distance = 0, hpp = 100} end
+    if kind == '<p1>' then return {type = 'PLAYER', name = 'Party member', raw = '<p1>', id = 1, index = 1, distance = 5, hpp = 75,
+        ispartymember = true, isallymember = true, is_npc = false, spawn_type = 1, status = 'Idle'} end
     return {type = 'MONSTER', name = 'Training Dummy', raw = '<t>', id = 0, index = 0, distance = 3, hpp = 100,
         is_npc = true, spawn_type = 16, status = 'Engaged', model_size = 1}
 end
@@ -93,8 +95,11 @@ local function aims(line, who, bit)
 end
 local function aims_enemy(line) return aims(line, 'Enemy', 32) end
 local function aims_self(line) return aims(line, 'Self', 1) end
+local function aims_ally(line) return aims(line, 'Party', 4) or aims(line, 'Player', 2) or aims(line, 'Ally', 8) end
 
-local function quarantine(messages, scheduled, ignore_recasts, tp)
+-- recasts: nil = the game's; 'all' = everything ready; a recast id = that one ready, the
+-- others running (the ability a helper fires first is then taken as already used)
+local function quarantine(messages, scheduled, recasts, tp)
     local saved = {}
     local function swap(tbl, key, value)
         saved[#saved + 1] = {tbl, key, rawget(tbl, key)}
@@ -119,10 +124,11 @@ local function quarantine(messages, scheduled, ignore_recasts, tp)
             return p
         end)
     end
-    if ignore_recasts then
-        local zero = setmetatable({}, {__index = function() return 0 end})
-        swap(windower.ffxi, 'get_ability_recasts', function() return zero end)
-        swap(windower.ffxi, 'get_spell_recasts', function() return zero end)
+    if recasts then
+        local own = recasts ~= 'all' and recasts or nil
+        local table_of = setmetatable({}, {__index = function(_, id) return (not own or id == own) and 0 or 60 end})
+        swap(windower.ffxi, 'get_ability_recasts', function() return table_of end)
+        swap(windower.ffxi, 'get_spell_recasts', function() return table_of end)
     end
     return function()
         for i = #saved, 1, -1 do rawset(saved[i][1], saved[i][2], saved[i][3]) end
@@ -150,31 +156,12 @@ end
 --- RUN
 ---============================================================================
 
---- Run an action through the job's precast, midcast and aftercast.
---- @param req table {kind = 'ma'|'ja'|'ws', name = 'Cure IV', target = 'auto'|'me'|'enemy',
----   status = 'Idle'|'Engaged'|nil, states = {HybridMode = 'PDT'}, ignore_recasts = boolean,
----   tp = number (weaponskills, 3000 by default)}
---- @return table {ok, phases = {{phase, list}}, messages, cancelled, scheduled, error}
-function AtelierSim.run(req)
-    local G = gs()
-    if not (G and KINDS[req.kind] and req.name) then return {ok = false, error = 'bad request'} end
-    local line = find_line(req.kind, req.name)
-    if not line then return {ok = false, error = 'unknown action: ' .. req.name} end
-
-    local r_line = G.copy_entry(line)
-    r_line.name = r_line[G.language] or r_line.en
-    local spell = G.spell_complete(r_line)
-    -- the action's own target unless one is asked: Phalanx on oneself, Flash on the enemy
-    local on_me = req.target == 'me' or ((req.target == nil or req.target == 'auto') and not aims_enemy(line))
-    spell.target = target_of(on_me and '<me>' or '<t>')
-    spell.action_type = G.action_type_map[KINDS[req.kind].prefix]
-    spell.interrupted = false
-
+-- One run of the three steps, everything put back after it
+local function run_once(G, spell, req, recasts, tp)
     local messages, scheduled, phases = {}, {}, {}
     local snap, status = snapshot_states(), player.status
-    local tp = req.kind == 'ws' and (tonumber(req.tp) or 3000) or nil
     local tp_was, vitals_tp_was = player.tp, player.vitals and player.vitals.tp
-    local restore = quarantine(messages, scheduled, req.ignore_recasts ~= false, tp)
+    local restore = quarantine(messages, scheduled, recasts, tp)
     local ok, err = pcall(function()
         set_states(req.states or {})
         if req.status then player.status = req.status end
@@ -205,7 +192,49 @@ function AtelierSim.run(req)
     local cancelled = messages.cancelled == true
     messages.cancelled = nil
     return {ok = ok, error = not ok and tostring(err) or nil, phases = phases, messages = messages,
-        cancelled = cancelled, scheduled = scheduled.n or 0, spell = {name = spell.name, type = spell.type, skill = spell.skill}}
+        cancelled = cancelled, scheduled = scheduled.n or 0}
+end
+
+--- Run an action through the job's precast, midcast and aftercast.
+--- @param req table {kind = 'ma'|'ja'|'ws', name = 'Cure IV', target = 'auto'|'me'|'enemy',
+---   status = 'Idle'|'Engaged'|nil, states = {HybridMode = 'PDT'}, ignore_recasts = boolean,
+---   tp = number (weaponskills, 3000 by default)}
+--- @return table {ok, phases = {{phase, list}}, messages, cancelled, scheduled, error,
+---   before = the ability a helper fires first (Majesty before a Cure), if any}
+function AtelierSim.run(req)
+    local G = gs()
+    if not (G and KINDS[req.kind] and req.name) then return {ok = false, error = 'bad request'} end
+    local line = find_line(req.kind, req.name)
+    if not line then return {ok = false, error = 'unknown action: ' .. req.name} end
+
+    local r_line = G.copy_entry(line)
+    r_line.name = r_line[G.language] or r_line.en
+    local spell = G.spell_complete(r_line)
+    -- the action's own target unless one is asked: Phalanx on oneself, Flash on the enemy;
+    -- 'ally': a party member (Cure on another player: CureOther sets)
+    local on_me = req.target == 'me' or ((req.target == nil or req.target == 'auto') and not aims_enemy(line))
+    spell.target = target_of(req.target == 'ally' and '<p1>' or on_me and '<me>' or '<t>')
+    spell.action_type = G.action_type_map[KINDS[req.kind].prefix]
+    spell.interrupted = false
+
+    local tp = req.kind == 'ws' and (tonumber(req.tp) or 3000) or nil
+    local own = line.recast_id or line.id
+    local first = run_once(G, spell, req, req.ignore_recasts ~= false and 'all' or nil, tp)
+    -- a helper (AbilityHelper) cancels the action to fire an ability first and casts it again
+    -- right after: as in game, the action then runs with that ability used (its recast running)
+    local before = nil
+    for _, m in ipairs(first.messages) do
+        local ja = tostring(m):match('^> input /ja "([^"]+)"') or tostring(m):match("^> input /ja '([^']+)'")
+        if ja then before = ja break end
+    end
+    local result = first
+    if first.cancelled and before and req.ignore_recasts ~= false then
+        result = run_once(G, spell, req, own, tp)
+        for i, m in ipairs(first.messages) do table.insert(result.messages, i, m) end
+    end
+    result.before = before
+    result.spell = {name = spell.name, type = spell.type, skill = spell.skill}
+    return result
 end
 
 --- The actions the page offers: the spells the character knows for the job, its
@@ -213,11 +242,14 @@ end
 --- @return table {ma = {...}, ja = {...}, ws = {...}, magic = {<skill> = {...}}, trust = one Trust's name or nil}
 function AtelierSim.actions()
     local G = gs()
-    -- aim[name]: 'me', 'enemy' or 'both', for the page's target filter
     local out = {ma = {}, ja = {}, ws = {}, magic = {}, aim = {}}
+    -- aim[name]: the targets it accepts among me, ally, enemy ('me ally enemy')
     local function note_aim(line)
-        local me, foe = aims_self(line), aims_enemy(line)
-        out.aim[line.en] = (me and foe) and 'both' or foe and 'enemy' or 'me'
+        local list = {}
+        if aims_self(line) then list[#list + 1] = 'me' end
+        if aims_ally(line) then list[#list + 1] = 'ally' end
+        if aims_enemy(line) then list[#list + 1] = 'enemy' end
+        out.aim[line.en] = table.concat(list, ' ')
     end
     local ok_s, known = pcall(windower.ffxi.get_spells)
     local main, sub = player.main_job_id, player.sub_job_id
