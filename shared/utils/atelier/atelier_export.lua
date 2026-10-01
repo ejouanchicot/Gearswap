@@ -614,9 +614,13 @@ end
 --- After a load, when the switch is on (INIT_SYSTEMS): the job's modules and
 --- keys are all in place a few seconds later.
 function AtelierExport.after_load()
+    -- the page's live link (shared/utils/atelier/atelier_live.lua): open at every load, for every
+    -- character, unless //gs c atelier live off closed it for this one
+    pcall(function()
+        local Live = require('shared/utils/atelier/atelier_live')
+        if Live.allowed() then Live.start() end
+    end)
     if not AtelierExport.enabled() then return end
-    -- the page's live link (shared/utils/atelier/atelier_live.lua): open while the switch is on
-    pcall(function() require('shared/utils/atelier/atelier_live').start() end)
     require('shared/utils/core/load_gate').defer(4, function() pcall(AtelierExport.export) end, 'atelier export')
 end
 
@@ -650,9 +654,14 @@ function AtelierExport.handle(args)
         return true
     end
     if sub == 'live' then
-        local ok, port, err = pcall(function() return require('shared/utils/atelier/atelier_live').start() end)
-        MessageFormatter.show_info(ok and port and ('Atelier: live link open on 127.0.0.1:%d, reload data/atelier.html'):format(port)
-            or ('Atelier: live link not opened (%s)'):format(tostring(ok and err or port)))
+        local off = args[2] and args[2]:lower() == 'off'
+        local ok, port, err = pcall(function() return require('shared/utils/atelier/atelier_live').set(not off) end)
+        if off then
+            MessageFormatter.show_info('Atelier: live link closed for this character (//gs c atelier live to open it again)')
+        else
+            MessageFormatter.show_info(ok and port and ('Atelier: live link open on 127.0.0.1:%d, reload data/atelier.html'):format(port)
+                or ('Atelier: live link not opened (%s)'):format(tostring(ok and err or port)))
+        end
         return true
     end
     local rel = AtelierExport.export()

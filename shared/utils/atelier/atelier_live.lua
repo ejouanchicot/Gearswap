@@ -21,8 +21,9 @@
 --- a web site cannot use the door. The door stays open across job loads
 --- (windower._atelier_live) and closes with the addon.
 ---
---- Started by AtelierExport.after_load when //gs c atelier on is set, or by
---- //gs c atelier live.
+--- Opened at every GearSwap load (AtelierExport.after_load), for every
+--- character: //gs c atelier live off closes it for this character (marker
+--- <Char>/saved/atelier_live.off), //gs c atelier live opens it again.
 ---
 --- @file shared/utils/atelier/atelier_live.lua
 --- @author ejouanchicot
@@ -161,6 +162,42 @@ end
 ---============================================================================
 --- DOOR
 ---============================================================================
+
+local function off_marker()
+    return player and player.name and require('shared/utils/core/char_paths').writable('saved', 'atelier_live.off')
+end
+
+--- Whether the door may open for this character (no atelier_live.off marker).
+--- @return boolean
+function AtelierLive.allowed()
+    local path = off_marker()
+    local f = path and io.open(path, 'r')
+    if f then f:close() return false end
+    return true
+end
+
+--- Close the door, take its file and the page's way to it out.
+function AtelierLive.stop()
+    local live = windower._atelier_live
+    if live and live.server then pcall(function() live.server:close() end) end
+    windower._atelier_live = nil
+    if player and player.name then os.remove(live_file(player.name)) end
+    pcall(function() require('shared/utils/atelier/atelier_export').write_index() end)
+end
+
+--- Switch the door for this character: on (open now and at every load) or off.
+--- @param on boolean
+--- @return number|nil port when opened
+function AtelierLive.set(on)
+    local path = off_marker()
+    if on then
+        if path then os.remove(path) end
+        return AtelierLive.start()
+    end
+    if path then write(path, 'Atelier live link off for this character: //gs c atelier live to open it again\n') end
+    AtelierLive.stop()
+    return nil
+end
 
 --- Open the door (once per addon load) and look at it every few frames during
 --- this file load; a new load counts as a new version for the page.
