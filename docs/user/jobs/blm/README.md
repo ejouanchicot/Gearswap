@@ -105,7 +105,7 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `cycle Storm` | Next storm, with a coloured chat line |
 | `storm` | /SCH: the `Storm` spell on you, Klimaform first when it is ready and not up. Klimaform neither up nor ready: its recast is shown, nothing is cast |
 | `klima` (`klimaform`) | /SCH: Dark Arts if down and ready, Manifestation if `KlimaformAOE` is On and a charge is left, then Klimaform; each step waits for the previous buff |
-| `buff` (`buffs`, `buffself`, `selfbuff`) | Stoneskin, Blink, Aquaveil, Ice Spikes, each only when missing, known and off recast |
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | The common command: by default Stoneskin, Blink, Aquaveil, Ice Spikes (`job.BLM` in `_common/combat/BUFF_CONFIG.lua`, [configuration](../../guides/configuration.md)), then your subjob's list (/WAR, /SAM, /NIN, /DNC by default). Each only when its buff is down, the spell learned and off recast; what is up or on recast is listed in chat; one cast after the other |
 | `lightarts` / `darkarts` | /SCH: Light / Dark Arts, then the Addendum on the next press |
 | `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: the spell through Light Arts and Accession (and Addendum: White for Erase) as charges allow |
 | `dispel` | /RDM: Dispel on a target you pick. /SCH: Dark Arts and Addendum: Black first when needed. Other subjobs: a warning |

@@ -6,7 +6,7 @@ eight config files and one sets file. It also owns, or is the main user of,
 two shared helpers: `shared/utils/dnc/waltz_manager.lua` and
 `shared/utils/precast/ability_helper.lua`; it uses two more that serve every
 job, `shared/utils/drg/auto_jump.lua` (through `WSPrecastHandler.handle`) and
-`shared/utils/smartbuff/subjob_buffs.lua`. GearSwap loads it when the main
+the buff command `shared/utils/buffs/buff_command.lua` (with its engine `self_buff_manager.lua`). GearSwap loads it when the main
 job becomes DNC. From then on Mote-Include calls its hooks on every action, on
 status and buff changes, on `//gs c` commands and on state cycles.
 
@@ -26,8 +26,8 @@ What DNC adds on top of the shared pipeline:
   `.SaberDance`, `.FanDance`, `.Clim` and their combinations, applied before the
   TP-bonus earring.
 - **Dancer commands**: `step` (Presto + MainStep/AltStep rotation), `dance`,
-  `smartbuff` (dance + samba + the subjob buffs of `SubjobBuffs`, answered
-  before the common `smartbuff`), plus the shared `waltz` /
+  and its part of the common `buff` (dance + samba through `_G.job_buff_extra`,
+  before the job and subjob lists), plus the shared `waltz` /
   `aoewaltz` (WaltzManager).
 - **Mote overrides**: `refine_waltz` becomes a no-op and
   `cancel_conflicting_buffs` keeps only the Sneak / Spectral Jig / Stoneskin
@@ -49,19 +49,19 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/dnc/functions/DNC_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/dnc/functions/DNC_STATUS.lua` | 19 | `LifecycleManager.status_change()` |
 | `shared/jobs/dnc/functions/DNC_BUFFS.lua` | 43 | `LifecycleManager.buff_change(on_dance_change)`: Doom, then a gear refresh on Saber/Fan Dance gain or loss |
-| `shared/jobs/dnc/functions/DNC_COMMANDS.lua` | 190 | `job_self_command` router (its own `smartbuff` ahead of the common commands); `job_state_change = LifecycleManager.state_change()` |
+| `shared/jobs/dnc/functions/DNC_COMMANDS.lua` | 194 | `job_buff_extra` (global: DNC's part of `//gs c buff`), `job_self_command` router; `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/dnc/functions/DNC_MOVEMENT.lua` | 13 | Header only, kept for the 12-module layout |
 | `shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DNC', ...)` wrappers |
 | `shared/jobs/dnc/functions/DNC_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DNC', ...)` wrapper |
 | `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 84 | `ClimaticManager.auto_trigger`, `has_three_finishing_moves`, `WS_MIN_TP` 1000 |
 | `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 121 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
 | `shared/jobs/dnc/functions/logic/step_manager.lua` | 96 | `execute_step`: recast check, Presto, Main/Alt rotation |
-| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 211 | `apply` (dance, samba, then `SubjobBuffs.collect`), `apply_dance` |
+| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 199 | `collect_dance`, `collect_samba`, `collect_extra` (dance then samba, for `job_buff_extra`), `apply_dance`; `apply` calls the common `BuffCommand.apply()` |
 | `shared/jobs/dnc/functions/logic/set_builder.lua` | 167 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
 | `shared/utils/dnc/waltz_manager.lua` | 261 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
 | `shared/utils/drg/auto_jump.lua` | 263 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
 | `shared/utils/precast/ability_helper.lua` | 409 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
-| `shared/utils/smartbuff/subjob_buffs.lua` | 101 | Subjob buffs of every job's `smartbuff` (the `subjob` lists of `_common/combat/SMARTBUFF_CONFIG.lua`, collected by `buff_list.lua`); DNC uses `collect` |
+| `shared/utils/buffs/buff_command.lua` | 59 | `//gs c buff` of every job: `_G.job_buff_extra` (DNC), then the `job` and `subjob` lists of `_common/combat/BUFF_CONFIG.lua`, through `self_buff_manager.lua` |
 | `_master/config/dnc/DNC_STATES.lua` | 211 | All Mote states |
 | `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 10 binds, data only; `KeybindManager.create('DNC', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/dnc/DNC_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -262,7 +262,7 @@ Mote's `buff_change` does not re-equip, so `DNC_BUFFS.lua` passes
 refresh while `midaction()` is true (the aftercast re-equips anyway) and when
 idle. A Doom event is handled by `DoomManager` and never reaches it.
 
-### Steps, dances, smartbuff
+### Steps, dances, buff
 
 `StepManager.execute_step`: picks `MainStep`, or `AltStep` when `UseAltStep`
 is On and `CurrentStep` is `Alt`; aborts with a cooldown message if the shared
@@ -271,27 +271,27 @@ step recast (id 220) is running; when Presto (236) is ready, not active and
 step to `AbilityHelper.follow_up` (replayed once Presto registers, soft
 deadline), else `input /ja "<step>" <t>`; flips `CurrentStep` when alternating.
 
-`SmartbuffManager.apply()` builds one queue, sent 2 s apart (`cast_queue`,
-`wait` chains):
+`//gs c buff` (and `buffs`, `buffself`, `selfbuff`, `smartbuff`) is the common
+command (`BuffCommand.apply()`, see
+[midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)).
+It first calls `_G.job_buff_extra` (`DNC_COMMANDS.lua` ->
+`SmartbuffManager.collect_extra()`):
 
 1. The dance from `state.Dance` (Saber 219 / Fan 224) unless already active.
 2. The samba from `state.Samba` (shared recast 216) unless Fan Dance is the
    selected dance, the value is not in `SAMBAS` (the template's `Off`, since
    2026-09-30), the samba buff is up (`Drain Samba II` grants
    `Drain Samba`), or the live TP is below its cost (`SAMBAS`) without Trance
-   (under Trance the cost is not checked, since 2026-09-28). The queued samba
-   then passes `job_precast_samba`, which applies the same rule.
-3. Subjob (`SubjobBuffs.collect(subjob)`, the list of the common `smartbuff`,
-   see [midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)): the
-   `subjob` list of `_common/combat/SMARTBUFF_CONFIG.lua`, by default /WAR
-   Berserk, Aggressor, Warcry; /NIN Utsusemi Ni then Ichi; /SAM Hasso (only
-   with a two-handed weapon) then Third Eye; a subjob without a list, or a
-   level-0 subjob, nothing (no warning here). A name the jobs do not have is
-   left out quietly.
+   (under Trance the cost is not checked, since 2026-09-28; TP short stays
+   silent). The queued samba then passes `job_precast_samba`, which applies the
+   same rule.
 
-`smartbuff` / `buffself` are answered in `job_self_command` before the common
-commands block, so DNC never reaches the common `smartbuff` (subjob buffs
-only).
+Then `job.DNC` of `_common/combat/BUFF_CONFIG.lua` (empty by default) and the
+`subjob` list (by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi Ni
+then Ichi; /SAM Hasso (only with a two-handed weapon) then Third Eye; nothing
+on a level-0 subjob). Everything goes through the shared action queue, each
+action when the previous has ended. `job_buff_extra` counts as a list, so DNC
+never gets the "nothing set" warning.
 
 `dance` / `fandance` (`apply_dance`) casts `state.Dance` even when active.
 
@@ -354,7 +354,7 @@ Step values are the resource names (`Quickstep`, not `Quick Step`).
 ## Commands
 
 `job_self_command` (`DNC_COMMANDS.lua`): `altjobupdate`, `requestjob`,
-watchdog, `smartbuff` / `buffself`, CommonCommands (`table.unpack(args)`), `ui`, `debugmidcast`,
+watchdog, CommonCommands (`table.unpack(args)`, `buff` among them), `ui`, `debugmidcast`,
 `cyclestate`, then DNC commands. `fandance` is also a key of the DNC alt
 command config; the DNC command answers first, so it runs here even when the
 dual-box partner plays DNC (`//gs c alt fandance` sends the partner's).
@@ -363,7 +363,7 @@ dual-box partner plays DNC (`//gs c alt fandance` sends the partner's).
 |---------|--------|
 | `waltz` / `aoewaltz` | WaltzManager (common command) |
 | `jump` | `DRGJumpManager.execute_jump` (common command, no WS replay) |
-| `smartbuff` / `buffself` | `SmartbuffManager.apply()` (DNC's own, ahead of the common `smartbuff`) |
+| `buff` / `buffs` / `buffself` / `selfbuff` / `smartbuff` | `BuffCommand.apply()` (common command), which calls `job_buff_extra` first |
 | `step` | `StepManager.execute_step()` |
 | `dance` / `fandance` | `SmartbuffManager.apply_dance()` |
 
@@ -419,7 +419,8 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 - `windower.*`: nothing written by DNC code itself; `AbilityHelper` keeps its
   replay marker in `windower._ability_replay`. No Windower events.
 - Coroutines and command queue: 8 s lockstyle; AutoJump chain (1-3 s);
-  `wait` chains of `smartbuff`; `step` and Climactic follow-ups; the Utsusemi
+  `wait` chains of `dance`; the `buff` steps in the shared `ActionQueue`
+  (`windower._action_queue`); `step` and Climactic follow-ups; the Utsusemi
   cancel. They survive a reload.
 - Subjob change: `job_sub_job_change` -> `JobChangeManager.on_job_change` ->
   reload.
@@ -437,7 +438,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
   shown), `CombatMode`, `CustomStates`
   ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
 - `WaltzManager` and `DRGJumpManager` serve every job with DNC or DRG as
-  subjob; `SubjobBuffs` answers `smartbuff` on every other job.
+  subjob; `BuffCommand` answers `buff` on every job.
 - Messages: `message_buffs`, `show_ability_tp_error`, `show_ability_cooldown`,
   `show_waltz_heal`, `show_multi_status` ([messages](../systems/messages.md)).
 
@@ -501,18 +502,18 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   `state.Samba`.
 - New step: add the resource name to `MainStep` / `AltStep` and a
   `sets.precast.Step['<name>']`.
-- New smartbuff subjob: a list under `subjob` in the character's
-  `SMARTBUFF_CONFIG.lua` (or in `SmartbuffConfig.DEFAULTS` plus the template
+- New buff for `//gs c buff`: a list under `job` or `subjob` in the
+  character's `BUFF_CONFIG.lua` (or in `BuffConfig.DEFAULTS` plus the template
   for everyone); a name with a rule of its own gets a `SPECIAL[name]` in
-  `shared/utils/smartbuff/buff_list.lua`. DNC and every other job pick it up
-  ([midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)).
+  `shared/utils/buffs/self_buff_manager.lua`. DNC and every other job pick it up
+  ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)).
 
 ## Known issues
 
 - The override drops Mote's Monomi Sneak cancel (entry,
   `cancel_conflicting_buffs`).
 - Fixed 2026-09-28: `collect_samba` skips its TP test under Trance, like
-  `job_precast_samba`, so smartbuff no longer leaves out a samba the game
+  `job_precast_samba`, so `buff` no longer leaves out a samba the game
   allows for free.
 - Midcast routing is a no-op (base sets absent) and duplicates THF's skeleton.
 - Utsusemi: Ichi (shared `utsusemi_shadows.lua`, every job) cancels every Copy

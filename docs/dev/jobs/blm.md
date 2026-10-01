@@ -34,7 +34,7 @@ function, not a line number.
 | Path | Role |
 |------|------|
 | `_master/entry/Tetsouo_BLM.lua` | Entry point (template): config preload at file level, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD refresh only), `init_gear_sets`, `file_unload` |
-| `shared/jobs/blm/functions/blm_functions.lua` | Facade: includes the 11 hook files, lazy logic loaders, globals `BuffSelf`, `refine_various_spells`, `checkArts`, `CastStorm`, requires `dualbox_manager` |
+| `shared/jobs/blm/functions/blm_functions.lua` | Facade: includes the 11 hook files, lazy logic loaders, globals `BuffSelf` (calls the common `BuffCommand.apply()`), `refine_various_spells`, `checkArts`, `CastStorm`, requires `dualbox_manager` |
 | `shared/jobs/blm/functions/BLM_PRECAST.lua` | `job_precast` (guard, `check_recast_or_refine`, `checkArts`, WS) / `job_post_precast` (TP gear) |
 | `shared/jobs/blm/functions/BLM_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast`: builds a context and dispatches to the router |
 | `shared/jobs/blm/functions/BLM_AFTERCAST.lua` | `job_aftercast`: watchdog notify |
@@ -49,7 +49,6 @@ function, not a line number.
 | `shared/jobs/blm/functions/logic/midcast_router.lua` | `Router.handle_impact`, `handle_elemental`, `handle_dark`, `handle_enfeebling`, and the override helpers |
 | `shared/jobs/blm/functions/logic/elemental_matcher.lua` | Storm (all 8) / day / weather element match, by element id |
 | `shared/jobs/blm/functions/logic/set_builder.lua` | `build_idle_set` / `build_engaged_set`: mode base, town, weapons, movement, Mana Wall |
-| `shared/jobs/blm/functions/logic/buff_manager.lua` | `//gs c buff` list for the shared `SelfBuffManager` |
 | `shared/jobs/blm/functions/logic/storm_manager.lua` | `cast_storm_with_klimaform`: Klimaform + storm with recast display |
 | `shared/jobs/blm/functions/logic/spell_refiner.lua` | Refinement facade `refine_various_spells(spell, eventArgs)` |
 | `shared/jobs/blm/functions/logic/refiner/correspondence.lua` | Tier downgrade table (Fire VI..base, -ga III..base, Sleep, Bind, Bio, ...) |
@@ -131,8 +130,8 @@ The `Tetsouo/...` paths in the template are replaced by the clone script.
 `blm_functions.lua` includes `message_buffs.lua`, then `BLM_PRECAST`,
 `BLM_MIDCAST`, `BLM_AFTERCAST`, `BLM_IDLE`, `BLM_ENGAGED`, `BLM_STATUS`,
 `BLM_BUFFS`, `BLM_LOCKSTYLE`, `BLM_MACROBOOK`, `BLM_COMMANDS`, `BLM_MOVEMENT`.
-Logic modules load on first use (`ensure_buff_manager`,
-`ensure_spell_refiner`, `ensure_storm_manager`). `TIMER(...)` calls are no-ops
+Logic modules load on first use (`ensure_spell_refiner`,
+`ensure_storm_manager`). `TIMER(...)` calls are no-ops
 unless `//gs c perf start`.
 
 ### Precast
@@ -383,7 +382,7 @@ common commands since 2026-09-30, the same on every job ([midcast and buffs](../
 | `cyclestate <State>` | `CycleHandler.handle_cyclestate` (every key) | router |
 | `cyclemainlight` / `cyclemaindark` / `cyclesublight` / `cyclesubdark` | Cycle with a coloured message | `handle_blm_cycle_commands` |
 | `cycle Storm` | Cycle `Storm` with a coloured message (other `cycle X` go to Mote) | `handle_blm_standard_cycles` |
-| `buff` / `buffs` / `buffself` / `selfbuff` | `BuffSelf()`: Stoneskin (8 s delay), Blink, Aquaveil, Ice Spikes through `SelfBuffManager` | router |
+| `buff` / `buffs` / `buffself` / `selfbuff` / `smartbuff` | Common command since 2026-10-01 (`BuffCommand.apply()`): `job.BLM` of `_common/combat/BUFF_CONFIG.lua` (default Stoneskin, Blink, Aquaveil, Ice Spikes), then the `subjob` list, through `SelfBuffManager` and the shared action queue ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)). BLM's own branch and `logic/buff_manager.lua` are gone | CommonCommands |
 | `klima` / `klimaform` | Steps Dark Arts (down and ready), Manifestation (`KlimaformAOE` On and a charge), then Klimaform, through `ScholarActions.run_chain(..., finish_anyway = true)` | router |
 | `dispel` | /RDM: `/ma "Dispel" <stnpc>`; /SCH: `ScholarActions.cast_under_black_addendum`; else a warning | router |
 | `light` / `dark` / `sublight` / `subdark` | `cast_from_states(element, SpellTier, build_nuke_name)` -> `windower.chat.input('/ma "<name>" <stnpc>')` | router |
@@ -497,8 +496,8 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   `TierRefiner` (shared with [RDM](rdm.md) and [GEO](geo.md)),
   `AbilityHelper.follow_up` ([precast pipeline](../systems/precast-pipeline.md)).
 - Midcast: `MidcastManager`, `MidcastFallback`, `MidcastWatchdog`
-  ([midcast and buffs](../systems/midcast-and-buffs.md)); `SelfBuffManager`
-  for `buff`; `ElementalBelt` ([factories and helpers](../systems/factories-and-helpers.md)).
+  ([midcast and buffs](../systems/midcast-and-buffs.md)); `BuffCommand` /
+  `SelfBuffManager` for the common `buff`; `ElementalBelt` ([factories and helpers](../systems/factories-and-helpers.md)).
 - Messages: `message_blm`, `message_blm_midcast`, `message_cooldowns`,
   `message_buffs` ([messages](../systems/messages.md)).
   `show_arts_already_active` and `show_stratagem_no_charges` in

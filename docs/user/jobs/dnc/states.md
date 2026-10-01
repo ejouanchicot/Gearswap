@@ -1,7 +1,7 @@
 # DNC — modes and keys
 
 Dancer modes pick your weapons, the steps `//gs c step` uses, the dance and samba
-`//gs c smartbuff` puts up, and whether Climactic Flourish and Jump fire on their own
+`//gs c buff` puts up, and whether Climactic Flourish and Jump fire on their own
 before a weaponskill.
 
 Start page for this job (every key, command and automatic feature): [README.md](README.md).
@@ -23,8 +23,8 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Ctrl+Numpad5 `^numpad5` | `UseAltStep` | **On**, Off | On: `//gs c step` alternates MainStep and AltStep. Off: MainStep only |
 | Ctrl+Numpad6 `^numpad6` | `ClimacticAuto` | **On**, Off | On: before a weaponskill listed in `DNC_WS_CONFIG.lua` (Rudra's Storm, Ruthless Stroke, Shark Bite), with at least 1000 TP (or the file's `min_tp` if higher), the target above 25 % HP and 3 or more Finishing Moves, Climactic Flourish is used first when it is ready and the weaponskill follows once it is up. Tried once per weaponskill |
 | Ctrl+Numpad7 `^numpad7` | `JumpAuto` | On, **Off** | /DRG only: a weaponskill pressed below 1000 TP with Jump ready uses Jump first (then High Jump if still short), then the weaponskill again |
-| Ctrl+Numpad8 `^numpad8` | `Dance` | **Saber Dance**, Fan Dance | Dance put up by `//gs c smartbuff` (unless already up) and `//gs c dance` (always) |
-| Ctrl+Numpad0 `^numpad0` | `Samba` | **Haste Samba**, Drain Samba II, Aspir Samba, Off | Samba put up by `//gs c smartbuff` when your TP covers it or Trance is up (never with Fan Dance). Off: `smartbuff` uses no samba |
+| Ctrl+Numpad8 `^numpad8` | `Dance` | **Saber Dance**, Fan Dance | Dance put up by `//gs c buff` (unless already up) and `//gs c dance` (always) |
+| Ctrl+Numpad0 `^numpad0` | `Samba` | **Haste Samba**, Drain Samba II, Aspir Samba, Off | Samba put up by `//gs c buff` when your TP covers it or Trance is up (never with Fan Dance). Off: `buff` uses no samba |
 
 ## Other modes (no key)
 
@@ -39,7 +39,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Command | What it does |
 |---|---|
 | `//gs c step` | Uses the step on `<t>`, with Presto first when it is ready, not already up and you are level 77+ (the step follows once Presto is up). Only a message when steps are on recast |
-| `//gs c smartbuff` (`buffself`) | The selected dance, then the selected samba, then subjob buffs of the common `smartbuff`, by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso (two-handed weapon only) and Third Eye (the lists: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md))). Only what is ready and not already up, 2 s apart; the rest is listed in chat |
+| `//gs c buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | The common command: the selected dance, then the selected samba, then `job.DNC` (empty by default) and your subjob's list, by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso (two-handed weapon only) and Third Eye (the lists: `job` / `subjob` in `_common/combat/BUFF_CONFIG.lua` ([configuration](../../guides/configuration.md))). Only what is ready and not already up, one after the other; the rest is listed in chat |
 | `//gs c dance` (`fandance`) | The selected dance only, even if it is already up |
 | `//gs c waltz` / `aoewaltz` | Curing Waltz on `<stpc>` (tier picked from the HP missing) / Divine Waltz II, else Divine Waltz. Common commands; they cancel Saber Dance first |
 | `//gs c jump` | /DRG jump (common command) |

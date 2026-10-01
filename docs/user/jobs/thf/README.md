@@ -21,7 +21,7 @@ Thief with the provided template gives you:
   weaponskill sets.
 - **Range lock**: every ranged attack locks the range and ammo slots;
   `//gs c range` equips your pull weapon and shoots.
-- **One-key chains**: `smartbuff` (by subjob), `fbc` (Feint, Bully,
+- **One-key chains**: `buff` (job and subjob lists), `fbc` (Feint, Bully,
   Conspirator), `steal` (Steal, Mug, Despoil).
 
 Every mode goes back to its default on each job change, subjob change and
@@ -74,7 +74,7 @@ and arguments: [commands guide](../../guides/commands.md).
 
 | Command | What it does |
 |---|---|
-| `smartbuff` | Common command, by default /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning. The lists are yours to change: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)) |
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Common command. Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. Main job lists (`job`): only BLM has one by default, the file shows examples. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
 | `fbc` | Feint, Bully, Conspirator: the ready ones whose buff is not already up, 1 s apart |
 | `steal` | Steal, Mug, Despoil on your target, the ready ones, 1 s apart. Only on a living monster |
 | `range` | Equips the range and ammo of `sets.RangeLock` (else `sets.precast.RA`), locks them, shoots `/ra <stnpc>`; never fires Rare or one-per-stack ammo, nor ammo the weapon cannot shoot |

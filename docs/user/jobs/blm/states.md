@@ -48,7 +48,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | `//gs c cyclemainlight` / `cyclemaindark` / `cyclesublight` / `cyclesubdark` | Cycles that element with a coloured chat line |
 | `//gs c storm` | Casts the `Storm` spell on yourself, with Klimaform first when Klimaform is ready and not up. If Klimaform is neither up nor ready, shows its recast and casts nothing |
 | `//gs c klima` (`klimaform`) | Dark Arts if it is down and ready, Manifestation if `KlimaformAOE` is On and a charge is left, then Klimaform |
-| `//gs c buff` (`buffs`, `buffself`, `selfbuff`) | Casts Stoneskin, Blink, Aquaveil, Ice Spikes when missing, skipping those on recast |
+| `//gs c buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Common command: casts `job.BLM` of `_common/combat/BUFF_CONFIG.lua` (by default Stoneskin, Blink, Aquaveil, Ice Spikes), then your subjob's list, skipping what is up or on recast (listed in chat) |
 | `//gs c lightarts` / `darkarts` | Light / Dark Arts, then the Addendum on the next press (/SCH) |
 | `//gs c aoe sneak` / `aoe invi` / `aoe erase` | Sneak / Invisible / Erase through Light Arts and Addendum/Accession as charges allow (/SCH) |
 | `//gs c dispel` | /RDM: Dispel on `<stnpc>`. /SCH: Addendum: Black (and Dark Arts) first. Other subjobs: a warning |

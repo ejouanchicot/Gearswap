@@ -766,8 +766,8 @@ cooldown. Callers: all 17 `[JOB]_PRECAST.lua`, always gated by `spell.action_typ
 false, `recast == 0`; else `recast <= tolerance`. `RECAST_CONFIG.on_cooldown(...)` is
 its negation. Globals `is_recast_ready(recast)` and `is_on_cooldown(recast)` are
 exported with `_G.RECAST_CONFIG` and used directly by `waltz_manager.lua`,
-`drg/auto_jump.lua`, `drg/DRG_JUMP_MANAGER.lua`, `smartbuff/subjob_buffs.lua`, the
-DNC/THF/WAR smartbuff managers, the DNC step manager, the PLD/RUN aoe and rune
+`drg/auto_jump.lua`, `drg/DRG_JUMP_MANAGER.lua`, `buffs/self_buff_manager.lua` (WAR's chains
+go through it), the DNC/THF smartbuff managers, the DNC step manager, the PLD/RUN aoe and rune
 managers and `BLM_COMMANDS.lua`.
 
 ### AbilityHelper (`shared/utils/precast/ability_helper.lua`)

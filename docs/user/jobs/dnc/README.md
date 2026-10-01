@@ -22,7 +22,7 @@ Dancer with the provided template gives you:
 - **Engaged gear by dance**: Saber Dance and Fan Dance have their own engaged
   sets, changed as soon as the dance starts or ends.
 - **One-key chains**: `step` (Presto first, main / alternate step),
-  `smartbuff` (dance, samba, subjob buffs), `dance`.
+  `buff` (dance, samba, then the job and subjob buff lists), `dance`.
 - **Waltzes**: `//gs c waltz` picks the Curing Waltz tier from the missing HP
   of your target (tier bands: `waltz_from` in `_common/combat/TUNING.lua`); `aoewaltz` uses Divine Waltz.
 
@@ -82,7 +82,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Command | What it does |
 |---|---|
 | `step` | The step on `<t>`: Main Step, or Main and Alt Step in turn when Use Alt Step is On. Presto first when it is ready, not up and you are level 77+. Only a message when steps are on recast |
-| `smartbuff` (`buffself`) | The selected dance (unless already up), the selected samba (never with Fan Dance, only when your TP covers it or Trance is up, and its buff is not up), then subjob buffs, by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni, else Ichi; /SAM Hasso (two-handed weapon only) and Third Eye (the lists: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md))). 2 s apart; what is up or on recast is listed |
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | The common command. The selected dance (unless already up), the selected samba (never with Fan Dance, only when your TP covers it or Trance is up, and its buff is not up), then `job.DNC` (empty by default) and your subjob's list, by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni, else Ichi; /SAM Hasso (two-handed weapon only) and Third Eye (the lists: `job` / `subjob` in `_common/combat/BUFF_CONFIG.lua` ([configuration](../../guides/configuration.md))). One action after the other; what is up or on recast is listed |
 | `dance` (`fandance`) | The selected dance, even if it is already up |
 | `waltz` | Curing Waltz on `<stpc>`: tier from the missing HP of your current target (you, or a party member), else the highest you can use. Cancels Saber Dance first. Common command |
 | `aoewaltz` | Divine Waltz II, else Divine Waltz. Common command |

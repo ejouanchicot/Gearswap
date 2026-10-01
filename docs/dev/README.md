@@ -283,7 +283,7 @@ including what a re-clone would overwrite today.
 |---|---|
 | [systems/core-lifecycle.md](systems/core-lifecycle.md) | Engine sandbox, boot order, INIT_SYSTEMS, JobChangeManager, JobSyncWatchdog, MidcastWatchdog, ModuleCache, LifecycleManager, CycleHandler |
 | [systems/precast-pipeline.md](systems/precast-pipeline.md) | PrecastGuard, DebuffChecker, AutoMedicine, DoomManager, CooldownChecker, AbilityHelper, WS chain, TP bonus, TierRefiner, WS slots |
-| [systems/midcast-and-buffs.md](systems/midcast-and-buffs.md) | MidcastManager resolution, set builders, SelfBuffManager, subjob WAR buffs, Scholar stratagems |
+| [systems/midcast-and-buffs.md](systems/midcast-and-buffs.md) | MidcastManager resolution, set builders, the `//gs c buff` command and its engine (`BUFF_CONFIG.lua`, `SelfBuffManager`), Scholar stratagems |
 | [systems/factories-and-helpers.md](systems/factories-and-helpers.md) | LockstyleManager, MacrobookManager, AutoMove, craft/fishing mode, /DRG jumps, WaltzManager, CureManager, ElementalBelt (Obi / Orpheus), DualWield (DW tiers by haste), SpellGearLock (Dispelga) |
 | [systems/messages.md](systems/messages.md) | Message architecture: facade, engine, renderer, hooks and handlers, modes |
 | [systems/messages-formatters.md](systems/messages-formatters.md) | The 34 formatter modules under `formatters/` (plus 2 in `utilities/`) and their public functions, incl. `altgroup`, `sortie`, `tempbind` |

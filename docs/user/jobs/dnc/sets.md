@@ -162,9 +162,10 @@ is worn on spells without a set of their own.
 - **`//gs c step`**: uses Presto first when it is ready and you are level 77+, then the
   step; alternates `MainStep` / `AltStep` when `UseAltStep` is On. Gear: the Step and
   `JA['Presto']` sets.
-- **`//gs c smartbuff`**: the dance, the samba (skipped with Fan Dance selected, or TP
-  short without Trance), then the subjob list of `SMARTBUFF_CONFIG.lua` (by default /WAR Berserk, Aggressor,
-  Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso, Third Eye), 2 seconds apart. Each one wears its own set above.
+- **`//gs c buff`** (also `smartbuff`): the dance, the samba (skipped with Fan Dance selected, or TP
+  short without Trance), then the `DNC` list of `job` (empty by default) and your subjob's list of `subjob` in
+  `BUFF_CONFIG.lua` (by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso,
+  Third Eye), one action after the other. Each one wears its own set above.
 
 ## Names the code reads that the provided file lacks
 

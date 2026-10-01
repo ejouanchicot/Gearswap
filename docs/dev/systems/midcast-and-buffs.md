@@ -1,6 +1,6 @@
 # Midcast selection, set building and buff helpers
 
-`MidcastManager` picks the midcast set for a spell from nested `sets.midcast` tables. Every job's `job_post_midcast` calls it (directly or through a router) after Mote-Include's default midcast has already equipped its own guess, and `MidcastFallback` routes the spells a job does not (a subjob's magic) from Mote's `cleanup_midcast`. `MidcastTrace` writes each choice to the trace log, `UtsusemiShadows` lets Utsusemi: Ichi replace shadows already up, and `MidcastDeps` lazy-loads the manager for the subjob-magic jobs. Alongside them sit the helpers every job `set_builder.lua` uses for idle movement and town gear (`BaseSetBuilder`), and three action helpers that send `/ja`/`/ma` from `//gs c` commands: the `//gs c buff` self-buff queue (`SelfBuffManager`), the `//gs c smartbuff` subjob buff list of every job (`SubjobBuffs`), and the /SCH Arts, Accession and Addendum chains (`ScholarActions`, `StratagemCharges`).
+`MidcastManager` picks the midcast set for a spell from nested `sets.midcast` tables. Every job's `job_post_midcast` calls it (directly or through a router) after Mote-Include's default midcast has already equipped its own guess, and `MidcastFallback` routes the spells a job does not (a subjob's magic) from Mote's `cleanup_midcast`. `MidcastTrace` writes each choice to the trace log, `UtsusemiShadows` lets Utsusemi: Ichi replace shadows already up, and `MidcastDeps` lazy-loads the manager for the subjob-magic jobs. Alongside them sit the helpers every job `set_builder.lua` uses for idle movement and town gear (`BaseSetBuilder`), and two action helpers that send `/ja`/`/ma` from `//gs c` commands: the buff engine behind `//gs c buff` on every job and WAR's `berserk` / `defender` (`SelfBuffManager`, `BuffCommand`, `BuffConfig`), and the /SCH Arts, Accession and Addendum chains (`ScholarActions`, `StratagemCharges`).
 
 The whole action lifecycle (precast -> midcast -> aftercast -> status rebuild, with the cleanup wrapper order) is on [precast-pipeline.md](precast-pipeline.md#action-lifecycle-end-to-end); this page details the midcast half.
 
@@ -19,11 +19,10 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
-| `shared/utils/buffs/self_buff_manager.lua` | 259 | Factory: resolves a list of spells/abilities and queues the missing ones (only BLM uses it) |
-| `shared/utils/smartbuff/subjob_buffs.lua` | 101 | `//gs c smartbuff` on every job: the current subjob's list from `SmartbuffConfig`, collected by `BuffList`, cast 2 s apart; DNC uses `collect` in its own smartbuff |
-| `shared/utils/smartbuff/buff_list.lua` | 197 | `BuffList.collect(names)` / `cast(queue, spacing)`: a list of ability / spell names turned into what to cast now; the names with a rule (Warcry, Hasso, Utsusemi, Haste Samba) |
-| `shared/utils/smartbuff/smartbuff_config.lua` | 57 | `SmartbuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/SMARTBUFF_CONFIG.lua` over the defaults |
-| `_master/config_global/SMARTBUFF_CONFIG.lua` | 38 | Template of `<Character>/_common/combat/SMARTBUFF_CONFIG.lua`, every key set to its default |
+| `shared/utils/buffs/self_buff_manager.lua` | 284 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest), `cast(to_cast)` (shared action queue), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
+| `shared/utils/buffs/buff_command.lua` | 59 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `subjob[sub]`) |
+| `shared/utils/buffs/buff_config.lua` | 62 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
+| `_master/config_global/BUFF_CONFIG.lua` | 49 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default, examples for RDM / PLD / RUN / NIN in comments |
 | `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 104 | Stratagem charge count derived from recast id 231 |
 
@@ -308,59 +307,65 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 
 Typical order (PLD `build_idle_set`): town base -> main weapon -> shield -> (return early in town) -> HybridMode set -> Xp set -> Regen set -> movement -> mode shield (`PLD_WEAPONS.lua` `shields`) -> mode ammo. Engaged (`build_engaged_set`): BurtgangKC / Kraken Club / HybridMode base -> weapon -> grip of a two-handed weapon (`PLD_WEAPONS.lua` `grips`, default Shining: Alber Strap) -> Xp -> mode shield -> mode ammo.
 
-## SelfBuffManager
+## Buff command and engine
 
-`SelfBuffManager.create({buffs = list, action_type = 'Magic'})` returns `{ buff_self = fn }`. A list entry is `{spell = name}` or `{ability = name}` with optional `buff` (buff name to test) and `delay` (seconds to wait after this action, default `DEFAULT_DELAY = 6`).
+Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buffs`, `buffself`, `selfbuff` and `smartbuff` are common commands: `COMMON_COMMANDS.lua` lists them in `is_common_command` and routes them to `BuffCommand.apply()` (`shared/utils/buffs/buff_command.lua`). BLM's own `buff` command, its `logic/buff_manager.lua`, `smartbuff/subjob_buffs.lua`, `smartbuff/buff_list.lua` and `smartbuff/smartbuff_config.lua` are gone; the global `BuffSelf()` (`blm_functions.lua`) stays and calls `BuffCommand.apply()`. WAR's `berserk` / `defender` / `thirdeye` / `tp` (Meditate) send their lists through the same engine ([war.md](../jobs/war.md#buff-chains-berserk-defender-thirdeye-tp)).
 
-`buff_self()`:
+### `//gs c buff` (`BuffCommand.apply`)
 
-1. Reads spell and ability recasts; shows an error and returns `false` if either is not a table.
-2. Resources: `_G.res or windower.res or require('resources')`.
-3. `usable_entries` resolves each entry (`resolve_entry`): the buff name comes from `res.buffs[data.status].en` unless given; entries with no buff name are dropped. `is_usable`: an ability must be in `windower.ffxi.get_abilities().job_abilities`; a spell must be known and either listed for the main job at any level or listed for the subjob at a level `<=` `player.sub_job_level`.
-4. `queue_ready` keeps entries whose buff is not active, whose recast is 0 and that were not queued in the last `CAST_COOLDOWN = 2.0` seconds (`os.clock`). The wait for each entry is the sum of the `delay` of the entries queued before it.
-5. `send_queue` sends every action at once as `wait N; input /ma "X" <me>` (or `/ja`) and stamps the anti-spam time.
-6. With nothing to send, `show_active` lists the buffs already up with `MessageBuffs.show_buff_status`. If none is up (everything missing is on recast) nothing is printed and `false` is returned.
+1. `_G.job_buff_extra`, when a job defines it (only DNC: `DNC_COMMANDS.lua` -> `SmartbuffManager.collect_extra()`, the selected dance, then the selected samba). Called under `pcall`; its `to_cast` and `status` are appended.
+2. `cfg.job[player.main_job]`, when it is a non-empty table: `SelfBuffManager.collect`.
+3. `cfg.subjob[player.sub_job]`, when `player.sub_job_level > 0` (not on a disabled subjob) and the list is non-empty: `SelfBuffManager.collect`.
+4. No list applied (none of the three): `MessageFormatter.show_warning('buff: nothing set for <main>/<sub> (_common/combat/BUFF_CONFIG.lua)')`, returns `false`. A `job_buff_extra` that ran counts as a list, so DNC never gets the warning.
+5. Otherwise `show_status(status)` then `cast(to_cast)`; returns true when something was queued or shown.
 
-Only caller: `shared/jobs/blm/functions/logic/buff_manager.lua` (Stoneskin with `delay = 8`, Blink, Aquaveil, Ice Spikes), reached by `//gs c buff|buffs|buffself|selfbuff` (`BLM_COMMANDS.lua` -> global `BuffSelf()` in `blm_functions.lua`). The anti-spam table is per manager instance, created when `buff_manager.lua` loads.
+### Settings (`BUFF_CONFIG.lua`)
 
-## SubjobBuffs
-
-`shared/utils/smartbuff/subjob_buffs.lua` replaced `subjob_war_buffs.lua` and the THF / DNC subjob collectors on 2026-09-30. `smartbuff` is a common command: `COMMON_COMMANDS.lua` lists it in `is_common_command` and routes it to `SubjobBuffs.apply()`. Since 2026-10-01 the lists are data: `SmartbuffConfig` (`smartbuff_config.lua`) gives them, `BuffList` (`buff_list.lua`) turns a list into casts. WAR's `berserk` / `defender` use the same two modules ([war.md](../jobs/war.md#buff-chains-berserk-defender-thirdeye-tp)).
-
-### Settings (`SMARTBUFF_CONFIG.lua`)
-
-`SmartbuffConfig.get()` reads `CharPaths.optional('common', 'SMARTBUFF_CONFIG')` (`<Character>/_common/combat/SMARTBUFF_CONFIG.lua`; a cached `require`, so an edit applies after a reload; missing file or an error = defaults) at each call and lays it over `SmartbuffConfig.DEFAULTS`:
+`BuffConfig.get()` reads `CharPaths.optional('common', 'BUFF_CONFIG')` (`<Character>/_common/combat/BUFF_CONFIG.lua`; a cached `require`, so an edit applies after a reload; missing file or an error = defaults) at each call and lays it over `BuffConfig.DEFAULTS`:
 
 | Key | Default | Read by |
 |---|---|---|
-| `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}` | `SubjobBuffs` (every job's `smartbuff`, DNC's subjob part) |
+| `job` | `BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'}`; no other job | `BuffCommand` (main job list) |
+| `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}` | `BuffCommand` (subjob list) |
 | `war_berserk` | `{'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Berserk')` (and any other `param`) |
 | `war_defender` | `{'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Defender')` |
 | `war_add_sam` | `true` | WAR `buff_war`: on /SAM, append the stance and Third Eye |
 
-Merge: `subjob` per subjob (a subjob the file names gets its table, the others keep their default; a non-table value is ignored); every other key replaced whole when the file's value has the default's type (`false` is kept), else the default. The template `_master/config_global/SMARTBUFF_CONFIG.lua` writes every key with its default; `char_paths.lua` and `migrate_layout.py` `COMMON_GROUPS` put it in `combat`, `where_is_what.py` describes it.
+Merge: `job` and `subjob` per job (a job the file names gets its table, the others keep their default; a non-table value is ignored); every other key replaced whole when the file's value has the default's type (`false` is kept), else the default. The template `_master/config_global/BUFF_CONFIG.lua` writes every key with its default and shows commented examples for `job` (RDM `{'Haste II', 'Refresh III', 'Phalanx', 'Temper II', 'Gain-STR'}`, PLD `{'Majesty', 'Crusade', 'Phalanx', 'Reprisal', 'Enlight II'}`, RUN `{'Crusade', 'Phalanx', 'Temper', 'Regen IV'}`, NIN `{'Utsusemi'}`) and `subjob` (WAR `{'Aggressor', 'Warcry'}`); `char_paths.lua` and `migrate_layout.py` `COMMON_GROUPS` put it in `combat`, `where_is_what.py` describes it.
 
-### BuffList
+### SelfBuffManager (`self_buff_manager.lua`)
 
-`BuffList.collect(names)` walks the list in order (non-string entries skipped) and returns `to_cast` (`{name, magic?}`) and `status` (`{name, status, time?}`):
+`collect(list)` walks the list in order and returns `to_cast` and `status` (`{name, status, time?, value?, extra?}`). Resources: `_G.res or windower.res or require('resources')`; none = two empty lists. The context (known abilities and spells, main / sub job ids, sub level, ability and spell recasts) is read once per call.
 
-- Plain name: `lookup` finds it in `res.job_abilities`, else `res.spells` (by English name, cached per module instance), giving its id and `recast_id`. Not found, or not `known` (a job ability not in `windower.ffxi.get_abilities().job_abilities`, a spell not `true` in `windower.ffxi.get_spells()`): left out quietly, no status line. Otherwise `buffactive[name]` -> `active`; `is_recast_ready(recast)` (the `RECAST_CONFIG.lua` global; spell recasts divided by 100) -> queued, `magic = true` for a spell; else `cooldown` with `math.ceil(recast)`. The buff is looked up under the ability's own name.
-- `Warcry`: Warcry queued when ready and Blood Rage not up; Blood Rage (only when known, so WAR main) queued when Warcry is not up, Warcry is on cooldown and Blood Rage is ready. Each gets its `active` / `cooldown` line.
-- `Hasso`: the plain rule, only when the main hand holds a two-handed weapon (`res.items` `skill` 4, 6, 7, 8, 10 or 12; an item not found counts as two-handed, the game refuses Hasso itself). Empty hand: nothing.
-- `Utsusemi`: Utsusemi: Ni (spell 339) when learned and ready, else Ichi (338) when learned and ready, as `/ma`; Ichi learned but both on recast gives two `cooldown` lines. No check of shadows already up.
-- `Haste Samba`: the plain rule, plus a `tp` status entry (`value` = live TP, `extra` = 350) instead of the cast when `live_tp` is under 350.
+- Entry forms: a name (`'Stoneskin'`), or a table `{name = ..., buff = ..., wait = ...}` (`delay` is read as `wait`); `{spell = ...}` looks only in `res.spells`, `{ability = ...}` only in `res.job_abilities`. A plain name is looked up as a job ability first, else a spell. Not found: skipped quietly.
+- Buff name: `entry.buff`, else the English name of the action's status (`res.buffs[data.status].en`: Enlight II gives Enlight), else the ability's own name; a spell without a status has no buff check.
+- Usable (`usable`), else skipped quietly: an ability must be in `windower.ffxi.get_abilities().job_abilities` (the game accounts for job and level); a spell must be learned (`get_spells()`) and listed for the main job at any level, or for the subjob at a level `<=` `player.sub_job_level`.
+- Then (`collect_item`): buff in `buffactive` -> `active` line; recast not ready (`is_recast_ready`, the `RECAST_CONFIG.lua` global; spell recasts divided by 100) -> `cooldown` line with `math.ceil(recast)`; queued less than `CAST_COOLDOWN = 2.0` s ago (`os.clock`, double press) -> skipped silently; else queued.
+- Wait of a step: `entry.wait`, else the spell's `cast_time` (1 for an ability) + `WAIT_MARGIN = 3.0`.
 
-`BuffList.cast(queue, spacing)` sends the first `input /ja` (or `/ma` for `magic`) `"<name>" <me>` at once and each next one `spacing * (i - 1)` seconds later (`wait` chains).
+Names with a rule of their own (`SPECIAL`, matched on the entry's name):
 
-### SubjobBuffs API
+| Name | Rule |
+|---|---|
+| `Warcry` | Warcry queued when ready and Blood Rage not up; Blood Rage (only when usable, so WAR main) queued when Warcry is not up, Warcry is on cooldown and Blood Rage is ready. Each gets its `active` / `cooldown` line |
+| `Hasso`, `Seigan` | the plain rule, only when the main hand holds a two-handed weapon (`res.items` `skill` 4, 6, 7, 8, 10 or 12; an item not found counts as two-handed, the game refuses the stance itself). Empty hand: nothing |
+| `Utsusemi` | Utsusemi: Ni when usable and ready, else Ichi when usable and ready (no buff check: shadows are counted by the game); Ichi usable but both on recast gives the `cooldown` lines |
+| `Haste Samba` | the plain rule, plus a `tp` status entry (`value` = live TP, `extra` = 350) instead of the cast when `live_tp` is under 350 |
 
-- `SubjobBuffs.collect(sub)` (default `player.sub_job`): `BuffList.collect` of `get().subjob[sub]`; both lists empty when the subjob has no list, an empty list, or `player.sub_job_level` is 0.
-- `SubjobBuffs.handles(sub)`: whether `sub` has a non-empty list.
-- `SubjobBuffs.cast(queue)`: `BuffList.cast(queue, CAST_SPACING)`, `CAST_SPACING = 2`.
-- `SubjobBuffs.show_status(status)` shows the `active` / `cooldown` lines through `MessageBuffs.show_buff_status`, then the short TP through `MessageFormatter.show_multi_status`.
-- `SubjobBuffs.apply()` warns (`MessageFormatter.show_warning`: `smartbuff: no self-buff on /<sub>` or `smartbuff: /<sub> is disabled here`) and returns false for a subjob without a list, or for a level-0 subjob (Sheol Gaol); otherwise `collect`, `show_status`, `cast`.
+`cast(to_cast)` sends each name once (a duplicate in the same call is dropped), stamps `last_use`, and pushes `input /ma "<name>" <me>` (a spell, `is_ability == false`, or an entry with `magic = true`) or `input /ja ...` onto the shared `ActionQueue` (`shared/utils/core/action_queue.lua`) with `{delay = 1.0, tag = 'BUFF'}` and the step's wait (an entry from `job_buff_extra` has none: 1 + 3 s). The queue sends a step when the previous action has ended plus `delay`, or after the wait; a spell the game refused silently is sent again (see `action_queue.lua`). It is the same queue as `//gs c stealth` and `//gs c cleanse`.
 
-DNC answers `smartbuff` / `buffself` in `DNC_COMMANDS.lua` before its common-commands block: its own `SmartbuffManager.apply()` queues the dance and the samba, then appends `SubjobBuffs.collect(subjob)` and casts through its own queue (`/ma` for `magic` entries too). THF has no smartbuff of its own any more (its `smartbuff_manager.lua` keeps `fbc` and `steal`). WAR main keeps `berserk` / `defender` / `thirdeye` / `tp` in its own `smartbuff_manager.lua`; its `smartbuff` is the common one.
+`show_status(status, action_type)` shows the `active` / `cooldown` lines through `MessageBuffs.show_buff_status`, then the short-TP entries through `MessageFormatter.show_multi_status`.
+
+### Callers
+
+| Caller | Lists |
+|---|---|
+| `BuffCommand.apply()` (`//gs c buff` and aliases, every job; BLM `BuffSelf()`; DNC `SmartbuffManager.apply()`) | `job_buff_extra`, `job[main]`, `subjob[sub]` |
+| WAR `SmartbuffManager.buff_war(param)` (`berserk` / `defender`) | `war_berserk` or `war_defender`, then with `war_add_sam` on an enabled /SAM `Hasso` (Seigan for Defender) and `Third Eye` |
+| WAR `buff_sam_sub()` (`thirdeye`) | the /SAM part, stance from `buffactive['Defender']` |
+| WAR `build_tp()` (`tp`) | `{'Meditate'}` on /SAM; /DRG goes to `DRG_JUMP_MANAGER` |
+
+DNC's `//gs c dance` (`apply_dance`) keeps its own `cast_queue` (`send_command` with `wait` chains, `CAST_SPACING = 2`); only its `//gs c buff` part goes through the engine. THF's `smartbuff_manager.lua` keeps `fbc` and `steal`.
 
 ## ScholarActions and StratagemCharges
 
@@ -399,13 +404,12 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 |---|---|---|
 | `//gs c debugmidcast` | 17 job COMMANDS files (see Debug mode) | Toggle `windower._midcast_debug` / `_G.MidcastManagerDebugState` |
 | `//gs c trace on` / `off` | `CommonCommands` | `MIDCAST` trace lines (and every other trace tag) |
-| `//gs c buff` / `buffs` / `buffself` / `selfbuff` (BLM) | `BLM_COMMANDS.lua` `job_self_command` | `SelfBuffManager` queue |
+| `//gs c buff` / `buffs` / `buffself` / `selfbuff` / `smartbuff` | every job, common command -> `BuffCommand.apply()` | DNC dance and samba (`job_buff_extra`), then `job[main]`, then `subjob[sub]` of `BUFF_CONFIG.lua`, through `SelfBuffManager` |
 | `//gs c lightarts` | every job, common command -> `ScholarActions.handle_command` | Light Arts, then Addendum: White |
 | `//gs c darkarts` | every job, common command | Dark Arts, then Addendum: Black |
 | `//gs c aoe sneak\|invi\|invisible\|erase` | every job, common command, with the job's `state.SneakInviAOE` when it has one (BLM, PLD, SCH). PLD and RUN answer the bare `aoe` themselves, ahead of the common commands: their Blue Magic rotation | `cast_with_stratagems` |
 | `//gs c klima` / `klimaform` | BLM | Dark Arts if not up and ready, Manifestation if `KlimaformAOE` is on and a charge exists, then Klimaform (`run_chain` with `finish_anyway`) |
 | `//gs c dispel` | BLM, GEO | `cast_under_black_addendum('Dispel', ...)` |
-| `//gs c smartbuff` | every job, common command -> `SubjobBuffs.apply()`; DNC answers it (and `buffself`) first with its own | Subjob self-buffs (/WAR, /SAM, /NIN, /DNC) |
 
 `SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/_common/dualbox/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
 
@@ -415,13 +419,13 @@ Until 2026-09-30 `lightarts`, `darkarts` and `aoe` were wired by hand in BLM, PL
 
 ## Configuration
 
-No config file is read by these modules. Inputs are:
+The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no config file of their own. Inputs are:
 
 - Set tables: `sets.midcast[...]`, `sets.midcast.BardSong`, `sets.midcast.Songs[instrument]`, `sets.midcast.Songs.Duration`, `sets.midcast.CureSelf` / `CureOther` (PLD, RUN), `sets.MoveSpeed`, `sets.Adoulin`, `sets.idle.Town`.
 - Mote states: whatever a caller passes as `mode_state`; `state.Moving`; `state.MainInstrument` (BRD router).
 - Mote data: `classes.SpellMaps` and `job_get_spell_map` (P8b through `get_spell_map`).
 - Globals: `buffactive`, `player`, `world`, `areas.Cities`, `_G.SongRotationManager`, `is_recast_ready` (from `RECAST_CONFIG.lua`, tolerance 2.0 s).
-- Hard-coded constants: `CAST_COOLDOWN = 2.0`, `DEFAULT_DELAY = 6` (self buffs); `CAST_SPACING = 2` (/WAR buffs); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `TUNING.lua` `stratagem_full_recharge`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
+- Hard-coded constants: `CAST_COOLDOWN = 2.0`, `DELAY = 1.0`, `WAIT_MARGIN = 3.0`, `HASTE_SAMBA_TP = 350` (buff engine); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `TUNING.lua` `stratagem_full_recharge`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
 
 ## State & lifetime
 
@@ -430,8 +434,8 @@ No config file is read by these modules. Inputs are:
 - `MidcastTrace` `current`: module local, the spell last passed to `begin`.
 - `windower._sch_cast_seq`: generation of the latest scholar cast; pending polls of an older one stop.
 - `_G.SongRotationManager`: written by `BRD_MIDCAST.lua` on the first BRD midcast; read by `get_song_instrument`.
-- Module locals: `MidcastDeps` cache, `SelfBuffManager` per-instance `last_use_times`, `ScholarActions` lazy `MessageFormatter`. All die with the user environment.
-- Coroutines: the `ScholarActions` buff polls (invalidated by `windower._sch_cast_seq`) and the `AbilityHelper.follow_up` polls it starts. `send_command('wait N; ...')` chains (self buffs, /WAR buffs, Utsusemi shadow cancel) are handed to Windower and cannot be cancelled by a reload or job change. No events, keybinds or text objects.
+- Module locals: `MidcastDeps` cache, `SelfBuffManager` `last_use` (double press), `ScholarActions` lazy `MessageFormatter`. All die with the user environment.
+- Coroutines: the `ScholarActions` buff polls (invalidated by `windower._sch_cast_seq`) and the `AbilityHelper.follow_up` polls it starts. The buff engine's steps wait in the shared `ActionQueue` on `windower._action_queue` (a queue under way goes on across a job change; a queue started after it gets a new generation). `send_command('wait N; ...')` chains (DNC `dance`, Utsusemi shadow cancel) are handed to Windower and cannot be cancelled by a reload or job change. No events, keybinds or text objects.
 
 ## Interactions
 
@@ -451,7 +455,7 @@ No config file is read by these modules. Inputs are:
 - `target_func` values must match the keys in the set file exactly. PLD/RUN return `'Self'`/`'Other'`; no PLD or RUN set defines those keys. RDM's `sets.midcast.CureSelf` has no selector.
 - Singing Step 1.5 removes every space: "Aria of Passion" looks up `AriaofPassion`, not the `AriaPassion` defined in the BRD sets.
 - `get_enhancing_target` only returns something with Composure up (a RDM main); for every other job it is `nil`.
-- `SubjobBuffs.collect` needs the global `is_recast_ready`, which exists only after the entry file has required `RECAST_CONFIG`.
+- `SelfBuffManager.collect` needs the global `is_recast_ready`, which exists only after the entry file has required `RECAST_CONFIG`.
 - `StratagemCharges` returns 0 when Scholar is neither main nor sub; `ScholarActions` then warns "No charges available (next charge: 0.0m)" for each stratagem it wanted.
 - The debug flag outlives job changes on purpose (it is there to trace them); remember to turn it off.
 - `MidcastFallback` identifies "already routed" by table identity (`_G._midcast_routed == spell`). A router that passes a copy of the spell to `select_set` would be routed twice.
@@ -463,7 +467,7 @@ No config file is read by these modules. Inputs are:
 - **New target key**: write a `target_func` returning the key, then define `base[key]` (P5) or `base[type][key]` / `base[type][key][mode]` (P2).
 - **Gear by Mote spell map**: define `sets.midcast[map]` or `base[map]`; P8b picks it when nothing more specific exists.
 - **New song set**: name it exactly like the spell, the tier-less spell, the family word, or the first word; for a multi-word name without spaces use the name with every space removed.
-- **New self-buff list for another job**: `SelfBuffManager.create({buffs = {...}})` in the job's logic folder and a `buff` command that calls `buff_self()`.
+- **New self-buff list for a job**: a list under `job` (or `subjob`) in the character's `BUFF_CONFIG.lua`, or in `BuffConfig.DEFAULTS` plus the template for everyone. A job part computed from states: define `_G.job_buff_extra` returning `to_cast, status` (DNC model). A new name with its own rule: a `SPECIAL` entry in `self_buff_manager.lua`.
 - **New /SCH cast**: add an entry to `AOE_SPELLS` with `toggle` and `addendum` flags, or call `cast_with_stratagems` / `cast_under_black_addendum` / `run_chain` from the job command.
 
 ## Known issues
@@ -540,7 +544,7 @@ Syntax:
 ```bash
 cd "D:/Windower Tetsouo/addons/GearSwap/data"
 for f in shared/utils/midcast/*.lua shared/utils/scholar/*.lua shared/utils/buffs/*.lua \
-         shared/utils/smartbuff/*.lua shared/utils/set_building/*.lua; do
+         shared/utils/set_building/*.lua; do
   luac5.1 -p "$f" || echo "FAIL $f"; done
 ```
 

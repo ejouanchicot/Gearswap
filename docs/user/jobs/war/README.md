@@ -67,7 +67,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Command | Does |
 |---|---|
 | `ws1` ... `ws5` | Uses the weaponskill in that slot for the current weapon, on `<t>`. `ws6`...`ws9` only warn |
-| `berserk` | By default Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is on recast), the ready ones, 2 s apart; /SAM adds Hasso and Third Eye. The list: `war_berserk` / `war_defender` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)); `war_add_sam = false` drops the /SAM part |
+| `berserk` | By default Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is on recast), the ready ones, one after the other; /SAM adds Hasso (two-handed weapon only) and Third Eye. The list: `war_berserk` / `war_defender` in `_common/combat/BUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)); `war_add_sam = false` drops the /SAM part |
 | `defender` | By default the same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. The list: `war_defender` |
 | `thirdeye` | /SAM: Hasso (Seigan if Defender is up) and Third Eye. On another subjob: a warning, nothing is sent |
 | `tp` | /SAM: Meditate. /DRG: Jump, then High Jump if TP is still under 1000. Other subjobs: a warning |
@@ -108,7 +108,7 @@ with the same name; `//gs c alt berserk` sends the alt's.
 |---|---|
 | `waltz`, `aoewaltz` | Curing Waltz / Divine Waltz (needs /DNC) |
 | `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
-| `smartbuff` | By default /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning. The lists are yours to change: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)) |
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. Main job lists (`job`): only BLM has one by default, the file shows examples. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
 | `!numpad-` | Jump Auto on / off, shown on /DRG only (see [commands](../../guides/commands.md#combat-helpers)) |
 | `jump` | Jump, then High Jump (needs /DRG) |
 | `stealth sneak` / `invi` / `both` (+ `self`, `check`, `status`...) | Sneak / Invisible on the whole group (Alt+Z / Alt+X) |
@@ -132,7 +132,7 @@ with the same name; `//gs c alt berserk` sends the alt's.
 
 | Feature | On WAR |
 |---|---|
-| Buff chains | `berserk` / `defender` send only the abilities that are ready and not already up, and list the others in chat. Their lists are `war_berserk` / `war_defender` of `SMARTBUFF_CONFIG.lua`; a name your jobs do not have is skipped without a message |
+| Buff chains | `berserk` / `defender` send only the abilities that are ready and not already up, and list the others in chat. Their lists are `war_berserk` / `war_defender` of `BUFF_CONFIG.lua`; a name your jobs do not have is skipped without a message. `//gs c buff` adds your WAR list (`job.WAR`, empty by default) and your subjob's |
 | Automatic Jump (/DRG) | With `JumpAuto` On, a weaponskill under 1000 TP is cancelled, Jump (then High Jump) goes out, and the weaponskill is sent again. If TP is still short, the weaponskill is refused as usual. A weaponskill out of range is refused without using a jump |
 | Retaliation auto-cancel | Retaliation up, not engaged, and 5 s of continuous running: `cancel Retaliation` is sent (needs the Windower `Cancel` addon) |
 | Engaged set choice | Kraken Club, a SubtleBlow / Hoxne stance, the weapon's own Aftermath set (`sets.engaged.<Weapon>AFM3`), Aftermath: Lv.3 on Ukonvasara and weapon-named engaged sets win over the Hybrid Mode set, in that order ([states.md](states.md#notes)); Aftermath: Lv.3 gained or lost re-dresses you about 0.1 s later (not while Doomed; during a spell or weaponskill, when it ends) |

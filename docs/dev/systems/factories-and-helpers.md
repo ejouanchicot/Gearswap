@@ -31,8 +31,8 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `_master/sets/fishing_sets.lua` | Generic fishing set file (single set, `description = 'Fishing'`), all 14 slots `""` |
 | `_master/Tetsouo/_common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000, every job on /DRG (run by `WSPrecastHandler.handle`); `attach` gives every job `state.JumpAuto` and its row |
-| `shared/utils/smartbuff/subjob_buffs.lua` | `//gs c smartbuff` on every job: the self-buffs of the current subjob, listed in `_common/combat/SMARTBUFF_CONFIG.lua` (defaults /WAR, /SAM, /NIN, /DNC) |
-| `shared/utils/smartbuff/buff_list.lua`, `smartbuff_config.lua` | A list of ability / spell names turned into casts (shared with WAR `berserk` / `defender`), and the settings over their defaults ([midcast and buffs](midcast-and-buffs.md#bufflist)) |
+| `shared/utils/buffs/buff_command.lua` | `//gs c buff` (aliases `buffs`, `buffself`, `selfbuff`, `smartbuff`) on every job: `_G.job_buff_extra`, then the main job's and the subjob's lists of `_common/combat/BUFF_CONFIG.lua` |
+| `shared/utils/buffs/self_buff_manager.lua`, `buff_config.lua` | The one buff engine (names turned into casts through the shared action queue; shared with WAR `berserk` / `defender` / `thirdeye` / `tp`), and the settings over their defaults ([midcast and buffs](midcast-and-buffs.md#buff-command-and-engine)) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | `//gs c jump` (manual Jump chain) |
 | `shared/utils/dnc/waltz_manager.lua` | Curing / Divine Waltz tier selection |
 | `shared/utils/whm/cure_manager.lua` | Cure / Curaga tier selection with recast fallback |
@@ -757,19 +757,19 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | KeybindGuard, common keys, key conflicts | KeybindManager | every job |
 | AutoMove loop (`state.Moving`) | `INIT_SYSTEMS` +0.5 s | the gear depends on the set builder (column below) |
 | `waltz` / `aoewaltz` / `jump` commands | `CommonCommands` | need DNC main or sub / DRG sub |
-| `smartbuff` command | `CommonCommands` -> `SubjobBuffs.apply()` | /WAR, /SAM, /NIN, /DNC; DNC main answers it first with its own |
+| `buff` command (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | `CommonCommands` -> `BuffCommand.apply()` | the main job's list (`job`, by default BLM only) then the subjob's (`subjob`, by default /WAR, /SAM, /NIN, /DNC); DNC main adds its dance and samba first |
 | Jump Auto (`state.JumpAuto`, before a WS) | `WSPrecastHandler.handle` + `AutoJump.attach` from KeybindManager | /DRG only; Off unless the job's STATES file says otherwise |
 
 **Per job:**
 
-| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | Own `JumpAuto` state and key (AutoJump itself: every job) | Own smartbuff (the common `smartbuff`: every job) | AUTO_ABILITIES options | Other job-specific shared use |
+| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | Own `JumpAuto` state and key (AutoJump itself: every job) | Own part of `buff` (the common `buff`: every job) | AUTO_ABILITIES options | Other job-specific shared use |
 |---|---|---|---|---|---|---|---|---|---|---|
 | BLM | yes (base builder) | native (`^numpad8`) | optional | | | yes (`follow_up` Dark Arts) | | | | ElementalMatcher defers to ElementalBelt |
 | BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | Combat Mode On keeps the worn weapons because their slots are locked (`apply_weapon` itself does not test the mode) |
 | BRD | yes | optional | optional | | commented | yes (Pianissimo, Nightingale / Troubadour) | | | | |
 | BST | yes (base builder, idle, outside town; since 2026-09-29) | optional | optional | | commented | | | | | |
 | COR | yes | optional | optional | | commented | | | | | DualWield, the TH engaged overlay and the custom idle / engaged gear skip during a roll hold (`GearHold`) |
-| DNC | yes | optional | optional | yes | commented | yes (Climactic Flourish, Presto) | yes | yes (`smartbuff`, `buffself`) | | WaltzManager |
+| DNC | yes | optional | optional | yes | commented | yes (Climactic Flourish, Presto) | yes | yes (`job_buff_extra`: dance, samba) | | WaltzManager |
 | DRK | yes (own builder) | optional | optional | | | | | | | weapons through `WeaponResolver` (`equip_without_set`) since 2026-09-28 |
 | GEO | yes | native (`^numpad0`) | optional | | | yes (Entrust, Full Circle) | | | `geo_entrust`, `geo_full_circle` | |
 | PLD | yes | optional | optional | | | yes (Divine Emblem, Majesty) | | | | |

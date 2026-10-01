@@ -4,7 +4,7 @@ Start page for THF (every key, command and automatic feature):
 [README.md](README.md). Set names and automatic gear: [sets.md](sets.md).
 
 Thief: weapons, Treasure Hunter, Sneak/Trick Attack gear, a ranged lock, and
-one-key ability chains (`smartbuff`, `fbc`, `steal`).
+one-key ability chains (`buff`, `fbc`, `steal`).
 
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
 mode's current value; this page says what each value does. `#numpad0` (Auto
@@ -33,7 +33,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 | Command | What it does |
 |---|---|
-| `//gs c smartbuff` | Common command, by subjob. By default /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning. The lists are yours to change: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)). |
+| `//gs c buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Common command. Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. Main job lists (`job`): only BLM has one by default, the file shows examples. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)). |
 | `//gs c fbc` | Feint, Bully, Conspirator: the ones that are ready (and whose buff is not already up), 1 s apart. |
 | `//gs c steal` | Steal, Mug, Despoil (the ready ones) on your target. Does nothing unless the target is a living monster. |
 | `//gs c range` | Equips the range and ammo of `sets.RangeLock` (else `sets.precast.RA`), locks range and ammo, then shoots `/ra <stnpc>`, except with Rare or one-per-stack ammo, or ammo the weapon cannot fire (it says why). |

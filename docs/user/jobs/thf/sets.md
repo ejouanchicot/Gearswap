@@ -171,7 +171,7 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
   next gear change). Remove those sets to stop it.
 - **Range lock** after every ranged attack; **quiver opening** for the bolts you wear.
 - **Weapons** re-equipped on every idle and engaged set.
-- The chains `//gs c smartbuff`, `fbc` and `steal` send abilities only; their
+- The chains `//gs c buff`, `fbc` and `steal` send abilities (and `buff` the spells of your lists); their
   gear comes from `sets.precast.JA` as usual ([states.md](states.md)).
 
 ## Sets in the provided file that nothing reads
