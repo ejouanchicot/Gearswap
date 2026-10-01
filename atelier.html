@@ -115,6 +115,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .fam span:last-child{color:var(--faint);letter-spacing:0;font-variant-numeric:tabular-nums}
 .setrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;width:100%;border:0;border-left:3px solid transparent;background:none;padding:5px 12px 5px 10px;text-align:left}
 .setrow b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.setrow.var{padding-left:24px}
+.setrow.var b{font-weight:500;font-size:13.5px}
+.setrow.var b::before{content:'↳ ';color:var(--faint)}
 .setrow small{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums;align-self:center}
 .setrow code{grid-column:1 / -1;font-family:var(--mono);font-size:11.5px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .setrow:hover{background:var(--hover)}
@@ -513,14 +516,14 @@ function family(path, pieces){
   const p = path;
   const slots = Object.keys(pieces||{});
   if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
-  if (/^sets\.(idle|Adoulin|Town|me\.idle|resting)/.test(p)) return 'idle';
+  if (/^sets\.(idle|Adoulin|Town|me\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
   if (/^sets\.(engaged|me\.engaged)/.test(p)) return 'engaged';
   if (/^sets\.pet|Pet|pet_/.test(p)) return 'pet';
   if (/^sets\.precast\.FC/.test(p)) return 'fc';
   if (/^sets\.precast\.WS/.test(p)) return 'ws';
   if (/^sets\.precast/.test(p)) return 'ja';
   if (/^sets\.midcast/.test(p)) return 'midcast';
-  if (/^sets\.(buff|defense|Kiting|MoveSpeed|TreasureHunter|CombatMode|Doom|latent|FullEnmity|Enmity)/.test(p)) return 'special';
+  if (/^sets\.(buff|defense|TreasureHunter|CombatMode|Doom|latent|FullEnmity|Enmity)/.test(p)) return 'special';
   return 'other';
 }
 function segs(path){ return path.match(/\.[\w-]+|\["[^"]+"\]/g).map(s => s.startsWith('.') ? s.slice(1) : s.slice(2,-2)); }
@@ -546,7 +549,8 @@ function buildCards(d){
   }
   for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));
   const order = ['idle','engaged','fc','ws','ja','midcast','pet','special','weapons','other'];
-  cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || a.name.localeCompare(b.name));
+  const lead = c => c.top.length === 1 && c.top[0] === c.fam ? 0 : 1;
+  cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || lead(a)-lead(b) || a.name.localeCompare(b.name));
   return {cards, bypath};
 }
 function niceName(card){
@@ -1318,6 +1322,7 @@ function hybridMode(d){
 function withWeapons(s, ignore){
   const d = data(), rules = (d && d.weapon_rules) || {}, hm = hybridMode(d), hybrid = hm && chosenWeapon(hm);
   const pieces = Object.assign({}, s.pieces), from = {}, picks = [];
+  if (family(s.path, s.pieces) === 'weapons') return applyTrial(s, pieces, from, null);
   let weapon = null, stanceWeapon = null;
   for (const m of weaponModes(d)) {
     const ex = explicitWeapon(m, ignore);
@@ -1333,10 +1338,7 @@ function withWeapons(s, ignore){
   if (grip) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
   for (const [m, v] of picks) fill(m, v, t('yourChoice', {v}), false);
-  // pieces tried in the page come last: they win over the set and the weapon modes
-  const tried = {}, tr = S._noTrial ? null : S.trial[trialKey(s)];
-  for (const [slot, p] of Object.entries(tr || {})) { if (p) pieces[slot] = p; else delete pieces[slot]; delete from[slot]; tried[slot] = true; }
-  return {pieces, from, stance: stanceWeapon, tried};
+  return applyTrial(s, pieces, from, stanceWeapon);
   function fill(m, v, why, onlyEmpty){
     for (const [slot, p] of Object.entries(m.sets[v].pieces)) {
       if (onlyEmpty && pieces[slot]) continue;
@@ -1344,9 +1346,16 @@ function withWeapons(s, ignore){
     }
   }
 }
+// Pieces tried in the page come last: they win over the set and the weapon modes
+function applyTrial(s, pieces, from, stance){
+  const tried = {}, tr = S._noTrial ? null : S.trial[trialKey(s)];
+  for (const [slot, p] of Object.entries(tr || {})) { if (p) pieces[slot] = p; else delete pieces[slot]; delete from[slot]; tried[slot] = true; }
+  return {pieces, from, stance, tried};
+}
 // The pickers of the weapon line: the Hybrid mode as the job loads it, then for each weapon
 // mode and free slot an "Auto" entry (what the job's rules put there) and the choices
 function weaponPicker(s){
+  if (family(s.path, s.pieces) === 'weapons') return '';
   const d = data(), hm = hybridMode(d), modes = weaponModes(d);
   if (!hm && !modes.length) return '';
   const opts = (m, sel) => m.values.map(v => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
@@ -1381,10 +1390,19 @@ function renderSets(d){
   const vis = cards.map((c,i) => i).filter(i => cardMatch(cards[i], q)); S._vis = vis;
   if (!vis.includes(S.sel[S.job])) S.sel[S.job] = vis[0];
   const sel = S.sel[S.job];
+  // one row per set: the set, then its variants (idle.Town, each weaponskill) indented under it
+  const vi = i => Math.min(S.variant[S.job + '|' + i] ?? 0, cards[i].variants.length - 1);
+  const rows = S._rows = [];
   let list = '', fam = null;
   for (const i of vis) { const c = cards[i];
-    if (c.fam !== fam) { fam = c.fam; list += `<div class="fam"><span>${t('fam.'+fam)}</span><span>${vis.filter(k => cards[k].fam===fam).length}</span></div>`; }
-    list += `<button class="setrow" data-pick="${i}" aria-current="${i===sel}"><b>${esc(niceName(c))}</b><small>${c.variants.length>1?c.variants.length:''}</small><code>${esc(cardPath(c))}</code></button>`;
+    if (c.fam !== fam) { fam = c.fam; list += `<div class="fam"><span>${t('fam.'+fam)}</span><span>${vis.filter(k => cards[k].fam===fam).reduce((n, k) => n + cards[k].variants.length, 0)}</span></div>`; }
+    c.variants.forEach((v, k) => {
+      if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
+      const cur = i === sel && k === vi(i), main = k === 0;
+      rows.push([i, k]);
+      list += `<button class="setrow ${main ? '' : 'var'}" data-pick="${i}" data-vpick="${k}" aria-current="${cur}">` +
+        `<b>${main ? esc(niceName(c)) + (v.label !== 'Base' ? ` · ${esc(v.label)}` : '') : esc(v.label)}</b><code>${esc(v.set.path)}</code></button>`;
+    });
   }
   if (!vis.length) list = `<p class="empty-list">${t('noMatch')}</p>`;
   return `<div class="setsx"><aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
@@ -1580,7 +1598,7 @@ document.addEventListener('click', e => {
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
   if (d.section) { S.section = d.section; render(); return; }
-  if (d.pick) { S.sel[S.job] = +d.pick; render(); return; }
+  if (d.pick) { S.sel[S.job] = +d.pick; if (d.vpick != null) S.variant[S.job+'|'+d.pick] = +d.vpick; render(); return; }
   if (d.variant) { S.variant[S.job+'|'+d.card] = +d.variant; render(); return; }
   if (d.slot) { openSlot(+d.card, d.slot); return; }
   if (d.try != null && S._drawer) { const o = S._drawOpts[+d.try];
@@ -1676,10 +1694,11 @@ document.addEventListener('scroll', () => { $('#tip').hidden = true; }, true);
 
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') { if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
-  if ((e.key==='ArrowDown' || e.key==='ArrowUp') && S.job && S.section==='sets' && $('#overlay').hidden && S._vis && S._vis.length) {
-    const i = S._vis.indexOf(S.sel[S.job]) + (e.key==='ArrowDown' ? 1 : -1);
-    if (i < 0 || i >= S._vis.length) return;
-    e.preventDefault(); S.sel[S.job] = S._vis[i]; render();
+  if ((e.key==='ArrowDown' || e.key==='ArrowUp') && S.job && S.section==='sets' && $('#overlay').hidden && S._rows && S._rows.length) {
+    const ci = S.sel[S.job], cv = Math.min(S.variant[S.job+'|'+ci] ?? 0, S._cards[ci].variants.length - 1);
+    const i = S._rows.findIndex(([a, b]) => a === ci && b === cv) + (e.key==='ArrowDown' ? 1 : -1);
+    if (i < 0 || i >= S._rows.length) return;
+    e.preventDefault(); const [a, b] = S._rows[i]; S.sel[S.job] = a; S.variant[S.job+'|'+a] = b; render();
     const cur = $('.setrow[aria-current="true"]'); if (cur) cur.scrollIntoView({block:'nearest'});
   }
 });
