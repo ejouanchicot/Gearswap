@@ -27,11 +27,14 @@ return {
     -- (pets), DNC (its dance and samba come first anyway), WAR (berserk /
     -- defender below), BLU (the game does not tell which spells are set),
     -- DRG, THF. Add one if you like, e.g. BLU = {'Cocoon', 'Barrier Tusk'}.
+    -- '$GainSpell': the spell chosen in that state (RDM's GainSpell);
+    -- {'$EnSpell II', '$EnSpell'}: the first ready of the two, nothing if
+    -- one is already up.
     job = {
         BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
         RDM = {'Composure', 'Haste II', 'Haste', 'Refresh III', 'Refresh II', 'Refresh',
-               'Phalanx', 'Temper II', 'Temper', 'Protect V', 'Protect IV', 'Shell V', 'Shell IV',
-               'Stoneskin', 'Blink', 'Aquaveil'},
+               'Phalanx', 'Temper II', 'Temper', '$GainSpell', {'$EnSpell II', '$EnSpell'},
+               'Protect V', 'Protect IV', 'Shell V', 'Shell IV', 'Stoneskin', 'Blink', 'Aquaveil'},
         WHM = {'Afflatus Solace', 'Reraise IV', 'Reraise III', 'Haste', 'Protect V', 'Protect IV',
                'Shell V', 'Shell IV', 'Auspice', 'Stoneskin', 'Blink', 'Aquaveil'},
         PLD = {'Majesty', 'Crusade', 'Reprisal', 'Enlight II', 'Enlight', 'Phalanx',
@@ -48,12 +51,8 @@ return {
     },
 
     -- Added after the job's list when this weapon is in hand (any job).
-    -- `$GainSpell`, `$EnSpell`: the spell chosen in that state (RDM's states;
-    -- left out on a job without them). {'$EnSpell II', '$EnSpell'}: the first
-    -- ready of the two, nothing if one is already up.
-    weapon = {
-        Naegling = {'$GainSpell', {'$EnSpell II', '$EnSpell'}},
-    },
+    -- Example: Naegling = {'Gain-STR', 'Enfire II'},
+    weapon = {},
 
     -- Your subjob's buffs (added after the main job's)
     -- Example: WAR = {'Aggressor', 'Warcry'} keeps Berserk off while tanking

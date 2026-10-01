@@ -23,8 +23,8 @@ BuffConfig.DEFAULTS = {
     job = {
         BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
         RDM = {'Composure', 'Haste II', 'Haste', 'Refresh III', 'Refresh II', 'Refresh',
-               'Phalanx', 'Temper II', 'Temper', 'Protect V', 'Protect IV', 'Shell V', 'Shell IV',
-               'Stoneskin', 'Blink', 'Aquaveil'},
+               'Phalanx', 'Temper II', 'Temper', '$GainSpell', {'$EnSpell II', '$EnSpell'},
+               'Protect V', 'Protect IV', 'Shell V', 'Shell IV', 'Stoneskin', 'Blink', 'Aquaveil'},
         WHM = {'Afflatus Solace', 'Reraise IV', 'Reraise III', 'Haste', 'Protect V', 'Protect IV',
                'Shell V', 'Shell IV', 'Auspice', 'Stoneskin', 'Blink', 'Aquaveil'},
         PLD = {'Majesty', 'Crusade', 'Reprisal', 'Enlight II', 'Enlight', 'Phalanx',
@@ -39,11 +39,8 @@ BuffConfig.DEFAULTS = {
         MNK = {'Impetus', 'Focus'},
         RNG = {'Velocity Shot'},
     },
-    -- Added for the weapon in hand, on any job. `$GainSpell` / `$EnSpell`:
-    -- the spell chosen in RDM's states; {II, I}: the first ready of the two
-    weapon = {
-        Naegling = {'$GainSpell', {'$EnSpell II', '$EnSpell'}},
-    },
+    -- Added for the weapon in hand, on any job (none by default)
+    weapon = {},
     subjob = {
         WAR = {'Berserk', 'Aggressor', 'Warcry'},
         SAM = {'Hasso', 'Third Eye'},
