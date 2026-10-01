@@ -5,8 +5,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 :root{
-  --bg:#F3F2EF; --side:#EAE8E3; --panel:#FFFFFF; --panel-2:#F7F6F3; --hover:#EFEDE8; --ink:#1B1C1F; --muted:#5F5D58; --faint:#8F8C85;
-  --line:#DEDBD4; --line-strong:#C6C2B9; --accent:#86621C; --accent-soft:#F4ECDA; --accent-ink:#FFFFFF; --aug:#7A5A1C; --well:#E6E3DC;
+  --bg:#E6E4DF; --side:#FBFAF8; --panel:#FFFFFF; --panel-2:#F4F3F0; --hover:#EFEDE8; --ink:#1B1C1F; --muted:#5A5853; --faint:#8A877F;
+  --line:#D9D6CF; --line-strong:#BDB9B0; --shadow:0 1px 2px rgba(30,25,15,.07),0 3px 10px rgba(30,25,15,.05);
+  --g-def:#2F67B3; --g-attr:#7449B0; --g-off:#B4502A; --g-mag:#147F7A; --g-skill:#4A8530; --g-res:#9A6A12; --g-other:#66635C;
+  --g-tank:#1F6F96; --g-buff:#8A6414; --g-you:#86621C; --g-caps:#4F5B6E; --accent:#86621C; --accent-soft:#F4ECDA; --accent-ink:#FFFFFF; --aug:#7A5A1C; --well:#E6E3DC;
   --r-tank:#3F5FC4; --r-healer:#3F8A2E; --r-support:#A67C0A; --r-dd:#B04646;
   --tip-bg:#23252A; --tip-edge:#23252A; --try:#2D6CB0; --try-soft:#E7EFF8;
   --display:"Cinzel","Trajan Pro",Georgia,serif;
@@ -15,15 +17,19 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   color-scheme:dark;
-  --bg:#121315; --side:#0D0E10; --panel:#18191C; --panel-2:#1E2024; --hover:#24262B; --ink:#E7E5E0; --muted:#A3A09A; --faint:#6F6D68;
-  --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
+  --bg:#0A0B0D; --side:#141619; --panel:#1A1C20; --panel-2:#212429; --hover:#272A30; --ink:#ECEAE5; --muted:#ABA8A1; --faint:#77746E;
+  --line:#2D3036; --line-strong:#41454D; --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 14px rgba(0,0,0,.25);
+  --g-def:#6EA3EC; --g-attr:#B08DEB; --g-off:#EE9468; --g-mag:#4CCBC2; --g-skill:#8BCB6B; --g-res:#E3B65A; --g-other:#A7A39B;
+  --g-tank:#5CB8E0; --g-buff:#E2BC6E; --g-you:#D6B370; --g-caps:#9AA8BF; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
   --r-tank:#7D9BF0; --r-healer:#86D36F; --r-support:#ECC94A; --r-dd:#E08585;
   --tip-bg:#2E3138; --tip-edge:#4A4E57; --try:#73A9E6; --try-soft:#1C2633;
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#121315; --side:#0D0E10; --panel:#18191C; --panel-2:#1E2024; --hover:#24262B; --ink:#E7E5E0; --muted:#A3A09A; --faint:#6F6D68;
-  --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
+  --bg:#0A0B0D; --side:#141619; --panel:#1A1C20; --panel-2:#212429; --hover:#272A30; --ink:#ECEAE5; --muted:#ABA8A1; --faint:#77746E;
+  --line:#2D3036; --line-strong:#41454D; --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 14px rgba(0,0,0,.25);
+  --g-def:#6EA3EC; --g-attr:#B08DEB; --g-off:#EE9468; --g-mag:#4CCBC2; --g-skill:#8BCB6B; --g-res:#E3B65A; --g-other:#A7A39B;
+  --g-tank:#5CB8E0; --g-buff:#E2BC6E; --g-you:#D6B370; --g-caps:#9AA8BF; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
   --r-tank:#7D9BF0; --r-healer:#86D36F; --r-support:#ECC94A; --r-dd:#E08585;
   --tip-bg:#2E3138; --tip-edge:#4A4E57; --try:#73A9E6; --try-soft:#1C2633;
 }
@@ -39,45 +45,42 @@ button{font:inherit;color:inherit;cursor:pointer}
 .muted{color:var(--muted)}
 .num{font-variant-numeric:tabular-nums}
 
-/* ---- shell: sidebar + main ---- */
-.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
-.side{background:var(--side);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow:auto;display:flex;flex-direction:column}
-.brand{display:flex;align-items:center;gap:11px;padding:20px 18px 16px}
+/* ---- shell: a top bar, then the content on the whole window ---- */
+.app{display:grid;grid-template-rows:auto minmax(0,1fr);min-height:100vh}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:8px 20px;background:var(--side);border-bottom:1px solid var(--line-strong);box-shadow:var(--shadow);position:relative;z-index:2}
+.brand{display:flex;align-items:center;gap:9px}
 .brand svg{color:var(--accent);flex:none}
-.brand b{display:block;font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:.1em;line-height:1}
-.brand small{display:block;font-size:10.5px;font-weight:600;letter-spacing:.24em;color:var(--faint);margin-top:4px}
+.brand b{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:.1em;line-height:1}
 .seg{display:flex}
 .seg button{flex:1;border:1px solid var(--line-strong);background:var(--panel);padding:4px 10px;font-size:13px;font-weight:600;color:var(--muted);margin-left:-1px}
 .seg button:first-child{border-radius:3px 0 0 3px;margin-left:0}
 .seg button:last-child{border-radius:0 3px 3px 0}
 .seg button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);position:relative;z-index:1}
 .seg svg{display:block;margin:auto}
-.chars{padding:0 16px 14px;border-bottom:1px solid var(--line)}
-.jobnav{padding:6px 0 18px;flex:1}
-.jobnav h4{margin:16px 18px 4px;font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--role)}
-.navjob{display:grid;grid-template-columns:20px 36px minmax(0,1fr) auto;align-items:center;gap:9px;width:100%;border:0;border-left:3px solid transparent;background:none;padding:5px 16px 5px 15px;text-align:left}
-.navjob .em{width:20px;height:20px}
-.navjob b{font-weight:700;font-size:14px;letter-spacing:.03em}
-.navjob .nm{color:var(--muted);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.navjob small{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
-.navjob:hover{background:var(--hover)}
-.navjob[aria-current="true"]{background:var(--panel);border-left-color:var(--accent)}
-.navjob.home{margin-top:10px}
-.navjob.home svg{color:var(--accent);margin:auto}
-.navjob.home b{grid-column:span 3;font-weight:600;letter-spacing:0}
-/* language and theme, top right of the page */
-.prefs{display:flex;gap:8px;justify-content:flex-end;max-width:1200px;margin-bottom:6px}
+.topbar .tsep{width:1px;align-self:stretch;background:var(--line)}
+.topbar .jobpick{display:flex;align-items:center;gap:10px}
+.topbar .jobpick .em{width:30px;height:30px}
+.topbar .homeic{color:var(--accent);display:grid;place-items:center;width:30px}
+.pick{display:grid;gap:0}
+.pick > small{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.topsel{font:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--panel);border:1px solid var(--line-strong);border-radius:3px;padding:2px 6px;max-width:260px}
+.topsel:hover{border-color:var(--ink)}
+.topsel.subsel{font-size:14px}
+.mini{display:flex;gap:18px;margin:0}
+.mini dt{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.mini dd{margin:0;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.topbar .sp{flex:1}
+.prefs{display:flex;gap:8px}
 .prefs .seg button{padding:3px 10px;font-size:12px}
-.main{min-width:0;padding:14px 40px 72px}
-.inner{max-width:1200px}
+.main{min-width:0;padding:10px 20px 56px}
 /* Wide screens: the page never scrolls, each block that lacks room scrolls on its own */
 @media (min-width:901px){
   html,body{height:100%;overflow:hidden}
   .app{height:100vh}
-  .main{height:100vh;overflow:hidden;padding-bottom:0;display:flex;flex-direction:column}
+  .main{overflow:hidden;padding-bottom:0;display:flex;flex-direction:column;min-height:0}
   .inner{flex:1;display:flex;flex-direction:column;min-height:0}
-  .pane{flex:1;min-height:0;overflow:auto;padding-bottom:24px}
-  .pane.split{overflow:hidden;padding-bottom:20px}
+  .pane{flex:1;min-height:0;overflow:auto;padding-bottom:16px}
+  .pane.split{overflow:hidden;padding-bottom:14px}
   .split .setsx{height:100%;align-items:stretch}
   .split .setlist{position:static;max-height:none;min-height:0}
   .split .detail{align-self:start;max-height:100%;overflow:auto}
@@ -87,26 +90,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .pagehead{margin-bottom:22px}
 .pagehead h1{font-size:40px;line-height:1.05;margin-top:4px}
 .lede{color:var(--muted);margin-top:6px;font-size:15.5px}
-.jobhead{display:flex;flex-wrap:wrap;align-items:center;gap:16px 36px;margin-bottom:20px}
-.jobhead .title{display:flex;align-items:center;gap:16px;margin-right:auto}
-.jobhead .em{width:52px;height:52px}
-.jobhead h1{font-size:38px;line-height:1}
-.jobhead p{margin-top:6px;color:var(--muted);display:flex;gap:12px;align-items:baseline}
-.facts{display:flex;margin:0}
-.facts div{padding:0 20px;border-left:1px solid var(--line)}
-.facts div:first-child{border-left:0;padding-left:0}
-.facts dt{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
-.facts dd{margin:3px 0 0;font-size:15.5px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.subpick{display:flex;gap:3px}
-.subpick button{border:1px solid var(--line-strong);background:var(--panel);border-radius:3px;padding:0 6px;font-size:13px;font-weight:600;color:var(--muted)}
-.subpick button:hover{border-color:var(--ink);color:var(--ink)}
-.subpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.subsel{font:inherit;font-size:13px;font-weight:600;color:var(--muted);background:var(--panel);border:1px solid var(--line-strong);border-radius:3px;padding:0 4px;height:22px}
-.subsel[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.subpick button.own{position:relative}
-.subpick button.own::after{content:"";position:absolute;top:-3px;right:-3px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
-.sections{display:flex;gap:28px;box-shadow:inset 0 -1px 0 var(--line);margin-bottom:22px;overflow-x:auto;overflow-y:hidden}
-.sections button{border:0;background:none;padding:10px 0 9px;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;white-space:nowrap}
+.sections{display:flex;gap:28px;box-shadow:inset 0 -1px 0 var(--line);margin-bottom:12px;overflow-x:auto;overflow-y:hidden}
+.sections button{border:0;background:none;padding:6px 0 7px;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;white-space:nowrap}
 .sections button:hover{color:var(--ink)}
 .sections button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
 .count{font-weight:400;color:var(--faint);margin-left:6px;font-variant-numeric:tabular-nums}
@@ -120,12 +105,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 /* ---- sets: list + detail ---- */
 .setsx{display:grid;grid-template-columns:290px minmax(0,1fr);gap:20px;align-items:start}
-.setlist{background:var(--panel);border:1px solid var(--line);border-radius:4px;position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}
+.setlist{background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}
 .setlist .search{display:flex;gap:8px;padding:10px;border-bottom:1px solid var(--line)}
 .setlist input{flex:1;min-width:0;font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line-strong);border-radius:3px;background:var(--panel-2);color:var(--ink)}
 .setlist input::placeholder{color:var(--faint)}
 .setlist .scroll{overflow:auto;padding-bottom:6px}
-.fam{display:flex;justify-content:space-between;padding:14px 12px 4px 13px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.fam{display:flex;justify-content:space-between;margin-top:8px;padding:5px 12px 4px 13px;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.scroll > .fam:first-child{margin-top:0;border-top:0}
 .fam span:last-child{color:var(--faint);letter-spacing:0;font-variant-numeric:tabular-nums}
 .setrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;width:100%;border:0;border-left:3px solid transparent;background:none;padding:5px 12px 5px 10px;text-align:left}
 .setrow b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -136,8 +122,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .setrow[aria-current="true"] code{color:var(--muted)}
 .empty-list{padding:18px 14px;color:var(--muted);font-size:14px}
 .hint{padding:8px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
-.detail{background:var(--panel);border:1px solid var(--line);border-radius:4px;min-width:0}
-.detail header{padding:14px 18px 12px;border-bottom:1px solid var(--line);display:grid;gap:3px}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);min-width:0}
+.detail header{padding:12px 18px 12px;border-bottom:1px solid var(--line);display:grid;gap:3px;background:var(--panel-2)}
 .detail .titleline{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
 .detail h2{font-size:21px;font-weight:700;line-height:1.15}
 .detail .when{color:var(--muted);font-size:13px;text-transform:none;letter-spacing:0;font-weight:400}
@@ -146,29 +132,30 @@ button{font:inherit;color:inherit;cursor:pointer}
 .variants button{border:1px solid var(--line-strong);background:var(--panel-2);border-radius:3px;font-size:13px;padding:2px 10px}
 .variants button:hover{border-color:var(--ink)}
 .variants button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel);font-weight:600}
-.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line)}
-.slot{background:var(--panel);border:0;border-left:3px solid transparent;padding:6px 10px 6px 7px;min-height:50px;text-align:left;display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 9px;align-items:center;position:relative}
-.slot .txt{display:grid;min-width:0}
 .ico{width:36px;height:36px;border:1px solid var(--line-strong);border-radius:3px;background:var(--well);display:grid;place-items:center;box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
 .ico img{width:32px;height:32px;display:block}
-.slot.empty .ico{background:transparent;border-style:dashed;box-shadow:none}
-.slot.inh .ico img{opacity:.5}
-.slot:hover{box-shadow:inset 0 0 0 1px var(--accent)}
-.slot .lbl{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);line-height:1.3}
-.slot .item{font-size:13.5px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* a long name gives way, its marks stay */
-.slot .item:has(.nm){display:flex;align-items:center}
-.slot .item .nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.slot .item .mk,.slot .item .rk{flex:none}
-.slot .item .mk{color:var(--aug);font-size:10px;margin-left:5px;vertical-align:1px}
-.slot .item .rk{color:var(--aug);font-size:10.5px;font-weight:700;margin-left:5px;padding:0 4px;border:1px solid var(--aug);border-radius:3px;vertical-align:1px;letter-spacing:.02em}
-.slot.empty .item{color:var(--faint);font-weight:400}
-.slot.inh{background:var(--panel-2)}
-.slot.weap{border-left-color:var(--accent)}
-.slot.tried{border-left-color:var(--try);background:var(--try-soft)}
-.slot.tried .lbl{color:var(--try)}
-.unslot{position:absolute;top:3px;right:4px;width:20px;height:20px;display:grid;place-items:center;border-radius:3px;font-size:13px;font-weight:700;color:var(--try);border:1px solid var(--try);background:var(--panel);cursor:pointer;line-height:1}
-.unslot:hover{background:var(--try);color:var(--panel)}
+/* ---- the equipment: 16 square cells, the game's icons; name and stats on hover ---- */
+.slots{display:grid;grid-template-columns:repeat(4,54px);gap:5px;justify-content:start}
+.slot{width:54px;height:54px;padding:0;border:1px solid var(--line-strong);border-radius:5px;background:var(--well);box-shadow:inset 0 1px 4px rgba(0,0,0,.28);display:grid;place-items:center;position:relative}
+.slot .ico{border:0;background:none;box-shadow:none;width:32px;height:32px}
+.slot:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.slot .mk{position:absolute;top:1px;right:3px;color:var(--aug);font-size:10px;line-height:1}
+.slot .rk{position:absolute;bottom:2px;right:2px;font-size:8.5px;font-weight:800;line-height:1.15;padding:0 2px;color:var(--aug);background:var(--panel);border:1px solid var(--aug);border-radius:2px}
+.slot .elbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:center;line-height:1.1;padding:0 2px}
+.slot.empty{background:transparent;border-style:dashed;box-shadow:none}
+.slot.inh .ico img{opacity:.42}
+.slot.weap{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent),inset 0 1px 4px rgba(0,0,0,.28)}
+.slot.tried{border:2px solid var(--try);background:var(--try-soft)}
+.slot.hit{outline:2px solid var(--accent);outline-offset:1px}
+.unslot{position:absolute;top:-7px;left:-7px;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;font-size:11px;font-weight:800;color:var(--panel);background:var(--try);border:1px solid var(--panel);cursor:pointer;line-height:1;z-index:1}
+.unslot:hover{filter:brightness(1.15)}
+/* the set's body: the equipment on the left, its stats beside it */
+.dbody{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start}
+.eqcol{padding:14px 16px;display:grid;gap:10px;border-right:1px solid var(--line);align-content:start}
+.eqcol footer{padding:0;font-size:12.5px;color:var(--muted);display:grid;gap:2px;max-width:236px}
+.eqcol .legend{border:0;padding:0;display:grid;gap:3px;font-size:12px;max-width:236px}
+.dbody .setstats{border-top:0;min-height:100%}
+@media (max-width:1100px){.dbody{grid-template-columns:minmax(0,1fr)}.eqcol{border-right:0;border-bottom:1px solid var(--line)}}
 .choice button.orig{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
 .choice .tag{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-left:8px;padding:1px 6px;border-radius:3px;vertical-align:1px}
 .choice .tag.orig{background:var(--accent);color:var(--accent-ink)}
@@ -178,7 +165,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .trybar b{color:var(--try)}
 .trybar .sp{flex:1}
 .trybar .btn{padding:3px 10px;font-size:13px}
-.legend i.try{border-left-color:var(--try);background:var(--try-soft)}
+.legend i.try{border:2px solid var(--try);background:var(--try-soft)}
 /* the piece picker of the drawer */
 .drawq{width:100%;font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line-strong);border-radius:3px;background:var(--panel-2);color:var(--ink)}
 .choice button.cur{box-shadow:inset 3px 0 0 var(--try)}
@@ -187,12 +174,21 @@ button{font:inherit;color:inherit;cursor:pointer}
 .drawacts{display:flex;flex-wrap:wrap;gap:8px}
 .luabox{width:100%;min-height:200px;font-family:var(--mono);font-size:12.5px;padding:10px;border:1px solid var(--line-strong);border-radius:3px;background:var(--panel-2);color:var(--ink);resize:vertical}
 /* buffs and conditions */
-.buffs{border:1px solid var(--line);border-radius:4px;background:var(--panel-2)}
-.bufftoggle{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border:0;background:transparent;text-align:left;font-size:13px;color:var(--muted)}
-.bufftoggle::after{content:'▾';color:var(--faint);margin-left:4px}
-.bufftoggle[aria-expanded="true"]::after{content:'▴'}
-.bufftoggle .on{color:var(--accent);font-weight:700}
-.buffbody{display:grid;gap:9px;padding:2px 12px 12px}
+/* ---- compartments: a card, a tinted title band in the section's colour, a colour edge ---- */
+.box{--c:var(--accent);background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.boxh{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:7px 12px 6px;border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 28%,var(--line));
+  background:color-mix(in srgb,var(--c) 11%,var(--panel));box-shadow:inset 3px 0 0 var(--c);text-align:left}
+.boxh h3,.boxh h4{margin:0;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.boxh .meta{font-size:12px;color:var(--muted);font-weight:600}
+.boxb{padding:6px 12px 10px}
+.boxb > .statlist li:last-child{border-bottom:0}
+.g-def{--c:var(--g-def)} .g-attr{--c:var(--g-attr)} .g-off{--c:var(--g-off)} .g-mag{--c:var(--g-mag)} .g-skill{--c:var(--g-skill)}
+.g-res{--c:var(--g-res)} .g-other{--c:var(--g-other)} .g-tank{--c:var(--g-tank)} .g-buff{--c:var(--g-buff)} .g-you{--c:var(--g-you)} .g-caps{--c:var(--g-caps)}
+.bufftoggle{cursor:pointer}
+.bufftoggle .meta::after{content:' ▾';color:var(--faint)}
+.bufftoggle[aria-expanded="true"] .meta::after{content:' ▴'}
+.bufftoggle .on{color:var(--c);font-weight:700}
+.buffbody{display:grid;gap:9px;padding:10px 12px 12px}
 .buffrow{display:grid;gap:3px;font-size:12.5px}
 .buffrow > span{color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .buffrow > div{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
@@ -204,21 +200,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip{font:inherit;font-size:12px;padding:1px 8px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel);color:var(--muted)}
 .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
 .buffnote{font-size:11.5px;color:var(--faint);margin:0}
-.globals-inline .globals > .buffs,.globals-inline .globals > .vsset{grid-column:1 / -1}
 .vsset{font-size:12px;color:var(--try);margin:0}
 .weaps{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:13px;color:var(--muted)}
 .weaps label{display:inline-flex;align-items:center;gap:6px}
 .weapsel{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-strong);border-radius:3px;padding:1px 4px}
 .weaps label.picked .weapsel{border-color:var(--accent);color:var(--accent)}
 .weaps label[title]{cursor:help}
-.slot.inh .item{color:var(--muted);font-weight:400}
-.slot.hit{box-shadow:inset 0 0 0 2px var(--accent)}
 .detail footer{padding:9px 18px;font-size:13px;color:var(--muted);display:grid;gap:2px}
 .detail footer details summary{cursor:pointer}
 .detail footer details p{margin:4px 0 0;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 .detail footer b{color:var(--ink);font-weight:600}
-.setstats{padding:14px 22px 16px;border-top:1px solid var(--line);display:grid;gap:10px}
-.statgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 28px}
+.setstats{padding:14px 16px 16px;border-top:1px solid var(--line);background:var(--panel-2);display:grid;gap:10px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;align-items:start}
 .statgrid h4{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:8px 0 4px}
 .statlist{list-style:none;margin:0;padding:0;font-size:13.5px}
 .statlist li{display:grid;grid-template-columns:minmax(0,1fr) 58px 60px;align-items:baseline;column-gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
@@ -233,7 +226,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .piecestats{display:grid;gap:6px}
 .piecestats .weapon{margin:0;font-weight:600}
 .piecestats .origin{margin:0;font-size:12.5px;color:var(--accent)}
-.globals{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 18px;display:grid;gap:8px;align-content:start}
+.globals{display:grid;gap:12px;align-content:start}
+.globals .note-m{font-size:12px;color:var(--faint);margin:0;line-height:1.4}
 .globals .kicker.sub{margin-top:6px;color:var(--muted)}
 .globals .statlist.big{font-size:15px}
 .globals .statlist.big b{font-size:16px}
@@ -241,13 +235,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .delta{font-style:normal;font-size:11.5px;margin-left:6px;font-weight:600}
 .delta.up{color:var(--r-healer)}
 .delta.down{color:var(--r-dd)}
-.globals-inline .globals{border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 18px;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));column-gap:28px;align-items:start}
-.globals-inline .globals > .kicker,.globals-inline .globals > p{grid-column:1 / -1}
+.globals-inline .globals{padding:14px 16px;border-top:1px solid var(--line);background:var(--panel-2);grid-template-columns:repeat(auto-fill,minmax(300px,1fr));align-items:start}
+.globals-inline .globals > .g-buff,.globals-inline .globals > .note-m{grid-column:1 / -1}
 .globalcol{display:none}
-@media (min-width:1650px){
-  .setsx{grid-template-columns:250px minmax(0,1fr) 300px}
-  .inner,.prefs{max-width:1560px}
+@media (min-width:1350px){
+  .setsx{grid-template-columns:260px minmax(0,1fr) 340px}
   .globalcol{display:block;min-width:0}
   .globals-inline{display:none}
   .split .globalcol{max-height:100%;overflow:auto;align-self:start}
@@ -268,11 +260,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .meritlist li.changed::before{content:"";position:absolute;left:0;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--accent)}
 .meritlist li.changed .meritin{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 .globals .edited{color:var(--accent);letter-spacing:.04em}
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:8px 18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{width:12px;height:12px;border:1px solid var(--line-strong);background:var(--panel)}
-.legend i.inh{background:var(--panel-2)}
-.legend i.weap{border-left:3px solid var(--accent)}
+.legend i{width:12px;height:12px;border:1px solid var(--line-strong);background:var(--well);border-radius:2px}
+.legend i.inh{opacity:.45}
+.legend i.weap{border-color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
 .legend b.mk{color:var(--aug);font-size:10px}
 .tip{--ink:#F2F0EB; --muted:#BDBAB3; --faint:#8E8B84; --line:#454951; --aug:#E6C47E;
   position:fixed;z-index:60;width:320px;max-height:calc(100vh - 24px);overflow:auto;background:var(--tip-bg);color:var(--ink);
@@ -364,41 +356,18 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 .mock{font-size:13px;color:var(--faint);padding-top:10px}
 
 @media (max-width:900px){
-  .app{display:block}
-  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
-  .brand{padding:14px 16px 10px}
-  .jobnav{display:flex;gap:2px;overflow-x:auto;padding:4px 8px 8px;flex:none}
-  .jobnav h4{display:none}
-  .navjob{display:flex;width:auto;padding:6px 10px;border-left:0;border-bottom:2px solid transparent;white-space:nowrap}
-  .navjob .nm,.navjob small{display:none}
-  .navjob[aria-current="true"]{border-bottom-color:var(--accent)}
-  .navjob.home{margin-top:0}
-  .main{padding:20px 16px 56px}
+  .topbar{padding:8px 12px}
+  .topbar .tsep,.mini{display:none}
+  .main{padding:12px 12px 56px}
   .setsx{grid-template-columns:minmax(0,1fr)}
   .setlist{position:static;max-height:340px}
-  .facts{flex-wrap:wrap;gap:10px 0}
+}
 }
 </style>
 
 <div class="app">
-  <aside class="side">
-    <div class="brand">
-      <svg width="28" height="28" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 10 H22 M13 1 L9 10 L13 25 L17 10 Z" fill="none" stroke="currentColor" stroke-width=".9" opacity=".6"/></svg>
-      <div><b>Atelier</b><small>GEARSWAP</small></div>
-    </div>
-    <div class="chars"><div class="seg" id="chars" role="group"></div></div>
-    <nav class="jobnav" id="jobnav"></nav>
-  </aside>
-  <main class="main">
-    <div class="prefs">
-      <div class="seg" role="group" aria-label="Language"><button id="lang-fr" data-lang="fr">FR</button><button id="lang-en" data-lang="en">EN</button></div>
-      <div class="seg" role="group" id="theme-seg">
-        <button data-theme-set="light" id="th-light"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.3"><path d="M7 0.5v2M7 11.5v2M0.5 7h2M11.5 7h2M2.4 2.4l1.4 1.4M10.2 10.2l1.4 1.4M2.4 11.6l1.4-1.4M10.2 3.8l1.4-1.4"/></g></svg></button>
-        <button data-theme-set="dark" id="th-dark"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9.8 1.2a6 6 0 1 0 3 9.6A5 5 0 0 1 9.8 1.2z" fill="currentColor"/></svg></button>
-      </div>
-    </div>
-    <div class="inner" id="view"></div>
-  </main>
+  <header class="topbar" id="top"></header>
+  <main class="main"><div class="inner" id="view"></div></main>
 </div>
 <div id="overlay" hidden></div>
 <div id="tip" class="tip" role="tooltip" hidden></div>
@@ -408,12 +377,12 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} : mérites, gifts, Master Level et traits compris (buffs et nourriture du moment aussi). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', accLabel:'Précision', evaLabel:'Évasion', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', sectionsMerits:'Mérites', meritsEdited:'{n} mérite(s) modifié(s)', inGame:'jeu :', noMerits:'Pas encore de mérites mesurés : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on).', meritsNote:'Tes niveaux lus en jeu le {at} (en /{s}). Change une valeur pour tester : elle passe en doré et tes stats (onglet Sets, colonne de droite) se recalculent. Rien n\'est changé en jeu.', meritsReset:'Revenir aux valeurs du jeu ({n})', mgHp:'HP / MP', mgAttr:'Attributs', mgCombat:'Compétences de combat', mgMagic:'Compétences de magie', mgOther:'Divers', mgJob1:'Job · groupe 1', mgJob2:'Job · groupe 2', gripFor:'Grip de {w} (arme à deux mains)', withMerits:'+ mérites', merits:'mérites', auto:'Auto', yourChoice:'Ton choix : {v}', slotBySet:'Fixé par le set lui-même', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} : mérites, gifts, Master Level et traits compris (buffs et nourriture du moment aussi). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', accLabel:'Précision', evaLabel:'Évasion', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', sectionsMerits:'Mérites', meritsEdited:'{n} mérite(s) modifié(s)', inGame:'jeu :', noMerits:'Pas encore de mérites mesurés : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on).', meritsNote:'Tes niveaux lus en jeu le {at} (en /{s}). Change une valeur pour tester : elle passe en doré et tes stats (onglet Sets, colonne de droite) se recalculent. Rien n\'est changé en jeu.', meritsReset:'Revenir aux valeurs du jeu ({n})', mgHp:'HP / MP', mgAttr:'Attributs', mgCombat:'Compétences de combat', mgMagic:'Compétences de magie', mgOther:'Divers', mgJob1:'Job · groupe 1', mgJob2:'Job · groupe 2', gripFor:'Grip de {w} (arme à deux mains)', withMerits:'+ mérites', merits:'mérites', auto:'Auto', yourChoice:'Ton choix : {v}', slotBySet:'Fixé par le set lui-même', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres', subMine:'Tes subs', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', setPiece:'Pièce du set', triedTag:'À l\'essai', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', setPiece:'Pièce du set', triedTag:'À l\'essai', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', attrTitle:'Attributs', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -431,12 +400,12 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s}: merits, gifts, master level and traits included (buffs and food of the moment too). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', accLabel:'Accuracy', evaLabel:'Evasion', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', sectionsMerits:'Merits', meritsEdited:'{n} merit(s) changed', inGame:'game:', noMerits:'No merits measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on).', meritsNote:'Your levels read in game on {at} (as /{s}). Change one to test: it turns gold and your stats (Sets tab, right column) follow. Nothing changes in game.', meritsReset:'Back to the game values ({n})', mgHp:'HP / MP', mgAttr:'Attributes', mgCombat:'Combat skills', mgMagic:'Magic skills', mgOther:'Others', mgJob1:'Job · group 1', mgJob2:'Job · group 2', gripFor:'Grip of {w} (two-handed)', withMerits:'+ merits', merits:'merits', auto:'Auto', yourChoice:'Your choice: {v}', slotBySet:'Set by the set itself', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s}: merits, gifts, master level and traits included (buffs and food of the moment too). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', accLabel:'Accuracy', evaLabel:'Evasion', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', sectionsMerits:'Merits', meritsEdited:'{n} merit(s) changed', inGame:'game:', noMerits:'No merits measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on).', meritsNote:'Your levels read in game on {at} (as /{s}). Change one to test: it turns gold and your stats (Sets tab, right column) follow. Nothing changes in game.', meritsReset:'Back to the game values ({n})', mgHp:'HP / MP', mgAttr:'Attributes', mgCombat:'Combat skills', mgMagic:'Magic skills', mgOther:'Others', mgJob1:'Job · group 1', mgJob2:'Job · group 2', gripFor:'Grip of {w} (two-handed)', withMerits:'+ merits', merits:'merits', auto:'Auto', yourChoice:'Your choice: {v}', slotBySet:'Set by the set itself', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others', subMine:'Your subjobs', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', setPiece:'The set\'s piece', triedTag:'Tried', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', setPiece:'The set\'s piece', triedTag:'Tried', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', attrTitle:'Attributes', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -839,7 +808,7 @@ function setStatsHTML(s){
     // Damage taken: DT counts in both, physical and magic, up to -50 % together
     if (g === 'def' && (v('dt') || v('pdt') || v('mdt')))
       rows = damageTakenLines(v) + rows;
-    return rows ? `<section><h4>${S.lang === 'fr' ? fr : en}</h4><ul class="statlist">${rows}</ul></section>` : '';
+    return rows ? box('g-' + g, S.lang === 'fr' ? fr : en, `<ul class="statlist">${rows}</ul>`) : '';
   }).join('');
   const notes = [];
   if (paths.length) notes.push(`<p>${t('pathNote')} ${paths.map(esc).join(', ')}</p>`);
@@ -1076,9 +1045,9 @@ function buffPanelHTML(){
     (def ? values : ['', ...values]).map(v => `<option value="${esc(v)}" ${String(v) === String(b[key] ?? def ?? '') ? 'selected' : ''}>${v === '' ? '—' : esc(v)}</option>`).join('') + `</select>`;
   const plus = (key, label, max) => `<label class="muted">${label} ${sel(key, Array.from({length: max}, (_, i) => i + 1), 'n')}</label>`;
   const row = (label, body) => `<div class="buffrow"><span>${label}</span><div>${body}</div></div>`;
-  const head = `<button class="bufftoggle" data-bufftoggle aria-expanded="${S.buffsOpen}"><span class="kicker">${t('buffsTitle')}</span>` +
-    `<span class="${n ? 'on' : ''}">${n ? t('buffsOn', {n}) : '—'}</span></button>`;
-  if (!S.buffsOpen) return `<div class="buffs">${head}</div>`;
+  const head = `<button class="boxh bufftoggle" data-bufftoggle aria-expanded="${S.buffsOpen}"><h3>${t('buffsTitle')}</h3>` +
+    `<span class="meta ${n ? 'on' : ''}">${n ? t('buffsOn', {n}) : '—'}</span></button>`;
+  if (!S.buffsOpen) return `<section class="box g-buff">${head}</section>`;
   const jas = jasOf();
   const body = [
     row(t('bFood'), sel('food', Object.keys(FOODS))),
@@ -1089,8 +1058,8 @@ function buffPanelHTML(){
     jas.length ? row(t('bJa'), jas.map(ja => `<button class="chip" data-ja="${esc(ja.name)}" aria-pressed="${!!(b.ja || {})[ja.name]}">${esc(ja.name)}</button>`).join('')) : '',
     row(t('bEnemy'), sel('enemy', Object.keys(ENEMIES).filter(x => x !== DEFAULT_ENEMY)).replace('>—<', `>${DEFAULT_ENEMY}<`)),
   ].join('');
-  return `<div class="buffs">${head}<div class="buffbody">${body}<p class="buffnote">${t('buffNote')}</p>` +
-    `${n ? `<div><button class="btn ghost" data-buffreset>${t('buffReset')}</button></div>` : ''}</div></div>`;
+  return `<section class="box g-buff">${head}<div class="buffbody">${body}<p class="buffnote">${t('buffNote')}</p>` +
+    `${n ? `<div><button class="btn ghost" data-buffreset>${t('buffReset')}</button></div>` : ''}</div></section>`;
 }
 
 /* ---- tanking (Guide_Paladin 02_enmity, 03_defense, 03_magic) and offense (wsdist get_tp, get_hit_rate) ---- */
@@ -1127,7 +1096,7 @@ function tankHTML(r){
     const pot = phalanxPotency(skill);
     rows += statLi('Phalanx', `−${pot + v('phalanx')}`, '', '', t('phalanxTip', {p: pot, s: skill, g: v('phalanx')}));
   }
-  return `<div class="kicker sub">${t('tankTitle')}</div><ul class="statlist">${rows}</ul>`;
+  return box('g-tank', t('tankTitle'), `<ul class="statlist">${rows}</ul>`);
 }
 function offenseHTML(r, s){
   const {c, set, B, cur} = r, v = k => (set[k] || {}).v || 0;
@@ -1153,7 +1122,7 @@ function offenseHTML(r, s){
   if (da || v('ta') || v('qa')) rows += statLi(t('multiLbl'), `${r1(da)} · ${v('ta')} · ${v('qa')} %`, '');
   const crit = v('crit') + (B.crit || 0);
   if (crit) rows += statLi(t('critLbl'), `${r1(crit)} %`, '');
-  return `<div class="kicker sub">${t('offTitle')}</div><ul class="statlist">${rows}</ul>`;
+  return box('g-off', t('offTitle'), `<ul class="statlist">${rows}</ul>`);
 }
 
 /* ---- the character's real stats with a set ---- */
@@ -1210,9 +1179,12 @@ function charStats(s){
   if (out.acc && cur.wskill) out.acc.tip = `${cur.wskill} ${cur.level}`;
   return {c, out, set, B, cur, vsSet};
 }
+// A compartment: a card with a title band in its section's colour (g-def, g-tank...)
+const box = (cls, title, body, meta = '') =>
+  `<section class="box ${cls}"><header class="boxh"><h3>${title}</h3>${meta}</header><div class="boxb">${body}</div></section>`;
 function globalsHTML(s){
   const r = charStats(s);
-  if (!r) return `<div class="globals"><div class="kicker">${t('youTitle')}</div><p class="muted">${t('noChar')}</p></div>`;
+  if (!r) return `<div class="globals">${box('g-you', t('youTitle'), `<p class="muted">${t('noChar')}</p>`)}</div>`;
   const {c, out, set, vsSet} = r;
   const row = (label, o) => { const d = o.set - o.now;
     return statLi(label, o.set, d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''); };
@@ -1230,30 +1202,35 @@ function globalsHTML(s){
     (sird ? statLi('SIRD', sird + ' %', sirdMerits ? `<em class="delta">${t('withMerits')}</em>` : '', '', `${t('gearOnly')} ${v('sird')} % + ${t('merits')} ${sirdMerits} %`) : '');
   const levels = [c.master_level ? `ML ${c.master_level}` : '', c.jp_spent ? `${c.jp_spent} JP` : ''].filter(Boolean).join(' · ');
   const edited = Object.keys(S.meritEdits[meritKey()] || {}).length;
-  return `<div class="globals">${buffPanelHTML()}<div class="kicker">${t('youTitle')}${edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''}</div>` +
-    `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul><ul class="statlist">${attrs}</ul>` +
-    `<div class="kicker sub">${t('gearKey')}</div><ul class="statlist">${gear}</ul>${tankHTML(r)}${offenseHTML(r, s)}` +
-    `<p class="muted small">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
+  const you = box('g-you', t('youTitle'), `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul>`,
+    edited ? `<span class="meta edited">${t('meritsEdited', {n: edited})}</span>` : '');
+  return `<div class="globals">${buffPanelHTML()}${you}${box('g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
+    `${box('g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}${tankHTML(r)}${offenseHTML(r, s)}` +
+    `<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
 }
 
 /* ---- render ---- */
+// The top bar: character, job (by role, the played ones) and subjob menus, the job's macro book,
+// lockstyle and export, language and theme
 function renderSide(){
-  $('#chars').innerHTML = Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${esc(c)}">${esc(c)}</button>`).join('');
-  $('#lang-fr').setAttribute('aria-pressed', S.lang==='fr'); $('#lang-en').setAttribute('aria-pressed', S.lang==='en');
   const dark = S.theme ? S.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  $('#th-light').setAttribute('aria-pressed', !dark); $('#th-dark').setAttribute('aria-pressed', dark);
-  $('#th-light').setAttribute('aria-label', S.lang==='fr'?'Mode jour':'Light mode'); $('#th-dark').setAttribute('aria-label', S.lang==='fr'?'Mode nuit':'Dark mode');
   document.documentElement.lang = S.lang;
   if (S.theme) document.documentElement.setAttribute('data-theme', S.theme);
-  let nav = `<button class="navjob home" data-job="" aria-current="${!S.job}"><svg width="14" height="14" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg><b>${t('overview')}</b></button>`;
-  // only the jobs this character plays (an export exists); a role with none is left out
-  for (const r of ROLES) {
-    const played = JOBS.filter(j => j[2]===r && plays(j[0]));
-    if (!played.length) continue;
-    nav += `<h4 style="--role:${ROLE_COLOR[r]}">${t('roles.'+r)}</h4>` + played.map(([c,name]) => { const n = counts(c);
-      return `<button class="navjob" data-job="${c}" aria-current="${S.job===c}" style="--role:${ROLE_COLOR[r]}">${emblem(c)}<b>${c}</b><span class="nm">${name}</span><small>${n?n.sets:''}</small></button>`; }).join('');
-  }
-  $('#jobnav').innerHTML = nav;
+  const d = data(), job = S.job && JOBS.find(x => x[0] === S.job);
+  const chars = `<div class="seg" role="group">${Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${esc(c)}">${esc(c)}</button>`).join('')}</div>`;
+  const groups = ROLES.map(r => { const played = JOBS.filter(j => j[2]===r && plays(j[0]));
+    return played.length ? `<optgroup label="${t('roles.'+r)}">${played.map(([c, name]) => `<option value="${c}" ${S.job===c?'selected':''}>${c} · ${name}</option>`).join('')}</optgroup>` : ''; }).join('');
+  const icon = job ? `<span style="--role:${ROLE_COLOR[job[2]]}">${emblem(job[0])}</span>`
+    : `<span class="homeic"><svg width="16" height="16" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg></span>`;
+  const jobPick = `<div class="jobpick">${icon}<label class="pick"><small>${t('colJob')}</small><select class="topsel jobsel">` +
+    `<option value="" ${!S.job?'selected':''}>${t('overview')}</option>${groups}</select></label>${d ? subPicker() : ''}</div>`;
+  const facts = d ? `<dl class="mini"><div><dt>${t('macro')}</dt><dd>${bookOf(d)}</dd></div><div><dt>${t('lockstyle')}</dt><dd>${styleOf(d)}</dd></div>` +
+    `<div><dt>${t('colExport')}</dt><dd>${esc(d.at||'—')}${d.offline ? ` <span class="muted">· ${t('offline')}</span>` : ''}</dd></div></dl>` : '';
+  const prefs = `<div class="prefs"><div class="seg" role="group" aria-label="Language"><button data-lang="fr" aria-pressed="${S.lang==='fr'}">FR</button><button data-lang="en" aria-pressed="${S.lang==='en'}">EN</button></div>` +
+    `<div class="seg" role="group"><button data-theme-set="light" aria-pressed="${!dark}" aria-label="${S.lang==='fr'?'Mode jour':'Light mode'}"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.3"><path d="M7 0.5v2M7 11.5v2M0.5 7h2M11.5 7h2M2.4 2.4l1.4 1.4M10.2 10.2l1.4 1.4M2.4 11.6l1.4-1.4M10.2 3.8l1.4-1.4"/></g></svg></button>` +
+    `<button data-theme-set="dark" aria-pressed="${dark}" aria-label="${S.lang==='fr'?'Mode nuit':'Dark mode'}"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9.8 1.2a6 6 0 1 0 3 9.6A5 5 0 0 1 9.8 1.2z" fill="currentColor"/></svg></button></div></div>`;
+  const brand = `<div class="brand"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 10 H22 M13 1 L9 10 L13 25 L17 10 Z" fill="none" stroke="currentColor" stroke-width=".9" opacity=".6"/></svg><b>Atelier</b></div>`;
+  $('#top').innerHTML = `${brand}${chars}<span class="tsep"></span>${jobPick}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${prefs}`;
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:d.keys.filter(k=>k.key).length} : null; }
 function renderHome(){
@@ -1268,14 +1245,14 @@ function renderHome(){
     <th>${t('macro')}</th><th>${t('lockstyle')}</th><th>${t('colExport')}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note-foot">${t('mock')}</p></div>`;
 }
 function slotHTML(s, ci, slot, own, q, eff){
-  const p = eff.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
-  if (!p) return `<button class="slot empty ${eff.tried[slot]?'tried':''}" data-card="${ci}" data-slot="${slot}">${eff.tried[slot] ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : ''}${icon(null)}<span class="txt"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></span></button>`;
-  const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
+  const p = eff.pieces[slot], label = SLOT_NAMES[S.lang][slot], tried = eff.tried[slot];
+  const reset = tried ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : '';
+  if (!p) return `<button class="slot empty ${tried?'tried':''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : —">${reset}<span class="elbl">${label}</span></button>`;
+  const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot), hit = q && p.name.toLowerCase().includes(q);
   const r = pieceStats(p), augmented = r && Object.keys(r.aug).length;
-  // the full story (base / augments / where it comes from) is in the hover card (showTip)
-  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${eff.tried[slot]?'tried':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}` +
-    `${eff.tried[slot] ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : ''}` +
-    `<span class="txt"><span class="lbl">${label}</span><span class="item"><span class="nm">${esc(p.name)}</span>${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</span></span></button>`;
+  // the name, its stats, base and augments are in the hover card (showTip)
+  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${tried?'tried':''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : ${esc(p.name)}">` +
+    `${reset}${icon(p.name)}${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</button>`;
 }
 /* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
 const WEAPON_SLOTS = new Set(['main', 'sub', 'range', 'ammo']);
@@ -1392,10 +1369,11 @@ function cardHTML(card, ci, bypath, q){
   if (s.aliases && s.aliases.length) foot.push(`<details><summary>${t('sharedCount', {n: s.aliases.length})}</summary><p>${s.aliases.map(a => esc(shortPath(a))).join(' · ')}</p></details>`);
   const variants = card.variants.length > 1 ? `<div class="variants" role="group">${card.variants.map((x,i) => `<button aria-pressed="${i===vi}" data-card="${ci}" data-variant="${i}">${esc(x.label)}</button>`).join('')}</div>` : '';
   const when = t('famWhen.'+card.fam);
+  const legend = `<div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span><i class="try"></i>${t('legendTry')}</span><span>${t('legendHover')}</span></div>`;
   return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}${when?` <span class="when">· ${when}</span>`:''}</div>` +
     `<div class="titleline"><h2>${esc(niceName(card))}</h2><code class="path">${esc(s.path)}</code></div>${variants}${weaponPicker(s)}${trialBar(s)}</header>
-    <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer><div class="globals-inline">${globalsHTML(s)}</div>${setStatsHTML(s)}
-    <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span><i class="try"></i>${t('legendTry')}</span><span>${t('legendHover')}</span></div></article>`;
+    <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
+    <div class="globals-inline">${globalsHTML(s)}</div></article>`;
 }
 function renderSets(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
@@ -1465,14 +1443,13 @@ function subPicker(){
   const label = s => s === 'NONE' ? '—' : esc(s);
   const twins = sameAsOf(S.char, S.job), own = s => s !== main && (m[s] || (twins[s] && twins[s] !== main));
   const others = allSubs(S.char, S.job).filter(s => !subs.includes(s));
-  const buttons = subs.map(s => `<button aria-pressed="${s===cur}" data-subpick="${esc(s)}" class="${own(s)?'own':''}" title="${own(s) ? t('subOwn') : t('subSame',{s:label(main)})}">${label(s)}</button>`).join('');
-  const list = others.length ? `<select class="subsel" aria-label="${t('subOther')}" aria-pressed="${others.includes(cur)}">` +
-    `<option value="">${t('subOther')}</option>${others.map(s => `<option value="${esc(s)}" ${s===cur?'selected':''}>${label(s)}${own(s)?' •':''}</option>`).join('')}</select>` : '';
-  return `<span class="subpick" role="group">${buttons}${list}</span>`;
+  const opt = s => `<option value="${esc(s)}" ${s===cur?'selected':''}>${label(s)}${own(s)?' •':''}</option>`;
+  return `<label class="pick" title="${t('subOwn')} : •"><small>${t('colSub')}</small><select class="topsel subsel">` +
+    `<optgroup label="${t('subMine')}">${subs.map(opt).join('')}</optgroup>` +
+    (others.length ? `<optgroup label="${t('subOther')}">${others.map(opt).join('')}</optgroup>` : '') + `</select></label>`;
 }
 function renderJob(){
-  const c = S.job, j = JOBS.find(x => x[0]===c), d = data();
-  const r = j[2];
+  const c = S.job, d = data();
   let body, sections = '';
   if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
@@ -1480,9 +1457,7 @@ function renderJob(){
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;
     body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits}[S.section](d);
   }
-  const facts = d ? [[t('colSub'), subPicker()], [t('macro'), bookOf(d)], [t('lockstyle'), styleOf(d)], [t('colExport'), esc(d.at||'—') + (d.offline ? ` <span class="muted">· ${t('offline')}</span>` : '')]] : [];
-  return `<header class="jobhead" style="--role:${ROLE_COLOR[r]}"><div class="title">${emblem(c)}<div><h1 class="display">${c}</h1><p><span>${j[1]}</span><span class="role">${t('roles.'+r)}</span></p></div></div>
-    <dl class="facts">${facts.map(([a,b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl></header>${sections}<div class="pane ${d && S.section==='sets' ? 'split' : ''}">${body}</div>`;
+  return `${sections}<div class="pane ${d && S.section==='sets' ? 'split' : ''}">${body}</div>`;
 }
 // Re-render, keeping the focus of the search box and the scroll of each block
 // while the view stays the same (the set detail goes back to its top for another set)
@@ -1601,7 +1576,6 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-unslot],button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
-  if (d.subpick) { S.subs[S.char + '|' + S.job] = d.subpick; render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
@@ -1642,6 +1616,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
+  if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.section = 'sets'; S.q = ''; render(); }
   if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
     if (e.target.value === '') delete b0[k]; else b0[k] = e.target.value; render(); }
   if (e.target.classList.contains('weapsel')) { const k = S.char + '|' + S.job + '|' + e.target.dataset.mode;
