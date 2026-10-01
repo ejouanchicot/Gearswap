@@ -313,7 +313,7 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 | `init_action_listener()` | 167 | Clears the callbacks, then subscribes to `ActionListener` under `warp_detector` (subscribing again replaces). Caller: `WarpEquipment.init` |
 | `get_warp_spells()` | 207 | 13 names. Caller: `command_test` |
 | `get_warp_items()` | 219 | Unique database ids, walked per destination (65). Caller: `command_test` |
-| `get_items_by_destination(key)`, `ItemDB` | 237, 249 | No caller |
+| `get_items_by_destination(key)`, `ItemDB` | 229, 241 | No caller |
 | `get_all_destinations()` | 244 | No caller; would raise (the database has no such function; the comment says so) |
 
 `WarpEquipment` (`warp_equipment.lua`)
