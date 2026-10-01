@@ -74,7 +74,7 @@ function; line numbers are given only where no function name fits.
 | `_master/sets/brd_sets.lua` | 519 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_brd.lua` + `data/jobs/brd_messages.lua` | 513 + 269 | BRD chat messages |
 | `shared/utils/messages/formatters/magic/message_precast.lua` | 135 | `debugprecast` output used by `job_post_precast` |
-| `shared/data/magic/BRD_SPELL_DATABASE.lua` (+ `song/song_buffs`, `song_debuffs`, `song_special`) | 181 (+ 893, 426, 49) | Song descriptions and elements for the midcast "Spell Activated" line. `song_buffs.lua` is over the 800-line limit (listed in `CLAUDE.md`) |
+| `shared/data/magic/BRD_SPELL_DATABASE.lua` (+ `song/song_buffs`, `song_debuffs`, `song_special`) | 63 (+ 893, 426, 49) | Song descriptions and elements for the midcast "Spell Activated" line. `song_buffs.lua` is over the 800-line limit (listed in `CLAUDE.md`) |
 | `shared/data/job_abilities/BRD_JA_DATABASE.lua` | 13 | `JA_DATABASE_FACTORY.create('BRD')` |
 | `shared/utils/core/cast_tracker.lua`, `shared/utils/precast/cast_time.lua` | 58, 241 | "Cast started" packets and the cast time computed at precast, read by the song queue; `cast_time.owned_ids()` also feeds `instrument_extra` |
 

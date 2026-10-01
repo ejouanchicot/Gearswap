@@ -10,7 +10,7 @@ records are read lazily, at the first cast or command that needs them, by five k
   after every magic midcast;
 - `MidcastManager.select_set()`'s `database_func`, which turns a spell name into a set sub-key
   (`ENHANCING_MAGIC_DATABASE.get_spell_family` for 15 jobs, `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type`
-  for RDM and BLU);
+  for BLM, BLU, DRG, PUP, RDM and SCH);
 - job code that reads a DB directly: BRD and GEO message code (songs, colures), the ability message
   handler (SMN blood pacts), RDM's midcast (Enhancing family for its own Enhancing logic) and BLU's
   spell map (gear category and Unbridled flag);
@@ -31,21 +31,21 @@ table, with a line number only where it was re-read that day.
 
 | Path | Lines | Records | Role |
 |---|---|---|---|
-| `shared/data/magic/ELEMENTAL_MAGIC_DATABASE.lua` | 256 | 99 | Merges 7 `elemental/` modules (`helix.lua` deliberately excluded) + helpers |
-| `shared/data/magic/DARK_MAGIC_DATABASE.lua` | 256 | 26 | Merges 4 `dark/` modules + helpers |
-| `shared/data/magic/DIVINE_MAGIC_DATABASE.lua` | 215 | 11 | Merges 3 `divine/` modules + helpers |
-| `shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua` | 140 | 33 | Merges 3 `enfeebling/` modules; `get_enfeebling_type` used by RDM and BLU midcast |
-| `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` | 99 | 139 | Merges 5 `enhancing/` modules incl. `storm.lua`; `get_spell_family` used by 15 midcast modules |
-| `shared/data/magic/HEALING_MAGIC_DATABASE.lua` | 183 | 32 | Merges 4 `healing/` modules + helpers |
-| `shared/data/magic/NINJUTSU_DATABASE.lua` | 131 | 37 | Merges 3 `ninjutsu/` modules + helpers |
-| `shared/data/magic/BLM_SPELL_DATABASE.lua` | 165 | 102 | Job view: Elemental + Dark + Enfeebling records that have a `BLM` key |
-| `shared/data/magic/RDM_SPELL_DATABASE.lua` | 181 | 132 | Job view: Elemental + Healing + Enhancing + Enfeebling records with `RDM` |
-| `shared/data/magic/WHM_SPELL_DATABASE.lua` | 217 | 112 | Job view: Healing + Enhancing + Divine + Enfeebling records with `WHM` |
-| `shared/data/magic/GEO_SPELL_DATABASE.lua` | 191 | 113 | Job view: all `geomancy/` + Elemental/Dark records with `GEO` |
-| `shared/data/magic/SCH_SPELL_DATABASE.lua` | 222 | 119 | Job view: Healing, Enhancing, Enfeebling, Elemental, Dark filtered on `SCH` + all of `helix.lua` and `storm.lua` |
-| `shared/data/magic/BRD_SPELL_DATABASE.lua` | 181 | 105 | Merges 3 `song/` modules |
-| `shared/data/magic/BLU_SPELL_DATABASE.lua` | 325 | 196 | Merges 19 `blu/` modules; `get_spell_data` read by BLU's spell map |
-| `shared/data/magic/SMN_SPELL_DATABASE.lua` | 418 | 143 | Merges 15 `summoning/` modules: 22 summons + 121 blood pacts in one `.spells` table |
+| `shared/data/magic/ELEMENTAL_MAGIC_DATABASE.lua` | 112 | 99 | Merges 7 `elemental/` modules (`helix.lua` deliberately excluded) + `is_aoe` (no caller) |
+| `shared/data/magic/DARK_MAGIC_DATABASE.lua` | 93 | 26 | Merges 4 `dark/` modules (data only) |
+| `shared/data/magic/DIVINE_MAGIC_DATABASE.lua` | 62 | 11 | Merges 3 `divine/` modules (data only) |
+| `shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua` | 129 | 33 | Merges 3 `enfeebling/` modules; `get_enfeebling_type` used by 6 midcast modules (BLM, BLU, DRG, PUP, RDM, SCH); `is_aoe`, `get_stats` (no caller) |
+| `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` | 99 | 139 | Merges 5 `enhancing/` modules incl. `storm.lua`; `get_spell_family` used by 15 midcast modules; `get_spell_data` (no caller) |
+| `shared/data/magic/HEALING_MAGIC_DATABASE.lua` | 137 | 32 | Merges 4 `healing/` modules + `is_aoe`, `is_cure`, `get_stats` (no caller) |
+| `shared/data/magic/NINJUTSU_DATABASE.lua` | 98 | 37 | Merges 3 `ninjutsu/` modules + `can_cast` (no caller) |
+| `shared/data/magic/BLM_SPELL_DATABASE.lua` | 69 | 102 | Job view: Elemental + Dark + Enfeebling records that have a `BLM` key |
+| `shared/data/magic/RDM_SPELL_DATABASE.lua` | 101 | 132 | Job view: Elemental + Healing + Enhancing + Enfeebling records with `RDM`; `get_enfeebling_type` (no caller) |
+| `shared/data/magic/WHM_SPELL_DATABASE.lua` | 81 | 112 | Job view: Healing + Enhancing + Divine + Enfeebling records with `WHM` |
+| `shared/data/magic/GEO_SPELL_DATABASE.lua` | 78 | 113 | Job view: all `geomancy/` + Elemental/Dark records with `GEO` |
+| `shared/data/magic/SCH_SPELL_DATABASE.lua` | 107 | 119 | Job view: Healing, Enhancing, Enfeebling, Elemental, Dark filtered on `SCH` + all of `helix.lua` and `storm.lua` |
+| `shared/data/magic/BRD_SPELL_DATABASE.lua` | 63 | 105 | Merges 3 `song/` modules |
+| `shared/data/magic/BLU_SPELL_DATABASE.lua` | 153 | 196 | Merges 19 `blu/` modules; `get_spell_data` read by BLU's spell map |
+| `shared/data/magic/SMN_SPELL_DATABASE.lua` | 178 | 143 | Merges 15 `summoning/` modules: 22 summons + 121 blood pacts in one `.spells` table |
 | `shared/data/spells/BLM_SPELL_FILTERS.lua` | 126 | 3 sets | `REFINEMENT_SPELLS`, `ELEMENTAL_NO_TIERS`, `CHARGE_ABILITIES`: refinement vs cooldown check in `BLM_PRECAST` |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | 11 families | Tier-downgrade map for RDM enfeebles (`TIERS`, `get(family)`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | 13 families | Tier-downgrade map for nukes V..I, -ra III..I and Aspir III..I (`TIERS`, `get(family)`), RDM and GEO (since 2026-09-26) |
@@ -176,9 +176,9 @@ flowchart LR
    Job-unique modules are merged unfiltered (`geomancy/*` into GEO, `helix.lua` and `storm.lua` into
    SCH, all of BRD/BLU/SMN). A job aggregator therefore holds the *same* table objects as the skill
    aggregator it filtered.
-4. `SMN_SPELL_DATABASE` also merges every avatar's `.blood_pacts` into `.spells` and then splits
-   `.spells` again by `category` into the legacy tables `spirits`, `avatars`, `blood_pacts_rage`,
-   `blood_pacts_ward`. Blood pacts are job abilities in FFXI, so 18 pact names are also real spell names
+4. `SMN_SPELL_DATABASE` also merges every avatar's `.blood_pacts` into `.spells` (its only field: the
+   legacy split tables `spirits`, `avatars`, `blood_pacts_rage`, `blood_pacts_ward` were removed on
+   2026-10-01, nothing read them). Blood pacts are job abilities in FFXI, so 18 pact names are also real spell names
    (`Fire II`, `Fire IV`, `Impact`, `Sleepga`, `Thunderstorm`, ...), see Known issues.
 5. **Merged view.** `DataLoader.load_spells()` iterates `SPELL_DATABASES` (`data_loader.lua:57`: 6 skill
    DBs, then 8 job DBs, then Ninjutsu) and only inserts names not yet present: **first wins**, so skill
@@ -192,7 +192,7 @@ No database is loaded at job load. Each consumer requires only what the current 
 | Consumer | What it loads | When |
 |---|---|---|
 | `spell_message_handler.lua` | the one aggregator mapped to `spell.skill` (`SKILL_PATH`), and only on a miss the `FALLBACK_DATABASES` list in order | first cast of a skill whose message mode is not off |
-| Job midcast modules | `ENHANCING_MAGIC_DATABASE` (and for RDM / BLU `ENFEEBLING_MAGIC_DATABASE`) | in each job's `ensure_modules_loaded` / first routed cast; `MidcastDeps.load()` for BLU, COR, DNC, DRK, SAM, THF, WAR, WHM |
+| Job midcast modules | `ENHANCING_MAGIC_DATABASE` (and for BLM, BLU, DRG, PUP, RDM, SCH `ENFEEBLING_MAGIC_DATABASE`) | in each job's `ensure_modules_loaded` / first routed cast; `MidcastDeps.load()` for BLU, COR, DNC, DRK, SAM, THF, WAR, WHM |
 | `BRD_MIDCAST.lua` | `BRD_SPELL_DATABASE` | first BRD midcast |
 | `message_geo.lua` | `geomancy_indi.lua`, `geomancy_geo.lua` | when the GEO message formatter is first required |
 | `ability_message_handler.lua` | `SMN_SPELL_DATABASE` | first blood pact |
@@ -325,7 +325,7 @@ Common fields (spell records):
 | `tier` | string | most tiered families | Roman numeral `I`..`VII`; `nil` for Comet/Meteor/Impact and untiered spells |
 | `type` | string | all except `enhancing/` and `blu/` | Targeting: `single`, `aoe`, `self`, `self_aoe` (healing). SMN reuses it for `summon`, `spirit`, `physical`, `magical`, `buff`, `debuff`, `healing`, `support` |
 | `<JOB>` (`BLM`, `RDM`, ...) | number, or the string `"JP"` | per job that learns it | Learn level; job aggregators filter on it; `info` prints the numeric ones. `"JP"` appears on Aspir III (BLM, GEO), Drain III (DRK), Death (BLM), Endark II (DRK), Enlight II (PLD) |
-| `main_job_only`, `subjob_master_only` | boolean | many | Access flags; read only by unused `can_learn` helpers |
+| `main_job_only`, `subjob_master_only` | boolean | many | Access flags; read by no code (the `can_learn` helpers that read them were removed on 2026-10-01) |
 | `notes` | string | most | Free text, printed by `info` |
 
 Family-specific fields:
@@ -347,16 +347,17 @@ plus `get(family)`. `BLM_SPELL_FILTERS`: three sets keyed by spell name, `true` 
 ## Public API
 
 All aggregators expose `.spells` (name -> record). That field and the functions marked "used" are the
-only parts of this API with callers; the other helpers have **no caller outside their own module**
-anywhere in `shared/`, `_master/` and the live folders (checked by `grep -r`, including string
-dispatch), and several of them cannot work against the current schema.
+only parts of this API with callers. Since 2026-10-01 (`2b3863f`) the aggregators are data only: the
+query helpers nothing called (`can_learn`, `get_spells_by_category`, `get_spells_by_type`,
+`get_songs_by_type`, the per-family getters, the SMN pact helpers, ...) were removed, and the few
+functions left without a caller are listed below.
 
 ### Used
 
 | Function | Returns | Callers |
 |---|---|---|
 | `ENHANCING_MAGIC_DATABASE.get_spell_family(name)` | `spell_family` or nil | 15 midcast modules, see table above |
-| `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type(name)` | `enfeebling_type` or nil | `RDM_MIDCAST.lua`, `BLU_MIDCAST.lua` |
+| `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type(name)` | `enfeebling_type` or nil | `RDM_MIDCAST.lua`, `BLU_MIDCAST.lua`, `DRG_MIDCAST.lua`, `PUP_MIDCAST.lua`, `SCH_MIDCAST.lua`, BLM `logic/midcast_router.lua` |
 | `BLU_SPELL_DATABASE.get_spell_data(name)` | record or nil | `shared/jobs/blu/functions/logic/spell_map.lua` (`database_entry`) |
 | `RDM_ENFEEBLE_TIERS.get(family)` | tier map or nil | `RDM_PRECAST.lua` `get_spell_tiers` |
 | `NUKE_TIERS.get(family)` | tier map or nil | `RDM_PRECAST.lua` `get_spell_tiers`, `GEO_PRECAST.lua` |
@@ -366,24 +367,20 @@ dispatch), and several of them cannot work against the current schema.
 name, plus the key `'Elemental Magic'` which is never looked up because `uses_refinement` checks the
 skill directly), `ELEMENTAL_NO_TIERS`, `CHARGE_ABILITIES`.
 
-### Unused helpers (no callers)
+### Remaining functions without a caller
 
-| Module | Functions | Notes |
-|---|---|---|
-| ELEMENTAL | `can_learn`, `get_spells_by_element`, `get_spells_by_type`, `get_spells_by_tier`, `get_element`, `get_tier`, `is_aoe`, `get_ancient_magic`, `get_dot_spells` | |
-| DARK | `get_description`, `get_tier`, `get_element`, `is_job_points_spell`, `is_drk_only`, `get_spells_by_category`, `get_absorb_spells`, `get_drain_spell`, `get_bio_spell` | |
-| DIVINE | `can_learn`, `get_spells_by_job`, `get_spells_by_type`, `get_spells_by_tier`, `get_banish_spells`, `get_banishga_spells`, `get_holy_spells`, `is_effective_vs_undead` | `can_learn('Enlight II','PLD',99)` raises "attempt to compare string with number"; so does `get_spells_by_job('PLD', 99)` |
-| ENFEEBLING | `is_aoe`, `get_description`, `get_stats` | |
-| ENHANCING | `get_spell_data` | |
-| HEALING | `get_cure_type`, `is_aoe`, `is_status_removal`, `is_raise`, `is_cure`, `get_description`, `get_stats` | |
-| NINJUTSU | `get_description`, `get_element`, `get_tier`, `can_cast` | |
-| BLM / GEO | `can_learn`, `get_spells_by_category`, `get_elemental_spells`, `get_ancient_magic` / `get_colure_pair` | these two `can_learn` handle `"JP"` |
-| RDM | `can_learn`, `get_spells_by_category`, `get_elemental_spells`, `get_spells_by_magic_type`, `get_enfeebling_type` | RDM midcast uses the ENFEEBLING function instead |
-| WHM | `can_learn`, `get_spells_by_category`, `get_cure_spells`, `get_bar_elemental`, `get_boost_spells`, `get_teleport_spells`, `get_recall_spells` | the last four read `category`/`destination`, which enhancing records do not have: always empty |
-| SCH | `can_learn`, `get_spells_by_category`, `get_elemental_spells`, `get_helix_spells`, `get_storm_spells`, `get_arts_requirement` | `arts` field exists nowhere: always nil |
-| BRD | `can_learn`, `get_songs_by_category`, `get_songs_by_type`, `get_elemental_songs`, `get_etude_by_stat`, `get_buff_songs`, `get_debuff_songs` | `song_type` field exists nowhere: `get_songs_by_type`/`get_buff_songs`/`get_debuff_songs` always empty |
-| BLU | `can_learn`, `get_spells_by_type` + 6 wrappers, `get_spells_by_element`, `get_spells_by_trait`, `get_unbridled_spells`, `calculate_trait_points`, `get_skillchain_property` | `spell_type` exists nowhere (data uses `category`): `get_spells_by_type` and its wrappers always empty |
-| SMN | `can_summon`, `can_use_pact`, `get_avatar_pacts`, `get_pacts_by_element`, `get_rage_by_damage_type`, `get_skillchain_property`, `get_avatar_element`, `get_two_hour_pacts`, `get_all_spirits`, `get_all_avatars`, `get_pact_data` | `can_use_pact` reads `pact.SMN` but pacts carry `level`: always false; `get_skillchain_property` reads `.property`, pacts use `.skillchain`; `get_rage_by_damage_type('Physical')` returns nothing (`damage_type` holds `Blunt`, ...) |
+Checked with `grep -r` over `shared/`, `_master/` and the live folders on 2026-10-01.
+
+| Module | Functions |
+|---|---|
+| ELEMENTAL | `is_aoe` |
+| ENFEEBLING | `is_aoe`, `get_stats` |
+| ENHANCING | `get_spell_data` |
+| HEALING | `is_aoe`, `is_cure`, `get_stats` |
+| NINJUTSU | `can_cast` |
+| RDM | `get_enfeebling_type` (RDM midcast uses the ENFEEBLING function instead) |
+| DARK, DIVINE, BLM, WHM, GEO, SCH, BRD, SMN | `spells` only |
+| BLU | `spells` only besides the used `get_spell_data` |
 
 ## Commands
 
@@ -447,7 +444,7 @@ have no effect.
 - **Keys must equal `res/spells.lua` `en` names**, abbreviations included (`Ltng. Threnody`,
   `Nat. Meditation`, `Goddess's Hymnus`, `Aera`).
 - **`"JP"` level strings.** Any new helper comparing `level >= spell[job]` must skip non-number values
-  (only `BLM_SPELL_DATABASE.can_learn` and `GEO_SPELL_DATABASE.can_learn` do).
+  (no database function compares learn levels since 2026-10-01; `info` prints only the numeric ones).
 - **Blood pacts share the `.spells` namespace** of `SMN_SPELL_DATABASE`. Adding SMN to any merged view
   before the Elemental/Enfeebling/Healing/Enhancing DBs would make pact records shadow the real spells
   of the same name.
@@ -538,20 +535,21 @@ Re-checked on 2026-09-28. Open:
   `shared/data/magic/song/song_buffs.lua`
 - Blood pacts share the spell namespace; `//gs c info` can never show the 18 colliding pacts -
   `shared/data/magic/SMN_SPELL_DATABASE.lua`
-- Most helper functions have no external caller; several read fields the data does not have and one
-  raises an error - `DIVINE_MAGIC_DATABASE.can_learn`
 - `ELEMENTAL_NO_TIERS` can never match; filter lists name spells that do not exist -
   `shared/data/spells/BLM_SPELL_FILTERS.lua`
 - `_master/sets/rdm_sets.lua` (and `_master/Kaories/rdm/rdm_sets.lua`) say the enfeebling type comes
   from `RDM_SPELL_DATABASE`; it comes from `ENFEEBLING_MAGIC_DATABASE` (`RDM_MIDCAST.lua`)
-- Two conventions for Job Point spells: the string `"JP"` against numeric learn levels (`can_learn` of
-  BLM/GEO handle it, the DIVINE one raises). Left as is (changing it changes helper behaviour).
+- Two conventions for Job Point spells: the string `"JP"` against numeric learn levels. Harmless today
+  (no database function compares learn levels), a trap for any new comparison.
 - Spell descriptions: only the records flagged by the 2026-09-25 audit sample were re-read against
   BG-Wiki and fixed; the full pass over the ~360 remaining records is not done, and Tourbillion /
   Windstorm are still approximate.
 - `song/song_buffs.lua` is 893 lines, over the 800-line hard cap (pure data).
 
 Fixed:
+
+- Query helpers with no caller (several read fields the data does not have, `DIVINE_MAGIC_DATABASE.can_learn`
+  raised an error) and the SMN legacy tables: removed (`2b3863f`, 2026-10-01).
 
 - Dispelga had no record, so its first cast loaded all 15 DBs: record added to
   `enfeebling/enfeebling_control.lua` (`cc3e721`, 2026-09-27).

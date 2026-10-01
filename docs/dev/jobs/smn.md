@@ -479,8 +479,7 @@ it stays on after the first cast.
 - `CastingMode` has no effect (no `.Resistant` set); `sets.buff.Doom` is
   missing.
 - Standards: `SMN_BUFFS` and `SMN_AFTERCAST` re-implement `LifecycleManager`
-  (`SMN_STATUS` is the shared handler since 2026-09-28);
-  `SMN_SPELL_DATABASE.can_use_pact` is broken and dead (known).
+  (`SMN_STATUS` is the shared handler since 2026-09-28).
 - The overlay's SMN configs and entry carry `@author Tetsouo`
   (convention: `ejouanchicot`); the generic copies are fixed.
 - Not an issue: `Cacodemonia` (id 663, `mp_cost` 0) is not classified and
