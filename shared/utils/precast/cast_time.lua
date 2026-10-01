@@ -150,7 +150,9 @@ local EQUIP_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16}
 local OWNED_TTL = 30
 
 --- Item ids in the bags gear can be equipped from, re-read at most every
---- OWNED_TTL seconds.
+--- OWNED_TTL seconds. An empty read is not kept: the bags read empty while
+--- they load (login, zoning), and 30 s of "owns nothing" would undo every
+--- check that reads them.
 local function owned()
     local cache = rawget(_G, '_cast_time_owned')
     if cache and os.clock() - cache.at < OWNED_TTL then return cache.ids end
@@ -161,7 +163,7 @@ local function owned()
             if type(item) == 'table' and item.id and item.id > 0 then ids[item.id] = true end
         end
     end
-    _G._cast_time_owned = {at = os.clock(), ids = ids}
+    if next(ids) then _G._cast_time_owned = {at = os.clock(), ids = ids} end
     return ids
 end
 

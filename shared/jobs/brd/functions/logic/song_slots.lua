@@ -11,13 +11,10 @@
 --- song holds yet: a slot a song holds is open, and a new song overwrites the
 --- one with the least time left.
 ---
---- Slots are per bard: another bard's songs on this character hold none of
---- ours. The game does not say who cast a buff, so this module keeps its own
---- ledger of the songs this character finished on itself (record, called
---- from BRD_AFTERCAST) and counts those only, capped per song family by the
---- buffs actually up (read from the game: buffactive lags, see
---- AbilityHelper.is_buff_active). Not seen: another bard overwriting one of
---- ours with the same song (the buff stays, only its caster changes);
+--- Slots are per bard: another bard's or a Trust's songs on this character
+--- hold none of ours. The game does not say who cast a buff; song_owner.lua
+--- tells ours apart by their end time (a song instance that appears or is
+--- renewed when one of our songs lands), and only those count.
 --- //gs c songs full sings every dummy whatever is up.
 ---
 --- @file    shared/jobs/brd/functions/logic/song_slots.lua
@@ -30,95 +27,37 @@ local SongSlots = {}
 
 local BASE_SLOTS = 2
 
---- Buff names of the songs a BRD puts on the party (one buff per song up),
---- as res/buffs.lua names them: Honor March gives "March", Aria of Passion
---- "Aria". The family of a song is the one of these its name contains.
-local SONG_BUFFS = {}
-for _, name in ipairs({'Minuet', 'March', 'Madrigal', 'Minne', 'Paeon',
-        'Ballad', 'Etude', 'Carol', 'Mambo', 'Prelude', 'Aubade', 'Pastoral', 'Fantasia',
-        'Operetta', 'Capriccio', 'Round', 'Gavotte', 'Hymnus', 'Mazurka', 'Sirvente',
-        'Dirge', 'Scherzo', 'Aria'}) do
-    SONG_BUFFS[name:lower()] = true
-end
-
 local function resources()
     local ok, res = pcall(require, 'resources')
     return ok and res or {}
 end
 
--- An entry older than any song can last is dropped
-local LEDGER_MAX_AGE = 1200
+local SongOwner = require('shared/jobs/brd/functions/logic/song_owner')
 
---- Song buffs up on this character now, per family (lower-cased buff name).
---- @return table family -> count, number total
-local function buffs_up()
-    local me = windower.ffxi.get_player()
-    local buffs = resources().buffs or {}
-    local by_family, total = {}, 0
-    for _, id in ipairs(me and me.buffs or {}) do
-        local buff = buffs[id]
-        local family = buff and buff.en and buff.en:lower()
-        if family and SONG_BUFFS[family] then
-            by_family[family] = (by_family[family] or 0) + 1
-            total = total + 1
-        end
-    end
-    return by_family, total
-end
-
---- Buff family of a song ('Valor Minuet V' -> 'minuet'), nil for a debuff song.
---- @param song string
---- @return string|nil
-local function family_of(song)
-    local name = song:lower()
-    for family in pairs(SONG_BUFFS) do
-        if name:find(family, 1, true) then return family end
-    end
-    return nil
-end
-
-local function ledger()
-    windower._brd_own_songs = windower._brd_own_songs or {}
-    return windower._brd_own_songs
-end
-
---- Note a song this character finished on itself (BRD_AFTERCAST).
+--- A song this character finished on itself (BRD_AFTERCAST): song_owner.lua
+--- claims the song instance it put up.
 --- @param spell table Spell object from GearSwap
 function SongSlots.record(spell)
-    if not spell or spell.interrupted or spell.type ~= 'BardSong' then return end
-    local target = spell.target
-    local me = windower.ffxi.get_player()
-    if not target or not (target.type == 'SELF' or (me and target.id == me.id)) then return end
-    local family = family_of(spell.english or '')
-    if family then table.insert(ledger(), {family = family, at = os.clock()}) end
+    SongOwner.record(spell)
 end
 
---- Songs of this character up on itself: its ledger, per family no more than
---- the buffs of that family actually up. Stale entries are dropped.
---- @return number own, number all (every song buff up, any bard)
+--- Songs of this character up on itself, and every song up (any bard).
+--- @return number own, number all
 function SongSlots.songs_up()
-    local by_family, total = buffs_up()
-    local now, kept, per_family = os.clock(), {}, {}
-    local entries = ledger()
-    for i = #entries, 1, -1 do                   -- newest first
-        local e = entries[i]
-        local seen = per_family[e.family] or 0
-        if now - e.at < LEDGER_MAX_AGE and seen < (by_family[e.family] or 0) then
-            per_family[e.family] = seen + 1
-            table.insert(kept, 1, e)
-        end
-    end
-    windower._brd_own_songs = kept
-    return #kept, total
+    return SongOwner.counts()
 end
 
 --- Extra songs an instrument grants, from the version this character owns.
+--- The last value found is kept per instrument (on windower): while the bags
+--- read empty (zoning), it stands.
 --- @param name string|nil Instrument name
 --- @return number 0, 1 or 2
 function SongSlots.instrument_extra(name)
     if type(name) ~= 'string' or name == '' then return 0 end
     local res = resources()
     local owned = require('shared/utils/precast/cast_time').owned_ids()
+    windower._brd_instrument_extra = windower._brd_instrument_extra or {}
+    if not next(owned) then return windower._brd_instrument_extra[name] or 0 end
     local best = 0
     for id, item in pairs(res.items or {}) do
         if (item.en == name or item.enl == name) and owned[id] then
@@ -130,6 +69,7 @@ function SongSlots.instrument_extra(name)
             end
         end
     end
+    windower._brd_instrument_extra[name] = best
     return best
 end
 
@@ -168,6 +108,12 @@ function SongSlots.plan(pack_size, full)
     local capacity = BASE_SLOTS + math.max(i.main_extra, i.dummy_extra) + clarion
     local total = math.min(pack_size, math.max(capacity, held))
     local dummies = math.max(0, total - math.max(held, base))
+    pcall(function()
+        require('shared/utils/debug/trace_log').log('SONGS',
+            'plan: main %s +%d, dummy %s +%d, clarion %d, ours up %d / all %d -> %d songs, %d dummies, base %d',
+            tostring(i.main), i.main_extra, tostring(i.dummy), i.dummy_extra, clarion,
+            i.up, i.up_all, total, dummies, math.min(base, total))
+    end)
     return total, dummies, math.min(base, total)
 end
 

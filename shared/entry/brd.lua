@@ -229,6 +229,11 @@ function user_setup()
         end
     end, UIConfig.init_delay + 0.5)
 
+    -- Which songs up are ours (end times of packet 0x063), against other
+    -- bards' and Trusts' songs: shared/jobs/brd/functions/logic/song_owner.lua
+    local owner_ok, SongOwner = pcall(require, 'shared/jobs/brd/functions/logic/song_owner')
+    if owner_ok and SongOwner then SongOwner.start() end
+
     -- ==========================================================================
     -- DUALBOX IPC (covers main job change - job_sub_job_change is subjob-only)
     -- The require() triggers dualbox_manager auto-init which schedules the
