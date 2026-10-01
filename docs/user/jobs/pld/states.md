@@ -15,7 +15,7 @@ Set names and automatic gear: [sets.md](sets.md).
 |---|---|---|---|
 | `^numpad9` | `HybridMode` | **PDT**, MDT, Sortie. Under /SCH: DPS, **Tanking**, Hoxne | Your stance (see below) |
 | `^numpad1` | `MainWeapon` | **Excalibur**, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo | Weapon set to wield. The list shrinks in Sortie and under /SCH (see below). Hidden under /SCH Tanking |
-| `^numpad2` | `PhalanxSIRD` | **Off**, On. Under /SCH: Off, **On** | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. Under /SCH the key is `^numpad3` (`^numpad2` is Regen there) |
+| `^numpad2` | `PhalanxSIRD` | **Off**, On. Under /SCH: Off, **On** | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. The same key under every subjob |
 | `^numpad5` | `WS1` | depends on the weapon | Weaponskill of `//gs c ws1` (or `ws`) |
 | `^numpad6` | `WS2` | depends on the weapon | Weaponskill of `//gs c ws2` |
 | `^numpad3` (/RUN) | `RuneMode` | **Ignis**, Gelus, Flabra, Tellus, Sulpor, Unda, Lux, Tenebrae | Rune used by `//gs c rune` |
@@ -43,7 +43,7 @@ its own) uses `sets.engaged.BurtgangKC` in every stance.
 
 Under /SCH the weapon list is Naegling and Excalibur (both with Duban in the author's
 `PLD_WEAPONS.lua`), the weapon
-opens on Naegling and `PhalanxSIRD` starts On (Ctrl+Numpad3 turns it Off). Leaving the
+opens on Naegling and `PhalanxSIRD` starts On (Ctrl+Numpad2 turns it Off). Leaving the
 Sortie stance for PDT or MDT restores the full lists and turns `PhalanxSIRD` Off;
 PDT <-> MDT keeps every choice.
 
@@ -60,7 +60,7 @@ Savage Blade / Chant du Cygne.
 
 | Mode | Values | Use |
 |---|---|---|
-| `Regen` (/SCH) | **Off**, On | Ctrl+Numpad2 under /SCH (the key is Phalanx SIRD on the other subjobs). `On` lays `sets.idleRegen` over your idle set. A macro can also set it: `//gs c set Regen On` / `Off`. Forced Off outside /SCH |
+| `Regen` (/SCH) | **Off**, On | Ctrl+Numpad3 under /SCH (Rune Mode's key, which only /RUN uses). `On` lays `sets.idleRegen` over your idle set. A macro can also set it: `//gs c set Regen On` / `Off`. Forced Off outside /SCH |
 | `SneakInviAOE` | **On**, Off | Whether `aoe sneak` / `aoe invi` use Accession for the party, and whether `//gs c stealth` may cover your group with Accession ([Sneak and Invisible](../../guides/stealth.md)). No key: set back On each time the /SCH setup loads; `//gs c set SneakInviAOE Off` changes it until then |
 | `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog (how long it waits for a lost aftercast) |
 | `AutoMedicine` | **On**, Off | Common to every job, key Apps+Numpad0: Echo Drops / Remedy when a debuff blocks your action |

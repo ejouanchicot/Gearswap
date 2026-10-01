@@ -31,10 +31,9 @@ the keys that are bound now, with the current value of each mode.
 |---|---|---|
 | `^numpad9` | Cycle `HybridMode` (your stance) | Every subjob; the list and default depend on the subjob (above) |
 | `^numpad1` | Cycle `MainWeapon` | Default Excalibur (/SCH: Naegling). **Unbound and hidden in the /SCH Tanking stance**, the /SCH default |
-| `^numpad2` | Cycle `PhalanxSIRD` (Off, On) | Every subjob but /SCH. Default Off (On in the Sortie stance) |
-| `^numpad2` | Cycle `Regen` (Off, On) | /SCH only. Default Off |
+| `^numpad2` | Cycle `PhalanxSIRD` (Off, On) | Every subjob. Default Off (On under /SCH and in the Sortie stance) |
 | `^numpad3` | Cycle `RuneMode` (Ignis ... Tenebrae) | /RUN only. Default Ignis; used by `//gs c rune` |
-| `^numpad3` | Cycle `PhalanxSIRD` (Off, On) | /SCH only. Default On |
+| `^numpad3` | Cycle `Regen` (Off, On) | /SCH only. Default Off |
 | `^numpad4` | Cycle `Xp` (Off, On) | /RDM only. Default Off |
 | `^numpad5` | Cycle `WS1`: the weaponskill of `//gs c ws1` | Every subjob; the list follows the weapon in hand |
 | `^numpad6` | Cycle `WS2`: the weaponskill of `//gs c ws2` | Every subjob; the list follows the weapon in hand |
