@@ -55,8 +55,8 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/midcast_router.lua` | 296 | `handle_singing` (dummy / debuff / normal), `handle_healing`, `handle_enhancing`, `handle_enfeebling`, `handle_elemental`; `apply_main_instrument` |
 | `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 250 | `get_current_pack`, `get_songs_with_replacement`, `update_song_slots` (HUD), `get_required_instrument`, `start_with_nitro`, `cast_songs_with_phases`, `cast_dummy_songs` |
 | `shared/jobs/brd/functions/logic/dummy_next.lua` | 77 | DummySong switch: `is_on`, `mark`, `on_aftercast` (next song as a dummy, then off) |
-| `shared/jobs/brd/functions/logic/song_slots.lua` | 120 | `plan` (one `SONGS` trace line per plan), `inputs`, `songs_up`, `record` (both through `song_owner`), `instrument_extra` |
-| `shared/jobs/brd/functions/logic/song_owner.lua` | 221 | Which songs up are ours, by end time (packet 0x063): `record`, `counts`, `start`, `family_of` |
+| `shared/jobs/brd/functions/logic/song_slots.lua` | 113 | `plan` (one `SONGS` trace line per plan), `inputs`, `songs_up` (through `song_owner`), `instrument_extra` |
+| `shared/jobs/brd/functions/logic/song_owner.lua` | 224 | Which songs up are ours, from the caster of each song (packets 0x028 + 0x063): `counts`, `start` |
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 177 | `start`, `stop`, `on_aftercast`; retry / timeout logic; buff guard before each song; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
@@ -249,15 +249,18 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   caches an empty read.
   Own songs up come from `logic/song_owner.lua`. A song buff is one instance,
   `<buff id>:<end time>` (packet 0x063 order 9, decoded by
-  `BuffTimers.read`). `SongSlots.record` (from `BRD_AFTERCAST.lua`, songs
-  finished on self) claims the instance of that song's family that appears or
-  is renewed within 3 s of the aftercast, whichever comes first. An instance
-  that appears without a song of ours (another bard, a Trust) is not ours; one
-  of ours whose end time changes or that goes is dropped. The instances of ours
+  `BuffTimers.read`). The action packet of every song landing on this
+  character (0x028 category 4, message 230 / 266) names its caster and the buff
+  it gave; the instance that appears or is renewed is paired with it by buff id,
+  in arrival order, either packet first, within 3 s. Ours when the caster is
+  this character; another bard's or a Trust's otherwise. One of ours whose end
+  time changes or that goes is dropped. Two songs of one family from two
+  casters between two buff packets: the count is right, which instance is
+  whose may be swapped. The instances of ours
   live on `windower._brd_song_owned` and in `<Character>/saved/brd_own_songs.lua`,
   so a `lua reload` keeps them; until the first packet of a load, a saved one
-  counts when a buff of its id is up. The listener is a raw event started from
-  `user_setup` (`SongOwner.start`). Each plan writes a `SONGS` trace line
+  counts when a buff of its id is up. The listeners are raw events started
+  from `user_setup` (`SongOwner.start`). Each plan writes a `SONGS` trace line
   (instruments and extras, Clarion, ours / all up, result). `//gs c songplan`
   shows the inputs and the plan.
 - `cast_songs_with_phases(false, '<me>', full)`: `base` pack songs, the
@@ -510,8 +513,8 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
   `gs reload` or a subjob change: the next load's aftercast carries it on; a main
   job change drops it at its next step), `_brd_song_owned`
   (our song instances, also saved to `saved/brd_own_songs.lua`, so a `lua
-  reload` keeps them), `_brd_instrument_extra`. One raw event: `incoming
-  chunk` 0x063, from `SongOwner.start`.
+  reload` keeps them), `_brd_instrument_extra`. Two raw events, from
+  `SongOwner.start`: `incoming chunk` 0x063 and `action`.
 - Coroutines and queued commands: the 0.2 s macro/lockstyle block, the song
   slot refresh, `nt`, `forceidle`, Marcato's `wait 2`, the song queue timers
   (each checks the queue sequence) and the AutoNitro chain. None is cancelled
