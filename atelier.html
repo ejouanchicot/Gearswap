@@ -209,11 +209,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
 .buffnote{font-size:11.5px;color:var(--faint);margin:0}
 .vsset{font-size:12px;color:var(--try);margin:0}
-.weaps{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:13px;color:var(--muted)}
-.weaps label{display:inline-flex;align-items:center;gap:6px}
-.weapsel{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-strong);border-radius:3px;padding:1px 4px}
-.weaps label.picked .weapsel{border-color:var(--accent);color:var(--accent)}
-.weaps label[title]{cursor:help}
+.weaps{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;gap:5px 12px;margin-top:10px;font-size:13px;color:var(--muted)}
+.weaps > .kicker{grid-column:1 / -1}
+.wrow{display:contents}
+.wrow > span{white-space:nowrap}
+.wrow .variants{margin-top:0}
+.wrow.picked > span{color:var(--accent);font-weight:600}
+.wrow .variants button[data-wval=""]{font-style:italic}
 .detail footer{padding:9px 18px;font-size:13px;color:var(--muted);display:grid;gap:2px}
 .detail footer details summary{cursor:pointer}
 .detail footer details p{margin:4px 0 0;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
@@ -1391,13 +1393,14 @@ function weaponPicker(s){
   const d = data(), modes = weaponModes(d).filter(m => !isEmpty(s.pieces[slotOf(m)]));
   const hm = modes.length ? hybridMode(d) : null;
   if (!hm && !modes.length) return '';
-  const opts = (m, sel) => m.values.map(v => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
-  const hybrid = hm ? `<label>${esc(hm.desc)}<select class="weapsel" data-mode="${esc(hm.name)}">${opts(hm, chosenWeapon(hm))}</select></label>` : '';
+  // buttons, like the set's variants: one row per mode, "Auto" first (what the job's rules put there)
+  const chip = (m, v, on, label = v, title = '') => `<button type="button" data-wmode="${esc(m.name)}" data-wval="${esc(v)}" aria-pressed="${on}"${title ? ` title="${esc(title)}"` : ''}>${esc(label)}</button>`;
+  const row = (label, chips, picked) => `<div class="wrow ${picked ? 'picked' : ''}"><span>${esc(label)}</span><div class="variants">${chips}</div></div>`;
+  const hybrid = hm ? row(hm.desc, hm.values.map(v => chip(hm, v, v === chosenWeapon(hm))).join(''), false) : '';
   return `<div class="weaps"><span class="kicker">${t('weapons')}</span>${hybrid}${modes.map(m => {
     const slot = slotOf(m), auto = withWeapons(s, m.name), piece = auto.pieces[slot], ex = explicitWeapon(m);
     const why = auto.from[slot] || (piece ? t('slotBySet') : '');
-    return `<label class="${ex ? 'picked' : ''}">${esc(m.desc)}<select class="weapsel" data-mode="${esc(m.name)}" title="${esc(why)}">` +
-      `<option value="">${t('auto')} · ${esc(piece ? piece.name : '—')}</option>${opts(m, ex)}</select></label>`; }).join('')}</div>`;
+    return row(m.desc, chip(m, '', !ex, `${t('auto')} · ${piece ? piece.name : '—'}`, why) + m.values.map(v => chip(m, v, v === ex)).join(''), ex); }).join('')}</div>`;
 }
 function cardHTML(card, ci, bypath, q){
   const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
@@ -1412,7 +1415,7 @@ function cardHTML(card, ci, bypath, q){
   const when = t('famWhen.'+card.fam);
   const legend = `<div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span><i class="try"></i>${t('legendTry')}</span><span>${t('legendHover')}</span></div>`;
   return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}${when?` <span class="when">· ${when}</span>`:''}</div>` +
-    `<div class="titleline"><h2>${esc(niceName(card))}</h2><code class="path">${esc(s.path)}</code></div>${variants}${weaponPicker(s)}${trialBar(s)}</header>
+    `<div class="titleline"><h2>${esc(niceName(card))}</h2><code class="path">${esc(s.path)}</code></div>${weaponPicker(s)}${variants}${trialBar(s)}</header>
     <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
     <div class="globals-inline">${globalsHTML(s)}</div></article>`;
 }
@@ -1651,6 +1654,7 @@ document.addEventListener('click', e => {
   if ('tryundo' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); delete S.trial[trialKey(s)]; render(); return; }
   if ('trylua' in d) { openLua(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('copylua' in d) { copyLua(b); return; }
+  if (d.wmode) { const k = S.char + '|' + S.job + '|' + d.wmode; if (d.wval) S.weapons[k] = d.wval; else delete S.weapons[k]; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if ('bufftoggle' in d) { S.buffsOpen = !S.buffsOpen; render(); return; }
   if ('buffreset' in d) { S.buffs[S.char] = {}; render(); return; }
@@ -1681,8 +1685,6 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.section = 'sets'; S.q = ''; render(); }
   if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
     if (e.target.value === '') delete b0[k]; else b0[k] = e.target.value; render(); }
-  if (e.target.classList.contains('weapsel')) { const k = S.char + '|' + S.job + '|' + e.target.dataset.mode;
-    if (e.target.value) S.weapons[k] = e.target.value; else delete S.weapons[k]; render(); }
 });
 /* ---- the hover card of a piece: what it brings, base and augments apart ---- */
 function tipHTML(card, slot){
