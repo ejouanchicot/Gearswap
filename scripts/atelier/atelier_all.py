@@ -234,8 +234,12 @@ def write_index():
                     if m.group(2):
                         entry['sub'] = m.group(2)
                     entries.append(entry)
+    # the live link files that exist (live_<Char>.js, link_<Char>.js): the page loads only those
+    live = sorted('atelier/' + n for n in os.listdir(os.path.join(DATA, 'atelier'))
+                  if re.match(r'^(live|link)_.+\.js$', n))
     with open(os.path.join(DATA, 'atelier', 'index.js'), 'w', encoding='utf-8', newline='\n') as f:
-        f.write('window.ATELIER_INDEX = %s;\n' % json.dumps(entries, separators=(',', ':')))
+        f.write('window.ATELIER_INDEX = %s;\nwindow.ATELIER_LIVE_FILES = %s;\n'
+                % (json.dumps(entries, separators=(',', ':')), json.dumps(live, separators=(',', ':'))))
 
 
 def group_twins(char, job, main_sub, done):

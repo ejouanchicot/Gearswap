@@ -185,6 +185,8 @@ function AtelierLive.start()
     -- the page finds the door through this file (one per character: two boxes, two doors)
     write(live_file(player.name), ('window.ATELIER_LIVE = window.ATELIER_LIVE || {};\nATELIER_LIVE[%q] = {port: %d, token: %q};\n')
         :format(player.name, live.port, live.token))
+    -- the index lists the live files, so the page asks for those only
+    pcall(function() require('shared/utils/atelier/atelier_export').write_index() end)
     -- raw: no refresh of GearSwap's globals at every frame; GearSwap drops it at the
     -- next file load (refresh.lua unregisters the user's events)
     local frame = 0

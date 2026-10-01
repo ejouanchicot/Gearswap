@@ -2406,7 +2406,8 @@ function boot(){
   const index = window.ATELIER_INDEX || [];
   // the live link files of every character the index knows (absent when the game never opened the door)
   const chars = [...new Set(index.map(e => (e.file.match(/^([^/]+)\/saved\//) || [])[1]).filter(Boolean))];
-  const live = chars.map(c => `atelier/live_${c}.js`).concat(chars.map(c => `atelier/link_${c}.js`));
+  // the index lists the live link files that exist; an index from before lists none: ask for every character's
+  const live = window.ATELIER_LIVE_FILES || chars.map(c => `atelier/live_${c}.js`).concat(chars.map(c => `atelier/link_${c}.js`));
   loadScripts(index.map(e => e.file).concat(live), () => {
     setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
     // <JOB>_<SUB>.js fill ATELIER_SUBS[char][job][sub]; a <JOB>.js of before 2026-10-01 fills ATELIER[char][job]

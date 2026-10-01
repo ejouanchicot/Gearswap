@@ -540,7 +540,14 @@ local function write_index()
         end
     end
     table.sort(entries, function(a, b) return a.char .. a.job .. (a.sub or '') < b.char .. b.job .. (b.sub or '') end)
-    return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\n')
+    -- the live link files that exist (live_<Char>.js, link_<Char>.js): the page loads only those
+    local live = {}
+    for _, file in ipairs(windower.get_dir(data_path('atelier')) or {}) do
+        if file:match('^live_.+%.js$') or file:match('^link_.+%.js$') then live[#live + 1] = 'atelier/' .. file end
+    end
+    table.sort(live)
+    return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\nwindow.ATELIER_LIVE_FILES = '
+        .. json(live) .. ';\n')
 end
 
 --- The data of the loaded job, as the page reads it (the file of export(), the
@@ -671,6 +678,9 @@ function AtelierExport.install_link()
     windower.send_command('lua reload atelierlink; lua load atelierlink')
     return true
 end
+
+--- Write data/atelier/index.js again (the live link, once its file is written).
+AtelierExport.write_index = write_index
 
 --- The page's JSON writer (the live link answers with it).
 AtelierExport.json = json
