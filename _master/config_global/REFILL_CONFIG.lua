@@ -16,6 +16,8 @@
 ---       RefillConfig.source_bags = {'sack', 'wardrobe4'}    -- ammo in W4
 ---   store_bag: where extra and other jobs' items are put back (one bag).
 ---       RefillConfig.store_bag = 'case'
+---   store_foreign / foreign_characters / never_store: which items of your
+---   other lists go back to store_bag (see below).
 ---
 ---   These apply to every job. A job's own list (<job>/inventory/<JOB>_REFILL.lua)
 ---   or the craft list (_common/inventory/CRAFT_REFILL.lua) can set its own
@@ -38,6 +40,21 @@ RefillConfig.source_bags = {'case', 'sack', 'satchel'}
 
 -- Where extra items are put back
 RefillConfig.store_bag = 'case'
+
+-- An item of one of your other refill lists, sitting in the inventory but
+-- not in the list of the job you are on, goes back to store_bag:
+--   'mine'  your own lists only (this character's folder)
+--   'all'   other characters' lists too (an item of theirs traded to you):
+--           RefillConfig.store_foreign = 'all'
+--           RefillConfig.foreign_characters = {'Tetsouo', 'Kaories'}
+--           (empty: every character folder, frozen ones included)
+--   false   never: only the surplus of the active list goes back
+RefillConfig.store_foreign = 'mine'
+RefillConfig.foreign_characters = {}
+
+-- Items never put back, whatever the lists say (kept by hand)
+-- Example: RefillConfig.never_store = {'Echo Drops', 'Holy Water'}
+RefillConfig.never_store = {}
 
 -- The common list: what every job keeps in the inventory, unless its own
 -- file (<job>/inventory/<JOB>_REFILL.lua) adds to it (M.extra) or replaces

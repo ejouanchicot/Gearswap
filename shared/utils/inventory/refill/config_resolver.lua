@@ -16,6 +16,12 @@
 ---     .store_bag   = 'case'                   -- where surplus goes
 ---     .source_bags = {'case', 'sack'}         -- where pulls come from
 ---   Bags: case, sack, satchel, wardrobe1..wardrobe8; the job file wins.
+---   REFILL_CONFIG.lua also says which items in the inventory go back to the
+---   store bag (foreign: in another list, not in the active one):
+---     .store_foreign      = 'mine'           -- this character's lists (default),
+---                                            -- 'all' other folders too, false never
+---     .foreign_characters = {'Tetsouo'}      -- with 'all': these folders only
+---     .never_store        = {'Echo Drops'}   -- never put back
 ---
 ---   Item `name` can be a string (single item) or a list of strings:
 ---     { name = {'Squid Sushi +1', 'Squid Sushi'}, target = 12 }
@@ -122,32 +128,53 @@ local function load_char_refill_configs(char_name)
     return configs
 end
 
---- Scan ALL character folders under data/ for *_REFILL.lua configs.
---- This makes foreign detection cross-character: Kaories on GEO will detect
---- items used by Tetsouo's other jobs (e.g. Silent Oil from Tetsouo melee
---- jobs) as foreign and push them back to the store_bag.
+--- Scan the character folders under data/ for *_REFILL.lua configs, for
+--- store_foreign = 'all': Kaories on GEO then puts back the items of
+--- Tetsouo's lists too (Silent Oil from his melee jobs).
 ---
---- Heuristic for character folders: must start with uppercase letter (FFXI
---- character names are PascalCase), so _master, shared, scripts etc. are
---- skipped. Every such folder counts, frozen clones included.
+--- Character folders start with an uppercase letter (FFXI names are
+--- PascalCase), so _master, shared, scripts etc. are skipped. `only`: the
+--- names to read (case-insensitive); nil or empty reads every folder.
+--- @param only table|nil List of character names
 --- @return table list of {char=string, job=string, cfg=table}
-local function load_all_refill_configs()
+local function load_all_refill_configs(only)
+    local wanted = {}
+    for _, name in ipairs(type(only) == 'table' and only or {}) do
+        if type(name) == 'string' then wanted[name:lower()] = true end
+    end
     local configs = {}
     local data_dir = windower.addon_path .. 'data/'
-    local entries = windower.get_dir(data_dir)
-    if not entries then
-        return {}
-    end
-
-    for _, char_entry in ipairs(entries) do
-        if char_entry:match('^[A-Z]') then
-            local char_configs = load_char_refill_configs(char_entry)
-            for _, c in ipairs(char_configs) do
+    for _, char_entry in ipairs(windower.get_dir(data_dir) or {}) do
+        if char_entry:match('^[A-Z]') and (next(wanted) == nil or wanted[char_entry:lower()]) then
+            for _, c in ipairs(load_char_refill_configs(char_entry)) do
                 table.insert(configs, c)
             end
         end
     end
     return configs
+end
+
+--- The character's REFILL_CONFIG.lua (bags for every list, foreign items),
+--- or nil.
+--- @param char string Character name
+--- @return table|nil
+local function load_refill_config(char)
+    local ok, cfg = require('shared/utils/core/char_paths').load('common', 'REFILL_CONFIG', nil, char)
+    return (ok and type(cfg) == 'table') and cfg or nil
+end
+
+--- The refill configs whose items count as foreign, from REFILL_CONFIG.lua:
+--- store_foreign 'mine' (default) this character's lists, 'all' the lists
+--- of foreign_characters (every folder when empty), false none.
+--- @param char_name string
+--- @param cfg table|nil REFILL_CONFIG.lua
+--- @return table list of {char, job, cfg}
+local function foreign_sources(char_name, cfg)
+    local mode = cfg and cfg.store_foreign
+    if mode == nil then mode = 'mine' end
+    if mode == false or mode == 'off' then return {} end
+    if mode == 'all' then return load_all_refill_configs(cfg.foreign_characters) end
+    return load_char_refill_configs(char_name)
 end
 
 --- Iterate all entries in a config (default, extra, default_list and every
@@ -173,29 +200,32 @@ end
 ---   PUBLIC API
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build a set of item IDs that belong to OTHER jobs (not the active list).
+--- Build a set of item IDs that belong to OTHER lists (not the active one).
 --- Used to identify foreign refill items sitting in inventory that should be
---- pushed back to the store_bag.
+--- pushed back to the store_bag. Which lists count: store_foreign in
+--- REFILL_CONFIG.lua (foreign_sources); never_store items are never in it.
 --- @param char_name string
 --- @param current_list table  the list resolved for the active job/subjob
 --- @return table {[item_id] = display_name}
 function ConfigResolver.build_foreign_items_set(char_name, current_list)
+    local cfg = load_refill_config(char_name)
     local current_ids = {}
-    for _, entry in ipairs(current_list) do
-        local variants = (type(entry.name) == 'table') and entry.name or {entry.name}
-        for _, n in ipairs(variants) do
-            local id = ItemResolver.resolve_item_id(n)
-            if id then
-                current_ids[id] = true
+    local kept = {}
+    for _, name in ipairs(cfg and type(cfg.never_store) == 'table' and cfg.never_store or {}) do
+        kept[#kept + 1] = {name = name}
+    end
+    for _, list in ipairs({current_list, kept}) do
+        for _, entry in ipairs(list) do
+            local variants = (type(entry.name) == 'table') and entry.name or {entry.name}
+            for _, n in ipairs(variants) do
+                local id = ItemResolver.resolve_item_id(n)
+                if id then current_ids[id] = true end
             end
         end
     end
 
-    -- GLOBAL scan: include configs from ALL characters so cross-character items
-    -- (e.g. Silent Oil used by Tetsouo melee jobs but not by any Kaories job)
-    -- are correctly flagged as foreign when running on a different character.
     local foreign = {}
-    for _, c in ipairs(load_all_refill_configs()) do
+    for _, c in ipairs(foreign_sources(char_name, cfg)) do
         iterate_config_entries(c.cfg, function(entry)
             local variants = (type(entry.name) == 'table') and entry.name or {entry.name}
             for _, n in ipairs(variants) do
@@ -207,14 +237,6 @@ function ConfigResolver.build_foreign_items_set(char_name, current_list)
         end)
     end
     return foreign
-end
-
---- The character's config/REFILL_CONFIG.lua (bags for every list), or nil.
---- @param char string Character name
---- @return table|nil
-local function load_refill_config(char)
-    local ok, cfg = require('shared/utils/core/char_paths').load('common', 'REFILL_CONFIG', nil, char)
-    return (ok and type(cfg) == 'table') and cfg or nil
 end
 
 --- A bag named in a config, or nil when the name is not a usable bag.
