@@ -154,6 +154,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .slot .item{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .slot.empty .item{color:var(--faint);font-weight:400}
 .slot.inh{background:var(--panel-2)}
+.slot.weap .from{color:var(--accent);font-style:normal}
+.weaps{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:13px;color:var(--muted)}
+.weaps label{display:inline-flex;align-items:center;gap:6px}
+.weapsel{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-strong);border-radius:3px;padding:1px 4px}
 .slot.inh .item{color:var(--muted);font-weight:400}
 .slot .from{font-size:12px;color:var(--faint);font-style:italic}
 .slot .aug{font-family:var(--mono);font-size:11px;line-height:1.4;color:var(--aug);margin-top:3px}
@@ -312,7 +316,7 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} (buffs et nourriture du moment compris). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} (buffs et nourriture du moment compris). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', gripFor:'Grip de {w} (arme à deux mains)', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', drawerWeap:'Pièce posée par ton mode d\'arme ({m}) : le set laisse cet emplacement libre.', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
@@ -337,7 +341,7 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s} (buffs and food of the moment included). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s} (buffs and food of the moment included). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', gripFor:'Grip of {w} (two-handed)', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', drawerWeap:'Piece put by your weapon mode ({m}): the set leaves this slot free.', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
@@ -381,7 +385,7 @@ const JOBS = [['PLD','Paladin','tank'],['RUN','Rune Fencer','tank'],
 let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
-let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, q:'', lang:'fr', theme:null};
+let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, q:'', lang:'fr', theme:null};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null, char:s.char||''}); } catch(e) {}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -678,6 +682,16 @@ const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
 function cappedLi(label, sum, cap, detail){
   return statLi(label, signed(sum) + ' %', `cap ${signed(cap)} %`, Math.abs(sum) > Math.abs(cap) ? 'over' : '', detail);
 }
+// Damage taken (Guide_Paladin, 03_defense): DT + PDT and DT + MDT stop at -50 %; PDT II
+// (Burtgang) and MDT II (Aegis) go on past it, up to -87.5 % in all
+function damageTakenLines(v){
+  const pdt = Math.max(v('dt') + v('pdt'), -50), mdt = Math.max(v('dt') + v('mdt'), -50);
+  let out = cappedLi(t('pdtEff'), pdt, -50, `DT ${v('dt')} + PDT ${v('pdt')}`) + cappedLi(t('mdtEff'), mdt, -50, `DT ${v('dt')} + MDT ${v('mdt')}`);
+  if (v('pdt2')) out += cappedLi(t('pdtAll'), Math.max(pdt + v('pdt2'), -87.5), -87.5, `${pdt} + PDT II ${v('pdt2')}`);
+  if (v('mdt2')) out += cappedLi(t('mdtAll'), Math.max(mdt + v('mdt2'), -87.5), -87.5, `${mdt} + MDT II ${v('mdt2')}`);
+  if (v('bdt')) out += cappedLi(t('bdtEff'), Math.max(v('dt') + v('bdt'), -50), -50, `DT ${v('dt')} + BDT ${v('bdt')}`);
+  return out;
+}
 // One piece's stats as label / value rows, in the groups' order
 function statRows(stats){
   const keys = Object.keys(stats).filter(k => stats[k].v);
@@ -688,9 +702,9 @@ const STAT_ORDER = Object.keys(STAT_DEF);
 const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.indexOf(b) + 1 || 999) || a.localeCompare(b);
 // What the set's gear brings: every piece added up, the caps shown where the game has one
 function setStats(s){
-  const total = {}, paths = [], unknown = [], cond = [];
+  const total = {}, paths = [], unknown = [], cond = [], pieces = withWeapons(s).pieces;
   for (const slot of SLOTS) {
-    const p = s.pieces[slot], r = pieceStats(p);
+    const p = pieces[slot], r = pieceStats(p);
     if (!r) continue;
     if (!r.known) unknown.push(p.name);
     if (r.path && !r.rank) paths.push(`${p.name} (Path ${r.path})`);
@@ -710,8 +724,7 @@ function setStatsHTML(s){
                  : statLi(esc(statLabel(k, total[k])), fmtStat(total[k])); }).join('');
     // Damage taken: DT counts in both, physical and magic, up to -50 % together
     if (g === 'def' && (v('dt') || v('pdt') || v('mdt')))
-      rows = capped(t('pdtEff'), Math.max(v('dt') + v('pdt'), -50), -50, `DT ${v('dt')} + PDT ${v('pdt')}`) +
-             capped(t('mdtEff'), Math.max(v('dt') + v('mdt'), -50), -50, `DT ${v('dt')} + MDT ${v('mdt')}`) + rows;
+      rows = damageTakenLines(v) + rows;
     return rows ? `<section><h4>${S.lang === 'fr' ? fr : en}</h4><ul class="statlist">${rows}</ul></section>` : '';
   }).join('');
   const notes = [];
@@ -777,8 +790,7 @@ function globalsHTML(s){
   const pct = (label, sum, cap) => cappedLi(label, sum, cap, '');
   const main = [['HP', out.hp], ['MP', out.mp], [t('defLabel'), out.def], [t('atkLabel'), out.atk]].map(([l, o]) => row(l, o)).join('');
   const attrs = ATTRS.map(a => row(a.toUpperCase(), out[a])).join('');
-  const gear = pct(t('pdtEff'), Math.max(v('dt') + v('pdt'), -50), -50) + pct(t('mdtEff'), Math.max(v('dt') + v('mdt'), -50), -50) +
-    pct('Haste', v('haste'), 25) + pct('Fast Cast', v('fc'), 80);
+  const gear = damageTakenLines(v) + pct('Haste', v('haste'), 25) + pct('Fast Cast', v('fc'), 80);
   return `<div class="globals"><div class="kicker">${t('youTitle')}</div><ul class="statlist big">${main}</ul><ul class="statlist">${attrs}</ul>` +
     `<div class="kicker sub">${t('gearKey')}</div><ul class="statlist">${gear}</ul>` +
     `<p class="muted small">${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
@@ -815,26 +827,107 @@ function renderHome(){
     <div class="pane"><div class="tblwrap"><table class="tbl click"><thead><tr><th>${t('colJob')}</th><th>${t('colRole')}</th><th>${t('colSub')}</th><th class="r">${t('colSets')}</th><th class="r">${t('colKeys')}</th>
     <th>${t('macro')}</th><th>${t('lockstyle')}</th><th>${t('colExport')}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note-foot">${t('mock')}</p></div>`;
 }
-function slotHTML(s, ci, slot, own, q){
-  const p = s.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
+function slotHTML(s, ci, slot, own, q, eff){
+  const p = eff.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
   if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></button>`;
-  const inh = s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
+  const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
   const tip = [pieceStats(p).text, ...(p.augs || [])].filter(Boolean).join('\n');
-  return `<button class="slot ${inh?'inh':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}" title="${esc(tip)}">${icon(p.name)}<span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>` +
-    `${p.aug?`<span class="aug">${esc(p.aug)}</span>`:''}${inh?`<span class="from">${esc(t('inhFrom',{b:shortPath(s.base)}))}</span>`:''}</button>`;
+  const from = weap ? `↳ ${weap}` : inh ? t('inhFrom', {b: shortPath(s.base)}) : '';
+  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}" title="${esc(tip)}">${icon(p.name)}<span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>` +
+    `${p.aug?`<span class="aug">${esc(p.aug)}</span>`:''}${from?`<span class="from">${esc(from)}</span>`:''}</button>`;
+}
+/* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
+const WEAPON_SLOTS = new Set(['main', 'sub', 'range', 'ammo']);
+const WEAPON_CACHE = new WeakMap();
+// Modes whose values name a top-level weapon set (MainWeapon "Excalibur" -> sets.Excalibur),
+// the main hand first, the sub and range ones after so they win on their own slots
+function weaponModes(d){
+  if (!d) return [];
+  const cached = WEAPON_CACHE.get(d);
+  if (cached && cached.lang === S.lang) return cached.modes;
+  const top = {};
+  for (const s of d.sets) {
+    const m = s.path.match(/^sets(?:\.([\w-]+)|\["([^"]+)"\])$/), slots = Object.keys(s.pieces);
+    if (m && slots.length && slots.every(k => WEAPON_SLOTS.has(k))) top[m[1] || m[2]] = s;
+  }
+  const rank = n => /sub/i.test(n) ? 2 : /range|ammo/i.test(n) ? 3 : /main/i.test(n) ? 0 : 1;
+  const modes = d.modes.filter(m => m.values.some(v => top[v]))
+    .map(m => ({name: m.name, desc: m.desc || m.name, values: m.values.filter(v => top[v]), current: m.current, sets: top}))
+    .sort((a, b) => rank(a.name) - rank(b.name));
+  // One-piece weapon sets no mode names (PLD's sets.Duban, sets.Aegis...): a choice per slot,
+  // used where neither the set nor a weapon mode fills it; by default the piece the job's sets use most
+  // (never the main hand: it comes from the weapon mode, or the stance weapon of the job's rules)
+  const stances = Object.values((d.weapon_rules || {}).stance_weapon || {});
+  const named = new Set(modes.flatMap(m => m.values).concat(stances)), free = {};
+  for (const [name, s] of Object.entries(top)) {
+    const slots = Object.keys(s.pieces);
+    if (!named.has(name) && slots.length === 1 && slots[0] !== 'main') (free[slots[0]] = free[slots[0]] || []).push(name);
+  }
+  for (const [slot, values] of Object.entries(free)) {
+    const used = {};
+    for (const s of d.sets) { const p = s.pieces[slot]; if (p) used[p.name] = (used[p.name] || 0) + 1; }
+    const best = values.slice().sort((a, b) => (used[top[b].pieces[slot].name] || 0) - (used[top[a].pieces[slot].name] || 0))[0];
+    modes.push({name: 'slot:' + slot, desc: SLOT_NAMES[S.lang][slot], values: values.sort(), current: best, sets: top, onlyEmpty: true});
+  }
+  WEAPON_CACHE.set(d, {lang: S.lang, modes});
+  return modes;
+}
+// The weapon chosen in the page for a mode, else the one the job loads with
+function chosenWeapon(m){
+  const v = S.weapons[S.char + '|' + S.job + '|' + m.name];
+  return m.values.includes(v) ? v : m.values.includes(m.current) ? m.current : m.values[0];
+}
+// The job's weapon rules (<job>/combat/<JOB>_WEAPONS.lua, PLD's set_builder.lua): they hang
+// on the Hybrid mode, offered beside the weapons when the rules use it
+const DEFAULT_GRIPS = {Shining: 'Alber Strap'};
+function hybridMode(d){
+  const rules = (d && d.weapon_rules) || {};
+  if (!rules.shields && !rules.stance_weapon) return null;
+  const m = d.modes.find(x => x.name === 'HybridMode');
+  return m ? {name: m.name, desc: m.desc || m.name, values: m.values, current: m.current} : null;
+}
+// A set as worn, the way the job code builds it: the weapon mode's set on top (the stance's
+// weapon first: PLD Tanking holds Burtgang), then the grip of a two-handed weapon or the
+// shield the stance gives that weapon; a one-piece weapon set no mode names (a shield) only
+// where the slot is still empty
+function withWeapons(s){
+  const d = data(), rules = (d && d.weapon_rules) || {}, hm = hybridMode(d), hybrid = hm && chosenWeapon(hm);
+  const pieces = Object.assign({}, s.pieces), from = {};
+  let weapon = null;
+  for (const m of weaponModes(d)) {
+    let v = chosenWeapon(m), why = `${m.desc} : ${v}`;
+    const stance = m.name === 'MainWeapon' && hybrid && (rules.stance_weapon || {})[hybrid];
+    if (stance && m.sets[stance]) { v = stance; why = `${hybrid} : ${v}`; }
+    for (const [slot, p] of Object.entries(m.sets[v].pieces)) {
+      if (m.onlyEmpty && pieces[slot]) continue;
+      pieces[slot] = p; from[slot] = why;
+    }
+    if (m.name === 'MainWeapon') weapon = v;
+  }
+  const grip = weapon && (rules.grips || DEFAULT_GRIPS)[weapon];
+  const shield = weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
+  if (grip) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
+  else if (shield) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
+  return {pieces, from};
+}
+function weaponPicker(){
+  const d = data(), hm = hybridMode(d), modes = (hm ? [hm] : []).concat(weaponModes(d));
+  if (!modes.length) return '';
+  return `<div class="weaps"><span class="kicker">${t('weapons')}</span>${modes.map(m => `<label>${esc(m.desc)}<select class="weapsel" data-mode="${esc(m.name)}">` +
+    m.values.map(v => `<option value="${esc(v)}" ${v === chosenWeapon(m) ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select></label>`).join('')}</div>`;
 }
 function cardHTML(card, ci, bypath, q){
   const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
   const s = card.variants[vi].set; const base = s.base ? bypath[s.base] : null;
-  const own = new Set(s.own || Object.keys(s.pieces));
-  const slots = SLOTS.map(slot => slotHTML(s, ci, slot, base ? own : new Set(SLOTS), q)).join('');
+  const own = new Set(s.own || Object.keys(s.pieces)), eff = withWeapons(s);
+  const slots = SLOTS.map(slot => slotHTML(s, ci, slot, base ? own : new Set(SLOTS), q, eff)).join('');
   const foot = [];
   if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits',{b:'<b>'+esc(shortPath(s.base))+'</b>'})} · ${n?t('changed',{n}):t('nothingChanged')}`); }
   else foot.push(t('defined',{n:'<b>'+Object.keys(s.pieces).length+'</b>'}));
   if (s.aliases && s.aliases.length) foot.push(t('sharedBy',{l:s.aliases.map(a => esc(shortPath(a))).join(', ')}));
   const variants = card.variants.length > 1 ? `<div class="variants" role="group">${card.variants.map((x,i) => `<button aria-pressed="${i===vi}" data-card="${ci}" data-variant="${i}">${esc(x.label)}</button>`).join('')}</div>` : '';
   const when = t('famWhen.'+card.fam);
-  return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}</div><h2>${esc(niceName(card))}</h2>${when?`<p class="when">${when}</p>`:''}<code class="path">${esc(s.path)}</code>${variants}</header>
+  return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}</div><h2>${esc(niceName(card))}</h2>${when?`<p class="when">${when}</p>`:''}<code class="path">${esc(s.path)}</code>${variants}${weaponPicker()}</header>
     <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer><div class="globals-inline">${globalsHTML(s)}</div>${setStatsHTML(s)}
     <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="aug"></i>${t('legendAug')}</span></div></article>`;
 }
@@ -942,12 +1035,13 @@ function render(){
 /* ---- drawer ---- */
 function openSlot(ci, slot){
   const card = S._cards[ci]; const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
-  const s = card.variants[vi].set; const p = s.pieces[slot]; const own = new Set(s.own || Object.keys(s.pieces));
+  const s = card.variants[vi].set; const p = withWeapons(s).pieces[slot]; const own = new Set(s.own || Object.keys(s.pieces));
   const label = SLOT_NAMES[S.lang][slot];
   const seen = {}; for (const x of data().sets) { const q = x.pieces[slot]; if (q) seen[q.name] = (seen[q.name]||0)+1; }
   const owned = (ofAnySub('items') || {})[slot];
   const items = owned ? owned.map(n => [n, seen[n] || 0]) : Object.entries(seen).sort((a,b) => b[1]-a[1]);
-  const notes = !p ? t('drawerEmpty') : (s.base && !own.has(slot)) ? t('drawerInh',{b:shortPath(s.base)}) : t('drawerOwn');
+  const weap = withWeapons(s).from[slot];
+  const notes = !p ? t('drawerEmpty') : weap ? t('drawerWeap', {m: weap}) : (s.base && !own.has(slot)) ? t('drawerInh',{b:shortPath(s.base)}) : t('drawerOwn');
   let html = `<div class="note">${esc(notes)}</div>${pieceStatsHTML(p)}`;
   if (s.aliases && s.aliases.length) html += `<div class="note">${esc(t('drawerShared',{n:s.aliases.length}))}</div>`;
   html += `<div class="choice"><div class="kicker">${t('yourItems')}</div>${items.map(([n,c]) => `<button type="button">${icon(n)}<span>${esc(n)}<small>${c ? t('seenIn',{n:c}) : t('inBags')}</small></span></button>`).join('')}</div>`;
@@ -991,7 +1085,10 @@ document.addEventListener('click', e => {
   if ('close' in d) closeOverlay();
 });
 document.addEventListener('input', e => { if (e.target.id === 'setq') { S.q = e.target.value; render(); } });
-document.addEventListener('change', e => { if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); } });
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
+  if (e.target.classList.contains('weapsel')) { S.weapons[S.char + '|' + S.job + '|' + e.target.dataset.mode] = e.target.value; render(); }
+});
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') { if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
   if ((e.key==='ArrowDown' || e.key==='ArrowUp') && S.job && S.section==='sets' && $('#overlay').hidden && S._vis && S._vis.length) {

@@ -417,6 +417,9 @@ function AtelierExport.export()
         player = player.name, job = player.main_job, sub = player.sub_job, at = os.date('%Y-%m-%d %H:%M'),
         sets = collect_sets(), keys = collect_keys(), modes = collect_modes(),
         macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'), items = collect_items(),
+        -- <job>/combat/<JOB>_WEAPONS.lua (PLD: shield per stance and weapon, stance weapon, grips):
+        -- the page puts the weapons in the sets the way the job code does
+        weapon_rules = job_config('WEAPONS'),
     }
     data.icons = collect_icons(data.sets, data.items)
     local ids = {}
