@@ -209,6 +209,10 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     return pieces_for_gap(sorted, gap)
 end
 
+--- TP the weaponskill opens with: the TP shown plus weapon, buff and Fencer bonuses.
+--- Read by the Atelier page (shared/utils/atelier/atelier_sim.lua) to place its TP steps.
+TPBonusCalculator.effective_tp = effective_tp
+
 _G.TPBonusCalculator = TPBonusCalculator
 
 return TPBonusCalculator

@@ -11,8 +11,8 @@
 ---   POST /save?file=<name>     writes <Char>/saved/<name>: keybind_overrides.lua
 ---                              or set_overrides.lua only
 ---   GET  /actions              the job's spells, abilities and weapon skills
----   GET  /tpbonus?tp=&main=&sub=  the TP bonus pieces the job's rules add to a
----                              weaponskill at that TP (AtelierSim.tp_bonus)
+---   GET  /tpbonus?tp=&main=&sub=&buffs=  the TP bonus pieces the job's rules add
+---                              to a weaponskill at that TP, and its TP steps (AtelierSim.tp_bonus)
 ---   POST /simulate?kind=&name=  what the job wears for an action (atelier_sim.lua),
 ---        &target=&status=&s.<Mode>=  without doing it
 ---   POST /reload[?full=1]      //gs reload (so a saved change is worn now), or the
@@ -133,7 +133,7 @@ local function route(req, live)
     end
     if req.path == '/tpbonus' then
         local q = query_table(req.query)
-        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').tp_bonus({tp = q.tp, main = q.main, sub = q.sub}))
+        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').tp_bonus({tp = q.tp, main = q.main, sub = q.sub, buffs = q.buffs}))
     end
     if req.path == '/simulate' and req.method == 'POST' then
         local q = query_table(req.query)

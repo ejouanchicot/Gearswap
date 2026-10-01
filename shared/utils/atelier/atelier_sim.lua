@@ -239,21 +239,34 @@ end
 
 --- The TP bonus pieces the job's own rules add to a weaponskill at a TP: TPBonusCalculator
 --- (shared/utils/weaponskill/tp_bonus_calculator.lua) with the job's TP config (<JOB>_TP_CONFIG.lua,
---- _G.<JOB>TPConfig), the buffs on now, and the main / sub the page shows.
---- @param req table {tp = number, main = string|nil, sub = string|nil}
---- @return table {ok, gear = {slot = name} (page slot names), config = boolean}
+--- _G.<JOB>TPConfig), the main / sub the page shows and the buffs it lists (Warcry, Hagakure...:
+--- they stand for buffactive during the call, so the page's choice counts, not what is on now).
+--- @param req table {tp = number|nil, main = string|nil, sub = string|nil, buffs = 'Warcry,Hagakure'|nil}
+--- @return table {ok, config = boolean, gear = {slot = name} (page slot names), bonus = TP the weapon
+---   and buffs add, total = TP all the pieces add, thresholds = {2000, 3000}}
 function AtelierSim.tp_bonus(req)
     local config = player and rawget(_G, tostring(player.main_job) .. 'TPConfig')
     local ok_c, Calc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
+    if not (ok_c and Calc and type(config) == 'table') then return {ok = true, gear = {}, config = false} end
+    local main = req.main ~= '' and req.main or nil
+    local sub = req.sub ~= '' and req.sub or nil
+    local buffs = {}
+    for name in tostring(req.buffs or ''):gmatch('[^,]+') do buffs[name] = true end
+    local was = rawget(_G, 'buffactive')
+    rawset(_G, 'buffactive', buffs)
+    local ok_b, bonus = pcall(function() return Calc.effective_tp and Calc.effective_tp(0, config, main, buffs, sub) or 0 end)
     local tp = tonumber(req.tp)
-    if not (tp and ok_c and Calc and type(config) == 'table') then return {ok = true, gear = {}, config = type(config) == 'table'} end
-    local ok, gear = pcall(Calc.calculate, tp, config, req.main ~= '' and req.main or nil, buffactive, req.sub ~= '' and req.sub or nil)
-    local out = {}
+    local ok, gear = true, nil
+    if tp then ok, gear = pcall(Calc.calculate, tp, config, main, buffs, sub) end
+    rawset(_G, 'buffactive', was)
+    local out, total = {}, 0
     for slot, name in pairs(ok and type(gear) == 'table' and gear or {}) do
         local page = SLOT_NAME[tostring(slot):lower()]
         if page then out[page] = name end
     end
-    return {ok = ok, gear = out, config = true}
+    for _, piece in ipairs(type(config.pieces) == 'table' and config.pieces or {}) do total = total + (tonumber(piece.bonus) or 0) end
+    return {ok = ok, config = true, gear = out, bonus = ok_b and bonus or 0, total = total,
+        thresholds = (Calc.config or {}).thresholds or {2000, 3000}}
 end
 
 --- The actions the page offers: the spells the character knows for the job, its
