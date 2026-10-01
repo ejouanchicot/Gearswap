@@ -1121,12 +1121,12 @@ function setStatsHTML(s){
     return `<li><b>${esc(piece)}</b><span>${esc(txt.join(' — '))}</span></li>`; }).join('')}</ul>`) : '';
   return groups.length || Object.keys(S.statHide).length ? `<div class="setstats"><div class="kicker">${t('setStats')} ${statPickBtn()}</div>${[2, 3, 4].map(k => stackColumns(groups, k)).join('')}${notes.join('')}${conds}</div>` : '';
 }
-// The stat groups go in fixed columns: each one is placed by its number of lines (the shortest column
-// takes the next), never by its height, so opening or closing a group moves no other. The layout is
-// drawn for 2, 3 and 4 columns; the room the block has picks one (container queries, .setstats CSS)
+// The stat groups go in fixed columns, in their order, row by row (Defense, Attributes, Combat on top,
+// Magic under Defense...): never by their height, so opening or closing a group moves no other. The
+// layout is drawn for 2, 3 and 4 columns; the room the block has picks one (container queries, .setstats CSS)
 function stackColumns(items, k){
-  const cols = Array.from({length: k}, () => ({n: 0, html: ''}));
-  for (const it of items) { const c = cols.reduce((a, b) => b.n < a.n ? b : a); c.n += it.n + 2; c.html += it.html; }
+  const cols = Array.from({length: k}, () => ({html: ''}));
+  items.forEach((it, i) => { cols[i % k].html += it.html; });
   return `<div class="statgrid k${k}" style="--k:${k}">${cols.map(c => `<div class="statcol">${c.html}</div>`).join('')}</div>`;
 }
 // The drawer's view of one piece: its stats, its effects, what only applies sometimes
