@@ -301,6 +301,8 @@ end
 local monitor_event_id = nil
 local last_check = 0
 local prev_pet_eng = 'false'
+-- The monitor runs every second: an error is shown once per load, not every run
+local monitor_error_shown = false
 
 -- Upvalues for hot path (prerender fires ~60fps)
 local os_clock = os.clock
@@ -353,7 +355,14 @@ local function start_pet_monitoring()
         end)
 
         if not ok then
-            print('[BST] Monitor error: ' .. tostring(err))
+            pcall(function() require('shared/utils/debug/trace_log').log('BST', 'monitor error: %s', tostring(err)) end)
+            if not monitor_error_shown then
+                monitor_error_shown = true
+                local ok_mf, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+                if ok_mf and MessageFormatter then
+                    MessageFormatter.show_error('[BST] Pet monitor error: ' .. tostring(err))
+                end
+            end
         end
     end)
 end
