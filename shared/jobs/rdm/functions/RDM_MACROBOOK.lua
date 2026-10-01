@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Module created on first function call
 ---
 ---   Configuration:
----   • Macro definitions: config/rdm/RDM_MACROBOOK.lua
+---   • Macro definitions: rdm/display/RDM_MACROBOOK.lua
 ---   • Default book: 1, page: 1
 ---   • Default subjob: NIN
 ---   • Automatic subjob-based selection
@@ -40,7 +40,7 @@ local function get_macrobook_module()
     return macrobook_module
 end
 
---- Select the macro book/page for the current subjob (see config/rdm/RDM_MACROBOOK.lua).
+--- Select the macro book/page for the current subjob (see rdm/display/RDM_MACROBOOK.lua).
 function select_default_macro_book()
     return get_macrobook_module().select_default_macro_book()
 end

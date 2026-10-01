@@ -2,7 +2,7 @@
 --- UI Style - the player's HUD and chat look, read from UI_CONFIG.lua
 ---============================================================================
 --- Resolves the optional `layout`, `colors` and `chat` tables of
---- <Character>/config/UI_CONFIG.lua into one checked table. Every option
+--- <Character>/_common/display/UI_CONFIG.lua into one checked table. Every option
 --- left out keeps the look the HUD had before these options existed, so a
 --- config without them renders exactly as it always did.
 ---

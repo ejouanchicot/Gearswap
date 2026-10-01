@@ -16,7 +16,7 @@
 ---     res.items), only while PUP is the main job; GearSwap's pet.head /
 ---     pet.frame as the fallback.
 ---
----   PetMode (config/pup/PUP_STATES.lua) follows the head: set again when a
+---   PetMode (pup/keys/PUP_STATES.lua) follows the head: set again when a
 ---   new automaton comes out (force) or when the head / frame read differs
 ---   from the last detection. A value cycled by hand therefore holds until
 ---   one of those happens.

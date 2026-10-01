@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Module created on first function call
 ---
 ---   Configuration:
----   • Macro definitions: config/war/WAR_MACROBOOK.lua
+---   • Macro definitions: war/display/WAR_MACROBOOK.lua
 ---   • Default book: 22, page: 1
 ---   • Default subjob: SAM
 ---   • Automatic subjob-based selection

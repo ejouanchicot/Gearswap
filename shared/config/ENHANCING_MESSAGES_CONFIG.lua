@@ -18,7 +18,7 @@
 ---     • Helper functions for mode checks
 ---
 ---   Settings File:
----     • [CharName]/config/message_modes.lua (written by message_settings.lua)
+---     • [CharName]/saved/message_modes.lua (written by message_settings.lua)
 ---
 ---   @file    shared/config/ENHANCING_MESSAGES_CONFIG.lua
 ---   @author  ejouanchicot

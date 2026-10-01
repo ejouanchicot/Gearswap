@@ -12,7 +12,7 @@
 ---   sets.Adoulin in a city, then the weapons, then sets.MoveSpeed while
 ---   moving outside a city.
 ---   Weapons: MainWeapon / SubWeapon through WeaponResolver (a plain weapon
----   needs no set when config/WEAPON_CONFIG.lua turns equip_without_set on).
+---   needs no set when _common/combat/WEAPON_CONFIG.lua turns equip_without_set on).
 ---   Mote's defense and Kiting layers (F10/F11, Alt+F10) are laid again on
 ---   the chosen base: Mote laid them on its own pick, which is replaced here.
 ---

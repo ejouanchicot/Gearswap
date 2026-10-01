@@ -9,10 +9,10 @@
 ---     BUFFS, COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK
 ---   • Logic modules (5, required by the hooks):
 ---       logic/spell_map.lua       Blue Magic spell -> gear category
----                                 (config/blu/BLU_SPELL_MAP.lua)
+---                                 (blu/combat/BLU_SPELL_MAP.lua)
 ---       logic/set_builder.lua     idle / engaged sets, single wield (.SW)
 ---       logic/unbridled.lua       Unbridled Learning before an unbridled
----                                 spell (option, config/AUTO_ABILITIES.lua)
+---                                 spell (option, _common/combat/AUTO_ABILITIES.lua)
 ---       logic/expiacion_guard.lua Expiacion held back under 3000 TP without
 ---                                 Aftermath Lv.3 (option)
 ---       logic/azure_sets.lua      AzureSets addon loaded while on BLU

@@ -3,7 +3,7 @@
 ---============================================================================
 --- A job's key list holds its own keys, the player's custom keys
 --- (<JOB>_CUSTOM.lua), Combat Mode and the character's common keys
---- (config/COMMON_KEYBINDS.lua: subjob and partner layers). Only one command
+--- (_common/keys/COMMON_KEYBINDS.lua: subjob and partner layers). Only one command
 --- can sit on a key; when two entries apply at once, one of them does
 --- nothing. Which one wins (KeybindManager lays the keys in list order):
 ---   - a common entry without `override` yields to a job / custom entry;

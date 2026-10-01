@@ -7,7 +7,7 @@
 --- _G.keybind_saved_settings via KeybindSettings.save().
 ---
 --- Reads UIConfig.background_presets / UIConfig.text from _G.UIConfig
---- (set by config_loader.lua from the character's config/UI_CONFIG.lua).
+--- (set by config_loader.lua from the character's _common/display/UI_CONFIG.lua).
 ---
 --- @file shared/utils/ui/ui_appearance.lua
 --- @author ejouanchicot

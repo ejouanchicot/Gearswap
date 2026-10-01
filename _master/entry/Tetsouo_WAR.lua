@@ -6,7 +6,7 @@
 --- shared/ updates it too: nothing to change here.
 ---
 --- Your WAR settings and sets: the war/ folder next to this file.
---- Settings of the whole character: common/.
+--- Settings of the whole character: _common/.
 ---
 --- @file    Tetsouo_WAR.lua
 --- @author  ejouanchicot

@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BLU Expiacion Guard - hold Expiacion back for the Aftermath: Lv.3 window
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Option blu_expiacion_window (config/AUTO_ABILITIES.lua, off by default).
+---   Option blu_expiacion_window (_common/combat/AUTO_ABILITIES.lua, off by default).
 ---   Tizona's Aftermath: Lv.3 needs Expiacion at 3000 TP. With Tizona in the
 ---   main hand, no Aftermath: Lv.3 up and less than 3000 TP, the first press
 ---   is cancelled and opens a 3 s window: a second press within it goes.

@@ -90,7 +90,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- THIRD: Entrust / Full Circle first, when the character turned them on
-    -- (config/AUTO_ABILITIES.lua)
+    -- (_common/combat/AUTO_ABILITIES.lua)
     require('shared/jobs/geo/functions/logic/geo_auto_abilities').apply(spell, eventArgs)
     if eventArgs.cancel or eventArgs.handled then
         return

@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Status change handler: the shared LifecycleManager one (unlocks Doom
 ---   slots so a raise does not leave them stuck), plus Hasso on engaging when
----   the character turned it on (config/AUTO_ABILITIES.lua).
+---   the character turned it on (_common/combat/AUTO_ABILITIES.lua).
 ---
 ---   @file    shared/jobs/sam/functions/SAM_STATUS.lua
 ---   @author  ejouanchicot
@@ -13,7 +13,7 @@
 
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
---- The chosen stance on engaging, when config/AUTO_ABILITIES.lua sets
+--- The chosen stance on engaging, when _common/combat/AUTO_ABILITIES.lua sets
 --- sam_hasso (the name predates the Stance mode): state.Stance, Hasso or
 --- Seigan, not over a stance already up, and only once its recast is ready.
 --- Sending the other stance would also switch state.Stance (SAM_PRECAST

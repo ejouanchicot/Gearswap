@@ -14,8 +14,9 @@
 ---   `/ta <stpc>` an ally to set `lastst`, then fire the command. Nothing is
 ---   deferred and no event listener is involved.
 ---
----   Which commands exist is data, not code: each alt job has its own config
----   at `<Character>/config/alt/<JOB>_ALT_COMMANDS.lua`. The config for the
+---   Which commands exist is data, not code: each alt job has its own table
+---   in `shared/data/alt/<JOB>_ALT_COMMANDS.lua` (the character's
+---   `_common/dualbox/alt/<JOB>_ALT_CUSTOM.lua` adds to it). The table for the
 ---   job the alt is currently on is the one that answers - swap the alt from
 ---   COR to RDM and the command set follows automatically.
 ---

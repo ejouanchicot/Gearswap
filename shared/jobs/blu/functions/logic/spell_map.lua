@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Blue Magic gear follows what a spell scales with (STR, DEX, INT, magic
 ---   accuracy, skill...), not its name. The character's
----   config/blu/BLU_SPELL_MAP.lua lists, per category, the spells that wear
+---   blu/combat/BLU_SPELL_MAP.lua lists, per category, the spells that wear
 ---   sets.midcast['Blue Magic'].<category>. Read once per load.
 ---
 ---   A spell listed under two categories keeps the first in alphabetical

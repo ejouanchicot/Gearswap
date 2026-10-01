@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Module created on first function call
 ---
 ---   Configuration:
----   • Macro definitions: config/brd/BRD_MACROBOOK.lua
+---   • Macro definitions: brd/display/BRD_MACROBOOK.lua
 ---   • Default book: 1, page: 1
 ---   • Default subjob: WHM
 ---   • Automatic subjob-based selection

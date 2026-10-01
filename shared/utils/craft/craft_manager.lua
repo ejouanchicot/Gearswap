@@ -6,7 +6,7 @@
 ---       e.g. Tetsouo/_common/sets/bonecraft_sets.lua
 ---            Tetsouo/_common/sets/fishing_sets.lua
 ---   Which file //gs c craft / fish read: craft_file / fish_file in
----   <charname>/config/CRAFT_CONFIG.lua (craft_commands.lua).
+---   <charname>/_common/inventory/CRAFT_CONFIG.lua (craft_commands.lua).
 ---
 ---   Two file shapes are supported:
 ---

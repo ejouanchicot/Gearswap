@@ -2,7 +2,7 @@
 --- Custom States - player-made states, keys and gear, from one config file
 ---============================================================================
 --- Lets a player add a mode without writing code. One optional file per job,
---- in the character folder: <Character>/config/<job>/<JOB>_CUSTOM.lua
+--- in the character folder: <Character>/<job>/keys/<JOB>_CUSTOM.lua
 ---
 ---   return {
 ---       { state = 'TPMode', desc = 'TP Mode', key = '^numpad7',

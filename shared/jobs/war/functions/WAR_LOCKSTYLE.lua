@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Module created on first function call
 ---
 ---   Configuration:
----   • Lockstyle definitions: config/war/WAR_LOCKSTYLE.lua
+---   • Lockstyle definitions: war/display/WAR_LOCKSTYLE.lua
 ---   • Default lockstyle: #4
 ---   • Default subjob: SAM
 ---   • Automatic subjob-based selection

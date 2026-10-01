@@ -82,7 +82,7 @@ local BAG_INFO = {
 
 --- Where SURPLUS and foreign items go, and where missing items are taken
 --- from (in order), unless the player's configs say otherwise: the list file
---- (<JOB>_REFILL.lua, CRAFT_REFILL.lua) first, then config/REFILL_CONFIG.lua.
+--- (<JOB>_REFILL.lua, CRAFT_REFILL.lua) first, then _common/inventory/REFILL_CONFIG.lua.
 local DEFAULT_STORE_BAG = 'case'
 local DEFAULT_SOURCE_BAGS = {'case', 'sack', 'satchel'}
 

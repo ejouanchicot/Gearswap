@@ -6,7 +6,7 @@
 --- shared/ updates it too: nothing to change here.
 ---
 --- Your SAM settings and sets: the sam/ folder next to this file.
---- Settings of the whole character: common/.
+--- Settings of the whole character: _common/.
 ---
 --- @file    Tetsouo_SAM.lua
 --- @author  ejouanchicot

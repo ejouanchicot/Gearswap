@@ -4,7 +4,7 @@
 --- Scans inventory for consumable items and pulls them from the bags the
 --- player chose (source_bags; default Case, Sack, Satchel) to maintain target
 --- quantities. Items above target are pushed back to store_bag (default
---- Case). Both are set in the list file or config/REFILL_CONFIG.lua
+--- Case). Both are set in the list file or _common/inventory/REFILL_CONFIG.lua
 --- (refill/config_resolver.lua). Items belonging to OTHER jobs'
 --- refill lists are detected as "foreign" and pushed back too.
 ---

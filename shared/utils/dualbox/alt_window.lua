@@ -21,7 +21,7 @@
 ---
 --- Shown on the main only, when the box group has other members.
 --- //gs c alts window shows / hides it; drag it with the mouse. Both are
---- saved in <Character>/config/alt_window.lua. Font and background follow
+--- saved in <Character>/saved/alt_window.lua. Font and background follow
 --- the HUD.
 ---
 --- @file shared/utils/dualbox/alt_window.lua

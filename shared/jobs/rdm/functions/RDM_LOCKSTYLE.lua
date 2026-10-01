@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Module created on first function call
 ---
 ---   Configuration:
----   • Lockstyle definitions: config/rdm/RDM_LOCKSTYLE.lua
+---   • Lockstyle definitions: rdm/display/RDM_LOCKSTYLE.lua
 ---   • Default lockstyle: #1
 ---   • Default subjob: NIN
 ---   • Automatic subjob-based selection
@@ -39,7 +39,7 @@ local function get_lockstyle_module()
     return lockstyle_module
 end
 
---- Apply the lockstyle for the current subjob (see config/rdm/RDM_LOCKSTYLE.lua).
+--- Apply the lockstyle for the current subjob (see rdm/display/RDM_LOCKSTYLE.lua).
 function select_default_lockstyle()
     return get_lockstyle_module().select_default_lockstyle()
 end

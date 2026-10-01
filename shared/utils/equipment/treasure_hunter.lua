@@ -19,7 +19,7 @@
 ---
 --- TreasureMode is an optional state (optional_state.lua): THF defines it in
 --- its STATES file and shows it; any other job gets it Off, its HUD row and
---- key hidden until //gs c th show (saved in config/treasure_mode.lua). A job
+--- key hidden until //gs c th show (saved in _common/keys/treasure_mode.lua). A job
 --- without sets.TreasureHunter gets no TH gear whatever the mode.
 ---
 --- Gear order: the engaged overlay wraps handle_equipping_gear after the

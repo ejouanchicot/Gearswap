@@ -6,7 +6,7 @@
 ---   //gs c th key <key>    its key on this job (none = no key)
 ---   //gs c th clear        forget every tag
 ---   //gs c th help
---- Saved in <Character>/config/treasure_mode.lua (optional_state.lua).
+--- Saved in <Character>/_common/keys/treasure_mode.lua (optional_state.lua).
 ---
 --- @file    shared/utils/equipment/treasure_commands.lua
 --- @author  ejouanchicot

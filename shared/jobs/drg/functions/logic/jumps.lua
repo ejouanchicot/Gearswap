@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRG Jumps - //gs c jump on a Dragoon main job
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Uses the first jump of DRGTPConfig.jumps (config/drg/DRG_TP_CONFIG.lua)
+---   Uses the first jump of DRGTPConfig.jumps (drg/combat/DRG_TP_CONFIG.lua)
 ---   the player has (AbilityHelper.can_use_ability: job, level, job points)
 ---   and that is off recast (AbilityHelper.is_ability_ready); when none is,
 ---   one cooldown block lists them with their time left.

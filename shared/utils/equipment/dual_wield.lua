@@ -16,7 +16,7 @@
 ---
 --- Magic haste is estimated from the buffs up (read from the game) and the
 --- spells that gave them (the action packet: Haste or Haste II, which March):
---- values in <Character>/config/DW_CONFIG.lua, rounded down on purpose (an
+--- values in <Character>/_common/combat/DW_CONFIG.lua, rounded down on purpose (an
 --- underestimate keeps a little more Dual Wield, the safe side).
 --- //gs c dw shows the estimate; //gs c dw none|haste|haste2|max forces a
 --- tier, //gs c dw auto goes back to the estimate. (Not "haste": that name

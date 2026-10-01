@@ -5,7 +5,7 @@
 ---   Settings persist within session AND across //lua reload gearswap.
 ---
 ---   Features:
----     • Per-character settings ([CharName]/config/ui_settings.lua)
+---     • Per-character settings ([CharName]/saved/ui_settings.lua)
 ---     • Global variable storage (_G.UI_SETTINGS)
 ---     • Auto-load from file on startup
 ---     • Auto-save on every setting change
@@ -25,7 +25,7 @@
 ---     • Sections (section_spells, section_enhancing, section_job_abilities, section_weapons, section_modes)
 ---
 ---   Settings File:
----     • [CharName]/config/ui_settings.lua (one file per character)
+---     • [CharName]/saved/ui_settings.lua (one file per character)
 ---
 ---   @file    shared/config/ui_settings.lua
 ---   @author  ejouanchicot
@@ -81,7 +81,7 @@ local D = compute_defaults()
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Absolute path of the per-character settings file
---- @return string Path to [CharName]/config/ui_settings.lua
+--- @return string Path to [CharName]/saved/ui_settings.lua
 local function get_settings_path()
     return require('shared/utils/core/char_paths').writable('saved', 'ui_settings.lua')
 end

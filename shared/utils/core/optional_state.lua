@@ -4,7 +4,7 @@
 --- Combat Mode and Treasure Mode work the same way: a Mote state the project
 --- adds to every job (when the job's own STATES file does not define it), a
 --- row in the HUD and a key, shown or hidden per job, saved per character in
---- <Character>/config/<file>:
+--- <Character>/_common/keys/<file> (combat_mode.lua, treasure_mode.lua):
 ---   return { shown = {WAR = true}, hidden = {GEO = true}, keys = {WAR = '!numpad0'} }
 --- `all` stands for every job not named (a job's own line wins). A job not
 --- named shows it when its own STATES file defines the state ("native").

@@ -5,7 +5,7 @@
 --- sends `gs c setalt <me>` to the other members of the box group, which
 --- switch to alt of it. No file to edit on either side.
 ---
---- The choice is saved in <Character>/config/dualbox_role.lua and applied
+--- The choice is saved in <Character>/saved/dualbox_role.lua and applied
 --- over DUALBOX_CONFIG.lua at every load, so it holds through a reload and a
 --- game restart. Delete that file to go back to DUALBOX_CONFIG.lua.
 --- The main also writes the alts' files, so an alt that was offline picks

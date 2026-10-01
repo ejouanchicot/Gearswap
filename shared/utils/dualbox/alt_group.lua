@@ -3,7 +3,7 @@
 ---============================================================================
 --- Drives the alts' automation addon (console "sm ...") through the send
 --- addon, one alt at a time, so it reaches only the characters named in
---- config/DUALBOX_CONFIG.lua and not every other box on the machine.
+--- _common/dualbox/DUALBOX_CONFIG.lua and not every other box on the machine.
 ---
 ---   //gs c alts on | off     automation on / off
 ---   //gs c alts toggle       flip it

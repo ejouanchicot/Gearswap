@@ -397,7 +397,7 @@ end
 --- @return table The same module, with get_active_binds, bind_all, refresh,
 ---   unbind_all, show_intro and show_binds attached, its Combat Mode row
 ---   (shared/utils/core/combat_mode.lua), and the player's custom
----   keys, then the character's common keys (config/COMMON_KEYBINDS.lua),
+---   keys, then the character's common keys (_common/keys/COMMON_KEYBINDS.lua),
 ---   appended to .binds
 function KeybindManager.create(job, module)
     local ctx = {job = job, module = module, applied = {}, api = module}

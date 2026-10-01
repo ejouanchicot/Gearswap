@@ -18,7 +18,7 @@
 --- Magical category. Installed on Mote's cleanup_precast / cleanup_midcast,
 --- so every job has it without a line in its own files.
 ---
---- Settings (optional file <Character>/config/ELEMENTAL_BELT.lua):
+--- Settings (optional file <Character>/_common/combat/ELEMENTAL_BELT.lua):
 ---   return { enabled = true, min_bonus = 5 }
 --- //gs c belt shows the state, the belts found and today's bonuses.
 ---

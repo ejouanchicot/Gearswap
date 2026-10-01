@@ -3,7 +3,7 @@
 ---============================================================================
 --- CooldownChecker cancels an ability or spell still on recast and shows the
 --- time left in this character's chat. A character can also tell the party,
---- per action, in its config/RECAST_CONFIG.lua:
+--- per action, in its _common/combat/RECAST_CONFIG.lua:
 ---
 ---   RECAST_CONFIG.party_announce = {
 ---       ['Phantom Roll'] = true,                          -- default text

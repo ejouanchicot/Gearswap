@@ -10,7 +10,7 @@
 ---     CraftCommands.handle_fish(variant)    - equip the fishing set + lock slots
 ---
 ---   Which set file each one reads is the player's choice, in
----   <charname>/config/CRAFT_CONFIG.lua: craft_file (sets/<craft_file>_sets.lua,
+---   <charname>/_common/inventory/CRAFT_CONFIG.lua: craft_file (sets/<craft_file>_sets.lua,
 ---   'bonecraft' when unset) and fish_file ('fishing' when unset).
 ---     CraftCommands.handle_uncraft()        - unlock, normal gear and job
 ---                                             lockstyle resume

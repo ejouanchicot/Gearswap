@@ -1,7 +1,7 @@
 ---============================================================================
 --- Common Keybinds - keys shared by every job of a character
 ---============================================================================
---- Reads <Character>/config/COMMON_KEYBINDS.lua (same entry format as a
+--- Reads <Character>/_common/keys/COMMON_KEYBINDS.lua (same entry format as a
 --- job's _KEYBINDS file) and appends its entries to the job's binds. A key
 --- the job file already uses stays the job's: the job wins. No file, no
 --- common keys.

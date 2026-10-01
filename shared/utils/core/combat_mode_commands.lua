@@ -5,7 +5,7 @@
 ---   //gs c combatmode show | hide  Combat Mode on this job or not
 ---   //gs c combatmode key <key>    its key on this job (none = no key)
 ---   //gs c combatmode help
---- Saved in <Character>/config/combat_mode.lua (combat_mode.lua reads it).
+--- Saved in <Character>/_common/keys/combat_mode.lua (combat_mode.lua reads it).
 ---
 --- @file    shared/utils/core/combat_mode_commands.lua
 --- @author  ejouanchicot

@@ -1,5 +1,5 @@
 ---============================================================================
---- Stealth Config - <Character>/config/STEALTH_CONFIG.lua, read and saved
+--- Stealth Config - <Character>/_common/combat/STEALTH_CONFIG.lua, read and saved
 ---============================================================================
 --- The settings of //gs c stealth: refresh_below, alert_before, overwrite,
 --- alerts, delay. Read once per load (a missing file or key keeps the default);

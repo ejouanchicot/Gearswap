@@ -16,7 +16,7 @@
 ---   • //gs c step - Execute step with Presto if available
 ---   • Ctrl+Numpad5 cycles UseAltStep - Enable/disable alternation
 ---   • Ctrl+Numpad3/4 cycle MainStep/AltStep - Change step abilities
----     (keys from config/dnc/DNC_KEYBINDS.lua)
+---     (keys from dnc/keys/DNC_KEYBINDS.lua)
 ---
 ---   @file    shared/jobs/dnc/functions/logic/step_manager.lua
 ---   @author  ejouanchicot

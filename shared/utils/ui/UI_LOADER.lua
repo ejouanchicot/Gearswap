@@ -26,7 +26,7 @@ function KeybindLoader.get_job_keybinds(job)
         return nil
     end
 
-    -- Format: config/war/WAR_KEYBINDS.lua
+    -- Format: war/keys/WAR_KEYBINDS.lua
     local config_path = require('shared/utils/core/char_paths').module('job', job:upper() .. '_KEYBINDS', job)
 
     local success, keybind_config = pcall(require, config_path)
@@ -63,7 +63,7 @@ function KeybindLoader.get_fallback_keybinds(job)
             { key = "Alt+2", desc = "Sub Weapon",  state = "SubSet" },
         },
 
-        -- Geomancer fallback (should use config/geo/GEO_KEYBINDS.lua instead)
+        -- Geomancer fallback (should use geo/keys/GEO_KEYBINDS.lua instead)
         GEO = {
             { key = "Alt+1", desc = "Main Indi",   state = "MainIndi" },
             { key = "Alt+2", desc = "Main Geo",    state = "MainGeo" },

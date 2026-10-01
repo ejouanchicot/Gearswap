@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Module created on first function call
 ---
 ---   Configuration:
----   • Lockstyle definitions: config/brd/BRD_LOCKSTYLE.lua
+---   • Lockstyle definitions: brd/display/BRD_LOCKSTYLE.lua
 ---   • Default lockstyle: #1
 ---   • Default subjob: WHM
 ---   • Automatic subjob-based selection

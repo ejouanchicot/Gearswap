@@ -6,7 +6,7 @@
 --- shared/ updates it too: nothing to change here.
 ---
 --- Your BRD settings and sets: the brd/ folder next to this file.
---- Settings of the whole character: common/.
+--- Settings of the whole character: _common/.
 ---
 --- @file    Tetsouo_BRD.lua
 --- @author  ejouanchicot

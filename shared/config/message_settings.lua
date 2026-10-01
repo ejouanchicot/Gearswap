@@ -5,7 +5,7 @@
 ---   Settings persist within session AND across //lua reload gearswap.
 ---
 ---   Features:
----     • Per-character settings ([CharName]/config/message_modes.lua)
+---     • Per-character settings ([CharName]/saved/message_modes.lua)
 ---     • Global variable storage (_G.MESSAGE_SETTINGS)
 ---     • Auto-load from file on startup
 ---     • Auto-save on every setting change
@@ -18,7 +18,7 @@
 ---     • Automatic file generation with formatted output
 ---
 ---   Settings File:
----     • [CharName]/config/message_modes.lua (one file per character)
+---     • [CharName]/saved/message_modes.lua (one file per character)
 ---
 ---   @file    shared/config/message_settings.lua
 ---   @author  ejouanchicot
@@ -33,7 +33,7 @@ local MessageSettings = {}
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Absolute path of the per-character settings file
---- @return string Path to [CharName]/config/message_modes.lua
+--- @return string Path to [CharName]/saved/message_modes.lua
 local function get_settings_path()
     return require('shared/utils/core/char_paths').writable('saved', 'message_modes.lua')
 end

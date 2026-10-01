@@ -6,7 +6,7 @@
 --- shared/ updates it too: nothing to change here.
 ---
 --- Your DNC settings and sets: the dnc/ folder next to this file.
---- Settings of the whole character: common/.
+--- Settings of the whole character: _common/.
 ---
 --- @file    Tetsouo_DNC.lua
 --- @author  ejouanchicot
