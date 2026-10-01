@@ -115,6 +115,8 @@ end
 
 --- Name of a slot value when it is a piece this hook may place.
 local function placeable_name(value)
+    -- GearSwap's `empty` table must reach it untouched (it is matched by identity)
+    if value == rawget(_G, 'empty') then return nil end
     if type(value) == 'string' and value ~= '' and value:lower() ~= 'empty' then return value end
     if type(value) == 'table' and type(value.name) == 'string' and not value.bag
         and not (type(value.augments) == 'table' and #value.augments > 0) and not value.augment then

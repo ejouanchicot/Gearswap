@@ -182,8 +182,12 @@ end
 --- @return table
 local function ranked_copy(set, st)
     local out = {}
+    local empty_value = rawget(_G, 'empty')
     for key, value in pairs(set) do
-        local priority = SLOTS[key] and priority_of(key, value, st)
+        -- GearSwap knows its `empty` table by identity (equip_processing.lua
+        -- `entry == empty`): a copy of it is taken for an item named "empty",
+        -- not found, and the slot keeps its piece (//gs c naked did nothing)
+        local priority = SLOTS[key] and value ~= empty_value and priority_of(key, value, st)
         if priority then
             local piece = {}
             if type(value) == 'table' then
