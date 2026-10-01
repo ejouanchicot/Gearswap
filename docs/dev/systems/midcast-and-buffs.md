@@ -327,7 +327,7 @@ Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buff
 | Key | Default | Read by |
 |---|---|---|
 | `job` | one list for BLM, RDM, WHM, PLD, RUN, SCH, NIN, SAM, DRK, MNK, RNG (table below); none for the other jobs | `BuffCommand` (main job list) |
-| `weapon` | `Naegling = {'$GainSpell', {'$EnSpell II', '$EnSpell'}}` (Gain and Enspell from RDM's states; on a job without them the entries drop out) | `BuffCommand` (weapon list) |
+| `weapon` | `{}` (none; RDM's Gain and Enspell are in `job.RDM`: `'$GainSpell', {'$EnSpell II', '$EnSpell'}` after Temper II) | `BuffCommand` (weapon list) |
 | `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}` | `BuffCommand` (subjob list) |
 | `war_berserk` | `{'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Berserk')` (and any other `param`) |
 | `war_defender` | `{'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Defender')` |
