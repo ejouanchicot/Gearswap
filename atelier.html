@@ -542,7 +542,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const t = (k, v={}) => { let s = k.split('.').reduce((o,p) => o && o[p], T[S.lang]) ?? k; for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; };
 const role = c => JOBS.find(j => j[0]===c)[2];
-const plays = c => CHARS[S.char].jobs.includes(c);
+const plays = c => !!CHARS[S.char] && CHARS[S.char].jobs.includes(c);
 const emblem = c => `<span class="em" style="--icon:url(${ICONS[c]})"></span>`;
 // Another character with exported jobs, offered when this one has none for the job
 const otherChar = () => Object.keys(CHARS).find(c => c !== S.char);
@@ -613,7 +613,7 @@ const LAYOUTS = {
   qwertz: {KeyY: 'z', KeyZ: 'y', Minus: 'ß', Equal: '´', BracketLeft: 'ü', BracketRight: '+', Semicolon: 'ö', Quote: 'ä', Backquote: '^', Backslash: '#', Slash: '-'},
 };
 let LAYOUT_MAP = null;
-try { navigator.keyboard && navigator.keyboard.getLayoutMap().then(m => { LAYOUT_MAP = m; if (S.char) render(); }, () => {}); } catch (e) {}
+try { navigator.keyboard && navigator.keyboard.getLayoutMap().then(m => { LAYOUT_MAP = m; if (S.char && CHARS[S.char]) render(); }, () => {}); } catch (e) {}
 function printedKey(code){
   const pick = S.layout || 'auto';
   if (pick === 'auto' && LAYOUT_MAP && LAYOUT_MAP.get(code)) return LAYOUT_MAP.get(code);
