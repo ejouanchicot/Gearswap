@@ -165,6 +165,15 @@ end
 local function collect_sets()
     local path_of, out, order = walk_sets(sets or {})
     add_provenance(path_of, out)
+    -- what the set file gave before the page's overrides (shared/utils/atelier/set_overrides.lua)
+    local ok, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
+    for path, slots in pairs(ok and SetOverrides.was or {}) do
+        local rec = out[path]
+        if rec then
+            rec.was = {}
+            for slot, value in pairs(slots) do rec.was[slot] = value and piece(value) or {name = 'empty'} end
+        end
+    end
     local list = {}
     for _, path in ipairs(order) do list[#list + 1] = out[path] end
     return list
@@ -567,6 +576,8 @@ function AtelierExport.export()
     -- the keys changed in the page and saved (<Char>/saved/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
     data.key_overrides = ok_o and KeyOverrides.read() or nil
+    local ok_s, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
+    data.set_overrides = ok_s and SetOverrides.read() or nil
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))

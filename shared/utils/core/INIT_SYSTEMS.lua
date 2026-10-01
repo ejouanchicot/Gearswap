@@ -27,6 +27,10 @@
 
 pcall(function() require('shared/utils/debug/trace_log').log('LOAD', 'INIT_SYSTEMS start (Mote and user_setup done)') end)
 
+-- Pieces changed in the Atelier page (<Char>/saved/set_overrides.lua), over the sets
+-- init_gear_sets has just built (shared/utils/atelier/set_overrides.lua)
+pcall(function() require('shared/utils/atelier/set_overrides').apply(player and player.main_job) end)
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RESTORE PERSISTENT DEBUG FLAGS (survives job changes)
 ---  ═══════════════════════════════════════════════════════════════════════════
