@@ -8,8 +8,9 @@
 ---
 --- The full length of a buff is not in the packet: it is taken when the buff
 --- appears, or when its end time jumps forward (recast), as end - now. So the
---- part left (fraction_left) is known from the first cast seen; a buff
---- already up when GearSwap loaded counts from that moment.
+--- part left (fraction_left) is known from the first cast seen. The lengths
+--- are saved (saved/buff_timers.lua), so a reload keeps them; a buff cast
+--- while GearSwap was not running counts from the moment it is first seen.
 --- Used by //gs c buff to recast a buff whose time left is under
 --- BUFF_CONFIG.lua refresh_below (percent).
 ---
@@ -55,15 +56,54 @@ function BuffTimers.read(data)
     return out
 end
 
---- id -> {finish, full}, on windower (survives a reload).
+local SAVE_FILE = 'buff_timers.lua'
+
+local function save_path()
+    local ok, path = pcall(function()
+        return require('shared/utils/core/char_paths').writable('saved', SAVE_FILE)
+    end)
+    return ok and path or nil
+end
+
+--- The lengths are also saved in <Character>/saved/buff_timers.lua: after a
+--- //lua reload gearswap (windower.* is reset) a buff already up would
+--- otherwise get as length the time it has left, and be recast late. Seen in
+--- play: Refresh III of 23:25 not recast at 1:28 left (10 % is 2:20).
+local function load_saved()
+    local path = save_path()
+    local ok, saved = pcall(function() return path and windower.file_exists(path) and dofile(path) end)
+    local known, now = {}, os.time()
+    for id, e in pairs(ok and type(saved) == 'table' and saved or {}) do
+        if type(e) == 'table' and tonumber(e.finish) and tonumber(e.full) and e.finish > now then
+            known[tonumber(id)] = {finish = e.finish, full = e.full}
+        end
+    end
+    return known
+end
+
+local function save(known)
+    local path = save_path()
+    local file = path and io.open(path, 'w')
+    if not file then return end
+    local lines = {}
+    for id, e in pairs(known) do
+        lines[#lines + 1] = ('    [%d] = {finish = %d, full = %d},'):format(id, e.finish, e.full)
+    end
+    file:write('-- Own buffs: end time and full length, written by buff_timers.lua\nreturn {\n'
+        .. table.concat(lines, '\n') .. '\n}\n')
+    file:close()
+end
+
+--- id -> {finish, full}, on windower (survives a job change), and in the
+--- saved file (survives //lua reload gearswap).
 local function store()
-    windower._buff_timers = windower._buff_timers or {}
+    windower._buff_timers = windower._buff_timers or load_saved()
     return windower._buff_timers
 end
 
 local function on_buffs(data)
     local now = os.time()
-    local seen, known = {}, store()
+    local seen, known, changed = {}, store(), false
     for _, buff in ipairs(BuffTimers.read(data)) do
         local finish = buff.finish
         -- the latest end when one id is there several times
@@ -73,13 +113,15 @@ local function on_buffs(data)
         local entry = known[id]
         if not entry or finish > entry.finish + RENEWED then
             known[id] = {finish = finish, full = math.max(1, finish - now)}
+            changed = true
         else
             entry.finish = finish
         end
     end
     for id in pairs(known) do
-        if not seen[id] then known[id] = nil end
+        if not seen[id] then known[id] = nil; changed = true end
     end
+    if changed then save(known) end
 end
 
 --- Seconds left on a buff, or nil when unknown.
