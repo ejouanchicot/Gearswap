@@ -63,4 +63,10 @@ return {
     -- WAR main /SAM: add the stance (Hasso with berserk, Seigan with
     -- defender) and Third Eye to those two commands
     war_add_sam = true,
+
+    -- Seconds between the end of an action and the next one. After a spell
+    -- the game refuses a new spell for a moment: too short, and a spell is
+    -- refused then sent again.
+    wait_after_spell   = 3.0,
+    wait_after_ability = 1.0,
 }

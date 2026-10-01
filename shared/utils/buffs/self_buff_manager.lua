@@ -34,8 +34,12 @@ local SelfBuffManager = {}
 
 --- Seconds during which a name just queued is not queued again (double press).
 local CAST_COOLDOWN = 2.0
---- Seconds after an action ends before the next one goes.
-local DELAY = 1.0
+--- Seconds after an action ends before the next one goes: after a spell
+--- the game refuses a new one for a moment (seen on 2026-10-01: a spell sent
+--- 1 s after the previous one ended was refused, then sent again). Both are
+--- BUFF_CONFIG.lua settings (wait_after_spell, wait_after_ability).
+local DEFAULT_AFTER_SPELL = 3.0
+local DEFAULT_AFTER_ABILITY = 1.0
 --- Longest wait of a step = its cast time + this, when the game never says it ended.
 local WAIT_MARGIN = 3.0
 
@@ -264,6 +268,9 @@ end
 --- @param to_cast table From collect() (entries may also be {name, magic?})
 function SelfBuffManager.cast(to_cast)
     local ActionQueue = require('shared/utils/core/action_queue')
+    local cfg = require('shared/utils/buffs/buff_config').get()
+    local after_spell = tonumber(cfg.wait_after_spell) or DEFAULT_AFTER_SPELL
+    local after_ability = tonumber(cfg.wait_after_ability) or DEFAULT_AFTER_ABILITY
     local seen = {}
     for _, item in ipairs(to_cast or {}) do
         if not seen[item.name] then
@@ -271,7 +278,8 @@ function SelfBuffManager.cast(to_cast)
             last_use[item.name] = os.clock()
             local magic = item.is_ability == false or item.magic == true
             local command = ('input %s "%s" <me>'):format(magic and '/ma' or '/ja', item.name)
-            ActionQueue.push(command, item.wait or (1 + WAIT_MARGIN), {delay = DELAY, tag = 'BUFF'})
+            local delay = magic and after_spell or after_ability
+            ActionQueue.push(command, (item.wait or (1 + WAIT_MARGIN)) + delay, {delay = delay, tag = 'BUFF'})
         end
     end
 end
