@@ -98,6 +98,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .subpick button{border:1px solid var(--line-strong);background:var(--panel);border-radius:3px;padding:0 6px;font-size:13px;font-weight:600;color:var(--muted)}
 .subpick button:hover{border-color:var(--ink);color:var(--ink)}
 .subpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.subpick button.own{position:relative}
+.subpick button.own::after{content:"";position:absolute;top:-3px;right:-3px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .sections{display:flex;gap:28px;box-shadow:inset 0 -1px 0 var(--line);margin-bottom:22px;overflow-x:auto;overflow-y:hidden}
 .sections button{border:0;background:none;padding:10px 0 9px;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;white-space:nowrap}
 .sections button:hover{color:var(--ink)}
@@ -275,7 +277,7 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', subOwn:'Ses propres modes ou touches', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
@@ -300,7 +302,7 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', subOwn:'Its own modes or keys', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
@@ -361,8 +363,25 @@ function defaultSub(c, j){
   const m = exportsOf(c, j), rank = d => (d.offline ? '0' : '1') + (d.main_sub ? '1' : '0') + (d.at || '');
   return Object.keys(m).sort((a, b) => rank(m[b]).localeCompare(rank(m[a])))[0];
 }
-const subOf = (c, j) => { const s = S.subs[c + '|' + j]; return exportsOf(c, j)[s] ? s : defaultSub(c, j); };
-const recordOf = (c, j) => exportsOf(c, j)[subOf(c, j)];
+// Subjobs the player chose: the macro book list, and a lockstyle only when it differs
+// from the default (same rule as subs_named in scripts/atelier/atelier_all.py)
+function namedSubs(d){
+  const m = d.macro || {}, l = d.lockstyle || {};
+  const named = Object.keys(m.solo || {}).concat(Object.keys(l.by_subjob || {}).filter(s => l.by_subjob[s] !== l.default));
+  return named.filter(s => s !== d.job && JOBS.some(j => j[0] === s));
+}
+// Every subjob the picker offers: those with an export of their own, and the chosen ones
+function subsOf(c, j){
+  const m = exportsOf(c, j), main = m[defaultSub(c, j)];
+  return [...new Set(Object.keys(m).concat(main ? namedSubs(main) : []))].sort();
+}
+const subOf = (c, j) => { const s = S.subs[c + '|' + j]; return subsOf(c, j).includes(s) ? s : defaultSub(c, j); };
+// A subjob without an export of its own shows the main export: same sets, keys and
+// modes; its macro book, lockstyle and keys of one subjob follow d.sub
+function recordOf(c, j){
+  const m = exportsOf(c, j), s = subOf(c, j), main = m[defaultSub(c, j)];
+  return m[s] || (main && Object.assign({}, main, {sub: s, sameAs: main.sub}));
+}
 const data = () => S.job && recordOf(S.char, S.job);
 // What only the game sees (bag items) or any export knows (icons) is shared by the job's subjobs
 const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
@@ -535,10 +554,13 @@ function renderMacro(d){
   const rows = (obj, fmt) => Object.entries(obj||{}).map(([k,v]) => `<tr><td class="sub">${esc(k)}</td><td>${fmt(v)}</td></tr>`).join('');
   const bp = v => v && v.book ? t('bookPage',{b:v.book,p:v.page}) : Object.entries(v||{}).map(([s,x]) => `/${esc(s)} ${x.book}·${x.page}`).join(' &nbsp; ');
   const table = (title, obj, fmt) => obj && Object.keys(obj).length ? `<table class="tbl"><tr class="grp"><th colspan="2">${title}</th></tr>${rows(obj, fmt)}</table>` : '';
+  // the values in force for the subjob shown: its own entry, else the default
+  const book = (m.solo || {})[d.sub] || m.default, style = (l.by_subjob || {})[d.sub] ?? l.default;
+  const whose = own => ' · ' + (own ? '/' + esc(d.sub) : t('byDefault'));
   return `<div class="pair">
-    <section class="panel"><div class="head"><div class="kicker">${t('macro')}</div><span class="big">${bookOf(d)}</span><p>${m.default?t('bookPage',{b:m.default.book,p:m.default.page}):''}</p></div>
+    <section class="panel"><div class="head"><div class="kicker">${t('macro')}</div><span class="big">${bookOf(d)}</span><p>${book?t('bookPage',{b:book.book,p:book.page}) + whose((m.solo || {})[d.sub]):''}</p></div>
       ${table(t('bySub'), m.solo, bp)}${table(t('byDual'), m.dualbox, bp)}</section>
-    <section class="panel"><div class="head"><div class="kicker">${t('lockstyle')}</div><span class="big">${esc(l.default ?? '—')}</span><p>${l.default?t('style',{s:l.default}):''}</p></div>
+    <section class="panel"><div class="head"><div class="kicker">${t('lockstyle')}</div><span class="big">${styleOf(d)}</span><p>${style != null ? t('style',{s:esc(style)}) + whose((l.by_subjob || {})[d.sub] != null) : ''}</p></div>
       ${table(t('bySub'), l.by_subjob, v => t('style',{s:v}))}</section></div>`;
 }
 function renderFunctions(d){
@@ -550,11 +572,13 @@ function renderFunctions(d){
     `</tbody></table></div>`;
 }
 // The exported subjobs of the job: one button each, the shown one pressed
+// A dot marks a subjob that shows something else than the main one (its own modes...)
 function subPicker(){
-  const subs = Object.keys(exportsOf(S.char, S.job)).sort(), cur = subOf(S.char, S.job);
+  const subs = subsOf(S.char, S.job), cur = subOf(S.char, S.job), m = exportsOf(S.char, S.job), main = defaultSub(S.char, S.job);
   const label = s => s === 'NONE' ? '—' : esc(s);
   if (subs.length < 2) return label(cur);
-  return `<span class="subpick" role="group">${subs.map(s => `<button aria-pressed="${s===cur}" data-subpick="${esc(s)}">${label(s)}</button>`).join('')}</span>`;
+  return `<span class="subpick" role="group">${subs.map(s => { const own = m[s] && s !== main;
+    return `<button aria-pressed="${s===cur}" data-subpick="${esc(s)}" class="${own?'own':''}" title="${own ? t('subOwn') : t('subSame',{s:label(main)})}">${label(s)}</button>`; }).join('')}</span>`;
 }
 function renderJob(){
   const c = S.job, j = JOBS.find(x => x[0]===c), d = data();
