@@ -60,9 +60,9 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `shared/jobs/bst/functions/BST_MOVEMENT.lua` | 41 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/bst/functions/BST_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('BST', 'bst/display/BST_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/bst/functions/BST_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('BST', 'bst/display/BST_MACROBOOK', 'SAM', 1, 1)` wrapper |
-| `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 262 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs`, `cycle_ammo` (dead) |
-| `shared/jobs/bst/functions/logic/pet_manager.lua` | 318 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache), `check_and_engage_pet` and `monitor_pet_status` (PUP template only) |
-| `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 283 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
+| `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 241 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs` |
+| `shared/jobs/bst/functions/logic/pet_manager.lua` | 170 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache) |
+| `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 217 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
 | `shared/jobs/bst/functions/logic/set_builder.lua` | 193 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
 | `_master/config/bst/BST_STATES.lua` | 77 | `BSTStates.configure()` |
 | `_master/config/bst/BST_KEYBINDS.lua` | 48 | 7 binds, data only; `KeybindManager.create('BST', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -312,8 +312,10 @@ History: until 2026-09-27 (`302e3f2`) the template ran an older
 which tested `pet.isvalid` on a raw Windower mob (never set), so `PetEngaged`
 went back to `'false'` every second and Fight was re-sent while engaged. The
 template now has the prerender monitor and the dual-box pattern of the live
-entry, and `monitor_pet_status` tests `pet.id` (it is still called by the PUP
-template).
+entry. `PetManager.monitor_pet_status` and `check_and_engage_pet` were removed
+on 2026-10-01 (no caller left: the PUP rewrite of 2026-09-29 dropped the last
+ones). Old pre-2026-09-30 entry files (Gab's v12 package) still call them: a
+package must ship the character's current entries with the current `shared/`.
 
 ### Midcast
 
@@ -514,7 +516,7 @@ or /DNC, shields included (its comment now says so).
 ## State & lifetime
 
 - Module state (sandbox, dies on every load): PetManager caches (pet mode 1 s,
-  pet status 0.5 s, Ready moves 30 s), `last_monitor_time`; lazy-load locals;
+  Ready moves 30 s); lazy-load locals;
   the monitor's `monitor_event_id`, `last_check`, `prev_pet_eng`.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_pet_precast`,
@@ -629,8 +631,6 @@ or /DNC, shields included (its comment now says so).
 
 - Line numbers drift; cite functions. `rg` skips the gitignored character
   folders: check live copies with `grep -r` before calling code dead.
-- `PetManager.get_pet_status` and `is_pet_valid` test `isvalid` on raw mobs
-  (always false) but have no caller; do not revive them without switching to `id`.
   (`SetBuilder.should_use_pet_sets`, `is_pet_engaged` and `get_current_mode`, dead
   the same way, were removed on 2026-09-29.)
 - `BST_MIDCAST` reports a categoriser that failed to load with
@@ -697,11 +697,7 @@ or /DNC, shields included (its comment now says so).
   already swapped to the pet damage set by then); `BST_AFTERCAST.lua` keeps a
   `pet_manager` require that nothing uses ("kept so the module keeps loading at
   the same point").
-- Dead code: `job_pet_precast` (whole `BST_PET_PRECAST.lua`),
-  `PetManager.get_pet_status` / `is_pet_valid` (BST side; `check_and_engage_pet`
-  and `monitor_pet_status` are used only by the PUP template),
-  `EcosystemManager.cycle_ammo`, `ReadyMoveCategorizer.is_physical` /
-  `is_magical` / `get_midcast_set_name` / `get_category_counts` and the
+- Dead code: `job_pet_precast` (whole `BST_PET_PRECAST.lua`), the
   `_G.pet*Moves` exports, `BST_ECOSYSTEM_DATA.lua`, BST message wrappers with
   no caller.
 - Fixed, no longer issues: the template's pet monitor re-sending Fight every
