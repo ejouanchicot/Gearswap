@@ -210,29 +210,59 @@ local function job_config(kind)
     return (ok and type(cfg) == 'table') and cfg or nil
 end
 
---- Owned equippable items, by slot: {slot = {name, ...}}.
+--- The augments of one copy of an item (its extdata), or nil.
+local function copy_augments(item)
+    local ok_ext, extdata = pcall(require, 'extdata')
+    local ok, ext = false, nil
+    if ok_ext then ok, ext = pcall(extdata.decode, item) end
+    if not (ok and ext and type(ext.augments) == 'table') then return nil end
+    local augs = {}
+    for _, a in ipairs(ext.augments) do
+        if type(a) == 'string' and a ~= '' and a ~= 'none' then augs[#augs + 1] = a end
+    end
+    return #augs > 0 and augs or nil
+end
+
+--- Whether the main job can wear an item (res.items jobs: a set of job ids, or the raw bitmask).
+local function wearable(info)
+    local job = player and player.main_job_id
+    if not (job and info.jobs) then return true end
+    if type(info.jobs) == 'number' then return math.floor(info.jobs / 2 ^ job) % 2 == 1 end
+    return info.jobs[job] == true
+end
+
+--- Owned items the main job can wear, by slot: `items` = {slot = {name, ...}} and
+--- `owned` = {slot = {{name = , augs = }, ...}}, one entry per distinct copy (two capes
+--- with other augments are two choices in the page).
 local function collect_items()
     local ok, res = pcall(require, 'resources')
     if not ok or not res or not res.items then return nil end
-    local by_slot, seen = {}, {}
+    local by_slot, owned, seen = {}, {}, {}
     for _, bag in ipairs(EQUIP_BAGS) do
         for _, item in ipairs(windower.ffxi.get_items(bag) or {}) do
             local info = type(item) == 'table' and item.id and item.id > 0 and res.items[item.id]
-            if info and info.slots and type(info.slots) == 'table' and info.slots.it then
+            if info and info.slots and type(info.slots) == 'table' and info.slots.it and wearable(info) then
+                local augs = copy_augments(item)
+                local copy = info.en .. '|' .. table.concat(augs or {}, '|')
                 for slot_id in info.slots:it() do
                     local slot = SLOT_BY_ID[slot_id]
-                    local key = slot and slot .. '|' .. info.en
-                    if key and not seen[key] then
-                        seen[key] = true
+                    if slot and not seen[slot .. '|' .. info.en] then
+                        seen[slot .. '|' .. info.en] = true
                         by_slot[slot] = by_slot[slot] or {}
                         table.insert(by_slot[slot], info.en)
+                    end
+                    if slot and not seen[slot .. '#' .. copy] then
+                        seen[slot .. '#' .. copy] = true
+                        owned[slot] = owned[slot] or {}
+                        table.insert(owned[slot], {name = info.en, augs = augs})
                     end
                 end
             end
         end
     end
     for _, names in pairs(by_slot) do table.sort(names) end
-    return by_slot
+    for _, list in pairs(owned) do table.sort(list, function(a, b) return a.name < b.name end) end
+    return by_slot, owned
 end
 
 --- Item id of every name the page shows ({name = id}), equippable items
@@ -261,25 +291,12 @@ local function worn_gear(res)
     local items = windower.ffxi.get_items()
     local equipment = items and items.equipment
     if type(equipment) ~= 'table' then return nil end
-    local ok_ext, extdata = pcall(require, 'extdata')
     local worn = {}
     for key, slot in pairs(WORN_SLOTS) do
         local index, bag = equipment[key], equipment[key .. '_bag']
         local item = index and index > 0 and bag and windower.ffxi.get_items(bag, index)
         local info = item and item.id and item.id > 0 and res.items[item.id]
-        if info then
-            local piece = {name = info.en, id = item.id}
-            local ok, ext = false, nil
-            if ok_ext then ok, ext = pcall(extdata.decode, item) end
-            if ok and ext and type(ext.augments) == 'table' then
-                local augs = {}
-                for _, a in ipairs(ext.augments) do
-                    if type(a) == 'string' and a ~= '' and a ~= 'none' then augs[#augs + 1] = a end
-                end
-                if #augs > 0 then piece.augs = augs end
-            end
-            worn[slot] = piece
-        end
+        if info then worn[slot] = {name = info.en, id = item.id, augs = copy_augments(item)} end
     end
     return worn
 end
@@ -496,11 +513,12 @@ function AtelierExport.export()
     local data = {
         player = player.name, job = player.main_job, sub = player.sub_job, at = os.date('%Y-%m-%d %H:%M'),
         sets = collect_sets(), keys = collect_keys(), modes = collect_modes(),
-        macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'), items = collect_items(),
+        macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'),
         -- <job>/combat/<JOB>_WEAPONS.lua (PLD: shield per stance and weapon, stance weapon, grips):
         -- the page puts the weapons in the sets the way the job code does
         weapon_rules = job_config('WEAPONS'),
     }
+    data.items, data.owned = collect_items()
     data.icons = collect_icons(data.sets, data.items)
     local ids = {}
     for _, id in pairs(data.icons or {}) do ids[#ids + 1] = id end

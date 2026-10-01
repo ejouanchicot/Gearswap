@@ -175,7 +175,8 @@ def run_load(lua, ffxi, char, job, sub):
 
 def finish(char, job, sub, carry, names_for_icons, main):
     """Mark the file offline and give it what only the game sees, from the last in-game
-    export: the bag items, and the character's measured stats (same subjob first)."""
+    export: the bag items (each copy with its augments), and the character's measured
+    stats (same subjob first)."""
     data = read_export(export_path(char, job, sub))
     if not data:
         return None
@@ -187,6 +188,9 @@ def finish(char, job, sub, carry, names_for_icons, main):
         data['items'] = bags
         for names in bags.values():
             names_for_icons.update(names)
+    # each copy of the bags with its own augments (the page's piece swap)
+    if (carry or {}).get('owned') and not data.get('owned'):
+        data['owned'] = carry['owned']
     if not data.get('char') and measured:
         data['char'] = measured.get(sub) or sorted(measured.values(), key=lambda c: c.get('at', ''))[-1]
     write_export(export_path(char, job, sub), data)
@@ -307,7 +311,8 @@ def main():
         for _, d in sorted(previous, key=lambda p: p[1].get('at', '')):
             if d.get('char'):
                 chars[d['char'].get('sub') or d.get('sub')] = d['char']
-        bags[(char, job)] = {'items': with_items[-1]['items'] if with_items else None, 'chars': chars}
+        last = with_items[-1] if with_items else {}
+        bags[(char, job)] = {'items': last.get('items'), 'owned': last.get('owned'), 'chars': chars}
     done, failed, names_for_icons = [], [], set()
     print('Atelier: %d jobs, the subjob of the last export first' % len(jobs))
     run_all(lua, ffxi, [(c, j, first[(c, j)]) for c, j in jobs], bags, done, failed, names_for_icons, workers)

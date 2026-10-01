@@ -8,7 +8,7 @@
   --bg:#F3F2EF; --side:#EAE8E3; --panel:#FFFFFF; --panel-2:#F7F6F3; --hover:#EFEDE8; --ink:#1B1C1F; --muted:#5F5D58; --faint:#8F8C85;
   --line:#DEDBD4; --line-strong:#C6C2B9; --accent:#86621C; --accent-soft:#F4ECDA; --accent-ink:#FFFFFF; --aug:#7A5A1C; --well:#E6E3DC;
   --r-tank:#3F5FC4; --r-healer:#3F8A2E; --r-support:#A67C0A; --r-dd:#B04646;
-  --tip-bg:#23252A; --tip-edge:#23252A;
+  --tip-bg:#23252A; --tip-edge:#23252A; --try:#2D6CB0; --try-soft:#E7EFF8;
   --display:"Cinzel","Trajan Pro",Georgia,serif;
   --sans:"Source Sans 3","Segoe UI",system-ui,sans-serif;
   --mono:"JetBrains Mono",Consolas,monospace;
@@ -18,14 +18,14 @@
   --bg:#121315; --side:#0D0E10; --panel:#18191C; --panel-2:#1E2024; --hover:#24262B; --ink:#E7E5E0; --muted:#A3A09A; --faint:#6F6D68;
   --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
   --r-tank:#7D9BF0; --r-healer:#86D36F; --r-support:#ECC94A; --r-dd:#E08585;
-  --tip-bg:#2E3138; --tip-edge:#4A4E57;
+  --tip-bg:#2E3138; --tip-edge:#4A4E57; --try:#73A9E6; --try-soft:#1C2633;
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#121315; --side:#0D0E10; --panel:#18191C; --panel-2:#1E2024; --hover:#24262B; --ink:#E7E5E0; --muted:#A3A09A; --faint:#6F6D68;
   --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
   --r-tank:#7D9BF0; --r-healer:#86D36F; --r-support:#ECC94A; --r-dd:#E08585;
-  --tip-bg:#2E3138; --tip-edge:#4A4E57;
+  --tip-bg:#2E3138; --tip-edge:#4A4E57; --try:#73A9E6; --try-soft:#1C2633;
 }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);margin:0;-webkit-font-smoothing:antialiased}
@@ -165,6 +165,41 @@ button{font:inherit;color:inherit;cursor:pointer}
 .slot.empty .item{color:var(--faint);font-weight:400}
 .slot.inh{background:var(--panel-2)}
 .slot.weap{border-left-color:var(--accent)}
+.slot.tried{border-left-color:var(--try);background:var(--try-soft)}
+.slot.tried .lbl{color:var(--try)}
+/* the bar over the grid while pieces are being tried */
+.trybar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px;padding:7px 10px;border:1px solid var(--try);border-radius:4px;background:var(--try-soft);font-size:13px}
+.trybar b{color:var(--try)}
+.trybar .sp{flex:1}
+.trybar .btn{padding:3px 10px;font-size:13px}
+.legend i.try{border-left-color:var(--try);background:var(--try-soft)}
+/* the piece picker of the drawer */
+.drawq{width:100%;font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line-strong);border-radius:3px;background:var(--panel-2);color:var(--ink)}
+.choice button.cur{box-shadow:inset 3px 0 0 var(--try)}
+.choice button .augl{display:block;color:var(--aug);font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.choice button .rk{color:var(--aug);font-size:10.5px;font-weight:700;margin-left:6px;padding:0 4px;border:1px solid var(--aug);border-radius:3px}
+.drawacts{display:flex;flex-wrap:wrap;gap:8px}
+.luabox{width:100%;min-height:200px;font-family:var(--mono);font-size:12.5px;padding:10px;border:1px solid var(--line-strong);border-radius:3px;background:var(--panel-2);color:var(--ink);resize:vertical}
+/* buffs and conditions */
+.buffs{border:1px solid var(--line);border-radius:4px;background:var(--panel-2)}
+.bufftoggle{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border:0;background:transparent;text-align:left;font-size:13px;color:var(--muted)}
+.bufftoggle::after{content:'▾';color:var(--faint);margin-left:4px}
+.bufftoggle[aria-expanded="true"]::after{content:'▴'}
+.bufftoggle .on{color:var(--accent);font-weight:700}
+.buffbody{display:grid;gap:9px;padding:2px 12px 12px}
+.buffrow{display:grid;gap:3px;font-size:12.5px}
+.buffrow > span{color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.buffrow > div{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.buffsel{font:inherit;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line-strong);border-radius:3px;padding:1px 3px;flex:1 1 110px;min-width:0;max-width:100%}
+.buffsel.set{border-color:var(--accent);color:var(--accent);font-weight:600}
+.buffsel.n{flex:0 0 auto}
+.buffrow label{display:inline-flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap}
+.globals-inline .buffbody{grid-template-columns:repeat(auto-fill,minmax(320px,1fr));column-gap:24px}
+.chip{font:inherit;font-size:12px;padding:1px 8px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel);color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.buffnote{font-size:11.5px;color:var(--faint);margin:0}
+.globals-inline .globals > .buffs,.globals-inline .globals > .vsset{grid-column:1 / -1}
+.vsset{font-size:12px;color:var(--try);margin:0}
 .weaps{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:13px;color:var(--muted)}
 .weaps label{display:inline-flex;align-items:center;gap:6px}
 .weapsel{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-strong);border-radius:3px;padding:1px 4px}
@@ -361,29 +396,26 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 </div>
 <div id="overlay" hidden></div>
 <div id="tip" class="tip" role="tooltip" hidden></div>
-
 <script src="atelier/index.js"></script>
 <script>
 let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} : mérites, gifts, Master Level et traits compris (buffs et nourriture du moment aussi). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', accLabel:'Précision', evaLabel:'Évasion', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', sectionsMerits:'Mérites', meritsEdited:'{n} mérite(s) modifié(s)', inGame:'jeu :', noMerits:'Pas encore de mérites mesurés : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on).', meritsNote:'Tes niveaux lus en jeu le {at} (en /{s}). Change une valeur pour tester : elle passe en doré et tes stats (onglet Sets, colonne de droite) se recalculent. Rien n\'est changé en jeu.', meritsReset:'Revenir aux valeurs du jeu ({n})', mgHp:'HP / MP', mgAttr:'Attributs', mgCombat:'Compétences de combat', mgMagic:'Compétences de magie', mgOther:'Divers', mgJob1:'Job · groupe 1', mgJob2:'Job · groupe 2', gripFor:'Grip de {w} (arme à deux mains)', withMerits:'+ mérites', merits:'mérites', auto:'Auto', yourChoice:'Ton choix : {v}', slotBySet:'Fixé par le set lui-même', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', drawerWeap:'Pièce posée par ton mode d\'arme ({m}) : le set laisse cet emplacement libre.', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} : mérites, gifts, Master Level et traits compris (buffs et nourriture du moment aussi). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', accLabel:'Précision', evaLabel:'Évasion', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', sectionsMerits:'Mérites', meritsEdited:'{n} mérite(s) modifié(s)', inGame:'jeu :', noMerits:'Pas encore de mérites mesurés : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on).', meritsNote:'Tes niveaux lus en jeu le {at} (en /{s}). Change une valeur pour tester : elle passe en doré et tes stats (onglet Sets, colonne de droite) se recalculent. Rien n\'est changé en jeu.', meritsReset:'Revenir aux valeurs du jeu ({n})', mgHp:'HP / MP', mgAttr:'Attributs', mgCombat:'Compétences de combat', mgMagic:'Compétences de magie', mgOther:'Divers', mgJob1:'Job · groupe 1', mgJob2:'Job · groupe 2', gripFor:'Grip de {w} (arme à deux mains)', withMerits:'+ mérites', merits:'mérites', auto:'Auto', yourChoice:'Ton choix : {v}', slotBySet:'Fixé par le set lui-même', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats', rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
     modesOther:'Autres modes (sans touche)', atLoad:'La valeur encadrée est celle au chargement du job.',
     noKey:'aucune touche', macro:'Macrobook', lockstyle:'Lockstyle', bookPage:'Livre {b}, page {p}', bySub:'Par sub', byDual:'En dual-box (job de l\'autre perso)',
-    style:'Set {s}', on:'On', off:'Off', mock:'Données écrites par le jeu (//gs c atelier), ou pour tous les jobs d\'un coup par « Atelier - export all jobs.bat » (dossier data). Puis recharge cette page.', inBags:'dans tes sacs', none:'Pas encore de données. En jeu, tape //gs c atelier (le job chargé) ou //gs c atelier on (chaque job à son chargement), puis recharge cette page.',
-    placeholder:'Pas encore exporté : charge ce job en jeu avec //gs c atelier on actif, ou tape //gs c atelier.', seeOther:'Voir les jobs de {c}', drawerInh:'Cette pièce vient de {b}. La changer ici l\'ajoute à ce set seulement ; {b} ne bouge pas.',
-    drawerOwn:'Pièce écrite dans ce set : elle sera remplacée à cet endroit du fichier.', drawerEmpty:'Aucune pièce : ce que tu portes déjà reste.',
-    drawerShared:'Ce set est aussi utilisé sous {n} autre(s) nom(s). Tu pourras modifier pour tous ou séparer celui-ci.',
-    yourItems:'Tes objets vus pour cet emplacement', seenIn:'vu dans {n} set(s)', close:'Fermer', apply:'Appliquer (maquette)',
+    style:'Set {s}', on:'On', off:'Off', mock:'Données écrites par le jeu (//gs c atelier), ou pour tous les jobs d\'un coup par « Atelier - export all jobs.bat » (dossier data). Puis recharge cette page.', none:'Pas encore de données. En jeu, tape //gs c atelier (le job chargé) ou //gs c atelier on (chaque job à son chargement), puis recharge cette page.',
+    placeholder:'Pas encore exporté : charge ce job en jeu avec //gs c atelier on actif, ou tape //gs c atelier.', seeOther:'Voir les jobs de {c}',
+    close:'Fermer',
     addTitle:'Ajouter un set', step1:'Quand ?', step2:'Lequel ?', step3:'À partir de quoi ?', back:'Retour', cancel:'Annuler',
     exists:'existe déjà', fromEmpty:'Vide', fromEmptyD:'Tu remplis chaque emplacement toi-même', fromCopy:'Copie de {b}', fromCopyD:'Hérite de tout, tu changes seulement ce qui diffère',
     fromWorn:'Capture de l\'équipement porté', fromWornD:'Ce que tu portes en jeu devient le set', catalog:'Dans la version finale : les noms que le code du job lit, avec ceux qui manquent.',
@@ -393,22 +425,20 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s}: merits, gifts, master level and traits included (buffs and food of the moment too). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', accLabel:'Accuracy', evaLabel:'Evasion', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', sectionsMerits:'Merits', meritsEdited:'{n} merit(s) changed', inGame:'game:', noMerits:'No merits measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on).', meritsNote:'Your levels read in game on {at} (as /{s}). Change one to test: it turns gold and your stats (Sets tab, right column) follow. Nothing changes in game.', meritsReset:'Back to the game values ({n})', mgHp:'HP / MP', mgAttr:'Attributes', mgCombat:'Combat skills', mgMagic:'Magic skills', mgOther:'Others', mgJob1:'Job · group 1', mgJob2:'Job · group 2', gripFor:'Grip of {w} (two-handed)', withMerits:'+ merits', merits:'merits', auto:'Auto', yourChoice:'Your choice: {v}', slotBySet:'Set by the set itself', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', drawerWeap:'Piece put by your weapon mode ({m}): the set leaves this slot free.', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s}: merits, gifts, master level and traits included (buffs and food of the moment too). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', accLabel:'Accuracy', evaLabel:'Evasion', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', sectionsMerits:'Merits', meritsEdited:'{n} merit(s) changed', inGame:'game:', noMerits:'No merits measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on).', meritsNote:'Your levels read in game on {at} (as /{s}). Change one to test: it turns gold and your stats (Sets tab, right column) follow. Nothing changes in game.', meritsReset:'Back to the game values ({n})', mgHp:'HP / MP', mgAttr:'Attributes', mgCombat:'Combat skills', mgMagic:'Magic skills', mgOther:'Others', mgJob1:'Job · group 1', mgJob2:'Job · group 2', gripFor:'Grip of {w} (two-handed)', withMerits:'+ merits', merits:'merits', auto:'Auto', yourChoice:'Your choice: {v}', slotBySet:'Set by the set itself', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats', rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
     modesOther:'Other modes (no key)', atLoad:'The framed value is the one at job load.',
     noKey:'no key', macro:'Macro book', lockstyle:'Lockstyle', bookPage:'Book {b}, page {p}', bySub:'By subjob', byDual:'Dual-box (other character\'s job)',
-    style:'Set {s}', on:'On', off:'Off', mock:'Data written by the game (//gs c atelier), or for every job at once by "Atelier - export all jobs.bat" (data folder). Then reload this page.', inBags:'in your bags', none:'No data yet. In game, type //gs c atelier (the loaded job) or //gs c atelier on (every job as it loads), then reload this page.',
-    placeholder:'Not exported yet: load this job in game with //gs c atelier on, or type //gs c atelier.', seeOther:'See {c}\'s jobs', drawerInh:'This piece comes from {b}. Changing it here adds it to this set only; {b} stays as it is.',
-    drawerOwn:'Piece written in this set: it is replaced at that spot in the file.', drawerEmpty:'No piece: what you already wear stays.',
-    drawerShared:'This set is also used under {n} other name(s). You will choose: all of them, or split this one.',
-    yourItems:'Your items seen for this slot', seenIn:'seen in {n} set(s)', close:'Close', apply:'Apply (mock-up)',
+    style:'Set {s}', on:'On', off:'Off', mock:'Data written by the game (//gs c atelier), or for every job at once by "Atelier - export all jobs.bat" (data folder). Then reload this page.', none:'No data yet. In game, type //gs c atelier (the loaded job) or //gs c atelier on (every job as it loads), then reload this page.',
+    placeholder:'Not exported yet: load this job in game with //gs c atelier on, or type //gs c atelier.', seeOther:'See {c}\'s jobs',
+    close:'Close',
     addTitle:'Add a set', step1:'When?', step2:'Which?', step3:'Starting from?', back:'Back', cancel:'Cancel',
     exists:'already there', fromEmpty:'Empty', fromEmptyD:'You fill every slot yourself', fromCopy:'Copy of {b}', fromCopyD:'Inherits everything, you change only what differs',
     fromWorn:'Capture what you wear', fromWornD:'Your in-game gear becomes the set', catalog:'In the real tool: the names the job code reads, missing ones included.',
@@ -427,7 +457,6 @@ const ROLE_COLOR = {tank:'var(--r-tank)',healer:'var(--r-healer)',support:'var(-
 const ROLES = ['tank','healer','support','dd'];
 // Job emblems: AioHUD's own (assets/job_icons_src, white masks the HUD tints with the role colour)
 const ICONS = {PLD:'data:image/png;base64,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',RUN:'data:image/png;base64,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',WHM:'data:image/png;base64,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',RDM:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAFQ0lEQVR42u2ba4jUVRjGf/+ZWQwtMy0KRUVTK/MSGEpSmmEUlVYW3VSwtLJILEMCo7KrFUFh0eVDSElRYF8UvHUxCSkoiCwrUsuMLFTsYmqr7jx98Dl4GsYdd2Z35z+ze+DPnjk7O7vPc8553+d5z9lEEh25ZejgrZOATgI6CajrlpTCmKtz8PLT4VZAxsC7AtM7GgFZIA90B94HxjSHNakzIZQFmoBTgY+BPcA4bweKbYd6IiAHHAZ6A+s8Nhr4+1jg62kLBPBDgA1AAzAe+CsKhnUbA7IGPx74xK8vBn6P4kHdBsGc9/zNwFrjuQzYHsWDuhRCSTTzdwJvAweAycB3ETF1qQSDumsC5gOvAo3ALcCnETHH1yTV0pNIyrr/sI60vKTpHsu19DNrDXzG/Ud1tM0tF3wtEZAxAUhaFIFfGIFP6pWATPT15Qj8Cx7Plgu+FggI4LtJWhaBf6PIyijrSbMUDnm8F/CehQ7AauBq4FBzEve4U0pKCQjgewPLgVEe/9xC5w+nwnzFOTWFBATwg4BVQH+PbbHE/a21wKeRgAB+OPCB+3td2LgE2Hy8ErcWa4JBvo60o9sDbAROAa5sC/BpIiDY2dHAZ3Z1a4ELrO83tkTft/QXpwX8RGAN8CKwCVgMTDIhuRbp+5a0Kuf5IF9viJTdNe7fWInErQUhFIDNMOAnJE12f057gK8mAcHR3WHAz0q6zv0H2wt8NQiI7ez9EeAp7j9ZqblJMwEx+AUGfJeky91/rjXMTVoJiMEvNOCZkia6/1o1wFdKQFIG+McN+FZJY91fFhU7kvaOR+1hZ4OlfcqAp0s63/11kk4w8KQaAbmSH+5TUKrKRYCz0awj6SUDniLpXEmHJH0lqWeB7089AeEPneq8XeoPP0vSakkHJI2T1E/SP5K2SOpbkBKr8uTKKEkDXOj6+yjgW2CopexAm5efgbeA04EBwAhghw3NHnv6X9rC3LS1HQ7nbIN9/napffs90XuW+6Dibvv5p4GTgC+AbsCEtnJ27eEGA1ubPfOJga3xeCMwDJhjT78IuN1kbWorT18NMxTydT9JKyQNkvSD/t+aHOz+lXR2kTiSiqfcekCTZ3+763P3AmOBnwpWVxboAjwSWd88KWqVlMTC0fMwFywmAN/4ckICLHUFty8wD7jeATCptJKbFgLiGt5iB8IRwDZgGkfu50z1qjgM7AQ+bM2CZrULImEvL5E0WNIG5/vxHp8VxYPbJI1MYwzIVVjGmgXMAP70El/hZf+AV0Vf4FqnwXQexVdQyblI0n7P8DZJXSWdKOkZSXslrZJ0nqSbJL0pqUc1NX9rSeEgW4dJ2mHw6yUNKXjfmZKWSnpX0lZ7/qrL3koJyEbgfpTUKGllBC7Y2d6SZkdGZ7ikeZKGttBGp0oHhCsp/b3PB1gDrAe+dDYInzUNeMVxIAF2Ab/6Lk+vAk+Ripp8qdbggHeGwZ/jC0mvA88DBw0o5PdJTnNL/foA0Mdnentb40S3PYNgSFkNkr72nt8p6YqCWkCDX3eVtNvyOClIed3TeAchU8L55a3ixgDv2MhcBaz0yghq8BDQE1hiO7ygYJYTjl5ZrYk0GGZuoKR9kna5knNykfee5irvbq+QWccQPEkaV0CuROHjPseJg0APW9r5XgnfA3OBmV4NHwGPOTAWk7tK61XT5nz/IGAf8JCPrDM2PqOA2cB+k7Qa2BpljDw10kqZoW4mqdit6y4ugBS7wUm9EFBYCgsznEQ1gRAI89RgK0VA0sz+TdK6r1tTCKnM79H5f4OdBHQSUBPtP1W8tgosUYKbAAAAAElFTkSuQmCC',SMN:'data:image/png;base64,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',GEO:'data:image/png;base64,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',COR:'data:image/png;base64,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',BRD:'data:image/png;base64,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',WAR:'data:image/png;base64,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',MNK:'data:image/png;base64,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',THF:'data:image/png;base64,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',DRK:'data:image/png;base64,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',SAM:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAEuUlEQVR42u2bW4hVVRjH//ucg7cyolAz80Y9FFGShAMKRTewsgtGF4IyIyYrGYtCX3yoB4se1KCroWHzIhYGCQVZRtANowsmZkmFXawIjJQaTWfm10P/RR8HL3M5Z87eZ86CzTrnv88e+P33t7717TVrZ4CGcytpmLeWAS0DWga0DGiWlvmQpPJwMyAzC5LWSJrRV75mMaAsqUfSUkntIQKy4WBARVK3pHslPekomDBchkDZ8PMlPevPmaSZw8GAFPZzJK339xTyU5rdgJLhp0vaKGmspF8lHfH53mY2IE13YyRtkDRJ0l5JSyQd9m9+bGYDUug/IanN2nJJBySd4u+fN6sBMeN3WNvqHDDbM8A+STt8jmYyIGX8WZKeCqF+l4dEm/tNkn4y24lzAVCEowRkwETgG/5rXcBVPn870GvtwnDNCf92EeAzoOz+Lf5v7T5/PvCbtdX9gS+KARX3KwL8GmsnAR9Z2wmMtVFZsxiQ4BcG+LeBMYbstHYAaOvv3c+7AWX3FwH7DfotMMn6qmDKfVXXFN6AdBcnArvDXZ5jfXGAX10VLYU3ILMBo4D3DHkQuNHn5wOHrL9aNUsU3oAshPHLhjwC3GHtcuBP658CpwbDVHQDIvzKEOKLrV0M/G7ta2DyQJJeXg3Iwhh+LMA/au08YI+174BzBpr08mpAgl8a4FdZmw7ssrbXhU9N4PNiQIJ/IMA/bW0K8KW1fcCswWT8PBqQQBYAPQZ9wdq0AN8FzK01fKMNSCDXh2ltbQj7nda6/bBTc/hGGpBArghV3kvWpgb4XuDuesE3yoAEcpnHNcA6a2cC2wP8onrC18uA4z2NJZArgT8M2mltHLAthP099YavdwRkx4C/OlRzr1g7HfjA2mHgzqGAr5cBZWBklQmpvw34y6CbXMWNAz4MYb9gqOBrbUAqSR8HtgIjgl4GHnJoA7xmU84IYQ9w/1DC19KAVJVdGmA2Bv2WoL9u+Mkh4QE8PNTwtTQgJb4JwMcBar318cAWYLMjYlqY6gCWBfisiAbEcT4e2HGUsnaU4acCXx3lzpcbUZPUayXnbC9fpfZIOL85lLftjYSv9zR4AfDLUcrZucAXwHWNGPNDMQuc5qQnYHYodQ+67hcwuhaLGXkyoBTW5TYauMPnbvb83gv8DcyzPiIPaxG1XMQU8GKo5ggPMkv8vcdj/9ZjVIuFMyDW/c+HRcwej/tDfugRsDyY0A086PFfKqoBpdCvDfCEim8/cEP47bIwM/zjFZ+GRsJg5/yRwIYq+NTvBmZWlcNpOLwPXJKHYTAY+JOBN44Bv8X/1ame40t5SHzxKA1gN2ZJ0mhJnZKu8aaFtG2lImmdpGu9aSnpCpuXSnnanJEN8I2RaZK+N1wWzFnh/TpJ6z2OmRRls3T6zSJJ70o6V9Iew1bC/rwOw5f6sFUtP+/p9HG8V4DPPL53ee1OwDPAz870Cjs5irL1Rv2Z7p4La/ef+NE3lb65THB9OfqSA1IimyFpm6SR1t+UNM/hXJ3smuqFiZTotku6SdIP1t8xfKWo8P2dBdK+u7MkLZS0UlJXnjL6UEyD5SLf7VrsFO3xNeVmMaAygGt6W2+NtQxoGdAyoFnav+ldmqZNVavNAAAAAElFTkSuQmCC',NIN:'data:image/png;base64,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',DRG:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAFAUlEQVR42u2bXYhVZRSGn73PODON2kQ4GV0UQ6H9QEFMo0XJBBEh/WpgVHQRIqbhYIIRkUFZCvZrVDdWBBP2Y4aleJVhdRHSWBelMdmFQWbaUBNOjT9z3i7m3fR1cGaOZ87M2fvM+WCz91ln78O871rf+tZ69zeRJCbziJnko0ZAjYDqHtFoN9RVuWPzky0CIiBn4HngrMlEQA4QMAi0Ai8B74+GM64irw8CDcDjQDfQCewdLRdEGS+E4mCeXw+8CLT588/AlUCfCVC1RUAy16cCG4AvDP64v3/W4HPDgQdAUtaOSFLO19dI+kZDY7uk9b7eLalOUuz7h/29rIGPg+vFkvoNeK2kaZL2SBqQ1OZ7cqP9ZpbAJ2CmSHrZwE9IWmL7a7Y9Uyz4LBFQ5/OFkj410IOSOmxfblu3pMZiQj8rBITz/TpJBwx0r6TZts+R1CfpmHNC0d5POwGhF5cG832npBbbz5fUY/uqMwWfJgJyBQkuF4T+8/pvbJJUHxD0oe1dpYBPCwFxwVxPvN4qaVcA/rkCkEki3Cdphp+Ls0RAFIC9xYBm+vOdkn4JwL9ge30wJSTpH0lzS/V+JQlIvBXbs/K6nnzfZdugpFdta/S5wwlPklYWrBKZISAJ1acM5Kik6QaSk9QpKS/pkAHf6vvbJB3xM9sCz0el/i1xhbq3PDADWOYu7mzgWuCUPzf6vibgI2AesBDYCbQAh4HlQZNTekdXwaLmXnvylM+HJS2TtEJSr/4/+oMpkfezJc/78KhEO1xnT3fag78C77hr+xPoAWYB5wzz/HvAPYEGMLZwrKAe0AgM+Pp7oBdYBUwzSdsM8Elgnwm5CXjavX5UjOaXZgIA6h0NnwPfAjOBuz2/1wNvOVLGNRwrqeaccCjPtny1HfjOklYT8EfBM5f5vL9ADcocAZGPq4EHvCK0A+dZ11tggA8Dh4DdlrceAx4s6x9SoSmQJML5wA7gJDDFSbDXy9olwf19QDPwMXBHubxfKU0wZ/BXONs/YfB7gIsMfBZwP3DEibIZOOiIiLIcAYnnznVR0+4sf9Jg3wiio8m54FLggJe+7nJ6f6JzQOzQnu7qrt32qcCjwT2DfqOzEfgdWAu8YoLKCn4iK8Gk+clJ+iSo8B4JdL5CPaB5hLa5bMdEy1qvB+BXFtnMjKnZqTQBIfh1Afg1pxFARtILyCIBUdD4rAnAbywC/IQdEwF+dQD+zYkI6zQQkIBfEYDfHCTDKC3q83iCX+reXZK2BCEfp0l+Hy/wSwLwWy1mpg58uQWRpIK7D3jbJe8Ot7cD41LEpKgUTsDfBbzrPn8XcDvQn1bw5SIgAX+zS9wm9/Q3upQti3SV1n2CCfh53pDU5P59YRbAj5WApK29CtjilvWo+/WeLIAvlYDInh8ELnbYt1jMWAB8HXxflVtlZc9fYIWmFfjL4L8MpkXV7RWOHdbN3pK2Fbgc+BtYBHyWNfBnogdEp3lxKRc7i8f6grKSR12Rc15+MTEXuMFreuwpsCmTni9SEkvk6wYnu45gP+4xYPNIuzCrgYBEo5tv8Mf9zI/AbV7zlZWMXwoBMgkPWbltsL0L+KncEnXaSuGkkJkDfGXbD8A64AO/1spnOfyLzQGrvdRtYGg3dh9VNOpGAD7od3a/MbQLe39BZFTFGK0bDMHmqiHkS2mHo3JtRshiDmDMm5Bq/zdYI6BGQI2AFI9/AX1u97HgAtg8AAAAAElFTkSuQmCC',DNC:'data:image/png;base64,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',BST:'data:image/png;base64,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',BLU:'data:image/png;base64,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',PUP:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAG30lEQVR42u2bbahlVRnHf/vct2mcKYfGSZkMNZvBKJXG0RwrSsoPMhlOYaNFaRSBUJRKXwaSPvWmRFBB1ocoSArRXiTToKLoDZleILtlL1LT5DWbKYt5aebc8+vDeTYsVvuce/a++5w7l7kHNmfffc9a61n/9bz8n2etXaiczp8Op/lnDYDTHYDpVS5/kdw7SQCm4rsX9724JjnxDrCYzcXs2dIdtRgFpkKA3pgnPgV04+/1wBzwz8YdNgTgKuBa4ALgR8A3gL9kq9NrqpYDfFWRrO4G4EbgDuAs4KfAt4AjwJeB/47cszrqVagz6gP+/+cp9ZPqpVmb6WhHg6tQp7L2z1Pfr85b/fmduj7ajDRuXYE66jXqF9W/JwP34vtIAHSdOpu0nYq2o4zTid+nzy5TP6EeTMbsJvd/Uj+qbk1kpW0A8utC9cPqgUSQxeT+F+r71LOzdlMVAhYVIG1U36w+pB6vWO1j6nfUm9XNTefRpFEnE3SL+t6YcNXqPKl+Wr1qwEpPZ8+3qR9S/zCgv4Pq3eqOEYAdGwCoL1evyOz9evUR9WRmGuUkvqe+Uz0r63Od+nr1XvWZpM2J5H5evUM9J9Oc89VrM9nGCkBpn9erN4UQc9lvdqmfVRcGrOKC+nn1BnWf+lim3ulvH1XfFs4tlaHUnJ3qBzLZJgLADeqNmfrlaviCWLX5RCO6Azz4YvK/rvp9dU+2qmn/5fMr1NuaArCcXGAmj6gRp424PR3c4C7gImAPcChhjl3gRMTsxYQ/LADXAK8G7o/nMwkPsGLcFckFFoGjQ0hLydbmgNcEcdqY0Obpiv4ANgH7gPOBrwVoi9FvFcHq1qW/bQFgrGBKhdOcYAuwF3grsDPJHcqJHALuCxq7B9iW9HN1XPuAe4PdPVYhdw84GVfDWTT3AW8JwpPb/eXqZzIHmPKD36p3hvcu26xX96rfzTx/GvMfUN+obsgi0iURWSbmBKdjoJsjdKGeEcJ9MwmBaRhcVB9W31ThzXOhd6gfUZ8Y4CxLALfH77dGNKriFEteTZKhItT/lrDp/wC3AS9JbLlMlw8BXwc+FwnLoMyxKoHaBLwBeAewK2lT1gCORd//Bn4fznasJlCq+VwQj/0Z0UnV/Ffq7ZmabxyRrVXlAleq96j/GjDefGjFeXXZYJ3JF8HYfhaD3ql+NRHiqPpgYhbphHYFr69jp1W8Ypv6QfXXGanaHYAcCBkZRzZY2v9u9b6gvAvq48HdL04muD2+Z+LZK8JO6zqqkuy8Lssl1gVJeigc5GH1K+rL6maDdcNgF3gwrlcCZwOPAM8kHODSIDF3t1B0Le39hcDTCcE6HiTpfmAHMAv8pAk5ml5G6euHFf10IyYfqeAMy2FsR4Nz9DLWKLA/xs+rRmMri5fe+8ogOUVFLbAzgQpwSbpeBLy7aS1yOYKuA549YGWLEZ/VBX4QMIsrsTHSHYJ6ZwwADNOM4lTbGSraFHIEDVgVADAmADrLmUenxUmO+zMMgKmVAsAhtYK2NWqYl++dahqw2DIPSPu0TQ2cFADFMgHoLBFxTjkn2PYG6bGkxMZqOCCxWMOJLeX45qJcNjtgpZelAdNj8NLdKJK0sTi9qCjfDvwSmAcOZhNeUROoWtXDIWjusGzQdwH8GfhHJFlPJklQK+G4MwYNeCoBoLdMJyjwBfrnEK4Gbs1KbivOBB2SLS6HNJWAbQQuTp69PXxCb7WdEqurAaVc24Gtof7d8AfPzYqjq+aYXK+B/S/QryzPhMP+cfzdaev4zfSEcoGpuIoaYHWAvwK7gXfRrzJ9jP5eYmr3xUqFwTqDHo44bk2NKeiXvPYP0JAVBWApEFJHdgtwIfA48McaPsEkzg/aHe6s5EnRUSZxMpzXeRXF0jZ8x4rygFHaPx/YTP9Q40vb9OBZQaSYNABH6e/LLVU+fw9wCXAO8KX47rUIwolIlpwkAOuBc4HX0q8OV61qmRBdkOzjbwktaCsV30h/83RvyFMb2E7DBGUb8KkgJWdUoJ966M1Z3O61SL3PBC4PnvCcJj6h6SocjwFn4r4Y4L0F7gnnNwv8AHh0hBIXNUrzJwLk2UZm0PB0yMeT3dm7Rjijd1Fsqj6r7ublkE1a1FsTOX4TW/dFnf47Ne2uPKz0qkSd94RP6A3ZEZqnv6F6rIXyWGpGlyWn086NUFsryjQxgQ30d4VLUrIpQt0g+zMpXRctcfgSgBcnG6azIdvYiZBZTv50JC3DJtcbU3b5tyTPOAA8Ubf8VveMUDnwTvo7w3Ph5H7e4urWkeNM4KaIRt9OHKyTfmVmkpPnVHhrrDNmFa/78hRN31dq86Up1l6cXANgDYA1AFbb538qh6shyO3I8QAAAABJRU5ErkJggg==',SCH:'data:image/png;base64,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',RNG:'data:image/png;base64,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',BLM:'data:image/png;base64,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'};
-
 const JOBS = [['PLD','Paladin','tank'],['RUN','Rune Fencer','tank'],
   ['WHM','White Mage','healer'],['RDM','Red Mage','healer'],['SMN','Summoner','healer'],
   ['GEO','Geomancer','support'],['COR','Corsair','support'],['BRD','Bard','support'],
@@ -437,8 +466,10 @@ const JOBS = [['PLD','Paladin','tank'],['RUN','Rune Fencer','tank'],
 let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
-let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, meritEdits:{}, q:'', lang:'fr', theme:null};
-try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null, char:s.char||''}); } catch(e) {}
+let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, meritEdits:{}, q:'', lang:'fr', theme:null,
+  trial:{}, buffs:{}, buffsOpen:false};
+try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null, char:s.char||'',
+  buffs:s.buffs||{}, buffsOpen:!!s.buffsOpen}); } catch(e) {}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const t = (k, v={}) => { let s = k.split('.').reduce((o,p) => o && o[p], T[S.lang]) ?? k; for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; };
@@ -484,7 +515,7 @@ const data = () => S.job && recordOf(S.char, S.job);
 const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
   const other = Object.values(exportsOf(S.char, S.job)).find(x => x[key]); return other ? other[key] : null; };
 const iconIds = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.icons || {}));
-function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme, char:S.char})); } catch(e) {} }
+function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme, char:S.char, buffs:S.buffs, buffsOpen:S.buffsOpen})); } catch(e) {} }
 // The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
 const icon = name => { const id = name && iconIds()[name];
   return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="this.remove()">` : ''}</span>`; };
@@ -938,6 +969,187 @@ function combatOf(c, gear, dex, agi, mainName){
   return {acc, eva, wskill, level};
 }
 
+/* ---- buffs and conditions (IzaKastra buffs.py / gear.py, Guide_Paladin 01_prologue, 03_magic, 03_job_ability) ---- */
+// Foods: flat stats; atkf = Attack added after the Attack % (wsdist "Food Attack"); a [%, cap] pair is a % of the stat with its cap
+const FOODS = {
+  'Grape Daifuku +1': {str: 3, vit: 4, atkf: 55, acc: 85, mab: 4}, 'Grape Daifuku': {str: 2, vit: 3, atkf: 50, acc: 80, mab: 3},
+  'Sublime Sushi +1': {str: 7, dex: 8, mnd: -4, chr: 7, acc: 105}, 'Sublime Sushi': {str: 6, dex: 7, mnd: -3, chr: 6, acc: 100},
+  'Red Curry Bun +1': {str: 7, agi: 3, atkf: 150}, 'Red Curry Bun': {str: 7, agi: 1, int: -2, atkf: 150},
+  'Om. Sandwich +1': {acc: 85, vit: 8, mnd: 8}, 'Om. Sandwich': {acc: 80, vit: 7, mnd: 7},
+  'Gyudon +1': {da: 6, wsd: 6}, 'Gyudon': {da: 5, wsd: 5}, 'Marine Stewpot': {acc: 90, macc: 90},
+  'Crepe des rois': {macc: 95, int: 2, mnd: 2, mdb: 1}, 'Tropical Crepe': {macc: 90, int: 2, mnd: 2, mdb: 1},
+  "Altana's Repast": {str: 10, dex: 10, vit: 10, agi: 10, int: 10, mnd: 10, chr: 10, stp: 6, acc: 70, macc: 70, eva: 70, meva: 70, atkf: 70, mdb: 3, mab: 10},
+  'Miso Ramen +1': {hp: 105, deff: [11, 175], mdb: 6, mevaf: [11, 55]}, 'Miso Ramen': {hp: 100, deff: [10, 170], mdb: 5, mevaf: [10, 50]},
+};
+// Songs: stat -> [base, per Songs+], up to the song's own Songs+ limit; Magic Haste in %
+const SONGS = {
+  'Honor March': {lim: 4, mhaste: [12.305, 1.172], atk: [168, 16], acc: [42, 4]}, 'Victory March': {lim: 8, mhaste: [15.918, 1.587]},
+  'Advancing March': {lim: 8, mhaste: [10.547, 1.152]}, 'Minuet V': {lim: 8, atk: [149, 12.375]}, 'Minuet IV': {lim: 8, atk: [137, 11.2]},
+  'Minuet III': {lim: 8, atk: [121, 9.5]}, 'Blade Madrigal': {lim: 9, acc: [60, 6]}, 'Sword Madrigal': {lim: 9, acc: [45, 4.5]},
+  'Aria of Passion': {lim: 7, pdl: [12, 1.333]},
+  'Herculean Etude': {lim: 9, str: [15, 1]}, 'Uncanny Etude': {lim: 9, dex: [15, 1]}, 'Vital Etude': {lim: 9, vit: [15, 1]},
+  'Swift Etude': {lim: 9, agi: [15, 1]}, 'Sage Etude': {lim: 9, int: [15, 1]}, 'Logical Etude': {lim: 9, mnd: [15, 1]}, 'Bewitching Etude': {lim: 9, chr: [15, 1]},
+};
+// Rolls: the value of each number I..XI, then per Rolls+ (Attack % as a fraction)
+const ROLLS = {
+  'Chaos': {atkp: [[.0625, .0781, .0937, .25, .1093, .125, .1562, .0312, .1718, .1875, .3125], 32 / 1024]},
+  "Samurai": {stp: [[8, 32, 10, 12, 14, 4, 16, 20, 22, 24, 40], 4]}, "Fighter's": {da: [[1, 2, 3, 4, 10, 5, 6, 6, 1, 7, 15], 1]},
+  "Rogue's": {crit: [[1, 2, 3, 4, 10, 5, 6, 7, 1, 8, 14], 1]}, "Hunter's": {acc: [[10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50], 5]},
+  "Wizard's": {mab: [[4, 6, 8, 10, 25, 12, 14, 17, 2, 20, 30], 2]}, "Warlock's": {macc: [[10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50], 5]},
+  "Monk's": {sb: [[8, 10, 32, 12, 14, 16, 4, 20, 22, 24, 40], 4]}, "Tactician's": {regain: [[10, 10, 10, 10, 30, 10, 10, 0, 20, 20, 40], 2]},
+};
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+// Geomancy bubbles: [base, per Geomancy+]; the same bubble twice (Indi and Geo) counts once
+const BUBBLES = {
+  'Fury': {atkp: [.347, .027]}, 'Haste': {mhaste: [29.9, 1.1]}, 'Precision': {acc: [50, 5]}, 'Focus': {macc: [50, 5]}, 'Acumen': {mab: [15, 3]},
+  'STR': {str: [25, 2]}, 'DEX': {dex: [25, 2]}, 'VIT': {vit: [25, 2]}, 'AGI': {agi: [25, 2]}, 'INT': {int: [25, 2]}, 'MND': {mnd: [25, 2]}, 'CHR': {chr: [25, 2]},
+};
+const PROTECT = {'Protect': 20, 'Protect II': 50, 'Protect III': 90, 'Protect IV': 140, 'Protect V': 220};
+const SHELL = {'Shell': 27, 'Shell II': 42, 'Shell III': 56, 'Shell IV': 67, 'Shell V': 80};
+const HASTE = {'Haste': 14.648, 'Haste II': 29.98};
+const STORMS = {'Firestorm II': {str: 7}, 'Thunderstorm II': {dex: 7}, 'Sandstorm II': {vit: 7}, 'Windstorm II': {agi: 7}, 'Hailstorm II': {int: 7},
+  'Rainstorm II': {mnd: 7}, 'Aurorastorm II': {chr: 7}, 'Voidstorm II': {str: 3, dex: 3, vit: 3, agi: 3, int: 3, mnd: 3, chr: 3}};
+// Job abilities and spells on oneself: the job that has it, whether a subjob has it too, what it gives
+// (main: the effect as main job). party: a buff a party member gives, always offered
+const JAS = {
+  'Berserk': {job: 'WAR', sub: true, fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25})},
+  'Aggressor': {job: 'WAR', sub: true, fx: m => ({acc: 25 + (m ? 20 : 0), eva: -25})},
+  'Defender': {job: 'WAR', sub: true, fx: () => ({defp: .25, atkp: -.25})},
+  'Last Resort': {job: 'DRK', sub: true, fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25})},
+  'Hasso': {job: 'SAM', sub: true, fx: m => ({str: m ? 34 : 7, jahaste: 10, acc: 10})},
+  'Swordplay': {job: 'RUN', fx: () => ({acc: 54, eva: 54})},
+  'Rampart': {job: 'PLD', fx: () => ({dmgmul: .75})},
+  'Sentinel': {job: 'PLD', sub: true, fx: m => ({enmity: m ? 100 : 50})},
+  'Crusade': {job: ['PLD', 'RUN'], fx: () => ({enmity: 30})},
+  'Cocoon': {job: 'BLU', sub: true, fx: () => ({defp: .5})},
+  'Haste Samba': {job: 'DNC', sub: true, party: true, fx: m => ({jahaste: m ? 10.1 : 5.1})},
+};
+const ENEMIES = {'Apex Bats': [129, 1142, 1043], 'Apex Toad': [132, 1239, 1133], 'Apex Bat': [135, 1338, 1224],
+  'Apex Lugcrawler Hunter': [138, 1446, 1314], 'Apex Knight Lugcrawler': [140, 1530, 1383], 'Apex Idle Drifter': [142, 1448, 1502],
+  'Apex Archaic Cog': [145, 1704, 1551], 'Apex Archaic Cogs': [147, 1791, 1628], 'BG Wiki sets': [null, 1500, 1350]};
+const DEFAULT_ENEMY = 'BG Wiki sets';
+const buffState = () => (S.buffs[S.char] = S.buffs[S.char] || {});
+// The abilities the shown job and subjob have (as main: full effect), and the party ones
+function jasOf(){
+  const sub = (data() || {}).sub;
+  return Object.entries(JAS).filter(([, a]) => { const jobs = [].concat(a.job);
+    return a.party || jobs.includes(S.job) || (a.sub && jobs.includes(sub)); })
+    .map(([name, a]) => ({name, main: [].concat(a.job).includes(S.job), a}));
+}
+// Every active buff added up: {stat: value}; atkp/defp as fractions, deff/mevaf as [%, cap], dmgmul a product
+function buffTotals(){
+  const b = buffState(), B = {}, put = (k, v) => { B[k] = (B[k] || 0) + v; };
+  const food = FOODS[b.food];
+  for (const [k, v] of Object.entries(food || {})) Array.isArray(v) ? (B[k] = v) : put(k, v);
+  const songsPlus = +(b.songsPlus || 0), songs = new Set([b.song0, b.song1, b.song2, b.song3].filter(x => SONGS[x]));
+  for (const name of songs) for (const [k, v] of Object.entries(SONGS[name])) if (k !== 'lim') {
+    const val = v[0] + Math.min(SONGS[name].lim, songsPlus) * v[1]; put(k, k === 'atk' ? Math.floor(val) : val); }
+  const rollsPlus = +(b.rollsPlus || 0);
+  for (const i of [0, 1]) { const r = ROLLS[b['roll' + i]], n = ROMAN.indexOf(b['roll' + i + 'n'] || 'XI');
+    if (r && n >= 0) for (const [k, [vals, step]] of Object.entries(r)) put(k, vals[n] + rollsPlus * step); }
+  const geoPlus = +(b.geoPlus || 0);
+  for (const name of new Set([b.indi, b.geo].filter(x => BUBBLES[x])))
+    for (const [k, [base, step]] of Object.entries(BUBBLES[name])) put(k, base + geoPlus * step);
+  if (PROTECT[b.protect]) put('def', PROTECT[b.protect]);
+  if (SHELL[b.shell]) put('shell', SHELL[b.shell]);
+  if (HASTE[b.haste]) put('mhaste', HASTE[b.haste]);
+  for (const [k, v] of Object.entries(STORMS[b.storm] || {})) put(k, v);
+  for (const ja of jasOf()) if ((b.ja || {})[ja.name]) for (const [k, v] of Object.entries(ja.a.fx(ja.main)))
+    k === 'dmgmul' ? (B.dmgmul = (B.dmgmul || 1) * v) : put(k, v);
+  return B;
+}
+function buffCount(){
+  const b = buffState();
+  return ['food', 'protect', 'shell', 'haste', 'storm', 'song0', 'song1', 'song2', 'song3', 'roll0', 'roll1', 'indi', 'geo'].filter(k => b[k]).length +
+    jasOf().filter(ja => (b.ja || {})[ja.name]).length;
+}
+function buffPanelHTML(){
+  const b = buffState(), n = buffCount();
+  // `def`: the value used while none is chosen (a roll's number: XI), shown instead of an empty choice
+  const sel = (key, values, cls = '', def = null) => `<select class="buffsel ${cls} ${b[key] ? 'set' : ''}" data-buff="${key}">` +
+    (def ? values : ['', ...values]).map(v => `<option value="${esc(v)}" ${String(v) === String(b[key] ?? def ?? '') ? 'selected' : ''}>${v === '' ? '—' : esc(v)}</option>`).join('') + `</select>`;
+  const plus = (key, label, max) => `<label class="muted">${label} ${sel(key, Array.from({length: max}, (_, i) => i + 1), 'n')}</label>`;
+  const row = (label, body) => `<div class="buffrow"><span>${label}</span><div>${body}</div></div>`;
+  const head = `<button class="bufftoggle" data-bufftoggle aria-expanded="${S.buffsOpen}"><span class="kicker">${t('buffsTitle')}</span>` +
+    `<span class="${n ? 'on' : ''}">${n ? t('buffsOn', {n}) : '—'}</span></button>`;
+  if (!S.buffsOpen) return `<div class="buffs">${head}</div>`;
+  const jas = jasOf();
+  const body = [
+    row(t('bFood'), sel('food', Object.keys(FOODS))),
+    row(t('bWhm'), sel('protect', Object.keys(PROTECT)) + sel('shell', Object.keys(SHELL)) + sel('haste', Object.keys(HASTE)) + sel('storm', Object.keys(STORMS))),
+    row(t('bBrd'), [0, 1, 2, 3].map(i => sel('song' + i, Object.keys(SONGS))).join('') + plus('songsPlus', 'Songs+', 9)),
+    row(t('bCor'), [0, 1].map(i => sel('roll' + i, Object.keys(ROLLS)) + sel('roll' + i + 'n', ROMAN, 'n', 'XI')).join('') + plus('rollsPlus', 'Rolls+', 8)),
+    row(t('bGeo'), 'Indi ' + sel('indi', Object.keys(BUBBLES)) + ' Geo ' + sel('geo', Object.keys(BUBBLES)) + plus('geoPlus', 'Geomancy+', 10)),
+    jas.length ? row(t('bJa'), jas.map(ja => `<button class="chip" data-ja="${esc(ja.name)}" aria-pressed="${!!(b.ja || {})[ja.name]}">${esc(ja.name)}</button>`).join('')) : '',
+    row(t('bEnemy'), sel('enemy', Object.keys(ENEMIES).filter(x => x !== DEFAULT_ENEMY)).replace('>—<', `>${DEFAULT_ENEMY}<`)),
+  ].join('');
+  return `<div class="buffs">${head}<div class="buffbody">${body}<p class="buffnote">${t('buffNote')}</p>` +
+    `${n ? `<div><button class="btn ghost" data-buffreset>${t('buffReset')}</button></div>` : ''}</div></div>`;
+}
+
+/* ---- tanking (Guide_Paladin 02_enmity, 03_defense, 03_magic) and offense (wsdist get_tp, get_hit_rate) ---- */
+// Phalanx potency of the enhancing skill: up to 300, a tenth less 2; past it a point per 28.5, up to 35 at 500
+const phalanxPotency = skill => skill <= 300 ? Math.max(0, Math.floor(skill / 10) - 2) : Math.min(35, 28 + Math.floor((skill - 300.5) / 28.5));
+// Base TP of a hit from the weapon delay (wsdist get_tp.py)
+function tpBase(d){
+  if (d <= 180) return 61 + (d - 180) * 63 / 360;
+  if (d <= 540) return 61 + (d - 180) * 88 / 360;
+  if (d <= 630) return 149 + (d - 540) * 20 / 360;
+  if (d <= 720) return 154 + (d - 630) * 28 / 360;
+  if (d <= 900) return 161 + (d - 720) * 24 / 360;
+  return 173 + (d - 900) * 28 / 360;
+}
+const TWO_HANDED = /great|scythe|polearm|staff/i;
+function tankHTML(r){
+  const {c, set, B} = r, v = k => (set[k] || {}).v || 0, mul = B.dmgmul || 1;
+  const dt = v('dt'), shell = B.shell ? -B.shell / 256 * 100 : 0;
+  const pdt = Math.max(Math.max(dt + v('pdt'), -50) + v('pdt2'), -87.5);
+  const mdt = Math.max(Math.max(dt + v('mdt') + shell, -50) + v('mdt2'), -87.5);
+  const mdb = v('mdb') + traitOf('mdb', c) + giftOf('mdb', c) + (B.mdb || 0);
+  const fl = x => Math.floor(x + 1e-9);
+  const phys = fl(1000 * (1 + pdt / 100) * mul), mag = fl(fl(1000 * (1 + mdt / 100)) / (1 + mdb / 100) * mul);
+  const breath = fl(1000 * (1 + Math.max(dt + v('bdt'), -50) / 100) * mul);
+  const pctOf = n => `${signed(Math.round((n / 1000 - 1) * 1000) / 10)} %`;
+  let rows = statLi(t('physHit'), phys, pctOf(phys), '', mul < 1 ? 'Rampart ×0.75' : '') +
+    statLi(t('magHit'), mag, pctOf(mag), '', t('magTip', {m: Math.round(Math.max(dt + v('mdt') + shell, -50) * 10) / 10, b: mdb})) +
+    statLi(t('breathHit'), breath, pctOf(breath));
+  const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : 1 + enm / 100;
+  if (enm) rows += statLi(t('enmityLbl'), signed(enm), `×${mult.toFixed(2)}`, '', t('enmTip', {g: v('enmity'), b: B.enmity || 0}));
+  if (enm && ['PLD', 'RUN'].includes(S.job)) rows += statLi(t('flashLbl'), `${Math.floor(180 * mult)} / ${Math.floor(1280 * mult)}`, '');
+  const skill = skillLevel(c, 'enhancing magic') + v('skill:enhancing magic skill');
+  if (['PLD', 'RUN', 'RDM'].includes(S.job) && skill) {
+    const pot = phalanxPotency(skill);
+    rows += statLi('Phalanx', `−${pot + v('phalanx')}`, '', '', t('phalanxTip', {p: pot, s: skill, g: v('phalanx')}));
+  }
+  return `<div class="kicker sub">${t('tankTitle')}</div><ul class="statlist">${rows}</ul>`;
+}
+function offenseHTML(r, s){
+  const {c, set, B, cur} = r, v = k => (set[k] || {}).v || 0;
+  const pieces = withWeapons(s).pieces, rm = pieceStats(pieces.main), rs = pieceStats(pieces.sub);
+  const d1 = rm && rm.weapon && +rm.weapon.Delay;
+  if (!d1) return '';
+  const d2 = (rs && rs.weapon && +rs.weapon.Delay) || 0, dual = d2 > 0;
+  const dw = dual ? v('dw') + traitOf('dw', c) + giftOf('dw', c) : 0;
+  const gh = Math.min(v('haste'), 25), mh = Math.min(B.mhaste || 0, 43.75), jh = Math.min(B.jahaste || 0, 25), haste = gh + mh + jh;
+  const mdelay = dual ? (d1 + d2) / 2 * (1 - dw / 100) : d1;
+  const stp = v('stp') + traitOf('stp', c) + giftOf('stp', c) + (B.stp || 0);
+  const tph = Math.floor(tpBase(mdelay) * (1 + stp / 100));
+  const delay = d1 + (dual ? d2 : 0), round = Math.max(delay * (1 - dw / 100) * (1 - haste / 100), 0.2 * delay) / 60;
+  const two = cur.wskill && TWO_HANDED.test(cur.wskill), enemyName = ENEMIES[buffState().enemy] ? buffState().enemy : DEFAULT_ENEMY;
+  const eva = ENEMIES[enemyName][2], cap = two || dual ? 95 : 99;
+  const r1 = n => Math.round(n * 10) / 10;
+  let rows = statLi(t('hasteTot'), `${r1(haste)} %`, haste >= 93.75 ? 'cap' : '', '', t('hasteTip', {g: r1(gh), m: r1(mh), j: r1(jh)})) +
+    statLi(t('tpHit'), tph, '', '', t('tpTip', {d: Math.round(mdelay), s: stp})) + statLi(t('hitsTo'), Math.ceil(1000 / tph), '') +
+    statLi(t('roundLbl'), `${r1(round)} s`, '');
+  if (cur.acc != null) { const rate = Math.max(20, Math.min(cap, 75 + 0.5 * (cur.acc - eva)));
+    rows += statLi(t('hitRate'), `${Math.floor(rate)} %`, `cap ${cap}`, '', t('hitTip', {a: cur.acc, e: eva, n: enemyName}) + (two ? ' · ' + t('twoHand') : '')); }
+  const da = v('da') + traitOf('da', c) + giftOf('da', c) + (B.da || 0);
+  if (da || v('ta') || v('qa')) rows += statLi(t('multiLbl'), `${r1(da)} · ${v('ta')} · ${v('qa')} %`, '');
+  const crit = v('crit') + (B.crit || 0);
+  if (crit) rows += statLi(t('critLbl'), `${r1(crit)} %`, '');
+  return `<div class="kicker sub">${t('offTitle')}</div><ul class="statlist">${rows}</ul>`;
+}
+
 /* ---- the character's real stats with a set ---- */
 // The stats measured in game by //gs c atelier (this subjob's export, else another one's)
 // The measure taken on the shown subjob if there is one, else the latest of the job (an offline
@@ -958,33 +1170,44 @@ function gearTotal(pieces){
 function charStats(s){
   const c = measuredChar();
   if (!c || !c.base) return null;
-  const worn = gearTotal(c.worn || {}), set = setStats(s).total;
+  const worn = gearTotal(c.worn || {}), set = setStats(s).total, B = buffTotals();
   const g = (o, k) => (o[k] || {}).v || 0;
-  const out = {};
   // merits changed in the page (Merits tab) move the base: Max HP before the gear's HP %
-  const md = meritDelta();
-  for (const a of ATTRS) { const now = (c.base[a] || 0) + (c.add[a] || 0); out[a] = {now, set: now - g(worn, a) + g(set, a) + (md[a] || 0)}; }
-  const pool = (max, k) => {
-    const naked = max / (1 + g(worn, k + '%') / 100) - g(worn, k) + (md[k] || 0);
-    return Math.round((naked + g(set, k)) * (1 + g(set, k + '%') / 100));
-  };
-  out.hp = {now: c.max_hp, set: pool(c.max_hp, 'hp')};
-  out.mp = {now: c.max_mp, set: pool(c.max_mp, 'mp')};
-  out.def = {now: c.defense, set: Math.floor(c.defense + g(set, 'def') - g(worn, 'def') + 1.5 * (out.vit.set - out.vit.now))};
-  out.atk = {now: c.attack, set: c.attack + g(set, 'atk') - g(worn, 'atk') + (out.str.set - out.str.now)};
-  // Accuracy and Evasion are not in the status window: computed for the worn gear and the set alike
-  if (c.skills && Object.keys(c.skills).length) {
-    const was = combatOf(c, worn, out.dex.now, out.agi.now, (c.worn && c.worn.main || {}).name);
-    const now = combatOf(c, set, out.dex.set, out.agi.set, (withWeapons(s).pieces.main || {}).name);
-    out.acc = {now: was.acc, set: now.acc, tip: now.wskill ? `${now.wskill} ${now.level}` : ''};
-    out.eva = {now: was.eva, set: now.eva};
+  const md = meritDelta(), measured = a => (c.base[a] || 0) + (c.add[a] || 0);
+  // The stats with one gear total: the measure, less the gear worn then, plus that gear and the buffs
+  function calc(gear, mainName){
+    const r = {};
+    for (const a of ATTRS) r[a] = measured(a) - g(worn, a) + g(gear, a) + (md[a] || 0) + (B[a] || 0);
+    const pool = (max, k) => {
+      const naked = max / (1 + g(worn, k + '%') / 100) - g(worn, k) + (md[k] || 0) + (B[k] || 0);
+      return Math.round((naked + g(gear, k)) * (1 + g(gear, k + '%') / 100));
+    };
+    r.hp = pool(c.max_hp, 'hp'); r.mp = pool(c.max_mp, 'mp');
+    let def = (c.defense + g(gear, 'def') - g(worn, 'def') + 1.5 * (r.vit - measured('vit')) + (B.def || 0)) * (1 + (B.defp || 0));
+    if (B.deff) def += Math.min(def * B.deff[0] / 100, B.deff[1]);
+    r.def = Math.floor(def);
+    r.atk = Math.floor((c.attack + g(gear, 'atk') - g(worn, 'atk') + (r.str - measured('str')) + (B.atk || 0)) * (1 + (B.atkp || 0)) + (B.atkf || 0));
+    // Accuracy and Evasion are not in the status window: computed for the worn gear and the set alike
+    if (c.skills && Object.keys(c.skills).length) {
+      const cb = combatOf(c, gear, r.dex, r.agi, mainName);
+      r.acc = cb.acc + Math.floor(B.acc || 0); r.eva = cb.eva + (B.eva || 0); r.wskill = cb.wskill; r.level = cb.level;
+    }
+    return r;
   }
-  return {c, out, set};
+  const cur = calc(set, (withWeapons(s).pieces.main || {}).name);
+  // the difference: to the set without the tried pieces when some are tried, else to the gear worn when measured
+  const vsSet = trialCount(s) > 0;
+  const ref = vsSet ? withoutTrial(() => calc(setStats(s).total, (withWeapons(s).pieces.main || {}).name))
+    : calc(worn, (c.worn && c.worn.main || {}).name);
+  const out = {};
+  for (const k of [...ATTRS, 'hp', 'mp', 'def', 'atk', 'acc', 'eva']) if (cur[k] != null) out[k] = {now: ref[k], set: cur[k]};
+  if (out.acc && cur.wskill) out.acc.tip = `${cur.wskill} ${cur.level}`;
+  return {c, out, set, B, cur, vsSet};
 }
 function globalsHTML(s){
   const r = charStats(s);
   if (!r) return `<div class="globals"><div class="kicker">${t('youTitle')}</div><p class="muted">${t('noChar')}</p></div>`;
-  const {c, out, set} = r;
+  const {c, out, set, vsSet} = r;
   const row = (label, o) => { const d = o.set - o.now;
     return statLi(label, o.set, d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''); };
   const v = k => (set[k] || {}).v || 0;
@@ -1001,9 +1224,9 @@ function globalsHTML(s){
     (sird ? statLi('SIRD', sird + ' %', sirdMerits ? `<em class="delta">${t('withMerits')}</em>` : '', '', `${t('gearOnly')} ${v('sird')} % + ${t('merits')} ${sirdMerits} %`) : '');
   const levels = [c.master_level ? `ML ${c.master_level}` : '', c.jp_spent ? `${c.jp_spent} JP` : ''].filter(Boolean).join(' · ');
   const edited = Object.keys(S.meritEdits[meritKey()] || {}).length;
-  return `<div class="globals"><div class="kicker">${t('youTitle')}${edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''}</div>` +
-    `<ul class="statlist big">${main}</ul><ul class="statlist">${attrs}</ul>` +
-    `<div class="kicker sub">${t('gearKey')}</div><ul class="statlist">${gear}</ul>` +
+  return `<div class="globals">${buffPanelHTML()}<div class="kicker">${t('youTitle')}${edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''}</div>` +
+    `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul><ul class="statlist">${attrs}</ul>` +
+    `<div class="kicker sub">${t('gearKey')}</div><ul class="statlist">${gear}</ul>${tankHTML(r)}${offenseHTML(r, s)}` +
     `<p class="muted small">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
 }
 
@@ -1040,11 +1263,11 @@ function renderHome(){
 }
 function slotHTML(s, ci, slot, own, q, eff){
   const p = eff.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
-  if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="txt"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></span></button>`;
+  if (!p) return `<button class="slot empty ${eff.tried[slot]?'tried':''}" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="txt"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></span></button>`;
   const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
   const r = pieceStats(p), augmented = r && Object.keys(r.aug).length;
   // the full story (base / augments / where it comes from) is in the hover card (showTip)
-  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}` +
+  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${eff.tried[slot]?'tried':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}` +
     `<span class="txt"><span class="lbl">${label}</span><span class="item"><span class="nm">${esc(p.name)}</span>${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</span></span></button>`;
 }
 /* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
@@ -1126,7 +1349,10 @@ function withWeapons(s, ignore){
   if (grip) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
   for (const [m, v] of picks) fill(m, v, t('yourChoice', {v}), false);
-  return {pieces, from, stance: stanceWeapon};
+  // pieces tried in the page come last: they win over the set and the weapon modes
+  const tried = {}, tr = S._noTrial ? null : S.trial[trialKey(s)];
+  for (const [slot, p] of Object.entries(tr || {})) { if (p) pieces[slot] = p; else delete pieces[slot]; delete from[slot]; tried[slot] = true; }
+  return {pieces, from, stance: stanceWeapon, tried};
   function fill(m, v, why, onlyEmpty){
     for (const [slot, p] of Object.entries(m.sets[v].pieces)) {
       if (onlyEmpty && pieces[slot]) continue;
@@ -1160,9 +1386,9 @@ function cardHTML(card, ci, bypath, q){
   const variants = card.variants.length > 1 ? `<div class="variants" role="group">${card.variants.map((x,i) => `<button aria-pressed="${i===vi}" data-card="${ci}" data-variant="${i}">${esc(x.label)}</button>`).join('')}</div>` : '';
   const when = t('famWhen.'+card.fam);
   return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}${when?` <span class="when">· ${when}</span>`:''}</div>` +
-    `<div class="titleline"><h2>${esc(niceName(card))}</h2><code class="path">${esc(s.path)}</code></div>${variants}${weaponPicker(s)}</header>
+    `<div class="titleline"><h2>${esc(niceName(card))}</h2><code class="path">${esc(s.path)}</code></div>${variants}${weaponPicker(s)}${trialBar(s)}</header>
     <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer><div class="globals-inline">${globalsHTML(s)}</div>${setStatsHTML(s)}
-    <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span>${t('legendHover')}</span></div></article>`;
+    <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span><i class="try"></i>${t('legendTry')}</span><span>${t('legendHover')}</span></div></article>`;
 }
 function renderSets(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
@@ -1268,20 +1494,78 @@ function render(){
 /* ---- drawer ---- */
 function openSlot(ci, slot){
   const card = S._cards[ci]; const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
-  const s = card.variants[vi].set; const p = withWeapons(s).pieces[slot]; const own = new Set(s.own || Object.keys(s.pieces));
+  const s = card.variants[vi].set, eff = withWeapons(s), p = eff.pieces[slot];
   const label = SLOT_NAMES[S.lang][slot];
-  const seen = {}; for (const x of data().sets) { const q = x.pieces[slot]; if (q) seen[q.name] = (seen[q.name]||0)+1; }
-  const owned = (ofAnySub('items') || {})[slot];
-  const items = owned ? owned.map(n => [n, seen[n] || 0]) : Object.entries(seen).sort((a,b) => b[1]-a[1]);
-  const weap = withWeapons(s).from[slot];
-  const notes = !p ? t('drawerEmpty') : weap ? t('drawerWeap', {m: weap}) : (s.base && !own.has(slot)) ? t('drawerInh',{b:shortPath(s.base)}) : t('drawerOwn');
-  let html = `<div class="note">${esc(notes)}</div>${pieceStatsHTML(p)}`;
-  if (s.aliases && s.aliases.length) html += `<div class="note">${esc(t('drawerShared',{n:s.aliases.length}))}</div>`;
-  html += `<div class="choice"><div class="kicker">${t('yourItems')}</div>${items.map(([n,c]) => `<button type="button">${icon(n)}<span>${esc(n)}<small>${c ? t('seenIn',{n:c}) : t('inBags')}</small></span></button>`).join('')}</div>`;
+  S._drawer = {ci, slot, set: s};
+  const opts = S._drawOpts = pieceChoices(slot, p);
+  const same = o => p && o.piece && o.piece.name === p.name && (o.piece.augs || []).join('|') === (p.augs || []).join('|');
+  const acts = [eff.tried[slot] ? `<button class="btn ghost" data-tryreset>${t('tryReset')}</button>` : '',
+    p ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : ''].join('');
+  const list = opts.length ? opts.map((o, i) => { const r = pieceStats(o.piece), augs = o.piece.augs || [];
+    const where = [o.owned ? t('inBag') : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
+    return `<button type="button" class="${same(o) ? 'cur' : ''}" data-try="${i}">${icon(o.piece.name)}<span>` +
+      `<span>${esc(o.piece.name)}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</span>` +
+      `${augs.length ? `<span class="augl">◆ ${esc(augs.filter(a => !/^Path:/.test(a)).join(' · ') || augs.join(' · '))}</span>` : ''}<small>${esc(where)}</small></span></button>`; }).join('')
+    : `<p class="note">${t('noOwned')}</p>`;
+  let html = `<p class="muted small">${t('pickHint')}</p>` +
+    `${acts ? `<div class="drawacts">${acts}</div>` : ''}<input id="drawq" class="drawq" type="search" placeholder="${t('drawSearch')}" autocomplete="off" spellcheck="false">` +
+    `<div class="choice">${list}</div>`;
   $('#overlay').innerHTML = `<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="${label}">
     <header><small>${esc(niceName(card))} · <span style="font-family:var(--mono)">${esc(s.path)}</span></small><h3>${label} : ${p?esc(p.name):'—'}</h3></header>
-    <div class="body">${html}</div><footer><button class="btn ghost" data-close>${t('close')}</button><button class="btn" data-close>${t('apply')}</button></footer></aside>`;
+    <div class="body">${html}</div><footer><button class="btn ghost" data-close>${t('close')}</button></footer></aside>`;
   $('#overlay').hidden = false;
+}
+// What the drawer offers for a slot: each copy in the bags the job can wear (with its own
+// augments), then the pieces the job's sets name and the bags do not hold; the most used first
+function pieceChoices(slot, current){
+  const seen = {}, d = data();
+  for (const x of d.sets) { const q = x.pieces[slot]; if (q) seen[q.name] = (seen[q.name] || 0) + 1; }
+  const owned = (ofAnySub('owned') || {})[slot], names = (ofAnySub('items') || {})[slot] || [];
+  const list = owned ? owned.map(x => ({piece: {name: x.name, augs: x.augs}, owned: true}))
+    : names.map(n => ({piece: {name: n}, owned: true}));
+  const have = new Set(list.map(o => o.piece.name));
+  for (const x of d.sets) { const q = x.pieces[slot];
+    if (q && !have.has(q.name)) { have.add(q.name); list.push({piece: {name: q.name, augs: q.augs}, owned: false}); } }
+  if (current && !have.has(current.name)) list.push({piece: current, owned: false});
+  for (const o of list) o.seen = seen[o.piece.name] || 0;
+  return list.sort((a, b) => (b.owned - a.owned) || (b.seen - a.seen) || a.piece.name.localeCompare(b.piece.name));
+}
+/* ---- pieces tried in the page ---- */
+const trialKey = s => S.char + '|' + S.job + '|' + s.path;
+const trialCount = s => Object.keys(S.trial[trialKey(s)] || {}).length;
+function setTrial(s, slot, piece){
+  const k = trialKey(s), tr = S.trial[k] = S.trial[k] || {};
+  if (piece === undefined) delete tr[slot]; else tr[slot] = piece;
+  if (!Object.keys(tr).length) delete S.trial[k];
+}
+// The same set without the tried pieces (what the differences compare to)
+function withoutTrial(fn){ S._noTrial = true; try { return fn(); } finally { S._noTrial = false; } }
+function trialBar(s){
+  const n = trialCount(s);
+  if (!n) return '';
+  return `<div class="trybar"><span>${t('tryBar', {n: `<b>${n}</b>`})}</span><span class="sp"></span>` +
+    `<button class="btn ghost" data-trylua>${t('tryLua')}</button><button class="btn ghost" data-tryundo>${t('tryUndo')}</button></div>`;
+}
+// The tried pieces as a set_combine to paste in the sets file
+function trialLua(s){
+  const q = v => '"' + String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  const tr = S.trial[trialKey(s)] || {};
+  const lines = SLOTS.filter(slot => slot in tr).map(slot => { const p = tr[slot];
+    return `    ${slot} = ${!p ? 'empty' : p.augs && p.augs.length ? `{ name = ${q(p.name)}, augments = { ${p.augs.map(q).join(', ')} } }` : q(p.name)},`; });
+  return `-- Tried in the Atelier\n${s.path} = set_combine(${s.path}, {\n${lines.join('\n')}\n})\n`;
+}
+function openLua(s){
+  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog" role="dialog" aria-label="${t('luaTitle')}"><header><h3>${t('luaTitle')}</h3></header>
+    <div class="body"><textarea class="luabox" id="luabox" readonly spellcheck="false">${esc(trialLua(s))}</textarea></div>
+    <footer><button class="btn ghost" data-close>${t('close')}</button><button class="btn" data-copylua>${t('copy')}</button></footer></div>`;
+  $('#overlay').hidden = false;
+}
+function copyLua(btn){
+  const box = $('#luabox'); if (!box) return;
+  const done = () => { btn.textContent = t('copied'); };
+  box.select();
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(box.value).then(done, () => { document.execCommand('copy'); done(); });
+  else { document.execCommand('copy'); done(); }
 }
 /* ---- add set ---- */
 let addStep = 0, addFam = null, addBase = null;
@@ -1311,6 +1595,16 @@ document.addEventListener('click', e => {
   if (d.pick) { S.sel[S.job] = +d.pick; render(); return; }
   if (d.variant) { S.variant[S.job+'|'+d.card] = +d.variant; render(); return; }
   if (d.slot) { openSlot(+d.card, d.slot); return; }
+  if (d.try != null && S._drawer) { const o = S._drawOpts[+d.try]; setTrial(S._drawer.set, S._drawer.slot, {name: o.piece.name, augs: o.piece.augs});
+    $('#tip').hidden = true; closeOverlay(); render(); return; }
+  if ('tryreset' in d && S._drawer) { setTrial(S._drawer.set, S._drawer.slot, undefined); closeOverlay(); render(); return; }
+  if ('tryempty' in d && S._drawer) { setTrial(S._drawer.set, S._drawer.slot, null); closeOverlay(); render(); return; }
+  if ('tryundo' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); delete S.trial[trialKey(s)]; render(); return; }
+  if ('trylua' in d) { openLua(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
+  if ('copylua' in d) { copyLua(b); return; }
+  if ('bufftoggle' in d) { S.buffsOpen = !S.buffsOpen; render(); return; }
+  if ('buffreset' in d) { S.buffs[S.char] = {}; render(); return; }
+  if (d.ja) { const b0 = buffState(), ja = b0.ja = b0.ja || {}; if (ja[d.ja]) delete ja[d.ja]; else ja[d.ja] = 1; render(); return; }
   if (d.action==='add') { addStep = 0; renderAdd(); return; }
   if (d.action==='meritreset') { delete S.meritEdits[meritKey()]; render(); return; }
   if (d.addfam) { addFam = d.addfam; addStep = 1; renderAdd(); return; }
@@ -1320,6 +1614,9 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'setq') { S.q = e.target.value; render(); }
+  // the drawer's search: hides the pieces that do not match, nothing re-drawn
+  if (e.target.id === 'drawq') { const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('.choice [data-try]').forEach(el => { el.hidden = q && !el.textContent.toLowerCase().includes(q); }); }
   // a merit level typed in the Merits tab: kept while it differs from the game's
   if (e.target.classList.contains('meritin')) {
     const m = (meritList() || []).find(x => x.key === e.target.dataset.merit), v = parseInt(e.target.value, 10);
@@ -1331,12 +1628,18 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
+  if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
+    if (e.target.value === '') delete b0[k]; else b0[k] = e.target.value; render(); }
   if (e.target.classList.contains('weapsel')) { const k = S.char + '|' + S.job + '|' + e.target.dataset.mode;
     if (e.target.value) S.weapons[k] = e.target.value; else delete S.weapons[k]; render(); }
 });
 /* ---- the hover card of a piece: what it brings, base and augments apart ---- */
 function tipHTML(card, slot){
-  const s = shownSet(card.c, card.i), eff = withWeapons(s), p = eff.pieces[slot];
+  const s = shownSet(card.c, card.i);
+  return pieceTip(withWeapons(s).pieces[slot], slot);
+}
+// The hover card of one piece (a set's, or one offered in the drawer)
+function pieceTip(p, slot){
   const label = SLOT_NAMES[S.lang][slot];
   if (!p) return `<div class="th">${icon(null)}<div><b>${label}</b><small>${slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty')}</small></div></div>`;
   const r = pieceStats(p);
@@ -1358,9 +1661,16 @@ function tipHTML(card, slot){
 }
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
-  const tip = $('#tip'), ci = +el.dataset.card, card = S._cards && S._cards[ci];
-  if (!card) return;
-  tip.innerHTML = tipHTML({c: card, i: ci}, el.dataset.slot);
+  const tip = $('#tip');
+  if (el.dataset.try != null) {
+    const o = (S._drawOpts || [])[+el.dataset.try];
+    if (!o || !o.piece) return;
+    tip.innerHTML = pieceTip(o.piece, S._drawer.slot);
+  } else {
+    const ci = +el.dataset.card, card = S._cards && S._cards[ci];
+    if (!card) return;
+    tip.innerHTML = tipHTML({c: card, i: ci}, el.dataset.slot);
+  }
   tip.classList.toggle('wide', tip.querySelectorAll('.r').length > 6);
   tip.hidden = false;
   const b = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
@@ -1368,8 +1678,9 @@ function showTip(el){
   tip.style.left = left + 'px';
   tip.style.top = Math.max(8, Math.min(b.top, innerHeight - h - 8)) + 'px';
 }
-document.addEventListener('mouseover', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });
-document.addEventListener('mouseout', e => { if (e.target.closest('.slot[data-slot]') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.slot[data-slot]'))) $('#tip').hidden = true; });
+const TIPPED = '.slot[data-slot], .choice [data-try]';
+document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED); if (el) showTip(el); });
+document.addEventListener('mouseout', e => { if (e.target.closest(TIPPED) && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(TIPPED))) $('#tip').hidden = true; });
 document.addEventListener('focusin', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });
 document.addEventListener('focusout', e => { if (e.target.closest('.slot[data-slot]')) $('#tip').hidden = true; });
 document.addEventListener('scroll', () => { $('#tip').hidden = true; }, true);
