@@ -532,10 +532,10 @@ let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
 let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, meritEdits:{}, q:'', lang:'fr', theme:null,
-  trial:{}, buffs:{}, buffsOpen:false, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}};
+  trial:{}, buffs:{}, buffsOpen:false, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim'];
+const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 const $ = s => document.querySelector(s);
@@ -1735,7 +1735,10 @@ function renderSim(d){
   const st = simState(), acts = (S._simActions && S._simActions.list) || null, q = (st.q || '').toLowerCase();
   // groups: each magic skill of the main and sub (Healing, Enhancing...), one Trust row, abilities, weaponskills
   const row = (k, n, label) => `<button class="setrow" data-simpick="${k}|${esc(n)}" aria-current="${st.kind === k && st.name === n}"><b>${esc(label || n)}</b></button>`;
-  const group = (label, rows) => rows.length ? `<div class="fam static"><span>${esc(label)}</span><span>${rows.length}</span></div>` + rows.join('') : '';
+  // closed until opened (a search opens them all); the group of the chosen action is marked
+  const group = (label, rows, names) => { if (!rows.length) return '';
+    const key = S.job + '|' + label, open = !!q || !!S.simOpen[key], here = st.name && (names || []).includes(st.name);
+    return `<button class="fam ${here ? 'here' : ''}" data-simgroup="${esc(key)}" aria-expanded="${open}"><span>${esc(label)}</span><span>${rows.length}</span></button>` + (open ? rows.join('') : ''); };
   // the target chosen narrows the list: on me, what can aim at oneself; on the enemy, what can aim at one
   const aimOk = n => { const a = (acts && acts.aim || {})[n]; return st.target === 'auto' || !a || a === 'both' || a === (st.target === 'me' ? 'me' : 'enemy'); };
   const match = n => (!q || n.toLowerCase().includes(q)) && aimOk(n);
@@ -1743,10 +1746,10 @@ function renderSim(d){
   if (acts) {
     const magic = acts.magic || (acts.ma && acts.ma.length ? {Magic: acts.ma} : {});
     const order = Object.keys(magic).sort((a, b) => (MAGIC_ORDER.indexOf(a) + 1 || 99) - (MAGIC_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
-    pick = order.map(sk => group(magicLabel(sk), magic[sk].filter(match).map(n => row('ma', n)))).join('') +
-      (acts.trust && (!q || 'trust'.includes(q)) && st.target !== 'enemy' ? group('Trust', [row('ma', acts.trust, t('simTrust'))]) : '') +
-      group(t('simAbilities'), (acts.ja || []).filter(match).map(n => row('ja', n))) +
-      group(t('simWs'), (acts.ws || []).filter(match).map(n => row('ws', n)));
+    pick = order.map(sk => group(magicLabel(sk), magic[sk].filter(match).map(n => row('ma', n)), magic[sk])).join('') +
+      (acts.trust && (!q || 'trust'.includes(q)) && st.target !== 'enemy' ? group('Trust', [row('ma', acts.trust, t('simTrust'))], [acts.trust]) : '') +
+      group(t('simAbilities'), (acts.ja || []).filter(match).map(n => row('ja', n)), acts.ja) +
+      group(t('simWs'), (acts.ws || []).filter(match).map(n => row('ws', n)), acts.ws);
   }
   const chip = (key, v, label) => `<button data-simopt="${key}|${v}" aria-pressed="${String(st[key]) === String(v)}">${label}</button>`;
   const modes = d.modes.filter(m => m.values.length > 1 && m.values.length <= 12 && !HIDDEN_MODES.has(m.name) && !/^[A-Z]{3}Song\d$/.test(m.name));
@@ -2280,6 +2283,7 @@ document.addEventListener('click', e => {
   if (d.wmode) { const k = S.char + '|' + S.job + '|' + d.wmode; if (d.wval) S.weapons[k] = d.wval; else delete S.weapons[k]; render(); return; }
   if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
   if (d.simpick) { const [k, ...n] = d.simpick.split('|'); Object.assign(simState(), {kind: k, name: n.join('|')}); simRun(); return; }
+  if (d.simgroup) { S.simOpen[d.simgroup] = !S.simOpen[d.simgroup]; render(); return; }
   if (d.simopt) { const [k, v] = d.simopt.split('|'), st = simState(); st[k] = v;
     // an action the new target leaves out of the list is dropped
     const aim = S._simActions && S._simActions.list && S._simActions.list.aim || {}, a = aim[st.name];
