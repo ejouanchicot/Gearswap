@@ -14,6 +14,11 @@
 ---   Enlight) or it is on recast, and skipped when it was used seconds ago
 ---   (double press). Tiers of one buff, best first (Refresh III, Refresh II,
 ---   Refresh): the first one available goes, the others are left out.
+---   `$State` in a name is the value of that state ('$GainSpell' -> the Gain
+---   chosen in RDM's GainSpell state); left out when the job has no such
+---   state or it is Off. A plain list inside the list is a group of
+---   alternatives ({'$EnSpell II', '$EnSpell'}): nothing when one is up, else
+---   the first ready (for tiers whose buffs have different names).
 ---   A few names keep a rule of their own:
 ---     Warcry       Blood Rage instead while Warcry is on cooldown (WAR main)
 ---     Hasso, Seigan  only with a two-handed weapon in hand
@@ -238,6 +243,71 @@ end
 --- @param list table Names or entries
 --- @return table to_cast Resolved entries ({name, is_ability, wait...})
 --- @return table status List of {name, status, time?, value?, extra?}
+--- `$State` in a name: the value of that Mote state ('$GainSpell' ->
+--- 'Gain-STR', '$EnSpell II' -> 'Enfire II'). nil when the job has no such
+--- state or it is Off / None, so the entry is left out.
+--- @param name string
+--- @return string|nil
+local function expand(name)
+    if type(name) ~= 'string' or not name:find('%$') then return name end
+    local missing = false
+    local out = name:gsub('%$([%w_]+)', function(key)
+        local st = rawget(_G, 'state') and state[key]
+        local value = st and (st.value or st.current)
+        if type(value) ~= 'string' or value == '' or value:lower() == 'off' or value:lower() == 'none' then
+            missing = true
+            return ''
+        end
+        return value
+    end)
+    return not missing and out or nil
+end
+
+--- An entry with its `$State` names replaced, or nil.
+local function expanded(entry)
+    if type(entry) == 'string' then return expand(entry) end
+    if type(entry) ~= 'table' then return nil end
+    local copy = {}
+    for k, v in pairs(entry) do copy[k] = v end
+    for _, key in ipairs({'name', 'spell', 'ability'}) do
+        if copy[key] ~= nil then
+            copy[key] = expand(copy[key])
+            if copy[key] == nil then return nil end
+        end
+    end
+    return copy
+end
+
+--- A group of alternatives: a plain list ({'$EnSpell II', '$EnSpell'}),
+--- not an entry ({name = ...}).
+local function is_group(entry)
+    return type(entry) == 'table' and entry[1] ~= nil
+        and entry.name == nil and entry.spell == nil and entry.ability == nil
+end
+
+--- One of a group: nothing when one of them is up, else the first ready
+--- (tiers whose buffs carry different names: Enfire II / Enfire).
+local function collect_group(group, ctx, to_cast, status)
+    local items = {}
+    for _, alt in ipairs(group) do
+        local item = resolve(expanded(alt), ctx.res)
+        if item and usable(item, ctx) then items[#items + 1] = item end
+    end
+    for _, item in ipairs(items) do
+        if item.buff and buffactive[item.buff] then
+            table.insert(status, {name = item.name, status = 'active'})
+            return
+        end
+    end
+    for _, item in ipairs(items) do
+        if is_recast_ready(recast_of(item, ctx)) then
+            collect_item(item, ctx, to_cast, status)
+            return
+        end
+    end
+    if items[1] then collect_item(items[1], ctx, to_cast, status) end
+end
+
 function SelfBuffManager.collect(list)
     local to_cast, status = {}, {}
     local res = resources()
@@ -247,16 +317,23 @@ function SelfBuffManager.collect(list)
     -- one is up or queued, the others of that buff are left out; a tier on
     -- recast lets the next one go
     local covered = {}
-    for _, entry in ipairs(list) do
-        local name = type(entry) == 'table' and (entry.name or entry.ability or entry.spell) or entry
-        if SPECIAL[name] then
-            SPECIAL[name](ctx, to_cast, status)
+    for _, raw_entry in ipairs(list) do
+        if is_group(raw_entry) then
+            collect_group(raw_entry, ctx, to_cast, status)
         else
-            local item = resolve(entry, res)
-            if item and usable(item, ctx) and not (item.buff and covered[item.buff]) then
-                local outcome = collect_item(item, ctx, to_cast, status)
-                if item.buff and (outcome == 'active' or outcome == 'queued' or outcome == 'spam') then
-                    covered[item.buff] = true
+            local entry = expanded(raw_entry)
+            local name = type(entry) == 'table' and (entry.name or entry.ability or entry.spell) or entry
+            if entry == nil then
+                -- a `$State` the job does not have, or Off
+            elseif SPECIAL[name] then
+                SPECIAL[name](ctx, to_cast, status)
+            else
+                local item = resolve(entry, res)
+                if item and usable(item, ctx) and not (item.buff and covered[item.buff]) then
+                    local outcome = collect_item(item, ctx, to_cast, status)
+                    if item.buff and (outcome == 'active' or outcome == 'queued' or outcome == 'spam') then
+                        covered[item.buff] = true
+                    end
                 end
             end
         end

@@ -5,7 +5,9 @@
 ---   1. the job's own buffs when its files give some (_G.job_buff_extra:
 ---      DNC's dance and samba, chosen with its states);
 ---   2. the main job's list (`job` of _common/combat/BUFF_CONFIG.lua);
----   3. the subjob's list (`subjob`), unless the subjob is disabled here.
+---   3. the list of the weapon in hand (`weapon`, any job: Naegling ->
+---      Gain and Enspell for a melee RDM);
+---   4. the subjob's list (`subjob`), unless the subjob is disabled here.
 --- Each list goes through shared/utils/buffs/self_buff_manager.lua: what is
 --- up, on recast or out of reach is skipped; the rest goes one action after
 --- the other. Nothing set for these jobs: a warning naming the file.
@@ -38,6 +40,15 @@ function BuffCommand.apply()
     end
     if type(cfg.job[main or '']) == 'table' and #cfg.job[main] > 0 then
         local a, s = Engine.collect(cfg.job[main])
+        append(to_cast, a); append(status, s); lists = lists + 1
+    end
+    local weapon = player and player.equipment and player.equipment.main
+    if (not weapon or weapon == '' or weapon == 'empty') and rawget(_G, 'state') and state.MainWeapon then
+        weapon = state.MainWeapon.value
+    end
+    local weapon_list = type(cfg.weapon) == 'table' and cfg.weapon[weapon or '']
+    if type(weapon_list) == 'table' and #weapon_list > 0 then
+        local a, s = Engine.collect(weapon_list)
         append(to_cast, a); append(status, s); lists = lists + 1
     end
     if (player and player.sub_job_level or 0) > 0 and type(cfg.subjob[sub or '']) == 'table'

@@ -39,6 +39,11 @@ BuffConfig.DEFAULTS = {
         MNK = {'Impetus', 'Focus'},
         RNG = {'Velocity Shot'},
     },
+    -- Added for the weapon in hand, on any job. `$GainSpell` / `$EnSpell`:
+    -- the spell chosen in RDM's states; {II, I}: the first ready of the two
+    weapon = {
+        Naegling = {'$GainSpell', {'$EnSpell II', '$EnSpell'}},
+    },
     subjob = {
         WAR = {'Berserk', 'Aggressor', 'Warcry'},
         SAM = {'Hasso', 'Third Eye'},
@@ -52,7 +57,7 @@ BuffConfig.DEFAULTS = {
     wait_after_ability = 0.5,
 }
 
-local PER_JOB = {job = true, subjob = true}
+local PER_JOB = {job = true, subjob = true, weapon = true}
 
 --- The settings: defaults with the character's file over them.
 --- @return table

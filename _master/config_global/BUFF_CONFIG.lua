@@ -47,6 +47,14 @@ return {
         RNG = {'Velocity Shot'},
     },
 
+    -- Added after the job's list when this weapon is in hand (any job).
+    -- `$GainSpell`, `$EnSpell`: the spell chosen in that state (RDM's states;
+    -- left out on a job without them). {'$EnSpell II', '$EnSpell'}: the first
+    -- ready of the two, nothing if one is already up.
+    weapon = {
+        Naegling = {'$GainSpell', {'$EnSpell II', '$EnSpell'}},
+    },
+
     -- Your subjob's buffs (added after the main job's)
     -- Example: WAR = {'Aggressor', 'Warcry'} keeps Berserk off while tanking
     subjob = {
