@@ -85,7 +85,7 @@ _G.precast = function(spell)
 end
 ```
 
-`WarpPrecast.handle_precast(spell)` returns unless `spell.action_type == 'Magic'` and `WarpDetector.is_warp_spell(spell)` (exact name in `WARP_SPELLS`, 13 spells, else any name containing `warp`, `teleport`, `recall`, `retrace` or `escape`, case-insensitive). Then `force_fc(spell)` does `equip(sets.precast.FC)` and prints `show_force_fc` (the `force_fc` template, one chat line per transport spell); a missing `sets.precast.FC` prints `show_precast_fc_warning` instead. `WarpEquipment.on_warp_spell()` is then called and does nothing.
+`WarpPrecast.handle_precast(spell)` returns unless `spell.action_type == 'Magic'` and `WarpDetector.is_warp_spell(spell)` (exact name in `WARP_SPELLS`, 13 spells, else any name containing `warp`, `teleport`, `recall`, `retrace` or `escape`, case-insensitive). Then `force_fc(spell)` does `equip(sets.precast.FC)` and prints `show_force_fc` (the `force_fc` template, one chat line per transport spell); a missing `sets.precast.FC` prints `show_precast_fc_warning` instead.
 
 Position in the precast lifecycle ([precast-pipeline.md](precast-pipeline.md)):
 
@@ -281,10 +281,8 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 |---|---|---|
 | `cast_spell(spell_name)` | 99 | Gate, message, `/ma "<spell>" <me>`, true; false with a message otherwise. Caller: `cast_with_fallback` |
 | `can_cast(spell_name)` | 146 | Gate only. No caller |
-| `get_required_level(spell_name)` | 154 | Level from the two tables. No caller |
-| `is_blm_spell(name)`, `is_whm_spell(name)` | 161, 168 | No caller |
 
-`CastHelpers` (`casting/cast_helpers.lua`): `has_item(item_name, item_id)` (24; inventory and wardrobes 1-8 by name key, match by id or by `res.items[id].en`, case-insensitive; caller `use_ring`), `RING_IDS` (72), `get_ring_id(name)` (88; caller `use_ring`), `has_ring(name)` (95, no caller).
+`CastHelpers` (`casting/cast_helpers.lua`): `has_item(item_name, item_id)` (24; inventory and wardrobes 1-8 by name key, match by id or by `res.items[id].en`, case-insensitive; caller `use_ring`), `RING_IDS` (72), `get_ring_id(name)` (88; caller `use_ring`).
 
 `WarpIPC` (`warp_ipc.lua`)
 
@@ -293,7 +291,6 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 | `send_to_all(command)` | 154 | Whitelist, flags, local run +0.3 s, IPC +0.5 s, reset +2.5 s. Returns false when not whitelisted. Caller: `warpcommands_handle_command_all` |
 | `init()` | 134 | Registers `handle_ipc_message` on `windower._warp_ipc_event_id`. No caller (the live listener is `warp_ipc_register.lua`) |
 | `is_initialized()` | 206 | True when `send_ipc_message` and `register_event` exist. No caller |
-| `get_allowed_commands()` | 212 | `Registry.COMMANDS`. No caller |
 
 `warp_ipc_register.lua` is a script, not a module: it returns nothing and exposes nothing; `include`-ing it registers the listener.
 
@@ -303,7 +300,6 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 |---|---|---|
 | `init()` | 65 | Bootstrap above. Caller: the deferred block of `INIT_SYSTEMS.lua`, every load |
 | `is_initialized()` | 121 | Per sandbox. Callers: `command_status`, `system_checker.lua` `check_warp` |
-| `handle_warp_spell(spell)` | 127 | `WarpPrecast.handle_precast(spell, nil)`. No caller |
 
 `WarpDetector` (`warp_detector.lua`)
 
@@ -317,7 +313,7 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 | `init_action_listener()` | 167 | Clears the callbacks, then subscribes to `ActionListener` under `warp_detector` (subscribing again replaces). Caller: `WarpEquipment.init` |
 | `get_warp_spells()` | 207 | 13 names. Caller: `command_test` |
 | `get_warp_items()` | 219 | Unique database ids, walked per destination (65). Caller: `command_test` |
-| `get_items_by_destination(key)`, `count_warp_items()`, `ItemDB` | 237, 250, 255 | No caller |
+| `get_items_by_destination(key)`, `ItemDB` | 237, 249 | No caller |
 | `get_all_destinations()` | 244 | No caller; would raise (the database has no such function; the comment says so) |
 
 `WarpEquipment` (`warp_equipment.lua`)
@@ -326,13 +322,12 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 |---|---|---|
 | `lock(warp_type, duration, tag, slot)` | 36 | `disable(slot)` or all 16 slots, flag, auto-unlock after `(duration or 15) + 3` s. Caller: `command_lock`, `on_warp_item` |
 | `unlock(is_timeout, tag)` | 78 | No-op unless the flag is set; `enable`, message, `gs c update` after 0.5 s. Callers: the auto-unlock, `force_unlock` |
-| `on_warp_spell(spell)` | 127 | No-op. Caller: `WarpPrecast.handle_precast` |
 | `on_warp_item(warp_data)` | 135 | `ring` -> `ring1`, tag `TELE` for teleport names, `lock('item', ...)`. Caller: the detector callback (never fires) |
 | `init()` | 164 | Callback + `init_action_listener()`. Caller: `WarpInit.init` |
 | `is_locked()`, `get_warp_type()` | 191, 197 | Callers: `command_status`, `command_unlock`, `command_lock` |
 | `force_unlock(tag)` | 203 | `unlock(false, tag)`. Caller: `command_unlock` |
 
-`WarpPrecast` (`warp_precast.lua`): `force_fc(spell)` (25), `handle_precast(spell, eventArgs)` (56; callers the `_G.precast` wrapper and `WarpInit.handle_warp_spell`; `eventArgs` unused), `global_precast_hook(spell, eventArgs)` (85, no caller), `init()` (98, silent message; caller `WarpInit.init`).
+`WarpPrecast` (`warp_precast.lua`): `force_fc(spell)` (25), `handle_precast(spell, eventArgs)` (56; caller the `_G.precast` wrapper; `eventArgs` unused), `init()` (98, silent message; caller `WarpInit.init`).
 
 `WarpDatabase` (`database/warp_database_core.lua`, also reached as `warp_item_database`)
 
@@ -343,7 +338,6 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 | `get_item_by_id(id)` | 195 | `data, destination`; searches cached modules first, then loads the rest. Callers: `use_now` (`item_user.lua`), `WarpDetector.is_warp_item` |
 | `get_all_item_names()` | 230 | 65 names. Callers: `wardrobe/lib/items.lua` `add_always_kept`, `wardrobe/lib/reports.lua`, `wardrobe/lib/warp_owned.lua` `scan` |
 | `count_total_items()` | 251 | 65 today. Callers: `command_status`, `command_test` |
-| `can_player_use_item(data)` | 271 | No caller |
 
 Each database module (`HomeDB`, `TeleportsDB`, `NationsDB`, `CitiesDB`, `CombinedDB`) exposes `get_items(key)`, `get_item_by_id(id)` and `count_items()`, called only by the core.
 
@@ -561,7 +555,7 @@ Still open:
 - Automatic item-use lock never engages: callbacks cleared after registration, item id read from `act.param` (`WarpEquipment.init`, `WarpDetector.init_action_listener`). Documented in the `init()` comment; kept inactive on purpose.
 - No single-flight guard: a second ring command during the wait starts a parallel chain (`use_ring`, `_wait_for_ring_usable`).
 - Database names or ids that do not match `res/items.lua` (`warp_database_adoulin_special_mechanics.lua`, special locations).
-- Dead code: `WarpIPC.init` / `handle_ipc_message` / `is_initialized` / `get_allowed_commands`, `WarpDetector.has_blm` / `has_whm` / `get_items_by_destination` / `get_all_destinations` / `count_warp_items`, `SpellCaster.can_cast` / `get_required_level` / `is_*_spell`, `CastHelpers.has_ring`, `WarpPrecast.global_precast_hook`, `WarpInit.handle_warp_spell`, `WarpDatabase.can_player_use_item`, `command_debugwarp` in `warp_commands.lua`.
+- Dead code: `WarpIPC.init` / `handle_ipc_message` / `is_initialized`, `WarpDetector.has_blm` / `has_whm` / `get_items_by_destination` / `get_all_destinations`, `SpellCaster.can_cast`, `command_debugwarp` in `warp_commands.lua`.
 - `//gs c warp unlock` cannot release the ring sequence's `ring1` lock (`command_unlock`).
 - `warp help` says `warp lock` locks for 10 s; the lock lasts 13 s (`lock('manual', 10)` + 3). `warp ipctest` is not in the help (`message_warp.lua` `HELP`).
 - `syscheck` reports the warp system as initialised from `windower._warp_init_done`, even when this sandbox's `init()` failed (`system_checker.lua` `check_warp`).
