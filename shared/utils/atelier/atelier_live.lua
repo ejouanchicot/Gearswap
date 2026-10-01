@@ -10,7 +10,8 @@
 ---   GET  /export               the loaded job's data (AtelierExport.build)
 ---   POST /save?file=<name>     writes <Char>/saved/<name>: keybind_overrides.lua
 ---                              or set_overrides.lua only
----   POST /reload               //gs reload, so a saved change is worn now
+---   POST /reload[?full=1]      //gs reload (so a saved change is worn now), or the
+---                              whole addon: //lua r gearswap
 ---
 --- Every request but the browser's preflight carries the token written in
 --- data/atelier/live_<Character>.js, a file only a page on this disk can read:
@@ -112,7 +113,10 @@ local function route(req, live)
         return '200 OK', Export.json({ok = true, file = file})
     end
     if req.path == '/reload' and req.method == 'POST' then
-        coroutine.schedule(function() windower.send_command('gs reload') end, 0.3)
+        -- ?full=1: the whole addon (lua r gearswap); the door closes with it and the new
+        -- GearSwap opens another one (AtelierExport.after_load), the page reads its new file
+        local full = req.query:match('full=1') ~= nil
+        coroutine.schedule(function() windower.send_command(full and 'lua r gearswap' or 'gs reload') end, 0.3)
         return '200 OK', '{"ok":true}'
     end
     return '404 Not Found', '{"error":"path"}'
