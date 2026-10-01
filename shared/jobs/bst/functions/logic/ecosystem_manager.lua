@@ -131,27 +131,6 @@ function EcosystemManager.equip_pet_broth()
     end
 end
 
----   Cycle ammoSet (cycle through pets for current ecosystem/species)
----   No caller in the project
-function EcosystemManager.cycle_ammo()
-    if not state or not state.ammoSet then
-        return
-    end
-
-    -- Cycle to next pet
-    state.ammoSet:cycle()
-
-    -- Schedule broth equipping (0.1s delay)
-    coroutine.schedule(function()
-        EcosystemManager.equip_pet_broth()
-    end, 0.1)
-
-    -- Update UI
-    if _G.KeybindUI and _G.KeybindUI.update then
-        _G.KeybindUI.update()
-    end
-end
-
 
 ---   Count jugs in inventory for a specific species
 ---   @param ecosystem string Ecosystem name

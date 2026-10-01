@@ -23,7 +23,7 @@ local res = require('resources')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PERFORMANCE CACHING (3 LAYERS)
+---   PERFORMANCE CACHING (2 LAYERS)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Cache Layer 1: Pet Mode (1.0s duration)
@@ -34,15 +34,7 @@ local cached_pet_mode = {
 }
 local PET_MODE_CACHE_DURATION = 1.0  -- Increased from 0.1s (pet rarely appears/disappears)
 
--- Cache Layer 2: Pet Status (0.5s duration)
-local pet_status_cache = {
-    status = nil,
-    timestamp = 0,
-    pet_id = nil
-}
-local PET_STATUS_CACHE_DURATION = 0.5  -- Increased from 0.1s (status changes aren't instant)
-
--- Cache Layer 3: Ready Moves (30s duration - Ready Moves only change when pet changes)
+-- Cache Layer 2: Ready Moves (30s duration - Ready Moves only change when pet changes)
 local ready_moves_cache = {
     moves = {},
     timestamp = 0
@@ -76,98 +68,9 @@ function PetManager.get_pet_mode()
     return cached_pet_mode
 end
 
----   Check if pet is valid (uses cache)
----   @param pet table Pet object (optional, will fetch if nil)
----   @return boolean is_valid True if pet is valid
-function PetManager.is_pet_valid(pet)
-    if not pet then
-        pet = windower.ffxi.get_mob_by_target('pet')
-    end
-
-    PetManager.update_pet_mode(pet)
-    return cached_pet_mode.pet_valid
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   PET STATUS TRACKING
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Get pet status (Idle or Engaged) with caching
----   @param pet table Pet object (optional, will fetch if nil)
----   @return string status "Idle", "Engaged", or nil
-function PetManager.get_pet_status(pet)
-    if not pet then
-        pet = windower.ffxi.get_mob_by_target('pet')
-    end
-
-    if not pet or not pet.isvalid then
-        return nil
-    end
-
-    local current_time = os.clock()
-    local pet_id = pet.id
-
-    -- Check cache validity (same pet + within cache duration)
-    if pet_status_cache.pet_id == pet_id and
-       current_time - pet_status_cache.timestamp < PET_STATUS_CACHE_DURATION then
-        return pet_status_cache.status
-    end
-
-    -- Update cache
-    pet_status_cache.status = pet.status
-    pet_status_cache.timestamp = current_time
-    pet_status_cache.pet_id = pet_id
-
-    return pet.status
-end
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PET AUTO-ENGAGE SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
-
----   Check and auto-engage pet if conditions met
----   CONDITIONS:
----   1. AutoPetEngage state is 'On'
----   2. Player is Engaged
----   3. Pet is valid
----   4. Pet is NOT already engaged (state.PetEngaged == "false" - STRING!)
----
----   @param pet table Pet object (optional, will fetch if nil)
----   @return boolean engaged True if pet was engaged, false otherwise
-function PetManager.check_and_engage_pet(pet)
-    -- Condition 1: Auto-engage enabled
-    if not state or not state.AutoPetEngage or state.AutoPetEngage.value ~= 'On' then
-        return false
-    end
-
-    -- Condition 2: Player is engaged (live API - _G.player is stale between events)
-    local live_player = windower.ffxi.get_player()
-    if not live_player or live_player.status ~= 1 then
-        return false
-    end
-
-    -- Condition 3: Pet is valid
-    if not pet then
-        pet = windower.ffxi.get_mob_by_target('pet')
-    end
-    if not pet or not pet.id or pet.id == 0 then
-        return false
-    end
-
-    -- Condition 4: Pet is NOT already engaged
-    if not state.PetEngaged or state.PetEngaged.value ~= 'false' then
-        return false
-    end
-
-    -- All conditions met - engage pet
-    windower.send_command('input /pet "Fight" <t>')
-    MessageFormatter.show_bst_pet_engage()
-
-    if state.PetEngaged then
-        state.PetEngaged:set('true')
-    end
-    return true
-end
 
 ---   Disengage pet
 ---   @return void
@@ -258,57 +161,6 @@ end
 ---   @return table ready_moves Array of {id, name, element, mp_cost}
 function PetManager.get_ready_moves()
     return PetManager.update_ready_moves(false)
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   PET STATUS MONITORING (for auto-engage)
----  ═══════════════════════════════════════════════════════════════════════════
-
--- Debouncing: at most one live pet check per MONITOR_DEBOUNCE seconds
-local last_monitor_time = 0
-local MONITOR_DEBOUNCE = 1.0  -- Don't update more than once per 1.0s (matches monitoring interval)
-
----   Monitor pet status changes and update state.PetEngaged
----   Called periodically (e.g., in time change event)
----   Uses LIVE API call to get real-time pet status (not stale _G.pet snapshot)
----   @return boolean|nil True when state.PetEngaged changed, false when not,
----           nil when skipped by the debounce or when there is no pet
-function PetManager.monitor_pet_status()
-    -- DEBOUNCING: Skip if called too recently (prevents lag spikes)
-    local current_time = os.clock()
-    if current_time - last_monitor_time < MONITOR_DEBOUNCE then
-        return  -- Too soon, skip
-    end
-    last_monitor_time = current_time
-
-    -- LIVE API call - _G.pet is stale between GearSwap events
-    local pet = windower.ffxi.get_mob_by_target('pet')
-
-    -- A raw Windower mob has no isvalid (only GearSwap's pet table does)
-    if not pet or not pet.id or pet.id == 0 then
-        -- No pet - ensure PetEngaged is "false" (STRING!)
-        if state and state.PetEngaged and state.PetEngaged.value ~= "false" then
-            state.PetEngaged:set('false')
-        end
-        return
-    end
-
-    -- Check if status is number 1 OR string "Engaged"
-    if pet.status == 1 or pet.status == "Engaged" then
-        -- Pet is Engaged - ensure PetEngaged is "true" (STRING!)
-        if state and state.PetEngaged and state.PetEngaged.value ~= "true" then
-            state.PetEngaged:set('true')
-            return true -- State changed
-        end
-    else
-        -- Pet is Idle - ensure PetEngaged is "false" (STRING!)
-        if state and state.PetEngaged and state.PetEngaged.value ~= "false" then
-            state.PetEngaged:set('false')
-            return true -- State changed
-        end
-    end
-
-    return false -- No state change
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
