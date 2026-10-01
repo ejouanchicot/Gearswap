@@ -23,8 +23,9 @@ BuffConfig.DEFAULTS = {
     job = {
         BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
         RDM = {'Composure', 'Haste II', 'Haste', 'Refresh III', 'Refresh II', 'Refresh',
-               'Phalanx', 'Temper II', 'Temper', '$GainSpell', {'$EnSpell', '$EnSpell II'},
-               'Protect V', 'Protect IV', 'Shell V', 'Shell IV', 'Stoneskin', 'Blink', 'Aquaveil'},
+               'Phalanx II', 'Phalanx', 'Temper II', 'Temper', '$GainSpell', {'$EnSpell', '$EnSpell II'},
+               'Regen II', 'Regen', 'Protect V', 'Protect IV', 'Shell V', 'Shell IV',
+               '$Barspell', '$BarAilment', 'Stoneskin', 'Blink', 'Aquaveil', '$Spike'},
         WHM = {'Afflatus Solace', 'Reraise IV', 'Reraise III', 'Haste', 'Protect V', 'Protect IV',
                'Shell V', 'Shell IV', 'Auspice', 'Stoneskin', 'Blink', 'Aquaveil'},
         PLD = {'Majesty', 'Crusade', 'Reprisal', 'Enlight II', 'Enlight', 'Phalanx',
