@@ -397,6 +397,24 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 .bighead .big{font-family:var(--display);font-weight:600;font-size:32px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--c)}
 .bighead p{color:var(--muted);font-size:14px}
 @media (max-width:900px){.tabx{grid-template-columns:minmax(0,1fr)}.joblist{max-height:220px}}
+/* Simulate */
+.simx{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;height:100%;min-height:0}
+.simx .setlist{min-height:0;display:flex;flex-direction:column}
+.simx .setlist .scroll{flex:1;min-height:0}
+.simmain{min-height:0;overflow:auto;display:grid;gap:14px;align-content:start;padding-bottom:16px}
+.simopts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.simopts .variants{margin:0}
+.simmodes summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:8px}
+.simmodegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 14px;margin-top:8px}
+.simmode{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.simmode.set span{color:var(--accent);font-weight:700}
+.simcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;align-items:start}
+.simcards .slots{grid-template-columns:repeat(4,52px);gap:4px}
+.simcards .slot{width:52px;height:52px}
+.simset{margin:8px 0 0}
+.simset code{font-family:var(--mono);font-size:11.5px}
+.simmsgs summary{cursor:pointer;color:var(--muted);font-size:13px}
+@media (max-width:900px){.simx{grid-template-columns:minmax(0,1fr)}}
 .placeholder{background:var(--panel);border:1px dashed var(--line-strong);border-radius:4px;padding:36px;text-align:center;color:var(--muted);display:grid;gap:14px;justify-items:center}
 
 /* ---- drawer / dialog ---- */
@@ -453,7 +471,7 @@ const T = {
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
-    sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', emptied:'vidé par ce set (empty)', moreWeapons:'Autres ({n})…', liveOn:'En jeu', gsUnload:'Décharger', gsLoad:'Charger GearSwap', linkOnly:'Jeu connecté · GearSwap déchargé', linkOnlyHow:'AtelierLink répond, pas GearSwap : il est déchargé (ou //gs c atelier on n\'est pas actif).', gs_load:'GearSwap se charge…', gs_unload:'GearSwap est déchargé.', gs_reload:'GearSwap redémarre : la page se reconnecte d\'elle-même.',  liveReload:'Recharger', liveRestart:'Relancer l\'addon', liveReloading:'GearSwap recharge tes fichiers…', liveRestarting:'GearSwap redémarre : la page se reconnecte d\'elle-même.', liveLost:'Le jeu ne répond plus.', liveOff:'Jeu non connecté', liveData:'en direct du jeu', liveJump:'Afficher le job chargé en jeu', liveHow:'En jeu : //gs c atelier on (ou //gs c atelier live), et la page parle directement à GearSwap.', savedLive:'Enregistré par le jeu : GearSwap recharge, la page suit dans un instant.', keysShowOther:'Voir les touches des autres subs ({n})', keysHideOther:'Seulement celles de /{s}',  folderTitle:'Où est ton GearSwap ?', folderWhy:'Pour écrire dans ton GearSwap, ton navigateur demande que tu lui montres le dossier une fois. Choisis celui-ci (ou GearSwap, ou le dossier de Windower : la page trouve le reste) :', folderOnce:'Une seule fois : ensuite la page enregistre directement. Si le navigateur propose « Autoriser à chaque visite », choisis-le.', folderPick:'Choisir le dossier',  trySave:'Enregistrer dans GearSwap', trySaved:'{n} pièce(s) enregistrée(s) : en jeu, //gs reload ou change de job pour les porter.', savedSet:'Enregistré dans {p}.', revertedSet:'Retiré de {p} : le set revient à ton fichier au prochain chargement.', setChanged:'Changé par l\'Atelier : {s}.', setRevert:'Revenir au fichier',  usName:'Nom Windower : {k}', keyEdit:'Changer la touche', keyPress:'Clique ici puis appuie sur la combinaison voulue', keyManual:'Choisir à la main (Ctrl+W, Win, Apps... que le navigateur garde pour lui)', keyNone:'Aucune touche', keyBack:'Touche du fichier', keyOk:'Valider', keyFile:'Dans le fichier : {k}', keyLayout:'Clavier :', keyClash:'Déjà prise par : {d}', keyClashShort:'Touche déjà prise', keyTyping:'Sans Ctrl, Alt, Shift ou Win, cette touche empêche de l\'écrire dans le chat.', keyMote:'Touche déjà utilisée par GearSwap (F9-F12, Ctrl+- et Ctrl+=).', keyPaste:'Ctrl+V est le coller de Windower.', keyUnknown:'Touche inconnue de Windower : {k}', keyWas:'avant :', keysHint:'Clique ✎ pour changer une touche. Rien n\'est écrit avant « Enregistrer ».', keysDirty:'Touches changées, pas encore enregistrées.', keysSaved:'{n} touche(s) changée(s) dans la page (saved/keybind_overrides.lua). En jeu : //gs reload ou change de job.', keysNoId:'Fais //gs c atelier en jeu (ou l\'export hors jeu) pour pouvoir changer les touches de ce job.', keysSave:'Enregistrer', keysUndo:'Annuler les changements', savedKeys:'Enregistré dans {p}. En jeu : //gs reload ou change de job.', savedDownload:'Ton navigateur ne peut pas écrire dans le dossier : le fichier est téléchargé, mets-le dans {p}.', saveWrongDir:'Choisis le dossier data de GearSwap (celui qui contient atelier.html).', kg:{letters:'Lettres',digits:'Chiffres',numpad:'Pavé numérique',fkeys:'Touches F',punct:'Ponctuation',others:'Autres'}, lay:{auto:'détecté',us:'QWERTY US',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
+    sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', emptied:'vidé par ce set (empty)', moreWeapons:'Autres ({n})…', liveOn:'En jeu', sectionsSim:'Simuler', simMagic:'Magie', simAbilities:'Capacités', simWs:'Weaponskills', simSearch:'Chercher une action…', simTitle:'Ce que ton GearSwap équipe', simEnemy:'Sur l\'ennemi', simMe:'Sur moi', simEngaged:'En combat', simIdle:'Au repos', simRecasts:'Tenir compte des recasts', simModes:'Modes pour la simulation (sinon ceux du jeu)', simRunning:'calcul…', simHint:'Choisis une action à gauche : ton GearSwap la joue à blanc et montre le gear de chaque étape. Rien n\'est lancé ni équipé en jeu.', simError:'Erreur', simNoSet:'set non reconnu', simChanged:'{n} emplacement(s) changé(s)', simCancelled:'Annulée par ton GearSwap (recast, debuff, garde…) : comme en jeu, rien après le précast.', simMsgs:'Messages de ton GearSwap ({n})', simScheduled:'{n} action(s) différée(s) non jouée(s) (sons, suites automatiques…).', simLoading:'Lecture des actions du job…', simNeedLive:'La simulation passe par le jeu : connecte {j} en jeu (//gs c atelier on), puis choisis une action.', ph:{precast:'Précast',midcast:'Midcast',aftercast:'Après l\'action'},  gsUnload:'Décharger', gsLoad:'Charger GearSwap', linkOnly:'Jeu connecté · GearSwap déchargé', linkOnlyHow:'AtelierLink répond, pas GearSwap : il est déchargé (ou //gs c atelier on n\'est pas actif).', gs_load:'GearSwap se charge…', gs_unload:'GearSwap est déchargé.', gs_reload:'GearSwap redémarre : la page se reconnecte d\'elle-même.',  liveReload:'Recharger', liveRestart:'Relancer l\'addon', liveReloading:'GearSwap recharge tes fichiers…', liveRestarting:'GearSwap redémarre : la page se reconnecte d\'elle-même.', liveLost:'Le jeu ne répond plus.', liveOff:'Jeu non connecté', liveData:'en direct du jeu', liveJump:'Afficher le job chargé en jeu', liveHow:'En jeu : //gs c atelier on (ou //gs c atelier live), et la page parle directement à GearSwap.', savedLive:'Enregistré par le jeu : GearSwap recharge, la page suit dans un instant.', keysShowOther:'Voir les touches des autres subs ({n})', keysHideOther:'Seulement celles de /{s}',  folderTitle:'Où est ton GearSwap ?', folderWhy:'Pour écrire dans ton GearSwap, ton navigateur demande que tu lui montres le dossier une fois. Choisis celui-ci (ou GearSwap, ou le dossier de Windower : la page trouve le reste) :', folderOnce:'Une seule fois : ensuite la page enregistre directement. Si le navigateur propose « Autoriser à chaque visite », choisis-le.', folderPick:'Choisir le dossier',  trySave:'Enregistrer dans GearSwap', trySaved:'{n} pièce(s) enregistrée(s) : en jeu, //gs reload ou change de job pour les porter.', savedSet:'Enregistré dans {p}.', revertedSet:'Retiré de {p} : le set revient à ton fichier au prochain chargement.', setChanged:'Changé par l\'Atelier : {s}.', setRevert:'Revenir au fichier',  usName:'Nom Windower : {k}', keyEdit:'Changer la touche', keyPress:'Clique ici puis appuie sur la combinaison voulue', keyManual:'Choisir à la main (Ctrl+W, Win, Apps... que le navigateur garde pour lui)', keyNone:'Aucune touche', keyBack:'Touche du fichier', keyOk:'Valider', keyFile:'Dans le fichier : {k}', keyLayout:'Clavier :', keyClash:'Déjà prise par : {d}', keyClashShort:'Touche déjà prise', keyTyping:'Sans Ctrl, Alt, Shift ou Win, cette touche empêche de l\'écrire dans le chat.', keyMote:'Touche déjà utilisée par GearSwap (F9-F12, Ctrl+- et Ctrl+=).', keyPaste:'Ctrl+V est le coller de Windower.', keyUnknown:'Touche inconnue de Windower : {k}', keyWas:'avant :', keysHint:'Clique ✎ pour changer une touche. Rien n\'est écrit avant « Enregistrer ».', keysDirty:'Touches changées, pas encore enregistrées.', keysSaved:'{n} touche(s) changée(s) dans la page (saved/keybind_overrides.lua). En jeu : //gs reload ou change de job.', keysNoId:'Fais //gs c atelier en jeu (ou l\'export hors jeu) pour pouvoir changer les touches de ce job.', keysSave:'Enregistrer', keysUndo:'Annuler les changements', savedKeys:'Enregistré dans {p}. En jeu : //gs reload ou change de job.', savedDownload:'Ton navigateur ne peut pas écrire dans le dossier : le fichier est téléchargé, mets-le dans {p}.', saveWrongDir:'Choisis le dossier data de GearSwap (celui qui contient atelier.html).', kg:{letters:'Lettres',digits:'Chiffres',numpad:'Pavé numérique',fkeys:'Touches F',punct:'Ponctuation',others:'Autres'}, lay:{auto:'détecté',us:'QWERTY US',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
     legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', setPiece:'Pièce du set', triedTag:'À l\'essai', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', attrTitle:'Attributs', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
@@ -476,7 +494,7 @@ const T = {
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
-    sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', emptied:'emptied by this set (empty)', moreWeapons:'Others ({n})…', liveOn:'In game', gsUnload:'Unload', gsLoad:'Load GearSwap', linkOnly:'Game connected · GearSwap unloaded', linkOnlyHow:'AtelierLink answers, GearSwap does not: it is unloaded (or //gs c atelier on is off).', gs_load:'GearSwap is loading…', gs_unload:'GearSwap is unloaded.', gs_reload:'GearSwap restarts: the page reconnects by itself.',  liveReload:'Reload', liveRestart:'Restart the addon', liveReloading:'GearSwap reloads your files…', liveRestarting:'GearSwap restarts: the page reconnects by itself.', liveLost:'The game does not answer.', liveOff:'Game not connected', liveData:'live from the game', liveJump:'Show the job loaded in game', liveHow:'In game: //gs c atelier on (or //gs c atelier live), and the page talks to GearSwap directly.', savedLive:'Saved by the game: GearSwap reloads, the page follows in a moment.', keysShowOther:'Show the keys of other subjobs ({n})', keysHideOther:'Only those of /{s}',  folderTitle:'Where is your GearSwap?', folderWhy:'To write in your GearSwap, your browser needs you to show it the folder once. Pick this one (or GearSwap, or Windower\'s folder: the page finds the rest):', folderOnce:'Only once: then the page saves straight away. If the browser offers "Allow on every visit", pick it.', folderPick:'Pick the folder',  trySave:'Save into GearSwap', trySaved:'{n} piece(s) saved: in game, //gs reload or change job to wear them.', savedSet:'Saved in {p}.', revertedSet:'Taken out of {p}: the set is back to your file at the next load.', setChanged:'Changed by the Atelier: {s}.', setRevert:'Back to the file',  usName:'Windower name: {k}', keyEdit:'Change the key', keyPress:'Click here, then press the keys you want', keyManual:'Pick by hand (Ctrl+W, Win, Apps... the browser keeps for itself)', keyNone:'No key', keyBack:'Key of the file', keyOk:'Apply', keyFile:'In the file: {k}', keyLayout:'Keyboard:', keyClash:'Already taken by: {d}', keyClashShort:'Key already taken', keyTyping:'Without Ctrl, Alt, Shift or Win, this key stops you typing it in the chat.', keyMote:'Key GearSwap already uses (F9-F12, Ctrl+- and Ctrl+=).', keyPaste:'Ctrl+V is Windower\'s paste.', keyUnknown:'Key Windower does not know: {k}', keyWas:'before:', keysHint:'Click ✎ to change a key. Nothing is written before "Save".', keysDirty:'Keys changed, not saved yet.', keysSaved:'{n} key(s) changed in the page (saved/keybind_overrides.lua). In game: //gs reload or change job.', keysNoId:'Run //gs c atelier in game (or the offline export) to change this job\'s keys.', keysSave:'Save', keysUndo:'Undo the changes', savedKeys:'Saved in {p}. In game: //gs reload or change job.', savedDownload:'Your browser cannot write in the folder: the file is downloaded, put it in {p}.', saveWrongDir:'Pick GearSwap\'s data folder (the one holding atelier.html).', kg:{letters:'Letters',digits:'Digits',numpad:'Numpad',fkeys:'F keys',punct:'Punctuation',others:'Others'}, lay:{auto:'detected',us:'US QWERTY',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
+    sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', emptied:'emptied by this set (empty)', moreWeapons:'Others ({n})…', liveOn:'In game', sectionsSim:'Simulate', simMagic:'Magic', simAbilities:'Abilities', simWs:'Weaponskills', simSearch:'Search an action…', simTitle:'What your GearSwap wears', simEnemy:'On the enemy', simMe:'On me', simEngaged:'Engaged', simIdle:'Idle', simRecasts:'Mind the recasts', simModes:'Modes for the simulation (else the game\'s)', simRunning:'working…', simHint:'Pick an action on the left: your GearSwap plays it dry and shows the gear of each step. Nothing is cast or worn in game.', simError:'Error', simNoSet:'set not recognised', simChanged:'{n} slot(s) changed', simCancelled:'Cancelled by your GearSwap (recast, debuff, guard…): as in game, nothing after precast.', simMsgs:'Messages of your GearSwap ({n})', simScheduled:'{n} delayed action(s) not played (sounds, automatic follow-ups…).', simLoading:'Reading the job\'s actions…', simNeedLive:'Simulating goes through the game: connect {j} in game (//gs c atelier on), then pick an action.', ph:{precast:'Precast',midcast:'Midcast',aftercast:'After the action'},  gsUnload:'Unload', gsLoad:'Load GearSwap', linkOnly:'Game connected · GearSwap unloaded', linkOnlyHow:'AtelierLink answers, GearSwap does not: it is unloaded (or //gs c atelier on is off).', gs_load:'GearSwap is loading…', gs_unload:'GearSwap is unloaded.', gs_reload:'GearSwap restarts: the page reconnects by itself.',  liveReload:'Reload', liveRestart:'Restart the addon', liveReloading:'GearSwap reloads your files…', liveRestarting:'GearSwap restarts: the page reconnects by itself.', liveLost:'The game does not answer.', liveOff:'Game not connected', liveData:'live from the game', liveJump:'Show the job loaded in game', liveHow:'In game: //gs c atelier on (or //gs c atelier live), and the page talks to GearSwap directly.', savedLive:'Saved by the game: GearSwap reloads, the page follows in a moment.', keysShowOther:'Show the keys of other subjobs ({n})', keysHideOther:'Only those of /{s}',  folderTitle:'Where is your GearSwap?', folderWhy:'To write in your GearSwap, your browser needs you to show it the folder once. Pick this one (or GearSwap, or Windower\'s folder: the page finds the rest):', folderOnce:'Only once: then the page saves straight away. If the browser offers "Allow on every visit", pick it.', folderPick:'Pick the folder',  trySave:'Save into GearSwap', trySaved:'{n} piece(s) saved: in game, //gs reload or change job to wear them.', savedSet:'Saved in {p}.', revertedSet:'Taken out of {p}: the set is back to your file at the next load.', setChanged:'Changed by the Atelier: {s}.', setRevert:'Back to the file',  usName:'Windower name: {k}', keyEdit:'Change the key', keyPress:'Click here, then press the keys you want', keyManual:'Pick by hand (Ctrl+W, Win, Apps... the browser keeps for itself)', keyNone:'No key', keyBack:'Key of the file', keyOk:'Apply', keyFile:'In the file: {k}', keyLayout:'Keyboard:', keyClash:'Already taken by: {d}', keyClashShort:'Key already taken', keyTyping:'Without Ctrl, Alt, Shift or Win, this key stops you typing it in the chat.', keyMote:'Key GearSwap already uses (F9-F12, Ctrl+- and Ctrl+=).', keyPaste:'Ctrl+V is Windower\'s paste.', keyUnknown:'Key Windower does not know: {k}', keyWas:'before:', keysHint:'Click ✎ to change a key. Nothing is written before "Save".', keysDirty:'Keys changed, not saved yet.', keysSaved:'{n} key(s) changed in the page (saved/keybind_overrides.lua). In game: //gs reload or change job.', keysNoId:'Run //gs c atelier in game (or the offline export) to change this job\'s keys.', keysSave:'Save', keysUndo:'Undo the changes', savedKeys:'Saved in {p}. In game: //gs reload or change job.', savedDownload:'Your browser cannot write in the folder: the file is downloaded, put it in {p}.', saveWrongDir:'Pick GearSwap\'s data folder (the one holding atelier.html).', kg:{letters:'Letters',digits:'Digits',numpad:'Numpad',fkeys:'F keys',punct:'Punctuation',others:'Others'}, lay:{auto:'detected',us:'US QWERTY',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
     legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', setPiece:'The set\'s piece', triedTag:'Tried', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', attrTitle:'Attributes', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
@@ -514,10 +532,10 @@ let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
 let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, meritEdits:{}, q:'', lang:'fr', theme:null,
-  trial:{}, buffs:{}, buffsOpen:false, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}};
+  trial:{}, buffs:{}, buffsOpen:false, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout'];
+const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 const $ = s => document.querySelector(s);
@@ -1665,6 +1683,89 @@ function liveBadge(){
   if (link) return `<span class="live mid" title="${esc(t('linkOnlyHow'))}">● ${t('linkOnly')}</span>` + btn('data-gsload', '▶', t('gsLoad'), '//lua l gearswap');
   return `<span class="live" title="${esc(t('liveHow'))}">○ ${t('liveOff')}</span>`;
 }
+/* ---- Simulate: the game's own GearSwap runs an action without doing it (shared/utils/atelier/atelier_sim.lua) ---- */
+const SIM_KINDS = [['ma', 'simMagic'], ['ja', 'simAbilities'], ['ws', 'simWs']];
+const simKey = () => S.char + '|' + S.job;
+function simState(){ return (S.sim[simKey()] = S.sim[simKey()] || {target: 'enemy', status: 'Engaged', recasts: false, states: {}}); }
+// The job's actions, asked once per GearSwap load
+async function simActions(){
+  const c = S.char, L = S._live[c] || {}, key = c + '|' + L.version;
+  if (S._simActions && S._simActions.key === key) return;
+  S._simActions = {key, list: null};
+  try { S._simActions.list = await liveFetch(c, '/actions', {timeout: 4000}); } catch (e) { S._simActions.list = {ma: [], ja: [], ws: []}; }
+  render();
+}
+let SIM_SEQ = 0;
+async function simRun(){
+  const st = simState(), c = S.char;
+  if (!st.name || !liveOk(c)) return;
+  const q = new URLSearchParams({kind: st.kind, name: st.name, target: st.target, status: st.status, recasts: st.recasts ? '1' : '0'});
+  for (const [k, v] of Object.entries(st.states || {})) q.set('s.' + k, v);
+  const seq = ++SIM_SEQ;
+  S._simBusy = true; render();
+  try {
+    const r = await liveFetch(c, '/simulate?' + q.toString(), {method: 'POST', timeout: 6000});
+    if (seq === SIM_SEQ) S._simResult = {req: q.toString(), r};
+  } catch (e) { if (seq === SIM_SEQ) S._simResult = {req: q.toString(), r: {ok: false, error: t('liveLost')}}; }
+  S._simBusy = false; render();
+}
+// The set a phase's gear comes from: the largest set every piece of which is in the list
+function simSetOf(list){
+  const d = data(); let best = null, bestN = 0;
+  for (const s of d.sets) {
+    const slots = Object.keys(s.pieces).filter(k => !isEmpty(s.pieces[k]));
+    if (slots.length < 3 || slots.length <= bestN) continue;
+    if (slots.every(k => list[k] && list[k].name === s.pieces[k].name)) { best = s; bestN = slots.length; }
+  }
+  return best;
+}
+// FFXI chat colour codes out of the captured lines
+const chatText = m => String(m).replace(/[\x1e\x1f][\s\S]/g, '').replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '').trim();
+function renderSim(d){
+  const c = S.char;
+  if (!liveOk(c) || (S._live[c] || {}).job !== S.job) return `<div class="placeholder"><p>${t('simNeedLive', {j: S.job})}</p></div>`;
+  simActions();
+  const st = simState(), acts = (S._simActions && S._simActions.list) || null, q = (st.q || '').toLowerCase();
+  const pick = acts ? SIM_KINDS.map(([k, label]) => { const list = (acts[k] || []).filter(n => !q || n.toLowerCase().includes(q));
+    return list.length ? `<div class="fam static"><span>${t(label)}</span><span>${list.length}</span></div>` +
+      list.map(n => `<button class="setrow ${st.kind === k && st.name === n ? '' : ''}" data-simpick="${k}|${esc(n)}" aria-current="${st.kind === k && st.name === n}"><b>${esc(n)}</b></button>`).join('') : ''; }).join('')
+    : `<p class="muted small" style="padding:12px">${t('simLoading')}</p>`;
+  const chip = (key, v, label) => `<button data-simopt="${key}|${v}" aria-pressed="${String(st[key]) === String(v)}">${label}</button>`;
+  const modes = d.modes.filter(m => m.values.length > 1 && m.values.length <= 12 && !HIDDEN_MODES.has(m.name) && !/^[A-Z]{3}Song\d$/.test(m.name));
+  const modeSel = modes.map(m => { const cur = (st.states || {})[m.name] ?? m.current;
+    return `<label class="simmode ${cur !== m.current ? 'set' : ''}"><span>${esc(m.desc || m.name)}</span><select class="buffsel" data-simstate="${esc(m.name)}">` +
+      m.values.map(v => `<option ${v === cur ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select></label>`; }).join('');
+  const opts = `<div class="simopts"><div class="variants">${chip('target', 'enemy', t('simEnemy'))}${chip('target', 'me', t('simMe'))}</div>` +
+    `<div class="variants">${chip('status', 'Engaged', t('simEngaged'))}${chip('status', 'Idle', t('simIdle'))}</div>` +
+    `<label class="chip"><input type="checkbox" class="simrecasts" ${st.recasts ? 'checked' : ''}> ${t('simRecasts')}</label></div>`;
+  return `<div class="simx"><aside class="setlist"><div class="search"><input id="simq" type="search" placeholder="${t('simSearch')}" value="${esc(st.q || '')}" autocomplete="off" spellcheck="false"></div>` +
+    `<div class="scroll">${pick}</div></aside><div class="simmain">` +
+    box('g-you', t('simTitle'), `${opts}<details class="simmodes"><summary>${t('simModes')}</summary><div class="simmodegrid">${modeSel}</div></details>`,
+      S._simBusy ? `<span class="meta">${t('simRunning')}</span>` : '') + simResultHTML(d) + `</div></div>`;
+}
+function simResultHTML(d){
+  const st = simState(), res = S._simResult;
+  if (!st.name) return `<p class="muted" style="margin:14px 2px">${t('simHint')}</p>`;
+  if (!res) return '';
+  const r = res.r;
+  if (!r.ok && r.error) return box('g-off', t('simError'), `<p class="kwarn">${esc(r.error)}</p>`);
+  // gear worn step by step: what the game wore at the last measure, then each phase on top
+  let worn = Object.assign({}, (measuredChar() || {}).worn || {});
+  const cards = (r.phases || []).map((ph, i) => {
+    worn = Object.assign({}, worn, ph.list || {});
+    const changed = new Set(Object.keys(ph.list || {})), set = simSetOf(ph.list || {});
+    const cells = SLOTS.map(slot => { const p = worn[slot], ch = changed.has(slot), none = !p || p.name === 'empty';
+      return `<button class="slot ${none ? 'empty' : ''} ${ch ? '' : 'inh'}" data-simp="${i}|${slot}" aria-label="${SLOT_NAMES[S.lang][slot]}">` +
+        (none ? `<span class="elbl">${SLOT_NAMES[S.lang][slot]}</span>` : icon(p.name)) + `</button>`; }).join('');
+    S._simWorn = S._simWorn || {}; S._simWorn[i] = Object.assign({}, worn);
+    return box(['g-mag', 'g-def', 'g-attr'][i] || 'g-other', t('ph.' + ph.phase),
+      `<div class="slots">${cells}</div><p class="muted small simset">${set ? `≈ <code>${esc(set.path)}</code>` : t('simNoSet')} · ${t('simChanged', {n: changed.size})}</p>`); }).join('');
+  const msgs = (r.messages || []).map(chatText).filter(Boolean);
+  const notes = (r.cancelled ? `<p class="kwarn">${t('simCancelled')}</p>` : '') +
+    (msgs.length ? `<details class="simmsgs"><summary>${t('simMsgs', {n: msgs.length})}</summary><ul class="plain">${msgs.map(m => `<li>${esc(m)}</li>`).join('')}</ul></details>` : '') +
+    (r.scheduled ? `<p class="muted small">${t('simScheduled', {n: r.scheduled})}</p>` : '');
+  return `<div class="simcards">${cards}</div>${notes}`;
+}
 /* ---- render ---- */
 // The top bar: character, job (by role, the played ones) and subjob menus, the job's macro book,
 // lockstyle and export, language and theme
@@ -1998,12 +2099,12 @@ function renderJob(){
   let body, sections = '';
   if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
-    const list = [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),d.keys.filter(k=>k.key).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),'']];
+    const list = [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),d.keys.filter(k=>k.key).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;
-    body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits}[S.section](d);
+    body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits, sim:renderSim}[S.section](d);
   }
   // every tab but Sets: the played jobs on the left, to change job and stay on the tab
-  if (d && S.section !== 'sets') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
+  if (d && S.section !== 'sets' && S.section !== 'sim') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
   return `${sections}<div class="pane ${d ? 'split' : ''}">${body}</div>`;
 }
 // Re-render, keeping the focus of the search box and the scroll of each block
@@ -2156,6 +2257,8 @@ document.addEventListener('click', e => {
   if ('keysundo' in d) { delete S.keyOv[S.char]; S.keyDirty[S.char] = false; S.toast = ''; render(); return; }
   if (d.wmode) { const k = S.char + '|' + S.job + '|' + d.wmode; if (d.wval) S.weapons[k] = d.wval; else delete S.weapons[k]; render(); return; }
   if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
+  if (d.simpick) { const [k, ...n] = d.simpick.split('|'); Object.assign(simState(), {kind: k, name: n.join('|')}); simRun(); return; }
+  if (d.simopt) { const [k, v] = d.simopt.split('|'); simState()[k] = v; simRun(); return; }
   if ('gsunload' in d) { linkGearSwap('unload'); return; }
   if ('gsload' in d) { linkGearSwap('load'); return; }
   if ('livereload' in d) { liveReload(false); return; }
@@ -2174,6 +2277,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'setq') { S.q = e.target.value; render(); }
+  if (e.target.id === 'simq') { simState().q = e.target.value; render(); }
   // the drawer's search: hides the pieces that do not match, nothing re-drawn
   if (e.target.id === 'drawq') { const q = e.target.value.trim().toLowerCase();
     document.querySelectorAll('.choice [data-try]').forEach(el => { el.hidden = q && !el.textContent.toLowerCase().includes(q); }); }
@@ -2190,6 +2294,8 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
   if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.section = 'sets'; S.q = ''; render(); }
   if (e.target.classList.contains('kmod') || e.target.classList.contains('kname')) manualKey();
+  if (e.target.classList.contains('simrecasts')) { simState().recasts = e.target.checked; simRun(); }
+  if (e.target.dataset && e.target.dataset.simstate) { const st = simState(); st.states = st.states || {}; st.states[e.target.dataset.simstate] = e.target.value; simRun(); }
   if (e.target.classList.contains('klayout')) { S.layout = e.target.value; renderKeyEdit(); save(); }
   if (e.target.classList.contains('wmore') && e.target.value) { S.weapons[S.char + '|' + S.job + '|' + e.target.dataset.wmode] = e.target.value; render(); }
   if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
@@ -2226,7 +2332,10 @@ function pieceTip(p, slot, emptied){
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
   const tip = $('#tip');
-  if (el.dataset.try != null) {
+  if (el.dataset.simp != null) {
+    const [i, slot] = el.dataset.simp.split('|'), p = ((S._simWorn || {})[i] || {})[slot];
+    tip.innerHTML = pieceTip(p && p.name !== 'empty' ? p : null, slot);
+  } else if (el.dataset.try != null) {
     const o = (S._drawOpts || [])[+el.dataset.try];
     if (!o || !o.piece) return;
     tip.innerHTML = pieceTip(o.piece, S._drawer.slot);
@@ -2242,7 +2351,7 @@ function showTip(el){
   tip.style.left = left + 'px';
   tip.style.top = Math.max(8, Math.min(b.top, innerHeight - h - 8)) + 'px';
 }
-const TIPPED = '.slot[data-slot], .choice [data-try]';
+const TIPPED = '.slot[data-slot], .choice [data-try], .slot[data-simp]';
 document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED); if (el) showTip(el); });
 document.addEventListener('mouseout', e => { if (e.target.closest(TIPPED) && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(TIPPED))) $('#tip').hidden = true; });
 document.addEventListener('focusin', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });

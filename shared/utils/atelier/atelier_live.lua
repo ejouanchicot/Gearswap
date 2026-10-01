@@ -10,6 +10,9 @@
 ---   GET  /export               the loaded job's data (AtelierExport.build)
 ---   POST /save?file=<name>     writes <Char>/saved/<name>: keybind_overrides.lua
 ---                              or set_overrides.lua only
+---   GET  /actions              the job's spells, abilities and weapon skills
+---   POST /simulate?kind=&name=  what the job wears for an action (atelier_sim.lua),
+---        &target=&status=&s.<Mode>=  without doing it
 ---   POST /reload[?full=1]      //gs reload (so a saved change is worn now), or the
 ---                              whole addon: //lua r gearswap
 ---
@@ -91,6 +94,16 @@ local function read_request(client)
     return {method = method, path = target:match('^[^?]*'), query = target:match('%?(.*)$') or '', headers = headers, body = body or ''}
 end
 
+-- ?a=1&b=two%20words -> {a = '1', b = 'two words'}
+local function query_table(query)
+    local out = {}
+    for k, v in query:gmatch('([^&=]+)=([^&]*)') do
+        local function decode(x) return (x:gsub('+', ' '):gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)) end
+        out[decode(k)] = decode(v)
+    end
+    return out
+end
+
 local function route(req, live)
     if req.method == 'OPTIONS' then return '204 No Content', '' end
     if req.headers['x-atelier-token'] ~= live.token then return '403 Forbidden', '{"error":"token"}' end
@@ -111,6 +124,17 @@ local function route(req, live)
         local path = require('shared/utils/core/char_paths').writable('saved', file)
         if not (path and write(path, req.body)) then return '500 Internal Server Error', '{"error":"write"}' end
         return '200 OK', Export.json({ok = true, file = file})
+    end
+    if req.path == '/actions' then
+        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').actions())
+    end
+    if req.path == '/simulate' and req.method == 'POST' then
+        local q = query_table(req.query)
+        local states = {}
+        for k, v in pairs(q) do local name = k:match('^s%.(.+)$'); if name then states[name] = v end end
+        local result = require('shared/utils/atelier/atelier_sim').run({kind = q.kind, name = q.name, target = q.target,
+            status = q.status, states = states, ignore_recasts = q.recasts ~= '1', tp = q.tp})
+        return '200 OK', Export.json(result)
     end
     if req.path == '/reload' and req.method == 'POST' then
         -- ?full=1: the whole addon (lua r gearswap); the door closes with it and the new
