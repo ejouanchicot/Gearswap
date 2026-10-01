@@ -1328,7 +1328,8 @@ function tipHTML(card, slot){
   if (!p) return `<div class="th">${icon(null)}<div><b>${label}</b><small>${slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty')}</small></div></div>`;
   const r = pieceStats(p);
   const own = new Set(s.own || Object.keys(s.pieces));
-  const origin = eff.from[slot] || (s.base && !own.has(slot) ? t('tipInh', {b: shortPath(s.base)}) : t('legendOwn'));
+  // Said only when the piece comes from elsewhere: a weapon mode or the base set
+  const origin = eff.from[slot] || (s.base && !own.has(slot) ? t('tipInh', {b: shortPath(s.base)}) : '');
   let body = '';
   if (r && r.known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
@@ -1346,7 +1347,7 @@ function tipHTML(card, slot){
     if (r.cond.length) body += `<div class="k">${t('condTitle')}</div><ul>${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
   } else body = `<p class="muted">${t('noDesc')}</p>`;
   const weapon = r && r.weapon ? ` · ${Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ')}` : '';
-  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}</small></div></div><p class="origin">${esc(origin)}</p>${body}`;
+  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}</small></div></div>${origin ? `<p class="origin">${esc(origin)}</p>` : ''}${body}`;
 }
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
