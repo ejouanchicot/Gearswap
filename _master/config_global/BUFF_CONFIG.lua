@@ -68,5 +68,5 @@ return {
     -- the game refuses a new spell for a moment: too short, and a spell is
     -- refused then sent again.
     wait_after_spell   = 3.0,
-    wait_after_ability = 1.0,
+    wait_after_ability = 0.5,
 }

@@ -49,7 +49,7 @@ BuffConfig.DEFAULTS = {
     war_defender = {'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
     war_add_sam  = true,
     wait_after_spell   = 3.0,
-    wait_after_ability = 1.0,
+    wait_after_ability = 0.5,
 }
 
 local PER_JOB = {job = true, subjob = true}

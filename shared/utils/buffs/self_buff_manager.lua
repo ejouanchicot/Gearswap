@@ -39,7 +39,7 @@ local CAST_COOLDOWN = 2.0
 --- 1 s after the previous one ended was refused, then sent again). Both are
 --- BUFF_CONFIG.lua settings (wait_after_spell, wait_after_ability).
 local DEFAULT_AFTER_SPELL = 3.0
-local DEFAULT_AFTER_ABILITY = 1.0
+local DEFAULT_AFTER_ABILITY = 0.5
 --- Longest wait of a step = its cast time + this, when the game never says it ended.
 local WAIT_MARGIN = 3.0
 
