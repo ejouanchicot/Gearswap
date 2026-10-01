@@ -329,6 +329,9 @@ kbd{font-family:var(--mono);font-size:12px;padding:1px 6px;border:1px solid var(
 .keybar .sp{flex:1}
 .toast{max-width:1240px;margin:0 auto 12px;font-size:13px;color:var(--r-healer)}
 .keyedit{width:min(560px,100%)}
+.folderdlg{width:min(560px,100%)}
+.folderdlg .body{display:grid;gap:10px}
+.folderpath{display:block;padding:8px 10px;border:1px solid var(--line-strong);border-radius:4px;background:var(--panel-2);font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
 .capture{display:grid;gap:6px;justify-items:center;padding:20px;border:2px dashed var(--line-strong);border-radius:6px;background:var(--panel-2);outline:none;cursor:pointer}
 .capture:focus{border-color:var(--accent);background:var(--accent-soft)}
 .capture .big .kbd kbd{font-size:20px;padding:4px 10px}
@@ -443,7 +446,7 @@ const T = {
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
-    sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', emptied:'vidé par ce set (empty)', moreWeapons:'Autres ({n})…', trySave:'Enregistrer dans GearSwap', trySaved:'{n} pièce(s) enregistrée(s) : en jeu, //gs reload ou change de job pour les porter.', savedSet:'Enregistré dans {p}.', revertedSet:'Retiré de {p} : le set revient à ton fichier au prochain chargement.', setChanged:'Changé par l\'Atelier : {s}.', setRevert:'Revenir au fichier',  usName:'Nom Windower : {k}', keyEdit:'Changer la touche', keyPress:'Clique ici puis appuie sur la combinaison voulue', keyManual:'Choisir à la main (Ctrl+W, Win, Apps... que le navigateur garde pour lui)', keyNone:'Aucune touche', keyBack:'Touche du fichier', keyOk:'Valider', keyFile:'Dans le fichier : {k}', keyLayout:'Clavier :', keyClash:'Déjà prise par : {d}', keyClashShort:'Touche déjà prise', keyTyping:'Sans Ctrl, Alt, Shift ou Win, cette touche empêche de l\'écrire dans le chat.', keyMote:'Touche déjà utilisée par GearSwap (F9-F12, Ctrl+- et Ctrl+=).', keyPaste:'Ctrl+V est le coller de Windower.', keyUnknown:'Touche inconnue de Windower : {k}', keyWas:'avant :', keysHint:'Clique ✎ pour changer une touche. Rien n\'est écrit avant « Enregistrer ».', keysDirty:'Touches changées, pas encore enregistrées.', keysSaved:'{n} touche(s) changée(s) dans la page (saved/keybind_overrides.lua). En jeu : //gs reload ou change de job.', keysNoId:'Fais //gs c atelier en jeu (ou l\'export hors jeu) pour pouvoir changer les touches de ce job.', keysSave:'Enregistrer', keysUndo:'Annuler les changements', savedKeys:'Enregistré dans {p}. En jeu : //gs reload ou change de job.', savedDownload:'Ton navigateur ne peut pas écrire dans le dossier : le fichier est téléchargé, mets-le dans {p}.', saveWrongDir:'Choisis le dossier data de GearSwap (celui qui contient atelier.html).', kg:{letters:'Lettres',digits:'Chiffres',numpad:'Pavé numérique',fkeys:'Touches F',punct:'Ponctuation',others:'Autres'}, lay:{auto:'détecté',us:'QWERTY US',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
+    sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', emptied:'vidé par ce set (empty)', moreWeapons:'Autres ({n})…', folderTitle:'Où est ton GearSwap ?', folderWhy:'Pour écrire dans ton GearSwap, ton navigateur demande que tu lui montres le dossier une fois. Choisis celui-ci (ou GearSwap, ou le dossier de Windower : la page trouve le reste) :', folderOnce:'Une seule fois : ensuite la page enregistre directement. Si le navigateur propose « Autoriser à chaque visite », choisis-le.', folderPick:'Choisir le dossier',  trySave:'Enregistrer dans GearSwap', trySaved:'{n} pièce(s) enregistrée(s) : en jeu, //gs reload ou change de job pour les porter.', savedSet:'Enregistré dans {p}.', revertedSet:'Retiré de {p} : le set revient à ton fichier au prochain chargement.', setChanged:'Changé par l\'Atelier : {s}.', setRevert:'Revenir au fichier',  usName:'Nom Windower : {k}', keyEdit:'Changer la touche', keyPress:'Clique ici puis appuie sur la combinaison voulue', keyManual:'Choisir à la main (Ctrl+W, Win, Apps... que le navigateur garde pour lui)', keyNone:'Aucune touche', keyBack:'Touche du fichier', keyOk:'Valider', keyFile:'Dans le fichier : {k}', keyLayout:'Clavier :', keyClash:'Déjà prise par : {d}', keyClashShort:'Touche déjà prise', keyTyping:'Sans Ctrl, Alt, Shift ou Win, cette touche empêche de l\'écrire dans le chat.', keyMote:'Touche déjà utilisée par GearSwap (F9-F12, Ctrl+- et Ctrl+=).', keyPaste:'Ctrl+V est le coller de Windower.', keyUnknown:'Touche inconnue de Windower : {k}', keyWas:'avant :', keysHint:'Clique ✎ pour changer une touche. Rien n\'est écrit avant « Enregistrer ».', keysDirty:'Touches changées, pas encore enregistrées.', keysSaved:'{n} touche(s) changée(s) dans la page (saved/keybind_overrides.lua). En jeu : //gs reload ou change de job.', keysNoId:'Fais //gs c atelier en jeu (ou l\'export hors jeu) pour pouvoir changer les touches de ce job.', keysSave:'Enregistrer', keysUndo:'Annuler les changements', savedKeys:'Enregistré dans {p}. En jeu : //gs reload ou change de job.', savedDownload:'Ton navigateur ne peut pas écrire dans le dossier : le fichier est téléchargé, mets-le dans {p}.', saveWrongDir:'Choisis le dossier data de GearSwap (celui qui contient atelier.html).', kg:{letters:'Lettres',digits:'Chiffres',numpad:'Pavé numérique',fkeys:'Touches F',punct:'Ponctuation',others:'Autres'}, lay:{auto:'détecté',us:'QWERTY US',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
     legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', setPiece:'Pièce du set', triedTag:'À l\'essai', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', attrTitle:'Attributs', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
@@ -466,7 +469,7 @@ const T = {
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
-    sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', emptied:'emptied by this set (empty)', moreWeapons:'Others ({n})…', trySave:'Save into GearSwap', trySaved:'{n} piece(s) saved: in game, //gs reload or change job to wear them.', savedSet:'Saved in {p}.', revertedSet:'Taken out of {p}: the set is back to your file at the next load.', setChanged:'Changed by the Atelier: {s}.', setRevert:'Back to the file',  usName:'Windower name: {k}', keyEdit:'Change the key', keyPress:'Click here, then press the keys you want', keyManual:'Pick by hand (Ctrl+W, Win, Apps... the browser keeps for itself)', keyNone:'No key', keyBack:'Key of the file', keyOk:'Apply', keyFile:'In the file: {k}', keyLayout:'Keyboard:', keyClash:'Already taken by: {d}', keyClashShort:'Key already taken', keyTyping:'Without Ctrl, Alt, Shift or Win, this key stops you typing it in the chat.', keyMote:'Key GearSwap already uses (F9-F12, Ctrl+- and Ctrl+=).', keyPaste:'Ctrl+V is Windower\'s paste.', keyUnknown:'Key Windower does not know: {k}', keyWas:'before:', keysHint:'Click ✎ to change a key. Nothing is written before "Save".', keysDirty:'Keys changed, not saved yet.', keysSaved:'{n} key(s) changed in the page (saved/keybind_overrides.lua). In game: //gs reload or change job.', keysNoId:'Run //gs c atelier in game (or the offline export) to change this job\'s keys.', keysSave:'Save', keysUndo:'Undo the changes', savedKeys:'Saved in {p}. In game: //gs reload or change job.', savedDownload:'Your browser cannot write in the folder: the file is downloaded, put it in {p}.', saveWrongDir:'Pick GearSwap\'s data folder (the one holding atelier.html).', kg:{letters:'Letters',digits:'Digits',numpad:'Numpad',fkeys:'F keys',punct:'Punctuation',others:'Others'}, lay:{auto:'detected',us:'US QWERTY',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
+    sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', emptied:'emptied by this set (empty)', moreWeapons:'Others ({n})…', folderTitle:'Where is your GearSwap?', folderWhy:'To write in your GearSwap, your browser needs you to show it the folder once. Pick this one (or GearSwap, or Windower\'s folder: the page finds the rest):', folderOnce:'Only once: then the page saves straight away. If the browser offers "Allow on every visit", pick it.', folderPick:'Pick the folder',  trySave:'Save into GearSwap', trySaved:'{n} piece(s) saved: in game, //gs reload or change job to wear them.', savedSet:'Saved in {p}.', revertedSet:'Taken out of {p}: the set is back to your file at the next load.', setChanged:'Changed by the Atelier: {s}.', setRevert:'Back to the file',  usName:'Windower name: {k}', keyEdit:'Change the key', keyPress:'Click here, then press the keys you want', keyManual:'Pick by hand (Ctrl+W, Win, Apps... the browser keeps for itself)', keyNone:'No key', keyBack:'Key of the file', keyOk:'Apply', keyFile:'In the file: {k}', keyLayout:'Keyboard:', keyClash:'Already taken by: {d}', keyClashShort:'Key already taken', keyTyping:'Without Ctrl, Alt, Shift or Win, this key stops you typing it in the chat.', keyMote:'Key GearSwap already uses (F9-F12, Ctrl+- and Ctrl+=).', keyPaste:'Ctrl+V is Windower\'s paste.', keyUnknown:'Key Windower does not know: {k}', keyWas:'before:', keysHint:'Click ✎ to change a key. Nothing is written before "Save".', keysDirty:'Keys changed, not saved yet.', keysSaved:'{n} key(s) changed in the page (saved/keybind_overrides.lua). In game: //gs reload or change job.', keysNoId:'Run //gs c atelier in game (or the offline export) to change this job\'s keys.', keysSave:'Save', keysUndo:'Undo the changes', savedKeys:'Saved in {p}. In game: //gs reload or change job.', savedDownload:'Your browser cannot write in the folder: the file is downloaded, put it in {p}.', saveWrongDir:'Pick GearSwap\'s data folder (the one holding atelier.html).', kg:{letters:'Letters',digits:'Digits',numpad:'Numpad',fkeys:'F keys',punct:'Punctuation',others:'Others'}, lay:{auto:'detected',us:'US QWERTY',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
     legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', setPiece:'The set\'s piece', triedTag:'Tried', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', attrTitle:'Attributes', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
@@ -1432,20 +1435,36 @@ function idb(mode, fn){
     r.onsuccess = () => { const tx = r.result.transaction('handles', mode), q = fn(tx.objectStore('handles')); q.onsuccess = () => ok(q.result); q.onerror = () => ko(q.error); };
     r.onerror = () => ko(r.error); });
 }
+// The page's own folder (D:\...\GearSwap\data): the one to pick, shown to the player
+const pageFolder = () => decodeURIComponent(location.pathname).replace(/^\/([A-Za-z]:)/, '$1').replace(/\/[^/]*$/, '').replace(/\//g, '\\');
+// The data folder inside what was picked: data itself, or GearSwap, addons, Windower above it
+async function findData(dir){
+  const has = async (d, n) => { try { await d.getFileHandle(n); return true; } catch (e) { return false; } };
+  const sub = async (d, n) => { try { return await d.getDirectoryHandle(n); } catch (e) { return null; } };
+  for (const path of [[], ['data'], ['GearSwap', 'data'], ['addons', 'GearSwap', 'data']]) {
+    let d = dir;
+    for (const n of path) d = d && await sub(d, n);
+    if (d && await has(d, 'atelier.html')) return d;
+  }
+  return null;
+}
+// The data folder kept from the first time, when the browser still lets the page write in it
 async function dataFolder(){
   let dir = null;
   try { dir = await idb('readonly', st => st.get('data')); } catch (e) {}
-  if (dir && (await dir.queryPermission({mode: 'readwrite'})) !== 'granted' && (await dir.requestPermission({mode: 'readwrite'})) !== 'granted') dir = null;
-  if (!dir) {
-    dir = await window.showDirectoryPicker({id: 'atelier-data', mode: 'readwrite'});
-    // the right folder holds atelier.html: GearSwap's data folder
-    try { await dir.getFileHandle('atelier.html'); } catch (e) { throw new Error(t('saveWrongDir')); }
-    try { await idb('readwrite', st => st.put(dir, 'data')); } catch (e) {}
-  }
+  if (!dir) return null;
+  let perm = await dir.queryPermission({mode: 'readwrite'});
+  if (perm !== 'granted') perm = await dir.requestPermission({mode: 'readwrite'});
+  return perm === 'granted' ? dir : null;
+}
+async function pickFolder(){
+  const dir = await findData(await window.showDirectoryPicker({id: 'atelier-data', mode: 'readwrite'}));
+  if (!dir) throw new Error(t('saveWrongDir'));
+  try { await idb('readwrite', st => st.put(dir, 'data')); } catch (e) {}
   return dir;
 }
-async function writeSaved(char, file, text){
-  const dir = await dataFolder(), mine = await dir.getDirectoryHandle(char), saved = await mine.getDirectoryHandle('saved', {create: true});
+async function writeSaved(dir, char, file, text){
+  const mine = await dir.getDirectoryHandle(char), saved = await mine.getDirectoryHandle('saved', {create: true});
   const fh = await saved.getFileHandle(file, {create: true}), w = await fh.createWritable();
   await w.write(text); await w.close();
 }
@@ -1456,16 +1475,32 @@ function download(file, text){
 // Write a file of <Char>/saved/; true when written in the folder (else downloaded, or cancelled)
 async function saveFile(file, text){
   const c = S.char;
+  // a browser without folder access (Firefox): the file is downloaded, the page says where it goes
+  if (!window.showDirectoryPicker) { download(file, text); S.toast = t('savedDownload', {p: `${c}/saved/${file}`}); return false; }
   try {
-    if (!window.showDirectoryPicker) throw new Error('nofs');
-    await writeSaved(c, file, text);
-    return true;
-  } catch (e) {
-    if (e && e.name === 'AbortError') return null;
-    download(file, text);
-    S.toast = t('savedDownload', {p: `${c}/saved/${file}`}) + (e && e.message && e.message !== 'nofs' ? ' · ' + e.message : '');
-    return false;
-  }
+    const dir = await dataFolder();
+    if (dir) { await writeSaved(dir, c, file, text); return true; }
+  } catch (e) {}
+  // the first time (or the folder moved): the page says which folder, then the player picks it
+  return new Promise(done => openFolderDialog(async () => {
+    const dir = await pickFolder();
+    await writeSaved(dir, c, file, text);
+    done(true);
+  }, () => done(null)));
+}
+// The one-time window: which folder, why, then the browser's own picker
+function openFolderDialog(pick, cancel){
+  const show = err => {
+    $('#overlay').innerHTML = `<div class="scrim" data-folderno></div><div class="dialog folderdlg" role="dialog" aria-label="${t('folderTitle')}">
+      <header><h3>${t('folderTitle')}</h3></header>
+      <div class="body"><p>${t('folderWhy')}</p><code class="folderpath">${esc(pageFolder())}</code><p class="muted small">${t('folderOnce')}</p>
+      ${err ? `<p class="kwarn">${esc(err)}</p>` : ''}</div>
+      <footer><button class="btn ghost" data-folderno>${t('cancel')}</button><button class="btn" data-folderpick>${t('folderPick')}</button></footer></div>`;
+    $('#overlay').hidden = false;
+  };
+  S._folder = {pick: async () => { try { await pick(); closeOverlay(); S._folder = null; } catch (e) { if (!(e && e.name === 'AbortError')) show(e && e.message || String(e)); } },
+    cancel: () => { closeOverlay(); S._folder = null; cancel(); }};
+  show('');
 }
 async function saveKeys(){
   const c = S.char, file = 'keybind_overrides.lua', done = await saveFile(file, overridesLua(keyOverrides()));
@@ -1981,7 +2016,7 @@ function renderAdd(){
 function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; KEYEDIT = null; }
 
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-unslot],button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
+  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
@@ -2000,6 +2035,8 @@ document.addEventListener('click', e => {
   if ('setrevert' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S._toastSet = s.path; revertSet(s); return; }
   if ('trylua' in d) { openLua(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('copylua' in d) { copyLua(b); return; }
+  if ('folderpick' in d && S._folder) { S._folder.pick(); return; }
+  if ('folderno' in d && S._folder) { S._folder.cancel(); return; }
   if (d.keyedit) { S.toast = ''; openKeyEdit(+d.keyedit); return; }
   if ('kok' in d && KEYEDIT) { setKey(data().keys[KEYEDIT.i], KEYEDIT.key); KEYEDIT = null; closeOverlay(); render(); return; }
   if ('knone' in d && KEYEDIT) { KEYEDIT.key = ''; renderKeyEdit(); return; }
