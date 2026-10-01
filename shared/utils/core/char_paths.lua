@@ -238,6 +238,14 @@ end
 --- @return string|nil
 function CharPaths.writable(kind, file, job, char)
     char = char or CharPaths.name()
+    -- A file the game writes goes to saved/ in a tidied folder, even when an
+    -- old copy is left at the root: Kaories' trace went back to the root
+    -- once saved/trace.log was rotated away (2026-10-01).
+    if kind == 'saved' and char and new_layout(char) then
+        local path = data_dir() .. char .. '/saved/' .. file
+        CharPaths.ensure_parent(path)
+        return path
+    end
     local path = CharPaths.file(kind, file, job, char)
     if path and new_layout(char) then CharPaths.ensure_parent(path) end
     return path
