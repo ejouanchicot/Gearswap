@@ -1,7 +1,7 @@
 ---============================================================================
 --- Fishing Equipment Set
 ---============================================================================
---- Read by //gs c fish when common/inventory/CRAFT_CONFIG.lua says
+--- Read by //gs c fish when _common/inventory/CRAFT_CONFIG.lua says
 --- fish_file = 'fishing' (the default).
 ---
 ---   //gs c fish      -> equip this set (slots locked while you fish)
@@ -11,7 +11,7 @@
 ---     range = "Item Name",
 --- A slot left "" is not touched.
 ---
---- @file    common/sets/fishing_sets.lua
+--- @file    _common/sets/fishing_sets.lua
 --- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-30

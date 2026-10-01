@@ -1,9 +1,9 @@
 ---============================================================================
 --- Craft Equipment Sets
 ---============================================================================
---- Read by //gs c craft when common/inventory/CRAFT_CONFIG.lua says
+--- Read by //gs c craft when _common/inventory/CRAFT_CONFIG.lua says
 --- craft_file = 'craft'. To keep one file per craft, copy this one as
---- common/sets/<craft>_sets.lua (goldsmithing_sets.lua, woodworking_sets.lua...)
+--- _common/sets/<craft>_sets.lua (goldsmithing_sets.lua, woodworking_sets.lua...)
 --- and name it in craft_file.
 ---
 ---   //gs c craft           -> default variant (hq)
@@ -25,7 +25,7 @@
 ---   3. SUB_CRAFTS: the neck piece of each other craft you use.
 ---   4. //gs c craft to test: the chat says how many slots were equipped.
 ---
---- @file    common/sets/craft_sets.lua
+--- @file    _common/sets/craft_sets.lua
 --- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-30

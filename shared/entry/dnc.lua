@@ -30,7 +30,7 @@
 ---
 --- Module Organization:
 ---   ├── functions/dnc_functions.lua        [Facade Loader]
----   ├── sets/dnc_sets.lua                  [Equipment Sets]
+---   ├── <Character>/dnc/sets/dnc_sets.lua [Equipment Sets]
 ---   ├── functions/DNC_*.lua                [11 Hook Modules]
 ---   └── functions/logic/*.lua              [5 Logic Modules]
 ---
@@ -49,7 +49,7 @@
 ---============================================================================
 
 -- Load lockstyle timing configuration with fallback defaults
--- Where the character's files are (common/, <job>/, older config/ and sets/)
+-- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
 
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))

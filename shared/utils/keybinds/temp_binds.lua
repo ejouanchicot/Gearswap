@@ -13,7 +13,7 @@
 --- each press: that is when a name is looked up, so the target can move,
 --- die and respawn.
 ---
---- Kept in <Character>/temp_binds.lua, not in memory: //lua r gearswap
+--- Kept in <Character>/saved/temp_binds.lua, not in memory: //lua r gearswap
 --- wipes GearSwap's memory but not Windower's binds, and `clear` must still
 --- find them. They are meant to last until the game closes: the file
 --- records os.clock() (time counted from the game process start), which

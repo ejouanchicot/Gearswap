@@ -31,7 +31,7 @@
 ---============================================================================
 
 -- Load lockstyle timing configuration
--- Where the character's files are (common/, <job>/, older config/ and sets/)
+-- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
 
 local lockstyle_config_success, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))

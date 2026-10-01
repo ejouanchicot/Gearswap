@@ -33,7 +33,7 @@
 ---============================================================================
 
 -- Load global configurations with fallbacks
--- Where the character's files are (common/, <job>/, older config/ and sets/)
+-- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
 
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))

@@ -806,7 +806,7 @@ class SmartCharacterCloner:
         # ── Step 7: Layout of 2026-09-30 (common/, <job>/, saved/) ─────
         from migrate_layout import migrate
         migrate(target_name, backup=False, quiet=True, base_dir=str(self.base_dir))
-        print(self.t['copy_ok'].format(f"{target_name}/common/, <job>/, saved/"))
+        print(self.t['copy_ok'].format(f"{target_name}/_common/, <job>/, saved/"))
 
         # After the rename and the layout: these already carry the right
         # names, including the other characters' (an alt_state follow
