@@ -74,6 +74,14 @@ return {
     -- defender) and Third Eye to those two commands
     war_add_sam = true,
 
+    -- A buff already up is cast again when less than this percent of its
+    -- length is left (0: never). Its time left is read from the game.
+    refresh_below = 10,
+
+    -- Buffs that cannot be cast over themselves: cancelled first when they
+    -- are recast (needs the Cancel addon)
+    cancel_first = {'Stoneskin'},
+
     -- Seconds between the end of an action and the next one. After a spell
     -- the game refuses a new spell for a moment: too short, and a spell is
     -- refused then sent again.

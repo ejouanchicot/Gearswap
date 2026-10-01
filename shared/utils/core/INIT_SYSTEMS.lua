@@ -313,6 +313,15 @@ else
     ensure_message_init().show_module_load_failed('Stealth Timers', StealthTimers)
 end
 
+-- Time left on every buff (packet 0x063): //gs c buff recasts one under
+-- BUFF_CONFIG.lua refresh_below
+local bt_ok, BuffTimers = pcall(require, 'shared/utils/buffs/buff_timers')
+if bt_ok and BuffTimers then
+    BuffTimers.start()
+else
+    ensure_message_init().show_module_load_failed('Buff Timers', BuffTimers)
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   CUSTOM STATES - hook the player's own gear (<JOB>_CUSTOM.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════

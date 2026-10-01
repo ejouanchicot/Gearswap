@@ -22,8 +22,6 @@ local StealthTimers = {}
 
 local BUFF_IDS = {sneak = 71, invi = 69}
 local LABELS = {sneak = 'Sneak', invi = 'Invisible'}
-local EPOCH = 1009810800            -- 2002-01-01 JST, the game's time origin
-local WRAP = 0x100000000 / 60       -- seconds before the counter wraps
 
 ---============================================================================
 --- STORE (on windower: survives a GearSwap reload)
@@ -64,28 +62,13 @@ end
 --- PACKET 0x063 ORDER 9
 ---============================================================================
 
-local function u16(data, at) return data:byte(at) + data:byte(at + 1) * 256 end
-local function u32(data, at)
-    return data:byte(at) + data:byte(at + 1) * 0x100 + data:byte(at + 2) * 0x10000
-        + data:byte(at + 3) * 0x1000000
-end
-
---- os.time() of a buff's end: the wrap count is the one that puts it nearest
---- to now (a buff lasts hours at most, a wrap is 2.27 years).
-local function end_time(raw)
-    local base = EPOCH + raw / 60
-    local wraps = math.floor((os.time() - base) / WRAP + 0.5)
-    return math.floor(base + wraps * WRAP)
-end
-
---- Sneak and Invisible end times read from the packet (0 = not up).
+--- Sneak and Invisible end times read from the packet (0 = not up); the
+--- decoding is shared/utils/buffs/buff_timers.lua's.
 local function read_packet(data)
     local found = {sneak = 0, invi = 0}
-    if #data < 0x48 + 32 * 4 then return found end
-    for i = 0, 31 do
-        local buff = u16(data, 9 + i * 2)
+    for _, buff in ipairs(require('shared/utils/buffs/buff_timers').read(data)) do
         for kind, id in pairs(BUFF_IDS) do
-            if buff == id then found[kind] = end_time(u32(data, 73 + i * 4)) end
+            if buff.id == id then found[kind] = buff.finish end
         end
     end
     return found

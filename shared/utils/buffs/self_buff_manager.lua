@@ -12,7 +12,10 @@
 ---   learned and the main or sub level); otherwise skipped, and reported,
 ---   when its buff is already up (the buff the action gives: Enlight II gives
 ---   Enlight) or it is on recast, and skipped when it was used seconds ago
----   (double press). Tiers of one buff, best first (Refresh III, Refresh II,
+---   (double press). A buff up with less than `refresh_below` percent of its
+---   length left (buff_timers.lua, BUFF_CONFIG.lua) is cast again, cancelled
+---   first when it is in `cancel_first` (it cannot overwrite itself).
+---   Tiers of one buff, best first (Refresh III, Refresh II,
 ---   Refresh): the first one available goes, the others are left out.
 ---   `$State` in a name is the value of that state ('$GainSpell' -> the Gain
 ---   chosen in RDM's GainSpell state); left out when the job has no such
@@ -88,9 +91,16 @@ local function resolve(entry, res)
     if not data then return nil end
     local status = data.status and res.buffs and res.buffs[data.status]
     local cast = (not is_ability and tonumber(data.cast_time)) or 1
+    local buff = entry.buff or (status and status.en) or (is_ability and name) or nil
+    local buff_id = status and status.id
+    if not buff_id and buff and res.buffs then
+        local ok, found = pcall(function() return res.buffs:with('en', buff) end)
+        buff_id = ok and type(found) == 'table' and found.id or nil
+    end
     return {
         name = name,
-        buff = entry.buff or (status and status.en) or (is_ability and name) or nil,
+        buff = buff,
+        buff_id = buff_id,
         is_ability = is_ability == true,
         id = data.id,
         recast_id = data.recast_id or data.id,
@@ -108,7 +118,14 @@ local function context(res)
             abilities[(type(value) == 'number') and value or key] = true
         end
     end
+    local cfg = require('shared/utils/buffs/buff_config').get()
+    local cancel_first = {}
+    for _, name in ipairs(type(cfg.cancel_first) == 'table' and cfg.cancel_first or {}) do
+        if type(name) == 'string' then cancel_first[name:lower()] = true end
+    end
     return {
+        refresh_below = cfg.refresh_below,
+        cancel_first = cancel_first,
         res = res,
         abilities = abilities,
         known = windower.ffxi.get_spells() or {},
@@ -141,14 +158,30 @@ local function item_of(name, ctx)
     return item and usable(item, ctx) and item or nil
 end
 
---- Queue it unless its buff is up, it is on recast or was just queued.
+--- Whether a buff that is up is close enough to its end to be recast:
+--- under `refresh_below` percent of its length (buff_timers.lua). Unknown
+--- time: no.
+local function wearing_off(item, ctx)
+    local below = tonumber(ctx.refresh_below) or 0
+    if below <= 0 or not item.buff_id then return false end
+    local ok, BuffTimers = pcall(require, 'shared/utils/buffs/buff_timers')
+    local part = ok and BuffTimers and BuffTimers.fraction_left(item.buff_id)
+    return part ~= nil and part * 100 < below
+end
+
+--- Queue it unless its buff is up (and not about to wear off), it is on
+--- recast or was just queued.
 --- @return string 'active', 'cooldown', 'queued' or 'spam'
 local function collect_item(item, ctx, to_cast, status)
     local recast = recast_of(item, ctx)
-    if item.buff and buffactive[item.buff] then
+    local up = item.buff and buffactive[item.buff]
+    if up and not wearing_off(item, ctx) then
         table.insert(status, {name = item.name, status = 'active'})
         return 'active'
-    elseif not is_recast_ready(recast) then
+    end
+    -- a buff that cannot overwrite itself is cancelled first (cancel_first)
+    item.cancel_first = up and ctx.cancel_first[item.name:lower()] or nil
+    if not is_recast_ready(recast) then
         table.insert(status, {name = item.name, status = 'cooldown', time = math.ceil(recast)})
         return 'cooldown'
     elseif not (last_use[item.name] and os.clock() - last_use[item.name] < CAST_COOLDOWN) then
@@ -356,6 +389,10 @@ function SelfBuffManager.cast(to_cast)
             local magic = item.is_ability == false or item.magic == true
             local command = ('input %s "%s" <me>'):format(magic and '/ma' or '/ja', item.name)
             local delay = magic and after_spell or after_ability
+            if item.cancel_first and item.buff then
+                -- Cancel addon: the buff goes, so the new cast can land
+                ActionQueue.push('cancel ' .. item.buff, 0.5, {delay = 0, tag = 'BUFF'})
+            end
             ActionQueue.push(command, (item.wait or (1 + WAIT_MARGIN)) + delay, {delay = delay, tag = 'BUFF'})
         end
     end

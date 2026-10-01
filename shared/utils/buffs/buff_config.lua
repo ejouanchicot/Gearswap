@@ -51,6 +51,8 @@ BuffConfig.DEFAULTS = {
     war_berserk  = {'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
     war_defender = {'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
     war_add_sam  = true,
+    refresh_below      = 10,
+    cancel_first       = {'Stoneskin'},
     wait_after_spell   = 3.0,
     wait_after_ability = 0.5,
 }
