@@ -24,6 +24,7 @@ end
 pcall(function()
     require('shared/utils/core/load_gate').begin()
     require('shared/utils/debug/trace_hooks').install()
+    require('shared/utils/debug/tombstones').install()
     require('shared/utils/atelier/atelier_export').install()
     require('shared/utils/debug/trace_log').log('LOAD', 'entry file %s/%s', player and player.main_job, player and player.sub_job)
 end)

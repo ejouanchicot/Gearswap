@@ -443,6 +443,9 @@ pcall(function()
 end)
 -- //gs c atelier on: export this job for data/atelier.html once it is loaded
 pcall(function() require('shared/utils/atelier/atelier_export').after_load() end)
+-- //gs c trace dead on: second try, in case the character was not known when
+-- config_loader.lua ran (it wraps what is already loaded too)
+pcall(function() require('shared/utils/debug/tombstones').install() end)
 
 LoadGate.defer(5.0, function()
     local ok, GlobalProbe = pcall(require, 'shared/utils/debug/global_probe')

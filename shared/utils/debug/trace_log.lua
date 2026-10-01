@@ -8,6 +8,8 @@
 ---   //gs c trace on      start recording (survives reloads, even //lua r gearswap)
 ---   //gs c trace off     stop
 ---   //gs c trace clear   empty the file
+---   //gs c trace dead ...  watch the functions the dead-code scan found
+---                          unused (shared/utils/debug/tombstones.lua)
 ---   //gs c trace         status
 ---
 --- Callers: TraceLog.log('TAG', 'format %s', ...) - a no-op while off, so the
@@ -181,6 +183,10 @@ end
 --- @return boolean handled
 function TraceLog.handle(args)
     local sub = args and args[1] and args[1]:lower() or ''
+    if sub == 'dead' then
+        -- //gs c trace dead ...: watch the "dead" functions in play (tombstones.lua)
+        return require('shared/utils/debug/tombstones').handle({select(2, unpack(args))})
+    end
     local path = file_path() or '?'
     if sub == 'on' then
         windower._trace_log_on = true
