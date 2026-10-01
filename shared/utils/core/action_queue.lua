@@ -16,6 +16,13 @@
 --- push_next puts a step in front: a function step uses it to act right
 --- after itself (decide at the last moment, then act).
 ---
+--- A step may carry a `guard` (opts.guard): called just before the step
+--- goes, it returns nil (go), 'skip' (this step is dropped), 'stop' (every
+--- step of its tag is dropped), 'stop_magic' (the spells of its tag are
+--- dropped) or 'before', steps (those go first, then this one). //gs c buff
+--- uses it to stop when asleep and to cure Paralysis / Silence first
+--- (shared/utils/buffs/buff_guard.lua).
+---
 --- @file shared/utils/core/action_queue.lua
 --- @author ejouanchicot
 --- @version 1.0
@@ -83,6 +90,25 @@ run_next = function(gen)
         q.waiting = nil
         return
     end
+    if type(step.guard) == 'function' then
+        local ok, verdict, first = pcall(step.guard, step)
+        if ok and verdict == 'skip' then return run_next(gen) end
+        if ok and (verdict == 'stop' or verdict == 'stop_magic') then
+            local kept = {}
+            for _, other in ipairs(q.steps) do
+                local drop = other.tag == step.tag and (verdict == 'stop' or other.magic)
+                if not drop then kept[#kept + 1] = other end
+            end
+            q.steps = kept
+            if verdict == 'stop_magic' and not step.magic then table.insert(q.steps, 1, step) end
+            return run_next(gen)
+        end
+        if ok and verdict == 'before' and type(first) == 'table' then
+            table.insert(q.steps, 1, step)
+            for i = #first, 1, -1 do table.insert(q.steps, 1, first[i]) end
+            return run_next(gen)
+        end
+    end
     -- A function step sends actions of its own (or decides what comes next):
     -- only its longest wait ends it.
     if type(step.command) == 'function' then
@@ -119,12 +145,14 @@ end
 --- Add an action; starts the queue when it was idle.
 --- @param command string|function Console command, or a function run in turn
 --- @param wait number Longest wait for this step, in seconds
---- @param opts table|nil {delay = seconds after the action ends, tag = trace tag}
+--- @param opts table|nil {delay = seconds after the action ends, tag = trace tag,
+---   guard = function(step), magic = true for a spell (see the header)}
 function ActionQueue.push(command, wait, opts)
     listen()
     local q = queue()
     opts = opts or {}
-    q.steps[#q.steps + 1] = {command = command, wait = wait, delay = opts.delay, tag = opts.tag}
+    q.steps[#q.steps + 1] = {command = command, wait = wait, delay = opts.delay, tag = opts.tag,
+        guard = opts.guard, magic = opts.magic}
     if q.busy then return end
     q.busy = true
     windower._action_gen_queue = (windower._action_gen_queue or 0) + 1
@@ -139,7 +167,8 @@ function ActionQueue.push_next(command, wait, opts)
     local q = queue()
     if not q.busy then return ActionQueue.push(command, wait, opts) end
     opts = opts or {}
-    table.insert(q.steps, 1, {command = command, wait = wait, delay = opts.delay, tag = opts.tag})
+    table.insert(q.steps, 1, {command = command, wait = wait, delay = opts.delay, tag = opts.tag,
+        guard = opts.guard, magic = opts.magic})
 end
 
 --- Whether steps are still waiting to go.

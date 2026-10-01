@@ -382,6 +382,10 @@ function SelfBuffManager.cast(to_cast)
     local after_spell = tonumber(cfg.wait_after_spell) or DEFAULT_AFTER_SPELL
     local after_ability = tonumber(cfg.wait_after_ability) or DEFAULT_AFTER_ABILITY
     local seen = {}
+    -- Debuffs landing while the queue runs: stop when asleep, cure
+    -- Paralysis / Silence first (buff_guard.lua)
+    local Guard = require('shared/utils/buffs/buff_guard')
+    if #(to_cast or {}) > 0 then Guard.reset() end
     for _, item in ipairs(to_cast or {}) do
         if not seen[item.name] then
             seen[item.name] = true
@@ -393,7 +397,8 @@ function SelfBuffManager.cast(to_cast)
                 -- Cancel addon: the buff goes, so the new cast can land
                 ActionQueue.push('cancel ' .. item.buff, 0.5, {delay = 0, tag = 'BUFF'})
             end
-            ActionQueue.push(command, (item.wait or (1 + WAIT_MARGIN)) + delay, {delay = delay, tag = 'BUFF'})
+            ActionQueue.push(command, (item.wait or (1 + WAIT_MARGIN)) + delay,
+                {delay = delay, tag = 'BUFF', guard = Guard.check, magic = magic})
         end
     end
 end
