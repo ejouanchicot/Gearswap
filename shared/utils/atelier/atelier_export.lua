@@ -335,11 +335,33 @@ local function collect_char()
         if type(level) == 'number' and level > 0 then char.merits[tostring(name)] = level end
     end
     char.merit_list = merit_list(res, p.merits or {})
+    -- combat and magic skill levels (sword = 424...) and the subjob's level: the page
+    -- computes Accuracy and Evasion from them, with the job traits of both jobs
+    char.skills = {}
+    for name, level in pairs(p.skills or {}) do
+        if type(level) == 'number' then char.skills[tostring(name)] = level end
+    end
+    char.sub_level = player.sub_job_level
+    char.main_level = player.main_job_level
     local jp = type(p.job_points) == 'table' and p.job_points[(player.main_job or ''):lower()]
     char.jp_spent = type(jp) == 'table' and jp.jp_spent or nil
     local packet = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
     char.master_level = packet and #packet > 0x65 and packet:byte(0x65 + 1) or nil
     return char
+end
+
+--- The combat skill of each weapon ({name = "Sword"}, res.items skill -> res.skills):
+--- the page takes the main hand's for Accuracy.
+local function collect_weapon_skills(icons)
+    local ok, res = pcall(require, 'resources')
+    if not (ok and res and res.items and res.skills) then return nil end
+    local out = {}
+    for name, id in pairs(icons or {}) do
+        local item = res.items[id]
+        local skill = item and item.category == 'Weapon' and (item.skill or 0) > 0 and res.skills[item.skill]
+        if skill and skill.en then out[name] = skill.en end
+    end
+    return out
 end
 
 --- What //gs c gearscan read on the character's own copies of these items
@@ -378,11 +400,29 @@ local function collect_icons(set_list, items)
     for _, names in pairs(items or {}) do
         for _, name in ipairs(names) do want(name) end
     end
+    -- one name, several items (eleven Burtgangs, one per upgrade): the copy in the bags first,
+    -- then equipment, then the highest id (the latest upgrade)
+    local owned = {}
+    for _, bag in ipairs(EQUIP_BAGS) do
+        for _, item in ipairs(windower.ffxi.get_items(bag) or {}) do
+            if type(item) == 'table' and item.id and item.id > 0 then owned[item.id] = true end
+        end
+    end
+    local function rank(id)
+        local info = res.items[id]
+        return (owned[id] and 2 or 0) + (info and info.slots and 1 or 0), id
+    end
+    local function better(id, than)
+        if not than then return true end
+        local a, ia = rank(id)
+        local b, ib = rank(than)
+        return a > b or (a == b and ia > ib)
+    end
     local icons = {}
     for id, info in pairs(res.items) do
         for _, key in ipairs({info.en and info.en:lower(), info.enl and info.enl:lower()}) do
             for name in pairs(wanted[key] or {}) do
-                if not icons[name] or info.slots then icons[name] = id end
+                if better(id, icons[name]) then icons[name] = id end
             end
         end
     end
@@ -476,6 +516,7 @@ function AtelierExport.export()
         piece.id = nil
     end
     data.descs = collect_descs(ids)
+    data.wskill = collect_weapon_skills(data.icons)
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))

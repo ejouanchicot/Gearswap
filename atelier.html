@@ -134,37 +134,39 @@ button{font:inherit;color:inherit;cursor:pointer}
 .empty-list{padding:18px 14px;color:var(--muted);font-size:14px}
 .hint{padding:8px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
 .detail{background:var(--panel);border:1px solid var(--line);border-radius:4px;min-width:0}
-.detail header{padding:18px 22px 16px;border-bottom:1px solid var(--line);display:grid;gap:4px}
-.detail h2{font-size:24px;font-weight:700;line-height:1.15}
-.detail .when{color:var(--muted)}
-.detail .path{font-family:var(--mono);font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.detail header{padding:14px 18px 12px;border-bottom:1px solid var(--line);display:grid;gap:3px}
+.detail .titleline{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.detail h2{font-size:21px;font-weight:700;line-height:1.15}
+.detail .when{color:var(--muted);font-size:13px;text-transform:none;letter-spacing:0;font-weight:400}
+.detail .path{font-family:var(--mono);font-size:12px;color:var(--faint);overflow-wrap:anywhere}
 .variants{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;max-height:96px;overflow:auto}
 .variants button{border:1px solid var(--line-strong);background:var(--panel-2);border-radius:3px;font-size:13px;padding:2px 10px}
 .variants button:hover{border-color:var(--ink)}
 .variants button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel);font-weight:600}
 .slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line)}
-.slot{background:var(--panel);border:0;padding:10px 12px 12px;min-height:76px;text-align:left;display:grid;grid-template-columns:40px minmax(0,1fr);gap:2px 10px;align-content:start}
-.slot > :not(.ico){grid-column:2}
-.ico{grid-row:1 / span 4;width:40px;height:40px;border:1px solid var(--line-strong);border-radius:3px;background:var(--well);display:grid;place-items:center;box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+.slot{background:var(--panel);border:0;border-left:3px solid transparent;padding:6px 10px 6px 7px;min-height:50px;text-align:left;display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 9px;align-items:center;position:relative}
+.slot .txt{display:grid;min-width:0}
+.ico{width:36px;height:36px;border:1px solid var(--line-strong);border-radius:3px;background:var(--well);display:grid;place-items:center;box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
 .ico img{width:32px;height:32px;display:block}
 .slot.empty .ico{background:transparent;border-style:dashed;box-shadow:none}
 .slot.inh .ico img{opacity:.5}
 .slot:hover{box-shadow:inset 0 0 0 1px var(--accent)}
-.slot .lbl{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
-.slot .item{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.slot .lbl{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);line-height:1.3}
+.slot .item{font-size:13.5px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot .item .mk{color:var(--aug);font-size:10px;margin-left:5px;vertical-align:1px}
 .slot.empty .item{color:var(--faint);font-weight:400}
 .slot.inh{background:var(--panel-2)}
-.slot.weap .from{color:var(--accent);font-style:normal}
+.slot.weap{border-left-color:var(--accent)}
 .weaps{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:13px;color:var(--muted)}
 .weaps label{display:inline-flex;align-items:center;gap:6px}
 .weapsel{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-strong);border-radius:3px;padding:1px 4px}
 .weaps label.picked .weapsel{border-color:var(--accent);color:var(--accent)}
 .weaps label[title]{cursor:help}
 .slot.inh .item{color:var(--muted);font-weight:400}
-.slot .from{font-size:12px;color:var(--faint);font-style:italic}
-.slot .aug{font-family:var(--mono);font-size:11px;line-height:1.4;color:var(--aug);margin-top:3px}
 .slot.hit{box-shadow:inset 0 0 0 2px var(--accent)}
-.detail footer{padding:12px 22px;font-size:13.5px;color:var(--muted);display:grid;gap:2px}
+.detail footer{padding:9px 18px;font-size:13px;color:var(--muted);display:grid;gap:2px}
+.detail footer details summary{cursor:pointer}
+.detail footer details p{margin:4px 0 0;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
 .detail footer b{color:var(--ink);font-weight:600}
 .setstats{padding:14px 22px 16px;border-top:1px solid var(--line);display:grid;gap:10px}
 .statgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 28px}
@@ -190,10 +192,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .delta{font-style:normal;font-size:11.5px;margin-left:6px;font-weight:600}
 .delta.up{color:var(--r-healer)}
 .delta.down{color:var(--r-dd)}
-.globals-inline .globals{border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 22px}
+.globals-inline .globals{border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 18px;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));column-gap:28px;align-items:start}
+.globals-inline .globals > .kicker,.globals-inline .globals > p{grid-column:1 / -1}
 .globalcol{display:none}
-@media (min-width:1500px){
-  .setsx{grid-template-columns:270px minmax(0,1fr) 300px}
+@media (min-width:1650px){
+  .setsx{grid-template-columns:250px minmax(0,1fr) 300px}
   .inner,.prefs{max-width:1560px}
   .globalcol{display:block;min-width:0}
   .globals-inline{display:none}
@@ -215,11 +219,27 @@ button{font:inherit;color:inherit;cursor:pointer}
 .meritlist li.changed::before{content:"";position:absolute;left:0;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--accent)}
 .meritlist li.changed .meritin{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 .globals .edited{color:var(--accent);letter-spacing:.04em}
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:8px 18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:12px;height:12px;border:1px solid var(--line-strong);background:var(--panel)}
 .legend i.inh{background:var(--panel-2)}
-.legend i.aug{background:var(--aug);border-color:var(--aug)}
+.legend i.weap{border-left:3px solid var(--accent)}
+.legend b.mk{color:var(--aug);font-size:10px}
+.tip{position:fixed;z-index:60;width:320px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:11px 13px;font-size:12.5px;pointer-events:none}
+.tip[hidden]{display:none}
+.tip .th{display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 10px;align-items:center;margin-bottom:8px}
+.tip .th b{font-size:14.5px;display:block}
+.tip .th small{color:var(--muted);font-size:12px}
+.tip table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:inherit}
+.tip th{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;text-align:right;padding:0 0 3px 6px}
+.tip th:first-child{text-align:left;padding-left:0}
+.tip td{padding:2px 0 2px 6px;text-align:right;border-top:1px dotted var(--line);white-space:nowrap}
+.tip td:first-child{text-align:left;padding-left:0;white-space:normal}
+.tip td.a{color:var(--aug);font-weight:600}
+.tip td.t{font-weight:700}
+.tip .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:9px 0 3px}
+.tip ul{margin:0;padding-left:16px;color:var(--muted);font-size:12.5px}
+.tip .origin{color:var(--accent);font-size:12.5px;margin:0 0 6px}
 @media (max-width:640px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* ---- tables ---- */
@@ -327,6 +347,7 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
   </main>
 </div>
 <div id="overlay" hidden></div>
+<div id="tip" class="tip" role="tooltip" hidden></div>
 
 <script src="atelier/index.js"></script>
 <script>
@@ -334,12 +355,12 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} : mérites, gifts, Master Level et traits compris (buffs et nourriture du moment aussi). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', sectionsMerits:'Mérites', meritsEdited:'{n} mérite(s) modifié(s)', inGame:'jeu :', noMerits:'Pas encore de mérites mesurés : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on).', meritsNote:'Tes niveaux lus en jeu le {at} (en /{s}). Change une valeur pour tester : elle passe en doré et tes stats (onglet Sets, colonne de droite) se recalculent. Rien n\'est changé en jeu.', meritsReset:'Revenir aux valeurs du jeu ({n})', mgHp:'HP / MP', mgAttr:'Attributs', mgCombat:'Compétences de combat', mgMagic:'Compétences de magie', mgOther:'Divers', mgJob1:'Job · groupe 1', mgJob2:'Job · groupe 2', gripFor:'Grip de {w} (arme à deux mains)', withMerits:'+ mérites', merits:'mérites', auto:'Auto', yourChoice:'Ton choix : {v}', slotBySet:'Fixé par le set lui-même', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', drawerWeap:'Pièce posée par ton mode d\'arme ({m}) : le set laisse cet emplacement libre.', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} : mérites, gifts, Master Level et traits compris (buffs et nourriture du moment aussi). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', accLabel:'Précision', evaLabel:'Évasion', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', sectionsMerits:'Mérites', meritsEdited:'{n} mérite(s) modifié(s)', inGame:'jeu :', noMerits:'Pas encore de mérites mesurés : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on).', meritsNote:'Tes niveaux lus en jeu le {at} (en /{s}). Change une valeur pour tester : elle passe en doré et tes stats (onglet Sets, colonne de droite) se recalculent. Rien n\'est changé en jeu.', meritsReset:'Revenir aux valeurs du jeu ({n})', mgHp:'HP / MP', mgAttr:'Attributs', mgCombat:'Compétences de combat', mgMagic:'Compétences de magie', mgOther:'Divers', mgJob1:'Job · groupe 1', mgJob2:'Job · groupe 2', gripFor:'Grip de {w} (arme à deux mains)', withMerits:'+ mérites', merits:'mérites', auto:'Auto', yourChoice:'Ton choix : {v}', slotBySet:'Fixé par le set lui-même', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', drawerWeap:'Pièce posée par ton mode d\'arme ({m}) : le set laisse cet emplacement libre.', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Défini dans ce set', legendInh:'Hérité du set de base', legendAug:'Augments',
+    legendOwn:'Défini dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipBase:'Base', tipAug:'Augm.', tipTotal:'Total', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -359,12 +380,12 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s}: merits, gifts, master level and traits included (buffs and food of the moment too). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', sectionsMerits:'Merits', meritsEdited:'{n} merit(s) changed', inGame:'game:', noMerits:'No merits measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on).', meritsNote:'Your levels read in game on {at} (as /{s}). Change one to test: it turns gold and your stats (Sets tab, right column) follow. Nothing changes in game.', meritsReset:'Back to the game values ({n})', mgHp:'HP / MP', mgAttr:'Attributes', mgCombat:'Combat skills', mgMagic:'Magic skills', mgOther:'Others', mgJob1:'Job · group 1', mgJob2:'Job · group 2', gripFor:'Grip of {w} (two-handed)', withMerits:'+ merits', merits:'merits', auto:'Auto', yourChoice:'Your choice: {v}', slotBySet:'Set by the set itself', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', drawerWeap:'Piece put by your weapon mode ({m}): the set leaves this slot free.', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s}: merits, gifts, master level and traits included (buffs and food of the moment too). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', accLabel:'Accuracy', evaLabel:'Evasion', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', sectionsMerits:'Merits', meritsEdited:'{n} merit(s) changed', inGame:'game:', noMerits:'No merits measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on).', meritsNote:'Your levels read in game on {at} (as /{s}). Change one to test: it turns gold and your stats (Sets tab, right column) follow. Nothing changes in game.', meritsReset:'Back to the game values ({n})', mgHp:'HP / MP', mgAttr:'Attributes', mgCombat:'Combat skills', mgMagic:'Magic skills', mgOther:'Others', mgJob1:'Job · group 1', mgJob2:'Job · group 2', gripFor:'Grip of {w} (two-handed)', withMerits:'+ merits', merits:'merits', auto:'Auto', yourChoice:'Your choice: {v}', slotBySet:'Set by the set itself', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', drawerWeap:'Piece put by your weapon mode ({m}): the set leaves this slot free.', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Set here', legendInh:'Inherited from the base set', legendAug:'Augments',
+    legendOwn:'Set here', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipBase:'Base', tipAug:'Augm.', tipTotal:'Total', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -617,7 +638,8 @@ function parseLine(line, out){
     const many = statsOf(phrase);
     if (many) { for (const k of many) add(out, k, v, m[3], k); continue; }
     const s = statOf(phrase);
-    if (!s.key) { free.push((s.rest + ' ' + m[0]).trim()); continue; }
+    // "Atonement: Enmity +100" (a path's rank stat) is for that ability only: shown, never counted
+    if (!s.key || /:\s*$/.test(s.rest)) { free.push((phrase.trim() + ' ' + m[0]).trim()); continue; }
     if (s.rest) free.push(s.rest);
     if (s.key === 'sird') v = Math.abs(v);
     // "HP+10%" is not "HP+10": a stat counted in points elsewhere gets its own % line
@@ -643,7 +665,8 @@ function pieceStats(p){
   const id = iconIds()[p.name], text = id ? descTexts()[id] : null;
   const key = S.char + '|' + p.name + '|' + (p.augs || []).join('|');
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
-  const r = {text, stats: {}, pet: {}, free: [], cond: [], path: null, weapon: null, known: !!text};
+  // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
+  const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], path: null, weapon: null, known: !!text};
   // after "Pet:" (or Avatar:, Wyvern:...) the lines are the pet's, after any other condition they only apply sometimes
   let mode = null;
   // the game wraps long phrases: a line starting in lower case goes on the previous one
@@ -651,20 +674,20 @@ function pieceStats(p){
   for (const raw of lines) {
     // "Converts 150 MP to HP" (Tuisto, Odnowa...): that much HP more, MP less
     let line = raw.replace(/Converts (\d+) (MP|HP) to (HP|MP)/g, (_, n, from, to) => {
-      add(r.stats, to.toLowerCase(), +n, '', to); add(r.stats, from.toLowerCase(), -n, '', from); return ' '; });
-    line = unsigned(line, r);
+      add(r.base, to.toLowerCase(), +n, '', to); add(r.base, from.toLowerCase(), -n, '', from); return ' '; });
+    line = unsigned(line, r.base);
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
     if (mode === 'cond') { r.cond.push(line); continue; }
     line = line.replace(/\b(DEF|DMG|Delay):\s?(\d+)/g, (_, k, n) => {
-      if (k === 'DEF') add(r.stats, 'def', +n, '', 'DEF'); else (r.weapon = r.weapon || {})[k] = +n; return ' '; });
-    const free = parseLine(line, r.stats);
+      if (k === 'DEF') add(r.base, 'def', +n, '', 'DEF'); else (r.weapon = r.weapon || {})[k] = +n; return ' '; });
+    const free = parseLine(line, r.base);
     if (free) r.free.push(free);
   }
   // Fast Cast the description only names ("Enhances "Fast Cast" effect"): its value, from BG-Wiki
   const hidden = HIDDEN_FC[p.name];
   if (hidden && r.free.some(f => /(Enhances|Increases) "Fast Cast" effect/.test(f))) {
-    add(r.stats, 'fc', hidden, '%', 'Fast Cast');
+    add(r.base, 'fc', hidden, '%', 'Fast Cast');
     r.free = r.free.map(f => f.replace(/(Enhances|Increases) "Fast Cast" effect/, '').trim()).filter(Boolean);
     r.hidden = true;
   }
@@ -682,21 +705,22 @@ function pieceStats(p){
     r.rank = scan.rank;
     for (const a of scan.rank_stats) addAugment(a, r);
   }
+  for (const part of [r.base, r.aug]) for (const [k, e] of Object.entries(part)) add(r.stats, k, e.v, e.unit, e.label);
   return (PIECE_CACHE[key] = r);
 }
 // What the game writes its own way: SIRD without a sign ("Spell interruption rate down 10%"),
 // elemental resistances as the element's icon (U+E000 fire ... U+E007 dark, the in-game order)
 const ELEMENTS = ['fire', 'ice', 'wind', 'earth', 'lightning', 'water', 'light', 'dark'];
-function unsigned(line, r){
-  return line.replace(/Spell interruption rate down\s*-?(\d+)%/gi, (_, n) => { add(r.stats, 'sird', +n, '%', 'SIRD'); return ' '; })
+function unsigned(line, out){
+  return line.replace(/Spell interruption rate down\s*-?(\d+)%/gi, (_, n) => { add(out, 'sird', +n, '%', 'SIRD'); return ' '; })
     .replace(/[-]/g, c => ' ' + ELEMENTS[c.charCodeAt(0) - 0xE000] + ' resistance');
 }
 function addAugment(a, r){
-  a = unsigned(a, r);
+  a = unsigned(a, r.aug);
   a = a.replace(/DMG:\s?\+?(\d+)/, (_, n) => { (r.weapon = r.weapon || {}).DMG = ((r.weapon || {}).DMG || 0) + +n; return ' '; });
   for (const part of a.split(/(?=Pet:)/)) {
     const pet = /^Pet:/.test(part);
-    const free = parseLine(part.replace(/^Pet:\s*/, ''), pet ? r.pet : r.stats);
+    const free = parseLine(part.replace(/^Pet:\s*/, ''), pet ? r.pet : r.aug);
     if (free) r.free.push(free);
   }
 }
@@ -838,6 +862,64 @@ function renderMerits(){
     (n ? `<button class="btn ghost" data-action="meritreset">${t('meritsReset', {n})}</button>` : '') + `</div><div class="meritgrid">${groups}</div>`;
 }
 
+/* ---- Accuracy and Evasion: wsdist's formulas (IzaKastra, create_player.py) ---- */
+// Job traits, highest tier first: [level, value]. The main job's counts, the subjob's only
+// when higher (they do not stack)
+const TRAITS = {
+  acc: {rng: [[96, 73], [86, 60], [70, 48], [50, 35], [30, 22], [10, 10]], drg: [[76, 35], [60, 22], [30, 10]],
+    dnc: [[76, 35], [60, 22], [30, 10]], run: [[90, 35], [70, 22], [50, 10]]},
+  eva: {thf: [[88, 72], [76, 60], [70, 48], [50, 35], [30, 22], [10, 10]], dnc: [[86, 48], [75, 35], [45, 22], [15, 10]],
+    pup: [[76, 48], [60, 35], [40, 22], [20, 10]]},
+  stp: {sam: [[90, 30], [70, 25], [50, 20], [30, 15], [10, 10]]},
+  da: {war: [[99, 18], [85, 16], [75, 14], [50, 12], [25, 10]]},
+  dw: {nin: [[85, 35], [65, 30], [45, 25], [25, 15], [10, 10]], dnc: [[80, 30], [60, 25], [40, 15], [20, 10]], thf: [[98, 25], [90, 15], [83, 10]]},
+  mdb: {run: [[99, 22], [91, 20], [76, 18], [70, 16], [50, 14], [30, 12], [10, 10]], whm: [[91, 20], [81, 18], [70, 16], [50, 14], [30, 12], [10, 10]],
+    rdm: [[96, 14], [45, 12], [25, 10]]},
+};
+// Job point gifts of the main job, all of them (2100 job points spent)
+const GIFTS = {
+  war: {acc: 26, eva: 36, meva: 36, macc: 36, da: 10}, mnk: {acc: 41, eva: 42, meva: 36, macc: 36}, whm: {acc: 14, macc: 70, mdb: 50},
+  blm: {macc: 32, meva: 42, mdb: 14}, rdm: {acc: 22, macc: 90, mdb: 28, meva: 56}, thf: {acc: 36, eva: 70, meva: 36, macc: 36, dw: 5},
+  pld: {acc: 28, eva: 22, meva: 42, macc: 42}, drk: {acc: 22, eva: 22, meva: 36, macc: 42}, bst: {acc: 36, eva: 36, meva: 36, macc: 36},
+  brd: {acc: 21, eva: 22, meva: 36, macc: 36, mdb: 15}, rng: {acc: 70, eva: 14, meva: 36}, smn: {eva: 22, meva: 22, mdb: 22},
+  sam: {acc: 36, eva: 36, meva: 36, stp: 8}, nin: {acc: 56, eva: 64, meva: 50, macc: 50}, drg: {acc: 64, eva: 36, meva: 36},
+  blu: {acc: 36, eva: 36, meva: 36, mdb: 36}, cor: {acc: 36, eva: 22, meva: 36, macc: 36}, pup: {acc: 50, eva: 56, meva: 36, macc: 36},
+  dnc: {acc: 64, eva: 64, meva: 36, macc: 36, dw: 5}, sch: {meva: 42, macc: 42, mdb: 22}, geo: {macc: 50, meva: 50, mdb: 28},
+  run: {acc: 56, eva: 56, meva: 70, macc: 36, mdb: 56},
+};
+function traitOf(stat, c){
+  const tier = (job, level) => { const list = (TRAITS[stat] || {})[(job || '').toLowerCase()] || [];
+    const hit = list.find(([lv]) => (level || 0) >= lv); return hit ? hit[1] : 0; };
+  return Math.max(tier(S.job, c.main_level || 99), tier(c.sub, c.sub_level || 0));
+}
+const giftOf = (stat, c) => (c.jp_spent || 0) >= 2100 ? ((GIFTS[(S.job || '').toLowerCase()] || {})[stat] || 0) : 0;
+// Accuracy from a combat skill, by steps: 1 a point to 200, 0.9 to 400, 0.8 to 600, 0.9 past it
+function skillAcc(level){
+  let a = Math.min(level, 200);
+  if (level > 200) a += Math.floor((Math.min(level, 400) - 200) * 0.9);
+  if (level > 400) a += Math.floor((Math.min(level, 600) - 400) * 0.8);
+  if (level > 600) a += Math.floor((level - 600) * 0.9);
+  return a;
+}
+// Evasion from the evasion skill: 1 a point to 300, 0.8 past it
+const skillEva = level => level > 300 ? Math.floor(300 + 0.8 * (level - 300)) : level;
+// A skill level read in game, by its name ("Great Sword" and "great_sword" alike)
+function skillLevel(c, name){
+  const want = (name || '').toLowerCase().replace(/[^a-z]/g, '');
+  for (const [k, v] of Object.entries(c.skills || {})) if (k.toLowerCase().replace(/[^a-z]/g, '') === want) return v;
+  return 0;
+}
+// Accuracy and Evasion of a gear total: main hand Accuracy = 0.75 x DEX + gear + its skill's
+// steps + traits + gifts; Evasion = 0.5 x AGI + gear + the evasion skill's steps + traits + gifts
+function combatOf(c, gear, dex, agi, mainName){
+  const g = k => (gear[k] || {}).v || 0;
+  const wskill = mainName && Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.wskill || {}))[mainName];
+  const level = wskill ? skillLevel(c, wskill) + g('skill:' + wskill.toLowerCase() + ' skill') : 0;
+  const acc = Math.floor(0.75 * dex) + g('acc') + (wskill ? skillAcc(level) : 0) + traitOf('acc', c) + giftOf('acc', c);
+  const eva = Math.floor(0.5 * agi) + g('eva') + skillEva(skillLevel(c, 'evasion') + g('skill:evasion skill')) + traitOf('eva', c) + giftOf('eva', c);
+  return {acc, eva, wskill, level};
+}
+
 /* ---- the character's real stats with a set ---- */
 // The stats measured in game by //gs c atelier (this subjob's export, else another one's)
 // The measure taken on the shown subjob if there is one, else the latest of the job (an offline
@@ -872,6 +954,13 @@ function charStats(s){
   out.mp = {now: c.max_mp, set: pool(c.max_mp, 'mp')};
   out.def = {now: c.defense, set: Math.floor(c.defense + g(set, 'def') - g(worn, 'def') + 1.5 * (out.vit.set - out.vit.now))};
   out.atk = {now: c.attack, set: c.attack + g(set, 'atk') - g(worn, 'atk') + (out.str.set - out.str.now)};
+  // Accuracy and Evasion are not in the status window: computed for the worn gear and the set alike
+  if (c.skills && Object.keys(c.skills).length) {
+    const was = combatOf(c, worn, out.dex.now, out.agi.now, (c.worn && c.worn.main || {}).name);
+    const now = combatOf(c, set, out.dex.set, out.agi.set, (withWeapons(s).pieces.main || {}).name);
+    out.acc = {now: was.acc, set: now.acc, tip: now.wskill ? `${now.wskill} ${now.level}` : ''};
+    out.eva = {now: was.eva, set: now.eva};
+  }
   return {c, out, set};
 }
 function globalsHTML(s){
@@ -882,7 +971,8 @@ function globalsHTML(s){
     return statLi(label, o.set, d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''); };
   const v = k => (set[k] || {}).v || 0;
   const pct = (label, sum, cap) => cappedLi(label, sum, cap, '');
-  const main = [['HP', out.hp], ['MP', out.mp], [t('defLabel'), out.def], [t('atkLabel'), out.atk]].map(([l, o]) => row(l, o)).join('');
+  const main = [['HP', out.hp], ['MP', out.mp], [t('defLabel'), out.def], [t('atkLabel'), out.atk], [t('accLabel'), out.acc], [t('evaLabel'), out.eva]]
+    .filter(([, o]) => o).map(([l, o]) => row(l, o)).join('');
   const attrs = ATTRS.map(a => row(a.toUpperCase(), out[a])).join('');
   // merits the game counts per level (res/merit_points.lua: "Spell Interruption Rate" 2 % a level)
   const merit = name => Object.entries(c.merits || {}).reduce((n, [k, lv]) => k.toLowerCase().replace(/_/g, ' ') === name ? n + lv : n, 0);
@@ -932,12 +1022,12 @@ function renderHome(){
 }
 function slotHTML(s, ci, slot, own, q, eff){
   const p = eff.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
-  if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></button>`;
+  if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="txt"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></span></button>`;
   const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
-  const tip = [pieceStats(p).text, ...(p.augs || [])].filter(Boolean).join('\n');
-  const from = weap ? `↳ ${weap}` : inh ? t('inhFrom', {b: shortPath(s.base)}) : '';
-  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}" title="${esc(tip)}">${icon(p.name)}<span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>` +
-    `${p.aug?`<span class="aug">${esc(p.aug)}</span>`:''}${from?`<span class="from">${esc(from)}</span>`:''}</button>`;
+  const r = pieceStats(p), augmented = r && Object.keys(r.aug).length;
+  // the full story (base / augments / where it comes from) is in the hover card (showTip)
+  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}` +
+    `<span class="txt"><span class="lbl">${label}</span><span class="item">${esc(p.name)}${augmented?'<span class="mk">◆</span>':''}</span></span></button>`;
 }
 /* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
 const WEAPON_SLOTS = new Set(['main', 'sub', 'range', 'ammo']);
@@ -1048,12 +1138,13 @@ function cardHTML(card, ci, bypath, q){
   const foot = [];
   if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits',{b:'<b>'+esc(shortPath(s.base))+'</b>'})} · ${n?t('changed',{n}):t('nothingChanged')}`); }
   else foot.push(t('defined',{n:'<b>'+Object.keys(s.pieces).length+'</b>'}));
-  if (s.aliases && s.aliases.length) foot.push(t('sharedBy',{l:s.aliases.map(a => esc(shortPath(a))).join(', ')}));
+  if (s.aliases && s.aliases.length) foot.push(`<details><summary>${t('sharedCount', {n: s.aliases.length})}</summary><p>${s.aliases.map(a => esc(shortPath(a))).join(' · ')}</p></details>`);
   const variants = card.variants.length > 1 ? `<div class="variants" role="group">${card.variants.map((x,i) => `<button aria-pressed="${i===vi}" data-card="${ci}" data-variant="${i}">${esc(x.label)}</button>`).join('')}</div>` : '';
   const when = t('famWhen.'+card.fam);
-  return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}</div><h2>${esc(niceName(card))}</h2>${when?`<p class="when">${when}</p>`:''}<code class="path">${esc(s.path)}</code>${variants}${weaponPicker(s)}</header>
+  return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}${when?` <span class="when">· ${when}</span>`:''}</div>` +
+    `<div class="titleline"><h2>${esc(niceName(card))}</h2><code class="path">${esc(s.path)}</code></div>${variants}${weaponPicker(s)}</header>
     <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer><div class="globals-inline">${globalsHTML(s)}</div>${setStatsHTML(s)}
-    <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="aug"></i>${t('legendAug')}</span></div></article>`;
+    <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span><b class="mk">◆</b>${t('legendAug')}</span><span>${t('legendHover')}</span></div></article>`;
 }
 function renderSets(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
@@ -1225,6 +1316,48 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('weapsel')) { const k = S.char + '|' + S.job + '|' + e.target.dataset.mode;
     if (e.target.value) S.weapons[k] = e.target.value; else delete S.weapons[k]; render(); }
 });
+/* ---- the hover card of a piece: what it brings, base and augments apart ---- */
+function tipHTML(card, slot){
+  const s = shownSet(card.c, card.i), eff = withWeapons(s), p = eff.pieces[slot];
+  const label = SLOT_NAMES[S.lang][slot];
+  if (!p) return `<div class="th">${icon(null)}<div><b>${label}</b><small>${slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty')}</small></div></div>`;
+  const r = pieceStats(p);
+  const own = new Set(s.own || Object.keys(s.pieces));
+  const origin = eff.from[slot] || (s.base && !own.has(slot) ? t('inhFrom', {b: shortPath(s.base)}) : t('legendOwn'));
+  let body = '';
+  if (r && r.known) {
+    const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
+    const order = STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder));
+    const cell = (part, k) => part[k] && part[k].v ? fmtStat(part[k]) : '';
+    body = `<table><thead><tr><th></th><th>${t('tipBase')}</th><th>${t('tipAug')}</th><th>${t('tipTotal')}</th></tr></thead><tbody>` +
+      order.map(k => `<tr><td>${esc(statLabel(k, r.stats[k]))}</td><td>${cell(r.base, k)}</td><td class="a">${cell(r.aug, k)}</td><td class="t">${fmtStat(r.stats[k])}</td></tr>`).join('') +
+      `</tbody></table>`;
+    const notes = [r.scanned ? t('fromScan') : '', r.rank ? t('rankKnown', {p: esc(r.path), r: r.rank}) : '',
+      r.path && !r.rank ? t('pathOne', {p: esc(r.path)}) : '', r.hidden ? t('hiddenFc') : ''].filter(Boolean);
+    if (notes.length) body += `<div class="k">${t('tipNotes')}</div><ul>${notes.map(n => `<li>${n}</li>`).join('')}</ul>`;
+    if (r.free.length) body += `<div class="k">${t('effects')}</div><ul>${r.free.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
+    if (r.cond.length) body += `<div class="k">${t('condTitle')}</div><ul>${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
+  } else body = `<p class="muted">${t('noDesc')}</p>`;
+  const weapon = r && r.weapon ? ` · ${Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ')}` : '';
+  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}</small></div></div><p class="origin">${esc(origin)}</p>${body}`;
+}
+// Placed beside the hovered slot, on the side with room, kept inside the window
+function showTip(el){
+  const tip = $('#tip'), ci = +el.dataset.card, card = S._cards && S._cards[ci];
+  if (!card) return;
+  tip.innerHTML = tipHTML({c: card, i: ci}, el.dataset.slot);
+  tip.hidden = false;
+  const b = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  const left = b.right + 8 + w < innerWidth ? b.right + 8 : Math.max(8, b.left - 8 - w);
+  tip.style.left = left + 'px';
+  tip.style.top = Math.max(8, Math.min(b.top, innerHeight - h - 8)) + 'px';
+}
+document.addEventListener('mouseover', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });
+document.addEventListener('mouseout', e => { if (e.target.closest('.slot[data-slot]') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.slot[data-slot]'))) $('#tip').hidden = true; });
+document.addEventListener('focusin', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });
+document.addEventListener('focusout', e => { if (e.target.closest('.slot[data-slot]')) $('#tip').hidden = true; });
+document.addEventListener('scroll', () => { $('#tip').hidden = true; }, true);
+
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') { if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
   if ((e.key==='ArrowDown' || e.key==='ArrowUp') && S.job && S.section==='sets' && $('#overlay').hidden && S._vis && S._vis.length) {
