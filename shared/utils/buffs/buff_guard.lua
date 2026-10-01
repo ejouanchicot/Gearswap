@@ -27,7 +27,9 @@ local BuffGuard = {}
 
 local NO_ACTION = {[2] = 'asleep', [19] = 'asleep', [193] = 'asleep', [7] = 'petrified',
     [10] = 'stunned', [28] = 'terrified', [14] = 'charmed', [17] = 'charmed'}
-local SILENCE, MUTE, OMERTA, PARALYSIS, AMNESIA = 6, 29, 262, 4, 16
+local SILENCE, MUTE, OMERTA, AMNESIA = 6, 29, 262, 16
+--- Paralysis, and its geomancy aura id (DEBUFF_REMOVAL.lua)
+local PARALYSIS_IDS = {4, 566}
 local AFTER_SPELL, AFTER_ITEM = 3.0, 1.0
 
 local function warn(text)
@@ -117,7 +119,9 @@ function BuffGuard.check(step)
         trace('amnesia: %s dropped', tostring(step.command))
         return 'skip'
     end
-    if ids[PARALYSIS] then
+    local paralyzed = false
+    for _, id in ipairs(PARALYSIS_IDS) do paralyzed = paralyzed or ids[id] == true end
+    if paralyzed then
         local first = cure_first('paralysis', not (ids[SILENCE] or ids[MUTE] or ids[OMERTA]))
         if first then return 'before', first end
     end

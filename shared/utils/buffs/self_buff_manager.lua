@@ -395,7 +395,10 @@ function SelfBuffManager.cast(to_cast)
             local delay = magic and after_spell or after_ability
             if item.cancel_first and item.buff then
                 -- Cancel addon: the buff goes, so the new cast can land
-                ActionQueue.push('cancel ' .. item.buff, 0.5, {delay = 0, tag = 'BUFF'})
+                -- same guard as its spell: a Silence landing now drops both,
+                -- so the buff is not cancelled for nothing
+                ActionQueue.push('cancel ' .. item.buff, 0.5,
+                    {delay = 0, tag = 'BUFF', guard = Guard.check, magic = magic})
             end
             ActionQueue.push(command, (item.wait or (1 + WAIT_MARGIN)) + delay,
                 {delay = delay, tag = 'BUFF', guard = Guard.check, magic = magic})
