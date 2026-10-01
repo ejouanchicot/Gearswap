@@ -29,7 +29,6 @@ local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
 local WHMTPConfig = nil
-local MessageWHM = nil
 local CureManager = nil
 
 local modules_loaded = false
@@ -50,10 +49,6 @@ local function ensure_modules_loaded()
     WSPrecastHandler = wph
 
     WHMTPConfig = _G.WHMTPConfig or {}
-
-    local msg_ok, msg = pcall(require, 'shared/utils/messages/formatters/jobs/message_whm')
-    if not msg_ok then msg = nil end
-    MessageWHM = msg
 
     local cm_ok, cm = pcall(require, 'shared/utils/whm/cure_manager')
     if not cm_ok then cm = nil end

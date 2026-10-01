@@ -199,15 +199,6 @@ function MessageCombat.show_target_error(action, reason)
     })
 end
 
---- @param old_state string Previous state
---- @param new_state string New state
-function MessageCombat.show_state_change(old_state, new_state)
-    M.send('COMBAT', 'state_change', {
-        old_state = old_state,
-        new_state = new_state
-    })
-end
-
 --- Ability refused: not enough TP
 --- @param ability_name string Ability name
 --- @param current_tp number Current TP
@@ -292,16 +283,6 @@ function MessageCombat.show_spell_cast(spell_name)
     })
 end
 
---- @param ability_name string Ability name
---- @param job_tag string|nil Job tag (defaults to the current one)
-function MessageCombat.show_ability_use(ability_name, job_tag)
-    job_tag = job_tag or MessageCore.get_job_tag()
-    M.send('COMBAT', 'ability_use', {
-        job = job_tag,
-        ability_name = ability_name
-    })
-end
-
 ---============================================================================
 --- WALTZ HEALING (DNC)
 ---============================================================================
@@ -348,60 +329,6 @@ function MessageCombat.show_waltz_heal(waltz_name, missing_hp, extra_ability, jo
             })
         end
     end
-end
-
----============================================================================
---- JUMP MESSAGES (DRG)
----============================================================================
-
---- @param jump_ability string Jump used
---- @param description string Description text
---- @param job_tag string|nil Job tag (defaults to the current one)
-function MessageCombat.show_jump_activated(jump_ability, description, job_tag)
-    job_tag = job_tag or MessageCore.get_job_tag()
-    M.send('COMBAT', 'jump_activated', {
-        job = job_tag,
-        jump_ability = jump_ability,
-        description = description
-    })
-end
-
---- @param second_jump string Jump chained next
---- @param description string|nil Description text
---- @param job_tag string|nil Job tag (defaults to the current one)
-function MessageCombat.show_jump_chaining(second_jump, description, job_tag)
-    job_tag = job_tag or MessageCore.get_job_tag()
-
-    if description then
-        M.send('COMBAT', 'jump_chaining_desc', {
-            job = job_tag,
-            second_jump = second_jump,
-            description = description
-        })
-    else
-        M.send('COMBAT', 'jump_chaining', {
-            job = job_tag,
-            second_jump = second_jump
-        })
-    end
-end
-
---- @param job_tag string|nil Job tag (defaults to the current one)
-function MessageCombat.show_jump_complete(job_tag)
-    job_tag = job_tag or MessageCore.get_job_tag()
-    M.send('COMBAT', 'jump_complete', {
-        job = job_tag
-    })
-end
-
---- @param ws_name string Weapon skill name
---- @param job_tag string|nil Job tag (defaults to the current one)
-function MessageCombat.show_jump_relaunch(ws_name, job_tag)
-    job_tag = job_tag or MessageCore.get_job_tag()
-    M.send('COMBAT', 'jump_relaunch', {
-        job = job_tag,
-        ws_name = ws_name
-    })
 end
 
 ---============================================================================

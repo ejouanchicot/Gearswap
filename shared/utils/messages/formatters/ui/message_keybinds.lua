@@ -92,12 +92,6 @@ function MessageKeybinds.show_no_binds_error(job_name)
     M.send('KEYBINDS', 'no_binds_error', {job_name = job_name})
 end
 
---- Display error when a keybind is invalid or malformed
---- @param bind_key string Invalid keybind key
-function MessageKeybinds.show_invalid_bind_error(bind_key)
-    M.send('KEYBINDS', 'invalid_bind_error', {bind_key = bind_key})
-end
-
 --- Display error when keybind binding fails
 --- @param bind_key string Keybind that failed to bind
 --- @param reason string Optional reason for failure

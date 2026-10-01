@@ -197,14 +197,6 @@ function Messages.custom(template, color)
         return self
     end
 
-    --- Set color (fluent interface)
-    --- @param new_color number Color code
-    --- @return table self
-    function builder:colored(new_color)
-        self.color = new_color
-        return self
-    end
-
     --- Set importance level
     --- @param level number 0=all, 1=important, 2=critical
     --- @return table self
@@ -308,21 +300,11 @@ function Messages.list(namespace)
     add_to_chat(160, "-----------------------------------------------------")
 end
 
---- Get cache statistics from engine
---- @return table {compiled_templates, loaded_namespaces, total_messages}
-function Messages.get_engine_stats()
-    return get_MessageEngine().get_stats()
-end
-
 --- Clear engine cache (for development/testing)
 function Messages.clear_cache()
     get_MessageEngine().clear_cache()
     Messages.info("Message cache cleared")
 end
-
----============================================================================
---- HELP COMMAND
----============================================================================
 
 ---============================================================================
 --- INTEGRATED TEST SUITE

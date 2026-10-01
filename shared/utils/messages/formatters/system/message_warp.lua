@@ -35,12 +35,6 @@ function MessageWarp.show_warp_equipping(ring_name)
     M.send('WARP', 'warp_equipping', {ring_name = ring_name})
 end
 
---- Show warp countdown
---- @param seconds number Seconds remaining
-function MessageWarp.show_warp_countdown(seconds)
-    M.send('WARP', 'warp_countdown', {seconds = tostring(seconds)})
-end
-
 --- Show warp ring usage
 --- @param ring_name string Ring name being used
 function MessageWarp.show_warp_using(ring_name)
@@ -69,39 +63,6 @@ function MessageWarp.show_warp_requires_blm(spell_name, required_level)
     })
 end
 
---- Show warp not available error
---- @param ring_name string|nil Optional ring name that was checked
-function MessageWarp.show_warp_unavailable(ring_name)
-    local ring_text = ring_name or "Warp Ring"
-    M.send('WARP', 'warp_unavailable', {ring_text = ring_text})
-end
-
---- Show warp ring no charges
---- @param ring_name string Ring name that has no charges
-function MessageWarp.show_warp_no_charges(ring_name)
-    M.send('WARP', 'warp_no_charges', {ring_name = ring_name})
-end
-
---- Show warp ring recast time
---- @param ring_name string Ring name on cooldown
---- @param seconds number Seconds until recast ready
-function MessageWarp.show_warp_recast(ring_name, seconds)
-    M.send('WARP', 'warp_recast', {
-        ring_name = ring_name,
-        seconds = tostring(seconds)
-    })
-end
-
---- Show warp ring charges remaining after usage
---- @param ring_name string Ring name
---- @param charges_remaining number Charges left after usage
-function MessageWarp.show_warp_charges_remaining(ring_name, charges_remaining)
-    M.send('WARP', 'warp_charges_remaining', {
-        ring_name = ring_name,
-        charges = tostring(charges_remaining)
-    })
-end
-
 ---============================================================================
 --- TELEPORT MESSAGES (Teleport-*, Recall-*, Teleport Rings, Dim Rings)
 ---============================================================================
@@ -116,12 +77,6 @@ end
 --- @param ring_name string Ring name being equipped
 function MessageWarp.show_tele_equipping(ring_name)
     M.send('WARP', 'tele_equipping', {ring_name = ring_name})
-end
-
---- Show teleport countdown
---- @param seconds number Seconds remaining
-function MessageWarp.show_tele_countdown(seconds)
-    M.send('WARP', 'tele_countdown', {seconds = tostring(seconds)})
 end
 
 --- Show teleport ring usage
@@ -156,44 +111,6 @@ end
 --- @param error_reason string Error reason
 function MessageWarp.show_spell_cannot_cast(error_reason)
     M.send('WARP', 'spell_cannot_cast', {error_reason = error_reason})
-end
-
---- Show teleport not available error
---- @param ring_names table|string Ring names that were checked
-function MessageWarp.show_tele_unavailable(ring_names)
-    local ring_text
-    if type(ring_names) == 'table' then
-        ring_text = table.concat(ring_names, ' or ')
-    else
-        ring_text = tostring(ring_names)
-    end
-    M.send('WARP', 'tele_unavailable', {ring_text = ring_text})
-end
-
---- Show teleport ring no charges
---- @param ring_name string Ring name that has no charges
-function MessageWarp.show_tele_no_charges(ring_name)
-    M.send('WARP', 'tele_no_charges', {ring_name = ring_name})
-end
-
---- Show teleport ring recast time
---- @param ring_name string Ring name on cooldown
---- @param seconds number Seconds until recast ready
-function MessageWarp.show_tele_recast(ring_name, seconds)
-    M.send('WARP', 'tele_recast', {
-        ring_name = ring_name,
-        seconds = tostring(seconds)
-    })
-end
-
---- Show teleport ring charges remaining after usage
---- @param ring_name string Ring name
---- @param charges_remaining number Charges left after usage
-function MessageWarp.show_tele_charges_remaining(ring_name, charges_remaining)
-    M.send('WARP', 'tele_charges_remaining', {
-        ring_name = ring_name,
-        charges = tostring(charges_remaining)
-    })
 end
 
 ---============================================================================

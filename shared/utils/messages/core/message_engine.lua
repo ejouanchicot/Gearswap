@@ -281,13 +281,6 @@ end
 --- UTILITY FUNCTIONS
 ---============================================================================
 
---- Check if a namespace is loaded
---- @param namespace string
---- @return boolean
-function MessageEngine.is_loaded(namespace)
-    return _message_data[namespace] ~= nil
-end
-
 --- Get all keys in a namespace (for debugging)
 --- @param namespace string
 --- @return table keys

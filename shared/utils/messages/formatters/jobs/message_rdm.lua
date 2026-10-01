@@ -28,35 +28,8 @@ local function get_job_tag()
 end
 
 ---============================================================================
---- DEBUFF WARNING MESSAGES
----============================================================================
-
---- Display DOOM warning message
-function RDMMessages.show_doom_warning()
-    M.job('RDM', 'doom_warning', {
-        job = get_job_tag()
-    })
-end
-
---- Display Doom removed message
-function RDMMessages.show_doom_removed()
-    M.job('RDM', 'doom_removed', {
-        job = get_job_tag()
-    })
-end
-
----============================================================================
 --- SPELL CASTING MESSAGES
 ---============================================================================
-
---- Display spell casting message
---- @param spell_name string Name of the spell being cast
-function RDMMessages.show_spell_casting(spell_name)
-    M.job('RDM', 'spell_casting', {
-        job = get_job_tag(),
-        spell = spell_name
-    })
-end
 
 --- Display element list help message
 function RDMMessages.show_element_list()
@@ -68,15 +41,6 @@ end
 ---============================================================================
 --- STATE DISPLAY MESSAGES
 ---============================================================================
-
---- Display current Enspell state
---- @param enspell_value string Current enspell value
-function RDMMessages.show_enspell_current(enspell_value)
-    M.job('RDM', 'enspell_current', {
-        job = get_job_tag(),
-        value = enspell_value
-    })
-end
 
 --- Display current Storm state
 --- @param storm_value string Current storm value
@@ -136,17 +100,6 @@ end
 ---============================================================================
 --- SPELL OPTIMIZATION MESSAGES
 ---============================================================================
-
---- Display Phalanx spell detected (debug)
---- @param spell_name string Name of Phalanx spell detected
---- @param target_name string Name of the target
-function RDMMessages.show_phalanx_detected(spell_name, target_name)
-    M.job('RDM', 'phalanx_detected', {
-        job = get_job_tag(),
-        spell = spell_name,
-        target = target_name
-    })
-end
 
 --- Display Phalanx II downgrade to Phalanx message
 function RDMMessages.show_phalanx_downgrade()

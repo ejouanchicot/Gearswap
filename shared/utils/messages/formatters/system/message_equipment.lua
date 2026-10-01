@@ -25,12 +25,6 @@ function MessageEquipment.show_check_header(job_name)
     InfoBlock.header('CHECKSETS', job_name:upper())
 end
 
---- Display a valid set (all items available)
---- @param set_path string Full path to set (e.g., "sets.precast.WS.Upheaval")
-function MessageEquipment.show_set_valid(set_path)
-    M.send('EQUIPMENT', 'set_valid', {set_path = set_path})
-end
-
 --- Display a missing item
 --- @param set_path string Full path to set
 --- @param slot string Equipment slot

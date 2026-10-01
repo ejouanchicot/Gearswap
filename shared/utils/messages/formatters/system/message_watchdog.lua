@@ -27,11 +27,6 @@ function MessageWatchdog.show_disabled()
     M.send('WATCHDOG', 'disabled')
 end
 
---- Show the WATCHDOG.stopped message
-function MessageWatchdog.show_stopped()
-    M.send('WATCHDOG', 'stopped')
-end
-
 --- Show the WATCHDOG.not_loaded message
 function MessageWatchdog.show_not_loaded()
     M.send('WATCHDOG', 'not_loaded')
@@ -120,17 +115,6 @@ function MessageWatchdog.show_debug_midcast_item(spell_name, cast_delay, timeout
     M.send('WATCHDOG', 'debug_midcast_item', {
         spell_name = spell_name,
         cast_delay = string.format("%.2f", cast_delay),
-        timeout = string.format("%.2f", timeout)
-    })
-end
-
---- @param spell_name string Spell name
---- @param cast_time number Cast time (s)
---- @param timeout number Watchdog timeout (s)
-function MessageWatchdog.show_debug_midcast_spell(spell_name, cast_time, timeout)
-    M.send('WATCHDOG', 'debug_midcast_spell', {
-        spell_name = spell_name,
-        cast_time = string.format("%.2f", cast_time),
         timeout = string.format("%.2f", timeout)
     })
 end

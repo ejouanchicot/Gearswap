@@ -177,15 +177,6 @@ function BLMMessages.show_spell_recasts_error()
     })
 end
 
---- Display insufficient MP error
---- @param player_mp number Current player MP
-function BLMMessages.show_insufficient_mp_error(player_mp)
-    M.job('BLM', 'insufficient_mp_error', {
-        job = get_job_tag(),
-        mp = tostring(player_mp)
-    })
-end
-
 --- Display Breakga replacement blocked message (lag protection)
 function BLMMessages.show_breakga_blocked()
     M.job('BLM', 'breakga_blocked', {

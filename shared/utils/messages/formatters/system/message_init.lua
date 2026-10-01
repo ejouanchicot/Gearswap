@@ -26,23 +26,6 @@ function MessageInit.show_module_load_failed(module_name, error_msg)
     })
 end
 
---- Show watchdog failed to load (no caller: INIT_SYSTEMS uses show_module_load_failed)
---- @param error_msg any Error message or object
-function MessageInit.show_watchdog_load_failed(error_msg)
-    M.send('INIT', 'watchdog_load_failed', {error_msg = tostring(error_msg)})
-end
-
---- Show system module loaded successfully
---- @param module_name string Name of the module
-function MessageInit.show_module_loaded(module_name)
-    M.send('INIT', 'module_loaded', {module_name = module_name})
-end
-
---- Show system initialization complete
-function MessageInit.show_init_complete()
-    M.send('INIT', 'init_complete')
-end
-
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================

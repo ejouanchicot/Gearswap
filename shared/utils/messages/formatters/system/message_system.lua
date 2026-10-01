@@ -78,15 +78,6 @@ function MessageSystem.show_system_intro(title, keybinds, job_name)
     build_and_display_intro(title, keybinds, nil, nil)
 end
 
---- Display a system intro with centered title, keybinds, and macro book info
---- @param title string System title (e.g., "WAR SYSTEM LOADED")
---- @param keybinds table Array of keybind objects with 'key' and 'desc' fields
---- @param macro_info table Optional macro info {book, page, subjob}
---- @param job_name string Not used (the intro carries no job tag)
-function MessageSystem.show_system_intro_with_macros(title, keybinds, macro_info, job_name)
-    build_and_display_intro(title, keybinds, macro_info, nil)
-end
-
 --- Display a system intro with centered title, keybinds, macro book and lockstyle info
 --- @param title string System title (e.g., "WAR SYSTEM LOADED")
 --- @param keybinds table Array of keybind objects with 'key' and 'desc' fields

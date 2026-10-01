@@ -203,34 +203,6 @@ function MessageDebuffs.show_action_blocked(action_name, action_type, debuff_nam
 end
 
 ---============================================================================
---- INCAPACITATED MESSAGE
----============================================================================
-
---- Display incapacitated message (player cannot act at all)
---- @param debuff_name string The incapacitating debuff
-function MessageDebuffs.show_incapacitated(debuff_name)
-    local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
-    local error_color = MessageCore.create_color_code(Colors.ERROR)
-    local debuff_color = MessageCore.create_color_code(Colors.DEBUFF)
-
-    -- Top separator
-    M.send('DEBUFFS', 'separator')
-
-    local formatted_message = string.format(
-        "%sIncapacitated %s[%s%s%s]",
-        error_color,
-        separator_color,
-        debuff_color, debuff_name,
-        separator_color
-    )
-
-    MessageRenderer.send(formatted_message, 1)
-
-    -- Bottom separator
-    M.send('DEBUFFS', 'separator')
-end
-
----============================================================================
 --- SILENCE CURE MESSAGES
 ---============================================================================
 

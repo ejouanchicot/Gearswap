@@ -49,14 +49,6 @@ function MessageCommands.show_color_test_header()
     add_to_chat(121, gray .. separator)
 end
 
---- One color sample line (codes 1-255 only)
---- @param code number Color code
-function MessageCommands.show_color_sample(code)
-    local color_code = string.char(0x1F, code)
-    local sample_text = color_code .. string.format("%03d - Sample Text", code)
-    M.send('COMMANDS', 'testcolors_sample', {sample = sample_text})
-end
-
 --- Up to 14 color codes on one line, each in its own color (1-509)
 --- @param code1 number First code; code2..code14 follow, nil entries are skipped
 function MessageCommands.show_color_sample_row(code1, code2, code3, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14)
@@ -126,25 +118,6 @@ function MessageCommands.show_craft_ready(description)
         gray .. ' ready - slots locked. Run ' ..
         yellow .. '//gs c uncraft' .. gray .. ' when done.')
 end
-
----============================================================================
---- DETECTREGION COMMAND
----============================================================================
-
---- Show the COMMANDS.windower_info_header message
-function MessageCommands.show_windower_info_header()
-    M.send('COMMANDS', 'windower_info_header')
-end
-
---- @param key string Field name
---- @param value any Field value
-function MessageCommands.show_windower_info_field(key, value)
-    M.send('COMMANDS', 'windower_info_field', {key = key, value = value})
-end
-
----============================================================================
---- SETREGION COMMAND
----============================================================================
 
 ---============================================================================
 --- LOCKSTYLE COMMAND

@@ -54,65 +54,9 @@ end
 --- ABILITY MESSAGES
 ---============================================================================
 
---- Show the BRD.soul_voice_activated message
-function BRDMessages.show_soul_voice_activated()
-    M.job('BRD', 'soul_voice_activated', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.soul_voice_ended message
-function BRDMessages.show_soul_voice_ended()
-    M.job('BRD', 'soul_voice_ended', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.nightingale_activated message
-function BRDMessages.show_nightingale_activated()
-    M.job('BRD', 'nightingale_activated', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.nightingale_active message
-function BRDMessages.show_nightingale_active()
-    M.job('BRD', 'nightingale_active', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.troubadour_activated message
-function BRDMessages.show_troubadour_activated()
-    M.job('BRD', 'troubadour_activated', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.troubadour_active message
-function BRDMessages.show_troubadour_active()
-    M.job('BRD', 'troubadour_active', {
-        job = get_job_tag()
-    })
-end
-
 --- Show the BRD.marcato_used message
 function BRDMessages.show_marcato_used()
     M.job('BRD', 'marcato_used', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.marcato_skip_buffs message
-function BRDMessages.show_marcato_skip_buffs()
-    M.job('BRD', 'marcato_skip_buffs', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.marcato_skip_soul_voice message
-function BRDMessages.show_marcato_skip_soul_voice()
-    M.job('BRD', 'marcato_skip_soul_voice', {
         job = get_job_tag()
     })
 end
@@ -166,16 +110,6 @@ function BRDMessages.show_instrument_released(song_name, instrument)
     })
 end
 
---- Legacy shortcut: Honor March on Marsyas
-function BRDMessages.show_honor_march_locked()
-    BRDMessages.show_instrument_locked('Honor March', 'Marsyas')
-end
-
---- Legacy shortcut: Honor March on Marsyas
-function BRDMessages.show_honor_march_released()
-    BRDMessages.show_instrument_released('Honor March', 'Marsyas')
-end
-
 ---============================================================================
 --- INSTRUMENT SELECTION MESSAGES
 ---============================================================================
@@ -214,77 +148,11 @@ function BRDMessages.show_song_pack(pack_name, song_list)
     })
 end
 
---- @param song_count number Number of songs being refreshed
-function BRDMessages.show_songs_refresh(song_count)
-    M.job('BRD', 'songs_refresh', {
-        job = get_job_tag(),
-        count = song_count
-    })
-end
-
 --- @param total_songs number Total number of dummy songs
 function BRDMessages.show_dummy_casting(total_songs)
     M.job('BRD', 'dummy_casting', {
         job = get_job_tag(),
         count = total_songs
-    })
-end
-
---- Note: the 'dummy_cast' template is commented out in brd_messages.lua, so a
---- call prints a format error. Its only callers are commented out too.
---- @param dummy_name string Name of the dummy song
-function BRDMessages.show_dummy_cast(dummy_name)
-    M.job('BRD', 'dummy_cast', {
-        job = get_job_tag(),
-        dummy = dummy_name
-    })
-end
-
---- @param song_count number Number of songs being cast
-function BRDMessages.show_tank_casting(song_count)
-    M.job('BRD', 'tank_casting', {
-        job = get_job_tag(),
-        count = song_count
-    })
-end
-
---- @param song_count number Number of songs being refreshed
-function BRDMessages.show_tank_refresh(song_count)
-    M.job('BRD', 'tank_refresh', {
-        job = get_job_tag(),
-        count = song_count
-    })
-end
-
---- @param song_count number Number of songs being cast
-function BRDMessages.show_healer_casting(song_count)
-    M.job('BRD', 'healer_casting', {
-        job = get_job_tag(),
-        count = song_count
-    })
-end
-
---- @param song_count number Number of songs being refreshed
-function BRDMessages.show_healer_refresh(song_count)
-    M.job('BRD', 'healer_refresh', {
-        job = get_job_tag(),
-        count = song_count
-    })
-end
-
----============================================================================
---- INDIVIDUAL SONG MESSAGES
----============================================================================
-
---- @param slot number Song slot (3, 4, or 5)
---- @param dummy_count number Number of dummies required
-function BRDMessages.show_song_guidance(slot, dummy_count)
-    local dummy_text = dummy_count > 1 and "dummies" or "dummy"
-    M.job('BRD', 'song_guidance', {
-        job = get_job_tag(),
-        slot = slot,
-        dummy_count = dummy_count,
-        dummy_text = dummy_text
     })
 end
 
@@ -329,52 +197,6 @@ function BRDMessages.show_threnody_cast(element)
     M.job('BRD', 'threnody_cast', {
         job = get_job_tag(),
         spell = colored_spell
-    })
-end
-
----============================================================================
---- HELPER: Get element color from database
----============================================================================
-
---- Helper to get element color from spell database
---- @param spell_data table Spell data from database
---- @return string|nil element_color Inline color code or nil
-local function get_element_color_from_data(spell_data)
-    if not spell_data or not spell_data.element then
-        return nil
-    end
-    return ELEMENT_COLORS[spell_data.element]
-end
-
----============================================================================
---- GENERIC SONG CAST (with element color support)
----============================================================================
-
---- Display generic song cast with element color from database
---- Format: [BRD] [ELEMENT_COLOR][Song Name] >> Description
---- @param spell_name string Full spell name (e.g., "Valor Minuet IV")
---- @param spell_data table Spell data from database (must have 'element' and 'description')
-function BRDMessages.show_song_cast_generic(spell_name, spell_data)
-    if not spell_data then
-        M.error(string.format("Spell '%s' has no database entry", spell_name))
-        return
-    end
-
-    -- Get element color from database
-    local element_color = get_element_color_from_data(spell_data)
-    local gray_code = string.char(0x1F, 160)
-
-    -- Add element color to spell name if spell has an element
-    local colored_spell = spell_name
-    if element_color then
-        colored_spell = element_color .. spell_name .. gray_code
-    end
-
-    -- Use generic spell template with element color
-    M.send('MAGIC', 'spell_activated_full', {
-        job = get_job_tag(),
-        spell = colored_spell,
-        description = spell_data.description or "Unknown effect"
     })
 end
 
@@ -431,47 +253,8 @@ function BRDMessages.show_song_refinement_failed(song_name, recast_seconds)
 end
 
 ---============================================================================
---- BUFF STATUS MESSAGES
----============================================================================
-
---- Show the BRD.doom_gained message
-function BRDMessages.show_doom_gained()
-    M.job('BRD', 'doom_gained', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.doom_removed message
-function BRDMessages.show_doom_removed()
-    M.job('BRD', 'doom_removed', {
-        job = get_job_tag()
-    })
-end
-
----============================================================================
 --- ERROR MESSAGES
 ---============================================================================
-
---- Show the BRD.no_pack_configured message
-function BRDMessages.show_no_pack_configured()
-    M.job('BRD', 'no_pack_configured', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.tank_not_configured message
-function BRDMessages.show_tank_not_configured()
-    M.job('BRD', 'tank_not_configured', {
-        job = get_job_tag()
-    })
-end
-
---- Show the BRD.healer_not_configured message
-function BRDMessages.show_healer_not_configured()
-    M.job('BRD', 'healer_not_configured', {
-        job = get_job_tag()
-    })
-end
 
 --- Show the BRD.no_element_selected message
 function BRDMessages.show_no_element_selected()

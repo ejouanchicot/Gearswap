@@ -65,20 +65,6 @@ function MessageStatus.show_tp_ready(job, tp_value)
     })
 end
 
---- Show TP required message
---- @param job string Job abbreviation (e.g., "SAM")
---- @param ability string Ability name
---- @param current_tp number Current TP
---- @param required_tp number Required TP
-function MessageStatus.show_tp_required(job, ability, current_tp, required_tp)
-    M.send('STATUS', 'tp_required', {
-        job = job,
-        ability = ability,
-        current_tp = tostring(current_tp),
-        required_tp = tostring(required_tp)
-    })
-end
-
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================

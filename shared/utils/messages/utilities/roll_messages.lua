@@ -456,28 +456,6 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
     end
 end
 
---- Display Natural 11 special benefits (simple one-line format). No caller:
---- show_roll_result prints the same line itself.
---- Shows instant recast reset, 30s recast, and bust debuff immunity
---- NOTE: Immunity = NO BUST DEBUFF if you bust (you can still bust but no penalty)
---- Benefits only apply if NO Bust debuff is currently active
---- Benefits persist as long as ANY 11 roll remains active
-function RollMessages.show_roll_natural_eleven()
-    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
-    local success_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
-    local white_color = ChatPalette.tag('white')
-
-    -- Simple one-line message: [COR/DNC] 11! Reset / 30s Recast / Bust Immunity
-    local message = string.format(
-        "%s%s11!%s Reset / 30s Recast / Bust Immunity",
-        tag_prefix(job_color, white_color),
-        success_color,
-        white_color
-    )
-
-    MessageCore.raw(message)
-end
-
 ---============================================================================
 --- BUST MESSAGES
 ---============================================================================
@@ -568,16 +546,6 @@ end
 ---============================================================================
 --- ERROR MESSAGES
 ---============================================================================
-
---- Display roll not found error
---- @param roll_name string Name of the roll
-function RollMessages.show_roll_not_found(roll_name)
-    local message = string.format(
-        "Unknown roll: %s",
-        roll_name
-    )
-    MessageCore.error(message)
-end
 
 --- Display invalid roll value error
 --- @param roll_value number Invalid roll value
