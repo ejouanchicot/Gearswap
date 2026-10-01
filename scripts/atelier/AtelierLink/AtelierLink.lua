@@ -71,9 +71,20 @@ local function write_link_file()
         :format(p.name, port, token)) then written_for = p.name end
 end
 
+-- A listening socket on that port, or nil when another program holds it. Not socket.bind():
+-- it sets SO_REUSEADDR, and on Windows that lets the second box bind the port of the first,
+-- whose door then answers both
+local function listen_on(p)
+    local tcp = socket.tcp()
+    if not tcp then return nil end
+    if tcp:bind('127.0.0.1', p) and tcp:listen(32) then return tcp end
+    tcp:close()
+    return nil
+end
+
 local function open_door()
     for p = FIRST_PORT, FIRST_PORT + PORT_TRIES - 1 do
-        server = socket.bind('127.0.0.1', p)
+        server = listen_on(p)
         if server then port = p break end
     end
     if not server then

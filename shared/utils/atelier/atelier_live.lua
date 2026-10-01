@@ -208,6 +208,17 @@ end
 --- Open the door (once per addon load) and look at it every few frames during
 --- this file load; a new load counts as a new version for the page.
 --- @return number|nil port, string|nil error
+-- A listening socket on that port, or nil when another program holds it. Not socket.bind():
+-- it sets SO_REUSEADDR, and on Windows that lets a second box bind the same port as the
+-- first, whose door then answers both (the second one's page gets "token" refusals)
+local function listen_on(socket, port)
+    local server = socket.tcp()
+    if not server then return nil end
+    if server:bind('127.0.0.1', port) and server:listen(32) then return server end
+    server:close()
+    return nil
+end
+
 function AtelierLive.start()
     if not (player and player.name) then return nil, 'no player' end
     local live = windower._atelier_live
@@ -216,7 +227,7 @@ function AtelierLive.start()
         if not socket then return nil, 'LuaSocket not reachable' end
         local server, port
         for p = FIRST_PORT, FIRST_PORT + PORT_TRIES - 1 do
-            server = socket.bind('127.0.0.1', p)
+            server = listen_on(socket, p)
             if server then port = p break end
         end
         if not server then return nil, 'no free port' end
