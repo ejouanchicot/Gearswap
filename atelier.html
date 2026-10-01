@@ -258,11 +258,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .meritbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:14px}
 .meritbar p{margin:0;max-width:760px;font-size:13.5px}
 /* columns, not a grid: each group stacks under the previous one, no row as tall as the longest group */
-.meritgrid{columns:300px;column-gap:28px}
-.meritgrid section{break-inside:avoid;margin-bottom:10px}
-.meritgrid h4{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
-.meritgrid section{padding-top:2px}
-.meritgrid section + section{margin-top:6px}
+.meritgrid{columns:340px;column-gap:14px}
+.meritgrid .box{break-inside:avoid;margin-bottom:14px;display:block}
 .meritlist{list-style:none;margin:0;padding:0;font-size:13.5px}
 .meritlist li{display:grid;grid-template-columns:minmax(0,1fr) 54px 92px;align-items:center;column-gap:8px;padding:2px 0 2px 12px;border-bottom:1px dotted var(--line);position:relative}
 .meritlist span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help}
@@ -336,6 +333,30 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 .panel .big{font-family:var(--display);font-weight:600;font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums}
 .panel .head p{color:var(--muted);font-size:14px}
 .panel .tbl td:first-child{width:30%}
+/* the other tabs: the jobs on the left, compartments on the right */
+.tabx{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;height:100%;min-height:0}
+.joblist{min-height:0;display:flex;flex-direction:column}
+.joblist .scroll{flex:1;min-height:0}
+.tabmain{min-height:0;overflow:auto;padding-bottom:16px}
+.fam.static{cursor:default;color:var(--role)}
+.fam.static span:first-child::before{content:none}
+.jobrow{grid-template-columns:20px 40px minmax(0,1fr);align-items:center;gap:0 10px;padding:6px 12px 6px 10px}
+.jobrow .em{width:20px;height:20px;background:var(--role)}
+.jobrow b{font-size:14px;letter-spacing:.03em}
+.jobrow small{font-size:13px;color:var(--muted);align-self:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.boxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:14px;align-items:start}
+.boxgrid.one{grid-template-columns:minmax(0,1fr)}
+.tbl.in{font-size:14px}
+.tbl.in td{padding:6px 12px}
+.tbl.in tr:first-child td{border-top:0}
+.box .boxb > .tbl.in:only-child{margin:-6px -12px -10px;width:calc(100% + 24px)}
+.tbl .kcol{width:150px}
+.tbl .swcol{width:52px}
+.subh{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:12px 0 2px}
+.bighead{display:grid;gap:2px;padding:4px 0 6px}
+.bighead .big{font-family:var(--display);font-weight:600;font-size:32px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--c)}
+.bighead p{color:var(--muted);font-size:14px}
+@media (max-width:900px){.tabx{grid-template-columns:minmax(0,1fr)}.joblist{max-height:220px}}
 .placeholder{background:var(--panel);border:1px dashed var(--line-strong);border-radius:4px;padding:36px;text-align:center;color:var(--muted);display:grid;gap:14px;justify-items:center}
 
 /* ---- drawer / dialog ---- */
@@ -397,7 +418,7 @@ const T = {
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
-    modesOther:'Autres modes (sans touche)', atLoad:'La valeur encadrée est celle au chargement du job.',
+    modesOther:'Autres modes (sans touche)', modesKeyed:'Modes avec une touche', atLoad:'La valeur encadrée est celle au chargement du job.',
     noKey:'aucune touche', macro:'Macrobook', lockstyle:'Lockstyle', bookPage:'Livre {b}, page {p}', bySub:'Par sub', byDual:'En dual-box (job de l\'autre perso)',
     style:'Set {s}', on:'On', off:'Off', mock:'Données écrites par le jeu (//gs c atelier), ou pour tous les jobs d\'un coup par « Atelier - export all jobs.bat » (dossier data). Puis recharge cette page.', none:'Pas encore de données. En jeu, tape //gs c atelier (le job chargé) ou //gs c atelier on (chaque job à son chargement), puis recharge cette page.',
     placeholder:'Pas encore exporté : charge ce job en jeu avec //gs c atelier on actif, ou tape //gs c atelier.', seeOther:'Voir les jobs de {c}',
@@ -420,7 +441,7 @@ const T = {
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
-    modesOther:'Other modes (no key)', atLoad:'The framed value is the one at job load.',
+    modesOther:'Other modes (no key)', modesKeyed:'Modes with a key', atLoad:'The framed value is the one at job load.',
     noKey:'no key', macro:'Macro book', lockstyle:'Lockstyle', bookPage:'Book {b}, page {p}', bySub:'By subjob', byDual:'Dual-box (other character\'s job)',
     style:'Set {s}', on:'On', off:'Off', mock:'Data written by the game (//gs c atelier), or for every job at once by "Atelier - export all jobs.bat" (data folder). Then reload this page.', none:'No data yet. In game, type //gs c atelier (the loaded job) or //gs c atelier on (every job as it loads), then reload this page.',
     placeholder:'Not exported yet: load this job in game with //gs c atelier on, or type //gs c atelier.', seeOther:'See {c}\'s jobs',
@@ -881,6 +902,7 @@ function meritDelta(){
   }
   return out;
 }
+const MERIT_COLORS = {mgHp: 'g-def', mgAttr: 'g-attr', mgCombat: 'g-off', mgMagic: 'g-mag', mgOther: 'g-other', mgJob1: 'g-you', mgJob2: 'g-buff'};
 const MERIT_GROUPS = [[64, 128, 'mgHp'], [128, 192, 'mgAttr'], [192, 256, 'mgCombat'], [256, 320, 'mgMagic'], [320, 384, 'mgOther'],
   [384, 2048, 'mgJob1'], [2048, 9999, 'mgJob2']];
 function renderMerits(){
@@ -894,7 +916,7 @@ function renderMerits(){
       return `<li class="${changed ? 'changed' : ''}"><span title="${esc(m.desc)}">${esc(m.en)}</span>` +
         `<input class="meritin" id="merit-${esc(m.key)}" data-merit="${esc(m.key)}" type="number" min="0" max="15" value="${lv}">` +
         `<i>${changed ? `${t('inGame')} ${m.level} · ` : ''}${esc(total)}</i></li>`; }).join('');
-    return rows ? `<section><h4>${t(label)}</h4><ul class="meritlist">${rows}</ul></section>` : '';
+    return rows ? box(MERIT_COLORS[label], t(label), `<ul class="meritlist">${rows}</ul>`) : '';
   }).join('');
   const n = Object.keys(edits).length;
   return `<div class="meritbar"><p class="muted">${t('meritsNote', {at: esc(c.at), s: esc(c.sub || '—')})}</p>` +
@@ -1467,48 +1489,52 @@ function renderSets(d){
 }
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
+const KEY_COLORS = {job: 'g-def', custom: 'g-attr', combat: 'g-off', treasure: 'g-res', common: 'g-other'};
 function renderKeys(d){
   const groups = {};
   for (const k of d.keys) { if (!k.key) continue; (groups[k.src] = groups[k.src] || []).push(k); }
-  const body = ['job','custom','combat','treasure','common'].filter(g => groups[g]).map(g =>
-    `<tr class="grp"><th colspan="4">${t('keyGroups.'+g)}<span class="count">${groups[g].length}</span></th></tr>` + groups[g].map(k =>
-      `<tr class="${k.subjob && k.subjob !== d.sub ? 'other-sub' : ''}"><td>${keyLabel(k.key)}</td><td>${esc(k.desc)}</td><td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td><td class="file r">${t('source.'+g).replace('{J}', S.job)}.lua</td></tr>`).join('')).join('');
-  return `<div class="tblwrap"><table class="tbl"><thead><tr><th>${t('colKey')}</th><th>${t('colAction')}</th><th>${t('colSub')}</th><th class="r">${t('colFile')}</th></tr></thead><tbody>${body}</tbody></table></div>`;
+  const boxes = ['job','custom','combat','treasure','common'].filter(g => groups[g]).map(g =>
+    box(KEY_COLORS[g], t('keyGroups.'+g), `<table class="tbl in"><tbody>${groups[g].map(k =>
+      `<tr class="${k.subjob && k.subjob !== d.sub ? 'other-sub' : ''}"><td class="kcol">${keyLabel(k.key)}</td><td>${esc(k.desc)}</td>` +
+      `<td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td></tr>`).join('')}</tbody></table>`,
+      `<span class="meta">${groups[g].length} · ${t('source.'+g).replace('{J}', S.job)}.lua</span>`)).join('');
+  return `<div class="boxgrid">${boxes}</div>`;
 }
 function keyOfState(d){ const keyOf = {}; for (const k of d.keys) if (k.state && k.key && !keyOf[k.state]) keyOf[k.state] = k.key; return keyOf; }
 function modeTable(list, keyOf){
-  return `<div class="tblwrap"><table class="tbl"><thead><tr><th>${t('colMode')}</th><th>${t('colValues')}</th><th class="r">${t('colKey')}</th></tr></thead><tbody>` +
+  return `<table class="tbl in"><tbody>` +
     list.map(m => `<tr><td><b>${esc(m.desc || m.name)}</b><span class="state">state.${esc(m.name)}</span></td>
-      <td><span class="values">${m.values.map(v => `<span class="${v===m.current?'def':''}">${esc(v)}</span>`).join('')}</span></td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`).join('') + `</tbody></table></div>`;
+      <td><span class="values">${m.values.map(v => `<span class="${v===m.current?'def':''}">${esc(v)}</span>`).join('')}</span></td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`).join('') + `</tbody></table>`;
 }
 function renderModes(d){
   const keyOf = keyOfState(d);
   const shown = d.modes.filter(m => !HIDDEN_MODES.has(m.name) && !/^[A-Z]{3}Song\d$/.test(m.name));
   const keyed = shown.filter(m => keyOf[m.name]), other = shown.filter(m => !keyOf[m.name]);
-  return modeTable(keyed, keyOf) + (other.length ? `<details class="more"><summary>${t('modesOther')} (${other.length})</summary>${modeTable(other, keyOf)}</details>` : '') +
-    `<p class="note-foot">${t('atLoad')}</p>`;
+  return `<div class="boxgrid one">${box('g-attr', t('modesKeyed'), modeTable(keyed, keyOf), `<span class="meta">${keyed.length}</span>`)}` +
+    (other.length ? box('g-other', t('modesOther'), modeTable(other, keyOf), `<span class="meta">${other.length}</span>`) : '') +
+    `</div><p class="note-foot">${t('atLoad')}</p>`;
 }
 function renderMacro(d){
   const m = d.macro || {}, l = d.lockstyle || {};
   const rows = (obj, fmt) => Object.entries(obj||{}).map(([k,v]) => `<tr><td class="sub">${esc(k)}</td><td>${fmt(v)}</td></tr>`).join('');
   const bp = v => v && v.book ? t('bookPage',{b:v.book,p:v.page}) : Object.entries(v||{}).map(([s,x]) => `/${esc(s)} ${x.book}·${x.page}`).join(' &nbsp; ');
-  const table = (title, obj, fmt) => obj && Object.keys(obj).length ? `<table class="tbl"><tr class="grp"><th colspan="2">${title}</th></tr>${rows(obj, fmt)}</table>` : '';
+  const table = (title, obj, fmt) => obj && Object.keys(obj).length ? `<div class="subh">${title}</div><table class="tbl in"><tbody>${rows(obj, fmt)}</tbody></table>` : '';
   // the values in force for the subjob shown: its own entry, else the default
   const book = (m.solo || {})[d.sub] || m.default, style = (l.by_subjob || {})[d.sub] ?? l.default;
   const whose = own => ' · ' + (own ? '/' + esc(d.sub) : t('byDefault'));
-  return `<div class="pair">
-    <section class="panel"><div class="head"><div class="kicker">${t('macro')}</div><span class="big">${bookOf(d)}</span><p>${book?t('bookPage',{b:book.book,p:book.page}) + whose((m.solo || {})[d.sub]):''}</p></div>
-      ${table(t('bySub'), m.solo, bp)}${table(t('byDual'), m.dualbox, bp)}</section>
-    <section class="panel"><div class="head"><div class="kicker">${t('lockstyle')}</div><span class="big">${styleOf(d)}</span><p>${style != null ? t('style',{s:esc(style)}) + whose((l.by_subjob || {})[d.sub] != null) : ''}</p></div>
-      ${table(t('bySub'), l.by_subjob, v => t('style',{s:v}))}</section></div>`;
+  const head = (big, line) => `<div class="bighead"><span class="big">${big}</span><p>${line}</p></div>`;
+  return `<div class="boxgrid">` +
+    box('g-tank', t('macro'), head(bookOf(d), book ? t('bookPage',{b:book.book,p:book.page}) + whose((m.solo || {})[d.sub]) : '') + table(t('bySub'), m.solo, bp) + table(t('byDual'), m.dualbox, bp)) +
+    box('g-buff', t('lockstyle'), head(styleOf(d), style != null ? t('style',{s:esc(style)}) + whose((l.by_subjob || {})[d.sub] != null) : '') + table(t('bySub'), l.by_subjob, v => t('style',{s:v}))) +
+    `</div>`;
 }
 function renderFunctions(d){
   const keyOf = keyOfState(d);
   const bools = d.modes.filter(m => m.values.length===2 && ((m.values.includes('on') && m.values.includes('off')) || (m.values.includes('On') && m.values.includes('Off'))) && !HIDDEN_MODES.has(m.name));
-  return `<div class="tblwrap"><table class="tbl"><thead><tr><th style="width:56px"></th><th>${t('colMode')}</th><th>${t('colState')}</th><th class="r">${t('colKey')}</th></tr></thead><tbody>` +
+  return `<div class="boxgrid one">` + box('g-mag', t('sectionsFunctions'), `<table class="tbl in"><tbody>` +
     bools.map(m => { const on = m.current.toLowerCase()==='on';
-      return `<tr><td><span class="sw ${on?'on':''}" aria-hidden="true"></span></td><td><b>${esc(m.desc||m.name)}</b><span class="state">state.${esc(m.name)}</span></td><td>${on?t('on'):t('off')}</td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`; }).join('') +
-    `</tbody></table></div>`;
+      return `<tr><td class="swcol"><span class="sw ${on?'on':''}" aria-hidden="true"></span></td><td><b>${esc(m.desc||m.name)}</b><span class="state">state.${esc(m.name)}</span></td><td>${on?t('on'):t('off')}</td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`; }).join('') +
+    `</tbody></table>`, `<span class="meta">${bools.length}</span>`) + `</div>`;
 }
 // The exported subjobs of the job: one button each, the shown one pressed
 // A dot marks a subjob that shows something else than the main one (its own modes...)
@@ -1522,6 +1548,14 @@ function subPicker(){
     `<optgroup label="${t('subMine')}">${subs.map(opt).join('')}</optgroup>` +
     (others.length ? `<optgroup label="${t('subOther')}">${others.map(opt).join('')}</optgroup>` : '') + `</select></label>`;
 }
+// The played jobs by role, the shown one marked: a click changes job and keeps the tab
+function jobListHTML(){
+  const rows = ROLES.map(r => { const played = JOBS.filter(j => j[2]===r && plays(j[0]));
+    return played.length ? `<div class="fam static" style="--role:${ROLE_COLOR[r]}"><span>${t('roles.'+r)}</span><span>${played.length}</span></div>` +
+      played.map(([c, name]) => `<button class="setrow jobrow" data-jobkeep="${c}" aria-current="${S.job===c}" style="--role:${ROLE_COLOR[r]}">` +
+        `${emblem(c)}<b>${c}</b><small>${name}</small></button>`).join('') : ''; }).join('');
+  return `<aside class="setlist joblist"><div class="scroll">${rows}</div></aside>`;
+}
 function renderJob(){
   const c = S.job, d = data();
   let body, sections = '';
@@ -1531,7 +1565,9 @@ function renderJob(){
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;
     body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits}[S.section](d);
   }
-  return `${sections}<div class="pane ${d && S.section==='sets' ? 'split' : ''}">${body}</div>`;
+  // every tab but Sets: the played jobs on the left, to change job and stay on the tab
+  if (d && S.section !== 'sets') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
+  return `${sections}<div class="pane ${d ? 'split' : ''}">${body}</div>`;
 }
 // Re-render, keeping the focus of the search box and the scroll of each block
 // while the view stays the same (the set detail goes back to its top for another set)
@@ -1665,6 +1701,7 @@ document.addEventListener('click', e => {
   if ('trylua' in d) { openLua(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('copylua' in d) { copyLua(b); return; }
   if (d.wmode) { const k = S.char + '|' + S.job + '|' + d.wmode; if (d.wval) S.weapons[k] = d.wval; else delete S.weapons[k]; render(); return; }
+  if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if ('bufftoggle' in d) { S.buffsOpen = !S.buffsOpen; render(); return; }
   if ('buffreset' in d) { S.buffs[S.char] = {}; render(); return; }
