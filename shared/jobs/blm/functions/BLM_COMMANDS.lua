@@ -101,7 +101,7 @@ local function update_ui()
 end
 
 -- NOTE: BLM logic functions are loaded globally via blm_functions.lua:
---   • BuffSelf() - Automated self-buffing
+--   • BuffSelf() - the common //gs c buff (shared/utils/buffs/buff_command.lua)
 --   • CastStorm() - Storm + Klimaform automation
 --   • refine_various_spells() - Spell refinement (tier downgrading)
 -- These functions are available in _G scope and called directly

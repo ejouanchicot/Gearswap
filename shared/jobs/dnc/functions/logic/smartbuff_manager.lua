@@ -10,7 +10,8 @@
 ---   • Then //gs c buff adds the DNC and subjob lists of BUFF_CONFIG.lua
 ---     (shared/utils/buffs/buff_command.lua, through _G.job_buff_extra)
 ---   • Recast checking (is_recast_ready from RECAST_CONFIG)
----   • Sequential casting (CAST_SPACING seconds apart)
+---   • //gs c dance: sequential casting (CAST_SPACING seconds apart); //gs c
+---     buff goes through the shared action queue (self_buff_manager.lua)
 ---   • Status display (active/cooldown with time remaining)
 ---
 ---   @file    shared/jobs/dnc/functions/logic/smartbuff_manager.lua
