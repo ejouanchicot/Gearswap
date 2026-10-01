@@ -374,7 +374,6 @@ end
 HPPriority._piece_hp_mp = piece_hp_mp
 HPPriority._augment_hp_mp = augment_hp_mp
 HPPriority._config = { DEFAULTS = DEFAULTS, MP_WEIGHT = MP_WEIGHT }
-HPPriority._ranked_copy = function(set) return ranked_copy(set, rawget(_G, state_key)) end
 
 _G.HPPriority = HPPriority
 

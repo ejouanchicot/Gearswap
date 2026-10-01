@@ -59,11 +59,6 @@ function Chat.separator()
     add_to_chat(CHANNEL, C.gray .. SEP)
 end
 
---- Full-width gray '-' divider for sub-sections.
-function Chat.divider()
-    add_to_chat(CHANNEL, C.gray .. string.rep('-', WIDTH))
-end
-
 --- Banner panel: a single line with the title centered between '=' chars
 --- (matches MessageKeybinds pattern: `===== Title =====`).
 --- Total width is Config.SEP_LEN. Title is wrapped in spaces.

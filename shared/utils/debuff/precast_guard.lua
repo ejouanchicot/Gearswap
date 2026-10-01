@@ -508,20 +508,4 @@ end
 ---   UTILITY FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if action would be blocked without actually blocking it
---- Useful for UI indicators or pre-validation
---- @param action_type string Type of action to check
---- @return boolean blocked True if action would be blocked
---- @return string|nil debuff_name Name of blocking debuff
-function PrecastGuard.would_block(action_type)
-    local blocked, debuff_name = DebuffChecker.check_action_blocked(action_type)
-    return blocked, debuff_name
-end
-
---- Get status of all current blocking debuffs
---- @return table List of active blocking debuffs
-function PrecastGuard.get_active_blocks()
-    return DebuffChecker.get_all_active_blocks()
-end
-
 return PrecastGuard

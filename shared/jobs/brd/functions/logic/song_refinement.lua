@@ -95,17 +95,6 @@ function SongRefinement.refine_song(spell, eventArgs)
     return false
 end
 
----   Get downgrade for a spell (for command usage)
----   @param spell_name string Spell name
----   @return string|nil downgrade Downgrade spell name or nil
-function SongRefinement.get_downgrade(spell_name)
-    if not BRDSongConfig.SONG_REFINE or not BRDSongConfig.SONG_REFINE.tiers then
-        return nil
-    end
-
-    return BRDSongConfig.SONG_REFINE.tiers[spell_name]
-end
-
 ---   Check if refinement system is enabled
 ---   @return boolean enabled
 function SongRefinement.is_enabled()

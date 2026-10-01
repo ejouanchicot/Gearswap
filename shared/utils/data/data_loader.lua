@@ -251,18 +251,6 @@ function DataLoader.load_weaponskills()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   LOAD ALL DATA (Convenience function)
----  ═══════════════════════════════════════════════════════════════════════════
-
---- @return boolean Always true
-function DataLoader.load_all()
-    DataLoader.load_spells()
-    DataLoader.load_abilities()
-    DataLoader.load_weaponskills()
-    return true
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   QUERY FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 

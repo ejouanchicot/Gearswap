@@ -170,22 +170,10 @@ function AutoMove.is_moving()
     return moving
 end
 
---- Get last calculated distance
---- @return number Distance moved since last check
-function AutoMove.get_last_distance()
-    return mov.last_distance or 0
-end
-
 --- Get current position
 --- @return table {x, y, z} Current position
 function AutoMove.get_position()
     return { x = mov.x, y = mov.y, z = mov.z }
-end
-
---- Reinitialize position (called after job change to prevent false positives)
---- @return boolean True if position was successfully reinitialized
-function AutoMove.reinit_position()
-    return init_position()
 end
 
 ---============================================================================

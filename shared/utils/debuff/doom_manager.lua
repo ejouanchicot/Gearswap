@@ -132,24 +132,6 @@ function DoomManager.handle_status_change(newStatus, oldStatus)
     end
 end
 
---- Validates that Doom set is properly configured
---- Checks if sets.buff.Doom exists and is not empty
----
---- @return boolean True if Doom set is valid, false otherwise
-function DoomManager.validate_doom_set()
-    if not sets or not sets.buff or not sets.buff.Doom then
-        return false
-    end
-
-    local has_gear = false
-    for slot, item in pairs(sets.buff.Doom) do
-        has_gear = true
-        break
-    end
-
-    return has_gear
-end
-
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================

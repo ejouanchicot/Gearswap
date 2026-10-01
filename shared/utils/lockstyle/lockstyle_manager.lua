@@ -63,12 +63,6 @@ function LockstyleManager.toggle_dressup()
     return _G.DRESSUP_MANAGEMENT_ENABLED
 end
 
---- Get current DressUp management state
---- @return boolean Current state
-function LockstyleManager.is_dressup_enabled()
-    return _G.DRESSUP_MANAGEMENT_ENABLED == true
-end
-
 --- Apply an arbitrary lockstyle number with DressUp awareness.
 --- Stateless helper usable from anywhere (craft/fish commands, debug, etc).
 --- If DressUp management is enabled, unloads dressup, applies the style,

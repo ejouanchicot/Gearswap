@@ -229,30 +229,6 @@ function Orchestrator.attach(KeybindUI)
         return false
     end
 
-    --- Get UI status information (for debug / monitoring).
-    --- NOTE: total_update_time is never incremented, so avg_update_time is always 0.
-    --- @return table Status snapshot
-    function KeybindUI.get_status()
-        local ui_state = _G.ui_manager_state
-        local avg_update_time = 0
-        if ui_state.update_count > 0 then
-            avg_update_time = ui_state.total_update_time / ui_state.update_count
-        end
-
-        return {
-            job = ui_state.current_job,
-            subjob = ui_state.current_subjob,
-            update_in_progress = ui_state.update_in_progress,
-            pending_updates = ui_state.pending_update_id,
-            last_update = os.clock() - ui_state.last_update,
-            consecutive_failures = ui_state.consecutive_failures,
-            total_updates = ui_state.update_count,
-            avg_update_time = avg_update_time,
-            ui_exists = _G.keybind_ui_display ~= nil,
-            ui_visible = _G.keybind_ui_visible
-        }
-    end
-
     --- Schedule an update for a job configuration change (0.5 s job, 1.0 s
     --- subjob, 1.5 s otherwise).
     --- @param change_data table { type = 'job_change'|'subjob_change'|... }

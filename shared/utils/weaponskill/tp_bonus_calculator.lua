@@ -209,67 +209,6 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     return pieces_for_gap(sorted, gap)
 end
 
---- Get expected final TP after applying TP bonus gear (Fencer not counted,
---- unlike calculate())
---- @param current_tp number Current TP
---- @param gear_table table Gear to equip (result from calculate())
---- @param tp_config table Job-specific TP config
---- @param weapon_name string Current main weapon
---- @param active_buffs table Active buffs
---- @return number Expected final TP
-function TPBonusCalculator.get_final_tp(current_tp, gear_table, tp_config, weapon_name, active_buffs)
-    local total_tp = current_tp
-
-    if weapon_name and tp_config.get_weapon_bonus then
-        total_tp = total_tp + tp_config.get_weapon_bonus(weapon_name)
-    end
-
-    -- WAR: Warcry
-    if active_buffs and active_buffs['Warcry'] and tp_config.get_warcry_bonus then
-        total_tp = total_tp + tp_config.get_warcry_bonus()
-    end
-
-    -- SAM: Hagakure
-    if tp_config.get_hagakure_bonus then
-        total_tp = total_tp + tp_config.get_hagakure_bonus()
-    end
-
-    -- TP pieces: those about to be equipped (gear_table), then those already
-    -- worn that gear_table does not cover
-    local counted_slots = {}
-
-    if gear_table then
-        for slot, item_name in pairs(gear_table) do
-            for _, piece in ipairs(tp_config.pieces) do
-                if piece.slot == slot and piece.name == item_name then
-                    total_tp = total_tp + piece.bonus
-                    counted_slots[slot] = true
-                    break
-                end
-            end
-        end
-    end
-
-    -- e.g. Boii Cuisses +3 already in the WS set
-    if player and player.equipment then
-        for _, piece in ipairs(tp_config.pieces) do
-            if not counted_slots[piece.slot] then
-                local equipped_item = player.equipment[piece.slot]
-                if equipped_item == piece.name then
-                    total_tp = total_tp + piece.bonus
-                end
-            end
-        end
-    end
-
-    -- Cap at 3000 TP (FFXI hard limit)
-    if total_tp > 3000 then
-        total_tp = 3000
-    end
-
-    return total_tp
-end
-
 _G.TPBonusCalculator = TPBonusCalculator
 
 return TPBonusCalculator

@@ -54,14 +54,6 @@ function DualBoxSyncIPC.register_hook(cmd, fn)
     _G.DUALBOX_SYNC_HOOKS[cmd:lower()] = fn
 end
 
---- Remove a previously registered hook (no-op if absent; no caller today).
---- @param cmd string Hook name
-function DualBoxSyncIPC.unregister_hook(cmd)
-    if type(cmd) == 'string' then
-        _G.DUALBOX_SYNC_HOOKS[cmd:lower()] = nil
-    end
-end
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SEND
 ---  ═══════════════════════════════════════════════════════════════════════════

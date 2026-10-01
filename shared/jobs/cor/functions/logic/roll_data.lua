@@ -357,17 +357,6 @@ function RollData.get_roll(roll_name)
     return RollData.rolls[roll_name]
 end
 
----   Get all roll names (for state options)
----   @return table Array of roll names
-function RollData.get_roll_names()
-    local names = {}
-    for roll_name, _ in pairs(RollData.rolls) do
-        table.insert(names, roll_name)
-    end
-    table.sort(names)
-    return names
-end
-
 ---   Calculate final bonus value including job bonus and gear bonus
 ---   @param roll_name string Name of the roll
 ---   @param roll_value number Roll value (1-11)

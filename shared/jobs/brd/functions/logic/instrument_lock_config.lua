@@ -53,16 +53,6 @@ function InstrumentLockConfig.get_instrument(song_name)
     return InstrumentLockConfig.LOCKED_SONGS[song_name]
 end
 
----   Get all locked songs (for debugging/display)
----   @return table Table of song names
-function InstrumentLockConfig.get_all_locked_songs()
-    local songs = {}
-    for song_name, _ in pairs(InstrumentLockConfig.LOCKED_SONGS) do
-        table.insert(songs, song_name)
-    end
-    return songs
-end
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
