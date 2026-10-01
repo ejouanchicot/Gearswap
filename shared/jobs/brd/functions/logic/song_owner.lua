@@ -141,6 +141,11 @@ local function on_action(act)
         if target.id == me.id then
             for _, action in ipairs(target.actions or {}) do
                 local id = action.param
+                if by_id[id] or act.actor_id == me.id then
+                    local actor = windower.ffxi.get_mob_by_id(act.actor_id)
+                    trace('0x028 %s (%d) spell %d -> msg %d param %d%s', actor and actor.name or '?',
+                        act.actor_id, act.param or 0, action.message or 0, id or 0, by_id[id] and ' (song)' or '')
+                end
                 if GAIN_MESSAGES[action.message] and by_id[id] then
                     local ours = act.actor_id == me.id
                     local seen = take(live.appeared, id)
@@ -164,8 +169,12 @@ local function on_buffs(data)
     live.appeared = fresh(live.appeared, now)
     -- first packet of this load: what is up was there before, nothing new
     local previous = live.snapshot or current
+    for key in pairs(previous) do
+        if not current[key] then trace('0x063 gone %s (%s)', key, by_id[previous[key]]) end
+    end
     for key, id in pairs(current) do
         if not previous[key] then
+            trace('0x063 new %s (%s)', key, by_id[id])
             local song = take(live.landed, id)
             if song then settle(key, song.ours)
             else live.appeared[#live.appeared + 1] = {key = key, id = id, at = now} end
