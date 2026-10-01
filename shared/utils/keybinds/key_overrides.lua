@@ -13,7 +13,8 @@
 ---                  ['cmd:stealth sneak'] = '' },                 -- '' = no key
 ---   }
 --- A key is found by its state ('state:<State>'), else by its command
---- ('cmd:<command>'). Keys of COMMON_KEYBINDS take the `common` table, the
+--- ('cmd:<command>'), then '@<SUB>' or '@-<SUB>' when the key is for (or
+--- not for) some subjobs only. Keys of COMMON_KEYBINDS take the `common` table, the
 --- others the job's. Key names are Windower's: physical key positions named
 --- as on a US keyboard ('a' is the key right of Caps Lock, printed Q on AZERTY).
 ---
@@ -27,12 +28,25 @@ local KeyOverrides = {}
 
 local FILE = 'keybind_overrides.lua'
 
---- The id an override names a key by: its state, else its command.
---- @param bind table A key entry (key, command, state...)
+local function subjobs(value)
+    if type(value) == 'string' then return value end
+    if type(value) == 'table' then return table.concat(value, '/') end
+    return nil
+end
+
+--- The id an override names a key by: its state, else its command, then the
+--- subjobs it is for. One state can hold two keys (PLD's Phalanx SIRD:
+--- ^numpad2 but on /SCH, ^numpad3 on /SCH): 'state:PhalanxSIRD@-SCH' and
+--- 'state:PhalanxSIRD@SCH' keep them apart.
+--- @param bind table A key entry (key, command, state, subjob, exclude_subjob...)
 --- @return string
 function KeyOverrides.id_of(bind)
-    if type(bind.state) == 'string' and bind.state ~= '' then return 'state:' .. bind.state end
-    return 'cmd:' .. tostring(bind.command or '')
+    local id = (type(bind.state) == 'string' and bind.state ~= '') and ('state:' .. bind.state)
+        or ('cmd:' .. tostring(bind.command or ''))
+    local only, but = subjobs(bind.subjob), subjobs(bind.exclude_subjob)
+    if only then return id .. '@' .. only end
+    if but then return id .. '@-' .. but end
+    return id
 end
 
 --- The overrides file of the character, read now, or nil when there is none.
