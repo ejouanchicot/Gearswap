@@ -1766,17 +1766,22 @@ async function simActions(){
   render();
 }
 let SIM_SEQ = 0;
+// The request of the chosen action; its character and job lead, so a result never shows under another job
+function simQuery(st){
+  const q = new URLSearchParams({kind: st.kind, name: st.name, target: st.target, status: st.status, recasts: st.recasts ? '1' : '0'});
+  for (const [k, v] of Object.entries(st.states || {})) q.set('s.' + k, v);
+  return q;
+}
 async function simRun(){
   const st = simState(), c = S.char;
   if (!st.name || !liveOk(c)) return;
-  const q = new URLSearchParams({kind: st.kind, name: st.name, target: st.target, status: st.status, recasts: st.recasts ? '1' : '0'});
-  for (const [k, v] of Object.entries(st.states || {})) q.set('s.' + k, v);
+  const q = simQuery(st), key = simKey() + '?' + q.toString();
   const seq = ++SIM_SEQ;
   S._simBusy = true; render();
   try {
     const r = await liveFetch(c, '/simulate?' + q.toString(), {method: 'POST', timeout: 6000});
-    if (seq === SIM_SEQ) S._simResult = {req: q.toString(), r};
-  } catch (e) { if (seq === SIM_SEQ) S._simResult = {req: q.toString(), r: {ok: false, error: t('liveLost')}}; }
+    if (seq === SIM_SEQ) S._simResult = {req: key, r};
+  } catch (e) { if (seq === SIM_SEQ) S._simResult = {req: key, r: {ok: false, error: t('liveLost')}}; }
   S._simBusy = false; render();
 }
 // The set a phase's gear comes from: the largest set every piece of which is in the list
@@ -1795,7 +1800,11 @@ function renderSim(d){
   const c = S.char;
   if (!liveOk(c) || (S._live[c] || {}).job !== S.job) return `<div class="placeholder"><p>${t('simNeedLive', {j: S.job})}</p></div>`;
   simActions();
-  const st = simState(), acts = (S._simActions && S._simActions.list) || null, q = (st.q || '').toLowerCase();
+  const st = simState();
+  // the action chosen before a page reload (or under another job) runs again on its own
+  if (st.name && !S._simBusy && !S._simQueued && (!S._simResult || S._simResult.req !== simKey() + "?" + simQuery(st).toString())) {
+    S._simQueued = true; setTimeout(() => { S._simQueued = false; simRun(); }); }
+  const acts = (S._simActions && S._simActions.list) || null, q = (st.q || '').toLowerCase();
   // groups: each magic skill of the main and sub (Healing, Enhancing...), one Trust row, abilities, weaponskills
   const row = (k, n, label) => `<button class="setrow" data-simpick="${k}|${esc(n)}" aria-current="${st.kind === k && st.name === n}"><b>${esc(label || n)}</b></button>`;
   // closed until opened (a search opens them all); the group of the chosen action is marked
@@ -1861,7 +1870,7 @@ function simTableHTML(phases, stats){
     (stats[0] && stats[0].gearOnly ? `<p class="muted small">${t('simGearOnly')}</p>` : '');
 }
 function simResultHTML(d){
-  const st = simState(), res = S._simResult;
+  const st = simState(), res = S._simResult && S._simResult.req === simKey() + '?' + simQuery(st).toString() ? S._simResult : null;
   if (!st.name) return `<p class="muted" style="margin:14px 2px">${t('simHint')}</p>`;
   if (!res) return '';
   const r = res.r;
