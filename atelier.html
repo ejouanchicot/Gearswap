@@ -257,9 +257,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 }
 .meritbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:14px}
 .meritbar p{margin:0;max-width:760px;font-size:13.5px}
-.meritbar{max-width:1500px}
+.meritbar{max-width:1500px;margin-left:auto;margin-right:auto}
+.tabmain > .note-foot{max-width:880px;margin:16px auto 0}
 /* columns, not a grid: each group stacks under the previous one, no row as tall as the longest group */
-.meritgrid{columns:340px;column-gap:14px;max-width:1500px}
+.meritgrid{columns:340px;column-gap:14px;max-width:1500px;margin:0 auto}
 .meritgrid .box{break-inside:avoid;margin-bottom:14px;display:block}
 .meritlist{list-style:none;margin:0;padding:0;font-size:13.5px}
 .meritlist li{display:grid;grid-template-columns:minmax(0,1fr) 54px 92px;align-items:center;column-gap:8px;padding:2px 0 2px 12px;border-bottom:1px dotted var(--line);position:relative}
@@ -347,10 +348,12 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 .jobrow small{font-size:13px;color:var(--muted);align-self:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .boxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),600px));gap:14px;align-items:start}
 /* a single column of compartments: as wide as its content needs, not the whole window */
+/* centred in the room left by the job column */
+.tabmain .boxgrid{justify-content:center}
 .boxgrid.one{grid-template-columns:minmax(0,880px)}
 .boxgrid.narrow{grid-template-columns:minmax(0,620px)}
 /* columns that stack: no hole under a short compartment */
-.boxgrid.cols{display:block;columns:460px;column-gap:14px;max-width:1240px}
+.boxgrid.cols{display:block;columns:460px;column-gap:14px;max-width:1240px;margin:0 auto}
 .boxgrid.cols > .box{break-inside:avoid;margin-bottom:14px;display:block}
 .tbl.in{font-size:14px}
 .tbl.in td{padding:6px 12px}
