@@ -1,7 +1,8 @@
 ---============================================================================
 --- Buff Guard - a debuff landing while //gs c buff runs its queue
 ---============================================================================
---- Checked just before each action of the buff queue (ActionQueue guard):
+--- Checked just before each action of the buff queue (ActionQueue guard),
+--- and before each song of //gs c songs (BRD song_queue.lua):
 ---   asleep, petrified, stunned, terrified, charmed  the buff queue stops:
 ---                       nothing more is sent, the player has the hand back
 ---   Paralysis           cured first: Paralyna when this character can cast
@@ -32,9 +33,12 @@ local SILENCE, MUTE, OMERTA, AMNESIA = 6, 29, 262, 16
 local PARALYSIS_IDS = {4, 566}
 local AFTER_SPELL, AFTER_ITEM = 3.0, 1.0
 
+--- Label of the messages: 'buff', or the step's own (BRD songs: 'songs').
+local label = 'buff'
+
 local function warn(text)
     local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-    if ok and MessageFormatter and MessageFormatter.show_warning then MessageFormatter.show_warning('buff: ' .. text) end
+    if ok and MessageFormatter and MessageFormatter.show_warning then MessageFormatter.show_warning(label .. ': ' .. text) end
 end
 
 local function trace(fmt, ...)
@@ -96,23 +100,24 @@ end
 --- @param step table {command, magic...}
 --- @return string|nil verdict, table|nil steps to run first
 function BuffGuard.check(step)
+    label = step.label or 'buff'
     local ids = debuffs()
     for id, what in pairs(NO_ACTION) do
         if ids[id] then
-            warn(what .. ': the buffs left are dropped')
+            warn(what .. ((label == 'songs') and ': the songs left are dropped' or ': the buffs left are dropped'))
             trace('%s: queue stopped', what)
             return 'stop'
         end
     end
     if step.magic then
         if ids[MUTE] or ids[OMERTA] then
-            warn('cannot cast (Mute / Omerta): the spells left are dropped')
+            warn('cannot cast (Mute / Omerta): the ' .. ((label == 'songs') and 'songs' or 'spells') .. ' left are dropped')
             return 'stop_magic'
         end
         if ids[SILENCE] then
             local first = cure_first('silence', false)
             if first then return 'before', first end
-            warn('silenced, no cure: the spells left are dropped')
+            warn('silenced, no cure: the ' .. ((label == 'songs') and 'songs' or 'spells') .. ' left are dropped')
             return 'stop_magic'
         end
     elseif ids[AMNESIA] then

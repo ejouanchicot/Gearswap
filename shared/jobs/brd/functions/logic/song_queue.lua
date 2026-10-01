@@ -120,6 +120,21 @@ send_step = function(queue)
         windower._brd_song_queue = nil
         return
     end
+    -- A debuff landed (shared/utils/buffs/buff_guard.lua): asleep,
+    -- petrified, stunned or Mute stop the queue; Silence / Paralysis get
+    -- their cure first, then this song
+    local g_ok, Guard = pcall(require, 'shared/utils/buffs/buff_guard')
+    if g_ok and Guard then
+        local verdict, first = Guard.check({command = song, magic = true, label = 'songs'})
+        if verdict == 'stop' or verdict == 'stop_magic' then
+            windower._brd_song_queue = nil
+            return
+        end
+        if verdict == 'before' and type(first) == 'table' and first[1] then
+            send_command(first[1].command)
+            return later(queue, first[1].wait or 5, send_step)
+        end
+    end
     queue.sent_at = os.clock()
     send_command(('input /ma "%s" %s'):format(song, queue.target))
     later(queue, START_WINDOW, function(q) watch_start(q, false) end)
@@ -134,6 +149,8 @@ function SongQueue.start(songs, target)
         seq = (previous and previous.seq or windower._brd_song_queue_seq or 0) + 1}
     windower._brd_song_queue_seq = queue.seq
     windower._brd_song_queue = queue
+    local g_ok, Guard = pcall(require, 'shared/utils/buffs/buff_guard')
+    if g_ok and Guard then Guard.reset() end
     send_step(queue)
 end
 
