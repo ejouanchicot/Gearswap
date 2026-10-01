@@ -30,6 +30,10 @@ engaged and casting gear, the job does these things by itself:
   from what is in your off hand and your subjob (dual wield on /NIN or /DNC).
 - **Cast commands** that read a mode (nuke element and tier, enspell, gain,
   bar-spell, spikes, storm) and a cast-by-name command for any action.
+- **`//gs c buff` with Naegling in hand** casts, after the RDM list, the
+  `GainSpell` mode's spell and the `EnSpell` mode's spell, tier II first
+  (Enfire II, else Enfire; nothing if one is up). Set in `weapon` of
+  `_common/combat/BUFF_CONFIG.lua`.
 
 ## All keys on this job
 

@@ -19,9 +19,9 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
-| `shared/utils/buffs/self_buff_manager.lua` | 300 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first), `cast(to_cast)` (shared action queue), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
-| `shared/utils/buffs/buff_command.lua` | 59 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `subjob[sub]`) |
-| `shared/utils/buffs/buff_config.lua` | 82 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
+| `shared/utils/buffs/self_buff_manager.lua` | 385 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first; `$State` names, groups of alternatives), `cast(to_cast)` (shared action queue), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
+| `shared/utils/buffs/buff_command.lua` | 70 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `weapon[<main hand>]`, then `subjob[sub]`) |
+| `shared/utils/buffs/buff_config.lua` | 89 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
 | `_master/config_global/BUFF_CONFIG.lua` | 66 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
 | `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 104 | Stratagem charge count derived from recast id 231 |
@@ -315,9 +315,10 @@ Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buff
 
 1. `_G.job_buff_extra`, when a job defines it (only DNC: `DNC_COMMANDS.lua` -> `SmartbuffManager.collect_extra()`, the selected dance, then the selected samba). Called under `pcall`; its `to_cast` and `status` are appended.
 2. `cfg.job[player.main_job]`, when it is a non-empty table: `SelfBuffManager.collect`.
-3. `cfg.subjob[player.sub_job]`, when `player.sub_job_level > 0` (not on a disabled subjob) and the list is non-empty: `SelfBuffManager.collect`.
-4. No list applied (none of the three): `MessageFormatter.show_warning('buff: nothing set for <main>/<sub> (_common/combat/BUFF_CONFIG.lua)')`, returns `false`. A `job_buff_extra` that ran counts as a list, so DNC never gets the warning.
-5. Otherwise `show_status(status)` then `cast(to_cast)`; returns true when something was queued or shown.
+3. `cfg.weapon[<weapon>]`, when it is a non-empty table: `SelfBuffManager.collect`. `<weapon>` is `player.equipment.main`; when that is nil, `''` or `'empty'`, `state.MainWeapon.value` (if the job has that state). Any job.
+4. `cfg.subjob[player.sub_job]`, when `player.sub_job_level > 0` (not on a disabled subjob) and the list is non-empty: `SelfBuffManager.collect`.
+5. No list applied (none of the four): `MessageFormatter.show_warning('buff: nothing set for <main>/<sub> (_common/combat/BUFF_CONFIG.lua)')`, returns `false`. A `job_buff_extra` that ran counts as a list, so DNC never gets the warning.
+6. Otherwise `show_status(status)` then `cast(to_cast)`; returns true when something was queued or shown.
 
 ### Settings (`BUFF_CONFIG.lua`)
 
@@ -326,12 +327,15 @@ Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buff
 | Key | Default | Read by |
 |---|---|---|
 | `job` | one list for BLM, RDM, WHM, PLD, RUN, SCH, NIN, SAM, DRK, MNK, RNG (table below); none for the other jobs | `BuffCommand` (main job list) |
+| `weapon` | `Naegling = {'$GainSpell', {'$EnSpell II', '$EnSpell'}}` (Gain and Enspell from RDM's states; on a job without them the entries drop out) | `BuffCommand` (weapon list) |
 | `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}` | `BuffCommand` (subjob list) |
 | `war_berserk` | `{'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Berserk')` (and any other `param`) |
 | `war_defender` | `{'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Defender')` |
 | `war_add_sam` | `true` | WAR `buff_war`: on /SAM, append the stance and Third Eye |
+| `wait_after_spell` | `3.0` | `cast`: delay after a spell |
+| `wait_after_ability` | `0.5` | `cast`: delay after an ability |
 
-Merge: `job` and `subjob` per job (a job the file names gets its table, the others keep their default; a non-table value is ignored); every other key replaced whole when the file's value has the default's type (`false` is kept), else the default. A character file copied from the first template (commit ea90614) names only BLM under `job`, so every other job gets the default list below. The template `_master/config_global/BUFF_CONFIG.lua` writes every key with its default and a commented example for `subjob` (WAR `{'Aggressor', 'Warcry'}`); `char_paths.lua` and `migrate_layout.py` `COMMON_GROUPS` put it in `combat`, `where_is_what.py` describes it.
+Merge: `job`, `subjob` and `weapon` per key (`PER_JOB`: a job or weapon the file names gets its table, the others keep their default; a non-table value is ignored); every other key replaced whole when the file's value has the default's type (`false` is kept), else the default. A character file copied from the first template (commit ea90614) names only BLM under `job`, so every other job gets the default list below. The template `_master/config_global/BUFF_CONFIG.lua` writes every key with its default and a commented example for `subjob` (WAR `{'Aggressor', 'Warcry'}`); `char_paths.lua` and `migrate_layout.py` `COMMON_GROUPS` put it in `combat`, `where_is_what.py` describes it.
 
 Default `job` lists (`BuffConfig.DEFAULTS`, since 2026-10-01; names checked against `res/spells.lua` and `res/job_abilities.lua`), tiers of one buff best first:
 
@@ -355,6 +359,8 @@ No list on purpose (comment in `buff_config.lua` and the template): BRD (songs),
 
 `collect(list)` walks the list in order and returns `to_cast` and `status` (`{name, status, time?, value?, extra?}`). Resources: `_G.res or windower.res or require('resources')`; none = two empty lists. The context (known abilities and spells, main / sub job ids, sub level, ability and spell recasts) is read once per call.
 
+- `$State` names (since 2026-10-01): each entry first goes through `expanded(entry)`, which runs `expand(name)` on a string, or on the `name` / `spell` / `ability` fields of a copied table. `expand` replaces every `$<word>` (`%$([%w_]+)`) with `state[<word>].value` (or `.current`); when the state is missing, or its value is not a string, empty, `Off` or `None` (any case), it returns nil and the entry is dropped silently. `'$EnSpell II'` with `EnSpell = Enfire` gives `Enfire II`.
+- Groups of alternatives (since 2026-10-01): `is_group(entry)` is true for a table with `[1]` and no `name` / `spell` / `ability`. `collect_group` expands and resolves each alternative and keeps the usable ones; if one's buff is in `buffactive`: an `active` line, nothing cast. Else the first whose recast is ready goes through `collect_item`; none ready: `collect_item` on the first (its `cooldown` line). A group does not read or fill `covered`, and `SPECIAL` names are not matched inside it. It exists for tiers whose buffs have different names (Enfire II / Enfire), which the `covered` rule cannot link.
 - Entry forms: a name (`'Stoneskin'`), or a table `{name = ..., buff = ..., wait = ...}` (`delay` is read as `wait`); `{spell = ...}` looks only in `res.spells`, `{ability = ...}` only in `res.job_abilities`. A plain name is looked up as a job ability first, else a spell. Not found: skipped quietly.
 - Buff name: `entry.buff`, else the English name of the action's status (`res.buffs[data.status].en`: Enlight II gives Enlight), else the ability's own name; a spell without a status has no buff check.
 - Usable (`usable`), else skipped quietly: an ability must be in `windower.ffxi.get_abilities().job_abilities` (the game accounts for job and level); a spell must be learned (`get_spells()`) and listed for the main job at any level, or for the subjob at a level `<=` `player.sub_job_level`.
@@ -379,7 +385,7 @@ Names with a rule of their own (`SPECIAL`, matched on the entry's name):
 
 | Caller | Lists |
 |---|---|
-| `BuffCommand.apply()` (`//gs c buff` and aliases, every job; BLM `BuffSelf()`; DNC `SmartbuffManager.apply()`) | `job_buff_extra`, `job[main]`, `subjob[sub]` |
+| `BuffCommand.apply()` (`//gs c buff` and aliases, every job; BLM `BuffSelf()`; DNC `SmartbuffManager.apply()`) | `job_buff_extra`, `job[main]`, `weapon[<main hand>]`, `subjob[sub]` |
 | WAR `SmartbuffManager.buff_war(param)` (`berserk` / `defender`) | `war_berserk` or `war_defender`, then with `war_add_sam` on an enabled /SAM `Hasso` (Seigan for Defender) and `Third Eye` |
 | WAR `buff_sam_sub()` (`thirdeye`) | the /SAM part, stance from `buffactive['Defender']` |
 | WAR `build_tp()` (`tp`) | `{'Meditate'}` on /SAM; /DRG goes to `DRG_JUMP_MANAGER` |
@@ -423,7 +429,7 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 |---|---|---|
 | `//gs c debugmidcast` | 17 job COMMANDS files (see Debug mode) | Toggle `windower._midcast_debug` / `_G.MidcastManagerDebugState` |
 | `//gs c trace on` / `off` | `CommonCommands` | `MIDCAST` trace lines (and every other trace tag) |
-| `//gs c buff` / `buffs` / `buffself` / `selfbuff` / `smartbuff` | every job, common command -> `BuffCommand.apply()` | DNC dance and samba (`job_buff_extra`), then `job[main]`, then `subjob[sub]` of `BUFF_CONFIG.lua`, through `SelfBuffManager` |
+| `//gs c buff` / `buffs` / `buffself` / `selfbuff` / `smartbuff` | every job, common command -> `BuffCommand.apply()` | DNC dance and samba (`job_buff_extra`), then `job[main]`, then `weapon[<main hand>]`, then `subjob[sub]` of `BUFF_CONFIG.lua`, through `SelfBuffManager` |
 | `//gs c lightarts` | every job, common command -> `ScholarActions.handle_command` | Light Arts, then Addendum: White |
 | `//gs c darkarts` | every job, common command | Dark Arts, then Addendum: Black |
 | `//gs c aoe sneak\|invi\|invisible\|erase` | every job, common command, with the job's `state.SneakInviAOE` when it has one (BLM, PLD, SCH). PLD and RUN answer the bare `aoe` themselves, ahead of the common commands: their Blue Magic rotation | `cast_with_stratagems` |
@@ -486,7 +492,7 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 - **New target key**: write a `target_func` returning the key, then define `base[key]` (P5) or `base[type][key]` / `base[type][key][mode]` (P2).
 - **Gear by Mote spell map**: define `sets.midcast[map]` or `base[map]`; P8b picks it when nothing more specific exists.
 - **New song set**: name it exactly like the spell, the tier-less spell, the family word, or the first word; for a multi-word name without spaces use the name with every space removed.
-- **New self-buff list for a job**: a list under `job` (or `subjob`) in the character's `BUFF_CONFIG.lua`, or in `BuffConfig.DEFAULTS` plus the template for everyone. A job part computed from states: define `_G.job_buff_extra` returning `to_cast, status` (DNC model). A new name with its own rule: a `SPECIAL` entry in `self_buff_manager.lua`.
+- **New self-buff list for a job**: a list under `job` (or `subjob`, or `weapon` for a weapon in hand) in the character's `BUFF_CONFIG.lua`, or in `BuffConfig.DEFAULTS` plus the template for everyone. A job part computed from states: define `_G.job_buff_extra` returning `to_cast, status` (DNC model). A new name with its own rule: a `SPECIAL` entry in `self_buff_manager.lua`.
 - **New /SCH cast**: add an entry to `AOE_SPELLS` with `toggle` and `addendum` flags, or call `cast_with_stratagems` / `cast_under_black_addendum` / `run_chain` from the job command.
 
 ## Known issues
