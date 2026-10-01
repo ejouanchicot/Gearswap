@@ -90,17 +90,6 @@ function ENFEEBLING_MAGIC_DATABASE.is_aoe(spell_name)
     return false
 end
 
---- Get spell description
---- @param spell_name string Name of spell
---- @return string|nil description
-function ENFEEBLING_MAGIC_DATABASE.get_description(spell_name)
-    local spell_data = ENFEEBLING_MAGIC_DATABASE.spells[spell_name]
-    if spell_data then
-        return spell_data.description
-    end
-    return nil
-end
-
 --- Get database statistics
 --- @return table stats {total_spells, by_type, by_element, by_job}
 function ENFEEBLING_MAGIC_DATABASE.get_stats()

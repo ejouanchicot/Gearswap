@@ -77,17 +77,6 @@ end
 --- HELPER FUNCTIONS
 ---============================================================================
 
---- Get cure type for a spell
---- @param spell_name string Name of spell
---- @return string|nil cure_type ("single", "aoe", "self_aoe", "self")
-function HEALING_MAGIC_DATABASE.get_cure_type(spell_name)
-    local spell_data = HEALING_MAGIC_DATABASE.spells[spell_name]
-    if spell_data then
-        return spell_data.type
-    end
-    return nil
-end
-
 --- Check if spell is AoE (Curaga, Cura, Esuna)
 --- @param spell_name string Name of spell
 --- @return boolean is_aoe
@@ -95,30 +84,6 @@ function HEALING_MAGIC_DATABASE.is_aoe(spell_name)
     local spell_data = HEALING_MAGIC_DATABASE.spells[spell_name]
     if spell_data and (spell_data.type == "aoe" or spell_data.type == "self_aoe") then
         return true
-    end
-    return false
-end
-
---- Check if spell is a status removal spell (-na, Esuna, Sacrifice)
---- @param spell_name string Name of spell
---- @return boolean is_status_removal
-function HEALING_MAGIC_DATABASE.is_status_removal(spell_name)
-    -- Check if spell ends with "na" or is Esuna/Sacrifice
-    if spell_name:sub(-2) == "na" or spell_name == "Esuna" or spell_name == "Sacrifice" then
-        return true
-    end
-    return false
-end
-
---- Check if spell is a raise spell (Raise, Reraise, Arise)
---- @param spell_name string Name of spell
---- @return boolean is_raise
-function HEALING_MAGIC_DATABASE.is_raise(spell_name)
-    local spell_data = HEALING_MAGIC_DATABASE.spells[spell_name]
-    if spell_data and spell_data.category            == "Healing" then
-        if spell_name:find("Raise") or spell_name:find("Reraise") or spell_name == "Arise" then
-            return true
-        end
     end
     return false
 end
@@ -131,17 +96,6 @@ function HEALING_MAGIC_DATABASE.is_cure(spell_name)
         return true
     end
     return false
-end
-
---- Get spell description
---- @param spell_name string Name of spell
---- @return string|nil description
-function HEALING_MAGIC_DATABASE.get_description(spell_name)
-    local spell_data = HEALING_MAGIC_DATABASE.spells[spell_name]
-    if spell_data then
-        return spell_data.description
-    end
-    return nil
 end
 
 --- Get database statistics
