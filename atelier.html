@@ -156,7 +156,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .slot:hover{box-shadow:inset 0 0 0 1px var(--accent)}
 .slot .lbl{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);line-height:1.3}
 .slot .item{font-size:13.5px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* a long name gives way, its marks stay */
+.slot .item:has(.nm){display:flex;align-items:center}
+.slot .item .nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.slot .item .mk,.slot .item .rk{flex:none}
 .slot .item .mk{color:var(--aug);font-size:10px;margin-left:5px;vertical-align:1px}
+.slot .item .rk{color:var(--aug);font-size:10.5px;font-weight:700;margin-left:5px;padding:0 4px;border:1px solid var(--aug);border-radius:3px;vertical-align:1px;letter-spacing:.02em}
 .slot.empty .item{color:var(--faint);font-weight:400}
 .slot.inh{background:var(--panel-2)}
 .slot.weap{border-left-color:var(--accent)}
@@ -235,6 +240,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tip .th{display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 10px;align-items:center;margin-bottom:8px}
 .tip .th b{font-size:14.5px;display:block}
 .tip .th small{color:var(--muted);font-size:12px}
+.tip .th .rk{color:var(--aug);font-weight:700}
 .tip.wide{width:440px}
 .tip .attrs{display:flex;flex-wrap:wrap;gap:2px 12px;padding:4px 0 5px;border-bottom:1px dotted var(--line);font-variant-numeric:tabular-nums}
 .tip .attrs span{white-space:nowrap;color:var(--muted)}
@@ -367,7 +373,7 @@ const T = {
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats', rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -392,7 +398,7 @@ const T = {
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats', rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -707,9 +713,14 @@ function pieceStats(p){
     if (/^System:/.test(a)) continue;
     addAugment(a, r);
   }
+  // The rank gearscan read on the character's copy, when that copy is the one the set names:
+  // same path, or the scanned augments themselves
+  if (scan && scan.rank != null && (r.path ? scan.path === r.path : r.scanned || (augs && !scan.differ))) {
+    r.rank = scan.rank; r.path = r.path || scan.path;
+  }
   // A path's rank stats (Odyssey gear), known when the scanned copy is on the same path
   if (r.path && scan && scan.path === r.path && scan.rank_stats) {
-    r.rank = scan.rank;
+    r.rankStats = true;
     for (const a of scan.rank_stats) addAugment(a, r);
   }
   for (const part of [r.base, r.aug]) for (const [k, e] of Object.entries(part)) add(r.stats, k, e.v, e.unit, e.label);
@@ -773,7 +784,7 @@ function setStats(s){
     const p = pieces[slot], r = pieceStats(p);
     if (!r) continue;
     if (!r.known) unknown.push(p.name);
-    if (r.path && !r.rank) paths.push(`${p.name} (Path ${r.path})`);
+    if (r.path && !r.rankStats) paths.push(`${p.name} (Path ${r.path})`);
     for (const [k, e] of Object.entries(r.stats)) add(total, k, e.v, e.unit, e.label);
     for (const c of r.cond) cond.push(`${p.name} — ${c}`);
   }
@@ -808,9 +819,9 @@ function pieceStatsHTML(p){
   const pet = Object.keys(r.pet).length ? `<div class="kicker">${t('petStats')}</div><ul class="statlist">${statRows(r.pet)}</ul>` : '';
   const free = r.free.length ? `<div class="kicker">${t('effects')}</div><ul class="plain">${r.free.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : '';
   const cond = r.cond.length ? `<div class="kicker">${t('condTitle')}</div><ul class="plain">${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : '';
-  const origin = [r.scanned ? t('fromScan') : '', r.rank ? t('rankKnown', {p: esc(r.path), r: r.rank}) : '', r.hidden ? t('hiddenFc') : '']
+  const origin = [r.scanned ? t('fromScan') : '', r.rankStats ? t('rankKnown', {p: esc(r.path), r: r.rank}) : '', r.hidden ? t('hiddenFc') : '']
     .filter(Boolean).map(x => `<p class="origin">${x}</p>`).join('');
-  const path = r.path && !r.rank ? `<div class="note">${t('pathOne', {p: esc(r.path)})}</div>` : '';
+  const path = r.path && !r.rankStats ? `<div class="note">${t('pathOne', {p: esc(r.path)})}</div>` : '';
   return `<div class="piecestats"><div class="kicker">${t('pieceStats')}</div>${w}<ul class="statlist">${statRows(r.stats)}</ul>${origin}${pet}${free}${cond}${path}</div>`;
 }
 
@@ -1034,7 +1045,7 @@ function slotHTML(s, ci, slot, own, q, eff){
   const r = pieceStats(p), augmented = r && Object.keys(r.aug).length;
   // the full story (base / augments / where it comes from) is in the hover card (showTip)
   return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}` +
-    `<span class="txt"><span class="lbl">${label}</span><span class="item">${esc(p.name)}${augmented?'<span class="mk">◆</span>':''}</span></span></button>`;
+    `<span class="txt"><span class="lbl">${label}</span><span class="item"><span class="nm">${esc(p.name)}</span>${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</span></span></button>`;
 }
 /* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
 const WEAPON_SLOTS = new Set(['main', 'sub', 'range', 'ammo']);
@@ -1342,7 +1353,8 @@ function tipHTML(card, slot){
     if (r.cond.length) body += `<div class="k">${t('condTitle')}</div><ul>${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
   } else body = `<p class="muted">${t('noDesc')}</p>`;
   const weapon = r && r.weapon ? ` · ${Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ')}` : '';
-  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}</small></div></div>${body}`;
+  const rank = r && r.rank != null ? ` · <span class="rk">${r.path ? `Path ${esc(r.path)} · ` : ''}${t('rankShort', {r: r.rank})}</span>` : '';
+  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}${rank}</small></div></div>${body}`;
 }
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
