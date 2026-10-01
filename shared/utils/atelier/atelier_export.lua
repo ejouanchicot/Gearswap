@@ -636,6 +636,12 @@ function AtelierExport.handle(args)
             :format(sub == 'on' and 'ON' or 'OFF'))
         return true
     end
+    if sub == 'link' then
+        local ok, err = AtelierExport.install_link()
+        MessageFormatter.show_info(ok and 'Atelier: AtelierLink installed and loaded: the page can now load, unload and reload GearSwap'
+            or ('Atelier: AtelierLink not installed (%s)'):format(tostring(err)))
+        return true
+    end
     if sub == 'live' then
         local ok, port, err = pcall(function() return require('shared/utils/atelier/atelier_live').start() end)
         MessageFormatter.show_info(ok and port and ('Atelier: live link open on 127.0.0.1:%d, reload data/atelier.html'):format(port)
@@ -649,6 +655,22 @@ function AtelierExport.handle(args)
 end
 
 _G.AtelierExport = AtelierExport
+
+--- Copy the AtelierLink addon (data/scripts/atelier/AtelierLink/AtelierLink.lua) into
+--- Windower's addons/AtelierLink/ and load it: an addon of its own, which keeps
+--- answering the page while GearSwap is unloaded (load, unload, reload).
+--- @return boolean ok, string|nil error
+function AtelierExport.install_link()
+    local src = io.open(data_path('scripts/atelier/AtelierLink/AtelierLink.lua'), 'rb')
+    if not src then return false, 'data/scripts/atelier/AtelierLink/AtelierLink.lua missing' end
+    local text = src:read('*a')
+    src:close()
+    local dir = windower.addon_path .. '../AtelierLink/'
+    windower.create_dir(dir)
+    if not write(dir .. 'AtelierLink.lua', text) then return false, 'cannot write ' .. dir end
+    windower.send_command('lua reload atelierlink; lua load atelierlink')
+    return true
+end
 
 --- The page's JSON writer (the live link answers with it).
 AtelierExport.json = json
