@@ -5,7 +5,8 @@
 --- bard or a Trust (Joachim) look the same. Two packets together do:
 ---   - the action packet (0x028, category 4) of every song that lands on us
 ---     names its caster (actor_id) and the buff it gave (action.param, message
----     230 / 266 "gains the effect of");
+---     230 / 266 "gains the effect of"), read as the server sent it (see
+---     start: Battlemod rewrites it);
 ---   - the buff packet (0x063 order 9, shared/utils/buffs/buff_timers.lua)
 ---     gives each buff its end time: a song buff is one instance,
 ---     `<buff id>:<end time>`, and a song sung again gets a new end time.
@@ -259,14 +260,19 @@ function SongOwner.counts()
     return own, all
 end
 
---- Listen to the action and buff packets, once per load (raw events: a plain
---- one from a job file runs GearSwap's refresh on every packet).
+--- Listen to the action and buff packets, once per load (a raw event: a plain
+--- one from a job file runs GearSwap's refresh on every packet). Both are read
+--- from the packet as the server sent it (`original`): Battlemod rewrites
+--- 0x028 for the chat, setting to 0 the message of what its filters hide and
+--- of the targets it folds into one line.
 function SongOwner.start()
     if rawget(_G, '_brd_song_owner_listener') then return end
-    _G._brd_song_owner_listener = windower.raw_register_event('incoming chunk', function(id, data)
-        if id == 0x063 and data:byte(5) == 9 then pcall(on_buffs, data) end
+    _G._brd_song_owner_listener = windower.raw_register_event('incoming chunk', function(id, original)
+        if id == 0x063 and original:byte(5) == 9 then pcall(on_buffs, original)
+        elseif id == 0x028 then
+            pcall(function() on_action(windower.packets.parse_action(original)) end)
+        end
     end)
-    windower.raw_register_event('action', function(act) pcall(on_action, act) end)
 end
 
 return SongOwner

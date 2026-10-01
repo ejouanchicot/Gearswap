@@ -263,8 +263,10 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   whose may be swapped. The instances of ours
   live on `windower._brd_song_owned` and in `<Character>/saved/brd_own_songs.lua`,
   so a `lua reload` keeps them; until the first packet of a load, a saved one
-  counts when a buff of its id is up. The listeners are raw events started
-  from `user_setup` (`SongOwner.start`). Each plan writes a `SONGS` trace line
+  counts when a buff of its id is up. The listener is a raw `incoming chunk`
+  event started from `user_setup` (`SongOwner.start`); it parses the packets
+  as the server sent them (`original`), since Battlemod sets to 0 the message
+  of what its filters hide and of the targets it folds into one line. Each plan writes a `SONGS` trace line
   (instruments and extras, Clarion, ours / all up, result). `//gs c songplan`
   shows the inputs and the plan.
 - `cast_songs_with_phases(false, '<me>', full)`: `base` pack songs, the
@@ -517,8 +519,9 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
   `gs reload` or a subjob change: the next load's aftercast carries it on; a main
   job change drops it at its next step), `_brd_song_owned`
   (our song instances, also saved to `saved/brd_own_songs.lua`, so a `lua
-  reload` keeps them), `_brd_instrument_extra`. Two raw events, from
-  `SongOwner.start`: `incoming chunk` 0x063 and `action`.
+  reload` keeps them), `_brd_instrument_extra`. One raw event, from
+  `SongOwner.start`: `incoming chunk` 0x028 and 0x063, read from `original`
+  (Battlemod rewrites 0x028 for the chat).
 - Coroutines and queued commands: the 0.2 s macro/lockstyle block, the song
   slot refresh, `nt`, `forceidle`, Marcato's `wait 2`, the song queue timers
   (each checks the queue sequence) and the AutoNitro chain. None is cancelled
