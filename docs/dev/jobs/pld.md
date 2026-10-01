@@ -21,8 +21,9 @@ What PLD adds on top of the shared pipeline:
   two-handed weapon (Shining) and the Burtgang + Kraken Club exception, HybridMode
   sets, XP sets, Regen idle layer. The shield per weapon in given modes, a stance's
   own weapon and the grips come from the character's `PLD_WEAPONS.lua`.
-- **Two HybridMode profiles**: PDT / MDT / Sortie on every subjob but /SCH, and
-  DPS / Tanking / Hoxne on /SCH. Sortie and Tanking wear `sets.EnmityMax`
+- **Two HybridMode profiles**: PDT / MDT / Sortie on every subjob but /SCH and /RUN, and
+  DPS / Tanking / Hoxne on /SCH and /RUN (`STANCE_SUBJOBS` in `PLD_STATES.lua`; /RUN keeps
+  the Sortie runes, Accession sneak/invi and Regen stay /SCH only). Sortie and Tanking wear `sets.EnmityMax`
   instead of `sets.FullEnmity`; Hoxne locks the ammo slot on the Hoxne Ampulla.
 - **Weaponskill slots** `WS1` / `WS2` that follow the weapon actually in hand.
 - **Subjob helpers**: BLU AOE enmity rotation (`aoe`), rune casting (`rune`),
@@ -199,7 +200,8 @@ flowchart TD
   `sets.precast.JA[name]` (JA base is FullEnmity), or `sets.precast.WS[name]`.
   `job_precast` equips nothing itself.
 - `job_post_precast`, in order:
-  1. `apply_sch_ws_set`: on /SCH, `sets.precast.WS.SCH[<ws>]` when it exists
+  1. `apply_sch_ws_set`: on /SCH and /RUN (`PLDStates.stance_subjob`, /SCH alone when the
+     character's PLD_STATES.lua predates it), `sets.precast.WS.SCH[<ws>]` when it exists
      (only the live Tetsouo sets define one, for Knights of Round);
   2. `WSPrecastHandler.apply_tp_gear`;
   3. `sets.precast.FC.CureSelf` for Cure III / IV on self (only the live Tetsouo
@@ -213,8 +215,8 @@ flowchart TD
 
 | subjob | values | default |
 |---|---|---|
-| anything but /SCH | `PDT` / `MDT` / `Sortie` | `PDT` |
-| /SCH | `DPS` / `Tanking` / `Hoxne` | `Tanking` |
+| anything but /SCH and /RUN | `PDT` / `MDT` / `Sortie` | `PDT` |
+| /SCH, /RUN | `DPS` / `Tanking` / `Hoxne` | `Tanking` |
 
 PLD/SCH is played for Sortie and nothing else, so it drops the general split
 for three stances of its own. `PLD_COMMANDS.lua` wires
@@ -259,7 +261,7 @@ the set `handle_update` re-equips.
 - **`PLDKeybinds.refresh()`** re-lays only the keys that changed: entering or
   leaving /SCH Tanking hides or shows `MainWeapon`.
 
-#### Stances under /SCH
+#### Stances under /SCH (and /RUN, since 2026-10-01)
 
 The stance owns the set, the ammo and the lock; the weapon is a separate axis.
 

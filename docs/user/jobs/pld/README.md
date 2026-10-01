@@ -19,8 +19,8 @@ The stance list depends on your subjob:
 
 | Subjob | Stances (default in **bold**) | Notes |
 |---|---|---|
-| Any but /SCH | **PDT**, MDT, Sortie | Sortie narrows the weapon and rune lists and turns Phalanx SIRD On |
-| /SCH | DPS, **Tanking**, Hoxne | A Sortie-only setup: with the author's `PLD_WEAPONS.lua` Tanking always holds Burtgang + Aegis; Hoxne keeps the Hoxne Ampulla in the ammo slot |
+| Any but /SCH and /RUN | **PDT**, MDT, Sortie | Sortie narrows the weapon and rune lists and turns Phalanx SIRD On |
+| /SCH, /RUN | DPS, **Tanking**, Hoxne | A Sortie-only setup (everything this page says of the /SCH stances holds for /RUN too, which keeps the Sortie runes; Accession sneak/invi and Regen stay /SCH only): with the author's `PLD_WEAPONS.lua` Tanking always holds Burtgang + Aegis; Hoxne keeps the Hoxne Ampulla in the ammo slot |
 
 ## All keys on this job
 

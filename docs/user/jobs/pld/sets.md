@@ -97,7 +97,7 @@ Order: stance set (or BurtgangKC), then the weapon, then the grip for Shining, t
 |---|---|
 | `sets.precast.WS` | Any weaponskill without its own set |
 | `sets.precast.WS['Name']` | That weaponskill. Provided: Savage Blade, Requiescat, Chant du Cygne, Atonement, Sanguine Blade, Aeolian Edge, Circle Blade |
-| `sets.precast.WS.SCH['Name']` | Under /SCH only: that weaponskill's /SCH version, put on over the normal one |
+| `sets.precast.WS.SCH['Name']` | Under /SCH and /RUN only: that weaponskill's Sortie-setup version, put on over the normal one |
 
 The provided `sets.precast.WS['Atonement']` is `sets.FullEnmity` (Atonement's damage
 comes from enmity). Knights of Round has no set in the provided file and uses

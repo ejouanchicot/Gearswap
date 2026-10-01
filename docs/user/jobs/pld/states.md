@@ -13,7 +13,7 @@ Set names and automatic gear: [sets.md](sets.md).
 
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
-| `^numpad9` | `HybridMode` | **PDT**, MDT, Sortie. Under /SCH: DPS, **Tanking**, Hoxne | Your stance (see below) |
+| `^numpad9` | `HybridMode` | **PDT**, MDT, Sortie. Under /SCH and /RUN: DPS, **Tanking**, Hoxne | Your stance (see below) |
 | `^numpad1` | `MainWeapon` | **Excalibur**, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo | Weapon set to wield. The list shrinks in Sortie and under /SCH (see below). Hidden under /SCH Tanking |
 | `^numpad2` | `PhalanxSIRD` | **Off**, On. Under /SCH: Off, **On** | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. The same key under every subjob |
 | `^numpad5` | `WS1` | depends on the weapon | Weaponskill of `//gs c ws1` (or `ws`) |
@@ -48,8 +48,8 @@ Sortie stance for PDT or MDT restores the full lists and turns `PhalanxSIRD` Off
 PDT <-> MDT keeps every choice.
 
 `//gs c sortie <target>` (Sortie orders, only on a character with a `SORTIE_CONFIG.lua`;
-with Tetsouo's, the example) sets the /SCH stance for the
-target (DPS or Tanking; without /SCH it only warns) and `PhalanxSIRD`: Off for `aminon`
+with Tetsouo's, the example) sets the /SCH or /RUN stance for the
+target (DPS or Tanking; on another subjob it only warns) and `PhalanxSIRD`: Off for `aminon`
 and `aminontest` (Phalanx potency matters more there), On for every other target.
 
 The weaponskill slots follow the weapon in hand (`PLD_WS_CONFIG.lua`): Excalibur =

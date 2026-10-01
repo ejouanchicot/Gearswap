@@ -144,13 +144,17 @@ function job_precast(spell, action, spellMap, eventArgs)
 end
 
 ---   Swap in the /SCH variant of a weaponskill set, where one exists
----   PLD/SCH is the Sortie-only setup and builds its weaponskills differently
----   from the general tanking one, so sets.precast.WS.SCH holds the variants.
+---   PLD/SCH (and /RUN, the subjobs of PLDStates.stance_subjob in pld/keys/
+---   PLD_STATES.lua) is the Sortie-only setup and builds its weaponskills
+---   differently from the general tanking one, so sets.precast.WS.SCH holds the variants.
 ---   Runs in post_precast because Mote has laid down sets.precast.WS[name] by
 ---   then, and before apply_tp_gear so the TP bonus piece still wins.
 ---   @param spell table Spell/ability data
 local function apply_sch_ws_set(spell)
-    if spell.type ~= 'WeaponSkill' or not (player and player.sub_job == 'SCH') then
+    local states = rawget(_G, 'PLDStates')
+    local stance_sub = states and states.stance_subjob and states.stance_subjob()
+    if stance_sub == nil then stance_sub = player and player.sub_job == 'SCH' end
+    if spell.type ~= 'WeaponSkill' or not stance_sub then
         return
     end
 

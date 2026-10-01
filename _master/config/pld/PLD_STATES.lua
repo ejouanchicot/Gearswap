@@ -67,8 +67,15 @@ local SORTIE_WEAPON_OPTIONS = {
 --- COMBAT MODE OPTIONS
 ---============================================================================
 
---- The three stances every subjob but SCH gets.
+--- The three stances every subjob but the Sortie ones (STANCE_SUBJOBS) gets.
 local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
+
+--- Subjobs played for Sortie and nothing else: they take the Sortie stances
+--- (SCH_HYBRID_OPTIONS), its weapon list and Phalanx SIRD, and the /SCH
+--- weaponskill variants (sets.precast.WS.SCH, PLD_PRECAST.lua). What only one
+--- of them has stays its own: Accession sneak/invi and Regen under /SCH, the
+--- Sortie runes under /RUN.
+local STANCE_SUBJOBS = {SCH = true, RUN = true}
 
 --- PLD/SCH is played for Sortie and nothing else, so it drops the general
 --- PDT/MDT/Sortie split for the stances that content asks for: hold hate,
@@ -96,10 +103,16 @@ local SCH_WEAPON_OPTIONS = {
 --- configure() has created the states without applying a profile yet.
 local active_profile = nil
 
---- Whether the current subjob is the Sortie-only Scholar setup
+--- Whether the current subjob is SCH (Accession, Regen)
 --- @return boolean True when the subjob is SCH
 local function is_sch()
     return player ~= nil and player.sub_job == 'SCH'
+end
+
+--- Whether the current subjob plays the Sortie stances (STANCE_SUBJOBS)
+--- @return boolean
+local function is_stance_sub()
+    return player ~= nil and STANCE_SUBJOBS[player.sub_job] == true
 end
 
 --- Replace a mode's options, keeping its current value when the new list has it.
@@ -142,7 +155,7 @@ function PLDStates.configure()
     ---   • 'Hoxne'   - sets.engaged.Hoxne, weapon from MainWeapon, ammo
     ---              frozen on Hoxne Ampulla so nothing swaps the charge away
     --- Keybind: Ctrl+Numpad9 to cycle
-    if is_sch() then
+    if is_stance_sub() then
         state.HybridMode:options(table.unpack(SCH_HYBRID_OPTIONS))
         state.HybridMode:set('Tanking') -- Hold hate first, TP once it sticks
     else
@@ -279,12 +292,12 @@ end
 ---============================================================================
 
 --- Which profile the states should hold right now.
---- The subjob decides first: /SCH is the Sortie-only setup and has its own
---- stances, so the PDT/MDT/Sortie question never reaches it.
+--- The subjob decides first: /SCH and /RUN (STANCE_SUBJOBS) are the Sortie-only
+--- setup and have their own stances, so the PDT/MDT/Sortie question never reaches them.
 --- @param mode string HybridMode value
 --- @return string 'sch', 'sortie' or 'standard'
 local function profile_for(mode)
-    if is_sch() then
+    if is_stance_sub() then
         return 'sch'
     end
     return (mode == 'Sortie') and 'sortie' or 'standard'
@@ -304,7 +317,13 @@ local function install_profile(profile)
         state.MainWeapon:set(SCH_WEAPON_OPTIONS[1])
 
         state.PhalanxSIRD:set('On')
-        state.SneakInviAOE:set('On')
+        if is_sch() then
+            state.SneakInviAOE:set('On')
+        else
+            -- /RUN: the Sortie runes; Regen is a /SCH mode, Off where the HUD hides it
+            reshape(state.RuneMode, SORTIE_RUNE_OPTIONS)
+            state.Regen:set('Off')
+        end
         return
     end
 
@@ -356,6 +375,11 @@ end
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================
+
+--- Whether the current subjob plays the Sortie stances (/SCH, /RUN): PLD_PRECAST
+--- swaps in the sets.precast.WS.SCH weaponskill variants for those.
+--- @return boolean
+PLDStates.stance_subjob = is_stance_sub
 
 -- Make globally available: the shared state-change hook reaches the profile
 -- through _G, the character path of this file being unknown to shared/.
