@@ -158,6 +158,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .weaps{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:13px;color:var(--muted)}
 .weaps label{display:inline-flex;align-items:center;gap:6px}
 .weapsel{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-strong);border-radius:3px;padding:1px 4px}
+.weapsel:disabled{border-style:dashed;color:var(--muted);background:transparent;opacity:1;cursor:help}
+.weaps label[title]{cursor:help}
 .slot.inh .item{color:var(--muted);font-weight:400}
 .slot .from{font-size:12px;color:var(--faint);font-style:italic}
 .slot .aug{font-family:var(--mono);font-size:11px;line-height:1.4;color:var(--aug);margin-top:3px}
@@ -316,7 +318,7 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} (buffs et nourriture du moment compris). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', gripFor:'Grip de {w} (arme à deux mains)', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', drawerWeap:'Pièce posée par ton mode d\'arme ({m}) : le set laisse cet emplacement libre.', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} (buffs et nourriture du moment compris). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', gripFor:'Grip de {w} (arme à deux mains)', slotBySet:'Fixé par le set lui-même', shieldFor:'Bouclier de {w} en {m}', pdtAll:'Physiques + PDT II', mdtAll:'Magiques + MDT II', bdtEff:'Souffle DT+BDT', weapons:'Armes', drawerWeap:'Pièce posée par ton mode d\'arme ({m}) : le set laisse cet emplacement libre.', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
@@ -341,7 +343,7 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s} (buffs and food of the moment included). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', gripFor:'Grip of {w} (two-handed)', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', drawerWeap:'Piece put by your weapon mode ({m}): the set leaves this slot free.', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s} (buffs and food of the moment included). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', gripFor:'Grip of {w} (two-handed)', slotBySet:'Set by the set itself', shieldFor:'Shield of {w} in {m}', pdtAll:'Physical + PDT II', mdtAll:'Magic + MDT II', bdtEff:'Breath DT+BDT', weapons:'Weapons', drawerWeap:'Piece put by your weapon mode ({m}): the set leaves this slot free.', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
@@ -893,11 +895,11 @@ function hybridMode(d){
 function withWeapons(s){
   const d = data(), rules = (d && d.weapon_rules) || {}, hm = hybridMode(d), hybrid = hm && chosenWeapon(hm);
   const pieces = Object.assign({}, s.pieces), from = {};
-  let weapon = null;
+  let weapon = null, stanceWeapon = null;
   for (const m of weaponModes(d)) {
     let v = chosenWeapon(m), why = `${m.desc} : ${v}`;
     const stance = m.name === 'MainWeapon' && hybrid && (rules.stance_weapon || {})[hybrid];
-    if (stance && m.sets[stance]) { v = stance; why = `${hybrid} : ${v}`; }
+    if (stance && m.sets[stance]) { v = stanceWeapon = stance; why = `${hybrid} : ${v}`; }
     for (const [slot, p] of Object.entries(m.sets[v].pieces)) {
       if (m.onlyEmpty && pieces[slot]) continue;
       pieces[slot] = p; from[slot] = why;
@@ -908,13 +910,22 @@ function withWeapons(s){
   const shield = weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
   if (grip) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
-  return {pieces, from};
+  return {pieces, from, stance: stanceWeapon};
 }
-function weaponPicker(){
+// The pickers of the weapon line; a slot picker whose slot the rules fill (the stance's shield,
+// a grip) shows that piece, greyed, with the reason, so the line says what the slot holds
+function weaponPicker(s){
   const d = data(), hm = hybridMode(d), modes = (hm ? [hm] : []).concat(weaponModes(d));
   if (!modes.length) return '';
-  return `<div class="weaps"><span class="kicker">${t('weapons')}</span>${modes.map(m => `<label>${esc(m.desc)}<select class="weapsel" data-mode="${esc(m.name)}">` +
-    m.values.map(v => `<option value="${esc(v)}" ${v === chosenWeapon(m) ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select></label>`).join('')}</div>`;
+  const eff = withWeapons(s);
+  return `<div class="weaps"><span class="kicker">${t('weapons')}</span>${modes.map(m => {
+    // the stance's weapon wins over Main Weapon (PLD Tanking: Burtgang)
+    if (m.name === 'MainWeapon' && eff.stance) return `<label title="${esc(eff.from.main)}">${esc(m.desc)}<select class="weapsel" disabled><option>${esc(eff.stance)}</option></select></label>`;
+    const slot = m.onlyEmpty && m.name.slice(5), why = slot && (eff.from[slot] || (s.pieces[slot] && t('slotBySet')));
+    const forced = why && !why.startsWith(m.desc + ' :') && eff.pieces[slot];
+    if (forced) return `<label title="${esc(why)}">${esc(m.desc)}<select class="weapsel" disabled><option>${esc(forced.name)}</option></select></label>`;
+    return `<label>${esc(m.desc)}<select class="weapsel" data-mode="${esc(m.name)}">` +
+      m.values.map(v => `<option value="${esc(v)}" ${v === chosenWeapon(m) ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select></label>`; }).join('')}</div>`;
 }
 function cardHTML(card, ci, bypath, q){
   const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
@@ -927,7 +938,7 @@ function cardHTML(card, ci, bypath, q){
   if (s.aliases && s.aliases.length) foot.push(t('sharedBy',{l:s.aliases.map(a => esc(shortPath(a))).join(', ')}));
   const variants = card.variants.length > 1 ? `<div class="variants" role="group">${card.variants.map((x,i) => `<button aria-pressed="${i===vi}" data-card="${ci}" data-variant="${i}">${esc(x.label)}</button>`).join('')}</div>` : '';
   const when = t('famWhen.'+card.fam);
-  return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}</div><h2>${esc(niceName(card))}</h2>${when?`<p class="when">${when}</p>`:''}<code class="path">${esc(s.path)}</code>${variants}${weaponPicker()}</header>
+  return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}</div><h2>${esc(niceName(card))}</h2>${when?`<p class="when">${when}</p>`:''}<code class="path">${esc(s.path)}</code>${variants}${weaponPicker(s)}</header>
     <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer><div class="globals-inline">${globalsHTML(s)}</div>${setStatsHTML(s)}
     <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="aug"></i>${t('legendAug')}</span></div></article>`;
 }
