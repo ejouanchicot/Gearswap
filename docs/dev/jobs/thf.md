@@ -63,7 +63,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 52 | THF layer over the shared module: `sata_overlay`, and `init` hands the shared wrapper the SA/TA + TH layer |
 | `shared/utils/equipment/treasure_hunter.lua` | 290 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
 | `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
-| `shared/utils/smartbuff/subjob_buffs.lua` | 185 | `//gs c smartbuff` of every job (common command): /WAR, /SAM, /NIN, /DNC self-buffs |
+| `shared/utils/smartbuff/subjob_buffs.lua` | 101 | `//gs c smartbuff` of every job (common command): the subjob's list from `_common/combat/SMARTBUFF_CONFIG.lua` (defaults /WAR, /SAM, /NIN, /DNC), through `buff_list.lua` |
 | `_master/config/thf/THF_STATES.lua` | 145 | All Mote states (`THFStates.configure()`) |
 | `_master/config/thf/THF_KEYBINDS.lua` | 37 | Data only: 7 binds (2 only on /WAR) handed to `KeybindManager.create('THF', ...)` |
 | `_master/config/thf/THF_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -367,9 +367,10 @@ unless `hidden.THF` is set in the character's `_common/keys/treasure_mode.lua`.
 
 `//gs c smartbuff` is no longer a THF command: the common command
 (`SubjobBuffs.apply()`, [midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs))
-answers it on THF as on every job (/DNC Haste Samba at 350 TP, /WAR Berserk,
-Aggressor, Warcry, /NIN Utsusemi: Ni else Ichi, /SAM Hasso with a two-handed
-weapon and Third Eye; other subjobs: a warning).
+answers it on THF as on every job with the `subjob` lists of
+`_common/combat/SMARTBUFF_CONFIG.lua` (by default /DNC Haste Samba at 350 TP,
+/WAR Berserk, Aggressor, Warcry, /NIN Utsusemi: Ni else Ichi, /SAM Hasso with a
+two-handed weapon and Third Eye; a subjob without a list: a warning).
 
 `apply_fbc()` and `apply_steal()` share one runner, `run_sequence`: `triage`
 sorts a list into "cast" and "status", and `cast_sequence` sends the ones to
@@ -610,8 +611,9 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   `.TA`, `.SATA`; no code change.
 - New weapon: add a state value in `THF_STATES.lua` and a `sets['<value>']`
   (or rely on `equip_without_set`).
-- New smartbuff subjob: add a collector to `COLLECTORS` in
-  `shared/utils/smartbuff/subjob_buffs.lua` (every job gets it).
+- New smartbuff subjob: a list under `subjob` in `SMARTBUFF_CONFIG.lua`
+  (or in `SmartbuffConfig.DEFAULTS` of
+  `shared/utils/smartbuff/smartbuff_config.lua` for everyone); every job gets it.
 - New command: add a branch after the CommonCommands block. A name that is
   also an alt config key then runs here; the alt's version stays reachable as
   `//gs c alt <name>`.

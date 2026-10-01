@@ -59,7 +59,8 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
 | `shared/jobs/war/functions/WAR_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('WAR', ..., 'SAM', 22, 1)` wrapper |
 | `shared/jobs/war/functions/logic/set_builder.lua` | 230 | Engaged base selection (KC through `BaseSetBuilder.kraken_in_offhand`, stance, AM3, weapon set, HybridMode), weapon layer (`BaseSetBuilder.lay_weapon`), stance ammo (`apply_stance_ammo` = `AmpullaLock.stance_ammo`), town / movement idle |
-| `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 287 | `buff_war`, `buff_sam_sub`, `build_tp` |
+| `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 213 | `buff_war`, `buff_sam_sub`, `build_tp` |
+| `shared/utils/smartbuff/buff_list.lua`, `smartbuff_config.lua` | 197, 57 | The `berserk` / `defender` lists (`SMARTBUFF_CONFIG.lua`) and their collection, shared with `//gs c smartbuff` ([midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)) |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
 | `shared/utils/drg/auto_jump.lua` | 263 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 88 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
@@ -232,19 +233,26 @@ hold any weaponskill of the weapon.
 
 `buff_war(param)` (`WAR_BUFFS.lua` -> `smartbuff_manager.lua` `buff_war`):
 
-1. `exclude` = `{Defender}` for `'Berserk'`, `{Berserk}` for `'Defender'`.
-2. `collect_main_abilities` walks `MAIN_ABILITIES`: Berserk (recast 1), Defender
-   (3), Aggressor (4), Retaliation (8), Restraint (9). Active buff -> status
-   `active`; `is_on_cooldown(recast)` -> status `cooldown` with `ceil(recast)`;
-   otherwise queued.
-3. `collect_warcry_bloodrage`: Warcry (2) is queued when ready and Blood Rage is not
-   up; Blood Rage (11) only when Warcry is not up **and** Warcry is on cooldown.
-4. `collect_subjob_abilities`: /SAM queues the stance paired with `param`
-   (`SAM_STANCE`: Hasso 138 for Berserk, Seigan 139 for Defender) and Third Eye
-   (133). Nothing for /DNC: Haste Samba was queued here until 2026-09-30,
-   removed because the player did not want it on every press. The stance follows `param`, not `buffactive`,
-   because the Berserk / Defender cast is still queued at that point.
-5. `MessageBuffs.show_buff_status(status)` if anything is active or on cooldown,
+1. `SmartbuffConfig.get()` (`shared/utils/smartbuff/smartbuff_config.lua`, the
+   character's `_common/combat/SMARTBUFF_CONFIG.lua` over the defaults): the list is
+   `war_defender` for `param == 'Defender'`, `war_berserk` for anything else
+   (`'Berserk'`, nil). Defaults: `{'Berserk', 'Aggressor', 'Retaliation',
+   'Restraint', 'Warcry'}` and `{'Defender', 'Aggressor', 'Retaliation',
+   'Restraint', 'Warcry'}`. Berserk and Defender are kept apart only by being in
+   different lists.
+2. `BuffList.collect(list)` (`shared/utils/smartbuff/buff_list.lua`): each name in
+   order, found in the game data (`res.job_abilities`, else `res.spells`), left out
+   quietly when the jobs do not have it; active buff -> status `active`; ready ->
+   queued; else status `cooldown` with `ceil(recast)`. `Warcry` keeps its rule:
+   Warcry queued when ready and Blood Rage is not up; Blood Rage only when Warcry is
+   not up **and** Warcry is on cooldown. Details: [midcast and buffs](../systems/midcast-and-buffs.md#bufflist).
+3. With `war_add_sam` (default `true`), `collect_subjob_abilities`: /SAM queues the
+   stance paired with `param` (`SAM_STANCE`: Hasso 138 for Berserk, Seigan 139 for
+   Defender) and Third Eye (133). Nothing for /DNC: Haste Samba was queued here until
+   2026-09-30, removed because the player did not want it on every press. The stance
+   follows `param`, not `buffactive`, because the Berserk / Defender cast is still
+   queued at that point.
+4. `MessageBuffs.show_buff_status(status)` if anything is active or on cooldown,
    then `cast_sequentially`: first `/ja` now, the *i*-th after `2 * (i - 1)` seconds,
    all as `input /ja "<name>" <me>` (the later ones through `wait N;`).
 
@@ -259,7 +267,9 @@ helpers; /DRG -> `DRGJumpManager.execute_jump()`; any other subjob -> warning
 
 Readiness uses the globals `is_recast_ready` / `is_on_cooldown` from
 `RECAST_CONFIG.lua` (tolerance 2.0 s), loaded by the entry in `get_sets`. The
-recast ids above match Windower's `res/job_abilities.lua`.
+recast ids above (stance, Third Eye, Meditate, still in `smartbuff_manager.lua`)
+match Windower's `res/job_abilities.lua`; the list names take theirs from the game
+data.
 
 ### Auto-Jump (/DRG)
 
@@ -474,6 +484,7 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 | `<char>/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
 | `<char>/war/WAR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `//gs c refill` (the common list without a list in it) |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
+| `<char>/_common/combat/SMARTBUFF_CONFIG.lua` `war_berserk`, `war_defender`, `war_add_sam` | the two lists above, `true` | `SmartbuffConfig.DEFAULTS` (`shared/utils/smartbuff/smartbuff_config.lua`); missing key or file = default | `buff_war` at each press |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
@@ -519,9 +530,9 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 - `DRGJumpManager` for `tp` on /DRG and `//gs c jump`
   ([factories and helpers](../systems/factories-and-helpers.md#drg-jumps)).
 - `SubjobBuffs` (`shared/utils/smartbuff/subjob_buffs.lua`) answers the common
-  `//gs c smartbuff` on every job, WAR included (the self-buffs of the subjob:
-  /SAM Hasso and Third Eye, /NIN Utsusemi, /DNC Haste Samba; on /WAR its own
-  Berserk / Aggressor / Warcry list). WAR's `berserk` / `defender` / `thirdeye` /
+  `//gs c smartbuff` on every job, WAR included (the `subjob` lists of
+  `SMARTBUFF_CONFIG.lua`; by default /SAM Hasso and Third Eye, /NIN Utsusemi, /DNC
+  Haste Samba). WAR's `berserk` / `defender` / `thirdeye` /
   `tp` stay in its own `smartbuff_manager.lua`.
 - Shared hooks from `INIT_SYSTEMS` (ElementalBelt, DualWield, TreasureHunter,
   CombatMode, CustomStates, HP priority) apply as on every job
@@ -551,8 +562,11 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 - The /SAM stance is queued whatever the weapon; Hasso and Seigan need a two-handed
   weapon, so with Naegling, Ikenga or Loxotic the game refuses them and their 2 s
   slot in the chain is wasted.
-- `buff_war(nil)` (only reachable by calling the global) excludes neither Berserk nor
-  Defender; the second cancels the first in game.
+- `buff_war(nil)` (only reachable by calling the global) uses `war_berserk`, like
+  `'Berserk'`, but `collect_subjob_abilities` still gets `nil` and falls back to Hasso.
+- `cast_sequentially` sends every entry as `/ja`: a spell put in `war_berserk` /
+  `war_defender` (Utsusemi on /NIN, for instance) is queued but sent as `/ja` and
+  fails. `//gs c smartbuff` (`BuffList.cast`) sends spells as `/ma`.
 - `select_engaged_base` ignores Mote's `meleeSet` whenever a hybrid set exists.
 - `cancel Retaliation` depends on the Windower Cancel addon.
 
@@ -565,9 +579,11 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
   `Naegling` in `detect_weapon`), and a list in `WAR_WS_CONFIG.by_weapon` under the
   same key. A one-handed weapon that should count for Fencer goes in
   `WAR_TP_CONFIG.one_hand_weapons`.
-- **New buff in the chain**: add `{name, buff, id}` (recast id from Windower's
-  `res/job_abilities.lua`) to `MAIN_ABILITIES` or a subjob branch in
-  `collect_subjob_abilities`.
+- **New buff in the chain**: a player adds its name to `war_berserk` /
+  `war_defender` in `SMARTBUFF_CONFIG.lua` (and the default in
+  `SmartbuffConfig.DEFAULTS` plus the template `_master/config_global/SMARTBUFF_CONFIG.lua`
+  for everyone). A name that needs a rule of its own gets a `SPECIAL[name]` in
+  `buff_list.lua`. The /SAM part stays in `collect_subjob_abilities`.
 - **New TP piece or weapon bonus**: `pieces` / `weapons` in `WAR_TP_CONFIG.lua`.
 - **New engaged variant**: a branch in `select_engaged_base` before the `HybridMode`
   step, and the set in both sets files. A new explicit stance goes in `STANCE_MODES`

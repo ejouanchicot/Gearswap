@@ -74,7 +74,7 @@ and arguments: [commands guide](../../guides/commands.md).
 
 | Command | What it does |
 |---|---|
-| `smartbuff` | Common command: /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning |
+| `smartbuff` | Common command, by default /WAR: Berserk, Aggressor, Warcry. /SAM: Hasso (two-handed weapon only) and Third Eye. /NIN: Utsusemi: Ni, else Ichi. /DNC: Haste Samba (350 TP). Only what is ready and not already up, 2 s apart; the rest is listed in chat. Other subjobs: a warning. The lists are yours to change: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)) |
 | `fbc` | Feint, Bully, Conspirator: the ready ones whose buff is not already up, 1 s apart |
 | `steal` | Steal, Mug, Despoil on your target, the ready ones, 1 s apart. Only on a living monster |
 | `range` | Equips the range and ammo of `sets.RangeLock` (else `sets.precast.RA`), locks them, shoots `/ra <stnpc>`; never fires Rare or one-per-stack ammo, nor ammo the weapon cannot shoot |

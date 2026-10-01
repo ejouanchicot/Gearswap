@@ -31,7 +31,8 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `_master/sets/fishing_sets.lua` | Generic fishing set file (single set, `description = 'Fishing'`), all 14 slots `""` |
 | `_master/Tetsouo/_common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000, every job on /DRG (run by `WSPrecastHandler.handle`); `attach` gives every job `state.JumpAuto` and its row |
-| `shared/utils/smartbuff/subjob_buffs.lua` | `//gs c smartbuff` on every job: the self-buffs of the current subjob (/WAR, /SAM, /NIN, /DNC) |
+| `shared/utils/smartbuff/subjob_buffs.lua` | `//gs c smartbuff` on every job: the self-buffs of the current subjob, listed in `_common/combat/SMARTBUFF_CONFIG.lua` (defaults /WAR, /SAM, /NIN, /DNC) |
+| `shared/utils/smartbuff/buff_list.lua`, `smartbuff_config.lua` | A list of ability / spell names turned into casts (shared with WAR `berserk` / `defender`), and the settings over their defaults ([midcast and buffs](midcast-and-buffs.md#bufflist)) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | `//gs c jump` (manual Jump chain) |
 | `shared/utils/dnc/waltz_manager.lua` | Curing / Divine Waltz tier selection |
 | `shared/utils/whm/cure_manager.lua` | Cure / Curaga tier selection with recast fallback |

@@ -82,7 +82,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Command | What it does |
 |---|---|
 | `step` | The step on `<t>`: Main Step, or Main and Alt Step in turn when Use Alt Step is On. Presto first when it is ready, not up and you are level 77+. Only a message when steps are on recast |
-| `smartbuff` (`buffself`) | The selected dance (unless already up), the selected samba (never with Fan Dance, only when your TP covers it or Trance is up, and its buff is not up), then subjob buffs: /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni, else Ichi; /SAM Hasso (two-handed weapon only) and Third Eye. 2 s apart; what is up or on recast is listed |
+| `smartbuff` (`buffself`) | The selected dance (unless already up), the selected samba (never with Fan Dance, only when your TP covers it or Trance is up, and its buff is not up), then subjob buffs, by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni, else Ichi; /SAM Hasso (two-handed weapon only) and Third Eye (the lists: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md))). 2 s apart; what is up or on recast is listed |
 | `dance` (`fandance`) | The selected dance, even if it is already up |
 | `waltz` | Curing Waltz on `<stpc>`: tier from the missing HP of your current target (you, or a party member), else the highest you can use. Cancels Saber Dance first. Common command |
 | `aoewaltz` | Divine Waltz II, else Divine Waltz. Common command |

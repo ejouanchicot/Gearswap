@@ -39,7 +39,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Command | What it does |
 |---|---|
 | `//gs c step` | Uses the step on `<t>`, with Presto first when it is ready, not already up and you are level 77+ (the step follows once Presto is up). Only a message when steps are on recast |
-| `//gs c smartbuff` (`buffself`) | The selected dance, then the selected samba, then subjob buffs of the common `smartbuff`: /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso (two-handed weapon only) and Third Eye. Only what is ready and not already up, 2 s apart; the rest is listed in chat |
+| `//gs c smartbuff` (`buffself`) | The selected dance, then the selected samba, then subjob buffs of the common `smartbuff`, by default /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso (two-handed weapon only) and Third Eye (the lists: `subjob` in `_common/combat/SMARTBUFF_CONFIG.lua` ([configuration](../../guides/configuration.md))). Only what is ready and not already up, 2 s apart; the rest is listed in chat |
 | `//gs c dance` (`fandance`) | The selected dance only, even if it is already up |
 | `//gs c waltz` / `aoewaltz` | Curing Waltz on `<stpc>` (tier picked from the HP missing) / Divine Waltz II, else Divine Waltz. Common commands; they cancel Saber Dance first |
 | `//gs c jump` | /DRG jump (common command) |

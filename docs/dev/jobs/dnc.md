@@ -61,7 +61,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/dnc/waltz_manager.lua` | 261 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
 | `shared/utils/drg/auto_jump.lua` | 263 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
 | `shared/utils/precast/ability_helper.lua` | 409 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
-| `shared/utils/smartbuff/subjob_buffs.lua` | 185 | Subjob buffs (/WAR, /SAM, /NIN, /DNC) of every job's `smartbuff`; DNC uses `collect` |
+| `shared/utils/smartbuff/subjob_buffs.lua` | 101 | Subjob buffs of every job's `smartbuff` (the `subjob` lists of `_common/combat/SMARTBUFF_CONFIG.lua`, collected by `buff_list.lua`); DNC uses `collect` |
 | `_master/config/dnc/DNC_STATES.lua` | 211 | All Mote states |
 | `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 10 binds, data only; `KeybindManager.create('DNC', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/dnc/DNC_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -282,10 +282,12 @@ deadline), else `input /ja "<step>" <t>`; flips `CurrentStep` when alternating.
    (under Trance the cost is not checked, since 2026-09-28). The queued samba
    then passes `job_precast_samba`, which applies the same rule.
 3. Subjob (`SubjobBuffs.collect(subjob)`, the list of the common `smartbuff`,
-   see [midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)): /WAR
-   Berserk, Aggressor, Warcry; /NIN Utsusemi Ni then Ichi; /SAM Hasso (138,
-   only with a two-handed weapon) then Third Eye (133); others, or a level-0
-   subjob, nothing.
+   see [midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)): the
+   `subjob` list of `_common/combat/SMARTBUFF_CONFIG.lua`, by default /WAR
+   Berserk, Aggressor, Warcry; /NIN Utsusemi Ni then Ichi; /SAM Hasso (only
+   with a two-handed weapon) then Third Eye; a subjob without a list, or a
+   level-0 subjob, nothing (no warning here). A name the jobs do not have is
+   left out quietly.
 
 `smartbuff` / `buffself` are answered in `job_self_command` before the common
 commands block, so DNC never reaches the common `smartbuff` (subjob buffs
@@ -499,9 +501,11 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   `state.Samba`.
 - New step: add the resource name to `MainStep` / `AltStep` and a
   `sets.precast.Step['<name>']`.
-- New smartbuff subjob: a collector returning `(abilities, status)` in
-  `shared/utils/smartbuff/subjob_buffs.lua` (`COLLECTORS`); DNC and every
-  other job pick it up.
+- New smartbuff subjob: a list under `subjob` in the character's
+  `SMARTBUFF_CONFIG.lua` (or in `SmartbuffConfig.DEFAULTS` plus the template
+  for everyone); a name with a rule of its own gets a `SPECIAL[name]` in
+  `shared/utils/smartbuff/buff_list.lua`. DNC and every other job pick it up
+  ([midcast and buffs](../systems/midcast-and-buffs.md#subjobbuffs)).
 
 ## Known issues
 
