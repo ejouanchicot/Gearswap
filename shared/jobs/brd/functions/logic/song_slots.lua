@@ -161,8 +161,12 @@ function SongSlots.plan(pack_size, full)
     local i = SongSlots.inputs()
     local clarion = i.clarion and 1 or 0
     local base = BASE_SLOTS + i.main_extra + clarion
-    local total = math.min(pack_size, BASE_SLOTS + math.max(i.main_extra, i.dummy_extra) + clarion)
     local held = full and 0 or i.up
+    -- A slot one of our songs holds stays open, Clarion Call or not: the 5th
+    -- song sung under Clarion Call can be sung again while it is up (it was
+    -- left out once Clarion Call ended, then wore off and the slot was lost)
+    local capacity = BASE_SLOTS + math.max(i.main_extra, i.dummy_extra) + clarion
+    local total = math.min(pack_size, math.max(capacity, held))
     local dummies = math.max(0, total - math.max(held, base))
     return total, dummies, math.min(base, total)
 end
