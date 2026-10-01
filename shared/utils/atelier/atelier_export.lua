@@ -284,6 +284,34 @@ local function worn_gear(res)
     return worn
 end
 
+--- The merits the page offers to change: the general ones (ids below 384: HP/MP,
+--- attributes, combat and magic skills, others) and the two groups of the main job
+--- (ids 384 + 64 x (job - 1) and 2048 + 64 x (job - 1), res/merit_points.lua), each
+--- with its level and the game's description, which says what a level gives.
+--- get_player().merits names them after the English name: "Sword Skill" -> sword,
+--- "Divine Magic Skill" -> divine, "Wind Instrument Skill" -> wind; four names of the
+--- resource do not follow it (MERIT_KEYS).
+local MERIT_KEYS = {['Ele. Mag. Debuff Dur.'] = 'elemental_magic_debuff_duration',
+    ['Ele. Mag. Debuff Pot.'] = 'elemental_magic_debuff_effect',
+    ['Desperate Blows Effect'] = 'desperate_blows', ['Strafe Effect'] = 'strafe'}
+local function merit_key(name)
+    return MERIT_KEYS[name] or (name:lower():gsub(' skill$', ''):gsub(' magic$', ''):gsub(' instrument$', ''):gsub('[^%w]+', '_'))
+end
+local function merit_list(res, levels)
+    local job = res.jobs and player.main_job_id or nil
+    if not (res.merit_points and job) then return nil end
+    local first, second = 384 + 64 * (job - 1), 2048 + 64 * (job - 1)
+    local list = {}
+    for id, m in pairs(res.merit_points) do
+        if id < 384 or (id >= first and id < first + 64) or (id >= second and id < second + 64) then
+            local key = merit_key(m.en)
+            list[#list + 1] = {id = id, en = m.en, key = key, level = levels[key] or 0, desc = m.endesc}
+        end
+    end
+    table.sort(list, function(a, b) return a.id < b.id end)
+    return list
+end
+
 --- The character's real stats now (the game's status packet, kept by GearSwap
 --- in `player`) and the gear worn while they were read: the page takes that
 --- gear out and puts a set's in, to show the stats each set gives. Nil
@@ -306,6 +334,7 @@ local function collect_char()
     for name, level in pairs(p.merits or {}) do
         if type(level) == 'number' and level > 0 then char.merits[tostring(name)] = level end
     end
+    char.merit_list = merit_list(res, p.merits or {})
     local jp = type(p.job_points) == 'table' and p.job_points[(player.main_job or ''):lower()]
     char.jp_spent = type(jp) == 'table' and jp.jp_spent or nil
     local packet = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
