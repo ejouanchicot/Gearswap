@@ -257,8 +257,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 }
 .meritbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:14px}
 .meritbar p{margin:0;max-width:760px;font-size:13.5px}
+.meritbar{max-width:1500px}
 /* columns, not a grid: each group stacks under the previous one, no row as tall as the longest group */
-.meritgrid{columns:340px;column-gap:14px}
+.meritgrid{columns:340px;column-gap:14px;max-width:1500px}
 .meritgrid .box{break-inside:avoid;margin-bottom:14px;display:block}
 .meritlist{list-style:none;margin:0;padding:0;font-size:13.5px}
 .meritlist li{display:grid;grid-template-columns:minmax(0,1fr) 54px 92px;align-items:center;column-gap:8px;padding:2px 0 2px 12px;border-bottom:1px dotted var(--line);position:relative}
@@ -344,8 +345,13 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 .jobrow .em{width:20px;height:20px;background:var(--role)}
 .jobrow b{font-size:14px;letter-spacing:.03em}
 .jobrow small{font-size:13px;color:var(--muted);align-self:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.boxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:14px;align-items:start}
-.boxgrid.one{grid-template-columns:minmax(0,1fr)}
+.boxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),600px));gap:14px;align-items:start}
+/* a single column of compartments: as wide as its content needs, not the whole window */
+.boxgrid.one{grid-template-columns:minmax(0,880px)}
+.boxgrid.narrow{grid-template-columns:minmax(0,620px)}
+/* columns that stack: no hole under a short compartment */
+.boxgrid.cols{display:block;columns:460px;column-gap:14px;max-width:1240px}
+.boxgrid.cols > .box{break-inside:avoid;margin-bottom:14px;display:block}
 .tbl.in{font-size:14px}
 .tbl.in td{padding:6px 12px}
 .tbl.in tr:first-child td{border-top:0}
@@ -1498,7 +1504,7 @@ function renderKeys(d){
       `<tr class="${k.subjob && k.subjob !== d.sub ? 'other-sub' : ''}"><td class="kcol">${keyLabel(k.key)}</td><td>${esc(k.desc)}</td>` +
       `<td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td></tr>`).join('')}</tbody></table>`,
       `<span class="meta">${groups[g].length} · ${t('source.'+g).replace('{J}', S.job)}.lua</span>`)).join('');
-  return `<div class="boxgrid">${boxes}</div>`;
+  return `<div class="boxgrid cols">${boxes}</div>`;
 }
 function keyOfState(d){ const keyOf = {}; for (const k of d.keys) if (k.state && k.key && !keyOf[k.state]) keyOf[k.state] = k.key; return keyOf; }
 function modeTable(list, keyOf){
@@ -1523,7 +1529,7 @@ function renderMacro(d){
   const book = (m.solo || {})[d.sub] || m.default, style = (l.by_subjob || {})[d.sub] ?? l.default;
   const whose = own => ' · ' + (own ? '/' + esc(d.sub) : t('byDefault'));
   const head = (big, line) => `<div class="bighead"><span class="big">${big}</span><p>${line}</p></div>`;
-  return `<div class="boxgrid">` +
+  return `<div class="boxgrid cols">` +
     box('g-tank', t('macro'), head(bookOf(d), book ? t('bookPage',{b:book.book,p:book.page}) + whose((m.solo || {})[d.sub]) : '') + table(t('bySub'), m.solo, bp) + table(t('byDual'), m.dualbox, bp)) +
     box('g-buff', t('lockstyle'), head(styleOf(d), style != null ? t('style',{s:esc(style)}) + whose((l.by_subjob || {})[d.sub] != null) : '') + table(t('bySub'), l.by_subjob, v => t('style',{s:v}))) +
     `</div>`;
@@ -1531,7 +1537,7 @@ function renderMacro(d){
 function renderFunctions(d){
   const keyOf = keyOfState(d);
   const bools = d.modes.filter(m => m.values.length===2 && ((m.values.includes('on') && m.values.includes('off')) || (m.values.includes('On') && m.values.includes('Off'))) && !HIDDEN_MODES.has(m.name));
-  return `<div class="boxgrid one">` + box('g-mag', t('sectionsFunctions'), `<table class="tbl in"><tbody>` +
+  return `<div class="boxgrid narrow">` + box('g-mag', t('sectionsFunctions'), `<table class="tbl in"><tbody>` +
     bools.map(m => { const on = m.current.toLowerCase()==='on';
       return `<tr><td class="swcol"><span class="sw ${on?'on':''}" aria-hidden="true"></span></td><td><b>${esc(m.desc||m.name)}</b><span class="state">state.${esc(m.name)}</span></td><td>${on?t('on'):t('off')}</td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`; }).join('') +
     `</tbody></table>`, `<span class="meta">${bools.length}</span>`) + `</div>`;
