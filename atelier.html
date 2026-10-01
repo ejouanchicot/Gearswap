@@ -167,6 +167,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .slot.weap{border-left-color:var(--accent)}
 .slot.tried{border-left-color:var(--try);background:var(--try-soft)}
 .slot.tried .lbl{color:var(--try)}
+.unslot{position:absolute;top:3px;right:4px;width:20px;height:20px;display:grid;place-items:center;border-radius:3px;font-size:13px;font-weight:700;color:var(--try);border:1px solid var(--try);background:var(--panel);cursor:pointer;line-height:1}
+.unslot:hover{background:var(--try);color:var(--panel)}
+.choice.back{border-color:var(--try)}
+.choice.back button{box-shadow:inset 3px 0 0 var(--try)}
 /* the bar over the grid while pieces are being tried */
 .trybar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px;padding:7px 10px;border:1px solid var(--try);border-radius:4px;background:var(--try-soft);font-size:13px}
 .trybar b{color:var(--try)}
@@ -407,7 +411,7 @@ const T = {
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', setPiece:'Pièce du set', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -430,7 +434,7 @@ const T = {
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', setPiece:'The set\'s piece', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -1263,11 +1267,12 @@ function renderHome(){
 }
 function slotHTML(s, ci, slot, own, q, eff){
   const p = eff.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
-  if (!p) return `<button class="slot empty ${eff.tried[slot]?'tried':''}" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="txt"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></span></button>`;
+  if (!p) return `<button class="slot empty ${eff.tried[slot]?'tried':''}" data-card="${ci}" data-slot="${slot}">${eff.tried[slot] ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : ''}${icon(null)}<span class="txt"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></span></button>`;
   const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
   const r = pieceStats(p), augmented = r && Object.keys(r.aug).length;
   // the full story (base / augments / where it comes from) is in the hover card (showTip)
   return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${eff.tried[slot]?'tried':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}` +
+    `${eff.tried[slot] ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : ''}` +
     `<span class="txt"><span class="lbl">${label}</span><span class="item"><span class="nm">${esc(p.name)}</span>${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</span></span></button>`;
 }
 /* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
@@ -1499,15 +1504,17 @@ function openSlot(ci, slot){
   S._drawer = {ci, slot, set: s};
   const opts = S._drawOpts = pieceChoices(slot, p);
   const same = o => p && o.piece && o.piece.name === p.name && (o.piece.augs || []).join('|') === (p.augs || []).join('|');
-  const acts = [eff.tried[slot] ? `<button class="btn ghost" data-tryreset>${t('tryReset')}</button>` : '',
-    p ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : ''].join('');
+  const orig = eff.tried[slot] ? withoutTrial(() => withWeapons(s).pieces[slot]) : null;
+  const back = eff.tried[slot] ? `<div class="choice back"><div class="kicker">${t('setPiece')}</div><button type="button" data-tryreset>${icon(orig && orig.name)}` +
+    `<span><span>↺ ${orig ? esc(orig.name) : t('empty')}</span><small>${t('tryReset')}</small></span></button></div>` : '';
+  const acts = p ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '';
   const list = opts.length ? opts.map((o, i) => { const r = pieceStats(o.piece), augs = o.piece.augs || [];
     const where = [o.owned ? t('inBag') : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
     return `<button type="button" class="${same(o) ? 'cur' : ''}" data-try="${i}">${icon(o.piece.name)}<span>` +
       `<span>${esc(o.piece.name)}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</span>` +
       `${augs.length ? `<span class="augl">◆ ${esc(augs.filter(a => !/^Path:/.test(a)).join(' · ') || augs.join(' · '))}</span>` : ''}<small>${esc(where)}</small></span></button>`; }).join('')
     : `<p class="note">${t('noOwned')}</p>`;
-  let html = `<p class="muted small">${t('pickHint')}</p>` +
+  let html = `${back}<p class="muted small">${t('pickHint')}</p>` +
     `${acts ? `<div class="drawacts">${acts}</div>` : ''}<input id="drawq" class="drawq" type="search" placeholder="${t('drawSearch')}" autocomplete="off" spellcheck="false">` +
     `<div class="choice">${list}</div>`;
   $('#overlay').innerHTML = `<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="${label}">
@@ -1586,7 +1593,8 @@ function renderAdd(){
 function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; }
 
 document.addEventListener('click', e => {
-  const b = e.target.closest('button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
+  const b = e.target.closest('[data-unslot],button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
+  if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
   if (d.subpick) { S.subs[S.char + '|' + S.job] = d.subpick; render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
