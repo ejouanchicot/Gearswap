@@ -53,7 +53,7 @@ COMMON_GROUPS = {
     'CRAFT_REFILL.lua': 'inventory', 'WARDROBE_CONFIG.lua': 'inventory',
     'AUTO_ABILITIES.lua': 'combat', 'RECAST_CONFIG.lua': 'combat', 'DW_CONFIG.lua': 'combat',
     'ELEMENTAL_BELT.lua': 'combat', 'WEAPON_CONFIG.lua': 'combat', 'STEALTH_CONFIG.lua': 'combat',
-    'HP_PRIORITY.lua': 'combat', 'SORTIE_CONFIG.lua': 'combat', 'AUTOCURE_CONFIG.lua': 'combat', 'TUNING.lua': 'combat', 'CLEANSE_CONFIG.lua': 'combat',
+    'HP_PRIORITY.lua': 'combat', 'SORTIE_CONFIG.lua': 'combat', 'AUTOCURE_CONFIG.lua': 'combat', 'TUNING.lua': 'combat', 'CLEANSE_CONFIG.lua': 'combat', 'SMARTBUFF_CONFIG.lua': 'combat',
 }
 
 

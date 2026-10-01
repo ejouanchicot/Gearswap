@@ -38,67 +38,11 @@ local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buf
 ---   WARRIOR ABILITY AUTOMATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Main WAR abilities (Berserk/Defender/Aggressor/Retaliation/Restraint).
---- Berserk and Defender are mutually exclusive via the `exclude` table.
-local MAIN_ABILITIES = {
-    { name = 'Berserk',     buff = 'Berserk',     id = 1 },
-    { name = 'Defender',    buff = 'Defender',    id = 3 },
-    { name = 'Aggressor',   buff = 'Aggressor',   id = 4 },
-    { name = 'Retaliation', buff = 'Retaliation', id = 8 },
-    { name = 'Restraint',   buff = 'Restraint',   id = 9 },
-}
-
---- Collect main 5 WAR abilities into cast queue + status display.
---- @param recasts table windower.ffxi.get_ability_recasts() output
---- @param buffs   table buffactive snapshot
---- @param exclude table { [name] = true } abilities to skip (mutual exclusion)
---- @return table abilities_to_cast, table status_data
-local function collect_main_abilities(recasts, buffs, exclude)
-    local to_cast = {}
-    local status = {}
-    for _, ability in ipairs(MAIN_ABILITIES) do
-        if not exclude[ability.name] then
-            local recast = recasts[ability.id] or 0
-            if buffs[ability.buff] then
-                table.insert(status, { name = ability.name, status = 'active' })
-            elseif is_on_cooldown(recast) then
-                table.insert(status, { name = ability.name, status = 'cooldown', time = math.ceil(recast) })
-            else
-                table.insert(to_cast, ability)
-            end
-        end
-    end
-    return to_cast, status
-end
-
---- Append Warcry / Blood Rage entries to existing cast queue + status.
---- Warcry is preferred; Blood Rage is used only if Warcry is on cooldown.
---- @param recasts table get_ability_recasts() output
---- @param buffs   table buffactive snapshot
---- @param to_cast table abilities_to_cast (mutated)
---- @param status  table status_data (mutated)
-local function collect_warcry_bloodrage(recasts, buffs, to_cast, status)
-    local warcry_recast    = recasts[2]  or 0
-    local bloodrage_recast = recasts[11] or 0
-    local warcry_active    = buffs['Warcry']
-    local bloodrage_active = buffs['Blood Rage']
-
-    if warcry_active then
-        table.insert(status, { name = 'Warcry', status = 'active' })
-    elseif is_recast_ready(warcry_recast) and not bloodrage_active then
-        table.insert(to_cast, { name = 'Warcry', id = 2 })
-    elseif is_on_cooldown(warcry_recast) then
-        table.insert(status, { name = 'Warcry', status = 'cooldown', time = math.ceil(warcry_recast) })
-    end
-
-    if bloodrage_active then
-        table.insert(status, { name = 'Blood Rage', status = 'active' })
-    elseif is_recast_ready(bloodrage_recast) and not warcry_active and is_on_cooldown(warcry_recast) then
-        table.insert(to_cast, { name = 'Blood Rage', id = 11 })
-    elseif is_on_cooldown(bloodrage_recast) then
-        table.insert(status, { name = 'Blood Rage', status = 'cooldown', time = math.ceil(bloodrage_recast) })
-    end
-end
+--- The Berserk / Defender chains: war_berserk / war_defender of
+--- _common/combat/SMARTBUFF_CONFIG.lua (smartbuff_config.lua; defaults Berserk
+--- or Defender, then Aggressor, Retaliation, Restraint, Warcry - Blood Rage
+--- while Warcry is on cooldown). Names and rules: shared/utils/smartbuff/buff_list.lua.
+local BuffList = require('shared/utils/smartbuff/buff_list')
 
 --- SAM stance paired with each WAR mode: Berserk goes with Hasso (offense),
 --- Defender with Seigan (defense).
@@ -159,41 +103,27 @@ local function cast_sequentially(abilities_to_cast)
     end
 end
 
----   Buff the player with key WAR job abilities automatically
----   Handles mutual exclusion between Berserk and Defender, then appends the
----   subjob abilities (see collect_subjob_abilities).
+---   Buff the player with the WAR chain of the mode: war_berserk or
+---   war_defender of SMARTBUFF_CONFIG.lua (each list holds one of Berserk /
+---   Defender), then, with war_add_sam, the /SAM stance and Third Eye
+---   (see collect_subjob_abilities).
 ---
----   Abilities managed:
----   • Berserk     (ID: 1) - Attack+, Defense- | Excludes Defender
----   • Defender    (ID: 3) - Defense+, Attack- | Excludes Berserk
----   • Aggressor   (ID: 4) - Accuracy+
----   • Retaliation (ID: 8) - Counter attacks
----   • Restraint   (ID: 9) - Weaponskill damage+
----   • Warcry      (ID: 2) - Attack boost (party)
----   • Blood Rage  (ID: 11) - Attack boost fallback (mutually exclusive with Warcry)
+---   Default lists: Berserk or Defender (they do not go together: Berserk
+---   lowers Defense, Defender Attack), Aggressor, Retaliation, Restraint,
+---   Warcry (Blood Rage while Warcry is on cooldown).
 ---
----   @param param string Optional mutual exclusion: 'Berserk' (exclude Defender) or 'Defender' (exclude Berserk)
+---   @param param string 'Berserk' (default) or 'Defender': which list
 ---   @return void
 function SmartbuffManager.buff_war(param)
-    local recasts = windower.ffxi.get_ability_recasts()
-    local buffs = buffactive
-
-    -- Mutual exclusion between Berserk and Defender (caller-driven via param).
-    local exclude = {}
-    if param == 'Berserk' then
-        exclude['Defender'] = true
-    elseif param == 'Defender' then
-        exclude['Berserk'] = true
+    local cfg = require('shared/utils/smartbuff/smartbuff_config').get()
+    local list = param == 'Defender' and cfg.war_defender or cfg.war_berserk
+    local to_cast, status = BuffList.collect(list)
+    if cfg.war_add_sam then
+        collect_subjob_abilities(param, windower.ffxi.get_ability_recasts(), buffactive, to_cast, status)
     end
-
-    local to_cast, status = collect_main_abilities(recasts, buffs, exclude)
-    collect_warcry_bloodrage(recasts, buffs, to_cast, status)
-    collect_subjob_abilities(param, recasts, buffs, to_cast, status)
-
     if #status > 0 then
         MessageBuffs.show_buff_status(status)
     end
-
     cast_sequentially(to_cast)
 end
 
