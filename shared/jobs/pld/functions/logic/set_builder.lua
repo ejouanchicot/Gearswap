@@ -191,7 +191,14 @@ function SetBuilder.apply_mode_shield(result)
     local mode = current_mode()
     local shields = weapons_config().shields
     local by_weapon = mode and type(shields) == 'table' and shields[mode]
-    local shield = type(by_weapon) == 'table' and by_weapon[SetBuilder.current_weapon() or ''] or nil
+    local weapon = SetBuilder.current_weapon() or ''
+    local shield = type(by_weapon) == 'table' and by_weapon[weapon] or nil
+    -- state.Shield (pld/keys/PLD_STATES.lua), when not 'Auto', forces its shield
+    -- over the mode's; a two-handed weapon keeps its grip
+    local forced = state.Shield and state.Shield.value
+    if forced and forced ~= 'Auto' and not grip_for(weapon) then
+        shield = forced
+    end
     if shield then
         result = set_combine(result, {sub = shield})
     end

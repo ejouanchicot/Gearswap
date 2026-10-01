@@ -201,6 +201,19 @@ function PLDStates.configure()
         'On' -- Force SIRD set
     }
 
+    --- Shield: the shield in the off hand, over the one the stance and weapon give
+    --- (pld/combat/PLD_WEAPONS.lua shields). 'Auto' leaves it to them; a shield
+    --- name forces it (a two-handed weapon keeps its grip). No key: set by
+    --- //gs c sortie <target> (SORTIE_CONFIG.lua states) or //gs c set Shield <name>.
+    state.Shield =
+        M {
+        ['description'] = 'Shield',
+        'Auto',
+        'Duban',
+        'Aegis',
+        'Blurred Shield +1'
+    }
+
     --- RuneMode: Rune selection (RUN subjob)
     --- Options and their order come from RUNE_OPTIONS / SORTIE_RUNE_OPTIONS,
     --- reapplied by apply_hybrid_profile() whenever HybridMode changes.

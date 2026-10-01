@@ -16,6 +16,7 @@ Set names and automatic gear: [sets.md](sets.md).
 | `^numpad9` | `HybridMode` | **PDT**, MDT, Sortie. Under /SCH and /RUN: DPS, **Tanking**, Hoxne | Your stance (see below) |
 | `^numpad1` | `MainWeapon` | **Excalibur**, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo | Weapon set to wield. The list shrinks in Sortie and under /SCH (see below). Hidden under /SCH Tanking |
 | `^numpad2` | `PhalanxSIRD` | **Off**, On. Under /SCH: Off, **On** | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. The same key under every subjob |
+| no key | `Shield` | **Auto**, Duban, Aegis, Blurred Shield +1 | `Auto` = the shield your stance and weapon give (`PLD_WEAPONS.lua`); a shield name forces it in idle and engaged (a two-handed weapon keeps its grip). Set by `//gs c sortie <target>` (`SORTIE_CONFIG.lua` states) or `//gs c set Shield <name>`; only in a `PLD_STATES.lua` that declares it |
 | `^numpad5` | `WS1` | depends on the weapon | Weaponskill of `//gs c ws1` (or `ws`) |
 | `^numpad6` | `WS2` | depends on the weapon | Weaponskill of `//gs c ws2` |
 | `^numpad3` (/RUN) | `RuneMode` | **Ignis**, Gelus, Flabra, Tellus, Sulpor, Unda, Lux, Tenebrae | Rune used by `//gs c rune` |
