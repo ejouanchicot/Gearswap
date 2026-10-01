@@ -62,10 +62,23 @@ button{font:inherit;color:inherit;cursor:pointer}
 .navjob.home{margin-top:10px}
 .navjob.home svg{color:var(--accent);margin:auto}
 .navjob.home b{grid-column:span 3;font-weight:600;letter-spacing:0}
-.side-foot{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line)}
-.side-foot .seg{flex:1}
-.main{min-width:0;padding:30px 40px 72px}
+/* language and theme, top right of the page */
+.prefs{display:flex;gap:8px;justify-content:flex-end;max-width:1200px;margin-bottom:6px}
+.prefs .seg button{padding:3px 10px;font-size:12px}
+.main{min-width:0;padding:14px 40px 72px}
 .inner{max-width:1200px}
+/* Wide screens: the page never scrolls, each block that lacks room scrolls on its own */
+@media (min-width:901px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100vh}
+  .main{height:100vh;overflow:hidden;padding-bottom:0;display:flex;flex-direction:column}
+  .inner{flex:1;display:flex;flex-direction:column;min-height:0}
+  .pane{flex:1;min-height:0;overflow:auto;padding-bottom:24px}
+  .pane.split{overflow:hidden;padding-bottom:20px}
+  .split .setsx{height:100%;align-items:stretch}
+  .split .setlist{position:static;max-height:none;min-height:0}
+  .split .detail{align-self:start;max-height:100%;overflow:auto}
+}
 
 /* ---- page heads ---- */
 .pagehead{margin-bottom:22px}
@@ -237,15 +250,17 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
     </div>
     <div class="chars"><div class="seg" id="chars" role="group"></div></div>
     <nav class="jobnav" id="jobnav"></nav>
-    <div class="side-foot">
+  </aside>
+  <main class="main">
+    <div class="prefs">
       <div class="seg" role="group" aria-label="Language"><button id="lang-fr" data-lang="fr">FR</button><button id="lang-en" data-lang="en">EN</button></div>
       <div class="seg" role="group" id="theme-seg">
         <button data-theme-set="light" id="th-light"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.3"><path d="M7 0.5v2M7 11.5v2M0.5 7h2M11.5 7h2M2.4 2.4l1.4 1.4M10.2 10.2l1.4 1.4M2.4 11.6l1.4-1.4M10.2 3.8l1.4-1.4"/></g></svg></button>
         <button data-theme-set="dark" id="th-dark"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9.8 1.2a6 6 0 1 0 3 9.6A5 5 0 0 1 9.8 1.2z" fill="currentColor"/></svg></button>
       </div>
     </div>
-  </aside>
-  <main class="main"><div class="inner" id="view"></div></main>
+    <div class="inner" id="view"></div>
+  </main>
 </div>
 <div id="overlay" hidden></div>
 
@@ -432,8 +447,8 @@ function renderHome(){
       <td><span class="role">${t('roles.'+r)}</span></td><td class="sub">${esc(d.sub||'—')}</td><td class="num r">${n.sets}</td><td class="num r">${n.keys}</td>
       <td class="num">${bookOf(d)}</td><td class="num">${esc(d.lockstyle&&d.lockstyle.default||'—')}</td><td class="num muted">${esc(d.at||'—')}${d.offline?' · '+t('offline'):''}</td></tr>`; }).join('');
   return `<header class="pagehead"><div class="kicker">${t('overview')}</div><h1 class="display">${esc(S.char)}</h1><p class="lede">${t('summary',{j:jobs.length,s:totS,k:totK})}</p></header>
-    <div class="tblwrap"><table class="tbl click"><thead><tr><th>${t('colJob')}</th><th>${t('colRole')}</th><th>${t('colSub')}</th><th class="r">${t('colSets')}</th><th class="r">${t('colKeys')}</th>
-    <th>${t('macro')}</th><th>${t('lockstyle')}</th><th>${t('colExport')}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note-foot">${t('mock')}</p>`;
+    <div class="pane"><div class="tblwrap"><table class="tbl click"><thead><tr><th>${t('colJob')}</th><th>${t('colRole')}</th><th>${t('colSub')}</th><th class="r">${t('colSets')}</th><th class="r">${t('colKeys')}</th>
+    <th>${t('macro')}</th><th>${t('lockstyle')}</th><th>${t('colExport')}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note-foot">${t('mock')}</p></div>`;
 }
 function slotHTML(s, ci, slot, own, q){
   const p = s.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
@@ -525,14 +540,19 @@ function renderJob(){
   }
   const facts = d ? [[t('colSub'), esc(d.sub)], [t('macro'), bookOf(d)], [t('lockstyle'), esc(d.lockstyle&&d.lockstyle.default||'—')], [t('colExport'), esc(d.at||'—') + (d.offline ? ` <span class="muted">· ${t('offline')}</span>` : '')]] : [];
   return `<header class="jobhead" style="--role:${ROLE_COLOR[r]}"><div class="title">${emblem(c)}<div><h1 class="display">${c}</h1><p><span>${j[1]}</span><span class="role">${t('roles.'+r)}</span></p></div></div>
-    <dl class="facts">${facts.map(([a,b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl></header>${sections}${body}`;
+    <dl class="facts">${facts.map(([a,b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl></header>${sections}<div class="pane ${d && S.section==='sets' ? 'split' : ''}">${body}</div>`;
 }
-// Re-render, keeping the set list's scroll and the focus of the search box
+// Re-render, keeping the focus of the search box and the scroll of each block
+// while the view stays the same (the set detail goes back to its top for another set)
+const SCROLLERS = ['.pane', '.setlist .scroll', '.detail'];
 function render(){
-  const sc = $('.setlist .scroll'), top = sc ? sc.scrollTop : 0;
+  const view = [S.char, S.job, S.section].join('|'), set = view + '|' + S.sel[S.job];
+  const tops = SCROLLERS.map(q => { const el = $(q); return el ? el.scrollTop : 0; });
   const a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;
   renderSide(); $('#view').innerHTML = S.job ? renderJob() : renderHome(); save();
-  const sc2 = $('.setlist .scroll'); if (sc2) sc2.scrollTop = top;
+  SCROLLERS.forEach((q, i) => { const el = $(q);
+    if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });
+  S._view = view; S._set = set;
   if (id) { const el = document.getElementById(id); if (el) { el.focus(); if (pos != null && el.setSelectionRange) el.setSelectionRange(pos, pos); } }
 }
 
