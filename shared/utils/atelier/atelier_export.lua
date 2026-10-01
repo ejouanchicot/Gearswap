@@ -178,12 +178,19 @@ local function source_of(bind)
     return 'job'
 end
 
+--- The keys of the job, as bound now. `id` names a key in the overrides file the
+--- page writes (shared/utils/keybinds/key_overrides.lua); `file_key` is the key
+--- of the key file when an override changed it.
 local function collect_keys()
     local module = rawget(_G, '_keybind_active')
+    local ok, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
     local keys = {}
     for _, bind in ipairs(module and module.binds or {}) do
         keys[#keys + 1] = {key = bind.key or '', desc = bind.desc or bind.command or '', state = bind.state,
-            src = source_of(bind), subjob = type(bind.subjob) == 'string' and bind.subjob or nil}
+            src = source_of(bind), subjob = type(bind.subjob) == 'string' and bind.subjob or nil,
+            id = ok and KeyOverrides.id_of(bind) or nil, file_key = bind.file_key,
+            subjobs = type(bind.subjob) == 'table' and bind.subjob or nil,
+            exclude = type(bind.exclude_subjob) == 'string' and {bind.exclude_subjob} or bind.exclude_subjob}
     end
     return keys
 end
@@ -557,6 +564,9 @@ function AtelierExport.export()
     data.descs = collect_descs(ids)
     data.wskill = collect_weapon_skills(data.icons)
     data.ws_skill = collect_ws_skills(data.sets)
+    -- the keys changed in the page and saved (<Char>/saved/keybind_overrides.lua)
+    local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
+    data.key_overrides = ok_o and KeyOverrides.read() or nil
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))

@@ -19,6 +19,7 @@ Two helpers sit beside them: `key_validator.lua` names keys that cannot work, an
 | `shared/utils/keybinds/key_validator.lua` | `KeyValidator.check(binds)`, `KeyValidator.is_valid_key(key)` |
 | `shared/utils/keybinds/key_conflicts.lua` | Two actions on one key: live conflicts (chat block, red key in the HUD) and every possible one over subjobs and partner jobs (`//gs c kc`) |
 | `shared/utils/keybinds/common_keybinds.lua` | `CommonKeybinds.load()`, `CommonKeybinds.merge_into(binds)` |
+| `shared/utils/keybinds/key_overrides.lua` | `KeyOverrides.id_of(bind)`, `KeyOverrides.read()`, `KeyOverrides.apply(job, binds)`: the keys changed in the Atelier page |
 | `shared/utils/keybinds/temp_binds.lua` | `//gs c tb` subcommands and the `<Character>/temp_binds.lua` file; exported as `_G.TempBinds` |
 | `shared/utils/keybinds/temp_binds_parse.lua` | Key words, action names, targets for `tb` |
 | `shared/utils/core/keybind_guard.lua` | `KeybindGuard.schedule()`: one delayed re-bind per load; exported as `_G.KeybindGuard` |
@@ -64,7 +65,8 @@ Requiring the file runs `KeybindManager.create(job, module)`, which does the fol
 2. `CombatMode.attach(job, module.binds)`, then `TreasureHunter.optional.attach(job, module.binds)`: the two optional states (see below). Then `AutoJump.attach(job, module.binds)` (`shared/utils/drg/auto_jump.lua`): creates `state.JumpAuto = M{'Off', 'On'}` (Off) when the job's STATES file has none, appends `{key = '!numpad-', command = 'cyclestate JumpAuto', desc = 'Jump Auto', state = 'JumpAuto'}` when the job's binds have no `JumpAuto` entry, and sets `subjob = 'DRG'` on the entry (unless it already has one), so the row and the key exist on /DRG only. It is not an optional state: no settings file, no show / hide command.
 3. Appends the player's `_CUSTOM` keys (local `add_custom_states`, under `pcall`). A broken custom file costs the job nothing but its custom keys, and prints `<JOB>_CUSTOM.lua: <error>`.
 4. Appends the common keys (`CommonKeybinds.merge_into`).
-5. When at least one entry has a `weapon` field, registers `AltStates.on_weapon_change('keybinds', refresh_active)` (local `watch_own_weapon`).
+5. Lays the keys changed in the Atelier page over the list (`KeyOverrides.apply`, `shared/utils/keybinds/key_overrides.lua`): `<Character>/saved/keybind_overrides.lua` holds `{common = {id = key}, <JOB> = {id = key}}`, an entry found by `state:<State>`, else `cmd:<command>`; a common entry takes the `common` table, the others the job's; `''` leaves the row without a key; the file's key stays in `file_key` for the export. Once per list (`binds._overrides_applied`). The old key is unbound by `clear_unwanted` at the next `bind_all`.
+6. When at least one entry has a `weapon` field, registers `AltStates.on_weapon_change('keybinds', refresh_active)` (local `watch_own_weapon`).
 
 The HUD loads the same file a second time, under another module name: `UI_LOADER.lua` requires `<job>/keys/<JOB>_KEYBINDS`, while the entry requires `<Char>/_common/...`. So `create` runs twice per load. The first module stays `_G._keybind_active`: that is the module `bind_all` lays the keys with, and the one `refresh_active`, `conflict_keys` and `show_possible_conflicts` use. `CustomStates.load` keeps its result in `_G._custom_state_cache` and hands the same bind entries to the second call, so the file is read, and its warnings shown, only once. The optional states record their "native" flag on the first `attach` of the sandbox for the same reason.
 
@@ -456,6 +458,7 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 | KeyConflicts | `show_possible(job, binds)` | `//gs c kc` output |
 | CommonKeybinds | `load()` | `config/COMMON_KEYBINDS.binds` or `{}` |
 | CommonKeybinds | `merge_into(binds)` -> number added | Appends once per list |
+| KeyOverrides | `apply(job, binds)` | Keys of `<Character>/saved/keybind_overrides.lua` over the list, once per list |
 | KeybindGuard | `schedule()` | Re-sends the active binds of `_G[<main_job> .. 'Keybinds']` after 2.0 s, unless a newer load bumped `windower._keybind_guard_seq` |
 | TempBinds | `handle(args)` -> true | `//gs c tb` |
 | Parse (`temp_binds_parse.lua`) | `key(text)`, `looks_like_key(text)`, `show_key(key)`, `command(words)`, `resolve(command)`, `show_command(command)` | Parsing and display for `tb` |

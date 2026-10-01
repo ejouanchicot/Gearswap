@@ -316,6 +316,25 @@ button{font:inherit;color:inherit;cursor:pointer}
 .jobcell b{font-weight:700;letter-spacing:.03em;min-width:34px}
 .kbd{display:inline-flex;gap:3px;white-space:nowrap}
 kbd{font-family:var(--mono);font-size:12px;padding:1px 6px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:3px;background:var(--panel-2);color:var(--ink)}
+.kedit{border:1px solid var(--line-strong);background:var(--panel);border-radius:3px;padding:0 7px;color:var(--muted);font-size:13px}
+.kedit:hover{border-color:var(--accent);color:var(--accent)}
+.tbl tr.changed td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.kwas{display:block;font-size:11.5px;color:var(--faint)}
+.kwas .kbd kbd{font-size:10.5px;opacity:.8}
+.kclash{display:inline-grid;place-items:center;width:16px;height:16px;margin-left:6px;border-radius:50%;background:var(--r-dd);color:#fff;font-size:11px;font-weight:800}
+.keybar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:1240px;margin:0 auto 12px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);font-size:13.5px;color:var(--muted)}
+.keybar.dirty{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.keybar .sp{flex:1}
+.toast{max-width:1240px;margin:0 auto 12px;font-size:13px;color:var(--r-healer)}
+.keyedit{width:min(560px,100%)}
+.capture{display:grid;gap:6px;justify-items:center;padding:20px;border:2px dashed var(--line-strong);border-radius:6px;background:var(--panel-2);outline:none;cursor:pointer}
+.capture:focus{border-color:var(--accent);background:var(--accent-soft)}
+.capture .big .kbd kbd{font-size:20px;padding:4px 10px}
+.kbuild{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.kbuild .chip input{margin:0 4px 0 0}
+.kmanual summary{cursor:pointer;color:var(--muted);font-size:13px}
+.kwarn{margin:0;padding:8px 12px 8px 26px;border-radius:4px;background:color-mix(in srgb,var(--r-dd) 12%,var(--panel));color:var(--ink);font-size:13px}
+.klayout{font:inherit;font-size:12.5px}
 .kbd.none{font-size:13px;color:var(--faint)}
 .values{display:flex;flex-wrap:wrap;gap:4px}
 .values span{font-size:13px;padding:1px 8px;border:1px solid var(--line);border-radius:3px;color:var(--muted)}
@@ -422,7 +441,7 @@ const T = {
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
-    sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', emptied:'vidé par ce set (empty)', moreWeapons:'Autres ({n})…', empty:'—', inhFrom:'↳ {b}',
+    sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', emptied:'vidé par ce set (empty)', moreWeapons:'Autres ({n})…', usName:'Nom Windower : {k}', keyEdit:'Changer la touche', keyPress:'Clique ici puis appuie sur la combinaison voulue', keyManual:'Choisir à la main (Ctrl+W, Win, Apps... que le navigateur garde pour lui)', keyNone:'Aucune touche', keyBack:'Touche du fichier', keyOk:'Valider', keyFile:'Dans le fichier : {k}', keyLayout:'Clavier :', keyClash:'Déjà prise par : {d}', keyClashShort:'Touche déjà prise', keyTyping:'Sans Ctrl, Alt, Shift ou Win, cette touche empêche de l\'écrire dans le chat.', keyMote:'Touche déjà utilisée par GearSwap (F9-F12, Ctrl+- et Ctrl+=).', keyPaste:'Ctrl+V est le coller de Windower.', keyUnknown:'Touche inconnue de Windower : {k}', keyWas:'avant :', keysHint:'Clique ✎ pour changer une touche. Rien n\'est écrit avant « Enregistrer ».', keysDirty:'Touches changées, pas encore enregistrées.', keysSaved:'{n} touche(s) changée(s) dans la page (saved/keybind_overrides.lua). En jeu : //gs reload ou change de job.', keysNoId:'Fais //gs c atelier en jeu (ou l\'export hors jeu) pour pouvoir changer les touches de ce job.', keysSave:'Enregistrer', keysUndo:'Annuler les changements', savedKeys:'Enregistré dans {p}. En jeu : //gs reload ou change de job.', savedDownload:'Ton navigateur ne peut pas écrire dans le dossier : le fichier est téléchargé, mets-le dans {p}.', saveWrongDir:'Choisis le dossier data de GearSwap (celui qui contient atelier.html).', kg:{letters:'Lettres',digits:'Chiffres',numpad:'Pavé numérique',fkeys:'Touches F',punct:'Ponctuation',others:'Autres'}, lay:{auto:'détecté',us:'QWERTY US',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
     legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats, clique-la pour la changer', tryBar:'{n} pièce(s) à l\'essai : les écarts comparent au set d\'origine', tryLua:'Copier en Lua', tryUndo:'Tout annuler', tryReset:'Remettre la pièce du set', setPiece:'Pièce du set', triedTag:'À l\'essai', tryEmpty:'Vider l\'emplacement', drawSearch:'Chercher un objet…', noOwned:'Aucun objet connu pour cet emplacement : fais //gs c atelier en jeu pour lister tes sacs.', pickHint:'Clique une pièce pour l\'essayer : la grille et tes stats suivent. Survole-la pour ses stats.', inSets:'dans {n} set(s)', inBag:'dans tes sacs', notOwned:'pas dans tes sacs', luaTitle:'À coller dans ton fichier de sets', copy:'Copier', copied:'Copié', legendTry:'Pièce à l\'essai', vsSet:'Écarts : avec les pièces à l\'essai, contre le set d\'origine', buffsTitle:'Buffs et conditions', attrTitle:'Attributs', buffsOn:'{n} actif(s)', bFood:'Nourriture', bWhm:'Blanc', bBrd:'Barde', bCor:'Corsaire', bGeo:'Géo', bJa:'Capacités', bEnemy:'Cible', buffReset:'Tout retirer', buffNote:'Ta mesure en jeu compte les buffs que tu avais à ce moment : mesure sans buff pour des chiffres justes.', tankTitle:'Tanking', offTitle:'Attaque', physHit:'Coup de 1000', magHit:'Sort de 1000', breathHit:'Souffle de 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Haste totale', tpHit:'TP par coup', hitsTo:'Coups pour 1000 TP', roundLbl:'Round d\'attaque', hitRate:'Taux de toucher', multiLbl:'DA · TA · QA', critLbl:'Critiques', phalanxTip:'Phalanx {p} (compétence {s}) + équipement {g}', hasteTip:'équipement {g} / 25 · magie {m} / 43,8 · capacités {j} / 25', tpTip:'Délai {d} · Store TP {s}', hitTip:'Précision {a} contre Évasion {e} ({n})', enmTip:'équipement {g} + capacités {b} · plafond ×3', magTip:'MDT {m} % (Shell compris) · MDT II · MDB {b}', twoHand:'deux mains',  rankShort:'Rang {r}', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
@@ -445,7 +464,7 @@ const T = {
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
-    sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', emptied:'emptied by this set (empty)', moreWeapons:'Others ({n})…', empty:'—', inhFrom:'↳ {b}',
+    sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', emptied:'emptied by this set (empty)', moreWeapons:'Others ({n})…', usName:'Windower name: {k}', keyEdit:'Change the key', keyPress:'Click here, then press the keys you want', keyManual:'Pick by hand (Ctrl+W, Win, Apps... the browser keeps for itself)', keyNone:'No key', keyBack:'Key of the file', keyOk:'Apply', keyFile:'In the file: {k}', keyLayout:'Keyboard:', keyClash:'Already taken by: {d}', keyClashShort:'Key already taken', keyTyping:'Without Ctrl, Alt, Shift or Win, this key stops you typing it in the chat.', keyMote:'Key GearSwap already uses (F9-F12, Ctrl+- and Ctrl+=).', keyPaste:'Ctrl+V is Windower\'s paste.', keyUnknown:'Key Windower does not know: {k}', keyWas:'before:', keysHint:'Click ✎ to change a key. Nothing is written before "Save".', keysDirty:'Keys changed, not saved yet.', keysSaved:'{n} key(s) changed in the page (saved/keybind_overrides.lua). In game: //gs reload or change job.', keysNoId:'Run //gs c atelier in game (or the offline export) to change this job\'s keys.', keysSave:'Save', keysUndo:'Undo the changes', savedKeys:'Saved in {p}. In game: //gs reload or change job.', savedDownload:'Your browser cannot write in the folder: the file is downloaded, put it in {p}.', saveWrongDir:'Pick GearSwap\'s data folder (the one holding atelier.html).', kg:{letters:'Letters',digits:'Digits',numpad:'Numpad',fkeys:'F keys',punct:'Punctuation',others:'Others'}, lay:{auto:'detected',us:'US QWERTY',azerty:'AZERTY',qwertz:'QWERTZ'},  empty:'—', inhFrom:'↳ {b}',
     legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats, click it to change it', tryBar:'{n} piece(s) tried: differences compare to the original set', tryLua:'Copy as Lua', tryUndo:'Undo all', tryReset:'Put the set\'s piece back', setPiece:'The set\'s piece', triedTag:'Tried', tryEmpty:'Empty the slot', drawSearch:'Search an item…', noOwned:'No item known for this slot: run //gs c atelier in game to list your bags.', pickHint:'Click a piece to try it: the grid and your stats follow. Hover it for its stats.', inSets:'in {n} set(s)', inBag:'in your bags', notOwned:'not in your bags', luaTitle:'Paste into your sets file', copy:'Copy', copied:'Copied', legendTry:'Piece being tried', vsSet:'Differences: with the tried pieces, against the original set', buffsTitle:'Buffs and conditions', attrTitle:'Attributes', buffsOn:'{n} active', bFood:'Food', bWhm:'White', bBrd:'Bard', bCor:'Corsair', bGeo:'Geo', bJa:'Abilities', bEnemy:'Target', buffReset:'Clear all', buffNote:'Your in-game measure counts the buffs you had then: measure without buffs for exact numbers.', tankTitle:'Tanking', offTitle:'Offense', physHit:'Hit of 1000', magHit:'Spell of 1000', breathHit:'Breath of 1000', enmityLbl:'Enmity', flashLbl:'Flash (CE / VE)', hasteTot:'Total haste', tpHit:'TP per hit', hitsTo:'Hits to 1000 TP', roundLbl:'Attack round', hitRate:'Hit rate', multiLbl:'DA · TA · QA', critLbl:'Critical hits', phalanxTip:'Phalanx {p} (skill {s}) + gear {g}', hasteTip:'gear {g} / 25 · magic {m} / 43.8 · abilities {j} / 25', tpTip:'Delay {d} · Store TP {s}', hitTip:'Accuracy {a} against Evasion {e} ({n})', enmTip:'gear {g} + abilities {b} · cap ×3', magTip:'MDT {m} % (Shell included) · MDT II · MDB {b}', twoHand:'two-handed',  rankShort:'Rank {r}', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
@@ -483,10 +502,10 @@ let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
 let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, meritEdits:{}, q:'', lang:'fr', theme:null,
-  trial:{}, buffs:{}, buffsOpen:false, famOpen:{}};
+  trial:{}, buffs:{}, buffsOpen:false, famOpen:{}, keyOv:{}, keyDirty:{}, layout:'auto', toast:''};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffsOpen', 'famOpen'];
+const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'layout'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 const $ = s => document.querySelector(s);
@@ -543,13 +562,52 @@ const bookOf = d => { const m = d.macro || {}, b = (m.solo || {})[d.sub] || m.de
   return b && b.book ? b.book + ' · ' + b.page : '—'; };
 const styleOf = d => { const l = d.lockstyle || {}; return esc((l.by_subjob || {})[d.sub] ?? l.default ?? '—'); };
 
+/* ---- keys: Windower names, physical keys, the player's keyboard layout ---- */
+// Windower binds physical keys (DirectInput scan codes, Hook.dll's table) named as on a US
+// keyboard; KeyboardEvent.code names the same physical keys, whatever the layout
+const CODE_KEY = {Backquote: '`', Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\', Semicolon: ';',
+  Quote: "'", Comma: ',', Period: '.', Slash: '/', Tab: 'tab', Enter: 'enter', Backspace: 'backspace', Escape: 'escape', Space: 'space',
+  ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Home: 'home', End: 'end', PageUp: 'pageup', PageDown: 'pagedown',
+  Insert: 'insert', Delete: 'delete', NumpadMultiply: 'numpad*', NumpadAdd: 'numpad+', NumpadSubtract: 'numpad-', NumpadDecimal: 'numpad.',
+  NumpadDivide: 'numpad/', NumpadEnter: 'numpadenter'};
+for (let i = 0; i < 26; i++) { const c = String.fromCharCode(65 + i); CODE_KEY['Key' + c] = c.toLowerCase(); }
+for (let i = 0; i < 10; i++) { CODE_KEY['Digit' + i] = String(i); CODE_KEY['Numpad' + i] = 'numpad' + i; }
+for (let i = 1; i <= 15; i++) CODE_KEY['F' + i] = 'f' + i;
+const KEY_CODE = Object.fromEntries(Object.entries(CODE_KEY).map(([c, k]) => [k, c]));
+// Keys printed on the player's keyboard: the browser's layout map when it gives one, else a
+// layout chosen in the page (the main ones written here)
+const LAYOUTS = {
+  azerty: {KeyQ: 'a', KeyW: 'z', KeyA: 'q', KeyZ: 'w', KeyM: ',', Semicolon: 'm', Comma: ';', Period: ':', Slash: '!', Digit1: '&', Digit2: 'é',
+    Digit3: '"', Digit4: "'", Digit5: '(', Digit6: '-', Digit7: 'è', Digit8: '_', Digit9: 'ç', Digit0: 'à', Minus: ')', Equal: '=', BracketLeft: '^',
+    BracketRight: '$', Quote: 'ù', Backquote: '²', Backslash: '*'},
+  qwertz: {KeyY: 'z', KeyZ: 'y', Minus: 'ß', Equal: '´', BracketLeft: 'ü', BracketRight: '+', Semicolon: 'ö', Quote: 'ä', Backquote: '^', Backslash: '#', Slash: '-'},
+};
+let LAYOUT_MAP = null;
+try { navigator.keyboard && navigator.keyboard.getLayoutMap().then(m => { LAYOUT_MAP = m; if (S.char) render(); }, () => {}); } catch (e) {}
+function printedKey(code){
+  const pick = S.layout || 'auto';
+  if (pick === 'auto' && LAYOUT_MAP && LAYOUT_MAP.get(code)) return LAYOUT_MAP.get(code);
+  return (LAYOUTS[pick] || {})[code] || null;
+}
+const MOD_NAMES = {'^': 'Ctrl', '!': 'Alt', '@': 'Win', '#': 'Apps', '~': 'Shift'};
+// "^!a" -> {mods: ['^', '!'], key: 'a'}; '%' / '$' (chat closed / open) kept apart
+function parseKey(k){
+  let i = 0; const mods = []; let chat = '';
+  while (i < k.length - 1 && (MOD_NAMES[k[i]] || k[i] === '%' || k[i] === '$')) { if (MOD_NAMES[k[i]]) mods.push(k[i]); else chat = k[i]; i++; }
+  return {mods, key: k.slice(i).toLowerCase(), chat};
+}
+// What the player reads on the key: their keyboard's character for letters and punctuation
+function keyCap(key){
+  const code = KEY_CODE[key];
+  const printed = code && /^(Key|Digit|Minus|Equal|Bracket|Backslash|Semicolon|Quote|Comma|Period|Slash|Backquote)/.test(code) && printedKey(code);
+  if (printed) return printed.toUpperCase();
+  return key.replace(/^numpad(.+)$/, 'Num $1').replace(/^f(\d+)$/, 'F$1').replace(/^(.)$/, c => c.toUpperCase());
+}
 function keyLabel(k){
   if (!k) return `<span class="kbd none">${t('noKey')}</span>`;
-  const mods = {'^':'Ctrl','!':'Alt','@':'Win','#':'Apps','~':'Shift'}; const parts = []; let i = 0;
-  while (mods[k[i]] && k.length > i+1) { parts.push(mods[k[i]]); i++; }
-  let rest = k.slice(i).replace(/^numpad/,'Num ').replace(/^f(\d+)$/,'F$1'); if (rest.length===1) rest = rest.toUpperCase();
-  parts.push(rest);
-  return '<span class="kbd">' + parts.map(p => '<kbd>'+esc(p)+'</kbd>').join('') + '</span>';
+  const {mods, key} = parseKey(k), cap = keyCap(key), us = key.length === 1 && cap !== key.toUpperCase();
+  const parts = mods.map(m => MOD_NAMES[m]).concat(cap);
+  return `<span class="kbd"${us ? ` title="${esc(t('usName', {k}))}"` : ''}>` + parts.map(p => '<kbd>'+esc(p)+'</kbd>').join('') + '</span>';
 }
 
 /* ---- set grouping ---- */
@@ -1255,6 +1313,158 @@ function globalsHTML(s){
     `<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
 }
 
+/* ---- keys changed in the page, saved into <Char>/saved/keybind_overrides.lua ---- */
+// S.keyOv[char] = {common: {id: key}, <JOB>: {id: key}}: the whole file, as the page wants it.
+// It starts from what the last export read in the file (key_overrides), a later save wins.
+function keyOverrides(){
+  const c = S.char, mine = S.keyOv[c];
+  const exports = Object.values(DATA[c] || {}).flatMap(j => Object.values(j)).filter(x => x.key_overrides !== undefined);
+  const latest = exports.sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
+  if (!mine || (latest && !S.keyDirty[c] && (latest.at || '') > (mine.at || ''))) {
+    S.keyOv[c] = {at: latest ? latest.at : '', map: JSON.parse(JSON.stringify((latest && latest.key_overrides) || {}))};
+  }
+  return S.keyOv[c].map;
+}
+const keyScope = k => k.src === 'common' ? 'common' : S.job;
+// The key a row has now: the page's override, else the key of the file
+function keyOf(k){
+  const ov = k.id ? (keyOverrides()[keyScope(k)] || {})[k.id] : undefined;
+  return ov !== undefined ? ov : fileKey(k);
+}
+// The key the key file gives (the export keeps it in file_key when an override changed it)
+const fileKey = k => k.file_key !== undefined ? k.file_key : k.key;
+const hasOverride = k => !!k.id && (keyOverrides()[keyScope(k)] || {})[k.id] !== undefined;
+// Local time, as the export writes it ("2026-10-01 15:22")
+const stamp = () => { const d = new Date(), z = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; };
+function setKey(k, key){
+  const map = keyOverrides(), scope = keyScope(k);
+  map[scope] = map[scope] || {};
+  if (key === undefined || key === fileKey(k)) delete map[scope][k.id]; else map[scope][k.id] = key;
+  if (!Object.keys(map[scope]).length) delete map[scope];
+  S.keyDirty[S.char] = true;
+}
+// A key bound with the subjob shown: its subjob(s), less the ones it excludes (exclude_subjob)
+function keyActive(k, sub){
+  const only = k.subjobs || (k.subjob ? [k.subjob] : null);
+  return (!only || only.includes(sub)) && !(k.exclude || []).includes(sub);
+}
+// Other keys bound with the shown subjob on the same key (none when the row itself is not bound)
+function keyClash(d, row, key){
+  if (!key || !keyActive(row, d.sub)) return [];
+  const want = key.toLowerCase();
+  return d.keys.filter(k => k !== row && keyActive(k, d.sub) && (keyOf(k) || '').toLowerCase() === want);
+}
+// What a key may do wrong: typing in the chat, Mote's own keys, Windower's paste
+const MOTE_KEYS = new Set(['f9', 'f10', 'f11', 'f12', '^f9', '^f10', '^f11', '^f12', '!f9', '!f10', '!f11', '!f12', '^-', '^=']);
+function keyWarnings(d, row, key){
+  const out = [], {mods, key: name} = parseKey(key || '');
+  if (!key) return out;
+  for (const k of keyClash(d, row, key)) out.push(t('keyClash', {d: k.desc}));
+  if (!mods.length && /^([a-z0-9]|[-=\[\];',.\/`\\]|space|enter|backspace|tab)$/.test(name)) out.push(t('keyTyping'));
+  if (MOTE_KEYS.has(key.toLowerCase())) out.push(t('keyMote'));
+  if (key.toLowerCase() === '^v') out.push(t('keyPaste'));
+  if (!KEY_CODE[name] && !/^(numpad\d|f\d+)$/.test(name)) out.push(t('keyUnknown', {k: name}));
+  return out;
+}
+let KEYEDIT = null;
+function openKeyEdit(i){
+  const d = data(), k = d.keys[i];
+  KEYEDIT = {i, key: keyOf(k), mods: parseKey(keyOf(k) || '').mods};
+  renderKeyEdit();
+}
+function renderKeyEdit(){
+  const d = data(), k = d.keys[KEYEDIT.i], key = KEYEDIT.key, file = fileKey(k);
+  const warn = keyWarnings(d, k, key);
+  const p = parseKey(key || ''), names = Object.values(CODE_KEY);
+  const groups = [['letters', names.filter(n => /^[a-z]$/.test(n))], ['digits', names.filter(n => /^\d$/.test(n))],
+    ['numpad', names.filter(n => /^numpad/.test(n))], ['fkeys', names.filter(n => /^f\d+$/.test(n))],
+    ['punct', names.filter(n => n.length === 1 && !/^[a-z0-9]$/.test(n))], ['others', names.filter(n => n.length > 1 && !/^(numpad|f\d)/.test(n))]];
+  const opts = groups.map(([g, list]) => `<optgroup label="${t('kg.' + g)}">${list.map(n => `<option value="${esc(n)}" ${n === p.key ? 'selected' : ''}>${esc(keyCap(n))}${keyCap(n).toLowerCase() !== n ? ` (${esc(n)})` : ''}</option>`).join('')}</optgroup>`).join('');
+  const mods = Object.entries(MOD_NAMES).map(([m, n]) => `<label class="chip"><input type="checkbox" class="kmod" value="${esc(m)}" ${p.mods.includes(m) ? 'checked' : ''}>${n}</label>`).join('');
+  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog keyedit" role="dialog" aria-label="${t('keyEdit')}">
+    <header><small class="muted">${esc(k.desc)}${k.state ? ` · <code>state.${esc(k.state)}</code>` : ''}</small><h3>${t('keyEdit')}</h3></header>
+    <div class="body">
+      <div class="capture" id="kcapture" tabindex="0"><span class="muted small">${t('keyPress')}</span><div class="big">${keyLabel(key)}</div>
+        <code class="muted small">${key ? esc(key) : '—'}</code></div>
+      <details class="kmanual"><summary>${t('keyManual')}</summary><div class="kbuild">${mods}<select class="kname topsel">${opts}</select></div></details>
+      ${warn.length ? `<ul class="kwarn">${warn.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : ''}
+      <p class="muted small">${t('keyFile', {k: file || '—'})} · ${t('keyLayout')} <select class="klayout">${['auto', 'us', 'azerty', 'qwertz'].map(l => `<option value="${l}" ${(S.layout || 'auto') === l ? 'selected' : ''}>${t('lay.' + l)}</option>`).join('')}</select></p>
+    </div>
+    <footer><span><button class="btn ghost" data-knone>${t('keyNone')}</button> <button class="btn ghost" data-kfile>${t('keyBack')}</button></span>
+      <span><button class="btn ghost" data-close>${t('cancel')}</button> <button class="btn" data-kok>${t('keyOk')}</button></span></footer></div>`;
+  $('#overlay').hidden = false;
+  const cap = $('#kcapture'); if (cap) cap.focus();
+}
+// The capture box: the physical key pressed, with its modifiers (Ctrl+W and the like stay with the browser:
+// the manual choice is there for those)
+document.addEventListener('keydown', e => {
+  if (!KEYEDIT || $('#overlay').hidden || !e.target.closest || !e.target.closest('#kcapture')) return;
+  e.preventDefault(); e.stopPropagation();
+  if (/^(Control|Alt|Shift|Meta|OS|ContextMenu)/.test(e.code)) return;
+  // Escape alone closes the window (it can still be picked by hand)
+  if (e.code === 'Escape' && !e.ctrlKey && !e.altKey && !e.shiftKey) { closeOverlay(); return; }
+  const name = CODE_KEY[e.code];
+  if (!name) { KEYEDIT.error = e.code; return; }
+  const mods = (e.ctrlKey ? '^' : '') + (e.altKey ? '!' : '') + (e.metaKey ? '@' : '') + (e.shiftKey ? '~' : '');
+  KEYEDIT.key = mods + name; renderKeyEdit();
+}, true);
+document.addEventListener('keyup', e => { if (KEYEDIT && e.target.closest && e.target.closest('#kcapture')) e.preventDefault(); }, true);
+function manualKey(){
+  const mods = [...document.querySelectorAll('.kmod:checked')].map(x => x.value).join(''), name = ($('.kname') || {}).value;
+  if (name) { KEYEDIT.key = mods + name; renderKeyEdit(); const det = $('.kmanual'); if (det) det.open = true; }
+}
+/* ---- saving: the page writes into the GearSwap data folder the player picks once ---- */
+const luaStr = v => "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n') + "'";
+function overridesLua(map){
+  const block = scope => `    ${/^[A-Za-z_]\w*$/.test(scope) ? scope : '[' + luaStr(scope) + ']'} = {\n` +
+    Object.keys(map[scope]).sort().map(id => `        [${luaStr(id)}] = ${luaStr(map[scope][id])},`).join('\n') + `\n    },`;
+  return `-- Keys changed in the Atelier page (data/atelier.html, Keys tab), laid over the key files\n` +
+    `-- (shared/utils/keybinds/key_overrides.lua). Delete this file to go back to the files' keys.\n` +
+    `-- '' = no key. Written ${stamp()}.\nreturn {\n${Object.keys(map).sort().map(block).join('\n')}\n}\n`;
+}
+// The data folder handle, kept in the browser (IndexedDB) once the player has picked it
+function idb(mode, fn){
+  return new Promise((ok, ko) => { const r = indexedDB.open('atelier', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('handles');
+    r.onsuccess = () => { const tx = r.result.transaction('handles', mode), q = fn(tx.objectStore('handles')); q.onsuccess = () => ok(q.result); q.onerror = () => ko(q.error); };
+    r.onerror = () => ko(r.error); });
+}
+async function dataFolder(){
+  let dir = null;
+  try { dir = await idb('readonly', st => st.get('data')); } catch (e) {}
+  if (dir && (await dir.queryPermission({mode: 'readwrite'})) !== 'granted' && (await dir.requestPermission({mode: 'readwrite'})) !== 'granted') dir = null;
+  if (!dir) {
+    dir = await window.showDirectoryPicker({id: 'atelier-data', mode: 'readwrite'});
+    // the right folder holds atelier.html: GearSwap's data folder
+    try { await dir.getFileHandle('atelier.html'); } catch (e) { throw new Error(t('saveWrongDir')); }
+    try { await idb('readwrite', st => st.put(dir, 'data')); } catch (e) {}
+  }
+  return dir;
+}
+async function writeSaved(char, file, text){
+  const dir = await dataFolder(), mine = await dir.getDirectoryHandle(char), saved = await mine.getDirectoryHandle('saved', {create: true});
+  const fh = await saved.getFileHandle(file, {create: true}), w = await fh.createWritable();
+  await w.write(text); await w.close();
+}
+function download(file, text){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/plain'})); a.download = file; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+async function saveKeys(){
+  const c = S.char, map = keyOverrides(), text = overridesLua(map), file = 'keybind_overrides.lua';
+  try {
+    if (!window.showDirectoryPicker) throw new Error('nofs');
+    await writeSaved(c, file, text);
+    S.keyDirty[c] = false; S.keyOv[c].at = stamp();
+    S.toast = t('savedKeys', {p: `${c}/saved/${file}`});
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;
+    download(file, text);
+    S.toast = t('savedDownload', {p: `${c}/saved/${file}`}) + (e && e.message && e.message !== 'nofs' ? ' · ' + e.message : '');
+  }
+  render();
+}
 /* ---- render ---- */
 // The top bar: character, job (by role, the played ones) and subjob menus, the job's macro book,
 // lockstyle and export, language and theme
@@ -1498,16 +1708,26 @@ function renderSets(d){
 }
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
+
 const KEY_COLORS = {job: 'g-def', custom: 'g-attr', combat: 'g-off', treasure: 'g-res', common: 'g-other'};
 function renderKeys(d){
   const groups = {};
-  for (const k of d.keys) { if (!k.key) continue; (groups[k.src] = groups[k.src] || []).push(k); }
+  // a row without a key (HUD only) is shown when the page changed it
+  d.keys.forEach((k, i) => { if (!keyOf(k) && !fileKey(k) && !hasOverride(k)) return; (groups[k.src] = groups[k.src] || []).push([k, i]); });
+  const row = ([k, i]) => { const key = keyOf(k), file = fileKey(k), changed = k.id && key !== file;
+    const clash = keyClash(d, k, key).length;
+    return `<tr class="${keyActive(k, d.sub) ? '' : 'other-sub'} ${changed ? 'changed' : ''}"><td class="kcol">${keyLabel(key)}${clash ? `<span class="kclash" title="${esc(t('keyClashShort'))}">!</span>` : ''}</td>` +
+      `<td>${esc(k.desc)}${changed ? `<span class="kwas">${t('keyWas')} ${keyLabel(file)}</span>` : ''}</td><td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td>` +
+      `<td class="r">${k.id ? `<button class="kedit" data-keyedit="${i}" title="${t('keyEdit')}">✎</button>` : ''}</td></tr>`; };
   const boxes = ['job','custom','combat','treasure','common'].filter(g => groups[g]).map(g =>
-    box(KEY_COLORS[g], t('keyGroups.'+g), `<table class="tbl in"><tbody>${groups[g].map(k =>
-      `<tr class="${k.subjob && k.subjob !== d.sub ? 'other-sub' : ''}"><td class="kcol">${keyLabel(k.key)}</td><td>${esc(k.desc)}</td>` +
-      `<td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td></tr>`).join('')}</tbody></table>`,
+    box(KEY_COLORS[g], t('keyGroups.'+g), `<table class="tbl in"><tbody>${groups[g].map(row).join('')}</tbody></table>`,
       `<span class="meta">${groups[g].length} · ${t('source.'+g).replace('{J}', S.job)}.lua</span>`)).join('');
-  return `<div class="boxgrid cols">${boxes}</div>`;
+  const changes = Object.values(keyOverrides()).reduce((n, m) => n + Object.keys(m).length, 0);
+  const noid = !d.keys.some(k => k.id);
+  const bar = `<div class="keybar ${S.keyDirty[S.char] ? 'dirty' : ''}"><span>${noid ? t('keysNoId') : S.keyDirty[S.char] ? t('keysDirty') : changes ? t('keysSaved', {n: changes}) : t('keysHint')}</span>` +
+    `${S.keyDirty[S.char] ? `<span class="sp"></span><button class="btn ghost" data-keysundo>${t('keysUndo')}</button><button class="btn" data-keyssave>${t('keysSave')}</button>` : ''}</div>`;
+  const toast = S.toast ? `<p class="toast">${esc(S.toast)}</p>` : '';
+  return `${bar}${toast}<div class="boxgrid cols">${boxes}</div>`;
 }
 function keyOfState(d){ const keyOf = {}; for (const k of d.keys) if (k.state && k.key && !keyOf[k.state]) keyOf[k.state] = k.key; return keyOf; }
 function modeTable(list, keyOf){
@@ -1689,7 +1909,7 @@ function renderAdd(){
     <div class="body">${body}</div><footer><button class="btn ghost" data-back ${addStep===0?'disabled':''}>${t('back')}</button><button class="btn ghost" data-close>${t('cancel')}</button></footer></div>`;
   $('#overlay').hidden = false;
 }
-function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; }
+function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; KEYEDIT = null; }
 
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-unslot],button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
@@ -1709,6 +1929,12 @@ document.addEventListener('click', e => {
   if ('tryundo' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); delete S.trial[trialKey(s)]; render(); return; }
   if ('trylua' in d) { openLua(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('copylua' in d) { copyLua(b); return; }
+  if (d.keyedit) { S.toast = ''; openKeyEdit(+d.keyedit); return; }
+  if ('kok' in d && KEYEDIT) { setKey(data().keys[KEYEDIT.i], KEYEDIT.key); KEYEDIT = null; closeOverlay(); render(); return; }
+  if ('knone' in d && KEYEDIT) { KEYEDIT.key = ''; renderKeyEdit(); return; }
+  if ('kfile' in d && KEYEDIT) { KEYEDIT.key = fileKey(data().keys[KEYEDIT.i]); renderKeyEdit(); return; }
+  if ('keyssave' in d) { saveKeys(); return; }
+  if ('keysundo' in d) { delete S.keyOv[S.char]; S.keyDirty[S.char] = false; S.toast = ''; render(); return; }
   if (d.wmode) { const k = S.char + '|' + S.job + '|' + d.wmode; if (d.wval) S.weapons[k] = d.wval; else delete S.weapons[k]; render(); return; }
   if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
@@ -1739,6 +1965,8 @@ document.addEventListener('input', e => {
 document.addEventListener('change', e => {
   if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
   if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.section = 'sets'; S.q = ''; render(); }
+  if (e.target.classList.contains('kmod') || e.target.classList.contains('kname')) manualKey();
+  if (e.target.classList.contains('klayout')) { S.layout = e.target.value; renderKeyEdit(); save(); }
   if (e.target.classList.contains('wmore') && e.target.value) { S.weapons[S.char + '|' + S.job + '|' + e.target.dataset.wmode] = e.target.value; render(); }
   if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
     if (e.target.value === '') delete b0[k]; else b0[k] = e.target.value; render(); }

@@ -435,6 +435,9 @@ function KeybindManager.create(job, module)
     if ok and CommonKeybinds then
         CommonKeybinds.merge_into(module.binds)
     end
+    -- keys changed in the Atelier page (<Char>/saved/keybind_overrides.lua), over all of the above
+    local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
+    if ok_o and KeyOverrides then KeyOverrides.apply(job, module.binds) end
     watch_own_weapon(module.binds)
     -- A row without desc (a hand-written keybind or CUSTOM file) made the
     -- HUD's first render raise and abort the job load: name it after its

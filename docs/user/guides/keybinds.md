@@ -245,6 +245,30 @@ Saved per character in `_common/keys/treasure_mode.lua`, same format as
 `combat_mode.lua`. A tag is forgotten when the mob dies, when you zone, or
 after 3 minutes without any action from or on it.
 
+## Changing keys from the Atelier page
+
+Open `data/atelier.html`, tab **Keys**, and click ✎ on a key:
+
+1. Click the box, then press the keys you want. The page reads the key's
+   position, as Windower does: on an AZERTY keyboard, press your own keys,
+   the page writes the Windower name (your A is written `q`). The page shows
+   the letters of your keyboard (detected by the browser; pick AZERTY, QWERTZ
+   or US QWERTY in the window when it cannot tell).
+2. Ctrl+W, Ctrl+T, the Windows key and the like stay with the browser: open
+   "Pick by hand" and tick the modifiers, then pick the key.
+3. The window warns of a key already taken on this job and subjob, of a key
+   without Ctrl / Alt / Shift / Win (you could no longer type it in the
+   chat), of F9-F12, Ctrl+- and Ctrl+= (Mote's) and of Ctrl+V (Windower's paste).
+4. **Save** writes `<YourName>/saved/keybind_overrides.lua`. The first time,
+   the browser asks for GearSwap's `data` folder (the one holding
+   `atelier.html`). A browser that cannot write there downloads the file:
+   put it in `<YourName>/saved/`.
+5. In game: `//gs reload` or change job. The old key is freed.
+
+Your key files are never rewritten. A common key changed in the page changes
+on every job; a job key on that job only. Delete `keybind_overrides.lua` to go
+back to the keys of your files.
+
 ## Temporary keys (`//gs c tb`)
 
 For a repetitive task, bind a key from the chat line; it lasts until you
