@@ -299,8 +299,13 @@ input[type=checkbox]{accent-color:var(--accent)}
 .statlist li.over b{color:var(--r-dd)}
 .statlist li[title]{cursor:help}
 .setstats p{margin:0;font-size:12px;color:var(--muted)}
-.conds summary{cursor:pointer;font-size:12.5px;color:var(--muted)}
-.conds ul,.plain{margin:4px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted)}
+.condlist{list-style:none;margin:0;padding:0;font-size:12.5px}
+.condlist li{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);gap:12px;padding:4px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.condlist li:last-child{border-bottom:0}
+.condlist b{font-weight:600;color:var(--ink)}
+.condlist span{color:var(--muted)}
+@container (max-width:499px){.condlist li{grid-template-columns:minmax(0,1fr);gap:0}}
+.plain{margin:4px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted)}
 .piecestats{display:grid;gap:6px}
 .piecestats .weapon{margin:0;font-weight:600}
 .piecestats .origin{margin:0;font-size:12px;color:var(--accent)}
@@ -887,6 +892,7 @@ const STAT_ALIAS = {
   'fire resistance':'res_fire','ice resistance':'res_ice','wind resistance':'res_wind','earth resistance':'res_earth',
   'lightning resistance':'res_lightning','water resistance':'res_water','light resistance':'res_light','dark resistance':'res_dark',
   'mag.atk.bns':'mab','rng.acc':'racc','rng.atk':'ratk',
+  'ranged acc.':'racc','ranged atk.':'ratk','magic acc.':'macc','magic atk.':'mab',
 };
 const normName = s => s.toLowerCase().replace(/["“”]/g, '').replace(/\.\s*/g, '.').replace(/\s+/g, ' ').replace(/^[\s/:]+|[\s/:]+$/g, '').trim();
 // A line that opens a condition (Set:, Latent effect:, Pet:, Unity ranking:...): what follows is not always on
@@ -955,7 +961,7 @@ function pieceStats(p){
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
   const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], path: null, weapon: null, known: !!text};
   // after "Pet:" (or Avatar:, Wyvern:...) the lines are the pet's, after any other condition they only apply sometimes
-  let mode = null;
+  let mode = null, cur = -1;
   // the game wraps long phrases: a line starting in lower case goes on the previous one
   const lines = (text || '').split('\n').reduce((acc, l) => { if (acc.length && /^[a-z]/.test(l)) acc[acc.length - 1] += ' ' + l; else acc.push(l); return acc; }, []);
   for (const raw of lines) {
@@ -965,7 +971,12 @@ function pieceStats(p){
     line = unsigned(line, r.base);
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
-    if (mode === 'cond') { r.cond.push(line); continue; }
+    // one condition per entry: its title line, then the lines under it ("Aftermath:" / "Increases Accuracy...")
+    if (mode === 'cond') {
+      if (COND.test(line) || cur < 0) cur = r.cond.push(line.trim()) - 1;
+      else r.cond[cur] += (/[,:]$/.test(r.cond[cur]) ? ' ' : ' · ') + line.trim();
+      continue;
+    }
     line = line.replace(/\b(DEF|DMG|Delay):\s?(\d+)/g, (_, k, n) => {
       if (k === 'DEF') add(r.base, 'def', +n, '', 'DEF'); else (r.weapon = r.weapon || {})[k] = +n; return ' '; });
     const free = parseLine(line, r.base);
@@ -1105,7 +1116,9 @@ function setStatsHTML(s){
   const notes = [];
   if (paths.length) notes.push(`<p>${t('pathNote')} ${paths.map(esc).join(', ')}</p>`);
   if (unknown.length) notes.push(`<p>${t('unknownNote')} ${unknown.map(esc).join(', ')}</p>`);
-  const conds = cond.length ? `<details class="conds"><summary>${t('condTitle')} (${cond.length})</summary><ul>${cond.map(c => `<li>${esc(c)}</li>`).join('')}</ul></details>` : '';
+  // what only applies sometimes (Set:, latent, Unity, Aftermath...): a foldable card, one line per effect, its piece first
+  const conds = cond.length ? fbox('set:cond', 'g-other', t('condTitle'), `<ul class="condlist">${cond.map(c => { const [piece, ...txt] = c.split(' — ');
+    return `<li><b>${esc(piece)}</b><span>${esc(txt.join(' — '))}</span></li>`; }).join('')}</ul>`) : '';
   return groups.length || Object.keys(S.statHide).length ? `<div class="setstats"><div class="kicker">${t('setStats')} ${statPickBtn()}</div>${[2, 3, 4].map(k => stackColumns(groups, k)).join('')}${notes.join('')}${conds}</div>` : '';
 }
 // The stat groups go in fixed columns: each one is placed by its number of lines (the shortest column
