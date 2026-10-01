@@ -239,18 +239,25 @@ end
 local function collect_icons(set_list, items)
     local ok, res = pcall(require, 'resources')
     if not ok or not res or not res.items then return nil end
+    -- every spelling met ('Fucho-no-obi' and 'Fucho-no-Obi'), by lower case
     local wanted = {}
+    local function want(name)
+        local key = name:lower()
+        wanted[key] = wanted[key] or {}
+        wanted[key][name] = true
+    end
     for _, set in ipairs(set_list) do
-        for _, p in pairs(set.pieces) do wanted[p.name:lower()] = p.name end
+        for _, p in pairs(set.pieces) do want(p.name) end
     end
     for _, names in pairs(items or {}) do
-        for _, name in ipairs(names) do wanted[name:lower()] = name end
+        for _, name in ipairs(names) do want(name) end
     end
     local icons = {}
     for id, info in pairs(res.items) do
         for _, key in ipairs({info.en and info.en:lower(), info.enl and info.enl:lower()}) do
-            local name = wanted[key]
-            if name and (not icons[name] or info.slots) then icons[name] = id end
+            for name in pairs(wanted[key] or {}) do
+                if not icons[name] or info.slots then icons[name] = id end
+            end
         end
     end
     return icons

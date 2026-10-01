@@ -255,7 +255,7 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
@@ -266,7 +266,7 @@ const T = {
     colMode:'Mode', colValues:'Valeurs', colState:'État',
     modesOther:'Autres modes (sans touche)', atLoad:'La valeur encadrée est celle au chargement du job.',
     noKey:'aucune touche', macro:'Macrobook', lockstyle:'Lockstyle', bookPage:'Livre {b}, page {p}', bySub:'Par sub', byDual:'En dual-box (job de l\'autre perso)',
-    style:'Set {s}', on:'On', off:'Off', mock:'Données écrites par le jeu (//gs c atelier). Pour les mettre à jour : recharge le job en jeu, puis cette page.', inBags:'dans tes sacs', none:'Pas encore de données. En jeu, tape //gs c atelier (le job chargé) ou //gs c atelier on (chaque job à son chargement), puis recharge cette page.',
+    style:'Set {s}', on:'On', off:'Off', mock:'Données écrites par le jeu (//gs c atelier), ou pour tous les jobs d'un coup par « Atelier - export all jobs.bat » (dossier data). Puis recharge cette page.', inBags:'dans tes sacs', none:'Pas encore de données. En jeu, tape //gs c atelier (le job chargé) ou //gs c atelier on (chaque job à son chargement), puis recharge cette page.',
     placeholder:'Pas encore exporté : charge ce job en jeu avec //gs c atelier on actif, ou tape //gs c atelier.', seeOther:'Voir les jobs de {c}', drawerInh:'Cette pièce vient de {b}. La changer ici l\'ajoute à ce set seulement ; {b} ne bouge pas.',
     drawerOwn:'Pièce écrite dans ce set : elle sera remplacée à cet endroit du fichier.', drawerEmpty:'Aucune pièce : ce que tu portes déjà reste.',
     drawerShared:'Ce set est aussi utilisé sous {n} autre(s) nom(s). Tu pourras modifier pour tous ou séparer celui-ci.',
@@ -280,7 +280,7 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
@@ -291,7 +291,7 @@ const T = {
     colMode:'Mode', colValues:'Values', colState:'State',
     modesOther:'Other modes (no key)', atLoad:'The framed value is the one at job load.',
     noKey:'no key', macro:'Macro book', lockstyle:'Lockstyle', bookPage:'Book {b}, page {p}', bySub:'By subjob', byDual:'Dual-box (other character\'s job)',
-    style:'Set {s}', on:'On', off:'Off', mock:'Data written by the game (//gs c atelier). To refresh: reload the job in game, then this page.', inBags:'in your bags', none:'No data yet. In game, type //gs c atelier (the loaded job) or //gs c atelier on (every job as it loads), then reload this page.',
+    style:'Set {s}', on:'On', off:'Off', mock:'Data written by the game (//gs c atelier), or for every job at once by "Atelier - export all jobs.bat" (data folder). Then reload this page.', inBags:'in your bags', none:'No data yet. In game, type //gs c atelier (the loaded job) or //gs c atelier on (every job as it loads), then reload this page.',
     placeholder:'Not exported yet: load this job in game with //gs c atelier on, or type //gs c atelier.', seeOther:'See {c}\'s jobs', drawerInh:'This piece comes from {b}. Changing it here adds it to this set only; {b} stays as it is.',
     drawerOwn:'Piece written in this set: it is replaced at that spot in the file.', drawerEmpty:'No piece: what you already wear stays.',
     drawerShared:'This set is also used under {n} other name(s). You will choose: all of them, or split this one.',
@@ -325,7 +325,7 @@ let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
 let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, q:'', lang:'fr', theme:null};
-try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null}); } catch(e) {}
+try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null, char:s.char||''}); } catch(e) {}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const t = (k, v={}) => { let s = k.split('.').reduce((o,p) => o && o[p], T[S.lang]) ?? k; for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; };
@@ -335,7 +335,7 @@ const emblem = c => `<span class="em" style="--icon:url(${ICONS[c]})"></span>`;
 // Another character with exported jobs, offered when this one has none for the job
 const otherChar = () => Object.keys(CHARS).find(c => c !== S.char);
 const data = () => (DATA[S.char] || {})[S.job];
-function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme})); } catch(e) {} }
+function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme, char:S.char})); } catch(e) {} }
 // The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
 const icon = name => { const id = name && ((data() || {}).icons || {})[name];
   return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="this.remove()">` : ''}</span>`; };
@@ -430,7 +430,7 @@ function renderHome(){
   const rows = jobs.map(([c,name,r]) => { const d = DATA[S.char][c], n = counts(c);
     return `<tr data-job="${c}" style="--role:${ROLE_COLOR[r]}"><td><span class="jobcell">${emblem(c)}<b>${c}</b><span class="muted">${name}</span></span></td>
       <td><span class="role">${t('roles.'+r)}</span></td><td class="sub">${esc(d.sub||'—')}</td><td class="num r">${n.sets}</td><td class="num r">${n.keys}</td>
-      <td class="num">${bookOf(d)}</td><td class="num">${esc(d.lockstyle&&d.lockstyle.default||'—')}</td><td class="num muted">${esc(d.at||'—')}</td></tr>`; }).join('');
+      <td class="num">${bookOf(d)}</td><td class="num">${esc(d.lockstyle&&d.lockstyle.default||'—')}</td><td class="num muted">${esc(d.at||'—')}${d.offline?' · '+t('offline'):''}</td></tr>`; }).join('');
   return `<header class="pagehead"><div class="kicker">${t('overview')}</div><h1 class="display">${esc(S.char)}</h1><p class="lede">${t('summary',{j:jobs.length,s:totS,k:totK})}</p></header>
     <div class="tblwrap"><table class="tbl click"><thead><tr><th>${t('colJob')}</th><th>${t('colRole')}</th><th>${t('colSub')}</th><th class="r">${t('colSets')}</th><th class="r">${t('colKeys')}</th>
     <th>${t('macro')}</th><th>${t('lockstyle')}</th><th>${t('colExport')}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note-foot">${t('mock')}</p>`;
@@ -523,7 +523,7 @@ function renderJob(){
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;
     body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions}[S.section](d);
   }
-  const facts = d ? [[t('colSub'), esc(d.sub)], [t('macro'), bookOf(d)], [t('lockstyle'), esc(d.lockstyle&&d.lockstyle.default||'—')], [t('colExport'), esc(d.at||'—')]] : [];
+  const facts = d ? [[t('colSub'), esc(d.sub)], [t('macro'), bookOf(d)], [t('lockstyle'), esc(d.lockstyle&&d.lockstyle.default||'—')], [t('colExport'), esc(d.at||'—') + (d.offline ? ` <span class="muted">· ${t('offline')}</span>` : '')]] : [];
   return `<header class="jobhead" style="--role:${ROLE_COLOR[r]}"><div class="title">${emblem(c)}<div><h1 class="display">${c}</h1><p><span>${j[1]}</span><span class="role">${t('roles.'+r)}</span></p></div></div>
     <dl class="facts">${facts.map(([a,b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl></header>${sections}${body}`;
 }
