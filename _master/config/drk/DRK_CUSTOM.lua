@@ -114,6 +114,6 @@ return {
     -- { when = { buff = 'Aftermath: Lv.3', weapon = 'Liberator' }, engaged = { ring1 = "Chirich Ring +1" } },
 
     -- Absorb spells under Nether Void
-    -- { when = { spell = 'Absorb*', buff = 'Nether Void' }, midcast = { legs = "Heathen's Flanchard +3" } },
+    -- { when = { spell = 'Absorb*', buff = 'Nether Void' }, midcast = { legs = "Heath. Flanchard +3" } },
 
 }

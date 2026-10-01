@@ -158,7 +158,7 @@ sets.precast.JA = {}
 
 -- Benediction (WHM 1hr)
 sets.precast.JA['Benediction'] = {
-    body = 'Piety Briault' -- Enhances Benediction effect
+    body = 'Piety Bliaut +3' -- Enhances Benediction effect
 }
 
 -- Devotion (MP transfer - maximize HP for more MP transferred)

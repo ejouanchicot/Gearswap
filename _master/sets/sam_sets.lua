@@ -255,7 +255,7 @@ sets.precast.JA['Hasso'] = {
 }
 
 sets.precast.JA['Seigan'] = {
-    head = 'Unkai Kabuto +3'
+    head = 'Kasuga Kabuto +3'
 }
 
 sets.precast.JA['Warding Circle'] = {

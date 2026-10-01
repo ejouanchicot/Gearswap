@@ -602,5 +602,5 @@ sets.buff['Dark Seal'] = {
 --   DRK_MIDCAST applies it to every spell whose name contains Absorb, Drain
 --   or Aspir (Absorb-TP included)
 sets.buff['Nether Void'] = {
-    legs = "Heathen's Flanchard +3"
+    legs = "Heath. Flanchard +3"
 }
