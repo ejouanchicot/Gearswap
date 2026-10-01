@@ -281,7 +281,8 @@ local function write_index()
                 local job = file:match('^(%u%u%u)%.js$')
                 if job and not seen[name .. job] then
                     seen[name .. job] = true
-                    entries[#entries + 1] = {char = name, job = job, file = name .. folder:sub(2) .. file}
+                    -- relative to data/, where atelier.html is: Tetsouo/saved/atelier/WAR.js
+                    entries[#entries + 1] = {char = name, job = job, file = name .. folder .. file}
                 end
             end
         end
