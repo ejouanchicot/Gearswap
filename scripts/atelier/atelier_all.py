@@ -10,11 +10,11 @@ Each <Char>/<Char>_<JOB>.lua is loaded outside the game by load_job.lua (Lua
 and the item icons, as //gs c atelier does in game: one file per subjob, since
 the modes, weapons and WS a job offers can depend on it. First the subjob of
 the last in-game export (else of the last export, else a usual one),
-then every other subjob the player chose: in the macro book list, or with a
-lockstyle other than the default. Such an export is kept only when it shows
-something else than the main one (PLD/SCH: its own modes); the page shows the
-other subjobs from the main export with their own macro book and lockstyle.
-An offline export of a subjob no longer named is removed, an in-game one stays.
+then the 20 other subjobs. Such an export is kept only when it shows something
+else than the main one (PLD/SCH: its own modes); the page shows the other
+subjobs from the main export with their own macro book and lockstyle. An
+offline export that became the same as the main one is removed, an in-game
+one stays.
 
 What only the game knows stays as the last in-game export had it: the items
 in your bags (the "your items" list of a slot). Everything else comes from
@@ -138,17 +138,6 @@ def first_sub(job, previous):
     if best.get('sub') and (not best.get('offline') or best.get('main_sub')):
         return best['sub']
     return USUAL_SUB.get(job, 'WAR')
-
-
-def subs_named(data):
-    """Subjobs the player chose: every subjob of the macro book list, and a lockstyle
-    subjob only when its style differs from the default (BST lists all 19 subjobs at
-    the default style). Keys of one subjob do not count: shared ones (Jump Auto,
-    /DRG) are on every job. atelier.html (namedSubs) applies the same rule."""
-    named = set((data.get('macro') or {}).get('solo') or {})
-    lockstyle = data.get('lockstyle') or {}
-    named |= {s for s, style in (lockstyle.get('by_subjob') or {}).items() if style != lockstyle.get('default')}
-    return {s for s in named if s in USUAL_SUB and s != data['job']}
 
 
 def same_content(a, b):
@@ -275,14 +264,11 @@ def main():
     done, failed, names_for_icons = [], [], set()
     print('Atelier: %d jobs, the subjob of the last export first' % len(jobs))
     run_all(lua, ffxi, [(c, j, first[(c, j)]) for c, j in jobs], bags, done, failed, names_for_icons, workers)
-    # Then every other subjob the player chose (macro book list, lockstyle of its own)
-    more = []
-    for char, job, sub in list(done):
-        data = read_export(export_path(char, job, sub))
-        more += [(char, job, s) for s in sorted(subs_named(data or {'job': job}) - {sub})]
-    print('Atelier: %d other subjobs chosen in the settings' % len(more))
+    # Then every other subjob
+    more = [(char, job, s) for char, job, sub in list(done) for s in sorted(USUAL_SUB) if s not in (job, sub)]
+    print('Atelier: %d other subjobs' % len(more))
     run_all(lua, ffxi, more, bags, done, failed, names_for_icons, workers, mains=first)
-    # Offline exports of a subjob no longer named go; an in-game export always stays
+    # Offline exports that are now the same as the main one go; an in-game export always stays
     exported = set(done)
     for char, job in jobs:
         legacy = os.path.join(export_folder(char), job + '.js')

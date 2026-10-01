@@ -98,6 +98,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .subpick button{border:1px solid var(--line-strong);background:var(--panel);border-radius:3px;padding:0 6px;font-size:13px;font-weight:600;color:var(--muted)}
 .subpick button:hover{border-color:var(--ink);color:var(--ink)}
 .subpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.subsel{font:inherit;font-size:13px;font-weight:600;color:var(--muted);background:var(--panel);border:1px solid var(--line-strong);border-radius:3px;padding:0 4px;height:22px}
+.subsel[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .subpick button.own{position:relative}
 .subpick button.own::after{content:"";position:absolute;top:-3px;right:-3px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .sections{display:flex;gap:28px;box-shadow:inset 0 -1px 0 var(--line);margin-bottom:22px;overflow-x:auto;overflow-y:hidden}
@@ -277,7 +279,7 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', subOwn:'Ses propres modes ou touches', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
@@ -302,7 +304,7 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', subOwn:'Its own modes or keys', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
@@ -364,18 +366,20 @@ function defaultSub(c, j){
   return Object.keys(m).sort((a, b) => rank(m[b]).localeCompare(rank(m[a])))[0];
 }
 // Subjobs the player chose: the macro book list, and a lockstyle only when it differs
-// from the default (same rule as subs_named in scripts/atelier/atelier_all.py)
+// from the default (BST lists all 19 subjobs at the default style)
 function namedSubs(d){
   const m = d.macro || {}, l = d.lockstyle || {};
   const named = Object.keys(m.solo || {}).concat(Object.keys(l.by_subjob || {}).filter(s => l.by_subjob[s] !== l.default));
   return named.filter(s => s !== d.job && JOBS.some(j => j[0] === s));
 }
-// Every subjob the picker offers: those with an export of their own, and the chosen ones
+// Subjobs shown as buttons: the main one and those of the player's settings; every
+// other subjob is in the picker's list (Kaories' RDM differs on all 21: no room for 21 buttons)
 function subsOf(c, j){
   const m = exportsOf(c, j), main = m[defaultSub(c, j)];
-  return [...new Set(Object.keys(m).concat(main ? namedSubs(main) : []))].sort();
+  return [...new Set([defaultSub(c, j)].concat(main ? namedSubs(main) : []))].filter(Boolean).sort();
 }
-const subOf = (c, j) => { const s = S.subs[c + '|' + j]; return subsOf(c, j).includes(s) ? s : defaultSub(c, j); };
+const allSubs = (c, j) => [...new Set(JOBS.map(x => x[0]).filter(x => x !== j).concat(Object.keys(exportsOf(c, j))))].sort();
+const subOf = (c, j) => { const s = S.subs[c + '|' + j]; return allSubs(c, j).includes(s) ? s : defaultSub(c, j); };
 // A subjob without an export of its own shows the main export: same sets, keys and
 // modes; its macro book, lockstyle and keys of one subjob follow d.sub
 function recordOf(c, j){
@@ -576,9 +580,12 @@ function renderFunctions(d){
 function subPicker(){
   const subs = subsOf(S.char, S.job), cur = subOf(S.char, S.job), m = exportsOf(S.char, S.job), main = defaultSub(S.char, S.job);
   const label = s => s === 'NONE' ? '—' : esc(s);
-  if (subs.length < 2) return label(cur);
-  return `<span class="subpick" role="group">${subs.map(s => { const own = m[s] && s !== main;
-    return `<button aria-pressed="${s===cur}" data-subpick="${esc(s)}" class="${own?'own':''}" title="${own ? t('subOwn') : t('subSame',{s:label(main)})}">${label(s)}</button>`; }).join('')}</span>`;
+  const own = s => m[s] && s !== main;
+  const others = allSubs(S.char, S.job).filter(s => !subs.includes(s));
+  const buttons = subs.map(s => `<button aria-pressed="${s===cur}" data-subpick="${esc(s)}" class="${own(s)?'own':''}" title="${own(s) ? t('subOwn') : t('subSame',{s:label(main)})}">${label(s)}</button>`).join('');
+  const list = others.length ? `<select class="subsel" aria-label="${t('subOther')}" aria-pressed="${others.includes(cur)}">` +
+    `<option value="">${t('subOther')}</option>${others.map(s => `<option value="${esc(s)}" ${s===cur?'selected':''}>${label(s)}${own(s)?' •':''}</option>`).join('')}</select>` : '';
+  return `<span class="subpick" role="group">${buttons}${list}</span>`;
 }
 function renderJob(){
   const c = S.job, j = JOBS.find(x => x[0]===c), d = data();
@@ -660,6 +667,7 @@ document.addEventListener('click', e => {
   if ('close' in d) closeOverlay();
 });
 document.addEventListener('input', e => { if (e.target.id === 'setq') { S.q = e.target.value; render(); } });
+document.addEventListener('change', e => { if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); } });
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') { if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
   if ((e.key==='ArrowDown' || e.key==='ArrowUp') && S.job && S.section==='sets' && $('#overlay').hidden && S._vis && S._vis.length) {
