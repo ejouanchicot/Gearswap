@@ -421,10 +421,14 @@ const allSubs = (c, j) => [...new Set(JOBS.map(x => x[0]).filter(x => x !== j).c
 const subOf = (c, j) => { const s = S.subs[c + '|' + j]; return allSubs(c, j).includes(s) ? s : defaultSub(c, j); };
 // A subjob without an export of its own shows the main export: same sets, keys and
 // modes; its macro book, lockstyle and keys of one subjob follow d.sub
+// A subjob without a file shows the export it has the same content as (same_as, written by
+// the offline export: PLD /WAR is like /RUN, not like /SCH), else the main one
 function recordOf(c, j){
   const m = exportsOf(c, j), s = subOf(c, j), main = m[defaultSub(c, j)];
-  return m[s] || (main && Object.assign({}, main, {sub: s, sameAs: main.sub}));
+  const twin = m[sameAsOf(c, j)[s]] || main;
+  return m[s] || (twin && Object.assign({}, twin, {sub: s, sameAs: twin.sub}));
 }
+const sameAsOf = (c, j) => Object.assign({}, ...Object.values(exportsOf(c, j)).map(x => x.same_as || {}));
 const data = () => S.job && recordOf(S.char, S.job);
 // What only the game sees (bag items) or any export knows (icons) is shared by the job's subjobs
 const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
@@ -765,10 +769,12 @@ function pieceStatsHTML(p){
 
 /* ---- the character's real stats with a set ---- */
 // The stats measured in game by //gs c atelier (this subjob's export, else another one's)
+// The measure taken on the shown subjob if there is one, else the latest of the job (an offline
+// export carries a copy of an older measure: the newest one has the latest merits)
 function measuredChar(){
-  const d = data(); if (d && d.char) return d.char;
-  const other = Object.values(exportsOf(S.char, S.job)).find(x => x.char);
-  return other ? other.char : null;
+  const d = data(), all = Object.values(exportsOf(S.char, S.job)).map(x => x.char).filter(c => c && c.base);
+  const latest = list => list.sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0] || null;
+  return latest(all.filter(c => d && c.sub === d.sub)) || latest(all);
 }
 function gearTotal(pieces){
   const total = {};
@@ -1039,7 +1045,7 @@ function renderFunctions(d){
 function subPicker(){
   const subs = subsOf(S.char, S.job), cur = subOf(S.char, S.job), m = exportsOf(S.char, S.job), main = defaultSub(S.char, S.job);
   const label = s => s === 'NONE' ? '—' : esc(s);
-  const own = s => m[s] && s !== main;
+  const twins = sameAsOf(S.char, S.job), own = s => s !== main && (m[s] || (twins[s] && twins[s] !== main));
   const others = allSubs(S.char, S.job).filter(s => !subs.includes(s));
   const buttons = subs.map(s => `<button aria-pressed="${s===cur}" data-subpick="${esc(s)}" class="${own(s)?'own':''}" title="${own(s) ? t('subOwn') : t('subSame',{s:label(main)})}">${label(s)}</button>`).join('');
   const list = others.length ? `<select class="subsel" aria-label="${t('subOther')}" aria-pressed="${others.includes(cur)}">` +

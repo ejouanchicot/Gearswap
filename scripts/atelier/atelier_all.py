@@ -234,6 +234,31 @@ def write_index():
         f.write('window.ATELIER_INDEX = %s;\n' % json.dumps(entries, separators=(',', ':')))
 
 
+def group_twins(char, job, main_sub, done):
+    """Subjobs kept because they differ from the main one may still be alike (PLD: main /SCH
+    has its own stances, the 19 others are all the same): one file per content, the others
+    removed and named in the main file's same_as ({sub: the sub whose file it shows})."""
+    groups, same_as = [], {}
+    for name, data in sorted(previous_exports(char, job)):
+        sub = name[len(job) + 1:-3]
+        if not sub or sub == main_sub:
+            continue
+        for keep_sub, keep in groups:
+            if same_content(keep, data):
+                if data.get('offline'):
+                    os.remove(export_path(char, job, sub))
+                    same_as[sub] = keep_sub
+                    if (char, job, sub) in done:
+                        done.remove((char, job, sub))
+                break
+        else:
+            groups.append((sub, data))
+    main = read_export(export_path(char, job, main_sub))
+    if main is not None:
+        main['same_as'] = same_as
+        write_export(export_path(char, job, main_sub), main)
+
+
 def run_all(lua, ffxi, tasks, bags, done, failed, names_for_icons, workers, mains=None):
     """Load and export each (character, job, subjob). Without mains, these are the main
     subjobs; with mains ({(char, job): sub}), an export showing the same as the main
@@ -290,6 +315,8 @@ def main():
     more = [(char, job, s) for char, job, sub in list(done) for s in sorted(USUAL_SUB) if s not in (job, sub)]
     print('Atelier: %d other subjobs' % len(more))
     run_all(lua, ffxi, more, bags, done, failed, names_for_icons, workers, mains=first)
+    for char, job in jobs:
+        group_twins(char, job, first[(char, job)], done)
     # Offline exports that are now the same as the main one go; an in-game export always stays
     exported = set(done)
     for char, job in jobs:
