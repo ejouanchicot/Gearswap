@@ -135,11 +135,12 @@ local function on_action(act)
     end, waiting.delay or 0)
 end
 
---- Listen for this character's own actions, once per load (a raw event:
---- a plain one from a job file runs GearSwap's refresh on every action).
+--- Listen for this character's own actions (shared/utils/core/action_listener.lua:
+--- the packet as the server sent it, one raw event for every module).
 local function listen()
     if rawget(_G, '_action_queue_listener') then return end
-    _G._action_queue_listener = windower.raw_register_event('action', on_action)
+    _G._action_queue_listener = true
+    require('shared/utils/core/action_listener').on('action_queue', on_action)
 end
 
 --- Add an action; starts the queue when it was idle.

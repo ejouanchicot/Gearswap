@@ -95,9 +95,8 @@ end
 --- Listen for this character's finished spells, once per load (raw event).
 function StealthTrace.start()
     if rawget(_G, '_stealth_trace_listener') then return end
-    _G._stealth_trace_listener = windower.raw_register_event('action', function(act)
-        pcall(StealthTrace.on_action, act)
-    end)
+    _G._stealth_trace_listener = true
+    require('shared/utils/core/action_listener').on('stealth_trace', StealthTrace.on_action)
 end
 
 return StealthTrace

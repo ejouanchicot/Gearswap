@@ -212,7 +212,7 @@ function DualWield.install()
         pcall(DualWield.apply, status)
         return result
     end
-    windower.raw_register_event('action', function(act) pcall(on_action, act) end)
+    require('shared/utils/core/action_listener').on('dual_wield', on_action)
     windower.raw_register_event('gain buff', function(id) pcall(on_buff, id) end)
     windower.raw_register_event('lose buff', function(id) pcall(on_buff, id) end)
 end

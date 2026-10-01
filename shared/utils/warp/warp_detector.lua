@@ -171,14 +171,9 @@ function WarpDetector.init_action_listener()
 
     if not windower or not windower.raw_register_event then return end
 
-    if windower._warp_detector_event_id
-       and windower._warp_detector_event_load == windower._gs_reload_count then
-        pcall(windower.unregister_event, windower._warp_detector_event_id)
-    end
-
-    -- raw_: the plain register_event wrapper refreshes the globals and runs
-    -- a full equip cycle on every action in range; only player.id is read.
-    windower._warp_detector_event_id = windower.raw_register_event('action', function(act)
+    -- shared/utils/core/action_listener.lua: one raw event for every module,
+    -- the packet as the server sent it; subscribing again replaces.
+    require('shared/utils/core/action_listener').on('warp_detector', function(act)
         if not act then return end
 
         -- Category 9 = Item usage
@@ -195,7 +190,6 @@ function WarpDetector.init_action_listener()
             end
         end
     end)
-    windower._warp_detector_event_load = windower._gs_reload_count
 end
 
 ---============================================================================

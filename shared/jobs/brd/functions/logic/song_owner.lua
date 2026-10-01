@@ -6,7 +6,7 @@
 ---   - the action packet (0x028, category 4) of every song that lands on us
 ---     names its caster (actor_id) and the buff it gave (action.param, message
 ---     230 / 266 "gains the effect of"), read as the server sent it (see
----     start: Battlemod rewrites it);
+---     shared/utils/core/action_listener.lua: Battlemod rewrites it);
 ---   - the buff packet (0x063 order 9, shared/utils/buffs/buff_timers.lua)
 ---     gives each buff its end time: a song buff is one instance,
 ---     `<buff id>:<end time>`, and a song sung again gets a new end time.
@@ -262,17 +262,15 @@ end
 
 --- Listen to the action and buff packets, once per load (a raw event: a plain
 --- one from a job file runs GearSwap's refresh on every packet). Both are read
---- from the packet as the server sent it (`original`): Battlemod rewrites
---- 0x028 for the chat, setting to 0 the message of what its filters hide and
---- of the targets it folds into one line.
+--- as the server sent them: the actions through
+--- shared/utils/core/action_listener.lua (Battlemod rewrites 0x028 for the
+--- chat), the buffs from `original`.
 function SongOwner.start()
     if rawget(_G, '_brd_song_owner_listener') then return end
     _G._brd_song_owner_listener = windower.raw_register_event('incoming chunk', function(id, original)
-        if id == 0x063 and original:byte(5) == 9 then pcall(on_buffs, original)
-        elseif id == 0x028 then
-            pcall(function() on_action(windower.packets.parse_action(original)) end)
-        end
+        if id == 0x063 and original:byte(5) == 9 then pcall(on_buffs, original) end
     end)
+    require('shared/utils/core/action_listener').on('brd_song_owner', on_action)
 end
 
 return SongOwner

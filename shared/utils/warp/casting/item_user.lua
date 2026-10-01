@@ -544,7 +544,8 @@ end
 --- @return nil
 local function drop_stale_autofix_listeners()
     local same_load = windower._warp_autofix_load == windower._gs_reload_count
-    for _, key in ipairs({ '_warp_autofix_action_id', '_warp_autofix_zone_id' }) do
+    pcall(function() require('shared/utils/core/action_listener').off('warp_autofix') end)
+    for _, key in ipairs({ '_warp_autofix_zone_id' }) do
         if windower[key] and same_load then
             pcall(windower.unregister_event, windower[key])
         end
@@ -633,8 +634,8 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         -- windower slots may belong to the new load: leave those alone.
         if my_load == windower._gs_reload_count then
             if action_listener then
-                windower.unregister_event(action_listener)
-                windower._warp_autofix_action_id = nil
+                require('shared/utils/core/action_listener').off('warp_autofix')
+                action_listener = nil
                 debug_log('Action listener unregistered')
             end
             if zone_listener then
@@ -675,7 +676,8 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         end
     end
 
-    action_listener = windower.register_event('action', function(act)
+    action_listener = 'warp_autofix'
+    require('shared/utils/core/action_listener').on(action_listener, function(act)
         if cleanup_done or not player or act.actor_id ~= player.id then return end
 
         -- Category 1 = the player's own melee round
@@ -685,7 +687,6 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         end
     end)
 
-    windower._warp_autofix_action_id = action_listener
     debug_log('Action listener registered (watching for category 1)')
 
     zone_listener = windower.register_event('zone change', function()

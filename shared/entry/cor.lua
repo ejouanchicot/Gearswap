@@ -127,10 +127,6 @@ function get_sets()
     -- MUST cleanup old event handlers BEFORE loading new ones
     -- This prevents duplicate event registration when switching jobs without reload
     -- (e.g., WAR → COR → WAR → COR causes double messages without this)
-    if _G.cor_action_event_id then
-        windower.unregister_event(_G.cor_action_event_id)
-        _G.cor_action_event_id = nil
-    end
     if _G.cor_party_event_id then
         windower.unregister_event(_G.cor_party_event_id)
         _G.cor_party_event_id = nil
@@ -360,11 +356,8 @@ end
 --- pending job-change operations and unbinds keys.
 --- @return void
 function file_unload()
-    -- Cleanup roll detection handler (registered by PartyTracker.init() from get_sets)
-    if _G.cor_action_event_id then
-        windower.unregister_event(_G.cor_action_event_id)
-        _G.cor_action_event_id = nil
-    end
+    -- Cleanup roll detection handler (PartyTracker.init_roll_listener, from get_sets)
+    pcall(function() require('shared/utils/core/action_listener').off('cor_roll') end)
 
     -- Cleanup RollTracker (clear all roll state and globals)
     local rt_success, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')

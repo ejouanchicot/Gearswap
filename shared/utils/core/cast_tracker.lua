@@ -34,11 +34,12 @@ local function on_action(act)
 end
 
 --- Listen to the action packets, once per load (the sandbox drops the
---- listener at the next one). Called from INIT_SYSTEMS.
+--- listener at the next one), through shared/utils/core/action_listener.lua.
+--- Called from INIT_SYSTEMS.
 function CastTracker.start()
     if rawget(_G, '_cast_tracker_listening') or not windower.raw_register_event then return end
     _G._cast_tracker_listening = true
-    windower.raw_register_event('action', on_action)
+    require('shared/utils/core/action_listener').on('cast_tracker', on_action)
 end
 
 --- Whether a spell started casting after `since` (os.clock()).

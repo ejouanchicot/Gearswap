@@ -10,14 +10,15 @@
 ---   @version 2.1.0
 ---   @date    Created: 2025-11-03 (extracted from Tetsouo_COR.lua)
 ---   @date    Updated: 2026-05-08 - Single canonical roll-detection path:
----            raw_register_event('action') is now owned by this module
+---            the roll listener is owned by this module
 ---            (PartyTracker.init_roll_listener), called from .init(). The
 ---            inline duplicate that used to live in Tetsouo_COR/Kaories_COR
 ---            entry points has been removed. Old 0x028 bit-unpack path
 ---            removed earlier in the same update.
 ---
 ---   Features:
----   • Phantom Roll detection via raw_register_event('action')
+---   • Phantom Roll detection from the action packets as the server sent
+---     them (shared/utils/core/action_listener.lua)
 ---   • Auto-detection of party member jobs for accurate roll bonuses
 ---     (incoming chunk 0xDD/0xDF parsed via the packets library)
 ---   • Event handler lifecycle management (init/cleanup, idempotent)
@@ -56,12 +57,10 @@ end
 ---   one, so calling init() repeatedly is safe.
 ---   @return nil
 function PartyTracker.init_roll_listener()
-    if _G.cor_action_event_id then
-        windower.unregister_event(_G.cor_action_event_id)
-        _G.cor_action_event_id = nil
-    end
-
-    _G.cor_action_event_id = windower.raw_register_event('action', function(act)
+    -- The packet as the server sent it (shared/utils/core/action_listener.lua):
+    -- Battlemod folds the targets of one action into one line, and the missed
+    -- members are read from the targets. Subscribing again replaces.
+    require('shared/utils/core/action_listener').on('cor_roll', function(act)
         if not act or type(act) ~= 'table' then return end
         if not player or not player.id then return end
         if player.main_job ~= 'COR' then return end

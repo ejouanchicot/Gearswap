@@ -211,7 +211,8 @@ function TreasureHunter.init()
     local d = data()
     if d.listening then return end
     d.listening = true
-    windower.raw_register_event('action', function(act) pcall(on_action, act) end)
+    -- actions as the server sent them (shared/utils/core/action_listener.lua)
+    require('shared/utils/core/action_listener').on('treasure_hunter', on_action)
     windower.raw_register_event('incoming chunk', function(id, original) pcall(on_incoming_chunk, id, original) end)
     windower.raw_register_event('target change', function() pcall(on_target_change) end)
     windower.raw_register_event('zone change', function() pcall(on_zone_change) end)

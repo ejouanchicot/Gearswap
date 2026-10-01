@@ -45,7 +45,7 @@ end
 function FlurryTracker.start()
     if rawget(_G, '_flurry_listening') or not windower.raw_register_event then return end
     _G._flurry_listening = true
-    windower.raw_register_event('action', on_action)
+    require('shared/utils/core/action_listener').on('flurry_tracker', on_action)
 end
 
 --- Flurry level up now: 0, 1 or 2.
