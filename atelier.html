@@ -529,9 +529,11 @@ const STAT_DEF = {
   cmp:['mag','Conserve MP','Conserve MP'], sird:['mag','SIRD','SIRD'],
   enhdur:['mag','Durée renfort','Enhancing duration'], refresh:['mag','Refresh','Refresh'], regen:['mag','Regen','Regen'],
   move:['mag','Vitesse de déplacement','Movement speed'], th:['mag','Treasure Hunter','Treasure Hunter'],
+  res_fire:['res','Feu','Fire'], res_ice:['res','Glace','Ice'], res_wind:['res','Vent','Wind'], res_earth:['res','Terre','Earth'],
+  res_lightning:['res','Foudre','Lightning'], res_water:['res','Eau','Water'], res_light:['res','Lumière','Light'], res_dark:['res','Ténèbres','Dark'],
 };
 const STAT_GROUPS = [['def','Défense','Defense'], ['attr','Attributs','Attributes'], ['off','Combat','Combat'],
-  ['mag','Magie & divers','Magic & misc'], ['skill','Compétences','Skills'], ['other','Autres','Others']];
+  ['mag','Magie & divers','Magic & misc'], ['res','Résistances','Resistances'], ['skill','Compétences','Skills'], ['other','Autres','Others']];
 // Every spelling met in the descriptions and augments, written as normName() gives it
 const STAT_ALIAS = {
   'hp':'hp','mp':'mp','str':'str','dex':'dex','vit':'vit','agi':'agi','int':'int','mnd':'mnd','chr':'chr',
@@ -554,6 +556,8 @@ const STAT_ALIAS = {
   'refresh':'refresh','regen':'regen','enmity':'enmity','magic burst damage':'mbd','magic burst damage ii':'mbd2',
   'movement speed':'move','treasure hunter':'th','chance of successful block':'block',
   'shield def.bonus':'sdb','enemy critical hit rate':'ecrit','trip.atk.':'ta','magic defense bonus':'mdb',
+  'fire resistance':'res_fire','ice resistance':'res_ice','wind resistance':'res_wind','earth resistance':'res_earth',
+  'lightning resistance':'res_lightning','water resistance':'res_water','light resistance':'res_light','dark resistance':'res_dark',
   'mag.atk.bns':'mab','rng.acc':'racc','rng.atk':'ratk',
 };
 const normName = s => s.toLowerCase().replace(/["“”]/g, '').replace(/\.\s*/g, '.').replace(/\s+/g, ' ').replace(/^[\s/:]+|[\s/:]+$/g, '').trim();
@@ -628,6 +632,7 @@ function pieceStats(p){
     // "Converts 150 MP to HP" (Tuisto, Odnowa...): that much HP more, MP less
     let line = raw.replace(/Converts (\d+) (MP|HP) to (HP|MP)/g, (_, n, from, to) => {
       add(r.stats, to.toLowerCase(), +n, '', to); add(r.stats, from.toLowerCase(), -n, '', from); return ' '; });
+    line = unsigned(line, r);
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
     if (mode === 'cond') { r.cond.push(line); continue; }
@@ -659,7 +664,15 @@ function pieceStats(p){
   }
   return (PIECE_CACHE[key] = r);
 }
+// What the game writes its own way: SIRD without a sign ("Spell interruption rate down 10%"),
+// elemental resistances as the element's icon (U+E000 fire ... U+E007 dark, the in-game order)
+const ELEMENTS = ['fire', 'ice', 'wind', 'earth', 'lightning', 'water', 'light', 'dark'];
+function unsigned(line, r){
+  return line.replace(/Spell interruption rate down\s*-?(\d+)%/gi, (_, n) => { add(r.stats, 'sird', +n, '%', 'SIRD'); return ' '; })
+    .replace(/[-]/g, c => ' ' + ELEMENTS[c.charCodeAt(0) - 0xE000] + ' resistance');
+}
 function addAugment(a, r){
+  a = unsigned(a, r);
   a = a.replace(/DMG:\s?\+?(\d+)/, (_, n) => { (r.weapon = r.weapon || {}).DMG = ((r.weapon || {}).DMG || 0) + +n; return ' '; });
   for (const part of a.split(/(?=Pet:)/)) {
     const pet = /^Pet:/.test(part);
