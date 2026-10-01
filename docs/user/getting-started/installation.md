@@ -35,7 +35,9 @@ The script asks:
 1. **Character name** (letters and digits, 2-15 characters). If
    `data/<Name>/` already exists, it asks whether to replace it.
 2. **Jobs**, comma-separated (any case), among BLM, BLU, BRD, BST, COR, DNC,
-   DRK, GEO, PLD, PUP, RDM, RUN, SAM, SMN, THF, WAR, WHM. A name that is not in
+   DRG, DRK, GEO, MNK, NIN, PLD, PUP, RDM, RNG, RUN, SAM, SCH, SMN, THF, WAR,
+   WHM (DRG, MNK, NIN, PUP, RNG and SCH load but have not been tested in game
+   yet). A name that is not in
    this list is dropped without a message. If your character is already listed
    in `character_db.lua`, its jobs are taken from there and this question is
    skipped.
@@ -48,14 +50,17 @@ It creates:
 
 ```
 data/<Name>/
-├── <Name>_<JOB>.lua      one entry file per job
-├── <job>/sets/<job>_sets.lua   one set file per job
-└── config/
-    ├── <job>/            keys, modes, lockstyle, macro book... per job
-    ├── alt/              alt commands (main only)
-    ├── COMMON_KEYBINDS.lua, UI_CONFIG.lua, LOCKSTYLE_CONFIG.lua, ...
-    ├── DUALBOX_CONFIG.lua   written from your answers
-    └── REGION_CONFIG.lua    written from your answers
+├── <Name>_<JOB>.lua      one entry file per job (one line, nothing to edit)
+├── _WHERE-IS-WHAT.txt    every file of the folder and what it holds
+├── _common/              settings of the whole character, by theme:
+│                         display/, keys/, combat/, inventory/, sets/,
+│                         dualbox/ (DUALBOX_CONFIG.lua, written from your
+│                         answers; alt/ = alt commands, main only);
+│                         REGION_CONFIG.lua (written from your answers) is in display/
+├── <job>/                one folder per job: display/ (HUD, lockstyle, macro
+│                         book), keys/ (keys, modes, CUSTOM), combat/,
+│                         inventory/, and sets/<job>_sets.lua
+└── saved/                written in game (HUD position, message modes, ...)
 ```
 
 The template's character name inside the copied `.lua` files is replaced with yours.
@@ -68,12 +73,12 @@ back from the backup: `saved/ui_settings.lua` (HUD), `saved/message_modes.lua`,
 `saved/gear_augments.lua`,
 `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua`,
 `_common/combat/STEALTH_CONFIG.lua`, every `<job>/display/<JOB>_HUD.lua` and
-`temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom
+`saved/temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom
 files) is only in the backup: copy it back yourself.
 
 ## 4. Put in your gear
 
-Open `data/<Name>/<job>/<job>_sets.lua`. It holds the author's gear; replace it
+Open `data/<Name>/<job>/sets/<job>_sets.lua`. It holds the author's gear; replace it
 with yours.
 
 - Item names must match the game exactly.

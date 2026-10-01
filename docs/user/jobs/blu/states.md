@@ -77,7 +77,7 @@ spell cast on yourself.
 
 ## Automatic abilities
 
-In `<YourChar>/common/combat/AUTO_ABILITIES.lua`, both off unless set to `true`:
+In `<YourChar>/_common/combat/AUTO_ABILITIES.lua`, both off unless set to `true`:
 
 | Option | What it does |
 |---|---|
@@ -113,5 +113,5 @@ In `<YourChar>/blu/`: `BLU_STATES.lua` (modes and defaults),
 `BLU_KEYBINDS.lua` (keys), `BLU_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `BLU_SPELL_MAP.lua` (spell categories),
 `BLU_LOCKSTYLE.lua` (lockstyle 1), `BLU_MACROBOOK.lua` (book 1, page 1),
-`BLU_TP_CONFIG.lua`. The options are in `<YourChar>/common/combat/AUTO_ABILITIES.lua`. See
+`BLU_TP_CONFIG.lua`. The options are in `<YourChar>/_common/combat/AUTO_ABILITIES.lua`. See
 [configuration](../../guides/configuration.md).

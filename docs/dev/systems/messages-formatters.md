@@ -124,7 +124,7 @@ and use modes 121 / 158 / 167 / `MessageColors.WARNING` (region orange). Used by
 **E. `add_to_chat` directly.** `message_warp.lua` (29 calls in code, debug and error lines with inline
 codes), `message_commands.lua` (14: colour test, craft, dressup, debugsubjob frames),
 `message_system.lua` (1: `show_color_test_sample`) and `roll_messages.lua` (1: `show_roll_bust`, mode 121)
-(grep with comments stripped, 2026-09-28). `.claude/CODE_QUALITY.md` section 6 allows `add_to_chat`
+(grep with comments stripped, 2026-09-28). The project rule allows `add_to_chat`
 anywhere under `shared/utils/messages/`. Paths C and D also end in `add_to_chat`, but path E bypasses the
 renderer's toggle and filter as well. Every path goes through the sandbox `add_to_chat` that
 `message_core.lua` wraps once per load, so the player's separator options (`chat_separators.lua`) apply
@@ -548,7 +548,7 @@ booleans print ON/OFF, kinds are `good`, `bad`, `warn`, `spell`, `dim`. Use the 
   fallback that forces colour 8, so the mistake is easy to miss (65 of them were fixed on 2026-09-28).
 - `MessageFormatter.show_error/show_warning/show_success/show_info` and `MessageCore.raw` take one
   argument; a second is silently dropped.
-- Direct `add_to_chat` is allowed only in the cases of `.claude/CODE_QUALITY.md` section 6 (the message
+- Direct `add_to_chat` is allowed only in the cases listed in [messages.md](messages.md#where-add_to_chat-may-be-called-directly) (the message
   system itself, diagnostic tools, the INIT_SYSTEMS fallback); a job module or shared system never
   calls it.
 - Before deleting a template or a formatter function, search for the key suffix and the function name

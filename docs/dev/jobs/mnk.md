@@ -4,8 +4,8 @@ MNK was added on 2026-09-29. It is a thin job built on the shared systems,
 like BLU and PUP: 11 hook modules plus 2 logic modules under
 `shared/jobs/mnk/functions/`, a template entry point, seven config files and
 one sets file. GearSwap loads it when the main job becomes MNK (the entry file
-`<Character>_MNK.lua`, made from `_master/entry/Tetsouo_MNK.lua` by the clone
-script, which offers MNK in `ALL_VALID_JOBS`).
+`<Character>_MNK.lua`, one `include` of `shared/entry/mnk.lua`, copied from
+`_master/entry/Tetsouo_MNK.lua` by the clone script, which offers MNK in `ALL_VALID_JOBS`).
 
 Player-facing pages: [hub](../../user/jobs/mnk/README.md),
 [modes](../../user/jobs/mnk/states.md), [sets](../../user/jobs/mnk/sets.md).
@@ -34,7 +34,7 @@ from `H2H_WS_DATABASE.lua`.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_MNK.lua` | 186 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/mnk.lua` | 190 | Entry (the same for every character; `<Char>_MNK.lua` and its template `_master/entry/Tetsouo_MNK.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/mnk/functions/mnk_functions.lua` | 63 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/mnk/functions/MNK_PRECAST.lua` | 119 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (WS buff layers, then TP gear) |
 | `shared/jobs/mnk/functions/MNK_MIDCAST.lua` | 75 | `job_midcast` (empty) / `job_post_midcast` (subjob magic via MidcastManager) |
@@ -68,8 +68,7 @@ Shared files changed for MNK:
   as /MNK) also gets that `gs c update`; it is harmless there (the same set
   is rebuilt).
 - Registries: `clone_character.py` (`ALL_VALID_JOBS`), `character_db.lua`
-  (`ALL_JOBS`, and `ARCHIVE_JOBS`: no character plays MNK, and `validate()`
-  wants every job assigned).
+  (`ALL_JOBS`, and Tetsouo's job list: `validate()` wants every job assigned).
 
 ## How it works
 
@@ -260,7 +259,6 @@ T = `_master/sets/mnk_sets.lua`. Player version:
 - No Perfect Counter, Inner Strength, Mantra or Formless Strikes layer while
   up: they are JA sets only.
 - No per-WS opt-out of the generic Impetus layer.
-- No `_master/config/alt/MNK_ALT_COMMANDS.lua` (dual-box partner commands).
 
 ## Needs an in-game check
 

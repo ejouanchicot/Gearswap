@@ -145,7 +145,9 @@ on it, on a reload or subjob change, or with `//gs c th clear`.
 
 ## Configuration files for this job
 
-In `<YourName>/thf/`:
+In `<YourName>/thf/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | Content |
 |---|---|
@@ -162,7 +164,7 @@ In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
 `combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
-`<YourName>/thf/thf_sets.lua`. See [configuration](../../guides/configuration.md).
+`<YourName>/thf/sets/thf_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More
 

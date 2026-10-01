@@ -3,7 +3,7 @@
 The BST job area is 14 hook modules plus 4 logic modules under
 `shared/jobs/bst/functions/` (about 2 600 lines), one entry point, nine config
 files and one sets file. GearSwap loads it when the main job becomes BST
-(`<Char>/<Char>_BST.lua`, template `_master/entry/Tetsouo_BST.lua`). From then
+(`<Char>/<Char>_BST.lua`, one `include` of `shared/entry/bst.lua`). From then
 on Mote-Include calls its hooks on every action (precast, midcast, aftercast,
 and the pet's own actions), on status and buff changes, on `//gs c` commands and
 on state cycles.
@@ -45,7 +45,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_BST.lua` | 399 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload` |
+| `shared/entry/bst.lua` | 415 | Entry point (the same for every character; `<Char>_BST.lua` and its template `_master/entry/Tetsouo_BST.lua` are one `include` of it): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload` |
 | `shared/jobs/bst/functions/bst_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
 | `shared/jobs/bst/functions/BST_PRECAST.lua` | 202 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `equip_broth`, `prepare_ready_move` |
 | `shared/jobs/bst/functions/BST_MIDCAST.lua` | 204 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
@@ -75,12 +75,12 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 178 | Ecosystem correlation matrix; **no reader anywhere** (its header says so) |
 | `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/Tetsouo/bst/inventory/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
-| `_master/Tetsouo/entry/Tetsouo_BST.lua` | 400 | Character overlay entry: the template plus `LagDebugger.on_job_update()` in `job_update` and the modular sets path |
 | `_master/sets/bst_sets.lua` | 834 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 225 + 271 | BST chat messages; the unprefixed facade copies of eight functions have no caller (callers use `show_bst_*`), and 33 templates have no sender (see the [catalog](../systems/messages-catalog.md)) |
 | `shared/data/job_abilities/BST_JA_DATABASE.lua` + `bst/*.lua` (5 files) | 17 + 293 | `JA_DATABASE_FACTORY.create('BST', ...)` with `subjob`, `mainjob`, `pet_commands_mainjob`, `pet_commands_subjob`, `sp`; read by `ability_message_handler.lua` |
 
-Live copies (gitignored): the live BST entry is the overlay entry above. The
+Live copies (gitignored): the live BST entry is one `include` of
+`shared/entry/bst.lua`, like every character's. The
 live `bst/*` files differ from the template only in their header
 (`@author`, `@file`) and in the two overlay files (`BST_MACROBOOK`,
 `BST_STATES`). The live sets are modular
@@ -558,8 +558,8 @@ or /DNC, shields included (its comment now says so).
 - Lockstyle / macrobook factories, `JobChangeManager`, `LifecycleManager`, HUD
   ([UI overlay](../systems/ui-overlay.md)), `CommonCommands`, `CycleHandler`,
   dual-box ([dualbox](../systems/dualbox.md)).
-- `LagDebugger.on_prerender_check` is called by the monitor (template and
-  overlay); `on_job_update` only by the overlay entry.
+- `LagDebugger.on_prerender_check` is called by the monitor and
+  `on_job_update` by `job_update`, both in `shared/entry/bst.lua`.
 
 ## Invariants & gotchas
 
@@ -600,9 +600,8 @@ or /DNC, shields included (its comment now says so).
 - New command: add a branch after the CommonCommands block. A name that is
   also an alt config key then runs here; the alt's version stays reachable as
   `//gs c alt <name>`.
-- Any change to the entry: make it in the template and the overlay
-  `_master/Tetsouo/entry/Tetsouo_BST.lua` (same code apart from the lines listed
-  in [Files](#files)); the live entry follows the overlay.
+- Any change to the entry: make it in `shared/entry/bst.lua`, which every
+  character runs; nothing to copy.
 
 ## For maintainers / AI
 
@@ -643,7 +642,7 @@ or /DNC, shields included (its comment now says so).
 **Offline testing**
 
 - Syntax of every BST file:
-  `for f in shared/jobs/bst/functions/*.lua shared/jobs/bst/functions/logic/*.lua _master/entry/Tetsouo_BST.lua _master/config/bst/*.lua; do luac5.1 -p "$f"; done`
+  `for f in shared/jobs/bst/functions/*.lua shared/jobs/bst/functions/logic/*.lua shared/entry/bst.lua _master/entry/Tetsouo_BST.lua _master/config/bst/*.lua; do luac5.1 -p "$f"; done`
 - The categoriser can be loaded outside GearSwap with a stub `S`
   (`function S(t) ... end` building a set with `contains`) and
   `dofile('shared/jobs/bst/functions/logic/ready_move_categorizer.lua')`, then

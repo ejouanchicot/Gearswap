@@ -6,8 +6,8 @@ a `pup/` folder that did not exist. It is now a thin job built on the
 shared systems, like BLU: 12 hook modules plus 3 logic modules under
 `shared/jobs/pup/functions/`, a template entry point, seven config files and
 one sets file. GearSwap loads it when the main job becomes PUP (the entry file
-`<Character>_PUP.lua`, made from `_master/entry/Tetsouo_PUP.lua` by the clone
-script, which offers PUP again).
+`<Character>_PUP.lua`, one `include` of `shared/entry/pup.lua`, copied from
+`_master/entry/Tetsouo_PUP.lua` by the clone script, which offers PUP again).
 
 Player-facing pages: [hub](../../user/jobs/pup/README.md),
 [modes](../../user/jobs/pup/states.md), [sets](../../user/jobs/pup/sets.md).
@@ -32,7 +32,7 @@ What PUP adds on top of the shared pipeline:
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_PUP.lua` | 210 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ first PetMode detection), `job_update` (PetMode, poll, HUD), `init_gear_sets`, `file_unload` (+ poll stop) |
+| `shared/entry/pup.lua` | 214 | Entry (the same for every character; `<Char>_PUP.lua` and its template `_master/entry/Tetsouo_PUP.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ first PetMode detection), `job_update` (PetMode, poll, HUD), `init_gear_sets`, `file_unload` (+ poll stop) |
 | `shared/jobs/pup/functions/pup_functions.lua` | 67 | Facade: includes `message_buffs` and the 12 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/pup/functions/PUP_PRECAST.lua` | 108 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/pup/functions/PUP_MIDCAST.lua` | 99 | `job_midcast` (empty) / `job_post_midcast` (subjob magic via MidcastManager) / `job_get_spell_map` (Maneuver) |
@@ -58,7 +58,7 @@ What PUP adds on top of the shared pipeline:
 | `_master/config/pup/PUP_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/pup/PUP_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/pup_sets.lua` | 155 | Template sets: every set the code reads, all empty |
-| `_master/config/alt/PUP_ALT_COMMANDS.lua` | - | Dual-box commands for a PUP partner (read by the main's alt system, not by the PUP job file) |
+| `shared/data/alt/PUP_ALT_COMMANDS.lua` | - | Dual-box commands for a PUP partner (read by the main's alt system, not by the PUP job file) |
 
 Removed on 2026-09-29: `PUP_PET_PRECAST.lua` (`job_pet_precast` is called by
 neither Mote nor the GearSwap engine), the `time change` listener of the entry,
@@ -347,8 +347,8 @@ T = `_master/sets/pup_sets.lua`. Player version:
 | `<char>/pup/PUP_HUD.lua` | empty | HUD |
 | `<char>/pup/PUP_LOCKSTYLE.lua`, `PUP_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
-`character_db.lua` still lists PUP in `ARCHIVE_JOBS` (no character plays it).
-That list is only read by the Lua side of the DB; `clone_character.py` offers
+`character_db.lua` lists PUP among Tetsouo's jobs (`ARCHIVE_JOBS` is empty).
+The DB is only read by the Lua side and by the clone's regex; `clone_character.py` offers
 every job of `ALL_VALID_JOBS` for a character the DB does not know, so a PUP
 clone works without touching it.
 

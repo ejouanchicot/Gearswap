@@ -1048,7 +1048,7 @@ Fixed:
 - `TierRefiner.find_available_tier` could pick a tier the character never learned: it
   checks `windower.ffxi.get_spells()` since `53e680c` (which also routed RDM and GEO
   nukes through the refiner).
-- `.claude/rules/precast-pattern.md` documented a non-existent `exclusions` parameter:
+- The private precast rule file documented a non-existent `exclusions` parameter:
   rewritten 2026-09-25.
 
 Commit hashes on this page are post-rewrite (2026-09-27); an older hash maps through

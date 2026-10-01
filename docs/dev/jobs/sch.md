@@ -3,7 +3,7 @@
 SCH was added on 2026-09-29. It is a thin mage job built on the shared
 systems: 12 hook modules plus 4 logic modules under `shared/jobs/sch/functions/`,
 a template entry point, seven config files and one sets file. GearSwap loads it
-when the main job becomes SCH (the entry file `<Character>_SCH.lua`, made from
+when the main job becomes SCH (the entry file `<Character>_SCH.lua`, one `include` of `shared/entry/sch.lua`, copied from
 `_master/entry/Tetsouo_SCH.lua` by the clone script, which offers SCH).
 
 Player-facing pages: [hub](../../user/jobs/sch/README.md),
@@ -32,7 +32,7 @@ What SCH adds on top of the shared pipeline:
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_SCH.lua` | 187 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/sch.lua` | 191 | Entry (the same for every character; `<Char>_SCH.lua` and its template `_master/entry/Tetsouo_SCH.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/sch/functions/sch_functions.lua` | 62 | Facade: includes `message_buffs` and the hook files, requires `dualbox_manager` |
 | `shared/jobs/sch/functions/SCH_PRECAST.lua` | 152 | `job_precast` (guard, tier refiner or cooldown, stratagem charges, WS handler) / `job_post_precast` (TP gear, grimoire layers) |
 | `shared/jobs/sch/functions/SCH_MIDCAST.lua` | 134 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager per skill, grimoire layers) |
@@ -93,8 +93,8 @@ repaints the HUD. `file_unload`: `JobChangeManager.cancel_all()`, then
 
 `Grimoire.arts()` returns `'Light'` for `Addendum: White` or `Light Arts`,
 `'Dark'` for `Addendum: Black` or `Dark Arts`, nil otherwise. The addendum is
-tested first: it replaces the Arts buff while it is up
-(`.claude/CODE_QUALITY.md` §7.5). A spell "matches" when it
+tested first: it replaces the Arts buff in `buffactive` while it is up, so a
+test of the Arts alone misses it. A spell "matches" when it
 is `WhiteMagic` under Light or `BlackMagic` under Dark.
 
 ### Precast
@@ -105,7 +105,7 @@ is `WhiteMagic` under Light or `BlackMagic` under Dark.
    which casts the highest tier that is learned, off recast and paid for, or
    cancels and lists every tier's recast. Anything else takes
    `CooldownChecker` (abilities / spells). This is the documented
-   "tiers before cooldown" exception (CLAUDE.md), as on BLM / RDM / GEO.
+   "tiers before cooldown" exception of the project, as on BLM / RDM / GEO.
 3. A `JobAbility` with `recast_id` 231 (the 16 stratagems) is cancelled when
    `StratagemCharges.get_max() > 0` and `available() == 0`, with
    `ScholarActions.warn_no_charge`. `available()` reads the full recharge from

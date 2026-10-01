@@ -137,7 +137,9 @@ and arguments: [commands guide](../../guides/commands.md).
 
 ## Configuration files for this job
 
-In `<YourName>/sam/`:
+In `<YourName>/sam/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | Content |
 |---|---|
@@ -154,7 +156,7 @@ In `<YourName>/_common/`, shared with the other jobs: `AUTO_ABILITIES.lua`
 (`sam_hasso`), `COMMON_KEYBINDS.lua`, `WEAPON_CONFIG.lua`,
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and
 `treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
-`combatmode`). Gear: `<YourName>/sam/sam_sets.lua`. See
+`combatmode`). Gear: `<YourName>/sam/sets/sam_sets.lua`. See
 [configuration](../../guides/configuration.md).
 
 ## More

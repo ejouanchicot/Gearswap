@@ -1,10 +1,10 @@
 # PLD (Paladin) job
 
 The PLD job area is 12 hook files plus 5 logic modules under
-`shared/jobs/pld/functions/` (1 977 lines on 2026-09-28), one entry template, one
-Kaories entry overlay, eleven config files and two sets files (template and Kaories
-overlay). GearSwap loads it when the main job becomes PLD (`Tetsouo_PLD.lua`,
-`Kaories_PLD.lua`). From then on Mote-Include calls its hooks on every action
+`shared/jobs/pld/functions/` (1 977 lines on 2026-09-28), one shared entry, eleven
+config files and two sets files (template and Kaories overlay). GearSwap loads it
+when the main job becomes PLD (`Tetsouo_PLD.lua`, `Kaories_PLD.lua`, each one
+`include` of `shared/entry/pld.lua`). From then on Mote-Include calls its hooks on every action
 (precast, midcast, aftercast), on status and buff changes, on `//gs c` commands
 and on state cycles.
 
@@ -40,8 +40,7 @@ numbers are avoided because they drift.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_PLD.lua` | 307 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
-| `_master/Kaories/entry/Kaories_PLD.lua` | 271 | Kaories overlay: `Kaories/...` paths and an older body: no `PLD_WS_CONFIG` / `pld_rebuild_ws_slots` (no weaponskill slots) and no `AmpullaLock` in `user_setup` / `file_unload` (a decision left to the player, not a bug) |
+| `shared/entry/pld.lua` | 309 | Entry point (the same for every character; `<Char>_PLD.lua` and its template `_master/entry/Tetsouo_PLD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/pld/functions/pld_functions.lua` | 121 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/pld/functions/PLD_PRECAST.lua` | 200 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
 | `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 202 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
@@ -77,10 +76,11 @@ numbers are avoided because they drift.
 | `_master/Kaories/pld/pld_sets.lua` | 777 | Kaories overlay sets (no Sortie or /SCH sets, see Known issues) |
 | `shared/data/job_abilities/PLD_JA_DATABASE.lua` + `pld/*.lua` | 13 + 194 | JA descriptions for `ability_message_handler` (messages only) |
 
-Live copies (gitignored): `Tetsouo/Tetsouo_PLD.lua` differs from the template only in
-comments, `@file` / `@author`, the keybind error text and `init_gear_sets`, which
-includes `pld/sets/pld_sets.lua`; `_master/Tetsouo/entry/Tetsouo_PLD.lua` is
-identical to it. `Tetsouo/pld/` is modular (`pld_sets.lua` + `armor`, `capes`,
+Live copies (gitignored): `Tetsouo/Tetsouo_PLD.lua` and `Kaories/Kaories_PLD.lua` are
+one `include` of `shared/entry/pld.lua` (since 2026-09-30; the Kaories entry used
+to be an older copy without weaponskill slots or `AmpullaLock`). Kaories has no
+`PLD_WS_CONFIG.lua`, so `CharPaths.optional` gives nil and her PLD has no
+weaponskill slots; her own `PLD_STATES.lua` builds none either. `Tetsouo/pld/` is modular (`pld_sets.lua` + `armor`, `capes`,
 `weapons`, mirrored in `_master/Tetsouo/pld/`). `_master/Tetsouo/config/pld/`
 holds only `PLD_MACROBOOK.lua` (other book numbers), `PLD_REFILL.lua` and
 `PLD_WEAPONS.lua` (Tetsouo's shields, see below).
@@ -102,7 +102,7 @@ PLD hook files exist (same model as [BLM](blm.md#load-sequence) and
 ```mermaid
 sequenceDiagram
     participant GS as GearSwap
-    participant E as Tetsouo_PLD.lua
+    participant E as shared/entry/pld.lua
     participant M as Mote-Include
     participant F as pld_functions.lua
     GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig via ConfigLoader, REGION_CONFIG)
@@ -118,7 +118,7 @@ sequenceDiagram
     E->>E: pld_rebuild_ws_slots(), register_lockstyle_cancel("PLD", ...)
 ```
 
-`user_setup()` (`Tetsouo_PLD.lua`):
+`user_setup()` (`shared/entry/pld.lua`):
 
 1. `_G.PLDWSConfig = require(... PLD_WS_CONFIG)`, then
    `require('Tetsouo/pld/keys/PLD_STATES').configure()` creates every state and
@@ -757,7 +757,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 ```bash
 # Syntax of every PLD file (fast, catches the error that silently aborts get_sets)
 for f in shared/jobs/pld/functions/*.lua shared/jobs/pld/functions/logic/*.lua \
-         _master/config/pld/*.lua _master/entry/Tetsouo_PLD.lua _master/sets/pld_sets.lua; do
+         _master/config/pld/*.lua shared/entry/pld.lua _master/entry/Tetsouo_PLD.lua _master/sets/pld_sets.lua; do
     luac5.1 -p "$f" || echo "FAIL $f"
 done
 # Whole project, live folders included (local script, gitignored)

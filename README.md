@@ -7,7 +7,7 @@
 [![Lua](https://img.shields.io/badge/Lua-5.1-blue?logo=lua&logoColor=white)](https://www.lua.org/)
 [![Windower](https://img.shields.io/badge/Windower-4-purple)](https://www.windower.net/)
 [![FFXI](https://img.shields.io/badge/FFXI-Retail-red)](https://www.playonline.com/ff11/)
-[![Jobs](https://img.shields.io/badge/Jobs-17-green)](#jobs)
+[![Jobs](https://img.shields.io/badge/Jobs-22-green)](#jobs)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 [Quick start](#quick-start) · [Keys](#keys) · [Commands](#commands) · [Dual-box](#dual-box) · [Documentation](#documentation)
@@ -33,12 +33,14 @@ lockstyle, macro book) is common to all jobs.
 | Job | Status |
 |---|---|
 | BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, SMN, THF, WAR, WHM | Template shipped in `_master/`, offered by the clone script |
-| PUP | **Does not load yet**: its configuration folder is missing, so the job file stops during loading. The clone script does not offer it |
+| DRG, MNK, NIN, RNG, SCH | Added 2026-09-29, offered by the clone script. They load, but have not been tested in game yet |
+| PUP | Rewritten 2026-09-29, offered by the clone script. It loads, but has not been tested in game yet |
 
 The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on the main,
 and COR, GEO, PLD and RDM on the dual-boxed alt. BLU (added 2026-09-26) is played
 by a friend's character. DRK, RUN, SAM and WHM exist as templates but no
-maintained character plays them.
+maintained character plays them, and DRG, MNK, NIN, PUP, RNG and SCH are new
+and not yet played.
 
 Per-job pages (modes, keys, commands): [docs/user/jobs/](docs/user/jobs/README.md).
 
@@ -76,8 +78,10 @@ Double-click `CLONE_CHARACTER.bat` (French prompts), or run it as
 5. a final confirmation.
 
 It then creates `data/<YourName>/` with one entry file per job
-(`<YourName>_<JOB>.lua`), the set files under `sets/`, and the settings under
-`config/`. If the folder already exists, it asks before replacing it and moves
+(`<YourName>_<JOB>.lua`), one folder per job (`<job>/`, with the job's
+settings and its sets in `<job>/sets/`), `_common/` for the settings of the
+whole character, and `saved/` for the files the game writes. The list of every
+file and what it holds is in `data/<YourName>/_WHERE-IS-WHAT.txt`. If the folder already exists, it asks before replacing it and moves
 the old one to `addons/GearSwap/clone_backups/` rather than deleting it; the
 HUD position and per-job HUD order, message modes, alt window, alt state,
 owned warp items, Combat Mode and Treasure Mode choices, Sneak / Invisible
@@ -85,7 +89,7 @@ settings and temporary keys you had are copied back.
 
 ### 3. Put in your gear
 
-Open `data/<YourName>/sets/<job>_sets.lua` and replace the author's items with
+Open `data/<YourName>/<job>/sets/<job>_sets.lua` and replace the author's items with
 yours (names and augments must match exactly). Check the result in game with
 `//gs c checksets`.
 
@@ -115,9 +119,9 @@ keypad stays free for the game.
 
 `^` is Ctrl, `!` Alt, `@` Windows, `#` Apps (the menu key), `~` Shift. The HUD
 lists every key of the current job with the mode's current value. The keys of
-each job are in `data/<YourName>/config/<job>/<JOB>_KEYBINDS.lua`, the keys
-shared by every job in `data/<YourName>/config/COMMON_KEYBINDS.lua`, and your
-own extra modes in `<JOB>_CUSTOM.lua`. See the
+each job are in `data/<YourName>/<job>/keys/<JOB>_KEYBINDS.lua`, the keys
+shared by every job in `data/<YourName>/_common/keys/COMMON_KEYBINDS.lua`, and
+your own extra modes in `<job>/keys/<JOB>_CUSTOM.lua`. See the
 [keybinds guide](docs/user/guides/keybinds.md).
 
 ## Commands
@@ -167,7 +171,7 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
 - **Doom.** While Doomed, the Doom set goes on and neck, rings and waist
   stay locked until Doom is gone (or you die).
 - **Job and subjob changes.** A subjob change reloads the job file after
-  0.5 s; rapid changes collapse into one reload. If GearSwap ever loads the
+  2 s; rapid changes collapse into one reload. If GearSwap ever loads the
   wrong job file, it is reloaded.
 - **Lockstyle and macro book** per job (the macro book also per subjob and
   per partner job): the macro book is set about 1.5 s after a load, the
@@ -217,10 +221,11 @@ Setup and details: [dual-box guide](docs/user/guides/dualbox.md).
 ## Craft and fishing
 
 `//gs c craft [variant]` and `//gs c fish` equip a set from
-`data/<YourName>/sets/bonecraft_sets.lua` and `fishing_sets.lua`, lock it and
-apply a craft lockstyle; `//gs c uncraft` (or `craft off`) gives your job gear
-back. Those two set files are **not in the public repository**: a character
-gets "No set file" until you write them.
+`data/<YourName>/_common/sets/craft_sets.lua` and `fishing_sets.lua` (the file
+names are set in `_common/inventory/CRAFT_CONFIG.lua`), lock it and apply a
+craft lockstyle; `//gs c uncraft` (or `craft off`) gives your job gear back.
+The provided files have every slot empty (`""`, not touched): write your
+items in them.
 
 ## Documentation
 

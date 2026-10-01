@@ -54,7 +54,7 @@ This page does not repeat the system pages. It summarises and links to them;
 ```mermaid
 flowchart TD
     ENG["GearSwap engine (engine)<br/>refresh.lua, flow.lua, triggers.lua,<br/>packet_parsing.lua, user_functions.lua"]
-    ENTRY["Entry file<br/>data/&lt;Char&gt;/&lt;Char&gt;_&lt;JOB&gt;.lua"]
+    ENTRY["Entry file<br/>data/&lt;Char&gt;/&lt;Char&gt;_&lt;JOB&gt;.lua<br/>(one include of shared/entry/&lt;job&gt;.lua)"]
     MOTE["Mote-Include<br/>(libs/Mote-*.lua)<br/>states, hook order, gs c commands"]
     INIT["INIT_SYSTEMS.lua<br/>systems started on every load,<br/>gear wrappers"]
     HOOKS["Message hooks<br/>shared/hooks/init_*_messages.lua"]
@@ -62,7 +62,7 @@ flowchart TD
     MODS["Job hook modules<br/>&lt;JOB&gt;_PRECAST ... &lt;JOB&gt;_MACROBOOK<br/>+ logic/"]
     SYS["Shared systems<br/>shared/utils/*"]
     DATA["Databases<br/>shared/data/*"]
-    CFG["Per-character config and sets<br/>data/&lt;Char&gt;/config, sets"]
+    CFG["Per-character config and sets<br/>data/&lt;Char&gt;/_common, &lt;job&gt;, saved<br/>(through char_paths.lua)"]
     ENG -->|"loads, calls get_sets()"| ENTRY
     ENTRY -->|"include('Mote-Include.lua')"| MOTE
     MOTE -->|"calls user_setup(), init_gear_sets()"| ENTRY
@@ -415,8 +415,7 @@ guard) is in [core-lifecycle.md, The gear hook chain](systems/core-lifecycle.md#
 
 ### Rules
 
-The coding standard is `.claude/CODE_QUALITY.md` (kept in the private working
-copy, not in the public repository). Its core, which reviews enforce:
+The coding standard, as reviews enforce it:
 
 | Rule | Detail |
 |---|---|
@@ -436,13 +435,16 @@ copy, not in the public repository). Its core, which reviews enforce:
 
 | Path | Role |
 |---|---|
-| `data/<Char>/<Char>_<JOB>.lua` (template `_master/entry/Tetsouo_<JOB>.lua`) | Entry: a loader (`get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload`) |
+| `data/<Char>/<Char>_<JOB>.lua` (template `_master/entry/Tetsouo_<JOB>.lua`, 15 lines) | Character entry, the file GearSwap opens: a header and one statement, `include('../shared/entry/<job>.lua')` |
+| `shared/entry/<job>.lua` | Entry code, the same for every character: a loader (`get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload`) that finds the character's files through `shared/utils/core/char_paths.lua` |
 | `shared/jobs/<job>/functions/<job>_functions.lua` | Facade: includes the hook modules |
 | `shared/jobs/<job>/functions/<JOB>_PRECAST.lua` ... `_MACROBOOK.lua` | 11 hook modules (PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS, COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK), plus pet modules on BST/PUP/SMN |
 | `shared/jobs/<job>/functions/logic/` | Job logic called by the hook modules |
-| `data/<Char>/<job>/` (template `_master/config/<job>/`) | `<JOB>_STATES`, `_KEYBINDS`, `_LOCKSTYLE`, `_MACROBOOK`, `_CUSTOM`, `_HUD`, TP/WS configs |
-| `data/<Char>/_common/` (template `_master/config_global/`) | Per-character files shared by all jobs: `UI_CONFIG`, `COMMON_KEYBINDS`, `RECAST_CONFIG`, `TUNING`, `ADDONS_CONFIG`, ... |
-| `data/<Char>/sets/` (template `_master/sets/<job>_sets.lua`) | Equipment. Templates are flat; a character overlay may deploy a modular `<job>/` tree |
+| `data/<Char>/<job>/<theme>/` (template `_master/config/<job>/`, flat) | `display/` (`<JOB>_HUD`, `_LOCKSTYLE`, `_MACROBOOK`), `keys/` (`_KEYBINDS`, `_STATES`, `_CUSTOM`), `combat/` (TP/WS configs and the job's own settings), `inventory/` (`_REFILL`) |
+| `data/<Char>/_common/<theme>/` (template `_master/config_global/`) | Per-character files shared by all jobs, by theme: `display/` (`UI_CONFIG`, `REGION_CONFIG`, `LOCKSTYLE_CONFIG`, `ADDONS_CONFIG`...), `keys/` (`COMMON_KEYBINDS`...), `dualbox/` (+ `alt/`), `inventory/`, `combat/` (`RECAST_CONFIG`, `TUNING`...), `sets/` (gear shared by jobs) |
+| `data/<Char>/<job>/sets/` (template `_master/sets/<job>_sets.lua`) | Equipment. Templates are flat; a character overlay may deploy a modular tree (`armor.lua`, `capes.lua`...) |
+| `data/<Char>/saved/` | Files the game writes (HUD position, dual-box role, traces...) |
+| `shared/data/alt/<JOB>_ALT_COMMANDS.lua` | Generated dual-box alt command table for the job, the same for every character |
 
 ### What git tracks
 
@@ -483,17 +485,24 @@ done while its docs are stale.
 
 ### Add a job
 
-Use the `/new-job <JOB>` skill for the guided workflow. The files:
+The files to create or touch:
 
 - [ ] `shared/jobs/<job>/functions/`: the 11 hook modules, the facade, `logic/`.
       Start from a similar job (templates: DNC_PRECAST, PLD_MIDCAST,
       WAR_COMMANDS). Pet jobs add pet modules.
-- [ ] `_master/entry/Tetsouo_<JOB>.lua`: copy a similar entry; keep the
-      `'Tetsouo/_common/...'` path form (the clone substitutes it); require
-      `config_loader` first, include INIT_SYSTEMS right after Mote-Include.
-- [ ] `_master/config/<job>/`: **every** file the entry requires without
-      `pcall` must exist (PUP did not load until 2026-09-29 for that
+- [ ] `shared/entry/<job>.lua`: copy a similar shared entry; reach every
+      character file through `CharPaths` (`CharPaths.module('job',
+      '<JOB>_STATES', '<JOB>')`, `CharPaths.relative('sets',
+      '<job>_sets.lua', '<JOB>')`, `CharPaths.name()`), never a hard-coded
+      character name; require `config_loader` before the other shared
+      modules, include INIT_SYSTEMS right after Mote-Include.
+- [ ] `_master/entry/Tetsouo_<JOB>.lua`: copy another one-line entry and
+      change the job (`include('../shared/entry/<job>.lua')`).
+- [ ] `_master/config/<job>/`: **every** file the shared entry requires
+      without `pcall` must exist (PUP did not load until 2026-09-29 for that
       reason: its entry required files that did not exist).
+- [ ] `shared/data/alt/<JOB>_ALT_COMMANDS.lua` if the job should answer
+      dual-box alt commands.
 - [ ] `_master/sets/<job>_sets.lua`: every set name the code reads, empty
       copies where the player has no gear yet.
 - [ ] `clone_character.py` `ALL_VALID_JOBS`; `character_db.lua` `ALL_JOBS`.
@@ -517,7 +526,7 @@ See also [characters-and-templates.md, How to add a job to the templates](archit
       set `eventArgs.handled = true` on every path, including errors.
 - [ ] Check the name against job commands (`grep -rn "command == '<name>'" shared/jobs`),
       warp aliases and their `<alias>all` form (`shared/utils/warp/warp_command_registry.lua`),
-      alt command files (`_master/config/alt/*.lua`) and Mote's `selfCommandMaps`.
+      alt command files (`shared/data/alt/*.lua`, `_master/config/alt/*_ALT_CUSTOM.lua`) and Mote's `selfCommandMaps`.
 - [ ] Lower-case what you compare; on an unknown sub-command, print usage
       rather than running a default that changes something.
 - [ ] Help: `COMMANDS_HELP` / `QUICK_HELP` in
@@ -855,4 +864,4 @@ Terms (sandbox, entry file, facade, hook module, Mote state, template / overlay
 | [systems/wardrobe-organizer.md](systems/wardrobe-organizer.md) | Wardrobe organizer |
 | [data/spell-databases.md](data/spell-databases.md) | Magic databases |
 | [data/ability-and-weaponskill-databases.md](data/ability-and-weaponskill-databases.md) | JA and weaponskill databases |
-| Jobs | [blm](jobs/blm.md) · [blu](jobs/blu.md) · [brd](jobs/brd.md) · [bst](jobs/bst.md) · [cor](jobs/cor.md) · [dnc](jobs/dnc.md) · [drk](jobs/drk.md) · [geo](jobs/geo.md) · [pld](jobs/pld.md) · [pup](jobs/pup.md) · [rdm](jobs/rdm.md) · [run](jobs/run.md) · [sam](jobs/sam.md) · [smn](jobs/smn.md) · [thf](jobs/thf.md) · [war](jobs/war.md) · [whm](jobs/whm.md) |
+| Jobs | [blm](jobs/blm.md) · [blu](jobs/blu.md) · [brd](jobs/brd.md) · [bst](jobs/bst.md) · [cor](jobs/cor.md) · [dnc](jobs/dnc.md) · [drg](jobs/drg.md) · [drk](jobs/drk.md) · [geo](jobs/geo.md) · [mnk](jobs/mnk.md) · [nin](jobs/nin.md) · [pld](jobs/pld.md) · [pup](jobs/pup.md) · [rdm](jobs/rdm.md) · [rng](jobs/rng.md) · [run](jobs/run.md) · [sam](jobs/sam.md) · [sch](jobs/sch.md) · [smn](jobs/smn.md) · [thf](jobs/thf.md) · [war](jobs/war.md) · [whm](jobs/whm.md) |

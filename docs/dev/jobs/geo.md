@@ -41,7 +41,7 @@ function, not a line number.
 
 | Path | Role |
 |------|------|
-| `_master/entry/Tetsouo_GEO.lua` | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (loads PetTP), `job_update` (HUD only), `init_gear_sets`, `file_unload` (unloads PetTP) |
+| `shared/entry/geo.lua` (279 lines) | Entry point (the same for every character; `<Char>_GEO.lua` and its template `_master/entry/Tetsouo_GEO.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (loads PetTP), `job_update` (HUD only), `init_gear_sets`, `file_unload` (unloads PetTP) |
 | `shared/jobs/geo/functions/geo_functions.lua` | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` |
 | `shared/jobs/geo/functions/GEO_PRECAST.lua` | `job_precast` (guard, tier refine or cooldown, auto abilities, Entrust flag, WS) / `job_post_precast` |
 | `shared/jobs/geo/functions/GEO_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast` (`midcast_geomancy` with `geomancy_family`, Enhancing branch, `PLAIN_SKILLS`) |
@@ -76,7 +76,7 @@ function, not a line number.
 | `shared/utils/scholar/scholar_actions.lua` | `aoe` Accession chains and `cast_under_black_addendum` (shared with BLM, PLD and `//gs c stealth`) |
 
 Character copies are gitignored. The alt's overlay (`_master/<Alt>/`) holds
-`entry/<Alt>_GEO.lua` (same code, its own paths),
+no entry (every character runs `shared/entry/geo.lua`), and
 `geo/{GEO_CUSTOM,GEO_KEYBINDS,GEO_LOCKSTYLE,GEO_MACROBOOK,GEO_REFILL,GEO_STATES,GEO_TP_CONFIG}.lua`
 (`GEO_STATES` differs by `CombatMode` defaulting to On) and `geo/sets/geo_sets.lua`
 (differs only in the Exudation weaponskill neck / waist). The author's main
@@ -89,7 +89,7 @@ overlay has no GEO files.
 ```mermaid
 sequenceDiagram
     participant GS as GearSwap
-    participant E as Tetsouo_GEO.lua
+    participant E as shared/entry/geo.lua
     participant M as Mote-Include
     participant F as geo_functions.lua
     GS->>E: file chunk: LOCKSTYLE_CONFIG, UIConfig (ConfigLoader), REGION_CONFIG
@@ -490,7 +490,7 @@ T = in `_master/sets/geo_sets.lua`.
 ### Offline testing (lua5.1)
 
 - Syntax: from `data/`,
-  `for f in shared/jobs/geo/functions/*.lua shared/jobs/geo/functions/logic/*.lua _master/entry/Tetsouo_GEO.lua _master/config/geo/*.lua _master/sets/geo_sets.lua; do luac5.1 -p "$f"; done`,
+  `for f in shared/jobs/geo/functions/*.lua shared/jobs/geo/functions/logic/*.lua shared/entry/geo.lua _master/entry/Tetsouo_GEO.lua _master/config/geo/*.lua _master/sets/geo_sets.lua; do luac5.1 -p "$f"; done`,
   or `python scripts/check_syntax.py`.
 - Entrust midcast: the harness described in [BLM](blm.md#offline-testing-lua51)
   (stubbed `message_midcast` and `midcast_trace`, recording `equip`,

@@ -64,8 +64,9 @@ data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
    [State and lifetime](#state-and-lifetime).
 2. **Every job or subjob change ends in a new sandbox.** A main job change
    loads a new file *(engine)*. A subjob change is handled by Mote in the same
-   sandbox, but the project turns it into a `gs reload` 0.5 s later through
-   `JobChangeManager.on_job_change` (`shared/utils/core/job_change_manager.lua:134-191`). So
+   sandbox, but the project turns it into a `gs reload` 2.0 s later (3.0 s
+   when the main job is not the one this sandbox was seeded with) through
+   `JobChangeManager.on_job_change` (`shared/utils/core/job_change_manager.lua:135-193`). So
    "per sandbox" means "until the next job, subjob or reload".
 3. **Mote-Include owns the hook order.** The project never hooks GearSwap
    directly for actions; it fills Mote's `job_*` / `user_*` hooks
@@ -94,30 +95,42 @@ flowchart TD
     HM --> L["Job logic<br/>shared/jobs/&lt;job&gt;/functions/logic/"]
     HM --> S["Shared systems<br/>shared/utils/*"]
     S --> D["Databases<br/>shared/data/*"]
-    F --> C["Per-character data<br/>data/&lt;Char&gt;/config, sets"]
+    F --> C["Per-character data<br/>data/&lt;Char&gt;/_common, &lt;job&gt;, saved"]
 ```
 
-- **Entry file** (`_master/entry/Tetsouo_<JOB>.lua`, deployed as
-  `data/<Char>/<Char>_<JOB>.lua`): a loader. It defines `get_sets`,
-  `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`,
-  `file_unload`. See [core-lifecycle.md](systems/core-lifecycle.md).
+- **Entry file** (`data/<Char>/<Char>_<JOB>.lua`, template
+  `_master/entry/Tetsouo_<JOB>.lua`): since 2026-09-30 one statement,
+  `include('../shared/entry/<job>.lua')`. The shared entry
+  (`shared/entry/<job>.lua`, 189-415 lines, the same for every character) is
+  the loader: it defines `get_sets`, `user_setup`, `init_gear_sets`,
+  `job_sub_job_change`, `job_update`, `file_unload`, and finds the
+  character's files through `shared/utils/core/char_paths.lua`. See
+  [core-lifecycle.md](systems/core-lifecycle.md).
 - **Facade** (`shared/jobs/<job>/functions/<job>_functions.lua`): `include`s
   the 11 hook modules (PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,
   LOCKSTYLE, MACROBOOK, COMMANDS, MOVEMENT) plus pet hooks for BST/PUP/SMN, and
   requires the dual-box manager.
 - **Hook modules** assign Mote's globals (`job_precast`, `job_post_midcast`, …)
   and delegate to shared systems and to `logic/`.
-- **Per-character data**: `config/` (keybinds, states, lockstyle, macrobook, TP
-  and refill configs, UI and message settings) and `sets/`.
+- **Per-character data** (layout of 2026-09-30, resolved by `char_paths.lua`,
+  which still reads the older `config/` and `sets/` folders):
+  `_common/<theme>/` for the settings of the whole character (`display/`,
+  `keys/`, `dualbox/` with `alt/`, `inventory/`, `combat/`, and `sets/` for
+  gear shared by jobs), `<job>/<theme>/` for one job (`display/` HUD,
+  lockstyle, macrobook; `keys/` keybinds, states, custom; `combat/` TP, WS and
+  job settings; `inventory/` refill), `<job>/sets/` for its gear, and `saved/`
+  for the files the game writes.
 
 ## Boot sequence of one load
 
-For a template entry such as `_master/entry/Tetsouo_WAR.lua`:
+For a character entry such as `Tetsouo/Tetsouo_WAR.lua`, whose only statement
+includes `shared/entry/war.lua`:
 
-1. **File chunk**: loads `LOCKSTYLE_CONFIG` and `REGION_CONFIG` under pcall,
+1. **File chunk** of `shared/entry/war.lua`: requires `char_paths`, loads
+   `LOCKSTYLE_CONFIG` and `REGION_CONFIG` under pcall,
    `ConfigLoader.load_ui_config` (`dofile` of `UI_CONFIG`), defines the hook
-   functions. Some entries (WAR, BST, PUP, SMN) also require
-   `JobChangeManager` and `UI_MANAGER` here.
+   functions. WAR, BST and SMN also require `JobChangeManager` and
+   `UI_MANAGER` here (PUP requires them inside its hooks).
 2. **`get_sets()`**:
    1. Job globals that states need before Mote (WAR `_G.WARWSConfig`, BRD, BST).
    2. `include('Mote-Include.lua')` → `init_include()`: Mote states and set
@@ -184,9 +197,8 @@ no midcast, no aftercast.
   (`sets.midcast.BardSong` for songs, which use their own pickers). `type` comes from
   the job's database function, `target` from `target_func`, `mode` from the
   mode state. There is no spellMap level and no idle fallback, and a missing
-  `sets.midcast[skill]` returns before any lookup. `CODE_QUALITY.md` §4.2 now
-  names it the P0-P9 chain and points to the file header (the old "7-level"
-  wording is gone since 2026-09-25). Job overrides run after. Then Mote's
+  `sets.midcast[skill]` returns before any lookup. The `midcast_manager.lua`
+  file header calls it the P0-P9 chain. Job overrides run after. Then Mote's
   `cleanup_midcast`, wrapped by the midcast fallback (a spell the job did not
   route), ElementalBelt (Hachirin-no-Obi / Orpheus's Sash on elemental damage)
   and the custom states. See [midcast-and-buffs.md](systems/midcast-and-buffs.md)
@@ -243,7 +255,8 @@ Consequences worth remembering:
 
 | Place | Tracked | Content |
 |---|---|---|
-| `_master/entry`, `sets`, `config/<job>`, `config/alt`, `config_global` | yes | Generic templates, written for a character named Tetsouo |
+| `_master/entry` (one-line entries), `sets`, `config/<job>`, `config/alt` (`<JOB>_ALT_CUSTOM.lua` only), `config_global` | yes | Generic templates, written for a character named Tetsouo |
+| `shared/entry/<job>.lua`, `shared/data/alt/<JOB>_ALT_COMMANDS.lua` | yes | Entry code and alt command tables, the same for every character (not copied by the clone) |
 | `_master/Kaories/`, `_master/Tetsouo/` | yes | Per-character overlays (same relative path replaces the template) |
 | `data/Tetsouo/`, `data/Kaories/` | **no** (gitignored) | What GearSwap loads |
 | `data/Hysoka/`, `data/Gabvanstronger/` | no | Frozen one-shot clones; not maintained |
@@ -328,8 +341,6 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 
 - `docs/user/` (tracked, public): user guides. Several pages are stale (key
   layout, job count, commands).
-- `.claude/CODE_QUALITY.md`: coding standard (private). `.claude/audits/`:
-  audit reports, newest last.
 - `scripts/` (tracked):
   - `check_syntax.py`: parses every Lua file, live folders included, with Lua
     5.1 (`python scripts/check_syntax.py [subtree]`, exit 1 on a parse error).
@@ -343,8 +354,7 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 - `scripts/audit/` (gitignored): static checks (`scan.py`, `check.py`,
   `check_arity.py`, `check_argorder.py`, `check_pcall_require.py`) and the
   `difftest_*.lua` differential tests. They scan tracked files only: untracked
-  new files and the live folders need a separate `luac -p` pass. `check.py`
-  still fails on the deleted `UNIVERSAL_JA_DATABASE.lua` (see the plan, item 11).
+  new files and the live folders need a separate `luac -p` pass.
 
 ## Where to look when…
 

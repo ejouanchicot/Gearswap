@@ -42,7 +42,7 @@ function; line numbers are given only where no function name fits.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_COR.lua` | 393 | Entry point (template): `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and `UIConfig` at file level, `init_party_tracking`, `get_sets`, `job_sub_job_change`, `user_setup` (two macro/lockstyle blocks), `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/cor.lua` | 389 | Entry point (the same for every character; `<Char>_COR.lua` and its template `_master/entry/Tetsouo_COR.lua` are one `include` of it): `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and `UIConfig` at file level, `init_party_tracking`, `get_sets`, `job_sub_job_change`, `user_setup` (two macro/lockstyle blocks), `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/cor/functions/cor_functions.lua` | 120 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` (its header still says "Logic modules (4)") |
 | `shared/jobs/cor/functions/COR_PRECAST.lua` | 225 | `job_precast` (guard, `DoubleUp.redirect`, cooldown, `apply_cor_precast`, WS) / `job_post_precast` (TP gear, `apply_luzaf`, `hold_fold_gear`, `RollDebug.note_precast`, `RollHold.start`); starts `flurry_tracker` at load |
 | `shared/jobs/cor/functions/COR_MIDCAST.lua` | 103 | `job_midcast` (empty) / `job_post_midcast` (RA with `RangedMode` + Triple Shot, Enhancing, `PASSTHROUGH_SKILLS`) |
@@ -84,13 +84,14 @@ function; line numbers are given only where no function name fits.
 | `shared/data/job_abilities/COR_JA_DATABASE.lua` | 21 | Factory with the roll modules |
 
 Character overlays: `_master/<Character>/cor/inventory/COR_REFILL.lua` for the
-characters that ship refill lists, and one full overlay
-(`_master/<Character>/entry/<Character>_COR.lua`, `cor/*`,
+characters that ship refill lists, and one full overlay (`cor/*`,
 `cor/sets/cor_sets.lua`) that adds a `RangedMode` (`Normal`, `Acc`) with a
 `^numpad7` key and Quick Draw damage sets. Its headers still say
-`@author Tetsouo`. Live folders are gitignored; the author's live COR uses the
-modular `cor/{cor_sets,armor,capes,weapons}.lua` (flat templates vs
-modular live sets: `.claude/CODE_QUALITY.md` §15.1).
+`@author Tetsouo`. No overlay has an entry since 2026-09-30: every character
+runs `shared/entry/cor.lua`. Live folders are gitignored; the author's live COR
+uses the modular `cor/{cor_sets,armor,capes,weapons}.lua`. The templates stay
+flat on purpose: a modular tree `require`s its parts by a path that names the
+character.
 
 ## How it works
 
@@ -160,7 +161,7 @@ flowchart TD
 ```
 
 - **`DoubleUp.redirect`** (`logic/double_up.lua`) runs before the cooldown
-  check, the documented exception in `CODE_QUALITY.md` §4.1: a
+  check, the project's documented exception to the precast order (the recast of Phantom Roll would cancel it otherwise): a
   `CorsairRoll` whose buff is up is cancelled. With `Double-Up Chance` up and
   the roll equal to `_G.cor_last_roll.name` (or no last roll known), it sends
   `input /ja "Double-Up" <me>`; otherwise it warns (no chance, or Double-Up
@@ -518,7 +519,7 @@ Lua 5.1 is installed (`lua5.1`, `luac5.1`):
 
 ```bash
 # syntax of every COR file
-for f in $(git ls-files 'shared/jobs/cor/*.lua' '_master/config/cor/*.lua' _master/entry/Tetsouo_COR.lua _master/sets/cor_sets.lua); do luac5.1 -p "$f"; done
+for f in $(git ls-files 'shared/jobs/cor/*.lua' '_master/config/cor/*.lua' shared/entry/cor.lua _master/entry/Tetsouo_COR.lua _master/sets/cor_sets.lua); do luac5.1 -p "$f"; done
 ```
 
 Pure logic runs outside the game with stubs: `roll_data.lua` needs nothing;
@@ -586,7 +587,7 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
 - `testcolors` / `colors` in `COR_COMMANDS.lua` are unreachable (the common
   commands answer first).
 - `COR_MOVEMENT.lua` and `COR_BUFFS.lua` export to `_G` only, with no module
-  `return` (the dual-export rule of `CODE_QUALITY.md` §5.2).
+  `return` (the project's dual-export rule: `_G.x = x` and a returned table).
 - The `COR_TP_CONFIG.lua` comment says the handler passes the main weapon
   only; it passes main and sub.
 - No `sets.idle.Town` in the template: other cities count as field.

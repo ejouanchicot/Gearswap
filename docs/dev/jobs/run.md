@@ -2,10 +2,10 @@
 
 The RUN job area is 12 hook files plus 4 logic modules under
 `shared/jobs/run/functions/` (1 429 lines on 2026-09-28), one entry template, eight
-config files and one sets file. No live character plays it: `character_db.lua` lists
-RUN in `ARCHIVE_JOBS`, there is no `Tetsouo_RUN.lua` under `Tetsouo/`, and the only
-deployed copy is the frozen `Hysoka/` clone (not analysed here). GearSwap would load
-it when the main job becomes RUN; from then on Mote-Include calls its hooks on every
+config files and one sets file. `character_db.lua` lists RUN among Tetsouo's jobs
+and `Tetsouo/Tetsouo_RUN.lua` exists (one `include` of `shared/entry/run.lua`, like every
+entry since 2026-09-30); the frozen `Hysoka/` clone also has RUN (not analysed here).
+GearSwap loads it when the main job becomes RUN; from then on Mote-Include calls its hooks on every
 action, on status and buff changes, on `//gs c` commands and on state cycles.
 
 RUN is structurally a copy of [PLD](pld.md) with less in it. What it adds on top of
@@ -37,7 +37,7 @@ drift.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_RUN.lua` | 268 | Entry point (template): same shape as PLD; BLU and TP configs loaded in `get_sets`; keybinds deferred 0.5 s; initial macro book / lockstyle deferred 0.2 s |
+| `shared/entry/run.lua` | 270 | Entry point (the same for every character; `<Char>_RUN.lua` and its template `_master/entry/Tetsouo_RUN.lua` are one `include` of it): same shape as PLD; BLU and TP configs loaded in `get_sets`; keybinds deferred 0.5 s; initial macro book / lockstyle deferred 0.2 s |
 | `shared/jobs/run/functions/run_functions.lua` | 113 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/run/functions/RUN_PRECAST.lua` | 180 | `job_precast` (guard, cooldown, WS) / `job_post_precast` (TP gear, self-cure FC, precast debug display) |
 | `shared/jobs/run/functions/RUN_MIDCAST.lua` | 157 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (dispatch) |
@@ -76,7 +76,7 @@ Live copies: none under `Tetsouo/` or `Kaories/`, and no RUN overlay under
 ```mermaid
 sequenceDiagram
     participant GS as GearSwap
-    participant E as Tetsouo_RUN.lua
+    participant E as shared/entry/run.lua
     participant M as Mote-Include
     participant F as run_functions.lua
     GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig via ConfigLoader, REGION_CONFIG)
@@ -93,7 +93,7 @@ sequenceDiagram
     Note over E: +0.5 s: RUNKeybinds.bind_all()
 ```
 
-`user_setup()` (`Tetsouo_RUN.lua`):
+`user_setup()` (`shared/entry/run.lua`):
 
 1. `RUNStates.configure()`.
 2. Keybinds in a `coroutine.schedule(..., 0.5)`: `require` into the global
@@ -384,8 +384,8 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 
 - RUN is untested in game in its current form: any change here has no player to
   confirm it. Prefer the offline checks below, and say so in the commit.
-- The entry's paths are hard-coded to `Tetsouo/run/...` in the template; the
-  clone script rewrites them. Do not "fix" them in `_master/entry/`.
+- The entry names no character: `shared/entry/run.lua` finds the files through
+  `CharPaths` (`CharPaths.module('job', 'RUN_STATES', 'RUN')`...).
 - Ripgrep skips the gitignored live folders (`Hysoka/` has RUN): confirm "no caller"
   claims with `grep -r`.
 
@@ -395,7 +395,7 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 
 ```bash
 for f in shared/jobs/run/functions/*.lua shared/jobs/run/functions/logic/*.lua \
-         _master/config/run/*.lua _master/entry/Tetsouo_RUN.lua _master/sets/run_sets.lua; do
+         _master/config/run/*.lua shared/entry/run.lua _master/entry/Tetsouo_RUN.lua _master/sets/run_sets.lua; do
     luac5.1 -p "$f" || echo "FAIL $f"
 done
 python scripts/check_syntax.py        # whole project, live folders included (local, gitignored)

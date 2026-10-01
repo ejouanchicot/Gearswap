@@ -76,7 +76,7 @@ Unknown word: [glossary](../guides/glossary.md).
 
 ## Changing job or subjob
 
-A subjob change reloads the job file 0.5 s later (several quick changes give
+A subjob change reloads the job file 2 s later (several quick changes give
 one reload). A main job change loads the new job's file. Modes (except Auto
 Medicine) restart at their
 default values after each load. The macro book follows at once, the lockstyle 8 s later.

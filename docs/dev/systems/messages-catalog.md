@@ -12,8 +12,8 @@ system code never touches a template directly: it calls a `MessageFormatter.show
 (`shared/utils/messages/message_formatter.lua`), a formatter module, `InfoBlock` or `HelpScreen`.
 
 This page also documents `shared/utils/whm/whm_message_formatter.lua`, a WHM formatter that lives
-outside `messages/`, builds its lines by hand and uses no template (`.claude/CODE_QUALITY.md`
-section 6, item 4).
+outside `messages/`, builds its lines by hand and uses no template (its direct `add_to_chat` calls are allowed as
+those of a formatter, see [messages.md](messages.md#where-add_to_chat-may-be-called-directly)).
 
 **How the reachability figures were obtained (2026-09-28).** Every `M.send` / `M.job` /
 `Messages.send` call site in the repository (excluding `_dev/`) was listed with the function that

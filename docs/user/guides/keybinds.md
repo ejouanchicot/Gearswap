@@ -249,7 +249,7 @@ after 3 minutes without any action from or on it.
 
 For a repetitive task, bind a key from the chat line; it lasts until you
 remove it or close the game (`//lua reload gearswap` keeps it: the list is kept
-in `<YourName>/temp_binds.lua`).
+in `<YourName>/saved/temp_binds.lua`).
 
 | Command | Effect |
 |---|---|

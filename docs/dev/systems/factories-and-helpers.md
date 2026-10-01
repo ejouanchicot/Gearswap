@@ -137,7 +137,7 @@ The per-job config is `<char>/<job>/<JOB>_LOCKSTYLE.lua`. GearSwap's `pathsearch
 | `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, RDM, SAM, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
 | `style` | no | "backward compatibility" field, no reader |
 
-`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `_master/entry/Tetsouo_WAR.lua`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
+`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `shared/entry/war.lua:38-42`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
 
 DressUp management flag: `_G.DRESSUP_MANAGEMENT_ENABLED`. It is initialised on each module load from the presence of `windower.addon_path .. 'data/.dressup_disabled'` (file present = off; `read_dressup_state`). The file is gitignored.
 
@@ -733,7 +733,7 @@ Transitions:
 
 Which shared system applies to which job, checked in the code and the `_master` templates.
 
-**Every job.** These apply to all 17 jobs, installed by `INIT_SYSTEMS.lua` or routed through `CommonCommands`.
+**Every job.** These apply to all 22 jobs, installed by `INIT_SYSTEMS.lua` or routed through `CommonCommands`.
 
 | System | How | Notes |
 |---|---|---|
@@ -746,7 +746,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Obi / Orpheus (`ElementalBelt`) | hook on `cleanup_precast/midcast` | BLM's own matcher steps aside |
 | DW tiers (`DualWield`) | hook on `handle_equipping_gear` | needs `sets.DW` in the set file |
 | Treasure Mode gear (`TreasureHunter`) | hooks | needs `sets.TreasureHunter` and the mode shown |
-| CUSTOM states | hooks + `<JOB>_CUSTOM.lua` | templates for all 17 jobs |
+| CUSTOM states | hooks + `<JOB>_CUSTOM.lua` | templates for all 22 jobs |
 | Combat Mode lock | hook | needs the state shown |
 | Impact's cloak kept on (`ImpactLock`) | wraps `precast` / `aftercast` / `cancel_spell` at load; equip hook (`equip_hooks.lua`, order 5) while Impact is cast | every character and job; the cloak (Crepuscular or Twilight) in `sets.precast.FC.Impact` / `sets.midcast.Impact`, or just owned in an equippable bag |
 | Doubled rings / earrings / weapons (`DuplicateGear`) | equip hook (`equip_hooks.lua`, order 10), registered at load | every character and job; copies must sit in different bags (`//gs c wo` spreads them) |
@@ -814,7 +814,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 ## For maintainers / AI
 
-- **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand (CODE_QUALITY section 3).
+- **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand: lockstyle and macro book always go through the two factories.
 - **New craft.** Add `<char>/_common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
 - **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_TIERS` / `DEFAULT_WALTZ_FROM` (and the `waltz_from` example of `_master/config_global/TUNING.lua`). Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
 - **New AutoMove consumer.** Read `state.Moving.value` in the set builder (or go through `base_set_builder.lua`), or register a callback from a coroutine scheduled after 0.5 s.

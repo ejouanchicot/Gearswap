@@ -40,7 +40,7 @@ function; line numbers are given only where no function name fits.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_DNC.lua` | 294 | Entry point (template): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/dnc.lua` | 297 | Entry point (the same for every character; `<Char>_DNC.lua` and its template `_master/entry/Tetsouo_DNC.lua` are one `include` of it): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/dnc/functions/dnc_functions.lua` | 107 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 206 | `refine_waltz` override, `job_precast` (guard, cooldown, `job_precast_samba`, Climactic timestamp, `job_precast_weaponskill`, WS handler), `job_post_precast` (WS variant, TP gear) |
 | `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 89 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
@@ -465,7 +465,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 Lua 5.1 is installed (`lua5.1`, `luac5.1`):
 
 ```bash
-for f in $(git ls-files 'shared/jobs/dnc/*.lua' '_master/config/dnc/*.lua' _master/entry/Tetsouo_DNC.lua _master/sets/dnc_sets.lua); do luac5.1 -p "$f"; done
+for f in $(git ls-files 'shared/jobs/dnc/*.lua' '_master/config/dnc/*.lua' shared/entry/dnc.lua _master/entry/Tetsouo_DNC.lua _master/sets/dnc_sets.lua); do luac5.1 -p "$f"; done
 ```
 
 Pure logic to exercise with stubs (`package.path` set to the `data/` folder):

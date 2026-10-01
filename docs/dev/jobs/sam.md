@@ -2,8 +2,9 @@
 
 The SAM job area: 11 hook modules plus 1 logic module under
 `shared/jobs/sam/functions/` (about 960 lines), an entry point template,
-seven config files and one sets file. SAM exists only as a template in
-`_master/` (no character overlay, no maintained live copy); GearSwap loads it
+seven config files and one sets file. SAM has no character overlay: the
+`_master/` template is the reference, and Tetsouo's live `sam/` (since 2026-09-29, when
+his folder got all 22 jobs) is a copy of it; GearSwap loads it
 when the main job becomes SAM (`<Character>_SAM.lua`).
 
 What SAM adds on top of the shared pipeline:
@@ -39,7 +40,7 @@ function; line numbers are deliberately not used.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_SAM.lua` | 219 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/sam.lua` | 221 | Entry point (the same for every character; `<Char>_SAM.lua` and its template `_master/entry/Tetsouo_SAM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/sam/functions/sam_functions.lua` | 49 | Facade: includes the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/sam/functions/SAM_PRECAST.lua` | 230 | `job_precast` (guard, cooldown, `remember_stance`, auto-Seigan, auto-Third Eye, WS handler) / `job_post_precast` (TP gear, Sekkanoki, Meikyo Shisui by `buffactive`) |
 | `shared/jobs/sam/functions/SAM_MIDCAST.lua` | 75 | `job_midcast` (empty) / `job_post_midcast`: watchdog, Healing and Enhancing via `MidcastManager` |
@@ -403,7 +404,7 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 ### Offline testing
 
 - Syntax: from `data/`,
-  `luac5.1 -p shared/jobs/sam/functions/*.lua shared/jobs/sam/functions/logic/*.lua _master/entry/Tetsouo_SAM.lua _master/config/sam/*.lua _master/sets/sam_sets.lua`.
+  `luac5.1 -p shared/jobs/sam/functions/*.lua shared/jobs/sam/functions/logic/*.lua shared/entry/sam.lua _master/entry/Tetsouo_SAM.lua _master/config/sam/*.lua _master/sets/sam_sets.lua`.
 - Behaviour: `SAM_PRECAST.lua` can be loaded with `dofile` after stubbing
   `send_command`, `buffactive`, `state.Stance` (a table with `value` and
   `set`), `windower.ffxi.get_abilities` / `get_ability_recasts`, and

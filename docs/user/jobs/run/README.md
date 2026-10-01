@@ -139,7 +139,9 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 
 ## Configuration files for this job
 
-In `<YourName>/run/`:
+In `<YourName>/run/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | What you change there |
 |---|---|
@@ -156,7 +158,7 @@ In `<YourName>/run/`:
 Files shared by every job are in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
 `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
-Your sets are in `<YourName>/run/run_sets.lua`.
+Your sets are in `<YourName>/run/sets/run_sets.lua`.
 
 ## See also
 

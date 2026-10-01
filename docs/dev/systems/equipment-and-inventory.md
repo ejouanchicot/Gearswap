@@ -56,7 +56,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/treasure_commands.lua` | 63 | `//gs c th` built on `optional_state_commands.create` | `COMMON_COMMANDS.lua` router | [commands-and-debug.md](commands-and-debug.md) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga -> Daybreak), worn through Combat Mode | RDM precast / midcast / aftercast / commands | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock), [../jobs/rdm.md](../jobs/rdm.md) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
-| `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` shared by the job set builders | set builders of 15 jobs (BST: `lay_town_set` and `apply_movement`), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
+| `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` shared by the job set builders | set builders of 21 jobs (every job but SMN; BST: `lay_town_set` and `apply_movement`), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
 | `shared/utils/inventory/refill_manager.lua` | 312 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
 | `shared/utils/inventory/refill/config_resolver.lua` | 361 | Picks the refill list (craft / job+subjob / common list + job extra / fallback) and builds the foreign item set (this character's lists, or other characters' too, per `store_foreign`) | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/item_resolver.lua` | 49 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
@@ -1016,7 +1016,7 @@ return M
 - Checker messages and templates: [messages-formatters.md](messages-formatters.md),
   [messages-catalog.md](messages-catalog.md). The auditor and `refill_panels.lua` print with the
   sandbox `add_to_chat` directly (no `MessageFormatter`); both are listed diagnostic/panel exceptions
-  in `.claude/CODE_QUALITY.md` section 6, and both still go through `ChatSeparators`. `QuiverManager`
+  in the project rule (see [messages.md](messages.md#where-add_to_chat-may-be-called-directly)), and both still go through `ChatSeparators`. `QuiverManager`
   uses `MessageFormatter.show_warning` / `show_success`; `AmpullaLock` uses
   `MessageFormatter.show_warning`.
 - Auto-medicine (`shared/utils/debuff/precast_guard.lua`) uses Echo Drops and Remedy from the

@@ -34,8 +34,8 @@ Two helpers sit beside them: `key_validator.lua` names keys that cannot work, an
 | `shared/utils/custom/custom_locks.lua` | `lock = {...}` slots of a custom value |
 | `shared/utils/custom/custom_states_validate.lua` | Plain-language checks of each `_CUSTOM` entry |
 | `shared/utils/messages/formatters/system/message_tempbind.lua` | `tb` messages (`TEMPBIND` namespace) |
-| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for all 17 jobs; character overlays under `_master/<Character>/<job>/` may replace some |
-| `_master/config/<job>/<JOB>_CUSTOM.lua` | Commented, empty `_CUSTOM` templates (all 17 jobs; the Tetsouo overlay has its own SMN and WAR copies) |
+| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for all 22 jobs; character overlays under `_master/<Character>/<job>/` may replace some |
+| `_master/config/<job>/<JOB>_CUSTOM.lua` | Commented, empty `_CUSTOM` templates (all 22 jobs; the Tetsouo overlay has its own SMN and WAR copies) |
 | `_master/config_global/COMMON_KEYBINDS.lua` | Common keys template; character overlays in `_master/<Character>/config_global/` |
 
 PUP got its `_KEYBINDS` and `_CUSTOM` templates with its rewrite on 2026-09-29 (see [jobs/pup.md](../jobs/pup.md)).
@@ -44,10 +44,10 @@ PUP got its `_KEYBINDS` and `_CUSTOM` templates with its rewrite on 2026-09-29 (
 
 ### Loading a job's keys
 
-The entry file's `user_setup()` requires the keybind file after the states are configured, keeps it in a global named `<JOB>Keybinds` and calls `bind_all()`. From `_master/entry/Tetsouo_WAR.lua` `user_setup`:
+The entry file's `user_setup()` requires the keybind file after the states are configured, keeps it in a global named `<JOB>Keybinds` and calls `bind_all()`. From `shared/entry/war.lua` `user_setup`:
 
 ```lua
-local kb_success, keybinds = pcall(require, 'Tetsouo/war/keys/WAR_KEYBINDS')
+local kb_success, keybinds = pcall(require, CharPaths.module('job', 'WAR_KEYBINDS', 'WAR'))
 if kb_success and keybinds then
     WARKeybinds = keybinds
     WARKeybinds.bind_all()
@@ -418,7 +418,7 @@ The keys in `settings.keys` of `combat_mode.lua` / `treasure_mode.lua` replace t
 
 ### Key layout (project convention)
 
-`.claude/rules/keybinds.md` is the rule; nothing in the code enforces it.
+The layout below is a convention kept by hand; nothing in the code enforces it.
 
 - Numpad keys, always with a modifier, so the bare numpad stays free for the game and for addons that send numpad presses.
 - `^numpad9` is `HybridMode` on every job that has one; a job without it should leave the key empty. BRD, WHM, SMN and BLU leave it empty, but RDM puts `EnfeebleTier` there (see Known issues).
@@ -574,6 +574,6 @@ Build it the way `treasure_hunter.lua` does:
 - **`eventArgs.no_overlay`** is tested in `Guards.hands_off`, but nothing sets it.
 - Fixed 2026-09-28: `custom_guards.lua` asked the THF module (`shared/jobs/thf/functions/logic/treasure_hunter`, a proxy) for the TH guard on every job; it now requires the shared `shared/utils/equipment/treasure_hunter`. The idle / engaged custom gear also waits for a COR roll to land (`GearHold`).
 - Fixed 2026-09-29 (checked offline, not yet in game): after `//po` or `//gs c wo`, WHM `Melee ON`, THF `RangeLock` and the Hoxne Ampulla lock stayed open while their state showed On; the `hold()` locks are now laid again after every update. `wo` still releases the Ampulla and range locks on purpose.
-- **RDM binds `^numpad9` to `EnfeebleTier`.** This breaks the "`^numpad9` = HybridMode or empty" convention of `.claude/rules/keybinds.md`.
+- **RDM binds `^numpad9` to `EnfeebleTier`.** This breaks the "`^numpad9` = HybridMode or empty" convention (see [Key layout](#key-layout-project-convention)).
 - **Common keys differ between overlays.** One tracked character overlay of `COMMON_KEYBINDS.lua` has no `!z` / `!x` stealth keys.
 - Fixed 2026-09-28: RUN's HUD readiness anchor was `RuneElement` (no such state, the HUD waited 5 s); it is `RuneMode`.

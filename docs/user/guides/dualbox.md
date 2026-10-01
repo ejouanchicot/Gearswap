@@ -38,7 +38,7 @@ Two characters on the same PC, both running this setup, one **main** and one
 3. Load both characters. About 2 seconds after the load, each box sends its
    job to the other.
 
-The script writes `<Name>/common/dualbox/DUALBOX_CONFIG.lua`. On the main:
+The script writes `<Name>/_common/dualbox/DUALBOX_CONFIG.lua`. On the main:
 
 ```lua
 DualBoxConfig.role = "main"
@@ -197,7 +197,7 @@ spell name**, lowercase, no spaces - `//gs c haste`, `//gs c dia`,
 
 ### Changing the commands
 
-The command files are in the MAIN's folder, `<Main>/common/dualbox/alt/`.
+The command files are in the MAIN's folder, `<Main>/_common/dualbox/alt/`.
 `<JOB>_ALT_COMMANDS.lua` is **generated** from the game data and gets rebuilt
 whenever the spell list changes - anything you write in it is lost.
 
@@ -208,7 +208,7 @@ regenerated, and it is merged on top of the generated file. A commented
 `_ALT_CUSTOM.lua` in use.
 
 ```
-<Main>/common/dualbox/alt/RDM_ALT_CUSTOM.lua
+<Main>/_common/dualbox/alt/RDM_ALT_CUSTOM.lua
 ```
 
 Three things it can do:

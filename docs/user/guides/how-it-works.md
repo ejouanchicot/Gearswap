@@ -11,7 +11,8 @@ GearSwap is a Windower addon that changes your equipment for you. It reads
 one file per job, `<YourName>/<YourName>_<JOB>.lua`, which loads:
 
 - **your files** in `<YourName>/`: your gear (`<job>/sets/<job>_sets.lua`) and your
-  settings (`config/`);
+  settings (`_common/` for the whole character, the other folders of
+  `<job>/` for one job);
 - **the shared code** in `shared/`, the same for every character and every
   job: it decides which of your sets to wear, and when.
 
@@ -181,7 +182,7 @@ width):
 
 | Folder | Whose | Changed by |
 |---|---|---|
-| `<YourName>/` | **Yours**: entry files, `sets/`, `config/` | You, and a few commands that save settings (`ui`, `jamsg`, `combatmode`, `th`, `stealth`, `tb`...) |
+| `<YourName>/` | **Yours**: entry files, `_common/`, one `<job>/` folder per job, `saved/` (written in game) | You, and a few commands that save settings (`ui`, `jamsg`, `combatmode`, `th`, `stealth`, `tb`...) |
 | `shared/` | The shared code, the same for everyone | An update of the setup only |
 | `_master/` | The templates the clone script copies from | An update only. In game only the alt-command files are read from there, when yours are missing |
 
@@ -190,14 +191,14 @@ not touch your folder (new options in the templates are not added to your
 files: compare them with `_master/` if you want them). The clone script
 builds `<YourName>/` once; running it again keeps a backup of the old folder
 ([installation](../getting-started/installation.md)). What each file of
-`config/` does: [configuration](configuration.md).
+your folder does: [configuration](configuration.md).
 
 ## Loads and reloads
 
 | What you did | Do this |
 |---|---|
 | Edited a set file, a keybind, states, CUSTOM or config file | `//gs c reload` (reloads the job file) |
-| Changed subjob | Nothing: the job file reloads by itself 0.5 s later |
+| Changed subjob | Nothing: the job file reloads by itself 2 s later |
 | Changed main job | Nothing: GearSwap loads the new job's file |
 | Something is stuck, or you updated the setup | `//lua reload gearswap` (reloads the whole addon) |
 

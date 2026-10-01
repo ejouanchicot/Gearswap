@@ -46,7 +46,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **`set_combine`** | Builds a set from another: `set_combine(sets.idle, { feet = "..." })` = the idle set with other feet |
 | **Slot** | One of the 16 gear places: main, sub, range, ammo, head, neck, ear1, ear2, body, hands, ring1, ring2, back, waist, legs, feet |
 | **Slot lock** | A slot GearSwap leaves alone whatever the set says (Combat Mode, Doom, craft...) |
-| **Subjob** | FFXI: your second job (`/NIN`, `/SAM`...). A subjob change reloads the job file 0.5 s later |
+| **Subjob** | FFXI: your second job (`/NIN`, `/SAM`...). A subjob change reloads the job file 2 s later |
 | **Tag** | Treasure Hunter: a mob is tagged once one of your actions lands on it with TH gear on; after that your normal gear can come back |
 | **Template** | The files in `_master/` the clone script copies from. The game reads them only for the alt commands, when your `_common/dualbox/alt/` lacks a file |
 | **TH** (Treasure Hunter) | FFXI: raises the drop rate of the mob it is applied to. `sets.TreasureHunter` and Treasure Mode (`//gs c th`) |

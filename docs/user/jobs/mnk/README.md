@@ -94,12 +94,14 @@ each weaponskill with its Impetus / Footwork layers.
 | Utsusemi (/NIN) | `sets.midcast.Utsusemi`; Utsusemi: Ichi removes your shadows so it can replace them (needs the Cancel addon) |
 | Your own modes | `MNK_CUSTOM.lua`: modes with a key and gear rules, without code |
 | Lockstyle and macro book | Set on load and on every subjob change |
-| Job change handling | A subjob change reloads the job 0.5 s later; every mode goes back to its default |
+| Job change handling | A subjob change reloads the job 2 s later; every mode goes back to its default |
 | Keybind HUD, dual-box, chat messages | As on every job |
 
 ## Configuration files for this job
 
-In `<YourName>/mnk/`:
+In `<YourName>/mnk/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | What it sets |
 |---|---|
@@ -111,7 +113,7 @@ In `<YourName>/mnk/`:
 | `MNK_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |
 | `MNK_HUD.lua` | Order of this job's HUD sections and rows |
 
-Sets: `<YourName>/mnk/mnk_sets.lua`, see [sets.md](sets.md).
+Sets: `<YourName>/mnk/sets/mnk_sets.lua`, see [sets.md](sets.md).
 
 ## Not done by the job
 

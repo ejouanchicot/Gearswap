@@ -1,6 +1,6 @@
 # Job / Subjob Change Lifecycle
 
-Every job change, subjob change and `gs reload` in this project ends with GearSwap throwing away the whole Lua environment of the job file and building a new one from scratch. This page traces, in code, what runs on each of those transitions: which engine path fires, which project code runs in the dying environment and which in the new one, what state survives, what is rebuilt, and what keeps running from the dead environment. It covers the engine (`addons/GearSwap/*.lua`, `libs/Mote-Include.lua`), the 16 template entry files `_master/entry/Tetsouo_*.lua` (plus the Tetsouo overlay entries), and the shared systems that take part: `JobChangeManager`, `JobSyncWatchdog`, `INIT_SYSTEMS`, `ModuleCache`, `KeybindGuard`, the lockstyle and macrobook factories, the keybind UI, AutoMove, the midcast watchdog, dual-box, craft mode, the wardrobe organizer and `DoomManager`.
+Every job change, subjob change and `gs reload` in this project ends with GearSwap throwing away the whole Lua environment of the job file and building a new one from scratch. This page traces, in code, what runs on each of those transitions: which engine path fires, which project code runs in the dying environment and which in the new one, what state survives, what is rebuilt, and what keeps running from the dead environment. It covers the engine (`addons/GearSwap/*.lua`, `libs/Mote-Include.lua`), the 22 shared entry files `shared/entry/<job>.lua` (each character's `<Name>_<JOB>.lua` is one `include` of the matching file, since 2026-09-30), and the shared systems that take part: `JobChangeManager`, `JobSyncWatchdog`, `INIT_SYSTEMS`, `ModuleCache`, `KeybindGuard`, the lockstyle and macrobook factories, the keybind UI, AutoMove, the midcast watchdog, dual-box, craft mode, the wardrobe organizer and `DoomManager`.
 
 Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and marked *(engine)*. Everything else is relative to the repo root (`addons/GearSwap/data`). Project line numbers were re-read against the code on 2026-09-28; where a line adds nothing, or moves often, the function is named instead. The reference for each core module (API, state, hook chain) is [core-lifecycle.md](../systems/core-lifecycle.md); this page follows the transitions.
 
@@ -14,7 +14,8 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | *(engine)* `user_functions.lua` | 423 | Sandboxed `windower` table, tracked `register_event`, `enable`/`disable` |
 | *(engine)* `flow.lua` | 431 | `equip_sets()`, `user_pcall2()` used for `file_unload` |
 | *(engine)* `libs/Mote-Include.lua` | 1125 | `init_include()` (runs `user_setup`), `sub_job_change()` |
-| `_master/entry/Tetsouo_*.lua` (16) | 203-401 | Entry points: `get_sets`, `user_setup`, `job_sub_job_change`, `file_unload` |
+| `<Name>/<Name>_<JOB>.lua` (template `_master/entry/Tetsouo_<JOB>.lua`, 22) | 15 | Character entry: a header and `include('../shared/entry/<job>.lua')` |
+| `shared/entry/<job>.lua` (22) | 189-415 | Entry code: `get_sets`, `user_setup`, `job_sub_job_change`, `file_unload` |
 | `shared/utils/core/job_change_manager.lua` | 235 | Debounced subjob change: cleanup, then `gs reload` |
 | `shared/utils/core/job_sync_watchdog.lua` | 165 | Reloads when the loaded file's job differs from the client's job |
 | `shared/utils/core/INIT_SYSTEMS.lua` | 412 | Per-load bootstrap of the universal systems (sync and deferred) and of the gear hook chain |
@@ -71,7 +72,7 @@ flowchart TD
     A["Outgoing 0x100 (main job change request)"] --> B["packet_parsing.lua:733-751: player.main_job_id = new; lua i gearswap load_user_files id"]
     C["Incoming 0x061 with a different subjob"] --> D["packet_parsing.lua:419-428: equip_sets('sub_job_change')"]
     D --> E["Mote sub_job_change (Mote-Include.lua:981-991): user_setup(); job_sub_job_change(); send_command('gs c update')"]
-    E --> F["JobChangeManager.on_job_change: cleanup_all_systems(); schedule gs reload in 0.5 s"]
+    E --> F["JobChangeManager.on_job_change: cleanup_all_systems(); schedule gs reload in 2.0 s (3.0 s if the main job differs)"]
     F --> G["gs reload -> refresh_user_env (refresh.lua:657-666)"]
     H["//gs reload, //gs c reload, JobSyncWatchdog"] --> G
     I["Incoming 0x00A (zone) with a different main job"] --> J["packet_parsing.lua:39-41: load_user_files"]
@@ -93,21 +94,21 @@ The subjob path is the only one that goes through `JobChangeManager`. A main job
 
 ### What a load runs (common to every path)
 
-Order inside one load of `Tetsouo_PLD.lua` (all templates follow the same skeleton, differences are listed in [Per-job differences](#per-job-differences)):
+Order inside one load of `Tetsouo_PLD.lua`, whose only statement includes `shared/entry/pld.lua` (all shared entries follow the same skeleton, differences are listed in [Per-job differences](#per-job-differences)):
 
-1. **Chunk level** (`_master/entry/Tetsouo_PLD.lua:37-58`): `LOCKSTYLE_CONFIG` via `pcall(require)` (loaded before the cache exists, so uncached), then `require('shared/utils/config/config_loader')` (`:49`), whose first statement installs `ModuleCache` so every later `require` of the load is cached, and `ConfigLoader.load_ui_config('Tetsouo','PLD')` (`dofile` of `<char>/_common/display/UI_CONFIG.lua`, sets `_G.UIConfig` and `_G.ui_display_config`), then `REGION_CONFIG` -> `_G.RegionConfig` (`:55-58`). `message_colors.lua` reads `_G.RegionConfig` each time the warning colour is used (`region_config()`), so the order of the region block no longer matters. `//gs c trace on` logs the orange code once, the first time it is resolved with a region config.
-2. **`get_sets()`** (`:63-130`):
-   1. `include('Mote-Include.lua')` (`:69`) runs `init_include()` (`Mote-Include.lua:188`): Mote states, Mote-Globals default binds F9-F12 (`Mote-Include.lua:159`), then **`user_setup()`** (`Mote-Include.lua:170-171`), then `init_gear_sets()` (`:175`). Only after `init_include()` returns does the rest of Mote-Include define `handle_equipping_gear`, `cleanup_precast`, `cleanup_midcast` and the default handlers.
-      - `user_setup()` (`Tetsouo_PLD.lua:164-239`): `_G.PLDWSConfig`, `PLDStates.configure()`, `pld_rebuild_ws_slots()` when it already exists (subjob change), `AmpullaLock.apply()` for the default stance; `require` of `PLD_KEYBINDS` and `bind_all()` (`:197`), which unbinds only the keys of the job's list that are no longer wanted, binds the subjob's subset (`clear_unwanted` / `lay_down` in `shared/utils/keybinds/keybind_manager.lua`) and calls `show_intro()`, which `require`s the job's `_MACROBOOK` and `_LOCKSTYLE` wrappers; `KeybindUI.smart_init('PLD', init_delay)` (`:214`); `JobChangeManager.initialize()` (`:223`); if `select_default_macro_book` and `select_default_lockstyle` exist, `select_default_macro_book()` and `coroutine.schedule(select_default_lockstyle, initial_load_delay)` (`:226-229`); `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (`:238`), whose body schedules the dual-box auto-init (Scenario 12).
-   2. `include('../shared/utils/core/INIT_SYSTEMS.lua')` (`:71`), see [INIT_SYSTEMS](#init_systems-timeline).
-   3. `data_loader`, the three message hook installers, `RECAST_CONFIG`, job configs (`:77-104`).
-   4. `JobChangeManager.cancel_all()` (`:107-110`) - in a fresh environment this cancels nothing (see [Known issues](#known-issues)).
-   5. The job facade `include('../shared/jobs/pld/functions/pld_functions.lua')` (`:113`), which defines the Mote hooks and the lockstyle/macrobook wrappers.
-   6. `JobChangeManager.register_lockstyle_cancel('PLD', cancel_pld_lockstyle_operations)` (`:126`).
+1. **Chunk level** (`shared/entry/pld.lua:38-59`): `require` of `shared/utils/core/char_paths` (`:38`), `LOCKSTYLE_CONFIG` via `pcall(require, CharPaths.module('common', ...))` (`:40-44`; both loaded before the cache exists, so uncached), then `require('shared/utils/config/config_loader')` (`:50`), whose first statement installs `ModuleCache` so every later `require` of the load is cached, and `ConfigLoader.load_ui_config(CharPaths.name(), 'PLD')` (`:51`; `dofile` of `<char>/_common/display/UI_CONFIG.lua`, sets `_G.UIConfig` and `_G.ui_display_config`), then `REGION_CONFIG` -> `_G.RegionConfig` (`:56-59`). `message_colors.lua` reads `_G.RegionConfig` each time the warning colour is used (`region_config()`), so the order of the region block no longer matters. `//gs c trace on` logs the orange code once, the first time it is resolved with a region config.
+2. **`get_sets()`** (`:64-134`):
+   1. `include('Mote-Include.lua')` (`:70`) runs `init_include()` (`Mote-Include.lua:188`): Mote states, Mote-Globals default binds F9-F12 (`Mote-Include.lua:159`), then **`user_setup()`** (`Mote-Include.lua:170-171`), then `init_gear_sets()` (`:175`). Only after `init_include()` returns does the rest of Mote-Include define `handle_equipping_gear`, `cleanup_precast`, `cleanup_midcast` and the default handlers.
+      - `user_setup()` (`shared/entry/pld.lua:165-240`): `_G.PLDWSConfig`, `PLDStates.configure()`, `pld_rebuild_ws_slots()` when it already exists (subjob change), `AmpullaLock.apply()` for the default stance; `require` of `PLD_KEYBINDS` and `bind_all()` (`:198`), which unbinds only the keys of the job's list that are no longer wanted, binds the subjob's subset (`clear_unwanted` / `lay_down` in `shared/utils/keybinds/keybind_manager.lua`) and calls `show_intro()`, which `require`s the job's `_MACROBOOK` and `_LOCKSTYLE` wrappers; `KeybindUI.smart_init('PLD', init_delay)` (`:215`); `JobChangeManager.initialize()` (`:224`); if `select_default_macro_book` and `select_default_lockstyle` exist, `select_default_macro_book()` and `coroutine.schedule(select_default_lockstyle, initial_load_delay)` (`:227-230`); `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (`:239`), whose body schedules the dual-box auto-init (Scenario 12).
+   2. `include('../shared/utils/core/INIT_SYSTEMS.lua')` (`:72`), see [INIT_SYSTEMS](#init_systems-timeline).
+   3. `data_loader`, the three message hook installers, `RECAST_CONFIG`, job configs (`:78-105`).
+   4. `JobChangeManager.cancel_all()` (`:108-111`) - in a fresh environment this cancels nothing (see [Known issues](#known-issues)).
+   5. The job facade `include('../shared/jobs/pld/functions/pld_functions.lua')` (`:114`), which defines the Mote hooks and the lockstyle/macrobook wrappers; then `pld_rebuild_ws_slots()` (`:120-122`).
+   6. `JobChangeManager.register_lockstyle_cancel('PLD', cancel_pld_lockstyle_operations)` (`:127`).
 
 `user_setup()` therefore runs **before** `INIT_SYSTEMS` and before the job facade. Two consequences:
 
-- The require cache already exists during `user_setup()` (installed by `config_loader` at chunk level since 2026-09-27), so a module first required there is the instance the rest of the load gets. It must not read, when it loads, a global that is only set later in `get_sets()`. The only uncached modules are those an entry requires before `config_loader` (`LOCKSTYLE_CONFIG`, and `REGION_CONFIG` in the entries that load it first, such as WAR). State that must be shared between two instances of one module lives on `_G` (`_G.JobChangeManagerSTATE`, `_G.ui_manager_state`, ...).
+- The require cache already exists during `user_setup()` (installed by `config_loader` at chunk level since 2026-09-27), so a module first required there is the instance the rest of the load gets. It must not read, when it loads, a global that is only set later in `get_sets()`. The only uncached modules are those an entry requires before `config_loader` (`char_paths`, `LOCKSTYLE_CONFIG`, and `REGION_CONFIG` in the entries that load it first, such as WAR). State that must be shared between two instances of one module lives on `_G` (`_G.JobChangeManagerSTATE`, `_G.ui_manager_state`, ...).
 - `select_default_macro_book` and `select_default_lockstyle` are defined by the facade (`shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua`, `<JOB>_LOCKSTYLE.lua`), which has not been included yet. The gate in `user_setup` is satisfied only because `show_intro()` required those two wrapper files a few lines earlier and they define the globals as a side effect (the comment above `show_intro` says so). BRD, BST and RUN re-test the gate in a 0.2 s coroutine instead (their `user_setup`); COR has a second, guarded macrobook/lockstyle block after the first.
 
 #### INIT_SYSTEMS timeline
@@ -164,10 +165,10 @@ sequenceDiagram
     A->>A: user_setup() again (states, bind_all, smart_init, macro 1.5 s, lockstyle 8 s)
     A->>A: job_sub_job_change -> JCM.on_job_change('SAM','DNC')
     A->>A: cleanup_all_systems (AutoMove.stop, Watchdog.stop, HUD destroy)
-    A->>A: counter++, schedule gs reload in 0.5 s
+    A->>A: counter++, schedule gs reload in 2.0 s
     A->>E: send_command('gs c update') (Mote-Include.lua:990)
     E->>A: gs c update -> job_update -> KeybindUI.update -> safe_init (HUD recreated)
-    Note over A: +0.5 s: counter matches -> windower.send_command('gs reload')
+    Note over A: +2.0 s: counter matches -> windower.send_command('gs reload')
     E->>A: file_unload (JCM.cancel_all, lock releases; keys kept)
     E->>E: unregister events, delete texts (HUD gone)
     E->>B: chunk + get_sets (user_setup, INIT_SYSTEMS, facade)
@@ -177,7 +178,7 @@ sequenceDiagram
 Details:
 
 1. `packet_parsing.lua:419-428` updates `player.sub_job_id` then calls `equip_sets('sub_job_change', nil, new, old)`.
-2. Mote runs `user_setup()`, `job_sub_job_change()`, then `send_command('gs c update')` in the **old** environment (`Mote-Include.lua:981-991`). The entry's `job_sub_job_change` (`Tetsouo_PLD.lua:145-155`) only calls `on_job_change(player.main_job, newSubjob)`. Until 2026-09-25 most templates also called `JobChangeManager.initialize({...})` there; that call was removed (the argument was ignored and `user_setup` already seeds).
+2. Mote runs `user_setup()`, `job_sub_job_change()`, then `send_command('gs c update')` in the **old** environment (`Mote-Include.lua:981-991`). The entry's `job_sub_job_change` (`shared/entry/pld.lua:146-155`) only calls `on_job_change(player.main_job, newSubjob)`. Until 2026-09-25 most templates also called `JobChangeManager.initialize({...})` there; that call was removed (the argument was ignored and `user_setup` already seeds).
 3. `JobChangeManager.on_job_change`: runs `cleanup_all_systems()` (`AutoMove.stop()`, `MidcastWatchdog.stop()`, `KeybindUI.destroy()`, clears `_G.keybind_ui_display`, resets `_G.ui_manager_state` fields, bumps `smart_init_id`), bumps `debounce_counter`, picks `delay = 2.0` because `STATE.current_main_job == main_job`, schedules the reload.
 4. The queued `gs c update` lands in the old environment before the reload and re-creates the HUD through `KeybindUI.update()` -> `safe_init()` (`ui_update_orchestrator.lua:50-55`). The engine deletes that text at the reload.
 5. At +2.0 s the coroutine checks `my_counter == STATE.debounce_counter`, writes `STATE.current_*` (dead writes, the environment is about to go) and sends `gs reload`.
@@ -206,10 +207,10 @@ The delay is keyed on the main job only, so the round trip still reloads, at 2.0
 ### Scenario 5 - main job change PLD -> BLM
 
 1. Outgoing 0x100: `player.main_job_id = BLM`, `command_registry`, `equip_list`, `equip_list_history` and cached equipment cleared, `lua i gearswap load_user_files 4` queued (`packet_parsing.lua:733-751`). The enable-all at `:755-757` does not run (see the environment model), so slot locks survive the change.
-2. `load_user_files(4)`: PLD `file_unload` (`Tetsouo_PLD.lua:285-307`, which releases the Hoxne ammo lock first), engine cleanup, `Tetsouo_BLM.lua` loads.
+2. `load_user_files(4)`: PLD `file_unload` (`shared/entry/pld.lua:287-309`, which releases the Hoxne ammo lock first), engine cleanup, `Tetsouo_BLM.lua` loads.
 3. No `cleanup_all_systems()`: the PLD environment's MidcastWatchdog loop ends when BLM's `start()` bumps `windower._midcast_wd_seq` at +2 s (`MidcastWatchdog.start`); its AutoMove chain dies when BLM's `AutoMove.start()` bumps `windower._automove_seq` at +0.5 s (`automove.lua:312`); a PLD `select_default_lockstyle` still scheduled returns early because `player.main_job ~= 'PLD'` (`select_default_lockstyle`, `lockstyle_manager.lua:192`), and a lockstyle apply already in its 2 s delay or DressUp steps is cancelled by PLD's `file_unload` (`JobChangeManager.cancel_all()` -> the registered `cancel_pld_lockstyle_operations`, which bumps the ctx's `operation_id`).
 4. If the server refuses or reorders the request, the incoming 0x061 corrects `player.main_job_id` without reloading (`packet_parsing.lua:381`). `JobSyncWatchdog` (started by BLM's `INIT_SYSTEMS`) compares `'BLM'` with `windower.ffxi.get_player().main_job` at +8 s and every 5 s; after 2 consecutive mismatches it sends `gs reload` (`JobSyncWatchdog.start`), at most once per 30 s (`windower._job_sync_last_reload`, local `force_reload`).
-5. Switching to a job that has no user file (Tetsouo has files for BLM, BRD, BST, COR, DNC, PLD, SMN, THF, WAR only): `load_user_files` finds no file (`refresh.lua:108-112`) and leaves no environment. The previous environment's AutoMove, MidcastWatchdog and JobSyncWatchdog loops keep running; the latter fires a "Job file is PLD but you are DRK - reloading." warning and a `gs reload` that again loads nothing.
+5. Switching to a job that has no user file (Tetsouo has a file for each of the 22 jobs; Kaories only for COR, GEO, PLD, RDM): `load_user_files` finds no file (`refresh.lua:108-112`) and leaves no environment. The previous environment's AutoMove, MidcastWatchdog and JobSyncWatchdog loops keep running; the latter fires a "Job file is PLD but you are DRK - reloading." warning and a `gs reload` that again loads nothing.
 
 `JobChangeManager`'s 3.0 s branch is taken only when a subjob change arrives while `player.main_job` differs from the job the loaded file was seeded with, which in practice means the refused-change case in step 4.
 
@@ -277,15 +278,15 @@ Roles come from `<Character>/_common/dualbox/DUALBOX_CONFIG.lua`, overridden by 
 ### Per-job differences
 
 - **BRD, BST, RUN**: macrobook/lockstyle gate re-tested in a 0.2 s coroutine (their `user_setup`).
-- **COR**: second macrobook + lockstyle block, each call guarded (`_master/entry/Tetsouo_COR.lua:305-320`; the JCM block before it, `:284-291`, runs too, so both select twice in the same environment); `init_party_tracking()` from `get_sets` (`:82-112`, `:207`); unregisters its events at the top of `get_sets` (`:128-135`), which in a fresh environment finds nothing. The DressUp watchdog loop and the "force gear re-equip" coroutine were removed on 2026-09-25 (the watchdog called a `get_addons` that does not exist; the re-equip equipped nothing).
-- **RUN**: keybinds bound from a 0.5 s coroutine (`_master/entry/Tetsouo_RUN.lua:162-166`); hence the 0.2 s gate re-test (`:201-206`).
-- **BST**: pet monitor on a raw `prerender` listener (`start_pet_monitoring` / `stop_pet_monitoring`, `_master/entry/Tetsouo_BST.lua`), started 3 s after `user_setup()` behind a job and existence guard; BST HUD addon loaded 2 s + 1.5 s after load with a counter and job guard (`_G.bst_hud_load_id`). The generic template now matches the Tetsouo overlay (only the set include and one LagDebugger line differ); `state.Moving` is left to AutoMove.
+- **COR**: second macrobook + lockstyle block, each call guarded (`shared/entry/cor.lua:302-318`; the JCM block before it, `:279-289`, runs too, so both select twice in the same environment); `init_party_tracking()` from `get_sets` (`:83-113`, `:205`); unregisters its events at the top of `get_sets` (`:131-134`), which in a fresh environment finds nothing. The DressUp watchdog loop and the "force gear re-equip" coroutine were removed on 2026-09-25 (the watchdog called a `get_addons` that does not exist; the re-equip equipped nothing).
+- **RUN**: keybinds bound from a 0.5 s coroutine (`shared/entry/run.lua:163-179`); hence the 0.2 s gate re-test (`:202-207`).
+- **BST**: pet monitor on a raw `prerender` listener (`start_pet_monitoring` / `stop_pet_monitoring`, `shared/entry/bst.lua`), started 3 s after `user_setup()` behind a job and existence guard; BST HUD addon loaded 2 s + 1.5 s after load with a counter and job guard (`_G.bst_hud_load_id`); `state.Moving` is left to AutoMove.
 - **PUP**: the automaton WS poll (`shared/jobs/pup/functions/logic/pet_ws.lua`), a 0.5 s `coroutine.schedule` loop that runs only while an automaton is out and Pet WS is On; generation `windower._pup_pet_ws_seq`, bumped when the module loads and by `PetWS.stop()` from `file_unload`. No event listener.
 - **Every job**: the Combat Mode weapon lock is centralised in `shared/utils/core/combat_mode.lua` (outermost `handle_equipping_gear` wrapper, see [core-lifecycle.md](../systems/core-lifecycle.md#the-gear-hook-chain)); it honours a craft session through `CraftManager.is_active()`. WHM's `Melee ON` lock is still released by its own `file_unload`, as are THF's `RangeLock` and the Hoxne Ampulla lock; since 2026-09-29 the next load's `attach` also empties their records in `windower._weapon_locks` (the registry Combat Mode lays again after every update).
-- **SMN (`_master/entry/Tetsouo_SMN.lua`, same code in the Tetsouo overlay and live)**: every `user_setup()` schedules a Carbuncle summon when no pet is out (`:149-156`), so a subjob change schedules two (old and new environment).
+- **SMN (`shared/entry/smn.lua`)**: every `user_setup()` schedules a Carbuncle summon when no pet is out (`:150-159`), so a subjob change schedules two (old and new environment).
 - **BST**: `JobChangeManager.initialize()` is still called from `user_setup`, without argument, like every other job.
 
-The nine Tetsouo overlay entries are identical to live; they differ from the generic templates by the modular set include (and BST as above).
+Since 2026-09-30 every character runs the same entry code: the set file is found by `CharPaths.relative('sets', '<job>_sets.lua', '<JOB>')`, which also reaches a modular tree's `<job>_sets.lua`, so no character needs its own entry.
 
 ## Public API
 
@@ -356,7 +357,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 
 | Source | Keys read | Default and where |
 |---|---|---|
-| `<char>/_common/display/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:42`) | 8.0; fallback table in each entry (e.g. `Tetsouo_PLD.lua:37-44`). Its only setting (`job_change_delay` and `cooldown`, read by nothing, were removed on 2026-09-29) |
+| `<char>/_common/display/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:42`) | 8.0; fallback table in each entry (e.g. `shared/entry/pld.lua:40-44`). Its only setting (`job_change_delay` and `cooldown`, read by nothing, were removed on 2026-09-29) |
 | `<char>/_common/display/UI_CONFIG.lua` (dofile) | `init_delay` for `smart_init` | 5.0 (`config_loader.lua:52`) |
 | `<char>/_common/dualbox/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug`, `report_on_load`, `tracked_buffs` | disabled main (`DualBoxManager.initialize`) |
 | `<char>/_common/inventory/CRAFT_CONFIG.lua` | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`craft_commands.lua`); a lockstyle key `false` keeps the job's lockstyle |
@@ -472,7 +473,7 @@ The engine removes all of these at the next `load_user_files` (`refresh.lua:69-7
 
 **Testing offline**
 
-`lua5.1` and `luac5.1` are installed. `luac5.1 -p _master/entry/*.lua shared/utils/core/*.lua` checks syntax; `python scripts/check_syntax.py` checks the whole project including live folders. For behaviour, stub the engine (`windower`, `player`, `coroutine.schedule` collecting callbacks) and replay a transition by running the collected callbacks in order; [core-lifecycle.md](../systems/core-lifecycle.md#for-maintainers--ai) has a working harness for the subjob debounce. Packet ordering (0x100 vs 0x061) and `Hook.dll` command ordering cannot be reproduced offline: use `//gs c debugjobchange` and `//gs c trace on` in game.
+`lua5.1` and `luac5.1` are installed. `luac5.1 -p _master/entry/*.lua shared/entry/*.lua shared/utils/core/*.lua` checks syntax; `python scripts/check_syntax.py` checks the whole project including live folders. For behaviour, stub the engine (`windower`, `player`, `coroutine.schedule` collecting callbacks) and replay a transition by running the collected callbacks in order; [core-lifecycle.md](../systems/core-lifecycle.md#for-maintainers--ai) has a working harness for the subjob debounce. Packet ordering (0x100 vs 0x061) and `Hook.dll` command ordering cannot be reproduced offline: use `//gs c debugjobchange` and `//gs c trace on` in game.
 
 ## Extending
 
@@ -480,7 +481,7 @@ The engine removes all of these at the next `load_user_files` (`refresh.lua:69-7
 - **New listener**: register it once per environment from `get_sets` or `INIT_SYSTEMS`. The engine removes it at the next load.
 - **New state that must survive a subjob change** (a mode the player chose, a session flag tied to engine state such as slot locks): store it on `windower._x` and restore it in `user_setup()`/`INIT_SYSTEMS`, or release the engine state from `file_unload`.
 - **New per-load work in an entry**: put anything that needs the facade after the facade `include` in `get_sets()`, or defer it with a short coroutine as BRD does. Anything that must run after Mote defines `handle_equipping_gear` / `cleanup_*` belongs in `INIT_SYSTEMS` (as `CustomStates.install_hooks`).
-- **New job entry**: copy `Tetsouo_PLD.lua`; keep `file_unload` calling `JobChangeManager.cancel_all()` and `<JOB>Keybinds.unbind_all()`, set `_G.RegionConfig` at file level, require `config_loader` before any other shared module (it installs the require cache), and make sure `select_default_macro_book()`/`select_default_lockstyle` run after the facade exists (RUN re-tests them after 0.2 s for that reason).
+- **New job entry**: copy `shared/entry/pld.lua` (and a one-line `_master/entry/Tetsouo_<JOB>.lua` that includes it); keep `file_unload` calling `JobChangeManager.cancel_all()` and `<JOB>Keybinds.unbind_all()`, set `_G.RegionConfig` at file level, require `config_loader` before any other shared module (it installs the require cache), and make sure `select_default_macro_book()`/`select_default_lockstyle` run after the facade exists (RUN re-tests them after 0.2 s for that reason).
 
 ## Known issues
 
@@ -498,10 +499,10 @@ Still open:
 
 - Craft session flag is lost on reload while the slots stay locked; `//gs c uncraft` then refuses (plan item 13: move the state to `windower.*`) - `CraftManager.unequip`, `shared/utils/craft/craft_manager.lua:177-181`
 - `DoomManager.handle_status_change` Dead branches are unreachable - `shared/utils/debuff/doom_manager.lua:112-135`
-- `JobChangeManager.cancel_all()` in every `get_sets` runs in the fresh environment and cancels nothing - `_master/entry/Tetsouo_PLD.lua` `get_sets`
+- `JobChangeManager.cancel_all()` in every `get_sets` runs in the fresh environment and cancels nothing - `shared/entry/pld.lua` `get_sets`
 - Switching to a job with no user file leaves the previous environment's loops running and triggers a pointless JobSyncWatchdog reload - `JobSyncWatchdog.start`, `shared/utils/core/job_sync_watchdog.lua`
 - A job change during `//gs c wo` leaves the old run moving items until the next phase boundary while the new environment allows a second run - `shared/utils/wardrobe/wardrobe_organizer.lua:53`
 - After a reload of the main, alt buff state is empty and never re-requested - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua`
-- COR selects the macro book and schedules the lockstyle twice per `user_setup` (the JCM block and the guarded block) - `_master/entry/Tetsouo_COR.lua:284-320`
+- COR selects the macro book and schedules the lockstyle twice per `user_setup` (the JCM block and the guarded block) - `shared/entry/cor.lua:279-318`
 - The 3 s fallback of `LifecycleManager.status_change` (an engage / disengage held during an action) sends `gs c update`, since `equip()` from a scheduled function is never sent (`flow.lua:60`); fixed 2026-09-27. Normally the aftercast path equips the new status set first. Not yet tested in game - `hold_during_action`, `shared/utils/core/lifecycle_manager.lua`
 - The intro of a job never shows the macro book or the lockstyle (Z2-09, a decision for the owner: return a value from the 32 wrappers, or drop the branch in `show_intro`) - `show_intro` in `shared/utils/keybinds/keybind_manager.lua`

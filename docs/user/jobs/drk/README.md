@@ -123,7 +123,9 @@ DRK has no command of its own. The common commands that work on DRK:
 
 ## Configuration files for this job
 
-In `<YourName>/drk/`:
+In `<YourName>/drk/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | Content |
 |---|---|
@@ -139,7 +141,7 @@ In `<YourName>/drk/`:
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and
 `treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
-`combatmode`). Gear: `<YourName>/drk/drk_sets.lua`. See
+`combatmode`). Gear: `<YourName>/drk/sets/drk_sets.lua`. See
 [configuration](../../guides/configuration.md).
 
 ## More

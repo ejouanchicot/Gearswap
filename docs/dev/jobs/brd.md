@@ -14,7 +14,7 @@ What BRD adds on top of the shared pipeline:
 
 - **Song refinement** in precast: a debuff song on recast is replaced by its
   configured lower (or, for Horde Lullaby, higher) tier. It runs **before**
-  `CooldownChecker` (documented exception, `CODE_QUALITY.md` §4.1).
+  `CooldownChecker` (the project's documented "tiers before cooldown" exception: the checker would cancel the song before the step-down).
 - **Automatic Pianissimo** when a song targets another player (the song is
   re-sent once Pianissimo registers), and **automatic Marcato** in front of the
   song chosen by `MarcatoSong` while Nightingale and Troubadour are both up.
@@ -39,7 +39,7 @@ function; line numbers are given only where no function name fits.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_BRD.lua` | 291 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/brd.lua` | 298 | Entry point (the same for every character; `<Char>_BRD.lua` and its template `_master/entry/Tetsouo_BRD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/brd/functions/brd_functions.lua` | 85 | Facade: includes the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/brd/functions/BRD_PRECAST.lua` | 313 | `job_precast` (guard, `SongRefinement.refine_song`, cooldown, `job_precast_bardsong` Pianissimo, `try_marcato`, WS, `job_precast_bardsong_2` instrument lock) / `job_post_precast` (TP gear, precast debug) |
 | `shared/jobs/brd/functions/BRD_MIDCAST.lua` | 145 | `job_midcast` (empty), `job_customize_midcast_set` (passthrough, never called), `job_post_midcast` (context + skill dispatch to the router) |
@@ -74,7 +74,7 @@ function; line numbers are given only where no function name fits.
 | `_master/sets/brd_sets.lua` | 519 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_brd.lua` + `data/jobs/brd_messages.lua` | 300 + 269 | BRD chat messages |
 | `shared/utils/messages/formatters/magic/message_precast.lua` | 135 | `debugprecast` output used by `job_post_precast` |
-| `shared/data/magic/BRD_SPELL_DATABASE.lua` (+ `song/song_buffs`, `song_debuffs`, `song_special`) | 63 (+ 893, 426, 49) | Song descriptions and elements for the midcast "Spell Activated" line. `song_buffs.lua` is over the 800-line limit (listed in `CLAUDE.md`) |
+| `shared/data/magic/BRD_SPELL_DATABASE.lua` (+ `song/song_buffs`, `song_debuffs`, `song_special`) | 63 (+ 893, 426, 49) | Song descriptions and elements for the midcast "Spell Activated" line. `song_buffs.lua` is over the project's 800-line hard limit for a file |
 | `shared/data/job_abilities/BRD_JA_DATABASE.lua` | 13 | `JA_DATABASE_FACTORY.create('BRD')` |
 | `shared/utils/core/cast_tracker.lua`, `shared/utils/precast/cast_time.lua` | 58, 241 | "Cast started" packets and the cast time computed at precast, read by the song queue; `cast_time.owned_ids()` also feeds `instrument_extra` |
 
@@ -585,7 +585,7 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
 Lua 5.1 is installed (`lua5.1`, `luac5.1`):
 
 ```bash
-for f in $(git ls-files 'shared/jobs/brd/*.lua' '_master/config/brd/*.lua' _master/entry/Tetsouo_BRD.lua _master/sets/brd_sets.lua); do luac5.1 -p "$f"; done
+for f in $(git ls-files 'shared/jobs/brd/*.lua' '_master/config/brd/*.lua' shared/entry/brd.lua _master/entry/Tetsouo_BRD.lua _master/sets/brd_sets.lua); do luac5.1 -p "$f"; done
 ```
 
 Pure logic to exercise with stubs: `SongSlots.plan` (stub `state`, `sets`,

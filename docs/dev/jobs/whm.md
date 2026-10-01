@@ -4,11 +4,12 @@ The WHM job is the healer of the project: 12 hook modules plus one logic module
 under `shared/jobs/whm/functions/` (about 1 090 lines), two job-specific
 utilities under `shared/utils/whm/` (830 lines), a template entry point, eight
 config files and one sets file. GearSwap loads it when the main job becomes WHM
-(the entry file `<Character>_WHM.lua`, made from `_master/entry/Tetsouo_WHM.lua`
-by the clone script). From then on Mote-Include calls its hooks on every action,
+(the entry file `<Character>_WHM.lua`, one `include` of `shared/entry/whm.lua`, copied from
+`_master/entry/Tetsouo_WHM.lua` by the clone script). From then on Mote-Include calls its hooks on every action,
 on status and buff changes, on `//gs c` commands and on state cycles. No
-maintained character plays WHM: the job exists as the `_master/` template only,
-and no overlay carries WHM files.
+overlay carries WHM files: the `_master/` template is the reference, and
+Tetsouo's live `whm/` (since 2026-09-29, when his folder got all 22 jobs) is a
+copy of it.
 
 Player-facing pages: [hub](../../user/jobs/whm/README.md),
 [modes](../../user/jobs/whm/states.md), [sets](../../user/jobs/whm/sets.md).
@@ -36,7 +37,7 @@ the sets file (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_WHM.lua` | 268 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record) |
+| `shared/entry/whm.lua` | 272 | Entry (the same for every character; `<Char>_WHM.lua` and its template `_master/entry/Tetsouo_WHM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record) |
 | `shared/jobs/whm/functions/whm_functions.lua` | 51 | Facade: includes the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/whm/functions/WHM_PRECAST.lua` | 174 | `job_precast`: guard, `retier_cure`, cooldown, `paralyna_on_self`, WS; `job_post_precast` (TP gear) |
 | `shared/jobs/whm/functions/WHM_MIDCAST.lua` | 261 | `job_midcast` (Cure sets by mode), `job_post_midcast` (overlays + `MidcastManager`), `job_get_spell_map` |
@@ -116,7 +117,7 @@ flowchart TD
 ```
 
 - `retier_cure` runs **before** the recast check, the way RDM, BLM and GEO send
-  tiered spells to their refiners (CODE_QUALITY section 4.1): otherwise
+  tiered spells to their refiners (the project's "tiers before cooldown" exception): otherwise
   `CooldownChecker` would cancel a requested tier on recast before CureManager
   could swap it. It takes Magic whose name starts with `Cure` or `Curaga`
   (`CureManager.is_tiered_cure`: not Full Cure, not Cura), resolves the target with
@@ -412,8 +413,8 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 **Invariants to keep**
 
 - Precast order: guard, `retier_cure`, cooldown, Paralyna, WS. CureManager must
-  stay before `CooldownChecker` (CODE_QUALITY section 4.1, CureManager
-  exception).
+  stay before `CooldownChecker` (the project's "tiers before cooldown" exception,
+  CureManager case).
 - A branch of `job_post_midcast` that equips without calling
   `MidcastManager.select_set` is overridden by `MidcastFallback`; the Cure path
   is safe only because `job_midcast` sets `eventArgs.handled`.
@@ -425,7 +426,8 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 **Traps**
 
 - `whm_message_formatter.lua` lives under `utils/whm/`, not `utils/messages/`:
-  its `add_to_chat` calls are the exception of CODE_QUALITY section 6, point 4.
+  its `add_to_chat` calls are allowed as those of a formatter (see
+  [messages.md](../systems/messages.md#where-add_to_chat-may-be-called-directly)).
 - `M('Potency', 'Cure Mode')`: the second argument is a value, not a
   description.
 - The alliance lookup in `get_hp_missing_party` never matches (wrong keys) but

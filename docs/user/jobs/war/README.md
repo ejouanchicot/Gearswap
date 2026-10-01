@@ -155,7 +155,9 @@ with the same name; `//gs c alt berserk` sends the alt's.
 
 ## Configuration files for this job
 
-In `<YourName>/war/`:
+In `<YourName>/war/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | What you change there |
 |---|---|
@@ -172,7 +174,7 @@ In `<YourName>/war/`:
 Files shared by every job are in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
 `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
-Your sets are in `<YourName>/war/war_sets.lua`.
+Your sets are in `<YourName>/war/sets/war_sets.lua`.
 
 ## See also
 

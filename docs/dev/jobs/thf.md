@@ -43,7 +43,7 @@ function; line numbers are deliberately not used.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_THF.lua` | 281 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ `RangeLock.sync_state`), `job_update`, `init_gear_sets`, `file_unload` (+ `RangeLock.release`, first) |
+| `shared/entry/thf.lua` | 283 | Entry point (the same for every character; `<Char>_THF.lua` and its template `_master/entry/Tetsouo_THF.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ `RangeLock.sync_state`), `job_update`, `init_gear_sets`, `file_unload` (+ `RangeLock.release`, first) |
 | `shared/jobs/thf/functions/thf_functions.lua` | 117 | Facade: includes `message_buffs` and the 11 hook files, calls `TreasureHunter.init()` (THF layer), requires `dualbox_manager` |
 | `shared/jobs/thf/functions/THF_PRECAST.lua` | 147 | `job_precast` / `job_post_precast`: guard, cooldown, SA/TA pending flags, WS handler; post: SA/TA WS variant, then TP gear |
 | `shared/jobs/thf/functions/THF_MIDCAST.lua` | 94 | `job_midcast` (ranged lock via `RangeLock.engage`) / `job_post_midcast` (watchdog, MidcastManager for Ninjutsu, Healing, Enhancing) |
@@ -76,8 +76,7 @@ function; line numbers are deliberately not used.
 | `shared/data/job_abilities/THF_JA_DATABASE.lua` + `thf/*.lua` | | `JA_DATABASE_FACTORY.create('THF')`, read by the ability message handler (messages only) |
 
 Author overlay (`_master/Tetsouo/`, tracked; deployed only by a clone to that
-character): `entry/Tetsouo_THF.lua` (same as the template except the header and
-`init_gear_sets`, which includes `thf/sets/thf_sets.lua`),
+character), no entry (every character runs `shared/entry/thf.lua`):
 `thf/display/THF_MACROBOOK.lua`, `thf/keys/THF_STATES.lua` (adds
 `'Telop Knife'` to `SubWeapon`), `thf/inventory/THF_REFILL.lua` (includes
 `Ac. Bolt Quiver`), and `thf/{thf_sets,armor,capes,weapons}.lua`
@@ -629,7 +628,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 `lua5.1` and `luac5.1` are installed on the author's machine.
 
 - Syntax: from `data/`,
-  `luac5.1 -p shared/jobs/thf/functions/*.lua shared/jobs/thf/functions/logic/*.lua _master/entry/Tetsouo_THF.lua _master/config/thf/*.lua _master/sets/thf_sets.lua`;
+  `luac5.1 -p shared/jobs/thf/functions/*.lua shared/jobs/thf/functions/logic/*.lua shared/entry/thf.lua _master/entry/Tetsouo_THF.lua _master/config/thf/*.lua _master/sets/thf_sets.lua`;
   `python scripts/check_syntax.py` checks the whole tree, live folders included.
 - Behaviour: stub the engine (`send_command`, `buffactive`, `state` with
   `M`-like tables holding `value` / `current` / `set`, `windower.ffxi.*`,
@@ -669,6 +668,5 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   (`keybind_manager.lua` `show_intro`).
 - `job_post_midcast` skeleton is duplicated with DNC.
 - `job_buff_change` re-implements `LifecycleManager.buff_change`.
-- The author overlay files (`_master/Tetsouo/entry/Tetsouo_THF.lua`,
-  `thf/keys/THF_STATES.lua`) still carry `@author Tetsouo`, against the
+- The author overlay file `thf/keys/THF_STATES.lua` still carries `@author Tetsouo`, against the
   project rule (`@author ejouanchicot`).

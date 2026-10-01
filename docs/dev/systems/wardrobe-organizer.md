@@ -19,7 +19,7 @@ Re-checked against the code on 2026-09-30, after commit `1c42340` ("the organize
 | `shared/utils/wardrobe/lib/items.lua` | 185 | `res.items` helpers, `NEVER_MOVE` filter (`is_equipment`), used names of the scope (`_G.sets` walk, plus every job's set files when `SCOPE = 'all_jobs'`), always-kept items (`KEEP`, warp rings) |
 | `shared/utils/wardrobe/lib/reports.lua` | 267 | `wo scan` and `wo keep` |
 | `shared/utils/wardrobe/lib/warp_owned.lua` | 118 | Scan / load / save of the warp items the character owns (`WARP_ITEMS_OWNED.lua`) |
-| `shared/utils/wardrobe/lib/chat.lua` | 164 | Chat panel helpers. They call the sandbox `add_to_chat` directly (no `MessageFormatter`; listed as an allowed exception in `.claude/CODE_QUALITY.md` section 6). Since 2026-09-27 (`64a0c20`) that `add_to_chat` is the one `message_core.lua` wraps with `ChatSeparators.apply`, so the `=` rules follow the player's separator options; before, the helpers called `windower.add_to_chat` and bypassed them |
+| `shared/utils/wardrobe/lib/chat.lua` | 164 | Chat panel helpers. They call the sandbox `add_to_chat` directly (no `MessageFormatter`; listed as an allowed exception, see [messages.md](messages.md#where-add_to_chat-may-be-called-directly)). Since 2026-09-27 (`64a0c20`) that `add_to_chat` is the one `message_core.lua` wraps with `ChatSeparators.apply`, so the `=` rules follow the player's separator options; before, the helpers called `windower.add_to_chat` and bypassed them |
 | `shared/utils/wardrobe/lib/log.lua` | 48 | `wardrobe_debug.log` writer, `bag_name()` |
 | `_master/config_global/WARDROBE_CONFIG.lua` | 80 | Generic template (new 2026-09-30): every key commented out, with examples; `clone_character.py` copies it to every clone (`_common/inventory/` after the layout step) |
 | `_master/Tetsouo/config_global/WARDROBE_CONFIG.lua` | 40 | Tetsouo overlay, deployed as `Tetsouo/_common/inventory/WARDROBE_CONFIG.lua` (same content; only the `@file` line differs) |
@@ -442,7 +442,7 @@ Invariants to keep:
 Traps:
 
 - `lib/phases.lua` is 684 lines (it was 798 before the alt phases were deleted), above the 600-line
-  soft limit of `.claude/CODE_QUALITY.md`: a new phase goes in a new `lib/` module, not in `phases.lua`.
+  soft limit of the project (600 lines per file): a new phase goes in a new `lib/` module, not in `phases.lua`.
 - Item names: look items up by id (`res.items[id]`, as `lib/items.lua` does), never by scanning
   `res.items` with `pairs`; bag loops iterate `res.bags` (a dozen entries), which is cheap.
 - `Chat.phase` formats with `%d`, so a fractional phase number is truncated (3.5 prints as 3).

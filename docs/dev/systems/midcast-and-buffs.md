@@ -453,7 +453,7 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 
 | Command | Handler | Effect |
 |---|---|---|
-| `//gs c debugmidcast` | 17 job COMMANDS files (see Debug mode) | Toggle `windower._midcast_debug` / `_G.MidcastManagerDebugState` |
+| `//gs c debugmidcast` | 22 job COMMANDS files (see Debug mode) | Toggle `windower._midcast_debug` / `_G.MidcastManagerDebugState` |
 | `//gs c trace on` / `off` | `CommonCommands` | `MIDCAST` trace lines (and every other trace tag) |
 | `//gs c buff` / `buffs` / `buffself` / `selfbuff` / `smartbuff` | every job, common command -> `BuffCommand.apply()` | DNC dance and samba (`job_buff_extra`), then `job[main]`, then `weapon[<main hand>]`, then `subjob[sub]` of `BUFF_CONFIG.lua`, through `SelfBuffManager` |
 | `//gs c lightarts` | every job, common command -> `ScholarActions.handle_command` | Light Arts, then Addendum: White |
@@ -462,7 +462,7 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 | `//gs c klima` / `klimaform` | BLM | Dark Arts if not up and ready, Manifestation if `KlimaformAOE` is on and a charge exists, then Klimaform (`run_chain` with `finish_anyway`) |
 | `//gs c dispel` | BLM, GEO | `cast_under_black_addendum('Dispel', ...)` |
 
-`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`_master/config/alt/SCH_ALT_COMMANDS.lua`, same in `Tetsouo/_common/dualbox/alt/`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
+`SCH_ALT_COMMANDS.lua` defines `darkarts`, `lightarts` (level 10) and `klimaform` (level 46) (`shared/data/alt/SCH_ALT_COMMANDS.lua`). `klimaform` is answered by BLM's handler; the alt's commands are Mote's last lookup, reached only when `job_self_command` leaves a name unhandled (`shared/utils/dualbox/alt_commands.lua` `AltCommands.install_fallback`, see [dualbox](dualbox.md#alt-command-routing)). `lightarts` / `darkarts` run here when this character has SCH, else they go to the alt when it offers them (`handle_command`). `//gs c alt lightarts` always sends the alt's version.
 
 ### Scholar commands
 
@@ -547,7 +547,7 @@ Fixed:
 - `get_element` and the four preset builders (`rdm_enfeebling`, `enhancing`, `elemental`, `cure`) were removed on 2026-09-28 (no caller in any folder).
 - `midcast_manager.lua.preref.bak` is gone from disk.
 - "Debug state survives reloads" was false: the flag now lives on `windower._midcast_debug` (`445e5ed`).
-- The fallback chain described in `.claude/CODE_QUALITY.md` §4.2, `.claude/rules/midcast-pattern.md` and the `midcast_manager.lua` header did not match the code: all three describe the chain (2026-09-25).
+- The fallback chain described in the private coding standard, its midcast rule and the `midcast_manager.lua` header did not match the code: all three now describe the chain (2026-09-25).
 - `base_set_builder.lua` listed the wrong users: the header lists match the code.
 - The comment in `self_buff_manager.lua` described a sub-second window: it now explains why `os.clock` is used for the 2.0 s window (`85ad22b`).
 - BLM passed the Enhancing database to Enfeebling midcast (`database_func` always nil): removed (2026-09-25).

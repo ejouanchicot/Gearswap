@@ -2,8 +2,9 @@
 
 The DRK job area: 11 hook modules plus 2 logic modules under
 `shared/jobs/drk/functions/` (about 1 240 lines), an entry point template,
-seven config files and one sets file. DRK exists only as a template in
-`_master/` (no character overlay, no maintained live copy); GearSwap loads it
+seven config files and one sets file. DRK has no character overlay: the
+`_master/` template is the reference, and Tetsouo's live `drk/` (since 2026-09-29, when
+his folder got all 22 jobs) is a copy of it; GearSwap loads it
 when the main job becomes DRK (`<Character>_DRK.lua`).
 
 What DRK adds on top of the shared pipeline:
@@ -38,7 +39,7 @@ function; line numbers are deliberately not used.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_DRK.lua` | 253 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/drk.lua` | 255 | Entry point (the same for every character; `<Char>_DRK.lua` and its template `_master/entry/Tetsouo_DRK.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/drk/functions/drk_functions.lua` | 99 | Facade: includes `message_buffs.lua` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/drk/functions/DRK_PRECAST.lua` | 132 | `job_precast` (guard, cooldown, pending flags, WS handler, JA gear, FC) / `job_post_precast` (TP gear) |
 | `shared/jobs/drk/functions/DRK_MIDCAST.lua` | 160 | `job_midcast` (empty) / `job_post_midcast`: watchdog + `JOB_POST_MIDCAST_HANDLERS` (Dark, Enfeebling, Elemental) |
@@ -397,7 +398,7 @@ invisible to Mote.
 ### Offline testing
 
 - Syntax: from `data/`,
-  `luac5.1 -p shared/jobs/drk/functions/*.lua shared/jobs/drk/functions/logic/*.lua _master/entry/Tetsouo_DRK.lua _master/config/drk/*.lua _master/sets/drk_sets.lua`.
+  `luac5.1 -p shared/jobs/drk/functions/*.lua shared/jobs/drk/functions/logic/*.lua shared/entry/drk.lua _master/entry/Tetsouo_DRK.lua _master/config/drk/*.lua _master/sets/drk_sets.lua`.
 - Behaviour: `logic/set_builder.lua` loads with stubs for `sets`, `state`,
   `buffactive`, `set_combine`, and `package.loaded` entries for
   `drk_buff_anticipation` and `message_formatter`; drive `build_engaged_set`

@@ -142,7 +142,7 @@ Checked in the code for BLU:
 | Midcast watchdog | Puts your idle or engaged gear back when the game never confirms the end of a cast; the Fast Cast mode (0 by default) is its fallback estimate |
 | Your own modes | `BLU_CUSTOM.lua`: modes with a key and gear rules, without code |
 | Lockstyle and macro book | Set on load and on every subjob change |
-| Job change handling | A subjob change reloads the job 0.5 s later; every mode goes back to its default |
+| Job change handling | A subjob change reloads the job 2 s later; every mode goes back to its default |
 | Keybind HUD, key guard | The HUD shows every mode; the keys are sent again 2 s after each load |
 | Dual-box | Job exchange with your other boxes, alt commands, macro book per alt job |
 | Chat messages | Ability / spell / weaponskill messages, set with `jamsg`, `spellmsg`, `wsmsg` |
@@ -151,7 +151,9 @@ Checked in the code for BLU:
 
 ## Configuration files for this job
 
-In `<YourName>/blu/`:
+In `<YourName>/blu/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | What it sets |
 |---|---|
@@ -171,7 +173,7 @@ In `<YourName>/_common/`, the files every job reads that matter here:
 `treasure_mode.lua`, `RECAST_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `DW_CONFIG.lua`,
 `LOCKSTYLE_CONFIG.lua`. See [configuration](../../guides/configuration.md).
 
-Sets: `<YourName>/blu/blu_sets.lua`, see [sets.md](sets.md).
+Sets: `<YourName>/blu/sets/blu_sets.lua`, see [sets.md](sets.md).
 
 ## Next
 

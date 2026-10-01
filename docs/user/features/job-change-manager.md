@@ -10,13 +10,13 @@ file removes its keys; the new one sets its keys, HUD, macro book (about
 
 ## Subjob change
 
-The job file stays loaded, but the setup reloads it 0.5 s later (a full
+The job file stays loaded, but the setup reloads it 2 s later (a full
 `gs reload`) so every system starts clean for the new subjob. Before the
 reload it stops movement tracking, the midcast watchdog and the HUD.
 
 Several changes in quick succession give **one** reload, for the last one.
 A back-and-forth (WAR/SAM to WAR/DNC and back) still reloads. When the main
-job also differs, the wait is 3.0 s instead of 0.5 s.
+job also differs, the wait is 3 s instead of 2 s.
 
 ## Wrong job file
 
@@ -28,7 +28,8 @@ two confirmations.
 ## What survives a load
 
 - Every mode goes back to its default, except Auto Medicine.
-- Your keys, the HUD position and the settings in `config/` are read again.
+- Your keys, the HUD position and the settings in your folder (`_common/`,
+  `<job>/`, `saved/`) are read again.
 - A slot locked by Doom, craft, the wardrobe organizer or a warp ring stays
   locked across the load; the matching command releases it
   (`//gs c uncraft`, `//gs c wo recover`, `//gs c warp fix`).

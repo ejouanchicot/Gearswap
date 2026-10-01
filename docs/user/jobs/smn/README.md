@@ -176,7 +176,9 @@ No TP bonus config on SMN.
 
 ## Configuration files for this job
 
-In `<YourName>/smn/`:
+In `<YourName>/smn/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | What you set there |
 |---|---|
@@ -192,7 +194,7 @@ Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua` and `treasure_mode.lua` (written by their commands),
 `ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
 `DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`. Your sets are in
-`<YourName>/smn/smn_sets.lua`. See
+`<YourName>/smn/sets/smn_sets.lua`. See
 [configuration](../../guides/configuration.md).
 
 ## More

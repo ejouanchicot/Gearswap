@@ -4,8 +4,8 @@ Added on 2026-09-29. A thin job built on the shared systems, shaped like PUP
 and BLU: 12 hook modules, a pet midcast module and 3 logic modules under
 `shared/jobs/drg/functions/`, a template entry point, seven config files and
 one sets file. GearSwap loads it when the main job becomes DRG (the entry
-file `<Character>_DRG.lua`, made from `_master/entry/Tetsouo_DRG.lua` by the
-clone script, which offers DRG).
+file `<Character>_DRG.lua`, one `include` of `shared/entry/drg.lua`, copied from
+`_master/entry/Tetsouo_DRG.lua` by the clone script, which offers DRG).
 
 Player-facing pages: [hub](../../user/jobs/drg/README.md),
 [modes](../../user/jobs/drg/states.md), [sets](../../user/jobs/drg/sets.md).
@@ -28,7 +28,7 @@ What DRG adds on top of the shared pipeline:
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_DRG.lua` | 186 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/drg.lua` | 190 | Entry (the same for every character; `<Char>_DRG.lua` and its template `_master/entry/Tetsouo_DRG.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/drg/functions/drg_functions.lua` | 66 | Facade: includes `message_buffs` and the hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/drg/functions/DRG_PRECAST.lua` | 109 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/drg/functions/DRG_MIDCAST.lua` | 100 | `job_midcast` (empty) / `job_post_midcast` (subjob magic via MidcastManager, then the Healing Breath trigger) |

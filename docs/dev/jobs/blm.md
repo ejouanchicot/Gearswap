@@ -33,7 +33,7 @@ function, not a line number.
 
 | Path | Role |
 |------|------|
-| `_master/entry/Tetsouo_BLM.lua` | Entry point (template): config preload at file level, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD refresh only), `init_gear_sets`, `file_unload` |
+| `shared/entry/blm.lua` (286 lines) | Entry point (the same for every character; `<Char>_BLM.lua` and its template `_master/entry/Tetsouo_BLM.lua` are one `include` of it): config preload at file level, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD refresh only), `init_gear_sets`, `file_unload` |
 | `shared/jobs/blm/functions/blm_functions.lua` | Facade: includes the 11 hook files, lazy logic loaders, globals `BuffSelf` (calls the common `BuffCommand.apply()`), `refine_various_spells`, `checkArts`, `CastStorm`, requires `dualbox_manager` |
 | `shared/jobs/blm/functions/BLM_PRECAST.lua` | `job_precast` (guard, `check_recast_or_refine`, `checkArts`, WS) / `job_post_precast` (TP gear) |
 | `shared/jobs/blm/functions/BLM_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast`: builds a context and dispatches to the router |
@@ -74,10 +74,11 @@ function, not a line number.
 | `shared/data/magic/BLM_SPELL_DATABASE.lua` | Spell data for messages and `//gs c info` (not read by BLM logic) |
 
 Character copies are gitignored. The author's overlay `_master/Tetsouo/`
-holds its own `entry/Tetsouo_BLM.lua` (includes the modular
-`blm/sets/blm_sets.lua`), `blm/display/BLM_MACROBOOK.lua` (book 7),
-`blm/inventory/BLM_REFILL.lua` and `blm/{blm_sets,armor,capes,weapons}.lua`.
-No other overlay has BLM files.
+holds `BLM_MACROBOOK.lua` (book 7), `BLM_REFILL.lua` and the modular sets
+`blm_sets.lua`, `armor.lua`, `capes.lua`, `weapons.lua`, deployed to
+`blm/display/`, `blm/inventory/` and `blm/sets/`. It has no entry: every
+character runs `shared/entry/blm.lua`, which includes `blm/sets/blm_sets.lua`
+through `CharPaths.relative`. No other overlay has BLM files.
 
 ## How it works
 
@@ -91,7 +92,7 @@ file exists.
 ```mermaid
 sequenceDiagram
     participant GS as GearSwap
-    participant E as Tetsouo_BLM.lua
+    participant E as shared/entry/blm.lua
     participant M as Mote-Include
     participant F as blm_functions.lua
     GS->>E: file chunk: LOCKSTYLE_CONFIG, UIConfig (ConfigLoader), REGION_CONFIG
@@ -609,7 +610,7 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 `lua5.1` and `luac5.1` are installed (`C:/ProgramData/chocolatey/bin/`).
 
 - Syntax: from `data/`,
-  `for f in shared/jobs/blm/functions/*.lua shared/jobs/blm/functions/logic/*.lua shared/jobs/blm/functions/logic/refiner/*.lua _master/entry/Tetsouo_BLM.lua _master/config/blm/*.lua _master/sets/blm_sets.lua; do luac5.1 -p "$f"; done`,
+  `for f in shared/jobs/blm/functions/*.lua shared/jobs/blm/functions/logic/*.lua shared/jobs/blm/functions/logic/refiner/*.lua shared/entry/blm.lua _master/entry/Tetsouo_BLM.lua _master/config/blm/*.lua _master/sets/blm_sets.lua; do luac5.1 -p "$f"; done`,
   or `python scripts/check_syntax.py` for the whole project.
 - Midcast behaviour: from `data/`, with `package.path = './?.lua;' .. package.path`,
   stub `package.preload['shared/utils/messages/formatters/magic/message_midcast']`
@@ -655,5 +656,3 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   idle bases.
 - `sets.midcast.QuanpurStone` exists only in the author's overlay.
 - Dead code: `show_mp_conservation` and `show_buff_status` in `message_blm`.
-- The author's overlay entry `_master/Tetsouo/entry/Tetsouo_BLM.lua` still
-  carries `@author Tetsouo` (convention: `ejouanchicot`).

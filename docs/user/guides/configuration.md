@@ -93,16 +93,16 @@ re-clone copies them back from the old folder (see
 
 | File | Written by |
 |---|---|
-| `ui_settings.lua` | `//gs c ui ...`: HUD position, shown parts, background, font. Wins over `UI_CONFIG.lua`; delete it to go back to those values |
-| `message_modes.lua` | `//gs c jamsg` / `spellmsg` / `wsmsg`: chat detail for abilities / spells / weaponskills |
-| `combat_mode.lua` | `//gs c combatmode`: on which jobs Combat Mode shows, and its key ([keybinds](keybinds.md#combat-mode-every-job)) |
-| `treasure_mode.lua` | `//gs c th`: on which jobs Treasure Mode shows, and its key ([keybinds](keybinds.md#treasure-mode-every-job)) |
-| `alt_window.lua` | Dragging the alt window (main only) |
-| `alt_state.lua` | The `alts` orders: who follows whom, automation on / off, kept across GearSwap reloads |
-| `WARP_ITEMS_OWNED.lua` | `//gs c wo scan`: the warp items you own |
-| `gear_augments.lua` | `//gs c gearscan`: the augments of your gear, read by the HP priority |
+| `saved/ui_settings.lua` | `//gs c ui ...`: HUD position, shown parts, background, font. Wins over `UI_CONFIG.lua`; delete it to go back to those values |
+| `saved/message_modes.lua` | `//gs c jamsg` / `spellmsg` / `wsmsg`: chat detail for abilities / spells / weaponskills |
+| `_common/keys/combat_mode.lua` | `//gs c combatmode`: on which jobs Combat Mode shows, and its key ([keybinds](keybinds.md#combat-mode-every-job)) |
+| `_common/keys/treasure_mode.lua` | `//gs c th`: on which jobs Treasure Mode shows, and its key ([keybinds](keybinds.md#treasure-mode-every-job)) |
+| `saved/alt_window.lua` | Dragging the alt window (main only) |
+| `saved/alt_state.lua` | The `alts` orders: who follows whom, automation on / off, kept across GearSwap reloads |
+| `saved/WARP_ITEMS_OWNED.lua` | `//gs c wo scan`: the warp items you own |
+| `saved/gear_augments.lua` | `//gs c gearscan`: the augments of your gear, read by the HP priority |
 | `<job>/display/<JOB>_HUD.lua` | `//gs c ui order` / `roworder` (see the per-job table below) |
-| `../temp_binds.lua` | `//gs c tb` (in `<YourName>/`, not in `config/`) |
+| `saved/temp_binds.lua` | `//gs c tb` |
 
 `dualbox_role.lua` is written by `//gs c main` and `setalt`: it wins over the
 role in `DUALBOX_CONFIG.lua`. A re-clone does **not** keep it, on purpose: the

@@ -297,7 +297,7 @@ sequenceDiagram
 ```
 
 Every entry file includes the ability hook before the WS hook (checked on every file of
-`_master/entry/` and the overlays), so the WS wrapper runs the ability wrapper first.
+`shared/entry/`, which every character entry includes), so the WS wrapper runs the ability wrapper first.
 
 JA path (`ability_message_handler.lua`):
 

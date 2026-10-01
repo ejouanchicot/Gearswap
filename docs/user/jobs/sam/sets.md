@@ -1,6 +1,6 @@
 # SAM — set names and automatic gear
 
-Every set name SAM reads in `<YourName>/sam/sam_sets.lua`, and everything the
+Every set name SAM reads in `<YourName>/sam/sets/sam_sets.lua`, and everything the
 job does by itself. Keys and modes: [states.md](states.md). Names every job
 understands (Fast Cast, subjob actions, Doom, Treasure Hunter...):
 [set names](../../guides/sets.md).

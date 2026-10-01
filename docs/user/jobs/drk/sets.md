@@ -1,6 +1,6 @@
 # DRK — set names and automatic gear
 
-Every set name DRK reads in `<YourName>/drk/drk_sets.lua`, and everything the
+Every set name DRK reads in `<YourName>/drk/sets/drk_sets.lua`, and everything the
 job does by itself. Keys and modes: [states.md](states.md); Dark Seal and
 Nether Void in detail: [abilities.md](abilities.md). Names every job
 understands (Fast Cast, subjob actions, Doom, Treasure Hunter...):

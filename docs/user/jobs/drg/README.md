@@ -95,12 +95,14 @@ engaged set chosen is logged.
 | Doom | `sets.buff.Doom` while doomed |
 | Your own modes | `DRG_CUSTOM.lua`: modes with a key and gear rules, without code |
 | Lockstyle and macro book | Set on load and on every subjob change |
-| Job change handling | A subjob change reloads the job 0.5 s later; every mode goes back to its default |
+| Job change handling | A subjob change reloads the job 2 s later; every mode goes back to its default |
 | Keybind HUD, dual-box, chat messages | As on every job |
 
 ## Configuration files for this job
 
-In `<YourName>/drg/`:
+In `<YourName>/drg/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | What it sets |
 |---|---|
@@ -112,7 +114,7 @@ In `<YourName>/drg/`:
 | `DRG_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |
 | `DRG_HUD.lua` | Order of this job's HUD sections and rows |
 
-Sets: `<YourName>/drg/drg_sets.lua`, see [sets.md](sets.md).
+Sets: `<YourName>/drg/sets/drg_sets.lua`, see [sets.md](sets.md).
 
 ## Not done by the job
 

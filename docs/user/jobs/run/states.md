@@ -53,11 +53,13 @@ Every [common command](../../guides/commands.md) works too.
   does not have, then gives up and shows).
 - To set RUN up for a character, pick it in the clone script (see
   [installation](../../getting-started/installation.md)), then fill in
-  `<YourName>/run/run_sets.lua`.
+  `<YourName>/run/sets/run_sets.lua`.
 
 ## Files
 
-In `<YourName>/run/`:
+In `<YourName>/run/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | Content |
 |---|---|

@@ -5,7 +5,7 @@ by itself. Modes and keys: [states.md](states.md). Names every job shares
 (subjob actions, movement, Doom, Dual Wield tiers, Treasure Hunter, Obi and
 Orpheus): [set names](../../guides/sets.md).
 
-Your file: `<YourName>/rdm/rdm_sets.lua`. `//gs c debugmidcast` shows, for each
+Your file: `<YourName>/rdm/sets/rdm_sets.lua`. `//gs c debugmidcast` shows, for each
 spell, which set was chosen and why.
 
 ## Weapons

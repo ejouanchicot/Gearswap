@@ -134,11 +134,12 @@ compiles `"{red}Error: {message}"` (colour tag -> `ChatPalette.tag('red')`, i.e.
   `midcast_messages.lua` compute one base colour at their own load (`MessageColors.get_warning_color()`),
   which is the one value that stays fixed until the next reload.
 
-All 29 entry templates (`_master/entry/*.lua` 16, `_master/Kaories/entry/*.lua` 4,
-`_master/Tetsouo/entry/*.lua` 9) include, inside `get_sets()` and in this order: `Mote-Include.lua`,
+All 22 shared entries (`shared/entry/<job>.lua`, which every character's one-line
+`<Name>_<JOB>.lua` includes) include, inside `get_sets()` and in this order: `Mote-Include.lua`,
 `INIT_SYSTEMS.lua`, `data_loader`, then `init_spell_messages.lua`, `init_ability_messages.lua`,
-`init_ws_messages.lua` (for example `_master/entry/Tetsouo_WAR.lua` `get_sets`). Each sets
-`_G.RegionConfig` at file level before requiring `config_loader`.
+`init_ws_messages.lua` (for example `shared/entry/war.lua` `get_sets`). Each sets
+`_G.RegionConfig` at file level, some before `config_loader` and some after; the order no longer
+matters, since `message_colors.lua` reads it at each use.
 
 ### The facade (`message_formatter.lua`)
 
@@ -184,7 +185,7 @@ are required directly by their callers; `info_block.lua` and `help_screen.lua` t
 | A. Template | `M.send(ns, key, params)` / `M.job(job, key, params)`; also every `InfoBlock` and `HelpScreen` line | yes | yes | yes |
 | B. Renderer | `MessageRenderer.send(text, color, options)` with a hand-built string | no (the formatter builds colours; the palette applies only where it uses `ChatPalette.tag`) | yes | yes |
 | C. MessageCore helpers | `MessageCore.raw(text)`, `info/error/warning/success(text)`, `show_separator()` | no | no | yes |
-| D. Direct | `add_to_chat(color, text)` in the files allowed by `.claude/CODE_QUALITY.md` section 6 | no | no | yes (it is the sandbox `add_to_chat`) |
+| D. Direct | `add_to_chat(color, text)` in the files allowed to (see [Where add_to_chat may be called directly](#where-add_to_chat-may-be-called-directly)) | no | no | yes (it is the sandbox `add_to_chat`) |
 
 Per-module counts are in [messages-formatters.md](messages-formatters.md). Until 2026-09-28, 65
 path-B call sites passed `(color, message)` (`message_rdm_midcast.lua` 48, `message_debuffs.lua` 14,
@@ -625,7 +626,7 @@ issues).
 
 ### Where `add_to_chat` may be called directly
 
-`.claude/CODE_QUALITY.md` section 6 allows a direct `add_to_chat` only in: the message system itself
+The project rule allows a direct `add_to_chat` only in: the message system itself
 (everything under `shared/utils/messages/`), the diagnostic tools, and the fallback used when the
 message system cannot load. Current state (grep `add_to_chat(`, 2026-09-28):
 
@@ -871,8 +872,7 @@ in `ui_style_commands.lua` (saved through `ui_config_writer.lua`), document it i
 
 **Add a new auto-announced action type.** Write a hook file in `shared/hooks/` with the same
 wrap-and-reexport pattern (save `_G.user_post_<action>`, call it first, re-export), include it from
-every entry template in `_master/entry/`, `_master/Kaories/entry/`, `_master/Tetsouo/entry/`, and do
-not add an idempotence guard.
+every shared entry in `shared/entry/`, and do not add an idempotence guard.
 
 **Add a mode key.** Add the key to `message_settings.lua` (getter, setter, `save_to_file`), a
 `*_MESSAGES_CONFIG.lua` built with `MessageModeConfig.create`, a row in `DEBUG_COMMANDS.lua`

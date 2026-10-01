@@ -141,7 +141,9 @@ and arguments: [commands guide](../../guides/commands.md).
 
 ## Configuration files for this job
 
-In `<YourName>/dnc/`:
+In `<YourName>/dnc/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | Content |
 |---|---|
@@ -159,7 +161,7 @@ In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
 `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
 `combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
-`<YourName>/dnc/dnc_sets.lua`. See [configuration](../../guides/configuration.md).
+`<YourName>/dnc/sets/dnc_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More
 

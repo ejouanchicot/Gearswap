@@ -205,7 +205,7 @@ All in `<YourName>/bst/` (plain Lua files; `//gs c reload` after an edit).
 | `BST_REFILL.lua` | What `//gs c rf` restocks on BST on top of or in place of the common list (every line commented in the generic template: the common list) |
 | `BST_ECOSYSTEM_DATA.lua` | Ecosystem strengths and weaknesses. Nothing reads it today |
 
-Your sets are in `<YourName>/bst/bst_sets.lua`. Files shared by every job
+Your sets are in `<YourName>/bst/sets/bst_sets.lua`. Files shared by every job
 (common keys, Combat Mode, Treasure Mode, belts, Dual Wield...) are in
 `<YourName>/_common/`: see the [configuration guide](../../guides/configuration.md).
 

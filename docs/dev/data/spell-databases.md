@@ -9,7 +9,7 @@ records are read lazily, at the first cast or command that needs them, by five k
   `shared/utils/messages/handlers/spell_message_handler.lua`), which prints the "spell activated" line
   after every magic midcast;
 - `MidcastManager.select_set()`'s `database_func`, which turns a spell name into a set sub-key
-  (`ENHANCING_MAGIC_DATABASE.get_spell_family` for 15 jobs, `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type`
+  (`ENHANCING_MAGIC_DATABASE.get_spell_family` for 20 jobs (all but BLM and SMN), `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type`
   for BLM, BLU, DRG, PUP, RDM and SCH);
 - job code that reads a DB directly: BRD and GEO message code (songs, colures), the ability message
   handler (SMN blood pacts), RDM's midcast (Enhancing family for its own Enhancing logic) and BLU's
@@ -294,7 +294,7 @@ values: `macc`, `mnd_potency`, `int_potency`, `skill_potency`, `skill_mnd_potenc
 `data_loader.lua` creates `_G.FFXI_DATA = { spells = {}, abilities = {}, weaponskills = {}, loaded =
 {...} }` at require time (`:40`) and loads nothing: the autoload call is commented out (`:303`, "causes
 100-300ms lag at startup"). The entry points that `require('shared/utils/data/data_loader')` (every
-entry file in `_master/entry/` and the overlays) therefore only create the empty global.
+shared entry in `shared/entry/`) therefore only create the empty global.
 
 The only real consumer is `shared/utils/commands/info_command.lua` (`//gs c info <name>`):
 `search_all_databases` (`:297`) tries `get_ability`, `get_spell`, `get_weaponskill` by exact name, then

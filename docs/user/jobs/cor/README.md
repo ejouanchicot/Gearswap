@@ -160,7 +160,9 @@ checks as a macro: debuff guard, recast check, roll gear, Luzaf's Ring.
 
 ## Configuration files for this job
 
-In `<YourName>/cor/`:
+In `<YourName>/cor/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | Content |
 |---|---|
@@ -178,7 +180,7 @@ In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
 `RECAST_CONFIG.lua` (party message on a refused roll), `STEALTH_CONFIG.lua`,
 `UI_CONFIG.lua` (roll message style), and `treasure_mode.lua` /
 `combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
-`<YourName>/cor/cor_sets.lua`. See [configuration](../../guides/configuration.md).
+`<YourName>/cor/sets/cor_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More
 

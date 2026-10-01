@@ -46,7 +46,7 @@ the job's TP config.
 
 ## Which jobs have it
 
-16 of the 17 jobs ship a `<JOB>_TP_CONFIG.lua` in `_master/config/<job>/`.
+21 of the 22 jobs ship a `<JOB>_TP_CONFIG.lua` in `_master/config/<job>/`.
 SMN has none. PUP's file also holds `pet_ws_tp`, the automaton TP from which
 its weaponskill gear goes on ([PUP modes](../pup/states.md#pet-ws)).
 

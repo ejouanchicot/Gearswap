@@ -3,7 +3,7 @@
 The WAR job area is 11 hook modules plus 2 logic modules under
 `shared/jobs/war/functions/` (1 790 lines on 2026-09-28), an entry template, eight
 config files and one sets file. GearSwap loads it when the main job becomes WAR
-(`Tetsouo_WAR.lua`). From then on Mote-Include calls its hooks on every action, on
+(`Tetsouo_WAR.lua`, one `include` of `shared/entry/war.lua`). From then on Mote-Include calls its hooks on every action, on
 status and buff changes, on `//gs c` commands and on state cycles.
 
 What WAR adds on top of the shared pipeline:
@@ -45,7 +45,7 @@ numbers are avoided because they drift.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_WAR.lua` | 313 | Entry point (template): config preload, `get_sets`, `init_gear_sets` + `sync_weapon_with_hand`, `job_sub_job_change`, `user_setup` (+ `AmpullaLock.apply`), `job_update`, `file_unload` (+ `AmpullaLock.release`), `show_keybind_error` |
+| `shared/entry/war.lua` | 315 | Entry point (the same for every character; `<Char>_WAR.lua` and its template `_master/entry/Tetsouo_WAR.lua` are one `include` of it): config preload, `get_sets`, `init_gear_sets` + `sync_weapon_with_hand`, `job_sub_job_change`, `user_setup` (+ `AmpullaLock.apply`), `job_update`, `file_unload` (+ `AmpullaLock.release`), `show_keybind_error` |
 | `shared/jobs/war/functions/war_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/war/functions/WAR_PRECAST.lua` | 138 | `job_precast` / `job_post_precast`: guard, cooldown, WS handler (which runs AutoJump), TP gear |
 | `shared/jobs/war/functions/WAR_MIDCAST.lua` | 74 | `job_midcast` (empty) / `job_post_midcast`: Healing and Enhancing routed to `MidcastManager` |
@@ -80,10 +80,9 @@ numbers are avoided because they drift.
 | `shared/utils/messages/formatters/magic/message_buffs.lua` | - | `show_buff_status` used by the buff chains (WAR has no job formatter) |
 
 Tetsouo overlay (`_master/Tetsouo/`, gitignored since 2026-09-27 like every
-character overlay) and live copies (gitignored, identical to the overlay):
-`Tetsouo_WAR.lua` differs from the template in the header comment (`@author` still
-reads the character name), `init_gear_sets` includes `war/sets/war_sets.lua`, and
-`job_update` also calls `_G.LagDebugger.on_job_update()`. `war/`:
+character overlay) and live copies (gitignored, identical to the overlay). The
+entry is `shared/entry/war.lua` for every character (no overlay entry since
+2026-09-30). `war/`:
 `WAR_MACROBOOK` uses book 3 instead of 22-30; `WAR_STATES` adds `SubtleBlow` and
 `Hoxne` to `HybridMode` and lists `Chango` second; `WAR_CUSTOM` holds only the
 commented examples (the `FullEmpy` test mode was removed on 2026-09-30); its `WAR_REFILL` holds a list (the template's is all comments). Sets are modular:
@@ -102,7 +101,7 @@ exist, and before any gear set exists.
 ```mermaid
 sequenceDiagram
     participant GS as GearSwap
-    participant E as Tetsouo_WAR.lua
+    participant E as shared/entry/war.lua
     participant M as Mote-Include
     participant F as war_functions.lua
     GS->>E: run chunk (LOCKSTYLE_CONFIG, REGION_CONFIG, UIConfig, JCM, UI_MANAGER)
@@ -123,7 +122,7 @@ sequenceDiagram
 slot states from it. Loaded with the other configs it would still be nil, and every
 slot would show `N/A`.
 
-`user_setup()` (`Tetsouo_WAR.lua`):
+`user_setup()` (`shared/entry/war.lua`):
 
 1. `WARStates.configure()` creates every state (see [Mote states](#mote-states)),
    including `WSSlots.sync(state.MainWeapon, _G.WARWSConfig)`. At this point the
@@ -598,7 +597,7 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 
 ```bash
 for f in shared/jobs/war/functions/*.lua shared/jobs/war/functions/logic/*.lua \
-         _master/config/war/*.lua _master/entry/Tetsouo_WAR.lua _master/sets/war_sets.lua; do
+         _master/config/war/*.lua shared/entry/war.lua _master/entry/Tetsouo_WAR.lua _master/sets/war_sets.lua; do
     luac5.1 -p "$f" || echo "FAIL $f"
 done
 python scripts/check_syntax.py        # whole project, live folders included (local, gitignored)
@@ -638,7 +637,5 @@ cancel depend on recasts, packets and timing: check them in game with
   Fencer, like any non-shield sub).
 - `tp_bonus_calculator.lua` `ranked_pieces` re-sorts the pieces on every weaponskill
   (open finding).
-- The character overlay entry still has `@author` set to the character name
-  (`_master/Tetsouo/entry/Tetsouo_WAR.lua`, gitignored).
 - To check in game: Hoxne stance then `//gs c wo`: a warning line, the ammo slot
   free after the run, and choosing Hoxne again locks it.

@@ -155,7 +155,9 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 
 ## Configuration files for this job
 
-In `<YourName>/pld/`:
+In `<YourName>/pld/`, each file in its theme folder (`display/` for HUD,
+lockstyle and macro book, `keys/` for states, keys and CUSTOM, `inventory/`
+for refill, `combat/` for the rest):
 
 | File | What you change there |
 |---|---|
@@ -174,7 +176,7 @@ In `<YourName>/pld/`:
 Files shared by every job are in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 `combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
 `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
-Your sets are in `<YourName>/pld/pld_sets.lua`.
+Your sets are in `<YourName>/pld/sets/pld_sets.lua`.
 
 ## See also
 

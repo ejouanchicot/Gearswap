@@ -7,7 +7,10 @@ disagrees with the code is a bug in the page.
 The same pages as one searchable site: open `docs/wiki/index.html` in a
 browser (rebuild it with `python docs/tools/build_wiki.py` after editing a page).
 
-17 jobs.
+22 jobs: BLM, BLU, BRD, BST, COR, DNC, DRG, DRK, GEO, MNK, NIN, PLD, PUP, RDM,
+RNG, RUN, SAM, SCH, SMN, THF, WAR, WHM. DRG, MNK, NIN, RNG and SCH (added
+2026-09-29) and PUP (rewritten the same day) load, but have not been tested in
+game yet.
 
 New here? Read, in this order: [installation](user/getting-started/installation.md),
 [quick start](user/getting-started/quick-start.md),
@@ -56,7 +59,8 @@ page (`sets.md`). Overview: [user/jobs/](user/jobs/README.md).
 | Mage | [BLM](user/jobs/blm/README.md) · [BLU](user/jobs/blu/README.md) · [GEO](user/jobs/geo/README.md) · [RDM](user/jobs/rdm/README.md) · [SCH](user/jobs/sch/README.md) · [WHM](user/jobs/whm/README.md) |
 | Support | [BRD](user/jobs/brd/README.md) · [COR](user/jobs/cor/README.md) |
 | Tank | [PLD](user/jobs/pld/README.md) · [RUN](user/jobs/run/README.md) |
-| Melee | [DNC](user/jobs/dnc/README.md) · [DRK](user/jobs/drk/README.md) · [SAM](user/jobs/sam/README.md) · [THF](user/jobs/thf/README.md) · [WAR](user/jobs/war/README.md) |
+| Melee | [DNC](user/jobs/dnc/README.md) · [DRK](user/jobs/drk/README.md) · [MNK](user/jobs/mnk/README.md) · [NIN](user/jobs/nin/README.md) · [SAM](user/jobs/sam/README.md) · [THF](user/jobs/thf/README.md) · [WAR](user/jobs/war/README.md) |
+| Ranged | [RNG](user/jobs/rng/README.md) |
 | Pet | [BST](user/jobs/bst/README.md) · [SMN](user/jobs/smn/README.md) · [PUP](user/jobs/pup/README.md) · [DRG](user/jobs/drg/README.md) |
 
 Shared by several jobs: [TP bonus gear](user/jobs/war/tp-bonus.md) (every job
@@ -73,24 +77,31 @@ Written from the code, for anyone who changes it.
 | [Architecture](dev/README.md#architecture) | [Job change lifecycle](dev/architecture/job-change-lifecycle.md), [characters and templates](dev/architecture/characters-and-templates.md) |
 | [Systems](dev/README.md#systems) | [Core lifecycle](dev/systems/core-lifecycle.md), [precast pipeline](dev/systems/precast-pipeline.md), [midcast and buffs](dev/systems/midcast-and-buffs.md), [commands and debug](dev/systems/commands-and-debug.md), [keybinds and CUSTOM](dev/systems/keybinds-and-custom.md), [HUD](dev/systems/ui-overlay.md), [messages](dev/systems/messages.md) ([catalog](dev/systems/messages-catalog.md), [formatters](dev/systems/messages-formatters.md)), [dual-box](dev/systems/dualbox.md), [stealth](dev/systems/stealth.md), [cleanse](dev/systems/cleanse.md), [equipment and inventory](dev/systems/equipment-and-inventory.md), [wardrobe organizer](dev/systems/wardrobe-organizer.md), [warp](dev/systems/warp.md), [factories and helpers](dev/systems/factories-and-helpers.md) |
 | [Data](dev/README.md#data) | [Spell databases](dev/data/spell-databases.md), [ability and weaponskill databases](dev/data/ability-and-weaponskill-databases.md) |
-| [Jobs](dev/README.md#jobs) | [BLM](dev/jobs/blm.md) · [BLU](dev/jobs/blu.md) · [BRD](dev/jobs/brd.md) · [BST](dev/jobs/bst.md) · [COR](dev/jobs/cor.md) · [DNC](dev/jobs/dnc.md) · [DRG](dev/jobs/drg.md) · [DRK](dev/jobs/drk.md) · [GEO](dev/jobs/geo.md) · [PLD](dev/jobs/pld.md) · [PUP](dev/jobs/pup.md) · [RDM](dev/jobs/rdm.md) · [RUN](dev/jobs/run.md) · [SAM](dev/jobs/sam.md) · [SCH](dev/jobs/sch.md) · [SMN](dev/jobs/smn.md) · [THF](dev/jobs/thf.md) · [WAR](dev/jobs/war.md) · [WHM](dev/jobs/whm.md) |
+| [Jobs](dev/README.md#jobs) | [BLM](dev/jobs/blm.md) · [BLU](dev/jobs/blu.md) · [BRD](dev/jobs/brd.md) · [BST](dev/jobs/bst.md) · [COR](dev/jobs/cor.md) · [DNC](dev/jobs/dnc.md) · [DRG](dev/jobs/drg.md) · [DRK](dev/jobs/drk.md) · [GEO](dev/jobs/geo.md) · [MNK](dev/jobs/mnk.md) · [NIN](dev/jobs/nin.md) · [PLD](dev/jobs/pld.md) · [PUP](dev/jobs/pup.md) · [RDM](dev/jobs/rdm.md) · [RNG](dev/jobs/rng.md) · [RUN](dev/jobs/run.md) · [SAM](dev/jobs/sam.md) · [SCH](dev/jobs/sch.md) · [SMN](dev/jobs/smn.md) · [THF](dev/jobs/thf.md) · [WAR](dev/jobs/war.md) · [WHM](dev/jobs/whm.md) |
 
 ## Your character folder
 
 ```
 <YourName>/
-├── <YourName>_<JOB>.lua     one file per job, loaded by GearSwap
-├── <job>/sets/<job>_sets.lua      your gear
-├── temp_binds.lua           temporary keys (//gs c tb), written in game
-└── config/
-    ├── COMMON_KEYBINDS.lua, UI_CONFIG.lua, LOCKSTYLE_CONFIG.lua, RECAST_CONFIG.lua,
-    │   AUTO_ABILITIES.lua, WEAPON_CONFIG.lua, DW_CONFIG.lua, ELEMENTAL_BELT.lua,
-    │   STEALTH_CONFIG.lua, DUALBOX_CONFIG.lua, REGION_CONFIG.lua, ...
-    ├── ui_settings.lua, message_modes.lua, combat_mode.lua, ...   written in game
-    ├── alt/                 alt commands (main character only)
-    ├── craft/               CRAFT_REFILL.lua (you write it)
-    └── <job>/               STATES, KEYBINDS, CUSTOM, LOCKSTYLE, MACROBOOK,
-                             TP_CONFIG, HUD, REFILL, ...
+├── <YourName>_<JOB>.lua     one line per job (it includes shared/entry/<job>.lua),
+│                            loaded by GearSwap; nothing to edit
+├── _WHERE-IS-WHAT.txt       every file of the folder and what it holds
+├── _common/                 settings of the whole character (every job)
+│   ├── display/             UI_CONFIG, UI_COLOR_CONFIG, REGION_CONFIG, LOCKSTYLE_CONFIG, ...
+│   ├── keys/                COMMON_KEYBINDS, combat_mode, ...
+│   ├── combat/              AUTO_ABILITIES, RECAST_CONFIG, WEAPON_CONFIG, DW_CONFIG,
+│   │                        ELEMENTAL_BELT, STEALTH_CONFIG, ...
+│   ├── inventory/           REFILL_CONFIG, CRAFT_CONFIG, CRAFT_REFILL, WARDROBE_CONFIG
+│   ├── dualbox/             DUALBOX_CONFIG; alt/ = alt commands (main character only)
+│   └── sets/                gear shared by jobs (rings.lua), craft and fishing sets
+├── <job>/                   one folder per job
+│   ├── display/             <JOB>_HUD, <JOB>_LOCKSTYLE, <JOB>_MACROBOOK
+│   ├── keys/                <JOB>_STATES, <JOB>_KEYBINDS, <JOB>_CUSTOM
+│   ├── combat/              <JOB>_TP_CONFIG and the job's own settings
+│   ├── inventory/           <JOB>_REFILL
+│   └── sets/                <job>_sets.lua: your gear
+└── saved/                   written in game: ui_settings, message_modes,
+                             temp_binds (//gs c tb), traces, ...
 ```
 
 Details: [configuration](user/guides/configuration.md).

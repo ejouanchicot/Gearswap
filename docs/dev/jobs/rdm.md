@@ -4,8 +4,8 @@ The RDM job is a caster/melee hybrid built mostly from shared systems: 12 hook
 modules plus one logic module under `shared/jobs/rdm/functions/` (about 1 800
 lines), a template entry point (plus character overlays), eight config files and
 one sets file. GearSwap loads it when the main job becomes RDM (the entry file
-`<Character>_RDM.lua`, made from `_master/entry/Tetsouo_RDM.lua` by the clone
-script). From then on Mote-Include calls its hooks on every action, on status
+`<Character>_RDM.lua`, one `include` of `shared/entry/rdm.lua`, copied from
+`_master/entry/Tetsouo_RDM.lua` by the clone script). From then on Mote-Include calls its hooks on every action, on status
 and buff changes, on `//gs c` commands and on state cycles.
 
 Player-facing pages: [hub](../../user/jobs/rdm/README.md),
@@ -46,8 +46,7 @@ the sets files (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_RDM.lua` | 302 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` |
-| `_master/Kaories/entry/Kaories_RDM.lua` | - | Overlay entry: the template with the character name in every config path |
+| `shared/entry/rdm.lua` | 304 | Entry (the same for every character; `<Char>_RDM.lua` and its template `_master/entry/Tetsouo_RDM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` |
 | `shared/jobs/rdm/functions/rdm_functions.lua` | 85 | Facade: includes the 11 hook files, then requires `dualbox_manager` |
 | `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 378 | `job_precast` as stages (guard, cooldown/refine, Phalanx, Saboteur) + WS + `SpellGearLock.begin`; `job_post_precast` (TP gear, spell FC set, lock hold, `debugprecast` trace) |
 | `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 362 | `job_midcast` (empty), `job_post_midcast` -> `route_midcast` (`SKILL_HANDLERS` table) + `SpellGearLock.hold` |
@@ -498,7 +497,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - Precast order is a contract: Combat Mode apply, guard, cooldown **or**
   refiner, Phalanx, Saboteur, WS, SpellGearLock. The refiner must stay before
   (instead of) `CooldownChecker` for tiered spells, or the checker cancels them
-  before a step-down can happen (CODE_QUALITY section 4.1).
+  before a step-down can happen (the project's documented "tiers before cooldown" exception).
 - Anything that equips in `job_post_midcast` without calling
   `MidcastManager.select_set` for that spell will be overridden by
   `MidcastFallback` in `cleanup_midcast`. Either call `select_set` (even with a

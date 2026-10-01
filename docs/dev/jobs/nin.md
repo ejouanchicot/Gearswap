@@ -4,8 +4,8 @@ NIN was added on 2026-09-29. It is a thin job built on the shared systems,
 like BLU and PUP: 11 hook modules plus 2 logic modules under
 `shared/jobs/nin/functions/`, a template entry point, seven config files and
 one sets file. GearSwap loads it when the main job becomes NIN (the entry file
-`<Character>_NIN.lua`, made from `_master/entry/Tetsouo_NIN.lua` by the clone
-script).
+`<Character>_NIN.lua`, one `include` of `shared/entry/nin.lua`, copied from
+`_master/entry/Tetsouo_NIN.lua` by the clone script).
 
 Player-facing pages: [hub](../../user/jobs/nin/README.md),
 [modes](../../user/jobs/nin/states.md), [sets](../../user/jobs/nin/sets.md).
@@ -36,7 +36,7 @@ and spell messages (`NIN_JA_DATABASE`, `NINJUTSU_DATABASE`).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_NIN.lua` | 186 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/nin.lua` | 190 | Entry (the same for every character; `<Char>_NIN.lua` and its template `_master/entry/Tetsouo_NIN.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/nin/functions/nin_functions.lua` | 64 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/nin/functions/NIN_PRECAST.lua` | 108 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/nin/functions/NIN_MIDCAST.lua` | 96 | `job_midcast` (empty) / `job_post_midcast` (Ninjutsu by family + Futae, other skills on their own chain) |

@@ -176,7 +176,7 @@ function CharDB.get_all()
 end
 
 --- Get the complete job list (for validation)
---- @return table All 16 supported job abbreviations
+--- @return table Every supported job abbreviation (ALL_JOBS)
 function CharDB.get_all_jobs()
     return ALL_JOBS
 end

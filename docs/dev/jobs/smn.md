@@ -45,21 +45,21 @@ Verified on 2026-09-28:
 | Shared modules (`shared/jobs/smn/`, 14 files) | repo | yes |
 | Blood Pact data (`shared/data/magic/SMN_SPELL_DATABASE.lua` + `summoning/*.lua`) | repo | yes |
 | Reference notes (`docs/SMN_BLOOD_PACTS_REFERENCE.md`) | repo | yes |
-| Alt command configs (`_master/config/alt/SMN_ALT_COMMANDS.lua`, `SMN_ALT_CUSTOM.lua`) | repo | yes |
+| Alt command configs (`shared/data/alt/SMN_ALT_COMMANDS.lua`, `_master/config/alt/SMN_ALT_CUSTOM.lua`) | repo | yes |
 | `character_db.lua`: SMN in the author's roster and in the all-jobs list | repo | yes |
-| Generic entry `_master/entry/Tetsouo_SMN.lua` | repo | yes |
+| Entry `shared/entry/smn.lua` and its one-line template `_master/entry/Tetsouo_SMN.lua` | repo | yes |
 | Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK`, `SMN_REFILL` (all comments: the common list) in `_master/config/smn/` | repo | yes |
 | Generic flat sets `_master/sets/smn_sets.lua` | repo | yes |
-| Author's copies: entry, `smn/`, modular `smn/sets/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
+| Author's copies: `smn/`, modular `smn/sets/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
 | `SMN_TP_CONFIG.lua`, `SMN_JA_DATABASE.lua`, SMN message formatter | nowhere | - |
-| `clone_character.py` `ALL_VALID_JOBS` | 16 jobs, SMN included (no PUP) | yes |
+| `clone_character.py` `ALL_VALID_JOBS` | 22 jobs, SMN included | yes |
 
 Consequence: any clone can get SMN, from the generic template (manual job
 selection offers it). A clone to the author's character, or any clone with
 `--source Tetsouo`, takes the overlay's copies instead (the overlay's
 `<job>/` tree wins over the generic flat file). The generic files are
-the overlay's with `@author ejouanchicot` and the flat set include
-`include('smn/sets/smn_sets.lua')`; the gear is the same. Until 2026-09-28 a
+the overlay's with `@author ejouanchicot`; the gear is the same. The entry code is
+`shared/entry/smn.lua` for every character. Until 2026-09-28 a
 clone of any other character printed
 `[WARN] No entry file for: SMN - these jobs will not load`.
 
@@ -67,7 +67,7 @@ clone of any other character printed
 
 | Path | Role |
 |------|------|
-| `_master/entry/Tetsouo_SMN.lua` (generic; the overlay `_master/Tetsouo/entry/` and the live folder hold the author's copy) | Entry: config preload, `get_sets`, `init_gear_sets`, `job_sub_job_change`, `user_setup` (Carbuncle auto-summon), `job_update` (HUD only), `file_unload` (stops the skill-up loop) |
+| `shared/entry/smn.lua` (203 lines; every character's `<Char>_SMN.lua` and the template `_master/entry/Tetsouo_SMN.lua` are one `include` of it) | Entry: config preload, `get_sets`, `init_gear_sets`, `job_sub_job_change`, `user_setup` (Carbuncle auto-summon), `job_update` (HUD only), `file_unload` (stops the skill-up loop) |
 | `shared/jobs/smn/functions/smn_functions.lua` | Facade: `message_buffs.lua`, the 12 hook files, `dualbox_manager`, a debug line |
 | `shared/jobs/smn/functions/SMN_PRECAST.lua` | Guard, cooldown, WS; empty Blood Pact branch; `job_post_precast` (TP gear) |
 | `shared/jobs/smn/functions/SMN_MIDCAST.lua` | `job_post_midcast`: Blood Pact set via the classifier, else `JOB_POST_MIDCAST_HANDLERS` by skill |
@@ -432,7 +432,7 @@ it stays on after the first cast.
 ### Offline testing (lua5.1)
 
 - Syntax: from `data/`,
-  `for f in shared/jobs/smn/functions/*.lua shared/jobs/smn/functions/logic/*.lua _master/entry/Tetsouo_SMN.lua _master/config/smn/*.lua _master/sets/smn_sets.lua; do luac5.1 -p "$f"; done`.
+  `for f in shared/jobs/smn/functions/*.lua shared/jobs/smn/functions/logic/*.lua shared/entry/smn.lua _master/entry/Tetsouo_SMN.lua _master/config/smn/*.lua _master/sets/smn_sets.lua; do luac5.1 -p "$f"; done`.
 - Classifier: `lua5.1 -e "package.path='./?.lua;'..package.path; S=function(t) local s={} for _,v in ipairs(t) do s[v]=true end return setmetatable(s,{__index={contains=function(self,k) return rawget(self,k)==true end}}) end; local C=require('shared/jobs/smn/functions/logic/blood_pact_classifier'); print(C.classify('Flaming Crush'), C.classify('healing ruby'))"`
   prints `BPRage.Hybrid nil`, which shows the case sensitivity of `smn bp`.
 - Pet midcast order: stub `equip` to record slots, call `job_pet_midcast`

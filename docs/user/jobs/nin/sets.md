@@ -5,7 +5,7 @@ itself. Modes and keys: [states.md](states.md). Names every job shares
 (subjob actions, movement, Doom, Dual Wield tiers, Treasure Hunter, Obi and
 Orpheus): [set names](../../guides/sets.md).
 
-Your file: `<YourName>/nin/nin_sets.lua`. The provided file has every set the
+Your file: `<YourName>/nin/sets/nin_sets.lua`. The provided file has every set the
 code reads, empty: fill in your pieces. `//gs c debugmidcast` shows, for each
 spell, which set was chosen and why.
 

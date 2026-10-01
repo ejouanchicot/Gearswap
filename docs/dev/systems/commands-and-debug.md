@@ -142,7 +142,7 @@ sequenceDiagram
 
 ### 4. Alt commands and name shadowing
 
-`AltCommands.is_alt_command(cmd)` (`shared/utils/dualbox/alt_commands.lua`) is true only on the dual-box main, and only when `cmd` is a key of the alt's current main-job or subjob config. "Main" means `_G.DualBoxConfig.enabled` and `role == 'main'` (see `get_alt_name`). The config is `<main char>/config/alt/<JOB>_ALT_COMMANDS.lua` merged with `<JOB>_ALT_CUSTOM.lua` (`load_job_config`); each file falls back to its `_master/config/alt/` template when the character has none. The merged config is filtered by the level the alt reported in `_G.AltJobState` and cached per `job/sub/levels` key (`load_config`). Explicit forms:
+`AltCommands.is_alt_command(cmd)` (`shared/utils/dualbox/alt_commands.lua`) is true only on the dual-box main, and only when `cmd` is a key of the alt's current main-job or subjob config. "Main" means `_G.DualBoxConfig.enabled` and `role == 'main'` (see `get_alt_name`). The config is the generated `shared/data/alt/<JOB>_ALT_COMMANDS.lua` merged with the main character's `_common/dualbox/alt/<JOB>_ALT_CUSTOM.lua` (`load_job_config`); the CUSTOM file falls back to its `_master/config/alt/` template when the character has none. The merged config is filtered by the level the alt reported in `_G.AltJobState` and cached per `job/sub/levels` key (`load_config`). Explicit forms:
 
 - `//gs c altcmds [filter]` (or `altlist`) lists the alt's commands;
 - `//gs c alt <name> [args]` runs one and forwards every extra word (`AltCommands.handle`).
@@ -155,7 +155,7 @@ A bare `//gs c <name>` reaches the alt only as Mote's last lookup. At module loa
 - **`runs_locally` names never reach the alt.** `__index` refuses every name `CommonCommands.runs_locally(name)` claims: common names, warp aliases and `<alias>all`, and Mote's raw keys. A common command whose handler fails therefore does not fall through to the alt. Four alt keys are such names: `warp`, `escape`, `retrace` (BLM alt config) and `jump` (DRG alt config). They run only as `//gs c alt <name>`. Likewise, the alt keys `haste` (RDM, WHM alt configs) are why the Dual Wield command is `dw`, not `haste`.
 - **The lookup is case-insensitive** (`Haste` works), because `is_alt_command` and `execute` lower-case the name.
 
-Mote rebuilds the table on every job-file load, and `COMMON_COMMANDS` is required again in each new sandbox on its first command, so the fallback exists from the first command on. RDM's cast-by-name fallback leaves a name unhandled when `selfCommandMaps` answers it. The other 16 job files have no catch-all.
+Mote rebuilds the table on every job-file load, and `COMMON_COMMANDS` is required again in each new sandbox on its first command, so the fallback exists from the first command on. RDM's cast-by-name fallback leaves a name unhandled when `selfCommandMaps` answers it. The other 21 job files have no catch-all.
 
 `altcmds`, `altlist` and a bare `alt` pass `runs_locally` down to `AltCommands.list`. The list shows the names `runs_locally` claims separately, under a `//gs c alt <name>` line (`message_alt_commands.lua`, `show_shadowed`). `AltCommands.list` cannot see job-specific commands, so a job command that shares an alt key (the list above) is still shown in the bare form although it runs on the main.
 
@@ -302,8 +302,8 @@ Mote-native commands that still reach Mote: `update`, `toggle`, `cycle`, `cycleb
 
 | Function | Behaviour | Callers |
 |---|---|---|
-| `handle_command(command, job_name, ...)` -> boolean | Router, section 3. `job_name` is used only by `reload` and `checksets` | the 17 job files |
-| `is_common_command(command)` -> boolean | True for common names, warp aliases and `<alias>all` | the 17 job files, `runs_locally` |
+| `handle_command(command, job_name, ...)` -> boolean | Router, section 3. `job_name` is used only by `reload` and `checksets` | the 22 job files |
+| `is_common_command(command)` -> boolean | True for common names, warp aliases and `<alias>all` | the 22 job files, `runs_locally` |
 | `runs_locally(name)` -> boolean | `is_common_command(name)` or `rawget(selfCommandMaps, name) ~= nil` | `AltCommands.install_fallback`, `AltCommands.handle` / `list` (through `handle_alt_command`) |
 | `handle_reload(job_name)` | `JobChangeManager.force_reload`; error message if the manager fails to load | router |
 | `handle_jump()` | `DRGJumpManager.execute_jump()` | router |
@@ -353,7 +353,7 @@ Output goes through `MessageInfo` (`formatters/ui/message_info.lua`). Units: JA 
 
 ### ConfigLoader (`config_loader.lua`)
 
-At file level it installs `ModuleCache` (so the cache exists before Mote's `user_setup`). `ConfigLoader.load_ui_config(char_name, job_name)` -> table: `dofile(windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/UI_CONFIG.lua')` inside `pcall`; on failure a fallback table and `MessageCore.show_config_error`. It writes `_G.UIConfig`, then requires `shared/config/ui_settings` and writes `_G.ui_display_config` from its getters. Callers: module level of every entry file (`_master/entry/Tetsouo_*.lua`, the overlay entries and their live copies).
+At file level it installs `ModuleCache` (so the cache exists before Mote's `user_setup`). `ConfigLoader.load_ui_config(char_name, job_name)` -> table: `dofile` of the path `CharPaths.file('common', 'UI_CONFIG.lua', nil, char_name)` returns (`<char>/_common/display/UI_CONFIG.lua`, or an older place) inside `pcall`; on failure a fallback table and `MessageCore.show_config_error`. It writes `_G.UIConfig`, then requires `shared/config/ui_settings` and writes `_G.ui_display_config` from its getters. Callers: module level of every shared entry (`shared/entry/<job>.lua`, with `CharPaths.name()`).
 
 ### DebugLogger (`debug_logger.lua`, returned module)
 
@@ -390,8 +390,8 @@ Probes called by other systems, each a no-op unless recording:
 | `on_cleanup` | `job_change_manager.lua` |
 | `on_gs_reload` | `job_change_manager.lua` |
 | `on_reload_complete` | `INIT_SYSTEMS.lua` |
-| `on_prerender_check` | the BST entries (`_master/entry/Tetsouo_BST.lua`, `_master/Tetsouo/entry/Tetsouo_BST.lua`) |
-| `on_job_update` | the SMN entry (`_master/entry/Tetsouo_SMN.lua`) and the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` |
+| `on_prerender_check` | the BST entry (`shared/entry/bst.lua`, pet monitor) |
+| `on_job_update` | every shared entry's `job_update` (`shared/entry/<job>.lua`, 22 files) |
 
 ### SystemChecker, FullTest, GlobalProbe, TraceLog
 
@@ -419,7 +419,7 @@ Ten checks, each OK = 1, WARN = 0.5, FAIL = 0; score = `floor(sum / 10 * 100)`. 
 | Global leaks (`check_global_leaks`) | `GlobalProbe.leaks()` | none / no baseline yet / list of names |
 | Job hooks (`check_job_hooks`) | `GlobalProbe.missing_hooks()` | all 7 present / - / list |
 
-Output goes to chat with `add_to_chat`: colour 207, then 204 for OK and 167 for both WARN and FAIL. Diagnostic tools may write to chat directly (`.claude/CODE_QUALITY.md` section 6). Export: `data/syscheck_<player.name>.txt`, one file per character.
+Output goes to chat with `add_to_chat`: colour 207, then 204 for OK and 167 for both WARN and FAIL. Diagnostic tools may write to chat directly: the project rule allows a direct `add_to_chat` in the message system itself, in diagnostic tools (which must keep working when the message chain is what is broken) and in the INIT fallback. Export: `data/syscheck_<player.name>.txt`, one file per character.
 
 ### FullTest (`//gs c fulltest [export]`)
 
@@ -471,7 +471,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 
 - On/off lives in `windower._trace_log_on` and in a marker file `<Character>/trace.on`, read once when `windower._trace_log_on` is nil. The marker makes recording survive `//lua reload gearswap`, which resets the `windower` table.
 - `trace on` and `trace off` set both. `clear` empties the log. Every form prints the state and the file path.
-- It prints with `add_to_chat` directly (CODE_QUALITY section 6), so it keeps working when the message system is what is being traced.
+- It prints with `add_to_chat` directly (allowed for diagnostic tools), so it keeps working when the message system is what is being traced.
 - Tags written today:
 
   | Tag | Written by |
@@ -512,7 +512,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 | Read / written | Where | Default / notes |
 |---|---|---|
 | Warp aliases | `shared/utils/warp/warp_command_registry.lua` `COMMANDS` | Single list shared with `warp_ipc.lua` |
-| Alt command definitions | `<main char>/config/alt/<JOB>_ALT_COMMANDS.lua` + `<JOB>_ALT_CUSTOM.lua` | Loaded by `alt_commands.lua` `load_job_config` with the main's `player.name`; each file falls back to `_master/config/alt/` |
+| Alt command definitions | `shared/data/alt/<JOB>_ALT_COMMANDS.lua` + `<main char>/_common/dualbox/alt/<JOB>_ALT_CUSTOM.lua` | Loaded by `alt_commands.lua` `load_job_config` on the main; the CUSTOM file falls back to `_master/config/alt/` |
 | Message modes | `<char>/saved/message_modes.lua` via `shared/config/message_settings.lua` | Written by `jamsg` / `spellmsg` / `wsmsg`; defaults `on` |
 | Combat Mode / Treasure Mode | `<char>/_common/keys/combat_mode.lua`, `<char>/_common/keys/treasure_mode.lua` | Rewritten whole by `combatmode` / `th`; kept across a re-clone (`clone_character.py` `KEPT_ON_RECLONE`) |
 | Dual Wield values | `<char>/_common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`) | Read by `dw` and the DW hook |
@@ -586,11 +586,11 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 5. **Check the name for collisions** before choosing it:
    - job commands: `grep -rn "command == '<name>'" shared/jobs`;
    - warp aliases (including `<alias>all`): `warp_command_registry.lua`;
-   - alt configs: `_master/config/alt/*.lua`;
+   - alt configs: `shared/data/alt/*.lua` and `_master/config/alt/*_ALT_CUSTOM.lua`;
    - Mote's `selfCommandMaps`.
 6. **Advertise it.** Add it to the help screens: `COMMANDS_HELP` (`//gs c commands`) and, if it has its own help, `QUICK_HELP` (`//gs c help`), both in `shared/utils/messages/formatters/ui/message_commands.lua`.
 7. **Declare its globals.** If it creates a global, add the name to `global_probe.lua` `EXPECTED`.
-8. **Use the message system.** Print through `MessageFormatter`, `InfoBlock` or `HelpScreen`. Direct `add_to_chat` is allowed only in the diagnostic tools listed in CODE_QUALITY section 6.
+8. **Use the message system.** Print through `MessageFormatter`, `InfoBlock` or `HelpScreen`. Direct `add_to_chat` is allowed only in the message system itself, the diagnostic tools (`lag_debugger.lua`, `full_test.lua`, `system_checker.lua`, `trace_log.lua`, `wardrobe_auditor.lua`, `wardrobe/lib/chat.lua`, `DEBUG_COMMANDS.lua`, `refill/refill_panels.lua`) and the INIT fallback.
 
 ### Adding a job command
 
@@ -627,7 +627,6 @@ Open:
 - `altcmds` cannot tell that a job command shares an alt key. On WAR with a WAR alt it lists `berserk` in the bare form, although `//gs c berserk` runs on the main (`AltCommands.list`).
 - `automedicine` and `lagdebug` treat any unrecognised argument as "toggle" (`AutoMedicine.handle_command`, `DebugCommands.handle_lagdebug`).
 - `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
-- `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` and, of the generic templates, only in `_master/entry/Tetsouo_SMN.lua` (copied from the overlay).
 - A `trace.on` marker left on a character keeps tracing across restarts; since 2026-09-29 the log is capped by moving it to `trace.old.log` past 10 MB, so at most about 20 MB stay on disk.
 - Fixed 2026-09-28: `RollShare.receive` returns true, so `rollshow` sets `eventArgs.handled` (before, it returned nothing; no visible effect, since `runs_locally` already stopped the alt fallback).
 - `COMMON_COMMANDS.lua` is 786 lines, past the 600-line soft limit (under the 800 hard limit).

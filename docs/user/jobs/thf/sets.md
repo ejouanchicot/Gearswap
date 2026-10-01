@@ -1,6 +1,6 @@
 # THF — set names and automatic gear
 
-Every set name THF reads in `<YourName>/thf/thf_sets.lua`, and everything the
+Every set name THF reads in `<YourName>/thf/sets/thf_sets.lua`, and everything the
 job puts on by itself. Keys and modes: [states.md](states.md). Names every job
 understands (Fast Cast, subjob actions, Doom, Dual Wield, movement...):
 [set names](../../guides/sets.md).

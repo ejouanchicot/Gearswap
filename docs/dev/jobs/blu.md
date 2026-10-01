@@ -4,7 +4,7 @@ The BLU job was added on 2026-09-26. It is a thin job built on the shared
 systems: 11 hook modules plus 5 logic modules under `shared/jobs/blu/functions/`
 (about 1 140 lines with the facade), a template entry point, eight config files,
 one sets file, and one character overlay. GearSwap loads it when the main job
-becomes BLU (the entry file `<Character>_BLU.lua`, made from
+becomes BLU (the entry file `<Character>_BLU.lua`, one `include` of `shared/entry/blu.lua`, copied from
 `_master/entry/Tetsouo_BLU.lua` by the clone script). From then on Mote-Include
 calls its hooks on every action, on status and buff changes, on `//gs c`
 commands and on state cycles.
@@ -40,7 +40,7 @@ the sets files (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_BLU.lua` | 203 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ AzureSets load), `job_update` (HUD only), `init_gear_sets`, `file_unload` (+ AzureSets unload) |
+| `shared/entry/blu.lua` | 205 | Entry (the same for every character; `<Char>_BLU.lua` and its template `_master/entry/Tetsouo_BLU.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ AzureSets load), `job_update` (HUD only), `init_gear_sets`, `file_unload` (+ AzureSets unload) |
 | `shared/jobs/blu/functions/blu_functions.lua` | 66 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/blu/functions/BLU_PRECAST.lua` | 130 | `job_precast` (guard, cooldown, Unbridled Learning, Expiacion hold, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/blu/functions/BLU_MIDCAST.lua` | 163 | `job_midcast` (empty) / `job_post_midcast` (Blue Magic by category + overlays, other skills) / `job_get_spell_map` |
@@ -73,7 +73,7 @@ the sets files (structure and set names only).
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |
 | `_master/sets/blu_sets.lua` | 182 | Template sets: every set the code reads, all empty |
 | `_master/Gabvanstronger/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)) |
-| `_master/config/alt/BLU_ALT_COMMANDS.lua` | - | Dual-box commands for a BLU partner (read by the main's alt system, not by the BLU job file) |
+| `shared/data/alt/BLU_ALT_COMMANDS.lua` | - | Dual-box commands for a BLU partner (read by the main's alt system, not by the BLU job file) |
 
 No live copy is tracked (live folders are gitignored).
 

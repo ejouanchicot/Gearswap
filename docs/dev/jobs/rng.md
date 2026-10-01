@@ -4,8 +4,8 @@ RNG was added on 2026-09-29. It is a thin job built on the shared systems,
 like BLU and PUP: 12 hook modules plus 2 logic modules under
 `shared/jobs/rng/functions/`, a template entry point, seven config files and
 one sets file. GearSwap loads it when the main job becomes RNG (the entry file
-`<Character>_RNG.lua`, made from `_master/entry/Tetsouo_RNG.lua` by the clone
-script, which lists RNG in `ALL_VALID_JOBS`).
+`<Character>_RNG.lua`, one `include` of `shared/entry/rng.lua`, copied from
+`_master/entry/Tetsouo_RNG.lua` by the clone script, which lists RNG in `ALL_VALID_JOBS`).
 
 Player-facing pages: [hub](../../user/jobs/rng/README.md),
 [modes](../../user/jobs/rng/states.md), [sets](../../user/jobs/rng/sets.md).
@@ -32,7 +32,7 @@ What RNG adds on top of the shared pipeline:
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_RNG.lua` | 185 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/rng.lua` | 189 | Entry (the same for every character; `<Char>_RNG.lua` and its template `_master/entry/Tetsouo_RNG.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/rng/functions/rng_functions.lua` | 64 | Facade: includes `message_buffs` and the hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/rng/functions/RNG_PRECAST.lua` | 123 | `job_precast` (guard, cooldown, Flurry groups, WS handler) / `job_post_precast` (TP gear, Velocity Shot layer on the aim); starts `FlurryTracker` at load |
 | `shared/jobs/rng/functions/RNG_MIDCAST.lua` | 90 | `job_midcast` (empty) / `job_post_midcast` (ranged attack and subjob magic via MidcastManager, ranged buff layers) |
@@ -56,7 +56,7 @@ What RNG adds on top of the shared pipeline:
 | `_master/config/rng/RNG_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/rng/RNG_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/rng_sets.lua` | 170 | Template sets: every set the code reads, all empty |
-| `_master/config/alt/RNG_ALT_COMMANDS.lua` | - | Dual-box commands for an RNG partner (read by the main's alt system, not by the RNG job file) |
+| `shared/data/alt/RNG_ALT_COMMANDS.lua` | - | Dual-box commands for an RNG partner (read by the main's alt system, not by the RNG job file) |
 
 ## How it works
 
