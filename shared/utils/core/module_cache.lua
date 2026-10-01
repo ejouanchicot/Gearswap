@@ -84,10 +84,6 @@ function ModuleCache.install()
 
         local result = original(path)
         stats.loads = stats.loads + 1
-        -- //gs c trace dead wraps the watched functions of each module it loads
-        -- (shared/utils/debug/tombstones.lua)
-        local on_load = rawget(_G, '__require_load_hook')
-        if on_load then pcall(on_load, path, result) end
         cache[key] = (result == nil) and CACHED_NIL or result
         return result
     end
