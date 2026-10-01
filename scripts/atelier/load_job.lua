@@ -212,7 +212,7 @@ for k, v in pairs({
     pack = {}, functions = {}, os = os, texts = texts, bit = {band = function() return 0 end},
     type = type, tostring = tostring, tonumber = tonumber, pairs = pairs, ipairs = ipairs, print = function() end,
     add_to_chat = function() end, unpack = unpack, next = next, select = select, lua_base_path = GS,
-    empty = {}, file = {}, loadstring = loadstring, assert = assert, error = error, pcall = pcall,
+    empty = {name = 'empty'}, file = {}, loadstring = loadstring, assert = assert, error = error, pcall = pcall,
     io = io, dofile = dofile, debug = debug, coroutine = cor, setmetatable = setmetatable,
     getmetatable = getmetatable, rawset = rawset, rawget = rawget, _libs = {},
     buffactive = {}, player = player, world = {area = 'Nowhere', zone = 'Nowhere', weather_element = 'None', day_element = 'Fire'},

@@ -40,6 +40,9 @@ local SLOT_BY_ID = {[0] = 'main', 'sub', 'range', 'ammo', 'head', 'body', 'hands
 -- Bags GearSwap equips from: inventory, wardrobes 1-8
 local EQUIP_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16}
 local MAX_DEPTH = 7
+-- What the export holds, raised when it gains something the page relies on: the page warns about
+-- an export written by an older exporter (2: key conditions, empty sets, 2026-10-02)
+local EXPORT_VERSION = 2
 
 ---============================================================================
 --- SWITCH AND PATHS
@@ -130,7 +133,14 @@ local function walk_sets(root)
         end
         path_of[tbl] = path
         local pieces = pieces_of(tbl)
-        if pieces then out[path] = {path = path, pieces = pieces} order[#order + 1] = path end
+        if not pieces and path ~= 'sets' then
+            local leaf = true
+            for key, value in pairs(tbl) do
+                if type(value) == 'table' and not slot_of(key) then leaf = false break end
+            end
+            if leaf then pieces = {} end
+        end
+        if pieces then out[path] = {path = path, pieces = pieces, empty = next(pieces) == nil or nil} order[#order + 1] = path end
         local keys = {}
         for key, value in pairs(tbl) do
             if type(value) == 'table' and not slot_of(key) then keys[#keys + 1] = key end
@@ -195,11 +205,21 @@ local function collect_keys()
     local ok, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
     local keys = {}
     for _, bind in ipairs(module and module.binds or {}) do
+        -- visible: a function (optional_state.lua, PLD MainWeapon under the Tanking stance),
+        -- read now; false means the game leaves the key unbound at the time of the export
+        local shown = nil
+        if type(bind.visible) == 'function' then
+            local ok_v, v = pcall(bind.visible)
+            shown = ok_v and v ~= false and v ~= nil
+        end
         keys[#keys + 1] = {key = bind.key or '', desc = bind.desc or bind.command or '', state = bind.state,
             src = source_of(bind), subjob = type(bind.subjob) == 'string' and bind.subjob or nil,
             id = ok and KeyOverrides.id_of(bind) or nil, file_key = bind.file_key,
             subjobs = type(bind.subjob) == 'table' and bind.subjob or nil,
-            exclude = type(bind.exclude_subjob) == 'string' and {bind.exclude_subjob} or bind.exclude_subjob}
+            exclude = type(bind.exclude_subjob) == 'string' and {bind.exclude_subjob} or bind.exclude_subjob,
+            visible_now = shown, override = bind.override == true or nil,
+            alt = type(bind.alt) == 'table' and bind.alt or nil,
+            weapon = (type(bind.weapon) == 'string' or type(bind.weapon) == 'table') and bind.weapon or nil}
     end
     return keys
 end
@@ -583,6 +603,7 @@ function AtelierExport.build()
     data.descs = collect_descs(ids)
     data.wskill = collect_weapon_skills(data.icons)
     data.ws_skill = collect_ws_skills(data.sets)
+    data.export_version = EXPORT_VERSION
     -- the keys changed in the page and saved (<Char>/saved/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
     data.key_overrides = ok_o and KeyOverrides.read() or nil
