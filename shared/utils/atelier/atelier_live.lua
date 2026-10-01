@@ -11,6 +11,9 @@
 ---   POST /save?file=<name>     writes <Char>/saved/<name>: keybind_overrides.lua
 ---                              or set_overrides.lua only
 ---   GET  /actions              the job's spells, abilities and weapon skills
+---   GET  /worn_options         the buffs the job's code reads, whether it has a pet
+---   POST /worn?status=&buffs=&town=&moving=&pet=&s.<Mode>=  the idle / engaged set the
+---                              job's code builds for those (AtelierSim.worn)
 ---   GET  /tpbonus?tp=&main=&sub=&buffs=  the TP bonus pieces the job's rules add
 ---                              to a weaponskill at that TP, and its TP steps (AtelierSim.tp_bonus)
 ---   POST /simulate?kind=&name=  what the job wears for an action (atelier_sim.lua),
@@ -130,6 +133,16 @@ local function route(req, live)
     end
     if req.path == '/actions' then
         return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').actions())
+    end
+    if req.path == '/worn_options' then
+        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').worn_options())
+    end
+    if req.path == '/worn' and req.method == 'POST' then
+        local q = query_table(req.query)
+        local states = {}
+        for k, v in pairs(q) do local name = k:match('^s%.(.+)$'); if name then states[name] = v end end
+        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').worn({status = q.status, states = states,
+            buffs = q.buffs, town = q.town == '1', moving = q.moving == '1', pet = q.pet}))
     end
     if req.path == '/tpbonus' then
         local q = query_table(req.query)
