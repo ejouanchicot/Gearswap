@@ -384,6 +384,24 @@ local function collect_weapon_skills(icons)
     return out
 end
 
+--- The combat skill of each weaponskill a set path names (sets.precast.WS["Savage Blade"]
+--- -> "Sword"): the page puts a weapon of that skill in the weaponskill's set.
+local function collect_ws_skills(set_list)
+    local ok, res = pcall(require, 'resources')
+    if not (ok and res and res.weapon_skills and res.skills) then return nil end
+    local by_name = {}
+    for _, ws in pairs(res.weapon_skills) do
+        local skill = ws.en and ws.skill and res.skills[ws.skill]
+        if skill and skill.en then by_name[ws.en] = skill.en end
+    end
+    local out = {}
+    for _, set in ipairs(set_list or {}) do
+        for name in tostring(set.path):gmatch('"([^"]+)"') do out[name] = by_name[name] end
+        for name in tostring(set.path):gmatch('%.([%w_]+)') do out[name] = out[name] or by_name[name] end
+    end
+    return out
+end
+
 --- What //gs c gearscan read on the character's own copies of these items
 --- (<Char>/saved/gear_augments.lua, shared/utils/equipment/gear_scan.lua):
 --- their real augments, and the path, rank and rank stats of Odyssey gear.
@@ -538,6 +556,7 @@ function AtelierExport.export()
     end
     data.descs = collect_descs(ids)
     data.wskill = collect_weapon_skills(data.icons)
+    data.ws_skill = collect_ws_skills(data.sets)
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))
