@@ -41,6 +41,15 @@ local INVENTORY_BAG_ID = 0
 --- Delay between move operations (seconds) to respect FFXI packet rate
 local MOVE_DELAY = 0.6
 
+--- One line in <Character>/saved/trace.log while //gs c trace is on (tag
+--- REFILL): the list used, each line planned, each move sent. The moves go
+--- through windower.ffxi.put_item / get_item, which the command trace does
+--- not see.
+local function trace(fmt, ...)
+    local args = {...}
+    pcall(function() require('shared/utils/debug/trace_log').log('REFILL', fmt, unpack(args)) end)
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PLANNING HELPERS
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -99,7 +108,8 @@ local function queue_surplus(variants, surplus, items_data, store_info)
             table.insert(moves, {
                 bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
                 slot = slot_info.slot, count = to_move,
-                item_name = v.name, is_surplus = true
+                item_name = v.name, is_surplus = true,
+                why = 'surplus', from = 'Inventory', to = store_info.display
             })
             remaining = remaining - to_move
         end
@@ -127,7 +137,8 @@ local function queue_deficit(variants, deficit, items_data, source_bags)
                     local to_move = math.min(remaining, slot_info.count)
                     table.insert(moves, {
                         bag_id = source.id, slot = slot_info.slot,
-                        count = to_move, item_name = v.name
+                        count = to_move, item_name = v.name,
+                        why = 'missing', from = source.display, to = 'Inventory'
                     })
                     remaining = remaining - to_move
                     moved = moved + to_move
@@ -171,6 +182,7 @@ local function plan_item(refill_item, items_data, store_info)
         deficit = deficit, moved = 0, short = 0, source = '',
         surplus = 0, surplus_dest = nil
     }
+    trace('plan %s: have %d, target %d', result.name, inv_count, target)
     local moves = {}
 
     if deficit < 0 then
@@ -216,7 +228,8 @@ local function sweep_foreign_items(items_data, list, store_info)
                 table.insert(moves, {
                     bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
                     slot = slot, count = it.count,
-                    item_name = display, is_surplus = true
+                    item_name = display, is_surplus = true,
+                    why = 'foreign', from = 'Inventory', to = store_info.display
                 })
                 foreign_results[display] = foreign_results[display]
                                            or {moved = 0, dest = store_info.display}
@@ -258,6 +271,7 @@ function RefillManager.refill()
     -- Which list applies to the job being played, and where surplus goes
     local list, source_label, store_info = ConfigResolver.resolve_list_for_player()
     RefillPanels.show_start(source_label, store_info.display, #list)
+    trace('list %s (%d lines), store %s', tostring(source_label), #list, tostring(store_info.display))
 
     local results = {}
     local move_queue = {}
@@ -287,6 +301,8 @@ function RefillManager.refill()
             end
 
             local move = move_queue[index]
+            trace('move %s x%d: %s -> %s (%s)', tostring(move.item_name), move.count,
+                tostring(move.from), tostring(move.to), tostring(move.why))
             if move.is_surplus then
                 -- INV -> store_bag: use put_item (canonical for inv->bag)
                 windower.ffxi.put_item(move.dst_id, move.slot, move.count)
