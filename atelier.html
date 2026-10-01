@@ -244,7 +244,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tip .split .a{font-size:11px;margin:0}
 .tip .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:9px 0 3px}
 .tip ul{margin:0;padding-left:16px;color:var(--muted);font-size:12.5px}
-.tip .origin{color:var(--accent);font-size:12.5px;margin:0 0 6px}
 @media (max-width:640px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* ---- tables ---- */
@@ -365,7 +364,7 @@ const T = {
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipSplit:'◆ = part des augments, le reste est la stat de base', tipInh:'Hérité de {b}', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipSplit:'◆ = part des augments, le reste est la stat de base', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -390,7 +389,7 @@ const T = {
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipSplit:'◆ = augment part, the rest is the base stat', tipInh:'Inherited from {b}', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipSplit:'◆ = augment part, the rest is the base stat', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -1327,9 +1326,6 @@ function tipHTML(card, slot){
   const label = SLOT_NAMES[S.lang][slot];
   if (!p) return `<div class="th">${icon(null)}<div><b>${label}</b><small>${slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty')}</small></div></div>`;
   const r = pieceStats(p);
-  const own = new Set(s.own || Object.keys(s.pieces));
-  // Said only when the piece comes from elsewhere: a weapon mode or the base set
-  const origin = eff.from[slot] || (s.base && !own.has(slot) ? t('tipInh', {b: shortPath(s.base)}) : '');
   let body = '';
   if (r && r.known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
@@ -1347,7 +1343,7 @@ function tipHTML(card, slot){
     if (r.cond.length) body += `<div class="k">${t('condTitle')}</div><ul>${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
   } else body = `<p class="muted">${t('noDesc')}</p>`;
   const weapon = r && r.weapon ? ` · ${Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ')}` : '';
-  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}</small></div></div>${origin ? `<p class="origin">${esc(origin)}</p>` : ''}${body}`;
+  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}</small></div></div>${body}`;
 }
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
