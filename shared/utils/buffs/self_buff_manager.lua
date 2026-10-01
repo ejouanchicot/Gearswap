@@ -12,7 +12,9 @@
 ---   learned and the main or sub level); otherwise skipped, and reported,
 ---   when its buff is already up (the buff the action gives: Enlight II gives
 ---   Enlight) or it is on recast, and skipped when it was used seconds ago
----   (double press). A few names keep a rule of their own:
+---   (double press). Tiers of one buff, best first (Refresh III, Refresh II,
+---   Refresh): the first one available goes, the others are left out.
+---   A few names keep a rule of their own:
 ---     Warcry       Blood Rage instead while Warcry is on cooldown (WAR main)
 ---     Hasso, Seigan  only with a two-handed weapon in hand
 ---     Utsusemi     Utsusemi: Ni, else Ichi
@@ -131,15 +133,20 @@ local function item_of(name, ctx)
 end
 
 --- Queue it unless its buff is up, it is on recast or was just queued.
+--- @return string 'active', 'cooldown', 'queued' or 'spam'
 local function collect_item(item, ctx, to_cast, status)
     local recast = recast_of(item, ctx)
     if item.buff and buffactive[item.buff] then
         table.insert(status, {name = item.name, status = 'active'})
+        return 'active'
     elseif not is_recast_ready(recast) then
         table.insert(status, {name = item.name, status = 'cooldown', time = math.ceil(recast)})
+        return 'cooldown'
     elseif not (last_use[item.name] and os.clock() - last_use[item.name] < CAST_COOLDOWN) then
         table.insert(to_cast, item)
+        return 'queued'
     end
+    return 'spam'
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -232,13 +239,22 @@ function SelfBuffManager.collect(list)
     local res = resources()
     if type(list) ~= 'table' or not res then return to_cast, status end
     local ctx = context(res)
+    -- Tiers of one buff (Refresh III, Refresh II, Refresh), best first: once
+    -- one is up or queued, the others of that buff are left out; a tier on
+    -- recast lets the next one go
+    local covered = {}
     for _, entry in ipairs(list) do
         local name = type(entry) == 'table' and (entry.name or entry.ability or entry.spell) or entry
         if SPECIAL[name] then
             SPECIAL[name](ctx, to_cast, status)
         else
             local item = resolve(entry, res)
-            if item and usable(item, ctx) then collect_item(item, ctx, to_cast, status) end
+            if item and usable(item, ctx) and not (item.buff and covered[item.buff]) then
+                local outcome = collect_item(item, ctx, to_cast, status)
+                if item.buff and (outcome == 'active' or outcome == 'queued' or outcome == 'spam') then
+                    covered[item.buff] = true
+                end
+            end
         end
     end
     return to_cast, status

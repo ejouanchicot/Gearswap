@@ -21,13 +21,30 @@
 ---============================================================================
 
 return {
-    -- Your main job's buffs. Examples to copy (your choice of spells):
-    --   RDM = {'Haste II', 'Refresh III', 'Phalanx', 'Temper II', 'Gain-STR'},
-    --   PLD = {'Majesty', 'Crusade', 'Phalanx', 'Reprisal', 'Enlight II'},
-    --   RUN = {'Crusade', 'Phalanx', 'Temper', 'Regen IV'},
-    --   NIN = {'Utsusemi'},
+    -- Your main job's buffs. Write the tiers of a buff best first (Refresh
+    -- III, Refresh II, Refresh): the first one you have and is ready goes.
+    -- No list: BRD (songs), COR (rolls), GEO (bubbles), BST / SMN / PUP
+    -- (pets), DNC (its dance and samba come first anyway), WAR (berserk /
+    -- defender below), BLU (the game does not tell which spells are set),
+    -- DRG, THF. Add one if you like, e.g. BLU = {'Cocoon', 'Barrier Tusk'}.
     job = {
         BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
+        RDM = {'Composure', 'Haste II', 'Haste', 'Refresh III', 'Refresh II', 'Refresh',
+               'Phalanx', 'Temper II', 'Temper', 'Protect V', 'Protect IV', 'Shell V', 'Shell IV',
+               'Stoneskin', 'Blink', 'Aquaveil'},
+        WHM = {'Afflatus Solace', 'Reraise IV', 'Reraise III', 'Haste', 'Protect V', 'Protect IV',
+               'Shell V', 'Shell IV', 'Auspice', 'Stoneskin', 'Blink', 'Aquaveil'},
+        PLD = {'Majesty', 'Crusade', 'Reprisal', 'Enlight II', 'Enlight', 'Phalanx',
+               'Protect V', 'Protect IV', 'Shell IV'},
+        RUN = {'Swordplay', 'Crusade', 'Temper', 'Phalanx', 'Regen IV', 'Refresh',
+               'Protect IV', 'Shell V', 'Shell IV', 'Foil', 'Aquaveil', 'Stoneskin', 'Blink'},
+        SCH = {'Protect V', 'Protect IV', 'Shell V', 'Shell IV', 'Regen V', 'Regen IV',
+               'Stoneskin', 'Blink', 'Aquaveil'},
+        NIN = {'Utsusemi', 'Migawari: Ichi', 'Kakka: Ichi', 'Myoshu: Ichi'},
+        SAM = {'Hasso', 'Third Eye'},
+        DRK = {'Last Resort', 'Endark II', 'Endark'},
+        MNK = {'Impetus', 'Focus'},
+        RNG = {'Velocity Shot'},
     },
 
     -- Your subjob's buffs (added after the main job's)

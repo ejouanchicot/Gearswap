@@ -16,8 +16,28 @@ local BuffConfig = {}
 
 --- The lists the code used before they could be set (2026-10-01).
 BuffConfig.DEFAULTS = {
+    -- Tiers best first: the first one available goes (self_buff_manager.lua).
+    -- No list: BRD (songs), COR (rolls), GEO (bubbles), BST / SMN / PUP (pets),
+    -- DNC (dance and samba: job_buff_extra), WAR (berserk / defender), BLU
+    -- (the game does not tell which blue spells are set), DRG, THF.
     job = {
         BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
+        RDM = {'Composure', 'Haste II', 'Haste', 'Refresh III', 'Refresh II', 'Refresh',
+               'Phalanx', 'Temper II', 'Temper', 'Protect V', 'Protect IV', 'Shell V', 'Shell IV',
+               'Stoneskin', 'Blink', 'Aquaveil'},
+        WHM = {'Afflatus Solace', 'Reraise IV', 'Reraise III', 'Haste', 'Protect V', 'Protect IV',
+               'Shell V', 'Shell IV', 'Auspice', 'Stoneskin', 'Blink', 'Aquaveil'},
+        PLD = {'Majesty', 'Crusade', 'Reprisal', 'Enlight II', 'Enlight', 'Phalanx',
+               'Protect V', 'Protect IV', 'Shell IV'},
+        RUN = {'Swordplay', 'Crusade', 'Temper', 'Phalanx', 'Regen IV', 'Refresh',
+               'Protect IV', 'Shell V', 'Shell IV', 'Foil', 'Aquaveil', 'Stoneskin', 'Blink'},
+        SCH = {'Protect V', 'Protect IV', 'Shell V', 'Shell IV', 'Regen V', 'Regen IV',
+               'Stoneskin', 'Blink', 'Aquaveil'},
+        NIN = {'Utsusemi', 'Migawari: Ichi', 'Kakka: Ichi', 'Myoshu: Ichi'},
+        SAM = {'Hasso', 'Third Eye'},
+        DRK = {'Last Resort', 'Endark II', 'Endark'},
+        MNK = {'Impetus', 'Focus'},
+        RNG = {'Velocity Shot'},
     },
     subjob = {
         WAR = {'Berserk', 'Aggressor', 'Warcry'},
