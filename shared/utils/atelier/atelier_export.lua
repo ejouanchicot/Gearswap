@@ -299,6 +299,17 @@ local function collect_char()
         char.add[a] = player['add_' .. a]
     end
     char.worn = worn_gear(res)
+    -- what the page adds to the gear's %: merit levels by name ("spell_interruption_rate" = 5),
+    -- and, shown with the measure, the job points spent and the master level (status packet 0x061)
+    local p = windower.ffxi.get_player() or {}
+    char.merits = {}
+    for name, level in pairs(p.merits or {}) do
+        if type(level) == 'number' and level > 0 then char.merits[tostring(name)] = level end
+    end
+    local jp = type(p.job_points) == 'table' and p.job_points[(player.main_job or ''):lower()]
+    char.jp_spent = type(jp) == 'table' and jp.jp_spent or nil
+    local packet = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
+    char.master_level = packet and #packet > 0x65 and packet:byte(0x65 + 1) or nil
     return char
 end
 
