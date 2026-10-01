@@ -12,7 +12,7 @@ The area holds three kinds of code:
   `data/wardrobe_audit.txt` (`wardrobe_auditor.lua`); the same file also feeds the wardrobe organizer
   with item-usage and bag-pin maps. `//gs c rf` restocks consumables in the inventory from the Mog
   Case, Mog Sack and Mog Satchel according to a per-character list (a common list, per-job files that add to or replace it), pushes surplus and "foreign"
-  consumables back, and prints a report (`refill_manager.lua` plus four helpers under `refill/`).
+  consumables (named in another list, by default only the character's own: `store_foreign`) back, and prints a report (`refill_manager.lua` plus four helpers under `refill/`).
   `QuiverManager` opens an ammo quiver or pouch from THF, COR and RNG aftercast when the ammo stack runs
   low (`quiver_manager.lua`). None of these four is loaded at job load: each is `pcall(require, ...)`-ed
   on first use by its caller.
@@ -58,7 +58,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` shared by the job set builders | set builders of 15 jobs (BST: `lay_town_set` and `apply_movement`), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
 | `shared/utils/inventory/refill_manager.lua` | 312 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
-| `shared/utils/inventory/refill/config_resolver.lua` | 339 | Picks the refill list (craft / job+subjob / common list + job extra / fallback) and builds the cross-character foreign item set | `refill_manager.lua` | this page |
+| `shared/utils/inventory/refill/config_resolver.lua` | 361 | Picks the refill list (craft / job+subjob / common list + job extra / fallback) and builds the foreign item set (this character's lists, or other characters' too, per `store_foreign`) | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/item_resolver.lua` | 49 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
 | `shared/utils/inventory/refill/bag_scanner.lua` | 45 | Counts one item id in one bag and returns its slots | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/refill_panels.lua` | 227 | Chat output of the refill (banner, progress, report) | `refill_manager.lua` | this page |
@@ -261,11 +261,11 @@ sequenceDiagram
    0.5 s after `//gs c uncraft` (`craft_manager.lua`), and 3.5 s after a successful wardrobe organize
    (`schedule_lockstyle` in `wardrobe_organizer.lua`). Each of these goes through `handle_refill` and
    therefore also refills the partner.
-2. Guards (`RefillManager.refill`, `refill_manager.lua:246`): the sandbox `player` must exist and
+2. Guards (`RefillManager.refill`, `refill_manager.lua:259`): the sandbox `player` must exist and
    `get_items()` must return a table; otherwise one red `[Refill]` line. There is no in-progress guard.
-3. List resolution (`ConfigResolver.resolve_list_for_player`, `config_resolver.lua:306`), first match
+3. List resolution (`ConfigResolver.resolve_list_for_player`, `config_resolver.lua:328`), first match
    (since 2026-09-30, `bea1f23`). The label is printed as `Config` in the start banner:
-   - No player or main job `NON`: `FALLBACK_LIST` (`:48`, six medicines at 12), label
+   - No player or main job `NON`: `FALLBACK_LIST` (`:54`, six medicines at 12), label
      `fallback (no player)`.
    - Craft mode (`_G.CraftManager.is_active()`; `craft_manager.lua` owns the session state):
      `CRAFT_REFILL` through `CharPaths.load('craft', ...)` (`<Char>/_common/inventory/CRAFT_REFILL.lua`,
@@ -293,29 +293,42 @@ sequenceDiagram
      (`BAG_INFO`): every bag the game opens away from the Mog House. Unknown names are skipped; a
      `source_bags` with none left falls back to the default. The third return value carries both:
      `{id, display, sources = {{key, id, display}, ...}}`.
-4. Planning (`plan_item`, `refill_manager.lua:149`), for each list entry:
+4. Planning (`plan_item`, `refill_manager.lua:160`), for each list entry:
    - `ItemResolver.resolve_variants(name)` keeps the variants whose name resolves in `res.items`
      through `en`/`enl`/`name`/`name_log` (`ItemIndex.id`, `shared/utils/equipment/item_index.lua`). If none
      resolves, the row is reported with `current = 0` and `short = target` (printed as "Out of stock").
-   - Held count = sum of all variants in the inventory (`count_held`, `:56`). Target: the number, or for
+   - Held count = sum of all variants in the inventory (`count_held`, `:65`). Target: the number, or for
      `target = 'all'` the held count plus everything of every variant in the source bags
-     (`effective_target`, `:74`).
+     (`effective_target`, `:83`).
    - Deficit > 0: pull moves, variants in list order, source bags in order, stack by stack
-     (`queue_deficit`, `:115`).
+     (`queue_deficit`, `:125`).
    - Deficit < 0: push moves of the surplus to the store bag, variants in list order (`queue_surplus`,
-     `:90`); the preferred variant is pushed first.
-5. Foreign sweep (`sweep_foreign_items`, `:206`): `ConfigResolver.build_foreign_items_set`
-   (`config_resolver.lua:182`) loads every `*_REFILL.lua`, and `REFILL_CONFIG.lua` (as job `COMMON`),
+     `:99`); the preferred variant is pushed first.
+5. Foreign sweep (`sweep_foreign_items`, `:218`): `ConfigResolver.build_foreign_items_set`
+   (`config_resolver.lua:210`, called with `player.name`) reads the character's `REFILL_CONFIG.lua`
+   (`load_refill_config`, `:161`) and picks the lists to scan from its `store_foreign`
+   (`foreign_sources`, `:172`; since 2026-10-01, before that every character folder was always read):
+   - `'mine'`, or the key absent (any value other than `'all'`, `false` or `'off'` counts as `'mine'`):
+     this character's lists only (`load_char_refill_configs(char_name)`, `:99`).
+   - `'all'`: `load_all_refill_configs(foreign_characters)` (`:140`), the same scan for every
+     directory of `data/` whose name starts with an uppercase letter; when `foreign_characters` is a
+     non-empty list, only the folders it names (case-insensitive). Empty or absent: every such folder,
+     frozen clones included (the behaviour before 2026-10-01).
+   - `false` or `'off'`: no list, so nothing is foreign; only the surplus of step 4 goes back.
+
+   `load_char_refill_configs` loads every `*_REFILL.lua`, and `REFILL_CONFIG.lua` (as job `COMMON`),
    found in `_common/inventory/`, `common/inventory/`, `common/craft/`, every `<sub>/` and
-   `<sub>/inventory/` folder and the same under `config/` (`load_char_refill_configs`, `:93`), for every
-   directory of `data/` whose name starts with an uppercase letter (`load_all_refill_configs`, `:134`),
-   i.e. all characters including frozen clones; the `char_name` argument is not used. Every item id
-   named in any of those lists (`default`, `extra`, `default_list` and all `subjobs` lists,
-   `iterate_config_entries`) that is not a variant of the current list is foreign, and every inventory
-   stack of a foreign id is queued for a full push to the store bag.
+   `<sub>/inventory/` folder and the same under `config/`. Every item id named in any of those lists
+   (`default`, `extra`, `default_list` and all `subjobs` lists, `iterate_config_entries`) that is
+   neither a variant of the current list nor a name in `never_store` (a list of item names in
+   `REFILL_CONFIG.lua`) is foreign, and every inventory stack of a foreign id is queued for a full push
+   to the store bag.
 6. Execution (end of `RefillManager.refill`): the queue holds pulls and pushes in plan order, foreign
    pushes last. `execute_move(1)` runs immediately; each move schedules the next with
-   `coroutine.schedule(..., 0.6)` (`MOVE_DELAY`, `:42`). Pushes use
+   `coroutine.schedule(..., 0.6)` (`MOVE_DELAY`, `:42`); each move first writes a `REFILL` trace
+   line (`move <item> x<n>: <from> -> <to> (missing | surplus | foreign)`), and the run writes
+   `list ...` and one `plan <item>: have <n>, target <n>` per line (`trace`, `:48`; only while
+   `//gs c trace` is on). Pushes use
    `windower.ffxi.put_item(dst_bag, inventory_slot, count)`, pulls
    `windower.ffxi.get_item(src_bag, slot, count)`. Slots and counts come from the single snapshot
    taken at step 2; free space in the inventory or the store bag is not checked and failed moves are
@@ -388,8 +401,9 @@ threshold)` 1.0 s later, so FFXI has decremented the ammo count first, and retur
 
 The quiver has to be in the inventory for `/item`; the refill lists keep it there (`THF_REFILL.lua`
 `Ac. Bolt Quiver` 12, Kaories `COR_REFILL.lua` `Brz. Bull. Pouch` 2). Because of the foreign sweep, a
-character whose own list for the current job does not name the quiver has it pushed back to the store
-bag on every refill.
+quiver that the list in use does not name, but another scanned list does (the character's own lists
+by default, see `store_foreign`), is pushed back to the store bag on every refill unless
+`never_store` names it.
 
 ### Weapon states: `WeaponResolver`
 
@@ -852,9 +866,9 @@ open until the stance is selected again. The registry is emptied on every job lo
 
 | Function | Returns | Callers |
 |---|---|---|
-| `RefillManager.refill()` `refill_manager.lua:246` | `boolean` (true once the queue is started) | `CommonCommands.handle_refill`, `refill_hook` in `INIT_SYSTEMS.lua` |
-| `ConfigResolver.resolve_list_for_player()` `config_resolver.lua:306` | `list, source_label, bags {id, display, sources}`; labels `CRAFT (<name>)`, `<JOB>/<SUB>`, `<JOB>/default`, `common/<SUB>`, `common`, `<common label> + <JOB> extra`, `fallback`, `fallback (no player)` | `RefillManager.refill` |
-| `ConfigResolver.build_foreign_items_set(char_name, current_list)` `:182` | `{[item_id] = config_name}` (`char_name` unused) | `sweep_foreign_items` |
+| `RefillManager.refill()` `refill_manager.lua:259` | `boolean` (true once the queue is started) | `CommonCommands.handle_refill`, `refill_hook` in `INIT_SYSTEMS.lua` |
+| `ConfigResolver.resolve_list_for_player()` `config_resolver.lua:328` | `list, source_label, bags {id, display, sources}`; labels `CRAFT (<name>)`, `<JOB>/<SUB>`, `<JOB>/default`, `common/<SUB>`, `common`, `<common label> + <JOB> extra`, `fallback`, `fallback (no player)` | `RefillManager.refill` |
+| `ConfigResolver.build_foreign_items_set(char_name, current_list)` `:210` | `{[item_id] = config_name}`; `char_name` picks the `REFILL_CONFIG.lua` read and, with `store_foreign = 'mine'`, the folder scanned | `sweep_foreign_items` |
 | `ItemResolver.resolve_item_id(name)` | `number or nil`, through `ItemIndex.id` (index built once per session) | `config_resolver.lua`, `resolve_variants` |
 | `ItemResolver.resolve_variants(name)` `:37` | `{ {name, id}, ... }` resolved only, in list order | `plan_item` |
 | `BagScanner.count_item_in_bag(items, bag_key, id)` `bag_scanner.lua:25` | `total, { {slot, count}, ... }` | `refill_manager.lua` (`count_held`, `effective_target`, `queue_surplus`, `queue_deficit`) |
@@ -901,6 +915,10 @@ Refill file schema. The common file, `<Char>/_common/inventory/REFILL_CONFIG.lua
 local RefillConfig = {}
 RefillConfig.source_bags = {'case', 'sack', 'satchel'}  -- where pulls come from, in order
 RefillConfig.store_bag = 'case'                         -- where surplus and foreign items go
+RefillConfig.store_foreign = 'mine'                     -- foreign lists: 'mine' (default when absent),
+                                                        -- 'all' other folders too, false / 'off' none
+RefillConfig.foreign_characters = {}                    -- with 'all': these folders only; empty = all
+RefillConfig.never_store = {}                           -- item names never foreign
 RefillConfig.default_list = {                           -- the common list: what every job refills
     {name = 'Panacea', target = 12},
     ...                                                 -- template: the six medicines of FALLBACK_LIST
@@ -937,17 +955,18 @@ return M
   `data/<player>/`, `data/common/`, `data/`, then `%APPDATA%/Windower/GearSwap/...`, then
   `addons/libs/`) wrapped by the project's `ModuleCache` (`shared/utils/core/module_cache.lua`). The
   directory scan for foreign detection uses `windower.addon_path .. 'data/'` only
-  (`load_char_refill_configs`, `load_all_refill_configs`).
+  (`load_char_refill_configs`, and `load_all_refill_configs` with `store_foreign = 'all'`).
 - Craft list: `<Char>/_common/inventory/CRAFT_REFILL.lua` (`CharPaths.load('craft', ...)`), only `.default`, `.store_bag` and `.source_bags`
   are read (template `_master/config/craft/CRAFT_REFILL.lua`, empty list).
 - Bags for every list and the common list: `<Char>/_common/inventory/REFILL_CONFIG.lua` (`store_bag`,
-  `source_bags`, `default_list`, `subjobs`; template `_master/config_global/REFILL_CONFIG.lua`). A list
+  `source_bags`, `default_list`, `subjobs`, and for the foreign sweep `store_foreign`,
+  `foreign_characters`, `never_store`; template `_master/config_global/REFILL_CONFIG.lua`). A list
   file's own bag fields win. The same file's `quiver_open_at` is read by `QuiverManager` only.
 - Weapon resolver: `<Char>/_common/combat/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
 - HP priority: `<Char>/_common/combat/HP_PRIORITY.lua` (template `_master/config_global/HP_PRIORITY.lua`),
   every key optional: `enabled` (`false` turns it off), `unity` (`'max'` when the Unity leader is
   rank 1, `'min'` otherwise), `mp_jobs`, `skip_jobs`. No file: `DEFAULTS`.
-- Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:48`, used only when there is neither a job
+- Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:54`, used only when there is neither a job
   list nor a common list), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:42`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:42`), quiver
   thresholds in the aftercast callers (the per-job override is `REFILL_CONFIG.lua` `quiver_open_at`),
@@ -1037,9 +1056,12 @@ return M
 - `extra` matches a common entry by its name, or its first variant, case ignored: an extra
   `{'Sublime Sushi +1', 'Sublime Sushi'}` replaces a common `'Sublime Sushi +1'` entry but not a common
   `'Sublime Sushi'` one (both are then kept).
-- Foreign detection is global across characters: an item named in any list of any character under
-  `data/` is pushed out unless the current list names it. Adding a consumable to one character's list
-  makes it foreign for every list of every character that does not name it.
+- Foreign detection covers the character's own lists by default (`store_foreign = 'mine'`): an item
+  named in any of them is pushed out unless the current list or `never_store` names it. With
+  `store_foreign = 'all'` the lists of other character folders count too (only `foreign_characters`
+  when set; empty means every uppercase folder of `data/`, a backup folder or frozen clone included),
+  so adding a consumable to one character's list makes it foreign for the others. `false` turns the
+  sweep off.
 - A refill entry whose `target` is neither a number (a numeric string is coerced) nor `'all'` makes
   `plan_item` do arithmetic on it and throws after the start banner was printed; `handle_refill` does
   not catch it.
@@ -1064,8 +1086,9 @@ return M
 - New refill list: for every job, edit `default_list` (or `subjobs`) in
   `<Char>/_common/inventory/REFILL_CONFIG.lua`; for one job, uncomment `extra`, `default` or `subjobs` in
   `<Char>/<job>/inventory/<JOB>_REFILL.lua` (and save it under `_master/<Char>/config/<job>/` for a
-  re-clone), then `gs reload`. Check the effect on other characters: every item it
-  names becomes foreign for every list that does not name it.
+  re-clone), then `gs reload`. Check the effect on the character's other lists (and, with
+  `store_foreign = 'all'`, on other characters): every item it names becomes foreign for every list
+  that does not name it.
 - New quiver pair: call `QuiverManager.after_ranged_attack(spell, ammo, quiver, threshold)` from the
   job's `job_aftercast`, as THF, COR and RNG do, and add the quiver to that job's refill list of every
   character that plays it.
@@ -1178,17 +1201,17 @@ Still open:
 - `add_equipped_items` reads inventory indices from `get_items().equipment` as item ids (the code
   comment says so) - `equipment_checker.lua:138`
 - Refill surplus pushes the preferred variant back first and keeps the lesser one - `queue_surplus`,
-  `refill_manager.lua:90`
-- Tetsouo's COR list lacks `Brz. Bull. Pouch`, so the global foreign sweep pushes the pouches
-  COR_AFTERCAST needs - `_master/Tetsouo/cor/inventory/COR_REFILL.lua` (Kaories' list has it)
-- Unresolvable refill item names are reported as "Out of stock" - `plan_item`, `refill_manager.lua:149`
+  `refill_manager.lua:99`
+- Tetsouo's COR list lacks `Brz. Bull. Pouch`; with `store_foreign = 'all'` (Kaories' lists read),
+  the foreign sweep pushes the pouches COR_AFTERCAST needs - `_master/Tetsouo/cor/inventory/COR_REFILL.lua` (Kaories' list has it)
+- Unresolvable refill item names are reported as "Out of stock" - `plan_item`, `refill_manager.lua:160`
 - A job refill file that fails to load (syntax error) is silently treated as absent: the common list
   is used (label `common` or `common/<SUB>`), and that file's food then counts as foreign -
-  `resolve_list_for_player`, `config_resolver.lua:322`
+  `resolve_list_for_player`, `config_resolver.lua:344`
 - Refill has no in-progress guard; overlapping runs replay stale slot moves - `RefillManager.refill`,
-  `refill_manager.lua:246`
+  `refill_manager.lua:259`
 - Tetsouo plays SMN live but `Tetsouo/smn/` holds no refill file: `rf` on SMN uses the common list
-  (`default_list` of his `REFILL_CONFIG.lua`, the six medicines) and pushes every food, Echo Drops and quiver named in any list to the Case as foreign
+  (`default_list` of his `REFILL_CONFIG.lua`, the six medicines) and pushes every food, Echo Drops and quiver named in his other lists (any character's with `store_foreign = 'all'`) to the Case as foreign, `never_store` aside
 - With no player the auditor falls back to Tetsouo's sets folder, on any character; `wo` reaches it
   through `build_pinned_bags` and `collect_all_used_names` - `sets_dir`, `wardrobe_auditor.lua:39`
 - `wa` counts strings inside `--[[ ]]` block comments as used items (only `--` to end of line is

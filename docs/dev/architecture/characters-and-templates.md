@@ -292,7 +292,7 @@ Single file (recommended):
 
 Full redeploy (`clone_character.py` on an existing character):
 
-1. The script moves the old folder to `addons/GearSwap/clone_backups/<Name>_<date>/` after the final confirmation. Keep that backup until the new folder has been checked in game. A copy you make yourself must stay outside `data/`: a folder inside `data/` with a capitalised name is scanned by the refill foreign-item pass (`load_all_refill_configs` in `config_resolver.lua`).
+1. The script moves the old folder to `addons/GearSwap/clone_backups/<Name>_<date>/` after the final confirmation. Keep that backup until the new folder has been checked in game. A copy you make yourself must stay outside `data/`: a folder inside `data/` with a capitalised name is scanned by the refill foreign-item pass of any character whose `REFILL_CONFIG.lua` sets `store_foreign = 'all'` with an empty `foreign_characters` (`load_all_refill_configs` in `config_resolver.lua`).
 2. Save every live-only file you want into `_master/<Name>/` first, or be ready to restore it from the backup.
 3. Check the `Overlay:` line of the confirmation screen. Pass `--source <Name>` only to build a character from another character's overlay.
 4. Afterwards: the `KEPT_ON_RECLONE` files come back on their own. Restore by hand only `dualbox_role.lua` if a runtime role switch should survive, the `.lua.example` files, and a hand-written `DUALBOX_CONFIG.lua` / `REGION_CONFIG.lua`.
@@ -331,7 +331,7 @@ Full redeploy (`clone_character.py` on an existing character):
 - Step 6 always overwrites `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua`. A copy of them in an overlay has no effect.
 - `ALL_VALID_JOBS` (Python, 16) and `ALL_JOBS` (Lua, 17) are separate lists. DB jobs skip the Python list.
 - Overlays are untracked: back them up yourself before editing, and remember that `git diff` never shows them.
-- The refill foreign-item scan loads `*_REFILL.lua` and `REFILL_CONFIG.lua` from every top-level `data/` entry whose name starts with an uppercase letter. A new character, or a backup folder inside `data/`, joins it.
+- The refill foreign-item scan reads the character's own `*_REFILL.lua` and `REFILL_CONFIG.lua` by default (`store_foreign = 'mine'`). With `store_foreign = 'all'` and an empty `foreign_characters`, it loads them from every top-level `data/` entry whose name starts with an uppercase letter: a new character, or a backup folder inside `data/`, then joins it. `foreign_characters` limits it to the folders it names.
 - `.gitignore` ignores itself, so a fresh clone of the public repository has no ignore rules for live folders (by design, per its comment).
 
 ## For maintainers / AI

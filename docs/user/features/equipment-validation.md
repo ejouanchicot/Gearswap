@@ -78,7 +78,10 @@ puts the surplus back. The list is the common one of
 `_common/inventory/REFILL_CONFIG.lua` (`default_list`, six medicines on a new
 character), which each job's `<job>/inventory/<JOB>_REFILL.lua` can add to or
 replace (every line commented at first; see
-[configuration](../guides/configuration.md#refill-job_refilllua)). `rf` is
+[configuration](../guides/configuration.md#refill-job_refilllua)). Items of
+your other lists that the list in use does not name go back too
+(`store_foreign` in `REFILL_CONFIG.lua`: your own lists by default, `'all'` for
+other characters' lists as well, `false` for none). `rf` is
 also sent to the other characters of your dual-box group.
 
 ## When to use them

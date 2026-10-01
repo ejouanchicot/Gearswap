@@ -64,7 +64,7 @@ re-clone copies them back from the old folder (see
 | `AUTO_ABILITIES.lua` | Job abilities used for you, all `false` (off) by default: `sam_hasso` (SAM: your chosen stance, Hasso or Seigan, when you engage, unless one is up), `geo_entrust` (an Indi- spell cast on a party member gets Entrust first), `geo_full_circle` (a Geo- spell cast while a luopan is out gets Full Circle first), `blu_unbridled` (an unbridled spell gets Unbridled Learning first), `blu_expiacion_window` (see [BLU](../jobs/blu/states.md)). Written `true` (on) by default, the automations that always ran: `sam_third_eye_ws` (SAM: Third Eye before a weaponskill), `pld_divine_emblem` (PLD: Divine Emblem before Flash), `pld_majesty` (PLD: Majesty before Protect / Cure), `blm_dark_arts` (BLM/SCH: Dark Arts before a nuke), `blm_klimaform` (BLM/SCH: Klimaform before a storm), `dnc_presto` (DNC: Presto before a step), `war_retaliation_cancel` (WAR: Retaliation cancelled after 5 s of running); `false` turns one off |
 | `WEAPON_CONFIG.lua` | `equip_without_set` (default `false`): with `true`, a weapon mode value that has no set of that name equips the weapon of that name directly, so a plain weapon needs no set. Keep a set for an augmented weapon |
 | `CRAFT_CONFIG.lua` | Which set file `craft` and `fish` use (`craft_file = 'craft'` reads `_common/sets/craft_sets.lua`; `'goldsmithing'` reads `_common/sets/goldsmithing_sets.lua`...) and their lockstyle numbers, `craft_lockstyle` and `fish_lockstyle` (19 and 17; `false`: no lockstyle change, the job's stays) |
-| `REFILL_CONFIG.lua` | The common list `rf` keeps on every job, `default_list` (six medicines by default, see [Refill](#refill-job_refilllua)), and optionally `subjobs` (that list per subjob). The bags `rf` uses, for every job: `source_bags` (where missing items are taken from, in order; default `{'case', 'sack', 'satchel'}`) and `store_bag` (where extra items go; default `'case'`). Bags: `case`, `sack`, `satchel`, `wardrobe1` to `wardrobe8` (wardrobes only hold equipment, ammo for instance). The Mog Safe, Storage and Locker only open in the Mog House. `quiver_open_at` (written with the defaults): the ammo left (inventory + wardrobes) at or under which COR, THF and RNG open the worn ammo's quiver or pouch after a ranged attack, per main job, e.g. `{THF = 10}`; `false` for a job: never. A job not listed keeps its own value (COR 15, THF 5, RNG 15) |
+| `REFILL_CONFIG.lua` | The common list `rf` keeps on every job, `default_list` (six medicines by default, see [Refill](#refill-job_refilllua)), and optionally `subjobs` (that list per subjob). The bags `rf` uses, for every job: `source_bags` (where missing items are taken from, in order; default `{'case', 'sack', 'satchel'}`) and `store_bag` (where extra items go; default `'case'`). Which items of your other lists go back to `store_bag`: `store_foreign`, `foreign_characters`, `never_store` (see [Refill](#refill-job_refilllua)). Bags: `case`, `sack`, `satchel`, `wardrobe1` to `wardrobe8` (wardrobes only hold equipment, ammo for instance). The Mog Safe, Storage and Locker only open in the Mog House. `quiver_open_at` (written with the defaults): the ammo left (inventory + wardrobes) at or under which COR, THF and RNG open the worn ammo's quiver or pouch after a ranged attack, per main job, e.g. `{THF = 10}`; `false` for a job: never. A job not listed keeps its own value (COR 15, THF 5, RNG 15) |
 | `DW_CONFIG.lua` | Dual Wield tiers: while you hold two weapons and are engaged, the pieces of `sets.DW.NoHaste` / `Haste` / `HasteII` / `MaxHaste` (in your job's set file) go on top of your engaged set, chosen by your magic haste (estimated from your buffs). `enabled`, and the % each buff counts for. No `sets.DW` in a job file: nothing changes. `//gs c dw` shows the estimate, `//gs c dw none\|haste\|haste2\|max` forces a tier, `//gs c dw auto` goes back. Slow / Elegy on you are not counted: while slowed, `//gs c dw none` |
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 3.0 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
@@ -243,7 +243,27 @@ Which list `rf` uses, first match (the start of the `rf` report shows it as
 4. Only when neither file gives a list (no `REFILL_CONFIG.lua`, or no
    `default_list` in it): the built-in six medicines (`fallback`).
 
-Consumables named only in another list (another job's, or any list of any character folder in `data/`) are put back too. While a craft
+Consumables named in another of your lists but not in the one in use (another
+job's, say) are put back to `store_bag` too. Three keys of `REFILL_CONFIG.lua`
+choose which:
+
+- `store_foreign`: `'mine'` (the default, also when the key is missing): only
+  your own lists, the ones in your character folder. `'all'`: the lists of
+  other character folders in `data/` too (an item of theirs traded to you goes
+  back). `false`: none; `rf` only puts back the surplus of the list in use.
+- `foreign_characters`: with `'all'`, only these folders (case ignored). Empty:
+  every character folder, old or unused ones included.
+- `never_store`: items never put back this way, whatever the lists say (you
+  keep them by hand). The surplus of an item that is in the list in use still
+  goes back.
+
+```lua
+RefillConfig.store_foreign = 'all'
+RefillConfig.foreign_characters = {'Tetsouo', 'Kaories'}
+RefillConfig.never_store = {'Echo Drops', 'Holy Water'}
+```
+
+While a craft
 set is on, `_common/inventory/CRAFT_REFILL.lua` is used instead: same format, empty
 until you fill it; it can set its own `source_bags` / `store_bag` too.
 

@@ -360,7 +360,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `<char>/_common/display/UI_CONFIG.lua` (dofile) | `init_delay` for `smart_init` | 5.0 (`config_loader.lua:52`) |
 | `<char>/_common/dualbox/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug`, `report_on_load`, `tracked_buffs` | disabled main (`DualBoxManager.initialize`) |
 | `<char>/_common/inventory/CRAFT_CONFIG.lua` | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`craft_commands.lua`); a lockstyle key `false` keeps the job's lockstyle |
-| `<char>/_common/inventory/REFILL_CONFIG.lua` | `source_bags`, `store_bag`, `default_list`, `subjobs`, `quiver_open_at` (QuiverManager) | Case, Sack, Satchel / Case; without a common list (and no job list) `FALLBACK_LIST` (`config_resolver.lua`) |
+| `<char>/_common/inventory/REFILL_CONFIG.lua` | `source_bags`, `store_bag`, `default_list`, `subjobs`, `store_foreign`, `foreign_characters`, `never_store` (foreign sweep), `quiver_open_at` (QuiverManager) | Case, Sack, Satchel / Case; `store_foreign` `'mine'`; without a common list (and no job list) `FALLBACK_LIST` (`config_resolver.lua`) |
 | `<char>/_common/sets/<name>_sets.lua` | craft/fish sets | `craft_manager.lua` |
 | `<char>/_common/display/ADDONS_CONFIG.lua` | addon name = `false` | every addon allowed (`shared/utils/core/job_addons.lua`) |
 | `<char>/_common/combat/TUNING.lua` | `sam_idle_hp`, `refresh_mp_below`, `waltz_from`, `smn_skillup`, `geo_escort_indi`, `brd_debuff_songs` | each job's own value, given at the call (`shared/utils/core/tuning.lua`) |

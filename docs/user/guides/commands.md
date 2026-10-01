@@ -61,7 +61,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `wo alt` | Same as `wo` with every job's gear counted as used, on the `USED_WHEN_ALL` / `UNUSED_WHEN_ALL` bags of your config (your usual bags if it has none) |
 | `wo global` / `wo global preview` | Same as `wo` / `wo preview` (older names) |
 | `wo recover` (`unlock`) / `wo reset` | Release the slots if a run was interrupted / clear a run stuck after a crash and release the slots |
-| `rf` (`refill`) | Restock consumables from the Mog Case, Sack and Satchel, put the surplus back; also sent to your other boxes |
+| `rf` (`refill`) | Restock consumables from the Mog Case, Sack and Satchel, put the surplus back, and the items of your other lists that this one does not name (`store_foreign`, [configuration](configuration.md#refill-job_refilllua)); also sent to your other boxes |
 | `naked` (or `equip naked`) | Remove every piece. A locked slot (Combat Mode, craft, `gs disable`) keeps its piece |
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
