@@ -288,11 +288,8 @@ end
 ---   Must be called in file_unload()
 function PartyTracker.cleanup()
     -- Unregister event handlers (CRITICAL for preventing duplicate handlers)
-    -- cor_action_event_id: roll listener (init_roll_listener)
-    if _G.cor_action_event_id then
-        windower.unregister_event(_G.cor_action_event_id)
-        _G.cor_action_event_id = nil
-    end
+    -- The roll listener (init_roll_listener, shared/utils/core/action_listener.lua)
+    pcall(function() require('shared/utils/core/action_listener').off('cor_roll') end)
 
     if _G.cor_party_event_id then
         windower.unregister_event(_G.cor_party_event_id)

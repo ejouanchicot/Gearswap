@@ -160,10 +160,8 @@ end
 
 --- Initialize action event listener for item usage detection.
 --- Called on every job-file load: GearSwap drops every sandbox listener at the
---- load. The id is kept on `windower.*` with its load
---- (windower._gs_reload_count); only an id from this same load is
---- unregistered, since an older one is already gone and could now belong to
---- another listener (cf dualbox_sync_ipc.init_listener).
+--- load. Subscribes to shared/utils/core/action_listener.lua (key
+--- 'warp_detector'); a second call in the same load replaces it.
 function WarpDetector.init_action_listener()
     -- Also drops any callback registered earlier in this load, including the
     -- one WarpEquipment.init() registers just before calling this function.
