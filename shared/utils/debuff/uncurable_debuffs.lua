@@ -20,6 +20,12 @@
 
 local UncurableDebuffs = {}
 
+--- One line in //gs c trace (tag CURE): what each check decided.
+local function trace(fmt, ...)
+    local args = {...}
+    pcall(function() require('shared/utils/debug/trace_log').log('CURE', fmt, unpack(args)) end)
+end
+
 --- Seconds after the /item line before looking: the item animation is over
 --- and a debuff it removed is gone.
 local CHECK_AFTER = 4.0
@@ -94,6 +100,7 @@ local function poll(name)
         local mark = marks()[name]
         if not mark then return end
         if not debuff_up(name) or os.clock() > mark.until_time then
+            trace('%s: mark dropped (%s)', name, debuff_up(name) and 'time up' or 'debuff gone')
             marks()[name] = nil
             return
         end
@@ -124,8 +131,16 @@ function UncurableDebuffs.watch(name, item, send_delay, on_marked)
     if not name or not item or not item.id then return end
     local before = count_in_inventory(item.id)
     coroutine.schedule(function()
-        if count_in_inventory(item.id) >= before then return end
-        if not debuff_up(name) then return end
+        local after = count_in_inventory(item.id)
+        if after >= before then
+            trace('%s: %s not used up (%d -> %d), nothing marked', name, item.name, before, after)
+            return
+        end
+        if not debuff_up(name) then
+            trace('%s: %s used, debuff gone', name, item.name)
+            return
+        end
+        trace('%s: %s used, debuff still on: marked uncurable for %ds', name, item.name, GIVE_UP_AFTER)
         marks()[name] = {until_time = os.clock() + GIVE_UP_AFTER}
         if on_marked then pcall(on_marked, name, item.name) end
         poll(name)
