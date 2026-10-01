@@ -208,10 +208,10 @@ end
 
 --- The actions the page offers: the spells the character knows for the job, its
 --- job abilities and weapon skills (names only, by kind).
---- @return table {ma = {...}, ja = {...}, ws = {...}, trust = one Trust's name or nil}
+--- @return table {ma = {...}, ja = {...}, ws = {...}, magic = {<skill> = {...}}, trust = one Trust's name or nil}
 function AtelierSim.actions()
     local G = gs()
-    local out = {ma = {}, ja = {}, ws = {}}
+    local out = {ma = {}, ja = {}, ws = {}, magic = {}}
     local ok_s, known = pcall(windower.ffxi.get_spells)
     local main, sub = player.main_job_id, player.sub_job_id
     local main_lv, sub_lv = player.main_job_level or 99, player.sub_job_level or 0
@@ -221,7 +221,14 @@ function AtelierSim.actions()
         if line.en and usable and (not ok_s or not known or known[id]) then
             -- every Trust casts the same way for the job's sets: one stands for all (out.trust)
             if line.type == 'Trust' then out.trust = out.trust or line.en
-            else out.ma[#out.ma + 1] = line.en end
+            else
+                out.ma[#out.ma + 1] = line.en
+                -- by magic skill, for the page's groups (Healing Magic, Enhancing Magic...)
+                local skill = G.res.skills[line.skill]
+                local group = skill and skill.en or 'Other'
+                out.magic[group] = out.magic[group] or {}
+                table.insert(out.magic[group], line.en)
+            end
         end
     end
     local ok_a, abil = pcall(windower.ffxi.get_abilities)
@@ -235,7 +242,8 @@ function AtelierSim.actions()
             if line and line.en then out.ws[#out.ws + 1] = line.en end
         end
     end
-    for _, list in pairs(out) do table.sort(list) end
+    for _, list in pairs({out.ma, out.ja, out.ws}) do table.sort(list) end
+    for _, list in pairs(out.magic) do table.sort(list) end
     return out
 end
 

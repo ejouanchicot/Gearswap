@@ -1685,6 +1685,13 @@ function liveBadge(){
 }
 /* ---- Simulate: the game's own GearSwap runs an action without doing it (shared/utils/atelier/atelier_sim.lua) ---- */
 const SIM_KINDS = [['ma', 'simMagic'], ['ja', 'simAbilities'], ['ws', 'simWs']];
+// The magic skills in the order a player thinks of them, and their French names
+const MAGIC_ORDER = ['Healing Magic', 'Enhancing Magic', 'Enfeebling Magic', 'Elemental Magic', 'Dark Magic', 'Divine Magic',
+  'Blue Magic', 'Ninjutsu', 'Singing', 'Geomancy', 'Summoning Magic'];
+const MAGIC_FR = {'Healing Magic': 'Soins', 'Enhancing Magic': 'Renfort', 'Enfeebling Magic': 'Affaiblissement', 'Elemental Magic': 'Élémentaire',
+  'Dark Magic': 'Ténèbres', 'Divine Magic': 'Divine', 'Blue Magic': 'Magie bleue', 'Ninjutsu': 'Ninjutsu', 'Singing': 'Chant',
+  'Geomancy': 'Géomancie', 'Summoning Magic': 'Invocation', Magic: 'Magie', Other: 'Autres'};
+const magicLabel = sk => S.lang === 'fr' ? (MAGIC_FR[sk] || sk) : sk;
 const simKey = () => S.char + '|' + S.job;
 function simState(){ return (S.sim[simKey()] = S.sim[simKey()] || {target: 'auto', status: 'Engaged', recasts: false, states: {}}); }
 // The job's actions, asked once per GearSwap load
@@ -1726,13 +1733,19 @@ function renderSim(d){
   if (!liveOk(c) || (S._live[c] || {}).job !== S.job) return `<div class="placeholder"><p>${t('simNeedLive', {j: S.job})}</p></div>`;
   simActions();
   const st = simState(), acts = (S._simActions && S._simActions.list) || null, q = (st.q || '').toLowerCase();
-  // one row for every Trust: they cast alike for the job's sets
-  const trustRow = acts && acts.trust && (!q || 'trust'.includes(q)) ? `<button class="setrow" data-simpick="ma|${esc(acts.trust)}" aria-current="${st.kind === 'ma' && st.name === acts.trust}"><b>${t('simTrust')}</b></button>` : '';
-  const pick = acts ? SIM_KINDS.map(([k, label]) => { const list = (acts[k] || []).filter(n => !q || n.toLowerCase().includes(q));
-    const extra = k === 'ma' ? trustRow : '';
-    return list.length || extra ? `<div class="fam static"><span>${t(label)}</span><span>${list.length + (extra ? 1 : 0)}</span></div>` + extra +
-      list.map(n => `<button class="setrow ${st.kind === k && st.name === n ? '' : ''}" data-simpick="${k}|${esc(n)}" aria-current="${st.kind === k && st.name === n}"><b>${esc(n)}</b></button>`).join('') : ''; }).join('')
-    : `<p class="muted small" style="padding:12px">${t('simLoading')}</p>`;
+  // groups: each magic skill of the main and sub (Healing, Enhancing...), one Trust row, abilities, weaponskills
+  const row = (k, n, label) => `<button class="setrow" data-simpick="${k}|${esc(n)}" aria-current="${st.kind === k && st.name === n}"><b>${esc(label || n)}</b></button>`;
+  const group = (label, rows) => rows.length ? `<div class="fam static"><span>${esc(label)}</span><span>${rows.length}</span></div>` + rows.join('') : '';
+  const match = n => !q || n.toLowerCase().includes(q);
+  let pick = `<p class="muted small" style="padding:12px">${t('simLoading')}</p>`;
+  if (acts) {
+    const magic = acts.magic || (acts.ma && acts.ma.length ? {Magic: acts.ma} : {});
+    const order = Object.keys(magic).sort((a, b) => (MAGIC_ORDER.indexOf(a) + 1 || 99) - (MAGIC_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
+    pick = order.map(sk => group(magicLabel(sk), magic[sk].filter(match).map(n => row('ma', n)))).join('') +
+      (acts.trust && match('trust') ? group('Trust', [row('ma', acts.trust, t('simTrust'))]) : '') +
+      group(t('simAbilities'), (acts.ja || []).filter(match).map(n => row('ja', n))) +
+      group(t('simWs'), (acts.ws || []).filter(match).map(n => row('ws', n)));
+  }
   const chip = (key, v, label) => `<button data-simopt="${key}|${v}" aria-pressed="${String(st[key]) === String(v)}">${label}</button>`;
   const modes = d.modes.filter(m => m.values.length > 1 && m.values.length <= 12 && !HIDDEN_MODES.has(m.name) && !/^[A-Z]{3}Song\d$/.test(m.name));
   const modeSel = modes.map(m => { const cur = (st.states || {})[m.name] ?? m.current;
@@ -1756,7 +1769,9 @@ function simResultHTML(d){
   if (!r.ok && r.error) return box('g-off', t('simError'), `<p class="kwarn">${esc(r.error)}</p>`);
   // gear worn step by step: what the game wore at the last measure, then each phase on top
   let worn = Object.assign({}, (measuredChar() || {}).worn || {});
-  const cards = (r.phases || []).map((ph, i) => {
+  // a job ability or a weaponskill has no midcast of its own: its empty step is left out
+  const phases = (r.phases || []).filter(ph => !(ph.phase === 'midcast' && st.kind !== 'ma' && !Object.keys(ph.list || {}).length));
+  const cards = phases.map((ph, i) => {
     worn = Object.assign({}, worn, ph.list || {});
     const changed = new Set(Object.keys(ph.list || {})), set = simSetOf(ph.list || {});
     const cells = SLOTS.map(slot => { const p = worn[slot], ch = changed.has(slot), none = !p || p.name === 'empty';
