@@ -237,9 +237,15 @@ def write_index():
     # the live link files that exist (live_<Char>.js, link_<Char>.js): the page loads only those
     live = sorted('atelier/' + n for n in os.listdir(os.path.join(DATA, 'atelier'))
                   if re.match(r'^(live|link)_.+\.js$', n))
-    with open(os.path.join(DATA, 'atelier', 'index.js'), 'w', encoding='utf-8', newline='\n') as f:
-        f.write('window.ATELIER_INDEX = %s;\nwindow.ATELIER_LIVE_FILES = %s;\n'
-                % (json.dumps(entries, separators=(',', ':')), json.dumps(live, separators=(',', ':'))))
+    # the spell families come from the game (shared/utils/atelier/atelier_families.lua): kept as they were
+    index = os.path.join(DATA, 'atelier', 'index.js')
+    families = ''
+    if os.path.exists(index):
+        m = re.search(r'^window\.ATELIER_FAMILIES = .*;$', open(index, encoding='utf-8').read(), re.M)
+        families = m.group(0) + '\n' if m else ''
+    with open(index, 'w', encoding='utf-8', newline='\n') as f:
+        f.write('window.ATELIER_INDEX = %s;\nwindow.ATELIER_LIVE_FILES = %s;\n%s'
+                % (json.dumps(entries, separators=(',', ':')), json.dumps(live, separators=(',', ':')), families))
 
 
 def group_twins(char, job, main_sub, done):

@@ -546,8 +546,10 @@ local function write_index()
         if file:match('^live_.+%.js$') or file:match('^link_.+%.js$') then live[#live + 1] = 'atelier/' .. file end
     end
     table.sort(live)
+    -- the spells behind each family set (shared/utils/atelier/atelier_families.lua)
+    local ok_f, families = pcall(function() return require('shared/utils/atelier/atelier_families').collect() end)
     return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\nwindow.ATELIER_LIVE_FILES = '
-        .. json(live) .. ';\n')
+        .. json(live) .. ';\nwindow.ATELIER_FAMILIES = ' .. json(ok_f and families or {}) .. ';\n')
 end
 
 --- The data of the loaded job, as the page reads it (the file of export(), the
