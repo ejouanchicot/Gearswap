@@ -788,14 +788,21 @@ function pieceStatsHTML(p){
 // null for a merit that changes no stat the page shows (a recast, a duration...)
 function meritEffect(m){
   const d = m.desc || ''; let x;
-  if ((x = d.match(/maximum (HP|MP) by (\d+)/))) return {key: x[1].toLowerCase(), per: +x[2], unit: ' ' + x[1]};
-  if ((x = d.match(/Adjust your (STR|DEX|VIT|AGI|INT|MND|CHR) by (\d+)/))) return {key: x[1].toLowerCase(), per: +x[2], unit: ' ' + x[1]};
-  if ((x = d.match(/spell interruption rate by (\d+) percent/))) return {key: 'sird', per: +x[1], unit: ' %'};
-  if ((x = d.match(/enemies' critical hit rate by (\d+) percent/))) return {key: 'ecrit', per: -x[1], unit: ' %'};
-  if ((x = d.match(/Adjust your critical hit rate by (\d+) percent/))) return {key: 'crit', per: +x[1], unit: ' %'};
-  if ((x = d.match(/(Increase|Decrease) your enmity (\d+)/))) return {key: 'enmity', per: (x[1] === 'Increase' ? 1 : -1) * x[2], unit: ''};
+  // only the general merits move the stats (ids below 384): a job's "Increase maximum HP by 50"
+  // (NIN Yonin Effect) holds under its ability only
+  const general = !(m.id >= 384);
+  if (general && (x = d.match(/maximum (HP|MP) by (\d+)/))) return {key: x[1].toLowerCase(), per: +x[2], unit: ' ' + x[1]};
+  if (general && (x = d.match(/Adjust your (STR|DEX|VIT|AGI|INT|MND|CHR) by (\d+)/))) return {key: x[1].toLowerCase(), per: +x[2], unit: ' ' + x[1]};
+  if (general && (x = d.match(/spell interruption rate by (\d+) percent/))) return {key: 'sird', per: +x[1], unit: ' %'};
+  if (general && (x = d.match(/enemies' critical hit rate by (\d+) percent/))) return {key: 'ecrit', per: -x[1], unit: ' %'};
+  if (general && (x = d.match(/Adjust your critical hit rate by (\d+) percent/))) return {key: 'crit', per: +x[1], unit: ' %'};
+  if ((x = d.match(/(Increase|Decrease) your enmity (\d+)/))) return {key: general ? 'enmity' : null, per: (x[1] === 'Increase' ? 1 : -1) * x[2], unit: ''};
   if ((x = d.match(/skill by (\d+) points/))) return {per: +x[1], unit: ''};
-  if ((x = d.match(/by (\d+) (percent|points?|seconds)/))) return {per: +x[1], unit: x[2] === 'percent' ? ' %' : x[2] === 'seconds' ? ' s' : ''};
+  // the verb gives the sign: "Shorten recast time by 10 seconds" is -10 s a level
+  if ((x = d.match(/(\w+)[^.]*? by (\d+(?:\.\d+)?)\s*(percent|%|points?|seconds?)?/))) {
+    const sign = /^(shorten|decrease|reduce|lower)/i.test(x[1]) ? -1 : 1;
+    return {per: sign * x[2], unit: /^(percent|%)$/.test(x[3] || '') ? ' %' : /^second/.test(x[3] || '') ? ' s' : ''};
+  }
   return null;
 }
 const meritKey = () => S.char + '|' + S.job;
