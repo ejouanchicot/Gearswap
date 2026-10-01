@@ -12,8 +12,10 @@
 --- The instance that appears or is renewed when a song lands is that song's,
 --- paired by buff id in arrival order (either packet may come first, within
 --- PAIR_WINDOW seconds). Ours when its caster is this character; another
---- bard's or a Trust's otherwise. One of ours whose end time changes (sung
---- over) or that goes (wore off, dispelled) is no longer ours.
+--- bard's or a Trust's otherwise (seen in play: Joachim and Ulmia, message
+--- 266). One of ours whose end time changes (sung over) or that goes (wore
+--- off, dispelled) is no longer ours; a shift of JITTER seconds or less is the
+--- game's rounding, the same song.
 --- The instances of ours are saved in <Character>/saved/brd_own_songs.lua, so
 --- a //lua reload gearswap keeps them. Until the first buff packet of a load,
 --- the saved ones count when a buff of their id is up.
@@ -157,6 +159,39 @@ local function on_action(act)
     end
 end
 
+--- The key of `set` that is the same instance as `key`: same buff id, end
+--- time within JITTER seconds, not in `used`. The game rounds the end time of
+--- one buff differently from one packet to the next (seen in play: 520, 521,
+--- 520... with no song sung), and a song sung again ends minutes later.
+local JITTER = 2
+local function same_instance(key, set, used)
+    local id, finish = key:match('^(%d+):(%d+)$')
+    for other in pairs(set) do
+        local oid, ofinish = other:match('^(%d+):(%d+)$')
+        if oid == id and not used[other] and math.abs(tonumber(ofinish) - tonumber(finish)) <= JITTER then
+            return other
+        end
+    end
+    return nil
+end
+
+--- The instances of ours follow their own end time when it shifts by the
+--- rounding (and after a reload, from the saved file); gone otherwise.
+local function follow_owned(current)
+    local owned, used, lost = load_owned(), {}, {}
+    for key in pairs(owned) do
+        if current[key] then used[key] = true else lost[#lost + 1] = key end
+    end
+    -- outside the loop over owned: a key added while pairs() runs breaks it
+    for _, key in ipairs(lost) do
+        owned[key] = nil
+        local now_key = same_instance(key, current, used)
+        if now_key then owned[now_key], used[now_key] = true, true end
+    end
+    local changed = #lost > 0
+    if changed then save_owned() end
+end
+
 --- Buff packet 0x063 order 9: the song instances up now.
 local function on_buffs(data)
     local by_id = families_by_id()
@@ -169,22 +204,26 @@ local function on_buffs(data)
     live.appeared = fresh(live.appeared, now)
     -- first packet of this load: what is up was there before, nothing new
     local previous = live.snapshot or current
+    local kept = {}
+    for key in pairs(current) do
+        if previous[key] then kept[key] = true end
+    end
     for key in pairs(previous) do
-        if not current[key] then trace('0x063 gone %s (%s)', key, by_id[previous[key]]) end
+        if not current[key] then
+            local shifted = same_instance(key, current, kept)
+            if shifted then kept[shifted] = true
+            else trace('0x063 gone %s (%s)', key, by_id[previous[key]]) end
+        end
     end
     for key, id in pairs(current) do
-        if not previous[key] then
+        if not kept[key] then
             trace('0x063 new %s (%s)', key, by_id[id])
             local song = take(live.landed, id)
             if song then settle(key, song.ours)
             else live.appeared[#live.appeared + 1] = {key = key, id = id, at = now} end
         end
     end
-    local owned, dropped = load_owned(), false
-    for key in pairs(owned) do
-        if not current[key] then owned[key] = nil; dropped = true end
-    end
-    if dropped then save_owned() end
+    follow_owned(current)
     live.snapshot = current
 end
 
