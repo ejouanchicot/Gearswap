@@ -362,7 +362,7 @@ const T = {
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce pour voir ses stats', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -387,7 +387,7 @@ const T = {
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece to see its stats', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -1146,7 +1146,7 @@ function cardHTML(card, ci, bypath, q){
   return `<article class="detail"><header><div class="kicker">${t('fam.'+card.fam)}${when?` <span class="when">· ${when}</span>`:''}</div>` +
     `<div class="titleline"><h2>${esc(niceName(card))}</h2><code class="path">${esc(s.path)}</code></div>${variants}${weaponPicker(s)}</header>
     <div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer><div class="globals-inline">${globalsHTML(s)}</div>${setStatsHTML(s)}
-    <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span><b class="mk">◆</b>${t('legendAug')}</span><span>${t('legendHover')}</span></div></article>`;
+    <div class="legend"><span><i></i>${t('legendOwn')}</span><span><i class="inh"></i>${t('legendInh')}</span><span><i class="weap"></i>${t('legendWeap')}</span><span>${t('legendHover')}</span></div></article>`;
 }
 function renderSets(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
