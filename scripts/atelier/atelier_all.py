@@ -173,18 +173,22 @@ def run_load(lua, ffxi, char, job, sub):
     return char, job, sub, error
 
 
-def finish(char, job, sub, bags, names_for_icons, main):
-    """Mark the file offline and give it the bag items of the last in-game export (the load sees empty bags)."""
+def finish(char, job, sub, carry, names_for_icons, main):
+    """Mark the file offline and give it what only the game sees, from the last in-game
+    export: the bag items, and the character's measured stats (same subjob first)."""
     data = read_export(export_path(char, job, sub))
     if not data:
         return None
     data['offline'] = True
     if main:
         data['main_sub'] = True
+    bags, measured = (carry or {}).get('items'), (carry or {}).get('chars') or {}
     if bags and not data.get('items'):
         data['items'] = bags
         for names in bags.values():
             names_for_icons.update(names)
+    if not data.get('char') and measured:
+        data['char'] = measured.get(sub) or sorted(measured.values(), key=lambda c: c.get('at', ''))[-1]
     write_export(export_path(char, job, sub), data)
     return data
 
@@ -273,7 +277,12 @@ def main():
         # an offline export only carries the items it was given: an in-game one first
         with_items = sorted((d for _, d in previous if d.get('items')),
                             key=lambda d: (not d.get('offline'), d.get('at', '')))
-        bags[(char, job)] = with_items[-1]['items'] if with_items else None
+        # the stats measured in game, by the subjob they were measured on
+        chars = {}
+        for _, d in sorted(previous, key=lambda p: p[1].get('at', '')):
+            if d.get('char'):
+                chars[d['char'].get('sub') or d.get('sub')] = d['char']
+        bags[(char, job)] = {'items': with_items[-1]['items'] if with_items else None, 'chars': chars}
     done, failed, names_for_icons = [], [], set()
     print('Atelier: %d jobs, the subjob of the last export first' % len(jobs))
     run_all(lua, ffxi, [(c, j, first[(c, j)]) for c, j in jobs], bags, done, failed, names_for_icons, workers)

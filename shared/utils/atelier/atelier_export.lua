@@ -251,6 +251,57 @@ local function collect_descs(ids)
     return descs
 end
 
+-- Slots of windower.ffxi.get_items().equipment, as the page names them
+local WORN_SLOTS = {main = 'main', sub = 'sub', range = 'range', ammo = 'ammo', head = 'head', neck = 'neck',
+    left_ear = 'ear1', right_ear = 'ear2', body = 'body', hands = 'hands', left_ring = 'ring1', right_ring = 'ring2',
+    back = 'back', waist = 'waist', legs = 'legs', feet = 'feet'}
+
+--- The gear worn right now, with the augments of these very copies.
+local function worn_gear(res)
+    local items = windower.ffxi.get_items()
+    local equipment = items and items.equipment
+    if type(equipment) ~= 'table' then return nil end
+    local ok_ext, extdata = pcall(require, 'extdata')
+    local worn = {}
+    for key, slot in pairs(WORN_SLOTS) do
+        local index, bag = equipment[key], equipment[key .. '_bag']
+        local item = index and index > 0 and bag and windower.ffxi.get_items(bag, index)
+        local info = item and item.id and item.id > 0 and res.items[item.id]
+        if info then
+            local piece = {name = info.en, id = item.id}
+            local ok, ext = false, nil
+            if ok_ext then ok, ext = pcall(extdata.decode, item) end
+            if ok and ext and type(ext.augments) == 'table' then
+                local augs = {}
+                for _, a in ipairs(ext.augments) do
+                    if type(a) == 'string' and a ~= '' and a ~= 'none' then augs[#augs + 1] = a end
+                end
+                if #augs > 0 then piece.augs = augs end
+            end
+            worn[slot] = piece
+        end
+    end
+    return worn
+end
+
+--- The character's real stats now (the game's status packet, kept by GearSwap
+--- in `player`) and the gear worn while they were read: the page takes that
+--- gear out and puts a set's in, to show the stats each set gives. Nil
+--- outside the game.
+local function collect_char()
+    if not (player and player.base_str and player.max_hp) then return nil end
+    local ok, res = pcall(require, 'resources')
+    if not ok or not res then return nil end
+    local char = {at = os.date('%Y-%m-%d %H:%M'), sub = player.sub_job, max_hp = player.max_hp, max_mp = player.max_mp,
+        attack = player.attack, defense = player.defense, main_level = player.main_job_level, base = {}, add = {}}
+    for _, a in ipairs({'str', 'dex', 'vit', 'agi', 'int', 'mnd', 'chr'}) do
+        char.base[a] = player['base_' .. a]
+        char.add[a] = player['add_' .. a]
+    end
+    char.worn = worn_gear(res)
+    return char
+end
+
 --- What //gs c gearscan read on the character's own copies of these items
 --- (<Char>/saved/gear_augments.lua, shared/utils/equipment/gear_scan.lua):
 --- their real augments, and the path, rank and rank stats of Odyssey gear.
@@ -370,8 +421,18 @@ function AtelierExport.export()
     data.icons = collect_icons(data.sets, data.items)
     local ids = {}
     for _, id in pairs(data.icons or {}) do ids[#ids + 1] = id end
-    data.descs = collect_descs(ids)
     data.scan = collect_scan(data.icons)
+    data.char = collect_char()
+    -- the worn pieces need their description and icon too, even when no set names them
+    for _, piece in pairs(data.char and data.char.worn or {}) do
+        data.icons = data.icons or {}
+        if not data.icons[piece.name] then
+            data.icons[piece.name] = piece.id
+            ids[#ids + 1] = piece.id
+        end
+        piece.id = nil
+    end
+    data.descs = collect_descs(ids)
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))
