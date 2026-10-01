@@ -199,8 +199,12 @@ then `gearswap.equip_sets(func, ...)` (`user_functions.lua:254-291`), a full
 gear-pipeline pass on every call. `raw_register_event` only sets the handler's
 environment (`:265-274`).
 
-Use `raw_register_event` for anything frequent (`incoming chunk`, `action`,
-`prerender`, `mouse`) and wrap the handler in `pcall`: the engine does not.
+Use `raw_register_event` for anything frequent (`incoming chunk`, `prerender`,
+`mouse`) and wrap the handler in `pcall`: the engine does not. For action
+packets, subscribe with `ActionListener.on(key, fn)`
+(`shared/utils/core/action_listener.lua`): one raw listener per load reads
+0x028 as the server sent it (Battlemod rewrites it for the chat) and calls
+each subscriber in its own `pcall`.
 Better still, avoid the event: poll from an existing loop or resolve at command
 time.
 
@@ -552,7 +556,7 @@ and [ui-overlay.md, For maintainers / AI](systems/ui-overlay.md#for-maintainers-
 - [ ] Guard once per sandbox with a `_G` flag; read the previous function with
       `rawget(_G, ...)` and return if it is not a function.
 - [ ] Wrap your own work in `pcall`; respect `eventArgs.cancel` in `cleanup_*`.
-- [ ] Events: `raw_register_event`, registered on every load; loops: a
+- [ ] Events: `raw_register_event` (action packets: `ActionListener.on`), registered on every load; loops: a
       `windower.*` generation counter.
 - [ ] Update the INIT_SYSTEMS header comment and the hook-chain table in
       [core-lifecycle.md](systems/core-lifecycle.md#the-gear-hook-chain) and the

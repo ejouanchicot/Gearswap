@@ -128,7 +128,7 @@ Steps 3 and 4 both go to the front, in reverse order, so the item goes next and 
 
 ## Shared action queue
 
-`shared/utils/core/action_queue.lua` (moved out of `stealth.lua` on 2026-10-01): one queue per character on `windower._action_queue`, generation `windower._action_gen_queue`, raw `action` listener `_G._action_queue_listener` registered once per load from `push`. `ActionQueue.push(command, wait, {delay, tag})`; cleanse passes `delay = 1.0` (`DELAY`) and `tag = 'CLEANSE'`, stealth its `delay` setting and `STEALTH`. A command step ends on the game's end-of-action for this character plus `delay`, or its longest wait; a function step runs first, then only its longest wait ends it; a refused `/ma` or `/item` is sent again (3 sends at most). `ActionQueue.push_next(command, wait, opts)` puts a step at the front (next to go), or starts the queue like `push` when it is idle; cleanse's local `push_next` passes the same `delay` and tag. The queue lives on `windower`, so a cleanse under way goes on across a job change. Full description: [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua).
+`shared/utils/core/action_queue.lua` (moved out of `stealth.lua` on 2026-10-01): one queue per character on `windower._action_queue`, generation `windower._action_gen_queue`, action packets through the `ActionListener` key `action_queue` ([core-lifecycle.md](core-lifecycle.md#actionlistener)), subscribed once per load from `push` (guard `_G._action_queue_listener`). `ActionQueue.push(command, wait, {delay, tag})`; cleanse passes `delay = 1.0` (`DELAY`) and `tag = 'CLEANSE'`, stealth its `delay` setting and `STEALTH`. A command step ends on the game's end-of-action for this character plus `delay`, or its longest wait; a function step runs first, then only its longest wait ends it; a refused `/ma` or `/item` is sent again (3 sends at most). `ActionQueue.push_next(command, wait, opts)` puts a step at the front (next to go), or starts the queue like `push` when it is idle; cleanse's local `push_next` passes the same `delay` and tag. The queue lives on `windower`, so a cleanse under way goes on across a job change. Full description: [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua).
 
 ## State & lifetime
 
@@ -136,7 +136,7 @@ Steps 3 and 4 both go to the front, in reverse order, so the item goes next and 
 |---|---|---|
 | `windower._action_queue`, `_action_gen_queue` | Shared queue (also stealth) | Until `//lua reload gearswap` |
 | `windower._uncurable_debuffs` | Aura marks per lowercase buff name (`mark_name`; shared with Auto Medicine) | Same; each mark 60 s at most |
-| `_G._action_queue_listener` | Raw `action` event id | Per load |
+| `_G._action_queue_listener` | `true` once the queue has subscribed to `ActionListener` | Per load |
 | `ITEM_IDS` (module local) | Item ids, including the ones looked up | Per load |
 
 ## Invariants & gotchas

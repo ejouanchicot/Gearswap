@@ -281,7 +281,7 @@ including what a re-clone would overwrite today.
 
 | Page | Covers |
 |---|---|
-| [systems/core-lifecycle.md](systems/core-lifecycle.md) | Engine sandbox, boot order, INIT_SYSTEMS, JobChangeManager, JobSyncWatchdog, MidcastWatchdog, ModuleCache, LifecycleManager, CycleHandler |
+| [systems/core-lifecycle.md](systems/core-lifecycle.md) | Engine sandbox, boot order, INIT_SYSTEMS, JobChangeManager, JobSyncWatchdog, MidcastWatchdog, CastTracker, ActionListener (the one listener for action packets), ModuleCache, LifecycleManager, CycleHandler |
 | [systems/precast-pipeline.md](systems/precast-pipeline.md) | PrecastGuard, DebuffChecker, AutoMedicine, DoomManager, CooldownChecker, AbilityHelper, WS chain, TP bonus, TierRefiner, WS slots |
 | [systems/midcast-and-buffs.md](systems/midcast-and-buffs.md) | MidcastManager resolution, set builders, the `//gs c buff` command and its engine (`BUFF_CONFIG.lua`, `SelfBuffManager`, `BuffTimers` refresh, `BuffGuard` debuff handling), Scholar stratagems |
 | [systems/factories-and-helpers.md](systems/factories-and-helpers.md) | LockstyleManager, MacrobookManager, AutoMove, craft/fishing mode, /DRG jumps, WaltzManager, CureManager, ElementalBelt (Obi / Orpheus), DualWield (DW tiers by haste), SpellGearLock (Dispelga) |

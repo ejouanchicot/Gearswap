@@ -16,7 +16,7 @@ Everything below was re-read on disk on 2026-09-28. Since the previous revision 
 | `shared/utils/warp/casting/spell_caster.lua` | 172 | Job/level gate and `/ma "<spell>" <me>` |
 | `shared/utils/warp/casting/item_user.lua` | 736 | Ring sequence: readiness check, lock, equip, wait, use, post-use monitor, restore |
 | `shared/utils/warp/casting/cast_helpers.lua` | 103 | `has_item()` over inventory + wardrobes, ring name to id table |
-| `shared/utils/warp/warp_detector.lua` | 257 | Spell/item classification, raw `action` listener registered on every load (inert, see Known issues) |
+| `shared/utils/warp/warp_detector.lua` | 251 | Spell/item classification, `ActionListener` subscription (`warp_detector`) made on every load (inert, see Known issues) |
 | `shared/utils/warp/warp_equipment.lua` | 207 | Module-flag lock/unlock of slots, fed by the detector and `warp lock` |
 | `shared/utils/warp/warp_precast.lua` | 102 | Equips `sets.precast.FC` for transport spells (through the precast hook) |
 | `shared/utils/warp/warp_item_database.lua` | 14 | Alias: `return require('shared/utils/warp/database/warp_database_core')` |
@@ -66,7 +66,7 @@ flowchart TD
 
 Consequences:
 
-- The IPC listener, the detector `action` listener and the `_G.precast` wrapper are re-created on every load, which is required because the engine removes every sandbox listener at each load and the new sandbox's `precast` is Mote's own (`1e7cc50`). Only `windower._warp_init_done` is once per addon session, and the two messages it gates (`show_commands_registered`, `show_init_success`) are empty functions today (`message_warp.lua`, "Silent init"); so are `show_ipc_registered`, `show_equipment_initialized`, `show_precast_initialized` and `show_ipc_unavailable`. A successful init prints nothing.
+- The IPC listener, the detector's `ActionListener` subscription and the `_G.precast` wrapper are re-created on every load, which is required because the engine removes every sandbox listener at each load and the new sandbox's `precast` is Mote's own (`1e7cc50`). Only `windower._warp_init_done` is once per addon session, and the two messages it gates (`show_commands_registered`, `show_init_success`) are empty functions today (`message_warp.lua`, "Silent init"); so are `show_ipc_registered`, `show_equipment_initialized`, `show_precast_initialized` and `show_ipc_unavailable`. A successful init prints nothing.
 - If `WarpEquipment` or `WarpPrecast` fails to load or init, `init()` prints `show_init_error` and returns before the precast hook: `initialized` stays false. A failed IPC include only calls the (silent) `show_ipc_unavailable` and init goes on.
 - The wrap is guarded by `_G.WARP_PRECAST_HOOKED` (`hook_global_precast`, `warp_init.lua:38-41`): when a load is replaced within 0.5 s, the replaced load's deferred block runs `WarpInit.init()` in the new sandbox too (a `require` from a dead environment's callback loads into the current one), and a second wrap would handle every warp spell twice.
 - `WarpInit.is_initialized()` is true once `init()` has completed in this module instance, i.e. from +0.5 s after the load. `system_checker.lua` `check_warp()` still reports "initialized (windower persistent)" from `windower._warp_init_done` before it asks `is_initialized()`, so after the first load it never looks at the current sandbox.
@@ -173,7 +173,7 @@ sequenceDiagram
         U->>U: "not ready: stretch deadline, sleep min(max(delay,1),5) s"
         U->>U: "ready: hold SAFETY_DELAY 3.5 s, wait for me.spawn_type"
     end
-    U->>G: "use_now: register 'action' + 'zone change' (_setup_auto_fix)"
+    U->>G: "use_now: ActionListener 'warp_autofix' + register 'zone change' (_setup_auto_fix)"
     U->>F: "input /item \"Warp Ring\" <me> (:405)"
     loop "check_cast_status every 0.5 s"
         U->>U: "status changed -> interrupted; elapsed >= cast_duration -> timeout"
@@ -202,13 +202,13 @@ Deadline rule on each not-ready check (`:492-515`): `wanted = now + max(recast, 
 
 Every failure exit of the wait goes through `abandon_wait()` (`:315`): `gs enable ring1`, then 1 s later `restore_equipment()`. Upper bound on the lock: about 90 s of waiting plus one sleep (at most 5 s), or, after use, `1 + cast_duration` seconds of monitoring. Both are bounded as long as no Lua error ends a coroutine early.
 
-Post-use monitor (`_setup_auto_fix`, `:562-735`):
+Post-use monitor (`_setup_auto_fix`, `:563-736`):
 
-- `drop_stale_autofix_listeners()` (`:545-553`) unregisters the ids parked on `windower._warp_autofix_action_id` / `_zone_id` by a previous sequence of the same load (`windower._warp_autofix_load == windower._gs_reload_count`); ids from an earlier load are only forgotten, since the engine already freed them.
-- `action` listener (`:678-686`): the player's own category 1 packet (a melee round) -> `cleanup_and_restore('interrupted')`.
-- `zone change` listener (`:691-694`) -> `cleanup_and_restore('success')`.
-- `check_cast_status` (`:705-731`), first run 1 s after setup, then every 0.5 s: `player.status` differs from the status at setup -> `interrupted`; `elapsed >= cast_duration` -> `timeout`. `elapsed` counts 0.5 per run starting at the 1 s mark, so it trails the real time by 0.5 s. The `if not player` branch is marked "defensive only" in the code (`player` is GearSwap's table, never nil).
-- `cleanup_and_restore(reason)` (`:622-675`) runs once (`cleanup_done`). When it runs in the load that registered the listeners, it unregisters both and clears their `windower.*` ids; after a reload (only the timeout path can still fire) it leaves them alone. Then it sends `gs enable ring1`. `success` stops there. `interrupted` and `timeout` print two lines and, 1 s later, call `restore_equipment()` then `verify_ring_restored()` (`:580-619`: first check after 1.5 s, up to 4 checks 1.5 s apart, success when `player.equipment.ring1` is neither empty nor the warp item).
+- `drop_stale_autofix_listeners()` (`:545-554`) removes the `warp_autofix` subscription (`ActionListener.off`) and unregisters the zone id parked on `windower._warp_autofix_zone_id` by a previous sequence of the same load (`windower._warp_autofix_load == windower._gs_reload_count`); an id from an earlier load is only forgotten, since the engine already freed it.
+- `ActionListener` key `warp_autofix` (`:679-688`, see [core-lifecycle.md](core-lifecycle.md#actionlistener)): the player's own category 1 packet (a melee round) -> `cleanup_and_restore('interrupted')`.
+- `zone change` listener (`:692-695`, plain `register_event`) -> `cleanup_and_restore('success')`.
+- `check_cast_status` (`:706-733`), first run 1 s after setup, then every 0.5 s: `player.status` differs from the status at setup -> `interrupted`; `elapsed >= cast_duration` -> `timeout`. `elapsed` counts 0.5 per run starting at the 1 s mark, so it trails the real time by 0.5 s. The `if not player` branch is marked "defensive only" in the code (`player` is GearSwap's table, never nil).
+- `cleanup_and_restore(reason)` (`:623-677`) runs once (`cleanup_done`). When it runs in the load that registered the listeners, it removes the `warp_autofix` subscription, unregisters the zone listener and clears `windower._warp_autofix_zone_id`; after a reload (only the timeout path can still fire) it leaves them alone. Then it sends `gs enable ring1`. `success` stops there. `interrupted` and `timeout` print two lines and, 1 s later, call `restore_equipment()` then `verify_ring_restored()` (`:581-620`: first check after 1.5 s, up to 4 checks 1.5 s apart, success when `player.equipment.ring1` is neither empty nor the warp item).
 
 `restore_equipment()` (`:39-51`) writes a `WARP` trace line (`restore: gs c update (ring1 now ...)`, only while `//gs c trace` is on) and sends `gs c update` (since `32b1dc6`): every call site runs inside a `coroutine.schedule` callback, where a direct `equip()` would be dropped, while `gs c update` goes through a real event (Mote's `handle_update`). The engine also helps: `gs enable ring1` re-sends the ring an event (typically the item's aftercast) tried to equip while the slot was locked. `//gs c warp fix` (`command_fix`) is the manual path: `enable('ring1')`, `gs enable ring1`, then `gs equip sets.engaged|sets.idle` 1 s later.
 
@@ -216,7 +216,7 @@ A movement interruption of the item is not seen by either listener (the item-int
 
 ### Automatic detection (inert)
 
-The design: `WarpDetector`'s `action` listener (`init_action_listener`, `warp_detector.lua:167-199`; registered with `windower.raw_register_event`, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:135-157`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
+The design: `WarpDetector`'s action subscription (`init_action_listener`, `warp_detector.lua:167-193`; `ActionListener` key `warp_detector`, one raw listener for every module, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:135-157`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
 
 In the code on disk the item lock never engages: `init_action_listener()` calls `clear_callbacks()` first, which drops the callback `WarpEquipment.init()` registered just before, and the listener reads the item id from `act.param` instead of `act.targets[1].actions[1].param`. The comment in `WarpEquipment.init()` says so and warns against just swapping the two calls (database slots such as `ears` and `item` are not GearSwap slot names, and the ring commands already lock `ring1` themselves). The listener itself is registered on every load. The only live path into `WarpEquipment.lock()` is `//gs c warp lock` (all slots, `lock('manual', 10)`, released after 13 s).
 
@@ -314,7 +314,7 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 | `is_warp_item(item_id)` | 116 | `bool, data` from `WarpItemDB.get_item_by_id`; `duration = cast_time + cast_delay`. Caller: its own listener |
 | `register_callback(fn)` | 152 | Appends to `_G.warp_detector_callbacks`. Caller: `WarpEquipment.init` |
 | `clear_callbacks()` | 157 | Caller: `init_action_listener` |
-| `init_action_listener()` | 167 | Raw `action` listener, stamped with the load. Caller: `WarpEquipment.init` |
+| `init_action_listener()` | 167 | Clears the callbacks, then subscribes to `ActionListener` under `warp_detector` (subscribing again replaces). Caller: `WarpEquipment.init` |
 | `get_warp_spells()` | 207 | 13 names. Caller: `command_test` |
 | `get_warp_items()` | 219 | Unique database ids, walked per destination (65). Caller: `command_test` |
 | `get_items_by_destination(key)`, `count_warp_items()`, `ItemDB` | 237, 250, 255 | No caller |
@@ -421,9 +421,8 @@ Each alias also has a long form (`sandoria`, `whitegate`, `stable-sd`, `chocircu
 |---|---|---|
 | `_warp_init_done` | `WarpInit.init` | Gates the (silent) init messages; also read by `system_checker.lua` `check_warp` |
 | `_warp_ipc_register_event_id`, `_warp_ipc_register_event_load` | `warp_ipc_register.lua` (top of the script and after the `register_event`) | Id of the live IPC listener and the load (`windower._gs_reload_count`) that registered it |
-| `_warp_detector_event_id`, `_warp_detector_event_load` | `init_action_listener` in `warp_detector.lua` | Id of the detector listener and its load |
 | `_warp_ipc_event_id` | `WarpIPC.init()` | Never written: `WarpIPC.init()` has no caller |
-| `_warp_autofix_action_id`, `_warp_autofix_zone_id`, `_warp_autofix_load` | `drop_stale_autofix_listeners`, `cleanup_and_restore`, `_setup_auto_fix` in `item_user.lua` | Ids of the post-use listeners and their load |
+| `_warp_autofix_zone_id`, `_warp_autofix_load` | `drop_stale_autofix_listeners`, `cleanup_and_restore`, `_setup_auto_fix` in `item_user.lua` | Id of the post-use `zone change` listener and its load |
 | `_gs_debug.WARP` | `DebugCommands.handle_debugwarp` (`flip_debug`) | Persistent copy of `_G.WARP_DEBUG` |
 
 Because the engine unregisters sandbox listeners on every load, a persisted id is already dead when the next load reads it, and Windower may have given the number to another listener since. Each id is therefore stored with `windower._gs_reload_count` (bumped by `INIT_SYSTEMS.lua:44` on every load) and unregistered only when that stamp equals the current count: a second registration in the same load (a stale sandbox's deferred init after a load within 0.5 s, or a second ring sequence) replaces its own listener, and nothing else is touched.
@@ -435,10 +434,10 @@ Registered events:
 | Event | Where | Lifetime |
 |---|---|---|
 | `ipc message` | `warp_ipc_register.lua` | Re-registered 0.5 s after every load |
-| `action` (detector, raw) | `warp_detector.lua` `init_action_listener` | Re-registered 0.5 s after every load |
-| `action`, `zone change` (post-use) | `item_user.lua:678, 691` | One ring use; removed by `cleanup_and_restore`, by the next sequence, or by the engine at the next load |
+| `ActionListener` key `warp_detector` | `warp_detector.lua` `init_action_listener` | Subscribed again 0.5 s after every load |
+| `ActionListener` key `warp_autofix`, `zone change` (post-use) | `item_user.lua:680, 692` | One ring use; removed by `cleanup_and_restore`, by the next sequence, or with the load |
 
-The IPC and post-use listeners run through GearSwap's `equip_sets` wrapper, so while the post-use `action` listener is registered each action packet in range costs a GearSwap event cycle. The detector listener uses `raw_register_event`: the engine still records its id in `registered_user_events`, so it is removed at the next load like the others.
+The IPC and post-use `zone change` listeners run through GearSwap's `equip_sets` wrapper. Both action subscriptions go through `ActionListener`'s one `raw_register_event('incoming chunk')`, so an action packet costs no GearSwap event cycle; the engine still records that id in `registered_user_events`, so it is removed at the next load like the others.
 
 Coroutines (none can be cancelled): the deferred bootstrap (`INIT_SYSTEMS.lua`), the ring chain (`item_user.lua:301-307` and the `check_usable` reschedules), the post-use monitor and verify chains, `abandon_wait`'s restore, `WarpEquipment`'s auto-unlock (`lock()`; `lock_timer = nil` does not cancel it) and its 0.5 s `gs c update` in `unlock()`, the IPC timers (`send_to_all`, the receiver's 0.5 s delay), `warp fix`'s 1 s equip.
 
@@ -502,7 +501,7 @@ Add a ring to a spell fallback: add its id to `CastHelpers.RING_IDS` and its nam
 - Do not "activate" the detector by swapping `register_callback` and `init_action_listener`: the item id is read from the wrong field and the slot names are wrong (see the `WarpEquipment.init` comment).
 - Most init messages are empty functions; a silent chat after a load is normal. Check `//gs c warp status` instead.
 - `//gs c syscheck` reports the warp system as initialised from `windower._warp_init_done`; only `warp status` answers for the current sandbox.
-- `windower.register_event` from project code costs a full GearSwap event cycle per event; new high-frequency listeners (`action`, `incoming chunk`) must use `windower.raw_register_event`.
+- `windower.register_event` from project code costs a full GearSwap event cycle per event; new high-frequency listeners (`incoming chunk`) must use `windower.raw_register_event`, and action packets go through `ActionListener`.
 - `os.clock()` (debounces) is CPU time in Windower's Lua state, `os.time()` (ring wait, extdata) is wall time: do not mix them in one comparison.
 
 ### How to debug
@@ -552,7 +551,7 @@ Fixed since the page was first written:
 - `//gs c warp test` walks the database per destination instead of reading a missing `WarpItemDB.ITEMS` (`32b1dc6`).
 - `WarpCommands.register()` (dead, wrong require path) was removed (`85ad22b`).
 - `warp_detector.lua` no longer claims 68 items.
-- The detector `action` listener goes through `raw_register_event` instead of the `equip_sets` wrapper (2026-09-25; not yet played).
+- The detector `action` listener goes through `raw_register_event` instead of the `equip_sets` wrapper (2026-09-25; not yet played), and since 2026-10-01 both action listeners (detector and post-use) are `ActionListener` subscriptions (not yet played).
 - `warp help` no longer lists `//gs c warp debug` (which cast Warp) and now lists `warp fix`, the destination codes and the `all` form (HelpScreen rewrite, `37337ca`).
 
 Still open:

@@ -256,7 +256,7 @@ All templates define `file_unload` at chunk level, so Mote's default (which woul
 | THF | yes | yes | `RangeLock.release()` |
 | WHM | yes | yes | releases `main/sub/range` when `windower._whm_melee_lock` is set (or `OffenseMode` still reads `Melee ON`) and no craft session is active (2026-09-25; the flag, which also covers a subjob change, 2026-09-28) |
 | GEO | yes | yes | `JobAddons.run('unload', 'pettp')` (skipped with `pettp = false` in `_common/display/ADDONS_CONFIG.lua`) |
-| COR | yes | yes | unregisters `_G.cor_action_event_id`, `RollTracker.cleanup()`, `PartyTracker.cleanup()`, `JobAddons.run('load', 'rolltracker')` (skipped with `rolltracker = false` in `ADDONS_CONFIG.lua`) (the DressUp watchdog stop is gone with the watchdog, 2026-09-25) |
+| COR | yes | yes | `ActionListener.off('cor_roll')`, `RollTracker.cleanup()`, `PartyTracker.cleanup()`, `JobAddons.run('load', 'rolltracker')` (skipped with `rolltracker = false` in `ADDONS_CONFIG.lua`) (the DressUp watchdog stop is gone with the watchdog, 2026-09-25) |
 | BST | yes | yes | `stop_pet_monitoring()`, bumps `_G.bst_hud_load_id`, `JobAddons.run('unload', 'bst-hud')`, nils `_G.KeybindUI/start_pet_monitoring/stop_pet_monitoring` |
 | PUP | yes | yes | `PetWS.stop()` first (ends the automaton WS poll) |
 
@@ -388,7 +388,7 @@ Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 p
 | `_alt_buff_reporting`, `_alt_buff_debug` | `alt_buff_reporter.lua:89`, `:231` | alt has reported at least once; tracing |
 | `_alt_group`, `_alt_window_gen` | `alt_group.lua`, `alt_window.lua` | Auto / Follow / Mirror shown by the alt window (last `alts` orders, or the reported state); alt window loop generation |
 | `_alt_reports`, `_alt_mirror` | `alt_group.lua` (`receive_report`, `receive_mirror`) | last state reported by each box's automation addon; mirror steps and results in progress |
-| `_warp_init_done`, `_warp_ipc_event_id`, `_warp_ipc_register_event_id` + `_load`, `_warp_detector_event_id` + `_load`, `_warp_autofix_*` + `_warp_autofix_load` | `warp_init.lua:111`; `warp_ipc_register.lua:20-24`, `:99`; `init_action_listener` in `warp_detector.lua`; `_setup_auto_fix` in `item_user.lua` | once-per-session init messages; listener tokens, each stamped with its load so an id from an earlier load is never unregistered |
+| `_warp_init_done`, `_warp_ipc_event_id`, `_warp_ipc_register_event_id` + `_load`, `_warp_autofix_zone_id` + `_warp_autofix_load` | `warp_init.lua:111`; `warp_ipc_register.lua:20-24`, `:99`; `_setup_auto_fix` in `item_user.lua` | once-per-session init messages; listener tokens, each stamped with its load so an id from an earlier load is never unregistered |
 | `_hook_wraps` | `shared/hooks/init_*_messages.lua` | counters for the message hook chain |
 | `_auto_medicine` | `auto_medicine.lua` | AutoMedicine choice |
 | `_cor_party_jobs`, `_cor_party_state` | `party_tracker.lua:127-133` | COR party job cache |
@@ -409,13 +409,13 @@ Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 p
 | `ipc message` (dual-box sync) | `init_listener`, `dualbox_sync_ipc.lua:170` | `windower._sync_ipc_event_id` at a second `init_listener` of the same load |
 | `ipc message` (warp register) | `warp_ipc_register.lua:49` | `windower._warp_ipc_register_event_id` at a second include in the same load |
 | `ipc message` (warp IPC) | `WarpIPC.init` (no caller) | `windower._warp_ipc_event_id` |
-| `action` (warp detector, raw since 2026-09-25) | `init_action_listener` in `warp_detector.lua` | `windower._warp_detector_event_id` at a second `init_action_listener` of the same load (registered on every load) |
-| `action`, `zone change` (warp item use) | `item_user.lua:678`, `:691` | local ids + `windower._warp_autofix_*`, only while the load is the one that registered them |
-| `action`, `incoming chunk` (COR, raw) | `party_tracker.lua:64`, `:158` | `_G.cor_action_event_id`, `_G.cor_party_event_id`, COR `file_unload` |
+| `incoming chunk` 0x028 (ActionListener, raw, one per load) | `listen` in `shared/utils/core/action_listener.lua` | `_G._action_listener_id` guard; no unregister path. Subscribers (`ActionListener.on`): `action_queue`, `cast_tracker`, `flurry_tracker`, `dual_wield`, `treasure_hunter`, `stealth_trace`, `warp_detector`, `warp_autofix`, `cor_roll`, `brd_song_owner`; the same key replaces, `off(key)` removes |
+| `zone change` (warp item use) | `item_user.lua:692` | local id + `windower._warp_autofix_zone_id`, only while the load is the one that registered it; the `warp_autofix` subscription is removed with `ActionListener.off` |
+| `incoming chunk` (COR, raw) | `party_tracker.lua:167` | `_G.cor_party_event_id`, `PartyTracker.cleanup` from COR `file_unload` (which also calls `ActionListener.off('cor_roll')`) |
 | `prerender`, `action` (lag debugger) | `lag_debugger.lua:118`, `:158` | `S.*` ids |
 | `prerender` (BST, raw) | `start_pet_monitoring` in the BST entry | `stop_pet_monitoring()` from BST `file_unload` |
 
-The engine removes all of these at the next `load_user_files` (`refresh.lua:69-71`), so the `windower._x` tokens only matter within one environment. The dual-box sync, warp register, warp detector and warp auto-fix tokens are stamped with `windower._gs_reload_count` and unregistered only when the stamp matches the current load: an id from an earlier load was already removed and may since have been given to another listener.
+The engine removes all of these at the next `load_user_files` (`refresh.lua:69-71`), so the `windower._x` tokens only matter within one environment. The dual-box sync, warp register and warp auto-fix zone tokens are stamped with `windower._gs_reload_count` and unregistered only when the stamp matches the current load: an id from an earlier load was already removed and may since have been given to another listener.
 
 ### Scheduled loops and how each one ends
 

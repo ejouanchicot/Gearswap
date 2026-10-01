@@ -12,7 +12,7 @@ Player-facing pages: [start page](../../user/jobs/cor/README.md),
 
 What COR adds on top of the shared pipeline:
 
-- **Phantom Roll tracking**: a raw `action` listener detects the player's own
+- **Phantom Roll tracking**: an `ActionListener` subscription detects the player's own
   rolls and Double-Ups and prints a result block (value, lucky/unlucky, bonus
   with gear, job bonus and Crooked Cards, party coverage from the packet, bust
   risk of the next Double-Up).
@@ -55,7 +55,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/cor/functions/COR_MOVEMENT.lua` | 34 | `job_handle_equipping_gear` -> `RollHold.hold_update` |
 | `shared/jobs/cor/functions/COR_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('COR', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/cor/functions/COR_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('COR', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/cor/functions/logic/party_tracker.lua` | 309 | `init_roll_listener` (raw `action`), `init` (raw `incoming chunk` `0xDD`/`0xDF`), `members_for_display`, `cleanup` |
+| `shared/jobs/cor/functions/logic/party_tracker.lua` | 308 | `init_roll_listener` (`ActionListener` key `cor_roll`), `init` (raw `incoming chunk` `0xDD`/`0xDF`), `members_for_display`, `cleanup` |
 | `shared/jobs/cor/functions/logic/roll_tracker.lua` | 581 | Roll state, `sync_with_buffs`, Crooked, bonus, bust, `cleanup`; re-exports the `roll_party` and `roll_display` functions on `RollTracker` and calls them through it |
 | `shared/jobs/cor/functions/logic/roll_party.lua` | 231 | Party job cache validation (`validate_party_cache`, `drop_departed_and_expired`), `is_job_in_party_zone`, `roll_range` (8, or 16 with LuzafRing), `count_party_members_with_buff` |
 | `shared/jobs/cor/functions/logic/roll_display.lua` | 79 | `display_roll_result` (local message + `RollShare.result`), `display_double_up_status` |
@@ -105,7 +105,7 @@ sequenceDiagram
     participant P as PartyTracker
     GS->>E: run chunk (LOCKSTYLE_CONFIG, REGION_CONFIG, config_loader + UIConfig)
     GS->>E: get_sets()
-    E->>E: clear _G.cor_* event ids, RollTracker.cleanup()
+    E->>E: clear _G.cor_party_event_id, RollTracker.cleanup()
     E->>M: include Mote-Include
     M->>E: user_setup() (states, keybinds + show_intro, UI, JCM, macro/lockstyle x2, dualbox)
     M->>E: init_gear_sets() -> include sets file
@@ -122,10 +122,10 @@ sequenceDiagram
   include, before the COR modules exist, and an earlier throw there silently
   removed roll detection. If `init()` throws, it re-arms only the roll listener.
 - The cleanup at the top of `get_sets()` runs in a fresh sandbox, so
-  `_G.cor_action_event_id` / `_G.cor_party_event_id` are always nil there, and
+  `_G.cor_party_event_id` is always nil there, and
   `RollTracker.cleanup()` runs on a module instance loaded before any state
   exists. GearSwap itself unregisters every event registered from a user file
-  on each file load, and the old sandbox's `file_unload` already unregistered
+  on each file load, and the old sandbox's `file_unload` already removed
   both handlers. Harmless, kept.
 - `user_setup()`: `CORStates.configure()`; `COR_KEYBINDS` (which returns
   `KeybindManager.create('COR', ...)`) -> global `CORKeybinds`, `bind_all()`,
@@ -237,8 +237,11 @@ sequenceDiagram
     end
 ```
 
-- **Listener**: `PartyTracker.init_roll_listener()`, one
-  `raw_register_event('action')` stored in `_G.cor_action_event_id`. A
+- **Listener**: `PartyTracker.init_roll_listener()`, subscribed to
+  [ActionListener](../systems/core-lifecycle.md#actionlistener) under the key
+  `cor_roll` (subscribing again replaces it): the packet as the server sent it,
+  since Battlemod folds the targets of one action into one line and the
+  members reached are read from the targets. A
   category-6 action counts as a roll only when
   `res.job_abilities[act.param].type == 'CorsairRoll'` (Double-Up arrives under
   the id of the roll it doubles). It builds `target_ids` from every
@@ -448,7 +451,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
   `job_status_change`, `job_buff_change`, `customize_idle_set`,
   `customize_melee_set`, `job_self_command`, `job_state_change`,
   `job_handle_equipping_gear`), the roll state above, `cor_roll_hold`,
-  `cor_action_event_id`, `cor_party_event_id`, `cor_party_jobs`,
+  `cor_party_event_id`, `cor_party_jobs`,
   `cor_party_state` (both point at `windower` tables), `CORTPConfig`,
   `CORKeybinds`, `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`, the
   lockstyle / macrobook wrappers.
@@ -456,8 +459,10 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
   `MidcastWatchdog`, `MidcastManagerDebugState`.
 - `windower.*`: `_cor_party_jobs`, `_cor_party_state`, `_cor_roll_values`
   (survive `gs reload` and job changes; reset by `lua reload gearswap`).
-- Events: the raw `action` and `incoming chunk` handlers, unregistered by
-  `file_unload` / `PartyTracker.cleanup` and by GearSwap on every file load.
+- Events: the `cor_roll` subscription (removed by `file_unload` and by
+  `PartyTracker.cleanup` with `ActionListener.off('cor_roll')`) and the raw
+  `incoming chunk` handler (unregistered by `PartyTracker.cleanup`); GearSwap
+  drops the raw listeners (ActionListener's and this one) on every file load.
 - Coroutines: the two 8 s lockstyles and the 1 s pouch check after `/ra`; none
   is cancelled by a reload.
 - Outside GearSwap: `rolltracker` unloaded while COR is loaded, loaded again by
@@ -490,9 +495,9 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
   recast would cancel the press before it could become a Double-Up.
 - `RollHold.start` must stay the last call of `job_post_precast` and
   `RollHold.stop` the first of `job_aftercast`.
-- The roll listener and the party listener are raw handlers; their ids live in
-  the sandbox `_G`, so only the same sandbox's `file_unload` (or GearSwap's own
-  cleanup) can remove them.
+- The roll subscription and the party listener live in the sandbox `_G`
+  (`_action_listener_subs`, `cor_party_event_id`), so only the same sandbox's
+  `file_unload` (or GearSwap's own cleanup) can remove them.
 - A Double-Up and a fresh roll produce the same packet; only `roll_is_active`
   tells them apart, and it depends on sandbox state that a reload clears.
 - Crooked Cards belongs to the roll: a Double-Up keeps it, a fresh roll spends

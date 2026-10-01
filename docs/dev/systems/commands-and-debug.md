@@ -573,7 +573,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 - `debugprecast` has an effect only on BRD, RDM and RUN, the jobs that read `_G.PrecastDebugState`. On BST it toggles a different flag.
 - `info` loads the complete ability, spell and weaponskill databases on first use.
 - SystemChecker and FullTest print `passed` with `%d` although it can be fractional (a WARN counts 0.5), so "9/10" can come with a 95 % score. SystemChecker colours WARN and FAIL identically (`STATUS_COLOR`).
-- LagDebugger registers its probes with the user `windower.register_event`, which GearSwap wraps in `user_equip_sets`. While recording, every `prerender` and every zone `action` therefore passes through GearSwap's `equip_sets`. `raw_register_event`, used by `party_tracker.lua`, `warp_detector.lua`, `dual_wield.lua` and `treasure_hunter.lua`, avoids that wrapper.
+- LagDebugger registers its probes with the user `windower.register_event`, which GearSwap wraps in `user_equip_sets`. While recording, every `prerender` and every zone `action` therefore passes through GearSwap's `equip_sets`. `raw_register_event` avoids that wrapper: `party_tracker.lua` (`incoming chunk`), `dual_wield.lua` and `treasure_hunter.lua` use it, and the project's action packets reach every other module through the one raw listener of `ActionListener` ([core-lifecycle.md](core-lifecycle.md#actionlistener)); LagDebugger keeps its own plain `action` listener.
 
 ## For maintainers / AI
 

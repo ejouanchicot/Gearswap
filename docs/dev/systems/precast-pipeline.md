@@ -563,8 +563,8 @@ and `brd/functions/logic/song_queue.lua`; `song_slots.lua` uses `owned_ids()`.
 
 ### FlurryTracker (ranged precast)
 
-`FlurryTracker.start()` registers a raw `action` listener once per load
-(`_G._flurry_listening`; COR_PRECAST calls it at file load). A category 4 packet with
+`FlurryTracker.start()` subscribes to `ActionListener` (key `flurry_tracker`) once per load
+(`_G._flurry_listening`; COR_PRECAST calls it at file load, RNG through `Ranged.start` in `ranged.lua`). A category 4 packet with
 param 845 (Flurry) or 846 (Flurry II) that targets this character stores the level in
 `windower._flurry_level`; Flurry I never overwrites a Flurry II. `level()` returns 0
 when neither Flurry buff id (265, 581) is in `get_player().buffs` (and forgets the
@@ -920,8 +920,8 @@ schema above. Jobs pass `_G.<JOB>TPConfig or {}`; an empty config yields no TP g
 | `state.AutoMedicine`, `state.WS1..n` | `auto_medicine.lua`, `ws_slots.lua` `rebuild` | Mote states; recreated by `user_setup` on each load and subjob change |
 | GearSwap `disable_table` (Doom lock) | `doom_manager.lua` | GearSwap global, survives reload |
 
-Registered events: FlurryTracker's raw `action` listener (removed by the engine at the
-next load). Deferred work: Windower `wait` chains in `send_command` (PrecastGuard's
+Registered events: FlurryTracker's `ActionListener` subscription (gone with the load:
+the engine removes the raw listener at the next load, and the registry lives on `_G`). Deferred work: Windower `wait` chains in `send_command` (PrecastGuard's
 cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
 `gs reload`, the UncurableDebuffs check and poll (`coroutine.schedule`, working on
 `windower._uncurable_debuffs`), and the AbilityHelper poll (`coroutine.schedule`, invalidated by

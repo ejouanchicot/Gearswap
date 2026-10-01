@@ -26,7 +26,9 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `lifecycle_manager.lua` | 160 | Factory for the four Mote hooks every job used to copy, plus `refresh_after_buff` (gear rebuild after an Aftermath Lv.3 change) | here |
 | `keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load | here |
 | `state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled) | here |
-| `cast_tracker.lua` | 58 | Raw `action` listener: did this character start a cast / act since time t | here |
+| `action_listener.lua` | 81 | One raw `incoming chunk` listener per load for the action packets (0x028), read from `original` and handed to every subscriber (2026-10-01) | here ([ActionListener](#actionlistener)) |
+| `action_queue.lua` | 181 | Shared one-action-at-a-time queue (stealth, cleanse, `//gs c buff`) | [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua) |
+| `cast_tracker.lua` | 59 | `ActionListener` subscriber: did this character start a cast / act since time t | here |
 | `auto_options.lua` | 35 | Reads `<Character>/_common/combat/AUTO_ABILITIES.lua` (automatic JA options) | here |
 | `tuning.lua` | 47 | `Tuning.get(key, default)`: a job threshold or name from `<Character>/_common/combat/TUNING.lua`, over the job's default | [factories-and-helpers.md](factories-and-helpers.md#tuning-sharedutilscoretuninglua) |
 | `job_addons.lua` | 45 | `JobAddons.allowed(addon)` / `run(action, addon)`: whether a job may load / unload a Windower addon, from `<Character>/_common/display/ADDONS_CONFIG.lua` | [factories-and-helpers.md](factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) |
@@ -153,11 +155,11 @@ The file runs top to bottom once per load. "sync" blocks run during the `include
 | 287-292 | sync | `StealthTimers.start()`: raw `incoming chunk` listener for Sneak / Invisible end times, see [stealth.md](stealth.md) | `_G._stealth_listener`, `windower._stealth_*` |
 | 316-323 (2026-10-01) | sync | `BuffTimers.start()` (`shared/utils/buffs/buff_timers.lua`): raw `incoming chunk` listener for the end time and length of every own buff, read by `//gs c buff` for `refresh_below`, see [midcast-and-buffs.md](midcast-and-buffs.md#refresh-before-the-end); a load failure prints `show_module_load_failed('Buff Timers', ...)` | `_G._buff_timers_listener`, `windower._buff_timers` |
 | 301-306 | sync | `ElementalBelt.install()` (chain layer 1) | `cleanup_precast`, `cleanup_midcast` |
-| 311-316 | sync | `DualWield.install()` (layer 2) + raw `action`, `gain buff`, `lose buff` listeners | `handle_equipping_gear` |
-| 321-326 | sync | `TreasureHunter.install()` (layer 3) + `TreasureHunter.init()` (raw `action`, `incoming chunk`, `target change`, `zone change` listeners) | all three |
+| 311-316 | sync | `DualWield.install()` (layer 2) + `ActionListener` key `dual_wield`, raw `gain buff`, `lose buff` listeners | `handle_equipping_gear` |
+| 321-326 | sync | `TreasureHunter.install()` (layer 3) + `TreasureHunter.init()` (`ActionListener` key `treasure_hunter`; raw `incoming chunk`, `target change`, `zone change` listeners) | all three |
 | 331-336 | sync | `MidcastFallback.install()` (layer 4) | `cleanup_midcast` |
 | 341-346 | sync | `CustomStates.install_hooks()` (layer 5; only when the job has `<JOB>_CUSTOM.lua` entries) | all three + `user_buff_change` |
-| 350-355 | sync | `CastTime.install_hook()` (layer 6) and `CastTracker.start()` (raw `action` listener) | `cleanup_precast`; `windower._cast_tracker` |
+| 350-355 | sync | `CastTime.install_hook()` (layer 6) and `CastTracker.start()` (`ActionListener` key `cast_tracker`) | `cleanup_precast`; `windower._cast_tracker` |
 | 359-364 | sync | `CombatMode.install_hook()` (layer 7, outermost) | `handle_equipping_gear` |
 | 383-395 | +3.0 s | Confirm `PrecastGuard`, `CooldownChecker` and `WSPrecastHandler` load; report the ones that do not | none |
 | 407-412 | +5.0 s | `GlobalProbe.snapshot()` (baseline for the `//gs c syscheck` leak report) | `_G.__global_baseline` |
@@ -316,9 +318,30 @@ With Mote's `state.EquipStop` set to `midcast`, `filter_aftercast` cancels the a
 
 ## CastTracker
 
-`shared/utils/core/cast_tracker.lua`, started by INIT_SYSTEMS. `start()` registers one raw `action` listener per sandbox (guard `_G._cast_tracker_listening`; the engine drops the listener at the next load). For every action packet whose actor is this character it stamps `windower._cast_tracker.last_action = os.clock()`, and `last_start` too for category 8 / param 24931 (a spell starts casting). The store lives on `windower`, so it survives a reload.
+`shared/utils/core/cast_tracker.lua`, started by INIT_SYSTEMS. `start()` subscribes to [ActionListener](#actionlistener) under the key `cast_tracker`, once per sandbox (guard `_G._cast_tracker_listening`; the subscription dies with the load). For every action packet whose actor is this character it stamps `windower._cast_tracker.last_action = os.clock()`, and `last_start` too for category 8 / param 24931 (a spell starts casting). The store lives on `windower`, so it survives a reload.
 
 Callers: the BRD song queue (`shared/jobs/brd/functions/logic/song_queue.lua`) and the shared action queue `shared/utils/core/action_queue.lua` (used by `//gs c stealth`, `//gs c cleanse` and `//gs c buff`; its steps may carry a `guard` checked just before they go, see [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua)), to tell within a second or two that a `/ma` the game refused never started, instead of waiting for a timeout.
+
+## ActionListener
+
+`shared/utils/core/action_listener.lua` (2026-10-01). Every module that reads action packets (0x028) subscribes here instead of registering its own `action` event. The first `on()` of a load registers one raw `incoming chunk` listener (guard `_G._action_listener_id`); for 0x028 it parses `original` once with `windower.packets.parse_action` and calls every subscriber with that table, in subscription order, each in its own `pcall` (one error does not stop the others). The registry (`{fns, order}`) lives on `_G._action_listener_subs`: it dies with the load, like the listener, and each load subscribes again. `on(key, fn)` with a key already present replaces the function and keeps its place; `off(key)` removes it.
+
+Why `original`: Battlemod rebuilds 0x028 for the chat (`addons/battlemod/parse_action_packet.lua`). It sets to 0 the message of what its filters hide and folds the targets of one action into one line, so a module reading the rebuilt packet could see a message 0 or fewer targets than the action reached.
+
+| Key | Subscribed by | Removed by |
+|---|---|---|
+| `action_queue` | `listen` in `action_queue.lua`, at the first `push` of a load (guard `_G._action_queue_listener = true`) | the load |
+| `cast_tracker` | `CastTracker.start` (INIT_SYSTEMS) | the load |
+| `dual_wield` | `DualWield.install` (INIT_SYSTEMS) | the load |
+| `treasure_hunter` | `TreasureHunter.init` (INIT_SYSTEMS) | the load |
+| `stealth_trace` | `StealthTrace.start`, from `StealthTimers.start` (guard `_G._stealth_trace_listener = true`) | the load |
+| `flurry_tracker` | `FlurryTracker.start` (COR_PRECAST at file load, RNG `Ranged.start`) | the load |
+| `warp_detector` | `WarpDetector.init_action_listener` (`WarpEquipment.init`, every load) | the load |
+| `warp_autofix` | `ItemUser._setup_auto_fix` (one warp ring use) | `cleanup_and_restore`, `drop_stale_autofix_listeners` |
+| `cor_roll` | `PartyTracker.init_roll_listener` (COR `get_sets`) | COR `file_unload` |
+| `brd_song_owner` | `SongOwner.start` (BRD entry) | the load |
+
+`lag_debugger.lua` keeps its own plain `register_event('action')` (diagnostic tool, see [commands-and-debug.md](commands-and-debug.md)).
 
 ## ModuleCache
 
@@ -468,6 +491,13 @@ Callers: all 17 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
 | `started_since(since)` | `os.clock()` value | true if a spell of this character started casting at or after `since` | BRD `song_queue.lua`, `action_queue.lua` |
 | `acted_since(since)` | `os.clock()` value | true if this character performed any action at or after `since` | same |
 
+### ActionListener (returned only)
+
+| Function | Params | Returns | Callers |
+|---|---|---|---|
+| `on(key, fn)` | subscriber name; function called with the parsed packet (`actor_id`, `category`, `param`, `targets`) | nil; ignored when `fn` is not a function | the ten keys of [ActionListener](#actionlistener) |
+| `off(key)` | name given to `on` | nil | `item_user.lua`, COR `file_unload` |
+
 ### AutoOptions (returned only)
 
 | Function | Params | Returns | Callers |
@@ -556,6 +586,7 @@ Runtime changes made with `watchdog buffer/fallback/on/off/debug` live in module
 | `_elemental_belt_installed`, `_dual_wield_installed`, `_treasure_installed`, `_midcast_fallback_installed`, `_custom_state_hooks`, `_cast_time_hook`, `_combat_mode_hook` | hook chain layers | the layers' own once-per-sandbox guards |
 | `_precast_cast_time` | `CastTime` hook | `MidcastWatchdog.on_midcast_start` |
 | `_cast_tracker_listening` | `CastTracker.start` | its own guard |
+| `_action_listener_id`, `_action_listener_subs` | `ActionListener` (`listen`, `on`) | its own guard; `dispatch`, `on`, `off` |
 | `_auto_options` | `AutoOptions.on` | same |
 
 Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_update`, `job_state_change` (CycleHandler).
@@ -578,7 +609,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 
 ### Events, texts, keybinds, coroutines
 
-- Listeners registered from this page's modules: `CastTracker` (raw `action`). Through INIT: DualWield (raw `action`, `gain buff`, `lose buff`), StealthTimers and BuffTimers (raw `incoming chunk`), TreasureHunter (its trackers), DualBox sync IPC (`ipc message`), AutoMove and Warp. GearSwap unregisters all of them and deletes text/prim objects itself on every `load_user_files` (`refresh.lua:69-79`).
+- Listeners registered from this page's modules: `ActionListener` (raw `incoming chunk`, the only one for 0x028), which `CastTracker` subscribes to. Through INIT: DualWield (an `ActionListener` subscription, raw `gain buff`, `lose buff`), StealthTimers and BuffTimers (raw `incoming chunk`), TreasureHunter (its trackers), DualBox sync IPC (`ipc message`), AutoMove and Warp. GearSwap unregisters all of them and deletes text/prim objects itself on every `load_user_files` (`refresh.lua:69-79`).
 - Coroutines scheduled here and how each is invalidated:
 
 | Scheduled by | Callback | Invalidation |
@@ -628,7 +659,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 | `_G` is rebuilt on every load | Per-load state, caches (`__require_cache`), hook guards. Anything meant to survive goes on `windower.*` |
 | `windower.*` fields persist until `//lua reload gearswap` | Sequence counters, debug flags, cross-load timestamps. Seed with `windower._x = windower._x or 0`, never reset on load |
 | Events registered via `windower.register_event` / `raw_register_event` are removed by the engine at the next load | Register once per sandbox (guard on `_G`); a `windower._x_event_id` token is only valid inside the load that stamped it |
-| `register_event` (not raw) wraps the callback in `refresh_globals` + `equip_sets` | Use `raw_register_event` for high-frequency events (`action`, `incoming chunk`, `prerender`) |
+| `register_event` (not raw) wraps the callback in `refresh_globals` + `equip_sets` | Use `raw_register_event` for high-frequency events (`incoming chunk`, `prerender`); for action packets, subscribe to `ActionListener` |
 | Coroutines are never cancelled | Every scheduled loop captures a `windower._x_seq` and returns when it moved; one-shot callbacks re-check their preconditions |
 | `equip()` from a coroutine is never sent | Send `gs c update` instead |
 | `player.tp`, `buffactive` are GearSwap copies refreshed at event time | In a raw event or a coroutine, read `windower.ffxi.get_player()` (`live_tp()`, `.buffs`) |

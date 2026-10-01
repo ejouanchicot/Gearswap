@@ -530,8 +530,9 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   exports, `thf_range_locked`, `_treasure` (tagged mobs, `overlay_on`,
   `listening`), `_treasure_engaged_by_job`, `_treasure_installed`.
 - `windower.*`: THF code writes nothing there.
-- Events: `action`, `incoming chunk`, `target change`, `zone change`, raw
-  events registered by the shared `TreasureHunter.init()`; GearSwap removes
+- Events: `incoming chunk`, `target change`, `zone change`, raw events
+  registered by the shared `TreasureHunter.init()`, plus its `ActionListener`
+  subscription (`treasure_hunter`) for the action packets; GearSwap removes
   them at the next load, and the facade registers them again.
 - Coroutines: the 8 s lockstyle in `user_setup`; `gs c update` 0.1 s after
   SA/TA loss; the quiver check 1 s after a shot. FBC, Steal and WAR buff

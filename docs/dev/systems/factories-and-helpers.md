@@ -519,7 +519,7 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 - **Magic haste estimate** (`magic_haste()`):
   - buffs from `get_player().buffs`: 33 Haste, 580 Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March (up to 2);
   - the value of each from `<Character>/_common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
-  - Haste vs Haste II (same buff) and which March come from a raw `action` listener: spells 57 / 511 / 710 (Erratic Flutter) and 417 / 419 / 420, landing on this character, kept on `windower._dw_tracked`.
+  - Haste vs Haste II (same buff) and which March come from the action packets (`ActionListener` key `dual_wield`, [core-lifecycle.md](core-lifecycle.md#actionlistener)): spells 57 / 511 / 710 (Erratic Flutter) and 417 / 419 / 420, landing on this character, kept on `windower._dw_tracked`.
 - **Not counted**: JA haste, Slow (buff 13) and Elegy (194). Their strength is unknown, and they are rare and short on a player. The config header tells the player to force `//gs c dw none` while slowed.
 - **Re-dress.** On `gain buff` / `lose buff` of those buffs, after 0.3 s, it sends `gs c update` when the tier changed and the player is engaged (token `windower._dw_update_token`).
 - **Command** `//gs c dw`. Not `haste`: that name is the alt command casting Haste. Without an argument it shows the estimate; `none|haste|haste2|max` forces a tier (`windower._dw_forced`); `auto` clears the force.
@@ -722,7 +722,7 @@ Scheduled coroutines:
 | DRGJumpManager second jump | 1.0 s | none |
 | DW re-dress after a haste buff change | 0.3 s | `windower._dw_update_token` |
 
-Events: DualWield (`action`, `gain buff`, `lose buff`) and TreasureHunter (`action`, `incoming chunk`, `target change`, `zone change`) register with `windower.raw_register_event`, once per sandbox. GearSwap drops them on the next load, and they avoid GearSwap's per-event `equip_sets` wrapper. The other modules on this page register no event, keybind or text object.
+Events: DualWield (`gain buff`, `lose buff`) and TreasureHunter (`incoming chunk`, `target change`, `zone change`) register with `windower.raw_register_event`, once per sandbox; both read the action packets through `ActionListener` (keys `dual_wield`, `treasure_hunter`). GearSwap drops them on the next load, and they avoid GearSwap's per-event `equip_sets` wrapper. The other modules on this page register no event, keybind or text object.
 
 Transitions:
 
@@ -824,7 +824,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 - **New haste source for DW.** Add the buff id to `WATCHED_BUFFS` and `magic_haste`, and its value to `DEFAULTS` and to `_master/config_global/DW_CONFIG.lua`.
 - **New AUTO_ABILITIES option.** Read it with `AutoOptions.on('<name>')`, add it (false) to `_master/config_global/AUTO_ABILITIES.lua` with a header line, and list it in the table above.
 - **Global hook trap.** A system that wraps `handle_equipping_gear` or `cleanup_*` must go through `INIT_SYSTEMS`. From `user_setup`, the wrap would be overwritten by Mote's own definitions a moment later. From a job file, the order relative to belt, DW, TH and CUSTOM is lost.
-- **Events trap.** Use `windower.raw_register_event` in shared helpers. The plain `register_event` from job code runs GearSwap's `refresh_globals` + `equip_sets` on every event.
+- **Events trap.** Use `windower.raw_register_event` in shared helpers, and `ActionListener.on` for action packets. The plain `register_event` from job code runs GearSwap's `refresh_globals` + `equip_sets` on every event.
 - **TP trap.** Test TP with `live_tp()`, never `player.tp`, especially in a coroutine.
 
 ## Known issues

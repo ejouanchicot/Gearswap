@@ -1,6 +1,6 @@
 # Stealth system (`//gs c stealth`, Sneak / Invisible on the box group)
 
-`//gs c stealth sneak | invi | both` (Alt+Z / Alt+X by default) puts Sneak or Invisible on this character and on every other member of the box group. A Scholar that needs the buff itself and has a stratagem charge covers the whole group with Accession and announces it; every other box picks its own best way from what the game says it can do right now (Spectral Jig > spell > ninjutsu with a tool > Silent Oil / Prism Powder > Evanessence > a partner casts it). A buff still up is cancelled (Cancel addon) before the new cast, since an active Sneak or Invisible blocks a new one. Actions go out through the shared action queue (`shared/utils/core/action_queue.lua`, also used by `//gs c cleanse`), which advances on the action's real end (raw `action` event) plus a delay, with a timed fallback and a resend when the game silently refused a spell or item. Each box reads the end time of its own two buffs from packet 0x063 order 9 and sends it to the group; a one-second loop warns before a buff wears off and redraws the alt window, which shows a Sneak and an Invi row per alt.
+`//gs c stealth sneak | invi | both` (Alt+Z / Alt+X by default) puts Sneak or Invisible on this character and on every other member of the box group. A Scholar that needs the buff itself and has a stratagem charge covers the whole group with Accession and announces it; every other box picks its own best way from what the game says it can do right now (Spectral Jig > spell > ninjutsu with a tool > Silent Oil / Prism Powder > Evanessence > a partner casts it). A buff still up is cancelled (Cancel addon) before the new cast, since an active Sneak or Invisible blocks a new one. Actions go out through the shared action queue (`shared/utils/core/action_queue.lua`, also used by `//gs c cleanse`), which advances on the action's real end (action packet, through `ActionListener`) plus a delay, with a timed fallback and a resend when the game silently refused a spell or item. Each box reads the end time of its own two buffs from packet 0x063 order 9 and sends it to the group; a one-second loop warns before a buff wears off and redraws the alt window, which shows a Sneak and an Invi row per alt.
 
 Verified against the code on 2026-09-28 (system added 2026-09-26, trace module added 2026-09-28); queue section re-verified 2026-10-01, when the queue moved to `action_queue.lua` and gained `push_next`; main-DNC Jig rule verified 2026-10-01 (commit `ce45482`); step guard and the shared 0x063 decoding (`BuffTimers.read`) verified 2026-10-01. The page names functions rather than line numbers; a line is given only where the line itself matters.
 
@@ -117,7 +117,7 @@ flowchart TD
     AR --> C{"/ma or /item and tries < 3?"}
     C -- yes --> CK["after START_CHECK 1.5 s: CastTracker says started?"]
     CK -- no --> RS["send again, arm(tries + 1)"]
-    W --> E{"raw 'action': actor = me, category 3/4/5/6, or 8 with param 28787?"}
+    W --> E{"action packet: actor = me, category 3/4/5/6, or 8 with param 28787?"}
     E -- yes --> D["after the step's delay: run_next if the token is unchanged"]
 ```
 
@@ -126,7 +126,7 @@ flowchart TD
 - Guard (since 2026-10-01, `opts.guard`, `opts.magic`): `run_next` calls `step.guard(step)` under `pcall` just before the step goes. `nil` (or an error): the step goes. `'skip'`: this step is dropped. `'stop'`: this step and every waiting step with the same `tag` are dropped. `'stop_magic'`: the waiting steps of that tag with `magic` are dropped, and this step too when it is a spell (an ability is put back in front). `'before', steps`: those steps go first, then this one (its guard runs again then). Only `//gs c buff` sets a guard (`BuffGuard.check`, [midcast-and-buffs.md](midcast-and-buffs.md#debuffs-during-the-queue-buff_guardlua)); stealth and cleanse steps have none. `push_next` takes the same two options.
 - A command step ends on whichever comes first: the game reporting this character's action finished (`on_action`: category 3 weapon skill, 4 spell, 5 item, 6 job ability, or 8 with param 28787 = interrupted cast) followed by the step's `delay`, or its longest wait. Stealth's longest wait is `wait_after(kind, name)`: the base cast time from the fixed table plus `delay` (Fast Cast not counted: on the safe side). `cancel` steps wait 0.5 s.
 - A **function step runs first, then waits**: `run_next` calls it at once and `arm` leaves `waiting` nil, so only its longest wait ends it. Stealth's Scholar chain is one (it sends several actions of its own); cleanse uses an empty one to hold the queue for `partner_wait`.
-- `listen()` registers the `action` listener with `raw_register_event` once per load (`_G._action_queue_listener`): a plain `register_event` from a job file runs GearSwap's `refresh_globals` and `equip_sets` on every action packet. It is called from `push`, so a load registers it only when its first step is queued.
+- `listen()` subscribes `on_action` to [ActionListener](core-lifecycle.md#actionlistener) under the key `action_queue` once per load (guard `_G._action_queue_listener = true`): one raw listener shared by every module, reading the packet as the server sent it (Battlemod rewrites 0x028 for the chat). It is called from `push`, so a load subscribes only when its first step is queued.
 - Refused actions: for a step that is a spell (`input /ma`) or an item (`input /item`) (`refusable`), `arm()` checks `START_CHECK` (1.5 s) later that it started (`CastTracker.started_since(sent_at)` for a spell, `acted_since(sent_at)` for an item). Not started (and the token and queue generation unchanged): the game refused it (sent too soon after the previous action), so it is sent again with a fresh token and a fresh longest wait, up to `MAX_TRIES` (3) sends; each resend writes a trace line under the step's tag, `not started, sent again: <command>`.
 - `ActionQueue.push_next(command, wait, {delay, tag})` puts a step at the front of `steps` (next to go) when the queue is busy, else it is `push` (append and start). Its use: a function step decides at the last moment and then acts right after itself, since the running step is already off `steps` when it runs. Cleanse uses it for every own spell and item (the step checks the debuff is still up, then `push_next`es the `/ma` or `/item`) and for Doom retries ([cleanse.md](cleanse.md#items-use_itementry-item-tries-settings-front)). Several `push_next` from one step end up in reverse order: the last one goes first. Stealth does not use it. `push_next` does not call `listen()`: the `push` that started the queue did.
 - `ActionQueue.busy()` tells whether steps are still waiting; no caller today.
@@ -153,7 +153,7 @@ InfoBlock `STEALTH :: Check (nothing is cast)`: jobs; per kind the buff state (`
 
 With `//gs c trace on`, `trace()` (`stealth.lua`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `invi: up, recast after sneak (an action breaks it)`, `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `sneak+invi: Spectral Jig on recast, <n>s` (a /DNC only), `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`, `not started, sent again: <command>`.
 
-What the game did afterwards (`stealth_trace.lua`, trace on only, checked with `TraceLog.enabled()`), on every box: `buff Sneak gained, <n> s left` / `refreshed` / `lost` (own buff end times from packet 0x063, via `StealthTimers`), and, when this character finishes casting Sneak or Invisible (raw `action`, category 4, spell 137 / 136), one `<spell> landed: <member> at <d> y` line for **every** group member (reached or not), then `<spell> landed[ with Accession]: reached <names>; missed <names (d y)>` from the targets of the action packet. `with Accession` reads buff 366 from `get_player().buffs`. The `Accession: ... yalms` line above is measured at the key press, several seconds before the cast.
+What the game did afterwards (`stealth_trace.lua`, trace on only, checked with `TraceLog.enabled()`), on every box: `buff Sneak gained, <n> s left` / `refreshed` / `lost` (own buff end times from packet 0x063, via `StealthTimers`), and, when this character finishes casting Sneak or Invisible (action packet through `ActionListener`, category 4, spell 137 / 136), one `<spell> landed: <member> at <d> y` line for **every** group member (reached or not), then `<spell> landed[ with Accession]: reached <names>; missed <names (d y)>` from the targets of the action packet. `with Accession` reads buff 366 from `get_player().buffs`. The `Accession: ... yalms` line above is measured at the key press, several seconds before the cast.
 
 ## Public API
 
@@ -208,8 +208,8 @@ Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `requ
 | Function | Params | Returns / behaviour | Callers |
 |---|---|---|---|
 | `buff_change(old, new, left)` | previous and new `{sneak, invi}` end times, `StealthTimers.left` | one trace line per changed kind (gained / refreshed / lost) | `stealth_timers.lua` `on_buffs` |
-| `on_action(act)` | Windower action | reach report for this character's finished Sneak / Invisible | its own raw `action` listener |
-| `start()` | - | registers that listener once per load (`_G._stealth_trace_listener`) | `StealthTimers.start` |
+| `on_action(act)` | Windower action | reach report for this character's finished Sneak / Invisible | `ActionListener` key `stealth_trace` |
+| `start()` | - | subscribes `on_action` once per load (guard `_G._stealth_trace_listener = true`) | `StealthTimers.start` |
 
 ### `StealthConfig` (`stealth_config.lua`)
 
@@ -274,7 +274,8 @@ Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `requ
 | `forced` (module local, `stealth.lua`) | Kinds to recast although up, until `os.clock()` | Per load |
 | `bag_cache` (module local, `stealth_methods.lua`) | Inventory counts, 1 s | Per load |
 | `_G._stealth_settings` | Settings read from the file | Per load |
-| `_G._stealth_listener`, `_G._action_queue_listener`, `_G._stealth_trace_listener` | Raw event ids (0x063, shared queue `action`, trace `action`) | Per load; the engine removes raw events recorded in `registered_user_events` at the next load |
+| `_G._stealth_listener` | Raw event id (0x063) | Per load; the engine removes raw events recorded in `registered_user_events` at the next load |
+| `_G._action_queue_listener`, `_G._stealth_trace_listener` | `true` once the queue / the trace has subscribed to `ActionListener` | Per load (the subscriptions live on `_G._action_listener_subs`) |
 
 Coroutines: the one-second loop (stopped by generation), the queue's fallback waits, post-action delays and start checks (stopped by the token and queue generation), the 0.5 s claim wait (not cancellable).
 
@@ -294,7 +295,7 @@ Coroutines: the one-second loop (stopped by generation), the queue's fallback wa
 - An active Sneak or Invisible blocks a new one: every path that casts for a kind cancels it first (`cancel_if_up`), and a box covered by another's Accession cancels its own before the Scholar's cast lands.
 - A timer is known only once the game has sent 0x063 order 9 after the buff went up; until then `needs()` falls back to "up or not" from the player's buff list.
 - `coverable` and `chain_time` read `buffactive`, the table `is_up` and the Scholar chain avoid in scheduled code; both run synchronously inside the command, where it is current.
-- A queue started before a reload keeps its steps; after the load, until the next `push` registers the new sandbox's `action` listener, its steps advance on their longest wait only.
+- A queue started before a reload keeps its steps; after the load, until the next `push` subscribes the new sandbox's queue to `ActionListener`, its steps advance on their longest wait only.
 
 ## For maintainers / AI
 
@@ -303,7 +304,7 @@ Coroutines: the one-second loop (stopped by generation), the queue's fallback wa
 | Invariant | Why | Where |
 |---|---|---|
 | No `res` lookup at run time; ids and cast times are copied constants | Walking `res.items` per key press was slow and could load the item list | `stealth_methods.lua` `SPELLS`, `ITEMS`, `SPECTRAL_JIG*`; `stealth.lua` / `stealth_timers.lua` `BUFF_IDS`; `stealth_trace.lua` `SPELLS`, `ACCESSION` |
-| Every Windower listener is `raw_register_event`, guarded by an `_G` id (`_stealth_*`, `_action_queue_listener`) | A plain `register_event` runs `refresh_globals` + `equip_sets` per packet; the `_G` guard makes it once per load | `ActionQueue` `listen`, `StealthTimers.start`, `StealthTrace.start` |
+| Every Windower listener is `raw_register_event` (action packets through `ActionListener`), guarded on `_G` (`_stealth_listener`, `_action_queue_listener`, `_stealth_trace_listener`) | A plain `register_event` runs `refresh_globals` + `equip_sets` per packet; Battlemod rewrites 0x028 for the chat; the `_G` guard makes it once per load | `ActionQueue` `listen`, `StealthTimers.start`, `StealthTrace.start` |
 | Buff state in scheduled code comes from `windower.ffxi.get_player().buffs`, never `buffactive` | `buffactive` lags inside `coroutine.schedule` | `is_up`, `accession_up` |
 | Cross-load state lives on `windower._stealth_*`; per-load state on `_G` or module locals | `_G` is rebuilt at every load; `windower.*` survives until `//lua reload gearswap` | State table above |
 | Every scheduled callback checks a token or generation before acting | Coroutines are never cancelled by a reload | `arm`, `on_action`, `tick` |
