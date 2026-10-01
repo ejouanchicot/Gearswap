@@ -134,11 +134,11 @@ end
 ---============================================================================
 
 --- One debuff: the way chosen, as {text, tone, run}. `run` does it.
-local function plan_one(entry, settings)
+local function plan_one(entry, settings, up)
     if uncurable().is_marked(mark_name(entry)) then
         return {text = 'left alone (item had no effect: aura?)', tone = 'warn'}
     end
-    local item = not entry.no_action and Methods.first_item(Methods.items_for(entry, settings)) or nil
+    local item = not entry.no_action and Methods.best_item(Methods.items_for(entry, settings), entry.key, up or {}) or nil
     if entry.spell and settings.use_spells ~= false and not entry.no_action and Methods.can_cast(entry.spell) then
         return {text = entry.spell, tone = 'good', run = function()
             -- decided when its turn comes: an earlier Erase or item may have
@@ -175,8 +175,11 @@ end
 local function plan()
     local settings = Methods.settings()
     local out = {}
-    for _, entry in ipairs(Methods.active(settings)) do
-        local way = plan_one(entry, settings)
+    local active = Methods.active(settings)
+    local up = {}
+    for _, entry in ipairs(active) do up[entry.key] = true end
+    for _, entry in ipairs(active) do
+        local way = plan_one(entry, settings, up)
         way.entry = entry
         out[#out + 1] = way
     end

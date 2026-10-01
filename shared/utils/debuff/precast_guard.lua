@@ -82,6 +82,31 @@ local cure_lock_until = 0
 --- Name of the item the lock is waiting on.
 local cure_in_flight = nil
 
+--- The cure list with, in front, an item that also takes off another debuff
+--- on now (Silence + Paralysis: one Remedy for both rather than Echo Drops,
+--- then a Remedy at the next ability). Covered debuffs: COVERS of
+--- cleanse_methods.lua.
+--- @param items table {name, id} list
+--- @param key string 'silence' or 'paralysis'
+--- @return table list (the same when nothing to move)
+local function covering_first(items, key)
+    local ok, Methods = pcall(require, 'shared/utils/debuff/cleanse_methods')
+    if not (ok and Methods and Methods.COVERS and buffactive) then return items end
+    for i, item in ipairs(items) do
+        local covers = Methods.COVERS[item.name]
+        if covers and covers[key] then
+            for other in pairs(covers) do
+                if other ~= key and buffactive[other] then
+                    local out = {item}
+                    for j, rest in ipairs(items) do if j ~= i then out[#out + 1] = rest end end
+                    return out
+                end
+            end
+        end
+    end
+    return items
+end
+
 --- Seconds between two requests to a partner for the same debuff: the key
 --- may be pressed several times while the partner's spell comes.
 local PARTNER_ASK_EVERY = 10
@@ -174,7 +199,8 @@ end
 --- @param debuff_message string The debuff message to display (e.g., "Silenced")
 --- @return string status See try_cure_debuff
 local function try_cure_silence(spell_name, debuff_message)
-    return try_cure_debuff(SILENCE_CURE_ITEMS, spell_name, debuff_message, MessageDebuffs.show_silence_cure_success, 'silence')
+    return try_cure_debuff(covering_first(SILENCE_CURE_ITEMS, 'silence'), spell_name, debuff_message,
+        MessageDebuffs.show_silence_cure_success, 'silence')
 end
 
 --- Try to use paralysis cure item (Remedy)
@@ -182,7 +208,8 @@ end
 --- @param debuff_message string The debuff message to display (e.g., "Paralyzed")
 --- @return string status See try_cure_debuff
 local function try_cure_paralysis(action_name, debuff_message)
-    return try_cure_debuff(PARALYSIS_CURE_ITEMS, action_name, debuff_message, MessageDebuffs.show_paralysis_cure_success, 'paralysis')
+    return try_cure_debuff(covering_first(PARALYSIS_CURE_ITEMS, 'paralysis'), action_name, debuff_message,
+        MessageDebuffs.show_paralysis_cure_success, 'paralysis')
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

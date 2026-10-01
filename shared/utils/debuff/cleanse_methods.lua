@@ -52,6 +52,17 @@ local ITEM_IDS = {
 }
 local ITEM_CAST = 1
 
+-- Items that take several debuffs off in one use (keys of DEBUFF_REMOVAL).
+-- Remedy: Blind, Paralyze, Poison and Silence at once (Ffxiclopedia; a
+-- player on the official forum: "removes almost everything but the
+-- disease"). Remedy Ointment takes ONE off at random: not listed. Panacea
+-- (every erasable ailment at once) needs no entry: it is the only item of
+-- those debuffs, so the first one used takes the others off.
+local COVERS = {
+    ['Remedy'] = {silence = true, paralysis = true, blindness = true, poison = true},
+}
+CleanseMethods.COVERS = COVERS
+
 local SCH = 20
 local ADDENDUM_WHITE = 401
 -- Silence, Mute, Omerta: no spell at all
@@ -173,6 +184,25 @@ function CleanseMethods.first_item(names)
         if CleanseMethods.item_count(name) > 0 then return {name = name, id = item_id(name)} end
     end
     return nil
+end
+
+--- The item to use on a debuff, from its list: one that also takes off
+--- another debuff on now goes first (Silence + Paralysis: one Remedy rather
+--- than Echo Drops then Remedy); else the first of the list held.
+--- @param names table The debuff's item list (items_for)
+--- @param key string The debuff's key
+--- @param up table key -> true of the debuffs on now
+--- @return table|nil {name, id}
+function CleanseMethods.best_item(names, key, up)
+    for _, name in ipairs(names or {}) do
+        local covers = COVERS[name]
+        if covers and covers[key] and CleanseMethods.item_count(name) > 0 then
+            for other in pairs(covers) do
+                if other ~= key and up[other] then return {name = name, id = item_id(name)} end
+            end
+        end
+    end
+    return CleanseMethods.first_item(names)
 end
 
 --- Seconds an item or a spell takes.
