@@ -88,6 +88,7 @@ Type them as `//gs c <command>`, or `/console gs c <command>` in a macro.
 | `aoe erase` | Light Arts + Addendum: White + Accession + Erase, each only when not already up |
 | `strat` | Arts up, stratagem charges, time to the next one, stratagem effects up |
 | `schhelp` | This list, in the chat |
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. Your list (`job.SCH`) by default: Protect V, Shell V, Regen V, Stoneskin, Blink, Aquaveil, with Protect IV, Shell IV and Regen IV behind (Protect V level 80, Shell V 90, Regen V 99). Of the tiers of one buff, the first one learned, in reach and off recast goes and the others are left out; a buff already up, even one cast by someone else, counts as up and gets no higher tier over it. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
 
 **Commands of every job**: the same as on the other jobs (`ui`, `cyclestate`,
 `checksets`, `wa`, `wo`, `rf`, `reload`, `ls`, `warp`, `waltz`, `th`,

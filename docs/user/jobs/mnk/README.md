@@ -73,6 +73,12 @@ on|off`...): see the [commands guide](../../guides/commands.md). With `trace
 on`, each engaged set chosen is logged with the buff sets laid on top, and
 each weaponskill with its Impetus / Footwork layers.
 
+**Buffs** (common command)
+
+| Command | What it does |
+|---|---|
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. Your list (`job.MNK`) by default: Impetus, Focus. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
+
 ## Shared features on this job
 
 | Feature | Effect on MNK |

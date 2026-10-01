@@ -73,6 +73,7 @@ Type them as `//gs c <command>`, or `/console gs c <command>` in a macro.
 |---|---|
 | `petmode` | Shows the automaton: head, frame, the Pet Mode they give, the Pet Mode in use, Pet WS, whether it is out or fighting, its TP against the WS threshold (green when the WS gear is on) |
 | `petmode auto` | Sets Pet Mode from the head again (ends a value you cycled by hand), then puts the gear on |
+| `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. PUP has no list (`job.PUP`) by default: its buffs come from the automaton; add one if you like. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP). Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
 
 **Commands of every job**: the same as on the other jobs (`ui`, `cyclestate`,
 `checksets`, `wa`, `wo`, `rf`, `reload`, `ls`, `warp`, `waltz`, `dw`, `th`,

@@ -19,10 +19,10 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
-| `shared/utils/buffs/self_buff_manager.lua` | 284 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest), `cast(to_cast)` (shared action queue), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
+| `shared/utils/buffs/self_buff_manager.lua` | 300 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first), `cast(to_cast)` (shared action queue), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
 | `shared/utils/buffs/buff_command.lua` | 59 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `subjob[sub]`) |
-| `shared/utils/buffs/buff_config.lua` | 62 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
-| `_master/config_global/BUFF_CONFIG.lua` | 49 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default, examples for RDM / PLD / RUN / NIN in comments |
+| `shared/utils/buffs/buff_config.lua` | 82 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
+| `_master/config_global/BUFF_CONFIG.lua` | 66 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
 | `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 104 | Stratagem charge count derived from recast id 231 |
 
@@ -325,13 +325,31 @@ Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buff
 
 | Key | Default | Read by |
 |---|---|---|
-| `job` | `BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'}`; no other job | `BuffCommand` (main job list) |
+| `job` | one list for BLM, RDM, WHM, PLD, RUN, SCH, NIN, SAM, DRK, MNK, RNG (table below); none for the other jobs | `BuffCommand` (main job list) |
 | `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}` | `BuffCommand` (subjob list) |
 | `war_berserk` | `{'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Berserk')` (and any other `param`) |
 | `war_defender` | `{'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Defender')` |
 | `war_add_sam` | `true` | WAR `buff_war`: on /SAM, append the stance and Third Eye |
 
-Merge: `job` and `subjob` per job (a job the file names gets its table, the others keep their default; a non-table value is ignored); every other key replaced whole when the file's value has the default's type (`false` is kept), else the default. The template `_master/config_global/BUFF_CONFIG.lua` writes every key with its default and shows commented examples for `job` (RDM `{'Haste II', 'Refresh III', 'Phalanx', 'Temper II', 'Gain-STR'}`, PLD `{'Majesty', 'Crusade', 'Phalanx', 'Reprisal', 'Enlight II'}`, RUN `{'Crusade', 'Phalanx', 'Temper', 'Regen IV'}`, NIN `{'Utsusemi'}`) and `subjob` (WAR `{'Aggressor', 'Warcry'}`); `char_paths.lua` and `migrate_layout.py` `COMMON_GROUPS` put it in `combat`, `where_is_what.py` describes it.
+Merge: `job` and `subjob` per job (a job the file names gets its table, the others keep their default; a non-table value is ignored); every other key replaced whole when the file's value has the default's type (`false` is kept), else the default. A character file copied from the first template (commit ea90614) names only BLM under `job`, so every other job gets the default list below. The template `_master/config_global/BUFF_CONFIG.lua` writes every key with its default and a commented example for `subjob` (WAR `{'Aggressor', 'Warcry'}`); `char_paths.lua` and `migrate_layout.py` `COMMON_GROUPS` put it in `combat`, `where_is_what.py` describes it.
+
+Default `job` lists (`BuffConfig.DEFAULTS`, since 2026-10-01; names checked against `res/spells.lua` and `res/job_abilities.lua`), tiers of one buff best first:
+
+| Job | List |
+|---|---|
+| BLM | Stoneskin, Blink, Aquaveil, Ice Spikes |
+| RDM | Composure, Haste II, Haste, Refresh III, Refresh II, Refresh, Phalanx, Temper II, Temper, Protect V, Protect IV, Shell V, Shell IV, Stoneskin, Blink, Aquaveil |
+| WHM | Afflatus Solace, Reraise IV, Reraise III, Haste, Protect V, Protect IV, Shell V, Shell IV, Auspice, Stoneskin, Blink, Aquaveil |
+| PLD | Majesty, Crusade, Reprisal, Enlight II, Enlight, Phalanx, Protect V, Protect IV, Shell IV |
+| RUN | Swordplay, Crusade, Temper, Phalanx, Regen IV, Refresh, Protect IV, Shell V, Shell IV, Foil, Aquaveil, Stoneskin, Blink |
+| SCH | Protect V, Protect IV, Shell V, Shell IV, Regen V, Regen IV, Stoneskin, Blink, Aquaveil |
+| NIN | Utsusemi, Migawari: Ichi, Kakka: Ichi, Myoshu: Ichi |
+| SAM | Hasso, Third Eye |
+| DRK | Last Resort, Endark II, Endark |
+| MNK | Impetus, Focus |
+| RNG | Velocity Shot |
+
+No list on purpose (comment in `buff_config.lua` and the template): BRD (songs), COR (rolls), GEO (bubbles), BST / SMN / PUP (pets), DNC (dance and samba through `job_buff_extra`), WAR (`berserk` / `defender`), BLU (the game does not tell which blue spells are set), DRG, THF. The lower tiers are kept as fallbacks for players who have not unlocked the top ones (Haste II level 96; Refresh III and Temper II 1200 job points; Enlight II, Endark II, Reraise IV 100 job points).
 
 ### SelfBuffManager (`self_buff_manager.lua`)
 
@@ -340,7 +358,8 @@ Merge: `job` and `subjob` per job (a job the file names gets its table, the othe
 - Entry forms: a name (`'Stoneskin'`), or a table `{name = ..., buff = ..., wait = ...}` (`delay` is read as `wait`); `{spell = ...}` looks only in `res.spells`, `{ability = ...}` only in `res.job_abilities`. A plain name is looked up as a job ability first, else a spell. Not found: skipped quietly.
 - Buff name: `entry.buff`, else the English name of the action's status (`res.buffs[data.status].en`: Enlight II gives Enlight), else the ability's own name; a spell without a status has no buff check.
 - Usable (`usable`), else skipped quietly: an ability must be in `windower.ffxi.get_abilities().job_abilities` (the game accounts for job and level); a spell must be learned (`get_spells()`) and listed for the main job at any level, or for the subjob at a level `<=` `player.sub_job_level`.
-- Then (`collect_item`): buff in `buffactive` -> `active` line; recast not ready (`is_recast_ready`, the `RECAST_CONFIG.lua` global; spell recasts divided by 100) -> `cooldown` line with `math.ceil(recast)`; queued less than `CAST_COOLDOWN = 2.0` s ago (`os.clock`, double press) -> skipped silently; else queued.
+- Then (`collect_item`, returns the outcome): buff in `buffactive` -> `active` line; recast not ready (`is_recast_ready`, the `RECAST_CONFIG.lua` global; spell recasts divided by 100) -> `cooldown` line with `math.ceil(recast)`; queued less than `CAST_COOLDOWN = 2.0` s ago (`os.clock`, double press) -> `spam`, skipped silently; else `queued`.
+- Tiers (since 2026-10-01): `collect` keeps a `covered` table keyed by buff name. An entry whose buff is already covered is skipped before `collect_item` (no line in chat). After `collect_item`, an outcome `active`, `queued` or `spam` covers the item's buff; `cooldown` does not, so the next tier of the same buff is tried. An entry not found or not usable (not learned, level too low) covers nothing either. So with tiers written best first (Refresh III, Refresh II, Refresh) the first one learned, in reach and off recast goes. Tiers share their status in the game data (Haste II and Haste give Haste, Enlight II gives Enlight), which is what links them; an entry without a buff (a spell with no status) never covers or is covered. The check is `buffactive`, so the same buff put up by another player (Haste from a WHM) counts as `active` and no higher tier is cast over it. `SPECIAL` names are outside this rule.
 - Wait of a step: `entry.wait`, else the spell's `cast_time` (1 for an ability) + `WAIT_MARGIN = 3.0`.
 
 Names with a rule of their own (`SPECIAL`, matched on the entry's name):
