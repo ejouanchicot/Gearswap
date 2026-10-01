@@ -240,8 +240,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tip .r span{min-width:0}
 .tip .r b{font-weight:700;white-space:nowrap}
 .tip .a{font-style:normal;color:var(--aug);font-weight:600;font-size:11.5px;margin-right:5px}
-.tip .split{color:var(--faint);font-size:11px;margin:-2px 0 4px}
-.tip .split .a{font-size:11px;margin:0}
 .tip .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:9px 0 3px}
 .tip ul{margin:0;padding-left:16px;color:var(--muted);font-size:12.5px}
 @media (max-width:640px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -364,7 +362,7 @@ const T = {
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipSplit:'◆ = part des augments, le reste est la stat de base', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -389,7 +387,7 @@ const T = {
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipSplit:'◆ = augment part, the rest is the base stat', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -1333,7 +1331,6 @@ function tipHTML(card, slot){
     // The augment part in front of the total: the base is what remains
     const aug = k => r.aug[k] && r.aug[k].v ? `<i class="a">◆${fmtStat(r.aug[k])}</i>` : '';
     const attrs = order.filter(k => statGroup(k) === 'attr'), rest = order.filter(k => statGroup(k) !== 'attr');
-    if (order.some(k => r.aug[k] && r.aug[k].v)) body += `<p class="split">${t('tipSplit')}</p>`;
     if (attrs.length) body += `<div class="attrs">${attrs.map(k => `<span>${esc(statLabel(k, r.stats[k]))}${aug(k)}<b>${fmtStat(r.stats[k])}</b></span>`).join('')}</div>`;
     body += `<div class="rows">${rest.map(k => `<div class="r"><span title="${esc(statLabel(k, r.stats[k]))}">${esc(statLabel(k, r.stats[k]))}</span><b>${aug(k)}${fmtStat(r.stats[k])}</b></div>`).join('')}</div>`;
     const notes = [r.scanned ? t('fromScan') : '', r.rank ? t('rankKnown', {p: esc(r.path), r: r.rank}) : '',
