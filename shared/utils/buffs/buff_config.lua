@@ -53,6 +53,7 @@ BuffConfig.DEFAULTS = {
     war_add_sam  = true,
     refresh_below      = 10,
     cancel_first       = {'Stoneskin'},
+    always_recast      = {'Stoneskin'},
     wait_after_spell   = 3.0,
     wait_after_ability = 0.5,
 }

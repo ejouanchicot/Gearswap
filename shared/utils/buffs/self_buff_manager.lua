@@ -123,9 +123,14 @@ local function context(res)
     for _, name in ipairs(type(cfg.cancel_first) == 'table' and cfg.cancel_first or {}) do
         if type(name) == 'string' then cancel_first[name:lower()] = true end
     end
+    local always_recast = {}
+    for _, name in ipairs(type(cfg.always_recast) == 'table' and cfg.always_recast or {}) do
+        if type(name) == 'string' then always_recast[name:lower()] = true end
+    end
     return {
         refresh_below = cfg.refresh_below,
         cancel_first = cancel_first,
+        always_recast = always_recast,
         res = res,
         abilities = abilities,
         known = windower.ffxi.get_spells() or {},
@@ -162,6 +167,9 @@ end
 --- under `refresh_below` percent of its length (buff_timers.lua). Unknown
 --- time: no.
 local function wearing_off(item, ctx)
+    -- always_recast: cast again on every press, whatever its time (Stoneskin:
+    -- its time says nothing of what it can still absorb)
+    if ctx.always_recast[item.name:lower()] then return true end
     local below = tonumber(ctx.refresh_below) or 0
     if below <= 0 or not item.buff_id then return false end
     local ok, BuffTimers = pcall(require, 'shared/utils/buffs/buff_timers')

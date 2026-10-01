@@ -82,6 +82,10 @@ return {
     -- are recast (needs the Cancel addon)
     cancel_first = {'Stoneskin'},
 
+    -- Cast again on every press, even with time left (Stoneskin: its time
+    -- says nothing of the damage it can still absorb)
+    always_recast = {'Stoneskin'},
+
     -- Seconds between the end of an action and the next one. After a spell
     -- the game refuses a new spell for a moment: too short, and a spell is
     -- refused then sent again.
