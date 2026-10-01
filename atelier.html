@@ -230,13 +230,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tip .th{display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 10px;align-items:center;margin-bottom:8px}
 .tip .th b{font-size:14.5px;display:block}
 .tip .th small{color:var(--muted);font-size:12px}
-.tip table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:inherit}
-.tip th{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;text-align:right;padding:0 0 3px 6px}
-.tip th:first-child{text-align:left;padding-left:0}
-.tip td{padding:2px 0 2px 6px;text-align:right;border-top:1px dotted var(--line);white-space:nowrap}
-.tip td:first-child{text-align:left;padding-left:0;white-space:normal}
-.tip td.a{color:var(--aug);font-weight:600}
-.tip td.t{font-weight:700}
+.tip.wide{width:440px}
+.tip .attrs{display:flex;flex-wrap:wrap;gap:2px 12px;padding:4px 0 5px;border-bottom:1px dotted var(--line);font-variant-numeric:tabular-nums}
+.tip .attrs span{white-space:nowrap;color:var(--muted)}
+.tip .attrs b{color:var(--text);font-weight:700;margin-left:3px}
+.tip .rows{display:grid;grid-template-columns:minmax(0,1fr);column-gap:18px;font-variant-numeric:tabular-nums}
+.tip.wide .rows{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tip .r{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px dotted var(--line)}
+.tip .r span{min-width:0}
+.tip .r b{font-weight:700;white-space:nowrap}
+.tip .a{font-style:normal;color:var(--aug);font-weight:600;font-size:11.5px;margin-right:5px}
+.tip .split{color:var(--faint);font-size:11px;margin:-2px 0 4px}
+.tip .split .a{font-size:11px;margin:0}
 .tip .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:9px 0 3px}
 .tip ul{margin:0;padding-left:16px;color:var(--muted);font-size:12.5px}
 .tip .origin{color:var(--accent);font-size:12.5px;margin:0 0 6px}
@@ -360,7 +365,7 @@ const T = {
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
     sharedBy:'Même set que : {l}', emptyWeapon:'suit le mode arme', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Défini dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipBase:'Base', tipAug:'Augm.', tipTotal:'Total', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
+    legendOwn:'Écrit dans ce set', legendWeap:'Posé par le mode d\'arme', legendHover:'Survole une pièce : stats de base et augments', tipSplit:'◆ = part des augments, le reste est la stat de base', tipInh:'Hérité de {b}', tipNotes:'À savoir', sharedCount:'Même set que {n} autre(s) nom(s)', legendInh:'Hérité du set de base', legendAug:'Augments',
     search:'Chercher un set ou un objet…', noMatch:'Aucun set ne correspond.', navHint:'↑ ↓ pour passer d\'un set à l\'autre',
     colJob:'Job', colRole:'Rôle', colSub:'Sub', colSets:'Sets', colKeys:'Touches', colExport:'Export', colKey:'Touche', colAction:'Action', colFile:'Fichier',
     colMode:'Mode', colValues:'Valeurs', colState:'État',
@@ -385,7 +390,7 @@ const T = {
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
     sharedBy:'Same set as: {l}', emptyWeapon:'follows the weapon mode', empty:'—', inhFrom:'↳ {b}',
-    legendOwn:'Set here', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipBase:'Base', tipAug:'Augm.', tipTotal:'Total', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
+    legendOwn:'Written in this set', legendWeap:'Put by the weapon mode', legendHover:'Hover a piece: base stats and augments', tipSplit:'◆ = augment part, the rest is the base stat', tipInh:'Inherited from {b}', tipNotes:'Good to know', sharedCount:'Same set as {n} other name(s)', legendInh:'Inherited from the base set', legendAug:'Augments',
     search:'Find a set or an item…', noMatch:'No set matches.', navHint:'↑ ↓ to move between sets',
     colJob:'Job', colRole:'Role', colSub:'Sub', colSets:'Sets', colKeys:'Keys', colExport:'Export', colKey:'Key', colAction:'Action', colFile:'File',
     colMode:'Mode', colValues:'Values', colState:'State',
@@ -1323,15 +1328,17 @@ function tipHTML(card, slot){
   if (!p) return `<div class="th">${icon(null)}<div><b>${label}</b><small>${slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty')}</small></div></div>`;
   const r = pieceStats(p);
   const own = new Set(s.own || Object.keys(s.pieces));
-  const origin = eff.from[slot] || (s.base && !own.has(slot) ? t('inhFrom', {b: shortPath(s.base)}) : t('legendOwn'));
+  const origin = eff.from[slot] || (s.base && !own.has(slot) ? t('tipInh', {b: shortPath(s.base)}) : t('legendOwn'));
   let body = '';
   if (r && r.known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
     const order = STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder));
-    const cell = (part, k) => part[k] && part[k].v ? fmtStat(part[k]) : '';
-    body = `<table><thead><tr><th></th><th>${t('tipBase')}</th><th>${t('tipAug')}</th><th>${t('tipTotal')}</th></tr></thead><tbody>` +
-      order.map(k => `<tr><td>${esc(statLabel(k, r.stats[k]))}</td><td>${cell(r.base, k)}</td><td class="a">${cell(r.aug, k)}</td><td class="t">${fmtStat(r.stats[k])}</td></tr>`).join('') +
-      `</tbody></table>`;
+    // The augment part in front of the total: the base is what remains
+    const aug = k => r.aug[k] && r.aug[k].v ? `<i class="a">◆${fmtStat(r.aug[k])}</i>` : '';
+    const attrs = order.filter(k => statGroup(k) === 'attr'), rest = order.filter(k => statGroup(k) !== 'attr');
+    if (order.some(k => r.aug[k] && r.aug[k].v)) body += `<p class="split">${t('tipSplit')}</p>`;
+    if (attrs.length) body += `<div class="attrs">${attrs.map(k => `<span>${esc(statLabel(k, r.stats[k]))}${aug(k)}<b>${fmtStat(r.stats[k])}</b></span>`).join('')}</div>`;
+    body += `<div class="rows">${rest.map(k => `<div class="r"><span title="${esc(statLabel(k, r.stats[k]))}">${esc(statLabel(k, r.stats[k]))}</span><b>${aug(k)}${fmtStat(r.stats[k])}</b></div>`).join('')}</div>`;
     const notes = [r.scanned ? t('fromScan') : '', r.rank ? t('rankKnown', {p: esc(r.path), r: r.rank}) : '',
       r.path && !r.rank ? t('pathOne', {p: esc(r.path)}) : '', r.hidden ? t('hiddenFc') : ''].filter(Boolean);
     if (notes.length) body += `<div class="k">${t('tipNotes')}</div><ul>${notes.map(n => `<li>${n}</li>`).join('')}</ul>`;
@@ -1346,6 +1353,7 @@ function showTip(el){
   const tip = $('#tip'), ci = +el.dataset.card, card = S._cards && S._cards[ci];
   if (!card) return;
   tip.innerHTML = tipHTML({c: card, i: ci}, el.dataset.slot);
+  tip.classList.toggle('wide', tip.querySelectorAll('.r').length > 6);
   tip.hidden = false;
   const b = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
   const left = b.right + 8 + w < innerWidth ? b.right + 8 : Math.max(8, b.left - 8 - w);
