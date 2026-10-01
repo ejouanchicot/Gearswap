@@ -2135,10 +2135,13 @@ function weaponModes(d){
   WEAPON_CACHE.set(d, {lang: S.lang, modes});
   return modes;
 }
-// The weapon chosen in the page for a mode, else the one the job loads with
+// The weapon chosen in the page for a mode, else the one the job loads with. A current value that
+// names no set (PLD's Shield on 'Auto') lays nothing, as in game: null
 function chosenWeapon(m){
   const v = S.weapons[weaponKey(m)];
-  return m.values.includes(v) ? v : m.values.includes(m.current) ? m.current : m.values[0];
+  if (m.values.includes(v)) return v;
+  if (m.values.includes(m.current)) return m.current;
+  return m.current && !m.onlyEmpty ? null : m.values[0];
 }
 const weaponKey = m => S.char + '|' + S.job + '|' + m.name;
 // A choice made in the page (never the job's default): it wins over the job's rules
@@ -2173,6 +2176,7 @@ function withWeapons(s, ignore){
     const ex = explicitWeapon(m, ignore);
     if (m.onlyEmpty) { if (ex) picks.push([m, ex]); else fill(m, chosenWeapon(m), `${m.desc} : ${chosenWeapon(m)}`, true); continue; }
     let v = ex || chosenWeapon(m), why = `${m.desc} : ${v}`;
+    if (!v) continue;
     const stance = !ex && m.name === 'MainWeapon' && hybrid && (rules.stance_weapon || {})[hybrid];
     if (stance && m.sets[stance]) { v = stanceWeapon = stance; why = `${hybrid} : ${v}`; }
     if (!ex && want && m.name === 'MainWeapon' && weaponSkillOf(m, v) !== want) {
