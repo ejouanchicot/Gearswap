@@ -114,7 +114,7 @@ for their set there instead of `sets.precast.JA`.
 | `sets.precast.WS.Acc`, `sets.precast.WS['Name'].Acc` | WS Mode Acc, or Offense Mode Acc |
 
 Moonshade Earring is added by itself when it reaches the next TP step:
-[TP bonus](../war/tp-bonus.md) (`PUP_TP_CONFIG.lua`).
+[TP bonus](../../features/tp-bonus.md) (`PUP_TP_CONFIG.lua`).
 
 ## Spells (subjob)
 

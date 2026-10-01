@@ -130,7 +130,7 @@ Checked in the code for BLU:
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, paralysis, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left (before Unbridled Learning is considered). Optional party message per action in `_common/combat/RECAST_CONFIG.lua` |
-| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `BLU_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
+| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `BLU_TP_CONFIG.lua` ([TP bonus](../../features/tp-bonus.md)) |
 | Automatic abilities | `blu_unbridled` and `blu_expiacion_window` in `_common/combat/AUTO_ABILITIES.lua`, both off: see [states.md](states.md#automatic-abilities) |
 | Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Magical Blue Magic, Sanguine Blade and the other elemental weaponskills when they add at least 5 % (`_common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) |
 | Combat Mode | Hidden; `//gs c combatmode show`, then `!numpad0`: On locks main, sub and range |

@@ -177,7 +177,7 @@ unless Daybreak is already in hand. (RDM has a dedicated command for this.)
 
 `sets.precast.WS`, `sets.precast.WS['Name']` (the provided file: Mystic Boon,
 Flash Nova). Moonshade Earring is added by itself when it reaches the next TP
-step: [TP bonus](../war/tp-bonus.md) (`WHM_TP_CONFIG.lua`).
+step: [TP bonus](../../features/tp-bonus.md) (`WHM_TP_CONFIG.lua`).
 
 ## Job abilities
 

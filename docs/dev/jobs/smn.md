@@ -44,7 +44,7 @@ Verified on 2026-09-28:
 |-------|-----------------|-----------|
 | Shared modules (`shared/jobs/smn/`, 14 files) | repo | yes |
 | Blood Pact data (`shared/data/magic/SMN_SPELL_DATABASE.lua` + `summoning/*.lua`) | repo | yes |
-| Reference notes (`docs/SMN_BLOOD_PACTS_REFERENCE.md`) | repo | yes |
+| Reference notes (`docs/user/jobs/smn/blood-pacts.md`) | repo | yes |
 | Alt command configs (`shared/data/alt/SMN_ALT_COMMANDS.lua`, `_master/config/alt/SMN_ALT_CUSTOM.lua`) | repo | yes |
 | `character_db.lua`: SMN in the author's roster and in the all-jobs list | repo | yes |
 | Entry `shared/entry/smn.lua` and its one-line template `_master/entry/Tetsouo_SMN.lua` | repo | yes |
@@ -377,7 +377,7 @@ it stays on after the first cast.
   character should get it, into the overlay too.
 - Blood Pact gear depends on the exact English pact name being in one of the
   classifier lists; keep them in sync with
-  `docs/SMN_BLOOD_PACTS_REFERENCE.md`.
+  `docs/user/jobs/smn/blood-pacts.md`.
 - `customize_idle_set` owns the whole idle choice; town and movement gear come
   from `BaseSetBuilder` there, after the avatar / `IdleMode` choice and the
   Avatar's Favor layer.

@@ -45,7 +45,7 @@ New here? Read, in this order: [installation](user/getting-started/installation.
 | [Keybind HUD](user/features/ui.md) | `//gs c ui`, section and row order, look, settings files |
 | [Equipment validation](user/features/equipment-validation.md) | `//gs c checksets`, the wardrobe audit and organizer, refill |
 | [Auto-tier](user/features/auto-tier-system.md) | WHM Cure and DNC Waltz tier from missing HP; BLM, RDM and GEO spells stepping down a tier |
-| [Job changes](user/features/job-change-manager.md) | What happens when you change job or subjob |
+| [Job changes](user/guides/how-it-works.md#job-and-subjob-changes) | What happens when you change job or subjob |
 | [Midcast watchdog](user/features/watchdog.md) | Gear recovery when a cast is never confirmed |
 | [Cleanse](user/features/cleanse.md) | `//gs c cleanse`: debuffs off you and your box group, every debuff and what removes it |
 
@@ -63,8 +63,8 @@ page (`sets.md`). Overview: [user/jobs/](user/jobs/README.md).
 | Ranged | [RNG](user/jobs/rng/README.md) |
 | Pet | [BST](user/jobs/bst/README.md) · [SMN](user/jobs/smn/README.md) · [PUP](user/jobs/pup/README.md) · [DRG](user/jobs/drg/README.md) |
 
-Shared by several jobs: [TP bonus gear](user/jobs/war/tp-bonus.md) (every job
-with a `<JOB>_TP_CONFIG.lua`). SMN reference: [blood pacts and summons](SMN_BLOOD_PACTS_REFERENCE.md).
+Shared by several jobs: [TP bonus gear](user/features/tp-bonus.md) (every job
+with a `<JOB>_TP_CONFIG.lua`). SMN reference: [blood pacts and summons](user/jobs/smn/blood-pacts.md).
 
 ## Developer documentation
 

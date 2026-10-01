@@ -729,7 +729,7 @@ Open:
 - Fixed 2026-09-29 (checked offline, not yet in game): after `//po` or `//gs c wo` (both end with `gs enable all`), the WHM `Melee ON`, THF `RangeLock` and Hoxne Ampulla locks stayed open while their state still showed On. The `hold()` registry is now laid again after the gear of every update (`reassert_holds`), and emptied on every job load. `wo` still releases the Ampulla and range locks on purpose when it ends.
 - Hook layers fail silently: each install is wrapped in `pcall(function() ... end)` with no report, unlike the other INIT blocks.
 - The 3 s fallback of `hold_during_action` (sends `gs c update`) is not tested in game.
-- `docs/user/features/job-change-manager.md` and `docs/user/features/watchdog.md` are out of date.
+- `docs/user/features/watchdog.md` is out of date. (The player page on job changes now lives in [how it works](../../user/guides/how-it-works.md#job-and-subjob-changes).)
 
 Fixed:
 

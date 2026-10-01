@@ -33,8 +33,8 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | SCH | [sch/README.md](sch/README.md) | Also [sch/states.md](sch/states.md), [sch/sets.md](sch/sets.md); added 2026-09-29: loads, not yet tested in game |
 | SMN | [smn/README.md](smn/README.md) | Also [smn/states.md](smn/states.md), [smn/sets.md](smn/sets.md); the provided set file is mostly empty |
 | THF | [thf/README.md](thf/README.md) | Also [states](thf/states.md), [sets](thf/sets.md) |
-| WAR | [war/README.md](war/README.md) | Also [war/states.md](war/states.md), [war/sets.md](war/sets.md), [war/tp-bonus.md](war/tp-bonus.md) |
+| WAR | [war/README.md](war/README.md) | Also [war/states.md](war/states.md), [war/sets.md](war/sets.md), [features/tp-bonus.md](../features/tp-bonus.md) |
 | WHM | [whm/README.md](whm/README.md) | Also [whm/states.md](whm/states.md), [whm/sets.md](whm/sets.md); not played by a maintained character |
 
 TP bonus gear (Moonshade Earring and the like), for every job with a
-`<JOB>_TP_CONFIG.lua`: [war/tp-bonus.md](war/tp-bonus.md).
+`<JOB>_TP_CONFIG.lua`: [features/tp-bonus.md](../features/tp-bonus.md).

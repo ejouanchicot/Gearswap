@@ -104,7 +104,7 @@ comes from enmity). Knights of Round has no set in the provided file and uses
 `sets.precast.WS`.
 
 Moonshade Earring (and the Sequence sword's bonus) are handled by the TP bonus system,
-not by a set: see [TP bonus gear](../war/tp-bonus.md).
+not by a set: see [TP bonus gear](../../features/tp-bonus.md).
 
 ## Job abilities
 
@@ -229,7 +229,7 @@ the `//gs c aoe` rotation).
   says).
 - **TP bonus**: a Moonshade Earring is added to a weaponskill only when it reaches the
   next TP step; Sequence counts as +500 when held
-  ([TP bonus gear](../war/tp-bonus.md)).
+  ([TP bonus gear](../../features/tp-bonus.md)).
 - **Automatic HP ordering on PLD too**: at each swap the pieces are ranked by the HP
   they gain over what you wear, so max HP never dips mid-swap
   ([configuration](../../guides/configuration.md), `HP_PRIORITY.lua`). You do not need

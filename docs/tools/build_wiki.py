@@ -41,7 +41,7 @@ NAV = [
                           'user/guides/faq.md', 'user/guides/glossary.md']),
     ('player', 'Features', ['user/features/ui.md', 'user/features/auto-tier-system.md',
                             'user/features/equipment-validation.md',
-                            'user/features/job-change-manager.md', 'user/features/watchdog.md', 'user/features/cleanse.md']),
+                            'user/features/tp-bonus.md', 'user/features/watchdog.md', 'user/features/cleanse.md']),
     ('player', 'Jobs', ['user/jobs/README.md']),
     ('dev', 'Overview', ['dev/README.md', 'dev/maintainer-guide.md']),
     ('dev', 'Architecture', ['dev/architecture/job-change-lifecycle.md',
@@ -53,11 +53,10 @@ NAV = [
                         'dev/systems/messages-catalog.md', 'dev/systems/ui-overlay.md',
                         'dev/systems/equipment-and-inventory.md', 'dev/systems/wardrobe-organizer.md',
                         'dev/systems/dualbox.md', 'dev/systems/stealth.md', 'dev/systems/cleanse.md', 'dev/systems/warp.md']),
-    ('dev', 'Data', ['dev/data/spell-databases.md', 'dev/data/ability-and-weaponskill-databases.md',
-                     'SMN_BLOOD_PACTS_REFERENCE.md']),
+    ('dev', 'Data', ['dev/data/spell-databases.md', 'dev/data/ability-and-weaponskill-databases.md']),
     ('dev', 'Jobs (code)', ['dev/jobs/%s.md' % j for j in JOBS]),
 ]
-JOB_PAGE_ORDER = ['README.md', 'states.md', 'sets.md', 'abilities.md', 'tp-bonus.md']
+JOB_PAGE_ORDER = ['README.md', 'states.md', 'sets.md', 'abilities.md', 'blood-pacts.md']
 SECTION_LABELS = {'player': 'Player guide', 'dev': 'Developer reference'}
 
 

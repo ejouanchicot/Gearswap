@@ -71,7 +71,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   inventory when 5 or fewer are left (`quiver_open_at` in
   `_common/inventory/REFILL_CONFIG.lua`, `false`: never).
 - Idle: town and Adoulin sets in town, `sets.MoveSpeed` while moving outside town.
-- Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).
+- Weaponskill TP bonus gear: see [TP bonus](../../features/tp-bonus.md).
 - Every mode goes back to its default on each job change, subjob change or reload.
 
 ## Files

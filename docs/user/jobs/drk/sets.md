@@ -71,7 +71,7 @@ when that action ends. The plain "Aftermath" takes effect at your next gear chan
 | `sets.precast.WS.Acc` | WS Mode Acc, for a weaponskill without its own set. A named weaponskill without `.Acc` keeps its own set |
 
 TP bonus (Moonshade Earring; Anguta counted when held):
-[TP bonus](../war/tp-bonus.md).
+[TP bonus](../../features/tp-bonus.md).
 
 ## Job abilities
 

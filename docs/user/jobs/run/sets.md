@@ -64,7 +64,7 @@ set with the weaponskill's name is still "its own set", so it would hide
 `sets.precast.WS` and change nothing.
 
 TP bonus: a Moonshade Earring is added only when it reaches the next TP step, and a held
-Lionheart counts +500 ([TP bonus gear](../war/tp-bonus.md), `RUN_TP_CONFIG.lua`).
+Lionheart counts +500 ([TP bonus gear](../../features/tp-bonus.md), `RUN_TP_CONFIG.lua`).
 
 ## Job abilities
 
@@ -136,7 +136,7 @@ family such as `sets.midcast.BarElement`, then the skill set).
 - **Runes swap nothing** with the provided file: `sets.precast.JA` is empty, so your
   idle or engaged gear stays on.
 - **TP bonus**: Moonshade Earring added to a weaponskill only when it reaches the next
-  TP step ([TP bonus gear](../war/tp-bonus.md)).
+  TP step ([TP bonus gear](../../features/tp-bonus.md)).
 - `//gs c rune` and `//gs c aoe` only send the ability or spell; the gear is then chosen
   as for any other rune or blue spell.
 - RUN has no automatic ability before a spell or weaponskill, no slot lock, no ward or

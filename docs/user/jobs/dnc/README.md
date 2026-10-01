@@ -154,7 +154,7 @@ for refill, `combat/` for the rest):
 | `DNC_HUD.lua` | HUD section and row order for DNC (written by `//gs c ui order` / `roworder`) |
 | `DNC_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (template: 2 everywhere) |
 | `DNC_MACROBOOK.lua` | Macro book / page per subjob and per dual-box alt job (template: book 4, /WAR book 5) |
-| `DNC_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../war/tp-bonus.md)) |
+| `DNC_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../../features/tp-bonus.md)) |
 | `DNC_REFILL.lua` | What `//gs c rf` restocks on DNC on top of or in place of the common list (every line commented at first: the common list) ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,

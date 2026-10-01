@@ -117,7 +117,7 @@ belt`).
 | `sets.precast.WS['Myrkr']`, `['Omniscience']`, `['Cataclysm']`, `['Shattersoul']`, `['Black Halo']` | That weaponskill |
 
 Moonshade Earring is added by itself when it reaches the next TP step:
-[TP bonus](../war/tp-bonus.md) (`SCH_TP_CONFIG.lua`).
+[TP bonus](../../features/tp-bonus.md) (`SCH_TP_CONFIG.lua`).
 
 ## Movement and town
 

@@ -78,7 +78,7 @@ Then, on top, in this order (a later layer wins a slot):
   for you. A WS Mode other than Normal always wins over it.
 - The TP bonus pieces (Moonshade Earring, Mpaca's Cap; Hagakure and
   Dojikiri Yasutsuna counted) go on first, the Sekkanoki / Meikyo Shisui pieces
-  after them: [TP bonus](../war/tp-bonus.md).
+  after them: [TP bonus](../../features/tp-bonus.md).
 
 ## Job abilities
 

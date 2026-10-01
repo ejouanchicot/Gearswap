@@ -77,7 +77,7 @@ are useful with a subjob:
   equips the weapon of that name directly.
 - Sekkanoki and Meikyo Shisui add `sets.buff.Sekkanoki` /
   `sets.buff['Meikyo Shisui']` to the weaponskill when the buff is up.
-- Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).
+- Weaponskill TP bonus gear: see [TP bonus](../../features/tp-bonus.md).
 - Every mode goes back to its default on each job change, subjob change or reload.
 
 ## Files

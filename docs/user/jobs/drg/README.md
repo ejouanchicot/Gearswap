@@ -87,7 +87,7 @@ engaged set chosen is logged.
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left |
-| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `DRG_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
+| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `DRG_TP_CONFIG.lua` ([TP bonus](../../features/tp-bonus.md)) |
 | Combat Mode | Hidden; `//gs c combatmode show`, then `!numpad0` |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
 | Movement speed | `sets.MoveSpeed` while you move, idle, outside a city |

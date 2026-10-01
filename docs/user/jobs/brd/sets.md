@@ -62,7 +62,7 @@ weapon. No `sets.MoveSpeed` on the engaged set.
 
 On top, Moonshade Earring goes in `ear1` when its +250 TP reaches the next step (2000
 or 3000 TP). Aeneas and Centovente count as TP bonus when held, in either hand. The
-list lives in `BRD_TP_CONFIG.lua`; how it works: [TP bonus gear](../war/tp-bonus.md).
+list lives in `BRD_TP_CONFIG.lua`; how it works: [TP bonus gear](../../features/tp-bonus.md).
 
 ## Job abilities
 

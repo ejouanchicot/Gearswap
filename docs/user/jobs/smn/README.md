@@ -5,7 +5,8 @@ every command that works on SMN, and every shared feature that acts on your
 gear or your actions, then points to the details:
 
 - [states.md](states.md): what each mode value does;
-- [sets.md](sets.md): every set name the SMN code reads, and what goes on by itself.
+- [sets.md](sets.md): every set name the SMN code reads, and what goes on by itself;
+- [blood-pacts.md](blood-pacts.md): every avatar and spirit, and its Blood Pacts.
 
 > **Getting SMN.** Pick SMN in the job list of the clone script. The
 > provided set file is an empty skeleton except for the Fast Cast set: fill
@@ -201,4 +202,5 @@ Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
 
 - [SMN modes and keys in detail](states.md)
 - [SMN set names and automatic gear](sets.md)
+- [Blood Pacts and summons reference](blood-pacts.md)
 - [Commands guide](../../guides/commands.md), [keybinds guide](../../guides/keybinds.md), [set names guide](../../guides/sets.md)

@@ -70,4 +70,4 @@ for refill, `combat/` for the rest):
 | `RUN_BLU_MAGIC.lua` | Blue Magic enmity rotation for `//gs c aoe` |
 | `RUN_LOCKSTYLE.lua` | Lockstyle number per subjob (3 in the template) |
 | `RUN_MACROBOOK.lua` | Macro book/page per subjob, and per dual-box alt job |
-| `RUN_TP_CONFIG.lua` | TP-bonus pieces used for weaponskill gear ([TP bonus](../war/tp-bonus.md)) |
+| `RUN_TP_CONFIG.lua` | TP-bonus pieces used for weaponskill gear ([TP bonus](../../features/tp-bonus.md)) |

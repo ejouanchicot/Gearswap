@@ -92,7 +92,7 @@ would look for their set there instead of `sets.precast.JA`.
 | `sets.precast.WS['<Name>'].Acc` | Same, for a weaponskill with its own set (add it) |
 
 Moonshade Earring is added by itself when it reaches the next TP step:
-[TP bonus](../war/tp-bonus.md) (`DRG_TP_CONFIG.lua`).
+[TP bonus](../../features/tp-bonus.md) (`DRG_TP_CONFIG.lua`).
 
 ## Spells (subjob) and the Healing Breath trigger
 

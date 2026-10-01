@@ -58,7 +58,7 @@ Ikenga or Loxotic the game refuses them and their turn in the chain is lost.
   not engaged, it is cancelled (needs the Windower `Cancel` addon).
 - Idle: town / Adoulin sets in town, `sets.MoveSpeed` while moving outside town.
 - Weaponskill TP bonus gear (Moonshade, Chango, Warcry, Fencer): see
-  [TP bonus](tp-bonus.md).
+  [TP bonus](../../features/tp-bonus.md).
 - Every mode except `AutoMedicine` goes back to its default on each job change,
   subjob change or reload (the weapon is read again from your hands).
 - The author's own files differ: Hybrid Mode also has `SubtleBlow` and `Hoxne`

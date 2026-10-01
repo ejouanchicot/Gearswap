@@ -102,7 +102,7 @@ THF, `//gs c th show` brings it back ([commands](../../guides/commands.md)).
 | `.SA` / `.TA` / `.SATA` | See Sneak Attack above |
 
 THF has no weaponskill mode. TP bonus pieces (Moonshade Earring) are added when
-they reach the next TP step: [TP bonus](../war/tp-bonus.md) (`THF_TP_CONFIG.lua`:
+they reach the next TP step: [TP bonus](../../features/tp-bonus.md) (`THF_TP_CONFIG.lua`:
 Aeneas +500 and Centovente +1000 are counted when held, main or off hand).
 
 ## Job abilities

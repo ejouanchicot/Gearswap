@@ -5,7 +5,7 @@ every shared feature that works on WAR, and the files you can edit.
 
 - What each mode does: [states.md](states.md)
 - Every set name WAR reads, and what it puts on by itself: [sets.md](sets.md)
-- TP bonus pieces (Moonshade, Boii, Chango, Warcry, Fencer): [tp-bonus.md](tp-bonus.md)
+- TP bonus pieces (Moonshade, Boii, Chango, Warcry, Fencer): [tp-bonus.md](../../features/tp-bonus.md)
 
 ## Overview
 
@@ -150,7 +150,7 @@ with the same name; `//gs c alt berserk` sends the alt's.
 | Doom | `sets.buff.Doom` goes on and neck, rings and waist stay locked until Doom is gone |
 | Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
 | Recast announce | An action refused on recast can tell the party, per action, from `_common/combat/RECAST_CONFIG.lua` |
-| TP bonus | Moonshade Earring and Boii Cuisses +3 added only when they reach the next TP step; Chango, Warcry (Savagery merits) and Fencer counted ([TP bonus](tp-bonus.md)) |
+| TP bonus | Moonshade Earring and Boii Cuisses +3 added only when they reach the next TP step; Chango, Warcry (Savagery merits) and Fencer counted ([TP bonus](../../features/tp-bonus.md)) |
 | Subjob spells | Cures and enhancing spells from /WHM or /RDM keep the gear you had on: the template has no Fast Cast or midcast set for them (add `sets.precast.FC`, `sets.midcast['Healing Magic']`...) |
 
 ## Configuration files for this job
@@ -180,6 +180,6 @@ Your sets are in `<YourName>/war/sets/war_sets.lua`.
 
 - [states.md](states.md): what each mode does
 - [sets.md](sets.md): set names and automatic gear
-- [tp-bonus.md](tp-bonus.md): TP bonus pieces, for every job
+- [tp-bonus.md](../../features/tp-bonus.md): TP bonus pieces, for every job
 - [Commands](../../guides/commands.md), [keybinds](../../guides/keybinds.md),
   [set names for every job](../../guides/sets.md), [all jobs](../README.md)

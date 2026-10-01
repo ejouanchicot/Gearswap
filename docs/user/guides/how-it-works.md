@@ -57,7 +57,7 @@ is **cancelled**: no gear moves and a chat line says why.
    ([auto-tier](../features/auto-tier-system.md)).
 3. **Weaponskills**: the target must be in range and you need 1000 TP.
    Then the TP bonus pieces are chosen (a Moonshade Earring when its
-   extra TP helps, for example: [TP bonus](../jobs/war/tp-bonus.md)).
+   extra TP helps, for example: [TP bonus](../features/tp-bonus.md)).
 4. **The precast set goes on**: `sets.precast.FC` (Fast Cast) for a spell,
    `sets.precast.JA['Name']` for an ability, `sets.precast.WS['Name']` for a
    weaponskill. For an ability or a weaponskill this is the set that counts:
@@ -205,12 +205,53 @@ your folder does: [configuration](configuration.md).
 On every load: the job's keys are bound (and sent again 2 s later, in case the
 game dropped some), the HUD is drawn after a few seconds, the macro book is
 set about 1.5 s later and the lockstyle 8 s later, and every mode goes back to
-its default. Details: [job changes](../features/job-change-manager.md).
+its default (except Auto Medicine).
+
+### Job and subjob changes
+
+- **Main job change**: GearSwap itself loads the new job's file
+  (`<YourName>_<JOB>.lua`). The old file removes its keys; the new one sets
+  its keys, HUD, macro book and lockstyle as on any load.
+- **Subjob change**: the job file stays loaded, but the setup reloads it (a
+  full `gs reload`) 2 s later, so every system starts clean for the new
+  subjob. Movement tracking, the midcast watchdog and the HUD stop at once,
+  before the wait.
+- Several changes in quick succession give **one** reload, for the last one.
+  A back-and-forth (WAR/SAM to WAR/DNC and back) still reloads. When the main
+  job also differs, the wait is 3 s instead of 2 s.
+
+### Wrong job file
+
+GearSwap picks the job file from your job-change request, not from the
+server's answer. If the two ever disagree (a refused or reordered change), a
+check every 5 seconds notices the mismatch and reloads the right file after
+two checks in a row.
+
+### What survives a load
+
+- Every mode goes back to its default, except Auto Medicine.
+- Your keys, the HUD position and the settings in your folder (`_common/`,
+  `<job>/`, `saved/`) are read again.
+- A slot locked by Doom, craft, the wardrobe organizer or a warp ring stays
+  locked across the load; the matching command releases it
+  (`//gs c uncraft`, `//gs c wo recover`, `//gs c warp fix`).
 
 `//lua reload gearswap` also forgets what survives an ordinary reload: debug
 switches, a forced Dual Wield tier, Auto Medicine's value. Your temporary keys
 (`//gs c tb`) are kept. Watchdog settings changed with `//gs c watchdog` last
 until the next load of any kind.
+
+### When a job change goes wrong
+
+| Symptom | Try |
+|---|---|
+| Keys dead after a change | Wait a few seconds (the job's keys are sent again 2 s after each load), then `//gs c reload` |
+| HUD shown twice or stale | `//gs c ui` twice, or `//gs c reload` |
+| Lockstyle applied several times | Harmless after quick changes |
+| Still wrong | `//lua reload gearswap` |
+
+`//gs c debugjobchange` prints what the job-change system does, for a bug
+report.
 
 ## Where to go next
 

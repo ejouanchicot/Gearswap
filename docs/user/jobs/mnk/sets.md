@@ -83,7 +83,7 @@ The buff sets go on or come off a moment after the buff comes or goes.
 | `sets.precast.WS['Dragon Kick'].Footwork`, `['Tornado Kick'].Footwork` | That kick with Footwork up, on top of it and of `sets.buff.Footwork`: only the pieces that change |
 
 Moonshade Earring is added by itself when it reaches the next TP step, after
-the Impetus / Footwork sets: [TP bonus](../war/tp-bonus.md) (`MNK_TP_CONFIG.lua`).
+the Impetus / Footwork sets: [TP bonus](../../features/tp-bonus.md) (`MNK_TP_CONFIG.lua`).
 
 ## Spells (subjob)
 

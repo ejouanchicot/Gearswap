@@ -1,7 +1,7 @@
 # WAR — set names and automatic gear
 
 Every set name Warrior reads, and everything it puts on by itself. Modes and keys are on
-[states.md](states.md); TP bonus pieces on [tp-bonus.md](tp-bonus.md); names shared by
+[states.md](states.md); TP bonus pieces on [tp-bonus.md](../../features/tp-bonus.md); names shared by
 every job (movement, town, Doom, Dual Wield, Treasure Hunter, subjob actions, how a name
 is chosen) are on [the sets guide](../../guides/sets.md).
 
@@ -81,7 +81,7 @@ same set, and PDTAFM3 / PDTKC are built from it.
 Weaponskills in your slots without a set of their own (Steel Cyclone, Decimation, Sonic
 Thrust, Black Halo...) use `sets.precast.WS`. TP bonus pieces (Moonshade Earring, Boii
 Cuisses +3) are added only when they reach the next TP step: see
-[tp-bonus.md](tp-bonus.md).
+[tp-bonus.md](../../features/tp-bonus.md).
 
 ## Job abilities
 
@@ -128,7 +128,7 @@ midcast set at all**: spells are cast in whatever you are wearing.
 - **Retaliation cancel**: with Retaliation up, moving for 5 seconds while not engaged
   cancels it (needs the Windower `Cancel` addon). No gear involved.
 - **TP bonus**: Moonshade Earring and Boii Cuisses +3 only when they reach the next TP
-  step; Chango, Warcry and Fencer are counted ([tp-bonus.md](tp-bonus.md)).
+  step; Chango, Warcry and Fencer are counted ([tp-bonus.md](../../features/tp-bonus.md)).
 - `//gs c berserk`, `defender`, `thirdeye`, `tp` only send abilities; each one then
   wears its own `sets.precast.JA` set.
 

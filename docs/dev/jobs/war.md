@@ -35,7 +35,7 @@ What WAR adds on top of the shared pipeline:
 
 Player-facing pages: [WAR hub](../../user/jobs/war/README.md),
 [modes](../../user/jobs/war/states.md), [sets](../../user/jobs/war/sets.md),
-[TP bonus](../../user/jobs/war/tp-bonus.md).
+[TP bonus](../../user/features/tp-bonus.md).
 
 Every file in scope was read in full on 2026-09-28 except the gear content of the
 sets files (structure and set names only). References are `file` + function; line
@@ -294,7 +294,7 @@ Examples: Ukonvasara at 1800 TP -> gap 200 -> Moonshade (Boii cannot cover it); 
 list is walked biggest first; Naegling + Blurred Shield +1 at 1200 TP -> 2060
 effective -> gap 940 > 350 -> nothing. The `grips` list changes nothing: a grip and
 any other non-shield sub both return 0. Player page:
-[tp-bonus.md](../../user/jobs/war/tp-bonus.md).
+[tp-bonus.md](../../user/features/tp-bonus.md).
 
 ### Midcast
 

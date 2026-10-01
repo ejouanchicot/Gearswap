@@ -141,7 +141,7 @@ Checked in the code for WHM:
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, paralysis, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left (a Cure first gets a chance to change tier). Optional party message per action in `_common/combat/RECAST_CONFIG.lua` |
-| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `WHM_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
+| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `WHM_TP_CONFIG.lua` ([TP bonus](../../features/tp-bonus.md)) |
 | Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Banish, Holy, nukes and elemental weaponskills (Flash Nova...) when they add at least 5 % (`_common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) |
 | Combat Mode | Native on WHM (`^numpad2`): On puts on `sets.CombatMode` if you define one, then locks main, sub, range and ammo |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |

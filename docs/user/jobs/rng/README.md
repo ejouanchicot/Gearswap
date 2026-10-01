@@ -92,7 +92,7 @@ engaged set chosen is logged, and each ranged buff set laid on a shot.
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left |
-| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `RNG_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)); a bow or gun's own TP bonus is not counted |
+| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `RNG_TP_CONFIG.lua` ([TP bonus](../../features/tp-bonus.md)); a bow or gun's own TP bonus is not counted |
 | Obi / Orpheus | Trueflight and Wildfire (and the other elemental weaponskills), when you own the belts (`//gs c belt`) |
 | Dual Wield tiers | With /NIN or /DNC and two weapons: your `sets.DW` pieces by magic haste (`//gs c dw`) |
 | Combat Mode | Hidden; `//gs c combatmode show`, then `!numpad0`. Locks main, sub and range |

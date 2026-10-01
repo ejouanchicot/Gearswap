@@ -101,7 +101,7 @@ Type them as `//gs c <command>`, or `/console gs c <command>` in a macro.
 |---|---|
 | Debuff guard + Auto Medicine | An action blocked by silence, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left; tiered spells drop a tier instead; stratagems are checked against their charges |
-| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `SCH_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
+| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `SCH_TP_CONFIG.lua` ([TP bonus](../../features/tp-bonus.md)) |
 | Elemental belt | Hachirin-no-Obi or Orpheus's Sash on nukes and helices by itself (`//gs c belt`) |
 | Combat Mode | `^numpad8`: keeps main, sub and range where they are |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |

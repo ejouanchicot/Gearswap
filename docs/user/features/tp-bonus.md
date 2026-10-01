@@ -1,6 +1,6 @@
 # TP bonus gear (all jobs)
 
-This page applies to every job that has a `<JOB>_TP_CONFIG.lua`, not only WAR.
+This page applies to every job that has a `<JOB>_TP_CONFIG.lua`.
 
 Before a weaponskill, the weaponskill handler adds up your current TP and the
 TP bonus you already have (weapon, buffs). If a TP bonus piece lets you reach
@@ -48,7 +48,7 @@ the job's TP config.
 
 21 of the 22 jobs ship a `<JOB>_TP_CONFIG.lua` in `_master/config/<job>/`.
 SMN has none. PUP's file also holds `pet_ws_tp`, the automaton TP from which
-its weaponskill gear goes on ([PUP modes](../pup/states.md#pet-ws)).
+its weaponskill gear goes on ([PUP modes](../jobs/pup/states.md#pet-ws)).
 
 ## Files
 
@@ -57,4 +57,4 @@ its weaponskill gear goes on ([PUP modes](../pup/states.md#pet-ws)).
   `shared/utils/precast/tp_bonus_handler.lua`,
   `shared/utils/weaponskill/tp_bonus_calculator.lua`
 
-See also: [job index](../README.md), [configuration](../../guides/configuration.md).
+See also: [job index](../jobs/README.md), [configuration](../guides/configuration.md).

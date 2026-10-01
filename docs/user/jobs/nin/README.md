@@ -90,7 +90,7 @@ engaged set chosen is logged, with the buff layers laid on top;
 | Debuff guard + Auto Medicine | An action blocked by silence, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left. Utsusemi too: a San on recast is **not** replaced by Ni |
 | Utsusemi: Ichi | Your shadows are cancelled 2.3 s into the cast so Ichi can replace them (needs the Cancel addon) |
-| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `NIN_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
+| Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `NIN_TP_CONFIG.lua` ([TP bonus](../../features/tp-bonus.md)) |
 | Obi / Orpheus | On elemental ninjutsu and on Blade: Chi, Teki, To, Ei and Aeolian Edge, when one of the belts adds enough (`//gs c belt`) |
 | Dual Wield tiers | `sets.DW.*` on top of your engaged gear, by your magic haste (`//gs c dw`) |
 | Combat Mode | Hidden; `//gs c combatmode show`, then `!numpad0` |
