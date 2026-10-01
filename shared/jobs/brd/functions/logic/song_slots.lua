@@ -12,9 +12,9 @@
 --- one with the least time left.
 ---
 --- Slots are per bard: another bard's or a Trust's songs on this character
---- hold none of ours. The game does not say who cast a buff; song_owner.lua
---- tells ours apart by their end time (a song instance that appears or is
---- renewed when one of our songs lands), and only those count.
+--- hold none of ours. The buff list does not say who cast a buff;
+--- song_owner.lua pairs each song instance with the action packet of the song
+--- that put it up, which names its caster, and only ours count.
 --- //gs c songs full sings every dummy whatever is up.
 ---
 --- @file    shared/jobs/brd/functions/logic/song_slots.lua
@@ -33,13 +33,6 @@ local function resources()
 end
 
 local SongOwner = require('shared/jobs/brd/functions/logic/song_owner')
-
---- A song this character finished on itself (BRD_AFTERCAST): song_owner.lua
---- claims the song instance it put up.
---- @param spell table Spell object from GearSwap
-function SongSlots.record(spell)
-    SongOwner.record(spell)
-end
 
 --- Songs of this character up on itself, and every song up (any bard).
 --- @return number own, number all

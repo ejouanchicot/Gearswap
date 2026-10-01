@@ -2,30 +2,35 @@
 --- BRD Song Owner - which of the songs on this character are ours
 ---============================================================================
 --- The buff list says no one's name: a March of ours and a March of another
---- bard or a Trust (Joachim) look the same. Each buff comes with its end time
---- though (packet 0x063 order 9, shared/utils/buffs/buff_timers.lua): a song
---- buff is one instance, `<buff id>:<end time>`.
----   - a song of ours finishes on us (record, from BRD_AFTERCAST): the song
----     instance that appears or is renewed (new end time) within CLAIM_WINDOW
----     seconds of it, of that song's family, is ours;
----   - an instance that appears without a song of ours is someone else's;
----   - one of ours whose end time changes without us (another bard sang over
----     it) or that goes (wore off, dispelled, overwritten) is no longer ours.
+--- bard or a Trust (Joachim) look the same. Two packets together do:
+---   - the action packet (0x028, category 4) of every song that lands on us
+---     names its caster (actor_id) and the buff it gave (action.param, message
+---     230 / 266 "gains the effect of");
+---   - the buff packet (0x063 order 9, shared/utils/buffs/buff_timers.lua)
+---     gives each buff its end time: a song buff is one instance,
+---     `<buff id>:<end time>`, and a song sung again gets a new end time.
+--- The instance that appears or is renewed when a song lands is that song's,
+--- paired by buff id in arrival order (either packet may come first, within
+--- PAIR_WINDOW seconds). Ours when its caster is this character; another
+--- bard's or a Trust's otherwise. One of ours whose end time changes (sung
+--- over) or that goes (wore off, dispelled) is no longer ours.
 --- The instances of ours are saved in <Character>/saved/brd_own_songs.lua, so
---- a //lua reload gearswap keeps them. Until the first packet of a session,
+--- a //lua reload gearswap keeps them. Until the first buff packet of a load,
 --- the saved ones count when a buff of their id is up.
 ---
 --- @file shared/jobs/brd/functions/logic/song_owner.lua
 --- @author ejouanchicot
---- @version 1.0
+--- @version 1.1
 --- @date Created: 2026-10-01 (replaces the ledger of song_slots.lua)
 --- Started from shared/entry/brd.lua (user_setup).
 ---============================================================================
 
 local SongOwner = {}
 
-local CLAIM_WINDOW = 3
+local PAIR_WINDOW = 3
 local SAVE_FILE = 'brd_own_songs.lua'
+--- "<target> gains the effect of <status>" (res/action_messages.lua)
+local GAIN_MESSAGES = {[230] = true, [266] = true}
 
 --- Song buff families (res/buffs.lua names): Honor March gives "March".
 local FAMILIES = {}
@@ -35,7 +40,6 @@ for _, name in ipairs({'Minuet', 'March', 'Madrigal', 'Minne', 'Paeon',
         'Dirge', 'Scherzo', 'Aria'}) do
     FAMILIES[name:lower()] = true
 end
-SongOwner.FAMILIES = FAMILIES
 
 local family_by_id
 
@@ -51,23 +55,14 @@ local function families_by_id()
     return family_by_id
 end
 
---- Family of a song name ('Valor Minuet V' -> 'minuet'), nil for a debuff song.
---- @param song string
---- @return string|nil
-function SongOwner.family_of(song)
-    local name = (song or ''):lower()
-    for family in pairs(FAMILIES) do
-        if name:find(family, 1, true) then return family end
-    end
-    return nil
-end
-
 ---============================================================================
 --- STATE: the instances of ours on windower and in the file; what the last
---- packet showed, per load (another job may have run in between, unheard)
+--- packets showed, per load (another job may have run in between, unheard)
 ---============================================================================
 
-local live = {snapshot = nil, recent = {}, pending = {}}
+--- landed: songs seen in 0x028 not paired yet {id, ours, at};
+--- appeared: instances seen in 0x063 not paired yet {key, id, at}
+local live = {snapshot = nil, landed = {}, appeared = {}}
 
 local function save_path()
     local ok, path = pcall(function()
@@ -106,58 +101,74 @@ local function trace(fmt, ...)
 end
 
 ---============================================================================
---- CLAIMS
+--- PAIRING
 ---============================================================================
 
---- Ours: the instance `key` of `family`.
-local function claim(key, family)
+--- An instance and the song that put it up are paired: kept when ours.
+local function settle(key, ours)
+    trace('%s: %s', key, ours and 'ours' or 'not ours')
+    if not ours then return end
     load_owned()[key] = true
-    trace('ours: %s (%s)', key, family)
     save_owned()
 end
 
---- A song of ours finished on us (BRD_AFTERCAST, through song_slots.record).
---- @param spell table Spell object from GearSwap
-function SongOwner.record(spell)
-    if not spell or spell.interrupted or spell.type ~= 'BardSong' then return end
-    local target = spell.target
-    local me = windower.ffxi.get_player()
-    if not target or not (target.type == 'SELF' or (me and target.id == me.id)) then return end
-    local family = SongOwner.family_of(spell.english)
-    if not family then return end
-    local s, now = live, os.clock()
-    -- the packet may have come first: a new instance of that family just now
-    for i, seen in ipairs(s.recent) do
-        if seen.family == family and now - seen.at <= CLAIM_WINDOW then
-            table.remove(s.recent, i)
-            return claim(seen.key, family)
-        end
+--- What waited longer than PAIR_WINDOW is dropped.
+local function fresh(list, now)
+    local kept = {}
+    for _, e in ipairs(list) do
+        if now - e.at <= PAIR_WINDOW then kept[#kept + 1] = e end
     end
-    s.pending[#s.pending + 1] = {family = family, until_at = now + CLAIM_WINDOW}
+    return kept
 end
 
---- Packet 0x063 order 9: the song instances up now.
+--- The oldest waiting entry of `list` with buff id `id`, taken out.
+local function take(list, id)
+    for i, e in ipairs(list) do
+        if e.id == id then return table.remove(list, i) end
+    end
+    return nil
+end
+
+--- Action packet: a song landing on us, and who sang it.
+local function on_action(act)
+    if act.category ~= 4 then return end
+    local me = windower.ffxi.get_player()
+    if not me then return end
+    local by_id, now = families_by_id(), os.clock()
+    live.landed = fresh(live.landed, now)
+    live.appeared = fresh(live.appeared, now)
+    for _, target in ipairs(act.targets or {}) do
+        if target.id == me.id then
+            for _, action in ipairs(target.actions or {}) do
+                local id = action.param
+                if GAIN_MESSAGES[action.message] and by_id[id] then
+                    local ours = act.actor_id == me.id
+                    local seen = take(live.appeared, id)
+                    if seen then settle(seen.key, ours)
+                    else live.landed[#live.landed + 1] = {id = id, ours = ours, at = now} end
+                end
+            end
+        end
+    end
+end
+
+--- Buff packet 0x063 order 9: the song instances up now.
 local function on_buffs(data)
     local by_id = families_by_id()
     local current = {}
     for _, buff in ipairs(require('shared/utils/buffs/buff_timers').read(data)) do
-        if by_id[buff.id] then current[buff.id .. ':' .. buff.finish] = by_id[buff.id] end
+        if by_id[buff.id] then current[buff.id .. ':' .. buff.finish] = buff.id end
     end
-    local s, now = live, os.clock()
+    local now = os.clock()
+    live.landed = fresh(live.landed, now)
+    live.appeared = fresh(live.appeared, now)
     -- first packet of this load: what is up was there before, nothing new
-    local previous = s.snapshot or current
-    for key, family in pairs(current) do
+    local previous = live.snapshot or current
+    for key, id in pairs(current) do
         if not previous[key] then
-            local claimed = false
-            for i, want in ipairs(s.pending) do
-                if want.family == family and now <= want.until_at then
-                    table.remove(s.pending, i)
-                    claim(key, family)
-                    claimed = true
-                    break
-                end
-            end
-            if not claimed then s.recent[#s.recent + 1] = {key = key, family = family, at = now} end
+            local song = take(live.landed, id)
+            if song then settle(key, song.ours)
+            else live.appeared[#live.appeared + 1] = {key = key, id = id, at = now} end
         end
     end
     local owned, dropped = load_owned(), false
@@ -165,17 +176,7 @@ local function on_buffs(data)
         if not current[key] then owned[key] = nil; dropped = true end
     end
     if dropped then save_owned() end
-    local keep = {}
-    for _, seen in ipairs(s.recent) do
-        if now - seen.at <= CLAIM_WINDOW and current[seen.key] then keep[#keep + 1] = seen end
-    end
-    s.recent = keep
-    local pending = {}
-    for _, want in ipairs(s.pending) do
-        if now <= want.until_at then pending[#pending + 1] = want end
-    end
-    s.pending = pending
-    s.snapshot = current
+    live.snapshot = current
 end
 
 ---============================================================================
@@ -183,14 +184,14 @@ end
 ---============================================================================
 
 --- Songs of ours up on us, and every song up (any bard).
---- Before the first packet of a session: the saved instances whose buff id is
---- up, no more per id than the buffs of that id.
+--- Before the first buff packet of a load: the saved instances whose buff id
+--- is up, no more per id than the buffs of that id.
 --- @return number own, number all
 function SongOwner.counts()
-    local s, owned = live, load_owned()
-    if s.snapshot then
+    local owned = load_owned()
+    if live.snapshot then
         local own, all = 0, 0
-        for key in pairs(s.snapshot) do
+        for key in pairs(live.snapshot) do
             all = all + 1
             if owned[key] then own = own + 1 end
         end
@@ -210,12 +211,14 @@ function SongOwner.counts()
     return own, all
 end
 
---- Listen to packet 0x063, once per load (a raw event).
+--- Listen to the action and buff packets, once per load (raw events: a plain
+--- one from a job file runs GearSwap's refresh on every packet).
 function SongOwner.start()
     if rawget(_G, '_brd_song_owner_listener') then return end
     _G._brd_song_owner_listener = windower.raw_register_event('incoming chunk', function(id, data)
         if id == 0x063 and data:byte(5) == 9 then pcall(on_buffs, data) end
     end)
+    windower.raw_register_event('action', function(act) pcall(on_action, act) end)
 end
 
 return SongOwner
