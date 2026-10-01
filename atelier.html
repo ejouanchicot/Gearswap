@@ -164,10 +164,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .statgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 28px}
 .statgrid h4{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:8px 0 4px}
 .statlist{list-style:none;margin:0;padding:0;font-size:13.5px}
-.statlist li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.statlist li{display:grid;grid-template-columns:minmax(0,1fr) 58px 60px;align-items:baseline;column-gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.statlist span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .statlist b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.statlist small{display:block;font-weight:400;font-size:11px;color:var(--faint)}
+.statlist i{font-style:normal;font-size:11.5px;color:var(--faint);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .statlist li.over b{color:var(--r-dd)}
+.statlist li[title]{cursor:help}
 .setstats p{margin:0;font-size:12.5px;color:var(--muted)}
 .conds summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .conds ul,.plain{margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
@@ -310,7 +312,7 @@ let DATA = {};
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
-  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} (buffs et nourriture du moment compris). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques reçus (DT + PDT)', mdtEff:'Magiques reçus (DT + MDT)', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
+  fr:{tagline:'Sets, touches, modes : tout ton GearSwap sur une page', overview:'Vue d\'ensemble', offline:'hors jeu', byDefault:'par défaut', youTitle:'Tes stats avec ce set', noChar:'Pas encore mesuré : fais //gs c atelier en jeu sur ce job (ou active //gs c atelier on) pour lire tes vraies stats.', measured:'Base mesurée en jeu le {at} en /{s} (buffs et nourriture du moment compris). L\'écart compare à ce que tu portais. L\'attaque ne suit pas un changement de compétence d\'arme.', atkLabel:'Attaque', defLabel:'Défense', gearKey:'Plafonds de l\'équipement', setStats:'Stats du set : ce que l\'équipement apporte', fromScan:'Augments relevés sur ta pièce par //gs c gearscan (le set n\'en précise pas).', rankKnown:'Path {p}, rang {r} (relevé par //gs c gearscan) : ses stats sont comptées.', hiddenFc:'Fast Cast caché compté (la description ne donne pas le chiffre).', gearOnly:'gear seul', pdtEff:'Physiques DT+PDT', mdtEff:'Magiques DT+MDT', pathNote:'Path non comptée (ses stats ne sont pas dans la description) :', unknownNote:'Sans description dans Windower :', condTitle:'Seulement dans certains cas (Set, latent, Unity…)', noDesc:'Windower n\'a pas la description de cet objet : stats inconnues.', petStats:'Familier', effects:'Effets', pieceStats:'Stats de la pièce (augments compris)', pathOne:'Path {p} : ses stats ne sont pas dans la description, elles ne sont pas comptées.', subOwn:'Ses propres modes ou touches', subOther:'Autres…', subSame:'Mêmes sets, touches et modes qu\'en /{s} ; son propre macrobook et lockstyle', summary:'{j} jobs joués · {s} sets · {k} touches',
     sets:'sets', keys:'touches', notPlayed:'Pas joué par {c}', sectionsSets:'Sets', sectionsKeys:'Touches', sectionsModes:'Modes',
     sectionsMacro:'Macrobook & lockstyle', sectionsFunctions:'Fonctions', add:'+ Ajouter un set', addShort:'+ Set',
     inherits:'Hérite de {b}', changed:'{n} pièce(s) changée(s)', nothingChanged:'rien de changé', defined:'{n} pièces définies ici',
@@ -335,7 +337,7 @@ const T = {
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
-  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s} (buffs and food of the moment included). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical taken (DT + PDT)', mdtEff:'Magic taken (DT + MDT)', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
+  en:{tagline:'Sets, keys, modes: your whole GearSwap on one page', overview:'Overview', offline:'offline', byDefault:'default', youTitle:'Your stats with this set', noChar:'Not measured yet: run //gs c atelier in game on this job (or turn //gs c atelier on) to read your real stats.', measured:'Base measured in game on {at} as /{s} (buffs and food of the moment included). The difference compares to what you wore. Attack does not follow a change of weapon skill.', atkLabel:'Attack', defLabel:'Defense', gearKey:'Gear caps', setStats:'Set stats: what the gear brings', fromScan:'Augments read on your copy by //gs c gearscan (the set names none).', rankKnown:'Path {p}, rank {r} (read by //gs c gearscan): its stats are counted.', hiddenFc:'Hidden Fast Cast counted (the description gives no number).', gearOnly:'gear only', pdtEff:'Physical DT+PDT', mdtEff:'Magic DT+MDT', pathNote:'Path not counted (its stats are not in the description):', unknownNote:'No description in Windower:', condTitle:'Only in some cases (Set, latent, Unity...)', noDesc:'Windower has no description for this item: stats unknown.', petStats:'Pet', effects:'Effects', pieceStats:'Piece stats (augments included)', pathOne:'Path {p}: its stats are not in the description, they are not counted.', subOwn:'Its own modes or keys', subOther:'Others…', subSame:'Same sets, keys and modes as /{s}; its own macro book and lockstyle', summary:'{j} jobs played · {s} sets · {k} keys',
     sets:'sets', keys:'keys', notPlayed:'Not played by {c}', sectionsSets:'Sets', sectionsKeys:'Keys', sectionsModes:'Modes',
     sectionsMacro:'Macro book & lockstyle', sectionsFunctions:'Switches', add:'+ Add a set', addShort:'+ Set',
     inherits:'Based on {b}', changed:'{n} piece(s) changed', nothingChanged:'nothing changed', defined:'{n} pieces defined here',
@@ -518,7 +520,7 @@ const STAT_DEF = {
   mdmg:['mag','Dégâts magiques','Magic damage'], mbd:['mag','Dégâts magic burst','Magic burst damage',40],
   mbd2:['mag','Dégâts magic burst II','Magic burst damage II'], cure:['mag','Cure potency','Cure potency',50],
   cure2:['mag','Cure potency II','Cure potency II',30], curecast:['mag','Temps d\'incantation Cure','Cure casting time'],
-  cmp:['mag','Conserve MP','Conserve MP'], sird:['mag','Interruption réduite (SIRD)','Spell interruption down'],
+  cmp:['mag','Conserve MP','Conserve MP'], sird:['mag','SIRD','SIRD'],
   enhdur:['mag','Durée renfort','Enhancing duration'], refresh:['mag','Refresh','Refresh'], regen:['mag','Regen','Regen'],
   move:['mag','Vitesse de déplacement','Movement speed'], th:['mag','Treasure Hunter','Treasure Hunter'],
 };
@@ -669,11 +671,18 @@ const baseKey = key => key.endsWith('%') ? key.slice(0, -1) : key;
 const statLabel = (key, e) => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][S.lang === 'fr' ? 1 : 2] + (key.endsWith('%') ? ' %' : '') : e.label;
 const statGroup = key => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][0] : key.startsWith('skill:') ? 'skill' : 'other';
 const fmtStat = e => (e.v > 0 ? '+' : e.v < 0 ? '−' : '') + Math.abs(e.v) + (e.unit ? ' %' : '');
+// One stat row, three aligned columns: name, value, then the difference or the cap
+const statLi = (label, value, extra = '', cls = '', tip = '') =>
+  `<li class="${cls}"${tip ? ` title="${esc(tip)}"` : ''}><span title="${label}">${label}</span><b>${value}</b><i>${extra}</i></li>`;
+const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
+function cappedLi(label, sum, cap, detail){
+  return statLi(label, signed(sum) + ' %', `cap ${signed(cap)} %`, Math.abs(sum) > Math.abs(cap) ? 'over' : '', detail);
+}
 // One piece's stats as label / value rows, in the groups' order
 function statRows(stats){
   const keys = Object.keys(stats).filter(k => stats[k].v);
   return STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder))
-    .map(k => `<li><span>${esc(statLabel(k, stats[k]))}</span><b>${fmtStat(stats[k])}</b></li>`).join('');
+    .map(k => statLi(esc(statLabel(k, stats[k])), fmtStat(stats[k]))).join('');
 }
 const STAT_ORDER = Object.keys(STAT_DEF);
 const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.indexOf(b) + 1 || 999) || a.localeCompare(b);
@@ -693,13 +702,12 @@ function setStats(s){
 function setStatsHTML(s){
   const {total, paths, unknown, cond} = setStats(s);
   const v = k => (total[k] || {}).v || 0;
-  const capped = (label, sum, cap, detail) => `<li class="${Math.abs(sum) > Math.abs(cap) ? 'over' : ''}"><span>${label}</span><b>${sum > 0 ? '+' : sum < 0 ? '−' : ''}${Math.abs(sum)} %` +
-    `<small>${detail} · cap ${cap > 0 ? '' : '−'}${Math.abs(cap)} %</small></b></li>`;
+  const capped = (label, sum, cap, detail) => cappedLi(label, sum, cap, detail);
   const groups = STAT_GROUPS.map(([g, fr, en]) => {
     const keys = Object.keys(total).filter(k => total[k].v && statGroup(k) === g).sort(statOrder);
     let rows = keys.map(k => { const cap = STAT_DEF[k] && STAT_DEF[k][3];
       return cap ? capped(esc(statLabel(k, total[k])), total[k].v, cap, t('gearOnly'))
-                 : `<li><span>${esc(statLabel(k, total[k]))}</span><b>${fmtStat(total[k])}</b></li>`; }).join('');
+                 : statLi(esc(statLabel(k, total[k])), fmtStat(total[k])); }).join('');
     // Damage taken: DT counts in both, physical and magic, up to -50 % together
     if (g === 'def' && (v('dt') || v('pdt') || v('mdt')))
       rows = capped(t('pdtEff'), Math.max(v('dt') + v('pdt'), -50), -50, `DT ${v('dt')} + PDT ${v('pdt')}`) +
@@ -764,9 +772,9 @@ function globalsHTML(s){
   if (!r) return `<div class="globals"><div class="kicker">${t('youTitle')}</div><p class="muted">${t('noChar')}</p></div>`;
   const {c, out, set} = r;
   const row = (label, o) => { const d = o.set - o.now;
-    return `<li><span>${label}</span><b>${o.set}${d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''}</b></li>`; };
+    return statLi(label, o.set, d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''); };
   const v = k => (set[k] || {}).v || 0;
-  const pct = (label, sum, cap) => `<li class="${Math.abs(sum) > Math.abs(cap) ? 'over' : ''}"><span>${label}</span><b>${sum > 0 ? '+' : sum < 0 ? '−' : ''}${Math.abs(sum)} %<small>cap ${cap < 0 ? '−' : ''}${Math.abs(cap)} %</small></b></li>`;
+  const pct = (label, sum, cap) => cappedLi(label, sum, cap, '');
   const main = [['HP', out.hp], ['MP', out.mp], [t('defLabel'), out.def], [t('atkLabel'), out.atk]].map(([l, o]) => row(l, o)).join('');
   const attrs = ATTRS.map(a => row(a.toUpperCase(), out[a])).join('');
   const gear = pct(t('pdtEff'), Math.max(v('dt') + v('pdt'), -50), -50) + pct(t('mdtEff'), Math.max(v('dt') + v('mdt'), -50), -50) +
