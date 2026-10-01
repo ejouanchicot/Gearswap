@@ -237,6 +237,25 @@ function AtelierSim.run(req)
     return result
 end
 
+--- The TP bonus pieces the job's own rules add to a weaponskill at a TP: TPBonusCalculator
+--- (shared/utils/weaponskill/tp_bonus_calculator.lua) with the job's TP config (<JOB>_TP_CONFIG.lua,
+--- _G.<JOB>TPConfig), the buffs on now, and the main / sub the page shows.
+--- @param req table {tp = number, main = string|nil, sub = string|nil}
+--- @return table {ok, gear = {slot = name} (page slot names), config = boolean}
+function AtelierSim.tp_bonus(req)
+    local config = player and rawget(_G, tostring(player.main_job) .. 'TPConfig')
+    local ok_c, Calc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
+    local tp = tonumber(req.tp)
+    if not (tp and ok_c and Calc and type(config) == 'table') then return {ok = true, gear = {}, config = type(config) == 'table'} end
+    local ok, gear = pcall(Calc.calculate, tp, config, req.main ~= '' and req.main or nil, buffactive, req.sub ~= '' and req.sub or nil)
+    local out = {}
+    for slot, name in pairs(ok and type(gear) == 'table' and gear or {}) do
+        local page = SLOT_NAME[tostring(slot):lower()]
+        if page then out[page] = name end
+    end
+    return {ok = ok, gear = out, config = true}
+end
+
 --- The actions the page offers: the spells the character knows for the job, its
 --- job abilities and weapon skills (names only, by kind).
 --- @return table {ma = {...}, ja = {...}, ws = {...}, magic = {<skill> = {...}}, trust = one Trust's name or nil}

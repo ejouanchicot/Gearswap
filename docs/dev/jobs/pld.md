@@ -584,7 +584,6 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 | `sets.precast.FC` (+ 17 name/skill entries) | Mote default precast | yes | yes | yes |
 | `sets.precast.FC.CureSelf` | `job_post_precast` | **absent** | **absent** | yes |
 | `sets.precast.WS` + named WS, `['Atonement'] = FullEnmity` | Mote default precast | yes | yes | yes (+ Knights of Round) |
-| `sets.precast.WS.TPBonus`, `['<WS>'].TPBonus` | nothing (TP gear comes from `PLD_TP_CONFIG`) | yes | yes | yes |
 | `sets.midcast.Enmity` (= FullEnmity) | skill `Enmity` (Enlight) | yes | yes | yes |
 | `sets.midcast['Flash']` (= FullEnmity) | skill `Flash`, Mote by name | yes | yes | yes |
 | `sets.midcast['Enlight']` | P0/P1 under skill Enmity | yes | yes | yes |
@@ -817,8 +816,7 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
   selects `sets.engaged.BurtgangKC` when the new weapon set names a `sub`
   (`select_engaged_base`), so the new weapon and its shield go on at once. A club
   equipped by hand with a weapon set that has no `sub` still selects it.
-- Dead or unread: `sets.precast.WS.TPBonus` family,
-  `sets.Duban/Aegis/['Blurred Shield +1']`, `sets.Alber` (since 2026-09-30), `cooldown_exclusions` (duplicates
+- Dead or unread: `sets.Duban/Aegis/['Blurred Shield +1']`, `sets.Alber` (since 2026-09-30), `cooldown_exclusions` (duplicates
   CooldownChecker), the `require` of `message_formatter` kept in `set_builder.lua`.
 - With the generic template (`PLD_WEAPONS.lua` all comments), `sets.engaged.TP`,
   `.DPS` and `.Hoxne` name no `sub` (their comments in `_master/sets/pld_sets.lua`

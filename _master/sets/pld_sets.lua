@@ -568,16 +568,9 @@ sets.precast.WS['Circle Blade'] =
 -- TP Bonus Adjustments
 -- ───────────────────────────────────────────────────────────────────────────
 
--- • TPBonus Set (Moonshade Earring for TP scaling)
-sets.precast.WS.TPBonus = {
-    left_ear = 'Moonshade Earring' -- TP Bonus +250
-}
-
--- • TPBonus Variants
-sets.precast.WS['Savage Blade'].TPBonus = set_combine(sets.precast.WS['Savage Blade'], sets.precast.WS.TPBonus)
-sets.precast.WS['Sanguine Blade'].TPBonus = set_combine(sets.precast.WS['Sanguine Blade'], sets.precast.WS.TPBonus)
-sets.precast.WS['Aeolian Edge'].TPBonus = set_combine(sets.precast.WS['Aeolian Edge'], sets.precast.WS.TPBonus)
-sets.precast.WS['Circle Blade'].TPBonus = set_combine(sets.precast.WS['Circle Blade'], sets.precast.WS.TPBonus)
+-- Moonshade Earring (TP bonus) goes on by itself, on every weaponskill, when it
+-- reaches the next TP step: PLD_TP_CONFIG.lua (combat/ folder of the job),
+-- applied by TPBonusCalculator. No .TPBonus set: nothing reads one.
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIDCAST SETS

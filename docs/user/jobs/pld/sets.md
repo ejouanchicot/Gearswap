@@ -240,8 +240,6 @@ the `//gs c aoe` rotation).
 - `sets.Duban`, `sets.Aegis`, `sets['Blurred Shield +1']`, `sets.Alber`: shields come
   from the stance sets or from `PLD_WEAPONS.lua`, the grip from its `grips` (table
   above). Use them in your own sets if you like.
-- `sets.precast.WS.TPBonus` and every `sets.precast.WS['Name'].TPBonus`: TP bonus gear
-  comes from `PLD_TP_CONFIG.lua`, not from these.
 - `sets.idleNormal`, `sets.midcast.SIRDEnmity`, `sets.midcast.PhalanxPotency`,
   `sets.Cure`, `sets.FullEnmity`: building blocks that other sets are made from (and
   `sets.FullEnmity` is compared against for the Sortie / Tanking enmity swap).
