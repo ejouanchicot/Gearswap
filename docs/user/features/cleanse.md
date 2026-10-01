@@ -178,6 +178,13 @@ items = {
 },
 ```
 
+One item can take several debuffs off: a **Remedy** removes Blind, Paralysis,
+Poison and Silence at once (a Remedy Ointment only one, at random), a
+**Panacea** every erasable debuff at once. When two or more debuffs a Remedy
+covers are on, the Remedy of the list goes first (Silence + Paralysis: one
+Remedy, not Echo Drops then Remedy); Auto Medicine does the same. With one of
+them alone, the list order holds (Echo Drops for Silence alone).
+
 ## Troubleshooting
 
 | Symptom | Try |

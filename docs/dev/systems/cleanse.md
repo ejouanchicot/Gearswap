@@ -148,6 +148,16 @@ Steps 3 and 4 both go to the front, in reverse order, so the item goes next and 
 - The partner request has no claim: every partner that can cast answers, so two able partners both cast (same as `stealth cast`).
 - `check` and the key share `plan()`, so `check` shows what the key would do; it does not look at the partners' MP or recast.
 
+## Items covering several debuffs
+
+`CleanseMethods.COVERS` lists the items that take several debuffs off in one
+use (`Remedy`: silence, paralysis, blindness, poison). `best_item(names, key,
+up)` picks, from the debuff's own list, an item that also covers another debuff
+on now, else the first held; `plan` passes the set of debuffs on. PrecastGuard's
+`covering_first` moves such an item to the front of the Auto Medicine list.
+Panacea needs no entry: it is the only item of the erasable debuffs, and every
+item is decided when its turn comes, so the next ones see them gone.
+
 ## Used by Auto Medicine
 
 `Cleanse.ask_partners_for(key)` asks the partners that may have the spell of a
