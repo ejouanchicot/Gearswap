@@ -336,16 +336,14 @@ local TEST_RED    = string.char(0x1F, 167)
 -- Built at each use: the width follows the player's chat.width
 local function test_separator() return string.rep("=", MessageCore.SEPARATOR_WIDTH) end
 
--- 21 jobs plus the general suite. Order is the order they run in.
--- The suites were moved to _dev/message_api_tests/, outside the require path:
--- nothing exists under api/tests/, so a full run executes no test and prints
--- "0/0 tests PASSED", and a named run prints "Test file not found".
+-- 22 jobs plus the general suite, in api/tests/test_<job>.lua (put back on
+-- 2026-10-01: 1635 tests, all passing). Order is the order they run in.
 local TEST_JOBS = {
     'system',                                    -- magic, JA, WS
     'whm', 'blm', 'rdm', 'sch', 'geo', 'blu',    -- mages
     'brd', 'cor',                                -- support
     'war', 'mnk', 'thf', 'pld', 'drk', 'bst',
-    'rng', 'sam', 'nin', 'drg', 'pup', 'dnc', 'run',
+    'rng', 'sam', 'nin', 'drg', 'pup', 'dnc', 'run', 'smn',
 }
 
 local function test_module_path(job)
