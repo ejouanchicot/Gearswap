@@ -11,8 +11,8 @@
 ---     gives each buff its end time: a song buff is one instance,
 ---     `<buff id>:<end time>`, and a song sung again gets a new end time.
 --- The instance that appears or is renewed when a song lands is that song's,
---- paired by buff id in arrival order (either packet may come first, within
---- PAIR_WINDOW seconds). Ours when its caster is this character; another
+--- paired by buff id with the newest one waiting (either packet may come
+--- first; seen in play 0.02 to 1.2 s apart; PAIR_WINDOW seconds at most). Ours when its caster is this character; another
 --- bard's or a Trust's otherwise (seen in play: Joachim and Ulmia, message
 --- 266). One of ours whose end time changes (sung over) or that goes (wore
 --- off, dispelled) is no longer ours; a shift of JITTER seconds or less is the
@@ -124,10 +124,14 @@ local function fresh(list, now)
     return kept
 end
 
---- The oldest waiting entry of `list` with buff id `id`, taken out.
+--- The newest waiting entry of `list` with buff id `id`, taken out. The
+--- newest: one packet follows closely the other of its pair, and an entry
+--- left alone is older. Seen in play: Ulmia's then Joachim's March 0.4 s
+--- apart gave one new instance; the leftover must not take our own March
+--- sung right after.
 local function take(list, id)
-    for i, e in ipairs(list) do
-        if e.id == id then return table.remove(list, i) end
+    for i = #list, 1, -1 do
+        if list[i].id == id then return table.remove(list, i) end
     end
     return nil
 end
