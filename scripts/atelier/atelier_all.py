@@ -6,9 +6,11 @@ Export every job of every character for the Atelier page, without the game.
     (or double-click "Atelier - export all jobs.bat" in the data folder)
 
 Each <Char>/<Char>_<JOB>.lua is loaded outside the game by load_job.lua (Lua
-5.1, lua5.1 or lua on the PATH), which writes <Char>/saved/atelier/<JOB>.js
-and the item icons, as //gs c atelier does in game. The subjob is the one of
-the last export, else a usual one for the job.
+5.1, lua5.1 or lua on the PATH), which writes <Char>/saved/atelier/<JOB>_<SUB>.js
+and the item icons, as //gs c atelier does in game. One file per subjob (the modes, weapons and WS a job offers can depend on it). First the
+subjob of the last in-game export (else of the last export, else a usual one),
+then every other subjob the player gave a macro book or a lockstyle of its own.
+An offline export of a subjob no longer named is removed, an in-game one stays.
 
 What only the game knows stays as the last in-game export had it: the items
 in your bags (the "your items" list of a slot). Everything else comes from
@@ -86,8 +88,12 @@ def jobs_of(char):
     return sorted(m.group(1) for m in map(pat.match, os.listdir(folder)) if m)
 
 
-def export_path(char, job):
-    return os.path.join(DATA, char, 'saved', 'atelier', job + '.js')
+def export_folder(char):
+    return os.path.join(DATA, char, 'saved', 'atelier')
+
+
+def export_path(char, job, sub):
+    return os.path.join(export_folder(char), '%s_%s.js' % (job, sub))
 
 
 def read_export(path):
@@ -99,11 +105,43 @@ def read_export(path):
 
 
 def write_export(path, data):
-    char, job = json.dumps(data['player']), json.dumps(data['job'])
+    c, j, s = json.dumps(data['player']), json.dumps(data['job']), json.dumps(data['sub'])
     body = json.dumps(data, ensure_ascii=False, separators=(',', ':'), sort_keys=True)
     with open(path, 'w', encoding='utf-8', newline='\n') as f:
-        f.write('window.ATELIER = window.ATELIER || {};\nATELIER[%s] = ATELIER[%s] || {};\nATELIER[%s][%s] = %s;\n'
-                % (char, char, char, job, body))
+        f.write('window.ATELIER_SUBS = window.ATELIER_SUBS || {};\nATELIER_SUBS[%s] = ATELIER_SUBS[%s] || {};\n'
+                'ATELIER_SUBS[%s][%s] = ATELIER_SUBS[%s][%s] || {};\nATELIER_SUBS[%s][%s][%s] = %s;\n'
+                % (c, c, c, j, c, j, c, j, s, body))
+
+
+def previous_exports(char, job):
+    """Exports of this job already on the disk: one per subjob, and the <JOB>.js of before 2026-10-01."""
+    folder = export_folder(char)
+    found = []
+    for name in os.listdir(folder) if os.path.isdir(folder) else []:
+        if re.match(r'^%s(_[A-Z]+)?\.js$' % job, name):
+            data = read_export(os.path.join(folder, name))
+            if data:
+                found.append((name, data))
+    return found
+
+
+def first_sub(job, previous):
+    """The subjob of the last in-game export, else the one an offline run started with
+    (marked main_sub), else a usual one."""
+    ranked = sorted(previous, key=lambda p: (not p[1].get('offline'), bool(p[1].get('main_sub')), p[1].get('at', '')),
+                    reverse=True)
+    best = ranked[0][1] if ranked else {}
+    if best.get('sub') and (not best.get('offline') or best.get('main_sub')):
+        return best['sub']
+    return USUAL_SUB.get(job, 'WAR')
+
+
+def subs_named(data):
+    """Subjobs the player gave a macro book or a lockstyle of their own. Keys of one
+    subjob do not count: shared ones (Jump Auto, /DRG) are on every job."""
+    named = set((data.get('macro') or {}).get('solo') or {})
+    named |= set((data.get('lockstyle') or {}).get('by_subjob') or {})
+    return {s for s in named if s in USUAL_SUB and s != data['job']}
 
 
 def item_ids():
@@ -117,27 +155,26 @@ def item_ids():
     return ids
 
 
-def run_job(lua, ffxi, char, job):
-    old = read_export(export_path(char, job))
-    sub = (old or {}).get('sub') or USUAL_SUB.get(job, 'WAR')
+def run_load(lua, ffxi, char, job, sub):
     proc = subprocess.run([lua, LOADER, char, job, sub, ffxi], cwd=DATA, capture_output=True, text=True)
-    if proc.returncode != 0:
-        return char, job, sub, None, (proc.stderr or proc.stdout).strip().splitlines()[-1:] or ['?']
-    return char, job, sub, old, None
+    error = None if proc.returncode == 0 else ((proc.stderr or proc.stdout).strip().splitlines()[-1:] or ['?'])[0]
+    return char, job, sub, error
 
 
-def keep_bag_items(char, job, old, names_for_icons):
-    """The offline load sees empty bags: keep the item lists of the last in-game export."""
-    new = read_export(export_path(char, job))
-    if not new:
-        return
-    new['offline'] = True
-    if old and old.get('items') and not new.get('items'):
-        new['items'] = old['items']
-        for names in old['items'].values():
+def finish(char, job, sub, bags, names_for_icons, main):
+    """Mark the file offline and give it the bag items of the last in-game export (the load sees empty bags)."""
+    data = read_export(export_path(char, job, sub))
+    if not data:
+        return None
+    data['offline'] = True
+    if main:
+        data['main_sub'] = True
+    if bags and not data.get('items'):
+        data['items'] = bags
+        for names in bags.values():
             names_for_icons.update(names)
-    write_export(export_path(char, job), new)
-    return new
+    write_export(export_path(char, job, sub), data)
+    return data
 
 
 def add_icons(lua, ffxi, done, names):
@@ -145,15 +182,15 @@ def add_icons(lua, ffxi, done, names):
         return
     ids = item_ids()
     found = {n: ids[n.lower()] for n in names if n.lower() in ids}
-    for char, job in done:
-        data = read_export(export_path(char, job))
+    for char, job, sub in done:
+        data = read_export(export_path(char, job, sub))
         if data and data.get('items'):
             icons = data.setdefault('icons', {})
             for slot_names in data['items'].values():
                 for n in slot_names:
                     if n in found:
                         icons.setdefault(n, found[n])
-            write_export(export_path(char, job), data)
+            write_export(export_path(char, job, sub), data)
     subprocess.run([lua, ICONS, ffxi, os.path.join(DATA, 'atelier', 'icons') + os.sep] + [str(i) for i in set(found.values())],
                    cwd=DATA)
 
@@ -167,12 +204,27 @@ def write_index():
             if char.startswith(('_', '.')) or not os.path.isdir(path):
                 continue
             for name in sorted(os.listdir(path)):
-                m = re.match(r'^([A-Z]{3})\.js$', name)
-                if m and (char, m.group(1)) not in seen:
-                    seen.add((char, m.group(1)))
-                    entries.append({'char': char, 'file': char + folder + name, 'job': m.group(1)})
+                m = re.match(r'^([A-Z]{3})_?([A-Z]*)\.js$', name)
+                if m and (char, m.group(1), m.group(2)) not in seen:
+                    seen.add((char, m.group(1), m.group(2)))
+                    entry = {'char': char, 'file': char + folder + name, 'job': m.group(1)}
+                    if m.group(2):
+                        entry['sub'] = m.group(2)
+                    entries.append(entry)
     with open(os.path.join(DATA, 'atelier', 'index.js'), 'w', encoding='utf-8', newline='\n') as f:
         f.write('window.ATELIER_INDEX = %s;\n' % json.dumps(entries, separators=(',', ':')))
+
+
+def run_all(lua, ffxi, tasks, bags, done, failed, names_for_icons, workers, main=False):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        for char, job, sub, error in pool.map(lambda t: run_load(lua, ffxi, *t), tasks):
+            if error:
+                failed.append((char, job, sub))
+                print('  %-12s %s/%s  FAILED  %s' % (char, job, sub, error))
+                continue
+            finish(char, job, sub, bags.get((char, job)), names_for_icons, main)
+            done.append((char, job, sub))
+            print('  %-12s %s/%s  ok' % (char, job, sub))
 
 
 def main():
@@ -182,19 +234,38 @@ def main():
     lua = lua_exe()
     if not ffxi:
         print('FFXI folder not found: no item icons (use --ffxi "<FINAL FANTASY XI folder>")')
-    tasks = [(char, job) for char in characters(names) for job in jobs_of(char)]
-    print('Atelier: %d jobs to export' % len(tasks))
-    done, failed, bag_names = [], [], set()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-        for char, job, sub, old, error in pool.map(lambda t: run_job(lua, ffxi, *t), tasks):
-            if error:
-                failed.append((char, job, error[0]))
-                print('  %-12s %s/%s  FAILED  %s' % (char, job, sub, error[0]))
-                continue
-            keep_bag_items(char, job, old, bag_names)
-            done.append((char, job))
-            print('  %-12s %s/%s  ok' % (char, job, sub))
-    add_icons(lua, ffxi, done, bag_names)
+    workers = max(2, min(8, (os.cpu_count() or 4) - 1))
+    jobs = [(char, job) for char in characters(names) for job in jobs_of(char)]
+    # What the disk holds before anything is rewritten: the subjob to start with, the bag items
+    first, bags = {}, {}
+    for char, job in jobs:
+        previous = previous_exports(char, job)
+        first[(char, job)] = first_sub(job, previous)
+        # an offline export only carries the items it was given: an in-game one first
+        with_items = sorted((d for _, d in previous if d.get('items')),
+                            key=lambda d: (not d.get('offline'), d.get('at', '')))
+        bags[(char, job)] = with_items[-1]['items'] if with_items else None
+    done, failed, names_for_icons = [], [], set()
+    print('Atelier: %d jobs, the subjob of the last export first' % len(jobs))
+    run_all(lua, ffxi, [(c, j, first[(c, j)]) for c, j in jobs], bags, done, failed, names_for_icons, workers, main=True)
+    # Then every other subjob the job's settings name (macro book, lockstyle, keys)
+    more = []
+    for char, job, sub in list(done):
+        data = read_export(export_path(char, job, sub))
+        more += [(char, job, s) for s in sorted(subs_named(data or {'job': job}) - {sub})]
+    print('Atelier: %d other subjobs named by the settings' % len(more))
+    run_all(lua, ffxi, more, bags, done, failed, names_for_icons, workers)
+    # Offline exports of a subjob no longer named go; an in-game export always stays
+    exported = set(done)
+    for char, job in jobs:
+        legacy = os.path.join(export_folder(char), job + '.js')
+        if os.path.exists(legacy):
+            os.remove(legacy)
+        for name, data in previous_exports(char, job):
+            sub = name[len(job) + 1:-3]
+            if sub and data.get('offline') and (char, job, sub) not in exported:
+                os.remove(os.path.join(export_folder(char), name))
+    add_icons(lua, ffxi, done, names_for_icons)
     write_index()
     print('Atelier: %d exported, %d failed' % (len(done), len(failed)))
     if '--no-open' not in argv:

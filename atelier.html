@@ -94,6 +94,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .facts div:first-child{border-left:0;padding-left:0}
 .facts dt{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 .facts dd{margin:3px 0 0;font-size:15.5px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.subpick{display:flex;gap:3px}
+.subpick button{border:1px solid var(--line-strong);background:var(--panel);border-radius:3px;padding:0 6px;font-size:13px;font-weight:600;color:var(--muted)}
+.subpick button:hover{border-color:var(--ink);color:var(--ink)}
+.subpick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .sections{display:flex;gap:28px;box-shadow:inset 0 -1px 0 var(--line);margin-bottom:22px;overflow-x:auto;overflow-y:hidden}
 .sections button{border:0;background:none;padding:10px 0 9px;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;white-space:nowrap}
 .sections button:hover{color:var(--ink)}
@@ -166,6 +170,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tbl thead th{border-top:0;background:var(--panel-2);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .tbl tr.grp th{background:var(--panel-2);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding-top:10px}
 .tbl tbody tr:not(.grp):hover td{background:var(--hover)}
+.tbl tr.other-sub td{opacity:.45}
 .tbl .r{text-align:right}
 .tbl .file{font-family:var(--mono);font-size:12px;color:var(--faint);white-space:nowrap}
 .tbl .state{display:block;font-family:var(--mono);font-size:12px;color:var(--faint)}
@@ -339,7 +344,7 @@ const JOBS = [['PLD','Paladin','tank'],['RUN','Rune Fencer','tank'],
 let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
-let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, q:'', lang:'fr', theme:null};
+let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, q:'', lang:'fr', theme:null};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null, char:s.char||''}); } catch(e) {}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -349,12 +354,28 @@ const plays = c => CHARS[S.char].jobs.includes(c);
 const emblem = c => `<span class="em" style="--icon:url(${ICONS[c]})"></span>`;
 // Another character with exported jobs, offered when this one has none for the job
 const otherChar = () => Object.keys(CHARS).find(c => c !== S.char);
-const data = () => (DATA[S.char] || {})[S.job];
+// DATA[char][job][sub]: one export per subjob. The one shown first is the last
+// in-game export, else the last one; the subjob chosen in the page wins.
+const exportsOf = (c, j) => (DATA[c] || {})[j] || {};
+function defaultSub(c, j){
+  const m = exportsOf(c, j), rank = d => (d.offline ? '0' : '1') + (d.main_sub ? '1' : '0') + (d.at || '');
+  return Object.keys(m).sort((a, b) => rank(m[b]).localeCompare(rank(m[a])))[0];
+}
+const subOf = (c, j) => { const s = S.subs[c + '|' + j]; return exportsOf(c, j)[s] ? s : defaultSub(c, j); };
+const recordOf = (c, j) => exportsOf(c, j)[subOf(c, j)];
+const data = () => S.job && recordOf(S.char, S.job);
+// What only the game sees (bag items) or any export knows (icons) is shared by the job's subjobs
+const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
+  const other = Object.values(exportsOf(S.char, S.job)).find(x => x[key]); return other ? other[key] : null; };
+const iconIds = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.icons || {}));
 function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme, char:S.char})); } catch(e) {} }
 // The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
-const icon = name => { const id = name && ((data() || {}).icons || {})[name];
+const icon = name => { const id = name && iconIds()[name];
   return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="this.remove()">` : ''}</span>`; };
-const bookOf = d => d.macro && d.macro.default ? d.macro.default.book + ' · ' + d.macro.default.page : '—';
+// Macro book and lockstyle in force for the export's subjob: its own setting, else the default
+const bookOf = d => { const m = d.macro || {}, b = (m.solo || {})[d.sub] || m.default;
+  return b && b.book ? b.book + ' · ' + b.page : '—'; };
+const styleOf = d => { const l = d.lockstyle || {}; return esc((l.by_subjob || {})[d.sub] ?? l.default ?? '—'); };
 
 function keyLabel(k){
   if (!k) return `<span class="kbd none">${t('noKey')}</span>`;
@@ -438,14 +459,14 @@ function renderSide(){
   }
   $('#jobnav').innerHTML = nav;
 }
-function counts(c){ const d = (DATA[S.char]||{})[c]; return d ? {sets:d.sets.length, keys:d.keys.filter(k=>k.key).length} : null; }
+function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:d.keys.filter(k=>k.key).length} : null; }
 function renderHome(){
   const jobs = JOBS.filter(j => plays(j[0])); let totS = 0, totK = 0;
   for (const [c] of jobs) { const n = counts(c); totS += n.sets; totK += n.keys; }
-  const rows = jobs.map(([c,name,r]) => { const d = DATA[S.char][c], n = counts(c);
+  const rows = jobs.map(([c,name,r]) => { const d = recordOf(S.char, c), n = counts(c);
     return `<tr data-job="${c}" style="--role:${ROLE_COLOR[r]}"><td><span class="jobcell">${emblem(c)}<b>${c}</b><span class="muted">${name}</span></span></td>
       <td><span class="role">${t('roles.'+r)}</span></td><td class="sub">${esc(d.sub||'—')}</td><td class="num r">${n.sets}</td><td class="num r">${n.keys}</td>
-      <td class="num">${bookOf(d)}</td><td class="num">${esc(d.lockstyle&&d.lockstyle.default||'—')}</td><td class="num muted">${esc(d.at||'—')}${d.offline?' · '+t('offline'):''}</td></tr>`; }).join('');
+      <td class="num">${bookOf(d)}</td><td class="num">${styleOf(d)}</td><td class="num muted">${esc(d.at||'—')}${d.offline?' · '+t('offline'):''}</td></tr>`; }).join('');
   return `<header class="pagehead"><div class="kicker">${t('overview')}</div><h1 class="display">${esc(S.char)}</h1><p class="lede">${t('summary',{j:jobs.length,s:totS,k:totK})}</p></header>
     <div class="pane"><div class="tblwrap"><table class="tbl click"><thead><tr><th>${t('colJob')}</th><th>${t('colRole')}</th><th>${t('colSub')}</th><th class="r">${t('colSets')}</th><th class="r">${t('colKeys')}</th>
     <th>${t('macro')}</th><th>${t('lockstyle')}</th><th>${t('colExport')}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note-foot">${t('mock')}</p></div>`;
@@ -493,7 +514,7 @@ function renderKeys(d){
   for (const k of d.keys) { if (!k.key) continue; (groups[k.src] = groups[k.src] || []).push(k); }
   const body = ['job','custom','combat','treasure','common'].filter(g => groups[g]).map(g =>
     `<tr class="grp"><th colspan="4">${t('keyGroups.'+g)}<span class="count">${groups[g].length}</span></th></tr>` + groups[g].map(k =>
-      `<tr><td>${keyLabel(k.key)}</td><td>${esc(k.desc)}</td><td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td><td class="file r">${t('source.'+g).replace('{J}', S.job)}.lua</td></tr>`).join('')).join('');
+      `<tr class="${k.subjob && k.subjob !== d.sub ? 'other-sub' : ''}"><td>${keyLabel(k.key)}</td><td>${esc(k.desc)}</td><td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td><td class="file r">${t('source.'+g).replace('{J}', S.job)}.lua</td></tr>`).join('')).join('');
   return `<div class="tblwrap"><table class="tbl"><thead><tr><th>${t('colKey')}</th><th>${t('colAction')}</th><th>${t('colSub')}</th><th class="r">${t('colFile')}</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 function keyOfState(d){ const keyOf = {}; for (const k of d.keys) if (k.state && k.key && !keyOf[k.state]) keyOf[k.state] = k.key; return keyOf; }
@@ -528,6 +549,13 @@ function renderFunctions(d){
       return `<tr><td><span class="sw ${on?'on':''}" aria-hidden="true"></span></td><td><b>${esc(m.desc||m.name)}</b><span class="state">state.${esc(m.name)}</span></td><td>${on?t('on'):t('off')}</td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`; }).join('') +
     `</tbody></table></div>`;
 }
+// The exported subjobs of the job: one button each, the shown one pressed
+function subPicker(){
+  const subs = Object.keys(exportsOf(S.char, S.job)).sort(), cur = subOf(S.char, S.job);
+  const label = s => s === 'NONE' ? '—' : esc(s);
+  if (subs.length < 2) return label(cur);
+  return `<span class="subpick" role="group">${subs.map(s => `<button aria-pressed="${s===cur}" data-subpick="${esc(s)}">${label(s)}</button>`).join('')}</span>`;
+}
 function renderJob(){
   const c = S.job, j = JOBS.find(x => x[0]===c), d = data();
   const r = j[2];
@@ -538,7 +566,7 @@ function renderJob(){
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;
     body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions}[S.section](d);
   }
-  const facts = d ? [[t('colSub'), esc(d.sub)], [t('macro'), bookOf(d)], [t('lockstyle'), esc(d.lockstyle&&d.lockstyle.default||'—')], [t('colExport'), esc(d.at||'—') + (d.offline ? ` <span class="muted">· ${t('offline')}</span>` : '')]] : [];
+  const facts = d ? [[t('colSub'), subPicker()], [t('macro'), bookOf(d)], [t('lockstyle'), styleOf(d)], [t('colExport'), esc(d.at||'—') + (d.offline ? ` <span class="muted">· ${t('offline')}</span>` : '')]] : [];
   return `<header class="jobhead" style="--role:${ROLE_COLOR[r]}"><div class="title">${emblem(c)}<div><h1 class="display">${c}</h1><p><span>${j[1]}</span><span class="role">${t('roles.'+r)}</span></p></div></div>
     <dl class="facts">${facts.map(([a,b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl></header>${sections}<div class="pane ${d && S.section==='sets' ? 'split' : ''}">${body}</div>`;
 }
@@ -562,7 +590,7 @@ function openSlot(ci, slot){
   const s = card.variants[vi].set; const p = s.pieces[slot]; const own = new Set(s.own || Object.keys(s.pieces));
   const label = SLOT_NAMES[S.lang][slot];
   const seen = {}; for (const x of data().sets) { const q = x.pieces[slot]; if (q) seen[q.name] = (seen[q.name]||0)+1; }
-  const owned = (data().items || {})[slot];
+  const owned = (ofAnySub('items') || {})[slot];
   const items = owned ? owned.map(n => [n, seen[n] || 0]) : Object.entries(seen).sort((a,b) => b[1]-a[1]);
   const notes = !p ? t('drawerEmpty') : (s.base && !own.has(slot)) ? t('drawerInh',{b:shortPath(s.base)}) : t('drawerOwn');
   let html = `<div class="note">${esc(notes)}</div>`;
@@ -593,6 +621,7 @@ function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = 
 document.addEventListener('click', e => {
   const b = e.target.closest('button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
+  if (d.subpick) { S.subs[S.char + '|' + S.job] = d.subpick; render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
@@ -619,8 +648,15 @@ document.addEventListener('keydown', e => {
 function boot(){
   const index = window.ATELIER_INDEX || [];
   loadScripts(index.map(e => e.file), () => {
-    DATA = window.ATELIER || {}; CHARS = {};
-    for (const e of index) if (DATA[e.char] && DATA[e.char][e.job]) (CHARS[e.char] = CHARS[e.char] || {jobs:[]}).jobs.push(e.job);
+    // <JOB>_<SUB>.js fill ATELIER_SUBS[char][job][sub]; a <JOB>.js of before 2026-10-01 fills ATELIER[char][job]
+    DATA = {}; CHARS = {};
+    const put = (c, j, d) => { if (!d || !d.sets) return; const s = d.sub || 'NONE';
+      const m = ((DATA[c] = DATA[c] || {})[j] = DATA[c][j] || {});
+      if (!m[s] || (m[s].at || '') < (d.at || '')) m[s] = d; };
+    const legacy = window.ATELIER || {}, subs = window.ATELIER_SUBS || {};
+    for (const c in legacy) for (const j in legacy[c]) put(c, j, legacy[c][j]);
+    for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
+    for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
     if (!CHARS[S.char]) S.char = Object.keys(CHARS)[0];
     if (!S.char) { $('#view').innerHTML = `<div class="placeholder"><p class="display" style="font-size:22px">Atelier</p><p>${t('tagline')}</p><p>${t('none')}</p></div>`; return; }
     S.job = null; render();

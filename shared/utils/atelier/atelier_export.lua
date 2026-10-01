@@ -9,8 +9,8 @@
 ---   //gs c atelier on     also export after every job load (per character)
 ---   //gs c atelier off    stop exporting on load
 ---
---- Files: data/<Character>/saved/atelier/<JOB>.js (one per job; atelier/ before
---- 2026-09-30),
+--- Files: data/<Character>/saved/atelier/<JOB>_<SUB>.js (one per job and
+--- subjob; <JOB>.js before 2026-10-01, atelier/ before 2026-09-30),
 --- data/atelier/index.js (the list the page reads) and data/atelier/icons/<id>.bmp
 --- (item icons from the game files, shared/utils/atelier/item_icons.lua). They are JavaScript, not
 --- JSON, because a page opened from the disk may load scripts but not read
@@ -300,24 +300,26 @@ local function write(path, text)
     return true
 end
 
---- data/atelier/index.js: every <Character>/saved/atelier/<JOB>.js on the
---- disk (and <Character>/atelier/, the folder before 2026-09-30).
+--- data/atelier/index.js: every <Character>/saved/atelier/<JOB>_<SUB>.js on
+--- the disk, and the one-file-per-job <JOB>.js written before 2026-10-01 (also
+--- in <Character>/atelier/, the folder before 2026-09-30).
 local function write_index()
     windower.create_dir(data_path('atelier'))
     local entries, seen = {}, {}
     for _, name in ipairs(windower.get_dir(data_path('')) or {}) do
         for _, folder in ipairs({'/saved/atelier/', '/atelier/'}) do
             for _, file in ipairs(windower.get_dir(data_path(name .. folder)) or {}) do
-                local job = file:match('^(%u%u%u)%.js$')
-                if job and not seen[name .. job] then
-                    seen[name .. job] = true
-                    -- relative to data/, where atelier.html is: Tetsouo/saved/atelier/WAR.js
-                    entries[#entries + 1] = {char = name, job = job, file = name .. folder .. file}
+                local job, sub = file:match('^(%u%u%u)_?(%u*)%.js$')
+                local key = job and name .. job .. sub
+                if key and not seen[key] then
+                    seen[key] = true
+                    -- relative to data/, where atelier.html is: Tetsouo/saved/atelier/WAR_SAM.js
+                    entries[#entries + 1] = {char = name, job = job, sub = sub ~= '' and sub or nil, file = name .. folder .. file}
                 end
             end
         end
     end
-    table.sort(entries, function(a, b) return a.char .. a.job < b.char .. b.job end)
+    table.sort(entries, function(a, b) return a.char .. a.job .. (a.sub or '') < b.char .. b.job .. (b.sub or '') end)
     return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\n')
 end
 
@@ -336,10 +338,16 @@ function AtelierExport.export()
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))
-    local rel = player.name .. '/saved/atelier/' .. player.main_job .. '.js'
-    local text = ('window.ATELIER = window.ATELIER || {};\nATELIER[%s] = ATELIER[%s] || {};\nATELIER[%s][%s] = %s;\n')
-        :format(json(player.name), json(player.name), json(player.name), json(player.main_job), json(data))
+    -- one file per subjob: the modes, weapons and WS a job offers can depend on it
+    local sub = player.sub_job or 'NONE'
+    local folder = player.name .. '/saved/atelier/'
+    local rel = folder .. player.main_job .. '_' .. sub .. '.js'
+    local c, j, s = json(player.name), json(player.main_job), json(sub)
+    local text = ('window.ATELIER_SUBS = window.ATELIER_SUBS || {};\nATELIER_SUBS[%s] = ATELIER_SUBS[%s] || {};\n'
+        .. 'ATELIER_SUBS[%s][%s] = ATELIER_SUBS[%s][%s] || {};\nATELIER_SUBS[%s][%s][%s] = %s;\n')
+        :format(c, c, c, j, c, j, c, j, s, json(data))
     if not write(data_path(rel), text) then return nil end
+    os.remove(data_path(folder .. player.main_job .. '.js'))
     write_index()
     return rel
 end
