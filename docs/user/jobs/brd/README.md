@@ -16,6 +16,14 @@ Bard with the provided template gives you:
   are worked out from the instruments you own, Clarion Call and the songs of
   yours already up. Each song goes out once the previous one is over; an
   interrupted or refused song is tried again (twice at most).
+- **Debuffs during a rotation** (`songs` and `dummy`): before each song the
+  rotation looks at your debuffs. Asleep, petrified, stunned, terrified,
+  charmed, Mute or Omerta: the songs left are dropped and you have the hand
+  back. Silenced: Echo Drops (or Remedy, from `CLEANSE_CONFIG.lua`) first,
+  then the same song; no item: the songs left are dropped. Paralyzed: Paralyna
+  first when you can cast it (/WHM), else Remedy, then the same song; no way:
+  the song goes anyway. One cure try per debuff and per rotation. Warnings
+  start with `songs:`.
 - **Victory March swapped when you already have Haste**: for Blade Madrigal,
   Valor Minuet III or an Etude (`VictoryMarch`).
 - **Instruments handled for you**: Honor March always on Marsyas, Aria of

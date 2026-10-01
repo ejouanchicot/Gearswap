@@ -56,7 +56,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 250 | `get_current_pack`, `get_songs_with_replacement`, `update_song_slots` (HUD), `get_required_instrument`, `start_with_nitro`, `cast_songs_with_phases`, `cast_dummy_songs` |
 | `shared/jobs/brd/functions/logic/dummy_next.lua` | 77 | DummySong switch: `is_on`, `mark`, `on_aftercast` (next song as a dummy, then off) |
 | `shared/jobs/brd/functions/logic/song_slots.lua` | 170 | `plan`, `inputs`, `songs_up` (own-song ledger), `record`, `instrument_extra` |
-| `shared/jobs/brd/functions/logic/song_queue.lua` | 160 | `start`, `stop`, `on_aftercast`; retry / timeout logic; drops the queue when the main job is no longer BRD |
+| `shared/jobs/brd/functions/logic/song_queue.lua` | 177 | `start`, `stop`, `on_aftercast`; retry / timeout logic; buff guard before each song; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
 | `shared/jobs/brd/functions/logic/set_builder.lua` | 217 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
@@ -261,12 +261,25 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   `/ma`, or drops the queue (`windower._brd_song_queue = nil`) when no song is
   left or `windower.ffxi.get_player().main_job` is no longer `BRD` (since
   2026-09-28: a reload or a subjob change keeps the queue, a main job change
-  ends it); `watch_start` after `START_WINDOW` (2.5 s): started
+  ends it). Since 2026-10-01, before the `/ma` it calls
+  `BuffGuard.check({command = song, magic = true, label = 'songs'})`
+  (`shared/utils/buffs/buff_guard.lua`, see
+  [midcast-and-buffs.md](../systems/midcast-and-buffs.md#debuffs-during-the-queue-buff_guardlua)):
+  `stop` / `stop_magic` (asleep, petrified, stunned, terrified, charmed, Mute,
+  Omerta, Silence with no cure left) drop the queue; `before` sends the first
+  cure step's command (Echo Drops / Remedy, Paralyna when castable) and calls
+  `send_step` again on the same song after its `wait`, without touching
+  `tries`; Paralysis with no cure left goes on. `SongQueue.start` calls
+  `BuffGuard.reset()`, so one cure try per debuff and per `songs` / `dummy`
+  (the try table `windower._buff_cure_tries` is shared with `//gs c buff`).
+  `watch_start` after `START_WINDOW` (2.5 s): started
   (`CastTracker.started_since`) -> wait the computed cast time + 3 s (12 s when
   unknown) before calling it lost; another action first (a Marcato) -> 3 s
   more; not started -> refused. `on_aftercast` (any `BardSong`): interrupted ->
   `retry`, else `advance` after `gap()` (`after_song`, + `after_locked_song`
-  after a locked song). `retry` tries twice more, then skips with a warning.
+  after a locked song). `retry` tries twice more (`MAX_RETRIES = 2`), then
+  skips with a warning: still the rule for a refusal the guard does not see
+  (recast, out of range...); each retry goes through the guard again.
   `SongQueue.start` drops a running queue; `//gs c songstop` calls `stop`.
 - `update_song_slots()` writes short names into `state.BRDSong1..5` by
   assigning `.value` and `.current` directly (Mote's `M{}` has no

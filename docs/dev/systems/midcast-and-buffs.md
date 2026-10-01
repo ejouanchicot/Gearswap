@@ -21,7 +21,7 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 427 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first; `$State` names, groups of alternatives; a buff under `refresh_below` recast), `cast(to_cast)` (shared action queue, `cancel_first`, buff guard), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
 | `shared/utils/buffs/buff_timers.lua` | 112 | `BuffTimers`: decodes packet 0x063 order 9 (`read`, also used by `stealth_timers.lua`), keeps each own buff's end time and full length, `left(id)`, `fraction_left(id)`, `start()` |
-| `shared/utils/buffs/buff_guard.lua` | 132 | `BuffGuard.check(step)`: the `ActionQueue` guard of each `//gs c buff` step (debuff landed: stop, skip, drop the spells, or cure first); `reset()` per press |
+| `shared/utils/buffs/buff_guard.lua` | 141 | `BuffGuard.check(step)`: the `ActionQueue` guard of each `//gs c buff` step, also called by BRD `song_queue.lua` before each song (debuff landed: stop, skip, drop the spells, or cure first); `reset()` per press |
 | `shared/utils/buffs/buff_command.lua` | 70 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `weapon[<main hand>]`, then `subjob[sub]`) |
 | `shared/utils/buffs/buff_config.lua` | 89 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
 | `_master/config_global/BUFF_CONFIG.lua` | 90 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
@@ -399,9 +399,11 @@ Since 2026-10-01 `cast` calls `BuffGuard.reset()` (clears `windower._buff_cure_t
 | Mute (29), Omerta (262) | spell | `stop_magic`: the spells left are dropped, the abilities go on |
 | Silence (6) | spell | first time this press: `before` the item of `CLEANSE_CONFIG.lua` (`Methods.best_item`, Echo Drops / Remedy), then the step; no item, an aura (`uncurable_debuffs`) or already tried: `stop_magic` |
 | Amnesia (16) | ability | `skip`: this ability is dropped |
-| Paralysis (4) | any (after the checks above) | first time this press: `before` Paralyna when `CleanseMethods.can_cast` says this character can cast it now (WHM, /WHM, SCH under Addendum: White; not when silenced / muted), else the item (Remedy); no way, an aura or already tried: the step goes anyway |
+| Paralysis (4; 566, its geomancy aura) | any (after the checks above) | first time this press: `before` Paralyna when `CleanseMethods.can_cast` says this character can cast it now (WHM, /WHM, SCH under Addendum: White; not when silenced / muted), else the item (Remedy); no way, an aura or already tried: the step goes anyway |
 
 A cure step is `input /ma "Paralyna" <me>` (wait cast time + 3 + 3 s, delay 3 s) or `input /item "<item>" <me>` (wait 5 s, delay 1 s), tag `BUFF`, without a guard; a warning `buff: <debuff>: <cure> first` goes to chat and a `BUFF` trace line to `trace.log`. One try per debuff and per press (`windower._buff_cure_tries`): if the cure did not take the debuff off, the rule without cure applies at the next step.
+
+`step.label` (default `'buff'`) is the prefix of the warnings. BRD `song_queue.lua` calls `check({command = song, magic = true, label = 'songs'})` itself before each song (no `ActionQueue`) and `reset()` from `SongQueue.start`: warnings read `songs: ...`, and the `stop` / `stop_magic` ones say `the songs left are dropped`. It drops its own queue on `stop` / `stop_magic` and sends the first cure step itself on `before` ([brd.md](../jobs/brd.md)). The try table is the same for both callers.
 
 `show_status(status, action_type)` shows the `active` / `cooldown` lines through `MessageBuffs.show_buff_status`, then the short-TP entries through `MessageFormatter.show_multi_status`.
 
