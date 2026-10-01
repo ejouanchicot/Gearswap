@@ -6,7 +6,7 @@
 <style>
 :root{
   --bg:#F3F2EF; --side:#EAE8E3; --panel:#FFFFFF; --panel-2:#F7F6F3; --hover:#EFEDE8; --ink:#1B1C1F; --muted:#5F5D58; --faint:#8F8C85;
-  --line:#DEDBD4; --line-strong:#C6C2B9; --accent:#86621C; --accent-soft:#F4ECDA; --accent-ink:#FFFFFF; --aug:#7A5A1C;
+  --line:#DEDBD4; --line-strong:#C6C2B9; --accent:#86621C; --accent-soft:#F4ECDA; --accent-ink:#FFFFFF; --aug:#7A5A1C; --well:#E6E3DC;
   --r-tank:#3F5FC4; --r-healer:#3F8A2E; --r-support:#A67C0A; --r-dd:#B04646;
   --display:"Cinzel","Trajan Pro",Georgia,serif;
   --sans:"Source Sans 3","Segoe UI",system-ui,sans-serif;
@@ -15,13 +15,13 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   color-scheme:dark;
   --bg:#121315; --side:#0D0E10; --panel:#18191C; --panel-2:#1E2024; --hover:#24262B; --ink:#E7E5E0; --muted:#A3A09A; --faint:#6F6D68;
-  --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E;
+  --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
   --r-tank:#7D9BF0; --r-healer:#86D36F; --r-support:#ECC94A; --r-dd:#E08585;
 }}
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#121315; --side:#0D0E10; --panel:#18191C; --panel-2:#1E2024; --hover:#24262B; --ink:#E7E5E0; --muted:#A3A09A; --faint:#6F6D68;
-  --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E;
+  --line:#2A2C31; --line-strong:#3B3E45; --accent:#D6B370; --accent-soft:#2B261B; --accent-ink:#121315; --aug:#CDAE6E; --well:#0B0C0E;
   --r-tank:#7D9BF0; --r-healer:#86D36F; --r-support:#ECC94A; --r-dd:#E08585;
 }
 *{box-sizing:border-box}
@@ -122,7 +122,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .variants button:hover{border-color:var(--ink)}
 .variants button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel);font-weight:600}
 .slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line)}
-.slot{background:var(--panel);border:0;padding:10px 14px 12px;min-height:76px;text-align:left;display:grid;align-content:start;gap:2px}
+.slot{background:var(--panel);border:0;padding:10px 12px 12px;min-height:76px;text-align:left;display:grid;grid-template-columns:40px minmax(0,1fr);gap:2px 10px;align-content:start}
+.slot > :not(.ico){grid-column:2}
+.ico{grid-row:1 / span 4;width:40px;height:40px;border:1px solid var(--line-strong);border-radius:3px;background:var(--well);display:grid;place-items:center;box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+.ico img{width:32px;height:32px;display:block}
+.slot.empty .ico{background:transparent;border-style:dashed;box-shadow:none}
+.slot.inh .ico img{opacity:.5}
 .slot:hover{box-shadow:inset 0 0 0 1px var(--accent)}
 .slot .lbl{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 .slot .item{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
@@ -189,7 +194,8 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 .note{font-size:14px;border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px}
 .choice{display:grid;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden}
 .choice .kicker{padding:10px 14px 6px;color:var(--muted)}
-.choice button{text-align:left;border:0;border-top:1px solid var(--line);background:var(--panel);padding:8px 14px;font-weight:600}
+.choice button{text-align:left;border:0;border-top:1px solid var(--line);background:var(--panel);padding:8px 14px;font-weight:600;display:grid;grid-template-columns:40px minmax(0,1fr);gap:0 12px;align-items:center}
+.choice button > span:last-child{display:grid}
 .choice button:hover{background:var(--hover)}
 .choice button small{display:block;color:var(--faint);font-size:12.5px;font-weight:400}
 .drawer footer,.dialog footer{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
@@ -330,6 +336,9 @@ const emblem = c => `<span class="em" style="--icon:url(${ICONS[c]})"></span>`;
 const otherChar = () => Object.keys(CHARS).find(c => c !== S.char);
 const data = () => (DATA[S.char] || {})[S.job];
 function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme})); } catch(e) {} }
+// The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
+const icon = name => { const id = name && ((data() || {}).icons || {})[name];
+  return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="this.remove()">` : ''}</span>`; };
 const bookOf = d => d.macro && d.macro.default ? d.macro.default.book + ' · ' + d.macro.default.page : '—';
 
 function keyLabel(k){
@@ -428,9 +437,9 @@ function renderHome(){
 }
 function slotHTML(s, ci, slot, own, q){
   const p = s.pieces[slot]; const label = SLOT_NAMES[S.lang][slot];
-  if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}"><span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></button>`;
+  if (!p) return `<button class="slot empty" data-card="${ci}" data-slot="${slot}">${icon(null)}<span class="lbl">${label}</span><span class="item">${slot==='main'||slot==='sub'?t('emptyWeapon'):t('empty')}</span></button>`;
   const inh = s.base && !own.has(slot); const hit = q && p.name.toLowerCase().includes(q);
-  return `<button class="slot ${inh?'inh':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}"><span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>` +
+  return `<button class="slot ${inh?'inh':''} ${hit?'hit':''}" data-card="${ci}" data-slot="${slot}">${icon(p.name)}<span class="lbl">${label}</span><span class="item">${esc(p.name)}</span>` +
     `${p.aug?`<span class="aug">${esc(p.aug)}</span>`:''}${inh?`<span class="from">${esc(t('inhFrom',{b:shortPath(s.base)}))}</span>`:''}</button>`;
 }
 function cardHTML(card, ci, bypath, q){
@@ -538,7 +547,7 @@ function openSlot(ci, slot){
   const notes = !p ? t('drawerEmpty') : (s.base && !own.has(slot)) ? t('drawerInh',{b:shortPath(s.base)}) : t('drawerOwn');
   let html = `<div class="note">${esc(notes)}</div>`;
   if (s.aliases && s.aliases.length) html += `<div class="note">${esc(t('drawerShared',{n:s.aliases.length}))}</div>`;
-  html += `<div class="choice"><div class="kicker">${t('yourItems')}</div>${items.map(([n,c]) => `<button type="button">${esc(n)}<small>${c ? t('seenIn',{n:c}) : t('inBags')}</small></button>`).join('')}</div>`;
+  html += `<div class="choice"><div class="kicker">${t('yourItems')}</div>${items.map(([n,c]) => `<button type="button">${icon(n)}<span>${esc(n)}<small>${c ? t('seenIn',{n:c}) : t('inBags')}</small></span></button>`).join('')}</div>`;
   $('#overlay').innerHTML = `<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="${label}">
     <header><small>${esc(niceName(card))} · <span style="font-family:var(--mono)">${esc(s.path)}</span></small><h3>${label} : ${p?esc(p.name):'—'}</h3></header>
     <div class="body">${html}</div><footer><button class="btn ghost" data-close>${t('close')}</button><button class="btn" data-close>${t('apply')}</button></footer></aside>`;

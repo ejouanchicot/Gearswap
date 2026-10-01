@@ -10,8 +10,9 @@
 ---   //gs c atelier off    stop exporting on load
 ---
 --- Files: data/<Character>/saved/atelier/<JOB>.js (one per job; atelier/ before
---- 2026-09-30) and
---- data/atelier/index.js (the list the page reads). They are JavaScript, not
+--- 2026-09-30),
+--- data/atelier/index.js (the list the page reads) and data/atelier/icons/<id>.bmp
+--- (item icons from the game files, shared/utils/atelier/item_icons.lua). They are JavaScript, not
 --- JSON, because a page opened from the disk may load scripts but not read
 --- files.
 ---
@@ -233,6 +234,28 @@ local function collect_items()
     return by_slot
 end
 
+--- Item id of every name the page shows ({name = id}), equippable items
+--- first: the page draws their icons from data/atelier/icons/<id>.bmp.
+local function collect_icons(set_list, items)
+    local ok, res = pcall(require, 'resources')
+    if not ok or not res or not res.items then return nil end
+    local wanted = {}
+    for _, set in ipairs(set_list) do
+        for _, p in pairs(set.pieces) do wanted[p.name:lower()] = p.name end
+    end
+    for _, names in pairs(items or {}) do
+        for _, name in ipairs(names) do wanted[name:lower()] = name end
+    end
+    local icons = {}
+    for id, info in pairs(res.items) do
+        for _, key in ipairs({info.en and info.en:lower(), info.enl and info.enl:lower()}) do
+            local name = wanted[key]
+            if name and (not icons[name] or info.slots) then icons[name] = id end
+        end
+    end
+    return icons
+end
+
 ---============================================================================
 --- WRITE
 ---============================================================================
@@ -300,6 +323,10 @@ function AtelierExport.export()
         sets = collect_sets(), keys = collect_keys(), modes = collect_modes(),
         macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'), items = collect_items(),
     }
+    data.icons = collect_icons(data.sets, data.items)
+    local ids = {}
+    for _, id in pairs(data.icons or {}) do ids[#ids + 1] = id end
+    pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     windower.create_dir(data_path(player.name .. '/saved'))
     windower.create_dir(data_path(player.name .. '/saved/atelier'))
     local rel = player.name .. '/saved/atelier/' .. player.main_job .. '.js'
