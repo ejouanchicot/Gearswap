@@ -21,7 +21,7 @@ local AtelierSim = {}
 
 local KINDS = {
     ma = {res = 'spells', prefix = '/ma'}, ja = {res = 'job_abilities', prefix = '/ja'},
-    ws = {res = 'weapon_skills', prefix = '/ws'},
+    ws = {res = 'weapon_skills', prefix = '/ws'}, ra = {prefix = '/ra'},
 }
 local PHASES = {'precast', 'midcast', 'aftercast'}
 
@@ -29,6 +29,7 @@ local function gs() return gearswap end
 
 -- The resource line of an action, by its English name
 local function find_line(kind, name)
+    if kind == 'ra' then return gs().resources_ranged_attack end
     local book = gs().res[KINDS[kind].res]
     local want = name:lower()
     for _, line in pairs(book) do
@@ -135,6 +136,55 @@ local function quarantine(messages, scheduled, recasts, tp)
     end
 end
 
+-- A stand-in for buffactive: the buffs the page lists, by any case (GearSwap's is case-insensitive)
+-- and by id (WAR reads Aftermath as buffactive[272])
+local function buffs_of(csv)
+    local t, want = {}, {}
+    for name in tostring(csv or ''):gmatch('[^,]+') do t[name:lower()] = 1; want[name:lower()] = true end
+    for id, line in pairs(gs().res.buffs or {}) do
+        if type(line) == 'table' and line.en and want[line.en:lower()] then t[id] = 1 end
+    end
+    return setmetatable(t, {__index = function(tbl, k) return type(k) == 'string' and rawget(tbl, k:lower()) or nil end})
+end
+
+-- What the job code may leave behind in globals (COR's cor_last_roll, THF's pending flags, the
+-- AbilityHelper markers on windower...): every plain value of _G, the snake_case tables of _G and
+-- the windower._ keys, shallow, to put back after a run
+local function snapshot_globals()
+    local snap = {g = {}, w = {}}
+    local function keep(into, tbl, key, value)
+        local copy = nil
+        if type(value) == 'table' then copy = {}; for k, v in pairs(value) do copy[k] = v end end
+        into[key] = {value = value, copy = copy}
+    end
+    for key, value in pairs(_G) do
+        local kind = type(value)
+        if type(key) == 'string' and (kind == 'string' or kind == 'number' or kind == 'boolean'
+            or (kind == 'table' and key:match('^[%l%d]+_[%l%d_]+$'))) then keep(snap.g, _G, key, value) end
+    end
+    for key, value in pairs(windower) do
+        if type(key) == 'string' and key:sub(1, 1) == '_' and type(value) ~= 'function' then keep(snap.w, windower, key, value) end
+    end
+    return snap
+end
+
+local function restore_globals(snap)
+    local function put(tbl, saved, filter)
+        for key in pairs(tbl) do
+            if filter(key) and saved[key] == nil and type(tbl[key]) ~= 'function' then rawset(tbl, key, nil) end
+        end
+        for key, entry in pairs(saved) do
+            rawset(tbl, key, entry.value)
+            if entry.copy and type(entry.value) == 'table' then
+                for k in pairs(entry.value) do if entry.copy[k] == nil then entry.value[k] = nil end end
+                for k, v in pairs(entry.copy) do entry.value[k] = v end
+            end
+        end
+    end
+    put(windower, snap.w, function(k) return type(k) == 'string' and k:sub(1, 1) == '_' end)
+    put(_G, snap.g, function(k) return type(k) == 'string' and k:match('^[%l%d]+_[%l%d_]+$') ~= nil end)
+end
+
 -- The modes, as they are now, to put back after the run
 local function snapshot_states()
     local snap = {}
@@ -159,7 +209,10 @@ end
 -- One run of the three steps, everything put back after it
 local function run_once(G, spell, req, recasts, tp)
     local messages, scheduled, phases = {}, {}, {}
-    local snap, status = snapshot_states(), player.status
+    local snap, status, globals = snapshot_states(), player.status, snapshot_globals()
+    -- the page's buffs (and the ability a helper fired first), never the ones on the player now
+    local buffs_was = rawget(_G, 'buffactive')
+    rawset(_G, 'buffactive', buffs_of(table.concat({req.buffs or '', req.extra_buff or ''}, ',')))
     local tp_was, vitals_tp_was = player.tp, player.vitals and player.vitals.tp
     local restore = quarantine(messages, scheduled, recasts, tp)
     local ok, err = pcall(function()
@@ -183,6 +236,10 @@ local function run_once(G, spell, req, recasts, tp)
         end
     end)
     restore()
+    rawset(_G, 'buffactive', buffs_was)
+    -- the marker a helper leaves (AbilityHelper fire_then_replay) tells a helper from a redirect
+    local helper = type(windower._ability_replay) == 'table' and windower._ability_replay.action == spell.name
+    restore_globals(globals)
     set_states(snap)
     player.status = status
     if tp then player.tp = tp_was; if player.vitals then player.vitals.tp = vitals_tp_was end end
@@ -192,7 +249,7 @@ local function run_once(G, spell, req, recasts, tp)
     local cancelled = messages.cancelled == true
     messages.cancelled = nil
     return {ok = ok, error = not ok and tostring(err) or nil, phases = phases, messages = messages,
-        cancelled = cancelled, scheduled = scheduled.n or 0}
+        cancelled = cancelled, scheduled = scheduled.n or 0, helper = helper}
 end
 
 --- Run an action through the job's precast, midcast and aftercast.
@@ -201,38 +258,70 @@ end
 ---   tp = number (weaponskills, 3000 by default)}
 --- @return table {ok, phases = {{phase, list}}, messages, cancelled, scheduled, error,
 ---   before = the ability a helper fires first (Majesty before a Cure), if any}
-function AtelierSim.run(req)
-    local G = gs()
-    if not (G and KINDS[req.kind] and req.name) then return {ok = false, error = 'bad request'} end
-    local line = find_line(req.kind, req.name)
-    if not line then return {ok = false, error = 'unknown action: ' .. req.name} end
-
+-- The spell GearSwap builds for an action (triggers.lua), on its target
+local function build_spell(G, kind, line, target)
     local r_line = G.copy_entry(line)
-    r_line.name = r_line[G.language] or r_line.en
+    r_line.name = r_line[G.language] or r_line.en or r_line.english
     local spell = G.spell_complete(r_line)
     -- the action's own target unless one is asked: Phalanx on oneself, Flash on the enemy;
     -- 'ally': a party member (Cure on another player: CureOther sets)
-    local on_me = req.target == 'me' or ((req.target == nil or req.target == 'auto') and not aims_enemy(line))
-    spell.target = target_of(req.target == 'ally' and '<p1>' or on_me and '<me>' or '<t>')
-    spell.action_type = G.action_type_map[KINDS[req.kind].prefix]
+    local on_me = target == 'me' or ((target == nil or target == 'auto') and not aims_enemy(line))
+    spell.target = target_of(target == 'ally' and '<p1>' or on_me and '<me>' or '<t>')
+    spell.action_type = G.action_type_map[KINDS[kind].prefix]
     spell.interrupted = false
+    return spell
+end
+
+-- The action a run sent instead of the one asked ("input /ma "Cure III"" from a Cure re-tier,
+-- "input /ja "Double-Up"" for a roll already up): kind and name, or nil
+local PREFIX_KIND = {ma = 'ma', magic = 'ma', song = 'ma', ninjutsu = 'ma', ja = 'ja', jobability = 'ja', ws = 'ws', weaponskill = 'ws'}
+local function sent_action(messages)
+    for _, m in ipairs(messages) do
+        local prefix, name = tostring(m):match('input /(%a+) "([^"]+)"')
+        if not prefix then prefix, name = tostring(m):match("input /(%a+) '([^']+)'") end
+        if prefix and PREFIX_KIND[prefix:lower()] then return PREFIX_KIND[prefix:lower()], name end
+    end
+    return nil
+end
+
+function AtelierSim.run(req)
+    local G = gs()
+    if not (G and KINDS[req.kind] and (req.name or req.kind == 'ra')) then return {ok = false, error = 'bad request'} end
+    local line = find_line(req.kind, req.name or '')
+    if not line then return {ok = false, error = 'unknown action: ' .. tostring(req.name)} end
+    local spell = build_spell(G, req.kind, line, req.target)
 
     local tp = req.kind == 'ws' and (tonumber(req.tp) or 3000) or nil
     local own = line.recast_id or line.id
     local first = run_once(G, spell, req, req.ignore_recasts ~= false and 'all' or nil, tp)
-    -- a helper (AbilityHelper) cancels the action to fire an ability first and casts it again
-    -- right after: as in game, the action then runs with that ability used (its recast running)
-    local before = nil
-    for _, m in ipairs(first.messages) do
-        local ja = tostring(m):match('^> input /ja "([^"]+)"') or tostring(m):match("^> input /ja '([^']+)'")
-        if ja then before = ja break end
+    local result, before, redirect = first, nil, nil
+    if first.cancelled then
+        local kind, name = sent_action(first.messages)
+        if first.helper and kind == 'ja' then
+            -- a helper (AbilityHelper) fired an ability first and casts the action again once its
+            -- buff is up: the action then runs with that ability used and its buff on
+            before = name
+            if req.ignore_recasts ~= false then
+                local again = {}
+                for k, v in pairs(req) do again[k] = v end
+                again.extra_buff = name
+                result = run_once(G, spell, again, own, tp)
+                for i, m in ipairs(first.messages) do table.insert(result.messages, i, m) end
+            end
+        elseif kind and not (kind == req.kind and name:lower() == tostring(req.name):lower()) then
+            -- the job sent another action in place of this one (a lower tier, Double-Up): that one
+            local other = find_line(kind, name)
+            if other then
+                redirect = name
+                local again = {}
+                for k, v in pairs(req) do again[k] = v end
+                again.kind, again.name = kind, name
+                result = run_once(G, build_spell(G, kind, other, req.target), again, 'all', kind == 'ws' and tp or nil)
+                for i, m in ipairs(first.messages) do table.insert(result.messages, i, m) end
+            end
+        end
     end
-    local result = first
-    if first.cancelled and before and req.ignore_recasts ~= false then
-        result = run_once(G, spell, req, own, tp)
-        for i, m in ipairs(first.messages) do table.insert(result.messages, i, m) end
-    end
-    result.before = before
+    result.before, result.redirect, result.helper = before, redirect, nil
     result.spell = {name = spell.name, type = spell.type, skill = spell.skill}
     return result
 end
@@ -240,17 +329,6 @@ end
 ---============================================================================
 --- WORN: the idle / engaged set the job's own code builds
 ---============================================================================
-
--- A stand-in for buffactive: the buffs the page lists, by any case (GearSwap's is case-insensitive)
--- and by id (WAR reads Aftermath as buffactive[272])
-local function buffs_of(csv)
-    local t, want = {}, {}
-    for name in tostring(csv or ''):gmatch('[^,]+') do t[name:lower()] = 1; want[name:lower()] = true end
-    for id, line in pairs(gs().res.buffs or {}) do
-        if type(line) == 'table' and line.en and want[line.en:lower()] then t[id] = 1 end
-    end
-    return setmetatable(t, {__index = function(tbl, k) return type(k) == 'string' and rawget(tbl, k:lower()) or nil end})
-end
 
 -- The pet GearSwap describes, as the job code reads it (pet.isvalid, status, name)
 local PET_NAMES = {GEO = 'Luopan', SMN = 'Carbuncle', PUP = 'Automaton', DRG = 'Wyvern', BST = 'Pet'}
@@ -327,9 +405,16 @@ function AtelierSim.worn_options()
                 local f = io.open(dir .. name, 'r')
                 local text = f and f:read('*a') or ''
                 if f then f:close() end
-                for word in text:gmatch("['\"]([^'\"\r\n]+)['\"]") do
-                    local en = known[word:lower()]
-                    if en and not seen[en] then seen[en] = true; found[#found + 1] = en end
+                -- only on a line that reads a buff or fires an ability first (AbilityHelper): a
+                -- spell named in the code (spell.english == 'Flash') is not a buff it reads
+                for line in text:gmatch('[^\n]+') do
+                    local low = line:lower()
+                    if low:find('buff', 1, true) or low:find('abilityhelper', 1, true) or low:find('aftermath', 1, true) then
+                        for word in line:gmatch("['\"]([^'\"\r\n]+)['\"]") do
+                            local en = known[word:lower()]
+                            if en and not seen[en] then seen[en] = true; found[#found + 1] = en end
+                        end
+                    end
                 end
                 -- buffs read by id (buffactive[272]: Aftermath: Lv.3)
                 for id in text:gmatch('buffactive%[(%d+)%]') do
@@ -424,6 +509,8 @@ function AtelierSim.actions()
             if line and line.en then out.ws[#out.ws + 1] = line.en; out.aim[line.en] = 'enemy' end
         end
     end
+    -- a ranged attack: any job, the game refuses it without a ranged weapon
+    out.ra = true
     for _, list in pairs({out.ma, out.ja, out.ws}) do table.sort(list) end
     for _, list in pairs(out.magic) do table.sort(list) end
     return out
