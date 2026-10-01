@@ -64,12 +64,12 @@ main{padding-block:24px 48px}
 .role-group{margin-top:26px}
 .role-group h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--role);display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .role-group h2::after{content:"";flex:1;height:1px;background:var(--line)}
-.grid-jobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
-.jobcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;border-left:4px solid var(--role)}
+.grid-jobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.jobcard{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:0 8px;align-items:center;border-left:3px solid var(--role)}
 .jobcard:hover{border-color:var(--role);box-shadow:var(--shadow)}
-.jobcard .abbr{font-family:var(--display);font-size:24px;grid-row:span 2;line-height:1}
-.jobcard .name{font-weight:600;font-size:13px}
-.jobcard .meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.jobcard .abbr{font-family:var(--display);font-size:16px;grid-row:span 2;line-height:1}
+.jobcard .name{font-weight:600;font-size:12px}
+.jobcard .meta{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .jobcard.off{background:var(--panel-2)}
 .jobcard.off .abbr{color:var(--muted)}
 
@@ -343,7 +343,7 @@ function renderTop(){
   document.documentElement.lang = S.lang;
   if (S.theme) document.documentElement.setAttribute('data-theme', S.theme);
   const tabs = [`<button class="tab home" role="tab" aria-selected="${!S.job}" data-job="">${t('home')}</button>`];
-  for (const c of TAB_ORDER) tabs.push(`<button class="tab ${plays(c)?'':'off'}" role="tab" aria-selected="${S.job===c}" data-job="${c}" style="--role:${ROLE_COLOR[role(c)]}"><i></i>${c}</button>`);
+  for (const c of TAB_ORDER) if (plays(c)) tabs.push(`<button class="tab ${plays(c)?'':'off'}" role="tab" aria-selected="${S.job===c}" data-job="${c}" style="--role:${ROLE_COLOR[role(c)]}"><i></i>${c}</button>`);
   $('#tabs').innerHTML = tabs.join('');
 }
 function counts(c){ const d = (DATA[S.char]||{})[c]; return d ? {sets:d.sets.length, keys:d.keys.filter(k=>k.key).length} : null; }
@@ -352,9 +352,12 @@ function renderHome(){
   for (const c of jobs) { const n = counts(c); if (n) { totS += n.sets; totK += n.keys; } }
   let html = `<section class="hello"><div><h1>${S.char}</h1><p>${jobs.join(' · ')}</p></div><div class="facts">
     <div class="fact"><b>${jobs.length}</b><span>${t('jobsPlayed')}</span></div>${totS?`<div class="fact"><b>${totS}</b><span>${t('sets')}</span></div><div class="fact"><b>${totK}</b><span>${t('keys')}</span></div>`:''}</div></section>`;
+  // only the jobs this character plays (an export exists); a role with none is left out
   for (const r of ['tank','melee','ranged','magic','support']) {
+    const played = JOBS.filter(j => j[2]===r && plays(j[0]));
+    if (!played.length) continue;
     html += `<section class="role-group" style="--role:${ROLE_COLOR[r]}"><h2>${t('roles.'+r)}</h2><div class="grid-jobs">` +
-      JOBS.filter(j => j[2]===r).map(([c,name]) => { const n = counts(c);
+      played.map(([c,name]) => { const n = counts(c);
         const meta = !plays(c) ? t('notPlayed',{c:S.char}) : n ? `${n.sets} ${t('sets')} · ${n.keys} ${t('keys')}` : t('toLoad');
         return `<button class="jobcard ${plays(c)?'':'off'}" data-job="${c}" style="--role:${ROLE_COLOR[r]}"><span class="abbr">${c}</span><span class="name">${name}</span><span class="meta">${meta}</span></button>`; }).join('') + `</div></section>`;
   }
