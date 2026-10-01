@@ -528,7 +528,7 @@ local COMMANDS_HELP = {
             {'//gs c lightarts', '', 'Light Arts, then Addendum: White (SCH)'},
             {'//gs c darkarts', '', 'Dark Arts, then Addendum: Black (SCH)'},
             {'//gs c aoe ', '<sneak|invi|erase>', 'Accession + the spell, party-wide (SCH)'},
-            {'//gs c smartbuff', '', 'Self-buffs of the subjob (WAR SAM NIN DNC)'},
+            {'//gs c buff', '', 'Self-buffs of the job, then of the subjob'},
         }},
         {title = 'WARP', note = '50+ commands, warp help', rows = {
             {'//gs c warp status', '', 'Warp lock status'},

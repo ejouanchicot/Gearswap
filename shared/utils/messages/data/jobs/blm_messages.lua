@@ -65,10 +65,6 @@ return {
     --- ERROR MESSAGES
     ---========================================================================
 
-    buffself_error = {
-        template = "{gray}[{lightblue}{job}{gray}] {red}Error: BuffSelf function not loaded",
-        color = 1
-    },
 
     spell_replacement_error = {
         template = "{gray}[{lightblue}{job}{gray}] {red}Error: Invalid parameters for spell replacement",

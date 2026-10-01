@@ -53,16 +53,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Logic modules loaded on demand (performance optimization)
-local BuffManager = nil
 local SpellRefiner = nil
 local StormManager = nil
-
----   Ensure BuffManager is loaded
-local function ensure_buff_manager()
-    if not BuffManager then
-        BuffManager = require('shared/jobs/blm/functions/logic/buff_manager')
-    end
-end
 
 ---   Ensure SpellRefiner is loaded
 local function ensure_spell_refiner()
@@ -124,8 +116,6 @@ TIMER('BLM_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   The following business logic modules use lazy loading for performance:
 ---
----   logic/buff_manager.lua (loaded on first BuffSelf() call)
----     • Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
 ---   logic/set_builder.lua (required by BLM_IDLE / BLM_ENGAGED for the idle and
 ---     engaged builders)
 ---     • Engaged set construction (weapons)
@@ -146,13 +136,12 @@ TIMER('BLM_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BuffSelf - Automated Self-Buffing
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Casts Stoneskin, Blink, Aquaveil, Ice Spikes when missing, skipping the
----   ones the job/subjob cannot cast and the ones still on recast
+---   The common //gs c buff (shared/utils/buffs/buff_command.lua; BLM's
+---   list is `job.BLM` of _common/combat/BUFF_CONFIG.lua), kept under this
+---   name for the callers of the old one
 ---   @return boolean True when casts were queued or a status was displayed
----   @usage BuffSelf()
 function BuffSelf()
-    ensure_buff_manager()
-    return BuffManager.BuffSelf()
+    return require('shared/utils/buffs/buff_command').apply()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

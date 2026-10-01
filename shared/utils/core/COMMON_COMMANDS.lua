@@ -663,8 +663,9 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_aoewaltz()
     elseif cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' then
         return require('shared/utils/scholar/scholar_actions').handle_command(cmd, args[1])
-    elseif cmd == 'smartbuff' then
-        return require('shared/utils/smartbuff/subjob_buffs').apply()
+    elseif cmd == 'buff' or cmd == 'buffs' or cmd == 'buffself' or cmd == 'selfbuff' or cmd == 'smartbuff' then
+        -- main job's buffs then the subjob's (BUFF_CONFIG.lua)
+        return require('shared/utils/buffs/buff_command').apply()
     elseif cmd == 'gearscan' then
         return require('shared/utils/equipment/gear_scan').run()
     elseif cmd == 'hporder' then
@@ -749,7 +750,8 @@ function CommonCommands.is_common_command(command)
         cmd == 'altsync' or cmd == 'altbuffsync' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
-        cmd == 'aoewaltz' or cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' or cmd == 'smartbuff' or cmd == 'gearscan' or cmd == 'hporder' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
+        cmd == 'aoewaltz' or cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' or cmd == 'smartbuff' or
+        cmd == 'buff' or cmd == 'buffs' or cmd == 'buffself' or cmd == 'selfbuff' or cmd == 'gearscan' or cmd == 'hporder' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
         cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
         cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or
         cmd == 'fulltest' or cmd == 'ft' or

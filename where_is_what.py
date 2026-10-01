@@ -43,7 +43,7 @@ COMMON = {
     'AUTOCURE_CONFIG.lua': 'Auto Medicine: debuffs cured, the items used, On or Off at start',
     'TUNING.lua': 'Thresholds and names some jobs use (SAM idle HP, refresh MP, waltz tiers, SMN skill-up, GEO escort, BRD debuff songs)',
     'CLEANSE_CONFIG.lua': '//gs c cleanse: debuffs taken off, their order, items, spells, partner',
-    'SMARTBUFF_CONFIG.lua': 'Abilities of //gs c smartbuff per subjob, and of WAR berserk / defender',
+    'BUFF_CONFIG.lua': 'Buffs of //gs c buff per main job and subjob, and of WAR berserk / defender',
     'SORTIE_CONFIG.lua': '//gs c sortie: the alt, its Silmaril profiles, your stances per target',
     'HP_PRIORITY.lua': 'Order the pieces go on in, so max HP never dips (Unity rank, MP jobs)',
     'rings.lua': 'Rings you own twice, each pinned to its wardrobe; the job sets use them',

@@ -156,13 +156,6 @@ end
 --- ERROR MESSAGES
 ---============================================================================
 
---- Display error message for missing BuffSelf function
-function BLMMessages.show_buffself_error()
-    M.job('BLM', 'buffself_error', {
-        job = get_job_tag()
-    })
-end
-
 --- Display error for invalid spell replacement parameters
 function BLMMessages.show_spell_replacement_error()
     M.job('BLM', 'spell_replacement_error', {

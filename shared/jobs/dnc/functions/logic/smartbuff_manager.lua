@@ -7,8 +7,8 @@
 ---   Features:
 ---   • Selected dance always first (state.Dance: Saber Dance / Fan Dance)
 ---   • Selected samba (state.Samba) when TP covers its cost
----   • Then the subjob buffs of every job's smartbuff
----     (shared/utils/smartbuff/subjob_buffs.lua: /WAR, /SAM, /NIN)
+---   • Then //gs c buff adds the DNC and subjob lists of BUFF_CONFIG.lua
+---     (shared/utils/buffs/buff_command.lua, through _G.job_buff_extra)
 ---   • Recast checking (is_recast_ready from RECAST_CONFIG)
 ---   • Sequential casting (CAST_SPACING seconds apart)
 ---   • Status display (active/cooldown with time remaining)
@@ -25,7 +25,6 @@ local SmartbuffManager = {}
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local MessageBuffs     = require('shared/utils/messages/formatters/magic/message_buffs')
-local SubjobBuffs      = require('shared/utils/smartbuff/subjob_buffs')
 
 -- is_recast_ready resolved as a global from RECAST_CONFIG.lua
 -- (loaded by entry point before job functions). Do not redeclare locally.
@@ -176,32 +175,21 @@ end
 ---   MAIN ENTRY POINT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply the selected dance, then the selected samba, then the subjob buffs
----   @return boolean Success status
-function SmartbuffManager.apply()
-    local subjob = player.sub_job
-
-    if not subjob then
-        MessageFormatter.show_error('Unable to detect subjob')
-        return false
-    end
-
+---   DNC's part of //gs c buff: the selected dance, then the selected samba
+---   (the job and subjob lists come after, from buff_command.lua)
+---   @return table abilities_to_cast, table status_data
+function SmartbuffManager.collect_extra()
     local abilities_to_cast, status_data = SmartbuffManager.collect_dance(true)
-
     local samba_abilities, samba_status = SmartbuffManager.collect_samba()
     append_all(abilities_to_cast, samba_abilities)
     append_all(status_data, samba_status)
+    return abilities_to_cast, status_data
+end
 
-    local sub_abilities, sub_status = SubjobBuffs.collect(subjob)
-    append_all(abilities_to_cast, sub_abilities)
-    append_all(status_data, sub_status)
-
-    if #status_data > 0 then
-        MessageBuffs.show_buff_status(status_data)
-    end
-
-    cast_queue(abilities_to_cast)
-    return true
+--- //gs c buff (kept for callers of the old name)
+--- @return boolean
+function SmartbuffManager.apply()
+    return require('shared/utils/buffs/buff_command').apply()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

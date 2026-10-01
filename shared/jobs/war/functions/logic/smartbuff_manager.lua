@@ -1,143 +1,72 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Smartbuff Manager - Subjob Buff Application (WAR)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Manages automatic buff application for WAR main job with various subjobs.
----   Provides intelligent automation for:
----   • WAR core abilities (Berserk, Aggressor, Warcry, etc.)
----   • SAM subjob automation (Hasso/Seigan + Third Eye)
----   • Subjob abilities folded into the main chain, so //gs c berserk and
----     //gs c defender are the only two macros needed:
----       /SAM -> Hasso + Third Eye  (Seigan + Third Eye under Defender)
----     (/DNC Haste Samba was in the chain until 2026-09-30; the player did
----     not want it sent with every berserk)
----
----   Features:
----   • Mutual exclusion handling (Berserk vs Defender)
----   • Cooldown tracking and status display
----   • Sequential casting with delays to avoid conflicts
----   • Subjob-specific logic routing
+---   WAR main: //gs c berserk and //gs c defender (the chains war_berserk /
+---   war_defender of _common/combat/BUFF_CONFIG.lua, plus the /SAM stance and
+---   Third Eye with war_add_sam), //gs c thirdeye, and TP building (/SAM
+---   Meditate, /DRG jumps). The lists go through the one buff engine,
+---   shared/utils/buffs/self_buff_manager.lua. (/DNC Haste Samba was in the
+---   chain until 2026-09-30; the player did not want it sent with every
+---   berserk.)
 ---
 ---   @file    shared/jobs/war/functions/logic/smartbuff_manager.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2025-10-06
+---   @version 2.0 - lists from BUFF_CONFIG.lua, the shared buff engine
+---   @date    Created: 2025-10-06 | Updated: 2026-10-01
 ---  ═══════════════════════════════════════════════════════════════════════════
 local SmartbuffManager = {}
-
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES
----  ═══════════════════════════════════════════════════════════════════════════
-
--- Buff status display (was the global show_war_buff_status wrapper before)
-local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buffs')
-
--- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
--- (loaded by entry point before job functions). Do not redeclare locally.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WARRIOR ABILITY AUTOMATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- The Berserk / Defender chains: war_berserk / war_defender of
---- _common/combat/SMARTBUFF_CONFIG.lua (smartbuff_config.lua; defaults Berserk
---- or Defender, then Aggressor, Retaliation, Restraint, Warcry - Blood Rage
---- while Warcry is on cooldown). Names and rules: shared/utils/smartbuff/buff_list.lua.
-local BuffList = require('shared/utils/smartbuff/buff_list')
+--- One engine for every buff list: shared/utils/buffs/self_buff_manager.lua
+--- (names, the rules of Warcry / Blood Rage, Hasso / Seigan, the shared
+--- action queue). The lists: _common/combat/BUFF_CONFIG.lua (buff_config.lua).
+local Engine = require('shared/utils/buffs/self_buff_manager')
 
---- SAM stance paired with each WAR mode: Berserk goes with Hasso (offense),
---- Defender with Seigan (defense).
-local SAM_STANCE = {
-    Berserk  = { name = 'Hasso',  id = 138 },
-    Defender = { name = 'Seigan', id = 139 },
-}
-
-local THIRD_EYE   = { name = 'Third Eye',   id = 133 }
-local MEDITATE    = { name = 'Meditate',    id = 134 }
-
---- Queue one ability unless it is already up or still on cooldown.
---- @param ability table { name, id }
---- @param recasts table get_ability_recasts() output
---- @param buffs   table buffactive snapshot
---- @param to_cast table abilities_to_cast (mutated)
---- @param status  table status_data (mutated)
-local function collect_ability(ability, recasts, buffs, to_cast, status)
-    local recast = recasts[ability.id] or 0
-
-    if buffs[ability.name] then
-        table.insert(status, { name = ability.name, status = 'active' })
-    elseif is_on_cooldown(recast) then
-        table.insert(status, { name = ability.name, status = 'cooldown', time = math.ceil(recast) })
-    else
-        table.insert(to_cast, { name = ability.name, id = ability.id })
+--- Collect lists, show what is not cast, cast the rest.
+--- @param ... table Lists of names
+local function run(...)
+    local to_cast, status = {}, {}
+    for _, list in ipairs({...}) do
+        local a, s = Engine.collect(list)
+        for _, v in ipairs(a) do to_cast[#to_cast + 1] = v end
+        for _, v in ipairs(s) do status[#status + 1] = v end
     end
+    Engine.show_status(status)
+    Engine.cast(to_cast)
 end
 
---- Append subjob abilities so one macro covers main job + subjob.
---- The SAM stance follows `param`, NOT buffactive: at this point the Berserk or
---- Defender cast is still queued, so its buff is not up yet and reading
---- buffactive would always pick Hasso.
---- @param param   string 'Berserk' or 'Defender'
---- @param recasts table get_ability_recasts() output
---- @param buffs   table buffactive snapshot
---- @param to_cast table abilities_to_cast (mutated)
---- @param status  table status_data (mutated)
-local function collect_subjob_abilities(param, recasts, buffs, to_cast, status)
-    local sub = player and player.sub_job
-
-    if sub == 'SAM' then
-        collect_ability(SAM_STANCE[param] or SAM_STANCE.Berserk, recasts, buffs, to_cast, status)
-        collect_ability(THIRD_EYE, recasts, buffs, to_cast, status)
-    end
-end
-
---- Cast collected abilities sequentially with 2-second spacing.
---- @param abilities_to_cast table List of { name, id } entries
-local function cast_sequentially(abilities_to_cast)
-    for i, ability in ipairs(abilities_to_cast) do
-        local command = 'input /ja "' .. ability.name .. '" <me>'
-        if i == 1 then
-            send_command(command)
-        else
-            send_command('wait ' .. ((i - 1) * 2) .. '; ' .. command)
-        end
-    end
+--- The /SAM part: the stance of the mode (Hasso with Berserk, Seigan with
+--- Defender) and Third Eye, or nothing on another or a disabled subjob.
+--- The stance follows `mode`, not buffactive: in the chain the Berserk or
+--- Defender cast is still queued, its buff is not up yet.
+--- @param mode string 'Berserk' or 'Defender'
+--- @return table names
+local function sam_part(mode)
+    if not (player and player.sub_job == 'SAM' and (player.sub_job_level or 0) > 0) then return {} end
+    return {mode == 'Defender' and 'Seigan' or 'Hasso', 'Third Eye'}
 end
 
 ---   Buff the player with the WAR chain of the mode: war_berserk or
----   war_defender of SMARTBUFF_CONFIG.lua (each list holds one of Berserk /
----   Defender), then, with war_add_sam, the /SAM stance and Third Eye
----   (see collect_subjob_abilities).
----
----   Default lists: Berserk or Defender (they do not go together: Berserk
----   lowers Defense, Defender Attack), Aggressor, Retaliation, Restraint,
----   Warcry (Blood Rage while Warcry is on cooldown).
----
+---   war_defender of BUFF_CONFIG.lua (each list holds one of Berserk /
+---   Defender: Berserk lowers Defense, Defender Attack), then, with
+---   war_add_sam, the /SAM stance and Third Eye.
 ---   @param param string 'Berserk' (default) or 'Defender': which list
 ---   @return void
 function SmartbuffManager.buff_war(param)
-    local cfg = require('shared/utils/smartbuff/smartbuff_config').get()
+    local cfg = require('shared/utils/buffs/buff_config').get()
     local list = param == 'Defender' and cfg.war_defender or cfg.war_berserk
-    local to_cast, status = BuffList.collect(list)
-    if cfg.war_add_sam then
-        collect_subjob_abilities(param, windower.ffxi.get_ability_recasts(), buffactive, to_cast, status)
-    end
-    if #status > 0 then
-        MessageBuffs.show_buff_status(status)
-    end
-    cast_sequentially(to_cast)
+    run(list, cfg.war_add_sam and sam_part(param) or {})
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM SUBJOB ABILITIES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Activate Samurai subjob abilities: Hasso/Seigan + Third Eye
----   Uses Seigan if Defender is active, otherwise uses Hasso.
----
----   Abilities:
----   • Hasso/Seigan (ID: 138/139) - Stance (Hasso: offense, Seigan: defense)
----   • Third Eye    (ID: 133)     - Anticipate physical attack
----
+---   //gs c thirdeye: the /SAM stance (Seigan while Defender is up, else
+---   Hasso) and Third Eye
 ---   @return void
 function SmartbuffManager.buff_sam_sub()
     if not player or player.sub_job ~= 'SAM' then
@@ -146,51 +75,25 @@ function SmartbuffManager.buff_sam_sub()
         if ok and MessageFormatter then MessageFormatter.show_warning('thirdeye: needs /SAM') end
         return
     end
-
-    local recasts = windower.ffxi.get_ability_recasts()
-    local buffs = buffactive
-    local to_cast, status = {}, {}
-
-    -- Standalone call: nothing is queued ahead of it, so buffactive is the
-    -- authoritative source for the stance (unlike the chained path in buff_war).
-    local mode = buffs['Defender'] and 'Defender' or 'Berserk'
-    collect_ability(SAM_STANCE[mode], recasts, buffs, to_cast, status)
-    collect_ability(THIRD_EYE, recasts, buffs, to_cast, status)
-
-    if #status > 0 then
-        MessageBuffs.show_buff_status(status)
-    end
-
-    cast_sequentially(to_cast)
+    -- Standalone call: nothing is queued ahead of it, so buffactive tells the mode
+    run(sam_part(buffactive['Defender'] and 'Defender' or 'Berserk'))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   TP BUILDING (SUBJOB DEPENDENT)
 ---  ═══════════════════════════════════════════════════════════════════════════
-
 ---   Build TP with whatever the current subjob offers
----   • /SAM -> Meditate (ID: 134, Lv30, 3min recast)
+---   • /SAM -> Meditate
 ---   • /DRG -> the shared DRG jump manager (Jump / High Jump rotation)
 ---   Any other subjob has no TP-building ability worth automating.
 ---
 ---   @return void
 function SmartbuffManager.build_tp()
     local sub = player and player.sub_job
-
     if sub == 'SAM' then
-        local recasts = windower.ffxi.get_ability_recasts()
-        local to_cast, status = {}, {}
-
-        collect_ability(MEDITATE, recasts, buffactive, to_cast, status)
-
-        if #status > 0 then
-            MessageBuffs.show_buff_status(status)
-        end
-
-        cast_sequentially(to_cast)
+        run({'Meditate'})
         return
     end
-
     if sub == 'DRG' then
         -- execute_jump() does its own /DRG and Sheol Gaol checks
         local ok, DRGJumpManager = pcall(require, 'shared/utils/drg/DRG_JUMP_MANAGER')
@@ -199,7 +102,6 @@ function SmartbuffManager.build_tp()
         end
         return
     end
-
     local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
     if ok and MessageFormatter then
         MessageFormatter.show_warning('No TP ability for /' .. tostring(sub or '???'))

@@ -13,7 +13,7 @@
 ---   Commands:
 ---   • //gs c reload         - Reload THF configuration
 ---   • //gs c checksets      - Validate equipment sets
----   • //gs c smartbuff      - Subjob buffs (common command, subjob_buffs.lua)
+---   • //gs c buff           - Job + subjob buffs (common command, buff_command.lua)
 ---   • //gs c fbc            - Feint / Bully / Conspirator opener
 ---   • //gs c steal          - Steal / Mug / Despoil on <t>
 ---   • //gs c range          - Equip + lock ranged + attack <stnpc> (one-way)

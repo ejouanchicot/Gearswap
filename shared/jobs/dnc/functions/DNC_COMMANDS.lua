@@ -50,6 +50,15 @@ local function ensure_commands_loaded()
     end
 end
 
+--- DNC's part of //gs c buff (shared/utils/buffs/buff_command.lua): the
+--- selected dance, then the selected samba, before the job and subjob lists.
+--- @return table abilities_to_cast, table status_data
+function job_buff_extra()
+    ensure_commands_loaded()
+    return SmartbuffManager.collect_extra()
+end
+_G.job_buff_extra = job_buff_extra
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   JOB SELF COMMAND HANDLER
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -95,13 +104,8 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Smartbuff: DNC's own (dance, samba, then the subjob buffs). Ahead of the
-    -- common commands, whose smartbuff casts the subjob buffs only
-    if command == 'smartbuff' or command == 'buffself' then
-        SmartbuffManager.apply()
-        eventArgs.handled = true
-        return
-    end
+    -- buff / smartbuff / buffself: the common command, which asks DNC for its
+    -- dance and samba first (job_buff_extra below)
 
     -- Common commands (reload, checksets, etc.)
     if CommonCommands.is_common_command(command) then

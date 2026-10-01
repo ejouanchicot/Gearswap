@@ -1,8 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Smartbuff Manager - Subjob Buff Application (Logic Module)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   THF ability chains. //gs c smartbuff (the subjob buffs) is the common
----   command of every job: shared/utils/smartbuff/subjob_buffs.lua.
+---   THF ability chains. The buffs (//gs c buff, smartbuff) are the common
+---   command of every job: //gs c buff, shared/utils/buffs/buff_command.lua.
 ---
 ---   Features:
 ---   • THF Feint / Bully / Conspirator opener (//gs c fbc)

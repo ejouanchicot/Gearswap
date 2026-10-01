@@ -343,7 +343,6 @@ MessageFormatter.show_spell_refinement = function(...) return get_BLMMessages().
 MessageFormatter.show_mp_conservation = function(...) return get_BLMMessages().show_mp_conservation(...) end
 MessageFormatter.show_arts_already_active = function(...) return get_BLMMessages().show_arts_already_active(...) end
 MessageFormatter.show_stratagem_no_charges = function(...) return get_BLMMessages().show_stratagem_no_charges(...) end
-MessageFormatter.show_buffself_error = function(...) return get_BLMMessages().show_buffself_error(...) end
 MessageFormatter.show_spell_replacement_error = function(...) return get_BLMMessages().show_spell_replacement_error(...) end
 MessageFormatter.show_spell_refinement_error = function(...) return get_BLMMessages().show_spell_refinement_error(...) end
 MessageFormatter.show_spell_recasts_error = function(...) return get_BLMMessages().show_spell_recasts_error(...) end

@@ -337,19 +337,8 @@ function job_self_command(cmdParams, eventArgs)
     -- BLM-SPECIFIC COMMANDS
     -- ══════════════════════════════════════════════════════════════════════════
 
-    -- Buff: Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
-    -- Accepts: buff, buffs, buffself, selfbuff (case-insensitive via :lower above)
-    if command == 'buff' or command == 'buffs'
-       or command == 'buffself' or command == 'selfbuff' then
-        -- Function loaded globally via blm_functions.lua
-        if BuffSelf then
-            BuffSelf()
-            eventArgs.handled = true
-        else
-            BLMMessages.show_buffself_error()
-        end
-        return
-    end
+    -- buff / buffs / buffself / selfbuff: the common command
+    -- (shared/utils/buffs/buff_command.lua; BLM's list in BUFF_CONFIG.lua `job`)
 
     -- Klima: Dark Arts + Manifestation + Klimaform, each step only when usable.
     -- Klimaform itself always fires; the two stratagem steps are opportunistic.

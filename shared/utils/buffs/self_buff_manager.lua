@@ -1,259 +1,284 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Self Buff Manager - Queued self-buffing from a list
+---   Self Buff Manager - a list of buff names turned into actions, one engine
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Factory shared by every job that offers a `//gs c buff` command. A job
----   supplies its list of spells and job abilities; this module decides what
----   is worth using and sends the actions in order.
+---   Used by //gs c buff (buff_command.lua: the main job's list, then the
+---   subjob's) and WAR's //gs c berserk / defender. The lists come from the
+---   character's _common/combat/BUFF_CONFIG.lua (buff_config.lua).
 ---
----   An entry is skipped when its buff is already up, when it is still on
----   recast, when it was used seconds ago (double press), or when the current
----   job and subjob cannot use it at all — the same list therefore behaves
----   correctly across subjob changes.
+---   An entry is a name ('Stoneskin', 'Berserk') or {name = ..., buff = ...,
+---   wait = ...}; {spell = ...} / {ability = ...} also work. It is found in the
+---   game data (a job ability first, else a spell) and skipped quietly when
+---   the current jobs cannot use it (abilities: read from the game; spells:
+---   learned and the main or sub level); otherwise skipped, and reported,
+---   when its buff is already up (the buff the action gives: Enlight II gives
+---   Enlight) or it is on recast, and skipped when it was used seconds ago
+---   (double press). A few names keep a rule of their own:
+---     Warcry       Blood Rage instead while Warcry is on cooldown (WAR main)
+---     Hasso, Seigan  only with a two-handed weapon in hand
+---     Utsusemi     Utsusemi: Ni, else Ichi
+---     Haste Samba  only with the TP it costs (350)
+---   The actions go through the shared queue (shared/utils/core/action_queue.lua):
+---   each one when the previous has ended, a refused spell sent again.
 ---
 ---   @file    shared/utils/buffs/self_buff_manager.lua
 ---   @author  ejouanchicot
----   @version 1.1 - Job abilities alongside spells
----   @date    Created: 2026-09-17
+---   @version 2.0 - names, rules, shared queue (was a factory for BLM's list)
+---   @date    Created: 2026-09-17 | Updated: 2026-10-01
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local SelfBuffManager = {}
 
-local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buffs')
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+-- is_recast_ready: global of RECAST_CONFIG.lua (loaded by the entry point)
 
---- Minimum seconds between two uses of the same entry, so a double press
---- does not queue the same buff twice.
+--- Seconds during which a name just queued is not queued again (double press).
 local CAST_COOLDOWN = 2.0
+--- Seconds after an action ends before the next one goes.
+local DELAY = 1.0
+--- Longest wait of a step = its cast time + this, when the game never says it ended.
+local WAIT_MARGIN = 3.0
 
---- Seconds the queue waits after an action before sending the next one,
---- unless the entry names its own delay.
-local DEFAULT_DELAY = 6
+local HASTE_SAMBA_TP = 350
+--- Weapon skills (res.items `skill`) of two-handed weapons: Hasso needs one.
+local TWO_HANDED = {[4] = true, [6] = true, [7] = true, [8] = true, [10] = true, [12] = true}
 
----  ═══════════════════════════════════════════════════════════════════════════
----   ENTRY RESOLUTION
----  ═══════════════════════════════════════════════════════════════════════════
+local last_use = {}
 
---- Job id of a job abbreviation ('PLD' -> 7)
---- @param res table Windower resources
---- @param job_abbrev string|nil Job abbreviation
---- @return number|nil Job id
-local function job_id(res, job_abbrev)
-    if not job_abbrev then
-        return nil
-    end
+local function resources()
+    local ok, res = pcall(function() return rawget(_G, 'res') or windower.res or require('resources') end)
+    return ok and res or nil
+end
 
-    local job = res.jobs:with('ens', job_abbrev)
-
+local function job_id(res, abbrev)
+    local job = abbrev and res and res.jobs and res.jobs:with('ens', abbrev)
     return job and job.id
 end
 
---- Resolve a list entry against the resources.
----
---- The buff name comes from the action's status effect rather than its name:
---- they differ often enough (Enlight II grants Enlight, Crusade grants Enmity
---- Boost) that deriving it is safer than repeating it in every job list.
---- @param entry table { spell = string } or { ability = string }, plus optional buff and delay
---- (delay = seconds the queue waits after this action)
---- @param res table Windower resources
---- @return table|nil { name, buff, delay, is_ability, command, recast_id, id, levels }
-local function resolve_entry(entry, res)
-    local is_ability = entry.ability ~= nil
-    local name = entry.ability or entry.spell
-    local data = is_ability and res.job_abilities:with('en', name) or res.spells:with('en', name)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENTRIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
-    if not data then
-        return nil
+--- An entry of a list resolved against the game data, or nil.
+--- @param entry string|table
+--- @param res table
+--- @return table|nil {name, buff, is_ability, id, recast_id, levels, wait}
+local function resolve(entry, res)
+    if type(entry) == 'string' then entry = {name = entry} end
+    if type(entry) ~= 'table' then return nil end
+    local name = entry.name or entry.ability or entry.spell
+    if type(name) ~= 'string' or not res then return nil end
+    local data, is_ability
+    if not entry.spell then
+        data = res.job_abilities and res.job_abilities:with('en', name)
+        is_ability = data ~= nil
     end
-
-    local status = data.status and res.buffs[data.status]
-
+    if not data and not entry.ability then
+        data = res.spells and res.spells:with('en', name)
+    end
+    if not data then return nil end
+    local status = data.status and res.buffs and res.buffs[data.status]
+    local cast = (not is_ability and tonumber(data.cast_time)) or 1
     return {
         name = name,
-        buff = entry.buff or (status and status.en),
-        delay = entry.delay or DEFAULT_DELAY,
-        is_ability = is_ability,
-        command = is_ability and '/ja' or '/ma',
-        recast_id = data.recast_id or data.id,
+        buff = entry.buff or (status and status.en) or (is_ability and name) or nil,
+        is_ability = is_ability == true,
         id = data.id,
-        levels = data.levels or {}
+        recast_id = data.recast_id or data.id,
+        levels = data.levels or {},
+        wait = tonumber(entry.wait or entry.delay) or (cast + WAIT_MARGIN),
     }
 end
 
---- The job abilities the current job and subjob grant, as a set of ids.
---- Absorbs both API shapes: a list of ids, or a map keyed by id.
---- @return table Set of ability ids
-local function available_abilities()
-    local ok, abilities = pcall(windower.ffxi.get_abilities)
-    if not ok or type(abilities) ~= 'table' or type(abilities.job_abilities) ~= 'table' then
-        return {}
+--- What the current jobs can use, read once per press.
+local function context(res)
+    local abilities = {}
+    local ok, got = pcall(windower.ffxi.get_abilities)
+    if ok and type(got) == 'table' and type(got.job_abilities) == 'table' then
+        for key, value in pairs(got.job_abilities) do
+            abilities[(type(value) == 'number') and value or key] = true
+        end
     end
-
-    local ids = {}
-    for key, value in pairs(abilities.job_abilities) do
-        ids[(type(value) == 'number') and value or key] = true
-    end
-
-    return ids
+    return {
+        res = res,
+        abilities = abilities,
+        known = windower.ffxi.get_spells() or {},
+        main_id = job_id(res, player and player.main_job),
+        sub_id = job_id(res, player and player.sub_job),
+        sub_level = player and player.sub_job_level or 0,
+        ja_recasts = windower.ffxi.get_ability_recasts() or {},
+        ma_recasts = windower.ffxi.get_spell_recasts() or {},
+    }
 end
 
---- Whether the current job and subjob can use this entry.
----
---- Abilities are read from the game, which already accounts for job and level.
---- Spells are checked by hand: a known spell listed for the main job is
---- castable, the scroll could not have been learned otherwise, while the
---- subjob is capped and its own requirement is compared to the subjob level.
---- @param item table From resolve_entry
---- @param ctx table { known, abilities, main_id, sub_id, sub_level }
---- @return boolean
-local function is_usable(item, ctx)
-    if item.is_ability then
-        return ctx.abilities[item.id] == true
-    end
-
-    if not ctx.known[item.id] then
-        return false
-    end
-
-    if ctx.main_id and item.levels[ctx.main_id] then
-        return true
-    end
-
+--- Whether the current jobs can use it. Abilities: the game's list already
+--- accounts for job and level. Spells: learned, and listed for the main job
+--- (the scroll could not have been learned otherwise) or within the subjob level.
+local function usable(item, ctx)
+    if item.is_ability then return ctx.abilities[item.id] == true end
+    if not ctx.known[item.id] then return false end
+    if ctx.main_id and item.levels[ctx.main_id] then return true end
     return ctx.sub_id ~= nil and item.levels[ctx.sub_id] ~= nil and item.levels[ctx.sub_id] <= ctx.sub_level
 end
 
+--- Seconds before it is ready.
+local function recast_of(item, ctx)
+    if item.is_ability then return ctx.ja_recasts[item.recast_id] or 0 end
+    return (ctx.ma_recasts[item.recast_id] or 0) / 100
+end
+
+local function item_of(name, ctx)
+    local item = resolve(name, ctx.res)
+    return item and usable(item, ctx) and item or nil
+end
+
+--- Queue it unless its buff is up, it is on recast or was just queued.
+local function collect_item(item, ctx, to_cast, status)
+    local recast = recast_of(item, ctx)
+    if item.buff and buffactive[item.buff] then
+        table.insert(status, {name = item.name, status = 'active'})
+    elseif not is_recast_ready(recast) then
+        table.insert(status, {name = item.name, status = 'cooldown', time = math.ceil(recast)})
+    elseif not (last_use[item.name] and os.clock() - last_use[item.name] < CAST_COOLDOWN) then
+        table.insert(to_cast, item)
+    end
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
----   FACTORY
+---   NAMES WITH A RULE OF THEIR OWN
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build a buff manager for one job
---- @param config table {
----   buffs = table             List of { spell = string } or { ability = string },
----                             each with optional buff and delay,
----   action_type = string|nil  Label for the status display (default 'Magic')
---- }
---- @return table Manager exposing buff_self()
-function SelfBuffManager.create(config)
-    local manager = {}
-    local last_use_times = {}
+local function two_handed(res)
+    local name = player and player.equipment and player.equipment.main
+    if not name or name == '' or name == 'empty' then return false end
+    local ok, item = pcall(function() return res.items:with('en', name) end)
+    if not ok or not item or not item.skill then return true end
+    return TWO_HANDED[item.skill] == true
+end
 
-    --- The entries worth using now, each with the delay it waits for.
-    --- The wait comes from the entries actually queued, not from the list: an
-    --- entry the subjob does not grant costs no time at all.
-    --- @param items table Resolved entries
-    --- @param recasts table { spells = table, abilities = table }
-    --- @param now number os.clock()
-    --- @return table List of { item, delay }
-    local function queue_ready(items, recasts, now)
-        local ready = {}
-        local total_delay = 0
+local SPECIAL = {}
 
-        for _, item in ipairs(items) do
-            local timers = item.is_ability and recasts.abilities or recasts.spells
-            local on_recast = (timers[item.recast_id] or 0) > 0
-            local spammed = last_use_times[item.name] and (now - last_use_times[item.name]) < CAST_COOLDOWN
-
-            if not (buffactive[item.buff] or on_recast or spammed) then
-                local previous = ready[#ready]
-                if previous then
-                    total_delay = total_delay + previous.item.delay
-                end
-                ready[#ready + 1] = { item = item, delay = total_delay }
-            end
-        end
-
-        return ready
+--- Warcry; Blood Rage (WAR main) while Warcry is on cooldown: they do not stack.
+SPECIAL['Warcry'] = function(ctx, to_cast, status)
+    local warcry, blood = item_of('Warcry', ctx), item_of('Blood Rage', ctx)
+    if not warcry then return end
+    local w_recast = recast_of(warcry, ctx)
+    if buffactive['Warcry'] then
+        table.insert(status, {name = 'Warcry', status = 'active'})
+    elseif is_recast_ready(w_recast) and not buffactive['Blood Rage'] then
+        table.insert(to_cast, warcry)
+    elseif not is_recast_ready(w_recast) then
+        table.insert(status, {name = 'Warcry', status = 'cooldown', time = math.ceil(w_recast)})
     end
+    if not blood then return end
+    local b_recast = recast_of(blood, ctx)
+    if buffactive['Blood Rage'] then
+        table.insert(status, {name = 'Blood Rage', status = 'active'})
+    elseif is_recast_ready(b_recast) and not buffactive['Warcry'] and not is_recast_ready(w_recast) then
+        table.insert(to_cast, blood)
+    elseif not is_recast_ready(b_recast) then
+        table.insert(status, {name = 'Blood Rage', status = 'cooldown', time = math.ceil(b_recast)})
+    end
+end
 
-    --- Send the queue, each action waiting out the ones before it
-    --- @param ready table From queue_ready
-    --- @param now number os.clock(), recorded for the anti-spam window
-    local function send_queue(ready, now)
-        for _, entry in ipairs(ready) do
-            local action = 'input ' .. entry.item.command .. ' "' .. entry.item.name .. '" <me>'
+for _, stance in ipairs({'Hasso', 'Seigan'}) do
+    SPECIAL[stance] = function(ctx, to_cast, status)
+        local item = item_of(stance, ctx)
+        if item and two_handed(ctx.res) then collect_item(item, ctx, to_cast, status) end
+    end
+end
 
-            send_command(entry.delay > 0 and ('wait ' .. entry.delay .. '; ' .. action) or action)
-            last_use_times[entry.item.name] = now
+--- Ni when ready, else Ichi (no buff check: the shadows are counted by the game).
+SPECIAL['Utsusemi'] = function(ctx, to_cast, status)
+    local ni, ichi = item_of('Utsusemi: Ni', ctx), item_of('Utsusemi: Ichi', ctx)
+    local ni_recast = ni and recast_of(ni, ctx) or math.huge
+    local ichi_recast = ichi and recast_of(ichi, ctx) or math.huge
+    if ni and is_recast_ready(ni_recast) then
+        table.insert(to_cast, ni)
+    elseif ichi and is_recast_ready(ichi_recast) then
+        table.insert(to_cast, ichi)
+    elseif ichi then
+        if ni then table.insert(status, {name = 'Utsusemi: Ni', status = 'cooldown', time = math.ceil(ni_recast)}) end
+        table.insert(status, {name = 'Utsusemi: Ichi', status = 'cooldown', time = math.ceil(ichi_recast)})
+    end
+end
+
+SPECIAL['Haste Samba'] = function(ctx, to_cast, status)
+    local item = item_of('Haste Samba', ctx)
+    if not item then return end
+    local recast = recast_of(item, ctx)
+    if buffactive['Haste Samba'] then
+        table.insert(status, {name = 'Haste Samba', status = 'active'})
+    elseif not is_recast_ready(recast) then
+        table.insert(status, {name = 'Haste Samba', status = 'cooldown', time = math.ceil(recast)})
+    else
+        local tp = require('shared/utils/core/live_tp')()
+        if tp < HASTE_SAMBA_TP then
+            table.insert(status, {name = 'Haste Samba', status = 'tp', value = tp, extra = HASTE_SAMBA_TP})
+        else
+            table.insert(to_cast, item)
         end
     end
+end
 
-    --- Report the buffs already up, so a no-op press is not silent
-    --- @param items table Resolved entries
-    --- @return boolean True when something was displayed
-    local function show_active(items)
-        local status_data = {}
+---  ═══════════════════════════════════════════════════════════════════════════
+---   API
+---  ═══════════════════════════════════════════════════════════════════════════
 
-        for _, item in ipairs(items) do
-            if buffactive[item.buff] then
-                status_data[#status_data + 1] = { name = item.name, status = 'active' }
-            end
+--- What to use now from a list, in order, and the state of the rest.
+--- @param list table Names or entries
+--- @return table to_cast Resolved entries ({name, is_ability, wait...})
+--- @return table status List of {name, status, time?, value?, extra?}
+function SelfBuffManager.collect(list)
+    local to_cast, status = {}, {}
+    local res = resources()
+    if type(list) ~= 'table' or not res then return to_cast, status end
+    local ctx = context(res)
+    for _, entry in ipairs(list) do
+        local name = type(entry) == 'table' and (entry.name or entry.ability or entry.spell) or entry
+        if SPECIAL[name] then
+            SPECIAL[name](ctx, to_cast, status)
+        else
+            local item = resolve(entry, res)
+            if item and usable(item, ctx) then collect_item(item, ctx, to_cast, status) end
         end
-
-        if #status_data == 0 then
-            return false
-        end
-
-        MessageBuffs.show_buff_status(status_data, config.action_type or 'Magic')
-
-        return true
     end
+    return to_cast, status
+end
 
-    --- The entries of the list this job and subjob can use right now
-    --- @param res table Windower resources
-    --- @return table Resolved entries, in list order
-    local function usable_entries(res)
-        local ctx = {
-            known = windower.ffxi.get_spells() or {},
-            abilities = available_abilities(),
-            main_id = job_id(res, player.main_job),
-            sub_id = job_id(res, player.sub_job),
-            sub_level = player.sub_job_level or 0
-        }
-
-        local items = {}
-        for _, entry in ipairs(config.buffs) do
-            local item = resolve_entry(entry, res)
-            if item and item.buff and is_usable(item, ctx) then
-                items[#items + 1] = item
-            end
+--- Send the actions through the shared queue, each when the previous has ended.
+--- @param to_cast table From collect() (entries may also be {name, magic?})
+function SelfBuffManager.cast(to_cast)
+    local ActionQueue = require('shared/utils/core/action_queue')
+    local seen = {}
+    for _, item in ipairs(to_cast or {}) do
+        if not seen[item.name] then
+            seen[item.name] = true
+            last_use[item.name] = os.clock()
+            local magic = item.is_ability == false or item.magic == true
+            local command = ('input %s "%s" <me>'):format(magic and '/ma' or '/ja', item.name)
+            ActionQueue.push(command, item.wait or (1 + WAIT_MARGIN), {delay = DELAY, tag = 'BUFF'})
         end
-
-        return items
     end
+end
 
-    --- Use every buff of the list that is missing and available
-    --- @return boolean True when actions were queued or a status was displayed
-    function manager.buff_self()
-        -- os.clock, not os.time: os.time only counts whole seconds, too coarse
-        -- for the CAST_COOLDOWN anti-spam window.
-        local now = os.clock()
-        local recasts = {
-            spells = windower.ffxi.get_spell_recasts(),
-            abilities = windower.ffxi.get_ability_recasts()
-        }
-
-        if type(recasts.spells) ~= 'table' or type(recasts.abilities) ~= 'table' then
-            MessageFormatter.show_error('Recast timers unavailable')
-            return false
+--- Report what was not used: active / cooldown lines, then a short TP.
+--- @param status table From collect()
+--- @param action_type string|nil Label of the status block
+function SelfBuffManager.show_status(status, action_type)
+    local lines, short_tp = {}, {}
+    for _, entry in ipairs(status or {}) do
+        if entry.status == 'tp' then
+            short_tp[#short_tp + 1] = {type = 'tp', name = entry.name, value = entry.value, extra = entry.extra}
+        else
+            lines[#lines + 1] = entry
         end
-
-        local res = _G.res or windower.res or require('resources')
-        if not res then
-            MessageFormatter.show_error('Resources unavailable')
-            return false
-        end
-
-        local items = usable_entries(res)
-        local ready = queue_ready(items, recasts, now)
-
-        if #ready > 0 then
-            send_queue(ready, now)
-            return true
-        end
-
-        return show_active(items)
     end
-
-    return manager
+    if #lines > 0 then
+        require('shared/utils/messages/formatters/magic/message_buffs').show_buff_status(lines, action_type)
+    end
+    if #short_tp > 0 then
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_multi_status(short_tp, MessageFormatter.get_job_tag())
+    end
 end
 
 return SelfBuffManager

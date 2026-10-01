@@ -81,7 +81,7 @@ TIMER('DNC_MOVEMENT')
 ---
 ---   • climactic_manager.lua    - Auto-trigger Climactic Flourish before WS
 ---   • set_builder.lua          - Shared set construction (engaged/idle)
----   • smartbuff_manager.lua    - Dance, samba and subjob buffs (smartbuff/dance)
+---   • smartbuff_manager.lua    - Dance and samba of //gs c buff (job_buff_extra)
 ---   • step_manager.lua         - Step + Presto management
 ---   • ws_variant_selector.lua  - WS variant from dance/Climactic buffs
 ---

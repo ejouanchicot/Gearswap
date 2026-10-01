@@ -1,0 +1,49 @@
+---============================================================================
+--- Buffs - what //gs c buff (and WAR's berserk / defender) cast, in order
+---============================================================================
+--- //gs c buff casts the list of your main job, then the list of your
+--- subjob (DNC: its dance and samba first). Write the name of the ability or
+--- spell, any works: it is skipped when its buff is already up, when it is on
+--- recast, or when your jobs cannot use it (a subjob too low, a spell not
+--- learned). One action goes when the previous one has ended.
+--- A few names keep a rule of their own:
+---   Warcry          Blood Rage instead while Warcry is on cooldown (WAR main)
+---   Hasso, Seigan   only with a two-handed weapon in hand
+---   Utsusemi        Utsusemi: Ni, else Ichi
+---   Haste Samba     only with 350 TP
+--- Remove a name and it is no longer cast; a job not listed (or {}) casts
+--- nothing. The values below are the defaults; a key removed goes back to
+--- its default.
+---
+--- @file _common/combat/BUFF_CONFIG.lua
+--- @author ejouanchicot
+--- @date Created: 2026-10-01
+---============================================================================
+
+return {
+    -- Your main job's buffs. Examples to copy (your choice of spells):
+    --   RDM = {'Haste II', 'Refresh III', 'Phalanx', 'Temper II', 'Gain-STR'},
+    --   PLD = {'Majesty', 'Crusade', 'Phalanx', 'Reprisal', 'Enlight II'},
+    --   RUN = {'Crusade', 'Phalanx', 'Temper', 'Regen IV'},
+    --   NIN = {'Utsusemi'},
+    job = {
+        BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
+    },
+
+    -- Your subjob's buffs (added after the main job's)
+    -- Example: WAR = {'Aggressor', 'Warcry'} keeps Berserk off while tanking
+    subjob = {
+        WAR = {'Berserk', 'Aggressor', 'Warcry'},
+        SAM = {'Hasso', 'Third Eye'},
+        NIN = {'Utsusemi'},
+        DNC = {'Haste Samba'},
+    },
+
+    -- WAR main: //gs c berserk and //gs c defender
+    war_berserk  = {'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
+    war_defender = {'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
+
+    -- WAR main /SAM: add the stance (Hasso with berserk, Seigan with
+    -- defender) and Third Eye to those two commands
+    war_add_sam = true,
+}
