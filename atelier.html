@@ -417,25 +417,35 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6p
 .simset{display:grid;gap:1px;width:100%;font-size:12px;color:var(--muted)}
 .simset code{font-family:var(--mono);font-size:11.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .simnotes{display:grid;gap:8px}
-.simtable{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;width:auto;min-width:min(100%,640px)}
-.simtable th,.simtable td{padding:4px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.simbody{display:grid;grid-template-columns:auto minmax(380px,1fr);gap:14px;align-items:start}
+.simbody > .box{min-width:0}
+.simbody .boxb{overflow-x:auto}
+@media (max-width:1500px){.simbody{grid-template-columns:minmax(0,1fr)}}
+.simtable{border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;width:100%}
+.simtable th,.simtable td{padding:3px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .simtable thead th{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:right;border-bottom:1px solid var(--line-strong)}
 .simtable thead th.ph{text-align:center}
 .simtable tbody th{text-align:left;font-weight:500;color:var(--muted);padding-left:0}
-.simtable td.v{text-align:right;font-weight:600;color:var(--ink);min-width:64px}
-.simtable td.d{text-align:left;font-size:11.5px;font-weight:600;min-width:58px;padding-left:2px;border-right:1px solid var(--line)}
+.simtable td.v{text-align:right;font-weight:600;color:var(--ink);min-width:56px}
+.simtable td.d{text-align:left;font-size:11px;font-weight:600;min-width:50px;padding-left:2px;border-right:1px solid var(--line)}
 .simtable td.d:last-child{border-right:0}
 .simtable td.d.up{color:var(--r-healer)}
 .simtable td.d.down{color:var(--r-dd)}
-.simtable tr.big td.v{font-size:15px}
+.simtable tr.big td.v{font-size:14px}
 .simtable tr.big th{color:var(--ink);font-weight:700}
 .simtable tbody tr:hover{background:var(--hover)}
 .statpickbtn{font-size:12px;letter-spacing:0;text-transform:none;font-weight:600;margin-left:8px}
-.statpickdlg{width:min(760px,100%)}
-.statpickdlg .body{display:grid;gap:12px;max-height:60vh;overflow:auto}
-.statpickdlg section{display:flex;flex-wrap:wrap;gap:6px}
-.statpickdlg h4{width:100%;margin:0;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.statpickdlg .chip input{margin:0 4px 0 0}
+.statpickdlg{width:min(1080px,100%)}
+.statpickdlg .body{max-height:70vh;overflow:auto;background:var(--panel-2)}
+.pickgrid{columns:240px;column-gap:14px}
+.pickcol{break-inside:avoid;margin-bottom:14px;display:block}
+.pickcol .boxh .meta{font-size:11.5px;white-space:nowrap}
+.pickcol .linkbtn{font-size:11.5px}
+.pickrows{display:grid;padding:4px 0}
+.pickrow{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:center;padding:3px 12px;font-size:13px;cursor:pointer}
+.pickrow:hover{background:var(--hover)}
+.pickrow input{margin:0;accent-color:var(--c)}
+.pickrow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .simbefore{margin:0;padding:8px 12px;border-radius:4px;background:var(--accent-soft);color:var(--ink);font-size:13.5px}
 .simmsgs summary{cursor:pointer;color:var(--muted);font-size:13px}
 @media (max-width:900px){.simx{grid-template-columns:minmax(0,1fr)}}
@@ -958,15 +968,21 @@ function setStats(s){
 const statShown = k => !S.statHide[k];
 const statPickBtn = () => { const n = Object.keys(S.statHide).length;
   return `<button class="linkbtn statpickbtn" data-statpick>${t('statPick')}${n ? ` · ${t('statHidden', {n})}` : ''}</button>`; };
+// One column per stat group, in its colour: a title band with all / none, one tick per line
 function openStatPick(){
   const keys = ['dtEff'].concat(Object.keys(STAT_DEF).filter(k => !['dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt'].includes(k)));
   const groups = STAT_GROUPS.map(([g, fr, en]) => {
     const list = keys.filter(k => (k === 'dtEff' ? 'def' : statGroup(k)) === g);
-    return list.length ? `<section><h4>${S.lang === 'fr' ? fr : en}</h4>${list.map(k =>
-      `<label class="chip"><input type="checkbox" class="statpick" data-stat="${k}" ${statShown(k) ? 'checked' : ''}> ${esc(k === 'dtEff' ? t('dtEff') : statLabel(k, {}))}</label>`).join('')}</section>` : ''; }).join('');
+    if (!list.length) return '';
+    const on = list.filter(statShown).length;
+    return `<section class="box g-${g} pickcol"><header class="boxh"><h3>${S.lang === 'fr' ? fr : en}</h3>` +
+      `<span class="meta">${on}/${list.length} · <button class="linkbtn" data-statgroup="${g}|1">${t('statAll')}</button> · ` +
+      `<button class="linkbtn" data-statgroup="${g}|0">${t('statNone')}</button></span></header><div class="pickrows">` +
+      list.map(k => `<label class="pickrow"><input type="checkbox" class="statpick" data-stat="${k}" ${statShown(k) ? 'checked' : ''}>` +
+        `<span>${esc(k === 'dtEff' ? t('dtEff') : statLabel(k, {}))}</span></label>`).join('') + `</div></section>`; }).join('');
   $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog statpickdlg" role="dialog" aria-label="${t('statPick')}">
     <header><h3>${t('statPick')}</h3><p class="muted small">${t('statPickWhy')}</p></header>
-    <div class="body">${groups}</div>
+    <div class="body"><div class="pickgrid">${groups}</div></div>
     <footer><span><button class="btn ghost" data-statall>${t('statAll')}</button> <button class="btn ghost" data-statnone>${t('statNone')}</button></span>
       <button class="btn" data-close>${t('close')}</button></footer></div>`;
   $('#overlay').hidden = false;
@@ -1872,8 +1888,9 @@ function simResultHTML(d){
     (r.cancelled ? `<p class="kwarn">${t('simCancelled')}</p>` : '') +
     (msgs.length ? `<details class="simmsgs"><summary>${t('simMsgs', {n: msgs.length})}</summary><ul class="plain">${msgs.map(m => `<li>${esc(m)}</li>`).join('')}</ul></details>` : '') +
     (r.scheduled ? `<p class="muted small">${t('simScheduled', {n: r.scheduled})}</p>` : '');
-  return `${notes ? `<div class="simnotes">${notes}</div>` : ''}<div class="simcards" style="--n:${phases.length}">${cards}</div>` +
-    box('g-you', t('simCompare'), simTableHTML(phases, stats));
+  // the cards and the table side by side on a wide screen: the table keeps the whole height
+  return `${notes ? `<div class="simnotes">${notes}</div>` : ''}<div class="simbody"><div class="simcards" style="--n:${phases.length}">${cards}</div>` +
+    box('g-you', t('simCompare'), simTableHTML(phases, stats)) + `</div>`;
 }
 /* ---- render ---- */
 // The top bar: character, job (by role, the played ones) and subjob menus, the job's macro book,
@@ -2368,6 +2385,9 @@ document.addEventListener('click', e => {
   if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
   if (d.simpick) { const [k, ...n] = d.simpick.split('|'); Object.assign(simState(), {kind: k, name: n.join('|')}); simRun(); return; }
   if ('statpick' in d) { openStatPick(); return; }
+  if (d.statgroup) { const [g, on] = d.statgroup.split('|');
+    document.querySelectorAll('.g-' + g + ' .statpick').forEach(x => { if (on === '1') delete S.statHide[x.dataset.stat]; else S.statHide[x.dataset.stat] = 1; });
+    openStatPick(); render(); return; }
   if ('statall' in d) { S.statHide = {}; openStatPick(); render(); return; }
   if ('statnone' in d) { S.statHide = {}; document.querySelectorAll('.statpick').forEach(x => { S.statHide[x.dataset.stat] = 1; }); openStatPick(); render(); return; }
   if (d.simgroup) { S.simOpen[d.simgroup] = !S.simOpen[d.simgroup]; render(); return; }
@@ -2411,7 +2431,8 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
   if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.section = 'sets'; S.q = ''; render(); }
   if (e.target.classList.contains('kmod') || e.target.classList.contains('kname')) manualKey();
-  if (e.target.classList.contains('statpick')) { const k = e.target.dataset.stat; if (e.target.checked) delete S.statHide[k]; else S.statHide[k] = 1; render(); }
+  if (e.target.classList.contains('statpick')) { const k = e.target.dataset.stat; if (e.target.checked) delete S.statHide[k]; else S.statHide[k] = 1;
+    const sc = ($('.statpickdlg .body') || {}).scrollTop; openStatPick(); const b = $('.statpickdlg .body'); if (b) b.scrollTop = sc; render(); }
   if (e.target.classList.contains('simrecasts')) { simState().recasts = e.target.checked; simRun(); }
   if (e.target.dataset && e.target.dataset.simstate) { const st = simState(); st.states = st.states || {}; st.states[e.target.dataset.simstate] = e.target.value; simRun(); }
   if (e.target.classList.contains('klayout')) { S.layout = e.target.value; renderKeyEdit(); save(); }
