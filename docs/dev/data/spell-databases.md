@@ -49,7 +49,7 @@ table, with a line number only where it was re-read that day.
 | `shared/data/spells/BLM_SPELL_FILTERS.lua` | 126 | 3 sets | `REFINEMENT_SPELLS`, `ELEMENTAL_NO_TIERS`, `CHARGE_ABILITIES`: refinement vs cooldown check in `BLM_PRECAST` |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | 11 families | Tier-downgrade map for RDM enfeebles (`TIERS`, `get(family)`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | 13 families | Tier-downgrade map for nukes V..I, -ra III..I and Aspir III..I (`TIERS`, `get(family)`), RDM and GEO (since 2026-09-26) |
-| `shared/utils/data/data_loader.lua` | 312 | - | Lazy `_G.FFXI_DATA` view of spells (15 aggregators), job abilities and weaponskills; used by `//gs c info` |
+| `shared/utils/data/data_loader.lua` | 300 | - | Lazy `_G.FFXI_DATA` view of spells (15 aggregators), job abilities and weaponskills; used by `//gs c info` |
 | `shared/data/magic/dark/README_DARK_MAGIC.md` | 234 | - | Human reference for the Dark Magic modules (the only non-Lua file under `shared/data/`) |
 
 The gitignored `_dev/SPELL_DATABASES_SYSTEM.md` (local only) documents the deleted
@@ -360,7 +360,7 @@ dispatch), and several of them cannot work against the current schema.
 | `BLU_SPELL_DATABASE.get_spell_data(name)` | record or nil | `shared/jobs/blu/functions/logic/spell_map.lua` (`database_entry`) |
 | `RDM_ENFEEBLE_TIERS.get(family)` | tier map or nil | `RDM_PRECAST.lua` `get_spell_tiers` |
 | `NUKE_TIERS.get(family)` | tier map or nil | `RDM_PRECAST.lua` `get_spell_tiers`, `GEO_PRECAST.lua` |
-| `DataLoader.get_spell/get_ability/get_weaponskill(name)` (`:272`, `:282`, `:292`), `DataLoader.load_spells/load_abilities/load_weaponskills()` (`:122`, `:156`, `:228`) | record or nil / `true` | `search_all_databases` (`info_command.lua`) |
+| `DataLoader.get_spell/get_ability/get_weaponskill(name)` (`:260`, `:270`, `:280`), `DataLoader.load_spells/load_abilities/load_weaponskills()` (`:122`, `:156`, `:228`) | record or nil / `true` | `search_all_databases` (`info_command.lua`) |
 
 `BLM_SPELL_FILTERS` exposes three sets read by `BLM_PRECAST.lua`: `REFINEMENT_SPELLS` (keyed by spell
 name, plus the key `'Elemental Magic'` which is never looked up because `uses_refinement` checks the
@@ -384,7 +384,6 @@ skill directly), `ELEMENTAL_NO_TIERS`, `CHARGE_ABILITIES`.
 | BRD | `can_learn`, `get_songs_by_category`, `get_songs_by_type`, `get_elemental_songs`, `get_etude_by_stat`, `get_buff_songs`, `get_debuff_songs` | `song_type` field exists nowhere: `get_songs_by_type`/`get_buff_songs`/`get_debuff_songs` always empty |
 | BLU | `can_learn`, `get_spells_by_type` + 6 wrappers, `get_spells_by_element`, `get_spells_by_trait`, `get_unbridled_spells`, `calculate_trait_points`, `get_skillchain_property` | `spell_type` exists nowhere (data uses `category`): `get_spells_by_type` and its wrappers always empty |
 | SMN | `can_summon`, `can_use_pact`, `get_avatar_pacts`, `get_pacts_by_element`, `get_rage_by_damage_type`, `get_skillchain_property`, `get_avatar_element`, `get_two_hour_pacts`, `get_all_spirits`, `get_all_avatars`, `get_pact_data` | `can_use_pact` reads `pact.SMN` but pacts carry `level`: always false; `get_skillchain_property` reads `.property`, pacts use `.skillchain`; `get_rage_by_damage_type('Physical')` returns nothing (`damage_type` holds `Blunt`, ...) |
-| DataLoader | `load_all` | |
 
 ## Commands
 

@@ -45,7 +45,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/equip_hooks.lua` | 80 | Wraps GearSwap's `equip()` once per load (`_G._equip_hooks_wrapper`); every table argument goes through the registered hooks, lowest `order` first: 5 `impact_lock`, 10 `duplicate_gear`, 20 `hp_priority` | `impact_lock.lua`, `duplicate_gear.lua`, `hp_priority.lua` (`EquipHooks.add` / `remove`) | this page |
 | `shared/utils/equipment/impact_lock.lua` | 159 | At the precast of Impact, picks the cloak that grants it (Crepuscular / Twilight Cloak) and locks it: the equip hook `impact_lock` (order 5) puts it on every set and drops their `head` until the aftercast, a cancel or 20 s | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`ImpactLock.install`), every load, every job | this page |
 | `shared/utils/equipment/duplicate_gear.lua` | 225 | Equip hook `duplicate_gear` (order 10): a ring, earring or main / sub piece named without bag or augments, owned in 2+ copies without augments, gets the `bag` of the copy that side takes | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`DuplicateGear.install`), every load; then every `equip()` call | this page |
-| `shared/utils/equipment/hp_priority.lua` | 377 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = HP gained over the piece worn in that slot (dHP*1000+dMP on the `mp_jobs`, default BLM/RDM/GEO); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
+| `shared/utils/equipment/hp_priority.lua` | 380 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = HP gained over the piece worn in that slot (dHP*1000+dMP on the `mp_jobs`, default BLM/RDM/GEO); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
 | `shared/utils/equipment/gear_scan.lua` | 175 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
 | `shared/utils/equipment/weapon_resolver.lua` | 119 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
 | `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
@@ -545,8 +545,7 @@ touched. For each key of the set that is in `SLOTS` (`priority_of`):
   `{name = ..., priority = n}` and a table is copied with its `priority` field set.
 
 `apply()` returns the number of pieces whose HP / MP is known (entries of the index) and prints
-nothing. `HPPriority._piece_hp_mp`, `HPPriority._config` and `HPPriority._ranked_copy(set)` (the copy
-the hook would pass on now, with the load state of the last `apply()`) are exposed for offline
+nothing. `HPPriority._piece_hp_mp` and `HPPriority._config` are exposed for offline
 scripts; `HPPriority._augment_hp_mp` is also used by `gear_scan.lua`, so both read augments the same
 way.
 
@@ -758,7 +757,6 @@ Everything else is local. The module has no `_G` export.
 | `_piece_hp_mp(data, name, augments, unity, scanned)` | `hp, mp` (`scanned`: gear scan cache, optional) | offline scripts only |
 | `_augment_hp_mp(augments)` | `hp, mp` of a list of augment strings | `gear_scan.lua` |
 | `_config` | `{DEFAULTS, MP_WEIGHT}` | offline scripts only |
-| `_ranked_copy(set)` | the copy of `set` the `hp_priority` hook would pass on now | offline scripts only |
 | `toggle_order_display()` | flips `windower._hp_order_debug`; while on, the `hp_priority` hook notes each set's changing pieces and one block per frame lists them by priority (`//gs c hporder`) | `COMMON_COMMANDS` |
 
 Exported as `_G.HPPriority` and returned.
@@ -1156,7 +1154,7 @@ with `package.path = '<repo>/?.lua;' .. package.path`:
 
 - `hp_priority.lua`: stub `player = {name = 'Tetsouo', main_job = 'WAR'}`,
   `windower = {addon_path = '<GearSwap>/'}`, a stub `equip` (`equip_hooks.lua` wraps it), build a small `_G.sets`,
-  call `HPPriority.apply()`, set `player.equipment` and read `HPPriority._ranked_copy(set)`
+  call `HPPriority.apply()`, set `player.equipment`, call `equip(set)` and read the set the stub receives
   (settings and the gear scan cache go through `char_paths.lua`; when either read fails, the
   `DEFAULTS` apply and no scanned augments are added); or call
   `HPPriority._piece_hp_mp(dofile('<repo>/shared/data/equipment/ITEM_HP_MP.lua'), name, augments, 'max', scanned)`

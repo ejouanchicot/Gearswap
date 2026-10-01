@@ -62,9 +62,9 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 115 | `buff_war`, `buff_sam_sub`, `build_tp`: lists sent through the shared buff engine |
 | `shared/utils/buffs/self_buff_manager.lua`, `buff_config.lua` | 300, 82 | The buff engine and the `BUFF_CONFIG.lua` settings (`war_berserk`, `war_defender`, `war_add_sam`), shared with `//gs c buff` ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)) |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
-| `shared/utils/drg/auto_jump.lua` | 263 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
+| `shared/utils/drg/auto_jump.lua` | 218 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 88 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
-| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | TP bonus piece selection (shared) |
+| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 214 | TP bonus piece selection (shared) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
 | `_master/config/war/WAR_STATES.lua` | 124 | All WAR states (`WARStates.configure()`) |
 | `_master/config/war/WAR_KEYBINDS.lua` | 68 | Data only: 8 bind entries handed to `KeybindManager.create('WAR', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |

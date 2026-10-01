@@ -34,7 +34,7 @@ a name would not locate the spot (they move often in this folder).
 | `shared/utils/dualbox/alt_states.lua` | 188 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
 | `shared/utils/dualbox/alt_commands.lua` | 573 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 349 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
-| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 183 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
+| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 189 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
 | `shared/utils/dualbox/alt_group.lua` | 477 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `altreport`, `altmirror`, `altlead`, `main`, `setalt` |
 | `shared/utils/dualbox/alt_window.lua` | 368 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/saved/dualbox_role.lua` |
@@ -527,7 +527,6 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 | Function | Effect | Callers |
 |---|---|---|
 | `register_hook(cmd, fn)` | `_G.DUALBOX_SYNC_HOOKS[cmd:lower()] = fn` | INIT_SYSTEMS sync IPC block |
-| `unregister_hook(cmd)` | Removes a hook | none |
 | `broadcast(cmd)` | Sends `tetsouo_sync_<cmd> <player.name>` via Windower IPC | `CommonCommands.handle_refill`, `handle_lockstyle` |
 | `_on_ipc_message(msg)` | Listener body: self-echo, group filter, debounce, hook | registered by `init_listener` |
 | `init_listener()` | Unregisters `windower._sync_ipc_event_id` (pcall) only if it was registered in this same load (`windower._sync_ipc_event_load == windower._gs_reload_count`), registers `ipc message`, stores id and load | INIT_SYSTEMS sync IPC block |
@@ -826,7 +825,7 @@ Still open:
 
 - `_G.AltBuffState` is not re-synced after a MAIN reload, and `assume()` stays disabled - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua`
 - `altlight`/`altdark` send tier I spells when the MAIN is BLM - `_master/config/alt/GEO_ALT_CUSTOM.lua` `altlight` / `altdark` (same in BLM/RDM/SCH CUSTOM)
-- Dead API: `unregister_hook`, `clear_cache` - `dualbox_sync_ipc.lua`, `alt_commands.lua`. Fixed 2026-09-28: `DualBoxManager.show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update` removed (their `MessageDualbox.show_status_*` / `show_not_initialized` formatters are now uncalled, see [messages-catalog.md](messages-catalog.md)). `RollShare.receive` returns true, so `rollshow` counts as handled.
+- Dead API: `clear_cache` - `alt_commands.lua`. Fixed 2026-09-28: `DualBoxManager.show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update` removed (their `MessageDualbox.show_status_*` / `show_not_initialized` formatters are now uncalled, see [messages-catalog.md](messages-catalog.md)). `RollShare.receive` returns true, so `rollshow` counts as handled.
 - `_G.DUALBOX_SYNC_DEBUG` is never set, so sync hook errors are always silent (the comment now says so) - `_on_ipc_message`, `shared/utils/dualbox/dualbox_sync_ipc.lua`
 - `Composure` and `Bolter's Roll` are tracked by default but never reported on change and never read - `DEFAULT_TRACKED`, `shared/utils/dualbox/alt_buff_reporter.lua`
 - `//gs c alt <unknown>` prints nothing - `AltCommands.execute`, `shared/utils/dualbox/alt_commands.lua`

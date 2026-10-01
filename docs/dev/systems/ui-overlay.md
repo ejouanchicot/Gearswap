@@ -12,7 +12,7 @@ Line counts re-measured on 2026-09-28 (`wc -l`).
 |---|---|---|
 | `shared/utils/ui/UI_MANAGER.lua` | 167 | Facade. Seeds the `_G` UI globals (stub `UIConfig` keys, `ui_display_config`, `ui_manager_state`), records the live load in `windower._ui_live_state`, loads the sub-modules and builds the `KeybindUI` table that jobs call |
 | `shared/utils/ui/ui_lifecycle.lua` | 202 | `init`, `smart_init`, `safe_init`, `destroy`; per-job readiness anchors; creates and destroys the `texts` object |
-| `shared/utils/ui/ui_update_orchestrator.lua` | 277 | `update` (repaint only when states changed), `force_reinit`, plus `schedule_update` / `needs_reinit` / `get_status` / `handle_job_configuration_change`, which nothing calls |
+| `shared/utils/ui/ui_update_orchestrator.lua` | 253 | `update` (repaint only when states changed), `force_reinit`, plus `schedule_update` / `needs_reinit` / `handle_job_configuration_change`, which nothing calls |
 | `shared/utils/ui/ui_visibility.lua` | 149 | `toggle`, `show`, `hide`, `is_visible`, `enable`, `disable`, `save_position` |
 | `shared/utils/ui/ui_section_toggles.lua` | 194 | Header / legend / column-header / footer toggles; moves the box by the measured height change |
 | `shared/utils/ui/ui_appearance.lua` | 155 | Background preset, custom RGBA, background toggle, font |
@@ -283,7 +283,7 @@ Callers were found with `grep -r` over `shared/`, `_master/`, `Tetsouo/` and `Ka
 | `force_reinit(job_name, max_wait_time = 3)` | Bump `update_cancel_id`, destroy, `init()` now or poll. Returns a boolean (`true` when async) | failure path of `update()`, `schedule_update` |
 | `schedule_update(reason, delay = 1.0)` | Debounced update, or `force_reinit` if job/subjob changed | only `handle_job_configuration_change` |
 | `handle_job_configuration_change(change_data)` | Maps `change_data.type` to a delay and calls `schedule_update` | **none** |
-| `needs_reinit(job)`, `get_status()` | Diagnostics | **none** |
+| `needs_reinit(job)` | Diagnostics | **none** |
 | `save_position()` | Read `display:pos()`, persist it with the display flags, confirm in chat (`MessageUI.show_position_saved`) | `//gs c ui s` |
 | `toggle()` | With a display: flip visibility **and** persist `enabled`. Otherwise `enable()` / `disable()` | `//gs c ui` |
 | `show()`, `hide()` | Visibility only, not persisted | `enable`, `disable` |
@@ -507,7 +507,7 @@ Open:
 - `section_*` settings are persisted but never read, and `UIConfig.sections` is captured when `UI_SECTIONS.lua` loads (`shared/config/ui_settings.lua` `get_sections` / `set_section`).
 - `toggle_background` flips `UIConfig.background.visible`, not the persisted `bg_visible` (`ui_appearance.lua` `toggle_background`).
 - `KeybindSettings.save` rewrites the settings file up to nine times per command (`UI_SETTINGS.lua`).
-- `handle_job_configuration_change`, `schedule_update`, `needs_reinit` and `get_status` have no callers (`ui_update_orchestrator.lua`, header says so).
+- `handle_job_configuration_change`, `schedule_update` and `needs_reinit` have no callers (`ui_update_orchestrator.lua`, header says so).
 - Dead helpers: `KeybindLoader.config_exists` / `get_config_path` (wrong path), `UIDisplayBuilder.validate_structure` / `get_categorization_stats`, `UISections.validate_configuration` / `get_section_statistics`, `UIFormatter.calculate_header_width` / `format_empty_section` / `validate_configuration` / `get_statistics`, `ColorSystem.get_element_colors` / `get_stat_colors` / `add_custom_color`, `UISettingsResolver.default_ui_settings`; RDM `enhancing_keys` that can never match (`UI_DISPLAY_BUILDER.lua` `job_enhancements`).
 - The `display_current_state` override prints `State: Unknown` on F12 while the HUD is disabled (`state_display_override.lua`).
 - `UI_CONFIG.lua` has keys nothing reads (`auto_save_position`, `auto_save_delay`, `debug`, `update_throttle`), and `validate` has no callers.

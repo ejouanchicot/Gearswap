@@ -369,12 +369,12 @@ The `_if` variants read `_G[flag_key]` and return at once when it is falsy. `Mes
 
 ### Profiler (`performance_profiler.lua`, returned module)
 
-`enable()`, `disable()`, `toggle()`, `is_enabled()`, `status()`, `start(context)`, `mark(label, color)`, `finish(color)`, `create_timer(context)`, `profile_call(label, func, ...)`, `measure(label, code_block)`. Callers:
+`enable()`, `disable()`, `toggle()`, `is_enabled()`, `status()`, `start(context)`, `mark(label, color)`, `finish(color)`, `create_timer(context)`, `measure(label, code_block)`. Callers:
 
 - `start`, `mark` and `finish`: every entry file's `get_sets()`;
 - `create_timer`: the top of every `*_functions.lua` facade;
 - `enable`, `disable`, `toggle` and `status`: `DebugCommands.handle_perf`;
-- `profile_call` and `measure`: none.
+- `measure`: none.
 
 ### LagDebugger (`lag_debugger.lua`, `_G.LagDebugger` + returned module)
 
@@ -627,7 +627,7 @@ Open:
 - `data/fulltest_report.txt` and `data/debug_lag.txt` are shared by all characters (`FullTest.export`, `LagDebugger.export`).
 - `altcmds` cannot tell that a job command shares an alt key. On WAR with a WAR alt it lists `berserk` in the bare form, although `//gs c berserk` runs on the main (`AltCommands.list`).
 - `automedicine` and `lagdebug` treat any unrecognised argument as "toggle" (`AutoMedicine.handle_command`, `DebugCommands.handle_lagdebug`).
-- `Profiler.profile_call`, `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
+- `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
 - `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` and, of the generic templates, only in `_master/entry/Tetsouo_SMN.lua` (copied from the overlay).
 - A `trace.on` marker left on a character keeps tracing across restarts; since 2026-09-29 the log is capped by moving it to `trace.old.log` past 10 MB, so at most about 20 MB stay on disk.
 - Fixed 2026-09-28: `RollShare.receive` returns true, so `rollshow` sets `eventArgs.handled` (before, it returned nothing; no visible effect, since `runs_locally` already stopped the alt fallback).

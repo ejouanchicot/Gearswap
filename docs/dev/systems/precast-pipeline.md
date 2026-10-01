@@ -25,11 +25,11 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/debuff/precast_guard.lua` | 477 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy |
+| `shared/utils/debuff/precast_guard.lua` | 511 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy |
 | `shared/utils/debuff/uncurable_debuffs.lua` | 158 | UncurableDebuffs: 4 s after each cure item, marks a debuff the item did not take off (an aura keeps it on); no more item for it while marked (60 s at most) |
-| `shared/utils/debuff/debuff_checker.lua` | 290 | Blocking-debuff tables (production and test mode) and lookups |
+| `shared/utils/debuff/debuff_checker.lua` | 239 | Blocking-debuff tables (production and test mode) and lookups |
 | `shared/utils/debuff/auto_medicine.lua` | 235 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`, `//gs c am debuffs`; cold-load value from `auto_medicine_start` |
-| `shared/utils/debuff/doom_manager.lua` | 157 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
+| `shared/utils/debuff/doom_manager.lua` | 139 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
 | `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Shared defaults: auto-cure switches, cure item lists, test mode |
 | `shared/utils/debuff/autocure_settings.lua` | 82 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTOCURE_CONFIG.lua` over them, key by key; item names resolved to ids |
 | `_master/config_global/AUTOCURE_CONFIG.lua` | 28 | Template of `<Char>/_common/combat/AUTOCURE_CONFIG.lua` (every key written with its default value) |
@@ -41,7 +41,7 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/utils/precast/ws_validator.lua` | 46 | Thin wrapper over WeaponSkillManager (range + Amnesia) |
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 133 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
 | `shared/utils/precast/tp_bonus_handler.lua` | 79 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
-| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
+| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 214 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `//gs c ws1..ws9` (WAR) and `ws`, `ws1..` (PLD): weaponskill slots rebuilt per weapon |
 | `shared/utils/precast/tier_refiner.lua` | 230 | TierRefiner: cast the highest learned tier whose recast and MP allow it |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table for RDM enfeebles (`get(family)`) |
@@ -499,8 +499,7 @@ piece is not overwritten.
 4. `pieces_for_gap`: first single piece whose bonus covers the gap, else the greedy
    largest-first combination.
 
-TP bonus from pieces already in the WS set is not part of step 1; only the unused
-`get_final_tp` counts equipped pieces.
+TP bonus from pieces already in the WS set is not part of step 1.
 
 TP config schema (per job, `<Character>/<job>/combat/<JOB>_TP_CONFIG.lua`, loaded
 into `_G.<JOB>TPConfig` by the entry point): `pieces = { {slot, name, bonus}, ... }`
@@ -709,8 +708,6 @@ lazy-load time.
 | `check_ja(spell, eventArgs)` | blocked | same | `guard_precast` |
 | `check_ws(spell, eventArgs)` | blocked | cancel + message | `guard_precast` |
 | `check_item(spell, eventArgs)` | blocked | cancel + message | `guard_precast` |
-| `would_block(action_type)` | blocked, debuff name | none | no caller |
-| `get_active_blocks()` | list | none | no caller |
 
 ### DebuffChecker (`shared/utils/debuff/debuff_checker.lua`)
 
@@ -720,8 +717,7 @@ lazy-load time.
 `check_action_blocked(action_type)` dispatches on `"Magic"`,
 `"Ability"/"JobAbility"/"PetCommand"`, `"WeaponSkill"/"Weaponskill"`, `"Item"`,
 `"Ranged"` (GearSwap never produces `"Ranged"`; `/ra` is `"Ranged Attack"` and falls
-to universal-only). `get_all_active_blocks()` and `is_incapacitated()` have no caller
-outside this module chain.
+to universal-only).
 
 ### AutoMedicine (`shared/utils/debuff/auto_medicine.lua`, also `_G.AutoMedicine`)
 
@@ -746,7 +742,7 @@ outside this module chain.
 ### DoomManager (`shared/utils/debuff/doom_manager.lua`)
 
 `handle_buff_change(buff, gain) -> boolean`, `handle_status_change(new, old)`;
-callers listed above. `validate_doom_set()` has no caller.
+callers listed above.
 
 ### CooldownChecker (`shared/utils/precast/cooldown_checker.lua`)
 
@@ -801,7 +797,7 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 - `TPBonusHandler.live_tp()`, `TPBonusHandler.calculate_tp_gear(spell, tp_config)`,
   internal to WSPrecastHandler.
 - `TPBonusCalculator.calculate(tp, cfg, main, buffs, sub) -> table|nil`,
-  `get_final_tp(...)` (no caller), `config.thresholds`, `config.debug_mode`.
+  `config.thresholds`, `config.debug_mode`.
 - `WSSlots.rebuild(ws_list, max_slots)`, `detect_weapon(weapon_state)`,
   `sync(weapon_state, config)`, `get(index)`, `cast(index)`.
 
@@ -1031,9 +1027,7 @@ Open:
   went through, swapped the precast gear, and the game refused them. They are
   now blocked with their time left.
 - Unused API and dead branches in the WS chain (`initialize`, `MessageFormatter` field,
-  `distance_check_enabled`, `get_final_tp`).
-- Unused PrecastGuard/DebuffChecker API (`would_block`, `get_active_blocks`,
-  `get_all_active_blocks`, `is_incapacitated`) and `DoomManager.validate_doom_set`.
+  `distance_check_enabled`).
 - BLM TP config uses a `moonshade` key the calculator never reads
   (`_master/config/blm/BLM_TP_CONFIG.lua`).
 - Not yet tested in game: AbilityHelper replay marker (Majesty before Cure IV,

@@ -59,7 +59,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/cor/functions/logic/roll_tracker.lua` | 581 | Roll state, `sync_with_buffs`, Crooked, bonus, bust, `cleanup`; re-exports the `roll_party` and `roll_display` functions on `RollTracker` and calls them through it |
 | `shared/jobs/cor/functions/logic/roll_party.lua` | 231 | Party job cache validation (`validate_party_cache`, `drop_departed_and_expired`), `is_job_in_party_zone`, `roll_range` (8, or 16 with LuzafRing), `count_party_members_with_buff` |
 | `shared/jobs/cor/functions/logic/roll_display.lua` | 79 | `display_roll_result` (local message + `RollShare.result`), `display_double_up_status` |
-| `shared/jobs/cor/functions/logic/roll_data.lua` | 439 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
+| `shared/jobs/cor/functions/logic/roll_data.lua` | 428 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/roll_gear.lua` | 73 | `PHANTOM_ROLL_GEAR` and `RollGear.bonus()` read from the game |
 | `shared/jobs/cor/functions/logic/roll_hold.lua` | 68 | `RollHold.start` / `stop` / `hold_update`, `HOLD_MAX` 5 s |
 | `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
@@ -591,7 +591,7 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
   only; it passes main and sub.
 - No `sets.idle.Town` in the template: other cities count as field.
 - Dead code: `_G.cor_natural_eleven_active` (written, never read),
-  `RollData.get_roll_names`, `clear_natural_eleven` / `clear_last_roll` outside
+  `clear_natural_eleven` / `clear_last_roll` outside
   `clear_all`, `_G.cor_pending_roll_*` (cleared, never set),
   `job_post_aftercast`,
   `COR_MACROBOOK.get_macrobook`, `show_roll_natural_eleven` /

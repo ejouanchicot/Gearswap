@@ -58,8 +58,8 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/song_slots.lua` | 113 | `plan` (one `SONGS` trace line per plan), `inputs`, `songs_up` (through `song_owner`), `instrument_extra` |
 | `shared/jobs/brd/functions/logic/song_owner.lua` | 276 | Which songs up are ours, from the caster of each song (packets 0x028 + 0x063): `counts`, `start` |
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 177 | `start`, `stop`, `on_aftercast`; retry / timeout logic; buff guard before each song; drops the queue when the main job is no longer BRD |
-| `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
-| `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
+| `shared/jobs/brd/functions/logic/song_refinement.lua` | 104 | `refine_song(spell, eventArgs)` |
+| `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 60 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
 | `shared/jobs/brd/functions/logic/set_builder.lua` | 217 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
 | `_master/config/brd/BRD_STATES.lua` | 223 | All states (`BRDStates.configure()`) |
 | `_master/config/brd/BRD_KEYBINDS.lua` | 62 | 12 binds, data only; `KeybindManager.create('BRD', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -667,8 +667,7 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
 - `song1`..`song5` are five copies of the same branch in `BRD_COMMANDS.lua`
   (duplication); the header does not list `songplan`, `songstop`,
   `songs full`.
-- Dead code: `SongRefinement.get_downgrade` / `is_enabled`,
-  `InstrumentLockConfig.get_all_locked_songs`, and several BRD message keys
+- Dead code: `SongRefinement.is_enabled` and several BRD message keys
   (see the [catalog](../systems/messages-catalog.md)).
 - Pending in-game checks: the song queue with a Marcato in front, a refused
   song retried then skipped; `songplan` numbers with each instrument owned.

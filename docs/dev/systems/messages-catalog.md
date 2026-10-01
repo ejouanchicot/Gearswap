@@ -461,7 +461,7 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `PROFILER`
 
-- File: `data/systems/profiler_messages.lua` - 13 templates. Senders: `shared/utils/debug/performance_profiler.lua` (through its `get_M()`) and the `perf` branch of `WAR_COMMANDS.lua` (`usage`), which is unreachable because `perf` is a common command. Reachable: `enabled`, `disabled`, `reload_hint`, `status_enabled`, `status_disabled`, `status_hint`, `usage`, `separator`; `checkpoint_main` (context, label, perf_color, time); `checkpoint_job` (job, label, perf_color, time); `total` (context, perf_color, time). Unreachable: `measure`:81 and `call`:86 (sent by `Profiler.measure` and `Profiler.profile_call`, which have no caller; `Profiler.measure` appears only in a comment).
+- File: `data/systems/profiler_messages.lua` - 13 templates. Senders: `shared/utils/debug/performance_profiler.lua` (through its `get_M()`) and the `perf` branch of `WAR_COMMANDS.lua` (`usage`), which is unreachable because `perf` is a common command. Reachable: `enabled`, `disabled`, `reload_hint`, `status_enabled`, `status_disabled`, `status_hint`, `usage`, `separator`; `checkpoint_main` (context, label, perf_color, time); `checkpoint_job` (job, label, perf_color, time); `total` (context, perf_color, time). Unreachable: `measure`:81 and `call`:86 (`measure` is sent by `Profiler.measure`, which has no caller and appears only in a comment; `call` has no sender).
 
 ### `RDM`
 

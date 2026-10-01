@@ -22,19 +22,19 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | `shared/utils/core/module_cache.lua` | 96 | Makes `require` cache per environment |
 | `shared/utils/core/lifecycle_manager.lua` | 160 | Shared builders for `job_status_change`/`job_buff_change`/`job_aftercast`/`job_state_change`, plus `refresh_after_buff` |
 | `shared/utils/core/midcast_watchdog.lua` | 470 | 0.5 s polling loop that clears stuck midcasts, generation-guarded on `windower._midcast_wd_seq` |
-| `shared/utils/movement/automove.lua` | 383 | Movement polling loop, sequence-guarded on `windower._automove_seq` |
-| `shared/utils/lockstyle/lockstyle_manager.lua` | 340 | Lockstyle factory (per-job ctx on `_G.__lockstyle_contexts`, DressUp handling) |
+| `shared/utils/movement/automove.lua` | 371 | Movement polling loop, sequence-guarded on `windower._automove_seq` |
+| `shared/utils/lockstyle/lockstyle_manager.lua` | 338 | Lockstyle factory (per-job ctx on `_G.__lockstyle_contexts`, DressUp handling) |
 | `shared/utils/macrobook/macrobook_manager.lua` | 280 | Macrobook factory (solo/dual-box books) |
 | `shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | 36-55 | Lazy wrappers that export `select_default_lockstyle`, `select_default_macro_book`, `cancel_<job>_lockstyle_operations` |
 | `_master/config/<job>/<JOB>_KEYBINDS.lua` | 35-79 | Bind lists, turned into `bind_all`/`unbind_all`/`show_intro` by `KeybindManager.create` |
 | `shared/utils/keybinds/keybind_manager.lua` | 442 | `bind_all` (unbind only what is no longer wanted, then bind), `show_intro` |
 | `shared/utils/ui/UI_MANAGER.lua`, `ui_lifecycle.lua`, `ui_update_orchestrator.lua` | 167 / 202 / 277 | Keybind HUD state, `smart_init`, `destroy`, `update` |
 | `shared/utils/dualbox/dualbox_manager.lua` | 478 | Job exchange between the boxes, auto-init 2 s after load |
-| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 183 | IPC mirror of `ls`/`rf` between the instances of the box group |
+| `shared/utils/dualbox/dualbox_sync_ipc.lua` | 189 | IPC mirror of `ls`/`rf` between the instances of the box group |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 349 | Alt reports tracked buffs to the main |
 | `shared/utils/craft/craft_manager.lua`, `craft_commands.lua` | 200 / 302 | Craft/fish session and slot locks |
 | `shared/utils/wardrobe/wardrobe_organizer.lua` | 713 | `//gs c wo` phase chain, `job_changed()` guard |
-| `shared/utils/debuff/doom_manager.lua` | 157 | Doom gear + slot locks, death safety unlock |
+| `shared/utils/debuff/doom_manager.lua` | 139 | Doom gear + slot locks, death safety unlock |
 | `shared/utils/warp/warp_init.lua` | 132 | Warp system bootstrap (called by INIT_SYSTEMS on every load) |
 | `shared/utils/core/COMMON_COMMANDS.lua`, `DEBUG_COMMANDS.lua` | 786 / 583 | `reload`, `ls`, `craft`, `wo`, `alt*` handlers; debug toggles (`djc`, `debugupdate`) |
 | `_master/config_global/LOCKSTYLE_CONFIG.lua` | 60 | `initial_load_delay` used by entries |

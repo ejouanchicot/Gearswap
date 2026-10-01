@@ -101,7 +101,6 @@ There is no 15 s throttle anywhere in this module. The only rate limits are the 
 |---|---|---|
 | `LockstyleManager.create(job_code, config_path, default_lockstyle, default_subjob)` | Returns the per-job API below and writes the generated globals | the 17 `<JOB>_LOCKSTYLE.lua` wrappers |
 | `LockstyleManager.toggle_dressup()` | Flips `_G.DRESSUP_MANAGEMENT_ENABLED`, persists it as a file, returns the new value | `COMMON_COMMANDS.lua` `handle_dressup` (`//gs c dressup`) |
-| `LockstyleManager.is_dressup_enabled()` | Returns the flag | none |
 | `LockstyleManager.apply_style(style)` | Applies any number now (DressUp-aware); ignores non-numbers | `craft_commands.lua` `apply_lockstyle` |
 
 Per-job API returned by `create()`:
@@ -272,8 +271,8 @@ flowchart TD
 | `AutoMove.start()` | `INIT_SYSTEMS.lua` only |
 | `AutoMove.stop()` | `job_change_manager.lua` `cleanup_all_systems` (subjob path only) |
 | `AutoMove.register_callback(fn(is_moving, distance, status))` | `WAR_MOVEMENT.lua` (Retaliation cancel, registered 0.6 s after load) |
-| `AutoMove.is_moving()`, `get_last_distance()`, `get_position()` | none |
-| `AutoMove.clear_callbacks()`, `AutoMove.reinit_position()` | none |
+| `AutoMove.is_moving()`, `get_position()` | none |
+| `AutoMove.clear_callbacks()` | none |
 
 Callback errors are caught and printed with `MessageCore.show_automove_error` (local `trigger_callbacks`).
 
@@ -395,7 +394,7 @@ sequenceDiagram
     Note over J: "+0.5 s: _G.AUTO_JUMP_SEQUENCE_ACTIVE = false"
 ```
 
-TP is read from the game (`shared/utils/core/live_tp.lua`), both in the WS test and in the coroutine that decides the second jump; in a coroutine, GearSwap's `player.tp` is never refreshed. The replayed WS goes through precast again while the flag is set, so it cannot start a second sequence. Readiness uses the global `is_recast_ready` from `RECAST_CONFIG.lua` (tolerance 2.0 s). The diagnostics `get_tp_threshold()`, `get_animation_delay()`, `get_status()` and `is_drg_subjob()` have no callers outside the module, except `is_drg_subjob`, which `should_auto_jump` calls.
+TP is read from the game (`shared/utils/core/live_tp.lua`), both in the WS test and in the coroutine that decides the second jump; in a coroutine, GearSwap's `player.tp` is never refreshed. The replayed WS goes through precast again while the flag is set, so it cannot start a second sequence. Readiness uses the global `is_recast_ready` from `RECAST_CONFIG.lua` (tolerance 2.0 s).
 
 ### DRGJumpManager (`shared/utils/drg/DRG_JUMP_MANAGER.lua`)
 

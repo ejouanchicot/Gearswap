@@ -15,11 +15,11 @@ Re-checked against the code on 2026-09-30, after commit `1c42340` ("the organize
 | `shared/utils/wardrobe/lib/rules.lua` | 166 | `PLACE` / `JOBS` / `TYPES` of the config turned into pins and merged with the sets' own `bag = '...'` pins and the doubled-item pins (`Rules.pins`); item type from `res.items` slots (`Rules.item_type`). New 2026-09-30 (`1c42340`; doubled items `2588c3c`) |
 | `shared/utils/wardrobe/lib/phases.lua` | 692 | Phase 0 (unequip + lock), shared burst loop, Phase 2/3/3.5/4, `enable_slots`, `force_enable_all`, `count_unpacked` |
 | `shared/utils/wardrobe/lib/state.lua` | 283 | Snapshot of the bags into a state table, pin resolution (`pin_target_for`) |
-| `shared/utils/wardrobe/lib/moves.lua` | 196 | Packet primitives `pull_slot` / `push_slot`, `space_in`, pin-bag ordering (`unclaimed_pins_first`) |
+| `shared/utils/wardrobe/lib/moves.lua` | 162 | Packet primitives `pull_slot` / `push_slot`, `space_in`, pin-bag ordering (`unclaimed_pins_first`) |
 | `shared/utils/wardrobe/lib/items.lua` | 185 | `res.items` helpers, `NEVER_MOVE` filter (`is_equipment`), used names of the scope (`_G.sets` walk, plus every job's set files when `SCOPE = 'all_jobs'`), always-kept items (`KEEP`, warp rings) |
 | `shared/utils/wardrobe/lib/reports.lua` | 267 | `wo scan` and `wo keep` |
 | `shared/utils/wardrobe/lib/warp_owned.lua` | 118 | Scan / load / save of the warp items the character owns (`WARP_ITEMS_OWNED.lua`) |
-| `shared/utils/wardrobe/lib/chat.lua` | 169 | Chat panel helpers. They call the sandbox `add_to_chat` directly (no `MessageFormatter`; listed as an allowed exception in `.claude/CODE_QUALITY.md` section 6). Since 2026-09-27 (`64a0c20`) that `add_to_chat` is the one `message_core.lua` wraps with `ChatSeparators.apply`, so the `=` rules follow the player's separator options; before, the helpers called `windower.add_to_chat` and bypassed them |
+| `shared/utils/wardrobe/lib/chat.lua` | 164 | Chat panel helpers. They call the sandbox `add_to_chat` directly (no `MessageFormatter`; listed as an allowed exception in `.claude/CODE_QUALITY.md` section 6). Since 2026-09-27 (`64a0c20`) that `add_to_chat` is the one `message_core.lua` wraps with `ChatSeparators.apply`, so the `=` rules follow the player's separator options; before, the helpers called `windower.add_to_chat` and bypassed them |
 | `shared/utils/wardrobe/lib/log.lua` | 48 | `wardrobe_debug.log` writer, `bag_name()` |
 | `_master/config_global/WARDROBE_CONFIG.lua` | 80 | Generic template (new 2026-09-30): every key commented out, with examples; `clone_character.py` copies it to every clone (`_common/inventory/` after the layout step) |
 | `_master/Tetsouo/config_global/WARDROBE_CONFIG.lua` | 40 | Tetsouo overlay, deployed as `Tetsouo/_common/inventory/WARDROBE_CONFIG.lua` (same content; only the `@file` line differs) |
@@ -252,12 +252,12 @@ Library modules (internal to the area; callers are the organizer files, plus the
 | `lib/phases.lua` | `unequip(on_done)`, `enable_slots()`, `force_enable_all()`, `empty_w1w2(state, on_done)`, `fill_w1w2(state, on_done)`, `count_unpacked(state) -> number`, `compact_primary(state, on_done)`, `cleanup_inv(used_names, pinned_bags, on_done)` |
 | `lib/state.lua` | `build_state() -> state or nil, err`, `pin_target_for(entry, pinned_bags, claim_pool) -> bag_id or nil`, `snapshot_bag(bag_id, used_names)`, `dlog_state(state, label)` |
 | `lib/rules.lua` | `pins(set_pins, used_names) -> {[name] = {bag, ...}}`, `item_type(item_id) -> 'weapons' / 'ammo' / 'armor' / 'accessories' or nil` |
-| `lib/moves.lua` | `space_in(bag)`, `pull_slot(bag, slot) -> ok, reason`, `push_slot(inv_slot, bag) -> ok, reason`, `all_pinned_bags(id, pins)`, `unclaimed_pins_first(id, pins)`; `find_inv_slot` and `first_pinned_bag` have no caller |
+| `lib/moves.lua` | `space_in(bag)`, `pull_slot(bag, slot) -> ok, reason`, `push_slot(inv_slot, bag) -> ok, reason`, `all_pinned_bags(id, pins)`, `unclaimed_pins_first(id, pins)` |
 | `lib/items.lua` | `item_names(id)`, `display_name(id)`, `is_equipment(id)`, `is_used_name(id, used)`, `add_always_kept(used)`, `collect_used_names()` |
 | `lib/config.lua` | constants, `bag_id(name_or_id) -> id or nil`, `refresh() -> path or nil`, `use_all_jobs_layout()`; fields `RULES`, `RULE_BAGS`, `WARNINGS`, `LOADED_CHAR_CONFIG` |
 | `lib/warp_owned.lua` | `path()`, `load() -> names or nil`, `scan() -> found, total, where`, `save(names) -> path or nil, err` |
 | `lib/reports.lua` | `scan_warp_items()`, `show_kept()` |
-| `lib/chat.lua` | `separator`, `banner`, `section`, `info`, `success`, `error`, `warn`, `alert`, `phase`, `detail`; `divider` and `kv` have no caller |
+| `lib/chat.lua` | `separator`, `banner`, `section`, `info`, `success`, `error`, `warn`, `alert`, `phase`, `detail`; `kv` has no caller |
 | `lib/log.lua` | `dlog(line)`, `dlog_clear()`, `bag_name(id)` |
 
 ## Commands
@@ -487,7 +487,7 @@ Still open:
 - `verify` / `preview` ignore Phase 3.5 packing and inventory leftovers - `shared/utils/wardrobe/wardrobe_organizer.lua:586-674`
 - The scan report matches set names against `en` only; the many set files that use the long log name are reported as "declared but not held" - `owned_item_names`, `shared/utils/wardrobe/lib/reports.lua:35`
 - Warp-keep reachability and source selection are implemented twice - `Reports.show_kept`, `Items.add_always_kept`
-- Dead helpers and constants: `Moves.find_inv_slot`, `Moves.first_pinned_bag`, `Chat.divider`, `Chat.kv`, `Config.UNEQUIP_DELAY`, `Config.EQUIP_SLOTS`, `Config.BAG_NAME_TO_ID`
+- Dead helpers and constants: `Chat.kv`, `Config.UNEQUIP_DELAY`, `Config.EQUIP_SLOTS`, `Config.BAG_NAME_TO_ID`
 - No `job_changed()` check between Phase 3 and Phase 3.5, nor in `finish_run` - `start_phase_pack`, `shared/utils/wardrobe/wardrobe_organizer.lua:415`, `:301-398`
 - The debug log path carries no character name; two characters organising at the same time truncate and interleave one log - `shared/utils/wardrobe/lib/config.lua:143`, `Log.dlog_clear`
 - Phase 3.5 over-pulls: pending ignores items already waiting in the inventory, so the surplus goes back to the bag it came from - `Phases.compact_primary`, `shared/utils/wardrobe/lib/phases.lua:635`
