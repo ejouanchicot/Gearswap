@@ -14,8 +14,10 @@ Bard with the provided template gives you:
 - **A whole song pack on one command**: pick a pack (`SongMode`), then
   `//gs c songs` sings it on yourself. How many songs and how many dummy songs
   are worked out from the instruments you own, Clarion Call and the songs of
-  yours already up. Each song goes out once the previous one is over; an
-  interrupted or refused song is tried again (twice at most).
+  yours already up. Songs another bard or a Trust put on you do not count as
+  yours (they are told apart by their end time), and this is remembered across
+  a `//lua reload gearswap`. Each song goes out once the previous one is over;
+  an interrupted or refused song is tried again (twice at most).
 - **Debuffs during a rotation** (`songs` and `dummy`): before each song the
   rotation looks at your debuffs. Asleep, petrified, stunned, terrified,
   charmed, Mute or Omerta: the songs left are dropped and you have the hand

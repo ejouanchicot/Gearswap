@@ -55,7 +55,8 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/midcast_router.lua` | 296 | `handle_singing` (dummy / debuff / normal), `handle_healing`, `handle_enhancing`, `handle_enfeebling`, `handle_elemental`; `apply_main_instrument` |
 | `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 250 | `get_current_pack`, `get_songs_with_replacement`, `update_song_slots` (HUD), `get_required_instrument`, `start_with_nitro`, `cast_songs_with_phases`, `cast_dummy_songs` |
 | `shared/jobs/brd/functions/logic/dummy_next.lua` | 77 | DummySong switch: `is_on`, `mark`, `on_aftercast` (next song as a dummy, then off) |
-| `shared/jobs/brd/functions/logic/song_slots.lua` | 170 | `plan`, `inputs`, `songs_up` (own-song ledger), `record`, `instrument_extra` |
+| `shared/jobs/brd/functions/logic/song_slots.lua` | 120 | `plan` (one `SONGS` trace line per plan), `inputs`, `songs_up`, `record` (both through `song_owner`), `instrument_extra` |
+| `shared/jobs/brd/functions/logic/song_owner.lua` | 221 | Which songs up are ours, by end time (packet 0x063): `record`, `counts`, `start`, `family_of` |
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 177 | `start`, `stop`, `on_aftercast`; retry / timeout logic; buff guard before each song; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
@@ -243,11 +244,22 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   instrument this character owns ("Grants one / an / two additional song
   effect(s)"; an item whose description ties the extra song to Reives is ignored). The main instrument is
   `state.MainInstrument`; the dummy instrument is `sets.midcast.DummySong.range`.
-  Own songs up come from a ledger on `windower._brd_own_songs`
-  (`SongSlots.record`, called from `BRD_AFTERCAST.lua` for songs finished on
-  self), capped per family by the song buffs actually up
-  (`windower.ffxi.get_player().buffs`). `//gs c songplan` shows the inputs and
-  the plan.
+  The last extra found per instrument is kept on `windower._brd_instrument_extra`
+  and used while the bags read empty (zoning); `CastTime.owned_ids` no longer
+  caches an empty read.
+  Own songs up come from `logic/song_owner.lua`. A song buff is one instance,
+  `<buff id>:<end time>` (packet 0x063 order 9, decoded by
+  `BuffTimers.read`). `SongSlots.record` (from `BRD_AFTERCAST.lua`, songs
+  finished on self) claims the instance of that song's family that appears or
+  is renewed within 3 s of the aftercast, whichever comes first. An instance
+  that appears without a song of ours (another bard, a Trust) is not ours; one
+  of ours whose end time changes or that goes is dropped. The instances of ours
+  live on `windower._brd_song_owned` and in `<Character>/saved/brd_own_songs.lua`,
+  so a `lua reload` keeps them; until the first packet of a load, a saved one
+  counts when a buff of its id is up. The listener is a raw event started from
+  `user_setup` (`SongOwner.start`). Each plan writes a `SONGS` trace line
+  (instruments and extras, Clarion, ours / all up, result). `//gs c songplan`
+  shows the inputs and the plan.
 - `cast_songs_with_phases(false, '<me>', full)`: `base` pack songs, the
   dummies, the rest of the pack; handed to `start_with_nitro`. With
   `AutoNitro = On`, both abilities ready and Nightingale not up, it fires
@@ -496,8 +508,10 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
   `MidcastWatchdog`, `UIConfig`, `_precast_cast_time`.
 - `windower.*`: `_brd_song_queue`, `_brd_song_queue_seq` (the queue survives a
   `gs reload` or a subjob change: the next load's aftercast carries it on; a main
-  job change drops it at its next step), `_brd_own_songs`
-  (ledger, survives reloads, lost on `lua reload`). No events registered.
+  job change drops it at its next step), `_brd_song_owned`
+  (our song instances, also saved to `saved/brd_own_songs.lua`, so a `lua
+  reload` keeps them), `_brd_instrument_extra`. One raw event: `incoming
+  chunk` 0x063, from `SongOwner.start`.
 - Coroutines and queued commands: the 0.2 s macro/lockstyle block, the song
   slot refresh, `nt`, `forceidle`, Marcato's `wait 2`, the song queue timers
   (each checks the queue sequence) and the AutoNitro chain. None is cancelled
