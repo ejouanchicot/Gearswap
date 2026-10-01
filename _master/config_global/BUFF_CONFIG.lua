@@ -28,12 +28,14 @@ return {
     -- defender below), BLU (the game does not tell which spells are set),
     -- DRG, THF. Add one if you like, e.g. BLU = {'Cocoon', 'Barrier Tusk'}.
     -- '$GainSpell': the spell chosen in that state (RDM's GainSpell);
-    -- {'$EnSpell II', '$EnSpell'}: the first ready of the two, nothing if
-    -- one is already up.
+    -- {'$EnSpell', '$EnSpell II'}: the first ready of the two, nothing if
+    -- one is already up. Tier I first: it hits every swing of the round
+    -- (tier II only the first one), so it does more with Temper II's triple
+    -- attack (BG-Wiki); it cannot overwrite a tier II already up.
     job = {
         BLM = {'Stoneskin', 'Blink', 'Aquaveil', 'Ice Spikes'},
         RDM = {'Composure', 'Haste II', 'Haste', 'Refresh III', 'Refresh II', 'Refresh',
-               'Phalanx', 'Temper II', 'Temper', '$GainSpell', {'$EnSpell II', '$EnSpell'},
+               'Phalanx', 'Temper II', 'Temper', '$GainSpell', {'$EnSpell', '$EnSpell II'},
                'Protect V', 'Protect IV', 'Shell V', 'Shell IV', 'Stoneskin', 'Blink', 'Aquaveil'},
         WHM = {'Afflatus Solace', 'Reraise IV', 'Reraise III', 'Haste', 'Protect V', 'Protect IV',
                'Shell V', 'Shell IV', 'Auspice', 'Stoneskin', 'Blink', 'Aquaveil'},
