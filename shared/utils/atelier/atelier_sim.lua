@@ -86,11 +86,13 @@ end
 
 -- Whether an action can aim at an enemy (resource targets: a set {Enemy = true}
 -- through Windower's resources library, the raw bit field 32 otherwise)
-local function aims_enemy(line)
+local function aims(line, who, bit)
     local t = line.targets
-    if type(t) == 'table' then return t.Enemy == true or (type(t.contains) == 'function' and t:contains('Enemy')) end
-    return type(t) == 'number' and math.floor(t / 32) % 2 == 1
+    if type(t) == 'table' then return t[who] == true or (type(t.contains) == 'function' and t:contains(who)) end
+    return type(t) == 'number' and math.floor(t / bit) % 2 == 1
 end
+local function aims_enemy(line) return aims(line, 'Enemy', 32) end
+local function aims_self(line) return aims(line, 'Self', 1) end
 
 local function quarantine(messages, scheduled, ignore_recasts, tp)
     local saved = {}
@@ -211,7 +213,12 @@ end
 --- @return table {ma = {...}, ja = {...}, ws = {...}, magic = {<skill> = {...}}, trust = one Trust's name or nil}
 function AtelierSim.actions()
     local G = gs()
-    local out = {ma = {}, ja = {}, ws = {}, magic = {}}
+    -- aim[name]: 'me', 'enemy' or 'both', for the page's target filter
+    local out = {ma = {}, ja = {}, ws = {}, magic = {}, aim = {}}
+    local function note_aim(line)
+        local me, foe = aims_self(line), aims_enemy(line)
+        out.aim[line.en] = (me and foe) and 'both' or foe and 'enemy' or 'me'
+    end
     local ok_s, known = pcall(windower.ffxi.get_spells)
     local main, sub = player.main_job_id, player.sub_job_id
     local main_lv, sub_lv = player.main_job_level or 99, player.sub_job_level or 0
@@ -222,6 +229,7 @@ function AtelierSim.actions()
             -- every Trust casts the same way for the job's sets: one stands for all (out.trust)
             if line.type == 'Trust' then out.trust = out.trust or line.en
             else
+                note_aim(line)
                 out.ma[#out.ma + 1] = line.en
                 -- by magic skill, for the page's groups (Healing Magic, Enhancing Magic...)
                 local skill = G.res.skills[line.skill]
@@ -235,11 +243,11 @@ function AtelierSim.actions()
     if ok_a and abil then
         for _, id in ipairs(abil.job_abilities or {}) do
             local line = G.res.job_abilities[id]
-            if line and line.en then out.ja[#out.ja + 1] = line.en end
+            if line and line.en then out.ja[#out.ja + 1] = line.en; note_aim(line) end
         end
         for _, id in ipairs(abil.weapon_skills or {}) do
             local line = G.res.weapon_skills[id]
-            if line and line.en then out.ws[#out.ws + 1] = line.en end
+            if line and line.en then out.ws[#out.ws + 1] = line.en; out.aim[line.en] = 'enemy' end
         end
     end
     for _, list in pairs({out.ma, out.ja, out.ws}) do table.sort(list) end
