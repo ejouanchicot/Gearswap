@@ -122,14 +122,6 @@ end
 --- AUTOMATIC WARP DETECTION
 ---============================================================================
 
---- Handle warp spell cast (called from precast)
---- @param spell table The warp spell object
-function WarpEquipment.on_warp_spell(spell)
-    -- Spells don't need equipment lock (they can't be unequipped)
-    -- This function is kept for compatibility but does nothing
-    return
-end
-
 --- Handle warp item usage (called from action event)
 --- @param warp_data table The warp item data
 function WarpEquipment.on_warp_item(warp_data)

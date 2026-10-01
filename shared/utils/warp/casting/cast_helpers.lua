@@ -89,15 +89,4 @@ function CastHelpers.get_ring_id(ring_name)
     return CastHelpers.RING_IDS[ring_name]
 end
 
---- Check if player has a specific ring (no caller today)
---- @param ring_name string Ring name
---- @return boolean True if player has the ring
-function CastHelpers.has_ring(ring_name)
-    local ring_id = CastHelpers.get_ring_id(ring_name)
-    if not ring_id then
-        return false
-    end
-    return CastHelpers.has_item(ring_name, ring_id)
-end
-
 return CastHelpers

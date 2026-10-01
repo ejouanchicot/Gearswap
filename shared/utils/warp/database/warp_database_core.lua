@@ -265,39 +265,4 @@ function WarpDatabase.count_total_items()
     return total
 end
 
---- Check if player race can use item (race restriction check; no caller today)
---- @param item_data table Item data with races field
---- @return boolean True if player can use item
-function WarpDatabase.can_player_use_item(item_data)
-    if not item_data or not item_data.races then
-        return true  -- No race restriction
-    end
-
-    if not player then
-        return false
-    end
-
-    -- Race bitmask constants
-    local RACES = {
-        HUME_M = 0x0001,
-        HUME_F = 0x0002,
-        ELVAAN_M = 0x0004,
-        ELVAAN_F = 0x0008,
-        TARUTARU_M = 0x0010,
-        TARUTARU_F = 0x0020,
-        MITHRA = 0x0040,
-        GALKA = 0x0080,
-    }
-
-    local race_name = player.race
-    local race_bitmask = RACES[race_name:upper():gsub(' ', '_')]
-
-    if not race_bitmask then
-        return true  -- Unknown race, allow
-    end
-
-    -- Check if player's race bit is set (using bit.band for Lua 5.1)
-    return bit.band(item_data.races, race_bitmask) ~= 0
-end
-
 return WarpDatabase

@@ -65,29 +65,7 @@ function WarpPrecast.handle_precast(spell, eventArgs)
         return false
     end
 
-    local fc_applied = WarpPrecast.force_fc(spell)
-
-    -- on_warp_spell() is a no-op today (spells need no slot lock)
-    local WarpEquipment = require('shared/utils/warp/warp_equipment')
-    WarpEquipment.on_warp_spell(spell)
-
-    return fc_applied
-end
-
----============================================================================
---- MOTE HOOK (Global Precast Override)
----============================================================================
-
---- Alternative entry point for a Mote precast handler (no caller today;
---- WarpInit wraps _G.precast instead)
---- @param spell table The spell object
---- @param eventArgs table Event arguments
-function WarpPrecast.global_precast_hook(spell, eventArgs)
-    if not spell or spell.action_type ~= 'Magic' then
-        return
-    end
-
-    WarpPrecast.handle_precast(spell, eventArgs)
+    return WarpPrecast.force_fc(spell)
 end
 
 ---============================================================================

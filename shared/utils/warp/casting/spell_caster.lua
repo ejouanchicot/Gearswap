@@ -148,25 +148,4 @@ function SpellCaster.can_cast(spell_name)
     return can_cast
 end
 
---- Get required level for a spell
---- @param spell_name string Spell name
---- @return number|nil Required level, or nil if unknown spell
-function SpellCaster.get_required_level(spell_name)
-    return BLM_SPELLS[spell_name] or WHM_SPELLS[spell_name]
-end
-
---- Check if spell is a BLM spell
---- @param spell_name string Spell name
---- @return boolean True if BLM spell
-function SpellCaster.is_blm_spell(spell_name)
-    return BLM_SPELLS[spell_name] ~= nil
-end
-
---- Check if spell is a WHM spell
---- @param spell_name string Spell name
---- @return boolean True if WHM spell
-function SpellCaster.is_whm_spell(spell_name)
-    return WHM_SPELLS[spell_name] ~= nil
-end
-
 return SpellCaster

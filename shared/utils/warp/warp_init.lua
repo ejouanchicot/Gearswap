@@ -122,11 +122,4 @@ function WarpInit.is_initialized()
     return initialized
 end
 
---- Manual warp detection (for custom integrations; no caller today)
---- @param spell table The spell object
-function WarpInit.handle_warp_spell(spell)
-    local WarpPrecast = require('shared/utils/warp/warp_precast')
-    WarpPrecast.handle_precast(spell, nil)
-end
-
 return WarpInit

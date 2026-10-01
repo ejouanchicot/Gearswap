@@ -207,10 +207,4 @@ function WarpIPC.is_initialized()
     return windower.send_ipc_message ~= nil and windower.register_event ~= nil
 end
 
---- Get list of allowed commands (no caller today)
---- @return table List of allowed command strings
-function WarpIPC.get_allowed_commands()
-    return ALLOWED_COMMANDS
-end
-
 return WarpIPC

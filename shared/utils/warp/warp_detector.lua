@@ -237,12 +237,6 @@ function WarpDetector.get_all_destinations()
     return WarpItemDB.get_all_destinations()
 end
 
---- Count total warp items in database
---- @return number Total item count
-function WarpDetector.count_warp_items()
-    return WarpItemDB.count_total_items()
-end
-
 --- Access to WarpItemDB for advanced queries
 WarpDetector.ItemDB = WarpItemDB
 
