@@ -77,7 +77,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/Tetsouo/bst/inventory/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
 | `_master/Tetsouo/entry/Tetsouo_BST.lua` | 400 | Character overlay entry: the template plus `LagDebugger.on_job_update()` in `job_update` and the modular sets path |
 | `_master/sets/bst_sets.lua` | 834 | Template sets (flat) |
-| `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 546 + 271 | BST chat messages; several facade wrappers have no caller (see the [catalog](../systems/messages-catalog.md)) |
+| `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 225 + 271 | BST chat messages; the unprefixed facade copies of eight functions have no caller (callers use `show_bst_*`), and 33 templates have no sender (see the [catalog](../systems/messages-catalog.md)) |
 | `shared/data/job_abilities/BST_JA_DATABASE.lua` + `bst/*.lua` (5 files) | 17 + 293 | `JA_DATABASE_FACTORY.create('BST', ...)` with `subjob`, `mainjob`, `pet_commands_mainjob`, `pet_commands_subjob`, `sp`; read by `ability_message_handler.lua` |
 
 Live copies (gitignored): the live BST entry is the overlay entry above. The

@@ -79,8 +79,8 @@ the sets files (structure and set names only).
 | `_master/sets/rdm_sets.lua` | 562 | Template sets (flat) |
 | `_master/Kaories/rdm/*`, `_master/Kaories/rdm/rdm_sets.lua` | 7 files, 634 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; its own `RDM_REFILL.lua` list; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |
 | `_master/Gabvanstronger/rdm/*`, `_master/Gabvanstronger/rdm/rdm_sets.lua` | 5 files, 930 | Overlay: its own `EngagedMode` / `IdleMode` / weapon values, keys, custom modes, lockstyle and macro book |
-| `shared/utils/messages/formatters/jobs/message_rdm.lua` + `data/jobs/rdm_messages.lua` | 169 + 108 | RDM chat messages (errors, Phalanx swap, storm) |
-| `shared/utils/messages/formatters/jobs/message_rdm_midcast.lua` + `data/systems/rdm_midcast_messages.lua` | 203 + 25 | `debugmidcast` trace lines |
+| `shared/utils/messages/formatters/jobs/message_rdm.lua` + `data/jobs/rdm_messages.lua` | 122 + 108 | RDM chat messages (errors, Phalanx swap, storm) |
+| `shared/utils/messages/formatters/jobs/message_rdm_midcast.lua` + `data/systems/rdm_midcast_messages.lua` | 202 + 25 | `debugmidcast` trace lines |
 
 Live copies are gitignored (`<Character>/...`); a live copy can differ from
 its overlay until it is re-cloned.
@@ -568,19 +568,13 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - "Storm spells enabled/disabled" never prints: Mote's `sub_job_change` runs
   `user_setup()` (which already updated `state.Storm`) before
   `job_sub_job_change` compares.
-- Six `MessageFormatter` entries point at functions `message_rdm.lua` does not
-  define (`show_convert_activated`, `show_convert_used`,
-  `show_chainspell_activated`, `show_chainspell_ended`,
-  `show_composure_activated`, `show_composure_active`); none has a caller.
 - `message_rdm_midcast.lua` calls `MessageRenderer.send(color, text)` (48
   calls) while the signature is `send(message, color)`; the trace still prints,
   in one colour. It also uses emoji and describes priority orders that differ
   from the real chain.
 - `by_subjob` in `RDM_LOCKSTYLE.lua` is never read (no `get_style`).
 - Dead: `HybridMode` (in practice), the `check_off` path
-  of `castenspell` (no `EnSpell` value is `Off`), `show_doom_warning`,
-  `show_doom_removed`, `show_spell_casting`, `show_enspell_current`,
-  `show_phalanx_detected` in `message_rdm.lua`.
+  of `castenspell` (no `EnSpell` value is `Off`).
 - Stale text: `no_enspell_selected` says "Alt+8" (`rdm_messages.lua`; the key
   is `^numpad.`); the `RDM_STATES.lua` header describes `HybridMode` as "PDT =
   50% damage reduction"; the `RDM_COMMANDS.lua` header says

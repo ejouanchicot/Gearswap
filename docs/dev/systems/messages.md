@@ -29,15 +29,15 @@ does not).
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/messages/message_formatter.lua` | 480 | Facade: 271 lazy one-line wrappers `MessageFormatter.show_x -> <module>.show_y`, the `COLORS` proxy, `show_debug` |
+| `shared/utils/messages/message_formatter.lua` | 307 | Facade: 130 lazy one-line wrappers `MessageFormatter.show_x -> <module>.show_y`, the `COLORS` proxy, `show_debug` |
 | `shared/utils/messages/message_core.lua` | 196 | Colour-code builder, job tag and job prefix, `SEPARATOR_WIDTH` (player's `chat.width` or 69), separator line, direct-output helpers (`info/success/error/warning/raw/...`); installs the chat-line filter on the sandbox `add_to_chat` |
 | `shared/utils/messages/chat_separators.lua` | 145 | `ChatSeparators.apply(text)`: redraws or drops separator lines and framed titles according to the player's `chat` options; called for every chat line by the wrapper in `message_core.lua` |
 | `shared/utils/messages/chat_palette.lua` | 113 | Named chat colours (template tags) with the player's `chat.colors` overrides, alias rules, job-tag switch and `strip_job_tag` |
-| `shared/utils/messages/message_colors.lua` | 227 | Named colour constants (`SUCCESS`, `ERROR`, `WARNING`...) resolved at each read through the player's overrides; region-dependent orange; `//gs c trace` probe of the orange |
+| `shared/utils/messages/message_colors.lua` | 204 | Named colour constants (`SUCCESS`, `ERROR`, `WARNING`...) resolved at each read through the player's overrides; region-dependent orange; `//gs c trace` probe of the orange |
 | `shared/utils/messages/info_block.lua` | 134 | `InfoBlock`: one renderer for data blocks (`TAG :: title`, aligned `Label : value` fields), namespace `BLOCK` |
 | `shared/utils/messages/help_screen.lua` | 178 | `HelpScreen`: one renderer for help screens (groups, dot-leader rows, notes), namespace `HELP` |
-| `shared/utils/messages/api/messages.lua` | 456 | Messages API (`send`, `job`, `error`...), builder, renderer configuration wrappers, `//gs c testmsg` runner |
-| `shared/utils/messages/core/message_engine.lua` | 341 | Namespace loader (data files) and template compiler/cache; colour tags resolved through `ChatPalette` at render |
+| `shared/utils/messages/api/messages.lua` | 438 | Messages API (`send`, `job`, `error`...), builder, renderer configuration wrappers, `//gs c testmsg` runner |
+| `shared/utils/messages/core/message_engine.lua` | 334 | Namespace loader (data files) and template compiler/cache; colour tags resolved through `ChatPalette` at render |
 | `shared/utils/messages/core/message_renderer.lua` | 255 | Final template-path output: master toggle, filter level, colour scheme, timestamp, newline split, statistics |
 | `shared/utils/messages/message_validator.lua` | 425 | `//gs c msgtests`: static checks of job templates and job formatter exports, JSON and TXT reports |
 | `shared/utils/messages/handlers/ability_message_handler.lua` | 284 | Finds a JA in the per-job JA databases (or a Blood Pact in the SMN database) and prints it via `show_ja_activated` |
@@ -51,7 +51,6 @@ does not).
 | `shared/config/WS_MESSAGES_CONFIG.lua` | 37 | Same over `ws_mode` (short check `is_tp_only`) |
 | `shared/config/ENHANCING_MESSAGES_CONFIG.lua` | 37 | Same over `spell_mode` |
 | `shared/config/ENFEEBLING_MESSAGES_CONFIG.lua` | 37 | Same over the same `spell_mode` |
-| `shared/config/message_modes.lua` | 29 | Reference copy nothing loads (its header says so) |
 | `_master/config_global/message_modes.lua` | 12 | Seed copied by `clone_character.py` to `<Char>/saved/message_modes.lua` |
 
 Also part of the pipeline, documented elsewhere: formatters (`formatters/{combat,jobs,magic,system,ui}/`,
@@ -145,35 +144,32 @@ All 29 entry templates (`_master/entry/*.lua` 16, `_master/Kaories/entry/*.lua` 
 
 Every public name is a one-line forwarder
 `MessageFormatter.show_x = function(...) return get_Module().show_y(...) end`. Wrappers per target
-module (271 in total; "no caller" = the name appears in no file outside `formatters/` and
-`utilities/`, string-built names not resolved):
+module (130 in total, 2026-10-01; "no caller" = the name appears in no file outside `formatters/`,
+`utilities/` and the facade, string-built names not resolved):
 
 | Target module | Wrappers | Without caller | Notes |
 |---|---|---|---|
 | `message_core.lua` | 3 | 0 | `convert_key_display`, `show_separator`, `get_job_tag`; plus the `COLORS` proxy |
-| `formatters/combat/message_ja_buffs.lua` | 10 | 9 | `show_ja_*` and the BRD `*_new` legacy names; only `show_ja_activated` is used |
-| `formatters/magic/message_songs.lua` | 10 | 10 | `show_song_*`; module unreachable |
-| `formatters/ui/message_keybinds.lua` | 5 | 1 | keybind list and bind errors |
-| `formatters/system/message_system.lua` | 6 | 1 | job-load intro block, colour test |
-| `formatters/ui/message_status.lua` | 7 | 1 | `show_error/warning/success/info`, `show_state_display`, TP lines |
-| `formatters/combat/message_cooldowns.lua` | 13 | 8 | cooldown lines, `show_multi_status`, recast helpers |
-| `formatters/combat/message_combat.lua` | 15 | 6 | WS/range errors, WS TP, spell/JA/waltz/jump lines |
+| `formatters/combat/message_ja_buffs.lua` | 1 | 0 | `show_ja_activated` |
+| `formatters/ui/message_keybinds.lua` | 4 | 0 | keybind list and bind errors (`show_keybind_list` is called only by the frozen Gabvanstronger keybind files) |
+| `formatters/system/message_system.lua` | 5 | 0 | job-load intro block, colour test |
+| `formatters/ui/message_status.lua` | 6 | 0 | `show_error/warning/success/info`, `show_state_display`, `show_tp_ready` |
+| `formatters/combat/message_cooldowns.lua` | 6 | 1 | cooldown lines, `show_multi_status`, recast helpers (`get_spell_recast_seconds` has no caller) |
+| `formatters/combat/message_combat.lua` | 9 | 0 | WS/range errors, WS TP, spell/waltz lines (`show_target_error` counts as called only because `dualbox_manager.lua` calls `MessageDualbox.show_target_error`) |
 | `formatters/magic/message_buffs.lua` | 1 | 0 | `show_buff_status` |
-| `formatters/system/message_equipment.lua` | 7 | 1 | `//gs c checksets` |
-| `formatters/magic/message_debuffs.lua` | 8 | 1 | PrecastGuard "blocked" lines |
-| `utilities/roll_messages.lua` | 10 | 2 | COR rolls |
+| `formatters/system/message_equipment.lua` | 6 | 0 | `//gs c checksets` |
+| `formatters/magic/message_debuffs.lua` | 7 | 0 | PrecastGuard "blocked" lines |
+| `utilities/roll_messages.lua` | 8 | 0 | COR rolls |
 | `utilities/party_messages.lua` | 1 | 0 | COR party list |
-| `formatters/jobs/message_brd.lua` | 45 | 21 | |
-| `formatters/jobs/message_rdm.lua` | 21 | 11 | 6 point to functions `message_rdm.lua` does not define (Known issues) |
+| `formatters/jobs/message_brd.lua` | 23 | 0 | |
+| `formatters/jobs/message_rdm.lua` | 10 | 0 | |
 | `formatters/jobs/message_geo.lua` | 4 | 0 | |
-| `formatters/jobs/message_blm.lua` | 12 | 0 | trimmed by the 2026-09-27 dead-code cleanup (`964ca51`) |
-| `formatters/jobs/message_bst.lua` | 85 | 70 | every function exported twice, `show_bst_x` and `show_x` |
+| `formatters/jobs/message_blm.lua` | 10 | 0 | |
+| `formatters/jobs/message_bst.lua` | 23 | 8 | 8 functions exported twice, `show_bst_x` and `show_x`; the unprefixed copies have no caller |
 | `formatters/jobs/message_cor.lua` | 3 | 0 | |
-| `formatters/jobs/message_drg.lua` | 4 | 4 | |
-| `formatters/jobs/message_whm.lua` | 1 | 1 | |
 
-147 of the 271 wrappers have no caller by that measure. A wrapper whose target function does not
-exist only fails when called (`attempt to call field ... (a nil value)`).
+9 of the 130 wrappers have no caller by that measure. Every wrapper points to a function its module
+defines.
 
 Not every formatter is in the facade: `message_weaponskill`, `message_alt_commands`,
 `message_dualbox`, `message_altgroup`, `message_sortie`, `message_stealth`, `message_tempbind`,
@@ -330,8 +326,7 @@ lower-case constant names accepted in `chat.colors`. `MessageCore.COLORS` is thi
 
 Helpers: `get_tp_color(tp)` (>= 3000 -> `TP_ULTIMATE`, >= 2000 -> `TP_ENHANCED`, else `TP_NORMAL`),
 `get_warning_color()` (`colors.warning`, else `colors.orange`, else region orange),
-`region_orange()` (region only; used by the palette to avoid a loop), `get_action_color(type)` (no
-caller).
+`region_orange()` (region only; used by the palette to avoid a loop).
 
 **Region orange** (local `get_region_orange`), in order:
 
@@ -608,7 +603,7 @@ flowchart LR
   the next action without reload.
 - Seeds: `_master/config_global/message_modes.lua` (`ja_mode='full'`, others `'on'`) is copied to
   `<Char>/_common/` by `clone_character.py`; a re-clone keeps the character's own file
-  (`KEPT_ON_RECLONE`). `shared/config/message_modes.lua` is never read.
+  (`KEPT_ON_RECLONE`).
 
 ### Validator (`//gs c msgtests`)
 
@@ -619,8 +614,9 @@ BST, COR, DRG, GEO, RDM, WHM; the system namespaces are not covered):
   cyan, lightblue, blue, white, plus every key of `MessageEngine.COLOR_CODES` read at load since
   2026-09-28: 27 tags, `purple`, `gold`, `aqua`, `jobtag`... included), in `COMMON_PARAMS`, or ends
   in `_color`, `_text`, `_name`;
-- loads `formatters/jobs/message_<job>` and checks every function starts with `show_` and exists as
-  `MessageFormatter[name]`.
+- loads `formatters/jobs/message_<job>` with `pcall(require, ...)` and checks every function starts
+  with `show_` and exists as `MessageFormatter[name]`. DRG and WHM have no formatter (removed on
+  2026-10-01): the require fails silently and only their templates are checked.
 
 It prints with `print` (Windower console, not the chat) and writes `data/message_validation.json` and
 `.txt` under `windower.addon_path` (`export_json`, `export_txt`). The whitelist is narrower than the
@@ -647,7 +643,7 @@ message system cannot load. Current state (grep `add_to_chat(`, 2026-09-28):
 
 ### MessageFormatter (`message_formatter.lua`)
 
-271 forwarders (see "The facade") plus:
+130 forwarders (see "The facade") plus:
 
 | Function | Behaviour | Callers |
 |---|---|---|
@@ -687,7 +683,6 @@ The full per-module list is in [messages-formatters.md](messages-formatters.md).
 | `get_tp_color(tp)` | TP tier colour |
 | `get_warning_color()` | `colors.warning` / `colors.orange` / region orange |
 | `region_orange()` | region orange ignoring the player's colours (used by `ChatPalette`) |
-| `get_action_color(action_type)` | colour by action-type substring; no caller |
 
 ### ChatPalette (`chat_palette.lua`)
 
@@ -713,16 +708,16 @@ See "InfoBlock: data blocks" and "HelpScreen: help screens".
 
 | Function | Notes | Callers |
 |---|---|---|
-| `send(ns, key, params?, options?)` | "Messages API"; returns `ok, visible_length` | 392 lines `M.send(` / `Messages.send(` (formatters, InfoBlock, HelpScreen, `performance_profiler.lua`, the unreachable `perf` branch of `WAR_COMMANDS.lua`) |
-| `job(job, key, params?)` | alias of `send` | 130 lines (job formatters) |
-| `error(msg)` | `[SYSTEM] msg`, colour 167 | `message_brd.lua`, `message_geo.lua` |
-| `test(job_filter?)` | `//gs c testmsg [job]`: runs `shared/utils/messages/api/tests/test_<job>.lua` suites, which were moved to the gitignored `_dev/message_api_tests/`; a full run prints `0/0 tests PASSED`, a named run `Test file not found` | `COMMON_COMMANDS.lua` |
-| `combat`, `magic`, `ability`, `system`, `warning`, `info`, `success`, `debug`, `custom` (builder: `with`, `colored`, `level`, `send`, `preview`), `config`, `get_config`, `toggle`, `set_filter_level`, `set_color_mode`, `toggle_timestamp`, `reset_stats`, `list`, `get_engine_stats`, `clear_cache` | work, no caller (`system` is used by `error`). `custom():send()` uses plain `gsub`, not the engine: colour tags are not converted | none |
+| `send(ns, key, params?, options?)` | "Messages API"; returns `ok, visible_length` | 322 lines `M.send(` / `Messages.send(` (2026-10-01; formatters, InfoBlock, HelpScreen, `performance_profiler.lua`, the unreachable `perf` branch of `WAR_COMMANDS.lua`) |
+| `job(job, key, params?)` | alias of `send` | 65 lines (job formatters) |
+| `error(msg)` | `[SYSTEM] msg`, colour 167 | `message_geo.lua` |
+| `test(job_filter?)` | `//gs c testmsg [job]`: runs the `shared/utils/messages/api/tests/test_<job>.lua` suites (23: 22 jobs + system; put back from `_dev/` on 2026-10-01, 1635 tests passing); an unknown job prints `Test file not found` | `COMMON_COMMANDS.lua` |
+| `combat`, `magic`, `ability`, `system`, `warning`, `info`, `success`, `debug`, `custom` (builder: `with`, `level`, `send`, `preview`), `config`, `get_config`, `toggle`, `set_filter_level`, `set_color_mode`, `toggle_timestamp`, `reset_stats`, `list`, `clear_cache` | work, no caller (`system` is used by `error`). `custom():send()` uses plain `gsub`, not the engine: colour tags are not converted | none |
 
 ### MessageEngine (`core/message_engine.lua`)
 
 `format(ns, key, params) -> message, color` (the live path), `load(ns) -> true` (raises on failure),
-`is_loaded(ns)`, `list_keys(ns)`, `clear_cache()`, `get_stats() -> {compiled_templates,
+`list_keys(ns)`, `clear_cache()`, `get_stats() -> {compiled_templates,
 loaded_namespaces, total_messages}`. Only `format` and `load` are on a live path.
 
 ### MessageRenderer (`core/message_renderer.lua`)
@@ -909,9 +904,8 @@ Re-checked on 2026-09-28. Open:
   (`spell_message_handler.lua` `find_spell_in_databases`).
 - Fixed 2026-09-28: the `show_error(prefix, message)` calls of `DEBUG_COMMANDS.lua` `handle_memcheck`
   and `handle_debugmsg` lost the message; they now pass one string.
-- 148 of 271 facade wrappers have no caller by name (`show_insufficient_mp_error` joined them on 2026-09-28), 6 of them pointing at undefined RDM functions
-  (`show_convert_activated`, `show_convert_used`, `show_chainspell_activated`, `show_chainspell_ended`,
-  `show_composure_activated`, `show_composure_active`).
+- 9 of the 130 facade wrappers have no caller by name: `get_spell_recast_seconds` and the eight
+  unprefixed BST copies (see "The facade").
 - `//gs c testmsg` runs no test and reports success (`api/messages.lua` `Messages.test`).
 - `//gs c msgtests` parameter whitelist out of date, fails on valid templates (`message_validator.lua`
   `COMMON_PARAMS`). Fixed 2026-09-28 for the colour tags: `VALID_COLORS` now takes every engine tag
@@ -925,9 +919,8 @@ Re-checked on 2026-09-28. Open:
 - WS `full` mode prints nothing for a WS missing from the database (`init_ws_messages.lua`).
 - Job-tag helper duplicated in five job formatters (`message_blm.lua`, `message_brd.lua`,
   `message_bst.lua`, `message_geo.lua`, `message_rdm.lua`: local `get_job_tag`).
-- `shared/config/message_modes.lua` is loaded by nothing.
-- Unused API surface: 20 `Messages.*` configuration/statistics/builder functions and the renderer
-  functions they wrap, `MessageCore.success`, `MessageColors.get_action_color`,
+- Unused API surface: the `Messages.*` configuration/statistics/builder functions listed under
+  "Messages API" and the renderer functions they wrap, `MessageCore.success`,
   `MessageFormatter.COLORS`, the configs' `is_name_only`.
 - Unreachable spell-handler branches (`BloodPactRage/Ward` in `valid_action_types`, `SKILL_PATH`
   Singing/Geomancy): `spell_message_handler.lua`.

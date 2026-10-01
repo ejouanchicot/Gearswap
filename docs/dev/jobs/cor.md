@@ -75,7 +75,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/cor/COR_TP_CONFIG.lua` | 60 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500, never matched) |
 | `_master/config/cor/COR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/cor_sets.lua` | 443 | Template sets (flat; `sets.SingleWield` as a commented example) |
-| `shared/utils/messages/utilities/roll_messages.lua` | 596 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
+| `shared/utils/messages/utilities/roll_messages.lua` | 564 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
 | `shared/utils/messages/utilities/party_messages.lua` | 48 | `//gs c party` listing |
 | `shared/utils/messages/formatters/jobs/message_cor.lua` + `data/jobs/cor_messages.lua` | 39 + 32 | PartyTracker load failures |
 | `shared/utils/dualbox/roll_share.lua` | 110 | A COR alt's roll result re-printed on the main (`rollshow`) |
@@ -594,8 +594,7 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
   `clear_natural_eleven` / `clear_last_roll` outside
   `clear_all`, `_G.cor_pending_roll_*` (cleared, never set),
   `job_post_aftercast`,
-  `COR_MACROBOOK.get_macrobook`, `show_roll_natural_eleven` /
-  `show_roll_bust_rate` / `show_roll_not_found`.
+  `COR_MACROBOOK.get_macrobook`.
 - Pending in-game checks: a member out of reach listed as missed from the
   packet; engage / disengage while a roll goes out keeps the roll gear; a
   Curing Waltz, a Divine Waltz or a Quick Draw right after a roll is not

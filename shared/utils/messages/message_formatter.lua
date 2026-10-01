@@ -5,8 +5,8 @@
 --- wrapper that requires its formatter module on first call, so a job only
 --- loads the formatters it actually uses.
 ---
---- Some formatter functions are exposed under two names (show_bst_* and the
---- unprefixed name, *_new aliases for BRD). //gs c msgtests requires every
+--- Some BST formatter functions are exposed under two names (show_bst_* and
+--- the unprefixed name). //gs c msgtests requires every
 --- job formatter function to be exported here under its own name.
 ---
 --- @file shared/utils/messages/message_formatter.lua

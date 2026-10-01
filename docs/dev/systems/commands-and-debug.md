@@ -269,7 +269,6 @@ All the data of `//gs c sortie` is the character's `_common/combat/SORTIE_CONFIG
 | Command (aliases) | Args | Effect | Route |
 |---|---|---|---|
 | `trace` | `on`, `off`, `clear`, none = status | Records what the game returns to `<Character>/trace.log` | `debug/trace_log.lua` `TraceLog.handle` |
-| `trace dead` | `on`, `off`, `clear`, none = status | Watches in play the functions the dead-code scan found unused (`debug/tombstone_targets.lua`, 409 entries): each one is wrapped when its module loads (`_G.__require_load_hook`, called by `ModuleCache` after each load), and its first call per load writes `<Character>/saved/tombstones.log` (function, file:line, caller) and one chat line, then runs the real function. On/off in `windower._tombstones_on` and `saved/tombstones.on`; installed from `config_loader.lua` and again at the end of `INIT_SYSTEMS`. Temporary: deleted with the dead code | `debug/tombstones.lua` `Tombstones.handle` |
 | `perf` | `start\|on\|enable`, `stop\|off\|disable`, `toggle`, other or none = status (lower-cased) | Profiler switch | `Debug.handle_perf` |
 | `fulltest` (`ft`) | `[export]` | Runs `FullTest`, prints, optionally writes the report | `Debug.handle_fulltest` |
 | `syscheck` (`sc`) | `[export]` | Runs `SystemChecker`, prints, optionally writes the report | `Debug.handle_syscheck` |
