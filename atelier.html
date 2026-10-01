@@ -110,8 +110,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .setlist input{flex:1;min-width:0;font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line-strong);border-radius:3px;background:var(--panel-2);color:var(--ink)}
 .setlist input::placeholder{color:var(--faint)}
 .setlist .scroll{overflow:auto;padding-bottom:6px}
-.fam{display:flex;justify-content:space-between;margin-top:8px;padding:5px 12px 4px 13px;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.fam{width:100%;border:0;text-align:left;cursor:pointer;display:flex;justify-content:space-between;margin-top:8px;padding:5px 12px 4px 13px;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .scroll > .fam:first-child{margin-top:0;border-top:0}
+.fam + .fam{margin-top:0;border-top:0}
+.fam span:first-child::before{content:'▸';display:inline-block;width:14px;color:var(--faint)}
+.fam[aria-expanded="true"] span:first-child::before{content:'▾'}
+.fam:hover{color:var(--ink)}
+.fam.here{color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
 .fam span:last-child{color:var(--faint);letter-spacing:0;font-variant-numeric:tabular-nums}
 .setrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;width:100%;border:0;border-left:3px solid transparent;background:none;padding:5px 12px 5px 10px;text-align:left}
 .setrow b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -445,9 +450,12 @@ let CHARS = {};
 const HIDDEN_MODES = new Set(['CastingMode','DefenseMode','EquipStop','PCTargetMode','RestingMode','SelectNPCTargets','Moving','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','Kiting']);
 
 let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, meritEdits:{}, q:'', lang:'fr', theme:null,
-  trial:{}, buffs:{}, buffsOpen:false};
-try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); Object.assign(S, {lang:s.lang||'fr', theme:s.theme||null, char:s.char||'',
-  buffs:s.buffs||{}, buffsOpen:!!s.buffsOpen}); } catch(e) {}
+  trial:{}, buffs:{}, buffsOpen:false, famOpen:{}};
+// What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
+// (weapons, pieces, merits, buffs) and the open categories
+const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffsOpen', 'famOpen'];
+S.selPath = {};
+try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const t = (k, v={}) => { let s = k.split('.').reduce((o,p) => o && o[p], T[S.lang]) ?? k; for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; };
@@ -493,7 +501,7 @@ const data = () => S.job && recordOf(S.char, S.job);
 const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
   const other = Object.values(exportsOf(S.char, S.job)).find(x => x[key]); return other ? other[key] : null; };
 const iconIds = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.icons || {}));
-function save(){ try { localStorage.setItem('atelier', JSON.stringify({lang:S.lang, theme:S.theme, char:S.char, buffs:S.buffs, buffsOpen:S.buffsOpen})); } catch(e) {} }
+function save(){ try { localStorage.setItem('atelier', JSON.stringify(Object.fromEntries(KEEP.map(k => [k, S[k]])))); } catch(e) {} }
 // The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
 const icon = name => { const id = name && iconIds()[name];
   return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="this.remove()">` : ''}</span>`; };
@@ -1402,18 +1410,29 @@ function cardHTML(card, ci, bypath, q){
     <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
     <div class="globals-inline">${globalsHTML(s)}</div></article>`;
 }
+const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 function renderSets(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
   const q = S.q.trim().toLowerCase();
   const vis = cards.map((c,i) => i).filter(i => cardMatch(cards[i], q)); S._vis = vis;
+  const want = S.selPath[S.job];
+  if (want && S._found !== S.job + '|' + want) {
+    cards.forEach((c, i) => c.variants.forEach((v, k) => { if (v.set.path === want) { S.sel[S.job] = i; S.variant[S.job + '|' + i] = k; } }));
+    S._found = S.job + '|' + want;
+  }
   if (!vis.includes(S.sel[S.job])) S.sel[S.job] = vis[0];
   const sel = S.sel[S.job];
+  if (cards[sel]) { S.selPath[S.job] = shownSet(cards[sel], sel).path; S._found = S.job + '|' + S.selPath[S.job]; }
   // one row per set: the set, then its variants (idle.Town, each weaponskill) indented under it
   const vi = i => Math.min(S.variant[S.job + '|' + i] ?? 0, cards[i].variants.length - 1);
   const rows = S._rows = [];
   let list = '', fam = null;
   for (const i of vis) { const c = cards[i];
-    if (c.fam !== fam) { fam = c.fam; list += `<div class="fam"><span>${t('fam.'+fam)}</span><span>${vis.filter(k => cards[k].fam===fam).reduce((n, k) => n + cards[k].variants.length, 0)}</span></div>`; }
+    if (c.fam !== fam) { fam = c.fam;
+      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0);
+      list += `<button class="fam ${cards[sel] && cards[sel].fam === fam ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${famOpen(fam, q)}"><span>${t('fam.'+fam)}</span><span>${n}</span></button>`; }
+    // a category is closed until opened (a search opens them all)
+    if (!famOpen(c.fam, q)) continue;
     c.variants.forEach((v, k) => {
       if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
       const cur = i === sel && k === vi(i), main = k === 0;
@@ -1626,6 +1645,7 @@ document.addEventListener('click', e => {
   if ('tryundo' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); delete S.trial[trialKey(s)]; render(); return; }
   if ('trylua' in d) { openLua(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('copylua' in d) { copyLua(b); return; }
+  if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if ('bufftoggle' in d) { S.buffsOpen = !S.buffsOpen; render(); return; }
   if ('buffreset' in d) { S.buffs[S.char] = {}; render(); return; }
   if (d.ja) { const b0 = buffState(), ja = b0.ja = b0.ja || {}; if (ja[d.ja]) delete ja[d.ja]; else ja[d.ja] = 1; render(); return; }
@@ -1732,9 +1752,11 @@ function boot(){
     for (const c in legacy) for (const j in legacy[c]) put(c, j, legacy[c][j]);
     for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
     for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
-    if (!CHARS[S.char]) S.char = Object.keys(CHARS)[0];
+    if (!CHARS[S.char]) { S.char = Object.keys(CHARS)[0]; S.job = null; }
     if (!S.char) { $('#view').innerHTML = `<div class="placeholder"><p class="display" style="font-size:22px">Atelier</p><p>${t('tagline')}</p><p>${t('none')}</p></div>`; return; }
-    S.job = null; render();
+    // back where the last visit left off, when that job is still exported
+    if (S.job && !(DATA[S.char] || {})[S.job]) S.job = null;
+    render();
   });
 }
 boot();
