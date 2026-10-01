@@ -208,7 +208,7 @@ end
 
 --- The actions the page offers: the spells the character knows for the job, its
 --- job abilities and weapon skills (names only, by kind).
---- @return table {ma = {...}, ja = {...}, ws = {...}}
+--- @return table {ma = {...}, ja = {...}, ws = {...}, trust = one Trust's name or nil}
 function AtelierSim.actions()
     local G = gs()
     local out = {ma = {}, ja = {}, ws = {}}
@@ -218,7 +218,11 @@ function AtelierSim.actions()
     for id, line in pairs(G.res.spells) do
         local levels = type(line.levels) == 'table' and line.levels or {}
         local usable = (levels[main] and levels[main] <= main_lv) or (sub and levels[sub] and levels[sub] <= sub_lv)
-        if line.en and usable and (not ok_s or not known or known[id]) then out.ma[#out.ma + 1] = line.en end
+        if line.en and usable and (not ok_s or not known or known[id]) then
+            -- every Trust casts the same way for the job's sets: one stands for all (out.trust)
+            if line.type == 'Trust' then out.trust = out.trust or line.en
+            else out.ma[#out.ma + 1] = line.en end
+        end
     end
     local ok_a, abil = pcall(windower.ffxi.get_abilities)
     if ok_a and abil then
