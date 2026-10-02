@@ -739,6 +739,15 @@ function AtelierExport.handle(args)
             or ('Atelier: AtelierLink not installed (%s)'):format(tostring(err)))
         return true
     end
+    if sub == 'icons' then
+        -- every equipment icon of the game, for the pieces you do not hold (item_icons.lua)
+        local said = {start = 'Atelier: %d equipment icons to write (of %d), in the background',
+            progress = 'Atelier: icons %d / %d', done = 'Atelier: %d icons written, reload data/atelier.html'}
+        require('shared/utils/atelier/item_icons').extract_all(data_path('atelier/icons/'), function(kind, a, b)
+            MessageFormatter.show_info(said[kind]:format(a or 0, b or 0))
+        end)
+        return true
+    end
     if sub == 'live' then
         local off = args[2] and args[2]:lower() == 'off'
         local ok, port, err = pcall(function() return require('shared/utils/atelier/atelier_live').set(not off) end)

@@ -75,29 +75,77 @@ local function read_icon(id)
     return HEADER .. pixels
 end
 
+--- One item's icon written to the folder; true when it was.
+local function write_one(id, folder)
+    local bmp = read_icon(id)
+    local file = bmp and io.open(folder .. id .. '.bmp', 'wb')
+    if not file then return false end
+    file:write(bmp)
+    file:close()
+    return true
+end
+
+--- The icon file names already in the folder.
+local function on_disk(folder)
+    windower.create_dir(folder)
+    local have = {}
+    for _, name in ipairs(windower.get_dir(folder) or {}) do have[name] = true end
+    return have
+end
+
 --- Write the icons of these item ids that are not on the disk yet.
 --- @param ids table List of item ids
 --- @param folder string Absolute folder, ending with '/'
 --- @return number written
 function ItemIcons.write_missing(ids, folder)
-    windower.create_dir(folder)
-    local have = {}
-    for _, name in ipairs(windower.get_dir(folder) or {}) do have[name] = true end
-    local written = 0
+    local have, written = on_disk(folder), 0
     for _, id in ipairs(ids) do
-        local name = id .. '.bmp'
-        if not have[name] then
-            local bmp = read_icon(id)
-            local file = bmp and io.open(folder .. name, 'wb')
-            if file then
-                file:write(bmp)
-                file:close()
-                have[name] = true
-                written = written + 1
-            end
+        if not have[id .. '.bmp'] and write_one(id, folder) then
+            have[id .. '.bmp'] = true
+            written = written + 1
         end
     end
     return written
+end
+
+-- Icons written a call, and the pause between calls: the game never stalls (about 60 ms of work
+-- every 0.1 s), every equipment icon in about 40 seconds
+local CHUNK, PAUSE = 40, 0.1
+
+--- Every equipment icon of the game (armour and weapons of res.items) not on the disk yet, a few at a
+--- time; say(kind, a, b) tells the chat: 'start' (to write, total), 'progress' (done, total), 'done'
+--- (written). A second call while one runs stops the first (windower._atelier_icons, a token).
+--- @param folder string Absolute folder, ending with '/'
+--- @param say function
+function ItemIcons.extract_all(folder, say)
+    local gs = rawget(_G, 'gearswap')
+    local resources = rawget(_G, 'res') or (gs and gs.res)
+    if not (resources and resources.items) then return say('start', 0, 0) end
+    local have, todo, total = on_disk(folder), {}, 0
+    for id, item in pairs(resources.items) do
+        if type(item) == 'table' and (item.category == 'Armor' or item.category == 'Weapon') then
+            total = total + 1
+            if not have[id .. '.bmp'] then todo[#todo + 1] = id end
+        end
+    end
+    table.sort(todo)
+    local token = (windower._atelier_icons or 0) + 1
+    windower._atelier_icons = token
+    say('start', #todo, total)
+    if #todo == 0 then return end
+    local at, written = 1, 0
+    local function step()
+        if windower._atelier_icons ~= token then return end
+        for k = at, math.min(at + CHUNK - 1, #todo) do
+            if write_one(todo[k], folder) then written = written + 1 end
+        end
+        local before = at
+        at = at + CHUNK
+        if at > #todo then return say('done', written) end
+        if math.floor(at / 1000) > math.floor(before / 1000) then say('progress', at - 1, #todo) end
+        coroutine.schedule(step, PAUSE)
+    end
+    coroutine.schedule(step, PAUSE)
 end
 
 return ItemIcons
