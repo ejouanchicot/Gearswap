@@ -80,13 +80,20 @@ function SupportTier.install()
     end
 end
 
---- "Name JOB" for each member, "?" when the job is not known yet.
-local function party_line(members)
+local TIER_KIND = {Full = 'good', Group = 'warn', Solo = 'bad'}
+
+--- One field a member: its job green when it counts, gray when not known yet.
+--- @param members table PartyJobs.members_here()
+--- @return table InfoBlock fields
+local function member_fields(members)
     local out = {}
     for _, m in ipairs(members) do
-        out[#out + 1] = ('%s %s%s'):format(m.name or '?', m.main_job or '?', m.trust and ' (trust)' or '')
+        local job = m.main_job and (m.main_job .. (m.trust and ' (trust)' or '')) or 'not known yet'
+        local kind = nil
+        if SUPPORT_JOBS[m.main_job or ''] then kind = 'good' elseif not m.main_job then kind = 'dim' end
+        out[#out + 1] = {(m.name or '?') .. (m.self and ' (you)' or ''), job, kind}
     end
-    return table.concat(out, ', ')
+    return out
 end
 
 --- //gs c support [auto|solo|group|full]
@@ -97,11 +104,12 @@ function SupportTier.command(args)
     if word == 'auto' then windower._support_forced = nil
     elseif word and FORCE_NAMES[word] then windower._support_forced = FORCE_NAMES[word] end
     local tier, forced, members = SupportTier.tier()
-    require('shared/utils/messages/info_block').show({tag = 'SUPPORT', title = 'Weaponskill set by party support', fields = {
-        {'Tier', tier .. (forced and ' (forced: //gs c support auto to undo)' or ' (from the party)')},
-        {'Party here', party_line(members)},
+    local fields = {
+        {'Tier', tier .. (forced and ' (forced: //gs c support auto to undo)' or ' (from the party)'), forced and 'warn' or TIER_KIND[tier]},
         {'Sets read', tier == 'Full' and 'the WS set itself' or ('.' .. table.concat(CHAIN[tier], ', then .') .. ', then the WS set itself')},
-    }})
+    }
+    for _, f in ipairs(member_fields(members)) do fields[#fields + 1] = f end
+    require('shared/utils/messages/info_block').show({tag = 'SUPPORT', title = 'Weaponskill set by party support', fields = fields})
     return true
 end
 
