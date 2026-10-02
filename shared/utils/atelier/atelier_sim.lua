@@ -480,7 +480,8 @@ function AtelierSim.tp_bonus(req)
         total = total + (tonumber(piece.bonus) or 0)
         if piece.name then bonus_of[piece.name] = tonumber(piece.bonus) or 0 end
     end
-    return {ok = ok, config = true, gear = out, bonus = ok_b and bonus or 0, total = total, pieces = bonus_of,
+    -- worn_aware: this GearSwap counts the set's own TP pieces (the page warns an older one needs a reload)
+    return {ok = ok, config = true, gear = out, bonus = ok_b and bonus or 0, total = total, pieces = bonus_of, worn_aware = true,
         thresholds = (Calc.config or {}).thresholds or {2000, 3000}}
 end
 
