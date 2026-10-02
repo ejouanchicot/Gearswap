@@ -207,9 +207,10 @@
         return Math.max(0, def.pdt - (floor.pdt == null ? 0 : floor.pdt)) + Math.max(0, def.mdt - (floor.mdt == null ? 0 : floor.mdt))
             + Math.max(0, (floor.sb || 0) - def.sb) + (floor.hit && hit != null ? Math.max(0, floor.hit - hit) : 0);
     }
-    // The hit rate (%) of a weaponskill's hits after the first (the first has +100 accuracy), as
-    // FFXI.average_ws counts it (actions.js): the main hand's accuracy for that weaponskill at that TP
-    // against the target's Evasion, capped at 99 % one-handed, 95 % two-handed; null for a ranged one
+    // The hit rates (%) of a weaponskill, as FFXI.average_ws counts them (actions.js): [its first hit
+    // (+100 accuracy), the hits after it and the extra hits of a double / triple attack], the main hand's
+    // accuracy for that weaponskill at that TP against the target's Evasion, capped at 99 % one-handed,
+    // 95 % two-handed; null for a ranged one
     var ONE_HANDED = ["Axe", "Club", "Dagger", "Sword", "Katana", "Hand-to-Hand"];
     function hitAt(ctx, player, tp) {
         if (ctx.wsType === "ranged") return null;
@@ -218,19 +219,21 @@
         var at = Math.max(1000, Math.min(3000, tp + (s["TP Bonus"] || 0)));
         var info = FFXI.weaponskill_info(ctx.ws, at, player, ctx.enemy, s.WSC || [], dual);
         var cap = ONE_HANDED.indexOf(skill) !== -1 ? 0.99 : 0.95;
-        return 100 * FFXI.get_hit_rate(info.player_accuracy1 + (s["Weapon Skill Accuracy"] || 0), ctx.enemy.stats.Evasion, cap);
+        var acc = info.player_accuracy1 + (s["Weapon Skill Accuracy"] || 0), eva = ctx.enemy.stats.Evasion;
+        return [100 * FFXI.get_hit_rate(acc + 100, eva, cap), 100 * FFXI.get_hit_rate(acc, eva, cap)];
     }
-    // A set's hit rate at the weaponskill: the lowest over the TP looked at (a weaponskill's accuracy
-    // bonus grows with TP)
-    O.hit = function (ctx, pieces, opts) {
+    // A set's hit rates at the weaponskill, {first, rest}: the lowest over the TP looked at (a
+    // weaponskill's accuracy bonus grows with TP); the floor reads `rest`
+    O.hits = function (ctx, pieces, opts) {
         var tps = opts.objective === "damage_avg" ? (opts.tps || [opts.tp]) : [opts.tp], low = null;
         for (var i = 0; i < tps.length; i++) {
             var pl = playerOf(ctx, wornAt(pieces, opts, tps[i]));
             var h = pl ? hitAt(ctx, pl.player, tps[i]) : null;
-            if (h != null && (low == null || h < low)) low = h;
+            if (h && (!low || h[1] < low.rest)) low = {first: h[0], rest: h[1]};
         }
         return low;
     };
+    O.hit = function (ctx, pieces, opts) { var h = O.hits(ctx, pieces, opts); return h ? h.rest : null; };
     // The set worn at the weaponskill: the pieces, then the TP pieces the job's rule lays at that TP
     function wornAt(pieces, opts, tp) {
         var worn = Object.assign({}, pieces), add = O.tpPieces(opts.tpRule, pieces, tp), blocked = O.blocked(pieces);
@@ -320,8 +323,8 @@
         var choices = input.prefilter ? O.prefilter(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
         var res = O.optimize(ctx, input.start, choices, opts);
         tpOnlyOut(ctx, res, choices, opts);
-        res.best.hit = O.hit(ctx, res.pieces, opts);
-        res.start.hit = O.hit(ctx, input.start, opts);
+        res.best.hits = O.hits(ctx, res.pieces, opts);
+        res.start.hits = O.hits(ctx, input.start, opts);
         delete opts.onStep;
         return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, gains: O.gains(ctx, res, choices, opts)};
     };
