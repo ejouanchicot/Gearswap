@@ -429,7 +429,12 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .foetab.on::after{content:'';display:inline-block;width:6px;height:6px;margin-left:5px;border-radius:50%;background:var(--r-dd);vertical-align:middle}
 .foepane{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:center;font-size:12.5px;min-height:68px;align-content:start}
 .foepane > *{min-width:0}
-.foepane.classic{min-height:0;margin-bottom:2px}
+.fclass{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fcard{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr;gap:6px 10px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--panel-2)}
+.fcard .fttl{grid-column:1 / -1;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.fcard .ffx{align-self:center}
+.fcard.wide{grid-column:1 / -1}
+@media (max-width:620px){.fclass{grid-template-columns:minmax(0,1fr)}}
 .foeonk{margin-top:10px;color:var(--muted);font-size:9.5px}
 .foeon{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-size:12px}
 .foeon li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-top:1px solid var(--line)}
@@ -2382,7 +2387,12 @@ function foePanelHTML(b){
     `<span class="ffx ${fx.length ? 'on' : ''}">${esc(fx.join(' · ') || '—')}</span>`).join('');
   const bar = `<div class="foetabs" role="tablist">${tabs.map(x => `<button class="foetab ${x.on ? 'on' : ''}" role="tab" data-foetab="${x.id}" ` +
     `aria-selected="${x === cur}">${esc(x.label)}</button>`).join('')}</div>`;
-  const pane = `<div class="foepane classic">${lines(classics)}</div><div class="kicker foeonk">${esc(t('foeOthers'))}</div>${bar}<div class="foepane">${lines(cur.lines)}</div>`;
+  // the usual ones as cards: Dia and Light Shot (it strengthens Dia) side by side, Distract with Saboteur under them
+  const [dia, dist, sabo, ls] = classics, fxOf = fx => `<span class="ffx ${fx.length ? 'on' : ''}">${esc(fx.join(' · ') || '—')}</span>`;
+  const card = (title, ctl, fx, wide = '') => `<div class="fcard ${wide}"><span class="fttl">${esc(title)}</span><div class="fctl">${ctl}</div>${fxOf(fx)}</div>`;
+  const cards = `<div class="fclass">${card('WHM · RDM — Dia', dia[1], dia[2])}${card('COR — Light Shot', ls[1], ls[2])}` +
+    `${card('RDM — Distract', dist[1] + sabo[1], dist[2], 'wide')}</div>`;
+  const pane = `${cards}<div class="kicker foeonk">${esc(t('foeOthers'))}</div>${bar}<div class="foepane">${lines(cur.lines)}</div>`;
   // everything on the target, whatever its tab: what lays it, what it takes off
   const onList = T.B._by.filter(e => ['edefp', 'eeva', 'emdb', 'emeva'].includes(e.k));
   const recap = onList.length ? `<ul class="foeon">${onList.map(e => `<li><span>${esc(e.src)}</span><b>${esc(geoSrc(e.src) ? nmGeo(short(e.k, e.v)) : short(e.k, e.v))}</b></li>`).join('')}</ul>`
