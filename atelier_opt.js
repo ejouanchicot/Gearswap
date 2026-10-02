@@ -155,6 +155,22 @@
         return out;
     };
 
+    // ------------------------------------------------------------ one reward among several
+    // Mission rewards where one item is chosen among several (BG Wiki): owning one rules the others
+    // out, and two of a group are never worn together
+    O.EXCLUSIVE = [
+        {name: "The Voracious Resurgence 11-2", items: ["Medada's Ring", "Gurebu's Ring", "Cornelia's Ring", "Ragelise's Ring", "Lehko's Ring", "Fickblix's Ring", "Ephramad's Ring"]},
+        {name: "Seekers of Adoulin 4-3-8", items: ["Adoulin's Refuge", "Ygnas's Resolve", "Arciela's Grace"]},
+        {name: "Seekers of Adoulin 4-6-1", items: ["Adoulin's Refuge +1", "Ygnas's Resolve +1", "Arciela's Grace +1"]},
+        {name: "Seekers of Adoulin 5-5-1", items: ["Adoulin Ring", "Gorney Ring", "Haverton Ring", "Janniston Ring", "Karieyh Ring", "Orvail Ring", "Renaye Ring", "Shneddick Ring", "Thurandaut Ring", "Vocane Ring", "Weather. Ring"]},
+        {name: "Seekers of Adoulin epilogue", items: ["Adoulin Ring +1", "Gorney Ring +1", "Haverton Ring +1", "Janniston Ring +1", "Karieyh Ring +1", "Orvail Ring +1", "Renaye Ring +1", "Shneddick Ring +1", "Thurandaut Ring +1", "Vocane Ring +1", "Weather. Ring +1"]},
+        {name: "Rhapsodies of Vana'diel epilogue", items: ["Ligeia Ring", "Ligeia Sash", "Ligeia Scythe"]}
+    ];
+    O.groupOf = function (name) {
+        for (var i = 0; i < O.EXCLUSIVE.length; i++) if (O.EXCLUSIVE[i].items.indexOf(name) !== -1) return O.EXCLUSIVE[i];
+        return null;
+    };
+
     // ------------------------------------------------------------ search
     // The defensive totals of a set's gear: DT + PDT, DT + MDT (Shell not counted), Subtle Blow I + II
     O.defense = function (set) {
@@ -209,12 +225,40 @@
     function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
     // A copy can go on two slots (rings, earrings) only when there are two of it
     function clashes(pieces, slot, piece) {
+        // another item of the same one-choice group worn elsewhere
+        var group = piece && O.groupOf(piece.name);
+        if (group) for (var sl in pieces) if (sl !== slot && pieces[sl] && pieces[sl].name !== piece.name && group.items.indexOf(pieces[sl].name) !== -1) return true;
         var twin = {ring1: "ring2", ring2: "ring1", ear1: "ear2", ear2: "ear1"}[slot];
         if (!twin || !piece || !pieces[twin]) return false;
         var o = pieces[twin];
         return o.name === piece.name && (o.augs || []).join("|") === (piece.augs || []).join("|") && !(piece.copies > 1);
     }
     O.clashes = function (pieces, slot, piece) { return clashes(pieces, slot, piece); };
+    // What each piece of the result you do not have yet (missing, or not at its best) brings: the
+    // set's value against the same set with your best piece of that slot in its place
+    O.gains = function (ctx, res, choices, opts) {
+        var out = [];
+        Object.keys(res.pieces).forEach(function (slot) {
+            var p = res.pieces[slot];
+            if (!p || !(p.missing || p.maxed) || !choices[slot]) return;
+            var mine = (p.maxed ? [p.from] : choices[slot].filter(function (x) { return !x.missing && !x.maxed; })
+                .concat(choices[slot].filter(function (x) { return x.maxed; }).map(function (x) { return x.from; })))
+                .filter(function (x) { return !clashes(res.pieces, slot, x); });
+            if (!mine.length) return;
+            var alt = Math.max.apply(null, mine.map(function (x) { return O.valueWith(ctx, res.pieces, slot, x, opts).v; }));
+            out.push({slot: slot, piece: p, gain: (res.best.v / alt - 1) * 100});
+        });
+        return out.sort(function (a, b) { return b.gain - a.gain; });
+    };
+    // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices,
+    // opts, prefilter (keep each slot's best n first)}; onStep(progress) while it searches
+    O.run = function (input, onStep) {
+        var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {onStep: onStep});
+        var choices = input.prefilter ? O.prefilter(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
+        var res = O.optimize(ctx, input.start, choices, opts);
+        delete opts.onStep;
+        return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, gains: O.gains(ctx, res, choices, opts)};
+    };
     // choices: {page slot: [piece...]} (fixed slots left out); opts: {tp, tpRule, passes, top, onStep}.
     // Slot by slot until nothing improves, then every pair of slots over their best few pieces
     // (a pair can beat two single moves: two pieces reaching a cap together).
@@ -222,9 +266,11 @@
         var st = {best: Object.assign({}, start), evals: 0};
         st.score = score(ctx, st.best, opts);
         var slots = Object.keys(choices), rounds = opts.rounds || 6;
+        var step = function (round) { if (opts.onStep) opts.onStep({round: round + 1, evals: st.evals, score: st.score}); };
         for (var round = 0; round < rounds; round++) {
-            singles(ctx, st, slots, choices, opts);
-            if (!pairs(ctx, st, slots, shortlist(ctx, st, slots, choices, opts, opts.top || 8), opts)) break;
+            singles(ctx, st, slots, choices, opts); step(round);
+            var more = pairs(ctx, st, slots, shortlist(ctx, st, slots, choices, opts, opts.top || 8), opts); step(round);
+            if (!more) break;
         }
         return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
     };
