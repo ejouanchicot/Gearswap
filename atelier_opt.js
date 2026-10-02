@@ -73,13 +73,22 @@
     var FOOD_KEYS = {str: "STR", dex: "DEX", vit: "VIT", agi: "AGI", int: "INT", mnd: "MND", chr: "CHR", acc: "Accuracy",
         atkf: "Attack", racc: "Ranged Accuracy", ratkf: "Ranged Attack", mab: "Magic Attack", macc: "Magic Accuracy",
         hp: "HP", mp: "MP", sb: "Subtle Blow", stp: "Store TP", da: "DA"};
+    // The songs as the engine reads them: Song1..Song4, Song5 under Clarion Call; the song under Marcato first,
+    // the engine laying Marcato on Song1 (the page's b.marcato is that song's place)
+    function songsOf(b) {
+        var list = [b.song0, b.song1, b.song2, b.song3].concat(b.clarion ? [b.song4] : []).map(function (x) { return x || "None"; });
+        if (b.marcato != null && !b.soulVoice && list[b.marcato]) list.unshift(list.splice(b.marcato, 1)[0]);
+        var out = {};
+        list.forEach(function (x, i) { out["Song" + (i + 1)] = x; });
+        return out;
+    }
     O.selection = function (b, food) {
         var f = null;
         if (food) { f = {}; for (var k in food) if (FOOD_KEYS[k]) f[FOOD_KEYS[k]] = food[k]; }
         var bubble = function (kind, v) { return v ? kind + v : "None"; };
         return {
-            brd: true, songs: {Song1: b.song0 || "None", Song2: b.song1 || "None", Song3: b.song2 || "None", Song4: b.song3 || "None"},
-            song_bonus: +(b.songsPlus || 0), soul_voice: false, marcato: false,
+            brd: true, songs: songsOf(b), song_bonus: +(b.songsPlus || 0), soul_voice: !!b.soulVoice,
+            marcato: b.marcato != null && !b.soulVoice,
             cor: true, rolls: {Roll1: {name: b.roll0 || "None", potency: b.roll0n || "XI"}, Roll2: {name: b.roll1 || "None", potency: b.roll1n || "XI"}},
             roll_bonus: +(b.rollsPlus || 0), crooked: false, job_bonus: false, light_shot: !!(b.lightshot && b.dia),
             geo: true, bubbles: {"Indi-": bubble("Indi-", b.indi), "Geo-": bubble("Geo-", b.geo), "Entrust-": bubble("Entrust-", b.entrust)},
