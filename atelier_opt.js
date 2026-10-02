@@ -92,7 +92,30 @@
     // ------------------------------------------------------------ evaluation
     // ctx: {job, sub, ml, buffs, abilities, enemy (create_enemy), ws, wsType ("melee" | "ranged"),
     //       metric ("Damage dealt"), primeStage}
+    // A physical weaponskill wsdist leaves out (Avalanche Axe...), from the project's weaponskill
+    // database (shared/data/weaponskills, exported as ws_info): fTP at 1000/2000/3000, its stat
+    // modifiers, its hits, fTP on every hit or the first. Critical rates by TP are not in that
+    // database: such a weaponskill is counted without them. Magical and hybrid ones are not made
+    // (element, dINT and magic burst are no guess): false is returned.
+    var STATS = {STR: "str", DEX: "dex", VIT: "vit", AGI: "agi", INT: "int", MND: "mnd", CHR: "chr"};
+    O.defineWs = function (name, info, skill) {
+        if (!FFXI.WS || FFXI.WS[name]) return !!(FFXI.WS && FFXI.WS[name]);
+        if (!info || (info.type && info.type !== "Physical") || !info.ftp) return false;
+        var mods = {};
+        if (typeof info.mods === "string") info.mods.replace(/(\d+)\D*%?\s*(STR|DEX|VIT|AGI|INT|MND|CHR)/g, function (m, pct, st) { mods[st] = +pct; });
+        else Object.keys(info.mods || {}).forEach(function (k) { mods[k.toUpperCase()] = +info.mods[k]; });
+        var f = info.ftp, f1 = +f["1000"] || 1, f2 = +f["2000"] || f1, f3 = +f["3000"] || f2;
+        FFXI.WS[name] = {skill: skill || "", sc: [], generic: true, set: function (v, tp) {
+            v.ftp = tp <= 2000 ? f1 + (f2 - f1) * (tp - 1000) / 1000 : f2 + (f3 - f2) * (tp - 2000) / 1000;
+            v.ftp_rep = !!info.replicating;
+            v.wsc = 0;
+            Object.keys(mods).forEach(function (st) { if (STATS[st]) v.wsc += mods[st] / 100 * v["player_" + STATS[st]]; });
+            v.nhits = info.hits || 1;
+        }};
+        return true;
+    };
     O.context = function (c) {
+        if (c.wsInfo) O.defineWs(c.ws, c.wsInfo, c.wsSkill);
         var agg = FFXI.aggregate_buffs(c.selection);
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
