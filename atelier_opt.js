@@ -85,7 +85,8 @@
             geo: true, bubbles: {"Indi-": bubble("Indi-", b.indi), "Geo-": bubble("Geo-", b.geo), "Entrust-": bubble("Entrust-", b.entrust)},
             bubble_bonus: +(b.geoPlus || 0), bolster: false, bog: false, bubble_potency: 100,
             whm: true, whm_spells: {Dia: b.dia || "None", Haste: b.haste || "None", Boost: "None", Storm: b.storm || "None"},
-            shell5: b.shell === "Shell V", food: f, toggles: {}
+            // the abilities on the target the page offers (Armor Break, Angon, Box Step, Corrosive Ooze, Swooping Frenzy)
+            shell5: b.shell === "Shell V", food: f, toggles: (b.foeJa || []).reduce(function (m, n) { m[n] = true; return m; }, {})
         };
     };
 
