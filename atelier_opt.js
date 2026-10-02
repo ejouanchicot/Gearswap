@@ -129,13 +129,21 @@
     function geoScaled(sel, mul) {
         var agg = FFXI.aggregate_buffs(Object.assign({}, sel, {geo: false}));
         agg[0].geo = agg[0].geo || {};
+        // each bubble alone, scaled; the same effect twice (Indi- and Geo- Fury) does not stack: the strongest counts
+        var best = {};
         Object.keys(GEO_SLOTS).forEach(function (slot) {
-            var bubbles = {"Indi-": "None", "Geo-": "None", "Entrust-": "None"};
-            bubbles[slot] = (sel.bubbles || {})[slot] || "None";
-            if (bubbles[slot] === "None") return;
+            var bubbles = {"Indi-": "None", "Geo-": "None", "Entrust-": "None"}, name = (sel.bubbles || {})[slot] || "None";
+            bubbles[slot] = name;
+            if (name === "None") return;
             var one = FFXI.aggregate_buffs({geo: true, bubbles: bubbles, bubble_bonus: sel.bubble_bonus, bolster: false, bog: false,
                 bubble_potency: sel.bubble_potency, food: null, toggles: {}});
-            var m = mul[GEO_SLOTS[slot]] || 1, k;
+            var m = mul[GEO_SLOTS[slot]] || 1, size = 0, k, effect = name.split("-").pop();
+            for (k in one[0].geo || {}) size += Math.abs(m * one[0].geo[k]);
+            for (k in one[1]) size += Math.abs(m * one[1][k]);
+            if (!best[effect] || size > best[effect].size) best[effect] = {one: one, m: m, size: size};
+        });
+        Object.keys(best).forEach(function (effect) {
+            var one = best[effect].one, m = best[effect].m, k;
             for (k in one[0].geo || {}) agg[0].geo[k] = (agg[0].geo[k] || 0) + m * one[0].geo[k];
             // an offensive bubble on an NM: what its resistance leaves (the page's geoMul.foe)
             for (k in one[1]) agg[1][k] = (agg[1][k] || 0) + m * (mul.foe == null ? 1 : mul.foe) * one[1][k];

@@ -1981,7 +1981,7 @@ function combatOf(c, gear, dex, agi, mainName){
 const FOODS = {
   'Grape Daifuku +1': {str: 3, vit: 4, atkf: 55, acc: 85, mab: 4}, 'Grape Daifuku': {str: 2, vit: 3, atkf: 50, acc: 80, mab: 3},
   'Sublime Sushi +1': {str: 7, dex: 8, mnd: -4, chr: 7, acc: 105}, 'Sublime Sushi': {str: 6, dex: 7, mnd: -3, chr: 6, acc: 100},
-  'Red Curry Bun +1': {str: 7, agi: 3, atkf: 150}, 'Red Curry Bun': {str: 7, agi: 1, int: -2, atkf: 150},
+  'Red Curry Bun +1': {str: 7, agi: 1, int: -2, atkf: 150}, 'Red Curry Bun': {str: 7, agi: 1, int: -2, atkf: 150},
   'Om. Sandwich +1': {acc: 85, vit: 8, mnd: 8}, 'Om. Sandwich': {acc: 80, vit: 7, mnd: 7},
   'Gyudon +1': {da: 6, wsd: 6}, 'Gyudon': {da: 5, wsd: 5}, 'Marine Stewpot': {acc: 90, macc: 90},
   'Crepe des rois': {macc: 95, int: 2, mnd: 2, mdb: 1}, 'Tropical Crepe': {macc: 90, int: 2, mnd: 2, mdb: 1},
@@ -1991,9 +1991,9 @@ const FOODS = {
 // Songs: stat -> [base, per Songs+], up to the song's own Songs+ limit; Magic Haste in %
 const SONGS = {
   'Honor March': {lim: 4, mhaste: [12.305, 1.172], atk: [168, 16], acc: [42, 4]}, 'Victory March': {lim: 8, mhaste: [15.918, 1.587]},
-  'Advancing March': {lim: 8, mhaste: [10.547, 1.152]}, 'Minuet V': {lim: 8, atk: [149, 12.375]}, 'Minuet IV': {lim: 8, atk: [137, 11.2]},
+  'Advancing March': {lim: 8, mhaste: [10.547, 1.05]}, 'Minuet V': {lim: 8, atk: [149, 12.375]}, 'Minuet IV': {lim: 8, atk: [137, 11.2]},
   'Minuet III': {lim: 8, atk: [121, 9.5]}, 'Blade Madrigal': {lim: 9, acc: [60, 6]}, 'Sword Madrigal': {lim: 9, acc: [45, 4.5]},
-  'Aria of Passion': {lim: 7, pdl: [12, 1.333]},
+  'Aria of Passion': {lim: 7, pdl: [13, 1.3]},
   'Herculean Etude': {lim: 9, str: [15, 1]}, 'Uncanny Etude': {lim: 9, dex: [15, 1]}, 'Vital Etude': {lim: 9, vit: [15, 1]},
   'Swift Etude': {lim: 9, agi: [15, 1]}, 'Sage Etude': {lim: 9, int: [15, 1]}, 'Logical Etude': {lim: 9, mnd: [15, 1]}, 'Bewitching Etude': {lim: 9, chr: [15, 1]},
 };
@@ -2076,7 +2076,7 @@ const STORMS = {'Firestorm II': {str: 7}, 'Thunderstorm II': {dex: 7}, 'Sandstor
 const JAS = {
   // lvl: the level the job learns it (BG Wiki); a subjob has it at its own level (49, +1 per 5 Master
   // Levels). fx(main, level): main = used as main job. Values: wsdist create_player.py (atelier-engine/player.js)
-  'Berserk': {job: 'WAR', lvl: 15, fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25})},
+  'Berserk': {job: 'WAR', lvl: 15, fx: (m, l) => ({atkp: m ? 89 / 256 : l >= 50 ? 69 / 256 : .25, atk: m ? 40 : 0, defp: -.25})},
   'Defender': {job: 'WAR', lvl: 25, fx: () => ({defp: .25, atkp: -.25})},
   // Warcry's TP Bonus (Savagery merits, Agoge) comes from the job's TP config, for the TP steps
   'Warcry': {job: 'WAR', lvl: 35, tp: true, excl: 'warcry', fx: (m, l) => ({atkp: Math.trunc(l / 4 + 4.75) / 256, atk: m ? 60 : 0})},
@@ -2087,9 +2087,9 @@ const JAS = {
   'Impetus': {job: 'MNK', lvl: 88, fx: () => ({crit: 45, atk: 126})},
   'Composure': {job: 'RDM', lvl: 50, mainOnly: true, fx: () => ({acc: 70})},
   'Conspirator': {job: 'THF', lvl: 87, fx: () => ({acc: 45, sb: 50})},
-  'Last Resort': {job: 'DRK', lvl: 15, fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25})},
+  'Last Resort': {job: 'DRK', lvl: 15, twoHanded: ['jahaste'], fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25, jahaste: m ? 25 : 15})},
   'Sharpshot': {job: 'RNG', lvl: 1, fx: m => ({racc: 40, ratk: m ? 40 : 0})},
-  'Hasso': {job: 'SAM', lvl: 25, fx: (m, l) => ({str: m ? 34 : Math.trunc(l / 7), jahaste: 10, acc: 10})},
+  'Hasso': {job: 'SAM', lvl: 25, twoHanded: true, fx: (m, l) => ({str: m ? 34 : Math.trunc(l / 7), jahaste: 10, acc: 10})},
   'Hagakure': {job: 'SAM', lvl: 95, tp: true, fx: () => ({})},
   'Innin': {job: 'NIN', lvl: 40, fx: m => m ? {acc: 20, scb: 5, crit: 24, eva: -24} : {crit: 24, eva: -24}},
   'Building Flourish': {job: 'DNC', lvl: 50, fx: () => ({crit: 10, acc: 40, atkp: .25})},
@@ -2220,8 +2220,11 @@ function buffTotals(){
   const geoPlus = +(b.geoPlus || 0);
   // the same effect twice does not stack (Indi- and Geo- Fury): each counts once. Geomancy+ is the
   // GEO's main hand or handbell, so not on an Entrust (BG Wiki Geomancy Skill)
-  const named = {}; for (const k of ['indi', 'geo', 'entrust']) if (b[k] && !named[b[k]])
-    named[b[k]] = {src: {indi: 'Indi-', geo: 'Geo-', entrust: 'Entrust Indi-'}[k] + b[k], plus: k === 'entrust' ? 0 : geoPlus, mul: geoMul(b)[k]};
+  const named = {}; for (const k of ['indi', 'geo', 'entrust']) if (b[k]) {
+    const plus = k === 'entrust' ? 0 : geoPlus, mul = geoMul(b)[k], one = Object.values(BUBBLES[b[k]] || GEO_DEBUFFS[b[k]] || {})[0] || [0, 0];
+    const strength = (one[0] + plus * one[1]) * mul;
+    if (!named[b[k]] || strength > named[b[k]].strength)
+      named[b[k]] = {src: {indi: 'Indi-', geo: 'Geo-', entrust: 'Entrust Indi-'}[k] + b[k], plus, mul, strength}; }
   for (const [name, {src, plus, mul}] of Object.entries(named)) if (BUBBLES[name] || GEO_DEBUFFS[name])
     for (const [k, [base, step]] of Object.entries(BUBBLES[name] || GEO_DEBUFFS[name]))
       put(k, (base + plus * step) * mul * (GEO_DEBUFFS[name] ? geoKeep(enemyKey(b.enemy)) : 1), src);
@@ -2233,7 +2236,11 @@ function buffTotals(){
   if (SHELL[b.shell]) put('shell', SHELL[b.shell], b.shell);
   if (HASTE[b.haste]) put('mhaste', HASTE[b.haste], b.haste);
   for (const [k, v] of Object.entries(STORMS[b.storm] || {})) put(k, v, b.storm);
+  // an ability for a two-handed weapon (Hasso, Last Resort's haste) with another in hand: left out
+  const main = shownMain(), wsk = main && Object.assign({}, ...Object.values(exportsOf(S.char, S.job) || {}).map(x => x.wskill || {}))[main];
+  const twoHands = !main || !wsk || TWO_HANDED.test(wsk);
   for (const ja of jasOf()) if (jaOn(b, ja.name)) for (const [k, v] of Object.entries(ja.a.fx(ja.main, ja.lvl))) {
+    if (!twoHands && (ja.a.twoHanded === true || (ja.a.twoHanded || []).includes(k))) continue;
     if (k === 'dmgmul') { B.dmgmul = (B.dmgmul || 1) * v; B._by.push({src: ja.name, k, v}); } else put(k, v, ja.name); }
   return B;
 }
