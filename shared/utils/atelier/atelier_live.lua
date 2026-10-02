@@ -154,7 +154,7 @@ local function route(req, live)
     end
     if req.path == '/tpbonus' then
         local q = query_table(req.query)
-        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').tp_bonus({tp = q.tp, main = q.main, sub = q.sub, buffs = q.buffs}))
+        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').tp_bonus({tp = q.tp, main = q.main, sub = q.sub, buffs = q.buffs, worn = q.worn}))
     end
     if req.path == '/simulate' and req.method == 'POST' then
         local q = query_table(req.query)

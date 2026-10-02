@@ -120,12 +120,14 @@ end
 ---
 --- One piece is preferred over several even when a combination would be a
 --- tighter fit: every extra slot spent here is a slot taken from the
---- weaponskill set.
+--- weaponskill set. Of the single pieces that close it, the smallest: a gap of
+--- 100 takes Boii Cuisses (+100), not Moonshade (+250), whose ear stays the set's.
 --- @param sorted table Pieces, biggest bonus first
 --- @param gap number TP still missing
 --- @return table|nil slot to item name, or nil when the gap cannot be closed
 local function pieces_for_gap(sorted, gap)
-    for _, piece in ipairs(sorted) do
+    for i = #sorted, 1, -1 do
+        local piece = sorted[i]
         if TPBonusCalculator.config.debug_mode then
             get_message_ws().show_checking_piece(piece.name, piece.slot, piece.bonus, gap)
         end
@@ -152,14 +154,41 @@ local function pieces_for_gap(sorted, gap)
     return nil
 end
 
+-- Every spelling of an ear / ring / range slot, as the config and GearSwap's equip list write them
+local SLOT_CANON = {left_ear = 'ear1', lear = 'ear1', right_ear = 'ear2', rear = 'ear2', left_ring = 'ring1',
+    lring = 'ring1', right_ring = 'ring2', rring = 'ring2', ranged = 'range'}
+local function canon(slot)
+    slot = tostring(slot):lower()
+    return SLOT_CANON[slot] or slot
+end
+
+--- The TP pieces the weaponskill set wears already ({slot = name or item}): their
+--- bonus counts as there, and they leave the list of pieces to add (their slot is taken).
+--- @return number bonus already worn, table pieces still available
+local function split_worn(pieces, worn)
+    if type(worn) ~= 'table' then return 0, pieces end
+    local by_slot = {}
+    for slot, item in pairs(worn) do
+        local name = type(item) == 'table' and item.name or item
+        if type(name) == 'string' then by_slot[canon(slot)] = name end
+    end
+    local already, left = 0, {}
+    for _, piece in ipairs(pieces) do
+        if by_slot[canon(piece.slot)] == piece.name then already = already + piece.bonus
+        else table.insert(left, piece) end
+    end
+    return already, left
+end
+
 --- Calculate which TP bonus gear to equip based on current TP and available bonuses
 --- @param current_tp number Current TP amount (1000-2999)
 --- @param tp_config table Job-specific TP config (pieces, weapons, buffs)
 --- @param weapon_name string Current main weapon name
 --- @param active_buffs table Table of active buffs (buffactive)
 --- @param sub_weapon string Current sub weapon name (optional, for Fencer detection)
+--- @param worn table|nil What the weaponskill set puts on ({slot = name or item}): its TP pieces count
 --- @return table|nil Table of gear to equip {ear1="...", legs="..."} or nil if none needed
-function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
+function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, worn)
     if not current_tp or not tp_config then
         if TPBonusCalculator.config.debug_mode then
             get_message_ws().show_tp_validation_failed(current_tp, tp_config)
@@ -167,7 +196,9 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
         return nil
     end
 
-    local real_tp = effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
+    local sorted_all, total_all = ranked_pieces(tp_config)
+    local already, available = split_worn(sorted_all or {}, worn)
+    local real_tp = effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon) + already
 
     if TPBonusCalculator.config.debug_mode then
         local weapon_bonus = 0
@@ -190,10 +221,11 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
         get_message_ws().show_target_threshold(target_threshold, gap)
     end
 
-    local sorted, total_available = ranked_pieces(tp_config)
-    if not sorted then
+    if not sorted_all then
         return nil
     end
+    local sorted, total_available = available, 0
+    for _, piece in ipairs(sorted) do total_available = total_available + piece.bonus end
 
     if gap > total_available then
         if TPBonusCalculator.config.debug_mode then

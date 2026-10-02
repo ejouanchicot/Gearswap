@@ -2886,11 +2886,13 @@ function tpAsk(s, pieces, tp){
   const c = S.char, L = S._live[c] || {};
   if (family(s.path, s.pieces) !== 'ws' || !liveOk(c) || L.job !== S.job) return null;
   const main = (pieces.main || {}).name || '', sub = (pieces.sub || {}).name || '', buffs = tpBuffs();
-  const key = [c, S.job, L.version, tp || 'steps', main, sub, buffs, partyTp()].join('|');
+  // what the set wears (before any TP piece): the game counts its own TP pieces (Boii Cuisses in the base set)
+  const worn = tp ? SLOTS.filter(sl => pieces[sl] && !isEmpty(pieces[sl])).map(sl => sl + ':' + pieces[sl].name).join('|') : '';
+  const key = [c, S.job, L.version, tp || 'steps', main, sub, buffs, partyTp(), worn].join('|');
   if (key in S._tpb) return S._tpb[key];
   S._tpb[key] = null;
   // the TP a party member's Warcry adds is the page's own: the game is asked as if the TP were that much higher
-  const q = {main, sub, buffs}; if (tp) q.tp = Math.min(3000, +tp + partyTp());
+  const q = {main, sub, buffs}; if (tp) { q.tp = Math.min(3000, +tp + partyTp()); q.worn = worn; }
   liveFetch(c, `/tpbonus?${new URLSearchParams(q)}`, {timeout: 3000})
     .then(r => { S._tpb[key] = r || {}; render(); }).catch(() => { delete S._tpb[key]; });
   return null;
@@ -2914,17 +2916,16 @@ function tpbOf(p, slot, cfg){
   if (p.name in cfg) return cfg[p.name];
   return WEAPON_SLOTS.has(slot) && slot !== 'ammo' ? 0 : (((pieceStats(p) || {}).stats || {}).tpb || {}).v || 0;
 }
-// The steps: the TP where the weaponskill reaches 2000 or 3000, with the TP Bonus the set already wears
-// (Boii Cuisses in the base set) and the weapon / buffs / party Warcry, then with every TP piece added
+// The steps, as the job's own rule plays (TPBonusCalculator: it counts the weapon, buffs and Fencer,
+// then adds TP pieces only when all of them together reach the next threshold):
+//   with the TP pieces: threshold - weapon / buffs - every TP piece of the config (where it starts adding them)
+//   without them: threshold - weapon / buffs - the TP Bonus the set wears already (Boii Cuisses in the base set)
 function tpSteps(r, s){
   if (!r || !r.thresholds) return TP_STEPS;
   const cfg = r.pieces || {}, worn = s ? (() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } })() : {};
-  const names = new Set(Object.values(worn).map(p => p && p.name));
   const inSet = SLOTS.reduce((n, slot) => n + tpbOf(worn[slot], slot, cfg), 0);
-  // the pieces the TP config could add (those the set does not wear already)
-  const extra = r.pieces ? Object.entries(cfg).filter(([n]) => !names.has(n)).reduce((n, [, v]) => n + v, 0) : r.total;
-  const out = new Set([1000, 3000]), bonus = r.bonus + partyTp() + inSet;
-  for (const th of r.thresholds) for (const v of [th - bonus - extra, th - bonus]) if (v > 1000 && v < 3000) out.add(v);
+  const out = new Set([1000, 3000]), bonus = r.bonus + partyTp();
+  for (const th of r.thresholds) for (const v of [th - bonus - r.total, th - bonus - inSet]) if (v > 1000 && v < 3000) out.add(v);
   return [...out].sort((a, b) => a - b);
 }
 // The TP line of a weaponskill set: off (the set as written) or a TP, its pieces from the game

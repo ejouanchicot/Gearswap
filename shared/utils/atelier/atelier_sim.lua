@@ -464,8 +464,11 @@ function AtelierSim.tp_bonus(req)
     rawset(_G, 'buffactive', buffs)
     local ok_b, bonus = pcall(function() return Calc.effective_tp and Calc.effective_tp(0, config, main, buffs, sub) or 0 end)
     local tp = tonumber(req.tp)
+    -- what the weaponskill set wears (worn=slot:name|slot:name): its own TP pieces count, as in game
+    local worn = {}
+    for slot, name in tostring(req.worn or ''):gmatch('([%w_]+):([^|]+)') do worn[slot] = name end
     local ok, gear = true, nil
-    if tp then ok, gear = pcall(Calc.calculate, tp, config, main, buffs, sub) end
+    if tp then ok, gear = pcall(Calc.calculate, tp, config, main, buffs, sub, worn) end
     rawset(_G, 'buffactive', was)
     local out, total, bonus_of = {}, 0, {}
     for slot, name in pairs(ok and type(gear) == 'table' and gear or {}) do
