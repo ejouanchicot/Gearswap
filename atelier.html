@@ -1397,7 +1397,7 @@ const GEO_DEBUFFS = {'Frailty': {edefp: [.148, .027]}, 'Torpor': {eeva: [50, 5]}
 const DIA = {'Dia': 104 / 1024, 'Dia II': 156 / 1024, 'Dia III': 208 / 1024};
 const LIGHT_SHOT = 28 / 1024;
 const PROTECT = {'Protect': 20, 'Protect II': 50, 'Protect III': 90, 'Protect IV': 140, 'Protect V': 220};
-const SHELL = {'Shell': 27, 'Shell II': 42, 'Shell III': 56, 'Shell IV': 67, 'Shell V': 80};
+const SHELL = {'Shell': 27, 'Shell II': 42, 'Shell III': 56, 'Shell IV': 67, 'Shell V': 75};
 const HASTE = {'Haste': 14.648, 'Haste II': 29.98};
 const STORMS = {'Firestorm II': {str: 7}, 'Thunderstorm II': {dex: 7}, 'Sandstorm II': {vit: 7}, 'Windstorm II': {agi: 7}, 'Hailstorm II': {int: 7},
   'Rainstorm II': {mnd: 7}, 'Aurorastorm II': {chr: 7}, 'Voidstorm II': {str: 3, dex: 3, vit: 3, agi: 3, int: 3, mnd: 3, chr: 3}};
@@ -1579,14 +1579,15 @@ function buffPanelHTML(){
 /* ---- the target: its stats (ENEMIES: level, Defense, Evasion), what each debuff takes off, you against it ---- */
 // The pDIF cap of a weapon's skill (wsdist get_pdif.py), before the PDL trait and gear
 const PDIF_CAP = s => /^(katana|dagger|sword|axe|club)$/i.test(s || '') ? 3.25 : /great katana|hand-to-hand/i.test(s || '') ? 3.5
-  : /great sword|staff|great axe|polearm/i.test(s || '') ? 3.75 : /scythe/i.test(s || '') ? 4.0 : 3.25;
+  : /great sword|staff|great axe|polearm/i.test(s || '') ? 3.75 : /scythe/i.test(s || '') ? 4.0 : /marksmanship|archery/i.test(s || '') ? 3.5 : 3.25;
 function targetInfo(s){
   const b = buffState(), B = withAftermath(buffTotals(), s ? (withWeapons(s).pieces.main || {}).name : null), name = ENEMIES[b.enemy] ? b.enemy : DEFAULT_ENEMY, [lv, def, eva, vit, agi, mnd, int] = ENEMIES[name];
   const by = B._by.filter(e => ['edefp', 'eeva', 'emdb', 'emeva'].includes(e.k));
   const defDown = Math.min(B.edefp || 0, 1), defAfter = Math.round(def * (1 - defDown)), evaAfter = Math.max(0, eva - (B.eeva || 0));
   const r = s ? charStats(s) : null, d = data(), pieces = s ? withWeapons(s).pieces : {};
   const two = r && r.cur && r.cur.wskill && TWO_HANDED.test(r.cur.wskill), dual = !!(pieceStats(pieces.sub) || {}).weapon;
-  const cap = two || dual ? 95 : 99;
+  // main hand: 95 % with a two-handed weapon, else 99 % even when dual wielding (the off hand alone caps at 95: BG Wiki Hit Rate)
+  const cap = two ? 95 : 99;
   const at = k => r && r.out[k] ? r.out[k].set : null, gear = k => r ? ((r.set[k] || {}).v || 0) : 0;
   // pDIF cap: the weapon skill's, plus the job's PDL trait, times the PDL of gear and buffs
   const wskill = r && r.cur ? r.cur.wskill : null, c = r ? r.c : null;
@@ -1694,7 +1695,7 @@ function tankHTML(r){
   let rows = statLi(t('physHit'), phys, pctOf(phys), '', mul < 1 ? 'Rampart ×0.75' : '') +
     statLi(t('magHit'), mag, pctOf(mag), '', t('magTip', {m: Math.round(Math.max(dt + v('mdt') + shell, -50) * 10) / 10, b: mdb})) +
     statLi(t('breathHit'), breath, pctOf(breath));
-  const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : 1 + enm / 100;
+  const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : Math.max(1 + enm / 100, .5);
   if (enm) rows += statLi(t('enmityLbl'), signed(enm), `×${mult.toFixed(2)}`, '', t('enmTip', {g: v('enmity'), b: B.enmity || 0}));
   if (enm && ['PLD', 'RUN'].includes(S.job)) rows += statLi(t('flashLbl'), `${Math.floor(180 * mult)} / ${Math.floor(1280 * mult)}`, '');
   const skill = skillLevel(c, 'enhancing magic') + v('skill:enhancing magic skill');
@@ -1714,10 +1715,10 @@ function offenseHTML(r, s){
   const gh = Math.min(v('haste'), 25), mh = Math.min(B.mhaste || 0, 43.75), jh = Math.min(B.jahaste || 0, 25), haste = gh + mh + jh;
   const mdelay = dual ? (d1 + d2) / 2 * (1 - dw / 100) : d1;
   const stp = v('stp') + traitOf('stp', c) + giftOf('stp', c) + (B.stp || 0);
-  const tph = Math.floor(tpBase(mdelay) * (1 + stp / 100));
+  const tph0 = Math.floor(tpBase(mdelay)), tph = tph0 + Math.floor(tph0 * stp / 100);
   const delay = d1 + (dual ? d2 : 0), round = Math.max(delay * (1 - dw / 100) * (1 - haste / 100), 0.2 * delay) / 60;
   const two = cur.wskill && TWO_HANDED.test(cur.wskill), enemyName = ENEMIES[buffState().enemy] ? buffState().enemy : DEFAULT_ENEMY;
-  const eva = Math.max(0, ENEMIES[enemyName][2] - (B.eeva || 0)), cap = two || dual ? 95 : 99;
+  const eva = Math.max(0, ENEMIES[enemyName][2] - (B.eeva || 0)), cap = two ? 95 : 99;
   const edef = Math.round(ENEMIES[enemyName][1] * (1 - Math.min(B.edefp || 0, 1)));
   const r1 = n => Math.round(n * 10) / 10;
   let rows = statLi(t('hasteTot'), `${r1(haste)} %`, haste >= 93.75 ? 'cap' : '', '', t('hasteTip', {g: r1(gh), m: r1(mh), j: r1(jh)})) +
