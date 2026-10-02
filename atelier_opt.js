@@ -284,7 +284,7 @@
         var step = function (round) { if (opts.onStep) opts.onStep({round: round + 1, evals: st.evals, score: st.score}); };
         for (var round = 0; round < rounds; round++) {
             singles(ctx, st, slots, choices, opts); step(round);
-            var more = pairs(ctx, st, slots, shortlist(ctx, st, slots, choices, opts, opts.top || 8), opts); step(round);
+            var more = pairs(ctx, st, slots, shortlist(ctx, st, slots, choices, opts, opts.top || 8, opts.extra || 4), opts); step(round);
             if (!more) break;
         }
         return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
@@ -328,30 +328,44 @@
         }
     }
     // The best few pieces of each slot, the others staying as they are
-    function shortlist(ctx, st, slots, choices, opts, top) {
+    // Three lists a slot, from one try of each piece on the set: the `top` best (floors counted), the
+    // `extra` best for damage alone (floors ignored: a strong piece that drops the defense under a floor)
+    // and the `extra` best for defense (DT+PDT and DT+MDT: the piece that can pay for it elsewhere)
+    function shortlist(ctx, st, slots, choices, opts, top, extra) {
         var out = {};
         slots.forEach(function (slot) {
-            out[slot] = choices[slot].map(function (piece) {
+            var rated = choices[slot].map(function (piece) {
                 if (clashes(st.best, slot, piece)) return null;
                 var trial = Object.assign({}, st.best); trial[slot] = piece; st.evals++;
-                return {piece: piece, v: score(ctx, trial, opts)};
-            }).filter(Boolean).sort(function (a, b) { return b.v - a.v; }).slice(0, top).map(function (x) { return x.piece; });
+                var r = O.value(ctx, trial, opts), d = r.def || {};
+                return r.v === -Infinity ? null : {piece: piece, v: r.v, raw: r.raw, dt: (d.pdt || 0) + (d.mdt || 0)};
+            }).filter(Boolean);
+            var best = function (key, n, low) {
+                return rated.slice().sort(function (x, y) { return low ? x[key] - y[key] : y[key] - x[key]; }).slice(0, n).map(function (x) { return x.piece; });
+            };
+            out[slot] = {top: best('v', top), raw: best('raw', extra), dt: best('dt', extra, true)};
         });
         return out;
     }
-    // Every pair of slots over their shortlists: two pieces can beat two single moves (a cap
-    // reached together, a floor met by one while the other gains); true when the set changed
+    // Pairs of slots: the best pieces of both (two pieces can beat two single moves: a cap reached
+    // together), and a strong piece for damage with a defense piece elsewhere that keeps the floors
+    // (Agoge Mask under the floor alone, with a Gelatinous Ring that pays its DT back); true when the set changed
     function pairs(ctx, st, slots, list, opts) {
         var moved = false;
-        for (var i = 0; i < slots.length; i++) for (var j = i + 1; j < slots.length; j++) {
-            var a = slots[i], b = slots[j];
-            list[a].forEach(function (pa) {
-                list[b].forEach(function (pb) {
+        var cross = function (a, b, la, lb) {
+            la.forEach(function (pa) {
+                lb.forEach(function (pb) {
                     var trial = Object.assign({}, st.best); trial[a] = pa; trial[b] = pb;
                     if (clashes(trial, a, pa) || clashes(trial, b, pb)) return;
                     if (tryMove(ctx, st, trial, opts)) moved = true;
                 });
             });
+        };
+        for (var i = 0; i < slots.length; i++) for (var j = i + 1; j < slots.length; j++) {
+            var a = slots[i], b = slots[j];
+            cross(a, b, list[a].top, list[b].top);
+            cross(a, b, list[a].raw, list[b].dt);
+            cross(a, b, list[a].dt, list[b].raw);
         }
         return moved;
     }
