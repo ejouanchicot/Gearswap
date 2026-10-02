@@ -115,9 +115,11 @@ local function route(req, live)
     if req.headers['x-atelier-token'] ~= live.token then return '403 Forbidden', '{"error":"token"}' end
     local Export = require('shared/utils/atelier/atelier_export')
     if req.path == '/ping' then
-        -- the alt online and its job: the macro book GearSwap picks depends on it (macrobook_manager.lua)
-        local ok_d, Dual = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-        local alt = ok_d and Dual and Dual.is_alt_online and Dual.is_alt_online() and Dual.get_alt_job() or nil
+        -- the alt's job as last exchanged (dualbox_manager.lua AltJobState): the macro book GearSwap
+        -- picks at the load depends on it. Not is_alt_online(): the state is only refreshed at a job
+        -- exchange, so 30 s after a load it reads offline although the alt is still there
+        local alt_state = rawget(_G, 'AltJobState')
+        local alt = type(alt_state) == 'table' and alt_state.online ~= nil and alt_state.job or nil
         return '200 OK', Export.json({player = player and player.name, job = player and player.main_job,
             sub = player and player.sub_job, version = live.version, alt = alt})
     end
