@@ -467,13 +467,17 @@ function AtelierSim.tp_bonus(req)
     local ok, gear = true, nil
     if tp then ok, gear = pcall(Calc.calculate, tp, config, main, buffs, sub) end
     rawset(_G, 'buffactive', was)
-    local out, total = {}, 0
+    local out, total, bonus_of = {}, 0, {}
     for slot, name in pairs(ok and type(gear) == 'table' and gear or {}) do
         local page = SLOT_NAME[tostring(slot):lower()]
         if page then out[page] = name end
     end
-    for _, piece in ipairs(type(config.pieces) == 'table' and config.pieces or {}) do total = total + (tonumber(piece.bonus) or 0) end
-    return {ok = ok, config = true, gear = out, bonus = ok_b and bonus or 0, total = total,
+    -- each piece's TP Bonus from the config: the page adds up the TP a weaponskill opens with
+    for _, piece in ipairs(type(config.pieces) == 'table' and config.pieces or {}) do
+        total = total + (tonumber(piece.bonus) or 0)
+        if piece.name then bonus_of[piece.name] = tonumber(piece.bonus) or 0 end
+    end
+    return {ok = ok, config = true, gear = out, bonus = ok_b and bonus or 0, total = total, pieces = bonus_of,
         thresholds = (Calc.config or {}).thresholds or {2000, 3000}}
 end
 
