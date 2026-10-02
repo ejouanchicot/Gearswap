@@ -134,7 +134,9 @@ local function note(by_copy, by_name, value, expr)
     local key = piece_key(value)
     if not key then return end
     if not by_copy[key] then by_copy[key] = expr end
-    if key:sub(-1) == '|' and not by_name[value.name or value] then by_name[value.name or value] = expr end
+    -- a piece written by its name alone is a string: Windower's string library refuses s.name
+    local name = type(value) == 'table' and value.name or value
+    if key:sub(-1) == '|' and not by_name[name] then by_name[name] = expr end
 end
 
 --- The pieces of the gear modules the file requires (`local Armor = require('.../armor')`),
