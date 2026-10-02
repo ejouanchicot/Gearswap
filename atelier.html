@@ -1569,7 +1569,8 @@ async function optimizeWs(s){
   // the search starts from the set itself (the file, or what is in test in game), never from a draft:
   // a draft can hold pieces this search may not use (not yours, another reward of a one-choice group)
   const k = trialKey(s), base = withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } });
-  const r = tpAsk(s, base, null), rule = r && r.piece_list ? {bonus: (r.bonus || 0) + partyTp(), pieces: r.piece_list} : null;
+  S._optBusy = true; S._optProgress = null; render();
+  const r = await tpAskWait(s, base, null), rule = r && r.piece_list ? {bonus: (r.bonus || 0) + partyTp(), pieces: r.piece_list} : null;
   const tpNames = new Set(((r && r.piece_list) || []).map(p => p.name)), o = S.optOpts || {};
   // the TP config's pieces are pieces like the others; one that only brings its TP Bonus leaves the
   // result at the end (FFXI.opt.run, tpOnlyOut)
@@ -3163,9 +3164,20 @@ function tpAsk(s, pieces, tp){
   S._tpb[key] = null;
   // the TP a party member's Warcry adds is the page's own: the game is asked as if the TP were that much higher
   const q = {main, sub, buffs}; if (tp) { q.tp = Math.min(3000, +tp + partyTp()); q.worn = worn; }
-  liveFetch(c, `/tpbonus?${new URLSearchParams(q)}`, {timeout: 3000})
-    .then(r => { S._tpb[key] = r || {}; render(); }).catch(() => { delete S._tpb[key]; });
+  S._tpbWait = S._tpbWait || {};
+  S._tpbWait[key] = liveFetch(c, `/tpbonus?${new URLSearchParams(q)}`, {timeout: 3000})
+    .then(r => { S._tpb[key] = r || {}; render(); return S._tpb[key]; }).catch(() => { delete S._tpb[key]; return null; })
+    .finally(() => { delete S._tpbWait[key]; });
   return null;
+}
+// The same, waiting for the game's answer when it is on its way (the optimizer needs the TP rule
+// before it starts: without it a first run after a reload works another problem than the next one)
+async function tpAskWait(s, pieces, tp){
+  const r = tpAsk(s, pieces, tp);
+  if (r) return r;
+  const waits = Object.values(S._tpbWait || {});
+  if (waits.length) await Promise.all(waits);
+  return tpAsk(s, pieces, tp);
 }
 function tpBonusGear(s, pieces){
   if (!S.wsTp || S._noTpGear) return null;
