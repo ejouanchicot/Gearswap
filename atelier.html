@@ -1619,9 +1619,9 @@ const JAS = {
   'Berserk': {job: 'WAR', lvl: 15, fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25})},
   'Defender': {job: 'WAR', lvl: 25, fx: () => ({defp: .25, atkp: -.25})},
   // Warcry's TP Bonus (Savagery merits, Agoge) comes from the job's TP config, for the TP steps
-  'Warcry': {job: 'WAR', lvl: 35, tp: true, fx: (m, l) => ({atkp: Math.trunc(l / 4 + 4.75) / 256, atk: m ? 60 : 0})},
+  'Warcry': {job: 'WAR', lvl: 35, tp: true, excl: 'warcry', fx: (m, l) => ({atkp: Math.trunc(l / 4 + 4.75) / 256, atk: m ? 60 : 0})},
   'Aggressor': {job: 'WAR', lvl: 45, fx: m => ({acc: 25 + (m ? 20 : 0), eva: -25})},
-  'Blood Rage': {job: 'WAR', lvl: 87, fx: m => ({crit: m ? 40 : 20})},
+  'Blood Rage': {job: 'WAR', lvl: 87, excl: 'warcry', fx: m => ({crit: m ? 40 : 20})},
   'Mighty Strikes': {job: 'WAR', lvl: 1, sp: true, fx: () => ({crit: 100, acc: 40})},
   'Focus': {job: 'MNK', lvl: 25, fx: (m, l) => m ? {crit: 20, acc: 120} : {crit: 20 * (1 - (99 - l) / 100), acc: 100 * (1 - (99 - l) / 100)}},
   'Impetus': {job: 'MNK', lvl: 88, fx: () => ({crit: 45, atk: 126})},
@@ -1640,10 +1640,12 @@ const JAS = {
   'Rampart': {job: 'PLD', lvl: 62, fx: () => ({dmgmul: .75})},
   'Crusade': {job: ['PLD', 'RUN'], lvl: 88, fx: () => ({enmity: 30})},
   'Cocoon': {job: 'BLU', lvl: 8, fx: () => ({defp: .5})},
+  // excl: abilities that overwrite each other, one at a time (BG Wiki: Blood Rage "overwrites and is
+  // overwritten by Warcry from Warrior main or sub job")
   // cast by someone else in the party, offered to every job: a WAR main's Warcry (its TP Bonus:
   // Savagery merits, +100 each, 500 at 5/5) and Blood Rage
-  'Warcry · party': {party: true, from: 'WAR', tpParty: 500, fx: () => ({atkp: Math.trunc(99 / 4 + 4.75) / 256})},
-  'Blood Rage · party': {party: true, from: 'WAR', fx: () => ({crit: 20})},
+  'Warcry · party': {party: true, excl: 'warcry', from: 'WAR', tpParty: 500, fx: () => ({atkp: Math.trunc(99 / 4 + 4.75) / 256})},
+  'Blood Rage · party': {party: true, excl: 'warcry', from: 'WAR', fx: () => ({crit: 20})},
 };
 // Targets (IzaKastra enemies.py): level, Defense, Evasion, VIT, AGI, MND, INT, CHR
 const ENEMIES = {'Apex Bats': [129, 1142, 1043, 254, 298, 233, 233, 247], 'Apex Toad': [132, 1239, 1133, 270, 348, 224, 293, 277],
@@ -3825,7 +3827,12 @@ document.addEventListener('click', e => {
   if ('buffreset' in d) { S.buffs[S.char] = {}; render(); return; }
   if ('buffendgame' in d) { S.buffs[S.char] = endgameBuffs(); render(); return; }
   if (d.ja) { const b0 = buffState(), ja = b0.ja = b0.ja || {}, off = b0.jaOff = b0.jaOff || {};
-    if (jaOn(b0, d.ja)) { delete ja[d.ja]; off[d.ja] = 1; } else { ja[d.ja] = 1; delete off[d.ja]; } render(); return; }
+    if (jaOn(b0, d.ja)) { delete ja[d.ja]; off[d.ja] = 1; }
+    else { ja[d.ja] = 1; delete off[d.ja];
+      // abilities that overwrite each other (BG Wiki: Blood Rage and Warcry): turning one on turns the others off
+      const ex = (JAS[d.ja] || {}).excl;
+      if (ex) for (const [n, a] of Object.entries(JAS)) if (n !== d.ja && a.excl === ex) delete ja[n]; }
+    render(); return; }
   if (d.action==='add') { addStep = 0; renderAdd(); return; }
   if (d.action==='meritreset') { delete S.meritEdits[meritKey()]; render(); return; }
   if (d.addfam) { addFam = d.addfam; addStep = 1; renderAdd(); return; }
