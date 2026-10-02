@@ -120,6 +120,9 @@
         var agg = FFXI.aggregate_buffs(c.selection);
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
+        // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
+        // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
+        if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage};
