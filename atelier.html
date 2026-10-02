@@ -2582,8 +2582,8 @@ function renderSim(d){
   const opts = `<div class="simopts"><div class="variants">${chip('target', 'auto', t('simAuto'))}${chip('target', 'me', t('simMe'))}${chip('target', 'ally', t('simAlly'))}${chip('target', 'enemy', t('simEnemy'))}</div>` +
     `<div class="variants">${chip('status', 'Engaged', t('simEngaged'))}${chip('status', 'Idle', t('simIdle'))}</div>` +
     `<label class="chip"><input type="checkbox" class="simrecasts" ${st.recasts ? 'checked' : ''}> ${t('simRecasts')}</label>` +
-    (st.kind === 'ws' ? `<div class="variants"><span class="simtplbl">TP</span>${TP_STEPS.map(v => chip('tp', v, v)).join('')}` +
-      `<input class="tpin" data-sim="1" type="number" min="0" max="3000" step="10" value="${st.tp && !TP_STEPS.includes(+st.tp) ? st.tp : ''}" placeholder="${t('tpOther')}" aria-label="TP"></div>` : '') + `</div>` +
+    (st.kind === 'ws' ? `<div class="variants"><span class="simtplbl">TP</span>${simTpSteps(st.name).map(v => chip('tp', v, v)).join('')}` +
+      `<input class="tpin" data-sim="1" type="number" min="0" max="3000" step="10" value="${st.tp && !simTpSteps(st.name).includes(+st.tp) ? st.tp : ''}" placeholder="${t('tpOther')}" aria-label="TP"></div>` : '') + `</div>` +
     // the buffs the job's code reads (GET /worn_options): only these count, never the ones on you now
     (simBuffs.length ? `<div class="simopts"><span class="simtplbl">${t('wornBuffs')}</span><div class="variants">` +
       simBuffs.map(b => `<button data-simbuff="${esc(b)}" aria-pressed="${(st.buffs || []).includes(b)}">${esc(b)}</button>`).join('') + `</div></div>` : '');
@@ -2820,9 +2820,10 @@ function withWeapons(s, ignore){
   if (grip && !blank.has('sub')) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield && !blank.has('sub')) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
   for (const [m, v] of picks) fill(m, v, t('yourChoice', {v}), false);
-  const tpg = tpBonusGear(s, pieces);
-  for (const [slot, name] of Object.entries(tpg || {})) if (!blank.has(slot)) { pieces[slot] = {name}; from[slot] = t('tpFrom', {tp: S.wsTp}); }
-  return applyTrial(s, pieces, from, stanceWeapon);
+  // the TP bonus pieces go on last, over the tried ones: the job lays them after the set (job_post_precast)
+  const out = applyTrial(s, pieces, from, stanceWeapon), tpg = tpBonusGear(s, out.pieces);
+  for (const [slot, name] of Object.entries(tpg || {})) if (!blank.has(slot)) { out.pieces[slot] = {name}; out.from[slot] = t('tpFrom', {tp: S.wsTp}); }
+  return out;
   function fill(m, v, why, onlyEmpty){
     for (const [slot, p] of Object.entries(m.sets[v].pieces)) {
       if ((onlyEmpty && pieces[slot] && !isEmpty(pieces[slot])) || blank.has(slot)) continue;
@@ -2858,6 +2859,12 @@ function tpBonusGear(s, pieces){
 }
 // The TP that matter with these weapons and buffs: 1000, then for each step (2000, 3000) the TP from
 // which the job's pieces reach it and the TP that reaches it alone, 3000 last
+// The TP steps of a weaponskill in Simulate: those of its set in the Sets tab (the game's TP bonus
+// config, its weapons and the buffs ticked), so both tabs offer the same ones
+function simTpSteps(ws){
+  const d = data(), set = d && (d.sets.find(x => wsOfSet(x) === ws) || d.sets.find(x => x.path === 'sets.precast.WS'));
+  return set ? tpSteps(tpAsk(set, withWeapons(set).pieces, null)) : TP_STEPS;
+}
 function tpSteps(r){
   if (!r || !r.thresholds) return TP_STEPS;
   const out = new Set([1000, 3000]);
