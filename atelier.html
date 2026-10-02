@@ -2446,7 +2446,8 @@ async function simRun(){
     let rFile = null;
     if (testing) { const qf = new URLSearchParams(q); qf.set('file', '1');
       try { rFile = await liveFetch(c, '/simulate?' + qf.toString(), {method: 'POST', timeout: 6000}); } catch (e) {} }
-    if (seq === SIM_SEQ) S._simResult = {req: key, r, rFile};
+    // ver: the GearSwap load that answered; a reload runs the action again (its code may have changed)
+    if (seq === SIM_SEQ) S._simResult = {req: key, r, rFile, ver: (S._live[c] || {}).version};
   } catch (e) { if (seq === SIM_SEQ) S._simResult = {req: key, r: {ok: false, error: t('liveLost')}}; }
   S._simBusy = false; render();
 }
@@ -2548,7 +2549,8 @@ function renderSim(d){
   simActions();
   const st = simState();
   // the action chosen before a page reload (or under another job) runs again on its own
-  if (st.name && !S._simBusy && !S._simQueued && (!S._simResult || S._simResult.req !== simKey() + "?" + simQuery(st).toString())) {
+  if (st.name && !S._simBusy && !S._simQueued && (!S._simResult || S._simResult.req !== simKey() + "?" + simQuery(st).toString()
+      || S._simResult.ver !== (S._live[c] || {}).version)) {
     S._simQueued = true; setTimeout(() => { S._simQueued = false; simRun(); }); }
   const acts = (S._simActions && S._simActions.list) || null, q = (st.q || '').toLowerCase();
   // groups: each magic skill of the main and sub (Healing, Enhancing...), one Trust row, abilities, weaponskills
