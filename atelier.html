@@ -1835,6 +1835,8 @@ const DEFAULT_ENEMY = 'BG Wiki sets';
 const ENDGAME_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II',
   song0: 'Honor March', song1: 'Minuet V', song2: 'Minuet IV', song3: 'Aria of Passion',
   roll0: 'Chaos', roll1: 'Samurai', indi: 'Fury', geo: 'Frailty', dia: 'Dia III', lightshot: true,
+  // the support's gear at its best: each song stops at its own cap (SONGS lim), Rolls +8 (Rostam C), Geomancy +10
+  songsPlus: '9', rollsPlus: '8', geoPlus: '10',
   // Haste Samba on its own whenever the shown subjob is DNC (a click turns it off there: jaOff)
   autoSamba: true};
 // Whether an ability counts: chosen, or Haste Samba under /DNC with the end-game default (not turned off)
@@ -1848,8 +1850,8 @@ const endgameBuffs = () => JSON.parse(JSON.stringify(ENDGAME_BUFFS));
 // target's (PERSONAL) follows you from one profile to the next. Full is the character's original profile.
 const TIERS = ['Full', 'Group', 'Solo'];
 const PERSONAL = ['food', 'am', 'amStage', 'enemy', 'ja', 'jaOff', 'autoSamba'];
-const TIER_DROP = {Full: [], Group: ['indi', 'geo', 'entrust'],
-  Solo: ['indi', 'geo', 'entrust', 'protect', 'shell', 'haste', 'song0', 'song1', 'song2', 'song3', 'roll0', 'roll1', 'dia', 'lightshot']};
+const TIER_DROP = {Full: [], Group: ['indi', 'geo', 'entrust', 'geoPlus'],
+  Solo: ['indi', 'geo', 'entrust', 'geoPlus', 'songsPlus', 'rollsPlus', 'protect', 'shell', 'haste', 'song0', 'song1', 'song2', 'song3', 'roll0', 'roll1', 'dia', 'lightshot']};
 function tierBuffs(tier){ const b = endgameBuffs(); for (const k of TIER_DROP[tier] || []) delete b[k]; return b; }
 const buffTier = () => (S.buffTier || {})[S.char] || 'Full';
 const buffKey = (tier = buffTier()) => tier === 'Full' ? S.char : S.char + '|' + tier;
