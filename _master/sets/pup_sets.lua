@@ -111,7 +111,8 @@ sets.midcast.Pet = {}
 sets.midcast.Pet.WeaponSkill = {}
 sets.midcast.Pet.WeaponSkill.Melee = set_combine(sets.midcast.Pet.WeaponSkill, {})
 sets.midcast.Pet.WeaponSkill.Tank = set_combine(sets.midcast.Pet.WeaponSkill, {})
-sets.midcast.Pet.WeaponSkill.Ranged = set_combine(sets.midcast.Pet.WeaponSkill, {})
+-- Ranged mode: RangedPet, never .Ranged (GearSwap would read it as the range slot)
+sets.midcast.Pet.WeaponSkill.RangedPet = set_combine(sets.midcast.Pet.WeaponSkill, {})
 -- sets.midcast.Pet['Arcuballista'] = {}  -- one weaponskill by name, when it goes off
 
 -- Automaton spells, when it starts casting
@@ -132,7 +133,7 @@ sets.idle.Pet = {}                           -- automaton out, not fighting
 sets.idle.Pet.Engaged = {}                   -- automaton fighting, you are not
 sets.idle.Pet.Engaged.Melee = set_combine(sets.idle.Pet.Engaged, {})
 sets.idle.Pet.Engaged.Tank = set_combine(sets.idle.Pet.Engaged, {})
-sets.idle.Pet.Engaged.Ranged = set_combine(sets.idle.Pet.Engaged, {})
+sets.idle.Pet.Engaged.RangedPet = set_combine(sets.idle.Pet.Engaged, {})  -- Ranged mode (see above)
 sets.idle.Pet.Engaged.Magic = set_combine(sets.idle.Pet.Engaged, {})
 sets.idle.Pet.Engaged.Heal = set_combine(sets.idle.Pet.Engaged, {})
 sets.idle.Pet.Engaged.Nuke = set_combine(sets.idle.Pet.Engaged, {})

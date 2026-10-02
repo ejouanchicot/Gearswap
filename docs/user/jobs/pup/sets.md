@@ -39,7 +39,7 @@ Built in this order, each step on top of the one before:
 | `sets.idle.Town` | In a city, on top |
 | `sets.idle.Pet` | Automaton out, not fighting |
 | `sets.idle.Pet.Engaged` | Automaton fighting, you are not |
-| `sets.idle.Pet.Engaged.Melee`, `.Tank`, `.Ranged`, `.Magic`, `.Heal`, `.Nuke` | Same, with that Pet Mode |
+| `sets.idle.Pet.Engaged.Melee`, `.Tank`, `.RangedPet`, `.Magic`, `.Heal`, `.Nuke` | Same, with that Pet Mode (Ranged mode: `.RangedPet`, since GearSwap reads a `.Ranged` key as the range slot) |
 | `sets.resting` | Resting (`/heal`) |
 
 The automaton sets go **on top** of your idle set: a slot they leave empty keeps
@@ -135,7 +135,7 @@ Moonshade Earring is added by itself when it reaches the next TP step:
 - `sets.Adoulin`, `sets.TreasureHunter` (both commented), `sets.defense.PDT` /
   `.MDT`.
 - `sets.idle.Pet.Engaged.<Pet Mode>` exist for all six; `sets.midcast.Pet
-  .WeaponSkill` only for Melee, Tank, Ranged.
+  .WeaponSkill` only for Melee, Tank, Ranged (`.RangedPet`).
 - `sets.engaged.Pet.Acc`, `.Acc.DT` versions.
 - `sets.midcast.Pet['Healing Magic']`, `['Enhancing Magic']`, `['Dark Magic']`,
   per-name automaton sets.

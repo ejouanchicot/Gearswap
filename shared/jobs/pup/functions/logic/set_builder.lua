@@ -40,13 +40,21 @@ local function hybrid_dt()
     return state.HybridMode ~= nil and state.HybridMode.current == 'DT'
 end
 
+--- The key of a Pet Mode's sub-set: the mode itself, except 'Ranged', which GearSwap
+--- reads as the range slot (its slot names ignore case): a sub-set under that key is taken
+--- for the range piece whenever the set holding it is equipped. Its sets are RangedPet.
+local function mode_key(mode)
+    return mode == 'Ranged' and 'RangedPet' or mode
+end
+
 --- node[PetMode] when it is a table, else node itself.
 --- @param node table
 --- @return table set, string suffix (for the trace)
 local function by_pet_mode(node)
     local mode = state.PetMode and state.PetMode.current
-    if mode and type(node[mode]) == 'table' then
-        return node[mode], '.' .. mode
+    local key = mode and mode_key(mode)
+    if key and type(node[key]) == 'table' then
+        return node[key], '.' .. key
     end
     return node, ''
 end

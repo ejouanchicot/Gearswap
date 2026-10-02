@@ -23,11 +23,19 @@
 
 --- The automaton WS set, by PetMode when defined.
 --- @return table|nil
+--- The key of a Pet Mode's sub-set: the mode itself, except 'Ranged', which GearSwap
+--- reads as the range slot (its slot names ignore case): a sub-set under that key is taken
+--- for the range piece whenever the set holding it is equipped. Its sets are RangedPet.
+local function mode_key(mode)
+    return mode == 'Ranged' and 'RangedPet' or mode
+end
+
 local function pet_ws_set()
     local ws = sets.midcast and sets.midcast.Pet and sets.midcast.Pet.WeaponSkill
     if not ws then return nil end
     local mode = state.PetMode and state.PetMode.current
-    if mode and type(ws[mode]) == 'table' then return ws[mode] end
+    local key = mode and mode_key(mode)
+    if key and type(ws[key]) == 'table' then return ws[key] end
     return ws
 end
 
