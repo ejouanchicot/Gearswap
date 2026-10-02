@@ -4,7 +4,9 @@
 --- For each weaponskill a set path names (sets.precast.WS["Savage Blade"]):
 ---   skill  its combat skill ("Sword"): the page puts a weapon of that skill in the set
 ---   info   what the weaponskill uses, from shared/data/weaponskills/<SKILL>_WS_DATABASE.lua:
----          type (Physical / Magical / Hybrid), mods ({STR = 60, VIT = 60}), hits, element.
+---          type (Physical / Magical / Hybrid), mods ({STR = 60, VIT = 60}), hits, element,
+---          ftp by TP ({["1000"] = 3.05, ...}), crit (its text names critical hits),
+---          replicating (its fTP goes to every hit).
 ---          The piece picker ranks the pieces by the stats the weaponskill is after.
 ---
 --- @file    shared/utils/atelier/atelier_ws.lua
@@ -36,7 +38,12 @@ function AtelierWS.collect(set_list)
     for name, skill in pairs(skills) do
         local entry = ok_db and Universal.resolve and Universal.resolve(name, skill)
         if type(entry) == 'table' then
-            info[name] = {type = entry.type, mods = entry.mods, hits = entry.hits, element = entry.element}
+            -- what the databases say in words: a critical weaponskill, fTP carried to every hit
+            local words = table.concat({entry.description or '', entry.special_notes or '', entry.notes or ''}, ' '):lower()
+            local ftp = {}
+            for tp, v in pairs(type(entry.ftp) == 'table' and entry.ftp or {}) do ftp[tostring(tp)] = v end
+            info[name] = {type = entry.type, mods = entry.mods or entry.stat_modifiers, hits = entry.hits, element = entry.element,
+                ftp = ftp, crit = words:find('crit', 1, true) ~= nil, replicating = words:find('replicat', 1, true) ~= nil}
         end
     end
     return skills, info
