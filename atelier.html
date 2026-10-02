@@ -3134,8 +3134,8 @@ function withWeapons(s, ignore){
     if (!v) continue;
     const stance = !ex && m.name === 'MainWeapon' && hybrid && (rules.stance_weapon || {})[hybrid];
     if (stance && m.sets[stance]) { v = stanceWeapon = stance; why = `${hybrid} : ${v}`; }
-    if (!ex && want && m.name === 'MainWeapon' && weaponSkillOf(m, v) !== want) {
-      const fit = m.values.find(x => weaponSkillOf(m, x) === want);
+    if (!ex && want && m.name === 'MainWeapon' && !wsWeaponFits(m, v, ws)) {
+      const fit = m.values.find(x => wsWeaponFits(m, x, ws));
       if (fit) { v = fit; stanceWeapon = null; why = `${ws} : ${v}`; }
     }
     fill(m, v, why, false);
@@ -3288,6 +3288,18 @@ function wsOfSet(s){
 }
 // Weaponskill -> its combat skill (export ws_skill), weapon -> its combat skill (export wskill)
 const wsSkills = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_skill || {}));
+// Whether a weapon of a mode can open a weaponskill: its skill, and for a relic or prime one the
+// weapon itself (export ws_info.lock names them; empyrean and mythic ones are unlocked for any weapon)
+const wsInfoOf = ws => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_info || {}))[ws] || {};
+function wsWeaponFits(m, v, ws){
+  const want = ws && wsSkills()[ws];
+  if (!want) return true;
+  if (weaponSkillOf(m, v) !== want) return false;
+  const lock = wsInfoOf(ws).lock;
+  if (!lock) return true;
+  const main = ((m.sets[v] && m.sets[v].pieces.main) || {}).name || v;
+  return lock.toLowerCase().includes(String(main).toLowerCase());
+}
 function weaponSkillOf(m, v){
   const main = m.sets[v] && m.sets[v].pieces.main;
   return main ? Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.wskill || {}))[main.name] : null;
@@ -3309,7 +3321,10 @@ function weaponPicker(s){
   if (family(s.path, s.pieces) === 'weapons') return '';
   // no picker for a slot the set empties on purpose (sets.naked): nothing can go there
   const slotOf = m => m.onlyEmpty ? m.name.slice(5) : (m.name === 'MainWeapon' ? 'main' : Object.keys(m.sets[m.values[0]].pieces)[0]);
-  const d = data(), modes = weaponModes(d).filter(m => !isEmpty(s.pieces[slotOf(m)]));
+  // a weaponskill's set offers only the weapons that open it (its skill; the weapon itself for a relic or prime)
+  const ws = wsOfSet(s), only = m => m.name !== 'MainWeapon' || !ws ? m
+    : Object.assign({}, m, {values: m.values.filter(v => wsWeaponFits(m, v, ws) || v === explicitWeapon(m))});
+  const d = data(), modes = weaponModes(d).filter(m => !isEmpty(s.pieces[slotOf(m)])).map(only);
   const hm = modes.length ? hybridMode(d) : null;
   if (!hm && !modes.length) return '';
   // buttons, like the set's variants: one row per mode, "Auto" first (what the job's rules put there)

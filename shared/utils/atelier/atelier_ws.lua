@@ -20,6 +20,30 @@
 local AtelierWS = {}
 
 --- {weaponskill = combat skill} and {weaponskill = {type, mods, hits, element}} for the sets.
+-- Relic weaponskills: only with the relic (or its quest weapon). The databases' notes name the
+-- weapon for some; these name it for every one (BG Wiki). Prime ones go by the notes.
+-- Empyrean and mythic weaponskills are not here: a quest unlocks them for any weapon of the skill.
+local RELIC = {
+    ['Final Heaven'] = 'Spharai', ['Mercy Stroke'] = 'Mandau', ['Knights of Round'] = 'Excalibur',
+    ['Scourge'] = 'Ragnarok', ['Onslaught'] = 'Guttler', ['Metatron Torment'] = 'Bravura',
+    ['Catastrophe'] = 'Apocalypse', ['Geirskogul'] = 'Gungnir', ['Blade: Metsu'] = 'Kikoku',
+    ['Tachi: Kaiten'] = 'Amanomurakumo', ['Randgrith'] = 'Mjollnir', ['Gate of Tartarus'] = 'Claustrum',
+    ['Namas Arrow'] = 'Yoichinoyumi', ['Coronach'] = 'Annihilator',
+}
+
+--- The weapons a relic or prime weaponskill needs, as text the page searches a weapon's name in;
+--- nil when any weapon of its skill can use it.
+local function lock_of(name, entry)
+    local words = table.concat({entry.description or '', entry.special_notes or '', entry.notes or ''}, ' ')
+    local kinds, named = words:lower(), {}
+    for _, w in ipairs(type(entry.special_weapons) == 'table' and entry.special_weapons or {}) do
+        if w.type == 'Relic' or w.type == 'Prime' then kinds = kinds .. ' relic' end
+        named[#named + 1] = w.weapon
+    end
+    if not (RELIC[name] or kinds:find('relic', 1, true) or kinds:find('prime', 1, true)) then return nil end
+    return table.concat({RELIC[name] or '', table.concat(named, ' / '), words}, ' | ')
+end
+
 -- The combat skills that have a weaponskill database (shared/data/weaponskills/)
 local SKILLS = {'Sword', 'Dagger', 'Hand-to-Hand', 'Great Sword', 'Great Axe', 'Axe', 'Scythe', 'Polearm',
     'Katana', 'Great Katana', 'Staff', 'Club', 'Archery'}
@@ -77,7 +101,8 @@ function AtelierWS.collect(set_list, job, level, sub)
             local ftp = {}
             for tp, v in pairs(type(entry.ftp) == 'table' and entry.ftp or {}) do ftp[tostring(tp)] = v end
             info[name] = {type = entry.type, mods = entry.mods or entry.stat_modifiers, hits = entry.hits, element = entry.element,
-                ftp = ftp, crit = words:find('crit', 1, true) ~= nil, replicating = words:find('replicat', 1, true) ~= nil}
+                ftp = ftp, crit = words:find('crit', 1, true) ~= nil, replicating = words:find('replicat', 1, true) ~= nil,
+                lock = lock_of(name, entry)}
         end
     end
     return skills, info
