@@ -250,12 +250,27 @@
         });
         return out.sort(function (a, b) { return b.gain - a.gain; });
     };
+    // A piece of the job's TP config stays in the result only when it brings more than its TP Bonus:
+    // when your best other piece for that slot does as well (the job's rule laying it at the TP when
+    // needed), that one goes in (Moonshade never written in a set, Boii Cuisses kept for its stats)
+    function tpOnlyOut(ctx, res, choices, opts) {
+        var names = ((opts.tpRule && opts.tpRule.pieces) || []).map(function (p) { return p.name; });
+        Object.keys(res.pieces).forEach(function (slot) {
+            var p = res.pieces[slot];
+            if (!p || names.indexOf(p.name) === -1 || !choices[slot]) return;
+            var others = choices[slot].filter(function (x) { return names.indexOf(x.name) === -1 && !clashes(res.pieces, slot, x); });
+            var best = null, bestV = -Infinity;
+            others.forEach(function (x) { var v = O.valueWith(ctx, res.pieces, slot, x, opts).v; if (v > bestV) { bestV = v; best = x; } });
+            if (best && bestV >= res.best.v - Math.abs(res.best.v) * 1e-9) { res.pieces[slot] = best; res.best = O.value(ctx, res.pieces, opts); }
+        });
+    }
     // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices,
     // opts, prefilter (keep each slot's best n first)}; onStep(progress) while it searches
     O.run = function (input, onStep) {
         var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {onStep: onStep});
         var choices = input.prefilter ? O.prefilter(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
         var res = O.optimize(ctx, input.start, choices, opts);
+        tpOnlyOut(ctx, res, choices, opts);
         delete opts.onStep;
         return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, gains: O.gains(ctx, res, choices, opts)};
     };
