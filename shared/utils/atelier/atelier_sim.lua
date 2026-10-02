@@ -295,6 +295,7 @@ function AtelierSim.run(req)
         local ok, result = pcall(AtelierSim.run, copy)
         if restore then restore() end
         if not ok then error(result, 0) end
+        result.as_file = true
         return result
     end
     local G = gs()
