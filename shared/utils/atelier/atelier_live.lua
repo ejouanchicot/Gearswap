@@ -18,6 +18,9 @@
 ---                              to a weaponskill at that TP, and its TP steps (AtelierSim.tp_bonus)
 ---   POST /simulate?kind=&name=  what the job wears for an action (atelier_sim.lua),
 ---        &target=&status=&s.<Mode>=  without doing it
+---   POST /push?mode=preview|write[&hash=]  a set written into the set file, previewed
+---                              first (shared/utils/atelier/set_push.lua)
+---   GET  /push_history, POST /push_undo?id=  the pushes, and putting a file back
 ---   POST /reload[?full=1]      //gs reload (so a saved change is worn now), or the
 ---                              whole addon: //lua r gearswap
 ---
@@ -160,6 +163,19 @@ local function route(req, live)
         local result = require('shared/utils/atelier/atelier_sim').run({kind = q.kind, name = q.name, target = q.target,
             status = q.status, states = states, ignore_recasts = q.recasts ~= '1', tp = q.tp, buffs = q.buffs})
         return '200 OK', Export.json(result)
+    end
+    if req.path == '/push' and req.method == 'POST' then
+        local q, SetPush = query_table(req.query), require('shared/utils/atelier/set_push')
+        local job = player and player.main_job
+        if not job then return '503 Service Unavailable', '{"error":"no job"}' end
+        local result = q.mode == 'write' and SetPush.write(job, req.body, q.hash) or SetPush.preview(job, req.body)
+        return '200 OK', Export.json(result)
+    end
+    if req.path == '/push_history' then
+        return '200 OK', Export.json({list = require('shared/utils/atelier/set_push').history()})
+    end
+    if req.path == '/push_undo' and req.method == 'POST' then
+        return '200 OK', Export.json(require('shared/utils/atelier/set_push').undo(tonumber(query_table(req.query).id)))
     end
     if req.path == '/reload' and req.method == 'POST' then
         -- ?full=1: the whole addon (lua r gearswap); the door closes with it and the new
