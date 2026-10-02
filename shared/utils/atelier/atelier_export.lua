@@ -689,6 +689,7 @@ function AtelierExport.build()
     local ok_s, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
     data.set_overrides = ok_s and SetOverrides.read() or nil
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
+    pcall(require('shared/utils/atelier/atelier_catalog').write_if_stale, data_path('atelier/catalog.js'), json)
     return data
 end
 
