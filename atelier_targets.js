@@ -7,6 +7,9 @@
 // Locus Ghost Crab: BG-Wiki (Defense, Evasion). Arebati: FFXIAH "Arebati stats" (V0, +4 each stat and +55 Defense a
 // Vengeance level); its Evasion was never measured: 1201 at V20 (BG-Wiki's V20 accuracy, ~1241, less the 40 a 95 %
 // hit rate needs), +2 a Vengeance level (AGI +4).
+// Sortie bosses: Evasion measured (@long_horned, BG-Wiki, the Aminon guide), INT / MND from BG-Wiki where it has
+// them; Defense worked out from the Apex rule (a base by level and job + VIT/2), VIT / INT / MND the median Apex of
+// that level. Their Evasion falls on the same rule, a hidden bonus on a boss would not show.
 // @author ejouanchicot
 const ATELIER_TARGETS = [
   {"key": "Apex Chapuli · Lv125", "name": "Apex Chapuli", "zone": "Sih Gates", "job": "WAR/WAR", "lv": 125, "hp": 140600, "def": 1027, "eva": 935, "vit": 240, "agi": 277, "int": 208, "mnd": 208, "chr": 210, "res": {"slash": 0.0, "pierce": 0.0, "blunt": 0.0, "ranged": 0.0, "magic": 0.0, "breath": 0.0}, "est": [], "src": "atwiki"},
@@ -161,5 +164,14 @@ const ATELIER_TARGETS = [
   {"key": "Arebati · V10", "name": "Arebati", "zone": "Odyssey Sheol Gaol", "job": "", "lv": null, "hp": null, "def": 1870, "eva": 1181, "vit": 370, "agi": 355, "int": 360, "mnd": 305, "chr": 320, "str": 435, "dex": 370, "res": null, "est": ["EVA"], "src": "ffxiah"},
   {"key": "Arebati · V15", "name": "Arebati", "zone": "Odyssey Sheol Gaol", "job": "", "lv": null, "hp": null, "def": 2145, "eva": 1191, "vit": 390, "agi": 375, "int": 380, "mnd": 325, "chr": 340, "str": 455, "dex": 390, "res": null, "est": ["EVA"], "src": "ffxiah"},
   {"key": "Arebati · V20", "name": "Arebati", "zone": "Odyssey Sheol Gaol", "job": "", "lv": null, "hp": null, "def": 2420, "eva": 1201, "vit": 410, "agi": 395, "int": 400, "mnd": 345, "chr": 360, "str": 475, "dex": 410, "res": null, "est": ["EVA"], "src": "ffxiah"},
-  {"key": "Arebati · V25", "name": "Arebati", "zone": "Odyssey Sheol Gaol", "job": "", "lv": null, "hp": null, "def": 2695, "eva": 1211, "vit": 430, "agi": 415, "int": 420, "mnd": 365, "chr": 380, "str": 495, "dex": 430, "res": null, "est": ["EVA"], "src": "ffxiah"}
+  {"key": "Arebati · V25", "name": "Arebati", "zone": "Odyssey Sheol Gaol", "job": "", "lv": null, "hp": null, "def": 2695, "eva": 1211, "vit": 430, "agi": 415, "int": 420, "mnd": 365, "chr": 380, "str": 495, "dex": 430, "res": null, "est": ["EVA"], "src": "ffxiah"},
+  {"key": "Ghatjot (A) · Lv135", "name": "Ghatjot", "zone": "Sortie", "job": "WAR/BLM", "lv": 135, "hp": null, "def": 1354, "eva": 1224, "vit": 320, "agi": 309, "int": 282, "mnd": 267, "chr": 267, "res": null, "est": ["DEF", "VIT", "AGI", "INT", "MND", "CHR"], "src": "model"},
+  {"key": "Leshonn (B) · Lv135", "name": "Leshonn", "zone": "Sortie", "job": "MNK/BLM", "lv": 135, "hp": null, "def": 1319, "eva": 1249, "vit": 320, "agi": 309, "int": 282, "mnd": 267, "chr": 267, "res": null, "est": ["DEF", "VIT", "AGI", "INT", "MND", "CHR"], "src": "model"},
+  {"key": "Skomora (C) · Lv135", "name": "Skomora", "zone": "Sortie", "job": "DRK/BLM", "lv": 135, "hp": null, "def": 1319, "eva": 1224, "vit": 320, "agi": 309, "int": 282, "mnd": 267, "chr": 267, "res": null, "est": ["DEF", "VIT", "AGI", "INT", "MND", "CHR"], "src": "model"},
+  {"key": "Degei (D) · Lv135", "name": "Degei", "zone": "Sortie", "job": "RUN/DRK", "lv": 135, "hp": null, "def": 1319, "eva": 1249, "vit": 320, "agi": 309, "int": 282, "mnd": 267, "chr": 267, "res": null, "est": ["DEF", "VIT", "AGI", "INT", "MND", "CHR"], "src": "model"},
+  {"key": "Dhartok (E) · Lv145", "name": "Dhartok", "zone": "Sortie", "job": "WAR/BLM", "lv": 145, "hp": null, "def": 1739, "eva": 1581, "vit": 381, "agi": 378, "int": 373, "mnd": 360, "chr": 360, "res": null, "est": ["DEF", "VIT", "AGI", "INT", "MND", "CHR"], "src": "model"},
+  {"key": "Gartell (F) · Lv145", "name": "Gartell", "zone": "Sortie", "job": "MNK/BLM", "lv": 145, "hp": null, "def": 1704, "eva": 1613, "vit": 381, "agi": 378, "int": 350, "mnd": 394, "chr": 394, "res": null, "est": ["DEF", "VIT", "AGI", "CHR"], "src": "model"},
+  {"key": "Triboulex (G) · Lv145", "name": "Triboulex", "zone": "Sortie", "job": "DRK/BLM", "lv": 145, "hp": null, "def": 1704, "eva": 1581, "vit": 381, "agi": 378, "int": 504, "mnd": 367, "chr": 367, "res": null, "est": ["DEF", "VIT", "AGI", "CHR"], "src": "model"},
+  {"key": "Aita (H) · Lv145", "name": "Aita", "zone": "Sortie", "job": "RUN/DRK", "lv": 145, "hp": null, "def": 1704, "eva": 1613, "vit": 381, "agi": 378, "int": 494, "mnd": 427, "chr": 427, "res": null, "est": ["DEF", "VIT", "AGI", "CHR"], "src": "model"},
+  {"key": "Aminon (final) · Lv149", "name": "Aminon", "zone": "Sortie", "job": "RUN/DRK", "lv": 149, "hp": null, "def": 1878, "eva": 1774, "vit": 415, "agi": 406, "int": 407, "mnd": 394, "chr": 394, "res": null, "est": ["DEF", "VIT", "AGI", "INT", "MND", "CHR"], "src": "model"}
 ];
