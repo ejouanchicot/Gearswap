@@ -24,17 +24,26 @@ local AtelierWS = {}
 local SKILLS = {'Sword', 'Dagger', 'Hand-to-Hand', 'Great Sword', 'Great Axe', 'Axe', 'Scythe', 'Polearm',
     'Katana', 'Great Katana', 'Staff', 'Club', 'Archery'}
 
---- Every weaponskill the databases give this job at this level: {name = combat skill}.
+--- Every weaponskill the databases give this job at this level: {name = combat skill}. The level
+--- is under `jobs` (`job_levels` in the dagger file); `main_or_sub` lists the jobs one of which
+--- must be the main or the subjob (Viper Bite, Aeolian Edge...).
 --- @param job string Main job code
 --- @param level number|nil Main job level (99 when unknown)
-local function job_weaponskills(job, level)
+--- @param sub string|nil Subjob code
+local function job_weaponskills(job, level, sub)
     local ok, Universal = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
     if not (ok and Universal and Universal.ensure_weapon_type and job) then return {} end
     for _, skill in ipairs(SKILLS) do Universal.ensure_weapon_type(skill) end
     local out, all = {}, (rawget(_G, 'WS_DATABASE') or {}).weaponskills or {}
     for name, entry in pairs(all) do
-        local need = type(entry.jobs) == 'table' and entry.jobs[job]
-        if need and (level or 99) >= need then out[name] = entry.weapon_type end
+        local levels = type(entry.jobs) == 'table' and entry.jobs or entry.job_levels
+        local need = type(levels) == 'table' and levels[job]
+        local allowed = true
+        if type(entry.main_or_sub) == 'table' then
+            allowed = false
+            for _, j in ipairs(entry.main_or_sub) do if j == job or j == sub then allowed = true end end
+        end
+        if need and allowed and (level or 99) >= need then out[name] = entry.weapon_type end
     end
     return out
 end
@@ -42,8 +51,9 @@ end
 --- @param set_list table The export's sets ({path, ...})
 --- @param job string|nil Main job code (its weaponskills are added)
 --- @param level number|nil Main job level
+--- @param sub string|nil Subjob code
 --- @return table|nil skills, table|nil info
-function AtelierWS.collect(set_list, job, level)
+function AtelierWS.collect(set_list, job, level, sub)
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.weapon_skills and res.skills) then return nil end
     local by_name = {}
@@ -56,7 +66,7 @@ function AtelierWS.collect(set_list, job, level)
         for name in tostring(set.path):gmatch('"([^"]+)"') do skills[name] = by_name[name] end
         for name in tostring(set.path):gmatch('%.([%w_]+)') do skills[name] = skills[name] or by_name[name] end
     end
-    for name, skill in pairs(job_weaponskills(job, level)) do skills[name] = skills[name] or skill end
+    for name, skill in pairs(job_weaponskills(job, level, sub)) do skills[name] = skills[name] or skill end
     local ok_db, Universal = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
     local info = {}
     for name, skill in pairs(skills) do

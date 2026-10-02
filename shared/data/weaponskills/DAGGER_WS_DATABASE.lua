@@ -71,6 +71,7 @@ dagger_ws.weaponskills = {
         description         = "Poison, 2x attack",
         skill_level         = 100,
         job_levels          = {BLM = 37, BRD = 34, BST = 35, COR = 34, DNC = 34, DRG = 40, DRK = 35, GEO = 35, NIN = 35, PLD = 35, PUP = 35, RDM = 34, RNG = 34, SAM = 40, SCH = 37, SMN = 40, THF = 33, WAR = 34},
+        main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "100% DEX",
         sc_properties       = {"Scission"},
         requires_quest      = false,
@@ -84,6 +85,7 @@ dagger_ws.weaponskills = {
         description         = "AoE Wind damage",
         skill_level         = 125,
         job_levels          = {BLM = 46, BRD = 43, BST = 44, COR = 43, DNC = 43, DRG = 50, DRK = 44, GEO = 44, NIN = 44, PLD = 44, PUP = 44, RDM = 43, RNG = 43, SAM = 50, SCH = 46, SMN = 50, THF = 41, WAR = 43},
+        main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'COR', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "40% DEX / 40% INT",
         sc_properties       = {"Detonation", "Impaction"},
         requires_quest      = false,
@@ -110,6 +112,7 @@ dagger_ws.weaponskills = {
         description         = "Steals MP (enhanced)",
         skill_level         = 175,
         job_levels          = {BLM = 59, BRD = 56, BST = 57, COR = 56, DNC = 56, DRG = 63, DRK = 57, GEO = 57, NIN = 57, PLD = 57, PUP = 57, RDM = 56, RNG = 56, SAM = 63, SCH = 59, SMN = 63, THF = 55, WAR = 56},
+        main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "100% MND",
         sc_properties       = {},
         requires_quest      = false,
@@ -139,7 +142,7 @@ dagger_ws.weaponskills = {
     ['Shark Bite'] = {
         description         = "2-hit, dmg varies",
         skill_level         = 225,
-        job_levels          = {BLM = 99, DNC = 68, GEO = 99, SCH = 99, SMN = 99, THF = 66},
+        job_levels          = {DNC = 68, THF = 66},  -- BG Wiki: Thief or Dancer only
         stat_modifiers      = "40% DEX / 40% AGI",
         sc_properties       = {'Fragmentation'},
         requires_quest      = false,
@@ -152,7 +155,7 @@ dagger_ws.weaponskills = {
     ['Evisceration'] = {
         description         = "5-hit, crit varies",
         skill_level         = 230,
-        job_levels          = {BRD = 73, BST = 75, COR = 70, DNC = 70, NIN = 75, PUP = 99, RDM = 71, RNG = 73, THF = 67, WAR = 73},
+        job_levels          = {BRD = 73, BST = 75, COR = 70, DNC = 70, NIN = 75, RDM = 71, RNG = 73, THF = 67, WAR = 73},  -- BG Wiki: no PUP
         stat_modifiers      = "50% DEX",
         sc_properties       = {'Gravitation', 'Transfixion'},
         requires_quest      = true,
@@ -167,6 +170,7 @@ dagger_ws.weaponskills = {
         description         = "AoE Wind, dmg varies",
         skill_level         = 290,
         job_levels          = {BLM = 92, BRD = 85, BST = 86, COR = 82, DNC = 78, DRG = 97, DRK = 87, GEO = 88, NIN = 86, PLD = 88, PUP = 88, RDM = 83, RNG = 85, SAM = 97, SCH = 92, SMN = 97, THF = 78, WAR = 85},
+        main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "40% DEX / 40% INT",
         sc_properties       = {'Scission', 'Detonation', 'Impaction'},
         requires_quest      = false,

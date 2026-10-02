@@ -661,7 +661,7 @@ function AtelierExport.build()
     data.descs = collect_descs(ids)
     data.wskill = collect_weapon_skills(data.icons)
     -- each weaponskill's combat skill and what it uses (shared/utils/atelier/atelier_ws.lua)
-    data.ws_skill, data.ws_info = require('shared/utils/atelier/atelier_ws').collect(data.sets, player.main_job, player.main_job_level)
+    data.ws_skill, data.ws_info = require('shared/utils/atelier/atelier_ws').collect(data.sets, player.main_job, player.main_job_level, player.sub_job)
     data.export_version = EXPORT_VERSION
     -- the keys changed in the page and saved (<Char>/saved/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')

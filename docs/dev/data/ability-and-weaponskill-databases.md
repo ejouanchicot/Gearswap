@@ -229,6 +229,10 @@ aggregators.
 `requires_merit`, `merit_ranks`, `special_weapons` (array of `{weapon, level, type, bonus|aftermath}`),
 `element`, `notes`. It has no `type`, `mods`, `hits`, `ftp`, `skill_required`, `jobs` or `skillchain`.
 The announcement only needs `description`, so it works; `//gs c info` shows only the fields it knows.
+`main_or_sub` (array of job codes, Viper Bite, Cyclone, Energy Drain, Aeolian Edge) lists the jobs one of
+which must be the main or the subjob (BG Wiki). The Atelier export reads `jobs` or `job_levels` and
+`main_or_sub` to list every weaponskill the loaded job and subjob can use
+(`shared/utils/atelier/atelier_ws.lua`).
 
 ## How it works
 
