@@ -52,6 +52,8 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `shared/utils/equipment/elemental_belt.lua` | 213 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
 | `shared/utils/equipment/dual_wield.lua` | 247 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
+| `shared/utils/party/support_tier.lua` | 108 | Weaponskill set version by party support (`.Group` / `.Solo`); `//gs c support` | `INIT_SYSTEMS.lua` (`SupportTier.install`) | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
+| `shared/utils/party/party_jobs.lua` | 106 | Main job of each party member (0xDD / 0xDF, alt report, trusts) | `support_tier.lua` | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
 | `shared/utils/equipment/treasure_hunter.lua` | 290 | `TreasureMode` (Off/Tag/Full, SATA on THF), mob tagging, engaged (skipped during a COR roll, `GearHold`) and action overlays | `INIT_SYSTEMS.lua` (`TreasureHunter.install`) | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
 | `shared/utils/equipment/treasure_commands.lua` | 63 | `//gs c th` built on `optional_state_commands.create` | `COMMON_COMMANDS.lua` router | [commands-and-debug.md](commands-and-debug.md) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga -> Daybreak), worn through Combat Mode | RDM precast / midcast / aftercast / commands | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock), [../jobs/rdm.md](../jobs/rdm.md) |
@@ -897,7 +899,7 @@ open until the stance is selected again. The registry is emptied on every job lo
 | `//gs c wardrobeaudit`, `//gs c wa` | none | Writes `data/wardrobe_audit.txt`, prints per-wardrobe unused counts | `handle_command` -> `CommonCommands.handle_wardrobeaudit` -> `WardrobeAuditor.audit` |
 | `//gs c refill`, `//gs c rf` | none | Restock from Case/Sack/Satchel, push surplus and foreign items, then broadcast `rf` to the partner | `handle_command` -> `CommonCommands.handle_refill` -> `RefillManager.refill` |
 | `//gs c gearscan` | none | Writes `<Char>/saved/gear_augments.lua` (augments of every equipment piece), prints a summary | `handle_command` -> `GearScan.run` |
-| `//gs c belt`, `//gs c dw ...`, `//gs c th ...` | see page | Belt status, Dual Wield tier, Treasure Mode | [factories-and-helpers.md](factories-and-helpers.md) |
+| `//gs c belt`, `//gs c dw ...`, `//gs c support ...`, `//gs c th ...` | see page | Belt status, Dual Wield tier, party support tier, Treasure Mode | [factories-and-helpers.md](factories-and-helpers.md) |
 
 The three inventory command names and `gearscan` are listed in `CommonCommands.is_common_command`.
 There is no command for the quiver manager, HP priority itself (only its `//gs c hporder` display,

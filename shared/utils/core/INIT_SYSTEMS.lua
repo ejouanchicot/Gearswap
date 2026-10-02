@@ -350,6 +350,15 @@ pcall(function()
     end
 end)
 
+-- Weaponskill set by the support in the party (support_tier.lua): wraps
+-- Mote's get_weaponskill_set, defined by now, and listens for party jobs.
+pcall(function()
+    local ok, SupportTier = pcall(require, 'shared/utils/party/support_tier')
+    if ok and SupportTier then
+        SupportTier.install()
+    end
+end)
+
 -- Treasure Hunter on the engaged set and on the first action against a
 -- mob not tagged yet (treasure_hunter.lua). After the Dual Wield and belt
 -- hooks (TH wins, once per mob), before the custom states.
