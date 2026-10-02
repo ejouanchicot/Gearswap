@@ -357,13 +357,18 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .diff div{padding:0 12px}
 .diff .add{background:color-mix(in srgb,var(--r-healer) 16%,transparent)}
 .diff .del{background:color-mix(in srgb,var(--r-dd) 16%,transparent);color:var(--muted)}
-.histrow{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:6px}
+.histrow{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:0 0 6px}
+.histrow[open]{display:grid;gap:6px}
 .histrow.undone{opacity:.6}
 .histtag{font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;border:1px solid currentColor}
 .histtag.delete{color:var(--r-dd)}
 .histtag.create{color:var(--r-healer)}
 .histtag.pieces{color:var(--g-def)}
-.histhead{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap}
+.histhead{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap;cursor:pointer;list-style:none}
+.histhead::-webkit-details-marker{display:none}
+.histhead::before{content:'▸';color:var(--muted)}
+.histrow[open]>.histhead::before{content:'▾'}
+.histfile{margin:0}
 .histhead .sp{flex:1}
 .histhead code{font-family:var(--mono);font-size:12.5px}
 .histrow ul{margin:0;padding-left:18px;font-size:12.5px;display:grid;gap:2px}
@@ -4381,11 +4386,12 @@ async function openHistory(){
   // what the entry did: a set deleted, a set created, or pieces changed in a set already there
   const kind = e => e.deleted ? 'delete' : e.created ? 'create' : 'pieces';
   const tag = e => `<span class="histtag ${kind(e)}">${esc(t('histKind_' + kind(e), {n: (e.changes || []).length}))}</span>`;
-  const body = list.length ? list.map(e => `<div class="histrow ${e.undone ? 'undone' : ''}"><div class="histhead">${tag(e)}<b>${esc(e.job)}</b>` +
-    `<code>${esc(shortPath(e.path))}</code><span class="muted small">${esc(e.at)} · ${esc(e.file)}</span><span class="sp"></span>${state(e)}</div>` +
+  const body = list.length ? list.map(e => `<details class="histrow ${e.undone ? 'undone' : ''}"><summary class="histhead">${tag(e)}<b>${esc(e.job)}</b>` +
+    `<code>${esc(shortPath(e.path))}</code><span class="muted small">${esc(e.at)}</span><span class="sp"></span>${state(e)}</summary>` +
+    `<p class="muted small histfile">${esc(e.file)}</p>` +
     (e.deleted ? `<ul><li><del>${esc(e.deleted.map(shortPath).join(' · '))}</del> ${t('histDeleted')}</li></ul>` : '') +
     `<ul>${(e.changes || []).map(c => `<li><b>${SLOT_NAMES[S.lang][c.slot] || c.slot}</b> ${c.before ? `<del>${esc(c.before)}</del> → ` : '+ '}` +
-      `<ins>${esc(c.after || t('histInherit'))}</ins></li>`).join('')}</ul></div>`).join('') : `<p class="muted">${t('histEmpty')}</p>`;
+      `<ins>${esc(c.after || t('histInherit'))}</ins></li>`).join('')}</ul></details>`).join('') : `<p class="muted">${t('histEmpty')}</p>`;
   showDialog('histdlg', t('histTitle'), (S._histToast ? `<p class="ok">${esc(S._histToast)}</p>` : '') + body, '');
   S._histToast = '';
 }
@@ -4513,7 +4519,7 @@ document.addEventListener('click', e => {
   if ('optws' in d) { optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('cmpmore' in d) { S._cmpMore = !S._cmpMore; openCompare(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('pushhist' in d) { openHistory(); return; }
-  if (d.pushundo) { pushUndo(+d.pushundo); return; }
+  if (d.pushundo) { e.preventDefault(); pushUndo(+d.pushundo); return; }
   if ('showjunk' in d && S._drawer) { S._showJunk = !S._showJunk; openSlot(S._drawer.ci, S._drawer.slot); return; }
   if ('tryempty' in d && S._drawer) { setTrial(S._drawer.set, S._drawer.slot, null); closeOverlay(); render(); return; }
   if ('tryundo' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), k = trialKey(s), dr = S.drafts[k];
