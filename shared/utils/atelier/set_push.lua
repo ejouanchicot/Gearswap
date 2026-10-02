@@ -20,6 +20,8 @@
 --- is written with that variable, read from how the file's other sets use it;
 --- any other piece by its name and augments. The set is found in the job's set
 --- folder (<Char>/<job>/sets/, shared/utils/atelier/set_writer.lua does the text).
+--- A support tier version of a weaponskill set (.Group, .Solo) the file does not
+--- write yet is written right under its base set, as a set_combine of it.
 ---
 --- Before writing, the file is copied to <Char>/saved/backups/; every push is
 --- noted in <Char>/saved/set_push_history.lua, and the set's entry leaves
@@ -217,16 +219,49 @@ local function changes_of(req, text)
     return out
 end
 
+-- Versions a push may write when the file has none yet, under the set they are built on:
+-- the support tiers of a weaponskill set (shared/utils/party/support_tier.lua)
+local NEW_VERSIONS = {Group = true, Solo = true}
+
+--- A version the file does not write yet, built on its base set: the file, its text, the
+--- base's definition and the version's name; or nil.
+local function locate_base(job, keys)
+    local name = keys[#keys]
+    if not (NEW_VERSIONS[name] and #keys > 1) then return nil end
+    local base_keys = {}
+    for i = 1, #keys - 1 do base_keys[i] = keys[i] end
+    for _, file in ipairs(set_files(job)) do
+        local text = read(file)
+        local def = text and SetWriter.find_keys(text, base_keys)
+        if def then return file, text, def, name end
+    end
+    return nil
+end
+
+--- The file with the set changed, or with the version written when the file has none yet.
+--- @return string|nil abs, string text|why, string out, table done, table def (before), table keys
+local function rewrite(job, req)
+    local keys = SetWriter.path_keys(req.path)
+    local abs, text, def = locate(job, req.path)
+    if abs then
+        local out, done = SetWriter.edit(text, def, changes_of(req, text))
+        return abs, text, out, done, def, keys
+    end
+    local babs, btext, base, name = locate_base(job, keys)
+    if not babs then return nil, text end
+    local out, done = SetWriter.create(btext, base, name, changes_of(req, btext))
+    return babs, btext, out, done, nil, keys
+end
+
 --- The change asked, worked out: {file, abs, text, out, before, after, changes, hash} or nil and why.
 local function prepare(job, body)
     local req = parse_body(body)
     if not (req.path and SetWriter.path_keys(req.path)) then return nil, 'path' end
-    local abs, text, def = locate(job, req.path)
+    local abs, text, out, done, def, keys = rewrite(job, req)
     if not abs then return nil, text end
-    local out, done = SetWriter.edit(text, def, changes_of(req, text))
-    local def_after = SetWriter.find(out, req.path)
+    local def_after = SetWriter.find_keys(out, keys)
     return {path = req.path, file = relative(abs), abs = abs, text = text, out = out, changes = done,
-        before = SetWriter.block(text, def), after = def_after and SetWriter.block(out, def_after) or '',
+        before = def and SetWriter.block(text, def) or '', created = def == nil or nil, after = def_after and SetWriter.block(out, def_after) or '',
         hash = SetWriter.hash(text)}
 end
 
@@ -287,7 +322,7 @@ end
 function SetPush.preview(job, body)
     local p, why = prepare(job, body)
     if not p then return {error = why} end
-    return {ok = true, file = p.file, hash = p.hash, before = p.before, after = p.after, changes = p.changes}
+    return {ok = true, file = p.file, hash = p.hash, before = p.before, after = p.after, changes = p.changes, created = p.created}
 end
 
 --- Write the set into its file, when the file is still the one the preview read.

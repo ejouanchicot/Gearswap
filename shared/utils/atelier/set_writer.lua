@@ -242,7 +242,11 @@ end
 
 --- The definition of one set, or nil.
 function SetWriter.find(text, path)
-    local keys = SetWriter.path_keys(path)
+    return SetWriter.find_keys(text, SetWriter.path_keys(path))
+end
+
+--- The definition of one set by its keys, or nil.
+function SetWriter.find_keys(text, keys)
     if not keys then return nil end
     for _, def in ipairs(SetWriter.definitions(text)) do
         if same_keys(def.keys, keys) then return def end
@@ -405,6 +409,34 @@ function SetWriter.edit(text, def, changes)
         for _, ins in ipairs(inserts) do insert_edits(text, def, ins, st, edits) end
     end
     return apply(text, edits), done
+end
+
+--- A new set written right after the definition of the set it is built on:
+---   <base path>.<name> = set_combine(<base path>, {
+---       head = ...,
+---   })
+--- the base path spelled as the file spells it, the slots in slot order (false ones left out:
+--- the new set inherits them).
+--- @return string text, table changes made {slot, after}, table keys of the new set
+function SetWriter.create(text, base, name, changes)
+    local base_path = text:match('^[ \t]*(sets[^=\n]-)%s*=', base.line_from)
+    local indent, padded = style(text, base)
+    local nl = text:find('\r\n', 1, true) and '\r\n' or '\n'
+    local lines, done = {}, {}
+    for _, slot in ipairs(SetWriter.ORDER) do
+        if changes[slot] then
+            lines[#lines + 1] = entry_line(indent, padded, slot, changes[slot])
+            done[#done + 1] = {slot = slot, after = changes[slot]}
+        end
+    end
+    local block = base.indent .. base_path .. '.' .. name .. ' = set_combine(' .. base_path .. ', {' .. nl
+        .. table.concat(lines, nl) .. (#lines > 0 and nl or '') .. base.indent .. '})'
+    local at = line_end(text, base.close)
+    local out = at <= #text and (text:sub(1, at) .. block .. nl .. text:sub(at + 1)) or (text .. nl .. block .. nl)
+    local keys = {}
+    for i, k in ipairs(base.keys) do keys[i] = k end
+    keys[#keys + 1] = name
+    return out, done, keys
 end
 
 --- A Lua string literal: single quotes unless the text holds one.
