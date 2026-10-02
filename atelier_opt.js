@@ -117,6 +117,8 @@
     O.context = function (c) {
         if (c.wsInfo) O.defineWs(c.ws, c.wsInfo, c.wsSkill);
         var agg = FFXI.aggregate_buffs(c.selection);
+        // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
+        if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage};
