@@ -196,6 +196,7 @@
         var o = pieces[twin];
         return o.name === piece.name && (o.augs || []).join("|") === (piece.augs || []).join("|") && !(piece.copies > 1);
     }
+    O.clashes = function (pieces, slot, piece) { return clashes(pieces, slot, piece); };
     // choices: {page slot: [piece...]} (fixed slots left out); opts: {tp, tpRule, passes, top, onStep}.
     // Slot by slot until nothing improves, then every pair of slots over their best few pieces
     // (a pair can beat two single moves: two pieces reaching a cap together).
@@ -208,6 +209,24 @@
             if (!pairs(ctx, st, slots, shortlist(ctx, st, slots, choices, opts, opts.top || 8), opts)) break;
         }
         return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
+    };
+    // Each slot's `keep` best pieces as single swaps from `start` (pieces flagged keep always stay):
+    // a first sort before searching hundreds of pieces a slot (every item of the game)
+    O.prefilter = function (ctx, start, choices, opts, keep) {
+        var out = {};
+        Object.keys(choices).forEach(function (slot) {
+            var rated = choices[slot].map(function (piece) {
+                var trial = Object.assign({}, start); trial[slot] = piece;
+                return {piece: piece, v: score(ctx, trial, opts)};
+            }).sort(function (a, b) { return b.v - a.v; });
+            out[slot] = rated.filter(function (x, i) { return i < keep || x.piece.keep; }).map(function (x) { return x.piece; });
+        });
+        return out;
+    };
+    // A set's value (the objective, floors counted) with one slot changed
+    O.valueWith = function (ctx, pieces, slot, piece, opts) {
+        var trial = Object.assign({}, pieces); trial[slot] = piece;
+        return O.value(ctx, trial, opts);
     };
     // A move kept when it improves the set (st: {best, score, evals})
     function tryMove(ctx, st, trial, opts) {
