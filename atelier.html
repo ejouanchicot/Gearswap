@@ -2895,7 +2895,7 @@ function tpAsk(s, pieces, tp){
   return null;
 }
 function tpBonusGear(s, pieces){
-  if (!S.wsTp) return null;
+  if (!S.wsTp || S._noTpGear) return null;
   const r = tpAsk(s, pieces, S.wsTp);
   return r && r.gear;
 }
@@ -2905,12 +2905,25 @@ function tpBonusGear(s, pieces){
 // config, its weapons and the buffs ticked), so both tabs offer the same ones
 function simTpSteps(ws){
   const d = data(), set = d && (d.sets.find(x => wsOfSet(x) === ws) || d.sets.find(x => x.path === 'sets.precast.WS'));
-  return set ? tpSteps(tpAsk(set, withWeapons(set).pieces, null)) : TP_STEPS;
+  return set ? tpSteps(tpAsk(set, withWeapons(set).pieces, null), set) : TP_STEPS;
 }
-function tpSteps(r){
+// A piece's TP Bonus: its value in the job's TP config, else its description (weapons: the game's bonus)
+function tpbOf(p, slot, cfg){
+  if (!p || isEmpty(p)) return 0;
+  if (p.name in cfg) return cfg[p.name];
+  return WEAPON_SLOTS.has(slot) && slot !== 'ammo' ? 0 : (((pieceStats(p) || {}).stats || {}).tpb || {}).v || 0;
+}
+// The steps: the TP where the weaponskill reaches 2000 or 3000, with the TP Bonus the set already wears
+// (Boii Cuisses in the base set) and the weapon / buffs / party Warcry, then with every TP piece added
+function tpSteps(r, s){
   if (!r || !r.thresholds) return TP_STEPS;
-  const out = new Set([1000, 3000]), bonus = r.bonus + partyTp();
-  for (const th of r.thresholds) for (const v of [th - bonus - r.total, th - bonus]) if (v > 1000 && v < 3000) out.add(v);
+  const cfg = r.pieces || {}, worn = s ? (() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } })() : {};
+  const names = new Set(Object.values(worn).map(p => p && p.name));
+  const inSet = SLOTS.reduce((n, slot) => n + tpbOf(worn[slot], slot, cfg), 0);
+  // the pieces the TP config could add (those the set does not wear already)
+  const extra = r.pieces ? Object.entries(cfg).filter(([n]) => !names.has(n)).reduce((n, [, v]) => n + v, 0) : r.total;
+  const out = new Set([1000, 3000]), bonus = r.bonus + partyTp() + inSet;
+  for (const th of r.thresholds) for (const v of [th - bonus - extra, th - bonus]) if (v > 1000 && v < 3000) out.add(v);
   return [...out].sort((a, b) => a - b);
 }
 // The TP line of a weaponskill set: off (the set as written) or a TP, its pieces from the game
@@ -2918,7 +2931,7 @@ function tpLineHTML(s){
   if (family(s.path, s.pieces) !== 'ws') return '';
   const chip = (v, label) => `<button data-wstp="${v}" aria-pressed="${String(S.wsTp || '') === String(v)}">${label}</button>`;
   const live = liveOk() && (S._live[S.char] || {}).job === S.job;
-  const r = tpAsk(s, withWeapons(s).pieces, null), steps = tpSteps(r);
+  const r = tpAsk(s, withWeapons(s).pieces, null), steps = tpSteps(r, s);
   const bonus = r && r.bonus ? ` ${t('tpBonusOf', {n: r.bonus})}` : '';
   const note = !live ? t('tpNeedLive') : r && r.config === false ? t('tpNoConfig') : (S.wsTp ? t('tpLiveNote') : t('tpOffNote')) + bonus;
   return `<div class="weaps vars"><span class="kicker">${t('tpTitle')}</span><div class="wrow"><span>${t('tpAt')}</span><div class="variants">` +
@@ -2934,8 +2947,7 @@ function tpTotalHTML(s, r){
   if (!S.wsTp) return '';
   const pieces = withWeapons(s).pieces, parts = [], cfg = (r && r.pieces) || {};
   let gear = 0;
-  for (const slot of SLOTS) { const p = pieces[slot]; if (!p || isEmpty(p)) continue;
-    const v = p.name in cfg ? cfg[p.name] : WEAPON_SLOTS.has(slot) && slot !== 'ammo' ? 0 : (((pieceStats(p) || {}).stats || {}).tpb || {}).v || 0;
+  for (const slot of SLOTS) { const p = pieces[slot], v = tpbOf(p, slot, cfg);
     if (v) { gear += v; parts.push(`${p.name} ${v}`); } }
   const base = r ? r.bonus || 0 : 0, party = partyTp(), total = Math.min(3000, +S.wsTp + base + party + gear);
   const bits = [`${S.wsTp}`].concat(base ? [t('tpTotBase', {n: base})] : [], party ? [t('tpTotParty', {n: party})] : [],
