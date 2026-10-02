@@ -8,6 +8,7 @@
 //   FFXI.opt.context(...)             player, buffs, target and weaponskill of one evaluation
 //   FFXI.opt.ws(ctx, pieces, tp)      the weaponskill's average damage with those pieces
 //   FFXI.opt.tpPieces(rule, pieces, tp)  the TP pieces the job's rule adds (tp_bonus_calculator.lua)
+//   FFXI.opt.value(ctx, pieces, opts)  a set's value for an objective, with the defense floors
 //   FFXI.opt.optimize(ctx, start, choices, opts)  the best set: slot by slot, then pairs of slots
 //
 // @file    atelier_opt.js
@@ -138,13 +139,56 @@
     };
 
     // ------------------------------------------------------------ search
-    // A set's value: the weaponskill with the TP pieces the job's rule lays at that TP
-    function score(ctx, pieces, opts) {
-        var worn = Object.assign({}, pieces), tp = opts.tp, add = O.tpPieces(opts.tpRule, pieces, tp);
-        for (var s in add) worn[s] = add[s];
-        var r = O.ws(ctx, worn, tp);
-        return r ? r[0] : -Infinity;
+    // The defensive totals of a set's gear: DT + PDT, DT + MDT (Shell not counted), Subtle Blow I + II
+    O.defense = function (set) {
+        var sum = function (k) { var n = 0; for (var sl in set) n += set[sl][k] || 0; return n; };
+        return {pdt: sum("DT") + sum("PDT"), mdt: sum("DT") + sum("MDT"), sb: sum("Subtle Blow") + sum("Subtle Blow II")};
+    };
+    // How far a set is from the floors (0 when it meets them): opts.floor = {pdt: -50, mdt: -21, sb: 0}
+    function shortfall(def, floor) {
+        if (!floor) return 0;
+        return Math.max(0, def.pdt - (floor.pdt == null ? 0 : floor.pdt)) + Math.max(0, def.mdt - (floor.mdt == null ? 0 : floor.mdt))
+            + Math.max(0, (floor.sb || 0) - def.sb);
     }
+    // The set worn at the weaponskill: the pieces, then the TP pieces the job's rule lays at that TP
+    function wornAt(pieces, opts, tp) {
+        var worn = Object.assign({}, pieces), add = O.tpPieces(opts.tpRule, pieces, tp);
+        for (var s in add) worn[s] = add[s];
+        return worn;
+    }
+    // The player of a set, kept (per context) while a search tries the same set at several TP:
+    // creating it is most of the cost of an evaluation
+    function playerOf(ctx, worn) {
+        var key = PAGE_SLOTS.map(function (sl) { var p = worn[sl]; return p ? p.name + "|" + (p.augs || []).join("|") + "|" + (p.rank == null ? "" : p.rank) : ""; }).join("#");
+        var cache = ctx._players = ctx._players || {map: {}, size: 0};
+        if (cache.map[key]) return cache.map[key];
+        var set = O.gearset(ctx, worn);
+        if (!set) return null;
+        if (cache.size > 20000) { cache.map = {}; cache.size = 0; }
+        cache.size++;
+        return (cache.map[key] = {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), def: O.defense(set)});
+    }
+    // One weaponskill: the engine's [value, [damage, TP return]] for the objective
+    function once(ctx, worn, tp, metric) {
+        var pl = playerOf(ctx, worn);
+        if (!pl) return null;
+        return {r: FFXI.average_ws(pl.player, ctx.enemy, ctx.ws, tp, ctx.wsType, metric), def: pl.def};
+    }
+    // A set's value for opts.objective: "damage" at opts.tp, "damage_avg" over opts.tps, "tp_return"
+    // (damage breaks ties); a set short of the floors loses 1e6 per point, so the search meets them first
+    O.value = function (ctx, pieces, opts) {
+        var tps = opts.objective === "damage_avg" ? (opts.tps || [1000, 1500, 2000, 2500, 3000]) : [opts.tp];
+        var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, def = null;
+        for (var i = 0; i < tps.length; i++) {
+            var e = once(ctx, wornAt(pieces, opts, tps[i]), tps[i], metric);
+            if (!e) return {v: -Infinity};
+            def = def || e.def;
+            total += opts.objective === "tp_return" ? e.r[1][1] + e.r[1][0] / 1e6 : e.r[1][0];
+        }
+        var v = total / tps.length, miss = shortfall(def, opts.floor);
+        return {v: v - 1e6 * miss, raw: v, def: def, miss: miss};
+    };
+    function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
     // A copy can go on two slots (rings, earrings) only when there are two of it
     function clashes(pieces, slot, piece) {
         var twin = {ring1: "ring2", ring2: "ring1", ear1: "ear2", ear2: "ear1"}[slot];
@@ -191,6 +235,6 @@
                 });
             });
         }
-        return {pieces: best, score: bestScore, start: score(ctx, start, opts), evals: evals};
+        return {pieces: best, score: bestScore, best: O.value(ctx, best, opts), start: O.value(ctx, start, opts), evals: evals};
     };
 });
