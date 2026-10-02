@@ -81,12 +81,11 @@
             brd: true, songs: {Song1: b.song0 || "None", Song2: b.song1 || "None", Song3: b.song2 || "None", Song4: b.song3 || "None"},
             song_bonus: +(b.songsPlus || 0), soul_voice: false, marcato: false,
             cor: true, rolls: {Roll1: {name: b.roll0 || "None", potency: b.roll0n || "XI"}, Roll2: {name: b.roll1 || "None", potency: b.roll1n || "XI"}},
-            roll_bonus: +(b.rollsPlus || 0), crooked: false, job_bonus: false, light_shot: !!b.lightshot,
+            roll_bonus: +(b.rollsPlus || 0), crooked: false, job_bonus: false, light_shot: !!(b.lightshot && b.dia),
             geo: true, bubbles: {"Indi-": bubble("Indi-", b.indi), "Geo-": bubble("Geo-", b.geo), "Entrust-": bubble("Entrust-", b.entrust)},
             bubble_bonus: +(b.geoPlus || 0), bolster: false, bog: false, bubble_potency: 100,
             whm: true, whm_spells: {Dia: b.dia || "None", Haste: b.haste || "None", Boost: "None", Storm: b.storm || "None"},
-            // the abilities on the target the page offers (Armor Break, Angon, Box Step, Corrosive Ooze, Swooping Frenzy)
-            shell5: b.shell === "Shell V", food: f, toggles: (b.foeJa || []).reduce(function (m, n) { m[n] = true; return m; }, {})
+            shell5: b.shell === "Shell V", food: f, toggles: {}
         };
     };
 
@@ -138,6 +137,9 @@
         var agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : FFXI.aggregate_buffs(c.selection);
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
+        // the abilities on the target, worked out by the page (one Defense Down effect, the strongest, and Box Step)
+        if (c.foeDown && c.foeDown.def) agg[1].Defense = (agg[1].Defense || 0) + c.foeDown.def;
+        if (c.foeDown && c.foeDown.mdb) agg[1]["Magic Defense"] = (agg[1]["Magic Defense"] || 0) + c.foeDown.mdb;
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
         if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
