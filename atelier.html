@@ -284,7 +284,9 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .wsval > button.more{border-style:dashed;color:var(--muted)}
 .wsval .heldsel{width:auto;min-width:240px}
 .wsval .tpin{margin-left:2px}
-.tip{font-style:normal;color:var(--faint);cursor:help;font-size:12px}
+.tip{font:inherit;font-size:12px;color:var(--faint);background:none;border:0;padding:0 2px;cursor:pointer}
+.tip:hover,.tip[aria-expanded="true"]{color:var(--accent)}
+.wshelp{grid-column:1/-1;flex-basis:100%;margin:-4px 0 2px;padding:8px 12px;border-left:3px solid var(--accent);border-radius:var(--radius-s);background:var(--accent-soft);color:var(--ink);font-size:12.5px;line-height:1.45}
 .tpres{margin-left:8px;font-size:13px;color:var(--muted)}
 .tpres b{color:var(--accent);font-size:14px}
 .optcard{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:18px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--panel-2)}
@@ -3264,10 +3266,14 @@ function tpSteps(r, s){
   return [...out].sort((a, b) => a - b);
 }
 // The TP line of a weaponskill set: off (the set as written) or a TP, its pieces from the game
+// An ⓘ that opens or closes the explanation `key` (S._help) in the page
+const helpBtn = key => `<button type="button" class="tip" data-help="${esc(key)}" aria-expanded="${S._help === key}" aria-label="?">ⓘ</button>`;
 // The top of a weaponskill set, for anyone: which weaponskill and which version, the weapon, the TP,
 // then the optimizer; one line each, the explanations on hover (ⓘ)
 function wsHeadHTML(card, ci, vi, s){
-  const line = (label, body, tip = '') => `<div class="wsline"><span class="wslbl">${esc(label)}${tip ? ` <i class="tip" title="${esc(tip)}">ⓘ</i>` : ''}</span><div class="wsval">${body}</div></div>`;
+  // the explanation of a line opens under it on a click of its ⓘ (never over the page)
+  const line = (label, body, tip = '', key = '') => `<div class="wsline"><span class="wslbl">${esc(label)}${tip ? ` ${helpBtn(key)}` : ''}</span><div class="wsval">${body}</div></div>` +
+    (tip && S._help === key ? `<p class="wshelp">${esc(tip)}</p>` : '');
   return `<div class="wshead">${wsPickLines(card, ci, vi, line)}${wsWeaponLine(s, line)}${wsTpLine(s, line)}</div>${wsOptHTML(s)}`;
 }
 // The weaponskills of the shown one's weapon (the others folded), then the shown one's versions
@@ -3281,7 +3287,7 @@ function wsPickLines(card, ci, vi, line){
   const same = list.filter(g => g !== base && g.main != null && (g === cur || (mine && skillOf(g) === mine)));
   const others = list.filter(g => g !== base && g.main != null && !same.includes(g));
   let out = line(t('wsLbl'), (base ? btn(base.main, t('wsBase')) : '') + same.map(g => btn(g.main, g.head)).join('') +
-    (others.length ? `<button class="more" data-varall aria-expanded="${!!S._varAll}">${S._varAll ? t('varHide') : t('varShow', {n: others.length})}</button>` : ''), t('wsLblTip'));
+    (others.length ? `<button class="more" data-varall aria-expanded="${!!S._varAll}">${S._varAll ? t('varHide') : t('varShow', {n: others.length})}</button>` : ''), t('wsLblTip'), 'ws');
   if (S._varAll) {
     const bySkill = new Map();
     for (const g of others) { const k = skillOf(g) || t('varOther'); if (!bySkill.has(k)) bySkill.set(k, []); bySkill.get(k).push(g); }
@@ -3289,7 +3295,7 @@ function wsPickLines(card, ci, vi, line){
   }
   if (cur.subs.length) {
     const tiers = cur.subs.some(x => /^(Group|Solo)$/.test(x.label));
-    out += line(t('verLbl'), (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join(''), t('verTip'));
+    out += line(t('verLbl'), (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join(''), t('verTip'), 'ver');
   }
   return out;
 }
@@ -3337,7 +3343,7 @@ function wsWeaponLine(s, line){
     `<option value="">${esc(t('heldMode', {w: auto && !isEmpty(auto) ? auto.name : '—'}))}</option>` +
     sorted.map(n => `<option value="${esc(n)}" ${n === held ? 'selected' : ''}>${esc(n + dmg(n))}</option>`).join('') + `</select>`;
   const sub = withWeapons(s).pieces.sub;
-  return line(t('weaponLbl'), menu + (sub && !isEmpty(sub) ? `<span class="muted small">${esc(t('heldSub', {w: sub.name}))}</span>` : ''), t('weaponTip'));
+  return line(t('weaponLbl'), menu + (sub && !isEmpty(sub) ? `<span class="muted small">${esc(t('heldSub', {w: sub.name}))}</span>` : ''), t('weaponTip'), 'weapon');
 }
 // The TP steps, then the TP the weaponskill opens with (its make-up on hover)
 function wsTpLine(s, line){
@@ -3347,10 +3353,11 @@ function wsTpLine(s, line){
   const bonus = r && r.bonus ? ` ${t('tpBonusOf', {n: r.bonus})}` : '';
   const note = !live ? t('tpNeedLive') : r && r.config === false ? t('tpNoConfig') : (S.wsTp ? t('tpLiveNote') : t('tpOffNote')) + bonus;
   // past 3000 the game keeps 3000: what is over is TP Bonus spent for nothing
-  const res = parts ? `<span class="tpres" title="${esc(parts.text)}">→ <b>${parts.total}</b> TP` +
+  const res = parts ? `<span class="tpres">→ <b>${parts.total}</b> TP` +
     (parts.raw > 3000 ? ` <span class="tpover">${t('tpOver', {t: parts.raw, n: parts.raw - 3000})}</span>` : '') + `</span>` : '';
   const input = `<input class="tpin" type="number" min="0" max="3000" step="10" value="${S.wsTp && !steps.includes(+S.wsTp) ? S.wsTp : ''}" placeholder="${t('tpOther')}" aria-label="TP">`;
-  return line(t('tpLbl'), chip('', t('tpOff')) + steps.map(v => chip(v, v)).join('') + input + res, note) +
+  // the make-up of the total joins the explanation
+  return line(t('tpLbl'), chip('', t('tpOff')) + steps.map(v => chip(v, v)).join('') + input + res, (parts ? parts.text + '. ' : '') + note, 'tp') +
     (parts && r && !r.worn_aware ? `<p class="kwarn">${t('tpOldCode')}</p>` : '');
 }
 // The optimizer: its button, the objective and the cost by party in view; where to look, the
@@ -3373,7 +3380,8 @@ function wsOptHTML(s){
     num('pdt', 'DT+PDT ≤', t('optPdtTip')) + num('mdt', 'DT+MDT ≤', t('optMdtTip')) + num('sb', 'Subtle Blow ≥', t('optSbTip')) + `</div></details>`;
   return `<div class="optcard"><button class="btn" data-optws>${t('optBtn')}</button>` +
     `<label class="optnum">${t('optObjLbl')} <select class="buffsel" data-optopt="obj">${objs}</select></label>${range}` +
-    `<button class="btn ghost" data-tiercost title="${esc(t('tcTip'))}">${t('tcBtn')}</button><i class="tip" title="${esc(why)}">ⓘ</i>${settings}</div>`;
+    `<button class="btn ghost" data-tiercost>${t('tcBtn')}</button>${helpBtn('opt')}` +
+    (S._help === 'opt' ? `<p class="wshelp">${esc(why)} ${esc(t('tcTip'))}.</p>` : '') + `${settings}</div>`;
 }
 // The TP the weaponskill opens with at the TP chosen: that TP, the weapon / buffs / Fencer bonus the
 // game counts, a party member's Warcry, then the TP Bonus of the pieces worn (their value from the
@@ -4415,6 +4423,7 @@ document.addEventListener('click', e => {
   if ('setdel' in d) { openDelete(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('delgo' in d) { delGo(); return; }
   if ('optstop' in d) { optStop(); return; }
+  if (d.help) { S._help = S._help === d.help ? null : d.help; render(); return; }
   if ('varall' in d) { S._varAll = !S._varAll; render(); return; }
   if ('tiercost' in d) { openTierCost(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('optws' in d) { optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
