@@ -1203,7 +1203,9 @@ function unsigned(line, out){
 // kept on this PC only) and the optimizer (atelier_opt.js): loaded once, run into window.FFXI
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
   .map(f => `atelier-engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
-  .map(f => `atelier-engine/${f}.js`), ['atelier_opt.js']);
+  .map(f => `atelier-engine/${f}.js`), ['atelier_opt.js'])
+  // read again at each page load: a browser keeps an older copy of a script otherwise
+  .map(f => f + '?v=' + Date.now());
 function loadRanked(done){
   if (window.FFXI && FFXI.RANKED) return done();
   window.FFXI_PARTS = [];
@@ -1511,12 +1513,14 @@ function gameChoices(slot, have, tpNames){
 // (never in the set), at the TP chosen; the result goes to draft B
 async function optimizeWs(s){
   if (!engineReady()) return;
-  const k = trialKey(s), base = (() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } })();
+  // the search starts from the set itself (the file, or what is in test in game), never from a draft:
+  // a draft can hold pieces this search may not use (not yours, another reward of a one-choice group)
+  const k = trialKey(s), base = withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } });
   const r = tpAsk(s, base, null), rule = r && r.piece_list ? {bonus: (r.bonus || 0) + partyTp(), pieces: r.piece_list} : null;
   const tpNames = new Set(((r && r.piece_list) || []).map(p => p.name)), o = S.optOpts || {};
-  const start = optPieces(base);
+  const start = optPieces(base), choices = optChoices(tpNames);
   for (const slot of Object.keys(start)) if (tpNames.has(start[slot].name)) delete start[slot];
-  const input = {ctx: optContextInput(s), start, choices: optChoices(tpNames), prefilter: o.where === 'all' ? 25 : 0,
+  const input = {ctx: optContextInput(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {tp: +(S.wsTp || 3000), tpRule: rule, objective: o.obj || 'damage', floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
   S._optBusy = true; S._optProgress = null; render();
   let w;
