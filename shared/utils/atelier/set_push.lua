@@ -374,7 +374,8 @@ function SetPush.write(job, body, hash)
     local backup, err = backup_and_write(p, id)
     if not backup then return {error = err} end
     local entry = {id = id, at = os.date('%Y-%m-%d %H:%M'), job = job, path = p.path,
-        file = p.file, backup = relative(backup), hash_before = p.hash, hash_after = SetWriter.hash(p.out), changes = p.changes}
+        file = p.file, backup = relative(backup), hash_before = p.hash, hash_after = SetWriter.hash(p.out), changes = p.changes,
+        created = p.created}
     list[#list + 1] = entry
     write_history(list)
     drop_override(job, p.path)
