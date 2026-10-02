@@ -2868,6 +2868,15 @@ function simSetOf(list, hint){
 // FFXI chat colour codes out of the captured lines
 const chatText = m => String(m).replace(/[\x1e\x1f][\s\S]/g, '').replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '').trim();
 // The buffs the job's code reads (Simulate offers them), asked once per GearSwap load
+// Buffs that cancel each other in the game: one at a time (Defender ends Berserk, Seigan ends Hasso...)
+const BUFF_EXCLUSIVE = [['Berserk', 'Defender'], ['Hasso', 'Seigan'], ['Light Arts', 'Dark Arts'],
+  ['Addendum: White', 'Addendum: Black'], ['Warcry', 'Blood Rage']];
+// A buff on or off; turning one on turns off those it cancels
+function toggleBuff(list, name){
+  if (list.includes(name)) return list.filter(b => b !== name);
+  const gone = BUFF_EXCLUSIVE.filter(g => g.includes(name)).flat();
+  return list.filter(b => !gone.includes(b)).concat([name]).sort();
+}
 async function simBuffOptions(){
   const c = S.char, L = S._live[c] || {}, key = c + '|' + L.version;
   if (S._simBuffs && S._simBuffs.key === key) return;
@@ -4507,7 +4516,7 @@ document.addEventListener('click', e => {
   if ('livereload' in d) { liveReload(false); return; }
   if ('liverestart' in d) { liveReload(true); return; }
   if ('livejump' in d) { const L = S._live[S.char]; S.job = L.job; S.subs[S.char + '|' + L.job] = L.sub; render(); return; }
-  if (d.simbuff) { const st = simState(); st.buffs = st.buffs || []; const i = st.buffs.indexOf(d.simbuff); if (i < 0) st.buffs.push(d.simbuff); else st.buffs.splice(i, 1); st.buffs.sort(); simRun(); return; }
+  if (d.simbuff) { const st = simState(); st.buffs = toggleBuff(st.buffs || [], d.simbuff); simRun(); return; }
   if ('wstp' in d) { S.wsTp = d.wstp ? +d.wstp : null; render(); return; }
   if ('macroalt' in d) { S.macroAlt[S.char + '|' + S.job] = d.macroalt; render(); return; }
   if (d.famall) { for (const f of S._fams || []) S.famOpen[S.job + '|' + f] = d.famall === '1'; render(); return; }
