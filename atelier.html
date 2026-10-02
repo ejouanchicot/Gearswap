@@ -2986,12 +2986,14 @@ function openSlot(ci, slot){
   S._drawer = {ci, slot, set: s};
   // the set's own piece (as written, weapon modes included) and the one tried now
   const orig = withoutTrial(() => withWeapons(s).pieces[slot]);
-  const sameAs = (o, q) => q && o.piece && o.piece.name === q.name && (o.piece.augs || []).join('|') === (q.augs || []).join('|');
+  // a piece named without augments is any copy of that name: the first one listed stands for it
+  const sameAs = (o, q) => q && o.piece && o.piece.name === q.name && (q.augs && q.augs.length ? (o.piece.augs || []).join('|') === q.augs.join('|')
+    : opts.find(x => x.piece.name === q.name) === o);
   const opts = S._drawOpts = pieceChoices(slot, p, orig);
   for (const o of opts) { o.orig = sameAs(o, orig); o.cur = eff.tried[slot] && sameAs(o, p); }
   const acts = p ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '';
   const list = opts.length ? opts.map((o, i) => { const r = pieceStats(o.piece), augs = o.piece.augs || [];
-    const where = [o.owned ? t('inBag') : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
+    const where = [o.owned ? (o.where && o.where.length ? o.where.join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
     const tag = o.orig ? `<em class="tag orig">${t('setPiece')}</em>` : o.cur ? `<em class="tag cur">${t('triedTag')}</em>` : '';
     return `<button type="button" class="${o.orig ? 'orig' : ''} ${o.cur ? 'cur' : ''}" data-try="${i}">${icon(o.piece.name)}<span>` +
       `<span>${esc(o.piece.name)}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}${tag}</span>` +
@@ -3012,15 +3014,16 @@ function pieceChoices(slot, current, orig){
   const seen = {}, d = data(), copyKey = q => q.name + '|' + (q.augs || []).join('|');
   for (const x of d.sets) { const q = x.pieces[slot]; if (q) { seen[q.name] = (seen[q.name] || 0) + 1; seen[copyKey(q)] = (seen[copyKey(q)] || 0) + 1; } }
   const owned = (ofAnySub('owned') || {})[slot], names = (ofAnySub('items') || {})[slot] || [];
-  const list = owned ? owned.map(x => ({piece: {name: x.name, augs: x.augs}, owned: true}))
+  const list = owned ? owned.map(x => ({piece: {name: x.name, augs: x.augs}, owned: true, where: x.where}))
     : names.map(n => ({piece: {name: n}, owned: true}));
   const have = new Set(list.map(o => o.piece.name));
   for (const x of d.sets) { const q = x.pieces[slot];
     if (q && !have.has(q.name)) { have.add(q.name); list.push({piece: {name: q.name, augs: q.augs}, owned: false}); } }
-  for (const q of [orig, current]) if (q && !list.some(o => o.piece.name === q.name && (o.piece.augs || []).join('|') === (q.augs || []).join('|')))
-    list.push({piece: q, owned: false});
+  // a set naming no augments wears any copy of that name (GearSwap picks one): it is one of yours
+  const sameCopy = (o, q) => o.piece.name === q.name && (!(q.augs && q.augs.length) || (o.piece.augs || []).join('|') === q.augs.join('|'));
+  for (const q of [orig, current]) if (q && !list.some(o => sameCopy(o, q))) list.push({piece: q, owned: false});
   for (const o of list) o.seen = (o.piece.augs && o.piece.augs.length ? seen[copyKey(o.piece)] : seen[o.piece.name]) || 0;
-  const isOrig = o => orig && o.piece.name === orig.name && (o.piece.augs || []).join('|') === (orig.augs || []).join('|');
+  const isOrig = o => orig && sameCopy(o, orig) && (orig.augs && orig.augs.length || o === list.find(x => sameCopy(x, orig)));
   return list.sort((a, b) => (isOrig(b) - isOrig(a)) || (b.owned - a.owned) || (b.seen - a.seen) || a.piece.name.localeCompare(b.piece.name));
 }
 /* ---- pieces tried in the page ---- */

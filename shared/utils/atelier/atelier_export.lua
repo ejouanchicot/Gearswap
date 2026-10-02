@@ -39,6 +39,12 @@ local SLOT_BY_ID = {[0] = 'main', 'sub', 'range', 'ammo', 'head', 'body', 'hands
     'ear1', 'ear2', 'ring1', 'ring2', 'back'}
 -- Bags GearSwap equips from: inventory, wardrobes 1-8
 local EQUIP_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16}
+-- Every bag a player keeps gear in (3, temporary items, left out): the page's "owned" list
+-- covers them all, each copy with where it is. Windower keeps the Mog House bags as last seen.
+local OWNED_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16, 1, 9, 2, 4, 5, 6, 7}
+local BAG_NAMES = {[0] = 'Inventory', [1] = 'Mog Safe', [2] = 'Storage', [4] = 'Mog Locker', [5] = 'Mog Satchel',
+    [6] = 'Mog Sack', [7] = 'Mog Case', [8] = 'Wardrobe', [9] = 'Mog Safe 2', [10] = 'Wardrobe 2', [11] = 'Wardrobe 3',
+    [12] = 'Wardrobe 4', [13] = 'Wardrobe 5', [14] = 'Wardrobe 6', [15] = 'Wardrobe 7', [16] = 'Wardrobe 8'}
 local MAX_DEPTH = 7
 -- What the export holds, raised when it gains something the page relies on: the page warns about
 -- an export written by an older exporter (2: key conditions, empty sets; 3: macro fallback, bag,
@@ -301,32 +307,62 @@ end
 --- Owned items the main job can wear, by slot: `items` = {slot = {name, ...}} and
 --- `owned` = {slot = {{name = , augs = }, ...}}, one entry per distinct copy (two capes
 --- with other augments are two choices in the page).
+--- The items kept in the Porter Moogle's storage slips (Windower's slips library: the bits of
+--- each slip held in a bag), as {item id = 'Slip N'}.
+local function slip_items()
+    local ok, slips = pcall(require, 'slips')
+    if not (ok and slips and slips.get_player_items) then return {} end
+    local ok_g, list = pcall(slips.get_player_items)
+    if not ok_g or type(list) ~= 'table' then return {} end
+    local out = {}
+    for slip_id, ids in pairs(list) do
+        local n = slips.get_slip_number_by_id and slips.get_slip_number_by_id(slip_id)
+        for _, id in ipairs(ids or {}) do
+            if type(id) == 'number' and id > 0 then out[id] = 'Slip ' .. tostring(n or slip_id) end
+        end
+    end
+    return out
+end
+
 local function collect_items()
     local ok, res = pcall(require, 'resources')
     if not ok or not res or not res.items then return nil end
-    local by_slot, owned, seen = {}, {}, {}
-    for _, bag in ipairs(EQUIP_BAGS) do
-        for _, item in ipairs(windower.ffxi.get_items(bag) or {}) do
-            local info = type(item) == 'table' and item.id and item.id > 0 and res.items[item.id]
-            if info and info.slots and type(info.slots) == 'table' and info.slots.it and wearable(info) then
-                local augs = copy_augments(item)
-                local copy = info.en .. '|' .. table.concat(augs or {}, '|')
-                for slot_id in info.slots:it() do
-                    local slot = SLOT_BY_ID[slot_id]
-                    if slot and not seen[slot .. '|' .. info.en] then
-                        seen[slot .. '|' .. info.en] = true
-                        by_slot[slot] = by_slot[slot] or {}
-                        table.insert(by_slot[slot], info.en)
-                    end
-                    if slot and not seen[slot .. '#' .. copy] then
-                        seen[slot .. '#' .. copy] = true
-                        owned[slot] = owned[slot] or {}
-                        table.insert(owned[slot], {name = info.en, augs = augs})
-                    end
+    local by_slot, owned, seen, entry_of = {}, {}, {}, {}
+    -- one piece: the slots it fits, once per name for `items`, once per copy for `owned`,
+    -- each copy with the places it is in (several bags when the same copy is twice)
+    local function add(info, augs, where)
+        if not (info and info.slots and type(info.slots) == 'table' and info.slots.it and wearable(info)) then return end
+        local copy = info.en .. '|' .. table.concat(augs or {}, '|')
+        for slot_id in info.slots:it() do
+            local slot = SLOT_BY_ID[slot_id]
+            if slot and not seen[slot .. '|' .. info.en] then
+                seen[slot .. '|' .. info.en] = true
+                by_slot[slot] = by_slot[slot] or {}
+                table.insert(by_slot[slot], info.en)
+            end
+            if slot then
+                local key = slot .. '#' .. copy
+                local entry = entry_of[key]
+                if not entry then
+                    entry = {name = info.en, augs = augs, where = {}}
+                    entry_of[key] = entry
+                    owned[slot] = owned[slot] or {}
+                    table.insert(owned[slot], entry)
                 end
+                local known = false
+                for _, w in ipairs(entry.where) do if w == where then known = true end end
+                if not known then table.insert(entry.where, where) end
             end
         end
     end
+    for _, bag in ipairs(OWNED_BAGS) do
+        for _, item in ipairs(windower.ffxi.get_items(bag) or {}) do
+            local info = type(item) == 'table' and item.id and item.id > 0 and res.items[item.id]
+            if info then add(info, copy_augments(item), BAG_NAMES[bag] or tostring(bag)) end
+        end
+    end
+    -- a slip keeps only items without augments
+    for id, where in pairs(slip_items()) do add(res.items[id], nil, where) end
     for _, names in pairs(by_slot) do table.sort(names) end
     for _, list in pairs(owned) do table.sort(list, function(a, b) return a.name < b.name end) end
     return by_slot, owned
