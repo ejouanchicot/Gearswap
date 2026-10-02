@@ -2702,10 +2702,32 @@ function charStats(s, pieces){
   const vsSet = trialCount(s) > 0;
   const ref = vsSet ? withoutTrial(() => calc(setStats(s).total, (withWeapons(s).pieces.main || {}).name))
     : calc(worn, (c.worn && c.worn.main || {}).name);
+  // Attack and Accuracy as the damage engine has them when it is loaded (the damage and the optimizer use
+  // those): the measure above multiplies an Attack measured in game, its own bonuses in it, by every buff
+  const eCur = engineStats(s, withWeapons(s).pieces);
+  const eRef = vsSet ? withoutTrial(() => engineStats(s, withWeapons(s).pieces)) : engineStats(s, c.worn || {});
+  if (eCur && eRef) for (const k of ['atk', 'acc']) { cur[k] = eCur[k]; ref[k] = eRef[k]; }
   const out = {};
   for (const k of [...ATTRS, 'hp', 'mp', 'def', 'atk', 'acc', 'eva']) if (cur[k] != null) out[k] = {now: ref[k], set: cur[k]};
   if (out.acc && cur.wskill) out.acc.tip = `${cur.wskill} ${cur.level}`;
   return {c, out, set, B, cur, vsSet};
+}
+// A set's main-hand Attack and Accuracy from the damage engine, with the page's buffs, target and weapons;
+// null while the engine is not loaded or a piece is not in its catalogue. Kept per gear and buffs
+const ENG_STATS = new Map();
+function engineStats(s, pieces){
+  if (!engineReady() || !s || !pieces || !pieces.main) return null;
+  try {
+    const ci = optContextInput(s), pc = optPieces(pieces);
+    const key = JSON.stringify([S.char, S.job, ci.sub, ci.selection, ci.abilities, ci.geoMul, ci.partyWarcry, pc]);
+    if (ENG_STATS.has(key)) return ENG_STATS.get(key);
+    const ctx = FFXI.opt.context(ci), set = FFXI.opt.gearset(ctx, pc);
+    const pl = set && FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities);
+    const v = pl ? {atk: Math.floor(pl.stats.Attack1), acc: Math.floor(pl.stats.Accuracy1)} : null;
+    if (ENG_STATS.size > 300) ENG_STATS.clear();
+    ENG_STATS.set(key, v);
+    return v;
+  } catch (e) { return null; }
 }
 // A compartment: a card with a title band in its section's colour (g-def, g-tank...)
 const box = (cls, title, body, meta = '') =>
