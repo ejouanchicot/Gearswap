@@ -1,7 +1,9 @@
 ---============================================================================
 --- Atelier WS - the weaponskills a job's sets name, for the Atelier page
 ---============================================================================
---- For each weaponskill a set path names (sets.precast.WS["Savage Blade"]):
+--- For each weaponskill a set path names (sets.precast.WS["Savage Blade"]), and every
+--- weaponskill the job can use at its level (the databases' `jobs`: relic, mythic,
+--- empyrean, aeonic and prime ones included), so the page can create their sets:
 ---   skill  its combat skill ("Sword"): the page puts a weapon of that skill in the set
 ---   info   what the weaponskill uses, from shared/data/weaponskills/<SKILL>_WS_DATABASE.lua:
 ---          type (Physical / Magical / Hybrid), mods ({STR = 60, VIT = 60}), hits, element,
@@ -18,9 +20,30 @@
 local AtelierWS = {}
 
 --- {weaponskill = combat skill} and {weaponskill = {type, mods, hits, element}} for the sets.
+-- The combat skills that have a weaponskill database (shared/data/weaponskills/)
+local SKILLS = {'Sword', 'Dagger', 'Hand-to-Hand', 'Great Sword', 'Great Axe', 'Axe', 'Scythe', 'Polearm',
+    'Katana', 'Great Katana', 'Staff', 'Club', 'Archery'}
+
+--- Every weaponskill the databases give this job at this level: {name = combat skill}.
+--- @param job string Main job code
+--- @param level number|nil Main job level (99 when unknown)
+local function job_weaponskills(job, level)
+    local ok, Universal = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    if not (ok and Universal and Universal.ensure_weapon_type and job) then return {} end
+    for _, skill in ipairs(SKILLS) do Universal.ensure_weapon_type(skill) end
+    local out, all = {}, (rawget(_G, 'WS_DATABASE') or {}).weaponskills or {}
+    for name, entry in pairs(all) do
+        local need = type(entry.jobs) == 'table' and entry.jobs[job]
+        if need and (level or 99) >= need then out[name] = entry.weapon_type end
+    end
+    return out
+end
+
 --- @param set_list table The export's sets ({path, ...})
+--- @param job string|nil Main job code (its weaponskills are added)
+--- @param level number|nil Main job level
 --- @return table|nil skills, table|nil info
-function AtelierWS.collect(set_list)
+function AtelierWS.collect(set_list, job, level)
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.weapon_skills and res.skills) then return nil end
     local by_name = {}
@@ -33,6 +56,7 @@ function AtelierWS.collect(set_list)
         for name in tostring(set.path):gmatch('"([^"]+)"') do skills[name] = by_name[name] end
         for name in tostring(set.path):gmatch('%.([%w_]+)') do skills[name] = skills[name] or by_name[name] end
     end
+    for name, skill in pairs(job_weaponskills(job, level)) do skills[name] = skills[name] or skill end
     local ok_db, Universal = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
     local info = {}
     for name, skill in pairs(skills) do
