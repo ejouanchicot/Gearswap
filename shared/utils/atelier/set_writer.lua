@@ -142,42 +142,86 @@ local function same_keys(a, b)
     return true
 end
 
---- The entries of the table from o to c ({ at o, } at c): {key, slot, from, key_end, expr_from, expr_to, sep}.
+--- From the start of a value, its last character and the separator after it (nil at the table's end c).
+local function value_end(text, j, c)
+    local last = j
+    while j < c do
+        local after = skip(text, j)
+        local ch = text:sub(j, j)
+        if after then
+            -- a string is part of the value, a comment is not
+            if ch == '"' or ch == "'" or (ch == '[' and text:sub(j + 1, j + 1):match('[%[=]')) then last = after - 1 end
+            j = after
+        elseif OPEN[ch] then j = (match_close(text, j) or c) + 1; last = j - 1
+        elseif ch == ',' or ch == ';' then break
+        else
+            if not ch:match('%s') then last = j end
+            j = j + 1
+        end
+    end
+    return last, j < c and j or nil
+end
+
+--- The key of the entry starting at i (`head =` or `['head'] =`) and where its value starts.
+local function entry_key(text, i)
+    local key, e = text:match('^([%a_][%w_]*)%s*=()', i)
+    if not key then
+        local q = text:match('^%[%s*([\'"])', i)
+        if q then key, e = text:match('^%[%s*' .. q .. '(.-)' .. q .. '%s*%]%s*=()', i) end
+    end
+    return key, e
+end
+
+--- The entries of the table from o to c ({ at o, } at c): {key, slot, from, expr_from, expr_to, sep}.
 local function entries(text, o, c)
     local out, i = {}, o + 1
     while true do
         i = next_code(text, i)
         if i >= c then break end
-        local entry = {from = i}
-        local key, e = text:match('^([%a_][%w_]*)%s*=()', i)
-        if not key then
-            local q = text:match('^%[%s*([\'"])', i)
-            if q then key, e = text:match('^%[%s*' .. q .. '(.-)' .. q .. '%s*%]%s*=()', i) end
-        end
-        entry.key, entry.slot = key, SetWriter.canon(key)
-        local j = key and next_code(text, e) or i
-        entry.expr_from = j
-        local last = j
-        while j < c do
-            local after = skip(text, j)
-            local ch = text:sub(j, j)
-            if after then
-                -- a string is part of the value, a comment is not
-                if ch == '"' or ch == "'" or (ch == '[' and text:sub(j + 1, j + 1):match('[%[=]')) then last = after - 1 end
-                j = after
-            elseif OPEN[ch] then j = (match_close(text, j) or c) + 1; last = j - 1
-            elseif ch == ',' or ch == ';' then break
-            else
-                if not ch:match('%s') then last = j end
-                j = j + 1
-            end
-        end
-        entry.expr_to = last
-        entry.sep = j < c and j or nil
-        out[#out + 1] = entry
-        i = j + 1
+        local key, e = entry_key(text, i)
+        local from = key and next_code(text, e) or i
+        local last, sep = value_end(text, from, c)
+        out[#out + 1] = {from = i, key = key, slot = SetWriter.canon(key), expr_from = from, expr_to = last, sep = sep}
+        i = (sep or c) + 1
     end
     return out
+end
+
+--- In `set_combine(...)` starting at r: its last argument's opening brace, when that argument
+--- is a table literal reaching the closing parenthesis; else nil.
+local function combine_table(text, r)
+    local p = text:find('(', r, true)
+    local q = match_close(text, p)
+    local k = q and q - 1
+    while k and k > p and text:sub(k, k):match('%s') do k = k - 1 end
+    if not (k and text:sub(k, k) == '}') then return nil end
+    local j, open = p + 1, nil
+    while j < q do
+        local after = skip(text, j)
+        if after then j = after
+        elseif text:sub(j, j) == '{' then
+            local cl = match_close(text, j)
+            if cl == k then open = j end
+            j = (cl or q) + 1
+        elseif OPEN[text:sub(j, j)] then j = (match_close(text, j) or q) + 1
+        else j = j + 1 end
+    end
+    return open
+end
+
+--- The set defined on the line from line_from to line_to, or nil: `sets.x = {...}` or
+--- `sets.x = set_combine(..., {...})`.
+local function definition_at(text, line_from, line_to)
+    local indent, start = text:match('^([ \t]*)()sets[%.%[ ]', line_from)
+    if not (start and start < line_to) then return nil end
+    local keys, after = read_path(text, start)
+    local eq = keys and text:match('^%s*=()', after)
+    if not eq or text:sub(eq, eq) == '=' then return nil end
+    local r = next_code(text, eq)
+    local open = text:sub(r, r) == '{' and r or (text:match('^set_combine%s*%(', r) and combine_table(text, r))
+    local close = open and match_close(text, open)
+    if not close then return nil end
+    return {keys = keys, line_from = line_from, open = open, close = close, indent = indent, entries = entries(text, open, close)}
 end
 
 --- Every set written in the file with a table of its own:
@@ -185,44 +229,11 @@ end
 function SetWriter.definitions(text)
     local defs, pos = {}, 1
     while pos <= #text do
-        local line_from = pos
         local line_to = text:find('\n', pos, true) or #text + 1
-        local indent, start = text:match('^([ \t]*)()sets[%.%[ ]', pos)
-        if start and start < line_to then
-            local keys, after = read_path(text, start)
-            local eq = keys and text:match('^%s*=()', after)
-            if eq and text:sub(eq, eq) ~= '=' then
-                local r = next_code(text, eq)
-                local open
-                if text:sub(r, r) == '{' then open = r
-                elseif text:match('^set_combine%s*%(', r) then
-                    local p = text:find('(', r, true)
-                    local q = match_close(text, p)
-                    -- the last argument, when it is a table literal reaching the closing parenthesis
-                    local k = q and q - 1
-                    while k and k > p and text:sub(k, k):match('%s') do k = k - 1 end
-                    if k and text:sub(k, k) == '}' then
-                        local j, cand = p + 1, nil
-                        while j < q do
-                            local after2 = skip(text, j)
-                            if after2 then j = after2
-                            elseif text:sub(j, j) == '{' then
-                                local cl = match_close(text, j)
-                                if cl == k then cand = j end
-                                j = (cl or q) + 1
-                            elseif OPEN[text:sub(j, j)] then j = (match_close(text, j) or q) + 1
-                            else j = j + 1 end
-                        end
-                        open = cand
-                    end
-                end
-                local close = open and match_close(text, open)
-                if close then
-                    defs[#defs + 1] = {keys = keys, line_from = line_from, open = open, close = close,
-                        indent = indent, entries = entries(text, open, close)}
-                    line_to = text:find('\n', close, true) or #text + 1
-                end
-            end
+        local def = definition_at(text, pos, line_to)
+        if def then
+            defs[#defs + 1] = def
+            line_to = text:find('\n', def.close, true) or #text + 1
         end
         pos = line_to + 1
     end
@@ -280,23 +291,21 @@ end
 --- its other entries as they were, the slots in slot order.
 local function edit_inline(text, def, changes)
     local parts, done, seen = {}, {}, {}
+    -- the new slots that come before rank `upto`, in slot order
     local function add_new(upto)
         for _, slot in ipairs(SetWriter.ORDER) do
             if RANK[slot] < upto and changes[slot] and not seen[slot] then
                 seen[slot] = true
                 parts[#parts + 1] = slot .. ' = ' .. changes[slot]
-                done[#done + 1] = {slot = slot, before = nil, after = changes[slot]}
+                done[#done + 1] = {slot = slot, after = changes[slot]}
             end
         end
     end
     for _, e in ipairs(def.entries) do
-        local expr = text:sub(e.expr_from, e.expr_to)
+        local expr, new = text:sub(e.expr_from, e.expr_to), e.slot and changes[e.slot]
         if e.slot then add_new(RANK[e.slot]) end
-        local new = e.slot and changes[e.slot]
-        if e.slot and seen[e.slot] then
-            -- the same slot twice in a table: the first one stays as written
-            parts[#parts + 1] = text:sub(e.from, e.expr_to)
-        elseif e.slot and new ~= nil then
+        -- the same slot twice in a table: the first one stays as written
+        if e.slot and new ~= nil and not seen[e.slot] then
             seen[e.slot] = true
             if new then parts[#parts + 1] = text:sub(e.from, e.expr_from - 1) .. new end
             if new ~= expr then done[#done + 1] = {slot = e.slot, before = expr, after = new or nil} end
@@ -305,10 +314,77 @@ local function edit_inline(text, def, changes)
         end
     end
     add_new(math.huge)
-    local inner = text:sub(def.open + 1, def.close - 1)
-    local sp = inner:match('^ ') and ' ' or ''
+    local sp = text:sub(def.open + 1, def.open + 1) == ' ' and ' ' or ''
     local body = #parts > 0 and (sp .. table.concat(parts, ', ') .. sp) or ''
     return text:sub(1, def.open) .. body .. text:sub(def.close), done
+end
+
+--- Taking an entry out: its whole line when it is alone on it (a comment after it goes too).
+local function removal(text, e)
+    local ls, le = line_start(text, e.from), line_end(text, e.sep or e.expr_to)
+    local rest = text:sub((e.sep or e.expr_to) + 1, le - 1)
+    if only_blank(text:sub(ls, e.from - 1)) and (only_blank(rest) or rest:match('^%s*%-%-')) then
+        return {from = ls, to = math.min(le, #text), text = ''}
+    end
+    return {from = e.from, to = e.sep or e.expr_to, text = ''}
+end
+
+--- The edits for the slots the set writes already (a new value, or the line out) and the
+--- slots to add: edits, inserts {slot, expr}, done {slot, before, after}.
+local function plan(text, def, changes)
+    local edits, inserts, done, by_slot = {}, {}, {}, {}
+    for _, e in ipairs(def.entries) do if e.slot and not by_slot[e.slot] then by_slot[e.slot] = e end end
+    for _, slot in ipairs(SetWriter.ORDER) do
+        local expr, e = changes[slot], by_slot[slot]
+        local before = e and text:sub(e.expr_from, e.expr_to) or nil
+        if expr and e and before ~= expr then
+            edits[#edits + 1] = {from = e.expr_from, to = e.expr_to, text = expr}
+            done[#done + 1] = {slot = slot, before = before, after = expr}
+        elseif expr == false and e then
+            edits[#edits + 1] = removal(text, e)
+            done[#done + 1] = {slot = slot, before = before}
+        elseif expr and not e then
+            inserts[#inserts + 1] = {slot = slot, expr = expr}
+            done[#done + 1] = {slot = slot, after = expr}
+        end
+    end
+    return edits, inserts, done
+end
+
+--- Where a new slot's line goes in a table on several lines: before the first entry of a later
+--- slot that starts its line, else after the last entry (a comma added to it when it has none).
+local function insert_edits(text, def, ins, style_of, edits)
+    local indent, padded, nl = style_of.indent, style_of.padded, style_of.nl
+    local line = entry_line(indent, padded, ins.slot, ins.expr)
+    for _, e in ipairs(def.entries) do
+        local ls = line_start(text, e.from)
+        if e.slot and RANK[e.slot] > RANK[ins.slot] and only_blank(text:sub(ls, e.from - 1)) then
+            edits[#edits + 1] = {from = ls, to = ls - 1, text = line .. nl, order = RANK[ins.slot]}
+            return
+        end
+    end
+    local last = def.entries[#def.entries]
+    if not last.sep then
+        edits[#edits + 1] = {from = last.expr_to + 1, to = last.expr_to, text = ',', order = 0}
+        last.sep = last.expr_to
+    end
+    local le = math.min(line_end(text, last.sep), def.close)
+    local at_nl = text:sub(le, le) == '\n'
+    local at = at_nl and le + 1 or le
+    edits[#edits + 1] = {from = at, to = at - 1, text = (at_nl and '' or nl) .. line .. (at_nl and nl or nl .. def.indent), order = RANK[ins.slot]}
+end
+
+--- Apply the edits from the end, so earlier offsets stay right; at one place a line taken out
+--- goes first (an insert there lands where it was), then the inserts in slot order.
+local function apply(text, edits)
+    table.sort(edits, function(a, b)
+        if a.from ~= b.from then return a.from > b.from end
+        local ia, ib = a.to < a.from, b.to < b.from
+        if ia ~= ib then return ib end
+        return (a.order or 0) > (b.order or 0)
+    end)
+    for _, ed in ipairs(edits) do text = text:sub(1, ed.from - 1) .. ed.text .. text:sub(ed.to + 1) end
+    return text
 end
 
 --- The file with the definition changed: changes = {slot = expr | false}, false
@@ -318,84 +394,17 @@ function SetWriter.edit(text, def, changes)
     if #def.entries > 0 and not text:sub(def.open, def.close):find('\n', 1, true) then
         return edit_inline(text, def, changes)
     end
-    local nl = text:find('\r\n', 1, true) and '\r\n' or '\n'
     local indent, padded = style(text, def)
-    local edits, done, by_slot = {}, {}, {}
-    for _, e in ipairs(def.entries) do if e.slot and not by_slot[e.slot] then by_slot[e.slot] = e end end
-    local inserts = {}
-    for _, slot in ipairs(SetWriter.ORDER) do
-        local expr = changes[slot]
-        local e = by_slot[slot]
-        if expr ~= nil then
-            local before = e and text:sub(e.expr_from, e.expr_to) or nil
-            if e and expr then
-                if before ~= expr then
-                    edits[#edits + 1] = {from = e.expr_from, to = e.expr_to, text = expr}
-                    done[#done + 1] = {slot = slot, before = before, after = expr}
-                end
-            elseif e then
-                local ls, le = line_start(text, e.from), line_end(text, e.sep or e.expr_to)
-                local rest = text:sub((e.sep or e.expr_to) + 1, le - 1)
-                if only_blank(text:sub(ls, e.from - 1)) and (only_blank(rest) or rest:match('^%s*%-%-')) then
-                    edits[#edits + 1] = {from = ls, to = math.min(le, #text), text = ''}
-                else
-                    edits[#edits + 1] = {from = e.from, to = e.sep or e.expr_to, text = ''}
-                end
-                done[#done + 1] = {slot = slot, before = before, after = nil}
-            elseif expr then
-                inserts[#inserts + 1] = {slot = slot, expr = expr}
-                done[#done + 1] = {slot = slot, before = nil, after = expr}
-            end
-        end
+    local st = {indent = indent, padded = padded, nl = text:find('\r\n', 1, true) and '\r\n' or '\n'}
+    local edits, inserts, done = plan(text, def, changes)
+    if #inserts > 0 and #def.entries == 0 then
+        local lines = {}
+        for k, ins in ipairs(inserts) do lines[k] = entry_line(indent, padded, ins.slot, ins.expr) end
+        edits[#edits + 1] = {from = def.open + 1, to = def.close - 1, text = st.nl .. table.concat(lines, st.nl) .. st.nl .. def.indent}
+    else
+        for _, ins in ipairs(inserts) do insert_edits(text, def, ins, st, edits) end
     end
-    if #inserts > 0 then
-        local multi = text:sub(def.open, def.close):find('\n', 1, true) ~= nil
-        if #def.entries == 0 then
-            local lines = {}
-            for i, ins in ipairs(inserts) do lines[i] = entry_line(indent, padded, ins.slot, ins.expr) end
-            edits[#edits + 1] = {from = def.open + 1, to = def.close - 1, text = nl .. table.concat(lines, nl) .. nl .. def.indent}
-        elseif multi then
-            local last = def.entries[#def.entries]
-            for _, ins in ipairs(inserts) do
-                -- before the first entry of a later slot that starts its line, else after the last entry
-                local at
-                for _, e in ipairs(def.entries) do
-                    local ls = line_start(text, e.from)
-                    if e.slot and RANK[e.slot] > RANK[ins.slot] and only_blank(text:sub(ls, e.from - 1)) then at = ls break end
-                end
-                if at then
-                    edits[#edits + 1] = {from = at, to = at - 1, text = entry_line(indent, padded, ins.slot, ins.expr) .. nl, order = RANK[ins.slot]}
-                else
-                    if not last.sep then
-                        edits[#edits + 1] = {from = last.expr_to + 1, to = last.expr_to, text = ',', order = 0}
-                        last.sep = last.expr_to
-                    end
-                    local le = line_end(text, last.sep)
-                    if le > def.close then le = def.close end
-                    local at2 = text:sub(le, le) == '\n' and le + 1 or le
-                    local lead = text:sub(le, le) == '\n' and '' or nl
-                    local trail = text:sub(le, le) == '\n' and nl or nl .. def.indent
-                    edits[#edits + 1] = {from = at2, to = at2 - 1, text = lead .. entry_line(indent, padded, ins.slot, ins.expr) .. trail, order = RANK[ins.slot]}
-                end
-            end
-        else
-            local last = def.entries[#def.entries]
-            local parts = {}
-            for _, ins in ipairs(inserts) do parts[#parts + 1] = ins.slot .. ' = ' .. ins.expr end
-            local at = (last.sep or last.expr_to) + 1
-            edits[#edits + 1] = {from = at, to = at - 1, text = (last.sep and ' ' or ', ') .. table.concat(parts, ', ') .. (last.sep and ',' or '')}
-        end
-    end
-    -- from the end, so earlier offsets stay right; at one place a line taken out goes first
-    -- (an insert there lands where it was), then the inserts in slot order
-    table.sort(edits, function(a, b)
-        if a.from ~= b.from then return a.from > b.from end
-        local ia, ib = a.to < a.from, b.to < b.from
-        if ia ~= ib then return ib end
-        return (a.order or 0) > (b.order or 0)
-    end)
-    for _, ed in ipairs(edits) do text = text:sub(1, ed.from - 1) .. ed.text .. text:sub(ed.to + 1) end
-    return text, done
+    return apply(text, edits), done
 end
 
 --- A Lua string literal: single quotes unless the text holds one.

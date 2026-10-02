@@ -3,9 +3,29 @@
 This page applies to every job that has a `<JOB>_TP_CONFIG.lua`.
 
 Before a weaponskill, the weaponskill handler adds up your current TP and the
-TP bonus you already have (weapon, buffs). If a TP bonus piece lets you reach
-the next step (2000 or 3000 TP), it equips the fewest pieces that do it. If no
-piece can reach the next step, nothing is added. TP is capped at 3000.
+TP bonus you already have (weapon, buffs, and the TP pieces your weaponskill set
+wears already, such as Boii Cuisses written in `sets.precast.WS`). If TP bonus
+pieces let you reach the next step (2000 or 3000 TP), it equips the fewest that
+do it; when one piece is enough, the smallest one that is (a gap of 100 takes
+Boii Cuisses +100, not Moonshade +250, so the ear keeps the set's earring). If
+the pieces cannot reach the next step, nothing is added. TP is capped at 3000.
+
+The pieces are only ever added, never taken off: a TP piece written in a
+weaponskill set stays on even when it is of no use (at 3000 TP, say). Leave them
+out of your weaponskill sets and let this rule put them on.
+
+Example (WAR, Laphria, Warcry with 5 Savagery merits and Agoge = 700, Boii
+Cuisses in the base WS set):
+
+| TP | Added | TP at the weaponskill |
+|----|-------|------|
+| 1000 | Moonshade | 2050 |
+| 1200 | nothing | 2000 |
+| 1950 | Moonshade | 3000 |
+| 2200 | nothing | 3000 |
+
+The Atelier page (Sets tab, a weaponskill set) shows these steps and the TP the
+weaponskill opens with, worked out the same way.
 
 ## Pieces (equipped only when they help)
 

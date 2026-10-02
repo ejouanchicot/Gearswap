@@ -284,20 +284,23 @@ local function sent_action(messages)
     return nil
 end
 
+--- The same run with the sets as the set files wrote them: the pieces saved from the page
+--- (set_overrides.lua) set aside for the run, laid again after. result.as_file = true.
+local function run_as_file(req)
+    local ok_o, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
+    local restore = ok_o and SetOverrides.as_file and SetOverrides.as_file()
+    local copy = {}
+    for k, v in pairs(req) do copy[k] = v end
+    copy.file = nil
+    local ok, result = pcall(AtelierSim.run, copy)
+    if restore then restore() end
+    if not ok then error(result, 0) end
+    result.as_file = true
+    return result
+end
+
 function AtelierSim.run(req)
-    -- file = true: the sets as the set files wrote them, the pieces saved from the page set aside
-    if req.file then
-        local ok_o, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
-        local restore = ok_o and SetOverrides.as_file and SetOverrides.as_file()
-        local copy = {}
-        for k, v in pairs(req) do copy[k] = v end
-        copy.file = nil
-        local ok, result = pcall(AtelierSim.run, copy)
-        if restore then restore() end
-        if not ok then error(result, 0) end
-        result.as_file = true
-        return result
-    end
+    if req.file then return run_as_file(req) end
     local G = gs()
     if not (G and KINDS[req.kind] and (req.name or req.kind == 'ra')) then return {ok = false, error = 'bad request'} end
     local line = find_line(req.kind, req.name or '')
@@ -452,6 +455,14 @@ end
 --- @param req table {tp = number|nil, main = string|nil, sub = string|nil, buffs = 'Warcry,Hagakure'|nil}
 --- @return table {ok, config = boolean, gear = {slot = name} (page slot names), bonus = TP the weapon
 ---   and buffs add, total = TP all the pieces add, thresholds = {2000, 3000}}
+--- What the weaponskill set wears, as the page sends it (worn=slot:name|slot:name): its own
+--- TP pieces count, as in game.
+local function worn_of(text)
+    local worn = {}
+    for slot, name in tostring(text or ''):gmatch('([%w_]+):([^|]+)') do worn[slot] = name end
+    return worn
+end
+
 function AtelierSim.tp_bonus(req)
     local config = player and rawget(_G, tostring(player.main_job) .. 'TPConfig')
     local ok_c, Calc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
@@ -464,11 +475,8 @@ function AtelierSim.tp_bonus(req)
     rawset(_G, 'buffactive', buffs)
     local ok_b, bonus = pcall(function() return Calc.effective_tp and Calc.effective_tp(0, config, main, buffs, sub) or 0 end)
     local tp = tonumber(req.tp)
-    -- what the weaponskill set wears (worn=slot:name|slot:name): its own TP pieces count, as in game
-    local worn = {}
-    for slot, name in tostring(req.worn or ''):gmatch('([%w_]+):([^|]+)') do worn[slot] = name end
     local ok, gear = true, nil
-    if tp then ok, gear = pcall(Calc.calculate, tp, config, main, buffs, sub, worn) end
+    if tp then ok, gear = pcall(Calc.calculate, tp, config, main, buffs, sub, worn_of(req.worn)) end
     rawset(_G, 'buffactive', was)
     local out, total, bonus_of = {}, 0, {}
     for slot, name in pairs(ok and type(gear) == 'table' and gear or {}) do

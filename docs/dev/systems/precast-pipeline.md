@@ -37,11 +37,11 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/utils/precast/recast_announce.lua` | 83 | Party message (`/p`) for an action refused on recast, per `RECAST_CONFIG.party_announce` |
 | `_master/config_global/RECAST_CONFIG.lua` | 115 | Recast tolerance (2.0 s), party announce list, global `is_recast_ready` / `is_on_cooldown` |
 | `shared/utils/precast/ability_helper.lua` | 409 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed (or abort, via `follow_up_or_abort`); at most one attempt per action |
-| `shared/utils/precast/ws_precast_handler.lua` | 103 | WSPrecastHandler: validation, TP gear calculation, 1000 TP check on the game's own TP, TP gear application |
+| `shared/utils/precast/ws_precast_handler.lua` | 147 | WSPrecastHandler: validation, TP gear calculation, 1000 TP check on the game's own TP, TP gear application |
 | `shared/utils/precast/ws_validator.lua` | 46 | Thin wrapper over WeaponSkillManager (range + Amnesia) |
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 133 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
-| `shared/utils/precast/tp_bonus_handler.lua` | 79 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
-| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 214 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
+| `shared/utils/precast/tp_bonus_handler.lua` | 84 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
+| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 230 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `//gs c ws1..ws9` (WAR) and `ws`, `ws1..` (PLD): weaponskill slots rebuilt per weapon |
 | `shared/utils/precast/tier_refiner.lua` | 230 | TierRefiner: cast the highest learned tier whose recast and MP allow it |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table for RDM enfeebles (`get(family)`) |
@@ -448,8 +448,16 @@ sequenceDiagram
     H->>H: live_tp() < 1000 -> cancel + "Not enough TP"
     H-->>J: true / false
     P->>H: apply_tp_gear(spell)
-    H->>P: equip(_G.temp_tp_bonus_gear), clear it
+    H->>T: calculate again with worn = gearswap.equip_list (_G.temp_tp_bonus_args)
+    H->>P: equip(gear), clear _G.temp_tp_bonus_gear / _G.temp_tp_bonus_args
 ```
+
+- **TP pieces worn by the set** (since 2026-10-02): `calculate_tp_gear` keeps its
+  arguments in `_G.temp_tp_bonus_args`; `apply_tp_gear`, once Mote has equipped the
+  weaponskill set, calls `TPBonusCalculator.calculate` again with `worn` = GearSwap's
+  equip list. A config piece the set already wears (same slot, same name) counts as
+  there and is not added; one piece that closes the gap is the smallest that does.
+  Without an equip list it equips the first answer. Trace: `TP ... with the set on -> gear ...`.
 
 - `WSPrecastHandler`'s local `ensure_modules_loaded` loads MessageFormatter,
   WSValidator, TPBonusHandler and AutoJump (`shared/utils/drg/auto_jump.lua`)

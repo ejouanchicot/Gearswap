@@ -40,6 +40,12 @@ end
 --- @return number
 TPBonusHandler.live_tp = require('shared/utils/core/live_tp')
 
+--- A TP line in the debug trace (shared/utils/debug/trace_log.lua), when it is on.
+local function trace(fmt, ...)
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok_t and Trace then Trace.log('TP', fmt, ...) end
+end
+
 --- Compute the TP bonus gear for a weaponskill and store it in
 --- _G.temp_tp_bonus_gear, where WSPrecastHandler.apply_tp_gear picks it up.
 --- @param spell table Spell object from GearSwap
@@ -68,11 +74,8 @@ function TPBonusHandler.calculate_tp_gear(spell, tp_config)
     local tp_gear = calculator.calculate(current_tp, tp_config, weapon_name, buffactive, sub_weapon)
     -- worked out again once the weaponskill set is on (WSPrecastHandler.apply_tp_gear): its own TP pieces count
     _G.temp_tp_bonus_args = {tp = current_tp, config = tp_config, main = weapon_name, sub = sub_weapon}
-    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
-    if ok_t and Trace then
-        Trace.log('TP', '%s tp %s main %s sub %s range %s -> gear %s', spell.english, current_tp,
-            weapon_name, sub_weapon, player.equipment and player.equipment.range, tp_gear)
-    end
+    trace('%s tp %s main %s sub %s range %s -> gear %s', spell.english, current_tp,
+        weapon_name, sub_weapon, player.equipment and player.equipment.range, tp_gear)
 
     -- Applied in job_post_precast by WSPrecastHandler.apply_tp_gear
     _G.temp_tp_bonus_gear = tp_gear

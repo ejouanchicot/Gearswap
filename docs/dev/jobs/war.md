@@ -287,12 +287,14 @@ replayed weaponskill goes through precast again and is refused by
 | Fencer | `get_fencer_bonus` | 630 + 11.5 x `fencer_jp_gifts` (860 at 20) when the main is in `one_hand_weapons` and the sub is empty or in `shields`; 0 otherwise |
 
 The calculator (`tp_bonus_calculator.lua` `calculate`) adds those bonuses to the
-current TP, targets the next of 2000 / 3000, and returns the **first** piece in
-descending bonus order that covers the gap, else the greedy combination, else nil.
-Examples: Ukonvasara at 1800 TP -> gap 200 -> Moonshade (Boii cannot cover it); at
-1950 TP -> gap 50 -> Moonshade again, because a single piece is preferred and the
-list is walked biggest first; Naegling + Blurred Shield +1 at 1200 TP -> 2060
-effective -> gap 940 > 350 -> nothing. The `grips` list changes nothing: a grip and
+current TP, plus the config pieces the weaponskill set wears already (`worn`: the
+equip list once the set is on, read again in `WSPrecastHandler.apply_tp_gear`),
+targets the next of 2000 / 3000, and returns the **smallest** single piece that
+covers the gap, else the greedy combination (biggest first), else nil (since
+2026-10-02; before, the biggest single piece). Examples: Ukonvasara at 1800 TP ->
+gap 200 -> Moonshade (Boii cannot cover it); at 1950 TP -> gap 50 -> Boii; with
+Boii in the WS set and Warcry (700), 1200 TP -> 2000 already -> nothing; Naegling +
+Blurred Shield +1 at 1200 TP -> 2060 effective -> gap 940 > 350 -> nothing. The `grips` list changes nothing: a grip and
 any other non-shield sub both return 0. Player page:
 [tp-bonus.md](../../user/features/tp-bonus.md).
 

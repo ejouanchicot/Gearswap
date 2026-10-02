@@ -154,6 +154,11 @@ local function pieces_for_gap(sorted, gap)
     return nil
 end
 
+--- A debug line of the weaponskill messages, only when TPBonusCalculator.config.debug_mode is on.
+local function debug(what, ...)
+    if TPBonusCalculator.config.debug_mode then get_message_ws()[what](...) end
+end
+
 -- Every spelling of an ear / ring / range slot, as the config and GearSwap's equip list write them
 local SLOT_CANON = {left_ear = 'ear1', lear = 'ear1', right_ear = 'ear2', rear = 'ear2', left_ring = 'ring1',
     lring = 'ring1', right_ring = 'ring2', rring = 'ring2', ranged = 'range'}
@@ -190,55 +195,30 @@ end
 --- @return table|nil Table of gear to equip {ear1="...", legs="..."} or nil if none needed
 function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, worn)
     if not current_tp or not tp_config then
-        if TPBonusCalculator.config.debug_mode then
-            get_message_ws().show_tp_validation_failed(current_tp, tp_config)
-        end
+        debug('show_tp_validation_failed', current_tp, tp_config)
         return nil
     end
-
-    local sorted_all, total_all = ranked_pieces(tp_config)
+    local sorted_all = ranked_pieces(tp_config)
     local already, available = split_worn(sorted_all or {}, worn)
     local real_tp = effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon) + already
-
-    if TPBonusCalculator.config.debug_mode then
-        local weapon_bonus = 0
-        if weapon_name and tp_config.get_weapon_bonus then
-            weapon_bonus = tp_config.get_weapon_bonus(weapon_name)
-        end
-        get_message_ws().show_tp_calculation(current_tp, weapon_name, weapon_bonus, real_tp)
-    end
-
+    debug('show_tp_calculation', current_tp, weapon_name,
+        weapon_name and tp_config.get_weapon_bonus and tp_config.get_weapon_bonus(weapon_name) or 0, real_tp)
     local target_threshold = next_threshold(real_tp)
     if not target_threshold then
-        if TPBonusCalculator.config.debug_mode then
-            get_message_ws().show_already_at_max()
-        end
+        debug('show_already_at_max')
         return nil
     end
-
     local gap = target_threshold - real_tp
-    if TPBonusCalculator.config.debug_mode then
-        get_message_ws().show_target_threshold(target_threshold, gap)
-    end
-
-    if not sorted_all then
-        return nil
-    end
-    local sorted, total_available = available, 0
-    for _, piece in ipairs(sorted) do total_available = total_available + piece.bonus end
-
+    debug('show_target_threshold', target_threshold, gap)
+    if not sorted_all then return nil end
+    local total_available = 0
+    for _, piece in ipairs(available) do total_available = total_available + piece.bonus end
     if gap > total_available then
-        if TPBonusCalculator.config.debug_mode then
-            get_message_ws().show_gap_too_large(gap, total_available)
-        end
+        debug('show_gap_too_large', gap, total_available)
         return nil
     end
-
-    if TPBonusCalculator.config.debug_mode then
-        get_message_ws().show_total_available(total_available)
-    end
-
-    return pieces_for_gap(sorted, gap)
+    debug('show_total_available', total_available)
+    return pieces_for_gap(available, gap)
 end
 
 --- TP the weaponskill opens with: the TP shown plus weapon, buff and Fencer bonuses.
