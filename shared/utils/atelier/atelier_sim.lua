@@ -343,70 +343,13 @@ function AtelierSim.run(req)
 end
 
 ---============================================================================
---- WORN: the idle / engaged set the job's own code builds
+--- BUFFS: the ones the job's code reads, offered by the Simulate tab
 ---============================================================================
 
--- The pet GearSwap describes, as the job code reads it (pet.isvalid, status, name)
-local PET_NAMES = {GEO = 'Luopan', SMN = 'Carbuncle', PUP = 'Automaton', DRG = 'Wyvern', BST = 'Pet'}
-local function pet_of(kind)
-    if kind ~= 'idle' and kind ~= 'engaged' then
-        return {isvalid = false, status = 'None', name = nil, hpp = 0, tp = 0}
-    end
-    local name = PET_NAMES[player.main_job] or 'Pet'
-    return {isvalid = true, status = kind == 'engaged' and 'Engaged' or 'Idle', name = name, hpp = 100, tp = 0,
-        element = 'Light', id = 0, index = 0}
-end
-
---- What the job wears idle or engaged, as its own code builds it (Mote's handle_equipping_gear,
---- the job's set builder, every overlay), with what the page chose standing for the game's:
---- the status, the modes, the buffs, the town or the field, moving, the pet. Nothing is sent.
---- @param req table {status = 'Idle'|'Engaged', states = {Mode = value}, buffs = 'A,B',
----   town = boolean, moving = boolean, pet = 'none'|'idle'|'engaged'}
---- @return table {ok, list = {slot = piece}, messages, error}
-function AtelierSim.worn(req)
-    local G = gs()
-    if not G then return {ok = false, error = 'no gearswap'} end
-    local messages, scheduled = {}, {}
-    local snap, status = snapshot_states(), player.status
-    local restore = quarantine(messages, scheduled, nil, nil)
-    local saved = {}
-    local function swap(tbl, key, value)
-        if type(tbl) ~= 'table' then return end
-        saved[#saved + 1] = {tbl, key, rawget(tbl, key)}
-        rawset(tbl, key, value)
-    end
-    local list, ok, err = {}, nil, nil
-    ok, err = pcall(function()
-        local states = {}
-        for k, v in pairs(req.states or {}) do states[k] = v end
-        states.Moving = req.moving and 'true' or 'false'
-        set_states(states)
-        player.status = req.status == 'Engaged' and 'Engaged' or 'Idle'
-        swap(_G, 'buffactive', buffs_of(req.buffs))
-        swap(_G, 'pet', pet_of(req.pet))
-        if rawget(_G, 'world') then swap(world, 'area', req.town and 'Bastok Markets' or 'Reisenjima') end
-        G.table.reassign(G.equip_list, {})
-        G._global.current_event = 'aftercast'
-        local handler = rawget(_G, 'handle_equipping_gear')
-        if type(handler) == 'function' then
-            local pet_status = (req.pet == 'idle' or req.pet == 'engaged') and (req.pet == 'engaged' and 'Engaged' or 'Idle') or nil
-            handler(player.status, pet_status)
-        end
-        list = read_list()
-    end)
-    for i = #saved, 1, -1 do rawset(saved[i][1], saved[i][2], saved[i][3]) end
-    restore()
-    set_states(snap)
-    player.status = status
-    G.table.reassign(G.equip_list, {})
-    G._global.current_event = 'None'
-    return {ok = ok, error = not ok and tostring(err) or nil, list = list, messages = messages}
-end
-
 --- The buffs the job's code reads (its quoted strings that are buff names of the game, in
---- shared/jobs/<job>/), and whether the job has a pet: the choices of the page's Worn view.
---- @return table {buffs = {...}, pet = boolean}
-function AtelierSim.worn_options()
+--- shared/jobs/<job>/): the buffs the Simulate tab offers.
+--- @return table {buffs = {...}}
+function AtelierSim.sim_buffs()
     local G = gs()
     local known = {}
     for _, line in pairs(G.res.buffs or {}) do
@@ -445,7 +388,7 @@ function AtelierSim.worn_options()
     end
     pcall(scan, root, 0)
     table.sort(found)
-    return {buffs = found, pet = PET_NAMES[player.main_job] ~= nil}
+    return {buffs = found}
 end
 
 --- The TP bonus pieces the job's own rules add to a weaponskill at a TP: TPBonusCalculator
