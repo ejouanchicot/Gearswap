@@ -1524,8 +1524,11 @@ async function optimizeWs(s){
 // The result into draft B (the pieces that differ from the set itself), the message, then Compare
 function optResult(s, k, res, gains, o){
   const tr = {}, plain = withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } });
+  // a slot another piece blocks (Onca Suit: no leggear) is emptied in the draft
+  const blocked = FFXI.opt.blocked(res.pieces);
+  for (const slot of Object.keys(blocked)) if (plain[slot] && !isEmpty(plain[slot])) tr[slot] = null;
   for (const [slot, p] of Object.entries(res.pieces)) {
-    if (['main', 'sub', 'range'].includes(slot) || !p) continue;
+    if (['main', 'sub', 'range'].includes(slot) || !p || blocked[slot]) continue;
     const a = plain[slot], piece = {name: p.name, augs: p.augs};
     if (p.rank != null) piece.rank = p.rank;
     if (p.capeMax) piece.capeMax = true;

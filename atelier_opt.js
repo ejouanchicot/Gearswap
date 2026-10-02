@@ -98,11 +98,28 @@
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage};
     };
-    // The engine's gear set from the page's pieces ({page slot: piece}); null when a piece is unknown
+    // The slots a piece leaves empty: "Cannot equip leggear" (Onca Suit), headgear, handgear, footgear
+    var BLOCK = {headgear: "head", handgear: "hands", hand: "hands", leggear: "legs", footgear: "feet"};
+    O.blocks = function (piece) {
+        var item = piece && piece.name && O.item(piece.name, piece.id), out = [];
+        ((item && item.unparsed) || []).forEach(function (t) {
+            var m = String(t).match(/Cannot equip (\w+)/i);
+            if (m && BLOCK[m[1].toLowerCase()]) out.push(BLOCK[m[1].toLowerCase()]);
+        });
+        return out;
+    };
+    // Every slot a set's pieces leave empty
+    O.blocked = function (pieces) {
+        var out = {};
+        PAGE_SLOTS.forEach(function (slot) { O.blocks(pieces[slot]).forEach(function (b) { out[b] = true; }); });
+        return out;
+    };
+    // The engine's gear set from the page's pieces ({page slot: piece}); null when a piece is unknown.
+    // A slot another piece blocks is empty.
     O.gearset = function (ctx, pieces) {
-        var set = {};
+        var set = {}, blocked = O.blocked(pieces);
         for (var i = 0; i < PAGE_SLOTS.length; i++) {
-            var slot = PAGE_SLOTS[i], g = O.gear(pieces[slot], slot, ctx);
+            var slot = PAGE_SLOTS[i], g = blocked[slot] ? O.empty() : O.gear(pieces[slot], slot, ctx);
             if (!g) return null;
             set[O.SLOT[slot]] = g;
         }
@@ -152,8 +169,9 @@
     }
     // The set worn at the weaponskill: the pieces, then the TP pieces the job's rule lays at that TP
     function wornAt(pieces, opts, tp) {
-        var worn = Object.assign({}, pieces), add = O.tpPieces(opts.tpRule, pieces, tp);
-        for (var s in add) worn[s] = add[s];
+        var worn = Object.assign({}, pieces), add = O.tpPieces(opts.tpRule, pieces, tp), blocked = O.blocked(pieces);
+        // no TP piece on a slot another piece blocks (no Boii Cuisses under Onca Suit)
+        for (var s in add) if (!blocked[s]) worn[s] = add[s];
         return worn;
     }
     // The player of a set, kept (per context) while a search tries the same set at several TP:
