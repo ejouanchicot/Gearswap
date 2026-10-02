@@ -284,8 +284,8 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .wsval > button.more{border-style:dashed;color:var(--muted)}
 .wsval .heldsel{width:auto;min-width:240px}
 .wsval .tpin{margin-left:2px}
-.tip{font:inherit;font-size:12px;color:var(--faint);background:none;border:0;padding:0 2px;cursor:pointer}
-.tip:hover,.tip[aria-expanded="true"]{color:var(--accent)}
+.helpbtn{font:inherit;font-size:12px;color:var(--faint);background:none;border:0;padding:0 2px;cursor:pointer}
+.helpbtn:hover,.helpbtn[aria-expanded="true"]{color:var(--accent)}
 .wshelp{grid-column:1/-1;flex-basis:100%;margin:-4px 0 2px;padding:8px 12px;border-left:3px solid var(--accent);border-radius:var(--radius-s);background:var(--accent-soft);color:var(--ink);font-size:12.5px;line-height:1.45}
 .tpres{margin-left:8px;font-size:13px;color:var(--muted)}
 .tpres b{color:var(--accent);font-size:14px}
@@ -293,6 +293,7 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .optset{flex-basis:100%}
 .optset > summary{cursor:pointer;font-size:12.5px;color:var(--muted);width:max-content}
 .optgrid{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:10px}
+.optexp{margin:8px 0 0;line-height:1.45}
 .tptotal .tpover{color:var(--r-dd);font-weight:600}
 .tptotal b{color:var(--accent);font-size:14px}
 .cmptbl{width:100%;border-collapse:collapse;font-size:13px}
@@ -3267,7 +3268,7 @@ function tpSteps(r, s){
 }
 // The TP line of a weaponskill set: off (the set as written) or a TP, its pieces from the game
 // An ⓘ that opens or closes the explanation `key` (S._help) in the page
-const helpBtn = key => `<button type="button" class="tip" data-help="${esc(key)}" aria-expanded="${S._help === key}" aria-label="?">ⓘ</button>`;
+const helpBtn = key => `<button type="button" class="helpbtn" data-help="${esc(key)}" aria-expanded="${S._help === key}" aria-label="?">ⓘ</button>`;
 // The top of a weaponskill set, for anyone: which weaponskill and which version, the weapon, the TP,
 // then the optimizer; one line each, the explanations on hover (ⓘ)
 function wsHeadHTML(card, ci, vi, s){
@@ -3347,7 +3348,7 @@ function wsWeaponLine(s, line){
 }
 // The TP steps, then the TP the weaponskill opens with (its make-up on hover)
 function wsTpLine(s, line){
-  const chip = (v, label) => `<button data-wstp="${v}" aria-pressed="${String(S.wsTp || '') === String(v)}"${(S._tpWhy || {})[v] ? ` title="${esc(S._tpWhy[v])}"` : ''}>${label}</button>`;
+  const chip = (v, label) => `<button data-wstp="${v}" aria-pressed="${String(S.wsTp || '') === String(v)}">${label}</button>`;
   const live = liveOk() && (S._live[S.char] || {}).job === S.job;
   const r = tpAsk(s, withWeapons(s).pieces, null), steps = tpSteps(r, s), parts = tpTotalParts(s, r);
   const bonus = r && r.bonus ? ` ${t('tpBonusOf', {n: r.bonus})}` : '';
@@ -3357,7 +3358,7 @@ function wsTpLine(s, line){
     (parts.raw > 3000 ? ` <span class="tpover">${t('tpOver', {t: parts.raw, n: parts.raw - 3000})}</span>` : '') + `</span>` : '';
   const input = `<input class="tpin" type="number" min="0" max="3000" step="10" value="${S.wsTp && !steps.includes(+S.wsTp) ? S.wsTp : ''}" placeholder="${t('tpOther')}" aria-label="TP">`;
   // the make-up of the total joins the explanation
-  return line(t('tpLbl'), chip('', t('tpOff')) + steps.map(v => chip(v, v)).join('') + input + res, (parts ? parts.text + '. ' : '') + note, 'tp') +
+  return line(t('tpLbl'), chip('', t('tpOff')) + steps.map(v => chip(v, v)).join('') + input + res, (parts ? parts.text + '. ' : '') + note + Object.entries(S._tpWhy || {}).map(([v, w]) => ` ${v} : ${w}.`).join(''), 'tp') +
     (parts && r && !r.worn_aware ? `<p class="kwarn">${t('tpOldCode')}</p>` : '');
 }
 // The optimizer: its button, the objective and the cost by party in view; where to look, the
@@ -3369,19 +3370,20 @@ function wsOptHTML(s){
   const o = S.optOpts = Object.assign({obj: 'damage', pdt: -50, mdt: -21, sb: 0}, S.optOpts || {}), [ta, tb] = avgRange(o);
   const r = tpAsk(s, withWeapons(s).pieces, null);
   const objs = ['damage', 'damage_avg', 'tp_return'].map(k => `<option value="${k}" ${o.obj === k ? 'selected' : ''}>${t('optObj_' + k, {tp: S.wsTp || 3000, a: ta, b: tb})}</option>`).join('');
-  const range = o.obj === 'damage_avg' ? `<label class="optnum" title="${esc(t('optRangeTip'))}">${t('optFrom')} <input type="number" step="250" min="1000" max="3000" data-optopt="tpFrom" value="${ta}"></label>` +
+  const range = o.obj === 'damage_avg' ? `<label class="optnum">${t('optFrom')} <input type="number" step="250" min="1000" max="3000" data-optopt="tpFrom" value="${ta}"></label>` +
     `<label class="optnum">${t('optTo')} <input type="number" step="250" min="1000" max="3000" data-optopt="tpTo" value="${tb}"> TP</label>` : '';
-  const num = (k, label, tip) => `<label class="optnum" title="${esc(tip)}">${label} <input type="number" step="1" data-optopt="${k}" value="${esc(o[k])}"></label>`;
+  const num = (k, label) => `<label class="optnum">${label} <input type="number" step="1" data-optopt="${k}" value="${esc(o[k])}"></label>`;
   const wheres = ['mine', 'mine_max', 'all'].map(k => `<option value="${k}" ${(o.where || 'mine') === k ? 'selected' : ''}>${t('optWhere_' + k)}</option>`).join('');
   const why = t('optWhy', {tp: S.wsTp || 3000}) + (r && r.piece_list ? '' : ' ' + t('optNoRule'));
   const settings = `<details class="optset" data-optset ${S._optSet ? 'open' : ''}><summary>${t('optSettings')}</summary><div class="optgrid">` +
     `<label class="optnum">${t('optWhereLbl')} <select class="buffsel" data-optopt="where">${wheres}</select></label>` +
-    `<label class="optnum" title="${esc(t('optWardTip'))}"><input type="checkbox" data-optopt="wardOnly" ${o.wardOnly ? 'checked' : ''}> ${t('optWard')}</label>` +
-    num('pdt', 'DT+PDT ≤', t('optPdtTip')) + num('mdt', 'DT+MDT ≤', t('optMdtTip')) + num('sb', 'Subtle Blow ≥', t('optSbTip')) + `</div></details>`;
+    `<label class="optnum"><input type="checkbox" data-optopt="wardOnly" ${o.wardOnly ? 'checked' : ''}> ${t('optWard')}</label>` +
+    num('pdt', 'DT+PDT ≤') + num('mdt', 'DT+MDT ≤') + num('sb', 'Subtle Blow ≥') + `</div>` +
+    `<p class="muted small optexp">${esc([t('optWardTip'), 'DT+PDT : ' + t('optPdtTip'), 'DT+MDT : ' + t('optMdtTip'), 'Subtle Blow : ' + t('optSbTip')].join('. '))}.</p></details>`;
   return `<div class="optcard"><button class="btn" data-optws>${t('optBtn')}</button>` +
     `<label class="optnum">${t('optObjLbl')} <select class="buffsel" data-optopt="obj">${objs}</select></label>${range}` +
     `<button class="btn ghost" data-tiercost>${t('tcBtn')}</button>${helpBtn('opt')}` +
-    (S._help === 'opt' ? `<p class="wshelp">${esc(why)} ${esc(t('tcTip'))}.</p>` : '') + `${settings}</div>`;
+    (S._help === 'opt' ? `<p class="wshelp">${esc(why)} ${esc(t('tcTip'))}.${o.obj === 'damage_avg' ? ' ' + esc(t('optRangeTip')) + '.' : ''}</p>` : '') + `${settings}</div>`;
 }
 // The TP the weaponskill opens with at the TP chosen: that TP, the weapon / buffs / Fencer bonus the
 // game counts, a party member's Warcry, then the TP Bonus of the pieces worn (their value from the
