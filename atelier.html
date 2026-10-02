@@ -3112,8 +3112,8 @@ function pieceChoices(slot, current, orig, s){
   // than a quarter of what the best choice for the slot gives of them
   const best = Math.max(0, ...list.map(o => o.score || 0)), armour = ['head', 'body', 'hands', 'legs', 'feet'].includes(slot);
   for (const o of list) {
-    o.why = o.low ? t('whyLow', {n: o.lv}) : armour && o.lv != null && !o.ilv ? t('whyNoIlv') : o.offTopic ? t('whyNone')
-      : best && (o.score || 0) < best / 4 ? t('whyWeak') : '';
+    o.why = o.low ? t('whyLow', {n: o.lv}) : armour && o.lv != null && !o.ilv ? t('whyNoIlv') : o.lowersDamage ? ''
+      : o.offTopic ? t('whyNone') : best && (o.score || 0) < best / 4 ? t('whyWeak') : '';
     // a piece you wear in a set of the same kind is never set aside: you chose it for such sets
     o.junk = !o.orig && !kin[o.piece.name] && !!o.why;
     o.grp = o.orig ? 0 : o.junk ? 5 : o.cat ? 4 : !o.owned ? 3 : o.seen ? 1 : 2; }
@@ -3149,7 +3149,13 @@ const MIDCAST_KINDS = [[/cur(e|a|aga)|healing|waltz/i, 'cure'], [/enhanc|phalanx
   [/elemental|magicburst|nuke|helix|impact|burst/i, 'elemental'], [/dark|drain|aspir|absorb/i, 'dark'], [/divine|banish|holy|flash/i, 'divine'],
   [/song|march|minuet|madrigal|ballad|minne|paeon|mambo|scherzo|lullaby|elegy|requiem|threnody|carol|etude|prelude|mazurka|nocturne|dirge|sirvente|hymnus|bardsong/i, 'song'],
   [/geo|indi|geomancy/i, 'geomancy'], [/ninjutsu|utsusemi|migawari|monomi|tonko|kakka|myoshu|yurin/i, 'ninjutsu'], [/enmity|provoke|foil|crusade/i, 'enmity']];
+// Damage taken counts in every set: a piece that lowers it is never set aside
+const ALWAYS = {dt: 0.8, pdt: 0.8, mdt: 0.8, pdt2: 0.8, mdt2: 0.8};
 function setWants(s){
+  const r = setWantsOf(s);
+  return Object.assign(r, {want: Object.assign({}, ALWAYS, r.want)});
+}
+function setWantsOf(s){
   const fam = family(s.path, s.pieces), path = s.path, add = (out, list, w = 1) => { for (const k of list.split(' ')) out[k] = Math.max(out[k] || 0, w); return out; };
   if (fam === 'ws') {
     const ws = wsOfSet(s) || segs(path).pop(), info = Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_info || {}))[ws] || {};
@@ -3198,6 +3204,7 @@ function relevance(s, slot, opts){
     o.score = parts.reduce((a, x) => a + x[2], 0);
     o.fit = parts.sort((a, b) => b[2] - a[2]).slice(0, 3).map(([k, e]) => `${statLabel(k, e)} ${fmtStat(e)}`);
     o.offTopic = stats[i].known !== false && !o.score;
+    o.lowersDamage = Object.entries(stats[i].stats || {}).some(([k, e]) => GOOD_DOWN.has(baseKey(k)) && e.v < 0);
   });
 }
 // The stats a set is after, as the drawer names them
