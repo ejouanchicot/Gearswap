@@ -115,9 +115,27 @@
         }};
         return true;
     };
+    // The buffs with each bubble at the page's multiplier (Bolster, Blaze of Glory, Ecliptic Attrition: the
+    // page's geoMul): everything but the bubbles, then each bubble alone, its geomancy part scaled
+    var GEO_SLOTS = {"Indi-": "indi", "Geo-": "geo", "Entrust-": "entrust"};
+    function geoScaled(sel, mul) {
+        var agg = FFXI.aggregate_buffs(Object.assign({}, sel, {geo: false}));
+        agg[0].geo = agg[0].geo || {};
+        Object.keys(GEO_SLOTS).forEach(function (slot) {
+            var bubbles = {"Indi-": "None", "Geo-": "None", "Entrust-": "None"};
+            bubbles[slot] = (sel.bubbles || {})[slot] || "None";
+            if (bubbles[slot] === "None") return;
+            var one = FFXI.aggregate_buffs({geo: true, bubbles: bubbles, bubble_bonus: sel.bubble_bonus, bolster: false, bog: false,
+                bubble_potency: sel.bubble_potency, food: null, toggles: {}});
+            var m = mul[GEO_SLOTS[slot]] || 1, k;
+            for (k in one[0].geo || {}) agg[0].geo[k] = (agg[0].geo[k] || 0) + m * one[0].geo[k];
+            for (k in one[1]) agg[1][k] = (agg[1][k] || 0) + m * one[1][k];
+        });
+        return agg;
+    }
     O.context = function (c) {
         if (c.wsInfo) O.defineWs(c.ws, c.wsInfo, c.wsSkill);
-        var agg = FFXI.aggregate_buffs(c.selection);
+        var agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : FFXI.aggregate_buffs(c.selection);
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
