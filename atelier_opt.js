@@ -200,41 +200,62 @@
     // Slot by slot until nothing improves, then every pair of slots over their best few pieces
     // (a pair can beat two single moves: two pieces reaching a cap together).
     O.optimize = function (ctx, start, choices, opts) {
-        var best = Object.assign({}, start), bestScore = score(ctx, best, opts), evals = 1;
-        var slots = Object.keys(choices), passes = opts.passes || 4;
-        for (var pass = 0; pass < passes; pass++) {
+        var st = {best: Object.assign({}, start), evals: 0};
+        st.score = score(ctx, st.best, opts);
+        var slots = Object.keys(choices), rounds = opts.rounds || 6;
+        for (var round = 0; round < rounds; round++) {
+            singles(ctx, st, slots, choices, opts);
+            if (!pairs(ctx, st, slots, shortlist(ctx, st, slots, choices, opts, opts.top || 8), opts)) break;
+        }
+        return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
+    };
+    // A move kept when it improves the set (st: {best, score, evals})
+    function tryMove(ctx, st, trial, opts) {
+        var v = score(ctx, trial, opts); st.evals++;
+        if (v > st.score + 1e-9) { st.best = trial; st.score = v; return true; }
+        return false;
+    }
+    // Slot by slot, every piece, until a full pass changes nothing
+    function singles(ctx, st, slots, choices, opts) {
+        for (var pass = 0; pass < (opts.passes || 6); pass++) {
             var moved = false;
             slots.forEach(function (slot) {
                 choices[slot].forEach(function (piece) {
-                    if (clashes(best, slot, piece)) return;
-                    var trial = Object.assign({}, best); trial[slot] = piece;
-                    var v = score(ctx, trial, opts); evals++;
-                    if (v > bestScore + 1e-9) { best = trial; bestScore = v; moved = true; }
+                    if (clashes(st.best, slot, piece)) return;
+                    var trial = Object.assign({}, st.best); trial[slot] = piece;
+                    if (tryMove(ctx, st, trial, opts)) moved = true;
                 });
             });
-            if (!moved) break;
+            if (!moved) return;
         }
-        var top = opts.top || 4;
-        // the best few pieces of each slot, the others staying as they are
-        var shortlist = {};
+    }
+    // The best few pieces of each slot, the others staying as they are
+    function shortlist(ctx, st, slots, choices, opts, top) {
+        var out = {};
         slots.forEach(function (slot) {
-            shortlist[slot] = choices[slot].map(function (piece) {
-                if (clashes(best, slot, piece)) return null;
-                var trial = Object.assign({}, best); trial[slot] = piece; evals++;
+            out[slot] = choices[slot].map(function (piece) {
+                if (clashes(st.best, slot, piece)) return null;
+                var trial = Object.assign({}, st.best); trial[slot] = piece; st.evals++;
                 return {piece: piece, v: score(ctx, trial, opts)};
             }).filter(Boolean).sort(function (a, b) { return b.v - a.v; }).slice(0, top).map(function (x) { return x.piece; });
         });
+        return out;
+    }
+    // Every pair of slots over their shortlists: two pieces can beat two single moves (a cap
+    // reached together, a floor met by one while the other gains); true when the set changed
+    function pairs(ctx, st, slots, list, opts) {
+        var moved = false;
         for (var i = 0; i < slots.length; i++) for (var j = i + 1; j < slots.length; j++) {
             var a = slots[i], b = slots[j];
-            shortlist[a].forEach(function (pa) {
-                shortlist[b].forEach(function (pb) {
-                    var trial = Object.assign({}, best); trial[a] = pa; trial[b] = pb;
+            list[a].forEach(function (pa) {
+                list[b].forEach(function (pb) {
+                    var trial = Object.assign({}, st.best); trial[a] = pa; trial[b] = pb;
                     if (clashes(trial, a, pa) || clashes(trial, b, pb)) return;
-                    var v = score(ctx, trial, opts); evals++;
-                    if (v > bestScore + 1e-9) { best = trial; bestScore = v; }
+                    if (tryMove(ctx, st, trial, opts)) moved = true;
                 });
             });
         }
-        return {pieces: best, score: bestScore, best: O.value(ctx, best, opts), start: O.value(ctx, start, opts), evals: evals};
-    };
+        return moved;
+    }
+
 });
