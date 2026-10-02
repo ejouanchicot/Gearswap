@@ -413,14 +413,15 @@ function SetWriter.edit(text, def, changes)
     return apply(text, edits), done
 end
 
---- A new set written right after the definition of the set it is built on:
+--- A new set written right after the definition of the set it is built on (or after `after`, the
+--- last set of its group: a new weaponskill goes at the end of the weaponskills):
 ---   <base path>.<name> = set_combine(<base path>, {
 ---       head = ...,
 ---   })
 --- the base path spelled as the file spells it, the slots in slot order (false ones left out:
 --- the new set inherits them).
 --- @return string text, table changes made {slot, after}, table keys of the new set
-function SetWriter.create(text, base, name, changes)
+function SetWriter.create(text, base, name, changes, after)
     local base_path = text:match('^[ \t]*(sets[^=\n]-)%s*=', base.line_from)
     local indent, padded = style(text, base)
     local nl = text:find('\r\n', 1, true) and '\r\n' or '\n'
@@ -431,9 +432,15 @@ function SetWriter.create(text, base, name, changes)
             done[#done + 1] = {slot = slot, after = changes[slot]}
         end
     end
-    local block = base.indent .. base_path .. '.' .. name .. ' = set_combine(' .. base_path .. ', {' .. nl
+    -- the key spelled as the set written before it spells its own (`WS['Upheaval']` or `WS.Upheaval`)
+    local prev = text:match('^[ 	]*(%S+)', (after or base).line_from) or ''
+    local q = prev:sub(1, #base_path + 1) == base_path .. '[' and prev:sub(#base_path + 2, #base_path + 2) or nil
+    local key = (name:match('^[%a_][%w_]*$') and not (q == "'" or q == '"')) and ('.' .. name)
+        or (q == '"' and not name:find('"', 1, true)) and ('["' .. name .. '"]')
+        or ('[' .. SetWriter.quote(name) .. ']')
+    local block = base.indent .. base_path .. key .. ' = set_combine(' .. base_path .. ', {' .. nl
         .. table.concat(lines, nl) .. (#lines > 0 and nl or '') .. base.indent .. '})'
-    local at = line_end(text, base.close)
+    local at = line_end(text, (after or base).close)
     local out = at <= #text and (text:sub(1, at) .. block .. nl .. text:sub(at + 1)) or (text .. nl .. block .. nl)
     local keys = {}
     for i, k in ipairs(base.keys) do keys[i] = k end

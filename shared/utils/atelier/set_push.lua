@@ -24,7 +24,9 @@
 --- any other piece by its name and augments. The set is found in the job's set
 --- folder (<Char>/<job>/sets/, shared/utils/atelier/set_writer.lua does the text).
 --- A support tier version of a weaponskill set (.Group, .Solo) the file does not
---- write yet is written right under its base set, as a set_combine of it.
+--- write yet is written right under its base set, as a set_combine of it; a
+--- weaponskill with no set yet (sets.precast.WS['X']) after the file's last
+--- weaponskill set, as a set_combine of sets.precast.WS.
 ---
 --- Before writing, the file is copied to <Char>/saved/backups/; every push is
 --- noted in <Char>/saved/set_push_history.lua, and the set's entry leaves
@@ -226,17 +228,37 @@ end
 -- the support tiers of a weaponskill set (shared/utils/party/support_tier.lua)
 local NEW_VERSIONS = {Group = true, Solo = true}
 
---- A version the file does not write yet, built on its base set: the file, its text, the
---- base's definition and the version's name; or nil.
+--- Whether a weaponskill of that name exists (the game's resources; unknown when they cannot be read).
+local function known_ws(name)
+    local gs = rawget(_G, 'gearswap')
+    local resources = rawget(_G, 'res') or (gs and gs.res)
+    if not (resources and resources.weapon_skills) then return true end
+    for _, ws in pairs(resources.weapon_skills) do
+        if type(ws) == 'table' and ws.english == name then return true end
+    end
+    return false
+end
+
+--- A set the file does not write yet that a push may create: a version (.Group, .Solo) under
+--- its set, or a weaponskill's set under sets.precast.WS (written after the last weaponskill set
+--- of that file). The file, its text, the base's definition, the new name and the definition to
+--- write after; or nil.
 local function locate_base(job, keys)
-    local name = keys[#keys]
-    if not (NEW_VERSIONS[name] and #keys > 1) then return nil end
-    local base_keys = {}
+    local name, base_keys, last_of_group = keys[#keys], {}, false
     for i = 1, #keys - 1 do base_keys[i] = keys[i] end
+    if #keys == 3 and keys[1] == 'precast' and keys[2] == 'WS' then
+        if not known_ws(name) then return nil end
+        last_of_group = true
+    elseif not (NEW_VERSIONS[name] and #keys > 1) then
+        return nil
+    end
     for _, file in ipairs(set_files(job)) do
         local text = read(file)
         local def = text and SetWriter.find_keys(text, base_keys)
-        if def then return file, text, def, name end
+        if def then
+            local group = last_of_group and SetWriter.family(text, base_keys)
+            return file, text, def, name, group and group[#group] or nil
+        end
     end
     return nil
 end
@@ -250,9 +272,9 @@ local function rewrite(job, req)
         local out, done = SetWriter.edit(text, def, changes_of(req, text))
         return abs, text, out, done, def, keys
     end
-    local babs, btext, base, name = locate_base(job, keys)
+    local babs, btext, base, name, after = locate_base(job, keys)
     if not babs then return nil, text end
-    local out, done = SetWriter.create(btext, base, name, changes_of(req, btext))
+    local out, done = SetWriter.create(btext, base, name, changes_of(req, btext), after)
     return babs, btext, out, done, nil, keys
 end
 
@@ -346,7 +368,7 @@ function SetPush.write(job, body, hash)
     local p, why = prepare(job, body)
     if not p then return {error = why} end
     if p.hash ~= hash then return {error = 'changed'} end
-    if #p.changes == 0 then return {error = 'nothing'} end
+    if #p.changes == 0 and not p.created then return {error = 'nothing'} end
     local list = read_history()
     local id = ((list[#list] or {}).id or 0) + 1
     local backup, err = backup_and_write(p, id)
