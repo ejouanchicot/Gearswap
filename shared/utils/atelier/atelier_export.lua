@@ -431,6 +431,17 @@ local function collect_char()
     char.jp_spent = type(jp) == 'table' and jp.jp_spent or nil
     local packet = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
     char.master_level = packet and #packet > 0x65 and packet:byte(0x65 + 1) or nil
+    -- every job's level and master level (packet 0x01B, libs/packets/fields.lua: job levels from
+    -- 0x49, master levels from 0x6D, one byte per job id 1-22): the page shows the mastered jobs first
+    local info = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x01B)
+    local ok_r, res = pcall(require, 'resources')
+    if info and #info >= 0x6D + 22 and ok_r and res and res.jobs then
+        char.jobs = {}
+        for id = 1, 22 do
+            local job = res.jobs[id] and res.jobs[id].ens
+            if job then char.jobs[job] = {level = info:byte(0x49 + id), ml = info:byte(0x6D + id)} end
+        end
+    end
     return char
 end
 
