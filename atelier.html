@@ -2713,7 +2713,8 @@ function charStats(s, pieces){
   return {c, out, set, B, cur, vsSet};
 }
 // A set's main-hand Attack and Accuracy from the damage engine, with the page's buffs, target and weapons;
-// null while the engine is not loaded or a piece is not in its catalogue. Kept per gear and buffs
+// null while the engine is not loaded. A piece its catalogue does not have (town gear, a ring worn when measured)
+// counts as an empty slot, so the set and the gear worn when measured are always both worked out. Kept per gear and buffs
 const ENG_STATS = new Map();
 function engineStats(s, pieces){
   if (!engineReady() || !s || !pieces || !pieces.main) return null;
@@ -2721,7 +2722,9 @@ function engineStats(s, pieces){
     const ci = optContextInput(s), pc = optPieces(pieces);
     const key = JSON.stringify([S.char, S.job, ci.sub, ci.selection, ci.abilities, ci.geoMul, ci.partyWarcry, pc]);
     if (ENG_STATS.has(key)) return ENG_STATS.get(key);
-    const ctx = FFXI.opt.context(ci), set = FFXI.opt.gearset(ctx, pc);
+    const ctx = FFXI.opt.context(ci);
+    for (const sl of Object.keys(pc)) if (sl !== 'main' && !FFXI.opt.gear(pc[sl], sl, ctx)) delete pc[sl];
+    const set = FFXI.opt.gearset(ctx, pc);
     const pl = set && FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities);
     const v = pl ? {atk: Math.floor(pl.stats.Attack1), acc: Math.floor(pl.stats.Accuracy1)} : null;
     if (ENG_STATS.size > 300) ENG_STATS.clear();
