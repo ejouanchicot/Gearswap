@@ -462,7 +462,11 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .tgtsum .tgtnums{margin-left:auto;font-size:12.5px}
 .tgtsum b.down{color:var(--r-dd)}
 .dialog.buffdlg{width:min(1060px,calc(100% - 32px))}
-.buffdlg .body{max-height:72vh;overflow:auto}
+.buffdlg .body{max-height:78vh;overflow:auto}
+.buffdlg .bhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+.buffdlg .bhead h3{margin:0}
+.buffdlg .bhead .tierbar{margin:0}
+.buffdlg .bhead > span{cursor:help}
 .buffdlg .buffbody{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:0;align-items:start}
 .buffdlg .bcol{display:grid;gap:14px;align-content:start;min-width:0}
 .buffdlg .box .boxb{display:grid;gap:7px}
@@ -2278,6 +2282,13 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''],
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],
   pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], mdmg: ['Dégâts magiques', 'Magic damage', '']};
+// Short labels, for a one-line summary (the party support cards)
+const FX_SHORT = {atkp: ['Att', 'Atk'], atk: ['Att', 'Atk'], atkf: ['Att', 'Atk'], acc: ['Préc', 'Acc'], racc: ['Préc. dist.', 'R.Acc'], ratk: ['Att. dist.', 'R.Atk'],
+  def: ['Déf', 'Def'], defp: ['Déf', 'Def'], eva: ['Éva', 'Eva'], meva: ['Éva. mag.', 'M.Eva'], mdb: ['Déf. mag.', 'MDB'], macc: ['Préc. mag.', 'M.Acc'],
+  mab: ['MAB', 'MAB'], mhaste: ['Haste', 'Haste'], jahaste: ['Haste JA', 'JA Haste'], shell: ['Shell', 'Shell'], stp: ['STP', 'STP'], da: ['DA', 'DA'],
+  crit: ['Crit', 'Crit'], pdl: ['PDL', 'PDL'], mdmg: ['Dmg mag.', 'M.Dmg'], regen: ['Regen', 'Regen'], refresh: ['Refresh', 'Refresh']};
+const fxShort = (k, v) => { const full = fxText(k, v), lbl = (FX_LABEL[k] || [])[S.lang === 'fr' ? 0 : 1], sh = (FX_SHORT[k] || [])[S.lang === 'fr' ? 0 : 1];
+  return lbl && sh && full.startsWith(lbl) ? sh + full.slice(lbl.length) : full; };
 function fxText(k, v){
   if (k === '_text') return v;
   const [fr, en, how = ''] = FX_LABEL[k] || [k.toUpperCase(), k.toUpperCase(), ''], label = S.lang === 'fr' ? fr : en, r = n => Math.round(n * 10) / 10;
@@ -2337,7 +2348,7 @@ function partyCardsHTML(b, sel, geoSel, plus){
   // what a job's buffs give, each stat once (two Minuets add up)
   const gives = src => { const sum = {};
     for (const e of B._by) if (src(e.src) && typeof e.v === 'number') sum[e.k] = (sum[e.k] || 0) + e.v;
-    return Object.entries(sum).map(([k, v]) => fxText(k, v)).join(' · '); };
+    return Object.entries(sum).map(([k, v]) => fxShort(k, v)).join(' · '); };
   const seg = (k, tiers, label) => `<div class="pseg"><span class="flbl">${esc(label)}</span><span class="fseg">${Object.keys(tiers).map(v =>
     `<button class="chip" data-foeseg="${k}" data-v="${esc(v)}" aria-pressed="${b[k] === v}">${esc(v.replace(/^\S+\s?/, '') || 'I')}</button>`).join('')}</span></div>`;
   const card = (job, body, fx) => `<div class="pcard"><span class="fttl">${esc(job)}</span><div class="pbody">${body}</div>` +
@@ -2552,7 +2563,7 @@ function openBuffs(){
   S._buffDlg = true;
   const sc = ($('.buffdlg .body') || {}).scrollTop;
   $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog buffdlg" role="dialog" aria-label="${t('buffsTitle')}">
-    <header><h3>${t('buffsTitle')}</h3><p class="muted small">${t('buffNote')}</p>${tierBarHTML()}<p class="muted small">${t('tierNote')}</p></header>
+    <header class="bhead"><h3>${t('buffsTitle')}</h3>${tierBarHTML()}<span class="muted small" title="${esc(t('tierNote') + ' ' + t('buffNote'))}">ⓘ</span></header>
     <div class="body">${buffPanelHTML()}</div>
     <footer><span><button class="btn ghost" data-buffendgame>${t('bEndgame')}</button> ${buffCount() ? `<button class="btn ghost" data-buffreset>${t('buffReset')}</button>` : ''}</span><button class="btn" data-close>${t('close')}</button></footer></div>`;
   $('#overlay').hidden = false;
