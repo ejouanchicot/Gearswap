@@ -956,7 +956,25 @@ const iconIds = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job
 function save(){ try { localStorage.setItem('atelier', JSON.stringify(Object.fromEntries(KEEP.map(k => [k, S[k]])))); } catch(e) {} }
 // The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
 const icon = name => { const id = name && (iconIds()[name] || (catalog() || {id: {}}).id[name]);
-  return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="this.remove()">` : ''}</span>`; };
+  return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="iconMiss(this, ${+id})">` : ''}</span>`; };
+// An icon not on the disk yet (a piece you do not hold: the export writes only yours and your sets'):
+// the game writes it on demand (POST /icons, item_icons.lua), the ids gathered for a moment, then the
+// page is drawn again; an id already asked for is not asked again
+const ICON_WANT = new Set(), ICON_ASKED = new Set();
+let ICON_TIMER = null;
+function iconMiss(img, id){
+  img.remove();
+  if (!id || ICON_ASKED.has(id) || !liveOk()) return;
+  ICON_WANT.add(id); clearTimeout(ICON_TIMER); ICON_TIMER = setTimeout(iconFetch, 150);
+}
+async function iconFetch(){
+  const ids = [...ICON_WANT].slice(0, 300);
+  ids.forEach(id => { ICON_WANT.delete(id); ICON_ASKED.add(id); });
+  if (!ids.length) return;
+  try { await liveFetch(S.char, '/icons?ids=' + ids.join(','), {method: 'POST', timeout: 15000}); } catch (e) { return; }
+  render();
+  if (ICON_WANT.size) iconFetch();
+}
 // Macro book and lockstyle in force for the export's subjob: its own setting, else the default
 // The alt the book is shown for: the page's choice, else the one online in game (ping), else none
 const macroAlt = d => { const pick = S.macroAlt[S.char + '|' + S.job];

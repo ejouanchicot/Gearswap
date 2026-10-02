@@ -12,6 +12,8 @@
 ---                              or set_overrides.lua only
 ---   GET  /actions              the job's spells, abilities and weapon skills
 ---   GET  /sim_buffs            the buffs the job's code reads (Simulate's buff choices)
+---   POST /icons?ids=1,2,3      writes the icons of those items the page lacks (pieces you
+---                              do not hold: item_icons.lua), at most 300 a call
 ---   GET  /tpbonus?tp=&main=&sub=&buffs=  the TP bonus pieces the job's rules add
 ---                              to a weaponskill at that TP, and its TP steps (AtelierSim.tp_bonus)
 ---   POST /simulate?kind=&name=  what the job wears for an action (atelier_sim.lua),
@@ -141,6 +143,15 @@ local function route(req, live)
     end
     if req.path == '/actions' then
         return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').actions())
+    end
+    if req.path == '/icons' and req.method == 'POST' then
+        local ids = {}
+        for id in tostring(query_table(req.query).ids or ''):gmatch('%d+') do
+            if #ids < 300 then ids[#ids + 1] = tonumber(id) end
+        end
+        local folder = windower.addon_path .. 'data/atelier/icons/'
+        local ok, n = pcall(require('shared/utils/atelier/item_icons').write_missing, ids, folder)
+        return '200 OK', Export.json({ok = ok, written = ok and n or 0})
     end
     if req.path == '/sim_buffs' then
         return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').sim_buffs())
