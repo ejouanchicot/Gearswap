@@ -114,8 +114,8 @@
         }};
         return true;
     };
-    // The buffs with each bubble at the page's multiplier (Bolster, Blaze of Glory, Ecliptic Attrition: the
-    // page's geoMul): everything but the bubbles, then each bubble alone, its geomancy part scaled
+    // The buffs with each bubble at the page's multiplier (Bolster, Blaze of Glory, Ecliptic Attrition, and an
+    // NM's resistance to the debuffs: the page's geoMul): everything but the bubbles, then each bubble alone, scaled
     var GEO_SLOTS = {"Indi-": "indi", "Geo-": "geo", "Entrust-": "entrust"};
     function geoScaled(sel, mul) {
         var agg = FFXI.aggregate_buffs(Object.assign({}, sel, {geo: false}));
@@ -128,7 +128,8 @@
                 bubble_potency: sel.bubble_potency, food: null, toggles: {}});
             var m = mul[GEO_SLOTS[slot]] || 1, k;
             for (k in one[0].geo || {}) agg[0].geo[k] = (agg[0].geo[k] || 0) + m * one[0].geo[k];
-            for (k in one[1]) agg[1][k] = (agg[1][k] || 0) + m * one[1][k];
+            // an offensive bubble on an NM: what its resistance leaves (the page's geoMul.foe)
+            for (k in one[1]) agg[1][k] = (agg[1][k] || 0) + m * (mul.foe == null ? 1 : mul.foe) * one[1][k];
         });
         return agg;
     }
