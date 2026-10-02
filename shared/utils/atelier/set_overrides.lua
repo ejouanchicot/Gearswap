@@ -100,4 +100,29 @@ function SetOverrides.apply(job)
     end
 end
 
+--- The sets as the set files wrote them, for a while: every piece the overrides laid is put
+--- back to the file's (SetOverrides.was). The Atelier's simulation runs an action this way to
+--- show what the file alone would wear.
+--- @return function restore Lays the overrides again
+function SetOverrides.as_file()
+    local saved = {}
+    for path, was in pairs(SetOverrides.was or {}) do
+        local set = resolve(path)
+        if set then
+            for slot, original in pairs(was) do
+                local keep = {}
+                for _, name in ipairs(SPELLINGS[slot] or {slot}) do keep[name] = rawget(set, name); set[name] = nil end
+                if original ~= false then set[slot] = original end
+                saved[#saved + 1] = {set = set, slot = slot, keep = keep}
+            end
+        end
+    end
+    return function()
+        for _, e in ipairs(saved) do
+            e.set[e.slot] = nil
+            for name, v in pairs(e.keep) do e.set[name] = v end
+        end
+    end
+end
+
 return SetOverrides

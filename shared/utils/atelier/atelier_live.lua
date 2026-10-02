@@ -161,7 +161,7 @@ local function route(req, live)
         local states = {}
         for k, v in pairs(q) do local name = k:match('^s%.(.+)$'); if name then states[name] = v end end
         local result = require('shared/utils/atelier/atelier_sim').run({kind = q.kind, name = q.name, target = q.target,
-            status = q.status, states = states, ignore_recasts = q.recasts ~= '1', tp = q.tp, buffs = q.buffs})
+            status = q.status, states = states, ignore_recasts = q.recasts ~= '1', tp = q.tp, buffs = q.buffs, file = q.file == '1'})
         return '200 OK', Export.json(result)
     end
     if req.path == '/push' and req.method == 'POST' then

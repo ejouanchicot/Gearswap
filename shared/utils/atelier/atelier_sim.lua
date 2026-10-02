@@ -285,6 +285,18 @@ local function sent_action(messages)
 end
 
 function AtelierSim.run(req)
+    -- file = true: the sets as the set files wrote them, the pieces saved from the page set aside
+    if req.file then
+        local ok_o, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
+        local restore = ok_o and SetOverrides.as_file and SetOverrides.as_file()
+        local copy = {}
+        for k, v in pairs(req) do copy[k] = v end
+        copy.file = nil
+        local ok, result = pcall(AtelierSim.run, copy)
+        if restore then restore() end
+        if not ok then error(result, 0) end
+        return result
+    end
     local G = gs()
     if not (G and KINDS[req.kind] and (req.name or req.kind == 'ra')) then return {ok = false, error = 'bad request'} end
     local line = find_line(req.kind, req.name or '')
