@@ -4129,7 +4129,10 @@ document.addEventListener('click', e => {
   if ('targetopen' in d) { openTarget(); return; }
   if ('bufftoggle' in d) { S.buffsOpen = !S.buffsOpen; render(); return; }
   if ('buffreset' in d) { S.buffs[buffKey()] = {}; render(); return; }
-  if ('buffendgame' in d) { S.buffs[buffKey()] = tierBuffs(buffTier()); render(); return; }
+  // the profile's usual party buffs; what is yours (food, aftermath, target, abilities) stays
+  if ('buffendgame' in d) { const old = buffState(), b = tierBuffs(buffTier());
+    for (const k of PERSONAL) if (old[k] !== undefined) b[k] = old[k];
+    S.buffs[buffKey()] = b; render(); return; }
   if (d.bufftier) { setBuffTier(d.bufftier); render(); return; }
   if (d.ja) { const b0 = buffState(), ja = b0.ja = b0.ja || {}, off = b0.jaOff = b0.jaOff || {};
     if (jaOn(b0, d.ja)) { delete ja[d.ja]; off[d.ja] = 1; }
