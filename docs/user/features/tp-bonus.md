@@ -40,6 +40,12 @@ calculator does not read (it reads `pieces`), so BLM never swaps it in today.
 
 ## Weapons (counted when held)
 
+Any weapon, main hand or off hand, is counted without a list: its TP Bonus is read from the
+game's description (`"TP Bonus"+500` on Chango, Centovente's +1000) and from your copy as
+`//gs c gearscan` read it, its augments and the stats of its path rank (Ikenga's Axe R23:
++200, R25: +300, R30: +500). After upgrading a weapon, run `//gs c gearscan` then `//gs reload`.
+A weapon your job's TP config lists keeps the value written there (the table below):
+
 | Job | Weapon | Bonus |
 |-----|--------|-------|
 | WAR | Chango | +500 |

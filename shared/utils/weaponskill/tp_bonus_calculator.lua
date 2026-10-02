@@ -4,7 +4,8 @@
 ---   Generic TP bonus calculation system for weaponskills
 ---   Intelligently determines which TP bonus gear to equip based on:
 ---   - Current TP amount
----   - Weapon TP bonus (e.g., Chango +500, Dojikiri Yasutsuna +500)
+---   - Weapon TP bonus (e.g., Chango +500, Dojikiri Yasutsuna +500; read by weapon_tp_bonus.lua
+---     when the job's TP config does not list the weapon: description, augments, path rank)
 ---   - Buff TP bonus:
 ---     • WAR: Warcry (+500-700 with Savagery merits + Agoge Mask)
 ---     • SAM: Hagakure (+1000-1200 with JP Gifts)
@@ -59,15 +60,15 @@ TPBonusCalculator.config = {
 --- @param sub_weapon string|nil Equipped sub (its own TP Bonus, and Fencer)
 --- @return number Effective TP
 local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
-    local weapon_bonus = 0
-    if weapon_name and tp_config.get_weapon_bonus then
-        weapon_bonus = tp_config.get_weapon_bonus(weapon_name) or 0
-    end
+    -- the weapon's TP Bonus: the job's config when it lists the weapon, else read from the game and
+    -- your gear scan (shared/utils/weaponskill/weapon_tp_bonus.lua: Ikenga's Axe R23 gives 200)
+    local WeaponTP = require('shared/utils/weaponskill/weapon_tp_bonus')
+    local weapon_bonus = WeaponTP.of(weapon_name, tp_config)
     -- An off-hand TP Bonus weapon counts too (Centovente on THF/DNC is always
     -- the sub): without it, 2750-2999 TP looked short of the cap and Moonshade
     -- replaced an earring for nothing. Same weapon in both hands: counted once.
-    if sub_weapon and sub_weapon ~= weapon_name and tp_config.get_weapon_bonus then
-        weapon_bonus = weapon_bonus + (tp_config.get_weapon_bonus(sub_weapon) or 0)
+    if sub_weapon and sub_weapon ~= weapon_name then
+        weapon_bonus = weapon_bonus + WeaponTP.of(sub_weapon, tp_config)
     end
 
     local buff_bonus = 0
