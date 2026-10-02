@@ -200,6 +200,13 @@ end
 --- Handle //gs c tb ...
 --- @param args table Words after "tb"
 --- @return boolean handled
+--- The temp keys bound in this game session, {key = command} (read by the Atelier
+--- page's export, shared/utils/atelier/atelier_export.lua).
+--- @return table
+function TempBinds.current()
+    return load_binds()
+end
+
 function TempBinds.handle(args)
     local words = {}
     for i, w in ipairs(args or {}) do words[i] = w end

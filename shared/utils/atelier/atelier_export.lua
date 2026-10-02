@@ -41,8 +41,9 @@ local SLOT_BY_ID = {[0] = 'main', 'sub', 'range', 'ammo', 'head', 'body', 'hands
 local EQUIP_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16}
 local MAX_DEPTH = 7
 -- What the export holds, raised when it gains something the page relies on: the page warns about
--- an export written by an older exporter (2: key conditions, empty sets, 2026-10-02)
-local EXPORT_VERSION = 2
+-- an export written by an older exporter (2: key conditions, empty sets; 3: macro fallback, bag,
+-- priority, temp keys; 2026-10-02)
+local EXPORT_VERSION = 3
 
 ---============================================================================
 --- SWITCH AND PATHS
@@ -107,7 +108,10 @@ local function piece(value)
         for i = 1, #value.augments do augs[i] = tostring(value.augments[i]) end
         aug = table.concat(augs, ' · ', 1, math.min(3, #augs))
     end
-    return {name = value.name, aug = aug, augs = augs}
+    -- bag (wardrobe N) and priority: where GearSwap takes the piece from, and its order in a swap
+    local bag = type(value.bag) == 'string' and value.bag or nil
+    local priority = tonumber(value.priority)
+    return {name = value.name, aug = aug, augs = augs, bag = bag, priority = priority}
 end
 
 --- Gear slots of one table, or nil when it holds none.
@@ -237,6 +241,30 @@ local function collect_modes()
     end
     table.sort(modes, function(a, b) return a.name < b.name end)
     return modes
+end
+
+--- The book / lockstyle a job falls back to with no config file: the numbers its factory call
+--- passes (shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua: create(job, path, sub, book, page);
+--- <JOB>_LOCKSTYLE.lua: create(job, path, style, sub)).
+--- @return table|nil {book, page}, number|nil style
+local function factory_defaults()
+    local job = player.main_job
+    local function args(kind)
+        local path = windower.addon_path .. 'data/shared/jobs/' .. job:lower() .. '/functions/' .. job .. '_' .. kind .. '.lua'
+        local f = io.open(path, 'r')
+        if not f then return {} end
+        local text = f:read('*a')
+        f:close()
+        local call = text:match(kind == 'MACROBOOK' and 'MacrobookManager%.create%((.-)%)' or 'LockstyleManager%.create%((.-)%)') or ''
+        call = call:gsub('%-%-[^\n]*', '')
+        local nums = {}
+        for n in call:gmatch('%f[%w](%d+)%f[%W]') do nums[#nums + 1] = tonumber(n) end
+        return nums
+    end
+    local ok_m, m = pcall(args, 'MACROBOOK')
+    local ok_l, l = pcall(args, 'LOCKSTYLE')
+    local book = ok_m and #m >= 2 and {book = m[#m - 1], page = m[#m]} or nil
+    return book, ok_l and l[1] or nil
 end
 
 --- A job config table (MACROBOOK / LOCKSTYLE), from the character's folder.
@@ -581,6 +609,7 @@ function AtelierExport.build()
         player = player.name, job = player.main_job, sub = player.sub_job, at = os.date('%Y-%m-%d %H:%M'),
         sets = collect_sets(), keys = collect_keys(), modes = collect_modes(),
         macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'),
+        macro_fallback = (factory_defaults()), lockstyle_fallback = select(2, factory_defaults()),
         -- <job>/combat/<JOB>_WEAPONS.lua (PLD: shield per stance and weapon, stance weapon, grips):
         -- the page puts the weapons in the sets the way the job code does
         weapon_rules = job_config('WEAPONS'),
@@ -607,6 +636,9 @@ function AtelierExport.build()
     -- the keys changed in the page and saved (<Char>/saved/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
     data.key_overrides = ok_o and KeyOverrides.read() or nil
+    -- the keys //gs c tb bound for this game session (shared/utils/keybinds/temp_binds.lua)
+    local ok_t, TempBinds = pcall(require, 'shared/utils/keybinds/temp_binds')
+    data.temp_binds = ok_t and TempBinds.current and TempBinds.current() or nil
     local ok_s, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
     data.set_overrides = ok_s and SetOverrides.read() or nil
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))

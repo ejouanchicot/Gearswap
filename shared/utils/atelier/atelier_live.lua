@@ -115,8 +115,11 @@ local function route(req, live)
     if req.headers['x-atelier-token'] ~= live.token then return '403 Forbidden', '{"error":"token"}' end
     local Export = require('shared/utils/atelier/atelier_export')
     if req.path == '/ping' then
+        -- the alt online and its job: the macro book GearSwap picks depends on it (macrobook_manager.lua)
+        local ok_d, Dual = pcall(require, 'shared/utils/dualbox/dualbox_manager')
+        local alt = ok_d and Dual and Dual.is_alt_online and Dual.is_alt_online() and Dual.get_alt_job() or nil
         return '200 OK', Export.json({player = player and player.name, job = player and player.main_job,
-            sub = player and player.sub_job, version = live.version})
+            sub = player and player.sub_job, version = live.version, alt = alt})
     end
     if req.path == '/export' then
         local data = Export.build()
