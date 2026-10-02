@@ -76,7 +76,8 @@
     // The songs as the engine reads them: Song1..Song4, Song5 under Clarion Call; the song under Marcato first,
     // the engine laying Marcato on Song1 (the page's b.marcato is that song's place)
     function songsOf(b) {
-        var list = [b.song0, b.song1, b.song2, b.song3].concat(b.clarion ? [b.song4] : []).map(function (x) { return x || "None"; });
+        // Aria of Passion is left to the page (its Loughnashade stage: the context's ariaPdl)
+        var list = [b.song0, b.song1, b.song2, b.song3].concat(b.clarion ? [b.song4] : []).map(function (x) { return x && x !== "Aria of Passion" ? x : "None"; });
         if (b.marcato != null && !b.soulVoice && list[b.marcato]) list.unshift(list.splice(b.marcato, 1)[0]);
         var out = {};
         list.forEach(function (x, i) { out["Song" + (i + 1)] = x; });
@@ -155,6 +156,7 @@
         var agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : FFXI.aggregate_buffs(c.selection);
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
+        if (c.ariaPdl) agg[0].brd.PDL = (agg[0].brd.PDL || 0) + c.ariaPdl;
         // the abilities on the target, worked out by the page (one Defense Down effect, the strongest, and Box Step)
         if (c.foeDown && c.foeDown.def) agg[1].Defense = (agg[1].Defense || 0) + c.foeDown.def;
         if (c.foeDown && c.foeDown.mdb) agg[1]["Magic Defense"] = (agg[1]["Magic Defense"] || 0) + c.foeDown.mdb;
