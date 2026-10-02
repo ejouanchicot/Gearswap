@@ -2705,8 +2705,9 @@ function charStats(s, pieces){
   // Attack and Accuracy as the damage engine has them when it is loaded (the damage and the optimizer use
   // those): the measure above multiplies an Attack measured in game, its own bonuses in it, by every buff
   const eCur = engineStats(s, withWeapons(s).pieces);
-  const eRef = vsSet ? withoutTrial(() => engineStats(s, withWeapons(s).pieces)) : engineStats(s, c.worn || {});
-  if (eCur && eRef) for (const k of ['atk', 'acc']) { cur[k] = eCur[k]; ref[k] = eRef[k]; }
+  // the gear worn when measured may be unknown (a live read without it): then no difference is shown
+  const eRef = (vsSet ? withoutTrial(() => engineStats(s, withWeapons(s).pieces)) : engineStats(s, c.worn || {})) || eCur;
+  if (eCur) for (const k of ['atk', 'acc']) { cur[k] = eCur[k]; ref[k] = eRef[k]; }
   const out = {};
   for (const k of [...ATTRS, 'hp', 'mp', 'def', 'atk', 'acc', 'eva']) if (cur[k] != null) out[k] = {now: ref[k], set: cur[k]};
   if (out.acc && cur.wskill) out.acc.tip = `${cur.wskill} ${cur.level}`;
@@ -2717,7 +2718,7 @@ function charStats(s, pieces){
 // counts as an empty slot, so the set and the gear worn when measured are always both worked out. Kept per gear and buffs
 const ENG_STATS = new Map();
 function engineStats(s, pieces){
-  if (!engineReady() || !s || !pieces || !pieces.main) return null;
+  if (!engineReady() || !s || !pieces || !Object.keys(pieces).length) return null;
   try {
     const ci = optContextInput(s), pc = optPieces(pieces);
     const key = JSON.stringify([S.char, S.job, ci.sub, ci.selection, ci.abilities, ci.geoMul, ci.partyWarcry, pc]);
