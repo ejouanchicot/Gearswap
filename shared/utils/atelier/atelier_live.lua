@@ -21,6 +21,8 @@
 ---   POST /push?mode=preview|write[&hash=]  a set written into the set file, previewed
 ---                              first (shared/utils/atelier/set_push.lua)
 ---   GET  /push_history, POST /push_undo?id=  the pushes, and putting a file back
+---   POST /delete?mode=preview|write[&hash=]  a set and its versions taken out of
+---                              the set file (set_push.lua)
 ---   POST /reload[?full=1]      //gs reload (so a saved change is worn now), or the
 ---                              whole addon: //lua r gearswap
 ---
@@ -169,6 +171,14 @@ local function route(req, live)
         local job = player and player.main_job
         if not job then return '503 Service Unavailable', '{"error":"no job"}' end
         local result = q.mode == 'write' and SetPush.write(job, req.body, q.hash) or SetPush.preview(job, req.body)
+        return '200 OK', Export.json(result)
+    end
+    if req.path == '/delete' and req.method == 'POST' then
+        local q, SetPush = query_table(req.query), require('shared/utils/atelier/set_push')
+        local job = player and player.main_job
+        if not job then return '503 Service Unavailable', '{"error":"no job"}' end
+        local path = (req.body or ''):match('^%s*(.-)%s*$')
+        local result = q.mode == 'write' and SetPush.delete(job, path, q.hash) or SetPush.delete_preview(job, path)
         return '200 OK', Export.json(result)
     end
     if req.path == '/push_history' then

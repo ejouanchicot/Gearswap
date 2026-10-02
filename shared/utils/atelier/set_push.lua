@@ -9,6 +9,9 @@
 ---                             the preview read
 ---   GET  /push_history        the pushes of this character, newest first
 ---   POST /push_undo?id=<n>    puts a file back as it was before a push
+---   POST /delete?mode=preview|write&hash=<h>  a set and its versions taken out
+---                             of the file (body: the set path); refused for the
+---                             job's base sets and while another set reads it
 ---
 --- Body (one line per slot, tab separated): the set path first, then
 ---   <slot> piece <name> [<augment> ...]   that copy
@@ -311,6 +314,18 @@ local function drop_override(job, path)
         .. "-- 'empty' = nothing in the slot.\nreturn " .. lua_value(data, '') .. '\n')
 end
 
+--- The file copied to saved/backups/ (named after the history entry, so two changes in
+--- the same second keep their own copy), then written.
+--- @return string|nil backup path, string|nil why
+local function backup_and_write(p, id)
+    local name = p.abs:match('([^/]+)%.lua$') or 'sets'
+    local backup = require('shared/utils/core/char_paths').writable('saved',
+        'backups/' .. name .. '_' .. os.date('%Y%m%d-%H%M%S') .. '_' .. id .. '.lua')
+    if not (backup and write(backup, p.text)) then return nil, 'backup' end
+    if not write(p.abs, p.out) then return nil, 'write' end
+    return backup
+end
+
 ---============================================================================
 --- PUBLIC
 ---============================================================================
@@ -332,17 +347,91 @@ function SetPush.write(job, body, hash)
     if not p then return {error = why} end
     if p.hash ~= hash then return {error = 'changed'} end
     if #p.changes == 0 then return {error = 'nothing'} end
-    local stamp = os.date('%Y%m%d-%H%M%S')
-    local name = p.abs:match('([^/]+)%.lua$') or 'sets'
-    local backup = require('shared/utils/core/char_paths').writable('saved', 'backups/' .. name .. '_' .. stamp .. '.lua')
-    if not (backup and write(backup, p.text)) then return {error = 'backup'} end
-    if not write(p.abs, p.out) then return {error = 'write'} end
     local list = read_history()
-    local entry = {id = ((list[#list] or {}).id or 0) + 1, at = os.date('%Y-%m-%d %H:%M'), job = job, path = p.path,
+    local id = ((list[#list] or {}).id or 0) + 1
+    local backup, err = backup_and_write(p, id)
+    if not backup then return {error = err} end
+    local entry = {id = id, at = os.date('%Y-%m-%d %H:%M'), job = job, path = p.path,
         file = p.file, backup = relative(backup), hash_before = p.hash, hash_after = SetWriter.hash(p.out), changes = p.changes}
     list[#list + 1] = entry
     write_history(list)
     drop_override(job, p.path)
+    return {ok = true, entry = entry}
+end
+
+---============================================================================
+--- DELETE
+---============================================================================
+
+-- Sets a job cannot do without: Mote builds idle, engaged, precast and the
+-- weaponskills on them, so the page never deletes them
+local PROTECTED = {['precast.WS'] = true, ['precast.FC'] = true, ['precast.JA'] = true,
+    ['precast.RA'] = true, ['midcast.RA'] = true}
+
+--- The sets of a file that read a set or one under it, outside the lines going away: their
+--- paths (a read outside any set: its line).
+local function readers(text, keys)
+    local defs, out, seen = SetWriter.definitions(text), {}, {}
+    for _, use in ipairs(SetWriter.uses(text, keys)) do
+        local name
+        for _, def in ipairs(defs) do
+            if use.at >= def.line_from and use.at <= def.close then name = path_string(def.keys) end
+        end
+        if not name then
+            local _, n = text:sub(1, use.at):gsub('\n', '')
+            name = 'line ' .. (n + 1)
+        end
+        if not seen[name] then seen[name] = true; out[#out + 1] = name end
+    end
+    return out
+end
+
+--- The deletion asked, worked out: {path, file, abs, text, out, before, removed, hash}, or nil,
+--- why and (for 'used') the sets still reading it.
+local function prepare_delete(job, path)
+    local keys = SetWriter.path_keys(path or '')
+    if not keys then return nil, 'path' end
+    if #keys == 1 or PROTECTED[table.concat(keys, '.')] then return nil, 'protected' end
+    local abs, text = locate(job, path)
+    if not abs then return nil, text end
+    local family = SetWriter.family(text, keys)
+    local out, before = SetWriter.remove(text, family)
+    local users = {}
+    for _, file in ipairs(set_files(job)) do
+        for _, name in ipairs(readers(file == abs and out or (read(file) or ''), keys)) do users[#users + 1] = name end
+    end
+    if #users > 0 then return nil, 'used', users end
+    local removed = {}
+    for i, def in ipairs(family) do removed[i] = path_string(def.keys) end
+    return {path = path, file = relative(abs), abs = abs, text = text, out = out, before = before,
+        removed = removed, hash = SetWriter.hash(text)}
+end
+
+--- What deleting a set would take out of its file (nothing written).
+--- @param job string Job code
+--- @param path string Set path
+--- @return table {ok, file, hash, before, removed} or {error, users}
+function SetPush.delete_preview(job, path)
+    local p, why, users = prepare_delete(job, path)
+    if not p then return {error = why, users = users} end
+    return {ok = true, file = p.file, hash = p.hash, before = p.before, removed = p.removed}
+end
+
+--- Delete a set and its versions from its file, when the file is still the one the preview read.
+--- @return table {ok, entry} or {error}
+function SetPush.delete(job, path, hash)
+    local p, why, users = prepare_delete(job, path)
+    if not p then return {error = why, users = users} end
+    if p.hash ~= hash then return {error = 'changed'} end
+    local list = read_history()
+    local id = ((list[#list] or {}).id or 0) + 1
+    local backup, err = backup_and_write(p, id)
+    if not backup then return {error = err} end
+    local entry = {id = id, at = os.date('%Y-%m-%d %H:%M'), job = job, path = p.path,
+        file = p.file, backup = relative(backup), hash_before = p.hash, hash_after = SetWriter.hash(p.out), deleted = p.removed}
+    list[#list + 1] = entry
+    write_history(list)
+    for _, removed in ipairs(p.removed) do drop_override(job, removed) end
     return {ok = true, entry = entry}
 end
 

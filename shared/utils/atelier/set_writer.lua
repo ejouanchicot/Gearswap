@@ -15,6 +15,8 @@
 ---
 --- A set written another way (a loop, an alias of another set, set_combine
 --- with no table of its own) is not found: the page then offers "Copy as Lua".
+--- Deleting a set takes out its lines and its versions' (SetWriter.family,
+--- SetWriter.remove); SetWriter.uses finds what still reads it.
 ---
 --- @file    shared/utils/atelier/set_writer.lua
 --- @author  ejouanchicot
@@ -437,6 +439,99 @@ function SetWriter.create(text, base, name, changes)
     for i, k in ipairs(base.keys) do keys[i] = k end
     keys[#keys + 1] = name
     return out, done, keys
+end
+
+---============================================================================
+--- DELETING
+---============================================================================
+
+local function starts_with(keys, prefix)
+    if #keys < #prefix then return false end
+    for i = 1, #prefix do if keys[i] ~= prefix[i] then return false end end
+    return true
+end
+
+--- The definitions of a set and of every set written under it (its versions:
+--- .Solo, .Acc...), in file order.
+function SetWriter.family(text, keys)
+    local out = {}
+    for _, def in ipairs(SetWriter.definitions(text)) do
+        if starts_with(def.keys, keys) then out[#out + 1] = def end
+    end
+    return out
+end
+
+--- Every place the code reads a set or one under it (`sets.x.y` with x.y the keys or
+--- longer), strings and comments skipped: {at, keys}.
+function SetWriter.uses(text, keys)
+    local out, j = {}, 1
+    while j <= #text do
+        local after = skip(text, j)
+        if after then j = after
+        elseif text:sub(j, j + 3) == 'sets' and not text:sub(j - 1, j - 1):match('[%w_%.]') then
+            local found, e = read_path(text, j)
+            if found and starts_with(found, keys) then out[#out + 1] = {at = j, keys = found} end
+            j = math.max(e or j, j + 4)
+        else
+            j = j + 1
+        end
+    end
+    return out
+end
+
+-- A comment line that heads a part of the file (a banner) rather than one set
+local function banner(line)
+    return line:find('──', 1, true) or line:find('══', 1, true) or line:match('^%s*%-%-%-%-') or line:match('===')
+end
+
+--- The span a definition takes: its lines and the comment lines right above it that are
+--- about it (not a banner).
+local function span(text, def)
+    local from = def.line_from
+    while from > 1 do
+        local prev = line_start(text, from - 1)
+        local line = text:sub(prev, from - 2):gsub('\r$', '')
+        if not line:match('^%s*%-%-') or banner(line) then break end
+        from = prev
+    end
+    return {from = from, to = math.min(line_end(text, def.close), #text)}
+end
+
+--- Spans that touch merged into one, in file order.
+local function merged(spans)
+    table.sort(spans, function(a, b) return a.from < b.from end)
+    local out = {}
+    for _, sp in ipairs(spans) do
+        local last = out[#out]
+        if last and sp.from <= last.to + 1 then last.to = math.max(last.to, sp.to)
+        else out[#out + 1] = {from = sp.from, to = sp.to} end
+    end
+    return out
+end
+
+--- A span sitting between two blank lines takes one of them, so no double gap stays.
+local function with_blank(text, sp)
+    if sp.from <= 1 or sp.to >= #text then return sp end
+    local above = text:sub(line_start(text, sp.from - 1), sp.from - 2):gsub('\r$', '')
+    local next_to = line_end(text, sp.to + 1)
+    local below = text:sub(sp.to + 1, next_to - 1):gsub('\r$', '')
+    if only_blank(above) and only_blank(below) then sp.to = math.min(next_to, #text) end
+    return sp
+end
+
+--- The file without the definitions given: the text, and the lines taken out.
+--- @param defs table Definitions of this text (SetWriter.family)
+--- @return string text, string removed
+function SetWriter.remove(text, defs)
+    local spans = {}
+    for _, def in ipairs(defs) do spans[#spans + 1] = span(text, def) end
+    local list, removed = merged(spans), {}
+    for i = #list, 1, -1 do
+        local sp = with_blank(text, list[i])
+        table.insert(removed, 1, text:sub(sp.from, sp.to))
+        text = text:sub(1, sp.from - 1) .. text:sub(sp.to + 1)
+    end
+    return text, (table.concat(removed, ''):gsub('[\r\n]+$', ''))
 end
 
 --- A Lua string literal: single quotes unless the text holds one.
