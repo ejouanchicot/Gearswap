@@ -179,6 +179,10 @@
         if (c.foeDown && c.foeDown.meva) agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + c.foeDown.meva;
         if (c.foeDown && c.foeDown.stats) Object.keys(c.foeDown.stats).forEach(function (st) { agg[1][st] = (agg[1][st] || 0) + c.foeDown.stats[st]; });
         if (c.foeDown && c.foeDown.crit) agg[0].feather_step = {"Crit Rate": c.foeDown.crit};
+        // a RUN's Gambit: the magic damage of its runes' element taken +10 % a rune, for a weaponskill of that element
+        var probe = wsProbe(c);
+        if (c.foeDown && c.foeDown.gambit && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.gambit.elem)
+            agg[1]["Magic DT%"] = (agg[1]["Magic DT%"] || 0) + c.foeDown.gambit.pct;
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
         if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
@@ -193,11 +197,17 @@
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
     // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %); for a physical weaponskill only,
     // the engine already counts a magical one's (Magic DT%)
+    // A weaponskill's own flags (magical, hybrid, element), read by setting it up once on blank stats; null when it
+    // cannot be read
+    function wsProbe(c) {
+        var w = FFXI.WS[c.ws], v = {};
+        if (!w) return null;
+        try { w.set(v, 1000, {stats: {}}, {stats: {}}); } catch (e) { return null; }
+        return v;
+    }
     function physMul(c) {
-        var r = c.physRes || 0, w = FFXI.WS[c.ws], v = {};
-        if (!r || !w) return 1;
-        try { w.set(v, 1000, {stats: {}}, {stats: {}}); } catch (e) { return 1; }
-        if (v.magical || v.hybrid) return 1;
+        var r = c.physRes || 0, v = r ? wsProbe(c) : null;
+        if (!v || v.magical || v.hybrid) return 1;
         return 1 + (r < 0 && c.tomahawk ? r * 0.75 : r) / 100;
     }
     // A result of FFXI.average_ws with its damage scaled by ctx.dmgMul (the TP return untouched)
