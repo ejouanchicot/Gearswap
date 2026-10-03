@@ -320,15 +320,22 @@
         var dist = handHits(x);
         var mean = 0; Object.keys(dist).forEach(function (k) { mean += k * dist[k]; });
         var fixed = Math.max(0, x.tpRound - mean * x.tpPerHit), need = Math.max(0, x.at - x.start);
-        var steps = Object.keys(dist).map(function (k) { return {tp: k * x.tpPerHit + fixed, p: dist[k]}; });
-        var cdf = [1], left = {0: 1}, mn = 0;   // left: the TP gathered while still short, by amount
-        for (var r = 1; r <= 40 && Object.keys(left).length; r++) {
-            var next = {}, still = 0;
-            Object.keys(left).forEach(function (a) { steps.forEach(function (s) {
-                var b = Math.round((+a + s.tp) * 10) / 10;
-                if (b < need) { next[b] = (next[b] || 0) + left[a] * s.p; still += left[a] * s.p; }
-            }); });
+        // after r rounds the TP gathered is (hits landed so far) x TP a hit + r x the rest of a round's TP: the walk
+        // follows the hits landed (a whole number), the chance of each count while still short of the weaponskill
+        var ks = Object.keys(dist).map(Number), ps = ks.map(function (k) { return dist[k]; });
+        var cdf = [1], left = [1], mn = 0;
+        for (var r = 1; r <= 40; r++) {
+            var next = [], still = 0, cap = need - r * fixed;
+            for (var h = 0; h < left.length; h++) {
+                var q = left[h];
+                if (!q) continue;
+                for (var i = 0; i < ks.length; i++) {
+                    var g = h + ks[i];
+                    if (g * x.tpPerHit < cap) { next[g] = (next[g] || 0) + q * ps[i]; still += q * ps[i]; }
+                }
+            }
             cdf.push(still); left = next;
+            if (!still) break;
         }
         var probs = [];
         for (var n = 1; n < cdf.length; n++) { probs.push(cdf[n - 1] - cdf[n]); mn += n * (cdf[n - 1] - cdf[n]); }
@@ -337,7 +344,10 @@
     O.round = function (ctx, pieces, opts) {
         var set = O.gearset(ctx, pieces);
         if (!set) return null;
-        return roundOf(ctx, FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), opts || {});
+        var r = roundOf(ctx, FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), opts || {});
+        // the attacks a round, shown with a set (left out of the search's tries: it does not move the objective)
+        if (r && r.detail) r.attacks = O.attacksOf(r.detail);
+        return r;
     };
     // The target's resistance to the auto-attacks: of the main weapon the set holds (ctx.physResBy: the page's
     // resistance by combat skill), the weapon the optimizer tries when it chooses the weapons
@@ -350,7 +360,7 @@
         var at = +opts.wsAt || 1000, r = FFXI.average_attack_round(player, ctx.enemy, 0, at, "Time to WS");
         var m = roundMul(ctx, player), dmg = r[1][0] * m, tp = r[1][1], sec = r[1][2];
         var detail = FFXI.lastRound || null, real = detail && opts.real !== false ? O.roundsOf(detail) : null;
-        return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg, detail: detail, real: real, attacks: detail ? O.attacksOf(detail) : null};
+        return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg, detail: detail, real: real};
     }
     // An engaged set's value for its objective: the time to the weaponskill (less is better), DPS or TP a round
     function roundValue(ctx, pieces, opts) {
@@ -554,66 +564,103 @@
     // that gives the defense back; and every item of the game to try, which leads the walk elsewhere. So it walks
     // from several starts and keeps the best: the set; the best set with no floor, brought back over the floors piece
     // by piece; and, with pieces you do not hold yet (or not at their best), your own pieces searched first
-    function searchBest(ctx, start, choices, opts) {
-        var mine = {}, more = false;
-        Object.keys(choices).forEach(function (slot) {
-            mine[slot] = choices[slot].filter(function (p) { return !p.missing && !p.maxed; });
-            if (mine[slot].length !== choices[slot].length) more = true;
-        });
-        var runs = [], evals = 0, from = function (pieces, list, o) { var r = O.optimize(ctx, pieces, list, o || opts); evals += r.evals; return r; };
+    // The ways the search starts (O.STARTS), each one walk that can run on its own core: the set itself; the best
+    // set with no floor, brought back over the floors piece by piece; your own pieces first, then everything from
+    // there. A walk stops where no move (one piece, or two) helps: a set right on its defense floors, where a faster
+    // piece has to come with another that gives the defense back, or every item of the game leading it elsewhere.
+    // The page keeps the best of the walks
+    O.STARTS = ["set", "loose", "own"];
+    // The walks that mean something for these choices and floors
+    O.startsFor = function (choices, opts) {
+        var more = Object.keys(choices).some(function (slot) { return choices[slot].some(function (p) { return p.missing || p.maxed; }); });
         var floors = opts.floor && Object.keys(opts.floor).some(function (k) { return +opts.floor[k]; });
-        var own = more ? from(start, mine) : null;
-        runs.push(from(own ? own.pieces : start, choices));
-        if (floors) {
-            var loose = from(own ? own.pieces : start, more ? mine : choices, Object.assign({}, opts, {floor: null}));
-            runs.push(from(loose.pieces, choices));
-        }
-        var best = runs.reduce(function (a, b) { return b.score > a.score ? b : a; });
-        best.start = O.value(ctx, start, opts); best.evals = evals;
-        return best;
+        return O.STARTS.filter(function (k) { return k === "set" || (k === "loose" && floors) || (k === "own" && more); });
+    };
+    function* walk(ctx, start, choices, opts, how) {
+        var mine = {};
+        Object.keys(choices).forEach(function (slot) { mine[slot] = choices[slot].filter(function (p) { return !p.missing && !p.maxed; }); });
+        var evals = 0, from = function* (pieces, list, o) { var r = yield* optimizeGen(ctx, pieces, list, o || opts); evals += r.evals; return r; };
+        var first = how === "own" ? yield* from(start, mine) : how === "loose" ? yield* from(start, choices, Object.assign({}, opts, {floor: null})) : null;
+        var res = yield* from(first ? first.pieces : start, choices);
+        res.start = O.value(ctx, start, opts); res.evals = evals;
+        return res;
     }
-    // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices,
-    // opts, prefilter (keep each slot's best n first)}; onStep(progress) while it searches
-    O.run = function (input, onStep) {
+    // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices, opts, prefilter
+    // (keep each slot's best n first), starts (the walks to make, every one by default)}; onStep(progress) while it
+    // searches. A generator: it stops after each try of a set, so a caller can spread it over time (O.runPaced)
+    function* runGen(input, onStep) {
         var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {onStep: onStep});
-        var choices = input.prefilter ? O.prefilter(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
-        var res = searchBest(ctx, input.start, choices, opts);
+        var choices = input.prefilter ? yield* prefilterGen(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
+        var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
+        for (var i = 0; i < starts.length; i++) {
+            var r = yield* walk(ctx, input.start, choices, opts, starts[i]);
+            evals += r.evals;
+            if (!res || r.score > res.score) res = r;
+        }
+        res.evals = evals;
         tpOnlyOut(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
         // an engaged set's round before and after, the real time worked out whatever the objective
         if (ctx.mode === "engaged") { res.best.round = O.round(ctx, res.pieces, opts); res.start.round = O.round(ctx, input.start, opts); }
         delete opts.onStep;
-        return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, gains: O.gains(ctx, res, choices, opts)};
+        return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, score: res.score, gains: O.gains(ctx, res, choices, opts)};
+    }
+    // A generator run to its end at once
+    function drain(gen) { var x = gen.next(); while (!x.done) x = gen.next(); return x.value; }
+    O.run = function (input, onStep) { return drain(runGen(input, onStep)); };
+    // The same run spread over time, so the computer stays smooth beside the game: `work` ms of search, then
+    // `rest` ms of pause (about half a core); done(result) or fail(error) at the end. Returns a stop function
+    O.runPaced = function (input, onStep, done, fail, work, rest) {
+        var gen = runGen(input, onStep), stopped = false;
+        var now = function () { return (typeof performance !== "undefined" ? performance : Date).now(); };
+        var pump = function () {
+            if (stopped) return;
+            var x;
+            try {
+                var end = now() + (work || 25);
+                do { x = gen.next(); } while (!x.done && now() < end);
+            } catch (e) { return fail(e); }
+            if (x.done) return done(x.value);
+            setTimeout(pump, rest == null ? 25 : rest);
+        };
+        setTimeout(pump, 0);
+        return function () { stopped = true; };
     };
     // choices: {page slot: [piece...]} (fixed slots left out); opts: {tp, tpRule, passes, top, onStep}.
     // Slot by slot until nothing improves, then every pair of slots over their best few pieces
     // (a pair can beat two single moves: two pieces reaching a cap together).
-    O.optimize = function (ctx, start, choices, opts) {
+    function* optimizeGen(ctx, start, choices, opts) {
         var st = {best: Object.assign({}, start), evals: 0};
         st.score = score(ctx, st.best, opts);
         var slots = Object.keys(choices), rounds = opts.rounds || 6;
         var step = function (round) { if (opts.onStep) opts.onStep({round: round + 1, evals: st.evals, score: st.score}); };
         for (var round = 0; round < rounds; round++) {
-            singles(ctx, st, slots, choices, opts); step(round);
-            var more = pairs(ctx, st, slots, shortlist(ctx, st, slots, choices, opts, opts.top || 8, opts.extra || 4), opts); step(round);
+            yield* singles(ctx, st, slots, choices, opts); step(round);
+            var list = yield* shortlist(ctx, st, slots, choices, opts, opts.top || 8, opts.extra || 4);
+            var more = yield* pairs(ctx, st, slots, list, opts); step(round);
             if (!more) break;
         }
         return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
-    };
+    }
+    O.optimize = function (ctx, start, choices, opts) { return drain(optimizeGen(ctx, start, choices, opts)); };
     // Each slot's `keep` best pieces as single swaps from `start` (pieces flagged keep always stay):
     // a first sort before searching hundreds of pieces a slot (every item of the game)
-    O.prefilter = function (ctx, start, choices, opts, keep) {
-        var out = {};
-        Object.keys(choices).forEach(function (slot) {
-            var rated = choices[slot].map(function (piece) {
-                var trial = put(Object.assign({}, start), slot, piece);
-                return {piece: piece, v: score(ctx, trial, opts)};
-            }).sort(function (a, b) { return b.v - a.v; });
-            out[slot] = rated.filter(function (x, i) { return i < keep || x.piece.keep; }).map(function (x) { return x.piece; });
-        });
+    function* prefilterGen(ctx, start, choices, opts, keep) {
+        var out = {}, slots = Object.keys(choices);
+        for (var s = 0; s < slots.length; s++) {
+            var slot = slots[s], rated = [];
+            for (var i = 0; i < choices[slot].length; i++) {
+                var piece = choices[slot][i];
+                rated.push({piece: piece, v: score(ctx, put(Object.assign({}, start), slot, piece), opts)});
+                yield;
+            }
+            rated.sort(function (a, b) { return b.v - a.v; });
+            out[slot] = rated.filter(function (x, n) { return n < keep || x.piece.keep; }).map(function (x) { return x.piece; });
+        }
         return out;
-    };
+    }
+    O.prefilter = function (ctx, start, choices, opts, keep) { return drain(prefilterGen(ctx, start, choices, opts, keep)); };
     // A set's value (the objective, floors counted) with one slot changed
     O.valueWith = function (ctx, pieces, slot, piece, opts) {
         return O.value(ctx, put(Object.assign({}, pieces), slot, piece), opts);
@@ -625,15 +672,18 @@
         return false;
     }
     // Slot by slot, every piece, until a full pass changes nothing
-    function singles(ctx, st, slots, choices, opts) {
+    function* singles(ctx, st, slots, choices, opts) {
         for (var pass = 0; pass < (opts.passes || 6); pass++) {
             var moved = false;
-            slots.forEach(function (slot) {
-                choices[slot].forEach(function (piece) {
-                    if (clashes(st.best, slot, piece)) return;
+            for (var s = 0; s < slots.length; s++) {
+                var slot = slots[s];
+                for (var i = 0; i < choices[slot].length; i++) {
+                    var piece = choices[slot][i];
+                    if (clashes(st.best, slot, piece)) continue;
                     if (tryMove(ctx, st, put(Object.assign({}, st.best), slot, piece), opts)) moved = true;
-                });
-            });
+                    yield;
+                }
+            }
             if (!moved) return;
         }
     }
@@ -641,41 +691,42 @@
     // Three lists a slot, from one try of each piece on the set: the `top` best (floors counted), the
     // `extra` best for damage alone (floors ignored: a strong piece that drops the defense under a floor)
     // and the `extra` best for defense (DT+PDT and DT+MDT: the piece that can pay for it elsewhere)
-    function shortlist(ctx, st, slots, choices, opts, top, extra) {
+    function* shortlist(ctx, st, slots, choices, opts, top, extra) {
         var out = {};
-        slots.forEach(function (slot) {
-            var rated = choices[slot].map(function (piece) {
-                if (clashes(st.best, slot, piece)) return null;
-                var trial = put(Object.assign({}, st.best), slot, piece); st.evals++;
-                var r = O.value(ctx, trial, opts), d = r.def || {};
-                return r.v === -Infinity ? null : {piece: piece, v: r.v, raw: r.raw, dt: (d.pdt || 0) + (d.mdt || 0)};
-            }).filter(Boolean);
+        for (var s = 0; s < slots.length; s++) {
+            var slot = slots[s], rated = [];
+            for (var i = 0; i < choices[slot].length; i++) {
+                var piece = choices[slot][i];
+                if (clashes(st.best, slot, piece)) continue;
+                var r = O.value(ctx, put(Object.assign({}, st.best), slot, piece), opts), d = r.def || {}; st.evals++;
+                if (r.v !== -Infinity) rated.push({piece: piece, v: r.v, raw: r.raw, dt: (d.pdt || 0) + (d.mdt || 0)});
+                yield;
+            }
             var best = function (key, n, low) {
                 return rated.slice().sort(function (x, y) { return low ? x[key] - y[key] : y[key] - x[key]; }).slice(0, n).map(function (x) { return x.piece; });
             };
-            out[slot] = {top: best('v', top), raw: best('raw', extra), dt: best('dt', extra, true)};
-        });
+            out[slot] = {top: best("v", top), raw: best("raw", extra), dt: best("dt", extra, true)};
+        }
         return out;
     }
     // Pairs of slots: the best pieces of both (two pieces can beat two single moves: a cap reached
     // together), and a strong piece for damage with a defense piece elsewhere that keeps the floors
     // (Agoge Mask under the floor alone, with a Gelatinous Ring that pays its DT back); true when the set changed
-    function pairs(ctx, st, slots, list, opts) {
+    function* pairs(ctx, st, slots, list, opts) {
         var moved = false;
-        var cross = function (a, b, la, lb) {
-            la.forEach(function (pa) {
-                lb.forEach(function (pb) {
-                    var trial = put(put(Object.assign({}, st.best), a, pa), b, pb);
-                    if (clashes(trial, a, pa) || clashes(trial, b, pb)) return;
-                    if (tryMove(ctx, st, trial, opts)) moved = true;
-                });
-            });
+        var cross = function* (a, b, la, lb) {
+            for (var i = 0; i < la.length; i++) for (var j = 0; j < lb.length; j++) {
+                var pa = la[i], pb = lb[j], trial = put(put(Object.assign({}, st.best), a, pa), b, pb);
+                if (clashes(trial, a, pa) || clashes(trial, b, pb)) continue;
+                if (tryMove(ctx, st, trial, opts)) moved = true;
+                yield;
+            }
         };
         for (var i = 0; i < slots.length; i++) for (var j = i + 1; j < slots.length; j++) {
             var a = slots[i], b = slots[j];
-            cross(a, b, list[a].top, list[b].top);
-            cross(a, b, list[a].raw, list[b].dt);
-            cross(a, b, list[a].dt, list[b].raw);
+            yield* cross(a, b, list[a].top, list[b].top);
+            yield* cross(a, b, list[a].raw, list[b].dt);
+            yield* cross(a, b, list[a].dt, list[b].raw);
         }
         return moved;
     }

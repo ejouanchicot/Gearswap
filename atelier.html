@@ -1478,19 +1478,29 @@ function loadRanked(done){
     done();
   });
 }
-// The engine in a worker, built once from the same parts (a page opened from the disk cannot
-// load a worker file: the source is a Blob), so a search never freezes the page
-let ENGINE_PARTS = [], OPT_WORKER = null;
+// The engine in workers, built from the same parts (a page opened from the disk cannot load a worker file: the
+// source is a Blob), so a search never freezes the page. Each worker runs its share of the search's walks
+// (FFXI.opt.STARTS) on its own core, paced (FFXI.opt.runPaced: work, then a pause) so the game stays smooth
+let ENGINE_PARTS = [], OPT_WORKER_URL = null, OPT_WORKERS = [], OPT_PAGE_STOP = null;
 function optWorker(){
-  if (OPT_WORKER) return OPT_WORKER;
-  const src = 'var FFXI = {};\n' + ENGINE_PARTS.map(p => '(' + p.toString() + ')(FFXI);').join('\n') +
-    '\nself.onmessage = function (e) { try { var r = FFXI.opt.run(e.data, function (p) { self.postMessage({progress: p}); });' +
-    ' self.postMessage({done: r}); } catch (err) { self.postMessage({error: String(err && err.message || err)}); } };';
-  OPT_WORKER = new Worker(URL.createObjectURL(new Blob([src], {type: 'text/javascript'})));
-  return OPT_WORKER;
+  if (!OPT_WORKER_URL) {
+    const src = 'var FFXI = {};\n' + ENGINE_PARTS.map(p => '(' + p.toString() + ')(FFXI);').join('\n') +
+      '\nself.onmessage = function (e) { FFXI.opt.runPaced(e.data, function (p) { self.postMessage({progress: p}); },' +
+      ' function (r) { self.postMessage({done: r}); }, function (err) { self.postMessage({error: String(err && err.message || err)}); }); };';
+    OPT_WORKER_URL = URL.createObjectURL(new Blob([src], {type: 'text/javascript'}));
+  }
+  const w = new Worker(OPT_WORKER_URL);
+  OPT_WORKERS.push(w);
+  return w;
 }
-// Stop a search: the worker is dropped, the next search builds another
-function optStop(){ if (OPT_WORKER) { OPT_WORKER.terminate(); OPT_WORKER = null; } S._optBusy = false; S._optProgress = null; render(); }
+// The cores a search may take: one a walk, leaving one free for the game and the page
+const optCores = n => Math.max(1, Math.min(n, (navigator.hardwareConcurrency || 2) - 1));
+// Stop a search: its workers are dropped
+function optStop(){
+  OPT_WORKERS.forEach(w => w.terminate()); OPT_WORKERS = [];
+  if (OPT_PAGE_STOP) { OPT_PAGE_STOP(); OPT_PAGE_STOP = null; }
+  S._optBusy = false; S._optProgress = null; render();
+}
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
 const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
 // The catalogue's stat names, as the page names them ([key, unit]); the rest are shown as effects
@@ -1913,21 +1923,33 @@ async function optimizeEngaged(s){
 // A search in the worker (on the page when there is none), its progress, then its result
 async function optLaunch(s, k, input, o){
   S._optBusy = true; S._optProgress = null; render();
-  let w;
-  try { w = optWorker(); } catch (e) { w = null; }
-  if (!w) {   // no worker (an old browser): the search runs on the page
-    await new Promise(done => setTimeout(done, 30));
-    try { const out = FFXI.opt.run(input); optResult(s, k, out, out.gains, o); }
-    catch (e) { S._optBusy = false; S._toastSet = s.path; S.toast = t('optFail', {e: e.message}); render(); }
+  const fail = msg => { optStop(); S._toastSet = s.path; S.toast = t('optFail', {e: msg}); render(); };
+  // the walks shared among the cores, round robin
+  const starts = FFXI.opt.startsFor(input.choices, input.opts), n = optCores(starts.length), shares = [...Array(n)].map(() => []);
+  starts.forEach((x, i) => shares[i % n].push(x));
+  let workers;
+  try { workers = shares.map(() => optWorker()); } catch (e) { workers = null; }
+  if (!workers) {   // no worker (an old browser): the search runs on the page, paced so it stays usable
+    OPT_WORKERS = [];
+    OPT_PAGE_STOP = FFXI.opt.runPaced(input, null, out => { OPT_PAGE_STOP = null; optResult(s, k, out, out.gains, o); }, e => fail(e.message));
     return;
   }
-  const t0 = performance.now();
-  w.onmessage = e => {
-    if (e.data.progress) { S._optProgress = Object.assign({}, e.data.progress, {ms: performance.now() - t0}); renderOptProgress(); return; }
-    if (e.data.error) { S._optBusy = false; S._optProgress = null; S._toastSet = s.path; S.toast = t('optFail', {e: e.data.error}); render(); return; }
-    S._optProgress = null; optResult(s, k, e.data.done, e.data.done.gains, o);
-  };
-  w.postMessage(input);
+  // progress: the tries of every worker added up; the result: the best walk
+  const t0 = performance.now(), evals = shares.map(() => 0), outs = [];
+  workers.forEach((w, i) => {
+    w.onmessage = e => {
+      if (!S._optBusy) return;
+      if (e.data.progress) { evals[i] = e.data.progress.evals; S._optProgress = Object.assign({}, e.data.progress, {evals: evals.reduce((a, b) => a + b, 0), ms: performance.now() - t0}); renderOptProgress(); return; }
+      if (e.data.error) return fail(e.data.error);
+      outs.push(e.data.done);
+      if (outs.length < workers.length) return;
+      const best = outs.reduce((a, b) => b.score > a.score ? b : a);
+      best.evals = outs.reduce((a, b) => a + b.evals, 0);
+      OPT_WORKERS.forEach(x => x.terminate()); OPT_WORKERS = [];
+      S._optProgress = null; optResult(s, k, best, best.gains, o);
+    };
+    w.postMessage(Object.assign({}, input, {starts: shares[i]}));
+  });
 }
 // The progress line while the worker searches (only that line is drawn again)
 function renderOptProgress(){
