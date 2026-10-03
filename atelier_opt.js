@@ -490,12 +490,20 @@
     }
     // A set's value for opts.objective: "damage" at opts.tp, "damage_avg" over opts.tps, "tp_return"
     // (damage breaks ties); a set short of the floors loses 1e6 per point, so the search meets them first
+    // Between sets of the same value, the one that takes less damage, then the one that keeps more of the set's own
+    // pieces (opts.base): a slot where nothing matters keeps its piece, rather than the first one tried (Baetyl Pendant,
+    // first by name, for an engaged set whose accuracy is capped)
+    function tieBreak(pieces, def, opts) {
+        var keep = 0, base = opts.base || {};
+        for (var k in base) if (pieces[k] && base[k] && pieces[k].name === base[k].name) keep++;
+        return -((def && def.pdt) || 0) * 1e-10 - ((def && def.mdt) || 0) * 1e-10 + keep * 1e-12;
+    }
     O.value = function (ctx, pieces, opts) {
         if (ctx.mode === "engaged") {
             var e0 = roundValue(ctx, pieces, opts);
             if (!e0) return {v: -Infinity};
             var miss0 = shortfall(e0.def, opts.floor, null);
-            return {v: e0.v - 1e6 * miss0, raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
+            return {v: e0.v - 1e6 * miss0 + tieBreak(pieces, e0.def, opts), raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
         }
         var tps = opts.objective === "damage_avg" ? (opts.tps || [1000, 1500, 2000, 2500, 3000]) : [opts.tp];
         var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, def = null;
@@ -507,7 +515,7 @@
         }
         var hit = opts.floor && opts.floor.hit ? O.hit(ctx, pieces, opts) : null;
         var v = total / tps.length, miss = shortfall(def, opts.floor, hit);
-        return {v: v - 1e6 * miss, raw: v, def: def, miss: miss};
+        return {v: v - 1e6 * miss + tieBreak(pieces, def, opts), raw: v, def: def, miss: miss};
     };
     function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
     // A choice put in a slot. The "weapons" choice is a main hand and its off hand together ({main, sub}): the
@@ -545,6 +553,17 @@
         });
         return out.sort(function (a, b) { return b.gain - a.gain; });
     };
+    // Every piece the search changed is tried back to the set's own: kept back when the set loses nothing by it (a piece
+    // that only came along in a pair, or that wins nothing the objective or the floors read), so no change is for nothing
+    function keepWhatDoesNotMatter(ctx, res, start, opts) {
+        Object.keys(res.pieces).forEach(function (slot) {
+            if (slot === "main" || slot === "sub" || !start[slot] || pieceName(res.pieces[slot]) === pieceName(start[slot])) return;
+            var trial = Object.assign({}, res.pieces); trial[slot] = start[slot];
+            if (clashes(trial, slot, start[slot])) return;
+            var r = O.value(ctx, trial, opts);
+            if (r.v >= res.score - 1e-13) { res.pieces = trial; res.score = r.v; res.best = r; }
+        });
+    }
     // A piece of the job's TP config stays in the result only when it brings more than its TP Bonus:
     // when your best other piece for that slot does as well (the job's rule laying it at the TP when
     // needed), that one goes in (Moonshade never written in a set, Boii Cuisses kept for its stats)
@@ -580,16 +599,22 @@
         var mine = {};
         Object.keys(choices).forEach(function (slot) { mine[slot] = choices[slot].filter(function (p) { return !p.missing && !p.maxed; }); });
         var evals = 0, from = function* (pieces, list, o) { var r = yield* optimizeGen(ctx, pieces, list, o || opts); evals += r.evals; return r; };
+        var prog = opts.prog || {}, v0 = O.value(ctx, start, opts);
+        prog.walk = how; prog.startRaw = v0.raw; prog.best = {raw: v0.raw, miss: v0.miss, v: v0.v};
+        // the stages of a walk: your pieces, or no floor, then everything over the floors
+        prog.stage = how === "own" ? "mine" : how === "loose" ? "nofloor" : "all";
         var first = how === "own" ? yield* from(start, mine) : how === "loose" ? yield* from(start, choices, Object.assign({}, opts, {floor: null})) : null;
+        prog.stage = "all";
         var res = yield* from(first ? first.pieces : start, choices);
         res.start = O.value(ctx, start, opts); res.evals = evals;
         return res;
     }
     // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices, opts, prefilter
-    // (keep each slot's best n first), starts (the walks to make, every one by default)}; onStep(progress) while it
+    // (keep each slot's best n first), starts (the walks to make, every one by default)}; its progress in opts.prog while it
     // searches. A generator: it stops after each try of a set, so a caller can spread it over time (O.runPaced)
-    function* runGen(input, onStep) {
-        var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {onStep: onStep});
+    function* runGen(input) {
+        var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {prog: {evals: 0, moves: []}, base: input.start});
+        yield opts.prog;
         var choices = input.prefilter ? yield* prefilterGen(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
         var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
         for (var i = 0; i < starts.length; i++) {
@@ -598,47 +623,54 @@
             if (!res || r.score > res.score) res = r;
         }
         res.evals = evals;
+        keepWhatDoesNotMatter(ctx, res, input.start, opts);
         tpOnlyOut(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
         // an engaged set's round before and after, the real time worked out whatever the objective
         if (ctx.mode === "engaged") { res.best.round = O.round(ctx, res.pieces, opts); res.start.round = O.round(ctx, input.start, opts); }
-        delete opts.onStep;
         return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, score: res.score, gains: O.gains(ctx, res, choices, opts)};
     }
     // A generator run to its end at once
     function drain(gen) { var x = gen.next(); while (!x.done) x = gen.next(); return x.value; }
-    O.run = function (input, onStep) { return drain(runGen(input, onStep)); };
+    O.run = function (input) { return drain(runGen(input)); };
     // The same run spread over time, so the computer stays smooth beside the game: `work` ms of search, then
-    // `rest` ms of pause (about half a core); done(result) or fail(error) at the end. Returns a stop function
+    // `rest` ms of pause (about half a core); after each slice onStep({walk, stage, phase, round, evals, startRaw,
+    // best: {raw, miss}, moves: the moves kept since the last one}); done(result) or fail(error) at the end.
+    // Returns a stop function
     O.runPaced = function (input, onStep, done, fail, work, rest) {
-        var gen = runGen(input, onStep), stopped = false;
+        var gen = runGen(input), stopped = false, prog = null;
         var now = function () { return (typeof performance !== "undefined" ? performance : Date).now(); };
         var pump = function () {
             if (stopped) return;
             var x;
             try {
                 var end = now() + (work || 25);
-                do { x = gen.next(); } while (!x.done && now() < end);
+                do { x = gen.next(); prog = prog || x.value; } while (!x.done && now() < end);
             } catch (e) { return fail(e); }
             if (x.done) return done(x.value);
+            if (onStep && prog) onStep({walk: prog.walk, stage: prog.stage, phase: prog.phase, round: prog.round, evals: prog.evals,
+                startRaw: prog.startRaw, best: prog.best, moves: prog.moves.splice(0)});
             setTimeout(pump, rest == null ? 25 : rest);
         };
         setTimeout(pump, 0);
         return function () { stopped = true; };
     };
-    // choices: {page slot: [piece...]} (fixed slots left out); opts: {tp, tpRule, passes, top, onStep}.
+    // choices: {page slot: [piece...]} (fixed slots left out); opts: {tp, tpRule, passes, top, prog}.
     // Slot by slot until nothing improves, then every pair of slots over their best few pieces
     // (a pair can beat two single moves: two pieces reaching a cap together).
     function* optimizeGen(ctx, start, choices, opts) {
         var st = {best: Object.assign({}, start), evals: 0};
         st.score = score(ctx, st.best, opts);
         var slots = Object.keys(choices), rounds = opts.rounds || 6;
-        var step = function (round) { if (opts.onStep) opts.onStep({round: round + 1, evals: st.evals, score: st.score}); };
+        var prog = opts.prog || {};
         for (var round = 0; round < rounds; round++) {
-            yield* singles(ctx, st, slots, choices, opts); step(round);
+            prog.round = round + 1; prog.phase = "singles";
+            yield* singles(ctx, st, slots, choices, opts);
+            prog.phase = "shortlist";
             var list = yield* shortlist(ctx, st, slots, choices, opts, opts.top || 8, opts.extra || 4);
-            var more = yield* pairs(ctx, st, slots, list, opts); step(round);
+            prog.phase = "pairs";
+            var more = yield* pairs(ctx, st, slots, list, opts);
             if (!more) break;
         }
         return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
@@ -648,11 +680,13 @@
     // a first sort before searching hundreds of pieces a slot (every item of the game)
     function* prefilterGen(ctx, start, choices, opts, keep) {
         var out = {}, slots = Object.keys(choices);
+        if (opts.prog) opts.prog.phase = "prefilter";
         for (var s = 0; s < slots.length; s++) {
             var slot = slots[s], rated = [];
             for (var i = 0; i < choices[slot].length; i++) {
                 var piece = choices[slot][i];
                 rated.push({piece: piece, v: score(ctx, put(Object.assign({}, start), slot, piece), opts)});
+                if (opts.prog) opts.prog.evals++;
                 yield;
             }
             rated.sort(function (a, b) { return b.v - a.v; });
@@ -665,11 +699,21 @@
     O.valueWith = function (ctx, pieces, slot, piece, opts) {
         return O.value(ctx, put(Object.assign({}, pieces), slot, piece), opts);
     };
-    // A move kept when it improves the set (st: {best, score, evals})
+    // A move kept when it improves the set (st: {best, score, evals}); the progress state hears of it: the slots it
+    // changed, from what to what, and the set's value then
+    var pieceName = function (p) { return p && p.name ? p.name : "—"; };
     function tryMove(ctx, st, trial, opts) {
-        var v = score(ctx, trial, opts); st.evals++;
-        if (v > st.score + 1e-9) { st.best = trial; st.score = v; return true; }
-        return false;
+        var r = O.value(ctx, trial, opts), prog = opts.prog; st.evals++;
+        if (prog) prog.evals++;
+        if (!(r.v > st.score + 1e-13)) return false;
+        if (prog) {
+            var changes = Object.keys(trial).filter(function (k) { return pieceName(trial[k]) !== pieceName(st.best[k]); })
+                .map(function (k) { return {slot: k, from: pieceName(st.best[k]), to: pieceName(trial[k])}; });
+            prog.best = {raw: r.raw, miss: r.miss, v: r.v};
+            prog.moves.push({changes: changes, raw: r.raw, miss: r.miss, stage: prog.stage});
+        }
+        st.best = trial; st.score = r.v;
+        return true;
     }
     // Slot by slot, every piece, until a full pass changes nothing
     function* singles(ctx, st, slots, choices, opts) {
@@ -699,6 +743,7 @@
                 var piece = choices[slot][i];
                 if (clashes(st.best, slot, piece)) continue;
                 var r = O.value(ctx, put(Object.assign({}, st.best), slot, piece), opts), d = r.def || {}; st.evals++;
+                if (opts.prog) opts.prog.evals++;
                 if (r.v !== -Infinity) rated.push({piece: piece, v: r.v, raw: r.raw, dt: (d.pdt || 0) + (d.mdt || 0)});
                 yield;
             }
