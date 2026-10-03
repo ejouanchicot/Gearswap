@@ -157,6 +157,17 @@
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
         if (c.ariaPdl) agg[0].brd.PDL = (agg[0].brd.PDL || 0) + c.ariaPdl;
+        // the rolls again, each alone with its own job bonus and Crooked Cards (the engine has one switch for both rolls)
+        if (c.rollOpts && c.selection.cor) {
+            agg[0].cor = {};
+            [1, 2].forEach(function (n, i) {
+                var roll = (c.selection.rolls || {})["Roll" + n], opt = c.rollOpts[i] || {};
+                if (!roll || roll.name === "None") return;
+                var one = FFXI.aggregate_buffs({cor: true, rolls: {Roll1: roll}, roll_bonus: c.selection.roll_bonus, job_bonus: !!opt.job,
+                    crooked: !!opt.cc, light_shot: false, food: null, toggles: {}});
+                for (var k in one[0].cor) agg[0].cor[k] = (agg[0].cor[k] || 0) + one[0].cor[k];
+            });
+        }
         // the abilities on the target, worked out by the page (one Defense Down effect, the strongest, and Box Step)
         if (c.foeDown && c.foeDown.def) agg[1].Defense = (agg[1].Defense || 0) + c.foeDown.def;
         if (c.foeDown && c.foeDown.mdb) agg[1]["Magic Defense"] = (agg[1]["Magic Defense"] || 0) + c.foeDown.mdb;
