@@ -613,7 +613,7 @@
         prog.walk = how; prog.startRaw = v0.raw; prog.best = {raw: v0.raw, miss: v0.miss, v: v0.v};
         // the stages of a walk: your pieces, or no floor, then everything over the floors
         prog.stage = how === "own" ? "mine" : how === "loose" ? "nofloor" : "all";
-        var first = how === "own" ? yield* from(start, mine) : how === "loose" ? yield* from(start, choices, Object.assign({}, opts, {floor: null, singlesOnly: true})) : null;
+        var first = how === "own" ? yield* from(start, mine) : how === "loose" ? yield* from(start, choices, Object.assign({}, opts, {floor: null})) : null;
         prog.stage = "all";
         var res = yield* from(first ? first.pieces : start, choices);
         res.start = O.value(ctx, start, opts); res.evals = evals;
@@ -677,8 +677,6 @@
         for (var round = 0; round < rounds; round++) {
             prog.round = round + 1; prog.phase = "singles";
             yield* singles(ctx, st, slots, choices, opts);
-            // the walk with no floor only looks for the region: piece by piece, no pairs (most of a walk's tries)
-            if (opts.singlesOnly) break;
             prog.phase = "shortlist";
             var list = yield* shortlist(ctx, st, slots, choices, opts, opts.top || 8, opts.extra || 4);
             prog.phase = "pairs";
