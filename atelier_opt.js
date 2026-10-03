@@ -92,11 +92,11 @@
             brd: true, songs: songsOf(b), song_bonus: +(b.songsPlus || 0), soul_voice: !!b.soulVoice,
             marcato: b.marcato != null && !b.soulVoice,
             cor: true, rolls: {Roll1: {name: b.roll0 || "None", potency: b.roll0n || "XI"}, Roll2: {name: b.roll1 || "None", potency: b.roll1n || "XI"}},
-            roll_bonus: +(b.rollsPlus || 0), crooked: false, job_bonus: false, light_shot: !!(b.lightshot && b.dia),
+            roll_bonus: +(b.rollsPlus || 0), crooked: false, job_bonus: false, light_shot: !!(b.lightshot && /^Dia/.test(b.dia || "")),
             geo: true, bubbles: {"Indi-": bubble("Indi-", b.indi), "Geo-": bubble("Geo-", b.geo), "Entrust-": bubble("Entrust-", b.entrust)},
             bubble_bonus: +(b.geoPlus || 0), bolster: false, bog: false, bubble_potency: 100,
             // Garuda's Hastega / Hastega II read as Haste / Haste II (the same effect), Hastega's 3/1024 more added in context
-            whm: true, whm_spells: {Dia: b.dia || "None", Haste: HASTE_AS[b.haste] || b.haste || "None", Boost: "None", Storm: b.storm || "None"},
+            whm: true, whm_spells: {Dia: /^Dia/.test(b.dia || "") ? b.dia : "None", Haste: HASTE_AS[b.haste] || b.haste || "None", Boost: "None", Storm: b.storm || "None"},
             haste_extra: b.haste === "Hastega" ? 3 / 1024 : 0,
             shell5: b.shell === "Shell V", food: f, toggles: {}
         };
@@ -175,6 +175,10 @@
         // the abilities on the target, worked out by the page (one Defense Down effect, the strongest, and Box Step)
         if (c.foeDown && c.foeDown.def) agg[1].Defense = (agg[1].Defense || 0) + c.foeDown.def;
         if (c.foeDown && c.foeDown.mdb) agg[1]["Magic Defense"] = (agg[1]["Magic Defense"] || 0) + c.foeDown.mdb;
+        // Frazzle III and Stutter Step, the elemental debuffs and Impact on its stats, Feather Step on your critical hits
+        if (c.foeDown && c.foeDown.meva) agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + c.foeDown.meva;
+        if (c.foeDown && c.foeDown.stats) Object.keys(c.foeDown.stats).forEach(function (st) { agg[1][st] = (agg[1][st] || 0) + c.foeDown.stats[st]; });
+        if (c.foeDown && c.foeDown.crit) agg[0].feather_step = {"Crit Rate": c.foeDown.crit};
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
         if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
