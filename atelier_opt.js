@@ -583,40 +583,66 @@
     // that gives the defense back; and every item of the game to try, which leads the walk elsewhere. So it walks
     // from several starts and keeps the best: the set; the best set with no floor, brought back over the floors piece
     // by piece; and, with pieces you do not hold yet (or not at their best), your own pieces searched first
-    // The ways the search starts (O.STARTS), each one walk that can run on its own core: the set itself; the best
-    // set with no floor, brought back over the floors piece by piece; your own pieces first, then everything from
-    // there. A walk stops where no move (one piece, or two) helps: a set right on its defense floors, where a faster
-    // piece has to come with another that gives the defense back, or every item of the game leading it elsewhere.
-    // The page keeps the best of the walks
+    // The two searches, each a set of walks that can run on their own cores, the best walk kept:
+    //   improve (opts.scratch false): from your set, one improving move at a time; quick, and where it ends depends on
+    //     the set it starts from
+    //   best (opts.scratch true): every walk builds a set from nothing (your weapons kept), so the set you start from does
+    //     not change the result (it only parts two sets of the same value, and shows how far the result is from it);
+    //     once a walk stops, three pieces are changed at random (seeded: the same every time) and it goes on from there,
+    //     the better set kept (KICKS times)
+    // The walks: "set" from where the search starts; "loose" with no floor, then brought back over them; "own" your
+    // pieces as they are first, then everything; "mix<n>" like "set", the slots and pieces tried in another order.
+    // A walk stops where no move (one piece, or two) helps
     O.STARTS = ["set", "loose", "own"];
+    var KICKS = 4;
     // The walks that mean something for these choices and floors
     O.startsFor = function (choices, opts) {
         var more = Object.keys(choices).some(function (slot) { return choices[slot].some(function (p) { return p.missing || p.maxed; }); });
         var floors = opts.floor && Object.keys(opts.floor).some(function (k) { return +opts.floor[k]; });
         return O.STARTS.filter(function (k) { return k === "set" || (k === "loose" && floors) || (k === "own" && more); });
     };
-    // A walk "mix<n>": from the set like "set", with the slots and their pieces in another order (seeded by n): where the
-    // search goes depends on what it tries first, so more walks on more cores find more
-    function shuffled(choices, seed) {
-        var r = seed * 9301 + 49297, rnd = function () { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+    // A seeded random draw (the same seed, the same draws)
+    function seeded(seed) { var r = seed * 9301 + 49297; return function () { r = (r * 9301 + 49297) % 233280; return r / 233280; }; }
+    function shuffled(choices, rnd) {
         var mix = function (list) { var a = list.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
         var out = {};
         mix(Object.keys(choices)).forEach(function (slot) { out[slot] = mix(choices[slot]); });
         return out;
     }
+    // The set a walk builds from: nothing but the weapons (the slots the search does not choose)
+    function bare(start, choices) {
+        var out = {};
+        Object.keys(start).forEach(function (slot) { if (!choices[slot] && !(choices.weapons && (slot === "main" || slot === "sub"))) out[slot] = start[slot]; });
+        return out;
+    }
+    // Three slots changed at random to pieces of theirs (not clashing): a kick out of where a walk stopped
+    function kicked(pieces, choices, rnd) {
+        var out = Object.assign({}, pieces), slots = Object.keys(choices).filter(function (k) { return choices[k].length > 1; });
+        for (var n = 0; n < 3 && slots.length; n++) {
+            var slot = slots.splice(Math.floor(rnd() * slots.length), 1)[0], list = choices[slot], piece = list[Math.floor(rnd() * list.length)];
+            if (!clashes(out, slot, piece)) put(out, slot, piece);
+        }
+        return out;
+    }
     function* walk(ctx, start, choices, opts, how) {
-        if (/^mix\d+$/.test(how)) choices = shuffled(choices, +how.slice(3));
+        var seed = /^mix(\d+)$/.exec(how), rnd = seeded(seed ? +seed[1] : how.length * 7 + 3);
+        if (seed) choices = shuffled(choices, rnd);
         var mine = {};
         Object.keys(choices).forEach(function (slot) { mine[slot] = choices[slot].filter(function (p) { return !p.missing && !p.maxed; }); });
         var evals = 0, from = function* (pieces, list, o) { var r = yield* optimizeGen(ctx, pieces, list, o || opts); evals += r.evals; return r; };
-        var prog = opts.prog || {}, v0 = O.value(ctx, start, opts);
-        prog.walk = how; prog.startRaw = v0.raw; prog.best = {raw: v0.raw, miss: v0.miss, v: v0.v};
-        // the stages of a walk: your pieces, or no floor, then everything over the floors
+        var prog = opts.prog || {}, v0 = O.value(ctx, start, opts), empty = opts.scratch ? bare(start, choices) : start;
+        prog.walk = how; prog.startRaw = v0.raw; prog.best = null;
+        // the stages of a walk: your pieces, or no floor, then everything over the floors, then the kicks
         prog.stage = how === "own" ? "mine" : how === "loose" ? "nofloor" : "all";
-        var first = how === "own" ? yield* from(start, mine) : how === "loose" ? yield* from(start, choices, Object.assign({}, opts, {floor: null})) : null;
+        var first = how === "own" ? yield* from(empty, mine) : how === "loose" ? yield* from(empty, choices, Object.assign({}, opts, {floor: null})) : null;
         prog.stage = "all";
-        var res = yield* from(first ? first.pieces : start, choices);
-        res.start = O.value(ctx, start, opts); res.evals = evals;
+        var res = yield* from(first ? first.pieces : empty, choices);
+        for (var k = 0; opts.scratch && k < KICKS; k++) {
+            prog.stage = "kick";
+            var again = yield* from(kicked(res.pieces, choices, rnd), choices);
+            if (again.score > res.score + 1e-13) res = again;
+        }
+        res.start = v0; res.evals = evals;
         return res;
     }
     // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices, opts, prefilter
@@ -625,7 +651,8 @@
     function* runGen(input) {
         var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {prog: {evals: 0, moves: []}, base: input.start});
         yield opts.prog;
-        var choices = input.prefilter ? yield* prefilterGen(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
+        var from0 = input.opts.scratch ? bare(input.start, input.choices) : input.start;
+        var choices = input.prefilter ? yield* prefilterGen(ctx, from0, input.choices, opts, input.prefilter) : input.choices;
         var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
         for (var i = 0; i < starts.length; i++) {
             var r = yield* walk(ctx, input.start, choices, opts, starts[i]);
@@ -719,7 +746,7 @@
         if (prog) {
             var changes = Object.keys(trial).filter(function (k) { return pieceName(trial[k]) !== pieceName(st.best[k]); })
                 .map(function (k) { return {slot: k, from: pieceName(st.best[k]), to: pieceName(trial[k])}; });
-            prog.best = {raw: r.raw, miss: r.miss, v: r.v};
+            if (!prog.best || r.v > prog.best.v) prog.best = {raw: r.raw, miss: r.miss, v: r.v};
             prog.moves.push({changes: changes, raw: r.raw, miss: r.miss, stage: prog.stage});
         }
         st.best = trial; st.score = r.v;
