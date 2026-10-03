@@ -2331,6 +2331,8 @@ function buffTotals(){
   for (const ja of jasOf()) if (jaOn(b, ja.name)) for (const [k, v] of Object.entries(ja.a.fx(ja.main, ja.lvl))) {
     if (!twoHands && (ja.a.twoHanded === true || (ja.a.twoHanded || []).includes(k))) continue;
     if (k === 'dmgmul') { B.dmgmul = (B.dmgmul || 1) * v; B._by.push({src: ja.name, k, v}); } else put(k, v, ja.name); }
+  // a party member's TP Bonus (a WAR's Warcry, a SMN's Crystal Blessing): shown with its other effects (the TP steps count it already)
+  for (const ja of jasOf()) if (ja.as === 'party' && ja.a.tpParty && jaOn(b, ja.name)) put('tpb', tpOfParty(ja.a, b), ja.name);
   return B;
 }
 /* ---- aftermath of the weapon in hand (wsdist create_player.py) ---- */
@@ -2380,7 +2382,7 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   def: ['Défense', 'Defense', ''], eva: ['Évasion', 'Evasion', ''], meva: ['Évasion magique', 'Magic Evasion', ''], mdb: ['Déf. magique', 'Magic Def. Bonus', ''],
   stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''],
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],
-  pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], sb: ['Subtle Blow', 'Subtle Blow', ''], mdmg: ['Dégâts magiques', 'Magic damage', '']};
+  pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], tpb: ['TP Bonus', 'TP Bonus', ''], sb: ['Subtle Blow', 'Subtle Blow', ''], mdmg: ['Dégâts magiques', 'Magic damage', '']};
 // Short labels, for a one-line summary (the party support cards)
 const FX_SHORT = {edefp: ['Déf cible', 'Tgt Def'], eeva: ['Éva cible', 'Tgt Eva'], emdb: ['Déf. mag. cible', 'Tgt MDB'], emeva: ['Éva. mag. cible', 'Tgt M.Eva'], atkp: ['Att', 'Atk'], atk: ['Att', 'Atk'], atkf: ['Att', 'Atk'], acc: ['Préc', 'Acc'], racc: ['Préc. dist.', 'R.Acc'], ratk: ['Att. dist.', 'R.Atk'],
   def: ['Déf', 'Def'], defp: ['Déf', 'Def'], eva: ['Éva', 'Eva'], meva: ['Éva. mag.', 'M.Eva'], mdb: ['Déf. mag.', 'MDB'], macc: ['Préc. mag.', 'M.Acc'],
