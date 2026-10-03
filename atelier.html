@@ -727,6 +727,19 @@ input[type=checkbox]{accent-color:var(--accent)}
 .tip .rx{align-self:start;display:flex;gap:3px}
 /* the search window: modern, quiet, alive (a pulsing dot, a moving bar, moves sliding in) */
 .dialog.optrun{width:min(880px,calc(100% - 32px))}
+/* steady whatever it shows: a fixed size anchored at the top (never centred again on its height), the feed taking
+   what is left and scrolling inside, one line a text cut with an ellipsis, figures of a fixed width */
+.dialog.optrun{top:24px;transform:translateX(-50%);height:min(780px,calc(100% - 48px));max-height:none;display:flex;flex-direction:column;overflow:hidden}
+.optrun > header,.optrun > footer{flex:none}
+.optrun > .body{flex:1;min-height:0;overflow:hidden;grid-template-rows:auto auto auto minmax(0,1fr)}
+.orfeed,.orchg{min-height:0;overflow:auto;max-height:none}
+.orfeed li,.orchg li{min-width:0}
+.orfmoves,.orphase,.orstage,.orwh b,.orfwalk,.orchg li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.orws{min-width:0}
+.orclock span{display:inline-block;min-width:5.5ch;text-align:right}
+.orbig,.orwbest,.orrate,.orevals,.orfval{font-variant-numeric:tabular-nums}
+.orhero{min-height:112px}
+.orres{min-height:0;overflow:auto}
 .optrun > header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,transparent),transparent)}
 .orhead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .orhead h3{font-family:var(--mono);font-size:15px}
@@ -2124,7 +2137,7 @@ function optRunPaint(walk, moves){
     for (const m of moves) {
       const li = document.createElement('li');
       li.innerHTML = `<span class="orfval">${esc(R.fmt(m.raw))}</span><span class="orfmoves">` + m.changes.map(c =>
-        `<span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span> <s>${esc(c.from)}</s> → <b>${esc(c.to)}</b>`).join('<br>') +
+        `<span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span> <s>${esc(c.from)}</s> → <b>${esc(c.to)}</b>`).join(' · ') +
         `</span><span class="orfwalk">${esc(walkLabel(walk))}${m.stage === 'nofloor' ? ' · ' + esc(t('orStage_nofloor')) : ''}${m.miss ? ' · ' + esc(t('orUnder')) : ''}</span>`;
       feed.prepend(li);
     }
@@ -2179,6 +2192,8 @@ function optRunResult(s, res, tr, plain, gains){
   const list = changes.map(c => `<li><span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span><span><s>${esc(c.from)}</s> → <b>${esc(c.to)}</b></span></li>`).join('');
   const rows = fig.map(([l, a, b, w]) => `<tr><th>${esc(l)}</th><td>${esc(a)}</td><td class="${w > 0 ? 'up' : w < 0 ? 'down' : ''}">${esc(b)}</td></tr>`).join('');
   const lack = gains.length ? `<p class="orlack">${esc(t('orLack'))} ` + gains.map(g => `<b>${esc(g.piece.name)}</b> ${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`).join(' · ') + `</p>` : '';
+  // the result's own rows: the hero, the changes and figures taking what is left (scrolling inside), what is to get
+  dlg.querySelector('.body').style.gridTemplateRows = 'auto minmax(0,1fr) auto';
   dlg.querySelector('.body').innerHTML = `<div class="orhero"><div><div class="orlbl">${esc(t(changes.length ? 'orFound' : 'orSame'))}</div>` +
     `<div class="orbig">${esc(R.fmt(res.best.raw))}</div><div class="orgain">${esc(t('orFrom', {v: R.fmt(res.start.raw)}))} ` +
     `<b class="${d > .05 ? 'up' : ''}">${d > 0 ? '+' : ''}${d.toFixed(1)} %</b></div></div>${dlg.querySelector('.orspark') ? dlg.querySelector('.orspark').outerHTML : ''}</div>` +
