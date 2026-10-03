@@ -3,7 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Centralized jump management for any job with DRG subjob (//gs c jump).
 ---   Handles Jump/High Jump rotation with TP-based decision making: the second
----   jump is considered 1.0s after the first, once its TP has landed.
+---   jump is considered once the first landed and its TP came
+---   (shared/utils/drg/jump_landing.lua).
 ---
 ---   @file    shared/utils/drg/DRG_JUMP_MANAGER.lua
 ---   @author  ejouanchicot
@@ -15,6 +16,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
 -- TP read from the game: GearSwap's copy is stale inside the coroutine below
 local live_tp = require('shared/utils/core/live_tp')
+local JumpLanding = require('shared/utils/drg/jump_landing')
 
 local DRGJumpManager = {}
 
@@ -69,9 +71,8 @@ function DRGJumpManager.execute_jump()
 
     send_command('input /ja "' .. first_jump .. '" <t>')
 
-    -- 1.0s lets the first jump's animation finish and its TP register
-    coroutine.schedule(function()
-        if live_tp() < 1000 then
+    JumpLanding.after(first_jump, function(tp)
+        if tp < 1000 then
             local recasts = windower.ffxi.get_ability_recasts()
             if not recasts then return end
 
@@ -82,7 +83,7 @@ function DRGJumpManager.execute_jump()
             end
         end
         -- If TP ≥ 1000 after first jump, do nothing (stop chaining)
-    end, 1.0)
+    end)
 end
 
 return DRGJumpManager

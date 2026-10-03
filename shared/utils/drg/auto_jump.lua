@@ -21,8 +21,10 @@
 ---   • Silent: the job's precast displays the normal JA messages
 ---   • Odyssey Sheol Gaol safe (subjob disabled reports level 0)
 ---
---- Timing:
----   • Single Jump: ~2.0s (1.0s animation + 1.0s gear swap)
+--- Timing: each Jump's TP is read once it landed (its action packet, then the
+--- TP the game shows; jump_landing.lua: at least 1.0 s, 3.0 s at most), the WS
+--- replayed 1.0 s later (gear swap):
+---   • Single Jump: ~2.0s
 ---   • Double Jump: ~3.0s
 ---
 --- @file    shared/utils/drg/auto_jump.lua
@@ -49,9 +51,8 @@ local TP_THRESHOLD = 1000
 -- TP read from the game: GearSwap's player.tp trails it, and is never
 -- refreshed inside the coroutines that chain the second jump
 local live_tp = require('shared/utils/core/live_tp')
-
---- Wait after a Jump so FFXI has credited the TP before it is read again.
-local JUMP_ANIMATION_DELAY = 1.0
+-- A Jump's TP read once it landed, not after a fixed wait (shared/utils/drg/jump_landing.lua)
+local JumpLanding = require('shared/utils/drg/jump_landing')
 
 --- Wait before replaying the WS so the gear swap has completed.
 local WS_DELAY_AFTER_JUMP = 1.0
@@ -129,8 +130,8 @@ end
 --- @param first_jump string Ability already used
 --- @param ws_name string
 --- @param ws_target string
-local function chain_second_jump(first_jump, ws_name, ws_target)
-    if live_tp() >= TP_THRESHOLD then
+local function chain_second_jump(first_jump, ws_name, ws_target, tp)
+    if tp >= TP_THRESHOLD then
         replay_ws(ws_name, ws_target)
         return
     end
@@ -148,9 +149,9 @@ local function chain_second_jump(first_jump, ws_name, ws_target)
     end
 
     send_command('input /ja "' .. second .. '" <t>')
-    coroutine.schedule(function()
+    JumpLanding.after(second, function()
         replay_ws(ws_name, ws_target)
-    end, JUMP_ANIMATION_DELAY)
+    end)
 end
 
 --- Cancel the WS, build TP with Jump(s), then replay the WS
@@ -182,9 +183,9 @@ function AutoJump.auto_trigger_jump(spell, eventArgs)
     local ws_target = (spell.target and spell.target.raw) or '<t>'
 
     send_command('input /ja "' .. jump_ability .. '" <t>')
-    coroutine.schedule(function()
-        chain_second_jump(jump_ability, ws_name, ws_target)
-    end, JUMP_ANIMATION_DELAY)
+    JumpLanding.after(jump_ability, function(tp)
+        chain_second_jump(jump_ability, ws_name, ws_target, tp)
+    end)
 end
 
 ---============================================================================
