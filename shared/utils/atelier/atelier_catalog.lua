@@ -20,8 +20,9 @@
 local AtelierCatalog = {}
 
 local CATALOG_VERSION = 3
--- res.items flags: Rare (0x8000), Ex (0x4000, no trade between players)
-local FLAG_RARE, FLAG_EX = 15, 14
+-- res.items flags: Rare (0x8000), Ex (0x4000, no trade between players). The resources file holds the
+-- bitmask; in game, Windower's resources library gives the set of their names (addons/libs/resources.lua)
+local FLAG_RARE, FLAG_EX = {bit = 15, name = 'Rare'}, {bit = 14, name = 'No PC Trade'}
 -- res slot ids, named as the page names them
 local SLOT_BY_ID = {[0] = 'main', 'sub', 'range', 'ammo', 'head', 'body', 'hands', 'legs', 'feet', 'neck', 'waist',
     'ear1', 'ear2', 'ring1', 'ring2', 'back'}
@@ -32,6 +33,12 @@ local JOBS = {'WAR', 'MNK', 'WHM', 'BLM', 'RDM', 'THF', 'PLD', 'DRK', 'BST', 'BR
 local function has(field, id)
     if type(field) == 'number' then return math.floor(field / 2 ^ id) % 2 == 1 end
     return type(field) == 'table' and field[id] == true
+end
+
+--- Whether an item carries a flag, from the set of flag names (in game) or the bitmask.
+local function flagged(info, flag)
+    if type(info.flags) == 'table' and info.flags[flag.name] then return true end
+    return has(info.flags, flag.bit)
 end
 
 --- The page's slot names an item fits, space separated, or nil for an item worn nowhere.
@@ -68,7 +75,7 @@ local function collect(res)
         local desc = res.item_descriptions and res.item_descriptions[id]
         if slots then
             rows[#rows + 1] = {id, info.en, slots, jobs_of(info), info.level or 0, info.item_level or 0, desc and desc.en or '',
-                has(info.flags, FLAG_RARE) and 1 or 0, has(info.flags, FLAG_EX) and 1 or 0}
+                flagged(info, FLAG_RARE) and 1 or 0, flagged(info, FLAG_EX) and 1 or 0}
         end
     end
     return rows
@@ -97,15 +104,20 @@ function AtelierCatalog.write_if_stale(path, json)
     local count = 0
     for _ in pairs(res.items) do count = count + 1 end
     if first_line(path) == header(count) then return false end
-    local rows = collect(res)
-    local parts = {}
-    for i, row in ipairs(rows) do parts[i] = json(row) end
-    local file = io.open(path, 'w')
+    -- written row by row into a file beside it, which replaces the catalog once whole: a write that
+    -- fails half way (the game's memory) leaves the catalog as it was, never an empty one
+    local tmp = path .. '.tmp'
+    local file = io.open(tmp, 'w')
     if not file then return false end
-    file:write(header(count), '\n', 'window.ATELIER_CATALOG = {"v":', CATALOG_VERSION, ',"items":[\n',
-        table.concat(parts, ',\n'), '\n]};\n')
+    local written = pcall(function()
+        file:write(header(count), '\n', 'window.ATELIER_CATALOG = {"v":', CATALOG_VERSION, ',"items":[\n')
+        for i, row in ipairs(collect(res)) do file:write(i > 1 and ',\n' or '', json(row)) end
+        file:write('\n]};\n')
+    end)
     file:close()
-    return true
+    if not written then os.remove(tmp) return false end
+    os.remove(path)
+    return os.rename(tmp, path) and true or false
 end
 
 return AtelierCatalog
