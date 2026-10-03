@@ -183,6 +183,9 @@
         var probe = wsProbe(c);
         if (c.foeDown && c.foeDown.gambit && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.gambit.elem)
             agg[1]["Magic DT%"] = (agg[1]["Magic DT%"] || 0) + c.foeDown.gambit.pct;
+        // a NIN's elemental ninjutsu: the target's resistance (Magic Evasion) -30 against an element, for a weaponskill of it
+        if (c.foeDown && c.foeDown.ninRes && probe && (probe.magical || probe.hybrid))
+            c.foeDown.ninRes.forEach(function (r) { if (r.elem === probe.element) agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + r.meva; });
         // a BRD's Threnody II: the target's Magic Evasion against its element, for a weaponskill of that element
         if (c.foeDown && c.foeDown.threnody && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.threnody.elem)
             agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + c.foeDown.threnody.meva;

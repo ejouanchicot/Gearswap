@@ -465,7 +465,7 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .foeon{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-size:12px;max-height:150px;overflow-y:auto;align-content:start}
 .foetabsw{margin-left:auto;padding-left:6px;align-self:center}
 .ftab7{flex-wrap:nowrap}
-.ftabs7{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));flex:1}
+.ftabs7{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));flex:1}
 .fcell.flow{align-items:flex-start}
 .fcell.flow .fctl{display:flex;flex-wrap:wrap;gap:4px}
 .fcell.flow .chip{padding:3px 8px;font-size:11.5px}
@@ -2130,6 +2130,11 @@ const FOE_JA = {
   // the tab; it and the spell Impact are both "Impact", one at a time
   SMN: {'Diamond Storm': {eeva: 25, evd: true}, 'Lunar Cry': {eeva: 31, evd: true}, 'Conflag Strike': {elem: 'INT', fixed: 63, as: 'Burn'},
     'Tidal Roar': {eatkp: .25, stacks: true}, 'Impact (Fenrir)': {smnImpact: true, stacks: true, excl: 'Impact'}},
+  // NIN (BG Wiki): an elemental ninjutsu lowers the target's resistance -30 (Magic Evasion against that element)
+  // whatever its tier, to the element that beats it (Katon: water), 15 s (25 s with merits); Aisha: Ichi Attack -15 %
+  NIN: {'Katon': {ninRes: 'Water', stacks: true}, 'Hyoton': {ninRes: 'Fire', stacks: true}, 'Huton': {ninRes: 'Ice', stacks: true},
+    'Doton': {ninRes: 'Wind', stacks: true}, 'Raiton': {ninRes: 'Earth', stacks: true}, 'Suiton': {ninRes: 'Thunder', stacks: true},
+    'Aisha: Ichi': {eatkp: .15, stacks: true}},
   SAM: {'Tachi: Ageha': {edefp: .25}},
   // DRG: Angon, and Jump under Spirit Surge (BG Wiki Spirit Surge: Defense -20 %, 60 s), both Defense Downs
   DRG: {'Angon': {edefp: .2}, 'Jump (Spirit Surge)': {edefp: .2}},
@@ -2190,6 +2195,7 @@ function foeFx(n, b){
   if (a.smnImpact) return {eallstat: Math.floor(smnSkill(b) / 20)};
   if (a.gambit) return {egambit: a.gambit * runeCount(b)};
   if (a.threnody) return {ethren: a.threnody + 5 * Math.min(9, +(b.songsPlus || 0))};
+  if (a.ninRes) return {['enin' + a.ninRes]: 30};
   return Object.fromEntries(Object.entries(a.sub && b.dncSub ? a.sub : a).filter(([k, v]) => typeof v === 'number'));
 }
 // What counts on the target, effect by effect (BG Wiki): one Defense Down (the strongest; Dia, Box Step and Frailty
@@ -2226,6 +2232,7 @@ function foeJaDown(b){
   for (const {k, v} of foeCounted(b).list) {
     if (k === 'egambit') out.gambit = {elem: RUNES[runeOf(b)], pct: v};
     if (k === 'ethren') out.threnody = {elem: threnElem(b), meva: v};
+    if (k.startsWith('enin')) (out.ninRes = out.ninRes || []).push({elem: k.slice(4), meva: v});
     if (k === 'edefp') out.def += v; if (k === 'emdb') out.mdb += v; if (k === 'emeva') out.meva += v; if (k === 'ecrit') out.crit += v;
     for (const st of STAT_KEYS) { const d = (k === 'e' + st.toLowerCase() || k === 'eallstat' ? v : 0) + (k === 'estatp' ? Math.floor(v * (x[st.toLowerCase()] || 0)) : 0);
       if (d) out.stats[st] = (out.stats[st] || 0) + d; } }
@@ -2698,7 +2705,7 @@ function targetCardPanel(b){
 // GEO's bubbles are chosen with the party's support (their effect in the list of what is on the target)
 function foePanelHTML(b){
   const key = enemyKey(b.enemy), T = targetInfo(null), pc = v => Math.round(v * 1000) / 10;
-  const short = (k, v) => STAT_KEYS.includes(k.slice(1).toUpperCase()) ? `${k.slice(1).toUpperCase()} −${Math.round(v)}` : ({edefp: `${t('sDef')} −${pc(v)} %`,
+  const short = (k, v) => k.startsWith('enin') ? `${t('el_' + k.slice(4))} : ${t('sMeva')} −${Math.round(v)}` : STAT_KEYS.includes(k.slice(1).toUpperCase()) ? `${k.slice(1).toUpperCase()} −${Math.round(v)}` : ({edefp: `${t('sDef')} −${pc(v)} %`,
     eeva: `${t('sEva')} −${Math.round(v)}`, eres: `${t('sRes')} −${pc(v)} %`, estatp: `${t('sStats')} −${pc(v)} %`, ecrit: `${t('sCrit')} +${Math.round(v)} %`,
     eatkp: `${t('sAtk')} −${pc(v)} %`, eallstat: `${t('sStats')} −${Math.round(v)}`, ethren: `${t('el_' + threnElem(b))} : ${t('sMeva')} −${Math.round(v)}`, eslow: `${t('sSlow')} −${pc(v)} %`, edot: `${Math.round(v)} HP/tick`, egambit: `${t('el_' + RUNES[runeOf(b)])} +${Math.round(v)} %`,
  emdb: `${t('sMdb')} −${Math.round(v)}`,
@@ -2709,7 +2716,7 @@ function foePanelHTML(b){
     full ? v : v.replace(/^(Dia|Distract)\s?/, '') || 'I', b[k] === v)).join('')}</span>`;
   const JA_TIP = {'Lunar Cry': 'lunarTip'};
   const ja = (n, over) => btn(`data-foeja="${esc(n)}"`, FOE_JA.BST[n] ? n.split(': ')[1] : n, (b.foeJa || []).includes(n),
-    [JA_TIP[n] ? t(JA_TIP[n]) : FOE_JA.BST[n] ? n : '', over ? t('ddOver') : ''].filter(Boolean).join(' · ')).replace('class="chip"', `class="chip${over ? ' over' : ''}"`);
+    [JA_TIP[n] ? t(JA_TIP[n]) : FOE_JA.BST[n] ? n : FOE_JA.NIN[n] && FOE_JA.NIN[n].ninRes ? `${t('el_' + FOE_JA.NIN[n].ninRes)} : ${t('sMeva')} −30` : '', over ? t('ddOver') : ''].filter(Boolean).join(' · ')).replace('class="chip"', `class="chip${over ? ' over' : ''}"`);
   const by = src => T.B._by.filter(e => src(e.src)).map(e => short(e.k, e.v));
   // Saboteur's multiplier on this target, on its own button (x2 a monster, x1.25 an NM, more with the gloves)
   const nm = isNmTarget(key), sabX = nm ? (b.sabGloves ? 1.39 : 1.25) : (b.sabGloves ? 2.14 : 2);
@@ -2726,7 +2733,7 @@ function foePanelHTML(b){
     ['', ja('Gambit'), by(v => v === 'Gambit'), 'wide'],
     ['Rayke', `<span class="muted small">${esc(t('raykeInfo', {e: t('el_' + RUNES[runeOf(b)]), n: runeCount(b)}))}</span>`, null, 'wide']];
   // many abilities: their buttons in one block (a weaker one struck through), what they take off in the list under
-  const FLOW_TABS = ['BLU', 'BST', 'WS'];
+  const FLOW_TABS = ['NIN', 'BLU', 'BST', 'WS'];
   const flowLines = (names, off) => [['', names.map(n => ja(n, off.includes(n))).join(''), null, 'wide flow']];
   const brdLines = () => [['', ja('Threnody II') + `<select class="buffsel set" data-buff="threnElem" title="${esc(t('elemWord'))}">${WS_ELEMENTS.map(el =>
       `<option value="${el}" ${el === threnElem(b) ? 'selected' : ''}>${esc(t('el_' + el))}</option>`).join('')}</select>`, by(v => v === 'Threnody II'), 'wide'],
@@ -2755,7 +2762,7 @@ function foePanelHTML(b){
     }),
   ];
   const cur = tabs.find(x => x.id === S._foeTab) || tabs.find(x => x.on) || tabs[0], curOn = !(b.off || {})[cur.id];
-  // the jobs in two rows of eight, the tab's switch on their right
+  // the jobs in two rows of nine, the tab's switch on their right
   const bar = `<div class="foetabs ftab7"><div class="ftabs7" role="tablist">${tabs.map(x => `<button class="foetab ${x.on && !(b.off || {})[x.id] ? 'on' : ''}" role="tab" data-foetab="${esc(x.id)}" ` +
     `aria-selected="${x === cur}">${esc(x.label)}</button>`).join('')}</div><span class="foetabsw">${offSwitch(b, cur.id)}</span></div>`;
   // the tab as a grid, two abilities a row (a wide one a row), each with what it takes off
@@ -2763,7 +2770,7 @@ function foePanelHTML(b){
     (fx ? `<span class="ffx ${fx.length && curOn ? 'on' : ''}" title="${esc(fx.join(' · '))}">${esc(!curOn ? '' : fx.join(' · ') || '—')}</span>` : '') + `</div>`;
   const pane = `${bar}<div class="ftabgrid ${curOn ? '' : 'off'}">${cur.lines.map(cell).join('')}</div>`;
   // everything on the target, whatever its tab: what lays it, what it takes off
-  const onList = T.B._by.filter(e => ['edefp', 'eeva', 'emdb', 'emeva', 'eres', 'estatp', 'ecrit', 'eatkp', 'egambit', 'ethren', 'eallstat', 'eslow', 'edot', 'estr', 'edex', 'evit', 'eagi', 'eint', 'emnd', 'echr'].includes(e.k));
+  const onList = T.B._by.filter(e => e.k.startsWith('enin') || ['edefp', 'eeva', 'emdb', 'emeva', 'eres', 'estatp', 'ecrit', 'eatkp', 'egambit', 'ethren', 'eallstat', 'eslow', 'edot', 'estr', 'edex', 'evit', 'eagi', 'eint', 'emnd', 'echr'].includes(e.k));
   // a line a debuff, its effects together (Swooping Frenzy: Defense and Magic Defense)
   const bySrc = new Map();
   for (const e of onList) bySrc.set(e.src, (bySrc.get(e.src) || []).concat(geoSrc(e.src) ? nmGeo(short(e.k, e.v)) : short(e.k, e.v)));
