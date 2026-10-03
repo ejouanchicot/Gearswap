@@ -183,6 +183,9 @@
         var probe = wsProbe(c);
         if (c.foeDown && c.foeDown.gambit && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.gambit.elem)
             agg[1]["Magic DT%"] = (agg[1]["Magic DT%"] || 0) + c.foeDown.gambit.pct;
+        // a BRD's Threnody II: the target's Magic Evasion against its element, for a weaponskill of that element
+        if (c.foeDown && c.foeDown.threnody && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.threnody.elem)
+            agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + c.foeDown.threnody.meva;
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
         if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
