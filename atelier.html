@@ -531,7 +531,11 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .vpill.ok{color:var(--r-healer);border-color:color-mix(in srgb,var(--r-healer) 50%,transparent);background:color-mix(in srgb,var(--r-healer) 10%,transparent)}
 .vpill.short{color:var(--r-dd);border-color:color-mix(in srgb,var(--r-dd) 50%,transparent);background:color-mix(in srgb,var(--r-dd) 10%,transparent)}
 .vsnote{margin:8px 0 0;font-size:11.5px;color:var(--faint)}
-.bnames{display:flex;flex-wrap:wrap;gap:4px}
+/* a fixed height (the chips scroll inside): adding or taking a buff off never moves the column */
+.bnames{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;height:104px;overflow-y:auto}
+.bnamesempty{height:104px;margin:0}
+.fxfixed{height:260px;overflow-y:auto;margin:0}
+.bcardacts .btn[disabled]{opacity:.45;cursor:not-allowed}
 .bnames span{font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);background:var(--accent-soft);color:var(--accent);font-weight:600}
 .bcardacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .opt .state.new{color:var(--accent);font-weight:700}
@@ -2336,9 +2340,9 @@ function fxText(k, v){
 function buffEffectsHTML(){
   const by = withAftermath(buffTotals(), shownMain())._by, groups = new Map();
   for (const e of by) { if (!groups.has(e.src)) groups.set(e.src, []); groups.get(e.src).push(fxText(e.k, e.v)); }
-  if (!groups.size) return '';
-  return fbox('fx', 'g-buff', t('bEffects'), `<ul class="condlist fxlist">${[...groups].map(([src, list]) =>
-    `<li><b>${esc(src)}</b><span>${list.map(esc).join(' · ')}</span></li>`).join('')}</ul>`);
+  // always there, its list scrolling inside a fixed height: adding or taking a buff off moves nothing
+  return fbox('fx', 'g-buff', t('bEffects'), groups.size ? `<ul class="condlist fxlist fxfixed">${[...groups].map(([src, list]) =>
+    `<li><b>${esc(src)}</b><span>${list.map(esc).join(' · ')}</span></li>`).join('')}</ul>` : `<p class="muted small fxfixed">${t('bNone')}</p>`);
 }
 function buffCount(){
   const b = buffState();
@@ -2618,8 +2622,8 @@ function openTarget(){
 // The column's card: the buffs chosen (their names), a button that opens the window, then their effects
 function buffCardHTML(){
   const n = buffCount(), names = [...new Set(withAftermath(buffTotals(), shownMain())._by.map(e => e.src))];
-  const body = tierBarHTML() + (names.length ? `<div class="bnames">${names.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : `<p class="muted small">${t('bNone')}</p>`) +
-    `<div class="bcardacts"><button class="btn" data-buffopen>${t('bChoose')}</button><button class="btn ghost" data-buffendgame>${t('bEndgame')}</button>${n ? `<button class="btn ghost" data-buffreset>${t('buffReset')}</button>` : ''}</div>`;
+  const body = tierBarHTML() + (names.length ? `<div class="bnames">${names.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : `<p class="muted small bnamesempty">${t('bNone')}</p>`) +
+    `<div class="bcardacts"><button class="btn" data-buffopen>${t('bChoose')}</button><button class="btn ghost" data-buffendgame>${t('bEndgame')}</button><button class="btn ghost" data-buffreset ${n ? '' : 'disabled'}>${t('buffReset')}</button></div>`;
   return box('g-buff', t('buffsTitle'), body, `<span class="meta ${n ? 'on' : ''}">${buffTier()} · ${n ? t('buffsOn', {n}) : '—'}</span>`) + buffEffectsHTML();
 }
 // The window over the page: every buff and condition, two columns; it follows the page's changes
