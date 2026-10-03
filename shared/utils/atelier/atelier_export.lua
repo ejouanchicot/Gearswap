@@ -329,7 +329,8 @@ local function collect_items()
     if not ok or not res or not res.items then return nil end
     local by_slot, owned, seen, entry_of = {}, {}, {}, {}
     -- one piece: the slots it fits, once per name for `items`, once per copy for `owned`,
-    -- each copy with the places it is in (several bags when the same copy is twice)
+    -- each copy with the places it is in (several bags when the same copy is twice) and how
+    -- many there are (two Moonlight Rings in one wardrobe: one place, count 2)
     local function add(info, augs, where)
         if not (info and info.slots and type(info.slots) == 'table' and info.slots.it and wearable(info)) then return end
         local copy = info.en .. '|' .. table.concat(augs or {}, '|')
@@ -344,7 +345,7 @@ local function collect_items()
                 local key = slot .. '#' .. copy
                 local entry = entry_of[key]
                 if not entry then
-                    entry = {name = info.en, augs = augs, where = {}}
+                    entry = {name = info.en, augs = augs, where = {}, count = 0}
                     entry_of[key] = entry
                     owned[slot] = owned[slot] or {}
                     table.insert(owned[slot], entry)
@@ -352,6 +353,7 @@ local function collect_items()
                 local known = false
                 for _, w in ipairs(entry.where) do if w == where then known = true end end
                 if not known then table.insert(entry.where, where) end
+                entry.count = entry.count + 1
             end
         end
     end

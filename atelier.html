@@ -1353,16 +1353,19 @@ function add(out, key, v, unit, label){
   const e = out[key] || (out[key] = {v: 0, unit, label});
   e.v += v; if (unit) e.unit = unit;
 }
-// Every stat of one piece: its description (always on part), then its augments
-const PIECE_CACHE = {};
+// Every stat of one piece: its description (always on part), then its augments. slot: where it is worn, for
+// an earring whose bonus works in one ear only ("Right ear: "Double Attack"+9%", the Empyrean earrings): counted
+// in that ear (ear2 is the right one, GearSwap's right_ear), a condition shown in the other or with no slot
+const PIECE_CACHE = {}, EAR_SIDE = {ear1: 'left', ear2: 'right'};
 const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
-function pieceStats(p){
+function pieceStats(p, slot){
   if (!p) return null;
   // a piece worn for one augment only (Moonshade Earring: its TP Bonus +250, its Accuracy+4 or Attack+4 never)
   if (ONLY_AUGS[p.name]) p = Object.assign({}, p, {augs: ONLY_AUGS[p.name]});
   const cat = catalog(), id = iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = id ? descTexts()[id] || (cat && cat.desc[id]) || null : null;
-  const key = S.char + '|' + p.name + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0);
+  const side = EAR_SIDE[slot] || '';
+  const key = S.char + '|' + p.name + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
   const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], path: null, weapon: null, known: !!text};
@@ -1374,6 +1377,9 @@ function pieceStats(p){
     // "Converts 150 MP to HP" (Tuisto, Odnowa...): that much HP more, MP less
     let line = raw.replace(/Converts (\d+) (MP|HP) to (HP|MP)/g, (_, n, from, to) => {
       add(r.base, to.toLowerCase(), +n, '', to); add(r.base, from.toLowerCase(), -n, '', from); return ' '; });
+    // the bonus of the ear it is worn in counts as the rest of the piece
+    const ear = line.match(/^(Left|Right) ear:\s*/i);
+    if (ear && ear[1].toLowerCase() === side) { mode = null; line = line.slice(ear[0].length); if (!line.trim()) continue; }
     line = unsigned(line, r.base);
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
@@ -1598,7 +1604,7 @@ const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.ind
 function setStats(s){
   const total = {}, paths = [], unknown = [], cond = [], pieces = withWeapons(s).pieces;
   for (const slot of SLOTS) {
-    const p = pieces[slot], r = pieceStats(p);
+    const p = pieces[slot], r = pieceStats(p, slot);
     if (!r) continue;
     if (!r.known) unknown.push(p.name);
     if (r.path && !r.rankStats) paths.push(`${p.name} (Path ${r.path})`);
@@ -1789,7 +1795,8 @@ function optChoices(tpNames){
   const reach = x => !o.wardOnly || !(x.where && x.where.length) || x.where.some(w => /^(Inventory|Wardrobe)/.test(w));
   for (const slot of SLOTS) if (!['main', 'sub', 'range'].includes(slot)) {
     choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && reach(x)).map(x => {
-      const mine = ownRank({name: x.name, augs: x.augs, copies: (x.where || []).length, keep: true});
+      // how many you have (an export before 2026-10-03 counts the bags they are in)
+      const mine = ownRank({name: x.name, augs: x.augs, copies: x.count || (x.where || []).length, keep: true});
       const up = o.where === 'mine_max' ? upgradeOf(mine) : null;
       return up ? Object.assign({}, up.piece, {copies: mine.copies, keep: true, maxed: true, from: mine}) : mine; });
     if (o.where === 'all') choices[slot] = choices[slot].concat(gameChoices(slot, choices[slot], tpNames));
@@ -3114,7 +3121,7 @@ function measuredChar(){
 }
 function gearTotal(pieces){
   const total = {};
-  for (const slot of SLOTS) { const r = pieceStats(pieces[slot]); if (r) for (const [k, e] of Object.entries(r.stats)) add(total, k, e.v, e.unit, e.label); }
+  for (const slot of SLOTS) { const r = pieceStats(pieces[slot], slot); if (r) for (const [k, e] of Object.entries(r.stats)) add(total, k, e.v, e.unit, e.label); }
   return total;
 }
 // Measured stats minus the gear worn when measured, plus the set's gear. HP / MP: the
@@ -3906,7 +3913,7 @@ function slotHTML(s, ci, slot, own, q, eff){
   const reset = tried ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : '';
   if (!p) return `<button class="slot empty ${tried?'tried':''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : —">${reset}<span class="elbl">${label}</span></button>`;
   const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot), hit = q && p.name.toLowerCase().includes(q);
-  const r = pieceStats(p), augmented = r && Object.keys(r.aug).length;
+  const r = pieceStats(p, slot), augmented = r && Object.keys(r.aug).length;
   // the name, its stats, base and augments are in the hover card (showTip)
   const hold = holdState(slot, p);
   return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${tried?'tried':''} ${hold ? 'own-' + hold : ''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : ${esc(p.name)}${hold ? ' · ' + t('lg_' + hold) : ''}">` +
@@ -4803,9 +4810,9 @@ function openSlot(ci, slot){
   const head = (o, i) => i && group(opts[i - 1]) === group(o) || !group(o) ? ''
     : `<div class="kicker" data-grp>${t('pickGrp' + group(o), {n: counts[group(o)]})}` +
       (group(o) === 5 ? ` · <button class="linkbtn" data-showjunk>${S._showJunk ? t('junkHide') : t('junkShow')}</button>` : '') + `</div>`;
-  const list = opts.length ? opts.map((o, i) => o.grp === 5 && !S._showJunk ? head(o, i) : head(o, i) + (() => { const r = o.cat ? null : pieceStats(o.piece), augs = o.piece.augs || [];
+  const list = opts.length ? opts.map((o, i) => o.grp === 5 && !S._showJunk ? head(o, i) : head(o, i) + (() => { const r = o.cat ? null : pieceStats(o.piece, (S._drawer || {}).slot), augs = o.piece.augs || [];
     const where = o.cat ? [t('notOwned'), o.ilv ? 'iLv ' + o.ilv : t('lvShort', {n: o.lv})].join(' · ')
-      : [o.owned ? (o.where && o.where.length ? o.where.join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
+      : [o.owned ? (o.count > 1 ? '×' + o.count + ' · ' : '') + (o.where && o.where.length ? o.where.join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
     const up = o.upgrade;
     const why = o.junk && o.why ? `<span class="whyl">${esc(o.why)}</span>` : '';
     const upTag = up ? `<span class="tag up ${o.curMax ? 'on' : ''}" data-trymax="${i}" role="button" tabindex="0" title="${esc(t('maxChipTip'))}">${up.to ? `→ R${up.to}` : t('capeMaxTag')}</span>` : '';
@@ -4835,7 +4842,7 @@ function pieceChoices(slot, current, orig, s){
     if (sl === slot) { seen[q.name] = (seen[q.name] || 0) + 1; seen[copyKey(q)] = (seen[copyKey(q)] || 0) + 1; }
     if (fam && family(x.path, x.pieces) === fam) kin[q.name] = true; }
   const owned = (ofAnySub('owned') || {})[slot], names = (ofAnySub('items') || {})[slot] || [];
-  const list = owned ? owned.map(x => ({piece: {name: x.name, augs: x.augs}, owned: true, where: x.where}))
+  const list = owned ? owned.map(x => ({piece: {name: x.name, augs: x.augs}, owned: true, where: x.where, count: x.count}))
     : names.map(n => ({piece: {name: n}, owned: true}));
   const have = new Set(list.map(o => o.piece.name));
   for (const x of d.sets) { const q = x.pieces[slot];
@@ -4976,7 +4983,7 @@ function relevance(s, slot, opts){
   const {want} = setWants(s), cure = /cur(e|a)/i.test(s.path);
   const dir = k => GOOD_DOWN.has(baseKey(k)) || (baseKey(k) === 'enmity' && cure) ? -1 : 1;
   const good = (k, v) => Math.max(0, dir(k) * v);
-  const stats = opts.map(o => pieceStats(o.piece) || {}), max = {};
+  const stats = opts.map(o => pieceStats(o.piece, slot) || {}), max = {};
   for (const r of stats) for (const [k, e] of Object.entries(r.stats || {})) if (wantOf(want, k)) max[k] = Math.max(max[k] || 0, good(k, e.v));
   opts.forEach((o, i) => {
     const parts = Object.entries(stats[i].stats || {}).filter(([k, e]) => wantOf(want, k) && max[k] && good(k, e.v))
@@ -5636,7 +5643,7 @@ function pieceTip(p, slot, emptied){
   // a slot the set empties (sets.naked, //gs c naked) stays empty whatever the weapon modes say
   const none = emptied ? t('emptied') : slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty');
   if (!p) return `<div class="th">${icon(null)}<div><b>${label}</b><small>${none}</small></div></div>`;
-  const r = pieceStats(p);
+  const r = pieceStats(p, slot);
   let body = '';
   if (r && r.known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);

@@ -65,6 +65,8 @@
         if (item.DMG) { g.DMG = item.DMG; g.Delay = item.Delay; }
         var add = function (src) { for (var k in src) if (typeof src[k] === "number") g[k] = (g[k] || 0) + src[k]; };
         add(item.stats || {});
+        // a bonus that works in one ear only (the Empyrean earrings' "Right ear:"), in that ear (ear2 = right_ear)
+        if (item.slot_stats && item.slot_stats[slot]) add(item.slot_stats[slot]);
         if (FFXI.parse_augments && (piece.augs && piece.augs.length || piece.rank != null)) add(FFXI.parse_augments(item.name, piece.augs || [], piece.rank).stats);
         // a piece worn for one augment only, whatever its other one (Moonshade Earring: its TP Bonus +250)
         var only = ONLY_STATS[item.name];
