@@ -57,7 +57,7 @@ RefillConfig.foreign_characters = {}
 
 -- Items never put back, whatever the lists say (kept by hand)
 -- Example: RefillConfig.never_store = {'Echo Drops', 'Holy Water'}
-RefillConfig.never_store = {}
+RefillConfig.never_store = {'Old Case', 'Old Case +1', 'Old Case +2'}   -- Sortie's cases, opened in the field
 
 -- The common list: what every job keeps in the inventory, unless its own
 -- file (<job>/inventory/<JOB>_REFILL.lua) adds to it (M.extra) or replaces

@@ -180,7 +180,9 @@ local function foreign_sources(char_name, cfg)
 end
 
 --- An item the game calls usable (food, medicine, a scroll) that the active list does not hold, as a lookup
---- (item id -> its name, nil for the rest): equipment, materials, crystals and linkshells never count.
+--- (item id -> its name, nil for the rest): equipment, materials, crystals and linkshells never count, nor an
+--- ammo container (a quiver, a pouch, a ninja toolbag), which has to be in the inventory to be opened
+--- (shared/utils/inventory/quiver_manager.lua).
 --- @param current_ids table {[item_id] = true} the active list and never_store
 --- @return function
 local function unlisted_usable(current_ids)
@@ -188,6 +190,8 @@ local function unlisted_usable(current_ids)
     return function(_, id)
         local info = ok and res and res.items and res.items[id]
         if not info or current_ids[id] or info.category ~= 'Usable' then return nil end
+        if tostring(info.en):lower():find('quiver') or tostring(info.en):lower():find('pouch')
+            or tostring(info.en):lower():find('toolbag') then return nil end
         local flags = info.flags
         if type(flags) == 'table' and flags['Linkshell'] then return nil end
         if type(flags) == 'number' and math.floor(flags / 0x100) % 2 == 1 then return nil end
