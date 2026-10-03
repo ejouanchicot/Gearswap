@@ -198,7 +198,8 @@
         if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
-            primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0};
+            primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
+            physResBy: c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk};
     };
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
     // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %), Banish II by 70 % on an undead;
@@ -257,28 +258,44 @@
     var ROUND_OBJ = {tp_real: "Time to WS", tp_time: "Time to WS", dps: "DPS", tp_round: "TP return"};
     // The hits landing in one round, as a distribution {hits: probability}: each hand swings once, plus a Quadruple
     // (3 more), else a Triple (2), else a Double Attack (1), each swing landing at the hand's hit rate
-    function handHits(ma, hr) {
-        var sw = {1: (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da), 2: (1 - ma.qa) * (1 - ma.ta) * ma.da, 3: (1 - ma.qa) * ma.ta, 4: ma.qa}, out = {};
-        Object.keys(sw).forEach(function (n) {
-            for (var k = 0, c = 1; k <= n; k++) {
-                out[k] = (out[k] || 0) + sw[n] * c * Math.pow(hr, k) * Math.pow(1 - hr, n - k);
-                c = c * (n - k) / (k + 1);
-            }
-        });
+    // A hand's swings in one round, as a distribution {swings: chance}, in the game's order (BG Wiki Multi-Attack):
+    // Quadruple, Triple, Double Attack, then the weapon's "Occasionally attacks X times" from the most down (a Kraken
+    // Club's OA8..OA2, a mythic's aftermath OA3 / OA2), each only when the ones before did not happen.
+    // oa: [[extra swings, chance], ...] highest first
+    function swingsOf(ma, oa) {
+        var out = {4: ma.qa, 3: (1 - ma.qa) * ma.ta, 2: (1 - ma.qa) * (1 - ma.ta) * ma.da}, f = (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da);
+        (oa || []).forEach(function (x) { if (x[1] > 0) { out[1 + x[0]] = (out[1 + x[0]] || 0) + f * x[1]; f *= 1 - x[1]; } });
+        out[1] = (out[1] || 0) + f;
         return out;
     }
-    function convolve(a, b) {
+    // The engine's OA list (actions.js multi_attack) by hand, highest first
+    function oaOf(list, hand) {
+        var l = list || [], g = function (i) { return l[i] || 0; };
+        return hand === "main" ? [[7, g(9)], [6, g(10)], [5, g(11)], [4, g(12)], [3, g(13)], [2, g(0)], [1, g(1)]]
+            : [[7, g(2)], [6, g(3)], [5, g(4)], [4, g(5)], [3, g(6)], [2, g(7)], [1, g(8)]];
+    }
+    // n swings landing at hr each: {hits: chance}
+    function landed(n, hr) {
         var out = {};
-        Object.keys(a).forEach(function (i) { Object.keys(b).forEach(function (j) { out[+i + +j] = (out[+i + +j] || 0) + a[i] * b[j]; }); });
+        for (var k = 0, c = 1; k <= n; k++) { out[k] = c * Math.pow(hr, k) * Math.pow(1 - hr, n - k); c = c * (n - k) / (k + 1); }
+        return out;
+    }
+    // The hits landing in one round, both hands, at most 8 attacks a round (the off hand loses what is over)
+    function handHits(x) {
+        var m = swingsOf(x.multi, oaOf(x.multi.oa, "main")), out = {};
+        var s = x.hits.sub > 0 ? swingsOf(x.multi, oaOf(x.multi.oa, "sub")) : {0: 1};
+        Object.keys(m).forEach(function (a) { Object.keys(s).forEach(function (b) {
+            var p = m[a] * s[b], hm = landed(+a, x.hitRate.main), hs = landed(Math.min(+b, 8 - a), x.hitRate.sub || x.hitRate.main);
+            Object.keys(hm).forEach(function (i) { Object.keys(hs).forEach(function (j) { out[+i + +j] = (out[+i + +j] || 0) + p * hm[i] * hs[j]; }); });
+        }); });
         return out;
     }
     // The rounds to the weaponskill with the hits drawn at random (not the average TP a round): the chance of each
     // count of rounds, their mean, the time, and the TP at the weaponskill (Wald: start + mean rounds x mean TP a
-    // round). What the distribution leaves out (Zanshin, kicks, Daken, Occasionally Attacks) and Regain come every
+    // round). What the distribution leaves out (Zanshin, kicks, Daken) and Regain come every
     // round as their mean, so the mean TP a round is the engine's
     O.roundsOf = function (x) {
-        var dist = handHits(x.multi, x.hitRate.main);
-        if (x.hits.sub > 0) dist = convolve(dist, handHits(x.multi, x.hitRate.sub || x.hitRate.main));
+        var dist = handHits(x);
         var mean = 0; Object.keys(dist).forEach(function (k) { mean += k * dist[k]; });
         var fixed = Math.max(0, x.tpRound - mean * x.tpPerHit), need = Math.max(0, x.at - x.start);
         var steps = Object.keys(dist).map(function (k) { return {tp: k * x.tpPerHit + fixed, p: dist[k]}; });
@@ -300,9 +317,16 @@
         if (!set) return null;
         return roundOf(ctx, FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), opts || {});
     };
+    // The target's resistance to the auto-attacks: of the main weapon the set holds (ctx.physResBy: the page's
+    // resistance by combat skill), the weapon the optimizer tries when it chooses the weapons
+    function roundMul(ctx, player) {
+        var skill = ctx.physResBy && ((player.gearset || {}).main || {})["Skill Type"];
+        if (!skill) return ctx.dmgMul || 1;
+        return physMul({physRes: ctx.physResBy[skill] || 0, mode: "engaged", banish: ctx.banish, tomahawk: ctx.tomahawk});
+    }
     function roundOf(ctx, player, opts) {
         var at = +opts.wsAt || 1000, r = FFXI.average_attack_round(player, ctx.enemy, 0, at, "Time to WS");
-        var m = ctx.dmgMul || 1, dmg = r[1][0] * m, tp = r[1][1], sec = r[1][2];
+        var m = roundMul(ctx, player), dmg = r[1][0] * m, tp = r[1][1], sec = r[1][2];
         var detail = FFXI.lastRound || null, real = detail && opts.real !== false ? O.roundsOf(detail) : null;
         return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg, detail: detail, real: real};
     }
@@ -454,8 +478,16 @@
         return {v: v - 1e6 * miss, raw: v, def: def, miss: miss};
     };
     function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
+    // A choice put in a slot. The "weapons" choice is a main hand and its off hand together ({main, sub}): the
+    // page makes only pairs the job can hold (a two-handed weapon with a grip, a shield, two weapons when it can
+    // dual wield), so the search never stops on a main weapon whose off hand does not fit it
+    function put(trial, slot, piece) {
+        if (slot === "weapons") { trial.main = piece.main; trial.sub = piece.sub; } else trial[slot] = piece;
+        return trial;
+    }
     // A copy can go on two slots (rings, earrings) only when there are two of it
     function clashes(pieces, slot, piece) {
+        if (slot === "weapons") return false;
         // another item of the same one-choice group worn elsewhere
         var group = piece && O.groupOf(piece.name);
         if (group) for (var sl in pieces) if (sl !== slot && pieces[sl] && pieces[sl].name !== piece.name && group.items.indexOf(pieces[sl].name) !== -1) return true;
@@ -530,7 +562,7 @@
         var out = {};
         Object.keys(choices).forEach(function (slot) {
             var rated = choices[slot].map(function (piece) {
-                var trial = Object.assign({}, start); trial[slot] = piece;
+                var trial = put(Object.assign({}, start), slot, piece);
                 return {piece: piece, v: score(ctx, trial, opts)};
             }).sort(function (a, b) { return b.v - a.v; });
             out[slot] = rated.filter(function (x, i) { return i < keep || x.piece.keep; }).map(function (x) { return x.piece; });
@@ -539,8 +571,7 @@
     };
     // A set's value (the objective, floors counted) with one slot changed
     O.valueWith = function (ctx, pieces, slot, piece, opts) {
-        var trial = Object.assign({}, pieces); trial[slot] = piece;
-        return O.value(ctx, trial, opts);
+        return O.value(ctx, put(Object.assign({}, pieces), slot, piece), opts);
     };
     // A move kept when it improves the set (st: {best, score, evals})
     function tryMove(ctx, st, trial, opts) {
@@ -555,8 +586,7 @@
             slots.forEach(function (slot) {
                 choices[slot].forEach(function (piece) {
                     if (clashes(st.best, slot, piece)) return;
-                    var trial = Object.assign({}, st.best); trial[slot] = piece;
-                    if (tryMove(ctx, st, trial, opts)) moved = true;
+                    if (tryMove(ctx, st, put(Object.assign({}, st.best), slot, piece), opts)) moved = true;
                 });
             });
             if (!moved) return;
@@ -571,7 +601,7 @@
         slots.forEach(function (slot) {
             var rated = choices[slot].map(function (piece) {
                 if (clashes(st.best, slot, piece)) return null;
-                var trial = Object.assign({}, st.best); trial[slot] = piece; st.evals++;
+                var trial = put(Object.assign({}, st.best), slot, piece); st.evals++;
                 var r = O.value(ctx, trial, opts), d = r.def || {};
                 return r.v === -Infinity ? null : {piece: piece, v: r.v, raw: r.raw, dt: (d.pdt || 0) + (d.mdt || 0)};
             }).filter(Boolean);
@@ -590,7 +620,7 @@
         var cross = function (a, b, la, lb) {
             la.forEach(function (pa) {
                 lb.forEach(function (pb) {
-                    var trial = Object.assign({}, st.best); trial[a] = pa; trial[b] = pb;
+                    var trial = put(put(Object.assign({}, st.best), a, pa), b, pb);
                     if (clashes(trial, a, pa) || clashes(trial, b, pb)) return;
                     if (tryMove(ctx, st, trial, opts)) moved = true;
                 });
