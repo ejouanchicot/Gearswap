@@ -248,7 +248,47 @@
     };
     // An engaged set's attack round (wsdist's average_attack_round, from 0 TP to the weaponskill at opts.wsAt, 1000
     // by default): {time: seconds to the weaponskill, dps, tp: TP a round, damage: a round's}; null for an unknown piece
-    var ROUND_OBJ = {tp_time: "Time to WS", dps: "DPS", tp_round: "TP return"};
+    var ROUND_OBJ = {tp_real: "Time to WS", tp_time: "Time to WS", dps: "DPS", tp_round: "TP return"};
+    // The hits landing in one round, as a distribution {hits: probability}: each hand swings once, plus a Quadruple
+    // (3 more), else a Triple (2), else a Double Attack (1), each swing landing at the hand's hit rate
+    function handHits(ma, hr) {
+        var sw = {1: (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da), 2: (1 - ma.qa) * (1 - ma.ta) * ma.da, 3: (1 - ma.qa) * ma.ta, 4: ma.qa}, out = {};
+        Object.keys(sw).forEach(function (n) {
+            for (var k = 0, c = 1; k <= n; k++) {
+                out[k] = (out[k] || 0) + sw[n] * c * Math.pow(hr, k) * Math.pow(1 - hr, n - k);
+                c = c * (n - k) / (k + 1);
+            }
+        });
+        return out;
+    }
+    function convolve(a, b) {
+        var out = {};
+        Object.keys(a).forEach(function (i) { Object.keys(b).forEach(function (j) { out[+i + +j] = (out[+i + +j] || 0) + a[i] * b[j]; }); });
+        return out;
+    }
+    // The rounds to the weaponskill with the hits drawn at random (not the average TP a round): the chance of each
+    // count of rounds, their mean, the time, and the TP at the weaponskill (Wald: start + mean rounds x mean TP a
+    // round). What the distribution leaves out (Zanshin, kicks, Daken, Occasionally Attacks) and Regain come every
+    // round as their mean, so the mean TP a round is the engine's
+    O.roundsOf = function (x) {
+        var dist = handHits(x.multi, x.hitRate.main);
+        if (x.hits.sub > 0) dist = convolve(dist, handHits(x.multi, x.hitRate.sub || x.hitRate.main));
+        var mean = 0; Object.keys(dist).forEach(function (k) { mean += k * dist[k]; });
+        var fixed = Math.max(0, x.tpRound - mean * x.tpPerHit), need = Math.max(0, x.at - x.start);
+        var steps = Object.keys(dist).map(function (k) { return {tp: k * x.tpPerHit + fixed, p: dist[k]}; });
+        var cdf = [1], left = {0: 1}, mn = 0;   // left: the TP gathered while still short, by amount
+        for (var r = 1; r <= 40 && Object.keys(left).length; r++) {
+            var next = {}, still = 0;
+            Object.keys(left).forEach(function (a) { steps.forEach(function (s) {
+                var b = Math.round((+a + s.tp) * 10) / 10;
+                if (b < need) { next[b] = (next[b] || 0) + left[a] * s.p; still += left[a] * s.p; }
+            }); });
+            cdf.push(still); left = next;
+        }
+        var probs = [];
+        for (var n = 1; n < cdf.length; n++) { probs.push(cdf[n - 1] - cdf[n]); mn += n * (cdf[n - 1] - cdf[n]); }
+        return {rounds: mn, time: mn * x.timeRound, probs: probs, tpAt: x.start + mn * x.tpRound, dist: dist};
+    };
     O.round = function (ctx, pieces, opts) {
         var set = O.gearset(ctx, pieces);
         if (!set) return null;
@@ -257,15 +297,19 @@
     function roundOf(ctx, player, opts) {
         var at = +opts.wsAt || 1000, r = FFXI.average_attack_round(player, ctx.enemy, 0, at, "Time to WS");
         var m = ctx.dmgMul || 1, dmg = r[1][0] * m, tp = r[1][1], sec = r[1][2];
-        return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg};
+        var detail = FFXI.lastRound || null, real = detail && opts.real !== false ? O.roundsOf(detail) : null;
+        return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg, detail: detail, real: real};
     }
     // An engaged set's value for its objective: the time to the weaponskill (less is better), DPS or TP a round
     function roundValue(ctx, pieces, opts) {
         var pl = playerOf(ctx, pieces);
         if (!pl) return null;
-        var r = roundOf(ctx, pl.player, opts), obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_time";
-        var raw = obj === "tp_time" ? r.time : obj === "dps" ? r.dps : r.tp;
-        return {v: obj === "tp_time" ? -raw : raw, raw: raw, def: pl.def, round: r};
+        var obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_real";
+        var r = roundOf(ctx, pl.player, Object.assign({}, opts, {real: obj === "tp_real"}));
+        // the real time first; a set as fast gains by its damage a round (the least weight)
+        var raw = obj === "tp_real" ? r.real.time : obj === "tp_time" ? r.time : obj === "dps" ? r.dps : r.tp;
+        var v = obj === "tp_real" || obj === "tp_time" ? -raw + r.damage * 1e-9 : raw;
+        return {v: v, raw: raw, def: pl.def, round: r};
     }
     // The weaponskill's average with those pieces at that TP: [metric value, [damage, TP return, ...]]
     O.ws = function (ctx, pieces, tp) {
