@@ -418,7 +418,8 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .brow > span{color:var(--faint);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding-top:5px}
 .bctl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
 .bctl.one{grid-template-columns:minmax(0,1fr)}
-.bctl.chips{display:flex;flex-wrap:wrap;gap:4px}
+.bctl.chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.bctl.chips .fseg{align-items:center}
 .bctl .pair{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:4px;grid-column:1 / -1}
 .bspan{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .bspan .chip[disabled]{opacity:.4;cursor:not-allowed}
