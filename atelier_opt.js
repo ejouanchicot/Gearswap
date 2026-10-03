@@ -192,7 +192,7 @@
         if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
-            primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws"};
+            primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0};
     };
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
     // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %), Banish II by 70 % on an undead;
@@ -359,10 +359,12 @@
     };
 
     // ------------------------------------------------------------ search
-    // The defensive totals of a set's gear: DT + PDT, DT + MDT (Shell not counted), Subtle Blow I + II
-    O.defense = function (set) {
+    // The defensive totals of a set's gear: DT + PDT, DT + MDT (Shell not counted), Subtle Blow as the game caps it
+    // (BG Wiki: I and II 50 each, 75 together; sbBuff, a party's Auspice, counts in I)
+    O.defense = function (set, sbBuff) {
         var sum = function (k) { var n = 0; for (var sl in set) n += set[sl][k] || 0; return n; };
-        return {pdt: sum("DT") + sum("PDT"), mdt: sum("DT") + sum("MDT"), sb: sum("Subtle Blow") + sum("Subtle Blow II")};
+        var sb = Math.min(75, Math.min(50, sum("Subtle Blow") + (sbBuff || 0)) + Math.min(50, sum("Subtle Blow II")));
+        return {pdt: sum("DT") + sum("PDT"), mdt: sum("DT") + sum("MDT"), sb: sb};
     };
     // How far a set is from the floors (0 when it meets them): opts.floor = {pdt: -50, mdt: -21, sb: 0, hit: 0},
     // hit the weaponskill's hit rate in % (O.hit)
@@ -416,7 +418,7 @@
         if (!set) return null;
         if (cache.size > 20000) { cache.map = {}; cache.size = 0; }
         cache.size++;
-        return (cache.map[key] = {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), def: O.defense(set)});
+        return (cache.map[key] = {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), def: O.defense(set, ctx.sbBuff)});
     }
     // One weaponskill: the engine's [value, [damage, TP return]] for the objective
     function once(ctx, worn, tp, metric) {
