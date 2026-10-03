@@ -3,8 +3,8 @@
 ---============================================================================
 --- Writes data/atelier/catalog.js from Windower's resources (res/items.lua,
 --- res/item_descriptions.lua): each equippable item with its slots, jobs,
---- level, item level, the game's description and whether it is Rare (one
---- copy a character: never two Moonlight-style rings of it). The page loads it only when
+--- level, item level, the game's description, whether it is Rare (one copy
+--- a character: never two Moonlight-style rings of it) and Ex (no trade). The page loads it only when
 --- "every item in the game" is ticked in the piece picker, and reads each
 --- item's stats from the description the way it reads the pieces you own.
 ---
@@ -19,9 +19,9 @@
 
 local AtelierCatalog = {}
 
-local CATALOG_VERSION = 2
--- res.items flags: Rare
-local FLAG_RARE = 15
+local CATALOG_VERSION = 3
+-- res.items flags: Rare (0x8000), Ex (0x4000, no trade between players)
+local FLAG_RARE, FLAG_EX = 15, 14
 -- res slot ids, named as the page names them
 local SLOT_BY_ID = {[0] = 'main', 'sub', 'range', 'ammo', 'head', 'body', 'hands', 'legs', 'feet', 'neck', 'waist',
     'ear1', 'ear2', 'ring1', 'ring2', 'back'}
@@ -52,7 +52,7 @@ local function jobs_of(info)
     return table.concat(out, ' ')
 end
 
---- The equippable items, sorted by id: {id, name, slots, jobs, level, item level, description, rare 1/0}.
+--- The equippable items, sorted by id: {id, name, slots, jobs, level, item level, description, rare 1/0, ex 1/0}.
 local function collect(res)
     local ids = {}
     for id, info in pairs(res.items) do
@@ -68,7 +68,7 @@ local function collect(res)
         local desc = res.item_descriptions and res.item_descriptions[id]
         if slots then
             rows[#rows + 1] = {id, info.en, slots, jobs_of(info), info.level or 0, info.item_level or 0, desc and desc.en or '',
-                has(info.flags, FLAG_RARE) and 1 or 0}
+                has(info.flags, FLAG_RARE) and 1 or 0, has(info.flags, FLAG_EX) and 1 or 0}
         end
     end
     return rows

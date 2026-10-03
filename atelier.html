@@ -702,7 +702,12 @@ input[type=checkbox]{accent-color:var(--accent)}
   box-shadow:0 0 0 1px rgba(0,0,0,.4),0 18px 40px -12px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05);padding:11px 13px;font-size:12.5px;pointer-events:none}
 .tip::before{content:"";position:absolute;left:10px;right:10px;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--aug),transparent)}
 .tip[hidden]{display:none}
-.tip .th{display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 10px;align-items:center;margin-bottom:8px}
+.tip .th{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:0 10px;align-items:center;margin-bottom:8px}
+/* Rare / Ex, small in the top right corner of the hover card */
+.tip .rx{align-self:start;display:flex;gap:3px}
+.tip .rx i{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1;padding:2px 4px;border-radius:3px;border:1px solid}
+.tip .rx .rare{color:var(--aug);border-color:color-mix(in srgb,var(--aug) 55%,transparent)}
+.tip .rx .ex{color:var(--muted);border-color:color-mix(in srgb,var(--muted) 45%,transparent)}
 .tip .th b{font-size:14px;display:block}
 .tip .th small{color:var(--muted);font-size:11.5px}
 .tip .th .rk{color:var(--aug);font-weight:700}
@@ -1544,18 +1549,26 @@ const scanOf = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)
 const descTexts = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.descs || {}));
 // Every gear item of the game (data/atelier/catalog.js, written by the export from Windower's
 // resources: shared/utils/atelier/atelier_catalog.lua), loaded when the picker asks for it.
-// Rows: [id, name, slots, jobs, level, item level, description, rare 1/0 (from catalog v2)]
+// Rows: [id, name, slots, jobs, level, item level, description, rare 1/0 (from catalog v2), ex 1/0 (v3)]
 let CAT = null;
 function catalog(){
   const c = window.ATELIER_CATALOG;
   if (!c) return null;
-  if (!CAT || CAT.src !== c) { CAT = {src: c, id: {}, desc: {}, row: {}, rare: new Set()};
-    for (const r of c.items) { if (!(r[1] in CAT.id)) { CAT.id[r[1]] = r[0]; CAT.row[r[1]] = r; } CAT.desc[r[0]] = r[6]; if (r[7]) CAT.rare.add(r[1]); } }
+  if (!CAT || CAT.src !== c) { CAT = {src: c, id: {}, desc: {}, row: {}, rare: new Set(), ex: new Set()};
+    for (const r of c.items) { if (!(r[1] in CAT.id)) { CAT.id[r[1]] = r[0]; CAT.row[r[1]] = r; } CAT.desc[r[0]] = r[6];
+      if (r[7]) CAT.rare.add(r[1]); if (r[8]) CAT.ex.add(r[1]); } }
   return CAT;
 }
 // Whether a character can hold two of an item: not Rare, as the game's resources say (an older catalog without
 // the flag: never assumed)
 function twoAllowed(name){ const c = catalog(); return !!c && c.src.v >= 2 && !c.rare.has(name); }
+// A piece's Rare / Ex badges, as the game marks it (the catalog), for its hover card
+function rareExHTML(name){
+  const c = catalog();
+  if (!c) return '';
+  const b = [c.rare.has(name) ? `<i class="rare">Rare</i>` : '', c.ex.has(name) ? `<i class="ex">Ex</i>` : ''].join('');
+  return b ? `<span class="rx">${b}</span>` : '';
+}
 function loadCatalog(done){
   if (window.ATELIER_CATALOG) return done();
   const el = document.createElement('script');
@@ -5666,7 +5679,7 @@ function pieceTip(p, slot, emptied){
   const rank = r && r.rank != null ? ` · <span class="rk">${r.path ? `Path ${esc(r.path)} · ` : ''}${t('rankShort', {r: r.rank})}</span>` : '';
   // where GearSwap takes it from (bag = 'wardrobe 3') and its order in a swap (priority)
   const where = [p.bag ? t('tipBag', {b: esc(p.bag)}) : '', p.priority != null ? t('tipPriority', {n: p.priority}) : ''].filter(Boolean).join(' · ');
-  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}${rank}${where ? ' · ' + where : ''}</small></div></div>${body}`;
+  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}${rank}${where ? ' · ' + where : ''}</small></div>${rareExHTML(p.name)}</div>${body}`;
 }
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
