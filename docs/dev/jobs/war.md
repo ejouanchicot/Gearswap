@@ -16,6 +16,8 @@ What WAR adds on top of the shared pipeline:
   `MainWeapon` puts in that slot (`WAR_WS_CONFIG.lua`), backed by real Mote states
   `WS1`..`WS5` shown on the HUD (`ws6`..`ws9` only warn).
 - **Weapon read from the hands** after each load (`sync_weapon_with_hand`).
+- **Jump set**: `sets.precast.JA['Jump']` is its own set (`set_combine(sets.engaged.PDTTP, {})` in the
+  template), High Jump the same one; the Atelier optimizes it for the TP of one attack round (`isJumpSet`).
 - **Auto-Jump** on /DRG (`JumpAuto`, Off in the template, WAR's own key
   `^numpad2`): a weaponskill pressed below 1000 TP is cancelled, Jump (then High
   Jump) builds the TP, and the weaponskill is replayed. Shared: it runs in

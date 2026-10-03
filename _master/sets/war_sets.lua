@@ -296,9 +296,11 @@ sets.FullEnmity = {
 --- Provoke (Enmity generation)
 sets.precast.JA['Provoke'] = sets.FullEnmity
 
---- Jump Abilities (DRG subjob)
-sets.precast.JA['Jump'] = sets.engaged.PDTTP
-sets.precast.JA['High Jump'] = sets.engaged.PDTTP
+-- • Jump / High Jump (/DRG subjob): one attack round, so the set that gives the most TP in one round
+--   (Store TP, multi-attacks; no defense needed for an animation). Starts as the TP set; the Atelier
+--   optimizes it ("TP par Jump"). High Jump uses the same set.
+sets.precast.JA['Jump']      = set_combine(sets.engaged.PDTTP, {})
+sets.precast.JA['High Jump'] = sets.precast.JA['Jump']
 
 --- Berserk (Enhances attack power + extends duration)
 sets.precast.JA['Berserk'] = set_combine(sets.LessEnmity, {
