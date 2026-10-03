@@ -2713,7 +2713,10 @@ function foePanelHTML(b){
   const pane = `${bar}<div class="ftabgrid ${curOn ? '' : 'off'}">${cur.lines.map(cell).join('')}</div>`;
   // everything on the target, whatever its tab: what lays it, what it takes off
   const onList = T.B._by.filter(e => ['edefp', 'eeva', 'emdb', 'emeva', 'eres', 'estatp', 'ecrit', 'eatkp', 'egambit', 'ethren', 'eslow', 'edot', 'estr', 'edex', 'evit', 'eagi', 'eint', 'emnd', 'echr'].includes(e.k));
-  const recap = onList.length ? `<ul class="foeon">${onList.map(e => `<li><span>${esc(e.src)}</span><b>${esc(geoSrc(e.src) ? nmGeo(short(e.k, e.v)) : short(e.k, e.v))}</b></li>`).join('')}</ul>`
+  // a line a debuff, its effects together (Swooping Frenzy: Defense and Magic Defense)
+  const bySrc = new Map();
+  for (const e of onList) bySrc.set(e.src, (bySrc.get(e.src) || []).concat(geoSrc(e.src) ? nmGeo(short(e.k, e.v)) : short(e.k, e.v)));
+  const recap = onList.length ? `<ul class="foeon">${[...bySrc].map(([src, fx]) => `<li><span>${esc(src)}</span><b>${esc(fx.join(' · '))}</b></li>`).join('')}</ul>`
     : `<p class="muted small foeonempty">${esc(t('foeNoneOn'))}</p>`;
   const total = [T.defDown ? short('edefp', T.defDown) : '', T.B.eeva ? short('eeva', T.B.eeva) : ''].filter(Boolean).join(' · ');
   return {body: pane + `<div class="kicker foeonk">${esc(t('foeOnTitle'))}</div>` + recap,
