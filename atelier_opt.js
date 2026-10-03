@@ -35,12 +35,14 @@
     }
     // The catalogue entry of a piece: its own item id when known, else the name's entry with the
     // highest item level (several ids share a name: a stage, an NQ and HQ copy...)
+    var bestOf = {};
     O.item = function (name, id) {
         index();
         if (!byId) return null;
         if (id && byId[id]) return byId[id];
+        if (name in bestOf) return bestOf[name];
         var list = byName[name] || [];
-        return list.slice().sort(function (a, b) { return (b.ilvl || 0) - (a.ilvl || 0) || b.id - a.id; })[0] || null;
+        return (bestOf[name] = list.slice().sort(function (a, b) { return (b.ilvl || 0) - (a.ilvl || 0) || b.id - a.id; })[0] || null);
     };
 
     O.empty = function () { return {"Name": "Empty", "Name2": "Empty", "Type": "None", "Skill Type": "None", "Jobs": ALL_JOBS.slice()}; };
@@ -326,7 +328,7 @@
         // follows the hits landed (a whole number), the chance of each count while still short of the weaponskill
         var ks = Object.keys(dist).map(Number), ps = ks.map(function (k) { return dist[k]; });
         var cdf = [1], left = [1], mn = 0;
-        for (var r = 1; r <= 40; r++) {
+        for (var r = 1; r <= 1000; r++) {
             var next = [], still = 0, cap = need - r * fixed;
             for (var h = 0; h < left.length; h++) {
                 var q = left[h];
@@ -337,7 +339,7 @@
                 }
             }
             cdf.push(still); left = next;
-            if (!still) break;
+            if (still < 1e-12) break;
         }
         var probs = [];
         for (var n = 1; n < cdf.length; n++) { probs.push(cdf[n - 1] - cdf[n]); mn += n * (cdf[n - 1] - cdf[n]); }
@@ -391,9 +393,10 @@
     O.tpPieces = function (rule, pieces, tp) {
         if (!rule || !rule.pieces) return {};
         var worn = 0, left = [];
+        var twin = {ring1: "ring2", ring2: "ring1", ear1: "ear2", ear2: "ear1"};
         rule.pieces.forEach(function (p) {
-            var on = pieces[p.slot];
-            if (on && on.name === p.name) worn += p.bonus; else left.push(p);
+            var on = pieces[p.slot], other = pieces[twin[p.slot]];
+            if ((on && on.name === p.name) || (other && other.name === p.name)) worn += p.bonus; else left.push(p);
         });
         var eff = tp + (rule.bonus || 0) + worn, th = eff < 2000 ? 2000 : eff < 3000 ? 3000 : 0;
         if (!th) return {};
@@ -500,17 +503,19 @@
     // Between sets of the same value, the one that takes less damage, then the one that keeps more of the set's own
     // pieces (opts.base): a slot where nothing matters keeps its piece, rather than the first one tried (Baetyl Pendant,
     // first by name, for an engaged set whose accuracy is capped)
-    function tieBreak(pieces, def, opts) {
+    function tieBreak(pieces, def, opts, v) {
         var keep = 0, base = opts.base || {};
         for (var k in base) if (pieces[k] && base[k] && pieces[k].name === base[k].name) keep++;
-        return -((def && def.pdt) || 0) * 1e-10 - ((def && def.mdt) || 0) * 1e-10 + keep * 1e-12;
+        // relative to the value: a fixed 1e-12 is lost to rounding on a 50 000 damage value
+        var sc = Math.max(1, Math.abs(v || 0));
+        return sc * (-((def && def.pdt) || 0) * 1e-13 - ((def && def.mdt) || 0) * 1e-13 + keep * 1e-15);
     }
     O.value = function (ctx, pieces, opts) {
         if (ctx.mode === "engaged") {
             var e0 = roundValue(ctx, pieces, opts);
             if (!e0) return {v: -Infinity};
             var miss0 = shortfall(e0.def, opts.floor, null);
-            return {v: e0.v - 1e6 * miss0 + tieBreak(pieces, e0.def, opts), raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
+            return {v: e0.v - 1e6 * miss0 + tieBreak(pieces, e0.def, opts, e0.v), raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
         }
         var tps = opts.objective === "damage_avg" ? (opts.tps || [1000, 1500, 2000, 2500, 3000]) : [opts.tp];
         var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, under = 0, def = null;
@@ -527,7 +532,7 @@
         }
         var hit = opts.floor && opts.floor.hit ? O.hit(ctx, pieces, opts) : null;
         var v = total / tps.length, miss = shortfall(def, opts.floor, hit);
-        return {v: v - 1e6 * miss + 1e-7 * under / tps.length + tieBreak(pieces, def, opts), raw: v, def: def, miss: miss};
+        return {v: v - 1e6 * miss + 1e-7 * under / tps.length + tieBreak(pieces, def, opts, v), raw: v, def: def, miss: miss};
     };
     function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
     // A choice put in a slot. The "weapons" choice is a main hand and its off hand together ({main, sub}): the
@@ -539,7 +544,10 @@
     }
     // A copy can go on two slots (rings, earrings) only when there are two of it
     function clashes(pieces, slot, piece) {
-        if (slot === "weapons") return false;
+        if (slot === "weapons") {
+            var both = put(Object.assign({}, pieces), slot, piece);
+            return clashes(both, "main", piece.main) || (piece.sub ? clashes(both, "sub", piece.sub) : false);
+        }
         // another item of the same one-choice group worn elsewhere
         var group = piece && O.groupOf(piece.name);
         if (group) for (var sl in pieces) if (sl !== slot && pieces[sl] && pieces[sl].name !== piece.name && group.items.indexOf(pieces[sl].name) !== -1) return true;
@@ -563,7 +571,7 @@
                 .filter(function (x) { return !clashes(res.pieces, slot, x); });
             if (!mine.length) return;
             var alt = Math.max.apply(null, mine.map(function (x) { return O.valueWith(ctx, res.pieces, slot, x, opts).v; }));
-            out.push({slot: slot, piece: p, gain: (res.best.v / alt - 1) * 100});
+            out.push({slot: slot, piece: p, gain: (res.best.v - alt) / Math.abs(alt || 1) * 100});
         });
         return out.sort(function (a, b) { return b.gain - a.gain; });
     };
@@ -651,7 +659,7 @@
         // the stages of a walk: your pieces, or no floor, then everything over the floors, then the kicks
         prog.stage = how === "own" ? "mine" : how === "loose" ? "nofloor" : "all";
         var first = how === "own" ? yield* from(empty, mine) : how === "loose" ? yield* from(empty, choices, Object.assign({}, opts, {floor: null})) : null;
-        prog.stage = "all";
+        prog.stage = "all"; prog.best = null;
         var res = yield* from(first ? first.pieces : empty, choices);
         for (var k = 0; opts.scratch && k < KICKS; k++) {
             prog.stage = "kick";
@@ -732,18 +740,21 @@
     // Each slot's `keep` best pieces as single swaps from `start` (pieces flagged keep always stay):
     // a first sort before searching hundreds of pieces a slot (every item of the game)
     function* prefilterGen(ctx, start, choices, opts, keep) {
-        var out = {}, slots = Object.keys(choices);
+        var out = {}, slots = Object.keys(choices), loose = Object.assign({}, opts, {floor: null});
         if (opts.prog) opts.prog.phase = "prefilter";
         for (var s = 0; s < slots.length; s++) {
             var slot = slots[s], rated = [];
             for (var i = 0; i < choices[slot].length; i++) {
-                var piece = choices[slot][i];
-                rated.push({piece: piece, v: score(ctx, put(Object.assign({}, start), slot, piece), opts)});
+                var piece = choices[slot][i], r = O.value(ctx, put(Object.assign({}, start), slot, piece), loose), d = r.def || {};
+                rated.push({piece: piece, v: r.v, dt: (d.pdt || 0) + (d.mdt || 0)});
                 if (opts.prog) opts.prog.evals++;
                 yield;
             }
+            var byDt = rated.slice().sort(function (a, b) { return a.dt - b.dt; }).slice(0, Math.ceil(keep / 3));
             rated.sort(function (a, b) { return b.v - a.v; });
-            out[slot] = rated.filter(function (x, n) { return n < keep || x.piece.keep; }).map(function (x) { return x.piece; });
+            // a piece you hold stays (a pair of weapons: its main hand's)
+            var held = function (x) { return x.piece.keep || (x.piece.main && x.piece.main.keep); };
+            out[slot] = rated.filter(function (x, n) { return n < keep || held(x) || byDt.indexOf(x) !== -1; }).map(function (x) { return x.piece; });
         }
         return out;
     }
@@ -803,7 +814,8 @@
             var best = function (key, n, low) {
                 return rated.slice().sort(function (x, y) { return low ? x[key] - y[key] : y[key] - x[key]; }).slice(0, n).map(function (x) { return x.piece; });
             };
-            out[slot] = {top: best("v", top), raw: best("raw", extra), dt: best("dt", extra, true)};
+            var fast = opts.objective === "tp_real" || opts.objective === "tp_time";
+            out[slot] = {top: best("v", top), raw: best("raw", extra, fast), dt: best("dt", extra, true)};
         }
         return out;
     }

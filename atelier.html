@@ -1090,6 +1090,8 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:13px;padding:6p
 <script src="atelier/index.js"></script>
 <script>
 let DATA = {};
+// Moves on whenever an export is read (the start, the live link): what is worked out from the exports is kept until then
+let DATA_GEN = 0;
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const T = {
@@ -1156,10 +1158,10 @@ const MOTE_DEFAULT_MODES = new Set(['CastingMode','DefenseMode','MagicalDefenseM
 const modeHidden = m => HIDDEN_MODES.has(m.name) || (MOTE_DEFAULT_MODES.has(m.name) && m.values.length < 2);
 
 let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, slotForce:{}, heldSub:{}, meritEdits:{}, q:'', lang:'fr', theme:null,
-  trial:{}, drafts:{}, buffs:{}, buffTier:{}, held:{}, buffsOpen:false, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}, statHide:{}, statSort:'group', statOnlyWant:false, statPresets:{}, statPreset:'', optOpts:{obj: 'damage', pdt: -50, mdt: -21, sb: 0}, boxOpen:{}, wsTp:null, _tpb:{}, macroAlt:{}};
+  trial:{}, drafts:{}, buffs:{}, buffTier:{}, held:{}, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}, statHide:{}, statSort:'group', statOnlyWant:false, statPresets:{}, statPreset:'', optOpts:{obj: 'damage', pdt: -50, mdt: -21, sb: 0}, boxOpen:{}, wsTp:null, _tpb:{}, macroAlt:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'forceSrc', 'heldSub', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'bFold'];
+const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'forceSrc', 'heldSub', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'bFold'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 if (S.section === 'worn') S.section = 'sets';
@@ -1197,7 +1199,9 @@ function subsOf(c, j){
   const m = exportsOf(c, j), main = m[defaultSub(c, j)];
   return [...new Set([defaultSub(c, j)].concat(main ? namedSubs(main) : []))].filter(Boolean).sort();
 }
-const allSubs = (c, j) => [...new Set(JOBS.map(x => x[0]).filter(x => x !== j).concat(Object.keys(exportsOf(c, j))))].sort();
+const ALL_SUBS = {};
+const allSubs = (c, j) => { const k = DATA_GEN + '|' + c + '|' + j;
+  return ALL_SUBS[k] || (ALL_SUBS[k] = [...new Set(JOBS.map(x => x[0]).filter(x => x !== j).concat(Object.keys(exportsOf(c, j))))].sort()); };
 const subOf = (c, j) => { const s = S.subs[c + '|' + j]; return allSubs(c, j).includes(s) ? s : defaultSub(c, j); };
 // A subjob without an export of its own shows the main export: same sets, keys and
 // modes; its macro book, lockstyle and keys of one subjob follow d.sub
@@ -1213,7 +1217,15 @@ const data = () => S.job && recordOf(S.char, S.job);
 // What only the game sees (bag items) or any export knows (icons) is shared by the job's subjobs
 const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
   const other = Object.values(exportsOf(S.char, S.job)).find(x => x[key]); return other ? other[key] : null; };
-const iconIds = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.icons || {}));
+// One field of every export of the shown job merged (icons, descriptions, scans), kept until an export is read again:
+// the stats of each piece ask for them, and merging ~800 entries each time was most of a render
+let MERGED = {}, MERGED_GEN = -1;
+function mergedOf(field){
+  if (MERGED_GEN !== DATA_GEN) { MERGED = {}; MERGED_GEN = DATA_GEN; }
+  const k = S.char + '|' + S.job + '|' + field;
+  return MERGED[k] || (MERGED[k] = Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x[field] || {})));
+}
+const iconIds = () => mergedOf('icons');
 function save(){ try { localStorage.setItem('atelier', JSON.stringify(Object.fromEntries(KEEP.map(k => [k, S[k]])))); } catch(e) {} }
 // The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
 const icon = name => { const id = name && (iconIds()[name] || (catalog() || {id: {}}).id[name]);
@@ -1412,6 +1424,7 @@ const STAT_ALIAS = {
   'lightning resistance':'res_lightning','water resistance':'res_water','light resistance':'res_light','dark resistance':'res_dark',
   'mag.atk.bns':'mab','rng.acc':'racc','rng.atk':'ratk',
   'ranged acc.':'racc','ranged atk.':'ratk','magic acc.':'macc','magic atk.':'mab',
+  'def':'def','magic dmg.taken':'mdt','magic attack bonus':'mab','mag.def.bonus':'mdb','magic defense':'mdb',
 };
 const normName = s => s.toLowerCase().replace(/["“”]/g, '').replace(/\.\s*/g, '.').replace(/\s+/g, ' ').replace(/^[\s/:]+|[\s/:]+$/g, '').trim();
 // A line that opens a condition (Set:, Latent effect:, Pet:, Unity ranking:...): what follows is not always on
@@ -1476,13 +1489,13 @@ function add(out, key, v, unit, label){
 const PIECE_CACHE = {}, EAR_SIDE = {ear1: 'left', ear2: 'right'};
 const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
 function pieceStats(p, slot){
-  if (!p) return null;
+  if (!p || isEmpty(p)) return null;
   // a piece worn for one augment only (Moonshade Earring: its TP Bonus +250, its Accuracy+4 or Attack+4 never)
   if (ONLY_AUGS[p.name]) p = Object.assign({}, p, {augs: ONLY_AUGS[p.name]});
   const cat = catalog(), id = iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = id ? descTexts()[id] || (cat && cat.desc[id]) || null : null;
   const side = EAR_SIDE[slot] || '';
-  const key = S.char + '|' + p.name + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
+  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
   const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], path: null, weapon: null, known: !!text};
@@ -1506,8 +1519,11 @@ function pieceStats(p, slot){
       else r.cond[cur] += (/[,:]$/.test(r.cond[cur]) ? ' ' : ' · ') + line.trim();
       continue;
     }
-    line = line.replace(/\b(DEF|DMG|Delay):\s?(\d+)/g, (_, k, n) => {
-      if (k === 'DEF') add(r.base, 'def', +n, '', 'DEF'); else (r.weapon = r.weapon || {})[k] = +n; return ' '; });
+    // a hand-to-hand weapon writes "DMG:+39 Delay:+51": its delay is added to the base 480
+    line = line.replace(/\b(DEF|DMG|Delay):\s?(\+?)(\d+)/g, (_, k, plus, n) => {
+      if (k === 'DEF') add(r.base, 'def', +n, '', 'DEF');
+      else (r.weapon = r.weapon || {})[k] = k === 'Delay' && plus ? 480 + +n : +n;
+      return ' '; });
     const free = parseLine(line, r.base);
     if (free) r.free.push(free);
   }
@@ -1602,7 +1618,10 @@ function optWalks(input){
 }
 const walkLabel = w => /^mix\d+$/.test(w) ? t('orWalk_mix', {n: w.slice(3)}) : t('orWalk_' + w);
 // Stop a search: its workers are dropped
+// The search running: a new one or a stop moves it on, so what an older one sends is dropped
+let OPT_SEQ = 0;
 function optStop(){
+  OPT_SEQ++;
   OPT_WORKERS.forEach(w => w.terminate()); OPT_WORKERS = [];
   if (OPT_PAGE_STOP) { OPT_PAGE_STOP(); OPT_PAGE_STOP = null; }
   clearInterval(OPT_RUN_CLOCK); S._optRun = null;
@@ -1681,8 +1700,8 @@ function addAugment(a, r){
 }
 // Fast Cast hidden behind "Enhances "Fast Cast" effect" (BG-Wiki; Guide_Paladin gear_pld.py)
 const HIDDEN_FC = {"Loquac. Earring": 2, "Prolix Ring": 2, "Orunmila's Torque": 5};
-const scanOf = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.scan || {}));
-const descTexts = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.descs || {}));
+const scanOf = () => mergedOf('scan');
+const descTexts = () => mergedOf('descs');
 // Every gear item of the game (data/atelier/catalog.js, written by the export from Windower's
 // resources: shared/utils/atelier/atelier_catalog.lua), loaded when the picker asks for it.
 // Rows: [id, name, slots, jobs, level, item level, description, rare 1/0 (from catalog v2), ex 1/0 (v3), alt 1/0 (v4)]
@@ -1998,8 +2017,11 @@ async function optimizeWs(s){
   // a draft can hold pieces this search may not use (not yours, another reward of a one-choice group)
   const k = trialKey(s), base = withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } });
   S._optBusy = true; S._optProgress = null; render();
-  const r = await tpAskWait(s, base, null), rule = r && r.piece_list ? {bonus: (r.bonus || 0) + partyTp(), pieces: r.piece_list} : null;
-  const tpNames = new Set(((r && r.piece_list) || []).map(p => p.name)), o = S.optOpts || {};
+  const at = S.char + '|' + S.job, seq = OPT_SEQ;
+  const r = await tpAskWait(s, base, null);
+  if (!S._optBusy || seq !== OPT_SEQ || at !== S.char + '|' + S.job) { if (seq === OPT_SEQ && S._optBusy) optStop(); return; }
+  const rule = r && r.piece_list ? {bonus: (r.bonus || 0) + partyTp(), pieces: r.piece_list} : null;
+  const tpNames = new Set(((r && r.piece_list) || []).map(p => p.name).concat(Object.keys(ONLY_AUGS))), o = S.optOpts || {};
   // the TP config's pieces (Moonshade...) are not searched: the job's TP rule lays them at the weaponskill when
   // they help (opts.tpRule), never the set
   const start = startOf(base), choices = optChoices(tpNames);
@@ -2049,7 +2071,8 @@ async function optimizeEngaged(s){
 // A search in the worker (on the page when there is none), its progress, then its result
 async function optLaunch(s, k, input, o){
   S._optBusy = true; S._optProgress = null; render();
-  const fail = msg => { optStop(); S._toastSet = s.path; S.toast = t('optFail', {e: msg}); render(); };
+  const seq = ++OPT_SEQ, at = S.char + '|' + S.job, mine = () => seq === OPT_SEQ && S._optBusy;
+  const fail = msg => { if (!mine()) return; optStop(); S._toastSet = s.path; S.toast = t('optFail', {e: msg}); render(); };
   // the walks shared among the cores, round robin
   input.opts.scratch = !!S._optScratch;
   const starts = optWalks(input), n = optCores(starts.length), shares = [...Array(n)].map(() => []);
@@ -2058,12 +2081,16 @@ async function optLaunch(s, k, input, o){
   starts.forEach((x, i) => shares[i % n].push(x));
   optRunOpen(s, o, starts, n, input.opts.floor);
   // the end: the best walk, shown done a moment before the result comes up
-  const finish = out => { optRunDone(); setTimeout(() => { if (S._optBusy) optResult(s, k, out, out.gains, o); }, 500); };
+  const finish = out => { optRunDone(); setTimeout(() => {
+    if (!mine()) return;
+    // left for another character or job meanwhile: the result is not laid on that one's sets
+    if (at !== S.char + '|' + S.job) return optStop();
+    optResult(s, k, out, out.gains, o); }, 500); };
   let workers;
   try { workers = shares.map(() => optWorker()); } catch (e) { workers = null; }
   if (!workers) {   // no worker (an old browser): the search runs on the page, paced so it stays usable
     OPT_WORKERS = [];
-    OPT_PAGE_STOP = FFXI.opt.runPaced(input, p => optRunStep(0, p), out => { OPT_PAGE_STOP = null; finish(out); }, e => fail(e.message), input.pace.work, input.pace.rest);
+    OPT_PAGE_STOP = FFXI.opt.runPaced(Object.assign({}, input, {starts}), p => optRunStep(0, p), out => { OPT_PAGE_STOP = null; finish(out); }, e => fail(e.message), input.pace.work, input.pace.rest);
     return;
   }
   // the end: once the main walks are done, the shuffled ones still going are not waited for (more cores never make it
@@ -2076,8 +2103,9 @@ async function optLaunch(s, k, input, o){
     finish(best);
   };
   workers.forEach((w, i) => {
+    w.onerror = e => fail(e.message || 'worker');
     w.onmessage = e => {
-      if (!S._optBusy) return;
+      if (!mine()) return;
       if (e.data.progress) return optRunStep(i, e.data.progress);
       if (e.data.error) return fail(e.data.error);
       outs.push(e.data.done);
@@ -2116,7 +2144,7 @@ let OPT_RUN_CLOCK = null;
 function optRunClock(){
   const R = S._optRun, el = document.getElementById('orclock');
   if (!R || !el) { clearInterval(OPT_RUN_CLOCK); return; }
-  const sec = (performance.now() - R.t0) / 1000, evals = Object.values(R.walks).reduce((a, w) => a + w.evals, 0);
+  const sec = (performance.now() - R.t0) / 1000, evals = optRunEvals(R);
   if (!R.done) el.textContent = sec.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' s';
   const rate = document.getElementById('orrate');
   if (rate) rate.textContent = t('orRate', {n: evals.toLocaleString(), r: Math.round(evals / Math.max(sec, .1)).toLocaleString()});
@@ -2125,6 +2153,8 @@ function optRunClock(){
   R.shown = R.shown == null ? best.raw : R.shown + (best.raw - R.shown) * .25;
   big.textContent = R.fmt(Math.abs(R.shown - best.raw) < 1e-4 ? best.raw : R.shown);
 }
+// The tries so far: each worker's count (it runs over all of that worker's walks)
+const optRunEvals = R => Object.values(R.byWorker || {}).reduce((a, n) => a + n, 0);
 // The best set found so far over every walk: one that keeps the floors (a walk with no floor does not count yet)
 function optRunBest(R){
   let best = null;
@@ -2138,14 +2168,16 @@ function optRunBest(R){
 function optRunStep(i, p){
   const R = S._optRun;
   if (!R || !p.walk) return;
-  const w = R.walks[p.walk] = Object.assign(R.walks[p.walk] || {}, {stage: p.stage, phase: p.phase, round: p.round, evals: p.evals, start: p.startRaw, best: p.best});
+  const w = R.walks[p.walk] = Object.assign(R.walks[p.walk] || {}, {stage: p.stage, phase: p.phase, round: p.round, start: p.startRaw, best: p.best});
+  (R.byWorker = R.byWorker || {})[i] = p.evals;
   R.start = R.start == null ? p.startRaw : R.start;
   for (const m of p.moves || []) R.feed.unshift(Object.assign({walk: p.walk, at: (performance.now() - R.t0) / 1000}, m));
   R.feed.length = Math.min(R.feed.length, 40);
   const best = optRunBest(R);
-  if (best) R.series.push([(performance.now() - R.t0) / 1000, best.raw]);
+  const last = R.series[R.series.length - 1];
+  if (best && (!last || last[1] !== best.raw)) R.series.push([(performance.now() - R.t0) / 1000, best.raw]);
   // the window may be closed (Hide): the compartment's line goes on
-  S._optProgress = {round: p.round, evals: Object.values(R.walks).reduce((a, x) => a + x.evals, 0), ms: performance.now() - R.t0};
+  S._optProgress = {round: p.round, evals: optRunEvals(R), ms: performance.now() - R.t0};
   renderOptProgress();
   optRunPaint(p.walk, p.moves || []);
 }
@@ -2286,9 +2318,11 @@ function optResult(s, k, res, gains, o){
   const now = new Date(), hm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
   const keep = x => ({raw: x.raw, def: x.def, hits: x.hits || null});
   S.drafts[k] = Object.assign({}, S.drafts[k], {prev: Object.assign({}, S.trial[k] || {}), info: {tier: buffTier(), at: hm},
-    res: {start: keep(res.start), best: keep(res.best), obj: o.obj || 'damage', tp: +(S.wsTp || 3000), range: avgRange(o)}});
+    res: {start: keep(res.start), best: keep(res.best), obj: o.eng ? o.engObj || 'tp_real' : o.obj || 'damage', tp: +(S.wsTp || 3000), range: avgRange(o),
+      floor: {pdt: o.pdt, mdt: o.mdt, sb: o.sb, hit: o.hit}}});
   if (Object.keys(tr).length) S.trial[k] = tr; else delete S.trial[k];
-  const gain = ((res.best.raw / res.start.raw - 1) * 100).toFixed(1), def = res.best.def || {};
+  const low = o.eng && /^tp_(real|time)$/.test(o.engObj || 'tp_real');
+  const gain = (((low ? res.start.raw / res.best.raw : res.best.raw / res.start.raw) - 1) * 100).toFixed(1), def = res.best.def || {};
   const extra = gains.map(g => `${g.piece.name}${g.piece.rank != null ? ' R' + g.piece.rank : ''}${g.piece.capeMax ? ' (max)' : ''} ${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`);
   S._toastSet = s.path;
   // the set itself short of the floors: the result meets them, which can cost damage
@@ -2463,7 +2497,8 @@ const GIFTS = {
 function traitOf(stat, c){
   const tier = (job, level) => { const list = (TRAITS[stat] || {})[(job || '').toLowerCase()] || [];
     const hit = list.find(([lv]) => (level || 0) >= lv); return hit ? hit[1] : 0; };
-  return Math.max(tier(S.job, c.main_level || 99), tier(c.sub, c.sub_level || 0));
+  const sub = (data() || {}).sub || c.sub;
+  return Math.max(tier(S.job, c.main_level || 99), tier(sub, sub === c.sub ? c.sub_level || 0 : jaLevels().sub));
 }
 const giftOf = (stat, c) => (c.jp_spent || 0) >= 2100 ? ((GIFTS[(S.job || '').toLowerCase()] || {})[stat] || 0) : 0;
 // Accuracy from a combat skill, by steps: 1 a point to 200, 0.9 to 400, 0.8 to 600, 0.9 past it
@@ -2746,7 +2781,7 @@ const JAS = {
   'Innin': {job: 'NIN', lvl: 40, fx: m => m ? {acc: 20, scb: 5, crit: 24, eva: -24} : {crit: 24, eva: -24}},
   'Building Flourish': {job: 'DNC', lvl: 50, fx: () => ({crit: 10, acc: 40, atkp: .25})},
   'Saber Dance': {job: 'DNC', lvl: 75, fx: () => ({da: 25})},
-  'Haste Samba': {job: 'DNC', lvl: 45, party: true, fx: m => ({jahaste: m ? 10.1 : 5.1})},
+  'Haste Samba': {job: 'DNC', from: 'DNC', lvl: 45, party: true, fx: m => ({jahaste: m ? 10.1 : 5.1})},
   'Swordplay': {job: 'RUN', lvl: 20, fx: () => ({acc: 54, eva: 54})},
   'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
   'Rampart': {job: 'PLD', lvl: 62, fx: () => ({dmgmul: .75})},
@@ -2838,8 +2873,9 @@ function withTierBuffs(tier, fn){
 // The buffs follow the set opened (once, when it changes): a .Group or .Solo version opens that profile, a weaponskill
 // or engaged set that has such versions opens Full; another set leaves the profile as it is
 function tierFollowsSet(path, bypath){
-  if (!path || path === S._tierPath) return;
-  S._tierPath = path;
+  const at = S.char + '|' + S.job + '|' + path;
+  if (!path || at === S._tierPath) return;
+  S._tierPath = at;
   const v = (path.match(/\.(Group|Solo)$/) || [])[1];
   const tier = v || (TIERED.test(path) && (bypath[path + '.Group'] || bypath[path + '.Solo']) ? 'Full' : null);
   if (tier && tier !== buffTier()) { setBuffTier(tier); save(); setTimeout(render, 0); }
@@ -2857,10 +2893,11 @@ function gripOf(pieces){
 // The subjob follows the engaged or weaponskill set opened (once, when it changes), from its weapons; a Jump set is /DRG
 function subFollowsSet(path, bypath){
   const s = bypath[path], rule = SUB_FOR_GRIP[S.job], jump = isJumpSet(path) && S.job !== 'DRG';
-  if (!s || path === S._subPath || !(jump || (rule && ['engaged', 'ws'].includes(family(s.path, s.pieces))))) return;
+  const at = S.char + '|' + S.job + '|' + path;
+  if (!s || at === S._subPath || !(jump || (rule && ['engaged', 'ws'].includes(family(s.path, s.pieces))))) return;
   const grip = jump ? 'jump' : gripOf(withWeapons(s).pieces);
   if (!grip) return;
-  S._subPath = path;
+  S._subPath = at;
   const sub = jump ? 'DRG' : rule[grip];
   if (sub && sub !== subOf(S.char, S.job) && allSubs(S.char, S.job).includes(sub)) { S.subs[S.char + '|' + S.job] = sub; save(); setTimeout(render, 0); }
 }
@@ -2869,8 +2906,9 @@ function subFollowsSet(path, bypath){
 // and GEO's sets.luopan.engaged.DPS are the melee sets, as against the tanky / DT ones, worn to build TP fast)
 function objFollowsSet(path, bypath){
   const s = bypath[path];
-  if (!s || path === S._objPath || family(s.path, s.pieces) !== 'engaged') return;
-  S._objPath = path;
+  const at = S.char + '|' + S.job + '|' + path;
+  if (!s || at === S._objPath || family(s.path, s.pieces) !== 'engaged') return;
+  S._objPath = at;
   const obj = isAfm3(path) ? 'dps' : 'tp_real';
   if ((S.optOpts || {}).engObj !== obj) { S.optOpts = Object.assign({}, S.optOpts, {engObj: obj}); save(); }
 }
@@ -2890,19 +2928,23 @@ function jaLevels(){
   const c = measuredChar() || {}, ml = ((c.jobs || {})[S.job] || {}).ml ?? c.master_level ?? 0;
   return {main: c.main_level || 99, sub: c.sub_level || Math.min(59, 49 + Math.floor(ml / 5)), ml};
 }
+// kept per character, job, subjob and set opened until an export is read again (asked for hundreds of times a render)
+let JAS_MEMO = {key: null, out: null};
 function jasOf(){
-  const sub = (data() || {}).sub, lv = jaLevels();
-  const out = [];
+  const sub = (data() || {}).sub, fam = S._curSet ? family(S._curSet.path, S._curSet.pieces) : null;
+  const key = [DATA_GEN, S.char, S.job, sub, fam].join('|');
+  if (JAS_MEMO.key === key) return JAS_MEMO.out;
+  const lv = jaLevels(), out = [];
   for (const [name, a] of Object.entries(JAS)) {
     const jobs = [].concat(a.job || []), asMain = jobs.includes(S.job) && a.lvl <= lv.main;
     const asSub = !asMain && !a.sp && !a.mainOnly && jobs.includes(sub) && a.lvl <= lv.sub;
     // a party buff from another job stays offered (where it serves the set shown); a WAR does not need the party
     // Warcry on top of its own
-    const fam = S._curSet ? family(S._curSet.path, S._curSet.pieces) : null;
     if (a.fams && fam && !a.fams.includes(fam)) continue;
     if (asMain || asSub || (a.party && !(a.from && a.from === S.job)))
       out.push({name, main: asMain, lvl: asMain ? lv.main : asSub ? lv.sub : 99, a, as: asMain ? 'main' : asSub ? 'sub' : 'party'});
   }
+  JAS_MEMO = {key, out};
   return out;
 }
 // A support job switched off in its card (b.off): its choices stay, the sums (page and engine) leave them out
@@ -3085,8 +3127,20 @@ const FX_SHORT = {edefp: ['Déf cible', 'Tgt Def'], eeva: ['Éva cible', 'Tgt Ev
   crit: ['Crit', 'Crit'], pdl: ['PDL', 'PDL'], mdmg: ['Dmg mag.', 'M.Dmg'], regen: ['Regen', 'Regen'], refresh: ['Refresh', 'Refresh']};
 const fxShort = (k, v) => { const full = fxText(k, v), lbl = (FX_LABEL[k] || [])[S.lang === 'fr' ? 0 : 1], sh = (FX_SHORT[k] || [])[S.lang === 'fr' ? 0 : 1];
   return lbl && sh && full.startsWith(lbl) ? sh + full.slice(lbl.length) : full; };
+// What a debuff takes off the target, in words (null for a key that is not the target's)
+function foeText(k, v, b = buffState()){
+  const pc = x => Math.round(x * 1000) / 10;
+  if (STAT_KEYS.includes(k.slice(1).toUpperCase())) return `${k.slice(1).toUpperCase()} −${Math.round(v)}`;
+  const text = {edefp: () => `${t('sDef')} −${pc(v)} %`, eeva: () => `${t('sEva')} −${Math.round(v)}`, eres: () => `${t('sRes')} −${pc(v)} %`,
+    estatp: () => `${t('sStats')} −${pc(v)} %`, ecrit: () => `${t('sCrit')} +${Math.round(v)} %`, eatkp: () => `${t('sAtk')} −${pc(v)} %`,
+    eresu: () => `${t('sRes')} −${pc(v)} % (${t('undeadOnly')})`, eallstat: () => `${t('sStats')} −${Math.round(v)}`, eslow: () => `${t('sSlow')} −${pc(v)} %`,
+    edot: () => `${Math.round(v)} HP/tick`, egambit: () => `${t('el_' + RUNES[runeOf(b)])} +${Math.round(v)} %`,
+    emdb: () => `${t('sMdb')} −${Math.round(v)}`, emeva: () => `${t('sMeva')} −${Math.round(v)} (${t('infoWord')})`}[k];
+  return text ? text() : null;
+}
 function fxText(k, v){
   if (k === '_text') return v;
+  if (!FX_LABEL[k] && k[0] === 'e') { const f = foeText(k, v); if (f != null) return f; }
   const [fr, en, how = ''] = FX_LABEL[k] || [k.toUpperCase(), k.toUpperCase(), ''], label = S.lang === 'fr' ? fr : en, r = n => Math.round(n * 10) / 10;
   if (how === 'pair') return `${label} +${v[0]} % (max ${v[1]})`;
   if (how === 'mul') return `${label} ×${r(v)}`;
@@ -3270,12 +3324,9 @@ function targetCardPanel(b){
 // take it off) and what they take off; then every debuff on, with what it takes off; the total in the band.
 // GEO's bubbles are chosen with the party's support (their effect in the list of what is on the target)
 function foePanelHTML(b){
-  const key = enemyKey(b.enemy), T = targetInfo(null), pc = v => Math.round(v * 1000) / 10;
-  const short = (k, v) => STAT_KEYS.includes(k.slice(1).toUpperCase()) ? `${k.slice(1).toUpperCase()} −${Math.round(v)}` : ({edefp: `${t('sDef')} −${pc(v)} %`,
-    eeva: `${t('sEva')} −${Math.round(v)}`, eres: `${t('sRes')} −${pc(v)} %`, estatp: `${t('sStats')} −${pc(v)} %`, ecrit: `${t('sCrit')} +${Math.round(v)} %`,
-    eatkp: `${t('sAtk')} −${pc(v)} %`, eresu: `${t('sRes')} −${pc(v)} % (${t('undeadOnly')})`, eallstat: `${t('sStats')} −${Math.round(v)}`, eslow: `${t('sSlow')} −${pc(v)} %`, edot: `${Math.round(v)} HP/tick`, egambit: `${t('el_' + RUNES[runeOf(b)])} +${Math.round(v)} %`,
- emdb: `${t('sMdb')} −${Math.round(v)}`,
-    emeva: `${t('sMeva')} −${Math.round(v)} (${t('infoWord')})`})[k] || fxText(k, v);
+  const key = enemyKey(b.enemy), T = targetInfo(null);
+  const short = (k, v) => foeText(k, v, b) ?? fxText(k, v);
+
   const btn = (attrs, label, on, tip = '', off = false) =>
     `<button class="chip" ${attrs} aria-pressed="${!!on}" ${off ? 'disabled' : ''} ${tip ? `title="${esc(tip)}"` : ''}>${esc(label)}</button>`;
   const seg = (k, tiers, full) => `<span class="fseg">${Object.keys(tiers).map(v => btn(`data-foeseg="${k}" data-v="${esc(v)}"`,
@@ -3899,7 +3950,7 @@ async function saveFile(file, text){
   if (liveOk(c)) {
     try {
       await liveFetch(c, '/save?file=' + encodeURIComponent(file), {method: 'POST', body: text});
-      await liveFetch(c, '/reload', {method: 'POST'});
+      try { await liveFetch(c, '/reload', {method: 'POST'}); } catch (e) {}
       return 'live';
     } catch (e) {}
   }
@@ -3960,22 +4011,22 @@ function setsLua(map){
 }
 // Save the set's tried pieces into the file (other sets and jobs kept)
 async function saveSet(s){
-  const map = setOverrides(), job = map[S.job] = map[S.job] || {}, slots = job[s.path] = job[s.path] || {};
+  const c = S.char, map = JSON.parse(JSON.stringify(setOverrides())), job = map[S.job] = map[S.job] || {}, slots = job[s.path] = job[s.path] || {};
   for (const [slot, p] of Object.entries(S.trial[trialKey(s)] || {})) slots[slot] = filePiece(p);
   const done = await saveFile('set_overrides.lua', setsLua(map));
   if (done === null) return;
-  S.setOv[S.char].at = stamp();
+  S.setOv[c] = {at: stamp(), map};
   if (done) S.toast = done === 'live' ? t('savedLive') : t('savedSet', {p: `${S.char}/saved/set_overrides.lua`});
   render();
 }
 // Back to the set file: the set's entry leaves the file, the page shows the file's pieces until the next export
 async function revertSet(s){
-  const map = setOverrides();
-  if (map[S.job]) { delete map[S.job][s.path]; if (!Object.keys(map[S.job]).length) delete map[S.job]; }
+  const c = S.char, job = S.job, k = trialKey(s), map = JSON.parse(JSON.stringify(setOverrides()));
+  if (map[job]) { delete map[job][s.path]; if (!Object.keys(map[job]).length) delete map[job]; }
   const done = await saveFile('set_overrides.lua', setsLua(map));
   if (done === null) return;
-  S.setOv[S.char].at = stamp();
-  const k = trialKey(s); S.trial[k] = {};
+  S.setOv[c] = {at: stamp(), map};
+  S.trial[k] = {};
   for (const [slot, was] of Object.entries(s.was || {})) S.trial[k][slot] = was.name === 'empty' ? null : was;
   if (done) S.toast = done === 'live' ? t('savedLive') : t('revertedSet', {p: `${S.char}/saved/set_overrides.lua`});
   render();
@@ -4032,12 +4083,12 @@ async function liveTick(){
   const was = S._live[c] || {};
   try {
     const ping = await liveFetch(c, '/ping', {timeout: 1500});
-    const now = {ok: true, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, at: was.at};
+    const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, at: was.at};
     if (ping.player === c && ping.job && (ping.version !== was.version || !was.ok)) {
       const d = await liveFetch(c, '/export', {timeout: 8000});
       if (d && d.sets) {
         const m = ((DATA[c] = DATA[c] || {})[d.job] = DATA[c][d.job] || {});
-        m[d.sub || 'NONE'] = d;
+        m[d.sub || 'NONE'] = d; DATA_GEN++;
         CHARS[c] = {jobs: Object.keys(DATA[c])};
         now.at = d.at;
       }
@@ -4126,7 +4177,7 @@ async function simRun(){
       try { rFile = await liveFetch(c, '/simulate?' + qf.toString(), {method: 'POST', timeout: 6000}); } catch (e) {} }
     // ver: the GearSwap load that answered; a reload runs the action again (its code may have changed)
     if (seq === SIM_SEQ) S._simResult = {req: key, r, rFile, ver: (S._live[c] || {}).version};
-  } catch (e) { if (seq === SIM_SEQ) S._simResult = {req: key, r: {ok: false, error: t('liveLost')}}; }
+  } catch (e) { if (seq === SIM_SEQ) S._simResult = {req: key, r: {ok: false, error: t('liveLost')}, ver: (S._live[c] || {}).version}; }
   S._simBusy = false; render();
 }
 // The set a phase's gear comes from: the set whose pieces are in the list
@@ -4518,13 +4569,14 @@ function withWeapons(s, ignore){
     fill(m, v, why, false);
     if (m.name === 'MainWeapon') weapon = v;
   }
-  const held = ws && !ignore && heldWeapon(ws);
+  const held = ws && ignore !== 'held' && ignore !== 'force' && heldWeapon(ws);
   if (held && !blank.has('main')) { holdWeapon(d, pieces, from, held); weapon = null; stanceWeapon = null; }
   // the off hand chosen for this weaponskill (a grip, a shield, a weapon when dual wielding), if the main hand takes it
   const hs = ws && ignore !== 'heldsub' && (S.heldSub || {})[heldKey(ws)];
-  if (hs && !blank.has('sub') && subFits(pieces.main, hs)) { pieces.sub = hs; from.sub = t('heldWhy'); }
-  const grip = weapon && (rules.grips || DEFAULT_GRIPS)[weapon];
-  const shield = weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
+  const hsOn = hs && !blank.has('sub') && subFits(pieces.main, hs);
+  if (hsOn) { pieces.sub = hs; from.sub = t('heldWhy'); }
+  const grip = !hsOn && weapon && (rules.grips || DEFAULT_GRIPS)[weapon];
+  const shield = !hsOn && weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
   if (grip && !blank.has('sub')) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield && !blank.has('sub')) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
   // the pieces forced in the page (FORCE_SLOTS), over the job's rules (a set named after a weapon keeps its
@@ -4608,7 +4660,7 @@ function tpbOf(p, slot, cfg){
 //   with the TP pieces: threshold - weapon / buffs - every TP piece of the config (where it starts adding them)
 //   without them: threshold - weapon / buffs - the TP Bonus the set wears already (Boii Cuisses in the base set)
 function tpSteps(r, s){
-  if (!r || !r.thresholds) return TP_STEPS;
+  if (!r || !r.thresholds) { S._tpWhy = {}; return TP_STEPS; }
   const cfg = r.pieces || {}, worn = s ? (() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } })() : {};
   const inSet = SLOTS.reduce((n, slot) => n + tpbOf(worn[slot], slot, cfg), 0);
   const out = new Set([1000, 3000]), bonus = r.bonus + partyTp();
@@ -4665,7 +4717,7 @@ function heldChoices(ws){
 // The weaponskill's damage with each of them, worked out once a state of the page (later, then drawn again)
 function heldRanking(s, ws, list){
   if (!engineReady() || !list.length) return null;
-  const key = [s.path, buffTier(), S.wsTp, JSON.stringify(S.trial[trialKey(s)] || {}), JSON.stringify(buffState()), list.join(',')].join('|');
+  const key = [S.char, S.job, s.path, buffTier(), S.wsTp, JSON.stringify((S.heldSub || {})[heldKey(ws)] || null), JSON.stringify(S.trial[trialKey(s)] || {}), JSON.stringify(buffState()), list.join(',')].join('|');
   S._heldRank = S._heldRank || {};
   if (S._heldRank[key]) return S._heldRank[key];
   if (!S._heldRankBusy) {
@@ -4756,7 +4808,7 @@ function wsResultHTML(s){
   return tr || r ? `<div class="engsec"><div class="kicker">${esc(t('engResKick'))}</div>${tr}${r ? wsVsHTML(r) : ''}</div>` : '';
 }
 function wsVsHTML(r){
-  const o = S.optOpts || {}, objLabel = r.obj === 'tp_return' ? t('wsvTp') : r.obj === 'damage_avg' ? t('wsvAvg', {a: r.range[0], b: r.range[1]}) : t('wsvDmg', {tp: r.tp});
+  const o = r.floor || S.optOpts || {}, objLabel = r.obj === 'tp_return' ? t('wsvTp') : r.obj === 'damage_avg' ? t('wsvAvg', {a: r.range[0], b: r.range[1]}) : t('wsvDmg', {tp: r.tp});
   const pct = h => h == null ? null : Math.floor(h);
   const lines = [{label: objLabel + ' ★', get: x => x.raw, fmt: v => r.obj === 'tp_return' ? String(Math.round(v)) : fmtDmg(v), low: false, obj: true},
     {label: t('wsvHit1'), get: x => x.hits ? pct(x.hits.first) : null, fmt: v => v + ' %', low: false},
@@ -5106,6 +5158,8 @@ function familyNoteHTML(card, s){
 function cardHTML(card, ci, bypath, q){
   const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
   const s = card.variants[vi].set; const base = s.base ? bypath[s.base] : null;
+  // the set every figure of the card reads (aftermath, the abilities a family of sets offers): this one, not the last one
+  S._curSet = s;
   const own = new Set(s.own || Object.keys(s.pieces)), eff = withWeapons(s);
   const slots = SLOTS.map(slot => slotHTML(s, ci, slot, base ? own : new Set(SLOTS), q, eff)).join('');
   const foot = [];
@@ -5128,7 +5182,7 @@ function cardHTML(card, ci, bypath, q){
     : roundSet(s) ? box('g-you wsoptbox', t('wsBoxOpt'), engOptHTML(s)) : '';
   return `<article class="detail"><header>${top}${trialBar(s)}</header>
     <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
-    ${opt ? `<section class="optsec">${opt}</section>` : ''}<div class="globals-inline">${globalsHTML(s)}</div></article>`;
+    ${opt ? `<section class="optsec">${opt}</section>` : ''}<div class="globals-inline">${(S._globals = {s, html: globalsHTML(s)}).html}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 function renderSets(d){
@@ -5136,13 +5190,14 @@ function renderSets(d){
   const q = S.q.trim().toLowerCase();
   const vis = cards.map((c,i) => i).filter(i => cardMatch(cards[i], q)); S._vis = vis;
   const want = S.selPath[S.job];
-  if (want && S._found !== S.job + '|' + want) {
+  const found = S.char + '|' + S.job + '|' + ((data() || {}).sub || '') + '|';
+  if (want && S._found !== found + want) {
     cards.forEach((c, i) => c.variants.forEach((v, k) => { if (v.set.path === want || (v.set.aliases || []).includes(want)) { S.sel[S.job] = i; S.variant[S.job + '|' + i] = k; } }));
-    S._found = S.job + '|' + want;
+    S._found = found + want;
   }
   if (!vis.includes(S.sel[S.job])) S.sel[S.job] = vis[0];
   const sel = S.sel[S.job];
-  if (cards[sel]) { S.selPath[S.job] = shownSet(cards[sel], sel).path; S._found = S.job + '|' + S.selPath[S.job]; }
+  if (cards[sel]) { S.selPath[S.job] = shownSet(cards[sel], sel).path; S._found = found + S.selPath[S.job]; }
   tierFollowsSet(S.selPath[S.job], bypath);
   subFollowsSet(S.selPath[S.job], bypath);
   objFollowsSet(S.selPath[S.job], bypath);
@@ -5183,7 +5238,7 @@ function renderSets(d){
     `<span>·</span><button class="linkbtn" data-pushhist>${t('histBtn')}</button></div>` : '';
   return `<div class="setsx"><aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
     `<button class="btn ghost" data-action="add" title="${t('add')}">${t('addShort')}</button></div>${tools}<div class="scroll">${list}</div><div class="hint">${t('navHint')}</div></aside>` +
-    `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${globalsHTML(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
+    `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
 }
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
@@ -5368,7 +5423,8 @@ function openSlot(ci, slot){
   for (const o of opts) { o.orig = sameAs(o, orig); o.cur = eff.tried[slot] && sameAs(o, p);
     // the piece tried is this row's best version
     o.curMax = !!(eff.tried[slot] && o.upgrade && samePiece(o.upgrade.piece, p)); }
-  const acts = (p ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '') +
+  const hand = ['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons';
+  const acts = (p && !hand ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '') +
     `<label class="chk"><input type="checkbox" data-allitems ${S.allItems ? 'checked' : ''}> ${t('allItems')}</label>` +
     (S.allItems && S._catMissing ? `<p class="note">${t('catMissing')}</p>` : '');
   // groups, each headed with its count: the long tail of a slot is easy to miss below the fold
@@ -5527,7 +5583,7 @@ function setWantsOf(s){
 function wsWants(s){
   const ws = wsOfSet(s) || segs(s.path).pop();
   const info = Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_info || {}))[ws] || {};
-  const tp = Math.min(3000, Math.max(1000, S.wsTp || 2000)), ftps = Object.entries(info.ftp || {}).map(([k, v]) => [+k, v]).sort((a, b) => a[0] - b[0]);
+  const tp = Math.min(3000, Math.max(1000, S.wsTp || 3000)), ftps = Object.entries(info.ftp || {}).map(([k, v]) => [+k, v]).sort((a, b) => a[0] - b[0]);
   const ftpAt = x => { if (!ftps.length) return 1; if (x <= ftps[0][0]) return ftps[0][1];
     for (let i = 1; i < ftps.length; i++) if (x <= ftps[i][0]) { const [a, va] = ftps[i - 1], [c, vc] = ftps[i]; return va + (vc - va) * (x - a) / (c - a); }
     return ftps[ftps.length - 1][1]; };
@@ -5870,7 +5926,8 @@ async function openPush(s){
 }
 async function pushGo(){
   const P = S._push;
-  if (!P || !P.hash) return;
+  if (!P || !P.hash || P.busy) return;
+  P.busy = true;
   let r;
   try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(P.hash), {method: 'POST', body: P.body, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('pushTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
@@ -5922,7 +5979,8 @@ function forgetSets(paths){
 }
 async function delGo(){
   const D = S._del;
-  if (!D || !D.hash) return;
+  if (!D || !D.hash || D.busy) return;
+  D.busy = true;
   let r;
   try { r = await liveFetch(S.char, '/delete?mode=write&hash=' + encodeURIComponent(D.hash), {method: 'POST', body: D.s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('delTitle'), `<p class="kwarn">${t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})}</p>`, '');
@@ -5956,9 +6014,13 @@ async function openHistory(){
   showDialog('histdlg', t('histTitle'), (S._histToast ? `<p class="ok">${esc(S._histToast)}</p>` : '') + body, '');
   S._histToast = '';
 }
+let UNDO_BUSY = false;
 async function pushUndo(id){
+  if (UNDO_BUSY) return;
+  UNDO_BUSY = true;
   let r;
   try { r = await liveFetch(S.char, '/push_undo?id=' + id, {method: 'POST', timeout: 5000}); } catch (e) { r = {error: 'live'}; }
+  UNDO_BUSY = false;
   if (r.error) return showDialog('histdlg', t('histTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   S._histToast = t('histUndoDone');
   try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {}
@@ -6026,7 +6088,8 @@ async function openCreate(name){
 }
 async function createGo(){
   const C = S._create;
-  if (!C || !C.hash) return;
+  if (!C || !C.hash || C.busy) return;
+  C.busy = true;
   let r;
   try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(C.hash), {method: 'POST', body: C.path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
@@ -6035,7 +6098,8 @@ async function createGo(){
   try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {}
   render();
 }
-function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; KEYEDIT = null; S._buffDlg = false; S._tgtDlg = false; S._tgtPick = false; }
+function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; KEYEDIT = null; S._buffDlg = false; S._tgtDlg = false; S._tgtPick = false;
+  S._push = S._del = S._create = null; const tip = $('#tip'); if (tip) tip.hidden = true; S._tipEl = null; }
 
 // the weapon groups of the weaponskill list stay as opened (toggle does not bubble: caught on the way down)
 document.addEventListener('toggle', e => { const g = e.target && e.target.dataset && e.target.dataset.wsgroup;
@@ -6069,7 +6133,7 @@ document.addEventListener('click', e => {
     if (x) { S.trial[k] = JSON.parse(JSON.stringify(x.tr)); if (!Object.keys(S.trial[k]).length) delete S.trial[k]; }
     closeOverlay(); render(); return; }
   if (d.keptdel != null) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), dr = S.drafts[trialKey(s)] || {};
-    dr.kept = (dr.kept || []).filter((_, i) => i !== +d.keptdel); save(); openCompare(s); return; }
+    dr.kept = (dr.kept || []).filter((_, i) => i !== +d.keptdel); render(); openCompare(s); return; }
   if ('cmpopen' in d) { openCompare(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('tryprev' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), k = trialKey(s), dr = S.drafts[k] || {};
     if (dr.prev && Object.keys(dr.prev).length) S.trial[k] = dr.prev; else delete S.trial[k];
@@ -6159,7 +6223,7 @@ document.addEventListener('click', e => {
     if (l.size) b.foeJa = [...l]; else delete b.foeJa; save(); render(); return; }
   if ('tgtback' in d) { S._tgtPick = false; openBuffs(); return; }
   if ('tgtpick' in d) { S._buffDlg = false; openTargetPick(); return; }
-  if ('pickenemy' in d) { const b = buffState(); if (d.pickenemy) b.enemy = d.pickenemy; else delete b.enemy; S._tgtPick = false; save(); openBuffs(); render(); return; }
+  if ('pickenemy' in d) { const b = buffState(); if (d.pickenemy) b.enemy = d.pickenemy; else delete b.enemy; S._tgtPick = false; render(); return; }
   if (d.buffflag) { const b = buffState(); b[d.buffflag] = !b[d.buffflag]; if (!b[d.buffflag]) delete b[d.buffflag];
     const other = {auspice: 'enspell', enspell: 'auspice'}[d.buffflag];
     if (other && b[d.buffflag]) delete b[other];
@@ -6167,8 +6231,9 @@ document.addEventListener('click', e => {
   if ('buffopen' in d) { S._tgtDlg = false; openBuffs(); return; }
   if ('targetopen' in d) { openTarget(); return; }
   if ('debugcalc' in d) { openDebug(); return; }
-  if ('dbgcopy' in d) { const ta = $('#dbgtext'); if (ta) { ta.select(); try { navigator.clipboard.writeText(ta.value); } catch (e) { document.execCommand('copy'); } b.textContent = t('dbgCopied'); } return; }
-  if ('bufftoggle' in d) { S.buffsOpen = !S.buffsOpen; render(); return; }
+  if ('dbgcopy' in d) { const ta = $('#dbgtext'); if (ta) { ta.select(); const done = () => { b.textContent = t('dbgCopied'); };
+    const old = () => { if (document.execCommand('copy')) done(); };
+    try { navigator.clipboard.writeText(ta.value).then(done, old); } catch (e) { old(); } } return; }
   if ('buffreset' in d) { S.buffs[buffKey()] = {}; render(); return; }
   // the profile's usual party buffs; what is yours (food, aftermath, target, abilities) stays
   if ('buffendgame' in d) { const old = buffState(), b = tierBuffs(buffTier());
@@ -6316,7 +6381,7 @@ for (const ev of ['keydown', 'keyup']) document.addEventListener(ev, e => {
   if (S._tipEl && !$('#tip').hidden && document.body.contains(S._tipEl)) showTip(S._tipEl);
 });
 const TIPPED = '.slot[data-slot], .choice [data-try], .slot[data-simp]';
-document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED); if (el) showTip(el); });
+document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED); if (el && !(el === S._tipEl && !$('#tip').hidden)) showTip(el); });
 document.addEventListener('mouseout', e => { if (e.target.closest(TIPPED) && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(TIPPED))) $('#tip').hidden = true; });
 document.addEventListener('focusin', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });
 document.addEventListener('focusout', e => { if (e.target.closest('.slot[data-slot]')) $('#tip').hidden = true; });
@@ -6324,7 +6389,8 @@ document.addEventListener('scroll', () => { $('#tip').hidden = true; }, true);
 
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') { if (!$('#overlay').hidden && S._tgtPick) { S._tgtPick = false; openBuffs(); } else if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
-  if ((e.key==='ArrowDown' || e.key==='ArrowUp') && S.job && S.section==='sets' && $('#overlay').hidden && S._rows && S._rows.length) {
+  const field = /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) && e.target.id !== 'setq';
+  if ((e.key==='ArrowDown' || e.key==='ArrowUp') && !field && S.job && S.section==='sets' && $('#overlay').hidden && S._rows && S._rows.length) {
     const ci = S.sel[S.job], cv = Math.min(S.variant[S.job+'|'+ci] ?? 0, S._cards[ci].variants.length - 1);
     const i = S._rows.findIndex(([a, b]) => a === ci && b === cv) + (e.key==='ArrowDown' ? 1 : -1);
     if (i < 0 || i >= S._rows.length) return;
@@ -6343,7 +6409,7 @@ function boot(){
     // the game's descriptions of every item: a piece a set names but no bag holds still has its stats
     setTimeout(() => loadCatalog(() => loadRanked(() => { if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300);
     // <JOB>_<SUB>.js fill ATELIER_SUBS[char][job][sub]; a <JOB>.js of before 2026-10-01 fills ATELIER[char][job]
-    DATA = {}; CHARS = {};
+    DATA = {}; CHARS = {}; DATA_GEN++;
     const put = (c, j, d) => { if (!d || !d.sets) return; const s = d.sub || 'NONE';
       const m = ((DATA[c] = DATA[c] || {})[j] = DATA[c][j] || {});
       if (!m[s] || (m[s].at || '') < (d.at || '')) m[s] = d; };
