@@ -7,6 +7,7 @@
 //   FFXI.opt.selection(b)             the page's buff state as FFXI.aggregate_buffs takes it
 //   FFXI.opt.context(...)             player, buffs, target and weaponskill of one evaluation
 //   FFXI.opt.ws(ctx, pieces, tp)      the weaponskill's average damage with those pieces
+//   FFXI.opt.round(ctx, pieces, opts)  an engaged set's attack round: time to the weaponskill, DPS, TP a round
 //   FFXI.opt.tpPieces(rule, pieces, tp)  the TP pieces the job's rule adds (tp_bonus_calculator.lua)
 //   FFXI.opt.value(ctx, pieces, opts)  a set's value for an objective, with the defense floors
 //   FFXI.opt.optimize(ctx, start, choices, opts)  the best set: slot by slot, then pairs of slots
@@ -191,7 +192,7 @@
         if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
-            primeStage: c.primeStage, dmgMul: physMul(c)};
+            primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws"};
     };
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
     // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %), Banish II by 70 % on an undead;
@@ -206,7 +207,8 @@
         return v;
     }
     function physMul(c) {
-        var r = c.physRes || 0, v = r ? wsProbe(c) : null;
+        // an engaged set's auto-attacks are physical, of the main weapon's type (the page's physRes)
+        var r = c.physRes || 0, v = !r ? null : c.mode === "engaged" ? {} : wsProbe(c);
         if (!v || v.magical || v.hybrid) return 1;
         // a resistance cut: Banish II's 70 % (an undead) or Tomahawk's 25 %, the stronger
         return 1 + (r < 0 && c.banish ? r * 0.3 : r < 0 && c.tomahawk ? r * 0.75 : r) / 100;
@@ -244,6 +246,27 @@
         }
         return set;
     };
+    // An engaged set's attack round (wsdist's average_attack_round, from 0 TP to the weaponskill at opts.wsAt, 1000
+    // by default): {time: seconds to the weaponskill, dps, tp: TP a round, damage: a round's}; null for an unknown piece
+    var ROUND_OBJ = {tp_time: "Time to WS", dps: "DPS", tp_round: "TP return"};
+    O.round = function (ctx, pieces, opts) {
+        var set = O.gearset(ctx, pieces);
+        if (!set) return null;
+        return roundOf(ctx, FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), opts || {});
+    };
+    function roundOf(ctx, player, opts) {
+        var at = +opts.wsAt || 1000, r = FFXI.average_attack_round(player, ctx.enemy, 0, at, "Time to WS");
+        var m = ctx.dmgMul || 1, dmg = r[1][0] * m, tp = r[1][1], sec = r[1][2];
+        return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg};
+    }
+    // An engaged set's value for its objective: the time to the weaponskill (less is better), DPS or TP a round
+    function roundValue(ctx, pieces, opts) {
+        var pl = playerOf(ctx, pieces);
+        if (!pl) return null;
+        var r = roundOf(ctx, pl.player, opts), obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_time";
+        var raw = obj === "tp_time" ? r.time : obj === "dps" ? r.dps : r.tp;
+        return {v: obj === "tp_time" ? -raw : raw, raw: raw, def: pl.def, round: r};
+    }
     // The weaponskill's average with those pieces at that TP: [metric value, [damage, TP return, ...]]
     O.ws = function (ctx, pieces, tp) {
         var set = O.gearset(ctx, pieces);
@@ -321,6 +344,7 @@
     // A set's hit rates at the weaponskill, {first, rest}: the lowest over the TP looked at (a
     // weaponskill's accuracy bonus grows with TP); the floor reads `rest`
     O.hits = function (ctx, pieces, opts) {
+        if (ctx.mode === "engaged") return null;
         var tps = opts.objective === "damage_avg" ? (opts.tps || [opts.tp]) : [opts.tp], low = null;
         for (var i = 0; i < tps.length; i++) {
             var pl = playerOf(ctx, wornAt(pieces, opts, tps[i]));
@@ -358,6 +382,12 @@
     // A set's value for opts.objective: "damage" at opts.tp, "damage_avg" over opts.tps, "tp_return"
     // (damage breaks ties); a set short of the floors loses 1e6 per point, so the search meets them first
     O.value = function (ctx, pieces, opts) {
+        if (ctx.mode === "engaged") {
+            var e0 = roundValue(ctx, pieces, opts);
+            if (!e0) return {v: -Infinity};
+            var miss0 = shortfall(e0.def, opts.floor, null);
+            return {v: e0.v - 1e6 * miss0, raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
+        }
         var tps = opts.objective === "damage_avg" ? (opts.tps || [1000, 1500, 2000, 2500, 3000]) : [opts.tp];
         var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, def = null;
         for (var i = 0; i < tps.length; i++) {
