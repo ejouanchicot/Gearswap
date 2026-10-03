@@ -66,8 +66,12 @@
         var add = function (src) { for (var k in src) if (typeof src[k] === "number") g[k] = (g[k] || 0) + src[k]; };
         add(item.stats || {});
         if (FFXI.parse_augments && (piece.augs && piece.augs.length || piece.rank != null)) add(FFXI.parse_augments(item.name, piece.augs || [], piece.rank).stats);
+        // a piece worn for one augment only, whatever its other one (Moonshade Earring: its TP Bonus +250)
+        var only = ONLY_STATS[item.name];
+        if (only) { for (var k in g) if (typeof g[k] === "number" && k !== "DMG" && k !== "Delay") delete g[k]; add(only); }
         return g;
     };
+    var ONLY_STATS = {"Moonshade Earring": {"TP Bonus": 250}};
 
     // ------------------------------------------------------------ buffs
     // The page's buff state (atelier.html buffState) as FFXI.aggregate_buffs takes it

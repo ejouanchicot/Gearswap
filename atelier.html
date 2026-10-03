@@ -1355,8 +1355,11 @@ function add(out, key, v, unit, label){
 }
 // Every stat of one piece: its description (always on part), then its augments
 const PIECE_CACHE = {};
+const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
 function pieceStats(p){
   if (!p) return null;
+  // a piece worn for one augment only (Moonshade Earring: its TP Bonus +250, its Accuracy+4 or Attack+4 never)
+  if (ONLY_AUGS[p.name]) p = Object.assign({}, p, {augs: ONLY_AUGS[p.name]});
   const cat = catalog(), id = iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = id ? descTexts()[id] || (cat && cat.desc[id]) || null : null;
   const key = S.char + '|' + p.name + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0);
