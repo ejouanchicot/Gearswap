@@ -2829,6 +2829,15 @@ function withTierBuffs(tier, fn){
   S._buffOverride = b;
   try { return fn(); } finally { S._buffOverride = keep; }
 }
+// The buffs follow the set opened (once, when it changes): a .Group or .Solo version opens that profile, a weaponskill
+// or engaged set that has such versions opens Full; another set leaves the profile as it is
+function tierFollowsSet(path, bypath){
+  if (!path || path === S._tierPath) return;
+  S._tierPath = path;
+  const v = (path.match(/\.(Group|Solo)$/) || [])[1];
+  const tier = v || (TIERED.test(path) && (bypath[path + '.Group'] || bypath[path + '.Solo']) ? 'Full' : null);
+  if (tier && tier !== buffTier()) { setBuffTier(tier); save(); setTimeout(render, 0); }
+}
 function setBuffTier(tier){
   if (!TIERS.includes(tier) || tier === buffTier()) return;
   const from = buffState();
@@ -5089,6 +5098,7 @@ function renderSets(d){
   if (!vis.includes(S.sel[S.job])) S.sel[S.job] = vis[0];
   const sel = S.sel[S.job];
   if (cards[sel]) { S.selPath[S.job] = shownSet(cards[sel], sel).path; S._found = S.job + '|' + S.selPath[S.job]; }
+  tierFollowsSet(S.selPath[S.job], bypath);
   // one row per set: the set, then its variants (idle.Town, each weaponskill) indented under it
   const vi = i => Math.min(S.variant[S.job + '|' + i] ?? 0, cards[i].variants.length - 1);
   const rows = S._rows = [];
