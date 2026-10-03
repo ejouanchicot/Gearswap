@@ -1544,15 +1544,18 @@ const scanOf = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)
 const descTexts = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.descs || {}));
 // Every gear item of the game (data/atelier/catalog.js, written by the export from Windower's
 // resources: shared/utils/atelier/atelier_catalog.lua), loaded when the picker asks for it.
-// Rows: [id, name, slots, jobs, level, item level, description]
+// Rows: [id, name, slots, jobs, level, item level, description, rare 1/0 (from catalog v2)]
 let CAT = null;
 function catalog(){
   const c = window.ATELIER_CATALOG;
   if (!c) return null;
-  if (!CAT || CAT.src !== c) { CAT = {src: c, id: {}, desc: {}, row: {}};
-    for (const r of c.items) { if (!(r[1] in CAT.id)) { CAT.id[r[1]] = r[0]; CAT.row[r[1]] = r; } CAT.desc[r[0]] = r[6]; } }
+  if (!CAT || CAT.src !== c) { CAT = {src: c, id: {}, desc: {}, row: {}, rare: new Set()};
+    for (const r of c.items) { if (!(r[1] in CAT.id)) { CAT.id[r[1]] = r[0]; CAT.row[r[1]] = r; } CAT.desc[r[0]] = r[6]; if (r[7]) CAT.rare.add(r[1]); } }
   return CAT;
 }
+// Whether a character can hold two of an item: not Rare, as the game's resources say (an older catalog without
+// the flag: never assumed)
+function twoAllowed(name){ const c = catalog(); return !!c && c.src.v >= 2 && !c.rare.has(name); }
 function loadCatalog(done){
   if (window.ATELIER_CATALOG) return done();
   const el = document.createElement('script');
@@ -1816,8 +1819,11 @@ function gameChoices(slot, have, tpNames){
     seen.add(it.name);
     const e = rankedEntry(it.name);
     if (e && e.paths) for (const path of Object.keys(e.paths)) out.push({name: it.name, augs: ['Path: ' + path], rank: e.max_rank, missing: true});
-    else out.push({name: it.name, missing: true});
+    else out.push({name: it.name, missing: true, copies: twoAllowed(it.name) ? 2 : 1});
   }
+  // rings and earrings: a second copy to get of one you have once, when the game lets you hold two
+  if (/^(ring|ear)[12]$/.test(slot)) for (const x of have)
+    if (x.copies === 1 && !(x.augs && x.augs.length) && !x.missing && twoAllowed(x.name)) out.push({name: x.name, missing: true, copies: 2});
   return out;
 }
 // The optimizer on a weaponskill set: weapons kept, the TP pieces of the job's config left to its rule

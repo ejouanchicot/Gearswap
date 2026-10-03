@@ -462,7 +462,7 @@
         var twin = {ring1: "ring2", ring2: "ring1", ear1: "ear2", ear2: "ear1"}[slot];
         if (!twin || !piece || !pieces[twin]) return false;
         var o = pieces[twin];
-        return o.name === piece.name && (o.augs || []).join("|") === (piece.augs || []).join("|") && !(piece.copies > 1);
+        return o.name === piece.name && (o.augs || []).join("|") === (piece.augs || []).join("|") && !(piece.copies > 1 || o.copies > 1);
     }
     O.clashes = function (pieces, slot, piece) { return clashes(pieces, slot, piece); };
     // What each piece of the result you do not have yet (missing, or not at its best) brings: the
