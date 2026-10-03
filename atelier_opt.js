@@ -184,8 +184,24 @@
         if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
-            primeStage: c.primeStage};
+            primeStage: c.primeStage, dmgMul: physMul(c)};
     };
+    // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
+    // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %); for a physical weaponskill only,
+    // the engine already counts a magical one's (Magic DT%)
+    function physMul(c) {
+        var r = c.physRes || 0, w = FFXI.WS[c.ws], v = {};
+        if (!r || !w) return 1;
+        try { w.set(v, 1000, {stats: {}}, {stats: {}}); } catch (e) { return 1; }
+        if (v.magical || v.hybrid) return 1;
+        return 1 + (r < 0 && c.tomahawk ? r * 0.75 : r) / 100;
+    }
+    // A result of FFXI.average_ws with its damage scaled by ctx.dmgMul (the TP return untouched)
+    function scaled(ctx, r, metric) {
+        var m = ctx.dmgMul || 1;
+        if (!r || m === 1) return r;
+        return [metric === "TP return" ? r[0] : r[0] * m, [r[1][0] * m, r[1][1], r[1][2]]];
+    }
     // The slots a piece leaves empty: "Cannot equip leggear" (Onca Suit), headgear, handgear, footgear
     var BLOCK = {headgear: "head", handgear: "hands", hand: "hands", leggear: "legs", footgear: "feet"};
     O.blocks = function (piece) {
@@ -218,7 +234,7 @@
         var set = O.gearset(ctx, pieces);
         if (!set) return null;
         var player = FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities);
-        return FFXI.average_ws(player, ctx.enemy, ctx.ws, tp, ctx.wsType, ctx.metric);
+        return scaled(ctx, FFXI.average_ws(player, ctx.enemy, ctx.ws, tp, ctx.wsType, ctx.metric), ctx.metric);
     };
 
     // ------------------------------------------------------------ TP bonus
@@ -322,7 +338,7 @@
     function once(ctx, worn, tp, metric) {
         var pl = playerOf(ctx, worn);
         if (!pl) return null;
-        return {r: FFXI.average_ws(pl.player, ctx.enemy, ctx.ws, tp, ctx.wsType, metric), def: pl.def};
+        return {r: scaled(ctx, FFXI.average_ws(pl.player, ctx.enemy, ctx.ws, tp, ctx.wsType, metric), metric), def: pl.def};
     }
     // A set's value for opts.objective: "damage" at opts.tp, "damage_avg" over opts.tps, "tp_return"
     // (damage breaks ties); a set short of the floors loses 1e6 per point, so the search meets them first
