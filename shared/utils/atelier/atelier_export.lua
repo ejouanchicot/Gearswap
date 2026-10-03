@@ -562,25 +562,6 @@ local function collect_icons(set_list, items)
     return icons
 end
 
---- The sets' pieces under the game's own item name. A set file may write an item's long name
---- ("Pummeler's Mask +4") or another case, which GearSwap accepts; the bags hold the short one
---- ("Pumm. Mask +4"), and the page tells the pieces you have by name.
---- @param set_list table collect_sets()
---- @param icons table|nil collect_icons(): name as written -> item id
-local function use_game_names(set_list, icons)
-    local ok, res = pcall(require, 'resources')
-    if not (ok and res and res.items and icons) then return end
-    for _, set in ipairs(set_list) do
-        for _, p in pairs(set.pieces) do
-            local info = icons[p.name] and res.items[icons[p.name]]
-            if info and info.en and info.en ~= p.name then
-                icons[info.en] = icons[p.name]
-                p.name = info.en
-            end
-        end
-    end
-end
-
 ---============================================================================
 --- WRITE
 ---============================================================================
@@ -666,7 +647,8 @@ function AtelierExport.build()
     }
     data.items, data.owned = collect_items()
     data.icons = collect_icons(data.sets, data.items)
-    use_game_names(data.sets, data.icons)
+    -- the pieces under the game's item name (shared/utils/atelier/atelier_names.lua)
+    require('shared/utils/atelier/atelier_names').use_game_names(data.sets, data.icons)
     local ids = {}
     for _, id in pairs(data.icons or {}) do ids[#ids + 1] = id end
     data.scan = collect_scan(data.icons)
