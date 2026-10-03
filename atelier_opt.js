@@ -595,7 +595,17 @@
         var floors = opts.floor && Object.keys(opts.floor).some(function (k) { return +opts.floor[k]; });
         return O.STARTS.filter(function (k) { return k === "set" || (k === "loose" && floors) || (k === "own" && more); });
     };
+    // A walk "mix<n>": from the set like "set", with the slots and their pieces in another order (seeded by n): where the
+    // search goes depends on what it tries first, so more walks on more cores find more
+    function shuffled(choices, seed) {
+        var r = seed * 9301 + 49297, rnd = function () { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+        var mix = function (list) { var a = list.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
+        var out = {};
+        mix(Object.keys(choices)).forEach(function (slot) { out[slot] = mix(choices[slot]); });
+        return out;
+    }
     function* walk(ctx, start, choices, opts, how) {
+        if (/^mix\d+$/.test(how)) choices = shuffled(choices, +how.slice(3));
         var mine = {};
         Object.keys(choices).forEach(function (slot) { mine[slot] = choices[slot].filter(function (p) { return !p.missing && !p.maxed; }); });
         var evals = 0, from = function* (pieces, list, o) { var r = yield* optimizeGen(ctx, pieces, list, o || opts); evals += r.evals; return r; };
