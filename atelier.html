@@ -739,6 +739,16 @@ input[type=checkbox]{accent-color:var(--accent)}
 .orclock span{display:inline-block;min-width:5.5ch;text-align:right}
 .orbig,.orwbest,.orrate,.orevals,.orfval{font-variant-numeric:tabular-nums}
 .orhero{min-height:112px}
+/* the walks: one row each of a fixed height, every figure in a column of its own (the dot, the name, the stage,
+   the step, the tries, the best), a thin moving line under it while it searches */
+.optrun .orwalks{grid-template-columns:1fr;gap:4px}
+.optrun .orwalk{grid-template-columns:10px minmax(0,1.3fr) minmax(0,.8fr) minmax(0,1.5fr) minmax(0,.7fr) minmax(0,.8fr);gap:0 12px;align-items:center;height:32px;padding:0 12px;position:relative;overflow:hidden}
+.optrun .orwalk .orwh,.optrun .orwalk .orws{display:contents}
+.optrun .orwalk .orstage{margin-left:0}
+.optrun .orwalk .orevals{text-align:right}
+.optrun .orwalk .orwbest{text-align:right;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.optrun .orwalk .orbar{position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:0}
+.orgain{min-height:1.4em}
 .orres{min-height:0;overflow:auto}
 .optrun > header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,transparent),transparent)}
 .orhead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
@@ -2071,7 +2081,7 @@ function optRunOpen(s, o, starts, cores, floor){
   S._optRun = {t0: performance.now(), cores, fmt, low: time, done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
   const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
   const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
-    `<div class="orbar"><i></i></div><div class="orws"><span class="orphase">${esc(t('orStarting'))}</span><span class="orevals"></span></div><div class="orwbest"></div></div>`).join('');
+    `<div class="orbar"><i></i></div><div class="orws"><span class="orphase">${esc(t('orStarting'))}</span><span class="orevals"></span></div><div class="orwbest">—</div></div>`).join('');
   $('#overlay').innerHTML = `<div class="scrim"></div><div class="dialog optrun" role="dialog" aria-live="polite">` +
     `<header><div class="orhead"><div><div class="kicker">${esc(t('orKick'))}</div><h3>${esc(shortPath(s.path))}</h3></div>` +
     `<div class="orclock"><span id="orclock">0,0 s</span><small>${esc(t('orCores', {n: cores}))}</small></div></div><div class="orchips">${chips}</div></header>` +
@@ -2130,7 +2140,7 @@ function optRunPaint(walk, moves){
   card.querySelector('.orstage').textContent = w.stage ? t('orStage_' + w.stage) : '';
   card.querySelector('.orphase').textContent = (w.phase ? t('orPhase_' + w.phase) : t('orStarting')) + (w.round ? ' · ' + t('orRound', {n: w.round}) : '');
   card.querySelector('.orevals').textContent = t('orTries', {n: (w.evals || 0).toLocaleString()});
-  card.querySelector('.orwbest').innerHTML = w.best ? `${esc(R.fmt(w.best.raw))}${w.best.miss ? ` <span class="ormiss">${esc(t('orUnder'))}</span>` : ''}` : '';
+  card.querySelector('.orwbest').innerHTML = w.best ? `${esc(R.fmt(w.best.raw))}${w.best.miss ? ` <span class="ormiss">${esc(t('orUnder'))}</span>` : ''}` : '—';
   const feed = document.getElementById('orfeed');
   if (feed && moves.length) {
     feed.querySelector('.orempty')?.remove();
