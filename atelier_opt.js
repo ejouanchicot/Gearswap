@@ -234,6 +234,8 @@
             var m = String(t).match(/Cannot equip (\w+)/i);
             if (m && BLOCK[m[1].toLowerCase()]) out.push(BLOCK[m[1].toLowerCase()]);
         });
+        // an instrument in the ranged slot (a GEO's bell, a BRD's horn or harp) leaves no room for ammo
+        if (item && item.Type === "Instrument") out.push("ammo");
         return out;
     };
     // Every slot a set's pieces leave empty
