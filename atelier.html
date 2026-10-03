@@ -474,11 +474,11 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .foeonk{margin-top:10px;color:var(--muted);font-size:9.5px}
 .foeon{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-size:12px;max-height:150px;overflow-y:auto;align-content:start}
 .foetabsw{margin-left:auto;align-self:center}
-.ftabgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+/* the room of the biggest tab (BLU: two rows of two) for every tab, so changing tab moves nothing */
+.ftabgrid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,32px);gap:6px 14px;align-content:start}
 .ftabgrid.off .fctl{opacity:.45}
 .fcell{display:flex;align-items:center;gap:8px;min-width:0;padding:3px 0}
 .fcell .ffx{margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.foetabfx{margin:2px 0 0}
 .foeonempty{margin:4px 0 0}
 .foeon li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-top:1px solid var(--line)}
 .foeon li b{color:var(--r-dd);font-weight:600;white-space:nowrap}
@@ -2571,8 +2571,7 @@ function foePanelHTML(b){
   const cell = ([l, ctl, fx]) => `<div class="fcell"><div class="fctl">${ctl}</div><span class="ffx ${fx.length && curOn ? 'on' : ''}">` +
     `${esc(!curOn ? '' : fx.join(' · ') || '—')}</span></div>`;
   const pane = `${cards}<div class="kicker foeonk">${esc(t('foeOthers'))}</div>${bar}` +
-    `<div class="ftabgrid ${curOn ? '' : 'off'}">${cur.lines.map(cell).join('')}</div>` +
-    (!curOn ? `<p class="muted small foetabfx">${esc(t('pOff'))}</p>` : '');
+    `<div class="ftabgrid ${curOn ? '' : 'off'}">${cur.lines.map(cell).join('')}</div>`;
   // everything on the target, whatever its tab: what lays it, what it takes off
   const onList = T.B._by.filter(e => ['edefp', 'eeva', 'emdb', 'emeva'].includes(e.k));
   const recap = onList.length ? `<ul class="foeon">${onList.map(e => `<li><span>${esc(e.src)}</span><b>${esc(geoSrc(e.src) ? nmGeo(short(e.k, e.v)) : short(e.k, e.v))}</b></li>`).join('')}</ul>`
