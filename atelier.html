@@ -248,6 +248,14 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .choice .tag.cur{background:var(--try);color:var(--panel)}
 /* the bar over the grid while pieces are being tried */
 .dialog.cmpdlg,.dialog.pushdlg,.dialog.histdlg{width:min(980px,calc(100% - 32px))}
+/* Compare: the pieces and the figures side by side (two or three columns), each pane a kicker over its table */
+.dialog.cmpdlg{width:min(1180px,calc(100% - 32px))}
+.cmpgrid{display:grid;gap:18px}
+.cmpgrid.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+.cmpgrid section{display:grid;gap:6px;min-width:0}
+.cmpgrid .cmptbl{font-size:12.5px}
+.cmpgrid .cmptbl th,.cmpgrid .cmptbl td{padding:5px 8px}
+@media (max-width:900px){.cmpgrid.two{grid-template-columns:1fr}}
 .dialog h3 code{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:600}
 .simtest{margin:10px 2px;font-size:13px;color:var(--muted)}
 .simtest b{color:var(--ink)}
@@ -2008,19 +2016,23 @@ async function optLaunch(s, k, input, o){
     OPT_PAGE_STOP = FFXI.opt.runPaced(input, p => optRunStep(0, p), out => { OPT_PAGE_STOP = null; finish(out); }, e => fail(e.message));
     return;
   }
-  const outs = [];
+  // the end: once the main walks are done, the shuffled ones still going are not waited for (more cores never make it
+  // longer); the best of the walks that finished is kept
+  const outs = [], main = new Set(starts.filter(x => !/^mix\d+$/.test(x))), left = new Set(main);
+  const end = () => {
+    const best = outs.reduce((a, b) => b.score > a.score ? b : a);
+    best.evals = outs.reduce((a, b) => a + b.evals, 0);
+    OPT_WORKERS.forEach(x => x.terminate()); OPT_WORKERS = [];
+    finish(best);
+  };
   workers.forEach((w, i) => {
     w.onmessage = e => {
       if (!S._optBusy) return;
       if (e.data.progress) return optRunStep(i, e.data.progress);
       if (e.data.error) return fail(e.data.error);
       outs.push(e.data.done);
-      shares[i].forEach(walk => optRunWalkDone(walk));
-      if (outs.length < workers.length) return;
-      const best = outs.reduce((a, b) => b.score > a.score ? b : a);
-      best.evals = outs.reduce((a, b) => a + b.evals, 0);
-      OPT_WORKERS.forEach(x => x.terminate()); OPT_WORKERS = [];
-      finish(best);
+      shares[i].forEach(walk => { optRunWalkDone(walk); left.delete(walk); });
+      if (!left.size || outs.length === workers.length) end();
     };
     w.postMessage(Object.assign({}, input, {starts: shares[i]}));
   });
@@ -2191,6 +2203,9 @@ function optResult(s, k, res, gains, o){
     const a = plain[slot], piece = {name: p.name, augs: p.augs};
     if (p.rank != null) piece.rank = p.rank;
     if (p.capeMax) piece.capeMax = true;
+    // the file names the piece alone and you hold one copy of it: GearSwap wears that copy, nothing changes
+    if (a && !isEmpty(a) && a.name === p.name && !(a.augs && a.augs.length) && !p.maxed && !p.missing
+      && ((ofAnySub('owned') || {})[slot] || []).filter(x => x.name === p.name).length <= 1) continue;
     if (!samePiece(piece, a && !isEmpty(a) ? optPieces({x: a}).x : null)) tr[slot] = piece;
   }
   // free weapons: the pair found becomes the page's forced weapons (never written to a set)
@@ -5538,14 +5553,17 @@ function openCompare(s){
   const dmgRow = dmg.some(v => v != null) ? `<tr class="want dmgrow"><th>${t('cmpDmg', {tp: S.wsTp || 3000})}</th>` + dmg.map((v, i) => {
     const dv = v != null && dmg[0] != null ? (v / dmg[0] - 1) * 100 : 0, best = Math.max(...dmg.filter(x => x != null));
     return `<td class="${v === best && dmg.some(x => x !== v) ? 'best' : ''}">${v == null ? '—' : fmtDmg(v)}${i && dv ? `<i class="dv ${dv > 0 ? 'up' : 'down'}">${dv > 0 ? '+' : ''}${dv.toFixed(1)} %</i>` : ''}</td>`; }).join('') + `</tr>` : '';
-  const wantRows = dmgRow + engCmpRows(s, cols) + dtRows + rowsOf(wanted, 'want'), statRows = rowsOf(keys, '');
+  // what the set is after: the stats that differ shown, the ones every column has alike folded with the rest
+  const differs = k => cols.some(c => num(c, k) !== num(ref, k)), wantedDiff = wanted.filter(differs), wantedSame = wanted.filter(k => !differs(k));
+  const wantRows = dmgRow + engCmpRows(s, cols) + dtRows + rowsOf(wantedDiff, 'want'), statRows = rowsOf(wantedSame, '') + rowsOf(keys, '');
+  const folded = wantedSame.length + keys.length, cols1 = cols.length + 1;
+  // two panes side by side for two or three columns: the pieces that differ, the figures; one under the other past that
+  const pieces = pieceRows ? `<section><div class="kicker">${t('cmpPieces')}</div><table class="cmptbl"><thead>${head}</thead><tbody>${pieceRows}</tbody></table></section>` : '';
+  const figures = wantRows || statRows ? `<section><div class="kicker">${t('cmpWanted')}</div><table class="cmptbl"><thead>${head}</thead><tbody>${wantRows}` +
+    (statRows ? `<tr class="sec"><td colspan="${cols1}"><button class="linkbtn foldbtn" data-cmpmore>${S._cmpMore ? '▾' : '▸'} ${t('cmpStats')} · ${folded}</button></td></tr>` +
+      (S._cmpMore ? statRows : '') : '') + `</tbody></table></section>` : '';
   const body = slots.length || keys.length || wanted.length
-    ? `<p class="muted small">${t('cmpWhy')}</p><table class="cmptbl"><thead>${head}</thead><tbody>` +
-      (pieceRows ? `<tr class="sec"><td colspan="${cols.length + 1}">${t('cmpPieces')}</td></tr>${pieceRows}` : '') +
-      (wantRows ? `<tr class="sec"><td colspan="${cols.length + 1}">${t('cmpWanted')}</td></tr>${wantRows}` : '') +
-      // the rest folded: what the set is not after
-      (statRows ? `<tr class="sec"><td colspan="${cols.length + 1}"><button class="linkbtn foldbtn" data-cmpmore>${S._cmpMore ? '▾' : '▸'} ${t('cmpStats')} · ${keys.length}</button></td></tr>` +
-        (S._cmpMore ? statRows : '') : '') + `</tbody></table>`
+    ? `<p class="muted small">${t('cmpWhy')}</p><div class="cmpgrid ${cols.length <= 3 && pieces && figures ? 'two' : ''}">${pieces}${figures}</div>`
     : `<p class="muted">${t('cmpSame')}</p>`;
   showDialog('cmpdlg', `${t('cmpTitle')} · <code>${esc(shortPath(s.path))}</code> ${statPickBtn()}`, body, '');
 }
