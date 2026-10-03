@@ -175,20 +175,13 @@
         // the abilities on the target, worked out by the page (one Defense Down effect, the strongest, and Box Step)
         if (c.foeDown && c.foeDown.def) agg[1].Defense = (agg[1].Defense || 0) + c.foeDown.def;
         if (c.foeDown && c.foeDown.mdb) agg[1]["Magic Defense"] = (agg[1]["Magic Defense"] || 0) + c.foeDown.mdb;
-        // Frazzle III and Stutter Step, the elemental debuffs and Impact on its stats, Feather Step on your critical hits
-        if (c.foeDown && c.foeDown.meva) agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + c.foeDown.meva;
+        // the elemental debuffs and Impact on its stats, Feather Step on your critical hits
         if (c.foeDown && c.foeDown.stats) Object.keys(c.foeDown.stats).forEach(function (st) { agg[1][st] = (agg[1][st] || 0) + c.foeDown.stats[st]; });
         if (c.foeDown && c.foeDown.crit) agg[0].feather_step = {"Crit Rate": c.foeDown.crit};
         // a RUN's Gambit: the magic damage of its runes' element taken +10 % a rune, for a weaponskill of that element
         var probe = wsProbe(c);
         if (c.foeDown && c.foeDown.gambit && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.gambit.elem)
             agg[1]["Magic DT%"] = (agg[1]["Magic DT%"] || 0) + c.foeDown.gambit.pct;
-        // a NIN's elemental ninjutsu: the target's resistance (Magic Evasion) -30 against an element, for a weaponskill of it
-        if (c.foeDown && c.foeDown.ninRes && probe && (probe.magical || probe.hybrid))
-            c.foeDown.ninRes.forEach(function (r) { if (r.elem === probe.element) agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + r.meva; });
-        // a BRD's Threnody II: the target's Magic Evasion against its element, for a weaponskill of that element
-        if (c.foeDown && c.foeDown.threnody && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.threnody.elem)
-            agg[1]["Magic Evasion"] = (agg[1]["Magic Evasion"] || 0) + c.foeDown.threnody.meva;
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
         if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
