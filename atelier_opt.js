@@ -259,13 +259,14 @@
     // The hits landing in one round, as a distribution {hits: probability}: each hand swings once, plus a Quadruple
     // (3 more), else a Triple (2), else a Double Attack (1), each swing landing at the hand's hit rate
     // A hand's swings in one round, as a distribution {swings: chance}, in the game's order (BG Wiki Multi-Attack):
-    // Quadruple, Triple, Double Attack, then the weapon's "Occasionally attacks X times" from the most down (a Kraken
-    // Club's OA8..OA2, a mythic's aftermath OA3 / OA2), each only when the ones before did not happen.
-    // oa: [[extra swings, chance], ...] highest first
+    // Quadruple, Triple, Double Attack, then, when none of them happened, the weapon's "Occasionally attacks X times":
+    // one draw among its outcomes (a Kraken Club's 2 to 8 at 15/25/25/15/10/3/2 %, else one; a mythic's aftermath
+    // twice 40 %, thrice 20 %), as BG Wiki measured it (Kraken Club: 4.05 attacks a swing).
+    // oa: [[extra swings, chance], ...]
     function swingsOf(ma, oa) {
-        var out = {4: ma.qa, 3: (1 - ma.qa) * ma.ta, 2: (1 - ma.qa) * (1 - ma.ta) * ma.da}, f = (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da);
-        (oa || []).forEach(function (x) { if (x[1] > 0) { out[1 + x[0]] = (out[1 + x[0]] || 0) + f * x[1]; f *= 1 - x[1]; } });
-        out[1] = (out[1] || 0) + f;
+        var out = {4: ma.qa, 3: (1 - ma.qa) * ma.ta, 2: (1 - ma.qa) * (1 - ma.ta) * ma.da}, f = (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da), none = 1;
+        (oa || []).forEach(function (x) { if (x[1] > 0) { out[1 + x[0]] = (out[1 + x[0]] || 0) + f * x[1]; none -= x[1]; } });
+        out[1] = (out[1] || 0) + f * Math.max(0, none);
         return out;
     }
     // The engine's OA list (actions.js multi_attack) by hand, highest first
@@ -283,14 +284,14 @@
         return {swings: sw, hits: hits};
     };
     // What can go off in each hand in a round, in the game's order: Quadruple, Triple, Double Attack, the weapon's
-    // Occasionally attacks (OA8..OA2), else one swing; each with its chance and its swings ({k, n, p}); the off hand
+    // Occasionally attacks (one draw: OA8..OA2), else one swing; each with its chance and its swings ({k, n, p}); the off hand
     // only when it holds a weapon. tpPerHit: the TP each landed swing gives
     O.procsOf = function (x) {
         var hand = function (oa) {
-            var ma = x.multi, f = (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da);
+            var ma = x.multi, f = (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da), none = 1;
             var out = [{k: "QA", n: 4, p: ma.qa}, {k: "TA", n: 3, p: (1 - ma.qa) * ma.ta}, {k: "DA", n: 2, p: (1 - ma.qa) * (1 - ma.ta) * ma.da}];
-            oa.forEach(function (o) { if (o[1] > 0) { out.push({k: "OA" + (o[0] + 1), n: o[0] + 1, p: f * o[1]}); f *= 1 - o[1]; } });
-            out.push({k: "1", n: 1, p: f});
+            oa.forEach(function (o) { if (o[1] > 0) { out.push({k: "OA" + (o[0] + 1), n: o[0] + 1, p: f * o[1]}); none -= o[1]; } });
+            out.push({k: "1", n: 1, p: f * Math.max(0, none)});
             return out.filter(function (e) { return e.p > 0; });
         };
         return {main: hand(oaOf(x.multi.oa, "main")), sub: x.hits.sub > 0 ? hand(oaOf(x.multi.oa, "sub")) : null, tpPerHit: x.tpPerHit};
