@@ -470,6 +470,11 @@
         for (var s in add) if (!blocked[s]) worn[s] = add[s];
         return worn;
     }
+    // Whether the TP pieces changed a slot of the set
+    function covers(worn, pieces) {
+        for (var s in worn) if (worn[s] !== pieces[s]) return true;
+        return false;
+    }
     // The player of a set, kept (per context) while a search tries the same set at several TP:
     // creating it is most of the cost of an evaluation
     function playerOf(ctx, worn) {
@@ -506,16 +511,21 @@
             return {v: e0.v - 1e6 * miss0 + tieBreak(pieces, e0.def, opts), raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
         }
         var tps = opts.objective === "damage_avg" ? (opts.tps || [1000, 1500, 2000, 2500, 3000]) : [opts.tp];
-        var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, def = null;
+        var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, under = 0, def = null;
+        var worth = function (e) { return opts.objective === "tp_return" ? e.r[1][1] + e.r[1][0] / 1e6 : e.r[1][0]; };
         for (var i = 0; i < tps.length; i++) {
-            var e = once(ctx, wornAt(pieces, opts, tps[i]), tps[i], metric);
+            var worn = wornAt(pieces, opts, tps[i]), e = once(ctx, worn, tps[i], metric);
             if (!e) return {v: -Infinity};
             def = def || e.def;
-            total += opts.objective === "tp_return" ? e.r[1][1] + e.r[1][0] / 1e6 : e.r[1][0];
+            total += worth(e);
+            // the set under the TP pieces (the earring a Moonshade covers at 1000 TP): worked out too, so it is
+            // still the best one for when the rule lays nothing (a higher TP); it only parts sets of the same value
+            var u = covers(worn, pieces) ? once(ctx, pieces, tps[i], metric) : e;
+            under += u ? worth(u) : 0;
         }
         var hit = opts.floor && opts.floor.hit ? O.hit(ctx, pieces, opts) : null;
         var v = total / tps.length, miss = shortfall(def, opts.floor, hit);
-        return {v: v - 1e6 * miss + tieBreak(pieces, def, opts), raw: v, def: def, miss: miss};
+        return {v: v - 1e6 * miss + 1e-7 * under / tps.length + tieBreak(pieces, def, opts), raw: v, def: def, miss: miss};
     };
     function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
     // A choice put in a slot. The "weapons" choice is a main hand and its off hand together ({main, sub}): the
