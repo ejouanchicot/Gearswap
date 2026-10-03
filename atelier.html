@@ -427,7 +427,11 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .foetab:hover{color:var(--ink)}
 .foetab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
 .foetab.on::after{content:'';display:inline-block;width:6px;height:6px;margin-left:5px;border-radius:50%;background:var(--r-dd);vertical-align:middle}
-.foepane{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:center;font-size:12.5px;min-height:68px;align-content:start}
+.foepane{display:grid;font-size:12.5px;min-height:128px;align-content:start}
+.frow{display:flex;align-items:center;gap:10px;padding:5px 2px;border-top:1px solid var(--line)}
+.frow:first-child{border-top:0}
+.frow .fctl{flex:none}
+.frow .ffx{margin-left:auto}
 .foepane > *{min-width:0}
 .fclass{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .pcard{display:grid;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--panel-2)}
@@ -443,12 +447,13 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .fcard .fttl{display:flex;align-items:center;gap:8px}
 .fcard .fttl .tgl{margin-left:auto}
 .fcard.off .fctl{opacity:.45}
-.foetabhead{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px}
+.foetabhead{display:flex;align-items:center;justify-content:space-between;margin:0 0 4px;font-size:11.5px;color:var(--muted)}
 .foepane.off{opacity:.45}
 .pcard.off .pbody{opacity:.45}
 .pcard.off .pfx{color:var(--faint);font-style:italic}
 .phead .fttl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);min-width:34px}
-.pfx{margin-left:auto;font-size:11.5px;color:var(--faint);line-height:1.4;text-align:right}
+.pfx{margin-left:auto;font-size:11.5px;color:var(--faint);line-height:1.4;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pfold .fttl{flex:none}
 .pfx.on{color:var(--r-healer)}
 .pbody{display:grid;gap:6px}
 .prow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
@@ -463,7 +468,8 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .fcard.wide{grid-column:1 / -1}
 @media (max-width:620px){.fclass{grid-template-columns:minmax(0,1fr)}}
 .foeonk{margin-top:10px;color:var(--muted);font-size:9.5px}
-.foeon{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-size:12px}
+.foeon{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-size:12px;height:150px;overflow-y:auto;align-content:start}
+.foeonempty{height:150px;margin:4px 0 0}
 .foeon li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-top:1px solid var(--line)}
 .foeon li b{color:var(--r-dd);font-weight:600;white-space:nowrap}
 .fctl{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
@@ -478,7 +484,10 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .tgtsum .tgtnums{margin-left:auto;font-size:12.5px}
 .tgtsum b.down{color:var(--r-dd)}
 .dialog.buffdlg{width:min(1060px,calc(100% - 32px))}
-.buffdlg .body{max-height:78vh;overflow:auto}
+/* a fixed height, the body scrolling inside: a value that changes never re-centres or resizes the window */
+.dialog.buffdlg{top:24px;transform:translateX(-50%);height:min(860px,calc(100% - 48px));display:flex;flex-direction:column;overflow:hidden}
+.buffdlg .body{flex:1;min-height:0;overflow-y:auto;scrollbar-gutter:stable}
+.buffdlg > header,.buffdlg > footer{flex:none}
 .buffdlg .bhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
 .buffdlg .bhead h3{margin:0}
 .buffdlg .bhead .tierbar{margin:0}
@@ -2507,8 +2516,9 @@ function foePanelHTML(b){
   ];
   const classics = tabs.splice(0, 3).flatMap(x => x.lines);
   const cur = tabs.find(x => x.id === S._foeTab) || tabs.find(x => x.on) || tabs[0];
-  const lines = ls => ls.map(([l, ctl, fx]) => `<span class="flbl">${esc(l)}</span><div class="fctl">${ctl}</div>` +
-    `<span class="ffx ${fx.length ? 'on' : ''}">${esc(fx.join(' · ') || '—')}</span>`).join('');
+  // a line an ability: its button (a label only when it has one), what it takes off on the right
+  const lines = ls => ls.map(([l, ctl, fx]) => `<div class="frow">${l ? `<span class="flbl">${esc(l)}</span>` : ''}<div class="fctl">${ctl}</div>` +
+    `<span class="ffx ${fx.length ? 'on' : ''}">${esc(fx.join(' · ') || '—')}</span></div>`).join('');
   const bar = `<div class="foetabs" role="tablist">${tabs.map(x => `<button class="foetab ${x.on ? 'on' : ''}" role="tab" data-foetab="${x.id}" ` +
     `aria-selected="${x === cur}">${esc(x.label)}</button>`).join('')}</div>`;
   // the usual ones as cards: Dia and Light Shot (it strengthens Dia) side by side, Distract with Saboteur under them
@@ -2524,7 +2534,7 @@ function foePanelHTML(b){
   // everything on the target, whatever its tab: what lays it, what it takes off
   const onList = T.B._by.filter(e => ['edefp', 'eeva', 'emdb', 'emeva'].includes(e.k));
   const recap = onList.length ? `<ul class="foeon">${onList.map(e => `<li><span>${esc(e.src)}</span><b>${esc(geoSrc(e.src) ? nmGeo(short(e.k, e.v)) : short(e.k, e.v))}</b></li>`).join('')}</ul>`
-    : `<p class="muted small">${esc(t('foeNoneOn'))}</p>`;
+    : `<p class="muted small foeonempty">${esc(t('foeNoneOn'))}</p>`;
   const total = [T.defDown ? short('edefp', T.defDown) : '', T.B.eeva ? short('eeva', T.B.eeva) : ''].filter(Boolean).join(' · ');
   return {body: pane + `<div class="kicker foeonk">${esc(t('foeOnTitle'))}</div>` + recap + `<p class="muted small bnote">${esc(t('foeNote'))}</p>`,
     total: `<span class="meta ${total ? 'down' : ''}">${esc(total || t('foeNone'))}</span>`};
