@@ -51,13 +51,16 @@ end
 --- @param final_set table Set built so far
 --- @param specific table|nil Specific group (see pdt_overlay)
 --- @param fallback table|nil Group catch-all PDT
+--- @param version function|nil Picks each set's version (engaged: the party support's)
 --- @return table
-local function with_pdt(final_set, specific, fallback)
+local function with_pdt(final_set, specific, fallback, version)
+    version = version or function(set) return set end
+    final_set = version(final_set)
     if not wants_pdt() then
         return final_set
     end
     local overlay = pdt_overlay(specific, fallback)
-    return overlay and set_combine(final_set, overlay) or final_set
+    return overlay and set_combine(final_set, version(overlay)) or final_set
 end
 
 --- Idle gear while a pet is out.
@@ -160,19 +163,21 @@ local function engaged_for_situation(base_engaged_set, pet_valid)
     -- String comparison: Mote states hold "true", not true.
     local pet_engaged = state.PetEngaged and state.PetEngaged.value == "true"
     local master_engaged = _G.player and _G.player.status == 'Engaged'
+    -- the party support's version of each set (.Solo, .Group: shared/utils/party/support_tier.lua)
+    local tier = require('shared/utils/party/support_tier').engaged
 
     if master_engaged and pet_valid and pet_engaged then
         local final_set = sets.pet.engagedBoth or sets.me.engaged or base_engaged_set
-        return with_pdt(final_set, sets.pet.engagedBoth, sets.pet.PDT)
+        return with_pdt(final_set, sets.pet.engagedBoth, sets.pet.PDT, tier)
     end
 
     if pet_valid and pet_engaged then
         local final_set = sets.pet.engaged or base_engaged_set
-        return with_pdt(final_set, sets.pet.engaged, sets.pet.PDT)
+        return with_pdt(final_set, sets.pet.engaged, sets.pet.PDT, tier)
     end
 
     local final_set = sets.me.engaged or base_engaged_set
-    return with_pdt(final_set, sets.me.engaged, sets.me.PDT)
+    return with_pdt(final_set, sets.me.engaged, sets.me.PDT, tier)
 end
 
 --- Build the engaged set (master / pet / both, then weapons).

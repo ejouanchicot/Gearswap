@@ -95,6 +95,8 @@ function SetBuilder.build_engaged_set(base_set)
         -- No Luopan - use standard engaged set
         result = select_hybrid_base(sets.engaged, sets.me.engaged)
     end
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    result = require('shared/utils/party/support_tier').engaged(result)
 
     -- Step 2: Apply weapon sets from states
     result = SetBuilder.apply_weapon(result)

@@ -536,23 +536,27 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 
 ## SupportTier
 
-`shared/utils/party/support_tier.lua` picks a version of the weaponskill set by the support in the party, for every job. `INIT_SYSTEMS` installs it on Mote's `get_weaponskill_set`, so it runs after Mote's own choice (`WeaponskillMode`).
+`shared/utils/party/support_tier.lua` picks a version of the weaponskill and engaged sets by the support in the party, for every job.
+
+- **Weaponskill sets.** `INIT_SYSTEMS` installs it on Mote's `get_weaponskill_set`, so it runs after Mote's own choice (`WeaponskillMode`).
+- **Engaged sets.** Each job's builder passes the set it picks, before its layers (weapons, grips, stance ammo, PDT overlays), through `SupportTier.engaged`: `build_engaged_set` in `shared/jobs/<job>/functions/logic/set_builder.lua` (SMN: `SMN_ENGAGED.lua`; BST: each set and PDT overlay of `engaged_for_situation`; COR, RUN: Mote's set and the HybridMode overlay). Every engaged variant can carry them (`sets.engaged.PDT.Solo`, `sets.engaged.LaphriaAFM3.Group`). A set built by `set_combine` in the builder has no version under it and is left as it is.
 
 - **Tier** (`tier()`), from the members in this zone, this character included. Out-of-zone members are skipped because their songs and rolls cannot reach:
   - `Full`: a GEO and a BRD or a COR;
   - `Group`: a BRD, a COR or a GEO;
   - `Solo`: none of them.
-- **Sets.** The WS set itself is the Full one. `.Group` and `.Solo` under it are worn in their tier. Solo falls back to Group, then to the set itself; with no version written, nothing changes. The version name is appended to Mote's breadcrumbs.
+- **Sets.** The set itself is the Full one. `.Group` and `.Solo` under it are worn in their tier. Solo falls back to Group, then to the set itself; with no version written, nothing changes. The version name is appended to Mote's breadcrumbs.
 - **Jobs of the party** come from `shared/utils/party/party_jobs.lua`:
   - 0xDD / 0xDF packets, cached on `windower._party_jobs` by member id (this character's own packets are skipped: `player.main_job` is exact);
   - otherwise by name, otherwise the dual-box alt's report (`_G.AltJobState`), otherwise a trust by name (Joachim, Ulmia → BRD; Qultada → COR; Sylvie → GEO).
 - **COR.** COR keeps its own copy of this tracking for its roll bonuses (`shared/jobs/cor/functions/logic/party_tracker.lua`, `windower._cor_party_jobs`). It moves onto PartyJobs once that module has been tested in game.
-- **Command** `//gs c support`: tier and party. `solo|group|full` forces a tier (`windower._support_forced`), `auto` clears the force. Nothing is shown in the HUD.
+- **Command** `//gs c support`: tier and party. `solo|group|full` forces a tier (`windower._support_forced`), `auto` clears the force; either re-equips at once (Mote's `handle_update`). Nothing is shown in the HUD. A tier that changes with the party is worn on the next gear update (a buff gained or lost, a status change), not at the moment the member joins.
 
 | Function | Behaviour |
 |---|---|
 | `SupportTier.tier()` -> tier, forced, members | Forced tier or the party's |
 | `SupportTier.version(set, tier)` -> set, name | The tier's version or the set itself |
+| `SupportTier.engaged(set)` -> set | The current tier's version of an engaged set, or the set itself |
 | `SupportTier.install()` | `PartyJobs.install()` + wrap, once per sandbox (`_G._support_tier_installed`) |
 | `SupportTier.command(args)` | `//gs c support` |
 | `PartyJobs.install()` | 0xDD / 0xDF listener, once per sandbox (`_G._party_jobs_installed`) |
@@ -705,7 +709,7 @@ sends `lua <action> <addon>` when allowed and returns whether it did.
 | `//gs c aoewaltz` | - | Divine Waltz on `<me>` | `handle_aoewaltz` |
 | `//gs c belt` | - | Obi / Orpheus status | `ElementalBelt.show_status` |
 | `//gs c dw` | `auto\|none\|haste\|haste2\|max` | Dual Wield tier estimate / force | `DualWield.command` |
-| `//gs c support` | `auto\|solo\|group\|full` | Weaponskill set by party support: tier / force | `SupportTier.command` |
+| `//gs c support` | `auto\|solo\|group\|full` | Weaponskill and engaged sets by party support: tier / force | `SupportTier.command` |
 | `//gs c th` | `show\|hide\|key <k>\|clear\|help` | Treasure Mode | `treasure_commands.handle` |
 | `//gs c dispelga` | `[target]` | Dispelga through Combat Mode (RDM job command) | `SpellGearLock.cast` |
 | `//gs c automovedebug`, `amd` | - | Toggle `_G.AUTOMOVE_DEBUG` (persisted) | `DebugCommands.handle_automovedebug` |

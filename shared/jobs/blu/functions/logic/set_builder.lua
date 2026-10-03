@@ -106,6 +106,8 @@ end
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then return {} end
     local result, path, offhand = SetBuilder.select_engaged_base(base_set)
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    result = require('shared/utils/party/support_tier').engaged(result)
     result = SetBuilder.apply_weapon(mote_layers(result))
     require('shared/utils/debug/trace_log').log('ENGAGED', 'offense %s, off hand %s -> %s',
         tostring(state.OffenseMode and state.OffenseMode.current), tostring(offhand), path)

@@ -111,6 +111,8 @@ end
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then return {} end
     local result, path = SetBuilder.select_engaged_base(base_set)
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    result = require('shared/utils/party/support_tier').engaged(result)
     return finish(result, 'ENGAGED', path)
 end
 

@@ -15,7 +15,8 @@
 --- @return table The set to equip
 function customize_melee_set(meleeSet)
     if not meleeSet then return {} end
-    return meleeSet
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    return require('shared/utils/party/support_tier').engaged(meleeSet)
 end
 
 _G.customize_melee_set = customize_melee_set

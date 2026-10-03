@@ -79,12 +79,13 @@ function SetBuilder.build_engaged_set(base_set)
     end
 
     -- Step 1: Start with base set
-    local result = base_set
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    local result = require('shared/utils/party/support_tier').engaged(base_set)
 
     -- Step 2: Apply Hybrid mode (PDT)
     if state.HybridMode and state.HybridMode.value == 'PDT' then
         if sets.engaged.PDT then
-            local success, combined = pcall(set_combine, result, sets.engaged.PDT)
+            local success, combined = pcall(set_combine, result, require('shared/utils/party/support_tier').engaged(sets.engaged.PDT))
             if success then
                 result = combined
             end

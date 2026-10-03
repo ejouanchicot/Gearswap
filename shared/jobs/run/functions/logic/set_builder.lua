@@ -77,7 +77,8 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    local result = base_set
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    local result = require('shared/utils/party/support_tier').engaged(base_set)
 
     -- Step 1: Apply HybridMode FIRST (PDT/MDT)
     if state.HybridMode and state.HybridMode.value then
@@ -89,7 +90,7 @@ function SetBuilder.build_engaged_set(base_set)
         end
 
         if hybrid_set then
-            result = set_combine(result, hybrid_set)
+            result = set_combine(result, require('shared/utils/party/support_tier').engaged(hybrid_set))
         end
     end
 

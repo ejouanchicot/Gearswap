@@ -66,6 +66,8 @@ end
 function SetBuilder.build_engaged_set(base_set)
     -- Step 1: Mote's base set, or the HybridMode PDT set
     local result = mode_base(sets.engaged, base_set or sets.engaged.Normal or {}, false)
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    result = require('shared/utils/party/support_tier').engaged(result)
 
     -- Step 2: Apply weapon sets from states
     result = SetBuilder.apply_weapon(result)

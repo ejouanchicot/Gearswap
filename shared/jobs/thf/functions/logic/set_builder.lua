@@ -179,6 +179,8 @@ function SetBuilder.build_engaged_set(base_set)
 
     -- Step 1: Select base set (Aftermath Lv.3 detection + HybridMode)
     local result = SetBuilder.select_engaged_base(base_set)
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    result = require('shared/utils/party/support_tier').engaged(result)
 
     -- Step 2: Apply weapon
     result = SetBuilder.apply_weapon(result)

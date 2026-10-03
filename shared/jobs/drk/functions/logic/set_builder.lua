@@ -156,6 +156,8 @@ end
 function DRKSetBuilder.build_engaged_set(weapon_name, hybrid_mode)
     -- Step 1: Select base set (AM3 detection + HybridMode)
     local result = DRKSetBuilder.select_engaged_base(weapon_name, hybrid_mode)
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    result = require('shared/utils/party/support_tier').engaged(result)
 
     -- Step 2: Apply weapon (overwrites main/sub like WAR)
     result = DRKSetBuilder.apply_weapon(result, weapon_name)

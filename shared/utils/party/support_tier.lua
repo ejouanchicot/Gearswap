@@ -1,8 +1,8 @@
 ---============================================================================
---- Support Tier - the weaponskill set by the support in the party
+--- Support Tier - the weaponskill and engaged sets by the support in the party
 ---============================================================================
 --- How much a party buffs you (attack, accuracy, the mob's defense) changes
---- the best weaponskill set, and neither a roll's number nor a Geo spell's
+--- the best weaponskill and engaged sets, and neither a roll's number nor a Geo spell's
 --- potency can be read. What can be read is who is there, so the tier is
 --- taken from the support jobs in this zone (you included), from
 --- party_jobs.lua:
@@ -13,14 +13,17 @@
 --- //gs c support solo|group|full forces one, //gs c support auto goes back
 --- to the party.
 ---
---- Weaponskill sets: the set itself is the Full one; a Group or Solo
---- version under it is worn in that tier, Solo falling back to Group, then
---- to the set itself. No version written: nothing changes.
+--- The set itself is the Full one; a Group or Solo version under it is
+--- worn in that tier, Solo falling back to Group, then to the set itself.
+--- No version written: nothing changes.
 ---   sets.precast.WS['Upheaval']          Full (and any tier without its own)
 ---   sets.precast.WS['Upheaval'].Group    Group
 ---   sets.precast.WS['Upheaval'].Solo     Solo
---- After Mote's own choice (WeaponskillMode): with Acc, .Acc.Solo is the
---- Solo one.
+---   sets.engaged.PDT.Solo, sets.engaged.LaphriaAFM3.Group...
+--- Weaponskill sets: after Mote's own choice (WeaponskillMode): with Acc,
+--- .Acc.Solo is the Solo one. Engaged sets: on the set each job's builder
+--- picks before its layers (weapons, stances' ammo...), through
+--- SupportTier.engaged (shared/jobs/<job>/functions/logic/set_builder.lua).
 ---
 --- @file    shared/utils/party/support_tier.lua
 --- @author  ejouanchicot
@@ -60,6 +63,17 @@ function SupportTier.version(set, tier)
         if type(set[name]) == 'table' then return set[name], name end
     end
     return set, nil
+end
+
+--- The tier's version of an engaged set, or the set itself (a set built by
+--- set_combine has no version under it: unchanged).
+--- @param set table|nil The engaged set the job's builder picked
+--- @return table|nil
+function SupportTier.engaged(set)
+    if type(set) ~= 'table' then return set end
+    local ok, tier = pcall(SupportTier.tier)
+    if not ok then return set end
+    return (SupportTier.version(set, tier))
 end
 
 --- Wrap Mote's get_weaponskill_set, once per sandbox.
@@ -103,13 +117,16 @@ function SupportTier.command(args)
     local word = args and args[1] and args[1]:lower()
     if word == 'auto' then windower._support_forced = nil
     elseif word and FORCE_NAMES[word] then windower._support_forced = FORCE_NAMES[word] end
+    -- the engaged set worn now follows the new tier (Mote's own refresh)
+    local update = rawget(_G, 'handle_update')
+    if word and type(update) == 'function' then pcall(update, {'auto'}) end
     local tier, forced, members = SupportTier.tier()
     local fields = {
         {'Tier', tier .. (forced and ' (forced: //gs c support auto to undo)' or ' (from the party)'), forced and 'warn' or TIER_KIND[tier]},
-        {'Sets read', tier == 'Full' and 'the WS set itself' or ('.' .. table.concat(CHAIN[tier], ', then .') .. ', then the WS set itself')},
+        {'Sets read', tier == 'Full' and 'the set itself' or ('.' .. table.concat(CHAIN[tier], ', then .') .. ', then the set itself')},
     }
     for _, f in ipairs(member_fields(members)) do fields[#fields + 1] = f end
-    require('shared/utils/messages/info_block').show({tag = 'SUPPORT', title = 'Weaponskill set by party support', fields = fields})
+    require('shared/utils/messages/info_block').show({tag = 'SUPPORT', title = 'Weaponskill and engaged sets by party support', fields = fields})
     return true
 end
 

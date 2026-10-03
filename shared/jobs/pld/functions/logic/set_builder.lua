@@ -276,6 +276,8 @@ function SetBuilder.build_engaged_set(base_set)
 
     -- Step 1: Select base set (BurtgangKC detection + HybridMode)
     local result = SetBuilder.select_engaged_base(base_set)
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    result = require('shared/utils/party/support_tier').engaged(result)
     local is_two_handed = grip_for(state.MainWeapon and state.MainWeapon.current) ~= nil
     local is_burtgang_kc = state.MainWeapon and state.MainWeapon.current == 'BurtgangKC'
 

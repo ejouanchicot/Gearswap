@@ -79,9 +79,8 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    -- WHM rarely melees, return base set as-is
-
-    return base_set
+    -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
+    return require('shared/utils/party/support_tier').engaged(base_set)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
