@@ -459,6 +459,7 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .prow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
 .pseg{display:flex;align-items:center;gap:6px}
 .pseg .buffsel{width:auto;min-width:130px}
+.pwho{font-size:10.5px;color:var(--faint);letter-spacing:.04em;margin-left:auto}
 .pgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
 .pgrid .pair{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:4px;grid-column:1 / -1}
 .pgrid .proll{display:grid;grid-template-columns:minmax(0,1fr) 50px auto auto;gap:4px;align-items:center;grid-column:1 / -1}
@@ -2462,13 +2463,17 @@ function partyCardsHTML(b, sel, geoSel, plus){
   // a card a job, folding: its band says what it gives, so a folded card still tells
   const card = (job, body, fx) => { const open = !(S.pFold || {})[job], on = !(b.off || {})[job];
     return `<div class="pcard ${open ? 'open' : ''} ${on ? '' : 'off'}"><div class="phead"><button class="pfold" data-pfold="${esc(job)}" aria-expanded="${open}">` +
-      `<span class="fttl">${esc(job)}</span><span class="pfx ${fx && on ? 'on' : ''}">${esc(on ? fx || t('pNone') : t('pOff'))}</span></button>` +
+      `<span class="fttl">${esc(job === 'WHM' ? 'WHM · RDM · SCH' : job)}</span><span class="pfx ${fx && on ? 'on' : ''}">${esc(on ? fx || t('pNone') : t('pOff'))}</span></button>` +
       `${offSwitch(b, job)}</div>` +
       `${open ? `<div class="pbody">${body}</div>` : ''}</div>`; };
   const songs = new Set(Object.keys(SONGS)), geoName = v => v.replace(/^(Entrust )?(Indi|Geo)-/, '');
   return [
-    card('WHM', `<div class="prow">${seg('protect', PROTECT, 'Protect')}${seg('shell', SHELL, 'Shell')}</div>` +
-      `<div class="prow">${seg('haste', HASTE, 'Haste')}<div class="pseg"><span class="flbl">Storm</span>${sel('storm', Object.keys(STORMS), 'Storm')}</div></div>`,
+    // who casts them (BG Wiki): Protect V WHM / RDM / SCH / PLD, Shell V WHM / RDM / SCH / RUN, Haste WHM / RDM and
+    // Haste II RDM only, Storm II SCH only; the switch keeps its WHM key
+    card('WHM', `<div class="prow">${seg('protect', PROTECT, 'Protect')}<span class="pwho">WHM RDM SCH PLD</span></div>` +
+      `<div class="prow">${seg('shell', SHELL, 'Shell')}<span class="pwho">WHM RDM SCH RUN</span></div>` +
+      `<div class="prow">${seg('haste', HASTE, 'Haste')}<span class="pwho">I : WHM RDM · II : RDM</span></div>` +
+      `<div class="prow"><div class="pseg"><span class="flbl">Storm</span>${sel('storm', Object.keys(STORMS), 'Storm')}</div><span class="pwho">SCH</span></div>`,
       gives(v => PROTECT[v] || SHELL[v] || HASTE[v] || STORMS[v])),
     card('BRD', `<div class="pgrid">${songSlots(b).map(i => sel('song' + i, Object.keys(SONGS), `${t('bSong')} ${i + 1}`)).join('')}${plus('songsPlus', 'Songs', 9)}</div>${brdJaHTML(b)}`,
       gives(v => songs.has(v))),
