@@ -2797,9 +2797,13 @@ const ENDGAME_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II'
   // Haste Samba on its own whenever the shown subjob is DNC (a click turns it off there: jaOff)
   autoSamba: true};
 // Whether an ability counts: chosen, or Haste Samba under /DNC with the end-game default (not turned off)
+// An ability is yours (your job or subjob: b.ja, the same in every support profile) or a party member's (b.pja, the
+// profile's own, none in Solo): Haste Samba ticked under /DNC is not a party DNC's once the subjob is SAM
+const jaRole = name => ((jasOf().find(j => j.name === name) || {}).as) === 'party' ? 'pja' : 'ja';
 function jaOn(b, name){
-  if ((b.ja || {})[name]) return true;
-  return name === 'Haste Samba' && !!b.autoSamba && (data() || {}).sub === 'DNC' && !(b.jaOff || {})[name];
+  const role = jaRole(name);
+  if ((b[role] || {})[name]) return true;
+  return role === 'ja' && name === 'Haste Samba' && !!b.autoSamba && (data() || {}).sub === 'DNC' && !(b.jaOff || {})[name];
 }
 const endgameBuffs = () => JSON.parse(JSON.stringify(ENDGAME_BUFFS));
 // The sets GearSwap wears a .Group / .Solo version of, by the party's support (support_tier.lua)
@@ -2810,7 +2814,7 @@ const TIERED = /^sets\.(precast\.WS|engaged)\b/;
 const TIERS = ['Full', 'Group', 'Solo'];
 const PERSONAL = ['food', 'am', 'amStage', 'amTp', 'enemy', 'ja', 'jaOff', 'autoSamba'];
 const TIER_DROP = {Full: [], Group: ['indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic'],
-  Solo: ['indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic', 'songsPlus', 'rollsPlus', 'protect', 'shell', 'haste', 'song0', 'song1', 'song2', 'song3', 'song4', 'soulVoice', 'marcato', 'clarion', 'ariaStage', 'roll0job', 'roll1job', 'rollCC', 'roll0', 'roll1', 'dia', 'lightshot', 'distract', 'saboteur', 'sabGloves', 'auspice', 'auspiceFeet', 'enspell', 'enSkill']};
+  Solo: ['pja', 'indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic', 'songsPlus', 'rollsPlus', 'protect', 'shell', 'haste', 'song0', 'song1', 'song2', 'song3', 'song4', 'soulVoice', 'marcato', 'clarion', 'ariaStage', 'roll0job', 'roll1job', 'rollCC', 'roll0', 'roll1', 'dia', 'lightshot', 'distract', 'saboteur', 'sabGloves', 'auspice', 'auspiceFeet', 'enspell', 'enSkill']};
 function tierBuffs(tier){ const b = endgameBuffs(); for (const k of TIER_DROP[tier] || []) delete b[k]; return b; }
 const buffTier = () => (S.buffTier || {})[S.char] || 'Full';
 const buffKey = (tier = buffTier()) => tier === 'Full' ? S.char : S.char + '|' + tier;
@@ -2886,7 +2890,7 @@ function liveBuffs(b){
   if ((off.includes('Light Shot') || off.includes('COR')) && out.foeJa) out.foeJa = out.foeJa.filter(n => !FOE_JA.COR[n]);
   // a party job's abilities on you (pWAR: a party WAR's Warcry...) go with its tab's switch
   const pOff = off.filter(j => j[0] === 'p').map(j => j.slice(1));
-  if (pOff.length && out.ja) out.ja = Object.fromEntries(Object.entries(out.ja).filter(([n]) => {
+  if (pOff.length && out.pja) out.pja = Object.fromEntries(Object.entries(out.pja).filter(([n]) => {
     const a = JAS[n] || {}; return !(a.party && pOff.includes(a.from || [].concat(a.job)[0])); }));
   // a job's abilities on the target (WAR Armor Break...) go with its switch
   if (out.foeJa) out.foeJa = out.foeJa.filter(n => !off.some(j => FOE_JA[j] && FOE_JA[j][n] && !FOE_SW[j]) &&
@@ -4519,8 +4523,8 @@ function withWeapons(s, ignore){
 // Without the game's answer: no weapon or buff bonus, Moonshade's 250 (2000 - 250 = 1750...)
 const TP_STEPS = [1000, 1750, 2000, 2750, 3000];
 // The buffs of the page that change a weaponskill's TP (Warcry, Hagakure), as the game's buffactive
-const tpBuffs = () => { const on = buffState().ja || {};
-  return jasOf().filter(j => on[j.name]).map(j => j.name).join(','); };
+const tpBuffs = () => { const b = buffState();
+  return jasOf().filter(j => jaOn(b, j.name)).map(j => j.name).join(','); };
 // The game's answer for these weapons and buffs (and this TP, when given), asked once and kept
 function tpAsk(s, pieces, tp){
   const c = S.char, L = S._live[c] || {};
@@ -6126,7 +6130,7 @@ document.addEventListener('click', e => {
     for (const k of PERSONAL) if (old[k] !== undefined) b[k] = old[k];
     S.buffs[buffKey()] = b; render(); return; }
   if (d.bufftier) { setBuffTier(d.bufftier); render(); return; }
-  if (d.ja) { const b0 = buffState(), ja = b0.ja = b0.ja || {}, off = b0.jaOff = b0.jaOff || {};
+  if (d.ja) { const b0 = buffState(), role = jaRole(d.ja), ja = b0[role] = b0[role] || {}, off = b0.jaOff = b0.jaOff || {};
     if (jaOn(b0, d.ja)) { delete ja[d.ja]; off[d.ja] = 1; }
     else { ja[d.ja] = 1; delete off[d.ja];
       // abilities that overwrite each other (BG Wiki: Blood Rage and Warcry): turning one on turns the others off
