@@ -176,6 +176,10 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .empty-list{padding:18px 14px;color:var(--muted);font-size:13.5px}
 .hint{padding:8px 12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint)}
 .detail{min-width:0}
+.optsec{padding:14px 18px;border-top:1px solid var(--line)}
+/* an engaged set's result beside the set worked out, when the middle has room */
+.engsplit{display:grid;gap:0 18px}
+@container (min-width:900px){.engsplit{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.engsplit > .engsec:only-child{grid-column:1 / -1}}
 .detail > header{padding:14px 18px;border-bottom:1px solid var(--line);display:grid;gap:3px;border-radius:var(--radius) var(--radius) 0 0;
   background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 7%,var(--panel-2)),var(--panel-2))}
 .detail .titleline{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
@@ -225,9 +229,10 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .eqcol footer{padding:0;font-size:12px;color:var(--muted);display:grid;gap:2px;max-width:236px}
 .eqcol .legend{border:0;padding:0;display:grid;gap:3px;font-size:11.5px;max-width:236px}
 .dbody .setstats{border-top:0;min-height:100%}
-/* below 1700px the stats beside the grid would get one narrow column: the equipment goes on top
+/* the middle too narrow for the stats beside the grid (one narrow column): the equipment goes on top
    (cells on the left, their notes beside them) and the stats take the whole width, two columns or more */
-@media (max-width:1700px){
+.detail{container-type:inline-size}
+@container (max-width:860px){
   .dbody{grid-template-columns:minmax(0,1fr)}
   .eqcol{border-right:0;border-bottom:1px solid var(--line);grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:22px;align-items:start}
   .eqcol > .slots{grid-row:1 / span 2}
@@ -4291,7 +4296,7 @@ function engOptHTML(s){
   const tr = trialRow(s), p = engineReady() ? engParts(s) : null;
   const result = tr || (p && p.vs) ? `<div class="engsec"><div class="kicker">${esc(t('engResKick'))}</div>${tr}${p ? p.vs : ''}</div>` : '';
   const shown = p ? `<div class="engsec"><div class="kicker">${esc(t('engNowKick'))}</div>${p.line}${p.calc}</div>` : '';
-  return engControlsHTML() + result + shown;
+  return engControlsHTML() + (result || shown ? `<div class="engsplit">${result}${shown}</div>` : '');
 }
 // The search's controls: the button (or its progress), the objective, the TP the weaponskill goes at, the settings
 function engControlsHTML(){
@@ -4511,15 +4516,16 @@ function cardHTML(card, ci, bypath, q){
   if (holds.short.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short.join(', '))})}</span>`);
   const legend = `<div class="legend mini"><span><i></i>${t('lgOwn')}</span><span><i class="inh"></i>${t('lgInh')}</span><span><i class="weap"></i>${t('lgWeap')}</span><span><i class="try"></i>${t('lgTry')}</span>${holds.missing.length ? `<span><i class="miss"></i>${t('lg_missing')}</span>` : ''}${holds.short.length ? `<span><i class="short"></i>${t('lg_short')}</span>` : ''}</div><p class="eqhint">${t('lgHint')}</p>`;
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws', head = ws ? wsTitleHTML(s) : '';
-  // a weaponskill set: three compartments like the page's others, each with its band: what the
-  // weaponskill is (left), what the figures are worked out with (right), the optimizer (under both)
+  // the page in three bands: what the set is (a weaponskill set: the weaponskill, what its figures are worked out with),
+  // the equipment beside its stats, then the optimizer on the whole width
   const top = ws ? `<div class="wstop">${box('g-off', t('wsBoxWs'), head + familyNoteHTML(card, s))}` +
-      (wsOfSet(s) ? box('g-caps', t('wsBoxCalc'), wsHeadHTML(card, ci, vi, s)) : '') + `</div>` +
-      (wsOfSet(s) ? box('g-you wsoptbox', t('wsBoxOpt'), wsOptHTML(s)) : '')
-    : setHeadHTML(card, ci, vi, s) + (family(s.path, s.pieces) === 'engaged' ? box('g-you wsoptbox', t('wsBoxOpt'), engOptHTML(s)) : '');
+      (wsOfSet(s) ? box('g-caps', t('wsBoxCalc'), wsHeadHTML(card, ci, vi, s)) : '') + `</div>`
+    : setHeadHTML(card, ci, vi, s);
+  const opt = ws && wsOfSet(s) ? box('g-you wsoptbox', t('wsBoxOpt'), wsOptHTML(s))
+    : family(s.path, s.pieces) === 'engaged' ? box('g-you wsoptbox', t('wsBoxOpt'), engOptHTML(s)) : '';
   return `<article class="detail"><header>${top}${trialBar(s)}</header>
     <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
-    <div class="globals-inline">${globalsHTML(s)}</div></article>`;
+    ${opt ? `<section class="optsec">${opt}</section>` : ''}<div class="globals-inline">${globalsHTML(s)}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 function renderSets(d){
