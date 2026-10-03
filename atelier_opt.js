@@ -496,6 +496,8 @@
         tpOnlyOut(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
+        // an engaged set's round before and after, the real time worked out whatever the objective
+        if (ctx.mode === "engaged") { res.best.round = O.round(ctx, res.pieces, opts); res.start.round = O.round(ctx, input.start, opts); }
         delete opts.onStep;
         return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, gains: O.gains(ctx, res, choices, opts)};
     };
