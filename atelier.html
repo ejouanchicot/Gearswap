@@ -2368,7 +2368,7 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],
   pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], mdmg: ['Dégâts magiques', 'Magic damage', '']};
 // Short labels, for a one-line summary (the party support cards)
-const FX_SHORT = {atkp: ['Att', 'Atk'], atk: ['Att', 'Atk'], atkf: ['Att', 'Atk'], acc: ['Préc', 'Acc'], racc: ['Préc. dist.', 'R.Acc'], ratk: ['Att. dist.', 'R.Atk'],
+const FX_SHORT = {edefp: ['Déf cible', 'Tgt Def'], eeva: ['Éva cible', 'Tgt Eva'], emdb: ['Déf. mag. cible', 'Tgt MDB'], emeva: ['Éva. mag. cible', 'Tgt M.Eva'], atkp: ['Att', 'Atk'], atk: ['Att', 'Atk'], atkf: ['Att', 'Atk'], acc: ['Préc', 'Acc'], racc: ['Préc. dist.', 'R.Acc'], ratk: ['Att. dist.', 'R.Atk'],
   def: ['Déf', 'Def'], defp: ['Déf', 'Def'], eva: ['Éva', 'Eva'], meva: ['Éva. mag.', 'M.Eva'], mdb: ['Déf. mag.', 'MDB'], macc: ['Préc. mag.', 'M.Acc'],
   mab: ['MAB', 'MAB'], mhaste: ['Haste', 'Haste'], jahaste: ['Haste JA', 'JA Haste'], shell: ['Shell', 'Shell'], stp: ['STP', 'STP'], da: ['DA', 'DA'],
   crit: ['Crit', 'Crit'], pdl: ['PDL', 'PDL'], mdmg: ['Dmg mag.', 'M.Dmg'], regen: ['Regen', 'Regen'], refresh: ['Refresh', 'Refresh']};
@@ -2495,7 +2495,9 @@ function partyCardsHTML(b, sel, geoSel, plus){
     card('COR', `<div class="pgrid">${[0, 1].map(i => `<div class="proll">${sel('roll' + i, Object.keys(ROLLS), `Roll ${i + 1}`)}${sel('roll' + i + 'n', ROMAN, '', 'XI', 'n')}` +
       rollChips(b, i) + `</div>`).join('')}${plus('rollsPlus', 'Rolls', 8)}</div>`, gives(v => / Roll [IVX]+/.test(v))),
     card('GEO', `<div class="pgrid">${geoSel('indi', 'Indi')}${geoSel('geo', 'Geo')}${geoSel('entrust', 'Entrust')}${plus('geoPlus', 'Geomancy', 10)}</div>${geoJaHTML(b)}`,
-      gives(v => /^(Entrust )?(Indi|Geo)-/.test(v) && BUBBLES[geoName(v)])),
+      // what the bubbles give you and take off the target (Frailty...), an NM's cut said
+      gives(v => /^(Entrust )?(Indi|Geo)-/.test(v) && (BUBBLES[geoName(v)] || GEO_DEBUFFS[geoName(v)])) +
+        (['indi', 'geo', 'entrust'].some(k => GEO_DEBUFFS[b[k]]) && geoKeep(enemyKey(b.enemy)) < 1 ? ` (NM −${Math.round((1 - geoKeep(enemyKey(b.enemy))) * 100)} %)` : '')),
   ].join('');
 }
 // The GEO's abilities on its bubbles, under its menus: Bolster greys out the two it leaves out
