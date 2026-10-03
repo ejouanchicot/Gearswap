@@ -131,6 +131,23 @@ local function loaded_piece(keys, slot)
     return nil
 end
 
+--- The file and definition holding a set's table: its own, or, for a name given to
+--- another set's table (sets.precast.JA['High Jump'] = sets.precast.JA['Jump']), that set's.
+local function locate_table(job, path)
+    local abs, text, def = locate(job, path)
+    if abs then return abs, text, def end
+    local keys = SetWriter.path_keys(path)
+    local node = keys and node_of(keys)
+    if not node then return nil, text end
+    for _, file in ipairs(set_files(job)) do
+        local ftext = read(file)
+        for _, d in ipairs(ftext and SetWriter.definitions(ftext) or {}) do
+            if rawequal(node_of(d.keys), node) then return file, ftext, d end
+        end
+    end
+    return nil, text
+end
+
 local function piece_key(value)
     if type(value) == 'string' then return value .. '|' end
     if type(value) ~= 'table' or type(value.name) ~= 'string' then return nil end
@@ -267,10 +284,10 @@ end
 --- @return string|nil abs, string text|why, string out, table done, table def (before), table keys
 local function rewrite(job, req)
     local keys = SetWriter.path_keys(req.path)
-    local abs, text, def = locate(job, req.path)
+    local abs, text, def = locate_table(job, req.path)
     if abs then
         local out, done = SetWriter.edit(text, def, changes_of(req, text))
-        return abs, text, out, done, def, keys
+        return abs, text, out, done, def, def.keys
     end
     local babs, btext, base, name, after = locate_base(job, keys)
     if not babs then return nil, text end
