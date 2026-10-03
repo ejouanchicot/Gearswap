@@ -1303,8 +1303,9 @@ function family(path, pieces){
   const p = path;
   const slots = Object.keys(pieces||{});
   if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
-  if (/^sets\.(idle|Adoulin|Town|me\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
-  if (/^sets\.(engaged|me\.engaged)/.test(p)) return 'engaged';
+  // GEO keeps its own sets (sets.me.*) and the ones with a luopan out (sets.luopan.*)
+  if (/^sets\.(idle|Adoulin|Town|me\.idle|luopan\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
+  if (/^sets\.(engaged|me\.engaged|luopan\.engaged)/.test(p)) return 'engaged';
   if (/^sets\.pet|Pet|pet_/.test(p)) return 'pet';
   if (/^sets\.precast\.FC/.test(p)) return 'fc';
   if (/^sets\.precast\.WS/.test(p)) return 'ws';
@@ -1319,7 +1320,7 @@ function topOf(path, fam){
   const s = segs(path);
   let n = 2;
   if (fam==='ja') n = 3;
-  if (fam==='idle' || fam==='engaged') n = s[0]==='me' ? 2 : 1;
+  if (fam==='idle' || fam==='engaged') n = ['me', 'luopan'].includes(s[0]) ? 2 : 1;
   if (fam==='special') n = s[0]==='buff' ? 2 : 1;
   if (fam==='weapons' || fam==='other') n = s.length;
   return s.slice(0, Math.min(n, s.length));
@@ -2808,7 +2809,7 @@ function jaOn(b, name){
 }
 const endgameBuffs = () => JSON.parse(JSON.stringify(ENDGAME_BUFFS));
 // The sets GearSwap wears a .Group / .Solo version of, by the party's support (support_tier.lua)
-const TIERED = /^sets\.(precast\.WS|engaged)\b/;
+const TIERED = /^sets\.(precast\.WS|engaged|luopan\.engaged)\b/;
 // Support profiles, as GearSwap picks the weaponskill and engaged sets (shared/utils/party/support_tier.lua): Full (a GEO
 // and a BRD or a COR), Group (one of them), Solo (none). Each keeps its own party buffs; what is yours or the
 // target's (PERSONAL) follows you from one profile to the next. Full is the character's original profile.
