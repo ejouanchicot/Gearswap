@@ -13,7 +13,7 @@ Set names and automatic gear: [sets.md](sets.md).
 
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
-| `^numpad1` | Main Weapon (`MainWeapon`) | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic | Weapon set (`sets.<Weapon>`) in idle and engaged. No fixed default: after loading, the mode is set to the weapon you are holding (Ukonvasara if it matches no set). NaeglingKC = Naegling with Kraken Club. |
+| `^numpad1` | Main Weapon (`MainWeapon`) | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic, LoxoticKC | Weapon set (`sets.<Weapon>`) in idle and engaged. No fixed default: after loading, the mode is set to the weapon you are holding (Ukonvasara if it matches no set). NaeglingKC = Naegling with Kraken Club. |
 | `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | Idle and engaged base: `sets.idle.PDT` / `sets.engaged.PDT`, or the Normal ones (the template has no `sets.idle.Normal`, so Normal idles in `sets.idle`). Engaged, a Kraken Club, Aftermath or weapon set can win over it: see Notes. |
 | `^numpad0` | Aftermath Set (`AftermathSet`) | **FastTP**, AFM3 | Shown only with a weapon that has its own Aftermath set (`sets.engaged.<Weapon>AFM3`, e.g. Laphria). AFM3: that set while the Aftermath is up (DPS). FastTP: the weapon's TP set (`sets.engaged.<Weapon>`) even under Aftermath. |
 | `^numpad2` | Jump Auto (`JumpAuto`) | On, **Off** | On /DRG only: the row and the key are hidden on other subjobs. On: a weaponskill pressed under 1000 TP is held back, Jump (then High Jump if TP is still short) goes out, then the weaponskill is sent again. |
@@ -48,9 +48,9 @@ Ikenga or Loxotic the game refuses them and their turn in the chain is lost.
 
 ## Notes
 
-- **Engaged set order** (first match wins): `sets.engaged.PDTKC` with
-  NaeglingKC, or with a Kraken Club in the off hand when the chosen weapon set has
-  no `sub`; a SubtleBlow / Hoxne stance set; `sets.engaged.<Weapon>AFM3` under
+- **Engaged set order** (first match wins): the weapon's Kraken Club set
+  (`sets.engaged.NaeglingKC` with NaeglingKC, `.LoxoticKC` with LoxoticKC, or `.<Weapon>KC` with a
+  Kraken Club in the off hand when the chosen weapon set has no `sub`); a SubtleBlow / Hoxne stance set; `sets.engaged.<Weapon>AFM3` under
   that weapon's Aftermath (AftermathSet AFM3: `LaphriaAFM3`, `UkonvasaraAFM3`);
   `sets.engaged.<Weapon>` if it exists;
   then `sets.engaged.<HybridMode>`.

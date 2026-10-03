@@ -22,8 +22,9 @@ What WAR adds on top of the shared pipeline:
   `WSPrecastHandler.handle` for every job on /DRG.
 - **TP bonus configuration** with Warcry / Savagery, Fencer and Chango bonuses.
 - **Engaged set selection** by weapon, stance and buff, first match wins: Kraken
-  Club (the `NaeglingKC` choice, or a club already in the off hand when the chosen
-  weapon set names no sub) -> `PDTKC`; an explicit stance (`HybridMode` `SubtleBlow` or `Hoxne`, not in
+  Club (a weapon value holding it, `NaeglingKC` / `LoxoticKC`, or a club already in the off hand when the
+  chosen weapon set names no sub) -> the weapon's KC set (`sets.engaged.NaeglingKC`, `.LoxoticKC`; `PDTKC`
+  until 2026-10-03); an explicit stance (`HybridMode` `SubtleBlow` or `Hoxne`, not in
   the template) -> its set, or `<stance>AFM3` under Ukonvasara Aftermath Lv.3;
   the weapon's own `<Weapon>AFM3` under its Aftermath (`AftermathSet` AFM3:
   `LaphriaAFM3`, `UkonvasaraAFM3`, which was `PDTAFM3` until 2026-10-03); a set named after the weapon
@@ -331,8 +332,9 @@ has no effect on WAR.
   (`BaseSetBuilder.apply_movement`).
 - `customize_melee_set` -> `build_engaged_set`: `select_engaged_base` replaces
   Mote's set with, first match wins:
-  1. `sets.engaged.PDTKC` when `MainWeapon == 'NaeglingKC'`, or when the equipped
-     sub is Kraken Club **and** the chosen `sets[MainWeapon]` sets no `sub` of its
+  1. the weapon's KC set (`kraken_set`): `sets.engaged[MainWeapon]` when `sets[MainWeapon]`
+     holds the Kraken Club (`NaeglingKC`, `LoxoticKC`), or `sets.engaged[MainWeapon .. 'KC']` when
+     the equipped sub is Kraken Club **and** the chosen `sets[MainWeapon]` sets no `sub` of its
      own (a manual equip). Since 2026-09-28: right after leaving `NaeglingKC` the
      club is still in hand for one rebuild, and the new weapon used to get the KC
      set until the next action;
@@ -389,7 +391,7 @@ change ends in a `gs reload`), so all values reset to their defaults. Keys from
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `HybridMode` (replaced by a new `M{}`) | PDT, Normal (overlay: + SubtleBlow, Hoxne) | PDT | `^numpad9` | `set_builder.lua` `select_stance_engaged`, `select_engaged_base`, `select_idle_base`; `job_state_change` (`AmpullaLock.apply`); Mote `get_melee_set` |
-| `MainWeapon` | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic (overlay order: Chango second) | the weapon in hand, set by `sync_weapon_with_hand()` after the sets load; first option (`Ukonvasara`) when it matches no set | `^numpad1` | `set_builder.lua` `ukonvasara_am3`, `select_weapon_engaged`, `apply_weapon`; `job_state_change` (WS slots) |
+| `MainWeapon` | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic, LoxoticKC (overlay order: Chango second) | the weapon in hand, set by `sync_weapon_with_hand()` after the sets load; first option (`Ukonvasara`) when it matches no set | `^numpad1` | `set_builder.lua` `ukonvasara_am3`, `select_weapon_engaged`, `apply_weapon`; `job_state_change` (WS slots) |
 | `JumpAuto` | On, Off | Off (overlay: On) | `^numpad2`, /DRG only (`subjob = "DRG"`) | `auto_jump.lua` `auto_trigger_jump` (through `WSPrecastHandler.handle`) |
 | `WS1`..`WS5` | the weapon's WS list, or `None` | entry *i* of the list | `^numpad3`..`^numpad7` | `WSSlots.get` / `cast`; HUD |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` (never reached for WAR) |
@@ -442,8 +444,8 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 
 | Set | Looked up by | T | L |
 |-----|--------------|---|---|
-| `sets['Ukonvasara']`, `['Naegling']`, `['NaeglingKC']`, `['Shining']`, `['Chango']`, `['Ikenga']`, `['Loxotic']` | `apply_weapon`, `ws_slots.lua` `detect_weapon` | yes | loop |
-| `sets.engaged.PDTKC` | `select_engaged_base` | yes | yes |
+| `sets['Ukonvasara']`, `['Naegling']`, `['NaeglingKC']`, `['Shining']`, `['Chango']`, `['Ikenga']`, `['Loxotic']`, `['LoxoticKC']` | `apply_weapon`, `ws_slots.lua` `detect_weapon` | yes | loop |
+| `sets.engaged.NaeglingKC`, `.LoxoticKC` | `select_engaged_base` (`kraken_set`) | `NaeglingKC` | both |
 | `sets.engaged.<Weapon>AFM3` (`LaphriaAFM3`, `UkonvasaraAFM3`) | `weapon_am3_set` (`WeaponAftermath`) | `UkonvasaraAFM3` | both |
 | `sets.engaged.SubtleBlow`, `.Hoxne`, `.HoxneAFM3` | `select_stance_engaged` (overlay `HybridMode` only) | absent | yes |
 | `sets.engaged.Naegling`, `.Ukonvasara` | `select_weapon_engaged` | absent | yes |
@@ -622,7 +624,7 @@ cancel depend on recasts, packets and timing: check them in game with
 - Fixed 2026-09-28: `WAR_STATUS.lua` is the shared `LifecycleManager.status_change()`
   (hold during an action, `DoomManager` required once); `detect_weapon` recognises
   table / other-case / long-name set entries; the Hoxne stance wears its Ampulla;
-  leaving `NaeglingKC` drops `PDTKC` at once; `thirdeye` off /SAM warns.
+  leaving `NaeglingKC` drops its KC set at once; `thirdeye` off /SAM warns.
 - Fixed 2026-09-29 (confirmed in game on WAR the same day): `job_buff_change` rebuilt
   the gear inside the buff event, where `buffactive` still holds the old buffs, so
   gaining Aftermath Lv.3 kept the non-AM3 set and losing it put `PDTAFM3` back on.

@@ -56,7 +56,8 @@ function WARStates.configure()
         'Shining', -- Shining One (Polearm)
         'Chango', -- Aeonic Great Axe (+500 TP bonus, see WAR_TP_CONFIG)
         'Ikenga', -- Ikenga's Axe (1H option)
-        'Loxotic' -- Loxotic Mace (1H option)
+        'Loxotic', -- Loxotic Mace (1H option)
+        'LoxoticKC' -- Loxotic Mace + Kraken Club (multi-attack focus)
     }
 
     --- AftermathSet: the engaged set of a weapon that has its own Aftermath

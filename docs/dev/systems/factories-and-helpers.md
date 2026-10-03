@@ -587,7 +587,7 @@ Wired on RDM only. Another job that casts Dispelga needs the same four calls.
 
 | Caller | Position | Named-weapon rule after it |
 |---|---|---|
-| `war/functions/logic/set_builder.lua` `weapon_am3_set` | after Kraken Club (`PDTKC`) and the SubtleBlow / Hoxne stance | `PDTAFM3` (Ukonvasara, 272) |
+| `war/functions/logic/set_builder.lua` `weapon_am3_set` | after Kraken Club (the weapon's KC set) and the SubtleBlow / Hoxne stance | `PDTAFM3` (Ukonvasara, 272) |
 | `sam/functions/logic/set_builder.lua` `select_engaged_base` | first | `AM3` (Masamune / Kogarasumaru, 272) |
 | `drk/functions/logic/set_builder.lua` `select_engaged_base` | first | `AM3` (Liberator, 272) |
 | `thf/functions/logic/set_builder.lua` `select_engaged_base` | first | `PDTAFM3` (Vajra, 272) |

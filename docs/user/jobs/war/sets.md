@@ -15,6 +15,7 @@ value, over your idle and engaged gear (in town too):
 | `sets.Ukonvasara` | `MainWeapon` Ukonvasara |
 | `sets.Naegling` | `MainWeapon` Naegling |
 | `sets.NaeglingKC` | `MainWeapon` NaeglingKC (the provided one is Naegling + Kraken Club) |
+| `sets.LoxoticKC` | `MainWeapon` LoxoticKC (the provided one is Loxotic Mace +1 + Kraken Club) |
 | `sets.Shining` | `MainWeapon` Shining |
 | `sets.Chango` | `MainWeapon` Chango |
 | `sets.Ikenga` | `MainWeapon` Ikenga |
@@ -52,7 +53,7 @@ The first line that matches wins, then the weapon set goes on top:
 
 | Set | Worn when |
 |---|---|
-| `sets.engaged.PDTKC` | `MainWeapon` NaeglingKC, **or a Kraken Club in your off hand** when the chosen weapon set has no `sub` of its own, whatever the mode |
+| `sets.engaged.NaeglingKC`, `sets.engaged.LoxoticKC` (`.<Weapon>KC`) | `MainWeapon` NaeglingKC / LoxoticKC, **or a Kraken Club in your off hand** under that weapon when its weapon set has no `sub` of its own, whatever the mode. Named after the weapon value, as `LaphriaAFM3` (`PDTKC` until 2026-10-03). The provided LoxoticKC starts as NaeglingKC's |
 | `sets.engaged.SubtleBlow` / `sets.engaged.Hoxne` | `HybridMode` SubtleBlow / Hoxne, if you add those values (not in the provided states). Under Aftermath: Lv.3 with Ukonvasara, `sets.engaged.SubtleBlowAFM3` / `sets.engaged.HoxneAFM3` first |
 | `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.LaphriaAFM3`, `sets.engaged.UkonvasaraAFM3`) | Aftermath up (Lv.3, or the plain "Aftermath" of a Prime weapon) with that weapon, while `AftermathSet` is AFM3 (the default is FastTP). With `AftermathSet` FastTP, `sets.engaged.<Weapon>` stays on. The same rule serves SAM, DRK and THF (without their `AftermathSet` key) |
 | `sets.engaged.<Weapon>` | A set named after the weapon mode (`sets.engaged.Naegling`, `sets.engaged.Ukonvasara`...). None in the provided file |
@@ -69,7 +70,7 @@ Two consequences worth knowing:
   if a spell or weaponskill is under way, when it ends).
 
 `sets.engaged.PDTTP` in the provided file is not read by name: `sets.engaged.PDT` is the
-same set, and UkonvasaraAFM3 / PDTKC are built from it.
+same set, and UkonvasaraAFM3 / NaeglingKC are built from it.
 
 ## Weaponskills
 
@@ -107,9 +108,10 @@ midcast set at all**: spells are cast in whatever you are wearing.
 - **Weapon from your hands**: at load, the weapon mode is set to the weapon you hold
   (see *Weapons*), and the five weaponskill slots follow it. Changing the weapon mode
   refills the slots.
-- **Kraken Club in the off hand forces `sets.engaged.PDTKC`**, whatever `HybridMode`,
-  when the chosen weapon set does not name a `sub` (a club you put on by hand). Leaving
-  NaeglingKC for a weapon that has its own sub drops `sets.engaged.PDTKC` at once.
+- **Kraken Club in the off hand forces the weapon's KC set** (`sets.engaged.NaeglingKC`,
+  `.LoxoticKC`), whatever `HybridMode`, also when the chosen weapon set does not name a `sub`
+  (a club you put on by hand: `sets.engaged.<Weapon>KC`). Leaving NaeglingKC for a weapon that
+  has its own sub drops it at once.
 - **Aftermath: Lv.3 on Ukonvasara** switches to `sets.engaged.UkonvasaraAFM3` while `AftermathSet`
   is AFM3 (a stance's AFM3 set whatever it is) and back about 0.1 s after the buff comes or goes.
 - **Hoxne stance** (only if you add `Hoxne` to `HybridMode` in `WAR_STATES.lua`): once

@@ -23,7 +23,7 @@ the keys that are bound now, with the current value of each mode.
 
 | Key | Does | Condition / default |
 |---|---|---|
-| `^numpad1` | Cycle `MainWeapon` (Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic) | After loading: the weapon in your hands (Ukonvasara if it matches no set) |
+| `^numpad1` | Cycle `MainWeapon` (Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic, LoxoticKC) | After loading: the weapon in your hands (Ukonvasara if it matches no set) |
 | `^numpad9` | Cycle `HybridMode` (PDT, Normal) | Default PDT |
 | `^numpad2` | Cycle `JumpAuto` (On, Off) | Default Off. /DRG only (hidden on other subjobs) |
 | `^numpad3` | Cycle `WS1`: the weaponskill of `//gs c ws1` | The list follows the weapon |

@@ -77,12 +77,26 @@ local function select_weapon_engaged()
     return sets.engaged[state.MainWeapon.current]
 end
 
+---   The weapon's own Kraken Club set while a Kraken Club is in the off hand: the weapon value that holds
+---   it names its set (MainWeapon NaeglingKC >> sets.engaged.NaeglingKC, LoxoticKC >> .LoxoticKC), and a
+---   club put in the off hand by hand under a weapon set with no sub takes that weapon's (Naegling >>
+---   sets.engaged.NaeglingKC). nil when the weapon has none.
+local function kraken_set()
+    local weapon = state.MainWeapon and state.MainWeapon.current
+    if not (weapon and sets.engaged) then return nil end
+    local sub = type(sets[weapon]) == 'table' and sets[weapon].sub
+    local sub_name = type(sub) == 'table' and sub.name or sub
+    if sub_name == 'Kraken Club' then return sets.engaged[weapon] end
+    if BaseSetBuilder.kraken_in_offhand() then return sets.engaged[weapon .. 'KC'] end
+    return nil
+end
+
 ---   Select engaged base set with Kraken Club and Aftermath Lv.3 detection
 ---   Kraken Club detection takes highest priority for specialized multi-attack set.
 ---   Aftermath Lv.3 (buff ID: 272) + a weapon = its own AFM3 set (UkonvasaraAFM3, LaphriaAFM3)
 ---
 ---   Priority order:
----   1. Kraken Club weapon set       >> sets.engaged.PDTKC
+---   1. Kraken Club in the off hand  >> the weapon's KC set (sets.engaged.NaeglingKC, .LoxoticKC)
 ---   2. Stance (SubtleBlow / Hoxne)  >> sets.engaged[HybridMode] (or its AFM3 variant)
 ---   3. Aftermath + weapon AFM3 set  >> sets.engaged[MainWeapon .. 'AFM3'] (LaphriaAFM3)
 ---   4. Weapon-specific set          >> sets.engaged[MainWeapon] (e.g. Naegling)
@@ -90,16 +104,12 @@ end
 ---   6. Fallback                     >> base_set
 ---
 ---   @param base_set table Base engaged set from war_sets.lua
----   @return table Selected engaged set (PDTKC / the weapon's AFM3 set if conditions met, otherwise hybrid/base)
+---   @return table Selected engaged set (the weapon's KC or AFM3 set if conditions met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
-    -- PRIORITY 1: Check for NaeglingKC weapon set (Kraken Club in sub)
-    if state.MainWeapon and state.MainWeapon.current == 'NaeglingKC' and sets.engaged.PDTKC then
-        return sets.engaged.PDTKC
-    end
-
-    -- Kraken Club still in the off hand (BaseSetBuilder.kraken_in_offhand)
-    if sets.engaged.PDTKC and BaseSetBuilder.kraken_in_offhand() then
-        return sets.engaged.PDTKC
+    -- PRIORITY 1: Kraken Club in the off hand: the weapon's own KC set (kraken_set)
+    local kc_set = kraken_set()
+    if kc_set then
+        return kc_set
     end
 
     -- PRIORITY 2: Explicit stance chosen by the player

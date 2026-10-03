@@ -4081,8 +4081,8 @@ function subWhy(main, sub){
   if (su.Type === 'Grip') return t('subGrip2h');
   return su.Type === 'Shield' || (su.Type === 'Weapon' && canDualWield()) ? '' : t('subNeedDw');
 }
-// A set named for the Kraken Club (sets.engaged.PDTKC: WAR wears it with NaeglingKC or a Kraken Club in the
-// off hand, BRD with its Kraken sub; shared/jobs/<job>/functions/logic/set_builder.lua) is shown with it
+// A set named for the Kraken Club (WAR's sets.engaged.NaeglingKC / LoxoticKC, BRD's PDTKC with its Kraken sub;
+// shared/jobs/<job>/functions/logic/set_builder.lua) is shown with it
 const KRAKEN = 'Kraken Club', isKraken = path => /KC$/.test(segs(path || '').pop() || '');
 // the weapon mode's value that holds the Kraken Club in the off hand (WAR's NaeglingKC), or null
 const krakenWeapon = m => m.values.find(v => { const sub = ((m.sets[v] || {}).pieces || {}).sub; return sub && sub.name === KRAKEN; }) || null;

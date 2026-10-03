@@ -91,6 +91,13 @@ WARWSConfig.by_weapon = {
         'Black Halo',
         'True Strike',
     },
+
+    -- Club + Kraken Club: same shortlist as Loxotic
+    LoxoticKC = {
+        'Judgment',
+        'Black Halo',
+        'True Strike',
+    },
 }
 
 --- Weaponskill list for a weapon key

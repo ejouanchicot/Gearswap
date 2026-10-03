@@ -7,7 +7,7 @@
 ---   • Equipment definitions (Souveran set, Cichol capes)
 ---   • Weapon sets (Great Axes, Polearms, Swords, Axes, Maces)
 ---   • Idle sets (Base, PDT, Town)
----   • Engaged sets (Base, PDTTP, PDT, Normal, UkonvasaraAFM3, PDTKC)
+---   • Engaged sets (Base, PDTTP, PDT, Normal, UkonvasaraAFM3, NaeglingKC, LoxoticKC)
 ---   • Precast JA sets (Berserk, Warcry, Aggressor, etc.)
 ---   • Precast WS sets (Ukko's Fury, Upheaval, Savage Blade, etc.)
 ---   • Movement sets (Base speed, Adoulin)
@@ -117,6 +117,11 @@ sets['Loxotic'] = {
     main = 'Loxotic Mace +1',
     sub = 'Blurred Shield +1'
 }
+
+sets['LoxoticKC'] = {
+    main = 'Loxotic Mace +1',
+    sub = 'Kraken Club'
+} -- Loxotic Mace + Kraken Club (multi-attack focus)
 
 --- Utilities (Sub-slot only)
 sets['Blurred Shield +1'] = {
@@ -231,11 +236,11 @@ sets.engaged.UkonvasaraAFM3 = set_combine(sets.engaged.PDTTP, {
     back = Cichol.da
 })
 
---- Kraken Club Specialized (Used when Kraken Club is in sub-weapon)
---- Automatically selected when Kraken Club is equipped in sub-weapon slot.
+--- A weapon with the Kraken Club in the off hand: its own set, named after the weapon value (NaeglingKC,
+--- LoxoticKC), worn whatever HybridMode while the club is in the off hand.
 --- Focuses on Store TP reduction to leverage Kraken Club's multi-attack proc rate.
 --- See: set_builder.lua select_engaged_base()
-sets.engaged.PDTKC = set_combine(sets.engaged.PDTTP, {
+sets.engaged.NaeglingKC = set_combine(sets.engaged.PDTTP, {
     ammo = "Aurgelmir Orb +1",
     head = "Pummeler's Mask +4",
     body = "Boii Lorica +3",
@@ -250,6 +255,9 @@ sets.engaged.PDTKC = set_combine(sets.engaged.PDTTP, {
     right_ring = "Moonlight Ring",
     back = Cichol.stp
 })
+
+-- • Loxotic Mace + Kraken Club (MainWeapon LoxoticKC): starts as NaeglingKC's, change what you want
+sets.engaged.LoxoticKC = set_combine(sets.engaged.NaeglingKC, {})
 
 -- ============================================================--
 --                  PRECAST: JOB ABILITIES                   --
