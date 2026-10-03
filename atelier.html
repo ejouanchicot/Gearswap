@@ -2162,11 +2162,12 @@ const FOE_JA = {
   // Down tables): Defense Downs Shell Crusher -25 %, Metatron Torment -18.75 %, Full Break and Garland of Bliss
   // -12.5 %, Abrasion Bolt -20.5 %, Acid and Gashing Bolt -12.5 %, Gungnir -17.5 %, Nitric Baselard -18.75 %, Oxidant
   // Baselard -12.5 %; Evasion Downs Shield Break -40, Randgrith -32, Full Break -20, Pyrrhic Kleos -10; Vidohunir and
-  // Shattersoul Magic Defense -10
+  // Shattersoul Magic Defense -10; Sniper Shot and Skullbreaker INT -10 (decaying; one INT Down, apart from Burn)
   WS: {'Shell Crusher': {edefp: .25}, 'Metatron Torment': {edefp: .1875}, 'Full Break': {edefp: .125, eeva: 20, evd: true, eatkp: .125},
     'Garland of Bliss': {edefp: .125}, 'Shield Break': {eeva: 40, evd: true}, 'Randgrith': {eeva: 32, evd: true}, 'Pyrrhic Kleos': {eeva: 10, evd: true},
     'Vidohunir': {emdb: 10}, 'Shattersoul': {emdb: 10}, 'Abrasion Bolt': {edefp: .205}, 'Acid Bolt': {edefp: .125}, 'Gashing Bolt': {edefp: .125},
-    'Gungnir': {edefp: .175}, 'Nitric Baselard': {edefp: .1875}, 'Oxidant Baselard': {edefp: .125}},
+    'Gungnir': {edefp: .175}, 'Nitric Baselard': {edefp: .1875}, 'Oxidant Baselard': {edefp: .125},
+    'Sniper Shot': {eint: 10, intd: true}, 'Skullbreaker': {eint: 10, intd: true}},
 };
 const FOE_JA_FX = Object.assign({}, ...Object.values(FOE_JA));
 // A debuff tab's switch key where the job's own is Party support's (BRD's songs)
@@ -2208,7 +2209,7 @@ function foeCounted(b){
   const on = (b.foeJa || []).filter(n => FOE_JA_FX[n]), all = [];
   for (const n of on) for (const [k, v] of Object.entries(foeFx(n, b))) {
     const a = FOE_JA_FX[n];
-    all.push({n, k, v, fam: k === 'edefp' && !a.stacks ? 'dd' : k === 'eeva' && a.evd ? 'evd' : k === 'emdb' ? 'mdd' : ''});
+    all.push({n, k, v, fam: k === 'edefp' && !a.stacks ? 'dd' : k === 'eeva' && a.evd ? 'evd' : k === 'emdb' ? 'mdd' : a.intd ? 'intd' : ''});
   }
   const best = {};
   for (const e of all) if (e.fam && (!best[e.fam] || e.v > best[e.fam].v)) best[e.fam] = e;
