@@ -557,9 +557,11 @@
     };
     // Every piece the search changed is tried back to the set's own: kept back when the set loses nothing by it (a piece
     // that only came along in a pair, or that wins nothing the objective or the floors read), so no change is for nothing
-    function keepWhatDoesNotMatter(ctx, res, start, opts) {
+    // (only a piece the search could choose: never one of the set you do not hold, in a search of your pieces)
+    function keepWhatDoesNotMatter(ctx, res, start, opts, choices) {
         Object.keys(res.pieces).forEach(function (slot) {
             if (slot === "main" || slot === "sub" || !start[slot] || pieceName(res.pieces[slot]) === pieceName(start[slot])) return;
+            if (!(choices[slot] || []).some(function (p) { return pieceName(p) === pieceName(start[slot]); })) return;
             var trial = Object.assign({}, res.pieces); trial[slot] = start[slot];
             if (clashes(trial, slot, start[slot])) return;
             var r = O.value(ctx, trial, opts);
@@ -662,7 +664,7 @@
             if (!res || r.score > res.score) res = r;
         }
         res.evals = evals;
-        keepWhatDoesNotMatter(ctx, res, input.start, opts);
+        keepWhatDoesNotMatter(ctx, res, input.start, opts, choices);
         tpOnlyOut(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
