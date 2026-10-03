@@ -732,7 +732,7 @@ input[type=checkbox]{accent-color:var(--accent)}
 .dialog.optrun{top:24px;transform:translateX(-50%);height:min(780px,calc(100% - 48px));max-height:none;display:flex;flex-direction:column;overflow:hidden}
 .optrun > header,.optrun > footer{flex:none}
 .optrun > .body{flex:1;min-height:0;overflow:hidden;grid-template-rows:auto auto auto minmax(0,1fr)}
-.orfeed,.orchg{min-height:0;overflow:auto;max-height:none}
+.orfeed,.orchg{min-height:0;overflow:auto;max-height:none;scrollbar-gutter:stable;overflow-anchor:none;overscroll-behavior:contain}
 .orfeed li,.orchg li{min-width:0}
 .orfmoves,.orphase,.orstage,.orwh b,.orfwalk,.orchg li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .orws{min-width:0}
@@ -2134,6 +2134,8 @@ function optRunPaint(walk, moves){
   const feed = document.getElementById('orfeed');
   if (feed && moves.length) {
     feed.querySelector('.orempty')?.remove();
+    // scrolled down the feed: what is read stays in place while new moves come in on top
+    const top = feed.scrollTop, height = feed.scrollHeight;
     for (const m of moves) {
       const li = document.createElement('li');
       li.innerHTML = `<span class="orfval">${esc(R.fmt(m.raw))}</span><span class="orfmoves">` + m.changes.map(c =>
@@ -2141,7 +2143,8 @@ function optRunPaint(walk, moves){
         `</span><span class="orfwalk">${esc(walkLabel(walk))}${m.stage === 'nofloor' ? ' · ' + esc(t('orStage_nofloor')) : ''}${m.miss ? ' · ' + esc(t('orUnder')) : ''}</span>`;
       feed.prepend(li);
     }
-    while (feed.children.length > 12) feed.lastChild.remove();
+    while (feed.children.length > 40) feed.lastChild.remove();
+    if (top > 0) feed.scrollTop = top + feed.scrollHeight - height;
   }
   const best = optRunBest(R), gain = document.getElementById('orgain');
   if (gain && best && R.start) {

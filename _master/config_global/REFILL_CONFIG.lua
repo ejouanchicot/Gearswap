@@ -49,7 +49,10 @@ RefillConfig.store_bag = 'case'
 --           RefillConfig.foreign_characters = {'Tetsouo', 'Kaories'}
 --           (empty: every character folder, frozen ones included)
 --   false   never: only the surplus of the active list goes back
-RefillConfig.store_foreign = 'mine'
+--   'usable' every usable item (food, medicine, scrolls) the active list does
+--           not hold, listed anywhere or not (equipment, materials, crystals and
+--           linkshells stay); never_store below keeps the ones you want at hand
+RefillConfig.store_foreign = 'usable'
 RefillConfig.foreign_characters = {}
 
 -- Items never put back, whatever the lists say (kept by hand)

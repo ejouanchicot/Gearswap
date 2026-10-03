@@ -19,7 +19,9 @@
 ---   REFILL_CONFIG.lua also says which items in the inventory go back to the
 ---   store bag (foreign: in another list, not in the active one):
 ---     .store_foreign      = 'mine'           -- this character's lists (default),
----                                            -- 'all' other folders too, false never
+---                                            -- 'all' other folders too, false never,
+---                                            -- 'usable' every usable item (food,
+---                                            -- medicine, scrolls) not in the active list
 ---     .foreign_characters = {'Tetsouo'}      -- with 'all': these folders only
 ---     .never_store        = {'Echo Drops'}   -- never put back
 ---
@@ -164,8 +166,8 @@ local function load_refill_config(char)
 end
 
 --- The refill configs whose items count as foreign, from REFILL_CONFIG.lua:
---- store_foreign 'mine' (default) this character's lists, 'all' the lists
---- of foreign_characters (every folder when empty), false none.
+--- store_foreign 'mine' (default) this character's lists ('usable' too), 'all'
+--- the lists of foreign_characters (every folder when empty), false none.
 --- @param char_name string
 --- @param cfg table|nil REFILL_CONFIG.lua
 --- @return table list of {char, job, cfg}
@@ -175,6 +177,22 @@ local function foreign_sources(char_name, cfg)
     if mode == false or mode == 'off' then return {} end
     if mode == 'all' then return load_all_refill_configs(cfg.foreign_characters) end
     return load_char_refill_configs(char_name)
+end
+
+--- An item the game calls usable (food, medicine, a scroll) that the active list does not hold, as a lookup
+--- (item id -> its name, nil for the rest): equipment, materials, crystals and linkshells never count.
+--- @param current_ids table {[item_id] = true} the active list and never_store
+--- @return function
+local function unlisted_usable(current_ids)
+    local ok, res = pcall(require, 'resources')
+    return function(_, id)
+        local info = ok and res and res.items and res.items[id]
+        if not info or current_ids[id] or info.category ~= 'Usable' then return nil end
+        local flags = info.flags
+        if type(flags) == 'table' and flags['Linkshell'] then return nil end
+        if type(flags) == 'number' and math.floor(flags / 0x100) % 2 == 1 then return nil end
+        return info.en
+    end
 end
 
 --- Iterate all entries in a config (default, extra, default_list and every
@@ -225,6 +243,8 @@ function ConfigResolver.build_foreign_items_set(char_name, current_list)
     end
 
     local foreign = {}
+    -- 'usable': any usable item the active list does not hold goes back too, found when the bag is read
+    if cfg and cfg.store_foreign == 'usable' then setmetatable(foreign, {__index = unlisted_usable(current_ids)}) end
     for _, c in ipairs(foreign_sources(char_name, cfg)) do
         iterate_config_entries(c.cfg, function(entry)
             local variants = (type(entry.name) == 'table') and entry.name or {entry.name}
