@@ -4028,8 +4028,13 @@ function weaponOfPath(path, m){
   let best = null;
   for (const p of parts) for (const v of m.values) if (p.startsWith(v) && (!best || v.length > best.length)) best = v;
   const job = AFM3_WEAPON[S.job];
-  return best || (isAfm3(path) && job && m.values.includes(job) ? job : null);
+  return best || (isAfm3(path) && job && m.values.includes(job) ? job : null) || (isKraken(path) ? krakenWeapon(m) : null);
 }
+// A set named for the Kraken Club (sets.engaged.PDTKC: WAR wears it with NaeglingKC or a Kraken Club in the
+// off hand, BRD with its Kraken sub; shared/jobs/<job>/functions/logic/set_builder.lua) is shown with it
+const KRAKEN = 'Kraken Club', isKraken = path => /KC$/.test(segs(path || '').pop() || '');
+// the weapon mode's value that holds the Kraken Club in the off hand (WAR's NaeglingKC), or null
+const krakenWeapon = m => m.values.find(v => { const sub = ((m.sets[v] || {}).pieces || {}).sub; return sub && sub.name === KRAKEN; }) || null;
 // The sets worn under Aftermath Lv.3, and the weapon a job's AFM3 sets named after no weapon go with (WAR's stance
 // sets, HoxneAFM3, under Ukonvasara: shared/jobs/war/functions/logic/set_builder.lua)
 const AFM3_WEAPON = {WAR: 'Ukonvasara'};
@@ -4074,6 +4079,10 @@ function withWeapons(s, ignore){
   const shield = weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
   if (grip && !blank.has('sub')) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield && !blank.has('sub')) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
+  // a Kraken Club set with no weapon value holding it: the club in the off hand, over the mode's sub (a weapon
+  // you chose in the page stays)
+  if (isKraken(s.path) && !blank.has('sub') && !(pieces.sub && pieces.sub.name === KRAKEN) && !weaponModes(d).some(m => explicitWeapon(m, ignore))) {
+    pieces.sub = {name: KRAKEN}; from.sub = t('weaponByVariant', {v: KRAKEN}); }
   for (const [m, v] of picks) fill(m, v, t('yourChoice', {v}), false);
   // the TP bonus pieces go on last, over the tried ones: the job lays them after the set (job_post_precast)
   const out = applyTrial(s, pieces, from, stanceWeapon), tpg = tpBonusGear(s, out.pieces);
