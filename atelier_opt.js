@@ -201,7 +201,8 @@
             primeStage: c.primeStage, dmgMul: physMul(c)};
     };
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
-    // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %); for a physical weaponskill only,
+    // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %), Banish II by 70 % on an undead;
+    // for a physical weaponskill only,
     // the engine already counts a magical one's (Magic DT%)
     // A weaponskill's own flags (magical, hybrid, element), read by setting it up once on blank stats; null when it
     // cannot be read
@@ -214,7 +215,8 @@
     function physMul(c) {
         var r = c.physRes || 0, v = r ? wsProbe(c) : null;
         if (!v || v.magical || v.hybrid) return 1;
-        return 1 + (r < 0 && c.tomahawk ? r * 0.75 : r) / 100;
+        // a resistance cut: Banish II's 70 % (an undead) or Tomahawk's 25 %, the stronger
+        return 1 + (r < 0 && c.banish ? r * 0.3 : r < 0 && c.tomahawk ? r * 0.75 : r) / 100;
     }
     // A result of FFXI.average_ws with its damage scaled by ctx.dmgMul (the TP return untouched)
     function scaled(ctx, r, metric) {
