@@ -2591,7 +2591,7 @@ const PDIF_CAP = s => /^(katana|dagger|sword|axe|club)$/i.test(s || '') ? 3.25 :
 function targetInfo(s){
   const b = buffState(), B = withAftermath(buffTotals(), s ? (withWeapons(s).pieces.main || {}).name : null), name = enemyKey(b.enemy), [lv, def, eva, vit, agi, mnd, int] = ENEMIES[name];
   const by = B._by.filter(e => ['edefp', 'eeva', 'emdb', 'emeva'].includes(e.k));
-  const defDown = Math.min(B.edefp || 0, 1), defAfter = Math.round(def * (1 - defDown)), evaAfter = Math.max(0, eva - (B.eeva || 0));
+  const defDown = Math.min(B.edefp || 0, 1), defAfter = Math.max(1, Math.round(def * (1 - defDown))), evaAfter = Math.max(0, eva - (B.eeva || 0));
   const r = s ? charStats(s) : null, d = data(), pieces = s ? withWeapons(s).pieces : {};
   const two = r && r.cur && r.cur.wskill && TWO_HANDED.test(r.cur.wskill), dual = !!(pieceStats(pieces.sub) || {}).weapon;
   // main hand: 95 % with a two-handed weapon, else 99 % even when dual wielding (the off hand alone caps at 95: BG Wiki Hit Rate)
