@@ -549,12 +549,35 @@
             if (best && bestV >= res.best.v - Math.abs(res.best.v) * 1e-9) { res.pieces[slot] = best; res.best = O.value(ctx, res.pieces, opts); }
         });
     }
+    // The search walks from the set one improving move at a time, and stops where no move (one piece, or two) helps.
+    // Two such stops are common: a set right on its defense floors, where a faster piece has to come with another
+    // that gives the defense back; and every item of the game to try, which leads the walk elsewhere. So it walks
+    // from several starts and keeps the best: the set; the best set with no floor, brought back over the floors piece
+    // by piece; and, with pieces you do not hold yet (or not at their best), your own pieces searched first
+    function searchBest(ctx, start, choices, opts) {
+        var mine = {}, more = false;
+        Object.keys(choices).forEach(function (slot) {
+            mine[slot] = choices[slot].filter(function (p) { return !p.missing && !p.maxed; });
+            if (mine[slot].length !== choices[slot].length) more = true;
+        });
+        var runs = [], evals = 0, from = function (pieces, list, o) { var r = O.optimize(ctx, pieces, list, o || opts); evals += r.evals; return r; };
+        var floors = opts.floor && Object.keys(opts.floor).some(function (k) { return +opts.floor[k]; });
+        var own = more ? from(start, mine) : null;
+        runs.push(from(own ? own.pieces : start, choices));
+        if (floors) {
+            var loose = from(own ? own.pieces : start, more ? mine : choices, Object.assign({}, opts, {floor: null}));
+            runs.push(from(loose.pieces, choices));
+        }
+        var best = runs.reduce(function (a, b) { return b.score > a.score ? b : a; });
+        best.start = O.value(ctx, start, opts); best.evals = evals;
+        return best;
+    }
     // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices,
     // opts, prefilter (keep each slot's best n first)}; onStep(progress) while it searches
     O.run = function (input, onStep) {
         var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {onStep: onStep});
         var choices = input.prefilter ? O.prefilter(ctx, input.start, input.choices, opts, input.prefilter) : input.choices;
-        var res = O.optimize(ctx, input.start, choices, opts);
+        var res = searchBest(ctx, input.start, choices, opts);
         tpOnlyOut(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
