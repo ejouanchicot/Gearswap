@@ -2631,7 +2631,8 @@ function foePanelHTML(b){
     full ? v : v.replace(/^(Dia|Distract)\s?/, '') || 'I', b[k] === v)).join('')}</span>`;
   const ja = n => btn(`data-foeja="${esc(n)}"`, n, (b.foeJa || []).includes(n));
   const by = src => T.B._by.filter(e => src(e.src)).map(e => short(e.k, e.v));
-  const nm = isNmTarget(key), sab = b.saboteur ? ` (${nm ? 'NM' : t('sabMobShort')} ×${nm ? (b.sabGloves ? 1.39 : 1.25) : (b.sabGloves ? 2.14 : 2)})` : '';
+  // Saboteur's multiplier on this target, on its own button (x2 a monster, x1.25 an NM, more with the gloves)
+  const nm = isNmTarget(key), sabX = nm ? (b.sabGloves ? 1.39 : 1.25) : (b.sabGloves ? 2.14 : 2);
   const geoSrc = v => GEO_DEBUFFS[v.replace(/^(Entrust )?(Indi|Geo)-/, '')];
   const nmGeo = x => geoKeep(key) < 1 ? `${x} (NM −${Math.round((1 - geoKeep(key)) * 100)} %)` : x;
   // BLM: Bio, Bio II (Bio III is a RDM's: its tab) and Impact; the six elemental debuffs, Archmage's Sabots +3 under them
@@ -2647,8 +2648,8 @@ function foePanelHTML(b){
     {id: 'Distract', label: 'RDM', on: !!DISTRACT[b.distract] || DIA_OWNER[b.dia] === 'Distract' || (b.foeJa || []).includes('Frazzle III'),
       lines: [['Dia · Bio', seg('dia', {'Dia III': 1, 'Bio III': 1}, true) + ja('Frazzle III'),
       by(v => (v === 'Dia III' || v === 'Bio III' || v === 'Frazzle III')), 'wide'], ['Distract', seg('distract', DISTRACT) +
-      btn('data-buffflag="saboteur"', 'Saboteur', b.saboteur, t('sabTip')) + btn('data-buffflag="sabGloves"', 'Lethargy +3', b.sabGloves, 'Lethargy Gantherots +3', !b.saboteur),
-      by(v => /^Distract/.test(v)).map(x => x + sab).concat(evdOver), 'wide']]},
+      btn('data-buffflag="saboteur"', b.saboteur ? `Saboteur ×${sabX}` : 'Saboteur', b.saboteur, `${t('sabTip')} · ${nm ? 'NM' : t('sabMobShort')} ×${sabX}`) + btn('data-buffflag="sabGloves"', 'Lethargy +3', b.sabGloves, 'Lethargy Gantherots +3', !b.saboteur),
+      by(v => /^Distract/.test(v)).concat(evdOver), 'wide']]},
     {id: 'Light Shot', label: 'COR', on: !!(b.lightshot && DIA[b.dia]), lines: [['', btn('data-buffflag="lightshot"', 'Light Shot', b.lightshot, t('lsTip'), !DIA[b.dia]), by(v => v === 'Light Shot')]]},
     ...Object.entries(FOE_JA).filter(([job]) => job !== 'RDM').map(([job, list]) => {
       const names = Object.keys(list), off = names.filter(n => (b.foeJa || []).includes(n) && !foeJaActive(b).includes(n));
