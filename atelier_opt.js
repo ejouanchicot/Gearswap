@@ -83,6 +83,7 @@
         list.forEach(function (x, i) { out["Song" + (i + 1)] = x; });
         return out;
     }
+    var HASTE_AS = {"Hastega": "Haste", "Hastega II": "Haste II"};
     O.selection = function (b, food) {
         var f = null;
         if (food) { f = {}; for (var k in food) if (FOOD_KEYS[k]) f[FOOD_KEYS[k]] = food[k]; }
@@ -94,7 +95,9 @@
             roll_bonus: +(b.rollsPlus || 0), crooked: false, job_bonus: false, light_shot: !!(b.lightshot && b.dia),
             geo: true, bubbles: {"Indi-": bubble("Indi-", b.indi), "Geo-": bubble("Geo-", b.geo), "Entrust-": bubble("Entrust-", b.entrust)},
             bubble_bonus: +(b.geoPlus || 0), bolster: false, bog: false, bubble_potency: 100,
-            whm: true, whm_spells: {Dia: b.dia || "None", Haste: b.haste || "None", Boost: "None", Storm: b.storm || "None"},
+            // Garuda's Hastega / Hastega II read as Haste / Haste II (the same effect), Hastega's 3/1024 more added in context
+            whm: true, whm_spells: {Dia: b.dia || "None", Haste: HASTE_AS[b.haste] || b.haste || "None", Boost: "None", Storm: b.storm || "None"},
+            haste_extra: b.haste === "Hastega" ? 3 / 1024 : 0,
             shell5: b.shell === "Shell V", food: f, toggles: {}
         };
     };
@@ -157,6 +160,7 @@
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
         if (c.ariaPdl) agg[0].brd.PDL = (agg[0].brd.PDL || 0) + c.ariaPdl;
+        if (c.selection.haste_extra) agg[0].whm["Magic Haste"] = (agg[0].whm["Magic Haste"] || 0) + c.selection.haste_extra;
         // the rolls again, each alone with its own job bonus and Crooked Cards (the engine has one switch for both rolls)
         if (c.rollOpts && c.selection.cor) {
             agg[0].cor = {};

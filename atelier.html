@@ -2111,7 +2111,8 @@ function foeJaDown(b){
 }
 const PROTECT = {'Protect': 20, 'Protect II': 50, 'Protect III': 90, 'Protect IV': 140, 'Protect V': 220};
 const SHELL = {'Shell': 27, 'Shell II': 42, 'Shell III': 56, 'Shell IV': 67, 'Shell V': 75};
-const HASTE = {'Haste': 14.648, 'Haste II': 29.98};
+// Haste spells and Garuda's blood pacts (BG Wiki: Hastega 153/1024, Hastega II 307/1024): one Haste effect, one at a time
+const HASTE = {'Haste': 14.648, 'Haste II': 29.98, 'Hastega': 14.941, 'Hastega II': 29.98};
 const STORMS = {'Firestorm II': {str: 7}, 'Thunderstorm II': {dex: 7}, 'Sandstorm II': {vit: 7}, 'Windstorm II': {agi: 7}, 'Hailstorm II': {int: 7},
   'Rainstorm II': {mnd: 7}, 'Aurorastorm II': {chr: 7}, 'Voidstorm II': {str: 3, dex: 3, vit: 3, agi: 3, int: 3, mnd: 3, chr: 3}};
 // Job abilities and spells on oneself: the job that has it, whether a subjob has it too, what it gives
@@ -2463,7 +2464,7 @@ function partyCardsHTML(b, sel, geoSel, plus){
   // a card a job, folding: its band says what it gives, so a folded card still tells
   const card = (job, body, fx) => { const open = !(S.pFold || {})[job], on = !(b.off || {})[job];
     return `<div class="pcard ${open ? 'open' : ''} ${on ? '' : 'off'}"><div class="phead"><button class="pfold" data-pfold="${esc(job)}" aria-expanded="${open}">` +
-      `<span class="fttl">${esc(job === 'WHM' ? 'WHM · RDM · SCH' : job)}</span><span class="pfx ${fx && on ? 'on' : ''}">${esc(on ? fx || t('pNone') : t('pOff'))}</span></button>` +
+      `<span class="fttl">${esc(job === 'WHM' ? 'WHM · RDM · SCH · SMN' : job)}</span><span class="pfx ${fx && on ? 'on' : ''}">${esc(on ? fx || t('pNone') : t('pOff'))}</span></button>` +
       `${offSwitch(b, job)}</div>` +
       `${open ? `<div class="pbody">${body}</div>` : ''}</div>`; };
   const songs = new Set(Object.keys(SONGS)), geoName = v => v.replace(/^(Entrust )?(Indi|Geo)-/, '');
@@ -2472,7 +2473,8 @@ function partyCardsHTML(b, sel, geoSel, plus){
     // Haste II RDM only, Storm II SCH only; the switch keeps its WHM key
     card('WHM', `<div class="prow">${seg('protect', PROTECT, 'Protect')}<span class="pwho">WHM RDM SCH PLD</span></div>` +
       `<div class="prow">${seg('shell', SHELL, 'Shell')}<span class="pwho">WHM RDM SCH RUN</span></div>` +
-      `<div class="prow">${seg('haste', HASTE, 'Haste')}<span class="pwho">I : WHM RDM · II : RDM</span></div>` +
+      `<div class="prow">${seg('haste', {'Haste': 1, 'Haste II': 1}, 'Haste')}<span class="pwho">I : WHM RDM · II : RDM</span></div>` +
+      `<div class="prow">${seg('haste', {'Hastega': 1, 'Hastega II': 1}, 'Hastega')}<span class="pwho">SMN (Garuda)</span></div>` +
       `<div class="prow"><div class="pseg"><span class="flbl">Storm</span>${sel('storm', Object.keys(STORMS), 'Storm')}</div><span class="pwho">SCH</span></div>`,
       gives(v => PROTECT[v] || SHELL[v] || HASTE[v] || STORMS[v])),
     card('BRD', `<div class="pgrid">${songSlots(b).map(i => sel('song' + i, Object.keys(SONGS), `${t('bSong')} ${i + 1}`)).join('')}${plus('songsPlus', 'Songs', 9)}</div>${brdJaHTML(b)}`,
