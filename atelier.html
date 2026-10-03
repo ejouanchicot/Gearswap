@@ -499,6 +499,9 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .buffdlg .buffbody{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:0;align-items:start}
 .buffdlg .bcol{display:grid;gap:14px;align-content:start;min-width:0}
 .buffdlg .box .boxb{display:grid;gap:7px}
+.bfoldbox > .boxh{cursor:pointer}
+.bfoldbox > .boxh h3::before{content:'▾ ';color:var(--muted)}
+.bfoldbox.shut > .boxh h3::before{content:'▸ '}
 .buffdlg .chip{white-space:nowrap}
 .buffdlg .bnote{margin:2px 0 0;font-size:11.5px;line-height:1.4}
 .buffdlg .boxh .meta.down{color:var(--r-dd);font-weight:700}
@@ -1019,7 +1022,7 @@ let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons
   trial:{}, drafts:{}, buffs:{}, buffTier:{}, held:{}, buffsOpen:false, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}, statHide:{}, statSort:'group', statOnlyWant:false, statPresets:{}, statPreset:'', optOpts:{obj: 'damage', pdt: -50, mdt: -21, sb: 0}, boxOpen:{}, wsTp:null, _tpb:{}, macroAlt:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'pFold'];
+const KEEP = ['lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'buffsOpen', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'pFold', 'bFold'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 if (S.section === 'worn') S.section = 'sets';
@@ -2414,8 +2417,12 @@ function buffPanelHTML(){
   ].join('') + (jas.length ? `<p class="muted small bnote">${esc(jaLvNote())}</p>` : '');
   const party = partyCardsHTML(b, sel, geoSel, plus);
   const tgt = targetCardPanel(b), foe = foePanelHTML(b);
-  return `<div class="buffbody"><div class="bcol">${box('g-buff', t('bYours'), own)}${box('g-def', t('bParty'), party)}</div>` +
-    `<div class="bcol">${box('g-off', t('bTarget'), tgt)}${box('g-mag', t('bDebuffsTitle'), foe.body, foe.total)}</div></div>`;
+  // the four compartments fold by their band (S.bFold, kept between visits)
+  const fold = (key, cls, title, body, meta = '') => { const shut = !!(S.bFold || {})[key];
+    return `<section class="box ${cls} bfoldbox ${shut ? 'shut' : ''}"><header class="boxh" data-bfold="${key}" role="button" aria-expanded="${!shut}">` +
+      `<h3>${title}</h3>${meta}</header>${shut ? '' : `<div class="boxb">${body}</div>`}</section>`; };
+  return `<div class="buffbody"><div class="bcol">${fold('you', 'g-buff', t('bYours'), own)}${fold('party', 'g-def', t('bParty'), party)}</div>` +
+    `<div class="bcol">${fold('target', 'g-off', t('bTarget'), tgt, `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}${fold('foe', 'g-mag', t('bDebuffsTitle'), foe.body, foe.total)}</div></div>`;
 }
 // A BRD's songs: four, five under Clarion Call; Soul Voice doubles them all, Marcato one of them x1.5, never
 // both (BG Wiki: Soul Voice cancels Marcato). Nightingale and Troubadour change casting and duration only
@@ -4962,7 +4969,7 @@ document.addEventListener('toggle', e => { const g = e.target && e.target.datase
   if (g) { S._wsOpen = S._wsOpen || {}; S._wsOpen[g] = e.target.open; }
   if (e.target && e.target.dataset && 'optset' in e.target.dataset) S._optSet = e.target.open; }, true);
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job]'); if (!b) return; const d = b.dataset;
+  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold]'); if (!b) return; const d = b.dataset;
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
@@ -5060,6 +5067,7 @@ document.addEventListener('click', e => {
   if (d.poff) { const b = buffState(); b.off = Object.assign({}, b.off); b.off[d.poff] = !b.off[d.poff]; if (!b.off[d.poff]) delete b.off[d.poff]; save(); render(); return; }
   if (d.rolljob != null) { const b = buffState(), k = 'roll' + d.rolljob + 'job'; if (b[k]) delete b[k]; else b[k] = true; save(); render(); return; }
   if (d.rollcc != null) { const b = buffState(); if (b.rollCC != null && +b.rollCC === +d.rollcc) delete b.rollCC; else b.rollCC = +d.rollcc; save(); render(); return; }
+  if (d.bfold) { S.bFold = Object.assign({}, S.bFold); S.bFold[d.bfold] = !S.bFold[d.bfold]; save(); render(); return; }
   if (d.pfold) { S.pFold = Object.assign({}, S.pFold); S.pFold[d.pfold] = !S.pFold[d.pfold]; save(); render(); return; }
   if (d.foetab) { S._foeTab = d.foetab; render(); return; }
   if (d.foeseg) { const b = buffState(); if (b[d.foeseg] === d.v) delete b[d.foeseg]; else b[d.foeseg] = d.v; save(); render(); return; }
