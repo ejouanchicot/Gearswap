@@ -57,8 +57,10 @@ local function build()
     by_spell = {}
     local ok, map = require('shared/utils/core/char_paths').load('job', 'BLU_SPELL_MAP', 'BLU')
     if not ok or type(map) ~= 'table' then
+        -- said to a BLU only: the Atelier export reads this map on every job (shared/utils/atelier/
+        -- atelier_families.lua), and a character who plays no BLU has none
         local mf_ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if mf_ok and MessageFormatter then
+        if mf_ok and MessageFormatter and player and player.main_job == 'BLU' then
             MessageFormatter.show_warning('BLU: config/blu/BLU_SPELL_MAP.lua not loaded, Blue Magic uses its base set')
         end
         return
