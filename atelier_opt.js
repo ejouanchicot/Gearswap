@@ -274,6 +274,27 @@
         return hand === "main" ? [[7, g(9)], [6, g(10)], [5, g(11)], [4, g(12)], [3, g(13)], [2, g(0)], [1, g(1)]]
             : [[7, g(2)], [6, g(3)], [5, g(4)], [4, g(5)], [3, g(6)], [2, g(7)], [1, g(8)]];
     }
+    // The attacks of one round in theory (both hands' swings: Double / Triple / Quadruple Attack, the weapons'
+    // Occasionally attacks, 8 at most) and how many of them land, on average
+    O.attacksOf = function (x) {
+        var m = swingsOf(x.multi, oaOf(x.multi.oa, "main")), s = x.hits.sub > 0 ? swingsOf(x.multi, oaOf(x.multi.oa, "sub")) : {0: 1}, sw = 0, hits = 0;
+        Object.keys(m).forEach(function (a) { Object.keys(s).forEach(function (b) { sw += m[a] * s[b] * (+a + Math.min(+b, 8 - a)); }); });
+        var d = handHits(x); Object.keys(d).forEach(function (k) { hits += k * d[k]; });
+        return {swings: sw, hits: hits};
+    };
+    // What can go off in each hand in a round, in the game's order: Quadruple, Triple, Double Attack, the weapon's
+    // Occasionally attacks (OA8..OA2), else one swing; each with its chance and its swings ({k, n, p}); the off hand
+    // only when it holds a weapon. tpPerHit: the TP each landed swing gives
+    O.procsOf = function (x) {
+        var hand = function (oa) {
+            var ma = x.multi, f = (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da);
+            var out = [{k: "QA", n: 4, p: ma.qa}, {k: "TA", n: 3, p: (1 - ma.qa) * ma.ta}, {k: "DA", n: 2, p: (1 - ma.qa) * (1 - ma.ta) * ma.da}];
+            oa.forEach(function (o) { if (o[1] > 0) { out.push({k: "OA" + (o[0] + 1), n: o[0] + 1, p: f * o[1]}); f *= 1 - o[1]; } });
+            out.push({k: "1", n: 1, p: f});
+            return out.filter(function (e) { return e.p > 0; });
+        };
+        return {main: hand(oaOf(x.multi.oa, "main")), sub: x.hits.sub > 0 ? hand(oaOf(x.multi.oa, "sub")) : null, tpPerHit: x.tpPerHit};
+    };
     // n swings landing at hr each: {hits: chance}
     function landed(n, hr) {
         var out = {};
@@ -328,7 +349,7 @@
         var at = +opts.wsAt || 1000, r = FFXI.average_attack_round(player, ctx.enemy, 0, at, "Time to WS");
         var m = roundMul(ctx, player), dmg = r[1][0] * m, tp = r[1][1], sec = r[1][2];
         var detail = FFXI.lastRound || null, real = detail && opts.real !== false ? O.roundsOf(detail) : null;
-        return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg, detail: detail, real: real};
+        return {time: r[0], dps: sec ? dmg / sec : 0, tp: tp, damage: dmg, detail: detail, real: real, attacks: detail ? O.attacksOf(detail) : null};
     }
     // An engaged set's value for its objective: the time to the weaponskill (less is better), DPS or TP a round
     function roundValue(ctx, pieces, opts) {
