@@ -5525,6 +5525,17 @@ const isOrigOf = (list, orig) => o => !!orig && sameCopy(o, orig) && (orig.augs 
 /* ---- pieces tried in the page ---- */
 const trialKey = s => S.char + '|' + S.job + '|' + s.path;
 const trialCount = s => Object.entries(S.trial[trialKey(s)] || {}).filter(([slot, p]) => !heldAlready(s, slot, p)).length;
+// A hand chosen for a set (main or sub; null: back to Auto): a weaponskill's set holds it for that weaponskill, any other
+// set has it forced in the page, the menus of the set's top following
+function chooseHand(s, slot, piece){
+  const ws = wsOfSet(s);
+  setTrial(s, slot, undefined);
+  if (!ws) return setForce(slot, piece ? optPieces({[slot]: piece})[slot] : null);
+  const k = heldKey(ws);
+  if (slot === 'main') { S.held = Object.assign({}, S.held); if (piece) S.held[k] = piece.name; else delete S.held[k]; }
+  else { S.heldSub = Object.assign({}, S.heldSub); if (piece) S.heldSub[k] = optPieces({sub: piece}).sub; else delete S.heldSub[k]; }
+  save();
+}
 function setTrial(s, slot, piece){
   const k = trialKey(s), tr = S.trial[k] = S.trial[k] || {}, dr = S.drafts[k];
   if (dr && dr.info) dr.info.edited = true;
@@ -5971,7 +5982,11 @@ document.addEventListener('click', e => {
   if (d.slot) { openSlot(+d.card, d.slot); return; }
   if (d.try != null && S._drawer) { const o = S._drawOpts[+d.try], mx = e.target.closest('[data-trymax]');
     const best = o.upgrade && (mx || e.shiftKey);
-    setTrial(S._drawer.set, S._drawer.slot, best ? Object.assign({}, o.upgrade.piece) : o.orig ? undefined : Object.assign({}, o.piece));
+    // a hand: the same choice as the weapon menus (a weaponskill's held weapon / off hand, an engaged set's forced
+    // ones), never a tried piece a push could write into the set; the set's own piece back to Auto
+    if (['main', 'sub'].includes(S._drawer.slot) && family(S._drawer.set.path, S._drawer.set.pieces) !== 'weapons')
+      chooseHand(S._drawer.set, S._drawer.slot, o.orig ? null : {name: o.piece.name, augs: o.piece.augs});
+    else setTrial(S._drawer.set, S._drawer.slot, best ? Object.assign({}, o.upgrade.piece) : o.orig ? undefined : Object.assign({}, o.piece));
     $('#tip').hidden = true; closeOverlay(); render(); return; }
   if ('trykeep' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), k = trialKey(s), dr = S.drafts[k] = S.drafts[k] || {};
     const now = new Date(), hm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
