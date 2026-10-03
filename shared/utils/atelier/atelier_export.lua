@@ -711,15 +711,11 @@ function AtelierExport.after_load()
         if Live.allowed() then Live.start() end
     end)
     if not AtelierExport.enabled() then return end
-    -- right after a load the game may not have given the character yet (level 0, bags not read): an
-    -- export then would write a near empty bag list over the good one, so it waits for the level
-    local LoadGate = require('shared/utils/core/load_gate')
-    local function try(left)
-        local me = windower.ffxi.get_player()
+    local defer, try = require('shared/utils/core/load_gate').defer, nil -- waits for the level (bags unread before)
+    try = function(left) local me = windower.ffxi.get_player()
         if me and (me.main_job_level or 0) > 0 then return pcall(AtelierExport.export) end
-        if left > 0 then LoadGate.defer(2, function() try(left - 1) end, 'atelier export') end
-    end
-    LoadGate.defer(4, function() try(20) end, 'atelier export')
+        if left > 0 then defer(2, function() try(left - 1) end, 'atelier export') end end
+    defer(4, function() try(20) end, 'atelier export')
 end
 
 ---============================================================================
