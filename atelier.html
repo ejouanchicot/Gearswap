@@ -271,7 +271,7 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .sethead{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
 .sethead h2{margin:0}
 .sethead .setwhen,.sethead .wspath{margin:0}
-.sethead .delset{margin-left:auto}
+.boxh .delset{margin-left:auto;white-space:nowrap}
 .wpick .variants{margin-top:0}
 .wpicks{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:12px;align-items:flex-end}
 .wpick{display:grid;gap:4px}
@@ -4623,7 +4623,7 @@ function setHeadHTML(card, ci, vi, s){
   // what the set is, on the whole width in one or two lines: its family, name and variant, when it is worn, its path
   const title = `<div class="sethead">${fam !== name ? `<span class="kicker">${esc(fam)}</span>` : ''}<h2>${esc(name)}` +
     `${label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : ''}</h2>` +
-    (when ? `<span class="muted small setwhen">${esc(when)}</span>` : '') + `<code class="path wspath">${esc(s.path)}</code>${delButton(s)}</div>` + familyNoteHTML(card, s);
+    (when ? `<span class="muted small setwhen">${esc(when)}</span>` : '') + `<code class="path wspath">${esc(s.path)}</code></div>` + familyNoteHTML(card, s);
   const line = (lbl, body) => `<div class="wsline"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
   // the weapons' menus side by side under the variants, a label over each
   const pick = (lbl, body) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
@@ -4637,8 +4637,10 @@ function setHeadHTML(card, ci, vi, s){
   const picks = (menus ? pick(t('weaponsLbl'), menus) : '') + (family(s.path, s.pieces) !== 'weapons' ? forceLines(s, pick) : '');
   // a job with a stance or a switch on its weapons keeps the full weapon picker
   const picker = menus === null ? weaponPicker(s) : '';
-  if (!ctl && !picker && !picks) return box('g-off', t('setBoxThis'), title);
-  return `<div class="wstop wstack">${box('g-off', t('setBoxThis'), title)}${box('g-caps', t('setBoxVar'), (ctl ? `<div class="wshead">${ctl}</div>` : '') +
+  // the delete link on the box's title line, on the right, where it has room
+  const head = box('g-off', t('setBoxThis'), title, delButton(s));
+  if (!ctl && !picker && !picks) return head;
+  return `<div class="wstop wstack">${head}${box('g-caps', t('setBoxVar'), (ctl ? `<div class="wshead">${ctl}</div>` : '') +
     (picks ? `<div class="wpicks">${picks}</div>` : '') + picker)}</div>`;
 }
 // The forced pieces' menus: Main, Sub and Ammo, from the list chosen (FORCE_SRCS), Auto first with what the job's
