@@ -534,6 +534,8 @@
         var twin = {ring1: "ring2", ring2: "ring1", ear1: "ear2", ear2: "ear1"}[slot];
         if (!twin || !piece || !pieces[twin]) return false;
         var o = pieces[twin];
+        // a Rare item is held once, whatever augments each reading of it shows
+        if (o.name === piece.name && (o.rare || piece.rare)) return true;
         return o.name === piece.name && (o.augs || []).join("|") === (piece.augs || []).join("|") && !(piece.copies > 1 || o.copies > 1);
     }
     O.clashes = function (pieces, slot, piece) { return clashes(pieces, slot, piece); };
