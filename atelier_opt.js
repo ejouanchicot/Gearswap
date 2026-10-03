@@ -306,9 +306,10 @@
         if (!pl) return null;
         var obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_real";
         var r = roundOf(ctx, pl.player, Object.assign({}, opts, {real: obj === "tp_real"}));
-        // the real time first; a set as fast gains by its damage a round (the least weight)
+        // speed only (damage has its DPS objective): the real time first, two sets as fast parted by wsdist's average
+        // time (the one that fills its rounds sooner keeps a margin)
         var raw = obj === "tp_real" ? r.real.time : obj === "tp_time" ? r.time : obj === "dps" ? r.dps : r.tp;
-        var v = obj === "tp_real" || obj === "tp_time" ? -raw + r.damage * 1e-9 : raw;
+        var v = obj === "tp_real" ? -raw - r.time * 1e-6 : obj === "tp_time" ? -raw : raw;
         return {v: v, raw: raw, def: pl.def, round: r};
     }
     // The weaponskill's average with those pieces at that TP: [metric value, [damage, TP return, ...]]
