@@ -3982,7 +3982,8 @@ function weaponOfPath(path, m){
   const job = AFM3_WEAPON[S.job];
   return best || (isAfm3(path) && job && m.values.includes(job) ? job : null);
 }
-// The sets worn under Aftermath Lv.3, and the weapon a job's AFM3 sets named after no weapon go with
+// The sets worn under Aftermath Lv.3, and the weapon a job's AFM3 sets named after no weapon go with (WAR's stance
+// sets, HoxneAFM3, under Ukonvasara: shared/jobs/war/functions/logic/set_builder.lua)
 const AFM3_WEAPON = {WAR: 'Ukonvasara'};
 const isAfm3 = path => /AFM3\b/.test(path || '');
 // The aftermath level the page counts: Lv.3 on an AFM3 set, else the one chosen in Buffs

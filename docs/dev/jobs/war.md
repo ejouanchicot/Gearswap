@@ -25,8 +25,8 @@ What WAR adds on top of the shared pipeline:
   Club (the `NaeglingKC` choice, or a club already in the off hand when the chosen
   weapon set names no sub) -> `PDTKC`; an explicit stance (`HybridMode` `SubtleBlow` or `Hoxne`, not in
   the template) -> its set, or `<stance>AFM3` under Ukonvasara Aftermath Lv.3;
-  the weapon's own `<Weapon>AFM3` under its Aftermath (`AftermathSet` AFM3);
-  Aftermath Lv.3 with Ukonvasara -> `PDTAFM3`; a set named after the weapon
+  the weapon's own `<Weapon>AFM3` under its Aftermath (`AftermathSet` AFM3:
+  `LaphriaAFM3`, `UkonvasaraAFM3`, which was `PDTAFM3` until 2026-10-03); a set named after the weapon
   (`sets.engaged.Naegling`); otherwise the `HybridMode` set.
 - **Hoxne stance** (when the player adds it to `HybridMode`): the engaged and idle
   builders put the Hoxne Ampulla on (`AmpullaLock.stance_ammo`, shared with PLD since 2026-09-29; since 2026-09-28)
@@ -345,9 +345,8 @@ has no effect on WAR.
      `FastTP` (`weapon_am3_set` -> [WeaponAftermath](../systems/factories-and-helpers.md#weaponaftermath), shared with SAM, DRK and THF since
      2026-09-30; the `^numpad0` key is `visible` only
      for a weapon with such a set, re-asked through `WARKeybinds.refresh()` on a
-     MainWeapon change in `job_state_change`);
-     else `sets.engaged.PDTAFM3` when `buffactive[272]` and
-     `MainWeapon == 'Ukonvasara'` (`ukonvasara_am3`);
+     MainWeapon change in `job_state_change`). Ukonvasara's is `UkonvasaraAFM3`
+     (named `PDTAFM3` and worn whatever `AftermathSet` until 2026-10-03);
   4. `sets.engaged[MainWeapon]` (`select_weapon_engaged`; the overlay defines
      `.Naegling` and `.Ukonvasara`);
   5. `sets.engaged[HybridMode]`; 6. Mote's base.
@@ -362,7 +361,7 @@ has no effect on WAR.
 - `job_buff_change` (`WAR_BUFFS.lua`): Doom through `DoomManager`; then
   `LifecycleManager.refresh_after_buff(buff)`: on gain or loss of
   `"Aftermath: Lv.3"` (exact `res.buffs` casing), unless Doom is up, `gs c update`
-  0.1 s later, skipped if an action is under way then. So `PDTAFM3` /
+  0.1 s later, skipped if an action is under way then. So `<Weapon>AFM3` /
   `<stance>AFM3` goes on or off about 0.1 s after the buff changes. It is deferred
   because `buffactive` inside `buff_change` still holds the old buffs
   ([core-lifecycle.md](../systems/core-lifecycle.md#lifecyclemanager)). Mote's
@@ -444,8 +443,8 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 | Set | Looked up by | T | L |
 |-----|--------------|---|---|
 | `sets['Ukonvasara']`, `['Naegling']`, `['NaeglingKC']`, `['Shining']`, `['Chango']`, `['Ikenga']`, `['Loxotic']` | `apply_weapon`, `ws_slots.lua` `detect_weapon` | yes | loop |
-| `sets.engaged.PDTKC`, `.PDTAFM3` | `select_engaged_base` | yes | yes |
-| `sets.engaged.<Weapon>AFM3` (`LaphriaAFM3`...) | `weapon_am3_set` (`WeaponAftermath`) | absent | `LaphriaAFM3` |
+| `sets.engaged.PDTKC` | `select_engaged_base` | yes | yes |
+| `sets.engaged.<Weapon>AFM3` (`LaphriaAFM3`, `UkonvasaraAFM3`) | `weapon_am3_set` (`WeaponAftermath`) | `UkonvasaraAFM3` | both |
 | `sets.engaged.SubtleBlow`, `.Hoxne`, `.HoxneAFM3` | `select_stance_engaged` (overlay `HybridMode` only) | absent | yes |
 | `sets.engaged.Naegling`, `.Ukonvasara` | `select_weapon_engaged` | absent | yes |
 | `sets.engaged.PDT` (alias of `PDTTP`), `.Normal` | `select_engaged_base` (HybridMode step) | yes | yes |

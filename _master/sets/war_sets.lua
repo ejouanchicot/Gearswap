@@ -7,7 +7,7 @@
 ---   • Equipment definitions (Souveran set, Cichol capes)
 ---   • Weapon sets (Great Axes, Polearms, Swords, Axes, Maces)
 ---   • Idle sets (Base, PDT, Town)
----   • Engaged sets (Base, PDTTP, PDT, Normal, PDTAFM3, PDTKC)
+---   • Engaged sets (Base, PDTTP, PDT, Normal, UkonvasaraAFM3, PDTKC)
 ---   • Precast JA sets (Berserk, Warcry, Aggressor, etc.)
 ---   • Precast WS sets (Ukko's Fury, Upheaval, Savage Blade, etc.)
 ---   • Movement sets (Base speed, Adoulin)
@@ -212,10 +212,10 @@ sets.engaged.PDT = sets.engaged.PDTTP
 --- Add DPS-specific pieces here when differentiation is needed.
 sets.engaged.Normal = set_combine(sets.engaged, {})
 
---- Aftermath Level 3 Specialized (Used with Ukonvasara)
+--- Ukonvasara with Aftermath Lv.3, named after the weapon (sets.engaged.<Weapon>AFM3, as LaphriaAFM3)
 --- Automatically selected when Aftermath Lv.3 (buff ID 272) is active.
---- See: set_builder.lua select_engaged_base()
-sets.engaged.PDTAFM3 = set_combine(sets.engaged.PDTTP, {
+--- See: shared/utils/equipment/weapon_aftermath.lua, set_builder.lua select_engaged_base()
+sets.engaged.UkonvasaraAFM3 = set_combine(sets.engaged.PDTTP, {
     ammo = 'Crepuscular Pebble',
     head = "Sakpata's Helm",
     body = "Sakpata's Plate",

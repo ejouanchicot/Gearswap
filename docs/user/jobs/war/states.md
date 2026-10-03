@@ -51,8 +51,8 @@ Ikenga or Loxotic the game refuses them and their turn in the chain is lost.
 - **Engaged set order** (first match wins): `sets.engaged.PDTKC` with
   NaeglingKC, or with a Kraken Club in the off hand when the chosen weapon set has
   no `sub`; a SubtleBlow / Hoxne stance set; `sets.engaged.<Weapon>AFM3` under
-  that weapon's Aftermath (AftermathSet AFM3); `sets.engaged.PDTAFM3` under
-  Aftermath: Lv.3 with Ukonvasara; `sets.engaged.<Weapon>` if it exists;
+  that weapon's Aftermath (AftermathSet AFM3: `LaphriaAFM3`, `UkonvasaraAFM3`);
+  `sets.engaged.<Weapon>` if it exists;
   then `sets.engaged.<HybridMode>`.
 - **Retaliation auto-cancel**: if Retaliation is up and you move for 5 s while
   not engaged, it is cancelled (needs the Windower `Cancel` addon).

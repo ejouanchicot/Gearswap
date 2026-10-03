@@ -79,19 +79,18 @@ end
 
 ---   Select engaged base set with Kraken Club and Aftermath Lv.3 detection
 ---   Kraken Club detection takes highest priority for specialized multi-attack set.
----   Aftermath Lv.3 (buff ID: 272) + Ukonvasara = Use specialized PDTAFM3 set
+---   Aftermath Lv.3 (buff ID: 272) + a weapon = its own AFM3 set (UkonvasaraAFM3, LaphriaAFM3)
 ---
 ---   Priority order:
 ---   1. Kraken Club weapon set       >> sets.engaged.PDTKC
 ---   2. Stance (SubtleBlow / Hoxne)  >> sets.engaged[HybridMode] (or its AFM3 variant)
 ---   3. Aftermath + weapon AFM3 set  >> sets.engaged[MainWeapon .. 'AFM3'] (LaphriaAFM3)
----      Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
 ---   4. Weapon-specific set          >> sets.engaged[MainWeapon] (e.g. Naegling)
 ---   5. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
 ---   6. Fallback                     >> base_set
 ---
 ---   @param base_set table Base engaged set from war_sets.lua
----   @return table Selected engaged set (PDTKC/PDTAFM3 if conditions met, otherwise hybrid/base)
+---   @return table Selected engaged set (PDTKC / the weapon's AFM3 set if conditions met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
     -- PRIORITY 1: Check for NaeglingKC weapon set (Kraken Club in sub)
     if state.MainWeapon and state.MainWeapon.current == 'NaeglingKC' and sets.engaged.PDTKC then
@@ -109,13 +108,10 @@ function SetBuilder.select_engaged_base(base_set)
         return stance_set
     end
 
-    -- PRIORITY 3: Aftermath: the weapon's own AFM3 set, else Ukonvasara's PDTAFM3
+    -- PRIORITY 3: Aftermath: the weapon's own AFM3 set (UkonvasaraAFM3, LaphriaAFM3)
     local am3_set = weapon_am3_set()
     if am3_set then
         return am3_set
-    end
-    if ukonvasara_am3() and sets.engaged.PDTAFM3 then
-        return sets.engaged.PDTAFM3
     end
 
     -- PRIORITY 4: Weapon-specific set (sets.engaged.Naegling, .Ukonvasara...)

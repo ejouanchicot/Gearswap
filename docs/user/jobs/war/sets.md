@@ -54,8 +54,7 @@ The first line that matches wins, then the weapon set goes on top:
 |---|---|
 | `sets.engaged.PDTKC` | `MainWeapon` NaeglingKC, **or a Kraken Club in your off hand** when the chosen weapon set has no `sub` of its own, whatever the mode |
 | `sets.engaged.SubtleBlow` / `sets.engaged.Hoxne` | `HybridMode` SubtleBlow / Hoxne, if you add those values (not in the provided states). Under Aftermath: Lv.3 with Ukonvasara, `sets.engaged.SubtleBlowAFM3` / `sets.engaged.HoxneAFM3` first |
-| `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.LaphriaAFM3`) | Aftermath up (Lv.3, or the plain "Aftermath" of a Prime weapon) with that weapon, while `AftermathSet` is AFM3 (the default is FastTP). With `AftermathSet` FastTP, `sets.engaged.<Weapon>` stays on. The same rule serves SAM, DRK and THF (without their `AftermathSet` key) |
-| `sets.engaged.PDTAFM3` | Aftermath: Lv.3 up with Ukonvasara, **in PDT and in Normal** |
+| `sets.engaged.<Weapon>AFM3` (e.g. `sets.engaged.LaphriaAFM3`, `sets.engaged.UkonvasaraAFM3`) | Aftermath up (Lv.3, or the plain "Aftermath" of a Prime weapon) with that weapon, while `AftermathSet` is AFM3 (the default is FastTP). With `AftermathSet` FastTP, `sets.engaged.<Weapon>` stays on. The same rule serves SAM, DRK and THF (without their `AftermathSet` key) |
 | `sets.engaged.<Weapon>` | A set named after the weapon mode (`sets.engaged.Naegling`, `sets.engaged.Ukonvasara`...). None in the provided file |
 | `sets.engaged.PDT` / `sets.engaged.Normal` | `HybridMode` PDT / Normal |
 | `sets.engaged` | None of the above exists |
@@ -64,12 +63,13 @@ Two consequences worth knowing:
 
 - A weapon engaged set (`sets.engaged.Naegling`) wins over `HybridMode`: with it,
   PDT and Normal wear the same set for that weapon.
-- Aftermath: Lv.3 on Ukonvasara uses `sets.engaged.PDTAFM3` even in Normal. Gaining or
-  losing Aftermath: Lv.3 re-equips your gear about 0.1 s later (not while Doomed;
+- A weapon's Aftermath set (`sets.engaged.UkonvasaraAFM3`, `.LaphriaAFM3`) goes on in PDT as in
+  Normal, while `AftermathSet` is AFM3 (FastTP, the default, keeps your TP set). Gaining or
+  losing the Aftermath re-equips your gear about 0.1 s later (not while Doomed;
   if a spell or weaponskill is under way, when it ends).
 
 `sets.engaged.PDTTP` in the provided file is not read by name: `sets.engaged.PDT` is the
-same set, and PDTAFM3 / PDTKC are built from it.
+same set, and UkonvasaraAFM3 / PDTKC are built from it.
 
 ## Weaponskills
 
@@ -110,8 +110,8 @@ midcast set at all**: spells are cast in whatever you are wearing.
 - **Kraken Club in the off hand forces `sets.engaged.PDTKC`**, whatever `HybridMode`,
   when the chosen weapon set does not name a `sub` (a club you put on by hand). Leaving
   NaeglingKC for a weapon that has its own sub drops `sets.engaged.PDTKC` at once.
-- **Aftermath: Lv.3 on Ukonvasara** switches to `sets.engaged.PDTAFM3` (or the stance's
-  AFM3 set) and back about 0.1 s after the buff comes or goes.
+- **Aftermath: Lv.3 on Ukonvasara** switches to `sets.engaged.UkonvasaraAFM3` while `AftermathSet`
+  is AFM3 (a stance's AFM3 set whatever it is) and back about 0.1 s after the buff comes or goes.
 - **Hoxne stance** (only if you add `Hoxne` to `HybridMode` in `WAR_STATES.lua`): once
   Hoxne Ampulla is actually in your ammo slot, the **ammo slot is locked** so
   weaponskill and ability sets cannot swap it out. As on PLD, WAR puts the Ampulla on
