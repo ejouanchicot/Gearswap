@@ -1,5 +1,5 @@
 // Atelier optimizer: the page's sets, buffs and target turned into the engine's player and enemy
-// (atelier-engine, wsdist's formulas, kept on this PC only), a weaponskill's average damage, and
+// (atelier-engine, kept on this PC only), a weaponskill's average damage, and
 // the search for the best set. One part of the engine (FFXI_PARTS): no DOM, no page state, so it
 // also runs in a Web Worker (FFXI.workerSource).
 //
@@ -110,7 +110,7 @@
     // ------------------------------------------------------------ evaluation
     // ctx: {job, sub, ml, buffs, abilities, enemy (create_enemy), ws, wsType ("melee" | "ranged"),
     //       metric ("Damage dealt"), primeStage}
-    // A physical weaponskill wsdist leaves out (Avalanche Axe...), from the project's weaponskill
+    // A physical weaponskill the engine leaves out (Avalanche Axe...), from the project's weaponskill
     // database (shared/data/weaponskills, exported as ws_info): fTP at 1000/2000/3000, its stat
     // modifiers, its hits, fTP on every hit or the first. Critical rates by TP are not in that
     // database: such a weaponskill is counted without them. Magical and hybrid ones are not made
@@ -250,7 +250,7 @@
         }
         return set;
     };
-    // An engaged set's attack round (wsdist's average_attack_round, from 0 TP to the weaponskill at opts.wsAt, 1000
+    // An engaged set's attack round (the engine's average_attack_round, from 0 TP to the weaponskill at opts.wsAt, 1000
     // by default): {time: seconds to the weaponskill, dps, tp: TP a round, damage: a round's}; null for an unknown piece
     var ROUND_OBJ = {tp_real: "Time to WS", tp_time: "Time to WS", dps: "DPS", tp_round: "TP return"};
     // The hits landing in one round, as a distribution {hits: probability}: each hand swings once, plus a Quadruple
@@ -310,7 +310,7 @@
         if (!pl) return null;
         var obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_real";
         var r = roundOf(ctx, pl.player, Object.assign({}, opts, {real: obj === "tp_real"}));
-        // speed only (damage has its DPS objective): the real time first, two sets as fast parted by wsdist's average
+        // speed only (damage has its DPS objective): the real time first, two sets as fast parted by the engine's average
         // time (the one that fills its rounds sooner keeps a margin)
         var raw = obj === "tp_real" ? r.real.time : obj === "tp_time" ? r.time : obj === "dps" ? r.dps : r.tp;
         var v = obj === "tp_real" ? -raw - r.time * 1e-6 : obj === "tp_time" ? -raw : raw;

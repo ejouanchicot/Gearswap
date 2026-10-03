@@ -1431,7 +1431,7 @@ function unsigned(line, out){
 }
 /* ---- ranks and Ambuscade capes (atelier-engine/catalog, kept on this PC only: augments_ranked.js
    from LandSandBoat's augment bundles, capes.js), loaded when present ---- */
-// The damage engine (atelier-engine/: wsdist's formulas, its gear catalogue, ranks and capes,
+// The damage engine (atelier-engine/: its formulas, its gear catalogue, ranks and capes,
 // kept on this PC only) and the optimizer (atelier_opt.js): loaded once, run into window.FFXI
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
   .map(f => `atelier-engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
@@ -1809,7 +1809,7 @@ function avgRange(o){
 function avgTps(o){ const [a, b] = avgRange(o), out = []; for (let x = a; x <= b; x += 250) out.push(x); return out; }
 async function optimizeWs(s){
   if (!engineReady()) return;
-  // a weaponskill the engine does not work out (wsdist leaves it out and it is not a physical one the
+  // a weaponskill the engine does not work out (the engine leaves it out and it is not a physical one the
   // project's database can describe): said plainly rather than a search over nothing
   const ws = wsOfSet(s) || segs(s.path).pop();
   if (!FFXI.opt.defineWs(ws, wsInfoOf(ws), wsSkills()[ws])) { S._toastSet = s.path; S.toast = t('optNoWs', {ws}); render(); return; }
@@ -2015,7 +2015,7 @@ function renderMerits(){
     (n ? `<button class="btn ghost" data-action="meritreset">${t('meritsReset', {n})}</button>` : '') + `</div><div class="meritgrid">${groups}</div>`;
 }
 
-/* ---- Accuracy and Evasion: wsdist's formulas (IzaKastra, create_player.py) ---- */
+/* ---- Accuracy and Evasion: the engine's formulas (atelier-engine/player.js) ---- */
 // Job traits, highest tier first: [level, value]. The main job's counts, the subjob's only
 // when higher (they do not stack)
 const TRAITS = {
@@ -2076,8 +2076,8 @@ function combatOf(c, gear, dex, agi, mainName){
   return {acc, eva, wskill, level};
 }
 
-/* ---- buffs and conditions (IzaKastra buffs.py / gear.py, Guide_Paladin 01_prologue, 03_magic, 03_job_ability) ---- */
-// Foods: flat stats; atkf = Attack added after the Attack % (wsdist "Food Attack"); a [%, cap] pair is a % of the stat with its cap
+/* ---- buffs and conditions (atelier-engine/buffs.js and its catalogue, Guide_Paladin 01_prologue, 03_magic, 03_job_ability) ---- */
+// Foods: flat stats; atkf = Attack added after the Attack % (the engine's "Food Attack"); a [%, cap] pair is a % of the stat with its cap
 const FOODS = {
   'Grape Daifuku +1': {str: 3, vit: 4, atkf: 55, acc: 85, mab: 4}, 'Grape Daifuku': {str: 2, vit: 3, atkf: 50, acc: 80, mab: 3},
   'Sublime Sushi +1': {str: 7, dex: 8, mnd: -4, chr: 7, acc: 105}, 'Sublime Sushi': {str: 6, dex: 7, mnd: -3, chr: 6, acc: 100},
@@ -2106,7 +2106,7 @@ const ROLLS = {
   "Monk's": {sb: [[8, 10, 32, 12, 14, 16, 4, 20, 22, 24, 40], 4]}, "Tactician's": {regain: [[10, 10, 10, 10, 30, 10, 10, 0, 20, 20, 40], 2]},
 };
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
-// A roll's bonus when its job is in the party (you count), as the engine has it (IzaKastra buffs.py, BG Wiki for
+// A roll's bonus when its job is in the party (you count), as the engine has it (atelier-engine/buffs.js, BG Wiki for
 // Chaos, Samurai, Fighter's, Rogue's, Hunter's); Crooked Cards: the roll x1.2, after Rolls+ and the job bonus (BG Wiki)
 const ROLL_JOB = {'Chaos': ['DRK', 100 / 1024], 'Samurai': ['SAM', 10], "Fighter's": ['WAR', 5], "Rogue's": ['THF', 5], "Hunter's": ['RNG', 15],
   "Wizard's": ['BLM', 10], "Warlock's": ['RDM', 15], "Monk's": ['MNK', 10], "Tactician's": ['SCH', 10]};
@@ -2117,7 +2117,7 @@ const BUBBLES = {
   'Fury': {atkp: [.347, .027]}, 'Haste': {mhaste: [29.9, 1.1]}, 'Precision': {acc: [50, 5]}, 'Focus': {macc: [50, 5]}, 'Acumen': {mab: [15, 3]},
   'STR': {str: [25, 2]}, 'DEX': {dex: [25, 2]}, 'VIT': {vit: [25, 2]}, 'AGI': {agi: [25, 2]}, 'INT': {int: [25, 2]}, 'MND': {mnd: [25, 2]}, 'CHR': {chr: [25, 2]},
 };
-// Geomancy on the enemy (IzaKastra buffs.py geo_debuffs: [base, + per Geomancy+]): e* = the enemy's stat
+// Geomancy on the enemy (atelier-engine/buffs.js geo_debuffs: [base, + per Geomancy+]): e* = the enemy's stat
 // (edefp a fraction of its Defense, eeva its Evasion, emdb its Magic Defense Bonus, emeva its Magic Evasion)
 // A GEO's abilities on its bubbles (BG Wiki), Geomancy+ included: Bolster doubles Indi- and Geo- (not an
 // Entrust) and leaves Blaze of Glory and Ecliptic Attrition out; without it, Blaze of Glory +50 % and Ecliptic
@@ -2132,11 +2132,11 @@ function geoMul(b){
 // V15 found -75 %); a monster takes it whole
 const geoKeep = key => { const z = (TARGETS[key] || {}).zone || ''; return /^Sortie/.test(z) ? .5 : /Odyssey/.test(z) ? .15 : 1; };
 const GEO_DEBUFFS = {'Frailty': {edefp: [.148, .027]}, 'Torpor': {eeva: [50, 5]}, 'Malaise': {emdb: [15, 3]}, 'Languor': {emeva: [50, 5]}};
-// The other jobs' Defense down on the enemy (IzaKastra whm_debuffs, cor_debuffs)
+// The other jobs' Defense down on the enemy (atelier-engine/buffs.js whm_debuffs, cor_debuffs)
 const DIA = {'Dia': 104 / 1024, 'Dia II': 156 / 1024, 'Dia III': 208 / 1024};
 // Distract's Evasion down at its cap (BG Wiki: a RDM at full enfeebling skill and +50 MND over the target),
 // Saboteur's multiplier: x2 on a monster, x1.25 on an NM (a Sortie or Odyssey boss), Lethargy Gantherots +3
-// +14 % (x2.14 / x1.39). IzaKastra's Distract III is 280: 130 x 2.14
+// +14 % (x2.14 / x1.39). the engine's Distract III is 280: 130 x 2.14
 const DISTRACT = {'Distract': 35, 'Distract II': 50, 'Distract III': 130};
 const isNmTarget = key => /Sortie|Odyssey/.test((TARGETS[key] || {}).zone || '');
 function distractEva(b){
@@ -2193,9 +2193,9 @@ const FOE_JA = {
   DRG: {'Angon': {edefp: .2}, 'Jump (Spirit Surge)': {edefp: .2}},
   // PUP automaton (BG Wiki): Sharpshot's Armor Shatterer Defense -15 %, Harlequin / Stormwaker's Knockout Evasion -50
   PUP: {'Armor Shatterer': {edefp: .15}, 'Knockout': {eeva: 50, evd: true}},
-  // DNC steps at 10 levels (a DNC main): Box Step (Sluggish Daze) -23 % as IzaKastra's wsdist has it, Quickstep
+  // DNC steps at 10 levels (a DNC main): Box Step (Sluggish Daze) -23 % as the engine has it, Quickstep
   // (Lethargic Daze) (10 + 1) x 4, Feather Step crit +1 % a level (Stutter Step, a Magic Evasion down, is a note); sub,
-  // 5 levels from a /DNC (b.dncSub; Box Step -13 %, wsdist again)
+  // 5 levels from a /DNC (b.dncSub; Box Step -13 %, the engine again)
   DNC: {'Box Step': {edefp: .23, stacks: true, sub: {edefp: .13}}, 'Quickstep': {eeva: 44, stacks: true, sub: {eeva: 24}},
     'Feather Step': {ecrit: 10, stacks: true, sub: {ecrit: 5}}},
   // BLU (BG Wiki Defense / Evasion / Magic Defense Down): Tourbillion about -33 %, Frightful Roar and Benthic Typhoon
@@ -2310,7 +2310,7 @@ const STORMS = {'Firestorm II': {str: 7}, 'Thunderstorm II': {dex: 7}, 'Sandstor
 // (main: the effect as main job). party: a buff a party member gives, always offered
 const JAS = {
   // lvl: the level the job learns it (BG Wiki); a subjob has it at its own level (49, +1 per 5 Master
-  // Levels). fx(main, level): main = used as main job. Values: wsdist create_player.py (atelier-engine/player.js)
+  // Levels). fx(main, level): main = used as main job. Values: atelier-engine/player.js
   'Berserk': {job: 'WAR', lvl: 15, fx: (m, l) => ({atkp: m ? 89 / 256 : l >= 50 ? 69 / 256 : .25, atk: m ? 40 : 0, defp: -.25})},
   'Defender': {job: 'WAR', lvl: 25, fx: () => ({defp: .25, atkp: -.25})},
   // Warcry's TP Bonus (Savagery merits, Agoge) comes from the job's TP config, for the TP steps
@@ -2354,7 +2354,7 @@ const JAS = {
   "Garuda's Favor · party": {party: true, excl: 'favor', from: 'SMN', fams: ['idle', 'special', 'engaged'], fx: () => ({eva: 55})},
   "Titan's Favor · party": {party: true, excl: 'favor', from: 'SMN', fams: ['idle', 'special', 'engaged'], fx: () => ({def: 127})},
 };
-// Targets: atelier_targets.js (monsters as players measured them, level by level) and IzaKastra's
+// Targets: atelier_targets.js (monsters as players measured them, level by level) and the engine's
 // "BG Wiki sets" reference, the default. TARGETS[key] the whole entry; ENEMIES[key] = level, Defense,
 // Evasion, VIT, AGI, MND, INT, CHR
 const DEFAULT_ENEMY = 'BG Wiki sets';
@@ -2362,7 +2362,7 @@ const TARGETS = Object.fromEntries((typeof ATELIER_TARGETS !== 'undefined' ? ATE
 TARGETS[DEFAULT_ENEMY] = {key: DEFAULT_ENEMY, name: DEFAULT_ENEMY, zone: '', job: '', lv: null, def: 1500, eva: 1350, vit: 340, agi: 340,
   int: 280, mnd: 280, chr: 280, res: null, est: [], src: 'ref'};
 const ENEMIES = Object.fromEntries(Object.values(TARGETS).map(x => [x.key, [x.lv, x.def, x.eva, x.vit, x.agi, x.mnd, x.int, x.chr]]));
-// the names an older page saved (IzaKastra's list, one level each)
+// the names an older page saved (the engine's former list, one level each)
 const OLD_ENEMIES = {'Apex Bats': 'Apex Bats · Lv129', 'Apex Toad': 'Apex Toad · Lv132', 'Apex Bat': 'Apex Bat · Lv135',
   'Apex Lugcrawler Hunter': 'Apex Lugcrawler Hunter · Lv138', 'Apex Knight Lugcrawler': 'Apex Knight Lugcrawler · Lv140',
   'Apex Idle Drifter': 'Apex Idle Drifter · Lv142', 'Apex Archaic Cog': 'Apex Archaic Cog · Lv145', 'Apex Archaic Cogs': 'Apex Archaic Cogs · Lv147'};
@@ -2533,13 +2533,13 @@ function buffTotals(){
   for (const ja of jasOf()) if (ja.as === 'party' && ja.a.tpParty && jaOn(b, ja.name)) put('tpb', tpOfParty(ja.a, b), ja.name);
   return B;
 }
-/* ---- aftermath of the weapon in hand (wsdist create_player.py) ---- */
-// Prime weapons: PDL by stage and level (Lv1 / Lv2 at 60 % between two steps, as wsdist), Lorg Mor and Opashoro magic
+/* ---- aftermath of the weapon in hand (atelier-engine/player.js) ---- */
+// Prime weapons: PDL by stage and level (Lv1 / Lv2 at 60 % between two steps, as the engine), Lorg Mor and Opashoro magic
 const PRIME_AM_PDL = {III: [2, 5, 8], IV: [4, 7, 10], V: [6, 9, 12]}, PRIME_AM_MDMG = {III: 0, IV: 20, V: 30}, PRIME_POT = .6;
 const PRIME_PDL = new Set(['Caliburnus', 'Dokoku', 'Earp', 'Foenaria', 'Gae Buide', 'Helheim', 'Kusanagi-no-Tsurugi', 'Laphria',
   'Mpu Gandring', 'Pinaka', 'Spalirisos', 'Varga Purnikawa']);
 const PRIME_MAGIC = {'Lorg Mor': ['mdmg'], 'Opashoro': ['mdmg', 'mab']};
-// Mythic weapons: Lv1 / Lv2 (at 85 %, as wsdist), Lv3 occasionally attacks twice or thrice (not counted)
+// Mythic weapons: Lv1 / Lv2 (at 85 %, as the engine), Lv3 occasionally attacks twice or thrice (not counted)
 const M49 = (49 - 30) * .85 + 30, M99 = (99 - 40) * .85 + 40;
 const MYTHIC_AM = {Conqueror: ['acc', 'atk'], Glanzfaust: ['acc', 'atk'], Vajra: ['acc', 'atk'], Burtgang: ['acc', 'atk'], Liberator: ['acc', 'atk'],
   Aymur: ['acc', 'atk'], Kogarasumaru: ['acc', 'atk'], Nagi: ['acc', 'atk'], Nirvana: ['acc', 'atk'], Ryunohige: ['acc', 'atk'], Kenkonken: ['acc', 'atk'],
@@ -2937,7 +2937,7 @@ function targetFactsHTML(name){
     (taken.length ? `<p class="small">${esc(t('tgtRes'))} : ${esc(taken.join(' · '))} <span class="muted">(${esc(t('tgtResNote'))})</span></p>` : '');
 }
 /* ---- the target: its stats (ENEMIES: level, Defense, Evasion), what each debuff takes off, you against it ---- */
-// The pDIF cap of a weapon's skill (wsdist get_pdif.py), before the PDL trait and gear
+// The pDIF cap of a weapon's skill (atelier-engine/helpers.js melee_pdif_base_cap), before the PDL trait and gear
 const PDIF_CAP = s => /^(katana|dagger|sword|axe|club)$/i.test(s || '') ? 3.25 : /great katana|hand-to-hand/i.test(s || '') ? 3.5
   : /great sword|staff|great axe|polearm/i.test(s || '') ? 3.75 : /scythe/i.test(s || '') ? 4.0 : /marksmanship|archery/i.test(s || '') ? 3.5 : 3.25;
 function targetInfo(s){
@@ -3021,10 +3021,10 @@ function openBuffs(){
   const b = $('.buffdlg .body'); if (b && sc) b.scrollTop = sc;
 }
 
-/* ---- tanking (Guide_Paladin 02_enmity, 03_defense, 03_magic) and offense (wsdist get_tp, get_hit_rate) ---- */
+/* ---- tanking (Guide_Paladin 02_enmity, 03_defense, 03_magic) and offense (atelier-engine/helpers.js get_tp, get_hit_rate) ---- */
 // Phalanx potency of the enhancing skill: up to 300, a tenth less 2; past it a point per 28.5, up to 35 at 500
 const phalanxPotency = skill => skill <= 300 ? Math.max(0, Math.floor(skill / 10) - 2) : Math.min(35, 28 + Math.floor((skill - 300.5) / 28.5));
-// Base TP of a hit from the weapon delay (wsdist get_tp.py)
+// Base TP of a hit from the weapon delay (atelier-engine/helpers.js get_tp)
 function tpBase(d){
   if (d <= 180) return 61 + (d - 180) * 63 / 360;
   if (d <= 540) return 61 + (d - 180) * 88 / 360;
@@ -3102,7 +3102,7 @@ function gearTotal(pieces){
 }
 // Measured stats minus the gear worn when measured, plus the set's gear. HP / MP: the
 // % of gear applies to base + gear HP (Guide_Paladin solver_common.effective_hp);
-// DEF moves with VIT x1.5 (calc_defense), Attack with STR (wsdist: 8 + skill + STR + Attack)
+// DEF moves with VIT x1.5 (calc_defense), Attack with STR (the engine: 8 + skill + STR + Attack)
 function charStats(s, pieces){
   const c = measuredChar();
   if (!c || !c.base) return null;
@@ -4259,7 +4259,7 @@ const optObjBlock = (sel, help, more) => optBlock(t('optObjLbl'), `<div class="o
 function optSettingsHelp(hit){
   return [t('optWardTip'), 'DT+PDT : ' + t('optPdtTip'), 'DT+MDT : ' + t('optMdtTip'), 'Subtle Blow : ' + t('optSbTip')].concat(hit ? [t('optHitLbl') + ' : ' + t('optHitTip')] : []).join('. ') + '.';
 }
-/* ---- the engaged optimizer: the attack round (wsdist's average_attack_round, as IzaKastra's TP sets) ---- */
+/* ---- the engaged optimizer: the attack round (atelier-engine/actions.js average_attack_round) ---- */
 const ENG_OBJS = ['tp_real', 'tp_time', 'dps', 'tp_round'];
 // An engaged set's attack round with the set as shown (weapons, tried pieces; plain: the file's, no try), or null
 function engRound(s, plain){
@@ -4279,7 +4279,7 @@ function engParts(s){
   const vs = was ? roundVsHTML(was, r) : '';
   return {line, vs, calc: r.detail ? roundCalcHTML(r.detail, r.real) : ''};
 }
-// The round worked out as IzaKastra's wsdist does it (average_attack_round, get_tp, get_delay_timing), each step with
+// The round worked out as the engine does it (atelier-engine: average_attack_round, get_tp, get_delay_timing), each step with
 // its figures; then the rounds counted whole (the TP comes at the end of a round)
 function roundCalcHTML(x, real){
   const f = (v, n = 0) => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: n, maximumFractionDigits: n});
@@ -5120,7 +5120,7 @@ function openCompare(s){
     : `<p class="muted">${t('cmpSame')}</p>`;
   showDialog('cmpdlg', `${t('cmpTitle')} · <code>${esc(shortPath(s.path))}</code> ${statPickBtn()}`, body, '');
 }
-// An engaged set's round per column: real time, wsdist's average, rounds, DPS, TP a round, the best in bold and each
+// An engaged set's round per column: real time, the engine's average, rounds, DPS, TP a round, the best in bold and each
 // column's gap to the first
 function engCmpRows(s, cols){
   if (family(s.path, s.pieces) !== 'engaged') return '';

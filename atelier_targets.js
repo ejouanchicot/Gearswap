@@ -1,9 +1,10 @@
 // Targets of the Atelier page: the stats of monsters as players measured them. Data only.
-// Apex monsters: atwiki bartlett3 page 327 (Japanese measures, the source of IzaKastra's enemies.py), level by level;
+// Apex monsters: atwiki bartlett3 page 327 (Japanese measures), level by level;
 // res = physical and magic damage taken in % (slash, pierce, blunt, ranged, magic, breath). `est` lists the stats
 // the source does not give, filled in: AGI = the Crawlers' Nest Lugcrawlers' (WAR, the page's only AGI at every
-// level) at that level, shifted for a monster IzaKastra gave one at one of its levels by his difference to them;
-// MND = INT, CHR = MND (or IzaKastra's) where missing, as IzaKastra did.
+// level) at that level, shifted for a monster the engine's list (atelier-engine/enemies.js) gives one at one of its
+// levels by that monster's difference to them;
+// MND = INT, CHR = MND (or that list's) where missing, as that list does.
 // Locus Ghost Crab: BG-Wiki (Defense, Evasion). Arebati: FFXIAH "Arebati stats" (V0, +4 each stat and +55 Defense a
 // Vengeance level); its Evasion was never measured: 1201 at V20 (BG-Wiki's V20 accuracy, ~1241, less the 40 a 95 %
 // hit rate needs), +2 a Vengeance level (AGI +4). The other Atonement 3 bosses and Bumba (Atonement 4): Arebati's
