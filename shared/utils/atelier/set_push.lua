@@ -142,7 +142,8 @@ local function locate_table(job, path)
     for _, file in ipairs(set_files(job)) do
         local ftext = read(file)
         for _, d in ipairs(ftext and SetWriter.definitions(ftext) or {}) do
-            if rawequal(node_of(d.keys), node) then return file, ftext, d end
+            -- plain ==: the sandbox has no rawequal (sets carry no __eq)
+            if node_of(d.keys) == node then return file, ftext, d end
         end
     end
     return nil, text
