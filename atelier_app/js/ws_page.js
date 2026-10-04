@@ -128,7 +128,7 @@ const itemOf = name => (window.FFXI && FFXI.opt && FFXI.opt.item && name) ? FFXI
 // Your weapons that can open a weaponskill: its skill, and the weapon itself for a relic or prime one
 function heldChoices(ws){
   const skill = wsSkills()[ws], lock = (wsInfoOf(ws).lock || '').toLowerCase(), seen = new Set(), out = [];
-  for (const x of ((ofAnySub('owned') || {}).main || [])) {
+  for (const x of ((ownedOf() || {}).main || [])) {
     if (seen.has(x.name)) continue;
     seen.add(x.name);
     const it = itemOf(x.name);
@@ -161,8 +161,8 @@ function wsWeaponLine(s, line){
   const sorted = rank ? list.slice().sort((a, b) => (rank[b] || 0) - (rank[a] || 0)) : list;
   const dmg = n => rank && rank[n] != null ? ' — ' + fmtDmg(rank[n]) : '';
   // a weapon out of reach (a slip, the Mog House) says where it is: it has to be taken out first
-  const where = n => { const w = [...new Set(((ofAnySub('owned') || {}).main || []).filter(x => x.name === n).flatMap(x => x.where || []))];
-    return w.length && !w.some(x => /^(Inventory|Wardrobe)/.test(x)) ? ' · ' + w.join(', ') : ''; };
+  const where = n => { const w = [...new Set(((ownedOf() || {}).main || []).filter(x => x.name === n).flatMap(x => x.where || []))];
+    return w.length && !w.some(x => /^(Inventory|Wardrobe)/.test(x)) ? ' · ' + w.map(whereLabel).join(', ') : ''; };
   const menu = `<select class="heldsel buffsel ${held ? 'set' : ''}" data-heldws="${esc(ws)}">` +
     `<option value="">${esc(t('heldMode', {w: auto && !isEmpty(auto) ? auto.name : '—'}))}</option>` +
     (held && !sorted.includes(held) ? `<option value="${esc(held)}" selected>${esc(held + ' · ' + t('heldGone'))}</option>` : '') +

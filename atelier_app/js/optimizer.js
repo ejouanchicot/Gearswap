@@ -89,7 +89,7 @@ function tierCostHTML(rows, worn, dmg, m){
 // Where the optimizer looks (S.optOpts.where): your pieces (wardrobes only when asked), your pieces at
 // their best (top rank, cape materials at their maximum), or every item of the game your job wears
 function optChoices(tpNames){
-  const o = S.optOpts || {}, owned = ofAnySub('owned') || {}, choices = {};
+  const o = S.optOpts || {}, owned = ownedOf() || {}, choices = {};
   const reach = x => !o.wardOnly || !(x.where && x.where.length) || x.where.some(w => /^(Inventory|Wardrobe)/.test(w));
   for (const slot of SLOTS) if (!['main', 'sub', 'range'].includes(slot)) {
     choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && reach(x)).map(x => {
@@ -106,7 +106,7 @@ function optChoices(tpNames){
 function gameChoices(slot, have, tpNames){
   const job = S.job.toLowerCase(), names = new Set(have.map(x => x.name)), out = [], seen = new Set();
   // a one-choice mission reward you chose already rules out the group's others (FFXI.opt.EXCLUSIVE)
-  const mine = new Set(Object.values(ofAnySub('owned') || {}).flat().map(x => x.name));
+  const mine = new Set(Object.values(ownedOf() || {}).flat().map(x => x.name));
   const ruledOut = name => { const g = FFXI.opt.groupOf(name); return !!g && g.items.some(n => n !== name && mine.has(n)); };
   for (const it of FFXI.CATALOG.items) {
     if (!it.slots.includes(FFXI.opt.SLOT[slot]) || !it.jobs.includes(job) || names.has(it.name) || tpNames.has(it.name) || seen.has(it.name)) continue;
@@ -157,7 +157,7 @@ async function optimizeWs(s){
 // The set a search starts from: in a search of your pieces (not every item of the game), a piece of the set you do not
 // hold leaves it (Revelation Gaunt. pushed from an every-item search), the search fills its slot with yours
 function startOf(base){
-  const start = optPieces(base), owned = ofAnySub('owned') || {};
+  const start = optPieces(base), owned = ownedOf() || {};
   if ((S.optOpts || {}).where === 'all') return start;
   for (const slot of Object.keys(start)) if (!['main', 'sub', 'range'].includes(slot) && !(owned[slot] || []).some(x => x.name === start[slot].name)) delete start[slot];
   return start;
@@ -165,7 +165,7 @@ function startOf(base){
 // Free weapons: every main hand you hold with every off hand it can take ({main, sub}, the engine's "weapons"
 // choice), the pair worn now first; a copy in both hands only when you have two
 function weaponPairs(base, ws){
-  const owned = ofAnySub('owned') || {}, piece = x => ownRank({name: x.name, augs: x.augs, copies: x.count || (x.where || []).length, keep: true});
+  const owned = ownedOf() || {}, piece = x => ownRank({name: x.name, augs: x.augs, copies: x.count || (x.where || []).length, keep: true});
   // a weaponskill set: only the weapons that open that weaponskill (its combat skill; a relic or prime's own)
   const opens = ws ? new Set(heldChoices(ws)) : null;
   // a hand you chose (a weaponskill's held weapon or off hand, an engaged set's forced ones) stays: only the other is searched
@@ -374,7 +374,9 @@ function optRunResult(s, res, tr, plain, gains){
     if (a || b) fig.push([label, String(a), String(b), ca === cb ? 0 : (low ? cb < ca : cb > ca) ? 1 : -1]);
   }
   const live = liveWrite();
-  const list = changes.map(c => `<li><span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span><span><s>${esc(c.from)}</s> → <b>${esc(c.to)}</b></span></li>`).join('');
+  const porter = (slot, name) => { const at = (ownedOf()[slot] || []).filter(x => x.name === name);
+    return at.length && at.every(atPorter) ? ` <span class="orporter">${esc(at[0].where.map(whereLabel).join(', '))}</span>` : ''; };
+  const list = changes.map(c => `<li><span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span><span><s>${esc(c.from)}</s> → <b>${esc(c.to)}</b>${porter(c.slot, c.to)}</span></li>`).join('');
   const rows = fig.map(([l, a, b, w]) => `<tr><th>${esc(l)}</th><td>${esc(a)}</td><td class="${w > 0 ? 'up' : w < 0 ? 'down' : ''}">${esc(b)}</td></tr>`).join('');
   const lack = gains.length ? `<p class="orlack">${esc(t('orLack'))} ` + gains.map(g => `<b>${esc(g.piece.name)}</b> ${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`).join(' · ') + `</p>` : '';
   // the result's own rows: the hero, the changes and figures taking what is left (scrolling inside), what is to get
@@ -422,7 +424,7 @@ function optResult(s, k, res, gains, o){
     if (p.capeMax) piece.capeMax = true;
     // the file names the piece alone and you hold one copy of it: GearSwap wears that copy, nothing changes
     if (a && !isEmpty(a) && a.name === p.name && !(a.augs && a.augs.length) && !p.maxed && !p.missing
-      && ((ofAnySub('owned') || {})[slot] || []).filter(x => x.name === p.name).length <= 1) continue;
+      && ((ownedOf() || {})[slot] || []).filter(x => x.name === p.name).length <= 1) continue;
     if (!samePiece(piece, a && !isEmpty(a) ? optPieces({x: a}).x : null)) tr[slot] = piece;
   }
   // free weapons: the pair found becomes the page's forced weapons (never written to a set)

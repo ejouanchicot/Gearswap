@@ -72,7 +72,7 @@ function optContextInput(s){
 // A set's pieces as the engine reads them: a piece named without augments is your copy of it (its
 // augments, path and the rank //gs c gearscan read)
 function optPieces(pieces){
-  const owned = ofAnySub('owned') || {}, out = {};
+  const owned = ownedOf() || {}, out = {};
   for (const [slot, p] of Object.entries(pieces)) {
     if (!p || isEmpty(p)) continue;
     let q = Object.assign({}, p);

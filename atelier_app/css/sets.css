@@ -196,6 +196,10 @@
 .legend i.short{border:2px solid var(--g-off)}
 .holdmiss{color:var(--r-dd)}
 .holdshort{color:var(--g-off)}
+.holdporter{color:var(--g-mag)}
+.slot.own-porter{box-shadow:0 0 0 2px var(--g-mag)}
+.legend i.porter{border:2px solid var(--g-mag)}
+.orporter{font-size:11.5px;color:var(--g-mag);margin-left:6px}
 .eqhint{margin:0;font-size:11px;color:var(--faint)}
 .keptacts{display:inline-flex;gap:6px;margin-left:8px;font-weight:400}
 .dacts .btn small{margin-left:4px;font-size:11px;opacity:.75}

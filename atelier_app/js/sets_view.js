@@ -43,10 +43,11 @@ function renderHome(){
 // counted with its materials at their maximum), '' when yours is it or the page knows no bags (no export yet)
 function holdState(slot, p){
   if (!p || isEmpty(p) || ['main', 'sub', 'range'].includes(slot)) return '';
-  const owned = ofAnySub('owned') || {};
+  const owned = ownedOf() || {};
   if (!Object.keys(owned).length) return '';
   const mine = (owned[slot] || []).filter(x => x.name === p.name);
   if (!mine.length) return 'missing';
+  if (mine.every(atPorter)) return 'porter';
   if (p.capeMax) return 'short';
   if (p.rank != null && !mine.some(x => { const r = ownRank({name: x.name, augs: x.augs}).rank; return r == null || r >= p.rank; })) return 'short';
   return '';
@@ -164,12 +165,15 @@ function cardHTML(card, ci, bypath, q){
   if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits',{b:'<b>'+esc(shortPath(s.base))+'</b>'})} · ${n?t('changed',{n}):t('nothingChanged')}`); }
   else foot.push(Object.keys(s.pieces).length ? t('defined',{n:'<b>'+Object.keys(s.pieces).length+'</b>'}) : t('emptySet'));
   if (s.aliases && s.aliases.length) foot.push(`<details><summary>${t('sharedCount', {n: s.aliases.length})}</summary><p>${s.aliases.map(a => esc(shortPath(a))).join(' · ')}</p></details>`);
-  const holds = {missing: [], short: []};
+  const holds = {missing: [], short: [], porter: []};
   for (const slot of SLOTS) { const st = holdState(slot, eff.pieces[slot]); if (st && !holds[st].includes(eff.pieces[slot].name)) holds[st].push(eff.pieces[slot].name); }
+  // at the Porter Moogle: which slip, to take it out
+  const slipOf = n => [...new Set(Object.values(ownedOf()).flat().filter(x => x.name === n).flatMap(x => x.where || []))].map(w => w.replace(/^Slip/, 'slip')).join(', ');
+  if (holds.porter.length) foot.push(`<span class="holdporter">${t('holdPorter', {l: esc(holds.porter.map(n => n + ' (' + slipOf(n) + ')').join(', '))})}</span>`);
   if (holds.missing.length) foot.push(`<span class="holdmiss">${t('holdMissing', {l: esc(holds.missing.join(', '))})}</span>`);
   if (holds.short.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short.join(', '))})}</span>`);
   // the legend folded by default (its state kept), the hint of the cells with it
-  const legend = `<details class="lgfold" data-lgfold ${S._lgOpen ? 'open' : ''}><summary>${t('lgTitle')}</summary><div class="legend mini"><span><i></i>${t('lgOwn')}</span><span><i class="inh"></i>${t('lgInh')}</span><span><i class="weap"></i>${t('lgWeap')}</span><span><i class="try"></i>${t('lgTry')}</span>${holds.missing.length ? `<span><i class="miss"></i>${t('lg_missing')}</span>` : ''}${holds.short.length ? `<span><i class="short"></i>${t('lg_short')}</span>` : ''}</div><p class="eqhint">${t('lgHint')}</p></details>`;
+  const legend = `<details class="lgfold" data-lgfold ${S._lgOpen ? 'open' : ''}><summary>${t('lgTitle')}</summary><div class="legend mini"><span><i></i>${t('lgOwn')}</span><span><i class="inh"></i>${t('lgInh')}</span><span><i class="weap"></i>${t('lgWeap')}</span><span><i class="try"></i>${t('lgTry')}</span>${holds.missing.length ? `<span><i class="miss"></i>${t('lg_missing')}</span>` : ''}${holds.short.length ? `<span><i class="short"></i>${t('lg_short')}</span>` : ''}${holds.porter.length ? `<span><i class="porter"></i>${t('lg_porter')}</span>` : ''}</div><p class="eqhint">${t('lgHint')}</p></details>`;
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws', head = ws ? wsTitleHTML(s) : '';
   // the page in three bands: what the set is (a weaponskill set: the weaponskill, what its figures are worked out with),
   // the equipment beside its stats, then the optimizer on the whole width

@@ -307,21 +307,11 @@ end
 --- Owned items the main job can wear, by slot: `items` = {slot = {name, ...}} and
 --- `owned` = {slot = {{name = , augs = }, ...}}, one entry per distinct copy (two capes
 --- with other augments are two choices in the page).
---- The items kept in the Porter Moogle's storage slips (Windower's slips library: the bits of
---- each slip held in a bag), as {item id = 'Slip N'}.
+--- The items kept at the Porter Moogle, {item id = 'Slip N'}: the slips, or the last list read
+--- when they cannot be read yet (shared/utils/atelier/slip_items.lua).
 local function slip_items()
-    local ok, slips = pcall(require, 'slips')
-    if not (ok and slips and slips.get_player_items) then return {} end
-    local ok_g, list = pcall(slips.get_player_items)
-    if not ok_g or type(list) ~= 'table' then return {} end
-    local out = {}
-    for slip_id, ids in pairs(list) do
-        local n = slips.get_slip_number_by_id and slips.get_slip_number_by_id(slip_id)
-        for _, id in ipairs(ids or {}) do
-            if type(id) == 'number' and id > 0 then out[id] = 'Slip ' .. tostring(n or slip_id) end
-        end
-    end
-    return out
+    local ok, SlipItems = pcall(require, 'shared/utils/atelier/slip_items')
+    return ok and SlipItems.get() or {}
 end
 
 local function collect_items()
@@ -711,10 +701,13 @@ function AtelierExport.after_load()
         if Live.allowed() then Live.start() end
     end)
     if not AtelierExport.enabled() then return end
-    local defer, try = require('shared/utils/core/load_gate').defer, nil -- waits for the level (bags unread before)
+    -- waits for the level, the bags and the Porter Moogle's slips in them (unread just after a load or a zone);
+    -- past the wait, the export goes with what there is (the slips' last list: shared/utils/atelier/slip_items.lua)
+    local defer, try, Slips = require('shared/utils/core/load_gate').defer, nil, require('shared/utils/atelier/slip_items')
     try = function(left) local me = windower.ffxi.get_player()
-        if me and (me.main_job_level or 0) > 0 then return pcall(AtelierExport.export) end
-        if left > 0 then defer(2, function() try(left - 1) end, 'atelier export') end end
+        local ready = me and (me.main_job_level or 0) > 0 and Slips.bags_ready()
+        if ready or left == 0 then return pcall(AtelierExport.export) end
+        defer(2, function() try(left - 1) end, 'atelier export') end
     defer(4, function() try(20) end, 'atelier export')
 end
 

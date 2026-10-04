@@ -67,7 +67,7 @@ function hybridMode(d){
 // The weapon held for a weaponskill (heldWeapon) in the main hand; a two-handed one takes a grip (the one
 // your weapon modes use, else the first you own), a one-handed one gives up a grip
 function holdWeapon(d, pieces, from, held){
-  const owned = ofAnySub('owned') || {}, own = (owned.main || []).find(x => x.name === held);
+  const owned = ownedOf() || {}, own = (owned.main || []).find(x => x.name === held);
   pieces.main = own && own.augs && own.augs.length ? {name: held, augs: own.augs} : {name: held};
   from.main = t('heldWhy');
   const two = TWO_HANDED.test((itemOf(held) || {})['Skill Type'] || ''), subType = pieces.sub ? (itemOf(pieces.sub.name) || {}).Type : null;
@@ -262,7 +262,7 @@ function forceList(slot){
   if (src === 'modes') return uniq(weaponModes(data()).flatMap(m => m.values.map(v => ((m.sets[v] || {}).pieces || {})[slot])));
   if (src === 'game') return !c ? [] : uniq(c.src.items.filter(r => r[2].split(' ').includes(slot) && r[3].split(' ').includes(S.job)
     && (r[4] >= 99 || r[5] > 0)).map(r => ({name: r[1]}))).sort((a, b) => a.name.localeCompare(b.name));
-  return uniq((ofAnySub('owned') || {})[slot] || []);
+  return uniq((ownedOf() || {})[slot] || []);
 }
 function forceLines(s, line){
   const f = slotForce(), auto = withWeapons(s, 'force').pieces, eff = withWeapons(s).pieces, src = S.forceSrc || 'mine';

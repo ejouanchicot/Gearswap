@@ -20,7 +20,7 @@ function pushEntry(slot, target, owned){
 // and from the set as the file writes it (the version is built on the file's set, so the pieces in test
 // in game, s.was, are written into it too)
 function versionPlan(s){
-  const tr = S.trial[trialKey(s)] || {}, was = s.was || {}, owned = ofAnySub('owned') || {};
+  const tr = S.trial[trialKey(s)] || {}, was = s.was || {}, owned = ownedOf() || {};
   const fileOf = slot => slot in was ? (!was[slot] || was[slot].name === 'empty' ? null : was[slot]) : (isEmpty(s.pieces[slot]) ? null : s.pieces[slot]);
   return SLOTS.filter(slot => slot in tr || slot in was).map(slot => {
     const target = slot in tr ? tr[slot] : (isEmpty(s.pieces[slot]) ? null : s.pieces[slot]);
@@ -37,7 +37,7 @@ function openVersion(s){
 // One entry per slot the draft or the saved pieces change: the piece, `empty`, or `inherit`
 // (the line goes, the set takes its base's piece again)
 function pushPlan(s){
-  const tr = S.trial[trialKey(s)] || {}, was = s.was || {}, owned = ofAnySub('owned') || {};
+  const tr = S.trial[trialKey(s)] || {}, was = s.was || {}, owned = ownedOf() || {};
   const base = s.base && S._bypath ? S._bypath[s.base] : null;
   return SLOTS.filter(slot => slot in tr || slot in was).map(slot => {
     const target = slot in tr ? tr[slot] : (isEmpty(s.pieces[slot]) ? null : s.pieces[slot]);
@@ -50,13 +50,13 @@ function pushPlan(s){
 }
 const pushLine = e => [e.slot, e.kind].concat(e.piece ? [e.piece.name].concat(e.kind === 'piece' ? e.piece.augs || [] : []) : []).join('\t');
 function pushWarnings(s, plan, fresh){
-  const owned = ofAnySub('owned') || {}, out = [];
+  const owned = ownedOf() || {}, out = [];
   for (const e of plan) if (e.piece && (e.piece.rank != null || e.piece.capeMax)) out.push(t('pushNotYet', {p: esc(e.piece.name)}));
   for (const e of plan) if (e.piece) {
     const copies = (owned[e.slot] || []).filter(x => x.name === e.piece.name && (e.kind === 'one' || (x.augs || []).join('|') === (e.piece.augs || []).join('|')));
     const where = [...new Set(copies.flatMap(x => x.where || []))];
     if (!copies.length) out.push(t('pushNotOwned', {p: esc(e.piece.name)}));
-    else if (where.length && !where.some(w => /^(Inventory|Wardrobe)/.test(w))) out.push(t('pushOutOfReach', {p: esc(e.piece.name), w: esc(where.join(', '))}));
+    else if (where.length && !where.some(w => /^(Inventory|Wardrobe)/.test(w))) out.push(t('pushOutOfReach', {p: esc(e.piece.name), w: esc(where.map(whereLabel).join(', '))}));
   }
   // the sets built from this one take the changed slots they do not write themselves
   const d = data(), changed = plan.map(e => e.slot), kids = [];

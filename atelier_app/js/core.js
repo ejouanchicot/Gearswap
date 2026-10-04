@@ -76,6 +76,28 @@ const data = () => S.job && recordOf(S.char, S.job);
 // What only the game sees (bag items) or any export knows (icons) is shared by the job's subjobs
 const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
   const other = Object.values(exportsOf(S.char, S.job)).find(x => x[key]); return other ? other[key] : null; };
+// The pieces you hold, by slot (the shown export's owned): with the Porter Moogle's ones of the job's latest export
+// that read them when this one could not (an export written while its slips were not there yet: they read empty)
+let OWNED_MEMO = {key: null, out: null};
+const isSlip = w => /^Slip \d+/.test(w);
+const atPorter = x => !!(x.where && x.where.length) && x.where.every(isSlip);
+function ownedOf(){
+  const d = data(), key = [DATA_GEN, S.char, S.job, d && d.sub].join('|');
+  if (OWNED_MEMO.key === key) return OWNED_MEMO.out;
+  const cur = ofAnySub('owned') || {}, out = {};
+  const hasSlips = o => Object.values(o || {}).some(list => list.some(atPorter));
+  const other = hasSlips(cur) ? null : Object.values(exportsOf(S.char, S.job)).filter(x => hasSlips(x.owned))
+    .sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
+  for (const [slot, list] of Object.entries(cur)) out[slot] = list.slice();
+  for (const [slot, list] of Object.entries((other && other.owned) || {})) for (const x of list.filter(atPorter)) {
+    const mine = out[slot] = out[slot] || [];
+    if (!mine.some(y => y.name === x.name && (y.augs || []).join('|') === (x.augs || []).join('|'))) mine.push(x);
+  }
+  OWNED_MEMO = {key, out};
+  return out;
+}
+// Where a piece is, as the page says it: a slip is the Porter Moogle's
+const whereLabel = w => isSlip(w) ? t('porterAt', {n: w.slice(5)}) : w;
 // One field of every export of the shown job merged (icons, descriptions, scans), kept until an export is read again:
 // the stats of each piece ask for them, and merging ~800 entries each time was most of a render
 let MERGED = {}, MERGED_GEN = -1;

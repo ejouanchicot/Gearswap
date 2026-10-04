@@ -30,7 +30,7 @@ function openSlot(ci, slot){
       (group(o) === 5 ? ` · <button class="linkbtn" data-showjunk>${S._showJunk ? t('junkHide') : t('junkShow')}</button>` : '') + `</div>`;
   const list = opts.length ? opts.map((o, i) => o.grp === 5 && !S._showJunk ? head(o, i) : head(o, i) + (() => { const r = o.cat ? null : pieceStats(o.piece, (S._drawer || {}).slot), augs = o.piece.augs || [];
     const where = o.cat ? [t('notOwned'), o.ilv ? 'iLv ' + o.ilv : t('lvShort', {n: o.lv})].join(' · ')
-      : [o.owned ? (o.count > 1 ? '×' + o.count + ' · ' : '') + (o.where && o.where.length ? o.where.join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
+      : [o.owned ? (o.count > 1 ? '×' + o.count + ' · ' : '') + (o.where && o.where.length ? o.where.map(whereLabel).join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
     const up = o.upgrade;
     const why = o.junk && o.why ? `<span class="whyl">${esc(o.why)}</span>` : '';
     const upTag = up ? `<span class="tag up ${o.curMax ? 'on' : ''}" data-trymax="${i}" role="button" tabindex="0" title="${esc(t('maxChipTip'))}">${up.to ? `→ R${up.to}` : t('capeMaxTag')}</span>` : '';
@@ -59,7 +59,7 @@ function pieceChoices(slot, current, orig, s){
   for (const x of d.sets) for (const sl of sides) { const q = x.pieces[sl]; if (!q) continue;
     if (sl === slot) { seen[q.name] = (seen[q.name] || 0) + 1; seen[copyKey(q)] = (seen[copyKey(q)] || 0) + 1; }
     if (fam && family(x.path, x.pieces) === fam) kin[q.name] = true; }
-  const owned = (ofAnySub('owned') || {})[slot], names = (ofAnySub('items') || {})[slot] || [];
+  const owned = (ownedOf() || {})[slot], names = (ofAnySub('items') || {})[slot] || [];
   const list = owned ? owned.map(x => ({piece: {name: x.name, augs: x.augs}, owned: true, where: x.where, count: x.count}))
     : names.map(n => ({piece: {name: n}, owned: true}));
   const have = new Set(list.map(o => o.piece.name));
