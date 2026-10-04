@@ -60,6 +60,9 @@ function optContextInput(s){
     if (ja.a.eng) { Object.assign(partyStats, ja.a.eng); continue; }
     // Haste Samba at the page's value (merits, a party DNC main or sub), not the engine's fixed 10.1 / 5.1
     if (base === 'Haste Samba') { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
+    // the engine counts Saber Dance at 25 % (and drops a /WAR's Double Attack trait under it): its 20 % floor instead,
+    // the legs' bonus counted by the engine on the legs worn (ctx.saberMerit, atelier_opt.js gearset)
+    if (base === 'Saber Dance') partyStats.DA = (partyStats.DA || 0) + 20 - 25;
     abilities[ja.as === 'sub' && base === 'Warcry' ? base + ' (sub)' : base] = true;
   }
   const skill = wsSkills()[ws] || '';
@@ -67,6 +70,7 @@ function optContextInput(s){
     wsInfo: wsInfoOf(ws), wsSkill: wsSkills()[ws],
     enemy: enemyKey(b.enemy), evaDown: foeEva(b), physRes: physResOf(b, skill), tomahawk: foeJaActive(b).includes('Tomahawk'), banish: foeJaActive(b).includes('Banish II'), partyWarcry, geoMul: geoMul(b), ariaPdl: ariaPdl(b),
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
+    saberMerit: abilities['Saber Dance'] ? danceMerit('saber') : 0,
     warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws, wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || 'V'};
 }
 // A set's pieces as the engine reads them: a piece named without augments is your copy of it (its
@@ -230,16 +234,18 @@ function tpBase(d){
 }
 const TWO_HANDED = /great|scythe|polearm|staff/i;
 function tankHTML(r){
-  const {c, set, B} = r, v = k => (set[k] || {}).v || 0, mul = B.dmgmul || 1;
+  const {c, set, B} = r, v = k => (set[k] || {}).v || 0, mul = B.dmgmul || 1, pmul = mul * (B.pdmgmul || 1);
   const dt = v('dt'), shell = B.shell ? -B.shell / 256 * 100 : 0;
   const pdt = Math.max(Math.max(dt + v('pdt'), -50) + v('pdt2'), -87.5);
   const mdt = Math.max(Math.max(dt + v('mdt') + shell, -50) + v('mdt2'), -87.5);
   const mdb = v('mdb') + traitOf('mdb', c) + giftOf('mdb', c) + (B.mdb || 0);
   const fl = x => Math.floor(x + 1e-9);
-  const phys = fl(1000 * (1 + pdt / 100) * mul), mag = fl(fl(1000 * (1 + mdt / 100)) / (1 + mdb / 100) * mul);
+  const phys = fl(1000 * (1 + pdt / 100) * pmul), mag = fl(fl(1000 * (1 + mdt / 100)) / (1 + mdb / 100) * mul);
   const breath = fl(1000 * (1 + Math.max(dt + v('bdt'), -50) / 100) * mul);
   const pctOf = n => `${signed(Math.round((n / 1000 - 1) * 1000) / 10)} %`;
-  let rows = statLi(t('physHit'), phys, pctOf(phys), '', mul < 1 ? 'Rampart ×0.75' : '') +
+  // what multiplies the damage taken (Rampart ×0.75, Fan Dance ×0.75...: past the -50 % cap)
+  const muls = B._by.filter(e => e.k === 'dmgmul' || e.k === 'pdmgmul').map(e => `${e.src} ×${Math.round(e.v * 100) / 100}`).join(' · ');
+  let rows = statLi(t('physHit'), phys, pctOf(phys), '', muls) +
     statLi(t('magHit'), mag, pctOf(mag), '', t('magTip', {m: Math.round(Math.max(dt + v('mdt') + shell, -50) * 10) / 10, b: mdb})) +
     statLi(t('breathHit'), breath, pctOf(breath));
   const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : Math.max(1 + enm / 100, .5);

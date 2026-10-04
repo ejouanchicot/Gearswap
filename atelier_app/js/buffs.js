@@ -247,7 +247,9 @@ const JAS = {
   'Hagakure': {job: 'SAM', lvl: 95, tp: true, fx: () => ({})},
   'Innin': {job: 'NIN', lvl: 40, fx: m => m ? {acc: 20, scb: 5, crit: 24, eva: -24} : {crit: 24, eva: -24}},
   'Building Flourish': {job: 'DNC', lvl: 50, fx: () => ({crit: 10, acc: 40, atkp: .25})},
-  'Saber Dance': {job: 'DNC', lvl: 75, fx: () => ({da: 25})},
+  // the dances (BG Wiki), a main DNC's merit abilities, one at a time: their floor, what holds through the effect
+  'Saber Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({da: danceFloor('saber', shownPieces())})},
+  'Fan Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({pdmgmul: 1 - danceFloor('fan', shownPieces()) / 100})},
   'Haste Samba': {job: 'DNC', from: 'DNC', lvl: 45, party: true, fx: (m, l, ja) => ({jahaste: sambaHaste(ja)})},
   'Swordplay': {job: 'RUN', lvl: 20, fx: () => ({acc: 54, eva: 54})},
   'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
@@ -306,9 +308,24 @@ const ENDGAME_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II'
 const jaRole = name => ((jasOf().find(j => j.name === name) || {}).as) === 'party' ? 'pja' : 'ja';
 function jaOn(b, name){
   const role = jaRole(name);
+  // Fan Dance renders your own sambas unusable (a party DNC's Haste Samba still counts)
+  if (name === 'Haste Samba' && role === 'ja' && jaOn(b, 'Fan Dance')) return false;
   if ((b[role] || {})[name]) return true;
   return role === 'ja' && name === 'Haste Samba' && !!b.autoSamba && (data() || {}).sub === 'DNC' && !(b.jaOff || {})[name];
 }
+// A dance's floor (BG Wiki): Saber Dance's Double Attack ends at 20 % (from 50 %, in 30 s), Fan Dance's physical damage
+// cut at 20 % (from 90 %, 10 % a hit taken); each "Saber Dance" / "Fan Dance" merit level adds 1 % to it while Etoile or
+// Horos Tights / Bangles are worn: counted on the pieces of the set shown (the search weighs the Tights against any
+// other legs: atelier_opt.js gearset)
+const DANCE = {saber: {merit: 'saber_dance', slot: 'legs', gear: /^(Horos|Etoile) Tights/},
+  fan: {merit: 'fan_dance', slot: 'hands', gear: /^(Horos|Etoile) Bangles/}};
+function danceMerit(kind){ const m = (meritList() || []).find(x => x.key === DANCE[kind].merit); return m ? meritLevel(m) : 0; }
+function danceFloor(kind, pieces){
+  const k = DANCE[kind], worn = pieces && k.gear.test((pieces[k.slot] || {}).name || '');
+  return 20 + (worn ? danceMerit(kind) : 0);
+}
+// The pieces of the set shown (its weapons and tries in), for what depends on the gear worn
+const shownPieces = () => S._curSet ? withWeapons(S._curSet).pieces : null;
 const endgameBuffs = () => JSON.parse(JSON.stringify(ENDGAME_BUFFS));
 // The sets GearSwap wears a .Group / .Solo version of, by the party's support (support_tier.lua)
 const TIERED = /^sets\.(precast\.WS|engaged|luopan\.engaged)\b/;
@@ -498,7 +515,7 @@ function buffTotals(){
   const twoHands = !main || !wsk || TWO_HANDED.test(wsk);
   for (const ja of jasOf()) if (jaOn(b, ja.name)) for (const [k, v] of Object.entries(ja.a.fx(ja.main, ja.lvl, ja))) {
     if (!twoHands && (ja.a.twoHanded === true || (ja.a.twoHanded || []).includes(k))) continue;
-    if (k === 'dmgmul') { B.dmgmul = (B.dmgmul || 1) * v; B._by.push({src: ja.name, k, v}); } else put(k, v, ja.name); }
+    if (k === 'dmgmul' || k === 'pdmgmul') { B[k] = (B[k] || 1) * v; B._by.push({src: ja.name, k, v}); } else put(k, v, ja.name); }
   // a party member's TP Bonus (a WAR's Warcry, a SMN's Crystal Blessing): shown with its other effects (the TP steps count it already)
   for (const ja of jasOf()) if (ja.as === 'party' && ja.a.tpParty && jaOn(b, ja.name)) put('tpb', tpOfParty(ja.a, b), ja.name);
   return B;

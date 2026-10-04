@@ -76,7 +76,7 @@ const shownMain = () => { const sset = S._curSet; return sset ? ((withWeapons(ss
 const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense', '%f'], edefp: ['Défense de la cible', 'Target Defense', '-%f'],
   eeva: ['Évasion de la cible', 'Target Evasion', '-'], emdb: ['Déf. magique de la cible', 'Target Magic Def.', '-'], emeva: ['Évasion magique de la cible', 'Target Magic Evasion', '-'], eres: ['Résistance de la cible', 'Target resistance', '-%f'],
   mhaste: ['Haste magique', 'Magic Haste', '%'], jahaste: ['Haste JA', 'JA Haste', '%'], shell: ['Shell (dégâts magiques reçus)', 'Shell (magic damage taken)', 'shell'],
-  dmgmul: ['Dégâts reçus', 'Damage taken', 'mul'], deff: ['Défense (nourriture)', 'Defense (food)', 'pair'], mevaf: ['Évasion magique (nourriture)', 'Magic Evasion (food)', 'pair'],
+  dmgmul: ['Dégâts reçus', 'Damage taken', 'mul'], pdmgmul: ['Dégâts physiques reçus', 'Physical damage taken', 'mul'], deff: ['Défense (nourriture)', 'Defense (food)', 'pair'], mevaf: ['Évasion magique (nourriture)', 'Magic Evasion (food)', 'pair'],
   atkf: ['Attaque (nourriture)', 'Attack (food)', ''], atk: ['Attaque', 'Attack', ''], acc: ['Précision', 'Accuracy', ''], racc: ['Précision à distance', 'Ranged Acc.', ''],
   ratk: ['Attaque à distance', 'Ranged Atk.', ''], macc: ['Précision magique', 'Magic Accuracy', ''], mab: ['Bonus att. magique', 'Magic Atk. Bonus', ''],
   def: ['Défense', 'Defense', ''], eva: ['Évasion', 'Evasion', ''], meva: ['Évasion magique', 'Magic Evasion', ''], mdb: ['Déf. magique', 'Magic Def. Bonus', ''],

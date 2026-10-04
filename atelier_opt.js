@@ -28,9 +28,15 @@
     function index() {
         if (byId || !FFXI.CATALOG) return;
         byId = {}; byName = {};
+        // by its short name and its long one, whatever the case: a set file writes either
+        // ("Macu. Earring +1" / "Maculele Earring +1", "Supershear Ring" / "SuperShear Ring")
         FFXI.CATALOG.items.forEach(function (it) {
             byId[it.id] = it;
-            (byName[it.name] = byName[it.name] || []).push(it);
+            [it.name, it.enl].forEach(function (n, i) {
+                var k = n && n.toLowerCase();
+                if (!k || (i === 1 && k === it.name.toLowerCase())) return;
+                (byName[k] = byName[k] || []).push(it);
+            });
         });
     }
     // The catalogue entry of a piece: its own item id when known, else the name's entry with the
@@ -41,7 +47,7 @@
         if (!byId) return null;
         if (id && byId[id]) return byId[id];
         if (name in bestOf) return bestOf[name];
-        var list = byName[name] || [];
+        var list = byName[String(name).toLowerCase()] || [];
         return (bestOf[name] = list.slice().sort(function (a, b) { return (b.ilvl || 0) - (a.ilvl || 0) || b.id - a.id; })[0] || null);
     };
 
@@ -201,7 +207,7 @@
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
-            physResBy: c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk};
+            physResBy: c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: c.saberMerit || 0};
     };
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
     // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %), Banish II by 70 % on an undead;
@@ -255,6 +261,10 @@
             if (!g) return null;
             set[O.SLOT[slot]] = g;
         }
+        // Saber Dance up: Etoile / Horos Tights worn raise its Double Attack floor 1 % a "Saber Dance" merit level (BG Wiki),
+        // counted on the legs worn, so the search weighs them against any other legs
+        var legs = pieces.legs && pieces.legs.name;
+        if (ctx && ctx.saberMerit && legs && /^(Horos|Etoile) Tights/.test(legs)) set[O.SLOT.legs] = Object.assign({}, set[O.SLOT.legs], {DA: ((set[O.SLOT.legs] || {}).DA || 0) + ctx.saberMerit});
         return set;
     };
     // An engaged set's attack round (the engine's average_attack_round, from 0 TP to the weaponskill at opts.wsAt, 1000
