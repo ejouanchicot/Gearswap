@@ -97,7 +97,10 @@ function PartyJobs.members_here()
         local member = party['p' .. i]
         if member and member.name and (not me or member.zone == me.zone) then
             local job = PartyJobs.job_of(member) or {}
-            out[#out + 1] = {name = member.name, main_job = job.main_job, trust = job.trust}
+            -- a trust whose job came from its party packet is still a trust (its support is weaker than a player's)
+            local named = TRUSTS[tostring(member.name):lower():match('^%a+') or '']
+            local trust = job.trust or (named ~= nil and not (member.mob and member.mob.is_npc == false))
+            out[#out + 1] = {name = member.name, main_job = job.main_job, trust = trust or nil}
         end
     end
     return out

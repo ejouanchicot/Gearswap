@@ -60,7 +60,7 @@ function pushButton(s, live){
   const tg = pushTarget(s);
   if (tg.exists) return `<button class="btn" data-veropen title="${esc(t('pushVerOpenTip', {v: tg.tier}))}">${t('pushVerOpen', {v: tg.tier})}</button>`;
   // Full is the weaponskill set itself (GearSwap reads no .Full): said on the button
-  const full = buffTier() === 'Full' && TIERED.test(s.path) && !/\.(Group|Solo)$/.test(s.path);
+  const full = buffTier() === 'Full' && TIERED.test(s.path) && !/\.(Group|Solo|Trust)$/.test(s.path);
   const label = tg.create ? t('pushToVer', {v: tg.tier}) : full ? t('pushToFull') : t('pushBtn');
   // the game writes into the files of the job it has loaded: another job there is said, not "the game is off"
   const tip = !live ? t('pushNeedsGame') : tg.create ? t('pushToVerTip', {v: tg.tier}) : full ? t('pushToFullTip') : '';

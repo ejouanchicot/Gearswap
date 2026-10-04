@@ -277,7 +277,7 @@ function cycleWsSets(s){
   const d = data(), main = (withWeapons(s).pieces.main || {}).name, skill = main && weaponSkills()[main];
   if (!d || !skill) return [];
   const tier = buffTier(), list = d.sets.filter(x => family(x.path, x.pieces) === 'ws' && wsOfSet(x) && wsSkills()[wsOfSet(x)] === skill);
-  const rank = x => (new RegExp('\\.' + tier + '$').test(x.path) ? 0 : /\.(Solo|Group)$/.test(x.path) ? 2 : 1);
+  const rank = x => (new RegExp('\\.' + tier + '$').test(x.path) ? 0 : /\.(Solo|Group|Trust)$/.test(x.path) ? 2 : 1);
   return list.sort((a, b) => rank(a) - rank(b) || a.path.localeCompare(b.path));
 }
 function cycleWsSet(s){

@@ -137,7 +137,7 @@ function setHeadHTML(card, ci, vi, s, acts){
   const cur = groups.find(g => g.main === vi || g.subs.some(x => x.i === vi));
   // the set's own versions only (Full / Group / Solo, .Acc...): the other sets of its family are in the set list
   let ctl = '';
-  const tiers = cur && cur.subs.some(x => /^(Group|Solo)$/.test(x.label));
+  const tiers = cur && cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
   if (cur && cur.subs.length) ctl += line(t('subVarLbl'), (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join(''));
   const menus = weaponMenus(s);
   const picks = (menus ? pick(t('weaponsLbl'), menus) : '') + (family(s.path, s.pieces) !== 'weapons' ? forceLines(s, pick) : '');

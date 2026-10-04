@@ -102,7 +102,7 @@ function wsPickLines(card, ci, vi, line){
   const btn = (i, label) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}">${esc(label)}</button>`;
   let out = '';
   if (cur.subs.length) {
-    const tiers = cur.subs.some(x => /^(Group|Solo)$/.test(x.label));
+    const tiers = cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
     out += line(t('verLbl'), (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join(''), t('verTip'), 'ver');
   }
   return out;

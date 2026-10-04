@@ -28,13 +28,15 @@ function optStop(){
 }
 /* ---- the cost of the wrong set: each version of a weaponskill set under each profile's buffs ---- */
 // The versions of a weaponskill set the file has (the set itself is the Full one), and the one GearSwap
-// wears in each tier (shared/utils/party/support_tier.lua: Solo falls back to Group, then to the set)
+// wears in each tier (shared/utils/party/support_tier.lua: Solo falls back to Group, then to the set; Trust to the set)
 function tierVersions(s){
-  const base = s.path.replace(/\.(Group|Solo)$/, ''), by = S._bypath || {};
+  const base = s.path.replace(/\.(Group|Solo|Trust)$/, ''), by = S._bypath || {};
   const out = [{name: 'Full', path: base, set: by[base] || s}];
-  for (const v of ['Group', 'Solo']) if (by[base + '.' + v]) out.push({name: v, path: base + '.' + v, set: by[base + '.' + v]});
+  for (const v of ['Group', 'Solo', 'Trust']) if (by[base + '.' + v]) out.push({name: v, path: base + '.' + v, set: by[base + '.' + v]});
   const has = v => out.some(x => x.name === v);
-  const worn = {Full: 'Full', Group: has('Group') ? 'Group' : 'Full', Solo: has('Solo') ? 'Solo' : has('Group') ? 'Group' : 'Full'};
+  // without a .Trust version, trusts with a GEO and a BRD or a COR give the Full set (support_tier.lua)
+  const worn = {Full: 'Full', Group: has('Group') ? 'Group' : 'Full', Solo: has('Solo') ? 'Solo' : has('Group') ? 'Group' : 'Full',
+    Trust: has('Trust') ? 'Trust' : 'Full'};
   return {base, rows: out, worn};
 }
 // What the table compares: a weaponskill set's average damage, an engaged set's figure for the objective

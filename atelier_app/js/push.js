@@ -1,12 +1,12 @@
 // GearSwap Atelier · push.js: push, delete, history, a new set
 // (cut from atelier.html, loaded by it in order: see the list there)
 /* ---- push: the set written into the player's set file (shared/utils/atelier/set_push.lua) ---- */
-// Where a push goes. Under the Group or Solo profile, a weaponskill or engaged set's draft belongs to that profile's
+// Where a push goes. Under the Group, Solo or Trust profile, a weaponskill or engaged set's draft belongs to that profile's
 // version (sets.precast.WS['X'].Solo, sets.engaged.PDT.Solo, worn by shared/utils/party/support_tier.lua): written as a new
 // set_combine of the set when the file has none (create), opened to work on when it has one (exists)
 function pushTarget(s){
   const tier = buffTier();
-  if (tier === 'Full' || !TIERED.test(s.path) || /\.(Group|Solo)$/.test(s.path)) return {path: s.path};
+  if (tier === 'Full' || !TIERED.test(s.path) || /\.(Group|Solo|Trust)$/.test(s.path)) return {path: s.path};
   const path = s.path + '.' + tier;
   return S._bypath && S._bypath[path] ? {path, tier, exists: true} : {path, tier, create: true};
 }

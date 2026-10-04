@@ -46,10 +46,11 @@ const BUBBLES = {
 // A GEO's abilities on its bubbles (BG Wiki), Geomancy+ included: Bolster doubles Indi- and Geo- (not an
 // Entrust) and leaves Blaze of Glory and Ecliptic Attrition out; without it, Blaze of Glory +50 % and Ecliptic
 // Attrition +25 % on the luopan (Geo-), added together
+// b.geoScale: a bubble weaker than a player's (a trust's: TRUST_BUFFS), {indi, geo, entrust} multipliers
 function geoMul(b){
-  const foe = geoKeep(enemyKey(b.enemy));
-  if (b.bolster) return {indi: 2, geo: 2, entrust: 1, foe};
-  return {indi: 1, geo: 1 + (b.bog ? .5 : 0) + (b.ecliptic ? .25 : 0), entrust: 1, foe};
+  const foe = geoKeep(enemyKey(b.enemy)), sc = b.geoScale || {}, x = k => sc[k] == null ? 1 : +sc[k];
+  if (b.bolster) return {indi: 2 * x('indi'), geo: 2 * x('geo'), entrust: x('entrust'), foe};
+  return {indi: x('indi'), geo: (1 + (b.bog ? .5 : 0) + (b.ecliptic ? .25 : 0)) * x('geo'), entrust: x('entrust'), foe};
 }
 // What is left of an offensive bubble (Frailty, Torpor, Malaise, Languor) on the target: NMs resist it.
 // Sortie NMs -50 %, Odyssey Sheol Gaol bosses -85 % (BG Wiki Category:Sortie and Category:Odyssey; a test at
@@ -332,13 +333,31 @@ const endgameBuffs = () => JSON.parse(JSON.stringify(ENDGAME_BUFFS));
 // The sets GearSwap wears a .Group / .Solo version of, by the party's support (support_tier.lua)
 const TIERED = /^sets\.(precast\.WS|engaged|luopan\.engaged)\b/;
 // Support profiles, as GearSwap picks the weaponskill and engaged sets (shared/utils/party/support_tier.lua): Full (a GEO
-// and a BRD or a COR), Group (one of them), Solo (none). Each keeps its own party buffs; what is yours or the
-// target's (PERSONAL) follows you from one profile to the next. Full is the character's original profile.
-const TIERS = ['Full', 'Group', 'Solo'];
+// and a BRD or a COR), Group (one of them), Solo (none), Trust (all the support from trusts). Each keeps its own party
+// buffs; what is yours or the target's (PERSONAL) follows you from one profile to the next. Full is the character's
+// original profile.
+const TIERS = ['Full', 'Group', 'Solo', 'Trust'];
+// The Trust profile: Sylvie (UC), Ulmia, Joachim, Qultada, Monberaux and an alt RDM (Kaories), from BG Wiki
+// (BGWiki:Trusts, 2026-10-05); what it does not give is taken at its lowest
+// - Sylvie: Indi-Fury +37.5 % (Geomancy +1 here: 37.4 %; Indi-Precision when your hit rate is low), Entrust
+//   Indi-Frailty -12.5 % Defense (the page's 14.8 % x .845), her Haste replaced by the RDM's Haste II
+// - Joachim and Ulmia: March and Madrigal each, no instrument or gear bonus (Joachim's said, Ulmia's taken so):
+//   Victory and Advancing March (with Haste II over the Magic Haste cap either way), Blade and Sword Madrigal
+// - Qultada: Chaos and Fighter's Roll, no Rolls+; he Double-Ups any 1 to 6 short of the lucky number: his
+//   average without Snake Eye is Chaos 17.2 % (IX: 17.18 %) and Fighter's 6.8 (X: 7), Light Shot on Dia
+// - Monberaux: Guard Drink's Protect (220) and Shell (-29 %); Samson's Strength (+10 stats, 1 min, a 60 s
+//   recast shared with three other mixes) left out
+// - the RDM: Haste II, Dia III, Distract III (Gravity: no damage)
+const TRUST_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II',
+  song0: 'Victory March', song1: 'Advancing March', song2: 'Blade Madrigal', song3: 'Sword Madrigal', songsPlus: '0',
+  roll0: 'Chaos', roll0n: 'IX', roll1: "Fighter's", roll1n: 'X', rollsPlus: '0', lightshot: true,
+  indi: 'Fury', entrust: 'Frailty', geoPlus: '1', geoScale: {entrust: .125 / .148},
+  dia: 'Dia III', distract: 'Distract III', autoSamba: true};
 const PERSONAL = ['food', 'am', 'amStage', 'amTp', 'enemy', 'ja', 'jaOff', 'autoSamba'];
 const TIER_DROP = {Full: [], Group: ['indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic'],
   Solo: ['pja', 'indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic', 'songsPlus', 'rollsPlus', 'protect', 'shell', 'haste', 'song0', 'song1', 'song2', 'song3', 'song4', 'soulVoice', 'marcato', 'clarion', 'ariaStage', 'roll0job', 'roll1job', 'rollCC', 'roll0', 'roll1', 'dia', 'lightshot', 'distract', 'saboteur', 'sabGloves', 'auspice', 'auspiceFeet', 'enspell', 'enSkill']};
-function tierBuffs(tier){ const b = endgameBuffs(); for (const k of TIER_DROP[tier] || []) delete b[k]; return b; }
+function tierBuffs(tier){ if (tier === 'Trust') return JSON.parse(JSON.stringify(TRUST_BUFFS));
+  const b = endgameBuffs(); for (const k of TIER_DROP[tier] || []) delete b[k]; return b; }
 const buffTier = () => (S.buffTier || {})[S.char] || 'Full';
 const buffKey = (tier = buffTier()) => tier === 'Full' ? S.char : S.char + '|' + tier;
 const buffState = () => { if (S._buffOverride) return S._buffOverride;
@@ -356,14 +375,14 @@ function withTierBuffs(tier, fn){
   S._buffOverride = b;
   try { return fn(); } finally { S._buffOverride = keep; }
 }
-// The buffs follow the set opened (once, when it changes): a .Group or .Solo version opens that profile, a weaponskill
+// The buffs follow the set opened (once, when it changes): a .Group, .Solo or .Trust version opens that profile, a weaponskill
 // or engaged set that has such versions opens Full; another set leaves the profile as it is
 function tierFollowsSet(path, bypath){
   const at = S.char + '|' + S.job + '|' + path;
   if (!path || at === S._tierPath) return;
   S._tierPath = at;
-  const v = (path.match(/\.(Group|Solo)$/) || [])[1];
-  const tier = v || (TIERED.test(path) && (bypath[path + '.Group'] || bypath[path + '.Solo']) ? 'Full' : null);
+  const v = (path.match(/\.(Group|Solo|Trust)$/) || [])[1];
+  const tier = v || (TIERED.test(path) && (bypath[path + '.Group'] || bypath[path + '.Solo'] || bypath[path + '.Trust']) ? 'Full' : null);
   if (tier && tier !== buffTier()) { setBuffTier(tier); save(); setTimeout(render, 0); }
 }
 // The subjob a job plays with each way of holding its weapons: a two-handed weapon, a weapon in each hand, one
