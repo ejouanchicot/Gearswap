@@ -226,6 +226,22 @@ const samePiece = (a, b) => (!a || a.name === 'empty') ? (!b || b.name === 'empt
 /* ---- the windows closed ---- */
 // GearSwap Atelier · events.js: clicks, menus, keyboard, the hover card, start-up
 // (cut from atelier.html, loaded by it in order: see the list there)
-function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; KEYEDIT = null; S._buffDlg = false; S._tgtDlg = false; S._tgtPick = false;
+// a search still running is set aside, not destroyed: Hide (or Escape) parks its window where it goes on painting,
+// and "See the search" on the optimizer page brings it back
+function closeOverlay(){ const ov = $('#overlay');
+  // drawn again after, so the optimizer page shows the button that brings it back
+  if (S._optRun && ov.querySelector('.optrun')) { searchPark().replaceChildren(...ov.childNodes); setTimeout(render); }
+  ov.hidden = true; ov.innerHTML = ''; KEYEDIT = null; S._buffDlg = false; S._tgtDlg = false; S._tgtPick = false;
   S._push = S._del = S._create = null; const tip = $('#tip'); if (tip) tip.hidden = true; S._tipEl = null; }
+function searchPark(){
+  let park = document.getElementById('orpark');
+  if (!park) { park = document.createElement('div'); park.id = 'orpark'; park.hidden = true; document.body.appendChild(park); }
+  return park;
+}
+const searchParked = () => !!document.querySelector('#orpark .optrun');
+function searchShow(){
+  if (!searchParked()) return;
+  closeOverlay();
+  const ov = $('#overlay'); ov.replaceChildren(...searchPark().childNodes); ov.hidden = false;
+}
 

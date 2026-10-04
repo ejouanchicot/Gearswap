@@ -42,6 +42,7 @@ document.addEventListener('click', e => {
   if ('delgo' in d) { delGo(); return; }
   if ('optstop' in d) { optStop(); return; }
   if ('orhide' in d) { closeOverlay(); return; }
+  if ('orshow' in d) { searchShow(); return; }
   if (d.help) { S._help = S._help === d.help ? null : d.help; render(); return; }
   if ('tiercost' in d) { openTierCost(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('optws' in d) { S._optScratch = d.optws === 'best'; optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }

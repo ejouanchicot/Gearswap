@@ -5,7 +5,7 @@
 // weaponskills and skillchains in (atelier_cycle.js, FFXI.opt.cycle: EXPERIMENTAL, offered only when that file is there)
 // (loaded by atelier.html after ws_page.js: see the list there)
 
-Object.assign(T.fr, {optOpenBtn: 'Optimiser ce set →',
+Object.assign(T.fr, {optOpenBtn: 'Optimiser ce set →', orShow: 'Voir la recherche',
   optBack: '← Retour au set', optPageTitle: 'Optimiseur', engObj_cycle: 'Dégâts sur un combat · TEST',
   opWhat: 'Ce qu’on cherche', opResult: 'Résultat', opSearch: 'Recherche', opChanges: 'Pièces changées', opWsTp: 'TP de la WS',
   opNoTry: 'Lance une recherche : l’essai s’affiche ici, comparé à ton set.', opNow: 'Ton set', opFight: 'Dégâts sur un combat',
@@ -21,7 +21,7 @@ Object.assign(T.fr, {optOpenBtn: 'Optimiser ce set →',
   opFHits: 'Coups qui touchent par round', opFDmg: 'Dégâts par coup', opFRound: 'Durée d’un round', opFTpHit: 'TP par coup', opCurve: 'Dégâts selon le TP', cycTpHit: 'TP par coup', cyc2r: 'Retour au seuil en 2 rounds', cycTpWs: 'TP au moment de la WS', cycChain: 'WS qui ferment une skillchain', cycWsMin: 'WS par minute',
   opHelp: 'Le résultat compare l’essai (les pièces que la recherche propose, en couleur dans le set) à ton set tel qu’il est dans le fichier. ★ = la ligne de l’objectif ; en doré, le meilleur des deux ; en rouge, sous un plancher. Verdict : sous 2 % d’écart, équivalent ; de 2 à 5 %, à essayer ; au-delà, meilleur ou moins bon. Dégâts sur un combat (TEST) : précision ±4 % mesurée en jeu le 2026-10-04 ; une WS qui revient en 3 rounds rate la fenêtre de skillchain (10 s, puis 9 s).',
   engDone_cycle: 'Optimisé : dégâts sur un combat {a} → {b} ({g} %), {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.'});
-Object.assign(T.en, {optOpenBtn: 'Optimize this set →',
+Object.assign(T.en, {optOpenBtn: 'Optimize this set →', orShow: 'See the search',
   optBack: '← Back to the set', optPageTitle: 'Optimizer', engObj_cycle: 'Damage over a fight · TEST',
   opWhat: 'What is looked for', opResult: 'Result', opSearch: 'Search', opChanges: 'Pieces changed', opWsTp: 'Weaponskill TP',
   opNoTry: 'Run a search: the try shows here, against your set.', opNow: 'Your set', opFight: 'Damage over a fight',
@@ -47,7 +47,7 @@ const opNum = (v, n = 0) => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-
 function optPageHTML(s, ws){
   const kind = ws ? 'ws' : isJumpSet(s.path) ? 'jump' : 'eng', act = ws ? 'optws' : 'opteng';
   const b = buffState();
-  const go = S._optBusy ? `<span class="optprog">${t('optStart')}</span><button class="btn ghost" data-optstop>${t('optStop')}</button>`
+  const go = S._optBusy ? `<span class="optprog">${t('optStart')}</span>${searchParked() ? `<button class="btn" data-orshow>${t('orShow')}</button>` : ''}<button class="btn ghost" data-optstop>${t('optStop')}</button>`
     : optGoButtons(act) + (kind === 'jump' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>`);
   const head = `<header class="ophead"><button class="btn ghost" data-optback>${t('optBack')}</button><h2 class="display">${t('optPageTitle')}</h2>` +
     `<span class="opset">${esc(shortPath(s.path))}</span><span class="muted small">${esc(buffTier())} · ${esc(enemyKey(b.enemy))}</span>` +

@@ -22,7 +22,8 @@ function optStop(){
   OPT_WORKERS.forEach(w => w.terminate()); OPT_WORKERS = [];
   if (OPT_PAGE_STOP) { OPT_PAGE_STOP(); OPT_PAGE_STOP = null; }
   clearInterval(OPT_RUN_CLOCK); S._optRun = null;
-  if (document.querySelector('.optrun')) closeOverlay();
+  searchPark().replaceChildren();
+  if ($('#overlay .optrun')) closeOverlay();
   S._optBusy = false; S._optProgress = null; render();
 }
 /* ---- the cost of the wrong set: each version of a weaponskill set under each profile's buffs ---- */
@@ -256,6 +257,7 @@ function optRunOpen(s, o, starts, cores, floor){
   const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
   const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
     `<div class="orbar"><i></i></div><div class="orws"><span class="orphase">${esc(t('orStarting'))}</span><span class="orevals"></span></div><div class="orwbest">—</div></div>`).join('');
+  searchPark().replaceChildren();
   $('#overlay').innerHTML = `<div class="scrim"></div><div class="dialog optrun" role="dialog" aria-live="polite">` +
     `<header><div class="orhead"><div><div class="kicker">${esc(t('orKick'))}</div><h3>${esc(shortPath(s.path))}</h3></div>` +
     `<div class="orclock"><span id="orclock">0,0 s</span><small>${esc(t('orCores', {n: cores}))}</small></div></div><div class="orchips">${chips}</div></header>` +
@@ -472,7 +474,8 @@ function optResult(s, k, res, gains, o){
   save();
   S._optBusy = false; render();
   // the search window still open: the result in it, with what to do next; else Compare
-  if (S._optRun && document.querySelector('.optrun')) optRunResult(s, res, tr, plain, gains);
+  if (S._optRun && $('#overlay .optrun')) optRunResult(s, res, tr, plain, gains);
   else if (Object.keys(tr).length) openCompare(s);
+  searchPark().replaceChildren();
   S._optRun = null;
 }
