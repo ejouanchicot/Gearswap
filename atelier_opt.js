@@ -391,12 +391,15 @@
         for (var n = 1; n < cdf.length; n++) { probs.push(cdf[n - 1] - cdf[n]); mn += n * (cdf[n - 1] - cdf[n]); }
         return {rounds: mn, time: mn * x.timeRound, probs: probs, tpAt: x.start + mn * x.tpRound, dist: dist};
     };
+    // opts.shared (the fight model): {set, gear} built once for a set tried under several buff states; opts.lean leaves
+    // out the attacks a round
     O.round = function (ctx, pieces, opts) {
-        var set = O.gearset(ctx, pieces);
+        opts = opts || {};
+        var sh = opts.shared, set = sh ? sh.set : O.gearset(ctx, pieces);
         if (!set) return null;
-        var r = roundOf(ctx, FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), opts || {});
+        var r = roundOf(ctx, FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities, sh && sh.gear), opts);
         // the attacks a round, shown with a set (left out of the search's tries: it does not move the objective)
-        if (r && r.detail) r.attacks = O.attacksOf(r.detail);
+        if (r && r.detail && !opts.lean) r.attacks = O.attacksOf(r.detail);
         return r;
     };
     // The target's resistance to the auto-attacks: of the main weapon the set holds (ctx.physResBy: the page's
