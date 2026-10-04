@@ -9,7 +9,8 @@
 --- targets, the orders) is in the character's _common/combat/
 --- SORTIE_CONFIG.lua (see Tetsouo's for every key). A character without that
 --- file has no sortie command: it answers "not set up" and is hidden from
---- the help (SortieCommands.available).
+--- the help (SortieCommands.available). Its `by_job` gives another main job
+--- its own way (DNC: another profile folder for the alt, other stances).
 ---
 --- Commands:
 ---   //gs c sortie <target>          stance + alt profile (targets of the config)
@@ -33,13 +34,37 @@ local SortieCommands = {}
 --- CONFIG
 ---============================================================================
 
---- The character's SORTIE_CONFIG.lua, or nil.
+--- The config as the current main job uses it: by_job[<MAIN>] replaces the
+--- keys it names, its `targets` replacing only the targets of the same name.
+--- A copy: the module require() keeps is never changed.
+--- @param cfg table SORTIE_CONFIG
+--- @return table
+local function for_job(cfg)
+    local job = player and player.main_job
+    local over = job and type(cfg.by_job) == 'table' and cfg.by_job[job]
+    if type(over) ~= 'table' then return cfg end
+    local out = {}
+    for k, v in pairs(cfg) do out[k] = v end
+    for k, v in pairs(over) do
+        if k == 'targets' and type(v) == 'table' then
+            local targets = {}
+            for name, target in pairs(cfg.targets) do targets[name] = target end
+            for name, target in pairs(v) do targets[name] = target end
+            out.targets = targets
+        else
+            out[k] = v
+        end
+    end
+    return out
+end
+
+--- The character's SORTIE_CONFIG.lua for its current main job, or nil.
 --- @return table|nil
 local function config()
     local ok, cfg = pcall(function()
         return require('shared/utils/core/char_paths').optional('common', 'SORTIE_CONFIG')
     end)
-    return (ok and type(cfg) == 'table' and type(cfg.targets) == 'table') and cfg or nil
+    return (ok and type(cfg) == 'table' and type(cfg.targets) == 'table') and for_job(cfg) or nil
 end
 
 --- True when the character has a Sortie config (the help shows the command).
