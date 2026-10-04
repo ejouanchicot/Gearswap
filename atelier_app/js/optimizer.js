@@ -94,7 +94,7 @@ function optChoices(tpNames){
   for (const slot of SLOTS) if (!['main', 'sub', 'range'].includes(slot)) {
     choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && reach(x)).map(x => {
       // how many you have (an export before 2026-10-03 counts the bags they are in)
-      const mine = ownRank({name: x.name, augs: x.augs, copies: x.count || (x.where || []).length, keep: true, rare: isRare(x.name)});
+      const mine = ownRank({name: x.name, id: x.id, augs: x.augs, copies: x.count || (x.where || []).length, keep: true, rare: isRare(x.name)});
       const up = o.where === 'mine_max' ? upgradeOf(mine) : null;
       return up ? Object.assign({}, up.piece, {copies: mine.copies, keep: true, maxed: true, from: mine}) : mine; });
     if (o.where === 'all') choices[slot] = choices[slot].concat(gameChoices(slot, choices[slot], tpNames));

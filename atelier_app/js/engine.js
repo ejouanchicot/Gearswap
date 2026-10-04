@@ -115,7 +115,7 @@ function ownRank(q){
 // What the game's description gives that the engine's catalogue lacks (Raetic Bangles' "M. Accuracy", a Haste it
 // left out): handed to the engine (atelier_opt.js gear: piece.fill), only for a stat it has none of
 function engineFill(q){
-  const it = window.FFXI && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(q.name) : null, r = it && pieceStats(Object.assign({}, q, {augs: []}));
+  const it = window.FFXI && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(q.name, q.id) : null, r = it && pieceStats(Object.assign({}, q, {augs: []}));
   if (!r || !r.known) return q;
   const fill = {}, unity = r.unity || {};
   for (const [k, e] of Object.entries(r.base)) { const ek = ENGINE_STAT[k], v = e.v - (unity[k] || 0); if (ek && v && !(it.stats || {})[ek]) fill[ek] = v; }
