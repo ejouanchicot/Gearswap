@@ -337,7 +337,7 @@ const TIERED = /^sets\.(precast\.WS|engaged|luopan\.engaged)\b/;
 // buffs; what is yours or the target's (PERSONAL) follows you from one profile to the next. Full is the character's
 // original profile.
 const TIERS = ['Full', 'Group', 'Solo', 'Trust'];
-// The Trust profile: Sylvie (UC), Ulmia, Joachim, Qultada, Monberaux and an alt RDM (Kaories), from BG Wiki
+// The Trust profile: Sylvie (UC), Ulmia, Joachim, Qultada and an alt RDM (Kaories), from BG Wiki
 // (BGWiki:Trusts, 2026-10-05); what it does not give is taken at its lowest
 // - Sylvie: Indi-Fury +37.5 % (Geomancy +1 here: 37.4 %; Indi-Precision when your hit rate is low), Entrust
 //   Indi-Frailty -12.5 % Defense (the page's 14.8 % x .845), her Haste replaced by the RDM's Haste II
@@ -345,9 +345,8 @@ const TIERS = ['Full', 'Group', 'Solo', 'Trust'];
 //   Victory and Advancing March (with Haste II over the Magic Haste cap either way), Blade and Sword Madrigal
 // - Qultada: Chaos and Fighter's Roll, no Rolls+; he Double-Ups any 1 to 6 short of the lucky number: his
 //   average without Snake Eye is Chaos 17.2 % (IX: 17.18 %) and Fighter's 6.8 (X: 7), Light Shot on Dia
-// - Monberaux: Guard Drink's Protect (220) and Shell (-29 %); Samson's Strength (+10 stats, 1 min, a 60 s
-//   recast shared with three other mixes) left out
-// - the RDM: Haste II, Dia III, Distract III (Gravity: no damage)
+// - the RDM: Protect V and Shell V (a RDM's at 77 and 87, res/spells.lua), Haste II, Dia III, Distract III
+//   (Gravity: no damage)
 const TRUST_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II',
   song0: 'Victory March', song1: 'Advancing March', song2: 'Blade Madrigal', song3: 'Sword Madrigal', songsPlus: '0',
   roll0: 'Chaos', roll0n: 'IX', roll1: "Fighter's", roll1n: 'X', rollsPlus: '0', lightshot: true,
