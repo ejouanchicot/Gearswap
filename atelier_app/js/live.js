@@ -202,7 +202,7 @@ async function liveTick(){
       const d = await liveFetch(c, '/export', {timeout: 8000});
       if (d && d.sets) {
         const m = ((DATA[c] = DATA[c] || {})[d.job] = DATA[c][d.job] || {});
-        m[d.sub || 'NONE'] = d; DATA_GEN++;
+        canonNames(d); m[d.sub || 'NONE'] = d; DATA_GEN++;
         CHARS[c] = {jobs: Object.keys(DATA[c])};
         now.at = d.at;
       }

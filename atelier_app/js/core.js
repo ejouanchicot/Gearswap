@@ -111,6 +111,15 @@ function ownedOf(){
   OWNED_MEMO = {key, out};
   return out;
 }
+// The game's short name for every piece of an export's sets: a set file may write the long one ("Maculele Earring +1"
+// for "Macu. Earring +1") or another case, and the bags list the short one, so the piece read as not yours (an export
+// written before shared/utils/atelier/atelier_names.lua). Needs the engine's catalogue (both names, any case)
+function canonNames(d){
+  if (!d || !window.FFXI || !FFXI.opt || !FFXI.opt.item) return;
+  const fix = p => { if (!p || !p.name || p.name === 'empty') return; const it = FFXI.opt.item(p.name); if (it && it.name !== p.name) p.name = it.name; };
+  for (const s of d.sets || []) { Object.values(s.pieces || {}).forEach(fix); Object.values(s.was || {}).forEach(fix); }
+}
+const canonAll = () => { for (const c of Object.values(DATA)) for (const j of Object.values(c)) Object.values(j).forEach(canonNames); DATA_GEN++; };
 // Where a piece is, as the page says it: a slip is the Porter Moogle's
 const whereLabel = w => isSlip(w) ? t('porterAt', {n: w.slice(5)}) : w;
 // One field of every export of the shown job merged (icons, descriptions, scans), kept until an export is read again:

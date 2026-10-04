@@ -306,7 +306,7 @@ function boot(){
   loadScripts(index.map(e => e.file).concat(live), () => {
     setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
     // the game's descriptions of every item: a piece a set names but no bag holds still has its stats
-    setTimeout(() => loadCatalog(() => loadRanked(() => { if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300);
+    setTimeout(() => loadCatalog(() => loadRanked(() => { canonAll(); if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300);
     // <JOB>_<SUB>.js fill ATELIER_SUBS[char][job][sub]; a <JOB>.js of before 2026-10-01 fills ATELIER[char][job]
     DATA = {}; CHARS = {}; DATA_GEN++;
     const put = (c, j, d) => { if (!d || !d.sets) return; const s = d.sub || 'NONE';
