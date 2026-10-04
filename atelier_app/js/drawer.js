@@ -176,7 +176,7 @@ function setWantsOf(s){
 //   the WS's attributes by their % (Disaster: STR 60, VIT 60).
 function wsWants(s){
   const ws = wsOfSet(s) || segs(s.path).pop();
-  const info = Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_info || {}))[ws] || {};
+  const info = wsInfoOf(ws);
   const tp = Math.min(3000, Math.max(1000, S.wsTp || 3000)), ftps = Object.entries(info.ftp || {}).map(([k, v]) => [+k, v]).sort((a, b) => a[0] - b[0]);
   const ftpAt = x => { if (!ftps.length) return 1; if (x <= ftps[0][0]) return ftps[0][1];
     for (let i = 1; i < ftps.length; i++) if (x <= ftps[i][0]) { const [a, va] = ftps[i - 1], [c, vc] = ftps[i]; return va + (vc - va) * (x - a) / (c - a); }

@@ -53,8 +53,7 @@ function keyLabel(k){
 // It starts from what the last export read in the file (key_overrides), a later save wins.
 function keyOverrides(){
   const c = S.char, mine = S.keyOv[c];
-  const exports = Object.values(DATA[c] || {}).flatMap(j => Object.values(j)).filter(x => x.key_overrides !== undefined);
-  const latest = exports.sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
+  const latest = latestExport(c, 'key_overrides');
   if (!mine || (latest && !S.keyDirty[c] && (latest.at || '') > (mine.at || ''))) {
     S.keyOv[c] = {at: latest ? latest.at : '', map: JSON.parse(JSON.stringify((latest && latest.key_overrides) || {}))};
   }

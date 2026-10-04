@@ -205,7 +205,7 @@ function wsWeaponFits(m, v, ws){
 }
 function weaponSkillOf(m, v){
   const main = m.sets[v] && m.sets[v].pieces.main;
-  return main ? Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.wskill || {}))[main.name] : null;
+  return main ? weaponSkills()[main.name] : null;
 }
 function applyTrial(s, pieces, from, stance){
   for (const [slot, p] of Object.entries(pieces)) if (isEmpty(p)) delete pieces[slot];

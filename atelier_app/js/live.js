@@ -101,8 +101,7 @@ async function saveKeys(){
 // S.setOv[char] = {at, map: {<JOB>: {path: {slot: piece}}}}: the whole file, from the latest export, a later save wins
 function setOverrides(){
   const c = S.char, mine = S.setOv[c];
-  const latest = Object.values(DATA[c] || {}).flatMap(j => Object.values(j)).filter(x => x.set_overrides !== undefined)
-    .sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
+  const latest = latestExport(c, 'set_overrides');
   if (!mine || (latest && (latest.at || '') > (mine.at || ''))) S.setOv[c] = {at: latest ? latest.at : '', map: JSON.parse(JSON.stringify((latest && latest.set_overrides) || {}))};
   return S.setOv[c].map;
 }

@@ -43,7 +43,7 @@ const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry
 function optContext(s, engaged){ return FFXI.opt.context(engaged ? engContextInput(s) : optContextInput(s)); }
 // An engaged set's: no weaponskill, the main weapon's skill for the target's damage-type resistance
 function engContextInput(s){
-  const main = (withWeapons(s).pieces.main || {}).name, skills = Object.assign({}, ...Object.values(exportsOf(S.char, S.job) || {}).map(x => x.wskill || {}));
+  const main = (withWeapons(s).pieces.main || {}).name, skills = weaponSkills();
   const b = liveBuffs(buffState()), physResBy = Object.fromEntries(Object.keys(SKILL_DMG).map(k => [k, physResOf(b, k)]));
   return Object.assign(optContextInput(s), {mode: 'engaged', ws: null, wsInfo: null, wsSkill: null, physRes: physResOf(b, skills[main] || ''), physResBy});
 }
@@ -209,7 +209,7 @@ function skillLevel(c, name){
 // steps + traits + gifts; Evasion = 0.5 x AGI + gear + the evasion skill's steps + traits + gifts
 function combatOf(c, gear, dex, agi, mainName){
   const g = k => (gear[k] || {}).v || 0;
-  const wskill = mainName && Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.wskill || {}))[mainName];
+  const wskill = mainName && weaponSkills()[mainName];
   const level = wskill ? skillLevel(c, wskill) + g('skill:' + wskill.toLowerCase() + ' skill') : 0;
   const acc = Math.floor(0.75 * dex) + g('acc') + (wskill ? skillAcc(level) : 0) + traitOf('acc', c) + giftOf('acc', c);
   const eva = Math.floor(0.5 * agi) + g('eva') + skillEva(skillLevel(c, 'evasion') + g('skill:evasion skill')) + traitOf('eva', c) + giftOf('eva', c);

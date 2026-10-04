@@ -85,6 +85,9 @@ function mergedOf(field){
   return MERGED[k] || (MERGED[k] = Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x[field] || {})));
 }
 const iconIds = () => mergedOf('icons');
+// The character's latest export that holds `field` (key_overrides, set_overrides: written by every job), or undefined
+const latestExport = (c, field) => Object.values(DATA[c] || {}).flatMap(j => Object.values(j)).filter(x => x[field] !== undefined)
+  .sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
 function save(){ try { localStorage.setItem('atelier', JSON.stringify(Object.fromEntries(KEEP.map(k => [k, S[k]])))); } catch(e) {} }
 // The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
 const icon = name => { const id = name && (iconIds()[name] || (catalog() || {id: {}}).id[name]);
@@ -151,10 +154,12 @@ function wsOfSet(s){
   return segs(s.path).reverse().find(x => known[x]) || null;
 }
 // Weaponskill -> its combat skill (export ws_skill), weapon -> its combat skill (export wskill)
-const wsSkills = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_skill || {}));
+const wsSkills = () => mergedOf('ws_skill');
 // Whether a weapon of a mode can open a weaponskill: its skill, and for a relic or prime one the
 // weapon itself (export ws_info.lock names them; empyrean and mythic ones are unlocked for any weapon)
-const wsInfoOf = ws => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_info || {}))[ws] || {};
+const wsInfoOf = ws => mergedOf('ws_info')[ws] || {};
+// Each weapon's combat skill (Great Axe, Sword...), every export of the shown job merged
+const weaponSkills = () => mergedOf('wskill');
 
 /* ---- shared HTML helpers: a compartment, damage figures ---- */
 // A compartment: a card with a title band in its section's colour (g-def, g-tank...)

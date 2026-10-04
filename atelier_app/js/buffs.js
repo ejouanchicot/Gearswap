@@ -494,7 +494,7 @@ function buffTotals(){
   if (b.enspell) put('enspell', enspellDmg(enSkill(b)), 'Enspell I');
   for (const [k, v] of Object.entries(STORMS[b.storm] || {})) put(k, v, b.storm);
   // an ability for a two-handed weapon (Hasso, Last Resort's haste) with another in hand: left out
-  const main = shownMain(), wsk = main && Object.assign({}, ...Object.values(exportsOf(S.char, S.job) || {}).map(x => x.wskill || {}))[main];
+  const main = shownMain(), wsk = main && weaponSkills()[main];
   const twoHands = !main || !wsk || TWO_HANDED.test(wsk);
   for (const ja of jasOf()) if (jaOn(b, ja.name)) for (const [k, v] of Object.entries(ja.a.fx(ja.main, ja.lvl, ja))) {
     if (!twoHands && (ja.a.twoHanded === true || (ja.a.twoHanded || []).includes(k))) continue;
