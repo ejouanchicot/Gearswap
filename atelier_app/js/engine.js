@@ -209,7 +209,7 @@ const TRAITS = {
 };
 // Job point gifts of the main job, all of them (2100 job points spent)
 const GIFTS = {
-  war: {acc: 26, eva: 36, meva: 36, macc: 36, da: 10}, mnk: {acc: 41, eva: 42, meva: 36, macc: 36}, whm: {acc: 14, macc: 70, mdb: 50},
+  war: {acc: 36, eva: 36, meva: 36, macc: 36, da: 10}, mnk: {acc: 41, eva: 42, meva: 36, macc: 36}, whm: {acc: 14, macc: 70, mdb: 50},
   blm: {macc: 32, meva: 42, mdb: 14}, rdm: {acc: 22, macc: 90, mdb: 28, meva: 56}, thf: {acc: 36, eva: 70, meva: 36, macc: 36, dw: 5},
   pld: {acc: 28, eva: 22, meva: 42, macc: 42}, drk: {acc: 22, eva: 22, meva: 36, macc: 42}, bst: {acc: 36, eva: 36, meva: 36, macc: 36},
   brd: {acc: 21, eva: 22, meva: 36, macc: 36, mdb: 15}, rng: {acc: 70, eva: 14, meva: 36}, smn: {eva: 22, meva: 22, mdb: 22},
