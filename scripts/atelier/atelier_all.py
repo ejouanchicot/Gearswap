@@ -188,9 +188,18 @@ def finish(char, job, sub, carry, names_for_icons, main):
         data['items'] = bags
         for names in bags.values():
             names_for_icons.update(names)
-    # each copy of the bags with its own augments (the page's piece swap)
-    if (carry or {}).get('owned') and not data.get('owned'):
-        data['owned'] = carry['owned']
+    # each copy of the bags with its own augments (the page's piece swap); the export outside the game holds
+    # only the Porter Moogle's pieces (its bags are empty, the slips come from <Char>/saved/slip_items.lua):
+    # they join the bags' copies of the last in-game export
+    if (carry or {}).get('owned'):
+        owned = {slot: list(copies) for slot, copies in carry['owned'].items()}
+        for slot, copies in (data.get('owned') or {}).items():
+            mine = owned.setdefault(slot, [])
+            for c in copies:
+                if c.get('where') and all(w.startswith('Slip ') for w in c['where']) and not any(
+                        m.get('name') == c.get('name') and (m.get('augs') or []) == (c.get('augs') or []) for m in mine):
+                    mine.append(c)
+        data['owned'] = owned
     if not data.get('char') and measured:
         data['char'] = measured.get(sub) or sorted(measured.values(), key=lambda c: c.get('at', ''))[-1]
     write_export(export_path(char, job, sub), data)

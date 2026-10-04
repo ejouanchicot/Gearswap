@@ -76,22 +76,37 @@ const data = () => S.job && recordOf(S.char, S.job);
 // What only the game sees (bag items) or any export knows (icons) is shared by the job's subjobs
 const ofAnySub = key => { const d = data(); if (d && d[key]) return d[key];
   const other = Object.values(exportsOf(S.char, S.job)).find(x => x[key]); return other ? other[key] : null; };
-// The pieces you hold, by slot (the shown export's owned): with the Porter Moogle's ones of the job's latest export
-// that read them when this one could not (an export written while its slips were not there yet: they read empty)
+// The pieces you hold, by slot (the shown export's owned), with every piece kept at the Porter Moogle this job can
+// wear: the export lists the whole Porter (porter: {item id: 'Slip N'}, every job's gear), the catalogue says each item's
+// slots and jobs, so a job not loaded since gets its stored pieces too (an export with no such list: the job's latest
+// export that read its slips)
 let OWNED_MEMO = {key: null, out: null};
 const isSlip = w => /^Slip \d+/.test(w);
 const atPorter = x => !!(x.where && x.where.length) && x.where.every(isSlip);
+// The character's Porter Moogle: the list of its latest export that has one
+const porterOf = c => (latestExport(c, 'porter') || {}).porter || null;
+function addCopy(out, slot, x){
+  const mine = out[slot] = out[slot] || [];
+  if (!mine.some(y => y.name === x.name && (y.augs || []).join('|') === (x.augs || []).join('|') && (y.where || []).join() === (x.where || []).join()))
+    mine.push(x);
+}
 function ownedOf(){
-  const d = data(), key = [DATA_GEN, S.char, S.job, d && d.sub].join('|');
+  const d = data(), cat = catalog(), key = [DATA_GEN, S.char, S.job, d && d.sub, !!cat].join('|');
   if (OWNED_MEMO.key === key) return OWNED_MEMO.out;
-  const cur = ofAnySub('owned') || {}, out = {};
-  const hasSlips = o => Object.values(o || {}).some(list => list.some(atPorter));
-  const other = hasSlips(cur) ? null : Object.values(exportsOf(S.char, S.job)).filter(x => hasSlips(x.owned))
-    .sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
-  for (const [slot, list] of Object.entries(cur)) out[slot] = list.slice();
-  for (const [slot, list] of Object.entries((other && other.owned) || {})) for (const x of list.filter(atPorter)) {
-    const mine = out[slot] = out[slot] || [];
-    if (!mine.some(y => y.name === x.name && (y.augs || []).join('|') === (x.augs || []).join('|'))) mine.push(x);
+  const cur = ofAnySub('owned') || {}, out = {}, porter = porterOf(S.char);
+  for (const [slot, list] of Object.entries(cur)) out[slot] = list.filter(x => !(porter && atPorter(x)));
+  if (porter && cat) {
+    const byId = CAT.byId || (CAT.byId = Object.fromEntries(cat.src.items.map(r => [r[0], r])));
+    for (const [id, where] of Object.entries(porter)) {
+      const r = byId[id];
+      if (!r || !r[3].split(' ').includes(S.job)) continue;
+      for (const slot of r[2].split(' ')) addCopy(out, slot, {name: r[1], where: [where], count: 1});
+    }
+  } else {
+    const hasSlips = o => Object.values(o || {}).some(list => list.some(atPorter));
+    const other = hasSlips(cur) ? null : Object.values(exportsOf(S.char, S.job)).filter(x => hasSlips(x.owned))
+      .sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
+    for (const [slot, list] of Object.entries((other && other.owned) || {})) for (const x of list.filter(atPorter)) addCopy(out, slot, x);
   }
   OWNED_MEMO = {key, out};
   return out;

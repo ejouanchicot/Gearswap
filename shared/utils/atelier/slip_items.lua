@@ -68,6 +68,11 @@ end
 function SlipItems.bags_ready()
     local ok, items = pcall(windower.ffxi.get_items)
     if not ok or type(items) ~= 'table' or type(items.inventory) ~= 'table' or (items.inventory.max or 0) == 0 then return false end
+    -- an inventory with nothing in it is not one the game sent (the Atelier's export outside the game,
+    -- scripts/atelier/load_job.lua, has empty bags): its slips read empty and would wipe the list kept
+    local any = false
+    for _, item in ipairs(items.inventory) do if type(item) == 'table' and (item.id or 0) > 0 then any = true break end end
+    if not any then return false end
     local ok_s, slips = pcall(require, 'slips')
     if not (ok_s and slips and slips.storages and slips.default_storages) then return true end
     local held = false

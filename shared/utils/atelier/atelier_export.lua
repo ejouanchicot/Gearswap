@@ -313,6 +313,8 @@ local function slip_items()
     local ok, SlipItems = pcall(require, 'shared/utils/atelier/slip_items')
     return ok and SlipItems.get() or {}
 end
+-- the whole Porter Moogle (every job's gear, the page keeps what the shown job can wear), item ids as text keys
+local function porter_list() local out = {} for id, w in pairs(slip_items()) do out[tostring(id)] = w end return out end
 
 local function collect_items()
     local ok, res = pcall(require, 'resources')
@@ -636,6 +638,7 @@ function AtelierExport.build()
         weapon_rules = job_config('WEAPONS'),
     }
     data.items, data.owned = collect_items()
+    data.porter = porter_list()
     data.icons = collect_icons(data.sets, data.items)
     -- the pieces under the game's item name (shared/utils/atelier/atelier_names.lua)
     require('shared/utils/atelier/atelier_names').use_game_names(data.sets, data.icons)
