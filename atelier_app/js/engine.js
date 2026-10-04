@@ -6,7 +6,7 @@
 // kept on this PC only) and the optimizer (atelier_opt.js): loaded once, run into window.FFXI
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
   .map(f => `atelier-engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
-  .map(f => `atelier-engine/${f}.js`), ['atelier_opt.js'])
+  .map(f => `atelier-engine/${f}.js`), ['atelier_opt.js', 'atelier_cycle.js'])
   // read again at each page load: a browser keeps an older copy of a script otherwise
   .map(f => f + '?v=' + Date.now());
 function loadRanked(done){
@@ -82,7 +82,9 @@ function optContextInput(s){
     enemy: enemyKey(b.enemy), evaDown: foeEva(b), physRes: physResOf(b, skill), tomahawk: foeJaActive(b).includes('Tomahawk'), banish: foeJaActive(b).includes('Banish II'), partyWarcry, geoMul: geoMul(b), ariaPdl: ariaPdl(b),
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
     saberMerit: abilities['Saber Dance'] ? danceMerit('saber') : 0,
-    warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws, wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V'};
+    warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws,
+    // your measured base attributes and merits, as data: a worker has no page to ask (atelier_opt.js withBase)
+    base: measuredBase((S.job || '').toLowerCase()), wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V'};
 }
 // A set's pieces as the engine reads them: a piece named without augments is your copy of it (its
 // augments, path and the rank //gs c gearscan read)
