@@ -19,7 +19,7 @@ for (const f of ['base', 'sets', 'panels', 'tabs']) document.write(`<link rel="s
 <script src="atelier/index.js"></script>
 <script>
 // in this order: each file reads what the ones before it declare
-for (const f of ['i18n', 'job_icons', 'core', 'keys', 'stats', 'engine', 'optimizer', 'buffs', 'buff_panels', 'live', 'simulate', 'sets_view', 'weapons', 'ws_page', 'drawer', 'trial', 'push', 'events'])
+for (const f of ['i18n', 'job_icons', 'core', 'keys', 'stats', 'engine', 'optimizer', 'buffs', 'buff_panels', 'live', 'simulate', 'sets_view', 'weapons', 'ws_page', 'opt_page', 'drawer', 'trial', 'push', 'events'])
   document.write(`<script charset="utf-8" src="atelier_app/js/${f}.js?v=${Date.now()}"><\/script>`);
 </script>
 

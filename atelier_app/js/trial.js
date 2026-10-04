@@ -23,7 +23,6 @@ function setTrial(s, slot, piece){
 // The same set without the tried pieces (what the differences compare to)
 function withoutTrial(fn){ S._noTrial = true; try { return fn(); } finally { S._noTrial = false; } }
 function trialBar(s){
-  if (wsOfSet(s) || family(s.path, s.pieces) === 'engaged') return '';
   const row = trialRow(s);
   return row ? `<div class="trybar">${row}</div>` : '';
 }

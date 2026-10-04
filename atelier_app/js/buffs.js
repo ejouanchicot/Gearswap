@@ -395,6 +395,8 @@ function objFollowsSet(path, bypath){
   const at = S.char + '|' + S.job + '|' + path;
   if (!s || at === S._objPath || family(s.path, s.pieces) !== 'engaged') return;
   S._objPath = at;
+  // the whole-fight objective, once chosen, stays for every engaged set
+  if ((S.optOpts || {}).engObj === 'cycle') return;
   const obj = isAfm3(path) ? 'dps' : 'tp_real';
   if ((S.optOpts || {}).engObj !== obj) { S.optOpts = Object.assign({}, S.optOpts, {engObj: obj}); save(); }
 }

@@ -1,7 +1,6 @@
 // GearSwap Atelier · ws_page.js: TP bonus, the weaponskill page, the engaged / Jump round
 // (cut from atelier.html, loaded by it in order: see the list there)
-// Your set and the try side by side: the objective chosen first (marked), the other figures, then the floors set
-// (DT+PDT, DT+MDT, Subtle Blow) with their limit, the better one in gold, a set short of a floor in red
+// The figures of an engaged set's round, worse to better (low: smaller is better), in the search window (optimizer.js)
 const ENG_COLS = {
   tp_real: {key: 'rdvReal', get: r => r.real ? r.real.time : r.time, fmt: v => v.toFixed(2) + ' s', low: true},
   tp_time: {key: 'rdvAvg', get: r => r.time, fmt: v => v.toFixed(2) + ' s', low: true},
@@ -11,22 +10,6 @@ const ENG_COLS = {
   // the attacks of a round in theory (Double / Triple / Quadruple Attack, the weapons' multi-attacks) and those that land
   attacks: {key: 'rdvAttacks', get: r => r.attacks ? r.attacks.swings : null, fmt: v => v.toFixed(2), low: false},
   landed: {key: 'rdvLanded', get: r => r.attacks ? r.attacks.hits : null, fmt: v => v.toFixed(2), low: false}};
-function roundVsHTML(a, b, o = S.optOpts || {}){
-  const obj = ENG_COLS[o.engObj] ? o.engObj : 'tp_real';
-  const cols = [obj, ...Object.keys(ENG_COLS).filter(k => k !== obj)].map(k => Object.assign({id: k}, ENG_COLS[k]));
-  // the floors set: their value, the limit in the head, red when a set does not keep it
-  const floors = [['pdt', 'DT+PDT', '≤', +o.pdt], ['mdt', 'DT+MDT', '≤', +o.mdt], ['sb', 'Subtle Blow', '≥', +o.sb]].filter(f => f[3]);
-  cols.push(...floors.map(([k, label, op, lim]) => ({label: `${label} ${op} ${lim}`, get: r => r.def ? r.def[k] : null, fmt: v => String(Math.round(v)),
-    low: op === '≤', floor: v => op === '≤' ? v <= lim : v >= lim})));
-  const cell = (c, r, other) => { const v = c.get(r), w = c.get(other);
-    if (v == null) return `<td>—</td>`;
-    const better = w != null && (c.low ? v < w - 1e-9 : v > w + 1e-9), bad = c.floor && !c.floor(v);
-    return `<td class="${better ? 'better' : ''} ${bad ? 'short' : ''} ${c.id === obj ? 'obj' : ''}">${c.fmt(v)}</td>`; };
-  // a line a figure, your set and the try in two columns
-  const line = c => `<tr class="${c.id === obj ? 'obj' : ''}"><th ${c.id === obj ? `title="${esc(t('rdvObjTip'))}"` : ''}>${esc(c.label || t(c.key))}${c.id === obj ? ' ★' : ''}</th>` +
-    `${cell(c, a, b)}${cell(c, b, a)}</tr>`;
-  return `<table class="rdvs"><thead><tr><th></th><th>${esc(t('rdvMine'))}</th><th>${esc(t('rdvTry'))}</th></tr></thead><tbody>${cols.map(line).join('')}</tbody></table>`;
-}
 /* ---- TP bonus: the pieces the job's own rules add to a weaponskill at a TP (Moonshade...) ----
    The game computes them (GET /tpbonus: TPBonusCalculator with <JOB>_TP_CONFIG.lua, the buffs on
    now, the main / sub shown): the page asks once per TP and weapons and keeps the answer */
@@ -100,7 +83,7 @@ function tpSteps(r, s){
 // An ⓘ that opens or closes the explanation `key` (S._help) in the page
 const helpBtn = key => `<button type="button" class="helpbtn" data-help="${esc(key)}" aria-expanded="${S._help === key}" aria-label="?">ⓘ</button>`;
 // The settings of a weaponskill set, for anyone: its version, the weapon held, the TP; one line each,
-// the explanations under their ⓘ (the optimizer is drawn under the title and these lines: wsOptHTML)
+// the explanations under their ⓘ (the optimizer has its own page: opt_page.js)
 function wsHeadHTML(card, ci, vi, s){
   // the explanation of a line opens under it on a click of its ⓘ (never over the page)
   const line = (label, body, tip = '', key = '') => `<div class="wsline"><span class="wslbl">${esc(label)}${tip ? ` ${helpBtn(key)}` : ''}</span><div class="wsval">${body}</div></div>` +
@@ -208,60 +191,6 @@ function wsTpLine(s, line){
   return line(t('tpLbl'), chip('', t('tpOff')) + steps.map(v => chip(v, v)).join('') + input + res + fallback + tbHTML, (parts ? parts.text + '. ' : '') + note + Object.entries(S._tpWhy || {}).map(([v, w]) => ` ${v} : ${w}.`).join(''), 'tp') +
     (parts && r && !r.worn_aware ? `<p class="kwarn">${t('tpOldCode')}</p>` : '');
 }
-// The optimizer: its button, the objective and the cost by party in view; where to look, the
-// floors and the wardrobe switch folded under Settings
-function wsOptHTML(s){
-  if (!engineReady()) return `<p class="tpnote">${t('optNoEngine')}</p>`;
-  if (S._optBusy) return `<div class="optcard"><button class="btn" disabled>${t('optBusy')}</button><span class="optprog">${t('optStart')}</span>` +
-    `<button class="btn ghost" data-optstop>${t('optStop')}</button></div>` + trialRow(s);
-  const o = S.optOpts = Object.assign({obj: 'damage', pdt: -50, mdt: -21, sb: 0, hit: 0}, S.optOpts || {}), [ta, tb] = avgRange(o);
-  const r = tpAsk(s, withWeapons(s).pieces, null);
-  const objs = ['damage', 'damage_avg', 'tp_return'].map(k => `<option value="${k}" ${o.obj === k ? 'selected' : ''}>${t('optObj_' + k, {tp: S.wsTp || 3000, a: ta, b: tb})}</option>`).join('');
-  const range = o.obj === 'damage_avg' ? `<label class="optnum">${t('optFrom')} <input type="number" step="250" min="1000" max="3000" data-optopt="tpFrom" value="${ta}"></label>` +
-    `<label class="optnum">${t('optTo')} <input type="number" step="250" min="1000" max="3000" data-optopt="tpTo" value="${tb}"> TP</label>` : '';
-  const why = t('optWhy', {tp: S.wsTp || 3000}) + (r && r.piece_list ? '' : ' ' + t('optNoRule'));
-  const settings = optSettingsHTML(o, true);
-  return `<div class="optcard">${optBlock(t('optGoLbl'), optGoButtons('optws') + `<button class="btn ghost" data-tiercost>${t('tcBtn')}</button>`)}` +
-    optObjBlock(`<select class="buffsel" data-optopt="obj">${objs}</select>`, helpBtn('opt'), range ? `<div class="optinl">${range}</div>` : '') + `${settings}` +
-    (S._help === 'opt' ? `<p class="wshelp">${esc(why)} ${esc(t('tcTip'))}.${o.obj === 'damage_avg' ? ' ' + esc(t('optRangeTip')) + '.' : ''} ${esc(optSettingsHelp(true))}</p>` : '') +
-    `</div>` + wsResultHTML(s);
-}
-// A weaponskill set's result: the try with its buttons and message, then your set against it as the optimizer found
-// them (the objective first, the hit rates, the floors set), while the try is the optimizer's own
-function wsResultHTML(s){
-  const tr = trialRow(s), dr = S.drafts[trialKey(s)] || {}, r = dr.res && trialCount(s) && !(dr.info || {}).edited ? dr.res : null;
-  return tr || r ? `<div class="engsec"><div class="kicker">${esc(t('engResKick'))}</div>${tr}${r ? wsVsHTML(r) : ''}</div>` : '';
-}
-function wsVsHTML(r){
-  const o = r.floor || S.optOpts || {}, objLabel = r.obj === 'tp_return' ? t('wsvTp') : r.obj === 'damage_avg' ? t('wsvAvg', {a: r.range[0], b: r.range[1]}) : t('wsvDmg', {tp: r.tp});
-  const pct = h => h == null ? null : Math.floor(h);
-  const lines = [{label: objLabel + ' ★', get: x => x.raw, fmt: v => r.obj === 'tp_return' ? String(Math.round(v)) : fmtDmg(v), low: false, obj: true},
-    {label: t('wsvHit1'), get: x => x.hits ? pct(x.hits.first) : null, fmt: v => v + ' %', low: false},
-    {label: t('wsvHit2'), get: x => x.hits ? pct(x.hits.rest) : null, fmt: v => v + ' %', low: false, floor: +o.hit ? v => v >= +o.hit : null}]
-    .concat([['pdt', 'DT+PDT', '≤', +o.pdt], ['mdt', 'DT+MDT', '≤', +o.mdt], ['sb', 'Subtle Blow', '≥', +o.sb]].filter(f => f[3]).map(([k, label, op, lim]) =>
-      ({label: `${label} ${op} ${lim}`, get: x => x.def ? x.def[k] : null, fmt: v => String(Math.round(v)), low: op === '≤', floor: v => op === '≤' ? v <= lim : v >= lim})));
-  const cell = (c, a, b) => { const v = c.get(a), w = c.get(b);
-    if (v == null) return `<td>—</td>`;
-    return `<td class="${w != null && (c.low ? v < w - 1e-9 : v > w + 1e-9) ? 'better' : ''} ${c.floor && !c.floor(v) ? 'short' : ''}">${c.fmt(v)}</td>`; };
-  return `<table class="rdvs"><thead><tr><th></th><th>${esc(t('rdvMine'))}</th><th>${esc(t('rdvTry'))}</th></tr></thead><tbody>` +
-    lines.filter(c => c.get(r.start) != null || c.get(r.best) != null).map(c => `<tr class="${c.obj ? 'obj' : ''}"><th>${esc(c.label)}</th>${cell(c, r.start, r.best)}${cell(c, r.best, r.start)}</tr>`).join('') + `</tbody></table>`;
-}
-// Where the optimizer looks and the floors it keeps, in view: a line each; hit: the weaponskill's hit rate floor (an
-// engaged set has none)
-function optSettingsHTML(o, hit){
-  const num = (k, label) => `<label class="optnum">${label} <input type="number" step="1" data-optopt="${k}" value="${esc(o[k])}"></label>`;
-  const wheres = ['mine', 'mine_max', 'all'].map(k => `<option value="${k}" ${(o.where || 'mine') === k ? 'selected' : ''}>${t('optWhere_' + k)}</option>`).join('');
-  return optBlock(t('optWhereLbl'), `<select class="buffsel" data-optopt="where">${wheres}</select>` +
-      `<label class="optnum"><input type="checkbox" data-optopt="wardOnly" ${o.wardOnly ? 'checked' : ''}> ${t('optWard')}</label>` +
-      // an engaged set: the optimizer may choose the weapons too (main and off hand, from yours)
-      `<label class="optnum" title="${esc(t(hit ? 'freeWeaponsWsTip' : 'freeWeaponsTip'))}"><input type="checkbox" data-optopt="freeWeapons" ${o.freeWeapons ? 'checked' : ''}> ${t('freeWeapons')}</label>` +
-      `<label class="optnum" title="${esc(t('fullSpeedTip', {n: OPT_CORES}))}"><input type="checkbox" data-optopt="fullSpeed" ${o.fullSpeed ? 'checked' : ''}> ${t('fullSpeed')}</label>`) +
-    optBlock(t('optFloorsLbl'), `<div class="optfloors">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('sb', 'Subtle Blow ≥')}${hit ? num('hit', t('optHitLbl')) : ''}</div>`);
-}
-// One block of the optimizer's settings: its title, then its controls one under the other
-const optBlock = (title, body) => `<div class="optblk"><span class="optlbl">${esc(title)}</span>${body}</div>`;
-// The objective's block: its menu with the help button beside it, then what it reads (TP range, the TP the weaponskill goes at)
-const optObjBlock = (sel, help, more) => optBlock(t('optObjLbl'), `<div class="optinl">${sel}${help}</div>${more}`);
 // The settings' help, for the compartment's ⓘ
 function optSettingsHelp(hit){
   return [t('optWardTip'), 'DT+PDT : ' + t('optPdtTip'), 'DT+MDT : ' + t('optMdtTip'), 'Subtle Blow : ' + t('optSbTip')].concat(hit ? [t('optHitLbl') + ' : ' + t('optHitTip')] : []).join('. ') + '.';
@@ -281,16 +210,6 @@ function engRound(s, plain){
   try { const ctx = optContext(s, true), p = optPieces(pieces), r = FFXI.opt.round(ctx, p, {wsAt: +o.engAt || 1000});
     if (r) r.def = FFXI.opt.defense(FFXI.opt.gearset(ctx, p), ctx.sbBuff);
     return r; } catch (e) { return null; }
-}
-// The round's pieces: its line, your set against the try (when there is one), the calculation folded
-function engParts(s){
-  const r = engRound(s);
-  if (!r) return null;
-  const was = trialCount(s) ? engRound(s, true) : null, at = (S.optOpts || {}).engAt || 1000;
-  const line = isJumpSet(s.path) ? `<p class="wsdmg">${t('jumpRound', {p: `<b>${Math.round(r.tp)}</b>`, e: esc(enemyKey(buffState().enemy))})}${r.attacks ? ' · ' + t('engAttacks', {a: r.attacks.swings.toFixed(2), h: r.attacks.hits.toFixed(2)}) : ''}</p>` : `<p class="wsdmg">${t('engRound', {t: `<b>${(r.real ? r.real.time : r.time).toFixed(2)} s</b>`, avg: r.time.toFixed(2), at, d: fmtDmg(r.dps),
-    p: Math.round(r.tp), e: esc(enemyKey(buffState().enemy))})}${r.attacks ? ' · ' + t('engAttacks', {a: r.attacks.swings.toFixed(2), h: r.attacks.hits.toFixed(2)}) : ''} · ${esc(t('wsDmgTier', {p: buffTier()}))}</p>`;
-  const vs = was ? roundVsHTML(was, r, engOpts(s)) : '';
-  return {line, vs, calc: r.detail ? roundCalcHTML(r.detail, r.real) : ''};
 }
 // The round worked out as the engine does it (atelier-engine: average_attack_round, get_tp, get_delay_timing), each step with
 // its figures; then the rounds counted whole (the TP comes at the end of a round)
@@ -326,30 +245,6 @@ function procsHTML(x, f, pc){
     `<span class="rdproc"><b>${e.k === '1' ? esc(t('rdProcNone')) : e.k}</b> ${pc(e.p)} % · ${e.n} × ${f(p.tpPerHit)} = <b>${f(e.n * p.tpPerHit)}</b> TP</span>`).join(' ');
   return t('rdProcs') + '<br>' + hand(p.main, t('rdHandMain')) + (p.sub ? '<br>' + hand(p.sub, t('rdHandSub')) : '');
 }
-// The engaged optimizer's compartment: the button, the objective, the TP the weaponskill goes at, the settings
-function engOptHTML(s){
-  const tr = trialRow(s), p = engineReady() ? engParts(s) : null;
-  const result = tr || (p && p.vs) ? `<div class="engsec"><div class="kicker">${esc(t('engResKick'))}</div>${tr}${p ? p.vs : ''}</div>` : '';
-  const shown = p ? `<div class="engsec"><div class="kicker">${esc(t('engNowKick'))}</div>${p.line}${p.calc}</div>` : '';
-  return engControlsHTML(isJumpSet(s.path)) + (result || shown ? `<div class="engsplit">${result}${shown}</div>` : '');
-}
-// The search's controls: the button (or its progress), the objective, the TP the weaponskill goes at, the settings
-function engControlsHTML(jump){
-  if (!engineReady()) return `<p class="tpnote">${t('optNoEngine')}</p>`;
-  if (S._optBusy) return `<div class="optcard"><button class="btn" disabled>${t('optBusy')}</button><span class="optprog">${t('optStart')}</span>` +
-    `<button class="btn ghost" data-optstop>${t('optStop')}</button></div>`;
-  const o = S.optOpts = Object.assign({obj: 'damage', pdt: -50, mdt: -21, sb: 0, hit: 0, engObj: 'tp_real', engAt: 1000}, S.optOpts || {});
-  const objs = ENG_OBJS.map(k => `<option value="${k}" ${o.engObj === k ? 'selected' : ''}>${t('engObj_' + k)}</option>`).join('');
-  // the TP the weaponskill goes at: only the two times to the weaponskill read it
-  if (jump) return `<div class="optcard">${optBlock(t('optGoLbl'), optGoButtons('opteng'))}` +
-    optObjBlock(`<span class="optfixed">${esc(t('jumpObj'))}</span>`, helpBtn('engopt'), '') + optSettingsHTML(o, false) +
-    (S._help === 'engopt' ? `<p class="wshelp">${esc(t('jumpWhy'))} ${esc(optSettingsHelp(false))}</p>` : '') + `</div>`;
-  const at = o.engObj === 'tp_real' || o.engObj === 'tp_time'
-    ? `<label class="optnum">${t('engAtLbl')} <input type="number" step="100" min="1000" max="3000" data-optopt="engAt" value="${esc(o.engAt)}"> TP</label>` : '';
-  return `<div class="optcard">${optBlock(t('optGoLbl'), optGoButtons('opteng') + `<button class="btn ghost" data-tiercost title="${esc(t('tcTipEng'))}">${t('tcBtn')}</button>`)}` +
-    optObjBlock(`<select class="buffsel" data-optopt="engObj">${objs}</select>`, helpBtn('engopt'), at) + optSettingsHTML(o, false) +
-    (S._help === 'engopt' ? `<p class="wshelp">${esc(t('engWhy'))} ${esc(optSettingsHelp(false))}</p>` : '') + `</div>`;
-}
 // The TP the weaponskill opens with at the TP chosen: that TP, the weapon / buffs / Fencer bonus the
 // game counts, a party member's Warcry, then the TP Bonus of the pieces worn (their value from the
 // job's TP config, <JOB>_TP_CONFIG.lua; any other piece from its description, weapons left to the game's bonus)
@@ -372,10 +267,3 @@ function tpTotalParts(s, r){
   return {total, raw, step, text: t('tpTotal', {b: bits.join(' + '), t: total}) + ' · ' + t('tpStep', {s: step})};
 }
 
-/* ---- a weaponskill set's average damage line ---- */
-function wsDamageHTML(s){
-  const v = wsDamage(s);
-  if (v == null) return '';
-  const b = buffState(), ws = wsOfSet(s) || segs(s.path).pop();
-  return `<p class="wsdmg">${t('wsDmg', {ws: esc(ws), d: `<b>${fmtDmg(v)}</b>`, tp: S.wsTp || 3000, e: esc(enemyKey(b.enemy))})} · ${esc(t('wsDmgTier', {p: buffTier()}))}</p>`;
-}

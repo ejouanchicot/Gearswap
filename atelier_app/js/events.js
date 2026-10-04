@@ -45,6 +45,9 @@ document.addEventListener('click', e => {
   if (d.help) { S._help = S._help === d.help ? null : d.help; render(); return; }
   if ('tiercost' in d) { openTierCost(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('optws' in d) { S._optScratch = d.optws === 'best'; optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
+  if (d.optobj) { S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
+  if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; render(); return; }
+  if ('optback' in d) { S.optView = null; render(); return; }
   if ('opteng' in d) { S._optScratch = d.opteng === 'best'; optimizeEngaged(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('cmpmore' in d) { S._cmpMore = !S._cmpMore; openCompare(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('pushhist' in d) { openHistory(); return; }
@@ -188,7 +191,7 @@ document.addEventListener('change', e => {
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
     // the objective shows or hides the TP range; the range reads back rounded to 250
-    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt'].includes(e.target.dataset.optopt)) render();
+    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed'].includes(e.target.dataset.optopt)) render();
     return; }
   if (e.target.id === 'statonly') { S.statOnlyWant = e.target.checked; S.statPreset = ''; save(); openStatPick(); render(); return; }
   if (e.target.classList.contains('statpick')) { S.statPreset = ''; const k = e.target.dataset.stat; if (e.target.checked) delete S.statHide[k]; else S.statHide[k] = 1;

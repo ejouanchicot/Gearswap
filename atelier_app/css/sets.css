@@ -276,3 +276,100 @@
 .drawacts .chk{display:inline-flex;gap:7px;align-items:center;font-size:13px;font-weight:600;cursor:pointer}
 .drawacts .note{flex-basis:100%}
 .luabox{width:100%;min-height:200px;font-family:var(--mono);font-size:12px;padding:10px;border:1px solid var(--line-strong);border-radius:var(--radius-s);background:var(--well);color:var(--ink);resize:vertical}
+/* the optimizer on its own page (opt_page.js): a line on top, then what is looked for | the result, on one screen */
+.optlink{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:8px}
+.oppage{display:flex;flex-direction:column}
+.detail > header.ophead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.ophead h2{margin:0;font-size:20px;color:var(--accent)}
+.ophead .opset{font-weight:600}
+.ophead .sp{flex:1}
+.ophead .btn{width:auto}
+.opgo{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.opcols{display:grid;grid-template-columns:minmax(300px,2fr) minmax(0,3fr);gap:0}
+@media (max-width:1100px){.opcols{grid-template-columns:1fr}}
+.opcol{padding:12px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.opcol + .opcol{border-left:1px solid var(--line)}
+.ophd{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ophd2{margin:4px 0 0;font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.opobjs{display:flex;flex-direction:column;gap:4px}
+.opobj{display:flex;align-items:center;gap:9px;text-align:left;background:var(--panel-2);border:1px solid var(--line-strong);border-radius:var(--radius-s);padding:6px 10px;color:var(--ink);font:inherit;cursor:pointer;min-width:0}
+.opobj::before{content:"";flex:0 0 auto;width:13px;height:13px;border-radius:50%;border:2px solid var(--line-strong);box-sizing:border-box}
+.opobj.on::before{border-color:var(--accent);background:radial-gradient(circle,var(--accent) 0 42%,transparent 46%)}
+.opobj b{font-size:13.5px;font-weight:600;white-space:nowrap}
+.opobj span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opobj:hover:not([disabled]){background:var(--hover)}
+.opobj.on{background:var(--accent-soft);border-color:var(--accent)}
+.opobj.on b{color:var(--accent)}
+.opobj[disabled]{cursor:default}
+.opparams{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px}
+.opf{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.opf input[type=number]{width:70px}
+.opbig{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.opval{display:flex;align-items:baseline;gap:10px}
+.opval b{font-family:var(--mono);font-size:30px}
+.opval em{font-style:normal;font-weight:700;font-size:18px}
+.opval em.up{color:var(--g-skill)}.opval em.down{color:var(--g-off)}
+.opverdict{border:1px solid var(--line-strong);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.opverdict.better{color:var(--g-skill);border-color:var(--g-skill)}.opverdict.try{color:var(--accent);border-color:var(--accent)}
+.opverdict.worse{color:var(--g-off);border-color:var(--g-off)}.opverdict.eq{color:var(--ink)}
+.opres{display:grid;grid-template-columns:minmax(0,3fr) minmax(180px,2fr);gap:14px;align-items:start}
+@media (max-width:1300px){.opres{grid-template-columns:1fr}}
+.optable{width:100%}
+.optable th{font-weight:500}
+.optable td{font-family:var(--mono);text-align:right}
+.optable tr.obj th{font-weight:700}
+.opchg{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+.opchg li{display:grid;grid-template-columns:70px minmax(0,1fr);column-gap:8px}
+.opchg .sl{color:var(--muted);grid-row:span 2}
+.opchg .to{color:var(--accent)}
+.cycparts{display:flex;flex-direction:column;gap:6px}
+.cycrow{display:grid;grid-template-columns:80px minmax(0,1fr) 130px;gap:10px;align-items:center;font-size:12.5px}
+.cycrow .num{font-family:var(--mono);text-align:right;white-space:nowrap}
+.cycbar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:var(--well)}
+.cycbar i,.cyclegend i{display:block}
+.cycbar i.m,.cyclegend i.m{background:var(--g-def)}.cycbar i.w,.cyclegend i.w{background:var(--accent)}.cycbar i.c,.cyclegend i.c{background:var(--g-attr)}
+.cyclegend{display:flex;flex-wrap:wrap;gap:14px;margin:0;font-size:12px;color:var(--muted)}
+.cyclegend span{display:flex;align-items:center;gap:6px}
+.cyclegend i{width:10px;height:10px;border-radius:2px}
+.cycbar i.g,.cyclegend i.g{background:var(--line-strong)}
+.cycbar.tall{height:18px}
+.cycbar i b{font-weight:700;font-style:normal;white-space:nowrap}
+.cycbar i{display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#0b0e13;overflow:hidden}
+.cycbar i.r0,.cyclegend i.r0{background:#5FC28A}.cycbar i.r1,.cyclegend i.r1{background:#8FD06E}.cycbar i.r2,.cyclegend i.r2{background:#E0B866}
+.cycbar i.r3,.cyclegend i.r3{background:#E8955E}.cycbar i.r4,.cyclegend i.r4{background:#D9705A}.cycbar i.r5,.cyclegend i.r5{background:#C25550}
+.cycbar i.r6,.cyclegend i.r6{background:#A44A5E}.cycbar i.r7,.cyclegend i.r7{background:#87456B}
+/* the result's pictures: the TP gauge (a mark a round), the factors (a bar from the middle), the damage by TP */
+.cycbar.gauge{background-image:repeating-linear-gradient(90deg,transparent 0 calc(var(--round) - 1px),var(--bg) calc(var(--round) - 1px) var(--round));background-color:var(--well)}
+.cycbar.gauge i{background-image:repeating-linear-gradient(90deg,transparent 0 calc(var(--round) - 2px),rgba(0,0,0,.35) calc(var(--round) - 2px) var(--round))}
+.opfac{border-collapse:collapse;font-size:12.5px;width:100%}
+.opfac th{text-align:left;font-weight:500;padding:2px 8px 2px 0}
+.opfac td{font-family:var(--mono);text-align:right;padding:2px 6px}
+.opfac td.up{color:var(--g-skill)}.opfac td.down{color:var(--g-off)}
+.opfac .facbar{position:relative;width:34%;min-width:120px}
+.opfac .facbar .mid{position:absolute;left:50%;top:2px;bottom:2px;width:1px;background:var(--line-strong)}
+.opfac .facbar i{position:absolute;top:5px;height:9px;border-radius:2px}
+.opfac .facbar i.up{background:var(--g-skill)}.opfac .facbar i.down{background:var(--g-off)}
+.opcurve svg{width:100%;max-width:460px;height:auto;display:block}
+.opcurve polyline{fill:none;stroke-width:2.5}
+.opcurve polyline.now{stroke:var(--accent)}.opcurve polyline.was{stroke:var(--faint);stroke-dasharray:4 3}
+.opcurve .mark{stroke:var(--g-def);stroke-width:1.5;stroke-dasharray:3 3}
+.opcurve .band{fill:var(--g-def);opacity:.15}
+.opcurve text{fill:var(--muted);font-size:10px;text-anchor:middle}
+/* a set's top: one title line (what it is, its path, its actions on the right), then one bar of the settings that change
+   what is shown (version, weapons, list, a weaponskill's TP) */
+.settop{display:flex;flex-direction:column;gap:10px}
+.settitle{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.settitle h2{margin:0}
+.settitle .wspath,.settitle .setwhen{margin:0}
+.settitle .wsfacts{margin-top:0}
+.setacts{margin-left:auto;display:flex;align-items:center;gap:12px}
+.setacts .btn{width:auto}
+.setctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 26px;padding-top:10px;border-top:1px solid var(--line)}
+.setctl .wshead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px}
+.setctl .wsline{display:flex;align-items:center;gap:8px}
+.setctl .wpicks{margin-top:0}
+.setctl .wshelp{flex-basis:100%}
+.setctl .wpick{display:flex;align-items:center;gap:8px}
+.setctl .wpicks{gap:8px 20px;align-items:center}
+.setctl .wpicks .wsrc{flex-basis:auto}
+.setctl .wpick select{max-width:230px}

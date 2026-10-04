@@ -189,6 +189,12 @@ async function optimizeEngaged(s){
   if (o.freeWeapons) choices.weapons = weaponPairs(base);
   const input = {ctx: engContextInput(s), start: startOf(base), choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
+  // the whole fight (opt_page.js, atelier_cycle.js): its weaponskill set and how you play, as data for the workers
+  if (o.engObj === 'cycle') {
+    const cy = cycleReady() && !isJumpSet(s.path) ? cycleInput(s) : null;
+    if (!cy) { S._toastSet = s.path; S.toast = t('cycNoWs'); render(); return; }
+    input.opts.cycle = cy;
+  }
   optLaunch(s, k, input, Object.assign({}, o, {eng: true}));
 }
 // A search in the worker (on the page when there is none), its progress, then its result
@@ -455,7 +461,7 @@ function optResult(s, k, res, gains, o){
   const pct = h => h == null ? '—' : Math.floor(h) + ' %', bh = res.best.hits;
   const hitTxt = bh ? ' ' + t('optHit', {f: pct(bh.first), h: pct(bh.rest), e: enemyKey(buffState().enemy)}) : '';
   const sd = res.start.def || {}, startMiss = res.start.miss ? t('optStartMiss', {p: Math.round(sd.pdt || 0), m: Math.round(sd.mdt || 0), sb: Math.round(sd.sb || 0), h: pct((res.start.hits || {}).rest)}) + ' ' : '';
-  const engV = v => o.engObj === 'dps' ? fmtDmg(v) : o.engObj === 'tp_round' ? Math.round(v) : v.toFixed(2) + ' s';
+  const engV = v => o.engObj === 'dps' || o.engObj === 'cycle' ? fmtDmg(v) : o.engObj === 'tp_round' ? Math.round(v) : v.toFixed(2) + ' s';
   const done = o.eng ? t('engDone_' + (o.engObj || 'tp_real'), {a: engV(res.start.raw), b: engV(res.best.raw), g: (+gain > 0 ? '+' : '') + gain, n: Object.keys(tr).length,
       p: Math.round(def.pdt || 0), m: Math.round(def.mdt || 0), sb: Math.round(def.sb || 0)})
     : t(o.obj === 'tp_return' ? 'optDoneTp' : 'optDone', {g: gain, d: fmtDmg(res.best.raw), n: Object.keys(tr).length,

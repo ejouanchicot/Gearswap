@@ -106,29 +106,29 @@ function familyNote(s){
 // The note's room is kept on every variant of a card that has one: switching variants moves nothing
 // The title of a weaponskill set: its weapon, its name and version, what it uses (type, attributes, hits,
 // fTP by TP, critical hits, fTP on every hit: the weaponskill database, exported as ws_info), the set's path
-function wsTitleHTML(s){
+function wsTitleHTML(s, acts = ''){
   const ws = wsOfSet(s);
   // the common set is one of the job's base sets: never deleted from the page (set_push.lua PROTECTED)
-  if (!ws) return `<div class="kicker">${t('wsKick')}</div><div class="titleline"><h2>${t('wsCommon')}</h2></div><code class="path wspath">${esc(s.path)}</code>`;
+  if (!ws) return `<div class="settitle"><span class="kicker">${t('wsKick')}</span><h2>${t('wsCommon')}</h2><code class="path wspath">${esc(s.path)}</code>${acts}</div>`;
   const info = wsInfoOf(ws), version = segs(s.path).slice(segs(s.path).lastIndexOf(ws) + 1).join(' · ');
   const n = v => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: 1, maximumFractionDigits: 3});
   const mods = typeof info.mods === 'string' ? [info.mods] : Object.entries(info.mods || {}).map(([k, v]) => `${v} % ${k}`);
   const ftp = info.ftp && info.ftp['1000'] != null ? 'fTP ' + ['1000', '2000', '3000'].map(k => info.ftp[k] != null ? n(info.ftp[k]) : '—').join(' / ') : '';
   const facts = [info.type ? t('wsType_' + info.type) : '', mods.join(' + '), info.hits ? t(info.hits > 1 ? 'wsHitN' : 'wsHit1', {n: info.hits}) : '', ftp,
     info.crit ? t('wsCritTag') : '', info.replicating ? t('wsReplTag') : '', info.element ? info.element : ''].filter(Boolean);
-  return `<div class="kicker">${esc((wsSkills()[ws] || '') + ' · ' + t('wsKickOne'))}</div>` +
-    `<div class="titleline"><h2>${esc(ws)}${version ? ` <span class="wsver">· ${esc(version)}</span>` : ''}</h2></div>` +
-    (facts.length ? `<div class="wsfacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : '') + wsDamageHTML(s) + `<code class="path wspath">${esc(s.path)}</code>`;
+  return `<div class="settitle"><span class="kicker">${esc((wsSkills()[ws] || '') + ' · ' + t('wsKickOne'))}</span>` +
+    `<h2>${esc(ws)}${version ? ` <span class="wsver">· ${esc(version)}</span>` : ''}</h2>` +
+    (facts.length ? `<span class="wsfacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</span>` : '') + `<code class="path wspath">${esc(s.path)}</code>${acts}</div>`;
 }
 // The top of a set other than a weaponskill's: what it is on the left (its family, when it is worn, its
 // name and variant, its path), its variants and the weapons it is shown with on the right
-function setHeadHTML(card, ci, vi, s){
+function setHeadHTML(card, ci, vi, s, acts){
   const when = t('famWhen.' + card.fam), label = card.variants[vi].label;
   const fam = t('fam.' + card.fam), name = niceName(card);
   // what the set is, on the whole width in one or two lines: its family, name and variant, when it is worn, its path
-  const title = `<div class="sethead">${fam !== name ? `<span class="kicker">${esc(fam)}</span>` : ''}<h2>${esc(name)}` +
+  const title = `<div class="settitle">${fam !== name ? `<span class="kicker">${esc(fam)}</span>` : ''}<h2>${esc(name)}` +
     `${label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : ''}</h2>` +
-    (when ? `<span class="muted small setwhen">${esc(when)}</span>` : '') + `<code class="path wspath">${esc(s.path)}</code></div>` + familyNoteHTML(card, s);
+    (when ? `<span class="muted small setwhen">${esc(when)}</span>` : '') + `<code class="path wspath">${esc(s.path)}</code>${acts}</div>` + familyNoteHTML(card, s);
   const line = (lbl, body) => `<div class="wsline"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
   // the weapons' menus side by side under the variants, a label over each
   const pick = (lbl, body) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
@@ -143,11 +143,8 @@ function setHeadHTML(card, ci, vi, s){
   const picks = (menus ? pick(t('weaponsLbl'), menus) : '') + (family(s.path, s.pieces) !== 'weapons' ? forceLines(s, pick) : '');
   // a job with a stance or a switch on its weapons keeps the full weapon picker
   const picker = menus === null ? weaponPicker(s) : '';
-  // the delete link on the box's title line, on the right, where it has room
-  const head = box('g-off', t('setBoxThis'), title, delButton(s));
-  if (!ctl && !picker && !picks) return head;
-  return `<div class="wstop wstack">${head}${box('g-caps', t('setBoxVar'), (ctl ? `<div class="wshead">${ctl}</div>` : '') +
-    (picks ? `<div class="wpicks">${picks}</div>` : '') + picker)}</div>`;
+  const bar = ctl || picks || picker ? `<div class="setctl">${ctl ? `<div class="wshead">${ctl}</div>` : ''}${picks ? `<div class="wpicks">${picks}</div>` : ''}${picker}</div>` : '';
+  return `<div class="settop">${title}${bar}</div>`;
 }
 function familyNoteHTML(card, s){
   if (!card.variants.some(v => familyNote(v.set))) return '';
@@ -177,14 +174,16 @@ function cardHTML(card, ci, bypath, q){
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws', head = ws ? wsTitleHTML(s) : '';
   // the page in three bands: what the set is (a weaponskill set: the weaponskill, what its figures are worked out with),
   // the equipment beside its stats, then the optimizer on the whole width
-  const top = ws ? `<div class="wstop wstack">${box('g-off', t('wsBoxWs'), head + familyNoteHTML(card, s), wsOfSet(s) ? delButton(s) : '')}` +
-      (wsOfSet(s) ? box('g-caps', t('wsBoxCalc'), wsHeadHTML(card, ci, vi, s)) : '') + `</div>`
-    : setHeadHTML(card, ci, vi, s);
-  const opt = ws && wsOfSet(s) ? box('g-you wsoptbox', t('wsBoxOpt'), wsOptHTML(s))
-    : roundSet(s) ? box('g-you wsoptbox', t('wsBoxOpt'), engOptHTML(s)) : '';
+  const optable = (ws && wsOfSet(s)) || roundSet(s);
+  if (optable && optPageOpen(s)) return optPageHTML(s, ws && wsOfSet(s));
+  // its actions on the title line: the optimizer, then deleting it
+  const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview>${t('optOpenBtn')}</button>` : ''}${ws && !wsOfSet(s) ? '' : delButton(s)}</span>`;
+  const top = ws ? `<div class="settop">${wsTitleHTML(s, acts)}${familyNoteHTML(card, s)}` +
+      (wsOfSet(s) ? `<div class="setctl">${wsHeadHTML(card, ci, vi, s)}</div>` : '') + `</div>`
+    : setHeadHTML(card, ci, vi, s, acts);
   return `<article class="detail"><header>${top}${trialBar(s)}</header>
     <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
-    ${opt ? `<section class="optsec">${opt}</section>` : ''}<div class="globals-inline">${(S._globals = {s, html: globalsHTML(s)}).html}</div></article>`;
+    <div class="globals-inline">${(S._globals = {s, html: globalsHTML(s)}).html}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 function renderSets(d){

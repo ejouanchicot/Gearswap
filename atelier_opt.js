@@ -416,6 +416,12 @@
     function roundValue(ctx, pieces, opts) {
         var pl = playerOf(ctx, pieces);
         if (!pl) return null;
+        // EXPERIMENTAL (2026-10-04, being tested in game): damage a second over a whole fight, weaponskill and skillchains
+        // in (atelier_cycle.js); opts.cycle: O.cycle's input without the engaged pieces
+        if (opts.objective === "cycle" && opts.cycle && O.cycle) {
+            var cy = O.cycle(Object.assign({}, opts.cycle, {pieces: {engaged: pieces, ws: opts.cycle.wsPieces}}));
+            return cy ? {v: cy.dps, raw: cy.dps, def: pl.def, round: null, cycle: cy} : null;
+        }
         var obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_real";
         var r = roundOf(ctx, pl.player, Object.assign({}, opts, {real: obj === "tp_real"}));
         // speed only (damage has its DPS objective): the real time first, two sets as fast parted by the engine's average
