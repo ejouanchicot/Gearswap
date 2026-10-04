@@ -359,6 +359,15 @@ pcall(function()
     end
 end)
 
+-- A chat block at each fight and each kill (fight_tracker.lua): listens
+-- only, nothing sent to the game.
+pcall(function()
+    local ok, FightTracker = pcall(require, 'shared/utils/combat/fight_tracker')
+    if ok and FightTracker then
+        FightTracker.init()
+    end
+end)
+
 -- Treasure Hunter on the engaged set and on the first action against a
 -- mob not tagged yet (treasure_hunter.lua). After the Dual Wield and belt
 -- hooks (TH wins, once per mob), before the custom states.
