@@ -59,6 +59,8 @@ const STAT_ALIAS = {
   'lightning resistance':'res_lightning','water resistance':'res_water','light resistance':'res_light','dark resistance':'res_dark',
   'mag.atk.bns':'mab','rng.acc':'racc','rng.atk':'ratk',
   'ranged acc.':'racc','ranged atk.':'ratk','magic acc.':'macc','magic atk.':'mab',
+  'triple atk.':'ta','quadruple atk.':'qa','magic burst dmg.':'mbd','magic burst dmg':'mbd',
+  'enha.mag.skill':'skill:enhancing magic skill','enfb.mag.skill':'skill:enfeebling magic skill',
   'def':'def','magic dmg.taken':'mdt','magic attack bonus':'mab','mag.def.bonus':'mdb','magic defense':'mdb',
 };
 const normName = s => s.toLowerCase().replace(/["“”]/g, '').replace(/\.\s*/g, '.').replace(/\s+/g, ' ').replace(/^[\s/:]+|[\s/:]+$/g, '').trim();
@@ -71,6 +73,8 @@ function statOf(phrase){
   for (let k = 0; k < words.length; k++) {
     const tail = normName(words.slice(k).join(' '));
     const key = STAT_ALIAS[tail] || (/ skill$/.test(tail) && tail.split(' ').length <= 4 ? 'skill:' + tail : null);
+    // never the end of a name in quotes ("Triple Atk."+3, "Sneak Attack"+10 are not Attack): an unknown name stays whole
+    if (key && (words.slice(0, k).join(' ').match(/"/g) || []).length % 2) break;
     if (key) return {key, label: words.slice(k).join(' ').replace(/^[\s/]+/, ''), rest: words.slice(0, k).join(' ')};
   }
   const short = words.length <= 5 && /[A-Za-z]/.test(phrase);
