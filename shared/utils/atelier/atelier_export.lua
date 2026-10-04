@@ -462,9 +462,10 @@ local function collect_char()
     char.jp_spent = type(jp) == 'table' and jp.jp_spent or nil
     local packet = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
     char.master_level = packet and #packet > 0x65 and packet:byte(0x65 + 1) or nil
-    -- every job's level and master level (packet 0x01B, libs/packets/fields.lua: job levels from
-    -- 0x49, master levels from 0x6D, one byte per job id 1-22): the page shows the mastered jobs first
+    -- every job's level and master level (packet 0x01B, libs/packets/fields.lua: job levels from 0x49, master levels
+    -- from 0x6D, one byte per job id 1-22; the mastery rank at 0x66, Hoxne Earring's "All BP" bonus on the page)
     local info = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x01B)
+    char.mastery_rank = info and #info > 0x66 and info:byte(0x66 + 1) or nil
     local ok_r, res = pcall(require, 'resources')
     if info and #info >= 0x6D + 22 and ok_r and res and res.jobs then
         char.jobs = {}

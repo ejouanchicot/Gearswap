@@ -138,6 +138,8 @@ function add(out, key, v, unit, label){
 // in that ear (ear2 is the right one, GearSwap's right_ear), a condition shown in the other or with no slot
 const PIECE_CACHE = {}, EAR_SIDE = {ear1: 'left', ear2: 'right'};
 const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
+// "All BP" by mastery rank (BG Wiki, Hoxne Earring)
+const MASTERY_BP = {1: -30, 2: -20, 3: -10, 4: 0, 5: 5, 6: 10, 7: 15, 8: 20, 9: 25, 10: 30};
 // The item id of your copy of a piece (the export gives each its id), the highest when you hold several; null when
 // you have none or the export predates ids
 function ownId(name, slot){
@@ -173,6 +175,14 @@ function pieceStats(p, slot){
     line = line.replace(/^Cannot [Ee]quip \w+\s*/, '');
     // "Unity Ranking: HP+30～80" (Blistering Sallet +1): your Unity's weekly ranking gives it all the time, not a
     // condition; at its top, as the game measured it (2026-10-04: Sailfi Belt +1 Attack +15, Gelatinous Ring +1 HP +35)
+    // "Mastery Rank: All BP -30 to +30" (Hoxne Earring): the seven attributes by your mastery rank (BG Wiki: rank 1
+    // -30 ... 4 +0 ... 10 +30), read by the export (packet 0x01B); a condition while the rank is not known
+    const mrank = /^Mastery Rank:\s*All BP/i.test(line) && (measuredChar() || {}).mastery_rank;
+    if (mrank && MASTERY_BP[mrank] != null) {
+      mode = null;
+      for (const a of ['str', 'dex', 'vit', 'agi', 'int', 'mnd', 'chr']) add(r.base, a, MASTERY_BP[mrank], '', a.toUpperCase());
+      continue;
+    }
     const unity = line.match(/^Unity Ranking:\s*/i);
     if (unity) {
       mode = null;
