@@ -237,6 +237,8 @@ const JAS = {
   'Aggressor': {job: 'WAR', lvl: 45, fx: m => ({acc: 25 + (m ? 20 : 0), eva: -25})},
   'Blood Rage': {job: 'WAR', lvl: 87, excl: 'warcry', fx: m => ({crit: m ? 40 : 20})},
   'Mighty Strikes': {job: 'WAR', lvl: 1, sp: true, fx: () => ({crit: 100, acc: 40})},
+  // Double Attack +100 % at its start, nothing after 30 s; +80 Attack from its job points (atelier-engine/player.js)
+  'Brazen Rush': {job: 'WAR', lvl: 96, sp: true, mainOnly: true, fx: () => ({da: 100, atk: 80})},
   'Focus': {job: 'MNK', lvl: 25, fx: (m, l) => m ? {crit: 20, acc: 120} : {crit: 20 * (1 - (99 - l) / 100), acc: 100 * (1 - (99 - l) / 100)}},
   'Impetus': {job: 'MNK', lvl: 88, fx: () => ({crit: 45, atk: 126})},
   'Composure': {job: 'RDM', lvl: 50, mainOnly: true, fx: () => ({acc: 70})},

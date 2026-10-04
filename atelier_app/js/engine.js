@@ -235,10 +235,15 @@ function skillAcc(level){
 }
 // Evasion from the evasion skill: 1 a point to 300, 0.8 past it
 const skillEva = level => level > 300 ? Math.floor(300 + 0.8 * (level - 300)) : level;
-// A skill level read in game, by its name ("Great Sword" and "great_sword" alike)
+// A skill level read in game, by its name ("Great Sword" and "great_sword" alike), held to the job's cap (the
+// engine's table + master level + 16 of merits): the skill packet can carry more than the job uses (Great Axe
+// 499 read for a WAR whose skill menu and Accuracy show 478)
 function skillLevel(c, name){
   const want = (name || '').toLowerCase().replace(/[^a-z]/g, '');
-  for (const [k, v] of Object.entries(c.skills || {})) if (k.toLowerCase().replace(/[^a-z]/g, '') === want) return v;
+  const table = ((FFXI.player_data || {}).JOB_COMBAT_STATS || {})[(S.job || '').toLowerCase()] || {};
+  const capKey = Object.keys(table).find(k => k.toLowerCase().replace(/[^a-z]/g, '') === want + 'skill');
+  const cap = capKey ? table[capKey] + (c.master_level || 0) + 16 : Infinity;
+  for (const [k, v] of Object.entries(c.skills || {})) if (k.toLowerCase().replace(/[^a-z]/g, '') === want) return Math.min(v, cap);
   return 0;
 }
 // Accuracy and Evasion of a gear total: main hand Accuracy = 0.75 x DEX + gear + its skill's
@@ -327,6 +332,13 @@ function measuredChar(){
   const d = data(), all = Object.values(exportsOf(S.char, S.job)).map(x => x.char).filter(c => c && c.base);
   const latest = list => list.sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0] || null;
   return latest(all.filter(c => d && c.sub === d.sub)) || latest(all);
+}
+// The measured base attributes ({main, sub, str: 153...}) for the damage engine's create_player (atelier_opt.js
+// withBase): the character's own race and attribute merits instead of a generic character's
+function measuredBase(job){
+  if (!S.job || S.job.toLowerCase() !== job) return null;
+  const c = measuredChar();
+  return c && c.base ? Object.assign({main: S.job, sub: c.sub}, c.base) : null;
 }
 function gearTotal(pieces){
   const total = {};

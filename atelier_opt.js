@@ -221,11 +221,27 @@
         if (c.warcryTpDelta) agg[0].own_warcry = {"TP Bonus": c.warcryTpDelta};
         // a party SMN's Avatar's Favor at BG Wiki's top values (the page's partyStats; the engine's own are lower or higher)
         if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
-        return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: c.abilities || {},
+        return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: withBase(c),
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
             physResBy: c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: c.saberMerit || 0};
     };
+    // The abilities with the character's own base attributes ("Base Stats"), from the game's status packet: c.base
+    // ({main, sub, str: 153, dex: 141...}), else the page's measuredBase(job). Measured with another subjob: that
+    // subjob's attribute bonus swapped for this one's (create_player's tables). Same main job only.
+    var ATTRS = ["STR", "DEX", "VIT", "AGI", "INT", "MND", "CHR"];
+    function withBase(c) {
+        var ab = c.abilities || {}, job = c.job.toLowerCase(), sub = (c.sub || "war").toLowerCase();
+        var m = c.base !== undefined ? c.base : (typeof measuredBase === "function" ? measuredBase(job) : null);
+        if (!m || ab["Base Stats"] || (m.main && m.main.toLowerCase() !== job)) return ab;
+        var SUB = FFXI.player_data.SUBJOB_PARAMETERS, from = SUB[(m.sub || sub).toLowerCase()] || {}, to = SUB[sub] || {};
+        var real = {};
+        ATTRS.forEach(function (k) {
+            var v = m[k.toLowerCase()];
+            if (typeof v === "number") real[k] = v - (from[k] || 0) + (to[k] || 0);
+        });
+        return Object.assign({}, ab, {"Base Stats": real});
+    }
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
     // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %), Banish II by 70 % on an undead;
     // for a physical weaponskill only,
