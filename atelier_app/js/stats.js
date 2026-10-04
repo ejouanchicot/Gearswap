@@ -69,7 +69,8 @@ const STAT_ALIAS = {
 };
 const normName = s => s.toLowerCase().replace(/["“”]/g, '').replace(/\.\s*/g, '.').replace(/\s+/g, ' ').replace(/^[\s/:]+|[\s/:]+$/g, '').trim();
 // A line that opens a condition (Set:, Latent effect:, Pet:, Unity ranking:...): what follows is not always on
-const COND = /^(?!DEF:|DMG:|Delay:)[A-Z][A-Za-z .()'\-]{1,30}:/;
+// "Synergy Damage taken-25%" (the craft smocks) has no colon: only while synergizing, never a defense of the set
+const COND = /^(?:Synergy\s|(?!DEF:|DMG:|Delay:)[A-Z][A-Za-z .()'\-]{1,30}:)/;
 
 // The stat a phrase ends with: the longest known name at its end, the rest is free text
 function statOf(phrase){
