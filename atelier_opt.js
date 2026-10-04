@@ -227,7 +227,7 @@
             physResBy: c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: c.saberMerit || 0};
     };
     // The abilities with the character's own base attributes ("Base Stats"), from the game's status packet: c.base
-    // ({main, sub, str: 153, dex: 141...}), else the page's measuredBase(job). Measured with another subjob: that
+    // ({main, sub, merits, str: 153, dex: 141...}), else the page's measuredBase(job). Measured with another subjob: that
     // subjob's attribute bonus swapped for this one's (create_player's tables). Same main job only.
     var ATTRS = ["STR", "DEX", "VIT", "AGI", "INT", "MND", "CHR"];
     function withBase(c) {
@@ -240,7 +240,10 @@
             var v = m[k.toLowerCase()];
             if (typeof v === "number") real[k] = v - (from[k] || 0) + (to[k] || 0);
         });
-        return Object.assign({}, ab, {"Base Stats": real});
+        var out = {"Base Stats": real};
+        // the "Critical Hit Rate" merits the export read (none listed = none placed)
+        if (m.merits) out["Crit Rate Merits"] = m.merits.critical_hit_rate || 0;
+        return Object.assign({}, ab, out);
     }
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25
     // resists), Tomahawk cutting a resistance by a quarter (BG Wiki: 50 % -> 37 %), Banish II by 70 % on an undead;

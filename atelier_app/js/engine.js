@@ -338,7 +338,7 @@ function measuredChar(){
 function measuredBase(job){
   if (!S.job || S.job.toLowerCase() !== job) return null;
   const c = measuredChar();
-  return c && c.base ? Object.assign({main: S.job, sub: c.sub}, c.base) : null;
+  return c && c.base ? Object.assign({main: S.job, sub: c.sub, merits: c.merits || null}, c.base) : null;
 }
 function gearTotal(pieces){
   const total = {};
