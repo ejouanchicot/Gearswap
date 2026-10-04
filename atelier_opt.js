@@ -73,9 +73,26 @@
         if (item.DMG) { g.DMG = item.DMG; g.Delay = item.Delay; }
         var add = function (src) { for (var k in src) if (typeof src[k] === "number") g[k] = (g[k] || 0) + src[k]; };
         add(item.stats || {});
+        // what the game's description gives that the catalogue lacks (the page's fill: a stat it has none of)
+        add(piece.fill || {});
         // a bonus that works in one ear only (the Empyrean earrings' "Right ear:"), in that ear (ear2 = right_ear)
         if (item.slot_stats && item.slot_stats[slot]) add(item.slot_stats[slot]);
-        if (FFXI.parse_augments && (piece.augs && piece.augs.length || piece.rank != null)) add(FFXI.parse_augments(item.name, piece.augs || [], piece.rank).stats);
+        if (FFXI.parse_augments && (piece.augs && piece.augs.length || piece.rank != null)) {
+            var parsed = FFXI.parse_augments(item.name, piece.augs || [], piece.rank), aug = parsed.stats;
+            // an innate TP Bonus the game shows as an augment (Centovente: +1000 once, not twice)
+            if (aug["TP Bonus"] && aug["TP Bonus"] === (item.stats || {})["TP Bonus"]) { aug = Object.assign({}, aug); delete aug["TP Bonus"]; }
+            add(aug);
+            // what the damage formulas do not read (HP, MP, Enmity, Fast Cast...): counted too, for the tanking and
+            // magic figures (the parser keeps them apart: atelier-engine/catalog/augments_parse.js `extra`)
+            add(parsed.extra || {});
+        }
+        // a path's rank stats only gearscan read (the page's extraAugs: no rank table here for that piece)
+        if (FFXI.parse_augments && piece.extraAugs && piece.extraAugs.length) {
+            var more = FFXI.parse_augments(item.name, piece.extraAugs);
+            add(more.stats); add(more.extra || {});
+        }
+        // the parser's ranks and augments write Defense, the catalogue and the engine DEF
+        if (g.Defense) { g.DEF = (g.DEF || 0) + g.Defense; delete g.Defense; }
         // a piece worn for one augment only, whatever its other one (Moonshade Earring: its TP Bonus +250)
         var only = ONLY_STATS[item.name];
         if (only) { for (var k in g) if (typeof g[k] === "number" && k !== "DMG" && k !== "Delay") delete g[k]; add(only); }

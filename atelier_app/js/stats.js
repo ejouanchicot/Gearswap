@@ -59,6 +59,10 @@ const STAT_ALIAS = {
   'lightning resistance':'res_lightning','water resistance':'res_water','light resistance':'res_light','dark resistance':'res_dark',
   'mag.atk.bns':'mab','rng.acc':'racc','rng.atk':'ratk',
   'ranged acc.':'racc','ranged atk.':'ratk','magic acc.':'macc','magic atk.':'mab',
+  'magic critical hit rate':'x:magic critical hit rate','magic crit.hit rate':'x:magic critical hit rate',
+  'slow':'slow','annuls damage taken':'x:annuls damage taken','physical damage converted to mp':'x:physical damage converted to mp','m.accuracy':'macc','m.acc.':'macc',
+  // a weaponskill's own accuracy (Fallen's Cuirass, Karieyh Ring): never the general one
+  'weapon skill accuracy':'x:weapon skill accuracy','weapon skill acc.':'x:weapon skill accuracy',
   'triple atk.':'ta','quadruple atk.':'qa','magic burst dmg.':'mbd','magic burst dmg':'mbd',
   'enha.mag.skill':'skill:enhancing magic skill','enfb.mag.skill':'skill:enfeebling magic skill',
   'def':'def','magic dmg.taken':'mdt','magic attack bonus':'mab','mag.def.bonus':'mdb','magic defense':'mdb',
@@ -75,6 +79,10 @@ function statOf(phrase){
     const key = STAT_ALIAS[tail] || (/ skill$/.test(tail) && tail.split(' ').length <= 4 ? 'skill:' + tail : null);
     // never the end of a name in quotes ("Triple Atk."+3, "Sneak Attack"+10 are not Attack): an unknown name stays whole
     if (key && (words.slice(0, k).join(' ').match(/"/g) || []).length % 2) break;
+    // nor a stat named after an ability ("Step" accuracy +35, "Jump" attack): that ability's, never the general one
+    if (key && k > 0 && /"[^"]*"\s*$/.test(words.slice(0, k).join(' '))) break;
+    // nor one element's (Earth Elemental "Magic Atk. Bonus"+5)
+    if (key && k > 0 && /elemental\s*$/i.test(words.slice(0, k).join(' '))) break;
     if (key) return {key, label: words.slice(k).join(' ').replace(/^[\s/]+/, ''), rest: words.slice(0, k).join(' ')};
   }
   const short = words.length <= 5 && /[A-Za-z]/.test(phrase);
@@ -94,21 +102,24 @@ function statsOf(phrase){
 function parseLine(line, out){
   const free = [];
   let last = 0;
-  for (const m of line.matchAll(/([+-])\s?(\d+)(%?)/g)) {
+  // "STR+2～5" (Rajas Ring): the top of the range, as the engine counts it
+  for (const m of line.matchAll(/([+-])\s?(\d+)(?:～(\d+))?(%?)/g)) {
     const phrase = line.slice(last, m.index);
     last = m.index + m[0].length;
-    let v = (m[1] === '-' ? -1 : 1) * +m[2];
+    let v = (m[1] === '-' ? -1 : 1) * +(m[3] || m[2]);
     // several stats for one value (rank stats): "DEX & AGI +15", "INT/MND +25", "All Attr.+2"
     const many = statsOf(phrase);
-    if (many) { for (const k of many) add(out, k, v, m[3], k); continue; }
+    if (many) { for (const k of many) add(out, k, v, m[4], k); continue; }
     const s = statOf(phrase);
     // "Atonement: Enmity +100" (a path's rank stat) is for that ability only: shown, never counted
     if (!s.key || /:\s*$/.test(s.rest)) { free.push((phrase.trim() + ' ' + m[0]).trim()); continue; }
     if (s.rest) free.push(s.rest);
     if (s.key === 'sird') v = Math.abs(v);
+    // "Slow"+7% (Lustratio, Hecatomb) is Haste taken off
+    if (s.key === 'slow') { add(out, 'haste', -v, '%', s.label); continue; }
     // "HP+10%" is not "HP+10": a stat counted in points elsewhere gets its own % line
-    const key = m[3] && FLAT.has(s.key) ? s.key + '%' : s.key;
-    add(out, key, v, m[3], s.label);
+    const key = m[4] && FLAT.has(s.key) ? s.key + '%' : s.key;
+    add(out, key, v, m[4], s.label);
   }
   const tail = line.slice(last).trim();
   if (tail) free.push(tail);
@@ -150,6 +161,8 @@ function pieceStats(p, slot){
     const ear = line.match(/^(Left|Right) ear:\s*/i);
     if (ear && ear[1].toLowerCase() === side) { mode = null; line = line.slice(ear[0].length); if (!line.trim()) continue; }
     line = unsigned(line, r.base);
+    // "Cannot Equip Headgear DEF:51..." (Twilight Cloak, Onca Suit): what follows is the piece's, not a condition
+    line = line.replace(/^Cannot [Ee]quip \w+\s*/, '');
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
     // one condition per entry: its title line, then the lines under it ("Aftermath:" / "Increases Accuracy...")
@@ -158,6 +171,8 @@ function pieceStats(p, slot){
       else r.cond[cur] += (/[,:]$/.test(r.cond[cur]) ? ' ' : ' · ') + line.trim();
       continue;
     }
+    // "STR:10" (Cornelia's Belt): an attribute written with a colon is STR+10
+    line = line.replace(/\b(STR|DEX|VIT|AGI|INT|MND|CHR|HP|MP):(\d+)/g, '$1+$2');
     // a hand-to-hand weapon writes "DMG:+39 Delay:+51": its delay is added to the base 480
     line = line.replace(/\b(DEF|DMG|Delay):\s?(\+?)(\d+)/g, (_, k, plus, n) => {
       if (k === 'DEF') add(r.base, 'def', +n, '', 'DEF');
@@ -173,6 +188,14 @@ function pieceStats(p, slot){
     r.free = r.free.map(f => f.replace(/(Enhances|Increases) "Fast Cast" effect/, '').trim()).filter(Boolean);
     r.hidden = true;
   }
+  // another effect the description only names (Brutal Earring: Enhances "Double Attack" effect): the engine's value
+  // (atelier-engine/catalog, BG Wiki's), when it has one for that stat
+  const engineIt = window.FFXI && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(p.name) : null;
+  const named = f => { for (const [re, key] of HIDDEN_PHRASES) { const m = f.match(re); if (m) return key || STAT_ALIAS[normName(m[1])]; } return null; };
+  const hiddenOf = f => { const k = named(f), v = k && !r.base[k] && engineIt && (engineIt.stats || {})[ENGINE_STAT[k]];
+    if (v) { add(r.base, k, v, '', f); r.hidden = true; } return !!v; };
+  r.free = r.free.filter(f => !hiddenOf(f));
+  r.cond.forEach(hiddenOf);
   // The set's augments; without any, those //gs c gearscan read on the character's own copy
   const scan = scanOf()[p.name];
   let augs = p.augs;
@@ -196,6 +219,12 @@ function pieceStats(p, slot){
   else if (r.path && scan && scan.path === r.path && scan.rank_stats) {
     r.rankStats = true;
     for (const a of scan.rank_stats) addAugment(a, r);
+  }
+  // a path whose rank gearscan never read: its top rank, as the engine counts it (atelier-engine augments_parse:
+  // rank_assumed), said in the hover card
+  else if (r.path && rankedEntry(p.name)) {
+    const top = rankedEntry(p.name).max_rank;
+    if (top != null) { r.rank = top; r.rankStats = true; r.rankAssumed = true; addRanked(p.name, r.path, top, r); }
   }
   for (const part of [r.base, r.aug]) for (const [k, e] of Object.entries(part)) add(r.stats, k, e.v, e.unit, e.label);
   return (PIECE_CACHE[key] = r);
@@ -221,7 +250,8 @@ const RANK_KEYS = {Accuracy: 'acc', 'Ranged Accuracy': 'racc', 'Magic Accuracy':
 function addRanked(name, path, rank, r){
   for (const [k, v0] of Object.entries(FFXI.ranked_stats(name, path, rank) || {})) {
     if (!v0) continue;
-    const v = k === 'TP Bonus' ? v0 * 10 : v0, pet = k.match(/^(Pet|Avatar|Automaton|Wyvern|Luopan):(.+)$/);
+    // the table already scales TP Bonus (its keys: "TP Bonus": 10): Ikenga's Axe R23 is +200, as the game shows
+    const v = v0, pet = k.match(/^(Pet|Avatar|Automaton|Wyvern|Luopan):(.+)$/);
     const key = RANK_KEYS[pet ? pet[2] : k];
     if (key) add(pet ? r.pet : r.aug, key, v, PCT.has(key) ? '%' : '', pet ? pet[2] : k);
     else r.free.push(`${k} ${v > 0 ? '+' : ''}${v}`);
@@ -277,7 +307,22 @@ function addAugment(a, r){
 }
 // Fast Cast hidden behind "Enhances "Fast Cast" effect" (BG-Wiki; Guide_Paladin gear_pld.py)
 const HIDDEN_FC = {"Loquac. Earring": 2, "Prolix Ring": 2, "Orunmila's Torque": 5};
-const scanOf = () => mergedOf('scan');
+// Effects a description names without a value (Brutal Earring, Charis Feather, Locus Ring, Lycurgos...): the stat
+// they are (null: the quoted name's), their value taken from the engine's catalogue
+const HIDDEN_PHRASES = [[/^(?:Enhances|Increases) "([^"]+)" effect$/i, null], [/^(TP Bonus) based on/i, null],
+  [/^Increases critical hit damage$/i, 'critdmg'], [/^Bonus damage added to magic burst$/i, 'mbd'], [/Increases magic burst damage/i, 'mbd']];
+// The engine's name of a page stat, for the effects a description only names
+const ENGINE_STAT = {da: 'DA', ta: 'TA', qa: 'QA', stp: 'Store TP', crit: 'Crit Rate', critdmg: 'Crit Damage', wsd: 'Weapon Skill Damage',
+  dw: 'Dual Wield', haste: 'Gear Haste', tpb: 'TP Bonus', sb: 'Subtle Blow', acc: 'Accuracy', atk: 'Attack', fc: 'Fast Cast',
+  str: 'STR', dex: 'DEX', vit: 'VIT', agi: 'AGI', int: 'INT', mnd: 'MND', chr: 'CHR', hp: 'HP', mp: 'MP', racc: 'Ranged Accuracy',
+  ratk: 'Ranged Attack', macc: 'Magic Accuracy', mab: 'Magic Attack', eva: 'Evasion', meva: 'Magic Evasion', mdb: 'Magic Defense',
+  def: 'DEF', pdl: 'PDL', dt: 'DT', pdt: 'PDT', mdt: 'MDT', enmity: 'Enmity', mdmg: 'Magic Damage', mbd: 'Magic Burst Damage'};
+// What //gs c gearscan read on your copies (augments, a path's rank): the character's, newest export last, whatever job's
+// export carries it (a job exported without it counted the Path pieces at rank 0, the engine at their best)
+let SCAN_MEMO = {key: null, out: null};
+const scanOf = () => { const key = DATA_GEN + '|' + S.char; if (SCAN_MEMO.key === key) return SCAN_MEMO.out;
+  const all = Object.values(DATA[S.char] || {}).flatMap(j => Object.values(j)).filter(x => x.scan).sort((a, b) => (a.at || '').localeCompare(b.at || ''));
+  return (SCAN_MEMO = {key, out: Object.assign({}, ...all.map(x => x.scan))}).out; };
 const descTexts = () => mergedOf('descs');
 // Every gear item of the game (data/atelier/catalog.js, written by the export from Windower's
 // resources: shared/utils/atelier/atelier_catalog.lua), loaded when the picker asks for it.
@@ -287,7 +332,9 @@ function catalog(){
   const c = window.ATELIER_CATALOG;
   if (!c) return null;
   if (!CAT || CAT.src !== c) { CAT = {src: c, id: {}, desc: {}, row: {}, rare: new Set(), ex: new Set(), alt: new Set()};
-    for (const r of c.items) { if (!(r[1] in CAT.id)) { CAT.id[r[1]] = r[0]; CAT.row[r[1]] = r; } CAT.desc[r[0]] = r[6];
+    // several items of one name (Kusanagi's stages): the highest item level, then the last id (its last stage), as the
+    // engine reads it; a copy you hold is read by its own id (the export's icons)
+    for (const r of c.items) { const o = CAT.row[r[1]]; if (!o || (r[5] || 0) > (o[5] || 0) || ((r[5] || 0) === (o[5] || 0) && r[0] > o[0])) { CAT.id[r[1]] = r[0]; CAT.row[r[1]] = r; } CAT.desc[r[0]] = r[6];
       if (r[7]) CAT.rare.add(r[1]); if (r[8]) CAT.ex.add(r[1]); if (r[9]) CAT.alt.add(r[1]); } }
   return CAT;
 }

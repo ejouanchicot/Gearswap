@@ -81,6 +81,11 @@ function optPieces(pieces){
     if (!p || isEmpty(p)) continue;
     let q = Object.assign({}, p);
     if (!(q.augs && q.augs.length)) { const mine = (owned[slot] || []).find(x => x.name === q.name); if (mine && mine.augs) q.augs = mine.augs; }
+    // else what //gs c gearscan read on your copy (a path): the engine then knows its rank, as the page's stats do
+    const sc = scanOf()[q.name];
+    if (!(q.augs && q.augs.length) && sc && !sc.differ && sc.augments) q.augs = sc.augments;
+    // a path's rank stats only gearscan knows (no table of the engine for that piece: Cacoethic Ring +1)
+    if (sc && sc.rank_stats && !rankedEntry(q.name) && (q.augs || []).includes('Path: ' + sc.path)) q.extraAugs = sc.rank_stats;
     if (isRare(q.name)) q.rare = true;
     out[slot] = ownRank(q);
   }
@@ -90,6 +95,16 @@ function optPieces(pieces){
 function ownRank(q){
   const sc = scanOf()[q.name];
   if (q.rank == null && sc && sc.rank != null && (q.augs || []).some(a => a === 'Path: ' + sc.path)) q.rank = sc.rank;
+  return engineFill(q);
+}
+// What the game's description gives that the engine's catalogue lacks (Raetic Bangles' "M. Accuracy", a Haste it
+// left out): handed to the engine (atelier_opt.js gear: piece.fill), only for a stat it has none of
+function engineFill(q){
+  const it = window.FFXI && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(q.name) : null, r = it && pieceStats(Object.assign({}, q, {augs: []}));
+  if (!r || !r.known) return q;
+  const fill = {};
+  for (const [k, e] of Object.entries(r.base)) { const ek = ENGINE_STAT[k]; if (ek && e.v && !(it.stats || {})[ek]) fill[ek] = e.v; }
+  if (Object.keys(fill).length) q.fill = fill;
   return q;
 }
 // The weaponskill's average damage with the set as shown (weapons, TP pieces, tried pieces), at the TP

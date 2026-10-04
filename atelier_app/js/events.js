@@ -237,7 +237,7 @@ function pieceTip(p, slot, emptied){
     if (r.cond.length) body += `<div class="k">${t('condTitle')}</div><ul>${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
   } else body = `<p class="muted">${t('noDesc')}</p>`;
   const weapon = r && r.weapon ? ` · ${Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ')}` : '';
-  const rank = r && r.rank != null ? ` · <span class="rk">${r.path ? `Path ${esc(r.path)} · ` : ''}${t('rankShort', {r: r.rank})}</span>` : '';
+  const rank = r && r.rank != null ? ` · <span class="rk">${r.path ? `Path ${esc(r.path)} · ` : ''}${t('rankShort', {r: r.rank})}${r.rankAssumed ? ' · ' + esc(t('rankAssumed')) : ''}</span>` : '';
   // where GearSwap takes it from (bag = 'wardrobe 3') and its order in a swap (priority)
   const where = [p.bag ? t('tipBag', {b: esc(p.bag)}) : '', p.priority != null ? t('tipPriority', {n: p.priority}) : ''].filter(Boolean).join(' · ');
   return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}${rank}${where ? ' · ' + where : ''}</small></div>${rareExHTML(p.name, r && Object.keys(r.aug).length)}</div>${body}`;
