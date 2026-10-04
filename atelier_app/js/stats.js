@@ -142,13 +142,14 @@ function pieceStats(p, slot){
   if (!p || isEmpty(p)) return null;
   // a piece worn for one augment only (Moonshade Earring: its TP Bonus +250, its Accuracy+4 or Attack+4 never)
   if (ONLY_AUGS[p.name]) p = Object.assign({}, p, {augs: ONLY_AUGS[p.name]});
-  const cat = catalog(), id = iconIds()[p.name] || (cat && cat.id[p.name]);
+  // the piece's own item id first (a prime weapon's stage), else the name's
+  const cat = catalog(), id = p.id || iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = id ? descTexts()[id] || (cat && cat.desc[id]) || null : null;
   const side = EAR_SIDE[slot] || '';
-  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
+  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (p.id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
-  const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], path: null, weapon: null, known: !!text};
+  const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], unity: {}, path: null, weapon: null, known: !!text};
   // after "Pet:" (or Avatar:, Wyvern:...) the lines are the pet's, after any other condition they only apply sometimes
   let mode = null, cur = -1;
   // the game wraps long phrases: a line starting in lower case goes on the previous one
@@ -163,6 +164,15 @@ function pieceStats(p, slot){
     line = unsigned(line, r.base);
     // "Cannot Equip Headgear DEF:51..." (Twilight Cloak, Onca Suit): what follows is the piece's, not a condition
     line = line.replace(/^Cannot [Ee]quip \w+\s*/, '');
+    // "Unity Ranking: HP+30～80" (Blistering Sallet +1): your Unity's weekly ranking gives it all the time, not a
+    // condition; at its top, as the game measured it (2026-10-04: Sailfi Belt +1 Attack +15, Gelatinous Ring +1 HP +35)
+    const unity = line.match(/^Unity Ranking:\s*/i);
+    if (unity) {
+      mode = null;
+      const u = {}; parseLine(line.slice(unity[0].length), u);
+      for (const [k, e] of Object.entries(u)) { add(r.base, k, e.v, e.unit, e.label); r.unity[k] = (r.unity[k] || 0) + e.v; }
+      continue;
+    }
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
     // one condition per entry: its title line, then the lines under it ("Aftermath:" / "Increases Accuracy...")

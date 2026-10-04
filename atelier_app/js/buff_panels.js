@@ -42,7 +42,7 @@ function aftermathOf(weapon){
   if (RELIC_AM[weapon]) return {fx: Object.entries(RELIC_AM[weapon]).map(([k, v]) => ({k, v})), note: weapon};
   if (EMPYREAN_AM.includes(weapon)) return {fx: [], note: weapon, text: t(weapon === 'Verethragna' ? 'amEmpVere' : 'amEmp', {n: lv, p: [30, 40, 50][lv - 1]})};
   if (PRIME_PDL.has(weapon) || PRIME_MAGIC[weapon]) {
-    const st = ['III', 'IV', 'V'].includes(b.amStage) ? b.amStage : 'V', st2 = PRIME_AM_PDL[st];
+    const own = ownedPrimeStage(weapon), st = ['III', 'IV', 'V'].includes(b.amStage) ? b.amStage : ['III', 'IV', 'V'].includes(own) ? own : 'V', st2 = PRIME_AM_PDL[st];
     const pdl = lv === 3 ? st2[2] : lv === 2 ? (st2[2] - st2[1]) * PRIME_POT + st2[1] : (st2[1] - st2[0]) * PRIME_POT + st2[0];
     // Opashoro V at Lv3: Magic Atk. Bonus +40, Magic Damage +80 (BG Wiki 119 III); the other levels as the engine has them
     const opaV3 = weapon === 'Opashoro' && st === 'V' && lv === 3;

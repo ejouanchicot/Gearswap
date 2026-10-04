@@ -87,7 +87,7 @@ const atPorter = x => !!(x.where && x.where.length) && x.where.every(isSlip);
 const porterOf = c => (latestExport(c, 'porter') || {}).porter || null;
 function addCopy(out, slot, x){
   const mine = out[slot] = out[slot] || [];
-  if (!mine.some(y => y.name === x.name && (y.augs || []).join('|') === (x.augs || []).join('|') && (y.where || []).join() === (x.where || []).join()))
+  if (!mine.some(y => y.name === x.name && (y.id || 0) === (x.id || 0) && (y.augs || []).join('|') === (x.augs || []).join('|') && (y.where || []).join() === (x.where || []).join()))
     mine.push(x);
 }
 function ownedOf(){
@@ -100,7 +100,7 @@ function ownedOf(){
     for (const [id, where] of Object.entries(porter)) {
       const r = byId[id];
       if (!r || !r[3].split(' ').includes(S.job)) continue;
-      for (const slot of r[2].split(' ')) addCopy(out, slot, {name: r[1], where: [where], count: 1});
+      for (const slot of r[2].split(' ')) addCopy(out, slot, {name: r[1], id: +id, where: [where], count: 1});
     }
   } else {
     const hasSlips = o => Object.values(o || {}).some(list => list.some(atPorter));

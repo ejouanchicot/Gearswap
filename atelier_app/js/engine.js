@@ -38,6 +38,17 @@ function optWorker(){
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
 const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
 /* ---- the engine on the page's sets: a weaponskill's average damage, and the optimizer ---- */
+// A prime weapon's stage from your own copy: the catalogue's items of that name are its stages II to V in id order
+// (Laphria IV holds STR +30, V +35), and the export gives each copy its item id; null when not a prime weapon or
+// no copy with an id (an export written before ids)
+function ownedPrimeStage(name){
+  const primes = ((window.FFXI && FFXI.player_data) || {}).PRIME_WEAPONS || [];
+  if (!name || !primes.includes(name) || !(FFXI.CATALOG && FFXI.CATALOG.items)) return null;
+  const copy = ((ownedOf() || {}).main || []).filter(x => x.name === name && x.id).sort((a, b) => b.id - a.id)[0];
+  if (!copy) return null;
+  const ids = FFXI.CATALOG.items.filter(it => it.name === name).map(it => it.id).sort((a, b) => a - b), i = ids.indexOf(copy.id);
+  return i < 0 ? null : ['V', 'IV', 'III', 'II'][ids.length - 1 - i] || null;
+}
 // The engine's view of the page: job, subjob, Master Level, the buffs ticked, abilities on, the
 // aftermath, the target, the weaponskill of the set
 function optContext(s, engaged){ return FFXI.opt.context(engaged ? engContextInput(s) : optContextInput(s)); }
@@ -71,7 +82,7 @@ function optContextInput(s){
     enemy: enemyKey(b.enemy), evaDown: foeEva(b), physRes: physResOf(b, skill), tomahawk: foeJaActive(b).includes('Tomahawk'), banish: foeJaActive(b).includes('Banish II'), partyWarcry, geoMul: geoMul(b), ariaPdl: ariaPdl(b),
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
     saberMerit: abilities['Saber Dance'] ? danceMerit('saber') : 0,
-    warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws, wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || 'V'};
+    warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws, wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V'};
 }
 // A set's pieces as the engine reads them: a piece named without augments is your copy of it (its
 // augments, path and the rank //gs c gearscan read)
@@ -80,7 +91,11 @@ function optPieces(pieces){
   for (const [slot, p] of Object.entries(pieces)) {
     if (!p || isEmpty(p)) continue;
     let q = Object.assign({}, p);
-    if (!(q.augs && q.augs.length)) { const mine = (owned[slot] || []).find(x => x.name === q.name); if (mine && mine.augs) q.augs = mine.augs; }
+    // your copy: its augments, and its item id (one name, several items: a prime weapon's stages), the highest of them
+    // when you hold several
+    const mine = (owned[slot] || []).filter(x => x.name === q.name).sort((a, b) => (b.id || 0) - (a.id || 0))[0];
+    if (!(q.augs && q.augs.length) && mine && mine.augs) q.augs = mine.augs;
+    if (!q.id && mine && mine.id) q.id = mine.id;
     // else what //gs c gearscan read on your copy (a path): the engine then knows its rank, as the page's stats do
     const sc = scanOf()[q.name];
     if (!(q.augs && q.augs.length) && sc && !sc.differ && sc.augments) q.augs = sc.augments;
@@ -102,8 +117,10 @@ function ownRank(q){
 function engineFill(q){
   const it = window.FFXI && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(q.name) : null, r = it && pieceStats(Object.assign({}, q, {augs: []}));
   if (!r || !r.known) return q;
-  const fill = {};
-  for (const [k, e] of Object.entries(r.base)) { const ek = ENGINE_STAT[k]; if (ek && e.v && !(it.stats || {})[ek]) fill[ek] = e.v; }
+  const fill = {}, unity = r.unity || {};
+  for (const [k, e] of Object.entries(r.base)) { const ek = ENGINE_STAT[k], v = e.v - (unity[k] || 0); if (ek && v && !(it.stats || {})[ek]) fill[ek] = v; }
+  // the Unity ranking's bonus is never in the engine's catalogue: on top of what it has (Blistering Sallet +1: HP 38 + 80)
+  for (const [k, u] of Object.entries(unity)) { const ek = ENGINE_STAT[k]; if (ek && u) fill[ek] = (fill[ek] || 0) + u; }
   if (Object.keys(fill).length) q.fill = fill;
   return q;
 }

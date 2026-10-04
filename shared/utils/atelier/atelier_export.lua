@@ -322,10 +322,11 @@ local function collect_items()
     local by_slot, owned, seen, entry_of = {}, {}, {}, {}
     -- one piece: the slots it fits, once per name for `items`, once per copy for `owned`,
     -- each copy with the places it is in (several bags when the same copy is twice) and how
-    -- many there are (two Moonlight Rings in one wardrobe: one place, count 2)
+    -- many there are (two Moonlight Rings in one wardrobe: one place, count 2), and its item id (one
+    -- name, several items: a prime weapon's stages, Laphria II to V, each its own stats)
     local function add(info, augs, where)
         if not (info and info.slots and type(info.slots) == 'table' and info.slots.it and wearable(info)) then return end
-        local copy = info.en .. '|' .. table.concat(augs or {}, '|')
+        local copy = info.id .. '|' .. table.concat(augs or {}, '|')
         for slot_id in info.slots:it() do
             local slot = SLOT_BY_ID[slot_id]
             if slot and not seen[slot .. '|' .. info.en] then
@@ -337,7 +338,7 @@ local function collect_items()
                 local key = slot .. '#' .. copy
                 local entry = entry_of[key]
                 if not entry then
-                    entry = {name = info.en, augs = augs, where = {}, count = 0}
+                    entry = {name = info.en, id = info.id, augs = augs, where = {}, count = 0}
                     entry_of[key] = entry
                     owned[slot] = owned[slot] or {}
                     table.insert(owned[slot], entry)
