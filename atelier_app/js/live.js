@@ -144,6 +144,14 @@ const heldAlready = (s, slot, p) => p ? samePiece(p, s.pieces[slot]) : isEmpty(s
 // data/atelier/live_<Character>.js (written by the game) gives the port and the token
 const liveConf = c => (window.ATELIER_LIVE || {})[c];
 const liveOk = (c = S.char) => !!(S._live[c] && S._live[c].ok);
+// A set file can be written while the character's GearSwap answers, whatever job it has loaded: the request names the
+// job shown (a job theory-crafted while another is played); GearSwap reloads only for the job it has loaded
+const liveWrite = () => liveOk();
+const jobQuery = () => '&job=' + encodeURIComponent(S.job || '');
+const shownJobLoaded = () => (S._live[S.char] || {}).job === S.job;
+// The message of a write: GearSwap reloads (the job it has loaded), or the file waits for that job to be loaded
+const doneText = (key, f) => shownJobLoaded() ? t(key, {f}) : t(key + 'Later', {f, j: S.job});
+async function reloadIfLoaded(){ if (shownJobLoaded()) try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {} }
 async function liveFetch(c, path, opts = {}){
   const L = opts.link ? linkConf(c) : liveConf(c), ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), opts.timeout || 2500);
   try {

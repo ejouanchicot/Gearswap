@@ -33,7 +33,7 @@ function trialRow(s){
   const toast = S.toast && S._toastSet === s.path ? S.toast : '';
   const kept = (dr.kept || []).length;
   if (!n && !changed.length && !dr.info && !toast && !kept) return '';
-  const saved = n > 0 && trialSaved(s), live = liveOk() && (S._live[S.char] || {}).job === S.job;
+  const saved = n > 0 && trialSaved(s), live = liveWrite();
   const msg = n ? (saved ? t('trySaved', {n: `<b>${n}</b>`}) : t('tryBar', {n: `<b>${n}</b>`}))
     : changed.length ? t('setChanged', {s: changed.map(x => SLOT_NAMES[S.lang][x] || x).join(', ')}) : '';
   const by = dr.info ? `<span class="tryby">${esc(t('tryOptBy', {t: dr.info.tier, at: dr.info.at}) + (dr.info.edited ? ' · ' + t('tryEdited') : ''))}</span>` : '';
@@ -64,8 +64,7 @@ function pushButton(s, live){
   const full = buffTier() === 'Full' && TIERED.test(s.path) && !/\.(Group|Solo)$/.test(s.path);
   const label = tg.create ? t('pushToVer', {v: tg.tier}) : full ? t('pushToFull') : t('pushBtn');
   // the game writes into the files of the job it has loaded: another job there is said, not "the game is off"
-  const L = S._live[S.char] || {}, other = liveOk() && L.job && L.job !== S.job;
-  const tip = !live ? (other ? t('pushOtherJob', {c: S.char, j: L.job, w: S.job}) : t('pushNeedsGame')) : tg.create ? t('pushToVerTip', {v: tg.tier}) : full ? t('pushToFullTip') : '';
+  const tip = !live ? t('pushNeedsGame') : tg.create ? t('pushToVerTip', {v: tg.tier}) : full ? t('pushToFullTip') : '';
   return `<button class="btn" data-pushopen ${live ? '' : 'disabled'} ${tip ? `title="${esc(tip)}"` : ''}>${label}</button>`;
 }
 // The tried pieces as a set_combine to paste in the sets file

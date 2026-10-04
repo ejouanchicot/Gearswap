@@ -373,7 +373,7 @@ function optRunResult(s, res, tr, plain, gains){
     const a = Math.round(sd[k] || 0), b = Math.round(bd[k] || 0), ca = low ? Math.max(a, -50) : a, cb = low ? Math.max(b, -50) : b;
     if (a || b) fig.push([label, String(a), String(b), ca === cb ? 0 : (low ? cb < ca : cb > ca) ? 1 : -1]);
   }
-  const live = liveOk() && (S._live[S.char] || {}).job === S.job;
+  const live = liveWrite();
   const list = changes.map(c => `<li><span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span><span><s>${esc(c.from)}</s> → <b>${esc(c.to)}</b></span></li>`).join('');
   const rows = fig.map(([l, a, b, w]) => `<tr><th>${esc(l)}</th><td>${esc(a)}</td><td class="${w > 0 ? 'up' : w < 0 ? 'down' : ''}">${esc(b)}</td></tr>`).join('');
   const lack = gains.length ? `<p class="orlack">${esc(t('orLack'))} ` + gains.map(g => `<b>${esc(g.piece.name)}</b> ${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`).join(' · ') + `</p>` : '';

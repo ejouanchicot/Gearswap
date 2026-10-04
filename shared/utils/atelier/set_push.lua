@@ -28,6 +28,10 @@
 --- weaponskill with no set yet (sets.precast.WS['X']) after the file's last
 --- weaponskill set, as a set_combine of sets.precast.WS.
 ---
+--- The job is the one the page names (?job=): the job loaded in game, or another one of this character
+--- (theory-crafting a job while playing another). For a job not loaded, nothing is read from the sets in
+--- memory: the file's variables and its aliases (`sets.x = sets.y`) are read from its text.
+---
 --- Before writing, the file is copied to <Char>/saved/backups/; every push is
 --- noted in <Char>/saved/set_push_history.lua, and the set's entry leaves
 --- <Char>/saved/set_overrides.lua (the file now holds those pieces).
@@ -131,12 +135,29 @@ local function loaded_piece(keys, slot)
     return nil
 end
 
+--- A name given to another set's table, read in the file's text (`sets.precast.JA['High Jump'] =
+--- sets.precast.JA['Jump']`): that set's file and definition; nil and why otherwise.
+local function text_alias(job, keys, why)
+    if not keys then return nil, why end
+    for _, file in ipairs(set_files(job)) do
+        for lhs, rhs in (read(file) or ''):gmatch('\n%s*(sets[%w_%.%[%]\'"%s]-)%s*=%s*(sets[%w_%.%[%]\'"%s]-)%s*\r?\n') do
+            local lk = SetWriter.path_keys(lhs)
+            if lk and #lk == #keys and table.concat(lk, '\0') == table.concat(keys, '\0') then
+                local abs, text, def = locate(job, rhs)
+                if abs then return abs, text, def end
+            end
+        end
+    end
+    return nil, why
+end
+
 --- The file and definition holding a set's table: its own, or, for a name given to
 --- another set's table (sets.precast.JA['High Jump'] = sets.precast.JA['Jump']), that set's.
-local function locate_table(job, path)
+local function locate_table(job, path, loaded)
     local abs, text, def = locate(job, path)
     if abs then return abs, text, def end
     local keys = SetWriter.path_keys(path)
+    if not loaded then return text_alias(job, keys, text) end
     local node = keys and node_of(keys)
     if not node then return nil, text end
     for _, file in ipairs(set_files(job)) do
@@ -188,11 +209,37 @@ local function module_pieces(text, by_copy, by_name)
     for name, m in pairs(modules) do scan(m, name) end
 end
 
+--- A piece written as a table in the text ({name = '...', augments = {'...', ...}}), or nil.
+local function text_piece(tbl)
+    -- a string in either quotes, the other kind inside it kept ('"Dbl.Atk."+10')
+    local _, name = tbl:match([[name%s*=%s*(['"])(.-)%1]])
+    if not name then return nil end
+    local augs, list = {}, tbl:match('augments%s*=%s*(%b{})')
+    for _, a in (list or ''):gmatch([[(['"])(.-)%1]]) do augs[#augs + 1] = a end
+    return {name = name, augments = augs}
+end
+
+--- The pieces the file itself defines (`local SouvHead = {name = ...}`, `Cichol.da = {name = ...}`), read from its text:
+--- a job the game has not loaded has no sets in memory to tell what each variable holds.
+local function text_pieces(text, by_copy, by_name)
+    for var, tbl in text:gmatch('\n%s*local%s+([%a_][%w_]*)%s*=%s*(%b{})') do
+        local p = text_piece(tbl)
+        if p then note(by_copy, by_name, p, var) end
+    end
+    for var, key, tbl in text:gmatch('\n%s*([%a_][%w_]*)%.([%a_][%w_]*)%s*=%s*(%b{})') do
+        local p = var ~= 'sets' and text_piece(tbl)
+        if p then note(by_copy, by_name, p, var .. '.' .. key) end
+    end
+end
+
 --- What the file's sets write through a variable: {copy key = expr}, {name = expr} for those
---- without augments; then the pieces of its gear modules.
-local function variables(text)
+--- without augments; then the pieces of its gear modules and the ones the file defines (read from its text).
+--- loaded: the job is the one in memory, its sets also tell what each variable they use holds (that wins).
+local function variables(text, loaded)
     local by_copy, by_name = {}, {}
     module_pieces(text, by_copy, by_name)
+    text_pieces(text, by_copy, by_name)
+    if not loaded then return by_copy, by_name end
     local used_copy, used_name = {}, {}
     for _, def in ipairs(SetWriter.definitions(text)) do
         for _, e in ipairs(def.entries) do
@@ -227,8 +274,8 @@ local function parse_body(body)
 end
 
 --- {slot = expr | false} for SetWriter.edit.
-local function changes_of(req, text)
-    local by_copy, by_name = variables(text)
+local function changes_of(req, text, loaded)
+    local by_copy, by_name = variables(text, loaded)
     local out = {}
     for slot, p in pairs(req.slots) do
         if p.kind == 'inherit' then out[slot] = false
@@ -284,15 +331,15 @@ end
 --- The file with the set changed, or with the version written when the file has none yet.
 --- @return string|nil abs, string text|why, string out, table done, table def (before), table keys
 local function rewrite(job, req)
-    local keys = SetWriter.path_keys(req.path)
-    local abs, text, def = locate_table(job, req.path)
+    local keys, loaded = SetWriter.path_keys(req.path), player and player.main_job == job
+    local abs, text, def = locate_table(job, req.path, loaded)
     if abs then
-        local out, done = SetWriter.edit(text, def, changes_of(req, text))
+        local out, done = SetWriter.edit(text, def, changes_of(req, text, loaded))
         return abs, text, out, done, def, def.keys
     end
     local babs, btext, base, name, after = locate_base(job, keys)
     if not babs then return nil, text end
-    local out, done = SetWriter.create(btext, base, name, changes_of(req, btext), after)
+    local out, done = SetWriter.create(btext, base, name, changes_of(req, btext, loaded), after)
     return babs, btext, out, done, nil, keys
 end
 

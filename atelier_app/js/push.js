@@ -87,10 +87,10 @@ async function openPush(s){
   const plan = tg.create ? versionPlan(s) : pushPlan(s);
   if (!plan.length) return;
   const body = [tg.path].concat(plan.map(pushLine)).join('\n');
-  S._push = {s, body, tg};
+  S._push = {s, body, tg, plan};
   showDialog('pushdlg', t('pushTitle'), `<p class="muted">${t('pushReading')}</p>`, '');
   let r;
-  try { r = await liveFetch(S.char, '/push?mode=preview', {method: 'POST', body, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
+  try { r = await liveFetch(S.char, '/push?mode=preview' + jobQuery(), {method: 'POST', body, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (!S._push || S._push.body !== body) return;
   if (r.error) return showDialog('pushdlg', t('pushTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   S._push.hash = r.hash;
@@ -104,7 +104,7 @@ async function pushGo(){
   if (!P || !P.hash || P.busy) return;
   P.busy = true;
   let r;
-  try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(P.hash), {method: 'POST', body: P.body, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
+  try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(P.hash) + jobQuery(), {method: 'POST', body: P.body, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('pushTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   // the file holds the draft now; the saved pieces of that set left set_overrides.lua with it
   const s = P.s, map = setOverrides();
@@ -112,10 +112,22 @@ async function pushGo(){
   // a new version leaves the set's own pieces in test where they are (they are still not in its file)
   if (map[S.job] && !(P.tg && P.tg.create)) { delete map[S.job][s.path]; if (!Object.keys(map[S.job]).length) delete map[S.job]; }
   S.setOv[S.char].at = stamp();
-  S._toastSet = s.path; S.toast = t('pushDone', {f: r.entry.file});
+  S._toastSet = s.path; S.toast = doneText('pushDone', r.entry.file);
+  // a job the game has not loaded: its export is not read again, the page's copy of the set takes the pieces written
+  // (a new version shows once that job is loaded)
+  if (!shownJobLoaded()) { if (P.tg && P.tg.create) S.toast += ' ' + t('pushLater', {j: S.job}); else patchSet(s, P.plan); }
   S._push = null; closeOverlay(); save();
-  try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {}
+  await reloadIfLoaded();
   render();
+}
+// The page's copy of a set given the pieces a push wrote (a job the game has not loaded: no new export of it comes)
+function patchSet(s, plan){
+  for (const e of plan) {
+    if (e.kind === 'inherit') delete s.pieces[e.slot];
+    else s.pieces[e.slot] = e.kind === 'empty' ? {name: 'empty'} : {name: e.piece.name, augs: e.piece.augs};
+    if (Array.isArray(s.own)) s.own = e.kind === 'inherit' ? s.own.filter(x => x !== e.slot) : [...new Set(s.own.concat([e.slot]))];
+  }
+  DATA_GEN++;
 }
 /* ---- delete: a set and its versions taken out of the set file (set_push.lua, /delete) ---- */
 // The sets a job cannot do without, never deleted (as shared/utils/atelier/set_push.lua PROTECTED)
@@ -126,14 +138,14 @@ function deletable(path){
 }
 function delButton(s){
   if (!deletable(s.path)) return '';
-  const live = liveOk() && (S._live[S.char] || {}).job === S.job;
+  const live = liveWrite();
   return `<button class="linkbtn delset" data-setdel ${live ? '' : `disabled title="${esc(t('pushNeedsGame'))}"`}>${t('delBtn')}</button>`;
 }
 async function openDelete(s){
   S._del = {s};
   showDialog('pushdlg', t('delTitle'), `<p class="muted">${t('pushReading')}</p>`, '');
   let r;
-  try { r = await liveFetch(S.char, '/delete?mode=preview', {method: 'POST', body: s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
+  try { r = await liveFetch(S.char, '/delete?mode=preview' + jobQuery(), {method: 'POST', body: s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (!S._del || S._del.s !== s) return;
   if (r.error) return showDialog('pushdlg', t('delTitle'), `<p class="kwarn">${t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})}</p>`, '');
   S._del.hash = r.hash;
@@ -157,14 +169,14 @@ async function delGo(){
   if (!D || !D.hash || D.busy) return;
   D.busy = true;
   let r;
-  try { r = await liveFetch(S.char, '/delete?mode=write&hash=' + encodeURIComponent(D.hash), {method: 'POST', body: D.s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
+  try { r = await liveFetch(S.char, '/delete?mode=write&hash=' + encodeURIComponent(D.hash) + jobQuery(), {method: 'POST', body: D.s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('delTitle'), `<p class="kwarn">${t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})}</p>`, '');
   forgetSets((r.entry.deleted || []).concat([D.s.path]));
   if (S.setOv[S.char]) S.setOv[S.char].at = stamp();
   S.selPath[S.job] = null; S._found = null;
-  S.toast = t('delDone', {f: r.entry.file}); S._toastSet = null;
+  S.toast = doneText('delDone', r.entry.file); S._toastSet = null;
   S._del = null; closeOverlay(); save();
-  try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {}
+  await reloadIfLoaded();
   render();
 }
 async function openHistory(){
@@ -233,7 +245,7 @@ function addWsList(cards){
     const name = segs(v.set.path).pop();
     if (!have[name]) have[name] = v.set.path;
   }
-  const live = liveOk() && (S._live[S.char] || {}).job === S.job;
+  const live = liveWrite();
   const skills = wsSkills(), names = Object.keys(skills).sort((a, b) => a.localeCompare(b));
   const row = n => have[n]
     ? `<button class="opt" data-addopen="${esc(have[n])}"><span>${esc(n)}</span><span class="state">${t('exists')} ›</span></button>`
@@ -254,7 +266,7 @@ async function openCreate(name){
   S._create = {path};
   showDialog('pushdlg', t('addTitle'), `<p class="muted">${t('pushReading')}</p>`, '');
   let r;
-  try { r = await liveFetch(S.char, '/push?mode=preview', {method: 'POST', body: path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
+  try { r = await liveFetch(S.char, '/push?mode=preview' + jobQuery(), {method: 'POST', body: path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (!S._create || S._create.path !== path) return;
   if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   S._create.hash = r.hash;
@@ -266,10 +278,10 @@ async function createGo(){
   if (!C || !C.hash || C.busy) return;
   C.busy = true;
   let r;
-  try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(C.hash), {method: 'POST', body: C.path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
+  try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(C.hash) + jobQuery(), {method: 'POST', body: C.path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
-  S.selPath[S.job] = C.path; S._found = null; S._toastSet = C.path; S.toast = t('addDone', {f: r.entry.file});
+  S.selPath[S.job] = C.path; S._found = null; S._toastSet = C.path; S.toast = doneText('addDone', r.entry.file);
   S._create = null; closeOverlay(); save();
-  try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {}
+  await reloadIfLoaded();
   render();
 }

@@ -115,6 +115,14 @@ local function query_table(query)
     return out
 end
 
+--- The job a push or a delete is for: the page's ?job= (a job of this character, three letters), else the
+--- one loaded in game
+local function asked_job(q)
+    local job = q.job and q.job:upper()
+    if job and job:match('^%u%u%u$') then return job end
+    return player and player.main_job
+end
+
 local function route(req, live)
     if req.method == 'OPTIONS' then return '204 No Content', '' end
     if req.headers['x-atelier-token'] ~= live.token then return '403 Forbidden', '{"error":"token"}' end
@@ -170,14 +178,14 @@ local function route(req, live)
     end
     if req.path == '/push' and req.method == 'POST' then
         local q, SetPush = query_table(req.query), require('shared/utils/atelier/set_push')
-        local job = player and player.main_job
+        local job = asked_job(q)
         if not job then return '503 Service Unavailable', '{"error":"no job"}' end
         local result = q.mode == 'write' and SetPush.write(job, req.body, q.hash) or SetPush.preview(job, req.body)
         return '200 OK', Export.json(result)
     end
     if req.path == '/delete' and req.method == 'POST' then
         local q, SetPush = query_table(req.query), require('shared/utils/atelier/set_push')
-        local job = player and player.main_job
+        local job = asked_job(q)
         if not job then return '503 Service Unavailable', '{"error":"no job"}' end
         local path = (req.body or ''):match('^%s*(.-)%s*$')
         local result = q.mode == 'write' and SetPush.delete(job, path, q.hash) or SetPush.delete_preview(job, path)

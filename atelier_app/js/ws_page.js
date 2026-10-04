@@ -191,7 +191,7 @@ function fitOptions(list, why, cur, main){
 // The TP steps, then the TP the weaponskill opens with (its make-up on hover)
 function wsTpLine(s, line){
   const chip = (v, label) => `<button data-wstp="${v}" aria-pressed="${String(S.wsTp || '') === String(v)}">${label}</button>`;
-  const live = liveOk() && (S._live[S.char] || {}).job === S.job;
+  const live = liveWrite();
   const r = tpAsk(s, withWeapons(s).pieces, null), steps = tpSteps(r, s), parts = tpTotalParts(s, r);
   const bonus = r && r.bonus ? ` ${t('tpBonusOf', {n: r.bonus})}` : '';
   const note = !live ? t('tpNeedLive') : r && r.config === false ? t('tpNoConfig') : (S.wsTp ? t('tpLiveNote') : t('tpOffNote')) + bonus;
