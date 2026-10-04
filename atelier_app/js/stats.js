@@ -138,15 +138,22 @@ function add(out, key, v, unit, label){
 // in that ear (ear2 is the right one, GearSwap's right_ear), a condition shown in the other or with no slot
 const PIECE_CACHE = {}, EAR_SIDE = {ear1: 'left', ear2: 'right'};
 const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
+// The item id of your copy of a piece (the export gives each its id), the highest when you hold several; null when
+// you have none or the export predates ids
+function ownId(name, slot){
+  const owned = ownedOf() || {}, list = slot && owned[slot] ? owned[slot] : Object.values(owned).flat();
+  const mine = list.filter(x => x.name === name && x.id).sort((a, b) => b.id - a.id)[0];
+  return mine ? mine.id : null;
+}
 function pieceStats(p, slot){
   if (!p || isEmpty(p)) return null;
   // a piece worn for one augment only (Moonshade Earring: its TP Bonus +250, its Accuracy+4 or Attack+4 never)
   if (ONLY_AUGS[p.name]) p = Object.assign({}, p, {augs: ONLY_AUGS[p.name]});
-  // the piece's own item id first (a prime weapon's stage), else the name's
-  const cat = catalog(), id = p.id || iconIds()[p.name] || (cat && cat.id[p.name]);
+  // the piece's own item id first, else your copy's (a set names a piece only: Laphria, your Laphria IV), else the name's
+  const cat = catalog(), id = p.id || ownId(p.name, slot) || iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = id ? descTexts()[id] || (cat && cat.desc[id]) || null : null;
   const side = EAR_SIDE[slot] || '';
-  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (p.id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
+  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
   const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], unity: {}, path: null, weapon: null, known: !!text};
