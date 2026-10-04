@@ -95,13 +95,6 @@ function wsDamage(s){
   try { const r = FFXI.opt.ws(optContext(s), optPieces(withWeapons(s).pieces), +(S.wsTp || 3000)); return r ? r[0] : null; }
   catch (e) { return null; }
 }
-const fmtDmg = n => Math.round(n).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US');
-function wsDamageHTML(s){
-  const v = wsDamage(s);
-  if (v == null) return '';
-  const b = buffState(), ws = wsOfSet(s) || segs(s.path).pop();
-  return `<p class="wsdmg">${t('wsDmg', {ws: esc(ws), d: `<b>${fmtDmg(v)}</b>`, tp: S.wsTp || 3000, e: esc(enemyKey(b.enemy))})} · ${esc(t('wsDmgTier', {p: buffTier()}))}</p>`;
-}
 /* ---- merits: the game's levels, which the page lets you change to test ---- */
 // What one level gives, read from the game's description ("Adjust your maximum HP by 10 points");
 // null for a merit that changes no stat the page shows (a recast, a duration...)
@@ -417,40 +410,3 @@ function engineStats(s, pieces){
     return v;
   } catch (e) { S._engErr = e.message; return null; }
 }
-// A compartment: a card with a title band in its section's colour (g-def, g-tank...)
-const box = (cls, title, body, meta = '') =>
-  `<section class="box ${cls}"><header class="boxh"><h3>${title}</h3>${meta}</header><div class="boxb">${body}</div></section>`;
-// A stats compartment that folds: closed until opened (S.boxOpen[key]); closed, its band says how many lines it holds
-function fbox(key, cls, title, body){
-  const open = !!S.boxOpen[key], n = (body.match(/<li[ >]/g) || []).length;
-  return `<section class="box ${cls}"><button class="boxh bufftoggle" data-fold="${esc(key)}" aria-expanded="${open}"><h3>${title}</h3>` +
-    `<span class="meta">${n || ''}</span></button>${open ? `<div class="boxb">${body}</div>` : ''}</section>`;
-}
-function globalsHTML(s){
-  S._curSet = s;
-  const r = charStats(s);
-  if (!r) return `<div class="globals">${box('g-you', t('youTitle'), `<p class="muted">${t('noChar')}</p>`)}</div>`;
-  const {c, out, set, vsSet} = r;
-  const row = (label, o) => { const d = o.set - o.now;
-    return statLi(label, o.set, d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''); };
-  const v = k => (set[k] || {}).v || 0;
-  const pct = (label, sum, cap) => cappedLi(label, sum, cap, '');
-  const main = [['HP', out.hp], ['MP', out.mp], [t('defLabel'), out.def], [t('atkLabel'), out.atk], [t('accLabel'), out.acc], [t('evaLabel'), out.eva]]
-    .filter(([, o]) => o).map(([l, o]) => row(l, o)).join('');
-  const attrs = ATTRS.map(a => row(a.toUpperCase(), out[a])).join('');
-  // merits the game counts per level (res/merit_points.lua: "Spell Interruption Rate" 2 % a level)
-  const merit = name => Object.entries(c.merits || {}).reduce((n, [k, lv]) => k.toLowerCase().replace(/_/g, ' ') === name ? n + lv : n, 0);
-  const sirdMerit = (meritList() || []).find(x => x.key === 'spell_interruption_rate');
-  const sirdMerits = sirdMerit ? 2 * meritLevel(sirdMerit) : 2 * merit('spell interruption rate');
-  const sird = v('sird') + sirdMerits;
-  const gear = damageTakenLines(v) + pct('Haste', v('haste'), 25) + pct('Fast Cast', v('fc'), 80) +
-    (sird ? statLi('SIRD', sird + ' %', sirdMerits ? `<em class="delta">${t('withMerits')}</em>` : '', '', `${t('gearOnly')} ${v('sird')} % + ${t('merits')} ${sirdMerits} %`) : '');
-  const levels = [c.master_level ? `ML ${c.master_level}` : '', c.jp_spent ? `${c.jp_spent} JP` : ''].filter(Boolean).join(' · ');
-  const edited = Object.keys(S.meritEdits[meritKey()] || {}).length;
-  const you = fbox('you', 'g-you', t('youTitle') + (edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''),
-    `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul>`);
-  return `<div class="globals">${buffCardHTML()}${targetCardHTML(s)}${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
-    `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}${tankHTML(r)}${offenseHTML(r, s)}` +
-    `<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
-}
-

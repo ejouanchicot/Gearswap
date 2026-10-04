@@ -498,3 +498,27 @@ function openBuffs(){
   const b = $('.buffdlg .body'); if (b && sc) b.scrollTop = sc;
 }
 
+/* ---- the panels' controls: profile bar, switches, Haste Samba's DNC, ability tips, skill lists ---- */
+// The profile buttons, on the card and in the window
+const tierBarHTML = () => `<div class="tierbar" role="group" aria-label="${t('tierLabel')}"><span class="muted small">${t('tierLabel')}</span>` +
+  TIERS.map(x => `<button class="chip" data-bufftier="${x}" aria-pressed="${x === buffTier()}" title="${esc(t('tier' + x + 'Tip'))}">${x}</button>`).join('') + `</div>`;
+// A small on / off switch (b.off[key]): the choices stay, the sums leave them out
+function offSwitch(b, key){
+  const on = !(b.off || {})[key];
+  return `<button class="tgl" data-poff="${esc(key)}" aria-pressed="${on}" title="${esc(t('pOffTip'))}" aria-label="${esc(key)} ${on ? 'ON' : 'OFF'}"></button>`;
+}
+// The party DNC's menu: a main DNC and its merits, or a /DNC
+const sambaHTML = b => `<span class="flbl">${esc(t('sambaWho'))}</span><select class="buffsel" data-buff="pSamba">` +
+  ['', 'm4', 'm3', 'm2', 'm1', 'm0', 'sub'].map(v => `<option value="${v}" ${(b.pSamba || '') === v ? 'selected' : ''}>` +
+    esc(v === 'sub' ? t('sambaSub') : t('sambaMain', {n: v ? v.slice(1) : 5, p: 5 + (v ? +v.slice(1) : 5)})) + `</option>`).join('') + `</select>`;
+const jaTip = ja => ja.as === 'party' ? t('jaPartyTip', {j: ja.a.from}) + (ja.a.tpParty ? ' · TP Bonus +' + tpOfParty(ja.a, buffState()) : '')
+  : t('jaLvTip', {j: [].concat(ja.a.job).join('/'), l: ja.a.lvl, w: ja.as === 'main' ? t('jaMain') : t('jaSub', {l: ja.lvl})});
+// The SMN's Summoning Magic skill for Fenrir's Impact (b.smnSkill, 600 until chosen)
+const SMN_SKILLS = [400, 450, 500, 550, 600, 650, 700, 750, 800];
+// A RDM's tier I Enspell given to the party with Accession (/SCH): its base damage from the caster's Enhancing Magic
+// skill (BG Wiki Enspell), the receiver's Enspell damage gear on top; the damage engine works it out a hit
+const EN_SKILLS = [450, 475, 500, 525, 550, 575, 600, 625, 650, 675, 700];
+
+/* ---- the aftermath level counted ---- */
+// The aftermath level the page counts: Lv.3 on an AFM3 set, else the one chosen in Buffs
+const amLevel = () => isAfm3((S._curSet || {}).path) ? 3 : +(buffState().am || 0);

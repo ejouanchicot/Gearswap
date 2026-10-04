@@ -124,10 +124,6 @@ function wsPickLines(card, ci, vi, line){
   }
   return out;
 }
-// The weapon held for a weaponskill, chosen in the page for that weaponskill only and never written
-// to a file: a weapon change resets the TP, so a weaponskill set never holds one. None = the weapon mode's
-const heldKey = ws => S.char + '|' + S.job + '|' + ws;
-const heldWeapon = ws => (S.held || {})[heldKey(ws)] || null;
 const itemOf = name => (window.FFXI && FFXI.opt && FFXI.opt.item && name) ? FFXI.opt.item(name) : null;
 // Your weapons that can open a weaponskill: its skill, and the weapon itself for a relic or prime one
 function heldChoices(ws){
@@ -374,4 +370,12 @@ function tpTotalParts(s, r){
     gear ? [t('tpTotGear', {n: gear, l: parts.join(', ')})] : []);
   const step = total >= 3000 ? 3000 : total >= 2000 ? 2000 : 1000;
   return {total, raw, step, text: t('tpTotal', {b: bits.join(' + '), t: total}) + ' · ' + t('tpStep', {s: step})};
+}
+
+/* ---- a weaponskill set's average damage line ---- */
+function wsDamageHTML(s){
+  const v = wsDamage(s);
+  if (v == null) return '';
+  const b = buffState(), ws = wsOfSet(s) || segs(s.path).pop();
+  return `<p class="wsdmg">${t('wsDmg', {ws: esc(ws), d: `<b>${fmtDmg(v)}</b>`, tp: S.wsTp || 3000, e: esc(enemyKey(b.enemy))})} · ${esc(t('wsDmgTier', {p: buffTier()}))}</p>`;
 }

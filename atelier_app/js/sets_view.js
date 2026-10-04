@@ -340,3 +340,85 @@ function render(){
   if (S._tgtDlg && !$('#overlay').hidden && $('.tgtdlg')) openTarget();
 }
 
+/* ---- roles, job emblems, the other character, macro book and lockstyle shown ---- */
+// Roles and colours of AioHUD (job_role_color, src/model/party_state.cpp): icon tint, border, text
+const ROLE_COLOR = {tank:'var(--r-tank)',healer:'var(--r-healer)',support:'var(--r-support)',dd:'var(--r-dd)'};
+const ROLES = ['tank','healer','support','dd'];
+const emblem = c => `<span class="em" style="--icon:url(${ICONS[c]})"></span>`;
+// Another character with exported jobs, offered when this one has none for the job
+const otherChar = () => Object.keys(CHARS).find(c => c !== S.char);
+const bookOf = d => { const b = bookFor(d); return b && b.book ? b.book + ' · ' + b.page : '—'; };
+const styleOf = d => { const l = d.lockstyle || {}; return esc((l.by_subjob || {})[d.sub] ?? l.default ?? d.lockstyle_fallback ?? '—'); };
+
+
+
+/* ---- the set list: cards, their names, the search ---- */
+// How many path segments name the card; the rest are its variants
+function topOf(path, fam){
+  const s = segs(path);
+  let n = 2;
+  if (fam==='ja') n = 3;
+  if (fam==='idle' || fam==='engaged') n = ['me', 'luopan'].includes(s[0]) ? 2 : 1;
+  if (fam==='special') n = s[0]==='buff' ? 2 : 1;
+  if (fam==='weapons' || fam==='other') n = s.length;
+  return s.slice(0, Math.min(n, s.length));
+}
+function buildCards(d){
+  // a set shared under several names (sets.idle.MDT = sets.engaged.MDT) is found by each of them
+  const bypath = {}; for (const s of d.sets) { bypath[s.path] = s; for (const a of s.aliases || []) bypath[a] = bypath[a] || s; }
+  const cards = [], index = {};
+  for (const s of d.sets) {
+    const fam = family(s.path, s.pieces);
+    const top = topOf(s.path, fam); const key = fam + '|' + top.join('/');
+    if (!index[key]) { index[key] = {fam, name: top[top.length-1], top, variants:[]}; cards.push(index[key]); }
+    const rest = segs(s.path).slice(top.length).join(' · ');
+    index[key].variants.push({label: rest || 'Base', set: s});
+  }
+  for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));
+  const order = ['idle','engaged','fc','ws','ja','midcast','pet','special','weapons','other'];
+  const lead = c => c.top.length === 1 && c.top[0] === c.fam ? 0 : 1;
+  cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || lead(a)-lead(b) || a.name.localeCompare(b.name));
+  return {cards, bypath};
+}
+function niceName(card){
+  const n = card.name;
+  const map = {idle:{fr:'Au repos',en:'Idle'}, engaged:{fr:'En combat',en:'Engaged'}, FC:{fr:'Fast Cast',en:'Fast Cast'}, WS:{fr:'Weaponskills',en:'Weaponskills'},
+    MoveSpeed:{fr:'Vitesse de course',en:'Movement speed'}, Doom:{fr:'Doom',en:'Doom'}, TreasureHunter:{fr:'Treasure Hunter',en:'Treasure Hunter'}};
+  return (map[n] && map[n][S.lang]) || n;
+}
+// A card matches the search when one of its variants has the text in its path or in a piece name
+function cardMatch(card, q){
+  return !q || card.variants.some(v => v.set.path.toLowerCase().includes(q) || Object.values(v.set.pieces).some(p => p.name.toLowerCase().includes(q)));
+}
+
+
+/* ---- the column of figures beside a set ---- */
+function globalsHTML(s){
+  S._curSet = s;
+  const r = charStats(s);
+  if (!r) return `<div class="globals">${box('g-you', t('youTitle'), `<p class="muted">${t('noChar')}</p>`)}</div>`;
+  const {c, out, set, vsSet} = r;
+  const row = (label, o) => { const d = o.set - o.now;
+    return statLi(label, o.set, d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''); };
+  const v = k => (set[k] || {}).v || 0;
+  const pct = (label, sum, cap) => cappedLi(label, sum, cap, '');
+  const main = [['HP', out.hp], ['MP', out.mp], [t('defLabel'), out.def], [t('atkLabel'), out.atk], [t('accLabel'), out.acc], [t('evaLabel'), out.eva]]
+    .filter(([, o]) => o).map(([l, o]) => row(l, o)).join('');
+  const attrs = ATTRS.map(a => row(a.toUpperCase(), out[a])).join('');
+  // merits the game counts per level (res/merit_points.lua: "Spell Interruption Rate" 2 % a level)
+  const merit = name => Object.entries(c.merits || {}).reduce((n, [k, lv]) => k.toLowerCase().replace(/_/g, ' ') === name ? n + lv : n, 0);
+  const sirdMerit = (meritList() || []).find(x => x.key === 'spell_interruption_rate');
+  const sirdMerits = sirdMerit ? 2 * meritLevel(sirdMerit) : 2 * merit('spell interruption rate');
+  const sird = v('sird') + sirdMerits;
+  const gear = damageTakenLines(v) + pct('Haste', v('haste'), 25) + pct('Fast Cast', v('fc'), 80) +
+    (sird ? statLi('SIRD', sird + ' %', sirdMerits ? `<em class="delta">${t('withMerits')}</em>` : '', '', `${t('gearOnly')} ${v('sird')} % + ${t('merits')} ${sirdMerits} %`) : '');
+  const levels = [c.master_level ? `ML ${c.master_level}` : '', c.jp_spent ? `${c.jp_spent} JP` : ''].filter(Boolean).join(' · ');
+  const edited = Object.keys(S.meritEdits[meritKey()] || {}).length;
+  const you = fbox('you', 'g-you', t('youTitle') + (edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''),
+    `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul>`);
+  return `<div class="globals">${buffCardHTML()}${targetCardHTML(s)}${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
+    `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}${tankHTML(r)}${offenseHTML(r, s)}` +
+    `<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
+}
+
+

@@ -1,8 +1,3 @@
-// GearSwap Atelier · events.js: clicks, menus, keyboard, the hover card, start-up
-// (cut from atelier.html, loaded by it in order: see the list there)
-function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; KEYEDIT = null; S._buffDlg = false; S._tgtDlg = false; S._tgtPick = false;
-  S._push = S._del = S._create = null; const tip = $('#tip'); if (tip) tip.hidden = true; S._tipEl = null; }
-
 // the weapon groups of the weaponskill list stay as opened (toggle does not bubble: caught on the way down)
 document.addEventListener('toggle', e => { const g = e.target && e.target.dataset && e.target.dataset.wsgroup;
   if (g) { S._wsOpen = S._wsOpen || {}; S._wsOpen[g] = e.target.open; }

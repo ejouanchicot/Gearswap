@@ -6,9 +6,6 @@ let DATA_GEN = 0;
 function loadScripts(files, done){ let i = 0; const next = () => { if (i >= files.length) return done();
   const el = document.createElement("script"); el.src = files[i++]; el.onload = next; el.onerror = next; document.head.appendChild(el); }; next(); }
 const SLOTS = ['main','sub','range','ammo','head','neck','ear1','ear2','body','hands','ring1','ring2','back','waist','legs','feet'];
-// Roles and colours of AioHUD (job_role_color, src/model/party_state.cpp): icon tint, border, text
-const ROLE_COLOR = {tank:'var(--r-tank)',healer:'var(--r-healer)',support:'var(--r-support)',dd:'var(--r-dd)'};
-const ROLES = ['tank','healer','support','dd'];
 const JOBS = [['PLD','Paladin','tank'],['RUN','Rune Fencer','tank'],
   ['WHM','White Mage','healer'],['RDM','Red Mage','healer'],['SMN','Summoner','healer'],
   ['GEO','Geomancer','support'],['COR','Corsair','support'],['BRD','Bard','support'],
@@ -41,9 +38,6 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;
 const t = (k, v={}) => { let s = k.split('.').reduce((o,p) => o && o[p], T[S.lang]) ?? k; for (const [a,b] of Object.entries(v)) s = s.split('{'+a+'}').join(b); return s; };
 const role = c => JOBS.find(j => j[0]===c)[2];
 const plays = c => !!CHARS[S.char] && CHARS[S.char].jobs.includes(c);
-const emblem = c => `<span class="em" style="--icon:url(${ICONS[c]})"></span>`;
-// Another character with exported jobs, offered when this one has none for the job
-const otherChar = () => Object.keys(CHARS).find(c => c !== S.char);
 // DATA[char][job][sub]: one export per subjob. The one shown first is the last
 // in-game export, else the last one; the subjob chosen in the page wins.
 const exportsOf = (c, j) => (DATA[c] || {})[j] || {};
@@ -126,6 +120,61 @@ function bookFor(d, alt = macroAlt(d)){
   const m = d.macro || {}, du = alt && (m.dualbox || {})[alt];
   return (du && (du[d.sub] || du.default)) || (m.solo || {})[d.sub] || (m.solo || {}).default || m.default || d.macro_fallback || null;
 }
-const bookOf = d => { const b = bookFor(d); return b && b.book ? b.book + ' · ' + b.page : '—'; };
-const styleOf = d => { const l = d.lockstyle || {}; return esc((l.by_subjob || {})[d.sub] ?? l.default ?? d.lockstyle_fallback ?? '—'); };
+
+/* ---- the set's path and family, read by every part of the page ---- */
+function family(path, pieces){
+  const p = path;
+  const slots = Object.keys(pieces||{});
+  if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
+  // GEO keeps its own sets (sets.me.*) and the ones with a luopan out (sets.luopan.*)
+  if (/^sets\.(idle|Adoulin|Town|me\.idle|luopan\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
+  if (/^sets\.(engaged|me\.engaged|luopan\.engaged)/.test(p)) return 'engaged';
+  if (/^sets\.pet|Pet|pet_/.test(p)) return 'pet';
+  if (/^sets\.precast\.FC/.test(p)) return 'fc';
+  if (/^sets\.precast\.WS/.test(p)) return 'ws';
+  if (/^sets\.precast/.test(p)) return 'ja';
+  if (/^sets\.midcast/.test(p)) return 'midcast';
+  if (/^sets\.(buff|defense|TreasureHunter|CombatMode|Doom|latent|FullEnmity|Enmity)/.test(p)) return 'special';
+  return 'other';
+}
+function segs(path){ return path.match(/\.[\w-]+|\["[^"]+"\]/g).map(s => s.startsWith('.') ? s.slice(1) : s.slice(2,-2)); }
+function shortPath(p){ return p ? p.replace(/^sets\./,'') : ''; }
+
+/* ---- the exports' weaponskill tables, and an empty slot ---- */
+// Pieces tried in the page come last: they win over the set and the weapon modes
+const isEmpty = p => p && p.name === 'empty';
+// The weaponskill a set is for (sets.precast.WS["Savage Blade"] -> Savage Blade), or null
+// The weaponskill of a set: the last part of its path that is one (sets.precast.WS.Disaster.Solo: Disaster)
+function wsOfSet(s){
+  if (family(s.path, s.pieces) !== 'ws') return null;
+  const known = wsSkills();
+  return segs(s.path).reverse().find(x => known[x]) || null;
+}
+// Weaponskill -> its combat skill (export ws_skill), weapon -> its combat skill (export wskill)
+const wsSkills = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_skill || {}));
+// Whether a weapon of a mode can open a weaponskill: its skill, and for a relic or prime one the
+// weapon itself (export ws_info.lock names them; empyrean and mythic ones are unlocked for any weapon)
+const wsInfoOf = ws => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_info || {}))[ws] || {};
+
+/* ---- shared HTML helpers: a compartment, damage figures ---- */
+// A compartment: a card with a title band in its section's colour (g-def, g-tank...)
+const box = (cls, title, body, meta = '') =>
+  `<section class="box ${cls}"><header class="boxh"><h3>${title}</h3>${meta}</header><div class="boxb">${body}</div></section>`;
+// A stats compartment that folds: closed until opened (S.boxOpen[key]); closed, its band says how many lines it holds
+function fbox(key, cls, title, body){
+  const open = !!S.boxOpen[key], n = (body.match(/<li[ >]/g) || []).length;
+  return `<section class="box ${cls}"><button class="boxh bufftoggle" data-fold="${esc(key)}" aria-expanded="${open}"><h3>${title}</h3>` +
+    `<span class="meta">${n || ''}</span></button>${open ? `<div class="boxb">${body}</div>` : ''}</section>`;
+}
+const fmtDmg = n => Math.round(n).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US');
+
+/* ---- two pieces compared ---- */
+const samePiece = (a, b) => (!a || a.name === 'empty') ? (!b || b.name === 'empty') : !!b && a.name === b.name && (a.augs || []).join('|') === (b.augs || []).join('|')
+  && (a.rank ?? null) === (b.rank ?? null);
+
+/* ---- the windows closed ---- */
+// GearSwap Atelier · events.js: clicks, menus, keyboard, the hover card, start-up
+// (cut from atelier.html, loaded by it in order: see the list there)
+function closeOverlay(){ $('#overlay').hidden = true; $('#overlay').innerHTML = ''; KEYEDIT = null; S._buffDlg = false; S._tgtDlg = false; S._tgtPick = false;
+  S._push = S._del = S._create = null; const tip = $('#tip'); if (tip) tip.hidden = true; S._tipEl = null; }
 

@@ -126,8 +126,6 @@ const krakenWeapon = m => m.values.find(v => { const sub = ((m.sets[v] || {}).pi
 // sets, HoxneAFM3, under Ukonvasara: shared/jobs/war/functions/logic/set_builder.lua)
 const AFM3_WEAPON = {WAR: 'Ukonvasara'};
 const isAfm3 = path => /AFM3\b/.test(path || '');
-// The aftermath level the page counts: Lv.3 on an AFM3 set, else the one chosen in Buffs
-const amLevel = () => isAfm3((S._curSet || {}).path) ? 3 : +(buffState().am || 0);
 function withWeapons(s, ignore){
   const d = data(), rules = (d && d.weapon_rules) || {}, hm = hybridMode(d), hybrid = hm && chosenWeapon(hm);
   const pieces = Object.assign({}, s.pieces), from = {}, picks = [];
@@ -196,18 +194,6 @@ function withWeapons(s, ignore){
 // Weapon modes laid only while a switch is on, and the modes they replace then: THF's Abyssea
 // weapon (shared/jobs/thf/functions/logic/set_builder.lua apply_weapon)
 const WEAPON_GATES = {AbyWeapon: {when: 'AbyProc', replaces: ['MainWeapon', 'SubWeapon']}};
-// The weaponskill a set is for (sets.precast.WS["Savage Blade"] -> Savage Blade), or null
-// The weaponskill of a set: the last part of its path that is one (sets.precast.WS.Disaster.Solo: Disaster)
-function wsOfSet(s){
-  if (family(s.path, s.pieces) !== 'ws') return null;
-  const known = wsSkills();
-  return segs(s.path).reverse().find(x => known[x]) || null;
-}
-// Weaponskill -> its combat skill (export ws_skill), weapon -> its combat skill (export wskill)
-const wsSkills = () => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_skill || {}));
-// Whether a weapon of a mode can open a weaponskill: its skill, and for a relic or prime one the
-// weapon itself (export ws_info.lock names them; empyrean and mythic ones are unlocked for any weapon)
-const wsInfoOf = ws => Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.ws_info || {}))[ws] || {};
 function wsWeaponFits(m, v, ws){
   const want = ws && wsSkills()[ws];
   if (!want) return true;
@@ -221,8 +207,6 @@ function weaponSkillOf(m, v){
   const main = m.sets[v] && m.sets[v].pieces.main;
   return main ? Object.assign({}, ...Object.values(exportsOf(S.char, S.job)).map(x => x.wskill || {}))[main.name] : null;
 }
-// Pieces tried in the page come last: they win over the set and the weapon modes
-const isEmpty = p => p && p.name === 'empty';
 function applyTrial(s, pieces, from, stance){
   for (const [slot, p] of Object.entries(pieces)) if (isEmpty(p)) delete pieces[slot];
   const tried = {}, tr = S._noTrial ? null : S.trial[trialKey(s)];
@@ -311,3 +295,9 @@ function weaponMenus(s){
       m.values.map(v => `<option value="${esc(v)}" ${v === ex ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select>`;
     return modes.length > 1 ? `<label class="wmlbl"><span>${esc(m.desc)}</span>${sel}</label>` : sel; }).join('');
 }
+
+/* ---- the weapon held for a weaponskill ---- */
+// The weapon held for a weaponskill, chosen in the page for that weaponskill only and never written
+// to a file: a weapon change resets the TP, so a weaponskill set never holds one. None = the weapon mode's
+const heldKey = ws => S.char + '|' + S.job + '|' + ws;
+const heldWeapon = ws => (S.held || {})[heldKey(ws)] || null;

@@ -176,3 +176,11 @@ function showDialog(cls, title, body, buttons){
     <div class="body">${body}</div><footer><button class="btn ghost" data-close>${t('close')}</button>${buttons}</footer></div>`;
   $('#overlay').hidden = false;
 }
+
+/* ---- tried pieces saved ---- */
+// The tried pieces of a set are the ones saved for it (waiting for a reload in game)
+function trialSaved(s){
+  const tr = S.trial[trialKey(s)] || {}, saved = ((setOverrides()[S.job] || {})[s.path]) || {};
+  const asPiece = v => v === 'empty' ? null : typeof v === 'string' ? {name: v} : {name: v.name, augs: v.augments};
+  return Object.keys(tr).length > 0 && Object.entries(tr).every(([slot, p]) => slot in saved && samePiece(p, asPiece(saved[slot])));
+}

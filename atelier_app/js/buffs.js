@@ -156,8 +156,6 @@ const elemClash = n => { const as = (FOE_JA_FX[n] || {}).as || n, i = ELEM_WHEEL
   const near = [ELEM_WHEEL[(i + 1) % 6], ELEM_WHEEL[(i + 5) % 6]];
   return [...near, as, ...Object.keys(FOE_JA_FX).filter(x => near.includes(FOE_JA_FX[x].as) || FOE_JA_FX[x].as === as)].filter(x => x !== n); };
 const elemDown = b => b.sabots ? 63 : 23;
-// The SMN's Summoning Magic skill for Fenrir's Impact (b.smnSkill, 600 until chosen)
-const SMN_SKILLS = [400, 450, 500, 550, 600, 650, 700, 750, 800];
 const smnSkill = b => +(b.smnSkill || 600);
 // The runes and the element each one is (the damage Gambit raises, the resistance Rayke lowers)
 const RUNES = {Ignis: 'Fire', Gelus: 'Ice', Flabra: 'Wind', Tellus: 'Earth', Sulpor: 'Thunder', Unda: 'Water', Lux: 'Light', Tenebrae: 'Dark'};
@@ -219,9 +217,6 @@ function foeJaDown(b){
 const AUSPICE_SB = 10, AUSPICE_FEET = {'Orison Duckbills +1': 5, 'Orison Duckbills +2': 10, 'Ebers Duckbills': 13, 'Ebers Duckbills +1': 15,
   'Ebers Duckbills +2': 17, 'Ebers Duckbills +3': 19};
 const auspiceSb = b => b.auspice ? AUSPICE_SB + (AUSPICE_FEET[b.auspiceFeet] || 0) : 0;
-// A RDM's tier I Enspell given to the party with Accession (/SCH): its base damage from the caster's Enhancing Magic
-// skill (BG Wiki Enspell), the receiver's Enspell damage gear on top; the damage engine works it out a hit
-const EN_SKILLS = [450, 475, 500, 525, 550, 575, 600, 625, 650, 675, 700];
 const enSkill = b => +(b.enSkill || 600);
 const enspellDmg = k => k < 600 ? Math.trunc((k - 223) / 7.70) + 29 : Math.trunc((k - 202.5) / 8.05) + 29;
 const PROTECT = {'Protect': 20, 'Protect II': 50, 'Protect III': 90, 'Protect IV': 140, 'Protect V': 220};
@@ -391,9 +386,6 @@ function setBuffTier(tier){
   const to = buffState();
   for (const k of PERSONAL) { if (from[k] === undefined) delete to[k]; else to[k] = JSON.parse(JSON.stringify(from[k])); }
 }
-// The profile buttons, on the card and in the window
-const tierBarHTML = () => `<div class="tierbar" role="group" aria-label="${t('tierLabel')}"><span class="muted small">${t('tierLabel')}</span>` +
-  TIERS.map(x => `<button class="chip" data-bufftier="${x}" aria-pressed="${x === buffTier()}" title="${esc(t('tier' + x + 'Tip'))}">${x}</button>`).join('') + `</div>`;
 // The abilities the shown job and subjob have (as main: full effect), and the party ones
 // The levels abilities are offered at: the main job's, and the subjob's (measured, else 49 + 1 per 5 Master Levels)
 function jaLevels(){
@@ -444,11 +436,6 @@ function liveBuffs(b){
 
   return out;
 }
-// A small on / off switch (b.off[key]): the choices stay, the sums leave them out
-function offSwitch(b, key){
-  const on = !(b.off || {})[key];
-  return `<button class="tgl" data-poff="${esc(key)}" aria-pressed="${on}" title="${esc(t('pOffTip'))}" aria-label="${esc(key)} ${on ? 'ON' : 'OFF'}"></button>`;
-}
 // TP Bonus a party member's ability adds before a weaponskill (a WAR's Warcry), counted by the page.
 // A party Warcry's: the WAR's Savagery merits (BG Wiki: 100 TP Bonus a level, 5 by default) and, worn when it is
 // used, Agoge Mask +3 / +4 (40 more a level, on by default): 700 at 5/5 with the mask
@@ -465,12 +452,6 @@ function sambaHaste(ja){
   const v = buffState().pSamba || '';
   return v === 'sub' ? 5.1 : 5.1 + (v ? +v.slice(1) : 5);
 }
-// The party DNC's menu: a main DNC and its merits, or a /DNC
-const sambaHTML = b => `<span class="flbl">${esc(t('sambaWho'))}</span><select class="buffsel" data-buff="pSamba">` +
-  ['', 'm4', 'm3', 'm2', 'm1', 'm0', 'sub'].map(v => `<option value="${v}" ${(b.pSamba || '') === v ? 'selected' : ''}>` +
-    esc(v === 'sub' ? t('sambaSub') : t('sambaMain', {n: v ? v.slice(1) : 5, p: 5 + (v ? +v.slice(1) : 5)})) + `</option>`).join('') + `</select>`;
-const jaTip = ja => ja.as === 'party' ? t('jaPartyTip', {j: ja.a.from}) + (ja.a.tpParty ? ' · TP Bonus +' + tpOfParty(ja.a, buffState()) : '')
-  : t('jaLvTip', {j: [].concat(ja.a.job).join('/'), l: ja.a.lvl, w: ja.as === 'main' ? t('jaMain') : t('jaSub', {l: ja.lvl})});
 const partyTp = () => { const b = buffState(); return jasOf().filter(j => j.as === 'party' && j.a.tpParty && jaOn(b, j.name)).reduce((n, j) => n + tpOfParty(j.a, b), 0); };
 // Every active buff added up: {stat: value}; atkp/defp as fractions, deff/mevaf as [%, cap], dmgmul a product
 function buffTotals(){

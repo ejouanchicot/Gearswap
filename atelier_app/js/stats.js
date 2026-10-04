@@ -1,61 +1,6 @@
 // GearSwap Atelier · stats.js: set families, a piece's stats (descriptions, augments, ranks, capes), the stats shown
 // (cut from atelier.html, loaded by it in order: see the list there)
 /* ---- set grouping ---- */
-function family(path, pieces){
-  const p = path;
-  const slots = Object.keys(pieces||{});
-  if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
-  // GEO keeps its own sets (sets.me.*) and the ones with a luopan out (sets.luopan.*)
-  if (/^sets\.(idle|Adoulin|Town|me\.idle|luopan\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
-  if (/^sets\.(engaged|me\.engaged|luopan\.engaged)/.test(p)) return 'engaged';
-  if (/^sets\.pet|Pet|pet_/.test(p)) return 'pet';
-  if (/^sets\.precast\.FC/.test(p)) return 'fc';
-  if (/^sets\.precast\.WS/.test(p)) return 'ws';
-  if (/^sets\.precast/.test(p)) return 'ja';
-  if (/^sets\.midcast/.test(p)) return 'midcast';
-  if (/^sets\.(buff|defense|TreasureHunter|CombatMode|Doom|latent|FullEnmity|Enmity)/.test(p)) return 'special';
-  return 'other';
-}
-function segs(path){ return path.match(/\.[\w-]+|\["[^"]+"\]/g).map(s => s.startsWith('.') ? s.slice(1) : s.slice(2,-2)); }
-// How many path segments name the card; the rest are its variants
-function topOf(path, fam){
-  const s = segs(path);
-  let n = 2;
-  if (fam==='ja') n = 3;
-  if (fam==='idle' || fam==='engaged') n = ['me', 'luopan'].includes(s[0]) ? 2 : 1;
-  if (fam==='special') n = s[0]==='buff' ? 2 : 1;
-  if (fam==='weapons' || fam==='other') n = s.length;
-  return s.slice(0, Math.min(n, s.length));
-}
-function buildCards(d){
-  // a set shared under several names (sets.idle.MDT = sets.engaged.MDT) is found by each of them
-  const bypath = {}; for (const s of d.sets) { bypath[s.path] = s; for (const a of s.aliases || []) bypath[a] = bypath[a] || s; }
-  const cards = [], index = {};
-  for (const s of d.sets) {
-    const fam = family(s.path, s.pieces);
-    const top = topOf(s.path, fam); const key = fam + '|' + top.join('/');
-    if (!index[key]) { index[key] = {fam, name: top[top.length-1], top, variants:[]}; cards.push(index[key]); }
-    const rest = segs(s.path).slice(top.length).join(' · ');
-    index[key].variants.push({label: rest || 'Base', set: s});
-  }
-  for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));
-  const order = ['idle','engaged','fc','ws','ja','midcast','pet','special','weapons','other'];
-  const lead = c => c.top.length === 1 && c.top[0] === c.fam ? 0 : 1;
-  cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || lead(a)-lead(b) || a.name.localeCompare(b.name));
-  return {cards, bypath};
-}
-function niceName(card){
-  const n = card.name;
-  const map = {idle:{fr:'Au repos',en:'Idle'}, engaged:{fr:'En combat',en:'Engaged'}, FC:{fr:'Fast Cast',en:'Fast Cast'}, WS:{fr:'Weaponskills',en:'Weaponskills'},
-    MoveSpeed:{fr:'Vitesse de course',en:'Movement speed'}, Doom:{fr:'Doom',en:'Doom'}, TreasureHunter:{fr:'Treasure Hunter',en:'Treasure Hunter'}};
-  return (map[n] && map[n][S.lang]) || n;
-}
-function shortPath(p){ return p ? p.replace(/^sets\./,'') : ''; }
-// A card matches the search when one of its variants has the text in its path or in a piece name
-function cardMatch(card, q){
-  return !q || card.variants.some(v => v.set.path.toLowerCase().includes(q) || Object.values(v.set.pieces).some(p => p.name.toLowerCase().includes(q)));
-}
-
 /* ---- item stats: read from the game's descriptions and the set's augments ---- */
 // key: [group, French label, English label, cap]. A stat not listed here is still
 // counted, under its own name ("Others"); "* skill" stats go to Skills.
