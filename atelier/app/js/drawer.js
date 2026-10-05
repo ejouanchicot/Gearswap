@@ -150,10 +150,14 @@ function setWants(s){
 function setWantsOf(s){
   const fam = family(s.path, s.pieces), path = s.path, add = (out, list, w = 1) => { for (const k of list.split(' ')) out[k] = Math.max(out[k] || 0, w); return out; };
   if (fam === 'ws') return wsWants(s);
+  // a self Cure (Guide_Paladin CURE SELF): its midcast wants max HP too (the gap the Cure fills), its Fast Cast few HP
+  const self = /cur(e|a)/i.test(path) && /self/i.test(path);
+  if (fam === 'fc' && self) return {fam, want: add({}, WANTS.fc + ' hp hp%', 1), label: 'Cure Self',
+    notes: [S.lang === 'fr' ? 'HP le plus bas possible : le set de Cure les remonte, le Cure remplit l’écart' : 'HP as low as can be: the Cure set raises them, the Cure fills the gap']};
   if (WANTS[fam]) return {fam, want: add({}, WANTS[fam])};
   if (fam === 'midcast' || fam === 'ja' || fam === 'special') {
     const kind = (MIDCAST_KINDS.find(([re]) => re.test(path)) || [])[1];
-    if (kind) return {fam, want: add({}, WANTS[kind])};
+    if (kind) return {fam, want: add({}, WANTS[kind] + (kind === 'cure' && self ? ' hp hp%' : ''))};
   }
   // no known kind: what the set's own pieces carry, the stats every piece has left out
   const out = {};
@@ -217,8 +221,10 @@ const GOOD_DOWN = new Set(['dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt']);
 // best choice's, times its weight. A ranking, not a simulation (the optimizer computes damage).
 // o.score, o.fit (its best stats for the set), o.offTopic when it gives none of them
 function relevance(s, slot, opts){
-  const {want} = setWants(s), cure = /cur(e|a)/i.test(s.path);
-  const dir = k => GOOD_DOWN.has(baseKey(k)) || (baseKey(k) === 'enmity' && cure) ? -1 : 1;
+  const {want} = setWants(s), cure = /cur(e|a)/i.test(s.path), tank = ['PLD', 'RUN'].includes(S.job);
+  // a tank's Cure wants its enmity (the guide: a Cure's enmity holds hate); a self Cure's Fast Cast wants few HP
+  const lowHp = cure && /self/i.test(s.path) && family(s.path, s.pieces) === 'fc';
+  const dir = k => GOOD_DOWN.has(baseKey(k)) || (baseKey(k) === 'enmity' && cure && !tank) || (lowHp && /^hp%?$/.test(baseKey(k))) ? -1 : 1;
   const good = (k, v) => Math.max(0, dir(k) * v);
   const stats = opts.map(o => pieceStats(o.piece, slot) || {}), max = {};
   for (const r of stats) for (const [k, e] of Object.entries(r.stats || {})) if (wantOf(want, k)) max[k] = Math.max(max[k] || 0, good(k, e.v));
