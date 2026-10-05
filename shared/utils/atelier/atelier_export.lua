@@ -442,6 +442,13 @@ local function snapshot_equipment()
     local copy = {}
     for k, v in pairs(eq) do copy[k] = v end
     windower._atelier_stat_equipment = copy
+    -- and the buffs up then: the stats count them (Protect in the Defense), the page takes them out
+    local okp, me = pcall(windower.ffxi.get_player)
+    if okp and type(me) == 'table' and type(me.buffs) == 'table' then
+        local buffs = {}
+        for i, id in ipairs(me.buffs) do buffs[i] = id end
+        windower._atelier_stat_buffs = buffs
+    end
 end
 
 --- Listen to the status packet, once per load (a raw event: a plain one from a job file runs GearSwap's refresh on
@@ -515,6 +522,8 @@ local function collect_char()
         char.add[a] = player['add_' .. a]
     end
     char.worn = worn_gear(res)
+    -- the buff ids up when those stats were sent (the page takes Protect out of the measured Defense)
+    char.buffs = windower._atelier_stat_buffs
     -- what the page adds to the gear's %: merit levels by name ("spell_interruption_rate" = 5),
     -- and, shown with the measure, the job points spent and the master level (status packet 0x061)
     local p = windower.ffxi.get_player() or {}

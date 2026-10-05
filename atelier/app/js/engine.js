@@ -348,6 +348,15 @@ function gearTotal(pieces){
   for (const slot of SLOTS) { const r = pieceStats(pieces[slot], slot); if (r) for (const [k, e] of Object.entries(r.stats)) add(total, k, e.v, e.unit, e.label); }
   return total;
 }
+// The Defense a Protect up when the stats were measured put in them (buff 40, the export's char.buffs), to take out
+// before the page lays its own: a Protect V (its tier is not sent), a PLD's with the shield worn then (Shield Barrier,
+// checked in game 2026-10-05: 2365 -> 2480 recast with Duban for Aegis, (145 - 40) x 1.1) and the gift's +10 %
+function protectAtMeasure(c){
+  if (!c || !(c.buffs || []).includes(40)) return 0;
+  const sub = c.worn && c.worn.sub, it = sub && itemOf(sub.name), r = it && it.Type === 'Shield' && S.job === 'PLD' ? pieceStats(sub, 'sub') : null;
+  const shield = r && r.stats.def ? r.stats.def.v : 0;
+  return Math.floor((PROTECT['Protect V'] + shield) * protectGift());
+}
 // Measured stats minus the gear worn when measured, plus the set's gear. HP / MP: the
 // % of gear applies to base + gear HP (Guide_Paladin solver_common.effective_hp);
 // DEF moves with VIT x1.5 (calc_defense), Attack with STR (the engine: 8 + skill + STR + Attack)
@@ -370,7 +379,7 @@ function charStats(s, pieces){
       return Math.round((naked + g(gear, k)) * (1 + g(gear, k + '%') / 100));
     };
     r.hp = pool(c.max_hp, 'hp'); r.mp = pool(c.max_mp, 'mp');
-    let def = (c.defense + g(gear, 'def') - g(worn, 'def') + 1.5 * (r.vit - measured('vit')) + (B.def || 0)) * (1 + (B.defp || 0));
+    let def = (c.defense - protectAtMeasure(c) + g(gear, 'def') - g(worn, 'def') + 1.5 * (r.vit - measured('vit')) + (B.def || 0)) * (1 + (B.defp || 0));
     if (B.deff) def += Math.min(def * B.deff[0] / 100, B.deff[1]);
     r.def = Math.floor(def);
     r.atk = Math.floor((c.attack + g(gear, 'atk') - g(worn, 'atk') + (r.str - measured('str')) + (B.atk || 0)) * (1 + (B.atkp || 0)) + (B.atkf || 0));
