@@ -449,6 +449,8 @@ local function snapshot_equipment()
         for i, id in ipairs(me.buffs) do buffs[i] = id end
         windower._atelier_stat_buffs = buffs
     end
+    -- a count of the measures, for the page's live link (atelier_live.lua /ping): a new one is worth fetching
+    windower._atelier_stat_seq = (windower._atelier_stat_seq or 0) + 1
 end
 
 --- Listen to the status packet, once per load (a raw event: a plain one from a job file runs GearSwap's refresh on
@@ -522,8 +524,16 @@ local function collect_char()
         char.add[a] = player['add_' .. a]
     end
     char.worn = worn_gear(res)
-    -- the buff ids up when those stats were sent (the page takes Protect out of the measured Defense)
+    -- the buff ids up when those stats were sent (the page takes Protect out of the measured Defense); before the first
+    -- status packet of a load, the ones up now
     char.buffs = windower._atelier_stat_buffs
+    if not char.buffs then
+        local okp, me = pcall(windower.ffxi.get_player)
+        if okp and type(me) == 'table' and type(me.buffs) == 'table' then
+            char.buffs = {}
+            for i, id in ipairs(me.buffs) do char.buffs[i] = id end
+        end
+    end
     -- what the page adds to the gear's %: merit levels by name ("spell_interruption_rate" = 5),
     -- and, shown with the measure, the job points spent and the master level (status packet 0x061)
     local p = windower.ffxi.get_player() or {}
@@ -784,6 +794,13 @@ end
 
 --- Export the current job. Returns the file written, or nil.
 --- @return string|nil
+--- The character's measure alone (stats, the gear and buffs up when the game sent them): what the page's live link
+--- fetches when a new measure came, far lighter than a whole export. Nil outside the game.
+--- @return table|nil
+function AtelierExport.measure()
+    return collect_char()
+end
+
 function AtelierExport.export()
     local data = AtelierExport.build()
     if not data then return nil end

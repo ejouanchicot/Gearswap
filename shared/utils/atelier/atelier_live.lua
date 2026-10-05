@@ -8,6 +8,8 @@
 ---
 ---   GET  /ping                 player, job, subjob, version (+1 at each load)
 ---   GET  /export               the loaded job's data (AtelierExport.build)
+---   GET  /measure              the character's stats, gear and buffs at the last status packet
+---                              (AtelierExport.measure): fetched when /ping's `stat` count moves
 ---   POST /save?file=<name>     writes <Char>/atelier/overrides/<name>: keybind_overrides.lua
 ---                              or set_overrides.lua only
 ---   GET  /actions              the job's spells, abilities and weapon skills
@@ -134,13 +136,18 @@ local function route(req, live)
         local alt_state = rawget(_G, 'AltJobState')
         local alt = type(alt_state) == 'table' and alt_state.online ~= nil and alt_state.job or nil
         return '200 OK', Export.json({player = player and player.name, job = player and player.main_job,
-            sub = player and player.sub_job, version = live.version, alt = alt})
+            sub = player and player.sub_job, version = live.version, alt = alt, stat = windower._atelier_stat_seq or 0})
     end
     if req.path == '/export' then
         local data = Export.build()
         if not data then return '503 Service Unavailable', '{"error":"no job"}' end
         data.live = true
         return '200 OK', Export.json(data)
+    end
+    if req.path == '/measure' then
+        local char = Export.measure()
+        if not char then return '503 Service Unavailable', '{"error":"no measure"}' end
+        return '200 OK', Export.json(char)
     end
     if req.path == '/save' and req.method == 'POST' then
         local file = req.query:match('file=([%w_%.]+)')

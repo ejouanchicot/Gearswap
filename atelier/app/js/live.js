@@ -202,7 +202,8 @@ async function liveTick(){
   const was = S._live[c] || {};
   try {
     const ping = await liveFetch(c, '/ping', {timeout: 1500});
-    const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, at: was.at};
+    const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, at: was.at,
+      stat: ping.stat, statAt: ping.stat !== was.stat ? Date.now() : was.statAt, statGot: was.statGot};
     if (ping.player === c && ping.job && (ping.version !== was.version || !was.ok)) {
       const d = await liveFetch(c, '/export', {timeout: 8000});
       if (d && d.sets) {
@@ -212,8 +213,16 @@ async function liveTick(){
         now.at = d.at;
       }
     }
+    // a new measure (the game sent the stats again: gear, buffs), fetched once it has held 3 s (not in the middle of an
+    // action), in place of the shown export's: no //gs c atelier to type
+    let measured = false;
+    if (now.ok && now.stat != null && now.stat !== now.statGot && Date.now() - (now.statAt || 0) >= 3000) {
+      const m = DATA[c] && DATA[c][ping.job] && DATA[c][ping.job][ping.sub || 'NONE'];
+      if (m) { const ch = await liveFetch(c, '/measure', {timeout: 4000}); if (ch && ch.base) { m.char = ch; DATA_GEN++; measured = true; } }
+      now.statGot = now.stat;
+    }
     S._live[c] = now;
-    if (!was.ok || now.version !== was.version) render();
+    if (!was.ok || now.version !== was.version || measured) render();
   } catch (e) {
     S._live[c] = {ok: false};
     if (was.ok) render();
