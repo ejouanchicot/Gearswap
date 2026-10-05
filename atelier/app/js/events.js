@@ -49,6 +49,8 @@ document.addEventListener('click', e => {
   if (d.optobj) { S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
   if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; render(); return; }
   if ('optback' in d) { S.optView = null; render(); return; }
+  // the page's subjob set to the game's (sets_view.js subWarnHTML)
+  if (d.subfix) { S.subs[S.char + '|' + S.job] = d.subfix; render(); return; }
   if ('optstat' in d) { S._optScratch = d.optstat === 'best'; optimizeStats(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   // the stats optimizer's first objective (stat_opt.js): the one chosen leaves the list of the next ones
   if (d.statobj) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), objs = statOpts(s).objs.filter(k => k !== d.statobj);

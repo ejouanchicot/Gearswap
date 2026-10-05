@@ -186,6 +186,13 @@ function cardHTML(card, ci, bypath, q){
     <div class="globals-inline">${(S._globals = {s, html: globalsHTML(s)}).html}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
+// The game on this job with another subjob than the page shows (the live link, live.js): every figure is then the other
+// subjob's (its base attributes, traits, sets), said with a button to show the game's
+function subWarnHTML(){
+  const L = (S._live || {})[S.char], d = data();
+  if (!L || !L.ok || L.job !== S.job || !d || !L.sub || L.sub === 'NONE' || L.sub === d.sub) return '';
+  return `<p class="kwarn subwarn">${esc(t('subWarn', {g: L.job + '/' + L.sub, p: S.job + '/' + d.sub}))} <button class="btn" data-subfix="${esc(L.sub)}">${esc(t('subFix', {s: L.sub}))}</button></p>`;
+}
 function renderSets(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
   const q = S.q.trim().toLowerCase();
@@ -248,7 +255,7 @@ function renderSets(d){
   const tools = vis.length && !q ? `<div class="listtools"><button class="linkbtn" data-famall="1">${t('openAll')}</button>` +
     `<span>·</span><button class="linkbtn" data-famall="0">${t('closeAll')}</button>` +
     `<span>·</span><button class="linkbtn" data-pushhist>${t('histBtn')}</button></div>` : '';
-  return `<div class="setsx"><aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
+  return `${subWarnHTML()}<div class="setsx"><aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
     `<button class="btn ghost" data-action="add" title="${t('add')}">${t('addShort')}</button></div>${tools}<div class="scroll">${list}</div><div class="hint">${t('navHint')}</div></aside>` +
     `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
 }

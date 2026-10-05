@@ -385,3 +385,4 @@
 .aliasfold{display:block;width:100%;text-align:left;background:none;border:0;color:var(--faint);font:inherit;font-size:11.5px;padding:2px 12px 4px 30px;cursor:pointer}
 .aliasfold:hover{color:var(--accent)}
 .opf.opwrap{white-space:normal;min-width:0;max-width:100%}
+.subwarn{margin:0 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
