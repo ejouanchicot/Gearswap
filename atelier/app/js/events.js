@@ -105,6 +105,8 @@ document.addEventListener('click', e => {
   if ('wstp' in d) { S.wsTp = d.wstp ? +d.wstp : null; render(); return; }
   if ('macroalt' in d) { S.macroAlt[S.char + '|' + S.job] = d.macroalt; render(); return; }
   if (d.famall) { for (const f of S._fams || []) S.famOpen[S.job + '|' + f] = d.famall === '1'; render(); return; }
+  // the names a set is shared under, folded under it in the set list (sets_view.js)
+  if (d.aliasfold) { const k = S.job + '|' + d.aliasfold; S._aliasOpen = Object.assign({}, S._aliasOpen, {[k]: !(S._aliasOpen || {})[k]}); render(); return; }
   if (d.wskill) { const k = S.job + '|' + d.wskill; S._wsList = Object.assign({}, S._wsList, {[k]: !(S._wsList || {})[k]}); render(); return; }
   if (d.stattab) { S._statTab = d.stattab; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }

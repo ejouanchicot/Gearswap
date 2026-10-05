@@ -382,3 +382,5 @@
 .hpcycle th,.hpcycle td{padding:2px 4px}
 .hpcycle tbody th{font-weight:500;white-space:normal;word-break:break-word;width:46%}
 .hpcycle td{text-align:right}
+.aliasfold{display:block;width:100%;text-align:left;background:none;border:0;color:var(--faint);font:inherit;font-size:11.5px;padding:2px 12px 4px 30px;cursor:pointer}
+.aliasfold:hover{color:var(--accent)}

@@ -206,10 +206,13 @@ function renderSets(d){
   const vi = i => Math.min(S.variant[S.job + '|' + i] ?? 0, cards[i].variants.length - 1);
   const rows = S._rows = [];
   let list = '', fam = null;
-  // the names a set is shared under, after the family's own sets: a link to the set they are
+  // the names a set is shared under, a link to the set they are: right under it when they are of its family
+  // (Blank Gaze, Cocoon... under SIRDEnmity), else after the family they belong to (Flash = FullEnmity, with the spells)
   const aliases = aliasRows(cards, q);
-  const aliasesOf = f => famOpen(f, q) ? aliases.filter(a => a.fam === f).map(a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
-    `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`).join('') : '';
+  const aliasBtn = a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
+    `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`;
+  const under = a => a.fam === cards[a.i].fam;
+  const aliasesOf = f => famOpen(f, q) ? aliases.filter(a => a.fam === f && !under(a)).map(aliasBtn).join('') : '';
   for (const i of vis) { const c = cards[i];
     if (c.fam !== fam) { if (fam) list += aliasesOf(fam); fam = c.fam;
       const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0) + aliases.filter(a => a.fam === fam).length;
@@ -222,6 +225,11 @@ function renderSets(d){
       rows.push([i, k]);
       list += `<button class="setrow ${main ? '' : 'var'}" data-pick="${i}" data-vpick="${k}" aria-current="${cur}">` +
         `<b>${main ? esc(niceName(c)) + (v.label !== 'Base' ? ` · ${esc(v.label)}` : '') : esc(v.label)}</b><code>${esc(v.set.path)}</code></button>`;
+      // its names folded under it: a line to open them (a search opens them)
+      const mine = aliases.filter(a => a.i === i && a.k === k && under(a));
+      if (mine.length) { const key = S.job + '|' + v.set.path, open = !!q || !!(S._aliasOpen || {})[key];
+        list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
+          (open ? mine.map(aliasBtn).join('') : ''); }
     };
     if (c.fam !== 'ws') { c.variants.forEach(row); continue; }
     // weaponskills: the common set, then one folding group a weapon (closed until opened, a search opens them)
@@ -343,11 +351,27 @@ function render(){
   renderSide(); $('#view').innerHTML = S.job ? renderJob() : renderHome(); save();
   SCROLLERS.forEach((q, i) => { const el = $(q);
     if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });
+  scrollBack(view, set);
   S._view = view; S._set = set;
   if (id) { const el = document.getElementById(id); if (el) { el.focus(); if (pos != null && el.setSelectionRange) el.setSelectionRange(pos, pos); } }
   if (S._buffDlg && !$('#overlay').hidden && $('.buffdlg')) openBuffs();
   if (S._tgtDlg && !$('#overlay').hidden && $('.tgtdlg')) openTarget();
 }
+
+// After a reload of the page (F5): each list back where it was, once, when the same view and set are shown again
+// (kept in this browser only: the page works without it)
+const SCROLL_STORE = 'atelier_scroll';
+function scrollBack(view, set){
+  if (S._scrollBack) return;
+  let kept = null;
+  try { kept = JSON.parse(localStorage.getItem(SCROLL_STORE) || 'null'); } catch (e) { kept = null; }
+  if (!kept || kept.view !== view || !$('.setlist')) { if ($('.setlist') || !kept) S._scrollBack = true; return; }
+  S._scrollBack = true;
+  SCROLLERS.forEach((q, i) => { const el = $(q); if (el && kept.tops[i] && (q !== '.detail' || kept.set === set)) el.scrollTop = kept.tops[i]; });
+}
+window.addEventListener('beforeunload', () => {
+  try { localStorage.setItem(SCROLL_STORE, JSON.stringify({view: S._view, set: S._set, tops: SCROLLERS.map(q => ($(q) || {}).scrollTop || 0)})); } catch (e) {}
+});
 
 /* ---- roles, job emblems, the other character, macro book and lockstyle shown ---- */
 // Roles and colours of AioHUD (job_role_color, src/model/party_state.cpp): icon tint, border, text
@@ -407,7 +431,7 @@ function aliasRows(cards, q){
   const out = [];
   cards.forEach((c, i) => c.variants.forEach((v, k) => { for (const a of v.set.aliases || []) {
     if (q && !a.toLowerCase().includes(q)) continue;
-    out.push({fam: family(a, v.set.pieces), label: shortPath(a).replace(/^(midcast|precast)\./, ''), path: a, of: v.set.path, i, k}); } }));
+    out.push({fam: family(a, v.set.pieces), label: segs(a).pop(), path: a, of: v.set.path, i, k}); } }));
   return out.sort((a, b) => a.label.localeCompare(b.label));
 }
 
