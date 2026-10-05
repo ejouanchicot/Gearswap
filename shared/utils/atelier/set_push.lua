@@ -23,7 +23,7 @@
 --- is written with that variable, read from how the file's other sets use it;
 --- any other piece by its name and augments. The set is found in the job's set
 --- folder (<Char>/<job>/sets/, shared/utils/atelier/set_writer.lua does the text).
---- A support tier version of a weaponskill or engaged set (.Group, .Solo) the file does not
+--- A support tier version of a weaponskill or engaged set (.Group, .Solo, .Trust) the file does not
 --- write yet is written right under its base set, as a set_combine of it; a
 --- weaponskill with no set yet (sets.precast.WS['X']) after the file's last
 --- weaponskill set, as a set_combine of sets.precast.WS.
@@ -291,7 +291,7 @@ end
 
 -- Versions a push may write when the file has none yet, under the set they are built on:
 -- the support tiers of a weaponskill or engaged set (shared/utils/party/support_tier.lua)
-local NEW_VERSIONS = {Group = true, Solo = true}
+local NEW_VERSIONS = {Group = true, Solo = true, Trust = true}
 
 --- Whether a weaponskill of that name exists (the game's resources; unknown when they cannot be read).
 local function known_ws(name)
@@ -304,7 +304,7 @@ local function known_ws(name)
     return false
 end
 
---- A set the file does not write yet that a push may create: a version (.Group, .Solo) under
+--- A set the file does not write yet that a push may create: a version (.Group, .Solo, .Trust) under
 --- its set, or a weaponskill's set under sets.precast.WS (written after the last weaponskill set
 --- of that file). The file, its text, the base's definition, the new name and the definition to
 --- write after; or nil.
