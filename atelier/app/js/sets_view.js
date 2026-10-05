@@ -206,16 +206,15 @@ function renderSets(d){
   const vi = i => Math.min(S.variant[S.job + '|' + i] ?? 0, cards[i].variants.length - 1);
   const rows = S._rows = [];
   let list = '', fam = null;
-  // the names a set is shared under, a link to the set they are: right under it when they are of its family
-  // (Blank Gaze, Cocoon... under SIRDEnmity), else after the family they belong to (Flash = FullEnmity, with the spells)
+  // the names a set is shared under, a link to the set they are: folded right under it, whatever their family
+  // (Blank Gaze, Cocoon... under SIRDEnmity; Flash, Crusade... under FullEnmity)
   const aliases = aliasRows(cards, q);
   const aliasBtn = a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
     `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`;
-  const under = a => a.fam === cards[a.i].fam;
-  const aliasesOf = f => famOpen(f, q) ? aliases.filter(a => a.fam === f && !under(a)).map(aliasBtn).join('') : '';
+
   for (const i of vis) { const c = cards[i];
-    if (c.fam !== fam) { if (fam) list += aliasesOf(fam); fam = c.fam;
-      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0) + aliases.filter(a => a.fam === fam).length;
+    if (c.fam !== fam) { fam = c.fam;
+      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0);
       list += `<button class="fam ${cards[sel] && cards[sel].fam === fam ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${famOpen(fam, q)}"><span>${t('fam.'+fam)}</span><span>${n}</span></button>`; }
     // a category is closed until opened (a search opens them all)
     if (!famOpen(c.fam, q)) continue;
@@ -226,7 +225,7 @@ function renderSets(d){
       list += `<button class="setrow ${main ? '' : 'var'}" data-pick="${i}" data-vpick="${k}" aria-current="${cur}">` +
         `<b>${main ? esc(niceName(c)) + (v.label !== 'Base' ? ` · ${esc(v.label)}` : '') : esc(v.label)}</b><code>${esc(v.set.path)}</code></button>`;
       // its names folded under it: a line to open them (a search opens them)
-      const mine = aliases.filter(a => a.i === i && a.k === k && under(a));
+      const mine = aliases.filter(a => a.i === i && a.k === k);
       if (mine.length) { const key = S.job + '|' + v.set.path, open = !!q || !!(S._aliasOpen || {})[key];
         list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
           (open ? mine.map(aliasBtn).join('') : ''); }
@@ -243,7 +242,6 @@ function renderSets(d){
       if (open) items.forEach(([v, k]) => row(v, k));
     }
   }
-  if (fam) list += aliasesOf(fam);
   if (!vis.length) list = `<p class="empty-list">${t('noMatch')}</p>`;
   S._fams = [...new Set(vis.map(i => cards[i].fam))];
   // open or close every category at once
