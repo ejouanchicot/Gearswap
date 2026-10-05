@@ -46,7 +46,7 @@ Object.assign(T.fr, {
   statAll: 'Tous les objectifs (+{n})', statFewer: 'Seulement ceux de ce set',
   statKept: 'Objectifs ou planchers changés à la main sur ce set.', statReset: 'Réglages par défaut',
   subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.', subFix: 'Passer en /{s}',
-  aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
+  aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis, pour départager', statNone: '—', statFloors: 'Minimums obligatoires (0 = aucun)', statFloorsWhy: 'Les objectifs disent quoi maximiser, dans l’ordre. Un minimum est obligatoire : un set en dessous perd toujours. Exemple : perte d’inimitié réduite ≥ 60, puis le plus d’évasion magique possible.', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥', statCeLoss: 'Perte d’inimitié réduite ≥',
   statWhy: 'Les sets sans dégâts à calculer (repos, Enmity, Phalanx, Fast Cast, Cure…) se jugent sur leurs stats : la recherche ' +
     'additionne celles de chaque pièce, comme les solveurs du guide Paladin. Le premier objectif décide ; les suivants départagent les sets ' +
@@ -98,7 +98,7 @@ Object.assign(T.en, {
   statAll: 'All objectives (+{n})', statFewer: 'Only this set’s',
   statKept: 'Objectives or floors changed by hand on this set.', statReset: 'Back to the defaults',
   subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',
-  aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
+  aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then, to part ties', statNone: '—', statFloors: 'Required minimums (0 = none)', statFloorsWhy: 'The objectives say what to maximise, in order. A minimum is required: a set under it always loses. Example: enmity loss cut ≥ 60, then the most magic evasion.', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥', statCeLoss: 'Enmity loss cut ≥',
   statWhy: 'Sets with no damage to work out (idle, Enmity, Phalanx, Fast Cast, Cure…) are judged on their stats: the search adds up ' +
     'each piece’s, as the Paladin guide’s solvers do. The first objective decides; the next ones part sets as good on it. A floor at 0 is ' +
@@ -532,7 +532,7 @@ function statWhatHTML(s){
   // the set's own settings kept from an earlier visit: one click back to the defaults (they change as the page learns)
   const kept = ((S.optOpts || {}).statBy || {})[s.path];
   const reset = kept ? `<p class="muted small">${esc(t('statKept'))} <button class="linkbtn" data-statreset>${esc(t('statReset'))}</button></p>` : '';
-  const floors = reset + `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
+  const floors = reset + `<h4 class="ophd2">${t('statFloors')}</h4><p class="muted small">${esc(t('statFloorsWhy'))}</p><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
     `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}${opt('ceLoss', 'ceLoss', t('statCeLoss'))}</div>`;
   const search = opSearchHTML(S.optOpts || {}, false, true);
   const jaList = abilityPieces(s);
