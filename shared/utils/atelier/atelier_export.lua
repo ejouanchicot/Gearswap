@@ -185,8 +185,51 @@ local function add_provenance(path_of, out)
     end
 end
 
+--- The last key of a set path (sets.midcast.Flash -> Flash, sets.precast.FC["Geist Wall"] -> Geist Wall).
+local function last_key(path)
+    return path:match('%["(.-)"%]$') or path:match('%.([%w_]+)$') or path
+end
+
+--- The names of the game's spells, job abilities and weapon skills (lower case), or nil without the resources.
+local action_names
+local function is_action(name)
+    if action_names == nil then
+        action_names = false
+        local res = rawget(_G, 'res')
+        if res then
+            action_names = {}
+            for _, kind in ipairs({'spells', 'job_abilities', 'weapon_skills'}) do
+                for _, r in pairs(res[kind] or {}) do if r.en then action_names[r.en:lower()] = true end end
+            end
+        end
+    end
+    return action_names and action_names[name:lower()] or false
+end
+
+--- A set met under several names keeps the one it is defined under when the walk met an action's name first:
+--- `sets.midcast['Banishga'] = sets.midcast.SIRDEnmity` is the SIRDEnmity set (alphabetical order put Banishga
+--- first). The first name that is not a spell, ability or weapon skill wins; the others become its aliases.
+local function prefer_set_names(path_of, out, order)
+    for i, path in ipairs(order) do
+        local rec = out[path]
+        if rec and rec.aliases and is_action(last_key(path)) then
+            for k, alias in ipairs(rec.aliases) do
+                if not is_action(last_key(alias)) then
+                    rec.aliases[k] = path
+                    rec.path = alias
+                    out[path], out[alias] = nil, rec
+                    order[i] = alias
+                    for tbl, p in pairs(path_of) do if p == path then path_of[tbl] = alias end end
+                    break
+                end
+            end
+        end
+    end
+end
+
 local function collect_sets()
     local path_of, out, order = walk_sets(sets or {})
+    prefer_set_names(path_of, out, order)
     add_provenance(path_of, out)
     -- what the set file gave before the page's overrides (shared/utils/atelier/set_overrides.lua)
     local ok, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
