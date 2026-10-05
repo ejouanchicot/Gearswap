@@ -285,7 +285,7 @@ function forceList(slot){
 }
 function forceLines(s, line){
   const f = slotForce(), auto = withWeapons(s, 'force').pieces, eff = withWeapons(s).pieces, src = S.forceSrc || 'mine';
-  const srcs = FORCE_SRCS.map(k => `<button type="button" data-fsrc="${k}" aria-pressed="${src === k}">${esc(t('fsrc_' + k))}</button>`).join('');
+  const srcs = FORCE_SRCS.map(k => `<button type="button" data-fsrc="${k}" aria-pressed="${src === k}" title="${esc(t('fsrcTip_' + k))}">${esc(t('fsrc_' + k))}</button>`).join('');
   // a set named after a weapon (NaeglingKC) keeps that weapon's main and sub: their menus say so, greyed
   const named = weaponModes(data()).map(m => m.name === 'MainWeapon' && weaponOfPath(s.path, m)).find(Boolean);
   return FORCE_SLOTS.map(slot => {
