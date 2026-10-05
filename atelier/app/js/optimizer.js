@@ -195,7 +195,7 @@ async function optimizeEngaged(s){
   if (o.freeWeapons) choices.weapons = weaponPairs(base);
   const input = {ctx: engContextInput(s), start: startOf(base), choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
-  // the whole fight (opt_page.js, atelier_cycle.js): its weaponskill set and how you play, as data for the workers
+  // the whole fight (opt_page.js, atelier/cycle.js): its weaponskill set and how you play, as data for the workers
   if (o.engObj === 'cycle') {
     const cy = cycleReady() && !isJumpSet(s.path) ? cycleInput(s) : null;
     if (!cy) { S._toastSet = s.path; S.toast = t('cycNoWs'); render(); return; }

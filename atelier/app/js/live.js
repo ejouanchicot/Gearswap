@@ -17,7 +17,8 @@ function idb(mode, fn){
     r.onerror = () => ko(r.error); });
 }
 // The page's own folder (D:\...\GearSwap\data): the one to pick, shown to the player
-const pageFolder = () => decodeURIComponent(location.pathname).replace(/^\/([A-Za-z]:)/, '$1').replace(/\/[^/]*$/, '').replace(/\//g, '\\');
+// GearSwap's data folder: the page is data/atelier/index.html (data/atelier.html before 2026-10-05, now a link to it)
+const pageFolder = () => decodeURIComponent(location.pathname).replace(/^\/([A-Za-z]:)/, '$1').replace(/\/[^/]*$/, '').replace(/\/atelier$/, '').replace(/\//g, '\\');
 // The data folder inside what was picked: data itself, or GearSwap, addons, Windower above it
 async function findData(dir){
   const has = async (d, n) => { try { await d.getFileHandle(n); return true; } catch (e) { return false; } };

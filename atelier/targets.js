@@ -2,7 +2,7 @@
 // Apex monsters: atwiki bartlett3 page 327 (Japanese measures), level by level;
 // res = physical and magic damage taken in % (slash, pierce, blunt, ranged, magic, breath). `est` lists the stats
 // the source does not give, filled in: AGI = the Crawlers' Nest Lugcrawlers' (WAR, the page's only AGI at every
-// level) at that level, shifted for a monster the engine's list (atelier-engine/enemies.js) gives one at one of its
+// level) at that level, shifted for a monster the engine's list (atelier/engine/enemies.js) gives one at one of its
 // levels by that monster's difference to them;
 // MND = INT, CHR = MND (or that list's) where missing, as that list does.
 // Locus Ghost Crab: BG-Wiki (Defense, Evasion). Arebati: FFXIAH "Arebati stats" (V0, +4 each stat and +55 Defense a

@@ -1,5 +1,5 @@
 // Atelier optimizer: the page's sets, buffs and target turned into the engine's player and enemy
-// (atelier-engine, kept on this PC only), a weaponskill's average damage, and
+// (atelier/engine, kept on this PC only), a weaponskill's average damage, and
 // the search for the best set. One part of the engine (FFXI_PARTS): no DOM, no page state, so it
 // also runs in a Web Worker (FFXI.workerSource).
 //
@@ -12,7 +12,7 @@
 //   FFXI.opt.value(ctx, pieces, opts)  a set's value for an objective, with the defense floors
 //   FFXI.opt.optimize(ctx, start, choices, opts)  the best set: slot by slot, then pairs of slots
 //
-// @file    atelier_opt.js
+// @file    atelier/opt.js
 // @author  ejouanchicot
 (globalThis.FFXI_PARTS = globalThis.FFXI_PARTS || []).push(function (FFXI) {
     var O = FFXI.opt = {};
@@ -102,7 +102,7 @@
             if (aug["TP Bonus"] && aug["TP Bonus"] === (item.stats || {})["TP Bonus"]) { aug = Object.assign({}, aug); delete aug["TP Bonus"]; }
             add(aug);
             // what the damage formulas do not read (HP, MP, Enmity, Fast Cast...): counted too, for the tanking and
-            // magic figures (the parser keeps them apart: atelier-engine/catalog/augments_parse.js `extra`)
+            // magic figures (the parser keeps them apart: atelier/engine/catalog/augments_parse.js `extra`)
             add(parsed.extra || {});
         }
         // a path's rank stats only gearscan read (the page's extraAugs: no rank table here for that piece)
@@ -439,7 +439,7 @@
         var pl = playerOf(ctx, pieces);
         if (!pl) return null;
         // EXPERIMENTAL (2026-10-04, being tested in game): damage a second over a whole fight, weaponskill and skillchains
-        // in (atelier_cycle.js); opts.cycle: O.cycle's input without the engaged pieces
+        // in (atelier/cycle.js); opts.cycle: O.cycle's input without the engaged pieces
         if (opts.objective === "cycle" && opts.cycle && O.cycle) {
             var cy = O.cycle(Object.assign({}, opts.cycle, {pieces: {engaged: pieces, ws: opts.cycle.wsPieces}}));
             return cy ? {v: cy.dps, raw: cy.dps, def: pl.def, round: null, cycle: cy} : null;

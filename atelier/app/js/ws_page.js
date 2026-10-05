@@ -195,7 +195,7 @@ function wsTpLine(s, line){
 function optSettingsHelp(hit){
   return [t('optWardTip'), 'DT+PDT : ' + t('optPdtTip'), 'DT+MDT : ' + t('optMdtTip'), 'Subtle Blow : ' + t('optSbTip')].concat(hit ? [t('optHitLbl') + ' : ' + t('optHitTip')] : []).join('. ') + '.';
 }
-/* ---- the engaged optimizer: the attack round (atelier-engine/actions.js average_attack_round) ---- */
+/* ---- the engaged optimizer: the attack round (atelier/engine/actions.js average_attack_round) ---- */
 const ENG_OBJS = ['tp_real', 'tp_time', 'dps', 'tp_round'];
 // A Jump (and High Jump, the same set): one attack round in its own set (BG Wiki: Double / Triple Attack and multi-hit
 // weapons count), so the optimizer reads the TP of a round (the defense floors are the engaged ones)
@@ -211,7 +211,7 @@ function engRound(s, plain){
     if (r) r.def = FFXI.opt.defense(FFXI.opt.gearset(ctx, p), ctx.sbBuff);
     return r; } catch (e) { return null; }
 }
-// The round worked out as the engine does it (atelier-engine: average_attack_round, get_tp, get_delay_timing), each step with
+// The round worked out as the engine does it (atelier/engine: average_attack_round, get_tp, get_delay_timing), each step with
 // its figures; then the rounds counted whole (the TP comes at the end of a round)
 function roundCalcHTML(x, real){
   const f = (v, n = 0) => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: n, maximumFractionDigits: n});

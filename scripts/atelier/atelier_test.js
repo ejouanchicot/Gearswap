@@ -1,14 +1,14 @@
 // GearSwap Atelier · the page's test (for the project, never shipped to players): atelier.html opened in Chrome,
 // every character / job of the exports with each of its sets and tabs, the main windows (buffs, target, the drawer on
 // each slot, Compare), the support profiles, four subjobs, two short searches and a stop; every page error reported.
-// Run after any change to atelier.html, atelier_app/ or atelier_opt.js:
+// Run after any change to atelier.html, atelier/app/ or atelier/opt.js:
 //   node scripts/atelier/atelier_test.js
 // Needs Node and Puppeteer (PUPPETEER = its folder, else the one installed globally with npm) and Chrome
 // (CHROME = chrome.exe, else the usual Windows path). The game is never asked: the page's fetch is stubbed.
 const path = require('path');
 const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier.html').split(path.sep).join('/');
+const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').split(path.sep).join('/');
 (async () => {
   const browser = await puppeteer.launch({executablePath: CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage();

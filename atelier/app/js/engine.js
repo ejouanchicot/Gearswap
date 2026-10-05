@@ -1,12 +1,12 @@
 // GearSwap Atelier · engine.js: the damage engine and its workers, a set's context, merits, accuracy, the character's stats
 // (cut from atelier.html, loaded by it in order: see the list there)
-/* ---- ranks and Ambuscade capes (atelier-engine/catalog, kept on this PC only: augments_ranked.js
+/* ---- ranks and Ambuscade capes (atelier/engine/catalog, kept on this PC only: augments_ranked.js
    from LandSandBoat's augment bundles, capes.js), loaded when present ---- */
-// The damage engine (atelier-engine/: its formulas, its gear catalogue, ranks and capes,
-// kept on this PC only) and the optimizer (atelier_opt.js): loaded once, run into window.FFXI
+// The damage engine (atelier/engine/: its formulas, its gear catalogue, ranks and capes,
+// kept on this PC only) and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
-  .map(f => `atelier-engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
-  .map(f => `atelier-engine/${f}.js`), ['atelier_opt.js', 'atelier_cycle.js'])
+  .map(f => `atelier/engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
+  .map(f => `atelier/engine/${f}.js`), ['atelier/opt.js', 'atelier/cycle.js'])
   // read again at each page load: a browser keeps an older copy of a script otherwise
   .map(f => f + '?v=' + Date.now());
 function loadRanked(done){
@@ -72,7 +72,7 @@ function optContextInput(s){
     // Haste Samba at the page's value (merits, a party DNC main or sub), not the engine's fixed 10.1 / 5.1
     if (base === 'Haste Samba') { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
     // the engine counts Saber Dance at 25 % (and drops a /WAR's Double Attack trait under it): its 20 % floor instead,
-    // the legs' bonus counted by the engine on the legs worn (ctx.saberMerit, atelier_opt.js gearset)
+    // the legs' bonus counted by the engine on the legs worn (ctx.saberMerit, atelier/opt.js gearset)
     if (base === 'Saber Dance') partyStats.DA = (partyStats.DA || 0) + 20 - 25;
     abilities[ja.as === 'sub' && base === 'Warcry' ? base + ' (sub)' : base] = true;
   }
@@ -83,7 +83,7 @@ function optContextInput(s){
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
     saberMerit: abilities['Saber Dance'] ? danceMerit('saber') : 0,
     warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws,
-    // your measured base attributes and merits, as data: a worker has no page to ask (atelier_opt.js withBase)
+    // your measured base attributes and merits, as data: a worker has no page to ask (atelier/opt.js withBase)
     base: measuredBase((S.job || '').toLowerCase()), wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V'};
 }
 // A set's pieces as the engine reads them: a piece named without augments is your copy of it (its
@@ -115,7 +115,7 @@ function ownRank(q){
   return engineFill(q);
 }
 // What the game's description gives that the engine's catalogue lacks (Raetic Bangles' "M. Accuracy", a Haste it
-// left out): handed to the engine (atelier_opt.js gear: piece.fill), only for a stat it has none of
+// left out): handed to the engine (atelier/opt.js gear: piece.fill), only for a stat it has none of
 function engineFill(q){
   const it = window.FFXI && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(q.name, q.id) : null, r = it && pieceStats(Object.assign({}, q, {augs: []}));
   if (!r || !r.known) return q;
@@ -192,7 +192,7 @@ function renderMerits(){
     (n ? `<button class="btn ghost" data-action="meritreset">${t('meritsReset', {n})}</button>` : '') + `</div><div class="meritgrid">${groups}</div>`;
 }
 
-/* ---- Accuracy and Evasion: the engine's formulas (atelier-engine/player.js) ---- */
+/* ---- Accuracy and Evasion: the engine's formulas (atelier/engine/player.js) ---- */
 // Job traits, highest tier first: [level, value]. The main job's counts, the subjob's only
 // when higher (they do not stack)
 const TRAITS = {
@@ -259,10 +259,10 @@ function combatOf(c, gear, dex, agi, mainName){
   return {acc, eva, wskill, level};
 }
 
-/* ---- tanking (Guide_Paladin 02_enmity, 03_defense, 03_magic) and offense (atelier-engine/helpers.js get_tp, get_hit_rate) ---- */
+/* ---- tanking (Guide_Paladin 02_enmity, 03_defense, 03_magic) and offense (atelier/engine/helpers.js get_tp, get_hit_rate) ---- */
 // Phalanx potency of the enhancing skill: up to 300, a tenth less 2; past it a point per 28.5, up to 35 at 500
 const phalanxPotency = skill => skill <= 300 ? Math.max(0, Math.floor(skill / 10) - 2) : Math.min(35, 28 + Math.floor((skill - 300.5) / 28.5));
-// Base TP of a hit from the weapon delay (atelier-engine/helpers.js get_tp)
+// Base TP of a hit from the weapon delay (atelier/engine/helpers.js get_tp)
 function tpBase(d){
   if (d <= 180) return 61 + (d - 180) * 63 / 360;
   if (d <= 540) return 61 + (d - 180) * 88 / 360;
@@ -335,7 +335,7 @@ function measuredChar(){
   const latest = list => list.sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0] || null;
   return latest(all.filter(c => d && c.sub === d.sub)) || latest(all);
 }
-// The measured base attributes ({main, sub, str: 153...}) for the damage engine's create_player (atelier_opt.js
+// The measured base attributes ({main, sub, str: 153...}) for the damage engine's create_player (atelier/opt.js
 // withBase): the character's own race and attribute merits instead of a generic character's
 function measuredBase(job){
   if (!S.job || S.job.toLowerCase() !== job) return null;

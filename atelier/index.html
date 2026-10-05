@@ -1,0 +1,27 @@
+<meta charset="utf-8">
+<title>GearSwap Atelier</title>
+<!-- GearSwap Atelier: open this file (or data/atelier.html) in a browser. Data: //gs c atelier in game.
+     Every path of the page is read from data/ (the base below): atelier/app/, atelier/engine/, <Char>/atelier/exports/... -->
+<base href="../">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<script>
+// the page's style and code (atelier/app/), read again at each load: a browser keeps an older copy otherwise
+for (const f of ['base', 'sets', 'panels', 'tabs']) document.write(`<link rel="stylesheet" href="atelier/app/css/${f}.css?v=${Date.now()}">`);
+</script>
+
+<div class="app">
+  <header class="topbar" id="top"></header>
+  <main class="main"><div class="inner" id="view"></div></main>
+</div>
+<div id="overlay" hidden></div>
+<div id="tip" class="tip" role="tooltip" hidden></div>
+<script src="atelier/targets.js"></script>
+<script src="atelier/index.js"></script>
+<script>
+// in this order: each file reads what the ones before it declare
+for (const f of ['i18n', 'job_icons', 'core', 'keys', 'stats', 'engine', 'optimizer', 'buffs', 'buff_panels', 'live', 'simulate', 'sets_view', 'weapons', 'ws_page', 'opt_page', 'drawer', 'trial', 'push', 'events'])
+  document.write(`<script charset="utf-8" src="atelier/app/js/${f}.js?v=${Date.now()}"><\/script>`);
+</script>
+

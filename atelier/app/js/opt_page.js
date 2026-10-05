@@ -2,7 +2,7 @@
 // a line on top (back, the set, the buffs profile and target, the search buttons), then two columns: what is looked for
 // (objective, its settings, where to look and the floors) and the result (the objective's figure, the same detailed table
 // for every objective, the pieces changed, what to do with them). An engaged set may be judged over a whole fight,
-// weaponskills and skillchains in (atelier_cycle.js, FFXI.opt.cycle: EXPERIMENTAL, offered only when that file is there)
+// weaponskills and skillchains in (atelier/cycle.js, FFXI.opt.cycle: EXPERIMENTAL, offered only when that file is there)
 // (loaded by atelier.html after ws_page.js: see the list there)
 
 Object.assign(T.fr, {optSearch_fast: 'Recherche rapide', optSearch_classic: 'Recherche classique', optSearchTip: 'Rapide : garde en mémoire ce qui est déjà calculé et écarte les pièces qui ne peuvent jamais gagner (une autre pièce du même emplacement fait au moins aussi bien sur tout ce que l’objectif compte). Classique : l’ancienne recherche, pour comparer.',
@@ -271,7 +271,7 @@ function opChangesHTML(s){
     `<span>${esc((plain[slot] || {}).name || '—')}</span><span class="to">→ ${esc(tr[slot].name || '—')}</span></li>`).join('')}</ul>`;
 }
 
-/* ---- the whole-fight objective (atelier_cycle.js) ---- */
+/* ---- the whole-fight objective (atelier/cycle.js) ---- */
 const CYCLE_TIMED = ['Berserk', 'Aggressor', 'Warcry'];
 // Measured on the Locus Ghost Crabs (2026-10-04): 32 TP a hit taken, ~0.18 hits a second
 const CYCLE_TP_TAKEN = 5.8;

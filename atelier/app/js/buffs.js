@@ -1,6 +1,6 @@
 // GearSwap Atelier · buffs.js: the buffs' tables, the support profiles, what follows the set opened
 // (cut from atelier.html, loaded by it in order: see the list there)
-/* ---- buffs and conditions (atelier-engine/buffs.js and its catalogue, Guide_Paladin 01_prologue, 03_magic, 03_job_ability) ---- */
+/* ---- buffs and conditions (atelier/engine/buffs.js and its catalogue, Guide_Paladin 01_prologue, 03_magic, 03_job_ability) ---- */
 // Foods: flat stats; atkf = Attack added after the Attack % (the engine's "Food Attack"); a [%, cap] pair is a % of the stat with its cap
 const FOODS = {
   'Grape Daifuku +1': {str: 3, vit: 4, atkf: 55, acc: 85, mab: 4}, 'Grape Daifuku': {str: 2, vit: 3, atkf: 50, acc: 80, mab: 3},
@@ -30,7 +30,7 @@ const ROLLS = {
   "Monk's": {sb: [[8, 10, 32, 12, 14, 16, 4, 20, 22, 24, 40], 4]}, "Tactician's": {regain: [[10, 10, 10, 10, 30, 10, 10, 0, 20, 20, 40], 2]},
 };
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
-// A roll's bonus when its job is in the party (you count), as the engine has it (atelier-engine/buffs.js, BG Wiki for
+// A roll's bonus when its job is in the party (you count), as the engine has it (atelier/engine/buffs.js, BG Wiki for
 // Chaos, Samurai, Fighter's, Rogue's, Hunter's); Crooked Cards: the roll x1.2, after Rolls+ and the job bonus (BG Wiki)
 const ROLL_JOB = {'Chaos': ['DRK', 100 / 1024], 'Samurai': ['SAM', 10], "Fighter's": ['WAR', 5], "Rogue's": ['THF', 5], "Hunter's": ['RNG', 15],
   "Wizard's": ['BLM', 10], "Warlock's": ['RDM', 15], "Monk's": ['MNK', 10], "Tactician's": ['SCH', 10]};
@@ -41,7 +41,7 @@ const BUBBLES = {
   'Fury': {atkp: [.347, .027]}, 'Haste': {mhaste: [29.9, 1.1]}, 'Precision': {acc: [50, 5]}, 'Focus': {macc: [50, 5]}, 'Acumen': {mab: [15, 3]},
   'STR': {str: [25, 2]}, 'DEX': {dex: [25, 2]}, 'VIT': {vit: [25, 2]}, 'AGI': {agi: [25, 2]}, 'INT': {int: [25, 2]}, 'MND': {mnd: [25, 2]}, 'CHR': {chr: [25, 2]},
 };
-// Geomancy on the enemy (atelier-engine/buffs.js geo_debuffs: [base, + per Geomancy+]): e* = the enemy's stat
+// Geomancy on the enemy (atelier/engine/buffs.js geo_debuffs: [base, + per Geomancy+]): e* = the enemy's stat
 // (edefp a fraction of its Defense, eeva its Evasion, emdb its Magic Defense Bonus, emeva its Magic Evasion)
 // A GEO's abilities on its bubbles (BG Wiki), Geomancy+ included: Bolster doubles Indi- and Geo- (not an
 // Entrust) and leaves Blaze of Glory and Ecliptic Attrition out; without it, Blaze of Glory +50 % and Ecliptic
@@ -57,7 +57,7 @@ function geoMul(b){
 // V15 found -75 %); a monster takes it whole
 const geoKeep = key => { const z = (TARGETS[key] || {}).zone || ''; return /^Sortie/.test(z) ? .5 : /Odyssey/.test(z) ? .15 : 1; };
 const GEO_DEBUFFS = {'Frailty': {edefp: [.148, .027]}, 'Torpor': {eeva: [50, 5]}, 'Malaise': {emdb: [15, 3]}, 'Languor': {emeva: [50, 5]}};
-// The other jobs' Defense down on the enemy (atelier-engine/buffs.js whm_debuffs, cor_debuffs)
+// The other jobs' Defense down on the enemy (atelier/engine/buffs.js whm_debuffs, cor_debuffs)
 const DIA = {'Dia': 104 / 1024, 'Dia II': 156 / 1024, 'Dia III': 208 / 1024};
 // Distract's Evasion down at its cap (BG Wiki: a RDM at full enfeebling skill and +50 MND over the target),
 // Saboteur's multiplier: x2 on a monster, x1.25 on an NM (a Sortie or Odyssey boss), Lethargy Gantherots +3
@@ -230,7 +230,7 @@ const STORMS = {'Firestorm II': {str: 7}, 'Thunderstorm II': {dex: 7}, 'Sandstor
 // (main: the effect as main job). party: a buff a party member gives, always offered
 const JAS = {
   // lvl: the level the job learns it (BG Wiki); a subjob has it at its own level (49, +1 per 5 Master
-  // Levels). fx(main, level): main = used as main job. Values: atelier-engine/player.js
+  // Levels). fx(main, level): main = used as main job. Values: atelier/engine/player.js
   'Berserk': {job: 'WAR', lvl: 15, fx: (m, l) => ({atkp: m ? 89 / 256 : l >= 50 ? 69 / 256 : .25, atk: m ? 40 : 0, defp: -.25})},
   'Defender': {job: 'WAR', lvl: 25, fx: () => ({defp: .25, atkp: -.25})},
   // Warcry's TP Bonus (Savagery merits, Agoge) comes from the job's TP config, for the TP steps
@@ -238,7 +238,7 @@ const JAS = {
   'Aggressor': {job: 'WAR', lvl: 45, fx: m => ({acc: 25 + (m ? 20 : 0), eva: -25})},
   'Blood Rage': {job: 'WAR', lvl: 87, excl: 'warcry', fx: m => ({crit: m ? 40 : 20})},
   'Mighty Strikes': {job: 'WAR', lvl: 1, sp: true, fx: () => ({crit: 100, acc: 40})},
-  // Double Attack +100 % at its start, nothing after 30 s; +80 Attack from its job points (atelier-engine/player.js)
+  // Double Attack +100 % at its start, nothing after 30 s; +80 Attack from its job points (atelier/engine/player.js)
   'Brazen Rush': {job: 'WAR', lvl: 96, sp: true, mainOnly: true, fx: () => ({da: 100, atk: 80})},
   'Focus': {job: 'MNK', lvl: 25, fx: (m, l) => m ? {crit: 20, acc: 120} : {crit: 20 * (1 - (99 - l) / 100), acc: 100 * (1 - (99 - l) / 100)}},
   'Impetus': {job: 'MNK', lvl: 88, fx: () => ({crit: 45, atk: 126})},
@@ -278,7 +278,7 @@ const JAS = {
   "Garuda's Favor · party": {party: true, excl: 'favor', from: 'SMN', fams: ['idle', 'special', 'engaged'], fx: () => ({eva: 55})},
   "Titan's Favor · party": {party: true, excl: 'favor', from: 'SMN', fams: ['idle', 'special', 'engaged'], fx: () => ({def: 127})},
 };
-// Targets: atelier_targets.js (monsters as players measured them, level by level) and the engine's
+// Targets: atelier/targets.js (monsters as players measured them, level by level) and the engine's
 // "BG Wiki sets" reference, the default. TARGETS[key] the whole entry; ENEMIES[key] = level, Defense,
 // Evasion, VIT, AGI, MND, INT, CHR
 const DEFAULT_ENEMY = 'BG Wiki sets';
@@ -319,7 +319,7 @@ function jaOn(b, name){
 // A dance's floor (BG Wiki): Saber Dance's Double Attack ends at 20 % (from 50 %, in 30 s), Fan Dance's physical damage
 // cut at 20 % (from 90 %, 10 % a hit taken); each "Saber Dance" / "Fan Dance" merit level adds 1 % to it while Etoile or
 // Horos Tights / Bangles are worn: counted on the pieces of the set shown (the search weighs the Tights against any
-// other legs: atelier_opt.js gearset)
+// other legs: atelier/opt.js gearset)
 const DANCE = {saber: {merit: 'saber_dance', slot: 'legs', gear: /^(Horos|Etoile) Tights/},
   fan: {merit: 'fan_dance', slot: 'hands', gear: /^(Horos|Etoile) Bangles/}};
 function danceMerit(kind){ const m = (meritList() || []).find(x => x.key === DANCE[kind].merit); return m ? meritLevel(m) : 0; }

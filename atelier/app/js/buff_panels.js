@@ -1,6 +1,6 @@
 // GearSwap Atelier · buff_panels.js: aftermath, effect labels, the buffs / party / target panels and windows
 // (cut from atelier.html, loaded by it in order: see the list there)
-/* ---- aftermath of the weapon in hand (atelier-engine/player.js) ---- */
+/* ---- aftermath of the weapon in hand (atelier/engine/player.js) ---- */
 // Prime weapons: PDL by stage and level (Lv1 / Lv2 at 60 % between two steps, as the engine), Lorg Mor and Opashoro magic
 const PRIME_AM_PDL = {III: [2, 5, 8], IV: [4, 7, 10], V: [6, 9, 12]}, PRIME_AM_MDMG = {III: 0, IV: 20, V: 30}, PRIME_POT = .6;
 const PRIME_PDL = new Set(['Caliburnus', 'Dokoku', 'Earp', 'Foenaria', 'Gae Buide', 'Helheim', 'Kusanagi-no-Tsurugi', 'Laphria',
@@ -414,7 +414,7 @@ function targetFactsHTML(name){
     (taken.length ? `<p class="small">${esc(t('tgtRes'))} : ${esc(taken.join(' · '))} <span class="muted">(${esc(t('tgtResNote'))})</span></p>` : '');
 }
 /* ---- the target: its stats (ENEMIES: level, Defense, Evasion), what each debuff takes off, you against it ---- */
-// The pDIF cap of a weapon's skill (atelier-engine/helpers.js melee_pdif_base_cap), before the PDL trait and gear
+// The pDIF cap of a weapon's skill (atelier/engine/helpers.js melee_pdif_base_cap), before the PDL trait and gear
 const PDIF_CAP = s => /^(katana|dagger|sword|axe|club)$/i.test(s || '') ? 3.25 : /great katana|hand-to-hand/i.test(s || '') ? 3.5
   : /great sword|staff|great axe|polearm/i.test(s || '') ? 3.75 : /scythe/i.test(s || '') ? 4.0 : /marksmanship|archery/i.test(s || '') ? 3.5 : 3.25;
 function targetInfo(s){

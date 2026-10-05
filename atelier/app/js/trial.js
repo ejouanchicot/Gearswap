@@ -134,7 +134,7 @@ function openCompare(s){
   };
   const dtRows = dtRow(t('pdtEff'), 'pdt', c => [['PDT II', num(c, 'pdt2')]]) +
     dtRow(shell ? t('mdtShell') : t('mdtEff'), 'mdt', c => [['MDT II', num(c, 'mdt2')], ['Shell', shell]]);
-  // the weaponskill's average damage per column (the engine, atelier-engine/)
+  // the weaponskill's average damage per column (the engine, atelier/engine/)
   const dmg = cols.map(c => withTrialAs(s, c.tr, () => wsDamage(s)));
   const dmgRow = dmg.some(v => v != null) ? `<tr class="want dmgrow"><th>${t('cmpDmg', {tp: S.wsTp || 3000})}</th>` + dmg.map((v, i) => {
     const dv = v != null && dmg[0] != null ? (v / dmg[0] - 1) * 100 : 0, best = Math.max(...dmg.filter(x => x != null));

@@ -217,7 +217,7 @@ function pieceStats(p, slot){
     r.hidden = true;
   }
   // another effect the description only names (Brutal Earring: Enhances "Double Attack" effect): the engine's value
-  // (atelier-engine/catalog, BG Wiki's), when it has one for that stat
+  // (atelier/engine/catalog, BG Wiki's), when it has one for that stat
   const engineIt = window.FFXI && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(p.name) : null;
   const named = f => { for (const [re, key] of HIDDEN_PHRASES) { const m = f.match(re); if (m) return key || STAT_ALIAS[normName(m[1])]; } return null; };
   const hiddenOf = f => { const k = named(f), v = k && !r.base[k] && engineIt && (engineIt.stats || {})[ENGINE_STAT[k]];
@@ -248,7 +248,7 @@ function pieceStats(p, slot){
     r.rankStats = true;
     for (const a of scan.rank_stats) addAugment(a, r);
   }
-  // a path whose rank gearscan never read: its top rank, as the engine counts it (atelier-engine augments_parse:
+  // a path whose rank gearscan never read: its top rank, as the engine counts it (atelier/engine augments_parse:
   // rank_assumed), said in the hover card
   else if (r.path && rankedEntry(p.name)) {
     const top = rankedEntry(p.name).max_rank;
@@ -286,7 +286,7 @@ function addRanked(name, path, rank, r){
   }
 }
 // An Ambuscade cape with each material at its maximum (thread, dust, dye, sap, resin: BG Wiki,
-// atelier-engine/catalog/capes.js), from the augments the copy carries; the materials it lacks named
+// atelier/engine/catalog/capes.js), from the augments the copy carries; the materials it lacks named
 const CAPE_MAX = [[/^(STR|DEX|VIT|AGI|INT|MND|CHR)\+\d+$/, 20, 10], [/^(HP|MP)\+\d+$/, 60, 20], [/Accuracy\+\d+ Attack\+\d+|Rng\.Acc\.\+\d+ Rng\.Atk\.\+\d+|Mag\. Acc\+\d+ \/Mag\. Dmg\.\+\d+|Eva\.\+\d+ \/Mag\. Eva\.\+\d+/, 20],
   [/^(Accuracy|Attack|Rng\.Acc\.|Rng\.Atk\.|Mag\. Acc\.|Mag\. Dmg\.|Evasion|Mag\. Evasion)\+\d+$/, 10],
   [/Weapon skill damage|Crit\.hit rate|"Store TP"|"Dbl\.Atk\."|^Haste|"Dual Wield"|^Enmity|"Snapshot"|"Mag\.Atk\.Bns\."|"Fast Cast"|"Cure" potency|"Waltz" potency/, 10],
