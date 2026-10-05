@@ -141,7 +141,7 @@ function openCompare(s){
     return `<td class="${v === best && dmg.some(x => x !== v) ? 'best' : ''}">${v == null ? '—' : fmtDmg(v)}${i && dv ? `<i class="dv ${dv > 0 ? 'up' : 'down'}">${dv > 0 ? '+' : ''}${dv.toFixed(1)} %</i>` : ''}</td>`; }).join('') + `</tr>` : '';
   // what the set is after: the stats that differ shown, the ones every column has alike folded with the rest
   const differs = k => cols.some(c => num(c, k) !== num(ref, k)), wantedDiff = wanted.filter(differs), wantedSame = wanted.filter(k => !differs(k));
-  const wantRows = dmgRow + engCmpRows(s, cols) + dtRows + rowsOf(wantedDiff, 'want'), statRows = rowsOf(wantedSame, '') + rowsOf(keys, '');
+  const wantRows = dmgRow + engCmpRows(s, cols) + statCmpRows(s, cols) + dtRows + rowsOf(wantedDiff, 'want'), statRows = rowsOf(wantedSame, '') + rowsOf(keys, '');
   const folded = wantedSame.length + keys.length, cols1 = cols.length + 1;
   // two panes side by side for two or three columns: the pieces that differ, the figures; one under the other past that
   const pieces = pieceRows ? `<section><div class="kicker">${t('cmpPieces')}</div><table class="cmptbl"><thead>${head}</thead><tbody>${pieceRows}</tbody></table></section>` : '';

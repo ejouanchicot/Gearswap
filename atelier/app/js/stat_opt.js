@@ -317,6 +317,25 @@ function hpCycleHTML(s){
   return fbox('hpcycle', 'g-tank', t('cyTitle'), body);
 }
 
+// The Compare window's lines for a set judged by its stats: its objectives and the lines shown under them (Phalanx with
+// its skill step, the Cure, the HP gap, each action's enmity...) per column, the best in bold, each column's gap to the
+// first (trial.js openCompare)
+function statCmpRows(s, cols){
+  if (!statSet(s) || !engineReady() || !FFXI.opt.statFigures) return '';
+  const figs = cols.map(c => withTrialAs(s, c.tr, () => statFigures(s)));
+  const rows = statRows(s).filter((r, i) => i < 3 || ['gap', 'ref', 'cure4', 'phalanx'].includes(r.id) || r.id.startsWith('act:'));
+  const seen = new Set();
+  return rows.filter(r => !seen.has(r.id) && seen.add(r.id)).map(r => {
+    const vals = figs.map(f => f ? r.get(f) : null);
+    if (vals.every(v => v == null)) return '';
+    const best = r.low ? Math.min(...vals.filter(v => v != null)) : Math.max(...vals.filter(v => v != null));
+    return `<tr class="want"><th ${r.tip ? `title="${esc(r.tip)}"` : ''}>${esc(r.label)}</th>` + vals.map((v, i) => {
+      const dv = v != null && vals[0] != null ? v - vals[0] : 0, up = r.low ? dv < 0 : dv > 0;
+      return `<td class="${v === best && vals.some(x => x !== v) ? 'best' : ''} ${r.floor && v != null && !r.floor(v) ? 'short' : ''}">${v == null ? '—' : r.fmt(v)}` +
+        (i && dv ? `<i class="dv ${up ? 'up' : 'down'}">${dv > 0 ? '+' : '−'}${Math.round(Math.abs(dv) * 10) / 10}</i>` : '') + `</td>`; }).join('') + `</tr>`;
+  }).join('');
+}
+
 /* ---- the search ---- */
 async function optimizeStats(s){
   if (!engineReady() || !statSet(s)) return;
