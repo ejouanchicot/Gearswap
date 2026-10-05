@@ -77,6 +77,9 @@ local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
 --- Sortie runes under /RUN.
 local STANCE_SUBJOBS = {SCH = true, RUN = true}
 
+--- Subjobs that offer the Regen state (sets.idleRegen over the idle): their keys in PLD_KEYBINDS.lua.
+local REGEN_SUBJOBS = {SCH = true, RUN = true}
+
 --- The Sortie stances of PLD/SCH and /RUN (DPS, Tanking, Hoxne), offered beside the classic PDT and MDT
 --- (STANCE_SUB_OPTIONS below): hold hate, feed weaponskills, or carry the Hoxne Ampulla.
 --- DPS and Hoxne each own their engaged build: the Ampulla's charge supplies
@@ -250,8 +253,8 @@ function PLDStates.configure()
     --- Idle only, so it never costs anything in combat; the stance keeps every
     --- slot the Regen set leaves out.
     --- Key ^numpad2 under /SCH (PLD_KEYBINDS.lua), or a macro with
-    --- //gs c set Regen On|Off. Shown in the HUD under /SCH alone - the other
-    --- subjobs force it Off below rather than leave it On where the HUD does
+    --- //gs c set Regen On|Off. Shown in the HUD under /SCH and /RUN (^numpad7 there) - the
+    --- other subjobs force it Off below rather than leave it On where the HUD does
     --- not show it.
     state.Regen =
         M {
@@ -339,9 +342,8 @@ local function install_profile(profile)
         if is_sch() then
             state.SneakInviAOE:set('On')
         else
-            -- /RUN: the Sortie runes; Regen is a /SCH mode, Off where the HUD hides it
+            -- /RUN: the Sortie runes (Regen stays as it is: /RUN has it too)
             reshape(state.RuneMode, SORTIE_RUNE_OPTIONS)
-            state.Regen:set('Off')
         end
         return
     end
@@ -357,8 +359,8 @@ local function install_profile(profile)
     reshape(state.RuneMode, RUNE_OPTIONS)
     reshape(state.MainWeapon, WEAPON_OPTIONS)
     state.PhalanxSIRD:set('Off')
-    -- Not shown in the HUD outside /SCH: turned Off rather than left On unseen.
-    state.Regen:set('Off')
+    -- Not shown in the HUD outside /SCH and /RUN: turned Off there rather than left On unseen.
+    if not (player and REGEN_SUBJOBS[player.sub_job]) then state.Regen:set('Off') end
 end
 
 --- Reshape the states that depend on the subjob and on HybridMode.

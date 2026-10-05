@@ -23,7 +23,7 @@ local PLDKeybinds = {}
 --- rather than on the job.
 ---
 --- Phalanx SIRD stays on Ctrl+Numpad2 under every subjob (On by default under
---- /SCH); Regen, /SCH only, takes Ctrl+Numpad3 (Rune Mode's key, which only /RUN uses).
+--- /SCH); Regen takes Ctrl+Numpad3 under /SCH (Rune Mode's key, which only /RUN uses), Ctrl+Numpad7 under /RUN.
 --- The weapon stays cyclable: the /SCH stances pick the set, not the sword.
 PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /SCH)
 {
@@ -63,16 +63,16 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
     -- Phalanx SIRD: one key under every subjob (under /SCH On by default, Off for a
     -- fight where the Phalanx potency matters more than not being interrupted: Sortie Aminon)
     { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD" },
-    -- Regen: /SCH only. Macros can still set an explicit value with `gs c set Regen On|Off`.
+    -- Regen (sets.idleRegen over the idle): /SCH on Ctrl+Numpad3, /RUN on Ctrl+Numpad7 (Numpad3 is its Rune Mode).
+    -- Macros can still set an explicit value with `gs c set Regen On|Off`.
     { key = "^numpad3", command = "cyclestate Regen", desc = "Regen", state = "Regen", subjob = "SCH" },
+    { key = "^numpad7", command = "cyclestate Regen", desc = "Regen", state = "Regen", subjob = "RUN" },
     { key = "^numpad5", command = "cyclestate WS1", desc = "WS Slot 1", state = "WS1" },
     { key = "^numpad6", command = "cyclestate WS2", desc = "WS Slot 2", state = "WS2" },
 }
 
---- Keys this file used to bind and no longer does, unbound on every load.
---- ^numpad7 held SneakInviAOE, retired when /SCH started holding it On.
-PLDKeybinds.retired_keys = {
-    "^numpad7"
-}
+--- Keys this file used to bind and no longer does, unbound on every load (^numpad7, SneakInviAOE's until /SCH
+--- held it On, is Regen's under /RUN since 2026-10-05).
+PLDKeybinds.retired_keys = {}
 
 return require('shared/utils/keybinds/keybind_manager').create('PLD', PLDKeybinds)
