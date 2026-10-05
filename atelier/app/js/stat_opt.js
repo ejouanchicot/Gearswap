@@ -13,6 +13,8 @@ Object.assign(T.fr, {
   statObj_cureSelf: 'Cure IV sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
   statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II ; +50 du gift PLD Cure Potency Bonus dès 1200 JP, vérifié en jeu : Cure IV 1332, 1245, 1114), le jour et la météo à part.',
   statObj_enhdur: 'Durée renfort', statD_enhdur: 'Enhancing magic duration : Protect, Shell, Reprisal… durent plus longtemps',
+  statObj_enhSkill: 'Skill de renfort', statD_enhSkill: 'le tien + le gear : Phalanx, Stoneskin, Barspells… en dépendent',
+  statObj_divSkill: 'Skill divin', statD_divSkill: 'le tien + le gear : Enlight II, Flash (Cécité), Banish, Holy',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbés : skill de renfort et MND (350 au plus), + le gear Stoneskin (475 au plus)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup, selon le skill divin',
   statObj_hpLow: 'HP les plus bas', statD_hpLow: 'Fast Cast d’un Cure sur toi : HP bas, le set de Cure les remonte et le Cure remplit l’écart',
@@ -49,6 +51,8 @@ Object.assign(T.en, {
   statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
   statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from the PLD gift Cure Potency Bonus from 1200 JP, checked in game: Cure IV 1332, 1245, 1114), day and weather aside.',
   statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
+  statObj_enhSkill: 'Enhancing skill', statD_enhSkill: 'yours + the gear: Phalanx, Stoneskin, Barspells… depend on it',
+  statObj_divSkill: 'Divine skill', statD_divSkill: 'yours + the gear: Enlight II, Flash (Blind), Banish, Holy',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit, by divine skill',
   statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
@@ -79,7 +83,7 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight'];
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 const statFmt = k => v => v == null ? '—' : (k === 'ecritRed' && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
@@ -118,10 +122,10 @@ function statDefaultOf(s){
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return ['cureSelf', 'pdtRed', 'hp'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
   if (/cur(e|a|aga)/i.test(p)) return ['cure', 'hp', 'enmity'];
-  if (/stoneskin/i.test(p) && fam !== 'fc') return ['stoneskin', 'hp', 'pdtRed'];
-  if (/enlight/i.test(p) && fam !== 'fc') return ['enlight', 'hp', 'pdtRed'];
+  if (/stoneskin/i.test(p) && fam !== 'fc') return ['stoneskin', 'enhSkill', 'hp'];
+  if (/enlight/i.test(p) && fam !== 'fc') return ['enlight', 'divSkill', 'hp'];
   // an enhancing set (Protect, Shell, Reprisal...): how long they last
-  if (family(s.path, s.pieces) === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) return ['enhdur', 'hp', 'pdtRed'];
+  if (family(s.path, s.pieces) === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) return ['enhdur', 'enhSkill', 'hp'];
   if (/refresh/i.test(p)) return ['refresh', 'pdtRed', 'mdtRed'];
   if (/regen/i.test(p)) return ['regen', 'pdtRed', 'mdtRed'];
   // a magic-defense set by its name (idle.MDT, MEva): not every set with Magic in it (Enhancing Magic)
@@ -139,14 +143,15 @@ function statOpts(s){
 // (SIRD sets and Cures: SIRD 102 with the merits, the guide's benchmark; a Fast Cast: capped at 80)
 // A tank's other sets: their HP between the reference and 200 more (hpRef)
 function statFloorDefault(s, first){
-  const fam = family(s.path, s.pieces), sird = /sird/i.test(setNames(s)) || tankSpell(s) ? {sird: 102} : {};
+  const fam = family(s.path, s.pieces), sird = /sird/i.test(setNames(s)) ? {sird: 102} : {};
   if (first === 'fc') return {fc: 80};
   if (!['PLD', 'RUN'].includes(S.job)) return sird;
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
-  if (first === 'def' && ['idle', 'special'].includes(fam)) return Object.assign({pdt: -50, ecrit: -5}, hp);
-  if (first === 'enmity') return Object.assign({pdt: -50}, sird, hp);
-  if (first === 'cure' || first === 'cureSelf') return {sird: 102};
-  return Object.assign({}, sird, hp);
+  // damage taken at its cap on every tank set worn more than an instant: DT+PDT -50, DT+MDT -50 less what Shell gives
+  // (Shell V -29.3 %: -21 left to the gear)
+  const shell = buffTotals().shell || 0, dt = {pdt: -50, mdt: -Math.ceil(50 - shell / 256 * 100)};
+  const ecrit = first === 'def' && ['idle', 'special'].includes(fam) ? {ecrit: -5} : {};
+  return Object.assign(dt, ecrit, sird, hp);
 }
 // The reference HP of a tank's sets (Guide_Paladin HP Management): the lowest of the classic Fast Cast sets
 // (sets.precast.FC and its spells', not the self Cure's, low on purpose), the lowest in HP of the sets worn in the cycle
@@ -161,14 +166,6 @@ function hpRef(s){
   let low = null;
   for (const x of list) { const hp = statFigures(x, true).hp; if (!low || hp < low.hp) low = {hp, path: x.path}; }
   return low;
-}
-// A tank's spell set (PLD, RUN): cast while taking hits, so SIRD at 102 with the merits (the guide's SIRD sets, Cure,
-// Enlight II SIRD...); not a spell's potency set that has its own SIRD twin (Phalanx beside SIRDPhalanx)
-function tankSpell(s){
-  if (!['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) !== 'midcast') return false;
-  const name = segs(s.path).pop(), d = data();
-  const flat = p => p.toLowerCase().replace(/[^a-z]/g, ''), twin = flat('sird' + name);
-  return !(d && d.sets.some(x => [x.path, ...(x.aliases || [])].some(p => flat(p).endsWith(twin))));
 }
 // A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay
 // when asked (a job ability's set: on by default), only the rest is searched. The slots kept, or none

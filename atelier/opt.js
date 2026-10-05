@@ -673,6 +673,7 @@
         var ss = x < 80 ? x : x <= 130 ? Math.floor(2 * enhAll / 3) + 2 * mndAll - 60 : enhAll + 3 * mndAll - 190;
         f.stoneskin = Math.min(475, Math.min(350, ss) + t.ss);
         var div = (b.div || 0) + t.div;
+        f.enhSkill = enhAll; f.divSkill = div;
         f.enlight = div <= 500 ? 2 * Math.floor((div + 85) / 13) + Math.floor((div + 85) / 26) : 2 * Math.floor((div + 400) / 20) + Math.floor((div + 400) / 40);
         // a self Cure IV: what it would heal, and what it heals (Guide_Paladin CURE SELF: the Fast Cast of the Cure lowers
         // the max HP, so the current HP with it; the Cure set raises the max HP; the Cure heals up to the gap)
@@ -686,7 +687,7 @@
         return f;
     };
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
