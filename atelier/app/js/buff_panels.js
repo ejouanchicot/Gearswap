@@ -214,7 +214,8 @@ function partyCardsHTML(b, sel, geoSel, plus, jas){
   // who casts the WHM tab's spells (BG Wiki): Protect V WHM / RDM / SCH / PLD, Shell V WHM / RDM / SCH / RUN, Haste WHM /
   // RDM, Haste II RDM only, Storm II SCH only, Hastega SMN (Garuda); its switch keeps its WHM key
   const tabs = [
-    {key: 'WHM', label: 'WHM', body: `<div class="prow">${seg('protect', PROTECT, 'Protect')}<span class="pwho">WHM RDM SCH PLD</span></div>` +
+    // a PLD's own Protect carries its shield's DEF (Shield Barrier): said when another job casts it
+    {key: 'WHM', label: 'WHM', body: `<div class="prow">${seg('protect', PROTECT, 'Protect')}${S.job === 'PLD' ? flag('protectOther', t('protOther'), t('protOtherTip')) : ''}<span class="pwho">WHM RDM SCH PLD</span></div>` +
       `<div class="prow">${seg('shell', SHELL, 'Shell')}<span class="pwho">WHM RDM SCH RUN</span></div>` +
       `<div class="prow">${seg('haste', {'Haste': 1, 'Haste II': 1}, 'Haste')}<span class="pwho">I : WHM RDM · II : RDM</span></div>` +
       `<div class="prow">${seg('haste', {'Hastega': 1, 'Hastega II': 1}, 'Hastega')}<span class="pwho">SMN (Garuda)</span></div>` +

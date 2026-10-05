@@ -27,6 +27,7 @@ Object.assign(T.fr, {
     + 'revenir ne les rend pas : la perte, c’est ce qui manque en revenant au repos (avant tout soin). Le guide vise 200 d’écart au plus. Tes pièces à l’essai comptent.',
   cyIdleHigh: 'Ton repos est {n} au-dessus : chaque sort te coûte cette différence.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Perte', cyOnPurpose: 'voulu', cyJa: 'JA',
   statAct: 'Inimitié de {a}', statActTip: '{a} : {ve} VE et {ce} CE de base, × (1 + Enmity / 100), Enmity du gear + Crusade + Sentinel plafonnée à +200 (guide Paladin, Enmity Generation).',
+  protOther: 'Lancé par un autre', protOtherTip: 'Protect lancé par un WHM, RDM, SCH… : sans la DEF de ton bouclier (Shield Barrier ne compte que sur ton propre Protect).',
   statGap: 'HP gagnés au midcast', statGapTip: 'HP du set {m} moins ceux du Fast Cast {f} : ce qui manque au moment du Cure, donc ce qu’il peut soigner en entier (guide Paladin, CURE SELF).',
   statD_def: 'VIT × 1,5 + DEF du gear (+ bouclier sous Protect en PLD)', statD_hp: 'HP avec les HP %', statD_enmity: 'jusqu’au plafond +200, buffs compris',
   statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %', statD_sird: 'jusqu’à 102 %',
@@ -72,6 +73,7 @@ Object.assign(T.en, {
     + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your tried pieces count.',
   cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose', cyJa: 'JA',
   statAct: '{a} enmity', statActTip: '{a}: {ve} VE and {ce} CE at base, × (1 + Enmity / 100), the Enmity of gear + Crusade + Sentinel capped at +200 (Paladin guide, Enmity Generation).',
+  protOther: 'Cast by another', protOtherTip: 'Protect cast by a WHM, RDM, SCH…: without your shield’s DEF (Shield Barrier counts on your own Protect only).',
   statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} less those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
   statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs in',
   statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %', statD_sird: 'up to 102 %',
@@ -311,7 +313,7 @@ function statBase(s){
   return {ecritRoom, cureJp, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
     hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: (B.enmity || 0) + crusade, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
-    shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect]};
+    shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect] && !b.protectOther, shieldMul: protectGift()};
 }
 const statContext = s => ({mode: 'stats', job: S.job, stat: {base: statBase(s)}});
 const CRUSADE_ENMITY = 30;
@@ -319,11 +321,20 @@ const CRUSADE_ENMITY = 30;
 /* ---- the tank figures the guide adds (Guide_Paladin 03 Defense, 02 Enmity), shown in the Tanking compartment ---- */
 // Shield Barrier (PLD trait): Protect cast by a PLD adds its shield's DEF (taken when cast; here the set's shield).
 // Returns the buff totals with it (a copy), or as they are
+// Only on a Protect you cast yourself (BG Wiki: "Protect spells cast by a Paladin"; the buffs window's Protect row says
+// when another job casts it: protectOther), the gift's +10 % on it too
 function shieldBarrier(B, sub){
-  if (S.job !== 'PLD' || !PROTECT[buffState().protect] || !sub || isEmpty(sub)) return B;
-  const it = itemOf(sub.name), r = it && it.Type === 'Shield' ? pieceStats(sub, 'sub') : null, def = r && r.stats.def ? r.stats.def.v : 0;
+  const b = buffState();
+  if (S.job !== 'PLD' || !PROTECT[b.protect] || b.protectOther || !sub || isEmpty(sub)) return B;
+  const it = itemOf(sub.name), r = it && it.Type === 'Shield' ? pieceStats(sub, 'sub') : null, def = r && r.stats.def ? Math.floor(r.stats.def.v * protectGift()) : 0;
   if (!def) return B;
   return Object.assign({}, B, {def: (B.def || 0) + def, _by: B._by.concat([{src: 'Shield Barrier · ' + sub.name, k: 'def', v: def}])});
+}
+// A PLD's job gift Protect Effect (BG Wiki Paladin: Protect received +10 %, from 550 job points spent): the factor on
+// Protect's Defense (on the shield's part too: BG Wiki does not say, to check in game)
+function protectGift(){
+  const c = typeof measuredChar === 'function' ? measuredChar() : null;
+  return S.job === 'PLD' && c && (c.jp_spent || 0) >= 550 ? 1.1 : 1;
 }
 // The shields the guide gives figures for: base block rate (at the attacker's skill) and the damage a block takes off
 const ULTIMATE_SHIELDS = {Aegis: [50, 75], Srivatsa: [50, 75], Ochain: [108, 60], Duban: [108, 60]};

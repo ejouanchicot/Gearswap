@@ -549,7 +549,7 @@ function buffTotals(){
   for (const e of foeCounted(b).list) put(e.k, e.v, e.n);
   if (BIO[b.dia]) put('eatkp', BIO[b.dia], b.dia);
   if (DISTRACT[b.distract] && foeCounted(b).distractWins) put('eeva', distractEva(b), b.distract + (b.saboteur ? ' + Saboteur' + (b.sabGloves ? ' (Lethargy +3)' : '') : ''));
-  if (PROTECT[b.protect]) put('def', PROTECT[b.protect], b.protect);
+  if (PROTECT[b.protect]) { const g = protectGift(); put('def', Math.floor(PROTECT[b.protect] * g), b.protect + (g > 1 ? ' · gift +10 %' : '')); }
   if (SHELL[b.shell]) put('shell', SHELL[b.shell], b.shell);
   if (HASTE[b.haste]) put('mhaste', HASTE[b.haste], b.haste);
   if (b.auspice) put('sb', auspiceSb(b), 'Auspice');

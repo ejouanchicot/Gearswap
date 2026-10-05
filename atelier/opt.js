@@ -653,7 +653,7 @@
         var t = {}, b = stat.base || {};
         STAT_KEYS.forEach(function (k) { t[k] = 0; });
         for (var sl in pieces) { var st = pieces[sl] && pieces[sl].st; if (st) for (var k in st) t[k] = (t[k] || 0) + st[k]; }
-        var shield = b.shieldBarrier && pieces.sub && pieces.sub.st && pieces.sub.shield ? pieces.sub.st.def || 0 : 0;
+        var shield = b.shieldBarrier && pieces.sub && pieces.sub.st && pieces.sub.shield ? Math.floor((pieces.sub.st.def || 0) * (b.shieldMul || 1)) : 0;
         var cap = function (v) { return Math.max(v, -50); }, two = function (v) { return Math.max(v, -87.5); };
         var shell = b.shell ? -b.shell / 256 * 100 : 0;
         var f = {
