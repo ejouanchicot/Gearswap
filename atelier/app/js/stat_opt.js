@@ -56,7 +56,7 @@ Object.assign(T.fr, {
     'la DEF du bouclier en plus (Shield Barrier, prise au moment du sort). Les dégâts physiques reçus selon l’attaque du monstre ne sont ' +
     'pas calculés : la formule des monstres n’est pas publiée (BG Wiki PDIF). Plus de DEF = moins de dégâts, sans chiffre exact.',
   statDone: 'Optimisé : {o} {a} → {b}, {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m}.',
-  statSame: 'Ton set est déjà le meilleur trouvé : {o} {v}.', statShield: 'dont bouclier (Shield Barrier) +{n}',
+  statSame: 'Ton set est déjà le meilleur trouvé : {o} {v}.', statThenShort: 'puis', statShield: 'dont bouclier (Shield Barrier) +{n}',
   tkBlock: 'Blocage', tkBlockTip: '{s} : {b} % de base à skill égal à celui du monstre (+0,2325 % par point d’écart), Palisade +30, Reprisal ×1,5 (×3 avec Priwen) ; un coup bloqué perd {r} % (guide Paladin).',
   tkCrit: 'Critiques ennemis', tkCritTip: '10 % au plus, 1 % au moins : mérites −{m}, gear {g}.', tkOver: '{n} de trop',
   tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup, deux réserves qui se multiplient : l’Enmity (1 % pour +2, 50 % au plus) et les pièces « Reduces Enmity loss » (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % au plus) ; −75 % au total au plus. Foe Sirvente (BRD) remplit la seconde, pas encore compté.'});
@@ -110,7 +110,7 @@ Object.assign(T.en, {
     'Barrier, taken when the spell is cast). Physical damage taken by the monster’s attack is not worked out: the monsters’ formula is not ' +
     'published (BG Wiki PDIF). More DEF = less damage, with no exact figure.',
   statDone: 'Optimised: {o} {a} → {b}, {n} piece(s) changed in your try · DT+PDT {p} · DT+MDT {m}.',
-  statSame: 'Your set is already the best found: {o} {v}.', statShield: 'with the shield (Shield Barrier) +{n}',
+  statSame: 'Your set is already the best found: {o} {v}.', statThenShort: 'then', statShield: 'with the shield (Shield Barrier) +{n}',
   tkBlock: 'Block', tkBlockTip: '{s}: {b} % at the monster’s own skill (+0.2325 % a point of difference), Palisade +30, Reprisal ×1.5 (×3 with Priwen); a blocked hit loses {r} % (Paladin guide).',
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your measure in game, with the buffs chosen in the page (a food chosen but not on in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit, two buckets that multiply: the Enmity (1 % a +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
@@ -592,7 +592,11 @@ function statResultHTML(s){
 }
 // The toast once a search is done
 function statDoneText(s, res, tr){
-  const k = statOpts(s).objs[0], f = statFmt(k), def = res.best.def || {}, label = t('statObj_' + k);
-  return Object.keys(tr).length ? t('statDone', {o: label, a: f(res.start.raw), b: f(res.best.raw), n: Object.keys(tr).length, p: Math.round(def.pdt || 0), m: Math.round(def.mdt || 0)})
-    : t('statSame', {o: label, v: f(res.best.raw)});
+  const objs = statOpts(s).objs, k = objs[0], f = statFmt(k), def = res.best.def || {}, label = t('statObj_' + k);
+  // the next objective too: it is what parts the sets as good on the first (Fast Cast capped: the lowest HP)
+  const k2 = objs[1], now = k2 && statFigures(s), was = k2 && Object.keys(tr).length ? statFigures(s, true) : null;
+  const then = !k2 || !now ? '' : ` ${t('statThenShort')} ${t('statObj_' + k2)} ${statFmt(k2)(now[k2])}` +
+    (was && was[k2] !== now[k2] ? ` (${statFmt(k2)(was[k2])})` : '');
+  return Object.keys(tr).length ? t('statDone', {o: label, a: f(res.start.raw), b: f(res.best.raw) + then, n: Object.keys(tr).length, p: Math.round(def.pdt || 0), m: Math.round(def.mdt || 0)})
+    : t('statSame', {o: label, v: f(res.best.raw) + then});
 }
