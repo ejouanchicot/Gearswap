@@ -261,7 +261,7 @@ function optRunOpen(s, o, starts, cores, floor){
   const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
     ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
     : [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
-  S._optRun = {t0: performance.now(), cores, fmt, low: time || obj === 'hpLow', done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
+  S._optRun = {t0: performance.now(), cores, fmt, objLabel, low: time || obj === 'hpLow', done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
   const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
   const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
     `<div class="orbar"><i></i></div><div class="orws"><span class="orphase">${esc(t('orStarting'))}</span><span class="orevals"></span></div><div class="orwbest">—</div></div>`).join('');
@@ -269,7 +269,7 @@ function optRunOpen(s, o, starts, cores, floor){
   $('#overlay').innerHTML = `<div class="scrim"></div><div class="dialog optrun" role="dialog" aria-live="polite">` +
     `<header><div class="orhead"><div><div class="kicker">${esc(t('orKick'))}</div><h3>${esc(shortPath(s.path))}</h3></div>` +
     `<div class="orclock"><span id="orclock">0,0 s</span><small>${esc(t('orCores', {n: cores}))}</small></div></div><div class="orchips">${chips}</div></header>` +
-    `<div class="body"><div class="orhero"><div><div class="orlbl">${esc(t('orBest'))}</div><div class="orbig" id="orbig">—</div><div class="orgain" id="orgain"></div></div>` +
+    `<div class="body"><div class="orhero"><div><div class="orlbl">${esc(t('orBest'))} · <b>${esc(objLabel)}</b></div><div class="orbig" id="orbig">—</div><div class="orgain" id="orgain"></div></div>` +
     `<svg class="orspark" id="orspark" viewBox="0 0 240 64" preserveAspectRatio="none"><path class="area"/><path class="line"/></svg></div>` +
     `<div class="orwalks">${cards}</div><div class="orlbl">${esc(t('orFeed'))}</div><ol class="orfeed" id="orfeed"><li class="orempty">${esc(t('orFeedEmpty'))}</li></ol></div>` +
     `<footer><span class="orrate" id="orrate"></span><span class="sp"></span><button class="btn ghost" data-orhide>${t('orHide')}</button>` +
@@ -379,15 +379,23 @@ function optRunResult(s, res, tr, plain, gains){
     const a = c.get(res.start.round), b = c.get(res.best.round);
     if (a != null && b != null) fig.push([c.label || t(c.key), c.fmt(a), c.fmt(b), Math.abs(a - b) < 1e-9 ? 0 : (c.low ? b < a : b > a) ? 1 : -1]);
   }
+  // a set judged by its stats (stat_opt.js): the lines of its result, its objectives first, then the heal, the gap,
+  // each action's enmity and the floors, your set beside the try
+  const relevant = res.best.stats ? statRelevant(s, statOpts(s).objs) : null;
+  if (res.best.stats && res.start.stats) for (const r of statRows(s).filter((r, i) => i < 3 || ['gap', 'ref', 'cure4', 'pdt', 'mdt'].includes(r.id) || r.id.startsWith('act:') || relevant.has(r.id))) {
+    const a = r.get(res.start.stats), b = r.get(res.best.stats);
+    if (a == null && b == null) continue;
+    fig.push([r.label, r.fmt(a), r.fmt(b), Math.abs((b || 0) - (a || 0)) < 1e-9 ? 0 : (r.low ? b < a : b > a) ? 1 : -1]);
+  }
   // a weaponskill: its average damage (or TP return), then its hit rates
-  if (!res.best.round) {
+  if (!res.best.round && !res.best.stats) {
     fig.push([t('orObjWs'), R.fmt(res.start.raw), R.fmt(res.best.raw), Math.abs(res.best.raw - res.start.raw) < 1e-9 ? 0 : res.best.raw > res.start.raw ? 1 : -1]);
     const h0 = res.start.hits || {}, h1 = res.best.hits || {}, pc = h => h == null ? '—' : Math.floor(h) + ' %';
     for (const [k, key] of [['first', 'wsvHit1'], ['rest', 'wsvHit2']]) if (h0[k] != null || h1[k] != null)
       fig.push([t(key), pc(h0[k]), pc(h1[k]), Math.floor(h1[k] || 0) === Math.floor(h0[k] || 0) ? 0 : (h1[k] || 0) > (h0[k] || 0) ? 1 : -1]);
   }
   const sd = res.start.def || {}, bd = res.best.def || {};
-  for (const [k, label, low] of [['pdt', 'DT+PDT', true], ['mdt', 'DT+MDT', true], ['sb', 'Subtle Blow', false]]) {
+  if (!res.best.stats) for (const [k, label, low] of [['pdt', 'DT+PDT', true], ['mdt', 'DT+MDT', true], ['sb', 'Subtle Blow', false]]) {
     // damage taken counts down to its -50 cap only: past it, no better
     const a = Math.round(sd[k] || 0), b = Math.round(bd[k] || 0), ca = low ? Math.max(a, -50) : a, cb = low ? Math.max(b, -50) : b;
     if (a || b) fig.push([label, String(a), String(b), ca === cb ? 0 : (low ? cb < ca : cb > ca) ? 1 : -1]);
@@ -400,7 +408,7 @@ function optRunResult(s, res, tr, plain, gains){
   const lack = gains.length ? `<p class="orlack">${esc(t('orLack'))} ` + gains.map(g => `<b>${esc(g.piece.name)}</b> ${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`).join(' · ') + `</p>` : '';
   // the result's own rows: the hero, the changes and figures taking what is left (scrolling inside), what is to get
   dlg.querySelector('.body').style.gridTemplateRows = 'auto minmax(0,1fr) auto';
-  dlg.querySelector('.body').innerHTML = `<div class="orhero"><div><div class="orlbl">${esc(t(changes.length ? 'orFound' : 'orSame'))}</div>` +
+  dlg.querySelector('.body').innerHTML = `<div class="orhero"><div><div class="orlbl">${esc(t(changes.length ? 'orFound' : 'orSame'))}${R.objLabel ? ` · <b>${esc(R.objLabel)}</b>` : ''}</div>` +
     `<div class="orbig">${esc(R.fmt(res.best.raw))}</div><div class="orgain">${esc(t('orFrom', {v: R.fmt(res.start.raw)}))} ` +
     `<b class="${d > .05 ? 'up' : ''}">${d > 0 ? '+' : ''}${d.toFixed(1)} %</b></div></div>${dlg.querySelector('.orspark') ? dlg.querySelector('.orspark').outerHTML : ''}</div>` +
     (changes.length ? `<div class="orres"><div><div class="orlbl">${esc(t('orChanged', {n: changes.length}))}</div><ul class="orchg">${list}</ul></div>` +
