@@ -170,7 +170,11 @@ function withWeapons(s, ignore){
   const hsOn = hs && !blank.has('sub') && subFits(pieces.main, hs);
   if (hsOn) { pieces.sub = hs; from.sub = t('heldWhy'); }
   const grip = !hsOn && weapon && (rules.grips || DEFAULT_GRIPS)[weapon];
-  const shield = !hsOn && weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
+  // a shield chosen in the Shield mode (not Auto) wins over the stance's, as in game (shared/jobs/pld/functions/logic/
+  // set_builder.lua apply_mode_shield): the mode laid it above; a two-handed weapon keeps its grip
+  const shieldMode = weaponModes(d).find(m => m.name === 'Shield');
+  const shieldChosen = shieldMode && (explicitWeapon(shieldMode, ignore) || chosenWeapon(shieldMode));
+  const shield = !hsOn && !shieldChosen && weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
   if (grip && !blank.has('sub')) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield && !blank.has('sub')) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
   // the pieces forced in the page (FORCE_SLOTS), over the job's rules (a set named after a weapon keeps its
