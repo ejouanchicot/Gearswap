@@ -748,7 +748,10 @@
         var first = how === "own" ? yield* from(empty, mine) : how === "loose" ? yield* from(empty, choices, Object.assign({}, opts, {floor: null})) : null;
         prog.stage = "all"; prog.best = null;
         var res = yield* from(first ? first.pieces : empty, choices);
-        for (var k = 0; opts.scratch && k < KICKS; k++) {
+        // the fast search makes many walks instead (four a core): the kicks found nothing more there and took three
+        // times as long (Laphria time to WS, Ukonvasara fight, 2026-10-05)
+        var kicks = opts.kicks != null ? opts.kicks : opts.fast ? 0 : KICKS;
+        for (var k = 0; opts.scratch && k < kicks; k++) {
             prog.stage = "kick";
             var again = yield* from(kicked(res.pieces, choices, rnd), choices);
             if (again.score > res.score + 1e-13) res = again;

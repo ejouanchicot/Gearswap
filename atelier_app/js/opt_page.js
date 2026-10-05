@@ -277,11 +277,14 @@ const CYCLE_TIMED = ['Berserk', 'Aggressor', 'Warcry'];
 const CYCLE_TP_TAKEN = 5.8;
 const cycleReady = () => !!(window.FFXI && FFXI.opt && FFXI.opt.cycle);
 const isCycle = () => cycleReady() && (S.optOpts || {}).engObj === 'cycle';
-// The weaponskill sets of the job that open with the engaged set's main weapon (its combat skill), the support tier's first
+// The weaponskill sets of the job that open with the engaged set's main weapon (its combat skill, and the weapon a
+// weaponskill is locked to: Disaster is Laphria's, never Ukonvasara's; the same test as the weaponskill's weapons,
+// ws_page.js heldChoices), the support tier's first
 function cycleWsSets(s){
   const d = data(), main = (withWeapons(s).pieces.main || {}).name, skill = main && weaponSkills()[main];
   if (!d || !skill) return [];
-  const tier = buffTier(), list = d.sets.filter(x => family(x.path, x.pieces) === 'ws' && wsOfSet(x) && wsSkills()[wsOfSet(x)] === skill);
+  const opens = ws => { const lock = (wsInfoOf(ws).lock || '').toLowerCase(); return !lock || lock.includes(main.toLowerCase()); };
+  const tier = buffTier(), list = d.sets.filter(x => family(x.path, x.pieces) === 'ws' && wsOfSet(x) && wsSkills()[wsOfSet(x)] === skill && opens(wsOfSet(x)));
   const rank = x => (new RegExp('\\.' + tier + '$').test(x.path) ? 0 : /\.(Solo|Group|Trust)$/.test(x.path) ? 2 : 1);
   return list.sort((a, b) => rank(a) - rank(b) || a.path.localeCompare(b.path));
 }
