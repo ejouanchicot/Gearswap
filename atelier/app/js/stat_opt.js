@@ -17,6 +17,9 @@ Object.assign(T.fr, {
   statRef: 'HP vs Fast Cast', statRefTip: 'HP du set moins ceux du Fast Cast {f} ({h} HP), le set classique le plus bas en HP, porté avant chaque sort : '
     + 'les autres sets visent entre lui et lui + 200 pour qu’un changement de set ne fasse pas perdre de HP (guide Paladin, HP Management : écart de 200 au plus).',
   statRefLine: 'HP de référence : {h} (Fast Cast {f}) · les sets tank visent {a} à {b}.',
+  cyTitle: 'Cycle des HP', cyNote: 'HP max de chaque set, repos {n} ({i}) → precast → midcast → repos. Passer à un set plus bas fait tomber tes HP, '
+    + 'revenir ne les rend pas : la perte, c’est ce qui manque en revenant au repos (avant tout soin). Le guide vise 200 d’écart au plus. Tes pièces à l’essai comptent.',
+  cyIdleHigh: 'Ton repos est {n} au-dessus : chaque sort te coûte cette différence.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Perte', cyOnPurpose: 'voulu', cyJa: 'JA',
   statGap: 'HP gagnés au midcast', statGapTip: 'HP du set {m} moins ceux du Fast Cast {f} : ce qui manque au moment du Cure, donc ce qu’il peut soigner en entier (guide Paladin, CURE SELF).',
   statD_def: 'VIT × 1,5 + DEF du gear (+ bouclier sous Protect en PLD)', statD_hp: 'HP avec les HP %', statD_enmity: 'jusqu’au plafond +200, buffs compris',
   statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %', statD_sird: 'jusqu’à 102 %',
@@ -46,6 +49,9 @@ Object.assign(T.en, {
   statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set less those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
     + 'the other sets aim between it and it + 200 so a set change loses no HP (Paladin guide, HP Management: 200 apart at most).',
   statRefLine: 'Reference HP: {h} (Fast Cast {f}) · the tank sets aim at {a} to {b}.',
+  cyTitle: 'HP cycle', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
+    + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your tried pieces count.',
+  cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose', cyJa: 'JA',
   statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} less those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
   statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs in',
   statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %', statD_sird: 'up to 102 %',
@@ -107,16 +113,19 @@ function statFloorDefault(s, first){
   if (first === 'cure' || first === 'cureSelf') return {sird: 102};
   return Object.assign({}, sird, hp);
 }
-// The reference HP of a tank's sets (Guide_Paladin HP Management): the classic Fast Cast set's (sets.precast.FC), the
-// lowest in HP of the sets worn in the cycle (idle, Fast Cast, midcast or ability, idle) and worn before every spell.
+// The reference HP of a tank's sets (Guide_Paladin HP Management): the lowest of the classic Fast Cast sets
+// (sets.precast.FC and its spells', not the self Cure's, low on purpose), the lowest in HP of the sets worn in the cycle
+// (idle, Fast Cast, midcast or ability, idle) and worn before every spell.
 // Swapping to a set with fewer max HP cuts the current HP, and swapping back does not give them back: the other sets
 // keep within HP_SPREAD over it (the guide: idle 3197, Fast Cast 3044, Full Enmity 3045). Not for the Fast Cast sets
 // themselves, nor the self Cure pair (its gap is on purpose: cureGap). {hp, path} or null
 const HP_SPREAD = 200;
 function hpRef(s){
   if (!['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) === 'fc') return null;
-  const d = data(), fc = d && d.sets.find(x => x.path === 'sets.precast.FC');
-  return fc ? {hp: statFigures(fc, true).hp, path: fc.path} : null;
+  const d = data(), list = d ? d.sets.filter(x => family(x.path, x.pieces) === 'fc' && !(/cure/i.test(x.path) && /self/i.test(x.path))) : [];
+  let low = null;
+  for (const x of list) { const hp = statFigures(x, true).hp; if (!low || hp < low.hp) low = {hp, path: x.path}; }
+  return low;
 }
 // A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay
 // when asked (a job ability's set: on by default), only the rest is searched. The slots kept, or none
@@ -216,6 +225,56 @@ function statFigures(s, plain){
   const v = {};
   for (const [slot, p] of Object.entries(optPieces(pieces))) v[slot] = withVec(p, slot);
   return FFXI.opt.statFigures(statContext(s).stat, v);
+}
+
+/* ---- the HP cycle (Guide_Paladin HP Management): every action's sets, idle -> precast -> midcast -> idle ---- */
+// A set's max HP as shown (its tried pieces in), the character's HP without gear given
+function setMaxHp(x, nakedHp){
+  const v = {};
+  for (const [slot, p] of Object.entries(optPieces(withWeapons(x).pieces))) v[slot] = withVec(p, slot);
+  return FFXI.opt.statFigures({base: {hp: nakedHp}}, v).hp;
+}
+// The actions and their sets: each spell with a midcast set (its own name, or a name it shares: sets.midcast.Flash =
+// sets.FullEnmity) after its Fast Cast (sets.precast.FC.<spell>, the self Cure's, else sets.precast.FC); each job
+// ability's set alone. Actions with the same two sets go on one line
+function hpCycleRows(){
+  const by = S._bypath || {}, d = data(), fc = by['sets.precast.FC'], out = new Map();
+  const pathOf = (root, name) => by[`${root}.${name}`] || by[`${root}["${name}"]`];
+  const paths = new Set();
+  for (const x of d.sets) for (const p of [x.path, ...(x.aliases || [])]) paths.add(p);
+  for (const p of paths) {
+    const sg = segs(p);
+    let pre = null, mid = null, name = sg[sg.length - 1];
+    if (sg[0] === 'midcast' && sg.length === 2) {
+      mid = by[p];
+      pre = /cur(e|a)/i.test(name) && /self/i.test(name) ? (Object.values(by).find(x => family(x.path, x.pieces) === 'fc' && /cure/i.test(x.path) && /self/i.test(x.path)) || fc) : pathOf('sets.precast.FC', name) || fc;
+    } else if (sg[0] === 'precast' && sg[1] === 'JA' && sg.length === 3) pre = by[p];
+    else continue;
+    if (!pre && !mid) continue;
+    const key = (pre ? pre.path : '') + '|' + (mid ? mid.path : '');
+    if (!out.has(key)) out.set(key, {pre, mid, names: [], ja: !mid, self: !!mid && /cure/i.test(name) && /self/i.test(name)});
+    out.get(key).names.push(name);
+  }
+  return [...out.values()];
+}
+function hpCycleHTML(s){
+  if (!['PLD', 'RUN'].includes(S.job) || !engineReady() || !FFXI.opt.statFigures) return '';
+  // the idle the cycle starts from: the set shown when it is one (idle.PDT, idle.MDT...), else sets.idle
+  const idle = family(s.path, s.pieces) === 'idle' ? s : (S._bypath || {})['sets.idle'];
+  if (!idle) return '';
+  const r = charStats(idle, {}), naked = r ? r.cur.hp : 0, hp = x => x ? setMaxHp(x, naked) : null, top = hp(idle), ref = hpRef(idle);
+  const rows = hpCycleRows().map(x => {
+    const a = hp(x.pre), b = hp(x.mid), low = Math.min(top, a == null ? top : a, b == null ? top : b);
+    return Object.assign(x, {a, b, loss: top - low});
+  }).sort((x, y) => y.loss - x.loss || x.names[0].localeCompare(y.names[0]));
+  const mine = x => [x.pre, x.mid].some(z => z && (z.path === s.path || (z.aliases || []).includes(s.path))) || x.names.some(n => s.path.endsWith('.' + n) || s.path.endsWith(`["${n}"]`));
+  const cls = x => x.self ? '' : x.loss > HP_SPREAD ? 'short' : x.loss > 0 ? 'warn' : 'better';
+  const names = x => (x.ja ? t('cyJa') + ' · ' : '') + x.names.sort().join(', ');
+  const refLine = ref ? `<p class="note-m">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}${top > ref.hp + HP_SPREAD ? ' ' + esc(t('cyIdleHigh', {n: top - ref.hp})) : ''}</p>` : '';
+  const body = `<p class="note-m">${esc(t('cyNote', {i: top, n: shortPath(idle.path)}))}</p>${refLine}<table class="rdvs optable hpcycle"><thead><tr><th>${t('cyAct')}</th><th>${t('cyPre')}</th><th>${t('cyMid')}</th><th>${t('cyLoss')}</th></tr></thead><tbody>` +
+    rows.map(x => `<tr class="${mine(x) ? 'obj' : ''}"><th title="${esc(x.names.join(', '))}">${esc(names(x).length > 24 ? names(x).slice(0, 23) + '…' : names(x))}</th>` +
+      `<td>${x.a ?? '—'}</td><td>${x.b ?? '—'}</td><td class="${cls(x)}">${x.self ? esc(t('cyOnPurpose')) : x.loss ? '−' + x.loss : '0'}</td></tr>`).join('') + `</tbody></table>`;
+  return fbox('hpcycle', 'g-tank', t('cyTitle'), body);
 }
 
 /* ---- the search ---- */
