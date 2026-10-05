@@ -11,7 +11,7 @@ Object.assign(T.fr, {
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureSelf: 'Cure IV sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
-  statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II), le jour et la météo à part.',
+  statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II ; +50 de job points et gifts d’un PLD maîtrisé, mesuré en jeu : Cure IV 1332), le jour et la météo à part.',
   statObj_enhdur: 'Durée renfort', statD_enhdur: 'Enhancing magic duration : Protect, Shell, Reprisal… durent plus longtemps',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbés : skill de renfort et MND (350 au plus), + le gear Stoneskin (475 au plus)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup, selon le skill divin',
@@ -41,13 +41,13 @@ Object.assign(T.fr, {
   statSame: 'Ton set est déjà le meilleur trouvé : {o} {v}.', statShield: 'dont bouclier (Shield Barrier) +{n}',
   tkBlock: 'Blocage', tkBlockTip: '{s} : {b} % de base à skill égal à celui du monstre (+0,2325 % par point d’écart), Palisade +30, Reprisal ×1,5 (×3 avec Priwen) ; un coup bloqué perd {r} % (guide Paladin).',
   tkCrit: 'Critiques ennemis', tkCritTip: '10 % au plus, 1 % au moins : mérites −{m}, gear {g}.', tkOver: '{n} de trop',
-  tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup : 1 % pour +2 d’Enmity, 50 % au plus. Le gear « Reduces Enmity loss » (Burtgang, Chev. Cuisses +3) et Foe Sirvente s’y multiplient, non comptés ici (−75 % au total au plus).'});
+  tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup : 1 % pour +2 d’Enmity, 50 % au plus. Le gear « Reduces Enmity loss » (Burtgang, Chev. Cuisses +3) et Foe Sirvente s’y multiplient, non comptés ici (−75 % au total au plus).'});
 Object.assign(T.en, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
-  statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25), day and weather aside.',
+  statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from a mastered PLD’s job points and gifts, measured in game: Cure IV 1332), day and weather aside.',
   statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit, by divine skill',
@@ -77,7 +77,7 @@ Object.assign(T.en, {
   statSame: 'Your set is already the best found: {o} {v}.', statShield: 'with the shield (Shield Barrier) +{n}',
   tkBlock: 'Block', tkBlockTip: '{s}: {b} % at the monster’s own skill (+0.2325 % a point of difference), Palisade +30, Reprisal ×1.5 (×3 with Priwen); a blocked hit loses {r} % (Paladin guide).',
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
-  tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
+  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
 
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur']);
@@ -249,7 +249,9 @@ function statBase(s){
   const pair = s && cureGap(s), pre = pair && family(s.path, s.pieces) !== 'fc' ? statFigures(pair.other, true).hp : null;
   // the enemy's critical hits the gear can still take off: 10 % to the 1 % floor, less the merits
   const ecritRoom = Math.max(0, 9 - ((c.merits || {}).enemy_critical_hit_rate || 0));
-  return {ecritRoom, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
+  // the Cure potency of a mastered PLD's job points and gifts, added to a Cure's base (measured: opt.js O.cureIV)
+  const cureJp = S.job === 'PLD' && (c.jp_spent || 0) >= 2100 ? 50 : 0;
+  return {ecritRoom, cureJp, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
     hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: B.enmity || 0, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
     shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect]};
@@ -280,6 +282,12 @@ function tankExtraHTML(c, set, B, enm){
   if (['PLD', 'RUN'].includes(S.job) || gear) {
     const left = Math.max(1, 10 - merit + gear), over = Math.max(0, 1 - (10 - merit + gear));
     rows.push(statLi(t('tkCrit'), `${left} %`, over ? t('tkOver', {n: over}) : '', '', t('tkCritTip', {m: merit, g: gear})));
+  }
+  // a Cure set: what its Cure IV heals (on yourself: within the HP its Fast Cast leaves)
+  const cs = S._curSet;
+  if (cs && /cur(e|a)/i.test(cs.path) && family(cs.path, cs.pieces) !== 'fc' && engineReady() && FFXI.opt.cureIV) {
+    const f = statFigures(cs), pair = cureGap(cs);
+    rows.push(statLi(t('tkCure'), `${f.cureIV} HP`, pair ? t('tkCureSelf', {h: f.cureSelf}) : '', '', t('statCure4Tip')));
   }
   if (enm > 0 && ['PLD', 'RUN'].includes(S.job))
     rows.push(statLi(t('tkLoss'), `−${Math.min(50, enm / 2)} %`, '', '', t('tkLossTip')));

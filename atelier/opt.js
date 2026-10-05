@@ -635,13 +635,14 @@
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
         "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
-    // [power floor, rate, HP floor], 640 at most; then x (1 + Cure Potency (50 % cap) + Cure Potency II (30 %)), then x (1 +
-    // Cure Potency Received (30 %)). Day and weather left out
+    // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a mastered PLD's 50,
+    // measured in game 2026-10-05, Cure IV 1332 and 1245 with two sets); then x (1 + Cure Potency (50 % cap) + Cure
+    // Potency II (30 %)), then x (1 + Cure Potency Received (30 %)). Day and weather left out
     var CURE4 = [[400, 2.5, 520], [300, 1.43, 450], [200, 2, 400], [70, 1, 270]];
-    O.cureIV = function (mnd, vit, skill, cp, cp2, recv) {
+    O.cureIV = function (mnd, vit, skill, cp, cp2, recv, jp) {
         var power = Math.floor(mnd / 2) + Math.floor(vit / 4) + skill, base = 270;
         for (var i = 0; i < CURE4.length; i++) if (power >= CURE4[i][0]) { base = Math.floor((power - CURE4[i][0]) / CURE4[i][1]) + CURE4[i][2]; break; }
-        base = Math.min(640, base);
+        base = Math.min(640, base) + (jp || 0);
         var pot = 1 + Math.min(50, cp) / 100 + Math.min(30, cp2) / 100;
         return Math.floor(Math.floor(base * pot) * (1 + Math.min(30, recv) / 100));
     };
@@ -675,7 +676,7 @@
         f.enlight = div <= 500 ? 2 * Math.floor((div + 85) / 13) + Math.floor((div + 85) / 26) : 2 * Math.floor((div + 400) / 20) + Math.floor((div + 400) / 40);
         // a self Cure IV: what it would heal, and what it heals (Guide_Paladin CURE SELF: the Fast Cast of the Cure lowers
         // the max HP, so the current HP with it; the Cure set raises the max HP; the Cure heals up to the gap)
-        f.cureIV = O.cureIV((b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), t.curerecv);
+        f.cureIV = O.cureIV((b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), t.curerecv, b.cureJp);
         f.cureSelf = b.preHp != null ? Math.max(0, Math.min(f.cureIV, f.hp - b.preHp)) : f.cureIV;
         // the reductions as positive figures (more is better, like every objective); hpLow: HP where less is better (a
         // PLD's Fast Cast for a self Cure, low so the Cure set's HP opens a gap the Cure fills: Guide_Paladin CURE SELF)
