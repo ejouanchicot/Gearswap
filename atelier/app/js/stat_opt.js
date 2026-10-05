@@ -299,6 +299,8 @@ function hpCycleHTML(s){
   const body = `<p class="note-m">${esc(t('cyNote', {i: top, n: shortPath(idle.path)}))}</p>${refLine}<table class="rdvs optable hpcycle"><thead><tr><th>${t('cyAct')}</th><th>${t('cyPre')}</th><th>${t('cyMid')}</th><th>${t('cyLoss')}</th></tr></thead><tbody>` +
     rows.map(x => `<tr class="${mine(x) ? 'obj' : ''}"><th title="${esc(x.names.join(', '))}">${esc(names(x).length > 24 ? names(x).slice(0, 23) + '…' : names(x))}</th>` +
       `<td>${x.a ?? '—'}</td><td>${x.b ?? '—'}</td><td class="${cls(x)}">${x.self ? esc(t('cyOnPurpose')) : x.loss ? '−' + x.loss : '0'}</td></tr>`).join('') + `</tbody></table>`;
+  // open until folded: it is what a tank checks on every set
+  if (S.boxOpen.hpcycle === undefined) S.boxOpen.hpcycle = true;
   return fbox('hpcycle', 'g-tank', t('cyTitle'), body);
 }
 
