@@ -195,8 +195,10 @@ local action_names
 local function is_action(name)
     if action_names == nil then
         action_names = false
-        local res = rawget(_G, 'res')
-        if res then
+        -- GearSwap's resources as shared/utils/atelier/atelier_families.lua reads them (gearswap.res), else the global
+        -- or the library: a plain rawget(_G, 'res') found nothing in game (the export kept Banishga)
+        local ok, res = pcall(function() return (type(gearswap) == 'table' and gearswap.res) or res or rawget(_G, 'res') or require('resources') end)
+        if ok and res then
             action_names = {}
             for _, kind in ipairs({'spells', 'job_abilities', 'weapon_skills'}) do
                 for _, r in pairs(res[kind] or {}) do if r.en then action_names[r.en:lower()] = true end end
