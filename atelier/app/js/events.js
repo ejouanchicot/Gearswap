@@ -52,7 +52,10 @@ document.addEventListener('click', e => {
   // the page's subjob set to the game's (sets_view.js subWarnHTML)
   if (d.subfix) { S.subs[S.char + '|' + S.job] = d.subfix; render(); return; }
   // every objective of the stats optimizer, or only the set's (stat_opt.js statRelevant)
-  if ('statall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
+  if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
+  // a set's stats settings back to the defaults (stat_opt.js statOpts)
+  if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
+    delete by[s.path]; S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save(); render(); return; }
   if ('optstat' in d) { S._optScratch = d.optstat === 'best'; optimizeStats(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   // the stats optimizer's first objective (stat_opt.js): the one chosen leaves the list of the next ones
   if (d.statobj) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), objs = statOpts(s).objs.filter(k => k !== d.statobj);

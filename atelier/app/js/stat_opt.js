@@ -39,6 +39,7 @@ Object.assign(T.fr, {
   statWeaponsNote: 'Armes libres : l’arme et le bouclier trouvés vont dans ce set, portés le temps de l’action (en idle, tes modes les remettent). Changer l’arme principale fait perdre le TP, le bouclier non.',
   statGrp_def: 'Défense', statGrp_enm: 'Inimitié', statGrp_cure: 'Soin', statGrp_magic: 'Magie', statGrp_regen: 'Récupération',
   statAll: 'Tous les objectifs (+{n})', statFewer: 'Seulement ceux de ce set',
+  statKept: 'Objectifs ou planchers changés à la main sur ce set.', statReset: 'Réglages par défaut',
   subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.', subFix: 'Passer en /{s}',
   aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -85,6 +86,7 @@ Object.assign(T.en, {
   statWeaponsNote: 'Free weapons: the weapon and shield found go in this set, worn for the action (at idle your modes lay theirs back). Changing the main weapon loses the TP, the shield does not.',
   statGrp_def: 'Defense', statGrp_enm: 'Enmity', statGrp_cure: 'Healing', statGrp_magic: 'Magic', statGrp_regen: 'Recovery',
   statAll: 'All objectives (+{n})', statFewer: 'Only this set’s',
+  statKept: 'Objectives or floors changed by hand on this set.', statReset: 'Back to the defaults',
   subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',
   aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -472,7 +474,7 @@ function statWhatHTML(s){
   const groups = STAT_OBJ_GROUPS.map(([g, keys]) => { const list = keys.filter(k => shown.has(k));
     return list.length ? `<div class="opgrp"><span class="opgrph">${esc(t('statGrp_' + g))}</span>${list.map(btn).join('')}</div>` : ''; }).join('');
   const hidden = STAT_OBJS.length - shown.size;
-  const toggle = `<button class="linkbtn opallbtn" data-statall>${esc(all ? t('statFewer') : t('statAll', {n: hidden}))}</button>`;
+  const toggle = `<button class="linkbtn opallbtn" data-statobjall>${esc(all ? t('statFewer') : t('statAll', {n: hidden}))}</button>`;
   const objs = `<div class="opobjs" role="radiogroup">${groups}</div>${all || hidden ? toggle : ''}`;
   const then = i => `<select class="buffsel" data-statthen="${i}">${['', ...STAT_OBJS].filter(k => k !== cur).map(k =>
     `<option value="${k}" ${(so.objs[i] || '') === k ? 'selected' : ''}>${esc(k ? t('statObj_' + k) : t('statNone'))}</option>`).join('')}</select>`;
@@ -480,7 +482,10 @@ function statWhatHTML(s){
   const num = (k, label) => `<label class="opf">${label} <input type="number" step="1" data-statfloor="${k}" value="${esc(so.floor[k])}"></label>`;
   // the floors of the stats this set is after (and any floor given a value), the others hidden with their objectives
   const has = (k, obj) => all || shown.has(obj) || !!+so.floor[k], opt = (k, obj, label) => has(k, obj) ? num(k, label) : '';
-  const floors = `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
+  // the set's own settings kept from an earlier visit: one click back to the defaults (they change as the page learns)
+  const kept = ((S.optOpts || {}).statBy || {})[s.path];
+  const reset = kept ? `<p class="muted small">${esc(t('statKept'))} <button class="linkbtn" data-statreset>${esc(t('statReset'))}</button></p>` : '';
+  const floors = reset + `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
     `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}</div>`;
   const search = opSearchHTML(S.optOpts || {}, false, true);
   const jaList = abilityPieces(s);
