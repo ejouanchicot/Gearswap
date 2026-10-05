@@ -213,8 +213,11 @@ local function module_pieces(text, by_copy, by_name)
     for name, m in pairs(modules) do scan(m, name) end
 end
 
---- A piece written as a table in the text ({name = '...', augments = {'...', ...}}), or nil.
+--- A piece written as a table in the text ({name = '...', augments = {'...', ...}}), or nil. A table holding other tables
+--- (a set: `local IdleBase = {neck = {name = 'Kgt. Beads +2'}, ...}`) is not a piece: only its augments list may be one.
 local function text_piece(tbl)
+    local inner = tbl:sub(2, -2):gsub('augments%s*=%s*%b{}', '')
+    if inner:find('{', 1, true) then return nil end
     -- a string in either quotes, the other kind inside it kept ('"Dbl.Atk."+10')
     local _, name = tbl:match([[name%s*=%s*(['"])(.-)%1]])
     if not name then return nil end
