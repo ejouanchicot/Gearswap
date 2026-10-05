@@ -633,7 +633,7 @@
     //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
-        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen"];
+        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; then x (1 + Cure Potency (50 % cap) + Cure Potency II (30 %)), then x (1 +
     // Cure Potency Received (30 %)). Day and weather left out
@@ -661,21 +661,31 @@
             enmity: Math.min(200, t.enmity + (b.enmity || 0)),
             phalanx: O.phalanxPotency((b.enh || 0) + t.enh) + t.phalanx, enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
             fc: Math.min(80, t.fc), sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
-            ecrit: t.ecrit, cure: Math.min(50, t.cure), refresh: t.refresh, regen: t.regen,
+            ecrit: t.ecrit, cure: Math.min(50, t.cure), refresh: t.refresh, regen: t.regen, enhdur: t.enhdur,
             pdtAll: two(cap(t.dt + t.pdt) + t.pdt2), mdtAll: two(cap(t.dt + t.mdt + shell) + t.mdt2), bdtAll: cap(t.dt + t.bdt),
             pdt: t.dt + t.pdt, mdt: t.dt + t.mdt
         };
+        // Stoneskin (BG Wiki): x = enhancing skill / 3 + MND; under 80 x, to 130 2 x skill / 3 + 2 x MND - 60, past it skill +
+        // 3 x MND - 190; 350 at most, the "Stoneskin" gear over the cap, 475 at most. Enlight II (BG Wiki): 2 x floor((divine
+        // skill + 85) / 13) + floor((skill + 85) / 26) up to 500 skill, 2 x floor((skill + 400) / 20) + floor((skill + 400) / 40) past it
+        var enhAll = (b.enh || 0) + t.enh, mndAll = (b.mnd || 0) + t.mnd, x = Math.floor(enhAll / 3) + mndAll;
+        var ss = x < 80 ? x : x <= 130 ? Math.floor(2 * enhAll / 3) + 2 * mndAll - 60 : enhAll + 3 * mndAll - 190;
+        f.stoneskin = Math.min(475, Math.min(350, ss) + t.ss);
+        var div = (b.div || 0) + t.div;
+        f.enlight = div <= 500 ? 2 * Math.floor((div + 85) / 13) + Math.floor((div + 85) / 26) : 2 * Math.floor((div + 400) / 20) + Math.floor((div + 400) / 40);
         // a self Cure IV: what it would heal, and what it heals (Guide_Paladin CURE SELF: the Fast Cast of the Cure lowers
         // the max HP, so the current HP with it; the Cure set raises the max HP; the Cure heals up to the gap)
         f.cureIV = O.cureIV((b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), t.curerecv);
         f.cureSelf = b.preHp != null ? Math.max(0, Math.min(f.cureIV, f.hp - b.preHp)) : f.cureIV;
         // the reductions as positive figures (more is better, like every objective); hpLow: HP where less is better (a
         // PLD's Fast Cast for a self Cure, low so the Cure set's HP opens a gap the Cure fills: Guide_Paladin CURE SELF)
-        f.pdtRed = -f.pdtAll; f.mdtRed = -f.mdtAll; f.ecritRed = -f.ecrit; f.hpLow = f.hp;
+        f.pdtRed = -f.pdtAll; f.mdtRed = -f.mdtAll; f.hpLow = f.hp;
+        // the enemy's critical hits: 10 % at most, 1 % at least (BG Wiki), so the gear counts up to 9 less the merits
+        f.ecritRed = Math.min(-f.ecrit, b.ecritRoom != null ? b.ecritRoom : 9);
         return f;
     };
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };

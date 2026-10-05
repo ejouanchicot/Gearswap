@@ -12,6 +12,9 @@ Object.assign(T.fr, {
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureSelf: 'Cure IV sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
   statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II), le jour et la météo à part.',
+  statObj_enhdur: 'Durée renfort', statD_enhdur: 'Enhancing magic duration : Protect, Shell, Reprisal… durent plus longtemps',
+  statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbés : skill de renfort et MND (350 au plus), + le gear Stoneskin (475 au plus)',
+  statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup, selon le skill divin',
   statObj_hpLow: 'HP les plus bas', statD_hpLow: 'Fast Cast d’un Cure sur toi : HP bas, le set de Cure les remonte et le Cure remplit l’écart',
   statKeepOwn: 'Garder les pièces propres à ce set ({p})', statKeepOwnTip: 'Les pièces que ce set met par-dessus {b} (celle qui renforce la JA) restent : la recherche choisit le reste.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP du set moins ceux du Fast Cast {f} ({h} HP), le set classique le plus bas en HP, porté avant chaque sort : '
@@ -25,7 +28,7 @@ Object.assign(T.fr, {
   statD_def: 'VIT × 1,5 + DEF du gear (+ bouclier sous Protect en PLD)', statD_hp: 'HP avec les HP %', statD_enmity: 'jusqu’au plafond +200, buffs compris',
   statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %', statD_sird: 'jusqu’à 102 %',
   statD_meva: 'résister aux sorts', statD_mdb: 'divise les dégâts magiques', statD_pdtRed: 'DT+PDT plafonnés à −50 %, puis PDT II',
-  statD_mdtRed: 'DT+MDT (+ Shell) plafonnés, puis MDT II', statD_ecritRed: 'réduction du gear (10 % → 1 % : −9 avec les mérites −5… à toi de compter)',
+  statD_mdtRed: 'DT+MDT (+ Shell) plafonnés, puis MDT II', statD_ecritRed: 'réduction du gear, comptée jusqu’au plancher : 10 % → 1 %, soit −9 avec tes mérites',
   statD_cure: 'jusqu’à 50 %', statD_refresh: 'MP par tick', statD_regen: 'HP par tick',
   aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -45,6 +48,9 @@ Object.assign(T.en, {
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
   statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25), day and weather aside.',
+  statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
+  statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
+  statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit, by divine skill',
   statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
   statKeepOwn: 'Keep this set’s own pieces ({p})', statKeepOwnTip: 'The pieces this set lays over {b} (the one that boosts the ability) stay: the search picks the rest.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set less those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
@@ -58,7 +64,7 @@ Object.assign(T.en, {
   statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs in',
   statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %', statD_sird: 'up to 102 %',
   statD_meva: 'resist spells', statD_mdb: 'divides magic damage', statD_pdtRed: 'DT+PDT capped at −50 %, then PDT II',
-  statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s cut (10 % → 1 %: −9 with the −5 merits… yours to count)',
+  statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s cut, counted down to the floor: 10 % → 1 %, so −9 with your merits',
   statD_cure: 'up to 50 %', statD_refresh: 'MP a tick', statD_regen: 'HP a tick',
   aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -73,9 +79,10 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
   tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen'];
-const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure']);
-const statFmt = k => v => v == null ? '—' : ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight'];
+const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur']);
+// a reduction of the enemy's critical hits reads as the gear says it (−7 %)
+const statFmt = k => v => v == null ? '—' : (k === 'ecritRed' && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
 // the weapon sets
 const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path);
@@ -111,6 +118,10 @@ function statDefaultOf(s){
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return ['cureSelf', 'pdtRed', 'hp'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
   if (/cur(e|a|aga)/i.test(p)) return ['cure', 'hp', 'enmity'];
+  if (/stoneskin/i.test(p) && fam !== 'fc') return ['stoneskin', 'hp', 'pdtRed'];
+  if (/enlight/i.test(p) && fam !== 'fc') return ['enlight', 'hp', 'pdtRed'];
+  // an enhancing set (Protect, Shell, Reprisal...): how long they last
+  if (family(s.path, s.pieces) === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) return ['enhdur', 'hp', 'pdtRed'];
   if (/refresh/i.test(p)) return ['refresh', 'pdtRed', 'mdtRed'];
   if (/regen/i.test(p)) return ['regen', 'pdtRed', 'mdtRed'];
   // a magic-defense set by its name (idle.MDT, MEva): not every set with Magic in it (Enhancing Magic)
@@ -128,7 +139,7 @@ function statOpts(s){
 // (SIRD sets and Cures: SIRD 102 with the merits, the guide's benchmark; a Fast Cast: capped at 80)
 // A tank's other sets: their HP between the reference and 200 more (hpRef)
 function statFloorDefault(s, first){
-  const fam = family(s.path, s.pieces), sird = /sird/i.test(setNames(s)) ? {sird: 102} : {};
+  const fam = family(s.path, s.pieces), sird = /sird/i.test(setNames(s)) || tankSpell(s) ? {sird: 102} : {};
   if (first === 'fc') return {fc: 80};
   if (!['PLD', 'RUN'].includes(S.job)) return sird;
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
@@ -150,6 +161,14 @@ function hpRef(s){
   let low = null;
   for (const x of list) { const hp = statFigures(x, true).hp; if (!low || hp < low.hp) low = {hp, path: x.path}; }
   return low;
+}
+// A tank's spell set (PLD, RUN): cast while taking hits, so SIRD at 102 with the merits (the guide's SIRD sets, Cure,
+// Enlight II SIRD...); not a spell's potency set that has its own SIRD twin (Phalanx beside SIRDPhalanx)
+function tankSpell(s){
+  if (!['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) !== 'midcast') return false;
+  const name = segs(s.path).pop(), d = data();
+  const flat = p => p.toLowerCase().replace(/[^a-z]/g, ''), twin = flat('sird' + name);
+  return !(d && d.sets.some(x => [x.path, ...(x.aliases || [])].some(p => flat(p).endsWith(twin))));
 }
 // A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay
 // when asked (a job ability's set: on by default), only the rest is searched. The slots kept, or none
@@ -191,14 +210,21 @@ function setActions(s){
 
 /* ---- the pieces and the character, as plain data for the search (a worker has no page to ask) ---- */
 // A piece's stats the search reads (stats.js keys), the shield flagged (Shield Barrier)
+// The HP a piece adds to Stoneskin (BG Wiki Stoneskin; the game's descriptions name the effect, not always its amount;
+// Stone Mufflers as its description says it, +20)
+const STONESKIN_PLUS = {'Stone Gorget': 30, 'Nodens Gorget': 30, 'Stone Mufflers': 20, 'Siegel Sash': 20, 'Haven Hose': 20, 'Earthcry Earring': 10, 'Shedir Seraweels': 35};
 function statVec(p, slot){
   const r = p && !isEmpty(p) ? pieceStats(p, slot) : null, v = k => r && r.stats[k] ? r.stats[k].v || 0 : 0, out = {};
   if (!r) return {};
   if (r.stats['x:potency of cure effect received']) out.curerecv = r.stats['x:potency of cure effect received'].v;
-  if (v('skill:healing magic skill')) out.heal = v('skill:healing magic skill');
-  for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'refresh', 'regen'])
+  // "All magic skills" (Stikini Ring +1) counts in each magic skill read here
+  const all = r.stats['x:all magic skills'] ? r.stats['x:all magic skills'].v : 0;
+  if (v('skill:healing magic skill') + all) out.heal = v('skill:healing magic skill') + all;
+  if (v('skill:divine magic skill') + all) out.div = v('skill:divine magic skill') + all;
+  if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
+  for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'refresh', 'regen', 'enhdur'])
     if (v(k)) out[k] = v(k);
-  if (v('skill:enhancing magic skill')) out.enh = v('skill:enhancing magic skill');
+  if (v('skill:enhancing magic skill') + all) out.enh = v('skill:enhancing magic skill') + all;
   return out;
 }
 function withVec(p, slot){
@@ -221,7 +247,9 @@ function statBase(s){
   // a self Cure's set: the HP its Fast Cast leaves (cureGap), MND / VIT / Healing skill for the Cure's power
   // (a PLD: Majesty's Cure Potency II +25 counted, on or not: the guide's Cure sets take it as always up)
   const pair = s && cureGap(s), pre = pair && family(s.path, s.pieces) !== 'fc' ? statFigures(pair.other, true).hp : null;
-  return {preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
+  // the enemy's critical hits the gear can still take off: 10 % to the 1 % floor, less the merits
+  const ecritRoom = Math.max(0, 9 - ((c.merits || {}).enemy_critical_hit_rate || 0));
+  return {ecritRoom, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
     hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: B.enmity || 0, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
     shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect]};
