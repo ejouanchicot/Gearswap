@@ -261,7 +261,7 @@ function optRunOpen(s, o, starts, cores, floor){
   const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
     ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
     : [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
-  S._optRun = {t0: performance.now(), cores, fmt, low: time, done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
+  S._optRun = {t0: performance.now(), cores, fmt, low: time || obj === 'hpLow', done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
   const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
   const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
     `<div class="orbar"><i></i></div><div class="orws"><span class="orphase">${esc(t('orStarting'))}</span><span class="orevals"></span></div><div class="orwbest">—</div></div>`).join('');

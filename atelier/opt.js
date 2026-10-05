@@ -632,8 +632,19 @@
     //   HP = (base + gear HP) x (1 + HP %); DEF = base + gear DEF + VIT x 1.5, + the shield's DEF when a PLD's Protect
     //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
-    var STAT_KEYS = ["hp", "hp%", "def", "vit", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "sird",
-        "fc", "meva", "mdb", "ecrit", "cure", "refresh", "regen"];
+    var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
+        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen"];
+    // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
+    // [power floor, rate, HP floor], 640 at most; then x (1 + Cure Potency (50 % cap) + Cure Potency II (30 %)), then x (1 +
+    // Cure Potency Received (30 %)). Day and weather left out
+    var CURE4 = [[400, 2.5, 520], [300, 1.43, 450], [200, 2, 400], [70, 1, 270]];
+    O.cureIV = function (mnd, vit, skill, cp, cp2, recv) {
+        var power = Math.floor(mnd / 2) + Math.floor(vit / 4) + skill, base = 270;
+        for (var i = 0; i < CURE4.length; i++) if (power >= CURE4[i][0]) { base = Math.floor((power - CURE4[i][0]) / CURE4[i][1]) + CURE4[i][2]; break; }
+        base = Math.min(640, base);
+        var pot = 1 + Math.min(50, cp) / 100 + Math.min(30, cp2) / 100;
+        return Math.floor(Math.floor(base * pot) * (1 + Math.min(30, recv) / 100));
+    };
     O.phalanxPotency = function (skill) {
         return skill <= 300 ? Math.max(0, Math.floor(skill / 10) - 2) : Math.min(35, 28 + Math.floor((skill - 300.5) / 28.5));
     };
@@ -654,12 +665,17 @@
             pdtAll: two(cap(t.dt + t.pdt) + t.pdt2), mdtAll: two(cap(t.dt + t.mdt + shell) + t.mdt2), bdtAll: cap(t.dt + t.bdt),
             pdt: t.dt + t.pdt, mdt: t.dt + t.mdt
         };
-        // the reductions as positive figures (more is better, like every objective)
-        f.pdtRed = -f.pdtAll; f.mdtRed = -f.mdtAll; f.ecritRed = -f.ecrit;
+        // a self Cure IV: what it would heal, and what it heals (Guide_Paladin CURE SELF: the Fast Cast of the Cure lowers
+        // the max HP, so the current HP with it; the Cure set raises the max HP; the Cure heals up to the gap)
+        f.cureIV = O.cureIV((b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), t.curerecv);
+        f.cureSelf = b.preHp != null ? Math.max(0, Math.min(f.cureIV, f.hp - b.preHp)) : f.cureIV;
+        // the reductions as positive figures (more is better, like every objective); hpLow: HP where less is better (a
+        // PLD's Fast Cast for a self Cure, low so the Cure set's HP opens a gap the Cure fills: Guide_Paladin CURE SELF)
+        f.pdtRed = -f.pdtAll; f.mdtRed = -f.mdtAll; f.ecritRed = -f.ecrit; f.hpLow = f.hp;
         return f;
     };
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
@@ -679,7 +695,7 @@
     function statValue(ctx, pieces, opts) {
         var f = O.statFigures(ctx.stat, pieces), list = [opts.objective].concat(opts.then || []).filter(function (k) { return k && f[k] != null; });
         var v = 0, w = 1;
-        list.forEach(function (k) { v += w * f[k]; w *= 1e-4; });
+        list.forEach(function (k) { v += w * (k === "hpLow" ? -f[k] : f[k]); w *= 1e-4; });
         var raw = list.length ? f[list[0]] : 0, miss = statShort(f, opts.floor);
         var def = {pdt: f.pdt, mdt: f.mdt, sb: 0};
         return {v: v - 1e6 * miss + tieBreak(pieces, def, opts, v), raw: raw, def: def, miss: miss, stats: f};

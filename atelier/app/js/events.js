@@ -197,6 +197,8 @@ document.addEventListener('change', e => {
     S.optOpts = Object.assign({}, S.optOpts, {cycWsBy: Object.assign({}, (S.optOpts || {}).cycWsBy, {[e.target.dataset.cycws]: e.target.value})});
     save(); render(); return; }
   // the stats optimizer's next objectives and floors, kept for that set (stat_opt.js)
+  if (e.target.dataset && 'statkeep' in e.target.dataset) {
+    setStatOpts(shownSet(S._cards[S.sel[S.job]], S.sel[S.job]).path, {keepOwn: e.target.checked}); render(); return; }
   if (e.target.dataset && (e.target.dataset.statthen || e.target.dataset.statfloor)) {
     const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), so = statOpts(s);
     if (e.target.dataset.statthen) { const objs = so.objs.slice(); objs[+e.target.dataset.statthen] = e.target.value;

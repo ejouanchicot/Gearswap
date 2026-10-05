@@ -375,3 +375,5 @@
 .setctl .wpicks{gap:8px 20px;align-items:center}
 .setctl .wpicks .wsrc{flex-basis:auto}
 .setctl .wpick select{max-width:230px}
+.setrow.alias b{font-weight:500;font-style:italic}
+.setrow.alias code{color:var(--faint)}

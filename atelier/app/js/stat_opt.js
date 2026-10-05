@@ -10,12 +10,20 @@ Object.assign(T.fr, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
+  statObj_cureSelf: 'Cure IV sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
+  statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II), le jour et la météo à part.',
+  statObj_hpLow: 'HP les plus bas', statD_hpLow: 'Fast Cast d’un Cure sur toi : HP bas, le set de Cure les remonte et le Cure remplit l’écart',
+  statKeepOwn: 'Garder les pièces propres à ce set ({p})', statKeepOwnTip: 'Les pièces que ce set met par-dessus {b} (celle qui renforce la JA) restent : la recherche choisit le reste.',
+  statRef: 'HP vs Fast Cast', statRefTip: 'HP du set moins ceux du Fast Cast {f} ({h} HP), le set classique le plus bas en HP, porté avant chaque sort : '
+    + 'les autres sets visent entre lui et lui + 200 pour qu’un changement de set ne fasse pas perdre de HP (guide Paladin, HP Management : écart de 200 au plus).',
+  statRefLine: 'HP de référence : {h} (Fast Cast {f}) · les sets tank visent {a} à {b}.',
+  statGap: 'HP gagnés au midcast', statGapTip: 'HP du set {m} moins ceux du Fast Cast {f} : ce qui manque au moment du Cure, donc ce qu’il peut soigner en entier (guide Paladin, CURE SELF).',
   statD_def: 'VIT × 1,5 + DEF du gear (+ bouclier sous Protect en PLD)', statD_hp: 'HP avec les HP %', statD_enmity: 'jusqu’au plafond +200, buffs compris',
   statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %', statD_sird: 'jusqu’à 102 %',
   statD_meva: 'résister aux sorts', statD_mdb: 'divise les dégâts magiques', statD_pdtRed: 'DT+PDT plafonnés à −50 %, puis PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) plafonnés, puis MDT II', statD_ecritRed: 'réduction du gear (10 % → 1 % : −9 avec les mérites −5… à toi de compter)',
   statD_cure: 'jusqu’à 50 %', statD_refresh: 'MP par tick', statD_regen: 'HP par tick',
-  statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
+  aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
   statWhy: 'Les sets sans dégâts à calculer (repos, Enmity, Phalanx, Fast Cast, Cure…) se jugent sur leurs stats : la recherche ' +
     'additionne celles de chaque pièce, comme les solveurs du guide Paladin. Le premier objectif décide ; les suivants départagent les sets ' +
@@ -31,12 +39,20 @@ Object.assign(T.en, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
+  statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
+  statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25), day and weather aside.',
+  statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
+  statKeepOwn: 'Keep this set’s own pieces ({p})', statKeepOwnTip: 'The pieces this set lays over {b} (the one that boosts the ability) stay: the search picks the rest.',
+  statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set less those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
+    + 'the other sets aim between it and it + 200 so a set change loses no HP (Paladin guide, HP Management: 200 apart at most).',
+  statRefLine: 'Reference HP: {h} (Fast Cast {f}) · the tank sets aim at {a} to {b}.',
+  statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} less those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
   statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs in',
   statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %', statD_sird: 'up to 102 %',
   statD_meva: 'resist spells', statD_mdb: 'divides magic damage', statD_pdtRed: 'DT+PDT capped at −50 %, then PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s cut (10 % → 1 %: −9 with the −5 merits… yours to count)',
   statD_cure: 'up to 50 %', statD_refresh: 'MP a tick', statD_regen: 'HP a tick',
-  statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
+  aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
   statWhy: 'Sets with no damage to work out (idle, Enmity, Phalanx, Fast Cast, Cure…) are judged on their stats: the search adds up ' +
     'each piece’s, as the Paladin guide’s solvers do. The first objective decides; the next ones part sets as good on it. A floor at 0 is ' +
@@ -49,7 +65,7 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
   tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
 
-const STAT_OBJS = ['def', 'hp', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen'];
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure']);
 const statFmt = k => v => v == null ? '—' : ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
@@ -60,7 +76,10 @@ const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family
 function statDefault(s){
   const p = s.path, fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
   if (/phalanx/i.test(p)) return ['phalanx', 'def', 'hp'];
+  // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap)
+  if (fam === 'fc' && /cure/i.test(p) && /self/i.test(p)) return ['fc', 'hpLow'];
   if (fam === 'fc') return ['fc', 'hp', 'pdtRed'];
+  if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return ['cureSelf', 'pdtRed', 'hp'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
   if (/cur(e|a|aga)/i.test(p)) return ['cure', 'hp', 'enmity'];
   if (/refresh/i.test(p)) return ['refresh', 'pdtRed', 'mdtRed'];
@@ -76,11 +95,46 @@ function statOpts(s){
 }
 // The floors a tank's idle and Enmity sets start with (the guide's solve_idle / solve_enmity: DT+PDT at the -50 % cap,
 // the gear's enemy critical hit rate -5 beside the -5 of the merits); 0 (no floor) elsewhere
+// (SIRD sets and Cures: SIRD 102 with the merits, the guide's benchmark; a Fast Cast: capped at 80)
+// A tank's other sets: their HP between the reference and 200 more (hpRef)
 function statFloorDefault(s, first){
-  if (!['PLD', 'RUN'].includes(S.job)) return {};
-  if (first === 'def' && ['idle', 'special'].includes(family(s.path, s.pieces))) return {pdt: -50, ecrit: -5};
-  if (first === 'enmity') return {pdt: -50};
-  return {};
+  const fam = family(s.path, s.pieces), sird = /sird/i.test(s.path) ? {sird: 102} : {};
+  if (first === 'fc') return {fc: 80};
+  if (!['PLD', 'RUN'].includes(S.job)) return sird;
+  const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
+  if (first === 'def' && ['idle', 'special'].includes(fam)) return Object.assign({pdt: -50, ecrit: -5}, hp);
+  if (first === 'enmity') return Object.assign({pdt: -50}, sird, hp);
+  if (first === 'cure' || first === 'cureSelf') return {sird: 102};
+  return Object.assign({}, sird, hp);
+}
+// The reference HP of a tank's sets (Guide_Paladin HP Management): the classic Fast Cast set's (sets.precast.FC), the
+// lowest in HP of the sets worn in the cycle (idle, Fast Cast, midcast or ability, idle) and worn before every spell.
+// Swapping to a set with fewer max HP cuts the current HP, and swapping back does not give them back: the other sets
+// keep within HP_SPREAD over it (the guide: idle 3197, Fast Cast 3044, Full Enmity 3045). Not for the Fast Cast sets
+// themselves, nor the self Cure pair (its gap is on purpose: cureGap). {hp, path} or null
+const HP_SPREAD = 200;
+function hpRef(s){
+  if (!['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) === 'fc') return null;
+  const d = data(), fc = d && d.sets.find(x => x.path === 'sets.precast.FC');
+  return fc ? {hp: statFigures(fc, true).hp, path: fc.path} : null;
+}
+// A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay
+// when asked (a job ability's set: on by default), only the rest is searched. The slots kept, or none
+function keptSlots(s){
+  if (!s.base || !(s.own || []).length) return [];
+  const mine = ((S.optOpts || {}).statBy || {})[s.path] || {};
+  const on = mine.keepOwn != null ? mine.keepOwn : family(s.path, s.pieces) === 'ja';
+  return on ? s.own.slice() : [];
+}
+// The HP a self Cure's midcast set opens over its Fast Cast (the other set of the pair: sets.precast.FC.CureSelf and
+// sets.midcast.CureSelf, any names with Cure and Self), or null
+function cureGap(s){
+  if (!/cure/i.test(s.path) || !/self/i.test(s.path)) return null;
+  const fc = family(s.path, s.pieces) === 'fc', d = data();
+  const other = d && d.sets.find(x => x.path !== s.path && /cure/i.test(x.path) && /self/i.test(x.path) && (family(x.path, x.pieces) === 'fc') !== fc && family(x.path, x.pieces) !== 'ws');
+  if (!other) return null;
+  const hp = set => statFigures(set, true).hp;
+  return {other, gap: f => fc ? hp(other) - f.hp : f.hp - hp(other), mid: fc ? other.path : s.path, pre: fc ? s.path : other.path};
 }
 function setStatOpts(path, patch){
   const by = Object.assign({}, (S.optOpts || {}).statBy), cur = by[path] || {};
@@ -93,7 +147,9 @@ function setStatOpts(path, patch){
 function statVec(p, slot){
   const r = p && !isEmpty(p) ? pieceStats(p, slot) : null, v = k => r && r.stats[k] ? r.stats[k].v || 0 : 0, out = {};
   if (!r) return {};
-  for (const k of ['hp', 'hp%', 'def', 'vit', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'refresh', 'regen'])
+  if (r.stats['x:potency of cure effect received']) out.curerecv = r.stats['x:potency of cure effect received'].v;
+  if (v('skill:healing magic skill')) out.heal = v('skill:healing magic skill');
+  for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'refresh', 'regen'])
     if (v(k)) out[k] = v(k);
   if (v('skill:enhancing magic skill')) out.enh = v('skill:enhancing magic skill');
   return out;
@@ -115,7 +171,11 @@ function statBase(s){
   const r = charStats(s, {}), b = buffState(), B = buffTotals(), c = measuredChar() || {};
   const cur = r ? r.cur : {};
   // SIRD merits: 2 % a level (Guide_Paladin solver_common: Merit_SIRD 10 at 5/5)
-  return {hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: B.enmity || 0, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
+  // a self Cure's set: the HP its Fast Cast leaves (cureGap), MND / VIT / Healing skill for the Cure's power
+  // (a PLD: Majesty's Cure Potency II +25 counted, on or not: the guide's Cure sets take it as always up)
+  const pair = s && cureGap(s), pre = pair && family(s.path, s.pieces) !== 'fc' ? statFigures(pair.other, true).hp : null;
+  return {preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
+    hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: B.enmity || 0, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
     shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect]};
 }
@@ -163,8 +223,9 @@ async function optimizeStats(s){
   if (!engineReady() || !statSet(s)) return;
   const k = trialKey(s), o = Object.assign({}, S.optOpts), so = statOpts(s), base = withoutTrial(() => withWeapons(s).pieces);
   const choices = optChoices(new Set(Object.keys(ONLY_AUGS)));
+  for (const slot of keptSlots(s)) delete choices[slot];
   for (const slot of Object.keys(choices)) choices[slot] = choices[slot].map(p => withVec(p, slot));
-  if (o.freeWeapons) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
+  if (o.freeWeapons && !keptSlots(s).some(x => x === 'main' || x === 'sub')) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
   const start = withVecs(startOf(base));
   const input = {ctx: statContext(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: so.objs[0], then: so.objs.slice(1), floor: so.floor}};
@@ -183,8 +244,12 @@ function statWhatHTML(s){
   const floors = `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
     `${num('hpMax', t('statHpMax'))}${num('sird', t('statSird'))}${num('fc', t('statFc'))}${num('ecrit', t('statEcrit'))}${num('enmity', t('statEnm'))}${num('phalanx', t('statPhx'))}</div>`;
   const search = opSearchHTML(S.optOpts || {}, false, true);
+  const own = family(s.path, s.pieces) === 'ja' && s.base && (s.own || []).length ? `<div class="opparams"><label class="opf" title="${esc(t('statKeepOwnTip', {b: shortPath(s.base)}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
+    `${esc(t('statKeepOwn', {p: s.own.map(sl => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')}))}</label></div>` : '';
+  const ref = cureGap(s) ? null : hpRef(s);
+  const refLine = ref ? `<p class="muted small">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}</p>` : '';
   return `<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
-    floors + search;
+    own + floors + refLine + search;
 }
 // The result's lines: the objectives first, then every figure, the floors marked
 function statRows(s){
@@ -195,8 +260,16 @@ function statRows(s){
   for (const r of rows) if (lim[r.id]) r.floor = lim[r.id];
   rows.push({id: 'pdt', label: on('pdt') ? `DT+PDT ≤ ${fl.pdt}` : 'DT+PDT', get: f => f.pdt, fmt: v => String(Math.round(v)), low: true, floor: on('pdt') ? v => v <= fl.pdt : null},
     {id: 'mdt', label: on('mdt') ? `DT+MDT ≤ ${fl.mdt}` : 'DT+MDT', get: f => f.mdt, fmt: v => String(Math.round(v)), low: true, floor: on('mdt') ? v => v <= fl.mdt : null});
+  const pair = cureGap(s), ref = pair ? null : hpRef(s);
+  if (pair && family(s.path, s.pieces) !== 'fc') rows.push({id: 'cure4', label: t('statCure4'), get: f => f.cureIV, fmt: v => String(Math.round(v)), tip: t('statCure4Tip')});
+  if (ref) rows.push({id: 'ref', label: t('statRef'), get: f => f.hp - ref.hp, fmt: v => (v > 0 ? '+' : '') + Math.round(v), tip: t('statRefTip', {f: shortPath(ref.path), h: ref.hp}),
+    floor: v => v >= 0 && v <= HP_SPREAD});
+  if (pair) rows.push({id: 'gap', label: t('statGap'), get: f => pair.gap(f), fmt: v => String(Math.round(v)), tip: t('statGapTip', {m: shortPath(pair.mid), f: shortPath(pair.pre)})});
   const first = so.objs.map(k => rows.find(r => r.id === k)).filter(Boolean);
-  return first.concat(rows.filter(r => !first.includes(r)));
+  // the gap (and the Cure's power) right under the objectives: it is what the pair of sets is for; Lowest HP only as an objective
+  const near = rows.filter(r => ['gap', 'ref', 'cure4'].includes(r.id) && !first.includes(r));
+  const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow');
+  return first.concat(near, rest);
 }
 function statResultHTML(s){
   const now = statFigures(s), was = trialCount(s) ? statFigures(s, true) : null, rows = statRows(s), main = rows[0];
@@ -204,13 +277,13 @@ function statResultHTML(s){
   const big = `<div class="opbig"><div><span class="muted small">${esc(main.label)}${was ? ' · ' + t('rdvTry') : ''}</span><div class="opval"><b>${main.fmt(v)}</b>` +
     (d ? `<em class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : '−'}${main.fmt(Math.abs(d))}</em>` : '') + `</div>` +
     (was ? `<span class="muted small">${t('opNow')} : ${main.fmt(w)}</span>` : '') +
-    (now.shield ? `<span class="muted small"> · DEF ${esc(t('statShield', {n: now.shield}))}</span>` : '') + `</div></div>`;
+    (now.shield && main.id === 'def' ? `<span class="muted small"> · DEF ${esc(t('statShield', {n: now.shield}))}</span>` : '') + `</div></div>`;
   const cell = (r, x, y) => { const a = r.get(x), b = y ? r.get(y) : null;
     const better = b != null && (r.low ? a < b - 1e-9 : a > b + 1e-9), bad = r.floor && !r.floor(a);
     return `<td class="${better ? 'better' : ''} ${bad ? 'short' : ''}">${r.fmt(a)}</td>`; };
   const shown = rows.filter((r, i) => i < 3 || r.get(now) || (was && r.get(was)) || r.floor);
   const table = `<table class="rdvs optable"><thead><tr><th></th>${was ? `<th>${t('rdvMine')}</th>` : ''}<th>${was ? t('rdvTry') : t('rdvMine')}</th></tr></thead><tbody>` +
-    shown.map((r, i) => `<tr class="${i ? '' : 'obj'}"><th>${esc(r.label)}${i ? '' : ' ★'}</th>${was ? cell(r, was, now) : ''}${cell(r, now, was)}</tr>`).join('') + `</tbody></table>`;
+    shown.map((r, i) => `<tr class="${i ? '' : 'obj'}"><th ${r.tip ? `title="${esc(r.tip)}"` : ''}>${esc(r.label)}${i ? '' : ' ★'}</th>${was ? cell(r, was, now) : ''}${cell(r, now, was)}</tr>`).join('') + `</tbody></table>`;
   return `<h3 class="ophd">${t('opResult')}</h3>${big}<div class="opres">${table}<div class="opside">${opChangesHTML(s)}</div></div>` +
     `${trialRow(s) || `<p class="muted small">${esc(t('opNoTry'))}</p>`}`;
 }

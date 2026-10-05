@@ -206,9 +206,13 @@ function renderSets(d){
   const vi = i => Math.min(S.variant[S.job + '|' + i] ?? 0, cards[i].variants.length - 1);
   const rows = S._rows = [];
   let list = '', fam = null;
+  // the names a set is shared under, after the family's own sets: a link to the set they are
+  const aliases = aliasRows(cards, q);
+  const aliasesOf = f => famOpen(f, q) ? aliases.filter(a => a.fam === f).map(a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
+    `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`).join('') : '';
   for (const i of vis) { const c = cards[i];
-    if (c.fam !== fam) { fam = c.fam;
-      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0);
+    if (c.fam !== fam) { if (fam) list += aliasesOf(fam); fam = c.fam;
+      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0) + aliases.filter(a => a.fam === fam).length;
       list += `<button class="fam ${cards[sel] && cards[sel].fam === fam ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${famOpen(fam, q)}"><span>${t('fam.'+fam)}</span><span>${n}</span></button>`; }
     // a category is closed until opened (a search opens them all)
     if (!famOpen(c.fam, q)) continue;
@@ -231,6 +235,7 @@ function renderSets(d){
       if (open) items.forEach(([v, k]) => row(v, k));
     }
   }
+  if (fam) list += aliasesOf(fam);
   if (!vis.length) list = `<p class="empty-list">${t('noMatch')}</p>`;
   S._fams = [...new Set(vis.map(i => cards[i].fam))];
   // open or close every category at once
@@ -389,9 +394,20 @@ function niceName(card){
     MoveSpeed:{fr:'Vitesse de course',en:'Movement speed'}, Doom:{fr:'Doom',en:'Doom'}, TreasureHunter:{fr:'Treasure Hunter',en:'Treasure Hunter'}};
   return (map[n] && map[n][S.lang]) || n;
 }
-// A card matches the search when one of its variants has the text in its path or in a piece name
+// A card matches the search when one of its variants has the text in its path, in a name it is shared under
+// (sets.midcast.Flash = sets.FullEnmity) or in a piece name
 function cardMatch(card, q){
-  return !q || card.variants.some(v => v.set.path.toLowerCase().includes(q) || Object.values(v.set.pieces).some(p => p.name.toLowerCase().includes(q)));
+  return !q || card.variants.some(v => v.set.path.toLowerCase().includes(q) || (v.set.aliases || []).some(a => a.toLowerCase().includes(q))
+    || Object.values(v.set.pieces).some(p => p.name.toLowerCase().includes(q)));
+}
+// The names a set is shared under, each in the family its own name belongs to (sets.midcast.Flash = sets.FullEnmity
+// is a spell's set: listed with the spells), a link to the set it is: [{fam, label, path, of, i, k}]
+function aliasRows(cards, q){
+  const out = [];
+  cards.forEach((c, i) => c.variants.forEach((v, k) => { for (const a of v.set.aliases || []) {
+    if (q && !a.toLowerCase().includes(q)) continue;
+    out.push({fam: family(a, v.set.pieces), label: shortPath(a).replace(/^(midcast|precast)\./, ''), path: a, of: v.set.path, i, k}); } }));
+  return out.sort((a, b) => a.label.localeCompare(b.label));
 }
 
 

@@ -82,7 +82,7 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   def: ['Défense', 'Defense', ''], eva: ['Évasion', 'Evasion', ''], meva: ['Évasion magique', 'Magic Evasion', ''], mdb: ['Déf. magique', 'Magic Def. Bonus', ''],
   stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''],
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],
-  block: ['Chance de blocage', 'Block rate', '%'], blockmul: ['Chance de blocage', 'Block rate', 'mul'],
+  block: ['Chance de blocage', 'Block rate', '%'], cure2: ['Cure potency II', 'Cure potency II', '%'], blockmul: ['Chance de blocage', 'Block rate', 'mul'],
   pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], tpb: ['TP Bonus', 'TP Bonus', ''], sb: ['Subtle Blow', 'Subtle Blow', ''], critdmg: ['Dégâts critiques', 'Critical damage', '%'], dt: ['Dégâts reçus (DT)', 'Damage taken (DT)', '%'], enspell: ['Enspell (dégâts par coup)', 'Enspell (damage a hit)', ''], mdmg: ['Dégâts magiques', 'Magic damage', '']};
 // Short labels, for a one-line summary (the party support cards)
 const FX_SHORT = {edefp: ['Déf cible', 'Tgt Def'], eeva: ['Éva cible', 'Tgt Eva'], emdb: ['Déf. mag. cible', 'Tgt MDB'], emeva: ['Éva. mag. cible (info)', 'Tgt M.Eva (info)'], atkp: ['Att', 'Atk'], atk: ['Att', 'Atk'], atkf: ['Att', 'Atk'], acc: ['Préc', 'Acc'], racc: ['Préc. dist.', 'R.Acc'], ratk: ['Att. dist.', 'R.Atk'],
