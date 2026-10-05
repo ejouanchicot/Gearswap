@@ -218,8 +218,12 @@ function renderSets(d){
   const aliases = aliasRows(cards, q);
   // an idle or engaged name of a set kept in another family (sets.idle.MDT = sets.engaged.MDT) shows in its own family
   // too, at its end: those are looked for there
-  const crossOf = f => ['idle', 'engaged'].includes(f) && famOpen(f, q)
-    ? aliases.filter(a => a.fam === f && cards[a.i].fam !== f).map(a => aliasBtn(Object.assign({}, a, {label: shortPath(a.path)}))).join('') : '';
+  // (right under the card it is a version of, sets.idle.MDT under Idle beside PDT and Town; else at the family's end)
+  const crossAll = aliases.filter(a => ['idle', 'engaged'].includes(a.fam) && cards[a.i].fam !== a.fam);
+  const homeOf = a => cards.findIndex(c => c.fam === a.fam && c.top.join('/') === topOf(a.path, a.fam).join('/'));
+  const crossLabel = a => Object.assign({}, a, {label: segs(a.path).slice(topOf(a.path, a.fam).length).join(' · ') || shortPath(a.path)});
+  const crossUnder = i => crossAll.filter(a => homeOf(a) === i).map(a => aliasBtn(crossLabel(a))).join('');
+  const crossOf = f => famOpen(f, q) ? crossAll.filter(a => a.fam === f && !vis.includes(homeOf(a))).map(a => aliasBtn(Object.assign({}, a, {label: shortPath(a.path)}))).join('') : '';
   const aliasBtn = a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
     `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`;
 
@@ -241,7 +245,7 @@ function renderSets(d){
         list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
           (open ? mine.map(aliasBtn).join('') : ''); }
     };
-    if (c.fam !== 'ws') { c.variants.forEach(row); continue; }
+    if (c.fam !== 'ws') { c.variants.forEach(row); list += crossUnder(i); continue; }
     // weaponskills: the common set, then one folding group a weapon (closed until opened, a search opens them)
     row(c.variants[0], 0);
     const bySkill = new Map();
