@@ -36,6 +36,8 @@ Object.assign(T.fr, {
   statAssumed: 'Toujours comptés, comme dans le guide : Crusade (Enmity +30){m}.', statAssumedMaj: ', Majesty (Cure Potency II +25)',
   ownWeapon: 'arme du set (portée le temps de l’action)',
   statWeaponsNote: 'Armes libres : l’arme et le bouclier trouvés vont dans ce set, portés le temps de l’action (en idle, tes modes les remettent). Changer l’arme principale fait perdre le TP, le bouclier non.',
+  statGrp_def: 'Défense', statGrp_enm: 'Inimitié', statGrp_cure: 'Soin', statGrp_magic: 'Magie', statGrp_regen: 'Récupération',
+  statAll: 'Tous les objectifs (+{n})', statFewer: 'Seulement ceux de ce set',
   subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.', subFix: 'Passer en /{s}',
   aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -79,6 +81,8 @@ Object.assign(T.en, {
   statAssumed: 'Always counted, as in the guide: Crusade (Enmity +30){m}.', statAssumedMaj: ', Majesty (Cure Potency II +25)',
   ownWeapon: 'the set’s own (worn for the action)',
   statWeaponsNote: 'Free weapons: the weapon and shield found go in this set, worn for the action (at idle your modes lay theirs back). Changing the main weapon loses the TP, the shield does not.',
+  statGrp_def: 'Defense', statGrp_enm: 'Enmity', statGrp_cure: 'Healing', statGrp_magic: 'Magic', statGrp_regen: 'Recovery',
+  statAll: 'All objectives (+{n})', statFewer: 'Only this set’s',
   subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',
   aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -217,6 +221,26 @@ function setStatOpts(path, patch){
   const by = Object.assign({}, (S.optOpts || {}).statBy), cur = by[path] || {};
   by[path] = Object.assign({}, cur, patch, patch.floor ? {floor: Object.assign({}, cur.floor, patch.floor)} : {});
   S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save();
+}
+
+/* ---- the objectives by kind, and the ones a set is shown ---- */
+const STAT_OBJ_GROUPS = [['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'meva', 'mdb']], ['enm', ['enmity', 'cureEnm']],
+  ['cure', ['cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
+  ['regen', ['refresh', 'regen']]];
+// What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
+function statRelevant(s, chosen){
+  const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
+  const add = list => list.forEach(k => out.add(k)), def = ['def', 'hp', 'pdtRed', 'mdtRed', 'meva', 'mdb', 'enmity'];
+  if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
+  else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
+  else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
+  else if (/stoneskin/i.test(p)) add(['stoneskin', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
+  else if (/enlight/i.test(p)) add(['enlight', 'divSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
+  else if (fam === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) add(['enhdur', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
+  else if (fam === 'enmity' || fam === 'ja') add(['enmity', 'sird', ...def]);
+  else if (fam === 'idle' || fam === 'special') add([...def, 'ecritRed', 'refresh', 'regen']);
+  else add([...def, 'refresh', 'regen']);
+  return out;
 }
 
 /* ---- the enmity of each action (Guide_Paladin 02 Enmity Generation: base VE / CE, before the gear) ---- */
@@ -424,14 +448,23 @@ async function optimizeStats(s){
 /* ---- the page: objectives, floors, the result's lines ---- */
 function statWhatHTML(s){
   const so = statOpts(s), cur = so.objs[0];
-  const objs = `<div class="opobjs" role="radiogroup">${STAT_OBJS.map(k => `<button class="opobj ${k === cur ? 'on' : ''}" role="radio" aria-checked="${k === cur}" ` +
-    `data-statobj="${k}"><b>${esc(t('statObj_' + k))}</b><span>${esc(t('statD_' + k))}</span></button>`).join('')}</div>`;
+  // the objectives by kind, only the ones that mean something for this set (statRelevant) unless all are asked for
+  const all = !!(S.optOpts || {}).statAll, shown = all ? new Set(STAT_OBJS) : statRelevant(s, so.objs);
+  const btn = k => `<button class="opobj ${k === cur ? 'on' : ''}" role="radio" aria-checked="${k === cur}" ` +
+    `data-statobj="${k}"><b>${esc(t('statObj_' + k))}</b><span>${esc(t('statD_' + k))}</span></button>`;
+  const groups = STAT_OBJ_GROUPS.map(([g, keys]) => { const list = keys.filter(k => shown.has(k));
+    return list.length ? `<div class="opgrp"><span class="opgrph">${esc(t('statGrp_' + g))}</span>${list.map(btn).join('')}</div>` : ''; }).join('');
+  const hidden = STAT_OBJS.length - shown.size;
+  const toggle = `<button class="linkbtn opallbtn" data-statall>${esc(all ? t('statFewer') : t('statAll', {n: hidden}))}</button>`;
+  const objs = `<div class="opobjs" role="radiogroup">${groups}</div>${all || hidden ? toggle : ''}`;
   const then = i => `<select class="buffsel" data-statthen="${i}">${['', ...STAT_OBJS].filter(k => k !== cur).map(k =>
     `<option value="${k}" ${(so.objs[i] || '') === k ? 'selected' : ''}>${esc(k ? t('statObj_' + k) : t('statNone'))}</option>`).join('')}</select>`;
   const help = S._help === 'optpage' ? `<p class="wshelp">${esc(t('statWhy'))} ${esc(t('opHelp'))}</p>` : '';
   const num = (k, label) => `<label class="opf">${label} <input type="number" step="1" data-statfloor="${k}" value="${esc(so.floor[k])}"></label>`;
+  // the floors of the stats this set is after (and any floor given a value), the others hidden with their objectives
+  const has = (k, obj) => all || shown.has(obj) || !!+so.floor[k], opt = (k, obj, label) => has(k, obj) ? num(k, label) : '';
   const floors = `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
-    `${num('hpMax', t('statHpMax'))}${num('sird', t('statSird'))}${num('fc', t('statFc'))}${num('ecrit', t('statEcrit'))}${num('enmity', t('statEnm'))}${num('phalanx', t('statPhx'))}</div>`;
+    `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}</div>`;
   const search = opSearchHTML(S.optOpts || {}, false, true);
   const jaList = abilityPieces(s);
   const own = jaList.length ? `<div class="opparams"><label class="opf opwrap" title="${esc(t('statKeepOwnTip', {b: segs(s.path).pop()}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +

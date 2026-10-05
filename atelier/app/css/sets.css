@@ -386,3 +386,6 @@
 .aliasfold:hover{color:var(--accent)}
 .opf.opwrap{white-space:normal;min-width:0;max-width:100%}
 .subwarn{margin:0 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.opgrp{display:contents}
+.opgrph{grid-column:1/-1;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:6px 0 0}
+.opallbtn{margin:4px 0 8px}
