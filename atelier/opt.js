@@ -678,9 +678,11 @@
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;
         f.statusRes = t.statusRes; f.eleRes = Math.round(t.eleRes / 8 * 10) / 10;
-        // the cut of the enmity lost on each hit taken (Guide_Paladin, CE Loss Reduction, its first bucket): 1 % a +2
-        // Enmity, Crusade in, 50 % at +100 (what the idle set wears when the hits land)
-        f.ceLoss = Math.max(0, Math.min(100, t.enmity + (b.enmity || 0))) / 2;
+        // the cut of the enmity lost on each hit taken (Guide_Paladin, CE Loss Reduction): two buckets that multiply, each
+        // 50 % at most: the Enmity (1 % a +2, Crusade in) and the "Reduces Enmity loss" pieces (Burtgang 20, Chev. Cuisses
+        // +3 14, Creed Collar 5); 75 % in all (what the idle set wears when the hits land)
+        var b1 = Math.max(0, Math.min(100, t.enmity + (b.enmity || 0))) / 200, b2 = Math.min(50, t.lossRed || 0) / 100;
+        f.ceLoss = Math.round((1 - (1 - b1) * (1 - b2)) * 1000) / 10;
         // the weapon's own Enlight bonus (BG Wiki: Brilliance +15, Honorbound +7, their melee hits only)
         f.enlight += t.enl || 0;
         f.enlight = div <= 500 ? 2 * Math.floor((div + 85) / 13) + Math.floor((div + 85) / 26) : 2 * Math.floor((div + 400) / 20) + Math.floor((div + 400) / 40);
@@ -699,7 +701,7 @@
         return f;
     };
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "lossRed"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };

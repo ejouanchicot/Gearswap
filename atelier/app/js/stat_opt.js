@@ -16,7 +16,7 @@ Object.assign(T.fr, {
   statObj_enhdur: 'Durée renfort', statD_enhdur: 'Enhancing magic duration : Protect, Shell, Reprisal… durent plus longtemps',
   statObj_enhSkill: 'Skill de renfort', statD_enhSkill: 'le tien + le gear : Phalanx, Stoneskin, Barspells… en dépendent',
   statObj_divSkill: 'Skill divin', statD_divSkill: 'le tien + le gear : Enlight II, Flash (Cécité), Banish, Holy',
-  statObj_ceLoss: 'Perte d’inimitié réduite', statD_ceLoss: 'quand tu prends un coup : 1 % pour +2 d’Enmity (Crusade comprise), 50 % au plus à +100',
+  statObj_ceLoss: 'Perte d’inimitié réduite', statD_ceLoss: 'quand tu prends un coup : Enmity (1 % pour +2, 50 % à +100) × pièces « perte réduite » (Burtgang 20, Chev. Cuisses +3 14, 50 % au plus), 75 % en tout',
   statObj_blockGear: 'Blocage (gear)', statD_blockGear: 'skill de bouclier × 0,2325 + chance de blocage des pièces, en plus de la base du bouclier',
   statObj_statusRes: 'Résistance aux statuts', statD_statusRes: '« résistance à tous les statuts » des pièces',
   statObj_eleRes: 'Résistances élémentaires', statD_eleRes: 'moyenne des 8 éléments',
@@ -56,7 +56,7 @@ Object.assign(T.fr, {
   statSame: 'Ton set est déjà le meilleur trouvé : {o} {v}.', statShield: 'dont bouclier (Shield Barrier) +{n}',
   tkBlock: 'Blocage', tkBlockTip: '{s} : {b} % de base à skill égal à celui du monstre (+0,2325 % par point d’écart), Palisade +30, Reprisal ×1,5 (×3 avec Priwen) ; un coup bloqué perd {r} % (guide Paladin).',
   tkCrit: 'Critiques ennemis', tkCritTip: '10 % au plus, 1 % au moins : mérites −{m}, gear {g}.', tkOver: '{n} de trop',
-  tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup : 1 % pour +2 d’Enmity, 50 % au plus. Le gear « Reduces Enmity loss » (Burtgang, Chev. Cuisses +3) et Foe Sirvente s’y multiplient, non comptés ici (−75 % au total au plus).'});
+  tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup, deux réserves qui se multiplient : l’Enmity (1 % pour +2, 50 % au plus) et les pièces « Reduces Enmity loss » (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % au plus) ; −75 % au total au plus. Foe Sirvente (BRD) remplit la seconde, pas encore compté.'});
 Object.assign(T.en, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
@@ -67,7 +67,7 @@ Object.assign(T.en, {
   statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
   statObj_enhSkill: 'Enhancing skill', statD_enhSkill: 'yours + the gear: Phalanx, Stoneskin, Barspells… depend on it',
   statObj_divSkill: 'Divine skill', statD_divSkill: 'yours + the gear: Enlight II, Flash (Blind), Banish, Holy',
-  statObj_ceLoss: 'Enmity loss cut', statD_ceLoss: 'when a hit lands: 1 % a +2 Enmity (Crusade in), 50 % at most at +100',
+  statObj_ceLoss: 'Enmity loss cut', statD_ceLoss: 'when a hit lands: Enmity (1 % a +2, 50 % at +100) × the “reduced loss” pieces (Burtgang 20, Chev. Cuisses +3 14, 50 % at most), 75 % in all',
   statObj_blockGear: 'Block (gear)', statD_blockGear: 'shield skill × 0.2325 + the pieces’ block chance, over the shield’s base',
   statObj_statusRes: 'Status resistance', statD_statusRes: 'the pieces’ “resistance to all status ailments”',
   statObj_eleRes: 'Elemental resistances', statD_eleRes: 'the 8 elements’ mean',
@@ -107,7 +107,7 @@ Object.assign(T.en, {
   statSame: 'Your set is already the best found: {o} {v}.', statShield: 'with the shield (Shield Barrier) +{n}',
   tkBlock: 'Block', tkBlockTip: '{s}: {b} % at the monster’s own skill (+0.2325 % a point of difference), Palisade +30, Reprisal ×1.5 (×3 with Priwen); a blocked hit loses {r} % (Paladin guide).',
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
-  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your measure in game, with the buffs chosen in the page (a food chosen but not on in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
+  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your measure in game, with the buffs chosen in the page (a food chosen but not on in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit, two buckets that multiply: the Enmity (1 % a +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss']);
@@ -285,6 +285,9 @@ function setActions(s){
 // The HP a piece adds to Stoneskin (BG Wiki Stoneskin; the game's descriptions name the effect, not always its amount;
 // Stone Mufflers as its description says it, +20)
 const STONESKIN_PLUS = {'Stone Gorget': 30, 'Nodens Gorget': 30, 'Stone Mufflers': 20, 'Siegel Sash': 20, 'Haven Hose': 20, 'Earthcry Earring': 10, 'Shedir Seraweels': 35};
+// The pieces that cut the enmity lost when hit (Guide_Paladin, "Reduces Enmity Loss": their descriptions name the effect
+// without its amount)
+const ENMITY_LOSS_GEAR = {'Burtgang': 20, "Chev. Cuisses +3": 14, 'Creed Collar': 5};
 // The weapons that raise Enlight's bonus, in hand (BG Wiki Enlight II)
 const ENLIGHT_WEAPON = {Brilliance: 15, Honorbound: 7};
 function statVec(p, slot){
@@ -297,6 +300,7 @@ function statVec(p, slot){
   if (v('skill:divine magic skill') + all) out.div = v('skill:divine magic skill') + all;
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
+  if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
   if (v('skill:shield skill')) out.shield = v('skill:shield skill');
   if (v('block')) out.block = v('block');
   const sr = v('x:resistance to all status ailments') + v('x:all status ailment resistance');
@@ -394,8 +398,14 @@ function tankExtraHTML(c, set, B, enm){
     const parts = t('tkCureParts', {m: mnd, mb: b.mnd, mg: v.mnd, v: vit, vb: b.vit, vg: v.vit, s: heal, p: Math.floor(mnd / 2) + Math.floor(vit / 4) + heal});
     rows.push(statLi(t('tkCure'), `${f.cureIV} HP`, pair ? t('tkCureSelf', {h: f.cureSelf}) : '', '', parts + ' ' + t('statCure4Tip')));
   }
-  if (enm > 0 && ['PLD', 'RUN'].includes(S.job))
-    rows.push(statLi(t('tkLoss'), `−${Math.min(50, enm / 2)} %`, '', '', t('tkLossTip')));
+  if (['PLD', 'RUN'].includes(S.job)) {
+    const held = S._curSet ? withWeapons(S._curSet).pieces : {};
+    // Crusade counted as the optimizer counts it (statBase: always up for a tank)
+    const crusade = jaOn(buffState(), 'Crusade') ? 0 : CRUSADE_ENMITY;
+    const b1 = Math.max(0, Math.min(100, enm + crusade)) / 2, b2 = Math.min(50, Object.values(held).reduce((n, p) => n + (p && ENMITY_LOSS_GEAR[p.name] || 0), 0));
+    const all = Math.round((1 - (1 - b1 / 100) * (1 - b2 / 100)) * 1000) / 10;
+    if (all) rows.push(statLi(t('tkLoss'), `−${all} %`, `${b1} % × ${b2} %`, '', t('tkLossTip')));
+  }
   return rows.join('');
 }
 // A set's figures (the try as shown, or plain: the file's set)
