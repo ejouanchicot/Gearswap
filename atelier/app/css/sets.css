@@ -302,6 +302,8 @@
 .opobj.on b{color:var(--accent)}
 .opobj[disabled]{cursor:default}
 .opparams{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px}
+.oppage .opwhere .buffsel{width:auto}
+.oppage .buffsel,.oppage .buffsel:not(.set){color:var(--ink);font-weight:600}
 .opf{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .opf input[type=number]{width:70px}
 .opbig{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}

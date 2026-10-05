@@ -255,10 +255,12 @@ async function optLaunch(s, k, input, o){
 // S._optRun: {t0, cores, walks: {walk: {stage, phase, round, evals, start, best, done}}, feed: [], series: [[s, value]],
 // fmt, low (a time: smaller is better), done}
 function optRunOpen(s, o, starts, cores, floor){
-  const eng = !!o.eng, obj = eng ? (o.engObj || 'tp_real') : (o.obj || 'damage'), time = eng && /^tp_(real|time)$/.test(obj);
-  const fmt = time ? v => v.toFixed(2) + ' s' : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
-  const objLabel = eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
-  const floors = floor ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`) : [];
+  const eng = !!o.eng, obj = o.stat || (eng ? (o.engObj || 'tp_real') : (o.obj || 'damage')), time = eng && /^tp_(real|time)$/.test(obj);
+  const fmt = o.stat ? statFmt(obj) : time ? v => v.toFixed(2) + ' s' : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
+  const objLabel = o.stat ? t('statObj_' + obj) : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
+  const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
+    ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
+    : [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
   S._optRun = {t0: performance.now(), cores, fmt, low: time, done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
   const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
   const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
@@ -460,7 +462,7 @@ function optResult(s, k, res, gains, o){
   const now = new Date(), hm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
   const keep = x => ({raw: x.raw, def: x.def, hits: x.hits || null});
   S.drafts[k] = Object.assign({}, S.drafts[k], {prev: Object.assign({}, S.trial[k] || {}), info: {tier: buffTier(), at: hm},
-    res: {start: keep(res.start), best: keep(res.best), obj: o.eng ? o.engObj || 'tp_real' : o.obj || 'damage', tp: +(S.wsTp || 3000), range: avgRange(o),
+    res: {start: keep(res.start), best: keep(res.best), obj: o.stat || (o.eng ? o.engObj || 'tp_real' : o.obj || 'damage'), tp: +(S.wsTp || 3000), range: avgRange(o),
       floor: {pdt: o.pdt, mdt: o.mdt, sb: o.sb, hit: o.hit}}});
   if (Object.keys(tr).length) S.trial[k] = tr; else delete S.trial[k];
   const low = o.eng && /^tp_(real|time)$/.test(o.engObj || 'tp_real');
@@ -480,6 +482,8 @@ function optResult(s, k, res, gains, o){
   S.toast = `${buffTier()} · ` + startMiss + (res.best.miss ? t('optMiss') + ' ' : '') + done + weapons + hitTxt + (extra.length ? ' ' + t('optLack', {l: extra.join(' · ')}) : '');
   // nothing better found: said plainly, draft B left empty, no Compare with nothing to compare
   if (!Object.keys(tr).length) S.toast = `${buffTier()} · ` + startMiss + (o.eng ? t('engSame', {v: engV(res.best.raw)}) : t('optSame', {d: fmtDmg(res.best.raw)})) + weapons + hitTxt;
+  // a set judged by its stats (stat_opt.js): its own words, no damage
+  if (o.stat) S.toast = `${buffTier()} · ` + (res.best.miss ? t('optMiss') + ' ' : '') + statDoneText(s, res, tr) + weapons + (extra.length ? ' ' + t('optLack', {l: extra.join(' · ')}) : '');
   save();
   S._optBusy = false; render();
   // the search window still open: the result in it, with what to do next; else Compare

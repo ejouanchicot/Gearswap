@@ -206,6 +206,7 @@
         return agg;
     }
     O.context = function (c) {
+        if (c.mode === "stats") return {mode: "stats", stat: c.stat, job: c.job};
         if (c.wsInfo) O.defineWs(c.ws, c.wsInfo, c.wsSkill);
         var agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : FFXI.aggregate_buffs(c.selection);
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
@@ -532,7 +533,7 @@
     // A set's hit rates at the weaponskill, {first, rest}: the lowest over the TP looked at (a
     // weaponskill's accuracy bonus grows with TP); the floor reads `rest`
     O.hits = function (ctx, pieces, opts) {
-        if (ctx.mode === "engaged") return null;
+        if (ctx.mode === "engaged" || ctx.mode === "stats") return null;
         var tps = opts.objective === "damage_avg" ? (opts.tps || [opts.tp]) : [opts.tp], low = null;
         for (var i = 0; i < tps.length; i++) {
             var pl = playerOf(ctx, wornAt(pieces, opts, tps[i]));
@@ -598,6 +599,7 @@
         return r;
     };
     function valueOf(ctx, pieces, opts) {
+        if (ctx.mode === "stats") return statValue(ctx, pieces, opts);
         if (ctx.mode === "engaged") {
             var e0 = roundValue(ctx, pieces, opts);
             if (!e0) return {v: -Infinity};
@@ -622,6 +624,66 @@
         return {v: v - 1e6 * miss + 1e-7 * under / tps.length + tieBreak(pieces, def, opts, v), raw: v, def: def, miss: miss};
     }
     function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
+
+    // ------------------------------------------------------------ sets judged by their stats (idle, enmity, Phalanx, Fast Cast...)
+    // No damage engine here: the page lays on each piece the stats it reads from it (piece.st: hp, hp%, def, vit, dt, pdt,
+    // mdt, pdt2, mdt2, enmity, phalanx, enh (enhancing skill), sird, fc, meva, mdb, ecrit, cure, refresh, regen) and gives
+    // the character without gear (ctx.stat.base). The figures (Guide_Paladin solver_common.py, BG Wiki):
+    //   HP = (base + gear HP) x (1 + HP %); DEF = base + gear DEF + VIT x 1.5, + the shield's DEF when a PLD's Protect
+    //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
+    //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
+    var STAT_KEYS = ["hp", "hp%", "def", "vit", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "sird",
+        "fc", "meva", "mdb", "ecrit", "cure", "refresh", "regen"];
+    O.phalanxPotency = function (skill) {
+        return skill <= 300 ? Math.max(0, Math.floor(skill / 10) - 2) : Math.min(35, 28 + Math.floor((skill - 300.5) / 28.5));
+    };
+    O.statFigures = function (stat, pieces) {
+        var t = {}, b = stat.base || {};
+        STAT_KEYS.forEach(function (k) { t[k] = 0; });
+        for (var sl in pieces) { var st = pieces[sl] && pieces[sl].st; if (st) for (var k in st) t[k] = (t[k] || 0) + st[k]; }
+        var shield = b.shieldBarrier && pieces.sub && pieces.sub.st && pieces.sub.shield ? pieces.sub.st.def || 0 : 0;
+        var cap = function (v) { return Math.max(v, -50); }, two = function (v) { return Math.max(v, -87.5); };
+        var shell = b.shell ? -b.shell / 256 * 100 : 0;
+        var f = {
+            hp: Math.round(((b.hp || 0) + t.hp) * (1 + t["hp%"] / 100)),
+            def: Math.floor((b.def || 0) + t.def + 1.5 * t.vit + shield), shield: shield,
+            enmity: Math.min(200, t.enmity + (b.enmity || 0)),
+            phalanx: O.phalanxPotency((b.enh || 0) + t.enh) + t.phalanx, enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
+            fc: Math.min(80, t.fc), sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
+            ecrit: t.ecrit, cure: Math.min(50, t.cure), refresh: t.refresh, regen: t.regen,
+            pdtAll: two(cap(t.dt + t.pdt) + t.pdt2), mdtAll: two(cap(t.dt + t.mdt + shell) + t.mdt2), bdtAll: cap(t.dt + t.bdt),
+            pdt: t.dt + t.pdt, mdt: t.dt + t.mdt
+        };
+        // the reductions as positive figures (more is better, like every objective)
+        f.pdtRed = -f.pdtAll; f.mdtRed = -f.mdtAll; f.ecritRed = -f.ecrit;
+        return f;
+    };
+    // the objectives: every one a figure where more is better
+    O.STAT_OBJS = ["def", "hp", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen"];
+    function statShort(f, fl) {
+        if (!fl) return 0;
+        var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
+        if (num("pdt")) n += Math.max(0, f.pdt - fl.pdt);
+        if (num("mdt")) n += Math.max(0, f.mdt - fl.mdt);
+        if (num("hp")) n += Math.max(0, fl.hp - f.hp) / 10;
+        if (num("hpMax")) n += Math.max(0, f.hp - fl.hpMax) / 10;
+        if (num("sird")) n += Math.max(0, fl.sird - f.sird);
+        if (num("fc")) n += Math.max(0, fl.fc - f.fc);
+        if (num("ecrit")) n += Math.max(0, f.ecrit - fl.ecrit);
+        if (num("enmity")) n += Math.max(0, fl.enmity - f.enmity);
+        if (num("phalanx")) n += Math.max(0, fl.phalanx - f.phalanx);
+        return n;
+    }
+    // A set's value: the objectives in their order (opts.objective, then opts.then), each well under a step of the one
+    // before it; the floors as for the other sets (1e6 a point short)
+    function statValue(ctx, pieces, opts) {
+        var f = O.statFigures(ctx.stat, pieces), list = [opts.objective].concat(opts.then || []).filter(function (k) { return k && f[k] != null; });
+        var v = 0, w = 1;
+        list.forEach(function (k) { v += w * f[k]; w *= 1e-4; });
+        var raw = list.length ? f[list[0]] : 0, miss = statShort(f, opts.floor);
+        var def = {pdt: f.pdt, mdt: f.mdt, sb: 0};
+        return {v: v - 1e6 * miss + tieBreak(pieces, def, opts, v), raw: raw, def: def, miss: miss, stats: f};
+    }
     // A choice put in a slot. The "weapons" choice is a main hand and its off hand together ({main, sub}): the
     // page makes only pairs the job can hold (a two-handed weapon with a grip, a shield, two weapons when it can
     // dual wield), so the search never stops on a main weapon whose off hand does not fit it
@@ -858,7 +920,7 @@
         var from0 = input.opts.scratch ? bare(input.start, input.choices) : input.start;
         var choices = input.prefilter ? yield* prefilterGen(ctx, from0, input.choices, opts, input.prefilter) : input.choices;
         // the fast search: only the pieces that can be the best of their slot
-        if (ctx._fast) choices = prunedChoices(ctx, input.start, choices, opts).choices;
+        if (ctx._fast && ctx.mode !== "stats") choices = prunedChoices(ctx, input.start, choices, opts).choices;
         var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
         for (var i = 0; i < starts.length; i++) {
             var r = yield* walk(ctx, input.start, choices, opts, starts[i]);

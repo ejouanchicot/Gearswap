@@ -6,7 +6,7 @@
 // (loaded by atelier.html after ws_page.js: see the list there)
 
 Object.assign(T.fr, {optSearch_fast: 'Recherche rapide', optSearch_classic: 'Recherche classique', optSearchTip: 'Rapide : garde en mémoire ce qui est déjà calculé et écarte les pièces qui ne peuvent jamais gagner (une autre pièce du même emplacement fait au moins aussi bien sur tout ce que l’objectif compte). Classique : l’ancienne recherche, pour comparer.',
-  optOpenBtn: 'Optimiser ce set →', orShow: 'Voir la recherche',
+  opHow: 'Méthode', optOpenBtn: 'Optimiser ce set →', orShow: 'Voir la recherche',
   optBack: '← Retour au set', optPageTitle: 'Optimiseur', engObj_cycle: 'Dégâts sur un combat · TEST',
   opWhat: 'Ce qu’on cherche', opResult: 'Résultat', opSearch: 'Recherche', opChanges: 'Pièces changées', opWsTp: 'TP de la WS',
   opNoTry: 'Lance une recherche : l’essai s’affiche ici, comparé à ton set.', opNow: 'Ton set', opFight: 'Dégâts sur un combat',
@@ -23,7 +23,7 @@ Object.assign(T.fr, {optSearch_fast: 'Recherche rapide', optSearch_classic: 'Rec
   opHelp: 'Le résultat compare l’essai (les pièces que la recherche propose, en couleur dans le set) à ton set tel qu’il est dans le fichier. ★ = la ligne de l’objectif ; en doré, le meilleur des deux ; en rouge, sous un plancher. Verdict : sous 2 % d’écart, équivalent ; de 2 à 5 %, à essayer ; au-delà, meilleur ou moins bon. Dégâts sur un combat (TEST) : précision ±4 % mesurée en jeu le 2026-10-04 ; une WS qui revient en 3 rounds rate la fenêtre de skillchain (10 s, puis 9 s).',
   engDone_cycle: 'Optimisé : dégâts sur un combat {a} → {b} ({g} %), {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.'});
 Object.assign(T.en, {optSearch_fast: 'Fast search', optSearch_classic: 'Classic search', optSearchTip: 'Fast: keeps what it already worked out and leaves out the pieces that can never win (another piece of the slot does at least as well on everything the objective counts). Classic: the former search, to compare.',
-  optOpenBtn: 'Optimize this set →', orShow: 'See the search',
+  opHow: 'Method', optOpenBtn: 'Optimize this set →', orShow: 'See the search',
   optBack: '← Back to the set', optPageTitle: 'Optimizer', engObj_cycle: 'Damage over a fight · TEST',
   opWhat: 'What is looked for', opResult: 'Result', opSearch: 'Search', opChanges: 'Pieces changed', opWsTp: 'Weaponskill TP',
   opNoTry: 'Run a search: the try shows here, against your set.', opNow: 'Your set', opFight: 'Damage over a fight',
@@ -47,16 +47,18 @@ const optPageOpen = s => !!s && S.optView === optViewKey(s);
 /* ---- the page ---- */
 const opNum = (v, n = 0) => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: n, maximumFractionDigits: n});
 function optPageHTML(s, ws){
-  const kind = ws ? 'ws' : isJumpSet(s.path) ? 'jump' : 'eng', act = ws ? 'optws' : 'opteng';
+  const kind = ws ? 'ws' : isJumpSet(s.path) ? 'jump' : roundSet(s) ? 'eng' : 'stat', act = ws ? 'optws' : kind === 'stat' ? 'optstat' : 'opteng';
   const b = buffState();
   const go = S._optBusy ? `<span class="optprog">${t('optStart')}</span>${searchParked() ? `<button class="btn" data-orshow>${t('orShow')}</button>` : ''}<button class="btn ghost" data-optstop>${t('optStop')}</button>`
-    : optGoButtons(act) + (kind === 'jump' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>`);
+    : optGoButtons(act) + (kind === 'jump' || kind === 'stat' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>`);
   const head = `<header class="ophead"><button class="btn ghost" data-optback>${t('optBack')}</button><h2 class="display">${t('optPageTitle')}</h2>` +
     `<span class="opset">${esc(shortPath(s.path))}</span><span class="muted small">${esc(buffTier())} · ${esc(enemyKey(b.enemy))}</span>` +
     `<span class="sp"></span><div class="opgo">${go}</div></header>`;
   if (!engineReady()) return `<article class="detail oppage">${head}<p class="tpnote">${t('optNoEngine')}</p></article>`;
-  return `<article class="detail oppage">${head}<div class="opcols"><section class="opcol">${opWhatHTML(s, kind)}</section>` +
-    `<section class="opcol">${opResultHTML(s, kind)}</section></div></article>`;
+  // a set judged by its stats (idle, Enmity, Phalanx, Fast Cast...): stat_opt.js
+  const what = kind === 'stat' ? statWhatHTML(s) : opWhatHTML(s, kind), result = kind === 'stat' ? statResultHTML(s) : opResultHTML(s, kind);
+  return `<article class="detail oppage">${head}<div class="opcols"><section class="opcol">${what}</section>` +
+    `<section class="opcol">${result}</section></div></article>`;
 }
 
 /* ---- left: what is looked for ---- */
@@ -103,16 +105,18 @@ function opParamsHTML(s, kind, cur){
   return f.length ? `<div class="opparams">${f.join('')}</div>` : '';
 }
 // Where the search looks and the floors it keeps: two lines
-function opSearchHTML(o, ws){
+// noFloors: the stats optimizer, which has floors of its own (stat_opt.js)
+function opSearchHTML(o, ws, noFloors){
   const wheres = ['mine', 'mine_max', 'all'].map(k => `<option value="${k}" ${(o.where || 'mine') === k ? 'selected' : ''}>${t('optWhere_' + k)}</option>`).join('');
   // the fast search (memory, pieces that can never win left out) or the classic one, kept to go back to
   const modes = ['fast', 'classic'].map(k => `<option value="${k}" ${(o.search || 'fast') === k ? 'selected' : ''}>${t('optSearch_' + k)}</option>`).join('');
   const chk = (k, label, tip) => `<label class="opf" ${tip ? `title="${esc(tip)}"` : ''}><input type="checkbox" data-optopt="${k}" ${o[k] ? 'checked' : ''}> ${label}</label>`;
   const num = (k, label) => `<label class="opf">${label} <input type="number" step="1" data-optopt="${k}" value="${esc(o[k])}"></label>`;
-  return `<h4 class="ophd2">${t('opSearch')}</h4><div class="opparams"><select class="buffsel" data-optopt="where" aria-label="${esc(t('optWhereLbl'))}">${wheres}</select>` +
-    `<select class="buffsel" data-optopt="search" title="${esc(t('optSearchTip'))}" aria-label="${esc(t('optSearchTip'))}">${modes}</select>` +
+  // labelled and in the text's colour (a bare grey menu read as a switched-off one, 2026-10-05)
+  return `<h4 class="ophd2">${t('opSearch')}</h4><div class="opparams opwhere"><label class="opf">${esc(t('optWhereLbl'))} <select class="buffsel" data-optopt="where">${wheres}</select></label>` +
+    `<label class="opf" title="${esc(t('optSearchTip'))}">${esc(t('opHow'))} <select class="buffsel" data-optopt="search">${modes}</select></label>` +
     chk('wardOnly', t('optWard')) + chk('freeWeapons', t('freeWeapons'), t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip')) + chk('fullSpeed', t('fullSpeed'), t('fullSpeedTip', {n: OPT_CORES})) + `</div>` +
-    `<div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('sb', 'Subtle Blow ≥')}${ws ? num('hit', t('optHitLbl')) : ''}</div>`;
+    (noFloors ? '' : `<div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('sb', 'Subtle Blow ≥')}${ws ? num('hit', t('optHitLbl')) : ''}</div>`);
 }
 
 /* ---- right: the result ---- */

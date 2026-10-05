@@ -49,6 +49,10 @@ document.addEventListener('click', e => {
   if (d.optobj) { S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
   if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; render(); return; }
   if ('optback' in d) { S.optView = null; render(); return; }
+  if ('optstat' in d) { S._optScratch = d.optstat === 'best'; optimizeStats(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
+  // the stats optimizer's first objective (stat_opt.js): the one chosen leaves the list of the next ones
+  if (d.statobj) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), objs = statOpts(s).objs.filter(k => k !== d.statobj);
+    setStatOpts(s.path, {objs: [d.statobj].concat(objs).slice(0, 3)}); render(); return; }
   if ('opteng' in d) { S._optScratch = d.opteng === 'best'; optimizeEngaged(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('cmpmore' in d) { S._cmpMore = !S._cmpMore; openCompare(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('pushhist' in d) { openHistory(); return; }
@@ -192,6 +196,13 @@ document.addEventListener('change', e => {
   if (e.target.dataset && e.target.dataset.cycws) {
     S.optOpts = Object.assign({}, S.optOpts, {cycWsBy: Object.assign({}, (S.optOpts || {}).cycWsBy, {[e.target.dataset.cycws]: e.target.value})});
     save(); render(); return; }
+  // the stats optimizer's next objectives and floors, kept for that set (stat_opt.js)
+  if (e.target.dataset && (e.target.dataset.statthen || e.target.dataset.statfloor)) {
+    const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), so = statOpts(s);
+    if (e.target.dataset.statthen) { const objs = so.objs.slice(); objs[+e.target.dataset.statthen] = e.target.value;
+      setStatOpts(s.path, {objs: objs.filter((k, i) => i === 0 || (k && objs.indexOf(k) === i))}); }
+    else setStatOpts(s.path, {floor: {[e.target.dataset.statfloor]: +e.target.value || 0}});
+    render(); return; }
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();

@@ -258,6 +258,9 @@ const JAS = {
   'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
   'Rampart': {job: 'PLD', lvl: 62, fx: () => ({dmgmul: .75})},
   'Crusade': {job: ['PLD', 'RUN'], lvl: 88, fx: () => ({enmity: 30})},
+  // the shield's block (Guide_Paladin: Palisade +30 % block rate, Reprisal the block rate x1.5, x3 with Priwen: tankHTML)
+  'Palisade': {job: 'PLD', lvl: 95, mainOnly: true, fx: () => ({block: 30})},
+  'Reprisal': {job: 'PLD', lvl: 61, fx: () => ({blockmul: 1.5})},
   'Cocoon': {job: 'BLU', lvl: 8, fx: () => ({defp: .5})},
   // excl: abilities that overwrite each other, one at a time (BG Wiki: Blood Rage "overwrites and is
   // overwritten by Warcry from Warrior main or sub job")

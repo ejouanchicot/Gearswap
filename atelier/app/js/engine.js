@@ -290,6 +290,7 @@ function tankHTML(r){
   const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : Math.max(1 + enm / 100, .5);
   if (enm) rows += statLi(t('enmityLbl'), signed(enm), `×${mult.toFixed(2)}`, '', t('enmTip', {g: v('enmity'), b: B.enmity || 0}));
   if (enm && ['PLD', 'RUN'].includes(S.job)) rows += statLi(t('flashLbl'), `${Math.floor(180 * mult)} / ${Math.floor(1280 * mult)}`, '');
+  rows += tankExtraHTML(c, set, B, enm);
   const skill = skillLevel(c, 'enhancing magic') + v('skill:enhancing magic skill');
   if (['PLD', 'RUN', 'RDM'].includes(S.job) && skill) {
     const pot = phalanxPotency(skill);
@@ -355,7 +356,8 @@ function charStats(s, pieces){
   if (!c || !c.base) return null;
   // pieces: the gear of a simulated step, taken as it is (no weapon mode, no tried piece over it)
   const worn = gearTotal(c.worn || {}), set = pieces ? gearTotal(pieces) : setStats(s).total;
-  const B = withAftermath(buffTotals(), ((pieces || (s ? withWeapons(s).pieces : {})).main || {}).name);
+  const held = pieces || (s ? withWeapons(s).pieces : {});
+  const B = shieldBarrier(withAftermath(buffTotals(), (held.main || {}).name), held.sub);
   const g = (o, k) => (o[k] || {}).v || 0;
   // merits changed in the page (Merits tab) move the base: Max HP before the gear's HP %
   const md = meritDelta(), measured = a => (c.base[a] || 0) + (c.add[a] || 0);
