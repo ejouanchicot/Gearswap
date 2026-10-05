@@ -17,7 +17,7 @@ Object.assign(T.fr, {
   statObj_enhSkill: 'Skill de renfort', statD_enhSkill: 'le tien + le gear : Phalanx, Stoneskin, Barspells… en dépendent',
   statObj_divSkill: 'Skill divin', statD_divSkill: 'le tien + le gear : Enlight II, Flash (Cécité), Banish, Holy',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbés : skill de renfort et MND (350 au plus), + le gear Stoneskin (475 au plus)',
-  statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup, selon le skill divin',
+  statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup : skill divin, Brilliance +15 / Honorbound +7 en main',
   statObj_hpLow: 'HP les plus bas', statD_hpLow: 'Fast Cast d’un Cure sur toi : HP bas, le set de Cure les remonte et le Cure remplit l’écart',
   statKeepOwn: 'Garder la pièce de la JA ({p})', statKeepOwnTip: 'Les pièces dont la description nomme {b} restent : la recherche choisit le reste.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP du set moins ceux du Fast Cast {f} ({h} HP), le set classique le plus bas en HP, porté avant chaque sort : '
@@ -62,7 +62,7 @@ Object.assign(T.en, {
   statObj_enhSkill: 'Enhancing skill', statD_enhSkill: 'yours + the gear: Phalanx, Stoneskin, Barspells… depend on it',
   statObj_divSkill: 'Divine skill', statD_divSkill: 'yours + the gear: Enlight II, Flash (Blind), Banish, Holy',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
-  statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit, by divine skill',
+  statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit: divine skill, Brilliance +15 / Honorbound +7 in hand',
   statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
   statKeepOwn: 'Keep the ability’s piece ({p})', statKeepOwnTip: 'The pieces whose description names {b} stay: the search picks the rest.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set less those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
@@ -112,7 +112,7 @@ const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family
 function statDefault(s){
   const list = withSird(s, statDefaultOf(s)), fam = family(s.path, s.pieces);
   // (the Cure's enmity counts Enmity already)
-  if (!['PLD', 'RUN'].includes(S.job) || fam === 'fc' || list[0] === 'enmity' || list[0] === 'cureEnm') return list;
+  if (!['PLD', 'RUN'].includes(S.job) || fam === 'fc' || list.includes('enmity') || list[0] === 'cureEnm') return list;
   if (fam === 'ja') return ['enmity', 'def', 'hp'];
   // after the set's own (and SIRD on a SIRD set), Enmity
   const lead = list[1] === 'sird' ? 2 : 1;
@@ -137,9 +137,10 @@ function statDefaultOf(s){
   // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt.js cureEnm), then the heal itself
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return tank ? ['cureEnm', 'cureSelf', 'pdtRed'] : ['cureSelf', 'pdtRed', 'hp'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
-  if (/cur(e|a|aga)/i.test(p)) return ['cure', 'hp', 'enmity'];
+  if (/cur(e|a|aga)/i.test(p)) return ['cure', 'enmity', 'hp'];
   if (/stoneskin/i.test(p) && fam !== 'fc') return ['stoneskin', 'enhSkill', 'hp'];
-  if (/enlight/i.test(p) && fam !== 'fc') return ['enlight', 'divSkill', 'hp'];
+  // Enlight II: its bonus, then how long it lasts (enhancing duration: not confirmed by BG Wiki on this divine spell), then Enmity
+  if (/enlight/i.test(p) && fam !== 'fc') return ['enlight', 'enhdur', 'enmity'];
   // an enhancing set (Protect, Shell, Reprisal...): how long they last
   if (family(s.path, s.pieces) === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) return ['enhdur', 'enhSkill', 'hp'];
   if (/refresh/i.test(p)) return ['refresh', 'pdtRed', 'mdtRed'];
@@ -235,7 +236,7 @@ function statRelevant(s, chosen){
   else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
   else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
   else if (/stoneskin/i.test(p)) add(['stoneskin', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
-  else if (/enlight/i.test(p)) add(['enlight', 'divSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
+  else if (/enlight/i.test(p)) add(['enlight', 'enhdur', 'divSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
   else if (fam === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) add(['enhdur', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
   else if (fam === 'enmity' || fam === 'ja') add(['enmity', 'sird', ...def]);
   else if (fam === 'idle' || fam === 'special') add([...def, 'ecritRed', 'refresh', 'regen']);
@@ -262,6 +263,8 @@ function setActions(s){
 // The HP a piece adds to Stoneskin (BG Wiki Stoneskin; the game's descriptions name the effect, not always its amount;
 // Stone Mufflers as its description says it, +20)
 const STONESKIN_PLUS = {'Stone Gorget': 30, 'Nodens Gorget': 30, 'Stone Mufflers': 20, 'Siegel Sash': 20, 'Haven Hose': 20, 'Earthcry Earring': 10, 'Shedir Seraweels': 35};
+// The weapons that raise Enlight's bonus, in hand (BG Wiki Enlight II)
+const ENLIGHT_WEAPON = {Brilliance: 15, Honorbound: 7};
 function statVec(p, slot){
   const r = p && !isEmpty(p) ? pieceStats(p, slot) : null, v = k => r && r.stats[k] ? r.stats[k].v || 0 : 0, out = {};
   if (!r) return {};
@@ -271,6 +274,7 @@ function statVec(p, slot){
   if (v('skill:healing magic skill') + all) out.heal = v('skill:healing magic skill') + all;
   if (v('skill:divine magic skill') + all) out.div = v('skill:divine magic skill') + all;
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
+  if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'refresh', 'regen', 'enhdur'])
     if (v(k)) out[k] = v(k);
   if (v('skill:enhancing magic skill') + all) out.enh = v('skill:enhancing magic skill') + all;
