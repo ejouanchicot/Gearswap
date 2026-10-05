@@ -114,7 +114,7 @@ const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family
 function statDefault(s){
   const list = withSird(s, statDefaultOf(s)), fam = family(s.path, s.pieces);
   // (the Cure's enmity counts Enmity already)
-  if (!['PLD', 'RUN'].includes(S.job) || fam === 'fc' || list.includes('enmity') || list[0] === 'cureEnm') return list;
+  if (!['PLD', 'RUN'].includes(S.job) || fam === 'fc' || list.includes('enmity') || list[0] === 'cureEnm' || list[0] === 'phalanx') return list;
   if (fam === 'ja') return ['enmity', 'def', 'hp'];
   // after the set's own (and SIRD on a SIRD set), Enmity
   const lead = list[1] === 'sird' ? 2 : 1;
@@ -135,7 +135,8 @@ function statDefaultOf(s){
   // a Fast Cast set first (it is named for the spells it serves: precast.FC.Phalanx)
   if (fam === 'fc' && /cure/i.test(p) && /self/i.test(p)) return ['fc', 'hpLow'];
   if (fam === 'fc') return ['fc', 'hp', 'pdtRed'];
-  if (/phalanx/i.test(p)) return ['phalanx', 'def', 'hp'];
+  // Phalanx first, then the damage taken (no DT floor: the Phalanx comes before it)
+  if (/phalanx/i.test(p)) return ['phalanx', 'pdtRed', 'mdtRed'];
   // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt.js cureEnm), then the heal itself
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return tank ? ['cureEnm', 'cureSelf', 'pdtRed'] : ['cureSelf', 'pdtRed', 'hp'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
@@ -170,7 +171,8 @@ function statFloorDefault(s, first){
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
   // damage taken at its cap on every tank set worn more than an instant: DT+PDT -50, DT+MDT -50 less what Shell gives
   // (Shell V -29.3 %: -21 left to the gear)
-  const shell = buffTotals().shell || 0, dt = {pdt: -50, mdt: -Math.ceil(50 - shell / 256 * 100)};
+  // (not on a Phalanx set: its Phalanx comes first, the damage taken after it as objectives)
+  const shell = buffTotals().shell || 0, dt = first === 'phalanx' ? {} : {pdt: -50, mdt: -Math.ceil(50 - shell / 256 * 100)};
   const ecrit = first === 'def' && ['idle', 'special'].includes(fam) ? {ecrit: -5} : {};
   return Object.assign(dt, ecrit, sird, hp);
 }
