@@ -432,10 +432,35 @@ local WORN_SLOTS = {main = 'main', sub = 'sub', range = 'range', ammo = 'ammo', 
     left_ear = 'ear1', right_ear = 'ear2', body = 'body', hands = 'hands', left_ring = 'ring1', right_ring = 'ring2',
     back = 'back', waist = 'waist', legs = 'legs', feet = 'feet'}
 
---- The gear worn right now, with the augments of these very copies.
+--- Where each worn piece was when the game last sent the stats (status packet 0x061): the stats GearSwap keeps in
+--- `player` are that packet's, so the gear taken out of them must be that moment's, not the export's (an export made
+--- during a job ability read idle stats with the ability's gear, and the page's base came out 78 MND too high).
+--- A copy of get_items('equipment') at each 0x061, kept on windower (it outlives the reloads).
+local function snapshot_equipment()
+    local ok, eq = pcall(windower.ffxi.get_items, 'equipment')
+    if not ok or type(eq) ~= 'table' then return end
+    local copy = {}
+    for k, v in pairs(eq) do copy[k] = v end
+    windower._atelier_stat_equipment = copy
+end
+
+--- Listen to the status packet, once per load (a raw event: a plain one from a job file runs GearSwap's refresh on
+--- every packet).
+local function listen_stats()
+    if rawget(_G, '_atelier_stat_listening') then return end
+    _G._atelier_stat_listening = true
+    windower.raw_register_event('incoming chunk', function(id)
+        if id == 0x061 then snapshot_equipment() end
+    end)
+end
+
+--- The gear worn when the stats were sent (else right now), with the augments of these very copies.
 local function worn_gear(res)
-    local items = windower.ffxi.get_items()
-    local equipment = items and items.equipment
+    local equipment = windower._atelier_stat_equipment
+    if type(equipment) ~= 'table' then
+        local items = windower.ffxi.get_items()
+        equipment = items and items.equipment
+    end
     if type(equipment) ~= 'table' then return nil end
     local worn = {}
     for key, slot in pairs(WORN_SLOTS) do
@@ -775,6 +800,7 @@ end
 --- After a load, when the switch is on (INIT_SYSTEMS): the job's modules and
 --- keys are all in place a few seconds later.
 function AtelierExport.after_load()
+    listen_stats()
     -- the page's live link (shared/utils/atelier/atelier_live.lua): open at every load, for every
     -- character, unless //gs c atelier live off closed it for this one
     pcall(function()
