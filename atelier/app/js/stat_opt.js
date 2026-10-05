@@ -85,23 +85,36 @@ const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family
 // Phalanx, the Cure...): Enmity goes second when it is not first. Not on a Fast Cast set: a spell's enmity comes at its
 // midcast. A job ability's set: Enmity first, its own piece kept (keptSlots)
 function statDefault(s){
-  const list = statDefaultOf(s), fam = family(s.path, s.pieces);
+  const list = withSird(s, statDefaultOf(s)), fam = family(s.path, s.pieces);
   if (!['PLD', 'RUN'].includes(S.job) || fam === 'fc' || list[0] === 'enmity') return list;
   if (fam === 'ja') return ['enmity', 'def', 'hp'];
-  return [list[0], 'enmity', ...list.slice(1).filter(k => k !== 'enmity')].slice(0, 3);
+  // after the set's own (and SIRD on a SIRD set), Enmity
+  const lead = list[1] === 'sird' ? 2 : 1;
+  return [...list.slice(0, lead), 'enmity', ...list.slice(lead).filter(k => k !== 'enmity')].slice(0, 3);
+}
+// A SIRD set (SIRDPhalanx, SIRDEnmity...): SIRD right after what the set is for, so the objective itself says it
+// (its floor at 102 holds it too: statFloorDefault)
+// Every name a set goes by (the export keeps one, the others as aliases: sets.midcast.SIRDEnmity is shared by
+// Banishga, Cocoon, Foil... and may come under any of them): what it is for is read from all of them
+const setNames = s => [s.path, ...(s.aliases || [])].join(' ');
+function withSird(s, list){
+  if (!/sird/i.test(setNames(s)) || list[0] === 'sird') return list;
+  return [list[0], 'sird', ...list.slice(1).filter(k => k !== 'sird')].slice(0, 3);
 }
 function statDefaultOf(s){
-  const p = s.path, fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
-  if (/phalanx/i.test(p)) return ['phalanx', 'def', 'hp'];
-  // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap)
+  const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
+  // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap);
+  // a Fast Cast set first (it is named for the spells it serves: precast.FC.Phalanx)
   if (fam === 'fc' && /cure/i.test(p) && /self/i.test(p)) return ['fc', 'hpLow'];
   if (fam === 'fc') return ['fc', 'hp', 'pdtRed'];
+  if (/phalanx/i.test(p)) return ['phalanx', 'def', 'hp'];
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return ['cureSelf', 'pdtRed', 'hp'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
   if (/cur(e|a|aga)/i.test(p)) return ['cure', 'hp', 'enmity'];
   if (/refresh/i.test(p)) return ['refresh', 'pdtRed', 'mdtRed'];
   if (/regen/i.test(p)) return ['regen', 'pdtRed', 'mdtRed'];
-  if (/meva|mdt|magic/i.test(p)) return ['mdtRed', 'meva', 'mdb'];
+  // a magic-defense set by its name (idle.MDT, MEva): not every set with Magic in it (Enhancing Magic)
+  if (/meva|mdt/i.test(p)) return ['mdtRed', 'meva', 'mdb'];
   if (fam === 'idle' || fam === 'special') return tank ? ['def', 'enmity', 'mdb'] : ['pdtRed', 'mdtRed', 'hp'];
   return ['hp', 'pdtRed', 'mdtRed'];
 }
@@ -115,7 +128,7 @@ function statOpts(s){
 // (SIRD sets and Cures: SIRD 102 with the merits, the guide's benchmark; a Fast Cast: capped at 80)
 // A tank's other sets: their HP between the reference and 200 more (hpRef)
 function statFloorDefault(s, first){
-  const fam = family(s.path, s.pieces), sird = /sird/i.test(s.path) ? {sird: 102} : {};
+  const fam = family(s.path, s.pieces), sird = /sird/i.test(setNames(s)) ? {sird: 102} : {};
   if (first === 'fc') return {fc: 80};
   if (!['PLD', 'RUN'].includes(S.job)) return sird;
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
