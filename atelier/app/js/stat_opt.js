@@ -47,7 +47,7 @@ Object.assign(T.fr, {
   statKept: 'Objectifs ou planchers changés à la main sur ce set.', statReset: 'Réglages par défaut',
   subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.', subFix: 'Passer en /{s}',
   aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
-  statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
+  statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥', statCeLoss: 'Perte d’inimitié réduite ≥',
   statWhy: 'Les sets sans dégâts à calculer (repos, Enmity, Phalanx, Fast Cast, Cure…) se jugent sur leurs stats : la recherche ' +
     'additionne celles de chaque pièce, comme les solveurs du guide Paladin. Le premier objectif décide ; les suivants départagent les sets ' +
     'aussi bons sur lui. Un plancher à 0 est ignoré. DEF : ta DEF mesurée en jeu sans gear, + DEF et VIT × 1,5 du set ; en PLD sous Protect, ' +
@@ -99,7 +99,7 @@ Object.assign(T.en, {
   statKept: 'Objectives or floors changed by hand on this set.', statReset: 'Back to the defaults',
   subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',
   aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
-  statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
+  statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥', statCeLoss: 'Enmity loss cut ≥',
   statWhy: 'Sets with no damage to work out (idle, Enmity, Phalanx, Fast Cast, Cure…) are judged on their stats: the search adds up ' +
     'each piece’s, as the Paladin guide’s solvers do. The first objective decides; the next ones part sets as good on it. A floor at 0 is ' +
     'ignored. DEF: your DEF measured in game without gear, + the set’s DEF and VIT × 1.5; on PLD under Protect, the shield’s DEF too (Shield ' +
@@ -179,7 +179,7 @@ function statDefaultOf(s){
 // The objectives and floors kept for that set (S.optOpts.statBy[path]: {objs, floor})
 function statOpts(s){
   const by = (S.optOpts || {}).statBy || {}, mine = by[s.path] || {}, objs = (mine.objs || statDefault(s)).slice(0, 3);
-  return {objs, floor: Object.assign({pdt: 0, mdt: 0, hp: 0, hpMax: 0, sird: 0, fc: 0, ecrit: 0, enmity: 0, phalanx: 0}, statFloorDefault(s, objs[0]), mine.floor || {})};
+  return {objs, floor: Object.assign({pdt: 0, mdt: 0, hp: 0, hpMax: 0, sird: 0, fc: 0, ecrit: 0, enmity: 0, phalanx: 0, ceLoss: 0}, statFloorDefault(s, objs[0]), mine.floor || {})};
 }
 // The floors a tank's idle and Enmity sets start with (the guide's solve_idle / solve_enmity: DT+PDT at the -50 % cap,
 // the gear's enemy critical hit rate -5 beside the -5 of the merits); 0 (no floor) elsewhere
@@ -199,6 +199,9 @@ function statFloorDefault(s, first){
   // the gear's cut of the enemy's crits the idle needs: 10 % to the 1 % floor is 9, less the merits (5/5: 4)
   const need = 9 - (((measuredChar() || {}).merits || {}).enemy_critical_hit_rate || 0);
   const ecrit = ['idle', 'special'].includes(fam) && need > 0 ? {ecrit: -need} : {};
+  // a magic-defense idle keeps 60 % of enmity loss cut (Chev. Cuisses +3): 31 magic evasion for 8 % of enmity kept and
+  // 5 MDB on Tetsouo's (2026-10-05), magic evasion after it
+  if (['idle', 'special'].includes(fam) && /meva|mdt/i.test(setNames(s))) ecrit.ceLoss = 60;
   return Object.assign(dt, ecrit, sird, hp);
 }
 // The reference HP of a tank's sets (Guide_Paladin HP Management): the lowest of the classic Fast Cast sets
@@ -530,7 +533,7 @@ function statWhatHTML(s){
   const kept = ((S.optOpts || {}).statBy || {})[s.path];
   const reset = kept ? `<p class="muted small">${esc(t('statKept'))} <button class="linkbtn" data-statreset>${esc(t('statReset'))}</button></p>` : '';
   const floors = reset + `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
-    `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}</div>`;
+    `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}${opt('ceLoss', 'ceLoss', t('statCeLoss'))}</div>`;
   const search = opSearchHTML(S.optOpts || {}, false, true);
   const jaList = abilityPieces(s);
   const own = jaList.length ? `<div class="opparams"><label class="opf opwrap" title="${esc(t('statKeepOwnTip', {b: segs(s.path).pop()}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
@@ -547,7 +550,8 @@ function statRows(s){
   const so = statOpts(s), fl = so.floor, on = k => +fl[k];
   const rows = STAT_OBJS.map(k => ({id: k, label: t('statObj_' + k), get: f => f[k], fmt: statFmt(k)}));
   const lim = {hp: v => (!on('hp') || v >= fl.hp) && (!on('hpMax') || v <= fl.hpMax), sird: v => !on('sird') || v >= fl.sird, fc: v => !on('fc') || v >= fl.fc,
-    ecritRed: v => !on('ecrit') || -v <= fl.ecrit, enmity: v => !on('enmity') || v >= fl.enmity, phalanx: v => !on('phalanx') || v >= fl.phalanx};
+    ecritRed: v => !on('ecrit') || -v <= fl.ecrit, enmity: v => !on('enmity') || v >= fl.enmity, phalanx: v => !on('phalanx') || v >= fl.phalanx,
+    ceLoss: v => !on('ceLoss') || v >= fl.ceLoss};
   for (const r of rows) if (lim[r.id]) r.floor = lim[r.id];
   rows.push({id: 'pdt', label: on('pdt') ? `DT+PDT ≤ ${fl.pdt}` : 'DT+PDT', get: f => f.pdt, fmt: v => String(Math.round(v)), low: true, floor: on('pdt') ? v => v <= fl.pdt : null},
     {id: 'mdt', label: on('mdt') ? `DT+MDT ≤ ${fl.mdt}` : 'DT+MDT', get: f => f.mdt, fmt: v => String(Math.round(v)), low: true, floor: on('mdt') ? v => v <= fl.mdt : null});

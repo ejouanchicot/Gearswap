@@ -721,6 +721,7 @@
         if (num("ecrit")) n += Math.max(0, f.ecrit - fl.ecrit);
         if (num("enmity")) n += Math.max(0, fl.enmity - f.enmity);
         if (num("phalanx")) n += Math.max(0, fl.phalanx - f.phalanx);
+        if (num("ceLoss")) n += Math.max(0, fl.ceLoss - f.ceLoss);
         return n;
     }
     // A set's value: the objectives in their order (opts.objective, then opts.then), each well under a step of the one
