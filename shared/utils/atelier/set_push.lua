@@ -381,6 +381,9 @@ local function read_history()
     return (ok and type(list) == 'table') and list or {}
 end
 
+local LUA_WORDS = {}
+for w in ('and break do else elseif end false for function goto if in local nil not or repeat return then true until while'):gmatch('%a+') do LUA_WORDS[w] = true end
+
 local function lua_value(v, indent)
     if type(v) == 'string' then return string.format('%q', v) end
     if type(v) ~= 'table' then return tostring(v) end
@@ -389,7 +392,9 @@ local function lua_value(v, indent)
     local keys = {}
     for k in pairs(v) do if type(k) == 'string' then keys[#keys + 1] = k end end
     table.sort(keys)
-    for _, k in ipairs(keys) do parts[#parts + 1] = inner .. k .. ' = ' .. lua_value(v[k], inner) .. ',' end
+    -- a set path is not a Lua name (sets.engaged.SaberDance): written ["..."], or the file no longer loads
+    local function key(k) return k:match('^[%a_][%w_]*$') and not LUA_WORDS[k] and k or ('[' .. string.format('%q', k) .. ']') end
+    for _, k in ipairs(keys) do parts[#parts + 1] = inner .. key(k) .. ' = ' .. lua_value(v[k], inner) .. ',' end
     if #parts == 0 then return '{}' end
     return '{\n' .. table.concat(parts, '\n') .. '\n' .. indent .. '}'
 end
