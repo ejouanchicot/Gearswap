@@ -71,20 +71,24 @@ local SORTIE_WEAPON_OPTIONS = {
 local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
 
 --- Subjobs played for Sortie and nothing else: they take the Sortie stances
---- (SCH_HYBRID_OPTIONS), its weapon list and Phalanx SIRD, and the /SCH
+--- (STANCE_SUB_OPTIONS), its weapon list and Phalanx SIRD, and the /SCH
 --- weaponskill variants (sets.precast.WS.SCH, PLD_PRECAST.lua). What only one
 --- of them has stays its own: Accession sneak/invi and Regen under /SCH, the
 --- Sortie runes under /RUN.
 local STANCE_SUBJOBS = {SCH = true, RUN = true}
 
---- PLD/SCH is played for Sortie and nothing else, so it drops the general
---- PDT/MDT/Sortie split for the stances that content asks for: hold hate,
---- feed weaponskills, or carry the Hoxne Ampulla.
+--- The Sortie stances of PLD/SCH and /RUN (DPS, Tanking, Hoxne), offered beside the classic PDT and MDT
+--- (STANCE_SUB_OPTIONS below): hold hate, feed weaponskills, or carry the Hoxne Ampulla.
 --- DPS and Hoxne each own their engaged build: the Ampulla's charge supplies
 --- the Double Attack that DPS has to buy with gear. Hoxne also freezes the
 --- ammo slot (shared/utils/equipment/ampulla_lock.lua), the Ampulla being swapped out by the
 --- next set the moment it is equipped otherwise.
-local SCH_HYBRID_OPTIONS = {'DPS', 'Tanking', 'Hoxne'}
+--- What /SCH and /RUN offer: the classic stances first (PDT, the default, and MDT, as on any subjob: weapons
+--- from WEAPON_OPTIONS, the set's own shield), then the Sortie ones (Tanking: Burtgang + Aegis, DPS, Hoxne).
+local STANCE_SUB_OPTIONS = {'PDT', 'MDT', 'DPS', 'Tanking', 'Hoxne'}
+
+--- Whether a HybridMode value is one of the Sortie stances.
+local SORTIE_STANCE = {DPS = true, Tanking = true, Hoxne = true}
 
 --- Under /SCH the stance and the weapon are separate choices: the stance
 --- picks the set, the ammo and the lock, MainWeapon picks what is in hand.
@@ -156,8 +160,9 @@ function PLDStates.configure()
     ---              frozen on Hoxne Ampulla so nothing swaps the charge away
     --- Keybind: Ctrl+Numpad9 to cycle
     if is_stance_sub() then
-        state.HybridMode:options(table.unpack(SCH_HYBRID_OPTIONS))
-        state.HybridMode:set('Tanking') -- Hold hate first, TP once it sticks
+        -- the classic stances and the Sortie ones (STANCE_SUB_OPTIONS), PDT first: Tanking is for Sortie only
+        state.HybridMode:options(table.unpack(STANCE_SUB_OPTIONS))
+        state.HybridMode:set('PDT')
     else
         state.HybridMode:options(table.unpack(STANDARD_HYBRID_OPTIONS))
         state.HybridMode:set('PDT') -- Default to PDT
@@ -310,7 +315,8 @@ end
 --- @param mode string HybridMode value
 --- @return string 'sch', 'sortie' or 'standard'
 local function profile_for(mode)
-    if is_stance_sub() then
+    -- under /SCH and /RUN, PDT and MDT are the classic stances (the standard profile), the others the Sortie ones
+    if is_stance_sub() and SORTIE_STANCE[mode] then
         return 'sch'
     end
     return (mode == 'Sortie') and 'sortie' or 'standard'
@@ -392,7 +398,9 @@ end
 --- Whether the current subjob plays the Sortie stances (/SCH, /RUN): PLD_PRECAST
 --- swaps in the sets.precast.WS.SCH weaponskill variants for those.
 --- @return boolean
-PLDStates.stance_subjob = is_stance_sub
+PLDStates.stance_subjob = function()
+    return is_stance_sub() and state.HybridMode ~= nil and SORTIE_STANCE[state.HybridMode.value] == true
+end
 
 -- Make globally available: the shared state-change hook reaches the profile
 -- through _G, the character path of this file being unknown to shared/.
