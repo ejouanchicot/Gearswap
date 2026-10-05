@@ -706,7 +706,7 @@
     };
     var ELEMENTS = ["fire", "ice", "wind", "earth", "lightning", "water", "light", "dark"];
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
-    var STAT_STEP = {def: 25};
+    var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover"];
     function statShort(f, fl) {
@@ -728,9 +728,10 @@
     function statValue(ctx, pieces, opts) {
         var f = O.statFigures(ctx.stat, pieces), list = [opts.objective].concat(opts.then || []).filter(function (k) { return k && f[k] != null; });
         var v = 0, w = 1;
-        // DEF parts sets by steps of 25 (about 1 %): a few points of it never outweigh what the next objectives give
+        // DEF and magic evasion part sets by steps of 25 (about 1 % of DEF, 3 % of MEva): a few points of them never
+        // outweigh what the next objectives give
         // (Sworn Brais' 13 DEF over Chev. Cuisses +3's 8 % of enmity kept on an idle)
-        list.forEach(function (k) { var x = k === "hpLow" ? -f[k] : k === "def" && opts.then && opts.then.length ? Math.floor(f[k] / STAT_STEP.def) : f[k]; v += w * x; w *= 1e-4; });
+        list.forEach(function (k) { var x = k === "hpLow" ? -f[k] : STAT_STEP[k] && opts.then && opts.then.length ? Math.floor(f[k] / STAT_STEP[k]) : f[k]; v += w * x; w *= 1e-4; });
         var raw = list.length ? f[list[0]] : 0, miss = statShort(f, opts.floor);
         var def = {pdt: f.pdt, mdt: f.mdt, sb: 0};
         return {v: v - 1e6 * miss + tieBreak(pieces, def, opts, v), raw: raw, def: def, miss: miss, stats: f};
