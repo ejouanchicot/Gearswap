@@ -34,7 +34,8 @@ Object.assign(T.fr, {
   statD_mdtRed: 'DT+MDT (+ Shell) plafonnés, puis MDT II', statD_ecritRed: 'réduction du gear, comptée jusqu’au plancher : 10 % → 1 %, soit −9 avec tes mérites',
   statD_cure: 'jusqu’à 50 %', statD_refresh: 'MP par tick', statD_regen: 'HP par tick',
   statAssumed: 'Toujours comptés, comme dans le guide : Crusade (Enmity +30){m}.', statAssumedMaj: ', Majesty (Cure Potency II +25)',
-  statNoWeapons: 'Tes armes viennent de tes modes (arme, bouclier) et passent par-dessus chaque set : la recherche garde celles de tes modes, comme en jeu.',
+  ownWeapon: 'arme du set (portée le temps de l’action)',
+  statWeaponsNote: 'Armes libres : l’arme et le bouclier trouvés vont dans ce set, portés le temps de l’action (en idle, tes modes les remettent). Changer l’arme principale fait perdre le TP, le bouclier non.',
   subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.', subFix: 'Passer en /{s}',
   aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -76,7 +77,8 @@ Object.assign(T.en, {
   statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s cut, counted down to the floor: 10 % → 1 %, so −9 with your merits',
   statD_cure: 'up to 50 %', statD_refresh: 'MP a tick', statD_regen: 'HP a tick',
   statAssumed: 'Always counted, as in the guide: Crusade (Enmity +30){m}.', statAssumedMaj: ', Majesty (Cure Potency II +25)',
-  statNoWeapons: 'Your weapons come from your modes (weapon, shield) and go over every set: the search keeps your modes’, as in game.',
+  ownWeapon: 'the set’s own (worn for the action)',
+  statWeaponsNote: 'Free weapons: the weapon and shield found go in this set, worn for the action (at idle your modes lay theirs back). Changing the main weapon loses the TP, the shield does not.',
   subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',
   aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
@@ -405,10 +407,6 @@ function statCmpRows(s, cols){
   }).join('');
 }
 
-// The job's weapons are laid by its weapon modes (PLD MainWeapon / Shield...), over every set (weapons.js weaponModes):
-// a set's own weapons are never worn, so a stats set's search keeps the modes' and offers no free weapons
-const statWeaponsByMode = () => weaponModes(data()).length > 0;
-
 /* ---- the search ---- */
 async function optimizeStats(s){
   if (!engineReady() || !statSet(s)) return;
@@ -416,7 +414,7 @@ async function optimizeStats(s){
   const choices = optChoices(new Set(Object.keys(ONLY_AUGS)));
   for (const slot of keptSlots(s)) delete choices[slot];
   for (const slot of Object.keys(choices)) choices[slot] = choices[slot].map(p => withVec(p, slot));
-  if (o.freeWeapons && !statWeaponsByMode() && !keptSlots(s).some(x => x === 'main' || x === 'sub')) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
+  if (o.freeWeapons && !keptSlots(s).some(x => x === 'main' || x === 'sub')) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
   const start = withVecs(startOf(base));
   const input = {ctx: statContext(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: so.objs[0], then: so.objs.slice(1), floor: so.floor}};
@@ -434,15 +432,16 @@ function statWhatHTML(s){
   const num = (k, label) => `<label class="opf">${label} <input type="number" step="1" data-statfloor="${k}" value="${esc(so.floor[k])}"></label>`;
   const floors = `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
     `${num('hpMax', t('statHpMax'))}${num('sird', t('statSird'))}${num('fc', t('statFc'))}${num('ecrit', t('statEcrit'))}${num('enmity', t('statEnm'))}${num('phalanx', t('statPhx'))}</div>`;
-  const search = opSearchHTML(S.optOpts || {}, false, true, statWeaponsByMode() ? t('statNoWeapons') : '');
+  const search = opSearchHTML(S.optOpts || {}, false, true);
   const jaList = abilityPieces(s);
   const own = jaList.length ? `<div class="opparams"><label class="opf opwrap" title="${esc(t('statKeepOwnTip', {b: segs(s.path).pop()}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
     `${esc(t('statKeepOwn', {p: jaList.map(sl => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')}))}</label></div>` : '';
   const ref = cureGap(s) ? null : hpRef(s);
   const refLine = ref ? `<p class="muted small">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}</p>` : '';
+  const weaponsNote = (S.optOpts || {}).freeWeapons ? `<p class="muted small">${esc(t('statWeaponsNote'))}</p>` : '';
   const assumed = ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
   return `<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
-    own + floors + refLine + assumed + search;
+    own + floors + refLine + assumed + search + weaponsNote;
 }
 // The result's lines: the objectives first, then every figure, the floors marked
 function statRows(s){

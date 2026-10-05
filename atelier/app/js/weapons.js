@@ -139,6 +139,9 @@ function withWeapons(s, ignore){
   let weapon = null, stanceWeapon = null;
   // a weaponskill's set holds a weapon of that weaponskill's skill (Savage Blade: a sword)
   const ws = wsOfSet(s), want = ws && wsSkills()[ws];
+  // the job lays its weapon modes on its idle and engaged sets only (shared/jobs/<job>/functions/logic/set_builder.lua):
+  // a precast, midcast or ability set wears its own weapons for the action, the modes' only where it names none
+  const ownHands = handsOwn(s);
   // a weapon mode laid only while a switch is on, in place of the usual weapons (WEAPON_GATES)
   const isOn = name => { const g = d.modes.find(x => x.name === name); return !!g && /^(on|true)$/i.test(g.current); };
   const gated = Object.entries(WEAPON_GATES).filter(([m, g]) => isOn(g.when)).map(([m]) => m);
@@ -188,6 +191,11 @@ function withWeapons(s, ignore){
   if (isKraken(s.path) && !blank.has('sub') && !(pieces.sub && pieces.sub.name === KRAKEN) && !force.sub && !force.main && !weaponModes(d).some(m => explicitWeapon(m, ignore))) {
     pieces.sub = {name: KRAKEN}; from.sub = t('weaponByVariant', {v: KRAKEN}); }
   for (const [m, v] of picks) fill(m, v, t('yourChoice', {v}), false);
+  // an action's set: the hands it names itself go over what the modes laid (the job wears them for the action)
+  if (ownHands) for (const slot of ['main', 'sub', 'range']) {
+    const p = s.pieces[slot];
+    if (p && !isEmpty(p)) { pieces[slot] = p; from[slot] = t('ownWeapon'); }
+  }
   // the TP bonus pieces go on last, over the tried ones: the job lays them after the set (job_post_precast)
   const out = applyTrial(s, pieces, from, stanceWeapon), tpg = tpBonusGear(s, out.pieces);
   for (const [slot, name] of Object.entries(tpg || {})) if (!blank.has(slot)) { out.pieces[slot] = {name}; out.from[slot] = t('tpFrom', {tp: S.wsTp}); }
@@ -215,12 +223,15 @@ function weaponSkillOf(m, v){
   const main = m.sets[v] && m.sets[v].pieces.main;
   return main ? weaponSkills()[main.name] : null;
 }
+// A set that wears its own weapons over the weapon modes: not idle, engaged, a weaponskill's or a weapon set (the modes
+// and the held weapon choose those)
+function handsOwn(s){ return !['idle', 'engaged', 'ws', 'weapons'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path); }
 function applyTrial(s, pieces, from, stance){
   for (const [slot, p] of Object.entries(pieces)) if (isEmpty(p)) delete pieces[slot];
   const tried = {}, tr = S._noTrial ? null : S.trial[trialKey(s)];
   // the hands never come from a try (but on a weapon set): the weapon menus and the grid choose them (chooseHand); a
   // try of an older page left on a hand is passed over
-  const hands = family(s.path, s.pieces) !== 'weapons';
+  const hands = family(s.path, s.pieces) !== 'weapons' && !handsOwn(s);
   for (const [slot, p] of Object.entries(tr || {})) {
     if (heldAlready(s, slot, p) || (hands && (slot === 'main' || slot === 'sub'))) continue;
     if (p) pieces[slot] = p; else delete pieces[slot]; delete from[slot]; tried[slot] = true;
