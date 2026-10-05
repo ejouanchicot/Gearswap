@@ -434,6 +434,12 @@ function aliasRows(cards, q){
 }
 
 
+// The SIRD of the merits (res/merit_points.lua: "Spell Interruption Rate" 2 % a level), as the Merits tab has them
+function sirdMeritsOf(c){
+  const m = (meritList() || []).find(x => x.key === 'spell_interruption_rate');
+  if (m) return 2 * meritLevel(m);
+  return 2 * Object.entries((c && c.merits) || {}).reduce((n, [k, lv]) => k.toLowerCase().replace(/_/g, ' ') === 'spell interruption rate' ? n + lv : n, 0);
+}
 /* ---- the column of figures beside a set ---- */
 function globalsHTML(s){
   S._curSet = s;
@@ -448,9 +454,7 @@ function globalsHTML(s){
     .filter(([, o]) => o).map(([l, o]) => row(l, o)).join('');
   const attrs = ATTRS.map(a => row(a.toUpperCase(), out[a])).join('');
   // merits the game counts per level (res/merit_points.lua: "Spell Interruption Rate" 2 % a level)
-  const merit = name => Object.entries(c.merits || {}).reduce((n, [k, lv]) => k.toLowerCase().replace(/_/g, ' ') === name ? n + lv : n, 0);
-  const sirdMerit = (meritList() || []).find(x => x.key === 'spell_interruption_rate');
-  const sirdMerits = sirdMerit ? 2 * meritLevel(sirdMerit) : 2 * merit('spell interruption rate');
+  const sirdMerits = sirdMeritsOf(c);
   const sird = v('sird') + sirdMerits;
   const gear = damageTakenLines(v) + pct('Haste', v('haste'), 25) + pct('Fast Cast', v('fc'), 80) +
     (sird ? statLi('SIRD', sird + ' %', sirdMerits ? `<em class="delta">${t('withMerits')}</em>` : '', '', `${t('gearOnly')} ${v('sird')} % + ${t('merits')} ${sirdMerits} %`) : '');

@@ -99,7 +99,9 @@ function compareColumns(s){
   return cols.map(c => withTrialAs(s, c.tr, () => Object.assign(c, {pieces: withWeapons(s).pieces, stats: setStats(s).total})));
 }
 function openCompare(s){
-  const cols = compareColumns(s), ref = cols[0], num = (c, k) => (c.stats[k] || {}).v || 0;
+  // SIRD counted with the merits, as under the set (sets_view.js sirdMeritsOf): the cap reads 102 % all in
+  const sirdM = sirdMeritsOf(measuredChar());
+  const cols = compareColumns(s), ref = cols[0], num = (c, k) => ((c.stats[k] || {}).v || 0) + (baseKey(k) === 'sird' && c.stats[k] ? sirdM : 0);
   const slots = SLOTS.filter(slot => cols.some(c => !samePiece(c.pieces[slot], ref.pieces[slot])));
   // the stats the set is after first (always shown, by weight), then the others that differ
   const {want} = setWants(s), all = [...new Set(cols.flatMap(c => Object.keys(c.stats)))];
