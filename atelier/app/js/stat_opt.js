@@ -18,7 +18,7 @@ Object.assign(T.fr, {
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbés : skill de renfort et MND (350 au plus), + le gear Stoneskin (475 au plus)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup, selon le skill divin',
   statObj_hpLow: 'HP les plus bas', statD_hpLow: 'Fast Cast d’un Cure sur toi : HP bas, le set de Cure les remonte et le Cure remplit l’écart',
-  statKeepOwn: 'Garder les pièces propres à ce set ({p})', statKeepOwnTip: 'Les pièces que ce set met par-dessus {b} (celle qui renforce la JA) restent : la recherche choisit le reste.',
+  statKeepOwn: 'Garder la pièce de la JA ({p})', statKeepOwnTip: 'Les pièces dont la description nomme {b} restent : la recherche choisit le reste.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP du set moins ceux du Fast Cast {f} ({h} HP), le set classique le plus bas en HP, porté avant chaque sort : '
     + 'les autres sets visent entre lui et lui + 200 pour qu’un changement de set ne fasse pas perdre de HP (guide Paladin, HP Management : écart de 200 au plus).',
   statRefLine: 'HP de référence : {h} (Fast Cast {f}) · les sets tank visent {a} à {b}.',
@@ -57,7 +57,7 @@ Object.assign(T.en, {
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit, by divine skill',
   statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
-  statKeepOwn: 'Keep this set’s own pieces ({p})', statKeepOwnTip: 'The pieces this set lays over {b} (the one that boosts the ability) stay: the search picks the rest.',
+  statKeepOwn: 'Keep the ability’s piece ({p})', statKeepOwnTip: 'The pieces whose description names {b} stay: the search picks the rest.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set less those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
     + 'the other sets aim between it and it + 200 so a set change loses no HP (Paladin guide, HP Management: 200 apart at most).',
   statRefLine: 'Reference HP: {h} (Fast Cast {f}) · the tank sets aim at {a} to {b}.',
@@ -172,10 +172,24 @@ function hpRef(s){
 // A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay
 // when asked (a job ability's set: on by default), only the rest is searched. The slots kept, or none
 function keptSlots(s){
-  if (!s.base || !(s.own || []).length) return [];
+  const list = abilityPieces(s);
+  if (!list.length) return [];
   const mine = ((S.optOpts || {}).statBy || {})[s.path] || {};
-  const on = mine.keepOwn != null ? mine.keepOwn : family(s.path, s.pieces) === 'ja';
-  return on ? s.own.slice() : [];
+  return (mine.keepOwn != null ? mine.keepOwn : true) ? list : [];
+}
+// The slots of a job ability's set whose piece boosts that ability: its description or its augments name it
+// (Rev. Leggings +4 "Holy Circle", Cab. Leggings "Sentinel", Chev. Sabatons "Divine Emblem"); not the set's other
+// pieces, which only differ from the set it is laid over (Cryptic Earring in Holy Circle's)
+function abilityPieces(s){
+  if (family(s.path, s.pieces) !== 'ja') return [];
+  const ja = segs(s.path).pop().toLowerCase(), cat = catalog(), out = [];
+  for (const [slot, p] of Object.entries(withoutTrial(() => withWeapons(s).pieces))) {
+    if (!p || isEmpty(p)) continue;
+    const id = p.id || ownId(p.name, slot) || (cat && cat.id[p.name]);
+    const text = ((id && (descTexts()[id] || (cat && cat.desc[id]))) || '') + ' ' + (p.augs || []).join(' ');
+    if (text.toLowerCase().includes(ja)) out.push(slot);
+  }
+  return out;
 }
 // The HP a self Cure's midcast set opens over its Fast Cast (the other set of the pair: sets.precast.FC.CureSelf and
 // sets.midcast.CureSelf, any names with Cure and Self), or null
@@ -402,8 +416,9 @@ function statWhatHTML(s){
   const floors = `<h4 class="ophd2">${t('statFloors')}</h4><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
     `${num('hpMax', t('statHpMax'))}${num('sird', t('statSird'))}${num('fc', t('statFc'))}${num('ecrit', t('statEcrit'))}${num('enmity', t('statEnm'))}${num('phalanx', t('statPhx'))}</div>`;
   const search = opSearchHTML(S.optOpts || {}, false, true);
-  const own = family(s.path, s.pieces) === 'ja' && s.base && (s.own || []).length ? `<div class="opparams"><label class="opf" title="${esc(t('statKeepOwnTip', {b: shortPath(s.base)}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
-    `${esc(t('statKeepOwn', {p: s.own.map(sl => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')}))}</label></div>` : '';
+  const jaList = abilityPieces(s);
+  const own = jaList.length ? `<div class="opparams"><label class="opf opwrap" title="${esc(t('statKeepOwnTip', {b: segs(s.path).pop()}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
+    `${esc(t('statKeepOwn', {p: jaList.map(sl => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')}))}</label></div>` : '';
   const ref = cureGap(s) ? null : hpRef(s);
   const refLine = ref ? `<p class="muted small">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}</p>` : '';
   const assumed = ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
