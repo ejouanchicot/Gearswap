@@ -105,8 +105,8 @@ function opParamsHTML(s, kind, cur){
   return f.length ? `<div class="opparams">${f.join('')}</div>` : '';
 }
 // Where the search looks and the floors it keeps: two lines
-// noFloors: the stats optimizer, which has floors of its own (stat_opt.js)
-function opSearchHTML(o, ws, noFloors){
+// noFloors: the stats optimizer, which has floors of its own (stat_opt.js); noWeapons: free weapons offered off, with why
+function opSearchHTML(o, ws, noFloors, noWeapons){
   const wheres = ['mine', 'mine_max', 'all'].map(k => `<option value="${k}" ${(o.where || 'mine') === k ? 'selected' : ''}>${t('optWhere_' + k)}</option>`).join('');
   // the fast search (memory, pieces that can never win left out) or the classic one, kept to go back to
   const modes = ['fast', 'classic'].map(k => `<option value="${k}" ${(o.search || 'fast') === k ? 'selected' : ''}>${t('optSearch_' + k)}</option>`).join('');
@@ -115,7 +115,8 @@ function opSearchHTML(o, ws, noFloors){
   // labelled and in the text's colour (a bare grey menu read as a switched-off one, 2026-10-05)
   return `<h4 class="ophd2">${t('opSearch')}</h4><div class="opparams opwhere"><label class="opf">${esc(t('optWhereLbl'))} <select class="buffsel" data-optopt="where">${wheres}</select></label>` +
     `<label class="opf" title="${esc(t('optSearchTip'))}">${esc(t('opHow'))} <select class="buffsel" data-optopt="search">${modes}</select></label>` +
-    chk('wardOnly', t('optWard')) + chk('freeWeapons', t('freeWeapons'), t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip')) + chk('fullSpeed', t('fullSpeed'), t('fullSpeedTip', {n: OPT_CORES})) + `</div>` +
+    chk('wardOnly', t('optWard')) + (noWeapons ? `<label class="opf muted" title="${esc(noWeapons)}"><input type="checkbox" disabled> ${t('freeWeapons')}</label>`
+      : chk('freeWeapons', t('freeWeapons'), t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip'))) + chk('fullSpeed', t('fullSpeed'), t('fullSpeedTip', {n: OPT_CORES})) + `</div>` +
     (noFloors ? '' : `<div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('sb', 'Subtle Blow ≥')}${ws ? num('hit', t('optHitLbl')) : ''}</div>`);
 }
 

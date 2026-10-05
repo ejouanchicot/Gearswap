@@ -437,7 +437,9 @@ function optResult(s, k, res, gains, o){
   const blocked = FFXI.opt.blocked(res.pieces);
   for (const slot of Object.keys(blocked)) if (plain[slot] && !isEmpty(plain[slot])) tr[slot] = null;
   for (const [slot, p] of Object.entries(res.pieces)) {
-    if (['main', 'sub', 'range'].includes(slot) || !p || blocked[slot]) continue;
+    // a stats set's weapons go in its try like its other pieces (a PLD's shield is part of each set); the other
+    // optimizers force them in the page (below)
+    if ((['main', 'sub'].includes(slot) && !o.stat) || slot === 'range' || !p || blocked[slot]) continue;
     const a = plain[slot], piece = {name: p.name, augs: p.augs};
     if (p.rank != null) piece.rank = p.rank;
     if (p.capeMax) piece.capeMax = true;
@@ -449,7 +451,7 @@ function optResult(s, k, res, gains, o){
   // free weapons: the pair found becomes the page's forced weapons (never written to a set)
   let weapons = '';
   const wsHeld = !o.eng && wsOfSet(s);
-  if (o.freeWeapons) for (const slot of ['main', 'sub']) {
+  if (o.freeWeapons && !o.stat) for (const slot of ['main', 'sub']) {
     const p = res.pieces[slot], a = plain[slot];
     if (!p || samePiece({name: p.name, augs: p.augs}, a && !isEmpty(a) ? optPieces({x: a}).x : null)) continue;
     if (!wsHeld) setForce(slot, {name: p.name, augs: p.augs});
