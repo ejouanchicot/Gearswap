@@ -216,11 +216,15 @@ function renderSets(d){
   // the names a set is shared under, a link to the set they are: folded right under it, whatever their family
   // (Blank Gaze, Cocoon... under SIRDEnmity; Flash, Crusade... under FullEnmity)
   const aliases = aliasRows(cards, q);
+  // an idle or engaged name of a set kept in another family (sets.idle.MDT = sets.engaged.MDT) shows in its own family
+  // too, at its end: those are looked for there
+  const crossOf = f => ['idle', 'engaged'].includes(f) && famOpen(f, q)
+    ? aliases.filter(a => a.fam === f && cards[a.i].fam !== f).map(a => aliasBtn(Object.assign({}, a, {label: shortPath(a.path)}))).join('') : '';
   const aliasBtn = a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
     `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`;
 
   for (const i of vis) { const c = cards[i];
-    if (c.fam !== fam) { fam = c.fam;
+    if (c.fam !== fam) { if (fam) list += crossOf(fam); fam = c.fam;
       const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0);
       list += `<button class="fam ${cards[sel] && cards[sel].fam === fam ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${famOpen(fam, q)}"><span>${t('fam.'+fam)}</span><span>${n}</span></button>`; }
     // a category is closed until opened (a search opens them all)
@@ -249,6 +253,7 @@ function renderSets(d){
       if (open) items.forEach(([v, k]) => row(v, k));
     }
   }
+  if (fam) list += crossOf(fam);
   if (!vis.length) list = `<p class="empty-list">${t('noMatch')}</p>`;
   S._fams = [...new Set(vis.map(i => cards[i].fam))];
   // open or close every category at once
