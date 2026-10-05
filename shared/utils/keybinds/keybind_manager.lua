@@ -435,7 +435,7 @@ function KeybindManager.create(job, module)
     if ok and CommonKeybinds then
         CommonKeybinds.merge_into(module.binds)
     end
-    -- keys changed in the Atelier page (<Char>/saved/keybind_overrides.lua), over all of the above
+    -- keys changed in the Atelier page (<Char>/atelier/overrides/keybind_overrides.lua), over all of the above
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
     if ok_o and KeyOverrides then KeyOverrides.apply(job, module.binds) end
     watch_own_weapon(module.binds)

@@ -8,7 +8,7 @@
 ---
 ---   GET  /ping                 player, job, subjob, version (+1 at each load)
 ---   GET  /export               the loaded job's data (AtelierExport.build)
----   POST /save?file=<name>     writes <Char>/saved/<name>: keybind_overrides.lua
+---   POST /save?file=<name>     writes <Char>/atelier/overrides/<name>: keybind_overrides.lua
 ---                              or set_overrides.lua only
 ---   GET  /actions              the job's spells, abilities and weapon skills
 ---   GET  /sim_buffs            the buffs the job's code reads (Simulate's buff choices)
@@ -33,7 +33,7 @@
 ---
 --- Opened at every GearSwap load (AtelierExport.after_load), for every
 --- character: //gs c atelier live off closes it for this character (marker
---- <Char>/saved/atelier_live.off), //gs c atelier live opens it again.
+--- <Char>/atelier/live.off), //gs c atelier live opens it again.
 ---
 --- @file shared/utils/atelier/atelier_live.lua
 --- @author ejouanchicot
@@ -145,8 +145,10 @@ local function route(req, live)
     if req.path == '/save' and req.method == 'POST' then
         local file = req.query:match('file=([%w_%.]+)')
         if not SAVED_FILES[file] then return '400 Bad Request', '{"error":"file"}' end
-        local path = require('shared/utils/core/char_paths').writable('saved', file)
+        local CharPaths = require('shared/utils/core/char_paths')
+        local path = CharPaths.writable('atelier', file)
         if not (path and write(path, req.body)) then return '500 Internal Server Error', '{"error":"write"}' end
+        CharPaths.retire(file)
         return '200 OK', Export.json({ok = true, file = file})
     end
     if req.path == '/actions' then
@@ -223,8 +225,12 @@ end
 --- DOOR
 ---============================================================================
 
-local function off_marker()
-    return player and player.name and require('shared/utils/core/char_paths').writable('saved', 'atelier_live.off')
+-- the marker where it is (atelier/live.off, or saved/atelier_live.off before 2026-10-05), or where it goes
+local function off_marker(to_write)
+    if not (player and player.name) then return nil end
+    local CharPaths = require('shared/utils/core/char_paths')
+    if to_write then CharPaths.retire('atelier_live.off') return CharPaths.writable('atelier', 'atelier_live.off') end
+    return CharPaths.file('atelier', 'atelier_live.off')
 end
 
 --- Whether the door may open for this character (no atelier_live.off marker).
@@ -249,11 +255,13 @@ end
 --- @param on boolean
 --- @return number|nil port when opened
 function AtelierLive.set(on)
-    local path = off_marker()
     if on then
+        local path = off_marker()
         if path then os.remove(path) end
+        if player and player.name then require('shared/utils/core/char_paths').retire('atelier_live.off') end
         return AtelierLive.start()
     end
+    local path = off_marker(true)
     if path then write(path, 'Atelier live link off for this character: //gs c atelier live to open it again\n') end
     AtelierLive.stop()
     return nil

@@ -2,7 +2,7 @@
 --- Set Overrides - pieces changed in the Atelier page, laid over the set files
 ---============================================================================
 --- The Atelier page (data/atelier.html, Sets tab: try a piece, then "Save")
---- writes the pieces a player changes into <Char>/saved/set_overrides.lua.
+--- writes the pieces a player changes into <Char>/atelier/overrides/set_overrides.lua (saved/ before 2026-10-05).
 --- The set files are never rewritten: deleting that file brings every set back.
 ---
 --- Format of the file:
@@ -41,7 +41,7 @@ local SPELLINGS = {
 --- @return table|nil {<JOB> = {path = {slot = piece}}}
 function SetOverrides.read()
     local ok, CharPaths = pcall(require, 'shared/utils/core/char_paths')
-    local path = ok and CharPaths and CharPaths.file('saved', FILE)
+    local path = ok and CharPaths and CharPaths.file('atelier', FILE)
     if not path then return nil end
     local ok_load, data = pcall(dofile, path)
     return (ok_load and type(data) == 'table') and data or nil

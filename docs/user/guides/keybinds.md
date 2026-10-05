@@ -259,7 +259,7 @@ Open `data/atelier.html`, tab **Keys**, and click ✎ on a key:
 3. The window warns of a key already taken on this job and subjob, of a key
    without Ctrl / Alt / Shift / Win (you could no longer type it in the
    chat), of F9-F12, Ctrl+- and Ctrl+= (Mote's) and of Ctrl+V (Windower's paste).
-4. **Save** writes `<YourName>/saved/keybind_overrides.lua`. The first time,
+4. **Save** writes `<YourName>/atelier/overrides/keybind_overrides.lua`. The first time,
    the browser asks for GearSwap's `data` folder (the one holding
    `atelier.html`). A browser that cannot write there downloads the file:
    put it in `<YourName>/saved/`.

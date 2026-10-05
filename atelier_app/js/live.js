@@ -44,16 +44,20 @@ async function pickFolder(){
   try { await idb('readwrite', st => st.put(dir, 'data')); } catch (e) {}
   return dir;
 }
+// <Char>/atelier/overrides/<file> (shared/utils/core/char_paths.lua), then the copy of before 2026-10-05 in
+// <Char>/saved/ taken out, so GearSwap never reads an older one
 async function writeSaved(dir, char, file, text){
-  const mine = await dir.getDirectoryHandle(char), saved = await mine.getDirectoryHandle('saved', {create: true});
-  const fh = await saved.getFileHandle(file, {create: true}), w = await fh.createWritable();
+  const mine = await dir.getDirectoryHandle(char), at = await mine.getDirectoryHandle('atelier', {create: true});
+  const into = await at.getDirectoryHandle('overrides', {create: true});
+  const fh = await into.getFileHandle(file, {create: true}), w = await fh.createWritable();
   await w.write(text); await w.close();
+  try { await (await mine.getDirectoryHandle('saved')).removeEntry(file); } catch (e) {}
 }
 function download(file, text){
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/plain'})); a.download = file; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-// Write a file of <Char>/saved/; true when written in the folder (else downloaded, or cancelled)
+// Write a file of <Char>/atelier/overrides/; true when written in the folder (else downloaded, or cancelled)
 async function saveFile(file, text){
   const c = S.char;
   if (liveOk(c)) {
@@ -64,7 +68,7 @@ async function saveFile(file, text){
     } catch (e) {}
   }
   // a browser without folder access (Firefox): the file is downloaded, the page says where it goes
-  if (!window.showDirectoryPicker) { download(file, text); S.toast = t('savedDownload', {p: `${c}/saved/${file}`}); return false; }
+  if (!window.showDirectoryPicker) { download(file, text); S.toast = t('savedDownload', {p: `${c}/atelier/overrides/${file}`}); return false; }
   try {
     const dir = await dataFolder();
     if (dir) { await writeSaved(dir, c, file, text); return true; }
@@ -94,10 +98,10 @@ async function saveKeys(){
   const c = S.char, file = 'keybind_overrides.lua', done = await saveFile(file, overridesLua(keyOverrides()));
   if (done === null) return;
   S.keyDirty[c] = false; S.keyOv[c].at = stamp();
-  if (done) S.toast = done === 'live' ? t('savedLive') : t('savedKeys', {p: `${c}/saved/${file}`});
+  if (done) S.toast = done === 'live' ? t('savedLive') : t('savedKeys', {p: `${c}/atelier/overrides/${file}`});
   render();
 }
-/* ---- sets: the tried pieces saved into <Char>/saved/set_overrides.lua ---- */
+/* ---- sets: the tried pieces saved into <Char>/atelier/overrides/set_overrides.lua ---- */
 // S.setOv[char] = {at, map: {<JOB>: {path: {slot: piece}}}}: the whole file, from the latest export, a later save wins
 function setOverrides(){
   const c = S.char, mine = S.setOv[c];
@@ -122,7 +126,7 @@ async function saveSet(s){
   const done = await saveFile('set_overrides.lua', setsLua(map));
   if (done === null) return;
   S.setOv[c] = {at: stamp(), map};
-  if (done) S.toast = done === 'live' ? t('savedLive') : t('savedSet', {p: `${S.char}/saved/set_overrides.lua`});
+  if (done) S.toast = done === 'live' ? t('savedLive') : t('savedSet', {p: `${S.char}/atelier/overrides/set_overrides.lua`});
   render();
 }
 // Back to the set file: the set's entry leaves the file, the page shows the file's pieces until the next export
@@ -134,7 +138,7 @@ async function revertSet(s){
   S.setOv[c] = {at: stamp(), map};
   S.trial[k] = {};
   for (const [slot, was] of Object.entries(s.was || {})) S.trial[k][slot] = was.name === 'empty' ? null : was;
-  if (done) S.toast = done === 'live' ? t('savedLive') : t('revertedSet', {p: `${S.char}/saved/set_overrides.lua`});
+  if (done) S.toast = done === 'live' ? t('savedLive') : t('revertedSet', {p: `${S.char}/atelier/overrides/set_overrides.lua`});
   render();
 }
 // A tried piece the set file already holds (the export after a save); emptying counts only

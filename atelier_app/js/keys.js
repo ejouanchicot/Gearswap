@@ -48,7 +48,7 @@ function keyLabel(k){
   return `<span class="kbd"${us ? ` title="${esc(t('usName', {k}))}"` : ''}>` + parts.map(p => '<kbd>'+esc(p)+'</kbd>').join('') + '</span>';
 }
 
-/* ---- keys changed in the page, saved into <Char>/saved/keybind_overrides.lua ---- */
+/* ---- keys changed in the page, saved into <Char>/atelier/overrides/keybind_overrides.lua ---- */
 // S.keyOv[char] = {common: {id: key}, <JOB>: {id: key}}: the whole file, as the page wants it.
 // It starts from what the last export read in the file (key_overrides), a later save wins.
 function keyOverrides(){

@@ -9,7 +9,7 @@
 ---   //gs c atelier on     also export after every job load (per character)
 ---   //gs c atelier off    stop exporting on load
 ---
---- Files: data/<Character>/saved/atelier/<JOB>_<SUB>.js (one per job and
+--- Files: data/<Character>/atelier/exports/<JOB>_<SUB>.js (one per job and
 --- subjob; <JOB>.js before 2026-10-01, atelier/ before 2026-09-30),
 --- data/atelier/index.js (the list the page reads) and data/atelier/icons/<id>.bmp
 --- (item icons from the game files, shared/utils/atelier/item_icons.lua). They are JavaScript, not
@@ -59,8 +59,11 @@ local function data_path(rel)
     return windower.addon_path .. 'data/' .. rel
 end
 
-local function marker()
-    return player and player.name and require('shared/utils/core/char_paths').writable('saved', 'atelier.on')
+-- the switch's marker where it is (atelier/export.on, or saved/atelier.on before 2026-10-05), or where it goes
+local function marker(to_write)
+    if not (player and player.name) then return nil end
+    local CharPaths = require('shared/utils/core/char_paths')
+    return to_write and CharPaths.writable('atelier', 'atelier.on') or CharPaths.file('atelier', 'atelier.on')
 end
 
 --- On/off per character: a marker file, read once per addon load.
@@ -617,20 +620,20 @@ local function write(path, text)
     return true
 end
 
---- data/atelier/index.js: every <Character>/saved/atelier/<JOB>_<SUB>.js on
---- the disk, and the one-file-per-job <JOB>.js written before 2026-10-01 (also
---- in <Character>/atelier/, the folder before 2026-09-30).
+--- data/atelier/index.js: every <Character>/atelier/exports/<JOB>_<SUB>.js on
+--- the disk (saved/atelier/ before 2026-10-05, read when no newer copy), and the one-file-per-job
+--- <JOB>.js written before 2026-10-01 (also in <Character>/atelier/, the folder before 2026-09-30).
 local function write_index()
     windower.create_dir(data_path('atelier'))
     local entries, seen = {}, {}
     for _, name in ipairs(windower.get_dir(data_path('')) or {}) do
-        for _, folder in ipairs({'/saved/atelier/', '/atelier/'}) do
+        for _, folder in ipairs({'/atelier/exports/', '/saved/atelier/', '/atelier/'}) do
             for _, file in ipairs(windower.get_dir(data_path(name .. folder)) or {}) do
                 local job, sub = file:match('^(%u%u%u)_?(%u*)%.js$')
                 local key = job and name .. job .. sub
                 if key and not seen[key] then
                     seen[key] = true
-                    -- relative to data/, where atelier.html is: Tetsouo/saved/atelier/WAR_SAM.js
+                    -- relative to data/, where atelier.html is: Tetsouo/atelier/exports/WAR_SAM.js
                     entries[#entries + 1] = {char = name, job = job, sub = sub ~= '' and sub or nil, file = name .. folder .. file}
                 end
             end
@@ -687,7 +690,7 @@ function AtelierExport.build()
     -- each weaponskill's combat skill and what it uses (shared/utils/atelier/atelier_ws.lua)
     data.ws_skill, data.ws_info = require('shared/utils/atelier/atelier_ws').collect(data.sets, player.main_job, player.main_job_level, player.sub_job)
     data.export_version = EXPORT_VERSION
-    -- the keys changed in the page and saved (<Char>/saved/keybind_overrides.lua)
+    -- the keys changed in the page and saved (<Char>/atelier/overrides/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
     data.key_overrides = ok_o and KeyOverrides.read() or nil
     -- the keys //gs c tb bound for this game session (shared/utils/keybinds/temp_binds.lua)
@@ -705,11 +708,13 @@ end
 function AtelierExport.export()
     local data = AtelierExport.build()
     if not data then return nil end
-    windower.create_dir(data_path(player.name .. '/saved'))
-    windower.create_dir(data_path(player.name .. '/saved/atelier'))
+    -- <Char>/atelier/exports/ (char_paths.lua), the old saved/atelier/ copy of the same file taken out after
+    local dir, old = require('shared/utils/core/char_paths').atelier_dir('exports')
+    if not dir then return nil end
+    windower.create_dir(dir)
+    local folder = dir:sub(#data_path('') + 1) .. '/'
     -- one file per subjob: the modes, weapons and WS a job offers can depend on it
     local sub = player.sub_job or 'NONE'
-    local folder = player.name .. '/saved/atelier/'
     local rel = folder .. player.main_job .. '_' .. sub .. '.js'
     local c, j, s = json(player.name), json(player.main_job), json(sub)
     local text = ('window.ATELIER_SUBS = window.ATELIER_SUBS || {};\nATELIER_SUBS[%s] = ATELIER_SUBS[%s] || {};\n'
@@ -717,6 +722,7 @@ function AtelierExport.export()
         :format(c, c, c, j, c, j, c, j, s, json(data))
     if not write(data_path(rel), text) then return nil end
     os.remove(data_path(folder .. player.main_job .. '.js'))
+    if old then os.remove(old .. '/' .. player.main_job .. '_' .. sub .. '.js'); os.remove(old .. '/' .. player.main_job .. '.js') end
     write_index()
     return rel
 end
@@ -747,9 +753,10 @@ end
 
 local function set_switch(on)
     windower._atelier_on = on
-    local path = marker()
+    local path = marker(on)
     if not path then return end
     if on then write(path, 'on') else os.remove(path) end
+    require('shared/utils/core/char_paths').retire('atelier.on')
 end
 
 --- //gs c atelier [on|off]

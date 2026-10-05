@@ -2,7 +2,7 @@
 --- Key Overrides - keys changed in the Atelier page, laid over the key files
 ---============================================================================
 --- The Atelier page (data/atelier.html, Keys tab) writes the keys a player
---- changes into <Char>/saved/keybind_overrides.lua. The key files themselves
+--- changes into <Char>/atelier/overrides/keybind_overrides.lua (saved/ before 2026-10-05). The key files themselves
 --- (<job>/keys/<JOB>_KEYBINDS.lua, _common/keys/COMMON_KEYBINDS.lua...) are
 --- never rewritten: deleting that file brings every key back.
 ---
@@ -53,7 +53,7 @@ end
 --- @return table|nil {common = {id = key}, <JOB> = {id = key}}
 function KeyOverrides.read()
     local ok, CharPaths = pcall(require, 'shared/utils/core/char_paths')
-    local path = ok and CharPaths and CharPaths.file('saved', FILE)
+    local path = ok and CharPaths and CharPaths.file('atelier', FILE)
     if not path then return nil end
     local ok_load, data = pcall(dofile, path)
     return (ok_load and type(data) == 'table') and data or nil

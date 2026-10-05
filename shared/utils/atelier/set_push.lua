@@ -32,10 +32,10 @@
 --- (theory-crafting a job while playing another). For a job not loaded, nothing is read from the sets in
 --- memory: the file's variables and its aliases (`sets.x = sets.y`) are read from its text.
 ---
---- Before writing, the file is copied to <Char>/saved/backups/ (the last 20 copies of each set file kept: twenty
+--- Before writing, the file is copied to <Char>/atelier/backups/ (the last 20 copies of each set file kept: twenty
 --- undos back); every push is
---- noted in <Char>/saved/set_push_history.lua, and the set's entry leaves
---- <Char>/saved/set_overrides.lua (the file now holds those pieces).
+--- noted in <Char>/atelier/history.lua, and the set's entry leaves
+--- <Char>/atelier/overrides/set_overrides.lua (the file now holds those pieces).
 ---
 --- @file    shared/utils/atelier/set_push.lua
 --- @author  ejouanchicot
@@ -363,8 +363,11 @@ end
 --- HISTORY
 ---============================================================================
 
-local function history_path()
-    return require('shared/utils/core/char_paths').writable('saved', HISTORY_FILE)
+-- <Char>/atelier/history.lua (char_paths.lua): read where it is (saved/set_push_history.lua before 2026-10-05),
+-- written in the new place
+local function history_path(to_write)
+    local CharPaths = require('shared/utils/core/char_paths')
+    return to_write and CharPaths.writable('atelier', HISTORY_FILE) or CharPaths.file('atelier', HISTORY_FILE)
 end
 
 local function read_history()
@@ -386,7 +389,7 @@ local function lua_value(v, indent)
     return '{\n' .. table.concat(parts, '\n') .. '\n' .. indent .. '}'
 end
 
---- The copies in saved/backups/ beyond the last BACKUPS_PER_FILE of each set file, and the ones no history entry
+--- The copies in atelier/backups/ beyond the last BACKUPS_PER_FILE of each set file, and the ones no history entry
 --- names any more, deleted (their entries lose their copy: nothing to undo them with).
 --- @param list table The history, oldest first
 local function prune_backups(list)
@@ -403,41 +406,48 @@ local function prune_backups(list)
             end
         end
     end
-    local dir = require('shared/utils/core/char_paths').writable('saved', 'backups')
-    local ok, files = pcall(windower.get_dir, dir)
-    if not (ok and type(files) == 'table') then return end
-    for _, name in ipairs(files) do
-        if name:match('%.lua$') and not kept[name] then os.remove(dir .. '/' .. name) end
+    -- both folders: atelier/backups/ and the saved/backups/ of before 2026-10-05
+    local dir, old = require('shared/utils/core/char_paths').atelier_dir('backups')
+    for _, d in ipairs({dir, old}) do
+        local ok, files = pcall(windower.get_dir, d)
+        if ok and type(files) == 'table' then
+            for _, name in ipairs(files) do
+                if name:match('%.lua$') and not kept[name] then os.remove(d .. '/' .. name) end
+            end
+        end
     end
 end
 
 local function write_history(list)
     while #list > HISTORY_MAX do table.remove(list, 1) end
     pcall(prune_backups, list)
-    return write(history_path(), '-- Sets pushed from the Atelier page into the set files (shared/utils/atelier/set_push.lua).\n'
-        .. '-- Each push: the file, its copy before the push (saved/backups/), what changed.\nreturn ' .. lua_value(list, '') .. '\n')
+    local ok = write(history_path(true), '-- Sets pushed from the Atelier page into the set files (shared/utils/atelier/set_push.lua).\n'
+        .. '-- Each push: the file, its copy before the push (atelier/backups/), what changed.\nreturn ' .. lua_value(list, '') .. '\n')
+    if ok then require('shared/utils/core/char_paths').retire(HISTORY_FILE) end
+    return ok
 end
 
---- The set's entry leaves <Char>/saved/set_overrides.lua: the set file holds those pieces now.
+--- The set's entry leaves <Char>/atelier/overrides/set_overrides.lua: the set file holds those pieces now.
 local function drop_override(job, path)
     local ok, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
     local data = ok and SetOverrides.read()
     if not (data and data[job] and data[job][path]) then return end
     data[job][path] = nil
     if next(data[job]) == nil then data[job] = nil end
-    local file = require('shared/utils/core/char_paths').writable('saved', 'set_overrides.lua')
-    write(file, '-- Pieces changed in the Atelier page (data/atelier.html, Sets tab), laid over the set files\n'
+    local CharPaths = require('shared/utils/core/char_paths')
+    local file = CharPaths.writable('atelier', 'set_overrides.lua')
+    if write(file, '-- Pieces changed in the Atelier page (data/atelier.html, Sets tab), laid over the set files\n'
         .. '-- (shared/utils/atelier/set_overrides.lua). Delete this file to go back to your set files.\n'
-        .. "-- 'empty' = nothing in the slot.\nreturn " .. lua_value(data, '') .. '\n')
+        .. "-- 'empty' = nothing in the slot.\nreturn " .. lua_value(data, '') .. '\n') then CharPaths.retire('set_overrides.lua') end
 end
 
---- The file copied to saved/backups/ (named after the history entry, so two changes in
+--- The file copied to atelier/backups/ (named after the history entry, so two changes in
 --- the same second keep their own copy), then written.
 --- @return string|nil backup path, string|nil why
 local function backup_and_write(p, id)
     local name = p.abs:match('([^/]+)%.lua$') or 'sets'
-    local backup = require('shared/utils/core/char_paths').writable('saved',
-        'backups/' .. name .. '_' .. os.date('%Y%m%d-%H%M%S') .. '_' .. id .. '.lua')
+    local dir = require('shared/utils/core/char_paths').atelier_dir('backups')
+    local backup = dir and (dir .. '/' .. name .. '_' .. os.date('%Y%m%d-%H%M%S') .. '_' .. id .. '.lua')
     if not (backup and write(backup, p.text)) then return nil, 'backup' end
     if not write(p.abs, p.out) then return nil, 'write' end
     return backup
@@ -576,7 +586,12 @@ function SetPush.undo(id)
             if e.undone then return {error = 'undone'} end
             local abs = data_dir() .. e.file
             if SetWriter.hash(read(abs) or '') ~= e.hash_after then return {error = 'changed'} end
+            -- the copy where the entry says, else under the same name in atelier/backups/ (moved there 2026-10-05)
             local before = read(data_dir() .. e.backup)
+            if not before then
+                local dir = require('shared/utils/core/char_paths').atelier_dir('backups')
+                before = dir and read(dir .. '/' .. (e.backup:match('([^/]+)$') or ''))
+            end
             if not before then return {error = 'backup'} end
             if not write(abs, before) then return {error = 'write'} end
             e.undone = os.date('%Y-%m-%d %H:%M')

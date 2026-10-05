@@ -6,7 +6,7 @@ Export every job of every character for the Atelier page, without the game.
     (or double-click "Atelier - export all jobs.bat" in the data folder)
 
 Each <Char>/<Char>_<JOB>.lua is loaded outside the game by load_job.lua (Lua
-5.1, lua5.1 or lua on the PATH), which writes <Char>/saved/atelier/<JOB>_<SUB>.js
+5.1, lua5.1 or lua on the PATH), which writes <Char>/atelier/exports/<JOB>_<SUB>.js
 and the item icons, as //gs c atelier does in game: one file per subjob, since
 the modes, weapons and WS a job offers can depend on it. First the subjob of
 the last in-game export (else of the last export, else a usual one),
@@ -93,7 +93,14 @@ def jobs_of(char):
 
 
 def export_folder(char):
-    return os.path.join(DATA, char, 'saved', 'atelier')
+    """<Char>/atelier/exports/ for a tidied folder (shared/utils/core/char_paths.lua; saved/atelier/ before
+    2026-10-05, still read by the index), else saved/atelier/."""
+    base = os.path.join(DATA, char)
+    if os.path.isdir(os.path.join(base, '_common')) or os.path.isdir(os.path.join(base, 'common')):
+        folder = os.path.join(base, 'atelier', 'exports')
+        os.makedirs(folder, exist_ok=True)
+        return folder
+    return os.path.join(base, 'saved', 'atelier')
 
 
 def export_path(char, job, sub):
@@ -231,7 +238,7 @@ def write_index():
     """data/atelier/index.js, once at the end (the loads run side by side)."""
     entries, seen = [], set()
     for char in sorted(os.listdir(DATA)):
-        for folder in ('/saved/atelier/', '/atelier/'):
+        for folder in ('/atelier/exports/', '/saved/atelier/', '/atelier/'):
             path = os.path.join(DATA, char + folder)
             if char.startswith(('_', '.')) or not os.path.isdir(path):
                 continue

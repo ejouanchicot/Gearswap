@@ -25,6 +25,15 @@
 ---       sets/                    its gear: <job>_sets.lua, armor.lua...
 ---   <Char>/saved/                files the game writes (window positions,
 ---                                dual-box role, HUD settings, traces...)
+---   <Char>/atelier/              what the Atelier page (data/atelier.html) writes
+---       overrides/               set_overrides.lua, keybind_overrides.lua: pieces
+---                                and keys changed in the page, laid over your files
+---       exports/                 <JOB>_<SUB>.js: the page's data (//gs c atelier)
+---       backups/                 set files before each push (last 20 each)
+---       history.lua              every push (the page's History)
+---       export.on, live.off      //gs c atelier on / live off
+---                                (before 2026-10-05 all of it was in saved/: still read
+---                                there, moved here when written again)
 ---
 --- Older layouts, still read: config/<FILE>, config/<job>/, config/alt/,
 --- config/craft/, sets/<job>_sets.lua, sets/<job>/, files at the root of the
@@ -100,6 +109,18 @@ local LEGACY_DEFAULT = {
     common = 'config/%s', alt = 'config/alt/%s', job = 'config/%j/%s', sets = 'sets/%s',
     craft = 'config/craft/%s', gear = 'sets/%s',
 }
+-- What the Atelier writes, by the name the code knows it by: its place in <Char>/atelier/ (the code before
+-- 2026-10-05 kept them all in saved/, under these names; exports in saved/atelier/)
+local ATELIER = {
+    ['set_overrides.lua'] = 'atelier/overrides/set_overrides.lua',
+    ['keybind_overrides.lua'] = 'atelier/overrides/keybind_overrides.lua',
+    ['set_push_history.lua'] = 'atelier/history.lua',
+    ['atelier.on'] = 'atelier/export.on',
+    ['atelier_live.off'] = 'atelier/live.off',
+    ['backups'] = 'atelier/backups',
+    ['exports'] = 'atelier/exports',
+}
+local ATELIER_OLD = {exports = {'saved/atelier'}}
 local ROOT_SAVED = {['temp_binds.lua'] = true, ['trace.log'] = true, ['trace.old.log'] = true,
     ['trace.on'] = true, ['atelier.on'] = true, ['rolldebug.log'] = true}
 
@@ -139,6 +160,7 @@ end
 
 --- Where a file that exists nowhere yet goes, for a folder in the old layout.
 local function legacy_default(kind, file, job)
+    if kind == 'atelier' then return legacy_default('saved', file, job) end
     if kind == 'saved' then return ROOT_SAVED[file] and file or ('config/' .. file) end
     return LEGACY_DEFAULT[kind] and fill(LEGACY_DEFAULT[kind], file, job) or nil
 end
@@ -151,6 +173,11 @@ end
 --- @return table
 local function candidates(kind, file, job)
     local out = {}
+    if kind == 'atelier' then
+        out[1] = ATELIER[file] or ('atelier/' .. file)
+        for _, old in ipairs(ATELIER_OLD[file] or {'saved/' .. file, 'config/' .. file, file}) do out[#out + 1] = old end
+        return out
+    end
     if kind == 'common' and COMMON_GROUPS[file] then
         out[1] = '_common/' .. COMMON_GROUPS[file] .. '/' .. file
         out[2] = 'common/' .. COMMON_GROUPS[file] .. '/' .. file
@@ -232,12 +259,28 @@ function CharPaths.ensure_parent(path)
     end
 end
 
+--- Create every missing folder of a path under data/<Char>/ (atelier/overrides/: two levels).
+--- @param dir string Absolute folder path
+function CharPaths.ensure_dir(dir)
+    if not (dir and windower.dir_exists and windower.create_dir) or windower.dir_exists(dir) then return end
+    CharPaths.ensure_dir(dir:match('^(.*)/[^/]+$'))
+    windower.create_dir(dir)
+end
+
 --- Absolute path of a file about to be written: where it already is, else
 --- where the character's layout puts it. In the new layout its folder is
 --- created (e.g. saved/); an old-layout folder is never given new folders.
+--- An Atelier file (kind 'atelier') always goes to <Char>/atelier/ in the new
+--- layout; once it is written there, CharPaths.retire drops its old copy.
 --- @return string|nil
 function CharPaths.writable(kind, file, job, char)
     char = char or CharPaths.name()
+    if kind == 'atelier' and char and new_layout(char) then
+        local path = data_dir() .. char .. '/' .. (ATELIER[file] or ('atelier/' .. file))
+        CharPaths.ensure_dir(path:match('^(.*)/[^/]*$'))
+        return path
+    end
+    if kind == 'atelier' then kind = 'saved' end
     -- A file the game writes goes to saved/ in a tidied folder, even when an
     -- old copy is left at the root: Kaories' trace went back to the root
     -- once saved/trace.log was rotated away (2026-10-01).
@@ -249,6 +292,34 @@ function CharPaths.writable(kind, file, job, char)
     local path = CharPaths.file(kind, file, job, char)
     if path and new_layout(char) then CharPaths.ensure_parent(path) end
     return path
+end
+
+--- The old copies of an Atelier file once it is written in <Char>/atelier/ (so no older copy is read in its place).
+--- @param file string The file's name (ATELIER above)
+--- @param char string|nil
+function CharPaths.retire(file, char)
+    char = char or CharPaths.name()
+    if not (char and new_layout(char)) then return end
+    local list = candidates('atelier', file)
+    for i = 2, #list do
+        local old = data_dir() .. char .. '/' .. list[i]
+        if exists(old) then os.remove(old) end
+    end
+end
+
+--- Absolute path of an Atelier folder (exports, backups): <Char>/atelier/<x>/ in the new layout (created), else
+--- the old place; and the old place, to read what is still there.
+--- @param name string 'exports' | 'backups'
+--- @param char string|nil
+--- @return string|nil folder, string|nil old folder
+function CharPaths.atelier_dir(name, char)
+    char = char or CharPaths.name()
+    if not char then return nil end
+    local base, list = data_dir() .. char .. '/', candidates('atelier', name)
+    if not new_layout(char) then return base .. list[2], nil end
+    local dir = base .. list[1]
+    CharPaths.ensure_dir(dir)
+    return dir, base .. list[2]
 end
 
 --- require() name for a path written the old way ('config/war/WAR_LOCKSTYLE',
