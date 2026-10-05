@@ -32,6 +32,7 @@ Object.assign(T.fr, {
   statD_meva: 'résister aux sorts', statD_mdb: 'divise les dégâts magiques', statD_pdtRed: 'DT+PDT plafonnés à −50 %, puis PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) plafonnés, puis MDT II', statD_ecritRed: 'réduction du gear, comptée jusqu’au plancher : 10 % → 1 %, soit −9 avec tes mérites',
   statD_cure: 'jusqu’à 50 %', statD_refresh: 'MP par tick', statD_regen: 'HP par tick',
+  statAssumed: 'Toujours comptés, comme dans le guide : Crusade (Enmity +30){m}.', statAssumedMaj: ', Majesty (Cure Potency II +25)',
   aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis', statNone: '—', statFloors: 'Planchers', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
   statWhy: 'Les sets sans dégâts à calculer (repos, Enmity, Phalanx, Fast Cast, Cure…) se jugent sur leurs stats : la recherche ' +
@@ -70,6 +71,7 @@ Object.assign(T.en, {
   statD_meva: 'resist spells', statD_mdb: 'divides magic damage', statD_pdtRed: 'DT+PDT capped at −50 %, then PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s cut, counted down to the floor: 10 % → 1 %, so −9 with your merits',
   statD_cure: 'up to 50 %', statD_refresh: 'MP a tick', statD_regen: 'HP a tick',
+  statAssumed: 'Always counted, as in the guide: Crusade (Enmity +30){m}.', statAssumedMaj: ', Majesty (Cure Potency II +25)',
   aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then', statNone: '—', statFloors: 'Floors', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥',
   statWhy: 'Sets with no damage to work out (idle, Enmity, Phalanx, Fast Cast, Cure…) are judged on their stats: the search adds up ' +
@@ -249,12 +251,16 @@ function statBase(s){
   // a PLD's job gift Cure Potency Bonus (BG Wiki Paladin: Cures heal 50 more, from 1200 job points spent), added to a
   // Cure's base (opt.js O.cureIV)
   const cureJp = S.job === 'PLD' && (c.jp_spent || 0) >= 1200 ? 50 : 0;
+  // a tank (PLD, RUN): Crusade's Enmity +30 counted, on or not (the guide: "essentially always up", 5 min, refreshed in
+  // the rotation), in the equipment Enmity capped at +200
+  const crusade = ['PLD', 'RUN'].includes(S.job) && !jaOn(buffState(), 'Crusade') ? CRUSADE_ENMITY : 0;
   return {ecritRoom, cureJp, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
-    hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: B.enmity || 0, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
+    hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: (B.enmity || 0) + crusade, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
     shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect]};
 }
 const statContext = s => ({mode: 'stats', job: S.job, stat: {base: statBase(s)}});
+const CRUSADE_ENMITY = 30;
 
 /* ---- the tank figures the guide adds (Guide_Paladin 03 Defense, 02 Enmity), shown in the Tanking compartment ---- */
 // Shield Barrier (PLD trait): Protect cast by a PLD adds its shield's DEF (taken when cast; here the set's shield).
@@ -400,8 +406,9 @@ function statWhatHTML(s){
     `${esc(t('statKeepOwn', {p: s.own.map(sl => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')}))}</label></div>` : '';
   const ref = cureGap(s) ? null : hpRef(s);
   const refLine = ref ? `<p class="muted small">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}</p>` : '';
+  const assumed = ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
   return `<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
-    own + floors + refLine + search;
+    own + floors + refLine + assumed + search;
 }
 // The result's lines: the objectives first, then every figure, the floors marked
 function statRows(s){
