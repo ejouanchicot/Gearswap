@@ -45,7 +45,7 @@ Object.assign(T.fr, {
   statSame: 'Ton set est déjà le meilleur trouvé : {o} {v}.', statShield: 'dont bouclier (Shield Barrier) +{n}',
   tkBlock: 'Blocage', tkBlockTip: '{s} : {b} % de base à skill égal à celui du monstre (+0,2325 % par point d’écart), Palisade +30, Reprisal ×1,5 (×3 avec Priwen) ; un coup bloqué perd {r} % (guide Paladin).',
   tkCrit: 'Critiques ennemis', tkCritTip: '10 % au plus, 1 % au moins : mérites −{m}, gear {g}.', tkOver: '{n} de trop',
-  tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup : 1 % pour +2 d’Enmity, 50 % au plus. Le gear « Reduces Enmity loss » (Burtgang, Chev. Cuisses +3) et Foe Sirvente s’y multiplient, non comptés ici (−75 % au total au plus).'});
+  tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup : 1 % pour +2 d’Enmity, 50 % au plus. Le gear « Reduces Enmity loss » (Burtgang, Chev. Cuisses +3) et Foe Sirvente s’y multiplient, non comptés ici (−75 % au total au plus).'});
 Object.assign(T.en, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
@@ -85,7 +85,7 @@ Object.assign(T.en, {
   statSame: 'Your set is already the best found: {o} {v}.', statShield: 'with the shield (Shield Barrier) +{n}',
   tkBlock: 'Block', tkBlockTip: '{s}: {b} % at the monster’s own skill (+0.2325 % a point of difference), Palisade +30, Reprisal ×1.5 (×3 with Priwen); a blocked hit loses {r} % (Paladin guide).',
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
-  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
+  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your measure in game, with the buffs chosen in the page (a food chosen but not on in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
 
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur']);
@@ -311,7 +311,12 @@ function tankExtraHTML(c, set, B, enm){
   const cs = S._curSet;
   if (cs && /cur(e|a)/i.test(cs.path) && family(cs.path, cs.pieces) !== 'fc' && engineReady() && FFXI.opt.cureIV) {
     const f = statFigures(cs), pair = cureGap(cs);
-    rows.push(statLi(t('tkCure'), `${f.cureIV} HP`, pair ? t('tkCureSelf', {h: f.cureSelf}) : '', '', t('statCure4Tip')));
+    // the figures it is worked out with, to set beside the game's (MND / VIT measured, the page's buffs in)
+    const b = statBase(cs), v = {};
+    for (const [slot, p] of Object.entries(optPieces(withWeapons(cs).pieces))) { const st = withVec(p, slot).st; for (const k of ['mnd', 'vit', 'heal']) v[k] = (v[k] || 0) + (st[k] || 0); }
+    const mnd = b.mnd + v.mnd, vit = b.vit + v.vit, heal = b.heal + v.heal;
+    const parts = t('tkCureParts', {m: mnd, mb: b.mnd, mg: v.mnd, v: vit, vb: b.vit, vg: v.vit, s: heal, p: Math.floor(mnd / 2) + Math.floor(vit / 4) + heal});
+    rows.push(statLi(t('tkCure'), `${f.cureIV} HP`, pair ? t('tkCureSelf', {h: f.cureSelf}) : '', '', parts + ' ' + t('statCure4Tip')));
   }
   if (enm > 0 && ['PLD', 'RUN'].includes(S.job))
     rows.push(statLi(t('tkLoss'), `−${Math.min(50, enm / 2)} %`, '', '', t('tkLossTip')));
