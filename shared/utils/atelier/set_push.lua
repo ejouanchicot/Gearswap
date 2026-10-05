@@ -32,7 +32,8 @@
 --- (theory-crafting a job while playing another). For a job not loaded, nothing is read from the sets in
 --- memory: the file's variables and its aliases (`sets.x = sets.y`) are read from its text.
 ---
---- Before writing, the file is copied to <Char>/saved/backups/; every push is
+--- Before writing, the file is copied to <Char>/saved/backups/ (the last 20 copies of each set file kept: twenty
+--- undos back); every push is
 --- noted in <Char>/saved/set_push_history.lua, and the set's entry leaves
 --- <Char>/saved/set_overrides.lua (the file now holds those pieces).
 ---
@@ -48,6 +49,9 @@ local SetWriter = require('shared/utils/atelier/set_writer')
 
 local HISTORY_FILE = 'set_push_history.lua'
 local HISTORY_MAX = 200
+-- The copies kept a set file: an undo goes back one push at a time (the file must still be the one the push wrote),
+-- so twenty steps back are kept; an older push stays in the history without its copy (nothing to undo it with)
+local BACKUPS_PER_FILE = 20
 
 ---============================================================================
 --- FILES
@@ -382,8 +386,34 @@ local function lua_value(v, indent)
     return '{\n' .. table.concat(parts, '\n') .. '\n' .. indent .. '}'
 end
 
+--- The copies in saved/backups/ beyond the last BACKUPS_PER_FILE of each set file, and the ones no history entry
+--- names any more, deleted (their entries lose their copy: nothing to undo them with).
+--- @param list table The history, oldest first
+local function prune_backups(list)
+    local kept, count = {}, {}
+    for i = #list, 1, -1 do
+        local e = list[i]
+        if e.backup then
+            count[e.file] = (count[e.file] or 0) + 1
+            if count[e.file] > BACKUPS_PER_FILE then
+                os.remove(data_dir() .. e.backup)
+                e.backup = nil
+            else
+                kept[e.backup:match('([^/]+)$') or e.backup] = true
+            end
+        end
+    end
+    local dir = require('shared/utils/core/char_paths').writable('saved', 'backups')
+    local ok, files = pcall(windower.get_dir, dir)
+    if not (ok and type(files) == 'table') then return end
+    for _, name in ipairs(files) do
+        if name:match('%.lua$') and not kept[name] then os.remove(dir .. '/' .. name) end
+    end
+end
+
 local function write_history(list)
     while #list > HISTORY_MAX do table.remove(list, 1) end
+    pcall(prune_backups, list)
     return write(history_path(), '-- Sets pushed from the Atelier page into the set files (shared/utils/atelier/set_push.lua).\n'
         .. '-- Each push: the file, its copy before the push (saved/backups/), what changed.\nreturn ' .. lua_value(list, '') .. '\n')
 end
@@ -530,7 +560,7 @@ function SetPush.history()
     for i = #list, 1, -1 do
         local e = list[i]
         if hashes[e.file] == nil then hashes[e.file] = SetWriter.hash(read(data_dir() .. e.file) or '') end
-        e.undoable = not e.undone and hashes[e.file] == e.hash_after
+        e.undoable = not e.undone and e.backup ~= nil and hashes[e.file] == e.hash_after
         out[#out + 1] = e
     end
     return out
