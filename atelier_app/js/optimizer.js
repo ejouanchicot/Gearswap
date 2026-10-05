@@ -153,7 +153,7 @@ async function optimizeWs(s){
   const start = startOf(base), choices = optChoices(tpNames);
   if (o.freeWeapons) choices.weapons = weaponPairs(base, ws);
   const input = {ctx: optContextInput(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
-    opts: {tp: +(S.wsTp || 3000), tps: avgTps(o), tpRule: rule, objective: o.obj || 'damage', floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0, hit: +o.hit || 0}}};
+    opts: {fast: (o.search || 'fast') !== 'classic', tp: +(S.wsTp || 3000), tps: avgTps(o), tpRule: rule, objective: o.obj || 'damage', floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0, hit: +o.hit || 0}}};
   optLaunch(s, k, input, o);
 }
 // The engaged optimizer: the set as it is (weapons kept), its objective, the defense floors; no TP piece rule
@@ -191,7 +191,7 @@ async function optimizeEngaged(s){
   const choices = optChoices(new Set(Object.keys(ONLY_AUGS)));
   if (o.freeWeapons) choices.weapons = weaponPairs(base);
   const input = {ctx: engContextInput(s), start: startOf(base), choices, prefilter: o.where === 'all' ? 25 : 0,
-    opts: {objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
+    opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
   // the whole fight (opt_page.js, atelier_cycle.js): its weaponskill set and how you play, as data for the workers
   if (o.engObj === 'cycle') {
     const cy = cycleReady() && !isJumpSet(s.path) ? cycleInput(s) : null;

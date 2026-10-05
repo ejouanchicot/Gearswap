@@ -64,7 +64,26 @@
     }
 
     // One piece as the engine reads it: the catalogue's stats plus its augments (or its rank's).
+    // ------------------------------------------------------------ fast search (opts.fast, the page's default)
+    // A search that tries the same pieces thousands of times keeps what it already worked out: each piece's engine
+    // item by slot, each set's player, each set's value (keyed by the pieces' identity). Off (the classic search),
+    // nothing is kept and every try is worked out from scratch, as before.
+    var IDS = typeof WeakMap !== "undefined" ? new WeakMap() : null, NEXT_ID = 1;
+    function idOf(p) {
+        if (!p || typeof p !== "object" || !IDS) return 0;
+        var i = IDS.get(p);
+        if (!i) { i = NEXT_ID++; IDS.set(p, i); }
+        return i;
+    }
+    function setKey(pieces) { var k = ""; for (var i = 0; i < PAGE_SLOTS.length; i++) k += idOf(pieces[PAGE_SLOTS[i]]) + ","; return k; }
+    var MEMO_MAX = 400000;
     O.gear = function (piece, slot, ctx) {
+        if (!(ctx && ctx._fast && IDS && piece && typeof piece === "object")) return gearOf(piece, slot, ctx);
+        var memo = ctx._gearMemo || (ctx._gearMemo = new WeakMap()), e = memo.get(piece);
+        if (!e) { e = {}; memo.set(piece, e); }
+        return slot in e ? e[slot] : (e[slot] = gearOf(piece, slot, ctx));
+    };
+    function gearOf(piece, slot, ctx) {
         if (!piece || !piece.name || piece.name === "empty") return O.empty();
         var item = O.item(piece.name, piece.id);
         if (!item) return null;
@@ -97,7 +116,7 @@
         var only = ONLY_STATS[item.name];
         if (only) { for (var k in g) if (typeof g[k] === "number" && k !== "DMG" && k !== "Delay") delete g[k]; add(only); }
         return g;
-    };
+    }
     var ONLY_STATS = {"Moonshade Earring": {"TP Bonus": 250}};
 
     // ------------------------------------------------------------ buffs
@@ -538,7 +557,8 @@
     // The player of a set, kept (per context) while a search tries the same set at several TP:
     // creating it is most of the cost of an evaluation
     function playerOf(ctx, worn) {
-        var key = PAGE_SLOTS.map(function (sl) { var p = worn[sl]; return p ? p.name + "|" + (p.augs || []).join("|") + "|" + (p.rank == null ? "" : p.rank) : ""; }).join("#");
+        if (ctx._noMemo) { var s0 = O.gearset(ctx, worn); return s0 ? {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, s0, ctx.buffs, ctx.abilities), def: O.defense(s0, ctx.sbBuff)} : null; }
+        var key = ctx._fast && IDS ? setKey(worn) : PAGE_SLOTS.map(function (sl) { var p = worn[sl]; return p ? p.name + "|" + (p.augs || []).join("|") + "|" + (p.rank == null ? "" : p.rank) : ""; }).join("#");
         var cache = ctx._players = ctx._players || {map: {}, size: 0};
         if (cache.map[key]) return cache.map[key];
         var set = O.gearset(ctx, worn);
@@ -566,6 +586,18 @@
         return sc * (-((def && def.pdt) || 0) * 1e-13 - ((def && def.mdt) || 0) * 1e-13 + keep * 1e-15);
     }
     O.value = function (ctx, pieces, opts) {
+        if (!ctx._fast || ctx._noMemo || !IDS) return valueOf(ctx, pieces, opts);
+        var memo = ctx._valueMemo || (ctx._valueMemo = {by: new WeakMap(), size: 0});
+        var map = memo.by.get(opts);
+        if (!map) { map = new Map(); memo.by.set(opts, map); }
+        var key = setKey(pieces), hit = map.get(key);
+        if (hit) return hit;
+        if (memo.size > MEMO_MAX) { memo.by = new WeakMap(); memo.size = 0; map = new Map(); memo.by.set(opts, map); }
+        var r = valueOf(ctx, pieces, opts);
+        map.set(key, r); memo.size++;
+        return r;
+    };
+    function valueOf(ctx, pieces, opts) {
         if (ctx.mode === "engaged") {
             var e0 = roundValue(ctx, pieces, opts);
             if (!e0) return {v: -Infinity};
@@ -588,7 +620,7 @@
         var hit = opts.floor && opts.floor.hit ? O.hit(ctx, pieces, opts) : null;
         var v = total / tps.length, miss = shortfall(def, opts.floor, hit);
         return {v: v - 1e6 * miss + 1e-7 * under / tps.length + tieBreak(pieces, def, opts, v), raw: v, def: def, miss: miss};
-    };
+    }
     function score(ctx, pieces, opts) { return O.value(ctx, pieces, opts).v; }
     // A choice put in a slot. The "weapons" choice is a main hand and its off hand together ({main, sub}): the
     // page makes only pairs the job can hold (a two-handed weapon with a grip, a shield, two weapons when it can
@@ -724,14 +756,106 @@
         res.start = v0; res.evals = evals;
         return res;
     }
+    // The fast search's first step: a piece that can never be the best one of its slot is left out. The stats the
+    // objective reads are found by trying them: a little of each laid on the set and on a bare set, the value moving
+    // up (more is better), down (less is better) or not at all (not read: Magic Accuracy for an engaged set's speed,
+    // Accuracy once it is capped even bare). A piece is left out when another piece of its slot is at least as good on
+    // every stat read, and on DT, PDT, MDT (they part sets of the same value). Never left out: the set's own pieces,
+    // a set bonus's pieces (and the job's AF when a Regal Ring or Earring may be worn), the
+    // job's TP pieces, a piece of a one-choice group; a piece you hold only by another you hold (your pieces first);
+    // a ring or earring only by two others (two slots to fill). Returns {choices, read: the stats read}
+    var BONUS_SET = /^(Adhemar|Amalric|Lustratio|Ryuo|Flamma|Mallquis|Ayanmo|Mummu|Regal) |^(Horos|Etoile) Tights/;
+    var SIDE = {DT: 1, PDT: 1, MDT: 1};
+    function prunedChoices(ctx, start, choices, opts) {
+        var slots = Object.keys(choices).filter(function (k) { return k !== "weapons"; });
+        var gearOfSlot = {}, keys = {};
+        slots.forEach(function (slot) {
+            gearOfSlot[slot] = choices[slot].map(function (p) { return O.gear(p, slot, ctx); });
+            gearOfSlot[slot].forEach(function (g) { if (g) for (var k in g) if (typeof g[k] === "number" && k !== "DMG" && k !== "Delay") keys[k] = 1; });
+        });
+        // the direction of each stat, tried on the set and on a bare one (every chosen slot empty)
+        var bareSet = Object.assign({}, start);
+        slots.forEach(function (k) { delete bareSet[k]; });
+        var probe = slots.filter(function (k) { return !/^(ring|ear)/.test(k); })[0] || slots[0];
+        var g0 = O.gearset, dir = {};
+        ctx._noMemo = true;
+        try {
+            [start, bareSet].forEach(function (at) {
+                var base = O.value(ctx, at, opts).v;
+                Object.keys(keys).forEach(function (k) {
+                    [5, 40].forEach(function (amt) {
+                        O.gearset = function (c, pieces) {
+                            var set = g0.apply(this, arguments);
+                            if (!set) return set;
+                            var out = Object.assign({}, set), sl = O.SLOT[probe];
+                            out[sl] = Object.assign({}, out[sl]); out[sl][k] = (out[sl][k] || 0) + amt;
+                            return out;
+                        };
+                        var v = O.value(ctx, at, opts).v;
+                        O.gearset = g0;
+                        if (!isFinite(v) || !isFinite(base)) { dir[k] = "both"; return; }
+                        var d = v - base, tiny = 1e-11 * Math.max(1, Math.abs(base));
+                        if (Math.abs(d) <= tiny) return;
+                        var now = d > 0 ? "up" : "down";
+                        dir[k] = !dir[k] || dir[k] === now ? now : "both";
+                    });
+                });
+            });
+        } finally { O.gearset = g0; ctx._noMemo = false; }
+        Object.keys(SIDE).forEach(function (k) { if (keys[k] && !dir[k]) dir[k] = "down"; });
+        var read = Object.keys(dir);
+        var tpNames = ((opts.tpRule && opts.tpRule.pieces) || []).map(function (p) { return p.name; });
+        var regal = slots.some(function (slot) { return choices[slot].some(function (p) { return /^Regal (Ring|Earring)/.test(p.name || ""); }); });
+        var af = ((FFXI.player_data && FFXI.player_data.AF_ARMOR) || {})[(ctx.job || "").toLowerCase()];
+        var startNames = {};
+        Object.keys(start).forEach(function (k) { if (start[k] && start[k].name) startNames[start[k].name + "|" + (start[k].augs || []).join("|")] = 1; });
+        var special = function (p) {
+            var n = p.name || "";
+            return startNames[n + "|" + (p.augs || []).join("|")] || BONUS_SET.test(n) || tpNames.indexOf(n) !== -1 || O.groupOf(n)
+                || (regal && af && n.toLowerCase().indexOf(af.toLowerCase()) !== -1);
+        };
+        var held = function (p) { return !p.missing && !p.maxed; };
+        var beats = function (a, b) {          // a at least as good as b on every stat read
+            var strict = false;
+            for (var i = 0; i < read.length; i++) {
+                var k = read[i], x = (a && a[k]) || 0, y = (b && b[k]) || 0, d = dir[k];
+                if (d === "both") { if (x !== y) return 0; continue; }
+                if (d === "up" ? x < y : x > y) return 0;
+                if (x !== y) strict = true;
+            }
+            return strict ? 2 : 1;
+        };
+        var out = {};
+        Object.keys(choices).forEach(function (slot) {
+            if (slot === "weapons" || !gearOfSlot[slot]) { out[slot] = choices[slot]; return; }
+            var list = choices[slot], gs = gearOfSlot[slot], twin = /^(ring|ear)/.test(slot);
+            out[slot] = list.filter(function (p, i) {
+                if (!gs[i] || special(p)) return true;
+                var units = 0;
+                for (var j = 0; j < list.length && units < (twin ? 2 : 1); j++) {
+                    if (j === i || !gs[j]) continue;
+                    if (held(p) && !held(list[j])) continue;
+                    var b = beats(gs[j], gs[i]);
+                    // equal on everything read: the first one stays
+                    if (b === 2 || (b === 1 && j < i)) units += twin && list[j].copies > 1 ? 2 : 1;
+                }
+                return units < (twin ? 2 : 1);
+            });
+        });
+        return {choices: out, read: dir};
+    }
+    O.prunedChoices = function (ctx, start, choices, opts) { return prunedChoices(ctx, start, choices, opts); };
     // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices, opts, prefilter
     // (keep each slot's best n first), starts (the walks to make, every one by default)}; its progress in opts.prog while it
     // searches. A generator: it stops after each try of a set, so a caller can spread it over time (O.runPaced)
     function* runGen(input) {
         var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {prog: {evals: 0, moves: []}, base: input.start});
+        ctx._fast = !!input.opts.fast;
         yield opts.prog;
         var from0 = input.opts.scratch ? bare(input.start, input.choices) : input.start;
         var choices = input.prefilter ? yield* prefilterGen(ctx, from0, input.choices, opts, input.prefilter) : input.choices;
+        // the fast search: only the pieces that can be the best of their slot
+        if (ctx._fast) choices = prunedChoices(ctx, input.start, choices, opts).choices;
         var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
         for (var i = 0; i < starts.length; i++) {
             var r = yield* walk(ctx, input.start, choices, opts, starts[i]);

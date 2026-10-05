@@ -5,7 +5,8 @@
 // weaponskills and skillchains in (atelier_cycle.js, FFXI.opt.cycle: EXPERIMENTAL, offered only when that file is there)
 // (loaded by atelier.html after ws_page.js: see the list there)
 
-Object.assign(T.fr, {optOpenBtn: 'Optimiser ce set →', orShow: 'Voir la recherche',
+Object.assign(T.fr, {optSearch_fast: 'Recherche rapide', optSearch_classic: 'Recherche classique', optSearchTip: 'Rapide : garde en mémoire ce qui est déjà calculé et écarte les pièces qui ne peuvent jamais gagner (une autre pièce du même emplacement fait au moins aussi bien sur tout ce que l’objectif compte). Classique : l’ancienne recherche, pour comparer.',
+  optOpenBtn: 'Optimiser ce set →', orShow: 'Voir la recherche',
   optBack: '← Retour au set', optPageTitle: 'Optimiseur', engObj_cycle: 'Dégâts sur un combat · TEST',
   opWhat: 'Ce qu’on cherche', opResult: 'Résultat', opSearch: 'Recherche', opChanges: 'Pièces changées', opWsTp: 'TP de la WS',
   opNoTry: 'Lance une recherche : l’essai s’affiche ici, comparé à ton set.', opNow: 'Ton set', opFight: 'Dégâts sur un combat',
@@ -21,7 +22,8 @@ Object.assign(T.fr, {optOpenBtn: 'Optimiser ce set →', orShow: 'Voir la recher
   opFHits: 'Coups qui touchent par round', opFDmg: 'Dégâts par coup', opFRound: 'Durée d’un round', opFTpHit: 'TP par coup', opCurve: 'Dégâts selon le TP', cycTpHit: 'TP par coup', cyc2r: 'Retour au seuil en 2 rounds', cycTpWs: 'TP au moment de la WS', cycChain: 'WS qui ferment une skillchain', cycWsMin: 'WS par minute',
   opHelp: 'Le résultat compare l’essai (les pièces que la recherche propose, en couleur dans le set) à ton set tel qu’il est dans le fichier. ★ = la ligne de l’objectif ; en doré, le meilleur des deux ; en rouge, sous un plancher. Verdict : sous 2 % d’écart, équivalent ; de 2 à 5 %, à essayer ; au-delà, meilleur ou moins bon. Dégâts sur un combat (TEST) : précision ±4 % mesurée en jeu le 2026-10-04 ; une WS qui revient en 3 rounds rate la fenêtre de skillchain (10 s, puis 9 s).',
   engDone_cycle: 'Optimisé : dégâts sur un combat {a} → {b} ({g} %), {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.'});
-Object.assign(T.en, {optOpenBtn: 'Optimize this set →', orShow: 'See the search',
+Object.assign(T.en, {optSearch_fast: 'Fast search', optSearch_classic: 'Classic search', optSearchTip: 'Fast: keeps what it already worked out and leaves out the pieces that can never win (another piece of the slot does at least as well on everything the objective counts). Classic: the former search, to compare.',
+  optOpenBtn: 'Optimize this set →', orShow: 'See the search',
   optBack: '← Back to the set', optPageTitle: 'Optimizer', engObj_cycle: 'Damage over a fight · TEST',
   opWhat: 'What is looked for', opResult: 'Result', opSearch: 'Search', opChanges: 'Pieces changed', opWsTp: 'Weaponskill TP',
   opNoTry: 'Run a search: the try shows here, against your set.', opNow: 'Your set', opFight: 'Damage over a fight',
@@ -103,9 +105,12 @@ function opParamsHTML(s, kind, cur){
 // Where the search looks and the floors it keeps: two lines
 function opSearchHTML(o, ws){
   const wheres = ['mine', 'mine_max', 'all'].map(k => `<option value="${k}" ${(o.where || 'mine') === k ? 'selected' : ''}>${t('optWhere_' + k)}</option>`).join('');
+  // the fast search (memory, pieces that can never win left out) or the classic one, kept to go back to
+  const modes = ['fast', 'classic'].map(k => `<option value="${k}" ${(o.search || 'fast') === k ? 'selected' : ''}>${t('optSearch_' + k)}</option>`).join('');
   const chk = (k, label, tip) => `<label class="opf" ${tip ? `title="${esc(tip)}"` : ''}><input type="checkbox" data-optopt="${k}" ${o[k] ? 'checked' : ''}> ${label}</label>`;
   const num = (k, label) => `<label class="opf">${label} <input type="number" step="1" data-optopt="${k}" value="${esc(o[k])}"></label>`;
   return `<h4 class="ophd2">${t('opSearch')}</h4><div class="opparams"><select class="buffsel" data-optopt="where" aria-label="${esc(t('optWhereLbl'))}">${wheres}</select>` +
+    `<select class="buffsel" data-optopt="search" title="${esc(t('optSearchTip'))}" aria-label="${esc(t('optSearchTip'))}">${modes}</select>` +
     chk('wardOnly', t('optWard')) + chk('freeWeapons', t('freeWeapons'), t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip')) + chk('fullSpeed', t('fullSpeed'), t('fullSpeedTip', {n: OPT_CORES})) + `</div>` +
     `<div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('sb', 'Subtle Blow ≥')}${ws ? num('hit', t('optHitLbl')) : ''}</div>`;
 }
