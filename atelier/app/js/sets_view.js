@@ -430,8 +430,6 @@ function buildCards(d){
   return {cards, bypath};
 }
 function niceName(card){
-  // the two CureSelf of the Cure sets told apart: the Fast Cast one says so
-  if (card.fam === 'cure' && card.top.includes('FC')) return 'Fast Cast · ' + card.name;
   const n = card.name;
   const map = {idle:{fr:'Au repos',en:'Idle'}, engaged:{fr:'En combat',en:'Engaged'}, FC:{fr:'Fast Cast',en:'Fast Cast'}, WS:{fr:'Weaponskills',en:'Weaponskills'},
     MoveSpeed:{fr:'Vitesse de course',en:'Movement speed'}, Doom:{fr:'Doom',en:'Doom'}, TreasureHunter:{fr:'Treasure Hunter',en:'Treasure Hunter'}};

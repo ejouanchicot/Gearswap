@@ -188,9 +188,9 @@ function family(path, pieces){
   if (/^sets\.(buff|defense|TreasureHunter|CombatMode|Doom|latent|FullEnmity|Enmity)/.test(p)) return 'special';
   return 'other';
 }
-// The set list's own grouping (the figures keep family()): the Cure sets together, their Fast Cast, the spell's sets
-// and the base they are built on
-const CURE_SET = /^sets(\.midcast|\.precast\.FC)?(\.Cur(e|aga)\w*|\["Cur(e|aga)[^"]*"\])/;
+// The set list's own grouping (the figures keep family()): the Cure sets together, the spell's sets and the base they
+// are built on (their Fast Cast stays with the Fast Cast sets)
+const CURE_SET = /^sets(\.midcast)?(\.Cur(e|aga)\w*|\["Cur(e|aga)[^"]*"\])/;
 function cardFamily(path, pieces){
   const f = family(path, pieces);
   if (f !== 'weapons' && CURE_SET.test(path)) return 'cure';
