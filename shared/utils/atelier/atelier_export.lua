@@ -479,6 +479,30 @@ end
 
 --- The combat skill of each weapon ({name = "Sword"}, res.items skill -> res.skills):
 --- the page takes the main hand's for Accuracy.
+--- Each weapon's weaponskills in the job's order, the first its main one: {main hand name: {ws...}}, from the job's
+--- weaponskill config (_G.<JOB>WSConfig.by_weapon, e.g. <Char>/war/combat/WAR_WS_CONFIG.lua: one list a weapon mode) and the
+--- weapon each mode wears (sets.<mode>.main, from <Char>/war/sets/weapons.lua). nil for a job with no such config.
+--- @param job string
+--- @return table|nil
+local function collect_ws_by_weapon(job)
+    local cfg = job and rawget(_G, job .. 'WSConfig')
+    if type(cfg) ~= 'table' or type(sets) ~= 'table' then return nil end
+    -- the lists live under by_weapon (WAR_WS_CONFIG.lua), else at the top
+    if type(cfg.by_weapon) == 'table' then cfg = cfg.by_weapon end
+    local out, any = {}, false
+    for mode, list in pairs(cfg) do
+        local weapon = type(mode) == 'string' and sets[mode]
+        local main = type(weapon) == 'table' and weapon.main
+        main = type(main) == 'table' and main.name or main
+        if type(main) == 'string' and type(list) == 'table' and not out[main] then
+            local names = {}
+            for _, ws in ipairs(list) do if type(ws) == 'string' then names[#names + 1] = ws end end
+            if #names > 0 then out[main] = names; any = true end
+        end
+    end
+    return any and out or nil
+end
+
 local function collect_weapon_skills(icons)
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.items and res.skills) then return nil end
@@ -659,6 +683,7 @@ function AtelierExport.build()
     end
     data.descs = collect_descs(ids)
     data.wskill = collect_weapon_skills(data.icons)
+    data.ws_by_weapon = collect_ws_by_weapon(player.main_job)
     -- each weaponskill's combat skill and what it uses (shared/utils/atelier/atelier_ws.lua)
     data.ws_skill, data.ws_info = require('shared/utils/atelier/atelier_ws').collect(data.sets, player.main_job, player.main_job_level, player.sub_job)
     data.export_version = EXPORT_VERSION

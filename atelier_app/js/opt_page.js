@@ -94,7 +94,7 @@ function opParamsHTML(s, kind, cur){
     f.push(`<label class="opf">${t('engAtLbl')} <input type="number" step="100" min="1000" max="3000" data-optopt="engAt" value="${esc(o.engAt)}"> TP</label>`);
   if (kind === 'eng' && cur === 'cycle') {
     const list = cycleWsSets(s), w = cycleWsSet(s);
-    f.push(list.length ? `<label class="opf">${t('cycWsLbl')} <select class="buffsel" data-optopt="cycWs">${list.map(x => `<option value="${esc(x.path)}" ${w && w.path === x.path ? 'selected' : ''}>${esc(shortPath(x.path).replace(/^precast\.WS\.?/, ''))}</option>`).join('')}</select></label>`
+    f.push(list.length ? `<label class="opf">${t('cycWsLbl')} <select class="buffsel" data-cycws="${esc(s.path)}">${list.map(x => `<option value="${esc(x.path)}" ${w && w.path === x.path ? 'selected' : ''}>${esc(shortPath(x.path).replace(/^precast\.WS\.?/, ''))}</option>`).join('')}</select></label>`
       : `<span class="kwarn">${esc(t('cycNoWs'))}</span>`);
     f.push(`<label class="opf">${t('cycHitsLbl')} <select class="buffsel" data-optopt="cycHits">${['me', 'tank'].map(k => `<option value="${k}" ${(o.cycHits || 'me') === k ? 'selected' : ''}>${t(k === 'me' ? 'cycHitsMe' : 'cycHitsTank')}</option>`).join('')}</select></label>`);
     const chk = (k, label) => `<label class="opf"><input type="checkbox" data-optopt="${k}" ${(o[k] ?? true) ? 'checked' : ''}> ${esc(label)}</label>`;
@@ -284,12 +284,18 @@ function cycleWsSets(s){
   const d = data(), main = (withWeapons(s).pieces.main || {}).name, skill = main && weaponSkills()[main];
   if (!d || !skill) return [];
   const opens = ws => { const lock = (wsInfoOf(ws).lock || '').toLowerCase(); return !lock || lock.includes(main.toLowerCase()); };
-  const tier = buffTier(), list = d.sets.filter(x => family(x.path, x.pieces) === 'ws' && wsOfSet(x) && wsSkills()[wsOfSet(x)] === skill && opens(wsOfSet(x)));
-  const rank = x => (new RegExp('\\.' + tier + '$').test(x.path) ? 0 : /\.(Solo|Group|Trust)$/.test(x.path) ? 2 : 1);
-  return list.sort((a, b) => rank(a) - rank(b) || a.path.localeCompare(b.path));
+  const list = d.sets.filter(x => family(x.path, x.pieces) === 'ws' && wsOfSet(x) && wsSkills()[wsOfSet(x)] === skill && opens(wsOfSet(x)));
+  // first the weaponskill sets of the engaged set's own version (Ukonvasara.Trust: the .Trust ones; the set itself: the
+  // sets themselves), then the weapon's weaponskills in the job's order (export ws_by_weapon, from <JOB>_WS_CONFIG:
+  // Ukko's Fury for Ukonvasara), then by name
+  const tier = (s.path.match(/\.(Group|Solo|Trust)$/) || [])[1] || null, order = (mergedOf('ws_by_weapon') || {})[main] || [];
+  const tierRank = x => { const v = (x.path.match(/\.(Group|Solo|Trust)$/) || [])[1] || null; return v === tier ? 0 : v ? 2 : 1; };
+  const wsRank = x => { const i = order.indexOf(wsOfSet(x)); return i === -1 ? 99 : i; };
+  return list.sort((a, b) => tierRank(a) - tierRank(b) || wsRank(a) - wsRank(b) || a.path.localeCompare(b.path));
 }
+// The weaponskill set the fight is worked out with: the one picked for this engaged set, else the first of the list
 function cycleWsSet(s){
-  const list = cycleWsSets(s), want = (S.optOpts || {}).cycWs;
+  const list = cycleWsSets(s), want = ((S.optOpts || {}).cycWsBy || {})[s.path];
   return list.find(x => x.path === want) || list[0] || null;
 }
 // O.cycle's input for an engaged set: its context, the weaponskill set's, how you play (plain data: it goes to the workers)

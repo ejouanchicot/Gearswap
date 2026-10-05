@@ -188,6 +188,10 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('kmod') || e.target.classList.contains('kname')) manualKey();
   if (e.target.classList.contains('tpin')) { const v = Math.max(0, Math.min(3000, Math.round(+e.target.value || 0)));
     if (e.target.dataset.sim) { simState().tp = v || 3000; simRun(); } else { S.wsTp = v || null; render(); } return; }
+  // the fight's weaponskill set, kept for that engaged set
+  if (e.target.dataset && e.target.dataset.cycws) {
+    S.optOpts = Object.assign({}, S.optOpts, {cycWsBy: Object.assign({}, (S.optOpts || {}).cycWsBy, {[e.target.dataset.cycws]: e.target.value})});
+    save(); render(); return; }
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
