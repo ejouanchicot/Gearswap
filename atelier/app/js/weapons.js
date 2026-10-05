@@ -21,11 +21,15 @@ function weaponModes(d){
   // One-piece weapon sets no mode names (PLD's sets.Duban, sets.Aegis...): a choice per slot,
   // used where neither the set nor a weapon mode fills it; by default the piece the job's sets use most
   // (never the main hand: it comes from the weapon mode, or the stance weapon of the job's rules)
+  // never a grip the job's weapon rules lay themselves under a two-handed weapon (PLD's sets.Alber: Alber Strap under
+  // Shining One, <job>/combat/<JOB>_WEAPONS.lua grips): it showed as an off hand to choose beside the Shield mode
   const stances = Object.values((d.weapon_rules || {}).stance_weapon || {});
+  const grips = new Set(Object.values((d.weapon_rules || {}).grips || {}));
   const named = new Set(modes.flatMap(m => m.values).concat(stances)), free = {};
   for (const [name, s] of Object.entries(top)) {
     const slots = Object.keys(s.pieces);
-    if (!named.has(name) && slots.length === 1 && slots[0] !== 'main') (free[slots[0]] = free[slots[0]] || []).push(name);
+    if (named.has(name) || slots.length !== 1 || slots[0] === 'main' || grips.has((s.pieces[slots[0]] || {}).name)) continue;
+    (free[slots[0]] = free[slots[0]] || []).push(name);
   }
   for (const [slot, values] of Object.entries(free)) {
     const used = {};
