@@ -635,8 +635,8 @@
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
         "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
-    // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a mastered PLD's 50,
-    // measured in game 2026-10-05, Cure IV 1332 and 1245 with two sets); then x (1 + Cure Potency (50 % cap) + Cure
+    // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
+    // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
     // Potency II (30 %)), then x (1 + Cure Potency Received (30 %)). Day and weather left out
     var CURE4 = [[400, 2.5, 520], [300, 1.43, 450], [200, 2, 400], [70, 1, 270]];
     O.cureIV = function (mnd, vit, skill, cp, cp2, recv, jp) {

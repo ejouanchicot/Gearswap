@@ -11,7 +11,7 @@ Object.assign(T.fr, {
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureSelf: 'Cure IV sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
-  statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II ; +50 de job points et gifts d’un PLD maîtrisé, mesuré en jeu : Cure IV 1332), le jour et la météo à part.',
+  statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II ; +50 du gift PLD Cure Potency Bonus dès 1200 JP, vérifié en jeu : Cure IV 1332, 1245, 1114), le jour et la météo à part.',
   statObj_enhdur: 'Durée renfort', statD_enhdur: 'Enhancing magic duration : Protect, Shell, Reprisal… durent plus longtemps',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbés : skill de renfort et MND (350 au plus), + le gear Stoneskin (475 au plus)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup, selon le skill divin',
@@ -47,7 +47,7 @@ Object.assign(T.en, {
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
-  statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from a mastered PLD’s job points and gifts, measured in game: Cure IV 1332), day and weather aside.',
+  statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from the PLD gift Cure Potency Bonus from 1200 JP, checked in game: Cure IV 1332, 1245, 1114), day and weather aside.',
   statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit, by divine skill',
@@ -249,8 +249,9 @@ function statBase(s){
   const pair = s && cureGap(s), pre = pair && family(s.path, s.pieces) !== 'fc' ? statFigures(pair.other, true).hp : null;
   // the enemy's critical hits the gear can still take off: 10 % to the 1 % floor, less the merits
   const ecritRoom = Math.max(0, 9 - ((c.merits || {}).enemy_critical_hit_rate || 0));
-  // the Cure potency of a mastered PLD's job points and gifts, added to a Cure's base (measured: opt.js O.cureIV)
-  const cureJp = S.job === 'PLD' && (c.jp_spent || 0) >= 2100 ? 50 : 0;
+  // a PLD's job gift Cure Potency Bonus (BG Wiki Paladin: Cures heal 50 more, from 1200 job points spent), added to a
+  // Cure's base (opt.js O.cureIV)
+  const cureJp = S.job === 'PLD' && (c.jp_spent || 0) >= 1200 ? 50 : 0;
   return {ecritRoom, cureJp, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
     hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: B.enmity || 0, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
