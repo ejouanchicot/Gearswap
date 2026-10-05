@@ -302,7 +302,10 @@ function optRunStep(i, p){
   const R = S._optRun;
   if (!R || !p.walk) return;
   const w = R.walks[p.walk] = Object.assign(R.walks[p.walk] || {}, {stage: p.stage, phase: p.phase, round: p.round, start: p.startRaw, best: p.best});
-  (R.byWorker = R.byWorker || {})[i] = p.evals;
+  // a worker counts its tries over all its walks: what it did since its last step goes to the walk it is on
+  R.byWorker = R.byWorker || {};
+  w.evals = (w.evals || 0) + Math.max(0, p.evals - (R.byWorker[i] || 0));
+  R.byWorker[i] = p.evals;
   R.start = R.start == null ? p.startRaw : R.start;
   for (const m of p.moves || []) R.feed.unshift(Object.assign({walk: p.walk, at: (performance.now() - R.t0) / 1000}, m));
   R.feed.length = Math.min(R.feed.length, 40);
