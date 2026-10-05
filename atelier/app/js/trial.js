@@ -123,11 +123,15 @@ function openCompare(s){
       return `<td class="${v === better && vals.some(x => x !== v) ? 'best' : ''}">${fmtStat({v, unit: e.unit})}${i && dv ? `<i class="dv ${(GOOD_DOWN.has(baseKey(k)) ? -dv : dv) > 0 ? 'up' : 'down'}">${fmtStat({v: dv, unit: e.unit})}</i>` : ''}</td>`; }).join('') + `</tr>`; }).join('');
   // DT + PDT and DT + MDT (Shell included, as under the set): the total against the -50 % cap, then each part
   const B = buffTotals(), shell = B.shell ? Math.round(-B.shell / 256 * 1000) / 10 : 0;
+  // the first layer (DT, PDT or MDT, Shell) stops at -50 %, the II stat (PDT II, MDT II) adds past it, -87.5 % in all
   const dtRow = (label, part, extra) => {
     const parts = cols.map(c => { const v = k => num(c, k), list = [['DT', v('dt')], [part.toUpperCase(), v(part)]].concat(extra(c)).filter(x => x[1]);
-      return {sum: list.reduce((a, x) => a + x[1], 0), list}; });
-    if (!parts.some(x => x.sum) || !statVisible('dt', s)) return '';
-    const eff = x => Math.max(x.sum, -50), best = Math.min(...parts.map(eff));
+      const two = list.filter(x => / II$/.test(x[0])).reduce((a, x) => a + x[1], 0);
+      return {sum: list.reduce((a, x) => a + x[1], 0) - two, two, list}; });
+    if (!parts.some(x => x.sum || x.two) || !statVisible('dt', s)) return '';
+    const eff = x => Math.max(Math.max(x.sum, -50) + x.two, -87.5), best = Math.min(...parts.map(eff));
+    // with a II stat the line is the total: named as the set's stats name it (stats.js layeredLi)
+    if (parts.some(x => x.two)) label = part === 'pdt' ? t('pdtTotal') : t('mdtTotal');
     return `<tr class="want"><th>${esc(label)}</th>` + parts.map((x, i) => { const dv = eff(x) - eff(parts[0]), r1 = n => Math.round(n * 10) / 10;
       return `<td class="${eff(x) === best && parts.some(y => eff(y) !== eff(x)) ? 'best' : ''}">${signed(r1(eff(x)))} %` +
         (x.sum < -50 ? ` <span class="overl">${t('cmpOver', {n: r1(-50 - x.sum)})}</span>` : '') +

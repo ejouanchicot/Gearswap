@@ -403,6 +403,13 @@ function cappedLi(label, sum, cap, detail){
   return `<li class="over"${detail ? ` title="${esc(detail)}"` : ''}><span title="${label}">${label}</span><b>${signed(cap)} %</b><i>cap</i>` +
     `<em class="overl">${t('overCap', {t: signed(r(sum)), n: r(Math.abs(sum - cap))})}</em></li>`;
 }
+// A damage taken with its II stat on one line: the first layer stops at -50 %, the II one adds past it, -87.5 % in all
+// (the line's total; its small text: the first layer against its cap, what is wasted past it, the II)
+function layeredLi(label, raw, two, name, detail){
+  const r = x => Math.round(x * 10) / 10, first = Math.max(raw, -50), total = Math.max(first + two, -87.5), over = raw < -50 ? r(-50 - raw) : 0;
+  const extra = `${signed(r(first))} / −50` + (over ? ` (${t('cmpOver', {n: over})})` : '') + ` + ${name} ${signed(two)}`;
+  return statLi(label, signed(r(total)) + ' %', extra, '', `${detail} = ${r(raw)}, ${t('dtCapNote')} ; + ${name} ${two} = ${r(total)} % (−87,5 % max)`);
+}
 // Damage taken (Guide_Paladin, 03_defense): DT + PDT and DT + MDT stop at -50 %; PDT II
 // (Burtgang) and MDT II (Aegis) go on past it, up to -87.5 % in all
 function damageTakenLines(v){
@@ -410,10 +417,10 @@ function damageTakenLines(v){
   // Shell (Buffs and conditions) lowers magic damage under the same -50 % cap: its share counts here
   const B = buffTotals(), shell = B.shell ? Math.round(-B.shell / 256 * 1000) / 10 : 0;
   const pdtRaw = v('dt') + v('pdt'), mdtRaw = v('dt') + v('mdt') + shell, pdt = Math.max(pdtRaw, -50), mdt = Math.max(mdtRaw, -50);
-  let out = cappedLi(t('pdtEff'), pdtRaw, -50, `DT ${v('dt')} + PDT ${v('pdt')}`) +
-    cappedLi(shell ? t('mdtShell') : t('mdtEff'), mdtRaw, -50, `DT ${v('dt')} + MDT ${v('mdt')}` + (shell ? ` + ${buffState().shell} ${shell}` : ''));
-  if (v('pdt2')) out += cappedLi(t('pdtAll'), pdt + v('pdt2'), -87.5, `${pdt} + PDT II ${v('pdt2')}`);
-  if (v('mdt2')) out += cappedLi(t('mdtAll'), mdt + v('mdt2'), -87.5, `${mdt} + MDT II ${v('mdt2')}`);
+  // one line a kind of damage: with a II stat (PDT II: Burtgang, MDT II: Aegis) its total, the two layers in its detail
+  const pDetail = `DT ${v('dt')} + PDT ${v('pdt')}`, mDetail = `DT ${v('dt')} + MDT ${v('mdt')}` + (shell ? ` + ${buffState().shell} ${shell}` : '');
+  let out = v('pdt2') ? layeredLi(t('pdtTotal'), pdtRaw, v('pdt2'), 'PDT II', pDetail) : cappedLi(t('pdtEff'), pdtRaw, -50, pDetail);
+  out += v('mdt2') ? layeredLi(t('mdtTotal'), mdtRaw, v('mdt2'), 'MDT II', mDetail) : cappedLi(shell ? t('mdtShell') : t('mdtEff'), mdtRaw, -50, mDetail);
   if (v('bdt')) out += cappedLi(t('bdtEff'), v('dt') + v('bdt'), -50, `DT ${v('dt')} + BDT ${v('bdt')}`);
   return out;
 }
