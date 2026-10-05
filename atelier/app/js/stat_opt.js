@@ -193,7 +193,9 @@ function statFloorDefault(s, first){
   // (Shell V -29.3 %: -21 left to the gear)
   // (not on a Phalanx set: its Phalanx comes first, the damage taken after it as objectives)
   const shell = buffTotals().shell || 0, dt = first === 'phalanx' ? {} : {pdt: -50, mdt: -Math.ceil(50 - shell / 256 * 100)};
-  const ecrit = ['idle', 'special'].includes(fam) ? {ecrit: -5} : {};
+  // the gear's cut of the enemy's crits the idle needs: 10 % to the 1 % floor is 9, less the merits (5/5: 4)
+  const need = 9 - (((measuredChar() || {}).merits || {}).enemy_critical_hit_rate || 0);
+  const ecrit = ['idle', 'special'].includes(fam) && need > 0 ? {ecrit: -need} : {};
   return Object.assign(dt, ecrit, sird, hp);
 }
 // The reference HP of a tank's sets (Guide_Paladin HP Management): the lowest of the classic Fast Cast sets
