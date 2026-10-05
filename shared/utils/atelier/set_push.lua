@@ -251,7 +251,9 @@ local function variables(text, loaded)
     for _, def in ipairs(SetWriter.definitions(text)) do
         for _, e in ipairs(def.entries) do
             local expr = e.slot and text:sub(e.expr_from, e.expr_to)
-            if expr and expr:match('^[%a_][%w_]*[%.%[][%w_%.%[%]\'"]*$') and expr ~= 'empty' then
+            -- another set's piece (sets.Cure.left_ear) only exists below that set's definition: written into a
+            -- set above it, the file stops loading (PLD FC.CureSelf, 2026-10-06); the piece is written plainly
+            if expr and expr:match('^[%a_][%w_]*[%.%[][%w_%.%[%]\'"]*$') and expr ~= 'empty' and not expr:match('^sets[%.%[]') then
                 note(used_copy, used_name, loaded_piece(def.keys, e.slot), expr)
             end
         end
