@@ -334,7 +334,8 @@ function renderJob(){
 }
 // Re-render, keeping the focus of the search box and the scroll of each block
 // while the view stays the same (the set detail goes back to its top for another set)
-const SCROLLERS = ['.pane', '.setlist .scroll', '.detail'];
+// (.globalcol: the right column, its compartments folded and unfolded in place)
+const SCROLLERS = ['.pane', '.setlist .scroll', '.detail', '.globalcol'];
 function render(){
   const view = [S.char, S.job, S.section].join('|'), set = view + '|' + S.sel[S.job];
   const tops = SCROLLERS.map(q => { const el = $(q); return el ? el.scrollTop : 0; });
