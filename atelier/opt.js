@@ -633,7 +633,8 @@
     //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
-        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes"];
+        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed",
+        "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
     // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
@@ -678,6 +679,9 @@
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;
         f.statusRes = t.statusRes; f.eleRes = Math.round(t.eleRes / 8 * 10) / 10;
+        // the elements whose resistance is positive (Guide_Paladin, Magical Damage Mitigation: a positive resistance is
+        // what lets magic evasion reach the full resist, 1/8; a negative one forces 1/2 at least): 0 to 8
+        f.eleCover = ELEMENTS.filter(function (e) { return (t["res_" + e] || 0) > 0; }).length;
         // the cut of the enmity lost on each hit taken (Guide_Paladin, CE Loss Reduction): two buckets that multiply, each
         // 50 % at most: the Enmity (1 % a +2, Crusade in) and the "Reduces Enmity loss" pieces (Burtgang 20, Chev. Cuisses
         // +3 14, Creed Collar 5); 75 % in all (what the idle set wears when the hits land)
@@ -700,10 +704,11 @@
         f.ecritRed = Math.min(-f.ecrit, b.ecritRoom != null ? b.ecritRoom : 9);
         return f;
     };
+    var ELEMENTS = ["fire", "ice", "wind", "earth", "lightning", "water", "light", "dark"];
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
     var STAT_STEP = {def: 25};
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "lossRed"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
