@@ -200,6 +200,14 @@ local function route(req, live)
         local result = q.mode == 'write' and SetPush.delete(job, path, q.hash) or SetPush.delete_preview(job, path)
         return '200 OK', Export.json(result)
     end
+    if req.path == '/porter_write' and req.method == 'POST' then
+        -- PorterPacker's unpack list from the sets in memory: the job loaded in game only
+        local job = asked_job(query_table(req.query))
+        if not (player and job == player.main_job) then return '409 Conflict', '{"error":"job not loaded"}' end
+        local result = require('shared/utils/atelier/porter_lists').write(job)
+        if result.ok then result.porterpacker = require('shared/utils/atelier/porter_lists').compare(job) end
+        return '200 OK', Export.json(result)
+    end
     if req.path == '/push_history' then
         return '200 OK', Export.json({list = require('shared/utils/atelier/set_push').history()})
     end

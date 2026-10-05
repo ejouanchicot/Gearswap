@@ -793,6 +793,12 @@ function AtelierExport.build()
     }
     data.items, data.owned = collect_items()
     data.porter = porter_list()
+    -- PorterPacker's unpack list against the job's sets (shared/utils/atelier/porter_lists.lua): what to add, what to drop
+    local okp, PorterLists = pcall(require, 'shared/utils/atelier/porter_lists')
+    if okp then
+        local okc, cmp = pcall(PorterLists.compare, player.main_job)
+        if okc then data.porterpacker = cmp end
+    end
     data.icons = collect_icons(data.sets, data.items)
     -- the pieces under the game's item name (shared/utils/atelier/atelier_names.lua)
     require('shared/utils/atelier/atelier_names').use_game_names(data.sets, data.icons)

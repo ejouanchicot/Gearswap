@@ -54,6 +54,7 @@ document.addEventListener('click', e => {
   // every objective of the stats optimizer, or only the set's (stat_opt.js statRelevant)
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
+  if ('porterwrite' in d) { porterWrite(); return; }
   if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
     delete by[s.path]; S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save(); render(); return; }
   if ('optstat' in d) { S._optScratch = d.optstat === 'best'; optimizeStats(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
