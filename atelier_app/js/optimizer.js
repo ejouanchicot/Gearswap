@@ -8,10 +8,13 @@ const optGoButtons = act => `<button class="btn optgo" data-${act}="best" title=
 // the page, eight at most; each worker paced to about half a core
 const OPT_CORES = Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 2) - 1));
 const optCores = n => Math.min(n, OPT_CORES);
-// The walks of a search: the ones its choices and floors call for, then shuffled ones ("mix<n>") on the cores left
+// The walks of a search: the ones its choices and floors call for, then shuffled ones ("mix<n>") on the cores left.
+// The fast search makes four a core: a walk costs it next to nothing, and an objective that moves by steps (the real
+// time to the weaponskill, whole rounds) is found by few walks (4 in 32 on Laphria, 2026-10-05), so more walks find it
+const OPT_FAST_WALKS = 4;
 function optWalks(input){
-  const base = FFXI.opt.startsFor(input.choices, input.opts);
-  return base.concat([...Array(Math.max(0, OPT_CORES - base.length))].map((_, i) => 'mix' + (i + 1)));
+  const base = FFXI.opt.startsFor(input.choices, input.opts), n = OPT_CORES * (input.opts && input.opts.fast ? OPT_FAST_WALKS : 1);
+  return base.concat([...Array(Math.max(0, n - base.length))].map((_, i) => 'mix' + (i + 1)));
 }
 const walkLabel = w => /^mix\d+$/.test(w) ? t('orWalk_mix', {n: w.slice(3)}) : t('orWalk_' + w);
 // Stop a search: its workers are dropped
@@ -226,8 +229,9 @@ async function optLaunch(s, k, input, o){
     return;
   }
   // the end: once the main walks are done, the shuffled ones still going are not waited for (more cores never make it
-  // longer); the best of the walks that finished is kept
-  const outs = [], left = new Set(starts.filter(x => !/^mix\d+$/.test(x)));
+  // longer); the best of the walks that finished is kept. The fast search waits for every walk: they are quick, and
+  // the shuffled ones are the ones that find a set behind a step
+  const outs = [], left = new Set(input.opts.fast ? starts : starts.filter(x => !/^mix\d+$/.test(x)));
   const end = () => {
     const best = outs.reduce((a, b) => b.score > a.score ? b : a);
     best.evals = outs.reduce((a, b) => a + b.evals, 0);
