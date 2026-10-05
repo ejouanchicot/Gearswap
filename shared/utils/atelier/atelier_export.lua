@@ -875,6 +875,11 @@ function AtelierExport.after_load()
         local Live = require('shared/utils/atelier/atelier_live')
         if Live.allowed() then Live.start() end
     end)
+    -- every load (a push from the page reloads too): the pieces the sets use and PorterPacker's unpack list
+    -- misses are added to it (porter_lists.lua sync; what it holds for nothing is left to the page's button)
+    require('shared/utils/core/load_gate').defer(3, function()
+        pcall(function() require('shared/utils/atelier/porter_lists').sync(player.main_job) end)
+    end, 'porter sync')
     if not AtelierExport.enabled() then return end
     -- waits for the level, the bags and the Porter Moogle's slips in them (unread just after a load or a zone);
     -- past the wait, the export goes with what there is (the slips' last list: shared/utils/atelier/slip_items.lua)

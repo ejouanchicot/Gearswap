@@ -180,8 +180,9 @@ end
 --- unpack block; a plain list becomes a split file (pack: the old list and the sets' pieces); no file: one is
 --- made in Active/. The file before is kept next to it (<JOB>.lua.bak, a name PorterPacker never loads).
 --- @param job string the job loaded in game
+--- @param opts table|nil {add_only = true}: the list kept and the missing pieces added (nothing taken out)
 --- @return table {ok, file, added, removed} or {ok = false, error}
-function PorterLists.write(job)
+function PorterLists.write(job, opts)
     local cmp = PorterLists.compare(job)
     if not cmp then return {ok = false, error = 'no PorterPacker or no slips'} end
     if cmp.form == 'unreadable' then return {ok = false, error = 'unreadable list: ' .. cmp.file} end
@@ -191,7 +192,15 @@ function PorterLists.write(job)
         local f = io.open(path, 'r'); old = f:read('*a'); f:close()
         local b = io.open(path .. '.bak', 'w'); if b then b:write(old) b:close() end
     end
-    local block = '    unpack = {\n' .. lua_list(cmp.wanted, '        ') .. '\n    },'
+    local list = cmp.wanted
+    if opts and opts.add_only then
+        local path0, _, exists0 = list_file(job)
+        list = {}
+        for _, n in ipairs((current_names(path0, exists0))) do if type(n) == 'string' then list[#list + 1] = n end end
+        for _, n in ipairs(cmp.add) do list[#list + 1] = n end
+        table.sort(list, function(a, b) return a:lower() < b:lower() end)
+    end
+    local block = '    unpack = {\n' .. lua_list(list, '        ') .. '\n    },'
     local text
     local s, e = old:find('\n[ \t]*unpack%s*=%s*{[^}]*}%s*,?')
     if cmp.form == 'split' and s then
@@ -222,7 +231,22 @@ function PorterLists.write(job)
     if not f then return {ok = false, error = 'cannot write ' .. cmp.file} end
     f:write(text)
     f:close()
-    return {ok = true, file = cmp.file, added = #cmp.add, removed = #cmp.remove}
+    return {ok = true, file = cmp.file, added = #cmp.add, removed = (opts and opts.add_only) and 0 or #cmp.remove}
+end
+
+--- At each load of a job (atelier_export.lua after_load; a push from the page reloads too): the pieces its sets use
+--- that the unpack list misses are added to it, said in the chat. Nothing is taken out (a piece kept out for
+--- something else than the sets stays): the page's button does that. Silent when nothing is missing or without
+--- PorterPacker.
+--- @param job string the job loaded in game
+function PorterLists.sync(job)
+    local cmp = PorterLists.compare(job)
+    if not cmp or #cmp.add == 0 then return end
+    local r = PorterLists.write(job, {add_only = true})
+    local ok_m, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    if not ok_m then return end
+    if not r.ok then MessageFormatter.show_error('PorterPacker list not updated: ' .. tostring(r.error)) return end
+    MessageFormatter.show_info(('PorterPacker %s: added %s (//po to apply)'):format(r.file, table.concat(cmp.add, ', ')))
 end
 
 _G.PorterLists = PorterLists
