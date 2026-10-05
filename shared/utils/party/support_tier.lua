@@ -11,6 +11,10 @@
 ---   Solo    none of them
 ---   Trust   all the support there is comes from trusts (Sylvie, Ulmia,
 ---           Joachim, Qultada: party_jobs.lua TRUSTS), weaker than players'
+--- The support the others give: your own job never counts (a BRD's songs are
+--- its own buffs whatever the party). With one other player's support, only
+--- the players count (a trust's is weaker than a player's): a BRD with Sylvie
+--- and Qultada is Trust, a WAR with a player GEO and a trust BRD is Group.
 --- Not shown in the HUD; //gs c support shows the tier and the party,
 --- //gs c support solo|group|full|trust forces one, //gs c support auto goes
 --- back to the party.
@@ -44,20 +48,28 @@ local SUPPORT_JOBS = {BRD = true, COR = true, GEO = true}
 -- The versions tried in each tier, closest first (then the set itself)
 local CHAIN = {Full = {}, Group = {'Group'}, Solo = {'Solo', 'Group'}}
 
---- The tier the support jobs give, trusts counted like players.
+--- The tier of a set of support jobs.
+--- @param has table {GEO = true, BRD = true, ...}
+--- @return string
+local function tier_of(has)
+    if has.GEO and (has.BRD or has.COR) then return 'Full' end
+    if has.GEO or has.BRD or has.COR then return 'Group' end
+    return 'Solo'
+end
+
+--- The tier the others' support jobs give (you left out): the players' alone when one of them supports, else the
+--- trusts' (the tier Trust stands for, and the one a set falls back to when it has no .Trust version).
 --- @param members table PartyJobs.members_here()
 --- @return string tier, boolean trusts_only (some support, all of it from trusts)
 local function jobs_tier(members)
-    local has, players = {}, false
+    local players, trusts = {}, {}
     for _, member in ipairs(members) do
-        if SUPPORT_JOBS[member.main_job or ''] then
-            has[member.main_job] = true
-            if not member.trust then players = true end
+        if not member.self and SUPPORT_JOBS[member.main_job or ''] then
+            if member.trust then trusts[member.main_job] = true else players[member.main_job] = true end
         end
     end
-    local any = has.GEO or has.BRD or has.COR
-    if has.GEO and (has.BRD or has.COR) then return 'Full', not players end
-    if any then return 'Group', not players end
+    if next(players) then return tier_of(players), false end
+    if next(trusts) then return tier_of(trusts), true end
     return 'Solo', false
 end
 

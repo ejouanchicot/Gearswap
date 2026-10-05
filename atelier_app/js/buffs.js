@@ -355,12 +355,31 @@ const TRUST_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II',
 const PERSONAL = ['food', 'am', 'amStage', 'amTp', 'enemy', 'ja', 'jaOff', 'autoSamba'];
 const TIER_DROP = {Full: [], Group: ['indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic'],
   Solo: ['pja', 'indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic', 'songsPlus', 'rollsPlus', 'protect', 'shell', 'haste', 'song0', 'song1', 'song2', 'song3', 'song4', 'soulVoice', 'marcato', 'clarion', 'ariaStage', 'roll0job', 'roll1job', 'rollCC', 'roll0', 'roll1', 'dia', 'lightshot', 'distract', 'saboteur', 'sabGloves', 'auspice', 'auspiceFeet', 'enspell', 'enSkill']};
-function tierBuffs(tier){ if (tier === 'Trust') return JSON.parse(JSON.stringify(TRUST_BUFFS));
+// The Trust profile for a job: Sylvie's bubbles follow your job (BG Wiki: Fury + Entrust Frailty for a melee job,
+// Haste + Entrust Refresh or Regen for PLD / RUN / NIN, magic bubbles for a mage or a BRD: none of those on the
+// damage), and a BRD sings its own songs (the trusts' left for it to set)
+const SYLVIE_FURY = ['WAR', 'MNK', 'THF', 'BST', 'DRK', 'DRG', 'SAM', 'BLU', 'PUP', 'DNC', 'RNG', 'COR'];
+function trustBuffsFor(job){
+  const b = JSON.parse(JSON.stringify(TRUST_BUFFS));
+  if (!SYLVIE_FURY.includes(job)) {
+    delete b.indi; delete b.entrust; delete b.geoScale;
+    if (['PLD', 'RUN', 'NIN'].includes(job)) b.indi = 'Haste';
+  }
+  if (job === 'BRD') for (const k of ['song0', 'song1', 'song2', 'song3']) delete b[k];
+  return b;
+}
+function tierBuffs(tier){ if (tier === 'Trust') return trustBuffsFor(S.job);
   const b = endgameBuffs(); for (const k of TIER_DROP[tier] || []) delete b[k]; return b; }
 const buffTier = () => (S.buffTier || {})[S.char] || 'Full';
-const buffKey = (tier = buffTier()) => tier === 'Full' ? S.char : S.char + '|' + tier;
+// the Trust profile's buffs are a job's own (the trusts act by your job: trustBuffsFor)
+const buffKey = (tier = buffTier()) => tier === 'Full' ? S.char : tier === 'Trust' ? S.char + '|' + S.job + '|Trust' : S.char + '|' + tier;
+// the Trust profile was the character's before it became a job's (2026-10-05): the WAR's takes it back
+function trustCarried(k){
+  const old = S.char + '|Trust';
+  if (!S.buffs[k] && S.buffs[old] && S.job === 'WAR' && k === S.char + '|WAR|Trust') { S.buffs[k] = S.buffs[old]; delete S.buffs[old]; }
+}
 const buffState = () => { if (S._buffOverride) return S._buffOverride;
-  const k = buffKey(); return (S.buffs[k] = S.buffs[k] || tierBuffs(buffTier())); };
+  const k = buffKey(); trustCarried(k); return (S.buffs[k] = S.buffs[k] || tierBuffs(buffTier())); };
 // A profile's buffs: its own, or (never opened yet) its usual party buffs with what is yours from the profile shown
 function tierBuffsOf(tier){
   if (S.buffs[buffKey(tier)]) return S.buffs[buffKey(tier)];
