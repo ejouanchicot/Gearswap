@@ -633,7 +633,7 @@
     //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
-        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div"];
+        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
     // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
@@ -674,6 +674,13 @@
         f.stoneskin = Math.min(475, Math.min(350, ss) + t.ss);
         var div = (b.div || 0) + t.div;
         f.enhSkill = enhAll; f.divSkill = div;
+        // the block the gear adds (Guide_Paladin: block rate = the shield's base + (shield skill - attacker's) x 0.2325,
+        // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
+        f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;
+        f.statusRes = t.statusRes; f.eleRes = Math.round(t.eleRes / 8 * 10) / 10;
+        // the cut of the enmity lost on each hit taken (Guide_Paladin, CE Loss Reduction, its first bucket): 1 % a +2
+        // Enmity, Crusade in, 50 % at +100 (what the idle set wears when the hits land)
+        f.ceLoss = Math.max(0, Math.min(100, t.enmity + (b.enmity || 0))) / 2;
         // the weapon's own Enlight bonus (BG Wiki: Brilliance +15, Honorbound +7, their melee hits only)
         f.enlight += t.enl || 0;
         f.enlight = div <= 500 ? 2 * Math.floor((div + 85) / 13) + Math.floor((div + 85) / 26) : 2 * Math.floor((div + 400) / 20) + Math.floor((div + 400) / 40);
@@ -692,7 +699,7 @@
         return f;
     };
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "enl"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };

@@ -16,6 +16,10 @@ Object.assign(T.fr, {
   statObj_enhdur: 'Durée renfort', statD_enhdur: 'Enhancing magic duration : Protect, Shell, Reprisal… durent plus longtemps',
   statObj_enhSkill: 'Skill de renfort', statD_enhSkill: 'le tien + le gear : Phalanx, Stoneskin, Barspells… en dépendent',
   statObj_divSkill: 'Skill divin', statD_divSkill: 'le tien + le gear : Enlight II, Flash (Cécité), Banish, Holy',
+  statObj_ceLoss: 'Perte d’inimitié réduite', statD_ceLoss: 'quand tu prends un coup : 1 % pour +2 d’Enmity (Crusade comprise), 50 % au plus à +100',
+  statObj_blockGear: 'Blocage (gear)', statD_blockGear: 'skill de bouclier × 0,2325 + chance de blocage des pièces, en plus de la base du bouclier',
+  statObj_statusRes: 'Résistance aux statuts', statD_statusRes: '« résistance à tous les statuts » des pièces',
+  statObj_eleRes: 'Résistances élémentaires', statD_eleRes: 'moyenne des 8 éléments',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbés : skill de renfort et MND (350 au plus), + le gear Stoneskin (475 au plus)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Précision et dégâts du premier coup : skill divin, Brilliance +15 / Honorbound +7 en main',
   statObj_hpLow: 'HP les plus bas', statD_hpLow: 'Fast Cast d’un Cure sur toi : HP bas, le set de Cure les remonte et le Cure remplit l’écart',
@@ -63,6 +67,10 @@ Object.assign(T.en, {
   statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
   statObj_enhSkill: 'Enhancing skill', statD_enhSkill: 'yours + the gear: Phalanx, Stoneskin, Barspells… depend on it',
   statObj_divSkill: 'Divine skill', statD_divSkill: 'yours + the gear: Enlight II, Flash (Blind), Banish, Holy',
+  statObj_ceLoss: 'Enmity loss cut', statD_ceLoss: 'when a hit lands: 1 % a +2 Enmity (Crusade in), 50 % at most at +100',
+  statObj_blockGear: 'Block (gear)', statD_blockGear: 'shield skill × 0.2325 + the pieces’ block chance, over the shield’s base',
+  statObj_statusRes: 'Status resistance', statD_statusRes: 'the pieces’ “resistance to all status ailments”',
+  statObj_eleRes: 'Elemental resistances', statD_eleRes: 'the 8 elements’ mean',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit: divine skill, Brilliance +15 / Honorbound +7 in hand',
   statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
@@ -101,8 +109,8 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your measure in game, with the buffs chosen in the page (a food chosen but not on in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit: 1 % a +2 Enmity, 50 % at most. The “Reduces Enmity loss” gear (Burtgang, Chev. Cuisses +3) and Foe Sirvente multiply in, not counted here (−75 % in all at most).'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm'];
-const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur']);
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss'];
+const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
@@ -120,7 +128,7 @@ const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family
 function statDefault(s){
   const list = withSird(s, statDefaultOf(s)), fam = family(s.path, s.pieces);
   // (the Cure's enmity counts Enmity already)
-  if (!['PLD', 'RUN'].includes(S.job) || fam === 'fc' || list.includes('enmity') || list[0] === 'cureEnm' || list[0] === 'phalanx') return list;
+  if (!['PLD', 'RUN'].includes(S.job) || ['fc', 'idle', 'special'].includes(fam) || list.includes('enmity') || list[0] === 'cureEnm' || list[0] === 'phalanx') return list;
   if (fam === 'ja') return ['enmity', 'def', 'hp'];
   // after the set's own (and SIRD on a SIRD set), Enmity
   const lead = list[1] === 'sird' ? 2 : 1;
@@ -156,7 +164,11 @@ function statDefaultOf(s){
   if (/regen/i.test(p)) return ['regen', 'pdtRed', 'mdtRed'];
   // a magic-defense set by its name (idle.MDT, MEva): not every set with Magic in it (Enhancing Magic)
   if (/meva|mdt/i.test(p)) return ['mdtRed', 'meva', 'mdb'];
-  if (fam === 'idle' || fam === 'special') return tank ? ['def', 'enmity', 'mdb'] : ['pdtRed', 'mdtRed', 'hp'];
+  // a tank's idle (Guide_Paladin idle sets): PDT / MDT capped, the HP pool and the enemy's crits as floors; then a PLD's
+  // block (the shield skill and block chance of the gear), the DEF, the magic evasion
+  // (the block only with a shield that does not block every hit already: Duban and Ochain, ~108 % at base, do)
+  // the enmity kept when hit (ceLoss: Enmity up to +100) second; a PLD's block first with a shield that does not block it all
+  if (fam === 'idle' || fam === 'special') return S.job === 'PLD' && !shieldBlocksAll(s) ? ['blockGear', 'ceLoss', 'def'] : tank ? ['def', 'ceLoss', 'meva'] : ['pdtRed', 'mdtRed', 'hp'];
   return ['hp', 'pdtRed', 'mdtRed'];
 }
 // The objectives and floors kept for that set (S.optOpts.statBy[path]: {objs, floor})
@@ -179,7 +191,7 @@ function statFloorDefault(s, first){
   // (Shell V -29.3 %: -21 left to the gear)
   // (not on a Phalanx set: its Phalanx comes first, the damage taken after it as objectives)
   const shell = buffTotals().shell || 0, dt = first === 'phalanx' ? {} : {pdt: -50, mdt: -Math.ceil(50 - shell / 256 * 100)};
-  const ecrit = first === 'def' && ['idle', 'special'].includes(fam) ? {ecrit: -5} : {};
+  const ecrit = ['idle', 'special'].includes(fam) ? {ecrit: -5} : {};
   return Object.assign(dt, ecrit, sird, hp);
 }
 // The reference HP of a tank's sets (Guide_Paladin HP Management): the lowest of the classic Fast Cast sets
@@ -235,7 +247,7 @@ function setStatOpts(path, patch){
 }
 
 /* ---- the objectives by kind, and the ones a set is shown ---- */
-const STAT_OBJ_GROUPS = [['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'meva', 'mdb']], ['enm', ['enmity', 'cureEnm']],
+const STAT_OBJ_GROUPS = [['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleRes']], ['enm', ['enmity', 'ceLoss', 'cureEnm']],
   ['cure', ['cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
   ['regen', ['refresh', 'regen']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
@@ -249,7 +261,7 @@ function statRelevant(s, chosen){
   else if (/enlight/i.test(p)) add(['enlight', 'enhdur', 'divSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
   else if (fam === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) add(['enhdur', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
   else if (fam === 'enmity' || fam === 'ja') add(['enmity', 'sird', ...def]);
-  else if (fam === 'idle' || fam === 'special') add([...def, 'ecritRed', 'refresh', 'regen']);
+  else if (fam === 'idle' || fam === 'special') add([...def, 'ceLoss', 'ecritRed', 'statusRes', 'eleRes', 'refresh', 'regen', ...(S.job === 'PLD' ? ['blockGear'] : [])]);
   else add([...def, 'refresh', 'regen']);
   return out;
 }
@@ -285,6 +297,12 @@ function statVec(p, slot){
   if (v('skill:divine magic skill') + all) out.div = v('skill:divine magic skill') + all;
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
+  if (v('skill:shield skill')) out.shield = v('skill:shield skill');
+  if (v('block')) out.block = v('block');
+  const sr = v('x:resistance to all status ailments') + v('x:all status ailment resistance');
+  if (sr) out.statusRes = sr;
+  const er = ['fire', 'ice', 'wind', 'earth', 'lightning', 'water', 'light', 'dark'].reduce((n, e) => n + v('res_' + e), 0);
+  if (er) out.eleRes = er;
   for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'refresh', 'regen', 'enhdur'])
     if (v(k)) out[k] = v(k);
   if (v('skill:enhancing magic skill') + all) out.enh = v('skill:enhancing magic skill') + all;
@@ -343,6 +361,11 @@ function shieldBarrier(B, sub){
 function protectGift(){
   const c = typeof measuredChar === 'function' ? measuredChar() : null;
   return S.job === 'PLD' && c && (c.jp_spent || 0) >= 550 ? 1.1 : 1;
+}
+// Whether the set's shield blocks every hit at its base already (Duban, Ochain: ~108 %): its block gains nothing more
+function shieldBlocksAll(s){
+  const sub = (withWeapons(s).pieces.sub || {}).name, sh = ULTIMATE_SHIELDS[sub];
+  return !!sh && sh[0] >= 100;
 }
 // The shields the guide gives figures for: base block rate (at the attacker's skill) and the damage a block takes off
 const ULTIMATE_SHIELDS = {Aegis: [50, 75], Srivatsa: [50, 75], Ochain: [108, 60], Duban: [108, 60]};

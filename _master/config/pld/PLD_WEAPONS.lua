@@ -15,6 +15,8 @@
 return {
     -- In these modes the shield follows the weapon, over the sub of the set:
     -- shields = {
+    --     PDT     = {Burtgang = 'Duban'},
+    --     MDT     = {Burtgang = 'Aegis'},
     --     Sortie  = {Burtgang = 'Aegis', Naegling = 'Blurred Shield +1'},
     --     Tanking = {Burtgang = 'Aegis', Naegling = 'Duban'},
     -- },
