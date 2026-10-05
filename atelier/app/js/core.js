@@ -188,6 +188,22 @@ function family(path, pieces){
   if (/^sets\.(buff|defense|TreasureHunter|CombatMode|Doom|latent|FullEnmity|Enmity)/.test(p)) return 'special';
   return 'other';
 }
+// The set list's own grouping (the figures keep family()): the Cure sets together, their Fast Cast, the spell's sets
+// and the base they are built on
+const CURE_SET = /^sets(\.midcast|\.precast\.FC)?(\.Cur(e|aga)\w*|\["Cur(e|aga)[^"]*"\])/;
+function cardFamily(path, pieces){
+  const f = family(path, pieces);
+  if (f !== 'weapons' && CURE_SET.test(path)) return 'cure';
+  // the experience sets laid over the others when the Xp state is On (PLD: sets.idleXp, sets.meleeXp)
+  if (/^sets\.\w+Xp$/.test(path)) return 'xp';
+  return f;
+}
+// A Cure set named at the top (sets.Cure) that other sets are built on: never worn (GearSwap wears the sets.midcast
+// and sets.precast ones, no job's code names it), only inherited from; the page shows it and does not change it
+function baseOnly(s){
+  const d = data();
+  return !!s && /^sets(\.\w+|\["[^"]+"\])$/.test(s.path) && CURE_SET.test(s.path) && !!d && d.sets.some(x => x.base === s.path);
+}
 function segs(path){ return path.match(/\.[\w-]+|\["[^"]+"\]/g).map(s => s.startsWith('.') ? s.slice(1) : s.slice(2,-2)); }
 function shortPath(p){ return p ? p.replace(/^sets\./,'') : ''; }
 

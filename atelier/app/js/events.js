@@ -13,7 +13,10 @@ document.addEventListener('click', e => {
   if (d.section) { S.section = d.section; render(); return; }
   if (d.pick) { S.sel[S.job] = +d.pick; if (d.vpick != null) S.variant[S.job+'|'+d.pick] = +d.vpick; render(); return; }
   if (d.variant) { S.variant[S.job+'|'+d.card] = +d.variant; render(); return; }
-  if (d.slot) { openSlot(+d.card, d.slot); return; }
+  // a base set (sets.Cure: never worn, only built on) is shown, not changed
+  if (d.slot) { const c = S._cards[+d.card], v = c && c.variants[Math.min(S.variant[S.job + '|' + d.card] ?? 0, c.variants.length - 1)];
+    if (v && baseOnly(v.set)) { S.toast = t('baseOnlyToast'); render(); return; }
+    openSlot(+d.card, d.slot); return; }
   if (d.try != null && S._drawer) { const o = S._drawOpts[+d.try], mx = e.target.closest('[data-trymax]');
     const best = o.upgrade && (mx || e.shiftKey);
     // a hand: the same choice as the weapon menus (a weaponskill's held weapon / off hand, an engaged set's forced

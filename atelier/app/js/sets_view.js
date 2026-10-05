@@ -174,13 +174,13 @@ function cardHTML(card, ci, bypath, q){
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws', head = ws ? wsTitleHTML(s) : '';
   // the page in three bands: what the set is (a weaponskill set: the weaponskill, what its figures are worked out with),
   // the equipment beside its stats, then the optimizer on the whole width
-  const optable = (ws && wsOfSet(s)) || roundSet(s) || statSet(s);
+  const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || roundSet(s) || statSet(s));
   if (optable && optPageOpen(s)) return optPageHTML(s, ws && wsOfSet(s));
   // its actions on the title line: the optimizer, then deleting it
-  const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview>${t('optOpenBtn')}</button>` : ''}${ws && !wsOfSet(s) ? '' : delButton(s)}</span>`;
+  const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview>${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;
   const top = ws ? `<div class="settop">${wsTitleHTML(s, acts)}${familyNoteHTML(card, s)}` +
       (wsOfSet(s) ? `<div class="setctl">${wsHeadHTML(card, ci, vi, s)}</div>` : '') + `</div>`
-    : setHeadHTML(card, ci, vi, s, acts);
+    : setHeadHTML(card, ci, vi, s, acts) + (locked ? `<p class="famnote">${esc(t('baseOnly', {l: data().sets.filter(x => x.base === s.path).map(x => shortPath(x.path)).join(', ')}))}</p>` : '');
   return `<article class="detail"><header>${top}${trialBar(s)}</header>
     <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
     <div class="globals-inline">${(S._globals = {s, html: globalsHTML(s)}).html}</div></article>`;
@@ -407,7 +407,9 @@ function topOf(path, fam){
   if (fam==='ja') n = 3;
   if (fam==='idle' || fam==='engaged') n = ['me', 'luopan'].includes(s[0]) ? 2 : 1;
   if (fam==='special') n = s[0]==='buff' ? 2 : 1;
-  if (fam==='weapons' || fam==='other') n = s.length;
+  if (fam==='weapons' || fam==='other' || fam==='xp') n = s.length;
+  // a Cure set's card: down to its Cure name (precast.FC.CureSelf, midcast.CureSelf), its versions under it
+  if (fam==='cure') n = s.findIndex(x => /^Cur/.test(x)) + 1 || s.length;
   return s.slice(0, Math.min(n, s.length));
 }
 function buildCards(d){
@@ -415,19 +417,21 @@ function buildCards(d){
   const bypath = {}; for (const s of d.sets) { bypath[s.path] = s; for (const a of s.aliases || []) bypath[a] = bypath[a] || s; }
   const cards = [], index = {};
   for (const s of d.sets) {
-    const fam = family(s.path, s.pieces);
+    const fam = cardFamily(s.path, s.pieces);
     const top = topOf(s.path, fam); const key = fam + '|' + top.join('/');
     if (!index[key]) { index[key] = {fam, name: top[top.length-1], top, variants:[]}; cards.push(index[key]); }
     const rest = segs(s.path).slice(top.length).join(' · ');
     index[key].variants.push({label: rest || 'Base', set: s});
   }
   for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));
-  const order = ['idle','engaged','fc','ws','ja','midcast','enmity','pet','special','weapons','other'];
+  const order = ['idle','engaged','fc','ws','ja','cure','midcast','enmity','pet','special','xp','weapons','other'];
   const lead = c => c.top.length === 1 && c.top[0] === c.fam ? 0 : 1;
   cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || lead(a)-lead(b) || a.name.localeCompare(b.name));
   return {cards, bypath};
 }
 function niceName(card){
+  // the two CureSelf of the Cure sets told apart: the Fast Cast one says so
+  if (card.fam === 'cure' && card.top.includes('FC')) return 'Fast Cast · ' + card.name;
   const n = card.name;
   const map = {idle:{fr:'Au repos',en:'Idle'}, engaged:{fr:'En combat',en:'Engaged'}, FC:{fr:'Fast Cast',en:'Fast Cast'}, WS:{fr:'Weaponskills',en:'Weaponskills'},
     MoveSpeed:{fr:'Vitesse de course',en:'Movement speed'}, Doom:{fr:'Doom',en:'Doom'}, TreasureHunter:{fr:'Treasure Hunter',en:'Treasure Hunter'}};
@@ -445,7 +449,7 @@ function aliasRows(cards, q){
   const out = [];
   cards.forEach((c, i) => c.variants.forEach((v, k) => { for (const a of v.set.aliases || []) {
     if (q && !a.toLowerCase().includes(q)) continue;
-    out.push({fam: family(a, v.set.pieces), label: segs(a).pop(), path: a, of: v.set.path, i, k}); } }));
+    out.push({fam: cardFamily(a, v.set.pieces), label: segs(a).pop(), path: a, of: v.set.path, i, k}); } }));
   return out.sort((a, b) => a.label.localeCompare(b.label));
 }
 

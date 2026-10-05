@@ -7,6 +7,8 @@
 // (loaded by atelier/index.html after stat_opt.js: see the list there)
 
 Object.assign(T.fr, {
+  baseOnly: 'Jamais porté : GearSwap ne met jamais ce set, il sert seulement de base à {l}. Changer une pièce ici changerait ces sets-là : modifie-les eux.',
+  baseOnlyToast: 'Set de base, jamais porté : modifie plutôt les sets qui en héritent.',
   porterTitle: 'PorterPacker', porterOk: 'à jour', porterToDo: '{n} à revoir',
   porterIntro: 'Sa liste « unpack » ({f}) : ce que PorterPacker sort pour ce job, et ne range pas quand tu changes de job.',
   porterAdd: 'Pièces de tes sets absentes de la liste : PorterPacker les range chez le Porter Moogle ou ne les ressort pas.',
@@ -20,6 +22,8 @@ Object.assign(T.fr, {
   porterFail: 'Liste PorterPacker non écrite : {e}',
 });
 Object.assign(T.en, {
+  baseOnly: 'Never worn: GearSwap never puts this set on, it is only the base of {l}. A piece changed here would change those sets: change them instead.',
+  baseOnlyToast: 'A base set, never worn: change the sets built on it instead.',
   porterTitle: 'PorterPacker', porterOk: 'up to date', porterToDo: '{n} to review',
   porterIntro: 'Its unpack list ({f}): what PorterPacker takes out for this job, and keeps out when you change jobs.',
   porterAdd: 'Pieces of your sets missing from the list: PorterPacker stores them at the Porter Moogle or leaves them there.',
