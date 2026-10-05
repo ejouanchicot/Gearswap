@@ -208,15 +208,51 @@ local function is_action(name)
     return action_names and action_names[name:lower()] or false
 end
 
---- A set met under several names keeps the one it is defined under when the walk met an action's name first:
---- `sets.midcast['Banishga'] = sets.midcast.SIRDEnmity` is the SIRDEnmity set (alphabetical order put Banishga
---- first). The first name that is not a spell, ability or weapon skill wins; the others become its aliases.
+--- A set path as the export writes it (child_path): sets.midcast['Flash'] -> sets.midcast.Flash, ["Geist Wall"] kept.
+local function canon_path(text)
+    return (text:gsub("%[%s*['\"]([^'\"]+)['\"]%s*%]", function(key)
+        return key:match('^[%a_][%w_]*$') and ('.' .. key) or ('["' .. key .. '"]')
+    end))
+end
+
+--- The names the job's set file gives as copies of another set (`sets.engaged.MDT = sets.idle.MDT`): {copy = defined}.
+local function file_copies()
+    local out = {}
+    local ok, CharPaths = pcall(require, 'shared/utils/core/char_paths')
+    local job = player and player.main_job
+    local path = ok and job and CharPaths.file('sets', job:lower() .. '_sets.lua', job)
+    local f = path and io.open(path, 'r')
+    if not f then return out end
+    local text = f:read('*a')
+    f:close()
+    local name = "sets[%w_%.%[%]'\" ]*[%w_%]]"
+    -- line by line (a copy on its own line, a comment after it allowed): consecutive copies all read
+    for line in (text .. '\n'):gmatch('([^\n]*)\n') do
+        local copy, defined = line:match('^%s*(' .. name .. ')%s*=%s*(' .. name .. ')%s*$')
+        if not copy then copy, defined = line:match('^%s*(' .. name .. ')%s*=%s*(' .. name .. ')%s*%-%-') end
+        if copy then out[canon_path(copy)] = canon_path(defined) end
+    end
+    return out
+end
+
+--- A set met under several names keeps the one it is defined under: the name the set file's copies point to
+--- (`sets.engaged.MDT = sets.idle.MDT`: idle.MDT; alphabetical order put engaged first), else the first that is not a
+--- spell, ability or weapon skill (`sets.midcast['Banishga'] = sets.midcast.SIRDEnmity`); the others become its aliases.
 local function prefer_set_names(path_of, out, order)
+    local copies = file_copies()
     for i, path in ipairs(order) do
         local rec = out[path]
-        if rec and rec.aliases and is_action(last_key(path)) then
+        local defined = rec and rec.aliases and copies[path]
+        local wanted = nil
+        if defined then
+            for _, alias in ipairs(rec.aliases) do if alias == defined then wanted = alias end end
+        end
+        if rec and rec.aliases and not wanted and is_action(last_key(path)) then
+            for _, alias in ipairs(rec.aliases) do if not is_action(last_key(alias)) then wanted = alias break end end
+        end
+        if wanted then
             for k, alias in ipairs(rec.aliases) do
-                if not is_action(last_key(alias)) then
+                if alias == wanted then
                     rec.aliases[k] = path
                     rec.path = alias
                     out[path], out[alias] = nil, rec
