@@ -20,6 +20,7 @@ Object.assign(T.fr, {
   cyTitle: 'Cycle des HP', cyNote: 'HP max de chaque set, repos {n} ({i}) → precast → midcast → repos. Passer à un set plus bas fait tomber tes HP, '
     + 'revenir ne les rend pas : la perte, c’est ce qui manque en revenant au repos (avant tout soin). Le guide vise 200 d’écart au plus. Tes pièces à l’essai comptent.',
   cyIdleHigh: 'Ton repos est {n} au-dessus : chaque sort te coûte cette différence.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Perte', cyOnPurpose: 'voulu', cyJa: 'JA',
+  statAct: 'Inimitié de {a}', statActTip: '{a} : {ve} VE et {ce} CE de base, × (1 + Enmity / 100), Enmity du gear + Crusade + Sentinel plafonnée à +200 (guide Paladin, Enmity Generation).',
   statGap: 'HP gagnés au midcast', statGapTip: 'HP du set {m} moins ceux du Fast Cast {f} : ce qui manque au moment du Cure, donc ce qu’il peut soigner en entier (guide Paladin, CURE SELF).',
   statD_def: 'VIT × 1,5 + DEF du gear (+ bouclier sous Protect en PLD)', statD_hp: 'HP avec les HP %', statD_enmity: 'jusqu’au plafond +200, buffs compris',
   statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %', statD_sird: 'jusqu’à 102 %',
@@ -52,6 +53,7 @@ Object.assign(T.en, {
   cyTitle: 'HP cycle', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
     + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your tried pieces count.',
   cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose', cyJa: 'JA',
+  statAct: '{a} enmity', statActTip: '{a}: {ve} VE and {ce} CE at base, × (1 + Enmity / 100), the Enmity of gear + Crusade + Sentinel capped at +200 (Paladin guide, Enmity Generation).',
   statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} less those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
   statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs in',
   statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %', statD_sird: 'up to 102 %',
@@ -79,7 +81,16 @@ const statFmt = k => v => v == null ? '—' : ((Math.round(v * 10) / 10) || 0).t
 const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path);
 // What a set is for when nothing was chosen: the guide's profiles (idle DEF then Enmity then MDB; Enmity then DEF;
 // Phalanx then DEF; Fast Cast then HP)
+// A tank (PLD, RUN) wants Enmity on every action its set is worn for, after what the action itself needs (the
+// Phalanx, the Cure...): Enmity goes second when it is not first. Not on a Fast Cast set: a spell's enmity comes at its
+// midcast. A job ability's set: Enmity first, its own piece kept (keptSlots)
 function statDefault(s){
+  const list = statDefaultOf(s), fam = family(s.path, s.pieces);
+  if (!['PLD', 'RUN'].includes(S.job) || fam === 'fc' || list[0] === 'enmity') return list;
+  if (fam === 'ja') return ['enmity', 'def', 'hp'];
+  return [list[0], 'enmity', ...list.slice(1).filter(k => k !== 'enmity')].slice(0, 3);
+}
+function statDefaultOf(s){
   const p = s.path, fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
   if (/phalanx/i.test(p)) return ['phalanx', 'def', 'hp'];
   // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap)
@@ -149,6 +160,20 @@ function setStatOpts(path, patch){
   const by = Object.assign({}, (S.optOpts || {}).statBy), cur = by[path] || {};
   by[path] = Object.assign({}, cur, patch, patch.floor ? {floor: Object.assign({}, cur.floor, patch.floor)} : {});
   S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save();
+}
+
+/* ---- the enmity of each action (Guide_Paladin 02 Enmity Generation: base VE / CE, before the gear) ---- */
+// Final = base x (1 + Enmity / 100), the Enmity of gear + Crusade + Sentinel capped at +200 (x3)
+const ACTION_ENMITY = {Invincible: [7200, 0], Palisade: [1800, 900], 'Shield Bash': [900, 450], Flash: [1280, 180], Sentinel: [900, 0],
+  Majesty: [340, 0], Rampart: [320, 320], 'Divine Emblem': [320, 0], Sepulcher: [320, 0], Jettatura: [1020, 180], 'Blank Gaze': [320, 320],
+  'Geist Wall': [320, 320], 'Sheep Song': [320, 320], Valiance: [900, 450], Vallation: [900, 450], Pflug: [900, 450], Foil: [880, 320],
+  Swordplay: [320, 160], Provoke: [1800, 1], Warcry: [320, 0]};
+// The actions a set is worn for, by its name and the names it is shared under (sets.FullEnmity: Flash, Crusade, Jettatura)
+function setActions(s){
+  // a Fast Cast set makes no enmity: the spell's comes at its midcast
+  if (family(s.path, s.pieces) === 'fc') return [];
+  const names = [s.path, ...(s.aliases || [])].map(p => segs(p).pop());
+  return [...new Set(names)].filter(n => ACTION_ENMITY[n]);
 }
 
 /* ---- the pieces and the character, as plain data for the search (a worker has no page to ask) ---- */
@@ -319,6 +344,10 @@ function statRows(s){
   for (const r of rows) if (lim[r.id]) r.floor = lim[r.id];
   rows.push({id: 'pdt', label: on('pdt') ? `DT+PDT ≤ ${fl.pdt}` : 'DT+PDT', get: f => f.pdt, fmt: v => String(Math.round(v)), low: true, floor: on('pdt') ? v => v <= fl.pdt : null},
     {id: 'mdt', label: on('mdt') ? `DT+MDT ≤ ${fl.mdt}` : 'DT+MDT', get: f => f.mdt, fmt: v => String(Math.round(v)), low: true, floor: on('mdt') ? v => v <= fl.mdt : null});
+  // the enmity each action of the set makes with it (its Enmity counted, cap x3)
+  for (const n of setActions(s).slice(0, 4)) { const [ve, ce] = ACTION_ENMITY[n];
+    rows.push({id: 'act:' + n, label: t('statAct', {a: n}), get: f => ve * (1 + f.enmity / 100), fmt: v => `${Math.round(v)} VE · ${Math.round(v * ce / ve)} CE`,
+      tip: t('statActTip', {a: n, ve, ce})}); }
   const pair = cureGap(s), ref = pair ? null : hpRef(s);
   if (pair && family(s.path, s.pieces) !== 'fc') rows.push({id: 'cure4', label: t('statCure4'), get: f => f.cureIV, fmt: v => String(Math.round(v)), tip: t('statCure4Tip')});
   if (ref) rows.push({id: 'ref', label: t('statRef'), get: f => f.hp - ref.hp, fmt: v => (v > 0 ? '+' : '') + Math.round(v), tip: t('statRefTip', {f: shortPath(ref.path), h: ref.hp}),
@@ -326,7 +355,7 @@ function statRows(s){
   if (pair) rows.push({id: 'gap', label: t('statGap'), get: f => pair.gap(f), fmt: v => String(Math.round(v)), tip: t('statGapTip', {m: shortPath(pair.mid), f: shortPath(pair.pre)})});
   const first = so.objs.map(k => rows.find(r => r.id === k)).filter(Boolean);
   // the gap (and the Cure's power) right under the objectives: it is what the pair of sets is for; Lowest HP only as an objective
-  const near = rows.filter(r => ['gap', 'ref', 'cure4'].includes(r.id) && !first.includes(r));
+  const near = rows.filter(r => (['gap', 'ref', 'cure4'].includes(r.id) || r.id.startsWith('act:')) && !first.includes(r));
   const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow');
   return first.concat(near, rest);
 }
