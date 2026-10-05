@@ -81,6 +81,14 @@ GEAR = {
 }
 SAVED = ('Written by GearSwap itself (window positions, HUD and chat settings, dual-box role, '
          'gear augments of //gs c gearscan, traces). No need to edit.')
+ATELIER_LINES = [
+    'overrides/     pieces (set_overrides.lua) and keys (keybind_overrides.lua) changed in the',
+    '               Atelier page, laid over your files at every load: delete one to go back to your files',
+    'exports/       the page data, one file per job and subjob (//gs c atelier)',
+    'backups/       your set files as they were before each push from the page (last 20 each)',
+    'history.lua    every push from the page (its History tab: undo from there)',
+    'export.on      present while //gs c atelier on exports at every job load',
+]
 
 
 def describe_job_file(job, name):
@@ -127,6 +135,7 @@ def build(char, char_dir):
         '_common/          settings of the whole character (every job)',
         '<job>/            one folder per job: display/ keys/ combat/ inventory/ sets/',
         'saved/            written by GearSwap itself',
+        'atelier/          what the Atelier page (data/atelier.html) writes',
         '',
     ]
     common = os.path.join(char_dir, '_common')
@@ -144,6 +153,7 @@ def build(char, char_dir):
             lines.append('  %-38s %s' % (rel, describe_job_file(job, rel.split('/')[-1])))
         lines.append('')
     lines += ['saved/', '-' * 60, '  ' + SAVED, '']
+    lines += ['atelier/', '-' * 60] + ['  ' + x for x in ATELIER_LINES] + ['']
     return '\r\n'.join(lines)
 
 

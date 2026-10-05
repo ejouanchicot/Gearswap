@@ -319,6 +319,12 @@ KEPT_ON_RECLONE = [
     ('saved', 'WARP_ITEMS_OWNED.lua'),
     ('saved', 'temp_binds.lua'),
     ('saved', 'gear_augments.lua'),  # //gs c gearscan
+    # what the Atelier page changed (shared/utils/core/char_paths.lua, 2026-10-05; saved/ before)
+    ('atelier', 'overrides', 'set_overrides.lua'),
+    ('atelier', 'overrides', 'keybind_overrides.lua'),
+    ('atelier', 'export.on'),
+    ('saved', 'set_overrides.lua'),
+    ('saved', 'keybind_overrides.lua'),
     ('_common', 'keys', 'combat_mode.lua'),
     ('_common', 'keys', 'treasure_mode.lua'),  # //gs c th show | hide | key
     ('_common', 'combat', 'STEALTH_CONFIG.lua'),
