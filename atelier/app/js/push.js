@@ -51,7 +51,12 @@ function pushPlan(s){
 const pushLine = e => [e.slot, e.kind].concat(e.piece ? [e.piece.name].concat(e.kind === 'piece' ? e.piece.augs || [] : []) : []).join('\t');
 function pushWarnings(s, plan, fresh){
   const owned = ownedOf() || {}, out = [];
-  for (const e of plan) if (e.piece && (e.piece.rank != null || e.piece.capeMax)) out.push(t('pushNotYet', {p: esc(e.piece.name)}));
+  // a piece counted above your copy: a rank higher than the one //gs c gearscan read on it, a cape at its maximum (never
+  // a rank piece at the very rank you hold: Kgt. Beads +2 R25 is yours as it is)
+  const above = (slot, p) => { if (p.capeMax) return true; if (p.rank == null) return false;
+    const mine = (owned[slot] || []).filter(x => x.name === p.name).map(x => ownRank({name: x.name, id: x.id, augs: x.augs}).rank).filter(r => r != null);
+    return !mine.length || p.rank > Math.max(...mine); };
+  for (const e of plan) if (e.piece && above(e.slot, e.piece)) out.push(t('pushNotYet', {p: esc(e.piece.name)}));
   for (const e of plan) if (e.piece) {
     const copies = (owned[e.slot] || []).filter(x => x.name === e.piece.name && (e.kind === 'one' || (x.augs || []).join('|') === (e.piece.augs || []).join('|')));
     const where = [...new Set(copies.flatMap(x => x.where || []))];
