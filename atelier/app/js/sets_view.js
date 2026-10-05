@@ -406,7 +406,7 @@ function buildCards(d){
     index[key].variants.push({label: rest || 'Base', set: s});
   }
   for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));
-  const order = ['idle','engaged','fc','ws','ja','midcast','pet','special','weapons','other'];
+  const order = ['idle','engaged','fc','ws','ja','midcast','enmity','pet','special','weapons','other'];
   const lead = c => c.top.length === 1 && c.top[0] === c.fam ? 0 : 1;
   cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || lead(a)-lead(b) || a.name.localeCompare(b.name));
   return {cards, bypath};

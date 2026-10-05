@@ -179,6 +179,8 @@ function family(path, pieces){
   if (/^sets\.(idle|Adoulin|Town|me\.idle|luopan\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
   if (/^sets\.(engaged|me\.engaged|luopan\.engaged)/.test(p)) return 'engaged';
   if (/^sets\.pet|Pet|pet_/.test(p)) return 'pet';
+  // the enmity sets a tank wears for its job abilities and spells (sets.FullEnmity, EnmityMax, midcast.SIRDEnmity)
+  if (/^sets\.(midcast\.)?\w*Enmity\w*$/.test(p)) return 'enmity';
   if (/^sets\.precast\.FC/.test(p)) return 'fc';
   if (/^sets\.precast\.WS/.test(p)) return 'ws';
   if (/^sets\.precast/.test(p)) return 'ja';
