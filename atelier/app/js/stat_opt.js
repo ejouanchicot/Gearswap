@@ -162,8 +162,10 @@ function statDefaultOf(s){
   if (family(s.path, s.pieces) === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) return ['enhdur', 'enhSkill', 'hp'];
   if (/refresh/i.test(p)) return ['refresh', 'pdtRed', 'mdtRed'];
   if (/regen/i.test(p)) return ['regen', 'pdtRed', 'mdtRed'];
-  // a magic-defense set by its name (idle.MDT, MEva): not every set with Magic in it (Enhancing Magic)
-  if (/meva|mdt/i.test(p)) return ['mdtRed', 'meva', 'mdb'];
+  // a magic-defense set by its name (idle.MDT, MEva): not every set with Magic in it (Enhancing Magic). Guide_Paladin
+  // (Idle MDT, Magical Damage Mitigation): resist first (magic evasion and the elemental resistances move the resist
+  // steps 1, 1/2, 1/4, 1/8), then the Magic Defense Bonus divides what lands; the MDT at its cap is a floor
+  if (/meva|mdt/i.test(p)) return ['meva', 'eleRes', 'mdb'];
   // a tank's idle (Guide_Paladin idle sets): PDT / MDT capped, the HP pool and the enemy's crits as floors; then a PLD's
   // block (the shield skill and block chance of the gear), the DEF, the magic evasion
   // (the block only with a shield that does not block every hit already: Duban and Ochain, ~108 % at base, do)
