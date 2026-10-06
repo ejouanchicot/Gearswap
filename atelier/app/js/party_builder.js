@@ -12,7 +12,10 @@ Object.assign(T.fr, {
   pbResult: 'Ce que le groupe te donne', pbTarget: 'Cible', pbSaved: 'Mes groupes', pbSave: '+ Enregistrer ce groupe', pbSaveAsk: 'Nom du groupe (Sortie, Odyssey, Trusts XP…)',
   pbForget: 'Oublier ce groupe', pbLoaded: 'Groupe « {n} » remis.', pbNoSaved: 'aucun : compose ton groupe puis enregistre-le',
   pbOther: 'Autres debuffs sur la cible (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Défense {a} → {b}', pbEvaNow: 'Évasion {a} → {b}',
-  pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbJob_GEO: 'Bulles', pbJob_BRD: 'Chansons', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
+  pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbOffense: 'Combat', pbAttrs: 'Attributs', pbGear: 'Équipement et capacités', pbOther2: 'Autres',
+  pbSongs: 'Chansons', pbSongsNote: '{n} / {m} : un clic place la chanson, un autre la retire', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Valeur de chaque roll',
+  pbIndiNote: 'sur le GEO et le groupe proche', pbGeoNote: 'la luopan, sur la cible ou le groupe', pbEntrustNote: 'une Indi donnée à un allié',
+  pbSvHint: 'chansons ×2', pbClarionHint: '+1 chanson', pbLsHint: 'renforce Dia', pbEnHint: 'dégâts en plus', pbDefDown: 'Déf cible −', pbAtkDown: 'Att cible −', pbEvaDown: 'Éva cible −', pbJob_GEO: 'Bulles', pbJob_BRD: 'Chansons', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
 });
 Object.assign(T.en, {
   pbTitle: 'My party', pbWhy: 'Add your party members: each comes with its usual buffs. What is ticked counts; one click to change.',
@@ -20,7 +23,10 @@ Object.assign(T.en, {
   pbResult: 'What the party gives you', pbTarget: 'Target', pbSaved: 'My parties', pbSave: '+ Save this party', pbSaveAsk: 'Party name (Sortie, Odyssey, Trusts XP…)',
   pbForget: 'Forget this party', pbLoaded: 'Party “{n}” back.', pbNoSaved: 'none: build your party, then save it',
   pbOther: 'Other debuffs on the target (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Defense {a} → {b}', pbEvaNow: 'Evasion {a} → {b}',
-  pbBuffs: 'On you', pbOnTarget: 'On the target', pbJob_GEO: 'Bubbles', pbJob_BRD: 'Songs', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
+  pbBuffs: 'On you', pbOnTarget: 'On the target', pbOffense: 'Combat', pbAttrs: 'Attributes', pbGear: 'Gear and abilities', pbOther2: 'Others',
+  pbSongs: 'Songs', pbSongsNote: '{n} / {m}: a click places the song, another takes it off', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Each roll’s number',
+  pbIndiNote: 'on the GEO and the party near', pbGeoNote: 'the luopan, on the target or the party', pbEntrustNote: 'an Indi given to an ally',
+  pbSvHint: 'songs ×2', pbClarionHint: '+1 song', pbLsHint: 'strengthens Dia', pbEnHint: 'extra damage', pbDefDown: 'Tgt Def −', pbAtkDown: 'Tgt Atk −', pbEvaDown: 'Tgt Eva −', pbJob_GEO: 'Bubbles', pbJob_BRD: 'Songs', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
 });
 
 const PB_FOE = ['edefp', 'eeva', 'emdb', 'emeva', 'eres', 'estatp', 'ecrit', 'eatkp', 'egambit', 'eresu', 'eallstat', 'eslow', 'edot', 'estr', 'edex', 'evit', 'eagi', 'eint', 'emnd', 'echr'];
@@ -90,61 +96,80 @@ const SONG_SHORT = v => v.replace(' March', '').replace(' Madrigal', ' Madr.').r
 // The buttons of what a job casts on the target (FOE_JA): its names, a pet's move without its "Pet:"
 function pbFoeChips(job, b){
   const names = Object.keys(FOE_JA[job] || {});
-  return names.length ? pbMini(t('pbOnTarget'), pbChips(names.map(n => pbChip(`data-foeja="${esc(n)}"`, n.includes(': ') ? n.split(': ')[1] : n,
-    (b.foeJa || []).includes(n), n)).join(''))) : '';
+  return names.length ? pbSec(t('pbOnTarget'), pbGrid(names.map(n => pbOpt(`data-foeja="${esc(n)}"`, n.includes(': ') ? n.split(': ')[1] : n,
+    (b.foeJa || []).includes(n), pbHint(FOE_JA[job][n]), '', n)).join(''))) : '';
 }
 function pbBody(job, b, shown){
   const inner = pbBodyOwn(job, b, shown), foe = ['WHM', 'RDM'].includes(job) ? '' : pbFoeChips(job, b);
   return inner + foe;
 }
+// What a choice gives, as the small line under its name: the stats of its table (a song, a roll, a bubble)
+const pbStat = k => ((FX_SHORT[k] || FX_LABEL[k] || [k.toUpperCase(), k.toUpperCase()])[S.lang === 'fr' ? 0 : 1]);
+// only the stats (a table's own fields, lim, shot, elem..., are left out)
+const PB_ATTRS = ['str', 'dex', 'vit', 'agi', 'int', 'mnd', 'chr'];
+const pbHint = def => [...new Set(Object.keys(def || {}).filter(k => FX_SHORT[k] || FX_LABEL[k] || PB_ATTRS.includes(k)).map(pbStat))].join(' · ');
+// A button with its effect under its name; a badge for its place (a song's slot, a roll's number)
+const pbOpt = (attrs, label, on, hint = '', badge = '', tip = '') => `<button class="chip pbc pbopt" ${attrs} aria-pressed="${!!on}" title="${esc(tip || label)}">` +
+  `<span class="pbon">${esc(label)}</span>${hint && hint.toLowerCase() !== String(label).toLowerCase() && !String(label).toUpperCase().startsWith(hint) ? `<span class="pbhint">${esc(hint)}</span>` : ''}${badge ? `<i class="pbbadge">${esc(badge)}</i>` : ''}</button>`;
+const pbGrid = html => `<div class="pbchips pbopts">${html}</div>`;
+const pbSec = (title, html, note = '') => `<section class="pbsec"><h4>${esc(title)}${note ? `<small>${esc(note)}</small>` : ''}</h4>${html}</section>`;
+const pbGroup = (label, html) => `<div class="pbgrp"><span class="pbgrpl">${esc(label)}</span>${html}</div>`;
+const SONG_GROUPS = [['March', /March/], ['Minuet', /Minuet/], ['Madrigal', /Madrigal/], ['Aria', /Aria/], ['Etude', /Etude/]];
+const BUBBLE_GROUPS = [[() => t('pbOffense'), ['Fury', 'Haste', 'Precision', 'Acumen', 'Focus']], [() => t('pbAttrs'), ['STR', 'DEX', 'VIT', 'AGI', 'INT', 'MND', 'CHR']],
+  [() => t('pbOnTarget'), ['Frailty', 'Torpor', 'Malaise', 'Languor']]];
 function pbBodyOwn(job, b, shown){
   const whm = shown.includes('WHM'), rdm = shown.includes('RDM');
-  const tier = (k, tiers) => Object.keys(tiers).map(v => pbChip(`data-foeseg="${k}" data-v="${esc(v)}"`, tierShort(v), b[k] === v, v)).join('');
+  const tier = (k, tiers) => `<div class="pbchips pbtier">${Object.keys(tiers).map(v => pbChip(`data-foeseg="${k}" data-v="${esc(v)}"`, tierShort(v), b[k] === v, v)).join('')}</div>`;
   if (job === 'GEO') {
-    const mode = S._pbGeoMode || 'indi';
-    const badge = v => GEO_MODES.filter(([k]) => b[k] === v).map(([, l]) => l[0]).join('');
-    const modes = GEO_MODES.map(([k, l]) => `<button class="chip pbmode" data-pbgeomode="${k}" aria-pressed="${mode === k}">${esc(l)}${b[k] ? ` · ${esc(b[k])}` : ''}</button>`).join('');
-    const list = Object.keys(BUBBLES).concat(Object.keys(GEO_DEBUFFS));
-    return pbChips(modes) + pbChips(list.map(v => pbChip(`data-pbset="${mode}|${esc(v)}"`, v, b[mode] === v, `${GEO_MODES.find(x => x[0] === mode)[1]}-${v}`, badge(v))).join('')) +
-      pbChips(pbChip('data-buffflag="bog"', 'Blaze of Glory', b.bog, t('bogTip')) + pbChip('data-buffflag="ecliptic"', 'Ecliptic', b.ecliptic, t('eclipticTip')) +
-        pbChip('data-buffflag="bolster"', 'Bolster', b.bolster, t('bolsterTip')) + pbPlus(b, 'geoPlus', 'Geomancy', 10));
+    const place = (key, label, note) => pbSec(label, BUBBLE_GROUPS.map(([g, list]) => pbGroup(g(), pbGrid(list.map(v =>
+      pbOpt(`data-pbset="${key}|${esc(v)}"`, v, b[key] === v, pbHint(BUBBLES[v] || GEO_DEBUFFS[v]), '', `${label}-${v}`)).join('')))).join(''), note);
+    return place('indi', 'Indi', t('pbIndiNote')) + place('geo', 'Geo', t('pbGeoNote')) + place('entrust', 'Entrust', t('pbEntrustNote')) +
+      pbSec(t('pbGear'), pbGrid(pbOpt('data-buffflag="bog"', 'Blaze of Glory', b.bog, 'Geo +50 %', '', t('bogTip')) +
+        pbOpt('data-buffflag="ecliptic"', 'Ecliptic', b.ecliptic, 'Geo +25 %', '', t('eclipticTip')) + pbOpt('data-buffflag="bolster"', 'Bolster', b.bolster, 'Indi, Geo ×2', '', t('bolsterTip'))) +
+        pbGroup(t('pGear'), pbPlus(b, 'geoPlus', 'Geomancy', 10)));
   }
   if (job === 'BRD') {
-    const slots = songSlots(b), at = v => slots.findIndex(i => b['song' + i] === v);
-    return pbChips(Object.keys(SONGS).map(v => pbChip(`data-pbsong="${esc(v)}"`, SONG_SHORT(v), at(v) >= 0, v, at(v) >= 0 ? String(at(v) + 1) : '')).join('')) +
-      pbChips(pbChip('data-buffflag="soulVoice"', 'Soul Voice', b.soulVoice, t('svTip')) + pbChip('data-buffflag="clarion"', 'Clarion', b.clarion, t('clarionTip')) +
-        pbPlus(b, 'songsPlus', 'Songs', 9)) +
-      pbMini('Marcato', pbChips(slots.map(i => pbChip(`data-marcato="${i}"`, String(i + 1), b.marcato != null && !b.soulVoice && +b.marcato === i, t('marcatoOn', {n: i + 1}))).join(''))) +
-      (slots.some(i => b['song' + i] === 'Aria of Passion') ? pbMini('Aria', pbChips(Object.keys(ARIA_HORN).map(st =>
-        pbChip(`data-foeseg="ariaStage" data-v="${st}"`, 'Lough. ' + st, (b.ariaStage || 'V') === st, t('ariaTip', {n: ARIA_HORN[st]}))).join(''))) : '');
+    const slots = songSlots(b), at = v => slots.findIndex(i => b['song' + i] === v), songs = Object.keys(SONGS);
+    const used = slots.filter(i => b['song' + i]).length;
+    const groups = SONG_GROUPS.map(([g, re]) => pbGroup(g, pbGrid(songs.filter(v => re.test(v)).map(v =>
+      pbOpt(`data-pbsong="${esc(v)}"`, SONG_SHORT(v), at(v) >= 0, pbHint(SONGS[v]), at(v) >= 0 ? String(at(v) + 1) : '', v)).join('')))).join('');
+    return pbSec(t('pbSongs'), groups, t('pbSongsNote', {n: used, m: slots.length})) +
+      pbSec(t('pbGear'), pbGroup(t('pGear'), pbPlus(b, 'songsPlus', 'Songs', 9)) +
+        pbGroup(t('bJa'), pbGrid(pbOpt('data-buffflag="soulVoice"', 'Soul Voice', b.soulVoice, t('pbSvHint'), '', t('svTip')) +
+          pbOpt('data-buffflag="clarion"', 'Clarion Call', b.clarion, t('pbClarionHint'), '', t('clarionTip')))) +
+        pbGroup('Marcato', `<div class="pbchips pbtier">${slots.map(i => pbChip(`data-marcato="${i}"`, String(i + 1), b.marcato != null && !b.soulVoice && +b.marcato === i, t('marcatoOn', {n: i + 1}))).join('')}</div>`) +
+        (slots.some(i => b['song' + i] === 'Aria of Passion') ? pbGroup('Loughnashade', `<div class="pbchips pbtier">${Object.keys(ARIA_HORN).map(st =>
+          pbChip(`data-foeseg="ariaStage" data-v="${st}"`, st, (b.ariaStage || 'V') === st, t('ariaTip', {n: ARIA_HORN[st]}))).join('')}</div>`) : ''));
   }
   if (job === 'COR') {
     const at = v => [0, 1].findIndex(i => b['roll' + i] === v);
-    const picked = [0, 1].filter(i => b['roll' + i]).map(i => `<span class="pbroll"><b>${esc(b['roll' + i])}</b>${pbSel(b, 'roll' + i + 'n', ROMAN, '', 'XI')}${rollChips(b, i)}</span>`).join('');
-    return pbChips(Object.keys(ROLLS).map(v => pbChip(`data-pbroll="${esc(v)}"`, v, at(v) >= 0, v + ' Roll', at(v) >= 0 ? String(at(v) + 1) : '')).join('')) +
-      (picked ? `<div class="pbrolls">${picked}</div>` : '') +
-      pbChips(pbChip('data-buffflag="lightshot"', 'Light Shot', b.lightshot, t('lsTip')) + pbPlus(b, 'rollsPlus', 'Rolls', 8));
+    const picked = [0, 1].filter(i => b['roll' + i]).map(i => pbGroup(b['roll' + i], `<div class="pbrollctl">${pbSel(b, 'roll' + i + 'n', ROMAN, '', 'XI')}${rollChips(b, i)}</div>`)).join('');
+    return pbSec(t('pbRolls'), pbGrid(Object.keys(ROLLS).map(v => pbOpt(`data-pbroll="${esc(v)}"`, v, at(v) >= 0, pbHint(ROLLS[v]), at(v) >= 0 ? String(at(v) + 1) : '', v + ' Roll')).join('')),
+      t('pbRollsNote', {n: [0, 1].filter(i => b['roll' + i]).length})) +
+      (picked ? pbSec(t('pbRollValues'), picked) : '') +
+      pbSec(t('pbGear'), pbGroup(t('pGear'), pbPlus(b, 'rollsPlus', 'Rolls', 8)) + pbGroup('Light Shot', pbGrid(pbOpt('data-buffflag="lightshot"', 'Light Shot', b.lightshot, t('pbLsHint'), '', t('lsTip')))));
   }
-  const tierRow = html => `<div class="pbchips pbtier">${html}</div>`;
-  const protect = pbMini('Protect', tierRow(tier('protect', PROTECT))) + pbMini('Shell', tierRow(tier('shell', SHELL)));
-  if (job === 'WHM') return protect + pbChips((rdm ? '' : pbChip('data-foeseg="haste" data-v="Haste"', 'Haste', b.haste === 'Haste')) +
-    pbChip('data-buffflag="auspice"', 'Auspice', b.auspice, t('auspiceTip')) + pbChip('data-foeseg="dia" data-v="Dia II"', 'Dia II', b.dia === 'Dia II'));
+  const protect = pbGroup('Protect', tier('protect', PROTECT)) + pbGroup('Shell', tier('shell', SHELL));
+  if (job === 'WHM') return pbSec(t('pbBuffs'), protect + pbGroup(t('pbOther2'), pbGrid((rdm ? '' : pbOpt('data-foeseg="haste" data-v="Haste"', 'Haste', b.haste === 'Haste', 'Haste')) +
+    pbOpt('data-buffflag="auspice"', 'Auspice', b.auspice, 'Subtle Blow', '', t('auspiceTip'))))) +
+    pbSec(t('pbOnTarget'), pbGrid(pbOpt('data-foeseg="dia" data-v="Dia II"', 'Dia II', b.dia === 'Dia II', t('pbDefDown'))));
   if (job === 'RDM') {
     const nm = isNmTarget(enemyKey(b.enemy)), sabX = nm ? (b.sabGloves ? 1.39 : 1.25) : (b.sabGloves ? 2.14 : 2);
-    return (whm ? '' : protect) +
-      pbMini(t('pbBuffs'), pbChips(pbChip('data-foeseg="haste" data-v="Haste II"', 'Haste II', b.haste === 'Haste II') + pbChip('data-buffflag="enspell"', 'Enspell I', b.enspell, t('enspellTip')))) +
-      pbMini(t('pbOnTarget'), pbChips(pbChip('data-foeseg="dia" data-v="Dia III"', 'Dia III', b.dia === 'Dia III') + pbChip('data-foeseg="dia" data-v="Bio III"', 'Bio III', b.dia === 'Bio III') +
-        Object.keys(DISTRACT).map(v => pbChip(`data-foeseg="distract" data-v="${esc(v)}"`, v.replace('Distract', 'Distr.'), b.distract === v, v)).join('') +
-        pbChip('data-buffflag="saboteur"', `Saboteur ×${sabX}`, b.saboteur, t('sabTip'))));
+    return pbSec(t('pbBuffs'), (whm ? '' : protect) + pbGroup(t('pbOther2'), pbGrid(pbOpt('data-foeseg="haste" data-v="Haste II"', 'Haste II', b.haste === 'Haste II', 'Haste') +
+      pbOpt('data-buffflag="enspell"', 'Enspell I', b.enspell, t('pbEnHint'), '', t('enspellTip'))))) +
+      pbSec(t('pbOnTarget'), pbGroup('Dia · Bio', pbGrid(pbOpt('data-foeseg="dia" data-v="Dia III"', 'Dia III', b.dia === 'Dia III', t('pbDefDown')) +
+        pbOpt('data-foeseg="dia" data-v="Bio III"', 'Bio III', b.dia === 'Bio III', t('pbAtkDown')))) +
+        pbGroup('Distract', pbGrid(Object.keys(DISTRACT).map(v => pbOpt(`data-foeseg="distract" data-v="${esc(v)}"`, v, b.distract === v, t('pbEvaDown'))).join('') +
+          pbOpt('data-buffflag="saboteur"', 'Saboteur', b.saboteur, `×${sabX}`, '', t('sabTip')))));
   }
-  if (job === 'SCH') return pbChips(Object.keys(STORMS).map(v => pbChip(`data-pbset="storm|${esc(v)}"`, v.replace('storm II', ''), b.storm === v, v)).join(''));
-  // a job whose abilities reach you (none: its card is what it casts on the target, added by pbBody)
+  if (job === 'SCH') return pbSec('Storm', pbGrid(Object.keys(STORMS).map(v => pbOpt(`data-pbset="storm|${esc(v)}"`, v.replace(' II', ''), b.storm === v, pbHint(STORMS[v]), '', v)).join('')));
+  // a job whose abilities reach you (none: its tab is what it casts on the target, added by pbBody)
   const list = pbJaJobs().get(job) || [];
   if (!list.length) return '';
-  return pbChips(list.map(ja => `<button class="chip pbc ja-party" data-ja="${esc(ja.name)}" aria-pressed="${jaOn(b, ja.name)}" title="${esc(jaTip(ja))}">` +
-    `${esc(ja.name.replace(' · party', ''))}</button>`).join('')) +
+  return pbSec(t('pbBuffs'), pbGrid(list.map(ja => `<button class="chip pbc pbopt ja-party" data-ja="${esc(ja.name)}" aria-pressed="${jaOn(b, ja.name)}" title="${esc(jaTip(ja))}">` +
+    `<span class="pbon">${esc(ja.name.replace(' · party', ''))}</span></button>`).join('')) +
     (list.some(x => x.name === 'Warcry · party') && jaOn(b, 'Warcry · party') ? warcryHTML(b, true) : '') +
-    (list.some(x => x.name === 'Haste Samba') && jaOn(b, 'Haste Samba') ? sambaHTML(b) : '');
+    (list.some(x => x.name === 'Haste Samba') && jaOn(b, 'Haste Samba') ? sambaHTML(b) : ''));
 }
 
 // What a source gives, each stat once: yours, then what comes off the target in red

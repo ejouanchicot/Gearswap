@@ -526,3 +526,22 @@
 .combattab .pbpanel .pbchips{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
 .combattab .pbpanel .pbchips.pbtier{grid-template-columns:repeat(5,minmax(0,64px))}
 .combattab .pbpanel .pbmini{grid-template-columns:110px minmax(0,1fr)}
+
+/* the member's panel, airy (party_builder.js pbBodyOwn): titled sections, choices by family, each with what it gives */
+.pbpanel > .pbbody{padding:6px 18px 18px;gap:0}
+.pbsec{display:grid;gap:10px;padding:14px 0;border-bottom:1px solid var(--line)}
+.pbsec:last-child{border-bottom:0}
+.pbsec h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);display:flex;align-items:baseline;gap:10px}
+.pbsec h4 small{font-size:12px;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:400}
+.pbgrp{display:grid;grid-template-columns:120px minmax(0,1fr);align-items:start;gap:12px}
+.pbgrpl{font-size:12.5px;color:var(--muted);padding-top:8px}
+.combattab .pbpanel .pbchips.pbopts{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.combattab .chip.pbopt{display:grid;justify-items:center;gap:1px;padding:7px 8px;min-height:44px;border-radius:10px}
+.pbon{font-size:12.5px;font-weight:600}
+.pbhint{font-size:10.5px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.chip.pbopt[aria-pressed="true"] .pbhint{color:var(--accent)}
+.combattab .pbpanel .pbchips.pbtier{grid-template-columns:repeat(5,minmax(0,56px))}
+.pbrollctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pbrollctl select{width:80px}
+.pbsec select.buffsel.plus{width:auto;min-width:150px}
+@media (max-width:900px){.pbgrp{grid-template-columns:minmax(0,1fr)}.pbgrpl{padding-top:0}}
