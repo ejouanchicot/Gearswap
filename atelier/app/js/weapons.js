@@ -270,49 +270,34 @@ function weaponPicker(s){
     const gate = WEAPON_GATES[m.name], off = gate && !/^(on|true)$/i.test((d.modes.find(x => x.name === gate.when) || {}).current || '');
     return row(m.desc, chip(m, '', !ex, `${t('auto')} · ${off ? gate.when + ' off' : piece ? piece.name : '—'}`, why) + chips(m, ex, m.current), ex); }).join('')}</div>`;
 }
-// The forced pieces' menus: Main, Sub and Ammo, from the list chosen (FORCE_SRCS), Auto first with what the job's
-// rules put there, then the list's pieces for that slot; an off hand the main hand cannot take is shown greyed, with why
-// Where the menus take their pieces from (S.forceSrc): your items, the weapons of the job's weapon modes, or every
-// item of the game the job wears (the catalog, level 99 or an item level)
-const FORCE_SRCS = ['mine', 'modes', 'game'];
+// Your pieces for a hand or the ammo (a weaponskill's off hand menu, ws_page.js), each name once
 function forceList(slot){
-  const seen = new Set(), uniq = l => l.filter(x => x && x.name && !isEmpty(x) && !seen.has(x.name) && seen.add(x.name));
-  const src = S.forceSrc || 'mine', c = catalog();
-  if (src === 'modes') return uniq(weaponModes(data()).flatMap(m => m.values.map(v => ((m.sets[v] || {}).pieces || {})[slot])));
-  if (src === 'game') return !c ? [] : uniq(c.src.items.filter(r => r[2].split(' ').includes(slot) && r[3].split(' ').includes(S.job)
-    && (r[4] >= 99 || r[5] > 0)).map(r => ({name: r[1]}))).sort((a, b) => a.name.localeCompare(b.name));
-  return uniq((ownedOf() || {})[slot] || []);
+  const seen = new Set();
+  return ((ownedOf() || {})[slot] || []).filter(x => x && x.name && !isEmpty(x) && !seen.has(x.name) && seen.add(x.name));
 }
-function forceLines(s, line){
-  const f = slotForce(), auto = withWeapons(s, 'force').pieces, eff = withWeapons(s).pieces, src = S.forceSrc || 'mine';
-  const srcs = FORCE_SRCS.map(k => `<button type="button" data-fsrc="${k}" aria-pressed="${src === k}" title="${esc(t('fsrcTip_' + k))}">${esc(t('fsrc_' + k))}</button>`).join('');
-  // a set named after a weapon (NaeglingKC) keeps that weapon's main and sub: their menus say so, greyed
-  const named = weaponModes(data()).map(m => m.name === 'MainWeapon' && weaponOfPath(s.path, m)).find(Boolean);
-  return FORCE_SLOTS.map(slot => {
-    if (named && slot !== 'ammo') return line(SLOT_NAMES[S.lang][slot], `<select class="wmenu buffsel" disabled><option>${esc(t('setWeaponsTag', {v: named}) + ' · ' + ((eff[slot] || {}).name || '—'))}</option></select>`);
-    const a = auto[slot], cur = f[slot], why = x => slot !== 'sub' || subFits(eff.main, x) ? '' : subWhy(eff.main, x), list = forceList(slot);
-    // the piece forced from another list stays shown, chosen
-    const kept = cur && !list.some(x => x.name === cur.name) ? `<option value="cur" selected>${esc(cur.name)}</option>` : '';
-    const sel = `<select class="wmenu buffsel fslot ${cur ? 'set' : ''}" data-fslot="${slot}" aria-label="${esc(SLOT_NAMES[S.lang][slot])}">` +
-      `<option value="">${esc(t('auto') + ' · ' + (a && !isEmpty(a) ? a.name : '—'))}</option>` + kept +
-      (slot === 'sub' ? fitOptions(list, why, cur, eff.main) : list.map((x, i) => `<option value="${i}" ${cur && cur.name === x.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')) +
-      (src === 'game' && !catalog() ? `<option disabled>${esc(t('fsrcNoCat'))}</option>` : '') + `</select>`;
-    return line(SLOT_NAMES[S.lang][slot], sel);
-  }).join('') + `<div class="wsrc">${line(t('fsrcLbl'), `<div class="variants">${srcs}</div>`)}</div>`;
+// What the job's GearSwap puts in the off hand and the ammo slot with the weapon chosen: shown, not chosen (in game the
+// weapon state decides them); a piece forced in the page (a click on its slot) says so, with the way back to Auto
+function weaponResultLines(s, line){
+  const eff = withWeapons(s), f = slotForce();
+  return ['sub', 'ammo'].map(slot => { const p = eff.pieces[slot];
+    if (!p || isEmpty(p)) return '';
+    const forced = f[slot] && f[slot].name === p.name;
+    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted">${esc(forced ? t('forcedTag') : t('byGearSwap'))}</small>` +
+      (forced ? ` <button class="linkbtn" data-unforce="${slot}">${esc(t('backToAuto'))}</button>` : '') + `</span>`); }).join('') +
+    (f.main ? line(SLOT_NAMES[S.lang].main, `<span class="wauto"><b>${esc(f.main.name)}</b> <small class="muted">${esc(t('forcedTag'))}</small> <button class="linkbtn" data-unforce="main">${esc(t('backToAuto'))}</button></span>`) : '');
 }
-// One menu a weapon mode: Auto (what the job's rules put there) then its weapons; '' when the set
-// shows no weapon, null when the job's weapons need the full picker (a stance, a switch)
 function weaponMenus(s){
   const d = data();
   if (family(s.path, s.pieces) === 'weapons') return '';
   if (hybridMode(d) || weaponModes(d).some(m => WEAPON_GATES[m.name])) return null;
   const slotOf = m => m.onlyEmpty ? m.name.slice(5) : (m.name === 'MainWeapon' ? 'main' : Object.keys(m.sets[m.values[0]].pieces)[0]);
   const modes = weaponModes(d).filter(m => !m.onlyEmpty && !isEmpty(s.pieces[slotOf(m)]));
+  // each weapon state under its name in game (MainWeapon, Shield...): [name, its menu]
   return modes.map(m => { const ex = explicitWeapon(m), auto = withWeapons(s, m.name).pieces[slotOf(m)];
     const sel = `<select class="wmenu buffsel ${ex ? 'set' : ''}" data-wmode="${esc(m.name)}" aria-label="${esc(m.desc)}">` +
       `<option value="">${esc(t('auto') + ' · ' + (auto && !isEmpty(auto) ? auto.name : '—'))}</option>` +
       m.values.map(v => `<option value="${esc(v)}" ${v === ex ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select>`;
-    return modes.length > 1 ? `<label class="wmlbl"><span>${esc(m.desc)}</span>${sel}</label>` : sel; }).join('');
+    return [m.name, sel, m.desc]; });
 }
 
 /* ---- the weapon held for a weaponskill ---- */

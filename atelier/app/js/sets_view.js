@@ -140,7 +140,9 @@ function setHeadHTML(card, ci, vi, s, acts){
   const tiers = cur && cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
   if (cur && cur.subs.length) ctl += line(t('subVarLbl'), (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join(''));
   const menus = weaponMenus(s);
-  const picks = (menus ? pick(t('weaponsLbl'), menus) : '') + (family(s.path, s.pieces) !== 'weapons' ? forceLines(s, pick) : '');
+  // the weapon states as in game, then what the job's GearSwap puts with them (off hand, ammo)
+  const picks = (menus ? menus.map(([name, sel, desc]) => pick(name, sel).replace('<span class="wslbl">', `<span class="wslbl" title="${esc(desc || '')}">`)).join('') : '') +
+    (family(s.path, s.pieces) !== 'weapons' ? weaponResultLines(s, pick) : '');
   // a job with a stance or a switch on its weapons keeps the full weapon picker
   const picker = menus === null ? weaponPicker(s) : '';
   const bar = ctl || picks || picker ? `<div class="setctl">${ctl ? `<div class="wshead">${ctl}</div>` : ''}${picks ? `<div class="wpicks">${picks}</div>` : ''}${picker}</div>` : '';

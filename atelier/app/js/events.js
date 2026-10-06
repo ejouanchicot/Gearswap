@@ -90,7 +90,7 @@ document.addEventListener('click', e => {
   if ('keysall' in d) { S.keysAll = !S.keysAll; render(); return; }
   if ('keyssave' in d) { saveKeys(); return; }
   if ('keysundo' in d) { delete S.keyOv[S.char]; S.keyDirty[S.char] = false; S.toast = ''; render(); return; }
-  if (d.fsrc) { S.forceSrc = d.fsrc; if (d.fsrc === 'game' && !window.ATELIER_CATALOG) loadCatalog(render); save(); render(); return; }
+  if (d.unforce) { setForce(d.unforce, null); save(); render(); return; }
   if (d.wmode) { const k = S.char + '|' + S.job + '|' + d.wmode; if (d.wval) S.weapons[k] = d.wval; else delete S.weapons[k]; render(); return; }
   if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
   if (d.simpick) { const [k, ...n] = d.simpick.split('|'); Object.assign(simState(), {kind: k, name: n.join('|')}); simRun(); return; }
@@ -237,10 +237,6 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('simrecasts')) { simState().recasts = e.target.checked; simRun(); }
   if (e.target.dataset && e.target.dataset.simstate) { const st = simState(); st.states = st.states || {}; st.states[e.target.dataset.simstate] = e.target.value; simRun(); }
   if (e.target.classList.contains('klayout')) { S.layout = e.target.value; renderKeyEdit(); save(); }
-  if (e.target.classList.contains('fslot')) { const slot = e.target.dataset.fslot;
-    if (e.target.value === 'cur') return;
-    const x = e.target.value === '' ? null : forceList(slot)[+e.target.value];
-    setForce(slot, x ? optPieces({[slot]: {name: x.name, augs: x.augs}})[slot] : null); save(); render(); return; }
   if (e.target.classList.contains('wmenu')) { const k = S.char + '|' + S.job + '|' + e.target.dataset.wmode;
     if (e.target.value) S.weapons[k] = e.target.value; else delete S.weapons[k]; render(); return; }
   if (e.target.classList.contains('heldsubsel') && e.target.value === 'cur') return;

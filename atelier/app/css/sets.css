@@ -141,7 +141,6 @@
 .wpicks{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:12px;align-items:flex-end}
 .wpick{display:grid;gap:4px}
 .wpick .wmenu{min-width:170px;max-width:250px}
-.wpicks .wsrc{flex-basis:100%}
 .wsctl{padding-top:2px}
 .wsctl .wsbase{margin:0}
 @media (max-width: 1100px){.wstop{grid-template-columns:minmax(0,1fr)}}
@@ -373,7 +372,6 @@
 .setctl .wshelp{flex-basis:100%}
 .setctl .wpick{display:flex;align-items:center;gap:8px}
 .setctl .wpicks{gap:8px 20px;align-items:center}
-.setctl .wpicks .wsrc{flex-basis:auto}
 .setctl .wpick select{max-width:230px}
 .setrow.alias b{font-weight:500;font-style:italic}
 .setrow.alias code{color:var(--faint)}
@@ -695,8 +693,6 @@
 .setsx.ui2 .wpicks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px;align-items:center}
 .setsx.ui2 .wpick{grid-template-columns:72px minmax(0,1fr);align-items:center;gap:10px}
 .setsx.ui2 .wpick .wmenu,.setsx.ui2 .wpick .wsval{width:100%;max-width:none;min-width:0}
-.setsx.ui2 .wpicks .wsrc{grid-column:1 / -1}
-.setsx.ui2 .wpicks .wsrc .wpick{grid-template-columns:auto minmax(0,1fr)}
 .setsx.ui2 .globalcol .setstats{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
 .setsx.ui2 .setstats{grid-template-columns:168px minmax(0,1fr);column-gap:0}
 .setsx.ui2 .setstats > *:not(.stabs):not(.stabbody){grid-column:1 / -1}
@@ -766,3 +762,5 @@
 /* the set's pieces with the button that wears them in game under them (live.js equipBtnHTML) */
 .slotcol{display:grid;gap:8px;align-content:start;justify-items:stretch;width:max-content;max-width:100%}
 .slotcol .eqbtn{width:100%}
+/* what the job's GearSwap puts with the weapon chosen (weapons.js weaponResultLines): shown, not a menu */
+.wauto{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:13px}
