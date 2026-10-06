@@ -451,7 +451,7 @@
 .pbotherb{padding-top:10px}
 
 /* the party as a list (party_builder.js): a row a member, its editor under it */
-.pblayout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:18px;align-items:start}
+.pblayout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
 @media (max-width:1250px){.pblayout{grid-template-columns:minmax(0,1fr)}}
 .pbside{display:grid;gap:14px;position:sticky;top:12px}
 .pbparty{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
@@ -497,3 +497,32 @@
 .pbcard > footer{padding:6px 12px 8px}
 .pbcard > footer .pbgv{font-size:12px}
 .pbbody select.buffsel.plus{width:auto}
+
+/* every button of a card the same size, on or off (only the colour changes) */
+.combattab .pbchips{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px}
+.combattab .pbchips.pbtier{grid-template-columns:repeat(5,minmax(0,1fr))}
+.combattab .pbyou .bctl.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.combattab .pbyou .chip{font-weight:600;justify-content:center;text-align:center}
+.combattab .chip.pbc,.combattab .chip.pbmode{font-size:11.5px;padding:4px 6px;font-weight:600;justify-content:center;text-align:center;white-space:nowrap;overflow:visible;text-overflow:ellipsis;min-height:28px}
+.combattab .chip.pbc[aria-pressed="true"],.combattab .chip.pbmode[aria-pressed="true"]{font-weight:600}
+.combattab .pbchips select.buffsel{width:100%}
+.combattab .pbmini{grid-template-columns:70px minmax(0,1fr)}
+
+/* the party as tabs (party_builder.js renderCombatParty): a tab a member saying what it gives, its panel under them */
+.pbmain{display:grid;gap:0;min-width:0}
+.pbtabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+@media (max-width:1300px){.pbtabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pbtab{display:grid;gap:4px;align-content:start;text-align:left;padding:8px 10px;border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;background:var(--panel-2);color:var(--ink);cursor:pointer;min-width:0}
+.pbtab[aria-selected="true"]{background:var(--panel);border-color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
+.pbtabh{display:flex;align-items:center;gap:6px;min-width:0}
+.pbtabh b{font-size:14px}
+.pbtabh small{color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbtabg{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:11px;color:var(--good,#5bd17f);line-height:1.35;max-height:2.8em;overflow:hidden}
+.pbtabg .pneg{color:var(--bad,#ff7b72)}
+.pbpanel{background:var(--panel);border:1px solid var(--accent);border-radius:0 0 12px 12px;display:flex;flex-direction:column}
+.pbpanel > header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line)}
+.pbpanel > .pbbody{padding:14px;gap:10px}
+.pbpanel > footer{display:grid;gap:4px;padding:10px 14px;border-top:1px dashed var(--line)}
+.combattab .pbpanel .pbchips{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+.combattab .pbpanel .pbchips.pbtier{grid-template-columns:repeat(5,minmax(0,64px))}
+.combattab .pbpanel .pbmini{grid-template-columns:110px minmax(0,1fr)}

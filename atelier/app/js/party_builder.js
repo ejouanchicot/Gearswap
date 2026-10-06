@@ -50,6 +50,10 @@ function pbJaJobs(){
   }
   return out;
 }
+// What a job casts on the target (FOE_JA, buffs.js), as its card's buttons; RDM, WHM and COR have theirs on their cards
+// already (Dia, Distract, Light Shot), WS is no job (the weaponskills' debuffs stay under "other debuffs")
+const pbFoeJobs = () => Object.keys(FOE_JA).filter(j => !['WS'].includes(j));
+const pbFoeOn = (b, job) => Object.keys(FOE_JA[job] || {}).some(n => (b.foeJa || []).includes(n));
 const pbMembers = b => b.pbMembers || [];
 // a member removed stays out even while a buff it shares is still on (Protect V with a RDM in the party)
 const pbGone = b => b.pbGone || [];
@@ -57,6 +61,7 @@ function pbShown(b){
   const ja = pbJaJobs(), out = j => pbGone(b).includes(j) && !pbMembers(b).includes(j);
   const shown = PB_JOBS.filter(j => !out(j.job) && (j.has(b) || pbMembers(b).includes(j.job))).map(j => j.job);
   for (const [job, list] of ja) if (!out(job) && (list.some(x => jaOn(b, x.name)) || pbMembers(b).includes(job))) shown.push(job);
+  for (const job of pbFoeJobs()) if (!shown.includes(job) && !out(job) && (pbFoeOn(b, job) || pbMembers(b).includes(job))) shown.push(job);
   return shown;
 }
 
@@ -82,7 +87,17 @@ const pbChips = html => `<div class="pbchips">${html}</div>`;
 const pbMini = (label, html) => `<div class="pbmini"><span class="pbminil">${esc(label)}</span>${html}</div>`;
 const GEO_MODES = [['indi', 'Indi'], ['geo', 'Geo'], ['entrust', 'Entrust']];
 const SONG_SHORT = v => v.replace(' March', '').replace(' Madrigal', ' Madr.').replace(' Etude', ' Ét.').replace('Aria of Passion', 'Aria');
+// The buttons of what a job casts on the target (FOE_JA): its names, a pet's move without its "Pet:"
+function pbFoeChips(job, b){
+  const names = Object.keys(FOE_JA[job] || {});
+  return names.length ? pbMini(t('pbOnTarget'), pbChips(names.map(n => pbChip(`data-foeja="${esc(n)}"`, n.includes(': ') ? n.split(': ')[1] : n,
+    (b.foeJa || []).includes(n), n)).join(''))) : '';
+}
 function pbBody(job, b, shown){
+  const inner = pbBodyOwn(job, b, shown), foe = ['WHM', 'RDM'].includes(job) ? '' : pbFoeChips(job, b);
+  return inner + foe;
+}
+function pbBodyOwn(job, b, shown){
   const whm = shown.includes('WHM'), rdm = shown.includes('RDM');
   const tier = (k, tiers) => Object.keys(tiers).map(v => pbChip(`data-foeseg="${k}" data-v="${esc(v)}"`, tierShort(v), b[k] === v, v)).join('');
   if (job === 'GEO') {
@@ -98,7 +113,10 @@ function pbBody(job, b, shown){
     const slots = songSlots(b), at = v => slots.findIndex(i => b['song' + i] === v);
     return pbChips(Object.keys(SONGS).map(v => pbChip(`data-pbsong="${esc(v)}"`, SONG_SHORT(v), at(v) >= 0, v, at(v) >= 0 ? String(at(v) + 1) : '')).join('')) +
       pbChips(pbChip('data-buffflag="soulVoice"', 'Soul Voice', b.soulVoice, t('svTip')) + pbChip('data-buffflag="clarion"', 'Clarion', b.clarion, t('clarionTip')) +
-        pbPlus(b, 'songsPlus', 'Songs', 9));
+        pbPlus(b, 'songsPlus', 'Songs', 9)) +
+      pbMini('Marcato', pbChips(slots.map(i => pbChip(`data-marcato="${i}"`, String(i + 1), b.marcato != null && !b.soulVoice && +b.marcato === i, t('marcatoOn', {n: i + 1}))).join(''))) +
+      (slots.some(i => b['song' + i] === 'Aria of Passion') ? pbMini('Aria', pbChips(Object.keys(ARIA_HORN).map(st =>
+        pbChip(`data-foeseg="ariaStage" data-v="${st}"`, 'Lough. ' + st, (b.ariaStage || 'V') === st, t('ariaTip', {n: ARIA_HORN[st]}))).join(''))) : '');
   }
   if (job === 'COR') {
     const at = v => [0, 1].findIndex(i => b['roll' + i] === v);
@@ -107,7 +125,8 @@ function pbBody(job, b, shown){
       (picked ? `<div class="pbrolls">${picked}</div>` : '') +
       pbChips(pbChip('data-buffflag="lightshot"', 'Light Shot', b.lightshot, t('lsTip')) + pbPlus(b, 'rollsPlus', 'Rolls', 8));
   }
-  const protect = pbMini('Protect', pbChips(tier('protect', PROTECT))) + pbMini('Shell', pbChips(tier('shell', SHELL)));
+  const tierRow = html => `<div class="pbchips pbtier">${html}</div>`;
+  const protect = pbMini('Protect', tierRow(tier('protect', PROTECT))) + pbMini('Shell', tierRow(tier('shell', SHELL)));
   if (job === 'WHM') return protect + pbChips((rdm ? '' : pbChip('data-foeseg="haste" data-v="Haste"', 'Haste', b.haste === 'Haste')) +
     pbChip('data-buffflag="auspice"', 'Auspice', b.auspice, t('auspiceTip')) + pbChip('data-foeseg="dia" data-v="Dia II"', 'Dia II', b.dia === 'Dia II'));
   if (job === 'RDM') {
@@ -119,8 +138,9 @@ function pbBody(job, b, shown){
         pbChip('data-buffflag="saboteur"', `Saboteur ×${sabX}`, b.saboteur, t('sabTip'))));
   }
   if (job === 'SCH') return pbChips(Object.keys(STORMS).map(v => pbChip(`data-pbset="storm|${esc(v)}"`, v.replace('storm II', ''), b.storm === v, v)).join(''));
-  // a job whose abilities reach you
+  // a job whose abilities reach you (none: its card is what it casts on the target, added by pbBody)
   const list = pbJaJobs().get(job) || [];
+  if (!list.length) return '';
   return pbChips(list.map(ja => `<button class="chip pbc ja-party" data-ja="${esc(ja.name)}" aria-pressed="${jaOn(b, ja.name)}" title="${esc(jaTip(ja))}">` +
     `${esc(ja.name.replace(' · party', ''))}</button>`).join('')) +
     (list.some(x => x.name === 'Warcry · party') && jaOn(b, 'Warcry · party') ? warcryHTML(b, true) : '') +
@@ -140,7 +160,7 @@ function pbGives(B, src){
 
 // The members not in the party yet, one button each, on a line over the cards
 function pbAddBar(shown){
-  const all = PB_JOBS.map(j => j.job).concat([...pbJaJobs().keys()]).filter(j => !shown.includes(j));
+  const all = [...new Set(PB_JOBS.map(j => j.job).concat([...pbJaJobs().keys()], pbFoeJobs()))].filter(j => !shown.includes(j));
   if (!all.length) return '';
   return `<div class="pbaddbar"><span class="pblbl">${esc(t('pbAddWhy'))}</span>` +
     all.map(j => `<button class="pbaddbtn" data-pbadd="${j}" title="${esc(t('pbAddWhy'))}">${emblem(j)}<span>+ ${esc(j)}</span></button>`).join('') + `</div>`;
@@ -162,36 +182,43 @@ function pbResult(B){
     `<p class="pbtgt"><b>${esc(T0.name)}</b> · ${esc(t('pbDefNow', {a: T0.def, b: T0.defAfter}))} · ${esc(t('pbEvaNow', {a: T0.eva, b: T0.evaAfter}))}</p></div></section>`;
 }
 
-function pbCard(job, b, shown, B){
-  const def = PB_JOBS.find(j => j.job === job), names = new Set((pbJaJobs().get(job) || []).map(x => x.name));
-  const gives = pbGives(B, def ? def.src : v => names.has(v));
-  return `<section class="pbcard"><header><span class="pbjob">${emblem(job)}<b>${esc(job)}</b></span>` +
-    `<button class="pbx" data-pbdel="${job}" title="${esc(t('pbRemove'))}" aria-label="${esc(t('pbRemove'))}">×</button></header>` +
-    `<div class="pbbody">${pbBody(job, b, shown)}</div><footer><div class="pbgv">${gives || `<span class="muted">${esc(t('pbNothing'))}</span>`}</div></footer></section>`;
+// What a member gives you, for its tab and its panel's foot
+function pbGivesOf(job, b, B){
+  if (job === 'you') {
+    const ownJa = new Set(jasOf().filter(j => j.as !== 'party').map(j => j.name));
+    return pbGives(withAftermath(B, shownMain()), v => v === b.food || ownJa.has(v) || /Aftermath/.test(v));
+  }
+  const def = PB_JOBS.find(j => j.job === job), names = new Set((pbJaJobs().get(job) || []).map(x => x.name).concat(Object.keys(FOE_JA[job] || {})));
+  return pbGives(B, def ? (v => def.src(v) || names.has(v)) : v => names.has(v));
 }
 
-// The Combat tab of the new layout: the party as the game's party window (6 at most, you first), every choice a
-// button on its member's card; the total and the target beside it
+// The Combat tab of the new layout: the party as tabs (you first, 6 at most, each saying what it gives), the chosen
+// member's buttons in one panel under them; the total and the target beside it
 const PB_MAX = 6;
 function renderCombatParty(d){
   const b = buffState(), n = buffCount();
   buffPanelHTML();   // its parts: your own abilities, the target picker, the other debuffs (S._bparts)
   const P = S._bparts || {}, shown = pbShown(b), B = buffTotals();
+  const cur = S._pbTab === 'you' || shown.includes(S._pbTab) ? S._pbTab || 'you' : 'you';
   const head = `<header class="tabhead"><div><h2>${esc(t('ui2CombatTitle'))}</h2><p class="muted small">${esc(t('pbWhy'))}</p></div>` +
     `<div class="tabacts">${tierBarHTML()}<button class="btn ghost" data-buffendgame>${t('bEndgame')}</button>` +
     `<button class="btn ghost" data-buffreset ${n ? '' : 'disabled'}>${t('buffReset')}</button></div></header>`;
-  // your card's footer: what your food, aftermath and own abilities give (the aftermath of the weapon held, as the
-  // old card counted it: withAftermath)
-  const ownJa = new Set(jasOf().filter(j => j.as !== 'party').map(j => j.name));
-  const youGives = pbGives(withAftermath(buffTotals(), shownMain()), v => v === b.food || ownJa.has(v) || /Aftermath/.test(v));
-  const you = `<section class="pbcard pbyou"><header><span class="pbjob">${emblem(S.job)}<b>${esc(t('pbYou'))}</b><small>${esc(S.job)}/${esc(d.sub || '—')}</small></span></header>` +
-    `<div class="pbbody">${P.own || ''}</div><footer><div class="pbgv">${youGives || `<span class="muted">${esc(t('pbNothing'))}</span>`}</div></footer></section>`;
+  const tab = (key, label, sub) => { const g = pbGivesOf(key, b, B);
+    return `<button class="pbtab" role="tab" data-pbtab="${esc(key)}" aria-selected="${cur === key}">` +
+      `<span class="pbtabh">${emblem(key === 'you' ? S.job : key)}<b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span>` +
+      `<span class="pbtabg">${g || `<span class="muted">${esc(t('pbNothing'))}</span>`}</span></button>`; };
+  const tabs = `<div class="pbtabs" role="tablist">${tab('you', t('pbYou'), `${S.job}/${d.sub || '—'}`)}` +
+    `${shown.map(j => tab(j, j, PB_JOBS.find(x => x.job === j) ? t('pbJob_' + j) : '')).join('')}</div>`;
   const full = shown.length + 1 >= PB_MAX;
   const bar = `<div class="pbbar"><b>${esc(t('pbTitle'))}</b><span class="muted small">${shown.length + 1} / ${PB_MAX}</span>${full ? '' : pbAddBar(shown)}${pbSavedBar()}</div>`;
-  const cards = `<div class="pbgrid">${you}${shown.map(j => pbCard(j, b, shown, B)).join('')}</div>`;
+  const body = cur === 'you' ? (P.own || '') : pbBody(cur, b, shown);
+  const panel = `<section class="pbpanel"><header><span class="pbjob">${emblem(cur === 'you' ? S.job : cur)}<b>${esc(cur === 'you' ? t('pbYou') : cur)}</b></span>` +
+    (cur === 'you' ? '' : `<button class="btn ghost small" data-pbdel="${esc(cur)}">${esc(t('pbRemove'))}</button>`) + `</header>` +
+    `<div class="pbbody ${cur === 'you' ? 'pbyou' : ''}">${body}</div><footer><span class="pbgl">${esc(t('pbGives'))}</span>` +
+    `<div class="pbgv">${pbGivesOf(cur, b, B) || `<span class="muted">${esc(t('pbNothing'))}</span>`}</div></footer></section>`;
   const side = `<aside class="pbside">${pbResult(B)}${box('g-off', t('pbTarget'), P.tgt || '', `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}</aside>`;
   const other = P.foe ? `<details class="lgfold pbother"><summary>${esc(t('pbOther'))} ${P.foe.total || ''}</summary><div class="pbotherb">${P.foe.body}</div></details>` : '';
-  return `<div class="ui2tab combattab">${head}${bar}<div class="pblayout"><div>${cards}</div>${side}</div>${other}</div>`;
+  return `<div class="ui2tab combattab">${head}${bar}<div class="pblayout"><div class="pbmain">${tabs}${panel}</div>${side}</div>${other}</div>`;
 }
 
 // The party keys a saved party holds (yours and the target's stay out)
@@ -204,6 +231,7 @@ function pbKeys(){
 // one only when no other card holds it), save / load / forget a party
 function pbClick(d){
   const b = buffState();
+  if (d.pbtab) { S._pbTab = d.pbtab; render(); return; }
   if (d.pbgeomode) { S._pbGeoMode = d.pbgeomode; render(); return; }
   if (d.pbset) { const [k, v] = d.pbset.split('|'); if (b[k] === v) delete b[k]; else b[k] = v; }
   else if (d.pbsong) {
@@ -218,12 +246,14 @@ function pbClick(d){
   }
   else if (d.pbadd) {
     if (pbShown(b).length + 1 >= PB_MAX) return;
+    S._pbTab = d.pbadd;
     const j = d.pbadd, def = PB_JOBS.find(x => x.job === j);
     b.pbMembers = [...new Set([...pbMembers(b), j])];
     b.pbGone = pbGone(b).filter(x => x !== j);
     if (def) for (const [k, v] of Object.entries(def.def)) if (b[k] == null || b[k] === '') b[k] = v;
     if (b.off) delete b.off[j];
   } else if (d.pbdel) {
+    S._pbTab = 'you';
     const j = d.pbdel, def = PB_JOBS.find(x => x.job === j), shown = pbShown(b).filter(x => x !== j);
     b.pbMembers = pbMembers(b).filter(x => x !== j);
     b.pbGone = [...new Set([...pbGone(b), j])];
@@ -234,6 +264,7 @@ function pbClick(d){
     }
     if (j === 'WHM' && b.haste === 'Haste' && !shown.includes('RDM')) delete b.haste;
     for (const ja of pbJaJobs().get(j) || []) if (b.pja) delete b.pja[ja.name];
+    if (!['WHM', 'RDM'].includes(j) && b.foeJa) b.foeJa = b.foeJa.filter(n => !(n in (FOE_JA[j] || {})));
   } else if ('pbsave' in d) {
     const name = (prompt(t('pbSaveAsk')) || '').trim();
     if (!name) return;
