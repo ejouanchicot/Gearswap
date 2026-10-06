@@ -17,6 +17,8 @@ function openSlot(ci, slot){
   for (const o of opts) { o.orig = sameAs(o, orig); o.cur = eff.tried[slot] && sameAs(o, p);
     // the piece tried is this row's best version
     o.curMax = !!(eff.tried[slot] && o.upgrade && samePiece(o.upgrade.piece, p)); }
+  // the new layout: a window over the page with filters (gear_pick.js)
+  if (ui2()) return gpOpen(card, s, slot, p, opts, label);
   const hand = ['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons';
   const acts = (p && !hand ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '') +
     `<label class="chk"><input type="checkbox" data-allitems ${S.allItems ? 'checked' : ''}> ${t('allItems')}</label>` +
