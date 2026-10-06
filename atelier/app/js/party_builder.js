@@ -123,7 +123,8 @@ function pbBodyOwn(job, b, shown){
   const tier = (k, tiers) => `<div class="pbchips pbtier">${Object.keys(tiers).map(v => pbChip(`data-foeseg="${k}" data-v="${esc(v)}"`, tierShort(v), b[k] === v, v)).join('')}</div>`;
   if (job === 'GEO') {
     const cell = (key, v) => `<td><button class="pbdot" data-pbset="${key}|${esc(v)}" aria-pressed="${b[key] === v}" title="${esc(GEO_MODES.find(x => x[0] === key)[1] + '-' + v)}"></button></td>`;
-    const table = groups => `<table class="pbgeo"><thead><tr><th></th>${GEO_MODES.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>` +
+    // the same widths in both tables (a name column, three place columns of one size): the dots line up
+    const table = groups => `<table class="pbgeo"><colgroup><col><col class="pbgeoc"><col class="pbgeoc"><col class="pbgeoc"></colgroup><thead><tr><th></th>${GEO_MODES.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>` +
       groups.map(([g, list]) => `<tr class="pbgeog"><td colspan="4">${esc(g())}</td></tr>` + list.map(v => { const h = pbHint(BUBBLES[v] || GEO_DEBUFFS[v]);
         return `<tr><th><b>${esc(v)}</b>${h && h !== v ? `<small>${esc(h)}</small>` : ''}</th>${GEO_MODES.map(([k]) => cell(k, v)).join('')}</tr>`; }).join('')).join('') + `</tbody></table>`;
     const extras = pbSec(t('pbGear'), pbGrid(pbOpt('data-buffflag="bog"', 'Blaze of Glory', b.bog, 'Geo +50 %', '', t('bogTip')) +

@@ -562,7 +562,9 @@
 .pbtab .pbx{margin-left:auto;font-size:15px}
 .pbtab:focus-visible{outline:2px solid var(--accent)}
 .pbnote{margin:6px 0 0;font-size:12px;color:var(--muted)}
-.pbgeo{width:100%;border-collapse:collapse;font-size:12.5px}
+.pbgeo{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.pbgeo col.pbgeoc{width:64px}
+.pbgeo tbody th{overflow:hidden;text-overflow:ellipsis}
 .pbgeo thead th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:2px 4px 6px;text-align:center}
 .pbgeo tbody th{text-align:left;font-weight:400;padding:3px 6px 3px 0;white-space:nowrap}
 .pbgeo tbody th b{font-weight:600}
