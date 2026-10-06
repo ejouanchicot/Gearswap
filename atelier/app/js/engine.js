@@ -174,22 +174,30 @@ const MERIT_GROUPS = [[64, 128, 'mgHp'], [128, 192, 'mgAttr'], [192, 256, 'mgCom
 // A merit's highest level where it is known for sure: Max HP / MP 15, a combat or magic skill 8 (+16),
 // a job group merit 5; the others keep 15, the page does not guess theirs
 const meritCap = m => m.id >= 64 && m.id < 128 ? 15 : m.id >= 192 && m.id < 320 ? 8 : m.id >= 384 ? 5 : 15;
+// The rows of one merit group: its name, its level (an input), what it gives
+function meritRows(list, lo, hi, edits){
+  return list.filter(m => m.id >= lo && m.id < hi && m.key !== 'maximum_merit_points').map(m => {
+    const e = meritEffect(m), lv = meritLevel(m), changed = m.key in edits;
+    const total = e ? `${e.per * lv > 0 ? '+' : e.per * lv < 0 ? '−' : ''}${Math.abs(e.per * lv)}${e.unit}` : '';
+    return `<li class="${changed ? 'changed' : ''}"><span title="${esc(m.desc)}">${esc(m.en)}</span>` +
+      `<input class="meritin" id="merit-${esc(m.key)}" data-merit="${esc(m.key)}" type="number" min="0" max="${meritCap(m)}" value="${lv}">` +
+      `<i>${changed ? `${t('inGame')} ${m.level} · ` : ''}${esc(total)}</i></li>`; }).join('');
+}
+// The note over the merits and the button that puts back the levels read in game
+function meritBar(edits){
+  const c = measuredChar(), n = Object.keys(edits).length;
+  return `<div class="meritbar"><p class="muted">${t('meritsNote', {at: esc(c.at), s: esc(c.sub || '—')})}</p>` +
+    (n ? `<button class="btn ghost" data-action="meritreset">${t('meritsReset', {n})}</button>` : '') + `</div>`;
+}
 function renderMerits(){
-  const list = meritList(), c = measuredChar();
+  const list = meritList();
   if (!list) return `<div class="placeholder"><p>${t('noMerits')}</p></div>`;
   const edits = S.meritEdits[meritKey()] || {};
   const groups = MERIT_GROUPS.map(([lo, hi, label]) => {
-    const rows = list.filter(m => m.id >= lo && m.id < hi && m.key !== 'maximum_merit_points').map(m => {
-      const e = meritEffect(m), lv = meritLevel(m), changed = m.key in edits;
-      const total = e ? `${e.per * lv > 0 ? '+' : e.per * lv < 0 ? '−' : ''}${Math.abs(e.per * lv)}${e.unit}` : '';
-      return `<li class="${changed ? 'changed' : ''}"><span title="${esc(m.desc)}">${esc(m.en)}</span>` +
-        `<input class="meritin" id="merit-${esc(m.key)}" data-merit="${esc(m.key)}" type="number" min="0" max="${meritCap(m)}" value="${lv}">` +
-        `<i>${changed ? `${t('inGame')} ${m.level} · ` : ''}${esc(total)}</i></li>`; }).join('');
+    const rows = meritRows(list, lo, hi, edits);
     return rows ? box(MERIT_COLORS[label], t(label), `<ul class="meritlist">${rows}</ul>`) : '';
   }).join('');
-  const n = Object.keys(edits).length;
-  return `<div class="meritbar"><p class="muted">${t('meritsNote', {at: esc(c.at), s: esc(c.sub || '—')})}</p>` +
-    (n ? `<button class="btn ghost" data-action="meritreset">${t('meritsReset', {n})}</button>` : '') + `</div><div class="meritgrid">${groups}</div>`;
+  return meritBar(edits) + `<div class="meritgrid">${groups}</div>`;
 }
 
 /* ---- Accuracy and Evasion: the engine's formulas (atelier/engine/player.js) ---- */

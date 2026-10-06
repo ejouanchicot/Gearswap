@@ -665,3 +665,23 @@
 .pbsavein{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:7px;background:var(--well);color:var(--ink);font:inherit;font-size:13px}
 .pbsavein:focus{outline:none;border-color:var(--accent)}
 .pbadddlg .pbpi small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+/* Mon perso (layout2.js renderPerso): the four cards on one row, all of one height; the merits as tabs, a group's rows
+   in one panel in two columns (renderMeritTabs) */
+.persogrid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch}
+.persogrid > *{height:100%;min-width:0;margin:0}
+@media (max-width:1400px){.persogrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.persogrid{grid-template-columns:minmax(0,1fr)}}
+.persotab .meritbar{margin-bottom:10px}
+.mtabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px}
+.mtab{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 12px;border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;background:var(--panel-2);color:var(--ink);cursor:pointer;font:inherit;text-align:left;min-width:0}
+.mtab b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mtab small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mtab[aria-selected="true"]{background:var(--panel);border-color:var(--c);box-shadow:inset 0 3px 0 var(--c)}
+.mtab[aria-selected="true"] b{color:var(--c)}
+.mtab .mdot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.mpanel{border:1px solid var(--c);border-radius:0 0 12px 12px;background:var(--panel);padding:14px 18px}
+.meritlist.two{columns:2;column-gap:40px}
+.meritlist.two li{break-inside:avoid}
+@media (max-width:900px){.meritlist.two{columns:1}}
+.mwrap{display:grid;gap:0}
+.meritlist.two{columns:300px;column-gap:48px}

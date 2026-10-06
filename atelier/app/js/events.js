@@ -57,6 +57,7 @@ document.addEventListener('click', e => {
   // every objective of the stats optimizer, or only the set's (stat_opt.js statRelevant)
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
+  if (d.merittab) { S.meritTab = d.merittab; save(); render(); return; }
   if (d.pbadd || d.pbdel || 'pbsave' in d || d.pbload || d.pbforget || d.pbopen || d.pbset || d.pbsong || d.pbroll || d.pbgeomode || d.pbtab || d.pbpick || d.pbchoose != null || d.pbaddopen != null || 'pbsavego' in d) { pbClick(d); return; }
   if (d.ui2) { S.ui2 = d.ui2 === 'on'; S._globals = null; save(); render(); return; }
   if ('porterwrite' in d) { porterWrite(); return; }

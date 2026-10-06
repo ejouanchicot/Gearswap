@@ -15,7 +15,7 @@ Object.assign(T.fr, {
   ui2Ctx: 'Calculé avec', ui2CtxEdit: 'Changer', ui2SetTitle: 'Stats de ce set', ui2All: 'Toutes les stats (perso, attributs, plafonds)',
   ui2CombatWhy: 'Les buffs, la cible et le groupe avec lesquels la page calcule tout (dégâts, temps jusqu’à la WS, optimiseur). Ils valent pour tous tes sets.',
   ui2PersoWhy: 'Ce qui est propre à ton perso : tes stats mesurées en jeu, tes mérites et Job Points, ta liste PorterPacker.',
-  ui2CombatTitle: 'Conditions de combat', ui2Job: 'Job', ui2Measured: 'Mesuré en jeu', ui2NotMeasured: 'pas encore (//gs c atelier)',
+  ui2CombatTitle: 'Conditions de combat', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magie', ui2Job: 'Job', ui2Measured: 'Mesuré en jeu', ui2NotMeasured: 'pas encore (//gs c atelier)',
 });
 Object.assign(T.en, {
   ui2Combat: 'Combat', ui2Perso: 'My character', ui2Old: 'Old layout', ui2New: 'New layout (trial)',
@@ -23,7 +23,7 @@ Object.assign(T.en, {
   ui2Ctx: 'Worked out with', ui2CtxEdit: 'Change', ui2SetTitle: 'This set’s stats', ui2All: 'Every stat (character, attributes, caps)',
   ui2CombatWhy: 'The buffs, target and party the page works everything out with (damage, time to the WS, optimizer). They hold for all your sets.',
   ui2PersoWhy: 'What is your character’s own: your stats measured in game, your merits and Job Points, your PorterPacker list.',
-  ui2CombatTitle: 'Combat conditions', ui2Job: 'Job', ui2Measured: 'Measured in game', ui2NotMeasured: 'not yet (//gs c atelier)',
+  ui2CombatTitle: 'Combat conditions', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magic', ui2Job: 'Job', ui2Measured: 'Measured in game', ui2NotMeasured: 'not yet (//gs c atelier)',
 });
 
 const ui2 = () => S.ui2 !== false;
@@ -77,7 +77,25 @@ function renderPerso(d){
     `<dl class="herofacts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl></header>`;
   const cards = s && charStats(s) ? globalsHTML(s, 'cards') : `<p class="muted">${t('noChar')}</p>`;
   return `<div class="ui2tab persotab">${head}<div class="persogrid">${cards}${porterHTML(true)}</div>` +
-    `<h3 class="tabsec">${esc(t('sectionsMerits'))}</h3>${renderMerits(d)}</div>`;
+    `<h3 class="tabsec">${esc(t('sectionsMerits'))}</h3>${renderMeritTabs()}</div>`;
+}
+
+// The merits as tabs, a group a tab (its levels spent beside its name, a dot when changed here), the chosen group's
+// rows in one panel in two columns: every panel the same width, nothing stacked in uneven columns
+function renderMeritTabs(){
+  const list = meritList();
+  if (!list) return `<div class="placeholder"><p>${t('noMerits')}</p></div>`;
+  const edits = S.meritEdits[meritKey()] || {};
+  const groups = MERIT_GROUPS.filter(([lo, hi]) => meritRows(list, lo, hi, edits));
+  const cur = groups.find(g => g[2] === S.meritTab) || groups[0];
+  // the skill groups' tab says only Combat / Magic: the full name runs out of a tab
+  const SHORT = new Set(['mgCombat', 'mgMagic']);
+  const spent = ([lo, hi]) => list.filter(m => m.id >= lo && m.id < hi && m.key !== 'maximum_merit_points').reduce((n, m) => n + meritLevel(m), 0);
+  const edited = ([lo, hi]) => list.some(m => m.id >= lo && m.id < hi && m.key in edits);
+  const tabs = groups.map(g => `<button class="mtab ${MERIT_COLORS[g[2]]}" role="tab" data-merittab="${g[2]}" aria-selected="${g === cur}">` +
+    `<b>${esc(t(SHORT.has(g[2]) ? 'mtShort_' + g[2] : g[2]))}</b><small>${spent(g)}</small>${edited(g) ? '<i class="mdot"></i>' : ''}</button>`).join('');
+  return meritBar(edits) + `<div class="mwrap"><div class="mtabs" role="tablist">${tabs}</div>` +
+    `<section class="mpanel ${MERIT_COLORS[cur[2]]}"><ul class="meritlist two">${meritRows(list, cur[0], cur[1], edits)}</ul></section></div>`;
 }
 
 // What the set is after, one line under its pieces (the stats themselves are on the right)
