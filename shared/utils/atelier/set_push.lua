@@ -347,7 +347,22 @@ local function rewrite(job, req)
         return abs, text, out, done, def, def.keys
     end
     local babs, btext, base, name, after = locate_base(job, keys)
-    if not babs then return nil, text end
+    if not babs then
+        -- a set the job has in memory (Mote made it: sets.precast.FC on a job whose file never writes it) and no
+        -- file writes: written whole into the job's set file, after the file's set closest to it
+        if not (loaded and keys and node_of(keys)) then return nil, text end
+        local file = set_files(job)[1]
+        local ftext = file and read(file)
+        if not ftext then return nil, text end
+        local closest, best = nil, 0
+        for _, d in ipairs(SetWriter.definitions(ftext)) do
+            local n = 0
+            while d.keys and d.keys[n + 1] and d.keys[n + 1] == keys[n + 1] do n = n + 1 end
+            if d.keys and n >= best and n > 0 then closest, best = d, n end
+        end
+        local out, done, nkeys = SetWriter.create_plain(ftext, closest, path_string(keys), keys, changes_of(req, ftext, loaded))
+        return file, ftext, out, done, nil, nkeys
+    end
     local out, done = SetWriter.create(btext, base, name, changes_of(req, btext, loaded), after)
     return babs, btext, out, done, nil, keys
 end

@@ -448,6 +448,32 @@ function SetWriter.create(text, base, name, changes, after)
     return out, done, keys
 end
 
+--- A set the file does not write at all (sets.precast.FC that Mote made empty): written whole as its own table,
+--- right after `after` (the file's set closest to it), or at the end of the file.
+--- @param text string The file
+--- @param after table|nil A definition to write it after
+--- @param path string The set path as the file spells it (sets.precast.FC)
+--- @param keys table Its keys
+--- @param changes table {slot = expr | false}
+--- @return string out, table done, table keys
+function SetWriter.create_plain(text, after, path, keys, changes)
+    local nl = text:find('\r\n', 1, true) and '\r\n' or '\n'
+    local indent, padded = '    ', text:find('\n[ \t]+ammo  = ') ~= nil
+    if after then indent, padded = style(text, after) end
+    local base_indent = after and after.indent or ''
+    local lines, done = {}, {}
+    for _, slot in ipairs(SetWriter.ORDER) do
+        if changes[slot] then
+            lines[#lines + 1] = entry_line(indent, padded, slot, changes[slot])
+            done[#done + 1] = {slot = slot, after = changes[slot]}
+        end
+    end
+    local block = base_indent .. path .. ' = {' .. nl .. table.concat(lines, nl) .. (#lines > 0 and nl or '') .. base_indent .. '}'
+    local at = after and line_end(text, after.close) or #text + 1
+    local out = at <= #text and (text:sub(1, at) .. nl .. block .. nl .. text:sub(at + 1)) or (text .. nl .. block .. nl)
+    return out, done, keys
+end
+
 ---============================================================================
 --- DELETING
 ---============================================================================
