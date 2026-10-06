@@ -690,3 +690,24 @@
 .tabx.setside .listtools{white-space:nowrap}
 @media (max-width:900px){.tabx.setside{grid-template-columns:minmax(0,1fr)}}
 .pbfam select.buffsel + select.buffsel{flex:0 0 96px}
+/* Sets tab, new layout, in the style of Mon perso: the weapon menus as an aligned two-column form, the stats' families
+   as tabs over one panel (stats.js setStatsHTML), the set and its stats as two cards of the same look */
+.setsx.ui2 .wpicks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px;align-items:center}
+.setsx.ui2 .wpick{grid-template-columns:72px minmax(0,1fr);align-items:center;gap:10px}
+.setsx.ui2 .wpick .wmenu,.setsx.ui2 .wpick .wsval{width:100%;max-width:none;min-width:0}
+.setsx.ui2 .wpicks .wsrc{grid-column:1 / -1}
+.setsx.ui2 .wpicks .wsrc .wpick{grid-template-columns:auto minmax(0,1fr)}
+.setsx.ui2 .globalcol .setstats{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.setsx.ui2 .setstats{grid-template-columns:168px minmax(0,1fr);column-gap:0}
+.setsx.ui2 .setstats > *:not(.stabs):not(.stabbody){grid-column:1 / -1}
+.setsx.ui2 .stabs{display:grid;grid-auto-rows:minmax(34px,auto);gap:4px;align-content:start;grid-column:1}
+.setsx.ui2 .stabs button{justify-content:space-between;border-radius:9px 0 0 9px;border-right:0;padding:6px 12px;background:var(--panel-2);color:var(--ink);font-size:12.5px;font-weight:600;min-width:0;text-align:left;position:relative;z-index:1}
+.setsx.ui2 .stabs button[aria-selected="true"]{background:var(--panel);border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);margin-right:-1px}
+.setsx.ui2 .stabbody{grid-column:2;border:1px solid var(--accent);border-radius:0 12px 12px 12px;padding:12px 16px;background:var(--panel);min-height:100%}
+/* a weaponskill set's menus (Version, Weapon, TP) as the same aligned form: a label column, the controls beside it */
+.setsx.ui2 .wshead{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.setsx.ui2 .wsline{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:10px}
+.setsx.ui2 .wslbl{white-space:nowrap}
+.setsx.ui2 .wsline .wsval{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.setsx.ui2 .wsline .wsval select.buffsel{flex:1 1 0;min-width:0;width:auto;max-width:none}
+.setsx.ui2 .setstats{grid-template-columns:186px minmax(0,1fr)}
