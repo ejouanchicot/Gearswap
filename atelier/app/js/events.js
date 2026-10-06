@@ -4,7 +4,7 @@ document.addEventListener('toggle', e => { const g = e.target && e.target.datase
   if (e.target && e.target.dataset && 'rdcalc' in e.target.dataset) S._rdOpen = e.target.open;
   if (e.target && e.target.dataset && 'lgfold' in e.target.dataset) S._lgOpen = e.target.open; }, true);
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold],[data-pbopen]'); if (!b) return; const d = b.dataset;
+  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold],[data-pbopen],[data-pbtab]'); if (!b) return; const d = b.dataset;
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }

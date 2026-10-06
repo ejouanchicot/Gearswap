@@ -545,3 +545,31 @@
 .pbrollctl select{width:80px}
 .pbsec select.buffsel.plus{width:auto;min-width:150px}
 @media (max-width:900px){.pbgrp{grid-template-columns:minmax(0,1fr)}.pbgrpl{padding-top:0}}
+
+/* everything of a member on one screen: columns, one-line buttons, the GEO's table (party_builder.js) */
+.pbcols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:0 28px;align-items:start}
+.pbcols.pb3{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:1200px){.pbcols,.pbcols.pb3{grid-template-columns:minmax(0,1fr)}}
+.pbcols > div > .pbsec:first-child{padding-top:4px}
+.pbpanel{border-radius:0 0 12px 12px}
+.pbpanel > .pbbody{padding:14px 18px}
+.pbsec{padding:10px 0;gap:8px}
+.combattab .chip.pbopt{display:flex;justify-content:center;align-items:baseline;gap:6px;min-height:30px;padding:5px 10px;border-radius:8px}
+.combattab .pbpanel .pbchips.pbopts{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.pbgrp{grid-template-columns:86px minmax(0,1fr);gap:10px}
+.pbgrpl{padding-top:6px}
+.pbtab{position:relative}
+.pbtab .pbx{margin-left:auto;font-size:15px}
+.pbtab:focus-visible{outline:2px solid var(--accent)}
+.pbnote{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.pbgeo{width:100%;border-collapse:collapse;font-size:12.5px}
+.pbgeo thead th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:2px 4px 6px;text-align:center}
+.pbgeo tbody th{text-align:left;font-weight:400;padding:3px 6px 3px 0;white-space:nowrap}
+.pbgeo tbody th b{font-weight:600}
+.pbgeo tbody th small{margin-left:6px;color:var(--muted);font-size:11px}
+.pbgeo td{text-align:center;padding:2px 4px}
+.pbgeo tr.pbgeog td{text-align:left;padding:8px 0 3px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.pbgeo tbody tr:not(.pbgeog):hover{background:var(--panel-2)}
+.pbdot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line-strong);background:transparent;cursor:pointer;padding:0}
+.pbdot:hover{border-color:var(--accent)}
+.pbdot[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 4px var(--panel)}
