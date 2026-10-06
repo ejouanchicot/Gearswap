@@ -231,8 +231,8 @@ const STORMS = {'Firestorm II': {str: 7}, 'Thunderstorm II': {dex: 7}, 'Sandstor
 const JAS = {
   // lvl: the level the job learns it (BG Wiki); a subjob has it at its own level (49, +1 per 5 Master
   // Levels). fx(main, level): main = used as main job. Values: atelier/engine/player.js
-  'Berserk': {job: 'WAR', lvl: 15, fx: (m, l) => ({atkp: m ? 89 / 256 : l >= 50 ? 69 / 256 : .25, atk: m ? 40 : 0, defp: -.25})},
-  'Defender': {job: 'WAR', lvl: 25, fx: () => ({defp: .25, atkp: -.25})},
+  'Berserk': {job: 'WAR', lvl: 15, excl: 'berserk', fx: (m, l) => ({atkp: m ? 89 / 256 : l >= 50 ? 69 / 256 : .25, atk: m ? 40 : 0, defp: -.25})},
+  'Defender': {job: 'WAR', lvl: 25, excl: 'berserk', fx: () => ({defp: .25, atkp: -.25})},
   // Warcry's TP Bonus (Savagery merits, Agoge) comes from the job's TP config, for the TP steps
   'Warcry': {job: 'WAR', lvl: 35, tp: true, excl: 'warcry', fx: (m, l) => ({atkp: Math.trunc(l / 4 + 4.75) / 256, atk: m ? 60 : 0})},
   'Aggressor': {job: 'WAR', lvl: 45, fx: m => ({acc: 25 + (m ? 20 : 0), eva: -25})},
@@ -264,7 +264,7 @@ const JAS = {
   'Reprisal': {job: 'PLD', lvl: 61, fx: () => ({blockmul: 1.5})},
   'Cocoon': {job: 'BLU', lvl: 8, fx: () => ({defp: .5})},
   // excl: abilities that overwrite each other, one at a time (BG Wiki: Blood Rage "overwrites and is
-  // overwritten by Warcry from Warrior main or sub job")
+  // overwritten by Warcry from Warrior main or sub job"; Berserk and Defender cancel each other)
   // cast by someone else in the party, offered to every job: a WAR main's Warcry (its TP Bonus comes only
   // from the WAR's Savagery merits, +100 each, and +40 each more with Agoge Mask +3 / +4 worn: warcryTp) and Blood Rage
   'Warcry · party': {party: true, excl: 'warcry', from: 'WAR', tpParty: 'warcry', fx: () => ({atkp: Math.trunc(99 / 4 + 4.75) / 256})},

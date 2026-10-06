@@ -604,3 +604,59 @@
 @media (max-width:760px){.pbf{grid-template-columns:110px minmax(0,1fr)}.pbfe{grid-column:2}.pbfextra{padding-left:0}}
 .pbpanel > .pbbody{padding:18px 22px}
 .pbfx select.buffsel{width:64px}
+
+/* a slot that opens its list in a window (party_builder.js pbPickBtn / pbOpenPick) */
+.pbpick{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:30px;padding:4px 10px;border:1px solid var(--line-strong);border-radius:7px;background:var(--well);color:var(--muted);cursor:pointer;font:inherit;font-size:13px;text-align:left}
+.pbpick.set{color:var(--accent);border-color:var(--accent);font-weight:600}
+.pbpick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbpick i{font-style:normal;color:var(--muted);font-size:11px}
+.pbpick:hover{border-color:var(--accent)}
+.dialog.pbdlg{width:min(680px,calc(100% - 32px))}
+.pbdlg .body{display:grid;gap:14px;max-height:min(640px,70vh);overflow-y:auto}
+.pbpq{width:100%;padding:8px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--well);color:var(--ink);font:inherit}
+.pbpg h4{margin:0 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pbpl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.pbpi{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);cursor:pointer;text-align:left;font:inherit}
+.pbpi:hover{border-color:var(--accent)}
+.pbpi.on{border-color:var(--accent);background:var(--accent-soft)}
+.pbpi b{font-size:13px;font-weight:600}
+.pbpi small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.pbpi.on small{color:var(--accent)}
+/* the choice window, airy: room between the families, a ruled title each, taller lines */
+.dialog.pbdlg{width:min(760px,calc(100% - 32px))}
+.pbdlg .body{gap:26px;padding:6px 24px 24px;max-height:min(680px,72vh)}
+.pbdlg .pbpq{margin-bottom:2px;padding:10px 14px;font-size:14px}
+.pbdlg .pbpg h4{margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.1em;color:var(--accent)}
+.pbdlg .pbpl{gap:10px 12px}
+.pbdlg .pbpi{padding:12px 16px;border-radius:10px;min-height:46px;align-items:center}
+.pbdlg .pbpi b{font-size:14px}
+.pbdlg .pbpi small{font-size:12px}
+.dialog.pbdlg .body{display:grid;gap:30px;align-content:start}
+.dialog.pbdlg .pbpg{display:grid;gap:0}
+/* a choice in the window: its name, then what it gives on a line of its own that may wrap: nothing runs out of its box */
+.dialog.pbdlg .pbpi{display:grid;grid-template-columns:minmax(0,1fr);align-content:center;gap:3px;min-height:52px}
+.dialog.pbdlg .pbpi b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dialog.pbdlg .pbpi small{white-space:normal;line-height:1.35;overflow-wrap:anywhere}
+.dialog.pbdlg .pbpi small:empty{display:none}
+.pbfe{overflow-wrap:anywhere}
+.pbfam{min-width:0}
+.pbfam select.buffsel{max-width:100%}
+.pbfam .amwho{white-space:normal;overflow-wrap:anywhere}
+/* compact: room comes from the grouping and the rules, not from bigger text or taller boxes */
+.dialog.pbdlg{width:min(640px,calc(100% - 32px))}
+.dialog.pbdlg .body{gap:16px;padding:4px 18px 18px}
+.pbdlg .pbpq{padding:7px 10px;font-size:13px}
+.pbdlg .pbpg h4{margin:0 0 8px;padding-bottom:5px;font-size:11px;letter-spacing:.08em}
+.pbdlg .pbpl{gap:6px 8px}
+.dialog.pbdlg .pbpi{min-height:0;padding:6px 10px;border-radius:7px;gap:1px}
+.pbdlg .pbpi b{font-size:12.5px}
+.pbdlg .pbpi small{font-size:11px}
+.pbpanel > .pbbody{padding:12px 18px}
+.pbf{min-height:28px;gap:10px}
+.pbfsec{padding:2px 0 10px}
+.pbfsec + .pbfsec{padding-top:10px}
+.pbfsec h4{margin:0 0 6px;font-size:11px}
+.pbfam{display:flex;gap:6px}
+.pbfam select.buffsel{flex:1 1 0;width:auto}
+.pbfe .amwho{color:var(--muted);font-size:12px}
+.pbfam{flex:1 1 auto;min-width:0}
