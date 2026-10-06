@@ -132,7 +132,9 @@ function pbGives(B, src){
   const sum = {};
   for (const e of B._by) if (src(e.src) && typeof e.v === 'number') sum[e.k] = (sum[e.k] || 0) + e.v;
   const keys = Object.keys(sum);
-  return keys.filter(k => !PB_FOE.includes(k)).map(k => `<span>${esc(fxShort(k, sum[k]))}</span>`)
+  // a cut of your own (Berserk's Defense, Aggressor's Evasion) in red; a lower damage taken (Shell) is good
+  const GOOD_LOW = ['shell', 'dt', 'pdt', 'mdt', 'bdt'];
+  return keys.filter(k => !PB_FOE.includes(k)).map(k => `<span ${sum[k] < 0 && !GOOD_LOW.includes(k) ? 'class="pneg"' : ''}>${esc(fxShort(k, sum[k]))}</span>`)
     .concat(keys.filter(k => PB_FOE.includes(k)).map(k => `<span class="pneg">${esc(fxShort(k, sum[k]))}</span>`)).join('');
 }
 
@@ -178,8 +180,12 @@ function renderCombatParty(d){
   const head = `<header class="tabhead"><div><h2>${esc(t('ui2CombatTitle'))}</h2><p class="muted small">${esc(t('pbWhy'))}</p></div>` +
     `<div class="tabacts">${tierBarHTML()}<button class="btn ghost" data-buffendgame>${t('bEndgame')}</button>` +
     `<button class="btn ghost" data-buffreset ${n ? '' : 'disabled'}>${t('buffReset')}</button></div></header>`;
+  // your card's footer: what your food, aftermath and own abilities give (the aftermath of the weapon held, as the
+  // old card counted it: withAftermath)
+  const ownJa = new Set(jasOf().filter(j => j.as !== 'party').map(j => j.name));
+  const youGives = pbGives(withAftermath(buffTotals(), shownMain()), v => v === b.food || ownJa.has(v) || /Aftermath/.test(v));
   const you = `<section class="pbcard pbyou"><header><span class="pbjob">${emblem(S.job)}<b>${esc(t('pbYou'))}</b><small>${esc(S.job)}/${esc(d.sub || '—')}</small></span></header>` +
-    `<div class="pbbody">${P.own || ''}</div></section>`;
+    `<div class="pbbody">${P.own || ''}</div><footer><div class="pbgv">${youGives || `<span class="muted">${esc(t('pbNothing'))}</span>`}</div></footer></section>`;
   const full = shown.length + 1 >= PB_MAX;
   const bar = `<div class="pbbar"><b>${esc(t('pbTitle'))}</b><span class="muted small">${shown.length + 1} / ${PB_MAX}</span>${full ? '' : pbAddBar(shown)}${pbSavedBar()}</div>`;
   const cards = `<div class="pbgrid">${you}${shown.map(j => pbCard(j, b, shown, B)).join('')}</div>`;
