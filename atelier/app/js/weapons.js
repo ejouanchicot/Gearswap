@@ -292,15 +292,23 @@ const weaponModeSlot = m => m.onlyEmpty ? m.name.slice(5).toLowerCase() : (m.nam
 function weaponMenus(s){
   const d = data();
   if (family(s.path, s.pieces) === 'weapons') return '';
-  if (hybridMode(d) || weaponModes(d).some(m => WEAPON_GATES[m.name])) return null;
-  const slotOf = weaponModeSlot;
-  const modes = weaponModes(d).filter(m => !m.onlyEmpty && !isEmpty(s.pieces[slotOf(m)]));
-  // each weapon state under its name in game (MainWeapon, Shield...): [name, its menu]
-  return modes.map(m => { const ex = explicitWeapon(m), auto = withWeapons(s, m.name).pieces[slotOf(m)];
+  // a weaponskill's set offers only the weapons that open it (its skill; the weapon itself for a relic or prime)
+  const ws = wsOfSet(s), only = m => m.name !== 'MainWeapon' || !ws ? m
+    : Object.assign({}, m, {values: m.values.filter(v => wsWeaponFits(m, v, ws) || v === explicitWeapon(m))});
+  const modes = weaponModes(d).filter(m => !m.onlyEmpty && !isEmpty(s.pieces[weaponModeSlot(m)])).map(only);
+  const hm = modes.length ? hybridMode(d) : null;
+  const opt = (v, on, label = v) => `<option value="${esc(v)}" ${on ? 'selected' : ''}>${esc(label)}</option>`;
+  // the stance the job's weapon rules hang on (PLD's HybridMode: its shield and stance weapon), always one of its values
+  const stance = hm ? [[hm.name, `<select class="wmenu buffsel" data-wmode="${esc(hm.name)}" aria-label="${esc(hm.desc)}">` +
+    hm.values.map(v => opt(v, v === chosenWeapon(hm))).join('') + `</select>`, hm.desc]] : [];
+  // each weapon state under its name in game (MainWeapon, SubWeapon...): Auto first, what the job's code puts there
+  return stance.concat(modes.map(m => { const ex = explicitWeapon(m), auto = withWeapons(s, m.name).pieces[weaponModeSlot(m)];
+    // a gated state (THF's AbyWeapon) with its switch off lays nothing: say so rather than name the main
+    const gate = WEAPON_GATES[m.name], off = gate && !/^(on|true)$/i.test((d.modes.find(x => x.name === gate.when) || {}).current || '');
     const sel = `<select class="wmenu buffsel ${ex ? 'set' : ''}" data-wmode="${esc(m.name)}" aria-label="${esc(m.desc)}">` +
-      `<option value="">${esc(t('auto') + ' · ' + (auto && !isEmpty(auto) ? auto.name : '—'))}</option>` +
-      m.values.map(v => `<option value="${esc(v)}" ${v === ex ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select>`;
-    return [m.name, sel, m.desc]; });
+      opt('', !ex, t('auto') + ' · ' + (off ? gate.when + ' off' : auto && !isEmpty(auto) ? auto.name : '—')) +
+      m.values.map(v => opt(v, v === ex)).join('') + `</select>`;
+    return [m.name, sel, m.desc]; }));
 }
 
 /* ---- the weapon held for a weaponskill ---- */

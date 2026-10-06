@@ -143,9 +143,7 @@ function setHeadHTML(card, ci, vi, s, acts){
   // the weapon states as in game, then what the job's GearSwap puts with them (off hand, ammo)
   const picks = (menus ? menus.map(([name, sel, desc]) => pick(name, sel).replace('<span class="wslbl">', `<span class="wslbl" title="${esc(desc || '')}">`)).join('') : '') +
     (family(s.path, s.pieces) !== 'weapons' ? weaponResultLines(s, pick) : '');
-  // a job with a stance or a switch on its weapons keeps the full weapon picker
-  const picker = menus === null ? weaponPicker(s) : '';
-  const bar = ctl || picks || picker ? `<div class="setctl">${ctl ? `<div class="wshead">${ctl}</div>` : ''}${picks ? `<div class="wpicks">${picks}</div>` : ''}${picker}</div>` : '';
+  const bar = ctl || picks ? `<div class="setctl">${ctl ? `<div class="wshead">${ctl}</div>` : ''}${picks ? `<div class="wpicks">${picks}</div>` : ''}</div>` : '';
   return `<div class="settop">${title}${bar}</div>`;
 }
 function familyNoteHTML(card, s){
