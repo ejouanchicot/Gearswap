@@ -56,6 +56,7 @@ function explicitWeapon(m, ignore){
 }
 // The job's weapon rules (<job>/combat/<JOB>_WEAPONS.lua, PLD's set_builder.lua): they hang
 // on the Hybrid mode, offered beside the weapons when the rules use it
+// PLD's own default (shared/jobs/pld/functions/logic/set_builder.lua): another job wears its weapon set's sub
 const DEFAULT_GRIPS = {Shining: 'Alber Strap'};
 function hybridMode(d){
   const rules = (d && d.weapon_rules) || {};
@@ -172,7 +173,7 @@ function withWeapons(s, ignore){
   const hs = ws && ignore !== 'heldsub' && (S.heldSub || {})[heldKey(ws)];
   const hsOn = hs && !blank.has('sub') && subFits(pieces.main, hs);
   if (hsOn) { pieces.sub = hs; from.sub = t('heldWhy'); }
-  const grip = !hsOn && weapon && (rules.grips || DEFAULT_GRIPS)[weapon];
+  const grip = !hsOn && weapon && (rules.grips || (hybridMode(d) ? DEFAULT_GRIPS : {}))[weapon];
   // a shield chosen in the Shield mode (not Auto) wins over the stance's, as in game (shared/jobs/pld/functions/logic/
   // set_builder.lua apply_mode_shield): the mode laid it above; a two-handed weapon keeps its grip
   const shieldMode = weaponModes(d).find(m => m.name === 'Shield');
@@ -278,19 +279,21 @@ function forceList(slot){
 // What the job's GearSwap puts in the off hand and the ammo slot with the weapon chosen: shown, not chosen (in game the
 // weapon state decides them); a piece forced in the page (a click on its slot) says so, with the way back to Auto
 function weaponResultLines(s, line){
-  const eff = withWeapons(s), f = slotForce();
-  return ['sub', 'ammo'].map(slot => { const p = eff.pieces[slot];
+  const eff = withWeapons(s), f = slotForce(), stated = new Set(weaponModes(data()).filter(m => !m.onlyEmpty).map(weaponModeSlot));
+  return ['sub', 'ammo'].filter(slot => !stated.has(slot)).map(slot => { const p = eff.pieces[slot];
     if (!p || isEmpty(p)) return '';
     const forced = f[slot] && f[slot].name === p.name;
     return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted">${esc(forced ? t('forcedTag') : t('byGearSwap'))}</small>` +
       (forced ? ` <button class="linkbtn" data-unforce="${slot}">${esc(t('backToAuto'))}</button>` : '') + `</span>`); }).join('') +
     (f.main ? line(SLOT_NAMES[S.lang].main, `<span class="wauto"><b>${esc(f.main.name)}</b> <small class="muted">${esc(t('forcedTag'))}</small> <button class="linkbtn" data-unforce="main">${esc(t('backToAuto'))}</button></span>`) : '');
 }
+// The slot a weapon state fills: MainWeapon the main hand, an Empty<Slot> switch its slot, another its first value's slot
+const weaponModeSlot = m => m.onlyEmpty ? m.name.slice(5).toLowerCase() : (m.name === 'MainWeapon' ? 'main' : Object.keys(m.sets[m.values[0]].pieces)[0]);
 function weaponMenus(s){
   const d = data();
   if (family(s.path, s.pieces) === 'weapons') return '';
   if (hybridMode(d) || weaponModes(d).some(m => WEAPON_GATES[m.name])) return null;
-  const slotOf = m => m.onlyEmpty ? m.name.slice(5) : (m.name === 'MainWeapon' ? 'main' : Object.keys(m.sets[m.values[0]].pieces)[0]);
+  const slotOf = weaponModeSlot;
   const modes = weaponModes(d).filter(m => !m.onlyEmpty && !isEmpty(s.pieces[slotOf(m)]));
   // each weapon state under its name in game (MainWeapon, Shield...): [name, its menu]
   return modes.map(m => { const ex = explicitWeapon(m), auto = withWeapons(s, m.name).pieces[slotOf(m)];
