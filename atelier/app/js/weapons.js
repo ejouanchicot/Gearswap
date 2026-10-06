@@ -37,25 +37,23 @@ function weaponModes(d){
     const best = values.slice().sort((a, b) => (used[top[b].pieces[slot].name] || 0) - (used[top[a].pieces[slot].name] || 0))[0];
     modes.push({name: 'slot:' + slot, desc: SLOT_NAMES[S.lang][slot], values: values.sort(), current: best, sets: top, onlyEmpty: true});
   }
-  // the weapon states whose values name no set (BLM's MainWeapon Hvergelmir, a new job's MainWeapon Free): with the
-  // character's equip_without_set on, a value that is an item is worn as is (weapon_resolver.lua), as a mode of its
-  // own here; else the state changes nothing in game and is only shown (weaponInertStates)
-  const inert = [], has = new Set(modes.map(m => m.name));
+  // the weapon states whose values name no set (a new job's MainWeapon Free): with the character's equip_without_set
+  // on, a value that is an item is worn as is (weapon_resolver.lua), as a mode of its own here; else the state changes
+  // nothing in game and the page leaves it out, as the set's own weapons are what is worn
+  const has = new Set(modes.map(m => m.name));
   for (const m of d.modes) {
     const slot = WEAPON_STATE_SLOT[m.name];
     if (!slot || has.has(m.name)) continue;
     const items = d.weapon_plain ? m.values.filter(v => isItemName(v)) : [];
     if (items.length) modes.push({name: m.name, desc: m.desc || m.name, values: items, current: m.current,
       sets: Object.fromEntries(items.map(v => [v, {path: v, pieces: {[slot]: {name: v}}}]))});
-    else inert.push({name: m.name, slot, current: m.current});
   }
-  WEAPON_CACHE.set(d, {lang: S.lang, modes, inert});
+  WEAPON_CACHE.set(d, {lang: S.lang, modes});
   return modes;
 }
-// The weapon states that change nothing in game (no set for their value): shown as they are, with why
+// The slot of a weapon state a value can be worn in as an item
 const WEAPON_STATE_SLOT = {MainWeapon: 'main', SubWeapon: 'sub', RangeWeapon: 'range'};
 const isItemName = v => { const c = catalog(); return !!(c && c.row[v]) || Object.values(ownedOf() || {}).some(l => (l || []).some(x => x.name === v)); };
-function weaponInertStates(d){ weaponModes(d); return (WEAPON_CACHE.get(d) || {}).inert || []; }
 // The weapon chosen in the page for a mode, else the one the job loads with. A current value that
 // names no set (PLD's Shield on 'Auto') lays nothing, as in game: null
 function chosenWeapon(m){
@@ -264,13 +262,10 @@ function forceList(slot){
 // weapon state decides them); a piece forced in the page (a click on its slot) says so, with the way back to Auto
 function weaponResultLines(s, line){
   const eff = withWeapons(s), f = slotForce(), stated = new Set(weaponModes(data()).filter(m => !m.onlyEmpty).map(weaponModeSlot));
-  // a state that changes nothing in game, under its name: its value, and why the weapon comes from the set
-  const inert = weaponInertStates(data()).map(m => line(m.name, `<span class="wauto"><b>${esc(m.current || '—')}</b> <small class="muted">${esc(
-    /^free$/i.test(m.current || '') ? t('stateFree') : t('stateNoSet', {v: m.current || '—'}))}</small></span>`)).join('');
-  return inert + ['main', 'sub', 'range', 'ammo'].filter(slot => !stated.has(slot)).map(slot => { const p = eff.pieces[slot];
+  return ['main', 'sub', 'range', 'ammo'].filter(slot => !stated.has(slot)).map(slot => { const p = eff.pieces[slot];
     if (!p || isEmpty(p)) return '';
     const forced = f[slot] && f[slot].name === p.name;
-    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted">${esc(forced ? t('forcedTag') : t(slot === 'main' || slot === 'range' ? 'bySet' : 'byGearSwap'))}</small>` +
+    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted">${esc(forced ? t('forcedTag') : t(eff.from[slot] ? 'byGearSwap' : 'bySet'))}</small>` +
       (forced ? ` <button class="linkbtn" data-unforce="${slot}">${esc(t('backToAuto'))}</button>` : '') + `</span>`); }).join('') +
     (f.main && stated.has('main') ? line(SLOT_NAMES[S.lang].main, `<span class="wauto"><b>${esc(f.main.name)}</b> <small class="muted">${esc(t('forcedTag'))}</small> <button class="linkbtn" data-unforce="main">${esc(t('backToAuto'))}</button></span>`) : '');
 }
