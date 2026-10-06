@@ -217,8 +217,6 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:13px;padding:6p
   .eqcol{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
   .eqcol > .slots,.eqcol > .slotcol{grid-row:auto}
   .setstats,.globals-inline .globals{padding:12px}
-  .weaps{grid-template-columns:minmax(0,1fr)}
-  .wrow > span{margin-top:4px}
   .variants{max-height:none}
   .simcards{grid-template-columns:minmax(0,1fr)}
   .simcards .box{align-items:stretch}

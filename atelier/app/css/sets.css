@@ -53,7 +53,6 @@
 .vgroup > :last-child{border-radius:0 var(--radius-s) var(--radius-s) 0!important}
 .variants button.sub{font-size:11.5px;color:var(--muted);background:var(--panel-2)}
 .variants button.sub[aria-pressed="true"]{color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--panel))}
-.weaps.vars{margin-top:12px}
 .tpin{width:78px;font:inherit;font-size:12.5px;padding:2px 8px;border:1px solid var(--line-strong);border-radius:var(--radius-s);background:var(--well);color:var(--ink);font-variant-numeric:tabular-nums}
 .tpin:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .tpnote{grid-column:1 / -1;margin:0;font-size:11.5px;color:var(--faint)}

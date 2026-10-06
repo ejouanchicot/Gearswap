@@ -139,7 +139,8 @@ function heldRanking(s, ws, list){
 // The weapon line: the weapon mode's weapon by default, or one of yours of the weaponskill's category, best first
 function wsWeaponLine(s, line){
   const d = data(), ws = wsOfSet(s);
-  if (hybridMode(d) || weaponModes(d).some(m => WEAPON_GATES[m.name])) return weaponPicker(s);
+  // a job with a stance or a gated state on its weapons (PLD, THF): its weapon states' menus, as on any set
+  if (hybridMode(d) || weaponModes(d).some(m => WEAPON_GATES[m.name])) return (weaponMenus(s) || []).map(([name, sel]) => line(name, sel)).join('');
   const auto = withWeapons(s, 'held').pieces.main, held = heldWeapon(ws), list = heldChoices(ws), rank = heldRanking(s, ws, list);
   const sorted = rank ? list.slice().sort((a, b) => (rank[b] || 0) - (rank[a] || 0)) : list;
   const dmg = n => rank && rank[n] != null ? ' — ' + fmtDmg(rank[n]) : '';

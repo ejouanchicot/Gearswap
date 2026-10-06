@@ -37,9 +37,25 @@ function weaponModes(d){
     const best = values.slice().sort((a, b) => (used[top[b].pieces[slot].name] || 0) - (used[top[a].pieces[slot].name] || 0))[0];
     modes.push({name: 'slot:' + slot, desc: SLOT_NAMES[S.lang][slot], values: values.sort(), current: best, sets: top, onlyEmpty: true});
   }
-  WEAPON_CACHE.set(d, {lang: S.lang, modes});
+  // the weapon states whose values name no set (BLM's MainWeapon Hvergelmir, a new job's MainWeapon Free): with the
+  // character's equip_without_set on, a value that is an item is worn as is (weapon_resolver.lua), as a mode of its
+  // own here; else the state changes nothing in game and is only shown (weaponInertStates)
+  const inert = [], has = new Set(modes.map(m => m.name));
+  for (const m of d.modes) {
+    const slot = WEAPON_STATE_SLOT[m.name];
+    if (!slot || has.has(m.name)) continue;
+    const items = d.weapon_plain ? m.values.filter(v => isItemName(v)) : [];
+    if (items.length) modes.push({name: m.name, desc: m.desc || m.name, values: items, current: m.current,
+      sets: Object.fromEntries(items.map(v => [v, {path: v, pieces: {[slot]: {name: v}}}]))});
+    else inert.push({name: m.name, slot, current: m.current});
+  }
+  WEAPON_CACHE.set(d, {lang: S.lang, modes, inert});
   return modes;
 }
+// The weapon states that change nothing in game (no set for their value): shown as they are, with why
+const WEAPON_STATE_SLOT = {MainWeapon: 'main', SubWeapon: 'sub', RangeWeapon: 'range'};
+const isItemName = v => { const c = catalog(); return !!(c && c.row[v]) || Object.values(ownedOf() || {}).some(l => (l || []).some(x => x.name === v)); };
+function weaponInertStates(d){ weaponModes(d); return (WEAPON_CACHE.get(d) || {}).inert || []; }
 // The weapon chosen in the page for a mode, else the one the job loads with. A current value that
 // names no set (PLD's Shield on 'Auto') lays nothing, as in game: null
 function chosenWeapon(m){
@@ -239,38 +255,6 @@ function applyTrial(s, pieces, from, stance){
   }
   return {pieces, from, stance, tried};
 }
-// The pickers of the weapon line: the Hybrid mode as the job loads it, then for each weapon
-// mode and free slot an "Auto" entry (what the job's rules put there) and the choices
-function weaponPicker(s){
-  if (family(s.path, s.pieces) === 'weapons') return '';
-  // no picker for a slot the set empties on purpose (sets.naked): nothing can go there
-  const slotOf = m => m.onlyEmpty ? m.name.slice(5) : (m.name === 'MainWeapon' ? 'main' : Object.keys(m.sets[m.values[0]].pieces)[0]);
-  // a weaponskill's set offers only the weapons that open it (its skill; the weapon itself for a relic or prime)
-  const ws = wsOfSet(s), only = m => m.name !== 'MainWeapon' || !ws ? m
-    : Object.assign({}, m, {values: m.values.filter(v => wsWeaponFits(m, v, ws) || v === explicitWeapon(m))});
-  const d = data(), modes = weaponModes(d).filter(m => !isEmpty(s.pieces[slotOf(m)])).map(only);
-  const hm = modes.length ? hybridMode(d) : null;
-  if (!hm && !modes.length) return '';
-  // buttons, like the set's variants: one row per mode, "Auto" first (what the job's rules put there)
-  const chip = (m, v, on, label = v, title = '') => `<button type="button" data-wmode="${esc(m.name)}" data-wval="${esc(v)}" aria-pressed="${on}"${title ? ` title="${esc(title)}"` : ''}>${esc(label)}</button>`;
-  // a mode with many weapons (a player may list 20): the chosen one and the job's default as buttons,
-  // the rest in a menu
-  const MAX_CHIPS = 8;
-  const chips = (m, sel, def) => {
-    if (m.values.length <= MAX_CHIPS) return m.values.map(v => chip(m, v, v === sel)).join('');
-    const shown = [...new Set([def, sel].filter(Boolean))], rest = m.values.filter(v => !shown.includes(v));
-    return shown.map(v => chip(m, v, v === sel)).join('') + `<select class="wmore" data-wmode="${esc(m.name)}"><option value="">${t('moreWeapons', {n: rest.length})}</option>` +
-      rest.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('') + `</select>`;
-  };
-  const row = (label, chips, picked) => `<div class="wrow ${picked ? 'picked' : ''}"><span>${esc(label)}</span><div class="variants">${chips}</div></div>`;
-  const hybrid = hm ? row(hm.desc, chips(hm, chosenWeapon(hm), hm.current), false) : '';
-  return `<div class="weaps"><span class="kicker">${t('weapons')}</span>${hybrid}${modes.map(m => {
-    const slot = slotOf(m), auto = withWeapons(s, m.name), piece = auto.pieces[slot], ex = explicitWeapon(m);
-    const why = auto.from[slot] || (piece ? t('slotBySet') : '');
-    // a gated mode (THF's AbyWeapon) with its switch off lays nothing: say so rather than name the main
-    const gate = WEAPON_GATES[m.name], off = gate && !/^(on|true)$/i.test((d.modes.find(x => x.name === gate.when) || {}).current || '');
-    return row(m.desc, chip(m, '', !ex, `${t('auto')} · ${off ? gate.when + ' off' : piece ? piece.name : '—'}`, why) + chips(m, ex, m.current), ex); }).join('')}</div>`;
-}
 // Your pieces for a hand or the ammo (a weaponskill's off hand menu, ws_page.js), each name once
 function forceList(slot){
   const seen = new Set();
@@ -280,12 +264,15 @@ function forceList(slot){
 // weapon state decides them); a piece forced in the page (a click on its slot) says so, with the way back to Auto
 function weaponResultLines(s, line){
   const eff = withWeapons(s), f = slotForce(), stated = new Set(weaponModes(data()).filter(m => !m.onlyEmpty).map(weaponModeSlot));
-  return ['sub', 'ammo'].filter(slot => !stated.has(slot)).map(slot => { const p = eff.pieces[slot];
+  // a state that changes nothing in game, under its name: its value, and why the weapon comes from the set
+  const inert = weaponInertStates(data()).map(m => line(m.name, `<span class="wauto"><b>${esc(m.current || '—')}</b> <small class="muted">${esc(
+    /^free$/i.test(m.current || '') ? t('stateFree') : t('stateNoSet', {v: m.current || '—'}))}</small></span>`)).join('');
+  return inert + ['main', 'sub', 'range', 'ammo'].filter(slot => !stated.has(slot)).map(slot => { const p = eff.pieces[slot];
     if (!p || isEmpty(p)) return '';
     const forced = f[slot] && f[slot].name === p.name;
-    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted">${esc(forced ? t('forcedTag') : t('byGearSwap'))}</small>` +
+    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted">${esc(forced ? t('forcedTag') : t(slot === 'main' || slot === 'range' ? 'bySet' : 'byGearSwap'))}</small>` +
       (forced ? ` <button class="linkbtn" data-unforce="${slot}">${esc(t('backToAuto'))}</button>` : '') + `</span>`); }).join('') +
-    (f.main ? line(SLOT_NAMES[S.lang].main, `<span class="wauto"><b>${esc(f.main.name)}</b> <small class="muted">${esc(t('forcedTag'))}</small> <button class="linkbtn" data-unforce="main">${esc(t('backToAuto'))}</button></span>`) : '');
+    (f.main && stated.has('main') ? line(SLOT_NAMES[S.lang].main, `<span class="wauto"><b>${esc(f.main.name)}</b> <small class="muted">${esc(t('forcedTag'))}</small> <button class="linkbtn" data-unforce="main">${esc(t('backToAuto'))}</button></span>`) : '');
 }
 // The slot a weapon state fills: MainWeapon the main hand, an Empty<Slot> switch its slot, another its first value's slot
 const weaponModeSlot = m => m.onlyEmpty ? m.name.slice(5).toLowerCase() : (m.name === 'MainWeapon' ? 'main' : Object.keys(m.sets[m.values[0]].pieces)[0]);

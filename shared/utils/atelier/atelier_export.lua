@@ -791,6 +791,10 @@ function AtelierExport.build()
         -- the page puts the weapons in the sets the way the job code does
         weapon_rules = job_config('WEAPONS'),
     }
+    -- a weapon state's value with no set equips that weapon only when the character turned it on
+    -- (shared/utils/equipment/weapon_resolver.lua, _common/combat/WEAPON_CONFIG.lua)
+    local okr, WeaponResolver = pcall(require, 'shared/utils/equipment/weapon_resolver')
+    data.weapon_plain = okr and WeaponResolver.equips_without_set() or false
     data.items, data.owned = collect_items()
     data.porter = porter_list()
     -- PorterPacker's unpack list against the job's sets (shared/utils/atelier/porter_lists.lua): what to add, what to drop

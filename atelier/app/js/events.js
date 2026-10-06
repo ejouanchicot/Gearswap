@@ -91,7 +91,6 @@ document.addEventListener('click', e => {
   if ('keyssave' in d) { saveKeys(); return; }
   if ('keysundo' in d) { delete S.keyOv[S.char]; S.keyDirty[S.char] = false; S.toast = ''; render(); return; }
   if (d.unforce) { setForce(d.unforce, null); save(); render(); return; }
-  if (d.wmode) { const k = S.char + '|' + S.job + '|' + d.wmode; if (d.wval) S.weapons[k] = d.wval; else delete S.weapons[k]; render(); return; }
   if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
   if (d.simpick) { const [k, ...n] = d.simpick.split('|'); Object.assign(simState(), {kind: k, name: n.join('|')}); simRun(); return; }
   if ('statpick' in d) { openStatPick(); return; }
@@ -245,7 +244,6 @@ document.addEventListener('change', e => {
     save(); render(); return; }
   if (e.target.classList.contains('heldsel')) { const k = heldKey(e.target.dataset.heldws);
     if (e.target.value) S.held[k] = e.target.value; else delete S.held[k]; render(); return; }
-  if (e.target.classList.contains('wmore') && e.target.value) { S.weapons[S.char + '|' + S.job + '|' + e.target.dataset.wmode] = e.target.value; render(); }
   if ('pbmarcato' in e.target.dataset) { const b0 = buffState(); if (e.target.value === '') delete b0.marcato; else b0.marcato = e.target.value; save(); render(); return; }
   if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
     if (e.target.value === '') delete b0[k]; else b0[k] = e.target.value; render(); }

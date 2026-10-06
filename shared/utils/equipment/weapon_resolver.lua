@@ -96,6 +96,13 @@ local function lookup(slot, value)
     return nil
 end
 
+--- Whether a weapon state's value with no set equips that weapon (the
+--- character's WEAPON_CONFIG): the Atelier page shows the states the same way.
+--- @return boolean
+function WeaponResolver.equips_without_set()
+    return enabled()
+end
+
 --- The set to lay for a weapon state's value (see the header), with an
 --- off-hand weapon the player cannot hold replaced (single_wield).
 --- @param slot string 'main' or 'sub'
