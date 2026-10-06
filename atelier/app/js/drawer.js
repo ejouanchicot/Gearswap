@@ -87,10 +87,11 @@ function pieceChoices(slot, current, orig, s){
   // than a quarter of what the best choice for the slot gives of them
   const best = Math.max(0, ...list.map(o => o.score || 0)), armour = ['head', 'body', 'hands', 'legs', 'feet'].includes(slot);
   // the hands: a weapon is not judged on the set's stats but on whether it can be there (weaponWhy), ranked by
-  // the weaponskill's damage when the set is a weaponskill's
+  // the weaponskill's damage when the set is a weaponskill's; below level 99 with no item level, it is set aside
+  // like the armour (only that rule: a level 99 weapon with no item level can still be the right one)
   if (WEAPON_SLOTS.has(slot) && slot !== 'ammo') weaponRanks(s, slot, list);
   for (const o of list) {
-    o.why = WEAPON_SLOTS.has(slot) && slot !== 'ammo' ? weaponWhy(s, slot, o.piece)
+    o.why = WEAPON_SLOTS.has(slot) && slot !== 'ammo' ? (o.low ? t('whyLow', {n: o.lv}) : weaponWhy(s, slot, o.piece))
       : o.low ? t('whyLow', {n: o.lv}) : armour && o.lv != null && !o.ilv ? t('whyNoIlv') : o.lowersDamage ? ''
       : o.offTopic ? t('whyNone') : best && (o.score || 0) < best / 4 ? t('whyWeak') : '';
     // a piece you wear in a set of the same kind is never set aside: you chose it for such sets
