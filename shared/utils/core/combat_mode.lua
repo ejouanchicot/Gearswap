@@ -81,6 +81,12 @@ CombatMode.is_shown = Optional.is_shown
 
 --- Whether the weapons are locked now.
 --- @return boolean
+--- Turned On together with the weapon states (//gs c sortie: the stance's weapon, the target's shield): the lock
+--- waits for the gear of the next update, so it holds the weapons those states put on, not the ones worn before.
+function CombatMode.lock_after_gear()
+    windower._combat_mode_loading = true
+end
+
 function CombatMode.is_on()
     return Optional.value() == 'On'
 end

@@ -205,10 +205,25 @@ local function engage_target(cfg, name)
         if messages() then messages().show_unknown_target(name) end
         return true
     end
-    set_states((cfg.stances or {})[target.stance] or {})
+    -- Combat Mode (the weapon lock) goes last: the stance's weapon and the target's shield go on first, then it holds
+    -- them; set with them, it would hold the weapons worn before (shared/utils/core/combat_mode.lua)
+    local lock
+    local function without_lock(list)
+        local out = {}
+        for _, setting in ipairs(list) do
+            if setting:match('^CombatMode%s') then lock = setting else out[#out + 1] = setting end
+        end
+        return out
+    end
+    set_states(without_lock((cfg.stances or {})[target.stance] or {}))
     -- Only the states this job has: set_states would otherwise send
     -- `gs c set` and print Mote's unknown-state error.
-    set_known_states(target_states(cfg, target))
+    set_known_states(without_lock(target_states(cfg, target)))
+    if lock and state and rawget(state, 'CombatMode') then
+        local ok, CombatMode = pcall(require, 'shared/utils/core/combat_mode')
+        if ok and lock:match('On$') and state.CombatMode.value ~= 'On' then CombatMode.lock_after_gear() end
+        set_known_states({lock})
+    end
     to_alt(cfg, 'sm load ' .. (cfg.profile_root or '') .. target.profile)
     to_alt(cfg, 'sm follow off')
     to_alt(cfg, 'sm on')
