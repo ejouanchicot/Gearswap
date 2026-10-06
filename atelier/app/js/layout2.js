@@ -61,15 +61,17 @@ function setPanelHTML(s){
   return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3>${offense}${defense}${hpCycleHTML(s)}${setStatsHTML(s)}${all}</div>`;
 }
 
-// Combat: a heading with the support profile and the quick actions; the buffs' editor in the page (it was a window);
-// on the side, what is active and the target
+// Combat: a heading with the support profile and the quick actions; the buffs' editor in the page (it was a window),
+// in two columns
 function renderCombat(d){
   const s = ui2CurrentSet(d), n = buffCount();
   const head = `<header class="tabhead"><div><h2>${esc(t('ui2CombatTitle'))}</h2><p class="muted small">${esc(t('ui2CombatWhy'))}</p></div>` +
     `<div class="tabacts">${tierBarHTML()}<button class="btn ghost" data-buffendgame>${t('bEndgame')}</button>` +
     `<button class="btn ghost" data-buffreset ${n ? '' : 'disabled'}>${t('buffReset')}</button></div></header>`;
-  return `<div class="ui2tab combattab">${head}<div class="tabgrid"><div class="tabmainc">${buffPanelHTML()}</div>` +
-    `<aside class="tabside">${s ? targetCardHTML(s) : ''}${buffEffectsHTML()}</aside></div></div>`;
+  // two columns: you and the party's support on the left, the target and its debuffs on the right, then what is
+  // active (buffPanelHTML ends with its two columns: the effects go at the bottom of the right one)
+  const panel = buffPanelHTML().replace(/<\/div><\/div>$/, `${buffEffectsHTML()}</div></div>`);
+  return `<div class="ui2tab combattab">${head}${panel}</div>`;
 }
 
 // My character: who (job, levels, when measured), the stats measured in game, PorterPacker, then the merits

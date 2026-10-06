@@ -404,7 +404,9 @@
 .tabacts .tierbar{margin:0 6px 0 0}
 .tabgrid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
 .tabside{display:grid;gap:12px;position:sticky;top:12px}
-.combattab .buffbody{padding:0;gap:18px}
+.combattab .buffbody{padding:0;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.combattab .bcol{display:grid;gap:18px;align-content:start}
+@media (max-width:1100px){.combattab .buffbody{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:1150px){.tabgrid{grid-template-columns:minmax(0,1fr)}.tabside{position:static}}
 .herofacts{display:grid;grid-template-columns:repeat(4,auto);gap:4px 28px;margin:0}
 .herofacts div{display:grid;gap:2px}
