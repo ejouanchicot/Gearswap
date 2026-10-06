@@ -759,3 +759,6 @@
 .gpfx button{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .gpfx button small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .gpfx button[aria-pressed="true"] small{color:var(--accent)}
+/* the list scrolls inside the window (.choice, tabs.css, hides its overflow and is read after this file) */
+.choice.gplist{overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0}
+.gpmain{overflow:hidden}
