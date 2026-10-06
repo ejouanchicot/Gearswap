@@ -64,14 +64,8 @@ function setPanelHTML(s){
 // Combat: a heading with the support profile and the quick actions; the buffs' editor in the page (it was a window),
 // in two columns
 function renderCombat(d){
-  const s = ui2CurrentSet(d), n = buffCount();
-  const head = `<header class="tabhead"><div><h2>${esc(t('ui2CombatTitle'))}</h2><p class="muted small">${esc(t('ui2CombatWhy'))}</p></div>` +
-    `<div class="tabacts">${tierBarHTML()}<button class="btn ghost" data-buffendgame>${t('bEndgame')}</button>` +
-    `<button class="btn ghost" data-buffreset ${n ? '' : 'disabled'}>${t('buffReset')}</button></div></header>`;
-  // two columns: you and the party's support on the left, the target and its debuffs on the right, then what is
-  // active (buffPanelHTML ends with its two columns: the effects go at the bottom of the right one)
-  const panel = buffPanelHTML().replace(/<\/div><\/div>$/, `${buffEffectsHTML()}</div></div>`);
-  return `<div class="ui2tab combattab">${head}${panel}</div>`;
+  // the party builder (party_builder.js): a card a member, the target and what the party gives under them
+  return renderCombatParty(d);
 }
 
 // My character: who (job, levels, when measured), the stats measured in game, PorterPacker, then the merits

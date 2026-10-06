@@ -153,6 +153,8 @@ function buffPanelHTML(){
   ].join('');
   const party = partyCardsHTML(b, sel, geoSel, plus, jas);
   const tgt = targetCardPanel(b), foe = foePanelHTML(b);
+  // the parts, for the new layout's party builder (party_builder.js lays them out its own way)
+  S._bparts = {own, tgt, foe};
   // the four compartments fold by their band (S.bFold, kept between visits)
   const fold = (key, cls, title, body, meta = '') => { const shut = !!(S.bFold || {})[key];
     return `<section class="box ${cls} bfoldbox ${shut ? 'shut' : ''}"><header class="boxh" data-bfold="${key}" role="button" aria-expanded="${!shut}">` +
