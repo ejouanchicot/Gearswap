@@ -20,7 +20,7 @@
 
 local AtelierCatalog = {}
 
-local CATALOG_VERSION = 4
+local CATALOG_VERSION = 5
 -- res.items flags: Rare (0x8000), Ex (0x4000, no trade between players), Alt (0x10, sent to the
 -- account's other characters). The resources file holds the bitmask; in game, Windower's resources
 -- library gives the set of their names (addons/libs/resources.lua)
@@ -62,7 +62,18 @@ local function jobs_of(info)
     return table.concat(out, ' ')
 end
 
---- The equippable items, sorted by id: {id, name, slots, jobs, level, item level, description, rare, ex, alt (1/0)}.
+--- What kind of hand piece an item is, for the page's picker: its combat skill (Sword, Great Axe, Archery...),
+--- Shield (it has a shield size), Grip (a weapon for the off hand only, no skill); '' for anything else.
+local function kind_of(info, res)
+    local skill = info.skill and info.skill > 0 and res.skills and res.skills[info.skill]
+    if skill then return skill.en end
+    if info.shield_size then return 'Shield' end
+    -- the slots are a set of ids in game, the raw bitmask in the file: read through slots_of either way
+    if info.category == 'Weapon' and slots_of(info) == 'sub' then return 'Grip' end
+    return ''
+end
+
+--- The equippable items, sorted by id: {id, name, slots, jobs, level, item level, description, rare, ex, alt (1/0), kind}.
 local function collect(res)
     local ids = {}
     for id, info in pairs(res.items) do
@@ -78,7 +89,7 @@ local function collect(res)
         local desc = res.item_descriptions and res.item_descriptions[id]
         if slots then
             rows[#rows + 1] = {id, info.en, slots, jobs_of(info), info.level or 0, info.item_level or 0, desc and desc.en or '',
-                flagged(info, FLAG_RARE) and 1 or 0, flagged(info, FLAG_EX) and 1 or 0, flagged(info, FLAG_ALT) and 1 or 0}
+                flagged(info, FLAG_RARE) and 1 or 0, flagged(info, FLAG_EX) and 1 or 0, flagged(info, FLAG_ALT) and 1 or 0, kind_of(info, res)}
         end
     end
     return rows

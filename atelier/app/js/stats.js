@@ -364,12 +364,14 @@ function catalog(){
     // engine reads it; a copy you hold is read by its own id (the export's icons)
     for (const r of c.items) { const o = CAT.row[r[1]]; if (!o || (r[5] || 0) > (o[5] || 0) || ((r[5] || 0) === (o[5] || 0) && r[0] > o[0])) { CAT.id[r[1]] = r[0]; CAT.row[r[1]] = r; } CAT.desc[r[0]] = r[6];
       if (r[7]) CAT.rare.add(r[1]); if (r[8]) CAT.ex.add(r[1]); if (r[9]) CAT.alt.add(r[1]); } }
+  // a hand piece's kind (catalog v5): its combat skill, Shield or Grip
   return CAT;
 }
 // Whether a character can hold two of an item: not Rare, as the game's resources say (an older catalog without
 // the flag: never assumed)
 // A Rare item (the game's flag, from the catalog): one copy a character, whatever its augments
 const isRare = name => { const c = catalog(); return !!c && c.rare.has(name); };
+const itemKind = name => { const c = catalog(), r = c && c.row[name]; return (r && r[10]) || weaponSkills()[name] || ''; };
 function twoAllowed(name){ const c = catalog(); return !!c && c.src.v >= 2 && !c.rare.has(name); }
 // A piece's badges for its hover card, in the game's order and look: Alt (it can be sent to your other characters),
 // Aug (it carries augments), Rare and Ex (the catalog, from the game's flags)

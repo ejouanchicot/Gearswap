@@ -71,7 +71,7 @@ document.addEventListener('click', e => {
   if ('cmpmore' in d) { S._cmpMore = !S._cmpMore; openCompare(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('pushhist' in d) { openHistory(); return; }
   if (d.pushundo) { e.preventDefault(); pushUndo(+d.pushundo); return; }
-  if ((d.gpsrc || d.gpfx != null) && S._drawer) { gpClick(d); return; }
+  if ((d.gpsrc || d.gpfx != null || d.gpkind != null) && S._drawer) { gpClick(d); return; }
   if ('showjunk' in d && S._drawer) { S._showJunk = !S._showJunk; openSlot(S._drawer.ci, S._drawer.slot); return; }
   if ('tryempty' in d && S._drawer) { setTrial(S._drawer.set, S._drawer.slot, null); closeOverlay(); render(); return; }
   if ('tryundo' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), k = trialKey(s), dr = S.drafts[k];

@@ -759,3 +759,6 @@
 .tip{background:linear-gradient(180deg,#262F3E,#1D2430);border-color:color-mix(in srgb,var(--accent) 75%,transparent);
   box-shadow:0 0 0 1px rgba(0,0,0,.55),0 24px 48px -10px rgba(0,0,0,.85),0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent)}
 .tip::before{left:0;right:0;height:2px;background:var(--accent);border-radius:8px 8px 0 0}
+.gpfx button{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.gpfx button small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gpfx button[aria-pressed="true"] small{color:var(--accent)}
