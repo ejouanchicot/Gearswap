@@ -182,8 +182,8 @@ function cardHTML(card, ci, bypath, q){
       (wsOfSet(s) ? `<div class="setctl">${wsHeadHTML(card, ci, vi, s)}</div>` : '') + `</div>`
     : setHeadHTML(card, ci, vi, s, acts) + (locked ? `<p class="famnote">${esc(t('baseOnly', {l: data().sets.filter(x => x.base === s.path).map(x => shortPath(x.path)).join(', ')}))}</p>` : '');
   return `<article class="detail"><header>${top}${trialBar(s)}</header>
-    <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${legend}</div>${setStatsHTML(s)}</div>
-    <div class="globals-inline">${(S._globals = {s, html: globalsHTML(s)}).html}</div></article>`;
+    <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${ui2() ? ui2Wants(s) : ''}${legend}</div>${ui2() ? '' : setStatsHTML(s)}</div>
+    <div class="globals-inline">${(S._globals = {s, html: ui2() ? setPanelHTML(s) : globalsHTML(s)}).html}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 // The game on this job with another subjob than the page shows (the live link, live.js): every figure is then the other
@@ -264,9 +264,9 @@ function renderSets(d){
   const tools = vis.length && !q ? `<div class="listtools"><button class="linkbtn" data-famall="1">${t('openAll')}</button>` +
     `<span>·</span><button class="linkbtn" data-famall="0">${t('closeAll')}</button>` +
     `<span>·</span><button class="linkbtn" data-pushhist>${t('histBtn')}</button></div>` : '';
-  return `${subWarnHTML()}<div class="setsx"><aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
+  return `${subWarnHTML()}${ui2() ? ui2CtxBar() : ''}<div class="setsx ${ui2() ? 'ui2' : ''}"><aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
     `<button class="btn ghost" data-action="add" title="${t('add')}">${t('addShort')}</button></div>${tools}<div class="scroll">${list}</div><div class="hint">${t('navHint')}</div></aside>` +
-    `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
+    `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : ui2() ? setPanelHTML(sv) : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
 }
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
@@ -346,9 +346,12 @@ function renderJob(){
   let body, sections = '';
   if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
-    const list = [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),keysShown(d).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
-    sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}</nav>`;
-    body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits, sim:renderSim,}[S.section](d);
+    // the new layout (layout2.js, a trial): Combat and My character tabs, the Merits in My character
+    if (ui2() && S.section === 'merits') S.section = 'perso';
+    if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
+    const list = ui2() ? ui2Sections(d) : [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),keysShown(d).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
+    sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}${ui2Toggle()}</nav>`;
+    body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
   }
   // every tab but Sets: the played jobs on the left, to change job and stay on the tab
   if (d && S.section !== 'sets' && S.section !== 'sim') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
@@ -459,7 +462,7 @@ function sirdMeritsOf(c){
   return 2 * Object.entries((c && c.merits) || {}).reduce((n, [k, lv]) => k.toLowerCase().replace(/_/g, ' ') === 'spell interruption rate' ? n + lv : n, 0);
 }
 /* ---- the column of figures beside a set ---- */
-function globalsHTML(s){
+function globalsHTML(s, only){
   S._curSet = s;
   const r = charStats(s);
   if (!r) return `<div class="globals">${box('g-you', t('youTitle'), `<p class="muted">${t('noChar')}</p>`)}</div>`;
@@ -480,6 +483,9 @@ function globalsHTML(s){
   const edited = Object.keys(S.meritEdits[meritKey()] || {}).length;
   const you = fbox('you', 'g-you', t('youTitle') + (edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''),
     `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul>`);
+  // the new layout's "every stat" fold and My character tab: the character's figures alone (layout2.js)
+  if (only === 'stats') return `<div class="globals">${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
+    `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
   return `<div class="globals">${buffCardHTML()}${targetCardHTML(s)}${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
     `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}${tankHTML(r)}${hpCycleHTML(s)}${offenseHTML(r, s)}${porterHTML()}` +
     `<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
