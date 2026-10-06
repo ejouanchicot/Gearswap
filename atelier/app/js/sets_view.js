@@ -182,7 +182,7 @@ function cardHTML(card, ci, bypath, q){
       (wsOfSet(s) ? `<div class="setctl">${wsHeadHTML(card, ci, vi, s)}</div>` : '') + `</div>`
     : setHeadHTML(card, ci, vi, s, acts) + (locked ? `<p class="famnote">${esc(t('baseOnly', {l: data().sets.filter(x => x.base === s.path).map(x => shortPath(x.path)).join(', ')}))}</p>` : '');
   return `<article class="detail"><header>${top}${trialBar(s)}</header>
-    <div class="dbody"><div class="eqcol"><div class="slots">${slots}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${ui2() ? ui2Wants(s) : ''}${legend}</div>${ui2() ? '' : setStatsHTML(s)}</div>
+    <div class="dbody"><div class="eqcol"><div class="slotcol"><div class="slots">${slots}</div>${equipBtnHTML()}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${ui2() ? ui2Wants(s) : ''}${legend}</div>${ui2() ? '' : setStatsHTML(s)}</div>
     <div class="globals-inline">${(S._globals = {s, html: ui2() ? setPanelHTML(s) : globalsHTML(s)}).html}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];

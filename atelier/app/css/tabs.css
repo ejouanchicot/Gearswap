@@ -215,7 +215,7 @@ details.more summary{cursor:pointer;color:var(--muted);font-size:13px;padding:6p
   .eqcol{padding:14px;justify-items:center}
   .eqcol footer,.eqcol .legend{max-width:none;justify-self:stretch}
   .eqcol{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
-  .eqcol > .slots{grid-row:auto}
+  .eqcol > .slots,.eqcol > .slotcol{grid-row:auto}
   .setstats,.globals-inline .globals{padding:12px}
   .weaps{grid-template-columns:minmax(0,1fr)}
   .wrow > span{margin-top:4px}

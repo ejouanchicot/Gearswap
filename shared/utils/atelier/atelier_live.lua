@@ -25,6 +25,8 @@
 ---   GET  /push_history, POST /push_undo?id=  the pushes, and putting a file back
 ---   POST /delete?mode=preview|write[&hash=]  a set and its versions taken out of
 ---                              the set file (set_push.lua)
+---   POST /equip?job=           the pieces the page shows for a set, worn now: one line a piece,
+---                              slot <tab> name <tab> augments joined by | (equip_pieces)
 ---   POST /reload[?full=1]      //gs reload (so a saved change is worn now), or the
 ---                              whole addon: //lua r gearswap
 ---
@@ -125,6 +127,37 @@ local function asked_job(q)
     return player and player.main_job
 end
 
+-- The slots a piece can be asked for, as the page names them (GearSwap reads ring1 / ear1 as left_ring / left_ear)
+local EQUIP_SLOTS = {main = true, sub = true, range = true, ammo = true, head = true, body = true, hands = true, legs = true,
+    feet = true, neck = true, waist = true, ear1 = true, ear2 = true, ring1 = true, ring2 = true, back = true}
+
+--- Wears the pieces the page sends, through GearSwap's own //gs equip (it keeps the locked slots locked):
+--- they go into a set of their own, taken out again once worn. They stay on until the job's code changes
+--- the gear (an action, a status change).
+--- @param body string One line a piece: slot, name, augments joined by |, tab separated; the name
+---   "empty" takes the slot off
+--- @return number How many pieces were asked
+local function equip_pieces(body)
+    local set, n = {}, 0
+    for line in (body or ''):gmatch('[^\r\n]+') do
+        local slot, name, augs = line:match('^(%w+)\t([^\t]+)\t?(.*)$')
+        if slot and EQUIP_SLOTS[slot] and n < 16 then
+            n = n + 1
+            if name == 'empty' then set[slot] = empty
+            elseif augs ~= '' then
+                local list = {}
+                for aug in augs:gmatch('[^|]+') do list[#list + 1] = aug end
+                set[slot] = {name = name, augments = list}
+            else set[slot] = name end
+        end
+    end
+    if n == 0 then return 0 end
+    sets.atelier_equip = set
+    windower.send_command('gs equip sets.atelier_equip')
+    coroutine.schedule(function() if type(sets) == 'table' then sets.atelier_equip = nil end end, 5)
+    return n
+end
+
 local function route(req, live)
     if req.method == 'OPTIONS' then return '204 No Content', '' end
     if req.headers['x-atelier-token'] ~= live.token then return '403 Forbidden', '{"error":"token"}' end
@@ -191,6 +224,14 @@ local function route(req, live)
         if not job then return '503 Service Unavailable', '{"error":"no job"}' end
         local result = q.mode == 'write' and SetPush.write(job, req.body, q.hash) or SetPush.preview(job, req.body)
         return '200 OK', Export.json(result)
+    end
+    if req.path == '/equip' and req.method == 'POST' then
+        local q = query_table(req.query)
+        -- a job's pieces worn on another job: the game would refuse most of them
+        if q.job and player and q.job:upper() ~= player.main_job then return '409 Conflict', '{"error":"job"}' end
+        local n = equip_pieces(req.body)
+        if n == 0 then return '400 Bad Request', '{"error":"empty"}' end
+        return '200 OK', Export.json({ok = true, pieces = n})
     end
     if req.path == '/delete' and req.method == 'POST' then
         local q, SetPush = query_table(req.query), require('shared/utils/atelier/set_push')

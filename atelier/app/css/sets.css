@@ -91,7 +91,7 @@
 @container (max-width:860px){
   .dbody{grid-template-columns:minmax(0,1fr)}
   .eqcol{border-right:0;border-bottom:1px solid var(--line);grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:22px;align-items:start}
-  .eqcol > .slots{grid-row:1 / span 2}
+  .eqcol > .slots,.eqcol > .slotcol{grid-row:1 / span 2}
   .eqcol footer,.eqcol .legend{max-width:420px}
 }
 .choice button.orig{background:var(--accent-soft);box-shadow:inset 2px 0 0 var(--accent)}
@@ -763,3 +763,6 @@
 .choice.gplist{overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0}
 .gpmain{overflow:hidden}
 .gpside select.gpsel{width:100%}
+/* the set's pieces with the button that wears them in game under them (live.js equipBtnHTML) */
+.slotcol{display:grid;gap:8px;align-content:start;justify-items:stretch;width:max-content;max-width:100%}
+.slotcol .eqbtn{width:100%}

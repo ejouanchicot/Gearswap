@@ -241,6 +241,31 @@ function liveReread(c, kind = 'live', wait = 4000){
   el.src = `atelier/${kind}_${c}.js?t=${Date.now()}`; el.onload = el.onerror = () => el.remove();
   document.head.appendChild(el);
 }
+// Wearing in game the set shown, as the page shows it (its tried pieces), the weapons left as they are: through GearSwap's
+// //gs equip (atelier_live.lua equip_pieces), for the job loaded only. Under the set's pieces
+Object.assign(T.fr, {equipBtn: 'Équiper en jeu', equipTip: 'Met ce set sur ton perso maintenant, tel que la page le montre (pièces à l’essai comprises). Tes armes ne changent pas : en changer en jeu viderait ton TP. Il reste porté jusqu’à ta prochaine action ou changement de statut.',
+  equipNoLive: 'Le jeu ne répond pas : lance GearSwap sur ce perso', equipOtherJob: 'Le jeu a chargé {j} : passe sur ce job pour équiper ses sets',
+  equipDone: '{s} équipé en jeu ({n} pièces)', equipFailed: 'Le jeu n’a pas pu équiper ce set'});
+Object.assign(T.en, {equipBtn: 'Equip in game', equipTip: 'Puts this set on your character now, as the page shows it (tried pieces included). Your weapons stay: changing them in game would empty your TP. It stays on until your next action or status change.',
+  equipNoLive: 'The game does not answer: start GearSwap on this character', equipOtherJob: 'The game has {j} loaded: change to this job to equip its sets',
+  equipDone: '{s} equipped in game ({n} pieces)', equipFailed: 'The game could not equip this set'});
+function equipBtnHTML(){
+  const on = liveOk() && shownJobLoaded();
+  const why = !liveOk() ? t('equipNoLive') : !shownJobLoaded() ? t('equipOtherJob', {j: (S._live[S.char] || {}).job || '—'}) : t('equipTip');
+  return `<button class="btn ghost eqbtn" data-equipset ${on ? '' : 'disabled'} title="${esc(why)}">${esc(t('equipBtn'))}</button>`;
+}
+async function equipShownSet(){
+  const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]);
+  if (!s) return;
+  const pieces = withWeapons(s).pieces;
+  // the weapons stay as they are: changing one in game empties the TP
+  const lines = Object.entries(pieces).filter(([slot, p]) => p && p.name && !['main', 'sub', 'range'].includes(slot)).map(([slot, p]) =>
+    [slot, isEmpty(p) ? 'empty' : p.name, (p.augs || []).join('|')].join('\t'));
+  try { const r = await liveFetch(S.char, '/equip?job=' + encodeURIComponent(S.job), {method: 'POST', body: lines.join('\n')});
+    S.toast = t('equipDone', {n: r.pieces, s: shortPath(s.path)}); }
+  catch (e) { S.toast = t('equipFailed'); }
+  render();
+}
 // The buttons of the top bar while the game answers: reload the files, or the whole addon
 async function liveReload(full){
   const c = S.char;

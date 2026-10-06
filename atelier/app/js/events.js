@@ -14,6 +14,7 @@ document.addEventListener('click', e => {
   if (d.pick) { S.sel[S.job] = +d.pick; if (d.vpick != null) S.variant[S.job+'|'+d.pick] = +d.vpick; render(); return; }
   if (d.variant) { S.variant[S.job+'|'+d.card] = +d.variant; render(); return; }
   // a base set (sets.Cure: never worn, only built on) is shown, not changed
+  if ('equipset' in d) { equipShownSet(); return; }
   if (d.slot) { const c = S._cards[+d.card], v = c && c.variants[Math.min(S.variant[S.job + '|' + d.card] ?? 0, c.variants.length - 1)];
     if (v && baseOnly(v.set)) { S.toast = t('baseOnlyToast'); render(); return; }
     openSlot(+d.card, d.slot); return; }
