@@ -73,14 +73,16 @@ function gpOpen(card, s, slot, p, opts, label){
   if (fx) rows = rows.map(([o, i]) => [o, i, gpValue(o.piece, slot, fx)]).filter(x => x[2] && x[2].good > 0).sort((a, b) => b[2].good - a[2].good);
   const sorts = gpSorts(fx), sort = sorts.some(([k]) => k === S.gpSort) ? S.gpSort : 'rel';
   if (GP_SORT[sort]) rows.sort(GP_SORT[sort]);
-  const sortList = `<div class="gpfx">${sorts.map(([k, l]) => `<button data-gpsort="${k}" aria-pressed="${k === sort}">${esc(t(l))}</button>`).join('')}</div>`;
+  // the long filters as menus (a list of buttons ran out of the column), where the pieces come from as three buttons
+  const menu = (name, list, cur) => `<select class="buffsel gpsel" data-gpsel="${name}">${list.map(([k, l]) => `<option value="${esc(k)}" ${k === cur ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  const sortList = menu('sort', sorts.map(([k, l]) => [k, t(l)]), sort);
   const seg = `<div class="gpseg" role="group">${GP_SRC.map(([k, l]) => `<button data-gpsrc="${k}" aria-pressed="${S.gpSrc === k}">${esc(t(l))}</button>`).join('')}</div>`;
   const stats = [['', t('gpAny')]].concat(gpStats(s).map(k => [k, statLabel(k, {label: k.toUpperCase()})]));
-  const fxList = `<div class="gpfx">${stats.map(([k, l]) => `<button data-gpfx="${k}" aria-pressed="${fx === k}">${esc(l)}</button>`).join('')}</div>`;
+  const fxList = menu('fx', stats, fx);
   const side = `<aside class="gpside"><input id="drawq" class="gpq" type="search" placeholder="${esc(t('gpSearch'))}" autocomplete="off" spellcheck="false">` +
     `<h4>${esc(t('gpFrom'))}</h4>${seg}<h4>${esc(t('gpSortLbl'))}</h4>${sortList}` +
-    (kinds.length > 1 ? `<h4>${esc(t('gpKind'))}</h4><div class="gpfx">` + [[null, t('gpKindAll'), kinds.reduce((n, x) => n + x[1], 0)]].concat(kinds.map(([k, n]) => [k, k || t('gpKindOther'), n]))
-      .map(([k, l, n]) => `<button data-gpkind="${k == null ? '*' : esc(k)}" aria-pressed="${kind === k}"><span>${esc(l)}</span><small>${n}</small></button>`).join('') + `</div>` : '') +
+    (kinds.length > 1 ? `<h4>${esc(t('gpKind'))}</h4>` + menu('kind', [['*', `${t('gpKindAll')} (${kinds.reduce((n, x) => n + x[1], 0)})`]]
+      .concat(kinds.map(([k, n]) => [k, `${k || t('gpKindOther')} (${n})`])), kind == null ? '*' : kind) : '') +
     `<h4>${esc(t('gpFor'))}</h4>${fxList}` +
     (junk ? `<label class="chk gpjunk"><input type="checkbox" data-gpjunk ${S._showJunk ? 'checked' : ''}> ${esc(t('gpJunk', {n: junk}))}</label>` : '') +
     (p && !(['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons') ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '') + `</aside>`;
