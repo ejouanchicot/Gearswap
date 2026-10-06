@@ -8,11 +8,13 @@
 Object.assign(T.fr, {
   gpFrom: 'Provenance', gpMine: 'Mes pièces', gpSets: 'Dans mes sets', gpGame: 'Tout le jeu', gpFor: 'Choisie pour', gpAny: 'Ce que le set cherche',
   gpSearch: 'Chercher un nom, une stat…', gpJunk: 'Montrer les pièces sans intérêt ({n})', gpNone: 'Aucune pièce avec ces filtres.',
+  gpSortRel: 'Pertinence', gpSortHi: 'Valeur décroissante', gpSortLo: 'Valeur croissante', gpSortAz: 'Nom A → Z', gpSortZa: 'Nom Z → A', gpSortIlv: 'Niveau d’objet', gpSortLbl: 'Trier',
   gpWorn: 'portée', gpVs: 'vs portée', gpCount: '{n} pièce(s)', gpCurrent: 'Portée dans ce set', gpGameWait: 'chargement du catalogue…',
 });
 Object.assign(T.en, {
   gpFrom: 'From', gpMine: 'My pieces', gpSets: 'In my sets', gpGame: 'Whole game', gpFor: 'Chosen for', gpAny: 'What the set is after',
   gpSearch: 'Search a name, a stat…', gpJunk: 'Show the pieces of no use ({n})', gpNone: 'No piece with these filters.',
+  gpSortRel: 'Relevance', gpSortHi: 'Value, highest first', gpSortLo: 'Value, lowest first', gpSortAz: 'Name A → Z', gpSortZa: 'Name Z → A', gpSortIlv: 'Item level', gpSortLbl: 'Sort',
   gpWorn: 'worn', gpVs: 'vs worn', gpCount: '{n} piece(s)', gpCurrent: 'Worn in this set', gpGameWait: 'loading the catalogue…',
 });
 
@@ -20,6 +22,17 @@ Object.assign(T.en, {
 // your job can wear (the catalogue, loaded on demand)
 const GP_SRC = [['mine', 'gpMine'], ['sets', 'gpSets'], ['game', 'gpGame']];
 const gpInSrc = (o, src) => src === 'mine' ? o.owned : src === 'sets' ? o.seen > 0 || o.orig : true;
+
+// The orders of the list: the page's own (the closest to the set first; the highest value first when a stat is chosen),
+// the chosen stat's value from the lowest, the name either way, the item level (the level when it has none)
+const gpLevel = o => o.ilv || o.lv || 0;
+const GP_SORT = {
+  lo: (a, b) => a[2].good - b[2].good,
+  az: (a, b) => a[0].piece.name.localeCompare(b[0].piece.name),
+  za: (a, b) => b[0].piece.name.localeCompare(a[0].piece.name),
+  ilv: (a, b) => gpLevel(b[0]) - gpLevel(a[0]) || a[0].piece.name.localeCompare(b[0].piece.name),
+};
+const gpSorts = fx => (fx ? [['rel', 'gpSortHi'], ['lo', 'gpSortLo']] : [['rel', 'gpSortRel']]).concat([['az', 'gpSortAz'], ['za', 'gpSortZa'], ['ilv', 'gpSortIlv']]);
 
 // The stats offered as filters: what the set is after, heaviest first (drawer.js setWants), the always-counted ones
 // (DT, PDT, MDT) left to the "what the set is after" default
@@ -45,6 +58,9 @@ function gpOpen(card, s, slot, p, opts, label){
   const junk = shown.filter(([o]) => o.grp === 5).length;
   let rows = shown.filter(([o]) => S._showJunk || o.grp !== 5);
   if (fx) rows = rows.map(([o, i]) => [o, i, gpValue(o.piece, slot, fx)]).filter(x => x[2] && x[2].good > 0).sort((a, b) => b[2].good - a[2].good);
+  const sorts = gpSorts(fx), sort = sorts.some(([k]) => k === S.gpSort) ? S.gpSort : 'rel';
+  if (GP_SORT[sort]) rows.sort(GP_SORT[sort]);
+  const sortSel = `<label class="gpsort">${esc(t('gpSortLbl'))}<select class="buffsel" data-gpsort>${sorts.map(([k, l]) => `<option value="${k}" ${k === sort ? 'selected' : ''}>${esc(t(l))}</option>`).join('')}</select></label>`;
   const seg = `<div class="gpseg" role="group">${GP_SRC.map(([k, l]) => `<button data-gpsrc="${k}" aria-pressed="${S.gpSrc === k}">${esc(t(l))}</button>`).join('')}</div>`;
   const stats = [['', t('gpAny')]].concat(gpStats(s).map(k => [k, statLabel(k, {label: k.toUpperCase()})]));
   const fxList = `<div class="gpfx">${stats.map(([k, l]) => `<button data-gpfx="${k}" aria-pressed="${fx === k}">${esc(l)}</button>`).join('')}</div>`;
@@ -55,7 +71,7 @@ function gpOpen(card, s, slot, p, opts, label){
   const item = ([o, i, v]) => gpCard(o, i, slot, v, worn);
   const list = rows.length ? rows.map(item).join('') : `<p class="muted">${esc(t('gpNone'))}</p>`;
   const wl = wantsLine(s);
-  const body = `<div class="gpgrid">${side}<section class="gpmain"><div class="gphead"><span class="muted small">${esc(t('gpCount', {n: rows.length}))}</span>` +
+  const body = `<div class="gpgrid">${side}<section class="gpmain"><div class="gphead"><div class="gpbar"><span class="muted small">${esc(t('gpCount', {n: rows.length}))}</span>${sortSel}</div>` +
     `${wl ? `<p class="gpwants small">${wl}</p>` : ''}</div><div class="choice gplist">${list}</div></section></div>`;
   const title = `${esc(label)} <span class="gpcur">${p ? esc(p.name) : '—'}</span><small>${esc(niceName(card))} · <code>${esc(s.path)}</code></small>`;
   showDialog('gpdlg', title, body, '');

@@ -187,6 +187,7 @@ document.addEventListener('input', e => {
     for (const z of document.querySelectorAll('.tpzone')) { const any = [...z.querySelectorAll('.tprow')].some(r => !r.hidden);
       z.hidden = !any; z.open = !!q && any; } return; }
   // the picker's "every item in the game": the catalogue loads once, the drawer is drawn again
+  if ('gpsort' in e.target.dataset && S._drawer) { S.gpSort = e.target.value; save(); openSlot(S._drawer.ci, S._drawer.slot); return; }
   if ('gpjunk' in e.target.dataset && S._drawer) { S._showJunk = e.target.checked; openSlot(S._drawer.ci, S._drawer.slot); return; }
   if ('allitems' in e.target.dataset && S._drawer) { S.allItems = e.target.checked; save();
     const {ci, slot} = S._drawer, reopen = () => { openSlot(ci, slot); const q = $('#drawq'); if (q) q.focus(); };

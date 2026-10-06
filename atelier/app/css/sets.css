@@ -751,3 +751,11 @@
 .gpval small.down{color:var(--bad,#ff7b72)}
 @media (max-width:900px){.gpgrid{grid-template-columns:minmax(0,1fr);height:auto}.gpside{border-right:0;border-bottom:1px solid var(--line)}.gplist{grid-template-columns:minmax(0,1fr)}}
 .choice.gplist{border:0;border-radius:0;background:none;box-shadow:none;max-height:none}
+.gpbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gpsort{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.gpsort select.buffsel{width:190px}
+/* the hover card stands out from the page, the windows and the pieces under it: a lighter surface, a gold edge, a deeper
+   shadow (it drew on the same dark as the picker window and melted into it) */
+.tip{background:linear-gradient(180deg,#262F3E,#1D2430);border-color:color-mix(in srgb,var(--accent) 75%,transparent);
+  box-shadow:0 0 0 1px rgba(0,0,0,.55),0 24px 48px -10px rgba(0,0,0,.85),0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent)}
+.tip::before{left:0;right:0;height:2px;background:var(--accent);border-radius:8px 8px 0 0}
