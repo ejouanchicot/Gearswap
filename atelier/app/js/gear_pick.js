@@ -8,14 +8,14 @@
 Object.assign(T.fr, {
   gpFrom: 'Provenance', gpMine: 'Mes pièces', gpSets: 'Dans mes sets', gpGame: 'Tout le jeu', gpFor: 'Choisie pour', gpAny: 'Ce que le set cherche',
   gpSearch: 'Chercher un nom, une stat…', gpJunk: 'Montrer les pièces sans intérêt ({n})', gpNone: 'Aucune pièce avec ces filtres.',
-  gpSortRel: 'Pertinence', gpSortHi: 'Valeur décroissante', gpSortLo: 'Valeur croissante', gpSortAz: 'Nom A → Z', gpSortZa: 'Nom Z → A', gpSortIlv: 'Niveau d’objet', gpSortLbl: 'Trier',
+  gpSortRel: 'Pertinence', gpSortHi: 'Valeur décroissante', gpSortLo: 'Valeur croissante', gpSortAz: 'Nom A → Z', gpSortZa: 'Nom Z → A', gpSortIlv: 'Niveau d’objet', gpSortLbl: 'Trier par',
   gpKind: 'Type', gpKindAll: 'Tous', gpKindOther: 'Autres',
   gpWorn: 'portée', gpVs: 'vs portée', gpCount: '{n} pièce(s)', gpCurrent: 'Portée dans ce set', gpGameWait: 'chargement du catalogue…',
 });
 Object.assign(T.en, {
   gpFrom: 'From', gpMine: 'My pieces', gpSets: 'In my sets', gpGame: 'Whole game', gpFor: 'Chosen for', gpAny: 'What the set is after',
   gpSearch: 'Search a name, a stat…', gpJunk: 'Show the pieces of no use ({n})', gpNone: 'No piece with these filters.',
-  gpSortRel: 'Relevance', gpSortHi: 'Value, highest first', gpSortLo: 'Value, lowest first', gpSortAz: 'Name A → Z', gpSortZa: 'Name Z → A', gpSortIlv: 'Item level', gpSortLbl: 'Sort',
+  gpSortRel: 'Relevance', gpSortHi: 'Value, highest first', gpSortLo: 'Value, lowest first', gpSortAz: 'Name A → Z', gpSortZa: 'Name Z → A', gpSortIlv: 'Item level', gpSortLbl: 'Sort by',
   gpKind: 'Type', gpKindAll: 'All', gpKindOther: 'Others',
   gpWorn: 'worn', gpVs: 'vs worn', gpCount: '{n} piece(s)', gpCurrent: 'Worn in this set', gpGameWait: 'loading the catalogue…',
 });
@@ -73,12 +73,12 @@ function gpOpen(card, s, slot, p, opts, label){
   if (fx) rows = rows.map(([o, i]) => [o, i, gpValue(o.piece, slot, fx)]).filter(x => x[2] && x[2].good > 0).sort((a, b) => b[2].good - a[2].good);
   const sorts = gpSorts(fx), sort = sorts.some(([k]) => k === S.gpSort) ? S.gpSort : 'rel';
   if (GP_SORT[sort]) rows.sort(GP_SORT[sort]);
-  const sortSel = `<label class="gpsort">${esc(t('gpSortLbl'))}<select class="buffsel" data-gpsort>${sorts.map(([k, l]) => `<option value="${k}" ${k === sort ? 'selected' : ''}>${esc(t(l))}</option>`).join('')}</select></label>`;
+  const sortList = `<div class="gpfx">${sorts.map(([k, l]) => `<button data-gpsort="${k}" aria-pressed="${k === sort}">${esc(t(l))}</button>`).join('')}</div>`;
   const seg = `<div class="gpseg" role="group">${GP_SRC.map(([k, l]) => `<button data-gpsrc="${k}" aria-pressed="${S.gpSrc === k}">${esc(t(l))}</button>`).join('')}</div>`;
   const stats = [['', t('gpAny')]].concat(gpStats(s).map(k => [k, statLabel(k, {label: k.toUpperCase()})]));
   const fxList = `<div class="gpfx">${stats.map(([k, l]) => `<button data-gpfx="${k}" aria-pressed="${fx === k}">${esc(l)}</button>`).join('')}</div>`;
   const side = `<aside class="gpside"><input id="drawq" class="gpq" type="search" placeholder="${esc(t('gpSearch'))}" autocomplete="off" spellcheck="false">` +
-    `<h4>${esc(t('gpFrom'))}</h4>${seg}` +
+    `<h4>${esc(t('gpFrom'))}</h4>${seg}<h4>${esc(t('gpSortLbl'))}</h4>${sortList}` +
     (kinds.length > 1 ? `<h4>${esc(t('gpKind'))}</h4><div class="gpfx">` + [[null, t('gpKindAll'), kinds.reduce((n, x) => n + x[1], 0)]].concat(kinds.map(([k, n]) => [k, k || t('gpKindOther'), n]))
       .map(([k, l, n]) => `<button data-gpkind="${k == null ? '*' : esc(k)}" aria-pressed="${kind === k}"><span>${esc(l)}</span><small>${n}</small></button>`).join('') + `</div>` : '') +
     `<h4>${esc(t('gpFor'))}</h4>${fxList}` +
@@ -87,7 +87,7 @@ function gpOpen(card, s, slot, p, opts, label){
   const item = ([o, i, v]) => gpCard(o, i, slot, v, worn);
   const list = rows.length ? rows.map(item).join('') : `<p class="muted">${esc(t('gpNone'))}</p>`;
   const wl = wantsLine(s);
-  const body = `<div class="gpgrid">${side}<section class="gpmain"><div class="gphead"><div class="gpbar"><span class="muted small">${esc(t('gpCount', {n: rows.length}))}</span>${sortSel}</div>` +
+  const body = `<div class="gpgrid">${side}<section class="gpmain"><div class="gphead"><span class="muted small">${esc(t('gpCount', {n: rows.length}))}</span>` +
     `${wl ? `<p class="gpwants small">${wl}</p>` : ''}</div><div class="choice gplist">${list}</div></section></div>`;
   const title = `${esc(label)} <span class="gpcur">${p ? esc(p.name) : '—'}</span><small>${esc(niceName(card))} · <code>${esc(s.path)}</code></small>`;
   showDialog('gpdlg', title, body, '');
@@ -116,6 +116,7 @@ function gpClick(d){
   if (ci == null) return;
   if (d.gpsrc) { S.gpSrc = d.gpsrc; save(); }
   if (d.gpfx != null) S._gpFx = d.gpfx;
+  if (d.gpsort) { S.gpSort = d.gpsort; save(); }
   if (d.gpkind != null) S._gpKind = {slot, k: d.gpkind === '*' ? null : d.gpkind};
   openSlot(ci, slot);
 }
