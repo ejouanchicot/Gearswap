@@ -194,6 +194,13 @@ function subWarnHTML(){
   return `<p class="kwarn subwarn">${esc(t('subWarn', {g: L.job + '/' + L.sub, p: S.job + '/' + d.sub}))} <button class="btn" data-subfix="${esc(L.sub)}">${esc(t('subFix', {s: L.sub}))}</button></p>`;
 }
 function renderSets(d){
+  const {aside, cards, sel, bypath, vis, q} = setListHTML(d);
+  return `${subWarnHTML()}${ui2() ? ui2CtxBar() : ''}<div class="setsx ${ui2() ? 'ui2' : ''}">${aside}` +
+    `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : ui2() ? setPanelHTML(sv) : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
+}
+// The list of the job's sets by family, with its search (the Sets tab's left column, and the Combat and Mon perso
+// tabs' in the new layout): picks the set shown and returns the column with what the tab needs to draw the set
+function setListHTML(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
   const q = S.q.trim().toLowerCase();
   const vis = cards.map((c,i) => i).filter(i => cardMatch(cards[i], q)); S._vis = vis;
@@ -264,9 +271,9 @@ function renderSets(d){
   const tools = vis.length && !q ? `<div class="listtools"><button class="linkbtn" data-famall="1">${t('openAll')}</button>` +
     `<span>·</span><button class="linkbtn" data-famall="0">${t('closeAll')}</button>` +
     `<span>·</span><button class="linkbtn" data-pushhist>${t('histBtn')}</button></div>` : '';
-  return `${subWarnHTML()}${ui2() ? ui2CtxBar() : ''}<div class="setsx ${ui2() ? 'ui2' : ''}"><aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
-    `<button class="btn ghost" data-action="add" title="${t('add')}">${t('addShort')}</button></div>${tools}<div class="scroll">${list}</div><div class="hint">${t('navHint')}</div></aside>` +
-    `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : ui2() ? setPanelHTML(sv) : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
+  const aside = `<aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
+    `<button class="btn ghost" data-action="add" title="${t('add')}">${t('addShort')}</button></div>${tools}<div class="scroll">${list}</div><div class="hint">${t('navHint')}</div></aside>`;
+  return {aside, cards, sel, bypath, vis, q};
 }
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
@@ -343,7 +350,7 @@ function jobListHTML(){
 }
 function renderJob(){
   const c = S.job, d = data();
-  let body, sections = '';
+  let body, sections = '', side = null;
   if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
     // the new layout (layout2.js, a trial): Combat and My character tabs, the Merits in My character
@@ -351,10 +358,14 @@ function renderJob(){
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
     const list = ui2() ? ui2Sections(d) : [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),keysShown(d).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}${ui2Toggle()}</nav>`;
+    // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
+    if (ui2() && ['combat', 'perso'].includes(S.section)) { side = setListHTML(d);
+      if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
     body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
   }
   // every tab but Sets: the played jobs on the left, to change job and stay on the tab
-  if (d && S.section !== 'sets' && S.section !== 'sim') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
+  if (side) body = `<div class="tabx setside">${side.aside}<div class="tabmain">${body}</div></div>`;
+  else if (d && S.section !== 'sets' && S.section !== 'sim') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
   return `${sections}<div class="pane ${d ? 'split' : ''}">${body}</div>`;
 }
 // Re-render, keeping the focus of the search box and the scroll of each block

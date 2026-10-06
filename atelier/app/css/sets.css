@@ -685,3 +685,8 @@
 @media (max-width:900px){.meritlist.two{columns:1}}
 .mwrap{display:grid;gap:0}
 .meritlist.two{columns:300px;column-gap:48px}
+/* Combat and Mon perso with the sets on the left (sets_view.js renderJob): the column as wide as on the Sets tab */
+.tabx.setside{grid-template-columns:260px minmax(0,1fr)}
+.tabx.setside .listtools{white-space:nowrap}
+@media (max-width:900px){.tabx.setside{grid-template-columns:minmax(0,1fr)}}
+.pbfam select.buffsel + select.buffsel{flex:0 0 96px}
