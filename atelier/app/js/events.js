@@ -245,6 +245,7 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('heldsel')) { const k = heldKey(e.target.dataset.heldws);
     if (e.target.value) S.held[k] = e.target.value; else delete S.held[k]; render(); return; }
   if (e.target.classList.contains('wmore') && e.target.value) { S.weapons[S.char + '|' + S.job + '|' + e.target.dataset.wmode] = e.target.value; render(); }
+  if ('pbmarcato' in e.target.dataset) { const b0 = buffState(); if (e.target.value === '') delete b0.marcato; else b0.marcato = e.target.value; save(); render(); return; }
   if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
     if (e.target.value === '') delete b0[k]; else b0[k] = e.target.value; render(); }
 });

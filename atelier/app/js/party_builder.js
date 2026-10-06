@@ -12,7 +12,7 @@ Object.assign(T.fr, {
   pbResult: 'Ce que le groupe te donne', pbTarget: 'Cible', pbSaved: 'Mes groupes', pbSave: '+ Enregistrer ce groupe', pbSaveAsk: 'Nom du groupe (Sortie, Odyssey, Trusts XP…)',
   pbForget: 'Oublier ce groupe', pbLoaded: 'Groupe « {n} » remis.', pbNoSaved: 'aucun : compose ton groupe puis enregistre-le',
   pbOther: 'Autres debuffs sur la cible (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Défense {a} → {b}', pbEvaNow: 'Évasion {a} → {b}',
-  pbGeoHelp: 'Une ligne par bulle : clique dans la colonne Indi, Geo ou Entrust ; un autre clic la retire.', pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbOffense: 'Combat', pbAttrs: 'Attributs', pbGear: 'Équipement et capacités', pbOther2: 'Autres',
+  pbBubbles: 'Bulles', pbYouBase: 'Repas et aftermath', pbGeoHelp: 'Une ligne par bulle : clique dans la colonne Indi, Geo ou Entrust ; un autre clic la retire.', pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbOffense: 'Combat', pbAttrs: 'Attributs', pbGear: 'Équipement et capacités', pbOther2: 'Autres',
   pbSongs: 'Chansons', pbSongsNote: '{n} / {m} : un clic place la chanson, un autre la retire', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Valeur de chaque roll',
   pbIndiNote: 'sur le GEO et le groupe proche', pbGeoNote: 'la luopan, sur la cible ou le groupe', pbEntrustNote: 'une Indi donnée à un allié',
   pbSvHint: 'chansons ×2', pbClarionHint: '+1 chanson', pbLsHint: 'renforce Dia', pbEnHint: 'dégâts en plus', pbDefDown: 'Déf cible −', pbAtkDown: 'Att cible −', pbEvaDown: 'Éva cible −', pbJob_GEO: 'Bulles', pbJob_BRD: 'Chansons', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
@@ -23,7 +23,7 @@ Object.assign(T.en, {
   pbResult: 'What the party gives you', pbTarget: 'Target', pbSaved: 'My parties', pbSave: '+ Save this party', pbSaveAsk: 'Party name (Sortie, Odyssey, Trusts XP…)',
   pbForget: 'Forget this party', pbLoaded: 'Party “{n}” back.', pbNoSaved: 'none: build your party, then save it',
   pbOther: 'Other debuffs on the target (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Defense {a} → {b}', pbEvaNow: 'Evasion {a} → {b}',
-  pbGeoHelp: 'A row a bubble: click in its Indi, Geo or Entrust column; again to take it off.', pbBuffs: 'On you', pbOnTarget: 'On the target', pbOffense: 'Combat', pbAttrs: 'Attributes', pbGear: 'Gear and abilities', pbOther2: 'Others',
+  pbBubbles: 'Bubbles', pbYouBase: 'Food and aftermath', pbGeoHelp: 'A row a bubble: click in its Indi, Geo or Entrust column; again to take it off.', pbBuffs: 'On you', pbOnTarget: 'On the target', pbOffense: 'Combat', pbAttrs: 'Attributes', pbGear: 'Gear and abilities', pbOther2: 'Others',
   pbSongs: 'Songs', pbSongsNote: '{n} / {m}: a click places the song, another takes it off', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Each roll’s number',
   pbIndiNote: 'on the GEO and the party near', pbGeoNote: 'the luopan, on the target or the party', pbEntrustNote: 'an Indi given to an ally',
   pbSvHint: 'songs ×2', pbClarionHint: '+1 song', pbLsHint: 'strengthens Dia', pbEnHint: 'extra damage', pbDefDown: 'Tgt Def −', pbAtkDown: 'Tgt Atk −', pbEvaDown: 'Tgt Eva −', pbJob_GEO: 'Bubbles', pbJob_BRD: 'Songs', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
@@ -99,82 +99,89 @@ function pbFoeChips(job, b){
   return names.length ? pbSec(t('pbOnTarget'), pbGrid(names.map(n => pbOpt(`data-foeja="${esc(n)}"`, n.includes(': ') ? n.split(': ')[1] : n,
     (b.foeJa || []).includes(n), pbHint(FOE_JA[job][n]), '', n)).join(''))) : '';
 }
-function pbBody(job, b, shown){
-  const inner = pbBodyOwn(job, b, shown), foe = ['WHM', 'RDM', 'BRD', 'COR', 'GEO'].includes(job) ? '' : pbFoeChips(job, b);
-  return inner + foe;
+// A member's tab as a form: a line a setting (its name, a list or a switch, what it gives you), titled sections in two
+// columns at most. Lists hold any number of choices on one line: more buffs later will not make it longer.
+const pbSw = (attrs, on, tip = '') => `<button class="tgl pbsw" ${attrs} aria-pressed="${!!on}" title="${esc(tip)}"></button>`;
+let PB_B = null;   // the party's totals while a tab is drawn (what each line gives)
+const pbEff = src => PB_B ? pbGives(PB_B, src) : '';
+const pbF = (label, control, eff = '') => `<div class="pbf"><span class="pbfl">${esc(label)}</span><div class="pbfc">${control}</div><div class="pbfe">${eff}</div></div>`;
+const pbFSec = (title, rows) => rows ? `<section class="pbfsec"><h4>${esc(title)}</h4>${rows}</section>` : '';
+const pbForm = (left, right = '') => `<div class="pbform ${right ? '' : 'one'}"><div>${left}</div>${right ? `<div>${right}</div>` : ''}</div>`;
+const pbList = (b, key, values, ph, def = null) => pbSel(b, key, values, ph, def);
+// a tier list (Protect I..V): its values, an empty "—" first
+const pbTiers = (b, key, tiers) => pbSel(b, key, Object.keys(tiers), '—');
+// a debuff on the target cast by this job (FOE_JA): a switch a name
+function pbFoeRows(job, b){
+  return Object.keys(FOE_JA[job] || {}).map(n => pbF(n.includes(': ') ? n.split(': ')[1] : n,
+    pbSw(`data-foeja="${esc(n)}"`, (b.foeJa || []).includes(n), n), pbEff(v => v === n))).join('');
 }
-// What a choice gives, as the small line under its name: the stats of its table (a song, a roll, a bubble)
-const pbStat = k => ((FX_SHORT[k] || FX_LABEL[k] || [k.toUpperCase(), k.toUpperCase()])[S.lang === 'fr' ? 0 : 1]);
-// only the stats (a table's own fields, lim, shot, elem..., are left out)
-const PB_ATTRS = ['str', 'dex', 'vit', 'agi', 'int', 'mnd', 'chr'];
-const pbHint = def => [...new Set(Object.keys(def || {}).filter(k => FX_SHORT[k] || FX_LABEL[k] || PB_ATTRS.includes(k)).map(pbStat))].join(' · ');
-// A button with its effect under its name; a badge for its place (a song's slot, a roll's number)
-const pbOpt = (attrs, label, on, hint = '', badge = '', tip = '') => `<button class="chip pbc pbopt" ${attrs} aria-pressed="${!!on}" title="${esc(tip || label)}">` +
-  `<span class="pbon">${esc(label)}</span>${hint && hint.toLowerCase() !== String(label).toLowerCase() && !String(label).toUpperCase().startsWith(hint) ? `<span class="pbhint">${esc(hint)}</span>` : ''}${badge ? `<i class="pbbadge">${esc(badge)}</i>` : ''}</button>`;
-const pbGrid = html => `<div class="pbchips pbopts">${html}</div>`;
-const pbSec = (title, html, note = '') => `<section class="pbsec"><h4>${esc(title)}${note ? `<small>${esc(note)}</small>` : ''}</h4>${html}</section>`;
-const pbCols = (left, right) => `<div class="pbcols"><div>${left}</div><div>${right}</div></div>`;
-const pbGroup = (label, html) => `<div class="pbgrp"><span class="pbgrpl">${esc(label)}</span>${html}</div>`;
-const SONG_GROUPS = [['March', /March/], ['Minuet', /Minuet/], ['Madrigal', /Madrigal/], ['Aria', /Aria/], ['Etude', /Etude/]];
-const BUBBLE_GROUPS = [[() => t('pbOffense'), ['Fury', 'Haste', 'Precision', 'Acumen', 'Focus']], [() => t('pbAttrs'), ['STR', 'DEX', 'VIT', 'AGI', 'INT', 'MND', 'CHR']],
-  [() => t('pbOnTarget'), ['Frailty', 'Torpor', 'Malaise', 'Languor']]];
-function pbBodyOwn(job, b, shown){
+function pbBody(job, b, shown){
+  PB_B = buffTotals();
   const whm = shown.includes('WHM'), rdm = shown.includes('RDM');
-  const tier = (k, tiers) => `<div class="pbchips pbtier">${Object.keys(tiers).map(v => pbChip(`data-foeseg="${k}" data-v="${esc(v)}"`, tierShort(v), b[k] === v, v)).join('')}</div>`;
   if (job === 'GEO') {
-    const cell = (key, v) => `<td><button class="pbdot" data-pbset="${key}|${esc(v)}" aria-pressed="${b[key] === v}" title="${esc(GEO_MODES.find(x => x[0] === key)[1] + '-' + v)}"></button></td>`;
-    // the same widths in both tables (a name column, three place columns of one size): the dots line up
-    const table = groups => `<table class="pbgeo"><colgroup><col><col class="pbgeoc"><col class="pbgeoc"><col class="pbgeoc"></colgroup><thead><tr><th></th>${GEO_MODES.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>` +
-      groups.map(([g, list]) => `<tr class="pbgeog"><td colspan="4">${esc(g())}</td></tr>` + list.map(v => { const h = pbHint(BUBBLES[v] || GEO_DEBUFFS[v]);
-        return `<tr><th><b>${esc(v)}</b>${h && h !== v ? `<small>${esc(h)}</small>` : ''}</th>${GEO_MODES.map(([k]) => cell(k, v)).join('')}</tr>`; }).join('')).join('') + `</tbody></table>`;
-    const extras = pbSec(t('pbGear'), pbGrid(pbOpt('data-buffflag="bog"', 'Blaze of Glory', b.bog, 'Geo +50 %', '', t('bogTip')) +
-      pbOpt('data-buffflag="ecliptic"', 'Ecliptic', b.ecliptic, 'Geo +25 %', '', t('eclipticTip')) + pbOpt('data-buffflag="bolster"', 'Bolster', b.bolster, 'Indi, Geo ×2', '', t('bolsterTip'))) +
-      pbGroup(t('pGear'), pbPlus(b, 'geoPlus', 'Geomancy', 10))) + `<p class="pbnote">${esc(t('pbGeoHelp'))}</p>`;
-    return `<div class="pbcols pb3"><div>${table([BUBBLE_GROUPS[0], BUBBLE_GROUPS[2]])}</div><div>${table([BUBBLE_GROUPS[1]])}</div><div>${extras}</div></div>`;
+    const geo = (key, label) => pbF(label, pbGeoSel(b, key, label), pbEff(v => v === ({indi: 'Indi-', geo: 'Geo-', entrust: 'Entrust Indi-'})[key] + b[key]));
+    return pbForm(pbFSec(t('pbBubbles'), geo('indi', 'Indi') + geo('geo', 'Geo') + geo('entrust', 'Entrust') + pbF(t('pGear'), pbPlus(b, 'geoPlus', 'Geomancy', 10))),
+      pbFSec(t('bJa'), pbF('Blaze of Glory', pbSw('data-buffflag="bog"', b.bog, t('bogTip')), `<span class="muted">Geo +50 %</span>`) +
+        pbF('Ecliptic Attrition', pbSw('data-buffflag="ecliptic"', b.ecliptic, t('eclipticTip')), `<span class="muted">Geo +25 %</span>`) +
+        pbF('Bolster', pbSw('data-buffflag="bolster"', b.bolster, t('bolsterTip')), `<span class="muted">Indi, Geo ×2</span>`)));
   }
   if (job === 'BRD') {
-    const slots = songSlots(b), at = v => slots.findIndex(i => b['song' + i] === v), songs = Object.keys(SONGS);
-    const used = slots.filter(i => b['song' + i]).length;
-    const groups = SONG_GROUPS.map(([g, re]) => pbGroup(g, pbGrid(songs.filter(v => re.test(v)).map(v =>
-      pbOpt(`data-pbsong="${esc(v)}"`, SONG_SHORT(v), at(v) >= 0, pbHint(SONGS[v]), at(v) >= 0 ? String(at(v) + 1) : '', v)).join('')))).join('');
-    return pbCols(pbSec(t('pbSongs'), groups, t('pbSongsNote', {n: used, m: slots.length})),
-      pbSec(t('pbGear'), pbGroup(t('pGear'), pbPlus(b, 'songsPlus', 'Songs', 9)) +
-        pbGroup(t('bJa'), pbGrid(pbOpt('data-buffflag="soulVoice"', 'Soul Voice', b.soulVoice, t('pbSvHint'), '', t('svTip')) +
-          pbOpt('data-buffflag="clarion"', 'Clarion Call', b.clarion, t('pbClarionHint'), '', t('clarionTip')))) +
-        pbGroup('Marcato', `<div class="pbchips pbtier">${slots.map(i => pbChip(`data-marcato="${i}"`, String(i + 1), b.marcato != null && !b.soulVoice && +b.marcato === i, t('marcatoOn', {n: i + 1}))).join('')}</div>`) +
-        (slots.some(i => b['song' + i] === 'Aria of Passion') ? pbGroup('Loughnashade', `<div class="pbchips pbtier">${Object.keys(ARIA_HORN).map(st =>
-          pbChip(`data-foeseg="ariaStage" data-v="${st}"`, st, (b.ariaStage || 'V') === st, t('ariaTip', {n: ARIA_HORN[st]}))).join('')}</div>`) : '')) + pbFoeChips(job, b));
+    const slots = songSlots(b);
+    const songs = slots.map(i => pbF(`${t('bSong')} ${i + 1}`, pbList(b, 'song' + i, Object.keys(SONGS), '—'), pbEff(v => v === b['song' + i]))).join('');
+    const marcato = `<select class="buffsel ${b.marcato != null ? 'set' : ''}" data-pbmarcato><option value="">—</option>` +
+      slots.map(i => `<option value="${i}" ${b.marcato != null && +b.marcato === i ? 'selected' : ''}>${esc(t('bSong'))} ${i + 1}</option>`).join('') + `</select>`;
+    const aria = slots.some(i => b['song' + i] === 'Aria of Passion')
+      ? pbF('Loughnashade', `<select class="buffsel set" data-buff="ariaStage">${Object.keys(ARIA_HORN).map(st => `<option ${(b.ariaStage || 'V') === st ? 'selected' : ''}>${st}</option>`).join('')}</select>`) : '';
+    return pbForm(pbFSec(t('pbSongs'), songs),
+      pbFSec(t('pbGear'), pbF(t('pGear'), pbPlus(b, 'songsPlus', 'Songs', 9)) + pbF('Soul Voice', pbSw('data-buffflag="soulVoice"', b.soulVoice, t('svTip')), `<span class="muted">${esc(t('pbSvHint'))}</span>`) +
+        pbF('Clarion Call', pbSw('data-buffflag="clarion"', b.clarion, t('clarionTip')), `<span class="muted">${esc(t('pbClarionHint'))}</span>`) + pbF('Marcato', marcato) + aria) +
+      pbFSec(t('pbOnTarget'), pbFoeRows('BRD', b)));
   }
   if (job === 'COR') {
-    const at = v => [0, 1].findIndex(i => b['roll' + i] === v);
-    const picked = [0, 1].filter(i => b['roll' + i]).map(i => pbGroup(b['roll' + i], `<div class="pbrollctl">${pbSel(b, 'roll' + i + 'n', ROMAN, '', 'XI')}${rollChips(b, i)}</div>`)).join('');
-    return pbCols(pbSec(t('pbRolls'), pbGrid(Object.keys(ROLLS).map(v => pbOpt(`data-pbroll="${esc(v)}"`, v, at(v) >= 0, pbHint(ROLLS[v]), at(v) >= 0 ? String(at(v) + 1) : '', v + ' Roll')).join('')),
-      t('pbRollsNote', {n: [0, 1].filter(i => b['roll' + i]).length})) +
-      pbFoeChips(job, b),
-      (picked ? pbSec(t('pbRollValues'), picked) : '') +
-      pbSec(t('pbGear'), pbGroup(t('pGear'), pbPlus(b, 'rollsPlus', 'Rolls', 8)) + pbGroup('Light Shot', pbGrid(pbOpt('data-buffflag="lightshot"', 'Light Shot', b.lightshot, t('pbLsHint'), '', t('lsTip'))))));
+    // the roll's list as wide as every list; its number, job bonus and Crooked Cards beside it
+    const roll = i => pbF(`Roll ${i + 1}`, pbList(b, 'roll' + i, Object.keys(ROLLS), '—'),
+      (b['roll' + i] ? `<span class="pbfx">${pbSel(b, 'roll' + i + 'n', ROMAN, '', 'XI')}${rollChips(b, i)}</span>` : '') + pbEff(v => b['roll' + i] && v.startsWith(b['roll' + i] + ' Roll')));
+    return pbForm(pbFSec(t('pbRolls'), roll(0) + roll(1) + pbF(t('pGear'), pbPlus(b, 'rollsPlus', 'Rolls', 8))),
+      pbFSec(t('pbOnTarget'), pbF('Light Shot', pbSw('data-buffflag="lightshot"', b.lightshot, t('lsTip')), pbEff(v => v === 'Light Shot')) + pbFoeRows('COR', b)));
   }
-  const protect = pbGroup('Protect', tier('protect', PROTECT)) + pbGroup('Shell', tier('shell', SHELL));
-  if (job === 'WHM') return pbCols(pbSec(t('pbBuffs'), protect + pbGroup(t('pbOther2'), pbGrid((rdm ? '' : pbOpt('data-foeseg="haste" data-v="Haste"', 'Haste', b.haste === 'Haste', 'Haste')) +
-    pbOpt('data-buffflag="auspice"', 'Auspice', b.auspice, 'Subtle Blow', '', t('auspiceTip'))))) +
-    pbSec(t('pbOnTarget'), pbGrid(pbOpt('data-foeseg="dia" data-v="Dia II"', 'Dia II', b.dia === 'Dia II', t('pbDefDown')))));
+  const protect = pbF('Protect', pbTiers(b, 'protect', PROTECT), pbEff(v => v.startsWith(b.protect || '§'))) + pbF('Shell', pbTiers(b, 'shell', SHELL), pbEff(v => v === b.shell));
+  if (job === 'WHM') return pbForm(pbFSec(t('pbBuffs'), protect + (rdm ? '' : pbF('Haste', pbSw('data-foeseg="haste" data-v="Haste"', b.haste === 'Haste'), pbEff(v => v === 'Haste'))) +
+      pbF('Auspice', pbSw('data-buffflag="auspice"', b.auspice, t('auspiceTip')) + (b.auspice ? pbSel(b, 'auspiceFeet', Object.keys(AUSPICE_FEET), t('auspiceFeet')) : ''), pbEff(v => v === 'Auspice'))),
+    pbFSec(t('pbOnTarget'), pbF('Dia', `<select class="buffsel ${['Dia', 'Dia II'].includes(b.dia) ? 'set' : ''}" data-buff="dia"><option value="">—</option>` +
+      ['Dia', 'Dia II'].map(v => `<option ${b.dia === v ? 'selected' : ''}>${v}</option>`).join('') + `</select>`, pbEff(v => v === b.dia)) + pbFoeRows('WHM', b)));
   if (job === 'RDM') {
     const nm = isNmTarget(enemyKey(b.enemy)), sabX = nm ? (b.sabGloves ? 1.39 : 1.25) : (b.sabGloves ? 2.14 : 2);
-    return pbCols(pbSec(t('pbBuffs'), (whm ? '' : protect) + pbGroup(t('pbOther2'), pbGrid(pbOpt('data-foeseg="haste" data-v="Haste II"', 'Haste II', b.haste === 'Haste II', 'Haste') +
-      pbOpt('data-buffflag="enspell"', 'Enspell I', b.enspell, t('pbEnHint'), '', t('enspellTip'))))),
-      pbSec(t('pbOnTarget'), pbGroup('Dia · Bio', pbGrid(pbOpt('data-foeseg="dia" data-v="Dia III"', 'Dia III', b.dia === 'Dia III', t('pbDefDown')) +
-        pbOpt('data-foeseg="dia" data-v="Bio III"', 'Bio III', b.dia === 'Bio III', t('pbAtkDown')))) +
-        pbGroup('Distract', pbGrid(Object.keys(DISTRACT).map(v => pbOpt(`data-foeseg="distract" data-v="${esc(v)}"`, v, b.distract === v, t('pbEvaDown'))).join('') +
-          pbOpt('data-buffflag="saboteur"', 'Saboteur', b.saboteur, `×${sabX}`, '', t('sabTip'))))));
+    const list = (key, values) => `<select class="buffsel ${values.includes(b[key]) ? 'set' : ''}" data-buff="${key}"><option value="">—</option>` +
+      values.map(v => `<option ${b[key] === v ? 'selected' : ''}>${v}</option>`).join('') + `</select>`;
+    return pbForm(pbFSec(t('pbBuffs'), (whm ? '' : protect) + pbF('Haste', list('haste', ['Haste', 'Haste II']), pbEff(v => v === b.haste)) +
+        pbF('Enspell I', pbSw('data-buffflag="enspell"', b.enspell, t('enspellTip')) + (b.enspell ? pbSel(b, 'enSkill', EN_SKILLS.map(String), t('enSkillPh'), '600') : ''), pbEff(v => v === 'Enspell I'))),
+      pbFSec(t('pbOnTarget'), pbF('Dia · Bio', list('dia', ['Dia III', 'Bio III']), pbEff(v => v === b.dia)) +
+        pbF('Distract', list('distract', Object.keys(DISTRACT)), pbEff(v => !!b.distract && v.startsWith(b.distract))) +
+        pbF('Saboteur', pbSw('data-buffflag="saboteur"', b.saboteur, t('sabTip')) + (b.saboteur ? pbSw('data-buffflag="sabGloves"', b.sabGloves, 'Lethargy Gantherots +3') + '<span class="muted small">Lethargy +3</span>' : ''),
+          b.saboteur ? `<span class="muted">×${sabX}</span>` : '')));
   }
-  if (job === 'SCH') return pbSec('Storm', pbGrid(Object.keys(STORMS).map(v => pbOpt(`data-pbset="storm|${esc(v)}"`, v.replace(' II', ''), b.storm === v, pbHint(STORMS[v]), '', v)).join('')));
-  // a job whose abilities reach you (none: its tab is what it casts on the target, added by pbBody)
+  if (job === 'SCH') return pbForm(pbFSec('Storm', pbF('Storm', pbList(b, 'storm', Object.keys(STORMS), '—'), pbEff(v => v === b.storm))));
+  // a job whose abilities reach you, and what it casts on the target: a switch each
   const list = pbJaJobs().get(job) || [];
-  if (!list.length) return '';
-  return pbSec(t('pbBuffs'), pbGrid(list.map(ja => `<button class="chip pbc pbopt ja-party" data-ja="${esc(ja.name)}" aria-pressed="${jaOn(b, ja.name)}" title="${esc(jaTip(ja))}">` +
-    `<span class="pbon">${esc(ja.name.replace(' · party', ''))}</span></button>`).join('')) +
-    (list.some(x => x.name === 'Warcry · party') && jaOn(b, 'Warcry · party') ? warcryHTML(b, true) : '') +
-    (list.some(x => x.name === 'Haste Samba') && jaOn(b, 'Haste Samba') ? sambaHTML(b) : ''));
+  const mine = list.map(ja => pbF(ja.name.replace(' · party', ''), pbSw(`data-ja="${esc(ja.name)}"`, jaOn(b, ja.name), jaTip(ja)), pbEff(v => v === ja.name))).join('');
+  const extra = (list.some(x => x.name === 'Warcry · party') && jaOn(b, 'Warcry · party') ? `<div class="pbfextra">${warcryHTML(b, true)}</div>` : '') +
+    (list.some(x => x.name === 'Haste Samba') && jaOn(b, 'Haste Samba') ? `<div class="pbfextra">${sambaHTML(b)}</div>` : '');
+  const foe = pbFoeRows(job, b);
+  return mine && foe ? pbForm(pbFSec(t('pbBuffs'), mine) + extra, pbFSec(t('pbOnTarget'), foe)) : pbForm(pbFSec(mine ? t('pbBuffs') : t('pbOnTarget'), mine || foe) + extra);
+}
+
+// Your own tab, the same form: food, aftermath, your abilities (switches), your own Warcry's merits
+function pbYouBody(b){
+  PB_B = buffTotals();
+  const sel = (key, values, ph, def) => pbSel(b, key, values, ph, def);
+  const jas = jasOf().filter(j => j.as !== 'party');
+  const ownWarcry = j => j.name === 'Warcry' && j.as === 'main';
+  const rows = jas.map(j => pbF(j.name + (j.as === 'sub' ? ' /' + ((data() || {}).sub || '') : ''), pbSw(`data-ja="${esc(j.name)}"`, jaOn(b, j.name), jaTip(j)),
+    pbEff(v => v === j.name))).join('');
+  const half = Math.ceil(jas.length / 2);
+  const left = pbFSec(t('pbYouBase'), pbF(t('bFood'), sel('food', Object.keys(FOODS), t('bFood')), pbEff(v => v === b.food)) +
+    pbF(t('bAm'), `<div class="pbfam">${amRowHTML(sel)}</div>`)) + (jas.some(ownWarcry) && jaOn(b, 'Warcry') ? `<div class="pbfextra">${warcryHTML(b)}</div>` : '');
+  return pbForm(left, pbFSec(t('bJa'), rows));
 }
 
 // What a source gives, each stat once: yours, then what comes off the target in red
@@ -242,7 +249,7 @@ function renderCombatParty(d){
     `${shown.map(j => tab(j, j, PB_JOBS.find(x => x.job === j) ? t('pbJob_' + j) : '')).join('')}</div>`;
   const full = shown.length + 1 >= PB_MAX;
   const bar = `<div class="pbbar"><b>${esc(t('pbTitle'))}</b><span class="muted small">${shown.length + 1} / ${PB_MAX}</span>${full ? '' : pbAddBar(shown)}${pbSavedBar()}</div>`;
-  const body = cur === 'you' ? (P.own || '') : pbBody(cur, b, shown);
+  const body = cur === 'you' ? pbYouBody(b) : pbBody(cur, b, shown);
   const panel = `<section class="pbpanel"><div class="pbbody ${cur === 'you' ? 'pbyou' : ''}">${body}</div></section>`;
   const side = `<aside class="pbside">${pbResult(B)}${box('g-off', t('pbTarget'), P.tgt || '', `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}</aside>`;
   const other = P.foe ? `<details class="lgfold pbother"><summary>${esc(t('pbOther'))} ${P.foe.total || ''}</summary><div class="pbotherb">${P.foe.body}</div></details>` : '';
