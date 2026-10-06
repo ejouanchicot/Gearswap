@@ -7,10 +7,11 @@
 // (loaded by atelier/index.html after layout2.js: see the list there)
 
 Object.assign(T.fr, {
-  pbTitle: 'Mon groupe', pbWhy: 'Ajoute les membres de ton groupe : chacun arrive avec ses buffs habituels. Ce qui est coché compte ; un clic pour changer.',
+  pbTitle: 'Buffs et débuffs du groupe', pbWhy: 'Choisis les buffs que tu reçois et les débuffs posés sur la cible : chaque job ajouté arrive avec ses buffs habituels. Ça sert seulement aux calculs des sets ; un clic pour changer.',
   pbYou: 'Toi', pbAdd: 'Ajouter', pbAddWhy: 'Un membre du groupe', pbRemove: 'Retirer ce membre', pbGives: 'Te donne', pbNothing: 'rien pour l’instant',
-  pbResult: 'Ce que le groupe te donne', pbTarget: 'Cible', pbSaved: 'Mes groupes', pbSave: '+ Enregistrer ce groupe', pbSaveAsk: 'Nom du groupe (Sortie, Odyssey, Trusts XP…)',
-  pbForget: 'Oublier ce groupe', pbLoaded: 'Groupe « {n} » remis.', pbNoSaved: 'aucun : compose ton groupe puis enregistre-le',
+  pbResult: 'Ce que le groupe te donne', pbTarget: 'Cible', pbSaved: 'Buffs enregistrés', pbSave: '+ Enregistrer ces buffs', pbSaveAsk: 'Nom (Sortie, Odyssey, Trusts XP…)', pbSaveTitle: 'Enregistrer ces buffs et débuffs', pbSaveGo: 'Enregistrer', pbSaveHave: 'Déjà enregistrés (un même nom remplace) :', pbSavedAs: 'Buffs « {n} » enregistrés',
+  pbAddTitle: 'Ajouter les buffs d’un job ({n} place(s))', pbAddLeft: '{n} place(s)', pbAddSupport: 'Buffs de soutien', pbAddJa: 'Capacités de groupe', pbAddFoe: 'Débuffs sur la cible',
+  pbForget: 'Oublier ces buffs', pbLoaded: 'Buffs « {n} » remis.', pbNoSaved: 'aucun : choisis les buffs puis enregistre-les',
   pbOther: 'Autres debuffs sur la cible (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Défense {a} → {b}', pbEvaNow: 'Évasion {a} → {b}',
   pbFoodAtk: 'Attaque', pbFoodAcc: 'Précision', pbFoodBoth: 'Attaque et précision', pbFoodWs: 'Double Attack et WS', pbFoodMagic: 'Magie', pbFoodTank: 'Défense (tank)',
   pbChoose: 'Choisir…', pbSearch: 'Chercher…', pbNone: 'Aucune', pbBubbles: 'Bulles', pbYouBase: 'Repas et aftermath', pbGeoHelp: 'Une ligne par bulle : clique dans la colonne Indi, Geo ou Entrust ; un autre clic la retire.', pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbOffense: 'Combat', pbAttrs: 'Attributs', pbGear: 'Équipement et capacités', pbOther2: 'Autres',
@@ -19,10 +20,11 @@ Object.assign(T.fr, {
   pbSvHint: 'chansons ×2', pbClarionHint: '+1 chanson', pbLsHint: 'renforce Dia', pbEnHint: 'dégâts en plus', pbDefDown: 'Déf cible −', pbAtkDown: 'Att cible −', pbEvaDown: 'Éva cible −', pbJob_GEO: 'Bulles', pbJob_BRD: 'Chansons', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
 });
 Object.assign(T.en, {
-  pbTitle: 'My party', pbWhy: 'Add your party members: each comes with its usual buffs. What is ticked counts; one click to change.',
+  pbTitle: 'Party buffs and debuffs', pbWhy: 'Pick the buffs you get and the debuffs on the target: each job added comes with its usual buffs. Only used for the set calculations; one click to change.',
   pbYou: 'You', pbAdd: 'Add', pbAddWhy: 'A party member', pbRemove: 'Remove this member', pbGives: 'Gives you', pbNothing: 'nothing yet',
-  pbResult: 'What the party gives you', pbTarget: 'Target', pbSaved: 'My parties', pbSave: '+ Save this party', pbSaveAsk: 'Party name (Sortie, Odyssey, Trusts XP…)',
-  pbForget: 'Forget this party', pbLoaded: 'Party “{n}” back.', pbNoSaved: 'none: build your party, then save it',
+  pbResult: 'What the party gives you', pbTarget: 'Target', pbSaved: 'Saved buffs', pbSave: '+ Save these buffs', pbSaveAsk: 'Name (Sortie, Odyssey, Trusts XP…)', pbSaveTitle: 'Save these buffs and debuffs', pbSaveGo: 'Save', pbSaveHave: 'Already saved (the same name replaces it):', pbSavedAs: 'Buffs “{n}” saved',
+  pbAddTitle: 'Add a job’s buffs ({n} slot(s) left)', pbAddLeft: '{n} slot(s)', pbAddSupport: 'Support buffs', pbAddJa: 'Party abilities', pbAddFoe: 'Debuffs on the target',
+  pbForget: 'Forget these buffs', pbLoaded: 'Buffs “{n}” back.', pbNoSaved: 'none: pick the buffs, then save them',
   pbOther: 'Other debuffs on the target (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Defense {a} → {b}', pbEvaNow: 'Evasion {a} → {b}',
   pbFoodAtk: 'Attack', pbFoodAcc: 'Accuracy', pbFoodBoth: 'Attack and accuracy', pbFoodWs: 'Double Attack and WS', pbFoodMagic: 'Magic', pbFoodTank: 'Defense (tank)',
   pbChoose: 'Choose…', pbSearch: 'Search…', pbNone: 'None', pbBubbles: 'Bubbles', pbYouBase: 'Food and aftermath', pbGeoHelp: 'A row a bubble: click in its Indi, Geo or Entrust column; again to take it off.', pbBuffs: 'On you', pbOnTarget: 'On the target', pbOffense: 'Combat', pbAttrs: 'Attributes', pbGear: 'Gear and abilities', pbOther2: 'Others',
@@ -153,10 +155,7 @@ function pbOpenPick(key){
     P.groups().map(([g, list]) => list.length ? `<section class="pbpg"><h4>${esc(g)}</h4><div class="pbpl">${list.map(item).join('')}</div></section>` : '').join('');
   showDialog('pbdlg', esc(P.title(key.match(/\d+$/) ? key.match(/\d+$/)[0] : '')), body,
     cur ? `<button class="btn ghost" data-pbchoose="${esc(key)}|">${esc(t('pbNone'))}</button>` : '');
-  const q = $('.pbdlg .pbpq');
-  if (q) { q.focus(); q.addEventListener('input', () => { const w = q.value.trim().toLowerCase();
-    document.querySelectorAll('.pbdlg .pbpi').forEach(el => { el.hidden = !!w && !el.dataset.q.includes(w); });
-    document.querySelectorAll('.pbdlg .pbpg').forEach(sec => { sec.hidden = !sec.querySelector('.pbpi:not([hidden])'); }); }); }
+  pbDlgSearch();
 }
 function pbChoose(spec){
   const at = spec.indexOf('|'), key = spec.slice(0, at), v = spec.slice(at + 1), b = buffState();
@@ -269,11 +268,43 @@ function pbGives(B, src){
 }
 
 // The members not in the party yet, one button each, on a line over the cards
-function pbAddBar(shown){
-  const all = [...new Set(PB_JOBS.map(j => j.job).concat([...pbJaJobs().keys()], pbFoeJobs()))].filter(j => !shown.includes(j));
-  if (!all.length) return '';
-  return `<div class="pbaddbar"><span class="pblbl">${esc(t('pbAddWhy'))}</span>` +
-    all.map(j => `<button class="pbaddbtn" data-pbadd="${j}" title="${esc(t('pbAddWhy'))}">${emblem(j)}<span>+ ${esc(j)}</span></button>`).join('') + `</div>`;
+// Adding a member: a "+" tab opens a window listing the jobs not in the party, by what they bring (support buffs,
+// party abilities, debuffs on the target), each saying what it gives; a click adds it and opens its tab
+function pbAddGroups(shown){
+  const seen = new Set(shown), out = [];
+  const group = (title, jobs, hint) => { const l = jobs.filter(j => !seen.has(j)); l.forEach(j => seen.add(j)); if (l.length) out.push([title, l, hint]); };
+  group(t('pbAddSupport'), PB_JOBS.map(j => j.job), j => t('pbJob_' + j));
+  group(t('pbAddJa'), [...pbJaJobs().keys()], j => (pbJaJobs().get(j) || []).map(x => x.name.replace(' · party', '')).join(' · '));
+  group(t('pbAddFoe'), pbFoeJobs(), j => Object.keys(FOE_JA[j] || {}).join(' · '));
+  return out;
+}
+function pbOpenAdd(){
+  const b = buffState(), shown = pbShown(b), left = PB_MAX - shown.length - 1;
+  if (left <= 0) return;
+  const item = hint => j => `<button class="pbpi" data-pbadd="${esc(j)}" data-q="${esc((j + ' ' + hint(j)).toLowerCase())}">` +
+    `<b>${esc(j)}</b><small>${esc(hint(j))}</small></button>`;
+  const body = `<input class="pbpq" type="search" placeholder="${esc(t('pbSearch'))}" autocomplete="off">` +
+    pbAddGroups(shown).map(([g, l, hint]) => `<section class="pbpg"><h4>${esc(g)}</h4><div class="pbpl">${l.map(item(hint)).join('')}</div></section>`).join('');
+  showDialog('pbdlg pbadddlg', esc(t('pbAddTitle', {n: left})), body, '');
+  pbDlgSearch();
+}
+// the search on top of a picker window: hides the choices and the families that do not match
+function pbDlgSearch(){
+  const q = $('.pbdlg .pbpq');
+  if (!q) return;
+  q.focus();
+  q.addEventListener('input', () => { const w = q.value.trim().toLowerCase();
+    document.querySelectorAll('.pbdlg .pbpi').forEach(el => { el.hidden = !!w && !el.dataset.q.includes(w); });
+    document.querySelectorAll('.pbdlg .pbpg').forEach(sec => { sec.hidden = !sec.querySelector('.pbpi:not([hidden])'); }); });
+}
+// Saving the party: a window of the page asks its name (the saved ones listed, a same name replaces it)
+function pbOpenSave(){
+  const names = Object.keys(((S.pbPresets || {})[S.char]) || {});
+  const body = `<label class="pbsavel">${esc(t('pbSaveAsk'))}<input class="pbsavein" type="text" maxlength="40" autocomplete="off"></label>` +
+    (names.length ? `<p class="muted small">${esc(t('pbSaveHave'))} ${names.map(esc).join(' · ')}</p>` : '');
+  showDialog('pbdlg pbsavedlg', esc(t('pbSaveTitle')), body, `<button class="btn" data-pbsavego>${esc(t('pbSaveGo'))}</button>`);
+  const inp = $('.pbsavein');
+  if (inp) { inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); pbClick({pbsavego: '1'}); } }); }
 }
 
 function pbSavedBar(){
@@ -319,9 +350,10 @@ function renderCombatParty(d){
       `${key === 'you' ? '' : `<button class="pbx" data-pbdel="${esc(key)}" title="${esc(t('pbRemove'))}" aria-label="${esc(t('pbRemove'))}">×</button>`}</span>` +
       `<span class="pbtabg">${g || `<span class="muted">${esc(t('pbNothing'))}</span>`}</span></div>`; };
   const tabs = `<div class="pbtabs" role="tablist">${tab('you', t('pbYou'), `${S.job}/${d.sub || '—'}`)}` +
-    `${shown.map(j => tab(j, j, PB_JOBS.find(x => x.job === j) ? t('pbJob_' + j) : '')).join('')}</div>`;
+    `${shown.map(j => tab(j, j, PB_JOBS.find(x => x.job === j) ? t('pbJob_' + j) : '')).join('')}` +
+    (shown.length + 1 < PB_MAX ? `<button class="pbtab pbtabadd" data-pbaddopen><b>+ ${esc(t('pbAdd'))}</b><small>${esc(t('pbAddLeft', {n: PB_MAX - shown.length - 1}))}</small></button>` : '') + `</div>`;
   const full = shown.length + 1 >= PB_MAX;
-  const bar = `<div class="pbbar"><b>${esc(t('pbTitle'))}</b><span class="muted small">${shown.length + 1} / ${PB_MAX}</span>${full ? '' : pbAddBar(shown)}${pbSavedBar()}</div>`;
+  const bar = `<div class="pbbar"><b>${esc(t('pbTitle'))}</b><span class="muted small">${shown.length + 1} / ${PB_MAX}</span>${pbSavedBar()}</div>`;
   const body = cur === 'you' ? pbYouBody(b) : pbBody(cur, b, shown);
   const panel = `<section class="pbpanel"><div class="pbbody ${cur === 'you' ? 'pbyou' : ''}">${body}</div></section>`;
   const side = `<aside class="pbside">${pbResult(B)}${box('g-off', t('pbTarget'), P.tgt || '', `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}</aside>`;
@@ -355,8 +387,10 @@ function pbClick(d){
     if (at != null) { delete b['roll' + at]; delete b['roll' + at + 'n']; }
     else { const free = [0, 1].find(i => !b['roll' + i]); if (free == null) return; b['roll' + free] = d.pbroll; b['roll' + free + 'n'] = 'XI'; }
   }
+  else if (d.pbaddopen != null) { pbOpenAdd(); return; }
   else if (d.pbadd) {
     if (pbShown(b).length + 1 >= PB_MAX) return;
+    closeOverlay();
     S.pbTab = d.pbadd;
     const j = d.pbadd, def = PB_JOBS.find(x => x.job === j);
     b.pbMembers = [...new Set([...pbMembers(b), j])];
@@ -376,9 +410,12 @@ function pbClick(d){
     if (j === 'WHM' && b.haste === 'Haste' && !shown.includes('RDM')) delete b.haste;
     for (const ja of pbJaJobs().get(j) || []) if (b.pja) delete b.pja[ja.name];
     if (!['WHM', 'RDM'].includes(j) && b.foeJa) b.foeJa = b.foeJa.filter(n => !(n in (FOE_JA[j] || {})));
-  } else if ('pbsave' in d) {
-    const name = (prompt(t('pbSaveAsk')) || '').trim();
-    if (!name) return;
+  } else if ('pbsave' in d) { pbOpenSave(); return;
+  } else if ('pbsavego' in d) {
+    const inp = $('.pbsavein'), name = ((inp && inp.value) || '').trim();
+    if (!name) { if (inp) inp.focus(); return; }
+    closeOverlay();
+    S.toast = t('pbSavedAs', {n: name});
     const all = S.pbPresets = S.pbPresets || {}, mine = all[S.char] = all[S.char] || {}, keep = {};
     for (const k of pbKeys()) if (b[k] != null) keep[k] = JSON.parse(JSON.stringify(b[k]));
     mine[name] = keep;

@@ -441,9 +441,6 @@
 .pbgv{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--good,#5bd17f)}
 .pbgv.big{font-size:14px;gap:6px 14px}
 .pbgv .pneg{color:var(--bad,#ff7b72)}
-.pbaddbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.pbaddbtn{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);color:var(--ink);cursor:pointer;font-weight:600}
-.pbaddbtn:hover{border-color:var(--accent);color:var(--accent)}
 .pbbottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
 @media (max-width:1100px){.pbbottom{grid-template-columns:minmax(0,1fr)}}
 .pbtgt{margin:10px 0 0;font-size:13px}
@@ -473,12 +470,10 @@
 .pbedit{padding:12px 14px 16px 176px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:8px 24px;background:var(--panel-2);border-top:1px solid var(--line)}
 .pbedit > .brow,.pbedit > .bspan,.pbedit > .brdrows{grid-column:1 / -1}
 @media (max-width:900px){.pbedit{padding-left:14px}.pbhead{grid-template-columns:110px minmax(0,1fr) 16px 22px}.pbhead .pbgv{display:none}}
-.pbaddbar{padding:10px 14px;border-top:1px dashed var(--line)}
 
 /* the cards as buttons (party_builder.js pbBody): 3 a row, the same height */
 .pbbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .pbbar > b{font-size:15px}
-.pbbar .pbaddbar{padding:0;border:0}
 .pbbar .pbsaved{margin-left:auto}
 .combattab .pbgrid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr}
 @media (max-width:1500px){.combattab .pbgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -660,3 +655,13 @@
 .pbfam select.buffsel{flex:1 1 0;width:auto}
 .pbfe .amwho{color:var(--muted);font-size:12px}
 .pbfam{flex:1 1 auto;min-width:0}
+/* the "+" tab (party_builder.js pbOpenAdd) and the save window (pbOpenSave) */
+.pbtab.pbtabadd{border-style:dashed;border-bottom:0;background:transparent;color:var(--muted);align-content:center;justify-items:start}
+.pbtab.pbtabadd b{font-size:13px;color:var(--accent)}
+.pbtab.pbtabadd small{font-size:11px}
+.pbtab.pbtabadd:hover{border-color:var(--accent)}
+.dialog.pbsavedlg{width:min(440px,calc(100% - 32px))}
+.pbsavel{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.pbsavein{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:7px;background:var(--well);color:var(--ink);font:inherit;font-size:13px}
+.pbsavein:focus{outline:none;border-color:var(--accent)}
+.pbadddlg .pbpi small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
