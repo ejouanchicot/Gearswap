@@ -483,7 +483,10 @@ function globalsHTML(s, only){
   const edited = Object.keys(S.meritEdits[meritKey()] || {}).length;
   const you = fbox('you', 'g-you', t('youTitle') + (edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''),
     `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul>`);
-  // the new layout's "every stat" fold and My character tab: the character's figures alone (layout2.js)
+  // the new layout's "every stat" fold ('stats') and My character tab ('cards': open, without the note): the
+  // character's figures alone (layout2.js)
+  if (only === 'cards') return box('g-you', t('youTitle'), `<ul class="statlist big">${main}</ul>`) +
+    box('g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`) + box('g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`);
   if (only === 'stats') return `<div class="globals">${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
     `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
   return `<div class="globals">${buffCardHTML()}${targetCardHTML(s)}${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +

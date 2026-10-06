@@ -38,7 +38,7 @@ Object.assign(T.en, {
 });
 
 // The compartment beside the sets: what the unpack list misses and holds for nothing
-function porterHTML(){
+function porterHTML(open){
   const p = (data() || {}).porterpacker;
   if (!p || !p.wanted) return '';
   const todo = p.add.length + p.remove.length;
@@ -52,6 +52,8 @@ function porterHTML(){
     ? `<button class="btn" data-porterwrite title="${esc(t('porterWriteTip', {f: p.file}))}">${t('porterWrite')}</button>`
     : `<p class="muted small">${t('porterNeedJob', {j: esc(S.job)})}</p>`;
   const meta = todo ? t('porterToDo', {n: todo}) : t('porterOk');
+  // open: always unfolded (the My character tab of the new layout)
+  if (open) return box('g-caps', t('porterTitle'), body, `<span class="meta">${esc(meta)}</span>`);
   return `<section class="box g-caps"><button class="boxh bufftoggle" data-fold="porter" aria-expanded="${!!S.boxOpen.porter}">` +
     `<h3>${t('porterTitle')}</h3><span class="meta">${esc(meta)}</span></button>${S.boxOpen.porter ? `<div class="boxb">${body}</div>` : ''}</section>`;
 }

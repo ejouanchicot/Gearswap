@@ -15,6 +15,7 @@ Object.assign(T.fr, {
   ui2Ctx: 'Calculé avec', ui2CtxEdit: 'Changer', ui2SetTitle: 'Stats de ce set', ui2All: 'Toutes les stats (perso, attributs, plafonds)',
   ui2CombatWhy: 'Les buffs, la cible et le groupe avec lesquels la page calcule tout (dégâts, temps jusqu’à la WS, optimiseur). Ils valent pour tous tes sets.',
   ui2PersoWhy: 'Ce qui est propre à ton perso : tes stats mesurées en jeu, tes mérites et Job Points, ta liste PorterPacker.',
+  ui2CombatTitle: 'Conditions de combat', ui2Job: 'Job', ui2Measured: 'Mesuré en jeu', ui2NotMeasured: 'pas encore (//gs c atelier)',
 });
 Object.assign(T.en, {
   ui2Combat: 'Combat', ui2Perso: 'My character', ui2Old: 'Old layout', ui2New: 'New layout (trial)',
@@ -22,6 +23,7 @@ Object.assign(T.en, {
   ui2Ctx: 'Worked out with', ui2CtxEdit: 'Change', ui2SetTitle: 'This set’s stats', ui2All: 'Every stat (character, attributes, caps)',
   ui2CombatWhy: 'The buffs, target and party the page works everything out with (damage, time to the WS, optimizer). They hold for all your sets.',
   ui2PersoWhy: 'What is your character’s own: your stats measured in game, your merits and Job Points, your PorterPacker list.',
+  ui2CombatTitle: 'Combat conditions', ui2Job: 'Job', ui2Measured: 'Measured in game', ui2NotMeasured: 'not yet (//gs c atelier)',
 });
 
 const ui2 = () => S.ui2 !== false;
@@ -59,13 +61,27 @@ function setPanelHTML(s){
   return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3>${offense}${defense}${hpCycleHTML(s)}${setStatsHTML(s)}${all}</div>`;
 }
 
+// Combat: a heading with the support profile and the quick actions; the buffs' editor in the page (it was a window);
+// on the side, what is active and the target
 function renderCombat(d){
-  const s = ui2CurrentSet(d);
-  return `<div class="ui2tab"><p class="muted small">${esc(t('ui2CombatWhy'))}</p><div class="globals">${buffCardHTML()}${s ? targetCardHTML(s) : ''}</div></div>`;
+  const s = ui2CurrentSet(d), n = buffCount();
+  const head = `<header class="tabhead"><div><h2>${esc(t('ui2CombatTitle'))}</h2><p class="muted small">${esc(t('ui2CombatWhy'))}</p></div>` +
+    `<div class="tabacts">${tierBarHTML()}<button class="btn ghost" data-buffendgame>${t('bEndgame')}</button>` +
+    `<button class="btn ghost" data-buffreset ${n ? '' : 'disabled'}>${t('buffReset')}</button></div></header>`;
+  return `<div class="ui2tab combattab">${head}<div class="tabgrid"><div class="tabmainc">${buffPanelHTML()}</div>` +
+    `<aside class="tabside">${s ? targetCardHTML(s) : ''}${buffEffectsHTML()}</aside></div></div>`;
 }
+
+// My character: who (job, levels, when measured), the stats measured in game, PorterPacker, then the merits
 function renderPerso(d){
-  const s = ui2CurrentSet(d);
-  return `<div class="ui2tab"><p class="muted small">${esc(t('ui2PersoWhy'))}</p><div class="globals">${s ? globalsHTML(s, 'stats') : ''}${porterHTML()}</div>${renderMerits(d)}</div>`;
+  const s = ui2CurrentSet(d), c = measuredChar && measuredChar(), lv = jaLevels();
+  const facts = [[t('ui2Job'), `${S.job}/${d.sub || '—'}`], ['Master Level', lv.ml || '—'], ['Job Points', (c && c.jp_spent) || '—'],
+    [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]];
+  const head = `<header class="tabhead"><div><h2>${esc(S.char)}</h2><p class="muted small">${esc(t('ui2PersoWhy'))}</p></div>` +
+    `<dl class="herofacts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl></header>`;
+  const cards = s && charStats(s) ? globalsHTML(s, 'cards') : `<p class="muted">${t('noChar')}</p>`;
+  return `<div class="ui2tab persotab">${head}<div class="persogrid">${cards}${porterHTML(true)}</div>` +
+    `<h3 class="tabsec">${esc(t('sectionsMerits'))}</h3>${renderMerits(d)}</div>`;
 }
 
 // What the set is after, one line under its pieces (the stats themselves are on the right)
