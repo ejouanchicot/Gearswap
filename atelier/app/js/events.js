@@ -4,7 +4,7 @@ document.addEventListener('toggle', e => { const g = e.target && e.target.datase
   if (e.target && e.target.dataset && 'rdcalc' in e.target.dataset) S._rdOpen = e.target.open;
   if (e.target && e.target.dataset && 'lgfold' in e.target.dataset) S._lgOpen = e.target.open; }, true);
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold]'); if (!b) return; const d = b.dataset;
+  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold],[data-pbopen]'); if (!b) return; const d = b.dataset;
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
@@ -57,7 +57,7 @@ document.addEventListener('click', e => {
   // every objective of the stats optimizer, or only the set's (stat_opt.js statRelevant)
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
-  if (d.pbadd || d.pbdel || 'pbsave' in d || d.pbload || d.pbforget) { pbClick(d); return; }
+  if (d.pbadd || d.pbdel || 'pbsave' in d || d.pbload || d.pbforget || d.pbopen || d.pbset || d.pbsong || d.pbroll || d.pbgeomode) { pbClick(d); return; }
   if (d.ui2) { S.ui2 = d.ui2 === 'on'; S._globals = null; save(); render(); return; }
   if ('porterwrite' in d) { porterWrite(); return; }
   if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
