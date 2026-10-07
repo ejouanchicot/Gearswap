@@ -264,6 +264,36 @@ function SongOwner.counts()
     return own, all
 end
 
+--- The song family of a song name ("Honor March" -> "march").
+--- @param song_name string
+--- @return string|nil
+function SongOwner.family_of(song_name)
+    local name = type(song_name) == 'string' and song_name:lower() or ''
+    for family in pairs(FAMILIES) do
+        if name:find(family, 1, true) then return family end
+    end
+    return nil
+end
+
+--- The songs of ours up on us, with the time each has left.
+--- Before the first buff packet of a load: the saved instances whose buff is up.
+--- @return table list of {family, left (seconds)}
+function SongOwner.own_songs()
+    local by_id, up = families_by_id(), {}
+    local me = windower.ffxi.get_player()
+    for _, id in ipairs(me and me.buffs or {}) do up[id] = true end
+    local out, now = {}, os.time()
+    for key in pairs(load_owned()) do
+        local id, finish = key:match('^(%d+):(%d+)$')
+        id, finish = tonumber(id), tonumber(finish)
+        local there = live.snapshot and live.snapshot[key] or (not live.snapshot and up[id])
+        if there and by_id[id] and finish > now then
+            out[#out + 1] = {family = by_id[id], left = finish - now}
+        end
+    end
+    return out
+end
+
 --- Listen to the action and buff packets, once per load (a raw event: a plain
 --- one from a job file runs GearSwap's refresh on every packet). Both are read
 --- as the server sent them: the actions through

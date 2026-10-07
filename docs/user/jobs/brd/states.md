@@ -24,8 +24,8 @@ Set names and automatic gear: [sets.md](sets.md).
 | Apps+Numpad1 `#numpad1` | `EtudeType` | **STR**, DEX, VIT, AGI, INT, MND, CHR | Etude sung by `//gs c etude` and by the Etude replacement |
 | Ctrl+Numpad0 `^numpad0` | `CarolElement` | **Fire**, Ice, Wind, Earth, Lightning, Water, Light, Dark | `//gs c carol` sings `<Element> Carol II` |
 | Ctrl+Numpad. `^numpad.` | `ThrenodyElement` | same eight, **Fire** | `//gs c threnody` casts `<Element> Threnody II` on `<stnpc>` |
-| Ctrl+Numpad8 `^numpad8` | `MarcatoSong` | **HonorMarch**, AriaPassion, Off | Marcato is used automatically before that song (then the song 2 s later), only on yourself, under Nightingale + Troubadour, without Soul Voice, and when Marcato is ready |
-| Apps+Numpad2 `#numpad2` | `AutoNitro` | **On**, Off | On: `//gs c songs` first uses Nightingale, then Troubadour, when both are ready and Nightingale is not up yet, and starts the songs once they are on |
+| Ctrl+Numpad8 `^numpad8` | `MarcatoSong` | **HonorMarch**, AriaPassion, Off | Marcato is used automatically before that song (then the song once Marcato is up), only on yourself, under Nightingale + Troubadour, without Soul Voice, and when Marcato is ready |
+| Apps+Numpad2 `#numpad2` | `AutoNitro` | **On**, Off | On: `//gs c songs` first uses Nightingale, then Troubadour, when each is ready or already up, and starts the songs only once both are on (a refused ability is sent again; if one never goes, nothing is sung) |
 
 BRD has no `HybridMode` key: Ctrl+Numpad9 is left free.
 
@@ -50,7 +50,8 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
 
 | Command | What it does |
 |---|---|
-| `//gs c songs` (`melee`, `meleesong`, `allsongs`) | Sings the pack on yourself: the songs your main instrument holds, then the dummy songs, then the rest of the pack over the dummies. How many: 2 songs, plus what your instruments add (read from the version you own: Daurdabla, Loughnashade, Terpander, Blurred Harp +1...), plus 1 under Clarion Call, never more than the pack; dummies only for slots none of your own songs holds yet. Each song goes out once the previous one is over; an interrupted or refused song is tried twice more, then skipped with a warning |
+| `//gs c songs` (`melee`, `meleesong`, `allsongs`) | Sings the pack on yourself: the songs your main instrument holds, then the dummy songs, then the rest of the pack over the dummies. How many: 2 songs, plus what your instruments add (read from the version you own: Daurdabla, Loughnashade, Terpander, Blurred Harp +1...), plus 1 under Clarion Call, never more than the pack; dummies only for slots none of your own songs holds yet. Each song goes out once the previous one is over; an interrupted or refused song is tried twice more, then skipped with a warning. **Nothing is sent** (no Nightingale, no song) when every song of the pack is yours and has more than 3 minutes left: `brd_songs_refresh_below` in `_common/combat/TUNING.lua`, in seconds, 0 to always sing. A second `songs` while Nightingale / Troubadour are going out is ignored |
+| `//gs c songs force` | Sings the pack even when every song has time left |
 | `//gs c songs full` | The same, with every dummy song whatever is already up (another bard's songs on you) |
 | `//gs c songplan` | What `songs` would do now: Clarion Call, main and dummy instrument with the extra songs each gives, songs up (yours / all), the plan |
 | `//gs c songstop` | Stops a running rotation |

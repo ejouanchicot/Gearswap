@@ -177,10 +177,12 @@ Magic']` as an empty set and none of the other three.
   again once Pianissimo is on (`sets.precast.JA.Pianissimo` if you have one).
 - **Automatic Marcato.** Before the song chosen by `MarcatoSong` (Honor March or Aria
   of Passion), when Nightingale and Troubadour are both up, Soul Voice is not, Marcato
-  is not already up and is ready: Marcato is used first, then the song 2 seconds later.
+  is not already up and is ready: Marcato is used first (again if the game refuses it), then the song once Marcato is up.
   `MarcatoSong` Off turns it off.
-- **AutoNitro.** `//gs c songs` opens with Nightingale then Troubadour when both are
-  ready and Nightingale is not up (their JA sets are worn). The `AutoNitro` mode Off
+- **AutoNitro.** `//gs c songs` opens with Nightingale then Troubadour when each is
+  ready or already up (their JA sets are worn). Each one is checked before the next:
+  an ability the game refuses is sent again, and if one never goes, no song is sung.
+  With one of them on recast, the songs go without Nitro. The `AutoNitro` mode Off
   turns it off.
 - **Song tier fallback.** A debuff song still on cooldown is replaced by another tier
   (Foe Lullaby II to Foe Lullaby, Carnage Elegy to Battlefield Elegy, Foe Requiem VII

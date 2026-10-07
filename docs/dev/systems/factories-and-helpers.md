@@ -674,6 +674,7 @@ keeps 50); a key the default lacks is kept as given. Every reader calls it at th
 | `smn_skillup` | `{avatar = 'Siren', release_after = 5.0}` | `smn/functions/SMN_COMMANDS.lua` `start_skillup` (read at each start into `SKILLUP_STATE.avatar` / `cast_to_release_delay`) |
 | `geo_escort_indi` | `'Indi-Regen'` | `geo/functions/GEO_COMMANDS.lua` `escort` when no Indi- is given |
 | `brd_debuff_songs` | `{lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}` | `brd/functions/BRD_COMMANDS.lua` (`lullaby`, `lullaby2` / `foe`, `elegy`, `requiem`); the spell is also passed to the chat message |
+| `brd_songs_refresh_below` | `180` | `song_opening.lua`: `//gs c songs` sends nothing while every song of the plan is ours with more seconds left; 0 always sings |
 | `stratagem_full_recharge` | `240` (seconds, `DEFAULT_FULL_RECHARGE`) | `shared/utils/scholar/stratagem_charges.lua` `available` and `next_charge_minutes`: charges = `floor(max - max * recast / full)`, one charge every `full / max` s. Lower it with the job-point gift |
 
 A new key: give the job's value as `default` at the call, add a commented line with that default to

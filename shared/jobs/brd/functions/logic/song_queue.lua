@@ -98,6 +98,12 @@ end
 --- Once the cast has started, give it its cast time before calling it lost.
 --- Not started: refused, unless another action came first (a Marcato).
 local function watch_start(queue, waited_for_ja)
+    -- Marcato is still being used ahead of this song (song_opening.lua
+    -- marcato_then, which sends the song itself): not a refusal yet
+    local marcato = windower._brd_marcato_step
+    if marcato and os.clock() < marcato.expires then
+        return later(queue, 1.0, function(q) watch_start(q, waited_for_ja) end)
+    end
     if CastTracker.started_since(queue.sent_at) then
         local seconds = computed_cast_time()
         local timeout = seconds and (seconds + END_MARGIN) or CAST_TIMEOUT

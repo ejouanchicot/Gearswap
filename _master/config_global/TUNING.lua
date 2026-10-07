@@ -35,6 +35,11 @@ return {
     brd_debuff_songs = {lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II',
                         elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'},
 
+    -- BRD //gs c songs sends nothing (no Nightingale, no song) while every
+    -- song of the pack is yours with more than this many seconds left;
+    -- 0: always sing. //gs c songs force sings once anyway
+    brd_songs_refresh_below = 180,
+
     -- SCH / BLM stratagems: seconds for the whole pool to come back (the
     -- charges shown are read from it; lower with the job-point gift)
     stratagem_full_recharge = 240,

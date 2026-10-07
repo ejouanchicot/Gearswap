@@ -19,7 +19,8 @@
 ---   requiem           - Foe Requiem VII
 ---
 ---   Pack Rotation:
----   songs, meleesong, melee, allsongs - Cast current song pack (SongMode)
+---   songs, meleesong, melee, allsongs - Cast current song pack (SongMode);
+---                       nothing when every song has time left (songs force)
 ---   songplan          - Show what `songs` would cast now, and why
 ---   songstop          - Stop a running song rotation
 ---
@@ -388,7 +389,8 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'songs' or command == 'meleesong' or command == 'melee' or command == 'allsongs' then
         -- Cast current song pack using 3-phase rotation
         -- 'full': every dummy, whatever songs are up (another bard around)
-        SongRotationManager.cast_songs_with_phases(false, '<me>', cmdParams[2] == 'full')
+        -- 'force': sing even when every song has time left (song_opening.lua)
+        SongRotationManager.cast_songs_with_phases(false, '<me>', cmdParams[2] == 'full', cmdParams[2] == 'force')
         eventArgs.handled = true
         return
     end
@@ -416,6 +418,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'songstop' then
         -- Drop a running rotation (song_queue.lua)
         local stopped = require('shared/jobs/brd/functions/logic/song_queue').stop()
+        stopped = require('shared/jobs/brd/functions/logic/song_opening').stop() or stopped
         require('shared/utils/messages/message_formatter').show_info(
             stopped and 'Songs: rotation stopped.' or 'Songs: no rotation running.')
         eventArgs.handled = true

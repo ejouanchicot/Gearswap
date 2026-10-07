@@ -25,7 +25,9 @@ What BRD adds on top of the shared pipeline:
   goes out after the previous one's aftercast, with retries; how many songs and
   dummies comes from `song_slots.lua` (instruments owned, Clarion Call, own
   songs up). Victory March is swapped out when Haste is up; `AutoNitro` opens
-  with Nightingale + Troubadour.
+  with Nightingale + Troubadour, each checked before the next
+  (`song_opening.lua`); nothing is sent when every song of the plan is ours
+  with time left.
 - **Singing midcast**: the Singing branch of `MidcastManager` for buff songs;
   dummy songs equip `sets.midcast.DummySong`; debuff songs are left to Mote's
   choice and then re-picked by `MidcastFallback` through the same Singing chain.
@@ -191,9 +193,13 @@ resource names).
   (`HonorMarch` -> Honor March, `AriaPassion` -> Aria of Passion), not on
   another player, only with Nightingale **and** Troubadour, not under Soul
   Voice or an active Marcato, and only when Marcato's recast (id 48) is 0. It
-  cancels, sends `input /ja "Marcato" <me>` then
-  `wait 2; input /ma "<song>" <me>`. The song queue tolerates it: an action
-  other than a cast inside the start window buys `JA_FIRST_WAIT` (3 s).
+  cancels and hands the song to `SongOpening.marcato_then`: Marcato through
+  `AbilityHelper.ensure` (sent again when refused, 3 times in all), then the
+  song 1 s after its buff; the song goes out even when Marcato never did
+  (warning). The song it sends skips `try_marcato` once
+  (`windower._brd_marcato_replay`). The song queue waits while
+  `windower._brd_marcato_step` is set, then an action other than a cast
+  inside the start window buys `JA_FIRST_WAIT` (3 s).
 - Commands never send Marcato or Pianissimo themselves: `cast_song` only picks
   the target.
 
@@ -275,12 +281,21 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   one line. Each plan writes a `SONGS` trace line
   (instruments and extras, Clarion, ours / all up, result). `//gs c songplan`
   shows the inputs and the plan.
-- `cast_songs_with_phases(false, '<me>', full)`: `base` pack songs, the
-  dummies, the rest of the pack; handed to `start_with_nitro`. With
-  `AutoNitro = On`, both abilities ready and Nightingale not up, it fires
-  Nightingale, waits for its buff (`AbilityHelper.follow_up`, soft deadline),
-  then Troubadour likewise, then starts the queue 1 s later; otherwise the
-  queue starts at once. The `use_marcato` argument is unused.
+- `cast_songs_with_phases(false, '<me>', full, force)`: `base` pack songs,
+  the dummies, the rest of the pack; handed to `SongOpening.start`
+  (`logic/song_opening.lua`). The `use_marcato` argument is unused.
+  - Ignored while an opening is going out (`SongOpening.running`).
+  - **Nothing to sing** (`SongOpening.nothing_to_sing`, skipped by `full` and
+    `force`): every song of the plan, matched by family, is ours
+    (`SongOwner.own_songs`) with more than `Tuning.get('brd_songs_refresh_below', 180)`
+    seconds left. Nothing is sent, Nitro included. 0 turns the check off.
+  - **Nitro**: with `AutoNitro = On`, Nightingale and Troubadour each up or
+    ready and at least one not up: Nightingale, then Troubadour, each through
+    `AbilityHelper.ensure` (buff seen before the next step; refused: sent
+    again, 3 times in all), then the queue 1 s later. An ability that never
+    goes stops everything with a warning: no song is sung. One of the two on
+    recast: no Nitro, the queue starts at once.
+  - `//gs c songstop` drops an opening too (`SongOpening.stop`).
 - `cast_dummy_songs()` queues `total - base` dummies from
   `DUMMY_SONGS.standard` (`plan(99)`).
 - **Song queue** (`logic/song_queue.lua`). State on `windower._brd_song_queue`
@@ -413,7 +428,7 @@ Created by `BRDStates.configure()` on every `user_setup()`. Keys from
 | `CarolElement` | Fire, Ice, Wind, Earth, Lightning, Water, Light, Dark | Fire | `^numpad0` | `carol` (`CAROLS`) |
 | `ThrenodyElement` | same | Fire | `^numpad.` | `threnody` (`THRENODIES`) |
 | `MarcatoSong` | HonorMarch, AriaPassion, Off | HonorMarch | `^numpad8` | `marcato_target_song` |
-| `AutoNitro` | On, Off | On | `#numpad2` | `start_with_nitro` |
+| `AutoNitro` | On, Off | On | `#numpad2` | `SongOpening.start` |
 | `MainWeapon` | Naegling, Twashtar, Carnwenhan, Mpu Gandring | Mpu Gandring | `^numpad1` | `SetBuilder.apply_weapons` (`BaseSetBuilder.lay_weapons`) |
 | `SubWeapon` | Kraken, Demersal, Genmei, Centovente | Genmei | `^numpad2` | `SetBuilder.apply_weapons` (`BaseSetBuilder.lay_weapons`) |
 | `BRDSong1`..`BRDSong5` | Empty (overwritten with short names) | Empty | none | HUD rows only |
@@ -466,7 +481,7 @@ reflected).
 `cast_song` hands the song to `cast_song_to_target`: `<me>` when targeting
 yourself, the target's name when it is a PC (`spawn_type == 13`; precast then
 inserts Pianissimo), `<stpc>` otherwise. The header block of
-`BRD_COMMANDS.lua` does not list `songplan`, `songstop` nor `songs full`.
+`BRD_COMMANDS.lua` does not list `songs full`.
 
 ## Set names the code looks up
 
@@ -530,8 +545,9 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
   `ActionListener` key `brd_song_owner` for 0x028, both read from `original`
   (Battlemod rewrites 0x028 for the chat).
 - Coroutines and queued commands: the 0.2 s macro/lockstyle block, the song
-  slot refresh, `nt`, `forceidle`, Marcato's `wait 2`, the song queue timers
-  (each checks the queue sequence) and the AutoNitro chain. None is cancelled
+  slot refresh, `nt`, `forceidle`, Marcato's step, the song queue timers
+  (each checks the queue sequence) and the AutoNitro opening (dropped when
+  `windower._brd_song_opening` changes). None is cancelled
   by a reload.
 - Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - Subjob change: Mote re-runs `user_setup()`, then `job_sub_job_change` hands

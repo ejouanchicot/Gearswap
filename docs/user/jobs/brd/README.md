@@ -33,7 +33,8 @@ Bard with the provided template gives you:
   other buff song on the instrument chosen by `MainInstrument`.
 - **Automatic Pianissimo** for a song aimed at another player, **automatic
   Marcato** before Honor March (or Aria of Passion) under Nightingale +
-  Troubadour, and **AutoNitro** (Nightingale then Troubadour before a pack).
+  Troubadour, and **AutoNitro** (Nightingale then Troubadour before a pack,
+  each one checked before the next).
 - **Song tier fallback**: a debuff song on cooldown is sung at another tier
   (Foe Lullaby II to Foe Lullaby, Carnage Elegy to Battlefield Elegy...).
 - **Weapons on keys** and engaged / idle modes; Kraken Club gets its own
@@ -104,6 +105,7 @@ and arguments: [commands guide](../../guides/commands.md).
 |---|---|
 | `songs` (`melee`, `meleesong`, `allsongs`) | Sings the current pack on yourself: the songs your main instrument holds, then the dummy songs, then the rest of the pack over the dummies |
 | `songs full` | The same, with every dummy song whatever is already up (use it when another bard's songs are on you) |
+| `songs force` | Sings the pack even when `songs` says there is nothing to sing |
 | `songplan` | What `songs` would do now, and why: Clarion Call, instruments and the extra songs each gives, songs up (yours / all), the plan |
 | `songstop` | Stops a running `songs` / `dummy` rotation |
 | `dummy` (`dummysongs`) | Only the dummy songs your dummy harp can add |
@@ -166,7 +168,7 @@ starts, after its recast check, never by the command.
 |---|---|
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear (Moonshade...) from `BRD_TP_CONFIG.lua` is added, counting Aeneas / Centovente in either hand |
 | Recast check | An ability or spell still on recast is cancelled with the time left. Debuff songs that have another tier are handled first (tier fallback) |
-| Automatic abilities | Pianissimo before a song on another player (the song follows once Pianissimo is up), Marcato before the `MarcatoSong` song (the song follows 2 s later), Nightingale + Troubadour before a pack (`AutoNitro`, each waits for the previous buff) |
+| Automatic abilities | Pianissimo before a song on another player (the song follows once Pianissimo is up), Marcato before the `MarcatoSong` song (the song follows once Marcato is up), Nightingale + Troubadour before a pack (`AutoNitro`: each is sent again when the game refuses it, and the songs start only once both are up) |
 | Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns. Not while engaged |

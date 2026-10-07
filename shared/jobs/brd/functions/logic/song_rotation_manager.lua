@@ -156,68 +156,59 @@ local function add_phase(into, songs, start_index, count)
     end
 end
 
--- After a job ability lands, before the next action is accepted
-local AFTER_JA = 1.0
-
---- Start the queue, opening with Nightingale then Troubadour when AutoNitro
---- is On, both are ready and Nightingale is not up yet. Each waits for the
---- previous one's buff (AbilityHelper.follow_up: a refused ability does not
---- hold the rotation back, it starts at the soft deadline anyway).
---- @param order table Song list
---- @param target string
-local function start_with_nitro(order, target)
-    local Queue = require('shared/jobs/brd/functions/logic/song_queue')
-    local AbilityHelper = require('shared/utils/precast/ability_helper')
-    local wanted = state.AutoNitro and state.AutoNitro.value == 'On'
-    if not wanted or AbilityHelper.is_buff_active('Nightingale')
-        or not (AbilityHelper.is_ability_ready('Nightingale') and AbilityHelper.is_ability_ready('Troubadour')) then
-        return Queue.start(order, target)
+---   Show the pack's name and the short names of the songs sung.
+---   @param buff_songs table The pack's songs
+---   @param count number How many of them are sung
+local function show_pack(buff_songs, count)
+    local pack_name = state.SongMode and state.SongMode.current or 'Unknown'
+    local song_list = {}
+    for i = 1, count do
+        if buff_songs[i] then
+            table.insert(song_list, SongRotationManager.get_short_name(buff_songs[i]))
+        end
     end
-    send_command('input /ja "Nightingale" <me>')
-    AbilityHelper.follow_up('Nightingale', function()
-        coroutine.schedule(function()
-            send_command('input /ja "Troubadour" <me>')
-            AbilityHelper.follow_up('Troubadour', function()
-                coroutine.schedule(function() Queue.start(order, target) end, AFTER_JA)
-            end, 2)
-        end, AFTER_JA)
-    end, 2)
+    MessageFormatter.show_song_pack(pack_name, song_list)
 end
 
 ---   Cast songs using 3-phase rotation (Party >> Dummy >> Party)
 ---   @param use_marcato boolean Unused: Marcato is inserted by BRD_PRECAST (try_marcato)
 ---   @param target string Target for songs ("<me>" for party, "<stpc>" for pianissimo)
 ---   @param full boolean|nil Every dummy, whatever songs are up (//gs c songs full)
----   @return boolean Success status
-function SongRotationManager.cast_songs_with_phases(use_marcato, target, full)
+---   @param force boolean|nil Sing even when every song has time left (//gs c songs force)
+---   @return boolean True when a rotation started
+function SongRotationManager.cast_songs_with_phases(use_marcato, target, full, force)
     target = target or '<me>'
+    local Opening = require('shared/jobs/brd/functions/logic/song_opening')
+    if Opening.running() then
+        MessageFormatter.show_info('Songs: already starting (//gs c songstop to stop).')
+        return false
+    end
     local buff_songs = SongRotationManager.get_songs_with_replacement()
     local dummy_songs = SongRotationManager.get_dummy_songs()
     local order = {}
 
     -- Songs the instruments and Clarion Call can hold, dummies still needed
     -- (song_slots.lua). One song after the other, each once the previous is
-    -- over (song_queue.lua); Marcato is inserted by BRD_PRECAST, not here.
+    -- over (song_queue.lua); Nightingale and Troubadour go first
+    -- (song_opening.lua), Marcato is inserted by BRD_PRECAST, not here.
     -- The slots the main instrument opens, then the dummies, then the rest of
     -- the real songs over them.
     local total_songs, dummies, base = require('shared/jobs/brd/functions/logic/song_slots').plan(#buff_songs, full)
     dummies = math.min(dummies, #dummy_songs)
+    -- Every song of the plan is ours with time left: nothing is sent, Nitro
+    -- included (song_opening.lua)
+    local left = not (full or force) and Opening.nothing_to_sing(buff_songs, total_songs)
+    if left then
+        MessageFormatter.show_info(('Songs: all %d up, %d:%02d left on the shortest, nothing to sing (//gs c songs force).')
+            :format(total_songs, math.floor(left / 60), left % 60))
+        return false
+    end
     MessageFormatter.show_songs_casting(total_songs, ('%d-Song, %d dummy'):format(total_songs, dummies))
     add_phase(order, buff_songs, 1, base)
     add_phase(order, dummy_songs, 1, dummies)
     add_phase(order, buff_songs, base + 1, total_songs - base)
-    start_with_nitro(order, target)
-
-    -- Display song list
-    local pack_name = state.SongMode and state.SongMode.current or 'Unknown'
-    local song_list = {}
-    for i = 1, total_songs do
-        if buff_songs[i] then
-            table.insert(song_list, SongRotationManager.get_short_name(buff_songs[i]))
-        end
-    end
-    MessageFormatter.show_song_pack(pack_name, song_list)
-
+    Opening.start(order, target)
+    show_pack(buff_songs, total_songs)
     return true
 end
 

@@ -7,6 +7,8 @@
 ---       (PLD Divine Emblem / Majesty, RDM Saboteur, DNC Climactic Flourish)
 ---   follow_up / follow_up_or_abort - "ability, then action" chains used by
 ---       BLM, BRD, DNC, GEO, SAM and the Scholar helpers
+---   ensure - a step that must be done before the next one (BRD's Nightingale,
+---       Troubadour, Marcato): sent again when refused, never skipped
 ---
 --- @file    shared/utils/precast/ability_helper.lua
 --- @author  ejouanchicot
@@ -290,6 +292,60 @@ function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_tim
     end
 
     poll()
+end
+
+---============================================================================
+--- ENSURE: a step of a sequence that must be done before the next one
+---============================================================================
+
+-- A refused ability is sent again this many times in all
+local ENSURE_TRIES = 3
+-- Longer than JA_REGISTER_WINDOW: under lag an ability accepted late must not
+-- be taken for a refused one
+local ENSURE_REFUSED_AFTER = 1.5
+-- The ability went on recast and its buff is not there yet
+local ENSURE_BUFF_WAIT = 5.0
+-- Before the same ability is sent again
+local ENSURE_RETRY_GAP = 0.5
+
+--- Use an ability and go on only once its buff is up.
+---
+--- follow_up goes on whatever happened, because its caller cancelled an
+--- action that must still go out. A sequence (BRD: Nightingale, Troubadour,
+--- Marcato, then the songs) needs the opposite: an ability refused during an
+--- action lock is sent again, and the next step never starts without it.
+---   - buff already up       -> on_up at once, nothing sent
+---   - buff up after sending -> on_up
+---   - recast still ready after ENSURE_REFUSED_AFTER: refused, sent again
+---     (ENSURE_TRIES in all)
+---   - never up              -> on_fail(reason)
+--- @param ability_name string Ability to use, and the buff it gives
+--- @param on_up function Run once the buff is up
+--- @param on_fail function|nil Run with a reason when the ability never went
+--- @param alive function|nil Returns false once the sequence was dropped
+function AbilityHelper.ensure(ability_name, on_up, on_fail, alive)
+    local attempt
+
+    local function watch(try, started)
+        if alive and not alive() then return end
+        if AbilityHelper.is_buff_active(ability_name) then return on_up() end
+        local waited = os.clock() - started
+        if waited >= ENSURE_REFUSED_AFTER and AbilityHelper.is_ability_ready(ability_name) then
+            if try >= ENSURE_TRIES then return on_fail and on_fail('refused') end
+            return coroutine.schedule(function() attempt(try + 1) end, ENSURE_RETRY_GAP)
+        end
+        if waited >= ENSURE_BUFF_WAIT then return on_fail and on_fail('no buff') end
+        coroutine.schedule(function() watch(try, started) end, POLL_INTERVAL)
+    end
+
+    attempt = function(try)
+        if alive and not alive() then return end
+        if AbilityHelper.is_buff_active(ability_name) then return on_up() end
+        send_command(('input /ja "%s" <me>'):format(ability_name))
+        watch(try, os.clock())
+    end
+
+    attempt(1)
 end
 
 --- Extra time the replay marker outlives the follow-up's own deadline, so the

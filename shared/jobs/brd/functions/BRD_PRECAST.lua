@@ -163,8 +163,9 @@ end
 --- song, so Marcato on top of it is wasted. Targeting another player is the
 --- Pianissimo path and takes the song as it is.
 ---
---- On success the original cast is cancelled and replaced by Marcato followed
---- by the song, which is why it reports whether it acted.
+--- On success the original cast is cancelled and replaced by Marcato, then
+--- the song once Marcato is up (song_opening.lua marcato_then), which is why
+--- it reports whether it acted.
 --- @return boolean True when the cast was replaced
 local function try_marcato(spell, eventArgs)
     local target_song = marcato_target_song()
@@ -190,10 +191,15 @@ local function try_marcato(spell, eventArgs)
         return false
     end
 
+    -- The song sent once Marcato was dealt with goes out as it is
+    local SongOpening = require('shared/jobs/brd/functions/logic/song_opening')
+    if SongOpening.is_marcato_replay(target_song) then
+        return false
+    end
+
     cancel_spell()
-    send_command('input /ja "Marcato" <me>')
-    send_command('wait 2; input /ma "' .. target_song .. '" <me>')
     eventArgs.cancel = true
+    SongOpening.marcato_then(target_song)
     return true
 end
 
