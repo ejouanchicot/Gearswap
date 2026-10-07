@@ -23,6 +23,9 @@
 --- is written with that variable, read from how the file's other sets use it;
 --- any other piece by its name and augments. The set is found in the job's set
 --- folder (<Char>/<job>/sets/, shared/utils/atelier/set_writer.lua does the text).
+--- "+ Set" (body line `#create`, and `#base<TAB><path>` for a set built on another): a set of the job's
+--- catalog (shared/utils/atelier/set_catalog.lua) the file does not write yet, written after its parent
+--- table and its base (create_new).
 --- A support tier version of a weaponskill or engaged set (.Group, .Solo, .Trust) the file does not
 --- write yet is written right under its base set, as a set_combine of it; a
 --- weaponskill with no set yet (sets.precast.WS['X']) after the file's last
@@ -270,6 +273,12 @@ local function parse_body(body)
     for line in (body or ''):gmatch('[^\r\n]+') do lines[#lines + 1] = line end
     local req = {path = lines[1], slots = {}}
     for i = 2, #lines do
+        -- `#create` (a set of the catalog, see create_new), `#base<TAB><path>` (the set it is built on)
+        local opt, value = lines[i]:match('^#(%w+)\t?(.*)$')
+        if opt == 'create' then req.create = true
+        elseif opt == 'base' and value ~= '' then req.base = value end
+    end
+    for i = 2, #lines do
         local f = {}
         for part in (lines[i] .. '\t'):gmatch('([^\t]*)\t') do f[#f + 1] = part end
         local slot = SetWriter.canon(f[1])
@@ -337,15 +346,93 @@ local function locate_base(job, keys)
     return nil
 end
 
+-- The tables Mote-Include makes before the set file runs: a set can go under them anywhere in the file
+local MOTE_TABLES = {['precast'] = true, ['precast.FC'] = true, ['precast.JA'] = true, ['precast.WS'] = true,
+    ['midcast'] = true, ['idle'] = true, ['engaged'] = true, ['buff'] = true, ['defense'] = true, ['resting'] = true}
+
+-- The definition among a file's sets that ends last of those given (nil ones skipped)
+local function lowest(...)
+    local best
+    for i = 1, select('#', ...) do
+        local d = select(i, ...)
+        if d and (not best or d.close > best.close) then best = d end
+    end
+    return best
+end
+
+-- The definitions under a table, in a file: the last one of its group (a new set goes after its siblings)
+local function last_under(text, keys)
+    local group = SetWriter.family(text, keys)
+    return group[#group]
+end
+
+-- Whether the job loaded in game reads that set: its catalog offers it (shared/utils/atelier/set_catalog.lua)
+local function in_catalog(job, keys)
+    local SetCatalog = require('shared/utils/atelier/set_catalog')
+    local okw, ws_skill = pcall(function()
+        return (require('shared/utils/atelier/atelier_ws').collect({}, job, player.main_job_level, player.sub_job))
+    end)
+    ws_skill = okw and type(ws_skill) == 'table' and ws_skill or {}
+    local ws = {}
+    for name in pairs(ws_skill) do ws[#ws + 1] = name end
+    local okf, families = pcall(function() return require('shared/utils/atelier/atelier_families').collect() end)
+    return SetCatalog.find(job, SetCatalog.path_of(keys), {ws = ws, ws_skill = ws_skill, families = okf and families or nil}) ~= nil
+end
+
+-- Where a new set goes in a file: after its parent's last set and its base, whichever ends lower; under a table
+-- Mote makes and the file never writes, after the file's set whose path shares the most keys with it
+local function place(text, keys, pdef, parent, bdef)
+    local after = lowest(pdef and last_under(text, parent), bdef)
+    if after then return after end
+    local best = 0
+    for _, d in ipairs(SetWriter.definitions(text)) do
+        local n = 0
+        while d.keys and d.keys[n + 1] and d.keys[n + 1] == keys[n + 1] do n = n + 1 end
+        if n >= best and n > 0 then after, best = d, n end
+    end
+    return after
+end
+
+--- A set of the job's catalog the file does not write yet (the page's "+ Set"), written after its parent table and
+--- its base so both exist when it runs: as its own table, or built on its base. For the job loaded in game the path
+--- must be one the catalog offers; for another job, the page only offers its export's catalog. The parent must be a
+--- table Mote makes or one the same file writes; so must the base.
+--- @return string|nil abs, string text|why, string out, table done, nil, table keys
+local function create_new(job, req, keys, loaded)
+    if loaded and not in_catalog(job, keys) then return nil, 'catalog' end
+    local parent = {}
+    for i = 1, #keys - 1 do parent[i] = keys[i] end
+    local base_keys = req.base and SetWriter.path_keys(req.base)
+    if req.base and not base_keys then return nil, 'path' end
+    for _, file in ipairs(set_files(job)) do
+        local text = read(file)
+        local pdef = text and #parent > 0 and SetWriter.find_keys(text, parent)
+        local bdef = text and base_keys and SetWriter.find_keys(text, base_keys)
+        local parent_ok = #parent == 0 or MOTE_TABLES[table.concat(parent, '.')] or pdef
+        -- a base Mote makes and the file never writes (an empty sets.precast.WS) is there anywhere
+        local base_ok = not base_keys or bdef or MOTE_TABLES[table.concat(base_keys, '.')]
+        if text and parent_ok and base_ok then
+            local base_path = base_keys and (bdef and SetWriter.spelling(text, bdef) or path_string(base_keys)) or nil
+            local out, done, nkeys = SetWriter.create_at(text, place(text, keys, pdef, parent, bdef), path_string(keys),
+                base_path, keys, changes_of(req, text, loaded))
+            return file, text, out, done, nil, nkeys
+        end
+    end
+    return nil, base_keys and 'base' or 'parent'
+end
+
 --- The file with the set changed, or with the version written when the file has none yet.
 --- @return string|nil abs, string text|why, string out, table done, table def (before), table keys
 local function rewrite(job, req)
     local keys, loaded = SetWriter.path_keys(req.path), player and player.main_job == job
     local abs, text, def = locate_table(job, req.path, loaded)
     if abs then
+        -- "+ Set" names a set the file writes already: open it in the page instead
+        if req.create then return nil, 'exists' end
         local out, done = SetWriter.edit(text, def, changes_of(req, text, loaded))
         return abs, text, out, done, def, def.keys
     end
+    if req.create then return create_new(job, req, keys, loaded) end
     local babs, btext, base, name, after = locate_base(job, keys)
     if not babs then
         -- a set the job has in memory (Mote made it: sets.precast.FC on a job whose file never writes it) and no

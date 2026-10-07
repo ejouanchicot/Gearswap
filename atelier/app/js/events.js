@@ -1,6 +1,8 @@
 // the weapon groups of the weaponskill list stay as opened (toggle does not bubble: caught on the way down)
 document.addEventListener('toggle', e => { const g = e.target && e.target.dataset && e.target.dataset.wsgroup;
   if (g) { S._wsOpen = S._wsOpen || {}; S._wsOpen[g] = e.target.open; }
+  const ag = e.target && e.target.dataset && e.target.dataset.addgroup;
+  if (ag && !($('#addq') || {}).value) { S._addOpen = S._addOpen || {}; S._addOpen[ag] = e.target.open; }
   if (e.target && e.target.dataset && 'rdcalc' in e.target.dataset) S._rdOpen = e.target.open;
   if (e.target && e.target.dataset && 'lgfold' in e.target.dataset) S._lgOpen = e.target.open; }, true);
 document.addEventListener('click', e => {
@@ -171,17 +173,16 @@ document.addEventListener('click', e => {
     render(); return; }
   if (d.action==='add') { addStep = 0; renderAdd(); return; }
   if (d.action==='meritreset') { delete S.meritEdits[meritKey()]; render(); return; }
-  if (d.addfam) { addFam = d.addfam; addStep = 1; renderAdd(); return; }
   if (d.addopen) { S.selPath[S.job] = d.addopen; S._found = null; closeOverlay(); render(); return; }
   if (d.addws) { openCreate(d.addws); return; }
   if ('creatego' in d) { createGo(); return; }
-  if (d.addbase) { addBase = d.addbase; addStep = 2; renderAdd(); return; }
-  if ('back' in d) { addStep = Math.max(0, addStep-1); renderAdd(); return; }
+  if (addClick(d)) return;
   if ('close' in d) closeOverlay();
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'setq') { S.q = e.target.value; render(); }
   if (e.target.id === 'simq') { simState().q = e.target.value; render(); }
+  if (e.target.id === 'addq') { addFilter(e.target.value); return; }
   if (e.target.id === 'tgtq') { const q = e.target.value.trim().toLowerCase();
     for (const r of document.querySelectorAll('.tprow')) r.hidden = !!q && !r.dataset.q.includes(q);
     for (const z of document.querySelectorAll('.tpzone')) { const any = [...z.querySelectorAll('.tprow')].some(r => !r.hidden);

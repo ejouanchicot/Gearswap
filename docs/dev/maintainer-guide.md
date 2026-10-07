@@ -580,6 +580,12 @@ and [ui-overlay.md, For maintainers / AI](systems/ui-overlay.md#for-maintainers-
       saying what goes in `{}`. What the player wears today must not change. A
       set that replaces the whole base stays a commented example.
 - [ ] If the set is equipped from a wrapper, check its place in the chain.
+- [ ] The Atelier's "+ Set" offers only the names in the catalogs: add a line to
+      `shared/jobs/<job>/set_catalog.lua` (a name every job reads:
+      `shared/utils/atelier/set_catalog_common.lua`), with the code that reads
+      it in a comment; format in `shared/utils/atelier/set_catalog.lua`. A
+      code change that stops reading a name removes its line (or `skip`s the
+      common one).
 - [ ] Docs: the job's dev page, "Set names the code looks up", and the player
       page `docs/user/jobs/<job>/sets.md` (or `docs/user/guides/sets.md` for a
       set every job reads, such as `sets.TreasureHunter`). The player docs must

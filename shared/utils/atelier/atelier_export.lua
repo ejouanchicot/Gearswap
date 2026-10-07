@@ -48,8 +48,8 @@ local BAG_NAMES = {[0] = 'Inventory', [1] = 'Mog Safe', [2] = 'Storage', [4] = '
 local MAX_DEPTH = 7
 -- What the export holds, raised when it gains something the page relies on: the page warns about
 -- an export written by an older exporter (2: key conditions, empty sets; 3: macro fallback, bag,
--- priority, temp keys; 2026-10-02)
-local EXPORT_VERSION = 3
+-- priority, temp keys; 2026-10-02; 4: the set catalog, 2026-10-06)
+local EXPORT_VERSION = 4
 
 ---============================================================================
 --- SWITCH AND PATHS
@@ -824,6 +824,17 @@ function AtelierExport.build()
     data.ws_by_weapon = collect_ws_by_weapon(player.main_job)
     -- each weaponskill's combat skill and what it uses (shared/utils/atelier/atelier_ws.lua)
     data.ws_skill, data.ws_info = require('shared/utils/atelier/atelier_ws').collect(data.sets, player.main_job, player.main_job_level, player.sub_job)
+    -- the set names the job's code reads, filled with this character's modes, spells, abilities and weaponskills:
+    -- what the page's "+ Set" offers (shared/utils/atelier/set_catalog.lua)
+    local ok_c, catalog = pcall(function()
+        local ws = {}
+        for name in pairs(data.ws_skill or {}) do ws[#ws + 1] = name end
+        table.sort(ws)
+        local ok_f, families = pcall(function() return require('shared/utils/atelier/atelier_families').collect() end)
+        return require('shared/utils/atelier/set_catalog').collect(player.main_job,
+            {sub = player.sub_job, sub_level = player.sub_job_level, ws = ws, ws_skill = data.ws_skill, families = ok_f and families or nil})
+    end)
+    data.catalog = ok_c and catalog or nil
     data.export_version = EXPORT_VERSION
     -- the keys changed in the page and saved (<Char>/atelier/overrides/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')

@@ -226,22 +226,7 @@ function copyLua(btn){
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(box.value).then(done, () => { document.execCommand('copy'); done(); });
   else { document.execCommand('copy'); done(); }
 }
-/* ---- add set ---- */
-let addStep = 0, addFam = null, addBase = null;
-function renderAdd(){
-  const cards = S._cards || buildCards(data()).cards;
-  const steps = [t('step1'),t('step2'),t('step3')].map((s,i) => `<span class="${i===addStep?'on':''}">${i+1}. ${s}</span>`).join('');
-  let body;
-  if (addStep===0) body = [...new Set(cards.map(c => c.fam))].map(f => `<button class="opt" data-addfam="${f}"><span>${t('fam.'+f)}<small>${t('famWhen.'+f)}</small></span><span>›</span></button>`).join('');
-  else if (addStep===1 && addFam === 'ws') body = addWsList(cards);
-  else if (addStep===1) body = cards.filter(c => c.fam===addFam).flatMap(c => c.variants.map(v => v.set.path)).map(p =>
-      `<button class="opt" data-addbase="${esc(p)}"><span style="font-family:var(--mono);font-size:13px">${esc(p)}</span><span class="state">${t('exists')}</span></button>`).join('') + `<p class="mock">${t('catalog')}</p>`;
-  else body = [[t('fromEmpty'),t('fromEmptyD')],[t('fromCopy',{b:shortPath(addBase)}),t('fromCopyD')],[t('fromWorn'),t('fromWornD')]]
-      .map(([a,b]) => `<button class="opt" data-close><span>${esc(a)}<small>${esc(b)}</small></span><span>›</span></button>`).join('');
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog" role="dialog" aria-label="${t('addTitle')}"><header><h3>${t('addTitle')}</h3><div class="steps">${steps}</div></header>
-    <div class="body">${body}</div><footer><button class="btn ghost" data-back ${addStep===0?'disabled':''}>${t('back')}</button><button class="btn ghost" data-close>${t('cancel')}</button></footer></div>`;
-  $('#overlay').hidden = false;
-}
+/* ---- add set (the window: add_set.js) ---- */
 // Every weaponskill of the job (export ws_skill): the ones with a set open it, the others can be created
 // (sets.precast.WS['X'] = set_combine(sets.precast.WS, {}), written by the game: set_push.lua)
 function addWsList(cards){
@@ -268,7 +253,7 @@ const wsPath = name => 'sets.precast.WS' + (/^[A-Za-z_]\w*$/.test(name) ? '.' + 
 // A new weaponskill set: the game shows where it goes, then writes it (same preview, backup and history as a push)
 async function openCreate(name){
   const path = wsPath(name);
-  S._create = {path};
+  S._create = {path, body: path + '\n'};
   showDialog('pushdlg', t('addTitle'), `<p class="muted">${t('pushReading')}</p>`, '');
   let r;
   try { r = await liveFetch(S.char, '/push?mode=preview' + jobQuery(), {method: 'POST', body: path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
@@ -283,7 +268,7 @@ async function createGo(){
   if (!C || !C.hash || C.busy) return;
   C.busy = true;
   let r;
-  try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(C.hash) + jobQuery(), {method: 'POST', body: C.path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
+  try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(C.hash) + jobQuery(), {method: 'POST', body: C.body || C.path + '\n', timeout: 8000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   S.selPath[S.job] = C.path; S._found = null; S._toastSet = C.path; S.toast = doneText('addDone', r.entry.file);
   S._create = null; closeOverlay(); save();

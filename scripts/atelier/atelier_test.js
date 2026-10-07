@@ -1,6 +1,6 @@
 // GearSwap Atelier · the page's test (for the project, never shipped to players): atelier.html opened in Chrome,
 // every character / job of the exports with each of its sets and tabs, the main windows (buffs, target, the drawer on
-// each slot, Compare), the support profiles, four subjobs, two short searches and a stop; every page error reported.
+// each slot, Compare, "+ Set"), the support profiles, four subjobs, two short searches and a stop; every page error reported.
 // Run after any change to atelier.html, atelier/app/ or atelier/opt.js:
 //   node scripts/atelier/atelier_test.js
 // Needs Node and Puppeteer (PUPPETEER = its folder, else the one installed globally with npm) and Chrome
@@ -51,6 +51,17 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       for (let i = 0; i < 300 && S._optBusy; i++) await wait(200);
       if (S._optBusy) { optStop(); throw new Error('still busy after 60 s'); }
       closeOverlay(); render(); });
+    // "+ Set" (add_set.js): every kind of the catalog, its list, the search, the first set to create up to step 3
+    await tryIt('add a set window', async () => { S.subs['Tetsouo|WAR'] = 'SAM'; render();
+      if (!catalogEntries()) throw new Error('no catalog in the WAR export: run //gs c atelier on WAR');
+      addStep = 0; renderAdd();
+      const fams = [...document.querySelectorAll('[data-addfam]')].map(x => x.dataset.addfam);
+      if (!fams.length) throw new Error('no kind offered');
+      for (const f of fams) { addClick({addfam: f}); if (!document.querySelectorAll('.addrow').length) throw new Error('kind ' + f + ' lists nothing'); addStep = 0; }
+      addClick({addfam: fams[0]}); addFilter('a'); addFilter('');
+      const pick = document.querySelector('.addrow[data-addpick]:not([disabled])');
+      if (pick) { addClick({addpick: pick.dataset.addpick}); if (!document.querySelector('[data-addfrom]')) throw new Error('step 3 empty'); }
+      closeOverlay(); });
     await tryIt('stop a search at once', async () => { open('sets.engaged.Naegling'); optimizeEngaged(shownSet(S._cards[S.sel.WAR], S.sel.WAR)); await wait(300); optStop(); if (S._optBusy) throw new Error('busy after stop'); });
     return out.join('\n');
   });

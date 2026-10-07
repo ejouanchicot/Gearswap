@@ -474,6 +474,46 @@ function SetWriter.create_plain(text, after, path, keys, changes)
     return out, done, keys
 end
 
+--- A set of the job's catalog written where it can be read (set_push.lua create): after `after` (the last of the
+--- definitions it needs above it: its parent table, its base), as its own table, or built on `base_path`:
+---   <path> = set_combine(<base_path>, {
+---       head = ...,
+---   })
+--- @param text string The file
+--- @param after table|nil A definition to write it after (nil: at the end of the file)
+--- @param path string The set path as the file will spell it
+--- @param base_path string|nil The set it is built on, as the file spells it
+--- @param keys table Its keys
+--- @param changes table {slot = expr | false}
+--- @return string out, table done, table keys
+function SetWriter.create_at(text, after, path, base_path, keys, changes)
+    local nl = text:find('\r\n', 1, true) and '\r\n' or '\n'
+    local indent, padded = '    ', text:find('\n[ \t]+ammo  = ') ~= nil
+    if after then indent, padded = style(text, after) end
+    local base_indent = after and after.indent or ''
+    local lines, done = {}, {}
+    for _, slot in ipairs(SetWriter.ORDER) do
+        if changes[slot] then
+            lines[#lines + 1] = entry_line(indent, padded, slot, changes[slot])
+            done[#done + 1] = {slot = slot, after = changes[slot]}
+        end
+    end
+    local open = base_path and (path .. ' = set_combine(' .. base_path .. ', {') or (path .. ' = {')
+    local close = base_path and '})' or '}'
+    local block = base_indent .. open .. nl .. table.concat(lines, nl) .. (#lines > 0 and nl or '') .. base_indent .. close
+    local at = after and line_end(text, after.close) or #text + 1
+    local out = at <= #text and (text:sub(1, at) .. nl .. block .. nl .. text:sub(at + 1)) or (text .. nl .. block .. nl)
+    return out, done, keys
+end
+
+--- How the file spells a set it defines (the left of its `=`), or nil.
+--- @param text string
+--- @param def table A definition (SetWriter.definitions)
+--- @return string|nil
+function SetWriter.spelling(text, def)
+    return text:match('^[ \t]*(sets[^=\n]-)%s*=', def.line_from)
+end
+
 ---============================================================================
 --- DELETING
 ---============================================================================

@@ -179,7 +179,7 @@ function manualKey(){
   if (name) { KEYEDIT.key = mods + name; renderKeyEdit(); const det = $('.kmanual'); if (det) det.open = true; }
 }
 // The export the page expects (shared/utils/atelier/atelier_export.lua EXPORT_VERSION): an older one lacks data
-const EXPORT_VERSION = 3;
+const EXPORT_VERSION = 4;
 const KEY_COLORS = {job: 'g-def', custom: 'g-attr', combat: 'g-off', treasure: 'g-res', common: 'g-other'};
 function renderKeys(d){
   const groups = {};
