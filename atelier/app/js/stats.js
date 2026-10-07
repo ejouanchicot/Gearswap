@@ -248,11 +248,12 @@ function pieceStats(p, slot){
     r.rankStats = true;
     for (const a of scan.rank_stats) addAugment(a, r);
   }
-  // a path whose rank gearscan never read: its top rank, as the engine counts it (atelier/engine augments_parse:
-  // rank_assumed), said in the hover card
+  // the rank gearscan read, on a piece its own table lacks (PATH_RANK_GEAR.lua: most Limbus pieces): that rank's
+  // stats from the local catalogue. A path whose rank gearscan never read: its top rank, as the engine counts it
+  // (atelier/engine augments_parse: rank_assumed), said in the hover card
   else if (r.path && rankedEntry(p.name)) {
-    const top = rankedEntry(p.name).max_rank;
-    if (top != null) { r.rank = top; r.rankStats = true; r.rankAssumed = true; addRanked(p.name, r.path, top, r); }
+    const top = rankedEntry(p.name).max_rank, read = r.rank != null;
+    if (read || top != null) { if (!read) { r.rank = top; r.rankAssumed = true; } r.rankStats = true; addRanked(p.name, r.path, r.rank, r); }
   }
   for (const part of [r.base, r.aug]) for (const [k, e] of Object.entries(part)) add(r.stats, k, e.v, e.unit, e.label);
   return (PIECE_CACHE[key] = r);
