@@ -465,6 +465,21 @@
     // The pieces the job's rule adds before a weaponskill (shared/utils/weaponskill/tp_bonus_calculator.lua):
     // rule = {bonus (weapon, buffs, Fencer), pieces [{slot, name, bonus}]}; the set's own TP pieces count;
     // one piece that closes the gap is the smallest that does, else the biggest first.
+    // rule.weaponTp ({name: TP Bonus}, the game's word for your weapons): `bonus` then leaves the weapons out and
+    // the main, sub and ranged weapon of the set tried count their own (a search trying another gun than
+    // Anarchy +2 loses its +1000); a weapon the game was not asked about: what the engine reads on it.
+    function weaponTp(rule, pieces) {
+        if (!rule.weaponTp) return 0;
+        var total = 0, seen = {};
+        ["main", "sub", "range"].forEach(function (slot) {
+            var p = pieces[slot];
+            if (!p || !p.name || p.name === "empty" || seen[p.name]) return;
+            seen[p.name] = true;
+            if (!(p.name in rule.weaponTp)) { var g = null; try { g = gearOf(p, slot, {}); } catch (e) {} rule.weaponTp[p.name] = (g && g["TP Bonus"]) || 0; }
+            total += rule.weaponTp[p.name];
+        });
+        return total;
+    }
     O.tpPieces = function (rule, pieces, tp) {
         if (!rule || !rule.pieces) return {};
         var worn = 0, left = [];
@@ -473,7 +488,7 @@
             var on = pieces[p.slot], other = pieces[twin[p.slot]];
             if ((on && on.name === p.name) || (other && other.name === p.name)) worn += p.bonus; else left.push(p);
         });
-        var eff = tp + (rule.bonus || 0) + worn, th = eff < 2000 ? 2000 : eff < 3000 ? 3000 : 0;
+        var eff = tp + (rule.bonus || 0) + weaponTp(rule, pieces) + worn, th = eff < 2000 ? 2000 : eff < 3000 ? 3000 : 0;
         if (!th) return {};
         var gap = th - eff, total = left.reduce(function (n, p) { return n + p.bonus; }, 0);
         if (gap > total) return {};

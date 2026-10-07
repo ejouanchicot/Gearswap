@@ -12,24 +12,40 @@ const ENG_COLS = {
   landed: {key: 'rdvLanded', get: r => r.attacks ? r.attacks.hits : null, fmt: v => v.toFixed(2), low: false}};
 /* ---- TP bonus: the pieces the job's own rules add to a weaponskill at a TP (Moonshade...) ----
    The game computes them (GET /tpbonus: TPBonusCalculator with <JOB>_TP_CONFIG.lua, the buffs on
-   now, the main / sub shown): the page asks once per TP and weapons and keeps the answer */
+   now, the main / sub / ranged weapon shown): the page asks once per TP and weapons and keeps the answer */
 // Without the game's answer: no weapon or buff bonus, Moonshade's 250 (2000 - 250 = 1750...)
 const TP_STEPS = [1000, 1750, 2000, 2750, 3000];
 // The buffs of the page that change a weaponskill's TP (Warcry, Hagakure), as the game's buffactive
 const tpBuffs = () => { const b = buffState();
   return jasOf().filter(j => jaOn(b, j.name)).map(j => j.name).join(','); };
+// Your weapons for this job (main, sub, ranged): the game gives each one's TP Bonus with the rule, for a search
+// that tries them (60 names at most: a longer address may not go through; the engine reads the others' itself)
+function tpWeaponNames(){
+  const owned = ownedOf() || {};
+  return [...new Set(['main', 'sub', 'range'].flatMap(sl => (owned[sl] || []).map(x => x.name)))].sort().slice(0, 60).join('|');
+}
+// The TP rule a search works with: what does not come from the weapons (buffs, Fencer, the party; `less`: a Warcry
+// the fight times itself), each weapon's own TP Bonus (the search counts the weapons of the set it tries), the pieces
+function tpRuleOf(r, less){
+  if (!(r && r.piece_list)) return null;
+  const perWeapon = r.weapon_bonus != null && r.weapon_tp;
+  return {bonus: Math.max(0, (r.bonus || 0) - (perWeapon ? r.weapon_bonus : 0) - (less || 0)) + partyTp(),
+    weaponTp: perWeapon ? r.weapon_tp : null, pieces: r.piece_list};
+}
 // The game's answer for these weapons and buffs (and this TP, when given), asked once and kept
 function tpAsk(s, pieces, tp){
   const c = S.char, L = S._live[c] || {};
   if (family(s.path, s.pieces) !== 'ws' || !liveOk(c) || L.job !== S.job) return null;
   const main = (pieces.main || {}).name || '', sub = (pieces.sub || {}).name || '', buffs = tpBuffs();
+  // the ranged weapon's TP Bonus counts on any weaponskill (a COR's Anarchy +2: +1000 on Savage Blade)
+  const range = pieces.range && !isEmpty(pieces.range) ? pieces.range.name : '';
   // what the set wears (before any TP piece): the game counts its own TP pieces (Boii Cuisses in the base set)
   const worn = tp ? SLOTS.filter(sl => pieces[sl] && !isEmpty(pieces[sl])).map(sl => sl + ':' + pieces[sl].name).join('|') : '';
-  const key = [c, S.job, L.version, tp || 'steps', main, sub, buffs, partyTp(), worn].join('|');
+  const key = [c, S.job, L.version, tp || 'steps', main, sub, range, buffs, partyTp(), worn].join('|');
   if (key in S._tpb) return S._tpb[key];
   S._tpb[key] = null;
   // the TP a party member's Warcry adds is the page's own: the game is asked as if the TP were that much higher
-  const q = {main, sub, buffs}; if (tp) { q.tp = Math.min(3000, +tp + partyTp()); q.worn = worn; }
+  const q = {main, sub, range, buffs}; if (!tp) q.weapons = tpWeaponNames(); if (tp) { q.tp = Math.min(3000, +tp + partyTp()); q.worn = worn; }
   S._tpbWait = S._tpbWait || {};
   S._tpbWait[key] = liveFetch(c, `/tpbonus?${new URLSearchParams(q)}`, {timeout: 3000})
     .then(r => { S._tpb[key] = r || {}; render(); return S._tpb[key]; }).catch(() => { delete S._tpb[key]; return null; })

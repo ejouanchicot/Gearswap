@@ -310,7 +310,7 @@ function cycleInput(s){
   const b = liveBuffs(buffState()), r = tpAsk(w, withWeapons(w).pieces, null);
   // the game's rule counts a Warcry the page has on: the cycle times Warcry itself
   const warcry = S.job === 'WAR' && jaOn(b, 'Warcry') ? warcryTp(b) : 0;
-  const rule = r && r.piece_list ? {bonus: Math.max(0, (r.bonus || 0) - warcry) + partyTp(), pieces: r.piece_list} : null;
+  const rule = tpRuleOf(r, warcry);
   // only the abilities your job or subjob has (a BRD/DNC has no Berserk), Warcry the WAR's own only (as a subjob's it
   // has no Savagery TP Bonus the cycle counts)
   const mine = new Set(jasOf().filter(j => j.as === 'main' || j.as === 'sub').map(j => j.name));

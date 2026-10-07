@@ -4,7 +4,7 @@
 ---   Generic TP bonus calculation system for weaponskills
 ---   Intelligently determines which TP bonus gear to equip based on:
 ---   - Current TP amount
----   - Weapon TP bonus (e.g., Chango +500, Dojikiri Yasutsuna +500; read by weapon_tp_bonus.lua
+---   - Weapon TP bonus, main, sub and ranged (e.g., Chango +500, Anarchy +2 +1000; read by weapon_tp_bonus.lua
 ---     when the job's TP config does not list the weapon: description, augments, path rank)
 ---   - Buff TP bonus:
 ---     • WAR: Warcry (+500-700 with Savagery merits + Agoge Mask)
@@ -58,8 +58,9 @@ TPBonusCalculator.config = {
 --- @param weapon_name string|nil Equipped main weapon
 --- @param active_buffs table|nil buffactive, or a stand-in
 --- @param sub_weapon string|nil Equipped sub (its own TP Bonus, and Fencer)
+--- @param range_weapon string|nil Equipped ranged weapon (its own TP Bonus)
 --- @return number Effective TP
-local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
+local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, range_weapon)
     -- the weapon's TP Bonus: the job's config when it lists the weapon, else read from the game and
     -- your gear scan (shared/utils/weaponskill/weapon_tp_bonus.lua: Ikenga's Axe R23 gives 200)
     local WeaponTP = require('shared/utils/weaponskill/weapon_tp_bonus')
@@ -69,6 +70,12 @@ local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, su
     -- replaced an earring for nothing. Same weapon in both hands: counted once.
     if sub_weapon and sub_weapon ~= weapon_name then
         weapon_bonus = weapon_bonus + WeaponTP.of(sub_weapon, tp_config)
+    end
+    -- The ranged weapon's too, on any weaponskill (COR: Anarchy +2 gives its
+    -- +1000 to Savage Blade). Left out, Moonshade went on at 2750 TP for a
+    -- weaponskill already at 3000.
+    if range_weapon and range_weapon ~= weapon_name and range_weapon ~= sub_weapon then
+        weapon_bonus = weapon_bonus + WeaponTP.of(range_weapon, tp_config)
     end
 
     local buff_bonus = 0
@@ -193,15 +200,16 @@ end
 --- @param active_buffs table Table of active buffs (buffactive)
 --- @param sub_weapon string Current sub weapon name (optional, for Fencer detection)
 --- @param worn table|nil What the weaponskill set puts on ({slot = name or item}): its TP pieces count
+--- @param range_weapon string|nil Current ranged weapon name (its TP Bonus counts)
 --- @return table|nil Table of gear to equip {ear1="...", legs="..."} or nil if none needed
-function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, worn)
+function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, worn, range_weapon)
     if not current_tp or not tp_config then
         debug('show_tp_validation_failed', current_tp, tp_config)
         return nil
     end
     local sorted_all = ranked_pieces(tp_config)
     local already, available = split_worn(sorted_all or {}, worn)
-    local real_tp = effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon) + already
+    local real_tp = effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, range_weapon) + already
     debug('show_tp_calculation', current_tp, weapon_name,
         weapon_name and tp_config.get_weapon_bonus and tp_config.get_weapon_bonus(weapon_name) or 0, real_tp)
     local target_threshold = next_threshold(real_tp)

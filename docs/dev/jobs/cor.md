@@ -72,7 +72,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/cor/COR_HUD.lua` | 31 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/cor/COR_LOCKSTYLE.lua` | 51 | `default = 3`, `by_subjob`, `get_style` |
 | `_master/config/cor/COR_MACROBOOK.lua` | 68 | Book 3 page 1; `dualbox` commented; unused `get_macrobook` |
-| `_master/config/cor/COR_TP_CONFIG.lua` | 60 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500, never matched) |
+| `_master/config/cor/COR_TP_CONFIG.lua` | 60 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
 | `_master/config/cor/COR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/cor_sets.lua` | 443 | Template sets (flat; `sets.SingleWield` as a commented example) |
 | `shared/utils/messages/utilities/roll_messages.lua` | 564 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
@@ -439,7 +439,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 | `<char>/cor/COR_HUD.lua` | empty lists | HUD section / row order |
 | `<char>/cor/COR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (factory fallback 1) | `LockstyleManager` via `get_style` |
 | `<char>/cor/COR_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 3 page 1 (factory fallback book 1) | `MacrobookManager` (`get_macrobook` is not called) |
-| `<char>/cor/COR_TP_CONFIG.lua` -> `_G.CORTPConfig` | Moonshade 250; `ranged_weapons` | `TPBonusCalculator` through `get_weapon_bonus`, called with the main and sub weapons (`tp_bonus_handler.lua` `calculate_tp_gear`), never the ranged one |
+| `<char>/cor/COR_TP_CONFIG.lua` -> `_G.CORTPConfig` | Moonshade 250; `ranged_weapons` | `TPBonusCalculator` through `get_weapon_bonus`, called with the main, sub and ranged weapons (`tp_bonus_handler.lua` `calculate_tp_gear`): the gun's TP Bonus counts on every weaponskill |
 | `<char>/cor/COR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | refill system |
 | `<char>/_common/combat/RECAST_CONFIG.lua` `party_announce['Phantom Roll']` | none | `recast_announce.lua` |
 | `<char>/_common/display/UI_CONFIG.lua` `rolls` block | full style, remote `same`, every detail on (template lines commented) | `roll_messages.lua` (`//gs c ui roll...`) |
@@ -537,8 +537,6 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
 
 ### Traps
 
-- `COR_TP_CONFIG.get_weapon_bonus` receives the main and sub weapon, never the
-  gun: the `ranged_weapons` list matches nothing.
 - The COR facade still includes `message_buffs.lua`; BRD does not.
 - The template `COR_KEYBINDS.lua` leaves `^numpad7`, `^numpad8` and `^numpad0`
   free; one character overlay uses `^numpad7` for `RangedMode`.
@@ -570,9 +568,6 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
   `//gs c rolls` calls `sync_with_buffs` (`roll_is_active`, `on_roll_cast`).
 - After a reload, `DoubleUp.redirect` sends Double-Up for any roll that is up
   (no last roll known), even when the other roll was the last one.
-- `COR_TP_CONFIG.ranged_weapons` is never matched (see Traps). Open question:
-  whether a gun's TP bonus should count for every weaponskill or only ranged
-  ones.
 - `rolltracker` is unloaded on every COR load and loaded on every COR unload,
   including each subjob change and for players who never used it, unless the
   player sets `rolltracker = false` in `_common/display/ADDONS_CONFIG.lua` (since 2026-09-30).

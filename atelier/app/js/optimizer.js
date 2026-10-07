@@ -149,7 +149,7 @@ async function optimizeWs(s){
   const at = S.char + '|' + S.job, seq = OPT_SEQ;
   const r = await tpAskWait(s, base, null);
   if (!S._optBusy || seq !== OPT_SEQ || at !== S.char + '|' + S.job) { if (seq === OPT_SEQ && S._optBusy) optStop(); return; }
-  const rule = r && r.piece_list ? {bonus: (r.bonus || 0) + partyTp(), pieces: r.piece_list} : null;
+  const rule = tpRuleOf(r);
   const tpNames = new Set(((r && r.piece_list) || []).map(p => p.name).concat(Object.keys(ONLY_AUGS))), o = S.optOpts || {};
   // the TP config's pieces (Moonshade...) are not searched: the job's TP rule lays them at the weaponskill when
   // they help (opts.tpRule), never the set

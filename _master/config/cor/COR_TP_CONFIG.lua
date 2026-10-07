@@ -28,9 +28,9 @@ local CORTPConfig = {
     --- Ranged Weapons with automatic TP bonus
     ---============================================================================
     -- COR uses RANGED weapons (guns) for TP bonus, not main weapons.
-    -- Caveat: TPBonusHandler passes the main and sub names to
-    -- get_weapon_bonus(), never the range, so this list does not match
-    -- anything today.
+    -- The gun worn counts on every weaponskill, Savage Blade included
+    -- (shared/utils/weaponskill/tp_bonus_calculator.lua). A gun not listed
+    -- here is read from the game and your //gs c gearscan.
 
     ranged_weapons = {
         { name = "Anarchy +2", bonus = 1000 },

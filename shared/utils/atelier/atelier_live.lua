@@ -16,7 +16,7 @@
 ---   GET  /sim_buffs            the buffs the job's code reads (Simulate's buff choices)
 ---   POST /icons?ids=1,2,3      writes the icons of those items the page lacks (pieces you
 ---                              do not hold: item_icons.lua), at most 300 a call
----   GET  /tpbonus?tp=&main=&sub=&buffs=  the TP bonus pieces the job's rules add
+---   GET  /tpbonus?tp=&main=&sub=&range=&weapons=&buffs=  the TP bonus pieces the job's rules add
 ---                              to a weaponskill at that TP, and its TP steps (AtelierSim.tp_bonus)
 ---   POST /simulate?kind=&name=  what the job wears for an action (atelier_sim.lua),
 ---        &target=&status=&s.<Mode>=  without doing it
@@ -208,7 +208,7 @@ local function route(req, live)
     end
     if req.path == '/tpbonus' then
         local q = query_table(req.query)
-        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').tp_bonus({tp = q.tp, main = q.main, sub = q.sub, buffs = q.buffs, worn = q.worn}))
+        return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').tp_bonus({tp = q.tp, main = q.main, sub = q.sub, range = q.range, weapons = q.weapons, buffs = q.buffs, worn = q.worn}))
     end
     if req.path == '/simulate' and req.method == 'POST' then
         local q = query_table(req.query)

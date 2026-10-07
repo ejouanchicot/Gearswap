@@ -132,7 +132,7 @@ function WSPrecastHandler.apply_tp_gear(spell)
     local args = _G.temp_tp_bonus_args
     if not ok_g then list = nil end
     if args and type(list) == 'table' and _G.TPBonusCalculator then
-        local ok, again = pcall(_G.TPBonusCalculator.calculate, args.tp, args.config, args.main, buffactive, args.sub, list)
+        local ok, again = pcall(_G.TPBonusCalculator.calculate, args.tp, args.config, args.main, buffactive, args.sub, list, args.range)
         if ok then tp_gear = again end
         local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
         if ok_t and Trace then Trace.log('TP', 'with the set on -> gear %s', tp_gear) end

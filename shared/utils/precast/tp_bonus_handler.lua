@@ -71,11 +71,13 @@ function TPBonusHandler.calculate_tp_gear(spell, tp_config)
     local weapon_name = player.equipment and player.equipment.main or nil
     local sub_weapon = player.equipment and player.equipment.sub or nil
 
-    local tp_gear = calculator.calculate(current_tp, tp_config, weapon_name, buffactive, sub_weapon)
+    local range_weapon = player.equipment and player.equipment.range or nil
+
+    local tp_gear = calculator.calculate(current_tp, tp_config, weapon_name, buffactive, sub_weapon, nil, range_weapon)
     -- worked out again once the weaponskill set is on (WSPrecastHandler.apply_tp_gear): its own TP pieces count
-    _G.temp_tp_bonus_args = {tp = current_tp, config = tp_config, main = weapon_name, sub = sub_weapon}
+    _G.temp_tp_bonus_args = {tp = current_tp, config = tp_config, main = weapon_name, sub = sub_weapon, range = range_weapon}
     trace('%s tp %s main %s sub %s range %s -> gear %s', spell.english, current_tp,
-        weapon_name, sub_weapon, player.equipment and player.equipment.range, tp_gear)
+        weapon_name, sub_weapon, range_weapon, tp_gear)
 
     -- Applied in job_post_precast by WSPrecastHandler.apply_tp_gear
     _G.temp_tp_bonus_gear = tp_gear
