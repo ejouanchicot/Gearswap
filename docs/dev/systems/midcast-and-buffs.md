@@ -14,7 +14,7 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 |---|---|---|
 | `shared/utils/midcast/midcast_manager.lua` | 751 | `select_set()` with the standard chain (P0-P9, plus P8b) and the Singing chain, persistent debug toggle, Composure target helper, song helpers |
 | `shared/utils/midcast/midcast_fallback.lua` | 53 | Routes a spell no job midcast handed to `select_set` (a subjob's magic), on Mote's `cleanup_midcast` |
-| `shared/utils/midcast/midcast_trace.lua` | 81 | `MIDCAST` lines in `<Character>/trace.log` (chosen path and pieces, or "no set"); slot-name aliasing |
+| `shared/utils/midcast/midcast_trace.lua` | 81 | `MIDCAST` lines in `<Character>/logs/trace/trace.log` (chosen path and pieces, or "no set"); slot-name aliasing |
 | `shared/utils/midcast/utsusemi_shadows.lua` | 32 | Cancels Copy Image buffs 2.3 s into Utsusemi: Ichi (Cancel addon) |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 130 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
@@ -226,7 +226,7 @@ Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Te
 
 ### Trace log (`MidcastTrace`)
 
-With `//gs c trace on` (independent of `debugmidcast`), `shared/utils/midcast/midcast_trace.lua` writes one `MIDCAST` line per `select_set` to `<Character>/trace.log`:
+With `//gs c trace on` (independent of `debugmidcast`), `shared/utils/midcast/midcast_trace.lua` writes one `MIDCAST` line per `select_set` to `<Character>/logs/trace/trace.log`:
 
 - `begin(spell)` remembers `"<spell> on <target|self>"` (called at the top of `select_set`);
 - `selection(set, path, slots)` (from `equip_with_debug`) writes `<spell> -> <path> | slot=item, ...`;
@@ -585,7 +585,7 @@ Commit hashes on this page are post-rewrite (2026-09-27); an older hash maps thr
 | Question | Tool |
 |---|---|
 | Which set did MidcastManager choose, and why | `//gs c debugmidcast`, cast; the chat shows mode/type/target, each priority tried and the equipped slots |
-| Same, without chat noise, over a whole fight | `//gs c trace on`; `MIDCAST` lines in `<Character>/trace.log` (next to `PRECAST` lines from CastTime) |
+| Same, without chat noise, over a whole fight | `//gs c trace on`; `MIDCAST` lines in `<Character>/logs/trace/trace.log` (next to `PRECAST` lines from CastTime) |
 | "no sets.midcast['X']" in the trace | the skill has no base set: Mote's name / map set stayed on; define `sets.midcast.X` if the spell should be managed |
 | A subjob spell with the wrong gear | check the `MIDCAST` line exists (fallback routed it) and which path it chose |
 | Scholar chain stopped | "never came up" warning names the buff; a newer command bumps `windower._sch_cast_seq` |

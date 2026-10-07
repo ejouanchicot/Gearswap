@@ -3,7 +3,7 @@
 ---============================================================================
 --- Offline tests prove the code does what it says; they cannot prove the
 --- game gives the values the code assumes. This writes those values, as they
---- happen in play, to <Character>/trace.log, so they can be read afterwards.
+--- happen in play, to <Character>/logs/trace/trace.log, so they can be read afterwards.
 ---
 ---   //gs c trace on      start recording (survives reloads, even //lua r gearswap)
 ---   //gs c trace off     stop
@@ -39,7 +39,10 @@ local MAX_BYTES = 10 * 1024 * 1024
 
 local function file_path(name)
     if not (player and player.name and windower and windower.addon_path) then return nil end
-    return require('shared/utils/core/char_paths').writable('saved', name or 'trace.log')
+    local CharPaths = require('shared/utils/core/char_paths')
+    -- the on/off marker is a setting (saved/), the logs are journals (logs/trace/)
+    if name == 'trace.on' then return CharPaths.writable('saved', name) end
+    return CharPaths.log('trace', name or 'trace.log')
 end
 
 --- On/off lives on `windower` (outlives gs reload and job changes) and in a

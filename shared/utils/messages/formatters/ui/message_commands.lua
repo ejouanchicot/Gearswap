@@ -440,6 +440,7 @@ local COMMANDS_HELP = {
         {title = 'EQUIPMENT & INVENTORY', rows = {
             {'//gs c belt', '', 'Obi / Orpheus auto: state, bonuses'},
             {'//gs c dw ', 'auto|none|haste|haste2|max', 'Dual Wield tier by haste'},
+            {'//gs c support ', 'auto|solo|group|full|trust', 'WS / engaged sets by party support'},
             {'//gs c wardrobeaudit | wa', '', 'Audit wardrobe across jobs'},
             {'//gs c worganize | wo', '', 'Organize wardrobes by job'},
             {'//gs c worganize alt', '', 'Alt mode (4 wardrobes)'},
@@ -458,6 +459,13 @@ local COMMANDS_HELP = {
             {'//gs c stealth ', 'sneak | invi | both', 'You + alts, best method each'},
             {'//gs c stealth check', '', 'What stealth would do now'},
             {'//gs c cleanse', '', 'Debuffs off, you + alts (cleanse help)'},
+        }},
+        {title = 'ATELIER', note = 'data/atelier.html', rows = {
+            {'//gs c atelier', '', "Write this job's data for the page"},
+            {'//gs c atelier ', 'on | off', 'Write it after each job load'},
+            {'//gs c atelier live ', '[off]', 'Link the page to the game'},
+            {'//gs c atelier icons', '', 'Write every equipment icon'},
+            {'//gs c atelier link', '', 'Let the page reload GearSwap'},
         }},
         {title = 'CRAFT & FISH', rows = {
             {'//gs c craft', '', 'Craft mode (locks weapon slots)'},
@@ -481,6 +489,7 @@ local COMMANDS_HELP = {
         }},
         {title = 'INFO & DEBUG', rows = {
             {'//gs c info ', '<name>', 'Spell / JA / WS details'},
+            {'//gs c fights ', '[on | off | reset]', 'Fight / kill blocks (off by default)'},
             {'//gs c debugsubjob | dsj', '', 'Show subjob detection'},
             {'//gs c debugprecast', '', 'Toggle precast debug'},
             {'//gs c debugmidcast', '', 'Toggle midcast debug'},

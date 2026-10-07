@@ -1,7 +1,7 @@
 ---============================================================================
 --- Midcast Trace - MidcastManager's choices, written to the trace log
 ---============================================================================
---- While //gs c trace is on, one line per midcast in <Character>/trace.log:
+--- While //gs c trace is on, one line per midcast in <Character>/logs/trace/trace.log:
 --- the spell, its target, the set path MidcastManager chose and its pieces,
 --- or that the skill had no set at all. A no-op while the trace is off.
 ---

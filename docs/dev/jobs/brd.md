@@ -58,7 +58,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 250 | `get_current_pack`, `get_songs_with_replacement`, `update_song_slots` (HUD), `get_required_instrument`, `start_with_nitro`, `cast_songs_with_phases`, `cast_dummy_songs` |
 | `shared/jobs/brd/functions/logic/dummy_next.lua` | 77 | DummySong switch: `is_on`, `mark`, `on_aftercast` (next song as a dummy, then off) |
 | `shared/jobs/brd/functions/logic/song_slots.lua` | 113 | `plan` (one `SONGS` trace line per plan), `inputs`, `songs_up` (through `song_owner`), `instrument_extra` |
-| `shared/jobs/brd/functions/logic/song_owner.lua` | 276 | Which songs up are ours, from the caster of each song (packets 0x028 + 0x063): `counts`, `start` |
+| `shared/jobs/brd/functions/logic/song_owner.lua` | 276 | Which songs up are ours, from the caster of each song (packets 0x028 + 0x063): `counts`, `own_songs`, `family_of`, `start`. With no other bard in the party here (every member's job known, none BRD main or sub: `party_jobs.lua`), every song up counts as ours whatever the pairing kept |
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 177 | `start`, `stop`, `on_aftercast`; retry / timeout logic; buff guard before each song; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 104 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 60 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
@@ -284,6 +284,7 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
 - `cast_songs_with_phases(false, '<me>', full, force)`: `base` pack songs,
   the dummies, the rest of the pack; handed to `SongOpening.start`
   (`logic/song_opening.lua`). The `use_marcato` argument is unused.
+  - With no dummy to sing, the order is `soonest_first`: the songs by time left (`SongOwner.own_songs`, by family), the least first, one that is not up before all.
   - Ignored while an opening is going out (`SongOpening.running`).
   - **Nothing to sing** (`SongOpening.nothing_to_sing`, skipped by `full` and
     `force`): every song of the plan, matched by family, is ours

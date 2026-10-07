@@ -28,6 +28,7 @@ see [installation](../getting-started/installation.md)). After an edit,
         inventory/           WAR_REFILL
         sets/                the gear of that job (war_sets.lua...)
     saved/                   written by the game (window positions, HUD settings...): leave it
+    logs/                    journals, one folder a topic (see below): safe to delete
 ```
 
 Settings are files, gear is always in a `sets/` folder. The `_` in front of
@@ -103,6 +104,21 @@ re-clone copies them back from the old folder (see
 | `saved/gear_augments.lua` | `//gs c gearscan`: the augments of your gear, read by the HP priority |
 | `<job>/display/<JOB>_HUD.lua` | `//gs c ui order` / `roworder` (see the per-job table below) |
 | `saved/temp_binds.lua` | `//gs c tb` |
+
+**Journals** are in `<YourName>/logs/`, one folder a topic. Each is written again
+when its command runs, so any of them can be deleted:
+
+| Folder | What | Written by |
+|---|---|---|
+| `logs/trace/` | `trace.log` (and `trace.old.log` past 10 MB): what the game returned | `//gs c trace on` |
+| `logs/fights/` | `<date>.log`: each fight left and each kill, with time and damage | `//gs c fights on` |
+| `logs/sortie/` | `<date>_<time>.log`: one Sortie run a file (bosses, kill times) | the SortieLog addon, when you use it |
+| `logs/rolls/` | `rolldebug.log`: COR roll check | `//gs c rolldebug` |
+| `logs/dualbox/` | `altbuff.log`: alt buff reports | `//gs c altdebug` |
+| `logs/wardrobe/` | `wardrobe_debug.log`: the last wardrobe organizer run | `//gs c wo` |
+
+A journal left in `saved/` or in `data/` by an older version moves there the next
+time it is written.
 
 `dualbox_role.lua` is written by `//gs c main` and `setalt`: it wins over the
 role in `DUALBOX_CONFIG.lua`. A re-clone does **not** keep it, on purpose: the

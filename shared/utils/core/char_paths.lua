@@ -24,7 +24,16 @@
 ---       inventory/               <JOB>_REFILL
 ---       sets/                    its gear: <job>_sets.lua, armor.lua...
 ---   <Char>/saved/                files the game writes (window positions,
----                                dual-box role, HUD settings, traces...)
+---                                dual-box role, HUD settings, caches...)
+---   <Char>/logs/                 journals, one folder a topic (CharPaths.log):
+---       trace/                   trace.log, trace.old.log (//gs c trace)
+---       fights/                  <date>.log (//gs c fights on)
+---       sortie/                  <date>_<time>.log, one a run (the SortieLog addon)
+---       rolls/                   rolldebug.log (COR //gs c rolldebug)
+---       dualbox/                 altbuff.log (//gs c altdebug)
+---       wardrobe/                wardrobe_debug.log (//gs c wo)
+---                                (before 2026-10-07 in saved/ or in data/: moved
+---                                here when written again)
 ---   <Char>/atelier/              what the Atelier page (data/atelier.html) writes
 ---       overrides/               set_overrides.lua, keybind_overrides.lua: pieces
 ---                                and keys changed in the page, laid over your files
@@ -291,6 +300,37 @@ function CharPaths.writable(kind, file, job, char)
     end
     local path = CharPaths.file(kind, file, job, char)
     if path and new_layout(char) then CharPaths.ensure_parent(path) end
+    return path
+end
+
+local log_paths = {}
+
+--- Absolute path of a journal: <Char>/logs/<topic>/<file>, its folder created.
+--- A copy left where journals used to be written (saved/, the character's
+--- root, or `old`) is moved there first, so one file carries on. A character
+--- in an older layout keeps it where CharPaths.writable('saved') puts it.
+--- @param topic string 'trace', 'fights', 'sortie', 'rolls', 'dualbox', 'wardrobe'
+--- @param file string File name
+--- @param char string|nil
+--- @param old string|nil Absolute path of an older copy elsewhere (data/altbuff_<name>.log)
+--- @return string|nil
+function CharPaths.log(topic, file, char, old)
+    char = char or CharPaths.name()
+    if not char then return nil end
+    if not new_layout(char) then return CharPaths.writable('saved', file, nil, char) end
+    -- once a load: a trace writes a line a second, the folder is not looked up each time
+    local key = char .. '/' .. topic .. '/' .. file
+    if log_paths[key] then return log_paths[key] end
+    local base = data_dir() .. char
+    local dir = base .. '/logs/' .. topic
+    CharPaths.ensure_dir(dir)
+    local path = dir .. '/' .. file
+    if not exists(path) then
+        for _, before in ipairs({base .. '/saved/' .. file, base .. '/' .. file, old}) do
+            if exists(before) then os.rename(before, path) break end
+        end
+    end
+    log_paths[key] = path
     return path
 end
 

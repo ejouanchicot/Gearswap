@@ -41,7 +41,7 @@ local INVENTORY_BAG_ID = 0
 --- Delay between move operations (seconds) to respect FFXI packet rate
 local MOVE_DELAY = 0.6
 
---- One line in <Character>/saved/trace.log while //gs c trace is on (tag
+--- One line in <Character>/logs/trace/trace.log while //gs c trace is on (tag
 --- REFILL): the list used, each line planned, each move sent. The moves go
 --- through windower.ffxi.put_item / get_item, which the command trace does
 --- not see.

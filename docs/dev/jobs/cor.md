@@ -63,7 +63,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/cor/functions/logic/roll_gear.lua` | 73 | `PHANTOM_ROLL_GEAR` and `RollGear.bonus()` read from the game |
 | `shared/jobs/cor/functions/logic/roll_hold.lua` | 68 | `RollHold.start` / `stop` / `hold_update`, `HOLD_MAX` 5 s |
 | `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
-| `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/rolldebug.log` |
+| `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/logs/rolls/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/double_up.lua` | 45 | `DoubleUp.redirect(spell, eventArgs)` |
 | `shared/jobs/cor/functions/logic/set_builder.lua` | 153 | Town, weapons (main through `BaseSetBuilder.lay_weapon`, gun from `sets[...]`), PDT, Refresh, movement |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
@@ -531,7 +531,7 @@ and `rawget`. `roll_tracker.lua` (with `roll_party.lua`) needs `windower.ffxi.ge
 and call its functions; the gitignored `scripts/audit/` folder holds the
 existing differential tests (`difftest_*.lua`) as models.
 
-In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
+In game: `//gs c rolldebug` (per-roll gear report and `<Character>/logs/rolls/rolldebug.log`),
 `//gs c trace on` (roll hold lines `ROLL`, `MIDCAST`, `TP`), `//gs c debugmidcast`,
 `//gs c party`, `//gs c rolls`.
 

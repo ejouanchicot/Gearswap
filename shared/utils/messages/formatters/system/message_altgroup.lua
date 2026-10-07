@@ -98,7 +98,7 @@ function MessageAltGroup.show_usage()
             {'//gs c alts mirror', '', 'Mirror request from here'},
             {'//gs c alts window', '', 'Show / hide the alt window'},
         }}},
-        notes = {'Alts: the group of config/DUALBOX_CONFIG.lua.'},
+        notes = {'Alts: the group of _common/dualbox/DUALBOX_CONFIG.lua.'},
     })
 end
 

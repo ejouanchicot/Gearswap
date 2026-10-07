@@ -156,5 +156,5 @@ character keeps this file.
 | The new cast does nothing while the old buff is up | Load the `Cancel` addon |
 | Actions are refused as too early | They are sent again on their own; if it still happens, raise `//gs c stealth delay` (3.5 or 4) |
 | `no way of your own` with `self` | That character has no Jig, spell, ninjutsu or item right now; drop `self` to let a partner cast it |
-| Want to see every decision | `//gs c trace on`, press the key, then read the `STEALTH` lines of `<YourName>/trace.log` |
+| Want to see every decision | `//gs c trace on`, press the key, then read the `STEALTH` lines of `<YourName>/logs/trace/trace.log` |
 | Did a partner really get the buff? | With the trace on, each cast writes `Sneak landed ...: reached <names>; missed <name (distance)>`, and each box writes `buff Sneak gained` / `lost` when the game applies it |

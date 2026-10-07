@@ -100,7 +100,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | `clearrolls` | Forget the tracked rolls |
 | `party` | The party members and the job known for each (used for the roll job bonus) |
 | `clearparty` | Forget the party jobs (they come back as the game sends them) |
-| `rolldebug` | Roll check on / off: for each roll, the pieces of the roll set not worn when it landed, gear updates held back, pieces out of reach, locked slots; a summary when you switch it off. Also written to `<YourName>/rolldebug.log` |
+| `rolldebug` | Roll check on / off: for each roll, the pieces of the roll set not worn when it landed, gear updates held back, pieces out of reach, locked slots; a summary when you switch it off. Also written to `<YourName>/logs/rolls/rolldebug.log` |
 | `track_roll <roll> <value>` (`trackroll`) | Report a roll by hand, e.g. `track_roll chaos 7` (short names: `chaos`, `sam`, `hunter`, `tact`, `allies`, `wiz`, `lock`, `cor`, `cast`, `course`, `blitz`, `fight`, `rogue`, `gal`, `evo`, `bolt`, `miser`, `comp`, `ave`, `nat`) |
 | `ui rollstyle` / `rollorder` / `rolllucky` / `rollparty` / `rollbust` / `roll11` / `rollremote` | Look of the roll result line ([states.md](states.md#roll-messages)) |
 

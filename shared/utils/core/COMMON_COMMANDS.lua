@@ -555,7 +555,7 @@ function CommonCommands.handle_command(command, job_name, ...)
         return require('shared/utils/keybinds/temp_binds').handle(args)
     end
 
-    -- Record what the game really returns to <Character>/trace.log
+    -- Record what the game really returns to <Character>/logs/trace/trace.log
     if cmd == 'trace' then
         return require('shared/utils/debug/trace_log').handle(args)
     end

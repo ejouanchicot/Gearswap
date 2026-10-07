@@ -193,4 +193,4 @@ them alone, the list order holds (Echo Drops for Silence alone).
 | A character does not cast its spell | `//gs c cleanse check` on it: level, MP, recast, silence, and Addendum: White for a Scholar |
 | An item is not used | It must be in the inventory (not a Mog Case or wardrobe) |
 | `left alone (item had no effect: aura?)` | You stand in an aura: move out, or wait up to 60 s |
-| Want to see resends | `//gs c trace on`: a refused action sent again writes a `CLEANSE` line in `<YourName>/trace.log` |
+| Want to see resends | `//gs c trace on`: a refused action sent again writes a `CLEANSE` line in `<YourName>/logs/trace/trace.log` |

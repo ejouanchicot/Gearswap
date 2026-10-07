@@ -151,7 +151,7 @@ InfoBlock `STEALTH :: Check (nothing is cast)`: jobs; per kind the buff state (`
 
 ### Trace
 
-With `//gs c trace on`, `trace()` (`stealth.lua`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `invi: up, recast after sneak (an action breaks it)`, `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `sneak+invi: Spectral Jig on recast, <n>s` (a /DNC only), `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`, `not started, sent again: <command>`.
+With `//gs c trace on`, `trace()` (`stealth.lua`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/logs/trace/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `invi: up, recast after sneak (an action breaks it)`, `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `sneak+invi: Spectral Jig on recast, <n>s` (a /DNC only), `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`, `not started, sent again: <command>`.
 
 What the game did afterwards (`stealth_trace.lua`, trace on only, checked with `TraceLog.enabled()`), on every box: `buff Sneak gained, <n> s left` / `refreshed` / `lost` (own buff end times from packet 0x063, via `StealthTimers`), and, when this character finishes casting Sneak or Invisible (action packet through `ActionListener`, category 4, spell 137 / 136), one `<spell> landed: <member> at <d> y` line for **every** group member (reached or not), then `<spell> landed[ with Accession]: reached <names>; missed <names (d y)>` from the targets of the action packet. `with Accession` reads buff 366 from `get_player().buffs`. The `Accession: ... yalms` line above is measured at the key press, several seconds before the cast.
 
@@ -328,7 +328,7 @@ Coroutines: the one-second loop (stopped by generation), the queue's fallback wa
 |---|---|---|
 | What the key would do, without casting | `//gs c stealth check` | `key would` per kind, `Accession` reason, member distances and timers |
 | Settings and known timers | `//gs c stealth status` | `-` = no end time received yet (0x063 not seen, or the alt did not broadcast) |
-| Decisions and results | `//gs c trace on`, press the key, then read `<Character>/trace.log` | `STEALTH` lines: decision at the press, `not started, sent again`, `buff ... gained/lost`, `<spell> landed ... reached ...; missed ...` |
+| Decisions and results | `//gs c trace on`, press the key, then read `<Character>/logs/trace/trace.log` | `STEALTH` lines: decision at the press, `not started, sent again`, `buff ... gained/lost`, `<spell> landed ... reached ...; missed ...` |
 | Cross-box relay | trace on every box | the relayed key and claims appear on each box's own trace |
 | Stuck queue | `//lua reload gearswap` | resets `windower._action_queue` (stealth and cleanse); a `gs reload` does not |
 

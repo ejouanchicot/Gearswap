@@ -768,8 +768,8 @@ layers" rule of section 3, observed.
 | `//gs c wa` | Wardrobe audit across jobs |
 | `//gs c debugmidcast` | Per job: logs which `MidcastManager` level chose the set |
 | `//gs c debugprecast` | Precast debug toggle (persists through reloads via `windower._gs_debug`) |
-| `//gs c trace on` / `off` / `clear` | Appends real game values to `data/<Char>/trace.log`; survives even `//lua reload gearswap` through `data/<Char>/trace.on` |
-| `//gs c rolldebug` | COR: roll gear sent vs worn when the roll goes off, to `data/<Char>/rolldebug.log` |
+| `//gs c trace on` / `off` / `clear` | Appends real game values to `data/<Char>/logs/trace/trace.log`; survives even `//lua reload gearswap` through `data/<Char>/trace.on` |
+| `//gs c rolldebug` | COR: roll gear sent vs worn when the roll goes off, to `data/<Char>/logs/rolls/rolldebug.log` |
 | `//gs c syscheck` | System state, including the message hook wrap ratio and globals created since load |
 | `//gs c fulltest`, `//gs c lagdebug`, `//gs c perf`, `//gs c memcheck` | Full self-test, lag capture, profiler, `_G` export |
 | `//gs c debugjobchange`, `//gs c debugupdate`, `//gs c automovedebug` | Job-change, `job_update` and AutoMove debug toggles |

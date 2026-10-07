@@ -123,6 +123,17 @@ def files_under(folder):
     return sorted(out, key=str.lower)
 
 
+LOGS_LINES = [
+    'trace/trace.log, trace.old.log   what //gs c trace on records',
+    'fights/<date>.log                each fight left and each kill (//gs c fights on)',
+    'sortie/<date>_<time>.log         one Sortie run a file (the SortieLog addon)',
+    'rolls/rolldebug.log              COR roll check (//gs c rolldebug)',
+    'dualbox/altbuff.log              alt buff reports (//gs c altdebug)',
+    'wardrobe/wardrobe_debug.log      the last //gs c wo run',
+    'Safe to delete: each is written again when its command runs.',
+]
+
+
 def build(char, char_dir):
     lines = [
         'WHERE IS WHAT - %s' % char,
@@ -135,6 +146,7 @@ def build(char, char_dir):
         '_common/          settings of the whole character (every job)',
         '<job>/            one folder per job: display/ keys/ combat/ inventory/ sets/',
         'saved/            written by GearSwap itself',
+        'logs/             journals, one folder a topic (trace, fights, sortie, rolls...)',
         'atelier/          what the Atelier page (data/atelier.html) writes',
         '',
     ]
@@ -153,6 +165,7 @@ def build(char, char_dir):
             lines.append('  %-38s %s' % (rel, describe_job_file(job, rel.split('/')[-1])))
         lines.append('')
     lines += ['saved/', '-' * 60, '  ' + SAVED, '']
+    lines += ['logs/', '-' * 60] + ['  ' + x for x in LOGS_LINES] + ['']
     lines += ['atelier/', '-' * 60] + ['  ' + x for x in ATELIER_LINES] + ['']
     return '\r\n'.join(lines)
 

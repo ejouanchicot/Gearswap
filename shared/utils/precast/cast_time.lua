@@ -200,7 +200,7 @@ local function mote_set_path()
     return #parts > 0 and table.concat(parts, '.') or '?'
 end
 
---- One line per precast to <Character>/trace.log while //gs c trace is on:
+--- One line per precast to <Character>/logs/trace/trace.log while //gs c trace is on:
 --- the action, its target, Mote's set path, the computed cast time and the
 --- pieces sent (owned only).
 local function trace_precast(spell, seconds, percent)

@@ -534,7 +534,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   recast table, or `MidcastManager.select_set` with a fake `sets.midcast`).
   Run from `data/` so relative paths resolve.
 - In game: `//gs c debugprecast`, `//gs c debugmidcast`, `//gs c trace on`
-  (writes `<Character>/trace.log`), `//gs c checksets`.
+  (writes `<Character>/logs/trace/trace.log`), `//gs c checksets`.
 
 ## Extending
 

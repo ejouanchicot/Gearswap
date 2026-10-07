@@ -335,7 +335,7 @@ The shared `Config` table is seen by all libs only because `require` is cached p
 | `CLEANUP_MAX_PASSES` | 3 | Phase 4 passes |
 | `TRULY_STUCK_THRESHOLD` | 4 | same misplaced count before giving up; also the burst-loop cycle threshold (`CYCLE_THRESHOLD`, `phases.lua:45`) |
 | `MAX_WALK_DEPTH` | 50 | `_G.sets` walk |
-| `DEBUG_LOG` / `LOG_PATH` | `true` / `<addon>/data/wardrobe_debug.log` (`:138-139`) | `lib/log.lua` |
+| `DEBUG_LOG` / `LOG_PATH` | `true` / `<Character>/logs/wardrobe/wardrobe_debug.log` (`:138-139`) | `lib/log.lua` |
 | `UNEQUIP_DELAY`, `EQUIP_SLOTS`, `BAG_NAME_TO_ID` | (`:121`, `:147`, `:97`) | nothing reads them |
 
 ### Current character configs
@@ -362,7 +362,7 @@ Module state (locals of `wardrobe_organizer.lua:53-59`): `IS_RUNNING`, `outer_it
 - `_G`: reads `_G.sets` (`Items.collect_used_names`, `organize()`), the `player` global (`job_changed`, `active_job_tag`, `:77-99`) and `_G.ampulla_ammo_locked` / `_G.thf_range_locked`; `release_stance_locks` clears them through `AmpullaLock.release` / `RangeLock.release` and sets `state.RangeLock` to false.
 - `windower.*` persistent fields: none. Events: none registered. Keybinds, text or prim objects: none.
 - Scheduled coroutines: every phase step, phase transition, retry, snapshot and the post-run `gs c ls` / `gs c rf`. None is cancellable and none checks a run identifier; they stop only by reaching their own exit condition or a `job_changed()` guard.
-- Files written: `data/wardrobe_debug.log` (one fixed path for every character of this Windower install, `config.lua:143`; truncated at the start of each run and each preview, `Log.dlog_clear`, appended one line per event), `data/wardrobe_scan_<char>.txt`, `data/<char>/saved/WARP_ITEMS_OWNED.lua`.
+- Files written: `<Character>/logs/wardrobe/wardrobe_debug.log` (per character since 2026-10-07, `lib/log.lua`; `config.lua` `LOG_PATH` is the fallback; truncated at the start of each run and each preview, `Log.dlog_clear`, appended one line per event), `data/wardrobe_scan_<char>.txt`, `data/<char>/saved/WARP_ITEMS_OWNED.lua`.
 - Files read: `data/<char>/_common/inventory/WARDROBE_CONFIG.lua`, `data/<char>/saved/WARP_ITEMS_OWNED.lua`, the character's set files (through the auditor).
 - Slot lock: `gs disable all` sets GearSwap's `disable_table` (`GearSwap/statics.lua:194`, `user_functions.lua:131-143`), which is GearSwap global state and survives `gs reload` and job changes. Only a `gs enable` clears it.
 

@@ -21,7 +21,7 @@
 ---   the "Phantom Roll +" worn at landing against the one the roll message
 ---   uses (RollGear.bonus), and the status / movement at both ends.
 --- A diagnostic tool: only when switched on, it writes to the chat
---- (InfoBlock) and appends the same lines to <Character>/rolldebug.log.
+--- (InfoBlock) and appends the same lines to <Character>/logs/rolls/rolldebug.log.
 ---
 --- @file    shared/jobs/cor/functions/logic/roll_debug.lua
 --- @author  ejouanchicot
@@ -245,12 +245,12 @@ function RollDebug.show_summary()
     RollDebug.write_log('SUMMARY', fields)
 end
 
---- Append a report to <Character>/rolldebug.log.
+--- Append a report to <Character>/logs/rolls/rolldebug.log.
 --- @param roll_name string
 --- @param fields table InfoBlock fields
 function RollDebug.write_log(roll_name, fields)
     if not (player and player.name and windower.addon_path) then return end
-    local file = io.open(require('shared/utils/core/char_paths').writable('saved', 'rolldebug.log'), 'a')
+    local file = io.open(require('shared/utils/core/char_paths').log('rolls', 'rolldebug.log'), 'a')
     if not file then return end
     local status = player.status or '?'
     file:write(('%s  %s  (%s)\n'):format(os.date('%H:%M:%S'), roll_name, status))

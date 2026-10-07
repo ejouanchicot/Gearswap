@@ -359,8 +359,8 @@ pcall(function()
     end
 end)
 
--- A chat block at each fight and each kill (fight_tracker.lua): listens
--- only, nothing sent to the game.
+-- A chat block at each fight and each kill (fight_tracker.lua), only when
+-- the player turned it on (//gs c fights on): off, init() does nothing.
 pcall(function()
     local ok, FightTracker = pcall(require, 'shared/utils/combat/fight_tracker')
     if ok and FightTracker then

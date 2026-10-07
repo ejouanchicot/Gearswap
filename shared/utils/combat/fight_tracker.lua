@@ -12,9 +12,14 @@
 ---   - its level from that /check's answer (0x029 check messages), kept by
 ---     mob name for the session (your own /check counts too)
 ---
+--- Off unless the player turned it on: nothing is listened to, no /check is
+--- sent, no block is shown.
 --- //gs c fights            the session: kills, time a kill, level by mob
---- //gs c fights on|off     the chat blocks on or off (tracking goes on)
+--- //gs c fights on|off     the tracker on or off; the choice is kept
+---                          (<Character>/saved/fights.on, as the trace does)
 --- //gs c fights reset      a new session
+--- Each fight left and each kill is also a line of the day's journal,
+--- <Character>/logs/fights/<date>.log.
 ---
 --- The session lives on windower.* (kept through reloads and job changes,
 --- lost when Windower closes).
@@ -44,11 +49,45 @@ local MELEE_HIT, MELEE_CRIT = {[1] = true}, {[67] = true}
 local MELEE_MISS = {[15] = true, [63] = true, [31] = true, [32] = true, [70] = true}
 local WS_HIT, WS_MISS = {[185] = true}, {[188] = true}
 
+--- The marker file of the player's choice.
+local function marker_path()
+    if not (player and player.name) then return nil end
+    local ok, path = pcall(function() return require('shared/utils/core/char_paths').writable('saved', 'fights.on') end)
+    return ok and path or nil
+end
+
+--- Whether the player turned the tracker on. On windower.* (outlives a job
+--- change) and in a marker file, read once: //lua r gearswap resets windower.*.
+--- @return boolean
+local function enabled()
+    if windower._fight_tracker_on == nil then
+        local path = marker_path()
+        local file = path and io.open(path, 'r')
+        windower._fight_tracker_on = file ~= nil
+        if file then file:close() end
+    end
+    return windower._fight_tracker_on == true
+end
+
+--- Keep the player's choice: the marker file is there when on.
+--- @param on boolean
+local function set_enabled(on)
+    windower._fight_tracker_on = on
+    local path = marker_path()
+    if not path then return end
+    if on then
+        local file = io.open(path, 'w')
+        if file then file:write('on') file:close() end
+    else
+        os.remove(path)
+    end
+end
+
 --- The session, kept on windower.* so a reload or a job change keeps it.
 local function session()
     local s = windower._fight_tracker
     if not s then
-        s = {on = true, started = os.time(), fights = 0, total = 0, kills = {}, time = {}, levels = {}, fight = nil}
+        s = {started = os.time(), fights = 0, total = 0, kills = {}, time = {}, levels = {}, fight = nil}
         windower._fight_tracker = s
     end
     return s
@@ -65,8 +104,22 @@ local function level_text(name)
     return 'Lv ' .. lv.level .. (lv.note and (', ' .. lv.note) or ''), nil
 end
 
+--- One line of the day's journal (<Character>/logs/fights/<date>.log): the
+--- block's title and its fields, so a session can be read after the game closed.
+local function journal(tag, title, fields)
+    local ok, path = pcall(function()
+        return require('shared/utils/core/char_paths').log('fights', os.date('%Y-%m-%d') .. '.log')
+    end)
+    local file = ok and path and io.open(path, 'a')
+    if not file then return end
+    local parts = {}
+    for _, f in ipairs(fields) do parts[#parts + 1] = f[1] .. ': ' .. tostring(f[2]) end
+    file:write(('%s %s %s | %s\n'):format(os.date('%H:%M:%S'), tag, title, table.concat(parts, ' | ')))
+    file:close()
+end
+
 local function show(tag, title, fields)
-    if session().on then InfoBlock.show({tag = tag, title = title, fields = fields}) end
+    if enabled() then InfoBlock.show({tag = tag, title = title, fields = fields}) end
 end
 
 ---============================================================================
@@ -134,7 +187,10 @@ local function finish(killed)
     local fields = {{'Time', mmss(secs)},
         {'Your damage', string.format('%d (melee %d, WS %d)', f.dmg, f.melee.dmg, f.ws.dmg)},
         {'Melee', melee_text(f.melee)}, {'Weaponskills', ws_text(f.ws)}}
-    if not killed then return show('FIGHT', f.name .. ' (left, not killed)', fields) end
+    if not killed then
+        journal('LEFT', f.name, fields)
+        return show('FIGHT', f.name .. ' (left, not killed)', fields)
+    end
     s.total = s.total + 1
     s.kills[f.name] = (s.kills[f.name] or 0) + 1
     local t = s.time[f.name] or {sum = 0, n = 0}
@@ -143,6 +199,7 @@ local function finish(killed)
     fields[#fields + 1] = {'Level', level_text(f.name)}
     fields[#fields + 1] = {'Killed', string.format('%d (average %s a kill)', s.kills[f.name], mmss(t.sum / t.n)), 'good'}
     fields[#fields + 1] = {'Session', string.format('%d kill(s) in %s', s.total, mmss(os.time() - s.started))}
+    journal('KILL', f.name, fields)
     show('KILL', f.name, fields)
 end
 
@@ -151,6 +208,7 @@ end
 ---============================================================================
 
 local function on_engage()
+    if not enabled() then return end
     local mob, f = engaged_target(), session().fight
     if not mob or (f and f.id == mob.id) then return end
     if f then finish(false) end
@@ -158,6 +216,7 @@ local function on_engage()
 end
 
 local function on_status(new, old)
+    if not enabled() then return end
     if new == STATUS_ENGAGED then return on_engage() end
     if old ~= STATUS_ENGAGED or not session().fight then return end
     local id = session().fight.id
@@ -169,7 +228,7 @@ local function on_status(new, old)
 end
 
 local function on_incoming(id, original)
-    if id ~= 0x029 then return end
+    if id ~= 0x029 or not enabled() then return end
     local actor, target = original:unpack('I', 0x05), original:unpack('I', 0x09)
     local message = original:unpack('H', 0x19) % 32768
     local f = session().fight
@@ -218,9 +277,11 @@ end
 --- INSTALL AND COMMAND
 ---============================================================================
 
---- Listen, once per load (raw events: a plain one from a job file runs GearSwap's refresh on every packet).
+--- Listen, once per load, only when the player turned the tracker on (raw events: a plain one from a
+--- job file runs GearSwap's refresh on every packet). Turned off later in the same load, the listeners
+--- stay and do nothing.
 function FightTracker.init()
-    if rawget(_G, '_fight_tracker_listening') then return end
+    if not enabled() or rawget(_G, '_fight_tracker_listening') then return end
     _G._fight_tracker_listening = true
     require('shared/utils/core/action_listener').on('fight_tracker', on_action)
     windower.raw_register_event('incoming chunk', function(id, original) pcall(on_incoming, id, original) end)
@@ -231,7 +292,7 @@ end
 
 local function summary()
     local s, fields = session(), {}
-    fields[1] = {'Chat blocks', s.on}
+    fields[1] = {'Tracker', enabled()}
     fields[2] = {'Session', string.format('%d kill(s), %d fight(s) in %s', s.total, s.fights, mmss(os.time() - s.started))}
     local names = {}
     for name in pairs(s.kills) do names[#names + 1] = name end
@@ -249,9 +310,15 @@ end
 function FightTracker.command(args)
     local word = args and args[1] and args[1]:lower()
     local s = session()
-    if word == 'on' then s.on = true
-    elseif word == 'off' then s.on = false
-    elseif word == 'reset' then windower._fight_tracker = nil session().on = s.on end
+    if word == 'on' then
+        set_enabled(true)
+        FightTracker.init()
+    elseif word == 'off' then
+        set_enabled(false)
+        s.fight = nil
+    elseif word == 'reset' then
+        windower._fight_tracker = nil
+    end
     summary()
     return true
 end

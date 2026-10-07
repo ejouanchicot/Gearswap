@@ -43,7 +43,7 @@ Bolter's, Miser's, Companion's, Avenger's, Naturalist's.
 | `//gs c doubleup` (`du`) | Shows whether Double-Up is still possible (45 s window after the last roll or Double-Up) |
 | `//gs c clearrolls` | Forgets the tracked rolls |
 | `//gs c party` / `clearparty` | Shows / empties the party jobs used for the roll job bonus |
-| `//gs c rolldebug` | Roll check on / off. For each roll: every piece of the roll set that was NOT worn when the roll landed, gear updates held back during the roll, pieces not in the inventory / wardrobes, locked slots, status and movement, "Phantom Roll +" worn. Switching it off prints a summary. Also written to `<Char>/rolldebug.log` |
+| `//gs c rolldebug` | Roll check on / off. For each roll: every piece of the roll set that was NOT worn when the roll landed, gear updates held back during the roll, pieces not in the inventory / wardrobes, locked slots, status and movement, "Phantom Roll +" worn. Switching it off prints a summary. Also written to `<Char>/logs/rolls/rolldebug.log` |
 
 `shot`, `roll1` and `roll2` send a normal `/ja`, so they go through the same checks as a
 macro (debuffs, recast, roll gear, Luzaf ring).

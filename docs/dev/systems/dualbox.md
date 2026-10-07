@@ -324,7 +324,7 @@ states that FFXI fires `buff_change` for Entrust only on loss. The 3 s resync is
 **Tracing:**
 
 - `//gs c altdebug` toggles `windower._alt_buff_debug` (`toggle_debug`, `:88`). It truncates and writes a header to
-  `windower.addon_path .. 'data/altbuff_<player>.log'` (`log_path`, `:52`).
+  `<Character>/logs/dualbox/altbuff.log` (`log_path`, through `CharPaths.log`).
 - While on, `trace()` (`:61`) prints through `MessageFormatter.show_debug('ALTBUFF', ...)` and appends
   `[HH:MM:SS] msg` to that file.
 - The ALT side logs every `buff_change`, including untracked ones. The MAIN side logs every

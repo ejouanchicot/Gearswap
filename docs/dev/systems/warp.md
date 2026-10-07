@@ -506,7 +506,7 @@ Add a ring to a spell fallback: add its id to `CastHelpers.RING_IDS` and its nam
 | `//gs c warp status` | Init state of this sandbox, `WarpEquipment` lock flag, whether BLM/WHM can cast, database count (65) |
 | `//gs c warp test` | 13 spells, 65 item ids, 65 total; a lower count means a database module failed to load |
 | `//gs c warp ipctest` | The other boxes print "[Warp IPC] TEST message received from: <name>" if their listener is live |
-| `//gs c trace on` | `WARP` line on each `restore_equipment` in `<Character>/trace.log` |
+| `//gs c trace on` | `WARP` line on each `restore_equipment` in `<Character>/logs/trace/trace.log` |
 | `//gs c warp fix` / `gs enable ring1` | Recovery when `ring1` stays locked |
 | `//gs c syscheck` | `WarpInit` line (see the trap above) |
 

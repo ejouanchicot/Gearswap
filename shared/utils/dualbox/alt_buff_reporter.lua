@@ -61,12 +61,17 @@ local function debugging()
     return windower._alt_buff_debug == true
 end
 
---- Where this character's trace is written.
+--- Where this character's trace is written: <Character>/logs/dualbox/altbuff.log
+--- (data/altbuff_<name>.log before 2026-10-07, moved there when written again).
 --- One file per character so both sides of a dual-box can be read side by side.
 --- @return string Absolute path
 local function log_path()
     local who = (player and player.name) or 'unknown'
-    return windower.addon_path .. 'data/altbuff_' .. who .. '.log'
+    local old = windower.addon_path .. 'data/altbuff_' .. who .. '.log'
+    local ok, path = pcall(function()
+        return require('shared/utils/core/char_paths').log('dualbox', 'altbuff.log', player and player.name, old)
+    end)
+    return ok and path or old
 end
 
 --- Print a tracing line when `//gs c altdebug` is on, and append it to the log.

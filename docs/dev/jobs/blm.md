@@ -599,7 +599,7 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 - `//gs c debugmidcast`: the router's own trace lines plus the
   `MidcastManager` P0-P9 walk, including the fallback's second pass.
 - `//gs c trace on`: every `select_set` choice is written to
-  `<Character>/trace.log`.
+  `<Character>/logs/trace/trace.log`.
 - `//gs c belt`: whether the shared belt is on (and thus whether BLM's
   `ElementalMatch` can run).
 - `//gs c debugprecast` does not cover BLM (`PrecastDebugState` is read by BRD,

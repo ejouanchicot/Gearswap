@@ -842,7 +842,7 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 | `//gs c cyclestate AutoMedicine` | - | Mote cycle through the wrapped `cycle` (persists) | bound to `#numpad0` by `_common/keys/COMMON_KEYBINDS.lua` (template `_master/config_global/COMMON_KEYBINDS.lua`) |
 | `//gs c ws1` .. `//gs c ws9` (WAR), `ws`, `ws1`.. (PLD) | - | fire the weaponskill held by slot N | `WAR_COMMANDS.lua`, `PLD_COMMANDS.lua` -> `WSSlots.cast` |
 | `//gs c debugprecast` | - | toggle `_G.PrecastDebugState` (read by RDM, BRD, RUN precast debug output), persisted in `windower._gs_debug.PRECAST` | `DebugCommands.handle_debugprecast` |
-| `//gs c trace on` / `off` | - | trace log: `PRECAST`, `WSTP`, `TP`, `BELT`, `MIDCAST` lines in `<Character>/trace.log` | see [commands-and-debug.md](commands-and-debug.md) |
+| `//gs c trace on` / `off` | - | trace log: `PRECAST`, `WSTP`, `TP`, `BELT`, `MIDCAST` lines in `<Character>/logs/trace/trace.log` | see [commands-and-debug.md](commands-and-debug.md) |
 
 ## Configuration
 
@@ -1095,7 +1095,7 @@ Commit hashes on this page are post-rewrite (2026-09-27); an older hash maps thr
 
 | Symptom | Tool |
 |---|---|
-| Which precast set was sent | `//gs c trace on`, cast, read the `PRECAST` line in `<Character>/trace.log` (Mote breadcrumbs + pieces + cast time) |
+| Which precast set was sent | `//gs c trace on`, cast, read the `PRECAST` line in `<Character>/logs/trace/trace.log` (Mote breadcrumbs + pieces + cast time) |
 | Why a WS was refused | `WSTP` trace line (live TP vs GearSwap copy); range / Amnesia messages; `WeaponSkillManager.config.debug_mode = true` for the numeric-value failures |
 | TP bonus choice | `TP` trace line |
 | RDM / BRD / RUN precast stages | `//gs c debugprecast` |
