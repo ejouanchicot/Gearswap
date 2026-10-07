@@ -32,10 +32,41 @@ function tpRuleOf(r, less){
   return {bonus: Math.max(0, (r.bonus || 0) - (perWeapon ? r.weapon_bonus : 0) - (less || 0)) + partyTp(),
     weaponTp: perWeapon ? r.weapon_tp : null, pieces: r.piece_list};
 }
+// The TP pieces a rule lays at a TP (shared/utils/weaponskill/tp_bonus_calculator.lua): none past 3000 or when all
+// of them together do not reach the next step; else the smallest one that closes the gap, else the biggest first.
+// eff: the TP with the weapons' and the party's bonus. A TP piece the set wears in its slot counts as there.
+function tpPiecesLocal(list, pieces, eff){
+  const left = [];
+  for (const p of list) { if (pieces[p.slot] && pieces[p.slot].name === p.name) eff += p.bonus; else left.push(p); }
+  const step = eff < 2000 ? 2000 : eff < 3000 ? 3000 : 0, gap = step - eff;
+  if (!step || gap > left.reduce((n, p) => n + p.bonus, 0)) return {};
+  const asc = left.slice().sort((a, b) => a.bonus - b.bonus), one = asc.find(p => p.bonus >= gap);
+  if (one) return {[one.slot]: one.name};
+  const out = {}; let got = 0;
+  for (const p of asc.reverse()) if (got < gap) { out[p.slot] = p.name; got += p.bonus; }
+  return out;
+}
+// The game is on another job (or closed): the rule as this job's export kept it (tp_rule: its TP pieces and each
+// held weapon's TP Bonus), answered in the shape of /tpbonus. No buff and no Fencer in it: the game alone works
+// those out, on that job (`offline` says so)
+function tpOffline(pieces, tp){
+  const rule = (data() || {}).tp_rule;
+  if (!rule || !Array.isArray(rule.piece_list)) return null;
+  const tpOf = rule.weapon_tp || {};
+  const held = [...new Set(['main', 'sub', 'range'].map(sl => pieces[sl] && !isEmpty(pieces[sl]) ? pieces[sl].name : '').filter(Boolean))];
+  const weapon = held.reduce((n, name) => n + (tpOf[name] || 0), 0);
+  const names = tpWeaponNames().split('|').filter(Boolean);
+  const r = {offline: true, config: true, worn_aware: true, bonus: weapon, weapon_bonus: weapon, piece_list: rule.piece_list,
+    weapon_tp: Object.fromEntries(names.map(n => [n, tpOf[n] || 0])), pieces: Object.fromEntries(rule.piece_list.map(p => [p.name, p.bonus])),
+    total: rule.piece_list.reduce((n, p) => n + p.bonus, 0), thresholds: rule.thresholds || [2000, 3000]};
+  if (tp) r.gear = tpPiecesLocal(rule.piece_list, pieces, Math.min(3000, +tp + partyTp()) + weapon);
+  return r;
+}
 // The game's answer for these weapons and buffs (and this TP, when given), asked once and kept
 function tpAsk(s, pieces, tp){
   const c = S.char, L = S._live[c] || {};
-  if (family(s.path, s.pieces) !== 'ws' || !liveOk(c) || L.job !== S.job) return null;
+  if (family(s.path, s.pieces) !== 'ws') return null;
+  if (!liveOk(c) || L.job !== S.job) return tpOffline(pieces, tp);
   const main = (pieces.main || {}).name || '', sub = (pieces.sub || {}).name || '', buffs = tpBuffs();
   // the ranged weapon's TP Bonus counts on any weaponskill (a COR's Anarchy +2: +1000 on Savage Blade)
   const range = pieces.range && !isEmpty(pieces.range) ? pieces.range.name : '';

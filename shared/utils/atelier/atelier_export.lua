@@ -835,6 +835,16 @@ function AtelierExport.build()
             {sub = player.sub_job, sub_level = player.sub_job_level, ws = ws, ws_skill = data.ws_skill, families = ok_f and families or nil})
     end)
     data.catalog = ok_c and catalog or nil
+    -- the job's TP rule (its TP pieces, each held weapon's TP Bonus): the page lays Moonshade from it when the game
+    -- is on another job and cannot be asked (shared/utils/atelier/atelier_sim.lua tp_rule)
+    local ok_r, tp_rule = pcall(function()
+        local names = {}
+        for _, slot in ipairs({'main', 'sub', 'range'}) do
+            for _, name in ipairs(type(data.items) == 'table' and data.items[slot] or {}) do names[#names + 1] = name end
+        end
+        return require('shared/utils/atelier/atelier_sim').tp_rule(names)
+    end)
+    data.tp_rule = ok_r and tp_rule or nil
     data.export_version = EXPORT_VERSION
     -- the keys changed in the page and saved (<Char>/atelier/overrides/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')

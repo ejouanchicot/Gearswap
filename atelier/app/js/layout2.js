@@ -58,7 +58,7 @@ function setPanelHTML(s){
   const offense = r && (fam === 'ws' || fam === 'engaged') ? offenseHTML(r, s) : '';
   const defense = r && !offense ? tankHTML(r) : '';
   const all = `<details class="lgfold ui2all"><summary>${esc(t('ui2All'))}</summary>${globalsHTML(s, 'stats')}</details>`;
-  return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3>${offense}${defense}${hpCycleHTML(s)}${setStatsHTML(s)}${all}</div>`;
+  return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3>${offense}${defense}${hpCycleHTML(s)}${luopanHTML(s)}${setStatsHTML(s)}${all}</div>`;
 }
 
 // Combat: a heading with the support profile and the quick actions; the buffs' editor in the page (it was a window),

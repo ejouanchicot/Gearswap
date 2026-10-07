@@ -421,6 +421,28 @@ local function weapon_tp(config, held, asked)
     return total, by_name
 end
 
+--- The job's TP rule as the export keeps it, for a page opened while the game is on another job
+--- (it cannot ask /tpbonus then): the TP pieces of <JOB>_TP_CONFIG.lua and the TP Bonus of each
+--- weapon the character holds. No buff and no Fencer: those the game alone works out, on that job.
+--- @param weapons table Weapon names (main, sub, ranged)
+--- @return table|nil {piece_list = {{slot, name, bonus}...}, weapon_tp = {name = bonus}, thresholds}
+function AtelierSim.tp_rule(weapons)
+    local config = player and rawget(_G, tostring(player.main_job) .. 'TPConfig')
+    local ok_c, Calc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
+    if not (ok_c and Calc and type(config) == 'table') then return nil end
+    local list = {}
+    for _, piece in ipairs(type(config.pieces) == 'table' and config.pieces or {}) do
+        if piece.name then
+            list[#list + 1] = {slot = SLOT_NAME[tostring(piece.slot):lower()] or piece.slot, name = piece.name, bonus = tonumber(piece.bonus) or 0}
+        end
+    end
+    local _, by_name = weapon_tp(config, {}, table.concat(weapons or {}, '|'))
+    -- only the weapons that give some: the page reads a missing name as 0
+    local giving = {}
+    for name, bonus in pairs(by_name) do if bonus > 0 then giving[name] = bonus end end
+    return {piece_list = list, weapon_tp = giving, thresholds = (Calc.config or {}).thresholds or {2000, 3000}}
+end
+
 function AtelierSim.tp_bonus(req)
     local config = player and rawget(_G, tostring(player.main_job) .. 'TPConfig')
     local ok_c, Calc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
