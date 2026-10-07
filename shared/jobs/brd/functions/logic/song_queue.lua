@@ -62,6 +62,13 @@ local function current()
     return windower._brd_song_queue
 end
 
+--- A line of //gs c trace (shared/utils/debug/trace_log.lua), when it is on:
+--- each song sent, ended, tried again or skipped, with its place in the list.
+local function trace(fmt, ...)
+    local args = {...}
+    pcall(function() require('shared/utils/debug/trace_log').log('SONGS', fmt, unpack(args)) end)
+end
+
 local send_step
 
 --- Run `fn` after `delay` if the queue has not moved on meanwhile.
@@ -79,6 +86,7 @@ local function advance(queue, ended_song)
 end
 
 local function retry(queue, reason)
+    trace('queue: %s failed (%s), try %d', tostring(queue.songs[queue.index]), reason, queue.tries + 1)
     if queue.tries >= MAX_RETRIES then
         MessageFormatter.show_warning(('Songs: %s skipped (%s).'):format(queue.songs[queue.index], reason))
         return advance(queue)
@@ -123,6 +131,7 @@ send_step = function(queue)
     local song = queue.songs[queue.index]
     local ok, me = pcall(windower.ffxi.get_player)
     if not song or not (ok and me and me.main_job == 'BRD') then
+        trace('queue: over (%s)', song and 'no longer BRD' or 'every song sent')
         windower._brd_song_queue = nil
         return
     end
@@ -133,6 +142,7 @@ send_step = function(queue)
     if g_ok and Guard then
         local verdict, first = Guard.check({command = song, magic = true, label = 'songs'})
         if verdict == 'stop' or verdict == 'stop_magic' then
+            trace('queue: stopped by a debuff before %s', song)
             windower._brd_song_queue = nil
             return
         end
@@ -142,6 +152,7 @@ send_step = function(queue)
         end
     end
     queue.sent_at = os.clock()
+    trace('queue: %d/%d %s sent', queue.index, #queue.songs, song)
     send_command(('input /ma "%s" %s'):format(song, queue.target))
     later(queue, START_WINDOW, function(q) watch_start(q, false) end)
 end
@@ -155,6 +166,7 @@ function SongQueue.start(songs, target)
         seq = (previous and previous.seq or windower._brd_song_queue_seq or 0) + 1}
     windower._brd_song_queue_seq = queue.seq
     windower._brd_song_queue = queue
+    trace('queue: start, %s on %s', table.concat(songs, ', '), queue.target)
     local g_ok, Guard = pcall(require, 'shared/utils/buffs/buff_guard')
     if g_ok and Guard then Guard.reset() end
     send_step(queue)
@@ -164,6 +176,7 @@ end
 --- @return boolean True when one was running
 function SongQueue.stop()
     local running = current() ~= nil
+    if running then trace('queue: stopped (songstop or a new rotation)') end
     windower._brd_song_queue = nil
     return running
 end
@@ -176,6 +189,7 @@ function SongQueue.on_aftercast(spell)
     if spell.interrupted then
         retry(queue, 'interrupted')
     else
+        trace('queue: %s ended', tostring(spell.english))
         advance(queue, spell.english)
     end
 end

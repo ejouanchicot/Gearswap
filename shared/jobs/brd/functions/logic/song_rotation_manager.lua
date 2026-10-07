@@ -156,6 +156,35 @@ local function add_phase(into, songs, start_index, count)
     end
 end
 
+---   The songs in the order they wear off: the least time left first, a song
+---   that is not up before all. For a rotation that only sings songs again (no
+---   dummy): the one about to drop is saved first. Songs are matched by family
+---   (song_owner.lua); two of one family take its instances in pack order.
+---   @param songs table Song names, in pack order
+---   @return table The same songs, reordered
+local function soonest_first(songs)
+    local SongOwner = require('shared/jobs/brd/functions/logic/song_owner')
+    local lefts = {}
+    for _, song in ipairs(SongOwner.own_songs()) do
+        lefts[song.family] = lefts[song.family] or {}
+        table.insert(lefts[song.family], song.left)
+    end
+    for _, list in pairs(lefts) do table.sort(list) end
+    local rows = {}
+    for i, song in ipairs(songs) do
+        local list = lefts[SongOwner.family_of(song) or '']
+        rows[i] = {song = song, left = list and table.remove(list, 1) or 0, index = i}
+    end
+    -- table.sort is not stable: the pack order decides between equal times
+    table.sort(rows, function(a, b)
+        if a.left ~= b.left then return a.left < b.left end
+        return a.index < b.index
+    end)
+    local out = {}
+    for i, row in ipairs(rows) do out[i] = row.song end
+    return out
+end
+
 ---   Show the pack's name and the short names of the songs sung.
 ---   @param buff_songs table The pack's songs
 ---   @param count number How many of them are sung
@@ -207,6 +236,8 @@ function SongRotationManager.cast_songs_with_phases(use_marcato, target, full, f
     add_phase(order, buff_songs, 1, base)
     add_phase(order, dummy_songs, 1, dummies)
     add_phase(order, buff_songs, base + 1, total_songs - base)
+    -- No slot to open: only songs sung again, the one that wears off first first
+    if dummies == 0 then order = soonest_first(order) end
     Opening.start(order, target)
     show_pack(buff_songs, total_songs)
     return true

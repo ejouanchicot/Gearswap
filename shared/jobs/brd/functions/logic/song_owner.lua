@@ -236,6 +236,27 @@ end
 --- COUNTS
 ---============================================================================
 
+--- Whether no one else in the party here can sing on us: every member's job
+--- is known (shared/utils/party/party_jobs.lua) and none is a bard, main or
+--- sub. Every song up is then ours, whatever the pairing kept: it has lost
+--- songs of ours during play (seen 2026-10-07: the dummies sung again over
+--- four songs still up), and a song only reaches its singer's party.
+--- @return boolean
+local function sole_singer()
+    local ok, PartyJobs = pcall(require, 'shared/utils/party/party_jobs')
+    local ok_p, party = pcall(windower.ffxi.get_party)
+    if not (ok and PartyJobs and ok_p and type(party) == 'table') then return false end
+    local me = party.p0
+    for i = 1, 5 do
+        local member = party['p' .. i]
+        if member and member.name and (not me or member.zone == me.zone) then
+            local job = PartyJobs.job_of(member)
+            if not job or job.main_job == 'BRD' or job.sub_job == 'BRD' then return false end
+        end
+    end
+    return true
+end
+
 --- Songs of ours up on us, and every song up (any bard).
 --- Before the first buff packet of a load: the saved instances whose buff id
 --- is up, no more per id than the buffs of that id.
@@ -247,6 +268,10 @@ function SongOwner.counts()
         for key in pairs(live.snapshot) do
             all = all + 1
             if owned[key] then own = own + 1 end
+        end
+        if own < all and sole_singer() then
+            trace('counts: %d of %d paired as ours, no other bard here: all ours', own, all)
+            own = all
         end
         return own, all
     end
@@ -261,6 +286,7 @@ function SongOwner.counts()
         local id = tonumber(key:match('^(%d+):'))
         if id and (up[id] or 0) > 0 then up[id] = up[id] - 1; own = own + 1 end
     end
+    if own < all and sole_singer() then own = all end
     return own, all
 end
 
@@ -283,7 +309,9 @@ function SongOwner.own_songs()
     local me = windower.ffxi.get_player()
     for _, id in ipairs(me and me.buffs or {}) do up[id] = true end
     local out, now = {}, os.time()
-    for key in pairs(load_owned()) do
+    -- no other bard here: every song instance up is ours (sole_singer)
+    local keys = live.snapshot and sole_singer() and live.snapshot or load_owned()
+    for key in pairs(keys) do
         local id, finish = key:match('^(%d+):(%d+)$')
         id, finish = tonumber(id), tonumber(finish)
         local there = live.snapshot and live.snapshot[key] or (not live.snapshot and up[id])
