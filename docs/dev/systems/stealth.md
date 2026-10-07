@@ -130,6 +130,7 @@ flowchart TD
 - Refused actions: for a step that is a spell (`input /ma`) or an item (`input /item`) (`refusable`), `arm()` checks `START_CHECK` (1.5 s) later that it started (`CastTracker.started_since(sent_at)` for a spell, `acted_since(sent_at)` for an item). Not started (and the token and queue generation unchanged): the game refused it (sent too soon after the previous action), so it is sent again with a fresh token and a fresh longest wait, up to `MAX_TRIES` (3) sends; each resend writes a trace line under the step's tag, `not started, sent again: <command>`.
 - `ActionQueue.push_next(command, wait, {delay, tag})` puts a step at the front of `steps` (next to go) when the queue is busy, else it is `push` (append and start). Its use: a function step decides at the last moment and then acts right after itself, since the running step is already off `steps` when it runs. Cleanse uses it for every own spell and item (the step checks the debuff is still up, then `push_next`es the `/ma` or `/item`) and for Doom retries ([cleanse.md](cleanse.md#items-use_itementry-item-tries-settings-front)). Several `push_next` from one step end up in reverse order: the last one goes first. Stealth does not use it. `push_next` does not call `listen()`: the `push` that started the queue did.
 - `ActionQueue.busy()` tells whether steps are still waiting; no caller today.
+- `ActionQueue.clear_tag(tag)` drops the waiting steps of one tag (not the one under way); `Stealth.handle` calls it with `STEALTH` on every `sneak` / `invi` / `both` press.
 - Generation: `windower._action_gen_queue` goes up only when `push` starts an idle queue, never on a load. A queue under way therefore goes on across a job change or `gs reload` (its steps are on `windower`, its coroutines check the generation, which has not changed); a queue started after it is idle gets a new generation. The `action_queue.lua` header says so since 2026-10-01 (commit `295e701`).
 
 ### Timers (`stealth_timers.lua`)
@@ -291,7 +292,7 @@ Coroutines: the one-second loop (stopped by generation), the queue's fallback wa
 ## Invariants & gotchas
 
 - The key box runs `request` before relaying the key, and a covering Scholar sends its claim before casting: that order is what lets the others see the claim first.
-- `needs()` tests pending first: `overwrite` (and `forced`) do not bypass the 12 s after a request.
+- `needs()` tests pending first: `overwrite` (and `forced`) do not bypass the 12 s after a request. A new key press does: `start_over(sub)` (`stealth.lua`) zeroes the pending of the kinds asked and drops the queued `STEALTH` steps, so a press after an interrupted cast casts again. A press while the first cast is still under way therefore casts a second time.
 - An active Sneak or Invisible blocks a new one: every path that casts for a kind cancels it first (`cancel_if_up`), and a box covered by another's Accession cancels its own before the Scholar's cast lands.
 - A timer is known only once the game has sent 0x063 order 9 after the buff went up; until then `needs()` falls back to "up or not" from the player's buff list.
 - `coverable` and `chain_time` read `buffactive`, the table `is_up` and the Scholar chain avoid in scheduled code; both run synchronously inside the command, where it is current.

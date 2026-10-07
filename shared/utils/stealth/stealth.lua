@@ -416,12 +416,23 @@ end
 local SETTINGS = {refresh = 'refresh_below', alert = 'alert_before', overwrite = 'overwrite',
                   alerts = 'alerts', delay = 'delay'}
 
+--- A key press starts over: the kinds asked are no longer pending and the
+--- stealth steps still queued are dropped. Without this an interrupted cast
+--- (here or on another box) left the kind pending for PENDING_FOR seconds and
+--- the next press did nothing.
+local function start_over(sub)
+    if sub ~= 'invi' then pending().sneak = 0 end
+    if sub ~= 'sneak' then pending().invi = 0 end
+    ActionQueue.clear_tag('STEALTH')
+end
+
 --- //gs c stealth ...
 --- @param args table Words after "stealth"
 --- @return boolean handled
 function Stealth.handle(args)
     local sub = args[1] and args[1]:lower() or 'status'
     if sub == 'sneak' or sub == 'invi' or sub == 'both' then
+        start_over(sub)
         local kinds = keep_invisible(sub == 'both' and {'sneak', 'invi'} or {sub})
         local flag = args[2] and args[2]:lower()
         if flag == 'self' then

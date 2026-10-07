@@ -178,4 +178,16 @@ function ActionQueue.busy()
     return queue().busy == true
 end
 
+--- Drop the steps of one tag still waiting to go (the step under way is not
+--- one of them); the other tags' steps keep their place.
+--- @param tag string Tag given to push (e.g. 'STEALTH')
+function ActionQueue.clear_tag(tag)
+    local q = queue()
+    local kept = {}
+    for _, step in ipairs(q.steps) do
+        if step.tag ~= tag then kept[#kept + 1] = step end
+    end
+    q.steps = kept
+end
+
 return ActionQueue
