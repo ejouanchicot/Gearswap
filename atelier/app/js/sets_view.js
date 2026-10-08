@@ -54,14 +54,16 @@ function holdState(slot, p){
 }
 function slotHTML(s, ci, slot, own, q, eff){
   const p = eff.pieces[slot], label = SLOT_NAMES[S.lang][slot], tried = eff.tried[slot];
+  // locked for the optimizers (trial.js): a padlock in the corner
+  const lock = isLocked(s, slot) && LOCKABLE(slot) ? `<span class="lk" title="${esc(t('lockTip'))}"><svg viewBox="0 0 12 12" width="9" height="9" aria-hidden="true"><path d="M3.5 5V3.6a2.5 2.5 0 0 1 5 0V5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="5" width="8" height="6" rx="1.2" fill="currentColor"/></svg></span>` : '';
   const reset = tried ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : '';
-  if (!p) return `<button class="slot empty ${tried?'tried':''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : —">${reset}<span class="elbl">${label}</span></button>`;
+  if (!p) return `<button class="slot empty ${tried?'tried':''} ${lock ? 'locked' : ''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : —">${reset}${lock}<span class="elbl">${label}</span></button>`;
   const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot), hit = q && p.name.toLowerCase().includes(q);
   const r = pieceStats(p, slot), augmented = r && Object.keys(r.aug).length;
   // the name, its stats, base and augments are in the hover card (showTip)
   const hold = holdState(slot, p);
-  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${tried?'tried':''} ${hold ? 'own-' + hold : ''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : ${esc(p.name)}${hold ? ' · ' + t('lg_' + hold) : ''}">` +
-    `${reset}${icon(p.name)}${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</button>`;
+  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${tried?'tried':''} ${lock ? 'locked' : ''} ${hold ? 'own-' + hold : ''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : ${esc(p.name)}${hold ? ' · ' + t('lg_' + hold) : ''}">` +
+    `${reset}${lock}${icon(p.name)}${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</button>`;
 }
 // The variants of a card, laid out like the weapon rows: a label, then its buttons. A variant with
 // its own variants (Savage Blade · TPBonus) keeps them stuck to it; weaponskills go one row per

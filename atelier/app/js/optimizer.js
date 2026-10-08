@@ -97,13 +97,15 @@ function tierCostHTML(rows, worn, dmg, m){
 function optChoices(tpNames){
   const o = S.optOpts || {}, owned = ownedOf() || {}, choices = {};
   const reach = x => !o.wardOnly || !(x.where && x.where.length) || x.where.some(w => /^(Inventory|Wardrobe)/.test(w));
+  // the pieces the player left out of the searches (trial.js)
+  const excl = excludedOf();
   for (const slot of SLOTS) if (!['main', 'sub', 'range'].includes(slot)) {
-    choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && reach(x)).map(x => {
+    choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && !excl[x.name] && reach(x)).map(x => {
       // how many you have (an export before 2026-10-03 counts the bags they are in)
       const mine = ownRank({name: x.name, id: x.id, augs: x.augs, copies: x.count || (x.where || []).length, keep: true, rare: isRare(x.name)});
       const up = o.where === 'mine_max' ? upgradeOf(mine) : null;
       return up ? Object.assign({}, up.piece, {copies: mine.copies, keep: true, maxed: true, from: mine}) : mine; });
-    if (o.where === 'all') choices[slot] = choices[slot].concat(gameChoices(slot, choices[slot], tpNames));
+    if (o.where === 'all') choices[slot] = choices[slot].concat(gameChoices(slot, choices[slot], tpNames).filter(x => !excl[x.name]));
   }
   return choices;
 }
@@ -146,7 +148,7 @@ async function optimizeWs(s){
   if (!FFXI.opt.defineWs(ws, wsInfoOf(ws), wsSkills()[ws])) { S._toastSet = s.path; S.toast = t('optNoWs', {ws}); render(); return; }
   // the search starts from the set itself (the file, or what is in test in game), never from a draft:
   // a draft can hold pieces this search may not use (not yours, another reward of a one-choice group)
-  const k = trialKey(s), base = withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } });
+  const k = trialKey(s), base = lockedBase(s, withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } }));
   S._optBusy = true; S._optProgress = null; render();
   const at = S.char + '|' + S.job, seq = OPT_SEQ;
   const r = await tpAskWait(s, base, null);
@@ -155,7 +157,7 @@ async function optimizeWs(s){
   const tpNames = new Set(((r && r.piece_list) || []).map(p => p.name).concat(Object.keys(ONLY_AUGS))), o = S.optOpts || {};
   // the TP config's pieces (Moonshade...) are not searched: the job's TP rule lays them at the weaponskill when
   // they help (opts.tpRule), never the set
-  const start = startOf(base), choices = optChoices(tpNames);
+  const start = startOf(base, lockedSlots(s)), choices = lockChoices(s, optChoices(tpNames));
   if (o.freeWeapons) choices.weapons = weaponPairs(base, ws);
   const input = {ctx: optContextInput(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', tp: +(S.wsTp || 3000), tps: avgTps(o), tpRule: rule, objective: o.obj || 'damage', floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0, hit: +o.hit || 0}}};
@@ -164,10 +166,13 @@ async function optimizeWs(s){
 // The engaged optimizer: the set as it is (weapons kept), its objective, the defense floors; no TP piece rule
 // The set a search starts from: in a search of your pieces (not every item of the game), a piece of the set you do not
 // hold leaves it (Revelation Gaunt. pushed from an every-item search), the search fills its slot with yours
-function startOf(base){
-  const start = optPieces(base), owned = ownedOf() || {};
+// (a locked slot keeps its piece, yours or not: `locked`)
+function startOf(base, locked = []){
+  const start = optPieces(base), owned = ownedOf() || {}, excl = excludedOf();
+  // a piece left out of the searches is not started from either (a locked slot keeps its piece)
+  for (const slot of Object.keys(start)) if (!['main', 'sub', 'range'].includes(slot) && !locked.includes(slot) && excl[start[slot].name]) delete start[slot];
   if ((S.optOpts || {}).where === 'all') return start;
-  for (const slot of Object.keys(start)) if (!['main', 'sub', 'range'].includes(slot) && !(owned[slot] || []).some(x => x.name === start[slot].name)) delete start[slot];
+  for (const slot of Object.keys(start)) if (!['main', 'sub', 'range'].includes(slot) && !locked.includes(slot) && !(owned[slot] || []).some(x => x.name === start[slot].name)) delete start[slot];
   return start;
 }
 // Free weapons: every main hand you hold with every off hand it can take ({main, sub}, the engine's "weapons"
@@ -191,11 +196,11 @@ function weaponPairs(base, ws){
 }
 async function optimizeEngaged(s){
   if (!engineReady()) return;
-  const k = trialKey(s), o = engOpts(s), base = withoutTrial(() => withWeapons(s).pieces);
+  const k = trialKey(s), o = engOpts(s), base = lockedBase(s, withoutTrial(() => withWeapons(s).pieces));
   // pieces worn for their TP Bonus only (ONLY_AUGS: Moonshade) do nothing for an engaged set
-  const choices = optChoices(new Set(Object.keys(ONLY_AUGS)));
+  const choices = lockChoices(s, optChoices(new Set(Object.keys(ONLY_AUGS))));
   if (o.freeWeapons) choices.weapons = weaponPairs(base);
-  const input = {ctx: engContextInput(s), start: startOf(base), choices, prefilter: o.where === 'all' ? 25 : 0,
+  const input = {ctx: engContextInput(s), start: startOf(base, lockedSlots(s)), choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
   // the whole fight (opt_page.js, atelier/cycle.js): its weaponskill set and how you play, as data for the workers
   if (o.engObj === 'cycle') {
@@ -476,6 +481,8 @@ function optResult(s, k, res, gains, o){
   S.drafts[k] = Object.assign({}, S.drafts[k], {prev: Object.assign({}, S.trial[k] || {}), info: {tier: buffTier(), at: hm},
     res: {start: keep(res.start), best: keep(res.best), obj: o.stat || (o.eng ? o.engObj || 'tp_real' : o.obj || 'damage'), tp: +(S.wsTp || 3000), range: avgRange(o),
       floor: {pdt: o.pdt, mdt: o.mdt, sb: o.sb, hit: o.hit}}});
+  // a locked slot stays as it was shown, whatever the search hands back for it (its tried piece, or emptied)
+  for (const slot of lockedSlots(s)) { const old = S.trial[k] || {}; if (slot in old) tr[slot] = old[slot]; else delete tr[slot]; }
   if (Object.keys(tr).length) S.trial[k] = tr; else delete S.trial[k];
   const low = o.eng && /^tp_(real|time)$/.test(o.engObj || 'tp_real');
   const gain = (((low ? res.start.raw / res.best.raw : res.best.raw / res.start.raw) - 1) * 100).toFixed(1), def = res.best.def || {};

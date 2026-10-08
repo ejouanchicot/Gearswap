@@ -51,6 +51,52 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       for (let i = 0; i < 300 && S._optBusy; i++) await wait(200);
       if (S._optBusy) { optStop(); throw new Error('still busy after 60 s'); }
       closeOverlay(); render(); });
+    // a click on a slot opens its menu (trial.js): lock it, then choose a piece from it
+    await tryIt('slot menu: lock, then the picker', async () => { open('sets.engaged.Naegling');
+      const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR), slot = () => document.querySelector('.slot[data-slot="head"]');
+      slot().click(); await wait(30);
+      const menu = document.querySelector('#slotmenu');
+      if (!menu || menu.hidden) throw new Error('no menu on a slot click');
+      menu.querySelector('[data-slotact="lock"]').click(); await wait(30);
+      if (!isLocked(s, 'head') || !slot().classList.contains('locked')) throw new Error('the slot is not locked');
+      if (!document.querySelector('#slotmenu').hidden) throw new Error('the menu stayed open');
+      slot().click(); await wait(30); document.querySelector('#slotmenu [data-slotact="pick"]').click(); await wait(200);
+      if (document.querySelector('#overlay').hidden) throw new Error('the picker did not open');
+      closeOverlay(); toggleLock(s, 'head');
+      if (lockedSlots(s).length) throw new Error('still locked'); });
+    // a locked slot keeps what it shows through a search: a tried piece, and a slot left as the set has it
+    await tryIt('locked slots survive the optimizer', async () => { open('sets.engaged.Naegling');
+      const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR), k = trialKey(s), name = sl => (withWeapons(s).pieces[sl] || {}).name;
+      delete S.trial[k]; unlockAll(s);
+      const other = ((ownedOf() || {}).head || []).find(x => x.name !== name('head') && !FFXI.opt.blocks({name: x.name}).length);
+      if (!other) throw new Error('no other head piece to try');
+      setTrial(s, 'head', {name: other.name, augs: other.augs}); toggleLock(s, 'head'); toggleLock(s, 'waist');
+      const waist = name('waist');
+      S._optScratch = false; optimizeEngaged(s);
+      for (let i = 0; i < 300 && S._optBusy; i++) await wait(200);
+      if (S._optBusy) { optStop(); throw new Error('still busy after 60 s'); }
+      closeOverlay(); render();
+      const got = [name('head'), name('waist')];
+      delete S.trial[k]; unlockAll(s); render();
+      if (got[0] !== other.name) throw new Error('locked head changed: ' + got[0] + ' in place of ' + other.name);
+      if (got[1] !== waist) throw new Error('locked waist changed: ' + got[1] + ' in place of ' + waist); });
+    // a piece left out of the searches (trial.js): not among the choices, not started from, and back with one click
+    await tryIt('a piece excluded from the searches', async () => { open('sets.engaged.Naegling');
+      const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR), slotOf = sl => document.querySelector('.slot[data-slot="' + sl + '"]');
+      const name = (withWeapons(s).pieces.neck || {}).name;
+      if (!name) throw new Error('no neck piece in the set');
+      const has = () => (optChoices(new Set()).neck || []).some(x => x.name === name), started = () => !!(startOf(withWeapons(s).pieces).neck);
+      if (!has() || !started()) throw new Error('the neck piece is not a choice to begin with');
+      slotOf('neck').click(); await wait(30); document.querySelector('#slotmenu [data-slotact="exclude"]').click(); await wait(30);
+      if (!isExcluded(name) || has() || started()) throw new Error('still offered after excluding it');
+      slotOf('neck').click(); await wait(30); document.querySelector('#slotmenu [data-slotact="exclude"]').click(); await wait(30);
+      if (isExcluded(name) || !has()) throw new Error('not back after allowing it again');
+      // left out while not held, then in the bags: allowed again by itself; left out while held: stays out
+      const far = 'A piece nobody holds';
+      setExcluded(far, true); if (excludedOf()[far] !== 'missing') throw new Error('a piece not held is not marked missing');
+      S.excluded[S.char] = {[name]: 'missing'}; if (isExcluded(name)) throw new Error('a piece in the bags is still excluded');
+      setExcluded(name, true); if (!isExcluded(name) || excludedOf()[name] !== 'owned') throw new Error('a held piece excluded on purpose came back');
+      S.excluded[S.char] = {}; save(); });
     // "+ Set" (add_set.js): every kind of the catalog, its list, the search, the first set to create up to step 3
     await tryIt('add a set window', async () => { S.subs['Tetsouo|WAR'] = 'SAM'; render();
       if (!catalogEntries()) throw new Error('no catalog in the WAR export: run //gs c atelier on WAR');

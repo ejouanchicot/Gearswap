@@ -188,3 +188,101 @@ function trialSaved(s){
   const asPiece = v => v === 'empty' ? null : typeof v === 'string' ? {name: v} : {name: v.name, augs: v.augments};
   return Object.keys(tr).length > 0 && Object.entries(tr).every(([slot, p]) => slot in saved && samePiece(p, asPiece(saved[slot])));
 }
+
+/* ---- slots locked for the optimizers, and the menu of a slot ---- */
+// A locked slot keeps what it shows (its tried piece, or nothing) through every search: the optimizers neither
+// change it nor count another piece there. Kept by set, in the browser; never written to a file. The hands and the
+// ranged slot are the weapon menus' (the optimizers keep them unless "Free weapons").
+const LOCKABLE = slot => !['main', 'sub', 'range'].includes(slot);
+const lockedSlots = s => Object.keys((S.locks || {})[trialKey(s)] || {}).filter(LOCKABLE);
+const isLocked = (s, slot) => !!((S.locks || {})[trialKey(s)] || {})[slot];
+function toggleLock(s, slot){
+  const k = trialKey(s), mine = Object.assign({}, (S.locks || {})[k]);
+  if (mine[slot]) delete mine[slot]; else mine[slot] = true;
+  S.locks = Object.assign({}, S.locks);
+  if (Object.keys(mine).length) S.locks[k] = mine; else delete S.locks[k];
+  save();
+}
+function unlockAll(s){ S.locks = Object.assign({}, S.locks); delete S.locks[trialKey(s)]; save(); }
+// The set a search starts from (the file's, without the tried pieces), its locked slots as the page shows them
+function lockedBase(s, base){
+  const shown = withWeapons(s).pieces;
+  for (const slot of lockedSlots(s)) { if (shown[slot] && !isEmpty(shown[slot])) base[slot] = shown[slot]; else delete base[slot]; }
+  return base;
+}
+// A search's choices without the locked slots: a slot with no choice keeps the piece the search starts with
+function lockChoices(s, choices){
+  for (const slot of lockedSlots(s)) delete choices[slot];
+  return choices;
+}
+// The menu of a slot of the grid: choose a piece, lock it, empty it, put the set's piece back
+function openSlotMenu(el, ci, slot){
+  const card = S._cards[ci], s = card && shownSet(card, ci);
+  if (!s) return;
+  const eff = withWeapons(s), p = eff.pieces[slot], locked = isLocked(s, slot), tried = eff.tried[slot];
+  const item = (act, label, hint = '') => `<button data-slotact="${act}" data-card="${ci}" data-slot="${slot}">${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ''}</button>`;
+  let menu = $('#slotmenu');
+  if (!menu) { menu = document.createElement('div'); menu.id = 'slotmenu'; menu.className = 'slotmenu'; menu.setAttribute('role', 'menu'); document.body.appendChild(menu); }
+  menu.innerHTML = `<header><b>${esc(SLOT_NAMES[S.lang][slot])}</b><span>${esc(p && !isEmpty(p) ? p.name : t('empty'))}</span></header>` +
+    item('pick', t('slotPick')) +
+    (LOCKABLE(slot) ? item('lock', t(locked ? 'slotUnlock' : 'slotLock'), t(locked ? 'slotUnlockHint' : 'slotLockHint')) : '') +
+    (LOCKABLE(slot) && p && !isEmpty(p) ? item('exclude', t(isExcluded(p.name) ? 'slotInclude' : 'slotExclude'), t(isExcluded(p.name) ? 'slotIncludeHint' : 'slotExcludeHint')) : '') +
+    (LOCKABLE(slot) && p && !isEmpty(p) ? item('empty', t('tryEmpty')) : '') +
+    (tried ? item('reset', t('tryReset')) : '');
+  menu.hidden = false; $('#tip').hidden = true;
+  const b = el.getBoundingClientRect(), w = menu.offsetWidth, h = menu.offsetHeight;
+  menu.style.left = Math.max(8, Math.min(b.left, innerWidth - w - 8)) + 'px';
+  menu.style.top = (b.bottom + 6 + h < innerHeight ? b.bottom + 6 : Math.max(8, b.top - 6 - h)) + 'px';
+  const first = menu.querySelector('button'); if (first) first.focus();
+}
+function closeSlotMenu(){ const m = $('#slotmenu'); if (m) m.hidden = true; }
+function slotMenuAct(act, ci, slot){
+  const card = S._cards[ci], s = card && shownSet(card, ci);
+  closeSlotMenu();
+  if (!s) return;
+  if (act === 'pick') return openSlot(ci, slot);
+  if (act === 'lock') toggleLock(s, slot);
+  else if (act === 'exclude') { const p = withWeapons(s).pieces[slot];
+    if (p) { const was = isExcluded(p.name); setExcluded(p.name, !was);
+      // the piece a search offered goes back to the set's: the next search fills the slot without it
+      if (!was && withWeapons(s).tried[slot]) setTrial(s, slot, undefined); } }
+  else if (act === 'empty') setTrial(s, slot, null);
+  else if (act === 'reset') setTrial(s, slot, undefined);
+  save(); render();
+}
+Object.assign(T.fr, {slotPick: 'Choisir une pièce…', slotLock: 'Verrouiller', slotUnlock: 'Déverrouiller',
+  slotLockHint: 'l’optimiseur n’y touche plus', slotUnlockHint: 'l’optimiseur peut la changer', lgLock: 'verrouillé',
+  lockTip: 'Verrouillé : l’optimiseur garde cette case telle quelle',
+  locksLine: '{n} case(s) verrouillée(s) : {l}', locksClear: 'Tout déverrouiller'});
+Object.assign(T.en, {slotPick: 'Choose a piece…', slotLock: 'Lock', slotUnlock: 'Unlock',
+  slotLockHint: 'the optimizer leaves it alone', slotUnlockHint: 'the optimizer may change it', lgLock: 'locked',
+  lockTip: 'Locked: the optimizer keeps this slot as it is',
+  locksLine: '{n} locked slot(s): {l}', locksClear: 'Unlock all'});
+
+/* ---- pieces left out of the searches ---- */
+// A piece the character will not get (or does not want): by name, for every job and set of the character, kept in
+// the browser. The optimizers neither offer it nor start from it (a locked slot keeps its piece all the same).
+// A piece left out while the character did not hold it ('missing') comes back by itself the day it is in the bags:
+// it dropped, the reason to leave it out is gone. One left out while held ('owned': not wanted) stays out.
+const ownsPiece = name => Object.values(ownedOf() || {}).some(list => list.some(x => x.name === name));
+function excludedOf(){
+  const mine = (S.excluded || {})[S.char] || {}, got = Object.keys(mine).filter(n => mine[n] === 'missing' && ownsPiece(n));
+  if (!got.length) return mine;
+  const left = Object.assign({}, mine);
+  for (const n of got) delete left[n];
+  S.excluded = Object.assign({}, S.excluded, {[S.char]: left}); save();
+  return left;
+}
+const isExcluded = name => !!excludedOf()[name];
+function setExcluded(name, on){
+  const mine = Object.assign({}, excludedOf());
+  if (on) mine[name] = ownsPiece(name) ? 'owned' : 'missing'; else delete mine[name];
+  S.excluded = Object.assign({}, S.excluded, {[S.char]: mine});
+  save();
+}
+Object.assign(T.fr, {slotExclude: 'Exclure des recherches', slotExcludeHint: 'l’optimiseur ne la proposera plus (réautorisée d’elle-même si tu l’obtiens)',
+  slotInclude: 'Ne plus exclure', slotIncludeHint: 'l’optimiseur peut de nouveau la proposer',
+  exclLine: 'Exclues des recherches :', exclClear: 'Tout réautoriser', exclBack: 'Réautoriser {p}'});
+Object.assign(T.en, {slotExclude: 'Exclude from searches', slotExcludeHint: 'the optimizer will not offer it again (allowed again by itself once you get it)',
+  slotInclude: 'Stop excluding', slotIncludeHint: 'the optimizer may offer it again',
+  exclLine: 'Excluded from searches:', exclClear: 'Allow all again', exclBack: 'Allow {p} again'});

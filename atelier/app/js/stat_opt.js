@@ -504,12 +504,13 @@ function statCmpRows(s, cols){
 /* ---- the search ---- */
 async function optimizeStats(s){
   if (!engineReady() || !statSet(s)) return;
-  const k = trialKey(s), o = Object.assign({}, S.optOpts), so = statOpts(s), base = withoutTrial(() => withWeapons(s).pieces);
+  const k = trialKey(s), o = Object.assign({}, S.optOpts), so = statOpts(s), base = lockedBase(s, withoutTrial(() => withWeapons(s).pieces));
   const choices = optChoices(new Set(Object.keys(ONLY_AUGS)));
   for (const slot of keptSlots(s)) delete choices[slot];
+  lockChoices(s, choices);
   for (const slot of Object.keys(choices)) choices[slot] = choices[slot].map(p => withVec(p, slot));
   if (o.freeWeapons && !keptSlots(s).some(x => x === 'main' || x === 'sub')) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
-  const start = withVecs(startOf(base));
+  const start = withVecs(startOf(base, lockedSlots(s)));
   const input = {ctx: statContext(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: so.objs[0], then: so.objs.slice(1), floor: so.floor}};
   optLaunch(s, k, input, Object.assign({}, o, {stat: so.objs[0], statFloor: so.floor}));

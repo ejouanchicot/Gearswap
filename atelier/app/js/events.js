@@ -6,7 +6,13 @@ document.addEventListener('toggle', e => { const g = e.target && e.target.datase
   if (e.target && e.target.dataset && 'rdcalc' in e.target.dataset) S._rdOpen = e.target.open;
   if (e.target && e.target.dataset && 'lgfold' in e.target.dataset) S._lgOpen = e.target.open; }, true);
 document.addEventListener('click', e => {
+  // a click anywhere else closes the slot's menu
+  if (!e.target.closest('#slotmenu')) closeSlotMenu();
   const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold],[data-pbopen],[data-pbtab]'); if (!b) return; const d = b.dataset;
+  if (d.slotact) { slotMenuAct(d.slotact, +d.card, d.slot); return; }
+  if (d.unexclude) { setExcluded(d.unexclude, false); render(); return; }
+  if ('exclclear' in d) { S.excluded = Object.assign({}, S.excluded, {[S.char]: {}}); save(); render(); return; }
+  if ('locksclear' in d) { const s = ui2CurrentSet(data()); if (s) { unlockAll(s); render(); } return; }
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
@@ -19,7 +25,9 @@ document.addEventListener('click', e => {
   if ('equipset' in d) { equipShownSet(); return; }
   if (d.slot) { const c = S._cards[+d.card], v = c && c.variants[Math.min(S.variant[S.job + '|' + d.card] ?? 0, c.variants.length - 1)];
     if (v && baseOnly(v.set)) { S.toast = t('baseOnlyToast'); render(); return; }
-    openSlot(+d.card, d.slot); return; }
+    // the slot's menu (choose, lock, empty); Ctrl+click locks or unlocks at once
+    if ((e.ctrlKey || e.metaKey) && LOCKABLE(d.slot)) { toggleLock(v.set, d.slot); render(); return; }
+    openSlotMenu(b, +d.card, d.slot); return; }
   if (d.try != null && S._drawer) { const o = S._drawOpts[+d.try], mx = e.target.closest('[data-trymax]');
     const best = o.upgrade && (mx || e.shiftKey);
     // a hand: the same choice as the weapon menus (a weaponskill's held weapon / off hand, an engaged set's forced
@@ -328,14 +336,17 @@ for (const ev of ['keydown', 'keyup']) document.addEventListener(ev, e => {
   if (S._tipEl && !$('#tip').hidden && document.body.contains(S._tipEl)) showTip(S._tipEl);
 });
 const TIPPED = '.slot[data-slot], .choice [data-try], .slot[data-simp], .opobj[data-objtip]';
-document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED); if (el && !(el === S._tipEl && !$('#tip').hidden)) showTip(el); });
+// (not while a slot's menu is open: the card would cover it)
+document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED), menu = $('#slotmenu');
+  if (el && !(menu && !menu.hidden) && !(el === S._tipEl && !$('#tip').hidden)) showTip(el); });
 document.addEventListener('mouseout', e => { if (e.target.closest(TIPPED) && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(TIPPED))) $('#tip').hidden = true; });
 document.addEventListener('focusin', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });
 document.addEventListener('focusout', e => { if (e.target.closest('.slot[data-slot]')) $('#tip').hidden = true; });
-document.addEventListener('scroll', () => { $('#tip').hidden = true; }, true);
+document.addEventListener('scroll', e => { $('#tip').hidden = true; if (!(e.target.closest && e.target.closest('#slotmenu'))) closeSlotMenu(); }, true);
 
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('span[role="button"]')) { e.preventDefault(); e.stopPropagation(); e.target.click(); return; }
+  if (e.key==='Escape' && $('#slotmenu') && !$('#slotmenu').hidden) { closeSlotMenu(); return; }
   if (e.key==='Escape') { if (!$('#overlay').hidden && S._tgtPick) { S._tgtPick = false; openBuffs(); } else if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
   const field = /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) && e.target.id !== 'setq';
   if ((e.key==='ArrowDown' || e.key==='ArrowUp') && !field && S.job && S.section==='sets' && $('#overlay').hidden && S._rows && S._rows.length) {

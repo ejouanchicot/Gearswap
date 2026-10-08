@@ -78,6 +78,21 @@
 .slot.hit{outline:2px solid var(--accent);outline-offset:1px}
 .unslot{position:absolute;top:-7px;left:-7px;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;font-size:11px;font-weight:800;color:var(--panel);background:var(--try);border:1px solid var(--panel);cursor:pointer;line-height:1;z-index:1}
 .unslot:hover{filter:brightness(1.15)}
+/* a slot locked for the optimizers: a padlock in its corner, a steady edge */
+.slot .lk{position:absolute;top:-6px;right:-6px;width:17px;height:17px;display:grid;place-items:center;border-radius:50%;color:var(--panel);background:var(--accent);border:1px solid var(--panel);pointer-events:none}
+.slot.locked{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+/* the menu of a slot */
+.slotmenu{position:fixed;z-index:55;min-width:210px;max-width:280px;padding:5px;background:var(--panel);border:1px solid var(--line-strong);border-radius:9px;box-shadow:0 14px 34px -10px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:2px}
+.slotmenu[hidden]{display:none}
+.slotmenu header{display:flex;flex-direction:column;gap:1px;padding:5px 9px 7px;border-bottom:1px solid var(--line);margin-bottom:3px}
+.slotmenu header b{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.slotmenu header span{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slotmenu button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;padding:6px 9px;border:0;border-radius:6px;background:none;color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.slotmenu button:hover,.slotmenu button:focus-visible{background:var(--hover);outline:0}
+.slotmenu button small{font-size:11.5px;color:var(--muted)}
+.oplocks{margin:0;font-size:12.5px;color:var(--muted);line-height:1.9}
+.opexcl{padding:1px 7px;border:1px solid var(--line-strong);border-radius:999px;background:var(--panel-2);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.opexcl:hover{border-color:var(--accent);color:var(--accent)}
 /* the set's body: the equipment on the left, its stats beside it */
 .dbody{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start}
 .eqcol{padding:16px;display:grid;gap:12px;border-right:1px solid var(--line);align-content:start}
@@ -327,7 +342,7 @@
 .opsels{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;align-items:center;font-size:13px}
 .opsels > span{color:var(--muted);white-space:nowrap}
 /* the switches: one a line in a narrow column, side by side when there is room; lit when on */
-.opsws{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px 8px}
+.opsws{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 8px}
 .opsw{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 8px;border:1px solid var(--line);border-radius:var(--radius-s);font-size:13px;cursor:pointer}
 .opsw span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .opsw:hover{background:var(--hover)}
