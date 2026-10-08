@@ -219,6 +219,9 @@ local function take_stance(cfg, target)
     end
 end
 
+--- Seconds between Full Circle and the spell that follows it.
+local AFTER_FULL_CIRCLE = 1.5
+
 --- The alt loads a profile and starts it; `indi` is cast by hand when given.
 --- @param cfg table Sortie config
 --- @param profile string Folder under cfg.profile_root
@@ -233,15 +236,17 @@ end
 
 --- A target with a `prep` profile, once the fight starts (`sortie <target>
 --- fight`, sent by the trigger of the prep profile: SORTIE_CONFIG.lua). The
---- alt dismisses the prep luopan (the profile never casts a Geo- while one
---- is out) and loads the fight profile. No Indi- by hand: it would be sent
---- on top of Full Circle and refused, and the profile recasts its own since
---- it differs from the prep one. This character's stance is left as it is.
+--- alt is stopped (the prep profile would cast its Geo- again), dismisses
+--- the prep luopan (a profile never casts a Geo- while one is out), then
+--- loads the fight profile with its Indi- cast by hand like any other load,
+--- once Full Circle has gone through (sent with it, the spell is refused).
+--- This character's stance is left as it is.
 --- @param cfg table Sortie config
 --- @param target table Entry of cfg.targets
 local function start_fight(cfg, target)
+    to_alt(cfg, 'sm off')
     to_alt(cfg, '/ja "Full Circle" <me>')
-    load_profile(cfg, target.profile, nil)
+    coroutine.schedule(function() load_profile(cfg, target.profile, target.indi) end, AFTER_FULL_CIRCLE)
     if messages() then
         messages().show_target_loaded(target.profile, cfg.alt, target.indi, target.summary)
     end
@@ -267,9 +272,9 @@ local function engage_target(cfg, name, phase)
     end
     take_stance(cfg, target)
     local step = target.prep or target
-    -- A prep profile's Indi- is not cast by hand: it differs from the profile before it, so the profile casts it
-    -- itself (cast by hand too, it went twice)
-    load_profile(cfg, step.profile, not target.prep and step.indi or nil)
+    -- A prep profile has its own Indi- turned off: cast by hand here like any other, it went twice when the profile
+    -- cast it too
+    load_profile(cfg, step.profile, step.indi)
     if messages() then
         local shown = key ~= name
             and (name:sub(1, 1):upper() .. name:sub(2) .. ' (' .. step.profile .. ')')
