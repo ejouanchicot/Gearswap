@@ -230,10 +230,11 @@ const weaponSkills = () => mergedOf('wskill');
 const box = (cls, title, body, meta = '') =>
   `<section class="box ${cls}"><header class="boxh"><h3>${title}</h3>${meta}</header><div class="boxb">${body}</div></section>`;
 // A stats compartment that folds: closed until opened (S.boxOpen[key]); closed, its band says how many lines it holds
-function fbox(key, cls, title, body){
+// summary: a figure said in the header, so it is read with the card closed too (the Attack card's total accuracy)
+function fbox(key, cls, title, body, summary){
   const open = !!S.boxOpen[key], n = (body.match(/<li[ >]/g) || []).length;
   return `<section class="box ${cls}"><button class="boxh bufftoggle" data-fold="${esc(key)}" aria-expanded="${open}"><h3>${title}</h3>` +
-    `<span class="meta">${n || ''}</span></button>${open ? `<div class="boxb">${body}</div>` : ''}</section>`;
+    `<span class="meta">${summary ? `<b class="boxsum">${esc(summary)}</b>` : ''}${n || ''}</span></button>${open ? `<div class="boxb">${body}</div>` : ''}</section>`;
 }
 const fmtDmg = n => Math.round(n).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US');
 

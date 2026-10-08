@@ -200,7 +200,10 @@ function withWeapons(s, ignore){
   // weapon that opens it and the off hand chosen for it (S.held, S.heldSub), and its own ammo
   const force = Object.assign({}, ignore === 'force' || ws ? {} : slotForce());
   if (weapon && weaponModes(d).some(m => m.name === 'MainWeapon' && weaponOfPath(s.path, m))) { delete force.main; delete force.sub; }
-  for (const slot of FORCE_SLOTS) if (force[slot] && !blank.has(slot)) { pieces[slot] = force[slot]; from[slot] = t('forcedTag'); }
+  // a forced off hand the main hand cannot take is passed over (a grip the optimizer's free weapons paired with a
+  // staff, the main hand since put back on a club: it stayed in the off hand whatever the menus said)
+  for (const slot of FORCE_SLOTS) if (force[slot] && !blank.has(slot) && !(slot === 'sub' && !subFits(pieces.main, force.sub))) {
+    pieces[slot] = force[slot]; from[slot] = t('forcedTag'); }
   // a Kraken Club set with no weapon value holding it: the club in the off hand, over the mode's sub (a weapon
   // you chose in the page stays)
   if (isKraken(s.path) && !blank.has('sub') && !(pieces.sub && pieces.sub.name === KRAKEN) && !force.sub && !force.main && !weaponModes(d).some(m => explicitWeapon(m, ignore))) {

@@ -242,7 +242,12 @@ document.addEventListener('change', e => {
   if (e.target.dataset && e.target.dataset.simstate) { const st = simState(); st.states = st.states || {}; st.states[e.target.dataset.simstate] = e.target.value; simRun(); }
   if (e.target.classList.contains('klayout')) { S.layout = e.target.value; renderKeyEdit(); save(); }
   if (e.target.classList.contains('wmenu')) { const k = S.char + '|' + S.job + '|' + e.target.dataset.wmode;
-    if (e.target.value) S.weapons[k] = e.target.value; else delete S.weapons[k]; render(); return; }
+    if (e.target.value) S.weapons[k] = e.target.value; else delete S.weapons[k];
+    // the menu is the player's last word for its slot: a piece forced there (a click on the slot, the optimizer's
+    // free weapons) goes, or Auto would still show it
+    const mode = weaponModes(data()).find(m => m.name === e.target.dataset.wmode);
+    if (mode && slotForce()[weaponModeSlot(mode)]) setForce(weaponModeSlot(mode), null);
+    save(); render(); return; }
   if (e.target.classList.contains('heldsubsel') && e.target.value === 'cur') return;
   if (e.target.classList.contains('heldsubsel')) { const k = heldKey(e.target.dataset.heldws), x = e.target.value === '' ? null : forceList('sub')[+e.target.value];
     S.heldSub = Object.assign({}, S.heldSub); if (x) S.heldSub[k] = optPieces({sub: {name: x.name, augs: x.augs}}).sub; else delete S.heldSub[k];

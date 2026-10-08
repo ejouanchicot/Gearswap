@@ -323,7 +323,11 @@ function offenseHTML(r, s){
   const eva = Math.max(0, ENEMIES[enemyName][2] - (B.eeva || 0)), cap = two ? 95 : 99;
   const edef = Math.round(ENEMIES[enemyName][1] * (1 - Math.min(B.edefp || 0, 1)));
   const r1 = n => Math.round(n * 10) / 10;
-  let rows = statLi(t('hasteTot'), `${r1(haste)} %`, haste >= 93.75 ? 'cap' : '', '', t('hasteTip', {g: r1(gh), m: r1(mh), j: r1(jh)})) +
+  // the accuracy the hit rate is worked out from, first: character (weapon skill, DEX, traits, gifts) + the set +
+  // food and buffs
+  const accB = Math.floor(B.acc || 0);
+  let rows = (cur.acc != null ? statLi(t('accTotal'), cur.acc, t('accTotalNote', {g: v('acc'), b: accB}), '', t('accTotalTip', {g: v('acc'), b: accB, w: cur.wskill || '—', l: cur.level || 0})) : '') +
+    statLi(t('hasteTot'), `${r1(haste)} %`, haste >= 93.75 ? 'cap' : '', '', t('hasteTip', {g: r1(gh), m: r1(mh), j: r1(jh)})) +
     statLi(t('tpHit'), tph, '', '', t('tpTip', {d: Math.round(mdelay), s: stp})) + statLi(t('hitsTo'), Math.ceil(1000 / tph), '') +
     statLi(t('roundLbl'), `${r1(round)} s`, '');
   if (cur.acc != null) { const rate = Math.max(20, Math.min(cap, 75 + 0.5 * (cur.acc - eva)));
@@ -333,7 +337,7 @@ function offenseHTML(r, s){
   if (da || v('ta') || v('qa')) rows += statLi(t('multiLbl'), `${r1(da)} · ${v('ta')} · ${v('qa')} %`, '');
   const crit = v('crit') + (B.crit || 0);
   if (crit) rows += statLi(t('critLbl'), `${r1(crit)} %`, '');
-  return fbox('off', 'g-off', t('offTitle'), `<ul class="statlist">${rows}</ul>`);
+  return fbox('off', 'g-off', t('offTitle'), `<ul class="statlist">${rows}</ul>`, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : '');
 }
 
 /* ---- the character's real stats with a set ---- */
@@ -482,3 +486,8 @@ function engineStats(s, pieces){
     return v;
   } catch (e) { S._engErr = e.message; return null; }
 }
+// the Attack card's total accuracy
+Object.assign(T.fr, {accTotal: 'Précision totale', accTotalNote: 'set +{g} · buffs +{b}',
+  accTotalTip: 'Ta précision avec ce set : perso (compétence {w} {l}, DEX, traits, gifts) + pièces du set +{g} + repas et buffs +{b}. C’est elle qui donne le taux de toucher juste en dessous'});
+Object.assign(T.en, {accTotal: 'Total accuracy', accTotalNote: 'set +{g} · buffs +{b}',
+  accTotalTip: 'Your accuracy with this set: character ({w} skill {l}, DEX, traits, gifts) + the set’s pieces +{g} + food and buffs +{b}. The hit rate just below is calculated from it'});

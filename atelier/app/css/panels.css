@@ -6,6 +6,8 @@
 .boxh::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);box-shadow:0 0 10px var(--c)}
 .boxh h3,.boxh h4{margin:0;font-size:10.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--c)}
 .boxh .meta{font-size:11.5px;color:var(--muted);font-weight:600}
+.boxh .meta{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.boxh .boxsum{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--ink);letter-spacing:0;text-transform:none}
 .boxb{padding:6px 14px 10px}
 .boxb > .statlist li:last-child{border-bottom:0}
 .g-def{--c:var(--g-def)} .g-attr{--c:var(--g-attr)} .g-off{--c:var(--g-off)} .g-mag{--c:var(--g-mag)} .g-skill{--c:var(--g-skill)}
