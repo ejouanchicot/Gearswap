@@ -9,7 +9,9 @@
 ---   over the piece worn in that slot right now (player.equipment: what
 ---   GearSwap has sent, which the server takes as worn). The pieces that raise
 ---   max HP go on first, those that lower it last: max HP never dips mid-swap
----   and current HP is not lost.
+---   and current HP is not lost. MP comes next, the same way, among the pieces
+---   that change HP alike: on every job and every character (until 2026-10-08
+---   only on the jobs a `mp_jobs` setting named; that key is no longer read).
 ---
 ---   How: at each job load (INIT_SYSTEMS, after Mote has loaded the sets),
 ---   apply() keeps the HP / MP of every piece the sets name (from
@@ -18,7 +20,9 @@
 ---   (equip_hooks.lua): each set GearSwap is given goes on as a copy whose
 ---   pieces carry their priority. The sets themselves are never changed.
 ---
----   HP / MP of a piece: its base, plus the 'HP+N' / 'MP+N' augments written in
+---   HP / MP of a piece: its base, its percent (HP+10 %: that share of the
+---   character's own HP, worked out from max HP and what is worn), plus the
+---   'HP+N' / 'MP+N' augments written in
 ---   the set (a piece named without augments, and the piece worn: the ones
 ---   //gs c gearscan read in the bags, <Char>/saved/gear_augments.lua, see
 ---   gear_scan.lua), plus its Unity bonus.
@@ -26,13 +30,14 @@
 ---   Settings: <Char>/_common/combat/HP_PRIORITY.lua (every key optional):
 ---     enabled   = true           false turns the whole system off
 ---     unity     = 'min'          'max' when your Unity leader is rank 1
----     mp_jobs   = {'BLM', ...}   MP counts too on these jobs, after HP
 ---     skip_jobs = {}             jobs left alone
 ---
 ---   Rules:
----     • priority = HP gained over the worn piece
----     • priority = HP gained * 1000 + MP gained   (mp_jobs)
----     • a piece that already has a priority in the set is never touched
+---     • priority = HP gained * 1000 + MP gained, over the worn piece: all the
+---       HP first, the MP after
+---     • a `priority` written by hand in a set is replaced: the order is always
+---       this one (until 2026-10-08 it was kept). A job that must keep its own
+---       priorities goes in skip_jobs
 ---
 ---   @file    shared/utils/equipment/hp_priority.lua
 ---   @author  ejouanchicot
@@ -56,9 +61,10 @@ local DATA_FILE = 'data/shared/data/equipment/ITEM_HP_MP.lua'
 local DEFAULTS = {
     enabled = true,
     unity = 'min',
-    mp_jobs = { 'BLM', 'RDM', 'GEO' },
     skip_jobs = {},
 }
+--- HP counts this many times MP: no piece has 1000 MP, so MP only ever orders
+--- pieces that change HP alike.
 local MP_WEIGHT = 1000
 
 local SLOTS = {
@@ -113,8 +119,9 @@ end
 --- @param augments table|nil Augments as written in the set
 --- @param unity string 'max' or 'min'
 --- @param scanned table|nil gear_augments.lua (used when the set names no augments)
+--- @param own table|nil {hp, mp}: the character's own HP / MP, what a percent applies to
 --- @return number hp, number mp
-local function piece_hp_mp(data, name, augments, unity, scanned)
+local function piece_hp_mp(data, name, augments, unity, scanned, own)
     local entry = data[name:lower()]
     local hp, mp = augment_hp_mp(augments)
     local seen = augments == nil and scanned and scanned[name:lower()]
@@ -125,6 +132,10 @@ local function piece_hp_mp(data, name, augments, unity, scanned)
         local u = unity == 'max' and 1 or 0
         hp = hp + entry[1] + (entry[3 + u] or 0)
         mp = mp + entry[2] + (entry[5 + u] or 0)
+        if own then
+            hp = hp + math.floor((entry[7] or 0) * own.hp / 100)
+            mp = mp + math.floor((entry[8] or 0) * own.mp / 100)
+        end
     end
     return hp, mp
 end
@@ -140,7 +151,7 @@ local WORN_SLOT = {
     ranged = 'range',
 }
 
---- Load state: {index, unity, weigh_mp, scanned}, set by apply().
+--- Load state: {index, unity, scanned}, set by apply(); `own` ({hp, mp}) is set at each swap.
 local state_key = '_hp_priority_state'
 
 --- Name and augments of a slot value (nil name for empty or unknown values).
@@ -156,24 +167,43 @@ end
 local function value_hp_mp(value, st)
     local name, augments = name_of(value)
     if not name or name == '' or name:lower() == 'empty' then return 0, 0 end
-    return piece_hp_mp(st.index, name, augments, st.unity, st.scanned)
+    return piece_hp_mp(st.index, name, augments, st.unity, st.scanned, st.own)
 end
 
---- Priority of one piece of a set, or nil to leave it as it is.
+--- The character's own HP and MP (what an HP+N % applies to): max HP / MP now,
+--- less what the worn pieces add, flat then percent. An estimate, good for an
+--- order: the game's exact base is not read.
+--- @param st table Load state
+--- @return table {hp, mp}
+local function own_hp_mp(st)
+    local flat_hp, flat_mp, pct_hp, pct_mp = 0, 0, 0, 0
+    for _, worn in pairs(player and player.equipment or {}) do
+        local name = name_of(worn)
+        if name and name ~= '' and name:lower() ~= 'empty' then
+            local hp, mp = piece_hp_mp(st.index, name, nil, st.unity, st.scanned)
+            local entry = st.index[name:lower()]
+            flat_hp, flat_mp = flat_hp + hp, flat_mp + mp
+            pct_hp, pct_mp = pct_hp + (entry and entry[7] or 0), pct_mp + (entry and entry[8] or 0)
+        end
+    end
+    local max_hp, max_mp = tonumber(player and player.max_hp) or 0, tonumber(player and player.max_mp) or 0
+    return { hp = math.max(0, (max_hp - flat_hp) / (1 + pct_hp / 100)), mp = math.max(0, (max_mp - flat_mp) / (1 + pct_mp / 100)) }
+end
+
+--- Priority of one piece of a set (0: none), or nil for a value that is not a
+--- piece. A priority written in the set does not count: this one replaces it.
 --- @param key string Slot name as written in the set
 --- @param value string|table
 --- @param st table Load state
 --- @return number|nil
 local function priority_of(key, value, st)
-    if type(value) == 'table' and value.priority ~= nil then return nil end
     local name = name_of(value)
     if not name then return nil end
     local worn = player and player.equipment and player.equipment[WORN_SLOT[key] or key]
     local hp, mp = value_hp_mp(value, st)
     local worn_hp, worn_mp = value_hp_mp(worn, st)
     local dhp, dmp = hp - worn_hp, mp - worn_mp
-    local priority = st.weigh_mp and (dhp * MP_WEIGHT + dmp) or dhp
-    return priority ~= 0 and priority or nil
+    return dhp * MP_WEIGHT + dmp
 end
 
 --- A copy of a set whose pieces carry their priority for this swap.
@@ -183,19 +213,21 @@ end
 local function ranked_copy(set, st)
     local out = {}
     local empty_value = rawget(_G, 'empty')
+    st.own = own_hp_mp(st)
     for key, value in pairs(set) do
         -- GearSwap knows its `empty` table by identity (equip_processing.lua
         -- `entry == empty`): a copy of it is taken for an item named "empty",
         -- not found, and the slot keeps its piece (//gs c naked did nothing)
         local priority = SLOTS[key] and value ~= empty_value and priority_of(key, value, st)
-        if priority then
+        -- a copy when the piece gets a priority, or has one of its own to take off
+        if priority and (priority ~= 0 or (type(value) == 'table' and value.priority ~= nil)) then
             local piece = {}
             if type(value) == 'table' then
                 for k, v in pairs(value) do piece[k] = v end
             else
                 piece.name = value
             end
-            piece.priority = priority
+            piece.priority = priority ~= 0 and priority or nil
             out[key] = piece
         else
             out[key] = value
@@ -220,13 +252,8 @@ local function flush_order()
     table.sort(rows, function(a, b) return a.priority > b.priority end)
     local fields = {}
     for i, row in ipairs(rows) do
-        local value, kind
-        if row.fixed then
-            value, kind = 'priority ' .. row.priority .. ' (written in the set)', 'warn'
-        else
-            value = ('%+d HP'):format(row.hp) .. (row.mp ~= 0 and ('  %+d MP'):format(row.mp) or '')
-            kind = row.priority > 0 and 'good' or (row.priority < 0 and 'bad' or 'dim')
-        end
+        local value = ('%+d HP'):format(row.hp) .. (row.mp ~= 0 and ('  %+d MP'):format(row.mp) or '')
+        local kind = row.priority > 0 and 'good' or (row.priority < 0 and 'bad' or 'dim')
         fields[i] = { ('%d. %s'):format(i, row.name), value, kind }
     end
     require('shared/utils/messages/info_block').show({
@@ -252,9 +279,7 @@ local function show_order(ranked, st)
                     pending = {}
                     coroutine.schedule(function() pcall(flush_order) end, 0)
                 end
-                pending[slot] = { name = name, priority = priority, hp = hp - worn_hp, mp = mp - worn_mp,
-                    fixed = type(value) == 'table' and value.priority ~= nil
-                        and priority ~= (st.weigh_mp and ((hp - worn_hp) * MP_WEIGHT + (mp - worn_mp)) or (hp - worn_hp)) }
+                pending[slot] = { name = name, priority = priority, hp = hp - worn_hp, mp = mp - worn_mp }
             end
         end
     end
@@ -323,7 +348,7 @@ local function job_set(list)
 end
 
 --- The character's HP_PRIORITY.lua over the defaults.
---- @return table {enabled, unity, mp_jobs (set), skip_jobs (set)}
+--- @return table {enabled, unity, skip_jobs (set)}
 function HPPriority.settings()
     local ok, user = pcall(function()
         return require('shared/utils/core/char_paths').optional('common', 'HP_PRIORITY')
@@ -333,7 +358,6 @@ function HPPriority.settings()
     return {
         enabled = pick('enabled') ~= false,
         unity = pick('unity') == 'max' and 'max' or 'min',
-        mp_jobs = job_set(pick('mp_jobs')),
         skip_jobs = job_set(pick('skip_jobs')),
     }
 end
@@ -361,8 +385,7 @@ function HPPriority.apply()
     end
     local ok_s, GearScan = pcall(require, 'shared/utils/equipment/gear_scan')
     local index = build_index(data)
-    _G[state_key] = { index = index, unity = cfg.unity, weigh_mp = cfg.mp_jobs[job] == true,
-        scanned = ok_s and GearScan and GearScan.load() or nil }
+    _G[state_key] = { index = index, unity = cfg.unity, scanned = ok_s and GearScan and GearScan.load() or nil }
     EquipHooks.add('hp_priority', 20, rank_hook)
     local count = 0
     for _ in pairs(index) do count = count + 1 end

@@ -6,8 +6,12 @@
 --- ranks the pieces by the HP they gain over the ones you wear right then:
 --- the pieces that raise your max HP go on first, those that lower it last,
 --- so your max HP never dips in the middle of a swap (which would cost HP).
---- It changes the order only, never what you wear. A `priority` you write
---- yourself on a piece in your sets is kept as it is.
+--- MP comes next, the same way, among the pieces that change HP alike: all
+--- the HP first, the MP after, on every job.
+--- It changes the order only, never what you wear. A `priority` you wrote
+--- yourself on a piece in your sets is replaced by this order (a job that
+--- must keep its own goes in skip_jobs). Pieces giving HP or MP in percent
+--- (HP+10 %) count for that share of your own HP / MP.
 ---
 --- HP and MP of each piece come from the game data, plus the augments your
 --- set names. For a piece your sets name without augments (a unique piece),
@@ -16,7 +20,6 @@
 ---
 --- Examples:
 ---   unity = 'max'             your Unity leader is rank 1 (top Unity bonus)
----   mp_jobs = {'BLM', 'SCH'}  on these jobs MP counts too (after HP)
 ---   skip_jobs = {'PLD'}       leave PLD alone (write your own priorities)
 ---   enabled = false           turn it off
 ---
@@ -29,8 +32,6 @@ return {
     enabled = true,
     -- Rank of your Unity leader: 'max' for rank 1, 'min' otherwise
     unity = 'min',
-    -- Jobs where MP counts after HP
-    mp_jobs = {'BLM', 'RDM', 'GEO'},
     -- Jobs left alone (their sets give their own priorities)
     skip_jobs = {},
 }

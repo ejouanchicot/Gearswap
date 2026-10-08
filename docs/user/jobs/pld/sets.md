@@ -233,7 +233,8 @@ the `//gs c aoe` rotation).
 - **Automatic HP ordering on PLD too**: at each swap the pieces are ranked by the HP
   they gain over what you wear, so max HP never dips mid-swap
   ([configuration](../../guides/configuration.md), `HP_PRIORITY.lua`). You do not need
-  to write `priority` values; one you write on a piece is kept as it is.
+  to write `priority` values: one you write on a piece is replaced by this order (put the job in
+  `skip_jobs` of `HP_PRIORITY.lua` to keep your own).
 
 ## Sets in the provided file that nothing reads
 
