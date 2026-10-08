@@ -82,11 +82,12 @@ async function saveFile(file, text){
   }, () => done(null)));
 }
 // The one-time window: which folder, why, then the browser's own picker
-function openFolderDialog(pick, cancel){
+// what: {title, why, path} for another folder than the data one (offline_export.js asks for Windower's)
+function openFolderDialog(pick, cancel, what){
   const show = err => {
-    $('#overlay').innerHTML = `<div class="scrim" data-folderno></div><div class="dialog folderdlg" role="dialog" aria-label="${t('folderTitle')}">
-      <header><h3>${t('folderTitle')}</h3></header>
-      <div class="body"><p>${t('folderWhy')}</p><code class="folderpath">${esc(pageFolder())}</code><p class="muted small">${t('folderOnce')}</p>
+    $('#overlay').innerHTML = `<div class="scrim" data-folderno></div><div class="dialog folderdlg" role="dialog" aria-label="${esc((what || {}).title || t('folderTitle'))}">
+      <header><h3>${esc((what || {}).title || t('folderTitle'))}</h3></header>
+      <div class="body"><p>${esc((what || {}).why || t('folderWhy'))}</p><code class="folderpath">${esc((what || {}).path || pageFolder())}</code><p class="muted small">${t('folderOnce')}</p>
       ${err ? `<p class="kwarn">${esc(err)}</p>` : ''}</div>
       <footer><button class="btn ghost" data-folderno>${t('cancel')}</button><button class="btn" data-folderpick>${t('folderPick')}</button></footer></div>`;
     $('#overlay').hidden = false;
@@ -246,7 +247,7 @@ function liveReread(c, kind = 'live', wait = 4000){
 Object.assign(T.fr, {equipBtn: 'Équiper en jeu', equipTip: 'Met ce set sur ton perso maintenant, tel que la page le montre (pièces à l’essai et armes comprises ; une arme changée vide ton TP). Il reste porté jusqu’à ta prochaine action ou changement de statut.',
   equipNoLive: 'Le jeu ne répond pas : lance GearSwap sur ce perso', equipOtherJob: 'Le jeu a chargé {j} : passe sur ce job pour équiper ses sets',
   equipDone: '{s} équipé en jeu ({n} pièces)', equipFailed: 'Le jeu n’a pas pu équiper ce set'});
-Object.assign(T.en, {equipBtn: 'Equip in game', equipTip: 'Puts this set on your character now, as the page shows it (tried pieces and weapons included; a weapon changed empties your TP). It stays on until your next action or status change.',
+Object.assign(T.en, {equipBtn: 'Equip in game', equipTip: 'Puts this set on your character now, as the page shows it (trial pieces and weapons included; changing a weapon resets your TP). It stays on until your next action or status change.',
   equipNoLive: 'The game does not answer: start GearSwap on this character', equipOtherJob: 'The game has {j} loaded: change to this job to equip its sets',
   equipDone: '{s} equipped in game ({n} pieces)', equipFailed: 'The game could not equip this set'});
 function equipBtnHTML(){
@@ -287,4 +288,37 @@ function liveBadge(){
   // only the addon answers: GearSwap is unloaded (or its link is off), it can be loaded
   if (link) return `<span class="live mid" title="${esc(t('linkOnlyHow'))}">● ${t('linkOnly')}</span>` + btn('data-gsload', '▶', t('gsLoad'), '//lua l gearswap');
   return `<span class="live" title="${esc(t('liveHow'))}">○ ${t('liveOff')}</span>`;
+}
+
+/* ---- the files read again, without the game ---- */
+// The button opens gsatelier://refresh/<Character>: Windows runs scripts/atelier/atelier_all.py (the link is
+// registered by a first run of "Atelier - export all jobs.bat"), which exports the jobs whose files changed and
+// writes atelier/refresh.js; the page reloads when that file changes. A page cannot run a program by itself.
+Object.assign(T.fr, {refreshBtn: 'Relire les fichiers', refreshBusy: 'Lecture des fichiers…', refreshNone: 'Rien reçu',
+  refreshTip: 'Relit les jobs de ce perso depuis ses fichiers, sans le jeu (seuls les jobs modifiés sont refaits). Le contenu des sacs reste celui du dernier //gs c atelier en jeu',
+  refreshNoneTip: 'Aucune réponse en 3 minutes. Lance une fois « Atelier - export all jobs.bat » dans le dossier data : il active ce bouton'});
+Object.assign(T.en, {refreshBtn: 'Reload from files', refreshBusy: 'Reloading files…', refreshNone: 'No response',
+  refreshTip: 'Reloads this character\'s jobs from the files, without the game (only the jobs that changed are redone). The bags stay as of the last //gs c atelier in game',
+  refreshNoneTip: 'No response after 3 minutes. Run "Atelier - export all jobs.bat" in the data folder once: it enables this button'});
+const REFRESH_POLL_MS = 1500, REFRESH_GIVE_UP_MS = 180000;
+function refreshBadge(){
+  if (!S.char) return '';
+  const busy = S._refresh === 'busy', none = S._refresh === 'none', fail = S._refresh === 'fail';
+  // what the last run in this tab did (offline_export.js), said after the button's tip
+  let last = null; try { last = JSON.parse(sessionStorage.getItem('atelierRefresh') || 'null'); } catch (e) {}
+  const lastTip = !last ? '' : ' · ' + (last.failed.length ? t('refreshLastFail', {f: last.failed.length, l: last.failed.join(', ')}) : t('refreshLast', {e: last.e, u: last.u}));
+  const tip = fail ? S._refreshErr || '' : t(none ? 'refreshNoneTip' : 'refreshTip') + lastTip, warn = fail || (last && last.failed.length);
+  return `<button class="live act ${warn ? 'mid' : ''}" data-refreshfiles ${busy ? 'disabled' : ''} title="${esc(tip)}">⟳<span class="lbl"> ${t(busy ? 'refreshBusy' : none ? 'refreshNone' : fail ? 'refreshFail' : 'refreshBtn')}</span></button>`;
+}
+// The way without folder access (Firefox): the gsatelier:// link, see above. The page's own way: offline_export.js
+function refreshByLink(){
+  if (S._refresh === 'busy') return;
+  const stamp = () => JSON.stringify(window.ATELIER_REFRESH || null), before = stamp(), t0 = Date.now();
+  S._refresh = 'busy'; render();
+  location.href = 'gsatelier://refresh/' + encodeURIComponent(S.char);
+  const poll = () => loadScripts(['atelier/refresh.js?t=' + Date.now()], () => {
+    if (stamp() !== before) return location.reload();
+    if (Date.now() - t0 > REFRESH_GIVE_UP_MS) { S._refresh = 'none'; render(); return; }
+    setTimeout(poll, REFRESH_POLL_MS); });
+  setTimeout(poll, REFRESH_POLL_MS);
 }

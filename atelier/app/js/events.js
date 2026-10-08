@@ -115,6 +115,8 @@ document.addEventListener('click', e => {
     simRun(); if (!st.name) render(); return; }
   if ('gsunload' in d) { linkGearSwap('unload'); return; }
   if ('gsload' in d) { linkGearSwap('load'); return; }
+  if ('refreshfiles' in d) { refreshFromFiles(e.shiftKey); return; }
+  if (d.optab) { S._opTab = d.optab; render(); return; }
   if ('livereload' in d) { liveReload(false); return; }
   if ('liverestart' in d) { liveReload(true); return; }
   if ('livejump' in d) { const L = S._live[S.char]; S.job = L.job; S.subs[S.char + '|' + L.job] = L.sub; render(); return; }
@@ -228,6 +230,8 @@ document.addEventListener('change', e => {
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
+    // a piece's stats change with it (stats.js ENCHANT_KEPT): everything worked out from them is redone
+    if (e.target.dataset.optopt === 'hoxne') { DATA_GEN++; render(); }
     // the objective shows or hides the TP range; the range reads back rounded to 250
     if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed'].includes(e.target.dataset.optopt)) render();
     return; }
@@ -282,7 +286,10 @@ function pieceTip(p, slot, emptied){
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
   const tip = $('#tip');
-  if (el.dataset.simp != null) {
+  // an objective of the optimizer: its name, then what it is (opt_page.js objTip_*, stat_opt.js statD_*)
+  if (el.dataset.objtip != null) {
+    tip.innerHTML = `<b class="objtipn">${esc((el.querySelector('b') || el).textContent)}</b><p class="objtipd">${esc(el.dataset.objtip)}</p>`;
+  } else if (el.dataset.simp != null) {
     const [i, slot] = el.dataset.simp.split('|'), p = ((S._simWorn || {})[i] || {})[slot];
     tip.innerHTML = pieceTip(p && p.name !== 'empty' ? p : null, slot);
   } else if (el.dataset.try != null) {
@@ -315,7 +322,7 @@ for (const ev of ['keydown', 'keyup']) document.addEventListener(ev, e => {
   S._shift = ev === 'keydown';
   if (S._tipEl && !$('#tip').hidden && document.body.contains(S._tipEl)) showTip(S._tipEl);
 });
-const TIPPED = '.slot[data-slot], .choice [data-try], .slot[data-simp]';
+const TIPPED = '.slot[data-slot], .choice [data-try], .slot[data-simp], .opobj[data-objtip]';
 document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED); if (el && !(el === S._tipEl && !$('#tip').hidden)) showTip(el); });
 document.addEventListener('mouseout', e => { if (e.target.closest(TIPPED) && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(TIPPED))) $('#tip').hidden = true; });
 document.addEventListener('focusin', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });

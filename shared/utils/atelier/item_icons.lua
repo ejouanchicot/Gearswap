@@ -75,14 +75,18 @@ local function read_icon(id)
     return HEADER .. pixels
 end
 
---- One item's icon written to the folder; true when it was.
+--- One item's icon written to the folder; true when it was. Written under
+--- another name, then renamed: a run stopped half way leaves no empty icon
+--- (an empty <id>.bmp counted as there and was never written again).
 local function write_one(id, folder)
     local bmp = read_icon(id)
-    local file = bmp and io.open(folder .. id .. '.bmp', 'wb')
+    local path = folder .. id .. '.bmp'
+    local file = bmp and io.open(path .. '.tmp', 'wb')
     if not file then return false end
     file:write(bmp)
     file:close()
-    return true
+    os.remove(path)
+    return os.rename(path .. '.tmp', path) and true or false
 end
 
 --- The icon file names already in the folder.
