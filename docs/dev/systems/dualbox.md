@@ -726,6 +726,7 @@ Behaviour per event:
 - [COR](../jobs/cor.md): `roll_party.lua` treats `_G.AltJobState.job` as present in the party for
   the roll job bonus. `receive_alt_job` patches `_G.cor_party_jobs`.
 - [GEO](../jobs/geo.md): `GEO_BUFFS.lua` reports buffs.
+- Sortie, a target with a `prep` entry (`targets.<name>.prep = {profile, indi, summary}` in `SORTIE_CONFIG.lua`): `//gs c sortie <name>` loads the prep profile first (this character's stance as usual); `//gs c sortie <name> fight` then makes the alt use Full Circle and load the target's own profile (`start_fight`: no Indi- by hand, no stance change). That second command is sent by a trigger of the prep profile itself (actor Player, State Engaged, response Script: `send <main> gs c sortie <name> fight`); the profile's script text cannot hold an underscore (the profile program splits its messages on `_`).
 - Sortie: `//gs c sortie` (`shared/utils/sortie/sortie_commands.lua`) orders the `alt` of the character's `SORTIE_CONFIG.lua` (Kaories for Tetsouo) and records its orders with `AltGroup.note`; an unknown mode value now warns instead of raising (fixed 2026-09-25). `GEO_ALT_CUSTOM.lua` retargets Indi- under Entrust.
 - Windower `send` addon: required on both boxes for everything except sync IPC.
 

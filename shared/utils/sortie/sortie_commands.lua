@@ -194,17 +194,10 @@ end
 --- ACTIONS
 ---============================================================================
 
---- Stance for this character, profile for the alt, Silmaril on.
+--- This character's stance and states for a target.
 --- @param cfg table Sortie config
---- @param name string Target as typed
---- @return boolean handled
-local function engage_target(cfg, name)
-    local key = (cfg.aliases or {})[name] or name
-    local target = cfg.targets[key]
-    if not target then
-        if messages() then messages().show_unknown_target(name) end
-        return true
-    end
+--- @param target table Entry of cfg.targets
+local function take_stance(cfg, target)
     -- Combat Mode (the weapon lock) goes last: the stance's weapon and the target's shield go on first, then it holds
     -- them; set with them, it would hold the weapons worn before (shared/utils/core/combat_mode.lua)
     local lock
@@ -224,16 +217,64 @@ local function engage_target(cfg, name)
         if ok and lock:match('On$') and state.CombatMode.value ~= 'On' then CombatMode.lock_after_gear() end
         set_known_states({lock})
     end
-    to_alt(cfg, 'sm load ' .. (cfg.profile_root or '') .. target.profile)
+end
+
+--- The alt loads a profile and starts it; `indi` is cast by hand when given.
+--- @param cfg table Sortie config
+--- @param profile string Folder under cfg.profile_root
+--- @param indi string|nil
+local function load_profile(cfg, profile, indi)
+    to_alt(cfg, 'sm load ' .. (cfg.profile_root or '') .. profile)
     to_alt(cfg, 'sm follow off')
     to_alt(cfg, 'sm on')
     note({on = true, follow = false})
-    if target.indi then to_alt(cfg, '/ma "' .. target.indi .. '" <me>') end
+    if indi then to_alt(cfg, '/ma "' .. indi .. '" <me>') end
+end
+
+--- A target with a `prep` profile, once the fight starts (`sortie <target>
+--- fight`, sent by the trigger of the prep profile: SORTIE_CONFIG.lua). The
+--- alt dismisses the prep luopan (the profile never casts a Geo- while one
+--- is out) and loads the fight profile. No Indi- by hand: it would be sent
+--- on top of Full Circle and refused, and the profile recasts its own since
+--- it differs from the prep one. This character's stance is left as it is.
+--- @param cfg table Sortie config
+--- @param target table Entry of cfg.targets
+local function start_fight(cfg, target)
+    to_alt(cfg, '/ja "Full Circle" <me>')
+    load_profile(cfg, target.profile, nil)
+    if messages() then
+        messages().show_target_loaded(target.profile, cfg.alt, target.indi, target.summary)
+    end
+end
+
+--- Stance for this character, profile for the alt, Silmaril on. A target
+--- with a `prep` profile loads that one first; `fight` as second word moves
+--- on to its own profile.
+--- @param cfg table Sortie config
+--- @param name string Target as typed
+--- @param phase string|nil 'fight', or nil
+--- @return boolean handled
+local function engage_target(cfg, name, phase)
+    local key = (cfg.aliases or {})[name] or name
+    local target = cfg.targets[key]
+    if not target then
+        if messages() then messages().show_unknown_target(name) end
+        return true
+    end
+    if phase == 'fight' then
+        if target.prep then start_fight(cfg, target) end
+        return true
+    end
+    take_stance(cfg, target)
+    local step = target.prep or target
+    -- A prep profile's Indi- is not cast by hand: it differs from the profile before it, so the profile casts it
+    -- itself (cast by hand too, it went twice)
+    load_profile(cfg, step.profile, not target.prep and step.indi or nil)
     if messages() then
         local shown = key ~= name
-            and (name:sub(1, 1):upper() .. name:sub(2) .. ' (' .. target.profile .. ')')
-            or target.profile
-        messages().show_target_loaded(shown, cfg.alt, target.indi, target.summary)
+            and (name:sub(1, 1):upper() .. name:sub(2) .. ' (' .. step.profile .. ')')
+            or step.profile
+        messages().show_target_loaded(shown, cfg.alt, step.indi, step.summary)
     end
     return true
 end
@@ -298,7 +339,7 @@ function SortieCommands.handle(args)
         end
         return true
     end
-    return engage_target(cfg, sub)
+    return engage_target(cfg, sub, rest[1] and rest[1]:lower())
 end
 
 _G.SortieCommands = SortieCommands
