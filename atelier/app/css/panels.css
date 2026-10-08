@@ -93,7 +93,8 @@
 .rdvs tr.obj th,.rdvs tr.obj td{background:color-mix(in srgb, var(--accent) 10%, transparent)}
 .rdvs tbody th{font-size:12px}
 .rdcalc summary{cursor:pointer;color:var(--accent);font-weight:600}
-.rdcalc ol{margin:6px 0 4px 18px;padding:0;display:grid;gap:3px}
+.rdcalc ol{margin:6px 0 4px 18px;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
+.rdcalc li{min-width:0}
 .rdcalc li b{color:var(--ink);font-family:var(--mono)}
 .fcell.wide .fctl{min-width:0;overflow:hidden}
 .fcell .fnote{display:block;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -136,8 +137,8 @@
 .buffdlg .boxh .meta.down{color:var(--r-dd);font-weight:700}
 .tmeta{margin:6px 0 8px}
 .buffdlg .tgtpickbtn{width:100%;justify-content:space-between;text-align:left}
-.tnums{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tnum{display:flex;align-items:baseline;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--panel-2);font-size:13px}
+.tnums{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.tnum{display:flex;flex-wrap:wrap;min-width:0;align-items:baseline;gap:2px 6px;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--panel-2);font-size:13px}
 .tnum span{color:var(--muted);font-size:11.5px;margin-right:auto}
 .tnum i{color:var(--faint);font-style:normal}
 .tnum b.down{color:var(--r-dd)}
@@ -229,11 +230,11 @@ input[type=checkbox]{accent-color:var(--accent)}
 .setstats{container-type:inline-size}
 /* figures: tabular, right-aligned, in their own column */
 .statlist{list-style:none;margin:0;padding:0;font-size:13px}
-.statlist li{display:grid;grid-template-columns:minmax(0,1fr) minmax(44px,auto) minmax(40px,auto);align-items:baseline;column-gap:8px;padding:4px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.statlist li{display:grid;grid-template-columns:minmax(0,1fr) minmax(44px,auto) fit-content(52%);align-items:baseline;column-gap:8px;padding:4px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .statlist li:hover{background:linear-gradient(90deg,transparent,var(--hover) 20%,var(--hover) 80%,transparent)}
 .statlist span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:color-mix(in srgb,var(--ink) 82%,var(--muted))}
 .statlist b{font-weight:600;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;letter-spacing:-.02em}
-.statlist i{font-style:normal;font-size:11px;font-family:var(--mono);color:var(--faint);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.statlist i{font-style:normal;font-size:11px;font-family:var(--mono);color:var(--faint);text-align:right;white-space:normal;min-width:40px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .statlist li.over b{color:var(--accent)}
 .statlist li .overl{grid-column:1/-1;font-style:normal;font-size:11px;color:var(--g-off);text-align:right;font-family:var(--mono);letter-spacing:-.02em}
 .statlist li[title]{cursor:help}
@@ -386,7 +387,7 @@ input[type=checkbox]{accent-color:var(--accent)}
 @media (max-width:720px){.orres{grid-template-columns:1fr}}
 @media (max-width:640px){.orhero{grid-template-columns:1fr}.orfeed li{grid-template-columns:1fr}}
 .rdcalc .rdhand{font-weight:700;color:var(--muted)}
-.rdcalc .rdproc{display:inline-block;margin:2px 10px 2px 0;white-space:nowrap}
+.rdcalc .rdproc{display:inline-block;margin:2px 10px 2px 0;max-width:100%}
 .tip .rx i{--c:#9AA;--d:#344;font-style:normal;font-size:9.5px;font-weight:800;line-height:18px;height:18px;min-width:18px;padding:0 5px;
   border-radius:999px;text-align:center;color:var(--d);box-shadow:inset 0 -2px 3px rgba(0,0,0,.25),0 0 0 1px rgba(0,0,0,.45);
   background:radial-gradient(ellipse at 50% 22%,rgba(255,255,255,.85) 0 22%,transparent 60%),radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--c) 70%,#fff),var(--c) 75%)}

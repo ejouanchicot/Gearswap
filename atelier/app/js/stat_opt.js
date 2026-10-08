@@ -62,54 +62,54 @@ Object.assign(T.en, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
-  statObj_cureEnm: 'Cure enmity', statD_cureEnm: 'HP healed × (1 + Enmity): CE = heal × 0.231, VE = 6 × CE (Paladin guide); heal and Enmity part themselves',
+  statObj_cureEnm: 'Cure enmity', statD_cureEnm: 'HP healed × (1 + Enmity): CE = heal × 0.231, VE = 6 × CE (Paladin guide); healing and Enmity balance on their own',
   statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
   statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from the PLD gift Cure Potency Bonus from 1200 JP, checked in game: Cure IV 1332, 1245, 1114), day and weather aside.',
   statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
   statObj_enhSkill: 'Enhancing skill', statD_enhSkill: 'yours + the gear: Phalanx, Stoneskin, Barspells… depend on it',
   statObj_divSkill: 'Divine skill', statD_divSkill: 'yours + the gear: Enlight II, Flash (Blind), Banish, Holy',
-  statObj_ceLoss: 'Enmity loss cut', statD_ceLoss: 'when a hit lands: Enmity (1 % a +2, 50 % at +100) × the “reduced loss” pieces (Burtgang 20, Chev. Cuisses +3 14, 50 % at most), 75 % in all',
+  statObj_ceLoss: 'Enmity loss cut', statD_ceLoss: 'when you take a hit: Enmity (1 % per +2, 50 % at +100) × the “reduced loss” pieces (Burtgang 20, Chev. Cuisses +3 14, 50 % at most), 75 % in all',
   statObj_blockGear: 'Block (gear)', statD_blockGear: 'shield skill × 0.2325 + the pieces’ block chance, over the shield’s base',
   statObj_statusRes: 'Status resistance', statD_statusRes: 'the pieces’ “resistance to all status ailments”',
   statObj_eleCover: 'Elements covered', statD_eleCover: 'elements with a positive resistance (of 8): what lets magic evasion reach the 1/8 resist (Paladin guide)',
-  statObj_eleRes: 'Elemental resistances', statD_eleRes: 'the 8 elements’ mean',
+  statObj_eleRes: 'Elemental resistances', statD_eleRes: 'average of the 8 elements',
   statObj_stoneskin: 'Stoneskin', statD_stoneskin: 'HP absorbed: enhancing skill and MND (350 at most), + the Stoneskin gear (475 at most)',
   statObj_enlight: 'Enlight II', statD_enlight: 'Accuracy and damage of the first hit: divine skill, Brilliance +15 / Honorbound +7 in hand',
   statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
   statKeepOwn: 'Keep the ability’s piece ({p})', statKeepOwnTip: 'The pieces whose description names {b} stay: the search picks the rest.',
-  statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set less those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
+  statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set minus those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
     + 'the other sets aim between it and it + 200 so a set change loses no HP (Paladin guide, HP Management: 200 apart at most).',
   statRefLine: 'Reference HP: {h} (Fast Cast {f}) · the tank sets aim at {a} to {b}.',
   cyTitle: 'HP cycle', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
-    + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your tried pieces count.',
+    + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your trial pieces count.',
   cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose', cyJa: 'JA',
   statAct: '{a} enmity', statActTip: '{a}: {ve} VE and {ce} CE at base, × (1 + Enmity / 100), the Enmity of gear + Crusade + Sentinel capped at +200 (Paladin guide, Enmity Generation).',
   protOther: 'Cast by another', protOtherTip: 'Protect cast by a WHM, RDM, SCH…: without your shield’s DEF (Shield Barrier counts on your own Protect only).',
-  statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} less those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
-  statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs in',
+  statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} minus those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
+  statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs included',
   statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %', statD_sird: 'up to 102 %',
   statD_meva: 'resist spells', statD_mdb: 'divides magic damage', statD_pdtRed: 'DT+PDT capped at −50 %, then PDT II',
-  statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s cut, counted down to the floor: 10 % → 1 %, so −9 with your merits',
-  statD_cure: 'up to 50 %', statD_refresh: 'MP a tick', statD_regen: 'HP a tick',
+  statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s reduction, counted down to the minimum: 10 % → 1 %, so −9 with your merits',
+  statD_cure: 'up to 50 %', statD_refresh: 'MP per tick', statD_regen: 'HP per tick',
   statAssumed: 'Always counted, as in the guide: Crusade (Enmity +30){m}.', statAssumedMaj: ', Majesty (Cure Potency II +25)',
   ownWeapon: 'the set’s own (worn for the action)',
-  statWeaponsNote: 'Free weapons: the weapon and shield found go in this set, worn for the action (at idle your modes lay theirs back). Changing the main weapon loses the TP, the shield does not.',
+  statWeaponsNote: 'Free weapons: the weapon and shield found go in this set, worn for the action (at idle your weapon modes put theirs back). Changing the main weapon loses your TP, the shield does not.',
   statGrp_def: 'Defense', statGrp_enm: 'Enmity', statGrp_cure: 'Healing', statGrp_magic: 'Magic', statGrp_regen: 'Recovery',
   statAll: 'All objectives (+{n})', statFewer: 'Only this set’s',
-  statKept: 'Objectives or floors changed by hand on this set.', statReset: 'Back to the defaults',
+  statKept: 'Objectives or limits changed by hand on this set.', statReset: 'Back to the defaults',
   subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',
-  aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then, to part ties', statNone: '—', statFloors: 'Required minimums (0 = none)', statFloorsWhy: 'The objectives say what to maximise, in order. A minimum is required: a set under it always loses. Example: enmity loss cut ≥ 60, then the most magic evasion.', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
+  aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then, as tiebreakers', statNone: '—', statFloors: 'Required minimums (0 = none)', statFloorsWhy: 'The objectives say what to maximize, in order. A minimum is required: a set under it always loses. Example: enmity loss cut ≥ 60, then the most magic evasion.', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥', statCeLoss: 'Enmity loss cut ≥',
-  statWhy: 'Sets with no damage to work out (idle, Enmity, Phalanx, Fast Cast, Cure…) are judged on their stats: the search adds up ' +
-    'each piece’s, as the Paladin guide’s solvers do. The first objective decides; the next ones part sets as good on it. A floor at 0 is ' +
+  statWhy: 'Sets with no damage to calculate (idle, Enmity, Phalanx, Fast Cast, Cure…) are judged on their stats: the search adds up ' +
+    'each piece’s, as the Paladin guide’s solvers do. The first objective decides; the next ones break ties. A floor at 0 is ' +
     'ignored. DEF: your DEF measured in game without gear, + the set’s DEF and VIT × 1.5; on PLD under Protect, the shield’s DEF too (Shield ' +
-    'Barrier, taken when the spell is cast). Physical damage taken by the monster’s attack is not worked out: the monsters’ formula is not ' +
+    'Barrier, taken when the spell is cast). Physical damage taken by the monster’s attack is not calculated: the monsters’ formula is not ' +
     'published (BG Wiki PDIF). More DEF = less damage, with no exact figure.',
-  statDone: 'Optimised: {o} {a} → {b}, {n} piece(s) changed in your try · DT+PDT {p} · DT+MDT {m}.',
+  statDone: 'Optimized: {o} {a} → {b}, {n} piece(s) changed in your draft · DT+PDT {p} · DT+MDT {m}.',
   statSame: 'Your set is already the best found: {o} {v}.', statThenShort: 'then', statShield: 'with the shield (Shield Barrier) +{n}',
-  tkBlock: 'Block', tkBlockTip: '{s}: {b} % at the monster’s own skill (+0.2325 % a point of difference), Palisade +30, Reprisal ×1.5 (×3 with Priwen); a blocked hit loses {r} % (Paladin guide).',
-  tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
-  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your measure in game, with the buffs chosen in the page (a food chosen but not on in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit, two buckets that multiply: the Enmity (1 % a +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
+  tkBlock: 'Block', tkBlockTip: '{s}: {b} % at the monster’s own skill (+0.2325 % per point of difference), Palisade +30, Reprisal ×1.5 (×3 with Priwen); a blocked hit loses {r} % (Paladin guide).',
+  tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} over cap',
+  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
@@ -521,7 +521,7 @@ function statWhatHTML(s){
   // the objectives by kind, only the ones that mean something for this set (statRelevant) unless all are asked for
   const all = !!(S.optOpts || {}).statAll, shown = all ? new Set(STAT_OBJS) : statRelevant(s, so.objs);
   const btn = k => `<button class="opobj ${k === cur ? 'on' : ''}" role="radio" aria-checked="${k === cur}" ` +
-    `data-statobj="${k}"><b>${esc(t('statObj_' + k))}</b><span>${esc(t('statD_' + k))}</span></button>`;
+    `data-statobj="${k}" data-objtip="${esc(t('statD_' + k))}"><b>${esc(t('statObj_' + k))}</b><span>${esc(t('statD_' + k))}</span></button>`;
   const groups = STAT_OBJ_GROUPS.map(([g, keys]) => { const list = keys.filter(k => shown.has(k));
     return list.length ? `<div class="opgrp"><span class="opgrph">${esc(t('statGrp_' + g))}</span>${list.map(btn).join('')}</div>` : ''; }).join('');
   const hidden = STAT_OBJS.length - shown.size;
@@ -530,15 +530,19 @@ function statWhatHTML(s){
   const then = i => `<select class="buffsel" data-statthen="${i}">${['', ...STAT_OBJS].filter(k => k !== cur).map(k =>
     `<option value="${k}" ${(so.objs[i] || '') === k ? 'selected' : ''}>${esc(k ? t('statObj_' + k) : t('statNone'))}</option>`).join('')}</select>`;
   const help = S._help === 'optpage' ? `<p class="wshelp">${esc(t('statWhy'))} ${esc(t('opHelp'))}</p>` : '';
-  const num = (k, label) => `<label class="opf">${label} <input type="number" step="1" data-statfloor="${k}" value="${esc(so.floor[k])}"></label>`;
+  const num = (k, label) => opLimitHTML(`data-statfloor="${k}"`, label, so.floor[k]);
   // the floors of the stats this set is after (and any floor given a value), the others hidden with their objectives
   const has = (k, obj) => all || shown.has(obj) || !!+so.floor[k], opt = (k, obj, label) => has(k, obj) ? num(k, label) : '';
   // the set's own settings kept from an earlier visit: one click back to the defaults (they change as the page learns)
   const kept = ((S.optOpts || {}).statBy || {})[s.path];
   const reset = kept ? `<p class="muted small">${esc(t('statKept'))} <button class="linkbtn" data-statreset>${esc(t('statReset'))}</button></p>` : '';
-  const floors = reset + `<h4 class="ophd2">${t('statFloors')}</h4><p class="muted small">${esc(t('statFloorsWhy'))}</p><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
-    `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}${opt('ceLoss', 'ceLoss', t('statCeLoss'))}${opt('luDt', 'luDt', t('statLuDt'))}</div>`;
-  const search = opSearchHTML(S.optOpts || {}, false, true);
+  // the minimums first, as tiles (opt_page.js opLimitHTML); what they are is the title's tooltip, and a line
+  // under it while the help is open
+  const floors = opLimitsHTML(t('statFloors'), [num('pdt', 'DT+PDT ≤'), num('mdt', 'DT+MDT ≤'), num('hp', t('statHpMin')), num('hpMax', t('statHpMax')),
+    opt('sird', 'sird', t('statSird')), opt('fc', 'fc', t('statFc')), opt('ecrit', 'ecritRed', t('statEcrit')), opt('enmity', 'enmity', t('statEnm')),
+    opt('phalanx', 'phalanx', t('statPhx')), opt('ceLoss', 'ceLoss', t('statCeLoss')), opt('luDt', 'luDt', t('statLuDt'))], `title="${esc(t('statFloorsWhy'))}"`) +
+    (S._help === 'optpage' ? `<p class="muted small">${esc(t('statFloorsWhy'))}</p>` : '') + reset;
+  const search = opSearchHTML(S.optOpts || {}, false);
   const jaList = abilityPieces(s);
   const own = jaList.length ? `<div class="opparams"><label class="opf opwrap" title="${esc(t('statKeepOwnTip', {b: segs(s.path).pop()}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
     `${esc(t('statKeepOwn', {p: jaList.map(sl => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')}))}</label></div>` : '';
@@ -546,8 +550,8 @@ function statWhatHTML(s){
   const refLine = ref ? `<p class="muted small">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}</p>` : '';
   const weaponsNote = (S.optOpts || {}).freeWeapons ? `<p class="muted small">${esc(t('statWeaponsNote'))}</p>` : '';
   const assumed = ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
-  return `<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
-    own + floors + refLine + assumed + search + weaponsNote;
+  return `${floors}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
+    own + refLine + assumed + search + weaponsNote;
 }
 // The result's lines: the objectives first, then every figure, the floors marked
 function statRows(s){

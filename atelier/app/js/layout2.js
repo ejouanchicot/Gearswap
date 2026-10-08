@@ -19,10 +19,10 @@ Object.assign(T.fr, {
 });
 Object.assign(T.en, {
   ui2Combat: 'Combat', ui2Perso: 'My character', ui2Old: 'Old layout', ui2New: 'New layout (trial)',
-  ui2OldTip: 'Back to the page as before (everything in the right column)', ui2NewTip: 'The page laid out again: the set in the middle, its stats on the right, Combat and My character in their tabs',
-  ui2Ctx: 'Worked out with', ui2CtxEdit: 'Change', ui2SetTitle: 'This set’s stats', ui2All: 'Every stat (character, attributes, caps)',
-  ui2CombatWhy: 'The buffs, target and party the page works everything out with (damage, time to the WS, optimizer). They hold for all your sets.',
-  ui2PersoWhy: 'What is your character’s own: your stats measured in game, your merits and Job Points, your PorterPacker list.',
+  ui2OldTip: 'Back to the page as before (everything in the right column)', ui2NewTip: 'The redesigned page: the set in the middle, its stats on the right, Combat and My character in their tabs',
+  ui2Ctx: 'Calculated with', ui2CtxEdit: 'Change', ui2SetTitle: 'This set’s stats', ui2All: 'Every stat (character, attributes, caps)',
+  ui2CombatWhy: 'The buffs, target and party the page uses for every calculation (damage, time to WS, optimizer). They apply to all your sets.',
+  ui2PersoWhy: 'What belongs to your character: your stats measured in game, your merits and Job Points, your PorterPacker list.',
   ui2CombatTitle: 'Combat conditions', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magic', ui2Job: 'Job', ui2Measured: 'Measured in game', ui2NotMeasured: 'not yet (//gs c atelier)',
 });
 

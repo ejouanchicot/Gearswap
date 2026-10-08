@@ -30,16 +30,16 @@ Object.assign(T.fr, {
   luCastOnly: 'Pris au moment du cast du Geo- : Geomancy+, PV du luopan, Bagua Charm. Ses dégâts subis et son Regen viennent du set porté ensuite (tes sets luopan).',
 });
 Object.assign(T.en, {
-  luTitle: 'Luopan', luCastTitle: 'Luopan (at the cast)', luDt: 'Damage taken', luDtGear: 'gear {g} % of the {n} that count', luDtShort: '{n} % short', luDtOver: '{n} % too many',
+  luTitle: 'Luopan', luCastTitle: 'Luopan (at cast time)', luDt: 'Damage taken', luDtGear: 'gear {g} % of the {n} that count', luDtShort: '{n} % short', luDtOver: '{n} % over cap',
   luDtTip: 'The luopan has −50 % of its own; the total stops at −87.5 %, so 37.5 % at most come from gear.',
-  luHp: 'HP', luHpGear: '+{n} of it from gear', luRegen: 'Regen', luRegenTip: 'Taken off what it loses each tick (3 s).',
-  luCharm: 'Bagua Charm', luCharmTip: 'Luopan Duration +{p} %: {n} HP less lost a tick.',
+  luHp: 'HP', luHpGear: '+{n} of it from gear', luRegen: 'Regen', luRegenTip: 'Subtracted from what it loses each tick (3 s).',
+  luCharm: 'Bagua Charm', luCharmTip: 'Luopan Duration +{p} %: {n} less HP lost per tick.',
   luGeo: 'Geomancy+', luGeoFrom: '{p}', luGeoTip: 'The highest of the pieces worn counts, not their sum.', luGeoNone: 'no piece',
   luLife: 'How long it lasts when nothing hits it', luCase: 'Case', luLoss: 'Loss / tick', luTicks: 'Ticks', luTime: 'Lasts',
   luBase: 'Nothing used', luLe: 'Lasting Emanation', luEa: 'Ecliptic Attrition', luBogEa: 'Blaze of Glory + Ecliptic', luBog: 'Blaze of Glory',
   luHeals: 'heals', luCap: '10:00 (the cap)', luScaled: 'With +{n} HP the base loss rises about as much (counted here: {l} in place of 24).',
-  luFrom: 'HP and Bagua Charm: taken at the cast, read from {s}. Damage taken and Regen: this set’s, while it is worn.',
-  luFromNone: 'HP and Bagua Charm are taken at the cast: no Geo- cast set found (sets.midcast.Geo), read from this set.',
+  luFrom: 'HP and Bagua Charm: taken at cast time, read from {s}. Damage taken and Regen: this set’s, while it is worn.',
+  luFromNone: 'HP and Bagua Charm are taken at cast time: no Geo- cast set found (sets.midcast.Geo), read from this set.',
   luCastOnly: 'Taken when the Geo- spell is cast: Geomancy+, the luopan’s HP, Bagua Charm. Its damage taken and Regen come from the set worn afterwards (your luopan sets).',
 });
 
@@ -55,10 +55,10 @@ Object.assign(T.fr, {
 Object.assign(T.en, {
   statGrp_luopan: 'Luopan', statLuDt: 'Luopan damage taken ≥',
   statObj_luDt: 'Luopan: damage taken', statD_luDt: 'the gear’s share, counted up to the 37.5 % that fit (−87.5 % at most with its own −50); worn set',
-  statObj_luRegen: 'Luopan: Regen', statD_luRegen: 'HP a tick taken off what it loses; worn set',
-  statObj_luCharm: 'Luopan: Bagua Charm', statD_luCharm: 'HP less lost a tick (Luopan Duration); taken at the cast',
+  statObj_luRegen: 'Luopan: Regen', statD_luRegen: 'HP per tick, subtracted from what it loses; worn set',
+  statObj_luCharm: 'Luopan: Bagua Charm', statD_luCharm: 'less HP lost per tick (Luopan Duration); taken at cast time',
   statObj_geomancy: 'Geomancy+', statD_geomancy: 'the highest piece, not the sum; taken when the Geo- or Indi- is cast',
-  statObj_geoSkill: 'Geomancy + Handbell skill', statD_geoSkill: 'yours + the gear; taken at the cast',
+  statObj_geoSkill: 'Geomancy + Handbell skill', statD_geoSkill: 'yours + the gear; taken at cast time',
 });
 
 const LUOPAN = {hp: 1665, loss: 24, le: 17, ea: 30, tick: 3, max: 600, own: -50, cap: -87.5};

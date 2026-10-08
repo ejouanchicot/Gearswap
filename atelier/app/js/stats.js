@@ -139,6 +139,12 @@ function add(out, key, v, unit, label){
 // in that ear (ear2 is the right one, GearSwap's right_ear), a condition shown in the other or with no slot
 const PIECE_CACHE = {}, EAR_SIDE = {ear1: 'left', ear2: 'right'};
 const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
+// An enchantment counted as on while the piece is worn, when its option of the optimizer's search line is ticked
+// (S.optOpts.<option>, off by default: unticked, the piece counts for nothing and is never chosen). It lasts far
+// longer than its reuse delay, so a player who wears the piece keeps it up (Hoxne Ampulla: 30 minutes, reuse 60 s,
+// 1000 gil a use). It is lost when the piece leaves its slot, so a set without the piece ends it for the sets after it.
+const ENCHANT_KEPT = {'Hoxne Ampulla': 'hoxne'};
+const enchantKept = name => !!ENCHANT_KEPT[name] && !!(S.optOpts || {})[ENCHANT_KEPT[name]];
 // "All BP" by mastery rank (BG Wiki, Hoxne Earring)
 const MASTERY_BP = {1: -30, 2: -20, 3: -10, 4: 0, 5: 5, 6: 10, 7: 15, 8: 20, 9: 25, 10: 30};
 // The item id of your copy of a piece (the export gives each its id), the highest when you hold several; null when
@@ -156,7 +162,7 @@ function pieceStats(p, slot){
   const cat = catalog(), id = p.id || ownId(p.name, slot) || iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = id ? descTexts()[id] || (cat && cat.desc[id]) || null : null;
   const side = EAR_SIDE[slot] || '';
-  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side;
+  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side + (enchantKept(p.name) ? '|kept' : '');
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
   const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], unity: {}, path: null, weapon: null, known: !!text};
@@ -191,6 +197,8 @@ function pieceStats(p, slot){
       for (const [k, e] of Object.entries(u)) { add(r.base, k, e.v, e.unit, e.label); r.unity[k] = (r.unity[k] || 0) + e.v; }
       continue;
     }
+    // "Enchantment: Consumes 1000 gil:" then its effect on the next line: the piece's own, not a condition
+    if (enchantKept(p.name) && /^Enchantment:/i.test(line)) { mode = null; continue; }
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
     // one condition per entry: its title line, then the lines under it ("Aftermath:" / "Increases Accuracy...")

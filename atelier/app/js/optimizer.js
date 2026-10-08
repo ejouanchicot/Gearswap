@@ -119,8 +119,10 @@ function gameChoices(slot, have, tpNames){
     if (!(it.level >= 99 || it.ilvl > 0) || ruledOut(it.name)) continue;
     seen.add(it.name);
     const e = rankedEntry(it.name);
-    if (e && e.paths) for (const path of Object.keys(e.paths)) out.push({name: it.name, augs: ['Path: ' + path], rank: e.max_rank, missing: true});
-    else out.push({name: it.name, missing: true, copies: twoAllowed(it.name) ? 2 : 1, rare: isRare(it.name)});
+    // engineFill: what the description gives that the engine's catalogue lacks, as for your own pieces (without it
+    // a piece the catalogue reads nothing of counted for nothing: Hoxne Ampulla's Double Attack)
+    if (e && e.paths) for (const path of Object.keys(e.paths)) out.push(engineFill({name: it.name, augs: ['Path: ' + path], rank: e.max_rank, missing: true}));
+    else out.push(engineFill({name: it.name, missing: true, copies: twoAllowed(it.name) ? 2 : 1, rare: isRare(it.name)}));
   }
   // rings and earrings: a second copy to get of one you have once, when the game lets you hold two
   if (/^(ring|ear)[12]$/.test(slot)) for (const x of have)

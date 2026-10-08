@@ -13,11 +13,11 @@ Object.assign(T.fr, {
   gpWorn: 'portée', gpVs: 'vs portée', gpCount: '{n} pièce(s)', gpCurrent: 'Portée dans ce set', gpGameWait: 'chargement du catalogue…',
 });
 Object.assign(T.en, {
-  gpFrom: 'From', gpMine: 'My pieces', gpSets: 'In my sets', gpGame: 'Whole game', gpFor: 'Chosen for', gpAny: 'What the set is after',
-  gpSearch: 'Search a name, a stat…', gpJunk: 'Show the pieces of no use ({n})', gpNone: 'No piece with these filters.',
+  gpFrom: 'From', gpMine: 'My pieces', gpSets: 'In my sets', gpGame: 'Whole game', gpFor: 'Chosen for', gpAny: 'The set’s key stats',
+  gpSearch: 'Search a name, a stat…', gpJunk: 'Show pieces that are not useful ({n})', gpNone: 'No piece with these filters.',
   gpSortRel: 'Relevance', gpSortHi: 'Value, highest first', gpSortLo: 'Value, lowest first', gpSortAz: 'Name A → Z', gpSortZa: 'Name Z → A', gpSortIlv: 'Item level', gpSortLbl: 'Sort by',
   gpKind: 'Type', gpKindAll: 'All', gpKindOther: 'Others',
-  gpWorn: 'worn', gpVs: 'vs worn', gpCount: '{n} piece(s)', gpCurrent: 'Worn in this set', gpGameWait: 'loading the catalogue…',
+  gpWorn: 'worn', gpVs: 'vs worn', gpCount: '{n} piece(s)', gpCurrent: 'Worn in this set', gpGameWait: 'loading the catalog…',
 });
 
 // Where the pieces come from: yours (in your bags), the ones your sets name (yours or not), every item of the game

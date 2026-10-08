@@ -22,23 +22,23 @@ Object.assign(T.fr, {optSearch_fast: 'Recherche rapide', optSearch_classic: 'Rec
   opFHits: 'Coups qui touchent par round', opFDmg: 'Dégâts par coup', opFRound: 'Durée d’un round', opFTpHit: 'TP par coup', opCurve: 'Dégâts selon le TP', cycTpHit: 'TP par coup', cyc2r: 'Retour au seuil en 2 rounds', cycTpWs: 'TP au moment de la WS', cycChain: 'WS qui ferment une skillchain', cycWsMin: 'WS par minute',
   opHelp: 'Le résultat compare l’essai (les pièces que la recherche propose, en couleur dans le set) à ton set tel qu’il est dans le fichier. ★ = la ligne de l’objectif ; en doré, le meilleur des deux ; en rouge, sous un plancher. Verdict : sous 2 % d’écart, équivalent ; de 2 à 5 %, à essayer ; au-delà, meilleur ou moins bon. Dégâts sur un combat (TEST) : précision ±4 % mesurée en jeu le 2026-10-04 ; une WS qui revient en 3 rounds rate la fenêtre de skillchain (10 s, puis 9 s).',
   engDone_cycle: 'Optimisé : dégâts sur un combat {a} → {b} ({g} %), {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.'});
-Object.assign(T.en, {optSearch_fast: 'Fast search', optSearch_classic: 'Classic search', optSearchTip: 'Fast: keeps what it already worked out and leaves out the pieces that can never win (another piece of the slot does at least as well on everything the objective counts). Classic: the former search, to compare.',
-  opHow: 'Method', optOpenBtn: 'Optimize this set →', orShow: 'See the search',
+Object.assign(T.en, {optSearch_fast: 'Fast search', optSearch_classic: 'Classic search', optSearchTip: 'Fast: reuses what it already calculated and skips the pieces that can never win (another piece for the slot is at least as good on everything the objective counts). Classic: the previous search, for comparison.',
+  opHow: 'Method', optOpenBtn: 'Optimize this set →', orShow: 'Show the search',
   optBack: '← Back to the set', optPageTitle: 'Optimizer', engObj_cycle: 'Damage over a fight · TEST',
-  opWhat: 'What is looked for', opResult: 'Result', opSearch: 'Search', opChanges: 'Pieces changed', opWsTp: 'Weaponskill TP',
-  opNoTry: 'Run a search: the try shows here, against your set.', opNow: 'Your set', opFight: 'Damage over a fight',
-  objD_tp_real: 'reach the weaponskill fastest, hit by hit', objD_tp_time: 'reach the weaponskill fast, at the mean TP',
-  objD_dps: 'hit hardest, the weaponskill left out', objD_tp_round: 'the most TP each round',
+  opWhat: 'What to optimize', opResult: 'Result', opSearch: 'Search', opChanges: 'Pieces changed', opWsTp: 'Weaponskill TP',
+  opNoTry: 'Run a search: the draft appears here, compared with your set.', opNow: 'Your set', opFight: 'Damage over a fight',
+  objD_tp_real: 'reach the weaponskill fastest, hit by hit', objD_tp_time: 'reach the weaponskill fast, at average TP',
+  objD_dps: 'hit hardest, weaponskill excluded', objD_tp_round: 'the most TP per round',
   objD_cycle: 'melee, weaponskills, skillchains, Aftermath', objD_damage: 'the strongest weaponskill at this TP',
-  objD_damage_avg: 'the strongest weaponskill over the range', objD_tp_return: 'the most TP back from the weaponskill', objD_jump: 'an attack round in its own set',
+  objD_damage_avg: 'the strongest weaponskill over the range', objD_tp_return: 'the most TP returned by the weaponskill', objD_jump: 'an attack round in its own set',
   cycWsLbl: 'Weaponskill', cycNoWs: 'No weaponskill set for this set’s weapon.', cycAmLbl: 'Aftermath Lv.3 kept', cycHitsLbl: 'Hits taken',
-  cycHitsMe: 'Me (solo, ~5.8 TP/s)', cycHitsTank: 'A tank (party)', cycTimedLbl: 'Berserk, Aggressor, Warcry used again',
+  cycHitsMe: 'Me (solo, ~5.8 TP/s)', cycHitsTank: 'A tank (party)', cycTimedLbl: 'Berserk, Aggressor, Warcry reused',
   cycNoRule: 'No TP Bonus rule from the game: weaponskills without Moonshade or TP pieces.', cycMelee: 'Melee', cycWs: 'Weaponskills', cycSc: 'Skillchains',
   cycV_eq: 'Same: keep your set', cycV_try: 'Worth a try in game', cycV_better: 'Better, to confirm in game', cycV_worse: 'Worse than your set',
-  opRounds: '{n} rounds', opRoundsLbl: 'Rounds to the weaponskill', opGauge: '{r} rounds of {tp} TP to reach {at}', opMean: 'mean {n} rounds',
-  opFHits: 'Hits landing a round', opFDmg: 'Damage a hit', opFRound: 'Round time', opFTpHit: 'TP a hit', opCurve: 'Damage by TP', cycTpHit: 'TP a hit', cyc2r: 'Back to the TP in 2 rounds', cycTpWs: 'TP at the weaponskill', cycChain: 'Weaponskills closing a skillchain', cycWsMin: 'Weaponskills a minute',
-  opHelp: 'The result sets the try (the pieces the search offers, coloured in the set) against your set as the file has it. ★ = the objective’s line; in gold, the better of the two; in red, under a floor. Verdict: under 2 %, the same; 2 to 5 %, worth a try; beyond, better or worse. Damage over a fight (TEST): ±4 % as measured in game on 2026-10-04; a weaponskill coming back in 3 rounds misses the skillchain window (10 s, then 9 s).',
-  engDone_cycle: 'Optimised: damage over a fight {a} → {b} ({g} %), {n} piece(s) changed in your try · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.'});
+  opRounds: '{n} rounds', opRoundsLbl: 'Rounds to the weaponskill', opGauge: '{r} rounds of {tp} TP to reach {at}', opMean: 'avg {n} rounds',
+  opFHits: 'Hits landed per round', opFDmg: 'Damage per hit', opFRound: 'Round time', opFTpHit: 'TP per hit', opCurve: 'Damage by TP', cycTpHit: 'TP per hit', cyc2r: 'Back to the TP in 2 rounds', cycTpWs: 'TP at the weaponskill', cycChain: 'Weaponskills closing a skillchain', cycWsMin: 'Weaponskills per minute',
+  opHelp: 'The result compares the draft (the pieces the search suggests, colored in the set) with your set as written in the file. ★ = the objective’s row; gold = the better of the two; red = under a limit. Verdict: under 2 %, the same; 2 to 5 %, worth a try; beyond that, better or worse. Damage over a fight (TEST): ±4 % as measured in game on 2026-10-04; a weaponskill that comes back in 3 rounds misses the skillchain window (10 s, then 9 s).',
+  engDone_cycle: 'Optimized: damage over a fight {a} → {b} ({g} %), {n} piece(s) changed in your draft · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.'});
 
 /* ---- opened from a set ---- */
 const optViewKey = s => S.char + '|' + S.job + '|' + s.path;
@@ -81,9 +81,13 @@ function opWhatHTML(s, kind){
   const o = S.optOpts = Object.assign({obj: 'damage', pdt: -50, mdt: -21, sb: 0, hit: 0, engObj: 'tp_real', engAt: 1000}, S.optOpts || {});
   const cur = opObj(kind), key = opObjKey(kind);
   const objs = `<div class="opobjs" role="radiogroup">${opObjList(kind).map(k => `<button class="opobj ${k === cur ? 'on' : ''}" role="radio" aria-checked="${k === cur}" ` +
+    `data-objtip="${esc(t('objTip_' + k, {tp: S.wsTp || 3000, a: avgRange(o)[0], b: avgRange(o)[1]}))}" ` +
     `${kind === 'jump' ? 'disabled' : `data-optobj="${key}" data-v="${k}"`}><b>${esc(opObjLabel(kind, k))}</b><span>${esc(t('objD_' + k))}</span></button>`).join('')}</div>`;
   const help = S._help === 'optpage' ? `<p class="wshelp">${esc(t(kind === 'ws' ? 'optWhy' : kind === 'jump' ? 'jumpWhy' : 'engWhy', {tp: S.wsTp || 3000}))} ${esc(optSettingsHelp(kind === 'ws'))} ${esc(t('opHelp'))}</p>` : '';
-  return `<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}${opParamsHTML(s, kind, cur)}${opSearchHTML(o, kind === 'ws')}`;
+  // the limits first: what a result may never go past is read before what it maximises
+  const lim = (k, label) => opLimitHTML(`data-optopt="${k}"`, label, o[k]);
+  const limits = opLimitsHTML(t('opLimits'), [lim('pdt', 'DT+PDT ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []));
+  return `${limits}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}${opParamsHTML(s, kind, cur)}${opSearchHTML(o, kind === 'ws')}`;
 }
 // The objective's own settings: the TP the weaponskill goes at, the TP range, how a whole fight is played
 function opParamsHTML(s, kind, cur){
@@ -104,20 +108,56 @@ function opParamsHTML(s, kind, cur){
   }
   return f.length ? `<div class="opparams">${f.join('')}</div>` : '';
 }
-// Where the search looks and the floors it keeps: two lines
-// noFloors: the stats optimizer, which has floors of its own (stat_opt.js); noWeapons: free weapons offered off, with why
-function opSearchHTML(o, ws, noFloors, noWeapons){
-  const wheres = ['mine', 'mine_max', 'all'].map(k => `<option value="${k}" ${(o.where || 'mine') === k ? 'selected' : ''}>${t('optWhere_' + k)}</option>`).join('');
+/* ---- the left column's shared blocks: limits, search, switches ---- */
+// A limit as a tile: its name above, its sign and its value below ("DT+PDT ≤" gives DT+PDT, then ≤ and the number).
+// attr: the input's own attribute (data-optopt="pdt" here, data-statfloor="hp" in stat_opt.js)
+function opLimitHTML(attr, label, value){
+  const m = String(label).match(/^(.*?)\s*([≤≥])\s*$/), name = m ? m[1] : label;
+  return `<label class="oplim" title="${esc(label)}"><span class="oplimn">${esc(name)}</span><span class="oplimv">${m ? `<i>${m[2]}</i>` : ''}` +
+    `<input type="number" step="1" ${attr} value="${esc(value)}"></span></label>`;
+}
+// The limits block, at the top of the column: seen before anything else. More than four tiles (the stats
+// optimizer's minimums) go two across, their longer names on two lines
+function opLimitsHTML(title, tiles, extra = ''){
+  const shown = tiles.filter(Boolean);
+  return `<h3 class="ophd" ${extra}>${esc(title)}</h3><div class="oplimits ${shown.length > 4 ? 'many' : ''}">${shown.join('')}</div>`;
+}
+// The search's settings, in tabs: the pieces it may use, how it works them out, the special pieces. A new setting is a
+// line in OP_SWITCH (its label, its tip) and its key in a tab here; what it changes reads S.optOpts.<key>. `menu`: the
+// tab's menu (an S.optOpts key, its label, its values and their text prefix); `count`: the tab's name says how many
+// of its switches are on (special pieces: off for most players, so seen without opening the tab)
+const OP_TABS = [
+  {id: 'pieces', title: 'opTabPieces', menu: {key: 'where', label: 'optWhereLbl', values: ['mine', 'mine_max', 'all'], text: 'optWhere_', dflt: 'mine'},
+    keys: ['wardOnly', 'freeWeapons']},
   // the fast search (memory, pieces that can never win left out) or the classic one, kept to go back to
-  const modes = ['fast', 'classic'].map(k => `<option value="${k}" ${(o.search || 'fast') === k ? 'selected' : ''}>${t('optSearch_' + k)}</option>`).join('');
-  const chk = (k, label, tip) => `<label class="opf" ${tip ? `title="${esc(tip)}"` : ''}><input type="checkbox" data-optopt="${k}" ${o[k] ? 'checked' : ''}> ${label}</label>`;
-  const num = (k, label) => `<label class="opf">${label} <input type="number" step="1" data-optopt="${k}" value="${esc(o[k])}"></label>`;
-  // labelled and in the text's colour (a bare grey menu read as a switched-off one, 2026-10-05)
-  return `<h4 class="ophd2">${t('opSearch')}</h4><div class="opparams opwhere"><label class="opf">${esc(t('optWhereLbl'))} <select class="buffsel" data-optopt="where">${wheres}</select></label>` +
-    `<label class="opf" title="${esc(t('optSearchTip'))}">${esc(t('opHow'))} <select class="buffsel" data-optopt="search">${modes}</select></label>` +
-    chk('wardOnly', t('optWard')) + (noWeapons ? `<label class="opf muted" title="${esc(noWeapons)}"><input type="checkbox" disabled> ${t('freeWeapons')}</label>`
-      : chk('freeWeapons', t('freeWeapons'), t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip'))) + chk('fullSpeed', t('fullSpeed'), t('fullSpeedTip', {n: OPT_CORES})) + `</div>` +
-    (noFloors ? '' : `<div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('sb', 'Subtle Blow ≥')}${ws ? num('hit', t('optHitLbl')) : ''}</div>`);
+  {id: 'calc', title: 'opTabCalc', menu: {key: 'search', label: 'opHow', values: ['fast', 'classic'], text: 'optSearch_', dflt: 'fast', tip: 'optSearchTip'},
+    keys: ['fullSpeed']},
+  {id: 'special', title: 'opTabSpecial', keys: ['hoxne'], count: true}];
+const OP_SWITCH = {
+  wardOnly: {label: 'optWard'},
+  freeWeapons: {label: 'freeWeapons', tip: ws => t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip')},
+  fullSpeed: {label: 'fullSpeed', tip: () => t('fullSpeedTip', {n: OPT_CORES})},
+  hoxne: {label: 'optHoxne', tip: () => t('optHoxneTip')}};
+// One switch; noWeapons: free weapons offered off, with why
+function opSwitchHTML(o, k, ws, noWeapons){
+  const d = OP_SWITCH[k], off = k === 'freeWeapons' && noWeapons, tip = off ? noWeapons : d.tip ? d.tip(ws) : '';
+  return `<label class="opsw ${off ? 'off' : ''}" ${tip ? `title="${esc(tip)}"` : ''}><input type="checkbox" ${off ? 'disabled' : `data-optopt="${k}" ${o[k] ? 'checked' : ''}`}>` +
+    `<span>${esc(t(d.label))}</span></label>`;
+}
+// labelled and in the text's colour (a bare grey menu read as a switched-off one, 2026-10-05)
+function opMenuHTML(o, m){
+  const opts = m.values.map(v => `<option value="${v}" ${(o[m.key] || m.dflt) === v ? 'selected' : ''}>${t(m.text + v)}</option>`).join('');
+  const tip = m.tip ? `title="${esc(t(m.tip))}"` : '';
+  return `<div class="opsels"><span ${tip}>${esc(t(m.label))}</span><select class="buffsel" data-optopt="${m.key}" ${tip}>${opts}</select></div>`;
+}
+// The search block: its tabs, then the open tab's menu and switches
+function opSearchHTML(o, ws, noWeapons){
+  const cur = OP_TABS.find(x => x.id === S._opTab) || OP_TABS[0];
+  const tabs = OP_TABS.map(x => { const on = x.count ? x.keys.filter(k => o[k]).length : 0;
+    return `<button data-optab="${x.id}" aria-pressed="${x === cur}">${esc(t(x.title))}${on ? `<small class="opon">${on}</small>` : ''}</button>`; }).join('');
+  return `<h4 class="ophd2">${t('opSearch')}</h4><div class="seg optabs" role="group">${tabs}</div>` +
+    `<div class="optab">${cur.menu ? opMenuHTML(o, cur.menu) : ''}<div class="opsws">${cur.keys.map(k => opSwitchHTML(o, k, ws, noWeapons)).join('')}</div>` +
+    (cur.id === 'special' ? `<p class="muted small">${esc(t('opSpecialWhy'))}</p>` : '') + `</div>`;
 }
 
 /* ---- right: the result ---- */
@@ -333,3 +373,32 @@ function cycleOf(s, plain){
   }
   return S._cyc[key];
 }
+// the option that counts Hoxne Ampulla's enchantment (stats.js ENCHANT_KEPT)
+Object.assign(T.fr, {optHoxne: 'Hoxne Ampulla active', optHoxneTip: 'Compte son enchantement (Double Attack +100 %, 30 minutes, 1000 gils l’utilisation) comme actif tant qu’elle est portée : l’optimiseur peut alors la choisir. Décoché, elle ne compte pour rien et n’est jamais proposée'});
+Object.assign(T.en, {optHoxne: 'Hoxne Ampulla active', optHoxneTip: 'Counts its enchantment (Double Attack +100%, 30 minutes, 1000 gil per use) as active while it is worn: the optimizer may then pick it. Unchecked, it counts for nothing and is never suggested'});
+// the left column's blocks (limits, search tabs)
+Object.assign(T.fr, {opLimits: 'Limites à respecter', opTabPieces: 'Pièces', opTabCalc: 'Calcul', opTabSpecial: 'Spéciaux',
+  opSpecialWhy: 'Des pièces à effet particulier, comptées seulement quand tu les coches.'});
+Object.assign(T.en, {opLimits: 'Limits', opTabPieces: 'Pieces', opTabCalc: 'Calculation', opTabSpecial: 'Special',
+  opSpecialWhy: 'Pieces with a special effect, counted only when you check them.'});
+// what each objective is, on hover (events.js showTip): one or two sentences, and what sets it apart from its neighbours
+Object.assign(T.fr, {
+  objTip_tp_real: 'Le set qui arrive le plus vite au TP de la WS, en comptant le hasard des coups round par round. Le plus proche du jeu. Ne regarde que la vitesse : à temps égal, le temps moyen départage.',
+  objTip_tp_time: 'Le même but, calculé plus simplement : comme si chaque round donnait le TP moyen. À comparer au temps réel, qui compte le hasard des coups.',
+  objTip_dps: 'Les dégâts par seconde de tes auto-attaques seules, sans la WS. Pour un set où ce sont les coups qui comptent, pas le TP.',
+  objTip_tp_round: 'Le plus de TP gagné à chaque round d’attaque. La durée du round ne compte pas, contrairement aux deux « temps jusqu’à la WS ».',
+  objTip_cycle: 'Les dégâts d’un combat entier : auto-attaques, WS, skillchains et Aftermath ensemble. En test : résultat à confirmer en jeu.',
+  objTip_damage: 'Les dégâts de la WS lancée au TP choisi ({tp}). Pour une WS que tu lances toujours au même TP.',
+  objTip_damage_avg: 'La moyenne des dégâts de la WS de {a} à {b} TP, tous les 250. Pour une WS que tu lances à des TP variables.',
+  objTip_tp_return: 'Le plus de TP rendu par les coups de la WS, sans regarder ses dégâts : pour enchaîner la suivante plus vite.',
+  objTip_jump: 'Le plus de TP sur le round d’attaque que Jump et High Jump font dans leur propre set.'});
+Object.assign(T.en, {
+  objTip_tp_real: 'The set that reaches the weaponskill\'s TP fastest, with the randomness of each hit counted round by round. The closest to the game. Speed only: at equal time, average time breaks the tie.',
+  objTip_tp_time: 'The same goal, calculated more simply: as if every round gave the average TP. Compare it with real time, which counts the randomness of the hits.',
+  objTip_dps: 'The damage per second of your auto-attacks alone, without the weaponskill. For a set where the hits matter, not the TP.',
+  objTip_tp_round: 'The most TP gained each attack round. Round length does not count, unlike the two "time to WS" objectives.',
+  objTip_cycle: 'The damage of a whole fight: auto-attacks, weaponskills, skillchains and Aftermath together. Experimental: confirm the result in game.',
+  objTip_damage: 'The damage of the weaponskill used at the chosen TP ({tp}). For a weaponskill you always use at the same TP.',
+  objTip_damage_avg: 'The average damage of the weaponskill from {a} to {b} TP, every 250. For a weaponskill you use at varying TP.',
+  objTip_tp_return: 'The most TP returned by the weaponskill\'s hits, regardless of its damage: to get to the next one faster.',
+  objTip_jump: 'The most TP from the attack round Jump and High Jump do in their own set.'});

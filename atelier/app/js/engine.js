@@ -250,7 +250,8 @@ const skillEva = level => level > 300 ? Math.floor(300 + 0.8 * (level - 300)) : 
 // 499 read for a WAR whose skill menu and Accuracy show 478)
 function skillLevel(c, name){
   const want = (name || '').toLowerCase().replace(/[^a-z]/g, '');
-  const table = ((FFXI.player_data || {}).JOB_COMBAT_STATS || {})[(S.job || '').toLowerCase()] || {};
+  // the engine's files load after the first render: no cap until they are there (the page renders again then)
+  const table = (((window.FFXI || {}).player_data || {}).JOB_COMBAT_STATS || {})[(S.job || '').toLowerCase()] || {};
   const capKey = Object.keys(table).find(k => k.toLowerCase().replace(/[^a-z]/g, '') === want + 'skill');
   const cap = capKey ? table[capKey] + (c.master_level || 0) + 16 : Infinity;
   for (const [k, v] of Object.entries(c.skills || {})) if (k.toLowerCase().replace(/[^a-z]/g, '') === want) return Math.min(v, cap);
