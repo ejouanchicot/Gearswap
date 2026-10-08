@@ -51,7 +51,7 @@ PDT <-> MDT keeps every choice.
 `//gs c sortie <target>` (Sortie orders, only on a character with a `SORTIE_CONFIG.lua`;
 with Tetsouo's, the example) sets the /SCH or /RUN stance for the
 target (DPS or Tanking; on another subjob it only warns) and `PhalanxSIRD`: Off for `aminon`
-and `aminontest` (Phalanx potency matters more there), On for every other target.
+(Phalanx potency matters more there), On for every other target.
 
 The weaponskill slots follow the weapon in hand (`PLD_WS_CONFIG.lua`): Excalibur =
 Savage Blade / Knights of Round, Burtgang = Savage Blade / Atonement, Naegling =

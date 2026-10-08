@@ -121,7 +121,7 @@ unlocked wardrobes the rest, and no wardrobe is protected.
 | `alt <name> [args]` | Run an alt command even when a local command has the same name |
 | `<name>` | An alt command, when no local command has that name |
 | `altsync`, `altbuffs`, `altdebug` | Alt buff reports: ask again / show / trace |
-| `sortie ...` | Sortie orders: your stance for a target, and a Silmaril profile for your alt. Exists only on a character that has `_common/combat/SORTIE_CONFIG.lua` (the author's, Tetsouo's, is the example: his alt, targets, stances); without it the command says it is not set up and the help does not list it. With Tetsouo's file, on PLD it also sets Phalanx SIRD (Off for `aminon` / `aminontest`, On for every other target) and `sortie escort` turns Regen On, only with /SCH as subjob |
+| `sortie ...` | Sortie orders: your stance for a target, and a Silmaril profile for your alt. Exists only on a character that has `_common/combat/SORTIE_CONFIG.lua` (the author's, Tetsouo's, is the example: his alt, targets, stances); without it the command says it is not set up and the help does not list it. With Tetsouo's file, on PLD it also sets Phalanx SIRD (Off for `aminon`, On for every other target) and `sortie escort` turns Regen On, only with /SCH as subjob |
 
 The boxes also send each other commands you never type: `altjobupdate`,
 `requestjob`, `setalt`, `altbuff`, `altbuffsync`, `altreport`, `altmirror`,

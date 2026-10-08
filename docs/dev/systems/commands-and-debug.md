@@ -222,7 +222,7 @@ All the data of `//gs c sortie` is the character's `_common/combat/SORTIE_CONFIG
 | `profile_root` | path | Prefix of every `sm load` (relative to `Windower/Settings`; Tetsouo: `Kaories/Sortie/GEO/`) |
 | `stances` | `{name = {"State Value", ...}}` | This character's states for a stance (Tetsouo: `dps`, `tank`), set like `gs c set` without Mote's chat line; an unknown state falls back to `gs c set` |
 | `target_states` | `{"State Value", ...}` | Set for every target, only the states this job has (`rawget(state, ...)`), others skipped silently. Tetsouo: `PhalanxSIRD On`, so only PLD is affected |
-| `targets` | `{name = {profile, indi, stance, summary, states?}}` | One per target: the alt's profile folder, the Indi- it casts on load, the stance, the text shown; `states` replaces the same state of `target_states` (Tetsouo's `aminon` / `aminontest`: `PhalanxSIRD Off`) |
+| `targets` | `{name = {profile, indi, stance, summary, states?}}` | One per target: the alt's profile folder, the Indi- it casts on load, the stance, the text shown; `states` replaces the same state of `target_states` (Tetsouo's `aminon`: `PhalanxSIRD Off`) |
 | `aliases` | `{alias = target}` | Bosses fought the same way (Tetsouo: `degei`, `skomora`, `ghatjot`, `dhartok` -> `melee`) |
 | `escort` | `{indi, states = {SUB = {...}}}` | `sortie escort [Indi-X]`: `indi` is the default Indi- (`Indi-Regen` when missing); `states` per subjob of this character, set first (Tetsouo: `SCH = {'Regen on'}`, PLD's /SCH Regen). Then the alt gets `sm off` and `gs c escort <Indi> <me>` |
 | `orders` | `{name = {command, action?}}` | One-shot console command to the alt; `action` is the text shown, none = "Silmaril OFF". A `sm off` order also records Silmaril off in the alts window (`AltGroup.note`) |
