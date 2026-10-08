@@ -413,7 +413,11 @@ def add_icons(lua, ffxi, done, names):
     for char, job, sub in done:
         data = read_export(export_path(char, job, sub))
         if data and data.get('items'):
-            icons, descs = data.setdefault('icons', {}), data.setdefault('descs', {})
+            # an export with none wrote them as an empty list (Lua's empty table)
+            for key in ('icons', 'descs'):
+                if not isinstance(data.get(key), dict):
+                    data[key] = {}
+            icons, descs = data['icons'], data['descs']
             for slot_names in data['items'].values():
                 for n in slot_names:
                     if n in found:
