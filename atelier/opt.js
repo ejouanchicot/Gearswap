@@ -649,7 +649,8 @@
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
         "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed",
-        "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark"];
+        "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark",
+        "petdt", "petregen", "charm", "geoskill"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
     // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
@@ -685,6 +686,13 @@
         // Stoneskin (BG Wiki): x = enhancing skill / 3 + MND; under 80 x, to 130 2 x skill / 3 + 2 x MND - 60, past it skill +
         // 3 x MND - 190; 350 at most, the "Stoneskin" gear over the cap, 475 at most. Enlight II (BG Wiki): 2 x floor((divine
         // skill + 85) / 13) + floor((skill + 85) / 26) up to 500 skill, 2 x floor((skill + 400) / 20) + floor((skill + 400) / 40) past it
+        // a GEO's luopan (the page's luopan.js): the gear's cut of its damage taken, counted up to the 37.5 % that fit
+        // under its -87.5 % cap; its Regen; and, taken at the cast: the HP a tick a Bagua Charm saves it, Geomancy+ (the
+        // highest piece, never their sum) and the Geomancy + Handbell skills
+        var geo = 0;
+        for (var gs in pieces) { var gv = pieces[gs] && pieces[gs].st && pieces[gs].st.geo; if (gv > geo) geo = gv; }
+        f.luDt = Math.min(37.5, -t.petdt); f.luRegen = t.petregen; f.luCharm = t.charm; f.geomancy = geo;
+        f.geoSkill = (b.geoSkill || 0) + t.geoskill;
         var enhAll = (b.enh || 0) + t.enh, mndAll = (b.mnd || 0) + t.mnd, x = Math.floor(enhAll / 3) + mndAll;
         var ss = x < 80 ? x : x <= 130 ? Math.floor(2 * enhAll / 3) + 2 * mndAll - 60 : enhAll + 3 * mndAll - 190;
         f.stoneskin = Math.min(475, Math.min(350, ss) + t.ss);
@@ -723,7 +731,7 @@
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
@@ -737,6 +745,7 @@
         if (num("enmity")) n += Math.max(0, fl.enmity - f.enmity);
         if (num("phalanx")) n += Math.max(0, fl.phalanx - f.phalanx);
         if (num("ceLoss")) n += Math.max(0, fl.ceLoss - f.ceLoss);
+        if (num("luDt")) n += Math.max(0, fl.luDt - f.luDt);
         return n;
     }
     // A set's value: the objectives in their order (opts.objective, then opts.then), each well under a step of the one

@@ -111,8 +111,8 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} too many',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your measure in game, with the buffs chosen in the page (a food chosen but not on in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Cut of the enmity lost when you take a hit, two buckets that multiply: the Enmity (1 % a +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover'];
-const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss']);
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill'];
+const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
@@ -147,6 +147,8 @@ function withSird(s, list){
 }
 function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
+  // a GEO's luopan sets and its Geo- / Indi- cast sets (luopan.js)
+  if (luopanObjectives(s)) return luopanObjectives(s);
   // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap);
   // a Fast Cast set first (it is named for the spells it serves: precast.FC.Phalanx)
   if (fam === 'fc' && /cure/i.test(p) && /self/i.test(p)) return ['fc', 'hpLow'];
@@ -179,7 +181,7 @@ function statDefaultOf(s){
 // The objectives and floors kept for that set (S.optOpts.statBy[path]: {objs, floor})
 function statOpts(s){
   const by = (S.optOpts || {}).statBy || {}, mine = by[s.path] || {}, objs = (mine.objs || statDefault(s)).slice(0, 3);
-  return {objs, floor: Object.assign({pdt: 0, mdt: 0, hp: 0, hpMax: 0, sird: 0, fc: 0, ecrit: 0, enmity: 0, phalanx: 0, ceLoss: 0}, statFloorDefault(s, objs[0]), mine.floor || {})};
+  return {objs, floor: Object.assign({pdt: 0, mdt: 0, hp: 0, hpMax: 0, sird: 0, fc: 0, ecrit: 0, enmity: 0, phalanx: 0, ceLoss: 0, luDt: 0}, statFloorDefault(s, objs[0]), mine.floor || {})};
 }
 // The floors a tank's idle and Enmity sets start with (the guide's solve_idle / solve_enmity: DT+PDT at the -50 % cap,
 // the gear's enemy critical hit rate -5 beside the -5 of the merits); 0 (no floor) elsewhere
@@ -259,11 +261,12 @@ function setStatOpts(path, patch){
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'ceLoss', 'cureEnm']],
   ['cure', ['cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']]];
+  ['regen', ['refresh', 'regen']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
   const add = list => list.forEach(k => out.add(k)), def = ['def', 'hp', 'pdtRed', 'mdtRed', 'meva', 'mdb', 'enmity'];
+  add(luopanRelevant(s));
   if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
   else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
   else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
@@ -309,6 +312,7 @@ function statVec(p, slot){
   if (v('skill:healing magic skill') + all) out.heal = v('skill:healing magic skill') + all;
   if (v('skill:divine magic skill') + all) out.div = v('skill:divine magic skill') + all;
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
+  if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
   if (v('skill:shield skill')) out.shield = v('skill:shield skill');
@@ -350,7 +354,7 @@ function statBase(s){
   // a tank (PLD, RUN): Crusade's Enmity +30 counted, on or not (the guide: "essentially always up", 5 min, refreshed in
   // the rotation), in the equipment Enmity capped at +200
   const crusade = ['PLD', 'RUN'].includes(S.job) && !jaOn(buffState(), 'Crusade') ? CRUSADE_ENMITY : 0;
-  return {ecritRoom, cureJp, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
+  return {ecritRoom, cureJp, geoSkill: S.job === 'GEO' && c.skills ? skillLevel(c, 'geomancy') + skillLevel(c, 'handbell') : 0, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
     hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: (B.enmity || 0) + crusade, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
     shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect] && !b.protectOther, shieldMul: protectGift()};
@@ -533,7 +537,7 @@ function statWhatHTML(s){
   const kept = ((S.optOpts || {}).statBy || {})[s.path];
   const reset = kept ? `<p class="muted small">${esc(t('statKept'))} <button class="linkbtn" data-statreset>${esc(t('statReset'))}</button></p>` : '';
   const floors = reset + `<h4 class="ophd2">${t('statFloors')}</h4><p class="muted small">${esc(t('statFloorsWhy'))}</p><div class="opparams">${num('pdt', 'DT+PDT ≤')}${num('mdt', 'DT+MDT ≤')}${num('hp', t('statHpMin'))}` +
-    `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}${opt('ceLoss', 'ceLoss', t('statCeLoss'))}</div>`;
+    `${num('hpMax', t('statHpMax'))}${opt('sird', 'sird', t('statSird'))}${opt('fc', 'fc', t('statFc'))}${opt('ecrit', 'ecritRed', t('statEcrit'))}${opt('enmity', 'enmity', t('statEnm'))}${opt('phalanx', 'phalanx', t('statPhx'))}${opt('ceLoss', 'ceLoss', t('statCeLoss'))}${opt('luDt', 'luDt', t('statLuDt'))}</div>`;
   const search = opSearchHTML(S.optOpts || {}, false, true);
   const jaList = abilityPieces(s);
   const own = jaList.length ? `<div class="opparams"><label class="opf opwrap" title="${esc(t('statKeepOwnTip', {b: segs(s.path).pop()}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
@@ -551,7 +555,7 @@ function statRows(s){
   const rows = STAT_OBJS.map(k => ({id: k, label: t('statObj_' + k), get: f => f[k], fmt: statFmt(k)}));
   const lim = {hp: v => (!on('hp') || v >= fl.hp) && (!on('hpMax') || v <= fl.hpMax), sird: v => !on('sird') || v >= fl.sird, fc: v => !on('fc') || v >= fl.fc,
     ecritRed: v => !on('ecrit') || -v <= fl.ecrit, enmity: v => !on('enmity') || v >= fl.enmity, phalanx: v => !on('phalanx') || v >= fl.phalanx,
-    ceLoss: v => !on('ceLoss') || v >= fl.ceLoss};
+    ceLoss: v => !on('ceLoss') || v >= fl.ceLoss, luDt: v => !on('luDt') || v >= fl.luDt};
   for (const r of rows) if (lim[r.id]) r.floor = lim[r.id];
   rows.push({id: 'pdt', label: on('pdt') ? `DT+PDT ≤ ${fl.pdt}` : 'DT+PDT', get: f => f.pdt, fmt: v => String(Math.round(v)), low: true, floor: on('pdt') ? v => v <= fl.pdt : null},
     {id: 'mdt', label: on('mdt') ? `DT+MDT ≤ ${fl.mdt}` : 'DT+MDT', get: f => f.mdt, fmt: v => String(Math.round(v)), low: true, floor: on('mdt') ? v => v <= fl.mdt : null});
