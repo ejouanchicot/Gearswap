@@ -490,6 +490,7 @@ local COMMANDS_HELP = {
         {title = 'INFO & DEBUG', rows = {
             {'//gs c info ', '<name>', 'Spell / JA / WS details'},
             {'//gs c fights ', '[on | off | reset]', 'Fight / kill blocks (off by default)'},
+            {'//gs c dealwatch ', '[on | off]', 'Timers a Random Deal gave back to you'},
             {'//gs c debugsubjob | dsj', '', 'Show subjob detection'},
             {'//gs c debugprecast', '', 'Toggle precast debug'},
             {'//gs c debugmidcast', '', 'Toggle midcast debug'},

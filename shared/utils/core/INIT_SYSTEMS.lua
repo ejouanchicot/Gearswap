@@ -368,6 +368,15 @@ pcall(function()
     end
 end)
 
+-- The timers a Random Deal / Wild Card gave back (random_deal_watch.lua),
+-- only while the player has it on (//gs c dealwatch on).
+pcall(function()
+    local ok, RandomDealWatch = pcall(require, 'shared/utils/combat/random_deal_watch')
+    if ok and RandomDealWatch then
+        RandomDealWatch.init()
+    end
+end)
+
 -- Treasure Hunter on the engaged set and on the first action against a
 -- mob not tagged yet (treasure_hunter.lua). After the Dual Wield and belt
 -- hooks (TH wins, once per mob), before the custom states.
