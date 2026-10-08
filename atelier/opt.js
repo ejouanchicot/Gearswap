@@ -290,13 +290,23 @@
         if (!r || m === 1) return r;
         return [metric === "TP return" ? r[0] : r[0] * m, [r[1][0] * m, r[1][1], r[1][2]]];
     }
-    // The slots a piece leaves empty: "Cannot equip leggear" (Onca Suit), headgear, handgear, footgear
-    var BLOCK = {headgear: "head", handgear: "hands", hand: "hands", leggear: "legs", footgear: "feet"};
+    // The slots a piece leaves empty: "Cannot equip headgear", "Cannot Equip Hand, Leg, or Footgear", "Cannot Equip
+    // Headgear or Handgear": every slot the sentence names
+    var BLOCK = {head: "head", hand: "hands", leg: "legs", foot: "feet"}, SUIT = ["hands", "legs", "feet"];
+    // The game's English text names too few slots on these (its Japanese text and the game itself: an Onca Suit comes
+    // off as soon as a hand or foot piece goes on, its text says leggear only)
+    var BLOCK_FIX = {"Onca Suit": SUIT, "Behemoth Suit": SUIT, "Behemoth Suit +1": SUIT, "Wyrmking Suit": SUIT,
+        "Wyrmking Suit +1": SUIT, "Mandra. Suit": SUIT, "Mandra. Suit +1": SUIT, "Korrigan Suit": SUIT, "Kupo Suit": SUIT,
+        "Goblin Suit": SUIT, "G. Moogle Suit": SUIT, "Chocobo Suit": SUIT, "Chocobo Suit +1": SUIT, "Bl. Chocobo Suit": SUIT,
+        "Botulus Suit": ["head", "hands"], "Botulus Suit +1": ["head", "hands"],
+        "Poroggo Cassock": ["head"], "Poroggo Cass. +1": ["head"]};
     O.blocks = function (piece) {
-        var item = piece && piece.name && O.item(piece.name, piece.id), out = [];
+        var item = piece && piece.name && O.item(piece.name, piece.id), out = (BLOCK_FIX[piece && piece.name] || []).slice();
         ((item && item.unparsed) || []).forEach(function (t) {
-            var m = String(t).match(/Cannot equip (\w+)/i);
-            if (m && BLOCK[m[1].toLowerCase()]) out.push(BLOCK[m[1].toLowerCase()]);
+            var m = String(t).match(/Cannot equip ((?:\w+,? )*?\w*gear(?: or \w+gear)*)/i);
+            (m ? m[1].match(/head|hand|leg|foot/gi) : []).forEach(function (w) {
+                if (out.indexOf(BLOCK[w.toLowerCase()]) < 0) out.push(BLOCK[w.toLowerCase()]);
+            });
         });
         // an instrument in the ranged slot (a GEO's bell, a BRD's horn or harp) leaves no room for ammo
         if (item && item.Type === "Instrument") out.push("ammo");

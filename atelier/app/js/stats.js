@@ -173,7 +173,7 @@ function pieceStats(p, slot){
     if (ear && ear[1].toLowerCase() === side) { mode = null; line = line.slice(ear[0].length); if (!line.trim()) continue; }
     line = unsigned(line, r.base);
     // "Cannot Equip Headgear DEF:51..." (Twilight Cloak, Onca Suit): what follows is the piece's, not a condition
-    line = line.replace(/^Cannot [Ee]quip \w+\s*/, '');
+    line = line.replace(/^Cannot [Ee]quip (?:\w+,? )*?\w*gear(?: or \w+gear)*\.?\s*/i, '');
     // "Unity Ranking: HP+30～80" (Blistering Sallet +1): your Unity's weekly ranking gives it all the time, not a
     // condition; at its top, as the game measured it (2026-10-04: Sailfi Belt +1 Attack +15, Gelatinous Ring +1 HP +35)
     // "Mastery Rank: All BP -30 to +30" (Hoxne Earring): the seven attributes by your mastery rank (BG Wiki: rank 1
