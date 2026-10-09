@@ -60,7 +60,8 @@ local config = {
     jump_threshold      = 5.0,   -- Single-tick delta above this = teleport/zone (running maxes ~1 yalm/tick)
     heal_interval       = 2.0,   -- Max interval to re-sync gear while moving (desync backstop)
     idle_interval       = 0.3,   -- Slower poll while standing still (movespeed not changing)
-    engaged_interval    = 0.5    -- Slowest poll while Engaged (movespeed is idle-only; just watch for disengage)
+    engaged_interval    = 0.5,   -- Slowest poll while Engaged (movespeed is idle-only; just watch for disengage)
+    action_hold         = 3.0    -- Longest an update waits for an action to end (an action that never reports its end)
 }
 
 -- Track last update time for debouncing
@@ -71,6 +72,9 @@ local start_time = 0
 
 -- Track if an update was blocked and needs to be sent later
 local pending_update = false
+
+-- os.clock() of the first update held back by the action under way, nil when none is
+local held_since = nil
 
 ---============================================================================
 --- PERSISTENT SEQUENCE COUNTER (survives gs reload)
@@ -213,6 +217,25 @@ local function step_distance()
     return dist
 end
 
+--- True while an action is under way and updates must wait for its end.
+---
+--- `gs c update` puts the idle set on at once. Sent when the player starts
+--- running at the end of a cast, it took the midcast gear off before the spell
+--- landed, and the buff went out with the idle set's duration. The caller keeps
+--- its update pending and asks again each tick; aftercast puts the gear back on
+--- with Moving already set. An action that never reports its end stops holding
+--- after `action_hold`.
+--- @param now number os.clock() as read by the caller
+--- @return boolean
+local function held_by_action(now)
+    if type(midaction) ~= 'function' or not midaction() then
+        held_since = nil
+        return false
+    end
+    held_since = held_since or now
+    return (now - held_since) < config.action_hold
+end
+
 --- Ask GearSwap to re-equip, no more often than the debounce allows.
 ---
 --- Shared by the moving and the stopped branch, which ran the same throttle
@@ -230,6 +253,9 @@ local function send_update(reason, dist, now)
         return false
     end
     if (now - last_update_time) < config.update_debounce then
+        return false
+    end
+    if held_by_action(now) then
         return false
     end
 
@@ -268,7 +294,8 @@ local function handle_moving(dist)
     -- simply running.
     if moving and should_move
         and (now - start_time) >= config.job_change_cooldown
-        and (now - last_update_time) >= config.heal_interval then
+        and (now - last_update_time) >= config.heal_interval
+        and not held_by_action(now) then
         last_update_time = now
         if _G.LagDebugger then _G.LagDebugger.on_automove_update('heal', dist, moving) end
         windower.send_command('gs c update')
@@ -342,7 +369,7 @@ function AutoMove.start()
         -- A single-tick delta this large cannot come from running (~1 yalm a
         -- tick), so it is a teleport or a zone. Re-equip at once or movespeed
         -- is lost across the jump - including the cases with no loading screen.
-        if dist > config.jump_threshold then
+        if dist > config.jump_threshold and not held_by_action(os.clock()) then
             if _G.LagDebugger then _G.LagDebugger.on_automove_update('jump', dist, moving) end
             windower.send_command('gs c update')
             coroutine.schedule(run, config.check_interval)
