@@ -72,6 +72,8 @@ that were re-read that day; elsewhere the function is named, which survives edit
 |---|---|---|
 | `shared/data/equipment/ITEM_HP_MP.lua` | 6 534 (6 529 entries) | Generated HP/MP table read by `hp_priority.lua` (do not edit by hand) |
 | `shared/data/equipment/PATH_RANK_GEAR.lua` | 2 598 (67 entries) | Stats of path / rank gear per path and rank, read by hand from BG-Wiki (page link and notes per entry); read by `gear_scan.lua` at `//gs c gearscan` |
+| `shared/data/equipment/ITEM_FAST_CAST.lua` | 69 (62 entries) | Generated Fast Cast of the pieces whose game text gives no number, read by `shared/utils/precast/cast_time.lua` (do not edit by hand) |
+| `scripts/item_db/build_fast_cast_db.py` | 60 | Regenerates `ITEM_FAST_CAST.lua` from the Atelier catalogue (`atelier/engine/catalog/items.json`, local) and Windower `res/` |
 | `scripts/item_db/build_item_db.py` | 379 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
 | `scripts/item_db/find_items.py` | 94 | Query tool over the generated SQLite (`--stat hp --slot Head --job WAR --top 10`) |
 | `_master/config_global/REFILL_CONFIG.lua` | 71 | Template of `<Char>/_common/inventory/REFILL_CONFIG.lua`: bags, the common list `default_list` (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent Oil, 12 each), a commented `subjobs` example and a commented `quiver_open_at` line |

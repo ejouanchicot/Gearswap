@@ -8,7 +8,9 @@
 --- idle/engaged set comes back. Only spells and items are tracked; job
 --- abilities, waltzes, steps... are ignored. The cast time
 --- is the one computed from the precast set (shared/utils/precast/cast_time.lua),
---- or, when there is none, the base cast time minus state.FastCast.
+--- or, when there is none, the base cast time minus state.FastCast. A spell is
+--- never counted shorter than MIN_SPELL_TIME: the end of a cast reaches the
+--- client about that long after the midcast, however short the cast.
 ---
 --- Started by INIT_SYSTEMS 2 s after a load, stopped by JobChangeManager's
 --- cleanup. Settings changed with //gs c watchdog live in module locals and
@@ -34,6 +36,14 @@ local MessageWatchdog = require('shared/utils/messages/formatters/system/message
 -- Timeout = adjusted_cast_time + WATCHDOG_BUFFER
 -- 1.5s recommended to account for network latency
 local WATCHDOG_BUFFER = 1.5
+
+-- Shortest time counted for a spell before the buffer (in seconds).
+-- Measured on 560 casts (trace logs, 2026-10-08/09): a spell's aftercast comes
+-- 1.0 to 2.0 s after its midcast even when Fast Cast brings the cast to 0.2 s
+-- (Flash: median 1.25 s, longest 2.03 s; Foil 0.4 s: longest 2.67 s). Without
+-- this floor, 8 Flash out of 41 were reported stuck and got their `gs c update`
+-- before the spell landed.
+local MIN_SPELL_TIME = 1.5
 
 -- Fallback timeout for unknown spells (in seconds)
 local WATCHDOG_FALLBACK_TIMEOUT = 5.0
@@ -80,6 +90,13 @@ local function get_fast_cast_percent()
     return 0
 end
 
+--- Timeout of a spell from its cast time once reduced.
+--- @param cast_time number Seconds
+--- @return number
+local function spell_timeout(cast_time)
+    return math.max(cast_time, MIN_SPELL_TIME) + WATCHDOG_BUFFER
+end
+
 --- Calculate timeout for a spell or item based on its cast time/delay.
 --- Fast Cast applies to spells only.
 --- @param spell_id number|nil Spell id (res.spells)
@@ -109,9 +126,7 @@ local function calculate_timeout(spell_id, item_id)
     local fc_percent = get_fast_cast_percent()
     local adjusted_cast_time = base_cast_time * (1 - fc_percent / 100)
 
-    local timeout = adjusted_cast_time + WATCHDOG_BUFFER
-
-    return timeout, base_cast_time, adjusted_cast_time
+    return spell_timeout(adjusted_cast_time), base_cast_time, adjusted_cast_time
 end
 
 --- Clear midcast state tracking
@@ -200,7 +215,7 @@ function MidcastWatchdog.on_midcast_start(spell)
     if spell_id and computed and computed.id == spell_id then
         adjusted_cast_time = computed.seconds
         fc_percent = computed.percent
-        timeout = adjusted_cast_time + WATCHDOG_BUFFER
+        timeout = spell_timeout(adjusted_cast_time)
     end
 
     current_midcast.active             = true

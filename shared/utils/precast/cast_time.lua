@@ -12,6 +12,10 @@
 ---   songs: x0.5 under Nightingale, x1.5 under Troubadour;
 ---   Celerity / Alacrity halve the next white / black magic.
 --- Haste and Marches shorten the recast, never the cast.
+--- A piece whose text gives no number (Enhances "Fast Cast" effect: Loquac.
+--- Earring, Orunmila's Torque, Witful Belt...) takes its value from
+--- shared/data/equipment/ITEM_FAST_CAST.lua (BG-Wiki, generated).
+--- Augments: those written in the set, else those of the piece in the bags.
 --- Not counted: set bonuses, latent effects, "Quick Magic" procs.
 ---
 --- Only pieces this character owns count: GearSwap skips the others and the
@@ -36,6 +40,18 @@ local SLOTS = {'main', 'sub', 'range', 'ammo', 'head', 'neck', 'left_ear', 'righ
 
 local res = nil
 local by_name = nil
+local hidden = nil
+
+--- Fast Cast of a piece that its description does not give in numbers.
+--- @param id number|nil Item id
+--- @return number Percent, 0 when the piece has none
+local function hidden_fast_cast(id)
+    if not hidden then
+        local ok, data = pcall(require, 'shared/data/equipment/ITEM_FAST_CAST')
+        hidden = ok and type(data) == 'table' and data or {}
+    end
+    return id and hidden[id] or 0
+end
 
 local function resources()
     if not res then
@@ -98,18 +114,87 @@ local function reduction_in(text, spell)
     return total
 end
 
+-- Bags GearSwap equips from: inventory, wardrobes 1-8
+local EQUIP_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16}
+local OWNED_TTL = 30
+
+--- What the bags gear can be equipped from hold, re-read at most every
+--- OWNED_TTL seconds: {ids = set of item ids, items = id -> its copies}. An
+--- empty read is not kept: the bags read empty while they load (login,
+--- zoning), and 30 s of "owns nothing" would undo every check that reads them.
+local function owned()
+    local cache = rawget(_G, '_cast_time_owned')
+    if cache and cache.items and os.clock() - cache.at < OWNED_TTL then return cache end
+    local fresh = {at = os.clock(), ids = {}, items = {}, augments = {}}
+    for _, bag in ipairs(EQUIP_BAGS) do
+        for _, item in ipairs(windower.ffxi.get_items(bag) or {}) do
+            if type(item) == 'table' and item.id and item.id > 0 then
+                fresh.ids[item.id] = true
+                fresh.items[item.id] = fresh.items[item.id] or {}
+                table.insert(fresh.items[item.id], item)
+            end
+        end
+    end
+    if next(fresh.ids) then _G._cast_time_owned = fresh end
+    return fresh
+end
+
+--- Item ids this character can equip from its bags (cached OWNED_TTL s).
+--- @return table Set of item ids
+function CastTime.owned_ids()
+    return owned().ids
+end
+
+--- Augments of each owned copy of an item, decoded from the bags once per read.
+--- @param id number Item id
+--- @return table List of augment lists, empty when no copy is owned
+local function owned_augments(id)
+    local bags = owned()
+    if bags.augments[id] then return bags.augments[id] end
+    local lists = {}
+    local ok, extdata = pcall(require, 'extdata')
+    for _, item in ipairs(ok and bags.items[id] or {}) do
+        local decoded_ok, decoded = pcall(extdata.decode, item)
+        lists[#lists + 1] = decoded_ok and type(decoded) == 'table' and decoded.augments or {}
+    end
+    bags.augments[id] = lists
+    return lists
+end
+
+--- Percent from a list of augments.
+local function augments_reduction(augments, spell)
+    local total = 0
+    for _, augment in ipairs(augments) do
+        if type(augment) == 'string' then total = total + reduction_in(augment, spell) end
+    end
+    return total
+end
+
+--- Percent from the augments of a piece. Those written in the set when it
+--- gives them; else those the owned piece really carries (a set naming
+--- 'Grioavolr' alone says nothing of its "Fast Cast"+6), the lowest when
+--- several copies are owned: the estimate stays on the long side.
+local function piece_augments(piece, id, spell)
+    if type(piece) == 'table' and type(piece.augments) == 'table' then
+        return augments_reduction(piece.augments, spell)
+    end
+    local lowest = nil
+    for _, augments in ipairs(id and owned_augments(id) or {}) do
+        local percent = augments_reduction(augments, spell)
+        lowest = lowest and math.min(lowest, percent) or percent
+    end
+    return lowest or 0
+end
+
 --- Percent from one piece: its description plus its augments.
 local function piece_reduction(piece, spell)
     local name = type(piece) == 'table' and piece.name or piece
     if type(name) ~= 'string' or name == '' or name == 'empty' then return 0 end
-    local total = 0
     local id = item_id(name)
+    local total = hidden_fast_cast(id)
     local desc = id and resources().item_descriptions and resources().item_descriptions[id]
     if desc and desc.en then total = total + reduction_in(desc.en, spell) end
-    if type(piece) == 'table' and type(piece.augments) == 'table' then
-        for _, augment in ipairs(piece.augments) do total = total + reduction_in(augment, spell) end
-    end
-    return total
+    return total + piece_augments(piece, id, spell)
 end
 
 local function rdm_trait()
@@ -145,41 +230,13 @@ function CastTime.estimate(spell, gear)
     return seconds, percent
 end
 
--- Bags GearSwap equips from: inventory, wardrobes 1-8
-local EQUIP_BAGS = {0, 8, 10, 11, 12, 13, 14, 15, 16}
-local OWNED_TTL = 30
-
---- Item ids in the bags gear can be equipped from, re-read at most every
---- OWNED_TTL seconds. An empty read is not kept: the bags read empty while
---- they load (login, zoning), and 30 s of "owns nothing" would undo every
---- check that reads them.
-local function owned()
-    local cache = rawget(_G, '_cast_time_owned')
-    if cache and os.clock() - cache.at < OWNED_TTL then return cache.ids end
-    local ids = {}
-    for _, bag in ipairs(EQUIP_BAGS) do
-        local items = windower.ffxi.get_items(bag)
-        for _, item in ipairs(items or {}) do
-            if type(item) == 'table' and item.id and item.id > 0 then ids[item.id] = true end
-        end
-    end
-    if next(ids) then _G._cast_time_owned = {at = os.clock(), ids = ids} end
-    return ids
-end
-
---- Item ids this character can equip from its bags (cached OWNED_TTL s).
---- @return table Set of item ids
-function CastTime.owned_ids()
-    return owned()
-end
-
 --- What the precast leaves on: the worn gear, with this precast's equips over
 --- it where the piece is owned. GearSwap skips a piece that is not in the
 --- bags, and the slot keeps what it wore.
 local function precast_gear()
     local gear = {}
     for slot, name in pairs(player and player.equipment or {}) do gear[slot] = name end
-    local have = owned()
+    local have = owned().ids
     for slot, piece in pairs(gearswap and gearswap.equip_list or {}) do
         local name = type(piece) == 'table' and piece.name or piece
         local id = type(name) == 'string' and item_id(name)
