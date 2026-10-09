@@ -31,6 +31,9 @@
 ---     tp_max = 1999, dump = 'Fell Cleave'   above tp_max the TP is spent with that other
 ---                           weaponskill (an Aftermath's level comes from the TP its
 ---                           weaponskill is used at, and a lower level cannot replace a higher)
+---     strip = {'waist', 'left_ring'}   those slots are emptied and locked for the step, and
+---                           given back at the next one: fewer pieces, less accuracy, to see
+---                           how often you hit at each accuracy (written at each step)
 ---
 --- //gs c fights hits run plays the steps of `sequence` one after the other,
 --- each started when the one before reached its goal, then stops the journal.

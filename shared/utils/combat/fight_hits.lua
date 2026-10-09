@@ -19,10 +19,12 @@
 ---   MOB, ON-MOB   the mob's own moves and spells, the spells others land on
 ---            it, with the status gained or removed (a Defense Boost, a Dispel)
 ---   STEP, MARK    the parts of a session (//gs c fights hits <step>)
+---   STRIP    the slots a step emptied and locked
 ---
 --- Steps come from <Character>/_common/combat/FIGHTS_CONFIG.lua (every key is
 --- explained there): commands run on this character, a goal counted in swings
---- or weaponskills, a weaponskill used by itself at a TP, abilities kept up.
+--- or weaponskills, a weaponskill used by itself at a TP, abilities kept up,
+--- slots emptied and locked (to measure the hit rate at several accuracies).
 --- //gs c fights hits run plays its `sequence`. Nothing here moves, targets
 --- or engages the character.
 ---
@@ -57,6 +59,10 @@ local GEAR_SLOTS = {'main', 'sub', 'range', 'ammo', 'head', 'neck', 'left_ear', 
 local EVERY = {swings = 50, ws = 5}
 -- seconds before a weaponskill or a kept ability is asked again
 local WS_RETRY, KEEP_RETRY = 3, 5
+-- seconds a step that empties slots needs before what is worn can be read (unlock, update, equip, lock)
+local STRIP_DELAY = 5
+-- the set GearSwap is asked to equip to empty slots (sets.<name>, built for each such step)
+local STRIP_SET = 'FightsStrip'
 local FILE = '_hits.log'
 
 -- set by fight_tracker.lua: enable() turns the tracker on, level(name) gives a mob's checked level as
@@ -340,6 +346,31 @@ local function goal_of(words, step)
     return tonumber(step.goal), step.unit == 'ws' and 'ws' or 'swings'
 end
 
+--- The slots a step empties (`strip`), and the ones the step before had emptied given back. The
+--- slots are unlocked and the usual set put back first, then the step's slots are emptied with a
+--- set of empty slots and locked, so no set change fills them again. Only these slots are ever
+--- unlocked: a lock another feature holds on a slot is not ours to open.
+--- @param slots table|nil Slot names (left_ring, waist...), nil to give everything back
+--- @return string|nil The slots emptied, for the journal
+local function strip(slots)
+    local before, commands = windower._fight_hits_stripped, {}
+    if before then commands[#commands + 1] = 'gs enable ' .. table.concat(before, ' ') end
+    if before or slots then commands[#commands + 1] = 'gs c update' end
+    windower._fight_hits_stripped = nil
+    if type(slots) == 'table' and slots[1] and type(rawget(_G, 'sets')) == 'table' then
+        local set, names = {}, {}
+        for i, slot in ipairs(slots) do set[slot], names[i] = rawget(_G, 'empty'), slot end
+        sets[STRIP_SET] = set
+        -- emptied and locked in one go: a second between the two lets a set change fill the slots again
+        commands[#commands + 1] = 'gs equip ' .. STRIP_SET .. '; gs disable ' .. table.concat(names, ' ')
+        windower._fight_hits_stripped = names
+    end
+    -- given back for good: asked twice, the game refuses a piece now and then when many come back at once
+    if before and not windower._fight_hits_stripped then commands[#commands + 1] = 'gs c update' end
+    if commands[1] then send_command(table.concat(commands, '; wait 1; ')) end
+    return windower._fight_hits_stripped and table.concat(windower._fight_hits_stripped, ' ') or nil
+end
+
 --- A step of a measuring session: its commands (FIGHTS_CONFIG.lua `steps`) run on this character,
 --- then a STEP line in the journal. A name with no step there is a MARK line with the words typed.
 --- @param words table The words after "hits"
@@ -360,11 +391,13 @@ local function step(words)
         end
         write('STEP ' .. name .. ' | ' .. ran)
     end
-    -- what is worn once the step's commands have run (a weapon change takes a moment)
+    local stripped = strip(type(commands) == 'table' and commands.strip or nil)
+    if stripped then write('STRIP ' .. stripped) end
+    -- what is worn once the step's commands have run (a weapon change takes a moment, emptying slots more)
     coroutine.schedule(function()
         local p = windower.ffxi.get_player()
         if p and FightHits.on() then pcall(snapshot, p) end
-    end, PARAM_DELAY)
+    end, stripped and STRIP_DELAY or PARAM_DELAY)
 end
 
 --- The journal on or off, with the alt told. Stopped in the middle of a fight, the alt keeps its
@@ -378,6 +411,7 @@ local function switch(on)
         return tell_alt(true)
     end
     windower._fight_hits_run = nil
+    strip(nil)
     if not FightHits.hooks.fighting() then return tell_alt(false) end
     windower._fight_hits_alt_pending = true
     InfoBlock.show({tag = 'FIGHTS', title = 'Measure', fields = {{'Journal', 'off'}, {'Alt', 'stops when this mob is dead'}}})
