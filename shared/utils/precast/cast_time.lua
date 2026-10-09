@@ -7,8 +7,10 @@
 --- Spellcasting Time, Nightingale, Troubadour):
 ---   Fast Cast + casting time reductions of the spell's kind (song, cure,
 ---   elemental magic... or all spells) add up, capped at 80 %;
----   Red Mage Fast Cast trait: 10-30 % by level (job points not counted:
----   the estimate stays on the long side);
+---   Red Mage Fast Cast trait: 10-30 % by level, 32-38 % with the gifts of
+---   150 / 500 / 1125 / 2000 job points (main job);
+---   Elemental Celerity on elemental magic: BLM 15-30 % by level (2 % more
+---   at each of the same four job point gifts, main job), GEO 10 %;
 ---   songs: x0.5 under Nightingale, x1.5 under Troubadour;
 ---   Celerity / Alacrity halve the next white / black magic.
 --- Haste and Marches shorten the recast, never the cast.
@@ -34,7 +36,14 @@
 local CastTime = {}
 
 local CAP = 80
+-- {threshold, percent}, highest first (BG-Wiki: Fast Cast, Elemental Celerity)
 local RDM_TRAIT = {{89, 30}, {76, 25}, {55, 20}, {35, 15}, {15, 10}}
+-- 2 % at each of four gifts: RDM's Fast Cast, BLM's Elemental Celerity
+local CAST_GIFTS = {{2000, 8}, {1125, 6}, {500, 4}, {150, 2}}
+local ELEMENTAL_CELERITY = {
+    BLM = {{90, 30}, {80, 25}, {70, 20}, {60, 15}},
+    GEO = {{55, 10}},
+}
 local SLOTS = {'main', 'sub', 'range', 'ammo', 'head', 'neck', 'left_ear', 'right_ear',
     'body', 'hands', 'left_ring', 'right_ring', 'back', 'waist', 'legs', 'feet'}
 
@@ -92,6 +101,7 @@ local function applies(subject, spell)
     if subject:find('cure') then return name:find('^cur') ~= nil end
     if subject:find('utsusemi') then return name:find('^utsusemi') ~= nil end
     if subject:find('stoneskin') then return name == 'stoneskin' end
+    if subject:find('black magic') then return spell.type == 'BlackMagic' end
     for _, kind in ipairs({'elemental', 'healing', 'enhancing', 'enfeebling', 'dark', 'divine', 'blue'}) do
         if subject:find(kind) then return skill:find('^' .. kind) ~= nil end
     end
@@ -197,14 +207,50 @@ local function piece_reduction(piece, spell)
     return total + piece_augments(piece, id, spell)
 end
 
-local function rdm_trait()
-    local level = 0
-    if player and player.main_job == 'RDM' then level = player.main_job_level or 0
-    elseif player and player.sub_job == 'RDM' then level = player.sub_job_level or 0 end
-    for _, step in ipairs(RDM_TRAIT) do
-        if level >= step[1] then return step[2] end
+--- Percent of the first step `value` reaches.
+local function step_percent(steps, value)
+    for _, step in ipairs(steps) do
+        if value >= step[1] then return step[2] end
     end
     return 0
+end
+
+--- Level of a job this character has as main or sub, 0 when it has neither.
+local function job_level(job)
+    if not player then return 0 end
+    if player.main_job == job then return player.main_job_level or 0 end
+    if player.sub_job == job then return player.sub_job_level or 0 end
+    return 0
+end
+
+--- Job points spent on the main job, 0 when they cannot be read.
+local function main_job_points()
+    local info = windower.ffxi.get_player and windower.ffxi.get_player()
+    local points = type(info) == 'table' and type(info.job_points) == 'table'
+        and info.job_points[(info.main_job or ''):lower()]
+    return type(points) == 'table' and tonumber(points.jp_spent) or 0
+end
+
+--- Red Mage's Fast Cast trait, with its job point gifts as main job.
+local function rdm_trait()
+    local percent = step_percent(RDM_TRAIT, job_level('RDM'))
+    if percent > 0 and player.main_job == 'RDM' then
+        percent = percent + step_percent(CAST_GIFTS, main_job_points())
+    end
+    return percent
+end
+
+--- Elemental Celerity: the best of the two jobs' tiers, on elemental magic only.
+local function elemental_celerity(spell)
+    if spell.skill ~= 'Elemental Magic' then return 0 end
+    local best = 0
+    for job, steps in pairs(ELEMENTAL_CELERITY) do
+        best = math.max(best, step_percent(steps, job_level(job)))
+    end
+    if best > 0 and player.main_job == 'BLM' then
+        best = best + step_percent(CAST_GIFTS, main_job_points())
+    end
+    return best
 end
 
 --- Cast time of `spell` in `gear`.
@@ -213,7 +259,7 @@ end
 --- @return number seconds, number percent (reduction applied, capped)
 function CastTime.estimate(spell, gear)
     local base = spell.cast_time or 0
-    local percent = rdm_trait()
+    local percent = rdm_trait() + elemental_celerity(spell)
     for _, slot in ipairs(SLOTS) do
         if gear[slot] then percent = percent + piece_reduction(gear[slot], spell) end
     end
