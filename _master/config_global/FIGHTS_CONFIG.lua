@@ -4,10 +4,12 @@
 --- The tracker itself needs no setting: //gs c fights on | off | reset.
 ---
 --- //gs c fights hits on | off writes one line a swing and a weaponskill to
---- <Character>/logs/fights/<date>_hits.log (damage, critical or not, TP), to
---- check damage formulas against the game. While you measure, an alt can be
---- told what to do: the commands below are sent to it when the journal starts
---- and when it stops. Leave hits_alt out and nothing is sent.
+--- <Character>/logs/fights/<date>_hits.log (damage, critical or not, TP, the
+--- pieces worn at each weaponskill), to check damage formulas against the
+--- game. While you measure, an alt can be told what to do: the commands below
+--- are sent to it when the journal starts and when it stops (stopped in the
+--- middle of a fight, the alt keeps going until that mob is dead). Leave
+--- hits_alt out and nothing is sent.
 ---
 --- Example (an alt that loads a support profile, then switches it off):
 ---     hits_alt = 'Myalt',
@@ -15,27 +17,34 @@
 ---     hits_off = {'sm off'},
 ---
 --- //gs c fights hits <step> runs that step's commands on this character
---- (a weapon, a mode, an ability...) and writes a STEP line in the journal,
---- so each part of a session can be told apart afterwards. A word that is no
---- step is written as a plain MARK line (//gs c fights hits berserk on).
+--- (a weapon, a mode...) and writes a STEP line in the journal, so each part
+--- of a session can be told apart afterwards. A word that is no step is
+--- written as a plain MARK line (//gs c fights hits berserk on).
 --- Swings and weaponskills are counted from that line on. In a step:
----     goal = 300          the count is shown against it, its end said in the chat
----     unit = 'ws'         the goal counts weaponskills, not swings
----     ws = 'Raging Axe'   that weaponskill is used by itself once the TP is there
----     tp = 3000           the TP it waits for (1000 when left out)
+---     goal = 300            the count is shown against it, its end said in the chat
+---     unit = 'ws'           the goal counts weaponskills, not swings
+---     ws = 'Raging Axe'     that weaponskill is used by itself once the TP is there
+---     tp = 3000             the TP it waits for (1000 when left out)
+---     keep = {'Berserk'}    abilities used again whenever they are missing and ready;
+---                           the goal then counts only what happens under them
+---     under = 'Aftermath: Lv.3'  the goal counts only what happens under that buff, and
+---                           the step's weaponskill is used only while it is missing
 ---
 --- //gs c fights hits run plays the steps of `sequence` one after the other,
 --- each started when the one before reached its goal, then stops the journal.
+--- //gs c fights hits run <name> plays `sequences.<name>` instead.
 --- You only engage and fight: nothing here moves or engages the character.
 ---     sequence = {'polearm', 'thrust'},
+---     sequences = {buffed = {'rage'}},
 ---     steps = {
 ---         polearm = {'gs c set MainWeapon Shining', goal = 300},
 ---         thrust  = {ws = 'Vorpal Thrust', tp = 1000, goal = 20, unit = 'ws'},
+---         rage    = {keep = {'Berserk'}, goal = 80},
 ---     },
 ---
 --- @file    _common/combat/FIGHTS_CONFIG.lua
 --- @author  ejouanchicot
---- @version 1.0
+--- @version 1.1
 --- @date    Created: 2026-10-09
 ---============================================================================
 
