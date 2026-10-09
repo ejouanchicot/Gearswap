@@ -144,7 +144,9 @@
         "Shield Break": {url: U + "Shield_Break", mods: {STR: 60, VIT: 60}, ftp: same(1)},
         "Steel Cyclone": {url: U + "Steel_Cyclone", mods: {STR: 60, VIT: 60}, ftp: [1.5, 2.5, 4], hits: 1,
             attack: same(1.5)},
-        "Ukko's Fury": {url: U + "Ukko%27s_Fury", mods: {STR: 80}, ftp: same(2), hits: 2, crit: [20, 35, 65]},
+        // https://www.bg-wiki.com/ffxi/Ukonvasara_(Level_119_III) : rank 15 augment "[Ukko's Fury]: Damage +10%"
+        "Ukko's Fury": {url: U + "Ukko%27s_Fury", mods: {STR: 80}, ftp: same(2), hits: 2, crit: [20, 35, 65],
+            weapons: {"Ukonvasara R15": [1.1]}},
         // https://www.bg-wiki.com/ffxi/Chango : rank 15 augment "Upheaval: DMG:+10%"
         "Upheaval": {url: U + "Upheaval", mods: {VIT: 85}, ftp: [1, 3.5, 6.5], hits: 4,
             weapons: {"Chango R15": [1.1]}},

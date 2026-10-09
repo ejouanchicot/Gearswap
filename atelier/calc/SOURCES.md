@@ -188,3 +188,11 @@ DIFFERENCES.md, "Measured in game", and applied in its section P. In the code:
 Where the game overrides the page: the TP of a weapon skill's later swings (page "a flat 10 TP",
 game floor(10 x (1 + Store TP / 100)), calc_ws_tp.js). Where the page lists an effect without a
 rule and the game gave it: "Double Attack" damage (calc_ws_hits.js, for stage 3).
+
+Read for the end-to-end check of 2026-10-09 (DIFFERENCES.md, section Q):
+https://www.bg-wiki.com/ffxi/Ukonvasara_(Level_119_III) ("DMG:340 Delay:482 STR+50 ...", rank 15
+"DMG: +12 [Ukko's Fury]: Damage +10% STR & DEX +20", aftermath "30% / 40% / 50% Triple Damage":
+the +10% is in calc_ws_details.js), https://www.bg-wiki.com/ffxi/Empyrean_Aftermath ("Empyrean
+Aftermath cannot proc on Weapon Skills"), https://www.bg-wiki.com/ffxi/Chango (again: aftermath
+"Increases skillchain potency Increases magic burst potency"), https://www.bg-wiki.com/ffxi/Upheaval
+(again: "Delivers a fourfold attack", fTP 1.0 / 3.5 / 6.5, "73~85% VIT").

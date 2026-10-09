@@ -276,3 +276,59 @@ whether the spike and "Double Attack" damage exist on weapon skill hits (O6: the
 the spike to them, as to any melee hit, and not the "Double Attack" damage), the hit rate floor
 and slope (O1, so G1 stays BG-Wiki against the reference), and the first swing's accuracy bonus
 (O2: +40 to +100; the engine keeps the page's 100).
+
+## Q. End to end on weapon skills measured in game (evening of 2026-10-09)
+
+`node scripts/audit/calc_ws_ingame_check.js` (data: scripts/audit/engine_ref/ws_2026-10-09.json,
+written by ws_ingame_export.py from the journal's line 3976 on). 15 Ukko's Fury with Ukonvasara
+and 15 Upheaval with Chango (one set apart: STR Down). Nothing is fitted on the weapon skills.
+Inputs: attributes and attack from the stats packet at the weapon skill, accuracy from the
+/checkparam in the weapon skill set (three weapon skills have none of their own: the reading of
+another one in the same set is used), the set's other stats by `CALC.characterStats` on the
+pieces worn, the enemy's defense and VIT from that fight's auto-attack swings.
+
+| Series | n | Measured mean | Predicted, evasion at the swings' bound | Predicted, evasion from the TP returns |
+|--------|---|---------------|------------------------------------------|----------------------------------------|
+| Ukko's Fury, Ukonvasara R15 | 15 | 10 466 +- 1 110 | 10 128 (-3.2%, -0.3 standard error) | 11 267 (+7.7%, +0.7) |
+| Upheaval, Chango R15 | 14 | 6 377 +- 607 | 5 316 (-16.6%, -1.7) | 5 948 (-6.7%, -0.7) |
+
+TP returned: 198.5 +- 3.4 measured against 182 to 188 (Ukko's Fury), 166.6 +- 16.3 against 135 to
+151 (Upheaval). The first hit's TP confirms the Store TP the engine totals for both sets (167 =
+134 + floor(134 x 0.25); 174 = 134 + floor(134 x 0.30)).
+
+What limits the test, by size (the checker prints the whole table):
+- The enemy's evasion. The auto-attacks of fights 14 and 15 land at the 95% cap (accuracy 1400),
+  so they only say "evasion <= 1350 / 1360", and the weapon skill sets have 60 to 150 less
+  accuracy. 40 points of evasion move Upheaval by 27 to 30% and Ukko's Fury by 5 to 12%. The TP
+  returned counts the swings that landed, which gives an evasion without any damage (fight 15:
+  1346 to 1352; fight 16: 1366 against 1384 from the swings): that is the second prediction.
+- The first swing's accuracy bonus (O2): +40 instead of +100 takes 31% off Upheaval, whose
+  first hit carries the fTP. First hits landed 12 of 14 where the later swings land a third of
+  the time: at least +100 on this enemy.
+- The enemy's AGI, not measured: 50 under the character's DEX would add 10% to Ukko's Fury.
+- "Double Attack" damage on the weapon skill's Double Attack swings (O6): +5.7% on Ukko's Fury,
+  +1.2% on Upheaval. Neither sign of gap decides it.
+- Merits of Upheaval (85% assumed): 73% takes 6.5% off.
+- The enemy's defense interval: 1 to 3%. Its VIT, the 8 swing limit, the spike on weapon skill
+  hits (3.6% on Upheaval, nothing on Ukko's Fury whose hits are mostly critical): under 4%.
+
+Read for this check: https://www.bg-wiki.com/ffxi/Empyrean_Aftermath ("Also unlike Mythics,
+Empyrean Aftermath cannot proc on Weapon Skills": Ukonvasara's aftermath is not applied to
+Ukko's Fury), https://www.bg-wiki.com/ffxi/Ukonvasara_(Level_119_III) (DMG 340, rank 15 "DMG: +12
+[Ukko's Fury]: Damage +10%": the +10% was missing from calc_ws_details.js and is added),
+https://www.bg-wiki.com/ffxi/Chango (aftermath: skillchain and magic burst potency, nothing on
+weapon skill damage).
+
+Out of sample for section P: the 570 plain and 97 critical Ukonvasara swings of fights 13 and 14
+(a new engaged set, not used to settle any rule; `node scripts/audit/calc_swings_check.js`). The
+base and the ratio are fitted on their plain hits; predicted then: share at pDIF 1 20.6% and
+19.7% (measured 20.3% of 408, 16.1% of 162), critical / plain mean 2.169 and 2.165 (measured
+2.139, 2.142), plain mean +0.5% and -1.8%, critical mean +1.9% and -0.7%; without the spike the
+plain mean is 5.9% and 3.3% too high. Hit rate 95.3% of 506 and 96.9% of 191 against the 95% cap.
+
+The next measurement that would tighten this most: the enemy's evasion below the cap. Fight the
+same enemy for 150 to 200 auto-attack swings in a set of known lower accuracy (the weapon skill
+set itself, about 1250 to 1340, checked with /checkparam), so that the hit rate sits between 30%
+and 90%, then the weapon skills on that same enemy. With the evasion known to +-10, Upheaval's
+uncertainty falls from about 30% to about 8%, and the first swing's accuracy bonus (first hits
+landed against later swings) can be read to +-15.
