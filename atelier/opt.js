@@ -916,7 +916,7 @@
     // a set bonus's pieces (and the job's AF when a Regal Ring or Earring may be worn), the
     // job's TP pieces, a piece of a one-choice group; a piece you hold only by another you hold (your pieces first);
     // a ring or earring only by two others (two slots to fill). Returns {choices, read: the stats read}
-    var BONUS_SET = /^(Adhemar|Amalric|Lustratio|Ryuo|Flamma|Mallquis|Ayanmo|Mummu|Regal) |^(Horos|Etoile) Tights/;
+    var BONUS_SET = /^(Adhemar|Amalric|Lustratio|Ryuo|Flamma|Mallquis|Ayanmo|Mummu|Regal|Prophetic) |^(Horos|Etoile) Tights|^Prophetica$/;
     var SIDE = {DT: 1, PDT: 1, MDT: 1};
     function prunedChoices(ctx, start, choices, opts) {
         var slots = Object.keys(choices).filter(function (k) { return k !== "weapons"; });
