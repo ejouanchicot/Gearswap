@@ -112,6 +112,7 @@ when its command runs, so any of them can be deleted:
 |---|---|---|
 | `logs/trace/` | `trace.log` (and `trace.old.log` past 10 MB): what the game returned | `//gs c trace on` |
 | `logs/fights/` | `<date>.log`: each fight left and each kill, with time and damage | `//gs c fights on` |
+| `logs/fights/` | `<date>_hits.log`: one line a swing and a weaponskill (damage, critical or not, TP), to check damage formulas against the game | `//gs c fights hits on` (until Windower closes; `hits off` stops it). `_common/combat/FIGHTS_CONFIG.lua` can send commands to an alt when it starts and stops, and name steps: `//gs c fights hits <step>` runs that step's commands (a weapon, a mode) and writes a STEP line; any other word is written as a MARK line. Swings and weaponskills are counted from that line on, against a goal when one is given (`//gs c fights hits polearm 300`, `... vorpal 20 ws`, or `goal` / `unit` in the step). Each fight and step also writes your job, every piece worn and your accuracy and attack (a `/checkparam <me>` sent 3 s later). `//gs c fights hits run` plays the steps of the file's `sequence` one after the other, each started when the one before reached its goal; a step with `ws` uses that weaponskill itself once its `tp` is there. Nothing moves or engages the character |
 | `logs/sortie/` | `<date>_<time>.log`: one Sortie run a file (bosses, kill times) | the SortieLog addon, when you use it |
 | `logs/rolls/` | `rolldebug.log`: COR roll check | `//gs c rolldebug` |
 | `logs/dualbox/` | `altbuff.log`: alt buff reports | `//gs c altdebug` |

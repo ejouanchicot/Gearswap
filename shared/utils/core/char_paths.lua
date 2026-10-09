@@ -90,7 +90,7 @@ local COMMON_GROUPS = {
     ['ELEMENTAL_BELT.lua'] = 'combat', ['WEAPON_CONFIG.lua'] = 'combat', ['STEALTH_CONFIG.lua'] = 'combat',
     ['HP_PRIORITY.lua'] = 'combat', ['SORTIE_CONFIG.lua'] = 'combat', ['AUTOCURE_CONFIG.lua'] = 'combat',
     ['TUNING.lua'] = 'combat', ['CLEANSE_CONFIG.lua'] = 'combat',
-    ['BUFF_CONFIG.lua'] = 'combat',
+    ['BUFF_CONFIG.lua'] = 'combat', ['FIGHTS_CONFIG.lua'] = 'combat',
 }
 CharPaths.COMMON_GROUPS = COMMON_GROUPS
 

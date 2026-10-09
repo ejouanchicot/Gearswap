@@ -45,6 +45,7 @@ COMMON = {
     'CLEANSE_CONFIG.lua': '//gs c cleanse: debuffs taken off, their order, items, spells, partner',
     'BUFF_CONFIG.lua': 'Buffs of //gs c buff per main job and subjob, and of WAR berserk / defender',
     'SORTIE_CONFIG.lua': '//gs c sortie: the alt, its Silmaril profiles, your stances per target',
+    'FIGHTS_CONFIG.lua': '//gs c fights hits: commands sent to an alt while you measure, and your steps (weapon, mode)',
     'HP_PRIORITY.lua': 'Order the pieces go on in, so max HP never dips (Unity rank, MP jobs)',
     'rings.lua': 'Rings you own twice, each pinned to its wardrobe; the job sets use them',
 }
