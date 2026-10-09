@@ -332,3 +332,51 @@ set itself, about 1250 to 1340, checked with /checkparam), so that the hit rate 
 and 90%, then the weapon skills on that same enemy. With the evasion known to +-10, Upheaval's
 uncertainty falls from about 30% to about 8%, and the first swing's accuracy bonus (first hits
 landed against later swings) can be read to +-15.
+
+## R. Hit rate against accuracy, and Upheaval again (night of 2026-10-09)
+
+The measurement section Q asked for, made with the journal's `strip` steps: slots of the engaged
+set are emptied and locked step by step, the accuracy of each step is the /checkparam's, the
+steps are played three times round on one enemy. Ukonvasara, auto-attacks only, no weapon skill.
+
+| Accuracy | Lv 138 ("low evasion and defense") | Lv 139 ("high evasion, low defense") |
+|----------|-------------------------------------|---------------------------------------|
+| 1415 | | 28 of 31 (90%) |
+| 1390 to 1400 | 90 of 92 (98%) | |
+| 1365 | 81 of 92 (88%) | 49 of 61 (80%) |
+| 1324 | 65 of 92 (71%) | 49 of 91 (54%) |
+| 1267 | 45 of 91 (49%) | 20 of 91 (22%) |
+| 1190 | 28 of 90 (31%) | |
+| 1096 | 18 of 92 (20%) | |
+| 1039 | 20 of 90 (22%) | |
+
+- Floor: 38 of 182 at 1096 and 1039, 57 points apart: 20.9%. BG-Wiki's 20% holds.
+- Lv 139 follows 75 + (accuracy - evasion) / 2 with an evasion near 1365 (predicted 95 / 75 / 54.5
+  / 26 for the four rows, each within the sampling error).
+- Lv 138: the top of the curve gives an evasion of 1335 to 1340. Its two lowest rows above the
+  floor are higher than that line gives (49% for 41, 31% for the 20% floor; about 2 and 2.6
+  standard errors). NOT explained, and the Lv 139 enemy does not show it: nothing of it is in
+  the engine.
+- The evasion changes with the enemy's level, about 30 a level here. The same values come from
+  the TP the Upheavals returned (how many later swings landed, no damage used): 1300 at Lv 137,
+  1334 and 1346 at Lv 138, 1361 at Lv 139. One level's evasion must never be used for another.
+
+Upheaval with more weapon skills (`node scripts/audit/calc_ws_ingame_check.js` on the whole
+journal; the export of section Q is kept beside it as ws_2026-10-09.afternoon.bak):
+
+| Series | n | Measured mean | Predicted, evasion from the swings | Predicted, evasion from the TP returns |
+|--------|---|---------------|-------------------------------------|----------------------------------------|
+| Upheaval, Chango R15 | 54 | 8 248 +- 628 | 8 308 (+0.7%, 0.1 standard error) | 8 805 (+6.8%, 0.9) |
+| Ukko's Fury, Ukonvasara R15 | 17 | 10 862 +- 1 016 | 10 571 (-2.7%, -0.3) | 11 576 (+6.6%, 0.7) |
+
+TP returned by Upheaval: 172.2 +- 9.0 measured, 173.9 predicted. By series the gap goes both
+ways (-7% on 14 at Lv 139, -19% on 8 at Lv 138, +7% on 17 at Lv 137): one Upheaval is worth 0
+to 12 000, so 8 to 17 of them move the mean by 10 to 20% by themselves.
+
+What the 54 mix, and the engine does not separate: 7 were used under Restraint (its weapon skill
+damage bonus is not in the engine: those are expected a little under the game), some of fight 16
+under Berserk (the attack is the measured one, so they are comparable), and the Lv 137 enemy's
+evasion is only bounded by its swings (at the cap).
+
+Still open after this: the first swing's accuracy bonus by a direct measurement (O2), the lower
+part of the Lv 138 curve, Restraint.
