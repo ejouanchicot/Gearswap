@@ -27,8 +27,10 @@
 ---     tp = 3000             the TP it waits for (1000 when left out)
 ---     keep = {'Berserk'}    abilities used again whenever they are missing and ready;
 ---                           the goal then counts only what happens under them
----     under = 'Aftermath: Lv.3'  the goal counts only what happens under that buff, and
----                           the step's weaponskill is used only while it is missing
+---     under = 'Aftermath: Lv.1'  the goal counts only what happens under that buff
+---     tp_max = 1999, dump = 'Fell Cleave'   above tp_max the TP is spent with that other
+---                           weaponskill (an Aftermath's level comes from the TP its
+---                           weaponskill is used at, and a lower level cannot replace a higher)
 ---
 --- //gs c fights hits run plays the steps of `sequence` one after the other,
 --- each started when the one before reached its goal, then stops the journal.

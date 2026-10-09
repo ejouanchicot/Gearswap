@@ -374,11 +374,20 @@ local function keep_up(p, c)
     end
 end
 
+--- The weaponskill a step uses at this TP, or nil: its own (`ws`) from `tp` on, and above `tp_max`
+--- another one (`dump`) that only spends the TP. An Aftermath's level comes from the TP its
+--- weaponskill is used at: used above the level wanted it gives a higher one, which a lower one
+--- cannot replace for minutes (2026-10-09: a step for Lv.1 that started at 3000 TP got Lv.3).
+local function step_ws(step, tp)
+    if not step.ws then return nil end
+    if step.dump and tp > (tonumber(step.tp_max) or 3000) then return step.dump end
+    return tp >= (tonumber(step.tp) or 1000) and step.ws or nil
+end
+
 --- After a packet of swings or a weaponskill. A running sequence (//gs c fights hits run) goes to its
 --- next step once the goal is reached, and stops the journal after the last. Else the step's kept
---- abilities are used when missing, and its own weaponskill when the TP is there (`ws`, `tp`; asked
---- again after WS_RETRY s). A step that measures under a buff (`under`) uses its weaponskill only
---- while that buff is missing: the weaponskill is what gives it (an Aftermath).
+--- abilities are used when missing, and its weaponskill when the TP is there (step_ws; asked again
+--- after WS_RETRY s).
 --- @param p table windower.ffxi.get_player()
 function FightHits.after(p)
     local c, run = count(), windower._fight_hits_run
@@ -391,10 +400,10 @@ function FightHits.after(p)
     if not c.step or c.done then return end
     keep_up(p, c)
     local tp = p.vitals and p.vitals.tp or 0
-    local wanted = c.step.ws and not (c.step.under and buffs_up(p)[c.step.under:lower()])
-    if wanted and tp >= (tonumber(c.step.tp) or 1000) and os.clock() - (c.ws_asked or -WS_RETRY) >= WS_RETRY then
+    local ws = step_ws(c.step, tp)
+    if ws and os.clock() - (c.ws_asked or -WS_RETRY) >= WS_RETRY then
         c.ws_asked = os.clock()
-        send_command('input /ws "' .. c.step.ws .. '" <t>')
+        send_command('input /ws "' .. ws .. '" <t>')
     end
 end
 
