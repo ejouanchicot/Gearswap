@@ -237,7 +237,7 @@ function abilityPieces(s){
   for (const [slot, p] of Object.entries(withoutTrial(() => withWeapons(s).pieces))) {
     if (!p || isEmpty(p)) continue;
     const id = p.id || ownId(p.name, slot) || (cat && cat.id[p.name]);
-    const text = ((id && (descTexts()[id] || (cat && cat.desc[id]))) || '') + ' ' + (p.augs || []).join(' ');
+    const text = (descOf(id, cat) || '') + ' ' + (p.augs || []).join(' ');
     if (text.toLowerCase().includes(ja)) out.push(slot);
   }
   return out;

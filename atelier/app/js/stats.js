@@ -160,7 +160,7 @@ function pieceStats(p, slot){
   if (ONLY_AUGS[p.name]) p = Object.assign({}, p, {augs: ONLY_AUGS[p.name]});
   // the piece's own item id first, else your copy's (a set names a piece only: Laphria, your Laphria IV), else the name's
   const cat = catalog(), id = p.id || ownId(p.name, slot) || iconIds()[p.name] || (cat && cat.id[p.name]);
-  const text = id ? descTexts()[id] || (cat && cat.desc[id]) || null : null;
+  const text = descOf(id, cat);
   const side = EAR_SIDE[slot] || '';
   const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side + (enchantKept(p.name) ? '|kept' : '');
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
@@ -360,7 +360,13 @@ let SCAN_MEMO = {key: null, out: null};
 const scanOf = () => { const key = DATA_GEN + '|' + S.char; if (SCAN_MEMO.key === key) return SCAN_MEMO.out;
   const all = Object.values(DATA[S.char] || {}).flatMap(j => Object.values(j)).filter(x => x.scan).sort((a, b) => (a.at || '').localeCompare(b.at || ''));
   return (SCAN_MEMO = {key, out: Object.assign({}, ...all.map(x => x.scan))}).out; };
+// The game's English text is wrong for these pieces (the Japanese one is right): read as corrected, whatever the
+// export or the catalog holds. Seraphic Ampulla: the English says "Regain"+5, the Japanese INT+3 MND+3 Occult Acumen+7,
+// which is what the piece gives (seen in game, 2026-10-09).
+const DESC_FIX = {22250: 'INT+3 MND+3 "Occult Acumen"+7'};
 const descTexts = () => mergedOf('descs');
+// A piece's description by item id: the correction first, then your exports, then the catalog
+const descOf = (id, cat) => (id ? DESC_FIX[id] || descTexts()[id] || (cat && cat.desc[id]) || null : null);
 // Every gear item of the game (data/atelier/catalog.js, written by the export from Windower's
 // resources: shared/utils/atelier/atelier_catalog.lua), loaded when the picker asks for it.
 // Rows: [id, name, slots, jobs, level, item level, description, rare 1/0 (from catalog v2), ex 1/0 (v3), alt 1/0 (v4)]
