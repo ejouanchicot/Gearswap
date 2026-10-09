@@ -227,6 +227,7 @@ local function on_status(new, old)
 end
 
 local function on_incoming(id, original)
+    if id == 0x061 and Hits.on() then return Hits.char_stats(original) end
     if id ~= 0x029 or not enabled() then return end
     local actor, target = original:unpack('I', 0x05), original:unpack('I', 0x09)
     local message = original:unpack('H', 0x19) % 32768

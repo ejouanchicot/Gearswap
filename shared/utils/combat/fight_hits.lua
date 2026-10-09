@@ -8,6 +8,11 @@
 ---   SWING    one a swing: its round, hit / crit / miss, damage, TP, message
 ---   WS       one a weaponskill: name, damage, the TP before and after
 ---   WSGEAR   the pieces worn when the weaponskill is readied, and when it lands
+---   AUGS     the augments and rank of the pieces worn that carry some (with GEAR, and
+---            with WSGEAR when the weaponskill is readied)
+---   STATS    STR to CHR, attack and defense from the game's last stats packet, with its
+---            age (with GEAR and both WSGEAR); a /checkparam <me> is also sent when a
+---            weaponskill is readied, so its PARAM lines give the set's accuracy
 ---   FIGHT, JOB, GEAR, PARAM   the mob, what the character is and wears, and
 ---            its accuracy / attack from a /checkparam <me> sent 3 s later
 ---   BUFFS    the buffs up, each time they change between two swings
@@ -100,19 +105,60 @@ end
 --- WHAT THE CHARACTER IS AND WEARS
 ---============================================================================
 
+--- The augments and rank one worn copy carries, as text, or nil when it has none.
+local function augments_of(item)
+    local ok, extdata = pcall(require, 'extdata')
+    local decoded_ok, decoded = pcall(function() return ok and extdata.decode(item) end)
+    if not decoded_ok or type(decoded) ~= 'table' then return nil end
+    local parts = {}
+    for _, augment in ipairs(decoded.augments or {}) do
+        if type(augment) == 'string' and augment ~= '' and augment ~= 'none' then parts[#parts + 1] = augment end
+    end
+    if decoded.rank then parts[#parts + 1] = 'rank ' .. tostring(decoded.rank) end
+    if decoded.path then parts[#parts + 1] = 'path ' .. tostring(decoded.path) end
+    return #parts > 0 and table.concat(parts, '; ') or nil
+end
+
 --- The pieces worn right now, read from the game: GearSwap's `player.equipment` is, outside its own
 --- events, the table of its last refresh (2026-10-09: the idle set written for an engaged character).
---- @return string "main=..., sub=..., ..."
+--- @return string "main=..., sub=..., ...", string|nil the augments of the pieces that carry some
 local function worn()
     local items = windower.ffxi.get_items() or {}
-    local equipment, pieces, ok, res = items.equipment or {}, {}, pcall(require, 'resources')
+    local equipment, pieces, augments, ok, res = items.equipment or {}, {}, {}, pcall(require, 'resources')
     for _, slot in ipairs(GEAR_SLOTS) do
         local index, bag = equipment[slot], equipment[slot .. '_bag']
         local item = index and index > 0 and bag and windower.ffxi.get_items(bag, index)
         local info = ok and item and item.id and res.items[item.id]
         pieces[#pieces + 1] = slot .. '=' .. (info and info.en or 'empty')
+        local carried = info and augments_of(item)
+        if carried then augments[#augments + 1] = slot .. '={' .. carried .. '}' end
     end
-    return table.concat(pieces, ', ')
+    return table.concat(pieces, ', '), #augments > 0 and table.concat(augments, ', ') or nil
+end
+
+local ATTRIBUTES = {'STR', 'DEX', 'VIT', 'AGI', 'INT', 'MND', 'CHR'}
+
+--- The game's stats packet (0x061), kept as text for the next STATS line: the attributes with what
+--- the gear adds, attack and defense. The server sends it after the gear changes.
+--- @param original string The packet
+function FightHits.char_stats(original)
+    local ok, packets = pcall(require, 'packets')
+    local parsed = ok and packets.parse('incoming', original)
+    if type(parsed) ~= 'table' then return end
+    local parts = {}
+    for _, name in ipairs(ATTRIBUTES) do
+        parts[#parts + 1] = name .. ' ' .. tostring((parsed['Base ' .. name] or 0) + (parsed['Added ' .. name] or 0))
+    end
+    windower._fight_hits_stats = {at = os.clock(), text = table.concat(parts, ' ') .. ' | Attack ' ..
+        tostring(parsed['Attack']) .. ' | Defense ' .. tostring(parsed['Defense'])}
+end
+
+--- A STATS line from the last stats packet, with its age: a packet older than the gear change it
+--- should follow is that of the set before.
+local function stats_line(label)
+    local stats = windower._fight_hits_stats
+    if not stats then return end
+    write(('STATS %s | %s | packet %.1f s old'):format(label, stats.text, os.clock() - stats.at))
 end
 
 --- A JOB line, a GEAR line, and a /checkparam <me> PARAM_DELAY seconds later (its answer is written
@@ -121,16 +167,25 @@ end
 local function snapshot(p)
     write(('JOB %s%s/%s%s | buffs %s'):format(tostring(p.main_job), tostring(p.main_job_level),
         tostring(p.sub_job), tostring(p.sub_job_level), table.concat(names_of(p.buffs, 'buffs'), ', ')))
-    write('GEAR ' .. worn())
+    local pieces, augments = worn()
+    write('GEAR ' .. pieces)
+    if augments then write('AUGS ' .. augments) end
+    stats_line('gear')
     coroutine.schedule(function()
         if FightHits.on() then send_command('input /checkparam <me>') end
     end, PARAM_DELAY)
 end
 
---- The pieces worn around a weaponskill: when it is readied (its own set) and when it lands.
+--- The pieces worn around a weaponskill: when it is readied (its own set, with its augments, and a
+--- /checkparam <me> whose PARAM lines give that set's accuracy and attack) and when it lands.
 --- @param moment string 'ready' or 'done'
 function FightHits.ws_gear(moment)
-    write('WSGEAR ' .. moment .. ' | ' .. worn())
+    local pieces, augments = worn()
+    write('WSGEAR ' .. moment .. ' | ' .. pieces)
+    stats_line(moment)
+    if moment ~= 'ready' then return end
+    if augments then write('AUGS ' .. augments) end
+    send_command('input /checkparam <me>')
 end
 
 --- A /checkparam answer, written as a PARAM line.
