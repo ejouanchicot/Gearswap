@@ -262,7 +262,7 @@ flowchart TD
 - `handle_moving`: on the first moving tick, sets `state.Moving.value = 'true'` and `pending_update`, then calls `send_update('moving')`. While movement continues, it sends another `gs c update` every 2.0 s (`heal_interval`) as a desync backstop. It calls every registered callback with `(true, dist, player.status)`.
 - `handle_stopped`: on the transition, sets `state.Moving.value = 'false'` and `pending_update`, and calls the callbacks with `false`. Then it calls `send_update('stopping')` while `pending_update` is set.
 - `send_update` refuses for 2.0 s after `start()` (`job_change_cooldown`) and within 0.3 s of the last update (`update_debounce`). A refused update stays pending and is retried on later ticks. The jump branch and the heal branch bypass it.
-- No update goes out while an action is under way (`held_by_action`: GearSwap's `midaction()`), in `send_update`, the heal branch and the jump branch alike. `gs c update` puts the idle set on at once: sent when the player starts running at the end of a cast, it took the midcast gear off before the spell landed (a buff cast between two runs went out with the idle set's duration). The update stays pending, the action's aftercast puts the gear back on with `Moving` already set, and an action that never reports its end stops holding after 3.0 s (`action_hold`). Offline test: `scripts/audit/test_automove_cast.lua`.
+- No update goes out while an action is under way (`held_by_action`: GearSwap's `midaction()`), in `send_update`, the heal branch and the jump branch alike. `gs c update` puts the idle set on at once: sent when the player starts running at the end of a cast, it took the midcast gear off before the spell landed (a buff cast between two runs went out with the idle set's duration). The update of a stop is held the same way: a cast started before the stop is seen would get the idle set in its midcast. The update stays pending, the action's aftercast puts the gear back on with `Moving` already set, and an action that never reports its end stops holding 3.0 s (`action_hold`) after its base cast time. Offline test: `scripts/audit/test_automove_cast.lua`.
 - The gear itself comes from the job's set builder: `sets.MoveSpeed` is merged into the idle set when `state.Moving.value == 'true'`. That is done by `BaseSetBuilder.apply_movement` (`shared/utils/set_building/base_set_builder.lua`) on every job (see the matrix at the end of the page).
 
 ### Public API
@@ -291,7 +291,7 @@ Hard-coded in the `config` table of `automove.lua`:
 | `heal_interval` | 2.0 |
 | `idle_interval` | 0.3 |
 | `engaged_interval` | 0.5 |
-| `action_hold` | 3.0 |
+| `action_hold` | 3.0 (added to the action's cast time) |
 
 Debug output is gated by `_G.AUTOMOVE_DEBUG`, toggled by `//gs c automovedebug` or `//gs c debugupdate`. Both persist through `windower._gs_debug.AUTOMOVE`, restored by `INIT_SYSTEMS.lua`.
 

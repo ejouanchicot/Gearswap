@@ -61,7 +61,7 @@ local config = {
     heal_interval       = 2.0,   -- Max interval to re-sync gear while moving (desync backstop)
     idle_interval       = 0.3,   -- Slower poll while standing still (movespeed not changing)
     engaged_interval    = 0.5,   -- Slowest poll while Engaged (movespeed is idle-only; just watch for disengage)
-    action_hold         = 3.0    -- Longest an update waits for an action to end (an action that never reports its end)
+    action_hold         = 3.0    -- Margin past an action's cast time after which an update stops waiting for its end
 }
 
 -- Track last update time for debouncing
@@ -223,17 +223,24 @@ end
 --- running at the end of a cast, it took the midcast gear off before the spell
 --- landed, and the buff went out with the idle set's duration. The caller keeps
 --- its update pending and asks again each tick; aftercast puts the gear back on
---- with Moving already set. An action that never reports its end stops holding
---- after `action_hold`.
+--- with Moving already set. The same holds for the update of a stop: a cast
+--- started before the stop is seen would get the idle set in its midcast.
+--- An action that never reports its end stops holding `action_hold` after its
+--- cast time (the base one, never shorter than the real cast).
 --- @param now number os.clock() as read by the caller
 --- @return boolean
 local function held_by_action(now)
-    if type(midaction) ~= 'function' or not midaction() then
+    local busy, spell = false, nil
+    if type(midaction) == 'function' then
+        busy, spell = midaction()
+    end
+    if not busy then
         held_since = nil
         return false
     end
     held_since = held_since or now
-    return (now - held_since) < config.action_hold
+    local cast_time = type(spell) == 'table' and tonumber(spell.cast_time) or 0
+    return (now - held_since) < cast_time + config.action_hold
 end
 
 --- Ask GearSwap to re-equip, no more often than the debounce allows.
