@@ -320,7 +320,7 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 |---------|--------|
 | `indi` | `/ma "<MainIndi>" <me>` |
 | `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS`, `<stnpc>` otherwise (`is_geo_buff`) |
-| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `Tuning.get('geo_escort_indi', 'Indi-Regen')`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; `MessageSortie.show_alt_escort` |
+| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `Tuning.get('geo_escort_indi', 'Indi-Regen')`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; with a fourth word (a Silmaril profile folder, sent by `sortie escort` when the config has `escort.profile`), `sm load <profile>; sm follow off; sm on` replaces the `/ma` and the safety net waits 4 s more; `MessageSortie.show_alt_escort` |
 | `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
 | `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` |
 | `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` (broken) |

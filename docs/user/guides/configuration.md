@@ -88,7 +88,7 @@ re-clone copies them back from the old folder (see
 
 | File | What it sets |
 |---|---|
-| `SORTIE_CONFIG.lua` (in `combat/`) | `//gs c sortie`: your alt, where its Silmaril profiles are, your stances and the states set per target, the targets and their aliases, `escort` and the one-shot orders to the alt. Without it the character has no sortie command (it says it is not set up, and the help does not list it). The author's, `Tetsouo/_common/combat/SORTIE_CONFIG.lua`, is the example; its header explains every key |
+| `SORTIE_CONFIG.lua` (in `combat/`) | `//gs c sortie`: your alt, where its Silmaril profiles are, your stances and the states set per target, the targets and their aliases, `escort` (with `profile`, a Silmaril profile that casts the escort Indi-: Silmaril then casts every Indi- itself, escort and targets; without it the command casts them by hand) and the one-shot orders to the alt. Without it the character has no sortie command (it says it is not set up, and the help does not list it). The author's, `Tetsouo/_common/combat/SORTIE_CONFIG.lua`, is the example; its header explains every key |
 
 **Written in game (kept on a re-clone):**
 

@@ -89,7 +89,7 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `indi` | Casts `MainIndi` on you |
 | `geo` | Casts `MainGeo`: on a party member you pick for the 18 buff Geo- spells, on an enemy you pick for the others |
 | `entrust` | Entrust, then `MainIndi` on a party member you pick once Entrust is up; gives up with a warning if Entrust was refused |
-| `escort [Indi-X] [leader]` | Full Circle if a luopan is out, then the Indi- on you (Indi-Regen by default, `geo_escort_indi` in `_common/combat/TUNING.lua`); with a leader name, `sm follow <leader>` once the cast is over (needs an addon that answers `sm follow`) |
+| `escort [Indi-X] [leader] [profile]` | Full Circle if a luopan is out, then the Indi- on you (Indi-Regen by default, `geo_escort_indi` in `_common/combat/TUNING.lua`); with a leader name, `sm follow <leader>` once the cast is over (needs an addon that answers `sm follow`). With a Silmaril profile folder as fourth word, that profile is loaded and started instead of the cast (it casts the Indi- itself); `sortie escort` sends it when the Sortie config has `escort.profile` |
 | `lightspell` / `darkspell` | Nuke with the element mode and `SpellTier`, stepping down to a learned, ready tier |
 | `lightaoe` / `darkaoe` | Same with the -ra mode and `AOETier` |
 | `lightarts` / `darkarts` | /SCH: Light / Dark Arts, then the Addendum on the next press |

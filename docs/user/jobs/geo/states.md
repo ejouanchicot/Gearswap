@@ -48,7 +48,7 @@ Reorder or trim the lists in `GEO_STATES.lua`.
 | `//gs c indi` | Casts `MainIndi` on yourself |
 | `//gs c geo` | Casts `MainGeo`: on a party member (`<stpc>`) for a buff, on an enemy (`<stnpc>`) for a debuff |
 | `//gs c entrust` | Uses Entrust, then casts `MainIndi` on a party member (`<stal>`) once Entrust is up; gives up with a warning if Entrust was refused |
-| `//gs c escort [Indi-X] [leader]` | Full Circle if a luopan is out, then casts the Indi- on yourself (default Indi-Regen, `geo_escort_indi` in `_common/combat/TUNING.lua`); with a leader name, sends `sm follow <leader>` once the cast is over |
+| `//gs c escort [Indi-X] [leader] [profile]` | Full Circle if a luopan is out, then casts the Indi- on yourself (default Indi-Regen, `geo_escort_indi` in `_common/combat/TUNING.lua`); with a leader name, sends `sm follow <leader>` once the cast is over. With a Silmaril profile folder as fourth word, loads and starts that profile instead of casting (the profile casts the Indi-) |
 | `//gs c lightspell` / `darkspell` | Nukes your target with the chosen element and `SpellTier`, stepping down a tier when the higher one is not learned or is on recast |
 | `//gs c lightaoe` / `darkaoe` | Same with the -ra spells and `AOETier` |
 | `//gs c lightarts` / `darkarts` | /SCH: Light or Dark Arts, then the matching Addendum on the next press |

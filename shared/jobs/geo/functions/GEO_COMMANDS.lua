@@ -27,6 +27,7 @@ local GeoSpellRefiner = nil
 local ESCORT_JA_DELAY = 2          -- Full Circle -> Indi- (job ability delay)
 local ESCORT_DEFAULT_CAST = 3      -- cast time when the spell is not found
 local ESCORT_FOLLOW_MARGIN = 3     -- safety net: follow anyway this long after the cast
+local ESCORT_PROFILE_MARGIN = 4    -- more of it when Silmaril casts the Indi- (profile load, then its own pace)
 
 --- Follow waiting for the escort Indi- to finish: {spell, leader, seq}.
 local escort_pending = nil
@@ -210,15 +211,19 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Escort: //gs c escort [Indi-X] [leader]
+    -- Escort: //gs c escort [Indi-X] [leader] [profile]
     -- Dismiss the luopan if there is one, put up an Indi- on self, and only
     -- once the cast is over start following the leader: moving cancels the
     -- cast. Without a luopan the Indi- goes out at once, since waiting after
     -- a Full Circle that has nothing to dismiss only delays it.
+    -- With a Silmaril profile folder (the path `sm load` takes) that profile
+    -- is loaded and started instead of the cast: Silmaril casts its Indi-.
     if command == 'escort' then
         local indi = cmdParams[2] or require('shared/utils/core/tuning').get('geo_escort_indi', 'Indi-Regen')
         local leader = cmdParams[3]
-        local cast = 'input /ma "' .. indi .. '" <me>'
+        local profile = cmdParams[4]
+        local cast = profile and ('sm load ' .. profile .. '; sm follow off; sm on')
+            or ('input /ma "' .. indi .. '" <me>')
         local cast_start = 0
         if pet and pet.isvalid then
             send_command('input /ja "Full Circle" <me>')
@@ -245,7 +250,7 @@ function job_self_command(cmdParams, eventArgs)
                     escort_pending = nil
                     send_command('sm follow ' .. leader)
                 end
-            end, cast_start + cast_time + ESCORT_FOLLOW_MARGIN)
+            end, cast_start + cast_time + ESCORT_FOLLOW_MARGIN + (profile and ESCORT_PROFILE_MARGIN or 0))
         end
         local ok, MessageSortie = pcall(require, 'shared/utils/messages/formatters/system/message_sortie')
         if ok and MessageSortie then
