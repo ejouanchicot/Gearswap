@@ -12,6 +12,7 @@
 //   CALC.wsMeanPdif(ratio, cap, critRate, critDamage)   mean pDIF of a swing that lands
 //   CALC.wsProcChances(stats, offHand)   chance of 0 to 3 extra swings on a swing of one hand
 //   CALC.wsSwingKinds(ctx)               the swings of the weapon skill, by kind
+//   CALC.handNumbers(stats, enemy, hold, offHand)   damage, attack, accuracy, fSTR of one hand
 //
 // The result is an expected value: each kind of swing (first hit, the weapon skill's other
 // hits, the off-hand hit, the extra swings of multi-attack) is worth
@@ -74,15 +75,23 @@
         };
     }
 
-    // one hand of the character: weapon damage, attack, accuracy and the highest hit rate
-    function hand(ctx, offHand) {
-        var s = ctx.stats, n = offHand ? "2" : "1";
+    // One hand of the character as the sheet gives it: weapon damage, attack, accuracy, the
+    // highest hit rate and fSTR. Shared with the auto-attack round (calc_round_damage.js).
+    CALC.handNumbers = function (stats, enemy, hold, offHand) {
+        var n = offHand ? "2" : "1";
         return {
-            dmg: s["DMG" + n], attack: s["Attack" + n] * ctx.attackBonus,
-            accuracy: s["Accuracy" + n] + (s["Weapon Skill Accuracy"] || 0),
-            cap: CALC.HIT_RATE_CAP[offHand ? "offHand" : ctx.hold],
-            fstr: CALC.fSTR(s.STR, ctx.enemy.VIT, s["DMG" + n], ctx.hold === "handToHand")
+            dmg: stats["DMG" + n], attack: stats["Attack" + n], accuracy: stats["Accuracy" + n],
+            cap: CALC.HIT_RATE_CAP[offHand ? "offHand" : hold],
+            fstr: CALC.fSTR(stats.STR, enemy.VIT, stats["DMG" + n], hold === "handToHand")
         };
+    };
+
+    // the same hand during the weapon skill: its attack bonus and "Weapon Skill Accuracy"
+    function hand(ctx, offHand) {
+        var h = CALC.handNumbers(ctx.stats, ctx.enemy, ctx.hold, offHand);
+        h.attack *= ctx.attackBonus;
+        h.accuracy += ctx.stats["Weapon Skill Accuracy"] || 0;
+        return h;
     }
 
     // Mean pDIF of a swing that lands, critical hits included.

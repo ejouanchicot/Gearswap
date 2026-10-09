@@ -1,7 +1,7 @@
 // Atelier calculation engine, stage 2: the TP a weapon skill gives back.
 //
 //   CALC.baseTPFromDelay(delay)          TP of one hit before Store TP, from the delay
-//   CALC.tpPerHit(delay, storeTP)        TP of one full hit, Store TP included
+//   CALC.tpPerHit(delay, storeTP, extraBase)   TP of one full hit, Store TP included
 //   CALC.wsDelayForTP(stats, hold)       the delay the TP of a hit is worked out from
 //   CALC.wsExtraSwingTP(storeTP)         TP of each swing after the first one of a hand
 //   CALC.conserveTPAverage(conserveTP)   mean TP kept by Conserve TP
@@ -26,8 +26,11 @@
     // https://www.bg-wiki.com/ffxi/Tactical_Points
     //   "floor[Base TP] + floor[Base TP x (Store TP / 100)]"; the page's example: 115 base TP and
     //   20 Store TP give 138.
-    CALC.tpPerHit = function (delay, storeTP) {
-        var base = CALC.baseTPFromDelay(delay);
+    // `extraBase` (optional) is TP added to the base before Store TP, such as Ikishoten's on a
+    // Zanshin swing: https://www.bg-wiki.com/ffxi/Store_TP "'Base TP' is the TP per hit after
+    // delay reduction (like Dual Wield) and after adding things like Ikishoten."
+    CALC.tpPerHit = function (delay, storeTP, extraBase) {
+        var base = CALC.baseTPFromDelay(delay) + (extraBase || 0);
         return base + Math.floor(base * storeTP / 100);
     };
 

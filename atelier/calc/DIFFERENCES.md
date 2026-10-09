@@ -380,3 +380,117 @@ evasion is only bounded by its swings (at the cap).
 
 Still open after this: the first swing's accuracy bonus by a direct measurement (O2), the lower
 part of the Lv 138 curve, Restraint.
+
+---
+
+# atelier/calc, stage 3: differences with the reference results (the average auto-attack round)
+
+`node scripts/audit/calc_round_check.js` recomputes the `round` of the 756 cases with
+`CALC.attackRoundAverage` and `CALC.timeToWeaponskill`, fed with the case's own `stats` and enemy
+(the differences of stage 1 stay out), and compares fourteen intermediate values and the three
+results. The battery has no hand-to-hand, no kick, no Daken, no ability, no aftermath: those
+paths are written from BG-Wiki and never compared (section V).
+
+Cases by relative gap, engine as delivered (exact <= 1e-9 / <= 0.1% / <= 1% / <= 5% / more):
+
+| Value | exact | 0.1% | 1% | 5% | more |
+|-------|-------|------|----|----|------|
+| delay of a round, delay for TP, base TP, TP per hit, critical hit rate, regain, time of a round, kick, Daken | 756 | . | . | . | . |
+| hit rate, main hand (and swings landed, main hand) | 661 | . | 48 | 47 | . |
+| hit rate, off-hand (and swings landed, off-hand) | 739 | . | 14 | 3 | . |
+| swings landed, Zanshin | 736 | . | 7 | 13 | . |
+| RESULT TP a round | 640 | 6 | 68 | 42 | . |
+| RESULT damage a round | 176 | 3 | 122 | 129 | 326 |
+| RESULT time to weapon skill | 640 | 6 | 68 | 42 | . |
+
+With `--as-reference` (section S applied by the checker, in its own process): every value is
+exact in the 756 cases, except the damage of 6 cases (Kaories_COR#12 to #17, 0.06% to 0.08%, S6).
+
+`atelier/calc/` holds only what BG-Wiki documents, what the game showed, or an assumption marked
+ASSUMED in the code and listed in section T: no switch, constant or function there comes from the
+reference. The largest gap, the damage, is the mean pDIF (S2): the engine's is the one measured
+in game on auto-attack swings (sections M, N, P), the reference's is not.
+
+Two things the checker gives the engine because the sheet does not carry them, and that are not
+"as reference": the main hand weapon's name (for a relic's hidden effect) and five merits in
+Ikishoten for a Samurai (T13). And one definition: the reference's "TP a round" counts the
+Regain ticked during the round; the engine returns it apart (`tpFromRegain`), the checker adds
+the two.
+
+## S. BG-Wiki or the game states a rule, the reference does something else
+
+One line per engine function the checker replaces for `--as-reference`. "Cases moved" = how many
+of the 756 change when that one behaviour alone replaces the engine's, and the widest move.
+
+| # | What | Engine (BG-Wiki, or the game) | Reference (worked out from its results) | Cases moved | Source |
+|---|------|-------------------------------|------------------------------------------|-------------|--------|
+| S1 | `hitRate` | 75 + floor((accuracy - evasion) / 2) | no floor (G1 of stage 2): 20.5% against 20% | 116: damage and TP up to 2.5%, time to weapon skill up to 2.4% | https://www.bg-wiki.com/ffxi/Hit_Rate (section O1: the game has not settled it) |
+| S2 | `wsMeanPdif` (mean pDIF of a swing) | a swing is critical or not; critical: ratio + 1, same limits, no spike, "Crit Damage" on it alone; not critical: the spike at pDIF 1, else the draw. Measured in game on auto-attack swings (M1, M3, M4, N1, P1, P3) | one "average hit" (G5, G12 of stage 2): the critical hit RATE added to the ratio and again to the mean, no spike, "Crit Damage" on the whole | 503 damage, up to 34% (mean 8.8%); the missing spike alone: 354, up to 8.1% | https://www.bg-wiki.com/ffxi/PDIF ; the game |
+| S3 | `weaponRank` in fSTR's caps | floor(damage / 9) | damage / 9 (G2 of stage 2); the base damage itself is floored on both sides | 174 damage, up to 1.2% | https://www.bg-wiki.com/ffxi/Weapon_Rank |
+| S4 | `SWING_RULES.first`: what the first swing of a Double or Triple Attack round gets | "Double Attack" damage on BOTH swings of the round: measured in game (N2, 0.210 [0.199, 0.213] for +20, first and second swing alike). "DA Attack", "TA Attack", "TA Damage%" follow the same pattern (ASSUMED, T5) | the bonuses on the extra swings only (Tetsouo_WAR#0: 1414.5 against 1390.1 once S2 is set apart, the first swing without its +20%) | 114 damage, up to 10.1%. "Double Attack" damage alone (measured): 48, up to 9.8%. "TA Damage%" alone (assumed): 72, up to 5.7%. The attack bonuses alone (assumed): 48, up to 0.5% | the game (N2); https://www.bg-wiki.com/ffxi/Double_Attack lists the gear without a rule |
+| S5 | `SWING_RULES.ta.attack` | the Thief's job points: "Increases the physical attack of Triple Attack" "Increase physical attack by 1": "TA Attack" 20 added on Triple Attack rounds | "TA Attack" is not used in a round, while "DA Attack" is | 24 (Tetsouo_THF below the pDIF cap), up to 0.9% | https://www.bg-wiki.com/ffxi/Thief |
+| S6 | "TA Damage%" with two weapons | on the swings of the hand that triples | 0.06% to 0.08% more than the extra swings alone give: worth about one more off-hand swing with the bonus for each off-hand Triple Attack; not worked out further | Kaories_COR#12 to #17 | - |
+
+Where the engine and the reference agree on something BG-Wiki does not fully state, it is in
+section T (the reference "does the same"): agreement there is evidence, not proof.
+
+## T. Assumptions and readings (marked ASSUMED in the code)
+
+"Size" is the effect on the 756 cases of dropping or changing the assumption.
+
+| # | Assumption | Why | Size | Reference |
+|---|------------|-----|------|-----------|
+| T1 | A dual wield round lasts (Delay1 + Delay2) x (1 - Dual Wield) x (1 - haste) / 60 seconds | Dual_Wield gives "(Delay1 + Delay2) x (1 - Dual Wield %) / 2 = New Delay per Hand" and "the frequency of attack rounds", never the round's delay in so many words; Attack_Speed gives 60 delay a second by its example only | all 138 dual wield cases: the whole time | same (exact) |
+| T2 | Hand-to-hand: the delay left is never under 20% of 480 + weapon delay | Two pages disagree: Attack_Speed "(480 Base Delay + 86 Weapon Delay)*.2 Delay cap = 113.2 minimum possible delay", Martial_Arts "the minimum H2H delay is 96 delay per round" (20% of 480). The first, which counts the weapon, is followed | no case | not compared |
+| T3 | "Regain" +N is N TP every 3 seconds | Regain: "Regain restores TP over time in 3 second intervals (Ticks)." and "Regain +10" beside "10 TP/tick", never equated | 90 cases have Regain (3 to 8): up to 33% of the TP of a round where the hit rate is at its floor | same (exact) |
+| T4 | Eight swing limit: the main hand's extra swings are served first, then the off-hand's (or the second fist's), then the kick; the Zanshin swing only exists in rounds of one swing; a Daken throw is not counted | Multi-Attack says "limited to 8 hits" and not which swings are dropped | no case reaches the limit (two hands of four swings make eight; only a kick, or a weapon that attacks more than four times, can pass it) | not compared |
+| T5 | "DA Attack", "TA Attack" and "TA Damage%" go to every swing of the round of that hand, the first included; attack bonuses are added to the finished attack (not multiplied by Smite, Chaos Roll...) | The pages give "physical attack from double attacks", "physical attack of Triple Attack", and list "Triple Attack damage" gear without a rule. The one such bonus measured in game, "Double Attack" damage, is on both swings (N2): the others are taken to follow it | S4: "TA Damage%" 72 cases up to 5.7%; attack bonuses 48 cases up to 0.5% | extra swings only; "TA Attack" unused (S4, S5) |
+| T6 | Base damage of a swing = floor(D + fSTR) | Base_Damage writes "Base Damage = D + (aD) + fSTR" for melee and "floor(D + fSTR) + Total DEX" for Sneak Attack. The game's damage at pDIF 1 is whole (M2), which quarters of fSTR would not give | 418 cases, up to 0.8% against no floor | same |
+| T7 | Occasionally attacks: each weapon rolls its own "OA2" in its own hand, the off-hand included; Mythic Aftermath Lv.3 "40% 2x 20% 3x" is one roll (60% in all) of the main hand, of both fists hand-to-hand; only "attacks twice" weapons are computed | Multi-Attack: "that weapon will not be allowed to have a lower order check" (one check a weapon); nothing on the off-hand; no page gives the shares of a weapon that attacks 3 to 8 times | "OA2": 138 cases, damage and TP up to 31% | same for "OA2" (exact); aftermath not compared |
+| T8 | Zanshin: one check, on the missed swing of a round where no multi-attack fired, at the "Zanshin" of the sheet (x 1.25 with Hasso, the page's "appears"); the Zanshin swing has +34 accuracy and "Zanshin Attack", lands at its own hit rate and does not multi-attack. With Hasso and Samurai as main job, a last check at Zanshin / 4 adds a swing treated as a Zanshin hit | Zanshin: "single-swing attack rounds", "Missed melee attack."; the sentence "Zanshin attacks check for Zanshin: Double Attack first, followed by Zanshin: OAT only if Z:DA check fails." is not understood well enough to compute (it may mean a Zanshin swing can itself double) | Zanshin swings: 120 cases, damage up to 30%, TP up to 47%; the +34 and the attack: 54 cases, damage up to 12% | same without Hasso (exact); Hasso not compared |
+| T9 | Kick: one check a round after the fists (none when they already make eight swings), no multi-attack, the TP of a fist; base damage = skill x 0.11 + 3 + "Kick DMG", fSTR with the hand-to-hand rank of "Kick DMG" | Kick_Attacks: "an extra attack", "fSTR does apply to kick attacks (R0 weapon if you don't have kick damage modifying gear on)"; nothing on its TP, its place in the round or the rank with such gear | no case | not compared |
+| T10 | Daken: one check a round; only the number of throws is returned | Daken: "occasionally throws the shuriken when autoattacking" | no case | not compared |
+| T11 | Empyrean aftermath multiplies the swings of the main hand weapon (extra swings and Zanshin included, both fists, not the kick, not the off-hand), critical or not, by 1 + rate x (2 or 3 - 1) on average. Relic: Apocalypse only, 20% double damage on the main hand's first swing; its aftermath's "10% Job Ability Haste" is taken as 0.1 of the delay (102/1024 would be 0.0996) | Empyrean_Aftermath: "any additional hits (Double Attack, Triple Attack, Zanshin) initiated by the weapon"; Apocalypse's page. Measured in game for comparison only (N4): Ukonvasara Lv.1, 16 of 58 landed swings tripled (28%, [17, 41]) for the page's 30% | Apocalypse's hidden effect: 48 cases (Tetsouo_DRK), damage 12.5% to 14.6% | same for the hidden effect (exact); aftermaths not compared |
+| T12 | Time to a weapon skill = TP needed / (TP of a mean round / time of a round + Regain / 3) | our own arithmetic: a mean rate, not a whole number of rounds. A real fight ends on a round, so the true mean is a little longer; nothing is added for the weapon skill's own animation | - | same (exact) |
+| T13 | A Samurai has 5 merits in Ikishoten (given by the checker as an option; the engine's default is 0) | the job merits of stage 1 are all bought (D2); the sheet has no line for Ikishoten | 48 cases (Tetsouo_SAM): TP a round up to 26%, time up to 35% | same (exact) |
+
+## U. Input data not backed by BG-Wiki
+
+- Blurred Knife +1: the page has "Occasionally attacks twice" and no rate; the "OA2" 45 of our item
+  catalogue is BG-Wiki's figure for Demers. Degen +1 only ("has an activation rate of 45%").
+- A relic other than Apocalypse in the main hand gets no hidden effect: their pages were not read.
+
+## V. Not covered
+
+- Ranged attack rounds; the hit rate, damage and TP of a Daken throw (`swings.daken` is the number
+  of throws; `tpPerDaken` the TP one would give if it lands).
+- Pets; magical damage added on hit (enspells, "EnSpell Damage" of the sheet); additional effects.
+- Follow-up attacks (1st order of Multi-Attack: Virtue Stone, Raetic, SU 4/5 weapons).
+- Weapons that occasionally attack 3 to 8 times; Mythic Aftermath Lv.1 and Lv.2 (accuracy and attack
+  amounts that depend on the TP), and Lv.3 of the weapons below level 95 or of the ranged mythics.
+- Job abilities, the sheet's `abilities` being empty: Hasso's STR, accuracy and haste (only its
+  effect on Zanshin is an option here), Seigan's counters, Sneak / Trick Attack, Footwork, Impetus,
+  Saber Dance, Restraint... "Striking Crit Rate", "Sneak Attack Bonus" of the sheet are not read.
+- Zanshin after a swing absorbed by shadows, guarded or countered; counters and retaliations.
+- Hand-to-hand, kicks, aftermaths and Hasso are written and run (a scratch test checks their
+  arithmetic), but no case of the battery reaches them and nothing was measured in game for them.
+- Level correction (the enemy of the input has no level), as in stage 2.
+
+## W. What only a test in the game can settle
+
+1. "TA Damage%" (T5, S4): Triple Attack rounds of a Thief with Toutatis's Cape, swing by swing at
+   pDIF 1: do the three swings carry the bonus, or the two extra ones? The same journal as N2.
+2. "DA Attack" and "TA Attack" (T5, S5): the damage of the first swing of a Double Attack round
+   against a single swing, below the pDIF cap, without "Double Attack" damage gear: is the first
+   swing's attack raised too? (0.5% at most here: needs several hundred swings.)
+3. Zanshin (T8): does a Zanshin swing ever come with a Double Attack of its own; the rate with
+   Hasso (x 1.25?); the swing Hasso adds: +34 accuracy and Ikishoten's TP or not.
+4. The hit rate's floor in the formula (S1, O1 of stage 2).
+5. Off-hand "occasionally attacks twice" (T7), and Blurred Knife +1's rate (U): rounds of three
+   and four swings without Double / Triple Attack gear.
+6. Dual wield round time (T1): time 50 rounds with two weapons of different delays.
+7. Hand-to-hand's minimum delay (T2): 96 or 20% of 480 + weapon.
+8. Kick attacks (T9): TP of a kick, and whether a kick appears in a round of eight fist swings.
+9. Empyrean aftermath on the off-hand's and on a kick's swings, and its rate by level on more
+   than the 58 swings of N4 (T11).
+10. Regain (T3): TP gained over a minute without attacking, with "Regain +N" gear only.
