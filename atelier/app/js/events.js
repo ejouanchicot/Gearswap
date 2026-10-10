@@ -290,7 +290,7 @@ function pieceTip(p, slot, emptied){
     const aug = k => r.aug[k] && r.aug[k].v ? `<i class="a">◆${fmtStat(r.aug[k])}</i>` : '';
     const attrs = order.filter(k => statGroup(k) === 'attr'), rest = order.filter(k => statGroup(k) !== 'attr');
     if (attrs.length) body += `<div class="attrs">${attrs.map(k => `<span>${esc(statLabel(k, r.stats[k]))}${aug(k)}<b>${fmtStat(r.stats[k])}</b></span>`).join('')}</div>`;
-    body += `<div class="rows">${rest.map(k => `<div class="r"><span title="${esc(statLabel(k, r.stats[k]))}">${esc(statLabel(k, r.stats[k]))}</span><b>${aug(k)}${fmtStat(r.stats[k])}</b></div>`).join('')}</div>`;
+    body += `<div class="rows">${rest.map(k => `<div class="r"${statTitle(esc(statLabel(k, r.stats[k])), '')}><span>${esc(statLabel(k, r.stats[k]))}</span><b>${aug(k)}${fmtStat(r.stats[k])}</b></div>`).join('')}</div>`;
     if (r.free.length) body += `<div class="k">${t('effects')}</div><ul>${r.free.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
     if (r.cond.length) body += `<div class="k">${t('condTitle')}</div><ul>${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
   } else body = `<p class="muted">${t('noDesc')}</p>`;

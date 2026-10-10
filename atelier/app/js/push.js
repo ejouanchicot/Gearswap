@@ -100,9 +100,8 @@ async function openPush(s){
   if (r.error) return showDialog('pushdlg', t('pushTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   S._push.hash = r.hash;
   const warn = pushWarnings(s, plan, tg.create), any = r.changes && r.changes.length;
-  showDialog('pushdlg', t('pushTitle'), `<p>${t(r.created ? 'pushWhereNew' : 'pushWhere', {f: `<code>${esc(r.file)}</code>`, v: tg.tier, p: `<code>${esc(shortPath(tg.path))}</code>`})}</p>` +
-    (warn.length ? warn.map(w => `<p class="kwarn">${w}</p>`).join('') : '') + diffHTML(r.before, r.after) +
-    `<p class="muted small">${any ? t('pushSafety') : t('pushErr_nothing')}</p>`, any ? `<button class="btn" data-pushgo>${t('pushGo')}</button>` : '');
+  // in plain words, the file's lines in a fold (push_view.js)
+  showDialog('pushdlg', t('pushTitle'), pushViewHTML(s, tg, plan, r, warn, any), any ? `<button class="btn" data-pushgo>${t('pushGo')}</button>` : '');
 }
 async function pushGo(){
   const P = S._push;
@@ -155,9 +154,7 @@ async function openDelete(s){
   if (r.error) return showDialog('pushdlg', t('delTitle'), `<p class="kwarn">${t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})}</p>`, '');
   S._del.hash = r.hash;
   const also = (r.removed || []).filter(x => x !== s.path && shortPath(x) !== shortPath(s.path));
-  showDialog('pushdlg', t('delTitle'), `<p>${t('delWhere', {f: `<code>${esc(r.file)}</code>`})}</p>` +
-    (also.length ? `<p class="kwarn">${t('delAlso', {l: esc(also.map(shortPath).join(' · '))})}</p>` : '') +
-    diffHTML(r.before, '') + `<p class="muted small">${t('delSafety')}</p>`, `<button class="btn danger" data-delgo>${t('delGo')}</button>`);
+  showDialog('pushdlg', t('delTitle'), delViewHTML(s, r, also), `<button class="btn danger" data-delgo>${t('delGo')}</button>`);
 }
 // The page forgets what it kept for the sets taken out (drafts, pieces in test)
 function forgetSets(paths){
@@ -260,8 +257,7 @@ async function openCreate(name){
   if (!S._create || S._create.path !== path) return;
   if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   S._create.hash = r.hash;
-  showDialog('pushdlg', t('addTitle'), `<p>${t('addWhere', {p: `<code>${esc(shortPath(path))}</code>`, f: `<code>${esc(r.file)}</code>`})}</p>` +
-    diffHTML(r.before, r.after) + `<p class="muted small">${t('addSafety')}</p>`, `<button class="btn" data-creatego>${t('addGo')}</button>`);
+  showDialog('pushdlg', t('addTitle'), addViewHTML(path, r), `<button class="btn" data-creatego>${t('addGo')}</button>`);
 }
 async function createGo(){
   const C = S._create;

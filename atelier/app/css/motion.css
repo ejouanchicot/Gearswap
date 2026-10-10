@@ -1,0 +1,54 @@
+/* GearSwap Atelier · motion.css: what moves (app/js/motion.js puts the classes, only on what changed), the gear
+   grid's cells and the page's far background. Everything that moves is under :root[data-motion="on"]: with the
+   animations off in Settings, or a system that asks for less motion, the page is drawn as before. */
+
+/* ============================================================================ the far background
+   A tall screen left a flat dark sheet under the page: a faint weave and a glow from below, fixed behind it all */
+/* isolate: the layer sits over the body's own background and under all it holds */
+body{isolation:isolate;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(1200px 520px at 50% 108%,color-mix(in srgb,var(--line) 46%,transparent),transparent 72%),
+  radial-gradient(color-mix(in srgb,var(--line-strong) 16%,transparent) 1px,transparent 1.6px) 0 0/24px 24px}
+
+/* ============================================================================ the gear grid
+   Cells as the game's equipment screen: a dark well in a double edge, gold under the pointer. :where() keeps the
+   theme out of the weight of the rule, so a cell's own states (weapon, tried, locked, missing) still win. */
+:where(:root[data-theme="vanadiel"],:root[data-theme="grimoire"]) .slot{border-radius:var(--radius-s);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--panel-2) 70%,var(--well)),var(--well));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,#000 55%,transparent),inset 0 0 0 2px color-mix(in srgb,var(--line-strong) 22%,transparent),inset 0 6px 10px -6px rgba(255,255,255,.14)}
+:where(:root[data-theme="vanadiel"],:root[data-theme="grimoire"]) .slot.empty{background:color-mix(in srgb,var(--well) 55%,transparent)}
+.slot .ico{transition:transform .12s}
+.slot:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 16px -3px var(--accent),inset 0 0 12px -4px var(--accent)}
+:root[data-motion="on"] .slot:hover .ico{transform:scale(1.1)}
+:root[data-motion="on"] .slot.flash{animation:slotflash .6s ease-out var(--since,0ms) both}
+@keyframes slotflash{0%{box-shadow:0 0 0 2px var(--accent-2),0 0 22px 4px var(--accent);filter:brightness(1.9)}100%{filter:none}}
+
+/* ============================================================================ the game's hand
+   Drawn by motion.js in each list, on the chosen row; it replaces the ▶ written before the row's name */
+.hand{display:none}
+:root[data-theme="vanadiel"] .setlist .scroll{position:relative}
+:root[data-theme="vanadiel"] .setrow[aria-current="true"] b::before{content:none}
+:root[data-theme="vanadiel"] .setrow.var[aria-current="true"] b::before{content:none}
+:root[data-theme="vanadiel"] .setrow[aria-current="true"] b{padding-left:33px}
+/* a white cartoon glove pointing at the row (app/img/cursor/point.webp, cut from atelier/Img/cursor/Cursor.png) */
+:root[data-theme="vanadiel"] .hand{display:block;position:absolute;width:28px;height:20px;margin-top:-10px;pointer-events:none;
+  background:url(../img/cursor/point.webp) 0 0/100% 100% no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}
+:root[data-motion="on"] .hand{transition:top .16s cubic-bezier(.2,.8,.3,1);animation:handbob .55s ease-in-out infinite alternate}
+:root[data-motion="on"][data-theme="vanadiel"] .sections button[aria-selected="true"]::before{display:inline-block;animation:handbob .55s ease-in-out infinite alternate}
+@keyframes handbob{from{transform:translateX(-2px)}to{transform:translateX(2px)}}
+
+/* ============================================================================ windows
+   The game's windows open from their middle line. clip-path, not transform: a dialog is centred with transform */
+:root[data-motion="on"] :is(.detail,.dialog,.cfg > section).opens{animation:winopen .15s ease-out var(--since,0ms) both}
+@keyframes winopen{from{clip-path:inset(46% 0 46% 0);opacity:.3}to{clip-path:inset(0);opacity:1}}
+:root[data-motion="on"] details.unfolds > :not(summary){animation:unfold .16s ease-out}
+@keyframes unfold{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+/* ============================================================================ figures and gauges
+   A figure that changed lights up while it rolls. Gold either way: more is not better for every stat */
+:root[data-motion="on"] .statlist li > b.moved{animation:figmoved .9s ease-out var(--since,0ms) both}
+@keyframes figmoved{0%,35%{color:var(--accent-2);text-shadow:0 0 10px var(--accent)}100%{text-shadow:none}}
+:root[data-motion="on"] .statlist li.fills .gauge::after{animation:gaugefill .5s cubic-bezier(.2,.7,.2,1) var(--since,0ms) both}
+@keyframes gaugefill{from{width:var(--from,0%)}}
+:root[data-motion="on"] .statlist li.fills .capmax{animation:capmax .7s ease-out var(--since,0ms) both}
+@keyframes capmax{0%,55%{opacity:.25;box-shadow:none}75%{opacity:1;box-shadow:0 0 12px 2px var(--accent)}100%{box-shadow:none}}

@@ -142,3 +142,9 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 /* ---- surfaces shared by the lists, the detail and the compartments ---- */
 .setlist,.detail,.box,.panel,.tblwrap,.keybar,.placeholder,.choice{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 
+/* Wide screens, the Sets tab: the line above the three columns ("Computed with...") takes its height off theirs,
+   instead of pushing the bottom of the set list out of the page */
+@media (min-width:901px){
+  .pane.split{display:flex;flex-direction:column}
+  .pane.split > .setsx{flex:1;height:auto;min-height:0}
+}

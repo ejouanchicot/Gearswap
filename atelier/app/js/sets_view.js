@@ -81,6 +81,30 @@ function holdState(slot, p){
   if (p.rank != null && !mine.some(x => { const r = ownRank({name: x.name, augs: x.augs}).rank; return r == null || r >= p.rank; })) return 'short';
   return '';
 }
+// The legend of the gear grid: every look a cell can take, each with what it means in its tooltip. The three about
+// what you hold (not yours, to upgrade, at the Porter Moogle) are lit when the set has such a piece
+Object.assign(T.fr, {lgEmpty: 'vide', lgAug: 'augmentée', lgRank: 'rang',
+  lgT_own: 'Une pièce que ce set définit lui-même.', lgT_inh: 'Une pièce que ce set ne définit pas : elle vient du set sur lequel il est construit.',
+  lgT_weap: 'L’arme choisie par ton mode d’arme, pas par le set.', lgT_try: 'Une pièce que tu essaies dans la page : rien n’est encore écrit dans tes fichiers. La flèche ↺ dans le coin la retire.',
+  lgT_empty: 'Rien dans cet emplacement.', lgT_lock: 'Emplacement verrouillé : l’optimiseur n’y touche pas. Ctrl+clic sur une case pour la verrouiller ou la libérer.',
+  lgT_aug: 'La pièce porte des augments.', lgT_rank: 'Le rang de la pièce.',
+  lgT_missing: 'Tu ne possèdes pas cette pièce.', lgT_short: 'Tu l’as, mais pas encore à ce rang ou avec ces augments.',
+  lgT_porter: 'Elle est rangée chez le Porter Moogle : à retirer avant de pouvoir la porter.'});
+Object.assign(T.en, {lgEmpty: 'empty', lgAug: 'augmented', lgRank: 'rank',
+  lgT_own: 'A piece this set defines itself.', lgT_inh: 'A piece this set does not define: it comes from the set it is built on.',
+  lgT_weap: 'The weapon chosen by your weapon mode, not by the set.', lgT_try: 'A piece you are trying in the page: nothing is written to your files yet. The ↺ arrow in the corner takes it off.',
+  lgT_empty: 'Nothing in this slot.', lgT_lock: 'Locked slot: the optimizer leaves it alone. Ctrl+click a cell to lock or free it.',
+  lgT_aug: 'The piece carries augments.', lgT_rank: 'The piece’s rank.',
+  lgT_missing: 'You do not own this piece.', lgT_short: 'You have it, but not yet at this rank or with these augments.',
+  lgT_porter: 'It is stored with the Porter Moogle: to take out before you can wear it.'});
+function legendHTML(holds){
+  const item = (mark, label, tip, off) => `<span class="${off ? 'off' : ''}" title="${esc(t(tip))}">${mark}${esc(t(label))}</span>`;
+  return `<div class="legend mini lgline">` + item('<i></i>', 'lgOwn', 'lgT_own') + item('<i class="inh"></i>', 'lgInh', 'lgT_inh') +
+    item('<i class="weap"></i>', 'lgWeap', 'lgT_weap') + item('<i class="try"></i>', 'lgTry', 'lgT_try') + item('<i class="empty"></i>', 'lgEmpty', 'lgT_empty') +
+    item('<i class="lock"></i>', 'lgLock', 'lgT_lock') + item('<b class="mk">◆</b>', 'lgAug', 'lgT_aug') + item('<b class="rk">R15</b>', 'lgRank', 'lgT_rank') +
+    item('<i class="miss"></i>', 'lg_missing', 'lgT_missing', !holds.missing.length) + item('<i class="short"></i>', 'lg_short', 'lgT_short', !holds.short.length) +
+    item('<i class="porter"></i>', 'lg_porter', 'lgT_porter', !holds.porter.length) + `</div><p class="eqhint">${t('lgHint')}</p>`;
+}
 function slotHTML(s, ci, slot, own, q, eff){
   const p = eff.pieces[slot], label = SLOT_NAMES[S.lang][slot], tried = eff.tried[slot];
   // locked for the optimizers (trial.js): a padlock in the corner
@@ -200,8 +224,8 @@ function cardHTML(card, ci, bypath, q){
   if (holds.porter.length) foot.push(`<span class="holdporter">${t('holdPorter', {l: esc(holds.porter.map(n => n + ' (' + slipOf(n) + ')').join(', '))})}</span>`);
   if (holds.missing.length) foot.push(`<span class="holdmiss">${t('holdMissing', {l: esc(holds.missing.join(', '))})}</span>`);
   if (holds.short.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short.join(', '))})}</span>`);
-  // the legend folded by default (its state kept), the hint of the cells with it
-  const legend = `<details class="lgfold" data-lgfold ${S._lgOpen ? 'open' : ''}><summary>${t('lgTitle')}</summary><div class="legend mini"><span><i></i>${t('lgOwn')}</span><span><i class="inh"></i>${t('lgInh')}</span><span><i class="weap"></i>${t('lgWeap')}</span><span><i class="try"></i>${t('lgTry')}</span>${holds.missing.length ? `<span><i class="miss"></i>${t('lg_missing')}</span>` : ''}${holds.short.length ? `<span><i class="short"></i>${t('lg_short')}</span>` : ''}${holds.porter.length ? `<span><i class="porter"></i>${t('lg_porter')}</span>` : ''}</div><p class="eqhint">${t('lgHint')}</p></details>`;
+  // the legend, always in sight on one line under the grid (legendHTML): folded, its title took the room it needs
+  const legend = legendHTML(holds);
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws', head = ws ? wsTitleHTML(s) : '';
   // the page in three bands: what the set is (a weaponskill set: the weaponskill, what its figures are worked out with),
   // the equipment beside its stats, then the optimizer on the whole width
@@ -405,9 +429,35 @@ function renderJob(){
 // What tells a folded block from the others of the page: its classes and its title without the figures in it
 const foldKey = el => el.className + '|' + ((el.querySelector('summary') || {}).textContent || '').replace(/[\d.,%−+-]+/g, '').trim().slice(0, 60);
 const SCROLLERS = ['.pane', '.setlist .scroll', '.detail', '.globalcol'];
+// A click redraws the page whole: no block may jump back to its top for it. Beside the four above (which have their
+// own rules), every block that was scrolled is found again by its place in the page (the tag and first class of each
+// of its ancestors, and its rank among its like) and put back where it was
+const scrollKind = e => e.tagName + '.' + (e.classList[0] || '');
+function scrollKeep(){
+  const own = SCROLLERS.join(','), out = [];
+  for (const el of document.querySelectorAll('#view *')) {
+    if (!el.scrollTop || el.matches(own)) continue;
+    const path = [];
+    for (let e = el; e && e.id !== 'view'; e = e.parentElement) {
+      let rank = 0;
+      for (let s = e.previousElementSibling; s; s = s.previousElementSibling) if (scrollKind(s) === scrollKind(e)) rank++;
+      path.unshift([scrollKind(e), rank]);
+    }
+    out.push({path, top: el.scrollTop});
+  }
+  return out;
+}
+function scrollPut(kept){
+  for (const {path, top} of kept) {
+    let el = $('#view');
+    for (const [kind, rank] of path) { el = el && [...el.children].filter(c => scrollKind(c) === kind)[rank]; }
+    if (el) el.scrollTop = top;
+  }
+}
 function render(){
   const view = [S.char, S.job, S.section].join('|'), set = view + '|' + S.sel[S.job];
   const tops = SCROLLERS.map(q => { const el = $(q); return el ? el.scrollTop : 0; });
+  const kept = S._view === view ? scrollKeep() : [];
   const a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;
   // a folded block the player opened stays open through a redraw of the same tab: a click inside it (a job, a
   // tab, a mode) draws the page again, and the block closed under the pointer (2026-10-10)
@@ -416,11 +466,14 @@ function render(){
   for (const el of document.querySelectorAll('#view details:not([open])')) if (opened.has(foldKey(el))) el.open = true;
   SCROLLERS.forEach((q, i) => { const el = $(q);
     if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });
+  scrollPut(kept);
   scrollBack(view, set);
   S._view = view; S._set = set;
   if (id) { const el = document.getElementById(id); if (el) { el.focus(); if (pos != null && el.setSelectionRange) el.setSelectionRange(pos, pos); } }
   if (S._buffDlg && !$('#overlay').hidden && $('.buffdlg')) openBuffs();
   if (S._tgtDlg && !$('#overlay').hidden && $('.tgtdlg')) openTarget();
+  motionAfter();
+  guideAfter();
 }
 
 // After a reload of the page (F5): each list back where it was, once, when the same view and set are shown again

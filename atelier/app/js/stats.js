@@ -417,9 +417,11 @@ const baseKey = key => key.endsWith('%') ? key.slice(0, -1) : key;
 const statLabel = (key, e) => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][S.lang === 'fr' ? 1 : 2] + (key.endsWith('%') ? ' %' : '') : e.label;
 const statGroup = key => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][0] : key.startsWith('skill:') ? 'skill' : 'other';
 const fmtStat = e => (e.v > 0 ? '+' : e.v < 0 ? '−' : '') + Math.abs(e.v) + (e.unit ? ' %' : '');
-// One stat row, three aligned columns: name, value, then the difference or the cap
+// One stat row, three aligned columns: name, value, then the difference or the cap. Its tooltip: what the stat does
+// (stat_help.js), then `tip`, how this set gets its figure
+const statTitle = (label, tip) => { const text = statHelp(label, tip); return text ? ` title="${esc(text)}"` : ''; };
 const statLi = (label, value, extra = '', cls = '', tip = '') =>
-  `<li class="${cls}"${tip ? ` title="${esc(tip)}"` : ''}><span title="${label}">${label}</span><b>${value}</b><i>${extra}</i></li>`;
+  `<li class="${cls}"${statTitle(label, tip)}><span>${label}</span><b>${value}</b><i>${extra}</i></li>`;
 const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
 // A stat the game stops at a cap, as a gauge: how far the set is from the cap, "max" once it is there, and under
 // the gauge what goes past it for nothing (pieces that could give something else)
@@ -428,7 +430,7 @@ Object.assign(T.en, {capOf: 'of {c} %', capMax: 'max', capWaste: '{n} % over the
 function cappedLi(label, sum, cap, detail){
   const r = x => Math.round(x * 10) / 10, over = Math.abs(sum) > Math.abs(cap), full = Math.abs(sum) >= Math.abs(cap);
   const fill = Math.max(0, Math.min(100, cap ? Math.round(100 * sum / cap) : 0));
-  return `<li class="capli ${full ? 'full' : ''}"${detail ? ` title="${esc(detail)}"` : ''}><span title="${label}">${label}</span>` +
+  return `<li class="capli ${full ? 'full' : ''}"${statTitle(label, detail)}><span>${label}</span>` +
     `<b>${signed(r(over ? cap : sum))} %</b><i>${full ? `<em class="capmax">${t('capMax')}</em>` : esc(t('capOf', {c: signed(cap)}))}</i>` +
     `<u class="gauge" style="--fill:${fill}%"></u>` +
     (over ? `<em class="overl">${esc(t('capWaste', {n: r(Math.abs(sum - cap))}))}</em>` : '') + `</li>`;

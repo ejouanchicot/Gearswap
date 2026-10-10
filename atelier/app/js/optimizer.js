@@ -272,16 +272,19 @@ function optRunOpen(s, o, starts, cores, floor){
   const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
   const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
     `<div class="orbar"><i></i></div><div class="orws"><span class="orphase">${esc(t('orStarting'))}</span><span class="orevals"></span></div><div class="orwbest">—</div></div>`).join('');
+  // the moogle's scene in place of the walks and the feed, when animations are on (moogle.js)
+  const mog = mogOn();
   searchPark().replaceChildren();
   $('#overlay').innerHTML = `<div class="scrim"></div><div class="dialog optrun" role="dialog" aria-live="polite">` +
     `<header><div class="orhead"><div><div class="kicker">${esc(t('orKick'))}</div><h3>${esc(shortPath(s.path))}</h3></div>` +
     `<div class="orclock"><span id="orclock">0,0 s</span><small>${esc(t('orCores', {n: cores}))}</small></div></div><div class="orchips">${chips}</div></header>` +
-    `<div class="body"><div class="orhero"><div><div class="orlbl">${esc(t('orBest'))} · <b>${esc(objLabel)}</b></div><div class="orbig" id="orbig">—</div><div class="orgain" id="orgain"></div></div>` +
-    `<svg class="orspark" id="orspark" viewBox="0 0 240 64" preserveAspectRatio="none"><path class="area"/><path class="line"/></svg></div>` +
+    `<div class="body${mog ? ' mog' + (S.mogLines ? ' lines' : '') : ''}"><div class="orhero"><div><div class="orlbl">${esc(t('orBest'))} · <b>${esc(objLabel)}</b></div><div class="orbig" id="orbig">—</div><div class="orgain" id="orgain"></div></div>` +
+    `<svg class="orspark" id="orspark" viewBox="0 0 240 64" preserveAspectRatio="none"><path class="area"/><path class="line"/></svg></div>${mog ? mogSceneHTML() : ''}` +
     `<div class="orwalks">${cards}</div><div class="orlbl">${esc(t('orFeed'))}</div><ol class="orfeed" id="orfeed"><li class="orempty">${esc(t('orFeedEmpty'))}</li></ol></div>` +
-    `<footer><span class="orrate" id="orrate"></span><span class="sp"></span><button class="btn ghost" data-orhide>${t('orHide')}</button>` +
+    `<footer><span class="orrate" id="orrate"></span><span class="sp"></span>${mog ? mogToggleHTML() : ''}<button class="btn ghost" data-orhide>${t('orHide')}</button>` +
     `<button class="btn" data-optstop>${t('optStop')}</button></footer></div>`;
   $('#overlay').hidden = false;
+  mogStart();
   clearInterval(OPT_RUN_CLOCK);
   OPT_RUN_CLOCK = setInterval(optRunClock, 100);
 }
@@ -379,7 +382,7 @@ function optRunResult(s, res, tr, plain, gains){
   if (!R || !dlg) return;
   // the same piece in another copy (other augments, another path or rank) said so
   const changes = Object.keys(tr).map(slot => { const from = plain[slot] && !isEmpty(plain[slot]) ? plain[slot].name : '—', to = tr[slot] ? tr[slot].name : t('empty');
-    return {slot, from, to: to === from ? to + ' · ' + t('orOtherCopy') : to}; });
+    return {slot, from, name: tr[slot] ? tr[slot].name : null, to: to === from ? to + ' · ' + t('orOtherCopy') : to}; });
   const d = (R.low ? res.start.raw / res.best.raw - 1 : res.best.raw / res.start.raw - 1) * 100;
   const fig = [];
   if (res.best.round && res.start.round) for (const c of Object.values(ENG_COLS)) {
@@ -410,17 +413,19 @@ function optRunResult(s, res, tr, plain, gains){
   const live = liveWrite();
   const porter = (slot, name) => { const at = (ownedOf()[slot] || []).filter(x => x.name === name);
     return at.length && at.every(atPorter) ? ` <span class="orporter">${esc(at[0].where.map(whereLabel).join(', '))}</span>` : ''; };
-  const list = changes.map(c => `<li><span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span><span><s>${esc(c.from)}</s> → <b>${esc(c.to)}</b>${porter(c.slot, c.to)}</span></li>`).join('');
+  const list = changes.map(c => `<li>${icon(c.name)}<span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span><span><s>${esc(c.from)}</s> → <b>${esc(c.to)}</b>${porter(c.slot, c.to)}</span></li>`).join('');
   const rows = fig.map(([l, a, b, w]) => `<tr><th>${esc(l)}</th><td>${esc(a)}</td><td class="${w > 0 ? 'up' : w < 0 ? 'down' : ''}">${esc(b)}</td></tr>`).join('');
   const lack = gains.length ? `<p class="orlack">${esc(t('orLack'))} ` + gains.map(g => `<b>${esc(g.piece.name)}</b> ${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`).join(' · ') + `</p>` : '';
   // the result's own rows: the hero, the changes and figures taking what is left (scrolling inside), what is to get
+  mogClear(dlg);
   dlg.querySelector('.body').style.gridTemplateRows = 'auto minmax(0,1fr) auto';
   dlg.querySelector('.body').innerHTML = `<div class="orhero"><div><div class="orlbl">${esc(t(changes.length ? 'orFound' : 'orSame'))}${R.objLabel ? ` · <b>${esc(R.objLabel)}</b>` : ''}</div>` +
     `<div class="orbig">${esc(R.fmt(res.best.raw))}</div><div class="orgain">${esc(t('orFrom', {v: R.fmt(res.start.raw)}))} ` +
-    `<b class="${d > .05 ? 'up' : ''}">${d > 0 ? '+' : ''}${d.toFixed(1)} %</b></div></div>${dlg.querySelector('.orspark') ? dlg.querySelector('.orspark').outerHTML : ''}</div>` +
+    `<b class="${d > .05 ? 'up' : ''}">${d > 0 ? '+' : ''}${d.toFixed(1)} %</b></div></div>${dlg.querySelector('.orspark') ? dlg.querySelector('.orspark').outerHTML : ''}${mogWinHTML(changes.length > 0)}</div>` +
     (changes.length ? `<div class="orres"><div><div class="orlbl">${esc(t('orChanged', {n: changes.length}))}</div><ul class="orchg">${list}</ul></div>` +
       (rows ? `<div><div class="orlbl">${esc(t('orFigures'))}</div><table class="orfig"><thead><tr><th></th><th>${esc(t('rdvMine'))}</th><th>${esc(t('rdvTry'))}</th></tr></thead><tbody>${rows}</tbody></table></div>` : '') +
       `</div>` : `<p class="muted">${esc(t('orSameWhy'))}</p>`) + lack;
+  mogWinStart(dlg);
   dlg.querySelector('footer').innerHTML = `<button class="btn ghost" data-close>${t('close')}</button><span class="sp"></span>` +
     (changes.length ? `<button class="btn ghost" data-cmpopen>${t('orCompare')}</button>` +
       (live ? `<button class="btn ghost" data-trysave>${t('trySave')}</button>` : '') + pushButton(s, live) : '');
@@ -434,7 +439,7 @@ function optRunWalkDone(walk){
 function optRunDone(){
   const R = S._optRun;
   if (!R) return;
-  R.done = true; clearInterval(OPT_RUN_CLOCK); optRunClock();
+  R.done = true; clearInterval(OPT_RUN_CLOCK); optRunClock(); mogStop();
   Object.keys(R.walks).forEach(optRunWalkDone);
   document.querySelector('.optrun')?.classList.add('finished');
   const k = document.querySelector('.optrun .kicker');

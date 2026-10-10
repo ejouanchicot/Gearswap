@@ -1,0 +1,35 @@
+/* GearSwap Atelier · tips.css: the tooltip of app/js/tips.js, over everything else (the visit of the assistant
+   included). Said by the moogle (.mog, below): its head and a comic bubble, as the assistant's own. With the
+   assistant off, a small window of the game: its blue ground, a light edge inside a dark one, the text in the game's
+   pale ink; a thick outline and a hard shadow give it the cartoon weight of the glove pointer. The two plain themes
+   (Atelier dark, Atelier light) get a sober box in their own colours. */
+.gtip{position:fixed;z-index:80;max-width:min(360px,calc(100vw - 16px));padding:8px 12px;pointer-events:none;white-space:pre-line;
+  font-size:12.5px;line-height:1.4;color:var(--ink);background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.gtip[hidden]{display:none}
+:root[data-theme="vanadiel"] .gtip{color:#EEF3FF;background:linear-gradient(180deg,#234A8C 0,#12295A 55%,#0B1A3A 100%);border:2px solid #0A1226;border-radius:9px;
+  box-shadow:inset 0 0 0 1px #9FB6DC,inset 0 0 0 2px rgba(10,18,38,.6),inset 0 10px 14px -10px rgba(255,255,255,.35),0 4px 0 rgba(4,8,20,.65),0 10px 22px rgba(0,0,0,.45);
+  text-shadow:0 1px 0 rgba(0,0,0,.6)}
+:root[data-theme="grimoire"] .gtip{color:#EFE4CC;background:linear-gradient(180deg,#2A2012,#1A140B);border:2px solid #0E0A05;border-radius:6px;
+  box-shadow:inset 0 0 0 1px #8C6F2E,inset 0 0 0 2px rgba(14,10,5,.6),0 4px 0 rgba(0,0,0,.6),0 10px 22px rgba(0,0,0,.45)}
+:root[data-motion="on"] .gtip{animation:gtipin .14s cubic-bezier(.3,1.5,.5,1) both;transform-origin:0 0}
+@keyframes gtipin{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+
+/* ---- said by the moogle: its small figure, then the bubble with its tail towards it ---- */
+.gtip.mog{display:flex;align-items:flex-start;gap:7px;padding:0;max-width:min(400px,calc(100vw - 16px));background:none !important;border:0 !important;box-shadow:none !important;text-shadow:none !important}
+.gtip.mog[hidden]{display:none}
+.gtip:not(.mog) .gtipmog{display:none}
+/* the assistant's own figure (guide.css .gmog: two drawings, the mouth moving), small, and without its entrance */
+.gtipmog{flex:none;display:block;width:46px;height:46px}
+.gtipmog .gmog{display:block;width:46px;height:46px;animation:none !important}
+.gtip.mog .gtiptxt{position:relative;padding:7px 12px;border-radius:13px;color:#2A1D12;background:#FFF8E7;border:2px solid #2A1D12;box-shadow:0 3px 0 rgba(0,0,0,.35),0 8px 18px rgba(0,0,0,.4);font-weight:500}
+.gtip.mog .gtiptxt::before{content:"";position:absolute;left:-7px;top:14px;width:10px;height:10px;background:#FFF8E7;border:solid #2A1D12;border-width:0 0 2px 2px;transform:rotate(45deg)}
+:root[data-motion="on"] .gtip.mog{transform-origin:20px 0}
+
+/* the moogle at the right of its bubble (tips.js: both at the left of the pointer), the tail on that side */
+.gtip.mog.rev{flex-direction:row-reverse}
+.gtip.mog.rev .gtiptxt::before{left:auto;right:-7px;border-width:2px 2px 0 0}
+:root[data-motion="on"] .gtip.mog.rev{transform-origin:calc(100% - 20px) 0}
+/* the pair is lined up on the moogle's side of the line: on its top when it stands under the line (above), on its
+   bottom when it stands over the line and points down. A long text makes the bubble taller, not the moogle lower */
+.gtip.mog:has(.gtipmog[data-pose="down"]){align-items:flex-end}
+.gtip.mog:has(.gtipmog[data-pose="down"]) .gtiptxt::before{top:auto;bottom:14px}

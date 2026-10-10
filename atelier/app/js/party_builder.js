@@ -12,7 +12,7 @@ Object.assign(T.fr, {
   pbResult: 'Ce que le groupe te donne', pbTarget: 'Cible', pbSaved: 'Buffs enregistrés', pbSave: '+ Enregistrer ces buffs', pbSaveAsk: 'Nom (Sortie, Odyssey, Trusts XP…)', pbSaveTitle: 'Enregistrer ces buffs et débuffs', pbSaveGo: 'Enregistrer', pbSaveHave: 'Déjà enregistrés (un même nom remplace) :', pbSavedAs: 'Buffs « {n} » enregistrés',
   pbAddTitle: 'Ajouter les buffs d’un job ({n} place(s))', pbAddLeft: '{n} place(s)', pbAddSupport: 'Buffs de soutien', pbAddJa: 'Capacités de groupe', pbAddFoe: 'Débuffs sur la cible',
   pbForget: 'Oublier ces buffs', pbLoaded: 'Buffs « {n} » remis.', pbNoSaved: 'aucun : choisis les buffs puis enregistre-les',
-  pbOther: 'Autres debuffs sur la cible (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Défense {a} → {b}', pbEvaNow: 'Évasion {a} → {b}',
+  pbOther: 'Autres debuffs sur la cible', pbOtherWho: 'Dia, Distract, Light Shot, et ce que posent les jobs qui ne sont pas dans le groupe (THF, BLM, NIN, BLU, BST…)', pbOtherOpen: 'Déplier', pbOtherShut: 'Replier', pbDefNow: 'Défense {a} → {b}', pbEvaNow: 'Évasion {a} → {b}',
   pbFoodAtk: 'Attaque', pbFoodAcc: 'Précision', pbFoodBoth: 'Attaque et précision', pbFoodWs: 'Double Attack et WS', pbFoodMagic: 'Magie', pbFoodTank: 'Défense (tank)',
   pbChoose: 'Choisir…', pbSearch: 'Chercher…', pbNone: 'Aucune', pbBubbles: 'Bulles', pbYouBase: 'Repas et aftermath', pbGeoHelp: 'Une ligne par bulle : clique dans la colonne Indi, Geo ou Entrust ; un autre clic la retire.', pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbOffense: 'Combat', pbAttrs: 'Attributs', pbGear: 'Équipement et capacités', pbOther2: 'Autres',
   pbSongs: 'Chansons', pbSongsNote: '{n} / {m} : un clic place la chanson, un autre la retire', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Valeur de chaque roll',
@@ -25,7 +25,7 @@ Object.assign(T.en, {
   pbResult: 'What the party gives you', pbTarget: 'Target', pbSaved: 'Saved buffs', pbSave: '+ Save these buffs', pbSaveAsk: 'Name (Sortie, Odyssey, Trusts XP…)', pbSaveTitle: 'Save these buffs and debuffs', pbSaveGo: 'Save', pbSaveHave: 'Already saved (the same name replaces it):', pbSavedAs: 'Buffs “{n}” saved',
   pbAddTitle: 'Add a job’s buffs ({n} slot(s) left)', pbAddLeft: '{n} slot(s)', pbAddSupport: 'Support buffs', pbAddJa: 'Party abilities', pbAddFoe: 'Debuffs on the target',
   pbForget: 'Forget these buffs', pbLoaded: 'Buffs “{n}” restored.', pbNoSaved: 'none: pick the buffs, then save them',
-  pbOther: 'Other debuffs on the target (BLM, THF, NIN, BLU, BST…)', pbDefNow: 'Defense {a} → {b}', pbEvaNow: 'Evasion {a} → {b}',
+  pbOther: 'Other debuffs on the target', pbOtherWho: 'Dia, Distract, Light Shot, and what the jobs that are not in the party lay (THF, BLM, NIN, BLU, BST…)', pbOtherOpen: 'Unfold', pbOtherShut: 'Fold', pbDefNow: 'Defense {a} → {b}', pbEvaNow: 'Evasion {a} → {b}',
   pbFoodAtk: 'Attack', pbFoodAcc: 'Accuracy', pbFoodBoth: 'Attack and accuracy', pbFoodWs: 'Double Attack and WS', pbFoodMagic: 'Magic', pbFoodTank: 'Defense (tank)',
   pbChoose: 'Choose…', pbSearch: 'Search…', pbNone: 'None', pbBubbles: 'Bubbles', pbYouBase: 'Food and aftermath', pbGeoHelp: 'One row per bubble: click in its Indi, Geo or Entrust column; click again to remove it.', pbBuffs: 'On you', pbOnTarget: 'On the target', pbOffense: 'Combat', pbAttrs: 'Attributes', pbGear: 'Gear and abilities', pbOther2: 'Others',
   pbSongs: 'Songs', pbSongsNote: '{n} / {m}: one click places the song, another removes it', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Each roll’s number',
@@ -357,7 +357,7 @@ function renderCombatParty(d){
   const body = cur === 'you' ? pbYouBody(b) : pbBody(cur, b, shown);
   const panel = `<section class="pbpanel"><div class="pbbody ${cur === 'you' ? 'pbyou' : ''}">${body}</div></section>`;
   const side = `<aside class="pbside">${pbResult(B)}${box('g-off', t('pbTarget'), P.tgt || '', `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}</aside>`;
-  const other = P.foe ? `<details class="lgfold pbother" data-pbother ${S._pbOtherOpen ? 'open' : ''}><summary>${esc(t('pbOther'))} ${P.foe.total || ''}</summary><div class="pbotherb">${P.foe.body}</div></details>` : '';
+  const other = P.foe ? `<details class="pbother" data-pbother ${S._pbOtherOpen ? 'open' : ''}><summary><span class="pbot"><b>${esc(t('pbOther'))}</b><small>${esc(t('pbOtherWho'))}</small></span><span class="pbosum">${P.foe.total || ''}</span><span class="pbohint"><i class="o">${esc(t('pbOtherOpen'))}</i><i class="s">${esc(t('pbOtherShut'))}</i></span></summary><div class="pbotherb">${P.foe.body}</div></details>` : '';
   return `<div class="ui2tab combattab">${head}${bar}<div class="pblayout"><div class="pbmain">${tabs}${panel}</div>${side}</div>${other}</div>`;
 }
 

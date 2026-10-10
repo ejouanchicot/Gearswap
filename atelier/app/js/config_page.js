@@ -67,6 +67,6 @@ function renderConfig(){
     `<button data-lang="en" aria-pressed="${S.lang === 'en'}">English</button></div>`;
   return `<div class="cfg"><header><h2>${esc(t('cfgTitle'))}</h2><button class="btn ghost" data-config>← ${esc(t('cfgBack'))}</button></header>` +
     `<section class="box"><h3>${esc(t('cfgTheme'))}</h3><p>${esc(t('cfgThemeWhy'))}</p><div class="themes">${THEMES.map(themeCardHTML).join('')}</div></section>` +
-    `<section class="box"><h3>${esc(t('cfgLang'))}</h3><p>${esc(t('cfgLangWhy'))}</p><div class="cfgrow">${lang}</div></section>` +
+    `<section class="box"><h3>${esc(t('cfgLang'))}</h3><p>${esc(t('cfgLangWhy'))}</p><div class="cfgrow">${lang}</div></section>${motionConfigHTML()}${guideConfigHTML()}` +
     `<section class="box"><h3>${esc(t('cfgEngine'))}</h3><p>${esc(t('cfgEngineWhy'))}</p>${engineCardsHTML()}</section></div>`;
 }

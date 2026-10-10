@@ -495,8 +495,6 @@
 .pbbottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
 @media (max-width:1100px){.pbbottom{grid-template-columns:minmax(0,1fr)}}
 .pbtgt{margin:10px 0 0;font-size:13px}
-.pbother summary{cursor:pointer;color:var(--muted)}
-.pbotherb{padding-top:10px}
 
 /* the party as a list (party_builder.js): a row a member, its editor under it */
 .pblayout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
@@ -823,3 +821,42 @@
 .slotcol .eqbtn{width:100%}
 /* what the job's GearSwap puts with the weapon chosen (weapons.js weaponResultLines): shown, not a menu */
 .wauto{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:13px}
+
+/* the push windows (push_view.js): the pieces in plain rows, the file and its lines in a fold */
+.dialog.pushdlg{width:min(680px,calc(100% - 32px))}
+.dialog.pushdlg:has(.pushtech[open]){width:min(980px,calc(100% - 32px))}
+.pushrows{margin:10px 0 14px}
+.pushrows i{color:var(--muted)}
+.pushtech{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.pushtech summary{cursor:pointer;font-size:12.5px;color:var(--muted)}
+.pushtech summary:hover{color:var(--ink)}
+.pushtech[open] summary{margin-bottom:8px}
+
+/* Combat tab, the other debuffs on the target: a block of its own under the party, plainly one that unfolds (a
+   header with its name, what it holds, what it adds up to, and a word to unfold it). Its rows keep to a reading
+   width: a value at the far end of a wide screen is not read with its row */
+.pbother{margin-top:16px;max-width:800px;border:1px solid var(--line-strong);border-radius:var(--radius-s,8px);background:var(--panel);overflow:hidden}
+.pbother > summary{display:flex;align-items:center;gap:14px;padding:11px 16px;cursor:pointer;list-style:none;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 9%,transparent),transparent)}
+.pbother > summary::-webkit-details-marker{display:none}
+.pbother > summary::before{content:"▸";flex:none;color:var(--accent);font-size:15px;transition:transform .15s}
+.pbother[open] > summary::before{transform:rotate(90deg)}
+.pbother > summary:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.pbot{display:grid;gap:1px;min-width:0}
+.pbot b{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.pbot small{font-size:12px;color:var(--muted)}
+.pbosum{margin-left:auto;flex:none;font-weight:700;font-variant-numeric:tabular-nums;color:var(--r-dd)}
+.pbohint{flex:none;font-size:11.5px;font-weight:700;padding:3px 10px;border:1px solid var(--line-strong);border-radius:999px;color:var(--ink)}
+.pbohint i{font-style:normal}
+.pbother:not([open]) .pbohint .s,.pbother[open] .pbohint .o{display:none}
+.pbother[open] > summary{border-bottom:1px solid var(--line)}
+.pbotherb{padding:12px 16px 14px}
+
+/* the gear grid's legend, on one line under it (sets_view.js legendHTML): every look of a cell, the ones about what
+   you hold dimmed when the set has no such piece */
+.eqcol .legend.lgline{display:flex;flex-wrap:wrap;gap:5px 14px;max-width:none;margin-top:4px;font-size:11.5px;grid-column:1 / -1}
+.legend.lgline span{white-space:nowrap}
+.legend.lgline span.off{opacity:.45}
+.legend i.empty{border-style:dashed;background:transparent}
+.legend i.lock{border-radius:50%;border-color:var(--panel);background:var(--accent)}
+.legend b.rk{font-size:8.5px;font-weight:800;line-height:1.15;padding:0 3px;color:var(--aug);border:1px solid color-mix(in srgb,var(--aug) 70%,transparent);border-radius:3px}
+.eqcol .eqhint{margin-top:-6px;grid-column:1 / -1}
