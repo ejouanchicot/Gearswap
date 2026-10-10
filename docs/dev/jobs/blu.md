@@ -53,17 +53,17 @@ the sets files (structure and set names only).
 | `shared/jobs/blu/functions/BLU_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout; no `job_handle_equipping_gear` |
 | `shared/jobs/blu/functions/BLU_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('BLU', 'blu/display/BLU_LOCKSTYLE', 1, 'WAR')` wrappers |
 | `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'blu/display/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
-| `shared/jobs/blu/functions/logic/spell_map.lua` | 117 | `BLUSpellMap.category(name)` from the character's map, else the database category; `is_unbridled(name)` |
-| `shared/jobs/blu/functions/logic/set_builder.lua` | 156 | Idle and engaged: `.SW` detection, `[OffenseMode]`, Mote defense / Kiting layers, weapons, town, movement |
+| `shared/jobs/blu/functions/logic/spell_map.lua` | 119 | `BLUSpellMap.category(name)` from the character's map, else the database category; `is_unbridled(name)` |
+| `shared/jobs/blu/functions/logic/set_builder.lua` | 148 | Idle and engaged: `.SW` detection, `[OffenseMode]`, Mote defense / Kiting layers, weapons, town, movement |
 | `shared/jobs/blu/functions/logic/unbridled.lua` | 41 | Option `blu_unbridled`: `BLUUnbridled.apply` -> `AbilityHelper.try_ability` |
 | `shared/jobs/blu/functions/logic/expiacion_guard.lua` | 80 | Option `blu_expiacion_window`: `BLUExpiacionGuard.check` |
-| `shared/jobs/blu/functions/logic/azure_sets.lua` | 49 | `BLUAzureSets.load` / `unload` of the AzureSets addon, flag on `windower._blu_azuresets_loaded` |
+| `shared/jobs/blu/functions/logic/azure_sets.lua` | 51 | `BLUAzureSets.load` / `unload` of the AzureSets addon, flag on `windower._blu_azuresets_loaded` |
 | `shared/data/magic/BLU_SPELL_DATABASE.lua` (+ `blu/**/*.lua`) | - | Blue Magic spell data; BLU reads `get_spell_data(name).category` (unlisted spells) and `.unbridled` |
 | `shared/utils/core/auto_options.lua` | - | `AutoOptions.on(name)`: reads `_common/combat/AUTO_ABILITIES.lua` once per load (`== true`) |
 | `_master/config/blu/BLU_STATES.lua` | 66 | Mote mode options, `MainWeapon` / `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/blu/BLU_KEYBINDS.lua` | 34 | Data only: 6 entries (+ 2 commented per-weapon examples) handed to `KeybindManager.create('BLU', ...)` |
 | `_master/config/blu/BLU_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
-| `_master/config/blu/BLU_SPELL_MAP.lua` | 143 | 24 categories -> spell names, every database spell |
+| `_master/config/blu/BLU_SPELL_MAP.lua` | 154 | 24 categories -> spell names, every database spell |
 | `_master/config/blu/BLU_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/blu/BLU_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |
 | `_master/config/blu/BLU_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
@@ -72,7 +72,7 @@ the sets files (structure and set names only).
 | `_master/config_global/AUTO_ABILITIES.lua` | - | Template of `<Character>/_common/combat/AUTO_ABILITIES.lua`: both BLU options `false` |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |
 | `_master/sets/blu_sets.lua` | 182 | Template sets: every set the code reads, all empty |
-| `_master/Gabvanstronger/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)) |
+| `_master/Gabvanstronger/config/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)) |
 | `shared/data/alt/BLU_ALT_COMMANDS.lua` | - | Dual-box commands for a BLU partner (read by the main's alt system, not by the BLU job file) |
 
 No live copy is tracked (live folders are gitignored).

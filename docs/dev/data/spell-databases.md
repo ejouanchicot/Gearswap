@@ -254,7 +254,7 @@ sequenceDiagram
 ### Runtime path 2: midcast routing (`database_func`)
 
 `MidcastManager.resolve_metadata` calls `pcall(config.database_func, spell.english)`
-(`shared/utils/midcast/midcast_manager.lua:335-336`) and uses the returned string as the "type" key for
+(`shared/utils/midcast/midcast_manager.lua:336-337`) and uses the returned string as the "type" key for
 `sets.midcast[skill][type]...` and `sets.midcast[type]` (the `resolve_type_*` resolvers). Which DB
 function each job passes:
 
@@ -292,7 +292,7 @@ values: `macc`, `mnd_potency`, `int_potency`, `skill_potency`, `skill_mnd_potenc
 ### Runtime path 4: `data_loader` and `//gs c info`
 
 `data_loader.lua` creates `_G.FFXI_DATA = { spells = {}, abilities = {}, weaponskills = {}, loaded =
-{...} }` at require time (`:40`) and loads nothing: the autoload call is commented out (`:303`, "causes
+{...} }` at require time (`:40`) and loads nothing: the autoload call is commented out (`:294`, "causes
 100-300ms lag at startup"). The entry points that `require('shared/utils/data/data_loader')` (every
 shared entry in `shared/entry/`) therefore only create the empty global.
 
@@ -537,7 +537,7 @@ Re-checked on 2026-09-28. Open:
   `shared/data/magic/SMN_SPELL_DATABASE.lua`
 - `ELEMENTAL_NO_TIERS` can never match; filter lists name spells that do not exist -
   `shared/data/spells/BLM_SPELL_FILTERS.lua`
-- `_master/sets/rdm_sets.lua` (and `_master/Kaories/rdm/rdm_sets.lua`) say the enfeebling type comes
+- `_master/sets/rdm_sets.lua` (and `_master/Kaories/sets/rdm_sets.lua`) say the enfeebling type comes
   from `RDM_SPELL_DATABASE`; it comes from `ENFEEBLING_MAGIC_DATABASE` (`RDM_MIDCAST.lua`)
 - Two conventions for Job Point spells: the string `"JP"` against numeric learn levels. Harmless today
   (no database function compares learn levels), a trap for any new comparison.

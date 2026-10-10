@@ -35,7 +35,7 @@ sender at all (each section says which).
 
 | Path (under `shared/utils/messages/data/` unless stated) | Lines | Templates | Namespace and role |
 |---|---|---|---|
-| `jobs/blm_messages.lua` | 106 | 13 | `BLM` - element/storm cycles, refinement, arts, stratagems, BLM errors |
+| `jobs/blm_messages.lua` | 102 | 13 | `BLM` - element/storm cycles, refinement, arts, stratagems, BLM errors |
 | `jobs/brd_messages.lua` | 269 | 42 | `BRD` - JA, instrument lock, song packs, song refinement, BRD errors |
 | `jobs/bst_messages.lua` | 271 | 46 | `BST` - ecosystem/species, broth equip, pet engage, Ready moves, BST errors |
 | `jobs/cor_messages.lua` | 32 | 3 | `COR` - PartyTracker load failures |
@@ -600,7 +600,6 @@ folders (`grep -r`, not ripgrep) and string dispatch.
 
 Re-checked on 2026-09-28. Open:
 
-- PUP commands call nonexistent `MessageFormatter.error_pup_*` / `show_pup_*` functions; `PUP_MIDCAST.lua` `job_midcast` makes the same undefined call - `shared/jobs/pup/functions/PUP_COMMANDS.lua:43`.
 - WHM swallows a CureManager load failure; `WHM.curemanager_not_loaded` has no sender since `message_whm.lua` was removed - `shared/jobs/whm/functions/WHM_PRECAST.lua` `ensure_modules_loaded`.
 - `SONGS` namespace is a duplicate of `BRD` with no sender since `message_songs.lua` was removed - `shared/utils/messages/data/systems/songs_messages.lua`.
 - `SYSTEM` colour-test templates are unreachable (COR `testcolors` branch shadowed by the common command) - `shared/jobs/cor/functions/COR_COMMANDS.lua` `testcolors` branch.
@@ -618,12 +617,12 @@ Re-checked on 2026-09-28. Open:
 Fixed:
 
 - Orange frozen when `message_engine.lua` executed: colour tokens are resolved at each render through `ChatPalette.tag` (2026-09-25/27).
-- `{/}` documented as a colour-end token but not implemented: the engine comment now says it is not recognised (`b6c7dc6`).
+- `{/}` documented as a colour-end token but not implemented: the engine comment now says it is not recognised (`85ad22b`).
 - API usage header cited nonexistent templates (`BLM.manawall_ready`, `COMBAT.ws_tp`): the example now uses `BLM.element_cycle`.
 - `BLOCK` and `HELP` were listed under the `TEMPBIND` heading on this page: separate sections now.
 - 10 dead BLM keys and their formatter functions and facade lines: deleted in `964ca51` (2026-09-27).
 - `INFO.entity_*`, `SYSTEM.intro_*`, `WATCHDOG.status_*`/`help`, `COMMANDS.*_status_header`/`*_current_mode`, `TEMPBIND.help_line`, BST broth/Ready-move list keys: replaced by InfoBlock / HelpScreen and deleted (2026-09-25).
 - Unused `MessageColors` require in `precast_messages.lua`: removed (2026-09-25).
-- `DATABASE` namespace and `message_database` with no live caller: deleted in `72e135d`.
+- `DATABASE` namespace and `message_database` with no live caller: deleted in `e765fa2`.
 - 50/51-character separators in `BUFFS`, `COOLDOWNS`, `DEBUFFS`, `RDM_MIDCAST`, `COMBAT`, `STATUS`, `PRECAST`: all 69 now (2026-09-25).
 - Two job-label styles in `RDM`, `COMBAT` and `WARP`: unified to `{gray}[{lightblue}...{gray}]` (2026-09-25).

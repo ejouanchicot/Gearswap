@@ -339,7 +339,7 @@ matches nothing. Send a mob id bare:
 send_command(('input /ma "%s" %s'):format(spell.name, spell.target.id))
 ```
 
-(as `ability_helper.lua:372` does), and fall back to `<t>` only when the id is
+(as `ability_helper.lua:428` does), and fall back to `<t>` only when the id is
 nil.
 
 ### Item resources: look up by id, do not scan

@@ -29,7 +29,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `_master/config_global/CRAFT_CONFIG.lua` | Which set files `craft` / `fish` read (`craft_file = 'craft'`, `fish_file = 'fishing'`) and their lockstyles (19 / 17; `false` keeps the job's), deployed as `<char>/_common/inventory/CRAFT_CONFIG.lua` |
 | `_master/sets/craft_sets.lua` | Generic craft set file, every slot empty: `hq`, `nq`, `success` and one variant per sub-craft (the 8 crafts) |
 | `_master/sets/fishing_sets.lua` | Generic fishing set file (single set, `description = 'Fishing'`), all 14 slots `""` |
-| `_master/Tetsouo/_common/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
+| `_master/Tetsouo/sets/bonecraft_sets.lua`, `fishing_sets.lua` | Tetsouo's craft set files (multi-variant / single) |
 | `shared/utils/drg/auto_jump.lua` | Jump / High Jump before a WS when TP < 1000, every job on /DRG (run by `WSPrecastHandler.handle`); `attach` gives every job `state.JumpAuto` and its row |
 | `shared/utils/buffs/buff_command.lua` | `//gs c buff` (aliases `buffs`, `buffself`, `selfbuff`, `smartbuff`) on every job: `_G.job_buff_extra`, then the main job's and the subjob's lists of `_common/combat/BUFF_CONFIG.lua` |
 | `shared/utils/buffs/self_buff_manager.lua`, `buff_config.lua` | The one buff engine (names turned into casts through the shared action queue; shared with WAR `berserk` / `defender` / `thirdeye` / `tp`), and the settings over their defaults ([midcast and buffs](midcast-and-buffs.md#buff-command-and-engine)) |
@@ -678,6 +678,7 @@ keeps 50); a key the default lacks is kept as given. Every reader calls it at th
 | `brd_debuff_songs` | `{lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}` | `brd/functions/BRD_COMMANDS.lua` (`lullaby`, `lullaby2` / `foe`, `elegy`, `requiem`); the spell is also passed to the chat message |
 | `brd_songs_refresh_below` | `180` | `song_opening.lua`: `//gs c songs` sends nothing while every song of the plan is ours with more seconds left; 0 always sings |
 | `stratagem_full_recharge` | `240` (seconds, `DEFAULT_FULL_RECHARGE`) | `shared/utils/scholar/stratagem_charges.lua` `available` and `next_charge_minutes`: charges = `floor(max - max * recast / full)`, one charge every `full / max` s. Lower it with the job-point gift |
+| `warp_ring_safety` | `3.5` (seconds, `DEFAULT_SAFETY_DELAY`) | `shared/utils/warp/casting/item_user.lua` `safety_delay`: how long a warp ring is held once it reads ready, before it is used; never under 0 |
 
 A new key: give the job's value as `default` at the call, add a commented line with that default to
 `_master/config_global/TUNING.lua`, and list it here and in the player's configuration guide.

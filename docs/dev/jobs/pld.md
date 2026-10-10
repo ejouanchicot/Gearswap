@@ -43,26 +43,26 @@ numbers are avoided because they drift.
 |------|------:|------|
 | `shared/entry/pld.lua` | 309 | Entry point (the same for every character; `<Char>_PLD.lua` and its template `_master/entry/Tetsouo_PLD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/pld/functions/pld_functions.lua` | 121 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/pld/functions/PLD_PRECAST.lua` | 200 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
-| `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 202 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
+| `shared/jobs/pld/functions/PLD_PRECAST.lua` | 207 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
+| `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 203 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
 | `shared/jobs/pld/functions/PLD_AFTERCAST.lua` | 36 | `LifecycleManager.aftercast()`, empty `job_post_aftercast` |
 | `shared/jobs/pld/functions/PLD_IDLE.lua` | 51 | `customize_idle_set` -> `SetBuilder.build_idle_set` (+ `UPDATE_DEBUG` trace) |
 | `shared/jobs/pld/functions/PLD_ENGAGED.lua` | 51 | `customize_melee_set` -> `SetBuilder.build_engaged_set` (+ trace) |
 | `shared/jobs/pld/functions/PLD_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/pld/functions/PLD_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/pld/functions/PLD_COMMANDS.lua` | 306 | `job_self_command` router (incl. `ws`/`wsN`), local `rebuild_ws_slots` (exported `_G.pld_rebuild_ws_slots`), `job_state_change` (profile, WS slots, ammo lock, keybind refresh) |
+| `shared/jobs/pld/functions/PLD_COMMANDS.lua` | 285 | `job_self_command` router (incl. `ws`/`wsN`), local `rebuild_ws_slots` (exported `_G.pld_rebuild_ws_slots`), `job_state_change` (profile, WS slots, ammo lock, keybind refresh) |
 | `shared/jobs/pld/functions/PLD_MOVEMENT.lua` | 23 | Placeholder for the 12-module layout (comments only) |
 | `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'pld/display/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/pld/functions/PLD_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('PLD', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/pld/functions/logic/set_builder.lua` | 370 | Idle/engaged construction: weapon, shield, grip, ammo, HybridMode map, XP, Regen, movement, town; reads `PLD_WEAPONS.lua` (local `weapons_config`); `current_weapon()` is the authority on what is in hand |
+| `shared/jobs/pld/functions/logic/set_builder.lua` | 379 | Idle/engaged construction: weapon, shield, grip, ammo, HybridMode map, XP, Regen, movement, town; reads `PLD_WEAPONS.lua` (local `weapons_config`); `current_weapon()` is the authority on what is in hand |
 | `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
 | `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 54 | CureSelf / CureOther choice for Cure to Cure IV, `is_cure` |
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 178 | `//gs c aoe` BLU rotation (same code as RUN's copy; only headers and error text differ) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as RUN's copy) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so; records the lock with Combat Mode's lock registry (`'ampulla'`). Shared with WAR |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | Weapon-aware weaponskill slot states, shared with WAR (PLD uses `rebuild` / `get` / `cast`; the weapon-in-hand detection, `detect_weapon` / `sync`, is WAR's) |
-| `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 366 + 104 | /SCH chains, shared with BLM and GEO (and `//gs c stealth`); stratagem buffs read from `windower.ffxi.get_player().buffs` (`buff_up`), see [midcast and buffs](../systems/midcast-and-buffs.md) |
-| `_master/config/pld/PLD_STATES.lua` | 364 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, `_G.PLDStates` |
+| `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 398 + 109 | /SCH chains, shared with BLM and GEO (and `//gs c stealth`); stratagem buffs read from `windower.ffxi.get_player().buffs` (`buff_up`), see [midcast and buffs](../systems/midcast-and-buffs.md) |
+| `_master/config/pld/PLD_STATES.lua` | 411 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, `_G.PLDStates` |
 | `_master/config/pld/PLD_KEYBINDS.lua` | 78 | 8 bind entries (Phalanx SIRD on `^numpad2` under every subjob, Regen on `^numpad3` under /SCH), `subjob` / `exclude_subjob` filters, a `visible` predicate, `retired_keys = {'^numpad7'}`; data only, `KeybindManager.create('PLD', ...)` does the rest ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/pld/PLD_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
 | `_master/config/pld/PLD_HUD.lua` | 31 | HUD section / row order for PLD (empty lists = the `UI_CONFIG` default) |
@@ -71,10 +71,10 @@ numbers are avoided because they drift.
 | `_master/config/pld/PLD_MACROBOOK.lua` | 76 | Book 15/18/20 per subjob, dual-box table |
 | `_master/config/pld/PLD_TP_CONFIG.lua` | 75 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
 | `_master/config/pld/PLD_BLU_MAGIC.lua` | 203 | `_G.BluMagicConfig`: AOE spell table, dynamic / manual rotation |
-| `_master/config/pld/PLD_WEAPONS.lua` | 27 | `shields`, `stance_weapon`, `grips` for the set builder; every line commented (examples only), so nothing is forced but the default grip |
+| `_master/config/pld/PLD_WEAPONS.lua` | 29 | `shields`, `stance_weapon`, `grips` for the set builder; every line commented (examples only), so nothing is forced but the default grip |
 | `_master/config/pld/PLD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/pld_sets.lua` | 835 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
-| `_master/Kaories/pld/pld_sets.lua` | 777 | Kaories overlay sets (no Sortie or /SCH sets, see Known issues) |
+| `_master/sets/pld_sets.lua` | 830 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
+| `_master/Kaories/sets/pld_sets.lua` | 764 | Kaories overlay sets (no Sortie or /SCH sets, see Known issues) |
 | `shared/data/job_abilities/PLD_JA_DATABASE.lua` + `pld/*.lua` | 13 + 194 | JA descriptions for `ability_message_handler` (messages only) |
 
 Live copies (gitignored): `Tetsouo/Tetsouo_PLD.lua` and `Kaories/Kaories_PLD.lua` are
@@ -82,7 +82,7 @@ one `include` of `shared/entry/pld.lua` (since 2026-09-30; the Kaories entry use
 to be an older copy without weaponskill slots or `AmpullaLock`). Kaories has no
 `PLD_WS_CONFIG.lua`, so `CharPaths.optional` gives nil and her PLD has no
 weaponskill slots; her own `PLD_STATES.lua` builds none either. `Tetsouo/pld/` is modular (`pld_sets.lua` + `armor`, `capes`,
-`weapons`, mirrored in `_master/Tetsouo/pld/`). `_master/Tetsouo/config/pld/`
+`weapons`, mirrored in `_master/Tetsouo/sets/pld/`). `_master/Tetsouo/config/pld/`
 holds only `PLD_MACROBOOK.lua` (other book numbers), `PLD_REFILL.lua` and
 `PLD_WEAPONS.lua` (Tetsouo's shields, see below).
 `_master/Kaories/config/pld/` holds keybinds (with the old `^numpad7` SneakInviAOE
@@ -563,7 +563,7 @@ above the `RECAST_CONFIG` tolerance (global `is_on_cooldown`).
 
 ## Set names the code looks up
 
-T = `_master/sets/pld_sets.lua`, K = `_master/Kaories/pld/pld_sets.lua`,
+T = `_master/sets/pld_sets.lua`, K = `_master/Kaories/sets/pld_sets.lua`,
 L = `Tetsouo/pld/pld_sets.lua` (weapon sets in `Tetsouo/pld/sets/weapons.lua`).
 The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 

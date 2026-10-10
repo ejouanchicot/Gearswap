@@ -36,7 +36,7 @@ does not).
 | `shared/utils/messages/message_colors.lua` | 204 | Named colour constants (`SUCCESS`, `ERROR`, `WARNING`...) resolved at each read through the player's overrides; region-dependent orange; `//gs c trace` probe of the orange |
 | `shared/utils/messages/info_block.lua` | 134 | `InfoBlock`: one renderer for data blocks (`TAG :: title`, aligned `Label : value` fields), namespace `BLOCK` |
 | `shared/utils/messages/help_screen.lua` | 178 | `HelpScreen`: one renderer for help screens (groups, dot-leader rows, notes), namespace `HELP` |
-| `shared/utils/messages/api/messages.lua` | 438 | Messages API (`send`, `job`, `error`...), builder, renderer configuration wrappers, `//gs c testmsg` runner |
+| `shared/utils/messages/api/messages.lua` | 436 | Messages API (`send`, `job`, `error`...), builder, renderer configuration wrappers, `//gs c testmsg` runner |
 | `shared/utils/messages/core/message_engine.lua` | 334 | Namespace loader (data files) and template compiler/cache; colour tags resolved through `ChatPalette` at render |
 | `shared/utils/messages/core/message_renderer.lua` | 255 | Final template-path output: master toggle, filter level, colour scheme, timestamp, newline split, statistics |
 | `shared/utils/messages/message_validator.lua` | 425 | `//gs c msgtests`: static checks of job templates and job formatter exports, JSON and TXT reports |
@@ -45,7 +45,7 @@ does not).
 | `shared/hooks/init_ability_messages.lua` | 97 | Wraps `user_post_precast` -> ability handler |
 | `shared/hooks/init_spell_messages.lua` | 97 | Wraps `user_post_midcast` -> spell handler |
 | `shared/hooks/init_ws_messages.lua` | 138 | Wraps `user_post_precast` -> WS line from `UNIVERSAL_WS_DATABASE` |
-| `shared/config/message_settings.lua` | 188 | Loads/saves `<Char>/saved/message_modes.lua` into `_G.MESSAGE_SETTINGS` |
+| `shared/config/message_settings.lua` | 184 | Loads/saves `<Char>/saved/message_modes.lua` into `_G.MESSAGE_SETTINGS` |
 | `shared/config/message_mode_config.lua` | 82 | Factory `MessageModeConfig.create(opts)` that builds the four mode configs below |
 | `shared/config/JA_MESSAGES_CONFIG.lua` | 38 | `MessageModeConfig.create{...}` over `ja_mode` |
 | `shared/config/WS_MESSAGES_CONFIG.lua` | 37 | Same over `ws_mode` (short check `is_tp_only`) |
@@ -939,8 +939,8 @@ Fixed:
   `chat.separators`, `separator_char`, `separator_color`, applied to every chat line through the
   `add_to_chat` wrapper (2026-09-27, `64a0c20`).
 - Four near-identical mode config modules: replaced by the `MessageModeConfig.create` factory.
-- `{/}` documented as supported: comment corrected, dead variables removed (`b6c7dc6`).
-- `COMMON_COMMANDS.lua` required the renderer without using it (`7694dd3`).
+- `{/}` documented as supported: comment corrected, dead variables removed (`85ad22b`).
+- `COMMON_COMMANDS.lua` required the renderer without using it (`b257111`).
 - `//gs c debugmsg` described as a toggle in the user guide: the guide no longer says so.
 - Six separate `jamsg`/`spellmsg`/`wsmsg` help screens and three `*_mode_changed_<mode>` functions per
   command: one `show_message_mode_help` HelpScreen and one `show_<prefix>_mode_changed(mode)`.

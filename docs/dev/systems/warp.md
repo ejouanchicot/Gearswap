@@ -8,19 +8,19 @@ Everything below was re-read on disk on 2026-09-28. Since the previous revision 
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/warp/warp_init.lua` | 132 | Bootstrap on every load: IPC listener, detector listener, precast hook; `windower._warp_init_done` once per addon session |
+| `shared/utils/warp/warp_init.lua` | 125 | Bootstrap on every load: IPC listener, detector listener, precast hook; `windower._warp_init_done` once per addon session |
 | `shared/utils/warp/warp_ipc_register.lua` | 101 | Script (not a module), `include`d on every load: the live `ipc message` listener (receiver side of `warp all`) |
-| `shared/utils/warp/warp_ipc.lua` | 216 | `send_to_all()` (sender side); also an older listener that nothing registers |
+| `shared/utils/warp/warp_ipc.lua` | 210 | `send_to_all()` (sender side); also an older listener that nothing registers |
 | `shared/utils/warp/warp_command_registry.lua` | 87 | The 105 command aliases, the lookup set and `IPC_DEBOUNCE` |
 | `shared/utils/warp/warp_commands.lua` | 357 | Command router: system subcommands, spell/ring fallback, destinations, broadcast |
-| `shared/utils/warp/casting/spell_caster.lua` | 172 | Job/level gate and `/ma "<spell>" <me>` |
-| `shared/utils/warp/casting/item_user.lua` | 736 | Ring sequence: readiness check, lock, equip, wait, use, post-use monitor, restore |
-| `shared/utils/warp/casting/cast_helpers.lua` | 103 | `has_item()` over inventory + wardrobes, ring name to id table |
-| `shared/utils/warp/warp_detector.lua` | 251 | Spell/item classification, `ActionListener` subscription (`warp_detector`) made on every load (inert, see Known issues) |
-| `shared/utils/warp/warp_equipment.lua` | 207 | Module-flag lock/unlock of slots, fed by the detector and `warp lock` |
-| `shared/utils/warp/warp_precast.lua` | 102 | Equips `sets.precast.FC` for transport spells (through the precast hook) |
+| `shared/utils/warp/casting/spell_caster.lua` | 151 | Job/level gate and `/ma "<spell>" <me>` |
+| `shared/utils/warp/casting/item_user.lua` | 743 | Ring sequence: readiness check, lock, equip, wait, use, post-use monitor, restore |
+| `shared/utils/warp/casting/cast_helpers.lua` | 92 | `has_item()` over inventory + wardrobes, ring name to id table |
+| `shared/utils/warp/warp_detector.lua` | 243 | Spell/item classification, `ActionListener` subscription (`warp_detector`) made on every load (inert, see Known issues) |
+| `shared/utils/warp/warp_equipment.lua` | 199 | Module-flag lock/unlock of slots, fed by the detector and `warp lock` |
+| `shared/utils/warp/warp_precast.lua` | 80 | Equips `sets.precast.FC` for transport spells (through the precast hook) |
 | `shared/utils/warp/warp_item_database.lua` | 14 | Alias: `return require('shared/utils/warp/database/warp_database_core')` |
-| `shared/utils/warp/database/warp_database_core.lua` | 303 | Destination keys, lazy module routing, lookups |
+| `shared/utils/warp/database/warp_database_core.lua` | 268 | Destination keys, lazy module routing, lookups |
 | `shared/utils/warp/database/warp_database_home.lua` | 142 | Home point items (5) |
 | `shared/utils/warp/database/warp_database_teleports.lua` | 188 | Teleport crag rings (9) |
 | `shared/utils/warp/database/warp_database_nations.lua` | 134 | Nation and Jeuno earrings (4) |
@@ -150,13 +150,13 @@ Destination decision. `use_warp_destination()` takes `items[1]` of the destinati
 
 ### Ring sequence (`ItemUser`)
 
-`use_ring(ring_names, context)` (`item_user.lua:57-103`) walks the list in order. For each ring that `CastHelpers.has_item()` finds in inventory or a wardrobe, `_check_ring_usable(id)` (`:140`) decodes its extdata (Windower `extdata` library, searched over `res.bags:equippable(true)`):
+`use_ring(ring_names, context)` (`item_user.lua:57-103`) walks the list in order. For each ring that `CastHelpers.has_item()` finds in inventory or a wardrobe, `_check_ring_usable(id)` (`:146`) decodes its extdata (Windower `extdata` library, searched over `res.bags:equippable(true)`):
 
 - `General` type: ready.
 - `Enchanted Equipment`: not ready when `charges_remaining` is 0 (delay = time to `next_use_time + 18000`, or 600 when absent) or when `next_use_time + 18000 - os.time() > 0`; ready otherwise. The activation delay (`activation_time`) is not considered at this stage.
 - Anything else, decode failure, missing `extdata`, not found: not ready with delay 0.
 
-The first ready ring starts `_execute_ring_sequence()`. When none is ready, `_show_all_cooldowns()` (`:232`) prints one line per ring and the soonest one; when the list has no owned ring at all, `[WARP] No available rings found`.
+The first ready ring starts `_execute_ring_sequence()`. When none is ready, `_show_all_cooldowns()` (`:238`) prints one line per ring and the soonest one; when the list has no owned ring at all, `[WARP] No available rings found`.
 
 ```mermaid
 sequenceDiagram
@@ -171,7 +171,7 @@ sequenceDiagram
     loop "check_usable"
         U->>U: "hard ceiling 90 s? extdata ok? item found? charges?"
         U->>U: "not ready: stretch deadline, sleep min(max(delay,1),5) s"
-        U->>U: "ready: hold SAFETY_DELAY 3.5 s, wait for me.spawn_type"
+        U->>U: "ready: hold safety_delay() 3.5 s, wait for me.spawn_type"
     end
     U->>G: "use_now: ActionListener 'warp_autofix' + register 'zone change' (_setup_auto_fix)"
     U->>F: "input /item \"Warp Ring\" <me> (:405)"
@@ -186,29 +186,29 @@ Patience windows (all in `item_user.lua`):
 
 | Constant / delay | Value | Line | Meaning |
 |---|---|---|---|
-| equip delay | 0.5 s | 301-303 | `/equip ring1` after `gs disable ring1` |
-| first check | 2.5 s | 305-307 | `_wait_for_ring_usable` starts; `started = os.time()` (`:415`) |
-| `WAIT_FLOOR` | 15 s | 121 | initial deadline, `started + 15` (`:416`) |
-| `WAIT_GRACE` | 5 s | 123 | added to the delay the item reports |
-| `WAIT_CEILING` | 60 s | 122 | the deadline never moves past `started + 60` |
-| `WAIT_HARD_CEILING` | 90 s | 128 | tested first in every `check_usable`, covers the self-rescheduling paths (`:421`) |
-| `SAFETY_DELAY` | 3.5 s | 110 | hold after the first "ready" reading (re-check every 0.5 s) |
-| mob record retry | 1.0 s | 479-485 | `/item` is not sent while `me.spawn_type` is nil |
-| `POLL_INTERVAL` / `MAX_POLL_SLEEP` | 1.0 / 5.0 s | 130-131 | sleep = `min(max(remaining, 1), 5)` (`:515`) |
+| equip delay | 0.5 s | 307-309 | `/equip ring1` after `gs disable ring1` |
+| first check | 2.5 s | 311-313 | `_wait_for_ring_usable` starts; `started = os.time()` (`:421`) |
+| `WAIT_FLOOR` | 15 s | 127 | initial deadline, `started + 15` (`:422`) |
+| `WAIT_GRACE` | 5 s | 129 | added to the delay the item reports |
+| `WAIT_CEILING` | 60 s | 128 | the deadline never moves past `started + 60` |
+| `WAIT_HARD_CEILING` | 90 s | 134 | tested first in every `check_usable`, covers the self-rescheduling paths (`:427`) |
+| `DEFAULT_SAFETY_DELAY` | 3.5 s | 111 | hold after the first "ready" reading (re-check every 0.5 s); read through `safety_delay()`, which takes the player's `warp_ring_safety` of `_common/combat/TUNING.lua` when given (never under 0) |
+| mob record retry | 1.0 s | 485-491 | `/item` is not sent while `me.spawn_type` is nil |
+| `POLL_INTERVAL` / `MAX_POLL_SLEEP` | 1.0 / 5.0 s | 136-137 | sleep = `min(max(remaining, 1), 5)` (`:521`) |
 | `EXTDATA_TIME_OFFSET` | 18000 s | 107 | added to extdata timestamps before comparing with `os.time()`; the comment says only that the MyHome addon uses the same +18000 |
-| `cast_duration` | `cast_time + cast_delay + 5` (fallback 8+0+5) | 402 | post-use monitoring window from the database (`use_now`); Warp Ring 21 s, Holla Ring 43 s |
+| `cast_duration` | `cast_time + cast_delay + 5` (fallback 8+0+5) | 408 | post-use monitoring window from the database (`use_now`); Warp Ring 21 s, Holla Ring 43 s |
 
-Deadline rule on each not-ready check (`:492-515`): `wanted = now + max(recast, activation) + 3.5 + 5`; if `wanted > deadline` then `deadline = min(wanted, started + 60)`; if `now >= deadline` the wait reports why (`report_timeout`, `:373`) and gives up. The deadline only grows. The announce line "Waiting... Ns" is printed once, when the activation delay exceeds 1 s (`:505`).
+Deadline rule on each not-ready check (`:498-521`): `wanted = now + max(recast, activation) + 3.5 + 5`; if `wanted > deadline` then `deadline = min(wanted, started + 60)`; if `now >= deadline` the wait reports why (`report_timeout`, `:379`) and gives up. The deadline only grows. The announce line "Waiting... Ns" is printed once, when the activation delay exceeds 1 s (`:511`).
 
-Every failure exit of the wait goes through `abandon_wait()` (`:315`): `gs enable ring1`, then 1 s later `restore_equipment()`. Upper bound on the lock: about 90 s of waiting plus one sleep (at most 5 s), or, after use, `1 + cast_duration` seconds of monitoring. Both are bounded as long as no Lua error ends a coroutine early.
+Every failure exit of the wait goes through `abandon_wait()` (`:321`): `gs enable ring1`, then 1 s later `restore_equipment()`. Upper bound on the lock: about 90 s of waiting plus one sleep (at most 5 s), or, after use, `1 + cast_duration` seconds of monitoring. Both are bounded as long as no Lua error ends a coroutine early.
 
-Post-use monitor (`_setup_auto_fix`, `:563-736`):
+Post-use monitor (`_setup_auto_fix`, `:569-742`):
 
-- `drop_stale_autofix_listeners()` (`:545-554`) removes the `warp_autofix` subscription (`ActionListener.off`) and unregisters the zone id parked on `windower._warp_autofix_zone_id` by a previous sequence of the same load (`windower._warp_autofix_load == windower._gs_reload_count`); an id from an earlier load is only forgotten, since the engine already freed it.
-- `ActionListener` key `warp_autofix` (`:679-688`, see [core-lifecycle.md](core-lifecycle.md#actionlistener)): the player's own category 1 packet (a melee round) -> `cleanup_and_restore('interrupted')`.
-- `zone change` listener (`:692-695`, plain `register_event`) -> `cleanup_and_restore('success')`.
-- `check_cast_status` (`:706-733`), first run 1 s after setup, then every 0.5 s: `player.status` differs from the status at setup -> `interrupted`; `elapsed >= cast_duration` -> `timeout`. `elapsed` counts 0.5 per run starting at the 1 s mark, so it trails the real time by 0.5 s. The `if not player` branch is marked "defensive only" in the code (`player` is GearSwap's table, never nil).
-- `cleanup_and_restore(reason)` (`:623-677`) runs once (`cleanup_done`). When it runs in the load that registered the listeners, it removes the `warp_autofix` subscription, unregisters the zone listener and clears `windower._warp_autofix_zone_id`; after a reload (only the timeout path can still fire) it leaves them alone. Then it sends `gs enable ring1`. `success` stops there. `interrupted` and `timeout` print two lines and, 1 s later, call `restore_equipment()` then `verify_ring_restored()` (`:581-620`: first check after 1.5 s, up to 4 checks 1.5 s apart, success when `player.equipment.ring1` is neither empty nor the warp item).
+- `drop_stale_autofix_listeners()` (`:551-560`) removes the `warp_autofix` subscription (`ActionListener.off`) and unregisters the zone id parked on `windower._warp_autofix_zone_id` by a previous sequence of the same load (`windower._warp_autofix_load == windower._gs_reload_count`); an id from an earlier load is only forgotten, since the engine already freed it.
+- `ActionListener` key `warp_autofix` (`:685-694`, see [core-lifecycle.md](core-lifecycle.md#actionlistener)): the player's own category 1 packet (a melee round) -> `cleanup_and_restore('interrupted')`.
+- `zone change` listener (`:698-701`, plain `register_event`) -> `cleanup_and_restore('success')`.
+- `check_cast_status` (`:712-739`), first run 1 s after setup, then every 0.5 s: `player.status` differs from the status at setup -> `interrupted`; `elapsed >= cast_duration` -> `timeout`. `elapsed` counts 0.5 per run starting at the 1 s mark, so it trails the real time by 0.5 s. The `if not player` branch is marked "defensive only" in the code (`player` is GearSwap's table, never nil).
+- `cleanup_and_restore(reason)` (`:629-683`) runs once (`cleanup_done`). When it runs in the load that registered the listeners, it removes the `warp_autofix` subscription, unregisters the zone listener and clears `windower._warp_autofix_zone_id`; after a reload (only the timeout path can still fire) it leaves them alone. Then it sends `gs enable ring1`. `success` stops there. `interrupted` and `timeout` print two lines and, 1 s later, call `restore_equipment()` then `verify_ring_restored()` (`:587-626`: first check after 1.5 s, up to 4 checks 1.5 s apart, success when `player.equipment.ring1` is neither empty nor the warp item).
 
 `restore_equipment()` (`:39-51`) writes a `WARP` trace line (`restore: gs c update (ring1 now ...)`, only while `//gs c trace` is on) and sends `gs c update` (since `32b1dc6`): every call site runs inside a `coroutine.schedule` callback, where a direct `equip()` would be dropped, while `gs c update` goes through a real event (Mote's `handle_update`). The engine also helps: `gs enable ring1` re-sends the ring an event (typically the item's aftercast) tried to equip while the slot was locked. `//gs c warp fix` (`command_fix`) is the manual path: `enable('ring1')`, `gs enable ring1`, then `gs equip sets.engaged|sets.idle` 1 s later.
 
@@ -216,7 +216,7 @@ A movement interruption of the item is not seen by either listener (the item-int
 
 ### Automatic detection (inert)
 
-The design: `WarpDetector`'s action subscription (`init_action_listener`, `warp_detector.lua:167-193`; `ActionListener` key `warp_detector`, one raw listener for every module, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:135-157`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
+The design: `WarpDetector`'s action subscription (`init_action_listener`, `warp_detector.lua:167-193`; `ActionListener` key `warp_detector`, one raw listener for every module, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:127-149`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
 
 In the code on disk the item lock never engages: `init_action_listener()` calls `clear_callbacks()` first, which drops the callback `WarpEquipment.init()` registered just before, and the listener reads the item id from `act.param` instead of `act.targets[1].actions[1].param`. The comment in `WarpEquipment.init()` says so and warns against just swapping the two calls (database slots such as `ears` and `item` are not GearSwap slot names, and the ring commands already lock `ring1` themselves). The listener itself is registered on every load. The only live path into `WarpEquipment.lock()` is `//gs c warp lock` (all slots, `lock('manual', 10)`, released after 13 s).
 
@@ -374,7 +374,7 @@ A repeat of the exact same command text within 0.5 s is swallowed (`DEBOUNCE_THR
 
 There is no per-character warp configuration. All tuning is constants:
 
-- `item_user.lua:105-131` (table above).
+- `item_user.lua:105-137` (table above).
 - `warp_commands.lua:28` `DEBOUNCE_THRESHOLD = 0.5`.
 - `warp_command_registry.lua:85` `IPC_DEBOUNCE = 1.0`; prefix `tetsouo_warp_` duplicated in `warp_ipc.lua:30` and `warp_ipc_register.lua` (`IPC_PREFIX`), and written literally in `warp_commands.lua` (`ipctest`).
 - `WarpEquipment.lock()` auto-unlock after `duration + 3` s (duration default 15).
@@ -419,9 +419,9 @@ Each alias also has a long form (`sandoria`, `whitegate`, `stable-sd`, `chocircu
 | `_warp_autofix_zone_id`, `_warp_autofix_load` | `drop_stale_autofix_listeners`, `cleanup_and_restore`, `_setup_auto_fix` in `item_user.lua` | Id of the post-use `zone change` listener and its load |
 | `_gs_debug.WARP` | `DebugCommands.handle_debugwarp` (`flip_debug`) | Persistent copy of `_G.WARP_DEBUG` |
 
-Because the engine unregisters sandbox listeners on every load, a persisted id is already dead when the next load reads it, and Windower may have given the number to another listener since. Each id is therefore stored with `windower._gs_reload_count` (bumped by `INIT_SYSTEMS.lua:44` on every load) and unregistered only when that stamp equals the current count: a second registration in the same load (a stale sandbox's deferred init after a load within 0.5 s, or a second ring sequence) replaces its own listener, and nothing else is touched.
+Because the engine unregisters sandbox listeners on every load, a persisted id is already dead when the next load reads it, and Windower may have given the number to another listener since. Each id is therefore stored with `windower._gs_reload_count` (bumped by `INIT_SYSTEMS.lua:50` on every load) and unregistered only when that stamp equals the current count: a second registration in the same load (a stale sandbox's deferred init after a load within 0.5 s, or a second ring sequence) replaces its own listener, and nothing else is touched.
 
-`_G` globals (per sandbox, reset on every load): `WARP_DEBUG` (read across the warp modules, toggled by `debugwarp`; restored from `windower._gs_debug.WARP` by `INIT_SYSTEMS.lua:38`, so it survives a job change; `item_user.lua:24` defaults it to false), `WARP_IPC_BROADCASTING` (written by `send_to_all`, read by the IPC listener), `warp_detector_callbacks` (`warp_detector.lua` `register_callback` / `clear_callbacks` / the listener), `precast` (replaced in every sandbox by `hook_global_precast`), `WARP_PRECAST_HOOKED` (one wrap per sandbox). `shared/utils/debug/global_probe.lua` lists these names as known globals. Module-local state: `WarpEquipment` lock flags, `WarpCommands` debounce, IPC debounce (each side), `WarpIPC.initiated_broadcast`, `WarpDatabase._cached_modules`, `WarpInit.initialized` / `original_precast`.
+`_G` globals (per sandbox, reset on every load): `WARP_DEBUG` (read across the warp modules, toggled by `debugwarp`; restored from `windower._gs_debug.WARP` by `INIT_SYSTEMS.lua:44`, so it survives a job change; `item_user.lua:24` defaults it to false), `WARP_IPC_BROADCASTING` (written by `send_to_all`, read by the IPC listener), `warp_detector_callbacks` (`warp_detector.lua` `register_callback` / `clear_callbacks` / the listener), `precast` (replaced in every sandbox by `hook_global_precast`), `WARP_PRECAST_HOOKED` (one wrap per sandbox). `shared/utils/debug/global_probe.lua` lists these names as known globals. Module-local state: `WarpEquipment` lock flags, `WarpCommands` debounce, IPC debounce (each side), `WarpIPC.initiated_broadcast`, `WarpDatabase._cached_modules`, `WarpInit.initialized` / `original_precast`.
 
 Registered events:
 
@@ -429,11 +429,11 @@ Registered events:
 |---|---|---|
 | `ipc message` | `warp_ipc_register.lua` | Re-registered 0.5 s after every load |
 | `ActionListener` key `warp_detector` | `warp_detector.lua` `init_action_listener` | Subscribed again 0.5 s after every load |
-| `ActionListener` key `warp_autofix`, `zone change` (post-use) | `item_user.lua:680, 692` | One ring use; removed by `cleanup_and_restore`, by the next sequence, or with the load |
+| `ActionListener` key `warp_autofix`, `zone change` (post-use) | `item_user.lua:686, 698` | One ring use; removed by `cleanup_and_restore`, by the next sequence, or with the load |
 
 The IPC and post-use `zone change` listeners run through GearSwap's `equip_sets` wrapper. Both action subscriptions go through `ActionListener`'s one `raw_register_event('incoming chunk')`, so an action packet costs no GearSwap event cycle; the engine still records that id in `registered_user_events`, so it is removed at the next load like the others.
 
-Coroutines (none can be cancelled): the deferred bootstrap (`INIT_SYSTEMS.lua`), the ring chain (`item_user.lua:301-307` and the `check_usable` reschedules), the post-use monitor and verify chains, `abandon_wait`'s restore, `WarpEquipment`'s auto-unlock (`lock()`; `lock_timer = nil` does not cancel it) and its 0.5 s `gs c update` in `unlock()`, the IPC timers (`send_to_all`, the receiver's 0.5 s delay), `warp fix`'s 1 s equip.
+Coroutines (none can be cancelled): the deferred bootstrap (`INIT_SYSTEMS.lua`), the ring chain (`item_user.lua:307-313` and the `check_usable` reschedules), the post-use monitor and verify chains, `abandon_wait`'s restore, `WarpEquipment`'s auto-unlock (`lock()`; `lock_timer = nil` does not cancel it) and its 0.5 s `gs c update` in `unlock()`, the IPC timers (`send_to_all`, the receiver's 0.5 s delay), `warp fix`'s 1 s equip.
 
 Lifecycle:
 
@@ -541,7 +541,7 @@ Matching the `DESTINATIONS.<KEY>` names used in `warp_commands.lua` against the 
 Fixed since the page was first written:
 
 - `restore_equipment()` now sends `gs c update` instead of calling Mote's `status_change` from a scheduled callback (`32b1dc6`); `WarpEquipment.unlock()` does the same.
-- `MessageWarp.show_item_equip_delay` has one definition (`message_warp.lua:565`).
+- `MessageWarp.show_item_equip_delay` has one definition (`message_warp.lua:483`).
 - `//gs c warp test` walks the database per destination instead of reading a missing `WarpItemDB.ITEMS` (`32b1dc6`).
 - `WarpCommands.register()` (dead, wrong require path) was removed (`85ad22b`).
 - `warp_detector.lua` no longer claims 68 items.
@@ -559,4 +559,3 @@ Still open:
 - `//gs c warp unlock` cannot release the ring sequence's `ring1` lock (`command_unlock`).
 - `warp help` says `warp lock` locks for 10 s; the lock lasts 13 s (`lock('manual', 10)` + 3). `warp ipctest` is not in the help (`message_warp.lua` `HELP`).
 - `syscheck` reports the warp system as initialised from `windower._warp_init_done`, even when this sandbox's `init()` failed (`system_checker.lua` `check_warp`).
-- `CommonCommands.handle_warp_commands` (`COMMON_COMMANDS.lua:442`), on a load failure, probes `shared/utils/messages/message_warp`, a path that no longer exists (the formatter is `shared/utils/messages/formatters/system/message_warp`); see [commands-and-debug.md](commands-and-debug.md).

@@ -140,10 +140,10 @@ Roll 52, Consume Mana 55, Ebullience 55, Gallant's Roll 55, Rapture 55, Wizard's
 |------|-------|---------|------|
 | `UNIVERSAL_WS_DATABASE.lua` | 140 | - | Facade: `resolve()` merges the file of the WS's own skill into `_G.WS_DATABASE`; `ensure_weapon_type()` |
 | `SWORD_WS_DATABASE.lua` | 302 | 18 | Standard schema |
-| `DAGGER_WS_DATABASE.lua` | 297 | 18 | Alternate schema (see below) |
+| `DAGGER_WS_DATABASE.lua` | 301 | 18 | Alternate schema (see below) |
 | `H2H_WS_DATABASE.lua` | 293 | 17 | Standard schema |
 | `GREATSWORD_WS_DATABASE.lua` | 254 | 15 | Standard schema |
-| `GREATAXE_WS_DATABASE.lua` | 244 | 14 | Standard schema |
+| `GREATAXE_WS_DATABASE.lua` | 260 | 14 | Standard schema |
 | `AXE_WS_DATABASE.lua` | 243 | 15 | Standard schema |
 | `SCYTHE_WS_DATABASE.lua` | 255 | 15 | Standard schema |
 | `POLEARM_WS_DATABASE.lua` | 254 | 15 | Standard schema |

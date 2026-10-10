@@ -46,7 +46,7 @@ What RNG adds on top of the shared pipeline:
 | `shared/jobs/rng/functions/RNG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('RNG', 'rng/display/RNG_LOCKSTYLE', 1, 'WAR')` wrappers |
 | `shared/jobs/rng/functions/RNG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('RNG', 'rng/display/RNG_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/rng/functions/logic/ranged.lua` | 85 | `PRECAST_LAYERS`, `MIDCAST_LAYERS`, `layers`, `equip_layers`, `prepare_precast` (Flurry groups), `start` (Flurry listener) |
-| `shared/jobs/rng/functions/logic/set_builder.lua` | 117 | Idle and engaged: HybridMode, town, Mote layers, weapons (main, sub, range), movement |
+| `shared/jobs/rng/functions/logic/set_builder.lua` | 119 | Idle and engaged: HybridMode, town, Mote layers, weapons (main, sub, range), movement |
 | `_master/config/rng/RNG_STATES.lua` | 80 | Mote mode options, `RangeWeapon`, `MainWeapon`, `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/rng/RNG_KEYBINDS.lua` | 42 | Data only: 7 entries (+ 3 commented weaponskill examples) handed to `KeybindManager.create('RNG', ...)` |
 | `_master/config/rng/RNG_TP_CONFIG.lua` | 45 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.RNGTPConfig` |

@@ -44,23 +44,23 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/wardrobe_auditor.lua` | 764 | `//gs c wa` report (skips the `NEVER_TOUCH` wardrobes of `WARDROBE_CONFIG.lua`); text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `items.lua`, `rules.lua`, `reports.lua` | this page |
 | `shared/utils/equipment/equip_hooks.lua` | 80 | Wraps GearSwap's `equip()` once per load (`_G._equip_hooks_wrapper`); every table argument goes through the registered hooks, lowest `order` first: 5 `impact_lock`, 10 `duplicate_gear`, 20 `hp_priority` | `impact_lock.lua`, `duplicate_gear.lua`, `hp_priority.lua` (`EquipHooks.add` / `remove`) | this page |
 | `shared/utils/equipment/impact_lock.lua` | 159 | At the precast of Impact, picks the cloak that grants it (Crepuscular / Twilight Cloak) and locks it: the equip hook `impact_lock` (order 5) puts it on every set and drops their `head` until the aftercast, a cancel or 20 s | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`ImpactLock.install`), every load, every job | this page |
-| `shared/utils/equipment/duplicate_gear.lua` | 225 | Equip hook `duplicate_gear` (order 10): a ring, earring or main / sub piece named without bag or augments, owned in 2+ copies without augments, gets the `bag` of the copy that side takes | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`DuplicateGear.install`), every load; then every `equip()` call | this page |
-| `shared/utils/equipment/hp_priority.lua` | 380 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = dHP*1000+dMP over the piece worn in that slot (all the HP first, the MP after, on every job since 2026-10-08); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
-| `shared/utils/equipment/gear_scan.lua` | 175 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
-| `shared/utils/equipment/weapon_resolver.lua` | 119 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
+| `shared/utils/equipment/duplicate_gear.lua` | 234 | Equip hook `duplicate_gear` (order 10): a ring, earring or main / sub piece named without bag or augments, owned in 2+ copies without augments, gets the `bag` of the copy that side takes | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`DuplicateGear.install`), every load; then every `equip()` call | this page |
+| `shared/utils/equipment/hp_priority.lua` | 403 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = dHP*1000+dMP over the piece worn in that slot (all the HP first, the MP after, on every job since 2026-10-08); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
+| `shared/utils/equipment/gear_scan.lua` | 247 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
+| `shared/utils/equipment/weapon_resolver.lua` | 126 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
 | `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
-| `shared/utils/equipment/elemental_belt.lua` | 213 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
-| `shared/utils/equipment/dual_wield.lua` | 247 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
-| `shared/utils/party/support_tier.lua` | 133 | Weaponskill and engaged set version by party support (`.Group` / `.Solo`); `//gs c support` | `INIT_SYSTEMS.lua` (`SupportTier.install`), every job's engaged builder (`SupportTier.engaged`) | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
-| `shared/utils/party/party_jobs.lua` | 106 | Main job of each party member (0xDD / 0xDF, alt report, trusts) | `support_tier.lua` | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
-| `shared/utils/equipment/treasure_hunter.lua` | 290 | `TreasureMode` (Off/Tag/Full, SATA on THF), mob tagging, engaged (skipped during a COR roll, `GearHold`) and action overlays | `INIT_SYSTEMS.lua` (`TreasureHunter.install`) | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
+| `shared/utils/equipment/elemental_belt.lua` | 212 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
+| `shared/utils/equipment/dual_wield.lua` | 246 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
+| `shared/utils/party/support_tier.lua` | 173 | Weaponskill and engaged set version by party support (`.Group` / `.Solo`); `//gs c support` | `INIT_SYSTEMS.lua` (`SupportTier.install`), every job's engaged builder (`SupportTier.engaged`) | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
+| `shared/utils/party/party_jobs.lua` | 109 | Main job of each party member (0xDD / 0xDF, alt report, trusts) | `support_tier.lua` | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
+| `shared/utils/equipment/treasure_hunter.lua` | 291 | `TreasureMode` (Off/Tag/Full, SATA on THF), mob tagging, engaged (skipped during a COR roll, `GearHold`) and action overlays | `INIT_SYSTEMS.lua` (`TreasureHunter.install`) | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
 | `shared/utils/equipment/treasure_commands.lua` | 63 | `//gs c th` built on `optional_state_commands.create` | `COMMON_COMMANDS.lua` router | [commands-and-debug.md](commands-and-debug.md) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga -> Daybreak), worn through Combat Mode | RDM precast / midcast / aftercast / commands | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock), [../jobs/rdm.md](../jobs/rdm.md) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` shared by the job set builders | set builders of 21 jobs (every job but SMN; BST: `lay_town_set` and `apply_movement`), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
-| `shared/utils/inventory/refill_manager.lua` | 312 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
-| `shared/utils/inventory/refill/config_resolver.lua` | 361 | Picks the refill list (craft / job+subjob / common list + job extra / fallback) and builds the foreign item set (this character's lists, or other characters' too, per `store_foreign`) | `refill_manager.lua` | this page |
+| `shared/utils/inventory/refill_manager.lua` | 328 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
+| `shared/utils/inventory/refill/config_resolver.lua` | 385 | Picks the refill list (craft / job+subjob / common list + job extra / fallback) and builds the foreign item set (this character's lists, or other characters' too, per `store_foreign`) | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/item_resolver.lua` | 49 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
 | `shared/utils/inventory/refill/bag_scanner.lua` | 45 | Counts one item id in one bag and returns its slots | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/refill_panels.lua` | 227 | Chat output of the refill (banner, progress, report) | `refill_manager.lua` | this page |
@@ -70,20 +70,20 @@ that were re-read that day; elsewhere the function is named, which survives edit
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/data/equipment/ITEM_HP_MP.lua` | 6 534 (6 529 entries) | Generated HP/MP table read by `hp_priority.lua` (do not edit by hand) |
-| `shared/data/equipment/PATH_RANK_GEAR.lua` | 2 598 (67 entries) | Stats of path / rank gear per path and rank, read by hand from BG-Wiki (page link and notes per entry); read by `gear_scan.lua` at `//gs c gearscan` |
+| `shared/data/equipment/ITEM_HP_MP.lua` | 6 657 (6 651 entries) | Generated HP/MP table read by `hp_priority.lua` (do not edit by hand) |
+| `shared/data/equipment/PATH_RANK_GEAR.lua` | 3 032 (79 entries) | Stats of path / rank gear per path and rank, read by hand from BG-Wiki (page link and notes per entry); read by `gear_scan.lua` at `//gs c gearscan` |
 | `shared/data/equipment/ITEM_FAST_CAST.lua` | 69 (62 entries) | Generated Fast Cast of the pieces whose game text gives no number, read by `shared/utils/precast/cast_time.lua` (do not edit by hand) |
 | `scripts/item_db/build_fast_cast_db.py` | 60 | Regenerates `ITEM_FAST_CAST.lua` from the Atelier catalogue (`atelier/engine/catalog/items.json`, local) and Windower `res/` |
-| `scripts/item_db/build_item_db.py` | 379 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
+| `scripts/item_db/build_item_db.py` | 385 | Builds the item database from Windower `res/` and regenerates `ITEM_HP_MP.lua` |
 | `scripts/item_db/find_items.py` | 94 | Query tool over the generated SQLite (`--stat hp --slot Head --job WAR --top 10`) |
-| `_master/config_global/REFILL_CONFIG.lua` | 71 | Template of `<Char>/_common/inventory/REFILL_CONFIG.lua`: bags, the common list `default_list` (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent Oil, 12 each), a commented `subjobs` example and a commented `quiver_open_at` line |
+| `_master/config_global/REFILL_CONFIG.lua` | 91 | Template of `<Char>/_common/inventory/REFILL_CONFIG.lua`: bags, the common list `default_list` (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent Oil, 12 each), a commented `subjobs` example and a commented `quiver_open_at` line |
 | `_master/config/<job>/<JOB>_REFILL.lua` | 42 each | Generic job refill file for each of the 22 jobs: every line commented (`extra`, `default`, `subjobs` examples), so the common list applies |
 | `_master/config/craft/CRAFT_REFILL.lua` | 32 | Generic craft list (empty) |
 | `_master/Tetsouo/config/<job>/<JOB>_REFILL.lua` | 20-54 | Tetsouo's own job lists (BLM BRD BST COR DNC PLD THF WAR) |
 | `_master/Tetsouo/config/craft/CRAFT_REFILL.lua` | 34 | Tetsouo's list used while a craft set is active |
 | `_master/Kaories/config/<job>/<JOB>_REFILL.lua` | 22-42 | Kaories' own job lists (COR GEO PLD RDM) |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/_common/combat/WEAPON_CONFIG.lua` (`equip_without_set`) |
-| `_master/config_global/HP_PRIORITY.lua` | 36 | Template of `<Char>/_common/combat/HP_PRIORITY.lua` (`enabled`, `unity = 'min'`, `skip_jobs`) |
+| `_master/config_global/HP_PRIORITY.lua` | 37 | Template of `<Char>/_common/combat/HP_PRIORITY.lua` (`enabled`, `unity = 'min'`, `skip_jobs`) |
 | `_master/config_global/ELEMENTAL_BELT.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
 
 Live copies (gitignored): `Tetsouo/{blm,brd,bst,cor,dnc,pld,thf,war}/inventory/*_REFILL.lua` and
@@ -185,7 +185,7 @@ flowchart TD
 ```
 
 1. Sets folder: `windower.addon_path .. 'data/' .. <player name> .. '/sets/'`, falling back to
-   `Tetsouo` when `get_player()` returns nothing (`sets_dir`, `wardrobe_auditor.lua:39`). Nothing is
+   `Tetsouo` when `get_player()` returns nothing (`sets_dir`, `wardrobe_auditor.lua:47`). Nothing is
    loaded with `loadfile`; files are read with `io.open` because the sandbox has no
    `loadfile`/`setfenv`.
 2. `walk_lua_files` (`:61`) walks the tree iteratively; an entry ending in `.lua` is a file, anything
@@ -257,7 +257,7 @@ sequenceDiagram
 ```
 
 1. Entry points. `//gs c refill` / `//gs c rf` -> `CommonCommands.handle_command` ->
-   `CommonCommands.handle_refill` (`COMMON_COMMANDS.lua:234`), which calls `RefillManager.refill()` and
+   `CommonCommands.handle_refill` (`COMMON_COMMANDS.lua:236`), which calls `RefillManager.refill()` and
    then, whatever it returned, `DualBoxSyncIPC.broadcast('rf')`. Every other instance whose box group holds the sender runs
    `refill_hook`, registered for `rf` and `refill` in the dual-box block of `INIT_SYSTEMS.lua`; it calls
    `RefillManager.refill()` directly and does not broadcast again. `gs c rf` is also sent
@@ -267,9 +267,9 @@ sequenceDiagram
    therefore also refills the partner.
 2. Guards (`RefillManager.refill`, `refill_manager.lua:259`): the sandbox `player` must exist and
    `get_items()` must return a table; otherwise one red `[Refill]` line. There is no in-progress guard.
-3. List resolution (`ConfigResolver.resolve_list_for_player`, `config_resolver.lua:328`), first match
+3. List resolution (`ConfigResolver.resolve_list_for_player`, `config_resolver.lua:352`), first match
    (since 2026-09-30, `bea1f23`). The label is printed as `Config` in the start banner:
-   - No player or main job `NON`: `FALLBACK_LIST` (`:54`, six medicines at 12), label
+   - No player or main job `NON`: `FALLBACK_LIST` (`:56`, six medicines at 12), label
      `fallback (no player)`.
    - Craft mode (`_G.CraftManager.is_active()`; `craft_manager.lua` owns the session state):
      `CRAFT_REFILL` through `CharPaths.load('craft', ...)` (`<Char>/_common/inventory/CRAFT_REFILL.lua`,
@@ -309,12 +309,12 @@ sequenceDiagram
    - Deficit < 0: push moves of the surplus to the store bag, variants in list order (`queue_surplus`,
      `:99`); the preferred variant is pushed first.
 5. Foreign sweep (`sweep_foreign_items`, `:218`): `ConfigResolver.build_foreign_items_set`
-   (`config_resolver.lua:210`, called with `player.name`) reads the character's `REFILL_CONFIG.lua`
-   (`load_refill_config`, `:161`) and picks the lists to scan from its `store_foreign`
-   (`foreign_sources`, `:172`; since 2026-10-01, before that every character folder was always read):
+   (`config_resolver.lua:232`, called with `player.name`) reads the character's `REFILL_CONFIG.lua`
+   (`load_refill_config`, `:163`) and picks the lists to scan from its `store_foreign`
+   (`foreign_sources`, `:174`; since 2026-10-01, before that every character folder was always read):
    - `'mine'`, or the key absent (any value other than `'all'`, `false` or `'off'` counts as `'mine'`):
-     this character's lists only (`load_char_refill_configs(char_name)`, `:99`).
-   - `'all'`: `load_all_refill_configs(foreign_characters)` (`:140`), the same scan for every
+     this character's lists only (`load_char_refill_configs(char_name)`, `:101`).
+   - `'all'`: `load_all_refill_configs(foreign_characters)` (`:142`), the same scan for every
      directory of `data/` whose name starts with an uppercase letter; when `foreign_characters` is a
      non-empty list, only the folders it names (case-insensitive). Empty or absent: every such folder,
      frozen clones included (the behaviour before 2026-10-01).
@@ -512,7 +512,7 @@ is not lost. The sets themselves are never modified.
    upper-case job codes). It returns 0 when `enabled` is `false` or the job is in `skip_jobs` (empty
    by default: PLD is ranked like every other job).
 2. Loads `ITEM_HP_MP.lua` with `pcall(dofile, windower.addon_path .. 'data/shared/data/equipment/ITEM_HP_MP.lua')`:
-   `dofile`, not `require`, so the module cache does not keep the 6 529-entry table for the whole
+   `dofile`, not `require`, so the module cache does not keep the 6 651-entry table for the whole
    session.
 3. Builds an index (`build_index`) holding only the entries of the pieces the sets name and of the
    pieces worn now (`player.equipment`); the full table is then dropped. It walks `_G.sets` with a
@@ -875,8 +875,8 @@ open until the stance is selected again. The registry is emptied on every job lo
 | Function | Returns | Callers |
 |---|---|---|
 | `RefillManager.refill()` `refill_manager.lua:259` | `boolean` (true once the queue is started) | `CommonCommands.handle_refill`, `refill_hook` in `INIT_SYSTEMS.lua` |
-| `ConfigResolver.resolve_list_for_player()` `config_resolver.lua:328` | `list, source_label, bags {id, display, sources}`; labels `CRAFT (<name>)`, `<JOB>/<SUB>`, `<JOB>/default`, `common/<SUB>`, `common`, `<common label> + <JOB> extra`, `fallback`, `fallback (no player)` | `RefillManager.refill` |
-| `ConfigResolver.build_foreign_items_set(char_name, current_list)` `:210` | `{[item_id] = config_name}`; `char_name` picks the `REFILL_CONFIG.lua` read and, with `store_foreign = 'mine'`, the folder scanned | `sweep_foreign_items` |
+| `ConfigResolver.resolve_list_for_player()` `config_resolver.lua:352` | `list, source_label, bags {id, display, sources}`; labels `CRAFT (<name>)`, `<JOB>/<SUB>`, `<JOB>/default`, `common/<SUB>`, `common`, `<common label> + <JOB> extra`, `fallback`, `fallback (no player)` | `RefillManager.refill` |
+| `ConfigResolver.build_foreign_items_set(char_name, current_list)` `:232` | `{[item_id] = config_name}`; `char_name` picks the `REFILL_CONFIG.lua` read and, with `store_foreign = 'mine'`, the folder scanned | `sweep_foreign_items` |
 | `ItemResolver.resolve_item_id(name)` | `number or nil`, through `ItemIndex.id` (index built once per session) | `config_resolver.lua`, `resolve_variants` |
 | `ItemResolver.resolve_variants(name)` `:37` | `{ {name, id}, ... }` resolved only, in list order | `plan_item` |
 | `BagScanner.count_item_in_bag(items, bag_key, id)` `bag_scanner.lua:25` | `total, { {slot, count}, ... }` | `refill_manager.lua` (`count_held`, `effective_target`, `queue_surplus`, `queue_deficit`) |
@@ -974,14 +974,14 @@ return M
 - HP priority: `<Char>/_common/combat/HP_PRIORITY.lua` (template `_master/config_global/HP_PRIORITY.lua`),
   every key optional: `enabled` (`false` turns it off), `unity` (`'max'` when the Unity leader is
   rank 1, `'min'` otherwise), `skip_jobs`. No file: `DEFAULTS`.
-- Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:54`, used only when there is neither a job
+- Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:56`, used only when there is neither a job
   list nor a common list), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:42`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:42`), quiver
   thresholds in the aftercast callers (the per-job override is `REFILL_CONFIG.lua` `quiver_open_at`),
   `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `MP_WEIGHT`,
   `SLOTS` and `WORN_SLOT`. Apart from the quiver thresholds, none of them is read from a config file.
 - Templates and deployment: `clone_character.py` (`clone()`, step 4) copies `<job>/` per file,
-  taking the overlay `_master/<Source>/<job>/<file>` when an overlay is selected and has the
+  taking the overlay `_master/<Source>/config/<job>/<file>` when an overlay is selected and has the
   file, and `_master/config/<job>/<file>` otherwise (`_resolve_src`). The overlay is selected only when
   the target is the source character (default `Tetsouo`) or `--source` names it (`_select_overlay`).
   The shared config folders (`craft`, plus `alt` for a MAIN) are copied the same way. See
@@ -1211,17 +1211,17 @@ Still open:
 - Refill surplus pushes the preferred variant back first and keeps the lesser one - `queue_surplus`,
   `refill_manager.lua:99`
 - Tetsouo's COR list lacks `Brz. Bull. Pouch`; with `store_foreign = 'all'` (Kaories' lists read),
-  the foreign sweep pushes the pouches COR_AFTERCAST needs - `_master/Tetsouo/cor/inventory/COR_REFILL.lua` (Kaories' list has it)
+  the foreign sweep pushes the pouches COR_AFTERCAST needs - `_master/Tetsouo/config/cor/COR_REFILL.lua` (Kaories' list has it)
 - Unresolvable refill item names are reported as "Out of stock" - `plan_item`, `refill_manager.lua:160`
 - A job refill file that fails to load (syntax error) is silently treated as absent: the common list
   is used (label `common` or `common/<SUB>`), and that file's food then counts as foreign -
-  `resolve_list_for_player`, `config_resolver.lua:344`
+  `resolve_list_for_player`, `config_resolver.lua:368`
 - Refill has no in-progress guard; overlapping runs replay stale slot moves - `RefillManager.refill`,
   `refill_manager.lua:259`
 - Tetsouo plays SMN live but `Tetsouo/smn/` holds no refill file: `rf` on SMN uses the common list
   (`default_list` of his `REFILL_CONFIG.lua`, the six medicines) and pushes every food, Echo Drops and quiver named in his other lists (any character's with `store_foreign = 'all'`) to the Case as foreign, `never_store` aside
 - With no player the auditor falls back to Tetsouo's sets folder, on any character; `wo` reaches it
-  through `build_pinned_bags` and `collect_all_used_names` - `sets_dir`, `wardrobe_auditor.lua:39`
+  through `build_pinned_bags` and `collect_all_used_names` - `sets_dir`, `wardrobe_auditor.lua:47`
 - `wa` counts strings inside `--[[ ]]` block comments as used items (only `--` to end of line is
   stripped) - `extract_items_from_text`, `wardrobe_auditor.lua:267`
 - `build_pinned_bags` truncates names containing an apostrophe - `wardrobe_auditor.lua:688`

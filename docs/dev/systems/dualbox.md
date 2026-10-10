@@ -30,19 +30,19 @@ a name would not locate the spot (they move often in this folder).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/dualbox/dualbox_manager.lua` | 478 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
+| `shared/utils/dualbox/dualbox_manager.lua` | 476 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
 | `shared/utils/dualbox/alt_states.lua` | 188 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
-| `shared/utils/dualbox/alt_commands.lua` | 573 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
-| `shared/utils/dualbox/alt_buff_reporter.lua` | 349 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
+| `shared/utils/dualbox/alt_commands.lua` | 574 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
+| `shared/utils/dualbox/alt_buff_reporter.lua` | 359 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 189 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
 | `shared/utils/dualbox/alt_group.lua` | 477 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `altreport`, `altmirror`, `altlead`, `main`, `setalt` |
-| `shared/utils/dualbox/alt_window.lua` | 368 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state |
+| `shared/utils/dualbox/alt_window.lua` | 369 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/saved/dualbox_role.lua` |
 | `shared/utils/dualbox/roll_share.lua` | 110 | A COR alt's roll results and busts sent to the main (`gs c rollshow`) and shown there in the same format |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the box-group modules (including `not_ready`, `window_main_only`, `no_follower`) |
 | `shared/utils/messages/formatters/ui/message_dualbox.lua` | 121 | Chat output for the job exchange (via `M.send('DUALBOX', ...)`) |
 | `shared/utils/messages/data/systems/dualbox_messages.lua` | 164 | Message templates for the above |
-| `shared/utils/messages/formatters/ui/message_alt_commands.lua` | 274 | Renders `//gs c altcmds` (grouped overview / filtered view, plus the names only `alt <name>` reaches) |
+| `shared/utils/messages/formatters/ui/message_alt_commands.lua` | 237 | Renders `//gs c altcmds` (grouped overview / filtered view, plus the names only `alt <name>` reaches) |
 | `shared/data/alt/<JOB>_ALT_COMMANDS.lua` | 22 files, 45-435 | Generated command tables, one per job (BLM BLU BRD BST COR DNC DRG DRK GEO MNK NIN PLD PUP RDM RNG RUN SAM SCH SMN THF WAR WHM), the same for every character (moved out of the character folders on 2026-09-30) |
 | `_master/config/alt/<JOB>_ALT_CUSTOM.lua` | 5 files | Hand-written overrides: BLM, GEO, RDM, SCH, SMN |
 | `_master/config/alt/<JOB>_ALT_CUSTOM.lua.example` | 6 files | Commented templates: BLM, COR, GEO, RDM, SCH, WHM |
@@ -203,7 +203,7 @@ flowchart TD
 ```
 
 - Every job `job_self_command` checks `CommonCommands.is_common_command(command)` **before** its
-  job-specific branches (e.g. `WAR_COMMANDS.lua:113`, `BLM_COMMANDS.lua:277`).
+  job-specific branches (e.g. `WAR_COMMANDS.lua:113`, `BLM_COMMANDS.lua:273`).
   `CommonCommands.is_common_command` knows only built-in names and warp aliases; it does
   not look at the alt's config.
 - The alt's keys are Mote's last lookup. When `COMMON_COMMANDS` is loaded (once per job-file load, on the
@@ -305,15 +305,15 @@ A reported level of `0` (older two-argument payload) drops every entry that has 
 
 **On the MAIN:**
 
-- `receive(args)` (`:220`) treats the last word as the value (`'1'`/`'true'` means up) and joins the rest as
+- `receive(args)` (`:225`) treats the last word as the value (`'1'`/`'true'` means up) and joins the rest as
   the buff name, stripping `"` and lowercasing it.
 - It writes `_G.AltBuffState[buff]` (keys always lowercase: `receive`, `assume`, `consume` and `active`
   all lowercase the name, so a `tracked_buffs` entry written in any case still matches), clears any `_G.AltBuffExpiry[buff]`, and sets
   `windower._alt_buff_reporting = true`. That flag persists until `//lua reload gearswap`.
-- `assume(buff, seconds)` (`:291`) records a guess with an `os.clock()` expiry. It is used **only
+- `assume(buff, seconds)` (`:296`) records a guess with an `os.clock()` expiry. It is used **only
   while** `windower._alt_buff_reporting` is not set. It is called from alt commands that declare `sets_alt_buff`.
-- `consume(buff)` (`:314`) clears a buff.
-- `active(buff)` (`:332`) honours the expiry and clears expired guesses.
+- `consume(buff)` (`:319`) clears a buff.
+- `active(buff)` (`:337`) honours the expiry and clears expired guesses.
 
 GEO uses this in `_master/config/alt/GEO_ALT_CUSTOM.lua` (`indi_target` and `M.refine`): `refine` replaces the `me` target of
 every command whose name starts with `indi` by a function returning `'lastst'` while
@@ -323,12 +323,12 @@ states that FFXI fires `buff_change` for Entrust only on loss. The 3 s resync is
 
 **Tracing:**
 
-- `//gs c altdebug` toggles `windower._alt_buff_debug` (`toggle_debug`, `:88`). It truncates and writes a header to
+- `//gs c altdebug` toggles `windower._alt_buff_debug` (`toggle_debug`, `:108`). It truncates and writes a header to
   `<Character>/logs/dualbox/altbuff.log` (`log_path`, through `CharPaths.log`).
-- While on, `trace()` (`:61`) prints through `MessageFormatter.show_debug('ALTBUFF', ...)` and appends
+- While on, `trace()` (`:81`) prints through `MessageFormatter.show_debug('ALTBUFF', ...)` and appends
   `[HH:MM:SS] msg` to that file.
 - The ALT side logs every `buff_change`, including untracked ones. The MAIN side logs every
-  alt-command send (`trace_sent`, `alt_commands.lua:43`), every receive, and every assume/refusal.
+  alt-command send (`trace_sent`, `alt_commands.lua:44`), every receive, and every assume/refusal.
 - `*.log` is gitignored.
 
 ### Sync IPC (`dualbox_sync_ipc.lua`)

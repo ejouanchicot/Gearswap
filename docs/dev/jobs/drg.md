@@ -42,7 +42,7 @@ What DRG adds on top of the shared pipeline:
 | `shared/jobs/drg/functions/DRG_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
 | `shared/jobs/drg/functions/DRG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('DRG', 'drg/display/DRG_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/drg/functions/DRG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('DRG', 'drg/display/DRG_MACROBOOK', 'SAM', 1, 1)` wrapper |
-| `shared/jobs/drg/functions/logic/set_builder.lua` | 156 | Idle and engaged: base, town / HybridMode, wyvern layer, Spirit Surge, Mote layers, weapons, movement |
+| `shared/jobs/drg/functions/logic/set_builder.lua` | 158 | Idle and engaged: base, town / HybridMode, wyvern layer, Spirit Surge, Mote layers, weapons, movement |
 | `shared/jobs/drg/functions/logic/wyvern.lua` | 71 | `TRIGGER_HPP` by subjob, `trigger_line`, `spell_triggers_breath`, `breath_set` |
 | `shared/jobs/drg/functions/logic/jumps.lua` | 81 | `order`, `pick`, `execute` (`//gs c jump`) |
 | `_master/config/drg/DRG_STATES.lua` | 71 | Mote mode options, `MainWeapon`, `SubWeapon`, `FastCast`, `AutoMedicine` |

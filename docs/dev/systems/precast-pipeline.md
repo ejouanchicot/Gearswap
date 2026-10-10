@@ -26,27 +26,27 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | Path | Lines | Role |
 |------|------:|------|
 | `shared/utils/debuff/precast_guard.lua` | 511 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy |
-| `shared/utils/debuff/uncurable_debuffs.lua` | 158 | UncurableDebuffs: 4 s after each cure item, marks a debuff the item did not take off (an aura keeps it on); no more item for it while marked (60 s at most) |
+| `shared/utils/debuff/uncurable_debuffs.lua` | 173 | UncurableDebuffs: 4 s after each cure item, marks a debuff the item did not take off (an aura keeps it on); no more item for it while marked (60 s at most) |
 | `shared/utils/debuff/debuff_checker.lua` | 239 | Blocking-debuff tables (production and test mode) and lookups |
 | `shared/utils/debuff/auto_medicine.lua` | 235 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`, `//gs c am debuffs`; cold-load value from `auto_medicine_start` |
 | `shared/utils/debuff/doom_manager.lua` | 139 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
-| `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Shared defaults: auto-cure switches, cure item lists, test mode |
-| `shared/utils/debuff/autocure_settings.lua` | 82 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTOCURE_CONFIG.lua` over them, key by key; item names resolved to ids |
-| `_master/config_global/AUTOCURE_CONFIG.lua` | 28 | Template of `<Char>/_common/combat/AUTOCURE_CONFIG.lua` (every key written with its default value) |
-| `shared/utils/precast/cooldown_checker.lua` | 146 | CooldownChecker: ability and spell recast checks with tolerance |
+| `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 74 | Shared defaults: auto-cure switches, cure item lists, test mode |
+| `shared/utils/debuff/autocure_settings.lua` | 104 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTOCURE_CONFIG.lua` over them, key by key; item names resolved to ids |
+| `_master/config_global/AUTOCURE_CONFIG.lua` | 32 | Template of `<Char>/_common/combat/AUTOCURE_CONFIG.lua` (every key written with its default value) |
+| `shared/utils/precast/cooldown_checker.lua` | 143 | CooldownChecker: ability and spell recast checks with tolerance |
 | `shared/utils/precast/recast_announce.lua` | 83 | Party message (`/p`) for an action refused on recast, per `RECAST_CONFIG.party_announce` |
 | `_master/config_global/RECAST_CONFIG.lua` | 115 | Recast tolerance (2.0 s), party announce list, global `is_recast_ready` / `is_on_cooldown` |
-| `shared/utils/precast/ability_helper.lua` | 409 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed (or abort, via `follow_up_or_abort`); at most one attempt per action |
+| `shared/utils/precast/ability_helper.lua` | 465 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed (or abort, via `follow_up_or_abort`); at most one attempt per action |
 | `shared/utils/precast/ws_precast_handler.lua` | 147 | WSPrecastHandler: validation, TP gear calculation, 1000 TP check on the game's own TP, TP gear application |
 | `shared/utils/precast/ws_validator.lua` | 46 | Thin wrapper over WeaponSkillManager (range + Amnesia) |
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 133 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
-| `shared/utils/precast/tp_bonus_handler.lua` | 84 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
-| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 230 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
+| `shared/utils/precast/tp_bonus_handler.lua` | 86 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
+| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 239 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `//gs c ws1..ws9` (WAR) and `ws`, `ws1..` (PLD): weaponskill slots rebuilt per weapon |
 | `shared/utils/precast/tier_refiner.lua` | 230 | TierRefiner: cast the highest learned tier whose recast and MP allow it |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table for RDM enfeebles (`get(family)`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Tier table for nukes I-V, the GEO -ra nukes and Aspir (`get(family)`) |
-| `shared/utils/precast/cast_time.lua` | 241 | CastTime: cast-time estimate from the gear actually sent; `cleanup_precast` hook, `PRECAST` trace line |
+| `shared/utils/precast/cast_time.lua` | 346 | CastTime: cast-time estimate from the gear actually sent; `cleanup_precast` hook, `PRECAST` trace line |
 | `shared/utils/precast/flurry_tracker.lua` | 73 | FlurryTracker: Flurry I / II on this character, for `sets.precast.RA.Flurry1/2` |
 | `shared/hooks/init_ability_messages.lua` | 97 | Wraps `user_post_precast`: job ability messages |
 | `shared/hooks/init_ws_messages.lua` | 138 | Wraps `user_post_precast`: weaponskill messages |
@@ -216,7 +216,7 @@ The `action_type` dispatch in front of `CooldownChecker` is repeated in all 17
 
 ### PrecastGuard routing
 
-`PrecastGuard.guard_precast` (`precast_guard.lua:435-453`) dispatches on `spell.type`:
+`PrecastGuard.guard_precast` (`precast_guard.lua:487-505`) dispatches on `spell.type`:
 
 | `spell.type` | Handler | Debuffs checked (`debuff_checker.lua`) | Auto-cure |
 |---|---|---|---|
@@ -496,7 +496,7 @@ sequenceDiagram
 equips and clears it in `job_post_precast`; DNC applies its WS variant first so the TP
 piece is not overwritten.
 
-`TPBonusCalculator.calculate(tp, cfg, main, buffs, sub)` (`tp_bonus_calculator.lua:162`):
+`TPBonusCalculator.calculate(tp, cfg, main, buffs, sub, worn, range)` (`tp_bonus_calculator.lua:205`):
 
 1. Effective TP (`effective_tp`) = current TP + `get_weapon_bonus(main)`
    + `get_weapon_bonus(sub)` when the sub is a different weapon + `get_warcry_bonus()`

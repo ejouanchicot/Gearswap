@@ -16,29 +16,29 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | *(engine)* `libs/Mote-Include.lua` | 1125 | `init_include()` (runs `user_setup`), `sub_job_change()` |
 | `<Name>/<Name>_<JOB>.lua` (template `_master/entry/Tetsouo_<JOB>.lua`, 22) | 15 | Character entry: a header and `include('../shared/entry/<job>.lua')` |
 | `shared/entry/<job>.lua` (22) | 189-415 | Entry code: `get_sets`, `user_setup`, `job_sub_job_change`, `file_unload` |
-| `shared/utils/core/job_change_manager.lua` | 235 | Debounced subjob change: cleanup, then `gs reload` |
+| `shared/utils/core/job_change_manager.lua` | 238 | Debounced subjob change: cleanup, then `gs reload` |
 | `shared/utils/core/job_sync_watchdog.lua` | 165 | Reloads when the loaded file's job differs from the client's job |
-| `shared/utils/core/INIT_SYSTEMS.lua` | 412 | Per-load bootstrap of the universal systems (sync and deferred) and of the gear hook chain |
-| `shared/utils/core/keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load, sequence-guarded on `windower._keybind_guard_seq` |
-| `shared/utils/core/module_cache.lua` | 96 | Makes `require` cache per environment |
-| `shared/utils/core/lifecycle_manager.lua` | 160 | Shared builders for `job_status_change`/`job_buff_change`/`job_aftercast`/`job_state_change`, plus `refresh_after_buff` |
-| `shared/utils/core/midcast_watchdog.lua` | 470 | 0.5 s polling loop that clears stuck midcasts, generation-guarded on `windower._midcast_wd_seq` |
-| `shared/utils/movement/automove.lua` | 371 | Movement polling loop, sequence-guarded on `windower._automove_seq` |
+| `shared/utils/core/INIT_SYSTEMS.lua` | 483 | Per-load bootstrap of the universal systems (sync and deferred) and of the gear hook chain |
+| `shared/utils/core/keybind_guard.lua` | 82 | Re-sends the job's binds 2 s after a load, sequence-guarded on `windower._keybind_guard_seq` |
+| `shared/utils/core/module_cache.lua` | 100 | Makes `require` cache per environment |
+| `shared/utils/core/lifecycle_manager.lua` | 174 | Shared builders for `job_status_change`/`job_buff_change`/`job_aftercast`/`job_state_change`, plus `refresh_after_buff` |
+| `shared/utils/core/midcast_watchdog.lua` | 485 | 0.5 s polling loop that clears stuck midcasts, generation-guarded on `windower._midcast_wd_seq` |
+| `shared/utils/movement/automove.lua` | 405 | Movement polling loop, sequence-guarded on `windower._automove_seq` |
 | `shared/utils/lockstyle/lockstyle_manager.lua` | 338 | Lockstyle factory (per-job ctx on `_G.__lockstyle_contexts`, DressUp handling) |
-| `shared/utils/macrobook/macrobook_manager.lua` | 280 | Macrobook factory (solo/dual-box books) |
+| `shared/utils/macrobook/macrobook_manager.lua` | 287 | Macrobook factory (solo/dual-box books) |
 | `shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | 36-55 | Lazy wrappers that export `select_default_lockstyle`, `select_default_macro_book`, `cancel_<job>_lockstyle_operations` |
-| `_master/config/<job>/<JOB>_KEYBINDS.lua` | 35-79 | Bind lists, turned into `bind_all`/`unbind_all`/`show_intro` by `KeybindManager.create` |
-| `shared/utils/keybinds/keybind_manager.lua` | 442 | `bind_all` (unbind only what is no longer wanted, then bind), `show_intro` |
-| `shared/utils/ui/UI_MANAGER.lua`, `ui_lifecycle.lua`, `ui_update_orchestrator.lua` | 167 / 202 / 277 | Keybind HUD state, `smart_init`, `destroy`, `update` |
-| `shared/utils/dualbox/dualbox_manager.lua` | 478 | Job exchange between the boxes, auto-init 2 s after load |
+| `_master/config/<job>/<JOB>_KEYBINDS.lua` | 33-80 | Bind lists, turned into `bind_all`/`unbind_all`/`show_intro` by `KeybindManager.create` |
+| `shared/utils/keybinds/keybind_manager.lua` | 483 | `bind_all` (unbind only what is no longer wanted, then bind), `show_intro` |
+| `shared/utils/ui/UI_MANAGER.lua`, `ui_lifecycle.lua`, `ui_update_orchestrator.lua` | 165 / 210 / 170 | Keybind HUD state, `smart_init`, `destroy`, `update` |
+| `shared/utils/dualbox/dualbox_manager.lua` | 476 | Job exchange between the boxes, auto-init 2 s after load |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 189 | IPC mirror of `ls`/`rf` between the instances of the box group |
-| `shared/utils/dualbox/alt_buff_reporter.lua` | 349 | Alt reports tracked buffs to the main |
-| `shared/utils/craft/craft_manager.lua`, `craft_commands.lua` | 200 / 302 | Craft/fish session and slot locks |
-| `shared/utils/wardrobe/wardrobe_organizer.lua` | 713 | `//gs c wo` phase chain, `job_changed()` guard |
+| `shared/utils/dualbox/alt_buff_reporter.lua` | 359 | Alt reports tracked buffs to the main |
+| `shared/utils/craft/craft_manager.lua`, `craft_commands.lua` | 202 / 334 | Craft/fish session and slot locks |
+| `shared/utils/wardrobe/wardrobe_organizer.lua` | 716 | `//gs c wo` phase chain, `job_changed()` guard |
 | `shared/utils/debuff/doom_manager.lua` | 139 | Doom gear + slot locks, death safety unlock |
-| `shared/utils/warp/warp_init.lua` | 132 | Warp system bootstrap (called by INIT_SYSTEMS on every load) |
-| `shared/utils/core/COMMON_COMMANDS.lua`, `DEBUG_COMMANDS.lua` | 786 / 583 | `reload`, `ls`, `craft`, `wo`, `alt*` handlers; debug toggles (`djc`, `debugupdate`) |
-| `_master/config_global/LOCKSTYLE_CONFIG.lua` | 60 | `initial_load_delay` used by entries |
+| `shared/utils/warp/warp_init.lua` | 125 | Warp system bootstrap (called by INIT_SYSTEMS on every load) |
+| `shared/utils/core/COMMON_COMMANDS.lua`, `DEBUG_COMMANDS.lua` | 822 / 583 | `reload`, `ls`, `craft`, `wo`, `alt*` handlers; debug toggles (`djc`, `debugupdate`) |
+| `_master/config_global/LOCKSTYLE_CONFIG.lua` | 53 | `initial_load_delay` used by entries |
 
 ## The environment model
 
@@ -59,7 +59,7 @@ Consequences used throughout this page:
 - **Listeners and HUD texts never outlive the environment that follows them**; the engine removes them at steps 2 and 3. A listener registered by a dead environment's coroutine *after* the next load is tracked and removed at the load after that.
 - **Scheduled coroutines are never cancelled.** A closure scheduled by the old environment runs later against the old `_G`; the `send_command`, `player`, `enable`/`disable` it reaches are engine functions and objects, so they still act on the live game. Every coroutine must invalidate itself.
 - **Slot locks are engine state.** `disable_table` (`statics.lua:194`) is not touched by `load_user_files`, and a main job change does not clear it either: the outgoing-0x100 enable-all (`packet_parsing.lua:755-757`) tests `newmain ~= player.main_job_id` after `:744` has already assigned it, so it only runs for a request whose main-job byte is 0. Only an explicit `enable` unlocks a slot. That is why several `file_unload`s now release their own locks (see Scenario 11).
-- **`gearswap.user_env == _G` is true only in the live environment** (`refresh.lua:83`, `:114`, `:149`). The project uses an equivalent identity test instead: `UI_MANAGER.lua:124` stores the load's `_G.ui_manager_state` on `windower._ui_live_state`, and the delayed HUD inits compare against it (Scenario 3).
+- **`gearswap.user_env == _G` is true only in the live environment** (`refresh.lua:83`, `:114`, `:149`). The project uses an equivalent identity test instead: `UI_MANAGER.lua:123` stores the load's `_G.ui_manager_state` on `windower._ui_live_state`, and the delayed HUD inits compare against it (Scenario 3).
 - **`equip()` outside an event does nothing.** `equip_sets()` empties `equip_list` on entry (`flow.lua:60`) and sends it on exit; an `equip()` from a bare `coroutine.schedule` callback fills `equip_list` and is discarded by the next event. Use `send_command('gs c update')`.
 - **Keybinds are Windower-global.** Only an explicit `unbind` removes them.
 
@@ -133,22 +133,22 @@ No template sets `_G.DISABLE_AUTOMOVE` any more (removed for BST in commit 0563f
 
 | t | Event | Source |
 |---|---|---|
-| +0 | keys bound, HUD `smart_init`, `select_default_macro_book()` schedules `set_macro_page` at +1.5 s | `set_macro_with_delay`, `macrobook_manager.lua:97-110` |
+| +0 | keys bound, HUD `smart_init`, `select_default_macro_book()` schedules `set_macro_page` at +1.5 s | `set_macro_with_delay`, `macrobook_manager.lua:98-113` |
 | +0.5 | Warp, AutoMove, state display override | INIT_SYSTEMS +0.5 s block |
 | +2 | dual-box auto-init (retries every 1 s, 8 attempts), alt window start | `run_auto_init` in `dualbox_manager.lua` |
 | +2 | MidcastWatchdog loop starts; KeybindGuard re-sends the binds | INIT_SYSTEMS +2 s block, `KeybindGuard.schedule` |
-| +8 | `select_default_lockstyle()` -> apply at +10: `lua unload dressup`, +0.3 `/lockstyleset`, +3 `lua load dressup` | `set_lockstyle_with_delay` / `apply_lockstyle_immediate`, `lockstyle_manager.lua:128-178` |
+| +8 | `select_default_lockstyle()` -> apply at +10: `lua unload dressup`, +0.3 `/lockstyleset`, +3 `lua load dressup` | `set_lockstyle_with_delay` / `apply_lockstyle_immediate`, `lockstyle_manager.lua:122-176` |
 | +8 | JobSyncWatchdog first check, then every 5 s | `JobSyncWatchdog.start` (TUNING block of `job_sync_watchdog.lua`) |
 
 ### Scenario 1 - cold load
 
-`login` schedules `lua i gearswap refresh_user_env` 2 s later (`gearswap.lua:331-335`); `//lua load gearswap` while logged in calls `refresh_user_env()` from the `load` event (`gearswap.lua:136-144`). Either way `load_user_files` runs as above with no previous environment (`current_file` is nil, so no `file_unload`). All `windower._x` fields start nil: `JobSyncWatchdog` seeds `windower._job_sync_seq = 0` (module body), AutoMove seeds `windower._automove_seq` (`automove.lua:83`), `WarpInit` prints its init messages and sets `windower._warp_init_done` (`warp_init.lua:103-112`; its listeners and precast hook are set up on every load). `JobChangeManager.initialize()` seeds `STATE.current_main_job/sub_job` from `player` (`JobChangeManager.initialize`).
+`login` schedules `lua i gearswap refresh_user_env` 2 s later (`gearswap.lua:331-335`); `//lua load gearswap` while logged in calls `refresh_user_env()` from the `load` event (`gearswap.lua:136-144`). Either way `load_user_files` runs as above with no previous environment (`current_file` is nil, so no `file_unload`). All `windower._x` fields start nil: `JobSyncWatchdog` seeds `windower._job_sync_seq = 0` (module body), AutoMove seeds `windower._automove_seq` (`automove.lua:87`), `WarpInit` prints its init messages and sets `windower._warp_init_done` (`warp_init.lua:103-112`; its listeners and precast hook are set up on every load). `JobChangeManager.initialize()` seeds `STATE.current_main_job/sub_job` from `player` (`JobChangeManager.initialize`).
 
 ### Scenario 2 - `gs reload` while engaged
 
 `//gs reload` -> `refresh_user_env()` (`gearswap.lua:209-210`) reads the job from `windower.ffxi.get_player().main_job_id` (`refresh.lua:659`) -> `load_user_files`. `//gs c reload` (`CommonCommands.handle_reload`) calls `JobChangeManager.force_reload()`, which bumps the counter and sends `gs reload` immediately. Neither path calls `cleanup_all_systems()`.
 
-- Old environment: `file_unload` cancels (the JCM counter and a pending lockstyle, through the registered cancel), releases the locks it owns (Scenario 11) and keeps the keys for the new environment. Its MidcastWatchdog loop keeps scanning until the new environment's `start()` at +2 s bumps `windower._midcast_wd_seq`. Its AutoMove chain runs until the new environment calls `AutoMove.start()` at +0.5 s; while engaged it only tracks position (`track_while_engaged`, `automove.lua:201`).
+- Old environment: `file_unload` cancels (the JCM counter and a pending lockstyle, through the registered cancel), releases the locks it owns (Scenario 11) and keeps the keys for the new environment. Its MidcastWatchdog loop keeps scanning until the new environment's `start()` at +2 s bumps `windower._midcast_wd_seq`. Its AutoMove chain runs until the new environment calls `AutoMove.start()` at +0.5 s; while engaged it only tracks position (`track_while_engaged`, `automove.lua:193`).
 - Engine: the action in flight, if any, stays in `command_registry` (only 0x100 and 0x00A reset it), so its aftercast is delivered to the new environment.
 - New environment: nothing re-equips on load. Mote states return to their configured defaults (they are `_G` state). Gear changes on the next event (`status change`, action, or an AutoMove `gs c update`). COR's old attempt to re-equip from a coroutine was removed on 2026-09-25.
 
@@ -180,11 +180,11 @@ Details:
 1. `packet_parsing.lua:419-428` updates `player.sub_job_id` then calls `equip_sets('sub_job_change', nil, new, old)`.
 2. Mote runs `user_setup()`, `job_sub_job_change()`, then `send_command('gs c update')` in the **old** environment (`Mote-Include.lua:981-991`). The entry's `job_sub_job_change` (`shared/entry/pld.lua:146-155`) only calls `on_job_change(player.main_job, newSubjob)`. Until 2026-09-25 most templates also called `JobChangeManager.initialize({...})` there; that call was removed (the argument was ignored and `user_setup` already seeds).
 3. `JobChangeManager.on_job_change`: runs `cleanup_all_systems()` (`AutoMove.stop()`, `MidcastWatchdog.stop()`, `KeybindUI.destroy()`, clears `_G.keybind_ui_display`, resets `_G.ui_manager_state` fields, bumps `smart_init_id`), bumps `debounce_counter`, picks `delay = 2.0` because `STATE.current_main_job == main_job`, schedules the reload.
-4. The queued `gs c update` lands in the old environment before the reload and re-creates the HUD through `KeybindUI.update()` -> `safe_init()` (`ui_update_orchestrator.lua:50-55`). The engine deletes that text at the reload.
+4. The queued `gs c update` lands in the old environment before the reload and re-creates the HUD through `KeybindUI.update()` -> `safe_init()` (`ui_update_orchestrator.lua:45-50`). The engine deletes that text at the reload.
 5. At +2.0 s the coroutine checks `my_counter == STATE.debounce_counter`, writes `STATE.current_*` (dead writes, the environment is about to go) and sends `gs reload`.
 6. New environment: full load. `JobChangeManager.initialize()` seeds `STATE` from `player`, which already holds the new subjob.
 
-What the old environment's second `user_setup()` leaves behind: a macro book selection (+1.5 s) and a `select_default_lockstyle()` (+8 s), both firing in the dead environment after the reload. Since 2026-09-30 both are dropped: they go through `LoadGate.defer` keyed on the load that created their module (`ctx.load_gen`), and the reload started a newer one (see [LoadGate](#loadgate) below). Before, they doubled the new environment's own pair (a second DressUp unload/`/lockstyleset`/load sequence). The old environment's delayed HUD inits (`smart_init` polls, `force_reinit`) no longer create a HUD after the reload: since 2026-09-25 `try_init` and the `force_reinit` callback return when `windower._ui_live_state` is not their own state table (`ui_lifecycle.lua:136`, `ui_update_orchestrator.lua:76`). An identity test was chosen over a counter because `UI_MANAGER` could run twice in one load (required before and after `ModuleCache`, until the cache moved to `config_loader` on 2026-09-27), and a counter would cancel the load's own init.
+What the old environment's second `user_setup()` leaves behind: a macro book selection (+1.5 s) and a `select_default_lockstyle()` (+8 s), both firing in the dead environment after the reload. Since 2026-09-30 both are dropped: they go through `LoadGate.defer` keyed on the load that created their module (`ctx.load_gen`), and the reload started a newer one (see [LoadGate](#loadgate) below). Before, they doubled the new environment's own pair (a second DressUp unload/`/lockstyleset`/load sequence). The old environment's delayed HUD inits (`smart_init` polls, `force_reinit`) no longer create a HUD after the reload: since 2026-09-25 `try_init` and the `force_reinit` callback return when `windower._ui_live_state` is not their own state table (`ui_lifecycle.lua:145`, `ui_update_orchestrator.lua:71`). An identity test was chosen over a counter because `UI_MANAGER` could run twice in one load (required before and after `ModuleCache`, until the cache moved to `config_loader` on 2026-09-27), and a counter would cancel the load's own init.
 
 What survives: slot locks (`disable_table`), all `windower._x` fields, keybinds (the new `bind_all` sends only what changed, through the paced queue; `KeybindGuard` re-sends those once the queue is empty), loaded external addons.
 
@@ -208,7 +208,7 @@ The delay is keyed on the main job only, so the round trip still reloads, at 2.0
 
 1. Outgoing 0x100: `player.main_job_id = BLM`, `command_registry`, `equip_list`, `equip_list_history` and cached equipment cleared, `lua i gearswap load_user_files 4` queued (`packet_parsing.lua:733-751`). The enable-all at `:755-757` does not run (see the environment model), so slot locks survive the change.
 2. `load_user_files(4)`: PLD `file_unload` (`shared/entry/pld.lua:287-309`, which releases the Hoxne ammo lock first), engine cleanup, `Tetsouo_BLM.lua` loads.
-3. No `cleanup_all_systems()`: the PLD environment's MidcastWatchdog loop ends when BLM's `start()` bumps `windower._midcast_wd_seq` at +2 s (`MidcastWatchdog.start`); its AutoMove chain dies when BLM's `AutoMove.start()` bumps `windower._automove_seq` at +0.5 s (`automove.lua:312`); a PLD `select_default_lockstyle` still scheduled returns early because `player.main_job ~= 'PLD'` (`select_default_lockstyle`, `lockstyle_manager.lua:192`), and a lockstyle apply already in its 2 s delay or DressUp steps is cancelled by PLD's `file_unload` (`JobChangeManager.cancel_all()` -> the registered `cancel_pld_lockstyle_operations`, which bumps the ctx's `operation_id`).
+3. No `cleanup_all_systems()`: the PLD environment's MidcastWatchdog loop ends when BLM's `start()` bumps `windower._midcast_wd_seq` at +2 s (`MidcastWatchdog.start`); its AutoMove chain dies when BLM's `AutoMove.start()` bumps `windower._automove_seq` at +0.5 s (`automove.lua:334`); a PLD `select_default_lockstyle` still scheduled returns early because `player.main_job ~= 'PLD'` (`select_default_lockstyle`, `lockstyle_manager.lua:190`), and a lockstyle apply already in its 2 s delay or DressUp steps is cancelled by PLD's `file_unload` (`JobChangeManager.cancel_all()` -> the registered `cancel_pld_lockstyle_operations`, which bumps the ctx's `operation_id`).
 4. If the server refuses or reorders the request, the incoming 0x061 corrects `player.main_job_id` without reloading (`packet_parsing.lua:381`). `JobSyncWatchdog` (started by BLM's `INIT_SYSTEMS`) compares `'BLM'` with `windower.ffxi.get_player().main_job` at +8 s and every 5 s; after 2 consecutive mismatches it sends `gs reload` (`JobSyncWatchdog.start`), at most once per 30 s (`windower._job_sync_last_reload`, local `force_reload`).
 5. Switching to a job that has no user file (Tetsouo has a file for each of the 22 jobs; Kaories only for COR, GEO, PLD, RDM): `load_user_files` finds no file (`refresh.lua:108-112`) and leaves no environment. The previous environment's AutoMove, MidcastWatchdog and JobSyncWatchdog loops keep running; the latter fires a "Job file is PLD but you are DRK - reloading." warning and a `gs reload` that again loads nothing.
 
@@ -220,7 +220,7 @@ FFXI only allows job changes in a Mog House, so the realistic case is a reload (
 
 ### Scenario 7 - job change with craft mode active
 
-`//gs c craft` equips the craft set, `disable()`s the slots 2 s later (`lock_after_delay`, `craft_commands.lua:163-175`) and marks the session active in `_G.__CraftManagerState` (`craft_manager.lua:59`).
+`//gs c craft` equips the craft set, `disable()`s the slots 2 s later (`lock_after_delay`, `craft_commands.lua:193-205`) and marks the session active in `_G.__CraftManagerState` (`craft_manager.lua:59`).
 
 - Subjob change / any reload: the new environment starts with `__CraftManagerState = {active=false}`, while the engine keeps the slots locked. `//gs c uncraft` then answers "No craft set is currently active." and returns before `gs enable all` (`CraftManager.unequip`, `craft_manager.lua:177-181`), and the weapon-lock code that honours a craft session (`CombatMode.apply` and its `attach`, WHM's `file_unload` for `Melee ON`) reads `CraftManager.is_active()`, sees no session and re-enables the weapon slots. See Known issues. The comment above `_G.__CraftManagerState` describes exactly this.
 - Main job change: same as a reload. The slots stay locked (the 0x100 enable-all does not run, see the environment model) and the new environment has no session, so `//gs c uncraft` refuses; `//gs enable all` is the way out.
@@ -228,9 +228,9 @@ FFXI only allows job changes in a Mog House, so the realistic case is a reload (
 
 ### Scenario 8 - job change during `//gs c wo`
 
-The organizer's state (`IS_RUNNING`, `start_job_tag`, iteration counters) is module-local (`wardrobe_organizer.lua:53-59`), so it belongs to the environment that started the run. After a job change or reload:
+The organizer's state (`IS_RUNNING`, `start_job_tag`, iteration counters) is module-local (`wardrobe_organizer.lua:54-60`), so it belongs to the environment that started the run. After a job change or reload:
 
-- The old environment's phase chain keeps running. `job_changed()` (`:77-85`) compares `player.main_job/sub_job` with the tag captured at start and is tested at phase boundaries: before Phase 1 (`build_state_and_dispatch`), before Phase 3 (`rebuild_then_phase3`), before Phase 4 (`start_phase4`) and before a retry (`start_organize`). A mismatch calls `abort_run()` -> `clean_exit()` -> `gs enable all` and the stance-lock release. The move loop inside a phase (`run_burst_loop`, `lib/phases.lua:205-327`) does not check it and finishes the phase with the old job's plan.
+- The old environment's phase chain keeps running. `job_changed()` (`:78-86`) compares `player.main_job/sub_job` with the tag captured at start and is tested at phase boundaries: before Phase 1 (`build_state_and_dispatch`), before Phase 3 (`rebuild_then_phase3`), before Phase 4 (`start_phase4`) and before a retry (`start_organize`). A mismatch calls `abort_run()` -> `clean_exit()` -> `gs enable all` and the stance-lock release. The move loop inside a phase (`run_burst_loop`, `lib/phases.lua:205-327`) does not check it and finishes the phase with the old job's plan.
 - The new environment has `IS_RUNNING = false`, so a second `//gs c wo` can start while the old chain is still moving items, and the old chain's `clean_exit()` will `gs enable all` in the middle of the new run.
 - The slots that Phase 0 locked (`lock_and_finish`, `lib/phases.lua:119-125`) stay locked across a main job change as well (the 0x100 enable-all does not run); only the old chain's `clean_exit()` releases them.
 
@@ -269,11 +269,11 @@ What no `file_unload` does: stop the MidcastWatchdog loop (the next environment'
 
 Roles come from `<Character>/_common/dualbox/DUALBOX_CONFIG.lua`, overridden by `<Character>/saved/dualbox_role.lua` when `//gs c main` wrote one. `_G.DualBoxConfig`, `_G.AltJobState` ("the other box's job") and `_G.AltBuffState` are environment state, so each reload of a box forgets what it knew about the other one. `dualbox_manager.lua`'s body schedules `run_auto_init` 2 s after it first executes in an environment; `windower._dualbox_init_counter` supersedes earlier bodies and `windower._dualbox_init_last_reload` against `windower._gs_reload_count` (bumped by every INIT_SYSTEMS run) limits it to once per load (`run_auto_init`). Since the require cache is installed by `config_loader`, the body runs once per load (the `require` in `user_setup()`); the facade's `require` and the old environment's second `user_setup()` on a subjob change are cache hits.
 
-- **Either box reloads or changes job**: its new environment's auto-init runs the same steps for both roles (`:501-502`): `send_job_update()` sends `send <other> gs c altjobupdate <job> <sub> <lvl> <sublvl> <sender>` (an identical payload less than 1.5 s after the previous send is dropped, `windower._dualbox_last_send_payload/_time`, `:180-186`), then `request_alt_job()` sends `send <other> gs c requestjob`. The alt also runs `AltBuffReporter.report_all()` (`:504-511`).
+- **Either box reloads or changes job**: its new environment's auto-init runs the same steps for both roles (`:447-448`): `send_job_update()` sends `send <other> gs c altjobupdate <job> <sub> <lvl> <sublvl> <sender>` (an identical payload less than 1.5 s after the previous send is dropped, `windower._dualbox_last_send_payload/_time`, `:184-190`), then `request_alt_job()` sends `send <other> gs c requestjob`. The alt also runs `AltBuffReporter.report_all()` (`:451-458`).
 - **On the receiving box** the job's COMMANDS module routes `altjobupdate` to `receive_alt_job()` (e.g. `shared/jobs/pld/functions/PLD_COMMANDS.lua`), which records every sender in `alt_states.lua` and stops there for a sender that is not its tracked partner, stores `_G.AltJobState` and corrects `_G.cor_party_jobs` for the other character; only when the job or subjob differs from what it already held does it print the update and schedule `select_default_macro_book()` 0.5 s later, so the dual-box book is picked (`DualBoxManager.receive_alt_job`, `dualbox_config` in `macrobook_manager.lua`). It routes `requestjob` to `handle_job_request()`, which answers with `send_job_update(true)`: a forced reply that skips the de-dup window.
 - So a reload of either box restores both sides: the reloaded box learns the other's job from the forced reply, and the other box receives the reloaded box's job (stored silently when unchanged). Nothing asks the alt to resend its buffs after a reload of the main (see Known issues).
 - **IPC mirror (`ls`, `rf`)**: each load registers the hooks on its `_G.DUALBOX_SYNC_HOOKS` and an `ipc message` listener (INIT_SYSTEMS sync IPC block, `DualBoxSyncIPC.init_listener`). The listener id is kept on `windower._sync_ipc_event_id` with the load that registered it (`windower._sync_ipc_event_load`); `init_listener` unregisters it only when it comes from the same load, because the engine has already removed an older one and its id may now belong to another listener. Between the engine's unregister at the start of `load_user_files` and `INIT_SYSTEMS` in the new `get_sets`, the box has no listener and drops broadcasts. Self-echo suppression state is on `windower._sync_ipc_last_sent/_time` (`broadcast`) so it spans a reload. The message carries the sender's name and a box acts only on a sender of its `AltGroup.get_alts()`, which is empty until `_G.DualBoxConfig` is loaded (2 s after the load) and when the dual-box is disabled.
-- `DualBoxManager.is_alt_online()` turns false 30 s after the last `altjobupdate` (`:346-360`); `dualbox_config` in `macrobook_manager.lua` therefore uses the dual-box book only for macrobook selections made within 30 s of an update. `get_alt_jobs` in `alt_commands.lua` reads `_G.AltJobState` directly to avoid that timeout.
+- `DualBoxManager.is_alt_online()` turns false 30 s after the last `altjobupdate` (`:357-371`); `dualbox_config` in `macrobook_manager.lua` therefore uses the dual-box book only for macrobook selections made within 30 s of an update. `get_alt_jobs` in `alt_commands.lua` reads `_G.AltJobState` directly to avoid that timeout.
 
 ### Per-job differences
 
@@ -294,11 +294,11 @@ Since 2026-09-30 every character runs the same entry code: the set file is found
 
 | Function | Behaviour | Callers |
 |---|---|---|
-| `initialize(config)` (`:118-128`) | Seeds `STATE.current_main_job/sub_job` from `player` only when nil. `config` is ignored (its `@param` says so; only the frozen clones Hysoka and Gabvanstronger still pass a table). | every `user_setup` |
-| `on_job_change(main, sub)` (`:134-191`) | Returns if either is nil. `cleanup_all_systems()`, counter++, schedules `gs reload` after 2.0 s (same main job) or 3.0 s. | every `job_sub_job_change` |
-| `force_reload(main, sub)` (`:196-215`) | Counter++, immediate `gs reload`. No cleanup. | `CommonCommands.handle_reload` |
-| `cancel_all()` (`:219-227`) | Counter++; `pcall` every function in `STATE.lockstyle_cancel_registry`. | every `get_sets` and `file_unload` |
-| `register_lockstyle_cancel(job, fn)` (`:232-234`) | Stores `fn` in the registry. | every `get_sets` |
+| `initialize(config)` (`:119-129`) | Seeds `STATE.current_main_job/sub_job` from `player` only when nil. `config` is ignored (its `@param` says so; only the frozen clones Hysoka and Gabvanstronger still pass a table). | every `user_setup` |
+| `on_job_change(main, sub)` (`:135-192`) | Returns if either is nil. `cleanup_all_systems()`, counter++, schedules `gs reload` after 2.0 s (same main job) or 3.0 s. | every `job_sub_job_change` |
+| `force_reload(main, sub)` (`:197-216`) | Counter++, immediate `gs reload`. No cleanup. | `CommonCommands.handle_reload` |
+| `cancel_all()` (`:220-228`) | Counter++; `pcall` every function in `STATE.lockstyle_cancel_registry`. | every `get_sets` and `file_unload` |
+| `register_lockstyle_cancel(job, fn)` (`:235-237`) | Stores `fn` in the registry. | every `get_sets` |
 
 State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_main_job, target_sub_job, debounce_timer, debounce_counter, lockstyle_cancel_registry}` (`:36-53`). Debug lines are gated on `_G.JOBCHANGE_DEBUG` through `DebugLogger`.
 
@@ -316,23 +316,23 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 
 ### LockstyleManager / MacrobookManager (lifecycle-relevant parts)
 
-- `LockstyleManager.create(job, config_path, default_style, default_sub)` (`lockstyle_manager.lua:278`) returns `{select_default_lockstyle, set_lockstyle_with_delay, get_lockstyle_info, show_lockstyle_config, set_lockstyle_enabled, set_dressup_management, cancel_pending_operations, get_state, get_info, cancel_<job>_lockstyle_operations}` and exports the matching `_G.*` functions. Pending work is invalidated through `ctx.STATE.operation_id` (`cancel_pending_operations`, `:121`). The ctx is kept per job code in `_G.__lockstyle_contexts` (`contexts()`, `:263`), so both wrapper copies of an environment share it; it is environment state. The globals of a previous `create()` are cleared at the next one (`last_registered_globals`, `:252`; its comment now says the list only sees the calls of one load).
-- The job wrappers (`shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua`) create the module lazily on first call and export `select_default_lockstyle` and `cancel_<job>_lockstyle_operations`; the latter calls `get_lockstyle_module().cancel_<job>_lockstyle_operations()`, the key the factory adds for that purpose (`lockstyle_manager.lua:313`).
-- `MacrobookManager.create(...)` (`macrobook_manager.lua:227`); `set_macro_with_delay` invalidates on `_G._macrobook_schedule_id` (`:97-110`), which is per environment (the comment says a coroutine scheduled before a reload is not cancelled).
-- `LockstyleManager.apply_style(style)` (`:77`) is the stateless variant used by craft commands.
+- `LockstyleManager.create(job, config_path, default_style, default_sub)` (`lockstyle_manager.lua:276`) returns `{select_default_lockstyle, set_lockstyle_with_delay, get_lockstyle_info, show_lockstyle_config, set_lockstyle_enabled, set_dressup_management, cancel_pending_operations, get_state, get_info, cancel_<job>_lockstyle_operations}` and exports the matching `_G.*` functions. Pending work is invalidated through `ctx.STATE.operation_id` (`cancel_pending_operations`, `:116`). The ctx is kept per job code in `_G.__lockstyle_contexts` (`contexts()`, `:261`), so both wrapper copies of an environment share it; it is environment state. The globals of a previous `create()` are cleared at the next one (`last_registered_globals`, `:250`; its comment now says the list only sees the calls of one load).
+- The job wrappers (`shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua`) create the module lazily on first call and export `select_default_lockstyle` and `cancel_<job>_lockstyle_operations`; the latter calls `get_lockstyle_module().cancel_<job>_lockstyle_operations()`, the key the factory adds for that purpose (`lockstyle_manager.lua:311`).
+- `MacrobookManager.create(...)` (`macrobook_manager.lua:233`); `set_macro_with_delay` invalidates on `_G._macrobook_schedule_id` (`:98-113`), which is per environment (the comment says a coroutine scheduled before a reload is not cancelled).
+- `LockstyleManager.apply_style(style)` (`:71`) is the stateless variant used by craft commands.
 
 ### Other lifecycle entry points
 
 | Function | File:line | Notes |
 |---|---|---|
-| `AutoMove.start()` / `stop()` | `automove.lua:312` / `:104` | both bump `windower._automove_seq`; `start` only from the +0.5 s block of `INIT_SYSTEMS`, `stop` only from `cleanup_all_systems` |
+| `AutoMove.start()` / `stop()` | `automove.lua:334` / `:108` | both bump `windower._automove_seq`; `start` only from the +0.5 s block of `INIT_SYSTEMS`, `stop` only from `cleanup_all_systems` |
 | `MidcastWatchdog.start()` / `stop()` | `midcast_watchdog.lua` | both bump `windower._midcast_wd_seq`, which ends every older loop |
-| `KeybindUI.smart_init(job, max_wait)` / `destroy()` | `ui_lifecycle.lua:113` / `:178` | `smart_init_id` supersedes older polls; `windower._ui_live_state` stops polls from an older load |
+| `KeybindUI.smart_init(job, max_wait)` / `destroy()` | `ui_lifecycle.lua:122` / `:187` | `smart_init_id` supersedes older polls; `windower._ui_live_state` stops polls from an older load |
 | `KeybindGuard.schedule()` | `keybind_guard.lua` | re-sends the binds after 2 s; `windower._keybind_guard_seq` drops an older load's pass |
 | `DualBoxManager.send_job_update / request_alt_job / handle_job_request / receive_alt_job` | `dualbox_manager.lua` | see scenario 12 |
-| `DualBoxSyncIPC.register_hook / broadcast / init_listener` | `dualbox_sync_ipc.lua:52`, `:76`, `:170` | listener id on `windower._sync_ipc_event_id`, stamped with its load in `windower._sync_ipc_event_load` |
+| `DualBoxSyncIPC.register_hook / broadcast / init_listener` | `dualbox_sync_ipc.lua:52`, `:68`, `:176` | listener id on `windower._sync_ipc_event_id`, stamped with its load in `windower._sync_ipc_event_load` |
 | `CraftManager.mark_active / active_gear / unequip / is_active` | `craft_manager.lua` | state on `_G.__CraftManagerState` |
-| `WardrobeOrganizer.organize / reset / recover` | `wardrobe_organizer.lua:540`, `:670`, `:680` | module-local `IS_RUNNING` |
+| `WardrobeOrganizer.organize / reset / recover` | `wardrobe_organizer.lua:565`, `:680`, `:690` | module-local `IS_RUNNING` |
 | `DoomManager.handle_buff_change / handle_status_change` | `doom_manager.lua:67`, `:112` | via `LifecycleManager` |
 | `WarpInit.init()` | `warp_init.lua:65-113` | listeners and the precast hook on every load (the hook once per environment, `_G.WARP_PRECAST_HOOKED`, `:38-41`); init messages only while `windower._warp_init_done` is unset (`:103-111`) |
 
@@ -342,7 +342,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 |---|---|---|
 | `//gs reload` (engine) | `refresh_user_env()` -> `load_user_files` | `gearswap.lua:209-210` |
 | `//gs c reload` | `JobChangeManager.force_reload()` | `CommonCommands.handle_reload` |
-| `//gs c ls` / `lockstyle` | `select_default_lockstyle()` + `SyncIPC.broadcast('ls')` | `COMMON_COMMANDS.lua:604`, `handle_lockstyle` |
+| `//gs c ls` / `lockstyle` | `select_default_lockstyle()` + `SyncIPC.broadcast('ls')` | `COMMON_COMMANDS.lua:665`, `handle_lockstyle` |
 | `//gs c dressup` | toggles DressUp management, persisted as `data/.dressup_disabled` | `LockstyleManager.toggle_dressup`, `lockstyle_manager.lua:22-66` |
 | `//gs c debugjobchange` / `djc` | toggles `windower._gs_debug.JOBCHANGE` (restored into `_G.JOBCHANGE_DEBUG` by INIT_SYSTEMS) and prints `JobChangeManagerSTATE` | `DebugCommands.handle_debugjobchange` |
 | `//gs c debugupdate` | toggles `windower._gs_debug.UPDATE` (persists), mirrors to `_G.UPDATE_DEBUG` | `DebugCommands.handle_debugupdate` |
@@ -351,14 +351,14 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `//gs c watchdog [on|off|toggle|debug|buffer N|fallback N|clear|test|stats]` | MidcastWatchdog control | `WatchdogCommands.handle_command`, `WATCHDOG_COMMANDS.lua:36` |
 | `//gs c altjobupdate <job> <sub> [lvl] [sublvl] [sender]` | sent by the other box; `receive_alt_job()` | each `<JOB>_COMMANDS.lua` |
 | `//gs c requestjob` | sent by either box at auto-init; answered with this box's job, past the de-dup | each `<JOB>_COMMANDS.lua` |
-| `//gs c altbuff <name...> <0|1>`, `altbuffsync`, `altsync`, `altbuffs`, `altdebug` | alt buff reporting | `COMMON_COMMANDS.lua:557-596` |
+| `//gs c altbuff <name...> <0|1>`, `altbuffsync`, `altsync`, `altbuffs`, `altdebug` | alt buff reporting | `COMMON_COMMANDS.lua:618-657` |
 
 ## Configuration
 
 | Source | Keys read | Default and where |
 |---|---|---|
-| `<char>/_common/display/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:42`) | 8.0; fallback table in each entry (e.g. `shared/entry/pld.lua:40-44`). Its only setting (`job_change_delay` and `cooldown`, read by nothing, were removed on 2026-09-29) |
-| `<char>/_common/display/UI_CONFIG.lua` (dofile) | `init_delay` for `smart_init` | 5.0 (`config_loader.lua:52`) |
+| `<char>/_common/display/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:31`) | 8.0; fallback table in each entry (e.g. `shared/entry/pld.lua:40-44`). Its only setting (`job_change_delay` and `cooldown`, read by nothing, were removed on 2026-09-29) |
+| `<char>/_common/display/UI_CONFIG.lua` (dofile) | `init_delay` for `smart_init` | 5.0 (`config_loader.lua:69`) |
 | `<char>/_common/dualbox/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug`, `report_on_load`, `tracked_buffs` | disabled main (`DualBoxManager.initialize`) |
 | `<char>/_common/inventory/CRAFT_CONFIG.lua` | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`craft_commands.lua`); a lockstyle key `false` keeps the job's lockstyle |
 | `<char>/_common/inventory/REFILL_CONFIG.lua` | `source_bags`, `store_bag`, `default_list`, `subjobs`, `store_foreign`, `foreign_characters`, `never_store` (foreign sweep), `quiver_open_at` (QuiverManager) | Case, Sack, Satchel / Case; `store_foreign` `'mine'`; without a common list (and no job list) `FALLBACK_LIST` (`config_resolver.lua`) |
@@ -368,7 +368,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `data/.dressup_disabled` | file presence = DressUp management off | `lockstyle_manager.lua:22` |
 | `<char>/<job>/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | styles and books per subjob (and per alt job) | fallbacks in the factories |
 
-Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 per 0.25 s (`command_queue.lua`); JobSyncWatchdog 8/5/2/30 (TUNING block of `job_sync_watchdog.lua`); dual-box auto-init 2 s + 1 s x 8 (`INIT_FIRST_DELAY`, `INIT_RETRY_DELAY`, `INIT_MAX_ATTEMPTS` in `dualbox_manager.lua`); AutoMove `job_change_cooldown` 2.0 s (`automove.lua:59`); lockstyle select delay 2.0 s, DressUp 0.3 s / 3.0 s (`lockstyle_manager.lua:128-178`); macrobook 1.5 s (`macrobook_manager.lua:98`); KeybindGuard 2.0 s (`REASSERT_DELAY`).
+Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 per 0.25 s (`command_queue.lua`); JobSyncWatchdog 8/5/2/30 (TUNING block of `job_sync_watchdog.lua`); dual-box auto-init 2 s + 1 s x 8 (`INIT_FIRST_DELAY`, `INIT_RETRY_DELAY`, `INIT_MAX_ATTEMPTS` in `dualbox_manager.lua`); AutoMove `job_change_cooldown` 2.0 s (`automove.lua:59`); lockstyle select delay 2.0 s, DressUp 0.3 s / 3.0 s (`lockstyle_manager.lua:122-176`); macrobook 1.5 s (`macrobook_manager.lua:99`); KeybindGuard 2.0 s (`REASSERT_DELAY`).
 
 ## State & lifetime
 
@@ -378,21 +378,21 @@ Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 p
 |---|---|---|
 | `_gs_reload_count` | INIT_SYSTEMS (line 44) | per-load counter, read by dual-box auto-init and the listener stamps |
 | `_gs_debug` | `flip_debug` in `DEBUG_COMMANDS.lua`, read by INIT_SYSTEMS | persisted debug flags (`UPDATE`, `AUTOMOVE`, `WARP`, `PRECAST`, `JOBCHANGE`) |
-| `_automove_seq` | `automove.lua:83`, `:106`, `start` | invalidates AutoMove chains |
+| `_automove_seq` | `automove.lua:87`, `:110`, `start` | invalidates AutoMove chains |
 | `_midcast_wd_seq` | module body, `MidcastWatchdog.start`, `stop` | invalidates MidcastWatchdog loops |
 | `_job_sync_seq`, `_job_sync_last_reload` | module body, local `force_reload`, `start` | invalidation + reload floor |
 | `_keybind_guard_seq` | module body, `KeybindGuard.schedule` | drops an older load's re-bind pass |
-| `_ui_live_state` | `UI_MANAGER.lua:124` | the live load's HUD state table, compared by delayed inits |
+| `_ui_live_state` | `UI_MANAGER.lua:123` | the live load's HUD state table, compared by delayed inits |
 | `_dualbox_init_counter`, `_dualbox_init_last_reload` | `dualbox_manager.lua` body, `run_auto_init` | one auto-init per load |
 | `_dualbox_last_send_payload`, `_dualbox_last_send_time` | `DualBoxManager.send_job_update` | 1.5 s de-dup of `altjobupdate`; a reply to `requestjob` skips it |
 | `_sync_ipc_event_id`, `_sync_ipc_event_load`, `_sync_ipc_last_sent`, `_sync_ipc_last_sent_time` | `dualbox_sync_ipc.lua` (`broadcast`, `init_listener`) | IPC listener token and the load it belongs to, self-echo |
-| `_alt_buff_reporting`, `_alt_buff_debug` | `alt_buff_reporter.lua:89`, `:231` | alt has reported at least once; tracing |
+| `_alt_buff_reporting`, `_alt_buff_debug` | `alt_buff_reporter.lua:109`, `:251` | alt has reported at least once; tracing |
 | `_alt_group`, `_alt_window_gen` | `alt_group.lua`, `alt_window.lua` | Auto / Follow / Mirror shown by the alt window (last `alts` orders, or the reported state); alt window loop generation |
 | `_alt_reports`, `_alt_mirror` | `alt_group.lua` (`receive_report`, `receive_mirror`) | last state reported by each box's automation addon; mirror steps and results in progress |
 | `_warp_init_done`, `_warp_ipc_event_id`, `_warp_ipc_register_event_id` + `_load`, `_warp_autofix_zone_id` + `_warp_autofix_load` | `warp_init.lua:111`; `warp_ipc_register.lua:20-24`, `:99`; `_setup_auto_fix` in `item_user.lua` | once-per-session init messages; listener tokens, each stamped with its load so an id from an earlier load is never unregistered |
 | `_hook_wraps` | `shared/hooks/init_*_messages.lua` | counters for the message hook chain |
 | `_auto_medicine` | `auto_medicine.lua` | AutoMedicine choice |
-| `_cor_party_jobs`, `_cor_party_state` | `party_tracker.lua:127-133` | COR party job cache |
+| `_cor_party_jobs`, `_cor_party_state` | `party_tracker.lua:133-139` | COR party job cache |
 | `_lagdebug` | `lag_debugger.lua` | lag debugger state |
 
 ### `_G` state that dies with every environment
@@ -407,12 +407,12 @@ Timing constants: JCM 2.0 s / 3.0 s (`on_job_change`); keybind command queue 5 p
 
 | Event | Registered at | Unregister path (besides the engine at every load) |
 |---|---|---|
-| `ipc message` (dual-box sync) | `init_listener`, `dualbox_sync_ipc.lua:170` | `windower._sync_ipc_event_id` at a second `init_listener` of the same load |
+| `ipc message` (dual-box sync) | `init_listener`, `dualbox_sync_ipc.lua:176` | `windower._sync_ipc_event_id` at a second `init_listener` of the same load |
 | `ipc message` (warp register) | `warp_ipc_register.lua:49` | `windower._warp_ipc_register_event_id` at a second include in the same load |
 | `ipc message` (warp IPC) | `WarpIPC.init` (no caller) | `windower._warp_ipc_event_id` |
 | `incoming chunk` 0x028 (ActionListener, raw, one per load) | `listen` in `shared/utils/core/action_listener.lua` | `_G._action_listener_id` guard; no unregister path. Subscribers (`ActionListener.on`): `action_queue`, `cast_tracker`, `flurry_tracker`, `dual_wield`, `treasure_hunter`, `stealth_trace`, `warp_detector`, `warp_autofix`, `cor_roll`, `brd_song_owner`; the same key replaces, `off(key)` removes |
-| `zone change` (warp item use) | `item_user.lua:692` | local id + `windower._warp_autofix_zone_id`, only while the load is the one that registered it; the `warp_autofix` subscription is removed with `ActionListener.off` |
-| `incoming chunk` (COR, raw) | `party_tracker.lua:167` | `_G.cor_party_event_id`, `PartyTracker.cleanup` from COR `file_unload` (which also calls `ActionListener.off('cor_roll')`) |
+| `zone change` (warp item use) | `item_user.lua:698` | local id + `windower._warp_autofix_zone_id`, only while the load is the one that registered it; the `warp_autofix` subscription is removed with `ActionListener.off` |
+| `incoming chunk` (COR, raw) | `party_tracker.lua:173` | `_G.cor_party_event_id`, `PartyTracker.cleanup` from COR `file_unload` (which also calls `ActionListener.off('cor_roll')`) |
 | `prerender`, `action` (lag debugger) | `lag_debugger.lua:118`, `:158` | `S.*` ids |
 | `prerender` (BST, raw) | `start_pet_monitoring` in the BST entry | `stop_pet_monitoring()` from BST `file_unload` |
 
@@ -501,7 +501,7 @@ Still open:
 - `DoomManager.handle_status_change` Dead branches are unreachable - `shared/utils/debuff/doom_manager.lua:112-135`
 - `JobChangeManager.cancel_all()` in every `get_sets` runs in the fresh environment and cancels nothing - `shared/entry/pld.lua` `get_sets`
 - Switching to a job with no user file leaves the previous environment's loops running and triggers a pointless JobSyncWatchdog reload - `JobSyncWatchdog.start`, `shared/utils/core/job_sync_watchdog.lua`
-- A job change during `//gs c wo` leaves the old run moving items until the next phase boundary while the new environment allows a second run - `shared/utils/wardrobe/wardrobe_organizer.lua:53`
+- A job change during `//gs c wo` leaves the old run moving items until the next phase boundary while the new environment allows a second run - `shared/utils/wardrobe/wardrobe_organizer.lua:54`
 - After a reload of the main, alt buff state is empty and never re-requested - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua`
 - COR selects the macro book and schedules the lockstyle twice per `user_setup` (the JCM block and the guarded block) - `shared/entry/cor.lua:279-318`
 - The 3 s fallback of `LifecycleManager.status_change` (an engage / disengage held during an action) sends `gs c update`, since `equip()` from a scheduled function is never sent (`flow.lua:60`); fixed 2026-09-27. Normally the aftercast path equips the new status set first. Not yet tested in game - `hold_during_action`, `shared/utils/core/lifecycle_manager.lua`

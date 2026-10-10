@@ -56,7 +56,7 @@ remain without a reachable caller are listed per module under Public API.
 | `formatters/system/message_warp.lua` | 629 | 71 | Warp/teleport system: casting lines, status/test blocks, help, item_user and IPC debug |
 | `formatters/system/message_watchdog.lua` | 273 | 28 | Midcast watchdog status/stats/config/debug/alert/test/help |
 | `formatters/ui/message_alt_commands.lua` | 237 | 1 | `//gs c altcmds` listing |
-| `formatters/ui/message_commands.lua` | 531 | 39 | Output of _common/debug commands, `//gs c help` and `//gs c commands` |
+| `formatters/ui/message_commands.lua` | 541 | 39 | Output of _common/debug commands, `//gs c help` and `//gs c commands` |
 | `formatters/ui/message_dualbox.lua` | 121 | 13 | Dual-box config, role and job sync lines |
 | `formatters/ui/message_info.lua` | 66 | 3 | `//gs c info <name>` card, usage, not found |
 | `formatters/ui/message_keybinds.lua` | 113 | 5 | Keybind list line format and bind errors |
@@ -578,7 +578,7 @@ Fixed:
 - The dead region detection functions of `message_commands.lua` (`show_detect_region_*` ... `show_region_reload_required`) were removed.
 - `message_warp.lua` and `message_alt_commands.lua` no longer call `MessageRenderer.send` with swapped arguments (InfoBlock / HelpScreen / `add_to_chat` instead).
 - README no longer describes `jamsg`/`spellmsg`/`wsmsg`/`info`/`debugmsg`.
-- `MessageWarp.show_item_equip_delay` was defined twice: one definition left, `item_user.lua` uses `show_item_not_ready` for the other case (`518e536`).
-- `message_database` with no live caller: deleted in `72e135d`.
+- `MessageWarp.show_item_equip_delay` was defined twice: one definition left, `item_user.lua` uses `show_item_not_ready` for the other case (`32b1dc6`).
+- `message_database` with no live caller: deleted in `e765fa2`.
 - `message_brd.show_marcato_honor_march` / `show_song_cast` with empty bodies: removed with their callers (2026-09-25).
 - Formatter functions and facade wrappers without a caller (about 150 functions and 140 wrappers, including the six facade keys that pointed to undefined RDM functions, the BRD `*_new` and `show_song_*` aliases), and the three uncalled modules `message_drg.lua`, `message_whm.lua`, `message_songs.lua`: removed on 2026-10-01.

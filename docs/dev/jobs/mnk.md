@@ -48,7 +48,7 @@ from `H2H_WS_DATABASE.lua`.
 | `shared/jobs/mnk/functions/MNK_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('MNK', 'mnk/display/MNK_LOCKSTYLE', 1, 'WAR')` wrappers |
 | `shared/jobs/mnk/functions/MNK_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('MNK', 'mnk/display/MNK_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/mnk/functions/logic/buff_layers.lua` | 103 | `ENGAGED` / `WS` tables, `lay_engaged`, `ws_layers`, `equip_ws` |
-| `shared/jobs/mnk/functions/logic/set_builder.lua` | 106 | Idle and engaged: base selection, buff layers, Mote layers, weapon, movement |
+| `shared/jobs/mnk/functions/logic/set_builder.lua` | 108 | Idle and engaged: base selection, buff layers, Mote layers, weapon, movement |
 | `_master/config/mnk/MNK_STATES.lua` | 72 | Mote mode options, `MainWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/mnk/MNK_KEYBINDS.lua` | 33 | Data only: 4 entries (+ 1 commented per-weapon example) handed to `KeybindManager.create('MNK', ...)` |
 | `_master/config/mnk/MNK_TP_CONFIG.lua` | 41 | `pieces` (Moonshade 250), `weapons` (commented Godhands 500 example), `get_weapon_bonus`, sets `_G.MNKTPConfig` |

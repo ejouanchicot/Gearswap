@@ -35,7 +35,7 @@ Two helpers sit beside them: `key_validator.lua` names keys that cannot work, an
 | `shared/utils/custom/custom_locks.lua` | `lock = {...}` slots of a custom value |
 | `shared/utils/custom/custom_states_validate.lua` | Plain-language checks of each `_CUSTOM` entry |
 | `shared/utils/messages/formatters/system/message_tempbind.lua` | `tb` messages (`TEMPBIND` namespace) |
-| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for all 22 jobs; character overlays under `_master/<Character>/<job>/` may replace some |
+| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for all 22 jobs; character overlays under `_master/<Character>/config/<job>/` may replace some |
 | `_master/config/<job>/<JOB>_CUSTOM.lua` | Commented, empty `_CUSTOM` templates (all 22 jobs; the Tetsouo overlay has its own SMN and WAR copies) |
 | `_master/config_global/COMMON_KEYBINDS.lua` | Common keys template; character overlays in `_master/<Character>/config_global/` |
 

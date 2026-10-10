@@ -171,7 +171,7 @@ one you confirm. The macro line is what makes the game wait.
 | Command | Description |
 |---------|-------------|
 | `//gs c altcmds` | List everything the ALT can do on its current job |
-| `//gs c <name>` | Short form, e.g. `//gs c haste`, `//gs c chaos` |
+| `//gs c <name>` | Short form, e.g. `//gs c haste`, `//gs c chaosroll` |
 | `//gs c alt <name>` | Explicit form, use if a name collides with a built-in |
 
 The command set follows the ALT's main job and subjob automatically, and each

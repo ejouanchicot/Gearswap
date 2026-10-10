@@ -214,7 +214,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 
 - The regex `([A-Z][a-z]\w*)\s*=\s*\{[^}]*jobs\s*=\s*\{([^}]*)\}[^}]*role\s*=\s*['"](\w+)['"]` (DOTALL). A block is recognised only if its name starts with one uppercase letter followed by a lowercase one, `jobs` comes before `role`, and no `}` appears between `jobs = {...}` and `role`. `ARCHIVE_JOBS`, `ALL_JOBS` and `MASTER` are ignored.
 - DB jobs are used as-is (`lookup_character`). Manual entry is filtered by the script's own `ALL_VALID_JOBS`: the same 22 codes as `ALL_JOBS` (`clone_character.py:255-258`).
-- The header example at `character_db.lua:9` (`{'RDM','COR','GEO'}`) predates PLD being added to Kaories, and the `get_all_jobs` doc (`character_db.lua:179`) still says "16 supported job abbreviations".
+- The header example at `character_db.lua:9` (`{'RDM','COR','GEO'}`) predates PLD being added to Kaories, and the `get_all_jobs` doc (`character_db.lua:180`) still says "16 supported job abbreviations".
 
 ## Per-character files read at runtime
 

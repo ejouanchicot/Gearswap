@@ -50,7 +50,7 @@ and spell messages (`NIN_JA_DATABASE`, `NINJUTSU_DATABASE`).
 | `shared/jobs/nin/functions/NIN_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('NIN', 'nin/display/NIN_LOCKSTYLE', 1, 'WAR')` wrappers |
 | `shared/jobs/nin/functions/NIN_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('NIN', 'nin/display/NIN_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/nin/functions/logic/ninjutsu.lua` | 74 | `family(name)`, `midcast_config(spell)`, `futae_layer(family)` |
-| `shared/jobs/nin/functions/logic/set_builder.lua` | 151 | Idle and engaged: base, buff layers, Mote layers, weapons, movement (night set) |
+| `shared/jobs/nin/functions/logic/set_builder.lua` | 153 | Idle and engaged: base, buff layers, Mote layers, weapons, movement (night set) |
 | `_master/config/nin/NIN_STATES.lua` | 77 | Mote mode options, `MainWeapon`, `SubWeapon`, `MagicBurstMode`, `FastCast`, `AutoMedicine` |
 | `_master/config/nin/NIN_KEYBINDS.lua` | 39 | Data only: 6 entries (+ 2 commented per-weapon examples) handed to `KeybindManager.create('NIN', ...)` |
 | `_master/config/nin/NIN_TP_CONFIG.lua` | 42 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.NINTPConfig` |

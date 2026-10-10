@@ -51,7 +51,7 @@ the sets file (structure and set names only).
 | `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'whm/display/WHM_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'whm/display/WHM_MACROBOOK', 'SAM', 1, 1)` |
 | `shared/jobs/whm/functions/logic/set_builder.lua` | 90 | Idle: town, latent refresh, movement; engaged: unchanged |
-| `shared/utils/whm/cure_manager.lua` | 392 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
+| `shared/utils/whm/cure_manager.lua` | 421 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
 | `shared/utils/whm/whm_message_formatter.lua` | 262 | Cure tier / Afflatus messages and CureManager debug lines (direct `add_to_chat`, a documented exception: it is a formatter stored outside `utils/messages/`) |
 | `shared/utils/messages/data/jobs/whm_messages.lua` | 22 | One template (`curemanager_not_loaded`), no sender since its formatter `message_whm.lua` was removed (2026-10-01) |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | `MidcastDeps.load()`: MidcastManager + enhancing database, lazy |

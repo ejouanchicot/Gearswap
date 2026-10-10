@@ -41,14 +41,14 @@ What SCH adds on top of the shared pipeline:
 | `shared/jobs/sch/functions/SCH_ENGAGED.lua` | 30 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/sch/functions/SCH_STATUS.lua` | 19 | `LifecycleManager.status_change()` |
 | `shared/jobs/sch/functions/SCH_BUFFS.lua` | 24 | `LifecycleManager.buff_change` + `refresh_after_buff` (Sublimation) |
-| `shared/jobs/sch/functions/SCH_COMMANDS.lua` | 182 | `job_self_command` router + job commands, `job_state_change` |
+| `shared/jobs/sch/functions/SCH_COMMANDS.lua` | 176 | `job_self_command` router + job commands, `job_state_change` |
 | `shared/jobs/sch/functions/SCH_MOVEMENT.lua` | 16 | Header only, kept for the 12-module layout |
 | `shared/jobs/sch/functions/SCH_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('SCH', 'sch/display/SCH_LOCKSTYLE', 1, 'RDM')` |
 | `shared/jobs/sch/functions/SCH_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('SCH', 'sch/display/SCH_MACROBOOK', 'RDM', 1, 1)` |
 | `shared/jobs/sch/functions/logic/grimoire.lua` | 136 | Arts in force (addendum first), precast / midcast layer lists |
 | `shared/jobs/sch/functions/logic/spell_tiers.lua` | 47 | Tier families for `TierRefiner` |
 | `shared/jobs/sch/functions/logic/spell_commands.lua` | 106 | Element -> nuke / helix / storm names, `cast`, the `strat` block |
-| `shared/jobs/sch/functions/logic/set_builder.lua` | 111 | Idle (base, Sublimation, Mote layers, weapons, movement) and engaged |
+| `shared/jobs/sch/functions/logic/set_builder.lua` | 113 | Idle (base, Sublimation, Mote layers, weapons, movement) and engaged |
 | `_master/config/sch/SCH_STATES.lua` | 88 | Modes (see below) |
 | `_master/config/sch/SCH_KEYBINDS.lua` | 46 | 9 mode keys + 5 action keys, `KeybindManager.create('SCH', ...)` |
 | `_master/config/sch/SCH_TP_CONFIG.lua` | 44 | Moonshade 250, empty `weapons`, sets `_G.SCHTPConfig` |

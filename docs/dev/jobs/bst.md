@@ -63,7 +63,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 241 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs` |
 | `shared/jobs/bst/functions/logic/pet_manager.lua` | 170 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache) |
 | `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 217 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
-| `shared/jobs/bst/functions/logic/set_builder.lua` | 193 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
+| `shared/jobs/bst/functions/logic/set_builder.lua` | 198 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
 | `_master/config/bst/BST_STATES.lua` | 77 | `BSTStates.configure()` |
 | `_master/config/bst/BST_KEYBINDS.lua` | 48 | 7 binds, data only; `KeybindManager.create('BST', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/bst/BST_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
@@ -74,8 +74,8 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_TP_CONFIG.lua` | 172 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 178 | Ecosystem correlation matrix; **no reader anywhere** (its header says so) |
 | `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/Tetsouo/bst/inventory/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
-| `_master/sets/bst_sets.lua` | 834 | Template sets (flat) |
+| `_master/Tetsouo/config/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
+| `_master/sets/bst_sets.lua` | 685 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 225 + 271 | BST chat messages; the unprefixed facade copies of eight functions have no caller (callers use `show_bst_*`), and 33 templates have no sender (see the [catalog](../systems/messages-catalog.md)) |
 | `shared/data/job_abilities/BST_JA_DATABASE.lua` + `bst/*.lua` (5 files) | 17 + 293 | `JA_DATABASE_FACTORY.create('BST', ...)` with `subjob`, `mainjob`, `pet_commands_mainjob`, `pet_commands_subjob`, `sp`; read by `ability_message_handler.lua` |
 
@@ -85,7 +85,7 @@ live `bst/*` files differ from the template only in their header
 (`@author`, `@file`) and in the two overlay files (`BST_MACROBOOK`,
 `BST_STATES`). The live sets are modular
 (`<Char>/bst/{bst_sets,armor,capes,pets,weapons}.lua`), mirrored in
-`_master/Tetsouo/bst/`. No other character overlay has BST files.
+`_master/Tetsouo/config/bst/`. No other character overlay has BST files.
 
 ## How it works
 

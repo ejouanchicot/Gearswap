@@ -43,7 +43,7 @@ function; line numbers are given only where no function name fits.
 | `shared/entry/dnc.lua` | 297 | Entry point (the same for every character; `<Char>_DNC.lua` and its template `_master/entry/Tetsouo_DNC.lua` are one `include` of it): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/dnc/functions/dnc_functions.lua` | 107 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 206 | `refine_waltz` override, `job_precast` (guard, cooldown, `job_precast_samba`, Climactic timestamp, `job_precast_weaponskill`, WS handler), `job_post_precast` (WS variant, TP gear) |
-| `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 89 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
+| `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 90 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
 | `shared/jobs/dnc/functions/DNC_AFTERCAST.lua` | 38 | `job_aftercast`: watchdog tick only (exported to `_G` only) |
 | `shared/jobs/dnc/functions/DNC_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/dnc/functions/DNC_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -54,15 +54,15 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DNC', ...)` wrappers |
 | `shared/jobs/dnc/functions/DNC_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DNC', ...)` wrapper |
 | `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 84 | `ClimaticManager.auto_trigger`, `has_three_finishing_moves`, `WS_MIN_TP` 1000 |
-| `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 121 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
-| `shared/jobs/dnc/functions/logic/step_manager.lua` | 96 | `execute_step`: recast check, Presto, Main/Alt rotation |
-| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 199 | `collect_dance`, `collect_samba`, `collect_extra` (dance then samba, for `job_buff_extra`), `apply_dance`; `apply` calls the common `BuffCommand.apply()` |
-| `shared/jobs/dnc/functions/logic/set_builder.lua` | 167 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
-| `shared/utils/dnc/waltz_manager.lua` | 261 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
-| `shared/utils/drg/auto_jump.lua` | 218 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
-| `shared/utils/precast/ability_helper.lua` | 409 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
-| `shared/utils/buffs/buff_command.lua` | 59 | `//gs c buff` of every job: `_G.job_buff_extra` (DNC), then the `job` and `subjob` lists of `_common/combat/BUFF_CONFIG.lua`, through `self_buff_manager.lua` |
-| `_master/config/dnc/DNC_STATES.lua` | 211 | All Mote states |
+| `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 124 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
+| `shared/jobs/dnc/functions/logic/step_manager.lua` | 97 | `execute_step`: recast check, Presto, Main/Alt rotation |
+| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 200 | `collect_dance`, `collect_samba`, `collect_extra` (dance then samba, for `job_buff_extra`), `apply_dance`; `apply` calls the common `BuffCommand.apply()` |
+| `shared/jobs/dnc/functions/logic/set_builder.lua` | 159 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
+| `shared/utils/dnc/waltz_manager.lua` | 274 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
+| `shared/utils/drg/auto_jump.lua` | 219 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
+| `shared/utils/precast/ability_helper.lua` | 465 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
+| `shared/utils/buffs/buff_command.lua` | 70 | `//gs c buff` of every job: `_G.job_buff_extra` (DNC), then the `job` and `subjob` lists of `_common/combat/BUFF_CONFIG.lua`, through `self_buff_manager.lua` |
+| `_master/config/dnc/DNC_STATES.lua` | 212 | All Mote states |
 | `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 10 binds, data only; `KeybindManager.create('DNC', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/dnc/DNC_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
 | `_master/config/dnc/DNC_HUD.lua` | 32 | Per-job HUD `section_order` / `row_order` (empty) |
@@ -74,7 +74,7 @@ function; line numbers are given only where no function name fits.
 | `_master/sets/dnc_sets.lua` | 1040 | Template sets (flat; data, size not a defect) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
-Character overlay: `_master/<Character>/dnc/` holds `DNC_MACROBOOK.lua`
+Character overlay: `_master/<Character>/config/dnc/` holds `DNC_MACROBOOK.lua`
 and `DNC_REFILL.lua`; the author's live DNC uses the modular
 `dnc/{dnc_sets,armor,capes,weapons}.lua`.
 

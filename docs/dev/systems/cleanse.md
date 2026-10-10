@@ -8,11 +8,11 @@ Verified against the code on 2026-10-01 (system added 2026-10-01, commit `7950cf
 
 | Path | Lines | Role |
 |---|---:|---|
-| `shared/utils/debuff/cleanse.lua` | 283 | Command router (`Cleanse.handle`), plan per debuff (`plan_one`, `plan`), `run_self`, partner request (`partners_for`, `ask_partners`, `cast_for`), item use with aura watch and Doom retries (`use_item`), aura mark name (`mark_name`), reports (`report_to`, `receive_report`, `show`) |
-| `shared/utils/debuff/cleanse_methods.lua` | 238 | Settings merge (`settings`), debuff order (`ordered`, `active`, `is_up`), items (`items_for`, `item_count`, `first_item`, `cast_time`), spells (`can_cast`, `partner_may_cast`, `SPELLS`) |
+| `shared/utils/debuff/cleanse.lua` | 301 | Command router (`Cleanse.handle`), plan per debuff (`plan_one`, `plan`), `run_self`, partner request (`partners_for`, `ask_partners`, `cast_for`), item use with aura watch and Doom retries (`use_item`), aura mark name (`mark_name`), reports (`report_to`, `receive_report`, `show`) |
+| `shared/utils/debuff/cleanse_methods.lua` | 268 | Settings merge (`settings`), debuff order (`ordered`, `active`, `is_up`), items (`items_for`, `item_count`, `first_item`, `cast_time`), spells (`can_cast`, `partner_may_cast`, `SPELLS`) |
 | `shared/data/debuffs/DEBUFF_REMOVAL.lua` | 104 | Every debuff: `key`, `name`, buff `ids`, `spell`, default `items`, `no_action`; list order = default removal order |
-| `shared/utils/core/action_queue.lua` | 180 | Shared one-action-at-a-time queue (stealth, cleanse and `//gs c buff`), `push` and `push_next`, optional step `guard` (used by `//gs c buff` only, see [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua)) |
-| `_master/config_global/CLEANSE_CONFIG.lua` | 48 | Settings template, copied to `<Character>/_common/combat/` by the clone |
+| `shared/utils/core/action_queue.lua` | 193 | Shared one-action-at-a-time queue (stealth, cleanse and `//gs c buff`), `push` and `push_next`, optional step `guard` (used by `//gs c buff` only, see [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua)) |
+| `_master/config_global/CLEANSE_CONFIG.lua` | 49 | Settings template, copied to `<Character>/_common/combat/` by the clone |
 
 Integration points:
 

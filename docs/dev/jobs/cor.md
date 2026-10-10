@@ -43,7 +43,7 @@ function; line numbers are given only where no function name fits.
 | Path | Lines | Role |
 |------|------:|------|
 | `shared/entry/cor.lua` | 389 | Entry point (the same for every character; `<Char>_COR.lua` and its template `_master/entry/Tetsouo_COR.lua` are one `include` of it): `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and `UIConfig` at file level, `init_party_tracking`, `get_sets`, `job_sub_job_change`, `user_setup` (two macro/lockstyle blocks), `job_update`, `init_gear_sets`, `file_unload` |
-| `shared/jobs/cor/functions/cor_functions.lua` | 120 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` (its header still says "Logic modules (4)") |
+| `shared/jobs/cor/functions/cor_functions.lua` | 132 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` (its header still says "Logic modules (4)") |
 | `shared/jobs/cor/functions/COR_PRECAST.lua` | 225 | `job_precast` (guard, `DoubleUp.redirect`, cooldown, `apply_cor_precast`, WS) / `job_post_precast` (TP gear, `apply_luzaf`, `hold_fold_gear`, `RollDebug.note_precast`, `RollHold.start`); starts `flurry_tracker` at load |
 | `shared/jobs/cor/functions/COR_MIDCAST.lua` | 103 | `job_midcast` (empty) / `job_post_midcast` (RA with `RangedMode` + Triple Shot, Enhancing, `PASSTHROUGH_SKILLS`) |
 | `shared/jobs/cor/functions/COR_AFTERCAST.lua` | 62 | `job_aftercast` (`RollHold.stop`, watchdog, bullet pouch), empty `job_post_aftercast` |
@@ -55,24 +55,24 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/cor/functions/COR_MOVEMENT.lua` | 34 | `job_handle_equipping_gear` -> `RollHold.hold_update` |
 | `shared/jobs/cor/functions/COR_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('COR', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/cor/functions/COR_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('COR', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/cor/functions/logic/party_tracker.lua` | 308 | `init_roll_listener` (`ActionListener` key `cor_roll`), `init` (raw `incoming chunk` `0xDD`/`0xDF`), `members_for_display`, `cleanup` |
-| `shared/jobs/cor/functions/logic/roll_tracker.lua` | 581 | Roll state, `sync_with_buffs`, Crooked, bonus, bust, `cleanup`; re-exports the `roll_party` and `roll_display` functions on `RollTracker` and calls them through it |
-| `shared/jobs/cor/functions/logic/roll_party.lua` | 231 | Party job cache validation (`validate_party_cache`, `drop_departed_and_expired`), `is_job_in_party_zone`, `roll_range` (8, or 16 with LuzafRing), `count_party_members_with_buff` |
-| `shared/jobs/cor/functions/logic/roll_display.lua` | 79 | `display_roll_result` (local message + `RollShare.result`), `display_double_up_status` |
+| `shared/jobs/cor/functions/logic/party_tracker.lua` | 305 | `init_roll_listener` (`ActionListener` key `cor_roll`), `init` (raw `incoming chunk` `0xDD`/`0xDF`), `members_for_display`, `cleanup` |
+| `shared/jobs/cor/functions/logic/roll_tracker.lua` | 580 | Roll state, `sync_with_buffs`, Crooked, bonus, bust, `cleanup`; re-exports the `roll_party` and `roll_display` functions on `RollTracker` and calls them through it |
+| `shared/jobs/cor/functions/logic/roll_party.lua` | 230 | Party job cache validation (`validate_party_cache`, `drop_departed_and_expired`), `is_job_in_party_zone`, `roll_range` (8, or 16 with LuzafRing), `count_party_members_with_buff` |
+| `shared/jobs/cor/functions/logic/roll_display.lua` | 78 | `display_roll_result` (local message + `RollShare.result`), `display_double_up_status` |
 | `shared/jobs/cor/functions/logic/roll_data.lua` | 428 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/roll_gear.lua` | 73 | `PHANTOM_ROLL_GEAR` and `RollGear.bonus()` read from the game |
 | `shared/jobs/cor/functions/logic/roll_hold.lua` | 68 | `RollHold.start` / `stop` / `hold_update`, `HOLD_MAX` 5 s |
 | `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
 | `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/logs/rolls/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/double_up.lua` | 45 | `DoubleUp.redirect(spell, eventArgs)` |
-| `shared/jobs/cor/functions/logic/set_builder.lua` | 153 | Town, weapons (main through `BaseSetBuilder.lay_weapon`, gun from `sets[...]`), PDT, Refresh, movement |
+| `shared/jobs/cor/functions/logic/set_builder.lua` | 156 | Town, weapons (main through `BaseSetBuilder.lay_weapon`, gun from `sets[...]`), PDT, Refresh, movement |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
 | `_master/config/cor/COR_KEYBINDS.lua` | 37 | 7 binds, data only; `KeybindManager.create('COR', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/cor/COR_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
 | `_master/config/cor/COR_HUD.lua` | 31 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/cor/COR_LOCKSTYLE.lua` | 51 | `default = 3`, `by_subjob`, `get_style` |
 | `_master/config/cor/COR_MACROBOOK.lua` | 68 | Book 3 page 1; `dualbox` commented; unused `get_macrobook` |
-| `_master/config/cor/COR_TP_CONFIG.lua` | 60 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
+| `_master/config/cor/COR_TP_CONFIG.lua` | 61 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
 | `_master/config/cor/COR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/cor_sets.lua` | 443 | Template sets (flat; `sets.SingleWield` as a commented example) |
 | `shared/utils/messages/utilities/roll_messages.lua` | 564 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
@@ -83,7 +83,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/inventory/quiver_manager.lua` | 184 | `after_ranged_attack` -> `check_and_refill` |
 | `shared/data/job_abilities/COR_JA_DATABASE.lua` | 21 | Factory with the roll modules |
 
-Character overlays: `_master/<Character>/cor/inventory/COR_REFILL.lua` for the
+Character overlays: `_master/<Character>/config/cor/COR_REFILL.lua` for the
 characters that ship refill lists, and one full overlay (`cor/*`,
 `cor/sets/cor_sets.lua`) that adds a `RangedMode` (`Normal`, `Acc`) with a
 `^numpad7` key and Quick Draw damage sets. Its headers still say

@@ -36,7 +36,7 @@ What PUP adds on top of the shared pipeline:
 | `shared/jobs/pup/functions/pup_functions.lua` | 67 | Facade: includes `message_buffs` and the 12 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/pup/functions/PUP_PRECAST.lua` | 108 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/pup/functions/PUP_MIDCAST.lua` | 99 | `job_midcast` (empty) / `job_post_midcast` (subjob magic via MidcastManager) / `job_get_spell_map` (Maneuver) |
-| `shared/jobs/pup/functions/PUP_PET_MIDCAST.lua` | 58 | `job_pet_midcast`: automaton weaponskills; automaton spells left to Mote |
+| `shared/jobs/pup/functions/PUP_PET_MIDCAST.lua` | 66 | `job_pet_midcast`: automaton weaponskills; automaton spells left to Mote |
 | `shared/jobs/pup/functions/PUP_AFTERCAST.lua` | 21 | `job_aftercast = LifecycleManager.aftercast()` |
 | `shared/jobs/pup/functions/PUP_IDLE.lua` | 31 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/pup/functions/PUP_ENGAGED.lua` | 31 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -48,16 +48,16 @@ What PUP adds on top of the shared pipeline:
 | `shared/jobs/pup/functions/PUP_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('PUP', 'pup/display/PUP_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/pup/functions/logic/automaton.lua` | 151 | Live reads: pet out / fighting / TP; head and frame; `refresh_mode` |
 | `shared/jobs/pup/functions/logic/pet_ws.lua` | 117 | `is_due`, `threshold`, the poll (`ensure_running`, `stop`) |
-| `shared/jobs/pup/functions/logic/set_builder.lua` | 181 | Idle and engaged: master base, town, pet layers, Overdrive, pet WS, Mote layers, weapon, movement |
+| `shared/jobs/pup/functions/logic/set_builder.lua` | 191 | Idle and engaged: master base, town, pet layers, Overdrive, pet WS, Mote layers, weapon, movement |
 | `_master/config/pup/PUP_STATES.lua` | 83 | Mote mode options, `MainWeapon`, `PetMode`, `PetWS`, `FastCast`, `AutoMedicine` |
-| `_master/config/pup/PUP_KEYBINDS.lua` | 37 | Data only: 5 entries (+ 1 commented per-weapon example) handed to `KeybindManager.create('PUP', ...)` |
+| `_master/config/pup/PUP_KEYBINDS.lua` | 39 | Data only: 5 entries (+ 1 commented per-weapon example) handed to `KeybindManager.create('PUP', ...)` |
 | `_master/config/pup/PUP_TP_CONFIG.lua` | 49 | `pieces` (Moonshade 250), empty `weapons`, `pet_ws_tp = 1000`, `get_weapon_bonus`, sets `_G.PUPTPConfig` |
 | `_master/config/pup/PUP_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
 | `_master/config/pup/PUP_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/pup/PUP_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |
 | `_master/config/pup/PUP_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/pup/PUP_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/pup_sets.lua` | 155 | Template sets: every set the code reads, all empty |
+| `_master/sets/pup_sets.lua` | 156 | Template sets: every set the code reads, all empty |
 | `shared/data/alt/PUP_ALT_COMMANDS.lua` | - | Dual-box commands for a PUP partner (read by the main's alt system, not by the PUP job file) |
 
 Removed on 2026-09-29: `PUP_PET_PRECAST.lua` (`job_pet_precast` is called by

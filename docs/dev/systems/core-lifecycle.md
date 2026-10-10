@@ -18,28 +18,28 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 
 | Path | Lines | Role | Documented |
 |---|---|---|---|
-| `INIT_SYSTEMS.lua` | 412 | Included by every entry point's `get_sets()` right after Mote-Include. Starts the universal systems (some synchronously, some on 0.5 s / 2 s / 3 s / 5 s timers) and lays the gear hook chain | here |
-| `job_change_manager.lua` | 235 | Debounced `gs reload` on subjob change, cleanup before it, lockstyle-cancel registry | here |
+| `INIT_SYSTEMS.lua` | 483 | Included by every entry point's `get_sets()` right after Mote-Include. Starts the universal systems (some synchronously, some on 0.5 s / 2 s / 3 s / 5 s timers) and lays the gear hook chain | here |
+| `job_change_manager.lua` | 238 | Debounced `gs reload` on subjob change, cleanup before it, lockstyle-cancel registry | here |
 | `job_sync_watchdog.lua` | 165 | Compares the job the file was loaded for with the client's job every 5 s, forces `gs reload` after two mismatches | here |
-| `midcast_watchdog.lua` | 470 | Tracks the spell/item in midcast; if no aftercast arrives within cast time + buffer, sends `gs c update` | here |
-| `module_cache.lua` | 96 | Replaces the sandbox `require` with a caching wrapper, once per sandbox | here |
-| `lifecycle_manager.lua` | 160 | Factory for the four Mote hooks every job used to copy, plus `refresh_after_buff` (gear rebuild after an Aftermath Lv.3 change) | here |
-| `keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load | here |
+| `midcast_watchdog.lua` | 485 | Tracks the spell/item in midcast; if no aftercast arrives within cast time + buffer, sends `gs c update` | here |
+| `module_cache.lua` | 100 | Replaces the sandbox `require` with a caching wrapper, once per sandbox | here |
+| `lifecycle_manager.lua` | 174 | Factory for the four Mote hooks every job used to copy, plus `refresh_after_buff` (gear rebuild after an Aftermath Lv.3 change) | here |
+| `keybind_guard.lua` | 82 | Re-sends the job's binds 2 s after a load | here |
 | `state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled) | here |
 | `action_listener.lua` | 81 | One raw `incoming chunk` listener per load for the action packets (0x028), read from `original` and handed to every subscriber (2026-10-01) | here ([ActionListener](#actionlistener)) |
-| `action_queue.lua` | 181 | Shared one-action-at-a-time queue (stealth, cleanse, `//gs c buff`) | [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua) |
+| `action_queue.lua` | 193 | Shared one-action-at-a-time queue (stealth, cleanse, `//gs c buff`) | [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua) |
 | `cast_tracker.lua` | 59 | `ActionListener` subscriber: did this character start a cast / act since time t | here |
-| `auto_options.lua` | 35 | Reads `<Character>/_common/combat/AUTO_ABILITIES.lua` (automatic JA options) | here |
-| `tuning.lua` | 47 | `Tuning.get(key, default)`: a job threshold or name from `<Character>/_common/combat/TUNING.lua`, over the job's default | [factories-and-helpers.md](factories-and-helpers.md#tuning-sharedutilscoretuninglua) |
+| `auto_options.lua` | 59 | Reads `<Character>/_common/combat/AUTO_ABILITIES.lua` (automatic JA options) | here |
+| `tuning.lua` | 50 | `Tuning.get(key, default)`: a job threshold or name from `<Character>/_common/combat/TUNING.lua`, over the job's default | [factories-and-helpers.md](factories-and-helpers.md#tuning-sharedutilscoretuninglua) |
 | `job_addons.lua` | 45 | `JobAddons.allowed(addon)` / `run(action, addon)`: whether a job may load / unload a Windower addon, from `<Character>/_common/display/ADDONS_CONFIG.lua` | [factories-and-helpers.md](factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) |
 | `live_tp.lua` | 30 | TP read from the game instead of GearSwap's stale copy | here (API), [factories-and-helpers.md](factories-and-helpers.md) (users) |
 | `gear_hold.lua` | 25 | `GearHold.active()`: true while a COR roll holds the idle / engaged gear (`_G.cor_roll_hold`, written by `cor/functions/logic/roll_hold.lua`); asked by the Dual Wield, Treasure Hunter and custom-gear layers of the hook chain (2026-09-28) | here ([GearHold](#gearhold)), [cor.md](../jobs/cor.md) |
-| `WATCHDOG_COMMANDS.lua` | 113 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |
+| `WATCHDOG_COMMANDS.lua` | 114 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |
 | `CYCLE_HANDLER.lua` | 136 | `//gs c cyclestate <State> [reverse]`: Mote's cycle without the chat line when the keybind HUD is visible | here |
-| `combat_mode.lua` | 213 | Weapon lock on every job, and the registry of the other slot locks (`hold` / `release`) that it lays again after every update; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
+| `combat_mode.lua` | 261 | Weapon lock on every job, and the registry of the other slot locks (`hold` / `release`) that it lays again after every update; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `combat_mode_commands.lua` | 58 | `//gs c combatmode` | [keybinds-and-custom.md](keybinds-and-custom.md), [commands-and-debug.md](commands-and-debug.md) |
 | `optional_state.lua`, `optional_state_commands.lua` | 142, 147 | Base of Combat Mode and Treasure Mode (shown / hidden / key per job) | [keybinds-and-custom.md](keybinds-and-custom.md), [factories-and-helpers.md](factories-and-helpers.md) |
-| `COMMON_COMMANDS.lua` | 786 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
+| `COMMON_COMMANDS.lua` | 822 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
 | `DEBUG_COMMANDS.lua` | 583 | Debug toggles and dumps (`djc`, `debugupdate`, `debugstate`, `memcheck`...) | [commands-and-debug.md](commands-and-debug.md) |
 
 ### Bootstrap files outside `core/`

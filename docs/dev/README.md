@@ -36,19 +36,19 @@ Mote-Include:
   dual-boxed). Their folders are built from the tracked templates in `_master/`
   by `clone_character.py`.
 
-Measured on 2026-09-25 from `data/`, on the working tree (so today's
-uncommitted edits are counted; the one new untracked file,
-`shared/config/message_mode_config.lua`, is not):
+Measured on 2026-10-10 from `data/`, on the working tree (no code file was
+modified or untracked that day;
+`shared/config/message_mode_config.lua`, untracked on 2026-09-25, is tracked and counted):
 
 | Area | Lua files | Lines | Command |
 |---|---:|---:|---|
-| `shared/` | 675 | 108 721 | `git ls-files 'shared/*.lua' \| wc -l`, `git ls-files -z 'shared/*.lua' \| xargs -0 cat \| wc -l` |
-| `_master/` | 275 | 46 242 | same with `'_master/*.lua'` |
-| Total tracked Lua (adds `character_db.lua`) | 951 | 155 172 | same with `'*.lua'` |
-| Live `Tetsouo/` (gitignored) | 161 | — | `find Tetsouo -name '*.lua' \| wc -l` |
-| Live `Kaories/` (gitignored) | 50 | — | `find Kaories -name '*.lua' \| wc -l` |
+| `shared/` | 944 | 144 446 | `git ls-files 'shared/*.lua' \| wc -l`, `git ls-files -z 'shared/*.lua' \| xargs -0 cat \| wc -l` |
+| `_master/` | 264 | 27 023 | same with `'_master/*.lua'` |
+| Total tracked Lua (adds `character_db.lua` and the 4 Lua files under `scripts/`) | 1 213 | 172 305 | same with `'*.lua'` |
+| Live `Tetsouo/` (gitignored) | 353 | — | `find Tetsouo -name '*.lua' \| wc -l` |
+| Live `Kaories/` (gitignored) | 93 | — | `find Kaories -name '*.lua' \| wc -l` |
 
-`shared/data/equipment/ITEM_HP_MP.lua` alone is 6 534 of those lines (generated
+`shared/data/equipment/ITEM_HP_MP.lua` alone is 6 657 of those lines (generated
 data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
 
 ## Five facts that explain most of the code
@@ -153,15 +153,15 @@ includes `shared/entry/war.lua`:
 
 | When | What | Where |
 |---|---|---|
-| sync | debug flags restored from `windower._gs_debug`, `windower._gs_reload_count++` | `:35-44` |
-| sync | `ModuleCache.install()` — makes `require` cache per sandbox | `:54-56` |
-| sync | Gear hooks (`equip_hooks.lua` wraps `equip()` once per load; the sets exist: Mote ran `init_gear_sets` first): `ImpactLock.install()` — the cloak that grants Impact (Crepuscular / Twilight) stays on through the cast, every job (it also wraps `precast`, `aftercast`, `cancel_spell`); then `DuplicateGear.install()` — each side of a doubled ring / earring / weapon takes its own copy, by bag; then `HPPriority.apply()` — indexes the HP / MP of the pieces the sets name, and each swap ranks its pieces by HP gained over the gear worn | `:63-85` |
-| sync | LagDebugger, `AutoMedicine.ensure()`, `JobSyncWatchdog.start()`, dual-box sync IPC listener and its `ls` / `rf` hooks | `:87-221` |
-| sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `BuffTimers.start()` (own buff end times for `//gs c buff`, [midcast-and-buffs.md](systems/midcast-and-buffs.md#refresh-before-the-end)), `ElementalBelt.install()` (Obi / Orpheus on elemental damage), `DualWield.install()` (DW tier pieces on `handle_equipping_gear`), `TreasureHunter.install()` (TH on the engaged set and on the first action against an untagged mob), `MidcastFallback.install()` (subjob magic through MidcastManager), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules), in that order: each wraps Mote's `cleanup_precast` / `cleanup_midcast` around the previous one, so the set goes on, then the belt, then the custom gear | `:277-305` |
-| +0.5 s | WarpInit, AutoMove (unless `_G.DISABLE_AUTOMOVE`), StateDisplayOverride | `:208-257` |
-| +2 s | MidcastWatchdog | `:126-136` |
-| +3 s | load check of PrecastGuard / CooldownChecker / WSPrecastHandler (message on failure) | `:315-327` |
-| +5 s | GlobalProbe snapshot of `_G` | `:339-344` |
+| sync | debug flags restored from `windower._gs_debug`, `windower._gs_reload_count++` | `:41-50` |
+| sync | `ModuleCache.install()` — makes `require` cache per sandbox | `:60-65` |
+| sync | Gear hooks (`equip_hooks.lua` wraps `equip()` once per load; the sets exist: Mote ran `init_gear_sets` first): `ImpactLock.install()` — the cloak that grants Impact (Crepuscular / Twilight) stays on through the cast, every job (it also wraps `precast`, `aftercast`, `cancel_spell`); then `DuplicateGear.install()` — each side of a doubled ring / earring / weapon takes its own copy, by bag; then `HPPriority.apply()` — indexes the HP / MP of the pieces the sets name, and each swap ranks its pieces by HP gained over the gear worn | `:72-89` |
+| sync | LagDebugger, `AutoMedicine.ensure()`, `JobSyncWatchdog.start()`, dual-box sync IPC listener and its `ls` / `rf` hooks | `:97-229` |
+| sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `BuffTimers.start()` (own buff end times for `//gs c buff`, [midcast-and-buffs.md](systems/midcast-and-buffs.md#refresh-before-the-end)), `ElementalBelt.install()` (Obi / Orpheus on elemental damage), `DualWield.install()` (DW tier pieces on `handle_equipping_gear`), `TreasureHunter.install()` (TH on the engaged set and on the first action against an untagged mob), `MidcastFallback.install()` (subjob magic through MidcastManager), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules), in that order: each wraps Mote's `cleanup_precast` / `cleanup_midcast` around the previous one, so the set goes on, then the belt, then the custom gear | `:305-408` |
+| +0.5 s | WarpInit, AutoMove (unless `_G.DISABLE_AUTOMOVE`), StateDisplayOverride | `:235-284` |
+| +2 s | MidcastWatchdog | `:149-159` |
+| +3 s | load check of PrecastGuard / CooldownChecker / WSPrecastHandler (message on failure) | `:445-457` |
+| +5 s | GlobalProbe snapshot of `_G` | `:478-483` |
 
 The file header (`INIT_SYSTEMS.lua:11-20`) keeps the same list.
 
@@ -273,9 +273,10 @@ Consequences worth remembering:
   copied back from that backup.
 - Live Tetsouo uses **modular sets** (`<job>/{armor,capes,weapons}.lua` +
   `_common/sets/rings.lua`); the generic templates are flat. The modular trees
-  are versioned in `_master/Tetsouo/<job>/` and, since `f6f1683`, the
-  clone deploys an overlay's `<job>/` tree in place of the flat file, plus
-  its `common/` and the loose craft/fishing sets.
+  are kept in the overlay `_master/Tetsouo/sets/<job>/` (on this PC only: the
+  overlays are gitignored) and, since `2557885`, the clone deploys an overlay's
+  `sets/<job>/` tree in place of the flat file, plus its `sets/common/` and the
+  loose craft/fishing sets.
 - `character_db.lua` is read only by the clone script.
 
 See [characters-and-templates.md](architecture/characters-and-templates.md),
