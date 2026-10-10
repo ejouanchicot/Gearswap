@@ -3,6 +3,30 @@
 /* ---- render ---- */
 // The top bar: character, job (by role, the played ones) and subjob menus, the job's macro book,
 // lockstyle and export, language and theme
+// An element brought to `html` by changing only what differs, its own elements kept. Drawing the top bar anew at
+// each redraw replaced the button under the pointer: it lost its hover and began its colour change again, a flicker
+// at every tick and at every click (2026-10-10). Same shape: attributes and texts are set; another shape: replaced
+function patchInto(el, html){
+  if (el._html === html) return;
+  el._html = html;
+  const next = document.createElement(el.tagName);
+  next.innerHTML = html;
+  patchKids(el, next);
+}
+function patchKids(a, b){
+  const xs = [...a.childNodes], ys = [...b.childNodes];
+  if (xs.length !== ys.length || xs.some((x, i) => x.nodeType !== ys[i].nodeType || x.nodeName !== ys[i].nodeName)) return a.replaceChildren(...ys);
+  xs.forEach((x, i) => patchNode(x, ys[i]));
+}
+function patchNode(x, y){
+  if (x.nodeType !== 1) { if (x.nodeValue !== y.nodeValue) x.nodeValue = y.nodeValue; return; }
+  for (const at of [...x.attributes]) if (!y.hasAttribute(at.name)) x.removeAttribute(at.name);
+  for (const at of [...y.attributes]) if (x.getAttribute(at.name) !== at.value) x.setAttribute(at.name, at.value);
+  patchKids(x, y);
+  // what the player may have changed by hand is a property, not the attribute
+  if (x.nodeName === 'OPTION') x.selected = y.hasAttribute('selected');
+  if (x.nodeName === 'INPUT') { x.value = y.getAttribute('value') || ''; x.checked = y.hasAttribute('checked'); }
+}
 function renderSide(){
   const dark = S.theme ? S.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
   document.documentElement.lang = S.lang;
@@ -23,7 +47,7 @@ function renderSide(){
     `<div class="seg" role="group"><button data-theme-set="light" aria-pressed="${!dark}" aria-label="${S.lang==='fr'?'Mode jour':'Light mode'}"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.3"><path d="M7 0.5v2M7 11.5v2M0.5 7h2M11.5 7h2M2.4 2.4l1.4 1.4M10.2 10.2l1.4 1.4M2.4 11.6l1.4-1.4M10.2 3.8l1.4-1.4"/></g></svg></button>` +
     `<button data-theme-set="dark" aria-pressed="${dark}" aria-label="${S.lang==='fr'?'Mode nuit':'Dark mode'}"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9.8 1.2a6 6 0 1 0 3 9.6A5 5 0 0 1 9.8 1.2z" fill="currentColor"/></svg></button></div></div>`;
   const brand = `<div class="brand"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 10 H22 M13 1 L9 10 L13 25 L17 10 Z" fill="none" stroke="currentColor" stroke-width=".9" opacity=".6"/></svg><b>Atelier</b></div>`;
-  $('#top').innerHTML = `${brand}${chars}<span class="tsep"></span>${jobPick}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${refreshBadge()}${liveBadge()}${prefs}`;
+  patchInto($('#top'), `${brand}${chars}<span class="tsep"></span>${jobPick}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${refreshBadge()}${liveBadge()}${prefs}`);
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
 function renderHome(){

@@ -132,12 +132,13 @@ const OP_TABS = [
   // the fast search (memory, pieces that can never win left out) or the classic one, kept to go back to
   {id: 'calc', title: 'opTabCalc', menu: {key: 'search', label: 'opHow', values: ['fast', 'classic'], text: 'optSearch_', dflt: 'fast', tip: 'optSearchTip'},
     keys: ['fullSpeed']},
-  {id: 'special', title: 'opTabSpecial', keys: ['hoxne'], count: true}];
+  {id: 'special', title: 'opTabSpecial', keys: ['hoxne', 'vim'], count: true}];
 const OP_SWITCH = {
   wardOnly: {label: 'optWard'},
   freeWeapons: {label: 'freeWeapons', tip: ws => t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip')},
   fullSpeed: {label: 'fullSpeed', tip: () => t('fullSpeedTip', {n: OPT_CORES})},
-  hoxne: {label: 'optHoxne', tip: () => t('optHoxneTip')}};
+  hoxne: {label: 'optHoxne', tip: () => t('optHoxneTip')},
+  vim: {label: 'optVim', tip: () => t('optVimTip')}};
 // One switch; noWeapons: free weapons offered off, with why
 function opSwitchHTML(o, k, ws, noWeapons){
   const d = OP_SWITCH[k], off = k === 'freeWeapons' && noWeapons, tip = off ? noWeapons : d.tip ? d.tip(ws) : '';
@@ -387,6 +388,9 @@ function cycleOf(s, plain){
 Object.assign(T.fr, {optHoxne: 'Hoxne Ampulla active', optHoxneTip: 'Compte son enchantement (Double Attack +100 %, 30 minutes, 1000 gils l’utilisation) comme actif tant qu’elle est portée : l’optimiseur peut alors la choisir. Décoché, elle ne compte pour rien et n’est jamais proposée'});
 Object.assign(T.en, {optHoxne: 'Hoxne Ampulla active', optHoxneTip: 'Counts its enchantment (Double Attack +100%, 30 minutes, 1000 gil per use) as active while it is worn: the optimizer may then pick it. Unchecked, it counts for nothing and is never suggested'});
 // the left column's blocks (limits, search tabs)
+// the option that counts Vim Torque's latent Regain (stats.js ENCHANT_KEPT)
+Object.assign(T.fr, {optVim: 'Vim Torque actif', optVimTip: 'Compte le Regain latent du Vim Torque (+15) et du Vim Torque +1 (+20) comme actif tant qu’il est porté : l’optimiseur peut alors le choisir. L’effet marche arme sortie et te draine 50 HP par tick. Décoché, le collier ne compte que pour sa défense.'});
+Object.assign(T.en, {optVim: 'Vim Torque active', optVimTip: 'Counts the latent Regain of Vim Torque (+15) and Vim Torque +1 (+20) as active while it is worn: the optimizer may then pick it. The effect works with your weapon drawn and drains 50 HP a tick. Unchecked, the neck piece counts for its defense only.'});
 Object.assign(T.fr, {opLimits: 'Limites à respecter', opTabPieces: 'Pièces', opTabCalc: 'Calcul', opTabSpecial: 'Spéciaux',
   opSpecialWhy: 'Des pièces à effet particulier, comptées seulement quand tu les coches.'});
 Object.assign(T.en, {opLimits: 'Limits', opTabPieces: 'Pieces', opTabCalc: 'Calculation', opTabSpecial: 'Special',

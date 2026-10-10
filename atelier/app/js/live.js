@@ -167,6 +167,55 @@ async function liveFetch(c, path, opts = {}){
     return await r.json();
   } finally { clearTimeout(timer); }
 }
+// The door's file read now, whatever liveReread's pace: resolved once the file has run (or is missing)
+const doorAgain = (c, kind) => new Promise(done => { const el = document.createElement('script');
+  el.src = `atelier/${kind}_${c}.js?t=${Date.now()}`; el.onload = el.onerror = () => { el.remove(); done(); }; document.head.appendChild(el); });
+// An order sent by a button. Each load of GearSwap opens a new door (port, token): a button pressed in the seconds
+// before the page has read it again knocked at the old one and did nothing (2026-10-10: "I have to press twice").
+// A refusal reads the door again and asks once more
+async function liveOrder(c, path, opts = {}){
+  try { return await liveFetch(c, path, opts); }
+  catch (e) { await doorAgain(c, opts.link ? 'link' : 'live'); return liveFetch(c, path, opts); }
+}
+// A redraw asked by the page itself (the 2 s ticks), not by the player. Drawing replaces the buttons: a button pressed
+// and not yet released would be replaced under the pointer, and the browser then sends no click at all. So a redraw
+// that comes within HOLD_MS of a press waits for the end of that time. By the clock, never by "the button is still
+// down": the release of a press is not always told to the page (a button that went off meanwhile, a release outside
+// the window), and a redraw waiting for it then never came: the page looked deaf to the game (2026-10-10)
+const HOLD_MS = 500;
+let PRESSED_AT = 0, RENDER_HELD = false;
+function tickRender(){
+  const left = HOLD_MS - (Date.now() - PRESSED_AT);
+  if (left <= 0) return render();
+  if (RENDER_HELD) return;
+  RENDER_HELD = true;
+  setTimeout(() => { RENDER_HELD = false; render(); }, left + 20);
+}
+document.addEventListener('pointerdown', () => { PRESSED_AT = Date.now(); }, true);
+// An order given to GearSwap from the top bar (reload, restart, load, unload), shown there from the press until the
+// game is seen to have done it. Without it nothing moved for up to 2 s (the next tick), then the buttons were gone
+// for the seconds GearSwap takes to come back: a press read as lost, and pressed again (2026-10-10).
+// S._liveBusy = {what, until, down: the game was seen away since}
+const BUSY_MS = {reload: 8000, restart: 30000, load: 30000, unload: 8000};
+Object.assign(T.fr, {busy_reload: 'Rechargement des fichiers…', busy_restart: 'GearSwap redémarre…', busy_load: 'GearSwap se charge…', busy_unload: 'Déchargement…'});
+Object.assign(T.en, {busy_reload: 'Reloading the files…', busy_restart: 'GearSwap restarts…', busy_load: 'GearSwap is loading…', busy_unload: 'Unloading…'});
+// was: the top bar as it stood at the press (the game's job, whether the addon answered), kept as it is meanwhile
+function liveBusyStart(what){
+  const L = S._live[S.char] || {};
+  S._liveBusy = {what, until: Date.now() + BUSY_MS[what], down: false, version: L.version, boot: L.boot, was: {ok: !!L.ok, job: L.job, sub: L.sub, link: linkOk(S.char)}};
+  render();
+}
+// Whether the order is done, from what the last tick saw: back after having been away (restart), there (load), away
+// (unload), another version or back (reload); or its time is up
+function liveBusyStep(c){
+  const b = S._liveBusy, L = S._live[c] || {};
+  if (!b) return;
+  if (!L.ok) b.down = true;
+  // a restart opens a new door (its `boot`): that says it happened even when no tick saw the game away
+  const again = b.down || L.boot !== b.boot;
+  const done = {restart: again && L.ok, load: !!L.ok, unload: !L.ok, reload: L.ok && (b.down || L.version !== b.version)}[b.what];
+  if (done || Date.now() > b.until) { S._liveBusy = null; tickRender(); }
+}
 // AtelierLink (addons/AtelierLink, installed by //gs c atelier link): an addon of its own that loads,
 // unloads and reloads GearSwap, so it answers while GearSwap is unloaded
 const linkConf = c => (window.ATELIER_LINK || {})[c];
@@ -183,11 +232,12 @@ async function linkTick(){
   try { const p = await liveFetch(c, '/ping', {link: true, timeout: 1500}); S._link[c] = {ok: p.player === c}; }
   catch (e) { S._link[c] = {ok: false}; liveReread(c, 'link'); }
   finally { LINK_BUSY = false; }
-  if (was !== S._link[c].ok) render();
+  if (was !== S._link[c].ok) tickRender();
 }
 async function linkGearSwap(what){
-  try { await liveFetch(S.char, '/gearswap?do=' + what, {link: true, method: 'POST'}); S.toast = t('gs_' + what); }
-  catch (e) { S.toast = t('liveLost'); }
+  liveBusyStart(what === 'reload' ? 'restart' : what);
+  try { await liveOrder(S.char, '/gearswap?do=' + what, {link: true, method: 'POST'}); S.toast = t('gs_' + what); }
+  catch (e) { S.toast = t('liveLost'); S._liveBusy = null; }
   render();
 }
 // Every 2 s: is the game there, and did it load something new (job, subjob, a reload)?
@@ -203,9 +253,12 @@ async function liveTick(){
   const was = S._live[c] || {};
   try {
     const ping = await liveFetch(c, '/ping', {timeout: 1500});
-    const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, at: was.at,
+    // boot: when the game's door was opened. A restarted addon is back within 2 s with the same port, the same token
+    // and its loads counted from 1 again: between two pings only this says it restarted
+    const again = ping.version !== was.version || ping.boot !== was.boot;
+    const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, boot: ping.boot, at: was.at,
       stat: ping.stat, statAt: ping.stat !== was.stat ? Date.now() : was.statAt, statGot: was.statGot};
-    if (ping.player === c && ping.job && (ping.version !== was.version || !was.ok)) {
+    if (ping.player === c && ping.job && (again || !was.ok)) {
       const d = await liveFetch(c, '/export', {timeout: 8000});
       if (d && d.sets) {
         const m = ((DATA[c] = DATA[c] || {})[d.job] = DATA[c][d.job] || {});
@@ -223,13 +276,13 @@ async function liveTick(){
       now.statGot = now.stat;
     }
     S._live[c] = now;
-    if (!was.ok || now.version !== was.version || measured) render();
+    if (!was.ok || again || measured) tickRender();
   } catch (e) {
     S._live[c] = {ok: false};
-    if (was.ok) render();
+    if (was.ok) tickRender();
     // a relaunched GearSwap opens a new door (port, token): read its file again
     liveReread(c);
-  } finally { LIVE_BUSY = false; }
+  } finally { LIVE_BUSY = false; liveBusyStep(c); }
 }
 // The door's file read again (live_<char>.js for GearSwap, link_<char>.js for AtelierLink): each load of the game makes a
 // new port and token, so a page opened before keeps knocking at the old door; every `wait` ms at most, per file
@@ -262,7 +315,7 @@ async function equipShownSet(){
   // the weapons too (a set shown with Shining One while Laphria is held): a weapon changed in game empties the TP
   const lines = Object.entries(pieces).filter(([, p]) => p && p.name).map(([slot, p]) =>
     [slot, isEmpty(p) ? 'empty' : p.name, (p.augs || []).join('|')].join('\t'));
-  try { const r = await liveFetch(S.char, '/equip?job=' + encodeURIComponent(S.job), {method: 'POST', body: lines.join('\n')});
+  try { const r = await liveOrder(S.char, '/equip?job=' + encodeURIComponent(S.job), {method: 'POST', body: lines.join('\n')});
     S.toast = t('equipDone', {n: r.pieces, s: shortPath(s.path)}); }
   catch (e) { S.toast = t('equipFailed'); }
   render();
@@ -272,21 +325,29 @@ async function liveReload(full){
   const c = S.char;
   // a whole restart goes through the addon when it is there: it survives the unload
   if (full && linkOk(c)) return linkGearSwap('reload');
-  try { await liveFetch(c, '/reload' + (full ? '?full=1' : ''), {method: 'POST'}); S.toast = t(full ? 'liveRestarting' : 'liveReloading'); }
-  catch (e) { S.toast = t('liveLost'); }
+  liveBusyStart(full ? 'restart' : 'reload');
+  try { await liveOrder(c, '/reload' + (full ? '?full=1' : ''), {method: 'POST'}); S.toast = t(full ? 'liveRestarting' : 'liveReloading'); }
+  catch (e) { S.toast = t('liveLost'); S._liveBusy = null; }
   render();
 }
 function liveBadge(){
   const c = S.char, L = S._live[c] || {}, link = linkOk(c);
   if (!liveConf(c) && !linkConf(c)) return '';
+  // an order under way: the bar stays as it was at the press (nothing moves), its buttons off, the one pressed lit
+  // and saying what goes on; they come back with the game
+  if (S._liveBusy && Date.now() > S._liveBusy.until) S._liveBusy = null;
+  const busy = S._liveBusy, was = busy ? busy.was : null, ok = busy ? was.ok : L.ok, linked = busy ? was.link : link;
+  const job = busy ? was.job : L.job, sub = busy ? was.sub : L.sub, off = busy ? 'disabled' : '';
   // the label goes on medium screens (the icon stays, the label is in the tooltip)
-  const btn = (attr, icon, label, title) => `<button class="live act" ${attr} title="${esc(label + ' · ' + title)}">${icon}<span class="lbl"> ${label}</span></button>`;
+  const btn = (attr, icon, label, title, what) => busy && what === busy.what
+    ? `<button class="live act mid busy" disabled title="${esc(t('busy_' + what))}">${icon}<span class="lbl"> ${label}</span></button>`
+    : `<button class="live act" ${attr} ${off} title="${esc(label + ' · ' + title)}">${icon}<span class="lbl"> ${label}</span></button>`;
   // GearSwap answers: its job, then reload / restart (through the addon when it is there) / unload
-  if (L.ok) return `<button class="live on" data-livejump title="${esc(t('liveJump'))}">● ${t('liveOn')} · ${esc(L.job)}/${esc(L.sub)}</button>` +
-    btn('data-livereload', '⟳', t('liveReload'), '//gs reload') + btn('data-liverestart', '↺', t('liveRestart'), '//lua r gearswap') +
-    (link ? btn('data-gsunload', '⏏', t('gsUnload'), '//lua u gearswap') : '');
+  if (ok) return `<button class="live on" data-livejump ${off} title="${esc(t('liveJump'))}">● ${t('liveOn')} · ${esc(job)}/${esc(sub)}</button>` +
+    btn('data-livereload', '⟳', t('liveReload'), '//gs reload', 'reload') + btn('data-liverestart', '↺', t('liveRestart'), '//lua r gearswap', 'restart') +
+    (linked ? btn('data-gsunload', '⏏', t('gsUnload'), '//lua u gearswap', 'unload') : '');
   // only the addon answers: GearSwap is unloaded (or its link is off), it can be loaded
-  if (link) return `<span class="live mid" title="${esc(t('linkOnlyHow'))}">● ${t('linkOnly')}</span>` + btn('data-gsload', '▶', t('gsLoad'), '//lua l gearswap');
+  if (linked) return `<span class="live mid" title="${esc(t('linkOnlyHow'))}">● ${t('linkOnly')}</span>` + btn('data-gsload', '▶', t('gsLoad'), '//lua l gearswap', 'load');
   return `<span class="live" title="${esc(t('liveHow'))}">○ ${t('liveOff')}</span>`;
 }
 
@@ -317,7 +378,7 @@ function refreshByLink(){
   S._refresh = 'busy'; render();
   location.href = 'gsatelier://refresh/' + encodeURIComponent(S.char);
   const poll = () => loadScripts(['atelier/refresh.js?t=' + Date.now()], () => {
-    if (stamp() !== before) return location.reload();
+    if (stamp() !== before) return dataAgain();
     if (Date.now() - t0 > REFRESH_GIVE_UP_MS) { S._refresh = 'none'; render(); return; }
     setTimeout(poll, REFRESH_POLL_MS); });
   setTimeout(poll, REFRESH_POLL_MS);

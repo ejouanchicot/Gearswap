@@ -6,7 +6,8 @@
 --- job files reach it as gearswap.socket). data/atelier.html, opened from
 --- the disk, asks it:
 ---
----   GET  /ping                 player, job, subjob, version (+1 at each load)
+---   GET  /ping                 player, job, subjob, version (+1 at each load), boot (when
+---                              this door was opened: another one after //lua r gearswap)
 ---   GET  /export               the loaded job's data (AtelierExport.build)
 ---   GET  /measure              the character's stats, gear and buffs at the last status packet
 ---                              (AtelierExport.measure): fetched when /ping's `stat` count moves
@@ -169,7 +170,8 @@ local function route(req, live)
         local alt_state = rawget(_G, 'AltJobState')
         local alt = type(alt_state) == 'table' and alt_state.online ~= nil and alt_state.job or nil
         return '200 OK', Export.json({player = player and player.name, job = player and player.main_job,
-            sub = player and player.sub_job, version = live.version, alt = alt, stat = windower._atelier_stat_seq or 0})
+            sub = player and player.sub_job, version = live.version, boot = live.boot, alt = alt,
+            stat = windower._atelier_stat_seq or 0})
     end
     if req.path == '/export' then
         local data = Export.build()
@@ -350,7 +352,10 @@ function AtelierLive.start()
         end
         if not server then return nil, 'no free port' end
         server:settimeout(0)
-        live = {server = server, port = port, token = token(), version = 0}
+        -- boot: a restarted addon opens the same port with the same token and counts its loads from 1
+        -- again, so nothing else in /ping tells the page that the addon restarted between two of its
+        -- pings (measured 2026-10-10: the door is back within 2 s, the page asks every 2 s)
+        live = {server = server, port = port, token = token(), version = 0, boot = os.time()}
         windower._atelier_live = live
     end
     live.version = live.version + 1

@@ -523,7 +523,7 @@ function refreshFromFiles(all){
       if (!window.ATELIER_LUA) throw new Error(t('refreshNoLua'));
       const res = await OfflineExport.run(oxEnv(root), S.char, {allSubs: !!all, force: !!all, onProgress: (k, a, b, w) => label(t('refreshP_' + k, {n: a, m: b, w}))});
       try { sessionStorage.setItem('atelierRefresh', JSON.stringify({e: res.exported, u: res.unchanged, failed: res.failed.map(f => f[0] + '/' + f[1])})); } catch (e) {}
-      location.reload();
+      dataAgain();
     } catch (e) { S._refresh = 'fail'; S._refreshErr = String(e && e.message || e); render(); }
   };
   oxWindowerFolder().then(root => root ? go(root)

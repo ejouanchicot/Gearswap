@@ -98,8 +98,12 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .oldexport{color:var(--r-support);font-weight:700;cursor:help}
 .live.act{color:var(--muted);cursor:pointer}
 .live.mid{color:var(--accent);border-color:var(--accent)}
+/* an order to the game under way: its button lit, the others dimmed, nothing moves or blinks in the bar, and the
+   pointer over a button that is off changes nothing */
+.live[disabled]{opacity:.45;cursor:default}
+.live.busy[disabled]{opacity:1}
 @media (max-width:1750px){.live.act .lbl{display:none}}
-.live.act:hover{color:var(--ink);border-color:var(--line-strong);background:var(--hover)}
+.live.act:not([disabled]):hover{color:var(--ink);border-color:var(--line-strong);background:var(--hover)}
 .prefs .seg button{padding:3px 9px;font-size:12px}
 .main{min-width:0;padding:10px 20px 56px}
 /* Wide screens: the page never scrolls, each block that lacks room scrolls on its own */

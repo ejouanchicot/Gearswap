@@ -240,7 +240,7 @@ document.addEventListener('change', e => {
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
     // a piece's stats change with it (stats.js ENCHANT_KEPT): everything worked out from them is redone
-    if (e.target.dataset.optopt === 'hoxne') { DATA_GEN++; render(); }
+    if (ENCHANT_OPTS.includes(e.target.dataset.optopt)) { DATA_GEN++; render(); }
     // the objective shows or hides the TP range; the range reads back rounded to 250
     if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed'].includes(e.target.dataset.optopt)) render();
     return; }
@@ -358,16 +358,21 @@ document.addEventListener('keydown', e => {
     const cur = $('.setrow[aria-current="true"]'); if (cur) cur.scrollIntoView({block:'nearest'});
   }
 });
-function boot(){
-  const index = window.ATELIER_INDEX || [];
+// The exports read into the page, at its start and again after "Reload from files": atelier/index.js first (it lists
+// them), then every export, each asked with a new address (a browser keeps an older copy of a script otherwise)
+function readData(first, done){
+  loadScripts(first ? [] : ['atelier/index.js?t=' + Date.now()], () => readExports(first, done));
+}
+function readExports(first, done){
+  const index = window.ATELIER_INDEX || [], stamp = first ? '' : '?t=' + Date.now();
   // the live link files of every character the index knows (absent when the game never opened the door)
   const chars = [...new Set(index.map(e => (e.file.match(/^([^/]+)\/saved\//) || [])[1]).filter(Boolean))];
   // the index lists the live link files that exist; an index from before lists none: ask for every character's
   const live = window.ATELIER_LIVE_FILES || chars.map(c => `atelier/live_${c}.js`).concat(chars.map(c => `atelier/link_${c}.js`));
-  loadScripts(index.map(e => e.file).concat(live), () => {
-    setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
-    // the game's descriptions of every item: a piece a set names but no bag holds still has its stats
-    setTimeout(() => loadCatalog(() => loadRanked(() => { canonAll(); if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300);
+  loadScripts(index.map(e => e.file + stamp).concat(live), () => {
+    if (first) { setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
+      // the game's descriptions of every item: a piece a set names but no bag holds still has its stats
+      setTimeout(() => loadCatalog(() => loadRanked(() => { canonAll(); if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300); }
     // <JOB>_<SUB>.js fill ATELIER_SUBS[char][job][sub]; a <JOB>.js of before 2026-10-01 fills ATELIER[char][job]
     DATA = {}; CHARS = {}; DATA_GEN++;
     const put = (c, j, d) => { if (!d || !d.sets) return; const s = d.sub || 'NONE';
@@ -381,7 +386,14 @@ function boot(){
     if (!S.char) { $('#view').innerHTML = `<div class="placeholder"><p class="display" style="font-size:22px">Atelier</p><p>${t('tagline')}</p><p>${t('none')}</p></div>`; return; }
     // back where the last visit left off, when that job is still exported
     if (S.job && !(DATA[S.char] || {})[S.job]) S.job = null;
+    if (!first) canonAll();
+    if (done) done();
     render();
   });
 }
-boot();
+// The files were exported again: their data read in place. Not location.reload(): a page opened from the disk can
+// be refused it by the browser ("Unsafe attempt to load URL file:///...", 2026-10-10), and the button then stayed on
+// "reading" with nothing happening
+// the game's own data of the loaded job replaced the file's: asked again at the next tick (S._live emptied)
+function dataAgain(){ readData(false, () => { S._refresh = null; S._live = {}; }); }
+readData(true);

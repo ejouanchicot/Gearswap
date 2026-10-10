@@ -143,7 +143,11 @@ const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
 // (S.optOpts.<option>, off by default: unticked, the piece counts for nothing and is never chosen). It lasts far
 // longer than its reuse delay, so a player who wears the piece keeps it up (Hoxne Ampulla: 30 minutes, reuse 60 s,
 // 1000 gil a use). It is lost when the piece leaves its slot, so a set without the piece ends it for the sets after it.
-const ENCHANT_KEPT = {'Hoxne Ampulla': 'hoxne'};
+// The same for a latent effect the player chooses to live with: Vim Torque's Regain, on while the weapon is drawn,
+// "Drains 50 HP/tic from player" (BG Wiki, Vim Torque +1)
+const ENCHANT_KEPT = {'Hoxne Ampulla': 'hoxne', 'Vim Torque': 'vim', 'Vim Torque +1': 'vim'};
+// the options above, for what redoes the stats when one is ticked (events.js)
+const ENCHANT_OPTS = [...new Set(Object.values(ENCHANT_KEPT))];
 const enchantKept = name => !!ENCHANT_KEPT[name] && !!(S.optOpts || {})[ENCHANT_KEPT[name]];
 // "All BP" by mastery rank (BG Wiki, Hoxne Earring)
 const MASTERY_BP = {1: -30, 2: -20, 3: -10, 4: 0, 5: 5, 6: 10, 7: 15, 8: 20, 9: 25, 10: 30};
@@ -169,7 +173,8 @@ function pieceStats(p, slot){
   // after "Pet:" (or Avatar:, Wyvern:...) the lines are the pet's, after any other condition they only apply sometimes
   let mode = null, cur = -1;
   // the game wraps long phrases: a line starting in lower case goes on the previous one
-  const lines = (text || '').split('\n').reduce((acc, l) => { if (acc.length && /^[a-z]/.test(l)) acc[acc.length - 1] += ' ' + l; else acc.push(l); return acc; }, []);
+  // "DEF:14 Latent Effect: "Regain"+15" (Vim Torque): the latent effect on a line of its own, a condition like the others
+  const lines = (text || '').replace(/(\S) (Latent Effect:)/gi, '$1\n$2').split('\n').reduce((acc, l) => { if (acc.length && /^[a-z]/.test(l)) acc[acc.length - 1] += ' ' + l; else acc.push(l); return acc; }, []);
   for (const raw of lines) {
     // "Converts 150 MP to HP" (Tuisto, Odnowa...): that much HP more, MP less
     let line = raw.replace(/Converts (\d+) (MP|HP) to (HP|MP)/g, (_, n, from, to) => {
@@ -199,6 +204,8 @@ function pieceStats(p, slot){
     }
     // "Enchantment: Consumes 1000 gil:" then its effect on the next line: the piece's own, not a condition
     if (enchantKept(p.name) && /^Enchantment:/i.test(line)) { mode = null; continue; }
+    // a latent effect counted as on (its option ticked): the piece's own
+    if (enchantKept(p.name) && /^Latent Effect:/i.test(line)) { mode = null; line = line.replace(/^Latent Effect:\s*/i, ''); }
     if (COND.test(line)) mode = /^(Pet|Avatar|Automaton|Wyvern|Luopan):/.test(line) ? 'pet' : 'cond';
     if (mode === 'pet') { const f = parseLine(line.replace(/^[A-Za-z]+:\s*/, ''), r.pet); if (f) r.cond.push(f); continue; }
     // one condition per entry: its title line, then the lines under it ("Aftermath:" / "Increases Accuracy...")
@@ -353,7 +360,8 @@ const ENGINE_STAT = {da: 'DA', ta: 'TA', qa: 'QA', stp: 'Store TP', crit: 'Crit 
   dw: 'Dual Wield', haste: 'Gear Haste', tpb: 'TP Bonus', sb: 'Subtle Blow', acc: 'Accuracy', atk: 'Attack', fc: 'Fast Cast',
   str: 'STR', dex: 'DEX', vit: 'VIT', agi: 'AGI', int: 'INT', mnd: 'MND', chr: 'CHR', hp: 'HP', mp: 'MP', racc: 'Ranged Accuracy',
   ratk: 'Ranged Attack', macc: 'Magic Accuracy', mab: 'Magic Attack', eva: 'Evasion', meva: 'Magic Evasion', mdb: 'Magic Defense',
-  def: 'DEF', pdl: 'PDL', dt: 'DT', pdt: 'PDT', mdt: 'MDT', enmity: 'Enmity', mdmg: 'Magic Damage', mbd: 'Magic Burst Damage'};
+  def: 'DEF', pdl: 'PDL', dt: 'DT', pdt: 'PDT', mdt: 'MDT', enmity: 'Enmity', mdmg: 'Magic Damage', mbd: 'Magic Burst Damage',
+  regain: 'Regain'};
 // What //gs c gearscan read on your copies (augments, a path's rank): the character's, newest export last, whatever job's
 // export carries it (a job exported without it counted the Path pieces at rank 0, the engine at their best)
 let SCAN_MEMO = {key: null, out: null};
