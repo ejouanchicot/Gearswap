@@ -3,7 +3,7 @@
 ---============================================================================
 --- Thresholds and names the jobs used to fix in their code (SAM idle HP
 --- sets, COR / WHM refresh MP, waltz tiers, SMN skill-up, GEO escort, BRD
---- debuff songs, stratagem recharge). The character's
+--- debuff songs, stratagem recharge, warp ring margin). The character's
 --- _common/combat/TUNING.lua overrides them;
 --- a table is merged key by key over the job's default, so one key is
 --- enough. The default stays when the file or the key is missing.

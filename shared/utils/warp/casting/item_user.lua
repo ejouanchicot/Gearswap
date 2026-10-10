@@ -106,8 +106,14 @@ end
 -- Same constant as the MyHome addon (MyHome.lua uses +18000).
 local EXTDATA_TIME_OFFSET = 18000
 
--- Safety delay after item appears ready (lag/desync protection)
-local SAFETY_DELAY = 3.5  -- Hold after the first "ready" reading before using the item
+-- Hold after the first "ready" reading before using the item (lag/desync protection).
+-- The player's own value: _common/combat/TUNING.lua, warp_ring_safety.
+local DEFAULT_SAFETY_DELAY = 3.5
+
+--- Seconds held once the ring reads ready (TUNING.lua warp_ring_safety, never under 0).
+local function safety_delay()
+    return math.max(0, require('shared/utils/core/tuning').get('warp_ring_safety', DEFAULT_SAFETY_DELAY))
+end
 
 -- Bounds for the activation wait, in seconds.
 --
@@ -459,17 +465,17 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
 
         if is_ready then
             -- The item can read as ready a moment before the server agrees, so
-            -- hold for SAFETY_DELAY after first seeing it rather than firing.
+            -- hold for the safety delay after first seeing it rather than firing.
             if not ready_timestamp then
                 ready_timestamp = os.time()
-                debug_log(string.format('Item ready detected, starting safety delay (%.1fs)...', SAFETY_DELAY))
-                coroutine.schedule(check_usable, SAFETY_DELAY)
+                debug_log(string.format('Item ready detected, starting safety delay (%.1fs)...', safety_delay()))
+                coroutine.schedule(check_usable, safety_delay())
                 return
             end
 
             local elapsed = os.time() - ready_timestamp
-            if elapsed < SAFETY_DELAY then
-                debug_log(string.format('Safety delay: %.1fs / %.1fs', elapsed, SAFETY_DELAY))
+            if elapsed < safety_delay() then
+                debug_log(string.format('Safety delay: %.1fs / %.1fs', elapsed, safety_delay()))
                 coroutine.schedule(check_usable, 0.5)
                 return
             end
@@ -491,7 +497,7 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
 
         -- Not ready yet. Stretch the deadline to cover what the item now says
         -- it needs; it only ever grows, and never past the ceiling.
-        local wanted = os.time() + math.max(recast_delay, activation_delay) + SAFETY_DELAY + WAIT_GRACE
+        local wanted = os.time() + math.max(recast_delay, activation_delay) + safety_delay() + WAIT_GRACE
         if wanted > deadline then
             deadline = math.min(wanted, started + WAIT_CEILING)
         end

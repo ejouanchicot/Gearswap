@@ -43,4 +43,10 @@ return {
     -- SCH / BLM stratagems: seconds for the whole pool to come back (the
     -- charges shown are read from it; lower with the job-point gift)
     stratagem_full_recharge = 240,
+
+    -- Warp and teleport rings (//gs c warp...): seconds held once the ring
+    -- reads ready, before it is used. The ring's own wait after it is
+    -- equipped is the game's and cannot be shortened; lower this margin if
+    -- your connection is good, raise it if the ring is used too early
+    warp_ring_safety = 3.5,
 }
