@@ -424,11 +424,49 @@ function FightHits.fight_ended()
     tell_alt(false)
 end
 
---- //gs c fights hits [on|off|run [sequence]|<step> ...]
+--- The journal on or off without the alt being told, for a measure at rest (fight_sheet.lua).
+--- @param on boolean|nil
+--- @return boolean|nil What it was
+function FightHits.quiet(on)
+    local was = windower._fight_hits_on
+    windower._fight_hits_on = on
+    if on then FightHits.hooks.enable() end
+    return was
+end
+
+--- Empties and locks slots, or gives them back (nil): fight_sheet.lua's reading without a piece.
+--- @param slots table|nil
+--- @return string|nil The slots emptied
+function FightHits.empty(slots)
+    return strip(slots)
+end
+
+--- One line as given.
+function FightHits.note(text)
+    write(text)
+end
+
+--- A MARK line, then the character as it stands (job and buffs, pieces, stats, accuracy and attack).
+function FightHits.mark(label)
+    write('MARK ' .. label)
+    local p = windower.ffxi.get_player()
+    if p then pcall(snapshot, p) end
+end
+
+--- //gs c fights hits [on|off|sheet|run [sequence]|<step> ...]
 --- @param words table The words after "hits"
 function FightHits.command(words)
     local word = (words[1] or 'on'):lower()
     if word == 'on' or word == 'off' then return switch(word == 'on') end
+    if word == 'sheet' then
+        local FightSheet = require('shared/utils/combat/fight_sheet')
+        if (words[2] or ''):lower() == 'without' then
+            local slots = {}
+            for i = 3, #words do slots[#slots + 1] = words[i]:lower() end
+            return FightSheet.without(slots)
+        end
+        return FightSheet.run(config().sheet)
+    end
     if word == 'run' then
         local cfg = config()
         local sequence = words[2] and (cfg.sequences or {})[words[2]:lower()] or cfg.sequence

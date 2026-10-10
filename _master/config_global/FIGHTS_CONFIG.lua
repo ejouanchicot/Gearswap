@@ -58,6 +58,13 @@ return {
     -- hits_on  = {'sm load Myalt/Support', 'sm on'},
     -- hits_off = {'sm off'},
     -- sequence = {'polearm'},
+
+    -- //gs c fights hits sheet: what each of these adds to the character sheet, read at rest (no fight:
+    -- a Mog House will do). Only those the job and subjob have are used, one at a time, each cancelled
+    -- before the next (Cancel addon). Change job or subjob and run it again
+    sheet = {'Berserk', 'Aggressor', 'Warcry', 'Defender', 'Blood Rage', 'Restraint', 'Retaliation',
+        'Hasso', 'Seigan', 'Last Resort', 'Diabolic Eye', 'Focus', 'Dodge', 'Impetus', 'Footwork', 'Counterstance',
+        'Innin', 'Yonin', 'Sharpshot', 'Velocity Shot', 'Saber Dance', 'Fan Dance', 'Swordplay', 'Sentinel', 'Rampart'},
     -- steps = {
     --     polearm = {'gs c set MainWeapon Shining', goal = 300},
     -- },
