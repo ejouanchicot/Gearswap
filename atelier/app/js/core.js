@@ -19,11 +19,11 @@ const HIDDEN_MODES = new Set(['EquipStop','PCTargetMode','RestingMode','SelectNP
 const MOTE_DEFAULT_MODES = new Set(['CastingMode','DefenseMode','MagicalDefenseMode','PhysicalDefenseMode','RangedMode','WeaponskillMode','OffenseMode','IdleMode','HybridMode','Kiting']);
 const modeHidden = m => HIDDEN_MODES.has(m.name) || (MOTE_DEFAULT_MODES.has(m.name) && m.values.length < 2);
 
-let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, slotForce:{}, heldSub:{}, meritEdits:{}, q:'', lang:'fr', theme:null,
+let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons:{}, slotForce:{}, heldSub:{}, meritEdits:{}, q:'', lang:'fr', theme:null, engine:'old',
   trial:{}, drafts:{}, buffs:{}, buffTier:{}, held:{}, famOpen:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}, statHide:{}, statSort:'group', statOnlyWant:false, statPresets:{}, statPreset:'', optOpts:{obj: 'damage', pdt: -50, mdt: -21, sb: 0}, boxOpen:{}, wsTp:null, _tpb:{}, macroAlt:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['ui2', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'bFold'];
+const KEEP = ['engine', 'ui2', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'bFold'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 if (S.section === 'worn') S.section = 'sets';

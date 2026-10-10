@@ -48,8 +48,17 @@
 
     // https://www.bg-wiki.com/ffxi/Evasion
     //   Skill <= 200: Evasion = Skill ; Skill >= 201: floor((Skill - 200) x 0.9) + 200
+    // measured in game 2026-10-10 (/checkparam, every other part of the evasion read on the
+    // character): skill 316 gives 304 as the page says, skill 428 gives 402 and skill 468 gives 434
+    // where the page's line gives 405 and 441. A third step, 0.8 a point above 400, gives the three
+    // (DIFFERENCES.md, Z); the page was not written with skills above 400 in view.
+    CALC.EVASION_SKILL_STEPS = {second: 200, third: 400, secondRate: 0.9, thirdRate: 0.8};
+
     CALC.evasionFromSkill = function (skill) {
-        return skill <= 200 ? skill : Math.floor((skill - 200) * 0.9) + 200;
+        var k = CALC.EVASION_SKILL_STEPS;
+        if (skill <= k.second) return skill;
+        var middle = Math.floor((Math.min(skill, k.third) - k.second) * k.secondRate);
+        return k.second + middle + Math.floor(Math.max(0, skill - k.third) * k.thirdRate);
     };
 
     // https://www.bg-wiki.com/ffxi/Evasion

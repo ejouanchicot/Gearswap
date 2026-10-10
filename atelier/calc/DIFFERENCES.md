@@ -494,3 +494,154 @@ section T (the reference "does the same"): agreement there is evidence, not proo
 9. Empyrean aftermath on the off-hand's and on a kick's swings, and its rate by level on more
    than the 58 swings of N4 (T11).
 10. Regain (T3): TP gained over a minute without attacking, with "Regain +N" gear only.
+
+## X. The page asks this engine (2026-10-10)
+
+`calc_page.js` gives the page's shapes, `calc_bridge.js` switches between this engine ("own") and the
+one the page had before ("old"), on the page and in its workers; the choice is the page's (top bar),
+"old" by default. `node scripts/audit/calc_page_check.js` plays the 756 cases through the functions
+the page calls.
+
+1. Through the page, "own" answers exactly what the engine answers when called directly (0 gap on
+   2 268 weapon skill results and 756 rounds), and the page's own counting of whole rounds runs on
+   the round it is given.
+2. What "own" hands to "old", by reason, on the battery: 549 results of magical weapon skills, 42
+   hybrid, 33 without a type in our table, 8 with an fTP unknown at that TP. A character with any
+   ability on (Berserk, Hasso, an aftermath, an En-spell...) is built by "old" as a whole: the sheet
+   reads no ability yet (section V), and none of the battery's cases has one.
+3. The character's attributes and "Critical Hit Rate" merits read in game (the page's "Base Stats")
+   replace the table of U when given (`baseAttributes`, `critRateMerits` of CALC.characterStats).
+4. ASSUMED: the number of buffs a Naegling counts is not given by the page, taken as none.
+5. The same calls take 362 ms with "own" for 539 ms with "old" (one run, this PC).
+6. On the weapon skills measured in game (`node scripts/audit/calc_ws_ingame_check.js --old`: the
+   same sheets and the same enemy given to both, the evasion of the second prediction): Ukko's Fury,
+   17 measured at 10 862, "own" 11 576 (+6.6 %), "old" 14 380 (+32.4 %); Upheaval, 54 measured at
+   8 248, "own" 8 805 (+6.8 %), "old" 8 970 (+8.8 %).
+
+## Y. Job abilities (2026-10-10)
+
+`calc_abilities.js` holds what an ability used on oneself adds to the sheet (`CALC.ABILITIES`,
+`CALC.abilityTotals`); `CALC.characterStats` adds it after the buffs and before what depends on the
+weapons, and `CALC.page.player` now refuses only the abilities that come back as unknown. This
+replaces the line of section V and point 2 of section X that say no ability is read. Every page was
+fetched on 2026-10-10 (SOURCES.md, "Job abilities").
+
+Who uses the ability: the main job (level 99, job points counted, 20 ranks each: D5) when it has it
+and the name does not end with " (sub)", else the support job at `CALC.subJobLevel(ml)` without job
+points. An ability neither job has, or that the support job cannot have at its level, is unknown.
+
+### Y1. Covered
+
+| Ability | As main job | As support job | Page |
+|---------|-------------|----------------|------|
+| Berserk | Attack% and Ranged Attack% +89/256, Attack +40 | +64/256 below level 50, +69/256 at 50 to 59; no flat attack | Berserk |
+| Defender | Attack% and Ranged Attack% -0.25 | the same | Defender |
+| Warcry | Attack% and Ranged Attack% +29/256, Attack +60 | floor(level / 4 + 4.75) / 256 (17/256 at 49, 18/256 at 56) | Warcry |
+| Aggressor | Accuracy +45, Evasion -25 | Accuracy +25, Evasion -25 | Aggressor |
+| Blood Rage | Crit Rate +40 | unknown (level 87) | Blood_Rage |
+| Mighty Strikes | Crit Rate +100, Accuracy +40 | unknown (SP ability) | Mighty_Strikes |
+| Focus | Accuracy +120, Crit Rate +20 | Accuracy level + 1, Crit Rate (level + 1) x 0.2 | Focus |
+| Composure | Accuracy +70 | unknown ("not accessible") | Composure |
+| Last Resort | unknown (Y3) | Attack% +64/256; JA Haste 0.05 / 0.10 / 0.15 at level 15 / 30 / 45 with a two-handed weapon | Last_Resort, Desperate_Blows |
+| Sharpshot | Ranged Accuracy +40, Ranged Attack +40 | Ranged Accuracy +40 | Sharpshot |
+| Hasso | two-handed weapon only: STR +34, Accuracy +10, JA Haste 0.1 | STR floor(level / 7), Accuracy +10, JA Haste 0.1 | Hasso |
+| Hagakure | TP Bonus +1200 | unknown (level 95) | Hagakure |
+
+Hasso also puts "Hasso active" 1 on the sheet (not a game stat): `CALC.page.round` reads it to hand
+`hasso` to the round, which already had Zanshin's rules under Hasso (T8). Without it a Samurai with
+Hasso on would have lost them the day the page stopped falling back.
+
+### Y2. Known, empty effect (nothing the sheet holds)
+
+Fan Dance (physical damage taken; main job only), Sentinel (physical damage taken, enmity), Rampart
+(damage taken), Crusade (enmity; PLD and RUN), Palisade (block rate), Majesty (cure potency and
+recast), Reprisal (block rate, shield skill), Cocoon (defense +50 %: the sheet has no defense).
+Berserk's and Last Resort's defense penalty, Defender's defense bonus and its job points are left
+out for the same reason. As a support job, one of these whose level is above the support job's
+(Rampart 62, Reprisal 61, Majesty 70, Crusade 88, Palisade 95) comes back unknown.
+
+### Y3. Left out of the table (unknown: the page's case falls back)
+
+| Ability | Why | What the page gives |
+|---------|-----|---------------------|
+| Brazen Rush | decays with time | "begins at 100% double attack rate and diminishes over the duration of the effect"; job points attack +4 a rank |
+| Impetus | a count of hits in a row | "+2 Attack and +1% Critical Hit Rate for each consecutive successful attack", caps "+100 Attack and +50% Critical Hit Rate" |
+| Conspirator | the number of people on the enemy's list | 15 accuracy and 20 Subtle Blow at 1, 25 and 50 at 6, 49 and 50 at 18; job points up to 20 accuracy |
+| Innin | decays with time | "+30% Critical Hit Rate, and -30 Evasion to start, all of which decay to +-10 over time"; job points accuracy +1 a rank |
+| Saber Dance | decays with time | "50% Double Attack that decays to 20% in the first 30 seconds", then stays at 20% |
+| Swordplay | grows with time | "+3 Accuracy/Evasion upon activation", "+3/tick", "Caps at +60"; job points +1 to the cap a rank |
+| Building Flourish | the finishing moves spent, the merits bought, and the next weapon skill only | accuracy +40 / attack +25% / critical hit rate +10% at 1 / 2 / 3 moves; merits +2, +1%, +1% a level; job points weapon skill damage +1% a rank |
+| Last Resort as main job | two job merits the input does not give | attack 64/256 to 89/256 with "Last Resort Effect" merits, haste 15% to 25% with Desperate Blows merits, job points attack +2 a rank. With the merit levels in the input it can be written from the numbers already read. |
+
+Saber Dance after its first 30 seconds (20%) and Swordplay at its cap (60, 80 with job points) are
+steady values the page gives; they were not taken because nothing in the input says the ability
+has been up that long.
+
+### Y4. ASSUMED (marked in the code)
+
+| # | Assumption | Why |
+|---|------------|-----|
+| Y4.1 | Warcry: no merit in Savagery, so no TP Bonus | "Adds 100 TP Bonus to Warcry per merit level."; the input does not give the job merits. A Warrior with 5 merits has 500 TP Bonus more under Warcry than the sheet says. |
+| Y4.2 | Aggressor: no merit in Aggressive Aim (ranged accuracy +4 a level) | same reason |
+| Y4.3 | Mighty Strikes is +100 on the sheet's "Crit Rate": every swing of a round is critical, a weapon skill that can land critical hits always does, a weapon skill that cannot still does not | The page says "Turns all melee attacks into critical hits." and "Stacks with any physical Weapon Skill, Jump or similar ability.", and nothing on the weapon skills that cannot critically hit. |
+| Y4.4 | Focus as a support job uses the support job's level | "Accuracy = Level + 1": the page does not say whose level, and says nothing of the support job. Its critical hit rate is the page's "seems to be: (Monk Level + 1) * .2". |
+| Y4.5 | A percentage of job ability haste is that share of 1 (Hasso 0.1, Desperate Blows 0.05 / 0.10 / 0.15) | Attack_Speed lists "Hasso (10%)", "Last Resort (15~25%)" and gives 1024ths for the cap only ("25% (256/1024)"). Same reading as T11. If 10% were 102/1024 the haste would be 0.0996 instead of 0.1. |
+| Y4.6 | Last Resort as a support job: Desperate Blows comes at the support job's level, and Ranged Attack is not raised | Support_Job: "you will receive all spells, traits, and abilities available to your sub job at its level"; the Desperate Blows page lists "DRK15 / DRK 30 / DRK 45" and nothing on the support job. The Last Resort page names "attack" only (asked: ranged attack is not on the page), where Berserk's names both. |
+| Y4.7 | Blood Rage reaches its user | "Enhances critical hit rate for party members within area of effect." |
+| Y4.8 | Job points of an ability are added as main job only, flat attack inside the base the percentages multiply | D5; the measurement below settles the second half for Berserk and Warcry. |
+
+Also not read: the gear that strengthens an ability when worn for its activation (Pummeler's,
+Agoge, Boii, Wakido "Hasso +1"..., Anchorite's Crown "Additional 21 accuracy" on Focus, Orion
+Braccae on Sharpshot), Hagakure's "400 Save TP" (the TP a round starts from is the caller's), and
+the fact that Hagakure and Mighty Strikes last one weapon skill or 45 seconds: the sheet is the
+character while the ability is on.
+
+### Y5. Against the game (`node scripts/audit/sheet_check.js`)
+
+`scripts/audit/engine_ref/sheet.json`, WAR99/SAM56 at master level 39, read on 2026-10-10. The
+script now gives the engine the run's own attributes (the last block with nothing on, minus what
+the sheet adds from gear) and `abilities: {<label>: true}`; nothing else, and no number of the
+engine was changed after seeing these.
+
+| Block | Predicted | Measured |
+|-------|-----------|----------|
+| nothing on | attack 1723.3, accuracy 1195, evasion 893 | 1723, 1195, 905 |
+| Berserk | attack 2284.7 | 2284 |
+| Warcry | attack 1964.8 | 1964 |
+| Defender | attack 1364.0 | 1364 |
+| Aggressor | accuracy 1240, evasion 868 | 1240, 880 |
+| Hasso (support job, level 56) | STR 323, accuracy 1205, attack 1732.9 | 323, 1205, 1732 |
+| Blood Rage | attack, accuracy, evasion as with nothing on | nothing moved (the critical hit rate is not shown by the game) |
+| Restraint, Retaliation, Seigan | not in the table; sheet as with nothing on | nothing moved |
+
+- Confirmed: Berserk at 89/256 and Warcry at 29/256 add to Smite's 51/256 (one sum of percentages),
+  their job points (40 and 60) sit in the base before the percentages, Defender is -25% in the same
+  sum, Aggressor is 25 + 20 accuracy and -25 evasion, Hasso's STR follows the support job's level.
+  The four attacks are above the game's by less than 1: the game shows the whole part.
+- Not matched: evasion is 12 under the game's in every block, ability or not (893 for 905). The gap
+  is the sheet's, not an ability's: Aggressor moves both by 25. Not looked into here (A1 is about
+  the same formula).
+- Not compared: defense (1380 -> 1035 under Berserk, -> 1940 under Defender) is not on the sheet;
+  critical hit rate, haste, ranged attack, TP Bonus are not shown by the game. Only the Warrior's
+  abilities and Hasso as a support job were measured: the other lines of Y1 rest on the pages alone.
+
+## Z. Evasion from skill above 400 (measured 2026-10-10)
+
+Four readings of /checkparam at rest, each with the attributes from the game's own data, the pieces
+worn read one by one in the game's descriptions, the job's traits and gifts from its BG-Wiki page:
+
+| Job | Evasion skill | AGI | pieces | traits and gifts | evasion shown | left for the skill | BG-Wiki's line |
+|---|---|---|---|---|---|---|---|
+| WHM99/SAM49, Master Level 0 | 316 | 170 | 204 | 0 | 593 | 304 | 304 |
+| BST99/SAM52, Master Level 15 | 404 | 103 | 0 | 36 | 470 | 383 | 383 |
+| WAR99/SAM56, Master Level 39 | 428 | 140 | 15 (Bathy Choker +1, Unity rank 1) | 36 | 523 | 402 | 405 |
+| THF99/SAM54, Master Level 28 | 468 | 127 | 15 | 72 + 70 | 654 | 434 | 441 |
+
+1. BG-Wiki's two steps hold at 316 and are 3 and 7 too high at 428 and 468. A third step, each point
+   above 400 worth 0.8, floored apart from the second, gives 304, 402 and 434: in the engine
+   (CALC.evasionFromSkill). A lower worth of the Master Levels' skill points alone (about 0.82) gives
+   402 for the Warrior but 439 for the Thief: excluded.
+2. Bathy Choker +1's "Unity Ranking: Evasion+5~15" is 15 at Unity rank 1 (905 with it, 890 without).
+3. Not checked: where the step is exactly (the Beastmaster's 404 gives 383 with or without it: the step
+   is not visibly under 400, so between 400 and 428), and whether the main hand's
+   accuracy has one too (skill 748 gives the accuracy shown to the point with BG-Wiki's line).

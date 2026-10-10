@@ -2,9 +2,13 @@
 //
 //   CALC.characterStats(input)   input = {job, sub, ml, gearset, buffs, abilities}
 //                                returns stat name -> number, with the names the page reads
+//       optional, what was read on the character itself instead of the tables:
+//           baseAttributes   {STR, DEX, VIT, AGI, INT, MND, CHR} without gear or buffs
+//           critRateMerits   the "Critical Hit Rate" merits bought, in percent (0 to 5)
 //   CALC.ASSUME                  what is taken as true when the input does not say
 //
-// Order: skills and attributes of the jobs, traits / gifts / merits, gear, buffs, then what
+// Order: skills and attributes of the jobs, traits / gifts / merits, gear, buffs, the job
+// abilities that are on (calc_abilities.js; the ones it does not know add nothing), then what
 // depends on the weapons held (Dual Wield, Smite, Fencer...), then the derived stats.
 // The stats named like the gear ("Accuracy", "Attack", "Store TP"...) are plain totals;
 // "Accuracy1", "Attack1" (main hand), "Accuracy2", "Attack2" (off-hand), "Evasion" and
@@ -29,13 +33,14 @@
     }
 
     function startSheet(input) {
-        var stats = {}, base = CALC.baseAttributes(input.job, input.sub, input.ml);
+        var stats = {}, base = input.baseAttributes || CALC.baseAttributes(input.job, input.sub, input.ml);
+        var critMerits = typeof input.critRateMerits === "number" ? input.critRateMerits : CALC.COMMON_MERITS.critRate;
         ALWAYS.forEach(function (key) { stats[key] = 0; });
         addAll(stats, base || {STR: 0, DEX: 0, VIT: 0, AGI: 0, INT: 0, MND: 0, CHR: 0});
         addAll(stats, CALC.baseSkills(input.job, input.ml));
         addAll(stats, CALC.jobBonuses(input.job, input.sub, input.ml, CALC.ASSUME));
         // base rate 5% and the merit points: https://www.bg-wiki.com/ffxi/Critical_Hit_Rate
-        stats["Crit Rate"] += CALC.BASE_CRIT_RATE + CALC.COMMON_MERITS.critRate;
+        stats["Crit Rate"] += CALC.BASE_CRIT_RATE + critMerits;
         return stats;
     }
 
@@ -111,6 +116,7 @@
         addAll(stats, CALC.setBonusTotals(input.gearset));
         stats["Gear Haste"] = CALC.gearHaste(hastePercent);
         addAll(stats, CALC.buffTotals(input.buffs));
+        addAll(stats, CALC.abilityTotals(input).totals);
         applyWielding(stats, wield, CALC.traitValues(input.job, input.sub, input.ml));
         weaponSheet(stats, wield, input.gearset);
         derive(stats, wield);

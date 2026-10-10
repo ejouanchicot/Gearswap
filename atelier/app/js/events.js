@@ -16,6 +16,7 @@ document.addEventListener('click', e => {
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
   if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
+  if (d.engine) { S.engine = d.engine; useEngine(S.engine); save(); render(); return; }
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
   if (d.section) { S.section = d.section; render(); return; }

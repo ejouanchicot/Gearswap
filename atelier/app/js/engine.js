@@ -4,9 +4,15 @@
    from LandSandBoat's augment bundles, capes.js), loaded when present ---- */
 // The damage engine (atelier/engine/: its formulas, its gear catalogue, ranks and capes,
 // kept on this PC only) and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
+const CALC_FILES = ['abilities', 'attributes', 'derived', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
+  'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
+  'ws_tp', 'page'];
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
   .map(f => `atelier/engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
   .map(f => `atelier/engine/${f}.js`), ['atelier/opt.js', 'atelier/cycle.js'])
+  // our own engine (atelier/calc/: its parts, then calc_load.js builds CALC), and last the switch between the two
+  // (calc_bridge.js, S.engine: 'own' or 'old')
+  .concat(CALC_FILES.concat(['load', 'bridge']).map(f => `atelier/calc/calc_${f}.js`))
   // read again at each page load: a browser keeps an older copy of a script otherwise
   .map(f => f + '?v=' + Date.now());
 function loadRanked(done){
@@ -17,6 +23,7 @@ function loadRanked(done){
     ENGINE_PARTS = (window.FFXI_PARTS || []).slice().concat([targetsPart()]);
     for (const part of ENGINE_PARTS) { try { part(FFXI); } catch (e) {} }
     window.FFXI_PARTS = [];
+    useEngine(S.engine);
     done();
   });
 }
@@ -26,7 +33,9 @@ function loadRanked(done){
 let ENGINE_PARTS = [], OPT_WORKER_URL = null, OPT_WORKERS = [], OPT_PAGE_STOP = null;
 function optWorker(){
   if (!OPT_WORKER_URL) {
-    const src = 'var FFXI = {};\n' + ENGINE_PARTS.map(p => '(' + p.toString() + ')(FFXI);').join('\n') +
+    const src = 'var CALC = {};\n' + (window.CALC_PARTS || []).map(p => '(' + p.toString() + ')(CALC);').join('\n') +
+      `\nvar FFXI = {};\n` + ENGINE_PARTS.map(p => '(' + p.toString() + ')(FFXI);').join('\n') +
+      `\nif (FFXI.engine) FFXI.engine.use(${JSON.stringify(engineName())});` +
       '\nself.onmessage = function (e) { var pace = e.data.pace || {}; FFXI.opt.runPaced(e.data, function (p) { self.postMessage({progress: p}); },' +
       ' function (r) { self.postMessage({done: r}); }, function (err) { self.postMessage({error: String(err && err.message || err)}); }, pace.work, pace.rest); };';
     OPT_WORKER_URL = URL.createObjectURL(new Blob([src], {type: 'text/javascript'}));
@@ -34,6 +43,26 @@ function optWorker(){
   const w = new Worker(OPT_WORKER_URL);
   OPT_WORKERS.push(w);
   return w;
+}
+// Which engine computes: ours (atelier/calc/, 'own') or the one before it ('old'). Ours hands a case it does not
+// compute yet to the old one (FFXI.engine.fell: the reasons). The workers are built for one engine: made again
+function engineName(){ return window.FFXI && FFXI.engine ? FFXI.engine.name : 'old'; }
+function useEngine(name){
+  if (!(window.FFXI && FFXI.engine)) return;
+  FFXI.engine.use(name === 'own' ? 'own' : 'old');
+  for (const w of OPT_WORKERS) w.terminate();
+  OPT_WORKERS = [];
+  if (OPT_WORKER_URL) URL.revokeObjectURL(OPT_WORKER_URL);
+  OPT_WORKER_URL = null;
+}
+// The top bar's choice of engine, with what ours handed to the old one since it was chosen (hover)
+function enginePick(){
+  if (!(window.FFXI && FFXI.engine)) return '';
+  const own = engineName() === 'own', fell = Object.entries(FFXI.engine.fell).sort((a, b) => b[1] - a[1]);
+  const why = !own ? t('engOldTip') : fell.length ? t('engFell') + '\n' + fell.map(([w, n]) => `${n} × ${w}`).join('\n') : t('engOwnTip');
+  return `<div class="seg" role="group" aria-label="${esc(t('engLabel'))}" title="${esc(why)}">` +
+    `<button data-engine="old" aria-pressed="${!own}">${esc(t('engOld'))}</button>` +
+    `<button data-engine="own" aria-pressed="${own}">${esc(t('engOwn'))}${own && fell.length ? ' *' : ''}</button></div>`;
 }
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
 const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
