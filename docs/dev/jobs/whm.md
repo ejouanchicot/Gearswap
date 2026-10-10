@@ -27,7 +27,7 @@ What WHM adds on top of the shared pipeline:
   `MndEnfeebles` / `IntEnfeebles` by spell type.
 - **Pseudo-skill routing** through `MidcastManager`: `StatusRemoval`,
   `MndEnfeebles`, `IntEnfeebles` (and a `Repose` branch that is never used).
-- **Latent-refresh idle** below 51 % MP (`refresh_mp_below.WHM` in `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)), an `afflatus` command, and an
+- **Latent-refresh idle** below 51 % MP (`refresh_mp_below` in `whm/combat/WHM_CONFIG.lua`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)), an `afflatus` command, and an
   `OffenseMode = 'Melee ON'` weapon lock beside the shared Combat Mode.
 
 Every file in scope was read in full on 2026-09-28, except the gear content of
@@ -235,7 +235,7 @@ flowchart TD
   (no `sets.Adoulin` in the template, so Adoulin uses `sets.idle.Town`; the
   Town set goes on top of `sets.idle[IdleMode]`, rebuilt from Mote's town pick;
   with a defense or Kiting layer on, on top of Mote's layered Town set) -> `sets.latent_refresh`
-  when `player.mpp < Tuning.get('refresh_mp_below', {WHM = 51}).WHM` (51; empty in the template) -> `sets.MoveSpeed` while
+  when `player.mpp < JobConfig.get('WHM', 'refresh_mp_below', 51)` (empty in the template) -> `sets.MoveSpeed` while
   moving, in town too.
 - `customize_melee_set` returns Mote's set unchanged. Mote picks
   `sets.engaged[OffenseMode]` (no `None` or `Melee ON` set), then
@@ -347,7 +347,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 | `<char>/whm/WHM_LOCKSTYLE.lua` `default`, `by_subjob` | 3 | file; factory argument 1 | `default` only (no `get_style`) |
 | `<char>/whm/WHM_MACROBOOK.lua` | book 11: page 1 RDM, 2 SCH, 3 BLM, 4 BLU, 5 GEO | file; factory fallback 1/1 | `MacrobookManager` |
 | `<char>/whm/WHM_TP_CONFIG.lua` -> `_G.WHMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` |
-| `<char>/_common/keys/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
+| `<char>/saved/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
 
 ## State & lifetime
 

@@ -134,7 +134,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 
 | Feature | On PLD |
 |---|---|
-| Automatic abilities | Divine Emblem before Flash; Majesty before Protect III / IV / V and Cure III / IV. Each is fired only when ready and its buff is down, then the spell is sent again once the buff is up. Tried once per spell |
+| Automatic abilities | Divine Emblem before Flash; Majesty before Protect III / IV / V and Cure III / IV. Each is fired only when ready and its buff is down, then the spell is sent again once the buff is up. Tried once per spell. Both on by default: `auto_divine_emblem = false` / `auto_majesty = false` in `pld/combat/PLD_CONFIG.lua` turns one off |
 | Enmity in Sortie | In the Sortie stance and the /SCH Tanking stance, spells that wear `sets.FullEnmity` wear `sets.EnmityMax`, and job abilities get the pieces `sets.EnmityMax` adds ([sets.md](sets.md)) |
 | Hoxne stance (/SCH) | The ammo slot stays on the Hoxne Ampulla while the stance is on; freed when you leave it, change job, reload or run `//gs c wo` |
 | Movement speed | `sets.MoveSpeed` is added to your idle gear while you run outside town; in town you wear `sets.idle.Town` (Adoulin: `sets.Adoulin`) with your weapon and shield |
@@ -170,11 +170,14 @@ for refill, `combat/` for the rest):
 | `PLD_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (3 in the template) |
 | `PLD_MACROBOOK.lua` | Macro book and page per subjob, and per dual-box alt job |
 | `PLD_TP_CONFIG.lua` | TP bonus pieces and weapons |
+| `PLD_CONFIG.lua` | `auto_divine_emblem` (Divine Emblem before Flash) and `auto_majesty` (Majesty before Protect / Cure), both `true`; `false` turns one off ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)) |
 | `PLD_REFILL.lua` | Consumables for `//gs c rf` on PLD, added to the common list or replacing it; every line commented at first |
 
 Files shared by every job are in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
-`combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
-`DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
+`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, `DW_CONFIG.lua`,
+`ELEMENTAL_BELT_CONFIG.lua`, `UI_CONFIG.lua`; `combat_mode.lua` and
+`treasure_mode.lua`, written by their commands, are in `<YourName>/saved/`
+([configuration](../../guides/configuration.md)).
 Your sets are in `<YourName>/pld/sets/pld_sets.lua`.
 
 ## See also

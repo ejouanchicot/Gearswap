@@ -23,7 +23,7 @@
 ---   skip_jobs = {'PLD'}       leave PLD alone (write your own priorities)
 ---   enabled = false           turn it off
 ---
---- @file _common/combat/HP_PRIORITY.lua
+--- @file _common/gear/HP_PRIORITY_CONFIG.lua
 --- @author ejouanchicot
 --- @date Created: 2026-09-30
 ---============================================================================

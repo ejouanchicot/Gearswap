@@ -88,20 +88,25 @@ Written from the code, for anyone who changes it.
 ├── _WHERE-IS-WHAT.txt       every file of the folder and what it holds
 ├── _common/                 settings of the whole character (every job)
 │   ├── display/             UI_CONFIG, UI_COLOR_CONFIG, REGION_CONFIG, LOCKSTYLE_CONFIG, ...
-│   ├── keys/                COMMON_KEYBINDS, combat_mode, ...
-│   ├── combat/              AUTO_ABILITIES, RECAST_CONFIG, WEAPON_CONFIG, DW_CONFIG,
-│   │                        ELEMENTAL_BELT, STEALTH_CONFIG, ...
+│   ├── keys/                COMMON_KEYBINDS
+│   ├── combat/              BUFF_CONFIG, RECAST_CONFIG, CLEANSE_CONFIG,
+│   │                        AUTO_MEDICINE_CONFIG, SUBJOB_CONFIG
+│   ├── gear/                WEAPON_CONFIG, DW_CONFIG, ELEMENTAL_BELT_CONFIG,
+│   │                        HP_PRIORITY_CONFIG
+│   ├── travel/              STEALTH_CONFIG, WARP_CONFIG
+│   ├── tools/               FIGHTS_CONFIG, ADDONS_CONFIG, SORTIE_CONFIG (if you write one)
 │   ├── inventory/           REFILL_CONFIG, CRAFT_CONFIG, CRAFT_REFILL, WARDROBE_CONFIG
 │   ├── dualbox/             DUALBOX_CONFIG; alt/ = alt commands (main character only)
 │   └── sets/                gear shared by jobs (rings.lua), craft and fishing sets
 ├── <job>/                   one folder per job
 │   ├── display/             <JOB>_HUD, <JOB>_LOCKSTYLE, <JOB>_MACROBOOK
 │   ├── keys/                <JOB>_STATES, <JOB>_KEYBINDS, <JOB>_CUSTOM
-│   ├── combat/              <JOB>_TP_CONFIG and the job's own settings
+│   ├── combat/              <JOB>_CONFIG (the job's own switches, ten jobs),
+│   │                        <JOB>_TP_CONFIG and the job's other settings
 │   ├── inventory/           <JOB>_REFILL
 │   └── sets/                <job>_sets.lua: your gear
 └── saved/                   written in game: ui_settings, message_modes,
-                             temp_binds (//gs c tb), traces, ...
+                             combat_mode, treasure_mode, temp_binds (//gs c tb), ...
 ```
 
 Details: [configuration](user/guides/configuration.md).

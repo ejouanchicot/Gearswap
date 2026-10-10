@@ -23,8 +23,8 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/buffs/buff_timers.lua` | 154 | `BuffTimers`: decodes packet 0x063 order 9 (`read`, also used by `stealth_timers.lua`), keeps each own buff's end time and full length, `left(id)`, `fraction_left(id)`, `start()` |
 | `shared/utils/buffs/buff_guard.lua` | 141 | `BuffGuard.check(step)`: the `ActionQueue` guard of each `//gs c buff` step, also called by BRD `song_queue.lua` before each song (debuff landed: stop, skip, drop the spells, or cure first); `reset()` per press |
 | `shared/utils/buffs/buff_command.lua` | 70 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `weapon[<main hand>]`, then `subjob[sub]`) |
-| `shared/utils/buffs/buff_config.lua` | 91 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
-| `_master/config_global/BUFF_CONFIG.lua` | 95 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
+| `shared/utils/buffs/buff_config.lua` | 88 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
+| `_master/config_global/BUFF_CONFIG.lua` | 88 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
 | `shared/utils/scholar/scholar_actions.lua` | 398 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 109 | Stratagem charge count derived from recast id 231 |
 
@@ -331,13 +331,12 @@ Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buff
 | `job` | one list for BLM, RDM, WHM, PLD, RUN, SCH, NIN, SAM, DRK, MNK, RNG (table below); none for the other jobs | `BuffCommand` (main job list) |
 | `weapon` | `{}` (none; RDM's Gain and Enspell are in `job.RDM`: `'$GainSpell', '$EnSpell'` after Temper II (tier I only: BG-Wiki, more damage with Temper II)) | `BuffCommand` (weapon list) |
 | `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}` | `BuffCommand` (subjob list) |
-| `war_berserk` | `{'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Berserk')` (and any other `param`) |
-| `war_defender` | `{'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` | WAR `buff_war('Defender')` |
-| `war_add_sam` | `true` | WAR `buff_war`: on /SAM, append the stance and Third Eye |
 | `refresh_below` | `10` | `collect` (`wearing_off`): a buff up with less than this percent of its length left is recast; `0` = never |
 | `cancel_first` | `{'Stoneskin'}` | `collect` / `cast`: such a buff, recast while up, gets a `cancel <buff>` step first (Cancel addon) |
 | `wait_after_spell` | `3.0` | `cast`: delay after a spell |
 | `wait_after_ability` | `0.5` | `cast`: delay after an ability |
+
+WAR's chains are no longer here (2026-10-10): `berserk`, `defender` and `add_sam` are keys of `war/combat/WAR_CONFIG.lua`, read by `buff_war` through `JobConfig.get('WAR', ...)` with `WAR_CHAINS` (`smartbuff_manager.lua`) as defaults; `BuffConfig.DEFAULTS` has no `war_` key. A `BUFF_CONFIG.lua` that still has `war_berserk` / `war_defender` / `war_add_sam` (a folder not tidied by `migrate_config.py`) is read for them first ([JobConfig](factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)).
 
 Merge: `job`, `subjob` and `weapon` per key (`PER_JOB`: a job or weapon the file names gets its table, the others keep their default; a non-table value is ignored); every other key replaced whole when the file's value has the default's type (`false` is kept), else the default. A character file copied from the first template (commit ea90614) names only BLM under `job`, so every other job gets the default list below. The template `_master/config_global/BUFF_CONFIG.lua` writes every key with its default and a commented example for `subjob` (WAR `{'Aggressor', 'Warcry'}`); `char_paths.lua` and `migrate_layout.py` `COMMON_GROUPS` put it in `combat`, `where_is_what.py` describes it.
 
@@ -412,7 +411,7 @@ A cure step is `input /ma "Paralyna" <me>` (wait cast time + 3 + 3 s, delay 3 s)
 | Caller | Lists |
 |---|---|
 | `BuffCommand.apply()` (`//gs c buff` and aliases, every job; BLM `BuffSelf()`; DNC `SmartbuffManager.apply()`) | `job_buff_extra`, `job[main]`, `weapon[<main hand>]`, `subjob[sub]` |
-| WAR `SmartbuffManager.buff_war(param)` (`berserk` / `defender`) | `war_berserk` or `war_defender`, then with `war_add_sam` on an enabled /SAM `Hasso` (Seigan for Defender) and `Third Eye` |
+| WAR `SmartbuffManager.buff_war(param)` (`berserk` / `defender`) | the `berserk` or `defender` list of `war/combat/WAR_CONFIG.lua` (`JobConfig.get('WAR', key)`, taken whole; `WAR_CHAINS` when the file gives none), then with `add_sam` on an enabled /SAM `Hasso` (Seigan for Defender) and `Third Eye` |
 | WAR `buff_sam_sub()` (`thirdeye`) | the /SAM part, stance from `buffactive['Defender']` |
 | WAR `build_tp()` (`tp`) | `{'Meditate'}` on /SAM; /DRG goes to `DRG_JUMP_MANAGER` |
 
@@ -425,7 +424,7 @@ DNC's `//gs c dance` (`apply_dance`) keeps its own `cast_queue` (`send_command` 
 | Function | Behaviour |
 |---|---|
 | `get_max()` | Scholar level from main or sub job (`get_scholar_level`); capacity by tier 10/30/50/70/90 -> 1..5 charges (`CHARGE_TIERS`); 0 without Scholar |
-| `available()` | `floor(max - max * recast / full)` using ability recast id 231, the shared stratagem slot. `full` is `Tuning.get('stratagem_full_recharge', 240)` (`_common/combat/TUNING.lua`, since 2026-09-30; `DEFAULT_FULL_RECHARGE`): the Scholar 550 Job Point gift shortens it, so left at 240 the estimate is slightly optimistic for a SCH main with that gift and exact for a job subbing /SCH |
+| `available()` | `floor(max - max * recast / full)` using ability recast id 231, the shared stratagem slot. `full` is `JobConfig.common('SUBJOB_CONFIG', 'stratagem_full_recharge', 240)` (`_common/combat/SUBJOB_CONFIG.lua`; `DEFAULT_FULL_RECHARGE`; in `TUNING.lua` from 2026-09-30 to 2026-10-10): the Scholar 550 Job Point gift shortens it, so left at 240 the estimate is slightly optimistic for a SCH main with that gift and exact for a job subbing /SCH |
 | `has_charge()` | `available() > 0`; caller BLM `klima` |
 | `next_charge_minutes()` | time until the next whole-charge boundary, in minutes; `0` when Scholar is neither main nor sub |
 
@@ -476,7 +475,7 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 - Mote states: whatever a caller passes as `mode_state`; `state.Moving`; `state.MainInstrument` (BRD router).
 - Mote data: `classes.SpellMaps` and `job_get_spell_map` (P8b through `get_spell_map`).
 - Globals: `buffactive`, `player`, `world`, `areas.Cities`, `_G.SongRotationManager`, `is_recast_ready` (from `RECAST_CONFIG.lua`, tolerance 2.0 s).
-- Hard-coded constants: `RENEWED = 3` (buff timers), `AFTER_SPELL = 3.0`, `AFTER_ITEM = 1.0` (buff guard cure steps), `CAST_COOLDOWN = 2.0`, `DEFAULT_AFTER_SPELL = 3.0`, `DEFAULT_AFTER_ABILITY = 0.5`, `WAIT_MARGIN = 3.0`, `HASTE_SAMBA_TP = 350` (buff engine); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `TUNING.lua` `stratagem_full_recharge`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
+- Hard-coded constants: `RENEWED = 3` (buff timers), `AFTER_SPELL = 3.0`, `AFTER_ITEM = 1.0` (buff guard cure steps), `CAST_COOLDOWN = 2.0`, `DEFAULT_AFTER_SPELL = 3.0`, `DEFAULT_AFTER_ABILITY = 0.5`, `WAIT_MARGIN = 3.0`, `HASTE_SAMBA_TP = 350` (buff engine); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `stratagem_full_recharge` of `_common/combat/SUBJOB_CONFIG.lua`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
 
 ## State & lifetime
 

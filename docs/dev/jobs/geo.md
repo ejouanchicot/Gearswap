@@ -54,11 +54,11 @@ function, not a line number.
 | `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | Header only, kept for the 12-module layout |
 | `shared/jobs/geo/functions/GEO_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('GEO', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options |
+| `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options (keys `auto_entrust`, `auto_full_circle` of `GEO_CONFIG.lua`) |
 | `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | `refine_spell` / `refine_and_cast` for the nuke commands |
 | `shared/jobs/geo/functions/logic/set_builder.lua` | HybridMode / `sets.luopan` selection, town, weapons, movement |
 | `shared/data/spells/NUKE_TIERS.lua` | Tier table for Fire..Water (V-base), the -ra (III-base) and Aspir (III-base), shared with RDM |
-| `shared/utils/core/auto_options.lua` | Reads `<Character>/_common/combat/AUTO_ABILITIES.lua` |
+| `shared/utils/core/auto_options.lua`, `job_config.lua` | The two options and `escort_indi`, read from `<Character>/geo/combat/GEO_CONFIG.lua` |
 | `_master/config/geo/GEO_STATES.lua` | All states (`GEOStates.configure()`) |
 | `_master/config/geo/GEO_KEYBINDS.lua` | 12 binds, data only; `KeybindManager.create('GEO', ...)` ([keybinds](../systems/keybinds-and-custom.md)) |
 | `_master/config/geo/GEO_CUSTOM.lua` | Player modes and gear rules (all examples commented out) |
@@ -67,7 +67,7 @@ function, not a line number.
 | `_master/config/geo/GEO_MACROBOOK.lua` | Book 5 page 1 for every subjob; dual-box block empty |
 | `_master/config/geo/GEO_TP_CONFIG.lua` | `_G.GEOTPConfig`: `pieces` (Moonshade 250), `weapons = {}` |
 | `_master/config/geo/GEO_REFILL.lua` | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/config_global/AUTO_ABILITIES.lua` | Template of the option file (`geo_entrust`, `geo_full_circle` false) |
+| `_master/config/geo/GEO_CONFIG.lua` | Template of the job's own settings (`auto_entrust`, `auto_full_circle` false, `escort_indi = 'Indi-Regen'`) |
 | `_master/sets/geo_sets.lua` | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_geo.lua` + `data/jobs/geo_messages.lua` | Indi / Geo cast line with element colour, nuke refinement messages |
 | `shared/data/magic/geomancy/geomancy_indi.lua`, `geomancy_geo.lua` | Indi- / Geo- entries (description, element) read by `message_geo` |
@@ -108,7 +108,7 @@ sequenceDiagram
 
 1. `GEOStates.configure()`.
 2. `JobAddons.run('load', 'pettp')` ([JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)): the PetTP addon, unloaded again in
-   `file_unload` the same way; `pettp = false` in `_common/display/ADDONS_CONFIG.lua` skips both. This runs on every `user_setup()`, so a subjob change loads
+   `file_unload` the same way; `pettp = false` in `_common/tools/ADDONS_CONFIG.lua` skips both. This runs on every `user_setup()`, so a subjob change loads
    it in the old sandbox, unloads it in that sandbox's `file_unload`, and
    loads it again in the new one.
 3. `GEO_KEYBINDS` (which returns `KeybindManager.create('GEO', ...)`) ->
@@ -162,13 +162,13 @@ flowchart TD
   (below).
 - **Automatic abilities** (`geo_auto_abilities.lua`, only for
   `spell.skill == 'Geomancy'`, each gated by `AutoOptions.on(...)`):
-  - `geo_entrust`: an `Indi-` whose target is a party member other than self
+  - `geo_entrust` (key `auto_entrust`): an `Indi-` whose target is a party member other than self
     (PLAYER, or an NPC trust in party) goes through
     `AbilityHelper.try_ability(spell, eventArgs, 'Entrust', 1.5)`: when Entrust
     is ready and not up, the cast is cancelled (`cancel_spell`,
     `eventArgs.handled`), Entrust is sent, and the Indi- is re-sent on the
     same target id once the Entrust buff registers.
-  - `geo_full_circle`: a `Geo-` while `pet.isvalid` and Full Circle is ready
+  - `geo_full_circle` (key `auto_full_circle`): a `Geo-` while `pet.isvalid` and Full Circle is ready
     is cancelled (`eventArgs.cancel`), Full Circle goes out, and the Geo- is
     re-sent on the same target id 2 s later. `windower._geo_full_circle_replay`
     (5 s) lets that re-send through without a second Full Circle.
@@ -320,7 +320,7 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 |---------|--------|
 | `indi` | `/ma "<MainIndi>" <me>` |
 | `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS`, `<stnpc>` otherwise (`is_geo_buff`) |
-| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `Tuning.get('geo_escort_indi', 'Indi-Regen')`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; with a fourth word (a Silmaril profile folder, sent by `sortie escort` when the config has `escort.profile`), `sm load <profile>; sm follow off; sm on` replaces the `/ma` and the safety net waits 4 s more; `MessageSortie.show_alt_escort` |
+| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `JobConfig.get('GEO', 'escort_indi', 'Indi-Regen')`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; with a fourth word (a Silmaril profile folder, sent by `sortie escort` when the config has `escort.profile`), `sm load <profile>; sm follow off; sm on` replaces the `/ma` and the safety net waits 4 s more; `MessageSortie.show_alt_escort` |
 | `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
 | `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` |
 | `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` (broken) |
@@ -362,11 +362,11 @@ T = in `_master/sets/geo_sets.lua`.
 | `<char>/geo/GEO_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 5 | `LockstyleManager` via `get_style` (factory fallback 1) |
 | `<char>/geo/GEO_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 5 page 1; `dualbox` empty | `MacrobookManager` (factory fallback book 1) |
 | `<char>/geo/GEO_TP_CONFIG.lua` -> `_G.GEOTPConfig` | Moonshade 250 in `pieces` | TP bonus calculator |
-| `<char>/_common/combat/AUTO_ABILITIES.lua` `geo_entrust`, `geo_full_circle` | false, false | `AutoOptions.on` from `GeoAutoAbilities.apply` |
+| `<char>/geo/combat/GEO_CONFIG.lua` `auto_entrust`, `auto_full_circle` | false, false | `AutoOptions.on('geo_entrust')` / `('geo_full_circle')` from `GeoAutoAbilities.apply` |
 | `<char>/geo/GEO_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the alt overlay has its own list | refill system (the common list without a list in it) |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
-| PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` (both skipped with `pettp = false` in `_common/display/ADDONS_CONFIG.lua`) |
-| `_common/combat/TUNING.lua` `geo_escort_indi` | `'Indi-Regen'` | `escort` without an Indi- |
+| PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` (both skipped with `pettp = false` in `_common/tools/ADDONS_CONFIG.lua`) |
+| `<char>/geo/combat/GEO_CONFIG.lua` `escort_indi` | `'Indi-Regen'` | `escort` without an Indi- (`JobConfig.get`) |
 
 ## State & lifetime
 
@@ -446,8 +446,9 @@ T = in `_master/sets/geo_sets.lua`.
 - New Geo- buff: add it to `GEO_BUFFS` in `GEO_COMMANDS.lua` so `geo` targets
   `<stpc>`, and to `MainGeo`. Only real buffs belong there (the target
   follows `targets` in `res/spells.lua`).
-- New auto ability: an option key in `_master/config_global/AUTO_ABILITIES.lua`
-  (with its header line) and a branch in `GeoAutoAbilities.apply`.
+- New auto ability: a key in `_master/config/geo/GEO_CONFIG.lua` (and in the
+  `JOBS` table of `migrate_config.py`), its option name in `HOME` of
+  `auto_options.lua`, and a branch in `GeoAutoAbilities.apply`.
 - New state: `GEO_STATES.lua` and `GEO_KEYBINDS.lua`, in `_master/config/geo/`
   and in every character copy.
 

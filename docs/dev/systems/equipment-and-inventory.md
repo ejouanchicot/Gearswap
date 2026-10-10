@@ -45,7 +45,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/equip_hooks.lua` | 80 | Wraps GearSwap's `equip()` once per load (`_G._equip_hooks_wrapper`); every table argument goes through the registered hooks, lowest `order` first: 5 `impact_lock`, 10 `duplicate_gear`, 20 `hp_priority` | `impact_lock.lua`, `duplicate_gear.lua`, `hp_priority.lua` (`EquipHooks.add` / `remove`) | this page |
 | `shared/utils/equipment/impact_lock.lua` | 159 | At the precast of Impact, picks the cloak that grants it (Crepuscular / Twilight Cloak) and locks it: the equip hook `impact_lock` (order 5) puts it on every set and drops their `head` until the aftercast, a cancel or 20 s | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`ImpactLock.install`), every load, every job | this page |
 | `shared/utils/equipment/duplicate_gear.lua` | 234 | Equip hook `duplicate_gear` (order 10): a ring, earring or main / sub piece named without bag or augments, owned in 2+ copies without augments, gets the `bag` of the copy that side takes | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`DuplicateGear.install`), every load; then every `equip()` call | this page |
-| `shared/utils/equipment/hp_priority.lua` | 403 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = dHP*1000+dMP over the piece worn in that slot (all the HP first, the MP after, on every job since 2026-10-08); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
+| `shared/utils/equipment/hp_priority.lua` | 403 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = dHP*1000+dMP over the piece worn in that slot (all the HP first, the MP after, on every job since 2026-10-08); settings from `<Char>/_common/gear/HP_PRIORITY_CONFIG.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
 | `shared/utils/equipment/gear_scan.lua` | 247 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
 | `shared/utils/equipment/weapon_resolver.lua` | 126 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
 | `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
@@ -82,9 +82,9 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `_master/Tetsouo/config/<job>/<JOB>_REFILL.lua` | 20-54 | Tetsouo's own job lists (BLM BRD BST COR DNC PLD THF WAR) |
 | `_master/Tetsouo/config/craft/CRAFT_REFILL.lua` | 34 | Tetsouo's list used while a craft set is active |
 | `_master/Kaories/config/<job>/<JOB>_REFILL.lua` | 22-42 | Kaories' own job lists (COR GEO PLD RDM) |
-| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/_common/combat/WEAPON_CONFIG.lua` (`equip_without_set`) |
-| `_master/config_global/HP_PRIORITY.lua` | 37 | Template of `<Char>/_common/combat/HP_PRIORITY.lua` (`enabled`, `unity = 'min'`, `skip_jobs`) |
-| `_master/config_global/ELEMENTAL_BELT.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
+| `_master/config_global/WEAPON_CONFIG.lua` | - | Template of `<Char>/_common/gear/WEAPON_CONFIG.lua` (`equip_without_set`) |
+| `_master/config_global/HP_PRIORITY_CONFIG.lua` | 37 | Template of `<Char>/_common/gear/HP_PRIORITY_CONFIG.lua` (`enabled`, `unity = 'min'`, `skip_jobs`) |
+| `_master/config_global/ELEMENTAL_BELT_CONFIG.lua`, `DW_CONFIG.lua` | - | Templates of the belt and Dual Wield settings (see [factories-and-helpers.md](factories-and-helpers.md)) |
 
 Live copies (gitignored): `Tetsouo/{blm,brd,bst,cor,dnc,pld,thf,war}/inventory/*_REFILL.lua` and
 `Tetsouo/_common/inventory/CRAFT_REFILL.lua`, `Kaories/{cor,geo,pld,rdm}/inventory/*_REFILL.lua`. On
@@ -417,7 +417,7 @@ Every set builder that applies `state.MainWeapon` / `state.SubWeapon` asks
 THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-28; before, it read
 `sets[weapon]` directly and `equip_without_set` had no effect on DRK.
 
-- **Default** (no `<Char>/_common/combat/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
+- **Default** (no `<Char>/_common/gear/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
   `sets[value]`, exactly the old lookup. Tetsouo and Kaories have no `WEAPON_CONFIG.lua`, so nothing
   changed for them. Tetsouo's BLM relies on `Hvergelmir` having no set, so its idle and engaged sets
   keep their own staves.
@@ -506,7 +506,7 @@ is not lost. The sets themselves are never modified.
 1. Clears `_G._hp_priority_state` and removes the `hp_priority` equip hook
    (`EquipHooks.remove`), then returns 0 unless `player.main_job` is known and `_G.sets` is a
    table; every character is processed. It reads the settings (`HPPriority.settings()`): the
-   character's `_common/combat/HP_PRIORITY.lua` through `CharPaths.optional('common', 'HP_PRIORITY')`,
+   character's `_common/gear/HP_PRIORITY_CONFIG.lua` through `CharPaths.optional('common', 'HP_PRIORITY_CONFIG')`,
    every key optional, over `DEFAULTS` = `{enabled = true, unity = 'min', skip_jobs = {}}`
    (`unity` is `'max'` only when written so; `mp_jobs`, read until 2026-10-08, is ignored; the job list becomes a set of
    upper-case job codes). It returns 0 when `enabled` is `false` or the job is in `skip_jobs` (empty
@@ -763,7 +763,7 @@ Everything else is local. The module has no `_G` export.
 | Member | Returns | Callers |
 |---|---|---|
 | `apply()` | number of pieces whose HP / MP is known (0 when off or skipped); sets `_G._hp_priority_state` and registers the `hp_priority` equip hook (removed first, so it stays off when the system is off or the job skipped) | `INIT_SYSTEMS.lua`, GEAR HOOKS block |
-| `settings()` | `{enabled, unity, skip_jobs}` (the job list as a set): `HP_PRIORITY.lua` over `DEFAULTS` | `apply()` |
+| `settings()` | `{enabled, unity, skip_jobs}` (the job list as a set): `HP_PRIORITY_CONFIG.lua` over `DEFAULTS` | `apply()` |
 | `_piece_hp_mp(data, name, augments, unity, scanned)` | `hp, mp` (`scanned`: gear scan cache, optional) | offline scripts only |
 | `_augment_hp_mp(augments)` | `hp, mp` of a list of augment strings | `gear_scan.lua` |
 | `_config` | `{DEFAULTS, MP_WEIGHT}` | offline scripts only |
@@ -970,8 +970,8 @@ return M
   `source_bags`, `default_list`, `subjobs`, and for the foreign sweep `store_foreign`,
   `foreign_characters`, `never_store`; template `_master/config_global/REFILL_CONFIG.lua`). A list
   file's own bag fields win. The same file's `quiver_open_at` is read by `QuiverManager` only.
-- Weapon resolver: `<Char>/_common/combat/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
-- HP priority: `<Char>/_common/combat/HP_PRIORITY.lua` (template `_master/config_global/HP_PRIORITY.lua`),
+- Weapon resolver: `<Char>/_common/gear/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
+- HP priority: `<Char>/_common/gear/HP_PRIORITY_CONFIG.lua` (template `_master/config_global/HP_PRIORITY_CONFIG.lua`),
   every key optional: `enabled` (`false` turns it off), `unity` (`'max'` when the Unity leader is
   rank 1, `'min'` otherwise), `skip_jobs`. No file: `DEFAULTS`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:56`, used only when there is neither a job
@@ -1079,7 +1079,7 @@ return M
 - The quiver must stay in the inventory, and the character's refill list for the job must name it, or
   the next refill pushes it away as foreign.
 - HP priority replaces every hand-written `priority` (the sets themselves are not changed); a job
-  that must keep a hand-set order goes in `skip_jobs` of `HP_PRIORITY.lua`, where the whole system
+  that must keep a hand-set order goes in `skip_jobs` of `HP_PRIORITY_CONFIG.lua`, where the whole system
   leaves it alone.
 - The HP / MP of a piece come from the index built at load: a piece that no set names and that was not
   worn at load (put on by hand later) counts only its scanned augments, not its base HP / MP.
@@ -1105,9 +1105,9 @@ return M
   `_common/inventory/WARDROBE_CONFIG.lua` (the organizer then leaves it alone too); an item it must
   count as used: `KEEP` or `NEVER_MOVE` there. The in-game total still counts a `NEVER_TOUCH` wardrobe
   as used.
-- HP priority for one character: edit its `_common/combat/HP_PRIORITY.lua` (`unity`,
+- HP priority for one character: edit its `_common/gear/HP_PRIORITY_CONFIG.lua` (`unity`,
   `skip_jobs`, `enabled`). The defaults for every character are `DEFAULTS` in `hp_priority.lua` and
-  the template `_master/config_global/HP_PRIORITY.lua`.
+  the template `_master/config_global/HP_PRIORITY_CONFIG.lua`.
 - A new job that has weapon states: call `WeaponResolver.set_for('main'|'sub', state.X.current)` from
   its set builder rather than `sets[value]`, so `equip_without_set` works for it.
 - A new stance lock in the style of `AmpullaLock`: lock only after reading that the piece is worn,

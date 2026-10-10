@@ -22,7 +22,7 @@ after the mode's value is laid on top of idle and engaged.
 - A new value you add to `MainWeapon` or `RangeWeapon` in `COR_STATES.lua` needs a set
   of the same name: `sets['Fomalhaut'] = { range = "Fomalhaut" }`. Without it, nothing
   is equipped for that value. (For the main weapon only, `equip_without_set` in
-  `_common/combat/WEAPON_CONFIG.lua` lets a plain weapon name work without a set; the gun
+  `_common/gear/WEAPON_CONFIG.lua` lets a plain weapon name work without a set; the gun
   always needs one.)
 - Changing either mode re-equips at once.
 - Sheol Gaol and similar events set your subjob to level 0: it keeps its name (/NIN) but
@@ -36,7 +36,7 @@ after the mode's value is laid on top of idle and engaged.
 |---|---|
 | `sets.idle.Normal` | Standing, not fighting (the base) |
 | `sets.idle.PDT` | `HybridMode` is PDT (the default). Laid on top of `sets.idle.Normal` |
-| `sets.idle.Refresh` | Your MP is under 50 % (`refresh_mp_below` in `_common/combat/TUNING.lua`) and your subjob gives MP (not with /NIN, /DNC, /WAR...). Laid on top of everything above, **PDT included** |
+| `sets.idle.Refresh` | Your MP is under 50 % (`refresh_mp_below` in `cor/combat/COR_CONFIG.lua`) and your subjob gives MP (not with /NIN, /DNC, /WAR...). Laid on top of everything above, **PDT included** |
 | `sets.idle.Town` | In a town other than Adoulin (not in the provided file). Laid on top of `sets.idle.Normal`: no PDT, no Refresh, no `sets.MoveSpeed` there, only your weapons on top |
 | `sets.Adoulin` | In Western / Eastern Adoulin. Laid on top of `sets.idle.Normal` the same way |
 

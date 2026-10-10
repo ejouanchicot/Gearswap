@@ -47,10 +47,10 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/core/optional_state.lua`, `optional_state_commands.lua` | Base of Combat Mode and Treasure Mode: shown / hidden / key per job, commands (see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)) |
 | `shared/utils/core/live_tp.lua` | TP read from the game, not from GearSwap's copy |
 | `shared/utils/core/gear_hold.lua` | `GearHold.active()`: whether a COR roll holds the idle / engaged gear; asked by DualWield, TreasureHunter (engaged overlay) and the custom gear hook (see [core-lifecycle.md](core-lifecycle.md#gearhold)) |
-| `shared/utils/core/auto_options.lua` | Opt-in automatic job abilities (`_common/combat/AUTO_ABILITIES.lua`) |
-| `shared/utils/core/tuning.lua` | Job thresholds and names set per character (`_common/combat/TUNING.lua`) |
-| `shared/utils/core/job_addons.lua` | Whether a job may load / unload a Windower addon (`_common/display/ADDONS_CONFIG.lua`) |
-| `_master/config_global/DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `AUTO_ABILITIES.lua`, `TUNING.lua`, `ADDONS_CONFIG.lua` | Templates of the per-character settings of the helpers above (`TUNING` and `ADDONS_CONFIG`: every line commented out) |
+| `shared/utils/core/auto_options.lua` | The automatic job abilities a character turns on or off, by the names the jobs ask by (switches of `<job>/combat/<JOB>_CONFIG.lua`, through `JobConfig`) |
+| `shared/utils/core/job_config.lua` | `JobConfig`: a job's own settings (`<job>/combat/<JOB>_CONFIG.lua`) and the two common files `_common/combat/SUBJOB_CONFIG.lua`, `_common/travel/WARP_CONFIG.lua` |
+| `shared/utils/core/job_addons.lua` | Whether a job may load / unload a Windower addon (`_common/tools/ADDONS_CONFIG.lua`) |
+| `_master/config_global/DW_CONFIG.lua`, `ELEMENTAL_BELT_CONFIG.lua`, `SUBJOB_CONFIG.lua`, `WARP_CONFIG.lua`, `ADDONS_CONFIG.lua`; `_master/config/<job>/<JOB>_CONFIG.lua` (blm, blu, cor, dnc, geo, pld, sam, smn, war, whm) | Templates of the per-character settings of the helpers above, every key written with its default |
 
 Other helpers in `shared/utils/equipment/` are documented elsewhere:
 
@@ -423,7 +423,7 @@ It does not replay anything. Callers: `//gs c jump` (`COMMON_COMMANDS.lua` `hand
    - a party or alliance member (`in_party` / `in_alliance`, fields `get_mob_by_target` does carry): the estimate `hp / (hpp/100) - hp` (`get_missing_hp`);
    - a mob: unknown (`nil`);
    - no target: self.
-3. `preferred_curing_waltz`. With HP known, the tier whose band contains it (`curing_hp_brackets()`, rebuilt at each call from `DEFAULT_WALTZ_FROM` with `TUNING.lua` `waltz_from` over it, see [Tuning](#tuning-sharedutilscoretuninglua): I < 200, II 200-600, III 600-1100, IV 1100-1500, V ≥ 1500 by default). With HP unknown, the highest tier the level allows.
+3. `preferred_curing_waltz`. With HP known, the tier whose band contains it (`curing_hp_brackets()`, rebuilt at each call from `DEFAULT_WALTZ_FROM` with `waltz_from` of `_common/combat/SUBJOB_CONFIG.lua` over it, see [JobConfig](#jobconfig-sharedutilscorejob_configlua): I < 200, II 200-600, III 600-1100, IV 1100-1500, V ≥ 1500 by default). With HP unknown, the highest tier the level allows.
 4. `curing_priority`: the preferred tier first, then every other castable tier from highest down. The first one with its recast ready (`is_recast_ready`) and enough TP is sent as `/ja "<name>" <stpc>`, with `show_waltz_heal`.
 5. If none fires, `curing_blockers` builds one cooldown line per tier and one TP line, shown with `show_multi_status`.
 
@@ -446,7 +446,7 @@ The recast ids match `res/job_abilities.lua`. The project's own `shared/data/job
 
 | Function | Behaviour |
 |---|---|
-| `settings()` | `{enabled, min_bonus}` from `<Character>/_common/combat/ELEMENTAL_BELT.lua` (`dofile`, cached in `_G._elemental_belt_settings`), defaults `true` / 5; template `_master/config_global/ELEMENTAL_BELT.lua` |
+| `settings()` | `{enabled, min_bonus}` from `<Character>/_common/gear/ELEMENTAL_BELT_CONFIG.lua` (`dofile`, cached in `_G._elemental_belt_settings`), defaults `true` / 5; template `_master/config_global/ELEMENTAL_BELT_CONFIG.lua` |
 | `owned()` | `{[OBI] = bool, [ORPHEUS] = bool}` from the inventory and wardrobes 1-8 (bags 0, 8, 10-16), read through `gearswap.res`; cached 60 s in `_G._elemental_belt_owned` |
 | `applies(spell, phase)` | Precast: weaponskills of `WEAPONSKILLS` (magical and hybrid) and Quick Draw except Light / Dark Shot. A spell's precast is its Fast Cast set, left alone. Midcast: Elemental Magic except the DoTs (`DOTS`), Banish / Holy, `<X>ton: Ichi\|Ni\|San`, and Blue Magic of a `Magical*` category (`blu/functions/logic/spell_map.lua`) |
 | `choose(spell)` | `ElementalBonus.for_action`, then the owned belt with the higher bonus, provided that bonus reaches `min_bonus`; returns `belt, bonus, obi, orpheus`. Below `min_bonus`, the set's own belt stays |
@@ -470,7 +470,7 @@ Callers: `ElementalBelt`, and the CUSTOM conditions `obi_better`, `orpheus_bette
 
 ## TreasureHunter
 
-`shared/utils/equipment/treasure_hunter.lua` makes Treasure Hunter shared by every job. `TreasureMode` is an optional state (`TreasureHunter.optional`, file `_common/keys/treasure_mode.lua`, default key `!numpad.`). THF defines it in its STATES file (Tag / SATA / Full) and shows it; every other job gets it with values Off / Tag / Full, set to Off and hidden until `//gs c th show` (`treasure_commands.lua`). A job without `sets.TreasureHunter` gets no TH gear, whatever the mode. The DNC and THF templates define that set.
+`shared/utils/equipment/treasure_hunter.lua` makes Treasure Hunter shared by every job. `TreasureMode` is an optional state (`TreasureHunter.optional`, file `saved/treasure_mode.lua`, default key `!numpad.`). THF defines it in its STATES file (Tag / SATA / Full) and shows it; every other job gets it with values Off / Tag / Full, set to Off and hidden until `//gs c th show` (`treasure_commands.lua`). A job without `sets.TreasureHunter` gets no TH gear, whatever the mode. The DNC and THF templates define that set.
 
 Modes:
 
@@ -519,7 +519,7 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 - **Tiers.** `sets.DW.NoHaste`, `Haste` (15 %), `HasteII` (30 %), `MaxHaste` (43.75 %). A missing tier falls back to the one below, which means more DW. No `sets.DW` at all: nothing happens. The templates of BLU, BRD, BST, COR, DNC, RDM and THF end with a commented example.
 - **Magic haste estimate** (`magic_haste()`):
   - buffs from `get_player().buffs`: 33 Haste, 580 Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March (up to 2);
-  - the value of each from `<Character>/_common/combat/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
+  - the value of each from `<Character>/_common/gear/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
   - Haste vs Haste II (same buff) and which March come from the action packets (`ActionListener` key `dual_wield`, [core-lifecycle.md](core-lifecycle.md#actionlistener)): spells 57 / 511 / 710 (Erratic Flutter) and 417 / 419 / 420, landing on this character, kept on `windower._dw_tracked`.
 - **Not counted**: JA haste, Slow (buff 13) and Elegy (194). Their strength is unknown, and they are rare and short on a player. The config header tells the player to force `//gs c dw none` while slowed.
 - **Re-dress.** On `gain buff` / `lose buff` of those buffs, after 0.3 s, it sends `gs c update` when the tier changed and the player is engaged (token `windower._dw_update_token`).
@@ -649,43 +649,90 @@ The module returns a function: `local live_tp = require('shared/utils/core/live_
 
 ### `AutoOptions` (`shared/utils/core/auto_options.lua`)
 
-`AutoOptions.on(name)` -> boolean reads `<Character>/_common/combat/AUTO_ABILITIES.lua` once per sandbox (`pcall(require, 'config/AUTO_ABILITIES')`, cached in `_G._auto_options`, template in `_master/config_global/`). Every option is off unless the file sets it true:
+`AutoOptions.on(name)` -> boolean is true only when the option is set to `true` (the opt-in automations). `AutoOptions.enabled(name, default)` -> boolean returns the file's `true` / `false`, else `default`: the automations that always ran before they could be turned off are asked with `true`. The names are the ones the jobs ask by and did not change on 2026-10-10; the local table `HOME` maps each to its job and to the key the player writes, and the local `value_of(name)` returns `JobConfig.get(job, key)` (no default: `nil` when the file says nothing, and for a name `HOME` lacks). So the value comes from `<Character>/<job>/combat/<JOB>_CONFIG.lua`, or from `_common/combat/AUTO_ABILITIES.lua` under the option's own name where a folder still has that file ([JobConfig](#jobconfig-sharedutilscorejob_configlua), `BEFORE`). Nothing is cached here.
 
-| Option | Job | Effect | Reader |
-|---|---|---|---|
-| `sam_hasso` | SAM | the chosen stance (`state.Stance`: Hasso or Seigan) on engage unless Hasso or Seigan is up | `SAM_STATUS.lua` |
-| `geo_entrust` | GEO | Entrust before an Indi- aimed at a party member | `geo/functions/logic/geo_auto_abilities.lua` |
-| `geo_full_circle` | GEO | Full Circle before a Geo- while a luopan is out | same |
-| `blu_unbridled` | BLU | Unbridled Learning before an unbridled spell | `blu/functions/logic/unbridled.lua` |
-| `blu_expiacion_window` | BLU | Expiacion held once under 3000 TP without Aftermath: Lv.3 | `blu/functions/logic/expiacion_guard.lua` |
+| Option (the code's name) | Job file, key | Asked with | Effect | Reader |
+|---|---|---|---|---|
+| `sam_hasso` | `SAM_CONFIG.lua` `auto_hasso` | `on` | the chosen stance (`state.Stance`: Hasso or Seigan) on engage unless Hasso or Seigan is up | `sam/functions/SAM_STATUS.lua` |
+| `sam_third_eye_ws` | `SAM_CONFIG.lua` `auto_third_eye_ws` | `enabled(.., true)` | Third Eye before a weaponskill | `sam/functions/SAM_PRECAST.lua` `try_third_eye_ws` |
+| `geo_entrust` | `GEO_CONFIG.lua` `auto_entrust` | `on` | Entrust before an Indi- aimed at a party member | `geo/functions/logic/geo_auto_abilities.lua` |
+| `geo_full_circle` | `GEO_CONFIG.lua` `auto_full_circle` | `on` | Full Circle before a Geo- while a luopan is out | same |
+| `blu_unbridled` | `BLU_CONFIG.lua` `auto_unbridled` | `on` | Unbridled Learning before an unbridled spell | `blu/functions/logic/unbridled.lua` |
+| `blu_expiacion_window` | `BLU_CONFIG.lua` `expiacion_window` | `on` | Expiacion held once under 3000 TP without Aftermath: Lv.3 | `blu/functions/logic/expiacion_guard.lua` |
+| `pld_divine_emblem` | `PLD_CONFIG.lua` `auto_divine_emblem` | `enabled(.., true)` | Divine Emblem before Flash | `pld/functions/PLD_PRECAST.lua` |
+| `pld_majesty` | `PLD_CONFIG.lua` `auto_majesty` | `enabled(.., true)` | Majesty before Protect / Cure | same |
+| `blm_dark_arts` | `BLM_CONFIG.lua` `auto_dark_arts` | `enabled(.., true)` | /SCH: Dark Arts before a nuke | `blm/functions/blm_functions.lua` `checkArts` |
+| `blm_klimaform` | `BLM_CONFIG.lua` `auto_klimaform` | `enabled(.., true)` | /SCH: Klimaform before a storm (`//gs c storm`) | `blm/functions/logic/storm_manager.lua` `cast_storm_with_klimaform` |
+| `dnc_presto` | `DNC_CONFIG.lua` `auto_presto` | `enabled(.., true)` | Presto before a step (`//gs c step`) | `dnc/functions/logic/step_manager.lua` |
+| `war_retaliation_cancel` | `WAR_CONFIG.lua` `retaliation_cancel` | `enabled(.., true)` | Retaliation cancelled after 5 s of running | `war/functions/WAR_MOVEMENT.lua` |
 
-### `Tuning` (`shared/utils/core/tuning.lua`)
+### `JobConfig` (`shared/utils/core/job_config.lua`)
 
-`Tuning.get(key, default)` returns `<Character>/_common/combat/TUNING.lua`'s `key`
-(`CharPaths.optional('common', 'TUNING')` under pcall; missing file or key: `default`). A table
-default is copied and the file's keys are laid over it, so one key is enough; a table default given a
+Since 2026-10-10 a setting that belongs to one job lives in that job's folder, and `Tuning`
+(`shared/utils/core/tuning.lua`, `_common/combat/TUNING.lua`) is gone. Two functions:
+
+- `JobConfig.get(job, key, default)`: `key` of `<Character>/<job>/combat/<JOB>_CONFIG.lua`
+  (`CharPaths.optional('job', '<JOB>_CONFIG', job)`; the local table `FILE` sends BRD to its
+  `BRD_SONG_CONFIG.lua`, whose keys are fields of `BRDSongConfig`).
+- `JobConfig.common(file, key, default)`: `key` of a common file, `'SUBJOB_CONFIG'`
+  (`_common/combat/`) or `'WARP_CONFIG'` (`_common/travel/`), through `CharPaths.optional('common', file)`.
+
+The merge rules are those `Tuning.get` had (local `over`). A missing file or key, and a file that
+does not load or does not return a table (the read is under pcall), keep `default`. A table default
+is copied and the file's keys are laid over it, so one key is enough; a table default given a
 non-table value, or a non-table default given a value of another type, keeps the default. Inside a
 table, a file value whose key exists in the default with another type is skipped (`weak_below = '50'`
-keeps 50); a key the default lacks is kept as given. Every reader calls it at the moment it needs the value.
+keeps 50); a key the default lacks is kept as given. With no default (`nil`) the file's value is
+returned as it is. Every reader calls it at the moment it needs the value and nothing is kept in the
+module (the file itself is a cached `require`: an edit applies after a reload).
 
-| Key | Default | Reader |
-|---|---|---|
-| `sam_idle_hp` | `{weak_below = 50, regen_below = 80}` | `sam/functions/logic/set_builder.lua` `build_idle_set`: `sets.idle.Weak` under `weak_below` HP %, else `sets.idle.Regen` under `regen_below` |
-| `refresh_mp_below` | `{COR = 50, WHM = 51}` | `cor/functions/logic/set_builder.lua` (`sets.idle.Refresh`, only with `max_mp > 0`), `whm/functions/logic/set_builder.lua` (`sets.latent_refresh`) |
-| `waltz_from` | `{['Curing Waltz II'] = 200, ['Curing Waltz III'] = 600, ['Curing Waltz IV'] = 1100, ['Curing Waltz V'] = 1500}` | `shared/utils/dnc/waltz_manager.lua` `curing_hp_brackets`: tier N covers `[from[N], from[N+1])`, Curing Waltz has no floor, V no ceiling |
-| `smn_skillup` | `{avatar = 'Siren', release_after = 5.0}` | `smn/functions/SMN_COMMANDS.lua` `start_skillup` (read at each start into `SKILLUP_STATE.avatar` / `cast_to_release_delay`) |
-| `geo_escort_indi` | `'Indi-Regen'` | `geo/functions/GEO_COMMANDS.lua` `escort` when no Indi- is given |
-| `brd_debuff_songs` | `{lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}` | `brd/functions/BRD_COMMANDS.lua` (`lullaby`, `lullaby2` / `foe`, `elegy`, `requiem`); the spell is also passed to the chat message |
-| `brd_songs_refresh_below` | `180` | `song_opening.lua`: `//gs c songs` sends nothing while every song of the plan is ours with more seconds left; 0 always sings |
-| `stratagem_full_recharge` | `240` (seconds, `DEFAULT_FULL_RECHARGE`) | `shared/utils/scholar/stratagem_charges.lua` `available` and `next_charge_minutes`: charges = `floor(max - max * recast / full)`, one charge every `full / max` s. Lower it with the job-point gift |
-| `warp_ring_safety` | `3.5` (seconds, `DEFAULT_SAFETY_DELAY`) | `shared/utils/warp/casting/item_user.lua` `safety_delay`: how long a warp ring is held once it reads ready, before it is used; never under 0 |
+**The places of before (`BEFORE`).** Until 2026-10-10 these settings were in three common files:
+`_common/combat/TUNING.lua`, `AUTO_ABILITIES.lua` and the `war_` keys of `BUFF_CONFIG.lua`. The local
+table `BEFORE` gives, per job (or per common file) and key, `{old file, old key, key inside it}`, and
+both functions ask the local `before(owner, key)` FIRST: a value the old file gives wins over the new
+file, since in a folder that was not tidied it is what its player chose. The third field is for
+`refresh_mp_below`, which was one table `{COR = .., WHM = ..}` and is now a number in each job's file.
+Once `migrate_config.py` has run the old files are gone (and `BUFF_CONFIG.lua` has no `war_` key), so
+the job's file is the only place. `CharPaths` still knows `TUNING.lua` and `AUTO_ABILITIES.lua`
+(`COMMON_GROUPS`, in `combat/`) for that read.
 
-A new key: give the job's value as `default` at the call, add a commented line with that default to
-`_master/config_global/TUNING.lua`, and list it here and in the player's configuration guide.
+| File | Key (before: file, key) | Default | Reader |
+|---|---|---|---|
+| `sam/combat/SAM_CONFIG.lua` | `auto_hasso` (AUTO_ABILITIES `sam_hasso`) | `false` | `AutoOptions.on('sam_hasso')`: `sam/functions/SAM_STATUS.lua` |
+| | `auto_third_eye_ws` (AUTO_ABILITIES `sam_third_eye_ws`) | `true` | `AutoOptions.enabled('sam_third_eye_ws', true)`: `sam/functions/SAM_PRECAST.lua` |
+| | `idle_hp` (TUNING `sam_idle_hp`) | `{weak_below = 50, regen_below = 80}` | `sam/functions/logic/set_builder.lua` `build_idle_set`: `sets.idle.Weak` under `weak_below` HP %, else `sets.idle.Regen` under `regen_below` |
+| `geo/combat/GEO_CONFIG.lua` | `auto_entrust` (AUTO_ABILITIES `geo_entrust`) | `false` | `AutoOptions.on('geo_entrust')`: `geo/functions/logic/geo_auto_abilities.lua` `apply` |
+| | `auto_full_circle` (AUTO_ABILITIES `geo_full_circle`) | `false` | `AutoOptions.on('geo_full_circle')`: same |
+| | `escort_indi` (TUNING `geo_escort_indi`) | `'Indi-Regen'` | `geo/functions/GEO_COMMANDS.lua` `escort` when no Indi- is given |
+| `blu/combat/BLU_CONFIG.lua` | `auto_unbridled` (AUTO_ABILITIES `blu_unbridled`) | `false` | `AutoOptions.on('blu_unbridled')`: `blu/functions/logic/unbridled.lua` |
+| | `expiacion_window` (AUTO_ABILITIES `blu_expiacion_window`) | `false` | `AutoOptions.on('blu_expiacion_window')`: `blu/functions/logic/expiacion_guard.lua` |
+| `pld/combat/PLD_CONFIG.lua` | `auto_divine_emblem` (AUTO_ABILITIES `pld_divine_emblem`) | `true` | `AutoOptions.enabled('pld_divine_emblem', true)`: `pld/functions/PLD_PRECAST.lua` |
+| | `auto_majesty` (AUTO_ABILITIES `pld_majesty`) | `true` | `AutoOptions.enabled('pld_majesty', true)`: same |
+| `blm/combat/BLM_CONFIG.lua` | `auto_dark_arts` (AUTO_ABILITIES `blm_dark_arts`) | `true` | `AutoOptions.enabled('blm_dark_arts', true)`: `blm/functions/blm_functions.lua` `checkArts` |
+| | `auto_klimaform` (AUTO_ABILITIES `blm_klimaform`) | `true` | `AutoOptions.enabled('blm_klimaform', true)`: `blm/functions/logic/storm_manager.lua` |
+| `dnc/combat/DNC_CONFIG.lua` | `auto_presto` (AUTO_ABILITIES `dnc_presto`) | `true` | `AutoOptions.enabled('dnc_presto', true)`: `dnc/functions/logic/step_manager.lua` |
+| `war/combat/WAR_CONFIG.lua` | `retaliation_cancel` (AUTO_ABILITIES `war_retaliation_cancel`) | `true` | `AutoOptions.enabled('war_retaliation_cancel', true)`: `war/functions/WAR_MOVEMENT.lua` |
+| | `berserk` (BUFF_CONFIG `war_berserk`) | `{'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` (`WAR_CHAINS.berserk`) | `war/functions/logic/smartbuff_manager.lua` `buff_war`: asked with no default, so the player's list is taken whole (a shorter list is not filled up); `WAR_CHAINS` when the file gives none |
+| | `defender` (BUFF_CONFIG `war_defender`) | `{'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'}` (`WAR_CHAINS.defender`) | same, for `buff_war('Defender')` |
+| | `add_sam` (BUFF_CONFIG `war_add_sam`) | `true` | same: on /SAM, the stance and Third Eye after the chain |
+| `cor/combat/COR_CONFIG.lua` | `refresh_mp_below` (TUNING `refresh_mp_below.COR`) | `50` | `cor/functions/logic/set_builder.lua` `build_idle_set` (`sets.idle.Refresh`, only with `max_mp > 0`) |
+| `whm/combat/WHM_CONFIG.lua` | `refresh_mp_below` (TUNING `refresh_mp_below.WHM`) | `51` | `whm/functions/logic/set_builder.lua` `build_idle_set` (`sets.latent_refresh`) |
+| `smn/combat/SMN_CONFIG.lua` | `skillup` (TUNING `smn_skillup`) | `{avatar = 'Siren', release_after = 5.0}` | `smn/functions/SMN_COMMANDS.lua` `start_skillup` (read at each start into `SKILLUP_STATE.avatar` / `cast_to_release_delay`) |
+| `brd/combat/BRD_SONG_CONFIG.lua` | `BRDSongConfig.DEBUFF_SONGS` (TUNING `brd_debuff_songs`) | `{lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}` | `brd/functions/BRD_COMMANDS.lua` (`lullaby`, `lullaby2` / `foe`, `elegy`, `requiem`); the spell is also passed to the chat message |
+| | `BRDSongConfig.REFRESH_BELOW` (TUNING `brd_songs_refresh_below`) | `180` (`DEFAULT_REFRESH_BELOW`) | `brd/functions/logic/song_opening.lua` `nothing_to_sing`: `//gs c songs` sends nothing while every song of the plan is ours with more seconds left; 0 always sings |
+| `_common/combat/SUBJOB_CONFIG.lua` | `waltz_from` (TUNING `waltz_from`) | `{['Curing Waltz II'] = 200, ['Curing Waltz III'] = 600, ['Curing Waltz IV'] = 1100, ['Curing Waltz V'] = 1500}` (`DEFAULT_WALTZ_FROM`) | `shared/utils/dnc/waltz_manager.lua` `curing_hp_brackets`: tier N covers `[from[N], from[N+1])`, Curing Waltz has no floor, V no ceiling |
+| | `stratagem_full_recharge` (TUNING `stratagem_full_recharge`) | `240` (seconds, `DEFAULT_FULL_RECHARGE`) | `shared/utils/scholar/stratagem_charges.lua` `available` and `next_charge_minutes`: charges = `floor(max - max * recast / full)`, one charge every `full / max` s. Lower it with the job-point gift |
+| `_common/travel/WARP_CONFIG.lua` | `ring_safety` (TUNING `warp_ring_safety`) | `3.5` (seconds, `DEFAULT_SAFETY_DELAY`) | `shared/utils/warp/casting/item_user.lua` `safety_delay`: how long a warp ring is held once it reads ready, before it is used; never under 0 |
+
+A new setting of one job: give the job's value as `default` at the `JobConfig.get` call, write the
+key with that default in `_master/config/<job>/<JOB>_CONFIG.lua` (`python migrate_config.py
+--templates` writes those ten files from its `JOBS` table, so add the key there too), and list it here
+and in the player's configuration guide. No `BEFORE` entry: only a setting that existed before
+2026-10-10 has an older place.
 
 ### `JobAddons` (`shared/utils/core/job_addons.lua`)
 
-`JobAddons.allowed(addon)` is `false` only when `<Character>/_common/display/ADDONS_CONFIG.lua`
+`JobAddons.allowed(addon)` is `false` only when `<Character>/_common/tools/ADDONS_CONFIG.lua`
 (`CharPaths.optional('common', 'ADDONS_CONFIG')` under pcall) has that name, compared case-insensitively,
 set to `false`; missing file, missing name or any other value: `true`. `JobAddons.run(action, addon)`
 sends `lua <action> <addon>` when allowed and returns whether it did.
@@ -786,7 +833,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Combat Mode lock | hook | needs the state shown |
 | Impact's cloak kept on (`ImpactLock`) | wraps `precast` / `aftercast` / `cancel_spell` at load; equip hook (`equip_hooks.lua`, order 5) while Impact is cast | every character and job; the cloak (Crepuscular or Twilight) in `sets.precast.FC.Impact` / `sets.midcast.Impact`, or just owned in an equippable bag |
 | Doubled rings / earrings / weapons (`DuplicateGear`) | equip hook (`equip_hooks.lua`, order 10), registered at load | every character and job; copies must sit in different bags (`//gs c wo` spreads them) |
-| HP priority | `HPPriority.apply()` at load, then the equip hook (`equip_hooks.lua`, order 20) at every swap | every character; every job except the `skip_jobs` of `_common/combat/HP_PRIORITY.lua` (default none) |
+| HP priority | `HPPriority.apply()` at load, then the equip hook (`equip_hooks.lua`, order 20) at every swap | every character; every job except the `skip_jobs` of `_common/gear/HP_PRIORITY_CONFIG.lua` (default none) |
 | Weapon Aftermath set (`WeaponAftermath`) | engaged base selector | WAR, SAM, DRK, THF: `sets.engaged.<Weapon>AFM3` |
 | Lockstyle / macrobook factories | wrappers | |
 | KeybindGuard, common keys, key conflicts | KeybindManager | every job |
@@ -797,24 +844,24 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 **Per job:**
 
-| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | Own `JumpAuto` state and key (AutoJump itself: every job) | Own part of `buff` (the common `buff`: every job) | AUTO_ABILITIES options | Other job-specific shared use |
+| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | Own `JumpAuto` state and key (AutoJump itself: every job) | Own part of `buff` (the common `buff`: every job) | `AutoOptions` names (keys: [AutoOptions](#autooptions-sharedutilscoreauto_optionslua)) | Other job-specific shared use |
 |---|---|---|---|---|---|---|---|---|---|---|
-| BLM | yes (base builder) | native (`^numpad8`) | optional | | | yes (`follow_up` Dark Arts) | | | | ElementalMatcher defers to ElementalBelt |
+| BLM | yes (base builder) | native (`^numpad8`) | optional | | | yes (`follow_up` Dark Arts) | | | `blm_dark_arts`, `blm_klimaform` | ElementalMatcher defers to ElementalBelt |
 | BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | Combat Mode On keeps the worn weapons because their slots are locked (`apply_weapon` itself does not test the mode) |
 | BRD | yes | optional | optional | | commented | yes (Pianissimo, Nightingale / Troubadour) | | | | |
 | BST | yes (base builder, idle, outside town; since 2026-09-29) | optional | optional | | commented | | | | | |
 | COR | yes | optional | optional | | commented | | | | | DualWield, the TH engaged overlay and the custom idle / engaged gear skip during a roll hold (`GearHold`) |
-| DNC | yes | optional | optional | yes | commented | yes (Climactic Flourish, Presto) | yes | yes (`job_buff_extra`: dance, samba) | | WaltzManager |
+| DNC | yes | optional | optional | yes | commented | yes (Climactic Flourish, Presto) | yes | yes (`job_buff_extra`: dance, samba) | `dnc_presto` | WaltzManager |
 | DRK | yes (own builder) | optional | optional | | | | | | | weapons through `WeaponResolver` (`equip_without_set`) since 2026-09-28 |
 | GEO | yes | native (`^numpad0`) | optional | | | yes (Entrust, Full Circle) | | | `geo_entrust`, `geo_full_circle` | |
-| PLD | yes | optional | optional | | | yes (Divine Emblem, Majesty) | | | | |
+| PLD | yes | optional | optional | | | yes (Divine Emblem, Majesty) | | | `pld_divine_emblem`, `pld_majesty` | |
 | PUP | yes (base builder, idle, outside town) | optional | optional | commented | | | | | | CooldownChecker exempts the maneuvers (charges); `LifecycleManager.refresh_after_buff` for Overdrive |
 | RDM | yes | native (`^numpad5`) | optional | | commented | yes (Saboteur) | | | | SpellGearLock (Dispelga); set builder skips weapon states while Combat Mode is On |
 | RUN | yes | optional | optional | | | | | | | |
-| SAM | yes (base builder, idle; since 2026-09-28) | optional | optional | | | yes (Third Eye, Hasso check) | | | `sam_hasso` | |
+| SAM | yes (base builder, idle; since 2026-09-28) | optional | optional | | | yes (Third Eye, Hasso check) | | | `sam_hasso`, `sam_third_eye_ws` | |
 | SMN | yes | optional | optional | | | | | | | |
 | THF | yes | optional | native (`^numpad3`, Tag / SATA / Full) | yes (+ SA / TA / SATA / RA variants) | commented | | | | | THF builds its engaged TH itself |
-| WAR | yes | optional | optional | | | | yes | yes (buff hook, subjob TP ability) | | AutoMove callback (Retaliation) |
+| WAR | yes | optional | optional | | | | yes | yes (buff hook, subjob TP ability) | `war_retaliation_cancel` | AutoMove callback (Retaliation) |
 | WHM | yes | native (`^numpad2`) | optional | | | | | | | CureManager; `Melee ON` weapon lock with a craft-session guard |
 
 "optional" means that the state is created Off and its row and key are hidden until `//gs c combatmode show` / `//gs c th show`, or until `shown` in the character's settings file lists the job.
@@ -852,12 +899,12 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 - **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand: lockstyle and macro book always go through the two factories.
 - **New craft.** Add `<char>/_common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
-- **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_TIERS` / `DEFAULT_WALTZ_FROM` (and the `waltz_from` example of `_master/config_global/TUNING.lua`). Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
+- **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_TIERS` / `DEFAULT_WALTZ_FROM` (and the `waltz_from` line of `_master/config_global/SUBJOB_CONFIG.lua`). Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
 - **New AutoMove consumer.** Read `state.Moving.value` in the set builder (or go through `base_set_builder.lua`), or register a callback from a coroutine scheduled after 0.5 s.
 - **New belt weaponskill.** Add it to `WEAPONSKILLS` in `elemental_belt.lua`. A new damaging spell family goes in `applies`.
 - **New spell that needs a piece.** Add it to `REQUIRED` in `spell_gear_lock.lua` and wire the four calls (`begin`, `hold` twice, `release`) plus a `cast` command on the job that casts it. Add its slots to `SLOTS_BY_SPELL` in `custom_guards.lua`.
 - **New haste source for DW.** Add the buff id to `WATCHED_BUFFS` and `magic_haste`, and its value to `DEFAULTS` and to `_master/config_global/DW_CONFIG.lua`.
-- **New AUTO_ABILITIES option.** Read it with `AutoOptions.on('<name>')`, add it (false) to `_master/config_global/AUTO_ABILITIES.lua` with a header line, and list it in the table above.
+- **New automatic-ability option.** Read it with `AutoOptions.on('<name>')` (off by default) or `AutoOptions.enabled('<name>', true)` (on by default), add the name to `HOME` in `auto_options.lua` with its job and key, write the key with its default in `_master/config/<job>/<JOB>_CONFIG.lua` (and in the `JOBS` table of `migrate_config.py`, which writes those templates), and list it in the two tables above.
 - **Global hook trap.** A system that wraps `handle_equipping_gear` or `cleanup_*` must go through `INIT_SYSTEMS`. From `user_setup`, the wrap would be overwritten by Mote's own definitions a moment later. From a job file, the order relative to belt, DW, TH and CUSTOM is lost.
 - **Events trap.** Use `windower.raw_register_event` in shared helpers, and `ActionListener.on` for action packets. The plain `register_event` from job code runs GearSwap's `refresh_globals` + `equip_sets` on every event.
 - **TP trap.** Test TP with `live_tp()`, never `player.tp`, especially in a coroutine.

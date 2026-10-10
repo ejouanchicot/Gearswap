@@ -31,8 +31,8 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/utils/debuff/auto_medicine.lua` | 235 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`, `//gs c am debuffs`; cold-load value from `auto_medicine_start` |
 | `shared/utils/debuff/doom_manager.lua` | 139 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
 | `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 74 | Shared defaults: auto-cure switches, cure item lists, test mode |
-| `shared/utils/debuff/autocure_settings.lua` | 104 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTOCURE_CONFIG.lua` over them, key by key; item names resolved to ids |
-| `_master/config_global/AUTOCURE_CONFIG.lua` | 32 | Template of `<Char>/_common/combat/AUTOCURE_CONFIG.lua` (every key written with its default value) |
+| `shared/utils/debuff/autocure_settings.lua` | 104 | `AutoCureSettings.load()`: the shared defaults with the character's `_common/combat/AUTO_MEDICINE_CONFIG.lua` over them, key by key; item names resolved to ids |
+| `_master/config_global/AUTO_MEDICINE_CONFIG.lua` | 32 | Template of `<Char>/_common/combat/AUTO_MEDICINE_CONFIG.lua` (every key written with its default value) |
 | `shared/utils/precast/cooldown_checker.lua` | 143 | CooldownChecker: ability and spell recast checks with tolerance |
 | `shared/utils/precast/recast_announce.lua` | 83 | Party message (`/p`) for an action refused on recast, per `RECAST_CONFIG.party_announce` |
 | `_master/config_global/RECAST_CONFIG.lua` | 115 | Recast tolerance (2.0 s), party announce list, global `is_recast_ready` / `is_on_cooldown` |
@@ -413,7 +413,7 @@ that outlives the sandbox.
 | `RDM_PRECAST.lua` `stage_saboteur` | Saboteur (`try_ability_smart`, `RDMSaboteurConfig.wait_time`) | enfeebles in `RDMSaboteurConfig.auto_trigger_spells` when `state.SaboteurMode` is On |
 | `dnc/functions/logic/climactic_manager.lua` `auto_trigger` | Climactic Flourish (`try_ability_ws`, 1 s) | `state.ClimacticAuto` not Off, configured WS, live TP >= max(`min_tp`, 1000), target HP above `min_target_hpp`, 3 or more Finishing Moves |
 | `blu/functions/logic/unbridled.lua` | Unbridled Learning (`try_ability`) | an Unbridled spell, unless Unbridled Wisdom is up |
-| `geo/functions/logic/geo_auto_abilities.lua` `apply` | Entrust (`try_ability`, 1.5 s) | Indi- on an ally when turned on in `_common/combat/AUTO_ABILITIES.lua` |
+| `geo/functions/logic/geo_auto_abilities.lua` `apply` | Entrust (`try_ability`, 1.5 s) | Indi- on an ally when turned on (`auto_entrust` of `geo/combat/GEO_CONFIG.lua`, asked as `AutoOptions.on('geo_entrust')`) |
 | `blm_functions.lua` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
 | `dnc/functions/logic/step_manager.lua` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
 | `SAM_PRECAST.lua` | Third Eye (`follow_up`) | before Third Eye-gated actions |
@@ -846,24 +846,26 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 
 ## Configuration
 
-### Auto-cure settings (`DEBUFF_AUTOCURE_CONFIG.lua` + the character's `AUTOCURE_CONFIG.lua`)
+### Auto-cure settings (`DEBUFF_AUTOCURE_CONFIG.lua` + the character's `AUTO_MEDICINE_CONFIG.lua`)
 
 `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` holds the defaults (replaced by every
 update). `AutoCureSettings.load()` (`shared/utils/debuff/autocure_settings.lua`)
-copies them, then lays the character's `_common/combat/AUTOCURE_CONFIG.lua` over
-them key by key (`CharPaths.optional('common', 'AUTOCURE_CONFIG')`; missing file =
+copies them, then lays the character's `_common/combat/AUTO_MEDICINE_CONFIG.lua` over
+them key by key (`CharPaths.optional('common', 'AUTO_MEDICINE_CONFIG')`; missing file =
 defaults only). Since 2026-10-01 the item lists come from one place for Auto
 Medicine and `//gs c cleanse`: `silence_cure_items` / `paralysis_cure_items` are
 taken from the `items` of `_common/combat/CLEANSE_CONFIG.lua` (keys `silence`,
 `paralysis`) through `CleanseMethods.items_for`, else the defaults of
 `shared/data/debuffs/DEBUFF_REMOVAL.lua` (`cleanse_items` in
-`autocure_settings.lua`); the lists of `AUTOCURE_CONFIG.lua` and of the shared file
+`autocure_settings.lua`); the lists of `AUTO_MEDICINE_CONFIG.lua` and of the shared file
 are only used when those modules cannot be read. An entry may be a plain name
 (`'Echo Drops'`) or `{ name, id }`; a name without id takes the id of the shared
 lists, else is looked up in `res.items`, and an entry whose id stays unknown is
 dropped. See [cleanse.md](cleanse.md). The template
-`_master/config_global/AUTOCURE_CONFIG.lua` has every key written with its default value; the clone
-copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/combat/`.
+`_master/config_global/AUTO_MEDICINE_CONFIG.lua` has every key written with its default value; the clone
+copies it (step 4c) and `CharPaths` / `migrate_layout.py` put it in `_common/combat/`. The file
+was `AUTOCURE_CONFIG.lua` until 2026-10-10: a folder that still has it under that name is read
+(`COMMON_BEFORE` in `char_paths.lua`), and `migrate_config.py` renames it.
 
 | Key | Default | Read by |
 |---|---|---|

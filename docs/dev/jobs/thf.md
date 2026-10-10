@@ -241,7 +241,7 @@ sequenceDiagram
    read directly); otherwise `WeaponResolver.set_for('main', MainWeapon)` then
    `set_for('sub', SubWeapon)`, each through `pcall(set_combine)`. By default
    `set_for` returns `sets[value]`; with `equip_without_set = true` in the
-   character's `_common/combat/WEAPON_CONFIG.lua` it returns the set only when it names
+   character's `_common/gear/WEAPON_CONFIG.lua` it returns the set only when it names
    that slot (for `sub`, only its `sub` piece), else `{main = value}` /
    `{sub = value}` when `value` is a weapon name in `res.items`. A missing
    weapon set is skipped silently.
@@ -332,7 +332,7 @@ Two layers:
 
 THF's own STATES file defines `TreasureMode` as `Tag`, `SATA`, `Full` (default
 `Tag`, no `Off`). `OptionalState.attach` records it as native, so it is shown
-unless `hidden.THF` is set in the character's `_common/keys/treasure_mode.lua`.
+unless `hidden.THF` is set in the character's `saved/treasure_mode.lua`.
 
 | Mode | Engaged set | SA/TA overlay | Action overlay |
 |------|-------------|---------------|----------------|
@@ -514,8 +514,8 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 | `<char>/thf/THF_MACROBOOK.lua` | book 1 page 1 solo; dual-box RDM 1, GEO 2, COR 3 | file; factory fallback 1/1 | `MacrobookManager` |
 | `<char>/thf/THF_TP_CONFIG.lua` -> `_G.THFTPConfig` | Moonshade ear1 +250; weapons Aeneas 500, Centovente 1000 | file | `TPBonusHandler` -> `TPBonusCalculator` (main and sub weapon) |
 | `<char>/thf/THF_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `refill/config_resolver.lua` |
-| `<char>/_common/keys/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
-| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
+| `<char>/saved/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
+| `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
 | Hard-coded | quiver threshold (`job_aftercast`, 5; per character `REFILL_CONFIG.lua` `quiver_open_at.THF`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
 

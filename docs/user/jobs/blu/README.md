@@ -23,7 +23,7 @@ you fill them in. The job does these things by itself:
 - **Weapons from modes** (Main Weapon, Sub Weapon). The template has only
   `Free`: add your weapons in `BLU_STATES.lua`.
 - **AzureSets.** The AzureSets addon (`//aset`) is loaded while you are BLU
-  (`AzureSets = false` in `_common/display/ADDONS_CONFIG.lua`: left alone).
+  (`AzureSets = false` in `_common/tools/ADDONS_CONFIG.lua`: left alone).
 - **Two automatic abilities, off by default**: Unbridled Learning before a
   spell that needs it, and an Expiacion hold for Tizona's Aftermath: Lv.3.
 
@@ -131,8 +131,8 @@ Checked in the code for BLU:
 | Debuff guard + Auto Medicine | An action blocked by silence, paralysis, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left (before Unbridled Learning is considered). Optional party message per action in `_common/combat/RECAST_CONFIG.lua` |
 | Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `BLU_TP_CONFIG.lua` ([TP bonus](../../features/tp-bonus.md)) |
-| Automatic abilities | `blu_unbridled` and `blu_expiacion_window` in `_common/combat/AUTO_ABILITIES.lua`, both off: see [states.md](states.md#automatic-abilities) |
-| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Magical Blue Magic, Sanguine Blade and the other elemental weaponskills when they add at least 5 % (`_common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) |
+| Automatic abilities | `auto_unbridled` and `expiacion_window` in `blu/combat/BLU_CONFIG.lua`, both off: see [states.md](states.md#automatic-abilities) |
+| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Magical Blue Magic, Sanguine Blade and the other elemental weaponskills when they add at least 5 % (`_common/gear/ELEMENTAL_BELT_CONFIG.lua`, `//gs c belt`) |
 | Combat Mode | Hidden; `//gs c combatmode show`, then `!numpad0`: On locks main, sub and range |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
 | Dual Wield tiers | With two weapons and engaged, `sets.DW.<tier>` on top by your magic haste. The template has it commented out |
@@ -146,8 +146,8 @@ Checked in the code for BLU:
 | Keybind HUD, key guard | The HUD shows every mode; the keys are sent again 2 s after each load |
 | Dual-box | Job exchange with your other boxes, alt commands, macro book per alt job |
 | Chat messages | Ability / spell / weaponskill messages, set with `jamsg`, `spellmsg`, `wsmsg` |
-| Plain weapon names | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a weapon value that is a real weapon name needs no set |
-| HP priority | Gear swap order by HP, every character; settings in `_common/combat/HP_PRIORITY.lua` ([configuration](../../guides/configuration.md)) |
+| Plain weapon names | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a weapon value that is a real weapon name needs no set |
+| HP priority | Gear swap order by HP, every character; settings in `_common/gear/HP_PRIORITY_CONFIG.lua` ([configuration](../../guides/configuration.md)) |
 
 ## Configuration files for this job
 
@@ -165,13 +165,14 @@ for refill, `combat/` for the rest):
 | `BLU_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |
 | `BLU_TP_CONFIG.lua` | TP bonus pieces for weaponskills (Moonshade Earring +250) |
 | `BLU_HUD.lua` | Order of this job's HUD sections and rows |
+| `BLU_CONFIG.lua` | The two automatic abilities, `auto_unbridled` and `expiacion_window`, both `false` ([states.md](states.md#automatic-abilities)) |
 | `BLU_REFILL.lua` | Consumables for `//gs c rf` on BLU, added to the common list or replacing it; every line commented at first ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, the files every job reads that matter here:
-`AUTO_ABILITIES.lua` (`blu_unbridled`, `blu_expiacion_window`),
-`WEAPON_CONFIG.lua`, `COMMON_KEYBINDS.lua`, `combat_mode.lua` /
-`treasure_mode.lua`, `RECAST_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `DW_CONFIG.lua`,
-`LOCKSTYLE_CONFIG.lua`. See [configuration](../../guides/configuration.md).
+`WEAPON_CONFIG.lua`, `COMMON_KEYBINDS.lua`, `RECAST_CONFIG.lua`,
+`ELEMENTAL_BELT_CONFIG.lua`, `DW_CONFIG.lua`, `LOCKSTYLE_CONFIG.lua`; in
+`<YourName>/saved/`, `combat_mode.lua` / `treasure_mode.lua` (written by
+`combatmode` / `th`). See [configuration](../../guides/configuration.md).
 
 Sets: `<YourName>/blu/sets/blu_sets.lua`, see [sets.md](sets.md).
 

@@ -232,9 +232,9 @@ the `//gs c aoe` rotation).
   ([TP bonus gear](../../features/tp-bonus.md)).
 - **Automatic HP ordering on PLD too**: at each swap the pieces are ranked by the HP
   they gain over what you wear, so max HP never dips mid-swap
-  ([configuration](../../guides/configuration.md), `HP_PRIORITY.lua`). You do not need
+  ([configuration](../../guides/configuration.md), `HP_PRIORITY_CONFIG.lua`). You do not need
   to write `priority` values: one you write on a piece is replaced by this order (put the job in
-  `skip_jobs` of `HP_PRIORITY.lua` to keep your own).
+  `skip_jobs` of `HP_PRIORITY_CONFIG.lua` to keep your own).
 
 ## Sets in the provided file that nothing reads
 

@@ -21,7 +21,7 @@
 ---   STEP, MARK    the parts of a session (//gs c fights hits <step>)
 ---   STRIP    the slots a step emptied and locked
 ---
---- Steps come from <Character>/_common/combat/FIGHTS_CONFIG.lua (every key is
+--- Steps come from <Character>/_common/tools/FIGHTS_CONFIG.lua (every key is
 --- explained there): commands run on this character, a goal counted in swings
 --- or weaponskills, a weaponskill used by itself at a TP, abilities kept up,
 --- slots emptied and locked (to measure the hit rate at several accuracies).
@@ -315,7 +315,7 @@ end
 --- STEPS, SEQUENCE AND COMMAND
 ---============================================================================
 
---- The character's _common/combat/FIGHTS_CONFIG.lua, or an empty table.
+--- The character's _common/tools/FIGHTS_CONFIG.lua, or an empty table.
 local function config()
     local ok, cfg = pcall(function()
         return require('shared/utils/core/char_paths').optional('common', 'FIGHTS_CONFIG')

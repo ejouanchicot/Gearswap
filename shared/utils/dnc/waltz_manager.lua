@@ -88,7 +88,7 @@ end
 -- Each curing tier owns a band of missing HP. The bands are contiguous and the
 -- top one is open-ended; the bottom one has no floor, so a target that somehow
 -- reads as negative still lands on Tier I rather than on nothing.
--- Where each tier starts: _common/combat/TUNING.lua waltz_from.
+-- Where each tier starts: _common/combat/SUBJOB_CONFIG.lua waltz_from.
 local CURING_TIERS = {"Curing Waltz", "Curing Waltz II", "Curing Waltz III",
                       "Curing Waltz IV", "Curing Waltz V"}
 local DEFAULT_WALTZ_FROM = {
@@ -99,7 +99,7 @@ local DEFAULT_WALTZ_FROM = {
 --- The band of each tier, from where each one starts.
 --- @return table name -> {min, max}
 local function curing_hp_brackets()
-    local from = require('shared/utils/core/tuning').get('waltz_from', DEFAULT_WALTZ_FROM)
+    local from = require('shared/utils/core/job_config').common('SUBJOB_CONFIG', 'waltz_from', DEFAULT_WALTZ_FROM)
     local brackets = {}
     for i, name in ipairs(CURING_TIERS) do
         local next_name = CURING_TIERS[i + 1]

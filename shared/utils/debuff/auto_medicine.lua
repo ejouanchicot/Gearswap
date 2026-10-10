@@ -37,7 +37,7 @@ local function mote_state()
 end
 
 --- Read the value that survived the last job change. On a cold load (no
---- value yet), the character's AUTOCURE_CONFIG.lua auto_medicine_start
+--- value yet), the character's AUTO_MEDICINE_CONFIG.lua auto_medicine_start
 --- ('On' or 'Off', default 'On').
 --- @return string 'On' or 'Off'
 local function load_persisted_value()

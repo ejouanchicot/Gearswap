@@ -356,7 +356,7 @@ function SortieCommands.handle(args)
     if not cfg then
         local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if ok and MessageFormatter then
-            MessageFormatter.show_warning('sortie: not set up for this character (_common/combat/SORTIE_CONFIG.lua)')
+            MessageFormatter.show_warning('sortie: not set up for this character (_common/tools/SORTIE_CONFIG.lua)')
         end
         return true
     end

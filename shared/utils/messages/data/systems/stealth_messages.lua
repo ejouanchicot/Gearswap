@@ -19,5 +19,5 @@ return {
     wearing_off = { template = "{gray}[{lightblue}STEALTH{gray}] {yellow}{buff}{gray} wears off in {yellow}{left}", color = 1 },
     wearing_off_other = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{name}{gray} : {yellow}{buff}{gray} wears off in {yellow}{left}", color = 1 },
     setting = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{key}{gray} : {green}{value}", color = 1 },
-    setting_unsaved = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{key}{gray} : {green}{value}{gray} - {red}not saved{gray} (config/STEALTH_CONFIG.lua missing)", color = 1 },
+    setting_unsaved = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{key}{gray} : {green}{value}{gray} - {red}not saved{gray} (_common/travel/STEALTH_CONFIG.lua missing)", color = 1 },
 }

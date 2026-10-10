@@ -38,7 +38,7 @@ Corsair with the provided template gives you:
 
 The `rolltracker` addon is unloaded while COR is loaded (this job reports
 rolls itself) and loaded again when you leave COR; `rolltracker = false` in
-`_common/display/ADDONS_CONFIG.lua` leaves it alone. Every mode goes back to its
+`_common/tools/ADDONS_CONFIG.lua` leaves it alone. Every mode goes back to its
 default on each job change, subjob change and reload.
 
 ## All keys on this job
@@ -149,7 +149,7 @@ checks as a macro: debuff guard, recast check, roll gear, Luzaf's Ring.
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC). Held back while a roll is under way |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none). In a fight, its pieces wait while a roll is under way |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked, so the knife and gun of your roll set are not swapped in either |
-| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name (the gun still needs its set) |
+| Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name (the gun still needs its set) |
 | Your own modes | `COR_CUSTOM.lua`: extra modes, keys and gear rules without code. Idle / engaged gear rules wait while a roll is under way |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key) |
 | Lockstyle, macro book | Set on load and on each subjob change |
@@ -173,13 +173,15 @@ for refill, `combat/` for the rest):
 | `COR_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (template: 3 everywhere) |
 | `COR_MACROBOOK.lua` | Macro book / page per subjob and per dual-box alt job (template: book 3 page 1) |
 | `COR_TP_CONFIG.lua` | TP bonus pieces ([TP bonus](../../features/tp-bonus.md)) |
+| `COR_CONFIG.lua` | `refresh_mp_below` (50): the MP % under which idle adds `sets.idle.Refresh` ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)) |
 | `COR_REFILL.lua` | What `//gs c rf` restocks on COR (bullet pouches, cards...) on top of or in place of the common list (every line commented at first: the common list) ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
-`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
+`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT_CONFIG.lua`,
 `RECAST_CONFIG.lua` (party message on a refused roll), `STEALTH_CONFIG.lua`,
-`UI_CONFIG.lua` (roll message style), and `treasure_mode.lua` /
-`combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
+`UI_CONFIG.lua` (roll message style); in `<YourName>/saved/`,
+`treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
+`combatmode`). Gear:
 `<YourName>/cor/sets/cor_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More

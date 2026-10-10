@@ -128,12 +128,12 @@ The provided file has `sets.precast.JA['Bolster']`, `['Life Cycle']`,
   tables above say.
 - **Entrust set.** An Indi- aimed at someone else right after Entrust wears
   `sets.midcast.Indi.Entrust` instead of the Geomancy set.
-- **Entrust first (option, off by default).** With `geo_entrust = true` in
-  `<YourName>/_common/combat/AUTO_ABILITIES.lua`, an Indi- cast on a party member
+- **Entrust first (option, off by default).** With `auto_entrust = true` in
+  `<YourName>/geo/combat/GEO_CONFIG.lua`, an Indi- cast on a party member
   (not yourself) while Entrust is ready is held back: Entrust goes up, then
   the Indi- is cast again (and gets the Entrust set).
 - **Full Circle first (option, off by default).** With
-  `geo_full_circle = true` in the same file, a Geo- cast while a luopan is out
+  `auto_full_circle = true` in the same file, a Geo- cast while a luopan is out
   and Full Circle is ready is held back: Full Circle removes the old luopan,
   then the Geo- is cast 2 s later.
 - **Tier step-down.** A nuke (Fire V to Fire, Fira III to Fira, and the same

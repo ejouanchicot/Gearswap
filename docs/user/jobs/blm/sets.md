@@ -163,7 +163,7 @@ Any other ability by name under `sets.precast.JA`.
   has its own older rule, `sets.midcast.ElementalMatch`, worn when a storm, the
   day or the (real) weather matches the nuke's element; it **steps aside
   whenever the shared belt is enabled**. It only works if you turn the shared
-  belt off (`enabled = false` in `ELEMENTAL_BELT.lua`) and leave
+  belt off (`enabled = false` in `ELEMENTAL_BELT_CONFIG.lua`) and leave
   `auto_hachirin = true` in `BLM_ELEMENTAL_CONFIG.lua` (also `check_storm`,
   `check_day`, `check_weather` to pick the conditions). With the shared belt,
   the Obi's opposing-element penalty and Orpheus's Sash are taken into

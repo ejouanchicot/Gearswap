@@ -1,9 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Smartbuff Manager - Subjob Buff Application (WAR)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   WAR main: //gs c berserk and //gs c defender (the chains war_berserk /
----   war_defender of _common/combat/BUFF_CONFIG.lua, plus the /SAM stance and
----   Third Eye with war_add_sam), //gs c thirdeye, and TP building (/SAM
+---   WAR main: //gs c berserk and //gs c defender (the chains `berserk` /
+---   `defender` of war/combat/WAR_CONFIG.lua, plus the /SAM stance and
+---   Third Eye with `add_sam`), //gs c thirdeye, and TP building (/SAM
 ---   Meditate, /DRG jumps). The lists go through the one buff engine,
 ---   shared/utils/buffs/self_buff_manager.lua. (/DNC Haste Samba was in the
 ---   chain until 2026-09-30; the player did not want it sent with every
@@ -49,16 +49,24 @@ local function sam_part(mode)
     return {mode == 'Defender' and 'Seigan' or 'Hasso', 'Third Eye'}
 end
 
----   Buff the player with the WAR chain of the mode: war_berserk or
----   war_defender of BUFF_CONFIG.lua (each list holds one of Berserk /
+-- The chains of //gs c berserk and //gs c defender when war/combat/WAR_CONFIG.lua gives none
+local WAR_CHAINS = {
+    berserk  = {'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
+    defender = {'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
+}
+
+---   Buff the player with the WAR chain of the mode: `berserk` or
+---   `defender` of WAR_CONFIG.lua (each list holds one of Berserk /
 ---   Defender: Berserk lowers Defense, Defender Attack), then, with
----   war_add_sam, the /SAM stance and Third Eye.
+---   `add_sam`, the /SAM stance and Third Eye.
 ---   @param param string 'Berserk' (default) or 'Defender': which list
 ---   @return void
 function SmartbuffManager.buff_war(param)
-    local cfg = require('shared/utils/buffs/buff_config').get()
-    local list = param == 'Defender' and cfg.war_defender or cfg.war_berserk
-    run(list, cfg.war_add_sam and sam_part(param) or {})
+    local JobConfig = require('shared/utils/core/job_config')
+    local key = param == 'Defender' and 'defender' or 'berserk'
+    -- a list is taken whole (no default given: a shorter list of the player's must not be filled up)
+    local list = JobConfig.get('WAR', key)
+    run(type(list) == 'table' and list or WAR_CHAINS[key], JobConfig.get('WAR', 'add_sam', true) and sam_part(param) or {})
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

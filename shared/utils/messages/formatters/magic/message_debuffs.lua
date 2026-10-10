@@ -19,7 +19,7 @@ local MessageRenderer = require('shared/utils/messages/core/message_renderer')
 local Colors = MessageCore.COLORS
 
 --- "Echo Drops or Remedy", each name in the item colour.
---- @param items table|nil {name, id} list from AUTOCURE_CONFIG
+--- @param items table|nil {name, id} list from AUTO_MEDICINE_CONFIG
 --- @param default table Names when the list is empty
 --- @param item_color string
 --- @param text_color string

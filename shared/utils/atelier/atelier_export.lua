@@ -792,7 +792,7 @@ function AtelierExport.build()
         weapon_rules = job_config('WEAPONS'),
     }
     -- a weapon state's value with no set equips that weapon only when the character turned it on
-    -- (shared/utils/equipment/weapon_resolver.lua, _common/combat/WEAPON_CONFIG.lua)
+    -- (shared/utils/equipment/weapon_resolver.lua, _common/gear/WEAPON_CONFIG.lua)
     local okr, WeaponResolver = pcall(require, 'shared/utils/equipment/weapon_resolver')
     data.weapon_plain = okr and WeaponResolver.equips_without_set() or false
     data.items, data.owned = collect_items()

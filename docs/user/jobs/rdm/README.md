@@ -167,7 +167,7 @@ Checked in the code for RDM:
 | Debuff guard + Auto Medicine | An action blocked by silence, paralysis, amnesia... is stopped; with Auto Medicine On an Echo Drops / Remedy is used |
 | Recast check | An ability or spell on recast is cancelled with its time left. Tiered nukes, and tiered enfeebles while Enfeeble Tier is On, use the tier step-down instead. Optional party message per action in `_common/combat/RECAST_CONFIG.lua` |
 | Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `RDM_TP_CONFIG.lua` are handled by the TP bonus calculation ([TP bonus](../../features/tp-bonus.md)) |
-| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on nukes and on Sanguine Blade / Seraph Blade when they add at least 5 % (`_common/combat/ELEMENTAL_BELT.lua`, `//gs c belt`) |
+| Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on nukes and on Sanguine Blade / Seraph Blade when they add at least 5 % (`_common/gear/ELEMENTAL_BELT_CONFIG.lua`, `//gs c belt`) |
 | Combat Mode | Native on RDM (`^numpad5`): On puts on `sets.CombatMode` if you define one, then locks main, sub and range, so no set swaps your weapons |
 | Dispelga with Daybreak | `//gs c dispelga`: Daybreak for the cast, your weapon back after, even through Combat Mode |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
@@ -182,7 +182,7 @@ Checked in the code for RDM:
 | Keybind HUD, key guard | The HUD shows every mode; the keys are sent again 2 s after each load |
 | Dual-box | Job exchange with your other boxes, alt commands, macro book per alt job |
 | Chat messages | Ability / spell / weaponskill messages, set with `jamsg`, `spellmsg`, `wsmsg` |
-| HP priority | Gear swap order by HP and MP, every character; settings in `_common/combat/HP_PRIORITY.lua` ([configuration](../../guides/configuration.md)) |
+| HP priority | Gear swap order by HP and MP, every character; settings in `_common/gear/HP_PRIORITY_CONFIG.lua` ([configuration](../../guides/configuration.md)) |
 
 ## Configuration files for this job
 
@@ -203,10 +203,10 @@ for refill, `combat/` for the rest):
 | `RDM_REFILL.lua` | Consumables for `//gs c rf` on RDM, added to the common list or replacing it; every line commented at first ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, the files every job reads that matter here:
-`COMMON_KEYBINDS.lua` (common keys), `combat_mode.lua` / `treasure_mode.lua`
-(written by `combatmode` / `th`), `RECAST_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
+`COMMON_KEYBINDS.lua` (common keys), `RECAST_CONFIG.lua`, `ELEMENTAL_BELT_CONFIG.lua`,
 `DW_CONFIG.lua`, `WEAPON_CONFIG.lua` (`equip_without_set`: a weapon value
-needs no set), `LOCKSTYLE_CONFIG.lua`. See [configuration](../../guides/configuration.md).
+needs no set), `LOCKSTYLE_CONFIG.lua`; in `<YourName>/saved/`,
+`combat_mode.lua` / `treasure_mode.lua` (written by `combatmode` / `th`). See [configuration](../../guides/configuration.md).
 
 Sets: `<YourName>/rdm/sets/rdm_sets.lua`, see [sets.md](sets.md).
 

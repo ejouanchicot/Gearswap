@@ -109,7 +109,7 @@ is `WhiteMagic` under Light or `BlackMagic` under Dark.
 3. A `JobAbility` with `recast_id` 231 (the 16 stratagems) is cancelled when
    `StratagemCharges.get_max() > 0` and `available() == 0`, with
    `ScholarActions.warn_no_charge`. `available()` reads the full recharge from
-   `Tuning.get('stratagem_full_recharge', 240)` ([Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua), since 2026-09-30);
+   `JobConfig.common('SUBJOB_CONFIG', 'stratagem_full_recharge', 240)` (`_common/combat/SUBJOB_CONFIG.lua`; [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua));
    the 550 JP gift shortens it (48 s -> 33 s a charge), so left at 240 the
    estimate can only read **higher** than the real count: a cast cancelled
    here would have been refused by the game. The cooldown checker itself

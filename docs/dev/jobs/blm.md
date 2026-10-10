@@ -448,8 +448,8 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 | `<char>/blm/BLM_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 8 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/blm/BLM_MP_CONFIG.lua` `mp_threshold` | 1000 | file; fallback in `BLM_MIDCAST.lua` `ensure_modules_loaded` | `apply_mp_conservation` |
 | `<char>/blm/BLM_ELEMENTAL_CONFIG.lua` | all true | file; same fallback | `apply_elemental_match` (only when `ElementalBelt` is off) |
-| `<char>/_common/combat/ELEMENTAL_BELT.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
-| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
+| `<char>/_common/gear/ELEMENTAL_BELT_CONFIG.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
+| `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
 | `<char>/blm/BLM_TP_CONFIG.lua` -> `_G.BLMTPConfig` | `moonshade = {name, tp_bonus = 250}` | file | `WSPrecastHandler` -> TP calculator, which reads `pieces` / `get_weapon_bonus`, neither defined |
 | `<char>/blm/BLM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | file; the common list without it | `refill/config_resolver.lua` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | - | entry fallbacks | entry |
@@ -506,8 +506,8 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   subs Scholar.
 - Scholar helpers: `shared/utils/scholar/scholar_actions.lua`,
   `stratagem_charges.lua` (also used by [GEO](geo.md), [PLD](pld.md) and
-  `//gs c stealth`; full recharge from `TUNING.lua` `stratagem_full_recharge`,
-  default 240 s, see [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)). The chains read the Arts, Addendum, Accession and
+  `//gs c stealth`; full recharge from `stratagem_full_recharge` of `_common/combat/SUBJOB_CONFIG.lua`,
+  default 240 s, see [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)). The chains read the Arts, Addendum, Accession and
   Manifestation buffs from `windower.ffxi.get_player().buffs` (`buff_up`),
   since `buffactive` lags in scheduled polls.
 - Lockstyle / macrobook factories, `JobChangeManager`, `LifecycleManager`, UI

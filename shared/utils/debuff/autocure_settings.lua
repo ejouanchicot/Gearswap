@@ -2,7 +2,7 @@
 --- Auto Cure Settings - the shared defaults with the character's own choices
 ---============================================================================
 --- shared/config/DEBUFF_AUTOCURE_CONFIG.lua holds the defaults (replaced by
---- every update). A character's _common/combat/AUTOCURE_CONFIG.lua overrides
+--- every update). A character's _common/combat/AUTO_MEDICINE_CONFIG.lua overrides
 --- them key by key: which debuffs are cured, the state Auto Medicine starts
 --- in. The items come from one place for Auto Medicine and //gs c cleanse:
 --- the `items` of _common/combat/CLEANSE_CONFIG.lua (silence, paralysis),
@@ -88,7 +88,7 @@ function AutoCureSettings.load()
     local ok, base = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
     base = (ok and type(base) == 'table') and base or FALLBACK
     local ok_u, user = pcall(function()
-        return require('shared/utils/core/char_paths').optional('common', 'AUTOCURE_CONFIG')
+        return require('shared/utils/core/char_paths').optional('common', 'AUTO_MEDICINE_CONFIG')
     end)
     local merged = {}
     for k, v in pairs(base) do merged[k] = v end

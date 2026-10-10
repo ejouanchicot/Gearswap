@@ -18,7 +18,7 @@
 --- Magical category. Installed on Mote's cleanup_precast / cleanup_midcast,
 --- so every job has it without a line in its own files.
 ---
---- Settings (optional file <Character>/_common/combat/ELEMENTAL_BELT.lua):
+--- Settings (optional file <Character>/_common/gear/ELEMENTAL_BELT_CONFIG.lua):
 ---   return { enabled = true, min_bonus = 5 }
 --- //gs c belt shows the state, the belts found and today's bonuses.
 ---
@@ -72,7 +72,7 @@ function ElementalBelt.settings()
     local cached = rawget(_G, '_elemental_belt_settings')
     if cached then return cached end
     local settings = {enabled = DEFAULTS.enabled, min_bonus = DEFAULTS.min_bonus}
-    local path = player and player.name and require('shared/utils/core/char_paths').file('common', 'ELEMENTAL_BELT.lua')
+    local path = player and player.name and require('shared/utils/core/char_paths').file('common', 'ELEMENTAL_BELT_CONFIG.lua')
     local file = path and io.open(path, 'r')
     if file then
         file:close()

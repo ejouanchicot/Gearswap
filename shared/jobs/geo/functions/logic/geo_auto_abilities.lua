@@ -1,7 +1,7 @@
 ---============================================================================
 --- GEO Auto Abilities - Entrust before an ally's Indi-, Full Circle before a Geo-
 ---============================================================================
---- Both off unless <Character>/_common/combat/AUTO_ABILITIES.lua turns them on
+--- Both off unless <Character>/geo/combat/GEO_CONFIG.lua turns them on
 --- (shared/utils/core/auto_options.lua):
 ---   geo_entrust      an Indi- aimed at a party member (not self) cancels,
 ---                    fires Entrust, then recasts once Entrust is up

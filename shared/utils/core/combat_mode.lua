@@ -8,7 +8,7 @@
 --- first, then locks (e.g. the nuking weapons on BLM).
 ---
 --- Shown or hidden per job (row in the HUD, key, lock), saved per character
---- in <Character>/_common/keys/combat_mode.lua by //gs c combatmode
+--- in <Character>/saved/combat_mode.lua by //gs c combatmode
 --- (combat_mode_commands.lua):
 ---   return { shown = {WAR = true}, hidden = {GEO = true}, keys = {WAR = '!numpad0'} }
 --- `all` stands for every job not named: shown = {all = true},

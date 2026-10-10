@@ -4,7 +4,7 @@
 --- Combat Mode and Treasure Mode work the same way: a Mote state the project
 --- adds to every job (when the job's own STATES file does not define it), a
 --- row in the HUD and a key, shown or hidden per job, saved per character in
---- <Character>/_common/keys/<file> (combat_mode.lua, treasure_mode.lua):
+--- <Character>/saved/<file> (combat_mode.lua, treasure_mode.lua):
 ---   return { shown = {WAR = true}, hidden = {GEO = true}, keys = {WAR = '!numpad0'} }
 --- `all` stands for every job not named (a job's own line wins). A job not
 --- named shows it when its own STATES file defines the state ("native").
@@ -53,7 +53,14 @@ function OptionalState.create(cfg)
     --- Path of the character's settings file, or nil before the player is known.
     function S.settings_path()
         if not (player and player.name and windower and windower.addon_path) then return nil end
-        return require('shared/utils/core/char_paths').writable('common', cfg.file)
+        return require('shared/utils/core/char_paths').writable('saved', cfg.file)
+    end
+
+    --- Where the settings are now: saved/, or the place of before (a folder not tidied since
+    --- 2026-10-10 has the file in _common/keys/; it goes to saved/ the next time it is written).
+    function S.read_path()
+        if not (player and player.name and windower and windower.addon_path) then return nil end
+        return require('shared/utils/core/char_paths').file('saved', cfg.file)
     end
 
     --- The character's settings, read once per load: {shown, hidden, keys}.
@@ -61,7 +68,7 @@ function OptionalState.create(cfg)
         local cached = rawget(_G, settings_key)
         if cached then return cached end
         local loaded = nil
-        local path = S.settings_path()
+        local path = S.read_path()
         local file = path and io.open(path, 'r')
         if file then
             file:close()

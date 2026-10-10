@@ -29,16 +29,16 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `action_listener.lua` | 81 | One raw `incoming chunk` listener per load for the action packets (0x028), read from `original` and handed to every subscriber (2026-10-01) | here ([ActionListener](#actionlistener)) |
 | `action_queue.lua` | 193 | Shared one-action-at-a-time queue (stealth, cleanse, `//gs c buff`) | [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua) |
 | `cast_tracker.lua` | 59 | `ActionListener` subscriber: did this character start a cast / act since time t | here |
-| `auto_options.lua` | 59 | Reads `<Character>/_common/combat/AUTO_ABILITIES.lua` (automatic JA options) | here |
-| `tuning.lua` | 50 | `Tuning.get(key, default)`: a job threshold or name from `<Character>/_common/combat/TUNING.lua`, over the job's default | [factories-and-helpers.md](factories-and-helpers.md#tuning-sharedutilscoretuninglua) |
-| `job_addons.lua` | 45 | `JobAddons.allowed(addon)` / `run(action, addon)`: whether a job may load / unload a Windower addon, from `<Character>/_common/display/ADDONS_CONFIG.lua` | [factories-and-helpers.md](factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) |
+| `auto_options.lua` | 72 | `AutoOptions.on(name)` / `enabled(name, default)`: the automatic job abilities a character turns on or off, asked by the names the jobs use; each is a switch of `<Character>/<job>/combat/<JOB>_CONFIG.lua`, read through `job_config.lua` | here |
+| `job_config.lua` | 112 | `JobConfig.get(job, key, default)`: a setting of one job from `<Character>/<job>/combat/<JOB>_CONFIG.lua` (BRD: `BRD_SONG_CONFIG.lua`); `JobConfig.common(file, key, default)`: one of `_common/combat/SUBJOB_CONFIG.lua` or `_common/travel/WARP_CONFIG.lua`. Both over the caller's default, and after the places of before 2026-10-10 (`TUNING.lua`, `AUTO_ABILITIES.lua`, the `war_` keys of `BUFF_CONFIG.lua`), read first where a folder still has them. Replaces `tuning.lua` (deleted 2026-10-10) | [factories-and-helpers.md](factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua) |
+| `job_addons.lua` | 45 | `JobAddons.allowed(addon)` / `run(action, addon)`: whether a job may load / unload a Windower addon, from `<Character>/_common/tools/ADDONS_CONFIG.lua` | [factories-and-helpers.md](factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) |
 | `live_tp.lua` | 30 | TP read from the game instead of GearSwap's stale copy | here (API), [factories-and-helpers.md](factories-and-helpers.md) (users) |
 | `gear_hold.lua` | 25 | `GearHold.active()`: true while a COR roll holds the idle / engaged gear (`_G.cor_roll_hold`, written by `cor/functions/logic/roll_hold.lua`); asked by the Dual Wield, Treasure Hunter and custom-gear layers of the hook chain (2026-09-28) | here ([GearHold](#gearhold)), [cor.md](../jobs/cor.md) |
 | `WATCHDOG_COMMANDS.lua` | 114 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |
 | `CYCLE_HANDLER.lua` | 136 | `//gs c cyclestate <State> [reverse]`: Mote's cycle without the chat line when the keybind HUD is visible | here |
 | `combat_mode.lua` | 261 | Weapon lock on every job, and the registry of the other slot locks (`hold` / `release`) that it lays again after every update; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `combat_mode_commands.lua` | 58 | `//gs c combatmode` | [keybinds-and-custom.md](keybinds-and-custom.md), [commands-and-debug.md](commands-and-debug.md) |
-| `optional_state.lua`, `optional_state_commands.lua` | 142, 147 | Base of Combat Mode and Treasure Mode (shown / hidden / key per job) | [keybinds-and-custom.md](keybinds-and-custom.md), [factories-and-helpers.md](factories-and-helpers.md) |
+| `optional_state.lua`, `optional_state_commands.lua` | 149, 147 | Base of Combat Mode and Treasure Mode (shown / hidden / key per job) | [keybinds-and-custom.md](keybinds-and-custom.md), [factories-and-helpers.md](factories-and-helpers.md) |
 | `COMMON_COMMANDS.lua` | 822 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
 | `DEBUG_COMMANDS.lua` | 583 | Debug toggles and dumps (`djc`, `debugupdate`, `debugstate`, `memcheck`...) | [commands-and-debug.md](commands-and-debug.md) |
 
@@ -503,9 +503,10 @@ Callers: all 17 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
 
 | Function | Params | Returns | Callers |
 |---|---|---|---|
-| `on(name)` | option name | true only when `<Character>/_common/combat/AUTO_ABILITIES.lua` sets it to `true` | `SAM_STATUS.lua` (`sam_hasso`), `geo_auto_abilities.lua` (`geo_entrust`, `geo_full_circle`), BLU `unbridled.lua` (`blu_unbridled`), `expiacion_guard.lua` (`blu_expiacion_window`) |
+| `on(name)` | option name | true only when the job's file sets it to `true` | `SAM_STATUS.lua` (`sam_hasso`), `geo_auto_abilities.lua` (`geo_entrust`, `geo_full_circle`), BLU `unbridled.lua` (`blu_unbridled`), `expiacion_guard.lua` (`blu_expiacion_window`) |
+| `enabled(name, default)` | option name, value when the file says nothing | the file's `true` / `false`, else `default == true` | all with `true`: `SAM_PRECAST.lua` (`sam_third_eye_ws`), `PLD_PRECAST.lua` (`pld_divine_emblem`, `pld_majesty`), `blm_functions.lua` (`blm_dark_arts`), BLM `storm_manager.lua` (`blm_klimaform`), DNC `step_manager.lua` (`dnc_presto`), `WAR_MOVEMENT.lua` (`war_retaliation_cancel`) |
 
-The file is `require('config/AUTO_ABILITIES')` (relative, so the logged-in character's folder), read once per sandbox and cached in `_G._auto_options`; a missing file means every option is off. Template: `_master/config_global/AUTO_ABILITIES.lua`.
+The option names are the code's and did not change on 2026-10-10. The local table `HOME` gives each one its job and the key the player writes (`sam_hasso` -> SAM `auto_hasso`, `war_retaliation_cancel` -> WAR `retaliation_cancel`...), and the value is `JobConfig.get(job, key)`: `<Character>/<job>/combat/<JOB>_CONFIG.lua`, or `_common/combat/AUTO_ABILITIES.lua` under the option's own name where a folder still has that file. Asked at each call, nothing cached in the module; a missing file or key means off for `on` and `default` for `enabled`. Templates: `_master/config/<job>/<JOB>_CONFIG.lua`. Full table: [factories-and-helpers.md](factories-and-helpers.md#autooptions-sharedutilscoreauto_optionslua).
 
 ### live_tp (the module is the function)
 
@@ -549,7 +550,7 @@ Only the lifecycle part is here; the feature, its settings file and its commands
 
 ## Configuration
 
-Nothing on this page reads a config file except `AutoOptions` (`AUTO_ABILITIES.lua`) and the `UI_CONFIG.lua` loaded by `config_loader`. Tunables are file-level constants:
+Nothing on this page reads a config file except `AutoOptions` (the jobs' `<JOB>_CONFIG.lua`, through `JobConfig`) and the `UI_CONFIG.lua` loaded by `config_loader`. Tunables are file-level constants:
 
 | Constant | Value | Where |
 |---|---|---|

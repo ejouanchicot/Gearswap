@@ -7,7 +7,7 @@
 --- The values below are the defaults. Change what you want; a line removed
 --- (or commented out) goes back to its default.
 ---
---- @file _common/combat/AUTOCURE_CONFIG.lua
+--- @file _common/combat/AUTO_MEDICINE_CONFIG.lua
 --- @author ejouanchicot
 --- @date Created: 2026-09-30
 ---============================================================================

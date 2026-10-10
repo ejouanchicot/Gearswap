@@ -62,8 +62,8 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
 | `shared/jobs/war/functions/WAR_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('WAR', ..., 'SAM', 22, 1)` wrapper |
 | `shared/jobs/war/functions/logic/set_builder.lua` | 251 | Engaged base selection (KC through `BaseSetBuilder.kraken_in_offhand`, stance, AM3, weapon set, HybridMode), weapon layer (`BaseSetBuilder.lay_weapon`), stance ammo (`apply_stance_ammo` = `AmpullaLock.stance_ammo`), town / movement idle |
-| `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 115 | `buff_war`, `buff_sam_sub`, `build_tp`: lists sent through the shared buff engine |
-| `shared/utils/buffs/self_buff_manager.lua`, `buff_config.lua` | 438, 91 | The buff engine and the `BUFF_CONFIG.lua` settings (`war_berserk`, `war_defender`, `war_add_sam`), shared with `//gs c buff` ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)) |
+| `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 123 | `buff_war`, `buff_sam_sub`, `build_tp`: lists sent through the shared buff engine; `WAR_CHAINS`, the default chains of `berserk` / `defender` |
+| `shared/utils/buffs/self_buff_manager.lua`, `buff_config.lua` | 438, 88 | The buff engine and the `BUFF_CONFIG.lua` settings (`refresh_below`, `cancel_first`, the waits; the chains themselves are in `war/combat/WAR_CONFIG.lua` since 2026-10-10), shared with `//gs c buff` ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)) |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
 | `shared/utils/drg/auto_jump.lua` | 219 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
 | `shared/utils/drg/jump_landing.lua` | 73 | `JumpLanding.after(name, done)`: a Jump's TP read once it landed (its action packet through `ActionListener`, then the TP moving; 1.0 s at least, 3.0 s at most), used by Auto-Jump and `//gs c jump` / `tp` |
@@ -236,14 +236,17 @@ hold any weaponskill of the weapon.
 
 `buff_war(param)` (`WAR_BUFFS.lua` -> `smartbuff_manager.lua` `buff_war`):
 
-1. `BuffConfig.get()` (`shared/utils/buffs/buff_config.lua`, the character's
-   `_common/combat/BUFF_CONFIG.lua` over the defaults): the list is
-   `war_defender` for `param == 'Defender'`, `war_berserk` for anything else
-   (`'Berserk'`, nil). Defaults: `{'Berserk', 'Aggressor', 'Retaliation',
+1. `JobConfig.get('WAR', key)` (`shared/utils/core/job_config.lua`, the character's
+   `war/combat/WAR_CONFIG.lua`): the key is
+   `defender` for `param == 'Defender'`, `berserk` for anything else
+   (`'Berserk'`, nil). It is asked with no default, so a list the player wrote is
+   taken whole; when the file gives no table, the local `WAR_CHAINS[key]`. A folder
+   whose `_common/combat/BUFF_CONFIG.lua` still has `war_berserk` / `war_defender` /
+   `war_add_sam` is read there first. Defaults: `{'Berserk', 'Aggressor', 'Retaliation',
    'Restraint', 'Warcry'}` and `{'Defender', 'Aggressor', 'Retaliation',
    'Restraint', 'Warcry'}`. Berserk and Defender are kept apart only by being in
    different lists.
-2. With `war_add_sam` (default `true`), `sam_part(param)` adds, on an enabled /SAM
+2. With `add_sam` (`JobConfig.get('WAR', 'add_sam', true)`), `sam_part(param)` adds, on an enabled /SAM
    (`sub_job_level > 0`), `Seigan` for `'Defender'` else `Hasso`, then `Third Eye`.
    The stance follows `param`, not `buffactive`, because the Berserk / Defender
    cast is still queued at that point. Nothing for /DNC: Haste Samba was in the
@@ -481,7 +484,9 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 | `<char>/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
 | `<char>/war/WAR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `//gs c refill` (the common list without a list in it) |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
-| `<char>/_common/combat/BUFF_CONFIG.lua` `war_berserk`, `war_defender`, `war_add_sam` (and `job.WAR`, `subjob` for `//gs c buff`) | the two lists above, `true` (no `job.WAR`) | `BuffConfig.DEFAULTS` (`shared/utils/buffs/buff_config.lua`); missing key or file = default | `buff_war` / `BuffCommand.apply` at each press |
+| `<char>/war/combat/WAR_CONFIG.lua` `berserk`, `defender`, `add_sam` | the two lists above, `true` | `WAR_CHAINS` in `smartbuff_manager.lua` and the `true` given at the call (`JobConfig.get`); missing key or file = default | `buff_war` at each press |
+| `<char>/war/combat/WAR_CONFIG.lua` `retaliation_cancel` | `true` | `AutoOptions.enabled('war_retaliation_cancel', true)` | the AutoMove callback of `WAR_MOVEMENT.lua`: `false` = Retaliation never cancelled |
+| `<char>/_common/combat/BUFF_CONFIG.lua` `job.WAR`, `subjob` (and `refresh_below`, `cancel_first`, the waits, which the chains follow too) | no `job.WAR` | `BuffConfig.DEFAULTS` (`shared/utils/buffs/buff_config.lua`); missing key or file = default | `BuffCommand.apply` / the buff engine at each press |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
@@ -558,9 +563,9 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
   on a weapon swap).
 - The /SAM stance goes through the engine's two-handed rule: with Naegling, Ikenga
   or Loxotic in hand, Hasso and Seigan are left out.
-- `buff_war(nil)` (only reachable by calling the global) uses `war_berserk` and
+- `buff_war(nil)` (only reachable by calling the global) uses `berserk` and
   Hasso, like `'Berserk'`.
-- A spell put in `war_berserk` / `war_defender` (Utsusemi on /NIN, for instance) is
+- A spell put in `berserk` / `defender` (Utsusemi on /NIN, for instance) is
   sent as `/ma` since 2026-10-01 (it was sent as `/ja` and failed).
 - `select_engaged_base` ignores Mote's `meleeSet` whenever a hybrid set exists.
 - `cancel Retaliation` depends on the Windower Cancel addon.
@@ -574,10 +579,10 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
   `Naegling` in `detect_weapon`), and a list in `WAR_WS_CONFIG.by_weapon` under the
   same key. A one-handed weapon that should count for Fencer goes in
   `WAR_TP_CONFIG.one_hand_weapons`.
-- **New buff in the chain**: a player adds its name to `war_berserk` /
-  `war_defender` in `BUFF_CONFIG.lua` (and the default in
-  `BuffConfig.DEFAULTS` plus the template `_master/config_global/BUFF_CONFIG.lua`
-  for everyone). A name that needs a rule of its own gets a `SPECIAL[name]` in
+- **New buff in the chain**: a player adds its name to `berserk` /
+  `defender` in `WAR_CONFIG.lua` (and the default in
+  `WAR_CHAINS` plus the template `_master/config/war/WAR_CONFIG.lua` and the
+  `JOBS` table of `migrate_config.py` for everyone). A name that needs a rule of its own gets a `SPECIAL[name]` in
   `shared/utils/buffs/self_buff_manager.lua`. The /SAM part stays in `sam_part`.
 - **New TP piece or weapon bonus**: `pieces` / `weapons` in `WAR_TP_CONFIG.lua`.
 - **New engaged variant**: a branch in `select_engaged_base` before the `HybridMode`

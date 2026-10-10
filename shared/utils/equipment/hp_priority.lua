@@ -27,7 +27,7 @@
 ---   //gs c gearscan read in the bags, <Char>/saved/gear_augments.lua, see
 ---   gear_scan.lua), plus its Unity bonus.
 ---
----   Settings: <Char>/_common/combat/HP_PRIORITY.lua (every key optional):
+---   Settings: <Char>/_common/gear/HP_PRIORITY_CONFIG.lua (every key optional):
 ---     enabled   = true           false turns the whole system off
 ---     unity     = 'min'          'max' when your Unity leader is rank 1
 ---     skip_jobs = {}             jobs left alone
@@ -56,7 +56,7 @@ local HPPriority = {}
 --- pieces the sets name are kept (apply).
 local DATA_FILE = 'data/shared/data/equipment/ITEM_HP_MP.lua'
 
---- Defaults of HP_PRIORITY.lua. Unity rank is the rank of the character's
+--- Defaults of HP_PRIORITY_CONFIG.lua. Unity rank is the rank of the character's
 --- Unity leader: rank 1 gets the top of the range ('max').
 local DEFAULTS = {
     enabled = true,
@@ -347,11 +347,11 @@ local function job_set(list)
     return out
 end
 
---- The character's HP_PRIORITY.lua over the defaults.
+--- The character's HP_PRIORITY_CONFIG.lua over the defaults.
 --- @return table {enabled, unity, skip_jobs (set)}
 function HPPriority.settings()
     local ok, user = pcall(function()
-        return require('shared/utils/core/char_paths').optional('common', 'HP_PRIORITY')
+        return require('shared/utils/core/char_paths').optional('common', 'HP_PRIORITY_CONFIG')
     end)
     user = (ok and type(user) == 'table') and user or {}
     local function pick(key) if user[key] == nil then return DEFAULTS[key] end return user[key] end

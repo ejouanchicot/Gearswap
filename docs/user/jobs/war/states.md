@@ -34,8 +34,8 @@ end of the weapon's list shows `None`.
 | Command | What it does |
 |---|---|
 | `//gs c ws1` … `ws5` | Uses the weaponskill in that slot on `<t>`. |
-| `//gs c berserk` | By default Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is down and on recast), the ready ones, one after the other. Defender is left out. /SAM adds Hasso (two-handed weapon only) and Third Eye. The list: `war_berserk` / `war_defender` in `_common/combat/BUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)); `war_add_sam = false` drops the /SAM part. |
-| `//gs c defender` | By default the same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. The list: `war_defender`. |
+| `//gs c berserk` | By default Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is down and on recast), the ready ones, one after the other. Defender is left out. /SAM adds Hasso (two-handed weapon only) and Third Eye. The list: `berserk` / `defender` in `war/combat/WAR_CONFIG.lua` ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)); `add_sam = false` drops the /SAM part. |
+| `//gs c defender` | By default the same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. The list: `defender`. |
 | `//gs c thirdeye` | /SAM only: Hasso (or Seigan if Defender is up) and Third Eye. On another subjob it warns and sends nothing. |
 | `//gs c tp` | /SAM: Meditate. /DRG: same as `//gs c jump` (Jump or High Jump, then the other one if TP is still under 1000). Other subjobs: a warning. |
 | `//gs c retalstatus` | Shows the Retaliation auto-cancel tracker. |

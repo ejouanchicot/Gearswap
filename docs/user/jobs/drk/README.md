@@ -113,7 +113,7 @@ DRK has no command of its own. The common commands that work on DRK:
 | Obi / Orpheus | Added to elemental weaponskills (Sanguine Blade, Dark Harvest, Shadow of Death, Infernal Scythe, ...) and damaging spells (Elemental Magic, ...) when the day, weather or distance gives enough (`//gs c belt`) |
 | Treasure Hunter | Off and hidden. Needs `//gs c th show` and a `sets.TreasureHunter` you add |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Dual Wield tiers | Only while holding two weapons with a `sets.DW`: not the case with the DRK weapons of the template |
 | Your own modes | `DRK_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |
@@ -139,9 +139,9 @@ for refill, `combat/` for the rest):
 | `DRK_REFILL.lua` | What `//gs c rf` restocks on DRK on top of or in place of the common list (every line commented at first: the common list; [configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
-`ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and
-`treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
-`combatmode`). Gear: `<YourName>/drk/sets/drk_sets.lua`. See
+`ELEMENTAL_BELT_CONFIG.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`; in
+`<YourName>/saved/`, `treasure_mode.lua` / `combat_mode.lua` (written by
+`//gs c th` / `combatmode`). Gear: `<YourName>/drk/sets/drk_sets.lua`. See
 [configuration](../../guides/configuration.md).
 
 ## More

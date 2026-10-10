@@ -288,8 +288,8 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   - Ignored while an opening is going out (`SongOpening.running`).
   - **Nothing to sing** (`SongOpening.nothing_to_sing`, skipped by `full` and
     `force`): every song of the plan, matched by family, is ours
-    (`SongOwner.own_songs`) with more than `Tuning.get('brd_songs_refresh_below', 180)`
-    seconds left. Nothing is sent, Nitro included. 0 turns the check off.
+    (`SongOwner.own_songs`) with more than `JobConfig.get('BRD', 'REFRESH_BELOW', 180)`
+    seconds left (`BRDSongConfig.REFRESH_BELOW` in `BRD_SONG_CONFIG.lua`). Nothing is sent, Nitro included. 0 turns the check off.
   - **Nitro**: with `AutoNitro = On`, Nightingale and Troubadour each up or
     ready and at least one not up: Nightingale, then Troubadour, each through
     `AbilityHelper.ensure` (buff seen before the next step; refused: sent
@@ -463,8 +463,8 @@ alt's version stays reachable as `//gs c alt <name>`).
 | `lullaby2` / `foe` | `/ma "Foe Lullaby II" <stnpc>` |
 | `elegy`, `requiem` | Carnage Elegy / Foe Requiem VII on `<stnpc>` |
 
-The four spells are defaults of `Tuning.get('brd_debuff_songs', ...)` (keys `lullaby`,
-`lullaby2`, `elegy`, `requiem`; `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)). The chat
+The four spells are defaults of `JobConfig.get('BRD', 'DEBUFF_SONGS', ...)` (keys `lullaby`,
+`lullaby2`, `elegy`, `requiem`; `BRDSongConfig.DEBUFF_SONGS` in `brd/combat/BRD_SONG_CONFIG.lua`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)). The chat
 message names the spell sent: `show_lullaby_cast` / `show_elegy_cast` /
 `show_requiem_cast(debuff_songs.<key>)` fill `{spell}` in the `brd_messages.lua`
 templates (since 2026-09-30; a SongRefinement tier change at precast is not

@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BLU Unbridled - Unbridled Learning before an unbridled spell
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Option blu_unbridled (_common/combat/AUTO_ABILITIES.lua, off by default): an
+---   Option auto_unbridled (blu/combat/BLU_CONFIG.lua, off by default): an
 ---   unbridled spell (BLU_SPELL_DATABASE `unbridled`) cast without Unbridled
 ---   Learning or Unbridled Wisdom up is cancelled, Unbridled Learning goes
 ---   out, and the spell is cast again on the same target once the buff is up

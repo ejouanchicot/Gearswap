@@ -51,8 +51,8 @@ function SetBuilder.build_idle_set(base_set)
     -- ══════════════════════════════════════════════════════════════════════════
     -- MP RECOVERY (Latent Refresh - Timara WHM pattern)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- Apply latent refresh gear if MP < 51% (TUNING.lua refresh_mp_below.WHM)
-    local mp_below = require('shared/utils/core/tuning').get('refresh_mp_below', {WHM = 51}).WHM or 51
+    -- Apply latent refresh gear if MP < 51% (WHM_CONFIG.lua refresh_mp_below)
+    local mp_below = require('shared/utils/core/job_config').get('WHM', 'refresh_mp_below', 51)
     if player and player.mpp and player.mpp < mp_below then
         if sets.latent_refresh then
             result = set_combine(result, sets.latent_refresh)

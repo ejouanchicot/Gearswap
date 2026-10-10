@@ -67,8 +67,8 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Command | Does |
 |---|---|
 | `ws1` ... `ws5` | Uses the weaponskill in that slot for the current weapon, on `<t>`. `ws6`...`ws9` only warn |
-| `berserk` | By default Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is on recast), the ready ones, one after the other; /SAM adds Hasso (two-handed weapon only) and Third Eye. The list: `war_berserk` / `war_defender` in `_common/combat/BUFF_CONFIG.lua` ([configuration](../../guides/configuration.md)); `war_add_sam = false` drops the /SAM part |
-| `defender` | By default the same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. The list: `war_defender` |
+| `berserk` | By default Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is on recast), the ready ones, one after the other; /SAM adds Hasso (two-handed weapon only) and Third Eye. The list: `berserk` / `defender` in `war/combat/WAR_CONFIG.lua` ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)); `add_sam = false` drops the /SAM part |
+| `defender` | By default the same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. The list: `defender` |
 | `thirdeye` | /SAM: Hasso (Seigan if Defender is up) and Third Eye. On another subjob: a warning, nothing is sent |
 | `tp` | /SAM: Meditate. /DRG: Jump, then High Jump if TP is still under 1000. Other subjobs: a warning |
 | `retalstatus` | Retaliation auto-cancel tracker |
@@ -132,9 +132,9 @@ with the same name; `//gs c alt berserk` sends the alt's.
 
 | Feature | On WAR |
 |---|---|
-| Buff chains | `berserk` / `defender` send only the abilities that are ready and not already up, and list the others in chat. Their lists are `war_berserk` / `war_defender` of `BUFF_CONFIG.lua`; a name your jobs do not have is skipped without a message. `//gs c buff` adds your WAR list (`job.WAR`, empty by default) and your subjob's |
+| Buff chains | `berserk` / `defender` send only the abilities that are ready and not already up, and list the others in chat. Their lists are `berserk` / `defender` of `WAR_CONFIG.lua`; a name your jobs do not have is skipped without a message. `//gs c buff` adds your WAR list (`job.WAR`, empty by default) and your subjob's |
 | Automatic Jump (/DRG) | With `JumpAuto` On, a weaponskill under 1000 TP is cancelled, Jump (then High Jump) goes out, and the weaponskill is sent again. If TP is still short, the weaponskill is refused as usual. A weaponskill out of range is refused without using a jump |
-| Retaliation auto-cancel | Retaliation up, not engaged, and 5 s of continuous running: `cancel Retaliation` is sent (needs the Windower `Cancel` addon) |
+| Retaliation auto-cancel | Retaliation up, not engaged, and 5 s of continuous running: `cancel Retaliation` is sent (needs the Windower `Cancel` addon). `retaliation_cancel = false` in `war/combat/WAR_CONFIG.lua` turns it off |
 | Engaged set choice | Kraken Club, a SubtleBlow / Hoxne stance, the weapon's own Aftermath set (`sets.engaged.<Weapon>AFM3`), Aftermath: Lv.3 on Ukonvasara and weapon-named engaged sets win over the Hybrid Mode set, in that order ([states.md](states.md#notes)); Aftermath: Lv.3 gained or lost re-dresses you about 0.1 s later (not while Doomed; during a spell or weaponskill, when it ends) |
 | Hoxne stance | Not in the template. If you add `Hoxne` to `HybridMode` (and its sets), the Hoxne Ampulla goes on and the ammo slot stays on it while it is selected, as on PLD |
 | Movement speed | `sets.MoveSpeed` is added to your idle gear while you run outside town; in town you wear `sets.idle.Town` (Adoulin: `sets.Adoulin`) with your weapon |
@@ -169,11 +169,14 @@ for refill, `combat/` for the rest):
 | `WAR_TP_CONFIG.lua` | TP bonus pieces and weapons, your Savagery merits, Agoge Mask and Fencer job point gifts |
 | `WAR_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (4 in the template) |
 | `WAR_MACROBOOK.lua` | Macro book and page per subjob, and per dual-box alt job |
+| `WAR_CONFIG.lua` | `berserk` / `defender` (the chains of those two commands), `add_sam` (`true`: their /SAM part), `retaliation_cancel` (`true`: the Retaliation auto-cancel) ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)) |
 | `WAR_REFILL.lua` | Consumables for `//gs c rf` on WAR, added to the common list or replacing it; every line commented at first |
 
 Files shared by every job are in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
-`combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
-`DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
+`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, `DW_CONFIG.lua`,
+`ELEMENTAL_BELT_CONFIG.lua`, `UI_CONFIG.lua`; `combat_mode.lua` and
+`treasure_mode.lua`, written by their commands, are in `<YourName>/saved/`
+([configuration](../../guides/configuration.md)).
 Your sets are in `<YourName>/war/sets/war_sets.lua`.
 
 ## See also

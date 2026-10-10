@@ -115,7 +115,7 @@ the ability or spell.
 
 The charges left are estimated from the time the whole stratagem pool takes to
 come back, 240 s by default: `stratagem_full_recharge` in
-`_common/combat/TUNING.lua` sets yours.
+`_common/combat/SUBJOB_CONFIG.lua` sets yours.
 
 ### Common commands that work here
 
@@ -167,10 +167,10 @@ What the project's shared systems do on BLM, checked in the code.
 | Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle set (the Death / PDT set when that mode is on); in Adoulin `sets.Adoulin` first |
 | Combat Mode | Native, shown, Ctrl+Numpad8, Off by default. On locks main, sub, range **and ammo**; on turning it On, `sets.CombatMode` goes on first (provided file: Bunzi's Rod, Ammurapi Shield, Sroda Tathlum). Off frees the slots (unless a craft set holds them) |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your BLM set file |
-| Obi / Orpheus | The shared automatic belt is on by default (`ELEMENTAL_BELT.lua`, `//gs c belt`): Obi or Orpheus goes on after the nuke set when it helps. BLM's own Hachirin-no-Obi rule (`sets.midcast.ElementalMatch`, `BLM_ELEMENTAL_CONFIG.lua`) only runs when you turn the shared belt off |
+| Obi / Orpheus | The shared automatic belt is on by default (`ELEMENTAL_BELT_CONFIG.lua`, `//gs c belt`): Obi or Orpheus goes on after the nuke set when it helps. BLM's own Hachirin-no-Obi rule (`sets.midcast.ElementalMatch`, `BLM_ELEMENTAL_CONFIG.lua`) only runs when you turn the shared belt off |
 | Tier step-down | BLM's own, from a macro or a command alike: a tiered nuke (Fire VI to Fire...), -ga, Sleep / Sleepga, Bind, Bio, Poison, Drain or Aspir that is on recast or short of MP goes out as the highest lower tier you know that can; a -ja falls back to the -ga family (-ga III if none can); Breakga on recast becomes Break. Nothing castable: the cast is stopped and the recasts are shown |
 | Magic Burst call | `MagicBurstMode` On: `/p Casting: [<spell>] => Nuke` for an elemental nuke, at most once every 2.5 s |
-| Automatic ability | /SCH: Dark Arts is put up before an elemental nuke when it is ready and neither Dark Arts nor Addendum: Black is on; the nuke is re-sent once Dark Arts lands. Always on, no option |
+| Automatic ability | /SCH: Dark Arts is put up before an elemental nuke when it is ready and neither Dark Arts nor Addendum: Black is on; the nuke is re-sent once Dark Arts lands. On by default: `auto_dark_arts = false` in `blm/combat/BLM_CONFIG.lua` turns it off (`auto_klimaform = false`: `storm` no longer uses Klimaform first) |
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for abilities and for spells that do not step down (a tiered nuke steps down instead of being refused) |
 | Doom | `sets.buff.Doom` while Doomed; its slots stay locked until Doom is gone |
 | Dual Wield tiers | Only when you hold two weapons (with /NIN or /DNC): nothing with a staff |
@@ -212,12 +212,14 @@ for refill, `combat/` for the rest):
 | `BLM_MP_CONFIG.lua` | `mp_threshold` (1000): under it, `sets.midcast.MPConservation` goes on a nuke |
 | `BLM_ELEMENTAL_CONFIG.lua` | BLM's own Obi rule (storm, day, weather); only used when the shared belt is off |
 | `BLM_TP_CONFIG.lua` | Moonshade Earring entry; not read by the weaponskill TP code today |
+| `BLM_CONFIG.lua` | With a SCH subjob: `auto_dark_arts` (Dark Arts before a nuke) and `auto_klimaform` (Klimaform before `storm`), both `true`; `false` turns one off ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)) |
 | `BLM_REFILL.lua` | Items `//gs c rf` keeps in your inventory on BLM, on top of or in place of the common list; every line commented at first |
 
 Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
-`combat_mode.lua` and `treasure_mode.lua` (written by their commands),
-`ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
-`DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`. Your sets are in
+`ELEMENTAL_BELT_CONFIG.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
+`DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `SUBJOB_CONFIG.lua` (stratagem
+recharge), `UI_CONFIG.lua`; in `<YourName>/saved/`, written by their commands:
+`combat_mode.lua` and `treasure_mode.lua`. Your sets are in
 `<YourName>/blm/sets/blm_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More

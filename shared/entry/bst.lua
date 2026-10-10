@@ -209,7 +209,7 @@ function user_setup()
         if _G.bst_hud_load_id ~= my_hud_id then return end
         -- Guard 2: Only load if still on BST (handles main job change)
         if player and player.main_job ~= 'BST' then return end
-        -- Guard 3: bst-hud = false in _common/display/ADDONS_CONFIG.lua
+        -- Guard 3: bst-hud = false in _common/tools/ADDONS_CONFIG.lua
         local JobAddons = require('shared/utils/core/job_addons')
         if not JobAddons.allowed('bst-hud') then return end
         -- Guard 4: Always unload first, then load after delay

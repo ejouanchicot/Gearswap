@@ -62,7 +62,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   changes your gear (an action, engaging, a mode change), with your weapons back
   on. The same goes for Combat Mode On.
 - Idle: `sets.latent_refresh` goes on top while your MP is under 51 %
-  (`refresh_mp_below` in `_common/combat/TUNING.lua`), and
+  (`refresh_mp_below` in `whm/combat/WHM_CONFIG.lua`), and
   `sets.MoveSpeed` while you move (in town too).
 - Weaponskill TP bonus gear: see [TP bonus](../../features/tp-bonus.md).
 - Every mode goes back to its default on each job change, subjob change or reload.

@@ -20,7 +20,7 @@ local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_d
 local AutoMedicine = require('shared/utils/debuff/auto_medicine')
 local UncurableDebuffs = require('shared/utils/debuff/uncurable_debuffs')
 
--- Shared defaults with the character's _common/combat/AUTOCURE_CONFIG.lua
+-- Shared defaults with the character's _common/combat/AUTO_MEDICINE_CONFIG.lua
 -- over them (autocure_settings.lua)
 local AutoCureConfig = require('shared/utils/debuff/autocure_settings').load()
 
@@ -113,7 +113,7 @@ local PARTNER_ASK_EVERY = 10
 
 --- No item left: ask a partner that may have the spell (Paralyna, Silena) to
 --- cast it on this character (cleanse.lua), at most every PARTNER_ASK_EVERY
---- seconds per debuff. The action does not wait for it. AUTOCURE_CONFIG.lua
+--- seconds per debuff. The action does not wait for it. AUTO_MEDICINE_CONFIG.lua
 --- ask_partner = false: never.
 --- @param key string 'silence' or 'paralysis'
 --- @return table|nil names asked this time

@@ -196,7 +196,7 @@ function StormManager.cast_storm_with_klimaform(storm_name)
     local klimaform_recast = get_spell_recast('Klimaform')
     local storm_recast = get_spell_recast(storm_name)
 
-    -- Klimaform turned off (AUTO_ABILITIES.lua blm_klimaform = false): the
+    -- Klimaform turned off (BLM_CONFIG.lua auto_klimaform = false): the
     -- storm alone, as if Klimaform were up
     if not require('shared/utils/core/auto_options').enabled('blm_klimaform', true) then
         klimaform_active, klimaform_recast = true, 0

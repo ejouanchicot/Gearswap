@@ -18,15 +18,15 @@ What SAM adds on top of the shared pipeline:
   that `WSPrecastHandler` accepted (range, 1000 TP), pressed while Third Eye
   is known, ready (RECAST_CONFIG tolerance) and not up, is cancelled, Third
   Eye goes out and `AbilityHelper.follow_up` replays the weaponskill.
-- **Chosen stance on engage** (opt-in, `sam_hasso` in `AUTO_ABILITIES.lua`):
+- **Chosen stance on engage** (opt-in, `auto_hasso` in `sam/combat/SAM_CONFIG.lua`, asked as option `sam_hasso`):
   Hasso, or Seigan when `state.Stance` is Seigan.
 - **WS buff layers** in `job_post_precast`: `sets.buff.Sekkanoki` and
   `sets.buff['Meikyo Shisui']` while `buffactive` says those buffs are up.
 - **Set building**: engaged base re-selected from `OffenseMode` x
   `HybridMode` (Mote cannot reach `sets.engaged.PDT`), Aftermath Lv.3 set,
   Seigan / Third Eye layers, weapon set, bow layer; idle HybridMode PDT, then
-  by HP on top (Weak below 50 %, Regen below 80 %; `sam_idle_hp` in
-  `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)), then `sets.MoveSpeed` while
+  by HP on top (Weak below 50 %, Regen below 80 %; `idle_hp` in
+  `sam/combat/SAM_CONFIG.lua`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)), then `sets.MoveSpeed` while
   running. In a town with `sets.idle.Town` (or in Adoulin with
   `sets.Adoulin`), that set on top of the idle set plus the weapon, as on the
   other jobs; the provided file has neither.
@@ -63,7 +63,7 @@ function; line numbers are deliberately not used.
 | `_master/config/sam/SAM_MACROBOOK.lua` | 62 | `default`, `solo[sub]` (book 2 page 1), empty `dualbox` |
 | `_master/config/sam/SAM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/sam_sets.lua` | 533 | Template sets (flat) |
-| `_master/config_global/AUTO_ABILITIES.lua` | | `sam_hasso = false` (read through `shared/utils/core/auto_options.lua`) |
+| `_master/config/sam/SAM_CONFIG.lua` | 23 | The job's own settings: `auto_hasso = false`, `auto_third_eye_ws = true` (both read through `shared/utils/core/auto_options.lua`), `idle_hp` (`job_config.lua`) |
 | `shared/data/job_abilities/SAM_JA_DATABASE.lua` + `sam/sam_{mainjob,subjob,sp}.lua` | | JA data for the ability message hooks |
 
 The `Tetsouo/...` require paths in the template are replaced by the clone
@@ -193,7 +193,7 @@ no midcast set in the template).
   (`WeaponResolver.set_for('main', MainWeapon)`), without Weak, Regen, PDT or
   movement. Outside town: `sets.idle.PDT` when `HybridMode == 'PDT'`; then, on
   top of it, `sets.idle.Weak` if `player.hpp < weak_below` (50), else `sets.idle.Regen` if
-  below `regen_below` (80) (order since 2026-09-29; both from `Tuning.get('sam_idle_hp', ...)`); then `apply_main_weapon`; then `BaseSetBuilder.apply_movement`
+  below `regen_below` (80) (order since 2026-09-29; both from `JobConfig.get('SAM', 'idle_hp', ...)`); then `apply_main_weapon`; then `BaseSetBuilder.apply_movement`
   (`sets.MoveSpeed` while `state.Moving.value == 'true'`, since 2026-09-28).
   The provided file has no `sets.idle.Town` and no `sets.Adoulin`, so
   `select_idle_base_town` reports "not in town" in every city and SAM builds
@@ -229,8 +229,8 @@ no midcast set in the template).
 ### Auto Hasso
 
 `SAM_STATUS.lua` `auto_hasso(newStatus)`: on `Engaged`, when
-`AutoOptions.on('sam_hasso')` is true (the character's
-`_common/combat/AUTO_ABILITIES.lua`) and neither Hasso nor Seigan is up, it sends the
+`AutoOptions.on('sam_hasso')` is true (`auto_hasso` in the character's
+`sam/combat/SAM_CONFIG.lua`) and neither Hasso nor Seigan is up, it sends the
 chosen stance (`state.Stance`: Seigan when Seigan, else Hasso) once
 `AbilityHelper.is_ability_ready` says it is ready. The option keeps its old
 name. Until 2026-09-28 it always sent Hasso, which then switched a Seigan
@@ -318,8 +318,10 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 | `<char>/sam/SAM_TP_CONFIG.lua` | `hagakure_jp_gifts = 0`; Moonshade +250, Mpaca's Cap +200; Dojikiri Yasutsuna +500 | file | `WSPrecastHandler` via `_G.SAMTPConfig`; `TPBonusCalculator` adds `get_hagakure_bonus()` (1000 + 10 x gifts while Hagakure is up) |
 | `<char>/sam/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager` uses `default` only (no `get_style`) |
 | `<char>/sam/SAM_MACROBOOK.lua` | book 2 page 1 for every listed subjob | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/_common/combat/AUTO_ABILITIES.lua` `sam_hasso` | false | file | `SAM_STATUS.lua` `auto_hasso` |
-| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
+| `<char>/sam/combat/SAM_CONFIG.lua` `auto_hasso` (option `sam_hasso`) | false | file | `SAM_STATUS.lua` `auto_hasso` |
+| `<char>/sam/combat/SAM_CONFIG.lua` `auto_third_eye_ws` (option `sam_third_eye_ws`) | true | file | `SAM_PRECAST.lua` `try_third_eye_ws` |
+| `<char>/sam/combat/SAM_CONFIG.lua` `idle_hp` | `{weak_below = 50, regen_below = 80}` | file | `logic/set_builder.lua` `build_idle_set` |
+| `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | `CooldownChecker`, `is_recast_ready` |
 

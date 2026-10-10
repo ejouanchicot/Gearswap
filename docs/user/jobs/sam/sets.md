@@ -27,7 +27,7 @@ Then SAM adds, in this order:
 In the provided file `sets.idle.Regen` and `sets.idle.Weak` are whole sets
 (built on `sets.idle.Normal`), so below 80 % HP they replace your PDT pieces.
 To keep your DT pieces at low HP, list only the pieces to change in `Regen` /
-`Weak`. The 50 % and 80 % are `sam_idle_hp` in `_common/combat/TUNING.lua`.
+`Weak`. The 50 % and 80 % are `idle_hp` in `sam/combat/SAM_CONFIG.lua`.
 
 In a town, Adoulin included, `sets.idle.Town` goes on top of the idle set,
 then your weapon, and nothing else: no Weak, Regen or PDT, no `sets.MoveSpeed`.
@@ -100,7 +100,7 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 | `sets.Masamune`, `sets.Kusanagi`, `sets.Shining`, `sets.Dojikiri`, `sets.Soboro`, `sets.Norifusa` | The Main Weapon mode of that name, idle and engaged. Put the grip in the same set (`sub = 'Utu Grip'`): SAM has no Sub Weapon mode |
 
 - A weapon value with no set is skipped: the weapon you hold stays.
-- With `equip_without_set = true` in `<YourName>/_common/combat/WEAPON_CONFIG.lua`, a
+- With `equip_without_set = true` in `<YourName>/_common/gear/WEAPON_CONFIG.lua`, a
   value that is the exact name of a weapon is equipped without any set (main
   hand only, no grip).
 
@@ -110,7 +110,8 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
   your weaponskill is held back, Third Eye goes out (with
   `sets.precast.JA['Third Eye']`), then the weaponskill is sent again as soon
   as Third Eye is up, or refused. Only for a weaponskill that can go (in range,
-  1000 TP): a refused one does not use Third Eye. This cannot be turned off.
+  1000 TP): a refused one does not use Third Eye. On by default:
+  `auto_third_eye_ws = false` in `sam/combat/SAM_CONFIG.lua` turns it off.
 - **The stance is remembered.** Any Hasso or Seigan you use (or
   `//gs c hasso` / `//gs c seigan`) becomes the chosen stance. Default: Hasso.
   - Hasso stance: Third Eye always goes out alone, Hasso is never replaced.
@@ -126,9 +127,9 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
   your next gear change.
 - **Yoichinoyumi** in the range slot adds `sets.bow` while engaged.
 - **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %,
-  on top of `sets.idle.PDT` (thresholds: `sam_idle_hp` in `_common/combat/TUNING.lua`).
-- **Your stance when you engage** (optional): `sam_hasso = true` in
-  `<YourName>/_common/combat/AUTO_ABILITIES.lua`. On engaging with neither Hasso nor
+  on top of `sets.idle.PDT` (thresholds: `idle_hp` in `sam/combat/SAM_CONFIG.lua`).
+- **Your stance when you engage** (optional): `auto_hasso = true` in
+  `<YourName>/sam/combat/SAM_CONFIG.lua`. On engaging with neither Hasso nor
   Seigan up, your chosen stance goes out (Hasso, or Seigan after
   `//gs c seigan`) once it is ready. Off by default.
 

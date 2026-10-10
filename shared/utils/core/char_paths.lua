@@ -9,22 +9,28 @@
 ---   <Char>/_common/              settings for the whole character, by theme
 ---                                (the _ puts it first in the folder list)
 ---       display/                 HUD, colours, region, lockstyle delay
----       keys/                    common keys, Combat Mode / Treasure Mode keys
+---       keys/                    the keys bound for every job
 ---       dualbox/                 dual-box settings; alt/ = the alt's own commands
 ---       inventory/               refill, craft, wardrobe organizer
----       combat/                  automatic abilities, recasts, Dual Wield, belt,
----                                weapons, Sneak / Invisible
+---       combat/                  buffs, recasts, debuffs (medicine, cleanse), what a
+---                                subjob brings to any job (waltz tiers, stratagems)
+---       gear/                    how pieces are put on: weapons, Dual Wield tiers,
+---                                elemental belt, HP order
+---       travel/                  Sneak / Invisible, warp rings
+---       tools/                   fight journal, Sortie orders, addons a job loads
 ---       sets/                    gear shared by jobs (rings.lua...), craft and
 ---                                fishing sets
 ---   <Char>/<job>/                one job, by theme (job_group below)
 ---       display/                 <JOB>_HUD, _LOCKSTYLE, _MACROBOOK
 ---       keys/                    <JOB>_KEYBINDS, _STATES, _CUSTOM
----       combat/                  <JOB>_TP_CONFIG, _WS_CONFIG and the job's own
----                                settings (songs, Saboteur, cures, pets...)
+---       combat/                  <JOB>_CONFIG (the job's own switches and
+---                                thresholds: job_config.lua), <JOB>_TP_CONFIG,
+---                                _WS_CONFIG, and songs, Saboteur, cures, pets...
 ---       inventory/               <JOB>_REFILL
 ---       sets/                    its gear: <job>_sets.lua, armor.lua...
 ---   <Char>/saved/                files the game writes (window positions,
----                                dual-box role, HUD settings, caches...)
+---                                dual-box role, HUD settings, Combat Mode /
+---                                Treasure Mode per job, caches...)
 ---   <Char>/logs/                 journals, one folder a topic (CharPaths.log):
 ---       trace/                   trace.log, trace.old.log (//gs c trace)
 ---       fights/                  <date>.log (//gs c fights on)
@@ -43,6 +49,13 @@
 ---       export.on, live.off      //gs c atelier on / live off
 ---                                (before 2026-10-05 all of it was in saved/: still read
 ---                                there, moved here when written again)
+---
+--- Since 2026-10-10 a setting of one job is in that job's folder (TUNING.lua
+--- and AUTO_ABILITIES.lua are gone: job_config.lua), gear/, travel/ and tools/
+--- took what combat/ and display/ held for want of a better place, two files
+--- got the _CONFIG of the others (AUTOCURE_CONFIG is AUTO_MEDICINE_CONFIG), and the mode files went
+--- from keys/ to saved/. The places and names of before are still read
+--- (COMMON_BEFORE, SAVED_BEFORE).
 ---
 --- Older layouts, still read: config/<FILE>, config/<job>/, config/alt/,
 --- config/craft/, sets/<job>_sets.lua, sets/<job>/, files at the root of the
@@ -81,18 +94,37 @@ local LAYOUT = {
 --- here stays at the root of _common/.
 local COMMON_GROUPS = {
     ['UI_CONFIG.lua'] = 'display', ['UI_COLOR_CONFIG.lua'] = 'display',
-    ['REGION_CONFIG.lua'] = 'display', ['LOCKSTYLE_CONFIG.lua'] = 'display', ['ADDONS_CONFIG.lua'] = 'display',
-    ['COMMON_KEYBINDS.lua'] = 'keys', ['combat_mode.lua'] = 'keys', ['treasure_mode.lua'] = 'keys',
+    ['REGION_CONFIG.lua'] = 'display', ['LOCKSTYLE_CONFIG.lua'] = 'display',
+    ['COMMON_KEYBINDS.lua'] = 'keys',
     ['DUALBOX_CONFIG.lua'] = 'dualbox',
     ['REFILL_CONFIG.lua'] = 'inventory', ['CRAFT_CONFIG.lua'] = 'inventory',
     ['CRAFT_REFILL.lua'] = 'inventory', ['WARDROBE_CONFIG.lua'] = 'inventory',
-    ['AUTO_ABILITIES.lua'] = 'combat', ['RECAST_CONFIG.lua'] = 'combat', ['DW_CONFIG.lua'] = 'combat',
-    ['ELEMENTAL_BELT.lua'] = 'combat', ['WEAPON_CONFIG.lua'] = 'combat', ['STEALTH_CONFIG.lua'] = 'combat',
-    ['HP_PRIORITY.lua'] = 'combat', ['SORTIE_CONFIG.lua'] = 'combat', ['AUTOCURE_CONFIG.lua'] = 'combat',
-    ['TUNING.lua'] = 'combat', ['CLEANSE_CONFIG.lua'] = 'combat',
-    ['BUFF_CONFIG.lua'] = 'combat', ['FIGHTS_CONFIG.lua'] = 'combat',
+    ['BUFF_CONFIG.lua'] = 'combat', ['RECAST_CONFIG.lua'] = 'combat', ['CLEANSE_CONFIG.lua'] = 'combat',
+    ['AUTO_MEDICINE_CONFIG.lua'] = 'combat', ['SUBJOB_CONFIG.lua'] = 'combat',
+    ['WEAPON_CONFIG.lua'] = 'gear', ['DW_CONFIG.lua'] = 'gear',
+    ['ELEMENTAL_BELT_CONFIG.lua'] = 'gear', ['HP_PRIORITY_CONFIG.lua'] = 'gear',
+    ['STEALTH_CONFIG.lua'] = 'travel', ['WARP_CONFIG.lua'] = 'travel',
+    ['FIGHTS_CONFIG.lua'] = 'tools', ['SORTIE_CONFIG.lua'] = 'tools', ['ADDONS_CONFIG.lua'] = 'tools',
+    -- gone on 2026-10-10 (job_config.lua), read where a folder still has them
+    ['TUNING.lua'] = 'combat', ['AUTO_ABILITIES.lua'] = 'combat',
 }
 CharPaths.COMMON_GROUPS = COMMON_GROUPS
+
+--- Where a common setting was before 2026-10-10: {theme folder, file name}.
+local COMMON_BEFORE = {
+    ['AUTO_MEDICINE_CONFIG.lua'] = {'combat', 'AUTOCURE_CONFIG.lua'},
+    ['ELEMENTAL_BELT_CONFIG.lua'] = {'combat', 'ELEMENTAL_BELT.lua'},
+    ['HP_PRIORITY_CONFIG.lua'] = {'combat', 'HP_PRIORITY.lua'},
+    ['WEAPON_CONFIG.lua'] = {'combat', 'WEAPON_CONFIG.lua'}, ['DW_CONFIG.lua'] = {'combat', 'DW_CONFIG.lua'},
+    ['STEALTH_CONFIG.lua'] = {'combat', 'STEALTH_CONFIG.lua'},
+    ['FIGHTS_CONFIG.lua'] = {'combat', 'FIGHTS_CONFIG.lua'}, ['SORTIE_CONFIG.lua'] = {'combat', 'SORTIE_CONFIG.lua'},
+    ['ADDONS_CONFIG.lua'] = {'display', 'ADDONS_CONFIG.lua'},
+}
+--- Where a file the game writes was before 2026-10-10 (a setting's folder).
+local SAVED_BEFORE = {
+    ['combat_mode.lua'] = {'_common/keys/combat_mode.lua', 'common/keys/combat_mode.lua'},
+    ['treasure_mode.lua'] = {'_common/keys/treasure_mode.lua', 'common/keys/treasure_mode.lua'},
+}
 
 --- Theme folder of a job settings file, from the end of its name.
 local JOB_GROUP_SUFFIXES = {
@@ -193,9 +225,19 @@ local function candidates(kind, file, job)
     elseif kind == 'job' and CharPaths.job_group(file) then
         out[1] = (job or ''):lower() .. '/' .. CharPaths.job_group(file) .. '/' .. file
     end
+    local was = kind == 'common' and COMMON_BEFORE[file] or nil
+    if was then
+        out[#out + 1] = '_common/' .. was[1] .. '/' .. was[2]
+        out[#out + 1] = 'common/' .. was[1] .. '/' .. was[2]
+    end
     for _, pattern in ipairs(LAYOUT[kind] or {}) do
         out[#out + 1] = fill(pattern, file, job)
     end
+    -- under its name of before, in the places of the older layouts
+    if was and was[2] ~= file then
+        for _, pattern in ipairs(LAYOUT.common) do out[#out + 1] = fill(pattern, was[2], job) end
+    end
+    for _, old in ipairs(kind == 'saved' and SAVED_BEFORE[file] or {}) do out[#out + 1] = old end
     return out
 end
 

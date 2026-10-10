@@ -56,8 +56,8 @@ are useful with a subjob:
   latest 4.5 s later). Each action has its own precast: Third Eye
   gear, then weaponskill gear. Only a weaponskill in range and with 1000 TP
   does this: a refused one does not use Third Eye.
-- **Auto stance** (off by default): `sam_hasso = true` in
-  `<YourName>/_common/combat/AUTO_ABILITIES.lua` uses your chosen stance (Hasso, or
+- **Auto stance** (off by default): `auto_hasso = true` in
+  `<YourName>/sam/combat/SAM_CONFIG.lua` uses your chosen stance (Hasso, or
   Seigan after `//gs c seigan`) when you engage, if neither Hasso nor Seigan
   is up and it is ready.
 - **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` otherwise
@@ -68,12 +68,12 @@ are useful with a subjob:
   about 0.1 s after the aftermath starts, and comes off the same way when it ends.
 - **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%, on top
   of `sets.idle.PDT` (in PDT they replace the PDT pieces they hold). The
-  thresholds are `sam_idle_hp` in `_common/combat/TUNING.lua`.
+  thresholds are `idle_hp` in `sam/combat/SAM_CONFIG.lua`.
   `sets.MoveSpeed` goes on while you run. In a town with a `sets.idle.Town`
   (the provided file has no `sets.idle.Town`), you get that set on top of the idle set
   plus your weapon, nothing else.
 - **Weapons without a set**: with `equip_without_set = true` in
-  `_common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no `sets.<Weapon>`
+  `_common/gear/WEAPON_CONFIG.lua`, a Main Weapon value with no `sets.<Weapon>`
   equips the weapon of that name directly.
 - Sekkanoki and Meikyo Shisui add `sets.buff.Sekkanoki` /
   `sets.buff['Meikyo Shisui']` to the weaponskill when the buff is up.

@@ -421,8 +421,8 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 | `<char>/rdm/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
 | `<char>/rdm/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
 | `<char>/rdm/RDM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | template / overlay / player | `//gs c rf` |
-| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` |
-| `<char>/_common/keys/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
+| `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` |
+| `<char>/saved/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua`, `NUKE_TIERS.lua` | 11 families, nukes | file | `get_spell_tiers` |
 
 ## State & lifetime

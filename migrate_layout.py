@@ -4,7 +4,7 @@ Move a character folder to the layout of 2026-09-30.
     <Char>/<Char>_<JOB>.lua   one-line entry (shared/entry/<job>.lua does the work)
     <Char>/_common/           settings of the whole character, by theme
                               (the _ puts it first in the folder list):
-        display/ keys/ dualbox/ (+ alt/) inventory/ combat/
+        display/ keys/ dualbox/ (+ alt/) inventory/ combat/ gear/ travel/ tools/
         sets/                 gear shared by jobs (rings.lua...), craft and fishing sets
     <Char>/<job>/             one job, by theme:
         display/ keys/ combat/ inventory/
@@ -36,28 +36,39 @@ JOBS = ['blm', 'blu', 'brd', 'bst', 'cor', 'dnc', 'drg', 'drk', 'geo', 'mnk', 'n
 
 # Files of config/ that the game writes: they go to saved/, not common/
 SAVED_CONFIG = {'alt_state.lua', 'alt_window.lua', 'dualbox_role.lua', 'ui_settings.lua',
-                'message_modes.lua', 'WARP_ITEMS_OWNED.lua'}
+                'message_modes.lua', 'WARP_ITEMS_OWNED.lua', 'combat_mode.lua', 'treasure_mode.lua'}
 # Files at the root of the character folder that the game writes
 SAVED_ROOT = {'temp_binds.lua', 'trace.log', 'trace.old.log', 'trace.on', 'atelier.on',
               'rolldebug.log'}
-# Lower-case files of common/ that are settings, not gear
+# Lower-case files of common/ that are not gear (per-job choices the game writes)
 COMMON_SETTINGS = {'combat_mode.lua', 'treasure_mode.lua'}
 # Theme folder of each setting in common/ (same table as COMMON_GROUPS in
 # shared/utils/core/char_paths.lua)
 COMMON_GROUPS = {
     'UI_CONFIG.lua': 'display', 'UI_COLOR_CONFIG.lua': 'display',
-    'REGION_CONFIG.lua': 'display', 'LOCKSTYLE_CONFIG.lua': 'display', 'ADDONS_CONFIG.lua': 'display',
-    'COMMON_KEYBINDS.lua': 'keys', 'combat_mode.lua': 'keys', 'treasure_mode.lua': 'keys',
+    'REGION_CONFIG.lua': 'display', 'LOCKSTYLE_CONFIG.lua': 'display',
+    'COMMON_KEYBINDS.lua': 'keys',
     'DUALBOX_CONFIG.lua': 'dualbox',
     'REFILL_CONFIG.lua': 'inventory', 'CRAFT_CONFIG.lua': 'inventory',
     'CRAFT_REFILL.lua': 'inventory', 'WARDROBE_CONFIG.lua': 'inventory',
-    'AUTO_ABILITIES.lua': 'combat', 'RECAST_CONFIG.lua': 'combat', 'DW_CONFIG.lua': 'combat',
-    'ELEMENTAL_BELT.lua': 'combat', 'WEAPON_CONFIG.lua': 'combat', 'STEALTH_CONFIG.lua': 'combat',
-    'HP_PRIORITY.lua': 'combat', 'SORTIE_CONFIG.lua': 'combat', 'AUTOCURE_CONFIG.lua': 'combat', 'TUNING.lua': 'combat', 'CLEANSE_CONFIG.lua': 'combat', 'BUFF_CONFIG.lua': 'combat', 'FIGHTS_CONFIG.lua': 'combat',
+    'BUFF_CONFIG.lua': 'combat', 'RECAST_CONFIG.lua': 'combat', 'CLEANSE_CONFIG.lua': 'combat',
+    'AUTO_MEDICINE_CONFIG.lua': 'combat', 'SUBJOB_CONFIG.lua': 'combat',
+    'WEAPON_CONFIG.lua': 'gear', 'DW_CONFIG.lua': 'gear',
+    'ELEMENTAL_BELT_CONFIG.lua': 'gear', 'HP_PRIORITY_CONFIG.lua': 'gear',
+    'STEALTH_CONFIG.lua': 'travel', 'WARP_CONFIG.lua': 'travel',
+    'FIGHTS_CONFIG.lua': 'tools', 'SORTIE_CONFIG.lua': 'tools', 'ADDONS_CONFIG.lua': 'tools',
+    # gone on 2026-10-10: migrate_config.py folds them into the job files right after the moves
+    'TUNING.lua': 'combat', 'AUTO_ABILITIES.lua': 'combat',
 }
+# Names of before 2026-10-10 (an older folder, an overlay not renamed yet)
+RENAMED = {'AUTOCURE_CONFIG.lua': 'AUTO_MEDICINE_CONFIG.lua', 'ELEMENTAL_BELT.lua': 'ELEMENTAL_BELT_CONFIG.lua',
+           'HP_PRIORITY.lua': 'HP_PRIORITY_CONFIG.lua'}
 
 
 def _common(name):
+    if name in COMMON_SETTINGS:      # the game writes them: saved/ since 2026-10-10
+        return 'saved/' + name
+    name = RENAMED.get(name, name)
     group = COMMON_GROUPS.get(name)
     return 'common/%s/%s' % (group, name) if group else 'common/' + name
 
@@ -279,6 +290,10 @@ def migrate(char, dry_run=False, backup=True, quiet=False, base_dir=HERE):
                 os.rmdir(root)
     for folder in ('_common', 'saved'):
         os.makedirs(os.path.join(char_dir, folder), exist_ok=True)
+    # the settings of one job to that job's folder, the names and themes of 2026-10-10 (a clone: `fresh`,
+    # its job files are the templates and take the values of the old files its overlay brought)
+    import migrate_config
+    migrate_config.Tidy(char_dir, False, fresh=not backup).run()
     import where_is_what
     where_is_what.write(char, base_dir)
 

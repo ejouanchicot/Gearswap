@@ -34,11 +34,11 @@ Line counts re-measured on 2026-09-28 (`wc -l`); the files trimmed on 2026-10-01
 | `shared/config/ui_settings.lua` | 317 | Per-character store: `_G.UI_SETTINGS` plus file I/O (`dofile` / `io.open`) |
 | `shared/utils/config/config_loader.lua` | 99 | Installs the require cache, then `load_ui_config(char, job)`: `dofile` of `UI_CONFIG.lua`, fills `_G.UIConfig` and `_G.ui_display_config` |
 | `shared/utils/core/state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (see Interactions) |
-| `shared/utils/core/optional_state.lua` | 142 | `OptionalState.create{...}`: a Mote state the project adds to jobs, with a HUD row and key shown or hidden per job (Combat Mode, Treasure Mode) |
+| `shared/utils/core/optional_state.lua` | 149 | `OptionalState.create{...}`: a Mote state the project adds to jobs, with a HUD row and key shown or hidden per job (Combat Mode, Treasure Mode) |
 | `shared/utils/core/optional_state_commands.lua` | 147 | `//gs c <mode> [show\|hide\|key <key>\|help]` for an optional state; rewrites its settings file |
 | `_master/config_global/UI_CONFIG.lua` | 534 | Template for `data/<char>/_common/display/UI_CONFIG.lua` (display defaults, 36 presets, `layout` / `colors` / `chat` / `rolls` blocks) |
 | `_master/config_global/UI_COLOR_CONFIG.lua` | 275 | Template for the per-character value-colour overrides |
-| `_master/config_global/ui_settings.lua` | 36 | Starting settings for a new character (position 1600, 300). A re-clone keeps the character's existing file (`clone_character.py` `KEPT_ON_RECLONE`, which also keeps `combat_mode.lua`, `treasure_mode.lua` and `config/*/*_HUD.lua`) |
+| `_master/config_global/ui_settings.lua` | 36 | Starting settings for a new character (position 1600, 300). A re-clone keeps the character's existing file (`clone_character.py` `KEPT_ON_RECLONE`, which also keeps `saved/combat_mode.lua`, `saved/treasure_mode.lua` and `*/display/*_HUD.lua`) |
 
 ## How it works
 
@@ -162,7 +162,7 @@ Two Mote states are added by the project, not by the job files: `CombatMode` (`O
 
 - **Attach**. `KeybindManager.create(job, module)` calls `CombatMode.attach(job, module.binds)` then `TreasureHunter.optional.attach(job, module.binds)` before the custom states and common keys are merged. `attach` records once per load whether the job's own STATES file defined the state (`_G._<id>_native`; the first attach wins because the HUD's second require sees the state already created), creates `state.<State> = M{description, values...}` when missing, reuses the job's own bind for that state or appends `{key = default_key, command = 'cyclestate <State>', desc, state}`, applies the per-job key from settings, and wraps `entry.visible` so the row and key exist only while `is_shown(job)` (and the bind's own `visible`, if any) is true. Default keys: Combat Mode `!numpad0`, Treasure Mode `!numpad.`. Right after them `KeybindManager.create` calls `AutoJump.attach(job, module.binds)`, which is not an optional state: it creates `state.JumpAuto` (Off) when missing and appends a `!numpad-` row when the job has none, with `subjob = 'DRG'`, so the Jump Auto row shows on /DRG only on every job.
 - **Shown or not** (`is_shown(job)`): `hidden[job]` -> no; `shown[job]` or (`shown.all` and not `hidden.all`) -> yes; `hidden.all` -> no; otherwise yes only when the job defines the state natively. Natively: Combat Mode on BLM, GEO, RDM, WHM; Treasure Mode on THF. So on every other job the state exists (value `Off`) but has no row and no key.
-- **Settings file**: `<Char>/_common/keys/combat_mode.lua` / `treasure_mode.lua`, `return {shown = {JOB = true}, hidden = {...}, keys = {JOB = '!f10', all = '~f9'}}`; job codes are upper-cased on read, `ALL` / `all` accepted. Read once per load (`_G._<id>_settings`).
+- **Settings file**: `<Char>/saved/combat_mode.lua` / `treasure_mode.lua`, `return {shown = {JOB = true}, hidden = {...}, keys = {JOB = '!f10', all = '~f9'}}`; job codes are upper-cased on read, `ALL` / `all` accepted. Read once per load (`_G._<id>_settings`) from `read_path()`: `saved/`, else `_common/keys/`, where the file was until 2026-10-10; it is written to `saved/`.
 - **Commands** (`OptionalStateCommands.create`): `//gs c combatmode` / `//gs c th` (status InfoBlock: Shown, mode fields, Key), `... show`, `... hide` (also resets the state to its first value), `... key <key>|none` (validated by `key_validator.is_valid_key`), `... help` (HelpScreen); `th clear` forgets tagged mobs. Each command rewrites the whole settings file with its explanatory header, then `KeybindManager.refresh_active()`, `Display.update_display()` and `gs c update`, so the HUD row appears or disappears at once.
 
 ### Rendering pipeline
@@ -334,7 +334,7 @@ Callers were found with `grep -r` over `shared/`, `_master/`, `Tetsouo/` and `Ka
 | `HudJobConfig.render(job, data, keybinds_path)`, `.set_list(job, field, list)` -> `saved, err` | Write the file whole, keeping the other list | `ui_style_commands.lua` |
 | `UICommands.handle_ui_command(cmdParams)`, `.is_ui_command(cmd)` | Dispatcher | every job's `*_COMMANDS.lua` (17 files) |
 | `StateDisplayOverride.init()` | Installs `_G.display_current_state` | `INIT_SYSTEMS.lua`, deferred 0.5 s |
-| `OptionalState.create(cfg)` -> `{settings_path, settings, is_shown(job), value, entry, attach(job, binds)}` | See Optional states | `combat_mode.lua`, `treasure_hunter.lua` |
+| `OptionalState.create(cfg)` -> `{settings_path, read_path, settings, is_shown(job), value, entry, attach(job, binds)}` | See Optional states | `combat_mode.lua`, `treasure_hunter.lua` |
 | `OptionalStateCommands.create(cfg)` -> `{handle(args)}` | See Optional states | `combat_mode_commands.lua`, `treasure_commands.lua` |
 
 ## Commands
@@ -412,9 +412,9 @@ Keys: `pos_x, pos_y, enabled, show_header, show_legend, show_column_headers, sho
 
 `return {section_order = {...}, row_order = {...}}` with an explanatory header and the job's state names as a comment. An empty or missing list means the `UI_CONFIG.lua` default. Kept on re-clone.
 
-### `data/<char>/_common/keys/combat_mode.lua`, `treasure_mode.lua`
+### `data/<char>/saved/combat_mode.lua`, `treasure_mode.lua`
 
-`return {shown = {...}, hidden = {...}, keys = {...}}`, rewritten whole (with header) by `//gs c combatmode ...` / `//gs c th ...`. Deleting the file restores the defaults (native jobs only).
+`return {shown = {...}, hidden = {...}, keys = {...}}`, rewritten whole (with header) by `//gs c combatmode ...` / `//gs c th ...`. Deleting the file restores the defaults (native jobs only). Until 2026-10-10 the two files were in `_common/keys/`; a copy left there is read until a command writes the file again, to `saved/`.
 
 ### `data/<char>/_common/display/UI_COLOR_CONFIG.lua`
 

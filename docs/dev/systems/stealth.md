@@ -13,7 +13,7 @@ Verified against the code on 2026-09-28 (system added 2026-09-26, trace module a
 | `shared/utils/stealth/stealth_aoe.lua` | 148 | One Scholar for the group: `coverable`, claims (`record` / `winner` / `clear`), `status`, flat `distance`, `trace_distances`, `chain_time` |
 | `shared/utils/stealth/stealth_timers.lua` | 167 | Packet 0x063 order 9 listener (decoding by `BuffTimers.read`), end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
 | `shared/utils/stealth/stealth_trace.lua` | 102 | Trace only: own Sneak / Invisible gained / refreshed / lost, and who each Sneak / Invisible cast reached |
-| `shared/utils/stealth/stealth_config.lua` | 79 | Reads `<Character>/_common/combat/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
+| `shared/utils/stealth/stealth_config.lua` | 79 | Reads `<Character>/_common/travel/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
 | `shared/utils/messages/formatters/system/message_stealth.lua` | 98 | `show_skipped`, `show_covered`, `show_no_way`, `show_jig_recast`, `show_asked`, `show_wearing_off`, `show_setting`, `show_usage` |
 | `shared/utils/messages/data/systems/stealth_messages.lua` | 23 | `STEALTH` namespace, 10 templates |
 | `_master/config_global/STEALTH_CONFIG.lua` | 37 | Settings template, copied to `<Character>/_common/` by the clone |
@@ -24,7 +24,7 @@ Integration points outside the folder:
 - `shared/utils/core/INIT_SYSTEMS.lua` (block "Sneak / Invisible timers"): `pcall(require, 'shared/utils/stealth/stealth_timers')` then `StealthTimers.start()` synchronously on every load; a load failure prints `show_module_load_failed('Stealth Timers', ...)`.
 - `_master/config_global/COMMON_KEYBINDS.lua`: `!z` -> `stealth sneak`, `!x` -> `stealth invi`. The Blodykiller and Gabvanstronger overlays (`_master/<Name>/config_global/COMMON_KEYBINDS.lua`) keep their own per-subjob `!z` / `!x` binds (raw `/ja`, `/ma`, `/item` or alias commands) instead.
 - `shared/utils/dualbox/alt_window.lua` `stealth_lines` (called from `alt_lines`): a Sneak and an Invi row per alt.
-- `clone_character.py`: `('config', 'STEALTH_CONFIG.lua')` is in `KEPT_ON_RECLONE`, so a re-clone copies the player's file back from the backup. The template itself reaches `config/` through the `config_global` copy loop (overlay-aware, every `*.lua` of `_master/config_global/` and the overlay's `config_global/`).
+- `clone_character.py`: `('_common', 'travel', 'STEALTH_CONFIG.lua')` is in `KEPT_ON_RECLONE` (with the file's places of before: `_common/combat/` until 2026-10-10, `common/...`, `config/`), so a re-clone copies the player's file back from the backup. The template itself reaches `config/`, then `_common/travel/` (the clone's layout step), through the `config_global` copy loop (overlay-aware, every `*.lua` of `_master/config_global/` and the overlay's `config_global/`).
 - `shared/utils/messages/formatters/ui/message_commands.lua`: `//gs c commands` lists `stealth help` and `stealth sneak | invi | both`, `stealth check`. `help` is not a subcommand: it falls to the usage screen like any unknown word.
 - `shared/utils/core/action_queue.lua` (180 lines, since 2026-10-01): the action queue, shared with `//gs c cleanse` ([cleanse.md](cleanse.md)) and `//gs c buff` ([midcast-and-buffs.md](midcast-and-buffs.md#buff-command-and-engine)).
 - `shared/utils/buffs/buff_timers.lua` `BuffTimers.read(data)`: the packet 0x063 decoding `read_packet` uses (moved there on 2026-10-01, shared with the buff refresh of `//gs c buff`).
@@ -250,7 +250,7 @@ Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `requ
 
 ## Configuration
 
-`<Character>/_common/combat/STEALTH_CONFIG.lua` (template `_master/config_global/STEALTH_CONFIG.lua`), path from `StealthConfig.path()`:
+`<Character>/_common/travel/STEALTH_CONFIG.lua` (template `_master/config_global/STEALTH_CONFIG.lua`), path from `StealthConfig.path()`:
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -260,7 +260,7 @@ Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `requ
 | `alerts` | true | Wear-off warnings in chat |
 | `delay` | 3.0 | Seconds after an action ends before the next one (2.5 until 2026-09-27: a RDM/WHM Invisible right after Sneak was refused) |
 
-`get()` reads the file once per load with `pcall(dofile, path)` into `_G._stealth_settings`; a missing file or key, or a value of another type, keeps the default. `set()` changes the value in memory, then the local `save` rewrites only that key's `key = value,` line (or adds it before the closing brace), keeping comments and the file's line endings; a missing file gives `setting_unsaved` ("not saved (_common/combat/STEALTH_CONFIG.lua missing)"). Note: the template's header still suggests `//gs c stealth delay 2.5`, the old default.
+`get()` reads the file once per load with `pcall(dofile, path)` into `_G._stealth_settings`; a missing file or key, or a value of another type, keeps the default. `set()` changes the value in memory, then the local `save` rewrites only that key's `key = value,` line (or adds it before the closing brace), keeping comments and the file's line endings; a missing file gives `setting_unsaved` ("not saved (config/STEALTH_CONFIG.lua missing)": the template in `stealth_messages.lua` still names the place of the oldest layout). Note: the template's header still suggests `//gs c stealth delay 2.5`, the old default.
 
 ## State & lifetime
 

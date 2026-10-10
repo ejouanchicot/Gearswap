@@ -107,12 +107,12 @@ end
 local EXTDATA_TIME_OFFSET = 18000
 
 -- Hold after the first "ready" reading before using the item (lag/desync protection).
--- The player's own value: _common/combat/TUNING.lua, warp_ring_safety.
+-- The player's own value: _common/travel/WARP_CONFIG.lua, ring_safety.
 local DEFAULT_SAFETY_DELAY = 3.5
 
---- Seconds held once the ring reads ready (TUNING.lua warp_ring_safety, never under 0).
+--- Seconds held once the ring reads ready (WARP_CONFIG.lua ring_safety, never under 0).
 local function safety_delay()
-    return math.max(0, require('shared/utils/core/tuning').get('warp_ring_safety', DEFAULT_SAFETY_DELAY))
+    return math.max(0, require('shared/utils/core/job_config').common('WARP_CONFIG', 'ring_safety', DEFAULT_SAFETY_DELAY))
 end
 
 -- Bounds for the activation wait, in seconds.

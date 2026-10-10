@@ -160,7 +160,7 @@ end
 --- DEBUFF SONG MESSAGES
 ---============================================================================
 
---- @param spell string The lullaby sent (TUNING.lua brd_debuff_songs)
+--- @param spell string The lullaby sent (BRD_SONG_CONFIG.lua DEBUFF_SONGS)
 function BRDMessages.show_lullaby_cast(spell)
     M.job('BRD', 'lullaby_cast', {
         job = get_job_tag(),

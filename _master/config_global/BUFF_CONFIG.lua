@@ -1,5 +1,5 @@
 ---============================================================================
---- Buffs - what //gs c buff (and WAR's berserk / defender) cast, in order
+--- Buffs - what //gs c buff casts, in order
 ---============================================================================
 --- //gs c buff casts the list of your main job, then the list of your
 --- subjob (DNC: its dance and samba first). Write the name of the ability or
@@ -24,8 +24,8 @@ return {
     -- Your main job's buffs. Write the tiers of a buff best first (Refresh
     -- III, Refresh II, Refresh): the first one you have and is ready goes.
     -- No list: BRD (songs), COR (rolls), GEO (bubbles), BST / SMN / PUP
-    -- (pets), DNC (its dance and samba come first anyway), WAR (berserk /
-    -- defender below), BLU (the game does not tell which spells are set),
+    -- (pets), DNC (its dance and samba come first anyway), WAR (its berserk /
+    -- defender chains: war/combat/WAR_CONFIG.lua), BLU (the game does not tell which spells are set),
     -- DRG, THF. Add one if you like, e.g. BLU = {'Cocoon', 'Barrier Tusk'}.
     -- '$GainSpell': the spell chosen in that state (RDM's GainSpell).
     -- '$EnSpell': tier I only (Enfire...): it hits every swing of the round,
@@ -67,13 +67,6 @@ return {
         WHM = {'Reraise'},
     },
 
-    -- WAR main: //gs c berserk and //gs c defender
-    war_berserk  = {'Berserk', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
-    war_defender = {'Defender', 'Aggressor', 'Retaliation', 'Restraint', 'Warcry'},
-
-    -- WAR main /SAM: add the stance (Hasso with berserk, Seigan with
-    -- defender) and Third Eye to those two commands
-    war_add_sam = true,
 
     -- A buff already up is cast again when less than this percent of its
     -- length is left (0: never). Its time left is read from the game.

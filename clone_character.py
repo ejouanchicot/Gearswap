@@ -325,8 +325,11 @@ KEPT_ON_RECLONE = [
     ('atelier', 'export.on'),
     ('saved', 'set_overrides.lua'),
     ('saved', 'keybind_overrides.lua'),
-    ('_common', 'keys', 'combat_mode.lua'),
-    ('_common', 'keys', 'treasure_mode.lua'),  # //gs c th show | hide | key
+    ('saved', 'combat_mode.lua'),    # //gs c combatmode show | hide | key
+    ('saved', 'treasure_mode.lua'),  # //gs c th show | hide | key
+    ('_common', 'travel', 'STEALTH_CONFIG.lua'),
+    ('_common', 'keys', 'combat_mode.lua'),    # before 2026-10-10 (migrate_config.py)
+    ('_common', 'keys', 'treasure_mode.lua'),
     ('_common', 'combat', 'STEALTH_CONFIG.lua'),
     ('*', 'display', '*_HUD.lua'),  # per-job HUD row order (//gs c ui roworder)
     ('common', 'keys', 'combat_mode.lua'),    # before the _ (2026-09-30)

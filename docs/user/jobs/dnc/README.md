@@ -24,7 +24,7 @@ Dancer with the provided template gives you:
 - **One-key chains**: `step` (Presto first, main / alternate step),
   `buff` (dance, samba, then the job and subjob buff lists), `dance`.
 - **Waltzes**: `//gs c waltz` picks the Curing Waltz tier from the missing HP
-  of your target (tier bands: `waltz_from` in `_common/combat/TUNING.lua`); `aoewaltz` uses Divine Waltz.
+  of your target (tier bands: `waltz_from` in `_common/combat/SUBJOB_CONFIG.lua`); `aoewaltz` uses Divine Waltz.
 
 Every mode goes back to its default on each job change, subjob change and
 reload.
@@ -120,7 +120,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Feature | On DNC |
 |---|---|
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message (not when Jump took it over to build the TP); a weaponskill out of range uses neither Jump nor Climactic Flourish; TP bonus gear (Moonshade...) from `DNC_TP_CONFIG.lua` is added after the dance / Climactic version, counting Aeneas / Centovente in either hand |
-| Automatic abilities | Climactic Flourish before the weaponskills of `DNC_WS_CONFIG.lua` (Climactic Auto: 1000 TP or more, target above 25 % HP, 3+ Finishing Moves, tried once per weaponskill); Presto before `step` |
+| Automatic abilities | Climactic Flourish before the weaponskills of `DNC_WS_CONFIG.lua` (Climactic Auto: 1000 TP or more, target above 25 % HP, 3+ Finishing Moves, tried once per weaponskill); Presto before `step` (`auto_presto = false` in `dnc/combat/DNC_CONFIG.lua` turns it off) |
 | Auto Jump (/DRG) | Below 1000 TP, a weaponskill is replaced by Jump (then High Jump if still short) and sent again (Jump Auto) |
 | Recast check | An ability or spell still on recast is cancelled with the time left (Utsusemi is left to the game). A samba you cannot pay for (TP below its cost, not under Trance) is cancelled with a message |
 | Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
@@ -131,7 +131,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
 | Treasure Mode | Off and hidden. `//gs c th show` to use it: the template already has `sets.TreasureHunter` |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Your own modes | `DNC_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Utsusemi (/NIN) | Utsusemi: Ichi removes your old shadows 2.3 s into the cast so the new ones take (shared with every job; needs Windower's Cancel addon) |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key) |
@@ -155,12 +155,14 @@ for refill, `combat/` for the rest):
 | `DNC_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (template: 2 everywhere) |
 | `DNC_MACROBOOK.lua` | Macro book / page per subjob and per dual-box alt job (template: book 4, /WAR book 5) |
 | `DNC_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../../features/tp-bonus.md)) |
+| `DNC_CONFIG.lua` | `auto_presto` (`true`): Presto before `step`; `false` turns it off ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)) |
 | `DNC_REFILL.lua` | What `//gs c rf` restocks on DNC on top of or in place of the common list (every line commented at first: the common list) ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
-`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
-`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
-`combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
+`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT_CONFIG.lua`,
+`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, `SUBJOB_CONFIG.lua` (waltz
+tiers); in `<YourName>/saved/`, `treasure_mode.lua` / `combat_mode.lua`
+(written by `//gs c th` / `combatmode`). Gear:
 `<YourName>/dnc/sets/dnc_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More

@@ -144,7 +144,7 @@ Jobs that differ from the table above (details on each job's set page):
 
 Hachirin-no-Obi and Orpheus's Sash need no set: they go on by themselves on
 elemental damage when they help ([configuration](configuration.md),
-`ELEMENTAL_BELT.lua`, `//gs c belt`).
+`ELEMENTAL_BELT_CONFIG.lua`, `//gs c belt`).
 
 Impact's cloak (Crepuscular Cloak or Twilight Cloak) stays on by itself on every
 job, from the start of the cast to the end: whatever set goes on during the cast

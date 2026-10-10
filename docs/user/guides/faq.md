@@ -113,7 +113,7 @@ idle). See [BST](../jobs/bst/states.md).
 **Why does my mode reset?** Every mode goes back to its default on each job
 or subjob change, except Auto Medicine. Change the default in
 `<JOB>_STATES.lua` (Auto Medicine: `auto_medicine_start` in
-`_common/combat/AUTOCURE_CONFIG.lua`, read when the game starts).
+`_common/combat/AUTO_MEDICINE_CONFIG.lua`, read when the game starts).
 
 ## Quick table
 

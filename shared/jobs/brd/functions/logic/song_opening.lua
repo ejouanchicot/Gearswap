@@ -4,7 +4,7 @@
 --- //gs c songs first asks whether there is anything to sing, then uses the
 --- abilities that go before the songs, each one checked before the next:
 ---   1. Nothing to sing: every song of the plan is ours and has more than
----      `brd_songs_refresh_below` seconds left (_common/combat/TUNING.lua,
+---      `REFRESH_BELOW` seconds left (brd/combat/BRD_SONG_CONFIG.lua,
 ---      180 when unset, 0 turns the check off). Nothing is sent, neither
 ---      Nightingale nor a song. //gs c songs force sings anyway.
 ---   2. Nitro, when state.AutoNitro is On and Nightingale and Troubadour are
@@ -57,7 +57,7 @@ end
 --- @param count number How many of them the rotation holds
 --- @return number|nil Seconds left on the shortest, nil when something must be sung
 function SongOpening.nothing_to_sing(songs, count)
-    local below = require('shared/utils/core/tuning').get('brd_songs_refresh_below', DEFAULT_REFRESH_BELOW)
+    local below = require('shared/utils/core/job_config').get('BRD', 'REFRESH_BELOW', DEFAULT_REFRESH_BELOW)
     if type(below) ~= 'number' or below <= 0 or count < 1 then return nil end
     local SongOwner = require('shared/jobs/brd/functions/logic/song_owner')
     local have, shortest = {}, nil

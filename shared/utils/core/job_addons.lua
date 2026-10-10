@@ -4,7 +4,7 @@
 --- Some jobs drive an addon on their own: COR unloads rolltracker (its own
 --- roll tracker replaces it) and loads it back when you leave COR, BST loads
 --- bst-hud, GEO loads pettp, BLU loads AzureSets. The character's
---- _common/display/ADDONS_CONFIG.lua can stop any of them (name = false):
+--- _common/tools/ADDONS_CONFIG.lua can stop any of them (name = false):
 --- the job then leaves that addon alone. Everything allowed when the file
 --- or the name is missing.
 ---

@@ -120,7 +120,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | `requiem` | Foe Requiem VII on `<stnpc>` |
 
 The spells of `lullaby`, `lullaby2`, `elegy` and `requiem` can be changed with
-`brd_debuff_songs` in `_common/combat/TUNING.lua` (for instance `{elegy = 'Battlefield Elegy'}`).
+`BRDSongConfig.DEBUFF_SONGS` in `brd/combat/BRD_SONG_CONFIG.lua` (for instance `{elegy = 'Battlefield Elegy'}`).
 Their chat line (`Casting ...`) names the spell the command sends, before any
 tier change on recast.
 | `nt` | Nightingale, then Troubadour 2 s later |
@@ -176,7 +176,7 @@ starts, after its recast check, never by the command.
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC) |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none) |
 | Combat Mode | Off and hidden. **On BRD it also locks the instrument slot**: no instrument can change, dummy songs use whatever you wear, and Honor March / Aria of Passion are refused unless Marsyas / Loughnashade is already on. Leave it hidden unless you want exactly that |
-| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
 | Your own modes | `BRD_CUSTOM.lua`: extra modes, keys and gear rules without code. Your rules never touch the instrument or ammo while you sing |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key, default 80) |
 | Lockstyle, macro book | Set on load and on each subjob change |
@@ -195,7 +195,7 @@ for refill, `combat/` for the rest):
 | `BRD_STATES.lua` | Modes, their values and defaults |
 | `BRD_KEYBINDS.lua` | The job keys above |
 | `BRD_CUSTOM.lua` | Your own modes, keys and gear rules ([keybinds guide](../../guides/keybinds.md)) |
-| `BRD_SONG_CONFIG.lua` | The song packs, dummy songs, Etudes, Victory March replacements, HUD short names, song tier fallback (`SONG_REFINE`, `enabled = false` turns it off) |
+| `BRD_SONG_CONFIG.lua` | The song packs, dummy songs, Etudes, Victory March replacements, HUD short names, song tier fallback (`SONG_REFINE`, `enabled = false` turns it off), the spells of the debuff commands (`DEBUFF_SONGS`), the time left under which `//gs c songs` sings again (`REFRESH_BELOW`, 180 s) |
 | `BRD_TIMING_CONFIG.lua` | Gap after each song of a rotation (3.0 s, +1.0 s after Honor March / Aria of Passion) and the `nt` delay (2.0 s) |
 | `BRD_HUD.lua` | HUD section and row order for BRD (written by `//gs c ui order` / `roworder`) |
 | `BRD_LOCKSTYLE.lua` | Lockstyle number (template: 7). Its `by_subjob` table is not used: the file has no `get_style` |
@@ -204,9 +204,10 @@ for refill, `combat/` for the rest):
 | `BRD_REFILL.lua` | What `//gs c rf` restocks on BRD on top of or in place of the common list (every line commented at first: the common list) ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
-`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
-`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
-`combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
+`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT_CONFIG.lua`,
+`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`; in `<YourName>/saved/`,
+`treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
+`combatmode`). Gear:
 `<YourName>/brd/sets/brd_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More

@@ -660,14 +660,14 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 - Set building: `BaseSetBuilder` (movement, town), AutoMove (`state.Moving`).
   Shared hooks added by `INIT_SYSTEMS` apply on PLD too: ElementalBelt, DualWield,
   TreasureHunter, CombatMode, CustomStates ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
-  HP priority ranks PLD's swaps like every job's (`skip_jobs` of `_common/combat/HP_PRIORITY.lua`
+  HP priority ranks PLD's swaps like every job's (`skip_jobs` of `_common/gear/HP_PRIORITY_CONFIG.lua`
   is empty by default in `hp_priority.lua` `DEFAULTS`); the template sets carry no hand-written
   `priority` since 2026-09-30 ([equipment and inventory](../systems/equipment-and-inventory.md#hp-priority)).
 - Commands: `CommonCommands`, `UICommands`, `WatchdogCommands`, `CycleHandler`,
   `LifecycleManager` ([commands and debug](../systems/commands-and-debug.md),
   [core lifecycle](../systems/core-lifecycle.md)); `ScholarActions` and
   `StratagemCharges` (shared with [BLM](blm.md) and GEO); `SortieCommands` sets
-  the states named in the character's `_common/combat/SORTIE_CONFIG.lua` (Tetsouo's:
+  the states named in the character's `_common/tools/SORTIE_CONFIG.lua` (Tetsouo's:
   `HybridMode`, `MainWeapon`, `Regen` and `PhalanxSIRD` on PLD).
 - Messages: generic `MessageFormatter` / `MessageCooldowns`; JA descriptions from
   `PLD_JA_DATABASE` through `ability_message_handler`.

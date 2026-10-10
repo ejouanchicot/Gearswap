@@ -192,7 +192,7 @@ Patience windows (all in `item_user.lua`):
 | `WAIT_GRACE` | 5 s | 129 | added to the delay the item reports |
 | `WAIT_CEILING` | 60 s | 128 | the deadline never moves past `started + 60` |
 | `WAIT_HARD_CEILING` | 90 s | 134 | tested first in every `check_usable`, covers the self-rescheduling paths (`:427`) |
-| `DEFAULT_SAFETY_DELAY` | 3.5 s | 111 | hold after the first "ready" reading (re-check every 0.5 s); read through `safety_delay()`, which takes the player's `warp_ring_safety` of `_common/combat/TUNING.lua` when given (never under 0) |
+| `DEFAULT_SAFETY_DELAY` | 3.5 s | 111 | hold after the first "ready" reading (re-check every 0.5 s); read through `safety_delay()`, which takes the player's `ring_safety` of `_common/travel/WARP_CONFIG.lua` when given (`JobConfig.common('WARP_CONFIG', 'ring_safety', ...)`, `:115`; never under 0) |
 | mob record retry | 1.0 s | 485-491 | `/item` is not sent while `me.spawn_type` is nil |
 | `POLL_INTERVAL` / `MAX_POLL_SLEEP` | 1.0 / 5.0 s | 136-137 | sleep = `min(max(remaining, 1), 5)` (`:521`) |
 | `EXTDATA_TIME_OFFSET` | 18000 s | 107 | added to extdata timestamps before comparing with `os.time()`; the comment says only that the MyHome addon uses the same +18000 |

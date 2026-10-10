@@ -36,7 +36,7 @@ live in `<YourName>/bst/`: if you changed them, your files win.
   instead in Adoulin, if you define one).
 - **BST-HUD.** Loading BST unloads and reloads the separate `BST-HUD` addon (about
   3.5 s after the load); leaving BST unloads it. Nothing happens if you do not
-  have that addon; `['bst-hud'] = false` in `_common/display/ADDONS_CONFIG.lua` leaves it alone.
+  have that addon; `['bst-hud'] = false` in `_common/tools/ADDONS_CONFIG.lua` leaves it alone.
 
 Modes go back to their defaults at every job or subjob change: the ecosystem
 starts again on **Aquan**, Auto Pet Engage on **On**.

@@ -27,7 +27,7 @@
 ---   (M.extra), replaces it (M.default) or sets a list per subjob
 ---   (M.subjobs). subjobs: the common list per subjob.
 ---
----   @file    common/inventory/REFILL_CONFIG.lua
+---   @file    _common/inventory/REFILL_CONFIG.lua
 ---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-30

@@ -77,12 +77,12 @@ spell cast on yourself.
 
 ## Automatic abilities
 
-In `<YourChar>/_common/combat/AUTO_ABILITIES.lua`, both off unless set to `true`:
+In `<YourChar>/blu/combat/BLU_CONFIG.lua`, both off unless set to `true`:
 
 | Option | What it does |
 |---|---|
-| `blu_unbridled` | When you cast a spell that needs Unbridled Learning (or Wisdom) and neither is up, the spell is stopped, Unbridled Learning goes out, and the spell is cast again on the same target once the buff is up. If Unbridled Learning is not ready, the spell goes out as it is. |
-| `blu_expiacion_window` | With Tizona in your main hand, no Aftermath: Lv.3, and between 1000 and 2999 TP, your first Expiacion is cancelled with a warning; press it again within 3 s and it goes. At 3000 TP it goes at once. |
+| `auto_unbridled` | When you cast a spell that needs Unbridled Learning (or Wisdom) and neither is up, the spell is stopped, Unbridled Learning goes out, and the spell is cast again on the same target once the buff is up. If Unbridled Learning is not ready, the spell goes out as it is. |
+| `expiacion_window` | With Tizona in your main hand, no Aftermath: Lv.3, and between 1000 and 2999 TP, your first Expiacion is cancelled with a warning; press it again within 3 s and it goes. At 3000 TP it goes at once. |
 
 ## Commands
 
@@ -102,7 +102,7 @@ in [README.md](README.md#all-commands-on-this-job), details in
 - **AzureSets.** The AzureSets addon (`//aset`) is loaded when BLU loads, and
   unloaded once you are no longer BLU (checked 2 s after the job file unloads, so a
   subjob change or `//gs reload` keeps it). `AzureSets = false` in
-  `_common/display/ADDONS_CONFIG.lua`: BLU never loads it.
+  `_common/tools/ADDONS_CONFIG.lua`: BLU never loads it.
 - Weaponskill TP bonus: `BLU_TP_CONFIG.lua` (Moonshade Earring +250).
 - Every mode goes back to its default on each job change, subjob change or reload.
 
@@ -113,5 +113,5 @@ In `<YourChar>/blu/`: `BLU_STATES.lua` (modes and defaults),
 `BLU_KEYBINDS.lua` (keys), `BLU_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `BLU_SPELL_MAP.lua` (spell categories),
 `BLU_LOCKSTYLE.lua` (lockstyle 1), `BLU_MACROBOOK.lua` (book 1, page 1),
-`BLU_TP_CONFIG.lua`. The options are in `<YourChar>/_common/combat/AUTO_ABILITIES.lua`. See
+`BLU_TP_CONFIG.lua`. The options are in `<YourChar>/blu/combat/BLU_CONFIG.lua`. See
 [configuration](../../guides/configuration.md).

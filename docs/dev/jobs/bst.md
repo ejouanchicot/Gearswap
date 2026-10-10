@@ -29,7 +29,7 @@ What BST adds on top of the shared pipeline:
   Fight/Heel sequence).
 - **BST-HUD**: the external `BST-HUD` addon is unloaded and reloaded on every
   BST load and unloaded on `file_unload`, unless `['bst-hud'] = false` in
-  `_common/display/ADDONS_CONFIG.lua` ([JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)).
+  `_common/tools/ADDONS_CONFIG.lua` ([JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)).
 
 Player pages: [docs/user/jobs/bst/README.md](../../user/jobs/bst/README.md)
 (hub), [states.md](../../user/jobs/bst/states.md),

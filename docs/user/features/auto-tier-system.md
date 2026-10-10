@@ -61,7 +61,7 @@ Both need DNC as main job or subjob, and cancel Saber Dance first.
 
 Levels are your DNC level, main or sub. These values are in
 `shared/utils/dnc/waltz_manager.lua`; the missing HP at which each tier
-starts can be changed with `waltz_from` in `_common/combat/TUNING.lua` (for instance
+starts can be changed with `waltz_from` in `_common/combat/SUBJOB_CONFIG.lua` (for instance
 `waltz_from = {['Curing Waltz III'] = 800}`).
 
 ## BLM, RDM and GEO: nukes, enfeebles, Aspir

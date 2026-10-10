@@ -290,4 +290,16 @@ BRDSongConfig.SONG_REFINE = {
     }
 }
 
+---============================================================================
+--- DEBUFF COMMANDS AND //gs c songs
+---============================================================================
+
+-- The spell of each debuff command (//gs c lullaby, lullaby2, elegy, requiem)
+BRDSongConfig.DEBUFF_SONGS = {lullaby = 'Horde Lullaby', lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'}
+
+-- //gs c songs sends nothing (no Nightingale, no song) while every song of the
+-- pack is yours with more than this many seconds left; 0: always sing.
+-- //gs c songs force sings once anyway
+BRDSongConfig.REFRESH_BELOW = 180
+
 return BRDSongConfig

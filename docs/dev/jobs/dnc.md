@@ -240,7 +240,7 @@ equipped after the variant, on any weaponskill (since 2026-09-29).
 
 Then, with Saber Dance up, `sets.buff['Saber Dance']` is combined on top
 (since 2026-09-29), then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
-set, main + sub; with `equip_without_set` in `_common/combat/WEAPON_CONFIG.lua`, a
+set, main + sub; with `equip_without_set` in `_common/gear/WEAPON_CONFIG.lua`, a
 value with no set but a weapon name gives `{main = value}`), then, when
 `SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. That field
 is written into `result`, which is a fresh table only when the weapon set was
@@ -302,7 +302,7 @@ never gets the "nothing set" warning.
 `WaltzManager.cast_curing_waltz('<stpc>')` or `cast_divine_waltz()`. Tier from
 the missing HP of the current target (self exact; a party or alliance member
 estimated from its HP %; tier bands 200 / 600 / 1100 / 1500 by default, `waltz_from`
-in `_common/combat/TUNING.lua`), falling back through every tier by recast and TP.
+in `_common/combat/SUBJOB_CONFIG.lua`), falling back through every tier by recast and TP.
 Full description in
 [factories and helpers](../systems/factories-and-helpers.md#dnc-waltzmanager).
 

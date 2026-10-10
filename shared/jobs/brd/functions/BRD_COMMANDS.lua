@@ -350,8 +350,8 @@ function job_self_command(cmdParams, eventArgs)
     --- DEBUFF SONGS
     ---══════════════════════════════════════════════════════════════════════════
 
-    -- The spell of each command: _common/combat/TUNING.lua brd_debuff_songs
-    local debuff_songs = require('shared/utils/core/tuning').get('brd_debuff_songs', {lullaby = 'Horde Lullaby',
+    -- The spell of each command: brd/combat/BRD_SONG_CONFIG.lua DEBUFF_SONGS
+    local debuff_songs = require('shared/utils/core/job_config').get('BRD', 'DEBUFF_SONGS', {lullaby = 'Horde Lullaby',
         lullaby2 = 'Foe Lullaby II', elegy = 'Carnage Elegy', requiem = 'Foe Requiem VII'})
 
     if command == 'lullaby' then

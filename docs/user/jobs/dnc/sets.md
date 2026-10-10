@@ -23,7 +23,7 @@ stay in your hands.
 - Add an off-hand override: a value in `SubWeaponOverride` and a set of that name with
   a `sub` piece. A set without `sub` gives a warning and the off-hand is left alone.
 - A value with no set of that name forces no weapon. If your
-  `_common/combat/WEAPON_CONFIG.lua` has `equip_without_set = true`, a `MainWeapon` value that
+  `_common/gear/WEAPON_CONFIG.lua` has `equip_without_set = true`, a `MainWeapon` value that
   is an exact weapon name (for example `Twashtar`) is put in the main hand without a
   set. `SubWeaponOverride` always needs its set.
 - Weapons are only forced on the idle and engaged gear. Weaponskill and ability sets

@@ -273,8 +273,8 @@ through to Mote (and the alt fallback).
 | `skillup` / `skillup start|on|stop|off|status|<1-60>` | Toggle, start, stop or show the loop; a number sets `release_to_next_delay` and restarts |
 | `debugmidcast`, `cyclestate`, `ui ...`, `watchdog ...`, common commands | as in the other jobs |
 
-Skill-up loop: `start_skillup` reads `smn_skillup` from `_common/combat/TUNING.lua`
-([Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua); default `{avatar = 'Siren', release_after = 5.0}`) into
+Skill-up loop: `start_skillup` reads `skillup` from `smn/combat/SMN_CONFIG.lua`
+([JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua); default `{avatar = 'Siren', release_after = 5.0}`) into
 `SKILLUP_STATE.avatar` / `cast_to_release_delay` at each start.
 `skillup_iteration` casts that avatar, schedules Release
 `cast_to_release_delay` (5 s) later, then the next iteration
@@ -333,7 +333,7 @@ it stays on after the first cast.
 | `smn/display/SMN_HUD.lua` | empty | HUD section / row order |
 | `smn/display/SMN_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 1 everywhere | `LockstyleManager` (uses `get_style`) |
 | `smn/display/SMN_MACROBOOK.lua` | book 1, pages 1-4 | `MacrobookManager` |
-| `SKILLUP_STATE` knobs in `SMN_COMMANDS.lua` | Siren, 5.0 s cast-to-release, 1.5 s release-to-next | the loop; the first two from `_common/combat/TUNING.lua` `smn_skillup` at each start, `skillup <n>` changes the third |
+| `SKILLUP_STATE` knobs in `SMN_COMMANDS.lua` | Siren, 5.0 s cast-to-release, 1.5 s release-to-next | the loop; the first two from `smn/combat/SMN_CONFIG.lua` `skillup` at each start, `skillup <n>` changes the third |
 | Carbuncle auto-summon delay | `initial_load_delay + 2.0` (10 s) | entry `user_setup` |
 | Refill | `smn/inventory/SMN_REFILL.lua`, template all comments: the common list of `_common/inventory/REFILL_CONFIG.lua` (`shared/utils/inventory/refill/config_resolver.lua`) | `refill` |
 

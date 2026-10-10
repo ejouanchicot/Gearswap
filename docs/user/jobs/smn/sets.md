@@ -142,7 +142,7 @@ The provided file has `sets.precast.JA['Astral Flow']`, `['Astral Conduit']`,
   change), if no pet is out and you are not dead, Carbuncle is summoned. It is
   in the entry file; no mode turns it off.
 - **Skill-up loop.** `//gs c skillup` casts Siren, releases her 5 s later, and
-  starts again (another avatar or delay: `smn_skillup` in `_common/combat/TUNING.lua`): the Summoning Magic sets above are what you wear for it.
+  starts again (another avatar or delay: `skillup` in `smn/combat/SMN_CONFIG.lua`): the Summoning Magic sets above are what you wear for it.
 - **Doom.** SMN runs the shared Doom handling itself: `sets.buff.Doom` works as
   on the other jobs, but the provided file has none.
 

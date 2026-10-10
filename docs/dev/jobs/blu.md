@@ -26,8 +26,9 @@ What BLU adds on top of the shared pipeline:
   `sets.self_healing` for a Healing-category spell on oneself.
 - **Single wield** (`.SW`) engaged sets, chosen from the off-hand item.
 - Two **automatic abilities**, off by default: Unbridled Learning before an
-  unbridled spell (`blu_unbridled`) and an Expiacion hold for the Tizona
-  Aftermath: Lv.3 window (`blu_expiacion_window`).
+  unbridled spell (option `blu_unbridled`, key `auto_unbridled`) and an Expiacion
+  hold for the Tizona Aftermath: Lv.3 window (option `blu_expiacion_window`, key
+  `expiacion_window`), both keys of `blu/combat/BLU_CONFIG.lua`.
 - The **AzureSets** addon loaded while the character is BLU.
 
 BLU has no `//gs c` command of its own, no tier refinement and no job-specific
@@ -55,11 +56,11 @@ the sets files (structure and set names only).
 | `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'blu/display/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/blu/functions/logic/spell_map.lua` | 119 | `BLUSpellMap.category(name)` from the character's map, else the database category; `is_unbridled(name)` |
 | `shared/jobs/blu/functions/logic/set_builder.lua` | 148 | Idle and engaged: `.SW` detection, `[OffenseMode]`, Mote defense / Kiting layers, weapons, town, movement |
-| `shared/jobs/blu/functions/logic/unbridled.lua` | 41 | Option `blu_unbridled`: `BLUUnbridled.apply` -> `AbilityHelper.try_ability` |
-| `shared/jobs/blu/functions/logic/expiacion_guard.lua` | 80 | Option `blu_expiacion_window`: `BLUExpiacionGuard.check` |
+| `shared/jobs/blu/functions/logic/unbridled.lua` | 41 | Option `blu_unbridled` (`auto_unbridled` in `BLU_CONFIG.lua`): `BLUUnbridled.apply` -> `AbilityHelper.try_ability` |
+| `shared/jobs/blu/functions/logic/expiacion_guard.lua` | 80 | Option `blu_expiacion_window` (`expiacion_window` in `BLU_CONFIG.lua`): `BLUExpiacionGuard.check` |
 | `shared/jobs/blu/functions/logic/azure_sets.lua` | 51 | `BLUAzureSets.load` / `unload` of the AzureSets addon, flag on `windower._blu_azuresets_loaded` |
 | `shared/data/magic/BLU_SPELL_DATABASE.lua` (+ `blu/**/*.lua`) | - | Blue Magic spell data; BLU reads `get_spell_data(name).category` (unlisted spells) and `.unbridled` |
-| `shared/utils/core/auto_options.lua` | - | `AutoOptions.on(name)`: reads `_common/combat/AUTO_ABILITIES.lua` once per load (`== true`) |
+| `shared/utils/core/auto_options.lua` | 72 | `AutoOptions.on(name)`: the option's key in `blu/combat/BLU_CONFIG.lua`, through `JobConfig.get('BLU', key)` at each call (`== true`) |
 | `_master/config/blu/BLU_STATES.lua` | 66 | Mote mode options, `MainWeapon` / `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/blu/BLU_KEYBINDS.lua` | 34 | Data only: 6 entries (+ 2 commented per-weapon examples) handed to `KeybindManager.create('BLU', ...)` |
 | `_master/config/blu/BLU_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
@@ -69,10 +70,10 @@ the sets files (structure and set names only).
 | `_master/config/blu/BLU_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/blu/BLU_TP_CONFIG.lua` | 39 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.BLUTPConfig` |
 | `_master/config/blu/BLU_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/config_global/AUTO_ABILITIES.lua` | - | Template of `<Character>/_common/combat/AUTO_ABILITIES.lua`: both BLU options `false` |
+| `_master/config/blu/BLU_CONFIG.lua` | 21 | Template of `<Character>/blu/combat/BLU_CONFIG.lua`: `auto_unbridled = false`, `expiacion_window = false` |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |
 | `_master/sets/blu_sets.lua` | 182 | Template sets: every set the code reads, all empty |
-| `_master/Gabvanstronger/config/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)) |
+| `_master/Gabvanstronger/config/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)); its `AUTO_ABILITIES.lua` is the file of before 2026-10-10, folded into the job files when the overlay is cloned |
 | `shared/data/alt/BLU_ALT_COMMANDS.lua` | - | Dual-box commands for a BLU partner (read by the main's alt system, not by the BLU job file) |
 
 No live copy is tracked (live folders are gitignored).
@@ -277,11 +278,14 @@ A weapon cycle re-equips through Mote's `handle_update`.
 ### Automatic abilities
 
 Both options are read by `AutoOptions.on(name)`: `true` only if the character's
-`_common/combat/AUTO_ABILITIES.lua` sets it `true`, read once per load. The template
-file has both `false`; `clone_character.py` copies `config_global/*.lua` to
-`<Character>/_common/`.
+`blu/combat/BLU_CONFIG.lua` sets the option's key `true` (`blu_unbridled` ->
+`auto_unbridled`, `blu_expiacion_window` -> `expiacion_window`; `HOME` in
+`auto_options.lua`, read through [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua) at each call). A folder that still has
+`_common/combat/AUTO_ABILITIES.lua` is read there first, under the option's own
+name. The template `_master/config/blu/BLU_CONFIG.lua` has both `false`;
+`clone_character.py` copies it with the job's other config files.
 
-**`blu_unbridled`** (`BLUUnbridled.apply`), precast step 3:
+**`blu_unbridled`** (key `auto_unbridled`; `BLUUnbridled.apply`), precast step 3:
 
 1. Only for `spell.type == 'BlueMagic'`, option on, and a spell whose database
    entry has `unbridled = true` (`BLUSpellMap.is_unbridled`).
@@ -296,7 +300,7 @@ file has both `false`; `clone_character.py` copies `config_global/*.lua` to
    is not tried twice.
 4. Trace line `UNBRIDLED <spell> on <target> -> ...`.
 
-**`blu_expiacion_window`** (`BLUExpiacionGuard.check`), precast step 4,
+**`blu_expiacion_window`** (key `expiacion_window`; `BLUExpiacionGuard.check`), precast step 4,
 weaponskills only:
 
 - Only for Expiacion with the option on. TP is read from the game
@@ -318,7 +322,7 @@ weaponskills only:
 
 - `load()`, from `user_setup`: does nothing if `windower._blu_azuresets_loaded`
   is set, or if `JobAddons.allowed('AzureSets')` is false (`AzureSets = false` in
-  `_common/display/ADDONS_CONFIG.lua`, [JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)); otherwise sets it, sends `lua load AzureSets`, and 3 s later shows
+  `_common/tools/ADDONS_CONFIG.lua`, [JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)); otherwise sets it, sends `lua load AzureSets`, and 3 s later shows
   `AzureSets: //aset setlist | //aset spellset <name>`.
 - `unload()`, first thing in `file_unload` (GearSwap runs `file_unload` under
   one `pcall`, so an error further down would skip it): 2 s later reads
@@ -426,8 +430,8 @@ and a few sets nothing reaches, each marked so in the file.
 | `<char>/blu/BLU_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` and `get_style` only, so `by_subjob` is never read |
 | `<char>/blu/BLU_MACROBOOK.lua` | book 1 page 1 | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
 | `<char>/blu/BLU_TP_CONFIG.lua` -> `_G.BLUTPConfig` | Moonshade ear1 +250, no weapon | file | `WSPrecastHandler` / TP bonus calculator |
-| `<char>/_common/combat/AUTO_ABILITIES.lua` `blu_unbridled`, `blu_expiacion_window` | `false` | `AutoOptions.on` (`== true`) | `BLUUnbridled.apply`, `BLUExpiacionGuard.check` |
-| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | `false` | file | `WeaponResolver` |
+| `<char>/blu/combat/BLU_CONFIG.lua` `auto_unbridled`, `expiacion_window` (options `blu_unbridled`, `blu_expiacion_window`) | `false` | `AutoOptions.on` (`== true`) | `BLUUnbridled.apply`, `BLUExpiacionGuard.check` |
+| `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | `false` | file | `WeaponResolver` |
 | Hard-coded | Unbridled delay 1.5 s (`SPELL_DELAY`); Expiacion window 3 s, thresholds 1000 / 3000 TP, weapon `Tizona`; AzureSets delays 2 s / 3 s; overlay buffs (`BLUE_MAGIC_BUFFS`) | code | - |
 
 ## Character overlay
@@ -442,7 +446,7 @@ the clone script.
   Free (default Tizona). `SubWeapon`: Sakpata's Sword, Zantetsuken, Thibron,
   Tanmogayi +1, Nihility, Free. Its weapon lock is Combat Mode on `~f9` (its
   `config_global/combat_mode.lua`, shown on every job); its Aftermath state is
-  the `blu_expiacion_window` option.
+  the `blu_expiacion_window` option (key `expiacion_window`).
 - **Custom modes** (`BLU_CUSTOM.lua`): `RangedSet` (Normal / Pull, `sets.Pull`
   with range and ammo locked) and `CP` (on / off, `sets.CP` with the back
   locked).
@@ -450,7 +454,9 @@ the clone script.
   spells, per-weapon weaponskill keys for sword and club.
 - **Lockstyle** 2, **macro book** 8 page 1; weapons are plain items
   (`equip_without_set = true`); both BLU options `true` in its
-  `AUTO_ABILITIES.lua`.
+  `config_global/AUTO_ABILITIES.lua` (the file of before 2026-10-10, under the
+  names `blu_unbridled` / `blu_expiacion_window`: a clone writes them into
+  `blu/combat/BLU_CONFIG.lua`).
 
 ## State & lifetime
 

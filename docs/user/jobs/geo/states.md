@@ -48,7 +48,7 @@ Reorder or trim the lists in `GEO_STATES.lua`.
 | `//gs c indi` | Casts `MainIndi` on yourself |
 | `//gs c geo` | Casts `MainGeo`: on a party member (`<stpc>`) for a buff, on an enemy (`<stnpc>`) for a debuff |
 | `//gs c entrust` | Uses Entrust, then casts `MainIndi` on a party member (`<stal>`) once Entrust is up; gives up with a warning if Entrust was refused |
-| `//gs c escort [Indi-X] [leader] [profile]` | Full Circle if a luopan is out, then casts the Indi- on yourself (default Indi-Regen, `geo_escort_indi` in `_common/combat/TUNING.lua`); with a leader name, sends `sm follow <leader>` once the cast is over. With a Silmaril profile folder as fourth word, loads and starts that profile instead of casting (the profile casts the Indi-) |
+| `//gs c escort [Indi-X] [leader] [profile]` | Full Circle if a luopan is out, then casts the Indi- on yourself (default Indi-Regen, `escort_indi` in `geo/combat/GEO_CONFIG.lua`); with a leader name, sends `sm follow <leader>` once the cast is over. With a Silmaril profile folder as fourth word, loads and starts that profile instead of casting (the profile casts the Indi-) |
 | `//gs c lightspell` / `darkspell` | Nukes your target with the chosen element and `SpellTier`, stepping down a tier when the higher one is not learned or is on recast |
 | `//gs c lightaoe` / `darkaoe` | Same with the -ra spells and `AOETier` |
 | `//gs c lightarts` / `darkarts` | /SCH: Light or Dark Arts, then the matching Addendum on the next press |
@@ -65,9 +65,9 @@ you lack the MP, the highest lower tier you know that can go out is cast instead
 ## Notes
 
 - All modes go back to their default on every job change, subjob change and reload.
-- Two automatic abilities are available, off by default, in `<YourName>/_common/combat/AUTO_ABILITIES.lua`:
-  `geo_entrust = true` puts Entrust up before an Indi- you cast on a party member, and
-  `geo_full_circle = true` uses Full Circle before a Geo- cast while a luopan is out.
+- Two automatic abilities are available, off by default, in `<YourName>/geo/combat/GEO_CONFIG.lua`:
+  `auto_entrust = true` puts Entrust up before an Indi- you cast on a party member, and
+  `auto_full_circle = true` uses Full Circle before a Geo- cast while a luopan is out.
 - The author's alt overlay uses the same modes and keys, with one
   different default: `CombatMode` starts **On** there (weapons locked, TP kept).
 

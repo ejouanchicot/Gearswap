@@ -53,13 +53,14 @@ data/<Name>/
 ├── <Name>_<JOB>.lua      one entry file per job (one line, nothing to edit)
 ├── _WHERE-IS-WHAT.txt    every file of the folder and what it holds
 ├── _common/              settings of the whole character, by theme:
-│                         display/, keys/, combat/, inventory/, sets/,
+│                         display/, keys/, combat/, gear/, travel/, tools/,
+│                         inventory/, sets/,
 │                         dualbox/ (DUALBOX_CONFIG.lua, written from your
 │                         answers; alt/ = alt commands, main only);
 │                         REGION_CONFIG.lua (written from your answers) is in display/
 ├── <job>/                one folder per job: display/ (HUD, lockstyle, macro
-│                         book), keys/ (keys, modes, CUSTOM), combat/,
-│                         inventory/, and sets/<job>_sets.lua
+│                         book), keys/ (keys, modes, CUSTOM), combat/ (the job's
+│                         own settings), inventory/, and sets/<job>_sets.lua
 └── saved/                written in game (HUD position, message modes, ...)
 ```
 
@@ -71,8 +72,8 @@ deleted), a fresh one is built, and these files, written in game, are copied
 back from the backup: `saved/ui_settings.lua` (HUD), `saved/message_modes.lua`,
 `saved/alt_window.lua`, `saved/alt_state.lua`, `saved/WARP_ITEMS_OWNED.lua`,
 `saved/gear_augments.lua`,
-`_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua`,
-`_common/combat/STEALTH_CONFIG.lua`, every `<job>/display/<JOB>_HUD.lua` and
+`saved/combat_mode.lua`, `saved/treasure_mode.lua`,
+`_common/travel/STEALTH_CONFIG.lua`, every `<job>/display/<JOB>_HUD.lua` and
 `saved/temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom
 files) is only in the backup: copy it back yourself.
 

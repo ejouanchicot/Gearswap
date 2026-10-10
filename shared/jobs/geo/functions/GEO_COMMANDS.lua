@@ -219,7 +219,7 @@ function job_self_command(cmdParams, eventArgs)
     -- With a Silmaril profile folder (the path `sm load` takes) that profile
     -- is loaded and started instead of the cast: Silmaril casts its Indi-.
     if command == 'escort' then
-        local indi = cmdParams[2] or require('shared/utils/core/tuning').get('geo_escort_indi', 'Indi-Regen')
+        local indi = cmdParams[2] or require('shared/utils/core/job_config').get('GEO', 'escort_indi', 'Indi-Regen')
         local leader = cmdParams[3]
         local profile = cmdParams[4]
         local cast = profile and ('sm load ' .. profile .. '; sm follow off; sm on')

@@ -118,7 +118,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge, ...) and damaging spells when the day, weather or distance gives enough (`//gs c belt`) |
 | Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
-| Weapon without a set | With `equip_without_set = true` in `_common/combat/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
+| Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
 | Your own modes | `THF_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |
@@ -161,9 +161,10 @@ for refill, `combat/` for the rest):
 | `THF_REFILL.lua` | What `//gs c rf` restocks on THF on top of or in place of the common list (every line commented at first: the common list; [configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
 In `<YourName>/_common/`, shared with the other jobs: `COMMON_KEYBINDS.lua`,
-`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`,
-`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, and `treasure_mode.lua` /
-`combat_mode.lua` (written by `//gs c th` / `combatmode`). Gear:
+`WEAPON_CONFIG.lua`, `DW_CONFIG.lua`, `ELEMENTAL_BELT_CONFIG.lua`,
+`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`; in `<YourName>/saved/`,
+`treasure_mode.lua` / `combat_mode.lua` (written by `//gs c th` /
+`combatmode`). Gear:
 `<YourName>/thf/sets/thf_sets.lua`. See [configuration](../../guides/configuration.md).
 
 ## More

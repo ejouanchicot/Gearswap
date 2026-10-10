@@ -86,7 +86,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- 3. Unbridled Learning first (_common/combat/AUTO_ABILITIES.lua)
+    -- 3. Unbridled Learning first (blu/combat/BLU_CONFIG.lua)
     if BLUUnbridled then
         BLUUnbridled.apply(spell, eventArgs)
         if eventArgs.cancel or eventArgs.handled then
@@ -94,7 +94,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- 4. Expiacion held back for the Aftermath: Lv.3 window (_common/combat/AUTO_ABILITIES.lua)
+    -- 4. Expiacion held back for the Aftermath: Lv.3 window (blu/combat/BLU_CONFIG.lua)
     if BLUExpiacionGuard and spell.type == 'WeaponSkill' and BLUExpiacionGuard.check(spell, eventArgs) then
         return
     end

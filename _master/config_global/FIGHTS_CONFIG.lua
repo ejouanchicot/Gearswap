@@ -47,7 +47,7 @@
 ---         rage    = {keep = {'Berserk'}, goal = 80},
 ---     },
 ---
---- @file    _common/combat/FIGHTS_CONFIG.lua
+--- @file    _common/tools/FIGHTS_CONFIG.lua
 --- @author  ejouanchicot
 --- @version 1.1
 --- @date    Created: 2026-10-09

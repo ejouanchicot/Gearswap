@@ -457,7 +457,7 @@ listener under `pcall`. Two listeners exist: `dualbox` (`watch_weapon`, sends `a
   (fixed 2026-09-25). a drag is saved by the 5 s loop, not a
   `mouse` event: an event registered from a job file runs GearSwap's `refresh_globals` +
   `equip_sets` on every call, which made dragging lag.
-- **Not role-aware:** `//gs c sortie` sends to the `alt` named in the character's `_common/combat/SORTIE_CONFIG.lua` (Tetsouo's: Kaories and her Silmaril profiles), not to `DualBoxConfig`. A character without that file has no sortie command ([commands-and-debug](commands-and-debug.md#sortie-config)).
+- **Not role-aware:** `//gs c sortie` sends to the `alt` named in the character's `_common/tools/SORTIE_CONFIG.lua` (Tetsouo's: Kaories and her Silmaril profiles), not to `DualBoxConfig`. A character without that file has no sortie command ([commands-and-debug](commands-and-debug.md#sortie-config)).
 
 ### COR rolls on the main (`roll_share.lua`, 2026-09-27)
 

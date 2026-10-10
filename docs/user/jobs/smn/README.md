@@ -85,7 +85,7 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `smn bp <pact>` | Uses a Blood Pact: on you for a Ward buff or heal, on your target for every other pact. Type the pact with its capitals (`Healing Ruby`): in lower case it is not recognised and goes on `<t>` |
 | `smn astralflow` / `astralconduit` / `apogee` / `siphon` / `manacede` / `favor` / `release` / `retreat` | That ability on you (`siphon` = Elemental Siphon, `favor` = Avatar's Favor) |
 | `smn assault` | Assault on your target |
-| `skillup` | Starts or stops the skill-up loop: Siren, Release 5 s later, next Siren 1.5 s after the Release (avatar and the 5 s: `smn_skillup` in `_common/combat/TUNING.lua`, read at each start) |
+| `skillup` | Starts or stops the skill-up loop: Siren, Release 5 s later, next Siren 1.5 s after the Release (avatar and the 5 s: `skillup` in `smn/combat/SMN_CONFIG.lua`, read at each start) |
 | `skillup start` / `stop` / `status` | Start / stop / show the loop |
 | `skillup <1-60>` | Sets the wait after Release (seconds) and restarts the loop |
 
@@ -189,12 +189,13 @@ for refill, `combat/` for the rest):
 | `SMN_HUD.lua` | Order of the HUD sections and rows on SMN (also written by `//gs c ui order`) |
 | `SMN_LOCKSTYLE.lua` | Lockstyle number (1), per subjob through `get_style` |
 | `SMN_MACROBOOK.lua` | Macro book and page per subjob; dual-box block empty |
+| `SMN_CONFIG.lua` | `skillup` (`{avatar = 'Siren', release_after = 5.0}`): the avatar of `skillup` and the seconds before Release ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)) |
 | `SMN_REFILL.lua` | Items `//gs c rf` keeps in your inventory on SMN, on top of or in place of the common list; every line commented at first |
 
 Shared by every job, in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
-`combat_mode.lua` and `treasure_mode.lua` (written by their commands),
-`ELEMENTAL_BELT.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
-`DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`. Your sets are in
+`ELEMENTAL_BELT_CONFIG.lua`, `RECAST_CONFIG.lua`, `WEAPON_CONFIG.lua`,
+`DW_CONFIG.lua`, `STEALTH_CONFIG.lua`, `UI_CONFIG.lua`; in `<YourName>/saved/`,
+written by their commands: `combat_mode.lua` and `treasure_mode.lua`. Your sets are in
 `<YourName>/smn/sets/smn_sets.lua`. See
 [configuration](../../guides/configuration.md).
 

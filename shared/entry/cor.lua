@@ -188,7 +188,7 @@ function get_sets()
 
     -- Unload external rolltracker addon (prevents conflict with integrated roll tracker)
     -- Will be reloaded automatically in file_unload() when changing away from COR
-    -- (both skipped with rolltracker = false in _common/display/ADDONS_CONFIG.lua)
+    -- (both skipped with rolltracker = false in _common/tools/ADDONS_CONFIG.lua)
     require('shared/utils/core/job_addons').run('unload', 'rolltracker')
 
     -- Load job-specific functions (AutoMove loaded via INIT_SYSTEMS)

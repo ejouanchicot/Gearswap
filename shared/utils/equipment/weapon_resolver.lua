@@ -6,7 +6,7 @@
 --- lookup, so nothing changes.
 ---
 --- A character that turns on `equip_without_set` in
---- <Character>/_common/combat/WEAPON_CONFIG.lua gets, per slot:
+--- <Character>/_common/gear/WEAPON_CONFIG.lua gets, per slot:
 ---   1. sets[value], when it exists and names that slot (main / sub);
 ---   2. else {main = value} / {sub = value}, when value is a weapon name in
 ---      the game's item list: no set to write for a plain weapon;
@@ -28,7 +28,7 @@ local WeaponResolver = {}
 
 local config_loaded, plain_enabled = false, false
 
---- The character's choice, read once per load (_common/combat/WEAPON_CONFIG.lua).
+--- The character's choice, read once per load (_common/gear/WEAPON_CONFIG.lua).
 --- @return boolean
 local function enabled()
     if not config_loaded then

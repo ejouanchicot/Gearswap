@@ -169,7 +169,7 @@ function user_setup()
     -- ==========================================================================
     -- ADDON LOADING - PetTP for Luopan management (Always executed after reload)
     -- ==========================================================================
-    -- (pettp = false in _common/display/ADDONS_CONFIG.lua: left alone)
+    -- (pettp = false in _common/tools/ADDONS_CONFIG.lua: left alone)
     require('shared/utils/core/job_addons').run('load', 'pettp')
     -- Silent load - PetTP addon handles its own messaging
 

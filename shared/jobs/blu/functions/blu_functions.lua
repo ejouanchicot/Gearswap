@@ -12,7 +12,7 @@
 ---                                 (blu/combat/BLU_SPELL_MAP.lua)
 ---       logic/set_builder.lua     idle / engaged sets, single wield (.SW)
 ---       logic/unbridled.lua       Unbridled Learning before an unbridled
----                                 spell (option, _common/combat/AUTO_ABILITIES.lua)
+---                                 spell (option, blu/combat/BLU_CONFIG.lua)
 ---       logic/expiacion_guard.lua Expiacion held back under 3000 TP without
 ---                                 Aftermath Lv.3 (option)
 ---       logic/azure_sets.lua      AzureSets addon loaded while on BLU

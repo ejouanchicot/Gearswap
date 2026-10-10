@@ -25,7 +25,7 @@ local HINT_DELAY = 3
 --- Load the addon unless this module already did.
 function BLUAzureSets.load()
     if windower._blu_azuresets_loaded then return end
-    -- AzureSets = false in _common/display/ADDONS_CONFIG.lua: left alone
+    -- AzureSets = false in _common/tools/ADDONS_CONFIG.lua: left alone
     if not require('shared/utils/core/job_addons').allowed(ADDON) then return end
     windower._blu_azuresets_loaded = true
     send_command('lua load ' .. ADDON)

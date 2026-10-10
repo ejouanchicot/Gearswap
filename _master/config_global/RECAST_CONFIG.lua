@@ -13,7 +13,7 @@
 --- Required by every job entry file; also exposes the global helpers
 --- is_recast_ready() and is_on_cooldown() used by the shared job modules.
 ---
---- @file common/combat/RECAST_CONFIG.lua
+--- @file _common/combat/RECAST_CONFIG.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-06

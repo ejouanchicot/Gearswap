@@ -8,7 +8,7 @@
 --- job leaves that addon alone, e.g. you do not have it:
 ---     rolltracker = false,
 ---
---- @file _common/display/ADDONS_CONFIG.lua
+--- @file _common/tools/ADDONS_CONFIG.lua
 --- @author ejouanchicot
 --- @date Created: 2026-09-30
 ---============================================================================

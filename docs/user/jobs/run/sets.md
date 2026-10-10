@@ -23,7 +23,7 @@ The weapon and grip sets are laid over your idle and engaged sets every time the
 rebuilt, in town too. A weapon or grip you add to the lists in `RUN_STATES.lua` works
 the same way: name its set after the value.
 
-If `_common/combat/WEAPON_CONFIG.lua` has `equip_without_set = true`, a value that is an exact
+If `_common/gear/WEAPON_CONFIG.lua` has `equip_without_set = true`, a value that is an exact
 item name is put on without a set. For `SubWeapon`, a set that also names a `main`
 gives only its `sub`.
 

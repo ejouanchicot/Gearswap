@@ -193,8 +193,9 @@ An optional state is a mode the project adds to jobs, shown or hidden per job. `
 
 | Function | Behaviour |
 |---|---|
-| `settings_path()` | `<addon>/data/<player.name>/config/<file>`, nil before the player is known |
-| `settings()` | `{shown, hidden, keys}`, read once per sandbox with `dofile` (cached in `_G._<id>_settings`). Job codes are normalised by `by_job`: `thf` counts as `THF`, `ALL` as `all` |
+| `settings_path()` | Where the file is written: `CharPaths.writable('saved', file)`, so `<Character>/saved/<file>` in a tidied folder; nil before the player is known |
+| `read_path()` | Where the file is now: `CharPaths.file('saved', file)`, so `saved/<file>`, else the place of before 2026-10-10 (`_common/keys/<file>`, `SAVED_BEFORE` in `char_paths.lua`); the file goes to `saved/` the next time a command writes it |
+| `settings()` | `{shown, hidden, keys}`, read once per sandbox from `read_path()` with `dofile` (cached in `_G._<id>_settings`). Job codes are normalised by `by_job`: `thf` counts as `THF`, `ALL` as `all` |
 | `is_shown(job)` | `hidden[job]` -> false; `shown[job]` or `shown.all` (unless `hidden.all`) -> true; `hidden.all` -> false; else the "native" flag: the job's own STATES file defined the state (`_G._<id>_native`, recorded on the first `attach` of the sandbox) |
 | `value()` | The state's value when the job shows it, else nil |
 | `entry()` | The job's bind entry for the mode (`_G._<id>_entry`) |
@@ -216,7 +217,7 @@ Every change rewrites the whole settings file, starting with the mode's `header`
 |---|---|---|
 | Module | `shared/utils/core/combat_mode.lua` | `shared/utils/equipment/treasure_hunter.lua` (`TreasureHunter.optional`) |
 | State / values | `CombatMode`: `Off`, `On` | `TreasureMode`: `Off`, `Tag`, `Full` (THF's own STATES: `Tag`, `SATA`, `Full`) |
-| Settings file | `<Character>/_common/keys/combat_mode.lua` | `<Character>/_common/keys/treasure_mode.lua` |
+| Settings file | `<Character>/saved/combat_mode.lua` | `<Character>/saved/treasure_mode.lua` |
 | Native (shown by default) | BLM, GEO, RDM, WHM | THF |
 | Key when native | the job file's own entry: BLM `^numpad8`, GEO `^numpad0`, RDM `^numpad5`, WHM `^numpad2` | THF `^numpad3` |
 | Default key elsewhere | `!numpad0` (free on every job file) | `!numpad.` |
@@ -481,7 +482,7 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 |---|---|
 | `<Char>/<job>/keys/<JOB>_KEYBINDS.lua` | the job's entries, `retired_keys` |
 | `<Char>/_common/keys/COMMON_KEYBINDS.lua` | `CommonKeybinds.binds`, same entry format (+ `override`) |
-| `<Char>/_common/keys/combat_mode.lua`, `treasure_mode.lua` | `{shown, hidden, keys}` per job; rewritten by the commands, header included |
+| `<Char>/saved/combat_mode.lua`, `treasure_mode.lua` (`_common/keys/` before 2026-10-10, still read there) | `{shown, hidden, keys}` per job; rewritten by the commands, header included |
 | `<Char>/<job>/keys/<JOB>_CUSTOM.lua` | modes and rules; the templates are fully commented and return `{}` |
 | `<Char>/temp_binds.lua` | written by `tb`, not edited by hand |
 

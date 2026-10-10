@@ -68,7 +68,8 @@ is **cancelled**: no gear moves and a chat line says why.
 
 Some jobs also fire a job ability for you just before the action (for
 example Entrust before an Indi- spell on a party member). Most of these are
-off until you turn them on in `_common/combat/AUTO_ABILITIES.lua`.
+off until you turn them on in that job's `<job>/combat/<JOB>_CONFIG.lua`
+([configuration](configuration.md#a-jobs-own-switches-job_configlua)).
 
 ### 2. Midcast: the effect set (spells and ranged attacks)
 

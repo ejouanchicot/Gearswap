@@ -156,8 +156,10 @@ for refill, `combat/` for the rest):
 | `RUN_REFILL.lua` | Consumables for `//gs c rf` on RUN, added to the common list or replacing it; every line commented at first |
 
 Files shared by every job are in `<YourName>/_common/`: `COMMON_KEYBINDS.lua`,
-`combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
-`DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
+`RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`, `DW_CONFIG.lua`,
+`ELEMENTAL_BELT_CONFIG.lua`, `UI_CONFIG.lua`; `combat_mode.lua` and
+`treasure_mode.lua`, written by their commands, are in `<YourName>/saved/`
+([configuration](../../guides/configuration.md)).
 Your sets are in `<YourName>/run/sets/run_sets.lua`.
 
 ## See also

@@ -26,11 +26,11 @@ local StratagemCharges = {}
 local STRATAGEM_RECAST_ID = 231
 
 --- Seconds to regenerate the whole pool, without merits. With the job-point
---- gift, set yours in _common/combat/TUNING.lua stratagem_full_recharge.
+--- gift, set yours in _common/combat/SUBJOB_CONFIG.lua stratagem_full_recharge.
 local DEFAULT_FULL_RECHARGE = 240
 
 local function full_recharge()
-    return require('shared/utils/core/tuning').get('stratagem_full_recharge', DEFAULT_FULL_RECHARGE)
+    return require('shared/utils/core/job_config').common('SUBJOB_CONFIG', 'stratagem_full_recharge', DEFAULT_FULL_RECHARGE)
 end
 
 --- Charge count granted at each Scholar level breakpoint, highest first.

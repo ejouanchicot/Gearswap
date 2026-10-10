@@ -308,7 +308,7 @@ invisible to Mote.
 | `<char>/drk/DRK_MACROBOOK.lua` | book 1, page 1 (SAM), 2 (WAR), 3 (NIN), 4 (DNC); dual-box RDM book 2, COR 3, GEO 4 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry chunk |
-| `<char>/_common/combat/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
+| `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
 
 ## State & lifetime
 

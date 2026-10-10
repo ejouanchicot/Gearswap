@@ -34,19 +34,19 @@ COMMON = {
     'CRAFT_CONFIG.lua': 'Craft / fishing: which set file //gs c craft and //gs c fish use, lockstyle',
     'CRAFT_REFILL.lua': 'Items refilled while a craft set is on',
     'WARDROBE_CONFIG.lua': 'Wardrobe organizer (//gs c wo): wardrobes it fills, overflows to and leaves alone',
-    'AUTO_ABILITIES.lua': 'Job abilities used for you (Hasso, Entrust...), all off by default',
     'RECAST_CONFIG.lua': 'How close to ready a recast counts as ready',
     'DW_CONFIG.lua': 'Dual Wield tiers: less Dual Wield gear as haste goes up',
-    'ELEMENTAL_BELT.lua': 'Hachirin-no-Obi / Orpheus\'s Sash picked automatically',
+    'ELEMENTAL_BELT_CONFIG.lua': 'Hachirin-no-Obi / Orpheus\'s Sash picked automatically',
     'WEAPON_CONFIG.lua': 'How the weapon states equip a weapon that has no set',
     'STEALTH_CONFIG.lua': 'Sneak / Invisible on you and your alts (//gs c stealth)',
-    'AUTOCURE_CONFIG.lua': 'Auto Medicine: debuffs cured, the items used, On or Off at start',
-    'TUNING.lua': 'Thresholds and names some jobs use (SAM idle HP, refresh MP, waltz tiers, SMN skill-up, GEO escort, BRD debuff songs)',
+    'AUTO_MEDICINE_CONFIG.lua': 'Auto Medicine: debuffs cured, the items used, On or Off at start',
+    'SUBJOB_CONFIG.lua': 'What a subjob brings to any job: Curing Waltz tiers (/DNC), stratagem recharge (/SCH)',
+    'WARP_CONFIG.lua': 'Warp and teleport rings: the margin held once a ring reads ready',
     'CLEANSE_CONFIG.lua': '//gs c cleanse: debuffs taken off, their order, items, spells, partner',
-    'BUFF_CONFIG.lua': 'Buffs of //gs c buff per main job and subjob, and of WAR berserk / defender',
+    'BUFF_CONFIG.lua': 'Buffs of //gs c buff per main job and subjob',
     'SORTIE_CONFIG.lua': '//gs c sortie: the alt, its Silmaril profiles, your stances per target',
     'FIGHTS_CONFIG.lua': '//gs c fights hits: commands sent to an alt while you measure, and your steps (weapon, mode)',
-    'HP_PRIORITY.lua': 'Order the pieces go on in, so max HP never dips (Unity rank, MP jobs)',
+    'HP_PRIORITY_CONFIG.lua': 'Order the pieces go on in, so max HP never dips (Unity rank, MP jobs)',
     'rings.lua': 'Rings you own twice, each pinned to its wardrobe; the job sets use them',
 }
 
@@ -97,6 +97,8 @@ def describe_job_file(job, name):
         return 'Every set of the job (idle, engaged, precast, midcast, weaponskills...)'
     if name in GEAR:
         return GEAR[name]
+    if name == '%s_CONFIG.lua' % job.upper():
+        return "The job's own switches and thresholds (abilities used for you, HP / MP limits, its commands' choices)"
     base = name[:-4] if name.endswith('.lua') else name
     for suffix, text in JOB_SUFFIXES:
         if base.endswith(suffix):

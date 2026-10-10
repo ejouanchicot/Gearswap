@@ -163,7 +163,7 @@ item is decided when its turn comes, so the next ones see them gone.
 `Cleanse.ask_partners_for(key)` asks the partners that may have the spell of a
 debuff (`partners_for` + `ask_partners`) and returns their names. PrecastGuard
 calls it when Auto Medicine has no item left for Silence or Paralysis
-(`AUTOCURE_CONFIG.lua` `ask_partner`, see [precast-pipeline.md](precast-pipeline.md)).
+(`AUTO_MEDICINE_CONFIG.lua` `ask_partner`, see [precast-pipeline.md](precast-pipeline.md)).
 The item lists of Auto Medicine are the `items.silence` / `items.paralysis` of
 `CLEANSE_CONFIG.lua` (`autocure_settings.lua` `cleanse_items`).
 

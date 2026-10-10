@@ -440,8 +440,8 @@ The coding standard, as reviews enforce it:
 | `shared/jobs/<job>/functions/<job>_functions.lua` | Facade: includes the hook modules |
 | `shared/jobs/<job>/functions/<JOB>_PRECAST.lua` ... `_MACROBOOK.lua` | 11 hook modules (PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS, COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK), plus pet modules on BST/PUP/SMN |
 | `shared/jobs/<job>/functions/logic/` | Job logic called by the hook modules |
-| `data/<Char>/<job>/<theme>/` (template `_master/config/<job>/`, flat) | `display/` (`<JOB>_HUD`, `_LOCKSTYLE`, `_MACROBOOK`), `keys/` (`_KEYBINDS`, `_STATES`, `_CUSTOM`), `combat/` (TP/WS configs and the job's own settings), `inventory/` (`_REFILL`) |
-| `data/<Char>/_common/<theme>/` (template `_master/config_global/`) | Per-character files shared by all jobs, by theme: `display/` (`UI_CONFIG`, `REGION_CONFIG`, `LOCKSTYLE_CONFIG`, `ADDONS_CONFIG`...), `keys/` (`COMMON_KEYBINDS`...), `dualbox/` (+ `alt/`), `inventory/`, `combat/` (`RECAST_CONFIG`, `TUNING`...), `sets/` (gear shared by jobs) |
+| `data/<Char>/<job>/<theme>/` (template `_master/config/<job>/`, flat) | `display/` (`<JOB>_HUD`, `_LOCKSTYLE`, `_MACROBOOK`), `keys/` (`_KEYBINDS`, `_STATES`, `_CUSTOM`), `combat/` (`<JOB>_CONFIG`: the job's own switches and thresholds, read by `job_config.lua`; TP/WS configs and the job's other settings), `inventory/` (`_REFILL`) |
+| `data/<Char>/_common/<theme>/` (template `_master/config_global/`) | Per-character files shared by all jobs, by theme: `display/` (`UI_CONFIG`, `REGION_CONFIG`, `LOCKSTYLE_CONFIG`...), `keys/` (`COMMON_KEYBINDS`), `dualbox/` (+ `alt/`), `inventory/`, `combat/` (`BUFF_CONFIG`, `RECAST_CONFIG`, `CLEANSE_CONFIG`, `AUTO_MEDICINE_CONFIG`, `SUBJOB_CONFIG`), `gear/` (`WEAPON_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT_CONFIG`, `HP_PRIORITY_CONFIG`), `travel/` (`STEALTH_CONFIG`, `WARP_CONFIG`), `tools/` (`FIGHTS_CONFIG`, `SORTIE_CONFIG`, `ADDONS_CONFIG`), `sets/` (gear shared by jobs) |
 | `data/<Char>/<job>/sets/` (template `_master/sets/<job>_sets.lua`) | Equipment. Templates are flat; a character overlay may deploy a modular tree (`armor.lua`, `capes.lua`...) |
 | `data/<Char>/saved/` | Files the game writes (HUD position, dual-box role, traces...) |
 | `shared/data/alt/<JOB>_ALT_COMMANDS.lua` | Generated dual-box alt command table for the job, the same for every character |
@@ -468,8 +468,8 @@ folder is updated by hand or by re-clone. Stage explicit paths
 `_master/<Name>/` (same relative path replaces the template), substitutes the
 template name, generates `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua`, moves an
 existing folder to `addons/GearSwap/clone_backups/`, and copies back the files
-written in game (`KEPT_ON_RECLONE`, `clone_character.py:313-324`). The
-clone refuses jobs outside `ALL_VALID_JOBS` (`:255-258`). Two character folders
+written in game (`KEPT_ON_RECLONE`, `clone_character.py:313-353`). The
+clone refuses jobs outside `ALL_VALID_JOBS` (`:254-257`). Two character folders
 are frozen clones: do not modify them without the owner's approval.
 
 Details: [architecture/characters-and-templates.md](architecture/characters-and-templates.md).
@@ -596,8 +596,10 @@ and [ui-overlay.md, For maintainers / AI](systems/ui-overlay.md#for-maintainers-
 ### Add a configuration file
 
 A single number or name a job fixes in its code needs no new file: read it with
-`require('shared/utils/core/tuning').get('<key>', <job default>)` and add the key,
-commented, to `_master/config_global/TUNING.lua`. Whether a job may load or unload a
+`require('shared/utils/core/job_config').get('<JOB>', '<key>', <job default>)` and add the key,
+with that default, to the job's `_master/config/<job>/<JOB>_CONFIG.lua` (a setting a subjob
+brings to any job: `.common('SUBJOB_CONFIG', '<key>', <default>)` and
+`_master/config_global/SUBJOB_CONFIG.lua`). Whether a job may load or unload a
 Windower addon goes through `shared/utils/core/job_addons.lua` (`ADDONS_CONFIG.lua`).
 See [factories and helpers](systems/factories-and-helpers.md#core-helpers).
 

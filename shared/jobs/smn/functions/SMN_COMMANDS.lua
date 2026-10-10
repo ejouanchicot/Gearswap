@@ -122,7 +122,7 @@ local JA_SHORTCUTS = {
 local SKILLUP_STATE = {
     active  = false,
     counter = 0,    -- incremented every stop to invalidate scheduled coroutines
-    -- Tunable (set at each start from TUNING.lua smn_skillup):
+    -- Tunable (set at each start from SMN_CONFIG.lua skillup):
     avatar = 'Siren',
     cast_to_release_delay  = 5.0,  -- summon cast time + buffer
     release_to_next_delay  = 1.5,  -- recast is near-instant after Release, just buffer the queue
@@ -164,8 +164,8 @@ local function start_skillup()
     SKILLUP_STATE.active = true
     SKILLUP_STATE.counter = SKILLUP_STATE.counter + 1
     local my_counter = SKILLUP_STATE.counter
-    -- _common/combat/TUNING.lua smn_skillup
-    local tuning = require('shared/utils/core/tuning').get('smn_skillup', {avatar = 'Siren', release_after = 5.0})
+    -- smn/combat/SMN_CONFIG.lua skillup
+    local tuning = require('shared/utils/core/job_config').get('SMN', 'skillup', {avatar = 'Siren', release_after = 5.0})
     SKILLUP_STATE.avatar = type(tuning.avatar) == 'string' and tuning.avatar or 'Siren'
     SKILLUP_STATE.cast_to_release_delay = tonumber(tuning.release_after) or 5.0
 

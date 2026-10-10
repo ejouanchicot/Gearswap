@@ -30,10 +30,10 @@ What COR adds on top of the shared pipeline:
   `sets.midcast.RA[RangedMode]` through `MidcastManager`, a Triple Shot layer,
   and a bullet-pouch refill after `/ra`.
 - **Weapon handling**: main weapon (its off-hand weapon only with Dual Wield,
-  else `sets.SingleWield`'s sub or none) and the gun from states, `HybridMode` PDT overlay, Refresh overlay under 50 % MP (subjob with MP only; `refresh_mp_below.COR` in `_common/combat/TUNING.lua`, [Tuning](../systems/factories-and-helpers.md#tuning-sharedutilscoretuninglua)).
+  else `sets.SingleWield`'s sub or none) and the gun from states, `HybridMode` PDT overlay, Refresh overlay under 50 % MP (subjob with MP only; `refresh_mp_below` in `cor/combat/COR_CONFIG.lua`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)).
 - **External addon swap**: the `rolltracker` addon is unloaded while COR is
   loaded and loaded again by `file_unload`, both through [JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) (`rolltracker = false` in
-  `_common/display/ADDONS_CONFIG.lua`: left alone).
+  `_common/tools/ADDONS_CONFIG.lua`: left alone).
 
 Checked against the working tree on 2026-09-28. Code is cited by file and
 function; line numbers are given only where no function name fits.
@@ -337,7 +337,7 @@ end of precast by `ElementalBelt` ([factories and helpers](../systems/factories-
 - `customize_idle_set` -> `build_idle_set`: town (`sets.Adoulin` in Adoulin,
   `sets.idle.Town` elsewhere; the template has no `sets.idle.Town`, so other
   cities count as field) -> weapons -> (outside town) `sets.idle.PDT` when
-  `HybridMode = PDT` -> `sets.idle.Refresh` when `max_mp > 0` and MP < `Tuning.get('refresh_mp_below', {COR = 50}).COR` (50) -> `sets.MoveSpeed`
+  `HybridMode = PDT` -> `sets.idle.Refresh` when `max_mp > 0` and MP < `JobConfig.get('COR', 'refresh_mp_below', 50)` -> `sets.MoveSpeed`
   when `state.Moving`.
 - `customize_melee_set` -> `build_engaged_set`: Mote's base (keeps Mote's
   defense and kiting layers) + `sets.engaged.PDT` when `PDT` + weapons. No
@@ -467,7 +467,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 - Coroutines: the two 8 s lockstyles and the 1 s pouch check after `/ra`; none
   is cancelled by a reload.
 - Outside GearSwap: `rolltracker` unloaded while COR is loaded, loaded again by
-  `file_unload` (also on every subjob change), unless `_common/display/ADDONS_CONFIG.lua` sets it `false`.
+  `file_unload` (also on every subjob change), unless `_common/tools/ADDONS_CONFIG.lua` sets it `false`.
 - Subjob change: `job_sub_job_change` hands over to `JobChangeManager`, which
   reloads. The reload wipes `cor_active_rolls` and `cor_last_roll`.
 
@@ -570,7 +570,7 @@ In game: `//gs c rolldebug` (per-roll gear report and `<Character>/logs/rolls/ro
   (no last roll known), even when the other roll was the last one.
 - `rolltracker` is unloaded on every COR load and loaded on every COR unload,
   including each subjob change and for players who never used it, unless the
-  player sets `rolltracker = false` in `_common/display/ADDONS_CONFIG.lua` (since 2026-09-30).
+  player sets `rolltracker = false` in `_common/tools/ADDONS_CONFIG.lua` (since 2026-09-30).
 - Both macrobook/lockstyle blocks of `user_setup()` run on a fresh load: the
   macro book is set twice and two lockstyles are scheduled.
 - The event cleanup at the top of `get_sets()` never finds anything, and its

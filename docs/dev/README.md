@@ -115,10 +115,11 @@ flowchart TD
 - **Per-character data** (layout of 2026-09-30, resolved by `char_paths.lua`,
   which still reads the older `config/` and `sets/` folders):
   `_common/<theme>/` for the settings of the whole character (`display/`,
-  `keys/`, `dualbox/` with `alt/`, `inventory/`, `combat/`, and `sets/` for
-  gear shared by jobs), `<job>/<theme>/` for one job (`display/` HUD,
-  lockstyle, macrobook; `keys/` keybinds, states, custom; `combat/` TP, WS and
-  job settings; `inventory/` refill), `<job>/sets/` for its gear, and `saved/`
+  `keys/`, `dualbox/` with `alt/`, `inventory/`, `combat/`, `gear/`, `travel/`,
+  `tools/`, and `sets/` for gear shared by jobs), `<job>/<theme>/` for one job
+  (`display/` HUD, lockstyle, macrobook; `keys/` keybinds, states, custom;
+  `combat/` the job's own switches (`<JOB>_CONFIG.lua`), TP, WS and job
+  settings; `inventory/` refill), `<job>/sets/` for its gear, and `saved/`
   for the files the game writes.
 
 ## Boot sequence of one load
@@ -268,7 +269,7 @@ Consequences worth remembering:
   only to its own character or with `--source`. An existing folder is moved to
   `addons/GearSwap/clone_backups/` after the final confirmation, never deleted,
   and the files written in game (`KEPT_ON_RECLONE`: HUD position, message
-  modes, alt window and alt state, owned warp items, `combat_mode.lua`,
+  modes, alt window and alt state, owned warp items, `combat_mode.lua`, `treasure_mode.lua`,
   `STEALTH_CONFIG.lua`, `temp_binds.lua`) are
   copied back from that backup.
 - Live Tetsouo uses **modular sets** (`<job>/{armor,capes,weapons}.lua` +

@@ -11,7 +11,7 @@
 ---   //gs c stealth overwrite on    //gs c stealth alerts off
 ---   //gs c stealth delay 2.5
 ---
---- @file common/combat/STEALTH_CONFIG.lua
+--- @file _common/travel/STEALTH_CONFIG.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26

@@ -8,7 +8,7 @@
 --- UI setting change and by //gs c ui save), its values take precedence.
 --- init_delay, text.stroke, flags and background_presets are always read here.
 ---
---- @file common/display/UI_CONFIG.lua
+--- @file _common/display/UI_CONFIG.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-01

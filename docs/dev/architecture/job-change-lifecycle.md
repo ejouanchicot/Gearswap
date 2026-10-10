@@ -256,7 +256,7 @@ All templates define `file_unload` at chunk level, so Mote's default (which woul
 | PLD, WAR | yes | yes | `AmpullaLock.release()` first (the Hoxne ammo lock), so the lock does not leak into the next job |
 | THF | yes | yes | `RangeLock.release()` |
 | WHM | yes | yes | releases `main/sub/range` when `windower._whm_melee_lock` is set (or `OffenseMode` still reads `Melee ON`) and no craft session is active (2026-09-25; the flag, which also covers a subjob change, 2026-09-28) |
-| GEO | yes | yes | `JobAddons.run('unload', 'pettp')` (skipped with `pettp = false` in `_common/display/ADDONS_CONFIG.lua`) |
+| GEO | yes | yes | `JobAddons.run('unload', 'pettp')` (skipped with `pettp = false` in `_common/tools/ADDONS_CONFIG.lua`) |
 | COR | yes | yes | `ActionListener.off('cor_roll')`, `RollTracker.cleanup()`, `PartyTracker.cleanup()`, `JobAddons.run('load', 'rolltracker')` (skipped with `rolltracker = false` in `ADDONS_CONFIG.lua`) (the DressUp watchdog stop is gone with the watchdog, 2026-09-25) |
 | BST | yes | yes | `stop_pet_monitoring()`, bumps `_G.bst_hud_load_id`, `JobAddons.run('unload', 'bst-hud')`, nils `_G.KeybindUI/start_pet_monitoring/stop_pet_monitoring` |
 | PUP | yes | yes | `PetWS.stop()` first (ends the automaton WS poll) |
@@ -363,8 +363,8 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `<char>/_common/inventory/CRAFT_CONFIG.lua` | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`craft_commands.lua`); a lockstyle key `false` keeps the job's lockstyle |
 | `<char>/_common/inventory/REFILL_CONFIG.lua` | `source_bags`, `store_bag`, `default_list`, `subjobs`, `store_foreign`, `foreign_characters`, `never_store` (foreign sweep), `quiver_open_at` (QuiverManager) | Case, Sack, Satchel / Case; `store_foreign` `'mine'`; without a common list (and no job list) `FALLBACK_LIST` (`config_resolver.lua`) |
 | `<char>/_common/sets/<name>_sets.lua` | craft/fish sets | `craft_manager.lua` |
-| `<char>/_common/display/ADDONS_CONFIG.lua` | addon name = `false` | every addon allowed (`shared/utils/core/job_addons.lua`) |
-| `<char>/_common/combat/TUNING.lua` | `sam_idle_hp`, `refresh_mp_below`, `waltz_from`, `smn_skillup`, `geo_escort_indi`, `brd_debuff_songs` | each job's own value, given at the call (`shared/utils/core/tuning.lua`) |
+| `<char>/_common/tools/ADDONS_CONFIG.lua` | addon name = `false` | every addon allowed (`shared/utils/core/job_addons.lua`) |
+| `<char>/<job>/combat/<JOB>_CONFIG.lua` (ten jobs; BRD: `BRD_SONG_CONFIG.lua`), `<char>/_common/combat/SUBJOB_CONFIG.lua`, `<char>/_common/travel/WARP_CONFIG.lua` | a job's switches and thresholds (`idle_hp`, `refresh_mp_below`, `skillup`, `escort_indi`, `auto_*`...), `waltz_from`, `stratagem_full_recharge`, `ring_safety` | each caller's own value, given at the call (`shared/utils/core/job_config.lua`; `TUNING.lua` / `AUTO_ABILITIES.lua` read first where a folder still has them) |
 | `data/.dressup_disabled` | file presence = DressUp management off | `lockstyle_manager.lua:22` |
 | `<char>/<job>/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | styles and books per subjob (and per alt job) | fallbacks in the factories |
 
