@@ -4,7 +4,10 @@ document.addEventListener('toggle', e => { const g = e.target && e.target.datase
   const ag = e.target && e.target.dataset && e.target.dataset.addgroup;
   if (ag && !($('#addq') || {}).value) { S._addOpen = S._addOpen || {}; S._addOpen[ag] = e.target.open; }
   if (e.target && e.target.dataset && 'rdcalc' in e.target.dataset) S._rdOpen = e.target.open;
-  if (e.target && e.target.dataset && 'lgfold' in e.target.dataset) S._lgOpen = e.target.open; }, true);
+  if (e.target && e.target.dataset && 'lgfold' in e.target.dataset) S._lgOpen = e.target.open;
+  // the other debuffs on the target stay open while their jobs are clicked (each click redraws the page)
+  if (e.target && e.target.dataset && 'pbother' in e.target.dataset) S._pbOtherOpen = e.target.open;
+  if (e.target && e.target.dataset && 'ui2all' in e.target.dataset) S._ui2AllOpen = e.target.open; }, true);
 document.addEventListener('click', e => {
   // a click anywhere else closes the slot's menu
   if (!e.target.closest('#slotmenu')) closeSlotMenu();
@@ -18,6 +21,7 @@ document.addEventListener('click', e => {
   if (d.lang) { S.lang = d.lang; render(); return; }
   if (d.engine) { S.engine = d.engine; useEngine(S.engine); save(); render(); return; }
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
+  if ('config' in d) { S._cfg = !S._cfg; render(); scrollTo({top: 0}); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
   if (d.section) { S.section = d.section; render(); return; }
   if (d.pick) { S.sel[S.job] = +d.pick; if (d.vpick != null) S.variant[S.job+'|'+d.pick] = +d.vpick; render(); return; }
@@ -122,7 +126,6 @@ document.addEventListener('click', e => {
     const aim = S._simActions && S._simActions.list && S._simActions.list.aim || {};
     if (k === 'target' && st.name && !aimHas(aim[st.name], v)) { st.name = null; S._simResult = null; render(); return; }
     simRun(); if (!st.name) render(); return; }
-  if ('gsunload' in d) { linkGearSwap('unload'); return; }
   if ('gsload' in d) { linkGearSwap('load'); return; }
   if ('refreshfiles' in d) { refreshFromFiles(e.shiftKey); return; }
   if (d.optab) { S._opTab = d.optab; render(); return; }

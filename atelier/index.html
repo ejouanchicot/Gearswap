@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <script>
 // the page's style and code (atelier/app/), read again at each load: a browser keeps an older copy otherwise
-for (const f of ['base', 'sets', 'panels', 'tabs']) document.write(`<link rel="stylesheet" href="atelier/app/css/${f}.css?v=${Date.now()}">`);
+for (const f of ['base', 'sets', 'panels', 'tabs', 'themes']) document.write(`<link rel="stylesheet" href="atelier/app/css/${f}.css?v=${Date.now()}">`);
 </script>
 
 <div class="app">
@@ -21,7 +21,7 @@ for (const f of ['base', 'sets', 'panels', 'tabs']) document.write(`<link rel="s
 <script src="atelier/index.js"></script>
 <script>
 // in this order: each file reads what the ones before it declare
-for (const f of ['i18n', 'job_icons', 'core', 'keys', 'stats', 'engine', 'optimizer', 'buffs', 'buff_panels', 'live', 'offline_export', 'simulate', 'sets_view', 'weapons', 'ws_page', 'opt_page', 'stat_opt', 'luopan', 'porter', 'drawer', 'trial', 'push', 'add_set', 'layout2', 'party_builder', 'gear_pick', 'events'])
+for (const f of ['i18n', 'job_icons', 'core', 'keys', 'stats', 'engine', 'optimizer', 'buffs', 'buff_panels', 'live', 'offline_export', 'simulate', 'sets_view', 'weapons', 'ws_page', 'opt_page', 'stat_opt', 'luopan', 'porter', 'drawer', 'trial', 'push', 'add_set', 'layout2', 'party_builder', 'gear_pick', 'config_page', 'events'])
   document.write(`<script charset="utf-8" src="atelier/app/js/${f}.js?v=${Date.now()}"><\/script>`);
 </script>
 

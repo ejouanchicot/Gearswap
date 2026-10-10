@@ -57,7 +57,7 @@ function setPanelHTML(s){
   const r = charStats(s), fam = family(s.path, s.pieces);
   const offense = r && (fam === 'ws' || fam === 'engaged') ? offenseHTML(r, s) : '';
   const defense = r && !offense ? tankHTML(r) : '';
-  const all = `<details class="lgfold ui2all"><summary>${esc(t('ui2All'))}</summary>${globalsHTML(s, 'stats')}</details>`;
+  const all = `<details class="lgfold ui2all" data-ui2all ${S._ui2AllOpen ? 'open' : ''}><summary>${esc(t('ui2All'))}</summary>${globalsHTML(s, 'stats')}</details>`;
   return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3>${offense}${defense}${hpCycleHTML(s)}${luopanHTML(s)}${setStatsHTML(s)}${all}</div>`;
 }
 

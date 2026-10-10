@@ -55,15 +55,6 @@ function useEngine(name){
   if (OPT_WORKER_URL) URL.revokeObjectURL(OPT_WORKER_URL);
   OPT_WORKER_URL = null;
 }
-// The top bar's choice of engine, with what ours handed to the old one since it was chosen (hover)
-function enginePick(){
-  if (!(window.FFXI && FFXI.engine)) return '';
-  const own = engineName() === 'own', fell = Object.entries(FFXI.engine.fell).sort((a, b) => b[1] - a[1]);
-  const why = !own ? t('engOldTip') : fell.length ? t('engFell') + '\n' + fell.map(([w, n]) => `${n} × ${w}`).join('\n') : t('engOwnTip');
-  return `<div class="seg" role="group" aria-label="${esc(t('engLabel'))}" title="${esc(why)}">` +
-    `<button data-engine="old" aria-pressed="${!own}">${esc(t('engOld'))}</button>` +
-    `<button data-engine="own" aria-pressed="${own}">${esc(t('engOwn'))}${own && fell.length ? ' *' : ''}</button></div>`;
-}
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
 const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
 /* ---- the engine on the page's sets: a weaponskill's average damage, and the optimizer ---- */

@@ -140,8 +140,10 @@
 .tmeta{margin:6px 0 8px}
 .buffdlg .tgtpickbtn{width:100%;justify-content:space-between;text-align:left}
 .tnums{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
-.tnum{display:flex;flex-wrap:wrap;min-width:0;align-items:baseline;gap:2px 6px;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--panel-2);font-size:13px}
-.tnum span{color:var(--muted);font-size:11.5px;margin-right:auto}
+/* the name above, then before -> after on one line that never breaks */
+.tnum{display:grid;grid-template-columns:repeat(3,max-content);justify-content:center;white-space:nowrap;min-width:0;align-items:baseline;gap:2px 6px;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--panel-2);font-size:13px}
+.tnum span{color:var(--muted);font-size:11.5px;grid-column:1/-1;text-align:center}
+.nw{white-space:nowrap}
 .tnum i{color:var(--faint);font-style:normal}
 .tnum b.down{color:var(--r-dd)}
 @media (max-width:820px){.buffdlg .buffbody{grid-template-columns:minmax(0,1fr)}}
@@ -414,3 +416,11 @@ input[type=checkbox]{accent-color:var(--accent)}
 .tip .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700;margin:9px 0 3px}
 .tip ul{margin:0;padding-left:16px;color:var(--muted);font-size:12px}
 
+/* a capped stat (stats.js cappedLi): its gauge under the line, full and gold at the cap */
+.statlist li.capli{row-gap:3px}
+.statlist li.capli .gauge{grid-column:1/-1;height:5px;border-radius:99px;background:var(--well);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden;text-decoration:none}
+.statlist li.capli .gauge::after{content:"";display:block;height:100%;width:var(--fill);border-radius:99px;background:linear-gradient(90deg,var(--g-def),color-mix(in srgb,var(--g-def) 55%,var(--g-skill)))}
+.statlist li.capli.full .gauge::after{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.statlist li.capli.full b{color:var(--accent)}
+.statlist li .capmax{font-style:normal;font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent);border-radius:99px;padding:1px 7px}
+.statlist li.capli .overl{font-family:var(--sans);letter-spacing:0;color:var(--muted)}

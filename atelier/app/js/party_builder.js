@@ -320,7 +320,7 @@ function pbResult(B){
   const mine = Object.keys(B).filter(k => !k.startsWith('_') && !PB_FOE.includes(k) && typeof B[k] === 'number' && B[k]);
   return `<section class="box g-def"><header class="boxh"><h3>${esc(t('pbResult'))}</h3></header><div class="boxb">` +
     `<div class="pbgv big">${mine.map(k => `<span>${esc(fxShort(k, B[k]))}</span>`).join('') || `<span class="muted">${esc(t('pbNothing'))}</span>`}</div>` +
-    `<p class="pbtgt"><b>${esc(T0.name)}</b> · ${esc(t('pbDefNow', {a: T0.def, b: T0.defAfter}))} · ${esc(t('pbEvaNow', {a: T0.eva, b: T0.evaAfter}))}</p></div></section>`;
+    `<p class="pbtgt"><b>${esc(T0.name)}</b> · <span class="nw">${esc(t('pbDefNow', {a: T0.def, b: T0.defAfter}))}</span> · <span class="nw">${esc(t('pbEvaNow', {a: T0.eva, b: T0.evaAfter}))}</span></p></div></section>`;
 }
 
 // What a member gives you, for its tab and its panel's foot
@@ -357,7 +357,7 @@ function renderCombatParty(d){
   const body = cur === 'you' ? pbYouBody(b) : pbBody(cur, b, shown);
   const panel = `<section class="pbpanel"><div class="pbbody ${cur === 'you' ? 'pbyou' : ''}">${body}</div></section>`;
   const side = `<aside class="pbside">${pbResult(B)}${box('g-off', t('pbTarget'), P.tgt || '', `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}</aside>`;
-  const other = P.foe ? `<details class="lgfold pbother"><summary>${esc(t('pbOther'))} ${P.foe.total || ''}</summary><div class="pbotherb">${P.foe.body}</div></details>` : '';
+  const other = P.foe ? `<details class="lgfold pbother" data-pbother ${S._pbOtherOpen ? 'open' : ''}><summary>${esc(t('pbOther'))} ${P.foe.total || ''}</summary><div class="pbotherb">${P.foe.body}</div></details>` : '';
   return `<div class="ui2tab combattab">${head}${bar}<div class="pblayout"><div class="pbmain">${tabs}${panel}</div>${side}</div>${other}</div>`;
 }
 

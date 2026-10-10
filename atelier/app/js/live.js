@@ -196,6 +196,12 @@ document.addEventListener('pointerdown', () => { PRESSED_AT = Date.now(); }, tru
 // game is seen to have done it. Without it nothing moved for up to 2 s (the next tick), then the buttons were gone
 // for the seconds GearSwap takes to come back: a press read as lost, and pressed again (2026-10-10).
 // S._liveBusy = {what, until, down: the game was seen away since}
+Object.assign(T.fr, {cmdReload: 'Recharger', cmdRestart: 'Redémarrer', cmdFiles: 'Relire',
+  cmdReloadTip: 'Recharger (//gs reload) : relit tes sets, tes réglages et le code. Rapide : à faire après avoir changé une pièce, une touche ou un réglage.',
+  cmdRestartTip: 'Redémarrer (//lua r gearswap) : décharge puis recharge tout GearSwap, rien n’est gardé en mémoire. À faire quand quelque chose se comporte bizarrement, ou après une mise à jour du code.'});
+Object.assign(T.en, {cmdReload: 'Reload', cmdRestart: 'Restart', cmdFiles: 'Read',
+  cmdReloadTip: 'Reload (//gs reload): reads your sets, your settings and the code again. Quick: use it after changing a piece, a key or a setting.',
+  cmdRestartTip: 'Restart (//lua r gearswap): unloads then loads all of GearSwap, nothing is kept in memory. Use it when something behaves oddly, or after a code update.'});
 const BUSY_MS = {reload: 8000, restart: 30000, load: 30000, unload: 8000};
 Object.assign(T.fr, {busy_reload: 'Rechargement des fichiers…', busy_restart: 'GearSwap redémarre…', busy_load: 'GearSwap se charge…', busy_unload: 'Déchargement…'});
 Object.assign(T.en, {busy_reload: 'Reloading the files…', busy_restart: 'GearSwap restarts…', busy_load: 'GearSwap is loading…', busy_unload: 'Unloading…'});
@@ -338,14 +344,15 @@ function liveBadge(){
   if (S._liveBusy && Date.now() > S._liveBusy.until) S._liveBusy = null;
   const busy = S._liveBusy, was = busy ? busy.was : null, ok = busy ? was.ok : L.ok, linked = busy ? was.link : link;
   const job = busy ? was.job : L.job, sub = busy ? was.sub : L.sub, off = busy ? 'disabled' : '';
-  // the label goes on medium screens (the icon stays, the label is in the tooltip)
+  // a command: its word, and in its tooltip when to use it and what it sends
   const btn = (attr, icon, label, title, what) => busy && what === busy.what
     ? `<button class="live act mid busy" disabled title="${esc(t('busy_' + what))}">${icon}<span class="lbl"> ${label}</span></button>`
-    : `<button class="live act" ${attr} ${off} title="${esc(label + ' · ' + title)}">${icon}<span class="lbl"> ${label}</span></button>`;
-  // GearSwap answers: its job, then reload / restart (through the addon when it is there) / unload
-  if (ok) return `<button class="live on" data-livejump ${off} title="${esc(t('liveJump'))}">● ${t('liveOn')} · ${esc(job)}/${esc(sub)}</button>` +
-    btn('data-livereload', '⟳', t('liveReload'), '//gs reload', 'reload') + btn('data-liverestart', '↺', t('liveRestart'), '//lua r gearswap', 'restart') +
-    (linked ? btn('data-gsunload', '⏏', t('gsUnload'), '//lua u gearswap', 'unload') : '');
+    : `<button class="live act" ${attr} ${off} title="${esc(title)}">${icon}<span class="lbl"> ${label}</span></button>`;
+  // GearSwap answers: the job it has loaded, then the two ways to make it read again. Reload (//gs reload) reads the
+  // sets, the settings and the code again and keeps what the addon holds between two loads; Restart (//lua r
+  // gearswap) is an unload and a load: nothing is kept. Unloading alone served nothing from the page: left out
+  if (ok) return `<button class="live on" data-livejump ${off} title="${esc(t('liveJump'))}"><i class="led"></i>${t('liveOn')} · ${esc(job)}/${esc(sub)}</button>` +
+    btn('data-livereload', '⟳', t('cmdReload'), t('cmdReloadTip'), 'reload') + btn('data-liverestart', '↺', t('cmdRestart'), t('cmdRestartTip'), 'restart');
   // only the addon answers: GearSwap is unloaded (or its link is off), it can be loaded
   if (linked) return `<span class="live mid" title="${esc(t('linkOnlyHow'))}">● ${t('linkOnly')}</span>` + btn('data-gsload', '▶', t('gsLoad'), '//lua l gearswap', 'load');
   return `<span class="live" title="${esc(t('liveHow'))}">○ ${t('liveOff')}</span>`;
@@ -369,7 +376,7 @@ function refreshBadge(){
   let last = null; try { last = JSON.parse(sessionStorage.getItem('atelierRefresh') || 'null'); } catch (e) {}
   const lastTip = !last ? '' : ' · ' + (last.failed.length ? t('refreshLastFail', {f: last.failed.length, l: last.failed.join(', ')}) : t('refreshLast', {e: last.e, u: last.u}));
   const tip = fail ? S._refreshErr || '' : t(none ? 'refreshNoneTip' : 'refreshTip') + lastTip, warn = fail || (last && last.failed.length);
-  return `<button class="live act ${warn ? 'mid' : ''}" data-refreshfiles ${busy ? 'disabled' : ''} title="${esc(tip)}">⟳<span class="lbl"> ${t(busy ? 'refreshBusy' : none ? 'refreshNone' : fail ? 'refreshFail' : 'refreshBtn')}</span></button>`;
+  return `<button class="live act ${warn ? 'mid' : ''}" data-refreshfiles ${busy ? 'disabled' : ''} title="${esc(tip)}">⟳<span class="lbl"> ${t(busy ? 'refreshBusy' : none ? 'refreshNone' : fail ? 'refreshFail' : 'cmdFiles')}</span></button>`;
 }
 // The way without folder access (Firefox): the gsatelier:// link, see above. The page's own way: offline_export.js
 function refreshByLink(){

@@ -453,9 +453,21 @@ function FightHits.mark(label)
     if p then pcall(snapshot, p) end
 end
 
+--- The words typed, without the line breaks a pasted command carries: "run" pasted with the end of its
+--- line is not the word run, and the command then did nothing at all (2026-10-10).
+local function typed(words)
+    local out = {}
+    for _, word in ipairs(words or {}) do
+        local clean = tostring(word):gsub('[%s%c]+', '')
+        if clean ~= '' then out[#out + 1] = clean end
+    end
+    return out
+end
+
 --- //gs c fights hits [on|off|sheet|run [sequence]|<step> ...]
 --- @param words table The words after "hits"
 function FightHits.command(words)
+    words = typed(words)
     local word = (words[1] or 'on'):lower()
     if word == 'on' or word == 'off' then return switch(word == 'on') end
     if word == 'sheet' then

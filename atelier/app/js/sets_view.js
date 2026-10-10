@@ -28,26 +28,31 @@ function patchNode(x, y){
   if (x.nodeName === 'INPUT') { x.value = y.getAttribute('value') || ''; x.checked = y.hasAttribute('checked'); }
 }
 function renderSide(){
-  const dark = S.theme ? S.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
   document.documentElement.lang = S.lang;
-  if (S.theme) document.documentElement.setAttribute('data-theme', S.theme);
+  document.documentElement.setAttribute('data-theme', themeNow());
   const d = data(), job = S.job && JOBS.find(x => x[0] === S.job);
   const chars = `<div class="seg" role="group">${Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${esc(c)}">${esc(c)}</button>`).join('')}</div>`;
   const opt = ([c, name]) => { const ml = masterOf(c); return `<option value="${c}" ${S.job===c?'selected':''}>${c} · ${name}${ml ? ' · ML' + ml : ''}</option>`; };
   const jg = jobGroups();
   const groups = jg[0].label !== null ? jg.map(g => `<optgroup label="${g.label}">${g.jobs.map(opt).join('')}</optgroup>`).join('') : ROLES.map(r => { const played = JOBS.filter(j => j[2]===r && plays(j[0]));
     return played.length ? `<optgroup label="${t('roles.'+r)}">${played.map(([c, name]) => `<option value="${c}" ${S.job===c?'selected':''}>${c} · ${name}</option>`).join('')}</optgroup>` : ''; }).join('');
-  const icon = job ? `<span style="--role:${ROLE_COLOR[job[2]]}">${emblem(job[0])}</span>`
-    : `<span class="homeic"><svg width="16" height="16" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg></span>`;
-  const jobPick = `<div class="jobpick">${icon}<label class="pick"><small>${t('colJob')}</small><select class="topsel jobsel">` +
-    `<option value="" ${!S.job?'selected':''}>${t('overview')}</option>${groups}</select></label>${d ? subPicker() : ''}</div>`;
-  const facts = d ? `<dl class="mini"><div><dt>${t('macro')}</dt><dd>${bookOf(d)}</dd></div><div><dt>${t('lockstyle')}</dt><dd>${styleOf(d)}</dd></div>` +
-    `<div><dt>${t('colExport')}</dt><dd>${d.live ? `<span class="liveword">${t('liveData')}</span>` : esc(d.at||'—')}${d.offline ? ` <span class="muted">· ${t('offline')}</span>` : ''}${!d.live && (d.export_version || 1) < EXPORT_VERSION ? ` <span class="oldexport" title="${esc(t('oldExportHow'))}">· ${t('oldExport')}</span>` : ''}</dd></div></dl>` : '';
-  const prefs = `<div class="prefs">${enginePick()}<div class="seg" role="group" aria-label="Language"><button data-lang="fr" aria-pressed="${S.lang==='fr'}">FR</button><button data-lang="en" aria-pressed="${S.lang==='en'}">EN</button></div>` +
-    `<div class="seg" role="group"><button data-theme-set="light" aria-pressed="${!dark}" aria-label="${S.lang==='fr'?'Mode jour':'Light mode'}"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.3"><path d="M7 0.5v2M7 11.5v2M0.5 7h2M11.5 7h2M2.4 2.4l1.4 1.4M10.2 10.2l1.4 1.4M2.4 11.6l1.4-1.4M10.2 3.8l1.4-1.4"/></g></svg></button>` +
-    `<button data-theme-set="dark" aria-pressed="${dark}" aria-label="${S.lang==='fr'?'Mode nuit':'Dark mode'}"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9.8 1.2a6 6 0 1 0 3 9.6A5 5 0 0 1 9.8 1.2z" fill="currentColor"/></svg></button></div></div>`;
+  // the job and the subjob are chosen on the banner itself, as two plates under the name
+  const jobSel = `<select class="topsel jobsel" aria-label="${esc(t('colJob'))}" title="${esc(t('colJob'))}">` +
+    `<option value="" ${!S.job?'selected':''}>${t('overview')}</option>${groups}</select>`;
+  // the book and the style in force, and the export's date when the game is not there: read-outs under their name
+  const out = (label, value) => `<div class="tgrp"><small>${esc(label)}</small><span><b class="readout">${value}</b></span></div>`;
+  const facts = d ? out(t('macro'), bookOf(d)) + out(t('lockstyle'), styleOf(d)) +
+    (d.live ? '' : out(t('colExport'), `${esc(d.at||'—')}${d.offline ? ` · ${t('offline')}` : ''}${(d.export_version || 1) < EXPORT_VERSION ? ` <span class="oldexport" title="${esc(t('oldExportHow'))}">· ${t('oldExport')}</span>` : ''}`)) : '';
+  // the groups of the bar, named by what they act on: icons alone told nothing (2026-10-10)
+  const grp = (label, html) => html ? `<div class="tgrp"><small>${esc(label)}</small><span>${html}</span></div>` : '';
   const brand = `<div class="brand"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 10 H22 M13 1 L9 10 L13 25 L17 10 Z" fill="none" stroke="currentColor" stroke-width=".9" opacity=".6"/></svg><b>Atelier</b></div>`;
-  patchInto($('#top'), `${brand}${chars}<span class="tsep"></span>${jobPick}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${refreshBadge()}${liveBadge()}${prefs}`);
+  // the character shown, as a banner: its job's emblem in a ring of the role's colour, its name, then its job and
+  // subjob as plates (the two menus)
+  const hero = S.char ? `<div class="hero" ${job ? `style="--role:${ROLE_COLOR[job[2]]}"` : ''}><span class="crest">${job ? emblem(job[0]) :
+    '<svg width="20" height="20" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg>'}</span>` +
+    `<span class="who"><b>${esc(S.char)}</b><span class="plates">${jobSel}${d ? subPicker() : ''}</span></span></div>` : '';
+  const gear = `<button class="live act ${S._cfg ? 'mid' : ''}" data-config title="${esc(t('cfgOpen'))}">⚙<span class="lbl"> ${esc(t('cfgOpen'))}</span></button>`;
+  patchInto($('#top'), `${brand}${hero}<span class="tsep"></span>${grp(t('grpChar'), chars)}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${grp(t('grpFiles'), refreshBadge())}${grp('GearSwap', liveBadge())}${grp(t('grpPage'), gear)}`);
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
 function renderHome(){
@@ -397,12 +402,18 @@ function renderJob(){
 // Re-render, keeping the focus of the search box and the scroll of each block
 // while the view stays the same (the set detail goes back to its top for another set)
 // (.globalcol: the right column, its compartments folded and unfolded in place)
+// What tells a folded block from the others of the page: its classes and its title without the figures in it
+const foldKey = el => el.className + '|' + ((el.querySelector('summary') || {}).textContent || '').replace(/[\d.,%−+-]+/g, '').trim().slice(0, 60);
 const SCROLLERS = ['.pane', '.setlist .scroll', '.detail', '.globalcol'];
 function render(){
   const view = [S.char, S.job, S.section].join('|'), set = view + '|' + S.sel[S.job];
   const tops = SCROLLERS.map(q => { const el = $(q); return el ? el.scrollTop : 0; });
   const a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;
-  renderSide(); $('#view').innerHTML = S.job ? renderJob() : renderHome(); save();
+  // a folded block the player opened stays open through a redraw of the same tab: a click inside it (a job, a
+  // tab, a mode) draws the page again, and the block closed under the pointer (2026-10-10)
+  const opened = S._view === view ? new Set([...document.querySelectorAll('#view details[open]')].map(foldKey)) : new Set();
+  renderSide(); $('#view').innerHTML = S._cfg ? renderConfig() : S.job ? renderJob() : renderHome(); save();
+  for (const el of document.querySelectorAll('#view details:not([open])')) if (opened.has(foldKey(el))) el.open = true;
   SCROLLERS.forEach((q, i) => { const el = $(q);
     if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });
   scrollBack(view, set);

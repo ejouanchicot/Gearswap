@@ -1,0 +1,186 @@
+/* GearSwap Atelier · themes.css: the looks chosen in Settings (config_page.js), loaded after the other sheets.
+   A theme is first a set of the colours every sheet reads (base.css), so it reaches every tab at once; then a few
+   rules on the components all tabs share (the panels, the tab bar, the row chosen in a list). Nothing here names a
+   tab: a new panel built from .box / .panel takes the theme by itself. */
+
+/* ============================================================================ the top bar (every theme)
+   A game's character plate: the job's emblem in a ring of its role's colour, the name, the job and subjob as two
+   plates one chooses on, then who else can be shown, the book and style in force, and what acts on the game. */
+.topbar{padding:10px 22px;gap:10px 18px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel-2) 92%,transparent),color-mix(in srgb,var(--side) 96%,transparent))}
+.hero{display:flex;align-items:center;gap:14px;min-width:0}
+.hero .crest{--ring:var(--role,var(--accent));width:54px;height:54px;flex:none;display:grid;place-items:center;border-radius:50%;
+  background:radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--ring) 38%,var(--panel-2)),var(--well) 78%);
+  box-shadow:0 0 0 2px var(--side),0 0 0 3px color-mix(in srgb,var(--ring) 75%,transparent),0 0 20px -2px color-mix(in srgb,var(--ring) 55%,transparent)}
+.hero .crest .em{width:34px;height:34px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.hero .crest svg{color:var(--accent)}
+.hero .who{min-width:0;display:grid;gap:4px}
+.hero .who > b{font-family:var(--display);font-weight:700;font-size:23px;line-height:1;letter-spacing:.04em;white-space:nowrap;
+  background:linear-gradient(180deg,var(--ink) 30%,color-mix(in srgb,var(--accent-2) 70%,var(--ink)));-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.55))}
+.hero .plates{display:flex;align-items:center;gap:6px}
+.hero .pick{display:flex;align-items:center;gap:6px}
+.hero .pick > small{display:none}
+.hero .pick::before{content:"/";color:var(--faint);font-weight:700}
+/* a plate: cut corners, like the game's job tags */
+.hero .topsel{font-size:12.5px;font-weight:700;padding:3px 10px 3px 9px;border:0;border-radius:0;max-width:230px;color:var(--ink);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 22%,var(--panel-2)),color-mix(in srgb,var(--accent) 8%,var(--panel-2)));
+  clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+.hero .topsel:hover{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 36%,var(--panel-2)),color-mix(in srgb,var(--accent) 16%,var(--panel-2)))}
+.hero .topsel.subsel{font-size:12.5px;background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 12%,var(--panel-2)),var(--panel-2))}
+.hero .topsel option,.hero .topsel optgroup{background:var(--panel);color:var(--ink)}
+/* the book and the style in force: two small tags */
+.topbar .mini{gap:8px}
+.topbar .mini > div{display:flex;align-items:baseline;gap:7px;padding:4px 11px;border:1px solid var(--line);background:var(--panel-2);
+  clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+.topbar .mini dt{font-size:10px;letter-spacing:.1em}
+.topbar .mini dd{font-size:13.5px;color:var(--accent)}
+
+/* ============================================================================ Settings */
+.cfg{max-width:1060px;margin:6px auto 0;display:grid;gap:14px}
+.cfg > header{display:flex;align-items:baseline;gap:14px}
+.cfg > header h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em}
+.cfg section{padding:16px 18px}
+.cfg section h3{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.cfg section > p{color:var(--muted);margin-bottom:12px}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.themecard{display:block;text-align:left;padding:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2);overflow:hidden}
+.themecard:hover{border-color:var(--line-strong)}
+.themecard[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 18px -6px var(--accent)}
+.themecard .pv{display:grid;grid-template-columns:34% 1fr;gap:6px;height:96px;padding:10px;background:var(--pv-bg)}
+.themecard .pv i{display:block;border-radius:var(--pv-r);background:var(--pv-panel);border:1px solid var(--pv-line)}
+.themecard .pv i:last-child{background:linear-gradient(var(--pv-accent),var(--pv-accent)) 10px 12px/46% 5px no-repeat,
+  linear-gradient(var(--pv-ink),var(--pv-ink)) 10px 26px/70% 3px no-repeat,linear-gradient(var(--pv-ink),var(--pv-ink)) 10px 36px/58% 3px no-repeat,var(--pv-panel)}
+.themecard b{display:block;padding:9px 12px 0;font-size:14px}
+.themecard small{display:block;padding:2px 12px 11px;color:var(--muted);font-size:12.5px;line-height:1.35}
+.cfgrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.cfgrow > span{color:var(--muted);font-size:13px}
+
+/* ============================================================================ Vana'diel: the game's blue windows */
+:root[data-theme="vanadiel"]{
+  color-scheme:dark;
+  --bg:#060D1C; --bg-glow:rgba(70,130,220,.22); --bg-glow2:rgba(40,90,180,.14);
+  --side:#0B1A33; --panel:#102449; --panel-2:#163060; --hover:#1E3F7A; --ink:#EEF3FF; --muted:#B9C8E6; --faint:#8AA0C8;
+  --line:#34528A; --line-strong:#9FB6DC; --hi:rgba(255,255,255,.05);
+  --shadow:inset 0 0 0 1px rgba(8,18,40,.9),inset 0 0 0 2px rgba(159,182,220,.22),0 8px 24px -10px rgba(0,0,0,.7);
+  --g-def:#8FC0FF; --g-attr:#C6A8FF; --g-off:#FFB08A; --g-mag:#6FE3D8; --g-skill:#A6E487; --g-res:#FFD77A; --g-other:#C3CCDD;
+  --g-tank:#7FD3F5; --g-buff:#FFD98A; --g-you:#FFE08A; --g-caps:#B7C6E0; --accent:#FFE08A; --accent-2:#FFF0BD; --accent-soft:#263A63; --accent-ink:#0B1A33; --aug:#FFE08A; --well:#081430;
+  --r-tank:#9DB6FF; --r-healer:#9AF0B3; --r-support:#FFE08A; --r-dd:#FFA3A3;
+  --tip-bg:#0B1A33; --tip-edge:#9FB6DC; --try:#9CCBFF; --try-soft:#16305C;
+  --radius:6px; --radius-s:4px;
+}
+:root[data-theme="vanadiel"] body{background:radial-gradient(1300px 520px at 18% -140px,#1B3A6B,transparent 70%),radial-gradient(900px 420px at 100% -160px,#14306A,transparent 70%),var(--bg)}
+:root[data-theme="vanadiel"] :is(.setlist,.detail,.box,.panel,.tblwrap,.keybar,.placeholder,.choice,.sections,.pbcard,.pbparty,.cfg section){
+  background:linear-gradient(180deg,rgba(26,56,110,.92),rgba(11,26,58,.94));border-color:var(--line-strong)}
+:root[data-theme="vanadiel"] .topbar{border-bottom:1px solid var(--line-strong)}
+/* the game's hand: the row chosen in a list, the tab shown */
+:root[data-theme="vanadiel"] .setrow[aria-current="true"] b::before,
+:root[data-theme="vanadiel"] .sections button[aria-selected="true"]::before{content:"\25B6\00A0";color:var(--accent);font-size:.8em}
+:root[data-theme="vanadiel"] .sections button[aria-selected="true"]{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05));box-shadow:inset 0 0 0 1px var(--line-strong)}
+
+/* ============================================================================ Grimoire: dark parchment and gilt */
+:root[data-theme="grimoire"]{
+  color-scheme:dark;
+  --bg:#15110C; --bg-glow:rgba(215,178,90,.14); --bg-glow2:rgba(150,90,40,.10);
+  --side:#1A140B; --panel:#1F180D; --panel-2:#271E10; --hover:#33260F; --ink:#EFE4CC; --muted:#B8A479; --faint:#8E7B54;
+  --line:#463718; --line-strong:#6B5527; --hi:rgba(255,235,180,.04);
+  --shadow:inset 0 0 0 3px #17110A,inset 0 0 0 4px #3C2F15,0 10px 26px -14px rgba(0,0,0,.8);
+  --g-def:#9DB9E8; --g-attr:#C7A5E8; --g-off:#EFA277; --g-mag:#7FD1C4; --g-skill:#A9CF7C; --g-res:#E8C36A; --g-other:#B5AB97;
+  --g-tank:#8CC4DC; --g-buff:#E6C277; --g-you:#F0CF7A; --g-caps:#B3A88E; --accent:#D7B25A; --accent-2:#F0CF7A; --accent-soft:#2E2310; --accent-ink:#1A1206; --aug:#F0CF7A; --well:#120D07;
+  --r-tank:#9DB0E8; --r-healer:#A5D38A; --r-support:#EBC85A; --r-dd:#E89A8A;
+  --tip-bg:#17110A; --tip-edge:#6B5527; --try:#9CC0E8; --try-soft:#1F2630;
+  --radius:4px; --radius-s:2px;
+}
+:root[data-theme="grimoire"] body{background:radial-gradient(1000px 440px at 85% -160px,#3A2A12,transparent 70%),radial-gradient(900px 420px at 0 -200px,#2A1F0E,transparent 70%),var(--bg)}
+:root[data-theme="grimoire"] .topbar{border-bottom:1px solid var(--line-strong)}
+:root[data-theme="grimoire"] .sections button,:root[data-theme="grimoire"] .setrow b{font-family:var(--display);letter-spacing:.04em}
+
+/* the banner names the page's owner: no mark of the page beside it */
+.topbar .brand{display:none}
+.topbar{flex-wrap:nowrap}
+.topbar .seg{flex:none}
+@media (max-width:1500px){.topbar{flex-wrap:wrap}}
+
+/* the buttons of the right of the top bar, in groups named like the fields beside them (Job, Sub...) */
+.tgrp{display:flex;flex-direction:column;gap:2px;flex:none}
+.tgrp > small{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);line-height:1}
+.tgrp > span{display:flex;align-items:center;gap:6px}
+
+/* ============================================================================ the commands of the top bar
+   The game's menu buttons: a small plate with a light edge, its word in capitals, gold under the pointer and
+   pushed in when pressed. The state of the game is a tag with a lamp, not a button among the others. */
+.topbar .tgrp .live.act .lbl{display:inline}
+.topbar .live.act{display:inline-flex;align-items:center;gap:6px;border-radius:3px;padding:5px 12px 5px 10px;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink);text-shadow:0 1px 1px rgba(0,0,0,.55);border:1px solid color-mix(in srgb,var(--line-strong) 80%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 17%,var(--panel-2)) 0,var(--panel-2) 52%,color-mix(in srgb,#000 24%,var(--panel-2)) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.45)}
+.topbar .live.act:not([disabled]):hover{color:var(--accent-2);border-color:var(--accent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 26%,var(--panel-2)) 0,color-mix(in srgb,var(--accent) 9%,var(--panel-2)) 55%,color-mix(in srgb,#000 22%,var(--panel-2)) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 0 12px -3px var(--accent)}
+.topbar .live.act:not([disabled]):active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.55)}
+.topbar .live.act.busy[disabled]{color:var(--accent-2);border-color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent),0 0 12px -3px var(--accent)}
+.topbar .live.on{display:inline-flex;align-items:center;gap:8px;border-radius:3px;padding:5px 12px;font-size:12px;font-weight:700;letter-spacing:.04em;
+  background:color-mix(in srgb,var(--r-healer) 9%,var(--well));border:1px solid color-mix(in srgb,var(--r-healer) 45%,transparent);box-shadow:inset 0 1px 3px rgba(0,0,0,.5)}
+.topbar .live .led{width:8px;height:8px;border-radius:50%;background:var(--r-healer);box-shadow:0 0 8px 1px var(--r-healer),inset 0 1px 1px rgba(255,255,255,.6)}
+@media (max-width:1560px){.topbar .tgrp .live.act .lbl{display:none}}
+/* the gear is known without its word, and the bar keeps its one line */
+.topbar .tgrp .live.act[data-config] .lbl{display:none}
+.topbar .tgrp .live.act[data-config]{padding:5px 9px;font-size:14px}
+.topbar .live.act{letter-spacing:.06em;padding:5px 10px 5px 9px}
+.topbar{gap:10px 14px}
+
+/* ============================================================================ the left of the top bar, in the same family
+   The job and the subjob are two plates like the commands (the job's edged with its role's colour); the characters
+   are plates too, the one shown gold with the game's cursor; the book and the style are read-outs sunk in the bar. */
+.hero .topsel{clip-path:none;border-radius:3px;padding:4px 10px;font-size:12.5px;letter-spacing:.02em;text-shadow:0 1px 1px rgba(0,0,0,.55);
+  border:1px solid color-mix(in srgb,var(--line-strong) 80%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 17%,var(--panel-2)) 0,var(--panel-2) 52%,color-mix(in srgb,#000 24%,var(--panel-2)) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.45)}
+.hero .topsel.jobsel{border-left:3px solid var(--role,var(--accent));color:var(--accent-2)}
+.hero .topsel.subsel{background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 12%,var(--panel-2)) 0,var(--panel-2) 52%,color-mix(in srgb,#000 24%,var(--panel-2)) 100%)}
+.hero .topsel:hover{border-color:var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 0 12px -3px var(--accent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 22%,var(--panel-2)) 0,color-mix(in srgb,var(--accent) 8%,var(--panel-2)) 55%,color-mix(in srgb,#000 22%,var(--panel-2)) 100%)}
+.hero .topsel.jobsel:hover{border-left-color:var(--role,var(--accent))}
+.topbar .tgrp .seg{padding:0;border:0;background:none;box-shadow:none;gap:5px;display:flex}
+.topbar .tgrp .seg button{flex:none;border-radius:3px;padding:4px 11px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted);text-shadow:0 1px 1px rgba(0,0,0,.55);
+  border:1px solid color-mix(in srgb,var(--line) 85%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 9%,var(--panel-2)) 0,var(--panel-2) 55%,color-mix(in srgb,#000 22%,var(--panel-2)) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 1px 2px rgba(0,0,0,.4)}
+.topbar .tgrp .seg button:hover{color:var(--ink);border-color:var(--line-strong);background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 16%,var(--panel-2)) 0,var(--panel-2) 55%,color-mix(in srgb,#000 22%,var(--panel-2)) 100%)}
+.topbar .tgrp .seg button[aria-pressed="true"]{color:var(--accent-2);border-color:var(--accent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 26%,var(--panel-2)) 0,color-mix(in srgb,var(--accent) 9%,var(--panel-2)) 55%,color-mix(in srgb,#000 22%,var(--panel-2)) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 0 12px -4px var(--accent)}
+.topbar .tgrp .seg button[aria-pressed="true"]::before{content:"\25B6\00A0";font-size:.75em}
+.topbar .readout{display:inline-block;min-width:44px;text-align:center;padding:4px 12px;border-radius:3px;font:700 14px var(--display);letter-spacing:.06em;color:var(--accent-2);
+  background:var(--well);border:1px solid color-mix(in srgb,var(--line) 85%,transparent);box-shadow:inset 0 2px 4px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.06);white-space:nowrap}
+.topbar .readout .oldexport{font-family:var(--sans);font-size:11px;letter-spacing:0}
+
+/* ============================================================================ one line for the whole top bar
+   Every group is a small title over one control, and every control has the same height and sits on the same
+   bottom line: plates, read-outs, the state tag and the commands. The banner's name stands where the titles do,
+   and the emblem is as tall as the name and its plates together. */
+.topbar{--ctl:30px;align-items:flex-end;padding:9px 22px 10px}
+.topbar .tsep{align-self:flex-end;height:var(--ctl);margin:0}
+.topbar .tgrp{gap:6px}
+.topbar .tgrp > small{height:10px;line-height:10px}
+.topbar .tgrp > span{height:var(--ctl)}
+.topbar .hero{align-items:flex-end;gap:13px}
+.topbar .hero .crest{width:57px;height:57px}
+.topbar .hero .who{gap:6px}
+.topbar .hero .who > b{font-size:21px;line-height:21px}
+.topbar .hero .plates{height:var(--ctl)}
+.topbar .hero .topsel,.topbar .tgrp .seg button,.topbar .readout,.topbar .live.act,.topbar .live.on,.topbar .live.mid,.topbar .tgrp .live{
+  box-sizing:border-box;height:var(--ctl);display:inline-flex;align-items:center;padding-top:0;padding-bottom:0;line-height:1}
+.topbar .hero .topsel{display:inline-block}
+.topbar .readout{justify-content:center}
+.topbar .tgrp .live.act[data-config]{width:var(--ctl);justify-content:center;padding:0}
+
+/* Settings: the two engines, each a card saying what it computes */
+.engines{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.engcard{text-align:left;padding:12px 14px 10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2)}
+.engcard:hover{border-color:var(--line-strong)}
+.engcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 18px -6px var(--accent)}
+.engcard > b{display:block;font-size:15px;margin-bottom:6px}
+.engcard > b em{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+.engcard ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.5}
+.engcard li + li{margin-top:3px}
+.engfell{margin-top:10px;color:var(--muted);font-size:12.5px}

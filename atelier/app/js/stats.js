@@ -421,12 +421,17 @@ const fmtStat = e => (e.v > 0 ? '+' : e.v < 0 ? '−' : '') + Math.abs(e.v) + (e
 const statLi = (label, value, extra = '', cls = '', tip = '') =>
   `<li class="${cls}"${tip ? ` title="${esc(tip)}"` : ''}><span title="${label}">${label}</span><b>${value}</b><i>${extra}</i></li>`;
 const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
-// Past the cap the game counts the cap: the line shows it, with the total and what goes to waste
+// A stat the game stops at a cap, as a gauge: how far the set is from the cap, "max" once it is there, and under
+// the gauge what goes past it for nothing (pieces that could give something else)
+Object.assign(T.fr, {capOf: 'sur {c} %', capMax: 'max', capWaste: '{n} % en trop : une pièce pourrait apporter autre chose'});
+Object.assign(T.en, {capOf: 'of {c} %', capMax: 'max', capWaste: '{n} % over the cap: a piece could bring something else'});
 function cappedLi(label, sum, cap, detail){
-  const r = x => Math.round(x * 10) / 10, over = Math.abs(sum) > Math.abs(cap);
-  if (!over) return statLi(label, signed(r(sum)) + ' %', `cap ${signed(cap)} %`, '', detail);
-  return `<li class="over"${detail ? ` title="${esc(detail)}"` : ''}><span title="${label}">${label}</span><b>${signed(cap)} %</b><i>cap</i>` +
-    `<em class="overl">${t('overCap', {t: signed(r(sum)), n: r(Math.abs(sum - cap))})}</em></li>`;
+  const r = x => Math.round(x * 10) / 10, over = Math.abs(sum) > Math.abs(cap), full = Math.abs(sum) >= Math.abs(cap);
+  const fill = Math.max(0, Math.min(100, cap ? Math.round(100 * sum / cap) : 0));
+  return `<li class="capli ${full ? 'full' : ''}"${detail ? ` title="${esc(detail)}"` : ''}><span title="${label}">${label}</span>` +
+    `<b>${signed(r(over ? cap : sum))} %</b><i>${full ? `<em class="capmax">${t('capMax')}</em>` : esc(t('capOf', {c: signed(cap)}))}</i>` +
+    `<u class="gauge" style="--fill:${fill}%"></u>` +
+    (over ? `<em class="overl">${esc(t('capWaste', {n: r(Math.abs(sum - cap))}))}</em>` : '') + `</li>`;
 }
 // A damage taken with its II stat on one line: the first layer stops at -50 %, the II one adds past it, -87.5 % in all
 // (the line's total; its small text: the first layer against its cap, what is wasted past it, the II)
