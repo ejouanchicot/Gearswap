@@ -609,6 +609,9 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_wardrobeaudit()
     elseif cmd == 'worganize' or cmd == 'wo' then
         return CommonCommands.handle_wardrobeorganize(args[1], args[2])
+    elseif cmd == 'lockscan' then
+        -- every lockstyle set the character uses, applied in turn so its pieces are written down
+        return require('shared/utils/lockstyle/lockstyle_pieces').scan(args)
     elseif cmd == 'bags' then
         -- the tidy-up plan sent by the Atelier page (shared/utils/wardrobe/bag_mover.lua)
         return require('shared/utils/wardrobe/bag_mover').handle(args)
@@ -759,7 +762,7 @@ function CommonCommands.is_common_command(command)
 
     if cmd == 'mount' or
         cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or
-        cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'bags' or
+        cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'bags' or cmd == 'lockscan' or
         cmd == 'refill' or cmd == 'rf' or
         cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
         cmd == 'automedicine' or cmd == 'am' or

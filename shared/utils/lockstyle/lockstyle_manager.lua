@@ -14,6 +14,9 @@
 
 local LockstyleManager = {}
 
+-- the pieces of each set, read from the game's own packet when a lockstyle is applied (lockstyle_pieces.lua)
+pcall(function() require('shared/utils/lockstyle/lockstyle_pieces').listen() end)
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GLOBAL DRESSUP STATE (Persistent across reloads)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -74,12 +77,14 @@ function LockstyleManager.apply_style(style)
     if _G.DRESSUP_MANAGEMENT_ENABLED == true then
         send_command('lua unload dressup')
         coroutine.schedule(function()
+            require('shared/utils/lockstyle/lockstyle_pieces').expect(style)
             send_command('input /lockstyleset ' .. style)
         end, 0.3)
         coroutine.schedule(function()
             send_command('lua load dressup')
         end, 3.0)
     else
+        require('shared/utils/lockstyle/lockstyle_pieces').expect(style)
         send_command('input /lockstyleset ' .. style)
     end
 end
@@ -128,6 +133,7 @@ local function apply_lockstyle_immediate(ctx, style, operation_id)
 
     require('shared/utils/debug/trace_log').log('LOAD', 'lockstyle %s', style)
     if not get_manage_dressup() then
+        require('shared/utils/lockstyle/lockstyle_pieces').expect(style)
         send_command('input /lockstyleset ' .. style)
         STATE.is_processing = false
         return
@@ -143,6 +149,7 @@ local function apply_lockstyle_immediate(ctx, style, operation_id)
 
     coroutine.schedule(function()
         if operation_id ~= STATE.operation_id then return end
+        require('shared/utils/lockstyle/lockstyle_pieces').expect(style)
         send_command('input /lockstyleset ' .. style)
     end, 0.3)
 

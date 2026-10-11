@@ -1245,6 +1245,7 @@
 .bvitem .bvu{flex:none;font-size:10px;overflow:visible}
 .bvitem .bvu i{display:inline-block;margin-left:2px;padding:0 4px;border-radius:4px;font-style:normal;font-family:var(--mono);font-size:10px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
 .bvitem .bvu i.more,.bvitem .bvu i.cfg{background:none;border:1px solid var(--line-strong);color:var(--muted);font-family:inherit}
+.bvitem .bvu i.ls{background:color-mix(in srgb,#b392f0 22%,transparent);color:#c9b3ff;font-family:inherit}
 .bvitem .bvu.none{padding:0 5px;border-radius:4px;border:1px dashed var(--line-strong);color:var(--faint)}
 .bvitem .bva{flex:1 1 0}
 .bvitem b + .bvu,.bvitem b + .bvw,.bvitem b + em{margin-left:auto}

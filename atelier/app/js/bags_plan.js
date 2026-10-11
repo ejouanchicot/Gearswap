@@ -20,7 +20,7 @@ Object.assign(T.fr, {bpPlan: 'Le plan', bpPlanTip: 'Le calcul du rangement : ce 
   bpSafe3: 'Une pièce portée, un sac plein ou un sac du Mog House hors du Mog House : ce déplacement est sauté, et dit.', bpSafe4: 'Chaque déplacement est écrit dans le fichier atelier/bag_moves.log de ton perso.',
   bpSendN: '{n} déplacement(s)', bpSendNone: 'Rien à déplacer : tout ce que la page sait ranger est à sa place.', bpSendNoRoom: '{n} objet(s) n’ont pas de place dans leurs sacs et ne seront pas déplacés : {l}.',
   bpSendGo: 'Envoyer au jeu', bpSendTip: 'Envoie la liste. Ensuite, en jeu : //gs c bags pour la voir, //gs c bags go pour la lancer.', bpSent: 'Plan envoyé : {n} déplacement(s). En jeu, tape //gs c bags pour voir ce qui est prêt (rien ne bouge), puis //gs c bags go pour lancer, //gs c bags stop pour arrêter.',
-  bpSendFail: 'Le jeu n’a pas répondu : le plan n’a pas été envoyé.', bpSee: 'Voir', bpSeeCat: 'Voir : {c}', bpMoveN: '{n} à déplacer', bpStOk: 'Ton rangement tient', bpStOkWhy: 'chaque catégorie a assez de place dans ses sacs', bpStBad: '{n} catégorie(s) ne rentrent pas',
+  bpSendFail: 'Le jeu n’a pas répondu : le plan n’a pas été envoyé.', bpLockOf: 'Lockstyle n° {l}', bpSee: 'Voir', bpSeeCat: 'Voir : {c}', bpMoveN: '{n} à déplacer', bpStOk: 'Ton rangement tient', bpStOkWhy: 'chaque catégorie a assez de place dans ses sacs', bpStBad: '{n} catégorie(s) ne rentrent pas',
   bpChUnk: ' non classé(s)', bpChWrong: ' mal rangé(s)', bpChMule: ' pour la mule', bpChNpc: ' à déposer chez un NPC', bpChPlan: 'Voir le plan', bpPc: 'Catégorie du plan', bpPcTip: 'N’affiche que les objets que le plan range dans cette catégorie.', bpUnk: 'Non classé', bpSel: '{n} sélectionné(s) : ranger dans', bpSelAll: 'Tout sélectionner ({n} affichés)', bpSelNone: 'Désélectionner', bpAuto: 'Automatique', bpAutoTip: 'Oublie ton choix : la page reclasse toute seule.',
   bpPickTip: 'Clique pour sélectionner, puis range la sélection dans une catégorie.', bpCatTip: 'Catégorie : {c}{m}', bpByYou: ' (choisie par toi)'});
 Object.assign(T.en, {bpPlan: 'The plan', bpPlanTip: 'The tidy-up sum: what each role must house against the room of its bags. Nothing moves in game.', bpTitle: 'The tidy-up plan, in theory',
@@ -37,7 +37,7 @@ Object.assign(T.en, {bpPlan: 'The plan', bpPlanTip: 'The tidy-up sum: what each 
   bpSafe3: 'A piece worn, a full bag or a Mog House bag outside the Mog House: that move is skipped, and said.', bpSafe4: 'Every move is written to your character’s atelier/bag_moves.log file.',
   bpSendN: '{n} move(s)', bpSendNone: 'Nothing to move: everything the page can place is where it should be.', bpSendNoRoom: '{n} item(s) have no room in their bags and will not be moved: {l}.',
   bpSendGo: 'Send to the game', bpSendTip: 'Sends the list. Then, in game: //gs c bags to see it, //gs c bags go to play it.', bpSent: 'Plan sent: {n} move(s). In game, type //gs c bags to see what is ready (nothing moves), then //gs c bags go to play it, //gs c bags stop to stop.',
-  bpSendFail: 'The game did not answer: the plan was not sent.', bpSee: 'See', bpSeeCat: 'See: {c}', bpMoveN: '{n} to move', bpStOk: 'Your tidy-up fits', bpStOkWhy: 'every category has enough room in its bags', bpStBad: '{n} category(ies) do not fit',
+  bpSendFail: 'The game did not answer: the plan was not sent.', bpLockOf: 'Lockstyle no. {l}', bpSee: 'See', bpSeeCat: 'See: {c}', bpMoveN: '{n} to move', bpStOk: 'Your tidy-up fits', bpStOkWhy: 'every category has enough room in its bags', bpStBad: '{n} category(ies) do not fit',
   bpChUnk: ' not filed', bpChWrong: ' misplaced', bpChMule: ' for the mule', bpChNpc: ' to hand to an NPC', bpChPlan: 'See the plan', bpPc: 'Plan category', bpPcTip: 'Shows only the items the plan files in this category.', bpUnk: 'Not filed', bpSel: '{n} selected: file in', bpSelAll: 'Select all ({n} shown)', bpSelNone: 'Clear', bpAuto: 'Automatic', bpAutoTip: 'Forgets your choice: the page files it by itself again.',
   bpPickTip: 'Click to select, then file the selection in a category.', bpCatTip: 'Category: {c}{m}', bpByYou: ' (your choice)'});
 
@@ -75,6 +75,17 @@ const BP_BOXES = /^(Beitetsu (Parcel|Box)|Pluton (Case|Box)|Boulder (Case|Box)|H
 // Crafting materials the game does not tell from the rest (the alabaster parts: the player, 2026-10-11)
 const BP_MATS = /^Ala\. Part /;
 const bpNpc = name => (BP_NPC.find(([re]) => re.test(name)) || [])[1] || '';
+// The pieces of the lockstyle sets the game was seen to apply (export `lock_pieces`: shared/utils/lockstyle/
+// lockstyle_pieces.lua): {item id: ['4 (WAR)', ...]}
+let BP_LOCK = null;
+function bpLock(){
+  const key = DATA_GEN + '|' + S.char;
+  if (BP_LOCK && BP_LOCK.key === key) return BP_LOCK.by;
+  const x = latestExport(S.char, 'lock_pieces'), by = {};
+  for (const [set, v] of Object.entries((x && x.lock_pieces) || {})) for (const it of v.items || []) (by[it.id] = by[it.id] || []).push(set + (v.job ? ' (' + v.job + ')' : ''));
+  BP_LOCK = {key, by};
+  return by;
+}
 // A thing's category: the player's choice, else what the page can tell, else what its bag suggests, else 'unknown'
 function bpCat(B, r){
   const mine = bpTags()[r.id]; if (mine) return mine;
@@ -84,6 +95,7 @@ function bpCat(B, r){
     const home = r.where.filter(w => w.bag !== 'Porter Moogle').map(w => B.bags.find(b => b.name === w.bag)).filter(Boolean);
     if (home.length && home.every(b => bvRoles(B, b).includes('craft'))) return 'craft';
     if (Object.keys(r.use.jobs).length) return 'gear';
+    if (bpLock()[r.id]) return 'lock';                // worn by no set, but by a lockstyle: kept for its look
     // a piece no set wears, in no bag with a say of its own (crafting), that can go to another character: a mule's
     // (a piece is no consumable, material or currency, whatever bag it lies in: only a crafting bag speaks for it)
     const h = hint(); return h === 'craft' ? h : bpSendable(B, r) ? 'mule' : 'unused';

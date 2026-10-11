@@ -12,7 +12,7 @@ Object.assign(T.fr, {bvStats: 'Stats & mérites', bvBags: 'Sacs', bvStatsTip: 'T
   bvFree: '{n} libre(s)', bvFull: 'plein', bvTileTip: '{b} : {c} emplacement(s) pris sur {m}, {f} libre(s). Clique pour voir son contenu.', bvAllTip: 'Chaque objet une seule fois, avec les sacs où il se trouve.',
   bvSearch: 'Chercher un objet…', bvCatAll: 'Tout', bvDup: 'Dans plusieurs sacs', bvDupTip: 'Seulement les objets présents dans plus d’un sac : ce qui pourrait être regroupé.',
   bvNoSet: 'aucun set', bvNoSetTip: 'Dans aucun set des jobs lus.', bvCfg: 'réglages', bvUsedBy: 'Porté par : {l} (nombre de sets).', bvCfgTip: 'Nommé dans : {l}.',
-  bvGoes: 'Sa place : {d}.', bvUseAll: 'Tout', bvUseBad: 'Mal rangé', bvUseNone: 'Dans aucun set',
+  bvLs: 'style {l}', bvUseLock: 'Lockstyle', bvGoes: 'Sa place : {d}.', bvUseAll: 'Tout', bvUseBad: 'Mal rangé', bvUseNone: 'Dans aucun set',
   bvRoleOf: 'Ce sac sert à', bvRole2: 'et aussi à', bvRole2Tip: 'Un second rôle : deux sortes d’objets se partagent la place de ce sac.', bvRoleTip: 'Dis à quoi sert ce sac : la page signale ce qui n’y a pas sa place. Rien ne bouge en jeu.', bvBadN: '{n} objet(s) mal rangé(s) dans ce sac.',
   bvRs_free: 'libre', bvRs_job: 'job en cours', bvRs_gear: 'autres jobs', bvRs_spare: 'lockstyle, surplus', bvRs_unused: 'inutilisé', bvRs_craft: 'craft', bvRs_usable: 'consommables', bvRs_mats: 'vente, craft', bvRs_currency: 'currencies', bvRs_keys: 'objets clés', bvRs_furnish: 'meubles', bvRs_slips: 'slips', bvRs_archive: 'archives',
   bvR_free: 'pas de règle', bvR_job: 'job en cours', bvR_gear: 'équipement des jobs', bvR_unused: 'ce qui ne sert pas', bvR_craft: 'craft', bvR_usable: 'consommables', bvR_mats: 'à vendre et composants de craft', bvR_currency: 'currencies', bvR_keys: 'objets clés (améliorations, accès)', bvR_spare: 'lockstyle et surplus', bvR_furnish: 'meubles et rangement', bvR_slips: 'slips', bvR_archive: 'archives',
@@ -26,7 +26,7 @@ Object.assign(T.en, {bvStats: 'Stats & merits', bvBags: 'Bags', bvStatsTip: 'You
   bvFree: '{n} free', bvFull: 'full', bvTileTip: '{b}: {c} slot(s) taken of {m}, {f} free. Click to see what it holds.', bvAllTip: 'Each item once, with the bags it is in.',
   bvSearch: 'Search an item…', bvCatAll: 'All', bvDup: 'In several bags', bvDupTip: 'Only the items held in more than one bag: what could be put together.',
   bvNoSet: 'no set', bvNoSetTip: 'In no set of the jobs read.', bvCfg: 'settings', bvUsedBy: 'Worn by: {l} (number of sets).', bvCfgTip: 'Named in: {l}.',
-  bvGoes: 'Its place: {d}.', bvUseAll: 'All', bvUseBad: 'Misplaced', bvUseNone: 'In no set',
+  bvLs: 'style {l}', bvUseLock: 'Lockstyle', bvGoes: 'Its place: {d}.', bvUseAll: 'All', bvUseBad: 'Misplaced', bvUseNone: 'In no set',
   bvRoleOf: 'This bag is for', bvRole2: 'and also for', bvRole2Tip: 'A second role: two kinds of things share this bag’s room.', bvRoleTip: 'Say what this bag is for: the page points at what has no place in it. Nothing moves in game.', bvBadN: '{n} item(s) misplaced in this bag.',
   bvRs_free: 'free', bvRs_job: 'job loaded', bvRs_gear: 'other jobs', bvRs_spare: 'lockstyle, overflow', bvRs_unused: 'unused', bvRs_craft: 'crafting', bvRs_usable: 'consumables', bvRs_mats: 'sale, crafting', bvRs_currency: 'currencies', bvRs_keys: 'key items', bvRs_furnish: 'furniture', bvRs_slips: 'slips', bvRs_archive: 'archive',
   bvR_free: 'no rule', bvR_job: 'job loaded', bvR_gear: 'the jobs’ gear', bvR_unused: 'what is not used', bvR_craft: 'crafting', bvR_usable: 'consumables', bvR_mats: 'to sell and crafting materials', bvR_currency: 'currencies', bvR_keys: 'key items (upgrades, entries)', bvR_spare: 'lockstyle and overflow', bvR_furnish: 'furniture and storage', bvR_slips: 'slips', bvR_archive: 'archive',
@@ -77,7 +77,7 @@ function bvRows(B, sel, where){
 function bvFilter(rows){
   const q = bvNorm(S.bagQ || ''), cat = S.bagCat || 'all';
   const use = S.bagUse || 'all', nj = r => Object.keys(r.use.jobs).length;
-  const used = r => use === 'all' || (use === 'unk' ? bpCat(bvBags(), r) === 'unknown' : use === 'bad' ? r.bad.length > 0 : use === 'none' ? bvIsGear(r) && !nj(r) && !r.use.files.size : use === 'one' ? nj(r) === 1 : use === 'many' ? nj(r) > 1 : nj(r) > 0);
+  const used = r => use === 'all' || (use === 'unk' ? bpCat(bvBags(), r) === 'unknown' : use === 'bad' ? r.bad.length > 0 : use === 'lock' ? bvLockSets(r).length > 0 : use === 'none' ? bvIsGear(r) && !nj(r) && !r.use.files.size && !bvLockSets(r).length : use === 'one' ? nj(r) === 1 : use === 'many' ? nj(r) > 1 : nj(r) > 0);
   const pc = S.bagPc || '', B0 = pc ? bvBags() : null;
   return rows.filter(r => used(r) && (!pc || bpCat(B0, r) === pc) && (cat === 'all' || r.info.cat === cat) && (!S.bagDup || r.where.length > 1) && (!q || bvNorm(r.info.name + ' ' + (r.augs || []).join(' ')).includes(q)));
 }
@@ -91,7 +91,7 @@ function bvItemHTML(r, sel){
   const tip = [r.info.name + (r.n > 1 ? ' ×' + r.n : ''), r.augs ? r.augs.join(' · ') : '', r.where.map(w => w.bag + (w.slip ? ' (' + w.slip + ')' : '') + (w.n > 1 ? ' ×' + w.n : '')).join(', '), bvUseTip(r)].filter(Boolean).join('\n');
   const why = r.bad.map(x => x.bag + ' : ' + t(x.why)).join('\n') + (r.bad.length ? '\n' + t('bvGoes', {d: bpDest(bvBags(), r)}) : '');
   const cat = bpCat(bvBags(), r), mine = !!bpTags()[r.id];
-  return `<div class="bvitem ${r.where.length > 1 ? 'split' : ''} ${r.bad.length ? 'bad' : ''} ${(S._bagPick || new Set()).has(String(r.id)) ? 'picked' : ''} ${cat === 'unknown' ? 'unk' : ''}" data-bpick="${r.id}" title="${esc(tip + '\n' + t('bpCatTip', {c: bpCatName(cat), m: mine ? t('bpByYou') : ''}) + (cat === 'npc' && bpNpc(r.info.name) ? '\n' + t('bpNpcAt', {n: bpNpc(r.info.name)}) : '') + (why ? '\n⚠ ' + why : ''))}">${itemIco(r.info.name, r.id)}<b>${esc(r.info.name)}</b>${r.bad.length ? `<small class="bvx">${esc((sel === 'all' ? r.bad.map(x => bvShort(x.bag)).join(', ') + ' ' : '') + '→ ' + bpDest(bvBags(), r))}</small>` : ''}` +
+  return `<div class="bvitem ${r.where.length > 1 ? 'split' : ''} ${r.bad.length ? 'bad' : ''} ${(S._bagPick || new Set()).has(String(r.id)) ? 'picked' : ''} ${cat === 'unknown' ? 'unk' : ''}" data-bpick="${r.id}" title="${esc(tip + '\n' + t('bpCatTip', {c: bpCatName(cat), m: mine ? t('bpByYou') : ''}) + (cat === 'npc' && bpNpc(r.info.name) ? '\n' + t('bpNpcAt', {n: bpNpc(r.info.name)}) : '') + (bpLock()[r.id] ? '\n' + t('bpLockOf', {l: bpLock()[r.id].join(', ')}) : '') + (why ? '\n⚠ ' + why : ''))}">${itemIco(r.info.name, r.id)}<b>${esc(r.info.name)}</b>${r.bad.length ? `<small class="bvx">${esc((sel === 'all' ? r.bad.map(x => bvShort(x.bag)).join(', ') + ' ' : '') + '→ ' + bpDest(bvBags(), r))}</small>` : ''}` +
     `${r.augs ? `<small class="bva">${esc(r.augs.join(' · '))}</small>` : ''}${bvUseHTML(r)}${places}${r.n > 1 ? `<em>×${r.n}</em>` : ''}</div>`;
 }
 /* ---- who uses what ---- */
@@ -119,10 +119,14 @@ const bvUseOf = name => bvUsage().by[String(name).toLowerCase()] || {jobs: {}, f
 const bvIsGear = r => r.info.cat === 'Weapon' || r.info.cat === 'Armor';
 // What a row is used by, as small tags: the jobs (the one with the most sets first), then "settings" when a file names it
 function bvUseHTML(r){
-  const u = r.use, jobs = Object.entries(u.jobs).sort((a, b) => b[1] - a[1]);
-  if (!jobs.length && !u.files.size) return bvIsGear(r) ? `<small class="bvu none">${esc(t('bvNoSet'))}</small>` : '';
-  return `<small class="bvu">${jobs.slice(0, 4).map(([j]) => `<i>${j}</i>`).join('')}${jobs.length > 4 ? `<i class="more">+${jobs.length - 4}</i>` : ''}${u.files.size ? `<i class="cfg">${esc(t('bvCfg'))}</i>` : ''}</small>`;
+  const u = r.use, jobs = Object.entries(u.jobs).sort((a, b) => b[1] - a[1]), ls = bvLockSets(r);
+  const lock = ls.length ? `<i class="ls">${esc(t('bvLs', {l: ls.join(' ')}))}</i>` : '';
+  if (!jobs.length && !u.files.size && !lock) return bvIsGear(r) ? `<small class="bvu none">${esc(t('bvNoSet'))}</small>` : '';
+  const max = lock ? 3 : 4;
+  return `<small class="bvu">${lock}${jobs.slice(0, max).map(([j]) => `<i>${j}</i>`).join('')}${jobs.length > max ? `<i class="more">+${jobs.length - max}</i>` : ''}${u.files.size ? `<i class="cfg">${esc(t('bvCfg'))}</i>` : ''}</small>`;
 }
+// The numbers of the lockstyle sets a piece is in (bags_plan.js bpLock: '4 (WAR)' -> '4')
+const bvLockSets = r => (bpLock()[r.id] || []).map(s => s.split(' ')[0]);
 const bvUseTip = r => { const u = r.use, jobs = Object.entries(u.jobs).sort((a, b) => b[1] - a[1]);
   return [jobs.length ? t('bvUsedBy', {l: jobs.map(([j, n]) => j + ' (' + n + ')').join(', ')}) : bvIsGear(r) ? t('bvNoSetTip') : '', u.files.size ? t('bvCfgTip', {l: [...u.files].join(', ')}) : ''].filter(Boolean).join('\n'); };
 /* ---- what each bag is for, and what is not where it should be ---- */
@@ -155,7 +159,7 @@ function bvWrong(r, bagName, role){
   // a piece a set wears can only be put on from the inventory or a wardrobe: nowhere else, unless a copy is there
   // (the Porter Moogle is a storage the player chose: what waits there for its job is where it should be)
   if (gear && sets && !bvEquips(bagName) && bagName !== 'Porter Moogle' && !r.where.some(w => bvEquips(w.bag))) return 'bvW_far';
-  if (role === 'job' || role === 'gear') return !gear ? 'bvW_type' : !sets && !named ? 'bvW_unused' : '';
+  if (role === 'job' || role === 'gear') return !gear ? 'bvW_type' : !sets && !named && !bvLockSets(r).length ? 'bvW_unused' : '';
   if (role === 'unused') return gear && sets ? 'bvW_used' : '';
   if (role === 'usable') return bpCat(bvBags(), r) !== 'usable' ? 'bvW_type' : '';
   if (role === 'mats') return gear ? 'bvW_type' : '';
@@ -217,7 +221,7 @@ function renderBags(){
   const have = new Set(Object.values(B.items).map(i => i.cat)), cats = ['all', ...BV_CATS.filter(c => have.has(c)), ...[...have].filter(c => !BV_CATS.includes(c))];
   const filters = `<div class="bvbar2"><input id="bagq" class="tgq" type="search" value="${esc(S.bagQ || '')}" placeholder="${esc(t('bvSearch'))}" autocomplete="off">` +
     `<span class="modseg">${cats.map(c => `<button data-bagcat="${esc(c)}" aria-pressed="${(S.bagCat || 'all') === c}">${esc(c === 'all' ? t('bvCatAll') : bvCatName(c))}</button>`).join('')}</span>` +
-    `<span class="modseg bvuse" title="${esc(t('bvUseTip', {j: bvUsage().jobs.join(' ') || '—'}))}">${[['all', 'bvUseAll'], ['unk', 'bpUnk'], ['bad', 'bvUseBad'], ['none', 'bvUseNone'], ['one', 'bvUseOne'], ['many', 'bvUseMany']].map(([v, k]) =>
+    `<span class="modseg bvuse" title="${esc(t('bvUseTip', {j: bvUsage().jobs.join(' ') || '—'}))}">${[['all', 'bvUseAll'], ['unk', 'bpUnk'], ['bad', 'bvUseBad'], ['lock', 'bvUseLock'], ['none', 'bvUseNone'], ['one', 'bvUseOne'], ['many', 'bvUseMany']].map(([v, k]) =>
       `<button data-baguse="${v}" aria-pressed="${(S.bagUse || 'all') === v}">${esc(t(k))}</button>`).join('')}</span>` +
     `<label class="bvpick" title="${esc(t('bpPcTip'))}">${esc(t('bpPc'))}<select data-bagpc><option value="">${esc(t('bvCatAll'))}</option>${[...BP_CATS, 'unknown'].map(c => `<option value="${c}" ${S.bagPc === c ? 'selected' : ''}>${esc(bpCatName(c))}</option>`).join('')}</select></label>` +
     `<button class="modsw" role="switch" aria-checked="${!!S.bagDup}" data-bagdup title="${esc(t('bvDupTip'))}"><span class="sw ${S.bagDup ? 'on' : ''}" aria-hidden="true"></span><b>${esc(t('bvDup'))}</b></button></div>`;

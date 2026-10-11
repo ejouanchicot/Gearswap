@@ -288,6 +288,9 @@ function AtelierExport.build()
     -- shows and misses, a few at a time (atelier_live.lua)
     local ok_b, bags = pcall(require('shared/utils/atelier/atelier_export_bags').collect, ExportChar.augments)
     data.bags = ok_b and bags or nil
+    -- the pieces of each lockstyle set seen so far (shared/utils/lockstyle/lockstyle_pieces.lua)
+    local ok_l, lock = pcall(function() return require('shared/utils/lockstyle/lockstyle_pieces').read() end)
+    data.lock_pieces = (ok_l and type(lock) == 'table' and next(lock)) and lock or nil
     data.wskill = collect_weapon_skills(data.icons)
     data.ws_by_weapon = collect_ws_by_weapon(player.main_job)
     -- each weaponskill's combat skill and what it uses (shared/utils/atelier/atelier_ws.lua)
