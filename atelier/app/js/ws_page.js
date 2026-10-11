@@ -139,20 +139,8 @@ function wsHeadHTML(card, ci, vi, s){
   if (!wsOfSet(s)) return `<p class="muted small wsbase">${t('wsBaseNote')}</p>`;
   // a job with a stance or a switch on its weapons keeps the full weapon picker, under the lines
   const weapon = wsWeaponLine(s, line), inGrid = weapon.startsWith('<div class="wsline"');
-  return `<div class="wshead">${wsPickLines(card, ci, vi, line)}${inGrid ? weapon : ''}${wsTpLine(s, line)}</div>${inGrid ? '' : weapon}`;
-}
-// The shown weaponskill's versions (Full = the set, Group, Solo...); the weaponskills themselves are in the set list
-function wsPickLines(card, ci, vi, line){
-  const list = [...variantGroups(card).groups.values()];
-  const cur = list.find(g => g.main === vi || g.subs.some(x => x.i === vi)) || list[0];
-  if (!cur) return '';
-  const btn = (i, label) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}">${esc(label)}</button>`;
-  let out = '';
-  if (cur.subs.length) {
-    const tiers = cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
-    out += line(t('verLbl'), (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join(''), t('verTip'), 'ver');
-  }
-  return out;
+  // its versions are under the set's title (sets_view.js setVersionsHTML)
+  return `<div class="wshead">${inGrid ? weapon : ''}${wsTpLine(s, line)}</div>${inGrid ? '' : weapon}`;
 }
 const itemOf = name => (window.FFXI && FFXI.opt && FFXI.opt.item && name) ? FFXI.opt.item(name) : null;
 // Your weapons that can open a weaponskill: its skill, and the weapon itself for a relic or prime one

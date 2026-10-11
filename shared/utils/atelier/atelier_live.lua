@@ -11,8 +11,9 @@
 ---   GET  /export               the loaded job's data (AtelierExport.build)
 ---   GET  /measure              the character's stats, gear and buffs at the last status packet
 ---                              (AtelierExport.measure): fetched when /ping's `stat` count moves
----   POST /save?file=<name>     writes <Char>/atelier/overrides/<name>: keybind_overrides.lua
----                              or set_overrides.lua only
+---   POST /save?file=<name>     writes <Char>/atelier/overrides/<name>: keybind_overrides.lua,
+---                              set_overrides.lua or list_layout.js (how the page's list of sets is
+---                              arranged) only
 ---   GET  /actions              the job's spells, abilities and weapon skills
 ---   GET  /sim_buffs            the buffs the job's code reads (Simulate's buff choices)
 ---   POST /icons?ids=1,2,3      writes the icons of those items the page lacks (pieces you
@@ -49,7 +50,7 @@
 local AtelierLive = {}
 
 local FIRST_PORT, PORT_TRIES = 52740, 8
-local SAVED_FILES = {['keybind_overrides.lua'] = true, ['set_overrides.lua'] = true}
+local SAVED_FILES = {['keybind_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true}
 local MAX_BODY = 2 * 1024 * 1024
 local POLL_EVERY = 6   -- frames between two looks at the door
 

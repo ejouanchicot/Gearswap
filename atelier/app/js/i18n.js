@@ -17,7 +17,7 @@ const T = {
     fromWorn:'Capture de l\'équipement porté', fromWornD:'Ce que tu portes en jeu devient le set', catalog:'Dans la version finale : les noms que le code du job lit, avec ceux qui manquent.',
     source:{job:'{J}_KEYBINDS', common:'COMMON_KEYBINDS', custom:'{J}_CUSTOM', combat:'combat_mode', treasure:'treasure_mode'},
     keyGroups:{job:'Touches du job', common:'Tous les jobs', custom:'Tes modes perso', combat:'Combat Mode', treasure:'Treasure Mode', mote:'Touches de Mote (tous les jobs)', temp:'Touches temporaires (//gs c tb)'},
-    fam:{idle:'Au repos',engaged:'En combat',fc:'Fast Cast',ws:'Weaponskills',ja:'Abilities',midcast:'Sorts & chansons',enmity:'Enmity',cure:'Cure',xp:'XP',pet:'Familier',special:'Buffs & spéciaux',weapons:'Armes',other:'Autres'},
+    fam:{idle:'Idle',engaged:'Engaged',fc:'Fast Cast',ws:'Weaponskills',ja:'Abilities',midcast:'Midcast',enmity:'Enmity',cure:'Cure',xp:'XP',pet:'Pet',special:'Buffs & special',weapons:'Weapons',other:'Other'},
     famWhen:{idle:'Quand tu ne combats pas.',engaged:'Quand tu es engagé.',fc:'Au début de chaque sort, pour le lancer plus vite.',ws:'Sur tes weaponskills.',ja:'Quand tu utilises une ability.',
       midcast:'Au moment où le sort se pose.',enmity:'Pour l’inimitié : les JA, Flash, les sorts d’aggro.',cure:'Tes Cures : le sort sur toi ou sur un autre, et la base dont ils héritent.',xp:'Posés par-dessus le repos et le combat quand le mode Xp est sur On.',pet:'Ce que porte le perso pour son familier.',special:'Posé par-dessus le reste dans certaines situations.',weapons:'Les armes choisies par tes modes d\'arme.',other:''},
     roles:{tank:'Tank',healer:'Soigneur',support:'Soutien',dd:'Dégâts'}},
@@ -37,7 +37,7 @@ const T = {
     fromWorn:'Capture what you wear', fromWornD:'Your in-game gear becomes the set', catalog:'In the real tool: the names the job code reads, missing ones included.',
     source:{job:'{J}_KEYBINDS', common:'COMMON_KEYBINDS', custom:'{J}_CUSTOM', combat:'combat_mode', treasure:'treasure_mode'},
     keyGroups:{job:'Job keys', common:'Every job', custom:'Your own modes', combat:'Combat Mode', treasure:'Treasure Mode', mote:'Mote keys (every job)', temp:'Temporary keys (//gs c tb)'},
-    fam:{idle:'Idle',engaged:'Engaged',fc:'Fast Cast',ws:'Weaponskills',ja:'Abilities',midcast:'Spells & songs',enmity:'Enmity',cure:'Cure',xp:'XP',pet:'Pet',special:'Buffs & special',weapons:'Weapons',other:'Other'},
+    fam:{idle:'Idle',engaged:'Engaged',fc:'Fast Cast',ws:'Weaponskills',ja:'Abilities',midcast:'Midcast',enmity:'Enmity',cure:'Cure',xp:'XP',pet:'Pet',special:'Buffs & special',weapons:'Weapons',other:'Other'},
     famWhen:{idle:'When you are not fighting.',engaged:'When you are engaged.',fc:'At the start of each spell, to cast faster.',ws:'On your weaponskills.',ja:'When you use a job ability.',
       midcast:'When the spell lands.',enmity:'For enmity: job abilities, Flash, the aggro spells.',cure:'Your Cures: the spell on you or on someone else, and the base they inherit from.',xp:'Layered over idle and engaged when the Xp mode is On.',pet:'What you wear for your pet.',special:'Layered on top in some situations.',weapons:'Weapons picked by your weapon modes.',other:''},
     roles:{tank:'Tank',healer:'Healer',support:'Support',dd:'Damage'}}

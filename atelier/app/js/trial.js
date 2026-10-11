@@ -22,8 +22,13 @@ function setTrial(s, slot, piece){
 }
 // The same set without the tried pieces (what the differences compare to)
 function withoutTrial(fn){ S._noTrial = true; try { return fn(); } finally { S._noTrial = false; } }
+// In the three-column page the bar keeps its place when nothing is tried (a line that says how to try a piece): the
+// gear under it does not move when a first piece is tried
+Object.assign(T.fr, {tryIdle: 'Rien à l’essai. Clique une pièce pour en essayer une autre : les écarts et le bouton pour l’écrire dans ton fichier viendront ici.'});
+Object.assign(T.en, {tryIdle: 'Nothing on trial. Click a piece to try another one: the differences and the button that writes it to your file will come here.'});
 function trialBar(s){
   const row = trialRow(s);
+  if (!row && ui2() && !baseOnly(s)) return `<div class="trybar idle"><p class="tryline muted">${esc(t('tryIdle'))}</p></div>`;
   return row ? `<div class="trybar">${row}</div>` : '';
 }
 // The pieces tried on a set (by hand or by the optimizer): what they change, then what to do with them

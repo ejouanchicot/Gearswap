@@ -155,6 +155,7 @@ local LEGACY_DEFAULT = {
 local ATELIER = {
     ['set_overrides.lua'] = 'atelier/overrides/set_overrides.lua',
     ['keybind_overrides.lua'] = 'atelier/overrides/keybind_overrides.lua',
+    ['list_layout.js'] = 'atelier/overrides/list_layout.js',
     ['set_push_history.lua'] = 'atelier/history.lua',
     ['atelier.on'] = 'atelier/export.on',
     ['atelier_live.off'] = 'atelier/live.off',

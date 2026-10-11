@@ -52,7 +52,7 @@ function renderSide(){
     '<svg width="20" height="20" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg>'}</span>` +
     `<span class="who"><b>${esc(S.char)}</b><span class="plates">${jobSel}${d ? subPicker() : ''}</span></span></div>` : '';
   const gear = `<button class="live act ${S._cfg ? 'mid' : ''}" data-config title="${esc(t('cfgOpen'))}">⚙<span class="lbl"> ${esc(t('cfgOpen'))}</span></button>`;
-  patchInto($('#top'), `${brand}${hero}<span class="tsep"></span>${grp(t('grpChar'), chars)}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${grp(t('grpFiles'), refreshBadge())}${grp('GearSwap', liveBadge())}${grp(t('grpPage'), gear)}`);
+  patchInto($('#top'), `${brand}${hero}<span class="tsep"></span>${grp(t('grpChar'), chars)}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${grp(t('grpFiles'), refreshBadge() + historyBadge())}${grp('GearSwap', liveBadge())}${grp(t('grpPage'), gear)}`);
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
 function renderHome(){
@@ -159,21 +159,39 @@ function familyNote(s){
   return '';
 }
 // The note's room is kept on every variant of a card that has one: switching variants moves nothing
+// The title of every set, one shape whatever its content so nothing under it moves from a set to the next: the name
+// on a line, what it is on the next (when it is worn, or a weaponskill's facts), its path on the third; each line
+// keeps its height and cuts what is too long (the whole text in its tooltip); the actions at the right
+function setTitleBox(kicker, name, what, whatTip, path, acts){
+  return `<div class="settitle"><div class="stmain"><div class="stname">${kicker ? `<span class="kicker">${esc(kicker)}</span>` : ''}<h2>${name}</h2></div>` +
+    `<div class="stwhat" ${whatTip ? `title="${esc(whatTip)}"` : ''}>${what}</div><code class="path wspath">${esc(path)}</code></div>${acts}</div>`;
+}
 // The title of a weaponskill set: its weapon, its name and version, what it uses (type, attributes, hits,
 // fTP by TP, critical hits, fTP on every hit: the weaponskill database, exported as ws_info), the set's path
 function wsTitleHTML(s, acts = ''){
   const ws = wsOfSet(s);
   // the common set is one of the job's base sets: never deleted from the page (set_push.lua PROTECTED)
-  if (!ws) return `<div class="settitle"><span class="kicker">${t('wsKick')}</span><h2>${t('wsCommon')}</h2><code class="path wspath">${esc(s.path)}</code>${acts}</div>`;
+  if (!ws) return setTitleBox(t('wsKick'), esc(t('wsCommon')), '', '', s.path, acts);
   const info = wsInfoOf(ws), version = segs(s.path).slice(segs(s.path).lastIndexOf(ws) + 1).join(' · ');
   const n = v => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: 1, maximumFractionDigits: 3});
   const mods = typeof info.mods === 'string' ? [info.mods] : Object.entries(info.mods || {}).map(([k, v]) => `${v} % ${k}`);
   const ftp = info.ftp && info.ftp['1000'] != null ? 'fTP ' + ['1000', '2000', '3000'].map(k => info.ftp[k] != null ? n(info.ftp[k]) : '—').join(' / ') : '';
   const facts = [info.type ? t('wsType_' + info.type) : '', mods.join(' + '), info.hits ? t(info.hits > 1 ? 'wsHitN' : 'wsHit1', {n: info.hits}) : '', ftp,
     info.crit ? t('wsCritTag') : '', info.replicating ? t('wsReplTag') : '', info.element ? info.element : ''].filter(Boolean);
-  return `<div class="settitle"><span class="kicker">${esc((wsSkills()[ws] || '') + ' · ' + t('wsKickOne'))}</span>` +
-    `<h2>${esc(ws)}${version ? ` <span class="wsver">· ${esc(version)}</span>` : ''}</h2>` +
-    (facts.length ? `<span class="wsfacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</span>` : '') + `<code class="path wspath">${esc(s.path)}</code>${acts}</div>`;
+  return setTitleBox((wsSkills()[ws] || '') + ' · ' + t('wsKickOne'), esc(ws) + (version ? ` <span class="wsver">· ${esc(version)}</span>` : ''),
+    facts.length ? `<span class="wsfacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</span>` : '', facts.join(' · '), s.path, acts);
+}
+// The versions of the set shown (Full = the set itself, Group, Solo, Trust, or its other variants), right under its
+// title as one row of buttons: the list of sets has one line a set, its versions are chosen here. The row keeps its
+// place when the set has no version (nothing under it moves from a set to the next)
+function setVersionsHTML(card, ci, vi){
+  const groups = [...variantGroups(card).groups.values()];
+  const cur = groups.find(g => g.main === vi || g.subs.some(x => x.i === vi)) || (card.fam === 'ws' ? groups[0] : null);
+  if (!cur || !cur.subs.length) return `<div class="setvers none"></div>`;
+  const tiers = cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
+  const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}">${esc(txt)}</button>`;
+  return `<div class="setvers" title="${esc(tiers ? t('verTip') : '')}"><span class="kicker">${esc(t('verLbl'))}</span><div class="verseg" role="group">` +
+    (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join('') + `</div></div>`;
 }
 // The top of a set other than a weaponskill's: what it is on the left (its family, when it is worn, its
 // name and variant, its path), its variants and the weapons it is shown with on the right
@@ -181,25 +199,16 @@ function setHeadHTML(card, ci, vi, s, acts){
   const when = t('famWhen.' + card.fam), label = card.variants[vi].label;
   const fam = t('fam.' + card.fam), name = niceName(card);
   // what the set is, on the whole width in one or two lines: its family, name and variant, when it is worn, its path
-  const title = `<div class="settitle">${fam !== name ? `<span class="kicker">${esc(fam)}</span>` : ''}<h2>${esc(name)}` +
-    `${label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : ''}</h2>` +
-    (when ? `<span class="muted small setwhen">${esc(when)}</span>` : '') + `<code class="path wspath">${esc(s.path)}</code>${acts}</div>` + familyNoteHTML(card, s);
-  const line = (lbl, body) => `<div class="wsline"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
-  // the weapons' menus side by side under the variants, a label over each
+  const title = setTitleBox(fam !== name ? fam : '', esc(name) + (label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : ''),
+    when ? `<span class="muted small setwhen">${esc(when)}</span>` : '', when, s.path, acts);
+  // the weapons' menus side by side under the versions, a label over each
   const pick = (lbl, body) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
-  const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}">${esc(txt)}</button>`;
-  const groups = [...variantGroups(card).groups.values()];
-  const cur = groups.find(g => g.main === vi || g.subs.some(x => x.i === vi));
-  // the set's own versions only (Full / Group / Solo, .Acc...): the other sets of its family are in the set list
-  let ctl = '';
-  const tiers = cur && cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
-  if (cur && cur.subs.length) ctl += line(t('subVarLbl'), (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join(''));
   const menus = weaponMenus(s);
   // the weapon states as in game, then what the job's GearSwap puts with them (off hand, ammo)
   const picks = (menus ? menus.map(([name, sel, desc]) => pick(name, sel).replace('<span class="wslbl">', `<span class="wslbl" title="${esc(desc || '')}">`)).join('') : '') +
     (family(s.path, s.pieces) !== 'weapons' ? weaponResultLines(s, pick) : '');
-  const bar = ctl || picks ? `<div class="setctl">${ctl ? `<div class="wshead">${ctl}</div>` : ''}${picks ? `<div class="wpicks">${picks}</div>` : ''}</div>` : '';
-  return `<div class="settop">${title}${bar}</div>`;
+  const bar = `<div class="setctl"><div class="wpicks">${picks}</div></div>`;
+  return `<div class="settop">${title}${setVersionsHTML(card, ci, vi)}${bar}</div>`;
 }
 function familyNoteHTML(card, s){
   if (!card.variants.some(v => familyNote(v.set))) return '';
@@ -233,11 +242,14 @@ function cardHTML(card, ci, bypath, q){
   if (optable && optPageOpen(s)) return optPageHTML(s, ws && wsOfSet(s));
   // its actions on the title line: the optimizer, then deleting it
   const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview>${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;
-  const top = ws ? `<div class="settop">${wsTitleHTML(s, acts)}${familyNoteHTML(card, s)}` +
+  const top = ws ? `<div class="settop">${wsTitleHTML(s, acts)}${wsOfSet(s) ? setVersionsHTML(card, ci, vi) : '<div class="setvers none"></div>'}` +
       (wsOfSet(s) ? `<div class="setctl">${wsHeadHTML(card, ci, vi, s)}</div>` : '') + `</div>`
-    : setHeadHTML(card, ci, vi, s, acts) + (locked ? `<p class="famnote">${esc(t('baseOnly', {l: data().sets.filter(x => x.base === s.path).map(x => shortPath(x.path)).join(', ')}))}</p>` : '');
+    : setHeadHTML(card, ci, vi, s, acts);
+  // a family's note and a base set's go under the gear, where nothing is left to push down (over it, the gear moved
+  // from a set with a note to one without)
+  const notes = familyNoteHTML(card, s) + (locked && !ws ? `<p class="famnote">${esc(t('baseOnly', {l: data().sets.filter(x => x.base === s.path).map(x => shortPath(x.path)).join(', ')}))}</p>` : '');
   return `<article class="detail"><header>${top}${trialBar(s)}</header>
-    <div class="dbody"><div class="eqcol"><div class="slotcol"><div class="slots">${slots}</div>${equipBtnHTML()}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${ui2() ? ui2Wants(s) : ''}${legend}</div>${ui2() ? '' : setStatsHTML(s)}</div>
+    <div class="dbody"><div class="eqcol"><div class="slotcol"><div class="slots">${slots}</div>${equipBtnHTML()}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${ui2() ? ui2Wants(s) : ''}${legend}${notes}</div>${ui2() ? '' : setStatsHTML(s)}</div>
     <div class="globals-inline">${(S._globals = {s, html: ui2() ? setPanelHTML(s) : globalsHTML(s)}).html}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
@@ -246,19 +258,34 @@ const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 function subWarnHTML(){
   const L = (S._live || {})[S.char], d = data();
   if (!L || !L.ok || L.job !== S.job || !d || !L.sub || L.sub === 'NONE' || L.sub === d.sub) return '';
-  return `<p class="kwarn subwarn">${esc(t('subWarn', {g: L.job + '/' + L.sub, p: S.job + '/' + d.sub}))} <button class="btn" data-subfix="${esc(L.sub)}">${esc(t('subFix', {s: L.sub}))}</button></p>`;
+  const text = t('subWarn', {g: L.job + '/' + L.sub, p: S.job + '/' + d.sub});
+  return `<p class="kwarn subwarn"><span title="${esc(text)}">${esc(text)}</span> <button class="btn" data-subfix="${esc(L.sub)}">${esc(t('subFix', {s: L.sub}))}</button></p>`;
 }
 function renderSets(d){
   const {aside, cards, sel, bypath, vis, q} = setListHTML(d);
-  return `${subWarnHTML()}${ui2() ? ui2CtxBar() : ''}<div class="setsx ${ui2() ? 'ui2' : ''}">${aside}` +
+  return `${ui2() ? ui2CtxBar(subWarnHTML()) : subWarnHTML()}<div class="setsx ${ui2() ? 'ui2' : ''}" ${S.listW ? `style="--listw:${+S.listW}px"` : ''}>${aside}` +
     `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : ui2() ? setPanelHTML(sv) : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
 }
+// A version of a set for a party: the label of a variant against its set's ("Laphria · Group" against "Laphria",
+// "Trust" against the family's own set, "Base"); null for anything else
+const TIER_LABELS = ['Group', 'Solo', 'Trust'];
+function tierLabel(label, head){
+  const rest = head === 'Base' ? label : label.startsWith(head + ' · ') ? label.slice(head.length + 3) : '';
+  return TIER_LABELS.includes(rest) ? rest : null;
+}
+Object.assign(T.fr, {rowTry: 'Des pièces sont à l’essai dans ce set', rowVoid: 'vide', listPaths: 'Chemins', openShort: 'Déplier', closeShort: 'Replier', listPathsTip: 'Montre sous chaque set son nom dans ton fichier (sets.engaged.Laphria…)', searchShort: 'Chercher…'});
+Object.assign(T.en, {rowTry: 'Pieces are on trial in this set', rowVoid: 'empty', listPaths: 'Paths', openShort: 'Open', closeShort: 'Close', listPathsTip: 'Shows under each set its name in your file (sets.engaged.Laphria…)', searchShort: 'Search…'});
 // The list of the job's sets by family, with its search (the Sets tab's left column, and the Combat and Mon perso
 // tabs' in the new layout): picks the set shown and returns the column with what the tab needs to draw the set
 function setListHTML(d){
   const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
   const q = S.q.trim().toLowerCase();
-  const vis = cards.map((c,i) => i).filter(i => cardMatch(cards[i], q)); S._vis = vis;
+  // only the sets the job can use with the subjob shown (job_access.js); the others are counted under the list and
+  // come back on a click, or for a search that names them
+  const usable = cards.map(c => cardUsable(c)), showAll = !!S._listAll || !!q;
+  const prefs = listPrefs();
+  const vis = cards.map((c,i) => i).filter(i => cardMatch(cards[i], q) && (showAll || usable[i]) && (!!q || !prefs.hide.includes(cards[i].fam))); S._vis = vis;
+  const hidden = cards.reduce((n, c, i) => n + (usable[i] ? 0 : c.variants.length), 0);
   const want = S.selPath[S.job];
   const found = S.char + '|' + S.job + '|' + ((data() || {}).sub || '') + '|';
   if (want && S._found !== found + want) {
@@ -291,23 +318,58 @@ function setListHTML(d){
 
   for (const i of vis) { const c = cards[i];
     if (c.fam !== fam) { if (fam) list += crossOf(fam); fam = c.fam;
-      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.length, 0);
-      list += `<button class="fam ${cards[sel] && cards[sel].fam === fam ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${famOpen(fam, q)}"><span>${t('fam.'+fam)}</span><span>${n}</span></button>`; }
+      // the sets of the category (a set and its Group, Solo and Trust versions are one)
+      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.filter(v => !cards[k].variants.some(o => o !== v && tierLabel(v.label, o.label))).length, 0);
+      list += listFamHead(fam, n, cards[sel] && cards[sel].fam === fam, famOpen(fam, q)); }
     // a category is closed until opened (a search opens them all)
     if (!famOpen(c.fam, q)) continue;
+    const nameOf = (v, k) => k === 0 ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : v.label;
+    // what a row says beside the name: pieces on trial in it, or a set written with no piece yet; its path is in
+    // its tooltip, and under the name when the list is asked to show the paths (S.listPaths)
+    const marks = v => listMarks(v.set);
+    const pathLine = v => S.listPaths ? `<code>${esc(v.set.path)}</code>` : '';
+    // its names folded under it: a line to open them (a search opens them)
+    const aliasFold = (v, k) => {
+      const mine = aliases.filter(a => a.i === i && a.k === k);
+      if (!mine.length) return;
+      const key = S.job + '|' + v.set.path, open = !!q || !!(S._aliasOpen || {})[key];
+      list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
+        (open ? mine.map(aliasBtn).join('') : '');
+    };
     const row = (v, k) => {
       if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
-      const cur = i === sel && k === vi(i), main = k === 0;
+      const cur = i === sel && k === vi(i);
       rows.push([i, k]);
-      list += `<button class="setrow ${main ? '' : 'var'}" data-pick="${i}" data-vpick="${k}" aria-current="${cur}">` +
-        `<b>${main ? esc(niceName(c)) + (v.label !== 'Base' ? ` · ${esc(v.label)}` : '') : esc(v.label)}</b><code>${esc(v.set.path)}</code></button>`;
-      // its names folded under it: a line to open them (a search opens them)
-      const mine = aliases.filter(a => a.i === i && a.k === k);
-      if (mine.length) { const key = S.job + '|' + v.set.path, open = !!q || !!(S._aliasOpen || {})[key];
-        list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
-          (open ? mine.map(aliasBtn).join('') : ''); }
+      list += `<div class="setrow ${k === 0 ? '' : 'var'} ${usable[i] ? '' : 'nouse'}" aria-current="${cur}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(v.set.path)}">` +
+        `<b>${esc(nameOf(v, k))}</b></button><span class="rowmarks">${marks(v)}${listRowActs(v.set.path)}</span>${pathLine(v)}</div>${listGroupPicker(v.set.path)}`;
+      aliasFold(v, k);
     };
-    if (c.fam !== 'ws') { c.variants.forEach(row); list += crossUnder(i); continue; }
+    // A set and its versions for a party (Group, Solo, Trust) are ONE row, the set's name alone: the versions are
+    // chosen in the set's head (its "Full / Group / Solo / Trust" buttons), not in the list, which only says which
+    // one is shown. The row opens the version shown, else the one of the party every figure is worked out with (the
+    // Solo version while the page computes "Solo"), else the set itself
+    const tierRow = (v, k, tiers) => {
+      const all = [[v, k, 'Full']].concat(tiers), on = all.find(x => i === sel && x[1] === vi(i));
+      const go = on || all.find(x => x[2] === buffTier()) || all[0], path = go[0].set.path;
+      rows.push([i, go[1]]);
+      const tried = all.some(x => trialCount(x[0].set)) && !trialCount(go[0].set) ? `<i class="rowtry" title="${esc(t('rowTry'))}"></i>` : '';
+      list += `<div class="setrow ${k === 0 ? '' : 'var'}" aria-current="${!!on}"><button class="tname" data-pick="${i}" data-vpick="${go[1]}" ` +
+        `title="${esc(path + '  ·  ' + all.map(x => x[2]).join(' / '))}"><b>${esc(nameOf(v, k))}</b></button>` +
+        `<span class="rowmarks">${on && on[2] !== 'Full' ? `<small class="rowver">${esc(on[2])}</small>` : ''}${tried}${marks(go[0])}${listRowActs(path)}</span>${pathLine(go[0])}</div>${listGroupPicker(path)}`;
+      all.forEach(x => aliasFold(x[0], x[1]));
+    };
+    // the rows of a list of variants ([variant, its rank]); a search shows each version on its own line
+    const emit = items => {
+      const used = new Set();
+      items.forEach(([v, k], n) => {
+        if (used.has(k)) return;
+        const tiers = q ? [] : items.filter(([o, ok], m) => m !== n && !used.has(ok) && tierLabel(o.label, v.label)).map(([o, ok]) => [o, ok, tierLabel(o.label, v.label)]);
+        if (!tiers.length) return row(v, k);
+        tiers.forEach(x => used.add(x[1]));
+        tierRow(v, k, tiers);
+      });
+    };
+    if (c.fam !== 'ws') { emit(c.variants.map((v, k) => [v, k])); list += crossUnder(i); continue; }
     // weaponskills: the common set, then one folding group a weapon (closed until opened, a search opens them)
     row(c.variants[0], 0);
     const bySkill = new Map();
@@ -316,18 +378,25 @@ function setListHTML(d){
     for (const [sk, items] of [...bySkill].sort((a, b) => a[0].localeCompare(b[0]))) {
       const open = !!q || !!(S._wsList || {})[S.job + '|' + sk], here = i === sel && items.some(([, k]) => k === vi(i));
       list += `<button class="wskill ${here ? 'here' : ''}" data-wskill="${esc(sk)}" aria-expanded="${open}"><span>${esc(sk)}</span><span>${items.length}</span></button>`;
-      if (open) items.forEach(([v, k]) => row(v, k));
+      if (open) emit(items);
     }
   }
   if (fam) list += crossOf(fam);
   if (!vis.length) list = `<p class="empty-list">${t('noMatch')}</p>`;
+  if (hidden && !q) { const who = S.job + '/' + ((data() || {}).sub || '?');
+    list += `<p class="acchid" title="${esc(t('accTip', {m: S.job, s: (data() || {}).sub || '?'}))}">${esc(t('accHidden', {n: hidden, j: who}))} ` +
+      `<button class="linkbtn" data-listall>${esc(t(S._listAll ? 'accHide' : 'accShow'))}</button></p>`; }
   S._fams = [...new Set(vis.map(i => cards[i].fam))];
   // open or close every category at once
-  const tools = vis.length && !q ? `<div class="listtools"><button class="linkbtn" data-famall="1">${t('openAll')}</button>` +
-    `<span>·</span><button class="linkbtn" data-famall="0">${t('closeAll')}</button>` +
-    `<span>·</span><button class="linkbtn" data-pushhist>${t('histBtn')}</button></div>` : '';
-  const aside = `<aside class="setlist"><div class="search"><input id="setq" type="search" placeholder="${t('search')}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
-    `<button class="btn ghost" data-action="add" title="${t('add')}">${t('addShort')}</button></div>${tools}<div class="scroll">${list}</div><div class="hint">${t('navHint')}</div></aside>`;
+  // the player's own sections first (pinned sets, groups: list_prefs.js), each set as one plain row
+  const where = {};
+  cards.forEach((c, i) => c.variants.forEach((v, k) => { where[v.set.path] = [i, k]; }));
+  const ownRow = (path, group) => { const [i, k] = where[path], c = cards[i], v = c.variants[k], cur = i === sel && k === vi(i);
+    return `<div class="setrow own" aria-current="${cur}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(path)}">` +
+      `<b>${esc(niceName(c) + (v.label !== 'Base' ? ' · ' + v.label : ''))}</b></button><span class="rowmarks">${listMarks(v.set)}${listRowActs(path, group)}</span>` +
+      `${S.listPaths ? `<code>${esc(path)}</code>` : ''}</div>`; };
+  const own = q ? '' : listOwnSections(ownRow, new Set(Object.keys(where)), q);
+  const aside = `<aside class="setlist">${listHeadHTML(q)}<div class="scroll">${own}${list}</div><i class="listgrip" title="${esc(t('lpResize'))}"></i></aside>`;
   return {aside, cards, sel, bypath, vis, q};
 }
 // The variant of a card shown in its detail
@@ -474,8 +543,27 @@ function render(){
   if (id) { const el = document.getElementById(id); if (el) { el.focus(); if (pos != null && el.setSelectionRange) el.setSelectionRange(pos, pos); } }
   if (S._buffDlg && !$('#overlay').hidden && $('.buffdlg')) openBuffs();
   if (S._tgtDlg && !$('#overlay').hidden && $('.tgtdlg')) openTarget();
+  shapeKeep();
   motionAfter();
   guideAfter();
+}
+// A block whose size follows its content (the set's own figures: an attack block, a tank's defense block, both) is
+// given the tallest size it ever had for this character and job at this width: after the tallest set was seen once,
+// nothing under it moves again, in this visit and the next ones (S.shapes, kept in the browser)
+const SHAPES = {own: '.globalcol .ui2own', top: '.setsx.ui2 .detail > header:not(.ophead) > .settop'};
+function shapeKeep(){
+  S.shapes = S.shapes || {};
+  let learnt = false;
+  for (const [key, q] of Object.entries(SHAPES)) {
+    const el = $(q);
+    if (!el || !el.clientWidth) continue;
+    const k = [S.char, S.job, key, Math.round(el.clientWidth / 40)].join('|');
+    el.style.minHeight = '';
+    const h = Math.ceil(el.getBoundingClientRect().height);
+    if (h > (S.shapes[k] || 0)) { S.shapes[k] = h; learnt = true; }
+    el.style.minHeight = S.shapes[k] + 'px';
+  }
+  if (learnt) save();
 }
 
 // After a reload of the page (F5): back where it was, whatever the tab: Settings open if it was, the folded blocks
@@ -554,9 +642,10 @@ function buildCards(d){
 }
 function niceName(card){
   const n = card.name;
-  const map = {idle:{fr:'Au repos',en:'Idle'}, engaged:{fr:'En combat',en:'Engaged'}, FC:{fr:'Fast Cast',en:'Fast Cast'}, WS:{fr:'Weaponskills',en:'Weaponskills'},
-    MoveSpeed:{fr:'Vitesse de course',en:'Movement speed'}, Doom:{fr:'Doom',en:'Doom'}, TreasureHunter:{fr:'Treasure Hunter',en:'Treasure Hunter'}};
-  return (map[n] && map[n][S.lang]) || n;
+  // the game's and GearSwap's own words in every language (a category or a set is not translated: the player reads
+  // "engaged" in the file and in every guide); only what the file abbreviates is written out
+  const map = {idle: 'Idle', engaged: 'Engaged', FC: 'Fast Cast', WS: 'Weaponskills', TreasureHunter: 'Treasure Hunter'};
+  return map[n] || n;
 }
 // A card matches the search when one of its variants has the text in its path, in a name it is shared under
 // (sets.midcast.Flash = sets.FullEnmity) or in a piece name

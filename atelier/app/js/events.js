@@ -14,6 +14,8 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold],[data-pbopen],[data-pbtab]'); if (!b) return; const d = b.dataset;
   if (d.slotact) { slotMenuAct(d.slotact, +d.card, d.slot); return; }
   if (d.unexclude) { setExcluded(d.unexclude, false); render(); return; }
+  if ('listall' in d) { S._listAll = !S._listAll; render(); return; }
+  if ('listpaths' in d) { S.listPaths = !S.listPaths; save(); render(); return; }
   if ('exclclear' in d) { S.excluded = Object.assign({}, S.excluded, {[S.char]: {}}); save(); render(); return; }
   if ('locksclear' in d) { const s = ui2CurrentSet(data()); if (s) { unlockAll(s); render(); } return; }
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
@@ -372,7 +374,10 @@ function readExports(first, done){
   const chars = [...new Set(index.map(e => (e.file.match(/^([^/]+)\/saved\//) || [])[1]).filter(Boolean))];
   // the index lists the live link files that exist; an index from before lists none: ask for every character's
   const live = window.ATELIER_LIVE_FILES || chars.map(c => `atelier/live_${c}.js`).concat(chars.map(c => `atelier/link_${c}.js`));
-  loadScripts(index.map(e => e.file + stamp).concat(live), () => {
+  // each character's arrangement of its list of sets (list_prefs.js; absent until the page wrote one)
+  const lists = chars.map(c => `${c}/atelier/overrides/list_layout.js` + stamp);
+  loadScripts(index.map(e => e.file + stamp).concat(live, lists), () => {
+    listRead();
     if (first) { setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
       // the game's descriptions of every item: a piece a set names but no bag holds still has its stats
       setTimeout(() => loadCatalog(() => loadRanked(() => { canonAll(); if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300); }
