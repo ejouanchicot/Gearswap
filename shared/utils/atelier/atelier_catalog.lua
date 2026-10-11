@@ -112,6 +112,14 @@ end
 --- @param path string Absolute path of catalog.js
 --- @param json function The exporter's JSON encoder (shared/utils/atelier/atelier_export.lua)
 --- @return boolean True when the file was (re)written
+--- Whether an item can leave the character for another one of the player's: it is not Ex (it goes
+--- through the delivery box like anything), or it is Ex but can be sent to the account's characters.
+--- @param info table the item's entry in res.items
+--- @return boolean
+function AtelierCatalog.sendable(info)
+    return not flagged(info, FLAG_EX) or flagged(info, FLAG_ALT)
+end
+
 function AtelierCatalog.write_if_stale(path, json)
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.items) then return false end

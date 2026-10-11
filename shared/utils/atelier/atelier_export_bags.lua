@@ -32,9 +32,12 @@ local BAGS = {
 
 --- What the page needs to know of an item, once per item id.
 --- @param r table the item's entry in res.items
---- @return table {name, cat, stack}: its name, the game's category (Weapon, Armor, Usable, General...), its stack size
+--- @return table {name, cat, stack, send}: its name, the game's category (Weapon, Armor, Usable, General...), its
+--- stack size, and whether it can be sent to another character of the player's (a mule)
 local function describe(r)
-    return {name = r.en, cat = r.category, stack = (r.stack or 1) > 1 and r.stack or nil}
+    local ok, Catalog = pcall(require, 'shared/utils/atelier/atelier_catalog')
+    return {name = r.en, cat = r.category, stack = (r.stack or 1) > 1 and r.stack or nil,
+        send = ok and Catalog.sendable(r) or nil}
 end
 
 --- The items of one bag: {id, n, augs}, in the bag's own order.

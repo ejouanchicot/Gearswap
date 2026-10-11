@@ -1241,3 +1241,132 @@
 .bvtop > .bvgroup.self{flex:1 1 0;min-width:0}
 .bvtop > .bvgroup.house{flex:0 0 268px}
 @media (min-width:1700px){.bvtop > .bvgroup.house{flex-basis:auto}}
+/* who uses a piece: the jobs as small tags after its name, "no set" for a piece nothing wears */
+.bvitem .bvu{flex:none;font-size:10px;overflow:visible}
+.bvitem .bvu i{display:inline-block;margin-left:2px;padding:0 4px;border-radius:4px;font-style:normal;font-family:var(--mono);font-size:10px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.bvitem .bvu i.more,.bvitem .bvu i.cfg{background:none;border:1px solid var(--line-strong);color:var(--muted);font-family:inherit}
+.bvitem .bvu.none{padding:0 5px;border-radius:4px;border:1px dashed var(--line-strong);color:var(--faint)}
+.bvitem .bva{flex:1 1 0}
+.bvitem b + .bvu,.bvitem b + .bvw,.bvitem b + em{margin-left:auto}
+.bvitem .bva + .bvu{margin-left:6px}
+.bvitem .bvu + .bvw{margin-left:6px}
+.bvtop > .bvgroup.porter{flex:0 0 auto}
+.bvtop > .bvgroup.house{flex:0 0 268px}
+.bvitem{overflow:hidden}
+.bvitem b{flex:0 1 auto;min-width:70px}
+.bvitem .bva{min-width:0;flex:1 1 20px}
+/* what a bag is for under its gauge, with how many things are misplaced in it; a misplaced thing in the list */
+.bvtile .bvrole{grid-column:1 / -1;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);text-align:left;white-space:nowrap}
+.bvtile .bvrole i{margin-left:auto;padding:0 5px;border-radius:99px;font-style:normal;font-family:var(--mono);font-size:10px;font-weight:700;background:var(--warn,#e3b341);color:#1b1500}
+.bvpick{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.bvpick select{font:inherit;font-size:12.5px;padding:3px 8px;border:1px solid var(--line-strong);border-radius:var(--radius-s);background:var(--well);color:var(--ink)}
+.bvitem.bad{box-shadow:inset 2px 0 0 var(--warn,#e3b341)}
+.bvitem .bvx{flex:none;padding:0 5px;border-radius:4px;font-size:10px;font-weight:700;background:color-mix(in srgb,var(--warn,#e3b341) 20%,transparent);color:var(--warn,#e3b341);overflow:visible}
+/* the bags' tiles all the same size, in columns that line up: one grid a group */
+.bvtop{display:grid;grid-template-columns:150px minmax(0,1fr) 316px 150px;gap:10px;align-items:stretch}
+.bvtop > .bvgroup,.bvtop > .bvgroup.self,.bvtop > .bvgroup.house,.bvtop > .bvgroup.porter{flex:none;min-width:0}
+.bvtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.bvgroup.house .bvtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+.bvgroup:not(.self):not(.house) .bvtiles{grid-template-columns:minmax(0,1fr)}
+.bvtile,.bvtile.all{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 3px auto;gap:4px 8px;align-items:baseline;height:58px;padding:6px 9px;box-sizing:border-box;width:100%}
+.bvtile b,.bvtile.all b{grid-column:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bvtile .bvnum,.bvtile.all .bvnum{grid-column:2;grid-row:1}
+.bvtile .bvbar{grid-column:1 / -1;grid-row:2;height:3px}
+.bvtile .bvrole{grid-column:1 / -1;grid-row:3;overflow:hidden;text-overflow:ellipsis}
+.bvtile.plan{border-style:dashed}
+@media (max-width:1500px){.bvtop{grid-template-columns:140px minmax(0,1fr) 290px 140px}.bvtiles{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}}
+@media (max-width:1300px){.bvtop{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.bvtop > .bvgroup.self{grid-column:1 / -1;order:-1}}
+/* the tidy-up plan (bags_plan.js): a table, a line a category; the bar that files what is selected */
+.bpplan{display:grid;gap:10px;padding:4px 2px 10px}
+.bpplan > p{margin:0;max-width:110ch}
+.bptbl{border-collapse:collapse;width:100%;max-width:1180px}
+.bptbl th{padding:6px 12px 6px 0;text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--line-strong);white-space:nowrap}
+.bptbl td{padding:8px 12px 8px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
+.bptbl td b{font-size:13.5px}
+.bptbl td small{display:block;margin-top:2px;font-size:11.5px;color:var(--muted);max-width:70ch}
+.bptbl .n{text-align:right;font-family:var(--mono);white-space:nowrap}
+.bptbl td i{display:inline-block;margin:0 4px 2px 0;padding:0 6px;border-radius:99px;font-style:normal;font-size:11px;border:1px solid var(--line-strong)}
+.bptbl .v b.ok{color:var(--good,#56d364)}
+.bptbl .v b.bad{color:var(--bad,#ff7b72)}
+.bptbl tr.bad td:first-child{box-shadow:inset 3px 0 0 var(--bad,#ff7b72);padding-left:10px}
+.bpnote{padding:8px 12px;border:1px solid var(--line);border-radius:var(--radius-s);font-size:13px;max-width:1180px}
+.bpnote.warn{border-color:color-mix(in srgb,var(--warn,#e3b341) 55%,transparent);background:color-mix(in srgb,var(--warn,#e3b341) 9%,transparent)}
+.bpsel{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:32px;padding:4px 0}
+.bpsel .sp{flex:1}
+.bpsel b{font-size:12.5px;color:var(--accent);margin-right:4px}
+.bpsel .btn{padding:3px 10px;font-size:12px}
+.bpcat{padding:3px 10px;border:1px solid var(--accent);border-radius:99px;background:var(--accent-soft);color:var(--ink);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.bpcat:hover{background:var(--accent);color:var(--accent-ink)}
+.bpcat.auto{border-color:var(--line-strong);background:none;color:var(--muted);font-weight:400}
+.bvitem{cursor:pointer}
+.bvitem.picked{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.bvitem.unk b::after{content:' ?';color:var(--warn,#e3b341)}
+.bvtop{grid-template-columns:176px minmax(0,1fr) 316px 176px}
+.bvtile.tight .bvrole,.bvtile.full .bvrole{color:var(--muted);font-weight:400}
+@media (max-width:1500px){.bvtop{grid-template-columns:168px minmax(0,1fr) 290px 168px}}
+/* the Bags view, nothing cut: a tile is as tall as its tallest neighbour, its role in a few words on its own line(s) */
+.bvtiles{grid-auto-rows:1fr}
+.bvtile,.bvtile.all{height:auto;min-height:60px;grid-template-rows:auto 3px minmax(14px,auto);align-content:start}
+.bvtile b,.bvtile.all b{overflow:visible;text-overflow:clip;white-space:nowrap}
+.bvtile .bvrole{display:flex;align-items:flex-start;gap:6px;white-space:normal;overflow:visible;line-height:1.25}
+.bvtile .bvrole span{flex:1;min-width:0;overflow-wrap:anywhere}
+.bvtile .bvrole i{flex:none;margin-left:0}
+.bvtop{grid-template-columns:186px minmax(0,1fr) 336px 186px}
+.bvtiles{grid-template-columns:repeat(auto-fill,minmax(152px,1fr))}
+@media (max-width:1500px){.bvtop{grid-template-columns:176px minmax(0,1fr) 316px 176px}.bvtiles{grid-template-columns:repeat(auto-fill,minmax(146px,1fr))}}
+/* the state of the tidy-up in one line: the verdict, then what is left to do as buttons */
+.bpstatus{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:8px 12px;border:1px solid var(--line-strong);border-left-width:4px;border-radius:var(--radius-s);background:var(--panel)}
+.bpstatus.ok{border-left-color:var(--good,#56d364)}
+.bpstatus.bad{border-left-color:var(--bad,#ff7b72)}
+.bpstatus .bpmain{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;flex:1 1 320px;min-width:0}
+.bpstatus .bpmain i{font-style:normal;font-size:15px;font-weight:800}
+.bpstatus.ok .bpmain i,.bpstatus.ok .bpmain b{color:var(--good,#56d364)}
+.bpstatus.bad .bpmain i,.bpstatus.bad .bpmain b{color:var(--bad,#ff7b72)}
+.bpstatus .bpmain b{font-size:14.5px}
+.bpstatus .bpmain small{font-size:12.5px;color:var(--muted)}
+.bpchip{display:inline-flex;align-items:baseline;gap:5px;padding:3px 11px;border:1px solid var(--line-strong);border-radius:99px;background:var(--well);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.bpchip b{font-family:var(--mono);font-size:13px}
+.bpchip:hover{border-color:var(--accent)}
+.bpchip.warn{border-color:color-mix(in srgb,var(--warn,#e3b341) 60%,transparent)}
+.bpchip.warn b{color:var(--warn,#e3b341)}
+.bpstatus .btn{padding:4px 12px;font-size:12.5px}
+/* the plan as cards: a category, its gauge, its verdict; text wraps, nothing is cut */
+.bpcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;align-items:stretch}
+.bpcard{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--line-strong);border-top-width:3px;border-radius:10px;background:var(--panel-2);min-width:0}
+.bpcard.ok{border-top-color:var(--good,#56d364)}
+.bpcard.tight{border-top-color:var(--warn,#e3b341)}
+.bpcard.bad{border-top-color:var(--bad,#ff7b72)}
+.bpcard.free{border-top-color:var(--accent)}
+.bpcard h4{margin:0;font-size:13.5px;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
+.bpcard p{margin:0;font-size:12px;line-height:1.4;color:var(--muted)}
+.bpcard .bpbig{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);line-height:1.1}
+.bpcard .bpbig i{margin-left:6px;font-style:normal;font-size:13px;font-weight:400;color:var(--faint)}
+.bpgauge{display:block;height:7px;border-radius:99px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden}
+.bpgauge i{display:block;height:100%;border-radius:99px;background:var(--good,#56d364)}
+.bpcard.tight .bpgauge i{background:var(--warn,#e3b341)}
+.bpcard.bad .bpgauge i{background:var(--bad,#ff7b72)}
+.bpcard .bpverdict{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;font-size:12.5px}
+.bpcard .bpverdict b.ok{color:var(--good,#56d364)}
+.bpcard .bpverdict b.bad{color:var(--bad,#ff7b72)}
+.bpcard .bpbags{display:flex;flex-wrap:wrap;gap:4px}
+.bpcard .bpbags i{padding:0 7px;border-radius:99px;font-style:normal;font-size:11px;border:1px solid var(--line-strong);color:var(--ink)}
+.bpcard .bpmove{color:var(--warn,#e3b341);font-weight:600}
+.bpcard .bpsee{margin-top:auto;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.bpplan > .bpnote{max-width:none}
+.bvtop{grid-template-columns:178px minmax(0,1fr) 300px 170px}
+.bvtiles{grid-template-columns:repeat(auto-fill,minmax(134px,1fr))}
+.bvtile,.bvtile.all{min-height:56px;padding:5px 8px}
+@media (max-width:1500px){.bvtop{grid-template-columns:170px minmax(0,1fr) 290px 164px}.bvtiles{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+/* the plan sent to the game (bags_plan.js): the button over the cards, the window that lists the moves */
+.bpsendbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+.bpsendbar p{margin:0;flex:1 1 420px;max-width:110ch}
+.bpsendbar .btn[disabled]{opacity:.45;cursor:default}
+.bpdlg .body{display:block;overflow:auto}
+.bpdlg .body > p{margin:0 0 8px;font-size:13.5px;line-height:1.5}
+.bpdlg h4{margin:14px 0 6px;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.bpsafe{margin:0 0 4px;padding:10px 14px 10px 30px;border:1px solid color-mix(in srgb,var(--good,#56d364) 45%,transparent);border-radius:var(--radius-s);background:color-mix(in srgb,var(--good,#56d364) 8%,transparent);font-size:13px;line-height:1.5}
+.bpsafe li{margin:2px 0}
+.bpgo{border-top:1px solid var(--line)}
+.bpgo summary{display:flex;gap:10px;align-items:baseline;padding:7px 2px;cursor:pointer;font-size:13px}
+.bpgo summary i{margin-left:auto;font-style:normal;font-family:var(--mono);color:var(--accent)}
+.bpgo p{margin:0 0 8px;font-size:12.5px;line-height:1.5;color:var(--muted)}

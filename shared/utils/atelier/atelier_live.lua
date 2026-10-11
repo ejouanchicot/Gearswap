@@ -16,6 +16,8 @@
 ---                              arranged) only
 ---   GET  /actions              the job's spells, abilities and weapon skills
 ---   GET  /sim_buffs            the buffs the job's code reads (Simulate's buff choices)
+---   POST /bag_plan              the page's tidy-up plan (id, from bag, to bag, name a line), kept for
+---                              //gs c bags (shared/utils/wardrobe/bag_mover.lua)
 ---   POST /icons?ids=1,2,3      writes the icons of those items the page lacks (pieces you
 ---                              do not hold: item_icons.lua), at most 300 a call
 ---   GET  /tpbonus?tp=&main=&sub=&range=&weapons=&buffs=  the TP bonus pieces the job's rules add
@@ -251,6 +253,10 @@ local function route(req, live)
         local result = require('shared/utils/atelier/porter_lists').write(job)
         if result.ok then result.porterpacker = require('shared/utils/atelier/porter_lists').compare(job) end
         return '200 OK', Export.json(result)
+    end
+    if req.path == '/bag_plan' and req.method == 'POST' then
+        -- the page's tidy-up plan, one move a line; played by //gs c bags go (shared/utils/wardrobe/bag_mover.lua)
+        return '200 OK', Export.json(require('shared/utils/wardrobe/bag_mover').set_plan(req.body))
     end
     if req.path == '/config_write' and req.method == 'POST' then
         -- a setting changed in the page: the settings file's whole new text (shared/utils/atelier/atelier_configs.lua)
