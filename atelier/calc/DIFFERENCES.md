@@ -156,7 +156,7 @@ that section G is out of it.
 | H21 | Sickle Moon | "two-hit attack", fTP 1.5 / 3.5 / 6.5 (all "Verification Needed") | 1 hit, fTP 1.5 / 2.0 / 2.75 | x1.4 to x2.7; TP return 3% to 9% over | Tetsouo_RUN#8, #18, #28, #38 |
 | H22 | Hard Slash | "single-hit attack", fTP 1.5 / 2.5 / 3.5 (the last two "Verification Needed") | 2 swings (the TP return is exact with 2 hits); its fTP: not worked out | x0.66 to x1.7; TP return 2% to 7% under | Tetsouo_RUN#4, #14, #24, #34, #44 |
 | H23 | Iron Tempest | attack "+0%" / "+100%" / "+250%" (the last two "Verification Needed") | about +0% / +17% / +42% (x1, x7/6, x17/12 fit to 0.02%) | x1.4 to x2.5, uncapped only | Tetsouo_WAR#30, #43 |
-| H24 | Disaster | fTP "3.05" at 1000 TP, "9.15" at 2000 TP (both "Verification Needed"), nothing at 3000 TP, no hit count | fTP 3.05 / 6.10 / 9.15, 1 hit: the page's 9.15 sits one column too early | about x1.3 below 2000 TP; not computed above | Tetsouo_WAR#1, #14, #27, #40 |
+| H24 | Disaster | fTP "3.05" at 1000 TP, "9.15" at 2000 TP (both "Verification Needed"), nothing at 3000 TP, no hit count | fTP 3.05 / 6.10 / 9.15, 1 hit: the page's 9.15 sits one column too early. Measured in game 2026-10-10/11 (37 then 53 Disaster without Restraint, Laphria, crabs /checked): 3.05 at 1000 TP, 5.95 to 6.24 at 2000 TP, 9.7 +-0.7 at 3000 TP (the fTP x1.95 and x3.18 from 1000 TP). Ours now holds 3.05 / 6.10 / 9.15 | none since | Tetsouo_WAR#1, #14, #27, #40 |
 | H25 | Mordant Rime | fTP 5.0, "twofold attack"; the TP row is the chance of the weight effect, with question marks | same damage values (exact when the hit rate is capped) plus accuracy +0 / +20 / +40 by TP on every swing | 4% to 30% damage and TP | Tetsouo_BRD#4, #20, #28, #44 |
 | H26 | Bora Axe, Swift Blade (same +0 / +20 / +40 fit); Realmrazer, Dancing Edge, Tachi: Rana, Decimation, Ruinator (not fitted) | "Accuracy varies with TP" with question marks, or no accuracy line at all (Bora Axe): no accuracy bonus in the engine | an accuracy bonus by TP on every swing | up to 30% damage and TP | the cases whose hit rate is not capped |
 | H27 | True Strike | accuracy "Large Penalty", no number: none in the engine; attack modifier 2.0, 100% critical | accuracy -60 / -30 / -0 by TP | up to 48% at 1000 TP, exact at 3000 TP | Tetsouo_WHM#10, #21 |
@@ -208,7 +208,7 @@ functions or constants replaced: G1 to G10, G12 being in the function of G5), `r
 9. Ukko's Fury at 3000 TP (H13): share of critical hits over a few hundred hits, +65% or +55%.
 10. Tachi: Shoha (H17) and Iron Tempest (H23) on a high-defense enemy: how much the hit grows against a weapon skill without attack bonus (x1.375 or x2.375; +100% / +250% or +17% / +42%).
 11. Accuracy by TP (H25, H26, H27): hit rate of Swift Blade, Bora Axe, Mordant Rime at 1000 and at 3000 TP against an enemy where hits miss; True Strike's at 1000 TP.
-12. Disaster at 2000 and 3000 TP (H24), Dagda at any TP (H29): damage against a one-hit weapon skill of known fTP with the same weapon.
+12. Disaster (H24): measured at 1000, 2000 and 3000 TP on 2026-10-10/11; still to do, its damage against a one-hit weapon skill of known fTP with the same weapon and on the same enemies (Fell Cleave), to tell its fTP from the 10 % the whole model was under on 2026-10-11. Dagda at any TP (H29): the same.
 
 ---
 
@@ -645,3 +645,21 @@ worn read one by one in the game's descriptions, the job's traits and gifts from
 3. Not checked: where the step is exactly (the Beastmaster's 404 gives 383 with or without it: the step
    is not visibly under 400, so between 400 and 428), and whether the main hand's
    accuracy has one too (skill 748 gives the accuracy shown to the point with BG-Wiki's line).
+
+## AA. Laphria's first swing (measured 2026-10-10 and 11)
+
+Not on BG-Wiki (no hidden effect on the weapon's pages; the Disaster page: aftermath "Information Needed") and not
+in the reference. Read in the fights journals of Tetsouo WAR with a stage IV Laphria, four tests against Locus Ghost
+Crabs (`Tetsouo/logs/fights/2026-10-10_hits.log` and `2026-10-11_hits.log`):
+
+| | first swing of a round | later swings |
+|---|---|---|
+| swings read | 767 | 918 |
+| over 1.5 times the usual hit of the same fight | 256 (33.4 %, +-3.3) | 0 (largest x1.41) |
+| size of those | x2.04 | |
+
+The same whether the swing is critical (38.7 %) or not (32.3 %), and under every aftermath level (none 38.5 %, Lv.1
+30.7 %, Lv.2 35.8 %, Lv.3 28.2 %): it is the weapon's own, not the aftermath's. No Disaster in 190 is near twice its
+size: it does not act on the weaponskill. Ours: `CALC.RELIC_WEAPON["Laphria IV"]`, first swing x2 at 0.33. The reference
+has nothing: on an engaged set with Laphria ours is above it by the first swing's share of the round. Not measured:
+another stage of the weapon, the other prime weapons.

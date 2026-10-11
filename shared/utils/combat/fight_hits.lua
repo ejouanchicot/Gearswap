@@ -517,10 +517,16 @@ end
 --- another one (`dump`) that only spends the TP. An Aftermath's level comes from the TP its
 --- weaponskill is used at: used above the level wanted it gives a higher one, which a lower one
 --- cannot replace for minutes (2026-10-09: a step for Lv.1 that started at 3000 TP got Lv.3).
-local function step_ws(step, tp)
+--- `raise`: while the buff the step measures under (`under`) is missing, the weaponskill waits for that
+--- TP instead of `tp` (Aftermath: Lv.3 comes from 3000 TP; once it is on, weaponskills at 1000 TP do
+--- not take it off, so the same weaponskill can be measured at a low TP under a high level).
+--- @param p table windower.ffxi.get_player()
+local function step_ws(step, tp, p)
     if not step.ws then return nil end
     if step.dump and tp > (tonumber(step.tp_max) or 3000) then return step.dump end
-    return tp >= (tonumber(step.tp) or 1000) and step.ws or nil
+    local at = tonumber(step.tp) or 1000
+    if step.raise and step.under and not buffs_up(p)[step.under:lower()] then at = tonumber(step.raise) or at end
+    return tp >= at and step.ws or nil
 end
 
 --- After a packet of swings or a weaponskill. A running sequence (//gs c fights hits run) goes to its
@@ -539,7 +545,7 @@ function FightHits.after(p)
     if not c.step or c.done then return end
     keep_up(p, c)
     local tp = p.vitals and p.vitals.tp or 0
-    local ws = step_ws(c.step, tp)
+    local ws = step_ws(c.step, tp, p)
     if ws and os.clock() - (c.ws_asked or -WS_RETRY) >= WS_RETRY then
         c.ws_asked = os.clock()
         send_command('input /ws "' .. ws .. '" <t>')

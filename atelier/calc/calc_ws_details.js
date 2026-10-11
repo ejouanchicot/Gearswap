@@ -131,8 +131,20 @@
             attack: same(1.5)},
         // Great Axe
         "Armor Break": {url: U + "Armor_Break", mods: {STR: 60, VIT: 60}, ftp: same(1)},
-        "Disaster": {url: U + "Disaster", mods: {STR: 60, VIT: 60}, ftp: [3.05, 9.15, null],
-            unverified: "fTP at 1000 and 2000 TP", missing: "fTP at 3000 TP, number of hits"},
+        // The page gives fTP "3.05" at 1000 TP and "9.15" at 2000 TP (both "Verification Needed"), nothing at 3000.
+        // Measured in game (Tetsouo WAR, Laphria, Locus Ghost Crabs Lv 137 to 139 each /checked, no Restraint):
+        // - 2026-10-10/11, 37 Disaster with Dia III and Distract III on the crab: 3.05 at 1000 TP, 6.24 +-0.25
+        //   at 2000 TP;
+        // - 2026-10-11, 53 Disaster with no debuff, at 1000-1300, 2000-2400 and 3000 TP, the engine's first swing
+        //   made to land as the measured ones did: the fTP read is 3.40 / 6.63 / 10.82, the whole about 10 %
+        //   over (something else than the fTP: it is there at every TP). What does not depend on that: the fTP is
+        //   x1.95 from 1000 to 2000 TP and x3.18 +-0.35 from 1000 to 3000 TP.
+        // So the page's 9.15 is not the 2000 TP value: with its 3.05 at 1000 TP, 2000 TP is 5.95 to 6.24 and
+        // 3000 TP is 9.7 +-0.7. The table is set as a straight line through the page's two numbers, 9.15 moved to
+        // 3000 TP: inside both measures
+        "Disaster": {url: U + "Disaster", mods: {STR: 60, VIT: 60}, ftp: [3.05, 6.1, 9.15],
+            unverified: "fTP at 2000 and 3000 TP: measured 5.95 to 6.24 and 9.7 +-0.7 in game, set at 6.10 and 9.15",
+            missing: "number of hits"},
         "Fell Cleave": {url: U + "Fell_Cleave", mods: {STR: 60}, ftp: same(2.75)},
         "Full Break": {url: U + "Full_Break", mods: {STR: 50, VIT: 50}, ftp: same(1)},
         "Iron Tempest": {url: U + "Iron_Tempest", mods: {STR: 60}, ftp: same(1), hits: 1, attack: [1, 2, 3.5],

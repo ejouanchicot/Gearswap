@@ -101,7 +101,7 @@ function motionApply(rows, slots){
     if (kind === 'row' && row && row.text === live.text) { motionPut(row.b, 'moved', live); motionRoll(row.b, live.before, live.text, live.t0); }
     if (kind === 'fill' && row && row.fill === live.fill) { row.li.style.setProperty('--from', live.from); motionPut(row.li, 'fills', live); }
     if (kind === 'slot' && slot) motionPut(slot.el, 'flash', live);
-    if (kind === 'win') for (const el of document.querySelectorAll('#view .detail, #view .cfg > section')) motionPut(el, 'opens', live);
+    if (kind === 'win') for (const el of document.querySelectorAll('#view .detail, #view .cfg section')) motionPut(el, 'opens', live);
   }
 }
 function motionAfter(){

@@ -39,7 +39,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
 /* ============================================================================ windows
    The game's windows open from their middle line. clip-path, not transform: a dialog is centred with transform */
-:root[data-motion="on"] :is(.detail,.dialog,.cfg > section).opens{animation:winopen .15s ease-out var(--since,0ms) both}
+:root[data-motion="on"] :is(.detail,.dialog,.cfg section).opens{animation:winopen .15s ease-out var(--since,0ms) both}
 @keyframes winopen{from{clip-path:inset(46% 0 46% 0);opacity:.3}to{clip-path:inset(0);opacity:1}}
 :root[data-motion="on"] details.unfolds > :not(summary){animation:unfold .16s ease-out}
 @keyframes unfold{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}

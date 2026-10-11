@@ -427,7 +427,9 @@ function renderJob(){
 // while the view stays the same (the set detail goes back to its top for another set)
 // (.globalcol: the right column, its compartments folded and unfolded in place)
 // What tells a folded block from the others of the page: its classes and its title without the figures in it
-const foldKey = el => el.className + '|' + ((el.querySelector('summary') || {}).textContent || '').replace(/[\d.,%−+-]+/g, '').trim().slice(0, 60);
+// (without the classes an animation leaves on it for a moment: motion.js)
+const foldKey = el => [...el.classList].filter(c => !MOTION_MARKS.includes(c)).join(' ') + '|' + ((el.querySelector('summary') || {}).textContent || '').replace(/[\d.,%−+-]+/g, '').trim().slice(0, 60);
+const MOTION_MARKS = ['opens', 'unfolds', 'flash', 'rolls', 'fills'];
 const SCROLLERS = ['.pane', '.setlist .scroll', '.detail', '.globalcol'];
 // A click redraws the page whole: no block may jump back to its top for it. Beside the four above (which have their
 // own rules), every block that was scrolled is found again by its place in the page (the tag and first class of each
@@ -476,20 +478,37 @@ function render(){
   guideAfter();
 }
 
-// After a reload of the page (F5): each list back where it was, once, when the same view and set are shown again
-// (kept in this browser only: the page works without it)
-const SCROLL_STORE = 'atelier_scroll';
+// After a reload of the page (F5): back where it was, whatever the tab: Settings open if it was, the folded blocks
+// that were open, every block scrolled (the four above and any other, found again by its place) and the page itself.
+// Kept in this browser only: the page works without it. Put back at the first redraw that shows the same view, and
+// again at the redraws of the next seconds (the game's data comes after the files' and makes the page longer),
+// until the player scrolls, clicks or types
+const SCROLL_STORE = 'atelier_scroll', SCROLL_BACK_MS = 4000;
+let SCROLL_KEPT = null;
+try { SCROLL_KEPT = JSON.parse(localStorage.getItem(SCROLL_STORE) || 'null'); } catch (e) { SCROLL_KEPT = null; }
+if (SCROLL_KEPT && SCROLL_KEPT.cfg) S._cfg = true;
 function scrollBack(view, set){
-  if (S._scrollBack) return;
-  let kept = null;
-  try { kept = JSON.parse(localStorage.getItem(SCROLL_STORE) || 'null'); } catch (e) { kept = null; }
-  if (!kept || kept.view !== view || !$('.setlist')) { if ($('.setlist') || !kept) S._scrollBack = true; return; }
-  S._scrollBack = true;
-  SCROLLERS.forEach((q, i) => { const el = $(q); if (el && kept.tops[i] && (q !== '.detail' || kept.set === set)) el.scrollTop = kept.tops[i]; });
+  const kept = SCROLL_KEPT;
+  if (!kept || S._scrollBack === true) return;
+  // the files are still being read (no tab drawn yet): wait for the redraw that follows
+  if (!$(kept.cfg ? '.cfg' : '.pane')) return;
+  if (kept.view !== view || !!kept.cfg !== !!S._cfg) { S._scrollBack = true; return; }
+  if (!S._scrollBack) S._scrollBack = Date.now();
+  else if (Date.now() - S._scrollBack > SCROLL_BACK_MS) { S._scrollBack = true; return; }
+  const open = new Set(kept.open || []);
+  for (const el of document.querySelectorAll('#view details:not([open])')) if (open.has(foldKey(el))) el.open = true;
+  SCROLLERS.forEach((q, i) => { const el = $(q); if (el && (kept.tops || [])[i] && (q !== '.detail' || kept.set === set)) el.scrollTop = kept.tops[i]; });
+  scrollPut(kept.kept || []);
+  if (kept.win) scrollTo({top: kept.win});
 }
-window.addEventListener('beforeunload', () => {
-  try { localStorage.setItem(SCROLL_STORE, JSON.stringify({view: S._view, set: S._set, tops: SCROLLERS.map(q => ($(q) || {}).scrollTop || 0)})); } catch (e) {}
-});
+// the player moved: what was kept no longer says where the page should be
+for (const ev of ['wheel', 'pointerdown', 'keydown', 'touchstart']) addEventListener(ev, () => { S._scrollBack = true; }, {passive: true, capture: true});
+function scrollStore(){
+  try { localStorage.setItem(SCROLL_STORE, JSON.stringify({view: S._view, set: S._set, cfg: !!S._cfg, tops: SCROLLERS.map(q => ($(q) || {}).scrollTop || 0),
+    kept: scrollKeep(), win: window.scrollY || 0, open: [...document.querySelectorAll('#view details[open]')].map(foldKey)})); } catch (e) {}
+}
+window.addEventListener('beforeunload', scrollStore);
+window.addEventListener('pagehide', scrollStore);
 
 /* ---- roles, job emblems, the other character, macro book and lockstyle shown ---- */
 // Roles and colours of AioHUD (job_role_color, src/model/party_state.cpp): icon tint, border, text

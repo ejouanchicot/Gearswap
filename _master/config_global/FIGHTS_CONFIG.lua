@@ -28,6 +28,8 @@
 ---     keep = {'Berserk'}    abilities used again whenever they are missing and ready;
 ---                           the goal then counts only what happens under them
 ---     under = 'Aftermath: Lv.1'  the goal counts only what happens under that buff
+---     raise = 3000          while that buff is missing, the weaponskill waits for this TP instead
+---                           (to get the buff back), then goes on at `tp`
 ---     tp_max = 1999, dump = 'Fell Cleave'   above tp_max the TP is spent with that other
 ---                           weaponskill (an Aftermath's level comes from the TP its
 ---                           weaponskill is used at, and a lower level cannot replace a higher)

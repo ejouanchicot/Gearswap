@@ -140,7 +140,16 @@
     // Only the relics whose page was read are here; `haste` is taken as 10 / 100 of the delay
     // (the page gives a percentage, not 1024ths).
     var APOCALYPSE = {firstSwing: {rate: 0.2, multiplier: 2}, aftermath: {haste: 0.1, accuracy: 15}};
-    CALC.RELIC_WEAPON = {"Apocalypse": APOCALYPSE, "Apocalypse R15": APOCALYPSE};
+    // Laphria (a prime weapon, stage IV): no page gives this (the weapon's pages carry no hidden effect and the
+    // Disaster page says "Information Needed" for the aftermath). Measured in game on 2026-10-10 and 11 (Tetsouo WAR,
+    // 767 first swings of a round, each set against the later swings of the same fight, which never double: 0 of
+    // 918): the first swing deals twice the damage 33.4 % of the time (256 of 767, +-3.3; x2.04 a plain swing),
+    // critical or not, whatever the aftermath level (none 38 %, Lv.1 31 %, Lv.2 36 %, Lv.3 28 %), and never on a
+    // weaponskill (no Disaster of 190 near twice its size). Stage IV only: another stage is not measured, and the
+    // other prime weapons are not either
+    var LAPHRIA = {firstSwing: {rate: 0.33, multiplier: 2}};
+    // the stage is in the name the gear gives the weapon ("Laphria IV"): the other stages have no entry
+    CALC.RELIC_WEAPON = {"Apocalypse": APOCALYPSE, "Apocalypse R15": APOCALYPSE, "Laphria IV": LAPHRIA};
 
     // Mean damage multipliers from `options` = {aftermath: {type: "empyrean", level: 1..3,
     // multiplier: 2 or 3}, main: "Apocalypse R15"} (the main hand weapon as the gear names it).

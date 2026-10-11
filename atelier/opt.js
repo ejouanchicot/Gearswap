@@ -22,6 +22,14 @@
     O.SLOT = {main: "main", sub: "sub", range: "ranged", ammo: "ammo", head: "head", neck: "neck", ear1: "ear1", ear2: "ear2",
         body: "body", hands: "hands", ring1: "ring1", ring2: "ring2", back: "back", waist: "waist", legs: "legs", feet: "feet"};
     var PAGE_SLOTS = Object.keys(O.SLOT);
+    // The old engine is wsdist's and stays so (atelier/engine/README.md): when it is the one chosen, this layer gives
+    // it the page's situation in wsdist's own terms and adds nothing of ours to it. A choice of the page becomes
+    // wsdist's own option where it has one (Bolster, Blaze of Glory, a bubble's potency on an NM, Aria of Passion,
+    // Haste Samba, Saber Dance) and is left out where it has none (a party's Warcry, Avatar's Favor, Ecliptic
+    // Attrition, Hastega's 3/1024, Feather Step, the target's resistance by damage type, a weaponskill it does not
+    // know, the base attributes and merits measured in game). The target's own stats after the debuffs are an
+    // input as in wsdist, whose window takes them typed.
+    function wsdistOnly() { return !FFXI.engine || FFXI.engine.name !== "own"; }
 
     // ------------------------------------------------------------ catalogue
     var byId = null, byName = null;
@@ -128,7 +136,8 @@
     // the engine laying Marcato on Song1 (the page's b.marcato is that song's place)
     function songsOf(b) {
         // Aria of Passion is left to the page (its Loughnashade stage: the context's ariaPdl)
-        var list = [b.song0, b.song1, b.song2, b.song3].concat(b.clarion ? [b.song4] : []).map(function (x) { return x && x !== "Aria of Passion" ? x : "None"; });
+        var aria = wsdistOnly();
+        var list = [b.song0, b.song1, b.song2, b.song3].concat(b.clarion ? [b.song4] : []).map(function (x) { return x && (aria || x !== "Aria of Passion") ? x : "None"; });
         if (b.marcato != null && !b.soulVoice && list[b.marcato]) list.unshift(list.splice(b.marcato, 1)[0]);
         var out = {};
         list.forEach(function (x, i) { out["Song" + (i + 1)] = x; });
@@ -145,7 +154,8 @@
             cor: true, rolls: {Roll1: {name: b.roll0 || "None", potency: b.roll0n || "XI"}, Roll2: {name: b.roll1 || "None", potency: b.roll1n || "XI"}},
             roll_bonus: +(b.rollsPlus || 0), crooked: false, job_bonus: false, light_shot: !!(b.lightshot && /^Dia/.test(b.dia || "")),
             geo: true, bubbles: {"Indi-": bubble("Indi-", b.indi), "Geo-": bubble("Geo-", b.geo), "Entrust-": bubble("Entrust-", b.entrust)},
-            bubble_bonus: +(b.geoPlus || 0), bolster: false, bog: false, bubble_potency: 100,
+            // the page scales each bubble itself (context's geoMul); wsdist has its own Bolster and Blaze of Glory
+            bubble_bonus: +(b.geoPlus || 0), bolster: wsdistOnly() && !!b.bolster, bog: wsdistOnly() && !!b.bog, bubble_potency: 100,
             // Garuda's Hastega / Hastega II read as Haste / Haste II (the same effect), Hastega's 3/1024 more added in context
             whm: true, whm_spells: {Dia: /^Dia/.test(b.dia || "") ? b.dia : "None", Haste: HASTE_AS[b.haste] || b.haste || "None", Boost: "None", Storm: b.storm || "None"},
             haste_extra: b.haste === "Hastega" ? 3 / 1024 : 0,
@@ -164,6 +174,7 @@
     var STATS = {STR: "str", DEX: "dex", VIT: "vit", AGI: "agi", INT: "int", MND: "mnd", CHR: "chr"};
     O.defineWs = function (name, info, skill) {
         if (!FFXI.WS || FFXI.WS[name]) return !!(FFXI.WS && FFXI.WS[name]);
+        if (wsdistOnly()) return false;
         if (!info || (info.type && info.type !== "Physical") || !info.ftp) return false;
         var mods = {};
         if (typeof info.mods === "string") info.mods.replace(/(\d+)\D*%?\s*(STR|DEX|VIT|AGI|INT|MND|CHR)/g, function (m, pct, st) { mods[st] = +pct; });
@@ -208,11 +219,14 @@
     O.context = function (c) {
         if (c.mode === "stats") return {mode: "stats", stat: c.stat, job: c.job};
         if (c.wsInfo) O.defineWs(c.ws, c.wsInfo, c.wsSkill);
-        var agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : FFXI.aggregate_buffs(c.selection);
+        var strict = wsdistOnly(), agg;
+        // wsdist: its own bubbles, an NM's resistance as its "bubble potency"
+        if (strict) agg = FFXI.aggregate_buffs(c.geoMul && c.geoMul.foe != null ? Object.assign({}, c.selection, {bubble_potency: 100 * c.geoMul.foe}) : c.selection);
+        else agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : FFXI.aggregate_buffs(c.selection);
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
-        if (c.ariaPdl) agg[0].brd.PDL = (agg[0].brd.PDL || 0) + c.ariaPdl;
-        if (c.selection.haste_extra) agg[0].whm["Magic Haste"] = (agg[0].whm["Magic Haste"] || 0) + c.selection.haste_extra;
+        if (c.ariaPdl && !strict) agg[0].brd.PDL = (agg[0].brd.PDL || 0) + c.ariaPdl;
+        if (c.selection.haste_extra && !strict) agg[0].whm["Magic Haste"] = (agg[0].whm["Magic Haste"] || 0) + c.selection.haste_extra;
         // the rolls again, each alone with its own job bonus and Crooked Cards (the engine has one switch for both rolls)
         if (c.rollOpts && c.selection.cor) {
             agg[0].cor = {};
@@ -229,22 +243,22 @@
         if (c.foeDown && c.foeDown.mdb) agg[1]["Magic Defense"] = (agg[1]["Magic Defense"] || 0) + c.foeDown.mdb;
         // the elemental debuffs and Impact on its stats, Feather Step on your critical hits
         if (c.foeDown && c.foeDown.stats) Object.keys(c.foeDown.stats).forEach(function (st) { agg[1][st] = (agg[1][st] || 0) + c.foeDown.stats[st]; });
-        if (c.foeDown && c.foeDown.crit) agg[0].feather_step = {"Crit Rate": c.foeDown.crit};
+        if (c.foeDown && c.foeDown.crit && !strict) agg[0].feather_step = {"Crit Rate": c.foeDown.crit};
         // a RUN's Gambit: the magic damage of its runes' element taken +10 % a rune, for a weaponskill of that element
         var probe = wsProbe(c);
         if (c.foeDown && c.foeDown.gambit && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.gambit.elem)
             agg[1]["Magic DT%"] = (agg[1]["Magic DT%"] || 0) + c.foeDown.gambit.pct;
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
-        if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
+        if (c.partyWarcry != null && !strict) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
         // a WAR main's own Warcry: the engine counts 700 TP Bonus (Savagery 5/5 with Agoge Mask); the page's choice moves it
-        if (c.warcryTpDelta) agg[0].own_warcry = {"TP Bonus": c.warcryTpDelta};
+        if (c.warcryTpDelta && !strict) agg[0].own_warcry = {"TP Bonus": c.warcryTpDelta};
         // a party SMN's Avatar's Favor at BG Wiki's top values (the page's partyStats; the engine's own are lower or higher)
-        if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
-        return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: withBase(c),
+        if (c.partyStats && Object.keys(c.partyStats).length && !strict) agg[0].party_favor = c.partyStats;
+        return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withBase(c),
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
-            primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
-            physResBy: c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: c.saberMerit || 0};
+            primeStage: c.primeStage, dmgMul: strict ? 1 : physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
+            physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0};
     };
     // The abilities with the character's own base attributes ("Base Stats"), from the game's status packet: c.base
     // ({main, sub, merits, str: 153, dex: 141...}), else the page's measuredBase(job). Measured with another subjob: that

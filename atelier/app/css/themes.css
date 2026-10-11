@@ -36,20 +36,23 @@
 .topbar .mini dd{font-size:13.5px;color:var(--accent)}
 
 /* ============================================================================ Settings */
-.cfg{max-width:1060px;margin:6px auto 0;display:grid;gap:14px}
+.cfg{max-width:1500px;margin:6px auto 0;display:grid;gap:14px}
+.cfgcols{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
+.cfgcols > div{display:grid;gap:14px;min-width:0}
+.cfgpair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .cfg > header{display:flex;align-items:baseline;gap:14px}
 .cfg > header h2{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.03em}
-.cfg section{padding:16px 18px}
+.cfg section{padding:13px 16px}
 .cfg section h3{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.cfg section > p{color:var(--muted);margin-bottom:12px}
+.cfg section > p{color:var(--muted);margin-bottom:9px}
 .themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .themecard{display:block;text-align:left;padding:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2);overflow:hidden}
 .themecard:hover{border-color:var(--line-strong)}
 .themecard[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 18px -6px var(--accent)}
-.themecard .pv{display:grid;grid-template-columns:34% 1fr;gap:6px;height:96px;padding:10px;background:var(--pv-bg)}
+.themecard .pv{display:grid;grid-template-columns:34% 1fr;gap:6px;height:70px;padding:8px;background:var(--pv-bg)}
 .themecard .pv i{display:block;border-radius:var(--pv-r);background:var(--pv-panel);border:1px solid var(--pv-line)}
-.themecard .pv i:last-child{background:linear-gradient(var(--pv-accent),var(--pv-accent)) 10px 12px/46% 5px no-repeat,
-  linear-gradient(var(--pv-ink),var(--pv-ink)) 10px 26px/70% 3px no-repeat,linear-gradient(var(--pv-ink),var(--pv-ink)) 10px 36px/58% 3px no-repeat,var(--pv-panel)}
+.themecard .pv i:last-child{background:linear-gradient(var(--pv-accent),var(--pv-accent)) 10px 10px/46% 5px no-repeat,
+  linear-gradient(var(--pv-ink),var(--pv-ink)) 10px 23px/70% 3px no-repeat,linear-gradient(var(--pv-ink),var(--pv-ink)) 10px 32px/58% 3px no-repeat,var(--pv-panel)}
 .themecard b{display:block;padding:9px 12px 0;font-size:14px}
 .themecard small{display:block;padding:2px 12px 11px;color:var(--muted);font-size:12.5px;line-height:1.35}
 .cfgrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -175,7 +178,7 @@
 .topbar .tgrp .live.act[data-config]{width:var(--ctl);justify-content:center;padding:0}
 
 /* Settings: the two engines, each a card saying what it computes */
-.engines{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.engines{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
 .engcard{text-align:left;padding:12px 14px 10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2)}
 .engcard:hover{border-color:var(--line-strong)}
 .engcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 18px -6px var(--accent)}
@@ -184,8 +187,12 @@
 .engcard ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.5}
 .engcard li + li{margin-top:3px}
 .engfell{margin-top:10px;color:var(--muted);font-size:12.5px}
+.englink{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.englink a{color:var(--accent)}
+.englink span{margin-left:6px;opacity:.8}
 
 /* Wide screens: the page itself never scrolls (base.css), so Settings scrolls on its own like every other page */
 @media (min-width:901px){
-  .cfg{flex:1;min-height:0;overflow:auto;width:100%;align-self:center;align-content:start;grid-auto-rows:max-content;padding:0 6px 24px 0;scrollbar-gutter:stable}
+  .cfgcols{grid-template-columns:1fr 1fr}
+  .cfg{flex:1;min-height:0;overflow:auto;width:100%;align-self:center;align-content:start;grid-auto-rows:max-content;padding:0 6px 8px 0;scrollbar-gutter:stable}
 }

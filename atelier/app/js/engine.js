@@ -81,8 +81,10 @@ function engContextInput(s){
 // The same as plain data, for the worker
 function optContextInput(s){
   const b = liveBuffs(buffState()), d = data() || {}, lv = jaLevels(), ws = wsOfSet(s) || segs(s.path).pop();
+  // the old engine is wsdist's: its own Haste Samba and Saber Dance, nothing of the page's (atelier/opt.js wsdistOnly)
+  const strict = engineName() !== 'own';
   const abilities = {Aftermath: isAfm3(s && s.path) ? 3 : +(b.am || 0)};
-  if (+b.amTp) abilities['Aftermath TP'] = +b.amTp;
+  if (+b.amTp && !strict) abilities['Aftermath TP'] = +b.amTp;
   if (b.enspell) { abilities.EnSpell = true; abilities['Enhancing Skill'] = enSkill(b); }
   let partyWarcry = null; const partyStats = {};
   for (const ja of jasOf()) if (jaOn(b, ja.name)) {
@@ -90,11 +92,11 @@ function optContextInput(s){
     if (ja.as === 'party' && base === 'Warcry') { partyWarcry = warcryTp(b, true); continue; }
     if (ja.a.eng) { Object.assign(partyStats, ja.a.eng); continue; }
     // Haste Samba at the page's value (merits, a party DNC main or sub), not the engine's fixed 10.1 / 5.1
-    if (base === 'Haste Samba') { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
+    if (base === 'Haste Samba' && !strict) { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
     // the engine counts Saber Dance at 25 % (and drops a /WAR's Double Attack trait under it): its 20 % floor instead,
     // the legs' bonus counted by the engine on the legs worn (ctx.saberMerit, atelier/opt.js gearset)
     if (base === 'Saber Dance') partyStats.DA = (partyStats.DA || 0) + 20 - 25;
-    abilities[ja.as === 'sub' && base === 'Warcry' ? base + ' (sub)' : base] = true;
+    abilities[ja.as === 'sub' && (base === 'Warcry' || (strict && base === 'Haste Samba')) ? base + ' (sub)' : base] = true;
   }
   const skill = wsSkills()[ws] || '';
   return {job: S.job, sub: d.sub || 'WAR', ml: lv.ml, selection: FFXI.opt.selection(b, FOODS[b.food]), abilities, foeDown: foeJaDown(b),
