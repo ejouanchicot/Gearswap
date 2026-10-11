@@ -486,7 +486,7 @@ function renderJob(){
     const list = ui2() ? ui2Sections(d) : [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),keysShown(d).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
     sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}" title="${esc(T[S.lang]['ttTab_' + k] ? t('ttTab_' + k, {n}) : '')}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}${ui2Toggle()}</nav>`;
     // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
-    if (ui2() && ['combat', 'perso'].includes(S.section)) { side = setListHTML(d);
+    if (ui2() && ['combat', 'perso'].includes(S.section) && !(S.section === 'perso' && S.persoView === 'bags')) { side = setListHTML(d);   // (the bags are no set's)
       if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
     body = {sets:renderSets, jobcfg:renderJobCfg, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
   }

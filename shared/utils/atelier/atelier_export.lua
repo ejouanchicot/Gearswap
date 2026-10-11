@@ -283,6 +283,11 @@ function AtelierExport.build()
         piece.id = nil
     end
     data.descs = collect_descs(ids)
+    -- every bag as the game holds it (shared/utils/atelier/atelier_export_bags.lua). The icons of what is not
+    -- equipment are not written here (hundreds at once would stall the game): the page asks for the ones it
+    -- shows and misses, a few at a time (atelier_live.lua)
+    local ok_b, bags = pcall(require('shared/utils/atelier/atelier_export_bags').collect, ExportChar.augments)
+    data.bags = ok_b and bags or nil
     data.wskill = collect_weapon_skills(data.icons)
     data.ws_by_weapon = collect_ws_by_weapon(player.main_job)
     -- each weaponskill's combat skill and what it uses (shared/utils/atelier/atelier_ws.lua)

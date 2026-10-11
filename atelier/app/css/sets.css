@@ -1153,3 +1153,91 @@
 /* in the window of weaponskills: the weapon kind and the weapon that gives it, small after the name */
 .mitile.act small{font-size:11px;color:var(--muted)}
 .mitile.act small.wsw{color:var(--accent)}
+/* the Bags view of My character (bags_view.js): each bag a tile with how full it is, then the content of the one picked */
+.persoviews{align-self:center}
+.persoviews button{padding:6px 14px;font-size:13px}
+.bagsview{display:grid;gap:14px;min-width:0}
+.bvat{margin:0}
+.bvtop{display:grid;grid-template-columns:180px minmax(0,3fr) minmax(0,1.05fr);gap:14px;align-items:stretch}
+.bvgroup{display:grid;gap:8px;align-content:start;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.bvgroup h4{margin:0;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.bvtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:8px}
+.bvtile{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 8px;align-items:baseline;padding:8px 11px;border:1px solid var(--line-strong);border-radius:10px;background:var(--well);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.bvtile b{grid-column:1 / -1;font-size:13px;white-space:nowrap}
+.bvtile .bvnum{font-family:var(--mono);font-size:13px;font-weight:700}
+.bvtile .bvnum i{font-style:normal;font-weight:400;color:var(--faint)}
+.bvtile .bvbar{grid-column:1 / -1;height:5px;border-radius:99px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden}
+.bvtile .bvbar i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.bvtile small{font-size:11px;color:var(--muted);text-align:right;white-space:nowrap}
+.bvtile:hover{border-color:var(--accent)}
+.bvtile[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+.bvtile.tight .bvbar i{background:var(--warn,#e3b341)}
+.bvtile.tight small{color:var(--warn,#e3b341)}
+.bvtile.full .bvbar i{background:var(--bad,#ff7b72)}
+.bvtile.full small{color:var(--bad,#ff7b72);font-weight:700}
+.bvtile.all{align-content:center;gap:8px;padding:14px;border-radius:var(--radius);background:var(--panel)}
+.bvtile.all small{grid-column:1 / -1;text-align:left}
+.bvtile.all b{font-size:15px}
+.bvtile.all .bvnum{grid-column:1 / -1;font-size:20px}
+.bvbar2{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:4px 0 12px;border-bottom:1px solid var(--line)}
+.bvbar2 .tgq{flex:0 1 320px;font-size:13.5px;padding:7px 12px}
+.bvlist{max-height:calc(100vh - 470px);min-height:300px;overflow:auto;padding-right:4px}
+.bvcount{margin:10px 0 0}
+.bvcat{display:flex;align-items:baseline;gap:8px;margin:14px 0 8px;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.bvcat small{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:0;color:var(--faint)}
+.bvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}
+.bvitem{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;padding:6px 9px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);min-width:0}
+.bvitem .ico{width:34px;height:34px}
+.bvitem .ico img{width:100%;height:100%;image-rendering:pixelated}
+.bvitem > div{display:grid;gap:1px;min-width:0}
+.bvitem b{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bvitem b em{margin-left:6px;font-style:normal;font-family:var(--mono);font-size:12px;color:var(--accent)}
+.bvitem small{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bvitem .bvw i{display:inline-block;margin:0 4px 0 0;padding:0 6px;border-radius:99px;font-style:normal;border:1px solid var(--line-strong);color:var(--ink)}
+.bvitem.split{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.bvnone{padding:18px 4px}
+@media (max-width:1300px){.bvtop{grid-template-columns:minmax(0,1fr)}}
+/* the Bags view, compact: the bags as one band of small tiles, the items one line each in columns */
+.bvtop{grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start}
+.bvgroup{padding:8px 10px;gap:6px}
+.bvgroup h4{font-size:10px}
+.bvtiles{display:flex;flex-wrap:wrap;gap:5px}
+.bvtile,.bvtile.all{grid-template-columns:auto auto;gap:3px 8px;align-items:baseline;padding:4px 9px 5px;border-radius:7px;background:var(--well)}
+.bvtile b,.bvtile.all b{grid-column:auto;font-size:12px;font-weight:600}
+.bvtile .bvnum,.bvtile.all .bvnum{grid-column:auto;font-size:11.5px;text-align:right}
+.bvtile .bvbar{height:3px}
+.bvbar2{gap:8px 12px;padding:0 0 8px}
+.bvbar2 .tgq{flex:0 1 260px;font-size:12.5px;padding:5px 10px}
+.bvbar2 .modseg button{padding:3px 10px;font-size:12px}
+.bvbar2 .modsw{padding:3px 9px;font-size:12px}
+.bvlist{max-height:calc(100vh - 420px)}
+.bvcount{margin:6px 0 0;font-size:11.5px}
+.bvcat{margin:10px 0 4px;font-size:10.5px}
+.bvgrid{grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:0 14px}
+.bvitem{display:flex;align-items:center;gap:7px;height:26px;padding:0 6px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none}
+.bvitem:hover{background:var(--hover)}
+.bvitem .ico{flex:none;width:20px;height:20px}
+.bvitem b{flex:0 1 auto;min-width:60px;font-size:12.5px;font-weight:500}
+.bvitem .bva{flex:1 1 0;min-width:0;font-size:11px;color:var(--faint)}
+.bvitem .bvw{flex:none;margin-left:auto;font-size:10.5px;color:var(--muted);overflow:visible}
+.bvitem .bvw i{margin:0 0 0 3px;padding:0 5px;font-size:10.5px}
+.bvitem em{flex:none;margin-left:auto;font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+.bvitem .bvw + em{margin-left:6px}
+.bvitem.split{border-color:var(--line)}
+.bvitem.split b{color:var(--accent)}
+/* the Bags view holds in the window: its list is sized by bags_view.js bvFit and is the only scroll */
+.persotab:has(.bagsview){padding-bottom:16px}
+.bvlist{min-height:0}
+/* in the Bags view the tab's header is one line (the name, the two views): the room goes to the list */
+.persotab:has(.bagsview){gap:10px;padding-top:12px}
+.persotab:has(.bagsview) .tabhead{align-items:center;padding-bottom:8px}
+.persotab:has(.bagsview) .tabhead p,.persotab:has(.bagsview) .herofacts{display:none}
+.persotab:has(.bagsview) .tabhead h2{margin:0;font-size:18px}
+.bagsview{gap:8px}
+.bvat{font-size:11.5px}
+/* the three groups of bags on one band: the Mog House's four tiles two by two, the room to what is on the character */
+.bvtop{display:flex;flex-wrap:nowrap;align-items:stretch}
+.bvtop > .bvgroup{flex:0 0 auto}
+.bvtop > .bvgroup.self{flex:1 1 0;min-width:0}
+.bvtop > .bvgroup.house{flex:0 0 268px}
+@media (min-width:1700px){.bvtop > .bvgroup.house{flex-basis:auto}}

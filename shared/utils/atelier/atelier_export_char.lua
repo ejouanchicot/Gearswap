@@ -369,6 +369,9 @@ local function collect_icons(set_list, items)
     return icons
 end
 
+--- @param item table one copy of an item, as windower.ffxi.get_items gives it
+--- @return table|nil its augments
+ExportChar.augments = copy_augments
 --- @return table|nil items by slot, table|nil owned copies by slot
 ExportChar.items = collect_items
 --- @return table {item id as text = 'Slip N'}
