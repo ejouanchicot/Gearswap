@@ -45,11 +45,15 @@ function listRead(){
   const files = window.ATELIER_LIST || {};
   S.listPrefs = S.listPrefs || {};
   for (const c in files) { const f = files[c], mine = S.listPrefs[c];
-    if (f && f.jobs && (!mine || (mine.at || '') < (f.at || ''))) S.listPrefs[c] = JSON.parse(JSON.stringify(f)); }
+    if (f && f.jobs && (!mine || (mine.at || '') < (f.at || ''))) { const copy = JSON.parse(JSON.stringify(f));
+      // the buff profiles (profiles.js) are written in the same file
+      if (copy.profiles) { S.pbPresets = S.pbPresets || {}; S.pbPresets[c] = copy.profiles; delete copy.profiles; }
+      S.listPrefs[c] = copy; } }
 }
 const listFileText = c => `// GearSwap Atelier: how ${c}'s list of sets is arranged in the page (pinned sets, groups, hidden and renamed\n` +
-  `// categories), by job. Written by the page; deleting this file puts the list back as the page makes it.\n` +
-  `(window.ATELIER_LIST = window.ATELIER_LIST || {})[${JSON.stringify(c)}] = ${JSON.stringify(S.listPrefs[c])};\n`;
+  `// categories), by job, and the buff profiles saved in the "Buffs & target" tab. Written by the page; deleting this\n` +
+  `// file puts the list back as the page makes it and forgets those profiles.\n` +
+  `(window.ATELIER_LIST = window.ATELIER_LIST || {})[${JSON.stringify(c)}] = ${JSON.stringify(Object.assign({}, S.listPrefs[c], {profiles: (S.pbPresets || {})[c] || {}}))};\n`;
 // Written without asking anything: through the game when it is connected, else to the folder the page was already
 // given. Neither: the arrangement stays in the browser and the menu offers to save it (a click may ask for the folder)
 let LIST_TIMER = null;

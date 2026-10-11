@@ -99,6 +99,9 @@ const isChar = n => /^[A-Z]/.test(n) && fs.statSync(path.join(DATA_ABS, n)).isDi
           try { fs.unlinkSync(file); } catch (e) {}
           cp.spawnSync('lua5.1', ['scripts/atelier/load_job.lua', c, j, sub, ''], {cwd: DATA_ABS});
           const nat = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null, out = [];
+          // an export that does not read back is a failure of its own: two of them are not "the same"
+          if (nat && !OX.parseExport(nat)) out.push('the lua5.1 export does not read back');
+          if (w.text && !OX.parseExport(w.text)) out.push('the export of the page does not read back');
           if (w.text && nat) diff(OX.parseExport(nat), OX.parseExport(w.text), '', out);
           else if (!!w.text !== !!nat) out.push(w.text ? 'only the page exports it' : 'only lua5.1 exports it: ' + w.error);
           if (out.length) { bad++; console.log(`  ${c} ${j}/${sub}: ${out.slice(0, 3).join(' ; ').slice(0, 300)}`); }

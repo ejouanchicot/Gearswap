@@ -854,6 +854,8 @@ function AtelierExport.build()
     data.temp_binds = ok_t and TempBinds.current and TempBinds.current() or nil
     local ok_s, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
     data.set_overrides = ok_s and SetOverrides.read() or nil
+    local ok_g, configs = pcall(function() return require('shared/utils/atelier/atelier_configs').collect(player.name, player.main_job) end)
+    data.configs = ok_g and configs or nil   -- every settings file, as text
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
     pcall(require('shared/utils/atelier/atelier_catalog').write_if_stale, data_path('atelier/catalog.js'), json)
     return data
@@ -905,6 +907,9 @@ function AtelierExport.after_load()
     require('shared/utils/core/load_gate').defer(3, function()
         pcall(function() require('shared/utils/atelier/porter_lists').sync(player.main_job) end)
     end, 'porter sync')
+    -- a tour of the jobs (//gs c atelier tour: shared/utils/atelier/atelier_tour.lua) exports this load itself
+    local ok_t, on_tour = pcall(function() return require('shared/utils/atelier/atelier_tour').on_load() end)
+    if ok_t and on_tour then return end
     if not AtelierExport.enabled() then return end
     -- waits for the level, the bags and the Porter Moogle's slips in them (unread just after a load or a zone);
     -- past the wait, the export goes with what there is (the slips' last list: shared/utils/atelier/slip_items.lua)
@@ -940,6 +945,10 @@ function AtelierExport.handle(args)
             :format(sub == 'on' and 'ON' or 'OFF'))
         return true
     end
+    if sub == 'tour' then
+        require('shared/utils/atelier/atelier_tour').handle(args)
+        return true
+    end
     if sub == 'link' then
         local ok, err = AtelierExport.install_link()
         MessageFormatter.show_info(ok and 'Atelier: AtelierLink installed and loaded: the page can now load, unload and reload GearSwap'
@@ -967,6 +976,13 @@ function AtelierExport.handle(args)
         return true
     end
     local rel = AtelierExport.export()
+    if sub == 'all' and rel then
+        -- every other job is rebuilt by the page (its "Reread" button, pressed from here): the live link's /ping
+        -- carries the request (atelier_live.lua), the page open in the browser sees it within seconds
+        windower._atelier_rebuild = os.time()
+        MessageFormatter.show_info(('Atelier: %s written; the page open in your browser now rebuilds every other job'):format(rel))
+        return true
+    end
     MessageFormatter.show_info(rel and ('Atelier: %s written, open data/atelier.html'):format(rel)
         or 'Atelier: export failed (could not write the file)')
     return true

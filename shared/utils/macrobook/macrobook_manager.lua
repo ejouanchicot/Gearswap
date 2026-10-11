@@ -108,6 +108,8 @@ local function set_macro_with_delay(ctx, book, page, delay)
     -- or a job change, came first
     require('shared/utils/core/load_gate').defer(delay, function()
         if my_id ~= _G._macrobook_schedule_id then return end
+        -- //gs c atelier tour passes through every job: no macro book on the way (atelier_tour.lua)
+        if require('shared/utils/atelier/atelier_tour').active() then return end
         set_macro_page(page, book)
     end, 'macro book', ctx.load_gen)
 end

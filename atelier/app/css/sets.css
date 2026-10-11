@@ -259,6 +259,7 @@
 .histtag.delete{color:var(--r-dd)}
 .histtag.create{color:var(--r-healer)}
 .histtag.pieces{color:var(--g-def)}
+.histtag.config{color:var(--accent)}
 .histhead{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap;cursor:pointer;list-style:none}
 .histhead::-webkit-details-marker{display:none}
 .histhead::before{content:'▸';color:var(--muted)}
@@ -468,8 +469,6 @@
 .setsx.ui2 .dbody{grid-template-columns:minmax(0,1fr)}
 .ui2wants{margin:8px 0 0;color:var(--muted)}
 /* the party builder (app/js/party_builder.js) */
-.pbsaved{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.pbpreset{display:inline-flex;align-items:center}
 .pblbl{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}
 .pbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));grid-auto-rows:1fr;gap:14px;align-items:stretch}
 .pbcard{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
@@ -518,9 +517,6 @@
 @media (max-width:900px){.pbedit{padding-left:14px}.pbhead{grid-template-columns:110px minmax(0,1fr) 16px 22px}.pbhead .pbgv{display:none}}
 
 /* the cards as buttons (party_builder.js pbBody): 3 a row, the same height */
-.pbbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
-.pbbar > b{font-size:15px}
-.pbbar .pbsaved{margin-left:auto}
 .combattab .pbgrid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr}
 @media (max-width:1500px){.combattab .pbgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:900px){.combattab .pbgrid{grid-template-columns:minmax(0,1fr)}}
@@ -901,6 +897,146 @@
 .setsx.ui2 .globalcol .setstats{min-height:552px;box-sizing:border-box}
 .setsx:not(.ui2) .setctl > :empty{display:none}
 .setsx:not(.ui2) .setctl:not(:has(> :not(:empty))){display:none}
+/* ---- the job's settings: its four parts as one row of buttons over the part shown ---- */
+/* one frame for the four parts: the same width, the same line on top (what the part shows), the same two columns
+   of boxes under it, so going from one part to the next moves nothing but the content */
+.jobcfg{display:grid;gap:14px;align-content:start;width:100%;max-width:1240px;margin:0 auto}
+.jobcfg > *{min-width:0}
+.jobcfg > .keybar{width:100%;max-width:none;margin:0;min-height:52px}
+.jobcfg > .toast{margin:0}
+.jobcfg > .boxgrid.cols{width:100%;max-width:none;margin:0 0 -14px;columns:460px 2}
+.jobcfg .boxgrid.cols > .box.wide{column-span:all}
+.jobcfg .fn2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;margin:-6px -14px -10px}
+/* the Modules part (modules.js): the files on the left, the settings of the one opened on the right; a setting is
+   a line, its name and what the file says of it, then its control at a fixed place */
+.modlayout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;align-items:start}
+/* the left column scrolls by itself (a box hides what overflows: said again, more strongly); room kept for its bar */
+.modlayout > .modnav.box{padding:8px;display:grid;gap:10px;align-content:start;max-height:calc(100vh - 320px);overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable}
+.modgrp{display:grid;gap:2px}
+.modgrph{display:flex;align-items:center;gap:7px;width:100%;padding:7px 8px;border:0;border-radius:var(--radius-s);background:none;color:var(--accent);font:inherit;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;text-align:left;cursor:pointer}
+.modgrph:hover{background:var(--accent-soft)}
+.modgrph i{font-style:normal;font-size:11px;transition:transform .12s}
+.modgrp.open > .modgrph i{transform:rotate(90deg)}
+.modgrph b{flex:1;min-width:0}
+.modgrph small{font-family:var(--mono);font-size:10.5px;font-weight:400;letter-spacing:0;color:var(--faint)}
+.modgrph .moddot{position:static;transform:none;font-style:normal;padding:0 5px;letter-spacing:0}
+.modfile{position:relative;display:grid;text-align:left;padding:6px 30px 6px 10px;border:1px solid transparent;border-radius:var(--radius-s);background:none;color:var(--ink);font:inherit;cursor:pointer}
+.modfile b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modfile small{font-family:var(--mono);font-size:10.5px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modfile:hover{background:var(--hover)}
+.modfile[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.moddot{position:absolute;right:8px;top:50%;transform:translateY(-50%);min-width:18px;text-align:center;font-style:normal;font-size:11px;font-weight:800;border-radius:99px;background:var(--accent);color:var(--accent-ink)}
+.modpanel .box{display:block}
+.modtag{margin:0 0 6px;font-size:14px;color:var(--ink)}
+.modabout{margin:0 0 10px;font-size:12.5px;color:var(--muted)}
+.modabout summary{cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modabout pre,.modk p{margin:6px 0 0;font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+.modrows{margin:-6px -14px -10px;max-height:calc(100vh - 380px);min-height:260px;overflow:auto}
+.modrows .modabout{margin:8px 0 0}
+.modpart{margin:0;padding:12px 14px 6px;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);border-top:1px solid var(--line-strong)}
+.modpart small{display:block;margin-top:3px;font-size:11.5px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--faint)}
+.modadvall{border-top:1px solid var(--line-strong)}
+.modadvall > summary{padding:11px 14px;cursor:pointer;font-size:12.5px;color:var(--muted)}
+.modnone{padding:12px 14px}
+.modrow{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:6px 18px;align-items:center;padding:9px 14px 9px calc(14px + var(--d,0) * 20px);border-top:1px solid var(--line)}
+.modrow:first-child{border-top:0}
+.modrow.grp{grid-template-columns:minmax(0,1fr);background:color-mix(in srgb,var(--well) 60%,transparent)}
+.modrow.tall{grid-template-columns:minmax(0,1fr)}
+.modrow.changed{box-shadow:inset 3px 0 0 var(--accent);background:var(--accent-soft)}
+.modk b{font-size:14px;color:var(--ink)}
+.modk code{margin-left:8px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.modseg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.modseg button{padding:5px 12px;border:1px solid var(--line-strong);border-radius:99px;background:var(--well);color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.modseg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.modseg button[disabled]{cursor:default;opacity:.8}
+.modv:has(.modseg){display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+.modchips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+/* a list's entry: a tile that is dragged to its place; an item wears the game's icon */
+.modchip[draggable="true"]{cursor:grab}
+.modchip.dragging{opacity:.35}
+.modchip.dropl{box-shadow:-3px 0 0 var(--accent)}
+.modchip.dropr{box-shadow:3px 0 0 var(--accent)}
+.modchip .mcnum{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-right:2px}
+.modchip.item{padding:3px 4px 3px 4px;border-radius:9px;gap:7px;background:var(--panel-2)}
+.modchip.item .ico{width:30px;height:30px;flex:none}
+.modchip.item .ico img,.mitile .ico img{width:100%;height:100%;image-rendering:pixelated}
+.modaddbtn{padding:5px 12px;border:1px dashed var(--line-strong);border-radius:99px;background:none;color:var(--muted);font:inherit;font-size:12.5px;cursor:pointer}
+.modaddbtn:hover{border-color:var(--accent);color:var(--accent)}
+.modaddbtn[disabled]{display:none}
+/* the window of items: a search, then the items as tiles with their icon */
+.dialog.midlg{width:min(860px,94vw);max-height:86vh;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.midlg .body{display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px;min-height:0;overflow:hidden}
+.mibody{overflow:auto;min-height:220px;padding-right:4px}
+.mibody h4{margin:4px 0 8px;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.migrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-bottom:12px}
+.mitile{display:grid;grid-template-columns:36px minmax(0,1fr);gap:9px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.mitile span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitile:hover{border-color:var(--accent);background:var(--accent-soft)}
+.mitile[disabled]{opacity:.4;cursor:default}
+.modchip{display:inline-flex;align-items:center;gap:4px;padding:3px 4px 3px 10px;border:1px solid var(--line-strong);border-radius:99px;background:var(--well);font-size:12.5px}
+.modchip button{border:0;background:none;color:var(--muted);font:inherit;font-size:14px;line-height:1;padding:0 5px;cursor:pointer;border-radius:99px}
+.modchip button:hover{color:var(--bad,#ff7b72)}
+.modchip button[disabled]{display:none}
+.modin.add{width:130px;border-style:dashed}
+.modin.add[disabled]{display:none}
+.modadv summary{cursor:pointer;font-size:12px;color:var(--faint)}
+.modadv[open] summary{margin-bottom:6px}
+.modk p{margin:3px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.modv{display:grid;justify-items:end;min-width:0}
+.modrow.tall .modv{justify-items:stretch}
+.modrow.tall .modv:has(.modseg){justify-content:flex-start}
+.modsw{display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--line-strong);border-radius:99px;background:var(--well);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer}
+.modsw b{min-width:48px;text-align:left}
+.modsw[disabled],.modin[disabled]{opacity:.75;cursor:default}
+/* the simple view: one option a card, its title, what it does, what it reaches, then its control */
+.modviews{flex:none}
+.modviews button{padding:5px 12px;font-size:12.5px}
+.modfile[disabled]{opacity:.4;cursor:default}
+.mccards{margin:-6px -14px -10px;max-height:calc(100vh - 380px);min-height:260px;overflow:auto}
+.mccard{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:8px 20px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.mccard:first-child{border-top:0}
+.mccard.tall{grid-template-columns:minmax(0,1fr)}
+.mccard.tall .modv{justify-items:stretch}
+.mccard.changed{box-shadow:inset 3px 0 0 var(--accent);background:var(--accent-soft)}
+.mck b{font-size:14.5px;color:var(--ink)}
+.mck p{margin:3px 0 6px;font-size:12.5px;line-height:1.5;color:var(--muted);max-width:78ch}
+.mcscope{display:inline-block;margin-top:2px;padding:1px 9px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid var(--line-strong);color:var(--muted);cursor:help}
+.mcscope.job{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:var(--accent-soft)}
+.mccard .modv{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+.mccard.tall .modv{justify-content:flex-start}
+.mcunit{font-style:normal;font-size:12px;color:var(--muted);min-width:34px}
+/* what a module does, at the top of its options; and the presentation: the job, then every module in a sentence */
+.mcabout{padding:12px 14px;background:color-mix(in srgb,var(--well) 70%,transparent);border-bottom:1px solid var(--line-strong)}
+.mcabout p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink);max-width:90ch}
+.mcabout .mcuse{margin-top:6px;font-size:12.5px;color:var(--muted)}
+.mcabout .mcuse b{color:var(--accent)}
+.mcintro{padding:14px 16px 18px;display:grid;gap:22px;align-content:start}
+.mcintro h4{margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.mclead{margin:0 0 10px;font-size:14px;line-height:1.55;color:var(--ink);max-width:95ch}
+.mcpoints{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
+.mcpoints li{display:grid;gap:2px;padding:9px 12px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:var(--panel-2)}
+.mcpoints b{font-size:13.5px;color:var(--ink)}
+.mcpoints span{font-size:12.5px;line-height:1.45;color:var(--muted)}
+.mcnext{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.mcmods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mcintro h5{margin:14px 0 6px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.mcintro h5:first-of-type{margin-top:4px}
+.mcmod{display:grid;gap:4px;align-content:start;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);color:var(--ink);font:inherit;cursor:pointer}
+.mcmod:hover{border-color:var(--accent);background:var(--accent-soft)}
+.mcmod b{font-size:14px}
+.mcmod span{font-size:12.5px;line-height:1.45;color:var(--muted)}
+.mcmod i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--accent)}
+@media (max-width:1300px){.mcpoints{grid-template-columns:minmax(0,1fr)}.mcmods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1000px){.mccard{grid-template-columns:minmax(0,1fr)}.mccard .modv{justify-content:flex-start}}
+.modin{width:100%;font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line-strong);border-radius:var(--radius-s);background:var(--well);color:var(--ink)}
+.modin.num{width:110px;text-align:right;font-family:var(--mono)}
+.modin:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.modcode{margin:0;max-height:220px;overflow:auto;padding:8px 10px;border:1px dashed var(--line-strong);border-radius:var(--radius-s);background:var(--well);font-family:var(--mono);font-size:12px;line-height:1.45;color:var(--muted);white-space:pre}
+@media (max-width:1000px){.modlayout{grid-template-columns:minmax(0,1fr)}.modnav{max-height:220px}.modrow{grid-template-columns:minmax(0,1fr)}.modv{justify-items:start}}
+@media (max-width:1000px){.jobcfg .fn2{grid-template-columns:minmax(0,1fr)}.jobcfg .fn2 .tbl.in + .tbl.in tr:first-child td{border-top:1px solid var(--line)}}
+.jobcfgtabs{justify-self:center}
+.jobcfgtabs button{padding:7px 18px;font-size:13.5px;font-weight:700}
+.jobcfgtabs .count{margin-left:7px;font-size:11px;opacity:.75}
 /* ---- a set's versions, under its title: one row of buttons that is plainly a choice ---- */
 .setvers{display:flex;align-items:center;gap:12px;min-height:38px;padding:2px 0 0}
 .setvers .kicker{flex:none}
@@ -910,3 +1046,99 @@
 .verseg button:hover{color:var(--ink);background:var(--hover)}
 .verseg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 0 14px -4px var(--accent)}
 .setsx.ui2 .setctl > .wpicks{min-height:52px}
+/* a setting that is a table of lines (module_rows.js): the TP Bonus pieces, a refill list, the Cure tiers */
+.mrwrap{display:grid;gap:8px;justify-items:start;width:100%;min-width:0}
+.mrtbl{border-collapse:collapse;max-width:100%}
+.mrtbl th{padding:0 8px 4px 0;text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+.mrtbl td{padding:3px 8px 3px 0;vertical-align:middle}
+.mrtbl td.k-num .modin,.mrtbl th.k-num{text-align:right}
+.mrtbl td.k-num .modin{width:92px}
+.mrtbl td.k-slot .modin{width:190px}
+.mrtbl td.k-text .modin{width:230px}
+.mrname{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:center;width:340px;max-width:100%}
+.mrname .ico{width:30px;height:30px}
+.mrname .ico img{width:100%;height:100%;image-rendering:pixelated}
+.mrtbl select.modin{padding:5px 8px}
+.mrtbl tr.new td{background:var(--accent-soft)}
+.mrtbl tr.unfilled .mrname .modin{border-style:dashed}
+.mract{white-space:nowrap}
+.mract i{margin-right:6px;font-size:11.5px;color:var(--accent)}
+.mract button{width:26px;height:26px;margin-left:2px;border:1px solid var(--line-strong);border-radius:7px;background:var(--well);color:var(--muted);font:inherit;font-size:13px;line-height:1;cursor:pointer}
+.mract button:hover{border-color:var(--accent);color:var(--accent)}
+.mract button[data-rowdel]:hover{border-color:var(--bad,#ff7b72);color:var(--bad,#ff7b72)}
+.mract button[disabled]{opacity:.3;cursor:default}
+.mccard .modv:has(.mrwrap){justify-content:flex-start}
+/* one look for every setting of the Modules part, in Options and in Advanced alike: the name, what it does and what it
+   reaches each on its own line with the same gaps; the control in a column of one width, ending on the same line */
+.mccard,.modrow{grid-template-columns:minmax(0,1fr) 300px;gap:10px 24px;align-items:center;padding:14px 16px}
+.modrow{padding-left:calc(16px + var(--d,0) * 20px)}
+.mccard.tall,.modrow.tall,.modrow.grp{grid-template-columns:minmax(0,1fr)}
+.modrow.grp{padding-top:10px;padding-bottom:10px}
+.mck,.modk{display:grid;gap:5px;justify-items:start;min-width:0}
+.mck > b,.modk > b{font-size:14.5px;line-height:1.3;color:var(--ink)}
+.modk{grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:baseline}
+.modk > code{font-family:var(--mono);font-size:11px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.modk > p{grid-column:1 / -1}
+.mck > p,.modk > p{margin:0;font:inherit;font-size:12.5px;line-height:1.5;color:var(--muted);max-width:78ch;white-space:pre-wrap;overflow-wrap:anywhere}
+.mck > .mcscope{margin-top:2px}
+.mccard .modv,.modrow .modv{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center;min-width:0}
+.mccard.tall .modv,.modrow.tall .modv{justify-content:flex-start}
+.mccard .modv > .modin,.modrow .modv > .modin{width:100%}
+.mccard .modv > .modin.num,.modrow .modv > .modin.num{width:130px}
+.mcfield{display:inline-flex;align-items:center;width:130px;border:1px solid var(--line-strong);border-radius:var(--radius-s);background:var(--well)}
+.mcfield:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.mcfield .modin,.mcfield .modin:focus{flex:1;min-width:0;width:auto;border:0;background:none;box-shadow:none;padding-right:4px}
+.mcfield .mcunit{min-width:0;padding:0 10px 0 2px;font-size:12px;color:var(--muted);white-space:nowrap}
+.modchip:has(> button[disabled]){padding-right:10px}
+.modchip.item:has(> button[disabled]){padding-right:10px}
+.modpart{padding:14px 16px 8px}
+.mcabout{padding:14px 16px}
+@media (max-width:1000px){.mccard,.modrow{grid-template-columns:minmax(0,1fr)}.mccard .modv,.modrow .modv{justify-content:flex-start}}
+/* the Modules part made easy to handle (module_ux.js): the search on top, the read-only banner, a number with its
+   bounds, a colour as a colour, the waiting changes in a bar at the bottom */
+.keybar.modtop{gap:12px;align-items:center}
+.modtop .tgq{flex:0 1 440px;font-size:13.5px;padding:7px 12px}
+.modtop .modhint{flex:1;min-width:0;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modtop .btn.ghost{margin-right:auto}
+.modlock{display:flex;gap:12px;align-items:baseline;width:100%;padding:10px 16px;border:1px solid color-mix(in srgb,var(--warn,#e3b341) 55%,transparent);border-left-width:4px;border-radius:var(--radius-s);background:color-mix(in srgb,var(--warn,#e3b341) 10%,transparent)}
+.modlock b{flex:none;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--warn,#e3b341)}
+.modlock span{font-size:13px;line-height:1.5;color:var(--ink)}
+.modfound .modrows{max-height:calc(100vh - 380px)}
+.mcfield{width:auto}
+.mcfield .modin.num{width:74px;flex:none;text-align:right}
+.mcstep{flex:none;width:28px;align-self:stretch;border:0;background:none;color:var(--muted);font:inherit;font-size:15px;line-height:1;cursor:pointer}
+.mcstep:first-child{border-right:1px solid var(--line);border-radius:var(--radius-s) 0 0 var(--radius-s)}
+.mcstep:last-child{border-left:1px solid var(--line);border-radius:0 var(--radius-s) var(--radius-s) 0}
+.mcstep:hover:not([disabled]){background:var(--accent-soft);color:var(--accent)}
+.mcstep[disabled]{opacity:.45;cursor:default}
+.mcfield .mcunit{padding:0 8px 0 0}
+.modrange{flex:0 1 130px;min-width:80px;accent-color:var(--accent);cursor:pointer}
+.modrange[disabled]{opacity:.6;cursor:default}
+.mcstd{flex-basis:100%;text-align:right;border:0;background:none;padding:0;font:inherit;font-size:11.5px;color:var(--accent);cursor:pointer;text-decoration:underline dotted}
+.mcstd.is{color:var(--faint);text-decoration:none;cursor:default}
+.mcstd[disabled]{color:var(--faint);cursor:default}
+.modcolor{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.modcolor input[type=color]{width:54px;height:32px;padding:2px;border:1px solid var(--line-strong);border-radius:var(--radius-s);background:var(--well);cursor:pointer}
+.modcolor input[type=color][disabled]{cursor:default}
+.modcolor code{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.modcolor small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.modrow.grp.tint{grid-template-columns:minmax(0,1fr) 300px}
+.mitile.act{grid-template-columns:minmax(0,1fr);padding:8px 10px}
+.mitile.act.other{opacity:.6;border-style:dashed}
+.modsave{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:40;width:min(980px,calc(100vw - 48px));border:1px solid var(--accent);border-radius:12px;background:var(--panel);box-shadow:0 10px 34px rgba(0,0,0,.5)}
+.modsave .mshead{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.modsave .mshead b{font-size:13.5px;color:var(--accent)}
+.modsave .mshead .sp{flex:1}
+.modsave ul{margin:0;padding:0 8px 8px;list-style:none;max-height:104px;overflow:auto}
+.modsave li{display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(0,1fr) auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:4px 6px;border-top:1px solid var(--line);font-size:12.5px}
+.modsave li b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.modsave li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modsave li .was{color:var(--muted);text-decoration:line-through}
+.modsave li .now{color:var(--ink);font-weight:600}
+.modsave li i{font-style:normal;color:var(--accent)}
+.modsave li button{width:24px;height:24px;border:1px solid var(--line-strong);border-radius:7px;background:var(--well);color:var(--muted);font:inherit;line-height:1;cursor:pointer}
+.modsave li button:hover{border-color:var(--bad,#ff7b72);color:var(--bad,#ff7b72)}
+/* room for that bar: the panels stop above it */
+.jobcfg:has(.modsave) .mccards,.jobcfg:has(.modsave) .modrows,.jobcfg:has(.modsave) .modlayout > .modnav.box{max-height:calc(100vh - 560px);min-height:180px}
+.jobcfg:has(.modlock) .mccards,.jobcfg:has(.modlock) .modrows{max-height:calc(100vh - 440px)}
+.modchip .mcn.mode{font-style:italic;color:var(--accent);cursor:help}

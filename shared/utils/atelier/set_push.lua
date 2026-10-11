@@ -599,6 +599,25 @@ function SetPush.write(job, body, hash)
     return {ok = true, entry = entry}
 end
 
+--- Another file of the character rewritten from the page (a settings file:
+--- shared/utils/atelier/atelier_configs.lua), with the same copy and the same history as a set.
+--- @param abs string The file
+--- @param before string Its text now
+--- @param after string Its new text
+--- @param entry table What the history says of it ({job, path, changes, ...})
+--- @return table {ok, entry} or {error}
+function SetPush.write_file(abs, before, after, entry)
+    local list = read_history()
+    local id = ((list[#list] or {}).id or 0) + 1
+    local backup, err = backup_and_write({abs = abs, text = before, out = after}, id)
+    if not backup then return {error = err} end
+    entry.id, entry.at, entry.file, entry.backup = id, os.date('%Y-%m-%d %H:%M'), relative(abs), relative(backup)
+    entry.hash_before, entry.hash_after = SetWriter.hash(before), SetWriter.hash(after)
+    list[#list + 1] = entry
+    write_history(list)
+    return {ok = true, entry = entry}
+end
+
 ---============================================================================
 --- DELETE
 ---============================================================================

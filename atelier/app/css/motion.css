@@ -30,6 +30,9 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 :root[data-theme="vanadiel"] .setrow[aria-current="true"] b::before{content:none}
 :root[data-theme="vanadiel"] .setrow.var[aria-current="true"] b::before{content:none}
 :root[data-theme="vanadiel"] .setrow[aria-current="true"] b{padding-left:33px}
+/* a list of jobs: the row has its emblem and letters at the left, no room for the hand (it covered the letters) */
+:root[data-theme="vanadiel"] .joblist .hand{display:none}
+:root[data-theme="vanadiel"] .joblist .setrow[aria-current="true"] b{padding-left:0}
 /* a white cartoon glove pointing at the row (app/img/cursor/point.webp, cut from atelier/Img/cursor/Cursor.png) */
 :root[data-theme="vanadiel"] .hand{display:block;position:absolute;width:28px;height:20px;margin-top:-10px;pointer-events:none;
   background:url(../img/cursor/point.webp) 0 0/100% 100% no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}

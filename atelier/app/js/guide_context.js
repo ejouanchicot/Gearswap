@@ -23,9 +23,20 @@ Object.assign(T.fr, {gcNow: 'En ce moment', gcShow: 'Montre-moi', gcTips: 'À sa
   gcOffline: 'Le jeu n’est pas connecté : tu peux tout essayer et comparer, mais « Équiper en jeu » et « Simuler » attendent qu’il le soit.',
   gcPin: 'Astuce : passe la souris sur un set que tu ouvres souvent et clique l’étoile. Il restera tout en haut de la liste.',
   gcOpt: 'Ce set peut être optimisé : je cherche dans tes sacs la meilleure combinaison pour ce qu’il doit faire.',
-  gcOptWith: 'Je vais chercher avec les buffs « {t} » contre {e}. Si ce n’est pas ton combat, change-les dans l’onglet Combat avant de lancer.',
+  gcOptWith: 'Je vais chercher avec les buffs « {t} » contre {e}. Si ce n’est pas ton combat, change-les dans l’onglet « Buffs & cible » avant de lancer.',
   gcOptLocks: '{n} case(s) sont verrouillées : je n’y toucherai pas.', gcOptExcl: '{n} pièce(s) sont écartées de mes recherches (tu peux les remettre dans la liste des pièces écartées).',
-  gcOptNoGame: 'Le jeu n’est pas connecté : je cherche dans les sacs du dernier export, pas dans ce que tu as ramassé depuis.'});
+  gcOptNoGame: 'Le jeu n’est pas connecté : je cherche dans les sacs du dernier export, pas dans ce que tu as ramassé depuis.',
+  gcCombatNow: 'La page calcule tout avec le profil « {t} » contre {e}, et {n} buff(s) ou ability(s) compté(s).',
+  gcCombatNone: 'Aucun buff n’est compté : les chiffres sont ceux de ton personnage seul. « Buffs typiques » coche d’un coup un groupe complet.',
+  gcCombatSet: 'Les chiffres de cet onglet sont ceux du set {s}. Choisis-en un autre à gauche pour voir l’effet des buffs sur lui.',
+  gcKeysDirty: 'Tu as changé des touches sans les enregistrer : elles ne sont que dans cette page. « Enregistrer » les écrit, puis recharge GearSwap.',
+  gcKeysChanged: '{n} touche(s) ne sont plus celles de tes fichiers d’origine : elles viennent du fichier de la page (retour possible touche par touche).',
+  gcKeysHidden: '{n} touche(s) ne sont pas montrées : elles ne servent qu’avec un autre sub que {s}.',
+  gcPersoAt: 'Tes stats ont été mesurées en jeu le {d}. Si tu as monté des mérites, des Job Points ou des Master Levels depuis, relance //gs c atelier en jeu.',
+  gcPersoNone: 'La page n’a pas encore tes stats mesurées en jeu : elle part d’un personnage type. Lance //gs c atelier en jeu sur ce job.',
+  gcPersoEdits: 'Tu as changé {n} mérite(s) dans la page pour voir leur effet : rien n’est écrit, « Remettre » revient à ce qui a été lu en jeu.',
+  gcSimOff: 'Simuler demande le jeu lancé sur ce job : c’est GearSwap lui-même qui répond ce qu’il équiperait.',
+  gcModesLive: 'La valeur encadrée de chaque mode est celle du jeu en ce moment.', gcModesExport: 'La valeur encadrée de chaque mode est celle du dernier export, pas forcément celle du jeu maintenant.'});
 Object.assign(T.en, {gcNow: 'Right now', gcShow: 'Show me', gcTips: 'Good to know',
   gcSub: 'In game you are {g}, but the page computes as {p}: stats, traits and sets are not the ones you play. The button at the top of the page switches to your game subjob.',
   gcMiss: '{n} piece(s) of this set are not in your bags: {l}. The set will not wear them in game.',
@@ -40,9 +51,20 @@ Object.assign(T.en, {gcNow: 'Right now', gcShow: 'Show me', gcTips: 'Good to kno
   gcOffline: 'The game is not connected: you can try and compare everything, but "Equip in game" and "Simulate" wait for it.',
   gcPin: 'Tip: hover a set you open often and click the star. It will stay at the very top of the list.',
   gcOpt: 'This set can be optimized: I look in your bags for the best combination for what it must do.',
-  gcOptWith: 'I will search with the "{t}" buffs against {e}. If that is not your fight, change them in the Combat tab before starting.',
+  gcOptWith: 'I will search with the "{t}" buffs against {e}. If that is not your fight, change them in the "Buffs & target" tab before starting.',
   gcOptLocks: '{n} cell(s) are locked: I will not touch them.', gcOptExcl: '{n} piece(s) are kept out of my searches (you can put them back in the list of excluded pieces).',
-  gcOptNoGame: 'The game is not connected: I search the bags of the last export, not what you picked up since.'});
+  gcOptNoGame: 'The game is not connected: I search the bags of the last export, not what you picked up since.',
+  gcCombatNow: 'The page computes everything with the "{t}" profile against {e}, and {n} buff(s) or abilities counted.',
+  gcCombatNone: 'No buff is counted: the figures are your character alone. "Typical buffs" ticks a full party at once.',
+  gcCombatSet: 'This tab’s figures are those of the set {s}. Choose another on the left to see what the buffs do to it.',
+  gcKeysDirty: 'You changed keys without saving them: they are in this page only. "Save" writes them, then reload GearSwap.',
+  gcKeysChanged: '{n} key(s) are no longer those of your original files: they come from the page’s file (each can be put back).',
+  gcKeysHidden: '{n} key(s) are not shown: they serve with another subjob than {s} only.',
+  gcPersoAt: 'Your stats were measured in game on {d}. If you raised merits, Job Points or Master Levels since, run //gs c atelier in game again.',
+  gcPersoNone: 'The page does not have your stats measured in game yet: it starts from a typical character. Run //gs c atelier in game on this job.',
+  gcPersoEdits: 'You changed {n} merit(s) in the page to see their effect: nothing is written, "Put back" returns to what was read in game.',
+  gcSimOff: 'Simulate needs the game running on this job: GearSwap itself answers what it would equip.',
+  gcModesLive: 'The framed value of each mode is the game’s right now.', gcModesExport: 'The framed value of each mode is the last export’s, not necessarily the game’s now.'});
 
 // The set shown and its card, or null on a page without one
 function gcSet(){
@@ -79,6 +101,19 @@ const GC_RULES = {
     () => gcLive() ? null : {text: t('gcOffline'), sel: '#top [data-livejump]'},
     () => document.querySelector('.detail [data-optview]') ? {text: t('gcOpt'), sel: '.detail [data-optview]'} : null,
     () => listPrefs().pins.length || listPrefs().groups.length ? null : {text: t('gcPin'), sel: '.setlist .scroll'}],
+  combat: [
+    () => { const n = buffCount(); return n ? {text: t('gcCombatNow', {t: buffTier(), e: enemyKey(buffState().enemy), n})} : {text: t('gcCombatNone'), sel: '[data-buffendgame]'}; },
+    () => { const s = S._curSet; return s ? {text: t('gcCombatSet', {s: shortPath(s.path)}), sel: '.setlist'} : null; },
+    () => { const e = window.FFXI && FFXI.engine; return e && e.name === 'old' ? {text: t('gcOld')} : null; }],
+  keys: [
+    () => S.keyDirty && S.keyDirty[S.char] ? {text: t('gcKeysDirty'), sel: '.keybar', warn: true} : null,
+    () => { const n = Object.values(keyOverrides() || {}).reduce((m, x) => m + Object.keys(x).length, 0); return n && !(S.keyDirty && S.keyDirty[S.char]) ? {text: t('gcKeysChanged', {n}), sel: '.keybar'} : null; },
+    () => { const b = document.querySelector('[data-keysall]'), n = b && !S.keysAll ? +(b.textContent.match(/\d+/) || [0])[0] : 0; return n ? {text: t('gcKeysHidden', {n, s: (data() || {}).sub || '?'}), sel: '[data-keysall]'} : null; }],
+  modes: [() => ({text: t(gcLive() ? 'gcModesLive' : 'gcModesExport')})],
+  perso: [
+    () => { const c = measuredChar(); return c && c.at ? {text: t('gcPersoAt', {d: String(c.at).slice(0, 16)})} : {text: t('gcPersoNone'), warn: true}; },
+    () => { const n = Object.keys((S.meritEdits || {})[meritKey()] || {}).length; return n ? {text: t('gcPersoEdits', {n})} : null; }],
+  sim: [() => gcLive() ? null : {text: t('gcSimOff'), warn: true}],
   opt: [
     () => ({text: t('gcOptWith', {t: buffTier(), e: enemyKey(buffState().enemy)}), sel: '.ctxbar, .oppage .opwhere'}),
     () => { const c = gcSet(), n = c ? lockedSlots(c.s).length : 0; return n ? {text: t('gcOptLocks', {n})} : null; },

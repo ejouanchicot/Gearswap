@@ -192,7 +192,7 @@ async function openHistory(){
     : e.undoable ? `<button class="btn ghost" data-pushundo="${e.id}">${t('histUndo')}</button>`
     : `<span class="muted small" title="${esc(t('histLaterTip'))}">${t('histLater')}</span>`;
   // what the entry did: a set deleted, a set created, or pieces changed in a set already there
-  const kind = e => e.deleted ? 'delete' : e.created ? 'create' : 'pieces';
+  const kind = e => e.config ? 'config' : e.deleted ? 'delete' : e.created ? 'create' : 'pieces';
   const tag = e => `<span class="histtag ${kind(e)}">${esc(t('histKind_' + kind(e), {n: (e.changes || []).length}))}</span>`;
   const body = list.length ? list.map(e => `<details class="histrow ${e.undone ? 'undone' : ''}"><summary class="histhead">${tag(e)}<b>${esc(e.job)}</b>` +
     `<code>${esc(shortPath(e.path))}</code><span class="muted small">${esc(e.at)}</span><span class="sp"></span>${state(e)}</summary>` +

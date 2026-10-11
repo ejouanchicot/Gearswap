@@ -130,7 +130,7 @@ function buffCount(){
 function buffPanelHTML(){
   const b = buffState(), n = buffCount();
   // a menu; its empty choice names what it is for (Protect, Song 2...); `def` a value used while none is chosen
-  const sel = (key, values, ph = '—', def = null, cls = '') => `<select class="buffsel ${cls} ${b[key] ? 'set' : ''}" data-buff="${key}" title="${esc(ph)}">` +
+  const sel = (key, values, ph = '—', def = null, cls = '') => `<select class="buffsel ${cls} ${b[key] ? 'set' : ''}" data-buff="${key}" title="${esc(t('ttBuffSel', {n: ph}))}">` +
     (def ? values : ['', ...values]).map(v => `<option value="${esc(v)}" ${String(v) === String(b[key] ?? def ?? '') ? 'selected' : ''}>${v === '' ? esc(ph) : esc(v)}</option>`).join('') + `</select>`;
   // a geomancy menu: the buffs on you, then the debuffs on the enemy
   const geoSel = (key, ph) => `<select class="buffsel ${b[key] ? 'set' : ''}" data-buff="${key}" title="${ph}"><option value="">${ph}</option>` +
@@ -211,7 +211,7 @@ function partyCardsHTML(b, sel, geoSel, plus, jas){
     return parts.join(' · '); };
   const flag = (k, label, tip) => `<button class="chip" data-buffflag="${k}" aria-pressed="${!!b[k]}" title="${esc(tip)}">${esc(label)}</button>`;
   const seg = (k, tiers, label) => `<div class="pseg"><span class="flbl">${esc(label)}</span><span class="fseg">${Object.keys(tiers).map(v =>
-    `<button class="chip" data-foeseg="${k}" data-v="${esc(v)}" aria-pressed="${b[k] === v}">${esc(v.replace(/^\S+\s?/, '') || 'I')}</button>`).join('')}</span></div>`;
+    `<button class="chip" data-foeseg="${k}" data-v="${esc(v)}" aria-pressed="${b[k] === v}" title="${esc(v + ' · ' + t('ttTierChip'))}">${esc(v.replace(/^\S+\s?/, '') || 'I')}</button>`).join('')}</span></div>`;
   const songs = new Set(Object.keys(SONGS)), geoName = v => v.replace(/^(Entrust )?(Indi|Geo)-/, '');
   // who casts the WHM tab's spells (BG Wiki): Protect V WHM / RDM / SCH / PLD, Shell V WHM / RDM / SCH / RUN, Haste WHM /
   // RDM, Haste II RDM only, Storm II SCH only, Hastega SMN (Garuda); its switch keeps its WHM key
@@ -278,14 +278,6 @@ function warcryHTML(b, party){
   const who = party ? ' data-wparty="1"' : '';
   return `<span class="flbl">Savagery</span><span class="fseg">${[0, 1, 2, 3, 4, 5].map(n => btn(`data-savagery="${n}"${who}`, String(n), n === lv)).join('')}</span>` +
     btn(`data-agoge${who}`, 'Agoge Mask +3/+4', !noAgoge) + `<span class="muted small">${on ? 'TP Bonus +' + warcryTp(b, party) : esc(t('warcryOff'))}</span>`;
-}
-// The target compartment: the picker's button, its job and zone, its Defense and Evasion before → after
-function targetCardPanel(b){
-  const key = enemyKey(b.enemy), x = TARGETS[key] || {}, T = targetInfo(null);
-  const num = (label, a, z) => `<div class="tnum"><span>${esc(label)}</span><b>${a}</b><i>→</i><b class="${z !== a ? 'down' : ''}">${z}</b></div>`;
-  return `<button class="btn ghost tgtpickbtn" data-tgtpick>${esc(key)}${x.est && x.est.length ? ' *' : ''} ▾</button>` +
-    `<p class="muted small tmeta">${esc([x.job, x.zone].filter(Boolean).join(' · ') || t('pkDefault'))}</p>` +
-    `<div class="tnums">${num(t('tgtDef'), T.def, Math.max(1, T.defAfter))}${num(t('tgtEva'), T.eva, T.evaAfter)}</div>`;
 }
 // What lowers the target: the usual ones always in view (Dia, Distract with Saboteur, Light Shot), the other
 // jobs one tab each (a dot on a tab with something on); a line: its buttons (a tier is one click and again to
@@ -356,7 +348,7 @@ function foePanelHTML(b){
   const cur = tabs.find(x => x.id === S._foeTab) || tabs.find(x => x.on) || tabs[0], curOn = !(b.off || {})[cur.id];
   // the jobs in two rows of nine, the tab's switch on their right
   const bar = `<div class="foetabs ftab7"><div class="ftabs7" role="tablist">${tabs.map(x => `<button class="foetab ${x.on && !(b.off || {})[x.id] ? 'on' : ''}" role="tab" data-foetab="${esc(x.id)}" ` +
-    `aria-selected="${x === cur}">${esc(x.label)}</button>`).join('')}</div><span class="foetabsw">${offSwitch(b, cur.id)}</span></div>`;
+    `aria-selected="${x === cur}" title="${esc(t('ttFoeTab', {j: x.label}))}">${esc(x.label)}</button>`).join('')}</div><span class="foetabsw">${offSwitch(b, cur.id)}</span></div>`;
   // the tab as a grid, two abilities a row (a wide one a row), each with what it takes off
   const cell = ([l, ctl, fx, wide]) => `<div class="fcell ${wide || ''}">${l ? `<span class="flbl">${esc(l)}</span>` : ''}<div class="fctl">${ctl}</div>` +
     (fx ? `<span class="ffx ${fx.length && curOn ? 'on' : ''}" title="${esc(fx.join(' · '))}">${esc(!curOn ? '' : fx.join(' · ') || '—')}</span>` : '') + `</div>`;
@@ -373,42 +365,6 @@ function foePanelHTML(b){
     total: `<span class="meta ${total ? 'down' : ''}">${esc(total || t('foeNone'))}</span>`};
 }
 // The target picker, a window over the buffs: the target chosen and the reference on top, a search, then
-// one folding compartment a zone (all closed; a search opens the zones it finds), a line a monster with
-// its levels (or Vengeance) as buttons; * = some stats estimated. Picking one, Back, a click outside or
-// Escape go back to the buffs
-function openTargetPick(){
-  S._buffDlg = false; S._tgtPick = true;
-  const cur = enemyKey(buffState().enemy), zones = new Map();
-  for (const x of Object.values(TARGETS)) {
-    if (x.key === DEFAULT_ENEMY) continue;
-    if (!zones.has(x.zone)) zones.set(x.zone, new Map());
-    const m = zones.get(x.zone);
-    if (!m.has(x.name)) m.set(x.name, []);
-    m.get(x.name).push(x);
-  }
-  const chip = x => `<button class="chip" data-pickenemy="${esc(x.key)}" aria-pressed="${x.key === cur}">${esc(x.key.split(' · ')[1] || x.key)}</button>`;
-  const line = (n, xs) => `<div class="tprow" data-q="${esc((n + ' ' + xs[0].zone).toLowerCase())}"><span class="tpname">${esc(n)}` +
-    `${xs[0].est.length ? ' <span class="muted">*</span>' : ''}${xs[0].job ? ` <span class="muted small">${esc(xs[0].job)}</span>` : ''}</span>` +
-    `<div class="tplv">${xs.map(chip).join('')}</div></div>`;
-  // a zone's band: its name, how many monsters, their levels
-  const span = xs => { const lv = xs.map(x => x.lv).filter(Boolean), v = xs.map(x => x.key.match(/· (V\d+)$/)).filter(Boolean);
-    return lv.length ? `Lv${Math.min(...lv)}${Math.max(...lv) > Math.min(...lv) ? '–' + Math.max(...lv) : ''}` : v.length ? `${v[0][1]}–${v[v.length - 1][1]}` : ''; };
-  const zone = (z, m) => { const all = [...m.values()].flat(), has = all.some(x => x.key === cur);
-    return `<details class="tpzone ${has ? 'cur' : ''}"><summary><b>${esc(z)}</b><span class="muted small">${t('pkCount', {n: m.size})} · ${span(all)}</span>` +
-      `${has ? `<span class="pkcur">${esc(cur.split(' · ')[0])}</span>` : ''}</summary><div class="tpbody">${[...m].map(([n, xs]) => line(n, xs)).join('')}</div></details>`; };
-  const x = TARGETS[cur] || {};
-  const head = `<div class="pkhead"><div class="pknow"><span class="muted small">${esc(t('pkNow'))}</span><b>${esc(cur)}${x.est && x.est.length ? ' *' : ''}</b>` +
-    `<span class="muted small">${esc([x.job, x.zone].filter(Boolean).join(' · '))}</span></div>` +
-    `<button class="chip" data-pickenemy="" aria-pressed="${cur === DEFAULT_ENEMY}" title="${esc(t('pkDefault'))}">${esc(DEFAULT_ENEMY)}</button></div>` +
-    `<input id="tgtq" class="tgtq" type="search" placeholder="${esc(t('pkSearch'))}" autocomplete="off">`;
-  const body = head + `<div class="pkzones">${[...zones].map(([z, m]) => zone(z, m)).join('')}</div>` +
-    `<p class="muted small bnote">${esc(t('pkStar'))}</p>`;
-  $('#overlay').innerHTML = `<div class="scrim" data-tgtback></div><div class="dialog tgtpickdlg" role="dialog" aria-label="${esc(t('pkTitle'))}">` +
-    `<header><h3>${esc(t('pkTitle'))}</h3></header><div class="body">${body}</div>` +
-    `<footer><button class="btn ghost" data-tgtback>← ${esc(t('pkBack'))}</button></footer></div>`;
-  $('#overlay').hidden = false;
-  const q = $('#tgtq'); if (q) q.focus();
-}
 // Where a target's stats come from, the ones estimated, and the damage it takes by type
 function targetFactsHTML(name){
   const x = TARGETS[name] || {}, res = x.res || {};

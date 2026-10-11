@@ -20,8 +20,9 @@ local BSTTPConfig = {
     --- USER CONFIGURATION - Adjust According to Your Character
     ---==========================================================================
 
-    --- Fencer Job Points Gifts (0-4)
-    --- Number of JP Gift ranks obtained for Fencer TP Bonus.
+    --- Fencer Job Points Gifts: 'auto' (from the job points you spent on BST,
+    --- read in game: shared/utils/weaponskill/game_facts.lua), or 0 to 4 to force
+    --- the number of JP Gift ranks obtained for Fencer TP Bonus.
     --- Fencer grants TP bonus when single-wielding (main hand only or with shield).
     ---
     --- Base Fencer (job trait): +200 (Lv80), +300 (Lv87), +400 (Lv94)
@@ -38,7 +39,7 @@ local BSTTPConfig = {
     ---   2 = Ranks 150+500 >> Base +100
     ---   3 = Ranks 150+500+1125 >> Base +160
     ---   4 = All ranks >> Base +230 (max)
-    fencer_jp_gifts = 4,
+    fencer_jp_gifts = 'auto',
     ---==========================================================================
     --- TP BONUS EQUIPMENT PIECES
     ---==========================================================================
@@ -142,6 +143,12 @@ function BSTTPConfig.get_fencer_bonus(weapon_name, sub_weapon)
         elseif level >= 80 then
             base_bonus = 200 -- Tier I
         end
+    end
+
+    -- 'auto': the gifts the job points spent give (0 when the game cannot tell)
+    if BSTTPConfig.fencer_jp_gifts == 'auto' then
+        local ok, GameFacts = pcall(require, 'shared/utils/weaponskill/game_facts')
+        return base_bonus + (ok and GameFacts.fencer_gift_tp('BST') or 0)
     end
 
     -- Calculate JP Gifts bonus based on number of ranks obtained

@@ -202,7 +202,7 @@ function meritRows(list, lo, hi, edits){
     const e = meritEffect(m), lv = meritLevel(m), changed = m.key in edits;
     const total = e ? `${e.per * lv > 0 ? '+' : e.per * lv < 0 ? '−' : ''}${Math.abs(e.per * lv)}${e.unit}` : '';
     return `<li class="${changed ? 'changed' : ''}"><span title="${esc(m.desc)}">${esc(m.en)}</span>` +
-      `<input class="meritin" id="merit-${esc(m.key)}" data-merit="${esc(m.key)}" type="number" min="0" max="${meritCap(m)}" value="${lv}">` +
+      `<input class="meritin" id="merit-${esc(m.key)}" data-merit="${esc(m.key)}" type="number" min="0" max="${meritCap(m)}" value="${lv}" title="${esc(t('ttMeritIn'))}">` +
       `<i>${changed ? `${t('inGame')} ${m.level} · ` : ''}${esc(total)}</i></li>`; }).join('');
 }
 // The note over the merits and the button that puts back the levels read in game

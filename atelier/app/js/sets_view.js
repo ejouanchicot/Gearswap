@@ -415,8 +415,8 @@ function renderMacro(d){
   const head = (big, line) => `<div class="bighead"><span class="big">${big}</span><p>${line}</p></div>`;
   const alts = Object.keys(m.dualbox || {}).sort();
   const altPick = alts.length ? `<div class="variants" role="group"><span class="simtplbl">${t('bookAltPick')}</span>` +
-    [['', t('bookNoAlt')], ...alts.map(a => [a, a])].map(([v, label]) => `<button data-macroalt="${v}" aria-pressed="${(alt || '') === v}">${esc(label)}</button>`).join('') + `</div>` : '';
-  return `<div class="boxgrid cols">` +
+    [['', t('bookNoAlt')], ...alts.map(a => [a, a])].map(([v, label]) => `<button data-macroalt="${v}" aria-pressed="${(alt || '') === v}" title="${esc(t('ttMacroAlt'))}">${esc(label)}</button>`).join('') + `</div>` : '';
+  return `<div class="keybar"><span>${t('macroHint')}</span></div><div class="boxgrid cols">` +
     box('g-tank', t('macro'), altPick + head(bookOf(d), book ? t('bookPage',{b:book.book,p:book.page}) + ' · ' + why : '') + table(t('bySub'), m.solo, bp) + table(t('byDual'), m.dualbox, bp)) +
     box('g-buff', t('lockstyle'), head(styleOf(d), style != null ? t('style',{s:esc(style)}) + whose((l.by_subjob || {})[d.sub] != null) : '') + table(t('bySub'), l.by_subjob, v => t('style',{s:v}))) +
     `</div>`;
@@ -424,10 +424,12 @@ function renderMacro(d){
 function renderFunctions(d){
   const keyOf = keyOfState(d);
   const bools = d.modes.filter(m => m.values.length===2 && ((m.values.includes('on') && m.values.includes('off')) || (m.values.includes('On') && m.values.includes('Off'))) && !modeHidden(m) && !stateElsewhere(d, m.name));
-  return `<div class="boxgrid narrow">` + box('g-mag', t('sectionsFunctions'), `<table class="tbl in"><tbody>` +
-    bools.map(m => { const on = m.current.toLowerCase()==='on';
-      return `<tr><td class="swcol"><span class="sw ${on?'on':''}" aria-hidden="true"></span></td><td><b>${esc(m.desc||m.name)}</b><span class="state">state.${esc(m.name)}</span></td><td>${on?t('on'):t('off')}</td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`; }).join('') +
-    `</tbody></table>`, `<span class="meta">${bools.length}</span>`) + `</div>`;
+  const row = m => { const on = m.current.toLowerCase()==='on';
+    return `<tr><td class="swcol"><span class="sw ${on?'on':''}" aria-hidden="true"></span></td><td><b>${esc(m.desc||m.name)}</b><span class="state">state.${esc(m.name)}</span>${stateHelpHTML(m.name)}</td><td>${on?t('on'):t('off')}</td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`; };
+  // the same two columns as the other parts of the job's settings: the switches fill the left one first
+  const half = Math.ceil(bools.length / 2), col = list => `<table class="tbl in"><tbody>${list.map(row).join('')}</tbody></table>`;
+  return `<div class="keybar"><span>${t('fnHint', {at: esc(d.at || '—')})}</span></div><div class="boxgrid cols">` +
+    box('g-mag wide', t('sectionsFunctions'), `<div class="fn2">${col(bools.slice(0, half))}${col(bools.slice(half))}</div>`, `<span class="meta">${bools.length}</span>`) + `</div>`;
 }
 // The exported subjobs of the job: one button each, the shown one pressed
 // A dot marks a subjob that shows something else than the main one (its own modes...)
@@ -464,7 +466,7 @@ const jobBadge = c => { const L = jobLevels(), j = L && L[c];
   return j ? (j.ml ? `<span class="mlbadge" title="${t('mlTip', {n: j.ml})}">ML${j.ml}</span>` : `<span class="lvbadge">${j.level}</span>`) : ''; };
 function jobListHTML(){
   const groups = jobGroups();
-  const row = ([c, name, r], dim) => `<button class="setrow jobrow ${dim ? 'dim' : ''}" data-jobkeep="${c}" aria-current="${S.job===c}" style="--role:${ROLE_COLOR[r]}">` +
+  const row = ([c, name, r], dim) => `<button class="setrow jobrow ${dim ? 'dim' : ''}" data-jobkeep="${c}" aria-current="${S.job===c}" style="--role:${ROLE_COLOR[r]}" title="${esc(t(dim ? 'ttJobRowNo' : 'ttJobRow', {j: name}))}">` +
     `${emblem(c)}<b>${c}</b><small>${name}</small>${jobBadge(c)}</button>`;
   const rows = groups[0].label === null
     ? ROLES.map(r => { const played = groups[0].jobs.filter(j => j[2] === r);
@@ -477,7 +479,8 @@ function renderJob(){
   let body, sections = '', side = null;
   if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
-    // the new layout (layout2.js, a trial): Combat and My character tabs, the Merits in My character
+    // the Merits are in My character; the keys, modes, switches and macro book are the parts of the job's settings
+    // (a page kept on one of those four names, or sent there by a link, opens that part)
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
     const list = ui2() ? ui2Sections(d) : [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),keysShown(d).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
@@ -485,7 +488,7 @@ function renderJob(){
     // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
     if (ui2() && ['combat', 'perso'].includes(S.section)) { side = setListHTML(d);
       if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
-    body = {sets:renderSets, keys:renderKeys, modes:renderModes, macro:renderMacro, functions:renderFunctions, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
+    body = {sets:renderSets, jobcfg:renderJobCfg, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
   }
   // every tab but Sets: the played jobs on the left, to change job and stay on the tab
   if (side) body = `<div class="tabx setside">${side.aside}<div class="tabmain">${body}</div></div>`;
@@ -528,7 +531,10 @@ function scrollPut(kept){
 function render(){
   // a row of the list is being dragged: the page waits (a redraw would take the row from under the pointer)
   if (LIST_DRAG) return;
-  const view = [S.char, S.job, S.section].join('|'), set = view + '|' + S.sel[S.job];
+  // one of the four old tab names (a page kept on it, a link): the job's settings, on that part; settled before the
+  // view is named, so that the scroll kept for this view is found again
+  if (JOB_CFG.includes(S.section)) { S.jobTab = S.section; S.section = 'jobcfg'; }
+  const view = [S.char, S.job, S.section, S.section === 'jobcfg' ? S.jobTab : ''].join('|'), set = view + '|' + S.sel[S.job];
   const tops = SCROLLERS.map(q => { const el = $(q); return el ? el.scrollTop : 0; });
   const kept = S._view === view ? scrollKeep() : [];
   const a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;

@@ -36,7 +36,8 @@ const OfflineExport = (() => {
   const same = (a, b) => JSON.stringify(stable(a === undefined ? null : a)) === JSON.stringify(stable(b === undefined ? null : b));
   function parseExport(text){
     if (!text) return null;
-    try { return JSON.parse(text.slice(text.lastIndexOf('] = ') + 4).trim().replace(/;$/, '')); } catch (e) { return null; }
+    // the first '] = {' is the data's own line; the data may hold that text too (a settings file: `configs`)
+    try { return JSON.parse(text.slice(text.indexOf('] = {') + 4).trim().replace(/;$/, '')); } catch (e) { return null; }
   }
   function formatExport(data){
     const c = JSON.stringify(data.player), j = JSON.stringify(data.job), s = JSON.stringify(data.sub);
@@ -280,6 +281,9 @@ const OfflineExport = (() => {
       if (main) { main.same_as = sameAs; await write(job, first[job], main); }
       // exports made outside the game that are now the same as the main one go; an in-game export always stays
       await env.remove(`${folder}/${job}.js`);
+      // ... unless an export of the job failed or its main one does not read back: nothing of that job is removed
+      // (2026-10-11: exports that no longer read back took every older export with them)
+      if (failed.some(f => f[0] === job) || !main) continue;
       for (const [name, data] of await previousExports(env, folder, job)) {
         const sub = subOfName(job, name);
         if (sub && data.offline && !isDone(job, sub)) await env.remove(`${folder}/${name}`);

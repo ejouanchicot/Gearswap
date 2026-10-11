@@ -42,7 +42,7 @@ function keyCap(key){
   return key.replace(/^numpad(.+)$/, 'Num $1').replace(/^f(\d+)$/, 'F$1').replace(/^(.)$/, c => c.toUpperCase());
 }
 function keyLabel(k){
-  if (!k) return `<span class="kbd none">${t('noKey')}</span>`;
+  if (!k) return `<span class="kbd none" title="${esc(t('ttNoKey'))}">${t('noKey')}</span>`;
   const {mods, key} = parseKey(k), cap = keyCap(key), us = key.length === 1 && cap !== key.toUpperCase();
   const parts = mods.map(m => MOD_NAMES[m]).concat(cap);
   return `<span class="kbd"${us ? ` title="${esc(t('usName', {k}))}"` : ''}>` + parts.map(p => '<kbd>'+esc(p)+'</kbd>').join('') + '</span>';
@@ -193,11 +193,13 @@ function renderKeys(d){
     const clash = keyClash(d, k, key).length, beaten = keyBeatenBy(d, k), cond = keyCondition(k);
     const note = k.visible_now === false ? t('keyHiddenNow') : beaten ? t('keyYieldsTo', {d: esc(beaten.desc)}) : '';
     return `<tr class="${keyActive(k, d.sub) && !beaten ? '' : 'other-sub'} ${changed ? 'changed' : ''}"><td class="kcol">${keyLabel(key)}${clash ? `<span class="kclash" title="${esc(t('keyClashShort'))}">!</span>` : ''}</td>` +
-      `<td>${esc(k.desc)}${changed ? `<span class="kwas">${t('keyWas')} ${keyLabel(file)}</span>` : ''}${note || cond ? `<span class="kwas">${[note, esc(cond)].filter(Boolean).join(' · ')}</span>` : ''}</td>` +
+      `<td>${esc(keyDescText(k.desc))}${changed ? `<span class="kwas">${t('keyWas')} ${keyLabel(file)}</span>` : ''}${note || cond ? `<span class="kwas">${[note, esc(cond)].filter(Boolean).join(' · ')}</span>` : ''}${stateHelpHTML(k.state)}</td>` +
       `<td class="sub">${k.subjob?'/'+esc(k.subjob):''}</td>` +
       `<td class="r">${k.id ? `<button class="kedit" data-keyedit="${i}" title="${t('keyEdit')}">✎</button>` : ''}</td></tr>`; };
-  const moteRows = MOTE_BINDS.map(([key, , what]) => { const by = moteTakenBy(d, key);
-    return `<tr class="${by ? 'other-sub' : ''}"><td class="kcol">${keyLabel(key)}</td><td>${esc(what)}${by ? `<span class="kwas">${t('keyTakenBy', {d: esc(by.desc)})}</span>` : ''}</td><td class="sub"></td><td class="r"></td></tr>`; }).join('');
+  // Mote's keys: a key that changes a mode is said by the mode's name as the game shows it, with what the mode does
+  const modeName = st => (d.modes.find(m => m.name === st) || {}).desc || st;
+  const moteRows = MOTE_BINDS.map(([key, st, what]) => { const by = moteTakenBy(d, key), label = st ? t('keyMoteCycle', {m: modeName(st)}) : S.lang !== 'en' && MOTE_DESC_FR[what] || what;
+    return `<tr class="${by ? 'other-sub' : ''}"><td class="kcol">${keyLabel(key)}</td><td>${esc(label)}${stateHelpHTML(st)}${by ? `<span class="kwas">${t('keyTakenBy', {d: esc(by.desc)})}</span>` : ''}</td><td class="sub"></td><td class="r"></td></tr>`; }).join('');
   const boxes = ['job','custom','combat','treasure','common'].filter(g => groups[g]).map(g =>
     box(KEY_COLORS[g], t('keyGroups.'+g), `<table class="tbl in"><tbody>${groups[g].map(row).join('')}</tbody></table>`,
       `<span class="meta">${groups[g].length} · ${t('source.'+g).replace('{J}', S.job)}.lua</span>`)).join('') +
@@ -208,7 +210,7 @@ function renderKeys(d){
       `<span class="meta">${Object.keys(d.temp_binds).length} · saved/temp_binds.lua</span>`) : '');
   const changes = Object.values(keyOverrides()).reduce((n, m) => n + Object.keys(m).length, 0);
   const noid = !d.keys.some(k => k.id);
-  const others = hidden || S.keysAll ? `<button class="linkbtn" data-keysall>${S.keysAll ? t('keysHideOther', {s: d.sub}) : t('keysShowOther', {n: hidden})}</button>` : '';
+  const others = hidden || S.keysAll ? `<button class="linkbtn" data-keysall title="${esc(t('ttKeysAll'))}">${S.keysAll ? t('keysHideOther', {s: d.sub}) : t('keysShowOther', {n: hidden})}</button>` : '';
   const bar = `<div class="keybar ${S.keyDirty[S.char] ? 'dirty' : ''}"><span>${noid ? t('keysNoId') : S.keyDirty[S.char] ? t('keysDirty') : changes ? t('keysSaved', {n: changes}) : t('keysHint')}</span>${others}` +
     `${S.keyDirty[S.char] ? `<span class="sp"></span><button class="btn ghost" data-keysundo>${t('keysUndo')}</button><button class="btn" data-keyssave>${t('keysSave')}</button>` : ''}</div>`;
   const toast = S.toast ? `<p class="toast">${esc(S.toast)}</p>` : '';
@@ -227,9 +229,23 @@ function stateElsewhere(d, name){
   const binds = d.keys.filter(k => k.state === name && (keyOf(k) || fileKey(k)));
   return binds.length > 0 && !binds.some(k => keyActive(k, d.sub));
 }
+// What a mode does, for the job shown (state_help_fr.js; in English state_help_data.js, from the job's page of the docs).
+// A job's own text first, then the one every job shares; '' when nobody wrote it
+function stateHelp(name){
+  const en = S.lang === 'en', own = (en ? STATE_HELP_EN : STATE_HELP_FR)[S.job] || {};
+  return own[name] || (en && (STATE_HELP_MORE_EN[S.job] || {})[name]) || (en ? STATE_HELP_COMMON_EN : STATE_HELP_FR['*'])[name] || '';
+}
+const stateHelpHTML = name => { const h = name && stateHelp(name); return h ? `<span class="shelp">${esc(h)}</span>` : ''; };
+// What a key that is not a mode does, in French (the keys every job has: COMMON_KEYBINDS.lua), and Mote's own keys
+const KEY_DESC_FR = {'Alts: follow me (toggle)': 'Tes autres persos te suivent (marche / arrêt)', 'Alts: automation on/off': 'Automatisation de tes autres persos : marche / arrêt',
+  'Alts: mirror': 'Tes autres persos t’imitent', 'Sneak (you + alts)': 'Sneak sur toi et tes autres persos', 'Invisible (you + alts)': 'Invisible sur toi et tes autres persos'};
+const MOTE_DESC_FR = {'DefenseMode Physical': 'Mode défense physique (pose sets.defense.PDT)', 'DefenseMode Magical': 'Mode défense magique (pose sets.defense.MDT)',
+  'update (gs c update user)': 'Remettre ton équipement et afficher tes modes', 'reset DefenseMode': 'Enlever le mode défense',
+  'toggle SelectNPCTargets': 'Choisir le monstre avant un sort offensif : marche / arrêt', 'cycle PCTargetMode': 'Changer la façon de viser un joueur'};
+const keyDescText = desc => S.lang !== 'en' && KEY_DESC_FR[desc] || desc;
 function modeTable(list, keyOf){
   return `<table class="tbl in"><tbody>` +
-    list.map(m => `<tr><td><b>${esc(m.desc || m.name)}</b><span class="state">state.${esc(m.name)}</span></td>
+    list.map(m => `<tr><td><b>${esc(m.desc || m.name)}</b><span class="state">state.${esc(m.name)}</span>${stateHelpHTML(m.name)}</td>
       <td><span class="values">${m.values.map(v => `<span class="${v===m.current?'def':''}">${esc(v)}</span>`).join('')}</span></td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`).join('') + `</tbody></table>`;
 }
 function renderModes(d){
@@ -237,8 +253,8 @@ function renderModes(d){
   const all = d.modes.filter(m => !modeHidden(m) && !/^[A-Z]{3}Song\d$/.test(m.name));
   const away = all.filter(m => stateElsewhere(d, m.name)), shown = all.filter(m => !away.includes(m));
   const keyed = shown.filter(m => keyOf[m.name]), other = shown.filter(m => !keyOf[m.name]);
-  return `<div class="boxgrid one">${box('g-attr', t('modesKeyed'), modeTable(keyed, keyOf), `<span class="meta">${keyed.length}</span>`)}` +
+  return `<div class="keybar"><span>${t('atLoad', {at: esc(d.at || '—')})}</span></div><div class="boxgrid cols">${box('g-attr', t('modesKeyed'), modeTable(keyed, keyOf), `<span class="meta">${keyed.length}</span>`)}` +
     (other.length ? box('g-other', t('modesOther'), modeTable(other, keyOf), `<span class="meta">${other.length}</span>`) : '') +
     (away.length ? box('g-caps', t('modesElsewhere', {s: esc(d.sub)}), modeTable(away, {}), `<span class="meta">${away.length}</span>`) : '') +
-    `</div><p class="note-foot">${t('atLoad', {at: esc(d.at || '—')})}</p>`;
+    `</div>`;
 }

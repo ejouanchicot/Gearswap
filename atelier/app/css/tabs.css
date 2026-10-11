@@ -10,6 +10,9 @@
 .tbl .r{text-align:right}
 .tbl .file{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap}
 .tbl .state{display:block;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+/* what a mode does, under its name: the words of a player, not of the code */
+.tbl .shelp{display:block;margin-top:3px;max-width:62ch;font-size:12.5px;line-height:1.45;font-weight:400;color:var(--muted)}
+.jobcfg .tbl.in td:has(.shelp){width:52%}
 .tbl .sub{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .tbl.click tbody tr{cursor:pointer}
 .jobcell{display:flex;align-items:center;gap:10px;white-space:nowrap}

@@ -151,6 +151,8 @@ function DualBoxManager.send_job_update(force)
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
         return
     end
+    -- //gs c atelier tour passes through every job: the other box is not told of each one (atelier_tour.lua)
+    if require('shared/utils/atelier/atelier_tour').active() then return end
 
     -- Both sides report. It used to be alt-to-main only, which left the alt
     -- with no idea what the main was playing - and COR needs exactly that to
@@ -240,6 +242,7 @@ function DualBoxManager.request_alt_job()
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
         return
     end
+    if require('shared/utils/atelier/atelier_tour').active() then return end
 
     -- Every other box of the group: a main with several alts keys some
     -- binds on each one's job (alt_states.lua).

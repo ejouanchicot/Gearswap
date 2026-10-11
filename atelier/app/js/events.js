@@ -26,6 +26,7 @@ document.addEventListener('click', e => {
   if ('config' in d) { S._cfg = !S._cfg; render(); scrollTo({top: 0}); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
   if (d.section) { S.section = d.section; render(); return; }
+  if (d.jobtab) { S.jobTab = d.jobtab; save(); render(); return; }
   if (d.pick) { S.sel[S.job] = +d.pick; if (d.vpick != null) S.variant[S.job+'|'+d.pick] = +d.vpick; render(); return; }
   if (d.variant) { S.variant[S.job+'|'+d.card] = +d.variant; render(); return; }
   // a base set (sets.Cure: never worn, only built on) is shown, not changed
@@ -76,7 +77,7 @@ document.addEventListener('click', e => {
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
   if (d.merittab) { S.meritTab = d.merittab; save(); render(); return; }
-  if (d.pbadd || d.pbdel || 'pbsave' in d || d.pbload || d.pbforget || d.pbopen || d.pbset || d.pbsong || d.pbroll || d.pbgeomode || d.pbtab || d.pbpick || d.pbchoose != null || d.pbaddopen != null || 'pbsavego' in d) { pbClick(d); return; }
+  if (d.pbadd || d.pbdel || d.pbopen || d.pbset || d.pbsong || d.pbroll || d.pbgeomode || d.pbtab || d.pbpick || d.pbchoose != null || d.pbaddopen != null || 'pbsavego' in d) { pbClick(d); return; }
   if (d.ui2) { S.ui2 = d.ui2 === 'on'; S._globals = null; save(); render(); return; }
   if ('porterwrite' in d) { porterWrite(); return; }
   if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
@@ -161,9 +162,8 @@ document.addEventListener('click', e => {
       const ex = (FOE_JA_FX[d.foeja] || {}).excl;
       if (ex) for (const n of [...l]) if (n !== d.foeja && FOE_JA_FX[n] && FOE_JA_FX[n].excl === ex) l.delete(n); }
     if (l.size) b.foeJa = [...l]; else delete b.foeJa; save(); render(); return; }
-  if ('tgtback' in d) { S._tgtPick = false; openBuffs(); return; }
+  if ('tgtback' in d) { S._tgtPick = false; closeOverlay(); render(); return; }
   if ('tgtpick' in d) { S._buffDlg = false; openTargetPick(); return; }
-  if ('pickenemy' in d) { const b = buffState(); if (d.pickenemy) b.enemy = d.pickenemy; else delete b.enemy; S._tgtPick = false; render(); return; }
   if (d.buffflag) { const b = buffState(); b[d.buffflag] = !b[d.buffflag]; if (!b[d.buffflag]) delete b[d.buffflag];
     const other = {auspice: 'enspell', enspell: 'auspice'}[d.buffflag];
     if (other && b[d.buffflag]) delete b[other];
@@ -174,11 +174,13 @@ document.addEventListener('click', e => {
   if ('dbgcopy' in d) { const ta = $('#dbgtext'); if (ta) { ta.select(); const done = () => { b.textContent = t('dbgCopied'); };
     const old = () => { if (document.execCommand('copy')) done(); };
     try { navigator.clipboard.writeText(ta.value).then(done, old); } catch (e) { old(); } } return; }
-  if ('buffreset' in d) { S.buffs[buffKey()] = {}; render(); return; }
+  if ('buffreset' in d) { S._buffUndo = {key: buffKey(), state: JSON.parse(JSON.stringify(buffState())), what: b.textContent.trim()}; S.buffs[buffKey()] = {}; render(); return; }
+  if ('buffundo' in d) { if (S._buffUndo && S._buffUndo.key === buffKey()) { S.buffs[buffKey()] = S._buffUndo.state; S._buffUndo = null; S._globals = null; save(); render(); } return; }
   // the profile's usual party buffs; what is yours (food, aftermath, target, abilities) stays
-  if ('buffendgame' in d) { const old = buffState(), b = tierBuffs(buffTier());
-    for (const k of PERSONAL) if (old[k] !== undefined) b[k] = old[k];
-    S.buffs[buffKey()] = b; render(); return; }
+  if ('buffendgame' in d) { const old = buffState(), fresh = tierBuffs(buffTier());
+    S._buffUndo = {key: buffKey(), state: JSON.parse(JSON.stringify(old)), what: b.textContent.trim()};
+    for (const k of PERSONAL) if (old[k] !== undefined) fresh[k] = old[k];
+    S.buffs[buffKey()] = fresh; render(); return; }
   if (d.bufftier) { setBuffTier(d.bufftier); render(); return; }
   if (d.ja) { const b0 = buffState(), role = jaRole(d.ja), ja = b0[role] = b0[role] || {}, off = b0.jaOff = b0.jaOff || {};
     if (jaOn(b0, d.ja)) { delete ja[d.ja]; off[d.ja] = 1; }
@@ -199,10 +201,6 @@ document.addEventListener('input', e => {
   if (e.target.id === 'setq') { S.q = e.target.value; render(); }
   if (e.target.id === 'simq') { simState().q = e.target.value; render(); }
   if (e.target.id === 'addq') { addFilter(e.target.value); return; }
-  if (e.target.id === 'tgtq') { const q = e.target.value.trim().toLowerCase();
-    for (const r of document.querySelectorAll('.tprow')) r.hidden = !!q && !r.dataset.q.includes(q);
-    for (const z of document.querySelectorAll('.tpzone')) { const any = [...z.querySelectorAll('.tprow')].some(r => !r.hidden);
-      z.hidden = !any; z.open = !!q && any; } return; }
   // the picker's "every item in the game": the catalogue loads once, the drawer is drawn again
   if (e.target.dataset.gpsel && S._drawer) { gpClick({['gp' + e.target.dataset.gpsel]: e.target.value}); return; }
   if ('gpjunk' in e.target.dataset && S._drawer) { S._showJunk = e.target.checked; openSlot(S._drawer.ci, S._drawer.slot); return; }
@@ -353,7 +351,7 @@ document.addEventListener('scroll', e => { $('#tip').hidden = true; if (!(e.targ
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('span[role="button"]')) { e.preventDefault(); e.stopPropagation(); e.target.click(); return; }
   if (e.key==='Escape' && $('#slotmenu') && !$('#slotmenu').hidden) { closeSlotMenu(); return; }
-  if (e.key==='Escape') { if (!$('#overlay').hidden && S._tgtPick) { S._tgtPick = false; openBuffs(); } else if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
+  if (e.key==='Escape') { if (!$('#overlay').hidden && S._tgtPick) { S._tgtPick = false; closeOverlay(); render(); } else if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
   const field = /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) && e.target.id !== 'setq';
   if ((e.key==='ArrowDown' || e.key==='ArrowUp') && !field && S.job && S.section==='sets' && $('#overlay').hidden && S._rows && S._rows.length) {
     const ci = S.sel[S.job], cv = Math.min(S.variant[S.job+'|'+ci] ?? 0, S._cards[ci].variants.length - 1);
@@ -375,7 +373,8 @@ function readExports(first, done){
   // the index lists the live link files that exist; an index from before lists none: ask for every character's
   const live = window.ATELIER_LIVE_FILES || chars.map(c => `atelier/live_${c}.js`).concat(chars.map(c => `atelier/link_${c}.js`));
   // each character's arrangement of its list of sets (list_prefs.js; absent until the page wrote one)
-  const lists = chars.map(c => `${c}/atelier/overrides/list_layout.js` + stamp);
+  // (every character of the index: `chars` above only knows those whose exports are still under saved/)
+  const lists = [...new Set(index.map(e => e.char || (e.file.match(/^([^/]+)\//) || [])[1]).filter(Boolean))].map(c => `${c}/atelier/overrides/list_layout.js` + stamp);
   loadScripts(index.map(e => e.file + stamp).concat(live, lists), () => {
     listRead();
     if (first) { setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);

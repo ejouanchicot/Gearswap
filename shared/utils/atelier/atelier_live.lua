@@ -172,7 +172,7 @@ local function route(req, live)
         local alt = type(alt_state) == 'table' and alt_state.online ~= nil and alt_state.job or nil
         return '200 OK', Export.json({player = player and player.name, job = player and player.main_job,
             sub = player and player.sub_job, version = live.version, boot = live.boot, alt = alt,
-            stat = windower._atelier_stat_seq or 0})
+            stat = windower._atelier_stat_seq or 0, rebuild = windower._atelier_rebuild})
     end
     if req.path == '/export' then
         local data = Export.build()
@@ -251,6 +251,14 @@ local function route(req, live)
         local result = require('shared/utils/atelier/porter_lists').write(job)
         if result.ok then result.porterpacker = require('shared/utils/atelier/porter_lists').compare(job) end
         return '200 OK', Export.json(result)
+    end
+    if req.path == '/config_write' and req.method == 'POST' then
+        -- a setting changed in the page: the settings file's whole new text (shared/utils/atelier/atelier_configs.lua)
+        local q = query_table(req.query)
+        local job = asked_job(q)
+        if not (job and player and player.name) then return '503 Service Unavailable', '{"error":"no job"}' end
+        return '200 OK', Export.json(require('shared/utils/atelier/atelier_configs').write(player.name, job, q.file or '', req.body, q.hash,
+            {slot = q.key, before = q.before, after = q.after}))
     end
     if req.path == '/push_history' then
         return '200 OK', Export.json({list = require('shared/utils/atelier/set_push').history()})

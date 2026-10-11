@@ -135,7 +135,8 @@ def export_path(char, job, sub):
 def read_export(path):
     try:
         text = open(path, encoding='utf-8').read()
-        return json.loads(text[text.rindex('] = ') + 4:].rstrip().rstrip(';'))
+        # the first '] = {' is the data's own line; the data may hold that text too (a settings file: `configs`)
+        return json.loads(text[text.index('] = {') + 4:].rstrip().rstrip(';'))
     except (OSError, ValueError):
         return None
 
@@ -585,8 +586,13 @@ def main():
     for char, job in jobs:
         group_twins(char, job, first[(char, job)], done, known[(char, job)])
     # Offline exports that are now the same as the main one go; an in-game export always stays
+    # ... unless an export of the job failed, or its main one cannot be read back: nothing of that job is removed
+    # (2026-10-11: exports that no longer read back took every older export with them)
     exported = set(done)
+    broken = {(c, j) for c, j, _ in failed} | {(c, j) for c, j in jobs if read_export(export_path(c, j, first[(c, j)])) is None}
     for char, job in jobs:
+        if (char, job) in broken:
+            continue
         legacy = os.path.join(export_folder(char), job + '.js')
         if os.path.exists(legacy):
             os.remove(legacy)

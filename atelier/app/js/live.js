@@ -285,6 +285,9 @@ async function liveTick(){
       now.statGot = now.stat;
     }
     S._live[c] = now;
+    // //gs c atelier all typed in game: every job rebuilt here, once per request (the request's time is remembered)
+    if (now.ok && ping.rebuild) { let seen = ''; try { seen = localStorage.getItem('atelierRebuild_' + c) || ''; } catch (e) {}
+      if (seen !== String(ping.rebuild)) { try { localStorage.setItem('atelierRebuild_' + c, String(ping.rebuild)); } catch (e) {} refreshFromFiles(true); } }
     if (!was.ok || again || measured) tickRender();
   } catch (e) {
     S._live[c] = {ok: false};

@@ -357,8 +357,20 @@ const TRUST_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II',
   indi: 'Fury', entrust: 'Frailty', geoPlus: '1', geoScale: {entrust: .125 / .148},
   dia: 'Dia III', distract: 'Distract III', autoSamba: true};
 const PERSONAL = ['food', 'am', 'amStage', 'amTp', 'enemy', 'ja', 'jaOff', 'autoSamba'];
-const TIER_DROP = {Full: [], Group: ['indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic'],
-  Solo: ['pja', 'indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic', 'songsPlus', 'rollsPlus', 'protect', 'shell', 'haste', 'song0', 'song1', 'song2', 'song3', 'song4', 'soulVoice', 'marcato', 'clarion', 'ariaStage', 'roll0job', 'roll1job', 'rollCC', 'roll0', 'roll1', 'dia', 'lightshot', 'distract', 'saboteur', 'sabGloves', 'auspice', 'auspiceFeet', 'enspell', 'enSkill']};
+// What each situation starts with (and what "Typical buffs" puts back), as the player describes his parties
+// (2026-10-11); the support's gear at its best, as ENDGAME_BUFFS has it:
+//   Full   COR + BRD + GEO, a RDM and a WHM: the end-game party. The RDM lands Distract III under Saboteur with
+//          Lethargy Gantherots +3, Dia III, Haste II; the WHM Protect V and Shell V
+//   Group  BRD + COR + RDM, no GEO: the same songs and rolls, the RDM's Haste II, Dia III and Distract III
+//          WITHOUT Saboteur
+//   Solo   you and a RDM: Haste II, Dia III, Distract III without Saboteur (the alt's leveling profile); a WHM in
+//          its place is one click in the party
+//   Trust  you and the trusts (TRUST_BUFFS, by job)
+const GEO_KEYS = ['indi', 'geo', 'entrust', 'geoPlus', 'bolster', 'bog', 'ecliptic'];
+const TIER_START = {
+  Full: b => Object.assign(b, {distract: 'Distract III', saboteur: true, sabGloves: true}),
+  Group: b => { for (const k of GEO_KEYS.concat(['protect', 'shell'])) delete b[k]; return Object.assign(b, {distract: 'Distract III'}); },
+  Solo: () => ({haste: 'Haste II', dia: 'Dia III', distract: 'Distract III', autoSamba: true})};
 // The Trust profile for a job: Sylvie's bubbles follow your job (BG Wiki: Fury + Entrust Frailty for a melee job,
 // Haste + Entrust Refresh or Regen for PLD / RUN / NIN, magic bubbles for a mage or a BRD: none of those on the
 // damage), and a BRD sings its own songs (the trusts' left for it to set)
@@ -372,8 +384,7 @@ function trustBuffsFor(job){
   if (job === 'BRD') for (const k of ['song0', 'song1', 'song2', 'song3']) delete b[k];
   return b;
 }
-function tierBuffs(tier){ if (tier === 'Trust') return trustBuffsFor(S.job);
-  const b = endgameBuffs(); for (const k of TIER_DROP[tier] || []) delete b[k]; return b; }
+function tierBuffs(tier){ return tier === 'Trust' ? trustBuffsFor(S.job) : (TIER_START[tier] || TIER_START.Full)(endgameBuffs()); }
 const buffTier = () => (S.buffTier || {})[S.char] || 'Full';
 // the Trust profile's buffs are a job's own (the trusts act by your job: trustBuffsFor)
 const buffKey = (tier = buffTier()) => tier === 'Full' ? S.char : tier === 'Trust' ? S.char + '|' + S.job + '|Trust' : S.char + '|' + tier;

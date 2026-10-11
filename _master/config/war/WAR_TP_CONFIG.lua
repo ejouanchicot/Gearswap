@@ -23,18 +23,22 @@ local WARTPConfig = {
     --- USER CONFIGURATION - Adjust According to Your Character
     ---==========================================================================
 
-    --- Savagery merit points (0-5)
+    --- The three values below are read from the game on 'auto'
+    --- (shared/utils/weaponskill/game_facts.lua). Type a value only to force one.
+
+    --- Savagery merit points: 'auto' (your merits, read in game) or 0 to 5.
     --- Each merit adds 100 TP bonus to Warcry (140 TP with Agoge Mask).
     --- Example: 5/5 Savagery + Agoge Mask = 700 TP bonus from Warcry
-    savagery_merits = 5,
+    savagery_merits = 'auto',
 
-    --- Do you own Agoge Mask? (any version: +1/+2/+3)
+    --- Agoge Mask (any version): 'auto' (looked for in your bags), true or false.
     --- Agoge Mask adds +40 TP bonus per merit level (100 >> 140 per merit).
-    has_agoge_mask = true,
+    has_agoge_mask = 'auto',
 
-    --- Fencer Job Points Gifts (0-20)
-    --- Each JP Gift adds +11.5 TP bonus to Fencer (230 TP at 20/20).
-    fencer_jp_gifts = 20,
+    --- Fencer's TP Bonus from job point gifts: 'auto' (from the job points you
+    --- spent on WAR: +50 at 80, +50 at 405, +60 at 980, +70 at 1805, 230 in all),
+    --- or 0 to 20 to force a share of those 230 (20 = all of them).
+    fencer_jp_gifts = 'auto',
 
     ---==========================================================================
     --- TP BONUS EQUIPMENT PIECES
@@ -97,13 +101,28 @@ local WARTPConfig = {
 ---
 --- @return number TP bonus from Warcry (0-700)
 function WARTPConfig.get_warcry_bonus()
-    if WARTPConfig.savagery_merits == 0 then
+    local ok, GameFacts = pcall(require, 'shared/utils/weaponskill/game_facts')
+    local merits, mask = WARTPConfig.savagery_merits, WARTPConfig.has_agoge_mask
+    -- 'auto': what the game says; when it cannot tell, no bonus is counted
+    if merits == 'auto' then merits = ok and GameFacts.merit('savagery') or 0 end
+    if mask == 'auto' then mask = ok and GameFacts.owns('Agoge Mask') or false end
+    if merits == 0 then
         return 0
     end
 
     -- Calculate bonus per merit based on Agoge Mask ownership
-    local bonus_per_merit = WARTPConfig.has_agoge_mask and 140 or 100
-    return WARTPConfig.savagery_merits * bonus_per_merit
+    local bonus_per_merit = mask and 140 or 100
+    return merits * bonus_per_merit
+end
+
+--- Fencer's TP Bonus from the job point gifts: read from the job points spent
+--- on 'auto', else the share typed (0-20, 11.5 TP each).
+--- @return number 0 to 230
+function WARTPConfig.get_fencer_gift_bonus()
+    local gifts = WARTPConfig.fencer_jp_gifts
+    if gifts ~= 'auto' then return (tonumber(gifts) or 0) * 11.5 end
+    local ok, GameFacts = pcall(require, 'shared/utils/weaponskill/game_facts')
+    return ok and GameFacts.fencer_gift_tp('WAR') or 0
 end
 
 --- Get weapon TP bonus if equipped
@@ -162,15 +181,13 @@ function WARTPConfig.get_fencer_bonus(main_weapon, sub_weapon)
 
     -- Case 1: No sub weapon (empty) >> Fencer active
     if not sub_weapon or sub_weapon == "" or sub_weapon == "empty" then
-        local jp_bonus = WARTPConfig.fencer_jp_gifts * 11.5 -- 11.5 TP per JP Gift
-        return 630 + jp_bonus
+        return 630 + WARTPConfig.get_fencer_gift_bonus()
     end
 
     -- Case 2: Sub is shield >> Fencer active
     for _, shield in ipairs(WARTPConfig.shields) do
         if sub_weapon == shield then
-            local jp_bonus = WARTPConfig.fencer_jp_gifts * 11.5
-            return 630 + jp_bonus
+            return 630 + WARTPConfig.get_fencer_gift_bonus()
         end
     end
 

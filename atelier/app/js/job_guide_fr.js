@@ -1,0 +1,156 @@
+// GearSwap Atelier · job_guide_fr.js: what this GearSwap does on each job, in French, for a player who has never seen it.
+// Shown first in the Modules part (modules.js, the "Présentation" family). Each job: a sentence on how it is set up,
+// then what the job does by itself, [title, what it means]. The texts are the French of the "Overview" of
+// docs/user/jobs/<job>/README.md (the English shown by the page is taken from those pages by
+// scripts/atelier/build_job_guides.py): when a job's page changes, its entry here follows.
+// (loaded by atelier/index.html before modules.js)
+
+const JOB_GUIDE_FR = {
+  BLM: ['BLM choisit ses nukes par des modes plutôt que par des macros : un élément par « emplacement » (principal ou secondaire, lumière ou ténèbres, cible unique ou zone) et un tier, puis une commande lance le résultat sur la cible que tu choisis.', [
+    ['Descente de tier', 'Un nuke qui ne peut pas partir (recast, MP) descend au tier suivant qui le peut.'],
+    ['Magic Burst', 'Mode Magic Burst allumé : le nuke prend ton set Magic Burst et est annoncé dans le chat du groupe.'],
+    ['Sub SCH', 'Dark Arts est mis pour toi avant un nuke, et les commandes storm, klima, aoe et dispel enchaînent les stratagèmes.'],
+    ['Sets dédiés', 'Death, Mana Wall, Impact, les MP bas et la famille Stone ont chacun leur équipement.']]],
+  BLU: ['Blue Mage est monté en mêlée avec Blue Magic. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
+    ['Blue Magic par catégorie', 'Chaque sort porte le set de ce dont il dépend (PhysicalDex, Magical, MagicAccuracy, Healing, Buff…), d’après ton BLU_SPELL_MAP.lua ; un set au nom du sort gagne.'],
+    ['Surcouches', 'Un set par buff pour Chain Affinity, Burst Affinity, Convergence, Diffusion et Efflux tant qu’il est actif, et sets.self_healing pour un soin sur toi.'],
+    ['Une seule arme', 'Rien, un bouclier ou un grip en main gauche : le set engaged est sets.engaged.SW.'],
+    ['Armes par modes', 'Main Weapon et Sub Weapon ; le modèle n’a que « Free » : ajoute tes armes dans BLU_STATES.lua.'],
+    ['AzureSets', 'L’addon AzureSets est chargé tant que tu es BLU.'],
+    ['Deux automatismes, éteints par défaut', 'Unbridled Learning avant un sort qui en a besoin, et une retenue d’Expiacion pour l’Aftermath: Lv.3 de Tizona.']]],
+  BRD: ['Barde, avec le modèle fourni :', [
+    ['Tout un pack de chants sur une commande', 'Choisis un pack (SongMode), puis //gs c songs le chante sur toi. Le nombre de chants et de chants « dummy » est calculé d’après tes instruments, Clarion Call et tes chants déjà actifs. Un chant interrompu ou refusé est retenté (deux fois au plus).'],
+    ['Debuffs pendant une rotation', 'Avant chaque chant, tes debuffs sont regardés : endormi, pétrifié, stun… la suite est abandonnée ; Silence ou Paralysie : un objet ou Paralyna d’abord, puis le même chant.'],
+    ['Victory March remplacé quand tu as déjà Haste', 'Par Blade Madrigal, Valor Minuet III ou un Etude (mode VictoryMarch).'],
+    ['Instruments gérés pour toi', 'Honor March toujours sur Marsyas, Aria of Passion sur Loughnashade, les dummy sur la harpe de ton set dummy, le reste sur l’instrument du mode MainInstrument.'],
+    ['Pianissimo, Marcato et AutoNitro automatiques', 'Pianissimo pour un chant sur un autre joueur, Marcato avant Honor March sous Nightingale + Troubadour, et Nightingale puis Troubadour avant un pack.'],
+    ['Repli de tier', 'Un chant de debuff en recast est chanté à un autre tier (Foe Lullaby II vers Foe Lullaby…).'],
+    ['Une commande par chant', 'carol, etude, threnody, lullaby, elegy, requiem, song1 à song5, et les job abilities.']]],
+  BST: ['Beastmaster : ton équipement suit ton pet.', [
+    ['Équipement selon le pet', 'Idle et engaged viennent de deux groupes de sets, sets.me (toi) et sets.pet (ton pet), selon qu’un pet est dehors, qu’il se bat, et le Pet Idle Mode.'],
+    ['Pet surveillé chaque seconde', 'Quand le pet commence ou arrête de se battre, ton équipement est rafraîchi.'],
+    ['Pet envoyé tout seul', 'Auto Pet Engage allumé (par défaut) : si tu te bats et pas ton pet, /pet "Fight" est envoyé sur ta cible, chaque seconde jusqu’à ce qu’il se batte. Éteins-le pour le contrôler à la main.'],
+    ['Jugs par écosystème et espèce', 'Deux touches choisissent un écosystème puis une espèce ; le jug de ce pet va dans l’emplacement ammo pour Call Beast ou Bestial Loyalty.'],
+    ['Ready', 'Chaque Ready met d’abord le set de recast, puis le set de dégâts du pet de sa catégorie jusqu’à la fin du coup. //gs c rdylist et rdymove N les listent et les lancent par numéro.'],
+    ['Set de ville', 'En ville, tout sets.me.idle.Town est porté en idle.'],
+    ['BST-HUD', 'L’addon BST-HUD est rechargé à l’arrivée sur BST et déchargé au départ, si tu l’as.']]],
+  COR: ['Corsaire, avec le modèle fourni :', [
+    ['Armes sur des touches', 'L’arme de mêlée et le pistolet se choisissent depuis le HUD. L’arme de main gauche n’est portée qu’avec Dual Wield (/NIN ou /DNC) ; sinon le sub de sets.SingleWield la remplace.'],
+    ['Deux rolls sur deux commandes', 'Choisis un roll principal et un secondaire, puis //gs c roll1 / roll2. Rappuyer sur un roll déjà actif en fait un Double-Up quand c’est possible ; sinon l’appui est annulé, avec la raison.'],
+    ['Équipement de roll gardé jusqu’au résultat', 'Du précast au résultat, les autres changements d’équipement attendent : ta pièce « Phantom Roll + » est bien portée.'],
+    ['Une ligne de résultat par roll', 'Valeur, lucky / unlucky, bonus, qui a été touché dans le groupe, et le risque de bust du prochain Double-Up.'],
+    ['Luzaf’s Ring', 'Un mode : allumé pour des rolls à 16 yalms, éteint pour 8 yalms avec un autre anneau.'],
+    ['Quick Draw', 'L’élément sur une touche, tiré par //gs c shot.'],
+    ['Attaques à distance', 'sets.precast.RA (avec ses versions Flurry), sets.midcast.RA, une couche Triple Shot, et une pochette de balles ouverte pour toi quand les balles manquent.'],
+    ['rolltracker', 'L’addon rolltracker est déchargé tant que tu es COR : ce job affiche les rolls lui-même.']]],
+  DNC: ['Danseur, avec le modèle fourni :', [
+    ['Armes sur des touches', 'Un set d’armes (main droite et gauche) et une main gauche de rechange.'],
+    ['Aides aux weaponskills', 'Avant une weaponskill listée, Climactic Flourish part d’abord avec 3 Finishing Moves ou plus ; en /DRG, un Jump d’abord quand le TP manque. La weaponskill suit toute seule.'],
+    ['Weaponskills selon le buff', 'Des versions .SaberDance, .FanDance et .Clim de tes sets de weaponskill, avec Moonshade Earring ajoutée ensuite.'],
+    ['Engaged selon la danse', 'Saber Dance et Fan Dance ont leurs propres sets engaged, changés dès que la danse commence ou finit.'],
+    ['Enchaînements sur une touche', 'step (Presto d’abord), buff (danse, samba, puis les buffs du job et du sub), dance.'],
+    ['Waltz', '//gs c waltz choisit le tier de Curing Waltz d’après les HP manquants de ta cible ; aoewaltz lance Divine Waltz.']]],
+  DRG: ['Dragoon est monté en combattant à la lance avec une wyvern. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
+    ['Équipement de wyvern', 'En idle hors ville, sets.idle.Pet se pose sur ton set idle tant que la wyvern est dehors.'],
+    ['Spirit Surge', 'Son set se pose sur ton engaged tant que Spirit Surge est actif.'],
+    ['Déclencheur de Healing Breath', 'Quand tu lances un sort wyvern dehors avec tes HP sous le seuil de ton sub, sets.midcast.HealingBreathTrigger se pose sur l’équipement du sort.'],
+    ['Souffles', 'sets.midcast.HealingBreath et ElementalBreath quand le jeu signale le souffle de la wyvern (à confirmer en jeu).'],
+    ['Jumps', 'Un set par jump, et //gs c jump lance le premier jump prêt.'],
+    ['Arme et grip par modes', 'Le modèle n’a que « Free » : ajoute tes armes dans DRG_STATES.lua.']]],
+  DRK: ['Dark Knight, avec le modèle fourni :', [
+    ['Trois modes sur des touches', 'L’arme, la précision des weaponskills et la posture engaged (PDT ou Accu).'],
+    ['Équipement d’Aftermath', 'Un set engaged par arme pendant son Aftermath (sets.engaged.<Arme>AFM3), changé dès que l’Aftermath commence ou finit.'],
+    ['Dark Magic par sort', 'Dread Spikes, les Absorb, Drain / Aspir trouvent chacun leur set ; les pièces de Dark Seal et Nether Void s’ajoutent tant que ces buffs sont actifs.'],
+    ['Vitesse de déplacement', 'En idle, dès que tu bouges hors d’une ville.']]],
+  GEO: ['GEO garde tes bulles dans des modes : un sort Indi- et un sort Geo- choisis sur une touche, puis une commande lance chacun (indi, geo, entrust).', [
+    ['Équipement selon le luopan', 'Tes propres sets quand aucun luopan n’est posé, les sets de luopan (dégâts subis par le pet, regen) quand il y en a un.'],
+    ['Cible choisie pour toi', 'geo vise un membre du groupe pour un buff, un ennemi pour un debuff.'],
+    ['Descente de tier', 'Un nuke, un -ra ou Aspir lancé par macro descend d’un tier quand il ne peut pas partir.'],
+    ['Sub SCH', 'aoe sneak / aoe invi / aoe erase et dispel enchaînent les stratagèmes.'],
+    ['Deux automatismes, éteints par défaut', 'Entrust avant un Indi- sur un allié, Full Circle avant un nouveau Geo-.']]],
+  MNK: ['Monk est monté en combattant à mains nues, une seule arme. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
+    ['Équipement de buff en combat', 'Tant que Counterstance, Footwork, Impetus ou Hundred Fists est actif, son set se pose sur ton engaged.'],
+    ['Impetus sur les weaponskills', 'Sous Impetus, son set se pose sur chaque weaponskill, puis la version .Impetus de la weaponskill si tu l’as faite.'],
+    ['Footwork sur les coups de pied', 'Sous Footwork, son set se pose sur Dragon Kick et Tornado Kick.'],
+    ['Mode Counter', 'Hybrid Mode a une valeur Counter, pour un set de contre.'],
+    ['Arme par mode', 'Le modèle n’a que « Free » : ajoute tes armes dans MNK_STATES.lua.']]],
+  NIN: ['Ninja est monté en mêlée à deux armes qui nuke, affaiblit et tanke aux ombres. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
+    ['Ninjutsu par famille', 'Utsusemi, Migawari, le ninjutsu élémentaire, les affaiblissements et les autres ont chacun leur set.'],
+    ['Magic Burst', 'Mode allumé : le ninjutsu élémentaire porte son set MagicBurst.'],
+    ['Futae', 'Son set se pose sur le ninjutsu élémentaire lancé sous Futae.'],
+    ['Yonin, Innin, Sange, Issekigan', 'Le set de chacun se pose sur ton engaged tant que le buff est actif.'],
+    ['Vitesse de nuit', 'En déplacement hors ville : sets.MoveSpeed.Night de 17:00 à 7:00 (heure de Vana’diel), sets.MoveSpeed le reste du jour.'],
+    ['Armes par modes', 'Le modèle n’a que « Free » : ajoute tes armes dans NIN_STATES.lua.']]],
+  PLD: ['PLD est monté en tank. Un mode de posture (HybridMode) choisit tes sets idle et engaged ; un mode d’arme choisit l’épée, et le bouclier suit l’arme dans les postures que tu listes dans PLD_WEAPONS.lua.', [
+    ['Deux emplacements de weaponskill', 'Ils suivent l’arme en main : deux macros couvrent toutes les épées.'],
+    ['Abilities automatiques', 'Divine Emblem avant Flash, Majesty avant Protect III à V et Cure III / IV.'],
+    ['Soins par cible', 'Le set de Cure est choisi selon la cible.'],
+    ['Phalanx SIRD', 'Un set Phalanx anti-interruption quand tu le demandes.'],
+    ['Postures selon le sub', 'PDT, MDT, Sortie en général ; DPS, Tanking, Hoxne en /SCH et /RUN (un montage fait pour Sortie).']]],
+  PUP: ['Puppetmaster est monté en combattant à mains nues avec un automate. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
+    ['Pet Mode d’après la tête de l’automate', 'Harlequin = Melee, Valoredge = Tank, Sharpshot = Ranged, Stormwaker = Magic, Soulsoother = Heal, Spiritreaver = Nuke.'],
+    ['Équipement d’automate', 'sets.idle.Pet tant qu’il est dehors, une version par Pet Mode quand il se bat, sets.engaged.Pet quand vous vous battez tous les deux.'],
+    ['Weaponskill de l’automate, à temps', 'Pet WS allumé : quand son TP atteint 1000, son set de weaponskill se pose sur ton équipement, avant le coup.'],
+    ['Overdrive', 'Son set par-dessus tant qu’Overdrive est actif.'],
+    ['Maneuvers', 'Un set pour les huit maneuvers ; elles partagent un recast de 10 secondes.'],
+    ['Arme par mode', 'Le modèle n’a que « Free » : ajoute tes armes dans PUP_STATES.lua.']]],
+  RDM: ['Red Mage est monté en lanceur de sorts qui peut aussi se battre. En plus de choisir ton équipement idle, engaged et de cast, le job fait ceci tout seul :', [
+    ['Descente de tier', 'Un affaiblissement à tiers (Dia III, Distract III, Gravity II…) ou un nuke en recast ou sans assez de MP est remplacé par le meilleur tier que tu peux lancer. Affaiblissements : seulement avec Enfeeble Tier allumé.'],
+    ['Phalanx selon la cible', 'Phalanx II sur toi devient Phalanx ; Phalanx sur quelqu’un d’autre devient Phalanx II.'],
+    ['Saboteur automatique', 'Saboteur Mode allumé : Saboteur part avant les affaiblissements listés dans RDM_SABOTEUR_CONFIG.lua, puis le sort.'],
+    ['Midcast par famille de sort', 'Chaque affaiblissement porte le set de son type, chaque Enhancing celui de sa famille, avec une version Composure sur les autres.'],
+    ['Armes par modes', 'Avec des sets engaged une arme ou deux armes selon ta main gauche et ton sub.'],
+    ['Commandes de cast', 'Elles lisent un mode (élément et tier du nuke, enspell, gain, bar-spell, spikes, storm) ; une commande lance n’importe quelle action par son nom.'],
+    ['//gs c buff', 'Lance tous tes buffs : Composure, Haste II, Refresh III, Phalanx II, Temper II, le Gain et l’Enspell de tes modes, Regen II, Protect V, Shell V, Stoneskin, Blink, Aquaveil…']]],
+  RNG: ['Ranger est monté en job à distance (arc, fusil ou arbalète) qui peut aussi se battre au corps à corps. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
+    ['Arme à distance par mode', 'Son set tient l’arme et sa munition. Le modèle n’a que « Free » : ajoute tes armes dans RNG_STATES.lua.'],
+    ['Équipement de tir', 'La visée (sets.precast.RA, avec ses versions Flurry), puis le tir (sets.midcast.RA). Ranged Mode Acc prend les versions .Acc.'],
+    ['Buffs sur le tir', 'Velocity Shot, Hover Shot, Decoy Shot, Unlimited Shot, Double Shot ou Barrage : son set se pose sur le tir.'],
+    ['Recharge des munitions', 'Après un tir, quand il reste 15 munitions ou moins, le carquois ou la pochette est ouvert (il doit être dans ton inventaire).'],
+    ['Obi / Orpheus', 'Sur Trueflight et Wildfire, selon le jour, la météo et la distance, si tu les as.'],
+    ['Main gauche seulement avec Dual Wield', 'Une arme en main gauche est tenue en /NIN ou /DNC ; sinon le sub de sets.SingleWield la remplace.']]],
+  RUN: ['RUN est monté en tank. Tu choisis une posture (PDT ou MDT), une arme (Epeolatry ou Lycurgos) et un grip ; GearSwap reconstruit ton idle et ton engaged d’après ces trois choix. Aucun perso suivi ne joue RUN aujourd’hui : il n’est pas testé en jeu sous sa forme actuelle.', [
+    ['Runes', 'Un sélecteur de rune alimente //gs c rune. Les runes ne changent aucune pièce avec les sets fournis : ton équipement de tank reste.'],
+    ['Enmity en /BLU', '//gs c aoe lance un sort Blue Magic d’enmity.'],
+    ['Soins par cible', 'Les Cures du sub choisissent leur set selon la cible (toi ou quelqu’un d’autre).']]],
+  SAM: ['Samouraï, avec le modèle fourni :', [
+    ['Quatre modes sur des touches', 'L’arme, la précision engaged (Offense Mode), la précision des weaponskills (WS Mode) et le Hybrid Mode défensif.'],
+    ['Third Eye avant une weaponskill', 'Une weaponskill pressée alors que Third Eye est prêt est retenue, Third Eye part, puis la weaponskill. Hors de portée ou sans 1000 TP : refusée sans utiliser Third Eye.'],
+    ['Une stance que tu choisis', 'Hasso ou Seigan (//gs c hasso / seigan) : en stance Seigan, Third Eye est précédé de Seigan s’il n’est pas actif ; en stance Hasso, Hasso n’est jamais remplacé.'],
+    ['Équipement selon la situation', 'Sets Seigan / Third Eye, idle selon tes HP (Weak, Regen), pièces de Sekkanoki et Meikyo Shisui sur les weaponskills.'],
+    ['Vitesse de déplacement', 'sets.MoveSpeed se pose sur l’idle quand tu cours.']]],
+  SCH: ['Scholar est monté en lanceur de sorts. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
+    ['Équipement de grimoire', 'sets.precast.FC.Grimoire se pose sur ton fast cast quand le sort est des Arts actifs.'],
+    ['Équipement de stratagème', 'Perpetuance, Rapture, Ebullience, Immanence, Klimaform, Celerity ou Alacrity : son set se pose sur le sort qu’il touche.'],
+    ['Sublimation', 'Son set reste sur ton idle tant que Sublimation charge.'],
+    ['Repli de tier', 'Un nuke, -ra, Aspir, helix ou storm en recast (ou pas appris, ou sans MP) part au plus haut tier possible au lieu d’être refusé.'],
+    ['Aucun stratagème gâché', 'Un stratagème sans charge est arrêté, avec le temps avant la prochaine charge.'],
+    ['Magic Burst', 'Nukes, helix et Kaustra portent leur set .MagicBurst tant que le mode est allumé.'],
+    ['Mode d’élément', 'Une touche choisit l’élément ; nuke, helix et storm lancent le sort de cet élément.'],
+    ['Armes par mode', 'Le modèle n’a que « Free » : ajoute tes armes dans SCH_STATES.lua.']]],
+  SMN: ['SMN équipe les Blood Pacts de ton avatar par genre, pas par nom.', [
+    ['Blood Pacts triés', 'Chaque Blood Pact est Rage (Physical, Magical, Hybrid, Astral Flow) ou Ward (Buff, Debuff, Heal) ; le set correspondant est porté quand tu donnes l’ordre, puis quand l’avatar agit.'],
+    ['Idle d’avatar', 'Avatar dehors : sets.idle.Avatar tout seul ; sous Avatar’s Favor, son set se pose dessus.'],
+    ['Commandes en un mot', 'Pour invoquer un avatar, lancer un Blood Pact sur la bonne cible, ou une ability de SMN.'],
+    ['Boucle de skill-up', 'Summoning Magic : invoquer, Release, recommencer.'],
+    ['Carbuncle', 'Environ 10 secondes après un chargement, Carbuncle est invoqué si aucun avatar n’est dehors.']]],
+  THF: ['Voleur, avec le modèle fourni :', [
+    ['Armes sur des touches', 'Main droite et gauche depuis le HUD, plus un mode proc Abyssea en /WAR.'],
+    ['Treasure Hunter intégré', 'Treasure Mode est allumé par défaut (Tag) : sets.TreasureHunter reste porté jusqu’à ce qu’une de tes actions touche le monstre, puis ton équipement normal revient.'],
+    ['Sneak Attack / Trick Attack', 'Leur équipement reste de l’ability jusqu’au coup qui l’utilise, avec des versions .SA / .TA / .SATA de tes weaponskills.'],
+    ['Verrou de l’arme à distance', 'Chaque attaque à distance verrouille range et ammo ; //gs c range équipe ton arme de pull et tire.'],
+    ['Enchaînements sur une touche', 'buff (listes du job et du sub), fbc (Feint, Bully, Conspirator), steal (Steal, Mug, Despoil).']]],
+  WAR: ['WAR est monté en dégâts. Un mode d’arme choisit le set d’arme et, après chaque chargement, il se cale sur l’arme que tu tiens vraiment.', [
+    ['Cinq emplacements de weaponskill', 'Ils suivent l’arme : cinq macros couvrent toutes les armes.'],
+    ['//gs c berserk et //gs c defender', 'Toute la chaîne de buffs du Warrior en un appui (avec Hasso / Seigan et Third Eye en /SAM).'],
+    ['Jump en /DRG', 'Une weaponskill pressée sous 1000 TP est retenue pendant que Jump construit le TP.'],
+    ['Retaliation', 'Annulé tout seul après 5 secondes de course hors combat.']]],
+  WHM: ['White Mage est monté en soigneur. En plus de choisir ton équipement idle et de cast, le job fait ceci tout seul :', [
+    ['Tier de Cure selon les HP manquants', 'Cure Auto-Tier allumé : un Cure ou Curaga est remplacé par le tier qui correspond aux HP manquants de la cible (seuils dans WHM_CURE_CONFIG.lua).'],
+    ['Tier de Cure en recast', 'Toujours : un tier en recast est remplacé par le tier inférieur prêt, sinon un supérieur.'],
+    ['Équipement de Cure par mode', 'Cure Mode Potency ou SIRD choisit le set ; sous Afflatus Solace, un Cure prend sets.midcast.CureSolace.'],
+    ['Retrait de statuts', 'Paralyna, Cursna, Erase… ont leurs sets, avec celui de Divine Caress par-dessus tant qu’il est actif.'],
+    ['Affaiblissements par stat', 'Ceux de White Magic portent sets.midcast.MndEnfeebles, ceux de Black Magic sets.midcast.IntEnfeebles.'],
+    ['Deux verrous d’armes', 'Combat Mode (main, sub, range, ammo) et Offense Mode « Melee ON » (main, sub, range).'],
+    ['Refresh latent', 'sets.latent_refresh sur ton idle tant que tes MP sont sous 51 %.']]],
+};

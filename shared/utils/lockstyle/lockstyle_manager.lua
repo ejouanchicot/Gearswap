@@ -123,6 +123,8 @@ local function apply_lockstyle_immediate(ctx, style, operation_id)
     local STATE = ctx.STATE
     if not STATE.enabled then return end
     if operation_id ~= STATE.operation_id then return end
+    -- //gs c atelier tour passes through every job: no lockstyle on the way (atelier_tour.lua)
+    if require('shared/utils/atelier/atelier_tour').active() then return end
 
     require('shared/utils/debug/trace_log').log('LOAD', 'lockstyle %s', style)
     if not get_manage_dressup() then
