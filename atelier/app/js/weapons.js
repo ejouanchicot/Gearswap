@@ -268,7 +268,7 @@ function weaponResultLines(s, line){
   return ['main', 'sub', 'range', 'ammo'].filter(slot => !stated.has(slot)).map(slot => { const p = eff.pieces[slot];
     if (!p || isEmpty(p)) return '';
     const forced = f[slot] && f[slot].name === p.name;
-    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted">${esc(forced ? t('forcedTag') : t(eff.from[slot] ? 'byGearSwap' : 'bySet'))}</small>` +
+    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted" title="${esc(forced ? '' : t(eff.from[slot] ? 'ttByGs' : 'ttBySet'))}">${esc(forced ? t('forcedTag') : t(eff.from[slot] ? 'byGearSwap' : 'bySet'))}</small>` +
       (forced ? ` <button class="linkbtn" data-unforce="${slot}">${esc(t('backToAuto'))}</button>` : '') + `</span>`); }).join('') +
     (f.main && stated.has('main') ? line(SLOT_NAMES[S.lang].main, `<span class="wauto"><b>${esc(f.main.name)}</b> <small class="muted">${esc(t('forcedTag'))}</small> <button class="linkbtn" data-unforce="main">${esc(t('backToAuto'))}</button></span>`) : '');
 }

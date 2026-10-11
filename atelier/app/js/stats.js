@@ -500,7 +500,7 @@ function statSorter(s = curSet(), stats = {}){
 const statPickBtn = () => { const n = Object.keys(S.statHide).length;
   const bits = [S.statPreset ? `« ${esc(S.statPreset)} »` : '', n ? t('statHidden', {n}) : '', S.statOnlyWant ? t('statOnlyShort') : '',
     S.statSort !== 'group' ? t('statSort_' + S.statSort) : ''].filter(Boolean);
-  return `<button class="linkbtn statpickbtn" data-statpick>${t('statPick')}${bits.length ? ' · ' + bits.join(' · ') : ''}</button>`; };
+  return `<button class="linkbtn statpickbtn" data-statpick title="${esc(t('ttStatPick'))}">${t('statPick')}${bits.length ? ' · ' + bits.join(' · ') : ''}</button>`; };
 // Above the ticks: the order, "only what the set is after", the saved filters
 function statPickTools(){
   const sorts = ['group', 'want', 'name'].map(k => `<button class="seg ${S.statSort === k ? 'on' : ''}" data-statsort="${k}">${t('statSort_' + k)}</button>`).join('');
@@ -560,7 +560,7 @@ function setStatsHTML(s){
   if (!(groups.length || Object.keys(S.statHide).length || S.statOnlyWant)) return '';
   // one group at a time, its tab kept from set to set (the first when that group is not there)
   const cur = groups.find(g => g.key === S._statTab) || groups[0];
-  const tabs = groups.map(g => `<button role="tab" data-stattab="${g.key}" aria-selected="${g === cur}">${esc(g.label)}<small>${g.n}</small></button>`).join('');
+  const tabs = groups.map(g => `<button role="tab" data-stattab="${g.key}" aria-selected="${g === cur}" title="${esc(T[S.lang]['ttStatTab_' + g.key] ? t('ttStatTab_' + g.key) : '')}">${esc(g.label)}<small>${g.n}</small></button>`).join('');
   return `<div class="setstats"><div class="sshead"><span class="kicker">${t('setStats')}</span>${statPickBtn()}</div>` +
     `<div class="stabs" role="tablist">${tabs}</div>${cur ? `<div class="stabbody">${cur.body}</div>` : ''}${notes.join('')}</div>`;
 }

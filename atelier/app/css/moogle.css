@@ -91,3 +91,26 @@
 .orchg li:has(.ico){grid-template-columns:30px 86px minmax(0,1fr);align-items:center}
 .orchg .ico{width:30px;height:30px;border-radius:5px}
 .orchg .ico img{width:26px;height:26px}
+
+/* ---- the moogle in a pose that moves: four frames side by side in one image (scripts/atelier/mog_sprites.py),
+   one shown at a time; still on its first frame when the animations are off ---- */
+.mogspr{display:inline-block;flex:none;width:var(--s,72px);height:var(--s,72px);background:0 0/400% 100% no-repeat}
+@keyframes mogframes{from{background-position-x:0}to{background-position-x:100%}}
+.mog-idle{background-image:url(../img/mog/idle.webp)}
+.mog-sleep{background-image:url(../img/mog/sleep.webp)}
+.mog-sorry{background-image:url(../img/mog/sorry.webp)}
+.mog-carry{background-image:url(../img/mog/carry.webp)}
+:root[data-motion="on"] .mog-idle{animation:mogframes .72s steps(4,jump-none) infinite}
+:root[data-motion="on"] .mog-sleep{animation:mogframes 3.6s steps(4,jump-none) infinite}
+:root[data-motion="on"] .mog-sorry{animation:mogframes 3.2s steps(4,jump-none) infinite}
+:root[data-motion="on"] .mog-carry{animation:mogframes 1s steps(4,jump-none) infinite}
+/* in its corner: it flies; asleep when the page was left alone a while */
+.mogbtn i.mogspr{position:absolute;inset:auto;left:-14px;top:-9px;width:86px;height:86px;background:url(../img/mog/idle.webp) 0 0/400% 100% no-repeat}
+.mogbtn.asleep i.mogspr{background-image:url(../img/mog/sleep.webp);animation-duration:3.6s;left:-13px;top:-12px}
+.mogbtn.asleep{filter:saturate(.8) brightness(.9)}
+/* the moogle beside a sentence: sorry for what failed, carrying what goes into the files */
+.mognote{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+.mognote p{margin:0;flex:1;min-width:0}
+.mognote.sorry p{padding:9px 12px;border-radius:var(--radius-s);border-left:3px solid var(--r-dd);background:color-mix(in srgb,var(--r-dd) 11%,var(--panel));font-size:13px}
+.empty-list .mognote{flex-direction:column;text-align:center;gap:6px}
+.empty-list .mognote.sorry p{border-left:0;background:none;color:var(--muted)}

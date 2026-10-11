@@ -97,7 +97,7 @@ async function openPush(s){
   let r;
   try { r = await liveFetch(S.char, '/push?mode=preview' + jobQuery(), {method: 'POST', body, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (!S._push || S._push.body !== body) return;
-  if (r.error) return showDialog('pushdlg', t('pushTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
+  if (r.error) return showDialog('pushdlg', t('pushTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   S._push.hash = r.hash;
   const warn = pushWarnings(s, plan, tg.create), any = r.changes && r.changes.length;
   // in plain words, the file's lines in a fold (push_view.js)
@@ -109,7 +109,7 @@ async function pushGo(){
   P.busy = true;
   let r;
   try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(P.hash) + jobQuery(), {method: 'POST', body: P.body, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
-  if (r.error) return showDialog('pushdlg', t('pushTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
+  if (r.error) return showDialog('pushdlg', t('pushTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   // the file holds the draft now; the saved pieces of that set left set_overrides.lua with it
   const s = P.s, map = setOverrides();
   delete S.trial[trialKey(s)];
@@ -143,7 +143,7 @@ function deletable(path){
 function delButton(s){
   if (!deletable(s.path)) return '';
   const live = liveWrite();
-  return `<button class="linkbtn delset" data-setdel ${live ? '' : `disabled title="${esc(t('pushNeedsGame'))}"`}>${t('delBtn')}</button>`;
+  return `<button class="linkbtn delset" data-setdel ${live ? '' : 'disabled'} title="${esc(t('ttDel') + (live ? '' : ' ' + t('pushNeedsGame')))}">${t('delBtn')}</button>`;
 }
 async function openDelete(s){
   S._del = {s};
@@ -151,7 +151,7 @@ async function openDelete(s){
   let r;
   try { r = await liveFetch(S.char, '/delete?mode=preview' + jobQuery(), {method: 'POST', body: s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (!S._del || S._del.s !== s) return;
-  if (r.error) return showDialog('pushdlg', t('delTitle'), `<p class="kwarn">${t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})}</p>`, '');
+  if (r.error) return showDialog('pushdlg', t('delTitle'), mogSorryHTML(t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})), '');
   S._del.hash = r.hash;
   const also = (r.removed || []).filter(x => x !== s.path && shortPath(x) !== shortPath(s.path));
   showDialog('pushdlg', t('delTitle'), delViewHTML(s, r, also), `<button class="btn danger" data-delgo>${t('delGo')}</button>`);
@@ -172,7 +172,7 @@ async function delGo(){
   D.busy = true;
   let r;
   try { r = await liveFetch(S.char, '/delete?mode=write&hash=' + encodeURIComponent(D.hash) + jobQuery(), {method: 'POST', body: D.s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
-  if (r.error) return showDialog('pushdlg', t('delTitle'), `<p class="kwarn">${t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})}</p>`, '');
+  if (r.error) return showDialog('pushdlg', t('delTitle'), mogSorryHTML(t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})), '');
   forgetSets((r.entry.deleted || []).concat([D.s.path]));
   if (S.setOv[S.char]) S.setOv[S.char].at = stamp();
   S.selPath[S.job] = null; S._found = null;
@@ -186,7 +186,7 @@ async function openHistory(){
   showDialog('histdlg', t('histTitle'), `<p class="muted">${t('pushReading')}</p>`, '');
   let r;
   try { r = await liveFetch(S.char, '/push_history', {timeout: 4000}); } catch (e) { r = {error: 'live'}; }
-  if (r.error) return showDialog('histdlg', t('histTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
+  if (r.error) return showDialog('histdlg', t('histTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   const list = r.list || [];
   const state = e => e.undone ? `<span class="muted small">${esc(t('histUndone', {d: e.undone}))}</span>`
     : e.undoable ? `<button class="btn ghost" data-pushundo="${e.id}">${t('histUndo')}</button>`
@@ -210,7 +210,7 @@ async function pushUndo(id){
   let r;
   try { r = await liveFetch(S.char, '/push_undo?id=' + id, {method: 'POST', timeout: 5000}); } catch (e) { r = {error: 'live'}; }
   UNDO_BUSY = false;
-  if (r.error) return showDialog('histdlg', t('histTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
+  if (r.error) return showDialog('histdlg', t('histTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   S._histToast = t('histUndoDone');
   try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {}
   // GearSwap reloads: the door comes back on the next load, the list is read again then
@@ -255,7 +255,7 @@ async function openCreate(name){
   let r;
   try { r = await liveFetch(S.char, '/push?mode=preview' + jobQuery(), {method: 'POST', body: path + '\n', timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (!S._create || S._create.path !== path) return;
-  if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
+  if (r.error) return showDialog('pushdlg', t('addTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   S._create.hash = r.hash;
   showDialog('pushdlg', t('addTitle'), addViewHTML(path, r), `<button class="btn" data-creatego>${t('addGo')}</button>`);
 }
@@ -265,7 +265,7 @@ async function createGo(){
   C.busy = true;
   let r;
   try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(C.hash) + jobQuery(), {method: 'POST', body: C.body || C.path + '\n', timeout: 8000}); } catch (e) { r = {error: 'live'}; }
-  if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
+  if (r.error) return showDialog('pushdlg', t('addTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   S.selPath[S.job] = C.path; S._found = null; S._toastSet = C.path; S.toast = doneText('addDone', r.entry.file);
   S._create = null; closeOverlay(); save();
   await reloadIfLoaded();

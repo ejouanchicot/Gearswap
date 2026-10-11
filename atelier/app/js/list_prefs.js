@@ -105,7 +105,7 @@ function listOwnSections(rowOf, known, q){
   const p = listPrefs();
   let out = '';
   const section = (key, label, n, here, acts) => { const open = !!q || S.famOpen[S.job + '|' + key] !== false;
-    return [`<div class="famrow own"><button class="fam own ${here ? 'here' : ''}" data-owntoggle="${esc(key)}" aria-expanded="${open}"><span>${label}</span><span>${n}</span></button>${acts}</div>`, open]; };
+    return [`<div class="famrow own" data-owngrp="${esc(key)}" ${key.startsWith('g:') ? 'draggable="true"' : ''}><button class="fam own ${here ? 'here' : ''}" data-owntoggle="${esc(key)}" aria-expanded="${open}" title="${esc(t(key === 'pin' ? 'ttPinned' : 'ttGroup'))}"><span>${label}</span><span>${n}</span></button>${acts}</div>`, open]; };
   const pins = p.pins.filter(x => known.has(x));
   if (pins.length) { const [head, open] = section('pin', '★ ' + esc(t('lpPinned')), pins.length, false, '');
     out += head + (open ? pins.map(x => rowOf(x, '')).join('') : ''); }
@@ -120,15 +120,15 @@ function listOwnSections(rowOf, known, q){
 // a category of the page's: its header, with what to do with it when the pointer is on it
 function listFamHead(fam, n, here, open){
   if (S._listEdit === 'fam:' + fam) return `<div class="famrow edit">${listNameInput('fam:' + fam, listFamLabel(fam), t('fam.' + fam))}</div>`;
-  return `<div class="famrow"><button class="fam ${here ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${open}"><span>${esc(listFamLabel(fam))}</span><span>${n}</span></button>` +
+  return `<div class="famrow"><button class="fam ${here ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${open}" title="${esc(t('ttFam', {w: t('famWhen.' + fam)}))}"><span>${esc(listFamLabel(fam))}</span><span>${n}</span></button>` +
     `<span class="famacts"><button class="ract" data-listedit="fam:${fam}" title="${esc(t('lpRename'))}">✎</button><button class="ract" data-listhide="${fam}" title="${esc(t('lpHide'))}">⦸</button></span></div>`;
 }
 
 /* ---- the top of the list and its menu ---- */
 function listHeadHTML(q){
   return `<div class="search"><input id="setq" type="search" placeholder="${t('searchShort')}" title="${esc(t('lpSearchTip'))}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
-    `<button class="btn ghost lbtn" data-action="add" title="${t('add')}">+</button>` +
-    `<button class="btn ghost lbtn" data-listmenu aria-expanded="${!!S._listMenu}" title="${esc(t('lpMenu'))}">⋯</button></div>${S._listMenu ? listMenuHTML() : ''}`;
+    `<button class="btn ghost lbtn" data-action="add" title="${esc(t('ttAdd'))}">+</button>` +
+    `<button class="btn ghost lbtn" data-listmenu aria-expanded="${!!S._listMenu}" title="${esc(t('ttMenu'))}">⋯</button></div>${S._listMenu ? listMenuHTML() : ''}`;
 }
 function listMenuHTML(){
   const p = listPrefs(), check = on => `<i class="lmck">${on ? '✓' : ''}</i>`;
@@ -186,6 +186,44 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); S._listEdit = null; if (el.dataset.listname.startsWith('newfor:')) S._listGrpFor = null; render(); }
   else e.stopPropagation();
 }, true);
+// Dragging: a set (from anywhere in the list) dropped on "Pinned" or on a group goes into it, dropped on a set of
+// one of those takes the place before it (that is how they are put in order); from a group to another, it moves.
+// A group dragged on another group takes the place before it.
+let LIST_DRAG = null;
+const listDropAt = e => e.target.closest && e.target.closest('.setlist .setrow.own, .setlist .famrow.own');
+const listDropMark = el => { for (const x of document.querySelectorAll('.setlist .dropat')) if (x !== el) x.classList.remove('dropat'); if (el) el.classList.add('dropat'); };
+document.addEventListener('dragstart', e => {
+  const r = e.target.closest && e.target.closest('.setlist [data-rowpath], .setlist .famrow.own[draggable]');
+  if (!r) return;
+  LIST_DRAG = r.dataset.rowpath ? {path: r.dataset.rowpath, from: r.dataset.rowgroup == null ? null : r.dataset.rowgroup || 'pin'} : {group: r.dataset.owngrp.slice(2)};
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', LIST_DRAG.path || LIST_DRAG.group); } catch (x) {}
+});
+document.addEventListener('dragover', e => {
+  const at = LIST_DRAG && listDropAt(e);
+  if (!at || (LIST_DRAG.group && !(at.dataset.owngrp || '').startsWith('g:'))) return listDropMark(null);
+  e.preventDefault(); e.dataTransfer.dropEffect = 'move'; listDropMark(at);
+});
+document.addEventListener('drop', e => {
+  const at = LIST_DRAG && listDropAt(e), d = LIST_DRAG;
+  if (!at) return;
+  e.preventDefault();
+  LIST_DRAG = null; listDropMark(null);
+  const p = listPrefs(), listOf = key => key === 'pin' ? p.pins : (p.groups.find(g => g.id === key) || {}).sets;
+  if (d.group) { const to = (at.dataset.owngrp || '').slice(2), moved = p.groups.find(g => g.id === d.group);
+    if (!moved || !to || to === d.group) return render();
+    p.groups = p.groups.filter(g => g !== moved); p.groups.splice(p.groups.findIndex(g => g.id === to), 0, moved);
+    listPrefs().groups = p.groups; return listChanged(); }
+  // where it lands: a section's header (at its end) or one of its sets (before it)
+  const key = at.dataset.owngrp ? (at.dataset.owngrp === 'pin' ? 'pin' : at.dataset.owngrp.slice(2)) : (at.dataset.rowgroup || 'pin'), list = listOf(key);
+  if (!list) return render();
+  if (d.from && d.from !== key && d.from !== 'pin') { const src = listOf(d.from); if (src) src.splice(src.indexOf(d.path), 1); }
+  const was = list.indexOf(d.path); if (was >= 0) list.splice(was, 1);
+  const before = at.dataset.owngrp ? -1 : list.indexOf(at.dataset.rowpath);
+  if (before < 0) list.push(d.path); else list.splice(before, 0, d.path);
+  listChanged();
+});
+document.addEventListener('dragend', () => { if (LIST_DRAG) { LIST_DRAG = null; listDropMark(null); render(); } });
 // the width: the list's right edge is dragged; the page follows without a redraw, the width is kept
 document.addEventListener('pointerdown', e => {
   if (!e.target.classList || !e.target.classList.contains('listgrip')) return;

@@ -48,8 +48,8 @@ function ui2CurrentSet(d){
 // `warn`: the subjob warning, on the same line (a line of its own pushed the whole page down when it came)
 function ui2CtxBar(warn = ''){
   const b = buffState();
-  return `<div class="ctxbar"><span class="muted small">${esc(t('ui2Ctx'))}</span> <b>${esc(buffTier())}</b> · ${esc(enemyKey(b.enemy))}` +
-    ` <button class="linkbtn" data-section="combat">${esc(t('ui2CtxEdit'))}</button>${warn}</div>`;
+  return `<div class="ctxbar"><span class="ctxwhat" title="${esc(t('ttCtx'))}"><span class="muted small">${esc(t('ui2Ctx'))}</span> <b>${esc(buffTier())}</b> · ${esc(enemyKey(b.enemy))}</span>` +
+    ` <button class="linkbtn" data-section="combat" title="${esc(t('ttCtxEdit'))}">${esc(t('ui2CtxEdit'))}</button>${warn}</div>`;
 }
 
 // The right column: this set's figures, by its kind; then the gear's stats; the rest folded
@@ -58,7 +58,7 @@ function setPanelHTML(s){
   const r = charStats(s), fam = family(s.path, s.pieces);
   const offense = r && (fam === 'ws' || fam === 'engaged') ? offenseHTML(r, s) : '';
   const defense = r && !offense ? tankHTML(r) : '';
-  const all = `<details class="lgfold ui2all" data-ui2all ${S._ui2AllOpen ? 'open' : ''}><summary>${esc(t('ui2All'))}</summary>${globalsHTML(s, 'stats')}</details>`;
+  const all = `<details class="lgfold ui2all" data-ui2all ${S._ui2AllOpen ? 'open' : ''}><summary title="${esc(t('ttAllStats'))}">${esc(t('ui2All'))}</summary>${globalsHTML(s, 'stats')}</details>`;
   // the set's own figures in a block of fixed height (sets.css .ui2own): what follows stays where it is whatever the set
   return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3><div class="ui2own">${offense}${defense}${hpCycleHTML(s)}${luopanHTML(s)}</div>${setStatsHTML(s)}${all}</div>`;
 }
@@ -103,5 +103,5 @@ function renderMeritTabs(){
 // What the set is after, one line under its pieces (the stats themselves are on the right)
 function ui2Wants(s){
   const w = wantsLine(s);
-  return w ? `<p class="ui2wants small">${w}</p>` : '';
+  return w ? `<p class="ui2wants small" title="${esc(t('ttWants'))}">${w}</p>` : '';
 }

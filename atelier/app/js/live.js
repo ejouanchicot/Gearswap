@@ -158,7 +158,10 @@ const shownJobLoaded = () => (S._live[S.char] || {}).job === S.job;
 // The message of a write: GearSwap reloads (the job it has loaded), or the file waits for that job to be loaded
 const doneText = (key, f) => shownJobLoaded() ? t(key, {f}) : t(key + 'Later', {f, j: S.job});
 async function reloadIfLoaded(){ if (shownJobLoaded()) try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {} }
+// A page opened with ?nolive never talks to the game (a test of the page must not write a character's files)
+const LIVE_OFF = /[?&]nolive\b/.test(location.search);
 async function liveFetch(c, path, opts = {}){
+  if (LIVE_OFF) throw new Error('nolive');
   const L = opts.link ? linkConf(c) : liveConf(c), ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), opts.timeout || 2500);
   try {
     const r = await fetch(`http://127.0.0.1:${L.port}${path}`, {method: opts.method || 'GET', body: opts.body,

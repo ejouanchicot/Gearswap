@@ -1,0 +1,99 @@
+/* GearSwap Atelier · setlist.css: the list of sets of the Sets tab (sets_view.js setListHTML, list_prefs.js).
+   A category is a bar that opens; a set is a plain line inside it; the player's own sections (pinned sets, groups)
+   come first. Everything here is under .ofsets, the list of sets alone: the lists of jobs and of simulated actions
+   share .setlist and .setrow (sets.css) and keep their own look. */
+
+/* ---- the column: its width is the player's (dragged), the list is the box of its menu and its grip ---- */
+@media (min-width:1100px){.setsx.ui2{grid-template-columns:var(--listw,260px) minmax(0,1fr) minmax(420px,0.9fr)}}
+.setsx .setlist{position:relative;top:0}
+.ofsets .scroll{padding:4px 0 10px;overflow-x:hidden}
+.listgrip{position:absolute;top:0;right:0;bottom:0;width:6px;cursor:col-resize;z-index:3}
+.listgrip:hover,:root.resizing .listgrip{background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 55%,transparent))}
+:root.resizing{cursor:col-resize;user-select:none}
+
+/* ---- the top: the search, a new set, the menu ---- */
+.ofsets .search{position:relative;gap:6px}
+.ofsets .lbtn{flex:none;width:34px;padding:0;font-size:17px;line-height:1;display:grid;place-items:center}
+.ofsets .lbtn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.listmenu{position:absolute;z-index:6;top:52px;right:8px;left:8px;padding:6px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--panel);box-shadow:0 14px 34px -10px rgba(0,0,0,.7);display:grid;gap:1px}
+.listmenu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
+.listmenu small{padding:2px 8px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.lmitem{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--ink);font:inherit;font-size:13px;text-align:left;padding:6px 8px;border-radius:var(--radius-s)}
+.lmitem:hover{background:var(--hover)}
+.lmitem .lmck{flex:none;width:14px;font-style:normal;color:var(--accent);font-weight:700}
+.lmitem em{margin-left:auto;font-style:normal;font-size:11.5px;color:var(--accent)}
+
+/* ---- a category: a bar with an arrow (right when closed, down when open) and its count; lit when open ---- */
+.famrow{position:relative;display:flex;align-items:stretch;margin:8px 8px 0;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);overflow:hidden}
+.ofsets .scroll > .famrow:first-child{margin-top:2px}
+.famrow .fam{border-bottom:0;padding:9px 10px 8px;gap:8px;font-size:11px;letter-spacing:.13em;color:var(--muted);background:none}
+.famrow .fam span:first-child{display:flex;align-items:center;min-width:0}
+.famrow .fam span:first-child::before{flex:none;width:7px;height:7px;margin:0 11px 0 3px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg)}
+.famrow .fam span:last-child{flex:none;min-width:22px;text-align:center;padding:1px 7px;border-radius:99px;background:var(--well);color:var(--muted);font-size:11px;font-weight:600;letter-spacing:0}
+.famrow:hover{border-color:var(--line-strong)}
+.famrow:hover .fam{color:var(--ink);background:none}
+.famrow:has(.fam[aria-expanded="true"]){border-color:color-mix(in srgb,var(--accent) 55%,var(--line));background:color-mix(in srgb,var(--accent) 9%,var(--panel-2));border-radius:9px 9px 0 0}
+.famrow .fam[aria-expanded="true"]{color:var(--ink);background:none}
+.famrow .fam[aria-expanded="true"] span:first-child::before{transform:rotate(45deg);margin:-3px 11px 0 3px;border-color:var(--accent)}
+.famrow .fam[aria-expanded="true"] span:last-child{background:color-mix(in srgb,var(--accent) 22%,var(--well));color:var(--accent)}
+.famrow .fam.here{box-shadow:none}
+/* what can be done to it, when the pointer is on it */
+.famrow .famacts{position:absolute;right:40px;top:0;bottom:0;display:none;align-items:center;gap:2px;padding:0 4px;background:linear-gradient(90deg,transparent,var(--panel-2) 22%)}
+.famrow:hover .famacts,.famrow:focus-within .famacts{display:flex}
+/* the player's own sections: the same bar, gilt */
+.famrow.own{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.famrow.own .fam{color:var(--accent)}
+/* a name being typed (a group's, a category's) */
+.famrow.edit{padding:5px 8px;background:var(--panel-2)}
+.listname{flex:1;min-width:0;font:inherit;font-size:13px;padding:5px 9px;border:1px solid var(--accent);border-radius:var(--radius-s);background:var(--well);color:var(--ink)}
+.listname:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.ofsets input.listname{background:var(--well);padding:5px 9px}
+
+/* ---- a set: one line inside its category's frame; the name is the button ---- */
+.ofsets .scroll > div.setrow{grid-template-columns:minmax(0,1fr) auto;align-items:center;row-gap:0;min-height:34px;margin:0 8px;padding:0 10px 0 20px;
+  border-left:1px solid var(--line);border-right:1px solid var(--line);background:color-mix(in srgb,var(--well) 55%,transparent)}
+.ofsets .scroll > div.setrow:hover{background:color-mix(in srgb,var(--hover) 70%,var(--well))}
+.ofsets .scroll > div.setrow[aria-current="true"]{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 24%,transparent),color-mix(in srgb,var(--well) 55%,transparent) 85%);box-shadow:inset 3px 0 0 var(--accent)}
+div.setrow > .tname{min-width:0;align-self:stretch;display:flex;align-items:center;border:0;background:none;padding:8px 0;text-align:left;font:inherit;color:inherit}
+div.setrow > .tname b{display:block;font-size:13.5px;font-weight:600;letter-spacing:.005em}
+div.setrow[aria-current="true"] > .tname b{color:var(--ink)}
+/* a set under another: pushed in, a hairline down its left (no arrow) */
+.ofsets .setrow.var b::before{content:none}
+div.setrow.var > .tname{padding-left:16px;margin-left:5px;background:linear-gradient(var(--line-strong),var(--line-strong)) 0 0/1px 100% no-repeat}
+div.setrow.var > .tname b{font-weight:500;font-size:13px;color:color-mix(in srgb,var(--ink) 72%,var(--muted))}
+/* its path, when the list is asked to show the paths */
+div.setrow > code{grid-column:1 / -1;padding:0 0 7px;margin-top:-5px}
+div.setrow.var > code{padding-left:22px}
+/* a set the job cannot use with the subjob shown, when those are shown again; their count under the list */
+.setrow.nouse b{color:var(--faint);font-style:italic}
+.acchid{margin:14px 12px 4px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--faint)}
+
+/* ---- what a line says at its right: the version shown, a missing piece, pieces on trial, an empty set ---- */
+.setrow .rowmarks{display:flex;align-items:center;gap:5px;min-height:22px}
+.setrow .rowver{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.setrow .rowmiss{flex:none;font-style:normal;font-size:12px;font-weight:800;color:var(--r-dd);opacity:.9}
+.setrow .rowtry{width:6px;height:6px;border-radius:50%;background:var(--try);box-shadow:0 0 6px var(--try)}
+.setrow .rowvoid{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+/* its two actions (pin, put in a group), shown when the pointer is on the line; the star stays on a pinned set */
+.rowacts{display:none;align-items:center;gap:1px}
+.setrow:hover .rowacts,.setrow:focus-within .rowacts,.rowacts.pinned{display:flex}
+.rowacts.pinned .ract:not([data-listpin]){display:none}
+.setrow:hover .rowacts .ract,.setrow:focus-within .rowacts .ract{display:grid}
+.ract{width:20px;height:20px;display:grid;place-items:center;border:0;border-radius:6px;background:none;color:var(--faint);font:inherit;font-size:13px;line-height:1;padding:0}
+.ract:hover{background:var(--hover);color:var(--ink)}
+.ract[aria-pressed="true"],.ract[aria-expanded="true"]{color:var(--accent)}
+.rowacts.pinned .ract[data-listpin]{color:var(--accent);opacity:.75}
+
+/* ---- what goes with a line, in the same frame: the groups to tick, a set's other names, an empty group ---- */
+.ofsets .scroll > .aliasfold,.ofsets .scroll > .grppick,.ofsets .scroll > .grpempty,.ofsets .scroll > .setrow.alias{margin-left:8px;margin-right:8px;
+  border-left:1px solid var(--line);border-right:1px solid var(--line);background:color-mix(in srgb,var(--well) 55%,transparent)}
+.grppick{display:flex;flex-wrap:wrap;gap:5px;padding:6px 12px 8px 26px;border-bottom:1px solid var(--line)}
+.gpick{border:1px solid var(--line-strong);background:var(--panel);color:var(--muted);border-radius:99px;font:inherit;font-size:11.5px;padding:2px 9px}
+.gpick[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.grppick .listname{flex:1 1 120px;font-size:12px;padding:3px 8px;border-color:var(--line-strong)}
+.grpempty{margin:0;padding:8px 14px;font-size:12px;color:var(--faint)}
+
+/* ---- dragging a set or a group: where it would land ---- */
+.ofsets [draggable="true"]{-webkit-user-drag:element}
+.ofsets .dropat{box-shadow:inset 0 2px 0 var(--accent)}
+.ofsets .famrow.own.dropat{box-shadow:0 0 0 2px var(--accent)}

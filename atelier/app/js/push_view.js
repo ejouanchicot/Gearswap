@@ -37,7 +37,7 @@ function pushRowsHTML(s, plan){
 // The push window: what goes into which set, the warnings, what protects the file, then the fold
 function pushViewHTML(s, tg, plan, r, warn, any){
   const p = `<b>${esc(shortPath(s.path))}</b>`;
-  return `<p>${tg.create ? t('pvPushNew', {v: `<b>${esc(tg.tier)}</b>`, p}) : t('pvPush', {p})}</p>${pushRowsHTML(s, plan)}` +
+  return `${mogCarryHTML(tg.create ? t('pvPushNew', {v: `<b>${esc(tg.tier)}</b>`, p}) : t('pvPush', {p}))}${pushRowsHTML(s, plan)}` +
     warn.map(w => `<p class="kwarn">${w}</p>`).join('') + `<p class="muted small">${any ? t('pvSafe') : t('pushErr_nothing')}</p>${pushTechHTML(r, r.after)}`;
 }
 function delViewHTML(s, r, also){
@@ -46,7 +46,7 @@ function delViewHTML(s, r, also){
     `<p class="muted small">${t('pvDelSafe')}</p>${pushTechHTML(r, '')}`;
 }
 function addViewHTML(path, r){
-  return `<p>${t('pvAdd', {p: `<b>${esc(shortPath(path))}</b>`})}</p><p class="muted small">${t('pvSafe')}</p>${pushTechHTML(r, r.after)}`;
+  return `${mogCarryHTML(t('pvAdd', {p: `<b>${esc(shortPath(path))}</b>`}))}<p class="muted small">${t('pvSafe')}</p>${pushTechHTML(r, r.after)}`;
 }
 document.addEventListener('toggle', e => {
   if (e.target.matches && e.target.matches('[data-pushtech]')) { S.pushTech = e.target.open; save(); }

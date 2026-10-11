@@ -34,7 +34,6 @@
   border:2px solid var(--line-strong);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--accent) 22%,var(--panel-2)),var(--panel));
   box-shadow:0 4px 14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18);transition:transform .15s,border-color .15s,box-shadow .15s}
 .mogbtn[hidden]{display:none}
-.mogbtn i{position:absolute;inset:0;background:url(../img/mog/guide_tips_quiet.webp) 50% 6%/175% no-repeat}
 .mogbtn:hover{transform:translateY(-2px) scale(1.06);border-color:var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.55),0 0 16px -2px var(--accent)}
 
 /* ---- a page's word and the help: beside the button ---- */
@@ -43,6 +42,16 @@
 .ghelp{max-width:min(470px,calc(100vw - 36px))}
 .ghelp .gbub{transform-origin:100% 100%;max-height:calc(100vh - 150px);overflow:auto}
 .ghelp .gmog{width:84px;height:84px}
+/* the help: what the page is like right now, over what is always true of it */
+.ghelp h4{margin:10px 0 4px;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#8A6A1F}
+.ghelp .gnow{margin:0 0 4px;padding:0;list-style:none;display:grid;gap:5px}
+.ghelp .gnow li{padding:6px 9px;border-radius:9px;background:rgba(42,29,18,.07);border-left:3px solid rgba(42,29,18,.25)}
+.ghelp .gnow li.warn{background:rgba(196,60,40,.1);border-left-color:#C43C28}
+.ghelp .gnow .linkbtn{font-weight:700;white-space:nowrap}
+/* something deserves a look: a dot on the button */
+.mogbtn.haswarn{overflow:visible}
+.mogbtn.haswarn::after{content:"";position:absolute;right:-1px;top:-1px;width:14px;height:14px;border-radius:50%;background:#E0533D;border:2px solid var(--panel);box-shadow:0 0 8px #E0533D}
+.mogbtn.haswarn i.mogspr{clip-path:circle(29px at 43px 38px)}
 
 /* ---- the welcome visit ---- */
 .gtour{position:fixed;inset:0;z-index:60}

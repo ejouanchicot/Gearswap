@@ -51,7 +51,7 @@ function optPageHTML(s, ws){
   const b = buffState();
   const go = S._optBusy ? `<span class="optprog">${t('optStart')}</span>${searchParked() ? `<button class="btn" data-orshow>${t('orShow')}</button>` : ''}<button class="btn ghost" data-optstop>${t('optStop')}</button>`
     : optGoButtons(act) + (kind === 'jump' || kind === 'stat' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>`);
-  const head = `<header class="ophead"><button class="btn ghost" data-optback>${t('optBack')}</button><h2 class="display">${t('optPageTitle')}</h2>` +
+  const head = `<header class="ophead"><button class="btn ghost" data-optback title="${esc(t('ttOptBack'))}">${t('optBack')}</button><h2 class="display">${t('optPageTitle')}</h2>` +
     `<span class="opset">${esc(shortPath(s.path))}</span><span class="muted small">${esc(buffTier())} · ${esc(enemyKey(b.enemy))}</span>` +
     `<span class="sp"></span><div class="opgo">${go}</div></header>`;
   if (!engineReady()) return `<article class="detail oppage">${head}<p class="tpnote">${t('optNoEngine')}</p></article>`;
@@ -113,7 +113,9 @@ function opParamsHTML(s, kind, cur){
 // attr: the input's own attribute (data-optopt="pdt" here, data-statfloor="hp" in stat_opt.js)
 function opLimitHTML(attr, label, value){
   const m = String(label).match(/^(.*?)\s*([≤≥])\s*$/), name = m ? m[1] : label;
-  return `<label class="oplim" title="${esc(label)}"><span class="oplimn">${esc(name)}</span><span class="oplimv">${m ? `<i>${m[2]}</i>` : ''}` +
+  // what the limit does, not its name again: the limits the damage optimizer knows have their own sentence
+  const key = (String(attr).match(/data-optopt="(\w+)"/) || [])[1], tip = key && T[S.lang]['ttLim_' + key] ? t('ttLim_' + key) : t('ttLim');
+  return `<label class="oplim" title="${esc(tip)}"><span class="oplimn">${esc(name)}</span><span class="oplimv">${m ? `<i>${m[2]}</i>` : ''}` +
     `<input type="number" step="1" ${attr} value="${esc(value)}"></span></label>`;
 }
 // The limits block, at the top of the column: seen before anything else. More than four tiles (the stats
@@ -127,14 +129,14 @@ function opLimitsHTML(title, tiles, extra = ''){
 // tab's menu (an S.optOpts key, its label, its values and their text prefix); `count`: the tab's name says how many
 // of its switches are on (special pieces: off for most players, so seen without opening the tab)
 const OP_TABS = [
-  {id: 'pieces', title: 'opTabPieces', menu: {key: 'where', label: 'optWhereLbl', values: ['mine', 'mine_max', 'all'], text: 'optWhere_', dflt: 'mine'},
+  {id: 'pieces', title: 'opTabPieces', menu: {key: 'where', label: 'optWhereLbl', values: ['mine', 'mine_max', 'all'], text: 'optWhere_', dflt: 'mine', tip: 'ttOptWhere'},
     keys: ['wardOnly', 'freeWeapons']},
   // the fast search (memory, pieces that can never win left out) or the classic one, kept to go back to
   {id: 'calc', title: 'opTabCalc', menu: {key: 'search', label: 'opHow', values: ['fast', 'classic'], text: 'optSearch_', dflt: 'fast', tip: 'optSearchTip'},
     keys: ['fullSpeed']},
   {id: 'special', title: 'opTabSpecial', keys: ['hoxne', 'vim'], count: true}];
 const OP_SWITCH = {
-  wardOnly: {label: 'optWard'},
+  wardOnly: {label: 'optWard', tip: () => t('ttOptWard')},
   freeWeapons: {label: 'freeWeapons', tip: ws => t(ws ? 'freeWeaponsWsTip' : 'freeWeaponsTip')},
   fullSpeed: {label: 'fullSpeed', tip: () => t('fullSpeedTip', {n: OPT_CORES})},
   hoxne: {label: 'optHoxne', tip: () => t('optHoxneTip')},
@@ -165,7 +167,7 @@ function opLocksHTML(){
 function opSearchHTML(o, ws, noWeapons){
   const cur = OP_TABS.find(x => x.id === S._opTab) || OP_TABS[0];
   const tabs = OP_TABS.map(x => { const on = x.count ? x.keys.filter(k => o[k]).length : 0;
-    return `<button data-optab="${x.id}" aria-pressed="${x === cur}">${esc(t(x.title))}${on ? `<small class="opon">${on}</small>` : ''}</button>`; }).join('');
+    return `<button data-optab="${x.id}" aria-pressed="${x === cur}" title="${esc(t('ttOpTab_' + x.id))}">${esc(t(x.title))}${on ? `<small class="opon">${on}</small>` : ''}</button>`; }).join('');
   return `<h4 class="ophd2">${t('opSearch')}</h4><div class="seg optabs" role="group">${tabs}</div>` +
     `<div class="optab">${cur.menu ? opMenuHTML(o, cur.menu) : ''}<div class="opsws">${cur.keys.map(k => opSwitchHTML(o, k, ws, noWeapons)).join('')}</div>` +
     (cur.id === 'special' ? `<p class="muted small">${esc(t('opSpecialWhy'))}</p>` : '') + (cur.id === 'pieces' ? opLocksHTML() : '') + `</div>`;

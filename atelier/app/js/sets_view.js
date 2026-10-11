@@ -31,13 +31,13 @@ function renderSide(){
   document.documentElement.lang = S.lang;
   document.documentElement.setAttribute('data-theme', themeNow());
   const d = data(), job = S.job && JOBS.find(x => x[0] === S.job);
-  const chars = `<div class="seg" role="group">${Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${esc(c)}">${esc(c)}</button>`).join('')}</div>`;
+  const chars = `<div class="seg" role="group">${Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${esc(c)}" title="${esc(t(c === S.char ? 'ttCharNow' : 'ttChar', {c}))}">${esc(c)}</button>`).join('')}</div>`;
   const opt = ([c, name]) => { const ml = masterOf(c); return `<option value="${c}" ${S.job===c?'selected':''}>${c} · ${name}${ml ? ' · ML' + ml : ''}</option>`; };
   const jg = jobGroups();
   const groups = jg[0].label !== null ? jg.map(g => `<optgroup label="${g.label}">${g.jobs.map(opt).join('')}</optgroup>`).join('') : ROLES.map(r => { const played = JOBS.filter(j => j[2]===r && plays(j[0]));
     return played.length ? `<optgroup label="${t('roles.'+r)}">${played.map(([c, name]) => `<option value="${c}" ${S.job===c?'selected':''}>${c} · ${name}</option>`).join('')}</optgroup>` : ''; }).join('');
   // the job and the subjob are chosen on the banner itself, as two plates under the name
-  const jobSel = `<select class="topsel jobsel" aria-label="${esc(t('colJob'))}" title="${esc(t('colJob'))}">` +
+  const jobSel = `<select class="topsel jobsel" aria-label="${esc(t('colJob'))}" title="${esc(t('ttJob'))}">` +
     `<option value="" ${!S.job?'selected':''}>${t('overview')}</option>${groups}</select>`;
   // the book and the style in force, and the export's date when the game is not there: read-outs under their name
   const out = (label, value) => `<div class="tgrp"><small>${esc(label)}</small><span><b class="readout">${value}</b></span></div>`;
@@ -51,7 +51,7 @@ function renderSide(){
   const hero = S.char ? `<div class="hero" ${job ? `style="--role:${ROLE_COLOR[job[2]]}"` : ''}><span class="crest">${job ? emblem(job[0]) :
     '<svg width="20" height="20" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg>'}</span>` +
     `<span class="who"><b>${esc(S.char)}</b><span class="plates">${jobSel}${d ? subPicker() : ''}</span></span></div>` : '';
-  const gear = `<button class="live act ${S._cfg ? 'mid' : ''}" data-config title="${esc(t('cfgOpen'))}">⚙<span class="lbl"> ${esc(t('cfgOpen'))}</span></button>`;
+  const gear = `<button class="live act ${S._cfg ? 'mid' : ''}" data-config title="${esc(t('ttGear'))}">⚙<span class="lbl"> ${esc(t('cfgOpen'))}</span></button>`;
   patchInto($('#top'), `${brand}${hero}<span class="tsep"></span>${grp(t('grpChar'), chars)}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${grp(t('grpFiles'), refreshBadge() + historyBadge())}${grp('GearSwap', liveBadge())}${grp(t('grpPage'), gear)}`);
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
@@ -164,7 +164,7 @@ function familyNote(s){
 // keeps its height and cuts what is too long (the whole text in its tooltip); the actions at the right
 function setTitleBox(kicker, name, what, whatTip, path, acts){
   return `<div class="settitle"><div class="stmain"><div class="stname">${kicker ? `<span class="kicker">${esc(kicker)}</span>` : ''}<h2>${name}</h2></div>` +
-    `<div class="stwhat" ${whatTip ? `title="${esc(whatTip)}"` : ''}>${what}</div><code class="path wspath">${esc(path)}</code></div>${acts}</div>`;
+    `<div class="stwhat" ${whatTip ? `title="${esc(whatTip)}"` : ''}>${what}</div><code class="path wspath" title="${esc(t('ttPath'))}">${esc(path)}</code></div>${acts}</div>`;
 }
 // The title of a weaponskill set: its weapon, its name and version, what it uses (type, attributes, hits,
 // fTP by TP, critical hits, fTP on every hit: the weaponskill database, exported as ws_info), the set's path
@@ -189,8 +189,8 @@ function setVersionsHTML(card, ci, vi){
   const cur = groups.find(g => g.main === vi || g.subs.some(x => x.i === vi)) || (card.fam === 'ws' ? groups[0] : null);
   if (!cur || !cur.subs.length) return `<div class="setvers none"></div>`;
   const tiers = cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
-  const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}">${esc(txt)}</button>`;
-  return `<div class="setvers" title="${esc(tiers ? t('verTip') : '')}"><span class="kicker">${esc(t('verLbl'))}</span><div class="verseg" role="group">` +
+  const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}" title="${esc(T[S.lang]['ttVer' + txt] ? t('ttVer' + txt) : t('ttVer'))}">${esc(txt)}</button>`;
+  return `<div class="setvers"><span class="kicker">${esc(t('verLbl'))}</span><div class="verseg" role="group">` +
     (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join('') + `</div></div>`;
 }
 // The top of a set other than a weaponskill's: what it is on the left (its family, when it is worn, its
@@ -200,12 +200,12 @@ function setHeadHTML(card, ci, vi, s, acts){
   const fam = t('fam.' + card.fam), name = niceName(card);
   // what the set is, on the whole width in one or two lines: its family, name and variant, when it is worn, its path
   const title = setTitleBox(fam !== name ? fam : '', esc(name) + (label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : ''),
-    when ? `<span class="muted small setwhen">${esc(when)}</span>` : '', when, s.path, acts);
+    when ? `<span class="muted small setwhen">${esc(when)}</span>` : '', '', s.path, acts);
   // the weapons' menus side by side under the versions, a label over each
   const pick = (lbl, body) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
-  const menus = weaponMenus(s);
+  const menus = weaponMenus(s), tipOf = desc => desc && desc.replace(/\s+/g, '').toLowerCase() !== 'mainweapon' ? desc + ' · ' + t('ttWeapon') : t('ttWeapon');
   // the weapon states as in game, then what the job's GearSwap puts with them (off hand, ammo)
-  const picks = (menus ? menus.map(([name, sel, desc]) => pick(name, sel).replace('<span class="wslbl">', `<span class="wslbl" title="${esc(desc || '')}">`)).join('') : '') +
+  const picks = (menus ? menus.map(([name, sel, desc]) => pick(name, sel).replace('<span class="wslbl">', `<span class="wslbl" title="${esc(tipOf(desc))}">`).replace('<select class="wmenu', `<select title="${esc(tipOf(desc))}" class="wmenu`)).join('') : '') +
     (family(s.path, s.pieces) !== 'weapons' ? weaponResultLines(s, pick) : '');
   const bar = `<div class="setctl"><div class="wpicks">${picks}</div></div>`;
   return `<div class="settop">${title}${setVersionsHTML(card, ci, vi)}${bar}</div>`;
@@ -224,7 +224,7 @@ function cardHTML(card, ci, bypath, q){
   const slots = SLOTS.map(slot => slotHTML(s, ci, slot, base ? own : new Set(SLOTS), q, eff)).join('');
   const foot = [];
   if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits',{b:'<b>'+esc(shortPath(s.base))+'</b>'})} · ${n?t('changed',{n}):t('nothingChanged')}`); }
-  else foot.push(Object.keys(s.pieces).length ? t('defined',{n:'<b>'+Object.keys(s.pieces).length+'</b>'}) : t('emptySet'));
+  else foot.push(`<span title="${esc(t('ttDefined'))}">${Object.keys(s.pieces).length ? t('defined',{n:'<b>'+Object.keys(s.pieces).length+'</b>'}) : t('emptySet')}</span>`);
   if (s.aliases && s.aliases.length) foot.push(`<details><summary>${t('sharedCount', {n: s.aliases.length})}</summary><p>${s.aliases.map(a => esc(shortPath(a))).join(' · ')}</p></details>`);
   const holds = {missing: [], short: [], porter: []};
   for (const slot of SLOTS) { const st = holdState(slot, eff.pieces[slot]); if (st && !holds[st].includes(eff.pieces[slot].name)) holds[st].push(eff.pieces[slot].name); }
@@ -241,7 +241,7 @@ function cardHTML(card, ci, bypath, q){
   const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || roundSet(s) || statSet(s));
   if (optable && optPageOpen(s)) return optPageHTML(s, ws && wsOfSet(s));
   // its actions on the title line: the optimizer, then deleting it
-  const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview>${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;
+  const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview title="${esc(t('ttOptOpen'))}">${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;
   const top = ws ? `<div class="settop">${wsTitleHTML(s, acts)}${wsOfSet(s) ? setVersionsHTML(card, ci, vi) : '<div class="setvers none"></div>'}` +
       (wsOfSet(s) ? `<div class="setctl">${wsHeadHTML(card, ci, vi, s)}</div>` : '') + `</div>`
     : setHeadHTML(card, ci, vi, s, acts);
@@ -333,14 +333,14 @@ function setListHTML(d){
       const mine = aliases.filter(a => a.i === i && a.k === k);
       if (!mine.length) return;
       const key = S.job + '|' + v.set.path, open = !!q || !!(S._aliasOpen || {})[key];
-      list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
+      list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}" title="${esc(t('ttAlias'))}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
         (open ? mine.map(aliasBtn).join('') : '');
     };
     const row = (v, k) => {
       if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
       const cur = i === sel && k === vi(i);
       rows.push([i, k]);
-      list += `<div class="setrow ${k === 0 ? '' : 'var'} ${usable[i] ? '' : 'nouse'}" aria-current="${cur}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(v.set.path)}">` +
+      list += `<div class="setrow ${k === 0 ? '' : 'var'} ${usable[i] ? '' : 'nouse'}" aria-current="${cur}" draggable="true" data-rowpath="${esc(v.set.path)}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(t('ttRow', {p: v.set.path}))}">` +
         `<b>${esc(nameOf(v, k))}</b></button><span class="rowmarks">${marks(v)}${listRowActs(v.set.path)}</span>${pathLine(v)}</div>${listGroupPicker(v.set.path)}`;
       aliasFold(v, k);
     };
@@ -353,8 +353,8 @@ function setListHTML(d){
       const go = on || all.find(x => x[2] === buffTier()) || all[0], path = go[0].set.path;
       rows.push([i, go[1]]);
       const tried = all.some(x => trialCount(x[0].set)) && !trialCount(go[0].set) ? `<i class="rowtry" title="${esc(t('rowTry'))}"></i>` : '';
-      list += `<div class="setrow ${k === 0 ? '' : 'var'}" aria-current="${!!on}"><button class="tname" data-pick="${i}" data-vpick="${go[1]}" ` +
-        `title="${esc(path + '  ·  ' + all.map(x => x[2]).join(' / '))}"><b>${esc(nameOf(v, k))}</b></button>` +
+      list += `<div class="setrow ${k === 0 ? '' : 'var'}" aria-current="${!!on}" draggable="true" data-rowpath="${esc(path)}"><button class="tname" data-pick="${i}" data-vpick="${go[1]}" ` +
+        `title="${esc(t('ttRowVers', {v: go[2], p: path, l: all.map(x => x[2]).join(', ')}))}"><b>${esc(nameOf(v, k))}</b></button>` +
         `<span class="rowmarks">${on && on[2] !== 'Full' ? `<small class="rowver">${esc(on[2])}</small>` : ''}${tried}${marks(go[0])}${listRowActs(path)}</span>${pathLine(go[0])}</div>${listGroupPicker(path)}`;
       all.forEach(x => aliasFold(x[0], x[1]));
     };
@@ -382,7 +382,7 @@ function setListHTML(d){
     }
   }
   if (fam) list += crossOf(fam);
-  if (!vis.length) list = `<p class="empty-list">${t('noMatch')}</p>`;
+  if (!vis.length) list = `<div class="empty-list">${mogSorryHTML(esc(t('noMatch')))}</div>`;
   if (hidden && !q) { const who = S.job + '/' + ((data() || {}).sub || '?');
     list += `<p class="acchid" title="${esc(t('accTip', {m: S.job, s: (data() || {}).sub || '?'}))}">${esc(t('accHidden', {n: hidden, j: who}))} ` +
       `<button class="linkbtn" data-listall>${esc(t(S._listAll ? 'accHide' : 'accShow'))}</button></p>`; }
@@ -392,11 +392,11 @@ function setListHTML(d){
   const where = {};
   cards.forEach((c, i) => c.variants.forEach((v, k) => { where[v.set.path] = [i, k]; }));
   const ownRow = (path, group) => { const [i, k] = where[path], c = cards[i], v = c.variants[k], cur = i === sel && k === vi(i);
-    return `<div class="setrow own" aria-current="${cur}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(path)}">` +
+    return `<div class="setrow own" aria-current="${cur}" draggable="true" data-rowpath="${esc(path)}" data-rowgroup="${esc(group)}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(t('ttRow', {p: path}))}">` +
       `<b>${esc(niceName(c) + (v.label !== 'Base' ? ' · ' + v.label : ''))}</b></button><span class="rowmarks">${listMarks(v.set)}${listRowActs(path, group)}</span>` +
       `${S.listPaths ? `<code>${esc(path)}</code>` : ''}</div>`; };
   const own = q ? '' : listOwnSections(ownRow, new Set(Object.keys(where)), q);
-  const aside = `<aside class="setlist">${listHeadHTML(q)}<div class="scroll">${own}${list}</div><i class="listgrip" title="${esc(t('lpResize'))}"></i></aside>`;
+  const aside = `<aside class="setlist ofsets">${listHeadHTML(q)}<div class="scroll">${own}${list}</div><i class="listgrip" title="${esc(t('lpResize'))}"></i></aside>`;
   return {aside, cards, sel, bypath, vis, q};
 }
 // The variant of a card shown in its detail
@@ -437,7 +437,7 @@ function subPicker(){
   const twins = sameAsOf(S.char, S.job), own = s => s !== main && (m[s] || (twins[s] && twins[s] !== main));
   const others = allSubs(S.char, S.job).filter(s => !subs.includes(s));
   const opt = s => `<option value="${esc(s)}" ${s===cur?'selected':''}>${label(s)}${own(s)?' •':''}</option>`;
-  return `<label class="pick" title="${t('subOwn')} : •"><small>${t('colSub')}</small><select class="topsel subsel">` +
+  return `<label class="pick" title="${esc(t('ttSub'))}"><small>${t('colSub')}</small><select class="topsel subsel">` +
     `<optgroup label="${t('subMine')}">${subs.map(opt).join('')}</optgroup>` +
     (others.length ? `<optgroup label="${t('subOther')}">${others.map(opt).join('')}</optgroup>` : '') + `</select></label>`;
 }
@@ -481,7 +481,7 @@ function renderJob(){
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
     const list = ui2() ? ui2Sections(d) : [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),keysShown(d).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
-    sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}${ui2Toggle()}</nav>`;
+    sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}" title="${esc(T[S.lang]['ttTab_' + k] ? t('ttTab_' + k, {n}) : '')}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}${ui2Toggle()}</nav>`;
     // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
     if (ui2() && ['combat', 'perso'].includes(S.section)) { side = setListHTML(d);
       if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
@@ -526,6 +526,8 @@ function scrollPut(kept){
   }
 }
 function render(){
+  // a row of the list is being dragged: the page waits (a redraw would take the row from under the pointer)
+  if (LIST_DRAG) return;
   const view = [S.char, S.job, S.section].join('|'), set = view + '|' + S.sel[S.job];
   const tops = SCROLLERS.map(q => { const el = $(q); return el ? el.scrollTop : 0; });
   const kept = S._view === view ? scrollKeep() : [];

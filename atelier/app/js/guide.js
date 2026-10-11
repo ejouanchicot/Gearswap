@@ -46,12 +46,30 @@ function guideAdd(id, cls, html){
   document.body.appendChild(el);
   return el;
 }
-// Its button in the corner (not drawn when the assistant is off)
+// The moogle in a pose that moves (moogle.css .mogspr: four frames side by side in one image, scripts/atelier/
+// mog_sprites.py): idle (it flies), sleep, sorry, carry (gear in its arms)
+const mogSprite = (pose, size) => `<i class="mogspr mog-${pose}" ${size ? `style="--s:${size}px"` : ''} aria-hidden="true"></i>`;
+// Something failed or was not found: the sorry moogle beside the reason
+const mogSorryHTML = html => `<div class="mognote sorry">${mogSprite('sorry', 84)}<p>${html}</p></div>`;
+// Gear is about to go into the player's files: the moogle carries it, beside what will be written
+const mogCarryHTML = html => `<div class="mognote carry">${mogSprite('carry', 84)}<p>${html}</p></div>`;
+// Its button in the corner (not drawn when the assistant is off): it flies there, and falls asleep when nobody has
+// touched the page for a while (MOG_SLEEP_MS), until the pointer moves again
+const MOG_SLEEP_MS = 120000;
+let MOG_SEEN = Date.now();
+function mogAwake(){ MOG_SEEN = Date.now(); const b = document.getElementById('mogbtn'); if (b && b.classList.contains('asleep')) b.classList.remove('asleep'); }
+for (const ev of ['pointermove', 'pointerdown', 'keydown', 'wheel']) addEventListener(ev, mogAwake, {passive: true, capture: true});
+setInterval(() => { const b = document.getElementById('mogbtn'); if (b && Date.now() - MOG_SEEN > MOG_SLEEP_MS) b.classList.add('asleep'); }, 5000);
 function guideButton(){
   let b = document.getElementById('mogbtn');
-  if (!b) { b = document.createElement('button'); b.id = 'mogbtn'; b.className = 'mogbtn'; b.innerHTML = '<i></i>'; document.body.appendChild(b); }
+  if (!b) { b = document.createElement('button'); b.id = 'mogbtn'; b.className = 'mogbtn'; b.innerHTML = mogSprite('idle'); document.body.appendChild(b); }
   b.hidden = guideState().mode === 'off';
   b.title = t('gBtn'); b.setAttribute('aria-label', t('gBtn'));
+  // a dot on it when the page as it is deserves a look (a missing piece, another subjob in game...): it does not
+  // speak by itself, the dot says a click is worth it
+  let warn = 0;
+  if (!b.hidden && GUIDE.tour == null) { try { warn = guideContext(guidePage()).filter(x => x.warn).length; } catch (e) { warn = 0; } }
+  b.classList.toggle('haswarn', warn > 0);
 }
 // One word about a page, the first time it is opened: beside the button, nothing behind it is blocked
 function guideNote(page){
@@ -60,13 +78,26 @@ function guideNote(page){
     `<button class="btn" data-gok>${esc(t('gOk'))}</button><button class="linkbtn" data-ghelp>${esc(t('gMore'))}</button>` +
     `<button class="linkbtn" data-gquiet>${esc(t('gQuiet'))}</button></div></div>`);
 }
-// The help of the page shown (a click on the button)
+// The help of the page shown (a click on the button): first what the page is like right now (guide_context.js:
+// read from the state, each line with "Show me" when an element of the page is the answer), then what is always
+// true of the page
 function guideHelp(){
-  const p = GUIDE_PAGES[guideLang()][guidePage()];
+  const page = guidePage(), p = GUIDE_PAGES[guideLang()][page], now = GUIDE.now = guideContext(page);
   guideDrop('gnote');
+  const nowHTML = now.length ? `<h4>${esc(t('gcNow'))}</h4><ul class="gnow">${now.map((x, i) => `<li class="${x.warn ? 'warn' : ''}">${esc(x.text)}` +
+    (x.sel && document.querySelector(x.sel) ? ` <button class="linkbtn" data-gshow="${i}">${esc(t('gcShow'))}</button>` : '') + `</li>`).join('')}</ul><h4>${esc(t('gcTips'))}</h4>` : '';
   guideAdd('ghelp', 'ghelp', `<div class="gbub" role="dialog" aria-label="${esc(t('gBtn'))}"><small>${esc(t('gHere'))}</small><b>${esc(p.title)}</b><p>${esc(p.intro)}</p>` +
-    `<ul>${p.tips.map(x => `<li>${esc(x)}</li>`).join('')}</ul><div class="gacts"><button class="btn" data-gclose>${esc(t('close'))}</button>` +
+    `${nowHTML}<ul>${p.tips.map(x => `<li>${esc(x)}</li>`).join('')}</ul><div class="gacts"><button class="btn" data-gclose>${esc(t('close'))}</button>` +
     `<button class="linkbtn" data-gtour>${esc(t('gTourAgain'))}</button></div></div>${guideMogHTML('show')}`);
+}
+// "Show me": the moogle goes to the element a line is about and lights it, as in the visit (one step, then it ends)
+function guideShow(i){
+  const x = (GUIDE.now || [])[i];
+  if (!x || !x.sel || !document.querySelector(x.sel)) return;
+  guideDrop('ghelp');
+  GUIDE.steps = [[x.sel, x.text]]; GUIDE.tour = 0; GUIDE.single = true;
+  guideAdd('gtour', 'gtour', `<div class="gscrim"></div><div class="gspot"></div><div class="gcard"></div>`);
+  guideTourDraw();
 }
 
 /* ---- the welcome visit ---- */
@@ -82,6 +113,7 @@ function guideTourStart(){
 }
 function guideTourEnd(){
   GUIDE.tour = null; guideDrop('gtour');
+  if (GUIDE.single) { GUIDE.single = false; return; }
   const g = guideState(); g.seen.tour = true; g.seen[guidePage()] = true; save();
 }
 function guideTourDraw(){
@@ -90,9 +122,9 @@ function guideTourDraw(){
   const el = sel && document.querySelector(sel), r = el && el.getBoundingClientRect();
   if (r && (r.top < 0 || r.bottom > innerHeight) && r.height < innerHeight && sel !== '#mogbtn') el.scrollIntoView({block: 'center'});
   box.querySelector('.gcard').innerHTML = `${guideMogHTML(el ? 'point' : 'hello')}<div class="gbub"><p>${esc(text)}</p><div class="gacts">` +
-    `<button class="btn" data-gnext>${esc(t(i === 0 ? 'gStart' : i === n - 1 ? 'gEnd' : 'gNext'))}</button>` +
+    `<button class="btn" data-gnext>${esc(t(GUIDE.single ? 'gOk' : i === 0 ? 'gStart' : i === n - 1 ? 'gEnd' : 'gNext'))}</button>` +
     (i > 0 ? `<button class="linkbtn" data-gprev>${esc(t('gPrev'))}</button>` : '') +
-    (i < n - 1 ? `<button class="linkbtn" data-gskip>${esc(t('gSkip'))}</button>` : '') + `<span class="gcount">${i + 1} / ${n}</span></div></div>`;
+    (i < n - 1 ? `<button class="linkbtn" data-gskip>${esc(t('gSkip'))}</button>` : '') + (GUIDE.single ? '' : `<span class="gcount">${i + 1} / ${n}</span>`) + `</div></div>`;
   guideTourPlace();
 }
 // The light on the element and the card beside it, the moogle always between the element and its bubble so that
@@ -163,6 +195,7 @@ document.addEventListener('click', e => {
   if (at('#mogbtn')) return document.getElementById('ghelp') ? guideDrop('ghelp') : guideHelp();
   if (mode) return guideSetMode(mode.dataset.guideMode);
   if (at('[data-guide-reset]')) { S.guide = {mode: 'full', seen: {}}; save(); return guideTourAgain(); }
+  if (at('[data-gshow]')) return guideShow(+at('[data-gshow]').dataset.gshow);
   for (const [k, fn] of Object.entries(GUIDE_CLICKS)) if (at(`[data-${k}]`)) return fn();
 });
 document.addEventListener('keydown', e => {

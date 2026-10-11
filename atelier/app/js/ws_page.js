@@ -128,7 +128,7 @@ function tpSteps(r, s){
 }
 // The TP line of a weaponskill set: off (the set as written) or a TP, its pieces from the game
 // An ⓘ that opens or closes the explanation `key` (S._help) in the page
-const helpBtn = key => `<button type="button" class="helpbtn" data-help="${esc(key)}" aria-expanded="${S._help === key}" aria-label="?">ⓘ</button>`;
+const helpBtn = key => `<button type="button" class="helpbtn" data-help="${esc(key)}" aria-expanded="${S._help === key}" aria-label="?" title="${esc(t('ttHelp'))}">ⓘ</button>`;
 // The settings of a weaponskill set, for anyone: its version, the weapon held, the TP; one line each,
 // the explanations under their ⓘ (the optimizer has its own page: opt_page.js)
 function wsHeadHTML(card, ci, vi, s){
@@ -182,7 +182,7 @@ function wsWeaponLine(s, line){
   // a weapon out of reach (a slip, the Mog House) says where it is: it has to be taken out first
   const where = n => { const w = [...new Set(((ownedOf() || {}).main || []).filter(x => x.name === n).flatMap(x => x.where || []))];
     return w.length && !w.some(x => /^(Inventory|Wardrobe)/.test(x)) ? ' · ' + w.map(whereLabel).join(', ') : ''; };
-  const menu = `<select class="heldsel buffsel ${held ? 'set' : ''}" data-heldws="${esc(ws)}">` +
+  const menu = `<select class="heldsel buffsel ${held ? 'set' : ''}" data-heldws="${esc(ws)}" title="${esc(t('ttHeldWs'))}">` +
     `<option value="">${esc(t('heldMode', {w: auto && !isEmpty(auto) ? auto.name : '—'}))}</option>` +
     (held && !sorted.includes(held) ? `<option value="${esc(held)}" selected>${esc(held + ' · ' + t('heldGone'))}</option>` : '') +
     sorted.map(n => `<option value="${esc(n)}" ${n === held ? 'selected' : ''}>${esc(n + dmg(n) + where(n))}</option>`).join('') + `</select>`;
@@ -194,7 +194,7 @@ function heldSubMenu(s, ws){
   const main = withWeapons(s).pieces.main, auto = withWeapons(s, 'heldsub').pieces.sub, cur = (S.heldSub || {})[heldKey(ws)];
   const why = x => subWhy(main, x), list = forceList('sub');
   const shown = cur && list.some(x => x.name === cur.name && !why(x));
-  return `<select class="heldsubsel buffsel ${cur ? 'set' : ''}" data-heldws="${esc(ws)}" aria-label="Sub">` +
+  return `<select class="heldsubsel buffsel ${cur ? 'set' : ''}" data-heldws="${esc(ws)}" aria-label="Sub" title="${esc(t('ttHeldSub'))}">` +
     `<option value="">${esc('Sub · ' + t('auto') + ' · ' + (auto && !isEmpty(auto) ? auto.name : '—'))}</option>` +
     (cur && !shown ? `<option value="cur" selected>${esc(cur.name + ' · ' + (why(cur) || t('heldGone')))}</option>` : '') +
     fitOptions(list, why, cur, main) + `</select>`;
@@ -209,7 +209,7 @@ function fitOptions(list, why, cur, main){
 }
 // The TP steps, then the TP the weaponskill opens with (its make-up on hover)
 function wsTpLine(s, line){
-  const chip = (v, label) => `<button data-wstp="${v}" aria-pressed="${String(S.wsTp || '') === String(v)}">${label}</button>`;
+  const chip = (v, label) => `<button data-wstp="${v}" aria-pressed="${String(S.wsTp || '') === String(v)}" title="${esc(+v ? t('ttWsTp', {n: v}) : t('ttWsTpOff'))}">${label}</button>`;
   const live = liveWrite();
   const r = tpAsk(s, withWeapons(s).pieces, null), steps = tpSteps(r, s), parts = tpTotalParts(s, r);
   const bonus = r && r.bonus ? ` ${t('tpBonusOf', {n: r.bonus})}` : '';
@@ -217,7 +217,7 @@ function wsTpLine(s, line){
   // past 3000 the game keeps 3000: what is over is TP Bonus spent for nothing
   const res = parts ? `<span class="tpres">→ <b>${parts.total}</b> TP` +
     (parts.raw > 3000 ? ` <span class="tpover">${t('tpOver', {t: parts.raw, n: parts.raw - 3000})}</span>` : '') + `</span>` : '';
-  const input = `<input class="tpin" type="number" min="0" max="3000" step="10" value="${S.wsTp && !steps.includes(+S.wsTp) ? S.wsTp : ''}" placeholder="${t('tpOther')}" aria-label="TP">`;
+  const input = `<input class="tpin" type="number" min="0" max="3000" step="10" value="${S.wsTp && !steps.includes(+S.wsTp) ? S.wsTp : ''}" placeholder="${t('tpOther')}" aria-label="TP" title="${esc(t('ttWsTpOther'))}">`;
   // the make-up of the total joins the explanation
   const fallback = !r ? `<span class="muted small">${t(live ? 'tpAsking' : 'tpDefault')}</span>` : '';
   // the TP Bonus in total, in view, its make-up beside it
@@ -269,7 +269,7 @@ function roundCalcHTML(x, real){
     t('rdTime', {d: x.ma ? `(${f(delay)} − ${f(x.ma)})` : f(delay), dw: x.dw ? ` × (1 − ${f(x.dw)} %)` : '', tot: pc(tot), rd: f(rdelay, 1), fl: f(.2 * delay, 1), s: f(x.timeRound, 3)}),
     t('rdWs', {at: f(x.at), st: f(x.start), r: f(x.tpRound, 1), n: f(rounds, 2), s: f(x.timeRound, 3), t: f(x.timeWs, 2)}),
     real ? t('rdReal', {h: hitsP, r: roundsP, n: f(real.rounds, 2), t: f(real.time, 2), tp: f(real.tpAt)}) : ''].filter(Boolean);
-  return `<details class="rdcalc" data-rdcalc ${S._rdOpen ? 'open' : ''}><summary>${esc(t('rdTitle'))}</summary><ol>${steps.map(z => `<li>${z}</li>`).join('')}</ol>` +
+  return `<details class="rdcalc" data-rdcalc ${S._rdOpen ? 'open' : ''}><summary title="${esc(t('ttRdCalc'))}">${esc(t('rdTitle'))}</summary><ol>${steps.map(z => `<li>${z}</li>`).join('')}</ol>` +
     `<p class="muted small">${esc(t('rdNote'))}</p></details>`;
 }
 // What can go off in each hand (FFXI.opt.procsOf): QA, TA, DA, the weapon's OA8..OA2, or one swing, each with its
