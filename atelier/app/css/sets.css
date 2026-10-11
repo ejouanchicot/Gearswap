@@ -1142,3 +1142,14 @@
 .jobcfg:has(.modsave) .mccards,.jobcfg:has(.modsave) .modrows,.jobcfg:has(.modsave) .modlayout > .modnav.box{max-height:calc(100vh - 560px);min-height:180px}
 .jobcfg:has(.modlock) .mccards,.jobcfg:has(.modlock) .modrows{max-height:calc(100vh - 440px)}
 .modchip .mcn.mode{font-style:italic;color:var(--accent);cursor:help}
+/* the ready-made colours of a colour setting: a swatch and its name, the one in use marked */
+.modpresets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%;margin-top:4px}
+.modpresets small{flex-basis:100%;font-size:11.5px;color:var(--muted)}
+.modpreset{display:inline-flex;align-items:center;gap:7px;padding:3px 10px 3px 4px;border:1px solid var(--line-strong);border-radius:99px;background:var(--well);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.modpreset i{width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.35)}
+.modpreset:hover:not([disabled]){border-color:var(--accent)}
+.modpreset[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.modpreset[disabled]{cursor:default;opacity:.75}
+/* in the window of weaponskills: the weapon kind and the weapon that gives it, small after the name */
+.mitile.act small{font-size:11px;color:var(--muted)}
+.mitile.act small.wsw{color:var(--accent)}

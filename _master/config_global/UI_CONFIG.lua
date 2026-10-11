@@ -4,8 +4,11 @@
 --- User-configurable settings for the keybind UI display system.
 ---
 --- The position, visibility, background, font and section values below are
---- only defaults: once config/ui_settings.lua exists (it is rewritten on every
---- UI setting change and by //gs c ui save), its values take precedence.
+--- the starting values. Once <Character>/saved/ui_settings.lua exists (it is
+--- rewritten on every UI setting change and by //gs c ui save), its values
+--- win: what you set in game stays. A value you change HERE afterwards is
+--- taken at the next load, for that setting only (the saved file remembers
+--- what this file said: shared/config/ui_settings.lua).
 --- init_delay, text.stroke, flags and background_presets are always read here.
 ---
 --- @file _common/display/UI_CONFIG.lua

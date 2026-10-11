@@ -11,18 +11,24 @@ Object.assign(T.fr, {mxSearch: 'Chercher une option : un mot, un objet, un sort�
   mxWait: '{n} changement(s) à enregistrer', mxWaitTip: 'Rien n’est écrit tant que tu n’as pas cliqué « Enregistrer ».', mxRevert: 'Annuler ce changement', mxUndoAll: 'Tout annuler', mxEmptyVal: '(vide)',
   mxLockT: 'Lecture seule', mxLock: 'Le jeu n’est pas connecté : tu peux tout lire, mais pas modifier. Pour changer un réglage, lance le jeu avec GearSwap chargé sur {c} : la page s’y connecte toute seule, et les options se déverrouillent.',
   mxLess: 'Baisser de {s}', mxMore1: 'Monter de {s}', mxSlide: 'Glisse pour choisir entre {a} et {b}.', mxStd: 'Standard : {v}', mxStdTip: 'Remettre la valeur standard ({v}).', mxIsStd: 'valeur standard', mxRange: 'Entre {a} et {b}.',
-  mxColor: 'Clique pour ouvrir le nuancier et choisir la couleur.', mxColorOf: 'Rouge {r} · Vert {g} · Bleu {b}',
+  mxColor: 'Clique pour ouvrir le nuancier et choisir la couleur.', mxColorOf: 'Rouge {r} · Vert {g} · Bleu {b}', mxPresets: 'Couleurs toutes prêtes :', mxPresetTip: 'Prendre le fond « {n} » (opacité {a}).',
   mxActAdd: '+ Ajouter une ability ou un sort', mxActTip: 'Ouvre la liste des abilities et des sorts : clique sur celui à ajouter.', mxActTitle: 'Ajouter une ability ou un sort',
-  mxActSearch: 'Chercher une ability ou un sort…', mxActJa: 'Abilities de {j}', mxActMa: 'Magie de {j}', mxActAll: 'Dans tout le jeu', mxUsedJa: 'Abilities déjà dans tes listes (tous tes jobs)', mxUsedMa: 'Magie déjà dans tes listes (tous tes jobs)', mxUsedMode: 'Sorts qui suivent un mode', mxAllJa: 'Autres abilities du jeu', mxAllMa: 'Autre magie du jeu', mxActUse: 'Utilisable en {j}', mxActOther: 'Pas utilisable en {j}', mxActHint: 'Tape quelques lettres pour chercher dans toutes les abilities et tous les sorts du jeu.'});
+  mxActSearch: 'Chercher une ability ou un sort…', mxActJa: 'Abilities de {j}', mxActMa: 'Magie de {j}', mxWsAdd: '+ Ajouter une weaponskill', mxWsTip: 'Ouvre la liste des weaponskills : clique sur celle à ajouter.', mxWsTitle: 'Ajouter une weaponskill', mxWsTitleFor: 'Ajouter une weaponskill pour {w}',
+  mxWsSearch: 'Chercher une weaponskill…', mxWsHint: 'Tape quelques lettres pour chercher dans toutes les weaponskills du jeu.', mxWsGiven: 'Données par {w}', mxWsKindJob: '{k} : celles de {j}', mxWsKindSub: '{k} : avec ton sub /{s}',
+  mxWsKindAny: '{k} : jobs non renseignés', mxWsKindOther: '{k} : celles que {j} n’a pas', mxWsJob: 'Weaponskills de {j}', mxWsSub: 'Avec ton sub /{s}', mxWsFoundOk: 'Utilisables en {j}', mxWsFoundOther: 'Celles que {j} n’a pas',
+  mxWsFrom: 'Donnée par : {w}.', mxWsJobs: 'Jobs : {j}.', mxWsNoJobs: 'Jobs non renseignés.', mxActAll: 'Dans tout le jeu', mxUsedJa: 'Abilities déjà dans tes listes (tous tes jobs)', mxUsedMa: 'Magie déjà dans tes listes (tous tes jobs)', mxUsedMode: 'Sorts qui suivent un mode', mxAllJa: 'Autres abilities du jeu', mxAllMa: 'Autre magie du jeu', mxActUse: 'Utilisable en {j}', mxActOther: 'Pas utilisable en {j}', mxActHint: 'Tape quelques lettres pour chercher dans toutes les abilities et tous les sorts du jeu.'});
 Object.assign(T.en, {mxSearch: 'Search an option: a word, an item, a spell…', mxSearchTip: 'Searches the name and the explanation of every option of every module, and the items and spells of your lists.',
   mxFound: '{n} option(s) for "{q}"', mxNone: 'No option for "{q}". Try another word, or clear the search to see the modules again.', mxClear: 'Clear', mxClearTip: 'Clears the search and goes back to the modules.',
   mxInAdv: 'Advanced · {f}', mxMore: 'The first {n} are shown: narrow the search to see the others.',
   mxWait: '{n} change(s) to save', mxWaitTip: 'Nothing is written until you click "Save".', mxRevert: 'Undo this change', mxUndoAll: 'Undo all', mxEmptyVal: '(empty)',
   mxLockT: 'Read only', mxLock: 'The game is not connected: everything can be read, nothing changed. To change a setting, start the game with GearSwap loaded on {c}: the page connects by itself, and the options unlock.',
   mxLess: 'Lower by {s}', mxMore1: 'Raise by {s}', mxSlide: 'Drag to choose between {a} and {b}.', mxStd: 'Standard: {v}', mxStdTip: 'Back to the standard value ({v}).', mxIsStd: 'standard value', mxRange: 'Between {a} and {b}.',
-  mxColor: 'Click to open the colour picker and choose the colour.', mxColorOf: 'Red {r} · Green {g} · Blue {b}',
+  mxColor: 'Click to open the colour picker and choose the colour.', mxColorOf: 'Red {r} · Green {g} · Blue {b}', mxPresets: 'Ready-made colours:', mxPresetTip: 'Take the {n} background (opacity {a}).',
   mxActAdd: '+ Add an ability or a spell', mxActTip: 'Opens the list of abilities and spells: click the one to add.', mxActTitle: 'Add an ability or a spell',
-  mxActSearch: 'Search an ability or a spell…', mxActJa: '{j} abilities', mxActMa: '{j} magic', mxActAll: 'In the whole game', mxUsedJa: 'Abilities already in your lists (all your jobs)', mxUsedMa: 'Magic already in your lists (all your jobs)', mxUsedMode: 'Spells that follow a mode', mxAllJa: 'Other abilities of the game', mxAllMa: 'Other magic of the game', mxActUse: 'Usable on {j}', mxActOther: 'Not usable on {j}', mxActHint: 'Type a few letters to search every ability and spell of the game.'});
+  mxActSearch: 'Search an ability or a spell…', mxActJa: '{j} abilities', mxActMa: '{j} magic', mxWsAdd: '+ Add a weaponskill', mxWsTip: 'Opens the list of weaponskills: click the one to add.', mxWsTitle: 'Add a weaponskill', mxWsTitleFor: 'Add a weaponskill for {w}',
+  mxWsSearch: 'Search a weaponskill…', mxWsHint: 'Type a few letters to search every weaponskill of the game.', mxWsGiven: 'Given by {w}', mxWsKindJob: '{k}: those {j} has', mxWsKindSub: '{k}: with your /{s} subjob',
+  mxWsKindAny: '{k}: jobs not told', mxWsKindOther: '{k}: those {j} does not have', mxWsJob: '{j} weaponskills', mxWsSub: 'With your /{s} subjob', mxWsFoundOk: 'Usable on {j}', mxWsFoundOther: 'Those {j} does not have',
+  mxWsFrom: 'Given by: {w}.', mxWsJobs: 'Jobs: {j}.', mxWsNoJobs: 'Jobs not told.', mxActAll: 'In the whole game', mxUsedJa: 'Abilities already in your lists (all your jobs)', mxUsedMa: 'Magic already in your lists (all your jobs)', mxUsedMode: 'Spells that follow a mode', mxAllJa: 'Other abilities of the game', mxAllMa: 'Other magic of the game', mxActUse: 'Usable on {j}', mxActOther: 'Not usable on {j}', mxActHint: 'Type a few letters to search every ability and spell of the game.'});
 
 /* ---- a number with its bounds ---- */
 // opts: {unit, range: [min, max, step], std}. A unit in percent is 0 to 100 by itself
@@ -60,6 +66,16 @@ function modColorMap(f, x, off){
   return mxSwatch(rgb, `data-modcolor="${keys.join(',')}" data-modfile="${esc(f.file)}" data-modpath="${esc(x.path)}"`, off);
 }
 
+// The ready-made colours of the file (a table of named {r, g, b, a}: UI_CONFIG.lua background_presets), as swatches:
+// a click takes the colour and its opacity
+function modPresets(f, x, from, off){
+  const all = modParsed(f).byPath[from]; if (!all || all.kind !== 'map') return '';
+  const cur = ['r', 'g', 'b', 'a'].map(k => modValue(f.file, x.path + '.' + k)).join(',');
+  const tiles = all.fields.filter(p => mxColorMap(p)).map(p => { const v = ['r', 'g', 'b', 'a'].map(k => modValue(f.file, p.path + '.' + k)), name = p.key.replace(/_/g, ' ');
+    return `<button class="modpreset" data-modpreset="${esc(p.path)}" data-modfile="${esc(f.file)}" data-modpath="${esc(x.path)}" aria-pressed="${v.join(',') === cur}" ${off} ` +
+      `title="${esc(off ? t('ttModRead') : t('mxPresetTip', {n: name, a: v[3]}))}"><i style="background:${mxHex(v[0], v[1], v[2])};opacity:${Math.max(.25, (v[3] == null ? 255 : v[3]) / 255)}"></i><span>${esc(name)}</span></button>`; }).join('');
+  return tiles ? `<div class="modpresets"><small>${esc(t('mxPresets'))}</small>${tiles}</div>` : '';
+}
 /* ---- the bar of waiting changes ---- */
 // A setting's name for the player: the catalog's, else the Advanced view's, else the file's own
 function mxTitle(file, path){
@@ -133,7 +149,8 @@ document.addEventListener('change', e => {
   d.modcolor.split(',').forEach((k, i) => modStage(d.modfile, d.modpath + '.' + k, rgb[i]));
 });
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-numstep],[data-modstd],[data-modrevert],[data-modqclear]'); if (!b) return; const d = b.dataset;
+  const b = e.target.closest('[data-numstep],[data-modstd],[data-modrevert],[data-modqclear],[data-modpreset]'); if (!b) return; const d = b.dataset;
+  if (d.modpreset) { for (const k of ['r', 'g', 'b', 'a']) { const v = modValue(d.modfile, d.modpreset + '.' + k); if (typeof v === 'number' && modField(d.modfile, d.modpath + '.' + k)) modStage(d.modfile, d.modpath + '.' + k, v); } return; }
   if ('modqclear' in d) { S.modQ = ''; render(); return; }
   if ('modrevert' in d) { delete modEdits(d.modfile)[d.modpath]; S.toast = ''; render(); return; }
   if (d.modstd != null) { modStage(d.modfile, d.modpath, Number(d.modstd)); return; }
@@ -172,5 +189,52 @@ function mxActGrid(q){
 function openActPick(file, path){
   S._miPick = {file, path, acts: true};
   showDialog('midlg', esc(t('mxActTitle')), `<input id="miq" class="tgq" type="search" placeholder="${esc(t('mxActSearch'))}" autocomplete="off"><div id="mibody" class="mibody">${mxActGrid('')}</div>`, '');
+  const q = document.getElementById('miq'); if (q) q.focus();
+}
+
+/* ---- the window of weaponskills ---- */
+// The weapon a list of weaponskills is for: the last name of its path is a weapon mode (by_weapon.Naegling), whose
+// set (sets.Naegling) wears the weapon. {name, kind} (kind: the game's combat skill, "Sword"), or null
+function mxWsWeapon(path){
+  const mode = path.split('.').pop(), set = ((data() || {}).sets || []).find(s => s.path === 'sets.' + mode || s.path === 'sets["' + mode + '"]');
+  const main = set && set.pieces && set.pieces.main, name = main && main.name;
+  return name ? {name, kind: itemKind(name)} : null;
+}
+// The weapons whose description names a weaponskill ("Main hand: "Savage Blade"", a relic's own): {weaponskill: [weapons]}
+let MX_WS_GIVEN = null;
+function mxWsGiven(){
+  const c = typeof catalog === 'function' && catalog();
+  if (!c || typeof WS_ACCESS === 'undefined') return {};
+  if (!MX_WS_GIVEN || MX_WS_GIVEN.src !== c.src) { const by = {};
+    for (const r of c.src.items) if (r[6] && r[6].includes('"')) for (const m of r[6].matchAll(/"([^"]+)"/g)) if (WS_ACCESS[m[1]] && r[10] === WS_ACCESS[m[1]][0]) (by[m[1]] = by[m[1]] || new Set()).add(r[1]);
+    MX_WS_GIVEN = {src: c.src, by: Object.fromEntries(Object.entries(by).map(([k, v]) => [k, [...v].sort()]))}; }
+  return MX_WS_GIVEN.by;
+}
+function mxWsGrid(q){
+  if (typeof WS_ACCESS === 'undefined') return `<p class="muted">${esc(t('miNone'))}</p>`;
+  const p = S._miPick, has = new Set(modValue(p.file, p.path) || []), needle = mxNorm(q.trim()), d = data() || {}, job = S.job, sub = d.sub || '', lv = jaLevels();
+  const wpn = mxWsWeapon(p.path), given = mxWsGiven(), all = Object.keys(WS_ACCESS).sort();
+  const jobs = n => WS_ACCESS[n][1], main = n => !!(jobs(n) && jobs(n)[job] != null), bySub = n => !!(jobs(n) && !main(n) && jobs(n)[sub] != null && jobs(n)[sub] <= lv.sub);
+  const mine = n => !!(wpn && (given[n] || []).includes(wpn.name));
+  // what a tile says under the pointer: the weapons that give it, the jobs that have it
+  const about = n => [given[n] ? t('mxWsFrom', {w: given[n].slice(0, 4).join(', ') + (given[n].length > 4 ? '…' : '')}) : '',
+    jobs(n) ? t('mxWsJobs', {j: Object.keys(jobs(n)).sort().join(' ')}) : t('mxWsNoJobs')].filter(Boolean).join(' ');
+  const tile = (n, dim, kind) => `<button class="mitile act ${dim ? 'other' : ''}" data-mipick="${esc(n)}" ${has.has(n) ? 'disabled' : ''} title="${esc(has.has(n) ? t('miHas') : about(n))}">` +
+    `<span>${esc(n)}${kind ? `<small> · ${esc(WS_ACCESS[n][0])}</small>` : ''}${given[n] && !mine(n) ? `<small class="wsw"> · ${esc(given[n][0])}${given[n].length > 1 ? '…' : ''}</small>` : ''}</span></button>`;
+  const part = (title, list, dim, kind) => list.length ? `<h4>${esc(title)}</h4><div class="migrid">${list.map(n => tile(n, dim, kind)).join('')}</div>` : '';
+  const who = {j: job, s: sub, k: wpn && wpn.kind, w: wpn && wpn.name};
+  if (needle) { const found = all.filter(n => mxNorm(n).includes(needle)), ok = n => main(n) || bySub(n) || !jobs(n);
+    return found.length ? part(t('mxWsFoundOk', who), found.filter(ok), false, true) + part(t('mxWsFoundOther', who), found.filter(n => !ok(n)), true, true) : `<p class="muted">${esc(t('miNone'))}</p>`; }
+  // a weapon is known: its own weaponskills first, then those of its kind by who has them
+  const kind = wpn && wpn.kind && all.some(n => WS_ACCESS[n][0] === wpn.kind) ? all.filter(n => WS_ACCESS[n][0] === wpn.kind) : null;
+  if (!kind) return part(t('mxWsJob', who), all.filter(main), false, true) + (sub ? part(t('mxWsSub', who), all.filter(bySub), false, true) : '') + `<p class="muted small">${esc(t('mxWsHint'))}</p>`;
+  const rest = kind.filter(n => !mine(n));
+  return part(t('mxWsGiven', who), kind.filter(mine)) + part(t('mxWsKindJob', who), rest.filter(main)) + (sub ? part(t('mxWsKindSub', who), rest.filter(bySub)) : '') +
+    part(t('mxWsKindAny', who), rest.filter(n => !jobs(n))) + part(t('mxWsKindOther', who), rest.filter(n => jobs(n) && !main(n) && !bySub(n)), true) + `<p class="muted small">${esc(t('mxWsHint'))}</p>`;
+}
+function openWsPick(file, path){
+  S._miPick = {file, path, ws: true};
+  const wpn = mxWsWeapon(path);
+  showDialog('midlg', esc(wpn ? t('mxWsTitleFor', {w: wpn.name}) : t('mxWsTitle')), `<input id="miq" class="tgq" type="search" placeholder="${esc(t('mxWsSearch'))}" autocomplete="off"><div id="mibody" class="mibody">${mxWsGrid('')}</div>`, '');
   const q = document.getElementById('miq'); if (q) q.focus();
 }

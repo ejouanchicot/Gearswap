@@ -165,7 +165,6 @@ const MOD_REST_FR = {
     ['*', '{1}', ''], ['*.*', '{2}', ''],
   ],
   '{JOB}_CURE_CONFIG.lua': [
-    ['auto_tier_enabled', 'Choix du tier (pas lu)', 'Aujourd’hui c’est le mode Cure Auto-Tier qui allume ou éteint le choix du tier : ce réglage ne change rien.'],
     ['debug_messages', 'Messages de debug', 'Écrit « il manque X HP à la cible : Cure Y choisie ». Les messages habituels du WHM s’affichent de toute façon.'],
     ['message_color', 'Couleur de ces messages', 'Un numéro de couleur du chat.'],
   ],

@@ -161,6 +161,13 @@ function user_setup()
     local WHMStates = require(CharPaths.module('job', 'WHM_STATES', 'WHM'))
     WHMStates.configure()
 
+    -- The Cure tier choice starts as WHM_CURE_CONFIG.lua says (auto_tier_enabled = false: the
+    -- Cure Auto-Tier mode starts Off). Its key turns it on and off afterwards, until the next load.
+    local cure_ok, cure_config = CharPaths.load('job', 'WHM_CURE_CONFIG', 'WHM')
+    if cure_ok and type(cure_config) == 'table' and cure_config.auto_tier_enabled == false and state.CureAutoTier then
+        state.CureAutoTier:set('Off')
+    end
+
     -- ==========================================================================
     -- KEYBINDS LOADING (Always executed after reload)
     -- ==========================================================================

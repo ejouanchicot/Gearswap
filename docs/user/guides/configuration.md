@@ -117,7 +117,7 @@ re-clone copies them back from the old folder (see
 
 | File | Written by |
 |---|---|
-| `saved/ui_settings.lua` | `//gs c ui ...`: HUD position, shown parts, background, font. Wins over `UI_CONFIG.lua`; delete it to go back to those values |
+| `saved/ui_settings.lua` | `//gs c ui ...`: HUD position, shown parts, background, font. Wins over `UI_CONFIG.lua`, except for a value changed in `UI_CONFIG.lua` since the last load, which is taken; delete it to go back to those values |
 | `saved/message_modes.lua` | `//gs c jamsg` / `spellmsg` / `wsmsg`: chat detail for abilities / spells / weaponskills |
 | `saved/combat_mode.lua` | `//gs c combatmode`: on which jobs Combat Mode shows, and its key ([keybinds](keybinds.md#combat-mode-every-job)) |
 | `saved/treasure_mode.lua` | `//gs c th`: on which jobs Treasure Mode shows, and its key ([keybinds](keybinds.md#treasure-mode-every-job)) |

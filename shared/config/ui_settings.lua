@@ -75,6 +75,12 @@ local function compute_defaults()
 end
 
 local D = compute_defaults()
+-- Whether D was read from the player's UI_CONFIG.lua (false: the fallback above, the file was not loaded yet)
+local FROM_CONFIG = type(rawget(_G, 'UIConfig')) == 'table'
+-- The settings in the order the file writes them (the seed block is written in the same order)
+local KEYS = {'pos_x', 'pos_y', 'enabled', 'show_header', 'show_legend', 'show_column_headers', 'show_footer',
+    'bg_r', 'bg_g', 'bg_b', 'bg_a', 'bg_visible', 'font_size', 'font_name',
+    'section_spells', 'section_enhancing', 'section_job_abilities', 'section_weapons', 'section_modes'}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   FILE PERSISTENCE
@@ -140,7 +146,22 @@ local function save_to_file(settings)
         file:write(string.format('    section_enhancing = %s,\n', tostring(settings.section_enhancing ~= false)))
         file:write(string.format('    section_job_abilities = %s,\n', tostring(settings.section_job_abilities ~= false)))
         file:write(string.format('    section_weapons = %s,\n', tostring(settings.section_weapons ~= false)))
-        file:write(string.format('    section_modes = %s\n', tostring(settings.section_modes ~= false)))
+        file:write(string.format('    section_modes = %s,\n', tostring(settings.section_modes ~= false)))
+        file:write('\n')
+        -- What UI_CONFIG.lua said when these values were last lined up with it: a value that no longer
+        -- matches means the player changed UI_CONFIG.lua since, and that setting follows it at the next load
+        -- (none yet when UI_CONFIG.lua was not read at this load: written at the first load that reads it)
+        local seed = settings.seed or (_G.UI_SETTINGS and _G.UI_SETTINGS.seed)
+        if type(seed) == 'table' then
+            file:write('    -- UI_CONFIG.lua as last read (do not edit)\n')
+            file:write('    seed = {\n')
+            for _, key in ipairs(KEYS) do
+                local value = seed[key]
+                if value == nil then value = D[key] end
+                file:write(string.format('        %s = %s,\n', key, type(value) == 'string' and string.format('%q', value) or tostring(value)))
+            end
+            file:write('    },\n')
+        end
         file:write('}\n')
         file:close()
         return true
@@ -155,6 +176,30 @@ end
 ---   GLOBAL SETTINGS STORAGE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Line the saved settings up with UI_CONFIG.lua. The saved file wins (a change made in game with //gs c ui
+--- stays), except for a setting the player changed in UI_CONFIG.lua since the last load: that one follows the
+--- config, or an edit of the file (by hand, or from the Atelier page) would never show. A file saved before the
+--- seed existed only records it: nothing can tell what was changed where.
+--- @param settings table the saved settings (changed in place)
+--- @return boolean True when something was changed and must be written
+local function follow_config(settings)
+    if not FROM_CONFIG then return false end
+    if type(settings.seed) ~= 'table' then
+        settings.seed = {}
+        for _, key in ipairs(KEYS) do settings.seed[key] = D[key] end
+        return true
+    end
+    local changed = false
+    for _, key in ipairs(KEYS) do
+        if settings.seed[key] ~= D[key] then
+            settings[key] = D[key]
+            settings.seed[key] = D[key]
+            changed = true
+        end
+    end
+    return changed
+end
+
 -- ALWAYS try to load from file first (even if _G.UI_SETTINGS exists)
 -- This ensures settings persist across //lua reload gearswap
 local loaded = load_from_file()
@@ -162,12 +207,14 @@ local loaded = load_from_file()
 if loaded then
     -- File exists, use it (overwrite any existing _G.UI_SETTINGS)
     _G.UI_SETTINGS = loaded
+    if follow_config(loaded) then save_to_file(loaded) end
 elseif _G.UI_SETTINGS == nil then
     -- No file AND no global variable: seed from defaults (read from UIConfig).
     -- Shallow-copy D so subsequent mutations to _G.UI_SETTINGS don't leak
     -- back into the module-local defaults table.
     _G.UI_SETTINGS = {}
     for k, v in pairs(D) do _G.UI_SETTINGS[k] = v end
+    if FROM_CONFIG then _G.UI_SETTINGS.seed = {} for k, v in pairs(D) do _G.UI_SETTINGS.seed[k] = v end end
     save_to_file(_G.UI_SETTINGS)
 end
 -- If file doesn't exist but _G.UI_SETTINGS exists, keep the global (in-session changes)

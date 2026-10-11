@@ -177,8 +177,9 @@ for refill, `combat/` for the rest):
 | `WHM_CONFIG.lua` | `refresh_mp_below` (51): the MP % under which idle adds `sets.latent_refresh` ([configuration](../../guides/configuration.md#a-jobs-own-switches-job_configlua)) |
 | `WHM_REFILL.lua` | Consumables for `//gs c rf` on WHM, added to the common list or replacing it; every line commented at first ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
 
-In `WHM_CURE_CONFIG.lua`, `auto_tier_enabled` and `message_color` are not
-read: the auto-tier switch is the Cure Auto-Tier mode.
+In `WHM_CURE_CONFIG.lua`, `auto_tier_enabled` is the value the Cure Auto-Tier
+mode starts with when the job loads (`false`: it starts Off; its key turns it
+on and off afterwards). `message_color` is not read.
 
 In `<YourName>/_common/`, the files every job reads that matter here:
 `COMMON_KEYBINDS.lua` (common keys), `RECAST_CONFIG.lua`, `ELEMENTAL_BELT_CONFIG.lua`,

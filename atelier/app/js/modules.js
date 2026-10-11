@@ -365,7 +365,13 @@ function mcRows(d, fam){
   const files = modFiles(d), job = S.job || '', sub = d.sub || '', lang = S.lang === 'en' ? 'en' : 'fr', rows = [], seen = new Set();
   const fill = s => String(s).split('{JOB}').join(job).split('{SUB}').join(sub);
   fam.items.forEach((it, i) => {
-    const f = files.find(x => x.file.split('/').pop() === fill(it.file)), x = f && modParsed(f).byPath[fill(it.key)];
+    const f = files.find(x => x.file.split('/').pop() === fill(it.file));
+    // `table.*`: one option for each name the table holds (a weapon, a job), its name said back as {1}
+    if (f && it.key.endsWith('.*')) { const up = modParsed(f).byPath[fill(it.key.slice(0, -2))];
+      for (const c of (up && up.kind === 'map' ? up.fields : [])) if (modEditable(c) && !seen.has(f.file + '|' + c.path)) { seen.add(f.file + '|' + c.path);
+        rows.push({it, f, x: c, id: fam.id + '.' + i, title: fill(it[lang][0]).split('{1}').join(c.key), desc: fill(it[lang][1]).split('{1}').join(c.key)}); }
+      return; }
+    const x = f && modParsed(f).byPath[fill(it.key)];
     if (!x || !(modEditable(x) || (it.rgb && mxColorMap(x))) || (fam.id === 'job' && f.scope !== 'job')) return;
     // an empty table the catalog knows as a table of lines ({} in the file): its columns are the catalog's
     if (it.cols && x.kind === 'list' && !x.fields.length) Object.assign(x, {kind: 'rows', cols: Object.keys(it.cols), value: []});
@@ -390,14 +396,14 @@ function mcScope(d, r){
 function mcControl(r, val, id, off){
   const lang = S.lang === 'en' ? 2 : 1;
   if (r.it.choices) return `<span class="modseg">${r.it.choices.map((c, i) => `<button data-mcchoice="${r.id}:${i}" ${id} aria-pressed="${c[0] === val}" ${off} ${modTip(off, c[0] === val ? 'ttModChosen' : c[0] === 'auto' ? 'ttModAuto' : 'ttModChoose', {v: c[lang]})}>${esc(c[lang])}</button>`).join('')}</span>`;
-  if (r.it.rgb) return modColorMap(r.f, r.x, off);
+  if (r.it.rgb) return modColorMap(r.f, r.x, off) + (r.it.presets ? modPresets(r.f, r.x, r.it.presets, off) : '');
   return modControl(r.f, r.x, val, id, off, r.it);
 }
 function mcCardHTML(d, r){
   const ed = modEdits(r.f.file)[r.x.path], val = ed ? ed.v : r.x.value, off = modCanWrite(r.f) ? '' : 'disabled', sc = mcScope(d, r);
   const id = `data-modfile="${esc(r.f.file)}" data-modpath="${esc(r.x.path)}"`;
   const part = r.it.rgb && r.x.fields.some(c => modEdits(r.f.file)[c.path]);
-  return `<div class="mccard ${ed || part ? 'changed' : ''} ${r.x.kind === 'list' || r.x.kind === 'rows' ? 'tall' : ''}"><div class="mck"><b>${esc(r.title)}</b>${r.desc ? `<p>${esc(r.desc)}</p>` : ''}` +
+  return `<div class="mccard ${ed || part ? 'changed' : ''} ${r.x.kind === 'list' || r.x.kind === 'rows' || r.it.presets ? 'tall' : ''}"><div class="mck"><b>${esc(r.title)}</b>${r.desc ? `<p>${esc(r.desc)}</p>` : ''}` +
     `<span class="mcscope ${sc.cls}" title="${esc(sc.tip)}">${esc(sc.text)}</span></div>` +
     `<div class="modv">${mcControl(r, val, id, off)}</div></div>`;
 }

@@ -36,7 +36,8 @@ function modChips(x, val, id, off, opts = {}){
   const tiles = val.map((v, i) => `<span class="modchip ${pic ? 'item' : ''}" ${drag} data-moddrag="${i}" ${id} ${modTip(off, 'miDragTip')}>` +
     `${pic ? itemIco(v) : `<i class="mcnum">${i + 1}</i>`}<span class="mcn ${miIsMode(v) ? 'mode' : ''}" ${miIsMode(v) ? `title="${esc(t('miModeTip', {v}))}"` : ''}>${esc(miLabel(v))}</span>` +
     `<button data-moddel="${i}" ${id} ${off} title="${esc(t('modDel', {v}))}" aria-label="${esc(t('modDel', {v}))}">×</button></span>`).join('');
-  const add = opts.acts ? `<button class="modaddbtn" data-modpick data-actpick ${id} ${off} ${modTip(off, 'mxActTip')}>${esc(t('mxActAdd'))}</button>`
+  const add = opts.ws ? `<button class="modaddbtn" data-modpick data-wspick ${id} ${off} ${modTip(off, 'mxWsTip')}>${esc(t('mxWsAdd'))}</button>`
+    : opts.acts ? `<button class="modaddbtn" data-modpick data-actpick ${id} ${off} ${modTip(off, 'mxActTip')}>${esc(t('mxActAdd'))}</button>`
     : opts.items ? `<button class="modaddbtn" data-modpick ${id} ${off} ${modTip(off, 'miAddTip')}>${esc(t('miAdd'))}</button>`
     : opts.bags ? opts.bags.filter(b => !val.includes(b)).map(b => `<button class="modaddbtn" data-modaddv="${esc(b)}" ${id} ${off} ${modTip(off, 'miBagTip', {v: b})}>+ ${esc(b)}</button>`).join('')
     : `<input class="modin add" type="text" placeholder="${esc(t('modAdd'))}" ${opts.gear ? 'list="mrgear"' : ''} ${id} data-modadd ${off} ${modTip(off, 'ttModAdd')}>`;
@@ -66,11 +67,11 @@ const miAppend = (file, path, v) => { const cur = modValue(file, path) || []; if
 
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-modpick],[data-modaddv],[data-mipick]'); if (!b) return; const d = b.dataset;
-  if ('modpick' in d) { if ('actpick' in d) openActPick(d.modfile, d.modpath); else openItemPick(d.modfile, d.modpath, 'rowpick' in d); return; }
+  if ('modpick' in d) { if ('wspick' in d) openWsPick(d.modfile, d.modpath); else if ('actpick' in d) openActPick(d.modfile, d.modpath); else openItemPick(d.modfile, d.modpath, 'rowpick' in d); return; }
   if (d.modaddv != null) { miAppend(d.modfile, d.modpath, d.modaddv); return; }
   if (d.mipick != null && S._miPick) { const p = S._miPick; S._miPick = null; closeOverlay(); if (p.rows) mrAdd(p.file, p.path, d.mipick); else miAppend(p.file, p.path, d.mipick); }
 });
-document.addEventListener('input', e => { if (e.target.id === 'miq' && S._miPick) document.getElementById('mibody').innerHTML = S._miPick.acts ? mxActGrid(e.target.value) : miGridHTML(e.target.value); });
+document.addEventListener('input', e => { if (e.target.id === 'miq' && S._miPick) document.getElementById('mibody').innerHTML = S._miPick.ws ? mxWsGrid(e.target.value) : S._miPick.acts ? mxActGrid(e.target.value) : miGridHTML(e.target.value); });
 
 /* ---- dragging a tile to its place ---- */
 let MOD_DRAG = null;

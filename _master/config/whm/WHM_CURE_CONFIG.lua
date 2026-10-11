@@ -74,8 +74,10 @@ WHMCureConfig.curaga_tiers = {
 --- AUTO-TIER SETTINGS
 ---============================================================================
 
---- Enable/disable auto-tier system
---- Set to false to disable automatic Cure tier selection
+--- Whether the Cure tier choice is on when the job loads: the starting value of
+--- the Cure Auto-Tier mode (state.CureAutoTier, shared/entry/whm.lua).
+--- false: the mode starts Off (the tier you cast is kept). Its key turns it on
+--- and off afterwards, until the next load.
 WHMCureConfig.auto_tier_enabled = true
 
 --- Safety margin (extra HP to heal beyond missing)
