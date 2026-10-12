@@ -51,31 +51,19 @@ function SATAManager.apply_variant(spell)
     local has_sneak_attack = (buffactive and buffactive['Sneak Attack']) or _G.thf_sa_pending
     local has_trick_attack = (buffactive and buffactive['Trick Attack']) or _G.thf_ta_pending
 
-    -- Select variant based on buff combination (priority order)
+    -- Select variant based on buff combination (priority order); none written: Mote's base set stays
+    local variant
     if has_sneak_attack and has_trick_attack then
-        -- Both buffs active: use .SATA variant
-        if ws_sets.SATA then
-            equip(ws_sets.SATA)
-        elseif ws_sets.SA then
-            -- Fallback to SA only if .SATA variant doesn't exist
-            equip(ws_sets.SA)
-        elseif ws_sets.TA then
-            -- Fallback to TA only if .SA variant doesn't exist
-            equip(ws_sets.TA)
-        end
-        -- If no variants exist, base set is already equipped by Mote
+        variant = ws_sets.SATA or ws_sets.SA or ws_sets.TA
     elseif has_sneak_attack then
-        -- Sneak Attack only: use .SA variant
-        if ws_sets.SA then
-            equip(ws_sets.SA)
-        end
-        -- If no .SA variant, base set is already equipped
+        variant = ws_sets.SA
     elseif has_trick_attack then
-        -- Trick Attack only: use .TA variant
-        if ws_sets.TA then
-            equip(ws_sets.TA)
-        end
-        -- If no .TA variant, base set is already equipped
+        variant = ws_sets.TA
+    end
+    if variant then
+        -- the party support's version of it (.Solo, .Group, .Trust: shared/utils/party/support_tier.lua), as
+        -- for the base set
+        equip(require('shared/utils/party/support_tier').engaged(variant))
     end
 
     -- Consume pending flags: WS consumes SA/TA buffs, so the flags

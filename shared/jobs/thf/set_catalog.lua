@@ -76,7 +76,6 @@ return {
     {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'Any enhancing spell of that family, no family set at the root',
         base = 'midcast.Enhancing Magic', needs = {'skill:Enhancing Magic'}},
 
-    -- No WeaponskillMode: support_tier.lua reads the tiers on sets.precast.WS[ws] only (the common {ws} line); the sets
-    -- under it are the .SA / .TA / .SATA variants, equipped as they are by sa_ta_manager.lua
-    skip = {'precast.WS.{set:precast.WS}.{Group|Solo|Trust}'},
+    -- No WeaponskillMode: the sets under sets.precast.WS[ws] are the .SA / .TA / .SATA variants, which sa_ta_manager.lua
+    -- equips through the support tier too (support_tier.lua): the common line gives each its .Group / .Solo / .Trust
 }

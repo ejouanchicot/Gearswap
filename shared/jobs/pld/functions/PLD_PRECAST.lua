@@ -161,7 +161,9 @@ local function apply_sch_ws_set(spell)
     local sch_sets = sets.precast and sets.precast.WS and sets.precast.WS.SCH
     local ws_set = sch_sets and (sch_sets[spell.english] or sch_sets[spell.name])
     if ws_set then
-        equip(ws_set)
+        -- the party support's version of it (.Solo, .Group, .Trust: shared/utils/party/support_tier.lua), as
+        -- for the general weaponskill set
+        equip(require('shared/utils/party/support_tier').engaged(ws_set))
     end
 end
 

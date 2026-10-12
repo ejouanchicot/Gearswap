@@ -253,6 +253,11 @@ const JAS = {
   // the dances (BG Wiki), a main DNC's merit abilities, one at a time: their floor, what holds through the effect
   'Saber Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({da: danceFloor('saber', shownPieces())})},
   'Fan Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({pdmgmul: 1 - danceFloor('fan', shownPieces()) / 100, enmity: 15})},
+  // BG Wiki, Climactic Flourish: "Forces the first swing of the next X attack rounds to critical hit and grants them a
+  // base damage bonus equal to 50% of your CHR", "Works on the first hit of any Weapon Skills"; job points "Increases CHR
+  // bonus by 1%"; the Maculele Tiara's damage bonus. Nothing on the sheet: the weaponskill's damage counts it (the engine,
+  // abilities["Climactic Flourish"]), on a weaponskill set only (engine.js engContextInput leaves it out of a round)
+  'Climactic Flourish': {job: 'DNC', lvl: 80, mainOnly: true, fx: () => ({})},
   'Haste Samba': {job: 'DNC', from: 'DNC', lvl: 45, party: true, fx: (m, l, ja) => ({jahaste: sambaHaste(ja)})},
   'Swordplay': {job: 'RUN', lvl: 20, fx: () => ({acc: 54, eva: 54})},
   'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
@@ -323,8 +328,12 @@ function setDance(){
   const k = Object.keys(SET_DANCE).find(k => path.split('.').includes(k));
   return k ? SET_DANCE[k] : '';
 }
+// Climactic Flourish counts on its own on the .Clim versions of a weaponskill set (ws_variant_selector.lua), a click
+// turns it off there
+const setClim = () => S.job === 'DNC' && !!S._curSet && (S._curSet.path || '').split('.').includes('Clim');
 function jaOn(b, name){
   const role = jaRole(name);
+  if (role === 'ja' && name === 'Climactic Flourish' && setClim() && !(b.jaOff || {})[name]) return true;
   if (role === 'ja' && SET_DANCE_NAMES.has(name)) { const auto = setDance(), off = b.jaOff || {};
     if (auto === name && !off[name]) return true;
     if (auto && auto !== name && !off[auto]) return false; }

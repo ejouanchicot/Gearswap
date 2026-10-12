@@ -43,7 +43,7 @@ numbers are avoided because they drift.
 |------|------:|------|
 | `shared/entry/pld.lua` | 309 | Entry point (the same for every character; `<Char>_PLD.lua` and its template `_master/entry/Tetsouo_PLD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/pld/functions/pld_functions.lua` | 121 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/pld/functions/PLD_PRECAST.lua` | 207 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
+| `shared/jobs/pld/functions/PLD_PRECAST.lua` | 209 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
 | `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 203 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
 | `shared/jobs/pld/functions/PLD_AFTERCAST.lua` | 36 | `LifecycleManager.aftercast()`, empty `job_post_aftercast` |
 | `shared/jobs/pld/functions/PLD_IDLE.lua` | 51 | `customize_idle_set` -> `SetBuilder.build_idle_set` (+ `UPDATE_DEBUG` trace) |

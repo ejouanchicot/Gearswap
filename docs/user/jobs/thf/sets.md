@@ -52,6 +52,7 @@ Dual Wield piece, as Treasure Hunter does on every job.
 | `sets.precast.WS['<name>'].SA` | That weaponskill with Sneak Attack up |
 | `sets.precast.WS['<name>'].TA` | That weaponskill with Trick Attack up |
 | `sets.precast.WS['<name>'].SATA` | That weaponskill with both up. Missing: `.SA`, then `.TA` is used |
+| any of the `.SA` / `.TA` / `.SATA` versions with `.Group`, `.Solo` or `.Trust` after it (`sets.precast.WS['<name>'].SA.Solo`) | That version with less support in your zone (Group: one of BRD / COR / GEO; Solo: none; Trust: trusts only). Not written: the version above it is worn |
 
 - The SA/TA gear goes on as soon as you press the ability, without waiting for
   the buff to show: the game is a little slow to report it. If the ability is

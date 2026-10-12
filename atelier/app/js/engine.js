@@ -76,7 +76,10 @@ function optContext(s, engaged){ return FFXI.opt.context(engaged ? engContextInp
 function engContextInput(s){
   const main = (withWeapons(s).pieces.main || {}).name, skills = weaponSkills();
   const b = liveBuffs(buffState()), physResBy = Object.fromEntries(Object.keys(SKILL_DMG).map(k => [k, physResOf(b, k)]));
-  return Object.assign(optContextInput(s), {mode: 'engaged', ws: null, wsInfo: null, wsSkill: null, physRes: physResOf(b, skills[main] || ''), physResBy});
+  const base = optContextInput(s);
+  // Climactic Flourish is a weaponskill's first hit here, never an average round's
+  delete base.abilities['Climactic Flourish'];
+  return Object.assign(base, {mode: 'engaged', ws: null, wsInfo: null, wsSkill: null, physRes: physResOf(b, skills[main] || ''), physResBy});
 }
 // The same as plain data, for the worker
 function optContextInput(s){

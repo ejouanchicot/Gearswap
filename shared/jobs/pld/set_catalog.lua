@@ -145,7 +145,7 @@ return {
     {'midcast.Blue Magic', when = 'Any blue spell but Cocoon without a set of its own', needs = {'sub:BLU'}},
 
     -- set_builder.lua apply_weapon reads sets[weapon] itself: no WeaponResolver (SingleWield), no SubWeapon state.
-    -- No WeaponskillMode: support_tier.lua reads the tiers on sets.precast.WS[ws] only (the common {ws} line), never
-    -- under the sets below it (sets.precast.WS.SCH and its weaponskills are equipped as they are)
-    skip = {'SingleWield', '{SubWeapon}', 'precast.WS.{set:precast.WS}.{Group|Solo|Trust}'},
+    -- No WeaponskillMode: the sets under sets.precast.WS (sets.precast.WS.SCH and its weaponskills) are equipped
+    -- through the support tier too (PLD_PRECAST.lua apply_sch_ws_set), so the common line gives them their versions
+    skip = {'SingleWield', '{SubWeapon}'},
 }

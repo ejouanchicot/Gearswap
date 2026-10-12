@@ -56,7 +56,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/THF_MOVEMENT.lua` | 18 | Header only, kept for the 12-module layout |
 | `shared/jobs/thf/functions/THF_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('THF', ...)` wrappers |
 | `shared/jobs/thf/functions/THF_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('THF', ...)` wrapper |
-| `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 95 | `apply_variant`: WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
+| `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 83 | `apply_variant`: WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
 | `shared/jobs/thf/functions/logic/set_builder.lua` | 236 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, `sata_th_layer` (laid again after Dual Wield), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
 | `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 145 | `apply_fbc`, `apply_steal` |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 169 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`, plus Combat Mode's lock registry (`'thf_range'`); `release` at unload |
