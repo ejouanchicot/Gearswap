@@ -98,7 +98,9 @@ local function collect_items()
     for _, bag in ipairs(OWNED_BAGS) do
         for _, item in ipairs(windower.ffxi.get_items(bag) or {}) do
             local info = type(item) == 'table' and item.id and item.id > 0 and res.items[item.id]
-            if info then add(info, copy_augments(item), BAG_NAMES[bag] or tostring(bag)) end
+            -- the augments are read for gear only: add() keeps nothing else, and decoding every potion and
+            -- crystal of sixteen bags was a third of this stage
+            if info and info.slots and wearable(info) then add(info, copy_augments(item), BAG_NAMES[bag] or tostring(bag)) end
         end
     end
     -- a slip keeps only items without augments

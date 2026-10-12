@@ -20,7 +20,7 @@
 
 local WeaponTP = {}
 
-local cache, scan = {}, nil
+local cache, scan, newest = {}, nil, nil
 
 --- The TP Bonus written in a list of text lines (TP Bonus +200, "TP Bonus"+500), added up.
 local function from_lines(lines)
@@ -31,8 +31,24 @@ local function from_lines(lines)
     return total
 end
 
---- The item's description in the game resources, as one line list: of the newest item of that name
---- (several stages share a name: Ukonvasara from level 75 to 119).
+--- The newest weapon of each name in the game resources (several stages share a name: Ukonvasara from
+--- level 75 to 119), by lower-case name, short and long. Built once a load: one pass over the items,
+--- where a pass for each weapon asked froze the game a quarter of a second at every Atelier export.
+local function weapon_ids(res)
+    if newest then return newest end
+    newest = {}
+    for id, item in pairs(res.items) do
+        if type(item) == 'table' and item.category == 'Weapon' then
+            for _, key in ipairs({item.en, item.enl}) do
+                key = type(key) == 'string' and key:lower()
+                if key and (not newest[key] or id > newest[key]) then newest[key] = id end
+            end
+        end
+    end
+    return newest
+end
+
+--- The item's description in the game resources, as one line list.
 local function description(name)
     local res = rawget(_G, 'res')
     if not res then
@@ -40,11 +56,7 @@ local function description(name)
         res = ok and lib or nil
     end
     if not (res and res.items and res.item_descriptions) then return {} end
-    local lower, best = name:lower(), nil
-    for id, item in pairs(res.items) do
-        if type(item) == 'table' and item.category == 'Weapon' and ((item.en or ''):lower() == lower or (item.enl or ''):lower() == lower)
-            and (not best or id > best) then best = id end
-    end
+    local best = weapon_ids(res)[name:lower()]
     local d = best and res.item_descriptions[best]
     return {d and d.en or ''}
 end

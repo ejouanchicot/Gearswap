@@ -17,7 +17,8 @@
 --- keys, HUD, alt window, lockstyle, unload) and an ALIVE line every
 --- HEARTBEAT seconds (Lua memory, zone, status, counts of frequent events).
 --- trace_hooks.lua adds every module read, include, command sent and
---- GearSwap event. After a client crash, the last line tells what was running.
+--- GearSwap event, and a STALL line each time the game stood still longer than
+--- STALL_MIN. After a client crash, the last line tells what was running.
 ---
 --- The file is moved to trace.old.log once it passes MAX_BYTES (checked at
 --- each load), so a long session keeps the latest hours plus one old file.
@@ -36,6 +37,8 @@ local TraceLog = {}
 local CHAT = 207
 local HEARTBEAT = 1    -- seconds between two ALIVE lines
 local MAX_BYTES = 10 * 1024 * 1024
+local STALL_TICK = 0.05  -- seconds between two checks of the game's pace
+local STALL_MIN = 0.10   -- a check that late is a freeze worth a line
 
 local function file_path(name)
     if not (player and player.name and windower and windower.addon_path) then return nil end
@@ -159,6 +162,23 @@ local function alive_text()
         tostring(info and info.zone), tostring(player and player.status), counts ~= '' and ' | ' .. counts or '')
 end
 
+--- STALL lines while tracing: a check asked every STALL_TICK that comes late tells how long the game stood
+--- still (a load, a long handler), whatever the cause. The time the check was due lives on `windower`, so the
+--- freeze of a load is seen by the next load's first check, the old load's own never running again.
+--- @param gen number The heartbeat generation this watch belongs to
+local function start_stall_watch(gen)
+    local due = windower._trace_stall_due
+    if not due or os.clock() - due > 5 then windower._trace_stall_due = os.clock() + STALL_TICK end
+    local function check()
+        if gen ~= windower._trace_heartbeat_gen or not is_on() then return end
+        local late = os.clock() - windower._trace_stall_due
+        if late >= STALL_MIN then TraceLog.log('STALL', '%d ms frozen', late * 1000) end
+        windower._trace_stall_due = os.clock() + STALL_TICK
+        coroutine.schedule(check, STALL_TICK)
+    end
+    coroutine.schedule(check, STALL_TICK)
+end
+
 --- ALIVE every HEARTBEAT seconds while tracing, from the latest load only:
 --- the generation counter lives on `windower` because the coroutine of an
 --- older load keeps running after a reload.
@@ -171,6 +191,7 @@ function TraceLog.start_heartbeat()
         coroutine.schedule(beat, HEARTBEAT)
     end
     coroutine.schedule(beat, HEARTBEAT)
+    start_stall_watch(gen)
 end
 
 --- True while recording (for callers that would compute something costly).
