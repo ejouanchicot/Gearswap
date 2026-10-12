@@ -10,7 +10,7 @@
 [![Jobs](https://img.shields.io/badge/Jobs-22-green)](#jobs)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-[Quick start](#quick-start) · [Keys](#keys) · [Commands](#commands) · [Dual-box](#dual-box) · [Documentation](#documentation)
+[Quick start](#quick-start) · [Keys](#keys) · [Commands](#commands) · [Atelier](#atelier) · [Dual-box](#dual-box) · [Documentation](#documentation)
 
 </div>
 
@@ -22,7 +22,8 @@ A set of GearSwap files, built on Mote-Include, that swaps your gear for every
 spell, ability and weaponskill, and adds the tools around it: a keybind HUD,
 mode keys on the numeric keypad, warp shortcuts, a wardrobe organizer, a
 consumable refill, a set checker, and a dual-box layer to drive a second
-character from the first.
+character from the first. A page in your browser, the [Atelier](#atelier),
+shows your sets, keys and bags as the game has them.
 
 Every job shares the same code base: the job files only hold what is specific
 to the job, and the rest (precast checks, midcast set choice, messages,
@@ -135,7 +136,11 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
 | `checksets` | Lists the set items that are not in your inventory or wardrobes |
 | `wa` | Wardrobe audit: items in your wardrobes that no set file uses |
 | `wo` | Wardrobe organizer: moves the gear you use into the first wardrobes |
-| `rf` | Refill consumables from the Mog Case and Mog Sack |
+| `rf` | Refill consumables from the Mog Case, Sack and Satchel, and put the surplus back |
+| `atelier` | Write the loaded job for the [Atelier](#atelier) page (`atelier all`, `atelier tour`: every job) |
+| `bags` / `bags go` / `bags stop` | Show / play / stop the tidy-up plan made in the Atelier page. It only moves items from a bag to another |
+| `po` | After a job change, beside a Porter Moogle: PorterPacker, then `wo`, the lockstyle and the refill, in one command |
+| `lockscan` | Applies each of your lockstyle sets in turn, so that the pieces of each are known and kept |
 | `ls` | Re-apply the lockstyle |
 | `reload` | Reload the job file |
 | `warp`, `ret`, `esc`, `tph`, `sd`... | Warp, Retrace, Escape, teleports and destination items; add `all` (`warpall`) to send it to your other boxes |
@@ -194,6 +199,28 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
   See [Sneak and Invisible](docs/user/guides/stealth.md).
 - **Your own modes without code.** `<JOB>_CUSTOM.lua` adds a mode with a key
   and gear rules ("with this weapon, wear this") on top of the job's choice.
+
+## Atelier
+
+`//gs c atelier` writes the loaded job's sets, keys, modes, macro book and
+lockstyle; open `data/atelier.html` in your browser to read them.
+
+- **Sets** drawn as the game's 16 equipment cells, with the item icons, the
+  stats of each piece and what the whole set adds up to. A piece you do not
+  hold is framed red, one kept at the Porter Moogle is named with its slip.
+- **Bags**: what is in each bag and which jobs wear it, and a tidy-up plan
+  that `//gs c bags go` plays in game. Nothing is ever dropped, sold, sent or
+  used: items only move from a bag to another.
+- **Live**: with the game running, the page follows it without a reload: the
+  end of a tidy-up, how full each bag is, where you stand and which bags are
+  open there.
+- **Every job at once**: `//gs c atelier all`, or `//gs c atelier tour` in the
+  Mog House, which changes to each of your jobs in turn and comes back.
+
+Keys and pieces you change in the page are written apart, in
+`data/<YourName>/atelier/overrides/`; "Push to GearSwap" writes a set into
+your set file itself, when you ask for it. The
+commands are in the [commands guide](docs/user/guides/commands.md#gear-and-inventory).
 
 ## Dual-box
 
