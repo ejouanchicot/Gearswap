@@ -144,7 +144,9 @@ const icon = name => { const id = name && (iconIds()[name] || (catalog() || {id:
 const ICON_WANT = new Set(), ICON_ASKED = new Set();
 let ICON_TIMER = null;
 function iconMiss(img, id){
-  img.remove();
+  // (a window is not drawn again by render(): its frame waits there, filled once the game wrote the file)
+  if (img.closest('#overlay') && !img.dataset.miss && liveOk()) { img.hidden = true; img.dataset.miss = id; }
+  else img.remove();
   if (!id || ICON_ASKED.has(id) || !liveOk()) return;
   ICON_WANT.add(id); clearTimeout(ICON_TIMER); ICON_TIMER = setTimeout(iconFetch, 150);
 }
@@ -156,6 +158,7 @@ async function iconFetch(){
   try { await liveFetch(S.char, '/icons?ids=' + ids.join(','), {method: 'POST', timeout: 15000}); }
   catch (e) { ids.forEach(id => { ICON_ASKED.delete(id); ICON_WANT.add(id); }); clearTimeout(ICON_TIMER); ICON_TIMER = setTimeout(iconFetch, 10000); return; }
   render();
+  document.querySelectorAll('#overlay img[data-miss]').forEach(img => { img.hidden = false; img.src = img.src.split('?')[0] + '?again'; });
   if (ICON_WANT.size) iconFetch();
 }
 // Macro book and lockstyle in force for the export's subjob: its own setting, else the default

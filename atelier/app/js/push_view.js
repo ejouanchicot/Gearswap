@@ -29,9 +29,12 @@ function pushTechHTML(r, after){
 function pushRowsHTML(s, plan){
   const was = s.was || {}, base = s.base ? shortPath(s.base) : '';
   const now = slot => { const p = slot in was ? was[slot] : s.pieces[slot]; return p && !isEmpty(p) && p.name !== 'empty' ? p.name : ''; };
+  // the icon of a row: the piece written, or the base set's piece the slot takes again (an emptied slot has none)
+  const basePiece = slot => { const b = s.base && S._bypath ? S._bypath[s.base] : null, p = b && b.pieces[slot]; return p && !isEmpty(p) ? p.name : ''; };
+  const shown = e => e.piece ? e.piece.name : e.kind === 'inherit' ? basePiece(e.slot) : '';
   return `<ul class="orchg pushrows">${plan.map(e => {
     const from = now(e.slot), to = e.piece ? `<b>${esc(e.piece.name)}</b>` : `<i>${esc(e.kind === 'empty' ? t('pvEmptied') : base ? t('pvInherit', {b: base}) : t('pvInheritAny'))}</i>`;
-    return `<li title="${esc(e.piece && e.piece.augs ? e.piece.augs.join(' · ') : '')}">${icon(e.piece ? e.piece.name : '')}<span class="orfslot">${esc(SLOT_NAMES[S.lang][e.slot] || e.slot)}</span>` +
+    return `<li title="${esc(e.piece && e.piece.augs ? e.piece.augs.join(' · ') : '')}">${icon(shown(e))}<span class="orfslot">${esc(SLOT_NAMES[S.lang][e.slot] || e.slot)}</span>` +
       `<span>${from ? `<s>${esc(from)}</s> → ` : ''}${to}</span></li>`; }).join('')}</ul>`;
 }
 // The push window: what goes into which set, the warnings, what protects the file, then the fold
