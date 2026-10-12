@@ -427,13 +427,13 @@ const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
 // the gauge what goes past it for nothing (pieces that could give something else)
 Object.assign(T.fr, {capOf: 'sur {c} %', capMax: 'max', capWaste: '{n} % en trop : une pièce pourrait apporter autre chose'});
 Object.assign(T.en, {capOf: 'of {c} %', capMax: 'max', capWaste: '{n} % over the cap: a piece could bring something else'});
-function cappedLi(label, sum, cap, detail){
+function cappedLi(label, sum, cap, detail, small){
   const r = x => Math.round(x * 10) / 10, over = Math.abs(sum) > Math.abs(cap), full = Math.abs(sum) >= Math.abs(cap);
   const fill = Math.max(0, Math.min(100, cap ? Math.round(100 * sum / cap) : 0));
   return `<li class="capli ${full ? 'full' : ''}"${statTitle(label, detail)}><span>${label}</span>` +
     `<b>${signed(r(over ? cap : sum))} %</b><i>${full ? `<em class="capmax">${t('capMax')}</em>` : esc(t('capOf', {c: signed(cap)}))}</i>` +
     `<u class="gauge" style="--fill:${fill}%"></u>` +
-    (over ? `<em class="overl">${esc(t('capWaste', {n: r(Math.abs(sum - cap))}))}</em>` : '') + `</li>`;
+    (over ? `<em class="overl">${esc(t('capWaste', {n: r(Math.abs(sum - cap))}))}</em>` : small ? `<em class="overl">${esc(small)}</em>` : '') + `</li>`;
 }
 // A damage taken with its II stat on one line: the first layer stops at -50 %, the II one adds past it, -87.5 % in all
 // (the line's total; its small text: the first layer against its cap, what is wasted past it, the II)
@@ -463,8 +463,13 @@ function damageTakenLines(v){
   const pdtRaw = v('dt') + v('pdt'), mdtRaw = v('dt') + v('mdt') + shell, pdt = Math.max(pdtRaw, -50), mdt = Math.max(mdtRaw, -50);
   // one line a kind of damage: with a II stat (PDT II: Burtgang, MDT II: Aegis) its total, the two layers in its detail
   const pDetail = `DT ${v('dt')} + PDT ${v('pdt')}`, mDetail = `DT ${v('dt')} + MDT ${v('mdt')}` + (shell ? ` + ${buffState().shell} ${shell}` : '');
-  let out = v('pdt2') ? layeredLi(t('pdtTotal'), pdtRaw, v('pdt2'), 'PDT II', pDetail) : cappedLi(t('pdtEff'), pdtRaw, -50, pDetail);
-  out += mulLi(t('pdtWithMul'), Math.max(pdt + v('pdt2'), -87.5), ['dmgmul', 'pdmgmul'], B);
+  // with what multiplies the damage past the cap (Fan Dance): one line, the total, its gauge against the most the gear's
+  // cap and the dance give together (-60 % for 20 %); the gear's own share and the dance's are its small text
+  const pMul = ((B && B._by) || []).filter(e => (e.k === 'dmgmul' || e.k === 'pdmgmul') && e.v !== 1), pm = pMul.reduce((m, e) => m * e.v, 1);
+  const r1 = x => Math.round(x * 10) / 10, pHow = `${t('mulGear')} ${signed(r1(pdt))} % ` + pMul.map(e => `× ${e.src} ${signed(r1((e.v - 1) * 100))} %`).join(' ');
+  let out = v('pdt2') ? layeredLi(t('pdtTotal'), pdtRaw, v('pdt2'), 'PDT II', pDetail) + mulLi(t('pdtWithMul'), Math.max(pdt + v('pdt2'), -87.5), ['dmgmul', 'pdmgmul'], B)
+    : pMul.length ? cappedLi(t('pdtEff'), r1(((1 + pdt / 100) * pm - 1) * 100), r1((.5 * pm - 1) * 100), `${pDetail} ; ${pHow}`, pHow)
+    : cappedLi(t('pdtEff'), pdtRaw, -50, pDetail);
   out += v('mdt2') ? layeredLi(t('mdtTotal'), mdtRaw, v('mdt2'), 'MDT II', mDetail) : cappedLi(shell ? t('mdtShell') : t('mdtEff'), mdtRaw, -50, mDetail);
   out += mulLi(t('mdtWithMul'), Math.max(mdt + v('mdt2'), -87.5), ['dmgmul'], B);
   if (v('bdt')) out += cappedLi(t('bdtEff'), v('dt') + v('bdt'), -50, `DT ${v('dt')} + BDT ${v('bdt')}`);
