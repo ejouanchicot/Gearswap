@@ -198,7 +198,10 @@ function HudJobConfig.set_list(job, field, list)
     local data = {}
     for _, name in ipairs(FIELDS) do data[name] = current[name] end
     data[field] = list
-    local keybinds_path = path:gsub('_HUD%.lua$', '_KEYBINDS.lua')
+    -- the job's keys are not beside its HUD file (<job>/keys/ against <job>/display/): asked for by name; the
+    -- same folder only in an old layout
+    local keybinds_path = require('shared/utils/core/char_paths').file('job', job:upper() .. '_KEYBINDS.lua', job)
+        or path:gsub('_HUD%.lua$', '_KEYBINDS.lua')
     file:write(HudJobConfig.render(job, data, keybinds_path))
     file:close()
     cache()[job:upper()] = nil

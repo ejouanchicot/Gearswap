@@ -41,11 +41,17 @@ local function debug_print(msg)
     end
 end
 
--- DEFERRED REGISTRATION: Wait for AutoMove to load (it loads with 0.5s delay in INIT_SYSTEMS)
--- We wait 0.6s (AutoMove at 0.5s + 100ms margin) for faster callback registration
-coroutine.schedule(function()
+-- DEFERRED REGISTRATION: AutoMove is started by INIT_SYSTEMS 0.5 s after the load, or later: after a main job
+-- change alone the start waits for the game to be on the job (load_gate.lua, up to 10 s). So this looks for it
+-- at 0.6 s, then every half second for as long as that wait can last, and gives up when a newer load came.
+local REGISTER_TRIES = 24
+local load_gen = windower._load_gen
+local register
+register = function(left)
+    if windower._load_gen ~= load_gen then return end
     if not AutoMove then
-        -- Silent failure - AutoMove is optional
+        -- not started yet (or never: AutoMove is optional)
+        if left > 0 then coroutine.schedule(function() register(left - 1) end, 0.5) end
         return
     end
 
@@ -126,7 +132,8 @@ coroutine.schedule(function()
             retaliation_config.movement_start_time = nil
         end
     end)
-end, 0.6)  -- Wait 0.6s for AutoMove to load (it loads at 0.5s in INIT_SYSTEMS)
+end
+coroutine.schedule(function() register(REGISTER_TRIES) end, 0.6)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RETALIATION DEBUG
