@@ -265,10 +265,17 @@ async function liveTick(){
     // boot: when the game's door was opened. A restarted addon is back within 2 s with the same port, the same token
     // and its loads counted from 1 again: between two pings only this says it restarted
     const again = ping.version !== was.version || ping.boot !== was.boot;
-    const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, boot: ping.boot, at: was.at,
+    // a command moved things between the bags in game since the last ping (//gs c bags go, //gs c wo): read again
+    const tidied = !!was.ok && (ping.tidy || '') !== (was.tidy || '');
+    // how full each bag is changed since the bags were last read (anything that moved an item: a command, the player,
+    // another addon), and has not changed for 4 s: read again too
+    const bagAt = ping.bags !== was.bagSig ? Date.now() : was.bagAt, settled = !!was.ok && ping.bags != null && was.bagGot != null && ping.bags !== was.bagGot && Date.now() - (bagAt || 0) >= 4000;
+    const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, boot: ping.boot, at: was.at, tidy: ping.tidy, place: ping.place,
+      bagSig: ping.bags, bagAt, bagGot: was.bagGot,
       stat: ping.stat, statAt: ping.stat !== was.stat ? Date.now() : was.statAt, statGot: was.statGot};
-    if (ping.player === c && ping.job && (again || !was.ok)) {
+    if (ping.player === c && ping.job && (again || !was.ok || tidied || settled)) {
       const d = await liveFetch(c, '/export', {timeout: 8000});
+      now.bagGot = ping.bags;
       if (d && d.sets) {
         const m = ((DATA[c] = DATA[c] || {})[d.job] = DATA[c][d.job] || {});
         canonNames(d); m[d.sub || 'NONE'] = d; DATA_GEN++;
@@ -288,7 +295,9 @@ async function liveTick(){
     // //gs c atelier all typed in game: every job rebuilt here, once per request (the request's time is remembered)
     if (now.ok && ping.rebuild) { let seen = ''; try { seen = localStorage.getItem('atelierRebuild_' + c) || ''; } catch (e) {}
       if (seen !== String(ping.rebuild)) { try { localStorage.setItem('atelierRebuild_' + c, String(ping.rebuild)); } catch (e) {} refreshFromFiles(true); } }
-    if (!was.ok || again || measured) tickRender();
+    // where the character stands changed (zone, Mog House, a moogle within reach, the bags open): the Bags view says it
+    const moved = typeof bvPlaceKey === 'function' && S.section === 'perso' && S.persoView === 'bags' && bvPlaceKey(ping.place) !== bvPlaceKey(was.place);
+    if (!was.ok || again || measured || tidied || settled || moved) tickRender();
   } catch (e) {
     S._live[c] = {ok: false};
     if (was.ok) tickRender();

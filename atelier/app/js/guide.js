@@ -18,15 +18,16 @@ function guidePage(){
   if (document.querySelector('#view .oppage')) return 'opt';
   // the job's settings: the help is that of the part shown (keys, modes, switches, macro book)
   if (S.section === 'jobcfg') return jobCfgTab();
+  if (S.section === 'perso' && S.persoView === 'bags' && GUIDE_PAGES.fr.bags) return 'bags';
   return GUIDE_PAGES.fr[S.section] ? S.section : S.section === 'merits' ? 'perso' : 'sets';
 }
 
 Object.assign(T.fr, {gBtn: 'Aide du Mog', gOk: 'Compris', gMore: 'En savoir plus', gQuiet: 'Ne plus me montrer d’astuces', gTourAgain: 'Refaire la visite',
-  gNext: 'Suivant', gPrev: 'Précédent', gSkip: 'Passer la visite', gEnd: 'C’est parti !', gStart: 'Oui, montre-moi', gHere: 'Sur cette page',
+  gNext: 'Suivant', gPrev: 'Précédent', gSkip: 'Passer la visite', gEnd: 'C’est parti !', gStart: 'Oui, montre-moi', gTuto: 'Le tutoriel pas à pas', gTutoTip: 'Le Mog t’explique cette page étape par étape, en te montrant chaque élément.', gHere: 'Sur cette page',
   cfgGuide: 'Assistant Mog', cfgGuideWhy: 'Le Mog te fait visiter la page la première fois, dit un mot à ta première visite de chaque onglet, puis attend en bas à droite : un clic sur lui donne l’aide de la page où tu es.',
   gMode_full: 'Visite et astuces', gMode_ask: 'Seulement quand je clique', gMode_off: 'Coupé', gReset: 'Tout revoir depuis le début'});
 Object.assign(T.en, {gBtn: 'Moogle help', gOk: 'Got it', gMore: 'Tell me more', gQuiet: 'Stop showing me tips', gTourAgain: 'Take the visit again',
-  gNext: 'Next', gPrev: 'Back', gSkip: 'Skip the visit', gEnd: 'Let’s go!', gStart: 'Yes, show me', gHere: 'On this page',
+  gNext: 'Next', gPrev: 'Back', gSkip: 'Skip the visit', gEnd: 'Let’s go!', gStart: 'Yes, show me', gTuto: 'The step-by-step tutorial', gTutoTip: 'The moogle explains this page step by step, showing you each element.', gHere: 'On this page',
   cfgGuide: 'Moogle assistant', cfgGuideWhy: 'The moogle shows you around the first time, says a word on your first visit of each tab, then waits at the bottom right: a click on it gives the help of the page you are on.',
   gMode_full: 'Visit and tips', gMode_ask: 'Only when I click', gMode_off: 'Off', gReset: 'See everything again from the start'});
 
@@ -77,7 +78,7 @@ function guideButton(){
 function guideNote(page){
   const p = GUIDE_PAGES[guideLang()][page];
   guideAdd('gnote', 'gnote', `${guideMogHTML('tips')}<div class="gbub" role="status"><b>${esc(p.title)}</b><p>${esc(p.intro)}</p><div class="gacts">` +
-    `<button class="btn" data-gok>${esc(t('gOk'))}</button><button class="linkbtn" data-ghelp>${esc(t('gMore'))}</button>` +
+    (guideTuto(page) ? `<button class="btn" data-gtuto>${esc(t('gTuto'))}</button><button class="linkbtn" data-gok>${esc(t('gOk'))}</button>` : `<button class="btn" data-gok>${esc(t('gOk'))}</button>`) + `<button class="linkbtn" data-ghelp>${esc(t('gMore'))}</button>` +
     `<button class="linkbtn" data-gquiet>${esc(t('gQuiet'))}</button></div></div>`);
 }
 // The help of the page shown (a click on the button): first what the page is like right now (guide_context.js:
@@ -89,7 +90,7 @@ function guideHelp(){
   const nowHTML = now.length ? `<h4>${esc(t('gcNow'))}</h4><ul class="gnow">${now.map((x, i) => `<li class="${x.warn ? 'warn' : ''}">${esc(x.text)}` +
     (x.sel && document.querySelector(x.sel) ? ` <button class="linkbtn" data-gshow="${i}">${esc(t('gcShow'))}</button>` : '') + `</li>`).join('')}</ul><h4>${esc(t('gcTips'))}</h4>` : '';
   guideAdd('ghelp', 'ghelp', `<div class="gbub" role="dialog" aria-label="${esc(t('gBtn'))}"><small>${esc(t('gHere'))}</small><b>${esc(p.title)}</b><p>${esc(p.intro)}</p>` +
-    `${nowHTML}<ul>${p.tips.map(x => `<li>${esc(x)}</li>`).join('')}</ul><div class="gacts"><button class="btn" data-gclose>${esc(t('close'))}</button>` +
+    `${nowHTML}<ul>${p.tips.map(x => `<li>${esc(x)}</li>`).join('')}</ul><div class="gacts">${guideTuto(page) ? `<button class="btn" data-gtuto>${esc(t('gTuto'))}</button>` : ''}<button class="btn" data-gclose>${esc(t('close'))}</button>` +
     `<button class="linkbtn" data-gtour>${esc(t('gTourAgain'))}</button></div></div>${guideMogHTML('show')}`);
 }
 // "Show me": the moogle goes to the element a line is about and lights it, as in the visit (one step, then it ends)
@@ -113,13 +114,27 @@ function guideTourStart(){
   guideAdd('gtour', 'gtour', `<div class="gscrim"></div><div class="gspot"></div><div class="gcard"></div>`);
   guideTourDraw();
 }
+// A page's tutorial (guide_bags.js GUIDE_TUTO): a visit of that page alone, each step with the state it needs
+const guideTuto = page => typeof GUIDE_TUTO === 'object' && GUIDE_TUTO[page] ? GUIDE_TUTO[page][guideLang()] : null;
+function guideTutoStart(){
+  const page = guidePage(), steps = guideTuto(page);
+  if (!steps) return;
+  guideDrop('gnote'); guideDrop('ghelp');
+  GUIDE.steps = steps; GUIDE.tour = 0; GUIDE.tuto = page;
+  guideAdd('gtour', 'gtour', `<div class="gscrim"></div><div class="gspot"></div><div class="gcard"></div>`);
+  guideTourDraw();
+}
 function guideTourEnd(){
   GUIDE.tour = null; guideDrop('gtour');
   if (GUIDE.single) { GUIDE.single = false; return; }
+  if (GUIDE.tuto) { guideState().seen[GUIDE.tuto] = true; GUIDE.tuto = null; save(); return; }
   const g = guideState(); g.seen.tour = true; g.seen[guidePage()] = true; save();
 }
 function guideTourDraw(){
-  const i = GUIDE.tour, n = GUIDE.steps.length, [sel, text] = GUIDE.steps[i], box = document.getElementById('gtour');
+  const i = GUIDE.tour, n = GUIDE.steps.length, [sel, text, prep] = GUIDE.steps[i];
+  // a tutorial's step puts the view in the state it talks about, before looking for what it points at
+  if (prep && typeof GUIDE_PREP === 'object' && GUIDE_PREP[prep] && GUIDE_PREP[prep]()) { save(); render(); }
+  const box = document.getElementById('gtour');
   if (!box) return;
   const el = sel && document.querySelector(sel), r = el && el.getBoundingClientRect();
   if (r && (r.top < 0 || r.bottom > innerHeight) && r.height < innerHeight && sel !== '#mogbtn') el.scrollIntoView({block: 'center'});
@@ -191,7 +206,7 @@ function guideTourAgain(){
 }
 const GUIDE_CLICKS = {
   gok: () => guideDrop('gnote'), gclose: () => guideDrop('ghelp'), ghelp: guideHelp, gtour: guideTourAgain,
-  gquiet: () => guideSetMode('ask'), gnext: () => guideTourMove(1), gprev: () => guideTourMove(-1), gskip: guideTourEnd};
+  gquiet: () => guideSetMode('ask'), gtuto: guideTutoStart, gnext: () => guideTourMove(1), gprev: () => guideTourMove(-1), gskip: guideTourEnd};
 document.addEventListener('click', e => {
   const at = q => e.target.closest && e.target.closest(q), mode = at('[data-guide-mode]');
   if (at('#mogbtn')) return document.getElementById('ghelp') ? guideDrop('ghelp') : guideHelp();

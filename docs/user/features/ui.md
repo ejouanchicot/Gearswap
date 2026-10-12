@@ -84,6 +84,7 @@ in place, and saves.
 
 | File | Content |
 |---|---|
+| `<YourName>/atelier/overrides/bag_plan.js` | What each bag is for and the category you gave an item, as chosen in the Atelier page's Bags view. Written by the page; deleting it puts the page's own guesses back |
 | `<YourName>/saved/lockstyle_pieces.lua` | The pieces of each lockstyle set, written down when the game applies it (GearSwap reads the game's own list; nothing to edit). The Atelier page uses it to know what you keep for its look |
 | `<YourName>/saved/ui_settings.lua` | What `//gs c ui ...` changes: position, shown parts, background, font. Written by the commands; it wins over `UI_CONFIG.lua`: what you set in game stays. A value you change in `UI_CONFIG.lua` afterwards (by hand or from the Atelier page) is taken at the next load, for that setting only. Delete it to go back to the `UI_CONFIG.lua` values. Kept by a re-clone |
 | `<YourName>/_common/display/UI_CONFIG.lua` | The starting values, and the ones you change there later (see above), plus the background presets, text outline, `flags` and `init_delay`, always read |

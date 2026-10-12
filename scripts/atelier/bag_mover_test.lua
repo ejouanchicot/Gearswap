@@ -71,6 +71,9 @@ windower = {ffxi = {
 player = {name = 'Test'}
 coroutine.schedule = function(fn) tasks[#tasks + 1] = fn end
 local function run_all() local n = 0 while #tasks > 0 and n < 5000 do n = n + 1 table.remove(tasks, 1)() end end
+-- the game's items: everything below 400 is a piece of equipment, the rest is not
+package.preload['resources'] = function() return {items = setmetatable({}, {__index = function(_, id)
+    return {category = id < 400 and 'Armor' or 'General'} end})} end
 package.preload['shared/utils/messages/info_block'] = function() return {show = function(b) said[#said + 1] = b.title end} end
 package.preload['shared/utils/core/char_paths'] = function() return {writable = function() return os.tmpname() end} end
 
@@ -167,10 +170,13 @@ Mover = fresh()
 local lines = {}
 for i = 1, 10 do lines[i] = (100 + i) .. '\t8\t10\tPiece ' .. i end
 Mover.set_plan(table.concat(lines, '\n'))
-Mover.start()
-for _ = 1, 7 do if #tasks > 0 then table.remove(tasks, 1)() end end
+Mover.start()                                        -- the ten pieces are taken out at once
 Mover.stop() run_all()
-check('stopped: not everything moved', used(10) < 10, true)
+check('stopped: nothing was put away', used(10), 0)
+check('stopped: what was taken out waits in the inventory', used(0), 10)
+check('every item is still there', census(), before)
+Mover.start() run_all()
+check('go again: what waited in the inventory is put away', used(10), 10)
 check('every item is still there', census(), before)
 
 -- 9. not idle (engaged, in an event): nothing starts, and a run stops before its next move
@@ -184,18 +190,27 @@ Mover.start() run_all()
 check('engaged: nothing moves', count_in(8, 100) + count_in(8, 101), 2)
 status = 0
 Mover.start()
-if #tasks > 0 then table.remove(tasks, 1)() end      -- the first piece is in hand: its move is finished, the next is not begun
-status = 4
+status = 4                                           -- both pieces are in hand: the round is checked, the next is not begun
 run_all()
 check('an event in the middle: the run stopped', windower._bag_mover.running, false)
-check('the second piece was not taken', count_in(8, 101), 1)
+check('nothing was put away during the event', used(10), 0)
 check('every item is still there', census(), before)
 status = 0
 Mover.start() run_all()
-check('idle again: go takes up where it stopped', count_in(10, 101), 1)
+check('idle again: go takes up where it stopped', count_in(10, 100) + count_in(10, 101), 2)
 check('every item is still there', census(), before)
 
--- 10. a plan made for another character is not played
+-- 10. what is no equipment never goes to a wardrobe
+new_game()
+add(6, 400, 12)
+before = census()
+Mover = fresh()
+Mover.set_plan('400\t6\t15\tCrystal\n')
+Mover.start() run_all()
+check('a crystal is not taken out for a wardrobe', count_in(6, 400), 12)
+check('every item is still there', census(), before)
+
+-- 11. a plan made for another character is not played
 new_game()
 add(8, 100)
 Mover = fresh()
@@ -203,6 +218,86 @@ Mover.set_plan('100\t8\t10\tRing\n')
 player = {name = 'Other'}
 Mover.start() run_all()
 check('another character: nothing moves', count_in(8, 100), 1)
+
+-- 12. more moves than a round sends, through an inventory with five free slots: all arrive, in few rounds
+new_game()
+for i = 1, 70 do add(8, 100 + (i % 35)) end          -- two copies of each piece
+for _ = 1, 75 do add(0, 900) end
+before = census()
+Mover = fresh()
+lines = {}
+for i = 1, 70 do lines[i] = (100 + (i % 35)) .. '\t8\t10\tPiece ' .. i end
+Mover.set_plan(table.concat(lines, '\n'))
+Mover.start()
+local most, rounds = 0, 0
+while #tasks > 0 and rounds < 500 do rounds = rounds + 1 table.remove(tasks, 1)() most = math.max(most, used(0)) end
+check('seventy pieces through five slots: all arrived', used(10), 70)
+check('the inventory was never overfilled', most <= 80, true)
+check('every item is still there', census(), before)
+
+-- 13. a wide inventory: thirty calls a round, so far fewer rounds than moves
+new_game()
+for i = 1, 60 do add(8, 100 + i) end
+before = census()
+Mover = fresh()
+lines = {}
+for i = 1, 60 do lines[i] = (100 + i) .. '\t8\t10\tPiece ' .. i end
+Mover.set_plan(table.concat(lines, '\n'))
+Mover.start()
+rounds = 0
+while #tasks > 0 and rounds < 500 do rounds = rounds + 1 table.remove(tasks, 1)() end
+check('sixty pieces arrived', used(10), 60)
+check('in a handful of rounds (' .. rounds .. ')', rounds <= 6, true)
+check('every item is still there', census(), before)
+
+-- 14. two full bags that swap: the pieces holding the slots are taken out first
+new_game()
+for i = 1, 80 do add(8, i <= 3 and 100 + i or 300) end
+for i = 1, 80 do add(10, i <= 3 and 200 + i or 301) end
+before = census()
+Mover = fresh()
+Mover.set_plan('101\t8\t10\tA\n102\t8\t10\tB\n103\t8\t10\tC\n201\t10\t8\tD\n202\t10\t8\tE\n203\t10\t8\tF\n')
+Mover.start() run_all()
+check('a swap between two full bags: three went one way', count_in(10, 101) + count_in(10, 102) + count_in(10, 103), 3)
+check('and three the other', count_in(8, 201) + count_in(8, 202) + count_in(8, 203), 3)
+check('nothing is left in the inventory', used(0), 0)
+check('every item is still there', census(), before)
+
+-- 15. the character keeps a copy in the inventory: the one taken out is the one put away, the count stays
+new_game()
+add(0, 500, 5) add(6, 500, 12)
+before = census()
+Mover = fresh()
+Mover.set_plan('500\t6\t7\tMeat\n')
+Mover.start() run_all()
+check('the stack taken out went on, whole', count_in(7, 500), 12)
+check('the stack kept in the inventory stayed', count_in(0, 500), 5)
+check('every item is still there', census(), before)
+
+-- 16. a bag that stays full: its pieces are not taken out to wait in the inventory
+new_game()
+add(8, 100) add(8, 101) for _ = 1, 79 do add(11, 900) end
+before = census()
+Mover = fresh()
+Mover.set_plan('100\t8\t11\tRing\n101\t8\t11\tCape\n')
+Mover.start() run_all()
+check('one slot: one piece goes', used(11), 80)
+check('the other stays in its bag, not in the inventory', used(8) == 1 and used(0) == 0, true)
+check('every item is still there', census(), before)
+
+-- 17. a Mog House bag the game reports closed is not used, in the Mog House either (a locker whose lease ran out)
+new_game()
+add(8, 100)
+before = census()
+local info = windower.ffxi.get_bag_info
+windower.ffxi.get_bag_info = function(bag) local i = info(bag) if bag == 4 then i.enabled = false end return i end
+mog_house = true
+Mover = fresh()
+Mover.set_plan('100\t8\t4\tTo the locker\n')
+Mover.start() run_all()
+check('a locker the game closes is not used', count_in(8, 100), 1)
+check('every item is still there', census(), before)
+windower.ffxi.get_bag_info = info
 
 print(failed == 0 and '\nno item can be lost: every run leaves every item in a bag' or ('\n' .. failed .. ' check(s) failed'))
 os.exit(failed == 0 and 0 or 1)

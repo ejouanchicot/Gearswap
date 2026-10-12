@@ -15,8 +15,8 @@ Object.assign(T.fr, {bvStats: 'Stats & mérites', bvBags: 'Sacs', bvStatsTip: 'T
   bvLs: 'style {l}', bvUseLock: 'Lockstyle', bvGoes: 'Sa place : {d}.', bvUseAll: 'Tout', bvUseBad: 'Mal rangé', bvUseNone: 'Dans aucun set',
   bvRoleOf: 'Ce sac sert à', bvRole2: 'et aussi à', bvRole2Tip: 'Un second rôle : deux sortes d’objets se partagent la place de ce sac.', bvRoleTip: 'Dis à quoi sert ce sac : la page signale ce qui n’y a pas sa place. Rien ne bouge en jeu.', bvBadN: '{n} objet(s) mal rangé(s) dans ce sac.',
   bvRs_free: 'libre', bvRs_job: 'job en cours', bvRs_gear: 'autres jobs', bvRs_spare: 'lockstyle, surplus', bvRs_unused: 'inutilisé', bvRs_craft: 'craft', bvRs_usable: 'consommables', bvRs_mats: 'vente, craft', bvRs_currency: 'currencies', bvRs_keys: 'objets clés', bvRs_furnish: 'meubles', bvRs_slips: 'slips', bvRs_archive: 'archives',
-  bvR_free: 'pas de règle', bvR_job: 'job en cours', bvR_gear: 'équipement des jobs', bvR_unused: 'ce qui ne sert pas', bvR_craft: 'craft', bvR_usable: 'consommables', bvR_mats: 'à vendre et composants de craft', bvR_currency: 'currencies', bvR_keys: 'objets clés (améliorations, accès)', bvR_spare: 'lockstyle et surplus', bvR_furnish: 'meubles et rangement', bvR_slips: 'slips', bvR_archive: 'archives',
-  bvW_far: 'porté par un set, mais ne peut pas être équipé depuis ce sac', bvW_farS: 'pas équipable ici', bvW_type: 'pas le type d’objet de ce sac', bvW_typeS: 'pas à sa place', bvW_unused: 'dans aucun set : ce sac est pour l’équipement qui sert', bvW_unusedS: 'ne sert pas',
+  bvR_free: 'pas de règle', bvR_job: 'job en cours', bvR_gear: 'équipement des jobs', bvR_unused: 'ce qui ne sert pas', bvR_craft: 'craft', bvR_usable: 'consommables', bvR_mats: 'à vendre et composants de craft', bvR_currency: 'currencies', bvR_keys: 'objets clés (améliorations, accès)', bvR_spare: 'lockstyle, pièces à activer et surplus', bvR_furnish: 'meubles et rangement', bvR_slips: 'slips', bvR_archive: 'archives',
+  bvW_role: 'pas dans un sac de sa catégorie', bvW_spare: 'en surplus ici alors qu’il reste de la place dans les sacs des jobs', bvW_inv: 'rangé par le plan hors de l’inventaire', bvW_far: 'porté par un set, mais ne peut pas être équipé depuis ce sac', bvW_farS: 'pas équipable ici', bvW_type: 'pas le type d’objet de ce sac', bvW_typeS: 'pas à sa place', bvW_unused: 'dans aucun set : ce sac est pour l’équipement qui sert', bvW_unusedS: 'ne sert pas',
   bvW_used: 'porté par un set : ce sac est pour ce qui ne sert pas', bvW_usedS: 'sert à un set', bvUseOne: 'Un seul job', bvUseMany: 'Plusieurs jobs', bvUseTip: 'Qui porte chaque pièce, d’après les sets des jobs exportés : {j}. Un job jamais exporté ne compte pas, et les lockstyles ne sont pas connus de la page.',
   bvEmpty: 'Ce sac est vide.', bvNoHit: 'Aucun objet ne correspond.', bvCount: '{n} objet(s) · {s} emplacement(s)', bvIn: 'Dans : ', bvAlso: 'Aussi dans : ', bvStack: 'pile de {n}',
   bvC_Weapon: 'Armes', bvC_Armor: 'Armures', bvC_Usable: 'Utilisables', bvC_General: 'Divers', bvC_Furnishing: 'Mobilier', bvC_Automaton: 'Automate', bvC_Maze: 'Labyrinthe', bvC_Gil: 'Gils'});
@@ -29,8 +29,8 @@ Object.assign(T.en, {bvStats: 'Stats & merits', bvBags: 'Bags', bvStatsTip: 'You
   bvLs: 'style {l}', bvUseLock: 'Lockstyle', bvGoes: 'Its place: {d}.', bvUseAll: 'All', bvUseBad: 'Misplaced', bvUseNone: 'In no set',
   bvRoleOf: 'This bag is for', bvRole2: 'and also for', bvRole2Tip: 'A second role: two kinds of things share this bag’s room.', bvRoleTip: 'Say what this bag is for: the page points at what has no place in it. Nothing moves in game.', bvBadN: '{n} item(s) misplaced in this bag.',
   bvRs_free: 'free', bvRs_job: 'job loaded', bvRs_gear: 'other jobs', bvRs_spare: 'lockstyle, overflow', bvRs_unused: 'unused', bvRs_craft: 'crafting', bvRs_usable: 'consumables', bvRs_mats: 'sale, crafting', bvRs_currency: 'currencies', bvRs_keys: 'key items', bvRs_furnish: 'furniture', bvRs_slips: 'slips', bvRs_archive: 'archive',
-  bvR_free: 'no rule', bvR_job: 'job loaded', bvR_gear: 'the jobs’ gear', bvR_unused: 'what is not used', bvR_craft: 'crafting', bvR_usable: 'consumables', bvR_mats: 'to sell and crafting materials', bvR_currency: 'currencies', bvR_keys: 'key items (upgrades, entries)', bvR_spare: 'lockstyle and overflow', bvR_furnish: 'furniture and storage', bvR_slips: 'slips', bvR_archive: 'archive',
-  bvW_far: 'worn by a set, but cannot be put on from this bag', bvW_farS: 'not wearable here', bvW_type: 'not this bag’s kind of item', bvW_typeS: 'out of place', bvW_unused: 'in no set: this bag is for the gear in use', bvW_unusedS: 'not used',
+  bvR_free: 'no rule', bvR_job: 'job loaded', bvR_gear: 'the jobs’ gear', bvR_unused: 'what is not used', bvR_craft: 'crafting', bvR_usable: 'consumables', bvR_mats: 'to sell and crafting materials', bvR_currency: 'currencies', bvR_keys: 'key items (upgrades, entries)', bvR_spare: 'lockstyle, pieces to activate and overflow', bvR_furnish: 'furniture and storage', bvR_slips: 'slips', bvR_archive: 'archive',
+  bvW_role: 'not in a bag of its category', bvW_spare: 'overflow here while the jobs’ bags have room', bvW_inv: 'filed by the plan out of the inventory', bvW_far: 'worn by a set, but cannot be put on from this bag', bvW_farS: 'not wearable here', bvW_type: 'not this bag’s kind of item', bvW_typeS: 'out of place', bvW_unused: 'in no set: this bag is for the gear in use', bvW_unusedS: 'not used',
   bvW_used: 'worn by a set: this bag is for what is not used', bvW_usedS: 'used by a set', bvUseOne: 'One job only', bvUseMany: 'Several jobs', bvUseTip: 'Who wears each piece, from the sets of the jobs exported: {j}. A job never exported does not count, and the page does not know the lockstyles.',
   bvEmpty: 'This bag is empty.', bvNoHit: 'No item matches.', bvCount: '{n} item(s) · {s} slot(s)', bvIn: 'In: ', bvAlso: 'Also in: ', bvStack: 'stack of {n}',
   bvC_Weapon: 'Weapons', bvC_Armor: 'Armor', bvC_Usable: 'Usable', bvC_General: 'Misc', bvC_Furnishing: 'Furnishing', bvC_Automaton: 'Automaton', bvC_Maze: 'Maze', bvC_Gil: 'Gil'});
@@ -41,10 +41,11 @@ const bvCatName = c => t('bvC_' + c) !== 'bvC_' + c ? t('bvC_' + c) : c || '?';
 // `porter`: {item id: 'Slip N'}; the names come from the page's gear catalog)
 let BV_BAGS = null;
 function bvBags(){
-  const x = latestExport(S.char, 'bags'); if (!x || !x.bags) return null;
+  // the bags read last, by their own date (two jobs exported in one minute carry the same export date)
+  const x = Object.values(DATA[S.char] || {}).flatMap(j => Object.values(j)).filter(e => e.bags).sort((a, b) => (b.bags.at || '').localeCompare(a.bags.at || ''))[0]; if (!x) return null;
   const px = latestExport(S.char, 'porter'), cat = typeof catalog === 'function' && catalog(), key = DATA_GEN + '|' + S.char + '|' + !!cat;
   if (BV_BAGS && BV_BAGS.key === key) return BV_BAGS.B;
-  const B = {at: x.bags.at, bags: [...x.bags.bags], items: Object.assign({}, x.bags.items)};
+  const B = {at: x.bags.at, run: x.bags.run, bags: [...x.bags.bags], items: Object.assign({}, x.bags.items)};
   if (px && px.porter && cat) { if (!cat.byId) { cat.byId = {}; for (const r of cat.src.items) cat.byId[r[0]] = r; }
     const items = [];
     for (const [id, slip] of Object.entries(px.porter)) { const r = cat.byId[id]; if (!r) continue;
@@ -65,12 +66,15 @@ function bvWhere(B){
   return by;
 }
 // The rows of the list: one a thing, {key, id, info, augs, n (count), slots, where}
-function bvRows(B, sel, where){
+function bvRowsRaw(B, sel, where){
   const rows = new Map();
   for (const bag of B.bags) { if (sel !== 'all' && bag.name !== sel) continue;
     for (const it of bag.items) { const k = bvKey(it), info = B.items[it.id] || {name: '#' + it.id}, r = rows.get(k) || {key: k, id: it.id, info, augs: it.augs, n: 0, slots: 0, where: where[k], use: bvUseOf(info.name)};
       r.n += it.n; r.slots++; rows.set(k, r); } }
-  const out = [...rows.values()];
+  return [...rows.values()];
+}
+function bvRows(B, sel, where){
+  const out = bvRowsRaw(B, sel, where);
   for (const r of out) r.bad = bvBad(B, r).filter(x => sel === 'all' || x.bag === sel);
   return out;
 }
@@ -151,7 +155,7 @@ function bvRoleGuess(B, bag){
   // what is carried sorted by kind, the Mog House for what is kept
   return BV_ROLE_START[bag.name] || 'free';
 }
-const BV_ROLE_START = {'Mog Case': 'usable', 'Mog Satchel': 'mats', 'Mog Sack': 'mats', 'Mog Safe': 'currency+furnish', 'Mog Safe 2': 'currency+keys', 'Storage': 'unused', 'Mog Locker': 'unused'};
+const BV_ROLE_START = {'Mog Case': 'usable', 'Mog Satchel': 'mats+slips', 'Mog Sack': 'mats', 'Mog Safe': 'currency+furnish', 'Mog Safe 2': 'currency+keys', 'Storage': 'unused', 'Mog Locker': 'unused'};
 const bvRole = (B, bag) => ((S.bagRoles || {})[S.char] || {})[bag.name] || bvRoleGuess(B, bag);
 // Why a thing is not where it should be in a bag of that role ('' when it is): a key of the texts
 function bvWrong(r, bagName, role){
@@ -167,12 +171,11 @@ function bvWrong(r, bagName, role){
   if (role === 'slips') return /^Storage Slip/.test(r.info.name) ? '' : 'bvW_type';
   return '';
 }
-// The bags a row is misplaced in: [{bag, why}]
+// The bags a row is misplaced in: [{bag, why, to}], from the plan's one sum (bags_target.js bpTarget)
 const bvRoles = (B, bag) => bvRole(B, bag).split('+');
 const bvRoleName = (B, bag) => bvRoles(B, bag).map(r => t('bvR_' + r)).join(' + ');
 const bvRoleShort = (B, bag) => bvRoles(B, bag).map(r => t('bvRs_' + r)).join(' · ');
-const bvBad = (B, r) => r.where.map(w => { const bag = B.bags.find(b => b.name === w.bag), why = bag ? bvRoles(B, bag).map(role => bvWrong(r, w.bag, role)) : [''];
-  return {bag: w.bag, why: why.includes('') ? '' : why[0]}; }).filter(x => x.why);
+const bvBad = (B, r) => bpTarget(B).bad[r.key] || [];
 // The list under the filters (redrawn alone while the search is typed: the field keeps the caret)
 function bvListHTML(B){
   const sel = B.bags.some(b => b.name === S.bagSel) ? S.bagSel : 'all', where = bvWhere(B), rows = bvFilter(bvRows(B, sel, where));
@@ -186,9 +189,10 @@ function bvListHTML(B){
 // A bag as a tile: its name, how full it is
 function bvTileHTML(bag, sel){
   const used = bag.count != null ? bag.count : bag.items.length;
-  if (!bag.max) return `<button class="bvtile" data-bagsel="${esc(bag.name)}" aria-pressed="${sel === bag.name}" title="${esc(t('bvPorterTip', {c: used}))}"><b>${esc(bag.name)}</b><span class="bvnum">${used}</span><span class="bvbar"></span>${bvTileRole(bag)}</button>`;
-  const free = bag.max - used, pct = Math.round(100 * used / bag.max);
-  return `<button class="bvtile ${free <= 0 ? 'full' : pct >= 90 ? 'tight' : ''}" data-bagsel="${esc(bag.name)}" aria-pressed="${sel === bag.name}" title="${esc(t('bvTileTip', {b: bag.name, c: used, m: bag.max, f: Math.max(0, free)}))}">` +
+  const lit = bvLit(bag.name);
+  if (!bag.max) return `<button class="bvtile ${lit}" data-bagsel="${esc(bag.name)}" aria-pressed="${sel === bag.name}" title="${esc(t('bvPorterTip', {c: used}) + (lit ? ' ' + t(lit === 'open' ? 'plPorterOpen' : 'plPorterShut') : ''))}"><b>${esc(bag.name)}</b><span class="bvnum">${used}</span><span class="bvbar"></span>${bvTileRole(bag)}</button>`;
+  const free = bag.max - used, pct = Math.round(100 * used / bag.max), shut = bvShut(bag.name);
+  return `<button class="bvtile ${free <= 0 ? 'full' : pct >= 90 ? 'tight' : ''} ${lit}" data-bagsel="${esc(bag.name)}" aria-pressed="${sel === bag.name}" title="${esc(t('bvTileTip', {b: bag.name, c: used, m: bag.max, f: Math.max(0, free)}) + (shut ? ' ' + t('plTileShut', {w: shut}) : lit === 'open' ? ' ' + t('plTileOpen') : ''))}">` +
     `<b>${esc(bag.name)}</b><span class="bvnum">${used}<i>/${bag.max}</i></span><span class="bvbar"><i style="width:${Math.min(100, pct)}%"></i></span>${bvTileRole(bag)}</button>`;
 }
 // Under a tile's gauge: what the bag is for, and how many things are not where they should be in it
@@ -214,7 +218,10 @@ function renderBags(){
   if (!B) return `<div class="placeholder"><p>${esc(t('bvNone'))}</p></div>`;
   const sel = B.bags.some(b => b.name === S.bagSel) ? S.bagSel : 'all', sized = B.bags.filter(b => b.max), total = sized.reduce((n, b) => n + (b.count != null ? b.count : b.items.length), 0), room = sized.reduce((n, b) => n + b.max, 0);
   const group = (place, title) => { const list = B.bags.filter(b => b.place === place);
-    return list.length ? `<div class="bvgroup ${place}"><h4>${esc(title)}</h4><div class="bvtiles">${list.map(b => bvTileHTML(b, sel)).join('')}</div></div>` : ''; };
+    // the whole group says it when every bag of it is open, or closed, where the character stands
+    const lit = list.map(b => bvLit(b.name)), on = lit.filter(x => x === 'open').length, state = !lit.some(Boolean) ? '' : on === lit.length ? 'open' : on ? 'part' : 'shut';
+    const mark = state ? `<em title="${esc(t('plGroupTip'))}">${esc(state === 'part' ? t('plGroupPart', {n: on, m: lit.length}) : t(state === 'open' ? 'plGroupOpen' : 'plGroupShut'))}</em>` : '';
+    return list.length ? `<div class="bvgroup ${place} ${state}"><h4><span>${esc(title)}</span>${mark}</h4><div class="bvtiles">${list.map(b => bvTileHTML(b, sel)).join('')}</div></div>` : ''; };
   const all = `<div class="bvgroup"><h4>&nbsp;</h4><div class="bvtiles"><button class="bvtile all" data-bagsel="all" aria-pressed="${sel === 'all'}" title="${esc(t('bvAllTip'))}"><b>${esc(t('bvAll'))}</b><span class="bvnum">${total}<i>/${room}</i></span>` +
     `<span class="bvbar"><i style="width:${Math.round(100 * total / room)}%"></i></span><small class="bvrole">${esc(t('bvAllSub'))}</small></button>` +
     `<button class="bvtile plan" data-bagsel="plan" aria-pressed="${S.bagSel === 'plan'}" title="${esc(t('bpPlanTip'))}"><b>${esc(t('bpPlan'))}</b><span class="bvnum"></span><span class="bvbar"></span><small class="bvrole">${esc(t('bpPlanSub'))}</small></button></div></div>`;
@@ -225,7 +232,7 @@ function renderBags(){
       `<button data-baguse="${v}" aria-pressed="${(S.bagUse || 'all') === v}">${esc(t(k))}</button>`).join('')}</span>` +
     `<label class="bvpick" title="${esc(t('bpPcTip'))}">${esc(t('bpPc'))}<select data-bagpc><option value="">${esc(t('bvCatAll'))}</option>${[...BP_CATS, 'unknown'].map(c => `<option value="${c}" ${S.bagPc === c ? 'selected' : ''}>${esc(bpCatName(c))}</option>`).join('')}</select></label>` +
     `<button class="modsw" role="switch" aria-checked="${!!S.bagDup}" data-bagdup title="${esc(t('bvDupTip'))}"><span class="sw ${S.bagDup ? 'on' : ''}" aria-hidden="true"></span><b>${esc(t('bvDup'))}</b></button></div>`;
-  const top = `<p class="muted small bvat">${esc(t('bvAt', {at: B.at || '?'}))}</p><div class="bvtop">${all}${group('self', t('bvSelf'))}${group('house', t('bvHouse'))}${group('porter', t('bvPorter'))}</div>${bpStatusHTML(B)}`;
+  const top = `<p class="muted small bvat">${esc(t('bvAt', {at: B.at || '?'}))} <button class="linkbtn" data-gtuto title="${esc(t('gTutoTip'))}">${esc(t('gTuto'))}</button></p>${bvPlaceHTML()}<div class="bvtop">${all}${group('self', t('bvSelf'))}${group('house', t('bvHouse'))}${group('porter', t('bvPorter'))}</div>${bpStatusHTML(B)}`;
   if (S.bagSel === 'plan') return `<div class="bagsview">${top}` + box('g-attr wide', esc(t('bpTitle')), `<div id="bvlist" class="bvlist">${renderBagPlan(B)}</div>`) + `</div>`;
   return `<div class="bagsview">${top}` +
     box('g-attr wide', esc(sel === 'all' ? t('bvAll') : sel), `${filters}<div id="bpsel">${bpSelBarHTML(bvFilter(bvRows(B, sel, bvWhere(B))).length)}</div><div id="bvlist" class="bvlist">${bvListHTML(B)}</div>`, sel === 'all' ? '' : bvRolePick(B, B.bags.find(b => b.name === sel))) + `</div>`;
@@ -242,7 +249,7 @@ document.addEventListener('change', e => { const pc = e.target.closest && e.targ
   const el = e.target.closest && e.target.closest('[data-bagrole]'); if (!el) return;
   const B = bvBags(), bag = B && B.bags.find(b => b.name === el.dataset.bagrole), now = bag ? bvRoles(B, bag) : ['free'];
   const next = el.dataset.part === '1' ? [now[0], el.value] : [el.value, now[1]], role = next[0] === 'free' ? 'free' : next.filter((r, i) => r && (i === 0 || r !== next[0])).join('+');
-  S.bagRoles = Object.assign({}, S.bagRoles); S.bagRoles[S.char] = Object.assign({}, S.bagRoles[S.char], {[el.dataset.bagrole]: role}); save(); render(); });
+  S.bagRoles = Object.assign({}, S.bagRoles); S.bagRoles[S.char] = Object.assign({}, S.bagRoles[S.char], {[el.dataset.bagrole]: role}); bpTouch(); render(); });
 // The switch between the two views of the tab
 const persoViewsHTML = () => `<span class="seg persoviews" role="group">${[['stats', 'bvStats'], ['bags', 'bvBags']].map(([v, k]) =>
   `<button data-persoview="${v}" aria-pressed="${(S.persoView || 'stats') === v}" title="${esc(t(k + 'Tip'))}">${esc(t(k))}</button>`).join('')}</span>`;

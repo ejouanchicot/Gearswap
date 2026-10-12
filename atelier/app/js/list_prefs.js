@@ -58,16 +58,20 @@ const listFileText = c => `// GearSwap Atelier: how ${c}'s list of sets is arran
 // given. Neither: the arrangement stays in the browser and the menu offers to save it (a click may ask for the folder)
 let LIST_TIMER = null;
 function listSaveSoon(){ clearTimeout(LIST_TIMER); LIST_TIMER = setTimeout(() => listSave(false), 1200); }
-async function listSave(ask){
-  const c = S.char, text = listFileText(c);
-  let done = false;
-  if (liveOk(c)) { try { await liveFetch(c, '/save?file=' + encodeURIComponent(LIST_FILE), {method: 'POST', body: text}); done = true; } catch (e) {} }
-  if (!done && window.showDirectoryPicker) {
+// A file of <Char>/atelier/overrides/ written without asking anything: through the game when it is connected, else to
+// the folder the page was already given (ask: a click, which may ask for the folder). True when it was written
+async function charFileSave(c, file, text, ask){
+  if (liveOk(c)) { try { await liveFetch(c, '/save?file=' + encodeURIComponent(file), {method: 'POST', body: text}); return true; } catch (e) {} }
+  if (window.showDirectoryPicker) {
     try { let dir = await idb('readonly', st => st.get('data'));
       if (dir && (await dir.queryPermission({mode: 'readwrite'})) !== 'granted') dir = ask ? await dataFolder() : null;
       if (!dir && ask) dir = await pickFolder();
-      if (dir) { await writeSaved(dir, c, LIST_FILE, text); done = true; } } catch (e) {}
+      if (dir) { await writeSaved(dir, c, file, text); return true; } } catch (e) {}
   }
+  return false;
+}
+async function listSave(ask){
+  const c = S.char, done = await charFileSave(c, LIST_FILE, listFileText(c), ask);
   const was = S._listUnsaved;
   S._listUnsaved = !done;
   if (ask) { S.toast = t(done ? 'lpSaved' : 'lpBrowserOnly'); render(); } else if (was !== S._listUnsaved && S._listMenu) render();

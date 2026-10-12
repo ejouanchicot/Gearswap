@@ -129,6 +129,25 @@ function LockstylePieces.listen()
     end)
 end
 
+--- The pieces of the lockstyle sets a job's file names (its default and by-subjob sets), as known so far.
+--- @param job string
+--- @return table {item id = true}
+function LockstylePieces.of_job(job)
+    local out, numbers = {}, {}
+    local ok, loaded, cfg = pcall(require('shared/utils/core/char_paths').load, 'job', tostring(job) .. '_LOCKSTYLE', job)
+    if not (ok and loaded and type(cfg) == 'table') then return out end
+    numbers[tostring(cfg.default)] = true
+    for _, n in pairs(type(cfg.by_subjob) == 'table' and cfg.by_subjob or {}) do numbers[tostring(n)] = true end
+    for number, set in pairs(LockstylePieces.read()) do
+        if numbers[tostring(number)] then
+            for _, item in ipairs(type(set) == 'table' and set.items or {}) do
+                if type(item.id) == 'number' and item.id > 0 then out[item.id] = true end
+            end
+        end
+    end
+    return out
+end
+
 ---============================================================================
 --- SCAN: every lockstyle set the character uses, applied one after the other
 ---============================================================================

@@ -1319,6 +1319,8 @@
 .bpstatus{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:8px 12px;border:1px solid var(--line-strong);border-left-width:4px;border-radius:var(--radius-s);background:var(--panel)}
 .bpstatus.ok{border-left-color:var(--good,#56d364)}
 .bpstatus.bad{border-left-color:var(--bad,#ff7b72)}
+.bpstatus.todo{border-left-color:var(--warn,#e3b341)}
+.bpstatus.todo .bpmain i,.bpstatus.todo .bpmain b{color:var(--warn,#e3b341)}
 .bpstatus .bpmain{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;flex:1 1 320px;min-width:0}
 .bpstatus .bpmain i{font-style:normal;font-size:15px;font-weight:800}
 .bpstatus.ok .bpmain i,.bpstatus.ok .bpmain b{color:var(--good,#56d364)}
@@ -1332,27 +1334,29 @@
 .bpchip.warn b{color:var(--warn,#e3b341)}
 .bpstatus .btn{padding:4px 12px;font-size:12.5px}
 /* the plan as cards: a category, its gauge, its verdict; text wraps, nothing is cut */
-.bpcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;align-items:stretch}
-.bpcard{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--line-strong);border-top-width:3px;border-radius:10px;background:var(--panel-2);min-width:0}
+.bpcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:8px;align-items:stretch}
+.bpcard{display:flex;flex-direction:column;gap:4px;padding:7px 10px 6px;border:1px solid var(--line-strong);border-top-width:3px;border-radius:10px;background:var(--panel-2);min-width:0}
 .bpcard.ok{border-top-color:var(--good,#56d364)}
 .bpcard.tight{border-top-color:var(--warn,#e3b341)}
 .bpcard.bad{border-top-color:var(--bad,#ff7b72)}
 .bpcard.free{border-top-color:var(--accent)}
-.bpcard h4{margin:0;font-size:13.5px;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
-.bpcard p{margin:0;font-size:12px;line-height:1.4;color:var(--muted)}
-.bpcard .bpbig{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);line-height:1.1}
-.bpcard .bpbig i{margin-left:6px;font-style:normal;font-size:13px;font-weight:400;color:var(--faint)}
-.bpgauge{display:block;height:7px;border-radius:99px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden}
+.bpcard .bphead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.bpcard h4{margin:0;font-size:12.5px;line-height:1.25;color:var(--ink);overflow-wrap:anywhere}
+.bpcard p{margin:0;font-size:11.5px;line-height:1.3;color:var(--muted)}
+.bpcard .bpbig{flex:none;font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap}
+.bpcard .bpbig i{margin-left:1px;font-style:normal;font-size:11.5px;font-weight:400;color:var(--faint)}
+.bpgauge{display:block;flex:none;height:5px;border-radius:99px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden}
 .bpgauge i{display:block;height:100%;border-radius:99px;background:var(--good,#56d364)}
 .bpcard.tight .bpgauge i{background:var(--warn,#e3b341)}
 .bpcard.bad .bpgauge i{background:var(--bad,#ff7b72)}
-.bpcard .bpverdict{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;font-size:12.5px}
+.bpcard .bpverdict{display:flex;flex-wrap:wrap;gap:0 8px;align-items:baseline;font-size:11.5px}
 .bpcard .bpverdict b.ok{color:var(--good,#56d364)}
 .bpcard .bpverdict b.bad{color:var(--bad,#ff7b72)}
-.bpcard .bpbags{display:flex;flex-wrap:wrap;gap:4px}
-.bpcard .bpbags i{padding:0 7px;border-radius:99px;font-style:normal;font-size:11px;border:1px solid var(--line-strong);color:var(--ink)}
+.bpcard .bpfoot{display:flex;flex-wrap:wrap;align-items:center;gap:3px 4px;margin-top:auto;padding-top:2px}
+.bpcard .bpfoot .sp{flex:1}
+.bpcard .bpfoot .linkbtn{font-size:11.5px}
+.bpcard .bpfoot i{padding:0 6px;border-radius:99px;font-style:normal;font-size:11px;border:1px solid var(--line-strong);color:var(--ink)}
 .bpcard .bpmove{color:var(--warn,#e3b341);font-weight:600}
-.bpcard .bpsee{margin-top:auto;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
 .bpplan > .bpnote{max-width:none}
 .bvtop{grid-template-columns:178px minmax(0,1fr) 300px 170px}
 .bvtiles{grid-template-columns:repeat(auto-fill,minmax(134px,1fr))}
@@ -1371,3 +1375,49 @@
 .bpgo summary{display:flex;gap:10px;align-items:baseline;padding:7px 2px;cursor:pointer;font-size:13px}
 .bpgo summary i{margin-left:auto;font-style:normal;font-family:var(--mono);color:var(--accent)}
 .bpgo p{margin:0 0 8px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+
+/* where the character stands (bags_place.js): one line of chips over the bags, and a closed bag dimmed */
+.bvplace{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:2px 0 0;font-size:11.5px;color:var(--muted)}
+.bvplace i{font-style:normal;font-weight:700;color:var(--accent)}
+.bvplace b{color:var(--ink)}
+.bvplace span{padding:0 7px;border-radius:99px;background:var(--well);white-space:nowrap}
+.bvplace span.good{color:var(--good,#3fb950)}
+.bvplace span.warn{color:var(--warn,#e3b341)}
+/* a bag open where the character stands is lit, a closed one is greyed with a touch of red */
+.bvtile.open{border-color:color-mix(in srgb,var(--good,#3fb950) 65%,var(--line-strong));box-shadow:inset 3px 0 0 var(--good,#3fb950),0 0 9px color-mix(in srgb,var(--good,#3fb950) 28%,transparent)}
+.bvtile.shut{border-color:color-mix(in srgb,var(--bad,#ff7b72) 38%,var(--line-strong));background:color-mix(in srgb,var(--bad,#ff7b72) 7%,var(--well));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--bad,#ff7b72) 55%,transparent)}
+.bvtile.shut > *{opacity:.5;filter:grayscale(1)}
+.bvtile.open[aria-pressed="true"],.bvtile.shut[aria-pressed="true"]{border-color:var(--accent)}
+/* where the moogles are: a small window, one line a zone */
+.dialog.pldlg{width:min(600px,94vw)}
+.dialog.pldlg .body{display:block;overflow:auto;min-height:0}
+.pldlg .pltable{margin-bottom:4px}
+.pltable{width:100%;border-collapse:collapse;font-size:13px}
+.pltable th,.pltable td{padding:5px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.pltable thead th{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border-bottom-color:var(--line-strong)}
+.pltable tbody th{font-weight:600}
+.pltable td{width:150px;color:var(--faint)}
+.pltable td.yes{color:var(--good,#3fb950);font-weight:700}
+.pltable td small{margin-left:6px;font-family:var(--mono);font-weight:400;color:var(--ink)}
+.pltable td i{font-style:normal}
+.pltable tr.here{background:var(--accent-soft)}
+.pltable tr.here em{margin-left:8px;padding:0 7px;border-radius:99px;font-style:normal;font-size:10.5px;font-weight:700;background:var(--accent);color:#0b1020}
+.plgives{margin:0 0 10px;padding-left:18px;font-size:13px;line-height:1.6}
+/* a whole group of bags open, or closed, where the character stands: seen at a glance. The group's frame takes
+   the colour, and its title carries the state at its right end, a dot and two words in the title's own type */
+.bvgroup{min-width:0}
+.bvgroup h4{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 8px;min-width:0}
+.bvgroup h4 span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bvgroup h4 em{flex:none;display:inline-flex;align-items:center;gap:5px;font-style:normal;font-weight:600;font-size:10.5px;letter-spacing:0;text-transform:none;white-space:nowrap;color:var(--muted)}
+.bvgroup h4 em::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.bvgroup.open{border-color:color-mix(in srgb,var(--good,#3fb950) 55%,var(--line));background:color-mix(in srgb,var(--good,#3fb950) 5%,var(--panel))}
+.bvgroup.open h4 em{color:var(--good,#3fb950)}
+.bvgroup.open h4 em::before{box-shadow:0 0 7px var(--good,#3fb950)}
+.bvgroup.part{border-color:color-mix(in srgb,var(--warn,#e3b341) 45%,var(--line))}
+.bvgroup.part h4 em{color:var(--warn,#e3b341)}
+.bvgroup.shut{border-color:color-mix(in srgb,var(--bad,#ff7b72) 40%,var(--line));background:color-mix(in srgb,var(--bad,#ff7b72) 5%,var(--panel))}
+.bvgroup.shut h4 span{color:var(--muted)}
+.bvgroup.shut h4 em{color:color-mix(in srgb,var(--bad,#ff7b72) 85%,var(--muted))}
+/* the chain PorterPacker, wardrobes, refill: a small button in the place line, and its steps */
+.bvplace .plrun{padding:1px 10px;font-size:11.5px}
+.plsteps{margin:0 0 10px;padding-left:20px;font-size:13.5px;line-height:1.6}

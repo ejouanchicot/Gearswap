@@ -63,13 +63,50 @@ local function items_of(bag, res, info, ids, augments)
     return list
 end
 
+--- Whether the game has sent the bags. After a login it sends the inventory first and the other bags a moment
+--- later: read in between, they are all empty, and a worn piece points at an empty place of its wardrobe.
+--- @return boolean
+function ExportBags.read()
+    local ok, items = pcall(windower.ffxi.get_items)
+    if not ok or type(items) ~= 'table' then return false end
+    for slot, index in pairs(type(items.equipment) == 'table' and items.equipment or {}) do
+        local bag = items.equipment[slot .. '_bag']
+        if type(index) == 'number' and index > 0 and type(bag) == 'number' then
+            local okw, worn = pcall(windower.ffxi.get_items, bag, index)
+            if not okw or type(worn) ~= 'table' or (worn.id or 0) == 0 then return false end
+        end
+    end
+    local elsewhere = false
+    for _, def in ipairs(BAGS) do
+        local okb, bag = pcall(windower.ffxi.get_items, def.id)
+        if def.id ~= 0 and okb and type(bag) == 'table' and (bag.count or 0) > 0 then elsewhere = true end
+    end
+    return elsewhere
+end
+
+--- A command moved things between the bags (//gs c bags go, //gs c wo). Once the game has settled them the time
+--- is kept for the live link's /ping (`tidy`: the page reads the bags again when it changes) and the export is
+--- written again.
+--- @param delay number? seconds to wait first (2)
+function ExportBags.changed(delay)
+    coroutine.schedule(function()
+        windower._bags_changed = os.date('%Y-%m-%d %H:%M:%S')
+        pcall(function()
+            local Export = require('shared/utils/atelier/atelier_export')
+            if Export.enabled() then Export.export() end
+        end)
+    end, delay or 2)
+end
+
 --- Every bag of the character.
 --- @param augments function the augments of one copy of an item (a function: its item -> list or nil)
---- @return table|nil {at, bags = {{id, name, place, max, count, items}}, items = {id = {name, cat, stack}}}
+--- @return table|nil nil outside the game and while the game has not sent every bag (ExportBags.read), else {at, bags = {{id, name, place, max, count, items}}, items = {id = {name, cat, stack}}, run}
 --- @return table list of the item ids met (their icons are written with the export)
 function ExportBags.collect(augments)
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.items and windower.ffxi and windower.ffxi.get_items) then return nil, {} end
+    -- half sent by the game: no bags in this export, the page keeps the ones of the export before
+    if not ExportBags.read() then return nil, {} end
     local bags, info, ids, held = {}, {}, {}, 0
     for _, def in ipairs(BAGS) do
         local okb, bag = pcall(windower.ffxi.get_items, def.id)
@@ -83,7 +120,10 @@ function ExportBags.collect(augments)
     end
     -- nothing anywhere: not a character's bags (the export made outside the game plays empty ones)
     if #bags == 0 or held == 0 then return nil, {} end
-    return {at = os.date('%Y-%m-%d %H:%M'), bags = bags, items = info}, ids
+    -- to the second: two exports of one minute must not be taken one for the other; run: the last tidy-up played
+    -- (shared/utils/wardrobe/bag_mover.lua), {at, moved, skipped, stopped}
+    return {at = os.date('%Y-%m-%d %H:%M:%S'), bags = bags, items = info,
+        run = windower._bag_mover and windower._bag_mover.last or nil}, ids
 end
 
 return ExportBags

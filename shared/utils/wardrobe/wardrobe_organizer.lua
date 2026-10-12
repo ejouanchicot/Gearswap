@@ -26,6 +26,7 @@
 ---   Phase 3    Fill the used bags, and the rules' bags (from the other bags)
 ---   (//gs c wo alt runs the same flow on every job: Config.use_all_jobs_layout)
 ---   Phase 3.5  Pack the job into the first primary bag before the next
+---   Phase 3.6  Bring back what Phase 2 spilled into the later unused bags
 ---   Phase 4    Cleanup any leftover inventory gear (with retries)
 ---   ----       Re-enable all slots, snapshot final state, auto-retry if needed
 ---
@@ -70,6 +71,7 @@ local function reset_module_state()
     last_misplaced = math.huge
     same_misplaced_count = 0
     start_job_tag = nil
+    Phases.forget_spilled()
 end
 
 --- Detect that the user changed job (or sub-job) since the run started.
@@ -156,6 +158,9 @@ local function release_stance_locks()
     end
 end
 
+-- Seconds after a run before the Atelier page is told: past the lockstyle (1.5 s) and the refill (3.5 s)
+local BAGS_CHANGED_DELAY = 8
+
 --- Re-enable slots, reset module state, and clear IS_RUNNING flag.
 --- pcall'd so a stale state never prevents enable_slots from firing.
 local function clean_exit()
@@ -163,6 +168,8 @@ local function clean_exit()
     pcall(release_stance_locks)
     reset_module_state()
     IS_RUNNING = false
+    -- The Atelier page reads the bags again (after the lockstyle and the refill that follow a run)
+    pcall(function() require('shared/utils/atelier/atelier_export_bags').changed(BAGS_CHANGED_DELAY) end)
 end
 
 --- Schedule a lockstyle refresh + refill after wo finishes successfully.
@@ -431,7 +438,9 @@ local function start_phase3(state)
     Chat.phase(3, 'Fill ' .. primary_label(), string.format('%d items', #state.w3w6_used))
     Phases.fill_w1w2(state, function()
         coroutine.schedule(function()
-            start_phase_pack(state, function() start_phase4(state) end)
+            start_phase_pack(state, function()
+                Phases.compact_overflow(state, function() start_phase4(state) end)
+            end)
         end, Config.PHASE_DELAY)
     end)
 end

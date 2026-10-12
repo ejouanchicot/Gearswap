@@ -375,8 +375,10 @@ function readExports(first, done){
   // each character's arrangement of its list of sets (list_prefs.js; absent until the page wrote one)
   // (every character of the index: `chars` above only knows those whose exports are still under saved/)
   const lists = [...new Set(index.map(e => e.char || (e.file.match(/^([^/]+)\//) || [])[1]).filter(Boolean))].map(c => `${c}/atelier/overrides/list_layout.js` + stamp);
-  loadScripts(index.map(e => e.file + stamp).concat(live, lists), () => {
-    listRead();
+  // and what each bag is for and how each item is filed, for the bags plan (bags_plan.js; absent until written)
+  const plans = lists.map(f => f.replace('list_layout.js', 'bag_plan.js'));
+  loadScripts(index.map(e => e.file + stamp).concat(live, lists, plans), () => {
+    listRead(); bpRead();
     if (first) { setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
       // the game's descriptions of every item: a piece a set names but no bag holds still has its stats
       setTimeout(() => loadCatalog(() => loadRanked(() => { canonAll(); if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300); }

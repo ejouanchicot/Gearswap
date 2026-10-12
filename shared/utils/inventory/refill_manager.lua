@@ -107,7 +107,7 @@ local function queue_surplus(variants, surplus, items_data, store_info)
             local to_move = math.min(remaining, slot_info.count)
             table.insert(moves, {
                 bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
-                slot = slot_info.slot, count = to_move,
+                slot = slot_info.slot, count = to_move, id = v.id,
                 item_name = v.name, is_surplus = true,
                 why = 'surplus', from = 'Inventory', to = store_info.display
             })
@@ -136,7 +136,7 @@ local function queue_deficit(variants, deficit, items_data, source_bags)
                     if remaining <= 0 then break end
                     local to_move = math.min(remaining, slot_info.count)
                     table.insert(moves, {
-                        bag_id = source.id, slot = slot_info.slot,
+                        bag_id = source.id, slot = slot_info.slot, id = v.id,
                         count = to_move, item_name = v.name,
                         why = 'missing', from = source.display, to = 'Inventory'
                     })
@@ -227,7 +227,7 @@ local function sweep_foreign_items(items_data, list, store_info)
                 local display = foreign_set[it.id]
                 table.insert(moves, {
                     bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
-                    slot = slot, count = it.count,
+                    slot = slot, count = it.count, id = it.id,
                     item_name = display, is_surplus = true,
                     why = 'foreign', from = 'Inventory', to = store_info.display
                 })
@@ -247,6 +247,19 @@ local function sweep_foreign_items(items_data, list, store_info)
     end
 
     return moves, rows
+end
+
+--- Whether the slot a move was planned on still holds that item, enough of it, free to move.
+---
+--- The moves are planned on one reading of the bags and sent one by one over several seconds. The game moves
+--- whatever sits in the slot it is given: a slot that changed in between (another command moving items, the
+--- player, a second refill) would send something else to the store bag.
+--- @param move table {bag_id, slot, count, id}
+--- @return boolean
+local function still_there(move)
+    local ok, item = pcall(windower.ffxi.get_items, move.bag_id, move.slot)
+    return ok and type(item) == 'table' and item.id == move.id and (item.count or 0) >= move.count
+        and (item.status or 0) == 0
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -294,13 +307,27 @@ function RefillManager.refill()
 
     -- Execute move queue with delays
     if #move_queue > 0 then
+        local skipped = 0
         local function execute_move(index)
             if index > #move_queue then
                 RefillPanels.show_report(results)
+                -- the bags changed: the Atelier page reads them again (it would else show them as they were
+                -- before the refill, or in the middle of it after //gs c wo)
+                pcall(function() require('shared/utils/atelier/atelier_export_bags').changed(2) end)
+                if skipped > 0 then
+                    RefillPanels.show_error(('%d move(s) not made: the bags changed during the refill. //gs c rf again.')
+                        :format(skipped))
+                end
                 return
             end
 
             local move = move_queue[index]
+            if not still_there(move) then
+                skipped = skipped + 1
+                trace('SKIP %s x%d: slot %d of %s no longer holds it', tostring(move.item_name), move.count,
+                    move.slot, tostring(move.from))
+                return execute_move(index + 1)
+            end
             trace('move %s x%d: %s -> %s (%s)', tostring(move.item_name), move.count,
                 tostring(move.from), tostring(move.to), tostring(move.why))
             if move.is_surplus then

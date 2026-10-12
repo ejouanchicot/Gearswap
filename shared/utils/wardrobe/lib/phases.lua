@@ -198,6 +198,7 @@ end
 ---   @param opts.discover_pending   function() -> list of source entries to pull
 ---   @param opts.discover_drainable function() -> list of {slot, dst_list} inv entries
 ---   @param opts.on_done            function (called once when phase completes)
+---   @param opts.on_push            function(entry, bag)? called for each push sent
 
 local ADAPTIVE_DELAY_FLOOR = 1.0
 local ADAPTIVE_DELAY_PER_PACKET = 0.1
@@ -274,6 +275,7 @@ local function run_burst_loop(opts)
             for _, dst in ipairs(d.dst_list) do
                 if (not claimed or not claimed[dst]) and space_in(dst) > 0 then
                     if push_slot(d.slot, dst) then
+                        if opts.on_push then opts.on_push(d, dst) end
                         if d.is_pinned then
                             burst_claims[d.id] = burst_claims[d.id] or {}
                             burst_claims[d.id][dst] = true
@@ -319,6 +321,17 @@ local function run_burst_loop(opts)
     end
 
     coroutine.schedule(step, 0)
+end
+
+-- What this run pushed to the overflow bags, [item id] = copies. Phase 2 runs
+-- while those bags still hold the new job's gear, so it spills into the later
+-- ones; Phases.compact_overflow brings exactly these back once Phase 3 has made
+-- room. Nothing else is pulled: what the player keeps in a later bag stays.
+local spilled = {}
+
+--- Forget what the run pushed to overflow (start and end of a run).
+function Phases.forget_spilled()
+    spilled = {}
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -381,6 +394,9 @@ function Phases.empty_w1w2(state, on_done)
         discover_pending   = discover_pending,
         discover_drainable = discover_drainable,
         on_done            = on_done,
+        on_push            = function(d)
+            if not d.is_pinned and d.id then spilled[d.id] = (spilled[d.id] or 0) + 1 end
+        end,
     })
 end
 
@@ -683,6 +699,58 @@ function Phases.compact_primary(state, on_done)
 
     run_burst_loop({
         label              = 'PHASE 3.5',
+        discover_pending   = discover_pending,
+        discover_drainable = discover_drainable,
+        on_done            = on_done,
+    })
+end
+
+--- Pack the overflow bags: what Phase 2 pushed into a later one goes back to
+--- the first with room, now that Phase 3 has taken the job's gear out of them.
+--- Only this run's own pushes are pulled (`spilled`), never more than fits, and
+--- nothing pinned or used by the active job.
+--- @param state table Built state (needs used_names and pinned_bags)
+--- @param on_done function Called once when the phase completes
+function Phases.compact_overflow(state, on_done)
+    dlog('===== PHASE 3.6: PACK OVERFLOW (later bags -> earlier ones) =====')
+    local bags = Config.OVERFLOW_BAGS or {}
+
+    local function movable(it)
+        return it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id)
+            and not Items.is_used_name(it.id, state.used_names)
+            and #unclaimed_pins_first(it.id, state.pinned_bags) == 0
+    end
+
+    local function discover_pending()
+        local list, room = {}, 0
+        for i = 2, #bags do
+            room = room + Moves.space_in(bags[i - 1])
+            local left = {}
+            for slot, it in ipairs(room > #list and windower.ffxi.get_items(bags[i]) or {}) do
+                if #list >= room then break end
+                left[it.id] = left[it.id] or spilled[it.id] or 0
+                if left[it.id] > 0 and movable(it) then
+                    left[it.id] = left[it.id] - 1
+                    list[#list + 1] = {bag = bags[i], slot = slot, id = it.id, name = Items.display_name(it.id)}
+                end
+            end
+        end
+        return list
+    end
+
+    --- Anything just pulled goes back to the earliest overflow bag with room.
+    local function discover_drainable()
+        local list = {}
+        for slot, it in ipairs(windower.ffxi.get_items(INV_BAG) or {}) do
+            if movable(it) then
+                list[#list + 1] = {slot = slot, dst_list = bags, id = it.id, name = Items.display_name(it.id)}
+            end
+        end
+        return list
+    end
+
+    run_burst_loop({
+        label              = 'PHASE 3.6',
         discover_pending   = discover_pending,
         discover_drainable = discover_drainable,
         on_done            = on_done,

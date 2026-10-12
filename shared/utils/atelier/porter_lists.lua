@@ -9,8 +9,12 @@
 --- writes the unpack list from the sets (the pack list is left as it is).
 ---
 --- The job's pieces: every item named in its sets (sets.*, read in memory), its
---- Mote states' options and its <JOB>_WEAPONS.lua (shields, grips), kept when a
---- storage slip can hold them (only those can be at the Porter Moogle).
+--- Mote states' options, its <JOB>_WEAPONS.lua (shields, grips) and the pieces
+--- of its lockstyle sets (lockstyle_pieces.lua: worn for the look on that job
+--- only), kept when a storage slip can hold them (only those can be at the
+--- Porter Moogle). A piece PorterPacker's lists do not know at all is also
+--- added to the job's pack list: a swap to another job packs every other job's
+--- pack list, so that is what sends it to the moogle then.
 ---
 --- Used by shared/utils/atelier/atelier_export.lua (the export's porterpacker
 --- block) and atelier_live.lua (POST /porter_write).
@@ -100,6 +104,11 @@ local function wanted_ids(job, res, storable)
         local okw, weapons = pcall(CharPaths.optional, 'job', job .. '_WEAPONS', job)
         if okw then walk_strings(weapons, add, {}) end
     end
+    -- the pieces of the job's lockstyle sets: out on this job, at the moogle on the others
+    local okl, lock = pcall(function() return require('shared/utils/lockstyle/lockstyle_pieces').of_job(job) end)
+    for id in pairs(okl and type(lock) == 'table' and lock or {}) do
+        if storable[id] then out[id] = true end
+    end
     return out
 end
 
@@ -125,6 +134,13 @@ local function current_names(path, exists)
     if type(t.unpack) == 'table' then return t.unpack, 'split' end
     if type(t.pack) == 'table' then return t.pack, 'split' end
     return t, 'plain'
+end
+
+--- The pack list of a split file, or nil (a plain list packs what it unpacks; no file: none).
+local function pack_names(path, exists)
+    if not exists then return nil end
+    local ok, t = pcall(dofile, path)
+    return ok and type(t) == 'table' and type(t.pack) == 'table' and type(t.unpack) == 'table' and t.pack or nil
 end
 
 local function sorted_names(res, ids)
@@ -166,8 +182,17 @@ function PorterLists.compare(job)
         end
     end
     table.sort(remove, function(a, b) return a:lower() < b:lower() end)
+    -- what the job uses and its pack list does not name: never packed when another job is played
+    local pack, pack_add = pack_names(path, exists), {}
+    if pack then
+        local packed = {}
+        for _, n in ipairs(pack) do
+            if type(n) == 'string' then for _, id in ipairs(index[n:lower()] or {}) do packed[id] = true end end
+        end
+        for id in pairs(wanted) do if not packed[id] then pack_add[id] = true end end
+    end
     return {file = label, exists = exists, form = form, add = sorted_names(res, add), remove = remove,
-        wanted = sorted_names(res, wanted)}
+        wanted = sorted_names(res, wanted), pack_add = sorted_names(res, pack_add)}
 end
 
 local function lua_list(names, indent)
@@ -206,6 +231,11 @@ function PorterLists.write(job, opts)
     if cmp.form == 'split' and s then
         -- the unpack block: from "unpack = {" to its closing brace (a list of strings: no brace inside)
         text = old:sub(1, s) .. block .. old:sub(e + 1)
+        -- the pieces the pack list does not name go at its head (nothing else of it is touched)
+        local _, open = text:find('\n[ \t]*pack%s*=%s*{')
+        if open and #(cmp.pack_add or {}) > 0 then
+            text = text:sub(1, open) .. '\n' .. lua_list(cmp.pack_add, '        ') .. text:sub(open + 1)
+        end
     elseif cmp.form == 'split' then
         -- a split file with a pack list only: the unpack block goes before the table's closing brace
         local last = old:match('^.*()}')
@@ -231,7 +261,8 @@ function PorterLists.write(job, opts)
     if not f then return {ok = false, error = 'cannot write ' .. cmp.file} end
     f:write(text)
     f:close()
-    return {ok = true, file = cmp.file, added = #cmp.add, removed = (opts and opts.add_only) and 0 or #cmp.remove}
+    return {ok = true, file = cmp.file, added = #cmp.add, removed = (opts and opts.add_only) and 0 or #cmp.remove,
+        packed = #(cmp.pack_add or {})}
 end
 
 --- At each load of a job (atelier_export.lua after_load; a push from the page reloads too): the pieces its sets use
@@ -241,12 +272,16 @@ end
 --- @param job string the job loaded in game
 function PorterLists.sync(job)
     local cmp = PorterLists.compare(job)
-    if not cmp or #cmp.add == 0 then return end
+    if not cmp or (#cmp.add == 0 and #(cmp.pack_add or {}) == 0) then return end
     local r = PorterLists.write(job, {add_only = true})
     local ok_m, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
     if not ok_m then return end
     if not r.ok then MessageFormatter.show_error('PorterPacker list not updated: ' .. tostring(r.error)) return end
-    MessageFormatter.show_info(('PorterPacker %s: added %s (//po to apply)'):format(r.file, table.concat(cmp.add, ', ')))
+    local names, seen = {}, {}
+    for _, list in ipairs({cmp.add, cmp.pack_add or {}}) do
+        for _, n in ipairs(list) do if not seen[n] then seen[n] = true names[#names + 1] = n end end
+    end
+    MessageFormatter.show_info(('PorterPacker %s: added %s (//po to apply)'):format(r.file, table.concat(names, ', ')))
 end
 
 _G.PorterLists = PorterLists

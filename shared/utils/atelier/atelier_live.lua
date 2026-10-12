@@ -12,7 +12,8 @@
 ---   GET  /measure              the character's stats, gear and buffs at the last status packet
 ---                              (AtelierExport.measure): fetched when /ping's `stat` count moves
 ---   POST /save?file=<name>     writes <Char>/atelier/overrides/<name>: keybind_overrides.lua,
----                              set_overrides.lua or list_layout.js (how the page's list of sets is
+---                              set_overrides.lua, bag_plan.js (the role of each bag and the category of each item,
+---                              for the page's bags plan) or list_layout.js (how the page's list of sets is
 ---                              arranged) only
 ---   GET  /actions              the job's spells, abilities and weapon skills
 ---   GET  /sim_buffs            the buffs the job's code reads (Simulate's buff choices)
@@ -52,7 +53,7 @@
 local AtelierLive = {}
 
 local FIRST_PORT, PORT_TRIES = 52740, 8
-local SAVED_FILES = {['keybind_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true}
+local SAVED_FILES = {['keybind_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true, ['bag_plan.js'] = true}
 local MAX_BODY = 2 * 1024 * 1024
 local POLL_EVERY = 6   -- frames between two looks at the door
 
@@ -174,7 +175,20 @@ local function route(req, live)
         local alt = type(alt_state) == 'table' and alt_state.online ~= nil and alt_state.job or nil
         return '200 OK', Export.json({player = player and player.name, job = player and player.main_job,
             sub = player and player.sub_job, version = live.version, boot = live.boot, alt = alt,
-            stat = windower._atelier_stat_seq or 0, rebuild = windower._atelier_rebuild})
+            stat = windower._atelier_stat_seq or 0, rebuild = windower._atelier_rebuild,
+            -- when a command last moved things between the bags (//gs c bags go, //gs c wo:
+            -- ExportBags.changed): the page reads the bags again
+            tidy = windower._bags_changed,
+            -- how full each bag is: the page reads the bags again when it changed and has settled
+            bags = (function()
+                local ok, counts = pcall(function() return require('shared/utils/atelier/atelier_place').bag_counts() end)
+                return ok and counts or nil
+            end)(),
+            -- where the character stands: zone, Mog House, moogles around, bags open there (atelier_place.lua)
+            place = (function()
+                local ok, place = pcall(function() return require('shared/utils/atelier/atelier_place').read() end)
+                return ok and place or nil
+            end)()})
     end
     if req.path == '/export' then
         local data = Export.build()
@@ -245,6 +259,10 @@ local function route(req, live)
         local path = (req.body or ''):match('^%s*(.-)%s*$')
         local result = q.mode == 'write' and SetPush.delete(job, path, q.hash) or SetPush.delete_preview(job, path)
         return '200 OK', Export.json(result)
+    end
+    if req.path == '/porter_run' and req.method == 'POST' then
+        -- //gs c po asked from the page: PorterPacker, then the wardrobes and the refill (porter_run.lua)
+        return '200 OK', Export.json(require('shared/utils/wardrobe/porter_run').start())
     end
     if req.path == '/porter_write' and req.method == 'POST' then
         -- PorterPacker's unpack list from the sets in memory: the job loaded in game only

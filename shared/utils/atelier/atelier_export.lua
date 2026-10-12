@@ -387,6 +387,7 @@ function AtelierExport.after_load()
     local defer, try, Slips = require('shared/utils/core/load_gate').defer, nil, require('shared/utils/atelier/slip_items')
     try = function(left) local me = windower.ffxi.get_player()
         local ready = me and (me.main_job_level or 0) > 0 and Slips.bags_ready()
+            and require('shared/utils/atelier/atelier_export_bags').read()
         if ready or left == 0 then return pcall(AtelierExport.export) end
         defer(2, function() try(left - 1) end, 'atelier export') end
     defer(4, function() try(20) end, 'atelier export')

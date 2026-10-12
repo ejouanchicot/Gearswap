@@ -976,7 +976,10 @@ return M
   rank 1, `'min'` otherwise), `skip_jobs`. No file: `DEFAULTS`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:56`, used only when there is neither a job
   list nor a common list), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
-  `MOVE_DELAY = 0.6` (`refill_manager.lua:42`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:42`), quiver
+  `MOVE_DELAY = 0.6` (`refill_manager.lua:42`; the moves are planned on one reading of the bags and sent
+  one by one, so each is checked just before it is sent: `still_there` reads the slot again and the move is
+  skipped, and said at the end, when it no longer holds the planned item, as many of it, free to move;
+  `lua5.1 scripts/atelier/refill_guard_test.lua`, 11 checks), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:42`), quiver
   thresholds in the aftercast callers (the per-job override is `REFILL_CONFIG.lua` `quiver_open_at`),
   `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `MP_WEIGHT`,
   `SLOTS` and `WORN_SLOT`. Apart from the quiver thresholds, none of them is read from a config file.

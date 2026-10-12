@@ -615,6 +615,9 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'bags' then
         -- the tidy-up plan sent by the Atelier page (shared/utils/wardrobe/bag_mover.lua)
         return require('shared/utils/wardrobe/bag_mover').handle(args)
+    elseif cmd == 'po' or cmd == 'porter' then
+        -- PorterPacker for the job loaded, then the wardrobes and the refill (shared/utils/wardrobe/porter_run.lua)
+        return require('shared/utils/wardrobe/porter_run').start()
     elseif cmd == 'refill' or cmd == 'rf' then
         return CommonCommands.handle_refill()
     elseif cmd == 'automedicine' or cmd == 'am' then
