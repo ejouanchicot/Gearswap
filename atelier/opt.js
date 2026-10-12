@@ -258,7 +258,7 @@
         return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withBase(c),
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: strict ? 1 : physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
-            physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0};
+            physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0, fanDance: c.fanDance || null};
     };
     // The abilities with the character's own base attributes ("Base Stats"), from the game's status packet: c.base
     // ({main, sub, merits, str: 153, dex: 141...}), else the page's measuredBase(job). Measured with another subjob: that
@@ -547,6 +547,23 @@
         var sb = Math.min(75, Math.min(50, sum("Subtle Blow") + (sbBuff || 0)) + Math.min(50, sum("Subtle Blow II")));
         return {pdt: sum("DT") + sum("PDT"), mdt: sum("DT") + sum("MDT"), sb: sb};
     };
+    // Fan Dance up (ctx.fanDance = {merit}): the physical damage taken is the gear's DT + PDT, capped at -50 %, times the
+    // dance's cut, which is no part of that cap (BG Wiki, Fan Dance: "does not count towards the Physical Damage Taken cap
+    // of 50%, but is multiplied with it"). The cut is counted at its floor, 20 %, the one that lasts (90 % at first, 10 %
+    // less a hit taken), and 1 % more a "Fan Dance" merit level with Horos Bangles or Etoile Bangles +2 on the hands: so
+    // the search weighs them against any other hands. def.pdt is then that total (the floor asked is read against it),
+    // def.gearPdt the gear's own, def.fan the cut
+    var FAN_HANDS = /^(Horos Bangles|Etoile Bangles \+2)/;
+    O.fanCut = function (merit, hands) { return 20 + (hands && FAN_HANDS.test(hands) ? merit || 0 : 0); };
+    function defOf(ctx, set, pieces) {
+        var def = O.defense(set, ctx.sbBuff);
+        if (!ctx.fanDance) return def;
+        var hands = !O.blocked(pieces).hands && pieces.hands && pieces.hands.name;
+        def.fan = O.fanCut(ctx.fanDance.merit, hands);
+        def.gearPdt = def.pdt;
+        def.pdt = Math.round(((1 + Math.max(def.pdt, -50) / 100) * (1 - def.fan / 100) - 1) * 1000) / 10;
+        return def;
+    }
     // How far a set is from the floors (0 when it meets them): opts.floor = {pdt: -50, mdt: -21, sb: 0, hit: 0},
     // hit the weaponskill's hit rate in % (O.hit)
     function shortfall(def, floor, hit) {
@@ -597,7 +614,7 @@
     // The player of a set, kept (per context) while a search tries the same set at several TP:
     // creating it is most of the cost of an evaluation
     function playerOf(ctx, worn) {
-        if (ctx._noMemo) { var s0 = O.gearset(ctx, worn); return s0 ? {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, s0, ctx.buffs, ctx.abilities), def: O.defense(s0, ctx.sbBuff)} : null; }
+        if (ctx._noMemo) { var s0 = O.gearset(ctx, worn); return s0 ? {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, s0, ctx.buffs, ctx.abilities), def: defOf(ctx, s0, worn)} : null; }
         var key = ctx._fast && IDS ? setKey(worn) : PAGE_SLOTS.map(function (sl) { var p = worn[sl]; return p ? p.name + "|" + (p.augs || []).join("|") + "|" + (p.rank == null ? "" : p.rank) : ""; }).join("#");
         var cache = ctx._players = ctx._players || {map: {}, size: 0};
         if (cache.map[key]) return cache.map[key];
@@ -605,7 +622,7 @@
         if (!set) return null;
         if (cache.size > 20000) { cache.map = {}; cache.size = 0; }
         cache.size++;
-        return (cache.map[key] = {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), def: O.defense(set, ctx.sbBuff)});
+        return (cache.map[key] = {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), def: defOf(ctx, set, worn)});
     }
     // One weaponskill: the engine's [value, [damage, TP return]] for the objective
     function once(ctx, worn, tp, metric) {

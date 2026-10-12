@@ -104,6 +104,8 @@ function optContextInput(s){
     enemy: enemyKey(b.enemy), evaDown: foeEva(b), physRes: physResOf(b, skill), tomahawk: foeJaActive(b).includes('Tomahawk'), banish: foeJaActive(b).includes('Banish II'), partyWarcry, geoMul: geoMul(b), ariaPdl: ariaPdl(b),
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
     saberMerit: abilities['Saber Dance'] ? danceMerit('saber') : 0,
+    // Fan Dance's cut of the physical damage taken, counted by the search in the DT + PDT it is asked for (atelier/opt.js defOf)
+    fanDance: abilities['Fan Dance'] ? {merit: danceMerit('fan')} : null,
     warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws,
     // your measured base attributes and merits, as data: a worker has no page to ask (atelier/opt.js withBase)
     base: measuredBase((S.job || '').toLowerCase()), wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V'};

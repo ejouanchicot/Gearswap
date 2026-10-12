@@ -442,6 +442,18 @@ function layeredLi(label, raw, two, name, detail){
   const extra = `${signed(r(first))} / −50` + (over ? ` (${t('cmpOver', {n: over})})` : '') + ` + ${name} ${signed(two)}`;
   return statLi(label, signed(r(total)) + ' %', extra, '', `${detail} = ${r(raw)}, ${t('dtCapNote')} ; + ${name} ${two} = ${r(total)} % (−87,5 % max)`);
 }
+// What multiplies the damage taken past the cap (Fan Dance, Rampart: B._by, buffs.js), as a line of its own under the
+// gear's: the gear's share, capped, times each of them (BG Wiki, Fan Dance: "does not count towards the Physical Damage
+// Taken cap of 50%, but is multiplied with it"). No line when nothing multiplies
+Object.assign(T.fr, {pdtWithMul: 'Physiques au total', mdtWithMul: 'Magiques au total', mulGear: 'stuff'});
+Object.assign(T.en, {pdtWithMul: 'Physical in all', mdtWithMul: 'Magic in all', mulGear: 'gear'});
+function mulLi(label, gear, keys, B){
+  const by = ((B && B._by) || []).filter(e => keys.includes(e.k) && e.v !== 1);
+  if (!by.length) return '';
+  const r = x => Math.round(x * 10) / 10, total = (by.reduce((m, e) => m * e.v, 1 + gear / 100) - 1) * 100;
+  const how = `${t('mulGear')} ${signed(r(gear))} % ` + by.map(e => `× ${e.src} ${signed(r((e.v - 1) * 100))} %`).join(' ');
+  return statLi(label, signed(r(total)) + ' %', how, '', how);
+}
 // Damage taken (Guide_Paladin, 03_defense): DT + PDT and DT + MDT stop at -50 %; PDT II
 // (Burtgang) and MDT II (Aegis) go on past it, up to -87.5 % in all
 function damageTakenLines(v){
@@ -452,7 +464,9 @@ function damageTakenLines(v){
   // one line a kind of damage: with a II stat (PDT II: Burtgang, MDT II: Aegis) its total, the two layers in its detail
   const pDetail = `DT ${v('dt')} + PDT ${v('pdt')}`, mDetail = `DT ${v('dt')} + MDT ${v('mdt')}` + (shell ? ` + ${buffState().shell} ${shell}` : '');
   let out = v('pdt2') ? layeredLi(t('pdtTotal'), pdtRaw, v('pdt2'), 'PDT II', pDetail) : cappedLi(t('pdtEff'), pdtRaw, -50, pDetail);
+  out += mulLi(t('pdtWithMul'), Math.max(pdt + v('pdt2'), -87.5), ['dmgmul', 'pdmgmul'], B);
   out += v('mdt2') ? layeredLi(t('mdtTotal'), mdtRaw, v('mdt2'), 'MDT II', mDetail) : cappedLi(shell ? t('mdtShell') : t('mdtEff'), mdtRaw, -50, mDetail);
+  out += mulLi(t('mdtWithMul'), Math.max(mdt + v('mdt2'), -87.5), ['dmgmul'], B);
   if (v('bdt')) out += cappedLi(t('bdtEff'), v('dt') + v('bdt'), -50, `DT ${v('dt')} + BDT ${v('bdt')}`);
   return out;
 }

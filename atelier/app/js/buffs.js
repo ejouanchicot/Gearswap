@@ -252,7 +252,7 @@ const JAS = {
   'Building Flourish': {job: 'DNC', lvl: 50, fx: () => ({crit: 10, acc: 40, atkp: .25})},
   // the dances (BG Wiki), a main DNC's merit abilities, one at a time: their floor, what holds through the effect
   'Saber Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({da: danceFloor('saber', shownPieces())})},
-  'Fan Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({pdmgmul: 1 - danceFloor('fan', shownPieces()) / 100})},
+  'Fan Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({pdmgmul: 1 - danceFloor('fan', shownPieces()) / 100, enmity: 15})},
   'Haste Samba': {job: 'DNC', from: 'DNC', lvl: 45, party: true, fx: (m, l, ja) => ({jahaste: sambaHaste(ja)})},
   'Swordplay': {job: 'RUN', lvl: 20, fx: () => ({acc: 54, eva: 54})},
   'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
@@ -321,11 +321,14 @@ function jaOn(b, name){
   return role === 'ja' && name === 'Haste Samba' && !!b.autoSamba && (data() || {}).sub === 'DNC' && !(b.jaOff || {})[name];
 }
 // A dance's floor (BG Wiki): Saber Dance's Double Attack ends at 20 % (from 50 %, in 30 s), Fan Dance's physical damage
-// cut at 20 % (from 90 %, 10 % a hit taken); each "Saber Dance" / "Fan Dance" merit level adds 1 % to it while Etoile or
-// Horos Tights / Bangles are worn: counted on the pieces of the set shown (the search weighs the Tights against any
+// cut at 20 % (from 90 %, 10 % a hit taken), with Enmity +15; each "Saber Dance" / "Fan Dance" merit level adds 1 % to it while Etoile or
+// Horos Tights / Horos Bangles or Etoile Bangles +2 are worn: counted on the pieces of the set shown (the search weighs the Tights against any
 // other legs: atelier/opt.js gearset)
 const DANCE = {saber: {merit: 'saber_dance', slot: 'legs', gear: /^(Horos|Etoile) Tights/},
-  fan: {merit: 'fan_dance', slot: 'hands', gear: /^(Horos|Etoile) Bangles/}};
+  fan: {merit: 'fan_dance', slot: 'hands', gear: /^(Horos Bangles|Etoile Bangles \+2)/}};
+// Fan Dance on for the set shown: the DT + PDT of a search is then the physical damage taken with the dance (pdtLabel)
+const fanOn = () => jaOn(liveBuffs(buffState()), 'Fan Dance');
+const pdtLabel = () => fanOn() ? t('pdtFan') : 'DT+PDT';
 function danceMerit(kind){ const m = (meritList() || []).find(x => x.key === DANCE[kind].merit); return m ? meritLevel(m) : 0; }
 function danceFloor(kind, pieces){
   const k = DANCE[kind], worn = pieces && k.gear.test((pieces[k.slot] || {}).name || '');

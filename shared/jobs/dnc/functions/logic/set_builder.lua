@@ -6,7 +6,7 @@
 ---
 ---   Features:
 ---   • Saber Dance variant selection (engaged only)
----   • Fan Dance variant selection (engaged only - 30% gear + 20% buff = 50% cap)
+---   • Fan Dance variant selection (engaged only - the dance's 20% multiplies the gear's DT, outside the 50% cap)
 ---   • Town detection (idle only - Adoulin vs regular cities)
 ---   • Weapon set application (MainWeapon set, then SubWeaponOverride sub)
 ---   • Movement gear application (idle only, never in combat)
@@ -57,11 +57,11 @@ function SetBuilder.select_engaged_base(base_set)
 
     -- Priority 2: HybridMode (Fan Dance only changes the PDT choice)
     if state.HybridMode and state.HybridMode.current == 'PDT' then
-        -- Fan Dance active: use FanDance set (30% equipment + 20% buff = 50% cap)
+        -- Fan Dance active: use FanDance set (the dance's cut multiplies the gear's: 37.5% of gear x 0.80 = 50% in all)
         if has_fan_dance and sets.engaged.FanDance then
             return sets.engaged.FanDance
         else
-            -- No Fan Dance: use regular PDT set (50% equipment = 50% cap)
+            -- No Fan Dance: use regular PDT set
             return sets.engaged.PDT
         end
     elseif state.HybridMode and state.HybridMode.current then

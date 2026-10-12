@@ -267,7 +267,7 @@ function optRunOpen(s, o, starts, cores, floor){
   const objLabel = o.stat ? t('statObj_' + obj) : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
   const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
     ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
-    : [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
+    : [['pdt', pdtLabel() + ' ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
   S._optRun = {t0: performance.now(), cores, fmt, objLabel, low: time || obj === 'hpLow', done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
   const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
   const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
@@ -405,9 +405,10 @@ function optRunResult(s, res, tr, plain, gains){
       fig.push([t(key), pc(h0[k]), pc(h1[k]), Math.floor(h1[k] || 0) === Math.floor(h0[k] || 0) ? 0 : (h1[k] || 0) > (h0[k] || 0) ? 1 : -1]);
   }
   const sd = res.start.def || {}, bd = res.best.def || {};
-  if (!res.best.stats) for (const [k, label, low] of [['pdt', 'DT+PDT', true], ['mdt', 'DT+MDT', true], ['sb', 'Subtle Blow', false]]) {
+  if (!res.best.stats) for (const [k, label, low] of [['pdt', bd.fan ? t('pdtFan') : 'DT+PDT', true], ['mdt', 'DT+MDT', true], ['sb', 'Subtle Blow', false]]) {
     // damage taken counts down to its -50 cap only: past it, no better
-    const a = Math.round(sd[k] || 0), b = Math.round(bd[k] || 0), ca = low ? Math.max(a, -50) : a, cb = low ? Math.max(b, -50) : b;
+    // (with Fan Dance the figure is the total, the cap already inside it: nothing to cut)
+    const a = Math.round(sd[k] || 0), b = Math.round(bd[k] || 0), cut = low && !(k === 'pdt' && bd.fan), ca = cut ? Math.max(a, -50) : a, cb = cut ? Math.max(b, -50) : b;
     if (a || b) fig.push([label, String(a), String(b), ca === cb ? 0 : (low ? cb < ca : cb > ca) ? 1 : -1]);
   }
   const live = liveWrite();

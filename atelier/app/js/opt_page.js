@@ -86,7 +86,7 @@ function opWhatHTML(s, kind){
   const help = S._help === 'optpage' ? `<p class="wshelp">${esc(t(kind === 'ws' ? 'optWhy' : kind === 'jump' ? 'jumpWhy' : 'engWhy', {tp: S.wsTp || 3000}))} ${esc(optSettingsHelp(kind === 'ws'))} ${esc(t('opHelp'))}</p>` : '';
   // the limits first: what a result may never go past is read before what it maximises
   const lim = (k, label) => opLimitHTML(`data-optopt="${k}"`, label, o[k]);
-  const limits = opLimitsHTML(t('opLimits'), [lim('pdt', 'DT+PDT ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []));
+  const limits = opLimitsHTML(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []));
   return `${limits}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}${opParamsHTML(s, kind, cur)}${opSearchHTML(o, kind === 'ws')}`;
 }
 // The objective's own settings: the TP the weaponskill goes at, the TP range, how a whole fight is played
@@ -220,7 +220,7 @@ function opRows(kind, obj){
     {id: 'tpws', label: t('cycTpWs'), get: f => f.c ? f.c.check.tpAtWs : null, fmt: v => opNum(v)},
     {id: 'chain', label: t('cycChain'), get: f => f.c ? f.c.chainShare : null, fmt: pc},
     {id: 'wsmin', label: t('cycWsMin'), get: f => f.c ? f.c.wsPerMin : null, fmt: v => opNum(v, 1)}];
-  rows = rows.concat([['pdt', 'DT+PDT', '≤', +o.pdt], ['mdt', 'DT+MDT', '≤', +o.mdt], ['sb', 'Subtle Blow', '≥', +o.sb]].map(([k, label, op, lim]) =>
+  rows = rows.concat([['pdt', pdtLabel(), '≤', +o.pdt], ['mdt', 'DT+MDT', '≤', +o.mdt], ['sb', 'Subtle Blow', '≥', +o.sb]].map(([k, label, op, lim]) =>
     ({id: k, label: lim ? `${label} ${op} ${lim}` : label, get: f => f.def ? f.def[k] : null, fmt: v => String(Math.round(v)), low: op === '≤',
       floor: lim ? v => op === '≤' ? v <= lim : v >= lim : null})));
   const first = rows.find(r => r.id === obj);
@@ -393,9 +393,9 @@ Object.assign(T.en, {optHoxne: 'Hoxne Ampulla active', optHoxneTip: 'Counts its 
 // the option that counts Vim Torque's latent Regain (stats.js ENCHANT_KEPT)
 Object.assign(T.fr, {optVim: 'Vim Torque actif', optVimTip: 'Compte le Regain latent du Vim Torque (+15) et du Vim Torque +1 (+20) comme actif tant qu’il est porté : l’optimiseur peut alors le choisir. L’effet marche arme sortie et te draine 50 HP par tick. Décoché, le collier ne compte que pour sa défense.'});
 Object.assign(T.en, {optVim: 'Vim Torque active', optVimTip: 'Counts the latent Regain of Vim Torque (+15) and Vim Torque +1 (+20) as active while it is worn: the optimizer may then pick it. The effect works with your weapon drawn and drains 50 HP a tick. Unchecked, the neck piece counts for its defense only.'});
-Object.assign(T.fr, {opLimits: 'Limites à respecter', opTabPieces: 'Pièces', opTabCalc: 'Calcul', opTabSpecial: 'Spéciaux',
+Object.assign(T.fr, {pdtFan: 'Dégâts physiques reçus (stuff × Fan Dance)', opLimits: 'Limites à respecter', opTabPieces: 'Pièces', opTabCalc: 'Calcul', opTabSpecial: 'Spéciaux',
   opSpecialWhy: 'Des pièces à effet particulier, comptées seulement quand tu les coches.'});
-Object.assign(T.en, {opLimits: 'Limits', opTabPieces: 'Pieces', opTabCalc: 'Calculation', opTabSpecial: 'Special',
+Object.assign(T.en, {pdtFan: 'Physical damage taken (gear × Fan Dance)', opLimits: 'Limits', opTabPieces: 'Pieces', opTabCalc: 'Calculation', opTabSpecial: 'Special',
   opSpecialWhy: 'Pieces with a special effect, counted only when you check them.'});
 // what each objective is, on hover (events.js showTip): one or two sentences, and what sets it apart from its neighbours
 Object.assign(T.fr, {

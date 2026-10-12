@@ -143,8 +143,24 @@ function openCompare(s){
         (i && dv ? `<i class="dv ${dv < 0 ? 'up' : 'down'}">${signed(r1(dv))} %</i>` : '') +
         `<small>${x.list.map(([n, v]) => `${n} ${signed(r1(v))}`).join(' · ')}</small></td>`; }).join('') + `</tr>`;
   };
-  const dtRows = dtRow(t('pdtEff'), 'pdt', c => [['PDT II', num(c, 'pdt2')]]) +
-    dtRow(shell ? t('mdtShell') : t('mdtEff'), 'mdt', c => [['MDT II', num(c, 'mdt2')], ['Shell', shell]]);
+  // what multiplies the damage taken past the cap (Fan Dance, Rampart: stats.js mulLi), a line under the gear's: each
+  // column with its own hands, so Horos Bangles show the Fan Dance merits they add
+  const mulRow = (label, part, keys, extra) => {
+    const by = (B._by || []).filter(e => keys.includes(e.k) && e.v !== 1);
+    if (!by.length || !statVisible('dt', s)) return '';
+    const mulOf = (e, c) => e.src === 'Fan Dance' ? 1 - danceFloor('fan', c.pieces) / 100 : e.v, r1 = n => Math.round(n * 10) / 10;
+    const tot = cols.map(c => { const v = k => num(c, k), two = extra(c).filter(x => / II$/.test(x[0])).reduce((a, x) => a + x[1], 0);
+      const gear = Math.max(Math.max(v('dt') + v(part) + extra(c).filter(x => !/ II$/.test(x[0])).reduce((a, x) => a + x[1], 0), -50) + two, -87.5);
+      return {gear, all: (by.reduce((m, e) => m * mulOf(e, c), 1 + gear / 100) - 1) * 100, how: by.map(e => `× ${e.src} ${signed(r1((mulOf(e, c) - 1) * 100))} %`).join(' ')}; });
+    const best = Math.min(...tot.map(x => x.all));
+    return `<tr class="want"><th>${esc(label)}</th>` + tot.map((x, i) => { const dv = x.all - tot[0].all;
+      return `<td class="${x.all === best && tot.some(y => y.all !== x.all) ? 'best' : ''}">${signed(r1(x.all))} %` +
+        (i && r1(dv) ? `<i class="dv ${dv < 0 ? 'up' : 'down'}">${signed(r1(dv))} %</i>` : '') +
+        `<small>${esc(t('mulGear'))} ${signed(r1(x.gear))} % ${esc(x.how)}</small></td>`; }).join('') + `</tr>`;
+  };
+  const pExtra = c => [['PDT II', num(c, 'pdt2')]], mExtra = c => [['MDT II', num(c, 'mdt2')], ['Shell', shell]];
+  const dtRows = dtRow(t('pdtEff'), 'pdt', pExtra) + mulRow(t('pdtWithMul'), 'pdt', ['dmgmul', 'pdmgmul'], pExtra) +
+    dtRow(shell ? t('mdtShell') : t('mdtEff'), 'mdt', mExtra) + mulRow(t('mdtWithMul'), 'mdt', ['dmgmul'], mExtra);
   // the weaponskill's average damage per column (the engine, atelier/engine/)
   const dmg = cols.map(c => withTrialAs(s, c.tr, () => wsDamage(s)));
   const dmgRow = dmg.some(v => v != null) ? `<tr class="want dmgrow"><th>${t('cmpDmg', {tp: S.wsTp || 3000})}</th>` + dmg.map((v, i) => {
