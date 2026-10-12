@@ -2,7 +2,7 @@
 
 The SAM job area: 11 hook modules plus 1 logic module under
 `shared/jobs/sam/functions/` (about 960 lines), an entry point template,
-seven config files and one sets file. SAM has no character overlay: the
+nine config files and one sets file. SAM has no character overlay: the
 `_master/` template is the reference, and Tetsouo's live `sam/` (since 2026-09-29, when
 his folder got all 22 jobs) is a copy of it; GearSwap loads it
 when the main job becomes SAM (`<Character>_SAM.lua`).
@@ -42,7 +42,7 @@ function; line numbers are deliberately not used.
 |------|------:|------|
 | `shared/entry/sam.lua` | 221 | Entry point (the same for every character; `<Char>_SAM.lua` and its template `_master/entry/Tetsouo_SAM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/sam/functions/sam_functions.lua` | 49 | Facade: includes the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/sam/functions/SAM_PRECAST.lua` | 217 | `job_precast` (guard, cooldown, `remember_stance`, auto-Seigan, auto-Third Eye, WS handler) / `job_post_precast` (TP gear, Sekkanoki, Meikyo Shisui by `buffactive`) |
+| `shared/jobs/sam/functions/SAM_PRECAST.lua` | 217 | `job_precast` (guard, cooldown, `remember_stance`, auto-Seigan, WS handler, auto-Third Eye) / `job_post_precast` (TP gear, Sekkanoki, Meikyo Shisui by `buffactive`) |
 | `shared/jobs/sam/functions/SAM_MIDCAST.lua` | 75 | `job_midcast` (empty) / `job_post_midcast`: watchdog, Healing and Enhancing via `MidcastManager` |
 | `shared/jobs/sam/functions/SAM_AFTERCAST.lua` | 22 | `job_aftercast = LifecycleManager.aftercast()` |
 | `shared/jobs/sam/functions/SAM_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
@@ -66,8 +66,9 @@ function; line numbers are deliberately not used.
 | `_master/config/sam/SAM_CONFIG.lua` | 23 | The job's own settings: `auto_hasso = false`, `auto_third_eye_ws = true` (both read through `shared/utils/core/auto_options.lua`), `idle_hp` (`job_config.lua`) |
 | `shared/data/job_abilities/SAM_JA_DATABASE.lua` + `sam/sam_{mainjob,subjob,sp}.lua` | | JA data for the ability message hooks |
 
-The `Tetsouo/...` require paths in the template are replaced by the clone
-script ([characters and templates](../architecture/characters-and-templates.md)).
+The entry and the templates name no character: `shared/entry/sam.lua` finds the
+files through `CharPaths`
+([characters and templates](../architecture/characters-and-templates.md)).
 
 ## How it works
 
@@ -98,7 +99,7 @@ sequenceDiagram
 - `RECAST_CONFIG` defines the globals `is_recast_ready` / `is_on_cooldown`
   used by `//gs c jump` and `//gs c waltz`.
 - `REGION_CONFIG` is loaded in the file chunk, before `INIT_SYSTEMS` loads
-  `message_colors`, which reads `_G.RegionConfig` once per load.
+  `message_colors`, which reads `_G.RegionConfig` at each use (`region_config`).
 
 `user_setup()`: `SAMStates.configure()`, then `SAM_KEYBINDS` stored in the
 global `SAMKeybinds` and `bind_all()` (4 binds, the optional states, the
@@ -129,10 +130,12 @@ flowchart TD
     R --> E{Third Eye, Stance Seigan, Seigan down}
     E -- "yes, flag clear" --> S[cancel; flag = true; /ja Seigan; wait 1; /ja Third Eye]
     E -- "yes, flag set" --> E2[flag = false; let Third Eye through]
-    E -- no --> F{WeaponSkill and Third Eye not up}
-    E2 --> F
-    F -- "Third Eye known and recast slot reads 0" --> T[cancel; /ja Third Eye; follow_up replays /ws]
-    F -- no --> W[WSPrecastHandler.handle with SAMTPConfig]
+    E -- no --> W{WSPrecastHandler.handle with SAMTPConfig}
+    E2 --> W
+    W -- refused --> Z
+    W -- ok --> F{WeaponSkill, Third Eye not up, option sam_third_eye_ws on}
+    F -- "Third Eye known and ready (RECAST_CONFIG tolerance)" --> T[cancel; /ja Third Eye; follow_up replays /ws]
+    F -- no --> X[done]
 ```
 
 - `chosen_stance()` reads `state.Stance.value`; a config without the state
@@ -207,7 +210,8 @@ no midcast set in the template).
   (`sets.engaged.Normal/Mid/Acc/SuBlow`, falling back to `sets.engaged.Normal`)
   and, for a `HybridMode` other than Normal, its child (`sets.engaged.Acc.PDT`),
   else `sets.engaged[HybridMode]` (`PDT`, `MDT`), else the node, else Mote's
-  base. Then, with Seigan up, `sets.thirdeye` when `HybridMode == 'PDT'`,
+  base. Then the party-support version of that base (`SupportTier.engaged`,
+  `shared/utils/party/support_tier.lua`). Then, with Seigan up, `sets.thirdeye` when `HybridMode == 'PDT'`,
   `sets.seigan` otherwise; then the weapon set; then `sets.bow` when the range
   slot holds Yoichinoyumi. The re-selection is needed because Mote looks for
   `HybridMode` **under** the `OffenseMode` node (`sets.engaged.Normal.PDT`),
@@ -218,7 +222,7 @@ no midcast set in the template).
   action.
 - `job_buff_change = LifecycleManager.buff_change(extra)`: Doom, then (unless
   Doom handled the event) `LifecycleManager.refresh_after_buff(buff)`: on gain
-  or loss of `"Aftermath: Lv.3"`, unless Doom is up, `gs c update` 0.1 s later,
+  or loss of `"Aftermath: Lv.3"` or the plain `"Aftermath"` (its `GEAR_BUFFS` list), unless Doom is up, `gs c update` 0.1 s later,
   skipped if an action is under way then. So `sets.engaged.AM3` goes on or off
   about 0.1 s after the buff changes (since 2026-09-29; before, nothing rebuilt
   the gear on an Aftermath change). Deferred because `buffactive` inside
@@ -311,13 +315,13 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/sam/SAM_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/sam/SAM_KEYBINDS.lua` | 4 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
-| `<char>/sam/SAM_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
-| `<char>/sam/SAM_HUD.lua` | empty orders | file | `hud_job_config.lua` |
-| `<char>/sam/SAM_TP_CONFIG.lua` | `hagakure_jp_gifts = 0`; Moonshade +250, Mpaca's Cap +200; Dojikiri Yasutsuna +500 | file | `WSPrecastHandler` via `_G.SAMTPConfig`; `TPBonusCalculator` adds `get_hagakure_bonus()` (1000 + 10 x gifts while Hagakure is up) |
-| `<char>/sam/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager` uses `default` only (no `get_style`) |
-| `<char>/sam/SAM_MACROBOOK.lua` | book 2 page 1 for every listed subjob | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/sam/keys/SAM_STATES.lua` | see states | file | entry `user_setup` |
+| `<char>/sam/keys/SAM_KEYBINDS.lua` | 4 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
+| `<char>/sam/keys/SAM_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
+| `<char>/sam/display/SAM_HUD.lua` | empty orders | file | `hud_job_config.lua` |
+| `<char>/sam/combat/SAM_TP_CONFIG.lua` | `hagakure_jp_gifts = 0`; Moonshade +250, Mpaca's Cap +200; Dojikiri Yasutsuna +500 | file | `WSPrecastHandler` via `_G.SAMTPConfig`; `TPBonusCalculator` adds `get_hagakure_bonus()` (1000 + 10 x gifts while Hagakure is up) |
+| `<char>/sam/display/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager` uses `default` only (no `get_style`) |
+| `<char>/sam/display/SAM_MACROBOOK.lua` | book 2 page 1 for every listed subjob | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/sam/combat/SAM_CONFIG.lua` `auto_hasso` (option `sam_hasso`) | false | file | `SAM_STATUS.lua` `auto_hasso` |
 | `<char>/sam/combat/SAM_CONFIG.lua` `auto_third_eye_ws` (option `sam_third_eye_ws`) | true | file | `SAM_PRECAST.lua` `try_third_eye_ws` |
 | `<char>/sam/combat/SAM_CONFIG.lua` `idle_hp` | `{weak_below = 50, regen_below = 80}` | file | `logic/set_builder.lua` `build_idle_set` |
@@ -389,8 +393,8 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 - An automation that spends an ability before a weaponskill belongs after
   `WSPrecastHandler.handle`, never before: a refused weaponskill must not
   cost the ability.
-- The template keeps `Tetsouo/...` require paths; the clone script rewrites
-  them.
+- The entry names no character: `shared/entry/sam.lua` finds the files through
+  `CharPaths` (`CharPaths.module('job', 'SAM_STATES', 'SAM')`...).
 
 ### Extending
 
@@ -437,6 +441,7 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
   Aftermath Lv.3 did not rebuild the gear, so `sets.engaged.AM3` waited for the
   next gear change; `job_buff_change` now calls
   `LifecycleManager.refresh_after_buff`.
-- `SAM_LOCKSTYLE.by_subjob` is never read (no `get_style`).
+- `SAM_LOCKSTYLE.by_subjob` is not read by `LockstyleManager` (no `get_style`); only
+  `lockstyle_pieces.lua` and `job_test.lua` read it.
 - Dead code: `job_handle_equipping_gear`, `sets.buff.Sengikori`.
 - `SAM_COMMANDS` duplicates most of `DRK_COMMANDS` (open finding).

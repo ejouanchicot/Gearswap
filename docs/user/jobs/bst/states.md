@@ -46,7 +46,7 @@ Combat Mode and Treasure Mode exist on BST too, hidden until you show them
 | `//gs c rdylist` | Lists your pet's Ready moves, numbered |
 | `//gs c rdymove N` | Uses Ready move N. Pet fighting: at once. Pet idle: `Fight` on a target you pick with the cursor (`<stnpc>`), the move 3.5 s later; if you were idle too, `Heel` 6 s after the start |
 | `//gs c broth` (`broths`) | Counts the items with "Broth" in their name in your inventory (Crumbly Soil, Aged Humus, Gassy Sap, Windy Greens and T. Pristine Sap are not counted) |
-| `//gs c debugprecast` | On BST: traces the summon and Ready precast gear (not the common precast debug) |
+| `//gs c debugprecast` | On BST: traces the summon precast gear, Call Beast / Bestial Loyalty set and jug (not the common precast debug) |
 
 The Ready move list is kept 30 s: right after changing pet, `rdylist` / `rdymove`
 can still show the previous pet's moves for up to 30 s.

@@ -39,7 +39,7 @@ on the HUD.
 | Ctrl+Numpad1 `^numpad1` | `SpellTier` | V | Tier of `lightspell` / `darkspell` |
 | Ctrl+Numpad2 `^numpad2` | `AOETier` | III | Tier of `lightaoe` / `darkaoe` |
 | Ctrl+Numpad3 `^numpad3` | `MainIndi` | Indi-Haste | Spell of `indi` and `entrust` (30 values) |
-| Ctrl+Numpad4 `^numpad4` | `MainGeo` | Geo-Frailty | Spell of `geo` (28 values) |
+| Ctrl+Numpad4 `^numpad4` | `MainGeo` | Geo-Frailty | Spell of `geo` (30 values) |
 | Ctrl+Numpad5 `^numpad5` | `MainLightSpell` | Fire | Element of `lightspell` |
 | Ctrl+Numpad6 `^numpad6` | `MainDarkSpell` | Blizzard | Element of `darkspell` |
 | Ctrl+Numpad7 `^numpad7` | `MainLightAOE` | Fira | Spell of `lightaoe` |
@@ -96,7 +96,9 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: the spell on the party through Light Arts and Accession (and Addendum: White for Erase) as charges allow. GEO has no single-target switch: it is always the party version |
 | `dispel` | /RDM: Dispel on an enemy you pick. /SCH: Dark Arts and Addendum: Black first when needed. Other subjobs: a warning |
 
-The /SCH and /RDM commands do not check the subjob: the game refuses them.
+Without Scholar as main job or subjob, `lightarts` / `darkarts` / `aoe` go to a
+dual-box alt that offers the command, else print an error; `dispel` prints a
+warning on any subjob but /RDM and /SCH.
 
 ### Common commands that work here
 
@@ -171,7 +173,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Dual-box | As an alt, GEO tells the main when Entrust goes up or down, so the main's alt commands can aim an Indi- at the party |
 | Your own modes and gear rules | `GEO_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Midcast watchdog | Puts your idle / engaged set back when the game never confirms the end of a cast ([watchdog](../../features/watchdog.md)); `FastCast` (80) is its fallback estimate |
-| Lockstyle and macros | Lockstyle 5 and macro book 5 page 1 are set 8 s after each load |
+| Lockstyle and macros | Macro book 5 page 1 is set about 1.5 s after each load, lockstyle 5 after 8 s |
 
 Not on GEO: the Magic Burst party call and BLM's own tier refiner (BLM), pet
 Blood Pact gear (SMN), cure auto-tier (WHM).

@@ -38,9 +38,7 @@ the provided file `sets.idle.Town` is the same table as `sets.me.idle.Town`.
 | `sets.luopan.engaged.DT` | A luopan is out, `LuopanMode` DT (the default) |
 | `sets.luopan.engaged.DPS` | A luopan is out, `LuopanMode` DPS. Missing: `sets.luopan.engaged.DT`, then `sets.me.engaged` |
 
-Keep `sets.luopan.engaged = {}` in your file even if you remove the DT and DPS
-sets: the code reads it directly. The weapon sets are laid on top. No movement
-gear while engaged.
+The weapon sets are laid on top. No movement gear while engaged.
 
 When the luopan appears or disappears, the gear is re-chosen at once.
 

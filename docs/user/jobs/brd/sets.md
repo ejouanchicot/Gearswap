@@ -125,7 +125,7 @@ Capriccio, Goblin Gavotte, Fowl Aubade, Herb Pastoral, Shining Fantasia.
 | Set | Worn when |
 |---|---|
 | `sets.midcast.DummySong` | Singing any song of that list |
-| `sets.midcast['Gold Capriccio']`, `['Goblin Gavotte']`, `['Fowl Aubade']`, `['Herb Pastoral']`, `['Shining Fantasia']` | Not needed: `sets.midcast.DummySong` stays for the whole dummy song (the provided file keeps these copies; they are harmless) |
+| `sets.midcast['Gold Capriccio']`, `['Goblin Gavotte']`, `['Fowl Aubade']`, `['Herb Pastoral']`, `['Shining Fantasia']` | Not needed: `sets.midcast.DummySong` stays for the whole dummy song (the provided file keeps copies of the first four; they are harmless) |
 
 The `range` of `sets.midcast.DummySong` is also what `//gs c songs` and `//gs c dummy`
 use to count slots: if that instrument, in the version you own, grants extra songs,

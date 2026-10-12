@@ -2,7 +2,7 @@
 
 The keybind HUD is the on-screen text box that lists, for the current job, every state-cycling keybind with its key, a short description and the live value of the Mote state it cycles (for example `^numpad9    Hybrid Mode    ● PDT`). It is a single Windower `texts` object, rebuilt from four inputs: the job's keybind module (`<job>/keys/<JOB>_KEYBINDS.lua`, made by `KeybindManager.create`), the player's look options (`UI_CONFIG.lua` `layout` / `colors`, and the job's own `<job>/display/<JOB>_HUD.lua`), a name-pattern classifier that sorts each bind into a section, and the live `state` table. Every job entry file creates it from `user_setup()` through `KeybindUI.smart_init()`. It is repainted from `job_update`, `job_state_change`, the `cyclestate` handler and some job commands; a diff over all state values skips repaints that would change nothing. Position and display flags are saved per character in `data/<char>/saved/ui_settings.lua`, look options in `data/<char>/_common/display/UI_CONFIG.lua`. Users control it with `//gs c ui ...`.
 
-Scope of this page: everything under `shared/utils/ui/` (22 files), the settings store `shared/config/ui_settings.lua`, the loader `shared/utils/config/config_loader.lua` (UI part), the override `shared/utils/core/state_display_override.lua`, the per-character config files (`UI_CONFIG.lua`, `UI_COLOR_CONFIG.lua`, `ui_settings.lua`, `<JOB>_HUD.lua`), and the HUD side of the two optional states (Combat Mode, Treasure Mode). The chat side of the `UI_CONFIG.lua` `chat` block (palette, separators, job tag, width) is owned by [messages.md](messages.md#colours-palette-and-chat-options); the keybind engine by [keybinds-and-custom.md](keybinds-and-custom.md).
+Scope of this page: everything under `shared/utils/ui/` (21 files), the settings store `shared/config/ui_settings.lua`, the loader `shared/utils/config/config_loader.lua` (UI part), the override `shared/utils/core/state_display_override.lua`, the per-character config files (`UI_CONFIG.lua`, `UI_COLOR_CONFIG.lua`, `ui_settings.lua`, `<JOB>_HUD.lua`), and the HUD side of the two optional states (Combat Mode, Treasure Mode). The chat side of the `UI_CONFIG.lua` `chat` block (palette, separators, job tag, width) is owned by [messages.md](messages.md#colours-palette-and-chat-options); the keybind engine by [keybinds-and-custom.md](keybinds-and-custom.md).
 
 Line counts re-measured on 2026-09-28 (`wc -l`); the files trimmed on 2026-10-01 (unused functions removed) were re-measured that day.
 
@@ -30,13 +30,13 @@ Line counts re-measured on 2026-09-28 (`wc -l`); the files trimmed on 2026-10-01
 | `shared/utils/ui/ui_style.lua` | 576 | Player look options from `UI_CONFIG.lua` (`layout`, `colors`, `chat`, `rolls`): checked, cached per `_G.UIConfig` table, one chat warning per wrong value |
 | `shared/utils/ui/ui_style_commands.lua` | 479 | In-game look commands (`//gs c ui gap 3`, `compact`, `chatwidth`, `rollstyle`, `order`...): check, apply live, save |
 | `shared/utils/ui/ui_config_writer.lua` | 179 | Saves one look option into `UI_CONFIG.lua` by rewriting its line only |
-| `shared/utils/ui/hud_job_config.lua` | 208 | A job's own HUD settings, `<Character>/<job>/display/<JOB>_HUD.lua` (section and row order that replace the `UI_CONFIG.lua` defaults on that job); writes the file with its explanation |
+| `shared/utils/ui/hud_job_config.lua` | 211 | A job's own HUD settings, `<Character>/<job>/display/<JOB>_HUD.lua` (section and row order that replace the `UI_CONFIG.lua` defaults on that job); writes the file with its explanation |
 | `shared/config/ui_settings.lua` | 364 | Per-character store: `_G.UI_SETTINGS` plus file I/O (`dofile` / `io.open`). The saved file wins over `UI_CONFIG.lua`, but it keeps a `seed` block, what `UI_CONFIG.lua` said when the two were last lined up: at a load, a setting whose config value no longer matches its seed was changed in `UI_CONFIG.lua` since (by hand, or from the Atelier page) and follows the config, the others keep what the game saved (`follow_config`; a file saved before the seed existed only records it; nothing is done at a load that has not read `UI_CONFIG.lua`). Test: `lua5.1 scripts/atelier/ui_settings_test.lua` |
-| `shared/utils/config/config_loader.lua` | 99 | Installs the require cache, then `load_ui_config(char, job)`: `dofile` of `UI_CONFIG.lua`, fills `_G.UIConfig` and `_G.ui_display_config` |
+| `shared/utils/config/config_loader.lua` | 101 | Installs the require cache, then `load_ui_config(char, job)`: `dofile` of `UI_CONFIG.lua`, fills `_G.UIConfig` and `_G.ui_display_config` |
 | `shared/utils/core/state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (see Interactions) |
 | `shared/utils/core/optional_state.lua` | 149 | `OptionalState.create{...}`: a Mote state the project adds to jobs, with a HUD row and key shown or hidden per job (Combat Mode, Treasure Mode) |
 | `shared/utils/core/optional_state_commands.lua` | 147 | `//gs c <mode> [show\|hide\|key <key>\|help]` for an optional state; rewrites its settings file |
-| `_master/config_global/UI_CONFIG.lua` | 534 | Template for `data/<char>/_common/display/UI_CONFIG.lua` (display defaults, 36 presets, `layout` / `colors` / `chat` / `rolls` blocks) |
+| `_master/config_global/UI_CONFIG.lua` | 537 | Template for `data/<char>/_common/display/UI_CONFIG.lua` (display defaults, 36 presets, `layout` / `colors` / `chat` / `rolls` blocks) |
 | `_master/config_global/UI_COLOR_CONFIG.lua` | 275 | Template for the per-character value-colour overrides |
 | `_master/config_global/ui_settings.lua` | 36 | Starting settings for a new character (position 1600, 300). A re-clone keeps the character's existing file (`clone_character.py` `KEPT_ON_RECLONE`, which also keeps `saved/combat_mode.lua`, `saved/treasure_mode.lua` and `*/display/*_HUD.lua`) |
 
@@ -60,7 +60,7 @@ All sub-modules are loaded with `require`. In the GearSwap sandbox `require` is 
 
 Each job file load builds a new sandbox `_G` (`GearSwap/refresh.lua`), so all of these start empty after `gs reload` or a job change. Three values live on `windower.*` and outlive the sandbox: `windower._ui_live_state` (the live load's `_G.ui_manager_state`; a coroutine scheduled by an older load compares against it and gives up), `windower._hud_virtual_y` (the unclamped Y, see Persistence) and `windower._hud_line_height` (line heights learned per font size, `ui_section_toggles.lua` `learned_heights`). Everything else persists only through files.
 
-The keybind file itself is loaded twice per load under two require paths: the entry file requires `'<Char>/<job>/keys/<JOB>_KEYBINDS'`, the HUD requires `'<job>/keys/<JOB>_KEYBINDS'` (`KeybindLoader.get_job_keybinds`). The module cache keys by path, so these are two module tables, and `KeybindManager.create` runs on each. The first one is the one that lays the keys (`_G._keybind_active`); the HUD draws from the second.
+The keybind file is required by the entry file and by the HUD (`KeybindLoader.get_job_keybinds`) under the same path, `CharPaths.module('job', '<JOB>_KEYBINDS', job)`, i.e. `'<Char>/<job>/keys/<JOB>_KEYBINDS'`. The module cache keys by path, so there is one module table per load and `KeybindManager.create` runs once: the module that lays the keys (`_G._keybind_active`) is the one the HUD draws from.
 
 ### Initialisation (cold load, `gs reload`, main job change)
 
@@ -77,7 +77,7 @@ sequenceDiagram
     GS->>Entry: run file in fresh user_env
     Entry->>CL: require (installs ModuleCache)
     Entry->>CL: load_ui_config(char, JOB)
-    CL->>CL: dofile(CHAR/config/UI_CONFIG.lua) -> _G.UIConfig
+    CL->>CL: dofile(CHAR/_common/display/UI_CONFIG.lua) -> _G.UIConfig
     CL->>CL: require shared/config/ui_settings (reads ui_settings.lua)
     CL->>CL: _G.ui_display_config = persisted flags
     Entry->>Entry: WAR/BST/SMN: require UI_MANAGER at file level
@@ -96,8 +96,8 @@ sequenceDiagram
 ```
 
 1. `ConfigLoader.load_ui_config(char_name, job_name)` runs `dofile` on `<windower>/addons/GearSwap/data/<char>/_common/display/UI_CONFIG.lua`. On failure it substitutes a small table (`init_delay` 5.0, position 1600/300, every flag `true`) and prints `MessageCore.show_config_error(job, 'UIConfig load failed, using defaults')`. It then fills `_G.ui_display_config` from the persisted store.
-2. Load order: every shared entry (`shared/entry/*.lua`, which every character entry includes) requires `config_loader` before `UI_MANAGER`. WAR, BST and SMN require `UI_MANAGER` at file level right after it, the others inside `user_setup()`. The `UI_MANAGER.lua` stub therefore only fills keys missing from a real `UI_CONFIG.lua`; its comment still names WAR/BST/PUP as entries that load it first (stale comment).
-3. `smart_init(job_name, max_wait_time)` bumps `smart_init_id`, then calls `init()` at once if `are_states_ready()`. Otherwise it schedules `try_init` every 0.2 s. A newer `smart_init` (or `JobChangeManager` `cleanup_all_systems`) invalidates the poll, and so does a newer file load (`windower._ui_live_state` no longer its own state table). After `max_wait_time` (= `UIConfig.init_delay`, 5.0 in the template) it calls `init()` anyway. Anchor states (`are_states_ready`): BRD `SongMode`, BLM `MainLightSpell`, BST `Ecosystem`, THF `TreasureMode`, WAR/PLD `HybridMode` (Mote built-in, always present), DNC `MainStep`, RDM `MainLightSpell`, DRG `WeaponSet` (the DRG states define no `WeaponSet`, so DRG waits the full delay), RUN `RuneMode`, GEO `MainIndi`, BLU `MainWeapon`. Every other job counts as ready.
+2. Load order: every shared entry (`shared/entry/*.lua`, which every character entry includes) requires `config_loader` before `UI_MANAGER`. WAR, BST and SMN require `UI_MANAGER` at file level right after it, the others inside `user_setup()`. The `UI_MANAGER.lua` stub therefore only fills keys missing from a real `UI_CONFIG.lua`; the header comment above `compute_defaults` in `shared/config/ui_settings.lua` still names WAR/BST/PUP as entries that load `UI_MANAGER` first (stale comment).
+3. `smart_init(job_name, max_wait_time)` bumps `smart_init_id`, then calls `init()` at once if `are_states_ready()`. Otherwise it schedules `try_init` every 0.2 s. A newer `smart_init` (or `JobChangeManager` `cleanup_all_systems`) invalidates the poll, and so does a newer file load (`windower._ui_live_state` no longer its own state table). After `max_wait_time` (= `UIConfig.init_delay`, 5.0 in the template) it calls `init()` anyway. Anchor states (`are_states_ready`): BRD `SongMode`, BLM `MainLightSpell`, BST `Ecosystem`, THF `TreasureMode`, WAR/PLD `HybridMode` (Mote built-in, always present), DNC `MainStep`, RDM `MainLightSpell`, DRG `WeaponSet` (the DRG states define no `WeaponSet`, so DRG waits the full delay), RUN `RuneMode`, GEO `MainIndi`, BLU `MainWeapon`, SCH `Element`, NIN `MagicBurstMode`, RNG `RangeWeapon`. Every other job counts as ready.
 4. `init()` loads `_G.keybind_saved_settings` once, returns when `_G.ui_display_config.enabled` is false or a display already exists, builds the settings with `create_ui_settings()` (re-reads the store), calls `texts.new`, shows the object and renders once. The first render is **not** wrapped in `pcall`.
 
 ### How the rows are chosen
@@ -140,18 +140,23 @@ The HUD each template produces (running the real classifier over `_master/config
 |---|---|---|---|---|
 | BLM | Main/Sub Light, Dark, Light AOE, Dark AOE, SpellTier, AOETier, Storm | | | HybridMode, CombatMode, MagicBurstMode, DeathMode, SneakInviAOE, KlimaformAOE, AutoMedicine |
 | BLU | | | MainWeapon, SubWeapon | OffenseMode, IdleMode, CastingMode, WeaponskillMode, AutoMedicine |
-| BRD | VictoryMarch, EtudeType, CarolElement, ThrenodyElement ("Song Settings") | BRDSong1-5 ("Song Slots") | MainWeapon, SubWeapon, MainInstrument | IdleMode, EngagedMode, SongMode, MarcatoSong, AutoMedicine |
+| BRD | VictoryMarch, EtudeType, CarolElement, ThrenodyElement ("Song Settings") | BRDSong1-5 ("Song Slots") | MainWeapon, SubWeapon, MainInstrument | IdleMode, EngagedMode, SongMode, MarcatoSong, AutoNitro, AutoMedicine |
 | BST | Ecosystem, species ("Pet Abilities") | | WeaponSet, SubSet | HybridMode, AutoPetEngage, PetIdleMode, AutoMedicine |
 | COR | QuickDraw, MainRoll, SubRoll, LuzafRing ("Rolls & Quick Draw") | | MainWeapon, RangeWeapon | HybridMode, AutoMedicine |
 | DNC | | MainStep, AltStep ("JA") | MainWeapon, SubWeaponOverride | HybridMode, UseAltStep, ClimacticAuto, JumpAuto, Dance, Samba, AutoMedicine |
-| DRK | | | MainWeapon | HybridMode, AutoMedicine |
+| DRG | | | MainWeapon, SubWeapon | OffenseMode, WeaponskillMode, HybridMode, AutoMedicine |
+| DRK | | | MainWeapon | HybridMode, WeaponskillMode, AutoMedicine |
 | GEO | MainIndi, MainGeo, MainLight/DarkSpell, SpellTier, MainLight/DarkAOE, AOETier | | | HybridMode, CombatMode, LuopanMode, IndicolureMode, AutoMedicine |
-| PLD | | | MainWeapon (hidden under /SCH Tanking, `visible`) | HybridMode, Xp (/RDM), RuneMode (/RUN), PhalanxSIRD (`^numpad2`, `^numpad3` under /SCH), Regen (/SCH), SneakInviAOE (/SCH), AutoMedicine |
-| RDM | Storm (/SCH), EnSpell, GainSpell, Barspell, BarAilment, Spike | | MainWeapon, SubWeapon | EngagedMode, IdleMode, CombatMode, EnfeebleMode, NukeMode, SaboteurMode, NukeTier, AutoMedicine |
+| MNK | | | MainWeapon | WeaponskillMode, OffenseMode, HybridMode, AutoMedicine |
+| NIN | | | MainWeapon, SubWeapon | MagicBurstMode, OffenseMode, WeaponskillMode, HybridMode, AutoMedicine |
+| PLD | | WS1, WS2 ("JA") | MainWeapon (hidden under /SCH Tanking, `visible`) | HybridMode, Xp (/RDM), RuneMode (/RUN), PhalanxSIRD (`^numpad2`), Regen (`^numpad3` under /SCH, `^numpad7` under /RUN), AutoMedicine |
+| RDM | Storm (/SCH), EnSpell, GainSpell, Barspell, BarAilment, Spike | | MainWeapon, SubWeapon | EngagedMode, IdleMode, CombatMode, EnfeebleMode, NukeMode, SaboteurMode, EnfeebleTier, NukeTier, AutoMedicine |
+| RNG | | | MainWeapon, RangeWeapon, SubWeapon | RangedMode, HybridMode, OffenseMode, WeaponskillMode, AutoMedicine |
 | RUN | | | MainWeapon, SubWeapon | HybridMode, RuneMode, AutoMedicine |
-| SAM | | | MainWeapon | HybridMode, AutoMedicine |
+| SAM | | | MainWeapon | OffenseMode, WeaponskillMode, HybridMode, AutoMedicine |
+| SCH | Element, NukeTier (`section = "spell"`) | | MainWeapon, SubWeapon | MagicBurstMode, SneakInviAOE, OffenseMode, CombatMode, HybridMode, AutoMedicine |
 | THF | | | MainWeapon, SubWeapon, AbyProc (/WAR), AbyWeapon (/WAR) | HybridMode, TreasureMode, RangeLock, AutoMedicine |
-| WAR | | WS1-WS5 ("Weapon Skills") | MainWeapon | HybridMode, JumpAuto, AutoMedicine |
+| WAR | | WS1-WS5 ("Weapon Skills") | MainWeapon | HybridMode, JumpAuto (/DRG), AftermathSet (`visible`), AutoMedicine |
 | WHM | | | | CureMode, IdleMode, AfflatusMode, CureAutoTier, CombatMode, CastingMode, AutoMedicine |
 | PUP | | | MainWeapon | OffenseMode, HybridMode, PetMode, PetWS (`section = "mode"`), AutoMedicine |
 | SMN | | | | IdleMode, CastingMode, AvatarFavor, AutoMedicine |
@@ -161,7 +166,7 @@ The HUD each template produces (running the real classifier over `_master/config
 Two Mote states are added by the project, not by the job files: `CombatMode` (`Off`/`On`, locks main/sub/range; `shared/utils/core/combat_mode.lua`) and `TreasureMode` (`Off`/`Tag`/`Full`, Treasure Hunter gear; `shared/utils/equipment/treasure_hunter.lua`). Both are built on `OptionalState.create{id, state, description, values, file, default_key, on_attach?}`:
 
 - **Attach**. `KeybindManager.create(job, module)` calls `CombatMode.attach(job, module.binds)` then `TreasureHunter.optional.attach(job, module.binds)` before the custom states and common keys are merged. `attach` records once per load whether the job's own STATES file defined the state (`_G._<id>_native`; the first attach wins because the HUD's second require sees the state already created), creates `state.<State> = M{description, values...}` when missing, reuses the job's own bind for that state or appends `{key = default_key, command = 'cyclestate <State>', desc, state}`, applies the per-job key from settings, and wraps `entry.visible` so the row and key exist only while `is_shown(job)` (and the bind's own `visible`, if any) is true. Default keys: Combat Mode `!numpad0`, Treasure Mode `!numpad.`. Right after them `KeybindManager.create` calls `AutoJump.attach(job, module.binds)`, which is not an optional state: it creates `state.JumpAuto` (Off) when missing and appends a `!numpad-` row when the job has none, with `subjob = 'DRG'`, so the Jump Auto row shows on /DRG only on every job.
-- **Shown or not** (`is_shown(job)`): `hidden[job]` -> no; `shown[job]` or (`shown.all` and not `hidden.all`) -> yes; `hidden.all` -> no; otherwise yes only when the job defines the state natively. Natively: Combat Mode on BLM, GEO, RDM, WHM; Treasure Mode on THF. So on every other job the state exists (value `Off`) but has no row and no key.
+- **Shown or not** (`is_shown(job)`): `hidden[job]` -> no; `shown[job]` or (`shown.all` and not `hidden.all`) -> yes; `hidden.all` -> no; otherwise yes only when the job defines the state natively. Natively: Combat Mode on BLM, GEO, RDM, SCH, WHM; Treasure Mode on THF. So on every other job the state exists (value `Off`) but has no row and no key.
 - **Settings file**: `<Char>/saved/combat_mode.lua` / `treasure_mode.lua`, `return {shown = {JOB = true}, hidden = {...}, keys = {JOB = '!f10', all = '~f9'}}`; job codes are upper-cased on read, `ALL` / `all` accepted. Read once per load (`_G._<id>_settings`) from `read_path()`: `saved/`, else `_common/keys/`, where the file was until 2026-10-10; it is written to `saved/`.
 - **Commands** (`OptionalStateCommands.create`): `//gs c combatmode` / `//gs c th` (status InfoBlock: Shown, mode fields, Key), `... show`, `... hide` (also resets the state to its first value), `... key <key>|none` (validated by `key_validator.is_valid_key`), `... help` (HelpScreen); `th clear` forgets tagged mobs. Each command rewrites the whole settings file with its explanatory header, then `KeybindManager.refresh_active()`, `Display.update_display()` and `gs c update`, so the HUD row appears or disappears at once.
 
@@ -182,7 +187,7 @@ flowchart TD
     I --> J["_G.keybind_ui_display:text(str)"]
 ```
 
-**Keybind source** (`KeybindLoader.get_job_keybinds(job)`): `pcall(require, '<job>/keys/<JOB>_KEYBINDS')`. GearSwap's `pathsearch` checks `data/<player.name>/` first, so each character reads its own file. Every job keybind file goes through `KeybindManager.create`, so the loader uses `get_active_binds()`; the `.binds` branch only serves a file that does not. A require error is swallowed (returns nil, then the fallback: hard-coded COR and GEO lists, else `{}`).
+**Keybind source** (`KeybindLoader.get_job_keybinds(job)`): `pcall(require, CharPaths.module('job', '<JOB>_KEYBINDS', job))`, i.e. `'<Char>/<job>/keys/<JOB>_KEYBINDS'`: the character's name is in the path, so each character reads its own file. Every job keybind file goes through `KeybindManager.create`, so the loader uses `get_active_binds()`; the `.binds` branch only serves a file that does not. A require error is swallowed (returns nil, then the fallback: hard-coded COR and GEO lists, else `{}`).
 
 **Widths** are measured on the rows a section actually draws (`shown_rows`). The value column width comes from **every** possible value of every shown state (`StateValue.get_all_state_values`, `UIFormatter.calculate_value_column_width`), so the box keeps a fixed width when a value changes. Content width = the longest candidate line plus margins (`calculate_content_width`; in exact geometry it counts displayed columns via `UIStyle.display_len`, otherwise bytes).
 
@@ -190,7 +195,7 @@ flowchart TD
 
 **Value reading** (`StateValue.get_state_value(name, key)`): `BRDSong<n>` returns `.current` / `.value`, or `"Empty"`. A missing state returns `"N/A"`. A table returns `.current`, else `:display()`, else `tostring(.value)`. A plain boolean goes through `tostring`.
 
-**Header and footer**: `UIFormatter.create_header` prints (when `show_header`) a black-background margin line, the centred title (`job_titles`, which falls back to `"<JOB> Settings"` for DRK/SAM/WHM/PUP/SMN), an `=` separator in `colors.separator`, and when `show_legend` is set and `key_style` is not `words`, the legend lines (`layout.legend`, default `^ = Ctrl`, `! = Alt`, `@ = Windows`, `~ = Shift`; up to 8 texts). The legend is part of the header, so hiding the header also hides it. The footer (`UISections.render_commands_footer`, when `show_footer`) is a separator plus a centred `//gs c ui`.
+**Header and footer**: `UIFormatter.create_header` prints (when `show_header`) a black-background margin line, the centred title (`job_titles`, which falls back to `"<JOB> Settings"` for DRK/SAM/WHM/PUP/SMN/MNK), an `=` separator in `colors.separator`, and when `show_legend` is set and `key_style` is not `words`, the legend lines (`layout.legend`, default `^ = Ctrl`, `! = Alt`, `@ = Windows`, `~ = Shift`; up to 8 texts). The legend is part of the header, so hiding the header also hides it. The footer (`UISections.render_commands_footer`, when `show_footer`) is a separator plus a centred `//gs c ui`.
 
 **Colours** (`ColorSystem.get_value_color(value, description)`), first match wins:
 1. The description contains `Gain`: the stat inside the value picks an element colour (unknown stats fall back to red).
@@ -201,14 +206,14 @@ flowchart TD
 6. Exact literals: `true/True/On/on` green, `false/False/Off/off` red, `unknown/Unknown/N/A` grey.
 7. Otherwise white. `colors.value` in `UI_CONFIG.lua`, when set, replaces all of this with one colour.
 
-At module load `COLOR_SYSTEM.lua` requires `<player.name>/config/UI_COLOR_CONFIG` and converts its `{r,g,b}` triples into `\cs(r,g,b)` overrides.
+At module load `COLOR_SYSTEM.lua` loads the character's `_common/display/UI_COLOR_CONFIG` (`CharPaths.load('common', 'UI_COLOR_CONFIG')`) and converts its `{r,g,b}` triples into `\cs(r,g,b)` overrides.
 
 ### Update triggers
 
 | Trigger | Path |
 |---|---|
 | `job_update` (every `gs c update`, Mote `handle_cycle` and CycleHandler -> `handle_update({'auto'})`, Mote `sub_job_change` -> `gs c update`) | every entry file's `job_update` calls `KeybindUI.update()`; BRD refreshes the song slots first |
-| `job_state_change` via `LifecycleManager.state_change` (ignores `Moving`) | BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RUN, SAM, SMN, THF `*_COMMANDS.lua` |
+| `job_state_change` via `LifecycleManager.state_change` (ignores `Moving`) | BLU, BRD, BST, COR, DNC, DRG, DRK, GEO, MNK, NIN, PLD, PUP, RNG, RUN, SAM, SCH, SMN, THF `*_COMMANDS.lua` |
 | Jobs' own `job_state_change` | `RDM_COMMANDS.lua`, `WAR_COMMANDS.lua`, `WHM_COMMANDS.lua`; BLM through its local `update_ui` helper (`BLM_COMMANDS.lua`) |
 | `cyclestate` keybinds while the HUD reports visible | `shared/utils/core/CYCLE_HANDLER.lua`, after the `job_update` above |
 | THF `range` | `RangeLock.engage()` (`shared/jobs/thf/functions/logic/range_lock.lua`) |
@@ -232,14 +237,14 @@ flowchart LR
     KSS --> KS["KeybindSettings.save"]
     KS --> SET["UISettings.set_* (up to 9)"]
     SET --> GUS["_G.UI_SETTINGS (flat)"]
-    SET --> FILE["io.open(data/PLAYER/config/ui_settings.lua, 'w')"]
+    SET --> FILE["io.open(data/PLAYER/saved/ui_settings.lua, 'w')"]
     FILE -. "next load: dofile" .-> GUS
     GUS --> LOAD["KeybindSettings.load -> create_ui_settings -> texts.new"]
     LOOK["//gs c ui gap / chatwidth / order all ..."] --> W["UIConfigWriter.set -> UI_CONFIG.lua (one line)"]
     ORD["//gs c ui order / roworder (this job or JOB)"] --> HJ["HudJobConfig.set_list -> job/display/JOB_HUD.lua"]
 ```
 
-- `ui_settings.lua`: `windower.addon_path .. 'data/' .. player.name .. '/config/ui_settings.lua'`, a `return { ... }` literal with all 19 keys, written whole by `save_to_file`. A write failure is reported through `MessageFormatter.show_error`. At module load the file always wins; if it is missing, `_G.UI_SETTINGS` is seeded from `compute_defaults()` (values from `_G.UIConfig` at that moment) and written at once.
+- `ui_settings.lua`: `CharPaths.writable('saved', 'ui_settings.lua')` (`<Char>/saved/ui_settings.lua`), a `return { ... }` literal with all 19 keys plus a `seed` block (the same 19 keys, as `UI_CONFIG.lua` gave them when the two were last lined up), written whole by `save_to_file`. A write failure is reported through `MessageFormatter.show_error`. At module load the file is read first and wins, except for a setting whose `UI_CONFIG.lua` value no longer matches its seed: that one takes the config value and the file is rewritten (`follow_config`; only at a load that has read `UI_CONFIG.lua`, and a file without `seed` only gets one). If the file is missing, `_G.UI_SETTINGS` is seeded from `compute_defaults()` (values from `_G.UIConfig` at that moment) and written at once.
 - Every `UISettings.set_*` rewrites the whole file; `KeybindSettings.save` calls up to nine setters, so one command can write the file nine times.
 - Boolean defaults inside the store: `enabled`, `show_legend`, `bg_visible`, `section_*` default to true (`~= false`); `show_header`, `show_column_headers`, `show_footer` default to false (`== true`). The `UI_MANAGER` stub (nil means true) and the `config_loader` fallback (all true) use other defaults.
 - Position: saved as drawn (`ui_visibility.lua` `save_position_internal`; `create_ui_settings` reads it back as is, default 1600/300). A header, legend or column-header toggle moves the box by the height it adds or removes, so the key rows stay put, and saves the new position (`ui_section_toggles.lua` `toggle_top_section`); when Windower has not re-measured yet the shift is line count times a learned line height, corrected 0.15 s later (`SETTLE_DELAY`). Near the top of the screen Y can go negative: the box is drawn at 0 and the unclamped value is kept in `windower._hud_virtual_y`. Dragging with the mouse (`texts` `draggable` flag) is **not** saved automatically; `//gs c ui s` and the section toggles save.
@@ -298,7 +303,7 @@ Callers were found with `grep -r` over `shared/`, `_master/`, `Tetsouo/` and `Ka
 |---|---|---|
 | `Display.update_display()` (`ui_display.lua`) | Full render into `_G.keybind_ui_display`; no-op without a display. No diff | lifecycle, visibility, section toggles, style commands, orchestrator, `keybind_manager.lua` `redraw_hud`, `optional_state_commands.lua` |
 | `Display.get_current_job_keybinds()` | Loader chain (job file, fallback, BRD slots); `{}` when nothing | `update_display` |
-| `KeybindLoader.get_job_keybinds(job)` | `require('<job>/keys/<JOB>_KEYBINDS')`, `get_active_binds()` or `.binds`, else nil | `ui_display.lua`, `UI_DISPLAY_BUILDER.lua` |
+| `KeybindLoader.get_job_keybinds(job)` | `require` of `CharPaths.module('job', '<JOB>_KEYBINDS', job)` (`<Char>/<job>/keys/<JOB>_KEYBINDS`), `get_active_binds()` or `.binds`, else nil | `ui_display.lua`, `UI_DISPLAY_BUILDER.lua` |
 | `KeybindLoader.get_fallback_keybinds(job)` | Hard-coded COR and GEO lists, else `{}` | same |
 | `KeybindLoader.add_job_specific_elements(job, binds)` | Copy + BRD slot rows | same |
 | `UIDisplayBuilder.build_display_structure(job)` | `{spell_keys, ja_keys, weapon_keys, mode_keys, enhancing_keys?}` | `ui_display.lua` |
@@ -332,7 +337,7 @@ Callers were found with `grep -r` over `shared/`, `_master/`, `Tetsouo/` and `Ka
 | `UIConfigWriter.set(block, name, value)` -> `saved, err`; `.to_lua(value)`; `.path()` | Line-level rewrite of `UI_CONFIG.lua` | `ui_style_commands.lua` |
 | `HudJobConfig.path(job)`, `.get(job)`, `.list(job, field)`, `.row_order(job)`, `.section_order(job)` | Read `<JOB>_HUD.lua` (cached per job and load; an empty list means "use the default") | `ui_style.lua`, `ui_style_commands.lua` |
 | `HudJobConfig.render(job, data, keybinds_path)`, `.set_list(job, field, list)` -> `saved, err` | Write the file whole, keeping the other list | `ui_style_commands.lua` |
-| `UICommands.handle_ui_command(cmdParams)`, `.is_ui_command(cmd)` | Dispatcher | every job's `*_COMMANDS.lua` (17 files) |
+| `UICommands.handle_ui_command(cmdParams)`, `.is_ui_command(cmd)` | Dispatcher | every job's `*_COMMANDS.lua` (22 files) |
 | `StateDisplayOverride.init()` | Installs `_G.display_current_state` | `INIT_SYSTEMS.lua`, deferred 0.5 s |
 | `OptionalState.create(cfg)` -> `{settings_path, read_path, settings, is_shown(job), value, entry, attach(job, binds)}` | See Optional states | `combat_mode.lua`, `treasure_hunter.lua` |
 | `OptionalStateCommands.create(cfg)` -> `{handle(args)}` | See Optional states | `combat_mode_commands.lua`, `treasure_commands.lua` |
@@ -372,10 +377,10 @@ Related commands outside `ui`: `//gs c combatmode ...` and `//gs c th ...` (opti
 
 | Key | Template value | Read by |
 |---|---|---|
-| `enabled`, `show_header`, `show_legend`, `show_column_headers`, `show_footer` | true, false, true, false, false | only as `compute_defaults` input (settings file missing or lacking a key). At runtime the persisted values win |
-| `default_position {x,y}` | 1600, 300 (the code's own default, since 2026-09-30) | the same, defaults only |
-| `text.size`, `text.font` | 10, Consolas | defaults only. `text.stroke` is passed straight to `texts.new` on every init |
-| `background {r,g,b,a,visible}` | 15,15,35,180,true | defaults. `toggle_background` also flips `background.visible` at runtime |
+| `enabled`, `show_header`, `show_legend`, `show_column_headers`, `show_footer` | true, false, true, false, false | `compute_defaults` input: used when the settings file is missing or lacks a key, and compared with the file's `seed` at each load (a value changed here since then replaces the saved one, `follow_config`). Otherwise the persisted values win |
+| `default_position {x,y}` | 1600, 300 (the code's own default, since 2026-09-30) | the same |
+| `text.size`, `text.font` | 10, Consolas | the same. `text.stroke` is passed straight to `texts.new` on every init |
+| `background {r,g,b,a,visible}` | 15,15,35,180,true | the same. `toggle_background` also flips `background.visible` at runtime |
 | `background_presets` | 36 named presets | `UI_COMMANDS.lua`, `set_background_preset`, `show_theme_list` |
 | `flags {draggable, bold}` | true, true | passed to `texts.new` |
 | `sections {spells, enhancing, job_abilities, weapons, modes}` | all true | `UI_SECTIONS.lua`, through the table captured when the module loads |
@@ -406,9 +411,9 @@ Related commands outside `ui`: `//gs c combatmode ...` and `//gs c th ...` (opti
 
 ### `data/<char>/saved/ui_settings.lua` (auto-generated)
 
-Keys: `pos_x, pos_y, enabled, show_header, show_legend, show_column_headers, show_footer, bg_r, bg_g, bg_b, bg_a, bg_visible, font_size, font_name, section_spells, section_enhancing, section_job_abilities, section_weapons, section_modes`. The `section_*` keys are written but never read by the renderer. `font_size` has no command. A first clone copies the template (position 1600, 300); a re-clone keeps the character's own file.
+Keys: `pos_x, pos_y, enabled, show_header, show_legend, show_column_headers, show_footer, bg_r, bg_g, bg_b, bg_a, bg_visible, font_size, font_name, section_spells, section_enhancing, section_job_abilities, section_weapons, section_modes`, plus the `seed` table (the same 19 keys as `UI_CONFIG.lua` last gave them; not in the template, written at the first load that has read `UI_CONFIG.lua`). The `section_*` keys are written but never read by the renderer. `font_size` has no command. A first clone copies the template (position 1600, 300); a re-clone keeps the character's own file.
 
-### `data/<char>/<job>/<JOB>_HUD.lua` (written by `ui order` / `roworder`)
+### `data/<char>/<job>/display/<JOB>_HUD.lua` (written by `ui order` / `roworder`)
 
 `return {section_order = {...}, row_order = {...}}` with an explanatory header and the job's state names as a comment. An empty or missing list means the `UI_CONFIG.lua` default. Kept on re-clone.
 
@@ -439,7 +444,7 @@ Binds whose `desc` contains `←` are dropped.
 
 - Sandbox `_G` globals: see "Module instances and shared state". Also read: `_G.state`, `player`, `_G.update_brd_song_slots` (BRD `song_rotation_manager.lua`).
 - `windower.*`: `_ui_live_state`, `_hud_virtual_y`, `_hud_line_height`. They survive job changes and `gs reload`, and are reset by `//lua reload gearswap`.
-- Files: `UI_CONFIG.lua` (dofile, every load; line-rewritten by look commands), `ui_settings.lua` (dofile at module load, rewritten on each setter), `UI_COLOR_CONFIG.lua` (require at `COLOR_SYSTEM` load), `<JOB>_HUD.lua` (read once per job and load; rewritten by order commands), `combat_mode.lua` / `treasure_mode.lua` (read once per load), `<job>/keys/<JOB>_KEYBINDS.lua` (require; cached per path).
+- Files: `UI_CONFIG.lua` (dofile, every load; line-rewritten by look commands), `ui_settings.lua` (dofile at module load, rewritten on each setter and at a load where a setting followed `UI_CONFIG.lua`), `UI_COLOR_CONFIG.lua` (require at `COLOR_SYSTEM` load), `<JOB>_HUD.lua` (read once per job and load; rewritten by order commands), `combat_mode.lua` / `treasure_mode.lua` (read once per load), `<job>/keys/<JOB>_KEYBINDS.lua` (require; cached per path).
 - Events: none registered. Text objects: at most one per environment (the `init()` guard), deleted by GearSwap on every file load.
 
 ## Interactions
@@ -466,7 +471,7 @@ Binds whose `desc` contains `←` are dropped.
 
 **Add a HUD row for a new state**
 1. Create the state in the job's STATES module (or `<JOB>_CUSTOM.lua` for player states).
-2. Add `{key = "^numpadN", command = "cyclestate MyState", desc = "My State", state = "MyState"}` to `<job>/keys/<JOB>_KEYBINDS.lua` in `_master/config/` and in each live character folder that plays the job (`Tetsouo/`, `Kaories/`; gitignored, so `grep -r`, not ripgrep, finds them). Keep the key unique in the file.
+2. Add `{key = "^numpadN", command = "cyclestate MyState", desc = "My State", state = "MyState"}` to `_master/config/<job>/<JOB>_KEYBINDS.lua` (templates are flat) and to `<job>/keys/<JOB>_KEYBINDS.lua` in each live character folder that plays the job (`Tetsouo/`, `Kaories/`; gitignored, so `grep -r`, not ripgrep, finds them). Keep the key unique in the file.
 3. Check the bucket with the pattern table: if the name matches the wrong bucket (substring, mode first), add `section = 'spells'` etc. to the entry rather than a new broad pattern. Only add a pattern to `UI_DISPLAY_BUILDER.lua` `categorization_rules` when a whole family of names needs it, and re-check every existing state name against it.
 4. For a row that should appear only sometimes, use `subjob` / `exclude_subjob` (fixed per load), `weapon`, `alt`, or `visible = function() ... end` (state-dependent; must not error).
 5. If the job's states are created after `user_setup` starts, add an anchor in `ui_lifecycle.lua` `are_states_ready`. Optionally add a title to `UI_FORMATTER.lua` `job_titles` and a section title in `get_section_title`.
@@ -483,7 +488,7 @@ Binds whose `desc` contains `←` are dropped.
 **Traps**
 - The first render is unprotected (see Invariants): a bind row that raises there breaks the job load. `KeybindManager.create` gives every row without `desc` its state or command as `desc` (2026-09-28), which removes the known case.
 - Lifetimes: sandbox `_G` is rebuilt on every load; only `windower.*` persists. Coroutines are never cancelled by GearSwap: every scheduled UI callback must check `windower._ui_live_state` or a cancel id.
-- Two module tables per keybind file (two require paths): code that mutates a bind entry after load changes only one of them.
+- One module table per keybind file and load (the entry and the HUD require the same path): a bind entry mutated after load is the one both the keys and the HUD use.
 - `toggle` persists; `show` / `hide` do not.
 - The diff in `update()` sees only `_G.state`; anything else needs a direct `Display.update_display()`.
 - Live character folders are gitignored: ripgrep and the IDE search skip them. Use `grep -r` before calling a function dead or a file unused.
@@ -494,7 +499,7 @@ Open:
 
 - Fixed 2026-09-28: a keybind without `desc` made the first render throw inside `user_setup()` and aborted the job load; `KeybindManager.create` now fills `desc` from the state or the command.
 - Fixed 2026-09-28: RUN's HUD readiness anchor was `RuneElement` (no such state, the HUD waited 5 s); it is `RuneMode`.
-- `//gs c combatmode key` / `//gs c th key` update the entry of the last `attach` (the HUD's module), while the keys are laid from the first module (`_G._keybind_active`); the new key may be drawn in the HUD but bound only after a reload (`optional_state.lua` `attach`, `optional_state_commands.lua` `set_key`; not checked in game).
+- `//gs c combatmode key` / `//gs c th key`: the issue noted here before (the entry updated was the HUD's module, not the one the keys are laid from) assumed two module tables per keybind file. The entry and the HUD require the same path, so `attach` runs once per load and `set_key` updates the entry of the module in `_G._keybind_active` (`optional_state.lua` `attach`, `optional_state_commands.lua` `set_key`; not checked in game).
 - `section_*` settings are persisted but never read, and `UIConfig.sections` is captured when `UI_SECTIONS.lua` loads (`shared/config/ui_settings.lua` `save_to_file`).
 - `toggle_background` flips `UIConfig.background.visible`, not the persisted `bg_visible` (`ui_appearance.lua` `toggle_background`).
 - `KeybindSettings.save` rewrites the settings file up to nine times per command (`UI_SETTINGS.lua`).
@@ -503,7 +508,7 @@ Open:
 - `UI_CONFIG.lua` has keys nothing reads (`auto_save_position`, `auto_save_delay`, `debug`, `update_throttle`), and `validate` has no callers.
 - In `UI_COLOR_CONFIG.lua`, `bar_spells.ailment` and `special.default` have no effect (`COLOR_SYSTEM.lua`).
 - The standard legend explains `^ ! @ ~` but not `#` (Apps), the modifier of the common `#numpad0` AutoMedicine bind; `layout.legend` can add it (`ui_style.lua` `DEFAULT_LEGEND`).
-- `UI_MANAGER.lua` comments still say WAR/BST/PUP require it before `config_loader`; no entry does any more.
+- The header comment above `compute_defaults` in `shared/config/ui_settings.lua` still says WAR/BST/PUP require `UI_MANAGER` before `config_loader`; no entry does any more (the `UI_MANAGER.lua` comment now says every entry requires `config_loader` first).
 
 Fixed (kept here so an audit does not re-report them):
 

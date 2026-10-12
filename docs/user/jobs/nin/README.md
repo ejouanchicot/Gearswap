@@ -51,8 +51,8 @@ the job.
 | `!numpad7` | Your other boxes follow you (common key) | always | yes |
 | `!numpad8` | Other boxes' automation on / off (common key) | always | yes |
 | `!numpad9` | Other boxes mirror you (common key) | always | yes |
-| `!z` | Sneak on you and every other box (common key): Spectral Jig on /DNC, else Monomi | always | yes |
-| `!x` | Invisible on you and every other box (common key): Spectral Jig on /DNC, else Tonko | always | yes |
+| `!z` | Sneak on you and every other box (common key): Spectral Jig on /DNC, else the Sneak spell when you can cast it, else Monomi | always | yes |
+| `!x` | Invisible on you and every other box (common key): Spectral Jig on /DNC, else the Invisible spell when you can cast it, else Tonko | always | yes |
 | `f9` | Mote: cycle Offense Mode (same as `^numpad4`) | always | not on the HUD |
 | `^f9` | Mote: cycle Hybrid Mode (same as `^numpad9`) | always | not on the HUD |
 | `@f9` | Mote: cycle WS Mode (same as `^numpad5`) | always | not on the HUD |

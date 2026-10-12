@@ -1,8 +1,8 @@
 # COR (Corsair) job
 
-The COR job area is 11 hook modules, the facade and 8 logic modules under
-`shared/jobs/cor/functions/` (3 396 lines, facade included), one entry point
-per character, eight config files and one sets file. GearSwap loads it when the
+The COR job area is 11 hook modules, the facade and 10 logic modules under
+`shared/jobs/cor/functions/` (3 384 lines, facade included), one entry point
+per character, nine config files and one sets file. GearSwap loads it when the
 main job becomes COR; from then on Mote-Include calls its hooks on every
 action, on status and buff changes, on `//gs c` commands and on state cycles,
 and two raw Windower events registered by COR watch the packet stream.
@@ -72,6 +72,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/cor/COR_HUD.lua` | 31 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/cor/COR_LOCKSTYLE.lua` | 51 | `default = 3`, `by_subjob`, `get_style` |
 | `_master/config/cor/COR_MACROBOOK.lua` | 68 | Book 3 page 1; `dualbox` commented; unused `get_macrobook` |
+| `_master/config/cor/COR_CONFIG.lua` | 16 | The job's own settings, read through `JobConfig` (`refresh_mp_below = 50`) |
 | `_master/config/cor/COR_TP_CONFIG.lua` | 61 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
 | `_master/config/cor/COR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/cor_sets.lua` | 443 | Template sets (flat; `sets.SingleWield` as a commented example) |
@@ -84,12 +85,12 @@ function; line numbers are given only where no function name fits.
 | `shared/data/job_abilities/COR_JA_DATABASE.lua` | 21 | Factory with the roll modules |
 
 Character overlays: `_master/<Character>/config/cor/COR_REFILL.lua` for the
-characters that ship refill lists, and one full overlay (`cor/*`,
-`cor/sets/cor_sets.lua`) that adds a `RangedMode` (`Normal`, `Acc`) with a
-`^numpad7` key and Quick Draw damage sets. Its headers still say
-`@author Tetsouo`. No overlay has an entry since 2026-09-30: every character
+characters that ship refill lists, and two full overlays (`config/cor/*`,
+`sets/cor_sets.lua`): one adds a `RangedMode` (`Normal`, `Acc`) with a
+`^numpad7` key and Quick Draw damage sets, the other a `RangedMode` of five
+values on `!f9`. No overlay has an entry since 2026-09-30: every character
 runs `shared/entry/cor.lua`. Live folders are gitignored; the author's live COR
-uses the modular `cor/{cor_sets,armor,capes,weapons}.lua`. The templates stay
+uses the modular `cor/sets/{cor_sets,armor,capes,weapons}.lua`. The templates stay
 flat on purpose: a modular tree `require`s its parts by a path that names the
 character.
 
@@ -433,14 +434,15 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/cor/COR_STATES.lua` | see states | entry `user_setup` |
-| `<char>/cor/COR_KEYBINDS.lua` | 7 binds | entry `user_setup`, `file_unload`, KeybindGuard |
-| `<char>/cor/COR_CUSTOM.lua` | nothing active | `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/cor/COR_HUD.lua` | empty lists | HUD section / row order |
-| `<char>/cor/COR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (factory fallback 1) | `LockstyleManager` via `get_style` |
-| `<char>/cor/COR_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 3 page 1 (factory fallback book 1) | `MacrobookManager` (`get_macrobook` is not called) |
-| `<char>/cor/COR_TP_CONFIG.lua` -> `_G.CORTPConfig` | Moonshade 250; `ranged_weapons` | `TPBonusCalculator` through `get_weapon_bonus`, called with the main, sub and ranged weapons (`tp_bonus_handler.lua` `calculate_tp_gear`): the gun's TP Bonus counts on every weaponskill |
-| `<char>/cor/COR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | refill system |
+| `<char>/cor/keys/COR_STATES.lua` | see states | entry `user_setup` |
+| `<char>/cor/keys/COR_KEYBINDS.lua` | 7 binds | entry `user_setup`, `file_unload`, KeybindGuard |
+| `<char>/cor/keys/COR_CUSTOM.lua` | nothing active | `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/cor/display/COR_HUD.lua` | empty lists | HUD section / row order |
+| `<char>/cor/display/COR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (factory fallback 1) | `LockstyleManager` via `get_style` |
+| `<char>/cor/display/COR_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 3 page 1 (factory fallback book 1) | `MacrobookManager` (`get_macrobook` is not called) |
+| `<char>/cor/combat/COR_CONFIG.lua` `refresh_mp_below` | 50 | `logic/set_builder.lua` `build_idle_set`, through `JobConfig.get('COR', 'refresh_mp_below', 50)` |
+| `<char>/cor/combat/COR_TP_CONFIG.lua` -> `_G.CORTPConfig` | Moonshade 250; `ranged_weapons` | `TPBonusCalculator` through `get_weapon_bonus`, called with the main, sub and ranged weapons (`tp_bonus_handler.lua` `calculate_tp_gear`): the gun's TP Bonus counts on every weaponskill |
+| `<char>/cor/inventory/COR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | refill system |
 | `<char>/_common/combat/RECAST_CONFIG.lua` `party_announce['Phantom Roll']` | none | `recast_announce.lua` |
 | `<char>/_common/display/UI_CONFIG.lua` `rolls` block | full style, remote `same`, every detail on (template lines commented) | `roll_messages.lua` (`//gs c ui roll...`) |
 | Constants | duplicate window 0.5 s, Crooked window 60 s, Double-Up window 45 s, party TTL 600 s, `ROLL_MAX_DURATION` 600 s, `HOLD_MAX` 5 s, pouch threshold 15 | `roll_tracker.lua` (`is_duplicate_report`, `crooked_applies`), `roll_display.lua` (`display_double_up_status`), `roll_party.lua` (`drop_departed_and_expired`), `roll_hold.lua`, `COR_AFTERCAST.lua` |
@@ -583,8 +585,6 @@ In game: `//gs c rolldebug` (per-roll gear report and `<Character>/logs/rolls/ro
   commands answer first).
 - `COR_MOVEMENT.lua` and `COR_BUFFS.lua` export to `_G` only, with no module
   `return` (the project's dual-export rule: `_G.x = x` and a returned table).
-- The `COR_TP_CONFIG.lua` comment says the handler passes the main weapon
-  only; it passes main and sub.
 - No `sets.idle.Town` in the template: other cities count as field.
 - Dead code: `_G.cor_natural_eleven_active` (written, never read),
   `clear_natural_eleven` / `clear_last_roll` outside

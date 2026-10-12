@@ -51,7 +51,7 @@ your own in `BLU_CUSTOM.lua`.
 ## How Blue Magic picks its gear
 
 Each Blue Magic spell belongs to a category in your `BLU_SPELL_MAP.lua`
-(`PhysicalDex`, `Magical`, `MagicAccuracy`, `Healing`, `Buff`... 24 in the
+(`PhysicalDex`, `Magical`, `MagicAccuracy`, `Healing`, `Buff`... 26 in the
 template, every spell of the game listed). A spell missing from your file
 takes a broad category (`Physical`, `Magical`, `Buff`...) instead. The spell then wears, the first that exists:
 

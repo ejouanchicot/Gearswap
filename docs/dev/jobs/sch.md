@@ -1,8 +1,8 @@
 # SCH (Scholar) job
 
 SCH was added on 2026-09-29. It is a thin mage job built on the shared
-systems: 12 hook modules plus 4 logic modules under `shared/jobs/sch/functions/`,
-a template entry point, seven config files and one sets file. GearSwap loads it
+systems: 11 hook modules and their facade plus 4 logic modules under `shared/jobs/sch/functions/`,
+a template entry point, eight config files and one sets file. GearSwap loads it
 when the main job becomes SCH (the entry file `<Character>_SCH.lua`, one `include` of `shared/entry/sch.lua`, copied from
 `_master/entry/Tetsouo_SCH.lua` by the clone script, which offers SCH).
 
@@ -43,8 +43,8 @@ What SCH adds on top of the shared pipeline:
 | `shared/jobs/sch/functions/SCH_BUFFS.lua` | 24 | `LifecycleManager.buff_change` + `refresh_after_buff` (Sublimation) |
 | `shared/jobs/sch/functions/SCH_COMMANDS.lua` | 176 | `job_self_command` router + job commands, `job_state_change` |
 | `shared/jobs/sch/functions/SCH_MOVEMENT.lua` | 16 | Header only, kept for the 12-module layout |
-| `shared/jobs/sch/functions/SCH_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('SCH', 'sch/display/SCH_LOCKSTYLE', 1, 'RDM')` |
-| `shared/jobs/sch/functions/SCH_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('SCH', 'sch/display/SCH_MACROBOOK', 'RDM', 1, 1)` |
+| `shared/jobs/sch/functions/SCH_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('SCH', 'config/sch/SCH_LOCKSTYLE', 1, 'RDM')` |
+| `shared/jobs/sch/functions/SCH_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('SCH', 'config/sch/SCH_MACROBOOK', 'RDM', 1, 1)` |
 | `shared/jobs/sch/functions/logic/grimoire.lua` | 136 | Arts in force (addendum first), precast / midcast layer lists |
 | `shared/jobs/sch/functions/logic/spell_tiers.lua` | 47 | Tier families for `TierRefiner` |
 | `shared/jobs/sch/functions/logic/spell_commands.lua` | 106 | Element -> nuke / helix / storm names, `cast`, the `strat` block |
@@ -159,7 +159,8 @@ defense / Kiting layers, `lay_weapons`, and `apply_movement` outside a city.
 `buff_change`).
 
 `build_engaged_set`: `sets.engaged`, `[OffenseMode]` when defined, `.DT` under
-HybridMode DT (that level's, else `sets.engaged.DT`), Mote layers, weapons.
+HybridMode DT (that level's, else `sets.engaged.DT`), `support_tier.engaged`
+(`shared/utils/party/support_tier.lua`), Mote layers, weapons.
 
 ### Commands
 

@@ -20,7 +20,7 @@ The stance list depends on your subjob:
 | Subjob | Stances (default in **bold**) | Notes |
 |---|---|---|
 | Any but /SCH and /RUN | **PDT**, MDT, Sortie | Sortie narrows the weapon and rune lists and turns Phalanx SIRD On |
-| /SCH, /RUN | DPS, **Tanking**, Hoxne | A Sortie-only setup (everything this page says of the /SCH stances holds for /RUN too, which keeps the Sortie runes; Accession sneak/invi and Regen stay /SCH only): with the author's `PLD_WEAPONS.lua` Tanking always holds Burtgang + Aegis; Hoxne keeps the Hoxne Ampulla in the ammo slot |
+| /SCH, /RUN | **PDT**, MDT, DPS, Tanking, Hoxne | PDT and MDT as on any subjob; DPS, Tanking and Hoxne (the "/SCH stances" of this page) are a Sortie-only setup (everything this page says of the /SCH stances holds for /RUN too, which keeps the Sortie runes; Accession sneak/invi stays /SCH only): with the author's `PLD_WEAPONS.lua` Tanking always holds Burtgang + Aegis; Hoxne keeps the Hoxne Ampulla in the ammo slot |
 
 ## All keys on this job
 
@@ -30,14 +30,14 @@ the keys that are bound now, with the current value of each mode.
 | Key | Does | Condition / default |
 |---|---|---|
 | `^numpad9` | Cycle `HybridMode` (your stance) | Every subjob; the list and default depend on the subjob (above) |
-| `^numpad1` | Cycle `MainWeapon` | Default Excalibur (/SCH: Naegling). **Unbound and hidden in the /SCH Tanking stance**, the /SCH default |
-| `^numpad2` | Cycle `PhalanxSIRD` (Off, On) | Every subjob. Default Off (On under /SCH and in the Sortie stance) |
+| `^numpad1` | Cycle `MainWeapon` | Default Excalibur (put on Naegling when you enter a /SCH stance). **Unbound and hidden in the /SCH Tanking stance** |
+| `^numpad2` | Cycle `PhalanxSIRD` (Off, On) | Every subjob. Default Off (On in the /SCH stances and in the Sortie stance) |
 | `^numpad3` | Cycle `RuneMode` (Ignis ... Tenebrae) | /RUN only. Default Ignis; used by `//gs c rune` |
 | `^numpad3` | Cycle `Regen` (Off, On) | /SCH only. Default Off |
 | `^numpad4` | Cycle `Xp` (Off, On) | /RDM only. Default Off |
 | `^numpad5` | Cycle `WS1`: the weaponskill of `//gs c ws1` | Every subjob; the list follows the weapon in hand |
 | `^numpad6` | Cycle `WS2`: the weaponskill of `//gs c ws2` | Every subjob; the list follows the weapon in hand |
-| `^numpad7` | Nothing (an old PLD key, unbound at every load) | Free |
+| `^numpad7` | Cycle `Regen` (Off, On) | /RUN only. Default Off |
 | `#numpad0` | Auto Medicine on / off | Common key, every job |
 | `!numpad7` | Your other characters follow you (toggle) | Common key; needs a box group ([dual-box](../../guides/dualbox.md)) |
 | `!numpad8` | Other characters' automation on / off | Common key; box group |
@@ -59,7 +59,7 @@ the keys that are bound now, with the current value of each mode.
 | `^-` / `^=` | Mote: `<stnpc>` targeting on / off, PC target mode | |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | Free until you bind one |
 
-Two PLD modes have no key: `SneakInviAOE` and `FastCast` (see [states.md](states.md)).
+Three PLD modes have no key: `Shield`, `SneakInviAOE` and `FastCast` (see [states.md](states.md)).
 Your own modes from `PLD_CUSTOM.lua` add their keys to this list. Two actions on one key are
 reported in chat and turn the key red in the HUD; `//gs c kc` lists every possible
 conflict on every subjob.

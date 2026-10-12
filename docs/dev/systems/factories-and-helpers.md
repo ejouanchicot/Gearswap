@@ -18,10 +18,10 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 |---|---|
 | `shared/utils/lockstyle/lockstyle_manager.lua` | Lockstyle factory, DressUp toggle, stateless `apply_style` |
 | `shared/utils/macrobook/macrobook_manager.lua` | Macrobook factory (solo and dual-box books) |
-| `shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua` (17 files) | Lazy wrapper: `select_default_lockstyle`, `cancel_<job>_lockstyle_operations` |
-| `shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua` (17 files) | Lazy wrapper: `select_default_macro_book` |
-| `<char>/<job>/<JOB>_LOCKSTYLE.lua` | Per-job style numbers (`default`, `by_subjob`, optional `get_style`) |
-| `<char>/<job>/<JOB>_MACROBOOK.lua` | Per-job books (`solo`, `dualbox`, `default`) |
+| `shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua` (22 files) | Lazy wrapper: `select_default_lockstyle`, `cancel_<job>_lockstyle_operations` |
+| `shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua` (22 files) | Lazy wrapper: `select_default_macro_book` |
+| `<char>/<job>/display/<JOB>_LOCKSTYLE.lua` | Per-job style numbers (`default`, `by_subjob`, optional `get_style`) |
+| `<char>/<job>/display/<JOB>_MACROBOOK.lua` | Per-job books (`solo`, `dualbox`, `default`) |
 | `_master/config_global/LOCKSTYLE_CONFIG.lua` | Global lockstyle timing, deployed as `<char>/_common/display/LOCKSTYLE_CONFIG.lua` |
 | `shared/utils/movement/automove.lua` | Movement detection loop, `state.Moving`, `gs c update` |
 | `shared/utils/craft/craft_commands.lua` | `//gs c craft/fish/uncraft` handlers, gear diffing, slot locking |
@@ -65,11 +65,12 @@ Other helpers in `shared/utils/equipment/` are documented elsewhere:
 
 1. A job wrapper calls `LockstyleManager.create(job_code, config_path, default_lockstyle, default_subjob)` the first time one of its functions runs (local `get_lockstyle_module`). `create()` returns the `ctx` already built for that job code, or builds one. The ctxs are kept per job code in the sandbox global `_G.__lockstyle_contexts` (local `contexts()`), not in a module-local. That way every copy of the wrapper and every instance of this module in one load share them, and they die with the load. A ctx holds:
    - the job code and the defaults;
-   - the config returned by `pcall(require, config_path)`, or a fallback that always answers `default_lockstyle` (`load_config_or_fallback`);
-   - a `STATE` table: `enabled`, `is_processing`, `current_coroutines`, `dressup_state`, `last_dressup_command_time`, `operation_id`.
+   - the config returned by `pcall(require, CharPaths.legacy_module(config_path))`, or a fallback that always answers `default_lockstyle` (`load_config_or_fallback`);
+   - `load_gen`, the LoadGate number of the load that made it (`windower._load_gen`);
+   - a `STATE` table: `enabled`, `is_processing`, `dressup_state`, `last_dressup_command_time`, `operation_id`.
 2. Every operation is a module-level function taking `ctx` first, bound with a local `bind()`. The API also carries the job-suffixed key `cancel_<jl>_lockstyle_operations`, the name the job wrappers call. `create()` then deletes the globals it registered on its previous call in this module instance (`last_registered_globals`) and writes six job-suffixed globals.
 3. `select_default_lockstyle()` returns silently unless `player.main_job == ctx.job_code`. Otherwise it resolves the style (`resolve_style`: `LockstyleConfig.default or default_lockstyle`, then `LockstyleConfig.get_style(subjob)` if the config defines it, with `subjob = player.sub_job or default_subjob`) and calls `set_lockstyle_with_delay(style, 2.0)`.
-4. `set_lockstyle_with_delay` is a debounce. It calls `cancel_pending_operations` (which bumps `STATE.operation_id`), captures the new id and schedules `apply_lockstyle_immediate` after `delay`.
+4. `set_lockstyle_with_delay` is a debounce. It calls `cancel_pending_operations` (which bumps `STATE.operation_id`), captures the new id and schedules `apply_lockstyle_immediate` after `delay` through `LoadGate.defer(delay, ..., 'lockstyle', ctx.load_gen)` (`shared/utils/core/load_gate.lua`), which drops it when a newer load than the one that made the ctx has started or the game is on another job.
 5. `apply_lockstyle_immediate` returns if disabled or superseded. Without DressUp management it sends `input /lockstyleset N` at once. With DressUp management:
    - it sends `lua unload dressup`, unless `dressup_state == 'unloaded'` or the last DressUp command is less than 0.5 s old;
    - `/lockstyleset` follows 0.3 s later, and `lua load dressup` 3.0 s later;
@@ -99,7 +100,7 @@ There is no 15 s throttle anywhere in this module. The only rate limits are the 
 
 | Function | Effect | Callers |
 |---|---|---|
-| `LockstyleManager.create(job_code, config_path, default_lockstyle, default_subjob)` | Returns the per-job API below and writes the generated globals | the 17 `<JOB>_LOCKSTYLE.lua` wrappers |
+| `LockstyleManager.create(job_code, config_path, default_lockstyle, default_subjob)` | Returns the per-job API below and writes the generated globals | the 22 `<JOB>_LOCKSTYLE.lua` wrappers |
 | `LockstyleManager.toggle_dressup()` | Flips `_G.DRESSUP_MANAGEMENT_ENABLED`, persists it as a file, returns the new value | `COMMON_COMMANDS.lua` `handle_dressup` (`//gs c dressup`) |
 | `LockstyleManager.apply_style(style)` | Applies any number now (DressUp-aware); ignores non-numbers | `craft_commands.lua` `apply_lockstyle` |
 
@@ -116,7 +117,7 @@ Per-job API returned by `create()`:
 | `cancel_pending_operations()` | Bumps `operation_id`; also under the key `cancel_<jl>_lockstyle_operations`, which the wrappers call |
 | `get_state()` | The ctx's `STATE` |
 
-The wrappers do not return this table (BLU's returns only its two wrapper functions), so outside the factory only the globals are reachable.
+The wrappers do not return this table (those of BLU, DRG, MNK, NIN, PUP, RNG and SCH return only their two wrapper functions), so outside the factory only the globals are reachable.
 
 Generated globals (`jl` = lower-case job code): `select_default_lockstyle`, `cancel_<jl>_lockstyle_operations`, `set_<jl>_lockstyle_enabled`, `set_<jl>_dressup_management`, `get_<jl>_lockstyle_info`, `show_<jl>_lockstyle_config`. Their callers:
 
@@ -128,30 +129,31 @@ Generated globals (`jl` = lower-case job code): `select_default_lockstyle`, `can
 
 ### Configuration
 
-The per-job config is `<char>/<job>/<JOB>_LOCKSTYLE.lua`. GearSwap's `pathsearch` resolves it, trying `data/<player.name>/` before `data/`. BLM passes `<char_name>/config/...` explicitly (`BLM_LOCKSTYLE.lua`).
+The per-job config is `<char>/<job>/display/<JOB>_LOCKSTYLE.lua`. The wrappers still pass the path written the old way (`config/<job>/<JOB>_LOCKSTYLE`; BLM passes `<char_name>/config/...` explicitly, `BLM_LOCKSTYLE.lua`), and `load_config_or_fallback` turns it into the module of the current layout with `CharPaths.legacy_module` (`shared/utils/core/char_paths.lua`).
 
 | Key | Read by the factory | Notes |
 |---|---|---|
 | `default` | yes | wins over the `default_lockstyle` argument |
-| `get_style(subjob)` | yes, if present | defined by 9 of the 16 generic templates: BST, COR, DNC, DRK, GEO, PLD, RUN, SMN, WAR. It reads `by_subjob` |
-| `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, RDM, SAM, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
+| `get_style(subjob)` | yes, if present | defined by 9 of the 22 generic templates: BST, COR, DNC, DRK, GEO, PLD, RUN, SMN, WAR. It reads `by_subjob` |
+| `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, DRG, MNK, NIN, PUP, RDM, RNG, SAM, SCH, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
 | `style` | no | "backward compatibility" field, no reader |
 
-`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `shared/entry/war.lua:38-42`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
+`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/display/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `shared/entry/war.lua:38-42`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
 
 DressUp management flag: `_G.DRESSUP_MANAGEMENT_ENABLED`. It is initialised on each module load from the presence of `windower.addon_path .. 'data/.dressup_disabled'` (file present = off; `read_dressup_state`). The file is gitignored.
 
 ### Job wrappers
 
-Each wrapper holds a module-local `lockstyle_module` / `macrobook_module` and defines the global wrapper functions. It returns nothing, except BLU's, which returns a table of its wrapper functions. Arguments passed to the factories:
+Each wrapper holds a module-local `lockstyle_module` / `macrobook_module` and defines the global wrapper functions. It returns nothing, except those of BLU, DRG, MNK, NIN, PUP, RNG and SCH, which return a table of their wrapper functions. Arguments passed to the factories:
 
 | Job | Lockstyle default / subjob | Macrobook subjob / book / page |
 |---|---|---|
 | WAR | 4 / SAM | SAM / 22 / 1 |
 | RDM | 1 / NIN | NIN / 1 / 1 |
 | BRD, SMN | 1 / WHM | WHM / 1 / 1 |
-| BLU, PUP | 1 / WAR | WAR / 1 / 1 |
-| BLM, BST, COR, DNC, DRK, GEO, PLD, RUN, SAM, THF, WHM | 1 / SAM | SAM / 1 / 1 |
+| BLU, MNK, NIN, PUP, RNG | 1 / WAR | WAR / 1 / 1 |
+| SCH | 1 / RDM | RDM / 1 / 1 |
+| BLM, BST, COR, DNC, DRG, DRK, GEO, PLD, RUN, SAM, THF, WHM | 1 / SAM | SAM / 1 / 1 |
 
 The config's `default` overrides the lockstyle argument (e.g. the PLD config's default 3 vs the argument 1).
 
@@ -182,7 +184,7 @@ The two executions have separate module-locals, so each calls `create()` once. T
    - else the factory defaults.
 
    There is no main-job guard, unlike lockstyle. When `player` is nil it retries 0.5 s later.
-3. `set_macro_with_delay` bumps `_G._macrobook_schedule_id` and schedules Mote's `set_macro_page(page, book)` after 1.5 s (0.5 s when called from `set_macro_book`). Mote sends `input /macro book B; wait 1.1; input /macro set P`, and rejects books outside 1-40 and pages outside 1-10 (`libs/Mote-Utility.lua`).
+3. `set_macro_with_delay` bumps `_G._macrobook_schedule_id` and schedules Mote's `set_macro_page(page, book)` after 1.5 s (0.5 s when called from `set_macro_book`), through `LoadGate.defer(delay, ..., 'macro book', ctx.load_gen)`, which drops it when a newer load than the one that made the ctx has started or the game is on another job. Mote sends `input /macro book B; wait 1.1; input /macro set P`, and rejects books outside 1-40 and pages outside 1-10 (`libs/Mote-Utility.lua`).
 
 ### Public API
 
@@ -208,7 +210,7 @@ Callers of the selection:
 
 ### Configuration
 
-`<char>/<job>/<JOB>_MACROBOOK.lua`:
+`<char>/<job>/display/<JOB>_MACROBOOK.lua`:
 
 ```lua
 Cfg.solo    = { SAM = { book = 22, page = 1 }, ..., default = { book = 22, page = 1 } }
@@ -224,7 +226,7 @@ The config headers say "Book range: 1-40", which is what Mote accepts.
 
 ### How it works
 
-In its block deferred by 0.5 s, `INIT_SYSTEMS.lua` runs `pcall(include, '../shared/utils/movement/automove.lua')`, then `AutoMove.start()` unless `_G.DISABLE_AUTOMOVE == true`. No file in the repository sets that flag; only `system_checker.lua` (`check_automove`) still reads it, and `global_probe.lua` lists the name.
+In its block deferred by 0.5 s (`LoadGate.defer(0.5, ...)`: when the game does not report the load's main job yet, the block waits for it, 0.5 s at a time, 10 s at most, `shared/utils/core/load_gate.lua`), `INIT_SYSTEMS.lua` runs `pcall(include, '../shared/utils/movement/automove.lua')`, then `AutoMove.start()` unless `_G.DISABLE_AUTOMOVE == true`. No file in the repository sets that flag; only `system_checker.lua` (`check_automove`) still reads it, and `global_probe.lua` lists the name.
 
 Including the file does the following:
 
@@ -318,7 +320,7 @@ flowchart TD
     L --> M
 ```
 
-- **Loading.** Set files are loaded with `pcall(require, <player.name>/sets/<name>_sets)` (`load_craft_file`). Which file: `craft_file` / `fish_file` in `<char>/_common/inventory/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
+- **Loading.** Set files are loaded with `pcall(require, CharPaths.module('gear', '<name>_sets', nil, <player.name>))` (`load_craft_file`): `<char>/_common/sets/<name>_sets.lua`, then the older places. Which file: `craft_file` / `fish_file` in `<char>/_common/inventory/CRAFT_CONFIG.lua` (`configured_file` in `craft_commands.lua`; `_sets.lua` at the end is tolerated), else `bonecraft` / `fishing`, the names read before 2026-09-30, so an older `CRAFT_CONFIG.lua` keeps working. A missing file names the file and points to `CRAFT_CONFIG.lua`.
 - **Resolution** (`resolve`). A multi-variant file uses `default` when no argument is given, then tries a direct lower-case key lookup, then an alias scan. A single-set file returns the whole table and ignores the argument.
 - **Slot names** are canonicalised to `player.equipment` names (`ranged` -> `range`, `ear1` / `lear` -> `left_ear`, `ring2` / `rring` -> `right_ring`, ...; `canonical_gear`). `canonical_gear` also drops a slot whose item is `""`, so an empty slot is neither equipped nor locked (fishing and single-set files included). `diff_gear` keeps a slot untouched only when the running session put the same item there and it is still worn (item names compared case-insensitively). Slots the new variant no longer covers are released.
 - **Locking.** `equip_craft_gear` uses GearSwap's synchronous `enable()` rather than `gs enable all`, because the command would land after `equip()`. The lock is applied 2.0 s later (`lock_after_delay`); that coroutine carries no session check. When a variant switch changes nothing, only the lock is re-asserted.
@@ -363,7 +365,7 @@ Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, 
 | Source | Keys | Default |
 |---|---|---|
 | `<char>/_common/inventory/CRAFT_CONFIG.lua` (template `_master/config_global/CRAFT_CONFIG.lua`) | `craft_file`, `fish_file`, `craft_lockstyle`, `fish_lockstyle` | `bonecraft` / `fishing` / 19 / 17 (`DEFAULT_FILES`, `DEFAULT_CRAFT_LOCKSTYLE`, `DEFAULT_FISH_LOCKSTYLE` in `craft_commands.lua`); the template sets `craft_file = 'craft'`. A lockstyle key set to `false`: `get_configured_lockstyle` returns `false` and `apply_lockstyle` skips non-numbers, so the job's lockstyle stays; any other non-number falls back to the default |
-| `<char>/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
+| `<char>/_common/sets/<craft_file>_sets.lua`, `<fish_file>_sets.lua` | see shapes above | none (error message) |
 | `<char>/_common/inventory/CRAFT_REFILL.lua` | refill list while crafting | the usual refill list (job, then common) |
 
 `ModuleCache` caches the set files and `CRAFT_CONFIG` per sandbox, so an edit needs a reload.
@@ -607,7 +609,7 @@ No other job calls it. The gear rebuild on a buff change (`LifecycleManager.refr
 
 A typed tier on recast is thus swapped for a ready one before CooldownChecker could cancel it. When every tier is on recast, `select_cure_tier` returns `nil` without a message, and CooldownChecker gives the one cooldown message, cancelling the cast if its recast is over the 2.0 s tolerance.
 
-At module load the config is `pcall(require, <player.name>/config/whm/WHM_CURE_CONFIG)`. On failure it `print`s an error and uses a table with no `cure_tiers` / `curaga_tiers`.
+At module load the config is `CharPaths.load('job', 'WHM_CURE_CONFIG', 'WHM', <character name>)`. On failure it shows an error (`MessageFormatter.show_error`) and uses a built-in table with default `cure_tiers` / `curaga_tiers` (Cure to Cure VI, Curaga to Curaga V) and `safety_margin = 50`.
 
 ```mermaid
 flowchart TD
@@ -786,16 +788,15 @@ Dual-box: `INIT_SYSTEMS.lua` registers the IPC hooks `ls` and `lockstyle`, which
 | DW tracking, forced tier, last tier, update token | `windower._dw_tracked`, `windower._dw_forced`, `windower._dw_last_tier`, `windower._dw_update_token` | until `lua reload gearswap` |
 | TH tags and flags | `_G._treasure`, `_G._treasure_installed`, `_G._treasure_engaged_by_job` | one sandbox (tags are lost on reload) |
 | Spell gear lock | `_G._spell_gear_lock` | one sandbox |
-| Auto options | `_G._auto_options` | one sandbox |
 
 Scheduled coroutines:
 
 | Coroutine | Delay | Invalidation |
 |---|---|---|
 | `select_default_lockstyle` from `user_setup()` | `initial_load_delay` (8 s) | none; returns if the main job changed |
-| lockstyle apply / DressUp steps | 2.0 s, +0.3 s, +3.0 s | `STATE.operation_id` of the job's ctx |
+| lockstyle apply / DressUp steps | 2.0 s, +0.3 s, +3.0 s | `STATE.operation_id` of the job's ctx; the 2.0 s step also LoadGate (`ctx.load_gen`) |
 | `apply_style` steps (craft) | 0.3 s, 3.0 s | none |
-| `set_macro_page` | 1.5 s (0.5 s manual) | `_G._macrobook_schedule_id` of the sandbox |
+| `set_macro_page` | 1.5 s (0.5 s manual) | `_G._macrobook_schedule_id` of the sandbox; LoadGate (`ctx.load_gen`) |
 | `select_default_macro_book` retry when `player` is nil | 0.5 s | none |
 | AutoMove `run` | 0.12 / 0.3 / 0.5 s | `windower._automove_seq`, `_G.AUTOMOVE_RUNNING` |
 | craft lock / refill | 2.0 s / 2.5 s | none |
@@ -808,7 +809,7 @@ Events: DualWield (`gain buff`, `lose buff`) and TreasureHunter (`incoming chunk
 
 Transitions:
 
-- **`gs reload` / subjob change.** JobChangeManager's `cleanup_all_systems()` stops AutoMove, on the subjob path only. Every path runs `file_unload` -> `JobChangeManager.cancel_all()`. Its registered lockstyle cancel stops a lockstyle still waiting in its 2 s delay or in its DressUp steps; the raw +8 s `coroutine.schedule` itself is not tracked. The new sandbox then starts a new AutoMove chain at +0.5 s, a new lockstyle cycle at +8 s and a new macrobook selection at once. A running craft session loses its flag but keeps its slot locks. TH tags are lost.
+- **`gs reload` / subjob change.** JobChangeManager's `cleanup_all_systems()` stops AutoMove, on the subjob path only. Every path runs `file_unload` -> `JobChangeManager.cancel_all()`. Its registered lockstyle cancel stops a lockstyle still waiting in its 2 s delay or in its DressUp steps; the raw +8 s `coroutine.schedule` itself is not tracked, but the apply it leads to goes through LoadGate with the old load's number and is dropped once a newer load has started (`set_lockstyle_with_delay`). The new sandbox then starts a new AutoMove chain at +0.5 s, a new lockstyle cycle at +8 s and a new macrobook selection at once. A running craft session loses its flag but keeps its slot locks. TH tags are lost.
 - **Main job change.** Same, without `cleanup_all_systems()`. The old AutoMove chain dies when the new `start()` bumps the sequence.
 - **Zone.** AutoMove sees a jump of more than 5 yalms and sends `gs c update`. TreasureHunter forgets its tags.
 
@@ -897,7 +898,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 ## For maintainers / AI
 
-- **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand: lockstyle and macro book always go through the two factories.
+- **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/display/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand: lockstyle and macro book always go through the two factories.
 - **New craft.** Add `<char>/_common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
 - **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_TIERS` / `DEFAULT_WALTZ_FROM` (and the `waltz_from` line of `_master/config_global/SUBJOB_CONFIG.lua`). Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
 - **New AutoMove consumer.** Read `state.Moving.value` in the set builder (or go through `base_set_builder.lua`), or register a callback from a coroutine scheduled after 0.5 s.
@@ -913,9 +914,8 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 Open:
 
-- `by_subjob` is ignored when a lockstyle config has no `get_style`: the BLM, BLU, BRD, RDM, SAM, THF and WHM templates, and the overlays copied from them (`lockstyle_manager.lua` `resolve_style`).
+- `by_subjob` is ignored when a lockstyle config has no `get_style`: the BLM, BLU, BRD, DRG, MNK, NIN, PUP, RDM, RNG, SAM, SCH, THF and WHM templates, and the overlays copied from them (`lockstyle_manager.lua` `resolve_style`).
 - Craft slot locks outlive the session flag (after a reload, or an uncraft within 2 s of craft), and `//gs c uncraft` then refuses to unlock (`craft_manager.lua` `CraftManager.unequip`).
-- CureManager's fallback config has no tier tables, so every Cure / Curaga then raises an error in precast (`cure_manager.lua`, module load).
 - `//gs c waltz` / `aoewaltz` cancel Saber Dance before knowing whether any waltz can be used (`COMMON_COMMANDS.lua` `handle_waltz_generic`).
 - CureManager treats a spell with any recast left as unavailable, unlike CooldownChecker's 2.0 s tolerance (`cure_manager.lua` `is_spell_available`).
 - The learn levels of Curing Waltz II and Divine Waltz (35, 40) disagree with the project's DNC ability database (30, 25) (`waltz_manager.lua` `WALTZ_CONFIG`).
@@ -932,6 +932,7 @@ Open:
 
 Fixed:
 
+- CureManager's fallback config had no tier tables, so every Cure / Curaga then raised an error in precast. The fallback now carries default `cure_tiers` / `curaga_tiers` (`cure_manager.lua`, module load).
 - SAM's idle builder ends with `BaseSetBuilder.apply_movement`, so `sets.MoveSpeed` goes on while moving, as on the other jobs (2026-09-28).
 - DRK and SAM idle builders start with `BaseSetBuilder.select_idle_base_town` (DRK through `BaseSetBuilder.select_idle_base` since the same day, which also wears `sets.idle[HybridMode]` outside town): in a town the town set goes on top of the idle set and the movement layer is skipped, as on the other jobs (2026-09-29).
 - BST's idle builder laid `sets.MoveSpeed` inline, in town too: it now calls `BaseSetBuilder.apply_movement`, only when no town set was laid, after `BaseSetBuilder.lay_town_set` and the weapons (2026-09-29, checked offline).

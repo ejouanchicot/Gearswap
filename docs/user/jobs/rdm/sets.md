@@ -257,7 +257,6 @@ provided file), and by the same rule `sets.precast.JA['Saboteur']`,
 
 - The mode sets under a type: `sets.midcast['Enfeebling Magic'].<type>.Potency`,
   `.Skill`, `.Duration`.
-- `sets.midcast['Enfeebling Magic'].Skill` and `.Duration` (enfeebles with no type).
 - Family sets `sets.midcast.Boost`, and for /SCH `sets.midcast.Storm`.
 - `sets.midcast.Haste`, `sets.midcast.Protect`, `sets.midcast.Shell`,
   `sets.midcast.StatusRemoval` (fall back to the Enhancing / Healing base).

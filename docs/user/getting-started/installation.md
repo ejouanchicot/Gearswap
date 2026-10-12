@@ -73,8 +73,10 @@ back from the backup: `saved/ui_settings.lua` (HUD), `saved/message_modes.lua`,
 `saved/alt_window.lua`, `saved/alt_state.lua`, `saved/WARP_ITEMS_OWNED.lua`,
 `saved/gear_augments.lua`,
 `saved/combat_mode.lua`, `saved/treasure_mode.lua`,
-`_common/travel/STEALTH_CONFIG.lua`, every `<job>/display/<JOB>_HUD.lua` and
-`saved/temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom
+`_common/travel/STEALTH_CONFIG.lua`, every `<job>/display/<JOB>_HUD.lua`,
+`saved/temp_binds.lua`, and what the Atelier page wrote:
+`atelier/overrides/set_overrides.lua`, `atelier/overrides/keybind_overrides.lua`
+and `atelier/export.on`. Anything else you edited (sets, keybinds, modes, custom
 files) is only in the backup: copy it back yourself.
 
 ## 4. Put in your gear

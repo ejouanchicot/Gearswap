@@ -89,7 +89,7 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 | `pet disengage` | `/pet "Heel" <me>` |
 | `rdylist` | Your pet's Ready moves, numbered |
 | `rdymove N` | Uses Ready move N. Pet fighting: the move at once. Pet idle and you fighting: `Fight` on a target you pick with the cursor (`<stnpc>`), the move 3.5 s later. Both idle: the same, then `Heel` 6 s after the start |
-| `debugprecast` | On BST: turns on / off a trace of the summon and Ready precast gear (not the shared precast trace) |
+| `debugprecast` | On BST: turns on / off a trace of the summon precast gear, Call Beast / Bestial Loyalty set and jug (not the shared precast trace) |
 
 **Shared commands that work here**
 
@@ -149,7 +149,7 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 | Macro book | Book 12 page 1. With a dual-box partner on GEO and you /DNC: book 13; partner on COR and /DNC: book 14 |
 | Dual-box | Your job and your other box's job are exchanged at each load (macro book above, alt commands) |
 | Warp, mount, stealth, refill, wardrobe tools | As on every job |
-| Keys re-sent | Your keys are sent again 2 s after each load, in case the first bind was lost |
+| Keys re-sent | The keys a load sent are sent again 2 s later, in case the first bind was lost |
 
 ## Jug pets
 

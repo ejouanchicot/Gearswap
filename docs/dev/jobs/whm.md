@@ -2,7 +2,7 @@
 
 The WHM job is the healer of the project: 12 hook modules plus one logic module
 under `shared/jobs/whm/functions/` (about 1 090 lines), two job-specific
-utilities under `shared/utils/whm/` (830 lines), a template entry point, eight
+utilities under `shared/utils/whm/` (830 lines), a template entry point, ten
 config files and one sets file. GearSwap loads it when the main job becomes WHM
 (the entry file `<Character>_WHM.lua`, one `include` of `shared/entry/whm.lua`, copied from
 `_master/entry/Tetsouo_WHM.lua` by the clone script). From then on Mote-Include calls its hooks on every action,
@@ -37,7 +37,7 @@ the sets file (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/whm.lua` | 272 | Entry (the same for every character; `<Char>_WHM.lua` and its template `_master/entry/Tetsouo_WHM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record) |
+| `shared/entry/whm.lua` | 279 | Entry (the same for every character; `<Char>_WHM.lua` and its template `_master/entry/Tetsouo_WHM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record) |
 | `shared/jobs/whm/functions/whm_functions.lua` | 51 | Facade: includes the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/whm/functions/WHM_PRECAST.lua` | 174 | `job_precast`: guard, `retier_cure`, cooldown, `paralyna_on_self`, WS; `job_post_precast` (TP gear) |
 | `shared/jobs/whm/functions/WHM_MIDCAST.lua` | 261 | `job_midcast` (Cure sets by mode), `job_post_midcast` (overlays + `MidcastManager`), `job_get_spell_map` |
@@ -48,9 +48,9 @@ the sets file (structure and set names only).
 | `shared/jobs/whm/functions/WHM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/whm/functions/WHM_COMMANDS.lua` | 235 | `job_self_command` router, `job_state_change` (`Melee ON` lock, HUD) |
 | `shared/jobs/whm/functions/WHM_MOVEMENT.lua` | 39 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'whm/display/WHM_LOCKSTYLE', 1, 'SAM')` |
-| `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'whm/display/WHM_MACROBOOK', 'SAM', 1, 1)` |
-| `shared/jobs/whm/functions/logic/set_builder.lua` | 90 | Idle: town, latent refresh, movement; engaged: unchanged |
+| `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'config/whm/WHM_LOCKSTYLE', 1, 'SAM')` |
+| `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'config/whm/WHM_MACROBOOK', 'SAM', 1, 1)` |
+| `shared/jobs/whm/functions/logic/set_builder.lua` | 90 | Idle: town, latent refresh, movement; engaged: `SupportTier.engaged` (the set's `.Solo` / `.Group` version when it has one) |
 | `shared/utils/whm/cure_manager.lua` | 421 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
 | `shared/utils/whm/whm_message_formatter.lua` | 262 | Cure tier / Afflatus messages and CureManager debug lines (direct `add_to_chat`, a documented exception: it is a formatter stored outside `utils/messages/`) |
 | `shared/utils/messages/data/jobs/whm_messages.lua` | 22 | One template (`curemanager_not_loaded`), no sender since its formatter `message_whm.lua` was removed (2026-10-01) |
@@ -58,9 +58,10 @@ the sets file (structure and set names only).
 | `_master/config/whm/WHM_STATES.lua` | 139 | `WHMStates.configure` |
 | `_master/config/whm/WHM_KEYBINDS.lua` | 78 | Data only: 6 entries handed to `KeybindManager.create('WHM', ...)` |
 | `_master/config/whm/WHM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
-| `_master/config/whm/WHM_CURE_CONFIG.lua` | 102 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages` (+ unread `auto_tier_enabled`, `message_color`) |
+| `_master/config/whm/WHM_CONFIG.lua` | 16 | `refresh_mp_below = 51` (read through `JobConfig`) |
+| `_master/config/whm/WHM_CURE_CONFIG.lua` | 104 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages`, `auto_tier_enabled` (what `CureAutoTier` starts on, read by the entry's `user_setup`) (+ unread `message_color`) |
 | `_master/config/whm/WHM_HUD.lua` | 31 | HUD section / row order (empty = default) |
-| `_master/config/whm/WHM_LOCKSTYLE.lua` | 52 | `default = 3`, `by_subjob` (never read) |
+| `_master/config/whm/WHM_LOCKSTYLE.lua` | 52 | `default = 3`, `by_subjob` (never read by `LockstyleManager`; `//gs c lockscan` and `//gs c jobtest` read it) |
 | `_master/config/whm/WHM_MACROBOOK.lua` | 85 | `default` book 11 page 1, `solo[sub]` pages 1-5, empty `dualbox` |
 | `_master/config/whm/WHM_TP_CONFIG.lua` | 73 | `pieces` (Moonshade 250), `get_weapon_bonus`, sets `_G.WHMTPConfig` |
 | `_master/config/whm/WHM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
@@ -82,7 +83,9 @@ facade and the lockstyle cancel registration.
 
 `user_setup()`:
 
-1. `WHMStates.configure()` (see [Mote states](#mote-states)).
+1. `WHMStates.configure()` (see [Mote states](#mote-states)), then
+   `state.CureAutoTier:set('Off')` when the character's `WHM_CURE_CONFIG.lua` has
+   `auto_tier_enabled = false` (`CharPaths.load`).
 2. `pcall(require, '<Character>/whm/keys/WHM_KEYBINDS')` into the global
    `WHMKeybinds`, then `bind_all()` (ends with `show_intro()`, whose requires of
    `WHM_MACROBOOK.lua` and `WHM_LOCKSTYLE.lua` define
@@ -144,9 +147,9 @@ flowchart TD
 in [factories and helpers](../systems/factories-and-helpers.md#whm-curemanager).
 In short:
 
-- The tier tables come from `require(<player.name> .. '/config/whm/WHM_CURE_CONFIG')`
-  at module load (so once per sandbox); on failure it `print`s and uses a table
-  with no tier lists.
+- The tier tables come from `CharPaths.load('job', 'WHM_CURE_CONFIG', 'WHM', ...)`
+  at module load (so once per sandbox); on failure it calls
+  `MessageFormatter.show_error` and uses the template's tiers.
 - With `CureAutoTier` On, missing HP is exact for yourself; for a party member
   it is estimated from `hpp` and a fixed 2 000 max HP (Windower's party table
   has no `max_hp`); alliance members are looked up under keys `a1p1..a3p6`,
@@ -237,7 +240,9 @@ flowchart TD
   with a defense or Kiting layer on, on top of Mote's layered Town set) -> `sets.latent_refresh`
   when `player.mpp < JobConfig.get('WHM', 'refresh_mp_below', 51)` (empty in the template) -> `sets.MoveSpeed` while
   moving, in town too.
-- `customize_melee_set` returns Mote's set unchanged. Mote picks
+- `customize_melee_set` returns Mote's set through `SupportTier.engaged`
+  (`logic/set_builder.lua` `build_engaged_set`: its `.Solo` / `.Group` version when
+  the set has one, else the set itself). Mote picks
   `sets.engaged[OffenseMode]` (no `None` or `Melee ON` set), then
   `sets.engaged[HybridMode]` (`Normal`, Mote's only default value), so
   `sets.engaged.Normal` is always used, with Mote's defense / Kiting layers.
@@ -256,7 +261,7 @@ Created by `WHMStates.configure()` on every `user_setup()`. Keys from
 | `HybridMode` (Mote) | Normal | Normal | Mote's `^f9` | Mote `get_melee_set` (`sets.engaged.Normal`) |
 | `CureMode` | Potency, SIRD | Potency | `^numpad3` | `job_midcast` |
 | `AfflatusMode` | Solace, Misery | Solace | `^numpad5` | `afflatus` command |
-| `CureAutoTier` | On, Off | On | `^numpad4` | `CureManager.select_cure_tier` |
+| `CureAutoTier` | On, Off | On; Off when `WHM_CURE_CONFIG.lua` has `auto_tier_enabled = false` (entry `user_setup`) | `^numpad4` | `CureManager.select_cure_tier` |
 | `CombatMode` | Off, On | Off | `^numpad2` | shared Combat Mode lock (main / sub / range / ammo) |
 | `FastCast` | 0..80 by 10 | 80 | none | midcast watchdog fallback estimate |
 | `AutoMedicine` | ON, OFF | persisted | `#numpad0` (common key) | `AutoMedicine.init` at the end of `configure` |
@@ -338,15 +343,16 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/whm/WHM_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/whm/WHM_KEYBINDS.lua` | 6 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
-| `<char>/whm/WHM_CUSTOM.lua` | examples only | file | custom states |
-| `<char>/whm/WHM_HUD.lua` | empty | file | HUD layout |
-| `<char>/whm/WHM_CURE_CONFIG.lua` `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages` | Cure 0-200 .. VI 1600+; Curaga 0-300 .. V 1400+; 50; false | file; failure fallback has no tier lists | `CureManager` |
-| same, `auto_tier_enabled`, `message_color` | true, 8 | file | nothing (the switch is `state.CureAutoTier`) |
-| `<char>/whm/WHM_LOCKSTYLE.lua` `default`, `by_subjob` | 3 | file; factory argument 1 | `default` only (no `get_style`) |
-| `<char>/whm/WHM_MACROBOOK.lua` | book 11: page 1 RDM, 2 SCH, 3 BLM, 4 BLU, 5 GEO | file; factory fallback 1/1 | `MacrobookManager` |
-| `<char>/whm/WHM_TP_CONFIG.lua` -> `_G.WHMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` |
+| `<char>/whm/keys/WHM_STATES.lua` | see states | file | entry `user_setup` |
+| `<char>/whm/keys/WHM_KEYBINDS.lua` | 6 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
+| `<char>/whm/keys/WHM_CUSTOM.lua` | examples only | file | custom states |
+| `<char>/whm/display/WHM_HUD.lua` | empty | file | HUD layout |
+| `<char>/whm/combat/WHM_CURE_CONFIG.lua` `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages` | Cure 0-200 .. VI 1600+; Curaga 0-300 .. V 1400+; 50; false | file; the failure fallback in `cure_manager.lua` holds the same tiers and margin | `CureManager` |
+| same, `auto_tier_enabled` | true | file | entry `user_setup`: `false` starts `state.CureAutoTier` on Off |
+| same, `message_color` | 8 | file | nothing |
+| `<char>/whm/display/WHM_LOCKSTYLE.lua` `default`, `by_subjob` | 3 | file; factory argument 1 | `LockstyleManager`: `default` only (no `get_style`) |
+| `<char>/whm/display/WHM_MACROBOOK.lua` | book 11: page 1 RDM, 2 SCH, 3 BLM, 4 BLU, 5 GEO | file; factory fallback 1/1 | `MacrobookManager` |
+| `<char>/whm/combat/WHM_TP_CONFIG.lua` -> `_G.WHMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` |
 | `<char>/saved/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
 
 ## State & lifetime
@@ -444,7 +450,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   id), `state.CureAutoTier`, `windower.ffxi.get_spell_recasts` /
   `get_party` / `get_mob_by_target`, pre-fill `package.loaded` for
   `shared/utils/whm/whm_message_formatter`, `shared/utils/messages/message_core`
-  and `<Name>/whm/WHM_CURE_CONFIG` (a `dofile` of the template), then
+  and `<Name>/whm/combat/WHM_CURE_CONFIG` (a `dofile` of the template), then
   `dofile('shared/utils/whm/cure_manager.lua')` and call
   `select_cure_tier({name = 'Cure IV'}, target)`. This is how the Full Cure
   issue below was confirmed.
@@ -494,7 +500,9 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 - `warning` and `error` in `whm_message_formatter.lua` have no caller. The `elseif
   WHMCureConfig.debug_messages` branch at the end of `select_cure_tier` is
   unreachable (the branch before it already covers a loaded formatter).
-- `auto_tier_enabled` and `message_color` in `WHM_CURE_CONFIG.lua` are not read.
-- `by_subjob` in `WHM_LOCKSTYLE.lua` is never read.
+- `message_color` in `WHM_CURE_CONFIG.lua` is not read.
+- `by_subjob` in `WHM_LOCKSTYLE.lua` is never read by `LockstyleManager` (the
+  style applied is always `default`); `lockstyle_pieces.lua` (`//gs c lockscan`)
+  and `job_test.lua` read it.
 - Standards: the Cure sets are chosen by a manual `or` fallback in `job_midcast`
   instead of `MidcastManager`.

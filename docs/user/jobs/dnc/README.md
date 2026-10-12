@@ -33,8 +33,8 @@ reload.
 
 Ctrl = `^`, Alt = `!`, Apps (menu key) = `#`, Win = `@`. The keys come from
 the provided template; after cloning, yours are in `<YourName>/dnc/`
-and `<YourName>/_common/keys/COMMON_KEYBINDS.lua`, and those files win. No DNC key
-depends on the subjob (Jump Auto only acts on /DRG).
+and `<YourName>/_common/keys/COMMON_KEYBINDS.lua`, and those files win. Only one DNC
+key depends on the subjob: Jump Auto (`^numpad7`) is bound on /DRG only.
 
 | Key | Does | When | Shown in the HUD |
 |---|---|---|---|

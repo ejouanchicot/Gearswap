@@ -120,8 +120,9 @@ get the automatic Obi / Orpheus belt when it helps.
 - Moonshade Earring (TP bonus +250) goes on by itself in the left ear when it lifts your
   TP to the next step (2000 or 3000); the list is in `cor/combat/COR_TP_CONFIG.lua`. It
   never removes a Moonshade your weaponskill set already wears.
-- Your gun's TP bonus (Anarchy +2, Fomalhaut) is **not** counted in that calculation
-  today, so Moonshade may go on when the gun already reaches the step.
+- Your gun's TP bonus is counted in that calculation, on every weaponskill: Anarchy +2
+  and Fomalhaut from the `ranged_weapons` list of `COR_TP_CONFIG.lua`; a gun not listed
+  is read from the game and your `//gs c gearscan`.
 - Leaden Salute, Wildfire and Hot Shot get the automatic Obi / Orpheus belt when it
   helps.
 

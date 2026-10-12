@@ -53,7 +53,7 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/hooks/init_spell_messages.lua` | 97 | Wraps `user_post_midcast`: spell messages, Utsusemi: Ichi shadow cancel |
 
 Job files used to document the contract: every `shared/jobs/<job>/functions/<JOB>_PRECAST.lua`
-(17 files since BLU was added; BST also has `BST_PET_PRECAST.lua`, which does not run this pipeline).
+(22 files, one per job; BST also has `BST_PET_PRECAST.lua`, which does not run this pipeline).
 
 ## Action lifecycle, end to end
 
@@ -197,7 +197,7 @@ flowchart TD
     M --> N["cleanup_precast chain (belt, TH, custom, cast time)"]
 ```
 
-The `action_type` dispatch in front of `CooldownChecker` is repeated in all 17
+The `action_type` dispatch in front of `CooldownChecker` is repeated in all 22
 `[JOB]_PRECAST.lua` files; `CooldownChecker` itself has no dispatcher.
 
 | Job | Deviation (function) |
@@ -417,7 +417,7 @@ that outlives the sandbox.
 | `blm_functions.lua` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
 | `dnc/functions/logic/step_manager.lua` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
 | `SAM_PRECAST.lua` | Third Eye (`follow_up`) | before Third Eye-gated actions |
-| `brd/functions/logic/song_rotation_manager.lua` | Nightingale then Troubadour (`follow_up` chain) | song rotation, when both are ready |
+| `brd/functions/logic/song_opening.lua` `SongOpening.start` | Nightingale then Troubadour (`ensure`, one after the other) | before the songs, when `state.AutoNitro` is On and both are up or ready, at least one still to use |
 | `BRD_PRECAST.lua` `job_precast_bardsong` | Pianissimo (`follow_up_or_abort`) | a song aimed at another party member |
 | `GEO_COMMANDS.lua` | Entrust (`follow_up_or_abort`) | `//gs c entrust` |
 | `scholar_actions.lua` `cast_under_black_addendum` | Dark Arts, Addendum: Black (`follow_up`) | e.g. Dispel on BLM/GEO |
@@ -564,7 +564,8 @@ chain has run, and only if the action was not cancelled:
 description (`res.item_descriptions`) and the augments written in the set, applying a
 "kind" filter (`applies`: song, cure, utsusemi, stoneskin, a magic skill, a grimoire
 under the matching Arts, or all spells); adds the RDM Fast Cast trait (10-30 % by
-level); caps at 80 %; then x0.5 Nightingale / x1.5 Troubadour for songs and x0.5
+level, 32-38 % with the job point gifts as main job) and Elemental Celerity on
+elemental magic; caps at 80 %; then x0.5 Nightingale / x1.5 Troubadour for songs and x0.5
 under Celerity (white) / Alacrity (black). Readers: `shared/utils/core/midcast_watchdog.lua`
 and `brd/functions/logic/song_queue.lua`; `song_slots.lua` uses `owned_ids()`.
 
@@ -577,8 +578,8 @@ param 845 (Flurry) or 846 (Flurry II) that targets this character stores the lev
 when neither Flurry buff id (265, 581) is in `get_player().buffs` (and forgets the
 level), else the stored level or 1. `apply_ranged_groups()` clears
 `classes.CustomRangedGroups` and appends `Flurry1` / `Flurry2`, so Mote's
-`get_ranged_set` picks `sets.precast.RA.Flurry1/2` when they exist. Caller: COR
-`apply_cor_precast` for `/ra`.
+`get_ranged_set` picks `sets.precast.RA.Flurry1/2` when they exist. Callers: COR
+`apply_cor_precast` for `/ra`, RNG `Ranged.prepare_precast` (`rng/functions/logic/ranged.lua`).
 
 ### WSSlots (WAR, PLD)
 
@@ -710,7 +711,7 @@ lazy-load time.
 
 | Function | Returns | Side effects | Callers |
 |---|---|---|---|
-| `guard_precast(spell, eventArgs)` | `true` if blocked | may set `eventArgs.cancel`, send a cure item, print | first step of all 17 `[JOB]_PRECAST.lua` |
+| `guard_precast(spell, eventArgs)` | `true` if blocked | may set `eventArgs.cancel`, send a cure item, print | first step of all 22 `[JOB]_PRECAST.lua` |
 | `check_and_block(spell, eventArgs)` | blocked | same | `guard_precast` fallback |
 | `check_magic(spell, eventArgs)` | blocked | same | `guard_precast` only, unreachable |
 | `check_ja(spell, eventArgs)` | blocked | same | `guard_precast` |
@@ -756,7 +757,7 @@ callers listed above.
 
 `check_ability_cooldown(spell, eventArgs)` and `check_spell_cooldown(spell, eventArgs)`.
 Both set `eventArgs.cancel`, print and call `RecastAnnounce.on_refused` when on
-cooldown. Callers: all 17 `[JOB]_PRECAST.lua`, always gated by `spell.action_type`
+cooldown. Callers: all 22 `[JOB]_PRECAST.lua`, always gated by `spell.action_type`
 (`'Ability'` / `'Magic'`), plus BLM `check_recast_or_refine`. There is no third
 "exclusions" parameter.
 
@@ -783,6 +784,7 @@ managers and `BLM_COMMANDS.lua`.
 | `is_buff_active(name)` | buff name | `buffactive`, else the game's buff ids |
 | `follow_up(name, command, wait)` | command string or function | always acts: on buff, on "never fired", or at `wait + 3` s |
 | `follow_up_or_abort(name, command, wait, on_abort)` | wait default 2 | acts on buff only; otherwise `on_abort()` + warning |
+| `ensure(name, on_up, on_fail, alive)` | callbacks; `alive` optional | `on_up` once the buff is up (at once when it already is); an ability whose recast is still ready 1.5 s after the send is sent again, 3 tries in all; `on_fail(reason)` when it never goes (`'refused'`, or `'no buff'` after 5 s) |
 | `try_ability(spell, eventArgs, name, wait)` | wait default 2 | ready and buff not up -> `fire_then_replay` with `/ma "<spell>" <target id>` |
 | `try_ability_smart(...)` | same | returns early when the buff is up, then as `try_ability` |
 | `try_ability_ws(...)` | same | also sets `eventArgs.cancel`; replays `/ws "<name>" <t>` |
@@ -804,7 +806,7 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
   `initialize()` (no caller), `config` (`distance_check_enabled` is never read).
 - `TPBonusHandler.live_tp()`, `TPBonusHandler.calculate_tp_gear(spell, tp_config)`,
   internal to WSPrecastHandler.
-- `TPBonusCalculator.calculate(tp, cfg, main, buffs, sub) -> table|nil`,
+- `TPBonusCalculator.calculate(tp, cfg, main, buffs, sub, worn, range) -> table|nil`,
   `config.thresholds`, `config.debug_mode`.
 - `WSSlots.rebuild(ws_list, max_slots)`, `detect_weapon(weapon_state)`,
   `sync(weapon_state, config)`, `get(index)`, `cast(index)`.
@@ -832,7 +834,8 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 ### FlurryTracker (`shared/utils/precast/flurry_tracker.lua`)
 
 `start()`, `level() -> 0|1|2`, `apply_ranged_groups()`. Callers: `COR_PRECAST.lua`
-(file level and `apply_cor_precast`).
+(file level and `apply_cor_precast`), RNG `rng/functions/logic/ranged.lua`
+(`Ranged.start`, `Ranged.prepare_precast`).
 
 ## Commands
 
@@ -1003,8 +1006,8 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
   Auto-cure for a new debuff needs a new branch in `check_and_block` / `check_ja` and
   a message pair in `message_debuffs.lua`.
 - **New multi-charge ability**: add it to `MULTI_CHARGE_ABILITIES`
-  (`cooldown_checker.lua`). PLD, RUN and BLM keep their own lists
-  (`cooldown_exclusions` in `PLD_PRECAST.lua` and `RUN_PRECAST.lua`,
+  (`cooldown_checker.lua`). PLD, RUN, DRK and BLM keep their own lists
+  (`cooldown_exclusions` in `PLD_PRECAST.lua`, `RUN_PRECAST.lua` and `DRK_PRECAST.lua`,
   `BLM_SPELL_FILTERS.CHARGE_ABILITIES`).
 - **New auto-trigger ability**: call `AbilityHelper.try_ability_smart` after the
   cooldown check in the job's `job_precast`; return after it if the rest of the job

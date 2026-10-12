@@ -16,7 +16,7 @@ Verified against the code on 2026-09-28 (system added 2026-09-26, trace module a
 | `shared/utils/stealth/stealth_config.lua` | 79 | Reads `<Character>/_common/travel/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
 | `shared/utils/messages/formatters/system/message_stealth.lua` | 98 | `show_skipped`, `show_covered`, `show_no_way`, `show_jig_recast`, `show_asked`, `show_wearing_off`, `show_setting`, `show_usage` |
 | `shared/utils/messages/data/systems/stealth_messages.lua` | 23 | `STEALTH` namespace, 10 templates |
-| `_master/config_global/STEALTH_CONFIG.lua` | 37 | Settings template, copied to `<Character>/_common/` by the clone |
+| `_master/config_global/STEALTH_CONFIG.lua` | 37 | Settings template, copied to `<Character>/_common/travel/` by the clone |
 
 Integration points outside the folder:
 
@@ -25,8 +25,8 @@ Integration points outside the folder:
 - `_master/config_global/COMMON_KEYBINDS.lua`: `!z` -> `stealth sneak`, `!x` -> `stealth invi`. The Blodykiller and Gabvanstronger overlays (`_master/<Name>/config_global/COMMON_KEYBINDS.lua`) keep their own per-subjob `!z` / `!x` binds (raw `/ja`, `/ma`, `/item` or alias commands) instead.
 - `shared/utils/dualbox/alt_window.lua` `stealth_lines` (called from `alt_lines`): a Sneak and an Invi row per alt.
 - `clone_character.py`: `('_common', 'travel', 'STEALTH_CONFIG.lua')` is in `KEPT_ON_RECLONE` (with the file's places of before: `_common/combat/` until 2026-10-10, `common/...`, `config/`), so a re-clone copies the player's file back from the backup. The template itself reaches `config/`, then `_common/travel/` (the clone's layout step), through the `config_global` copy loop (overlay-aware, every `*.lua` of `_master/config_global/` and the overlay's `config_global/`).
-- `shared/utils/messages/formatters/ui/message_commands.lua`: `//gs c commands` lists `stealth help` and `stealth sneak | invi | both`, `stealth check`. `help` is not a subcommand: it falls to the usage screen like any unknown word.
-- `shared/utils/core/action_queue.lua` (180 lines, since 2026-10-01): the action queue, shared with `//gs c cleanse` ([cleanse.md](cleanse.md)) and `//gs c buff` ([midcast-and-buffs.md](midcast-and-buffs.md#buff-command-and-engine)).
+- `shared/utils/messages/formatters/ui/message_commands.lua`: `//gs c help` lists `stealth help`; `//gs c commands` lists `stealth sneak | invi | both` and `stealth check`. `help` is not a subcommand: it falls to the usage screen like any unknown word.
+- `shared/utils/core/action_queue.lua` (193 lines, since 2026-10-01): the action queue, shared with `//gs c cleanse` ([cleanse.md](cleanse.md)) and `//gs c buff` ([midcast-and-buffs.md](midcast-and-buffs.md#buff-command-and-engine)).
 - `shared/utils/buffs/buff_timers.lua` `BuffTimers.read(data)`: the packet 0x063 decoding `read_packet` uses (moved there on 2026-10-01, shared with the buff refresh of `//gs c buff`).
 - `shared/utils/core/cast_tracker.lua`: `started_since(t)` / `acted_since(t)` tell the queue whether a sent spell / item started.
 - `shared/utils/scholar/scholar_actions.lua` `cast_with_stratagems` and `shared/utils/scholar/stratagem_charges.lua` `available`: the Accession chain and the charge count.
@@ -217,7 +217,7 @@ Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `requ
 | Function / field | Params | Returns / behaviour | Callers |
 |---|---|---|---|
 | `DEFAULTS` | - | default values and types | `stealth.lua` `set_setting`, `get` |
-| `path()` | - | `windower.addon_path .. 'data/<player.name>/config/STEALTH_CONFIG.lua'`, nil without a player name | `get`, `save` |
+| `path()` | - | `CharPaths.writable('common', 'STEALTH_CONFIG.lua')` (`<Character>/_common/travel/STEALTH_CONFIG.lua`, or where an older folder has it), nil without a player name | `get`, `save` |
 | `get()` | - | settings, read once per load into `_G._stealth_settings` | `stealth.lua`, `stealth_timers.lua` `tick_once` |
 | `set(key, value)` | key of `DEFAULTS`, value of the same type | changes memory, then `save`; returns whether the file was written | `set_setting` |
 
@@ -260,7 +260,7 @@ Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `requ
 | `alerts` | true | Wear-off warnings in chat |
 | `delay` | 3.0 | Seconds after an action ends before the next one (2.5 until 2026-09-27: a RDM/WHM Invisible right after Sneak was refused) |
 
-`get()` reads the file once per load with `pcall(dofile, path)` into `_G._stealth_settings`; a missing file or key, or a value of another type, keeps the default. `set()` changes the value in memory, then the local `save` rewrites only that key's `key = value,` line (or adds it before the closing brace), keeping comments and the file's line endings; a missing file gives `setting_unsaved` ("not saved (config/STEALTH_CONFIG.lua missing)": the template in `stealth_messages.lua` still names the place of the oldest layout). Note: the template's header still suggests `//gs c stealth delay 2.5`, the old default.
+`get()` reads the file once per load with `pcall(dofile, path)` into `_G._stealth_settings`; a missing file or key, or a value of another type, keeps the default. `set()` changes the value in memory, then the local `save` rewrites only that key's `key = value,` line (or adds it before the closing brace), keeping comments and the file's line endings; a missing file gives `setting_unsaved` ("not saved (_common/travel/STEALTH_CONFIG.lua missing)", template in `stealth_messages.lua`). Note: the template's header still suggests `//gs c stealth delay 2.5`, the old default.
 
 ## State & lifetime
 
@@ -375,7 +375,6 @@ The missing `STEALTH_CONFIG.lua` makes `StealthConfig.get()` fall back to the de
 
 Open:
 
-- The header of `stealth.lua` still says "a newer load drops an older queue"; the queue generation changes only when an idle queue starts (`push`), not on a load (see gotchas). The `action_queue.lua` header was corrected on 2026-10-01.
 - A partner request (`stealth cast`) is answered by every box that has the spell: with two such partners the character gets two casts (`cast_for`; no claim for partner casts).
 - Two Scholar boxes that both qualify both cast Accession: `request` casts at once without recording its own claim, so the alphabetical `winner` rule never stops a box that has already cast.
 - `windower._stealth_warned` gains one key per buff end time and is never pruned before `//lua reload gearswap` (`stealth_timers.lua` `tick_once`).
@@ -384,6 +383,7 @@ Open:
 
 Fixed:
 
+- The header of `stealth.lua` said "a newer load drops an older queue"; that sentence is gone (the queue generation changes only when an idle queue starts, see gotchas).
 - The headers of `stealth.lua` and `stealth_aoe.lua` said a box waits one second for a claim; they now say half a second, matching `CLAIM_WAIT`.
 - The comment of `alt_window.lua` `stealth_lines` named a non-existent `//gs c stealth timers`; it now names `stealth_timers.lua`.
 - A DNC with Spectral Jig on recast fell back to oils and powders; it now waits for the Jig (`show_jig_recast`, 2026-09-27). Since 2026-10-01 (`ce45482`) that wait is for a /DNC only: a main DNC, whose Jig recast can be taken by Chocobo Jig / Chocobo Jig II (shared recast 218), goes its other ways.

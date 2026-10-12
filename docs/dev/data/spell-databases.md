@@ -35,7 +35,7 @@ table, with a line number only where it was re-read that day.
 | `shared/data/magic/DARK_MAGIC_DATABASE.lua` | 93 | 26 | Merges 4 `dark/` modules (data only) |
 | `shared/data/magic/DIVINE_MAGIC_DATABASE.lua` | 62 | 11 | Merges 3 `divine/` modules (data only) |
 | `shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua` | 129 | 33 | Merges 3 `enfeebling/` modules; `get_enfeebling_type` used by 6 midcast modules (BLM, BLU, DRG, PUP, RDM, SCH); `is_aoe`, `get_stats` (no caller) |
-| `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` | 99 | 139 | Merges 5 `enhancing/` modules incl. `storm.lua`; `get_spell_family` used by 15 midcast modules; `get_spell_data` (no caller) |
+| `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` | 99 | 139 | Merges 5 `enhancing/` modules incl. `storm.lua`; `get_spell_family` used by 20 midcast modules; `get_spell_data` (no caller) |
 | `shared/data/magic/HEALING_MAGIC_DATABASE.lua` | 137 | 32 | Merges 4 `healing/` modules + `is_aoe`, `is_cure`, `get_stats` (no caller) |
 | `shared/data/magic/NINJUTSU_DATABASE.lua` | 98 | 37 | Merges 3 `ninjutsu/` modules + `can_cast` (no caller) |
 | `shared/data/magic/BLM_SPELL_DATABASE.lua` | 69 | 102 | Job view: Elemental + Dark + Enfeebling records that have a `BLM` key |
@@ -192,7 +192,7 @@ No database is loaded at job load. Each consumer requires only what the current 
 | Consumer | What it loads | When |
 |---|---|---|
 | `spell_message_handler.lua` | the one aggregator mapped to `spell.skill` (`SKILL_PATH`), and only on a miss the `FALLBACK_DATABASES` list in order | first cast of a skill whose message mode is not off |
-| Job midcast modules | `ENHANCING_MAGIC_DATABASE` (and for BLM, BLU, DRG, PUP, RDM, SCH `ENFEEBLING_MAGIC_DATABASE`) | in each job's `ensure_modules_loaded` / first routed cast; `MidcastDeps.load()` for BLU, COR, DNC, DRK, SAM, THF, WAR, WHM |
+| Job midcast modules | `ENHANCING_MAGIC_DATABASE` (and for BLM, BLU, DRG, PUP, RDM, SCH `ENFEEBLING_MAGIC_DATABASE`) | in each job's `ensure_modules_loaded` / first routed cast; `MidcastDeps.load()` for BLU, COR, DNC, DRG, DRK, MNK, NIN, PUP, RNG, SAM, SCH, THF, WAR, WHM |
 | `BRD_MIDCAST.lua` | `BRD_SPELL_DATABASE` | first BRD midcast |
 | `message_geo.lua` | `geomancy_indi.lua`, `geomancy_geo.lua` | when the GEO message formatter is first required |
 | `ability_message_handler.lua` | `SMN_SPELL_DATABASE` | first blood pact |
@@ -260,10 +260,10 @@ function each job passes:
 
 | Function | Passed by |
 |---|---|
-| `ENHANCING_MAGIC_DATABASE.get_spell_family` | BLU (`skill_options`), BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM (`<JOB>_MIDCAST.lua`, Enhancing Magic branch). COR, DNC, DRK, SAM, THF, WAR, WHM and BLU get the table from `MidcastDeps.load()` (`shared/utils/midcast/midcast_deps.lua`); the others `pcall(require)` it themselves. RDM also calls it directly for its own Enhancing logic (`RDM_MIDCAST.lua`) |
-| `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type` | RDM (`RDM_MIDCAST.lua`, debug trace and routing), BLU (`skill_options`, Enfeebling Magic from a subjob, loaded on first use) |
+| `ENHANCING_MAGIC_DATABASE.get_spell_family` | BLU (`skill_options`), BRD, BST, COR, DNC, DRG, DRK, GEO, MNK, NIN, PLD, PUP, RDM, RNG, RUN, SAM, SCH, THF, WAR, WHM (`<JOB>_MIDCAST.lua`, Enhancing Magic branch). COR, DNC, DRG, DRK, MNK, NIN, PUP, RNG, SAM, SCH, THF, WAR, WHM and BLU get the table from `MidcastDeps.load()` (`shared/utils/midcast/midcast_deps.lua`); the others (BRD, BST, GEO, PLD, RDM, RUN) `pcall(require)` it themselves. RDM also calls it directly for its own Enhancing logic (`RDM_MIDCAST.lua`) |
+| `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type` | RDM (`RDM_MIDCAST.lua`, debug trace and routing), BLU (`skill_options`, Enfeebling Magic from a subjob, loaded on first use), DRG, PUP and SCH (`<JOB>_MIDCAST.lua`, loaded on first use), BLM (`logic/midcast_router.lua:218-222`) |
 
-BLM passes no `database_func` (its Enfeebling routing needs none). Spells a job's midcast does not route
+Spells a job's midcast does not route
 at all still reach `MidcastManager` through `shared/utils/midcast/midcast_fallback.lua` (installed by
 `INIT_SYSTEMS.lua` since 2026-09-27), which passes no `database_func`.
 
@@ -292,7 +292,7 @@ values: `macc`, `mnd_potency`, `int_potency`, `skill_potency`, `skill_mnd_potenc
 ### Runtime path 4: `data_loader` and `//gs c info`
 
 `data_loader.lua` creates `_G.FFXI_DATA = { spells = {}, abilities = {}, weaponskills = {}, loaded =
-{...} }` at require time (`:40`) and loads nothing: the autoload call is commented out (`:294`, "causes
+{...} }` at require time (`:41`) and loads nothing: the autoload call is commented out (`:294`, "causes
 100-300ms lag at startup"). The entry points that `require('shared/utils/data/data_loader')` (every
 shared entry in `shared/entry/`) therefore only create the empty global.
 
@@ -356,7 +356,7 @@ functions left without a caller are listed below.
 
 | Function | Returns | Callers |
 |---|---|---|
-| `ENHANCING_MAGIC_DATABASE.get_spell_family(name)` | `spell_family` or nil | 15 midcast modules, see table above |
+| `ENHANCING_MAGIC_DATABASE.get_spell_family(name)` | `spell_family` or nil | 20 midcast modules, see table above |
 | `ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type(name)` | `enfeebling_type` or nil | `RDM_MIDCAST.lua`, `BLU_MIDCAST.lua`, `DRG_MIDCAST.lua`, `PUP_MIDCAST.lua`, `SCH_MIDCAST.lua`, BLM `logic/midcast_router.lua` |
 | `BLU_SPELL_DATABASE.get_spell_data(name)` | record or nil | `shared/jobs/blu/functions/logic/spell_map.lua` (`database_entry`) |
 | `RDM_ENFEEBLE_TIERS.get(family)` | tier map or nil | `RDM_PRECAST.lua` `get_spell_tiers` |
@@ -423,7 +423,7 @@ have no effect.
 - `//gs c info`, `spellmsg`: [../systems/commands-and-debug.md](../systems/commands-and-debug.md).
 - Module cache and sandbox lifetime: [../systems/core-lifecycle.md](../systems/core-lifecycle.md),
   [../architecture/job-change-lifecycle.md](../architecture/job-change-lifecycle.md).
-- Dual-box alt commands: the generated `_common/dualbox/alt/<JOB>_ALT_COMMANDS.lua` files state they are built
+- Dual-box alt commands: the generated `shared/data/alt/<JOB>_ALT_COMMANDS.lua` files state they are built
   from `shared/data/magic/` and `res`; the generator itself is not in the repository. See
   [../systems/dualbox.md](../systems/dualbox.md).
 

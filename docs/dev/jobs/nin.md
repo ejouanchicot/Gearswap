@@ -2,7 +2,7 @@
 
 NIN was added on 2026-09-29. It is a thin job built on the shared systems,
 like BLU and PUP: 11 hook modules plus 2 logic modules under
-`shared/jobs/nin/functions/`, a template entry point, seven config files and
+`shared/jobs/nin/functions/`, a template entry point, eight config files and
 one sets file. GearSwap loads it when the main job becomes NIN (the entry file
 `<Character>_NIN.lua`, one `include` of `shared/entry/nin.lua`, copied from
 `_master/entry/Tetsouo_NIN.lua` by the clone script).
@@ -47,8 +47,8 @@ and spell messages (`NIN_JA_DATABASE`, `NINJUTSU_DATABASE`).
 | `shared/jobs/nin/functions/NIN_BUFFS.lua` | 25 | `LifecycleManager.buff_change` + `refresh_after_buff` (Yonin, Innin, Sange, Issekigan) |
 | `shared/jobs/nin/functions/NIN_COMMANDS.lua` | 116 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/nin/functions/NIN_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/nin/functions/NIN_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('NIN', 'nin/display/NIN_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/nin/functions/NIN_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('NIN', 'nin/display/NIN_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/nin/functions/NIN_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('NIN', 'config/nin/NIN_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/nin/functions/NIN_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('NIN', 'config/nin/NIN_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/nin/functions/logic/ninjutsu.lua` | 74 | `family(name)`, `midcast_config(spell)`, `futae_layer(family)` |
 | `shared/jobs/nin/functions/logic/set_builder.lua` | 153 | Idle and engaged: base, buff layers, Mote layers, weapons, movement (night set) |
 | `_master/config/nin/NIN_STATES.lua` | 77 | Mote mode options, `MainWeapon`, `SubWeapon`, `MagicBurstMode`, `FastCast`, `AutoMedicine` |
@@ -227,12 +227,12 @@ T = `_master/sets/nin_sets.lua`. Player version:
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/nin/NIN_STATES.lua` | see states | entry `user_setup` |
-| `<char>/nin/NIN_KEYBINDS.lua` | 6 entries | entry `user_setup`, `file_unload` |
-| `<char>/nin/NIN_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
-| `<char>/nin/NIN_CUSTOM.lua` | examples only | shared custom states |
-| `<char>/nin/NIN_HUD.lua` | empty | HUD |
-| `<char>/nin/NIN_LOCKSTYLE.lua`, `NIN_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
+| `<char>/nin/keys/NIN_STATES.lua` | see states | entry `user_setup` |
+| `<char>/nin/keys/NIN_KEYBINDS.lua` | 6 entries | entry `user_setup`, `file_unload` |
+| `<char>/nin/combat/NIN_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
+| `<char>/nin/keys/NIN_CUSTOM.lua` | examples only | shared custom states |
+| `<char>/nin/display/NIN_HUD.lua` | empty | HUD |
+| `<char>/nin/display/NIN_LOCKSTYLE.lua`, `NIN_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
 ## Mechanics relied on (BG-Wiki)
 

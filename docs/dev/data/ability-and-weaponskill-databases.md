@@ -8,7 +8,7 @@ behaviour of its own. They are read at runtime by three consumers: the JA announ
 `action_type` is `'Ability'`), the WS announcement hook (`shared/hooks/init_ws_messages.lua`, on every
 weapon skill), and the `//gs c info <name>` viewer (through `shared/utils/data/data_loader.lua`). RDM's
 command fallback reads neither: it resolves names from the game resources. Offline, the job-ability
-module files are the input of the generator that produced `_common/dualbox/alt/<JOB>_ALT_COMMANDS.lua`
+module files are the input of the generator that produced `shared/data/alt/<JOB>_ALT_COMMANDS.lua`
 (dual-box alt commands); that generator is not in the repository.
 
 Nothing in this area registers events, keybinds, coroutines or `windower.*` fields. All state is
@@ -143,7 +143,7 @@ Roll 52, Consume Mana 55, Ebullience 55, Gallant's Roll 55, Rapture 55, Wizard's
 | `DAGGER_WS_DATABASE.lua` | 301 | 18 | Alternate schema (see below) |
 | `H2H_WS_DATABASE.lua` | 293 | 17 | Standard schema |
 | `GREATSWORD_WS_DATABASE.lua` | 254 | 15 | Standard schema |
-| `GREATAXE_WS_DATABASE.lua` | 260 | 14 | Standard schema |
+| `GREATAXE_WS_DATABASE.lua` | 260 | 15 | Standard schema |
 | `AXE_WS_DATABASE.lua` | 243 | 15 | Standard schema |
 | `SCYTHE_WS_DATABASE.lua` | 255 | 15 | Standard schema |
 | `POLEARM_WS_DATABASE.lua` | 254 | 15 | Standard schema |
@@ -153,7 +153,7 @@ Roll 52, Consume Mana 55, Ebullience 55, Gallant's Roll 55, Rapture 55, Wizard's
 | `CLUB_WS_DATABASE.lua` | 345 | 17 | Standard schema |
 | `ARCHERY_WS_DATABASE.lua` | 240 | 12 | Standard schema |
 
-204 weapon skills, each filed once, in the file of its own `res` skill. There is no Marksmanship file.
+205 weapon skills, each filed once, in the file of its own `res` skill. There is no Marksmanship file.
 The weapon files are pure data (`local M = {}; M.weaponskills = {...}; return M`).
 
 ### Developer notes (`_dev/`, gitignored, local only)
@@ -170,7 +170,8 @@ The weapon files are pure data (`local M = {}; M.weaponskills = {...}; return M`
 |------|------|
 | `shared/hooks/init_ability_messages.lua` | Wraps `user_post_precast`, calls `AbilityMessageHandler.show_message` for `action_type == 'Ability'` |
 | `shared/utils/messages/handlers/ability_message_handler.lua` | Requires `<JOB>_JA_DATABASE` per job (`load_ja_db`), reads `.description` |
-| `shared/hooks/init_ws_messages.lua` | The only module that requires `UNIVERSAL_WS_DATABASE` (`:64`); calls `resolve(spell.english, spell.skill)` in `full` mode only and reads `.description` |
+| `shared/hooks/init_ws_messages.lua` | Requires `UNIVERSAL_WS_DATABASE` (`:64`); calls `resolve(spell.english, spell.skill)` in `full` mode only and reads `.description` |
+| `shared/utils/atelier/atelier_ws.lua` | The other module that requires `UNIVERSAL_WS_DATABASE` (`:58`, `:94`), for the Atelier export: `ensure_weapon_type` on every skill, then `resolve` on each weaponskill |
 | `shared/utils/data/data_loader.lua` + `shared/utils/commands/info_command.lua` | `//gs c info`: loads every module file directly into `_G.FFXI_DATA` |
 | `shared/jobs/pld/functions/logic/rune_manager.lua`, `shared/jobs/run/functions/logic/rune_manager.lua` | Comments only: the rune announcement comes from the ability handler reading `RUN_JA_DATABASE`; the managers read `res` for the recast |
 
@@ -188,7 +189,7 @@ not read these databases: cooldowns come from `spell.recast_id`, `AbilityHelper`
 | `description` | string | all 334 entries | `ability_message_handler.lua` (only in `ja_mode == 'full'`), `info_command.lua` |
 | `level` | number | all | `info_command.lua`; offline alt-commands generator |
 | `recast` | number, seconds (SCH stratagems and rolls use `0`) | all | `info_command.lua` |
-| `main_job_only` | boolean | all | offline alt-commands generator only (`main_only` in `_common/dualbox/alt/*_ALT_COMMANDS.lua`) |
+| `main_job_only` | boolean | all | offline alt-commands generator only (`main_only` in `shared/data/alt/*_ALT_COMMANDS.lua`) |
 | `cumulative_enmity`, `volatile_enmity` | number | all except the 31 rolls and `Assassin's Charge` | none |
 | `fm_cost` | number | DNC flourishes | none |
 | `lucky`, `unlucky` | number | COR rolls | none |
@@ -341,7 +342,7 @@ flowchart TD
 ```
 
 1. On first require the facade creates `_G.WS_DATABASE = {weaponskills={}, weapon_types={}}`
-   (`UNIVERSAL_WS_DATABASE.lua:45`).
+   (`UNIVERSAL_WS_DATABASE.lua:45-46`).
 2. `init_ws_messages.lua` passes `spell.skill`, the weaponskill's own skill as GearSwap reports it
    (`res.skills[id].english`), not the main hand's: a ranged WS belongs to the range slot.
 3. `resolve` (`:127`) returns an already merged entry, else merges that skill's file and returns
@@ -390,8 +391,8 @@ WHM 9: **334**, every entry on disk.
 
 | Function | Line | Behaviour | Callers |
 |----------|------|-----------|---------|
-| `resolve(ws_name, weapon_type)` | 127 | Returns the entry or nil, merging at most the one file of `weapon_type` | `init_ws_messages.lua` |
-| `ensure_weapon_type(weapon_type)` | 113 | Merges one file by its `res.skills` English name; ignores unknown names | `resolve` only |
+| `resolve(ws_name, weapon_type)` | 127 | Returns the entry or nil, merging at most the one file of `weapon_type` | `init_ws_messages.lua`, `atelier_ws.lua` |
+| `ensure_weapon_type(weapon_type)` | 113 | Merges one file by its `res.skills` English name; ignores unknown names | `resolve`, `job_weaponskills` in `atelier_ws.lua` |
 
 The former query API (`load()`, 13 query helpers, the per-weapon helpers) was removed in `e765fa2`
 (2026-09-22): none had a caller.
@@ -474,7 +475,7 @@ defaults are `ja_mode = 'on'`, `ws_mode = 'on'`.
 sub, else `_mainjob` or `_sp`) with the standard fields (`description`, `level`, `recast`,
 `main_job_only`, `cumulative_enmity`, `volatile_enmity`), keyed by the exact `res/job_abilities.lua`
 `en` name. Nothing else is needed for announcements or `info`. The generated
-`_common/dualbox/alt/<JOB>_ALT_COMMANDS.lua` does not pick it up (the generator is not in the repository); add
+`shared/data/alt/<JOB>_ALT_COMMANDS.lua` does not pick it up (the generator is not in the repository); add
 it to `<JOB>_ALT_CUSTOM.lua` if the alt should use it.
 
 **Add a module file to a job**: create `<job>/<job>_<suffix>.lua` with `.abilities`, then add the suffix
@@ -552,10 +553,10 @@ Results on 2026-09-28:
 | JA names present in `res/job_abilities.lua` | all 334 |
 | Suffix vs `main_job_only` | consistent in every file |
 | Missing fields | `cumulative_enmity`/`volatile_enmity` absent on 31 rolls and `Assassin's Charge`; no reader, no effect |
-| WS entries | 204 across 13 files, 204 distinct names |
+| WS entries | 205 across 13 files, 205 distinct names (counted again on 2026-10-12, after Disaster was added) |
 | Cross-file WS duplicates | none |
 | WS names present in `res/weapon_skills.lua` | all |
-| Player WS in `res` with no entry | Marksmanship (14, including Leaden Salute, Last Stand, Wildfire, Trueflight, Coronach), Sword (Atonement, Spirits Within, Glory Slash, Imperator, Knights of Rotund), Great Axe (Disaster), Hand-to-Hand (Final Paradise) |
+| Player WS in `res` with no entry | Marksmanship (14, including Leaden Salute, Last Stand, Wildfire, Trueflight, Coronach), Sword (Atonement, Spirits Within, Glory Slash, Imperator, Knights of Rotund), Hand-to-Hand (Final Paradise) |
 | Schema | 12 files standard, DAGGER alternate |
 
 ## Known issues
@@ -566,7 +567,7 @@ Re-checked on 2026-09-28. Open:
   ability handler's 21-database walk: SMN has no JA database and the type is `JobAbility`, so the first
   one after a job-file load loads every JA database - `find_ability_in_databases`,
   `shared/utils/messages/handlers/ability_message_handler.lua:150`
-- No Marksmanship file and several missing Sword/Great Axe/H2H WS; in `ws_mode == 'full'` those WS
+- No Marksmanship file and several missing Sword/H2H WS; in `ws_mode == 'full'` those WS
   print nothing (e.g. Atonement, Leaden Salute) - `weapon_type_configs`,
   `shared/data/weaponskills/UNIVERSAL_WS_DATABASE.lua:63`
 - DAGGER uses a different schema; `info` shows only the description (and element when set) for its 18

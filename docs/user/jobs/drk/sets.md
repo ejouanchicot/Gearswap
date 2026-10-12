@@ -37,9 +37,9 @@ Then, on top: `sets.<Main Weapon>`, then the Dark Seal / Nether Void pieces
 below. Other engaged names (`sets.engaged.Normal`, an Offense Mode...) are not
 read on DRK.
 
-When Aftermath: Lv.3 starts or ends, the engaged set is rebuilt about 0.1 s
-later (unless you are Doomed). If a spell or weaponskill is under way, it is rebuilt
-when that action ends. The plain "Aftermath" takes effect at your next gear change.
+When Aftermath: Lv.3 or the plain "Aftermath" starts or ends, the engaged set is
+rebuilt about 0.1 s later (unless you are Doomed). If a spell or weaponskill is under
+way, it is rebuilt when that action ends.
 
 ## Dark Seal and Nether Void
 

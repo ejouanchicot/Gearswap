@@ -40,14 +40,14 @@ that were re-read that day; elsewhere the function is named, which survives edit
 
 | Path | Lines | Role | Loaded by | Documented in |
 |---|---|---|---|---|
-| `shared/utils/equipment/equipment_checker.lua` | 489 | `//gs c checksets`: name -> location cache of owned items, walk of `sets`, report of unavailable slots | `CommonCommands.handle_checksets`, on demand | this page |
+| `shared/utils/equipment/equipment_checker.lua` | 483 | `//gs c checksets`: name -> location cache of owned items, walk of `sets`, report of unavailable slots | `CommonCommands.handle_checksets`, on demand | this page |
 | `shared/utils/equipment/wardrobe_auditor.lua` | 764 | `//gs c wa` report (skips the `NEVER_TOUCH` wardrobes of `WARDROBE_CONFIG.lua`); text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `items.lua`, `rules.lua`, `reports.lua` | this page |
 | `shared/utils/equipment/equip_hooks.lua` | 80 | Wraps GearSwap's `equip()` once per load (`_G._equip_hooks_wrapper`); every table argument goes through the registered hooks, lowest `order` first: 5 `impact_lock`, 10 `duplicate_gear`, 20 `hp_priority` | `impact_lock.lua`, `duplicate_gear.lua`, `hp_priority.lua` (`EquipHooks.add` / `remove`) | this page |
 | `shared/utils/equipment/impact_lock.lua` | 159 | At the precast of Impact, picks the cloak that grants it (Crepuscular / Twilight Cloak) and locks it: the equip hook `impact_lock` (order 5) puts it on every set and drops their `head` until the aftercast, a cancel or 20 s | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`ImpactLock.install`), every load, every job | this page |
 | `shared/utils/equipment/duplicate_gear.lua` | 234 | Equip hook `duplicate_gear` (order 10): a ring, earring or main / sub piece named without bag or augments, owned in 2+ copies without augments, gets the `bag` of the copy that side takes | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`DuplicateGear.install`), every load; then every `equip()` call | this page |
 | `shared/utils/equipment/hp_priority.lua` | 403 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = dHP*1000+dMP over the piece worn in that slot (all the HP first, the MP after, on every job since 2026-10-08); settings from `<Char>/_common/gear/HP_PRIORITY_CONFIG.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
 | `shared/utils/equipment/gear_scan.lua` | 247 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
-| `shared/utils/equipment/weapon_resolver.lua` | 126 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
+| `shared/utils/equipment/weapon_resolver.lua` | 126 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 18 job set builders (see below) | this page |
 | `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `shared/utils/equipment/elemental_belt.lua` | 212 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
@@ -58,8 +58,8 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/treasure_commands.lua` | 63 | `//gs c th` built on `optional_state_commands.create` | `COMMON_COMMANDS.lua` router | [commands-and-debug.md](commands-and-debug.md) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga -> Daybreak), worn through Combat Mode | RDM precast / midcast / aftercast / commands | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock), [../jobs/rdm.md](../jobs/rdm.md) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
-| `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` shared by the job set builders | set builders of 21 jobs (every job but SMN; BST: `lay_town_set` and `apply_movement`), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
-| `shared/utils/inventory/refill_manager.lua` | 328 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
+| `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` shared by the job set builders | set builders of 21 jobs (every job but SMN; BST: `lay_town_set` and `apply_movement`), `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
+| `shared/utils/inventory/refill_manager.lua` | 355 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
 | `shared/utils/inventory/refill/config_resolver.lua` | 385 | Picks the refill list (craft / job+subjob / common list + job extra / fallback) and builds the foreign item set (this character's lists, or other characters' too, per `store_foreign`) | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/item_resolver.lua` | 49 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
 | `shared/utils/inventory/refill/bag_scanner.lua` | 45 | Counts one item id in one bag and returns its slots | `refill_manager.lua` | this page |
@@ -107,31 +107,31 @@ and `craft_commands.lua`, and the wardrobe organizer under `shared/utils/wardrob
 ```mermaid
 flowchart TD
     A["CommonCommands.handle_command: cmd == 'checksets'"] --> B["handle_checksets(job_name)"]
-    B --> C["EquipmentChecker.check_job_equipment(job_name) :449"]
+    B --> C["EquipmentChecker.check_job_equipment(job_name) :443"]
     C --> D{"sets is a table?"}
     D -- no --> X1["show_no_sets_found"]
-    D -- yes --> E["build_cache_or_report :366 (pcall build_item_cache)"]
-    E --> F["scan_all_sets :390 (pcall scan_sets_recursive from 'sets')"]
+    D -- yes --> E["build_cache_or_report :360 (pcall build_item_cache)"]
+    E --> F["scan_all_sets :384 (pcall scan_sets_recursive from 'sets')"]
     F --> G{"any set with items?"}
     G -- no --> X2["show_no_sets_found"]
-    G -- yes --> H["report_set_issues :419"]
+    G -- yes --> H["report_set_issues :413"]
     H --> I["show_check_summary"]
 ```
 
 1. `CommonCommands.handle_command` passes the job code the job file supplied (`'WAR'`, `'BRD'`, ...;
    `shared/jobs/*/functions/*_COMMANDS.lua`) to `CommonCommands.handle_checksets`, which requires the
-   checker and calls `check_job_equipment(job_name)` (`equipment_checker.lua:449`). The job name is only
+   checker and calls `check_job_equipment(job_name)` (`equipment_checker.lua:443`). The job name is only
    used for the header and warning text; the data walked is always the sandbox global `sets` of the
    loaded job file.
-2. Item cache (`build_item_cache`, `equipment_checker.lua:184`), built once per command from one
+2. Item cache (`build_item_cache`, `equipment_checker.lua:178`), built once per command from one
    `windower.ffxi.get_items()` call:
-   - `add_equipped_items` (`:138`) iterates `items.equipment` and treats each non-`_bag` value as an
+   - `add_equipped_items` (`:139`) iterates `items.equipment` and treats each non-`_bag` value as an
      item id. In the Windower API those values are inventory indices inside the `<slot>_bag` bag, not
      item ids (see Known issues). Equipped items are still found by the next step because an equipped
      item stays in its bag.
-   - `add_bag_items` (`:149`) adds inventory and wardrobe 1-8 (`EQUIPPABLE_BAGS`, `:38`) as
+   - `add_bag_items` (`:150`) adds inventory and wardrobe 1-8 (`EQUIPPABLE_BAGS`, `:39`) as
      `available = true`, then `safe safe2 storage locker satchel sack case temporary` (`STORAGE_BAGS`,
-     `:100`) as `in_storage = true`.
+     `:101`) as `in_storage = true`.
    - `add_slip_items` adds Porter Moogle slip contents as storage (`bag_name = 'Slip NN'`), read by
      `shared/utils/equipment/slip_reader.lua` from `res.slips` and the slips' extdata in the bags. It
      used `pcall(require, 'slips')` until 2026-10-12: Windower's `slips.lua` is not loaded by the addon,
@@ -139,30 +139,30 @@ flowchart TD
      load, where `tables.lua` wraps the shared `table.sort` and `table.concat` around the load before's:
      no load was ever freed again. A Windower library the addon has not loaded must not be required from
      the job code (`slip_reader_test.lua` refuses `slips`).
-   - Every name field of the resource entry in `NAME_FIELDS` (`:92`) becomes a lowercase key
-     (`make_cache_adder`, `:108`). With the Windower resources library only `en`, `enl` and their
+   - Every name field of the resource entry in `NAME_FIELDS` (`:93`) becomes a lowercase key
+     (`make_cache_adder`, `:109`). With the Windower resources library only `en`, `enl` and their
      aliases `english`, `english_log` return strings; the French and German fields do not exist. When
      two bags hold the same name, an available location replaces an unavailable one; otherwise the
      first one written wins.
-3. Walk (`scan_sets_recursive`, `:341`), starting at `sets` with path `'sets'`:
-   - `skip_node` (`:247`) stops at depth > 15 (`MAX_RECURSION_DEPTH`, `:28`, with an error message), at
+3. Walk (`scan_sets_recursive`, `:335`), starting at `sets` with path `'sets'`:
+   - `skip_node` (`:241`) stops at depth > 15 (`MAX_RECURSION_DEPTH`, `:29`, with an error message), at
      non-tables, at a table already visited in this scan (aliases such as `sets.a = sets.b` are
      therefore reported once, under whichever path `pairs` reaches first), and at `sets.naked` / any
      `*.naked` path. `visited_tables` is module-level and reset by `scan_all_sets`.
-   - A table is an equipment set if any key is in `VALID_SLOTS` (`:51-72`: `main sub range ammo head
+   - A table is an equipment set if any key is in `VALID_SLOTS` (`:52-73`: `main sub range ammo head
      neck ear1 ear2 left_ear right_ear body hands ring1 ring2 left_ring right_ring back waist legs feet`).
      GearSwap also accepts `ranged`, `lear`, `rear`, `learring`, `rearring`, `lring`, `rring`
      (*(engine)* `statics.lua`, slot map); those keys are not slots for the checker.
-   - `collect_set_issues` (`:287`) takes the item name of each slot value (a string, or `.name` of a
-     table, `get_item_name`, `:81`), looks it up lowercased, treats `'empty'` as available, and records
+   - `collect_set_issues` (`:281`) takes the item name of each slot value (a string, or `.name` of a
+     table, `get_item_name`, `:82`), looks it up lowercased, treats `'empty'` as available, and records
      every slot whose status is not `available`. Augments, `bag` and `priority` fields are ignored. A
      set that names no item (only `empty` tables, for example) is not counted.
    - The walk always continues into child tables whose key is not a slot and not `naked`. Paths are
      built with `.` separators, so `sets.precast.WS['Savage Blade']` prints as
      `sets.precast.WS.Savage Blade`.
-4. `record_set` (`:312`) counts a set as valid or increments `storage_count` / `missing_count` once
+4. `record_set` (`:306`) counts a set as valid or increments `storage_count` / `missing_count` once
    per unavailable slot per set: the same missing ring in 20 sets counts 20.
-5. Output: only problems are printed (`report_set_issues`, `:419`). Each problem is two lines from
+5. Output: only problems are printed (`report_set_issues`, `:413`). Each problem is two lines from
    `equipment_messages.lua`: `[MISSING] [SLOT] Item` or `[STORAGE] [SLOT] Item - Found in <bag>`,
    followed by `  Set: <path>`. The header (`[EQUIPMENT CHECK] <JOB>` between `=` rules of
    `MessageCore.SEPARATOR_WIDTH`) and the summary (`Valid Sets: v/t`, then `Items in Storage: n` and
@@ -170,7 +170,7 @@ flowchart TD
    `show_check_summary`.
 6. Errors: a throw in the cache build or in the walk is caught and reported (`show_cache_build_failed`,
    `show_scan_failed`); the command returns `false`. The debug lines (`show_scanning`,
-   `show_alias_detected`, cache size) only print when the file-level `local DEBUG = false` (`:26`) is
+   `show_alias_detected`, cache size) only print when the file-level `local DEBUG = false` (`:27`) is
    edited to `true`; no command toggles it.
 
 ### `//gs c wa` and the organizer helpers
@@ -188,16 +188,21 @@ flowchart TD
     A --> I["show_ingame_summary :515"]
 ```
 
-1. Sets folder: `windower.addon_path .. 'data/' .. <player name> .. '/sets/'`, falling back to
-   `Tetsouo` when `get_player()` returns nothing (`sets_dir`, `wardrobe_auditor.lua:47`). Nothing is
+1. Character folder: `windower.addon_path .. 'data/' .. <character name> .. '/'` (`char_dir`,
+   `wardrobe_auditor.lua:40`; the name comes from `CharPaths.name()`, and while it is not known the
+   folder is nil and nothing is read). Set files are looked for in the current layout
+   (`layout_set_files`, `:96`) and in the old `sets/` folder (`sets_dir`, `:47`). Nothing is
    loaded with `loadfile`; files are read with `io.open` because the sandbox has no
    `loadfile`/`setfenv`.
-2. `walk_lua_files` (`:61`) walks the tree iteratively; an entry ending in `.lua` is a file, anything
-   else is pushed as a directory.
-3. `discover_job_files` (`:132`) maps each file to a job: `<job>_sets.lua` at the root (flat layout,
-   Kaories and the templates) or anything under `<job>/` (modular layout, Tetsouo live). Only the 22
-   codes in `VALID_JOBS` (`:29`) count, so root files such as `bonecraft_sets.lua` and
-   `fishing_sets.lua` are skipped. Every file under `_common/` is appended to every discovered job.
+2. `walk_lua_files` (`:61`) walks the old `sets/` tree iteratively; an entry ending in `.lua` is a
+   file, anything else is pushed as a directory.
+3. `discover_job_files` (`:132`) maps each file to a job. Current layout (`layout_set_files`): for
+   each of the 22 codes in `VALID_JOBS` (`:29`), the lower-case `.lua` files and the `*_CUSTOM.lua`
+   files of `<job>/`, `<job>/sets/` and `<job>/keys/`; the common files are the lower-case `.lua` files
+   of `_common/sets/`, `_common/`, `common/sets/`, `common/` and `common/craft/`. Old `sets/` folder:
+   `<job>_sets.lua` at its root (flat layout) or anything under `<job>/` (modular layout), for the 22
+   codes only, so root files there such as `bonecraft_sets.lua` and `fishing_sets.lua` are skipped;
+   the files under `sets/common/` are common. Every common file is appended to every discovered job.
    `parse_job_sets` calls `discover_job_files()` again for each job, so the tree is walked once per job
    plus once for the job list.
 4. `extract_items_from_text` (`:267`) removes `--` line comments, then collects every single- or
@@ -225,8 +230,9 @@ flowchart TD
 
 Organizer helpers (same text parser, no report):
 
-- `build_pinned_bags()` (`:688`) scans every `.lua` under the sets folder and records `name` + `bag`
-  pairs. It repeatedly removes the innermost `{...}` block (at most 200 passes per file), which handles
+- `build_pinned_bags()` (`:688`) scans every set file of the character (`all_set_files`, `:122`:
+  every `.lua` under the old `sets/` folder plus the files of `layout_set_files`) and records
+  `name` + `bag` pairs. It repeatedly removes the innermost `{...}` block (at most 200 passes per file), which handles
   `{name=..., augments={...}, bag=...}` and nested maps such as `_common/sets/rings.lua`. The name pattern
   `name%s*=%s*['"]([^'"]+)['"]` stops at the first quote character of either kind. Bag strings are
   mapped by `BAG_NAME_TO_ID` (`:668`, `wardrobe`/`wardrobe 1`/`wardrobe1` -> 8, `wardrobe N` ->
@@ -269,7 +275,7 @@ sequenceDiagram
    0.5 s after `//gs c uncraft` (`craft_manager.lua`), and 3.5 s after a successful wardrobe organize
    (`schedule_lockstyle` in `wardrobe_organizer.lua`). Each of these goes through `handle_refill` and
    therefore also refills the partner.
-2. Guards (`RefillManager.refill`, `refill_manager.lua:259`): the sandbox `player` must exist and
+2. Guards (`RefillManager.refill`, `refill_manager.lua:272`): the sandbox `player` must exist and
    `get_items()` must return a table; otherwise one red `[Refill]` line. There is no in-progress guard.
 3. List resolution (`ConfigResolver.resolve_list_for_player`, `config_resolver.lua:352`), first match
    (since 2026-09-30, `bea1f23`). The label is printed as `Config` in the start banner:
@@ -323,6 +329,9 @@ sequenceDiagram
      non-empty list, only the folders it names (case-insensitive). Empty or absent: every such folder,
      frozen clones included (the behaviour before 2026-10-01).
    - `false` or `'off'`: no list, so nothing is foreign; only the surplus of step 4 goes back.
+   - `'usable'`: the lists of `'mine'`, and besides them every item of category `Usable` that neither
+     the current list nor `never_store` names is foreign, quivers, pouches, toolbags and linkshells
+     left out (`unlisted_usable`, `:188`).
 
    `load_char_refill_configs` loads every `*_REFILL.lua`, and `REFILL_CONFIG.lua` (as job `COMMON`),
    found in `_common/inventory/`, `common/inventory/`, `common/craft/`, every `<sub>/` and
@@ -339,9 +348,13 @@ sequenceDiagram
    `//gs c trace` is on). Pushes use
    `windower.ffxi.put_item(dst_bag, inventory_slot, count)`, pulls
    `windower.ffxi.get_item(src_bag, slot, count)`. Slots and counts come from the single snapshot
-   taken at step 2; free space in the inventory or the store bag is not checked and failed moves are
-   not detected. The report (`RefillPanels.show_report`, `refill_panels.lua:158`) is printed after the
-   last move and shows the planned numbers.
+   taken at step 2, and each move is checked just before it is sent (`still_there`, `:259`): when
+   the slot no longer holds the planned item, as many of it, with status 0, the move is skipped (a
+   `SKIP` trace line) and the next one runs at once. Free space in the inventory or the store bag is
+   not checked and a move the game refuses is not detected. The report (`RefillPanels.show_report`,
+   `refill_panels.lua:158`) is printed after the last move and shows the planned numbers; a red line
+   then gives the number of moves skipped, when there are any, and the Atelier page is told the bags
+   changed (`atelier_export_bags.changed(2)`).
 7. Output example (WAR, inventory holding 24 Sublime Sushi +1 against a target of 12; colour codes
    omitted, standard separator options):
 
@@ -417,8 +430,8 @@ by default, see `store_foreign`), is pushed back to the store bag on every refil
 
 Every set builder that applies `state.MainWeapon` / `state.SubWeapon` asks
 `WeaponResolver.set_for(slot, value)` instead of reading `sets[value]` itself. Callers (all
-`shared/jobs/<job>/functions/logic/set_builder.lua`): BLM, BLU, BRD, COR, DNC, DRK, GEO, RDM, RUN, SAM,
-THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-28; before, it read
+`shared/jobs/<job>/functions/logic/set_builder.lua`): BLM, BLU, BRD, COR, DNC, DRG, DRK, GEO, MNK, NIN,
+PUP, RDM, RNG, RUN, SAM, SCH, THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-28; before, it read
 `sets[weapon]` directly and `equip_without_set` had no effect on DRK.
 
 - **Default** (no `<Char>/_common/gear/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
@@ -449,8 +462,9 @@ THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-
   the answer is always "no dual wield"; then `sets.shields` for unknown names) and the BLU set builder
   (`is_single_wield`).
 
-The config is read once per sandbox (`enabled`, `pcall(require, 'config/WEAPON_CONFIG')`); both item
-indexes are built lazily on first use (see [For maintainers / AI](#for-maintainers--ai) for the cost).
+The config is read once per sandbox (`enabled`, `CharPaths.load('common', 'WEAPON_CONFIG')`); the item
+lookups come from the session-wide `ItemIndex` (`item_index.lua`), built on first use (see
+[For maintainers / AI](#for-maintainers--ai) for the cost).
 
 ### Movement and town idle: `BaseSetBuilder`
 
@@ -476,8 +490,8 @@ share, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_mo
   `set, in_town`. Mote's `get_idle_set` follows `IdleMode` only, so without it `sets.idle.PDT` is
   never worn on a job whose PDT toggle is `HybridMode`. The HybridMode set replaces Mote's base
   whole: `sets.idle.Weak` and Mote's defense and kiting layers only show when the current
-  HybridMode value has no idle set. Used by: DNC, DRK, THF, WAR (DNC, THF and WAR as
-  `SetBuilder.select_idle_base`, DRK from `build_idle_set`).
+  HybridMode value has no idle set. Used by: DNC, DRG, DRK, MNK, NIN, RNG, SCH, THF, WAR (DNC, THF
+  and WAR as `SetBuilder.select_idle_base`, the others from `build_idle_set`).
 - `lay_town_set(idle, town_set)` (since 2026-09-29): the same zone test and layering for a job that
   builds its own idle and passes its own town set (BST: `sets.me.idle.Town` over the pet or master
   idle). In Western/Eastern Adoulin, when `sets.Adoulin` exists, returns
@@ -485,7 +499,7 @@ share, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_mo
   (Adoulin included), when `town_set` is given, `set_combine(idle, town_set), true`; otherwise
   `idle, false`. `select_idle_base_town` and `lay_town_set` share one local zone test (`town_zone`)
   and one layering helper (`lay_town`).
-- `lay_weapon(result, slot, value)` (since 2026-09-29): `WeaponResolver.set_for(slot, value)` on top of `result` under `pcall` (error message on failure), unchanged when the value has no set. `lay_weapons(result)`: `lay_weapon` with `state.MainWeapon.current` then `state.SubWeapon.current`. They replace the copies each set builder carried: BLM, BLU, BRD, GEO, RDM, THF (outside the Abyssea weapon) call `lay_weapons`; DNC, DRK, RUN (main and grip), SAM, WAR call `lay_weapon`. COR calls `lay_weapon` for `MainWeapon` since 2026-09-29 (before, its own code laid the sub only on /NIN or /DNC); its gun still comes from `sets[...]`. PLD and BST (`sets[...]` read directly) keep their own weapon code. 168-case offline comparison (every weapon value, `equip_without_set` on and off): identical.
+- `lay_weapon(result, slot, value)` (since 2026-09-29): `WeaponResolver.set_for(slot, value)` on top of `result` under `pcall` (error message on failure), unchanged when the value has no set. `lay_weapons(result)`: `lay_weapon` with `state.MainWeapon.current` then `state.SubWeapon.current`. They replace the copies each set builder carried: BLM, BLU, BRD, DRG, GEO, NIN, PUP, RDM, RNG, SCH, THF (outside the Abyssea weapon) call `lay_weapons`; DNC, DRK, MNK, RNG (`'range'`, `state.RangeWeapon`), RUN (main and grip), SAM, WAR call `lay_weapon`. COR calls `lay_weapon` for `MainWeapon` since 2026-09-29 (before, its own code laid the sub only on /NIN or /DNC); its gun still comes from `sets[...]`. PLD and BST (`sets[...]` read directly) keep their own weapon code. 168-case offline comparison (every weapon value, `equip_without_set` on and off): identical.
 - `is_in_town()`: the same zone test without any set (used by `SMN_IDLE.lua` for the avatar idle
   set and by the `town` condition of `custom/custom_conditions.lua`).
 
@@ -749,7 +763,7 @@ misreads shows up as a changed HP/MP pair.
 
 | Function | Returns | Notes |
 |---|---|---|
-| `check_job_equipment(job_name)` `:449` | `boolean` | Reads the global `sets`, prints report. `false` on missing job name, no `sets`, cache or scan error, or no set with items. Caller: `CommonCommands.handle_checksets` only. |
+| `check_job_equipment(job_name)` `:443` | `boolean` | Reads the global `sets`, prints report. `false` on missing job name, no `sets`, cache or scan error, or no set with items. Caller: `CommonCommands.handle_checksets` only. |
 
 Everything else is local. The module has no `_G` export.
 
@@ -823,7 +837,7 @@ Returned only (no `_G` export).
 
 | Function | Returns | Callers |
 |---|---|---|
-| `set_for(slot, value)` | `table` or `nil` (see [Weapon states](#weapon-states-weaponresolver)); an off-hand weapon the player cannot hold is replaced by `sets.SingleWield.sub` or dropped | set builders of BLM, BLU, BRD, COR, DNC, DRK, GEO, RDM, RUN, SAM, THF, WAR (through `BaseSetBuilder.lay_weapon` / `lay_weapons` for most) |
+| `set_for(slot, value)` | `table` or `nil` (see [Weapon states](#weapon-states-weaponresolver)); an off-hand weapon the player cannot hold is replaced by `sets.SingleWield.sub` or dropped | set builders of BLM, BLU, BRD, COR, DNC, DRG, DRK, GEO, MNK, NIN, PUP, RDM, RNG, RUN, SAM, SCH, THF, WAR (through `BaseSetBuilder.lay_weapon` / `lay_weapons` for most) |
 | `can_dual_wield()` | `true` when the player is unknown, main job NIN/DNC/THF/BLU, /NIN at level 10+ or /DNC at level 20+; else `false` | `set_for` (local `single_wield`), RDM `SetBuilder.has_shield_equipped` |
 | `is_offhand_weapon(name)` | `true` (dual wield), `false` (shield/grip), `nil` (unknown name or empty) | `set_for` (local `single_wield`), RDM `SetBuilder.has_shield_equipped`, BLU `SetBuilder.is_single_wield` |
 
@@ -833,12 +847,12 @@ Returned only (no `_G` export).
 
 | Function | Returns | Callers |
 |---|---|---|
-| `apply_movement(result)` | set (combined with `sets.MoveSpeed` when moving) | set builders of BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM; `DNC_IDLE.lua`; `SMN_IDLE.lua` |
-| `select_idle_base_town(base_set)` | `set, in_town` | set builders of BLM, BLU and RDM (as `SetBuilder.check_town`), BRD, COR, GEO, PLD, RUN, SAM, WHM; `select_idle_base`; `SMN_IDLE.lua` |
-| `select_idle_base(base_set)` | `set, in_town` | set builders of DNC, DRK, THF, WAR |
+| `apply_movement(result)` | set (combined with `sets.MoveSpeed` when moving) | set builders of the 21 jobs that have one (every job but SMN); `SMN_IDLE.lua` |
+| `select_idle_base_town(base_set)` | `set, in_town` | set builders of BLM, BLU and RDM (as `SetBuilder.check_town`), BRD, COR, GEO, PLD, PUP, RUN, SAM, WHM; `select_idle_base`; `SMN_IDLE.lua` |
+| `select_idle_base(base_set)` | `set, in_town` | set builders of DNC, DRG, DRK, MNK, NIN, RNG, SCH, THF, WAR |
 | `lay_town_set(idle, town_set)` | `set, in_town` | BST set builder (`apply_common_overlays`) |
-| `lay_weapon(result, slot, value)` | `set` | set builders of DNC, DRK, RUN, SAM, WAR (and `lay_weapons`) |
-| `lay_weapons(result)` | `set` | set builders of BLM, BLU, BRD, GEO, RDM, THF |
+| `lay_weapon(result, slot, value)` | `set` | set builders of COR, DNC, DRK, MNK, RNG, RUN, SAM, WAR (and `lay_weapons`) |
+| `lay_weapons(result)` | `set` | set builders of BLM, BLU, BRD, DRG, GEO, NIN, PUP, RDM, RNG, SCH, THF |
 | `kraken_in_offhand()` | `boolean` | WAR and PLD `select_engaged_base`: Kraken Club still worn in the sub while the chosen `sets[MainWeapon]` names no sub (the Kraken engaged set holds for that rebuild) |
 | `is_in_town()` | `boolean` | `SMN_IDLE.lua`; `custom/custom_conditions.lua` (`town` condition) |
 
@@ -878,7 +892,7 @@ open until the stance is selected again. The registry is emptied on every job lo
 
 | Function | Returns | Callers |
 |---|---|---|
-| `RefillManager.refill()` `refill_manager.lua:259` | `boolean` (true once the queue is started) | `CommonCommands.handle_refill`, `refill_hook` in `INIT_SYSTEMS.lua` |
+| `RefillManager.refill()` `refill_manager.lua:272` | `boolean` (true once the queue is started) | `CommonCommands.handle_refill`, `refill_hook` in `INIT_SYSTEMS.lua` |
 | `ConfigResolver.resolve_list_for_player()` `config_resolver.lua:352` | `list, source_label, bags {id, display, sources}`; labels `CRAFT (<name>)`, `<JOB>/<SUB>`, `<JOB>/default`, `common/<SUB>`, `common`, `<common label> + <JOB> extra`, `fallback`, `fallback (no player)` | `RefillManager.refill` |
 | `ConfigResolver.build_foreign_items_set(char_name, current_list)` `:232` | `{[item_id] = config_name}`; `char_name` picks the `REFILL_CONFIG.lua` read and, with `store_foreign = 'mine'`, the folder scanned | `sweep_foreign_items` |
 | `ItemResolver.resolve_item_id(name)` | `number or nil`, through `ItemIndex.id` (index built once per session) | `config_resolver.lua`, `resolve_variants` |
@@ -985,7 +999,7 @@ return M
   skipped, and said at the end, when it no longer holds the planned item, as many of it, free to move;
   `lua5.1 scripts/atelier/refill_guard_test.lua`, 11 checks), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:42`), quiver
   thresholds in the aftercast callers (the per-job override is `REFILL_CONFIG.lua` `quiver_open_at`),
-  `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `MP_WEIGHT`,
+  `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:29`), and in `hp_priority.lua` `MP_WEIGHT`,
   `SLOTS` and `WORN_SLOT`. Apart from the quiver thresholds, none of them is read from a config file.
 - Templates and deployment: `clone_character.py` (`clone()`, step 4) copies `<job>/` per file,
   taking the overlay `_master/<Source>/config/<job>/<file>` when an overlay is selected and has the
@@ -996,9 +1010,10 @@ return M
 
 ## State & lifetime
 
-- Module state: `visited_tables` (checker, reset per scan), `_name_to_id` (ItemResolver and
-  QuiverManager, built on first lookup), `last_open` (QuiverManager), `config_loaded` /
-  `plain_enabled` / `weapon_names` / `offhand_kinds` (WeaponResolver), `lock_sequence` (AmpullaLock).
+- Module state: `visited_tables` (checker, reset per scan), `last_open` (QuiverManager),
+  `config_loaded` / `plain_enabled` (WeaponResolver), `lock_sequence` (AmpullaLock). The name
+  lookups of ItemResolver, QuiverManager and WeaponResolver are not module state: they read the
+  session-wide `windower._item_index` (`item_index.lua`).
   Because `ModuleCache` stores modules on the sandbox `_G`, these live for one user environment and are
   rebuilt after every `gs reload` and job change (GearSwap drops `user_env` in `load_user_files`).
 - Globals read: `sets` (checker, `HPPriority`, `WeaponResolver`), `player` (refill, `HPPriority`,
@@ -1008,14 +1023,16 @@ return M
   (equip hooks; `_G.sets` is not written), `_G._impact_lock`, `_G.precast`, `_G.aftercast`,
   `_G.cancel_spell` and `_G._impact_wrapped_<name>` for each of them (Impact lock), `_G.ampulla_ammo_locked` (Ampulla lock). The `windower.*`
   fields written are the Ampulla lock's record in `windower._weapon_locks` (through `CombatMode.hold` /
-  `release`, since 2026-09-29) and `windower._dup_gear_warned` (doubled items already warned about,
-  kept for the session).
+  `release`, since 2026-09-29), `windower._dup_gear_warned` (doubled items already warned about,
+  kept for the session) and `windower._item_index` (the item name lookups of `item_index.lua`, built
+  once per session).
 - Doubled gear: the bag read is a module-level cache of `duplicate_gear.lua`, refreshed when older than
   5 s and cleared at each load (`install`).
 - Config caching: refill configs and `WEAPON_CONFIG.lua` are cached by `ModuleCache` like modules, so
   an edited file is only read again after a `gs reload` or job change. A refill config that failed to
   load is not cached and is retried on the next refill.
-- Files written: `data/wardrobe_audit.txt` only.
+- Files written: `data/wardrobe_audit.txt` (`//gs c wa`) and `<Char>/saved/gear_augments.lua`
+  (`//gs c gearscan`).
 - Events, keybinds, text objects: none in the modules of this page (the belt, Dual Wield and Treasure
   Hunter hooks are described on their page).
 - Coroutines: the refill move chain (one `coroutine.schedule` per move), the aftercast quiver check
@@ -1057,8 +1074,8 @@ return M
 - `checksets` never sees items under the `ranged` key, which BRD sets use for Linos.
 - STORAGE means "owned but not in inventory or wardrobe 1-8": safe, safe2, storage, locker, satchel,
   sack, case, temporary, or a storage slip.
-- `wa` treats any quoted string after `=` in any set file of the job, plus all of `_common/`, as a used
-  item; a ring declared in `_common/sets/rings.lua` is used by every job even if no set references it.
+- `wa` treats any quoted string after `=` in any set file of the job, plus the common set files (the
+  lower-case files of `_common/sets/` and `_common/`), as a used item; a ring declared in `_common/sets/rings.lua` is used by every job even if no set references it.
 - `wa` does not judge the `NEVER_TOUCH` wardrobes of the character's `WARDROBE_CONFIG.lua` (W7 for
   Tetsouo); without a config it judges every wardrobe.
 - Doubled gear only places a piece named without `bag` and without augments. A set that writes
@@ -1081,8 +1098,9 @@ return M
   `plan_item` do arithmetic on it and throws after the start banner was printed; `handle_refill` does
   not catch it.
 - Refill moves address inventory slots by index from one snapshot; running two refills at once (two
-  quick `rf`, or `rf` from the partner while one is running) replays moves against slots the first run
-  already changed.
+  quick `rf`, or `rf` from the partner while one is running) plans moves against slots the first run
+  then changes. Each move is checked just before it is sent (`still_there`): one whose slot no longer
+  holds the planned item is skipped and counted in the red line after the report.
 - The quiver must stay in the inventory, and the character's refill list for the job must name it, or
   the next refill pushes it away as foreign.
 - HP priority replaces every hand-written `priority` (the sets themselves are not changed); a job
@@ -1107,7 +1125,7 @@ return M
 - New quiver pair: call `QuiverManager.after_ranged_attack(spell, ammo, quiver, threshold)` from the
   job's `job_aftercast`, as THF, COR and RNG do, and add the quiver to that job's refill list of every
   character that plays it.
-- New slot alias for `checksets`: add the key to `VALID_SLOTS` (`equipment_checker.lua:51-72`).
+- New slot alias for `checksets`: add the key to `VALID_SLOTS` (`equipment_checker.lua:52-73`).
 - A wardrobe `wa` must not judge: list it in `NEVER_TOUCH` of the character's
   `_common/inventory/WARDROBE_CONFIG.lua` (the organizer then leaves it alone too); an item it must
   count as used: `KEEP` or `NEVER_MOVE` there. The in-game total still counts a `NEVER_TOUCH` wardrobe
@@ -1153,11 +1171,11 @@ Traps:
   (`rawget(_G, 'res')` or `gearswap.res`), as `elemental_belt.lua`, `dual_wield.lua` and
   `cor/functions/logic/roll_gear.lua` do. In the sandbox, `require('resources')` returns GearSwap's
   already-loaded instance (`include_user` checks `package.loaded` first), so it does not load a second
-  copy; the cost is the scan, not the require. Full scans that exist today, each once per sandbox:
-  `ItemResolver.build_name_index` (first `rf`), `QuiverManager.build_name_index` (first low-ammo check),
-  `WeaponResolver.is_weapon` (first plain-weapon lookup with `equip_without_set`) and
-  `WeaponResolver.is_offhand_weapon` (first RDM/BLU engaged-set build with an off-hand). Do not add a
-  new one on a precast/midcast path; if a name -> id map is needed, build it lazily once and share it.
+  copy; the cost is the scan, not the require. One full scan exists today, once per session: `build`
+  in `item_index.lua`, run by the first name lookup of `ItemResolver` (first `rf`), `QuiverManager`
+  (first low-ammo check) or `WeaponResolver` (`is_weapon`, `is_offhand_weapon`), and kept on
+  `windower._item_index`. Do not add a new one on a precast/midcast path; if a name -> id map is
+  needed, use `ItemIndex`.
 - **`player.equipment` in coroutines** is GearSwap's copy from the last event. A callback scheduled
   after an equip reads the live slot with `windower.ffxi.get_items('equipment')` (as `roll_gear.lua`
   does) or polls, as `AmpullaLock` does.
@@ -1178,7 +1196,8 @@ with `package.path = '<repo>/?.lua;' .. package.path`:
   directly (`scanned` optional).
 - `ElementalBonus`: set `world = {day_element = 'Fire', weather_element = 'Fire', weather_intensity = 2}`
   and call `obi('Fire')` (expect 35) or `orpheus(5)`.
-- Refill planning: `item_resolver.lua` does `require('resources')` at load, so set
+- Refill planning: `item_index.lua` (behind `item_resolver.lua`) does `require('resources')` on its
+  first lookup, so set
   `package.preload['resources'] = function() return {items = {...}} end` (a few `{en, enl}` entries
   keyed by id), and stub `player`,
   `windower.ffxi.get_items` returning a fake bag table and `coroutine.schedule = function(f) f() end`,
@@ -1206,15 +1225,18 @@ Fixed since the page was first written (night cleanup `85ad22b`, 2026-09-24, unl
   `WeaponResolver.set_for` now replaces the off-hand weapon with `sets.SingleWield.sub` (or nothing)
   when `can_dual_wield()` is false (COR /NIN0 -> Naegling + Nusku Shield; WAR NaeglingKC without Dual
   Wield leaves Kraken Club out). A 168-case comparison with Dual Wield available: identical.
+- With no player the auditor fell back to Tetsouo's sets folder, on any character. `char_dir`
+  (`wardrobe_auditor.lua:40`) now returns nil while `CharPaths.name()` knows no character, and
+  nothing is read.
 
 Still open:
 
 - `checksets` skips the `ranged` slot key, so BRD's Linos is never checked - `VALID_SLOTS`,
-  `shared/utils/equipment/equipment_checker.lua:51-72`
+  `shared/utils/equipment/equipment_checker.lua:52-73`
 - `checksets` ignores `augments` and `bag`, so a set naming an augment variant or a pinned copy you do
-  not have is reported valid - `collect_set_issues`, `equipment_checker.lua:287`
+  not have is reported valid - `collect_set_issues`, `equipment_checker.lua:281`
 - `add_equipped_items` reads inventory indices from `get_items().equipment` as item ids (the code
-  comment says so) - `equipment_checker.lua:138`
+  comment says so) - `equipment_checker.lua:139`
 - Refill surplus pushes the preferred variant back first and keeps the lesser one - `queue_surplus`,
   `refill_manager.lua:99`
 - Tetsouo's COR list lacks `Brz. Bull. Pouch`; with `store_foreign = 'all'` (Kaories' lists read),
@@ -1223,12 +1245,11 @@ Still open:
 - A job refill file that fails to load (syntax error) is silently treated as absent: the common list
   is used (label `common` or `common/<SUB>`), and that file's food then counts as foreign -
   `resolve_list_for_player`, `config_resolver.lua:368`
-- Refill has no in-progress guard; overlapping runs replay stale slot moves - `RefillManager.refill`,
-  `refill_manager.lua:259`
+- Refill has no in-progress guard; overlapping runs plan on stale slots (a move whose slot changed is
+  skipped by `still_there`, `refill_manager.lua:259`) - `RefillManager.refill`,
+  `refill_manager.lua:272`
 - Tetsouo plays SMN live but `Tetsouo/smn/` holds no refill file: `rf` on SMN uses the common list
   (`default_list` of his `REFILL_CONFIG.lua`, the six medicines) and pushes every food, Echo Drops and quiver named in his other lists (any character's with `store_foreign = 'all'`) to the Case as foreign, `never_store` aside
-- With no player the auditor falls back to Tetsouo's sets folder, on any character; `wo` reaches it
-  through `build_pinned_bags` and `collect_all_used_names` - `sets_dir`, `wardrobe_auditor.lua:47`
 - `wa` counts strings inside `--[[ ]]` block comments as used items (only `--` to end of line is
   stripped) - `extract_items_from_text`, `wardrobe_auditor.lua:267`
 - `build_pinned_bags` truncates names containing an apostrophe - `wardrobe_auditor.lua:688`
@@ -1236,7 +1257,7 @@ Still open:
   not - `show_ingame_summary`, `wardrobe_auditor.lua:515`
 - Duplicated code: `build_frequency_map` and `collect_all_used_names` identical (`:659`, `:755`)
 - The gear scan counts path / rank stats only for the pieces of `PATH_RANK_GEAR.lua` (hand-read from
-  BG-Wiki, 67 pieces), and a piece whose page gives only max-rank values counts nothing below max rank;
+  BG-Wiki, 79 pieces), and a piece whose page gives only max-rank values counts nothing below max rank;
   the cache stays as last written until `//gs c gearscan` is run again after new or upgraded gear -
   `gear_scan.lua`
 - User docs contradict the code: `docs/user/features/equipment-validation.md`,

@@ -24,13 +24,13 @@ The limit is the cast time plus a 1.5 s safety buffer:
   spell's kind, capped at 80 %, Red Mage's Fast Cast trait, Nightingale /
   Troubadour on songs, Celerity / Alacrity). When that estimate is not
   available, the base cast time minus the job's `FastCast` mode, if it has
-  one.
+  one. A spell counts for 1.5 s at least, however short its cast is.
 - **Items**: the item's use time, with no Fast Cast.
 - **Unknown action**: 5.0 s (the fallback).
 
 | Example | Cast time used | Limit |
 |---|---|---|
-| Cure IV (2.0 s) with 40 % Fast Cast | 1.2 s | 2.7 s |
+| Cure IV (2.0 s) with 40 % Fast Cast | 1.2 s, counted as 1.5 s | 3.0 s |
 | Stoneskin (7.0 s) with no Fast Cast | 7.0 s | 8.5 s |
 | Warp Ring (10 s use time) | 10.0 s | 11.5 s |
 

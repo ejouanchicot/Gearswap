@@ -9,7 +9,7 @@ Six pieces decide what a key does and what extra gear goes on:
 5. **Player modes and gear rules** (`shared/utils/custom/*.lua`). An optional `<Character>/<job>/keys/<JOB>_CUSTOM.lua` adds Mote states with a key, and gear that goes on last, over what the job picked.
 6. **Temporary binds** (`//gs c tb`, `shared/utils/keybinds/temp_binds.lua`). Keys made in game for a repetitive task, on Ctrl/Alt+F1-F8.
 
-Two helpers sit beside them: `key_validator.lua` names keys that cannot work, and `shared/utils/core/keybind_guard.lua` re-sends the job's binds 2 s after each load.
+Two helpers sit beside them: `key_validator.lua` names keys that cannot work, and `shared/utils/core/keybind_guard.lua` re-sends the keys a load sent, 2 s after it.
 
 ## Files
 
@@ -20,7 +20,7 @@ Two helpers sit beside them: `key_validator.lua` names keys that cannot work, an
 | `shared/utils/keybinds/key_conflicts.lua` | Two actions on one key: live conflicts (chat block, red key in the HUD) and every possible one over subjobs and partner jobs (`//gs c kc`) |
 | `shared/utils/keybinds/common_keybinds.lua` | `CommonKeybinds.load()`, `CommonKeybinds.merge_into(binds)` |
 | `shared/utils/keybinds/key_overrides.lua` | `KeyOverrides.id_of(bind)`, `KeyOverrides.read()`, `KeyOverrides.apply(job, binds)`: the keys changed in the Atelier page |
-| `shared/utils/keybinds/temp_binds.lua` | `//gs c tb` subcommands and the `<Character>/temp_binds.lua` file; exported as `_G.TempBinds` |
+| `shared/utils/keybinds/temp_binds.lua` | `//gs c tb` subcommands and the `<Character>/saved/temp_binds.lua` file; exported as `_G.TempBinds` |
 | `shared/utils/keybinds/temp_binds_parse.lua` | Key words, action names, targets for `tb` |
 | `shared/utils/core/keybind_guard.lua` | `KeybindGuard.schedule()`: one delayed re-bind per load; exported as `_G.KeybindGuard` |
 | `shared/utils/core/optional_state.lua` | `OptionalState.create{...}`: base of Combat Mode and Treasure Mode (settings file, shown / hidden / key per job, `attach`) |
@@ -65,10 +65,10 @@ Requiring the file runs `KeybindManager.create(job, module)`, which does the fol
 2. `CombatMode.attach(job, module.binds)`, then `TreasureHunter.optional.attach(job, module.binds)`: the two optional states (see below). Then `AutoJump.attach(job, module.binds)` (`shared/utils/drg/auto_jump.lua`): creates `state.JumpAuto = M{'Off', 'On'}` (Off) when the job's STATES file has none, appends `{key = '!numpad-', command = 'cyclestate JumpAuto', desc = 'Jump Auto', state = 'JumpAuto'}` when the job's binds have no `JumpAuto` entry, and sets `subjob = 'DRG'` on the entry (unless it already has one), so the row and the key exist on /DRG only. It is not an optional state: no settings file, no show / hide command.
 3. Appends the player's `_CUSTOM` keys (local `add_custom_states`, under `pcall`). A broken custom file costs the job nothing but its custom keys, and prints `<JOB>_CUSTOM.lua: <error>`.
 4. Appends the common keys (`CommonKeybinds.merge_into`).
-5. Lays the keys changed in the Atelier page over the list (`KeyOverrides.apply`, `shared/utils/keybinds/key_overrides.lua`): `<Character>/atelier/overrides/keybind_overrides.lua` holds `{common = {id = key}, <JOB> = {id = key}}`, an entry found by `state:<State>`, else `cmd:<command>`, then `@<SUB>` / `@-<SUB>` when it is for (or not for) some subjobs (PLD's two Phalanx SIRD keys); a common entry takes the `common` table, the others the job's; `''` leaves the row without a key; the file's key stays in `file_key` for the export. Once per list (`binds._overrides_applied`). The old key is unbound by `clear_unwanted` at the next `bind_all`.
+5. Lays the keys changed in the Atelier page over the list (`KeyOverrides.apply`, `shared/utils/keybinds/key_overrides.lua`): `<Character>/atelier/overrides/keybind_overrides.lua` holds `{common = {id = key}, <JOB> = {id = key}}`, an entry found by `state:<State>`, else `cmd:<command>`, then `@<SUB>` / `@-<SUB>` when it is for (or not for) some subjobs (PLD's two Regen keys, `state:Regen@SCH` and `state:Regen@RUN`); a common entry takes the `common` table, the others the job's; `''` leaves the row without a key; the file's key stays in `file_key` for the export. Once per list (`binds._overrides_applied`). The old key is unbound by `clear_unwanted` at the next `bind_all`.
 6. When at least one entry has a `weapon` field, registers `AltStates.on_weapon_change('keybinds', refresh_active)` (local `watch_own_weapon`).
 
-The HUD loads the same file a second time, under another module name: `UI_LOADER.lua` requires `<job>/keys/<JOB>_KEYBINDS`, while the entry requires `<Char>/_common/...`. So `create` runs twice per load. The first module stays `_G._keybind_active`: that is the module `bind_all` lays the keys with, and the one `refresh_active`, `conflict_keys` and `show_possible_conflicts` use. `CustomStates.load` keeps its result in `_G._custom_state_cache` and hands the same bind entries to the second call, so the file is read, and its warnings shown, only once. The optional states record their "native" flag on the first `attach` of the sandbox for the same reason.
+The HUD requires the same file too (`UI_LOADER.lua` `get_job_keybinds`); today it builds the module name the way the entry does, `CharPaths.module('job', '<JOB>_KEYBINDS', <job>)`. `create` is written to stand a second run per load (its comments say the HUD's require makes a second module). The first module stays `_G._keybind_active`: that is the module `bind_all` lays the keys with, and the one `refresh_active`, `conflict_keys` and `show_possible_conflicts` use. `CustomStates.load` keeps its result in `_G._custom_state_cache` and hands the same bind entries to the second call, so the file is read, and its warnings shown, only once. The optional states record their "native" flag on the first `attach` of the sandbox for the same reason.
 
 ### Bind entries
 
@@ -90,7 +90,7 @@ Fields, as listed in the `keybind_manager.lua` header:
 
 Set by the project, not by the file: `_common` (a common entry) and `custom` (a `_CUSTOM` entry).
 
-`<module>.retired_keys` lists keys that an older version of the file bound. They are unbound on every load; PLD keeps `^numpad7` there.
+`<module>.retired_keys` lists keys that an older version of the file bound. They are unbound on every load; the PLD template declares the list, empty today (`^numpad7`, once there, is now Regen's key under /RUN).
 
 `get_active_binds()` keeps the entries whose `subjob`, `exclude_subjob`, `weapon`, `alt` and `visible` allow them now. It then drops the common entries without `override` whose key a job or custom entry applying now also uses. It returns `active, yielded`.
 
@@ -144,11 +144,11 @@ It only warns: the bind is still sent, in case Windower knows a key name the lis
 
 ### The intro message
 
-`show_intro()` lists the keyed active binds under `<JOB> SYSTEM LOADED`. It also requires the job's `<JOB>_MACROBOOK` and `<JOB>_LOCKSTYLE` wrapper modules and looks for `get_<job>_macro_info` and `get_info` on them. None of the 34 wrappers returns a table with those keys (16 return nothing; BLU's return tables without them). So `show_system_intro_complete` is never reached, and the intro never shows the macro book or the lockstyle (see Known issues). The require still matters: it defines `select_default_macro_book` and `select_default_lockstyle`, which `user_setup` calls before the facade is loaded.
+`show_intro()` lists the keyed active binds under `<JOB> SYSTEM LOADED`. It also requires the job's `<JOB>_MACROBOOK` and `<JOB>_LOCKSTYLE` wrapper modules and looks for `get_<job>_macro_info` and `get_info` on them. None of the 44 wrappers returns a table with those keys (30 return nothing; the 14 that return a table have neither). So `show_system_intro_complete` is never reached, and the intro never shows the macro book or the lockstyle (see Known issues). The require still matters: it defines `select_default_macro_book` and `select_default_lockstyle`, which `user_setup` calls before the facade is loaded.
 
 ### Common keys
 
-`CommonKeybinds.load()` does `pcall(require, 'config/COMMON_KEYBINDS')`, so it reads the file of the character whose folder GearSwap loaded. No file means no common keys. `merge_into(binds)` appends every common entry that has both `key` and `command`, flags it `_common`, and marks the list with `binds._common_merged`, so a second call does nothing.
+`CommonKeybinds.load()` does `CharPaths.load('common', 'COMMON_KEYBINDS')` (a `pcall(require)` of `<Character>/_common/keys/COMMON_KEYBINDS`, or of the older places), so it reads the file of the character being played. No file means no common keys. `merge_into(binds)` appends every common entry that has both `key` and `command`, flags it `_common`, and marks the list with `binds._common_merged`, so a second call does nothing.
 
 The final list is ordered job keys, then the optional-state entries appended by `attach`, then `_CUSTOM` keys, then common keys. `get_active_binds` decides at each pass who gets a key:
 
@@ -218,8 +218,8 @@ Every change rewrites the whole settings file, starting with the mode's `header`
 | Module | `shared/utils/core/combat_mode.lua` | `shared/utils/equipment/treasure_hunter.lua` (`TreasureHunter.optional`) |
 | State / values | `CombatMode`: `Off`, `On` | `TreasureMode`: `Off`, `Tag`, `Full` (THF's own STATES: `Tag`, `SATA`, `Full`) |
 | Settings file | `<Character>/saved/combat_mode.lua` | `<Character>/saved/treasure_mode.lua` |
-| Native (shown by default) | BLM, GEO, RDM, WHM | THF |
-| Key when native | the job file's own entry: BLM `^numpad8`, GEO `^numpad0`, RDM `^numpad5`, WHM `^numpad2` | THF `^numpad3` |
+| Native (shown by default) | BLM, GEO, RDM, SCH, WHM | THF |
+| Key when native | the job file's own entry: BLM `^numpad8`, GEO `^numpad0`, RDM `^numpad5`, SCH `^numpad8`, WHM `^numpad2` | THF `^numpad3` |
 | Default key elsewhere | `!numpad0` (free on every job file) | `!numpad.` |
 | Command | `//gs c combatmode` | `//gs c th` (+ `clear`: forget the tagged mobs) |
 | Effect | Weapon lock (below) | TH gear until the mob is tagged ([factories-and-helpers.md](factories-and-helpers.md#treasurehunter)) |
@@ -240,7 +240,7 @@ GearSwap keeps a disabled slot across a job change. So the next load's `attach` 
 
 ### Player modes and gear rules (`<JOB>_CUSTOM.lua`)
 
-The file is `<addon>/data/<player.name>/config/<job>/<JOB>_CUSTOM.lua`. It is read with `dofile` under `pcall` at every load, so a `gs reload` picks up an edit. It returns a list of entries of two kinds:
+The file is `<addon>/data/<player.name>/<job>/keys/<JOB>_CUSTOM.lua` (`CharPaths.file('job', '<JOB>_CUSTOM.lua', job)`, which also finds the older `config/<job>/`). It is read with `dofile` under `pcall` at every load, so a `gs reload` picks up an edit. It returns a list of entries of two kinds:
 
 - **Mode**: `{ state = 'Name', desc, key, values = {...} | 'onoff', section, subjob, exclude_subjob, <Value> = { <moment> = gear, lock = {...}, when = {...} } }`.
   - A new state is created: `M(false, desc)` for `'onoff'`, else `M{description = desc, ...values}`.
@@ -373,9 +373,9 @@ The key itself is bound to `gs c tb run <key>`. The stored command is resolved w
 - Reserved keys (`RESERVED`): Mote's F9-F12 block with every modifier, plus `^-` and `^=`, and `^v` (Windower paste).
 - A key in the current job's active binds is reported with its owner. Common keys count too, since they are merged into the job's list.
 
-`force` skips that check. A job key taken with `force` is only borrowed: the next `bind_all` (next load) or KeybindGuard binds the job's command again.
+`force` skips that check. A job key taken with `force` is bound by `tb` directly (`send_command`), without touching `windower._keybind_manager_bound`: `bind_all` does not send again a key recorded there with the same line, and KeybindGuard re-sends only the keys the load sent, so the job's command comes back only when its line changes or when GearSwap is reloaded.
 
-**Storage.** The binds are kept in `<addon>/data/<Char>/temp_binds.lua`, rewritten on every change. The file holds `clock = os.clock()` and the key -> command table. It is a file because `//lua r gearswap` wipes GearSwap's memory but not Windower's binds, and `clear` must still find them. On read, a saved clock larger than the current `os.clock()` means the game was restarted (its binds are gone), and the list is treated as empty. The decision is traced under `TB`.
+**Storage.** The binds are kept in `<addon>/data/<Char>/saved/temp_binds.lua` (`CharPaths.writable('saved', 'temp_binds.lua')`), rewritten on every change. The file holds `clock = os.clock()` and the key -> command table. It is a file because `//lua r gearswap` wipes GearSwap's memory but not Windower's binds, and `clear` must still find them. On read, a saved clock larger than the current `os.clock()` means the game was restarted (its binds are gone), and the list is treated as empty. The decision is traced under `TB`.
 
 ## Keys per job
 
@@ -391,26 +391,31 @@ What each job's key list binds, read from the `_master` templates. `cyclestate X
 | BST | 1 WeaponSet, 2 SubSet, 3 PetIdleMode, 4 AutoPetEngage, 5 `ecosystem`, 6 `species`, 9 HybridMode | | `ecosystem` / `species` are BST job commands |
 | COR | 1 MainWeapon, 2 RangeWeapon, 3 QuickDraw, 4 MainRoll, 5 SubRoll, 6 LuzafRing, 9 HybridMode | | |
 | DNC | 1 MainWeapon, 2 SubWeaponOverride, 3 MainStep, 4 AltStep, 5 UseAltStep, 6 ClimacticAuto, 7 JumpAuto, 8 Dance, 9 HybridMode, 0 Samba | | 7 only on `/DRG` (`subjob` added by `AutoJump.attach`) |
+| DRG | 1 MainWeapon, 2 SubWeapon, 3 OffenseMode, 4 WeaponskillMode, 9 HybridMode | | |
 | DRK | 1 MainWeapon, 2 WeaponskillMode, 9 HybridMode | | |
 | GEO | 1 SpellTier, 2 AOETier, 3 MainIndi, 4 MainGeo, 5 MainLightSpell, 6 MainDarkSpell, 7 MainLightAOE, 8 MainDarkAOE, 9 HybridMode, 0 CombatMode, `.` LuopanMode, `+` IndicolureMode | | |
-| PLD | 1 MainWeapon, 2 PhalanxSIRD / Regen, 3 RuneMode / PhalanxSIRD, 4 Xp, 5 WS1, 6 WS2, 9 HybridMode | | 1 has a `visible` test (hidden in `/SCH` Tanking); 2 = PhalanxSIRD except `/SCH`, Regen on `/SCH`; 3 = RuneMode on `/RUN`, PhalanxSIRD on `/SCH`; 4 only on `/RDM`; `retired_keys = {'^numpad7'}` |
+| MNK | 1 MainWeapon, 2 WeaponskillMode, 3 OffenseMode, 9 HybridMode | | |
+| NIN | 1 MainWeapon, 2 SubWeapon, 3 MagicBurstMode, 4 OffenseMode, 5 WeaponskillMode, 9 HybridMode | | |
+| PLD | 1 MainWeapon, 2 PhalanxSIRD, 3 RuneMode / Regen, 4 Xp, 5 WS1, 6 WS2, 7 Regen, 9 HybridMode | | 1 has a `visible` test (hidden in `/SCH` Tanking); 2 = PhalanxSIRD under every subjob; 3 = RuneMode on `/RUN`, Regen on `/SCH`; 4 only on `/RDM`; 7 = Regen on `/RUN`; `retired_keys = {}` |
 | PUP | 1 MainWeapon, 2 OffenseMode, 3 HybridMode, 4 PetMode, 5 PetWS | | PetWS carries `section = "mode"` (its name holds `WS`) |
 | RDM | 1 MainWeapon, 2 SubWeapon, 3 EnfeebleMode, 4 IdleMode, 5 CombatMode, 6 EngagedMode, 7 NukeMode, 8 NukeTier, 9 EnfeebleTier, 0 SaboteurMode, `.` EnSpell, `+` GainSpell, `-` Barspell, `*` BarAilment, `/` Spike | 1 Storm | `#numpad1` only on `/SCH` |
+| RNG | 1 MainWeapon, 2 RangeWeapon, 3 RangedMode, 4 SubWeapon, 5 OffenseMode, 6 WeaponskillMode, 9 HybridMode | | |
 | RUN | 1 MainWeapon, 2 SubWeapon, 3 RuneMode, 9 HybridMode | | |
 | SAM | 1 MainWeapon, 2 OffenseMode, 3 WeaponskillMode, 9 HybridMode | | |
+| SCH | 1 MainWeapon, 2 SubWeapon, 3 Element, 4 NukeTier, 5 MagicBurstMode, 6 OffenseMode, 7 SneakInviAOE, 8 CombatMode, 9 HybridMode | 1 `lightarts`, 2 `darkarts`, 3 `nuke`, 4 `helix`, 5 `storm` | |
 | SMN | 1 IdleMode, 2 CastingMode, 3 AvatarFavor | | |
 | THF | 1 MainWeapon, 2 SubWeapon, 3 TreasureMode, 4 `toggle AbyProc`, 5 AbyWeapon, 6 `toggle RangeLock`, 9 HybridMode | | 4 and 5 only on `/WAR`; `toggle` is Mote's command |
-| WAR | 1 MainWeapon, 2 JumpAuto, 3 WS1, 4 WS2, 5 WS3, 6 WS4, 7 WS5, 9 HybridMode | | 2 only on `/DRG` |
+| WAR | 1 MainWeapon, 2 JumpAuto, 3 WS1, 4 WS2, 5 WS3, 6 WS4, 7 WS5, 9 HybridMode, 0 AftermathSet | | 2 only on `/DRG`; 0 has a `visible` test (only while `sets.engaged[<MainWeapon> .. 'AFM3']` exists) |
 | WHM | 1 IdleMode, 2 CombatMode, 3 CureMode, 4 CureAutoTier, 5 AfflatusMode, 6 CastingMode | | |
 
 ### Keys added on top of the job file
 
 | Source | Key | Jobs | Shown / bound by default |
 |---|---|---|---|
-| Combat Mode, native entry | BLM `^numpad8`, GEO `^numpad0`, RDM `^numpad5`, WHM `^numpad2` | BLM, GEO, RDM, WHM | yes |
-| Combat Mode, added entry | `!numpad0` | the 12 other jobs with a keybind file | no: hidden until `//gs c combatmode show` (or `shown` in `combat_mode.lua`) |
+| Combat Mode, native entry | BLM `^numpad8`, GEO `^numpad0`, RDM `^numpad5`, SCH `^numpad8`, WHM `^numpad2` | BLM, GEO, RDM, SCH, WHM | yes |
+| Combat Mode, added entry | `!numpad0` | the 17 other jobs with a keybind file | no: hidden until `//gs c combatmode show` (or `shown` in `combat_mode.lua`) |
 | Treasure Mode, native entry | THF `^numpad3` | THF | yes |
-| Treasure Mode, added entry | `!numpad.` | the 15 other jobs with a keybind file | no: hidden until `//gs c th show` |
+| Treasure Mode, added entry | `!numpad.` | the 21 other jobs with a keybind file | no: hidden until `//gs c th show` |
 | Jump Auto (`AutoJump.attach`), added entry | `!numpad-` | every job with a keybind file except DNC and WAR (their own entry) | only on /DRG |
 | `COMMON_KEYBINDS` | `#numpad0`, `!numpad7`, `!numpad8`, `!numpad9`, `!z`, `!x` | every job with a keybind file | yes |
 | `<JOB>_CUSTOM.lua` | the player's own | per character | yes (templates are empty) |
@@ -438,12 +443,12 @@ The layout below is a convention kept by hand; nothing in the code enforces it.
 | Function | Behaviour | Callers |
 |---|---|---|
 | `create(job, module)` -> module | Attaches the six functions, the optional states, custom and common keys, the weapon listener | the last line of every `<JOB>_KEYBINDS.lua` |
-| `bind_line(bind)` -> string | Console line for an entry | `bind_all`, `refresh`, KeybindGuard |
+| `bind_line(bind)` -> string | Console line for an entry | `bind_all`, `refresh` |
 | `conflict_keys()` -> set | Keys in conflict at the last pass of `_G._keybind_active` | HUD (`UI_SECTIONS.lua`) |
 | `show_possible_conflicts()` -> boolean | `KeyConflicts.show_possible(main_job, binds)`; false when no module is loaded | `//gs c kc` |
 | `refresh_active()` -> number | `refresh()` on `_G._keybind_active` | `alt_states.lua`, the weapon listener, `optional_state_commands.lua` |
 
-Per-module functions (attached by `create`): `get_active_binds()` -> active, yielded; `bind_all(silent)` -> boolean; `refresh()` -> commands sent; `unbind_all()` -> boolean; `show_intro()`; `show_binds()` (`MessageFormatter.show_keybind_list`). Callers: entry files (`bind_all`, `unbind_all`), PLD (`refresh`), KeybindGuard and `tb` (`get_active_binds`), the HUD (`get_active_binds`).
+Per-module functions (attached by `create`): `get_active_binds()` -> active, yielded; `bind_all(silent)` -> boolean; `refresh()` -> commands sent; `unbind_all()` -> boolean; `show_intro()`; `show_binds()` (`MessageFormatter.show_keybind_list`). Callers: entry files (`bind_all`, `unbind_all`), PLD (`refresh`), `tb` (`get_active_binds`), the HUD (`get_active_binds`).
 
 ### Other modules
 
@@ -457,10 +462,10 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 | KeyConflicts | `possible(binds)` | `{key, bound, lost, subjobs}` for every compatible pair |
 | KeyConflicts | `report(job, list, told)` | InfoBlock, once per conflict per load |
 | KeyConflicts | `show_possible(job, binds)` | `//gs c kc` output |
-| CommonKeybinds | `load()` | `config/COMMON_KEYBINDS.binds` or `{}` |
+| CommonKeybinds | `load()` | The `binds` of the character's `COMMON_KEYBINDS` (`CharPaths.load('common', ...)`) or `{}` |
 | CommonKeybinds | `merge_into(binds)` -> number added | Appends once per list |
 | KeyOverrides | `apply(job, binds)` | Keys of `<Character>/atelier/overrides/keybind_overrides.lua` over the list, once per list |
-| KeybindGuard | `schedule()` | Re-sends the active binds of `_G[<main_job> .. 'Keybinds']` after 2.0 s, unless a newer load bumped `windower._keybind_guard_seq` |
+| KeybindGuard | `schedule()` | After 2.0 s (then once the paced queue is empty), queues again the keys of `windower._keybind_sent_this_load` still recorded down with the same line, unless a newer load bumped `windower._keybind_guard_seq` |
 | TempBinds | `handle(args)` -> true | `//gs c tb` |
 | Parse (`temp_binds_parse.lua`) | `key(text)`, `looks_like_key(text)`, `show_key(key)`, `command(words)`, `resolve(command)`, `show_command(command)` | Parsing and display for `tb` |
 | OptionalState | `create(cfg)` | See [Optional states](#optional-states-combat-mode-and-treasure-mode) |
@@ -484,7 +489,7 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 | `<Char>/_common/keys/COMMON_KEYBINDS.lua` | `CommonKeybinds.binds`, same entry format (+ `override`) |
 | `<Char>/saved/combat_mode.lua`, `treasure_mode.lua` (`_common/keys/` before 2026-10-10, still read there) | `{shown, hidden, keys}` per job; rewritten by the commands, header included |
 | `<Char>/<job>/keys/<JOB>_CUSTOM.lua` | modes and rules; the templates are fully commented and return `{}` |
-| `<Char>/temp_binds.lua` | written by `tb`, not edited by hand |
+| `<Char>/saved/temp_binds.lua` | written by `tb`, not edited by hand |
 
 ## State & lifetime
 
@@ -502,7 +507,7 @@ Per-module functions (attached by `create`): `get_active_binds()` -> active, yie
 | Other slot locks (`hold`) | `windower._weapon_locks` | until `CombatMode.release(owner)` or the next load's `attach` |
 | Custom entries, watched buffs, hooks, cache | `_G._custom_state_entries`, `_custom_state_buffs`, `_custom_state_hooks`, `_custom_state_cache` | one sandbox; hooks are laid again after each load |
 | Custom locks | `windower._custom_locked` | until released by the next load's `CustomStates.load` |
-| Temporary binds | `<Char>/temp_binds.lua` + Windower binds | until `tb del` / `clear`, or the game restarts |
+| Temporary binds | `<Char>/saved/temp_binds.lua` + Windower binds | until `tb del` / `clear`, or the game restarts |
 
 A subjob change reruns `user_setup()` in the same sandbox, so `bind_all` runs again (the module is cached, so custom files are not read a second time), then JobChangeManager reloads. Both passes send only what the new subjob changes. The addon-unload handler removes only this manager's keys, never `tb` keys unless the job file also uses them.
 
@@ -516,7 +521,7 @@ A key could stay dead after a reload while `//gs c` still worked. The binds were
 
 ## Invariants & gotchas
 
-- A job file must end with `KeybindManager.create(...)`, and its module must be kept in the global `<JOB>Keybinds`: KeybindGuard and `tb`'s `taken_by` read `_G[<main_job> .. 'Keybinds']`.
+- A job file must end with `KeybindManager.create(...)`, and its module must be kept in the global `<JOB>Keybinds`: `tb`'s `taken_by` reads `_G[<main_job> .. 'Keybinds']`.
 - Among the active entries, a key used twice keeps the last one, custom keys included; the other is reported as a conflict.
 - `visible` is only re-asked by `refresh()`. A job whose `visible` depends on a state must call `refresh()` when that state changes, as PLD does.
 - `_CUSTOM` gear is equipped after the job's logic, so it overrides it, except where a guard holds the slot back. A new custom state starts at its first value on every load, like every Mote state.

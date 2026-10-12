@@ -82,7 +82,7 @@ both.
 - It casts wherever the others stand. A character out of reach simply
   presses the key again: the Scholar, now covered, stays out of it and that
   character uses its own way.
-- On BLM and PLD the `SneakInviAOE` mode set to Off stops the Scholar from
+- On BLM, PLD and SCH the `SneakInviAOE` mode set to Off stops the Scholar from
   spending a stratagem on the group.
 - The other characters wait half a second for the Scholar's message before
   going their own way. They do not wait when the jobs of every other

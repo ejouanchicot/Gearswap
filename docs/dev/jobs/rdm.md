@@ -2,7 +2,7 @@
 
 The RDM job is a caster/melee hybrid built mostly from shared systems: 12 hook
 modules plus one logic module under `shared/jobs/rdm/functions/` (about 1 800
-lines), a template entry point (plus character overlays), eight config files and
+lines), a template entry point (plus character overlays), nine config files and
 one sets file. GearSwap loads it when the main job becomes RDM (the entry file
 `<Character>_RDM.lua`, one `include` of `shared/entry/rdm.lua`, copied from
 `_master/entry/Tetsouo_RDM.lua` by the clone script). From then on Mote-Include calls its hooks on every action, on status
@@ -57,12 +57,12 @@ the sets files (structure and set names only).
 | `shared/jobs/rdm/functions/RDM_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/rdm/functions/RDM_COMMANDS.lua` | 439 | `job_self_command` router (cast-by-name resolved from `res`), `job_state_change` (HUD refresh) |
 | `shared/jobs/rdm/functions/RDM_MOVEMENT.lua` | 42 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'rdm/display/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
-| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'rdm/display/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
+| `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'config/rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers (the old-style path is resolved by `CharPaths.legacy_module`) |
+| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'config/rdm/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
 | `shared/jobs/rdm/functions/logic/set_builder.lua` | 243 | Idle / engaged construction: mode sets, single vs dual wield (off-hand item and subjob), weapons, town, movement |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table of 11 enfeeble families (`RDM_ENFEEBLE_TIERS.get`) |
-| `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tier table (`NUKE_TIERS.get`), shared with GEO |
-| `shared/utils/precast/tier_refiner.lua` | - | `TierRefiner.refine` (shared with BLM and GEO) |
+| `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tier table (`NUKE_TIERS.get`), shared with GEO and SCH |
+| `shared/utils/precast/tier_refiner.lua` | - | `TierRefiner.refine` (shared with BLM, GEO and SCH) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | `SpellGearLock.cast/begin/hold/release`, `REQUIRED = {Dispelga = {main = 'Daybreak'}}`; RDM is its only caller |
 | `shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua` (+ `enfeebling/*.lua`) | - | `get_enfeebling_type` (macc, mnd_potency, int_potency, skill_potency, skill_mnd_potency, potency, duration) |
 | `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` (+ `enhancing/*.lua`) | - | `get_spell_family` (Enspell, Gain, BarElement, BarAilment, Refresh, Regen, Phalanx, Stoneskin, Aquaveil, Spikes, Boost, Storm...) |
@@ -70,7 +70,7 @@ the sets files (structure and set names only).
 | `_master/config/rdm/RDM_KEYBINDS.lua` | 50 | Data only: 16 entries (Storm only on /SCH) handed to `KeybindManager.create('RDM', ...)` |
 | `_master/config/rdm/RDM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/rdm/RDM_HUD.lua` | 33 | HUD section / row order for this job (empty lists = default) |
-| `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` (never read, see Known issues) |
+| `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` (not read by `LockstyleManager`, see Known issues) |
 | `_master/config/rdm/RDM_MACROBOOK.lua` | 42 | `default` book 2 page 1, `solo[sub]`, empty `dualbox` |
 | `_master/config/rdm/RDM_SABOTEUR_CONFIG.lua` | 41 | `auto_trigger_spells` (Distract III, Gravity II), `wait_time = 2` |
 | `_master/config/rdm/RDM_TP_CONFIG.lua` | 75 | `pieces` (Moonshade 250), `get_weapon_bonus`; sets `_G.RDMTPConfig` itself |
@@ -219,8 +219,8 @@ midcast (spell name, spell map, skill, `CastingMode`), then
 `INIT_SYSTEMS` on Mote's `cleanup_midcast`) runs after `job_post_midcast` for
 any magic that no `select_set` call saw during this midcast
 (`_G._midcast_routed`), unless the action was cancelled or `eventArgs.handled`.
-On RDM that is subjob magic (Utsusemi, Divine...) and the Accession Phalanx
-branch. A skill with no `sets.midcast[skill]` keeps Mote's pick.
+On RDM that is subjob magic (Utsusemi, Divine...); the Accession Phalanx
+branch marks its spell with `MidcastFallback.skip`, so it is left alone. A skill with no `sets.midcast[skill]` keeps Mote's pick.
 
 How the [standard chain](../systems/midcast-and-buffs.md) resolves RDM casts
 with the template sets:
@@ -271,7 +271,9 @@ so under Saboteur it replaced the type, mode and name sets (Slow II lost its
   'true'`.
 - `customize_melee_set` -> `SetBuilder.build_engaged_set`:
   `select_engaged_base` picks `sets.engaged[EngagedMode]`, or its `.DW` child
-  when the off hand is a weapon, then `apply_weapon`. No town or movement layer.
+  when the off hand is a weapon, then `support_tier.engaged` (the `.Solo` /
+  `.Group` version of that set, `shared/utils/party/support_tier.lua`), then
+  `apply_weapon`. No town or movement layer.
 - `SetBuilder.offhand_item`: the worn off hand while Combat Mode is On (the
   state can change then without the gear following), otherwise the `sub` of
   the set `SubWeapon` names, or the value itself. `has_shield_equipped`: nil,
@@ -367,8 +369,8 @@ sent as `/ja`, `/ws` or `/ma`. A name that is no action but that
 `selfCommandMaps` answers (through the `__index` that
 `AltCommands.install_fallback` adds: the alt's commands) is left unhandled for
 Mote. Anything else prints "Command not recognized". A name is accepted when
-the game knows it, not only when the player's jobs can use it. Every step is
-logged by `trace_log` (`RDM` tag).
+the game knows it, not only when the player's jobs can use it. The resolution
+is logged by `trace_log` (`RDM` tag, one line).
 
 `job_state_change` skips `Moving` and refreshes the HUD. It does not equip:
 every cycle path ends in Mote's `handle_update`, which rebuilds the idle /
@@ -412,15 +414,15 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/rdm/RDM_STATES.lua` | see states | file | entry `user_setup`, `job_sub_job_change` (path substituted by the clone script) |
-| `<char>/rdm/RDM_KEYBINDS.lua` | 16 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
-| `<char>/rdm/RDM_CUSTOM.lua` | examples only | file | custom states ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/rdm/RDM_HUD.lua` | empty lists | file | HUD layout |
-| `<char>/rdm/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` (and `get_style`, absent); `by_subjob` is never read |
-| `<char>/rdm/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
-| `<char>/rdm/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
-| `<char>/rdm/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
-| `<char>/rdm/RDM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | template / overlay / player | `//gs c rf` |
+| `<char>/rdm/keys/RDM_STATES.lua` | see states | file | entry `user_setup`, `job_sub_job_change` (path from `CharPaths.module('job', 'RDM_STATES', 'RDM')`) |
+| `<char>/rdm/keys/RDM_KEYBINDS.lua` | 16 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
+| `<char>/rdm/keys/RDM_CUSTOM.lua` | examples only | file | custom states ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/rdm/display/RDM_HUD.lua` | empty lists | file | HUD layout |
+| `<char>/rdm/display/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` (and `get_style`, absent), never `by_subjob`; `lockstyle_pieces.lua` (`//gs c lockscan`, the pieces of a job's sets) and `job_test.lua` read both |
+| `<char>/rdm/display/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
+| `<char>/rdm/combat/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
+| `<char>/rdm/combat/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
+| `<char>/rdm/inventory/RDM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | template / overlay / player | `//gs c rf` |
 | `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` |
 | `<char>/saved/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua`, `NUKE_TIERS.lua` | 11 families, nukes | file | `get_spell_tiers` |
@@ -455,7 +457,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 
 ## Interactions
 
-- Precast: `PrecastGuard`, `CooldownChecker`, `TierRefiner` (with BLM and GEO),
+- Precast: `PrecastGuard`, `CooldownChecker`, `TierRefiner` (with BLM, GEO and SCH),
   `AbilityHelper`, `WSPrecastHandler`, `SpellGearLock`
   ([precast pipeline](../systems/precast-pipeline.md)).
 - Midcast: `MidcastManager`, `MidcastFallback`, `MidcastWatchdog`, the
@@ -501,7 +503,8 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - Anything that equips in `job_post_midcast` without calling
   `MidcastManager.select_set` for that spell will be overridden by
   `MidcastFallback` in `cleanup_midcast`. Either call `select_set` (even with a
-  one-off skill) or set `eventArgs.handled` in `job_midcast`.
+  one-off skill), call `MidcastFallback.skip(spell)` (the Accession Phalanx
+  branch) or set `eventArgs.handled` in `job_midcast`.
 - `SpellGearLock.hold()` must stay last in `job_post_precast` and
   `job_post_midcast`, and `release()` in `job_aftercast`.
 - `_G.RDMTPConfig` and `_G.RDMSaboteurConfig` must be set by the entry before
@@ -567,16 +570,18 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - "Storm spells enabled/disabled" never prints: Mote's `sub_job_change` runs
   `user_setup()` (which already updated `state.Storm`) before
   `job_sub_job_change` compares.
-- `message_rdm_midcast.lua` calls `MessageRenderer.send(color, text)` (48
-  calls) while the signature is `send(message, color)`; the trace still prints,
-  in one colour. It also uses emoji and describes priority orders that differ
-  from the real chain.
-- `by_subjob` in `RDM_LOCKSTYLE.lua` is never read (no `get_style`).
+- `message_rdm_midcast.lua` uses emoji and describes priority orders that differ
+  from the real chain (its 49 `MessageRenderer.send(text, CHAT_*)` calls now
+  match the signature `send(message, color)`).
+- `by_subjob` in `RDM_LOCKSTYLE.lua` is never read by `LockstyleManager` (no
+  `get_style`): the lockstyle applied is always `default`. Only
+  `lockstyle_pieces.lua` (`//gs c lockscan`) and `job_test.lua` read it.
 - Dead: `HybridMode` (in practice), the `check_off` path
   of `castenspell` (no `EnSpell` value is `Off`).
 - Stale text: `no_enspell_selected` says "Alt+8" (`rdm_messages.lua`; the key
-  is `^numpad.`); the `RDM_STATES.lua` header describes `HybridMode` as "PDT =
-  50% damage reduction"; the `RDM_COMMANDS.lua` header says
-  `job_state_change` re-equips weapons (it does not).
+  is `^numpad.`). The template `RDM_STATES.lua` header no longer describes
+  `HybridMode` as "PDT = 50% damage reduction" (the live
+  `Kaories/rdm/keys/RDM_STATES.lua` still does), and the `RDM_COMMANDS.lua`
+  header no longer says `job_state_change` re-equips weapons.
 - To check in game (2026-09-25 changes): a weapon cycle still equips the weapon;
   a Saboteur refused by the game sends the enfeeble once, without a loop.

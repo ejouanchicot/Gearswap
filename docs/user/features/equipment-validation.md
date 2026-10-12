@@ -21,8 +21,8 @@ retrieved, how many were not found.
 | `STORAGE` | Found, but in a bag you cannot equip from (Mog Safe, Storage, Locker, Satchel, Sack, Case) or in a Porter Moogle storage slip |
 | `MISSING` | Found nowhere |
 
-Storage slips are read through Windower's `slips` library (shipped with
-Windower); the Delivery Box is not scanned.
+Storage slips are read from the slips in your bags, with the game's list of
+what each slip holds (Windower's resources); the Delivery Box is not scanned.
 
 **An item you own shows `MISSING`**: its name in the set file does not match
 the game's exactly, or its `augments` do not.
@@ -80,7 +80,9 @@ character), which each job's `<job>/inventory/<JOB>_REFILL.lua` can add to or
 replace (every line commented at first; see
 [configuration](../guides/configuration.md#refill-job_refilllua)). Items of
 your other lists that the list in use does not name go back too
-(`store_foreign` in `REFILL_CONFIG.lua`: your own lists by default, `'all'` for
+(`store_foreign` in `REFILL_CONFIG.lua`: `'usable'` in the file a new character
+gets, every usable item the list in use does not name; `'mine'` for your own
+lists only, `'all'` for
 other characters' lists as well, `false` for none). `rf` is
 also sent to the other characters of your dual-box group.
 

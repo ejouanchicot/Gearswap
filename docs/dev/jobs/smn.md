@@ -3,7 +3,7 @@
 SMN is the 16th job area, added on 2026-07-29: the facade plus 12 hook
 modules and one logic module under `shared/jobs/smn/functions/` (about 1 300
 lines). Like every other job it has a generic template in `_master/`
-(entry, `smn/`, flat `smn/sets/smn_sets.lua`), offered by the clone script
+(entry, `config/smn/`, flat `sets/smn_sets.lua`), offered by the clone script
 since 2026-09-28. Until then the entry, configs and sets existed only in the
 author's gitignored live folder and overlay `_master/Tetsouo/`; the overlay
 still keeps its own copy (modular set path), which wins for that character.
@@ -48,7 +48,7 @@ Verified on 2026-09-28:
 | Alt command configs (`shared/data/alt/SMN_ALT_COMMANDS.lua`, `_master/config/alt/SMN_ALT_CUSTOM.lua`) | repo | yes |
 | `character_db.lua`: SMN in the author's roster and in the all-jobs list | repo | yes |
 | Entry `shared/entry/smn.lua` and its one-line template `_master/entry/Tetsouo_SMN.lua` | repo | yes |
-| Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK`, `SMN_REFILL` (all comments: the common list) in `_master/config/smn/` | repo | yes |
+| Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK`, `SMN_CONFIG`, `SMN_REFILL` (all comments: the common list) in `_master/config/smn/` | repo | yes |
 | Generic flat sets `_master/sets/smn_sets.lua` | repo | yes |
 | Author's copies: `smn/`, modular `smn/sets/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
 | `SMN_TP_CONFIG.lua`, `SMN_JA_DATABASE.lua`, SMN message formatter | nowhere | - |
@@ -74,12 +74,12 @@ clone of any other character printed
 | `shared/jobs/smn/functions/SMN_PET_MIDCAST.lua` | `job_pet_midcast(spell, action, spellMap, eventArgs)`: re-equips the classified Blood Pact set and marks the event handled |
 | `shared/jobs/smn/functions/SMN_AFTERCAST.lua` | Watchdog notify only |
 | `shared/jobs/smn/functions/SMN_IDLE.lua` | `customize_idle_set`: `sets.idle.Avatar` with an avatar out, else `sets.idle[IdleMode]`; `sets.buff["Avatar's Favor"]` on top; town set, `sets.MoveSpeed` (`BaseSetBuilder`) |
-| `shared/jobs/smn/functions/SMN_ENGAGED.lua` | `customize_melee_set` returns Mote's set |
+| `shared/jobs/smn/functions/SMN_ENGAGED.lua` | `customize_melee_set` returns Mote's set through `SupportTier.engaged` (`shared/utils/party/support_tier.lua`: its `.Solo` / `.Group` version) |
 | `shared/jobs/smn/functions/SMN_STATUS.lua` | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/smn/functions/SMN_BUFFS.lua` | `DoomManager` + Avatar's Favor state sync |
 | `shared/jobs/smn/functions/SMN_COMMANDS.lua` | `job_self_command`, skill-up loop, `job_state_change` (`LifecycleManager.state_change()`), `_G.cancel_smn_skillup_loop` |
 | `shared/jobs/smn/functions/SMN_MOVEMENT.lua` | Empty `job_handle_equipping_gear` (movement gear is in `SMN_IDLE`) |
-| `shared/jobs/smn/functions/SMN_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('SMN', 'smn/display/SMN_LOCKSTYLE', 1, 'WHM')` |
+| `shared/jobs/smn/functions/SMN_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('SMN', 'config/smn/SMN_LOCKSTYLE', 1, 'WHM')` |
 | `shared/jobs/smn/functions/SMN_MACROBOOK.lua` | Lazy `MacrobookManager.create('SMN', ..., 'WHM', 1, 1)` |
 | `shared/jobs/smn/functions/logic/blood_pact_classifier.lua` | Seven name sets, `classify`, `get_set`, `resolve` |
 | `smn/keys/SMN_STATES.lua` | `IdleMode`, `CastingMode`, `AvatarFavor`, `Moving`, `FastCast`, AutoMedicine |
@@ -88,10 +88,10 @@ clone of any other character printed
 | `smn/display/SMN_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
 | `smn/display/SMN_LOCKSTYLE.lua` | `default = 1`, `by_subjob` (all 1), `get_style` |
 | `smn/display/SMN_MACROBOOK.lua` | Book 1; page per subjob (WHM 1, SCH 2, RDM 3, BLM 4); empty `dualbox` |
-| `smn/sets/smn_sets.lua` (generic, flat; `smn/sets/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
+| `smn/sets/smn_sets.lua` (template: flat `_master/sets/smn_sets.lua`; `sets/smn/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
 | `shared/data/magic/SMN_SPELL_DATABASE.lua` + `summoning/*.lua` | Avatar / pact data for messages and `//gs c info` (SMN logic does not read it) |
 
-The `config/` and `sets/` rows are relative to a character folder; their
+The `smn/` rows are relative to a character folder; their
 templates are `_master/config/smn/` and `_master/sets/`. There is no SMN message formatter or message data file;
 SMN prints through `MessageFormatter.show_info/show_success/show_error/show_debug`.
 
@@ -100,11 +100,12 @@ SMN prints through `MessageFormatter.show_info/show_success/show_error/show_debu
 ### Load sequence
 
 The entry chunk loads `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and the UI config,
-**and requires `JobChangeManager` and `UI_MANAGER` at file level**, before
-`INIT_SYSTEMS` installs `ModuleCache`, so those two are pre-cache instances
+**and requires `JobChangeManager` and `UI_MANAGER` at file level**, after
+`config_loader` (whose first statement installs `ModuleCache`), so those two
+are the cached instances
 ([core lifecycle](../systems/core-lifecycle.md)). `get_sets()` includes
 Mote-Include (which runs `user_setup()` and `init_gear_sets()` =
-`include('smn/sets/smn_sets.lua')`), then `INIT_SYSTEMS`, `data_loader` and
+`include(CharPaths.relative('sets', 'smn_sets.lua', 'SMN'))`), then `INIT_SYSTEMS`, `data_loader` and
 the message hooks, sets `_G.LockstyleConfig`, `_G.UIConfig`,
 `_G.RECAST_CONFIG`, calls `JobChangeManager.cancel_all()`, includes the facade
 and registers the lockstyle cancel. It also marks each step for
@@ -119,7 +120,7 @@ and registers the lockstyle cancel. It also marks each step for
    `select_default_macro_book` and `select_default_lockstyle`; the facade has
    not run yet, so without this the next step would find both nil. A failed
    require prints `[SMN] Keybinds failed to load: <error>`.
-3. `KeybindUI.smart_init("SMN", UIConfig.init_delay)` (pre-cache instance).
+3. `KeybindUI.smart_init("SMN", UIConfig.init_delay)`.
 4. `JobChangeManager.initialize()`, then `select_default_macro_book()` now and
    `select_default_lockstyle` after `initial_load_delay` (8 s).
 5. A coroutine `initial_load_delay + 2` s later (10 s): if the main job is
@@ -231,8 +232,8 @@ only loads the modules.
   dropped whenever the avatar set or an `IdleMode` set replaces it (the
   provided file defines all of them, so always). Mote's `sets.idle.Pet` is
   never reached while those sets exist.
-- `customize_melee_set` returns Mote's set; `sets.engaged` is a flat
-  skeleton.
+- `customize_melee_set` returns `SupportTier.engaged(meleeSet)` (Mote's set,
+  or its `.Solo` / `.Group` version); `sets.engaged` is a flat skeleton.
 - `job_status_change` is `LifecycleManager.status_change()` since 2026-09-28
   (Doom unlock, then an engage / disengage during an action is held until the
   aftercast). `job_buff_change` still calls `DoomManager` itself. On
@@ -265,7 +266,7 @@ through to Mote (and the alt fallback).
 
 | Command | Effect |
 |---------|--------|
-| `smn summon <avatar>` | `input /ma "<Avatar>" <me>` for the 15 avatars and 8 spirits in `KNOWN_AVATARS` (case-insensitive, `caitsith` accepted) |
+| `smn summon <avatar>` | `input /ma "<Avatar>" <me>` for the 14 avatars and 8 spirits in `KNOWN_AVATARS` (case-insensitive, `caitsith` accepted) |
 | `smn astralflow` / `astralconduit` / `apogee` / `siphon` / `manacede` / `favor` / `release` / `retreat` | `input /ja "<Name>" <me>` (`JA_SHORTCUTS`) |
 | `smn assault` | `input /ja "Assault" <t>` |
 | `smn bp <pact>` | `input /pet "<pact>" <target>`: `<me>` for a pact `classify` puts in `BPWard.Buff` / `BPWard.Heal`, `<t>` for every other pact and for an unknown name (`handle_bp`); the words are joined as typed, so the match is case-sensitive |
@@ -388,7 +389,7 @@ it stays on after the first cast.
 
 ## Extending
 
-- Templating SMN is done (2026-09-28): generic entry, `smn/`, flat
+- Templating SMN is done (2026-09-28): generic entry, `config/smn/`, flat
   sets and `ALL_VALID_JOBS`; a commented `SMN_REFILL.lua` since 2026-09-30.
 - New Blood Pact: add the name to the right list in
   `blood_pact_classifier.lua` and to the reference doc.
@@ -420,7 +421,8 @@ it stays on after the first cast.
   type.
 - `state.AvatarFavor` is boolean: compare with `== true`, not `'On'`.
 - The entry requires `JobChangeManager` and `UI_MANAGER` at file level,
-  outside `ModuleCache`: a second instance exists after `INIT_SYSTEMS`.
+  after `config_loader` has installed `ModuleCache`: later `require`s get the
+  same instance.
 
 ### How to debug
 
@@ -458,10 +460,9 @@ it stays on after the first cast.
 - The Carbuncle auto-summon is scheduled from both the old and the new
   sandbox on a subjob change and re-summons after every reload when no pet is
   out. PLAUSIBLE for the double cast.
-- Skeleton sets blank every slot queued before them, so the Fast Cast set
-  stays on. This includes `sets.MoveSpeed` and `sets.idle.Town`: once the
-  idle sets hold gear, a still-skeleton `sets.MoveSpeed` blanks the whole idle
-  set while moving.
+- Skeleton sets are empty (`empty_set()` returns `{}`) and equip nothing, so
+  the Fast Cast set stays on. They no longer blank the slots queued before
+  them (`sets.MoveSpeed`, `sets.idle.Town` included).
 - `file_unload` prints "[SMN] Skillup loop is not running" on unload when the
   loop was off, or raises under `pcall` when no `//gs c` command ran yet
   (`MessageFormatter` still nil in `SMN_COMMANDS.lua`).
@@ -480,8 +481,6 @@ it stays on after the first cast.
   missing.
 - Standards: `SMN_BUFFS` and `SMN_AFTERCAST` re-implement `LifecycleManager`
   (`SMN_STATUS` is the shared handler since 2026-09-28).
-- The overlay's SMN configs and entry carry `@author Tetsouo`
-  (convention: `ejouanchicot`); the generic copies are fixed.
 - Not an issue: `Cacodemonia` (id 663, `mp_cost` 0) is not classified and
   should not be: it is not one of Diabolos' player pacts (BG-Wiki, Diabolos
   page, checked 2026-09-25).

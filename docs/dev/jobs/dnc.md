@@ -1,8 +1,8 @@
 # DNC (Dancer) job
 
 The DNC job area has 11 hook modules, the facade and 5 logic modules under
-`shared/jobs/dnc/functions/` (1 625 lines), one entry point per character,
-eight config files and one sets file. It also owns, or is the main user of,
+`shared/jobs/dnc/functions/` (1 544 lines), one entry point per character,
+ten config files and one sets file. It also owns, or is the main user of,
 two shared helpers: `shared/utils/dnc/waltz_manager.lua` and
 `shared/utils/precast/ability_helper.lua`; it uses two more that serve every
 job, `shared/utils/drg/auto_jump.lua` (through `WSPrecastHandler.handle`) and
@@ -70,13 +70,14 @@ function; line numbers are given only where no function name fits.
 | `_master/config/dnc/DNC_MACROBOOK.lua` | 78 | Book/page per subjob and per dual-box partner job |
 | `_master/config/dnc/DNC_TP_CONFIG.lua` | 68 | Moonshade piece, weapon TP bonus table (Aeneas, Centovente), `_G.DNCTPConfig` |
 | `_master/config/dnc/DNC_WS_CONFIG.lua` | 71 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25, `should_use_climactic` |
+| `_master/config/dnc/DNC_CONFIG.lua` | 16 | The job's own settings (`auto_presto = true`), read through `auto_options.lua` / `job_config.lua` |
 | `_master/config/dnc/DNC_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/dnc_sets.lua` | 1040 | Template sets (flat; data, size not a defect) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
 Character overlay: `_master/<Character>/config/dnc/` holds `DNC_MACROBOOK.lua`
 and `DNC_REFILL.lua`; the author's live DNC uses the modular
-`dnc/{dnc_sets,armor,capes,weapons}.lua`.
+`dnc/sets/{dnc_sets,armor,capes,weapons}.lua`.
 
 ## How it works
 
@@ -125,7 +126,7 @@ The two Mote overrides:
   Utsusemi: Ichi cancels, and the Saber Dance (waltz, Trance) / Fan Dance
   (samba) cancels (`Mote-Utility.lua` `cancel_conflicting_buffs`). The
   Utsusemi: Ichi shadow cancel now comes from `utsusemi_shadows.lua` for every
-  job; the entry comment still says "Utsusemi handled by DNC_MIDCAST".
+  job (the entry comment says so).
 
 ### Precast
 
@@ -242,9 +243,9 @@ Then, with Saber Dance up, `sets.buff['Saber Dance']` is combined on top
 (since 2026-09-29), then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
 set, main + sub; with `equip_without_set` in `_common/gear/WEAPON_CONFIG.lua`, a
 value with no set but a weapon name gives `{main = value}`), then, when
-`SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. That field
-is written into `result`, which is a fresh table only when the weapon set was
-combined; with no weapon set it is the engaged set table itself.
+`SubWeaponOverride` is not `Off`, `set_combine(result, {sub = sets[override].sub})`:
+a copy, so the override is never written into the engaged set table itself
+(with no weapon set, `result` is still that table).
 
 Because the engaged base is a sets table, not Mote's result, Mote's defense
 and kiting layers never reach DNC's engaged gear. `build_idle_set` starts from
@@ -266,8 +267,9 @@ idle. A Doom event is handled by `DoomManager` and never reaches it.
 
 `StepManager.execute_step`: picks `MainStep`, or `AltStep` when `UseAltStep`
 is On and `CurrentStep` is `Alt`; aborts with a cooldown message if the shared
-step recast (id 220) is running; when Presto (236) is ready, not active and
-`player.main_job_level >= 77`, sends `input /ja "Presto" <me>` and hands the
+step recast (id 220) is running; when Presto (236) is ready, not active,
+`player.main_job_level >= 77` and `auto_presto` of `DNC_CONFIG.lua` is not
+false (`AutoOptions.enabled('dnc_presto', true)`), sends `input /ja "Presto" <me>` and hands the
 step to `AbilityHelper.follow_up` (replayed once Presto registers, soft
 deadline), else `input /ja "<step>" <t>`; flips `CurrentStep` when alternating.
 
@@ -378,7 +380,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 | Set | Looked up by |
 |-----|--------------|
 | `sets.idle`, `sets.idle.Town` (template: 2 slots), `sets.Adoulin`, `sets.MoveSpeed` | Mote, `BaseSetBuilder` |
-| `sets.idle.PDT`, `sets.idle.Normal` (not in the template) | `select_idle_base` (`sets.idle[HybridMode]`, outside town) |
+| `sets.idle.PDT`, `sets.idle.Normal` (`Normal` not in the template) | `select_idle_base` (`sets.idle[HybridMode]`, outside town) |
 | `sets.engaged`, `.Normal`, `.PDT`, `.FanDance`, `.SaberDance`, `.SaberDance.PDT` | Mote, `select_engaged_base` |
 | `sets['Mpu Gandring']`, `['Twashtar']`, `['Demersal']`, `['Blurred']` (needs `.sub`) | `apply_weapon` |
 | `sets.precast.WS[ws].Clim/.FanDance/.FanDance.Clim/.SaberDance/.SaberDance.Clim` | `ws_variant_selector.lua` |
@@ -396,15 +398,16 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/dnc/DNC_STATES.lua` | see states | entry `user_setup` |
-| `<char>/dnc/DNC_KEYBINDS.lua` | 10 binds | entry `user_setup`, `file_unload`, KeybindGuard |
-| `<char>/dnc/DNC_CUSTOM.lua` | nothing active | `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/dnc/DNC_HUD.lua` | empty lists | HUD section / row order |
-| `<char>/dnc/DNC_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 2 (factory fallback 1) | `LockstyleManager` through `get_style` |
-| `<char>/dnc/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 4 (WAR 5) (factory 1/1) | `MacrobookManager` |
-| `<char>/dnc/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | `TPBonusCalculator` (main and sub weapons) |
-| `<char>/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | `ClimaticManager` |
-| `<char>/dnc/DNC_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | refill system |
+| `<char>/dnc/keys/DNC_STATES.lua` | see states | entry `user_setup` |
+| `<char>/dnc/keys/DNC_KEYBINDS.lua` | 10 binds | entry `user_setup`, `file_unload`, KeybindGuard |
+| `<char>/dnc/keys/DNC_CUSTOM.lua` | nothing active | `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/dnc/display/DNC_HUD.lua` | empty lists | HUD section / row order |
+| `<char>/dnc/display/DNC_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 2 (factory fallback 1) | `LockstyleManager` through `get_style` |
+| `<char>/dnc/display/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 4 (WAR 5) (factory 1/1) | `MacrobookManager` |
+| `<char>/dnc/combat/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | `TPBonusCalculator` (main and sub weapons) |
+| `<char>/dnc/combat/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | `ClimaticManager` |
+| `<char>/dnc/combat/DNC_CONFIG.lua` `auto_presto` | true | `AutoOptions.enabled('dnc_presto', true)` in `execute_step` |
+| `<char>/dnc/inventory/DNC_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | refill system |
 | Hard-coded | step recast 220, Presto 236 and level 77 (`execute_step`), samba costs (`SAMBAS`), `CAST_SPACING` 2 s, Climactic window 5 s, `WS_MIN_TP` 1000, auto-jump 1000 TP | code |
 
 ## State & lifetime
@@ -521,11 +524,9 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   cast shorter than that (high Fast Cast) loses its new shadows, and an
   interrupted cast loses the old ones.
 - Initial macrobook / lockstyle depend on the `show_intro` side effect.
-- Stale comments: the entry header claims subjob-filtered keybinds and says
-  "Utsusemi handled by DNC_MIDCAST"; the facade calls `DNC_MOVEMENT` a
-  "movement status accessor" (it is empty).
-- Dead code and states: `CombatWeaponMode`, `Buff['Climactic Flourish']`,
-  `sets.buff['Saber Dance' / 'Climactic Flourish']`.
+- Stale comments: the entry header claims subjob-filtered keybinds; the
+  facade calls `DNC_MOVEMENT` a "movement status accessor" (it is empty).
+- Dead states: `CombatWeaponMode`, `Buff['Climactic Flourish']`.
 - `DNC_AFTERCAST.lua` exports to `_G` only, with no module `return`.
 - Pending in-game checks: `//gs c waltz` on a party member picks a tier sized
   to its missing HP; a refused Climactic Flourish does not loop.

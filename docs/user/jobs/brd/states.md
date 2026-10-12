@@ -15,7 +15,7 @@ Set names and automatic gear: [sets.md](sets.md).
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
 | Ctrl+Numpad4 `^numpad4` | `IdleMode` | Refresh, **DT**, Regen | Idle set outside town: `sets.idle.Refresh` / `.DT` / `.Regen` |
-| Ctrl+Numpad5 `^numpad5` | `EngagedMode` | **STP**, Acc, DT, SB | Engaged set: `sets.engaged.STP` / `.Acc` / `.DT` / `.SB` (Store TP, accuracy, damage taken, Subtle Blow). The provided sets have no `.DT`: DT uses plain `sets.engaged`. With Kraken Club worn in the off hand, `sets.engaged.PDTKC` wins over every value |
+| Ctrl+Numpad5 `^numpad5` | `EngagedMode` | **STP**, Acc, DT, SB | Engaged set: `sets.engaged.STP` / `.Acc` / `.DT` / `.SB` (Store TP, accuracy, damage taken, Subtle Blow). In the provided sets `.DT` is a plain copy of `sets.engaged`: add your DT pieces there. With Kraken Club worn in the off hand, `sets.engaged.PDTKC` wins over every value |
 | Ctrl+Numpad6 `^numpad6` | `SongMode` | Dirge, March, Madrigal, Minne, Etude, Tank, Healer, Carol, Scherzo, Arebati, **Ngai** | Song pack sung by `//gs c songs` (list below) |
 | Ctrl+Numpad3 `^numpad3` | `MainInstrument` | **Gjallarhorn**, Daurdabla, Marsyas | Instrument for buff songs that do not need a specific one |
 | Ctrl+Numpad7 `^numpad7` | `VictoryMarch` | **Madrigal**, Minuet, Etude, None | When Haste or Haste II is already on you, Victory March in the pack is replaced by Blade Madrigal, Valor Minuet III or the Etude of `EtudeType`. None keeps it |

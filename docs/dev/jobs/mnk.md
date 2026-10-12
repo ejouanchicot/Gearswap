@@ -2,7 +2,7 @@
 
 MNK was added on 2026-09-29. It is a thin job built on the shared systems,
 like BLU and PUP: 11 hook modules plus 2 logic modules under
-`shared/jobs/mnk/functions/`, a template entry point, seven config files and
+`shared/jobs/mnk/functions/`, a template entry point, eight config files and
 one sets file. GearSwap loads it when the main job becomes MNK (the entry file
 `<Character>_MNK.lua`, one `include` of `shared/entry/mnk.lua`, copied from
 `_master/entry/Tetsouo_MNK.lua` by the clone script, which offers MNK in `ALL_VALID_JOBS`).
@@ -45,8 +45,8 @@ from `H2H_WS_DATABASE.lua`.
 | `shared/jobs/mnk/functions/MNK_BUFFS.lua` | 24 | `LifecycleManager.buff_change` + `refresh_after_buff` (the four layer buffs) |
 | `shared/jobs/mnk/functions/MNK_COMMANDS.lua` | 115 | `job_self_command` router (shared commands only), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/mnk/functions/MNK_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/mnk/functions/MNK_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('MNK', 'mnk/display/MNK_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/mnk/functions/MNK_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('MNK', 'mnk/display/MNK_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/mnk/functions/MNK_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('MNK', 'config/mnk/MNK_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/mnk/functions/MNK_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('MNK', 'config/mnk/MNK_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/mnk/functions/logic/buff_layers.lua` | 103 | `ENGAGED` / `WS` tables, `lay_engaged`, `ws_layers`, `equip_ws` |
 | `shared/jobs/mnk/functions/logic/set_builder.lua` | 108 | Idle and engaged: base selection, buff layers, Mote layers, weapon, movement |
 | `_master/config/mnk/MNK_STATES.lua` | 72 | Mote mode options, `MainWeapon`, `FastCast`, `AutoMedicine` |
@@ -230,12 +230,12 @@ T = `_master/sets/mnk_sets.lua`. Player version:
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/mnk/MNK_STATES.lua` | see states | entry `user_setup` |
-| `<char>/mnk/MNK_KEYBINDS.lua` | 4 entries | entry `user_setup`, `file_unload` |
-| `<char>/mnk/MNK_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
-| `<char>/mnk/MNK_CUSTOM.lua` | examples only | shared custom states |
-| `<char>/mnk/MNK_HUD.lua` | empty | HUD |
-| `<char>/mnk/MNK_LOCKSTYLE.lua`, `MNK_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
+| `<char>/mnk/keys/MNK_STATES.lua` | see states | entry `user_setup` |
+| `<char>/mnk/keys/MNK_KEYBINDS.lua` | 4 entries | entry `user_setup`, `file_unload` |
+| `<char>/mnk/combat/MNK_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
+| `<char>/mnk/keys/MNK_CUSTOM.lua` | examples only | shared custom states |
+| `<char>/mnk/display/MNK_HUD.lua` | empty | HUD |
+| `<char>/mnk/display/MNK_LOCKSTYLE.lua`, `MNK_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
 ## Game mechanics relied on (BG-Wiki)
 

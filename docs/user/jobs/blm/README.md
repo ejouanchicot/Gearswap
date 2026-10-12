@@ -110,8 +110,9 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: the spell through Light Arts and Accession (and Addendum: White for Erase) as charges allow |
 | `dispel` | /RDM: Dispel on a target you pick. /SCH: Dark Arts and Addendum: Black first when needed. Other subjobs: a warning |
 
-The commands that need /SCH or /RDM do not check the subjob: the game refuses
-the ability or spell.
+`storm` and `klima` do not check the subjob: the game refuses the ability or
+spell. Without Scholar as main job or subjob, `lightarts` / `darkarts` / `aoe`
+go to a dual-box alt that offers the command, else print an error.
 
 The charges left are estimated from the time the whole stratagem pool takes to
 come back, 240 s by default: `stratagem_full_recharge` in
@@ -182,7 +183,7 @@ What the project's shared systems do on BLM, checked in the code.
 | Your own modes and gear rules | `BLM_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Weapons without a set | `MainWeapon` / `SubWeapon` (Hvergelmir / Alber Strap) do nothing unless you write `sets.Hvergelmir` / `sets['Alber Strap']`, or turn on `equip_without_set` in `WEAPON_CONFIG.lua` |
 | Midcast watchdog | Puts your idle / engaged set back when the game never confirms the end of a cast ([watchdog](../../features/watchdog.md)); `FastCast` (80) is its fallback cast-time estimate |
-| Lockstyle and macros | Lockstyle 5 and macro book 8 page 1 are set 8 s after each load |
+| Lockstyle and macros | Macro book 8 page 1 is set about 1.5 s after each load, lockstyle 5 after 8 s |
 | Dual-box | Alt keys and commands above; the macro book can follow your partner's job (`BLM_MACROBOOK.lua`) |
 
 Not on BLM: Entrust / Full Circle options (GEO), pet features, cure

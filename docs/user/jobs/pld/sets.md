@@ -13,7 +13,7 @@ value, in idle and engaged:
 | Set | Worn when |
 |---|---|
 | `sets.Excalibur` | `MainWeapon` Excalibur |
-| `sets.Burtgang` | `MainWeapon` Burtgang, and always in the /SCH Tanking stance |
+| `sets.Burtgang` | `MainWeapon` Burtgang, and in the /SCH Tanking stance when `PLD_WEAPONS.lua` names it (`stance_weapon`) |
 | `sets.KC` | `MainWeapon` KC |
 | `sets.BurtgangKC` | `MainWeapon` BurtgangKC (the provided one is Burtgang + Kraken Club in the off hand) |
 | `sets.Naegling` | `MainWeapon` Naegling |
@@ -63,7 +63,7 @@ keep Shining in it. The file is read when the job loads: reload after an edit.
 | `sets.idle.MDT` | Stance MDT, Sortie, and all three /SCH stances (DPS, Tanking, Hoxne) |
 | `sets.idle` | Only if the stance's set above is missing |
 | `sets.idleXp` | `Xp` On (/RDM, Ctrl+Numpad4): laid over the idle set |
-| `sets.idleRegen` | `Regen` On (/SCH only, Ctrl+Numpad2): laid over the idle set |
+| `sets.idleRegen` | `Regen` On (/SCH Ctrl+Numpad3, /RUN Ctrl+Numpad7): laid over the idle set |
 
 Order in which idle is built: town set or stance set, then the weapon, then `sets.idleXp`,
 then `sets.idleRegen`, then `sets.MoveSpeed` when running, then the stance's shield from
@@ -97,7 +97,7 @@ Order: stance set (or BurtgangKC), then the weapon, then the grip for Shining, t
 |---|---|
 | `sets.precast.WS` | Any weaponskill without its own set |
 | `sets.precast.WS['Name']` | That weaponskill. Provided: Savage Blade, Requiescat, Chant du Cygne, Atonement, Sanguine Blade, Aeolian Edge, Circle Blade |
-| `sets.precast.WS.SCH['Name']` | Under /SCH and /RUN only: that weaponskill's Sortie-setup version, put on over the normal one |
+| `sets.precast.WS.SCH['Name']` | In the DPS, Tanking and Hoxne stances of /SCH and /RUN only: that weaponskill's Sortie-setup version, put on over the normal one |
 
 The provided `sets.precast.WS['Atonement']` is `sets.FullEnmity` (Atonement's damage
 comes from enmity). Knights of Round has no set in the provided file and uses
@@ -222,7 +222,7 @@ the `//gs c aoe` rotation).
   action, engaging, a mode change).
 - **Phalanx SIRD**: `PhalanxSIRD` On or `Xp` On casts Phalanx in
   `sets.midcast.SIRDPhalanx`. `PhalanxSIRD` turns On by itself when you enter Sortie or
-  /SCH and Off when you go back to PDT/MDT. `//gs c sortie <target>` also sets it
+  a /SCH stance (DPS, Tanking, Hoxne) and Off when you go back to PDT/MDT. `//gs c sortie <target>` also sets it
   when your `SORTIE_CONFIG.lua` says so (Tetsouo's: Off for Aminon, On for the others).
 - **Weaponskill slots follow the weapon actually in hand** (the `stance_weapon` of
   `PLD_WEAPONS.lua`, Burtgang in Tanking with the author's file, whatever `MainWeapon`

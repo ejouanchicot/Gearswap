@@ -1,8 +1,8 @@
 # THF (Thief) job
 
 The THF job area: 11 hook modules plus 5 logic modules under
-`shared/jobs/thf/functions/` (about 1 640 lines with the facade), an entry
-point template, seven config files and one sets file. GearSwap loads it when
+`shared/jobs/thf/functions/` (about 1 610 lines with the facade), an entry
+point template, eight config files and one sets file. GearSwap loads it when
 the main job becomes THF (`<Character>_THF.lua`). From then on Mote-Include
 calls its hooks on every action (precast, midcast, aftercast), on status and
 buff changes, on `//gs c` commands and on state cycles.
@@ -61,9 +61,9 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 145 | `apply_fbc`, `apply_steal` |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 169 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`, plus Combat Mode's lock registry (`'thf_range'`); `release` at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 52 | THF layer over the shared module: `sata_overlay`, and `init` hands the shared wrapper the SA/TA + TH layer |
-| `shared/utils/equipment/treasure_hunter.lua` | 291 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
+| `shared/utils/equipment/treasure_hunter.lua` | 291 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 3 raw events and an `ActionListener` subscription, `//gs c th` fields |
 | `shared/utils/equipment/weapon_resolver.lua` | 126 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
-| `shared/utils/buffs/buff_command.lua` | 70 | `//gs c buff` of every job (common command): the `job` list of the main job, then the `subjob` list, from `_common/combat/BUFF_CONFIG.lua` (defaults: no THF list; /WAR, /SAM, /NIN, /DNC), through `self_buff_manager.lua` |
+| `shared/utils/buffs/buff_command.lua` | 70 | `//gs c buff` of every job (common command): the `job` list of the main job, then the `subjob` list, from `_common/combat/BUFF_CONFIG.lua` (defaults: no THF list; /WAR, /SAM, /NIN, /DNC, /WHM), through `self_buff_manager.lua` |
 | `_master/config/thf/THF_STATES.lua` | 146 | All Mote states (`THFStates.configure()`) |
 | `_master/config/thf/THF_KEYBINDS.lua` | 37 | Data only: 7 binds (2 only on /WAR) handed to `KeybindManager.create('THF', ...)` |
 | `_master/config/thf/THF_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -77,9 +77,9 @@ function; line numbers are deliberately not used.
 
 Author overlay (`_master/Tetsouo/`, tracked; deployed only by a clone to that
 character), no entry (every character runs `shared/entry/thf.lua`):
-`thf/display/THF_MACROBOOK.lua`, `thf/keys/THF_STATES.lua` (adds
-`'Telop Knife'` to `SubWeapon`), `thf/inventory/THF_REFILL.lua` (includes
-`Ac. Bolt Quiver`), and `thf/{thf_sets,armor,capes,weapons}.lua`
+`config/thf/THF_MACROBOOK.lua`, `config/thf/THF_STATES.lua` (adds
+`'Telop Knife'` to `SubWeapon`), `config/thf/THF_REFILL.lua` (includes
+`Ac. Bolt Quiver`), and `sets/thf/{thf_sets,armor,capes,weapons}.lua`
 (modular; the weapon sets are copied from `weapons.lua` by a loop in
 `thf_sets.lua`). `_master/Kaories/` has no THF files.
 
@@ -238,7 +238,8 @@ sequenceDiagram
    `gs c update`, not under Doom, skipped if an action is under way then; since
    2026-09-29, before nothing rebuilt on an Aftermath change).
 2. `apply_weapon`: with `AbyProc` true, `sets[AbyWeapon]` (a main+sub pair,
-   read directly); otherwise `WeaponResolver.set_for('main', MainWeapon)` then
+   read directly); otherwise `BaseSetBuilder.lay_weapons`:
+   `WeaponResolver.set_for('main', MainWeapon)` then
    `set_for('sub', SubWeapon)`, each through `pcall(set_combine)`. By default
    `set_for` returns `sets[value]`; with `equip_without_set = true` in the
    character's `_common/gear/WEAPON_CONFIG.lua` it returns the set only when it names
@@ -321,7 +322,8 @@ Two layers:
   `TreasureMode` as an optional state (`Off`, `Tag`, `Full` on other jobs),
   tagging, `wants_engaged_th`, `apply_engaged`, the action overlay on
   `cleanup_precast` (weaponskill, job ability) and `cleanup_midcast` (spell,
-  ranged attack), 4 raw events, and the `//gs c th` fields.
+  ranged attack), 3 raw events and an `ActionListener` subscription, and the
+  `//gs c th` fields.
 - **THF** (`shared/jobs/thf/functions/logic/treasure_hunter.lua`): a table with
   the shared module as `__index`, plus `sata_overlay(has_sa, has_ta)` and an
   `init()` that sets `_G._treasure_engaged_by_job` to a function returning
@@ -352,8 +354,9 @@ unless `hidden.THF` is set in the character's `saved/treasure_mode.lua`.
   same id is tagged again. `//gs c th clear` forgets them all.
 - `target change` while engaged sends `gs c update` when the new target needs
   the overlay and the current set does not, or the reverse.
-- The four events are raw events registered once per load (`d.listening`);
-  GearSwap removes them at the next load. State (`tagged`, `overlay_on`,
+- The three raw events (`incoming chunk`, `target change`, `zone change`) and
+  the `ActionListener` subscription are registered once per load
+  (`d.listening`); GearSwap removes them at the next load. State (`tagged`, `overlay_on`,
   `listening`) lives in `_G._treasure`, so it is lost on every reload,
   including every subjob change.
 - `//gs c th hide` on THF: `hidden.THF = true`, `value()` returns nil, so no
@@ -369,7 +372,7 @@ command: the common command (`BuffCommand.apply()`, [midcast and buffs](../syste
 answers it on THF as on every job: `job.THF` of `_common/combat/BUFF_CONFIG.lua`
 (empty by default), then the `subjob` list (by default /DNC Haste Samba at 350 TP,
 /WAR Berserk, Aggressor, Warcry, /NIN Utsusemi: Ni else Ichi, /SAM Hasso with a
-two-handed weapon and Third Eye). No list for the jobs: a warning naming the file.
+two-handed weapon and Third Eye, /WHM Reraise). No list for the jobs: a warning naming the file.
 
 `apply_fbc()` and `apply_steal()` share one runner, `run_sequence`: `triage`
 sorts a list into "cast" and "status", and `cast_sequence` sends the ones to
@@ -506,17 +509,17 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/thf/THF_STATES.lua` | see states | file | entry `user_setup` (path `Tetsouo/...` in the template, replaced by the clone script) |
-| `<char>/thf/THF_KEYBINDS.lua` | 7 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
-| `<char>/thf/THF_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
-| `<char>/thf/THF_HUD.lua` | empty orders | file | `hud_job_config.lua` |
-| `<char>/thf/THF_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory fallback 1 | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
-| `<char>/thf/THF_MACROBOOK.lua` | book 1 page 1 solo; dual-box RDM 1, GEO 2, COR 3 | file; factory fallback 1/1 | `MacrobookManager` |
-| `<char>/thf/THF_TP_CONFIG.lua` -> `_G.THFTPConfig` | Moonshade ear1 +250; weapons Aeneas 500, Centovente 1000 | file | `TPBonusHandler` -> `TPBonusCalculator` (main and sub weapon) |
-| `<char>/thf/THF_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `refill/config_resolver.lua` |
+| `<char>/thf/keys/THF_STATES.lua` | see states | file | entry `user_setup` (path from `CharPaths.module('job', 'THF_STATES', 'THF')`) |
+| `<char>/thf/keys/THF_KEYBINDS.lua` | 7 binds (+ `COMMON_KEYBINDS.lua`, optional states) | file | entry `user_setup`, `file_unload` |
+| `<char>/thf/keys/THF_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
+| `<char>/thf/display/THF_HUD.lua` | empty orders | file | `hud_job_config.lua` |
+| `<char>/thf/display/THF_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory fallback 1 | `LockstyleManager` uses `default`; no `get_style`, so it never reads `by_subjob` (`//gs c lockscan` and `//gs c jobtest` do) |
+| `<char>/thf/display/THF_MACROBOOK.lua` | book 1 page 1 solo; dual-box RDM 1, GEO 2, COR 3 | file; factory fallback 1/1 | `MacrobookManager` |
+| `<char>/thf/combat/THF_TP_CONFIG.lua` -> `_G.THFTPConfig` | Moonshade ear1 +250; weapons Aeneas 500, Centovente 1000 | file | `TPBonusHandler` -> `TPBonusCalculator` (main and sub weapon) |
+| `<char>/thf/inventory/THF_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `refill/config_resolver.lua` |
 | `<char>/saved/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
 | `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
-| `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
+| `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `_common/combat/RECAST_CONFIG.lua`, `_common/display/REGION_CONFIG.lua`, UI config | - | shared | entry |
 | Hard-coded | quiver threshold (`job_aftercast`, 5; per character `REFILL_CONFIG.lua` `quiver_open_at.THF`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
 
 ## State & lifetime
@@ -534,7 +537,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   subscription (`treasure_hunter`) for the action packets; GearSwap removes
   them at the next load, and the facade registers them again.
 - Coroutines: the 8 s lockstyle in `user_setup`; `gs c update` 0.1 s after
-  SA/TA loss; the quiver check 1 s after a shot. FBC, Steal and WAR buff
+  SA/TA loss; the quiver check 1 s after a shot. FBC and Steal
   `wait` chains sit in the Windower command queue (they survive a reload).
 - `disable('range','ammo')` lives in GearSwap's `disable_table`, which only
   `enable()` clears and which survives `gs reload`, subjob change and main job
@@ -553,7 +556,8 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)).
 - Gear hooks installed by `INIT_SYSTEMS`: `ElementalBelt` (Aeolian Edge and
   other elemental WS, elemental ninjutsu), `DualWield` (needs `sets.DW`),
-  `TreasureHunter` (action overlay; the engaged wrapper steps aside),
+  `TreasureHunter` (action overlay; the engaged wrapper lays THF's SA/TA + TH
+  layer),
   `CustomStates`, `CastTime`, `CombatMode` ([factories and helpers](../systems/factories-and-helpers.md)).
 - Messages: `message_buffs` (`show_buff_status`),
   `show_success`, cooldown messages ([messages](../systems/messages.md)).
@@ -601,8 +605,9 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   `job_buff_change` does on SA/TA loss).
 - `AbyWeapon` is looked up with `sets[...]` directly, not through
   `WeaponResolver`: `equip_without_set` does not apply to it.
-- The template keeps `Tetsouo/...` require paths; the clone script rewrites
-  them. Edit `_master/` and, if you keep one, the live copy: they are separate
+- The templates carry no `Tetsouo/...` require path (the entry resolves the
+  character's files with `CharPaths`); only the author overlay's
+  `sets/thf/thf_sets.lua` does. Edit `_master/` and, if you keep one, the live copy: they are separate
   files, and the live folders are gitignored (ripgrep skips them; use `grep -r`).
 
 ### Extending
@@ -638,7 +643,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   compared between two versions).
 - What cannot be tested offline: the server's timing between the JA and
   `buffactive`, `disable_table` persistence across loads, and packet-driven
-  tagging. Use `//gs c trace on` (the `ENGAGED` and `SAMBA` lines),
+  tagging. Use `//gs c trace on` (the `ENGAGED` line),
   `//gs c th` and `//gs c debugmidcast` in game.
 
 ## Known issues
@@ -668,5 +673,3 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   (`keybind_manager.lua` `show_intro`).
 - `job_post_midcast` skeleton is duplicated with DNC.
 - `job_buff_change` re-implements `LifecycleManager.buff_change`.
-- The author overlay file `thf/keys/THF_STATES.lua` still carries `@author Tetsouo`, against the
-  project rule (`@author ejouanchicot`).

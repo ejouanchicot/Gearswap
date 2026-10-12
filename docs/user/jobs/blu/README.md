@@ -159,7 +159,7 @@ for refill, `combat/` for the rest):
 |---|---|
 | `BLU_STATES.lua` | Every mode: values and defaults (add your weapons here) |
 | `BLU_KEYBINDS.lua` | The job keys above, and the per-weapon examples |
-| `BLU_SPELL_MAP.lua` | Blue Magic spell -> gear category (24 categories, every spell of the game). Read once per load: `//gs reload` after an edit |
+| `BLU_SPELL_MAP.lua` | Blue Magic spell -> gear category (26 categories, every spell of the game). Read once per load: `//gs reload` after an edit |
 | `BLU_CUSTOM.lua` | Your own modes, keys and gear rules (commented examples only) |
 | `BLU_LOCKSTYLE.lua` | Lockstyle number: `default = 1` is the one used; the per-subjob list is not read |
 | `BLU_MACROBOOK.lua` | Macro book and page (book 1, page 1), per subjob and per alt job |

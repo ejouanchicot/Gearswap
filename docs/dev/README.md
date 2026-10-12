@@ -36,17 +36,17 @@ Mote-Include:
   dual-boxed). Their folders are built from the tracked templates in `_master/`
   by `clone_character.py`.
 
-Measured on 2026-10-10 from `data/`, on the working tree (no code file was
+Measured on 2026-10-12 from `data/`, on the working tree (no code file was
 modified or untracked that day;
 `shared/config/message_mode_config.lua`, untracked on 2026-09-25, is tracked and counted):
 
 | Area | Lua files | Lines | Command |
 |---|---:|---:|---|
-| `shared/` | 944 | 144 446 | `git ls-files 'shared/*.lua' \| wc -l`, `git ls-files -z 'shared/*.lua' \| xargs -0 cat \| wc -l` |
-| `_master/` | 264 | 27 023 | same with `'_master/*.lua'` |
-| Total tracked Lua (adds `character_db.lua` and the 4 Lua files under `scripts/`) | 1 213 | 172 305 | same with `'*.lua'` |
-| Live `Tetsouo/` (gitignored) | 353 | — | `find Tetsouo -name '*.lua' \| wc -l` |
-| Live `Kaories/` (gitignored) | 93 | — | `find Kaories -name '*.lua' \| wc -l` |
+| `shared/` | 958 | 147 305 | `git ls-files 'shared/*.lua' \| wc -l`, `git ls-files -z 'shared/*.lua' \| xargs -0 cat \| wc -l` |
+| `_master/` | 274 | 27 197 | same with `'_master/*.lua'` |
+| Total tracked Lua (adds `character_db.lua` and the 18 Lua files under `scripts/`) | 1 251 | 176 997 | same with `'*.lua'` |
+| Live `Tetsouo/` (gitignored) | 370 | — | `find Tetsouo -name '*.lua' \| wc -l` |
+| Live `Kaories/` (gitignored) | 97 | — | `find Kaories -name '*.lua' \| wc -l` |
 
 `shared/data/equipment/ITEM_HP_MP.lua` alone is 6 657 of those lines (generated
 data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
@@ -166,7 +166,11 @@ includes `shared/entry/war.lua`:
 
 The file header (`INIT_SYSTEMS.lua:11-20`) keeps the same list.
 
-None of the deferred blocks checks that its sandbox is still the live one; see
+The four deferred blocks go through `LoadGate.defer`
+(`shared/utils/core/load_gate.lua`; `INIT_SYSTEMS.lua:144-149`): a block is
+dropped when a newer load has started or the subjob changed, and waits (0.5 s
+at a time, 10 s at most) for the game to report the load's main job; see
+[job-change-lifecycle.md](architecture/job-change-lifecycle.md#loadgate) and
 [core-lifecycle.md](systems/core-lifecycle.md) (coroutines and their invalidation).
 
 ## Life of an action
@@ -183,8 +187,8 @@ no midcast, no aftercast.
   CooldownChecker cancels on recast (tolerance 2.0 s from `RECAST_CONFIG`).
   WSPrecastHandler validates range, runs Auto-Jump on /DRG (`state.JumpAuto`
   On), computes TP-bonus gear and cancels below 1000 TP, reading the TP from game memory (`TPBonusHandler.live_tp()`), not
-  GearSwap's lagging `player.vitals.tp` copy. Exceptions: BRD songs, BLM/RDM tiered spells and WHM cures are
-  refined before the recast check (BLM and RDM replace the check with tier
+  GearSwap's lagging `player.vitals.tp` copy. Exceptions: BRD songs, BLM/RDM/GEO tiered spells and WHM cures are
+  refined before the recast check (BLM, RDM and GEO replace the check with tier
   refinement for tiered spells; a cure WHM leaves as it is still gets the check).
   See [precast-pipeline.md](systems/precast-pipeline.md).
 - **Midcast** — Mote picks its default set, then `job_post_midcast` calls
@@ -221,7 +225,7 @@ no midcast, no aftercast.
   `gs reload` after 2.0 s (3.0 s if the main job differs from the seed). A
   newer change invalidates the older one through the counter. A round trip
   (WAR → DNC → WAR) still reloads, on purpose: the teardown has already run
-  (`job_change_manager.lua:157-165`).
+  (`job_change_manager.lua:159-167`).
 - **Main job change**: the engine loads the new file directly; the old file's
   `file_unload` cancels pending lockstyles; keys stay down and the new load
   sends only the difference, through a paced queue.
@@ -258,7 +262,7 @@ Consequences worth remembering:
 |---|---|---|
 | `_master/entry` (one-line entries), `sets`, `config/<job>`, `config/alt` (`<JOB>_ALT_CUSTOM.lua` only), `config_global` | yes | Generic templates, written for a character named Tetsouo |
 | `shared/entry/<job>.lua`, `shared/data/alt/<JOB>_ALT_COMMANDS.lua` | yes | Entry code and alt command tables, the same for every character (not copied by the clone) |
-| `_master/Kaories/`, `_master/Tetsouo/` | yes | Per-character overlays (same relative path replaces the template) |
+| `_master/Kaories/`, `_master/Tetsouo/` | no (gitignored since 2026-09-27) | Per-character overlays (same relative path replaces the template) |
 | `data/Tetsouo/`, `data/Kaories/` | **no** (gitignored) | What GearSwap loads |
 | `data/Hysoka/`, `data/Gabvanstronger/` | no | Frozen one-shot clones; not maintained |
 
@@ -301,7 +305,7 @@ including what a re-clone would overwrite today.
 | [systems/midcast-and-buffs.md](systems/midcast-and-buffs.md) | MidcastManager resolution, set builders, the `//gs c buff` command and its engine (`BUFF_CONFIG.lua`, `SelfBuffManager`, `BuffTimers` refresh, `BuffGuard` debuff handling), Scholar stratagems |
 | [systems/factories-and-helpers.md](systems/factories-and-helpers.md) | LockstyleManager, MacrobookManager, AutoMove, craft/fishing mode, /DRG jumps, WaltzManager, CureManager, ElementalBelt (Obi / Orpheus), DualWield (DW tiers by haste), SpellGearLock (Dispelga) |
 | [systems/messages.md](systems/messages.md) | Message architecture: facade, engine, renderer, hooks and handlers, modes |
-| [systems/messages-formatters.md](systems/messages-formatters.md) | The 34 formatter modules under `formatters/` (plus 2 in `utilities/`) and their public functions, incl. `altgroup`, `sortie`, `tempbind` |
+| [systems/messages-formatters.md](systems/messages-formatters.md) | The 32 formatter modules under `formatters/` (plus 2 in `utilities/`) and their public functions, incl. `altgroup`, `sortie`, `tempbind` |
 | [systems/messages-catalog.md](systems/messages-catalog.md) | Every template namespace and key (incl. `ALTGROUP`, `SORTIE`, `TEMPBIND`), reachable or not; the `message_mode_config` factory is in messages.md |
 | [systems/keybinds-and-custom.md](systems/keybinds-and-custom.md) | `KeybindManager`, bind line rules (`//` and `/`), `COMMON_KEYBINDS`, key validation, `<JOB>_CUSTOM.lua` player modes and `when` rules, `//gs c tb` temporary binds |
 | [systems/ui-overlay.md](systems/ui-overlay.md) | Keybind HUD: build, update triggers, settings, persistence |

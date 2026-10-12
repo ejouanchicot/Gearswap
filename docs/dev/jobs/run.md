@@ -1,7 +1,7 @@
 # RUN (Rune Fencer) job
 
 The RUN job area is 12 hook files plus 4 logic modules under
-`shared/jobs/run/functions/` (1 429 lines on 2026-09-28), one entry template, eight
+`shared/jobs/run/functions/` (1 429 lines on 2026-09-28), one entry template, nine
 config files and one sets file. `character_db.lua` lists RUN among Tetsouo's jobs
 and `Tetsouo/Tetsouo_RUN.lua` exists (one `include` of `shared/entry/run.lua`, like every
 entry since 2026-09-30); the frozen `Hysoka/` clone also has RUN (not analysed here).
@@ -48,7 +48,7 @@ drift.
 | `shared/jobs/run/functions/RUN_BUFFS.lua` | 19 | `LifecycleManager.buff_change()` |
 | `shared/jobs/run/functions/RUN_COMMANDS.lua` | 203 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` (HUD refresh only) |
 | `shared/jobs/run/functions/RUN_MOVEMENT.lua` | 24 | Comments only |
-| `shared/jobs/run/functions/RUN_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('RUN', 'run/display/RUN_LOCKSTYLE', 1, 'SAM')` |
+| `shared/jobs/run/functions/RUN_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('RUN', 'config/run/RUN_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/run/functions/RUN_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('RUN', ..., 'SAM', 1, 1)` |
 | `shared/jobs/run/functions/logic/set_builder.lua` | 156 | Idle/engaged: HybridMode, weapon, grip, town, movement |
 | `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU) |
@@ -66,8 +66,9 @@ drift.
 | `_master/sets/run_sets.lua` | 432 | Template sets (flat) |
 | `shared/data/job_abilities/RUN_JA_DATABASE.lua` + `run/*.lua` | 13 + 276 | JA descriptions (runes, wards, SP) for `ability_message_handler` |
 
-Live copies: none under `Tetsouo/` or `Kaories/`, and no RUN overlay under
-`_master/<Character>/`. `Hysoka/` has RUN and is a frozen clone; it was not read.
+Live copies: `Tetsouo/run/` (`keys/`, `display/`, `combat/`, `sets/`: the templates,
+three comment lines of `RUN_MACROBOOK.lua` apart; no `RUN_REFILL.lua`); none under
+`Kaories/`, and no RUN overlay under `_master/<Character>/`. `Hysoka/` has RUN and is a frozen clone; it was not read.
 
 ## How it works
 
@@ -143,9 +144,8 @@ flowchart TD
   `CooldownChecker` ([precast pipeline](../systems/precast-pipeline.md#recast-check)).
 - `RUNTPConfig = _G.RUNTPConfig or {}` is captured on the first action. The entry
   requires `RUN_TP_CONFIG.lua` in `get_sets`, and that file sets `_G.RUNTPConfig`,
-  so the TP bonus is computed (Moonshade +250, Lionheart +500). The comment above
-  that line in `ensure_modules_loaded` ("The entry does not load RUN_TP_CONFIG, so
-  this is normally {}") is stale.
+  so the TP bonus is computed (Moonshade +250, Lionheart +500); `{}` is only the
+  fallback when the file did not load.
 - Mote's default precast: `sets.precast.FC` for magic (no name / skill variants
   defined), `sets.precast.JA[name]` for JAs, `sets.precast.WS[name]` for WS.
   `sets.precast.JA` is `{}`: runes and any JA without a named set swap nothing, by
@@ -204,7 +204,9 @@ flowchart TD
   Doom handlers, plus the status hold during an action
   ([core lifecycle](../systems/core-lifecycle.md#lifecyclemanager)).
 - `SetBuilder.build_engaged_set`: Mote base (`sets.engaged.PDT` / `.MDT` through
-  `HybridMode`) -> the HybridMode set again (`set_combine`) -> weapon
+  `HybridMode`) in its party-support version (`SupportTier.engaged`,
+  `shared/utils/party/support_tier.lua`) -> the HybridMode set again (`set_combine`,
+  through `SupportTier.engaged` too) -> weapon
   (`apply_weapon`, `WeaponResolver.set_for('main', ...)`) -> grip (`apply_grip`,
   `WeaponResolver.set_for('sub', SubWeapon)`), whatever the weapon.
 - `SetBuilder.build_idle_set`: Mote's idle; in a city `sets.idle` with the town
@@ -226,8 +228,8 @@ flowchart TD
 | Blue Magic | `Cocoon` pseudo-skill, else `Blue Magic` (no base set) | `Blue Magic` with a base set |
 | Enmity override | `EnmityOverride` after dispatch | none |
 | Set builder | weapon + shield, BurtgangKC, grips / shields per mode / stance weapon from `PLD_WEAPONS.lua`, XP, Regen, Sortie / /SCH maps | weapon + grip (every weapon) |
-| HybridMode | PDT, MDT, Sortie (/SCH: DPS, Tanking, Hoxne); profile hook in `job_state_change` | PDT, MDT; HUD refresh only |
-| Subjob-filtered binds | Xp (/RDM), RuneMode (/RUN), Regen / Phalanx SIRD (/SCH) | none |
+| HybridMode | PDT, MDT, Sortie (/SCH, /RUN: PDT, MDT, DPS, Tanking, Hoxne); profile hook in `job_state_change` | PDT, MDT; HUD refresh only |
+| Subjob-filtered binds | Xp (/RDM), RuneMode (/RUN), Regen (/SCH, /RUN) | none |
 | WS slots | `WS1`, `WS2` | none |
 | /SCH helpers | `aoe sneak` / `invi` / `erase`, `lightarts`, `darkarts`: common commands on every job; RUN answers the bare `aoe` (BLU rotation) before them | none |
 
@@ -255,8 +257,8 @@ creates, so the HUD always waited the full 5 s `init_delay`.
 
 ## Commands
 
-`job_self_command` (`RUN_COMMANDS.lua`): watchdog, dual-box internals,
-CommonCommands, `ui`, `debugmidcast`, `cyclestate`, then RUN commands.
+`job_self_command` (`RUN_COMMANDS.lua`): watchdog, dual-box internals, the bare
+`aoe`, CommonCommands, `ui`, `debugmidcast`, `cyclestate`, then `rune`.
 
 | Command | Effect | Handler |
 |---------|--------|---------|
@@ -304,15 +306,15 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/run/RUN_STATES.lua` | see states | file | entry `user_setup` (hard-coded `Tetsouo/...`, rewritten by the clone script) |
-| `<char>/run/RUN_KEYBINDS.lua` | 4 entries (+ `COMMON_KEYBINDS.lua`) | file | entry (deferred), `file_unload`, HUD |
-| `<char>/run/RUN_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
-| `<char>/run/RUN_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
-| `<char>/run/RUN_LOCKSTYLE.lua` | 3 | file; factory fallback 1 | `LockstyleManager` (8 s after load) |
-| `<char>/run/RUN_MACROBOOK.lua` | book 15 page 1 | file; fallback book 1 page 1 | `MacrobookManager` (0.2 s after load, dual-box update) |
-| `<char>/run/RUN_TP_CONFIG.lua` -> `_G.RUNTPConfig` | Moonshade 250, Lionheart 500 | file | entry `get_sets` (`require`), `RUN_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
-| `<char>/run/RUN_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | entry `get_sets` -> `aoe_manager` (captured on first require) |
-| `<char>/run/RUN_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | file | refill system (the common list without a list in it) |
+| `<char>/run/keys/RUN_STATES.lua` | see states | file | entry `user_setup` (`CharPaths.module('job', 'RUN_STATES', 'RUN')`) |
+| `<char>/run/keys/RUN_KEYBINDS.lua` | 4 entries (+ `COMMON_KEYBINDS.lua`) | file | entry (deferred), `file_unload`, HUD |
+| `<char>/run/keys/RUN_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
+| `<char>/run/display/RUN_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
+| `<char>/run/display/RUN_LOCKSTYLE.lua` | 3 | file; factory fallback 1 | `LockstyleManager` (8 s after load) |
+| `<char>/run/display/RUN_MACROBOOK.lua` | book 15 page 1 | file; fallback book 1 page 1 | `MacrobookManager` (0.2 s after load, dual-box update) |
+| `<char>/run/combat/RUN_TP_CONFIG.lua` -> `_G.RUNTPConfig` | Moonshade 250, Lionheart 500 | file | entry `get_sets` (`require`), `RUN_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
+| `<char>/run/combat/RUN_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | entry `get_sets` -> `aoe_manager` (captured on first require) |
+| `<char>/run/inventory/RUN_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | file | refill system (the common list without a list in it) |
 | `RECAST_CONFIG`, `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry, `is_on_cooldown` |
 
 ## State & lifetime
@@ -373,8 +375,8 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
   HybridMode and `^numpad3` = RuneMode (see
   [keybinds and custom states](../systems/keybinds-and-custom.md#key-layout-project-convention));
   update `docs/user/jobs/run/README.md` and `states.md`.
-- **Fixing the HUD anchor**: change the `RUN` branch of `ui_lifecycle.lua`
-  `are_states_ready` to `state.RuneMode`; it changes RUN HUD timing (5 s -> at once),
+- **HUD anchor**: the `RUN` branch of `ui_lifecycle.lua` `are_states_ready` already
+  tests `state.RuneMode`; that changed RUN HUD timing (5 s -> at once),
   so check the first render in game.
 - **Sharing code with PLD**: `aoe_manager`, `cure_set_builder`, `rune_manager` and
   the BLU config are copies. A fix in one belongs in the other; a merge into
@@ -411,8 +413,6 @@ RUN weaponskills. There is no RUN-specific differential test.
   skipped and the sub slot kept whatever was worn; `apply_grip` now puts the
   SubWeapon grip on with every weapon.
 - Fixed 2026-09-28: the UI readiness anchor was `RuneElement` (no such state); it is `RuneMode`.
-- Stale comment in `RUN_PRECAST.lua` `ensure_modules_loaded`: it says the entry
-  does not load `RUN_TP_CONFIG`; the entry does, since 2026-09-27.
 - `RUN_MACROBOOK.lua` used a `RUN` subjob key (RUN/RUN cannot exist), so with an
   alt online every subjob but BLU fell to the solo book. Since 2026-09-29 each
   alt has a `default` (any other subjob: RDM 15, GEO 16, COR 17), which

@@ -23,7 +23,7 @@ on top of the idle and engaged sets, in town too.
 | Set | Worn when |
 |---|---|
 | `sets.idle` | Standing, not fighting |
-| `sets.idle.DT` | Hybrid Mode DT (`^numpad9`) |
+| `sets.idle.DT` | Hybrid Mode DT (`^numpad9`), outside a city |
 | `sets.idle.Town` | In a city (Dynamis excluded), on top of the idle set; `sets.Adoulin` in the Adoulin cities (checked first, if you add it) |
 | `sets.resting` | Resting (`/heal`) |
 

@@ -78,6 +78,6 @@ In `<YourChar>/rdm/`:
 | `RDM_KEYBINDS.lua` | The keys above |
 | `RDM_CUSTOM.lua` | Your own modes, keys and gear rules, without code (empty by default) |
 | `RDM_SABOTEUR_CONFIG.lua` | Spells that get an automatic Saboteur, and the wait |
-| `RDM_LOCKSTYLE.lua` | Lockstyle number per subjob |
+| `RDM_LOCKSTYLE.lua` | Lockstyle number (`default`; the per-subjob list is not read) |
 | `RDM_MACROBOOK.lua` | Macro book/page (book 2, page 1 in the template) |
 | `RDM_TP_CONFIG.lua` | TP-bonus pieces used for weaponskill gear |

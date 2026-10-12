@@ -29,7 +29,7 @@ Everything below was re-read on disk on 2026-09-28. Since the previous revision 
 | `shared/utils/mount/mount_manager.lua` | 160 | `//gs c mount`: dismount or summon a random owned mount |
 | `<Character>/saved/WARP_ITEMS_OWNED.lua` (live, gitignored) | 10 (Tetsouo) | Owned warp items written by `//gs c wo scan`; read by the wardrobe organizer only |
 
-Not owned by this area but on the path: `shared/utils/core/COMMON_COMMANDS.lua` (routing, `debugwarp`, `mount`), `shared/utils/core/INIT_SYSTEMS.lua` (the deferred +0.5 s block that calls `WarpInit.init()`), `shared/utils/core/DEBUG_COMMANDS.lua` (`handle_debugwarp`), `shared/utils/messages/formatters/system/message_warp.lua` (711 lines, every warp message; templates in `shared/utils/messages/data/systems/warp_messages.lua`), `shared/utils/wardrobe/lib/warp_owned.lua` (writes and reads `WARP_ITEMS_OWNED.lua`), `shared/utils/debug/system_checker.lua` (`check_warp`).
+Not owned by this area but on the path: `shared/utils/core/COMMON_COMMANDS.lua` (routing, `debugwarp`, `mount`), `shared/utils/core/INIT_SYSTEMS.lua` (the deferred +0.5 s block that calls `WarpInit.init()`), `shared/utils/core/DEBUG_COMMANDS.lua` (`handle_debugwarp`), `shared/utils/messages/formatters/system/message_warp.lua` (629 lines, every warp message; templates in `shared/utils/messages/data/systems/warp_messages.lua`), `shared/utils/wardrobe/lib/warp_owned.lua` (writes and reads `WARP_ITEMS_OWNED.lua`), `shared/utils/debug/system_checker.lua` (`check_warp`).
 
 The six database files were read in full; the alias, destination and item counts on this page were measured on 2026-09-28 by loading the registry and the database with `lua5.1` (see [For maintainers / AI](#for-maintainers--ai)).
 
@@ -49,7 +49,7 @@ These come from the GearSwap engine (`D:\Windower Tetsouo\addons\GearSwap\`), se
 
 ### Bootstrap
 
-`INIT_SYSTEMS.lua` schedules a coroutine 0.5 s after each file load (the "DEFERRED SYSTEMS" block); its first step requires `warp_init` and calls `WarpInit.init()` under `pcall`. A load failure or an error in `init()` is reported through `show_module_load_failed('Warp System', ...)`.
+`INIT_SYSTEMS.lua` schedules a function 0.5 s after each file load (the "DEFERRED SYSTEMS" block, through `LoadGate.defer(0.5, ...)`, which drops it when a newer load has started by then); its first step requires `warp_init` and calls `WarpInit.init()` under `pcall`. A load failure or an error in `init()` is reported through `show_module_load_failed('Warp System', ...)`.
 
 ```mermaid
 flowchart TD
@@ -68,7 +68,7 @@ Consequences:
 
 - The IPC listener, the detector's `ActionListener` subscription and the `_G.precast` wrapper are re-created on every load, which is required because the engine removes every sandbox listener at each load and the new sandbox's `precast` is Mote's own (`1e7cc50`). Only `windower._warp_init_done` is once per addon session, and the two messages it gates (`show_commands_registered`, `show_init_success`) are empty functions today (`message_warp.lua`, "Silent init"); so are `show_ipc_registered`, `show_equipment_initialized`, `show_precast_initialized` and `show_ipc_unavailable`. A successful init prints nothing.
 - If `WarpEquipment` or `WarpPrecast` fails to load or init, `init()` prints `show_init_error` and returns before the precast hook: `initialized` stays false. A failed IPC include only calls the (silent) `show_ipc_unavailable` and init goes on.
-- The wrap is guarded by `_G.WARP_PRECAST_HOOKED` (`hook_global_precast`, `warp_init.lua:38-41`): when a load is replaced within 0.5 s, the replaced load's deferred block runs `WarpInit.init()` in the new sandbox too (a `require` from a dead environment's callback loads into the current one), and a second wrap would handle every warp spell twice.
+- The wrap is guarded by `_G.WARP_PRECAST_HOOKED` (`hook_global_precast`, `warp_init.lua:38-41`): when a load is replaced within 0.5 s, the replaced load's deferred block runs `WarpInit.init()` in the new sandbox too (a `require` from a dead environment's callback loads into the current one), and a second wrap would handle every warp spell twice. Since the deferred block goes through `LoadGate.defer` (`load_gate.lua`), a replaced load's block is now skipped as "newer load" before it runs; the guard is still in place.
 - `WarpInit.is_initialized()` is true once `init()` has completed in this module instance, i.e. from +0.5 s after the load. `system_checker.lua` `check_warp()` still reports "initialized (windower persistent)" from `windower._warp_init_done` before it asks `is_initialized()`, so after the first load it never looks at the current sandbox.
 - Command handling does not depend on the bootstrap: `CommonCommands` requires `warp_commands` lazily on every warp command (`CommonCommands.handle_warp_commands`). Only the precast hook, the IPC receiver and the (inert) detector need it.
 
@@ -115,7 +115,7 @@ sequenceDiagram
 Every job's `job_self_command` calls `CommonCommands.is_common_command(command)` and then `CommonCommands.handle_command(command, JOB, table.unpack(args))` (for example `WAR_COMMANDS.lua` `job_self_command`). Inside `CommonCommands` (`COMMON_COMMANDS.lua`):
 
 1. `is_common_command()` accepts the hand-written list (it contains `mount` and `debugwarp`), then any registry alias, then any word ending in `all` whose base is an alias (two loops over `WARP_COMMANDS`, the registry's `COMMANDS` read at `COMMON_COMMANDS.lua:25`).
-2. `handle_command()` rebuilds `cmdParams = {command, args...}`, answers `sortie`, `alts` / `main` / `setalt` / `altreport` / `altmirror` / `altlead`, `rollshow`, `stealth`, `combatmode`, `keyconflicts` / `kc`, `th`, `dw`, `belt`, `tb` and `trace` first, then checks the warp aliases (and `<alias>all`) before every other common command. Alt commands are Mote's last lookup (`AltCommands.install_fallback`), so a warp alias always runs locally even when the dual-box alt config has a key of the same name (the generated BLM alt config `shared/data/alt/BLM_ALT_COMMANDS.lua` defines `warp`, `escape`, `retrace`; they are reachable only as `//gs c alt warp`).
+2. `handle_command()` rebuilds `cmdParams = {command, args...}`, answers `sortie`, `alts` / `main` / `setalt` / `altreport` / `altmirror` / `altlead`, `rollshow`, `stealth`, `cleanse`, `combatmode`, `keyconflicts` / `kc`, `th`, `dw`, `support`, `fights`, `dealwatch`, `belt`, `tb`, `trace` and `atelier` first, then checks the warp aliases (and `<alias>all`) before every other common command. Alt commands are Mote's last lookup (`AltCommands.install_fallback`), so a warp alias always runs locally even when the dual-box alt config has a key of the same name (the generated BLM alt config `shared/data/alt/BLM_ALT_COMMANDS.lua` defines `warp`, `escape`, `retrace`; they are reachable only as `//gs c alt warp`).
 3. `handle_warp_commands(cmdParams)` requires `warp_commands` and returns `WarpCommands.handle_command(cmdParams)`; when the module fails to load it prints the error and a module test (see Known issues for a stale path in that test).
 4. `debugwarp` is routed to `CommonCommands.handle_debugwarp`, which is `DebugCommands.handle_debugwarp` (`DEBUG_COMMANDS.lua`, flag kept in `windower._gs_debug.WARP`); `mount` calls `handle_mount()`.
 
@@ -165,7 +165,7 @@ sequenceDiagram
     participant G as "GearSwap engine"
     participant F as "FFXI client"
     C->>U: "use_ring({'Warp Ring'})"
-    U->>G: "gs disable ring1 (:298)"
+    U->>G: "gs disable ring1 (:304)"
     U->>F: "+0.5 s: input /equip ring1 \"Warp Ring\""
     U->>U: "+2.5 s: _wait_for_ring_usable"
     loop "check_usable"
@@ -174,12 +174,12 @@ sequenceDiagram
         U->>U: "ready: hold safety_delay() 3.5 s, wait for me.spawn_type"
     end
     U->>G: "use_now: ActionListener 'warp_autofix' + register 'zone change' (_setup_auto_fix)"
-    U->>F: "input /item \"Warp Ring\" <me> (:405)"
+    U->>F: "input /item \"Warp Ring\" <me> (:411)"
     loop "check_cast_status every 0.5 s"
         U->>U: "status changed -> interrupted; elapsed >= cast_duration -> timeout"
     end
     F-->>U: "zone change -> cleanup 'success'"
-    U->>G: "gs enable ring1 (:647)"
+    U->>G: "gs enable ring1 (:654)"
 ```
 
 Patience windows (all in `item_user.lua`):
@@ -216,7 +216,7 @@ A movement interruption of the item is not seen by either listener (the item-int
 
 ### Automatic detection (inert)
 
-The design: `WarpDetector`'s action subscription (`init_action_listener`, `warp_detector.lua:167-193`; `ActionListener` key `warp_detector`, one raw listener for every module, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:127-149`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
+The design: `WarpDetector`'s action subscription (`init_action_listener`, `warp_detector.lua:165-191`; `ActionListener` key `warp_detector`, one raw listener for every module, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:127-149`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
 
 In the code on disk the item lock never engages: `init_action_listener()` calls `clear_callbacks()` first, which drops the callback `WarpEquipment.init()` registered just before, and the listener reads the item id from `act.param` instead of `act.targets[1].actions[1].param`. The comment in `WarpEquipment.init()` says so and warns against just swapping the two calls (database slots such as `ears` and `item` are not GearSwap slot names, and the ring commands already lock `ring1` themselves). The listener itself is registered on every load. The only live path into `WarpEquipment.lock()` is `//gs c warp lock` (all slots, `lock('manual', 10)`, released after 13 s).
 
@@ -267,13 +267,13 @@ Local helpers (not exported): `command_status` (34), `command_unlock` (61), `com
 | Function | Line | Notes |
 |---|---|---|
 | `use_ring(ring_names, context)` | 57 | `ring_names` string or list; `context` (the spell name) is only forwarded to `_show_all_cooldowns`, which ignores it. Returns true once a sequence started. Caller: `cast_with_fallback` |
-| `_check_ring_usable(item_id)` | 140 | `usable, delay_s, status` with status `ready`, `cooldown`, `not_found`, `decode_failed`, `unknown_type`, `extdata_missing` |
-| `_show_all_cooldowns(info, context)` | 232 | Chat report when no ring is ready |
-| `_execute_ring_sequence(name, id, is_warp, tag)` | 289 | Save `ring1`, `gs disable ring1`, `/equip`, schedule the wait |
-| `_wait_for_ring_usable(name, id, is_warp, tag, initial_ring1)` | 414 | The patience loop; `initial_ring1` is forwarded, unused |
-| `_setup_auto_fix(id, tag, cast_duration, initial_ring1, item_name)` | 562 | Post-use listeners and monitor; `initial_ring1` is unused |
+| `_check_ring_usable(item_id)` | 146 | `usable, delay_s, status` with status `ready`, `cooldown`, `not_found`, `decode_failed`, `unknown_type`, `extdata_missing` |
+| `_show_all_cooldowns(info, context)` | 238 | Chat report when no ring is ready |
+| `_execute_ring_sequence(name, id, is_warp, tag)` | 295 | Save `ring1`, `gs disable ring1`, `/equip`, schedule the wait |
+| `_wait_for_ring_usable(name, id, is_warp, tag, initial_ring1)` | 420 | The patience loop; `initial_ring1` is forwarded, unused |
+| `_setup_auto_fix(id, tag, cast_duration, initial_ring1, item_name)` | 569 | Post-use listeners and monitor; `initial_ring1` is unused |
 
-Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_item` (332), `usability` (355), `report_timeout` (373), `use_now` (389), `get_action_name` (521), `drop_stale_autofix_listeners` (545).
+Local helpers: `restore_equipment` (39), `abandon_wait` (321), `find_equippable_item` (338), `usability` (361), `report_timeout` (379), `use_now` (395), `get_action_name` (527), `drop_stale_autofix_listeners` (551).
 
 `SpellCaster` (`casting/spell_caster.lua`)
 
@@ -310,11 +310,11 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 | `is_warp_item(item_id)` | 116 | `bool, data` from `WarpItemDB.get_item_by_id`; `duration = cast_time + cast_delay`. Caller: its own listener |
 | `register_callback(fn)` | 152 | Appends to `_G.warp_detector_callbacks`. Caller: `WarpEquipment.init` |
 | `clear_callbacks()` | 157 | Caller: `init_action_listener` |
-| `init_action_listener()` | 167 | Clears the callbacks, then subscribes to `ActionListener` under `warp_detector` (subscribing again replaces). Caller: `WarpEquipment.init` |
-| `get_warp_spells()` | 207 | 13 names. Caller: `command_test` |
-| `get_warp_items()` | 219 | Unique database ids, walked per destination (65). Caller: `command_test` |
+| `init_action_listener()` | 165 | Clears the callbacks, then subscribes to `ActionListener` under `warp_detector` (subscribing again replaces). Caller: `WarpEquipment.init` |
+| `get_warp_spells()` | 199 | 13 names. Caller: `command_test` |
+| `get_warp_items()` | 211 | Unique database ids, walked per destination (65). Caller: `command_test` |
 | `get_items_by_destination(key)`, `ItemDB` | 229, 241 | No caller |
-| `get_all_destinations()` | 244 | No caller; would raise (the database has no such function; the comment says so) |
+| `get_all_destinations()` | 236 | No caller; would raise (the database has no such function; the comment says so) |
 
 `WarpEquipment` (`warp_equipment.lua`)
 
@@ -322,12 +322,12 @@ Local helpers: `restore_equipment` (39), `abandon_wait` (315), `find_equippable_
 |---|---|---|
 | `lock(warp_type, duration, tag, slot)` | 36 | `disable(slot)` or all 16 slots, flag, auto-unlock after `(duration or 15) + 3` s. Caller: `command_lock`, `on_warp_item` |
 | `unlock(is_timeout, tag)` | 78 | No-op unless the flag is set; `enable`, message, `gs c update` after 0.5 s. Callers: the auto-unlock, `force_unlock` |
-| `on_warp_item(warp_data)` | 135 | `ring` -> `ring1`, tag `TELE` for teleport names, `lock('item', ...)`. Caller: the detector callback (never fires) |
-| `init()` | 164 | Callback + `init_action_listener()`. Caller: `WarpInit.init` |
-| `is_locked()`, `get_warp_type()` | 191, 197 | Callers: `command_status`, `command_unlock`, `command_lock` |
-| `force_unlock(tag)` | 203 | `unlock(false, tag)`. Caller: `command_unlock` |
+| `on_warp_item(warp_data)` | 127 | `ring` -> `ring1`, tag `TELE` for teleport names, `lock('item', ...)`. Caller: the detector callback (never fires) |
+| `init()` | 156 | Callback + `init_action_listener()`. Caller: `WarpInit.init` |
+| `is_locked()`, `get_warp_type()` | 183, 189 | Callers: `command_status`, `command_unlock`, `command_lock` |
+| `force_unlock(tag)` | 195 | `unlock(false, tag)`. Caller: `command_unlock` |
 
-`WarpPrecast` (`warp_precast.lua`): `force_fc(spell)` (25), `handle_precast(spell, eventArgs)` (56; caller the `_G.precast` wrapper; `eventArgs` unused), `init()` (98, silent message; caller `WarpInit.init`).
+`WarpPrecast` (`warp_precast.lua`): `force_fc(spell)` (25), `handle_precast(spell, eventArgs)` (56; caller the `_G.precast` wrapper; `eventArgs` unused), `init()` (76, silent message; caller `WarpInit.init`).
 
 `WarpDatabase` (`database/warp_database_core.lua`, also reached as `warp_item_database`)
 
@@ -372,7 +372,7 @@ A repeat of the exact same command text within 0.5 s is swallowed (`DEBOUNCE_THR
 
 ## Configuration
 
-There is no per-character warp configuration. All tuning is constants:
+One per-character setting: `ring_safety` in `<Character>/_common/travel/WARP_CONFIG.lua` (template `_master/config_global/WARP_CONFIG.lua`), read by `safety_delay()` in `item_user.lua`. The rest of the tuning is constants:
 
 - `item_user.lua:105-137` (table above).
 - `warp_commands.lua:28` `DEBOUNCE_THRESHOLD = 0.5`.
@@ -381,7 +381,7 @@ There is no per-character warp configuration. All tuning is constants:
 - `spell_caster.lua:24-42` spell levels; `warp_detector.lua:41-59` (`WARP_SPELLS`) spell names and durations, `:32-38` name patterns; `cast_helpers.lua:72-83` ring ids.
 - `mount_manager.lua:28-39` fallback mount, packet id and offset, mounted statuses.
 
-`WARP_ITEMS_OWNED.lua` (`data/<char>/_common/`) is written by `WarpOwned.save()` (`wardrobe/lib/warp_owned.lua:98`) and read by `WarpOwned.load()` (`:39`) for the wardrobe organizer's keep list. The warp system itself never reads it. Live today: Tetsouo `Delegate's Garb`, `Dim. Ring (Holla)`, `Instant Warp`, `Nexus Cape`, `Warp Ring`; Kaories `Dim. Ring (Holla)`, `Nexus Cape`, `Warp Ring`.
+`WARP_ITEMS_OWNED.lua` (`data/<char>/saved/`) is written by `WarpOwned.save()` (`wardrobe/lib/warp_owned.lua:98`) and read by `WarpOwned.load()` (`:39`) for the wardrobe organizer's keep list. The warp system itself never reads it. Live today: Tetsouo `Delegate's Garb`, `Dim. Ring (Holla)`, `Instant Warp`, `Nexus Cape`, `Warp Ring`; Kaories `Dim. Ring (Holla)`, `Nexus Cape`, `Warp Ring`.
 
 Destination database (first entry is what the command uses; `act` is the database `cast_delay`; the code only adds it to the post-use window, `use_now` in `item_user.lua`, while the wait reads the activation delay from extdata):
 
@@ -547,6 +547,7 @@ Fixed since the page was first written:
 - `warp_detector.lua` no longer claims 68 items.
 - The detector `action` listener goes through `raw_register_event` instead of the `equip_sets` wrapper (2026-09-25; not yet played), and since 2026-10-01 both action listeners (detector and post-use) are `ActionListener` subscriptions (not yet played).
 - `warp help` no longer lists `//gs c warp debug` (which cast Warp) and now lists `warp fix`, the destination codes and the `all` form (HelpScreen rewrite, `37337ca`).
+- `warp help` now says `warp lock` locks for 13 s (it said 10 s) and lists `warp ipctest` (`message_warp.lua` `HELP`).
 
 Still open:
 
@@ -557,5 +558,4 @@ Still open:
 - Database names or ids that do not match `res/items.lua` (`warp_database_adoulin_special_mechanics.lua`, special locations).
 - Dead code: `WarpIPC.init` / `handle_ipc_message` / `is_initialized`, `WarpDetector.has_blm` / `has_whm` / `get_items_by_destination` / `get_all_destinations`, `SpellCaster.can_cast`, `command_debugwarp` in `warp_commands.lua`.
 - `//gs c warp unlock` cannot release the ring sequence's `ring1` lock (`command_unlock`).
-- `warp help` says `warp lock` locks for 10 s; the lock lasts 13 s (`lock('manual', 10)` + 3). `warp ipctest` is not in the help (`message_warp.lua` `HELP`).
 - `syscheck` reports the warp system as initialised from `windower._warp_init_done`, even when this sandbox's `init()` failed (`system_checker.lua` `check_warp`).

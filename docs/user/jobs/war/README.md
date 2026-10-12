@@ -52,7 +52,7 @@ the keys that are bound now, with the current value of each mode.
 | `^-` / `^=` | Mote: `<stnpc>` targeting on / off, PC target mode | |
 | `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | Free until you bind one |
 
-None of the WAR keys depends on the subjob; `^numpad8` is free. Your own modes from
+Only `^numpad2` (Jump Auto, /DRG) depends on the subjob; `^numpad8` is free. Your own modes from
 `WAR_CUSTOM.lua` add their keys to this list. Two actions on one key are reported in
 chat and turn the key red in the HUD; `//gs c kc` lists every possible conflict on every
 subjob.
@@ -109,7 +109,7 @@ with the same name; `//gs c alt berserk` sends the alt's.
 | `waltz`, `aoewaltz` | Curing Waltz / Divine Waltz (needs /DNC) |
 | `lightarts`, `darkarts`, `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: Light / Dark Arts then the Addendum on the next press; Sneak / Invisible / Erase on the party with Accession |
 | `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | Every job: your main job's list, then your subjob's (not when the subjob is disabled), from `_common/combat/BUFF_CONFIG.lua`. WAR has no list (`job.WAR`) by default: its buffs go through `berserk` / `defender`; add one if you like. Subjob lists (`subjob`) by default: /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni, else Ichi; /DNC Haste Samba (350 TP); /WHM Reraise. Buffs already up or on recast are listed in chat, what your jobs cannot use is skipped quietly; the rest goes one action after the other. No list for your jobs: a warning naming the file ([configuration](../../guides/configuration.md)) |
-| `!numpad-` | Jump Auto on / off, shown on /DRG only (see [commands](../../guides/commands.md#combat-helpers)) |
+| `^numpad2` | Jump Auto on / off, shown on /DRG only (see [commands](../../guides/commands.md#combat-helpers)) |
 | `jump` | Jump, then High Jump (needs /DRG) |
 | `stealth sneak` / `invi` / `both` (+ `self`, `check`, `status`...) | Sneak / Invisible on the whole group (Alt+Z / Alt+X) |
 | `watchdog` (+ `on`, `off`, `buffer`, `stats`...) | Midcast watchdog (WAR does not feed it: no effect on WAR's own casts) |

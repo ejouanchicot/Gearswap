@@ -120,9 +120,15 @@ metatable**. A global that is not listed there is `nil`:
 | `loadfile`, `setfenv`, `getfenv`, `load`, `collectgarbage`, `gcinfo`, `rawequal`, `xpcall`, `module`, `package`, `newproxy`, and a bare `res` | `string`, `table`, `math`, `os`, `io`, `debug`, `coroutine`, `bit`, `T` `S` `L` `Q`, `loadstring`, `dofile`, `pcall`, `error`, `assert`, `select`, `next`, `unpack`, `rawget`, `rawset`, `setmetatable`, `getmetatable`, `print`, `texts`, `file`, `gearswap` (the engine's own `_G`), `player`, `buffactive`, `world`, `pet`, `party`, `alliance` |
 
 - `require` is the engine's `include_user` (`:132`, `user_functions.lua:300-335`),
-  not Lua's. It serves `package.loaded` when the name is there (Windower's own
-  libraries only) and otherwise reads, compiles and runs the file **every
-  time**: it never writes `package.loaded`. The project's `ModuleCache`
+  not Lua's. It serves `package.loaded` only when the name is there as a table
+  (`:306-307`: a Windower library the addon itself loaded and that returns a
+  table) and otherwise reads, compiles and runs the file inside the sandbox
+  **every time**: it never writes `package.loaded`. A Windower library the
+  addon has not loaded (`slips`) therefore runs inside the sandbox, with every
+  library it requires that returns no table (`lists`, `tables`): do not
+  `require` one from project code (header of
+  `shared/utils/equipment/slip_reader.lua`, which replaces `require('slips')`).
+  The project's `ModuleCache`
   (`shared/utils/core/module_cache.lua`, installed by `config_loader` and again
   by INIT_SYSTEMS) caches per sandbox. See
   [core-lifecycle.md, ModuleCache](systems/core-lifecycle.md#modulecache).
@@ -131,7 +137,8 @@ metatable**. A global that is not listed there is `nil`:
   in turn. **A failed `pcall(require, X)` never proves that X is missing**:
   print `tostring(err)`.
 - `require` resolves through `pathsearch` (`refresh.lua:677-728`): `libs-dev/`,
-  `libs/`, `data/<Char>/`, `data/common/`, `data/`, then the AppData copies.
+  `libs/`, `data/<Char>/`, `data/common/`, `data/`, then the AppData copies
+  and last Windower's `addons/libs/` (`refresh.lua:693-703`).
   A file under `data/<Char>/` shadows a file with the same relative path under
   `data/`.
 - Windower's `strings` library **is** loaded by GearSwap (`gearswap.lua:44`) and
@@ -221,11 +228,14 @@ time.
   handler writes the new `player.buffs` (`:566-568`). A coroutine waiting for a
   buff must read `windower.ffxi.get_player().buffs` and map ids with
   `res.buffs` (see `AbilityHelper.is_buff_active`,
-  `shared/utils/precast/ability_helper.lua:93`). For the same reason a gear
+  `shared/utils/precast/ability_helper.lua:95`). For the same reason a gear
   rebuild inside `job_buff_change` sees the old buffs: a buff that swaps sets
   goes in `GEAR_BUFFS` and the job calls `LifecycleManager.refresh_after_buff`
-  (a `gs c update` 0.1 s later; today only Aftermath: Lv.3, on WAR, DRK, SAM and
-  THF).
+  (a `gs c update` 0.1 s later; today Aftermath: Lv.3, a Prime weapon's
+  Aftermath, Overdrive, Spirit Surge, Sublimation: Activated, Impetus,
+  Footwork, Hundred Fists, Counterstance, Yonin, Innin, Sange and Issekigan,
+  called by the buff handlers of DRG, DRK, MNK, NIN, PUP, SAM, SCH, THF and
+  WAR; `GEAR_BUFFS`, `lifecycle_manager.lua:76-90`).
 - **TP.** Use `require('shared/utils/core/live_tp')()`: it reads
   `windower.ffxi.get_player().vitals.tp` and falls back to GearSwap's copy.
   Never add a new test on `player.tp` or `player.vitals.tp`.
@@ -449,8 +459,9 @@ The coding standard, as reviews enforce it:
 ### What git tracks
 
 `shared/`, `_master/` (generic templates), `character_db.lua`,
-`clone_character.py`, `docs/`, and three entries under `scripts/`
-(`check_syntax.py`, `check_overlay.py`, `item_db/`). Ignored (`.gitignore`):
+`clone_character.py`, `docs/`, and five entries under `scripts/`
+(`check_syntax.py`, `check_overlay.py`, `item_db/`, `addon_patches/`,
+`atelier/`; `.gitignore:98-106`). Ignored (`.gitignore`):
 
 - every character folder the game loads (`data/<Char>/`), and, through the same
   unanchored patterns, the per-character overlays `_master/<Char>/`;
@@ -468,8 +479,8 @@ folder is updated by hand or by re-clone. Stage explicit paths
 `_master/<Name>/` (same relative path replaces the template), substitutes the
 template name, generates `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua`, moves an
 existing folder to `addons/GearSwap/clone_backups/`, and copies back the files
-written in game (`KEPT_ON_RECLONE`, `clone_character.py:313-353`). The
-clone refuses jobs outside `ALL_VALID_JOBS` (`:254-257`). Two character folders
+written in game (`KEPT_ON_RECLONE`, `clone_character.py:313-355`). The
+clone refuses jobs outside `ALL_VALID_JOBS` (`:255-258`). Two character folders
 are frozen clones: do not modify them without the owner's approval.
 
 Details: [architecture/characters-and-templates.md](architecture/characters-and-templates.md).
@@ -754,7 +765,7 @@ end
 ```
 
 The spell is magic, so Treasure Hunter does not act at precast (it acts at
-precast only for weaponskills and abilities, `treasure_hunter.lua:117-126`).
+precast only for weaponskills and abilities, `treasure_hunter.lua:119-128`).
 A first version of this harness left `TH.optional` unstubbed: the error it
 raised inside the Treasure Hunter layer stopped the custom-states and cast-time
 layers from running. That is the "an error escaping a layer aborts the outer
@@ -770,7 +781,7 @@ layers" rule of section 3, observed.
 | `//gs c wa` | Wardrobe audit across jobs |
 | `//gs c debugmidcast` | Per job: logs which `MidcastManager` level chose the set |
 | `//gs c debugprecast` | Precast debug toggle (persists through reloads via `windower._gs_debug`) |
-| `//gs c trace on` / `off` / `clear` | Appends real game values to `data/<Char>/logs/trace/trace.log`; survives even `//lua reload gearswap` through `data/<Char>/trace.on` |
+| `//gs c trace on` / `off` / `clear` | Appends real game values to `data/<Char>/logs/trace/trace.log`; survives even `//lua reload gearswap` through `data/<Char>/saved/trace.on` (at the folder root in an older layout) |
 | `//gs c rolldebug` | COR: roll gear sent vs worn when the roll goes off, to `data/<Char>/logs/rolls/rolldebug.log` |
 | `//gs c syscheck` | System state, including the message hook wrap ratio and globals created since load |
 | `//gs c fulltest`, `//gs c lagdebug`, `//gs c perf`, `//gs c memcheck` | Full self-test, lag capture, profiler, `_G` export |

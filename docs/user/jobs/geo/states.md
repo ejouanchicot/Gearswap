@@ -15,7 +15,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
 | `^numpad3` | `MainIndi` | **Indi-Haste** and 29 more | Spell cast by `//gs c indi` and `//gs c entrust` |
-| `^numpad4` | `MainGeo` | **Geo-Frailty** and 27 more | Spell cast by `//gs c geo` |
+| `^numpad4` | `MainGeo` | **Geo-Frailty** and 29 more | Spell cast by `//gs c geo` |
 | `^numpad5` | `MainLightSpell` | **Fire**, Aero, Thunder | Element of `//gs c lightspell` |
 | `^numpad6` | `MainDarkSpell` | **Blizzard**, Stone, Water | Element of `//gs c darkspell` |
 | `^numpad1` | `SpellTier` | **V**, IV, III, II, I | Tier of the single-target nukes (`I` = the base spell, e.g. `Fire`) |

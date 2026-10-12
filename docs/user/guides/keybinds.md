@@ -2,11 +2,11 @@
 
 Three places give you keys, plus temporary keys made in game:
 
-| File (in `<YourName>/_common/`) | Keys |
+| File (in `<YourName>/`) | Keys |
 |---|---|
 | `<job>/keys/<JOB>_KEYBINDS.lua` | The job's keys |
 | `<job>/keys/<JOB>_CUSTOM.lua` | Your own modes, with their key (empty by default) |
-| `COMMON_KEYBINDS.lua` | Keys every job of this character gets |
+| `_common/keys/COMMON_KEYBINDS.lua` | Keys every job of this character gets |
 | `//gs c tb` (in game) | Temporary keys on Ctrl/Alt+F1-F8 |
 
 Keys are bound when the job loads and removed when you leave the job. The
@@ -295,5 +295,5 @@ in `<YourName>/saved/temp_binds.lua`).
 
 - `<JOB>_KEYBINDS.lua`, `COMMON_KEYBINDS.lua`, `<JOB>_CUSTOM.lua`: `//gs c reload`
   (or change job).
-- The files in `<YourName>/_common/` are your copies; the templates in
+- The files in `<YourName>/` are your copies; the templates in
   `_master/` are only read by the clone script.

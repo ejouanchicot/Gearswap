@@ -93,7 +93,7 @@ When the game says the action is over, your normal set comes back: the idle
 set if you are standing, the engaged set if your weapon is out. If the game
 never says so (packet loss in a laggy zone), the
 [midcast watchdog](../features/watchdog.md) puts it back after the cast time
-plus 1.5 s.
+(1.5 s at least for a spell) plus 1.5 s.
 
 ## How the idle and engaged sets are built
 

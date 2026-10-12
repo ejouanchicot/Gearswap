@@ -4,7 +4,7 @@ PUP was rewritten on 2026-09-29. Until then it was a copy of the BST code
 (jugs, Ready moves, ecosystems) that did not even load: its entry file required
 a `pup/` folder that did not exist. It is now a thin job built on the
 shared systems, like BLU: 12 hook modules plus 3 logic modules under
-`shared/jobs/pup/functions/`, a template entry point, seven config files and
+`shared/jobs/pup/functions/`, a template entry point, eight config files and
 one sets file. GearSwap loads it when the main job becomes PUP (the entry file
 `<Character>_PUP.lua`, one `include` of `shared/entry/pup.lua`, copied from
 `_master/entry/Tetsouo_PUP.lua` by the clone script, which offers PUP again).
@@ -44,8 +44,8 @@ What PUP adds on top of the shared pipeline:
 | `shared/jobs/pup/functions/PUP_BUFFS.lua` | 23 | `LifecycleManager.buff_change` + `refresh_after_buff` (Overdrive) |
 | `shared/jobs/pup/functions/PUP_COMMANDS.lua` | 158 | `job_self_command` router (+ `petmode`), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/pup/functions/PUP_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/pup/functions/PUP_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('PUP', 'pup/display/PUP_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/pup/functions/PUP_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('PUP', 'pup/display/PUP_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/pup/functions/PUP_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('PUP', 'config/pup/PUP_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/pup/functions/PUP_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('PUP', 'config/pup/PUP_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/pup/functions/logic/automaton.lua` | 151 | Live reads: pet out / fighting / TP; head and frame; `refresh_mode` |
 | `shared/jobs/pup/functions/logic/pet_ws.lua` | 117 | `is_due`, `threshold`, the poll (`ensure_running`, `stop`) |
 | `shared/jobs/pup/functions/logic/set_builder.lua` | 191 | Idle and engaged: master base, town, pet layers, Overdrive, pet WS, Mote layers, weapon, movement |
@@ -194,8 +194,8 @@ of a spell, and as a weaponskill goes off.
   child. Nothing PUP-specific was needed.
 - **Anything else** (weaponskills): if `sets.midcast.Pet[<name>]` exists,
   `job_pet_midcast` returns and Mote picks it; otherwise it equips
-  `sets.midcast.Pet.WeaponSkill[PetMode]` (or `.WeaponSkill`) and sets
-  `eventArgs.handled`.
+  `sets.midcast.Pet.WeaponSkill[PetMode]` (`RangedPet` for Ranged; or
+  `.WeaponSkill`) and sets `eventArgs.handled`.
 
 Mote's `pet_aftercast` puts the idle / engaged gear back. The custom gear
 (`PUP_CUSTOM.lua`) is never laid on pet actions: the custom hooks wrap
@@ -256,6 +256,8 @@ Idle (`build_idle_set`):
    plus Town on top).
 3. `pet_idle_layer`: pet fighting -> `sets.idle.Pet.Engaged[PetMode]` or
    `sets.idle.Pet.Engaged`; pet out -> `sets.idle.Pet`; `set_combine` on top.
+   The sub-set of PetMode Ranged is keyed `RangedPet` (`mode_key`), here and
+   for the pet WS set.
 4. `finish`: `sets.buff.Overdrive` (buffactive), the pet WS set when due,
    Mote's defense / Kiting layers, `BaseSetBuilder.lay_weapons` (MainWeapon).
 5. `BaseSetBuilder.apply_movement` outside a city.
@@ -263,7 +265,8 @@ Idle (`build_idle_set`):
 Engaged (`build_engaged_set` / `select_engaged_base`): group `sets.engaged`,
 or `sets.engaged.Pet` when it exists and the automaton fights; then
 `group[OffenseMode]` when a table; then under HybridMode DT the level's `.DT`,
-else the group's `.DT`. Then `finish` as above.
+else the group's `.DT`. Then `support_tier.engaged`
+(`shared/utils/party/support_tier.lua`) on that base, then `finish` as above.
 
 Trace lines (`//gs c trace on`): `IDLE <base>, pet mode <m>, on top: ...` and
 `ENGAGED <path>, pet mode <m>, on top: ...`.
@@ -324,12 +327,12 @@ T = `_master/sets/pup_sets.lua`. Player version:
 | `sets.precast.FC`, `.FC.Utsusemi` | Mote | yes |
 | `sets.precast.WS`, `.WS.Acc`, `WS['Victory Smite' / 'Shijin Spiral' / 'Stringing Pummel' / 'Howling Fist' / 'Asuran Fists']` | Mote | yes |
 | `sets.midcast.FastRecast`, `.Utsusemi` | Mote-Globals / Mote | yes |
-| `sets.midcast.Pet.WeaponSkill`, `.Melee`, `.Tank`, `.Ranged` (any PetMode child works) | `lay_pet_layers`, `job_pet_midcast` | yes |
+| `sets.midcast.Pet.WeaponSkill`, `.Melee`, `.Tank`, `.RangedPet` (any PetMode child works; Ranged is read as `RangedPet`) | `lay_pet_layers`, `job_pet_midcast` | yes |
 | `sets.midcast.Pet[<ws name>]` | Mote (`job_pet_midcast` defers to it) | commented |
 | `sets.midcast.Pet.Cure`, `['Elemental Magic']`, `['Enfeebling Magic']` (and `['Healing Magic']`, `['Enhancing Magic']`, `['Dark Magic']`, names) | Mote `get_pet_midcast_set` | first three |
 | `sets.resting` | Mote | yes |
 | `sets.idle`, `.DT`, `.Town` | `master_idle`, `BaseSetBuilder` | yes |
-| `sets.idle.Pet`, `.Pet.Engaged`, `.Pet.Engaged[PetMode]` (six) | `pet_idle_layer` | yes |
+| `sets.idle.Pet`, `.Pet.Engaged`, `.Pet.Engaged[PetMode]` (six, Ranged as `RangedPet`) | `pet_idle_layer` | yes |
 | `sets.engaged`, `.Acc`, `.DT` | `select_engaged_base` | yes |
 | `sets.engaged.Pet`, `.Pet.DT` (and `.Pet.Acc`, `.Pet.Acc.DT`) | `select_engaged_base` | first two |
 | `sets.defense.PDT` / `.MDT` | Mote defense layer | no |
@@ -339,13 +342,13 @@ T = `_master/sets/pup_sets.lua`. Player version:
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/pup/PUP_STATES.lua` | see states | entry `user_setup` |
-| `<char>/pup/PUP_KEYBINDS.lua` | 5 entries | entry `user_setup`, `file_unload` |
-| `<char>/pup/PUP_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
-| `<char>/pup/PUP_TP_CONFIG.lua` `pet_ws_tp` | 1000 | `PetWS.threshold` |
-| `<char>/pup/PUP_CUSTOM.lua` | examples only | shared custom states |
-| `<char>/pup/PUP_HUD.lua` | empty | HUD |
-| `<char>/pup/PUP_LOCKSTYLE.lua`, `PUP_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
+| `<char>/pup/keys/PUP_STATES.lua` | see states | entry `user_setup` |
+| `<char>/pup/keys/PUP_KEYBINDS.lua` | 5 entries | entry `user_setup`, `file_unload` |
+| `<char>/pup/combat/PUP_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
+| `<char>/pup/combat/PUP_TP_CONFIG.lua` `pet_ws_tp` | 1000 | `PetWS.threshold` |
+| `<char>/pup/keys/PUP_CUSTOM.lua` | examples only | shared custom states |
+| `<char>/pup/display/PUP_HUD.lua` | empty | HUD |
+| `<char>/pup/display/PUP_LOCKSTYLE.lua`, `PUP_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
 `character_db.lua` lists PUP among Tetsouo's jobs (`ARCHIVE_JOBS` is empty).
 The DB is only read by the Lua side and by the clone's regex; `clone_character.py` offers

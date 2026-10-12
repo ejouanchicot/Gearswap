@@ -4,7 +4,7 @@ The job files GearSwap loads live in one folder per character (`data/Tetsouo/`, 
 
 In game, every job file resolves inside `data/<player.name>/`, `data/shared/` or GearSwap's `libs/`, with one exception: a character that became main with `//gs c main` and has no alt folder (`_common/dualbox/alt/`) reads its hand-written `<JOB>_ALT_CUSTOM` commands from `_master/config/alt/` (`load_job_config` in `shared/utils/dualbox/alt_commands.lua`). The generated alt command tables are read from `shared/data/alt/` for every character.
 
-This page covers how a live folder is built, how it drifts from its templates, and how to add a character or deploy a template change safely. Verified against the code on 2026-09-28: `clone_character.py` (version 4.1.0, 1094 lines on 2026-10-10), `CLONE_CHARACTER.bat` (67), `character_db.lua` (226), `.gitignore` (130), the entry templates. Functions are cited by name; line numbers only where a function name would not locate the spot.
+This page covers how a live folder is built, how it drifts from its templates, and how to add a character or deploy a template change safely. Verified against the code on 2026-09-28: `clone_character.py` (version 4.1.0, 1094 lines on 2026-10-10), `CLONE_CHARACTER.bat` (67), `character_db.lua` (227), `.gitignore` (150), the entry templates. Functions are cited by name; line numbers only where a function name would not locate the spot.
 
 ## Files
 
@@ -32,7 +32,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `Kaories/` (live) | no | ALT, 4 jobs (COR GEO PLD RDM), flat sets |
 | `Hysoka/`, `Gabvanstronger/` (live) | no | Frozen one-shot clones; not to be modified without the owner's approval |
 
-Tracked `_master/` totals 269 files (`git ls-files _master`, 2026-10-01): `config/` 202, `config_global/` 21, `entry/` 22, `sets/` 24.
+Tracked `_master/` totals 280 files (`git ls-files _master`, 2026-10-12): `config/` 212, `config_global/` 22, `entry/` 22, `sets/` 24.
 
 ## Folder model
 
@@ -95,9 +95,9 @@ Since 2026-09-27 the overlays are no longer published: the `.gitignore` patterns
 
 | Tracked (`git ls-files`) | Ignored (`.gitignore`) |
 |---|---|
-| `_master/{entry,sets,config,config_global}/**` (269 files) | live folders `Morphetrix/`, `Hysoka/`, `Gabvanstronger/`, `Blodykiller/`, `Typioni/`, `Kaories/`, `Tetsouo/` (lines 51-57), and through the same patterns every `_master/<Name>/` overlay |
-| `character_db.lua`, `clone_character.py`, `CLONE_CHARACTER.bat`, `.markdownlint.json`, `README.md` | `.gitignore` itself (78), `data.code-workspace` (65), `.vscode/` (31), `CLAUDE.md` and `.claude/` (75-76, again 116), `notes/` (130) |
-| `shared/**`, `docs/`, `scripts/check_syntax.py`, `scripts/check_overlay.py`, `scripts/item_db/`, `scripts/addon_patches/` (negations at 98-104) | the rest of `scripts/` (94, e.g. the local `scripts/audit/` harnesses), `scripts/item_db/out/` (102), `_dev/` (90), `export/` (43), `*.log`, `*.png`, debug exports (120-126) |
+| `_master/{entry,sets,config,config_global}/**` (280 files) | live folders `Morphetrix/`, `Hysoka/`, `Gabvanstronger/`, `Blodykiller/`, `Typioni/`, `Kaories/`, `Tetsouo/` (lines 51-57), and through the same patterns every `_master/<Name>/` overlay |
+| `character_db.lua`, `clone_character.py`, `CLONE_CHARACTER.bat`, `.markdownlint.json`, `README.md` | `.gitignore` itself (78), `data.code-workspace` (65), `.vscode/` (31), `CLAUDE.md` and `.claude/` (75-76, again 118), `notes/` (132) |
+| `shared/**`, `docs/`, `scripts/check_syntax.py`, `scripts/check_overlay.py`, `scripts/item_db/`, `scripts/addon_patches/`, `scripts/atelier/` (negations at 98-106) | the rest of `scripts/` (94, e.g. the local `scripts/audit/` harnesses), `scripts/item_db/out/` (102), `_dev/` (90), `export/` (43), `*.log`, `*.png`, debug exports (122-128) |
 
 Lines 8-11 ignore `Tetsouo/jobs/`, `Tetsouo/utils/`, `Kaories/jobs/`, `Kaories/utils/` (junctions from an old migration). Neither live folder contains them any more, and lines 56-57 already cover them.
 
@@ -221,8 +221,8 @@ Public API. Every function has **zero callers** in `shared/`, `_master/` and the
 What `clone_character.py` actually reads (`parse_character_db`):
 
 - The regex `([A-Z][a-z]\w*)\s*=\s*\{[^}]*jobs\s*=\s*\{([^}]*)\}[^}]*role\s*=\s*['"](\w+)['"]` (DOTALL). A block is recognised only if its name starts with one uppercase letter followed by a lowercase one, `jobs` comes before `role`, and no `}` appears between `jobs = {...}` and `role`. `ARCHIVE_JOBS`, `ALL_JOBS` and `MASTER` are ignored.
-- DB jobs are used as-is (`lookup_character`). Manual entry is filtered by the script's own `ALL_VALID_JOBS`: the same 22 codes as `ALL_JOBS` (`clone_character.py:254-257`).
-- The header example at `character_db.lua:9` (`{'RDM','COR','GEO'}`) predates PLD being added to Kaories, and the `get_all_jobs` doc (`character_db.lua:180`) still says "16 supported job abbreviations".
+- DB jobs are used as-is (`lookup_character`). Manual entry is filtered by the script's own `ALL_VALID_JOBS`: the same 22 codes as `ALL_JOBS` (`clone_character.py:255-258`).
+- The header example at `character_db.lua:9` (`{'RDM','COR','GEO'}`) predates PLD being added to Kaories.
 
 ## Per-character files read at runtime
 
@@ -271,7 +271,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `saved/alt_state.lua`, `saved/alt_window.lua` | `alt_group.lua`, `alt_window.lua` | kept on re-clone | `//gs c alts ...`, window drag / toggle |
 | `temp_binds.lua` | `shared/utils/keybinds/temp_binds.lua` | kept on re-clone | `//gs c tb` |
 
-When `player` is nil, nine shared modules fall back to the name `'Tetsouo'` (`grep -rln "or 'Tetsouo'\|or \"Tetsouo\"" shared`), including `ui_settings.lua`, `message_settings.lua`, `dualbox_manager.lua` and `alt_commands.lua`.
+When the character's name is not known, six shared files fall back to the name `'Tetsouo'` (`grep -rln "or 'Tetsouo'\|or \"Tetsouo\"" shared`, 2026-10-12): `config_loader.lua`, `dualbox_manager.lua`, `cure_manager.lua`, `BLM_LOCKSTYLE.lua`, `BLM_MACROBOOK.lua` and `BLM_MIDCAST.lua`.
 
 `shared/utils/equipment/hp_priority.lua` processes every character; its settings come from the character's `_common/gear/HP_PRIORITY_CONFIG.lua` (defaults in the code when the file is missing: on, Unity `'min'`, MP counted on BLM/RDM/GEO, no job skipped).
 

@@ -59,14 +59,14 @@ sequenceDiagram
     P->>K: "send K gs c cleanse report P none"
 ```
 
-### Plan of one debuff (`plan_one(entry, settings)`)
+### Plan of one debuff (`plan_one(entry, settings, up)`)
 
 Returns `{text, tone, run, later}`; `run` acts now, `later` runs after the partner wait. First match wins:
 
 1. `UncurableDebuffs.is_marked(mark_name(entry))`: `left alone (item had no effect: aura?)`, nothing done. `mark_name(entry)` = `entry.name:lower()` (`attack down`, `magic atk. down`), the name `uncurable_debuffs.lua` resolves to buff ids through `res.buffs[id].en:lower()`; every `name` of `DEBUFF_REMOVAL.lua` is a `res.buffs` name.
 2. Own spell: `entry.spell`, `use_spells ~= false`, not `no_action`, `Methods.can_cast(spell)` -> `run` queues a function step (wait 0.05 s) that, when its turn comes, checks `Methods.is_up(entry)` and only then `ActionQueue.push_next`es `/ma "<spell>" <me>` with a longest wait of cast time + `WAIT_MARGIN` (3 s). An Erase, a Panacea or a partner's spell that went earlier in the queue may have taken the debuff off: then nothing is cast.
 3. Partner: `entry.spell` and `ask_partner ~= false` and `partners_for(spell)` not empty -> `run` sends `gs c cleanse cast <spell> <me>` to each partner; `later` (only when an item exists) uses the item if `Methods.is_up(entry)` still. Text `<spell> from <names>[, else <item>]`.
-4. Own item (`first_item(items_for(entry, settings))`, not for `no_action`) -> `use_item`.
+4. Own item (`best_item(items_for(entry, settings), entry.key, up)`, see [Items covering several debuffs](#items-covering-several-debuffs); not for `no_action`) -> `use_item`.
 5. Nothing: `cannot act, no partner can help` (`no_action`), `no item, no spell` (the entry has a spell or items but none is usable), else `nothing removes it`.
 
 `partners_for(spell)` keeps the other members for which `Methods.partner_may_cast(spell, job, subjob)` is true, with the job and subjob from `AltStates.get(name)`: an unknown job counts as able (asked anyway); a main job with a level for the spell; a WHM / RDM / PLD subjob whose level for the spell is 49 or less; never a SCH subjob. The partner's MP, recast, learned spells and Addendum are not checked here: `cast_for` on the partner checks them with its own `can_cast`, and does nothing when it cannot.

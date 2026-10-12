@@ -1,8 +1,8 @@
 # BLM (Black Mage) job
 
-The BLM job area is the facade plus 11 hook modules and 11 logic modules
-under `shared/jobs/blm/functions/` (about 3 030 lines), an entry point per
-character, nine config files and one sets file. GearSwap loads it when the main
+The BLM job area is the facade plus 11 hook modules and 10 logic modules
+under `shared/jobs/blm/functions/` (about 2 990 lines), an entry point per
+character, eleven config files and one sets file. GearSwap loads it when the main
 job becomes BLM. From then on Mote-Include calls its hooks on every action
 (precast, midcast, aftercast), on status and buff changes, on `//gs c`
 commands and on state cycles.
@@ -61,11 +61,12 @@ function, not a line number.
 | `_master/config/blm/BLM_KEYBINDS.lua` | 17 numpad binds, data only; `KeybindManager.create('BLM', ...)` ([keybinds](../systems/keybinds-and-custom.md)) |
 | `_master/config/blm/BLM_CUSTOM.lua` | Player modes and gear rules (all examples commented out) |
 | `_master/config/blm/BLM_HUD.lua` | Per-job HUD section / row order (empty = defaults), rewritten by `//gs c ui order` |
-| `_master/config/blm/BLM_LOCKSTYLE.lua` | `default = 5`, `by_subjob` (not read: no `get_style`) |
+| `_master/config/blm/BLM_LOCKSTYLE.lua` | `default = 5`, `by_subjob` (not applied: no `get_style`; only `lockstyle_pieces.lua` reads it, for `//gs c lockscan`) |
 | `_master/config/blm/BLM_MACROBOOK.lua` | `default` book 8 page 1, `solo[sub]`, `dualbox[partner_job][sub]` |
 | `_master/config/blm/BLM_MP_CONFIG.lua` | `mp_threshold = 1000` |
 | `_master/config/blm/BLM_ELEMENTAL_CONFIG.lua` | `auto_hachirin`, `check_storm`, `check_day`, `check_weather` |
 | `_master/config/blm/BLM_TP_CONFIG.lua` | `_G.BLMTPConfig` with a `moonshade` entry (see Known issues) |
+| `_master/config/blm/BLM_CONFIG.lua` | `auto_dark_arts`, `auto_klimaform` (both true), read through `auto_options.lua` (`blm_dark_arts`, `blm_klimaform`) |
 | `_master/config/blm/BLM_REFILL.lua` | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/blm_sets.lua` | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_blm.lua` + `data/jobs/blm_messages.lua` | BLM chat messages (cycles, refinement, errors) |
@@ -111,7 +112,7 @@ sequenceDiagram
 
 1. `BLMStates.configure()` creates every state (all values reset on every load
    and every subjob change).
-2. `require('Tetsouo/blm/keys/BLM_KEYBINDS')` returns
+2. `require(CharPaths.module('job', 'BLM_KEYBINDS', 'BLM'))` returns
    `KeybindManager.create('BLM', ...)` (the player's `BLM_CUSTOM.lua` keys and
    the character's `COMMON_KEYBINDS.lua` keys are appended there), stored in
    the global `BLMKeybinds`, then `bind_all()`, which validates, binds and
@@ -122,11 +123,14 @@ sequenceDiagram
    lockstyle after `LockstyleConfig.initial_load_delay` (8 s). On a fresh load
    those two globals exist only because `show_intro()` `require`s
    `BLM_MACROBOOK.lua` and `BLM_LOCKSTYLE.lua`, which define them as a side
-   effect. The facade includes the same files again later, creating a second,
-   independent factory instance of each.
+   effect. The facade includes the same files again later: a second,
+   independent `MacrobookManager` instance, while the two
+   `LockstyleManager.create('BLM', ...)` calls share one context
+   (`_G.__lockstyle_contexts`).
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (auto-init).
 
-The `Tetsouo/...` paths in the template are replaced by the clone script.
+The entry names no character: every character file is resolved through
+`CharPaths` (`CharPaths.module('job', ...)`, `CharPaths.relative('sets', ...)`).
 
 `blm_functions.lua` includes `message_buffs.lua`, then `BLM_PRECAST`,
 `BLM_MIDCAST`, `BLM_AFTERCAST`, `BLM_IDLE`, `BLM_ENGAGED`, `BLM_STATUS`,
@@ -169,7 +173,8 @@ flowchart TD
 - `has_charges` skips the ability check for Addendum: White / Black,
   Accession, Manifestation. `CooldownChecker` already skips stratagems itself,
   so this list only duplicates it.
-- `checkArts` (`blm_functions.lua`): only for Elemental Magic, only on /SCH
+- `checkArts` (`blm_functions.lua`): only for Elemental Magic, only while
+  `auto_dark_arts` of `BLM_CONFIG.lua` is not false, only on /SCH
   with `sub_job_level ~= 0` (Odyssey subjob lock), Dark Arts recast ready (id
   from `res.job_abilities`, fallback 232), and neither Dark Arts nor
   Addendum: Black active. It calls `cancel_spell()` directly (not
@@ -279,7 +284,7 @@ flowchart TD
 - The context built in `job_post_midcast` carries `debug_enabled`
   (`_G.MidcastManagerDebugState`), the midcast message module,
   `BLMMPConfig` and `BLMElementalConfig`. Both configs are read per character
-  (`player.name .. '/config/blm/...'`, `load_blm_config`, called from
+  (`CharPaths.load('job', <file>, 'BLM', char_name)` in `load_blm_config`, called from
   `ensure_modules_loaded`) and fall back to built-in defaults.
 - `select_set` tries the exact spell name first, so a root set named after
   the spell wins over `mode_value`. It returns false at once when
@@ -313,7 +318,7 @@ flowchart TD
   On -> `sets.idle.Death`, else HybridMode PDT -> `sets.idle.PDT`, each only
   when the set exists; otherwise Mote's set) -> `BaseSetBuilder.select_idle_base_town`
   (`sets.Adoulin` in Adoulin, `sets.idle.Town` in other cities, Dynamis
-  excluded) -> `apply_weapon` (`WeaponResolver.set_for('main' / 'sub', value)`)
+  excluded) -> `apply_weapon` (`BaseSetBuilder.lay_weapons`: `WeaponResolver.set_for('main' / 'sub', value)`)
   -> `sets.MoveSpeed` when `state.Moving.value == 'true'` outside town ->
   `sets.buff['Mana Wall']` while Mana Wall is up.
 - `customize_melee_set` -> `build_engaged_set`: `mode_base` (PDT only, no
@@ -440,18 +445,19 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/blm/BLM_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/blm/BLM_KEYBINDS.lua` | 17 binds | file | entry `user_setup`, `file_unload` |
-| `<char>/blm/BLM_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
-| `<char>/blm/BLM_HUD.lua` | empty | file | HUD section / row order |
-| `<char>/blm/BLM_LOCKSTYLE.lua` `default`, `by_subjob` | 5 | file; factory fallback 1 (`BLM_LOCKSTYLE.lua` wrapper) | `LockstyleManager`: `default` only (no `get_style`) |
-| `<char>/blm/BLM_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 8 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
-| `<char>/blm/BLM_MP_CONFIG.lua` `mp_threshold` | 1000 | file; fallback in `BLM_MIDCAST.lua` `ensure_modules_loaded` | `apply_mp_conservation` |
-| `<char>/blm/BLM_ELEMENTAL_CONFIG.lua` | all true | file; same fallback | `apply_elemental_match` (only when `ElementalBelt` is off) |
+| `<char>/blm/keys/BLM_STATES.lua` | see states | file | entry `user_setup` |
+| `<char>/blm/keys/BLM_KEYBINDS.lua` | 17 binds | file | entry `user_setup`, `file_unload` |
+| `<char>/blm/keys/BLM_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
+| `<char>/blm/display/BLM_HUD.lua` | empty | file | HUD section / row order |
+| `<char>/blm/display/BLM_LOCKSTYLE.lua` `default`, `by_subjob` | 5 | file; factory fallback 1 (`BLM_LOCKSTYLE.lua` wrapper) | `LockstyleManager`: `default` only (no `get_style`) |
+| `<char>/blm/display/BLM_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 8 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/blm/combat/BLM_MP_CONFIG.lua` `mp_threshold` | 1000 | file; fallback in `BLM_MIDCAST.lua` `ensure_modules_loaded` | `apply_mp_conservation` |
+| `<char>/blm/combat/BLM_ELEMENTAL_CONFIG.lua` | all true | file; same fallback | `apply_elemental_match` (only when `ElementalBelt` is off) |
 | `<char>/_common/gear/ELEMENTAL_BELT_CONFIG.lua` `enabled`, `min_bonus` | true, 5 | `elemental_belt.lua` `DEFAULTS` | shared belt, and the BLM match gate |
 | `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | `weapon_resolver.lua` | `apply_weapon`: with true, Hvergelmir / Alber Strap go on without a set |
-| `<char>/blm/BLM_TP_CONFIG.lua` -> `_G.BLMTPConfig` | `moonshade = {name, tp_bonus = 250}` | file | `WSPrecastHandler` -> TP calculator, which reads `pieces` / `get_weapon_bonus`, neither defined |
-| `<char>/blm/BLM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | file; the common list without it | `refill/config_resolver.lua` |
+| `<char>/blm/combat/BLM_TP_CONFIG.lua` -> `_G.BLMTPConfig` | `moonshade = {name, tp_bonus = 250}` | file | `WSPrecastHandler` -> TP calculator, which reads `pieces` / `get_weapon_bonus`, neither defined |
+| `<char>/blm/combat/BLM_CONFIG.lua` `auto_dark_arts`, `auto_klimaform` | true, true | file; `auto_options.lua` (`enabled(name, true)`) | `checkArts`; `StormManager.cast_storm_with_klimaform` (false: the storm alone) |
+| `<char>/blm/inventory/BLM_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited) | file; the common list without it | `refill/config_resolver.lua` |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | - | entry fallbacks | entry |
 
 ## State & lifetime
@@ -459,8 +465,8 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 - Module state: `TimingGuards` (last replacement, per-key cast times, last
   announce), `StormManager` last cast time, lazy-load locals. All live in the
   sandbox and die on `gs reload` (the `require` cache is on the sandbox `_G`).
-  Modules required inside `user_setup`, before `INIT_SYSTEMS` installs
-  `ModuleCache`, are not cached and load again later.
+  `ModuleCache` is installed by `config_loader.lua`, which the entry requires
+  at file level, so modules required inside `user_setup` are cached too.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`,
   `job_buff_change`, `customize_idle_set`, `customize_melee_set`,
@@ -477,7 +483,8 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   `CombatMode`, `AbilityHelper` and `ScholarActions` keep their own records).
   No Windower events are registered.
 - Coroutines: the 8 s lockstyle in `user_setup` (not cancelled by a reload;
-  `LockstyleManager.select_default_lockstyle` returns if the main job changed),
+  `LockstyleManager.select_default_lockstyle` returns if the main job changed,
+  and its own 2 s `LoadGate.defer` is dropped when the load was replaced),
   the `AbilityHelper` follow-up after Dark Arts, the `ScholarActions` polls
   (generation counter on `windower._sch_cast_seq`). `wait N` chains sent with
   `send_command` sit in the Windower command queue and survive a reload.
@@ -575,9 +582,10 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   `MagicBurst.acc` is last on purpose.
 - `apply_elemental_match` must stay gated on `ElementalBelt.settings().enabled`,
   or two belt rules fight over the waist.
-- The `Tetsouo/...` require paths in the template entry and in
-  `BLM_MIDCAST.lua`'s fallback character name are substituted by the clone
-  script or replaced by `player.name` at run time; do not hard-code another
+- No file requires a `Tetsouo/...` path: the entry and the modules resolve
+  character files through `CharPaths`. The only literal name left is the
+  `'Tetsouo'` fallback of `CharPaths.name()` in `BLM_MIDCAST.lua`,
+  `BLM_LOCKSTYLE.lua` and `BLM_MACROBOOK.lua`; do not hard-code another
   name.
 
 ### Traps
@@ -651,8 +659,10 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 - `MagicBurstMode = Acc` is ignored by the `/p` call and by Impact, and its
   overlay also replaces the Burn / Frost sets.
 - `BLM_TP_CONFIG` is never read by the TP calculator (no `pieces`).
-- `BLM_LOCKSTYLE.by_subjob` is never read (no `get_style`).
-- Template `sets.idle.Town` / `sets.Adoulin` are 1-2 slot sets used as full
-  idle bases.
+- `BLM_LOCKSTYLE.by_subjob` is never applied (no `get_style`); only
+  `lockstyle_pieces.lua` reads it (`//gs c lockscan`, `of_job`).
+- Template `sets.idle.Town` / `sets.Adoulin` are 1-2 slot sets; since
+  2026-09-29 `BaseSetBuilder.select_idle_base_town` lays them on top of the
+  idle set instead of using them as full idle bases.
 - `sets.midcast.QuanpurStone` exists only in the author's overlay.
 - Dead code: `show_mp_conservation` and `show_buff_status` in `message_blm`.

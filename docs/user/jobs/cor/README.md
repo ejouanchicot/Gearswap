@@ -140,7 +140,7 @@ checks as a macro: debuff guard, recast check, roll gear, Luzaf's Ring.
 
 | Feature | On COR |
 |---|---|
-| Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear (Moonshade...) from `COR_TP_CONFIG.lua` is added. The gun list in that file is not counted today (see [sets.md](sets.md#weaponskills)) |
+| Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear (Moonshade...) from `COR_TP_CONFIG.lua` is added. The TP bonus of the gun you wear is counted (see [sets.md](sets.md#weaponskills)) |
 | Recast check | An ability or spell still on recast is cancelled with the time left. Quick Draw is left to the game (it has charges). A refused roll can also tell the party when Phantom Roll is back ([states.md](states.md#notes)) |
 | Debuff guard | An action you cannot do (silenced, amnesia, ...) is stopped; with Auto Medicine on, Echo Drops / Remedy are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |

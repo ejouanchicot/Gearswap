@@ -31,7 +31,7 @@ weaponskill opens with, worked out the same way.
 
 | Item | Slot | Bonus | Jobs (template configs) |
 |------|------|-------|------|
-| Moonshade Earring | ear1 | +250 | BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM |
+| Moonshade Earring | ear1 | +250 | BLU, BRD, BST, COR, DNC, DRG, DRK, GEO, MNK, NIN, PLD, PUP, RDM, RNG, RUN, SAM, SCH, THF, WAR, WHM |
 | Boii Cuisses +3 | legs | +100 | WAR |
 | Mpaca's Cap | head | +200 | SAM |
 
@@ -62,13 +62,14 @@ A weapon your job's TP config lists keeps the value written there (the table bel
 
 | Job | Source | Value in the code |
 |-----|--------|-------------------|
-| WAR | Warcry (while the buff is up) | 100 per Savagery merit, 140 per merit with Agoge Mask (`savagery_merits`, template 5 → 700) |
-| WAR | Fencer (one-handed weapon, shield or empty off hand) | 630 + 11.5 per JP gift rank (`fencer_jp_gifts`, template 20 → 860) |
-| BST | Fencer | Base by level: 200 at 80, 300 at 87, 400 at 94+; plus 50 / 50 / 60 / 70 for JP gift ranks 1-4 (`fencer_jp_gifts`, template 4 → 630 at 99) |
+| WAR | Warcry (while the buff is up) | 100 per Savagery merit, 140 per merit with Agoge Mask (`savagery_merits` and `has_agoge_mask`, template `'auto'`: your merits read in game, the mask looked for in your bags; 5 merits with the mask → 700) |
+| WAR | Fencer (one-handed weapon, shield or empty off hand) | 630 + the job point gifts (`fencer_jp_gifts`, template `'auto'`: read from the job points spent on WAR, 230 in all → 860; a number 0 to 20 forces 11.5 each) |
+| BST | Fencer | Base by level: 200 at 80, 300 at 87, 400 at 94+; plus 50 / 50 / 60 / 70 for JP gift ranks 1-4 (`fencer_jp_gifts`, template `'auto'`: read from the job points spent on BST; 4 → 630 at 99) |
 | SAM | Hagakure (while the buff is up) | 1000 + 10 per JP gift rank (`hagakure_jp_gifts`, template 0 → 1000) |
 
-Set the merit / JP numbers and the Agoge Mask flag to match your character in
-the job's TP config.
+On `'auto'` these values are read from the game; type a number (or `true` /
+`false` for the Agoge Mask) in the job's TP config only to force one. SAM's
+`hagakure_jp_gifts` is a number you set.
 
 ## Which jobs have it
 

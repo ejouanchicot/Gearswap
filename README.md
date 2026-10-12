@@ -153,7 +153,7 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
 
 - **Precast checks, on every action.** Actions that cannot go off (silence,
   paralysis, amnesia...) are cancelled before any gear swap; with Auto Medicine
-  on, Echo Drops or Remedy are used for silence, and Remedy or Panacea for
+  on, Echo Drops or Remedy are used for silence, and Remedy for
   paralysis before a job ability. Abilities and spells still on recast are
   cancelled with the time left. Weaponskills are checked for range and TP, and
   get TP-bonus gear from each job's `<JOB>_TP_CONFIG.lua`.
@@ -175,7 +175,7 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
   wrong job file, it is reloaded.
 - **Lockstyle and macro book** per job (the macro book also per subjob and
   per partner job): the macro book is set about 1.5 s after a load, the
-  lockstyle 8 s after.
+  lockstyle about 10 s after.
   By default the DressUp addon is unloaded around `/lockstyleset` and loaded
   again 3 s later; `//gs c dressup` turns that off.
 - **Keybind HUD** with the current value of every mode.

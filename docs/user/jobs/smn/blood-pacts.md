@@ -333,7 +333,12 @@ Debuff pacts target enemy: `<t>`
 
 ### All Blood Pact: Rage — Physical names
 ```
-Punch, Rock Throw, Barracuda Dive, Claw, Welt, Axe Kick, Shock Strike, Camisado, Regal Scratch, Poison Nails, Moonlit Charge, Crescent Fang, Burning Strike, Rock Buster, Tail Whip, Double Punch, Megalith Throw, Roundhouse, Double Slap, Eclipse Bite, Flaming Crush, Mountain Buster, Spinning Dive, Predator Claws, Rush, Chaotic Strike, Volt Strike, Hysteric Assault, Crag Throw, Blindside, Regal Gash
+Punch, Rock Throw, Barracuda Dive, Claw, Welt, Axe Kick, Shock Strike, Camisado, Regal Scratch, Poison Nails, Moonlit Charge, Crescent Fang, Rock Buster, Tail Whip, Double Punch, Megalith Throw, Roundhouse, Double Slap, Eclipse Bite, Mountain Buster, Spinning Dive, Predator Claws, Rush, Chaotic Strike, Volt Strike, Hysteric Assault, Crag Throw, Blindside, Regal Gash
+```
+
+### All Blood Pact: Rage — Hybrid names
+```
+Burning Strike, Flaming Crush
 ```
 
 ### All Blood Pact: Rage — Magical names
@@ -343,17 +348,17 @@ Fire II, Stone II, Water II, Aero II, Blizzard II, Thunder II, Thunderspark, Fir
 
 ### All Blood Pact: Rage — Astral Flow names
 ```
-Searing Light, Inferno, Earthen Fury, Tidal Wave, Aerial Blast, Diamond Dust, Judgment Bolt, Howling Moon, Ruinous Omen, Clarsach Call, Zantetsuken
+Searing Light, Inferno, Earthen Fury, Tidal Wave, Aerial Blast, Diamond Dust, Judgment Bolt, Howling Moon, Ruinous Omen, Clarsach Call, Zantetsuken, Perfect Defense
 ```
 
 ### All Blood Pact: Ward — Buff names (target: <me>)
 ```
-Shining Ruby, Glittering Ruby, Crimson Howl, Earthen Ward, Aerial Armor, Frost Armor, Rolling Thunder, Lightning Armor, Ecliptic Growl, Noctoshield, Katabatic Blades, Ecliptic Howl, Dream Shroud, Reraise II, Earthen Armor, Fleet Wind, Inferno Howl, Wind's Blessing, Pacifying Ruby, Heavenward Howl, Hastega, Hastega II
+Shining Ruby, Glittering Ruby, Crimson Howl, Earthen Ward, Aerial Armor, Frost Armor, Rolling Thunder, Lightning Armor, Ecliptic Growl, Noctoshield, Katabatic Blades, Ecliptic Howl, Dream Shroud, Reraise II, Earthen Armor, Fleet Wind, Inferno Howl, Wind's Blessing, Pacifying Ruby, Heavenward Howl, Hastega, Hastega II, Crystal Blessing
 ```
 
 ### All Blood Pact: Ward — Heal names (target: <me>)
 ```
-Healing Ruby, Healing Ruby II, Whispering Wind, Spring Water, Soothing Ruby, Chinook, Soothing Current, Crystal Blessing, Altana's Favor
+Healing Ruby, Healing Ruby II, Whispering Wind, Spring Water, Soothing Ruby, Chinook, Soothing Current, Altana's Favor
 ```
 
 ### All Blood Pact: Ward — Debuff names (target: <t>)

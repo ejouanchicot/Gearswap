@@ -142,8 +142,11 @@ The format and specs of both renderers are documented in [messages.md](messages.
 | `InfoBlock` pieces (`header`, `separator`, `fields`, `footer`) | `checksets` (`MessageEquipment.show_check_header` then the set lines, then `show_check_summary`) |
 
 Outside the formatter folder, `InfoBlock` is also used by `BRD_COMMANDS.lua`, COR `roll_debug.lua`,
-`optional_state_commands.lua`, `dual_wield.lua`, `elemental_belt.lua`, `key_conflicts.lua` and
-`stealth.lua`, and `HelpScreen` by `optional_state_commands.lua`.
+`optional_state_commands.lua`, `dual_wield.lua`, `elemental_belt.lua`, `key_conflicts.lua`,
+`stealth.lua`, `PUP_COMMANDS.lua`, SCH `logic/spell_commands.lua`, `fight_hits.lua`, `fight_sheet.lua`,
+`fight_tracker.lua`, `random_deal_watch.lua`, `auto_medicine.lua`, `cleanse.lua`, `gear_scan.lua`,
+`hp_priority.lua`, `lockstyle_pieces.lua`, `support_tier.lua`, `bag_mover.lua` and `porter_run.lua`,
+and `HelpScreen` by `optional_state_commands.lua`, `SCH_COMMANDS.lua` and `cleanse.lua`.
 
 Not converted, on purpose: Sortie's own blocks (`message_sortie.lua`, the model of the InfoBlock look,
 with their own templates), in-game event messages (roll result, recasts, debuff alerts, the line after
@@ -262,7 +265,7 @@ rolllucky | rollparty | rollbust | roll11`, see [ui-overlay.md](ui-overlay.md)):
 
 - Details follow `rolls.order` (names `party`, `lucky`, `eleven`, `bust`; `DEFAULT_ORDER` otherwise),
   each turned off by `rolls.<name> = false` (local `detail_order`).
-- A roll made on another box (`source` argument, from `cor/functions/logic/roll_share.lua`) uses
+- A roll made on another box (`source` argument, from `shared/utils/dualbox/roll_share.lua`) uses
   `rolls.remote_style` unless it is `same`, and carries the caster instead of the job tag
   (`[Kaories COR]`, local `tag_prefix`).
 - The roll number is drawn as a circled digit (Shift-JIS bytes `0x87 0x40`...); it is green when lucky
@@ -326,7 +329,7 @@ formatter file. `(dead)` means no reachable caller was found (2026-09-28 scan, s
 | `show_cooldown_message(job_name, action_type, name, remaining, status, no_separators)` | core line, path C | `message_buffs.lua`, PLD and RUN `aoe_manager.lua` |
 | `show_spell_cooldown(spell_name, remaining_centiseconds, job_name)` | centiseconds | `precast/cooldown_checker.lua`, BLM `refiner/recast_display.lua`, `refiner/special_handlers.lua` |
 | `show_ability_cooldown(ability_name, remaining_seconds, job_name)` | seconds | `cooldown_checker.lua`, DNC `step_manager.lua`, PLD and RUN `rune_manager.lua` |
-| `show_multi_status(messages, job_name)` | block | BLM `spell_refiner.lua`, `storm_manager.lua`, `recast_display.lua`, `buffs/self_buff_manager.lua`, `dnc/waltz_manager.lua`, `drg/DRG_JUMP_MANAGER.lua`, `precast/tier_refiner.lua` |
+| `show_multi_status(messages, job_name)` | block | BLM `spell_refiner.lua`, `storm_manager.lua`, `recast_display.lua`, `buffs/self_buff_manager.lua`, `dnc/waltz_manager.lua`, `drg/DRG_JUMP_MANAGER.lua`, DRG `functions/logic/jumps.lua`, `precast/tier_refiner.lua` |
 | `get_ability_recast_seconds(id)`, `get_spell_recast_seconds(id)` | exported fields (read `windower.ffxi.get_*_recasts`) | `get_ability_recast_seconds`: `cooldown_checker.lua` via the facade; `get_spell_recast_seconds`: internal only |
 | `format_recast_duration(recast)` | used internally only | |
 
@@ -367,7 +370,7 @@ lines only when `TPBonusCalculator.config.debug_mode`).
 | Module | Live | Dead |
 |---|---|---|
 | message_buffs | `show_buff_status(buffs_data, action_type)`: DNC/THF `smartbuff_manager.lua`, `buffs/self_buff_manager.lua` (WAR chains and `//gs c buff`) | none |
-| message_debuffs | `show_spell_blocked`, `show_ja_blocked`, `show_ws_blocked`, `show_item_blocked` (`(name, debuff_name)`), `show_action_blocked(action_name, action_type, debuff_name)`, `show_no_silence_cure(spell_name, debuff_message)`, `show_no_paralysis_cure(action_name, debuff_message)` (`debuff/precast_guard.lua`; no Remedy left: "[ability] goes anyway [Paralyzed]", the ability is not cancelled); `show_debuff_uncurable(debuff_name, item_name)` ("[item] did not remove [debuff] (aura?)", printed once when a debuff is marked, passed as callback to `UncurableDebuffs.watch` by `precast_guard.lua`); `show_silence_cure_success(item_name, spell_name, debuff_message)`, `show_paralysis_cure_success(item_name, action_name, debuff_message)` (passed as callbacks by `precast_guard.lua`); `show_auto_medicine_toggled(enabled)` (`debuff/auto_medicine.lua`) | none |
+| message_debuffs | `show_spell_blocked`, `show_ja_blocked`, `show_ws_blocked`, `show_item_blocked` (`(name, debuff_name)`), `show_action_blocked(action_name, action_type, debuff_name)`, `show_no_silence_cure(spell_name, debuff_message, items, asked)`, `show_no_paralysis_cure(action_name, debuff_message, items, asked)` (`debuff/precast_guard.lua`; no Remedy left: "[ability] goes anyway [Paralyzed]", the ability is not cancelled); `show_debuff_uncurable(debuff_name, item_name)` ("[item] did not remove [debuff] (aura?)", printed once when a debuff is marked, passed as callback to `UncurableDebuffs.watch` by `precast_guard.lua`, and called by `debuff/cleanse.lua`); `show_silence_cure_success(item_name, spell_name, debuff_message)`, `show_paralysis_cure_success(item_name, action_name, debuff_message)` (passed as callbacks by `precast_guard.lua`); `show_auto_medicine_toggled(enabled)` (`debuff/auto_medicine.lua`) | none |
 | message_midcast | `show_debug_enabled`, `show_debug_disabled`, `show_debug_header(spell, skill, target)`, `show_debug_step(step, label, status, value)`, `show_priorities_header`, `show_priority_check(priority, label, found)`, `show_result_header`, `show_result(set_type, is_fallback)`, `show_equipment_line(slot1, item1, slot2, item2)` (`midcast/midcast_manager.lua`) | none |
 | message_precast | all 7: `show_debug_enabled`, `show_debug_disabled` (`DebugCommands.handle_debugprecast`), `show_debug_header(action, action_type)`, `show_debug_step(step, label, status, value)`, `show_completion`, `show_equipped_set(set_type)`, `show_equipment(gear_set)` (`BRD_PRECAST.lua`, `BST_PRECAST.lua`, `RDM_PRECAST.lua`, `RUN_PRECAST.lua`) | none |
 
@@ -394,11 +397,11 @@ Several `message_warp` functions are intentionally empty ("Silent init"): `show_
 | Module | Live | Dead |
 |---|---|---|
 | message_alt_commands | `show_list(alt, job, names, commands, filter, subjob, char, shadowed)` (`dualbox/alt_commands.lua` `AltCommands.list`) | none |
-| message_commands | colour test `show_color_test_header`, `show_color_sample_row(code1..code14)`, `show_color_test_separator`, `show_color_test_footer` (`CommonCommands.handle_testcolors`); `show_craft_equipping`, `show_craft_ready` (`craft/craft_commands.lua`); `show_lockstyle_reapplying`, `show_dressup_toggled`, `show_warp_error_header/error/footer`, `show_warp_testing_modules`, `show_warp_module_test` (`COMMON_COMMANDS.lua`); the debugsubjob block (`show_debugsubjob_header`, `_no_player`, `_instructions`, `show_main_job_info`, `show_sub_job_info`, `show_zone_info_header`, `show_zone_id`, `show_zone_name`, `show_zone_info_unavailable`; `DebugCommands.handle_debugsubjob`); for each of `jamsg`, `spellmsg`, `wsmsg`: `show_<p>_config_error`, `_invalid_mode(mode)`, `_mode_changed(mode)`, `_set_failed` (string dispatch in `handle_message_config_generic`) and `show_message_mode_help(msg_type, mode)`; `show_warp_debug_toggled` (`DebugCommands.handle_debugwarp`); `show_debugmidcast_toggled(job_name, debug_state)` (every `<JOB>_COMMANDS.lua`); `show_help`, `show_commands_list` (`COMMON_COMMANDS.lua`) | none |
+| message_commands | colour test `show_color_test_header`, `show_color_sample_row(code1..code14)`, `show_color_test_separator`, `show_color_test_footer` (`CommonCommands.handle_testcolors`); `show_craft_equipping`, `show_craft_ready` (`craft/craft_commands.lua`); `show_lockstyle_reapplying` (also `INIT_SYSTEMS.lua`), `show_dressup_toggled`, `show_warp_error_header/error/footer`, `show_warp_testing_modules`, `show_warp_module_test` (`COMMON_COMMANDS.lua`); the debugsubjob block (`show_debugsubjob_header`, `_no_player`, `_instructions`, `show_main_job_info`, `show_sub_job_info`, `show_zone_info_header`, `show_zone_id`, `show_zone_name`, `show_zone_info_unavailable`; `DebugCommands.handle_debugsubjob`); for each of `jamsg`, `spellmsg`, `wsmsg`: `show_<p>_config_error`, `_invalid_mode(mode)`, `_mode_changed(mode)`, `_set_failed` (string dispatch in `handle_message_config_generic`) and `show_message_mode_help(msg_type, mode)`; `show_warp_debug_toggled` (`DebugCommands.handle_debugwarp`); `show_debugmidcast_toggled(job_name, debug_state)` (every `<JOB>_COMMANDS.lua`); `show_help`, `show_commands_list` (`COMMON_COMMANDS.lua`) | none |
 | message_dualbox | all 13 (`dualbox/dualbox_manager.lua`): config, role, job exchange, `show_target_error` | none |
 | message_info | all 3: `show_entity(name, kind, fields)`, `show_usage`, `show_not_found(name)` (`commands/info_command.lua`) | none |
 | message_keybinds | `show_no_binds_error(job_name)`, `show_bind_failed_error(bind_key, reason)` (`keybinds/keybind_manager.lua`); `format_keybind_line(key, description)` (`ui/UI_FORMATTER.lua`, `ui/UI_SECTIONS.lua`); `calculate_max_width` (internal) | `show_keybind_list(title, keybinds)` is reached only through the `show_binds` method `KeybindManager.create` attaches to each keybind module, which nothing calls (the frozen Hysoka and Gabvanstronger files define their own uncalled `show_binds`) |
-| message_status | `show_error(message)`, `show_warning`, `show_success`, `show_info` (widely), `show_state_display(state_name, value)` (`core/state_display_override.lua`), `show_tp_ready(job, tp_value)` (`drg/DRG_JUMP_MANAGER.lua`) | none |
+| message_status | `show_error(message)`, `show_warning`, `show_success`, `show_info` (widely), `show_state_display(state_name, value)` (`core/state_display_override.lua`, BRD `functions/logic/dummy_next.lua`), `show_tp_ready(job, tp_value)` (`drg/DRG_JUMP_MANAGER.lua`) | none |
 | message_ui | all 12: `show_toggle(component, enabled)` (`ui_appearance.lua`, `ui_section_toggles.lua`), `show_enabled`, `show_disabled`, `show_position_saved(x, y)`, `show_position_save_failed` (`ui_visibility.lua`), `show_error(error_text)`, `show_help`, `show_theme_list` (`UI_COMMANDS.lua`), `show_style_set(option, value, error_text)`, `show_style_list(fields)` (`ui_style_commands.lua`), `show_background_preset(name, r, g, b, a)`, `show_background_rgba(r, g, b, a)` (`ui_appearance.lua`) | none |
 
 `MessageStatus.show_error(message)` takes one argument. `DEBUG_COMMANDS.lua` `handle_memcheck` and
@@ -408,8 +411,8 @@ Several `message_warp` functions are intentionally empty ("Silent init"): `show_
 
 | Function | Callers |
 |---|---|
-| `RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range, source)` | `cor/functions/logic/roll_display.lua`, `roll_share.lua` (remote rolls, `source` set) |
-| `show_roll_bust(roll_name, bust_effect, effect_type, source)` | `roll_tracker.lua`, `roll_share.lua` |
+| `RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range, source)` | `cor/functions/logic/roll_display.lua`, `dualbox/roll_share.lua` (remote rolls, `source` set) |
+| `show_roll_bust(roll_name, bust_effect, effect_type, source)` | COR `roll_tracker.lua`, `dualbox/roll_share.lua` |
 | `show_roll_double_up_window(remaining_seconds)` (`info`), `show_roll_double_up_expired()`, `show_no_active_roll()` (`warning`) | `roll_display.lua` |
 | `show_active_rolls(active_rolls)` (InfoBlock `COR :: Active rolls (n)`; a roll without value shows `? (cast before the reload)`), `show_rolls_cleared()`, `show_invalid_roll_value(roll_value)` | `COR_COMMANDS.lua` (`rolls`, `clearrolls`, `track_roll`) |
 | `PartyMessages.show_party_members(members)` | `COR_COMMANDS.lua` (`party`); expects an array of `{name, main_job?, sub_job?, main_job_level?}` from `PartyTracker.members_for_display`; a member without job prints `job unknown (until it zones or changes job)` |

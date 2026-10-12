@@ -2,7 +2,7 @@
 
 RNG was added on 2026-09-29. It is a thin job built on the shared systems,
 like BLU and PUP: 12 hook modules plus 2 logic modules under
-`shared/jobs/rng/functions/`, a template entry point, seven config files and
+`shared/jobs/rng/functions/`, a template entry point, eight config files and
 one sets file. GearSwap loads it when the main job becomes RNG (the entry file
 `<Character>_RNG.lua`, one `include` of `shared/entry/rng.lua`, copied from
 `_master/entry/Tetsouo_RNG.lua` by the clone script, which lists RNG in `ALL_VALID_JOBS`).
@@ -43,8 +43,8 @@ What RNG adds on top of the shared pipeline:
 | `shared/jobs/rng/functions/RNG_BUFFS.lua` | 22 | `job_buff_change = LifecycleManager.buff_change()` (no `refresh_after_buff`: no RNG buff swaps idle / engaged gear) |
 | `shared/jobs/rng/functions/RNG_COMMANDS.lua` | 115 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/rng/functions/RNG_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
-| `shared/jobs/rng/functions/RNG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('RNG', 'rng/display/RNG_LOCKSTYLE', 1, 'WAR')` wrappers |
-| `shared/jobs/rng/functions/RNG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('RNG', 'rng/display/RNG_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/rng/functions/RNG_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('RNG', 'config/rng/RNG_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/rng/functions/RNG_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('RNG', 'config/rng/RNG_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/rng/functions/logic/ranged.lua` | 85 | `PRECAST_LAYERS`, `MIDCAST_LAYERS`, `layers`, `equip_layers`, `prepare_precast` (Flurry groups), `start` (Flurry listener) |
 | `shared/jobs/rng/functions/logic/set_builder.lua` | 119 | Idle and engaged: HybridMode, town, Mote layers, weapons (main, sub, range), movement |
 | `_master/config/rng/RNG_STATES.lua` | 80 | Mote mode options, `RangeWeapon`, `MainWeapon`, `SubWeapon`, `FastCast`, `AutoMedicine` |
@@ -170,8 +170,9 @@ of the idle in a city; outside, `sets.idle[HybridMode]` when it exists, so
 
 Engaged (`build_engaged_set` / `select_engaged_base`): `sets.engaged`, then
 `sets.engaged[OffenseMode]` when a table, then under HybridMode DT that
-level's `.DT`, else `sets.engaged.DT`. Then `finish`. No `sets.engaged`: Mote's
-base is kept.
+level's `.DT`, else `sets.engaged.DT`. Then `SupportTier.engaged` (the set's
+`.Solo` / `.Group` version, `shared/utils/party/support_tier.lua`), then
+`finish`. No `sets.engaged`: Mote's base is kept.
 
 `apply_weapons`: `BaseSetBuilder.lay_weapons` (MainWeapon, SubWeapon), then
 `BaseSetBuilder.lay_weapon(result, 'range', RangeWeapon)`. `WeaponResolver`
@@ -243,17 +244,17 @@ T = `_master/sets/rng_sets.lua`. Player version:
 
 | File / key | Default | Read by |
 |------------|---------|---------|
-| `<char>/rng/RNG_STATES.lua` | see states | entry `user_setup` |
-| `<char>/rng/RNG_KEYBINDS.lua` | 7 entries | entry `user_setup`, `file_unload` |
-| `<char>/rng/RNG_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
-| `<char>/rng/RNG_CUSTOM.lua` | examples only | shared custom states |
-| `<char>/rng/RNG_HUD.lua` | empty | HUD |
-| `<char>/rng/RNG_LOCKSTYLE.lua`, `RNG_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
+| `<char>/rng/keys/RNG_STATES.lua` | see states | entry `user_setup` |
+| `<char>/rng/keys/RNG_KEYBINDS.lua` | 7 entries | entry `user_setup`, `file_unload` |
+| `<char>/rng/combat/RNG_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
+| `<char>/rng/keys/RNG_CUSTOM.lua` | examples only | shared custom states |
+| `<char>/rng/display/RNG_HUD.lua` | empty | HUD |
+| `<char>/rng/display/RNG_LOCKSTYLE.lua`, `RNG_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
 Registries that list RNG: `clone_character.py` `ALL_VALID_JOBS`,
 `character_db.lua` `ALL_JOBS`, `UI_FORMATTER.lua` `job_titles`,
-`ui_lifecycle.lua` `are_states_ready`. No character of `character_db.lua`
-plays RNG yet.
+`ui_lifecycle.lua` `are_states_ready`. In `character_db.lua`, Tetsouo's job
+list includes RNG.
 
 ## Left out on purpose (later options)
 
@@ -273,7 +274,8 @@ plays RNG yet.
   at precast; check with `//gs c trace on` that the body stays through the
   shot.
 - The refill threshold (15) against a Barrage volley.
-- TP bonus of a ranged weapon: `TPBonusCalculator` reads main / sub only, so a
-  range weapon listed in `RNG_TP_CONFIG.weapons` is not counted.
+- TP bonus of a ranged weapon: `TPBonusCalculator` counts the main, sub and
+  ranged weapon (`tp_bonus_handler.lua` passes `player.equipment.range`), so a
+  range weapon listed in `RNG_TP_CONFIG.weapons` is counted.
 - Custom rules (`RNG_CUSTOM.lua`) never touch a ranged attack
   (`custom_guards.lua` skips `'Ranged Attack'`).

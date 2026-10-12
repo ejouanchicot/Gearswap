@@ -30,7 +30,7 @@ a name would not locate the spot (they move often in this folder).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/dualbox/dualbox_manager.lua` | 476 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
+| `shared/utils/dualbox/dualbox_manager.lua` | 479 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
 | `shared/utils/dualbox/alt_states.lua` | 188 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
 | `shared/utils/dualbox/alt_commands.lua` | 574 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 359 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
@@ -52,7 +52,7 @@ a name would not locate the spot (they move often in this folder).
 | `<Character>/saved/dualbox_role.lua`, `alt_state.lua`, `alt_window.lua` (live, written in game) | - | Saved role, last `alts` orders, window position/visibility. Kept across a re-clone (`KEPT_ON_RECLONE` in `clone_character.py`), except `dualbox_role.lua` |
 
 Integration points outside the folder: `shared/utils/core/COMMON_COMMANDS.lua` (command routing),
-`shared/utils/core/INIT_SYSTEMS.lua` (sync IPC block: hooks + listener), the 17
+`shared/utils/core/INIT_SYSTEMS.lua` (sync IPC block: hooks + listener), the 22
 `shared/jobs/*/functions/*_COMMANDS.lua` (protocol commands), every entry file's `user_setup()`
 and every `*_functions.lua` facade (module load), `shared/jobs/geo/functions/GEO_BUFFS.lua`
 (buff reports), `shared/utils/macrobook/macrobook_manager.lua` `dualbox_config` (macro book per alt job),
@@ -81,7 +81,8 @@ which since the require cache is installed by `config_loader` (at the entry's fi
 The body does this:
 
 1. `windower._dualbox_init_counter += 1`, captures `my_init_counter`.
-2. Schedules `run_auto_init(1)` after `INIT_FIRST_DELAY = 2` s.
+2. Schedules `run_auto_init(1)` after `INIT_FIRST_DELAY = 2` s, through `LoadGate.defer(..., 'dual-box init')`
+   (`shared/utils/core/load_gate.lua`): a newer load or a job change before it runs drops it.
 
 `run_auto_init(attempt)`:
 
@@ -90,7 +91,8 @@ The body does this:
 2. Retries every `INIT_RETRY_DELAY = 1` s, at most `INIT_MAX_ATTEMPTS = 8` attempts, while `player.name` is missing.
 3. Runs at most once per load: compares `windower._gs_reload_count` (incremented by every INIT_SYSTEMS
    run) to `windower._dualbox_init_last_reload`.
-4. Calls `DualBoxManager.initialize()`, which loads `<player.name>/config/DUALBOX_CONFIG` into
+4. Calls `DualBoxManager.initialize()`, which loads the character's `DUALBOX_CONFIG` (module path from
+   `CharPaths.module('common', 'DUALBOX_CONFIG', nil, <name>)`: `_common/dualbox/`, then the older places) into
    `_G.DualBoxConfig`, applies the saved role over it (`DualBoxRole.apply_saved`) and creates an empty
    `_G.AltJobState`. If the config is missing, it installs disabled defaults and prints a warning.
 5. Returns unless the role is `main` or `alt`.
@@ -127,7 +129,8 @@ Until step 4 runs, `_G.DualBoxConfig` is nil. This window lasts 2 s at minimum a
 Details of `send_job_update(force)`:
 
 - **Role.** It has no role guard: both boxes call it at auto-init, and `handle_job_request` calls it on
-  either role. It returns when dual-boxing is disabled or `player.main_job` is not known yet.
+  either role. It returns when dual-boxing is disabled, while `//gs c atelier tour` runs
+  (`atelier_tour.lua` `active()`; `request_alt_job` has the same test) or `player.main_job` is not known yet.
 - **Payload.** `main_job/sub_job/main_level/sub_level/weapon`, with `sub_job` set to `"NON"` when there is
   no subjob and `weapon` from `AltStates.weapon_skill()` (`None` on error). The wire command appends the
   sender's name (`player.name`) and the weapon as fifth and sixth arguments; a receiver that reads fewer
@@ -579,9 +582,9 @@ All `alt*` names, `alts`, `main`, `setalt`, `altreport`, `altmirror`, `altlead` 
 
 ### `DUALBOX_CONFIG.lua` (`<Character>/_common/dualbox/DUALBOX_CONFIG.lua`)
 
-Loaded with `require(player.name .. '/config/DUALBOX_CONFIG')` (`DualBoxManager.initialize`), which is cached per env.
+Loaded with `require(CharPaths.module('common', 'DUALBOX_CONFIG', nil, <name>))` (`DualBoxManager.initialize`), which is cached per env.
 
-| Key | MAIN (`Tetsouo/config`) | ALT (`Kaories/config`) | Read at |
+| Key | MAIN (`Tetsouo/_common/dualbox`) | ALT (`Kaories/_common/dualbox`) | Read at |
 |---|---|---|---|
 | `role` | `"main"` | `"alt"` | everywhere, gates every function. Overridden by `dualbox_role.lua` when present |
 | `group` | `{"Tetsouo", "Kaories"}` | same | `alt_group.lua`, `dualbox_role.lua`, `alt_window.lua` |
@@ -620,7 +623,7 @@ Per-file format:
 
 Key counts (loaded with lua5.1): BLM 60, BLU 203, BRD 71, BST 19, COR 40, DNC 28, DRG 18, DRK 41,
 GEO 89, MNK 13, NIN 44, PLD 20, PUP 21, RDM 76, RNG 15, RUN 51, SAM 14, SCH 81, SMN 144, THF 15,
-WAR 12, WHM 76. The CUSTOM files have: BLM 2, GEO 6, RDM 2, SCH 2, SMN 9.
+WAR 12, WHM 76. The CUSTOM files have: BLM 2, GEO 7, RDM 2, SCH 2, SMN 9.
 
 Entry fields:
 
@@ -637,8 +640,8 @@ Entry fields:
 | `sets_alt_buff`, `alt_buff_duration`, `consumes_alt_buff`, `sync_after` | Buff bookkeeping after the send | `apply_buff_effects` |
 | `group`, `desc` | Display only | `message_alt_commands.lua` |
 
-Shipped usage, counting the 6 `chain` steps: 1,175 entries set `action` (`ma` 615, `ja` 334, `pet` 125, `so` 64, `ninjutsu` 37).
-No shipped entry uses `ws`, `item`, `ra` or `raw`. Targets are `lastst` 623 and `me` 552. `tiers` appears 683 times, `main_only` 193,
+Shipped usage, counting the 6 `chain` steps: 1,176 entries set `action` (`ma` 615, `ja` 335, `pet` 125, `so` 64, `ninjutsu` 37).
+No shipped entry uses `ws`, `item`, `ra` or `raw`. Targets are `lastst` 623 and `me` 553. `tiers` appears 683 times, `main_only` 194,
 `spell_from_state` 8, `chain` 3, `sets_alt_buff`/`sync_after` once (GEO `altentrust`).
 `consumes_alt_buff` is unused.
 
@@ -830,7 +833,7 @@ Still open:
 - `_G.AltBuffState` is not re-synced after a MAIN reload, and `assume()` stays disabled - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua`
 - `altlight`/`altdark` send tier I spells when the MAIN is BLM - `_master/config/alt/GEO_ALT_CUSTOM.lua` `altlight` / `altdark` (same in BLM/RDM/SCH CUSTOM)
 - Dead API: `clear_cache` - `alt_commands.lua`. Fixed 2026-09-28: `DualBoxManager.show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update` removed (their `MessageDualbox.show_status_*` / `show_not_initialized` formatters followed on 2026-10-01; the `DUALBOX.status_*` templates have no sender, see [messages-catalog.md](messages-catalog.md)). `RollShare.receive` returns true, so `rollshow` counts as handled.
-- `_G.DUALBOX_SYNC_DEBUG` is never set, so sync hook errors are always silent (the comment now says so) - `_on_ipc_message`, `shared/utils/dualbox/dualbox_sync_ipc.lua`
+- `_G.DUALBOX_SYNC_DEBUG` is never set, so sync hook errors never print in chat (the comment says so); they are written to `//gs c trace` as a `SYNC` line - `_on_ipc_message`, `shared/utils/dualbox/dualbox_sync_ipc.lua`
 - `Composure` and `Bolter's Roll` are tracked by default but never reported on change and never read - `DEFAULT_TRACKED`, `shared/utils/dualbox/alt_buff_reporter.lua`
 - `//gs c alt <unknown>` prints nothing - `AltCommands.execute`, `shared/utils/dualbox/alt_commands.lua`
 - The overlays' `DUALBOX_CONFIG.lua` are always replaced by the generated file on a clone - `_master/Kaories/config_global/DUALBOX_CONFIG.lua`

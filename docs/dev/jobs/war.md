@@ -1,7 +1,7 @@
 # WAR (Warrior) job
 
 The WAR job area is 11 hook modules plus 2 logic modules under
-`shared/jobs/war/functions/` (1 790 lines on 2026-09-28), an entry template, eight
+`shared/jobs/war/functions/` (1 790 lines on 2026-09-28), an entry template, ten
 config files and one sets file. GearSwap loads it when the main job becomes WAR
 (`Tetsouo_WAR.lua`, one `include` of `shared/entry/war.lua`). From then on Mote-Include calls its hooks on every action, on
 status and buff changes, on `//gs c` commands and on state cycles.
@@ -58,7 +58,7 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/WAR_STATUS.lua` | 27 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/war/functions/WAR_BUFFS.lua` | 117 | `job_buff_change` (Doom, Aftermath Lv.3 refresh through `LifecycleManager.refresh_after_buff`) and the globals `buff_war`, `buff_sam_sub`, `build_tp` |
 | `shared/jobs/war/functions/WAR_COMMANDS.lua` | 324 | `job_self_command` router and `job_state_change` (WS slot rebuild, `AmpullaLock.apply` on `HybridMode`, UI refresh) |
-| `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 170 | Retaliation auto-cancel (AutoMove callback), Retaliation debug helpers |
+| `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 177 | Retaliation auto-cancel (AutoMove callback), Retaliation debug helpers |
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
 | `shared/jobs/war/functions/WAR_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('WAR', ..., 'SAM', 22, 1)` wrapper |
 | `shared/jobs/war/functions/logic/set_builder.lua` | 251 | Engaged base selection (KC through `BaseSetBuilder.kraken_in_offhand`, stance, AM3, weapon set, HybridMode), weapon layer (`BaseSetBuilder.lay_weapon`), stance ammo (`apply_stance_ammo` = `AmpullaLock.stance_ammo`), town / movement idle |
@@ -71,11 +71,12 @@ numbers are avoided because they drift.
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 239 | TP bonus piece selection (shared) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
 | `_master/config/war/WAR_STATES.lua` | 125 | All WAR states (`WARStates.configure()`) |
-| `_master/config/war/WAR_KEYBINDS.lua` | 80 | Data only: 8 bind entries handed to `KeybindManager.create('WAR', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
+| `_master/config/war/WAR_CONFIG.lua` | 27 | The job's switches, read through `JobConfig` / `AutoOptions`: `retaliation_cancel`, the `berserk` and `defender` chains, `add_sam` |
+| `_master/config/war/WAR_KEYBINDS.lua` | 80 | Data only: 9 bind entries handed to `KeybindManager.create('WAR', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/war/WAR_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/war/WAR_HUD.lua` | 31 | HUD section / row order for WAR (empty lists = the default) |
 | `_master/config/war/WAR_WS_CONFIG.lua` | 111 | `max_slots = 5`, WS list per weapon key, `get(weapon)` |
-| `_master/config/war/WAR_TP_CONFIG.lua` | 195 | `_G.WARTPConfig`: Savagery / Agoge, Fencer JP, pieces, weapons, Fencer detection |
+| `_master/config/war/WAR_TP_CONFIG.lua` | 212 | `_G.WARTPConfig`: Savagery / Agoge, Fencer JP, pieces, weapons, Fencer detection |
 | `_master/config/war/WAR_LOCKSTYLE.lua` | 71 | `default = 4`, `by_subjob`, `get_style` |
 | `_master/config/war/WAR_MACROBOOK.lua` | 106 | `solo[sub]`, `dualbox[alt_job][sub]`, `default` (book 22 page 1) |
 | `_master/config/war/WAR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
@@ -84,13 +85,15 @@ numbers are avoided because they drift.
 | `shared/utils/messages/formatters/magic/message_buffs.lua` | - | `show_buff_status` used by the buff chains (WAR has no job formatter) |
 
 Tetsouo overlay (`_master/Tetsouo/`, gitignored since 2026-09-27 like every
-character overlay) and live copies (gitignored, identical to the overlay). The
+character overlay) and live copies (gitignored; the config files are the overlay's
+apart from their header, the live `war_sets.lua` has moved on since). The
 entry is `shared/entry/war.lua` for every character (no overlay entry since
-2026-09-30). `war/`:
-`WAR_MACROBOOK` uses book 3 instead of 22-30; `WAR_STATES` adds `SubtleBlow` and
-`Hoxne` to `HybridMode` and lists `Chango` second; `WAR_CUSTOM` holds only the
+2026-09-30). Config (`config/war/` in the overlay, `war/<theme>/` live):
+`WAR_MACROBOOK` uses book 3 for /SAM, /DRG and /DNC solo and book 5 in dual-box
+instead of 22-30; `WAR_STATES` adds `SubtleBlow` and
+`Hoxne` to `HybridMode` and starts `MainWeapon` with `Laphria`, `Ukonvasara`, `Chango`; `WAR_CUSTOM` holds only the
 commented examples (the `FullEmpy` test mode was removed on 2026-09-30); its `WAR_REFILL` holds a list (the template's is all comments). Sets are modular:
-`war/{war_sets,armor,capes,weapons}.lua`; weapon sets are created by a loop in
+`{war_sets,armor,capes,weapons}.lua` (`sets/war/` in the overlay, `war/sets/` live); weapon sets are created by a loop in
 `war_sets.lua`. `Kaories/` and `_master/Kaories/` contain no WAR files.
 
 ## How it works
@@ -110,7 +113,7 @@ sequenceDiagram
     participant F as war_functions.lua
     GS->>E: run chunk (LOCKSTYLE_CONFIG, REGION_CONFIG, UIConfig, JCM, UI_MANAGER)
     GS->>E: get_sets()
-    E->>E: _G.WARWSConfig = require WAR_WS_CONFIG
+    E->>E: _G.WARWSConfig = CharPaths.optional WAR_WS_CONFIG
     E->>M: include Mote-Include
     M->>E: user_setup(): states + WS slots, AmpullaLock.apply, keybinds, UI, JCM, macrobook/lockstyle, dualbox
     M->>E: init_gear_sets() -> include war/sets/war_sets.lua, then sync_weapon_with_hand()
@@ -135,7 +138,8 @@ slot would show `N/A`.
 2. `AmpullaLock.apply(state.HybridMode.value)`: `configure()` has just reset
    `HybridMode`, so an ammo lock left by a Hoxne stance of the previous load is
    released here.
-3. `require('Tetsouo/war/keys/WAR_KEYBINDS')`, stored in the global `WARKeybinds`,
+3. `pcall(require, CharPaths.module('job', 'WAR_KEYBINDS', 'WAR'))` (the character's
+   `war/keys/WAR_KEYBINDS.lua`), stored in the global `WARKeybinds`,
    then `bind_all()`, which calls `show_intro()`. The `KeybindManager` intro
    requires `WAR_MACROBOOK.lua` and `WAR_LOCKSTYLE.lua`; both return nothing, but the
    requires define `select_default_macro_book` / `select_default_lockstyle` as a
@@ -203,11 +207,12 @@ hold any weaponskill of the weapon.
 | Weapon | WS list (slot order) |
 |---|---|
 | Ukonvasara | Ukko's Fury, Upheaval, Fell Cleave, Armor Break, Steel Cyclone |
+| Laphria (not a `MainWeapon` option of the template) | Disaster, Upheaval, Ukko's Fury, Fell Cleave, Steel Cyclone |
 | Chango | Upheaval, Ukko's Fury, Fell Cleave, Steel Cyclone |
 | Shining | Impulse Drive, Stardiver, Leg Sweep, Sonic Thrust |
 | Ikenga | Decimation, Calamity, Bora Axe, Mistral Axe |
 | Naegling, NaeglingKC | Savage Blade, Sanguine Blade, Circle Blade |
-| Loxotic | Judgment, Black Halo, True Strike |
+| Loxotic, LoxoticKC | Judgment, Black Halo, True Strike |
 
 - `//gs c ws<N>` (`WAR_COMMANDS.lua`, pattern `^ws([1-9])$`) -> `WSSlots.cast(N)`:
   `'None'` or a missing state prints a warning; otherwise `input /ws "<name>" <t>`,
@@ -275,7 +280,7 @@ Readiness uses the global `is_recast_ready` from `RECAST_CONFIG.lua` (tolerance
 is a no-op unless `state.JumpAuto` is `'On'`, while a sequence is running (`_G.AUTO_JUMP_SEQUENCE_ACTIVE`), or unless the
 subjob is DRG with level > 0, the live TP is under 1000 and Jump or High Jump is
 ready (`should_auto_jump`). It then cancels the weaponskill, fires the jump on
-`<t>`, the other jump after the animation delay if TP is still short
+`<t>`, the other jump once the first has landed (`JumpLanding.after`) if TP is still short
 (`chain_second_jump`), and replays the weaponskill on the original `target.raw`
 after the last jump (`replay_ws`); the guard is cleared 0.5 s after the replay. The
 replayed weaponskill goes through precast again and is refused by
@@ -290,8 +295,8 @@ replayed weaponskill goes through precast again and is refused by
 |--------|------|-------|
 | Pieces | `pieces` | Moonshade Earring ear1 +250, Boii Cuisses +3 legs +100 |
 | Weapon | `get_weapon_bonus` | Chango +500 |
-| Warcry | `get_warcry_bonus`, only while `buffactive['Warcry']` (`tp_bonus_calculator.lua`) | `savagery_merits` x 140 with Agoge Mask, x 100 without; 0 with no merits. Template: 5 merits + mask = 700 |
-| Fencer | `get_fencer_bonus` | 630 + 11.5 x `fencer_jp_gifts` (860 at 20) when the main is in `one_hand_weapons` and the sub is empty or in `shields`; 0 otherwise |
+| Warcry | `get_warcry_bonus`, only while `buffactive['Warcry']` (`tp_bonus_calculator.lua`) | `savagery_merits` x 140 with Agoge Mask, x 100 without; 0 with no merits (5 merits + mask = 700). Template: both `'auto'`, read from the game (`shared/utils/weaponskill/game_facts.lua`: `GameFacts.merit('savagery')`, `GameFacts.owns('Agoge Mask')`; 0 merits / no mask when the game cannot tell) |
+| Fencer | `get_fencer_bonus` | 630 + `get_fencer_gift_bonus()` when the main is in `one_hand_weapons` and the sub is empty or in `shields`; 0 otherwise. The gift part: `fencer_jp_gifts` `'auto'` (template) = `GameFacts.fencer_gift_tp('WAR')` from the job points spent (+50 at 80, +50 at 405, +60 at 980, +70 at 1805: 230, so 860; 0 when they cannot be read), a number typed = 11.5 x it (860 at 20) |
 
 The calculator (`tp_bonus_calculator.lua` `calculate`) adds those bonuses to the
 current TP, plus the config pieces the weaponskill set wears already (`worn`: the
@@ -300,8 +305,8 @@ targets the next of 2000 / 3000, and returns the **smallest** single piece that
 covers the gap, else the greedy combination (biggest first), else nil (since
 2026-10-02; before, the biggest single piece). Examples: Ukonvasara at 1800 TP ->
 gap 200 -> Moonshade (Boii cannot cover it); at 1950 TP -> gap 50 -> Boii; with
-Boii in the WS set and Warcry (700), 1200 TP -> 2000 already -> nothing; Naegling +
-Blurred Shield +1 at 1200 TP -> 2060 effective -> gap 940 > 350 -> nothing. The `grips` list changes nothing: a grip and
+Boii in the WS set and Warcry (700: 5 merits and the mask), 1200 TP -> 2000 already -> nothing; Naegling +
+Blurred Shield +1 at 1200 TP (Fencer 860: every gift) -> 2060 effective -> gap 940 > 350 -> nothing. The `grips` list changes nothing: a grip and
 any other non-shield sub both return 0. Player page:
 [tp-bonus.md](../../user/features/tp-bonus.md).
 
@@ -359,7 +364,9 @@ has no effect on WAR.
      `.Naegling` and `.Ukonvasara`);
   5. `sets.engaged[HybridMode]`; 6. Mote's base.
 
-  Then the weapon layer, then the stance's ammo (`apply_stance_ammo`). No movement
+  Then the party support's version of that set when it has one
+  (`SupportTier.engaged`, `shared/utils/party/support_tier.lua`: `.Solo`, `.Group`, `.Trust` under the set),
+  then the weapon layer, then the stance's ammo (`apply_stance_ammo`). No movement
   layer when engaged. The Kraken Club rule wins
   over any `HybridMode`, and a stance wins over Aftermath and the weapon set.
 - `job_status_change` (`WAR_STATUS.lua`) is `LifecycleManager.status_change()`
@@ -367,8 +374,8 @@ has no effect on WAR.
   that lands during an action is held until the aftercast (3 s fallback). Before,
   it only called `DoomManager`, so the engaged / idle set replaced the action's gear.
 - `job_buff_change` (`WAR_BUFFS.lua`): Doom through `DoomManager`; then
-  `LifecycleManager.refresh_after_buff(buff)`: on gain or loss of
-  `"Aftermath: Lv.3"` (exact `res.buffs` casing), unless Doom is up, `gs c update`
+  `LifecycleManager.refresh_after_buff(buff)`: on gain or loss of a buff of its
+  `GEAR_BUFFS` list (for WAR `"Aftermath: Lv.3"` and the plain `"Aftermath"`, exact `res.buffs` casing), unless Doom is up, `gs c update`
   0.1 s later, skipped if an action is under way then. So `<Weapon>AFM3` /
   `<stance>AFM3` goes on or off about 0.1 s after the buff changes. It is deferred
   because `buffactive` inside `buff_change` still holds the old buffs
@@ -397,7 +404,8 @@ change ends in a `gs reload`), so all values reset to their defaults. Keys from
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `HybridMode` (replaced by a new `M{}`) | PDT, Normal (overlay: + SubtleBlow, Hoxne) | PDT | `^numpad9` | `set_builder.lua` `select_stance_engaged`, `select_engaged_base`, `select_idle_base`; `job_state_change` (`AmpullaLock.apply`); Mote `get_melee_set` |
-| `MainWeapon` | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic, LoxoticKC (overlay order: Chango second) | the weapon in hand, set by `sync_weapon_with_hand()` after the sets load; first option (`Ukonvasara`) when it matches no set | `^numpad1` | `set_builder.lua` `ukonvasara_am3`, `select_weapon_engaged`, `apply_weapon`; `job_state_change` (WS slots) |
+| `MainWeapon` | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic, LoxoticKC (overlay: `Laphria` first, then Ukonvasara, Chango) | the weapon in hand, set by `sync_weapon_with_hand()` after the sets load; first option (`Ukonvasara`) when it matches no set | `^numpad1` | `set_builder.lua` `ukonvasara_am3`, `select_weapon_engaged`, `apply_weapon`; `job_state_change` (WS slots) |
+| `AftermathSet` | FastTP, AFM3 | FastTP | `^numpad0`, shown only when `sets.engaged[MainWeapon .. 'AFM3']` exists | `weapon_aftermath.lua` `WeaponAftermath.set` (through `set_builder.lua` `weapon_am3_set`) |
 | `JumpAuto` | On, Off | Off (overlay: On) | `^numpad2`, /DRG only (`subjob = "DRG"`) | `auto_jump.lua` `auto_trigger_jump` (through `WSPrecastHandler.handle`) |
 | `WS1`..`WS5` | the weapon's WS list, or `None` | entry *i* of the list | `^numpad3`..`^numpad7` | `WSSlots.get` / `cast`; HUD |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` (never reached for WAR) |
@@ -444,8 +452,8 @@ releases it otherwise); always refreshes the UI.
 
 ## Set names the code looks up
 
-T = `_master/sets/war_sets.lua`, L = `Tetsouo/war/war_sets.lua` (same as the
-overlay `_master/Tetsouo/sets/war/war_sets.lua`; weapon sets come from `weapons.lua`
+T = `_master/sets/war_sets.lua`, L = `Tetsouo/war/sets/war_sets.lua` (the
+overlay `_master/Tetsouo/sets/war/war_sets.lua` is an older copy of it; weapon sets come from `weapons.lua`
 through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/sets.md).
 
 | Set | Looked up by | T | L |
@@ -462,9 +470,9 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 | `sets.buff.Doom` | `DoomManager` | yes | yes |
 | `sets.precast.JA` Provoke, Jump, High Jump, Berserk, Defender, Warcry, Aggressor, Blood Rage, Tomahawk | Mote default precast | yes | yes |
 | `sets.precast.WS` base + Armor Break, Ukko's Fury, Upheaval, Fell Cleave, King's Justice, Impulse Drive, Stardiver, Savage Blade, Calamity, Judgment | Mote default precast | yes | yes |
-| WS in `WAR_WS_CONFIG` without a named set: Steel Cyclone, Leg Sweep, Sonic Thrust, Decimation, Bora Axe, Mistral Axe, Sanguine Blade, Circle Blade, Black Halo, True Strike | Mote default precast -> `sets.precast.WS` base | base | base |
+| WS in `WAR_WS_CONFIG` without a named set: Steel Cyclone, Leg Sweep, Sonic Thrust, Decimation, Bora Axe, Mistral Axe, Sanguine Blade, Circle Blade, Black Halo, True Strike, and in the template Disaster | Mote default precast -> `sets.precast.WS` base | base | base (Disaster has its set, and in the live file Sonic Thrust) |
 | `sets.midcast['Healing Magic']`, `['Enhancing Magic']` | `WAR_MIDCAST.lua` `job_post_midcast` | **absent** | **absent** |
-| `sets.precast.FC` | Mote default precast (subjob spells) | **absent** (Mote's empty default) | - |
+| `sets.precast.FC` | Mote default precast (subjob spells) | **absent** (Mote's empty default) | yes in the live file, absent from the overlay |
 
 `sets['Lycurgos']` and the sub-only sets (`Blurred Shield +1`, `Telopanos Grip`,
 `Alber Strap`, `Aurgelmir Orb +1`) in the template are not reachable from any state;
@@ -474,15 +482,15 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/war/WAR_STATES.lua` | see states | file itself | entry `user_setup` (path hard-coded `Tetsouo/...`, replaced by the clone script) |
-| `<char>/war/WAR_KEYBINDS.lua` | 8 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload`, HUD |
-| `<char>/war/WAR_CUSTOM.lua` | examples only (template and overlay) | file | `KeybindManager` via `custom_states` |
-| `<char>/war/WAR_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
-| `<char>/war/WAR_WS_CONFIG.lua` `max_slots`, `by_weapon` | 5, 7 weapons | file (no pcall: a missing file aborts `get_sets`) | `WSSlots` via `_G.WARWSConfig` |
-| `<char>/war/WAR_TP_CONFIG.lua` | 5 merits, Agoge, 20 JP gifts | file | `WSPrecastHandler` via `_G.WARTPConfig` (captured on first action) |
-| `<char>/war/WAR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 4 (all subjobs) | file; factory fallback 4 (`WAR_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
-| `<char>/war/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 | file; factory fallback book 22 page 1 | `MacrobookManager` |
-| `<char>/war/WAR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `//gs c refill` (the common list without a list in it) |
+| `<char>/war/keys/WAR_STATES.lua` | see states | file itself | entry `user_setup` (`CharPaths.module('job', 'WAR_STATES', 'WAR')`) |
+| `<char>/war/keys/WAR_KEYBINDS.lua` | 9 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload`, HUD |
+| `<char>/war/keys/WAR_CUSTOM.lua` | examples only (template and overlay) | file | `KeybindManager` via `custom_states` |
+| `<char>/war/display/WAR_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
+| `<char>/war/combat/WAR_WS_CONFIG.lua` `max_slots`, `by_weapon` | 5, 9 weapon keys | file (`CharPaths.optional`: a missing file leaves `_G.WARWSConfig` nil and no slot is built; a broken file still errors) | `WSSlots` via `_G.WARWSConfig` |
+| `<char>/war/combat/WAR_TP_CONFIG.lua` | `'auto'` for Savagery merits, Agoge Mask and Fencer gifts (read from the game, `game_facts.lua`) | file | `WSPrecastHandler` via `_G.WARTPConfig` (captured on first action) |
+| `<char>/war/display/WAR_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 4 (all subjobs) | file; factory fallback 4 (`WAR_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
+| `<char>/war/display/WAR_MACROBOOK.lua` | template book 22 page 1 (/DRG 25, /DNC 28, dual-box 22-30); overlay book 3 (/SAM, /DRG, /DNC solo), 5 in dual-box | file; factory fallback book 22 page 1 | `MacrobookManager` |
+| `<char>/war/inventory/WAR_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the author's overlay has its own list | file | `//gs c refill` (the common list without a list in it) |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry `get_sets` -> `is_recast_ready` / `is_on_cooldown` |
 | `<char>/war/combat/WAR_CONFIG.lua` `berserk`, `defender`, `add_sam` | the two lists above, `true` | `WAR_CHAINS` in `smartbuff_manager.lua` and the `true` given at the call (`JobConfig.get`); missing key or file = default | `buff_war` at each press |
 | `<char>/war/combat/WAR_CONFIG.lua` `retaliation_cancel` | `true` | `AutoOptions.enabled('war_retaliation_cancel', true)` | the AutoMove callback of `WAR_MOVEMENT.lua`: `false` = Retaliation never cancelled |

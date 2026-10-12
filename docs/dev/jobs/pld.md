@@ -1,7 +1,7 @@
 # PLD (Paladin) job
 
 The PLD job area is 12 hook files plus 5 logic modules under
-`shared/jobs/pld/functions/` (1 977 lines on 2026-09-28), one shared entry, eleven
+`shared/jobs/pld/functions/` (1 977 lines on 2026-09-28), one shared entry, twelve
 config files and two sets files (template and Kaories overlay). GearSwap loads it
 when the main job becomes PLD (`Tetsouo_PLD.lua`, `Kaories_PLD.lua`, each one
 `include` of `shared/entry/pld.lua`). From then on Mote-Include calls its hooks on every action
@@ -21,9 +21,9 @@ What PLD adds on top of the shared pipeline:
   two-handed weapon (Shining) and the Burtgang + Kraken Club exception, HybridMode
   sets, XP sets, Regen idle layer. The shield per weapon in given modes, a stance's
   own weapon and the grips come from the character's `PLD_WEAPONS.lua`.
-- **Two HybridMode profiles**: PDT / MDT / Sortie on every subjob but /SCH and /RUN, and
-  DPS / Tanking / Hoxne on /SCH and /RUN (`STANCE_SUBJOBS` in `PLD_STATES.lua`; /RUN keeps
-  the Sortie runes, Accession sneak/invi and Regen stay /SCH only). Sortie and Tanking wear `sets.EnmityMax`
+- **Two HybridMode lists**: PDT / MDT / Sortie on every subjob but /SCH and /RUN, and
+  PDT / MDT / DPS / Tanking / Hoxne on /SCH and /RUN (`STANCE_SUBJOBS`, `STANCE_SUB_OPTIONS` in
+  `PLD_STATES.lua`; /RUN keeps the Sortie runes, Accession sneak/invi stays /SCH only, Regen is on both). Sortie and Tanking wear `sets.EnmityMax`
   instead of `sets.FullEnmity`; Hoxne locks the ammo slot on the Hoxne Ampulla.
 - **Weaponskill slots** `WS1` / `WS2` that follow the weapon actually in hand.
 - **Subjob helpers**: BLU AOE enmity rotation (`aoe`), rune casting (`rune`),
@@ -52,7 +52,7 @@ numbers are avoided because they drift.
 | `shared/jobs/pld/functions/PLD_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/pld/functions/PLD_COMMANDS.lua` | 285 | `job_self_command` router (incl. `ws`/`wsN`), local `rebuild_ws_slots` (exported `_G.pld_rebuild_ws_slots`), `job_state_change` (profile, WS slots, ammo lock, keybind refresh) |
 | `shared/jobs/pld/functions/PLD_MOVEMENT.lua` | 23 | Placeholder for the 12-module layout (comments only) |
-| `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'pld/display/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
+| `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'config/pld/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/pld/functions/PLD_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('PLD', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/pld/functions/logic/set_builder.lua` | 379 | Idle/engaged construction: weapon, shield, grip, ammo, HybridMode map, XP, Regen, movement, town; reads `PLD_WEAPONS.lua` (local `weapons_config`); `current_weapon()` is the authority on what is in hand |
 | `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
@@ -63,7 +63,7 @@ numbers are avoided because they drift.
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | Weapon-aware weaponskill slot states, shared with WAR (PLD uses `rebuild` / `get` / `cast`; the weapon-in-hand detection, `detect_weapon` / `sync`, is WAR's) |
 | `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 398 + 109 | /SCH chains, shared with BLM and GEO (and `//gs c stealth`); stratagem buffs read from `windower.ffxi.get_player().buffs` (`buff_up`), see [midcast and buffs](../systems/midcast-and-buffs.md) |
 | `_master/config/pld/PLD_STATES.lua` | 411 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, `_G.PLDStates` |
-| `_master/config/pld/PLD_KEYBINDS.lua` | 78 | 8 bind entries (Phalanx SIRD on `^numpad2` under every subjob, Regen on `^numpad3` under /SCH), `subjob` / `exclude_subjob` filters, a `visible` predicate, `retired_keys = {'^numpad7'}`; data only, `KeybindManager.create('PLD', ...)` does the rest ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `_master/config/pld/PLD_KEYBINDS.lua` | 78 | 9 bind entries (Phalanx SIRD on `^numpad2` under every subjob, Regen on `^numpad3` under /SCH and `^numpad7` under /RUN), `subjob` filters, a `visible` predicate, `retired_keys = {}`; data only, `KeybindManager.create('PLD', ...)` does the rest ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/pld/PLD_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
 | `_master/config/pld/PLD_HUD.lua` | 31 | HUD section / row order for PLD (empty lists = the `UI_CONFIG` default) |
 | `_master/config/pld/PLD_WS_CONFIG.lua` | 64 | `_G.PLDWSConfig`: `max_slots = 2`, the two weaponskills each sword offers |
@@ -71,6 +71,7 @@ numbers are avoided because they drift.
 | `_master/config/pld/PLD_MACROBOOK.lua` | 76 | Book 15/18/20 per subjob, dual-box table |
 | `_master/config/pld/PLD_TP_CONFIG.lua` | 75 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
 | `_master/config/pld/PLD_BLU_MAGIC.lua` | 203 | `_G.BluMagicConfig`: AOE spell table, dynamic / manual rotation |
+| `_master/config/pld/PLD_CONFIG.lua` | 19 | `auto_divine_emblem`, `auto_majesty` (both `true`): the switches of the two precast auto-abilities, read through `shared/utils/core/auto_options.lua` |
 | `_master/config/pld/PLD_WEAPONS.lua` | 29 | `shields`, `stance_weapon`, `grips` for the set builder; every line commented (examples only), so nothing is forced but the default grip |
 | `_master/config/pld/PLD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/pld_sets.lua` | 830 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
@@ -81,7 +82,7 @@ Live copies (gitignored): `Tetsouo/Tetsouo_PLD.lua` and `Kaories/Kaories_PLD.lua
 one `include` of `shared/entry/pld.lua` (since 2026-09-30; the Kaories entry used
 to be an older copy without weaponskill slots or `AmpullaLock`). Kaories has no
 `PLD_WS_CONFIG.lua`, so `CharPaths.optional` gives nil and her PLD has no
-weaponskill slots; her own `PLD_STATES.lua` builds none either. `Tetsouo/pld/` is modular (`pld_sets.lua` + `armor`, `capes`,
+weaponskill slots; her own `PLD_STATES.lua` builds none either. `Tetsouo/pld/sets/` is modular (`pld_sets.lua` + `armor`, `capes`,
 `weapons`, mirrored in `_master/Tetsouo/sets/pld/`). `_master/Tetsouo/config/pld/`
 holds only `PLD_MACROBOOK.lua` (other book numbers), `PLD_REFILL.lua` and
 `PLD_WEAPONS.lua` (Tetsouo's shields, see below).
@@ -121,15 +122,15 @@ sequenceDiagram
 
 `user_setup()` (`shared/entry/pld.lua`):
 
-1. `_G.PLDWSConfig = require(... PLD_WS_CONFIG)`, then
-   `require('Tetsouo/pld/keys/PLD_STATES').configure()` creates every state and
-   ends with `apply_hybrid_profile(state.HybridMode.value)`.
+1. `_G.PLDWSConfig = CharPaths.optional('job', 'PLD_WS_CONFIG', 'PLD')`, then
+   `require(CharPaths.module('job', 'PLD_STATES', 'PLD')).configure()` creates every state and
+   calls `apply_hybrid_profile(state.HybridMode.value)`.
    `_G.pld_rebuild_ws_slots()` runs only when the job modules already exist (a
    subjob change re-runs `user_setup` in the same sandbox); on a cold load
    `get_sets` calls it after including the facade. Then
    `AmpullaLock.apply(state.HybridMode.value)` gives back an ammo lock left by a
    stance that is no longer selected.
-2. `require('Tetsouo/pld/keys/PLD_KEYBINDS')` (a `KeybindManager` module) into
+2. `require(CharPaths.module('job', 'PLD_KEYBINDS', 'PLD'))` (a `KeybindManager` module) into
    the global `PLDKeybinds`, then `bind_all()`: `KeybindManager` clears keys no
    longer wanted, binds the ones whose `subjob` / `exclude_subjob` / `visible`
    rules apply, then `show_intro()`. A failed require prints
@@ -171,7 +172,7 @@ flowchart TD
     D --> G{eventArgs.cancel}
     E --> G
     G -- yes --> Z
-    G -- no --> F{Magic and auto_abilities name}
+    G -- no --> F{Magic, auto_abilities name, option on}
     F -- Flash --> H[try_ability Divine Emblem]
     F -- Protect III-V, Cure III/IV --> I[try_ability_smart Majesty]
     F -- other --> J
@@ -185,7 +186,8 @@ flowchart TD
   stratagems itself (see [precast pipeline](../systems/precast-pipeline.md#recast-check)).
   Weaponskills have `action_type == 'Ability'`, so they pass
   `check_ability_cooldown` too.
-- The helper abilities: when ready and their buff is down, `AbilityHelper` calls
+- The helper abilities (each one an option of `PLD_CONFIG.lua`, on unless set false:
+  `AutoOptions.enabled('pld_divine_emblem' / 'pld_majesty', true)`): when ready and their buff is down, `AbilityHelper` calls
   `cancel_spell()`, sends `input /ja "<JA>" <me>`, then replays the spell through
   `follow_up`, which waits for the buff to land instead of a fixed delay
   (`ability_helper.lua` `follow_up`, `try_ability`, `try_ability_smart`). It sets
@@ -200,7 +202,8 @@ flowchart TD
   `sets.precast.JA[name]` (JA base is FullEnmity), or `sets.precast.WS[name]`.
   `job_precast` equips nothing itself.
 - `job_post_precast`, in order:
-  1. `apply_sch_ws_set`: on /SCH and /RUN (`PLDStates.stance_subjob`, /SCH alone when the
+  1. `apply_sch_ws_set`: in a Sortie stance (DPS / Tanking / Hoxne) on /SCH and /RUN
+     (`PLDStates.stance_subjob`; /SCH alone, whatever the stance, when the
      character's PLD_STATES.lua predates it), `sets.precast.WS.SCH[<ws>]` when it exists
      (only the live Tetsouo sets define one, for Knights of Round);
   2. `WSPrecastHandler.apply_tp_gear`;
@@ -216,10 +219,10 @@ flowchart TD
 | subjob | values | default |
 |---|---|---|
 | anything but /SCH and /RUN | `PDT` / `MDT` / `Sortie` | `PDT` |
-| /SCH, /RUN | `DPS` / `Tanking` / `Hoxne` | `Tanking` |
+| /SCH, /RUN | `PDT` / `MDT` / `DPS` / `Tanking` / `Hoxne` (`STANCE_SUB_OPTIONS`) | `PDT` |
 
-PLD/SCH is played for Sortie and nothing else, so it drops the general split
-for three stances of its own. `PLD_COMMANDS.lua` wires
+PLD/SCH and /RUN keep the classic PDT and MDT and add three Sortie stances of
+their own (DPS, Tanking, Hoxne; `Sortie` is not offered there). `PLD_COMMANDS.lua` wires
 `job_state_change = LifecycleManager.state_change(on_state_change)`: the shared
 handler repaints the HUD (except for `Moving`), then runs `on_state_change`.
 
@@ -242,14 +245,14 @@ the set `handle_update` re-equips.
 
 - **`PLDStates.apply_hybrid_profile`** (`PLD_STATES.lua`) asks the local
   `profile_for` which profile should be in place: `sch`, `sortie` or `standard`.
-  The subjob decides first. `install_profile` then reshapes the option lists, and
+  `sch` is a Sortie stance (DPS, Tanking, Hoxne) under /SCH or /RUN; PDT and MDT there are `standard`. `install_profile` then reshapes the option lists, and
   is skipped while the profile is already in place (module local
   `active_profile`), so PDT <-> MDT and DPS <-> Hoxne change nothing.
-  - `standard`: full rune and weapon lists, `PhalanxSIRD` Off, `Regen` Off.
+  - `standard`: full rune and weapon lists, `PhalanxSIRD` Off, `Regen` Off except under /SCH and /RUN (`REGEN_SUBJOBS`).
   - `sortie`: `SORTIE_RUNE_OPTIONS` (Ignis, Tenebrae, Sulpor, Flabra, Unda),
     `SORTIE_WEAPON_OPTIONS` (Burtgang, Naegling), `PhalanxSIRD` On, `Regen` Off.
   - `sch`: `SCH_WEAPON_OPTIONS` (Naegling, Excalibur) and `MainWeapon` forced to
-    Naegling, `PhalanxSIRD` On, `SneakInviAOE` On; the rune list is left alone.
+    Naegling, `PhalanxSIRD` On; under /SCH `SneakInviAOE` On and the rune list left alone, under /RUN `SORTIE_RUNE_OPTIONS`.
 
   `reshape()` keeps the current weapon and rune when the new list has them:
   `Modes:options()` alone resets a mode to its first entry (Mote `Modes.lua`),
@@ -312,7 +315,7 @@ so every later `handle_update` wears it again.
 
 #### The weapon is its own axis
 
-`MainWeapon` offers Naegling / Excalibur under /SCH, Naegling first. Burtgang is
+`MainWeapon` offers Naegling / Excalibur in the Sortie stances of /SCH and /RUN, Naegling first. Burtgang is
 deliberately absent: the Tanking stance holds it outright through
 `stance_weapon.Tanking` in Tetsouo's and Kaories' `PLD_WEAPONS.lua`, so cycling never
 lands on it by accident.
@@ -399,8 +402,8 @@ is **left open** and the player is told what is worn instead (`warn_not_worn`).
 
 `disable_table` survives `gs reload` and job changes, so the slot is given back at
 both ends: `file_unload`, and `user_setup` right after `configure()` has reset
-`HybridMode`. `//gs c wo` also releases it (the organizer's `clean_exit` and
-`alt_finish` call `AmpullaLock.release()`, after their own `gs enable all`, which
+`HybridMode`. `//gs c wo` also releases it (the organizer's `clean_exit` calls
+`AmpullaLock.release()` through `release_stance_locks`, after its own `gs enable all`, which
 also cancels a lock still polling), so after `wo` the slot stays open until the
 stance is selected again.
 
@@ -478,7 +481,7 @@ flowchart TD
     subgraph Engaged [build_engaged_set]
     E1{MainWeapon BurtgangKC, or Kraken Club in sub and the chosen weapon set has no sub} -- yes --> E2[sets.engaged.BurtgangKC]
     E1 -- no --> E3[HybridMode map PDT/MDT/TP/DPS/Hoxne; weapon with a grip: strip sub]
-    E2 --> E4[+ weapon set]
+    E2 --> E4[SupportTier.engaged: the .Solo or .Group version, then + weapon set]
     E3 --> E4
     E4 --> E5[+ the weapon's grip as sub, e.g. Shining: Alber Strap]
     E5 --> E6[+ sets.meleeXp if Xp On]
@@ -509,14 +512,14 @@ the character's `_common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote's, options replaced) | PDT, MDT, Sortie; **/SCH: DPS, Tanking, Hoxne** | PDT; **Tanking** under /SCH | `^numpad9` | Mote `get_melee_set`; `set_builder.lua` (`hybrid_set`, `stance_weapon`, `apply_mode_shield`, `apply_mode_ammo`); `enmity_override.lua` `is_active`; `on_state_change`; UI anchor |
-| `MainWeapon` | Excalibur, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo (Sortie: Burtgang, Naegling; **/SCH: Naegling, Excalibur**) | Excalibur (first option); Burtgang on entering Sortie (Excalibur is not in its list); **Naegling** under /SCH | `^numpad1`, hidden in /SCH Tanking (`visible`) | `set_builder.lua` (`current_weapon`, `apply_weapon`, `apply_shield`, `select_engaged_base`, `build_*`); WS slots |
+| `HybridMode` (Mote's, options replaced) | PDT, MDT, Sortie; **/SCH and /RUN: PDT, MDT, DPS, Tanking, Hoxne** | PDT | `^numpad9` | Mote `get_melee_set`; `set_builder.lua` (`hybrid_set`, `stance_weapon`, `apply_mode_shield`, `apply_mode_ammo`); `enmity_override.lua` `is_active`; `on_state_change`; UI anchor |
+| `MainWeapon` | Excalibur, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo (Sortie: Burtgang, Naegling; **/SCH and /RUN Sortie stances: Naegling, Excalibur**) | Excalibur (first option); Burtgang on entering Sortie (Excalibur is not in its list); **Naegling** on entering a /SCH or /RUN Sortie stance | `^numpad1`, hidden in /SCH Tanking (`visible`) | `set_builder.lua` (`current_weapon`, `apply_weapon`, `apply_shield`, `select_engaged_base`, `build_*`); WS slots |
 | `Xp` | Off, On | Off | `^numpad4` (/RDM only) | `set_builder.lua` build functions; `PLD_MIDCAST.lua` `midcast_phalanx` |
-| `RuneMode` | Ignis .. Tenebrae (8); Sortie profile: Ignis, Tenebrae, Sulpor, Flabra, Unda | Ignis | `^numpad3` (/RUN only) | `rune_manager.lua` `execute_rune` |
-| `SneakInviAOE` | On, Off | On; set On again whenever the /SCH profile installs | none (retired `^numpad7`) | `PLD_COMMANDS.lua` `aoe` -> `scholar_actions.lua` (missing state counts as On); `stealth_aoe.lua` (`Off` = no Accession for the box group, see [stealth](../systems/stealth.md)) |
+| `RuneMode` | Ignis .. Tenebrae (8); Sortie profile, and the /RUN Sortie stances: Ignis, Tenebrae, Sulpor, Flabra, Unda | Ignis | `^numpad3` (/RUN only) | `rune_manager.lua` `execute_rune` |
+| `SneakInviAOE` | On, Off | On; set On again whenever the /SCH profile installs | none | `PLD_COMMANDS.lua` `aoe` -> `scholar_actions.lua` (missing state counts as On); `stealth_aoe.lua` (`Off` = no Accession for the box group, see [stealth](../systems/stealth.md)) |
 | `PhalanxSIRD` | Off, On | Off; **On** on the /SCH and Sortie profiles | `^numpad2` | `PLD_MIDCAST.lua` `midcast_phalanx`; required by `apply_hybrid_profile`. `//gs c sortie <target>` sets it from the character's `SORTIE_CONFIG.lua` (`target_states`, a target's own `states`; Tetsouo's: Off for `aminon`, On for every other target; `sortie_commands.lua` `engage_target`) |
 | `Shield` | Auto, Duban, Aegis, Blurred Shield +1 | Auto | none | `set_builder.lua` `apply_mode_shield`: not Auto forces that sub over the mode's shield, unless the weapon has a grip; absent from a `PLD_STATES.lua` that predates it (2026-10-01), then nothing changes |
-| `Regen` | Off, On | Off; forced Off by the standard and Sortie profiles | `^numpad3` under /SCH, or `gs c set Regen On\|Off` | `set_builder.lua` `build_idle_set` (step 6b): lays `sets.idleRegen` over the idle set |
+| `Regen` | Off, On | Off; forced Off by the Sortie profile, and by the standard one except under /SCH and /RUN | `^numpad3` under /SCH, `^numpad7` under /RUN, or `gs c set Regen On\|Off` | `set_builder.lua` `build_idle_set` (step 6b): lays `sets.idleRegen` over the idle set |
 | `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`), or `None` | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` or `HybridMode` change |
 | `FastCast` | 0..80 step 10 | 80 | none | `midcast_watchdog.lua` (fallback cast time) |
 | `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` at the end of `configure()` |
@@ -564,7 +567,7 @@ above the `RECAST_CONFIG` tolerance (global `is_on_cooldown`).
 ## Set names the code looks up
 
 T = `_master/sets/pld_sets.lua`, K = `_master/Kaories/sets/pld_sets.lua`,
-L = `Tetsouo/pld/pld_sets.lua` (weapon sets in `Tetsouo/pld/sets/weapons.lua`).
+L = `Tetsouo/pld/sets/pld_sets.lua` (weapon sets in `Tetsouo/pld/sets/weapons.lua`).
 The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 
 | Set | Looked up by | T | K | L |
@@ -605,18 +608,19 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/pld/PLD_STATES.lua` | see states | file | entry `user_setup` (path hard-coded `Tetsouo/...`, rewritten by the clone script) |
+| `<char>/pld/keys/PLD_STATES.lua` | see states | file | entry `user_setup` (`CharPaths.module('job', 'PLD_STATES', 'PLD')`) |
 | `SORTIE_RUNE_OPTIONS`, `SORTIE_WEAPON_OPTIONS`, `SCH_WEAPON_OPTIONS` | 5 runes, 2 weapons, 2 weapons | `PLD_STATES.lua` | `install_profile` |
-| `<char>/pld/PLD_KEYBINDS.lua` | 9 entries | file | entry `user_setup`, `file_unload`, HUD |
-| `<char>/pld/PLD_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/pld/PLD_HUD.lua` | empty lists | file | HUD ([UI overlay](../systems/ui-overlay.md)); rewritten by `//gs c ui order` / `roworder` |
-| `<char>/pld/PLD_WS_CONFIG.lua` -> `_G.PLDWSConfig` | 2 slots, 3 swords | file (no pcall: a missing file aborts `user_setup`) | `configure`, `rebuild_ws_slots` |
-| `<char>/pld/PLD_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (Kaories overlay 4) | file; factory fallback 1 (`PLD_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
-| `<char>/pld/PLD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt][sub]` | book 15 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/pld/keys/PLD_KEYBINDS.lua` | 9 entries | file | entry `user_setup`, `file_unload`, HUD |
+| `<char>/pld/keys/PLD_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/pld/display/PLD_HUD.lua` | empty lists | file | HUD ([UI overlay](../systems/ui-overlay.md)); rewritten by `//gs c ui order` / `roworder` |
+| `<char>/pld/combat/PLD_WS_CONFIG.lua` -> `_G.PLDWSConfig` | 2 slots, 3 swords | file (`CharPaths.optional`: a missing file gives nil and no slots, a broken one still errors) | `configure`, `rebuild_ws_slots` |
+| `<char>/pld/display/PLD_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (Kaories overlay 4) | file; factory fallback 1 (`PLD_LOCKSTYLE.lua` wrapper) | `LockstyleManager` |
+| `<char>/pld/display/PLD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt][sub]` | book 15 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/pld/combat/PLD_WEAPONS.lua` `shields`, `stance_weapon`, `grips` | nothing forced; `grips` = `{Shining = 'Alber Strap'}` | `set_builder.lua` `DEFAULT_GRIPS`; the file is optional (`CharPaths.optional`, missing = empty) | `set_builder.lua` `weapons_config`, once per load |
-| `<char>/pld/PLD_TP_CONFIG.lua` -> `_G.PLDTPConfig` | Moonshade 250, Sequence 500 | file | `PLD_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
-| `<char>/pld/PLD_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | `aoe_manager.lua` (captured when the module is first required) |
-| `<char>/pld/PLD_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); overlays have their own list | file | refill system (the common list without a list in it) |
+| `<char>/pld/combat/PLD_CONFIG.lua` `auto_divine_emblem`, `auto_majesty` | true, true | file; on when a key is absent (`AutoOptions.enabled(name, true)`) | `PLD_PRECAST.lua` `job_precast` through `auto_options.lua` |
+| `<char>/pld/combat/PLD_TP_CONFIG.lua` -> `_G.PLDTPConfig` | Moonshade 250, Sequence 500 | file | `PLD_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
+| `<char>/pld/combat/PLD_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | `aoe_manager.lua` (captured when the module is first required) |
+| `<char>/pld/inventory/PLD_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); overlays have their own list | file | refill system (the common list without a list in it) |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance | shared | `is_on_cooldown` in aoe/rune managers, `is_recast_ready` in AbilityHelper |
 | `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry |
 
@@ -647,7 +651,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
   AmpullaLock poll (sequence-guarded, module-local), the AbilityHelper and Scholar
   chain polls. `send_command` waits sit in the Windower queue and survive a reload.
 - States reset on every load. Every subjob change ends in a `gs reload` (2.0 s,
-  JobChangeManager), so HybridMode goes back to PDT (Tanking on /SCH) and the
+  JobChangeManager), so HybridMode goes back to PDT and the
   Sortie profile to standard. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).
 
@@ -714,7 +718,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 ### Change recipes
 
 - **New HybridMode value**: add it to `STANDARD_HYBRID_OPTIONS` or
-  `SCH_HYBRID_OPTIONS` (`PLD_STATES.lua`), to `ENGAGED_SET_BY_MODE` /
+  `STANCE_SUB_OPTIONS` (and `SORTIE_STANCE` for a Sortie stance; `PLD_STATES.lua`), to `ENGAGED_SET_BY_MODE` /
   `IDLE_SET_BY_MODE` (`set_builder.lua`), to `ENMITY_MAX_MODES` if it holds hate,
   to `stance_weapon` / `shields` in the characters' `PLD_WEAPONS.lua` if it holds
   its own weapon or its shield follows the weapon; define the sets in
@@ -794,7 +798,7 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
 - Fixed 2026-09-29 (checked offline, not yet in game): after `//po` the Hoxne
   ammo lock stayed open while the stance still showed Hoxne; the lock is now
   recorded with `CombatMode.hold` and laid again after every update.
-- `//gs c wo reset` and the organizer's two "crashed" paths call
+- `//gs c wo reset` and the organizer's "start_organize crashed" path call
   `Phases.enable_slots()` without releasing the stance lock, so the Hoxne state can
   still believe the slot is closed; re-select the stance or `//lua r gearswap`.
   Since 2026-09-29 the `'ampulla'` record survives those paths, so the next update
@@ -810,8 +814,8 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
 - "No Blue Magic AOE spells equipped" can never show: every rotation name exists in
   `res.spells`; with the /BLU guard the counter only catches a typo in the config.
 - `rune` sends the JA on any subjob (`rune_manager.lua` `execute_rune`).
-- Fixed 2026-09-28: `//gs c sortie escort` sets `Regen` On only on /SCH
-  (since 2026-09-30 through `escort.states.SCH` of Tetsouo's `SORTIE_CONFIG.lua`); before, it did so on any subjob, where the
+- Fixed 2026-09-28: `//gs c sortie escort` sets `Regen` On only on /SCH and /RUN
+  (since 2026-09-30 through `escort.states.SCH` / `.RUN` of Tetsouo's `SORTIE_CONFIG.lua`); before, it did so on any subjob, where the
   Regen row and key are hidden.
 - Atonement is in no WS database, so in `wsmsg full` it prints no WS line
   (`UNIVERSAL_WS_DATABASE.lua`, `UniversalWS.resolve`).

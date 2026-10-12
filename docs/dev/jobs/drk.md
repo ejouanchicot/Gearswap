@@ -1,8 +1,8 @@
 # DRK (Dark Knight) job
 
 The DRK job area: 11 hook modules plus 2 logic modules under
-`shared/jobs/drk/functions/` (about 1 240 lines), an entry point template,
-seven config files and one sets file. DRK has no character overlay: the
+`shared/jobs/drk/functions/` (about 1 210 lines), an entry point template,
+eight config files and one sets file. DRK has no character overlay: the
 `_master/` template is the reference, and Tetsouo's live `drk/` (since 2026-09-29, when
 his folder got all 22 jobs) is a copy of it; GearSwap loads it
 when the main job becomes DRK (`<Character>_DRK.lua`).
@@ -299,13 +299,13 @@ invisible to Mote.
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/drk/DRK_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/drk/DRK_KEYBINDS.lua` | 3 binds (+ common keys, optional states) | file | entry `user_setup`, `file_unload` |
-| `<char>/drk/DRK_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
-| `<char>/drk/DRK_HUD.lua` | empty orders | file | `hud_job_config.lua` |
-| `<char>/drk/DRK_TP_CONFIG.lua` | Moonshade ear1 +250; Anguta +500 (not a `MainWeapon` value) | file | `WSPrecastHandler` via `_G.DRKTPConfig` (captured on first action) |
-| `<char>/drk/DRK_LOCKSTYLE.lua` | default 1; SAM/WAR 1, NIN 2, DNC 3 | file; factory fallback 1 | `LockstyleManager` through `get_style` |
-| `<char>/drk/DRK_MACROBOOK.lua` | book 1, page 1 (SAM), 2 (WAR), 3 (NIN), 4 (DNC); dual-box RDM book 2, COR 3, GEO 4 | file; factory fallback book 1 page 1 | `MacrobookManager` |
+| `<char>/drk/keys/DRK_STATES.lua` | see states | file | entry `user_setup` |
+| `<char>/drk/keys/DRK_KEYBINDS.lua` | 3 binds (+ common keys, optional states) | file | entry `user_setup`, `file_unload` |
+| `<char>/drk/keys/DRK_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
+| `<char>/drk/display/DRK_HUD.lua` | empty orders | file | `hud_job_config.lua` |
+| `<char>/drk/combat/DRK_TP_CONFIG.lua` | Moonshade ear1 +250; Anguta +500 (not a `MainWeapon` value) | file | `WSPrecastHandler` via `_G.DRKTPConfig` (captured on first action) |
+| `<char>/drk/display/DRK_LOCKSTYLE.lua` | default 1; SAM/WAR 1, NIN 2, DNC 3 | file; factory fallback 1 | `LockstyleManager` through `get_style` |
+| `<char>/drk/display/DRK_MACROBOOK.lua` | book 1, page 1 (SAM), 2 (WAR), 3 (NIN), 4 (DNC); dual-box RDM book 2, COR 3, GEO 4 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/_common/combat/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry chunk |
 | `<char>/_common/gear/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
@@ -378,8 +378,6 @@ invisible to Mote.
 - Do not rebuild gear directly inside `job_buff_change`: `buffactive` there
   still holds the buffs from before the change. The Aftermath refresh is a
   `gs c update` 0.1 s later, skipped under Doom or while `midaction()` is true.
-- The template keeps `Tetsouo/...` require paths; the clone script rewrites
-  them.
 
 ### Extending
 
@@ -413,7 +411,8 @@ invisible to Mote.
 - Enfeebling Magic routed with the Enhancing database function
   (`DRK_MIDCAST.lua` `job_post_midcast_enfeebling_magic`).
 - Elemental Magic routing is a no-op: no `sets.midcast['Elemental Magic']`.
-- Nether Void legs applied to Absorb-TP against the set comment.
+- Nether Void set applied to Absorb-TP too (the set comment in
+  `drk_sets.lua` now says so).
 - Redundant JA/FC equips in `job_precast`; empty `cooldown_exclusions`.
 - Fixed 2026-09-28: `DRK_STATUS` is `LifecycleManager.status_change()` (an
   engage during an action waits for the aftercast); the Aftermath Lv.3

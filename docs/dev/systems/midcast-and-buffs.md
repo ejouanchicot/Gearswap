@@ -16,7 +16,7 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/midcast_fallback.lua` | 62 | Routes a spell no job midcast handed to `select_set` (a subjob's magic), on Mote's `cleanup_midcast` |
 | `shared/utils/midcast/midcast_trace.lua` | 81 | `MIDCAST` lines in `<Character>/logs/trace/trace.log` (chosen path and pieces, or "no set"); slot-name aliasing |
 | `shared/utils/midcast/utsusemi_shadows.lua` | 32 | Cancels Copy Image buffs 2.3 s into Utsusemi: Ichi (Cancel addon) |
-| `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
+| `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 14 jobs that call it (see [MidcastDeps](#midcastdeps)) |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 130 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 438 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first; `$State` names, groups of alternatives; a buff under `refresh_below` recast), `cast(to_cast)` (shared action queue, `cancel_first`, buff guard), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
@@ -95,7 +95,7 @@ Example, `Utsusemi: Ni` on WAR/NIN: `sets.midcast['Utsusemi: Ni']`, else `sets.m
 |---|---|---|---|
 | `skill` | string, required | `select_set`, every path string | Name of the base set under `sets.midcast`. It does not have to be a real FFXI skill: jobs pass "pseudo-skills" that are just root set names (`'Flash'`, `'Enmity'`, `'Phalanx'`, `'Cocoon'` in PLD; `'Death'` in BLM; `'Absorb'`, `'Dread Spikes'` in DRK; `'StatusRemoval'`, `'MndEnfeebles'`, `'IntEnfeebles'`, `'Repose'` in WHM; `'RA'` in COR) |
 | `spell` | GearSwap spell table | P0, P1, P8b, header, pickers | `spell.english` and `spell.target.name` are read by the manager; `target_func` and Mote's `get_spell_map` receive the whole table |
-| `mode_value` | string | `resolve_metadata` | Explicit mode. Wins over `mode_state`. Only BLM passes it (`logic/midcast_router.lua` `Router.handle_elemental`, value `'MagicBurst'`) |
+| `mode_value` | string | `resolve_metadata` | Explicit mode. Wins over `mode_state`. Passed by BLM (`logic/midcast_router.lua` `Router.handle_elemental`, value `'MagicBurst'`), NIN (`nin/functions/logic/ninjutsu.lua` `Ninjutsu.midcast_config`, `'MagicBurst'` on elemental ninjutsu) and SCH (`SCH_MIDCAST.lua` `config_for`, its `burst_mode()`) |
 | `mode_state` | Mote state | `resolve_metadata` | Its `.value` is the mode when `mode_value` is absent |
 | `database_func` | `function(spell_name) -> string` | `resolve_metadata` | Called with `spell.english` under `pcall`. Its result is the **type** (for example `'Refresh'`, `'Enspell'`, `'mnd_potency'`). An error or `nil` means no type |
 | `target_func` | `function(spell) -> string` | `resolve_metadata` | Called with the whole spell under `pcall`. Its result is the **target** key (`'Composure'` from `get_enhancing_target`, `'Self'`/`'Other'` in PLD/RUN) |
@@ -110,7 +110,7 @@ Any other key is ignored. The Singing branch reads only `spell`.
 | SMN | `state.CastingMode` | Elemental, Enfeebling |
 | BLU | `state.CastingMode` | Blue Magic routes |
 | WHM | `state.CastingMode` | Divine, the enfeeble pseudo-skills |
-| COR | `state.RangedMode` | `'RA'` (ranged midcast) |
+| COR, RNG | `state.RangedMode` | `'RA'` (ranged midcast) |
 
 No states file in `_master/`, `Tetsouo/`, `Kaories/` or `shared/` defines `state.EnhancingMode`, so that value is always `nil`. `state.CureMode` (`_master/config/whm/WHM_STATES.lua`) is read by `WHM_MIDCAST.lua` `job_midcast` itself and never passed to `select_set`.
 
@@ -134,7 +134,7 @@ No states file in `_master/`, `Tetsouo/`, `Kaories/` or `shared/` defines `state
 
 P0 and P1 go through `try_path`: missing intermediate tables are fine and only the last node has to be a table. P2-P8 index tables directly and accept any non-nil value. After choosing a set, `equip_with_debug` calls `equip()`, `MidcastTrace.selection`, and, with debug on, prints every slot in `SLOT_ORDER` (names resolved through `MidcastTrace.item_name`, so `left_ring` / `ring1` / `lring` all show). `is_fallback` is `selected_set == base`. A named set that is literally the same table as the base (for example `sets.midcast['Comet'] = sets.midcast['Elemental Magic']` in the BLM sets) is therefore reported as a fallback.
 
-The header of `midcast_manager.lua` describes this chain including P8b; the older comment block above `resolve_metadata` ("STANDARD BRANCH (P0-P9)") does not list P8b.
+The header of `midcast_manager.lua` describes this chain including P8b, and so does the comment block above `resolve_metadata` ("STANDARD BRANCH (P0-P9)").
 
 ```mermaid
 flowchart TD
@@ -171,7 +171,7 @@ flowchart TD
 
 Properties that follow from the order:
 
-- A spell-name set (P0) or a tier-less name set (P1) beats every type, target and mode set. No level looks up `sets.midcast[spell][mode]`, so a mode sub-table hung under a spell-name set is never selected.
+- A spell-name set (P0) or a tier-less name set (P1) beats every type, target and mode set. Only P0 looks up `sets.midcast[spell][mode]` (exact spell name); a mode sub-table hung under a tier-less name set (P1) is never selected.
 - When a spell's tier-less name equals its database family (Refresh, Regen, Phalanx, Stoneskin, Aquaveil in `ENHANCING_MAGIC_DATABASE`), P1 finds `sets.midcast[family]` or `base[family]` before P2-P4, so mode-specific family sets are unreachable for those spells.
 - Target beats type (P5 before P6/P7) and type beats mode (P6/P7 before P8).
 - The spell map (P8b) only matters when nothing above matched: it cannot change a choice made before 2026-09-28, it only stops P9 from replacing the map set Mote had already put on.
@@ -183,10 +183,10 @@ Checked by loading the real `midcast_manager.lua` under `lua5.1` with stubbed `s
 
 | Job / cast | Metadata | Result |
 |---|---|---|
-| RDM Refresh III on self (`_master/sets/rdm_sets.lua` `sets.midcast.Refresh`) | type `Refresh`, target nil | P1 `sets.midcast.Refresh`, a 2-slot set (see Known issues) |
+| RDM Refresh III on self (`_master/sets/rdm_sets.lua` `sets.midcast.Refresh`) | type `Refresh`, target nil | P1 `sets.midcast.Refresh` (the Enhancing set with the Refresh pieces) |
 | RDM Refresh III on a party member with Composure | type `Refresh`, target `Composure` | P1 `sets.midcast.Refresh.Composure` |
 | BLM Thunder VI, MagicBurstMode On | mode `MagicBurst` | P8 `sets.midcast['Elemental Magic'].MagicBurst` |
-| BLM Comet, MagicBurstMode On | mode `MagicBurst` | P0 `sets.midcast.Comet`, which is the non-MB base table (see Known issues) |
+| BLM Comet, MagicBurstMode On | mode `MagicBurst` | P0 `sets.midcast.Comet.MagicBurst`: `Comet` is the Elemental table itself, and P0 takes its `[mode]` child |
 | WAR/NIN Utsusemi: Ni, `sets.midcast.Ninjutsu` and `sets.midcast.Utsusemi` defined | map `Utsusemi` | P8b `sets.midcast.Utsusemi` (before 2026-09-28: P9 `Ninjutsu`) |
 | Any job, `Cure` with no `sets.midcast['Healing Magic']` | - | returns `false`, Mote's `sets.midcast.Cure` stays |
 | RDM Slow II, EnfeebleMode Potency (traced by reading) | type `mnd_potency`, mode `Potency` | P3 misses (`.mnd_potency.Potency` absent), P7 `base.mnd_potency`; the `.Potency` mode set is never reached while a type set exists |
@@ -210,7 +210,7 @@ Checked by loading the real `midcast_manager.lua` under `lua5.1` with stubbed `s
 
 After `select_set`, the BRD router (`shared/jobs/brd/functions/logic/midcast_router.lua` `equip_normal_song`) forces `range = _G.locked_instrument` for a song that holds the instrument lock (Honor March, Aria of Passion) and otherwise puts the instrument chosen by `state.MainInstrument` in the range slot (`apply_main_instrument`): only the `range` of `sets.midcast.Songs[instrument]` is taken, so the family pieces stay (added in `002493f`).
 
-Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Tetsouo/brd/brd_sets.lua`):
+Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Tetsouo/brd/sets/brd_sets.lua`):
 
 - `sets.midcast.Songs` holds `Gjallarhorn` and `Daurdabla`, each `set_combine(sets.midcast.BardSong, {range = ...})`, and `Marsyas = {range = ...}`. There is no `Songs.Loughnashade` and no `Songs.Duration`, so the Troubadour layer never fires and Aria of Passion gets no instrument layer.
 - `Songs.Marsyas` is only the instrument, so layering it onto `HonorMarch` changes the range slot alone.
@@ -219,7 +219,7 @@ Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Te
 
 ### Debug mode
 
-- `//gs c debugmidcast` is handled in each job's COMMANDS file (17 files: BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, SMN, THF, WAR, WHM; `if command == 'debugmidcast'` in `job_self_command`). Each requires the manager, calls `MidcastManager.toggle_debug()`, then prints `MessageCommands.show_debugmidcast_toggled(job, _G.MidcastManagerDebugState)`.
+- `//gs c debugmidcast` is handled in each job's COMMANDS file (all 22 jobs; `if command == 'debugmidcast'` in `job_self_command`). Each requires the manager, calls `MidcastManager.toggle_debug()`, then prints `MessageCommands.show_debugmidcast_toggled(job, _G.MidcastManagerDebugState)`.
 - **The flag lives on `windower._midcast_debug`** and is copied into `_G.MidcastManagerDebugState` every time the module loads; `enable_debug` / `disable_debug` write both. It therefore survives `gs reload`, main job changes and subjob changes, and is reset only by `//lua reload gearswap` (since `445e5ed`). Job routers read the `_G` mirror to gate their own traces (`RDM_MIDCAST.lua` `route_midcast`, `BRD_MIDCAST.lua` and `BLM_MIDCAST.lua` `job_post_midcast` ctx, `SMN_MIDCAST.lua` `job_post_midcast`).
 - Output: header, mode/type/target steps (`resolve_metadata`), one line per priority checked (P1 prints only its first failing path; P8b prints as priority 8, label `Map (...)`), then the chosen path and every equipped slot (`equip_with_debug`).
 - A skill with no `sets.midcast[skill]` prints the header and the `Skill set` warning (see `select_set` step 5). With the fallback above, every spell cast on any main / sub is reported.
@@ -242,11 +242,11 @@ Each call is a no-op while the trace is off (`trace_log.enabled()`).
 
 | Function | Callers |
 |---|---|
-| `get_enhancing_target(spell)` | `target_func` in the BRD router, BLU, BST, COR, DNC, GEO, PLD, PUP, RDM, RUN, SAM, SMN, THF, WAR, WHM midcast files. Returns `'Composure'` when `buffactive['Composure']` and the target is not the player, else `nil` |
+| `get_enhancing_target(spell)` | `target_func` in the BRD router, BLU, BST, COR, DNC, DRG, GEO, MNK, NIN, PLD, PUP, RDM, RNG, RUN, SAM, SCH, SMN, THF, WAR, WHM midcast files. Returns `'Composure'` when `buffactive['Composure']` and the target is not the player, else `nil` |
 | `get_song_type(name)` | only `song_by_type` |
 | `get_song_instrument(name)` | `layer_instrument`, BRD router `apply_main_instrument` |
 | `MidcastManager.debug.enabled` | none (read-only proxy; any other key returns nil) |
-| `enable_debug`, `disable_debug`, `toggle_debug` | `toggle_debug` from the 17 COMMANDS files |
+| `enable_debug`, `disable_debug`, `toggle_debug` | `toggle_debug` from the 22 COMMANDS files |
 
 ## MidcastFallback
 
@@ -261,7 +261,7 @@ Each call is a no-op while the trace is off (`trace_log.enabled()`).
 
 ## MidcastDeps
 
-`MidcastDeps.load()` `pcall`-requires `midcast_manager` and `ENHANCING_MAGIC_DATABASE` on first call and returns the same pair afterwards, even if a load failed (`loaded = true` is set unconditionally). Callers, each at the top of `job_post_midcast`: `BLU_MIDCAST.lua`, `COR_MIDCAST.lua`, `DNC_MIDCAST.lua`, `DRK_MIDCAST.lua`, `SAM_MIDCAST.lua`, `THF_MIDCAST.lua`, `WAR_MIDCAST.lua`, `WHM_MIDCAST.lua`. These callers index `MidcastManager.select_set` without a nil check, so they depend on the manager loading.
+`MidcastDeps.load()` `pcall`-requires `midcast_manager` and `ENHANCING_MAGIC_DATABASE` on first call and returns the same pair afterwards, even if a load failed (`loaded = true` is set unconditionally). Callers, each at the top of `job_post_midcast`: `BLU_MIDCAST.lua`, `COR_MIDCAST.lua`, `DNC_MIDCAST.lua`, `DRG_MIDCAST.lua`, `DRK_MIDCAST.lua`, `MNK_MIDCAST.lua`, `NIN_MIDCAST.lua`, `PUP_MIDCAST.lua`, `RNG_MIDCAST.lua`, `SAM_MIDCAST.lua`, `SCH_MIDCAST.lua`, `THF_MIDCAST.lua`, `WAR_MIDCAST.lua`, `WHM_MIDCAST.lua`. These callers index `MidcastManager.select_set` without a nil check, so they depend on the manager loading.
 
 The cache lives in module locals. GearSwap's `require` is `include_user`, which reads `package.loaded` but never writes it; caching comes from `ModuleCache`, installed at the top of `INIT_SYSTEMS.lua` on the sandbox `_G`. Each user environment therefore gets its own `MidcastDeps` instance.
 
@@ -289,7 +289,7 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 
 - `apply_movement(result)`: when `state.Moving.value == 'true'` (the string state created by `shared/utils/movement/automove.lua`) and `sets.MoveSpeed` exists, returns `set_combine(result, sets.MoveSpeed)` under `pcall`; on error shows `MessageFormatter.show_error` and returns `result`.
 - `select_idle_base_town(base_set)`: returns `set_combine(idle, sets.Adoulin), true` in Western/Eastern Adoulin when that set exists; otherwise `set_combine(idle, sets.idle.Town), true` when `areas.Cities` (`libs/Mote-Mappings.lua`) contains `world.area` and the area name does not contain "Dynamis"; otherwise `base_set, false`. No Dynamis zone is in `areas.Cities`, so the Dynamis test never changes the result. `idle` is `base_set`, or, when `base_set` is Mote's own town pick (`sets.idle.Town` or its `IdleMode` child, chosen by `get_idle_set` in every city), `sets.idle` then `sets.idle[IdleMode]`, and Mote's town node is what goes on top. Since 2026-09-29 the town set goes on top of the idle set instead of replacing it, so a partial one keeps the idle pieces in the other slots.
-- `select_idle_base(base_set)` (since 2026-09-29): `select_idle_base_town` in town; outside town `sets.idle[state.HybridMode.current]` when it is a table, else `base_set`. Mote's idle follows `IdleMode` only, so this is what puts `sets.idle.PDT` on the jobs whose PDT toggle is `HybridMode`. Used by DNC, DRK, THF, WAR.
+- `select_idle_base(base_set)` (since 2026-09-29): `select_idle_base_town` in town; outside town `sets.idle[state.HybridMode.current]` when it is a table, else `base_set`. Mote's idle follows `IdleMode` only, so this is what puts `sets.idle.PDT` on the jobs whose PDT toggle is `HybridMode`. Used by DNC, DRG, DRK, MNK, NIN, RNG, SCH, THF, WAR.
 - `lay_town_set(idle, town_set)` (since 2026-09-29): the same test and layering for a job that builds its own idle: `sets.Adoulin` on top in Adoulin when it exists, else `town_set` on top in any city (Adoulin included); returns `idle, false` outside town. Used by BST.
 - `is_in_town()`: the same test without a set.
 
@@ -330,9 +330,10 @@ Since 2026-10-01 one command and one engine cover every buff list. `buff`, `buff
 |---|---|---|
 | `job` | one list for BLM, RDM, WHM, PLD, RUN, SCH, NIN, SAM, DRK, MNK, RNG (table below); none for the other jobs | `BuffCommand` (main job list) |
 | `weapon` | `{}` (none; RDM's Gain and Enspell are in `job.RDM`: `'$GainSpell', '$EnSpell'` after Temper II (tier I only: BG-Wiki, more damage with Temper II)) | `BuffCommand` (weapon list) |
-| `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}` | `BuffCommand` (subjob list) |
+| `subjob` | `WAR = {'Berserk', 'Aggressor', 'Warcry'}`, `SAM = {'Hasso', 'Third Eye'}`, `NIN = {'Utsusemi'}`, `DNC = {'Haste Samba'}`, `WHM = {'Reraise'}` | `BuffCommand` (subjob list) |
 | `refresh_below` | `10` | `collect` (`wearing_off`): a buff up with less than this percent of its length left is recast; `0` = never |
 | `cancel_first` | `{'Stoneskin'}` | `collect` / `cast`: such a buff, recast while up, gets a `cancel <buff>` step first (Cancel addon) |
+| `always_recast` | `{'Stoneskin'}` | `collect` (`wearing_off`): such a buff is cast again on every press, whatever its time left |
 | `wait_after_spell` | `3.0` | `cast`: delay after a spell |
 | `wait_after_ability` | `0.5` | `cast`: delay after an ability |
 
@@ -501,7 +502,7 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 ## Invariants & gotchas
 
 - `select_set` equips nothing unless `sets.midcast[skill]` exists, even for a spell that has its own named set. No PLD set file defines `sets.midcast['Healing Magic']`, `['Divine Magic']` or `['Blue Magic']`, so for PLD those calls return `false` and Mote's default choice stands.
-- Sets are chosen, never merged. A set that only lists the slots that differ (for example RDM `sets.midcast.Refresh`, `sets.midcast.Regen`) is worn over whatever was on before, which is the precast set for the slots Mote's default did not touch.
+- Sets are chosen, never merged. A set that only lists the slots that differ is worn over whatever was on before, which is the precast set for the slots Mote's default did not touch.
 - A spell-name or tier-less-name set shadows every mode and family set for that spell (P0/P1 come first).
 - `target_func` values must match the keys in the set file exactly. PLD/RUN return `'Self'`/`'Other'`; no PLD or RUN set defines those keys. RDM's `sets.midcast.CureSelf` has no selector.
 - Singing Step 1.5 removes every space: "Aria of Passion" looks up `AriaofPassion`, not the `AriaPassion` defined in the BRD sets.
@@ -514,7 +515,7 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 ## Extending
 
 - **New skill in a job**: add a branch in `job_post_midcast` calling `MidcastManager.select_set({skill = ..., spell = spell, ...})` and define `sets.midcast[skill]` (the base set is mandatory). Pass `database_func` only if the database returns strings that match set keys. A skill the job does not route still reaches `select_set` through `MidcastFallback`.
-- **Mode-specific gear**: put it under the base (`base[mode]`, P8) or under a family (`base[type][mode]`, P3). Do not hang it under a spell-name set, and do not define a root set named after a spell whose family you want mode-routed (P0/P1 would win).
+- **Mode-specific gear**: put it under the base (`base[mode]`, P8) or under a family (`base[type][mode]`, P3). Do not hang it under a tier-less name set (only an exact spell-name set has its `[mode]` child read, at P0), and do not define a root set named after a spell whose family you want mode-routed (P0/P1 would win).
 - **New target key**: write a `target_func` returning the key, then define `base[key]` (P5) or `base[type][key]` / `base[type][key][mode]` (P2).
 - **Gear by Mote spell map**: define `sets.midcast[map]` or `base[map]`; P8b picks it when nothing more specific exists.
 - **New song set**: name it exactly like the spell, the tier-less spell, the family word, or the first word; for a multi-word name without spaces use the name with every space removed.
@@ -525,22 +526,23 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 
 Open:
 
-- BLM Comet never uses the MagicBurst set: P0 returns `sets.midcast['Comet']`, which is the base Elemental table (`_master/sets/blm_sets.lua`, `sets.midcast['Comet'] = sets.midcast['Elemental Magic']`).
-- RDM self-cast Refresh/Regen wear only 2 midcast slots over the precast set (`_master/sets/rdm_sets.lua`, live `Kaories/rdm/rdm_sets.lua`).
 - `sets.midcast.AriaPassion` is unreachable by name (`song_by_name`, `_master/sets/brd_sets.lua`).
 - PLD Healing `select_set` calls always return `false` (no `sets.midcast['Healing Magic']`); Cure I-IV are dressed in `job_midcast` and skip `EnmityOverride.apply_midcast`.
 - Unused public API: `MidcastManager.debug`.
 - Dead `ctx.target ~= 'others'` guard in `resolve_base_name` (no `target_func` returns `'others'`).
-- The "STANDARD BRANCH (P0-P9)" comment block in `midcast_manager.lua` omits P8b, and P8b's debug line is labelled priority 8.
+- P8b's debug line is labelled priority 8 (`resolve_spell_map`).
 - Scholar chains warn "No charges (0.0m)" when /SCH is absent (`warn_no_charge`).
-- GEO keeps its own Light/Dark Arts toggles (`GEO_COMMANDS.lua`).
-- RDM's subjob-magic fallback is gated on `spell.type == 'Magic'` and never runs (`RDM_MIDCAST.lua` `route_midcast`); `MidcastFallback` covers those spells now, so the branch is dead code.
 - DRK passes the Enhancing database's `get_spell_family` as `database_func` for Enfeebling Magic (`DRK_MIDCAST.lua`).
 - Not checked in game yet (2026-10-01): `refresh_below` timings, Stoneskin not overwriting itself (`cancel_first`), the guard verdicts.
 - The `AOE_SPELLS` comment says `CommonCommands` answers `sneak`/`invi`/`erase` before the job block and sends them to the partner; since `53bf99f` alt keys are Mote's last lookup, so that reason no longer holds (`scholar_actions.lua`, above `AOE_SPELLS`).
 
 Fixed:
 
+- BLM Comet never used the MagicBurst set (P0 returned `sets.midcast['Comet']`, the base Elemental table): P0 now takes the `[mode]` child of a spell-name set (`resolve_exact_spell`), here `sets.midcast['Comet'].MagicBurst`.
+- RDM self-cast Refresh/Regen wore only 2 midcast slots over the precast set: `sets.midcast.Refresh` / `.Regen` are now `set_combine(sets.midcast['Enhancing Magic'], {...})` (`_master/sets/rdm_sets.lua`, live `Kaories/rdm/sets/rdm_sets.lua`).
+- The "STANDARD BRANCH (P0-P9)" comment block in `midcast_manager.lua` omitted P8b: it lists it.
+- GEO kept its own Light/Dark Arts toggles: `lightarts`, `darkarts` and `aoe` are common commands (`GEO_COMMANDS.lua` has none).
+- RDM's subjob-magic branch (`midcast_subjob`, gated on `spell.type == 'Magic'`, never ran) was removed on 2026-09-28; `MidcastFallback` routes those spells.
 - Before 2026-09-28 a spell whose Mote map differs from its tier-less name (`Utsusemi: Ni` -> `Utsusemi`, `Barfire` -> `BarElement`) lost its map set as soon as the skill set existed: P8b keeps it.
 - PLD/RUN Cure I/II gear depended on the last Cure III/IV target (`CureSetBuilder` assigned `sets.midcast.Cure`): it now returns `CureSelf` / `CureOther` for Cure to Cure IV and leaves `sets.midcast.Cure` untouched. RUN now defines `sets.midcast['Healing Magic']`.
 - `get_element` and the four preset builders (`rdm_enfeebling`, `enhancing`, `elemental`, `cure`) were removed on 2026-09-28 (no caller in any folder).

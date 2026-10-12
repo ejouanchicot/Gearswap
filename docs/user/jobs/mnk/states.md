@@ -19,7 +19,7 @@ command of the job, on one page: [README.md](README.md).
 | `^numpad1` | Main Weapon (`MainWeapon`) | **Free** | Main hand. Add your weapons in `MNK_STATES.lua`: each value is `sets.<Weapon>` from your set file (or the plain weapon, if `WEAPON_CONFIG.lua` has `equip_without_set = true`). `Free` keeps the weapon you wear. Monk has no off hand. |
 | `^numpad2` | WS Mode (`WeaponskillMode`) | **Normal**, Acc | Acc: `sets.precast.WS['<name>'].Acc` (or `sets.precast.WS.Acc` for a weaponskill without its own set) when your set file has it. With Normal, Offense Mode Acc also picks the `.Acc` weaponskill set (Mote's rule). |
 | `^numpad3` | Offense Mode (`OffenseMode`) | **Normal**, Acc | Engaged gear: `sets.engaged.Acc` when your set file has it. |
-| `^numpad9` | Hybrid Mode (`HybridMode`) | **Normal**, DT, Counter | DT: `sets.engaged.DT` and, standing, `sets.idle.DT`. Counter: `sets.engaged.Counter` (counter gear); standing, your normal idle. With Offense Mode Acc, `sets.engaged.Acc.DT` / `.Acc.Counter` are used when you add them. |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **Normal**, DT, Counter | DT: `sets.engaged.DT` and, standing outside a city, `sets.idle.DT`. Counter: `sets.engaged.Counter` (counter gear); standing, your normal idle. With Offense Mode Acc, `sets.engaged.Acc.DT` / `.Acc.Counter` are used when you add them. |
 
 Mote-Include's F-keys reach the same modes: F9 Offense Mode, Ctrl+F9 Hybrid
 Mode, Win+F9 WS Mode.

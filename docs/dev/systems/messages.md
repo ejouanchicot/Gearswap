@@ -15,8 +15,8 @@ verbosity (`full` / `on` / `off`) persisted to `<Char>/saved/message_modes.lua` 
 
 This page covers the core: facade, API, engine, renderer, colours and palette, chat options (width,
 separators, job tag, colour overrides), the chat-line filter, `InfoBlock`, `HelpScreen`, action
-hooks and handlers, mode settings, validator, and the allowed direct `add_to_chat` calls. The 37
-formatter modules (35 under `shared/utils/messages/formatters/`, 2 under `utilities/`) are documented in
+hooks and handlers, mode settings, validator, and the allowed direct `add_to_chat` calls. The 34
+formatter modules (32 under `shared/utils/messages/formatters/`, 2 under `utilities/`) are documented in
 [messages-formatters.md](messages-formatters.md); the template files under
 `shared/utils/messages/data/` in [messages-catalog.md](messages-catalog.md); the HUD and the
 `//gs c ui` commands that set the chat options in [ui-overlay.md](ui-overlay.md).
@@ -152,7 +152,7 @@ module (130 in total, 2026-10-01; "no caller" = the name appears in no file outs
 |---|---|---|---|
 | `message_core.lua` | 3 | 0 | `convert_key_display`, `show_separator`, `get_job_tag`; plus the `COLORS` proxy |
 | `formatters/combat/message_ja_buffs.lua` | 1 | 0 | `show_ja_activated` |
-| `formatters/ui/message_keybinds.lua` | 4 | 0 | keybind list and bind errors (`show_keybind_list` is called only by the frozen Gabvanstronger keybind files) |
+| `formatters/ui/message_keybinds.lua` | 4 | 0 | keybind list and bind errors (`show_keybind_list` is called only by `keybind_manager.lua` local `show_binds` and by the `show_binds` of the frozen Hysoka and Gabvanstronger keybind files) |
 | `formatters/system/message_system.lua` | 5 | 0 | job-load intro block, colour test |
 | `formatters/ui/message_status.lua` | 6 | 0 | `show_error/warning/success/info`, `show_state_display`, `show_tp_ready` |
 | `formatters/combat/message_cooldowns.lua` | 6 | 1 | cooldown lines, `show_multi_status`, recast helpers (`get_spell_recast_seconds` has no caller) |
@@ -336,7 +336,7 @@ Helpers: `get_tp_color(tp)` (>= 3000 -> `TP_ULTIMATE`, >= 2000 -> `TP_ENHANCED`,
    does not exist).
 3. `_G.RegionConfig.get_orange_code(_G.RegionConfig.get_region(player.name))`, read at each use
    (`rawget(_G, 'RegionConfig')`). Each entry file sets `_G.RegionConfig` from
-   `<Char>/_common/display/REGION_CONFIG.lua` at file level. Live values: Tetsouo EU -> 3, Kaories EU -> 2.
+   `<Char>/_common/display/REGION_CONFIG.lua` at file level. Live values: Tetsouo US -> 57, Kaories EU -> 2.
 4. Default 57.
 
 The first time `WARNING` is read after `RegionConfig` exists, `trace_region` writes the orange it
@@ -423,7 +423,11 @@ Callers of `show`: `message_system.lua` (job-load block), `message_ui.lua` (`ui 
 `roll_messages.lua` (`rolls`), `party_messages.lua` (`party`), `BRD_COMMANDS.lua`,
 `cor/functions/logic/roll_debug.lua`, `core/optional_state_commands.lua` (Combat/Treasure Mode
 status), `equipment/dual_wield.lua`, `equipment/elemental_belt.lua`, `keybinds/key_conflicts.lua`,
-`stealth/stealth.lua`. Pieces (`header`, `fields`, `separator`, `footer`): `message_equipment.lua`
+`stealth/stealth.lua`, and also `PUP_COMMANDS.lua`, SCH `functions/logic/spell_commands.lua`,
+`combat/fight_hits.lua`, `combat/fight_sheet.lua`, `combat/fight_tracker.lua`,
+`combat/random_deal_watch.lua`, `debuff/auto_medicine.lua`, `debuff/cleanse.lua`,
+`equipment/gear_scan.lua`, `equipment/hp_priority.lua`, `lockstyle/lockstyle_pieces.lua`,
+`party/support_tier.lua`, `wardrobe/bag_mover.lua`, `wardrobe/porter_run.lua`. Pieces (`header`, `fields`, `separator`, `footer`): `message_equipment.lua`
 (`//gs c checksets`).
 
 Not converted on purpose: Sortie's own blocks (the model, same look, own templates), in-game event
@@ -474,7 +478,8 @@ Callers of `show`: `message_commands.lua` (`//gs c help`, `//gs c commands`,
 `jamsg|spellmsg|wsmsg` with no argument via `show_message_mode_help`), `message_ui.lua` (`ui help`),
 `message_warp.lua` (`warp help`), `message_watchdog.lua`, `message_tempbind.lua` (`tb help`),
 `message_altgroup.lua` (`alts` usage), `message_sortie.lua`, `message_stealth.lua`,
-`message_info.lua` (`info` usage), `core/optional_state_commands.lua` (Combat/Treasure Mode help).
+`message_info.lua` (`info` usage), `core/optional_state_commands.lua` (Combat/Treasure Mode help),
+`SCH_COMMANDS.lua`, `debuff/cleanse.lua`.
 Pieces: `message_alt_commands.lua` (`//gs c altcmds`, built at run time) and `message_ui.lua`.
 
 Convention: every command with a help screen answers `help` (`//gs c ui help`, `tb help`, `warp help`,
@@ -586,8 +591,8 @@ flowchart LR
 ```
 
 - `message_settings.lua` runs at its first `require` in a sandbox. It `dofile`s
-  `windower.addon_path .. 'data/' .. player.name .. '/config/message_modes.lua'` (local
-  `get_settings_path`, `load_from_file`; falls back to `Tetsouo` when `player.name` is nil). A table
+  `<Char>/saved/message_modes.lua`, the path given by `CharPaths.writable('saved', 'message_modes.lua')`
+  (local `get_settings_path`, `load_from_file`). A table
   result replaces `_G.MESSAGE_SETTINGS`. With no file and no global it creates
   `{spell_mode='on', ja_mode='on', ws_mode='on'}` and writes the file.
 - Keys: `spell_mode` (every spell category, Enfeebling included), `ja_mode`, `ws_mode`. Values:
@@ -603,7 +608,7 @@ flowchart LR
   on an invalid mode. The predicates read `MessageSettings` on every call, so a mode change applies to
   the next action without reload.
 - Seeds: `_master/config_global/message_modes.lua` (`ja_mode='full'`, others `'on'`) is copied to
-  `<Char>/_common/` by `clone_character.py`; a re-clone keeps the character's own file
+  `<Char>/saved/` by `clone_character.py` (through `migrate_layout.py`); a re-clone keeps the character's own file
   (`KEPT_ON_RECLONE`).
 
 ### Validator (`//gs c msgtests`)
@@ -620,9 +625,9 @@ BST, COR, DRG, GEO, RDM, WHM; the system namespaces are not covered):
   2026-10-01): the require fails silently and only their templates are checked.
 
 It prints with `print` (Windower console, not the chat) and writes `data/message_validation.json` and
-`.txt` under `windower.addon_path` (`export_json`, `export_txt`). The whitelist is narrower than the
-engine (no `purple`, `jobtag`, `itemcolor`...), so valid templates are reported as failures (Known
-issues).
+`.txt` under `windower.addon_path` (`export_json`, `export_txt`). The colour whitelist now follows the
+engine; the parameter whitelist (`COMMON_PARAMS`) is still narrower than the templates, so valid
+templates are reported as failures (Known issues).
 
 ### Where `add_to_chat` may be called directly
 
@@ -648,7 +653,7 @@ message system cannot load. Current state (grep `add_to_chat(`, 2026-09-28):
 
 | Function | Behaviour | Callers |
 |---|---|---|
-| `show_debug(prefix, message)` | `MessageRenderer.send('[prefix] message', 8)` | 81 call sites |
+| `show_debug(prefix, message)` | `MessageRenderer.send('[prefix] message', 8)` | 73 call sites |
 | `COLORS` | proxy table, `__index` -> `MessageCore.COLORS` (`pairs()` yields nothing) | none |
 | `get_job_tag()`, `show_separator(len)`, `convert_key_display(key)` | -> `MessageCore` | |
 | `show_error(message)`, `show_warning`, `show_success`, `show_info` | ONE argument; templates `STATUS.error` ("Error: {message}", 167), `warning` (region orange), `success` (158), `info` (1) | widely |
@@ -666,11 +671,11 @@ The full per-module list is in [messages-formatters.md](messages-formatters.md).
 | `COLORS` | = `MessageColors` | formatters |
 | `DEFAULT_SEPARATOR_WIDTH` | 69 | read only through `SEPARATOR_WIDTH` |
 | `SEPARATOR_WIDTH` (metatable) | `chat.width` or 69, read at each use | 15 files (InfoBlock, HelpScreen, formatters, test runner) |
-| `create_color_code(n)` | `string.char(0x1F, n)`; raises on a non-number | 125 call sites in 7 files |
+| `create_color_code(n)` | `string.char(0x1F, n)`; raises on a non-number | 103 call sites in 8 files |
 | `convert_key_display(key)` | `!`->`ALT+`, `^`->`CTRL+`, `~`->`SHIFT+`, `@`->`WIN+`, `fN`->`FN`, upper-cased | `key_conflicts.lua`, `message_keybinds.lua`, `ui_style.lua` (`display_key`), facade |
 | `show_separator(len)` | `len` ignored; nothing when `chat.separators` is false; else `add_to_chat(1, color .. line)` with `chat.separator_char` (default `=`), `chat.separator_color` or `COLORS.SEPARATOR`, `SEPARATOR_WIDTH` characters | both handlers, BST `BST_PET_PRECAST.lua`, PLD/RUN `aoe_manager.lua`, facade |
 | `job_prefix()` | `"[MAIN/SUB] "` or `""` when `chat.job_tag` is false | `info/success/error/warning`, `message_cooldowns.lua`, `roll_messages.lua` |
-| `get_job_tag()` | "Colours, palette and chat options" | 182 call sites |
+| `get_job_tag()` | "Colours, palette and chat options" | 91 call sites |
 | `info(msg)`, `success(msg)`, `error(msg)`, `warning(msg)` | `add_to_chat(121 / 158 / 167 / MessageColors.WARNING, job_prefix() .. msg)` | info: `party_messages.lua`, `roll_messages.lua`; success: none; error: `roll_messages.lua` and four warp files; warning: `BLM_COMMANDS.lua`, `roll_messages.lua` |
 | `raw(message)` | `add_to_chat(1, message)`; ONE argument; for pre-coloured strings | `roll_messages.lua`, `whm_message_formatter.lua` |
 | `show_automove_error(msg)`, `show_config_error(module, msg)`, `show_ui_error(msg)`, `show_ui_info(msg)`, `show_test_mode(msg)` | fixed-colour `add_to_chat` (167/167/167/122/8) | `automove.lua`, `config_loader.lua`, `UI_COMMANDS.lua`, `ui_appearance.lua`, `precast_guard.lua` |
@@ -754,9 +759,9 @@ call them; `DebugCommands.handle_debugmsg` reads `_G.MESSAGE_SETTINGS` directly.
 | `//gs c jamsg [full\|f\|on\|name\|nameonly\|name_only\|n\|off\|disabled\|disable\|d\|help]` | `CommonCommands.handle_jamsg` = `DebugCommands.handle_jamsg` -> local `handle_message_config_generic('ja', mode)` | No argument or `help`: `MessageCommands.show_message_mode_help` (a HelpScreen with the current mode). Otherwise normalises to `full/on/off`, `Config.set_display_mode`, writes the settings file, prints `show_jamsg_mode_changed(mode)`; an unknown mode prints `show_jamsg_invalid_mode`. |
 | `//gs c spellmsg <same>` | `DebugCommands.handle_spellmsg` | Same through `ENHANCING_MESSAGES_CONFIG`; changes `spell_mode`, which also governs Enfeebling. BRD songs and Geomancy lines are printed by their job code regardless. |
 | `//gs c wsmsg <same> \| tp\|tponly\|tp_only\|t` | `DebugCommands.handle_wsmsg` | Same for `ws_mode`; the `tp` aliases map to `on`. |
-| `//gs c debugmsg` | `DebugCommands.handle_debugmsg` | Prints `_G.MESSAGE_SETTINGS` through `show_debug`. Before `message_settings.lua` has loaded in the current sandbox it prints `Error: MSG` (Known issues). |
-| `//gs c testmsg [job]` / `msgtest` | `COMMON_COMMANDS.lua` -> `Messages.test` | Runs no test (suites moved out of the require path). |
-| `//gs c msgtests` | `COMMON_COMMANDS.lua` -> `MessageValidator.run_all_tests()` | Section 14. |
+| `//gs c debugmsg` | `DebugCommands.handle_debugmsg` | Prints `_G.MESSAGE_SETTINGS` through `show_debug`. Before `message_settings.lua` has loaded in the current sandbox it prints `Error: MSG: MESSAGE_SETTINGS is nil`. |
+| `//gs c testmsg [job]` / `msgtest` | `COMMON_COMMANDS.lua` -> `Messages.test` | Runs the `api/tests/test_<job>.lua` suites (all 23, or the one named); see `test` under "Messages API". |
+| `//gs c msgtests` | `COMMON_COMMANDS.lua` -> `MessageValidator.run_all_tests()` | See "Validator". |
 | `//gs c testcolors` / `colors` | `CommonCommands.handle_testcolors` | Colour sample rows (`message_commands.lua`). |
 | `//gs c ui separators\|sepchar\|sepcolor\|chatwidth\|jobtag\|chatcolor ...` | `ui_style_commands.lua` | Set the chat options of "Colours, palette and chat options"; see [ui-overlay.md](ui-overlay.md). |
 
@@ -844,8 +849,8 @@ page, so nothing needs cleanup in `file_unload`.
    `M.job`) with every parameter non-nil.
 3. Either expose it in `message_formatter.lua` next to its group
    (`MessageFormatter.show_x = function(...) return get_Module().show_x(...) end`, with a lazy getter
-   for a new module), or require the formatter directly from its one caller. For the 8 validated job
-   formatters the facade must export the same name and parameters must satisfy the validator
+   for a new module), or require the formatter directly from its one caller. For the 6 validated job
+   formatters (BLM, BRD, BST, COR, GEO, RDM) the facade must export the same name and parameters must satisfy the validator
    whitelist (see "Validator").
 4. Call it from game code; never call `add_to_chat` from `shared/jobs/`.
 
@@ -906,7 +911,8 @@ Re-checked on 2026-09-28. Open:
   and `handle_debugmsg` lost the message; they now pass one string.
 - 9 of the 130 facade wrappers have no caller by name: `get_spell_recast_seconds` and the eight
   unprefixed BST copies (see "The facade").
-- `//gs c testmsg` runs no test and reports success (`api/messages.lua` `Messages.test`).
+- Fixed 2026-10-01: `//gs c testmsg` ran no test and reported success; its suites are back in
+  `api/tests/` (`api/messages.lua` `Messages.test`, `TEST_JOBS`).
 - `//gs c msgtests` parameter whitelist out of date, fails on valid templates (`message_validator.lua`
   `COMMON_PARAMS`). Fixed 2026-09-28 for the colour tags: `VALID_COLORS` now takes every engine tag
   (`MessageEngine.COLOR_CODES`).
@@ -927,7 +933,7 @@ Re-checked on 2026-09-28. Open:
 - Warning colours (region orange 3 on EU, 2 for Kaories) not yet checked in game; the
   `trace_region` probe in `message_colors.lua` should be removed once `trace.log` shows `orange 2` for
   Kaories COR.
-- The `CHAT` block comment of `_master/config_global/UI_CONFIG.lua` does not list the four help
+- Fixed: the `CHAT` block comment of `_master/config_global/UI_CONFIG.lua` now lists the four help
   colours (`gold`, `aqua`, `mustard`, `amber`) that `chat.colors` accepts.
 
 Fixed:

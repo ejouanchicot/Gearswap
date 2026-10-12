@@ -10,7 +10,7 @@ The transition-by-transition view (subjob change, main job change, reload during
 
 Everything here runs inside the GearSwap sandbox. The single most important fact for maintaining this area is that GearSwap throws the whole sandbox away and builds a new one on every main job change, every `gs reload` and every zone-in on a different job, while Windower coroutines scheduled by the old sandbox keep running. Most of the design (and most of the defects listed at the end) follow from that.
 
-Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a flat script with no functions) are given as of that date; everywhere else the function is named.
+Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a flat script with no functions) are given as of 2026-10-12; everywhere else the function is named.
 
 ## Files
 
@@ -25,6 +25,9 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `module_cache.lua` | 100 | Replaces the sandbox `require` with a caching wrapper, once per sandbox | here |
 | `lifecycle_manager.lua` | 174 | Factory for the four Mote hooks every job used to copy, plus `refresh_after_buff` (gear rebuild after an Aftermath Lv.3 change) | here |
 | `keybind_guard.lua` | 82 | Re-sends the job's binds 2 s after a load | here |
+| `load_gate.lua` | 96 | `LoadGate.begin()` numbers each load (`windower._load_gen`); `LoadGate.defer(delay, fn, label)` runs deferred load work only while that load is still the live one | here ([INIT_SYSTEMS](#init_systemslua-in-execution-order)) |
+| `command_queue.lua` | 88 | Keybind console commands sent at a steady pace (5 per 0.25 s) | [keybinds-and-custom.md](keybinds-and-custom.md) |
+| `char_paths.lua` | 428 | Where a character's files are (`CharPaths.module`, `optional`, `relative`...) | [characters-and-templates.md](../architecture/characters-and-templates.md) |
 | `state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled) | here |
 | `action_listener.lua` | 81 | One raw `incoming chunk` listener per load for the action packets (0x028), read from `original` and handed to every subscriber (2026-10-01) | here ([ActionListener](#actionlistener)) |
 | `action_queue.lua` | 193 | Shared one-action-at-a-time queue (stealth, cleanse, `//gs c buff`) | [stealth.md](stealth.md#action-queue-sharedutilscoreaction_queuelua) |
@@ -39,7 +42,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `combat_mode.lua` | 261 | Weapon lock on every job, and the registry of the other slot locks (`hold` / `release`) that it lays again after every update; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `combat_mode_commands.lua` | 58 | `//gs c combatmode` | [keybinds-and-custom.md](keybinds-and-custom.md), [commands-and-debug.md](commands-and-debug.md) |
 | `optional_state.lua`, `optional_state_commands.lua` | 149, 147 | Base of Combat Mode and Treasure Mode (shown / hidden / key per job) | [keybinds-and-custom.md](keybinds-and-custom.md), [factories-and-helpers.md](factories-and-helpers.md) |
-| `COMMON_COMMANDS.lua` | 822 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
+| `COMMON_COMMANDS.lua` | 834 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
 | `DEBUG_COMMANDS.lua` | 583 | Debug toggles and dumps (`djc`, `debugupdate`, `debugstate`, `memcheck`...) | [commands-and-debug.md](commands-and-debug.md) |
 
 ### Bootstrap files outside `core/`
@@ -101,7 +104,7 @@ sequenceDiagram
     GS->>Entry: run top level
     Entry->>Entry: char_paths, LOCKSTYLE_CONFIG, REGION_CONFIG (uncached requires)
     Entry->>CL: require config_loader
-    CL->>CL: ModuleCache.install() (require now caches), load_ui_config
+    CL->>CL: ModuleCache.install() (require now caches), LoadGate.begin(), load_ui_config
     Entry->>Entry: require job_change_manager, UI_MANAGER (cached)
     GS->>Entry: get_sets()
     Entry->>Mote: include Mote-Include.lua
@@ -121,7 +124,7 @@ Step by step, with the WAR entry (`shared/entry/war.lua`, 315 lines):
 | # | Where | What |
 |---|---|---|
 | 1 | file level, `:36-49` | `char_paths` (where the character's files are), `LOCKSTYLE_CONFIG` (fallback table if missing) and `REGION_CONFIG` -> `_G.RegionConfig`, both through `CharPaths.module('common', ...)`. These `require`s run before the module cache exists, so they execute their file and are not cached. |
-| 2 | file level, `:55-56` | `config_loader`: its first statement is `ModuleCache.install()`, so every later `require` of this load is cached, including those made from `user_setup()`. Then `load_ui_config(CharPaths.name(), 'WAR')`. |
+| 2 | file level, `:55-56` | `config_loader`: its first statement is `ModuleCache.install()`, so every later `require` of this load is cached, including those made from `user_setup()`; next it calls `LoadGate.begin()`, which numbers the load. Then `load_ui_config(CharPaths.name(), 'WAR')`. |
 | 3 | file level, `:60-61` | `job_change_manager`, `UI_MANAGER` (after `config_loader` on purpose: cached, and `UI_MANAGER` reads `_G.UIConfig` at load). BST and SMN do the same; the other entries require them inside `get_sets()`/`user_setup()` instead, also after the cache exists. |
 | 4 | `get_sets`, `:81` | `_G.WARWSConfig = CharPaths.optional('job', 'WAR_WS_CONFIG', 'WAR')` set before Mote, because `user_setup()` needs it. |
 | 5 | `get_sets`, `:84` | `include('Mote-Include.lua')`. Mote runs `init_include()` at the end of its own load (`Mote-Include.lua:188`): creates `state`, `classes`, `sets.*` skeletons, includes Mote-Utility / Mote-SelfCommands / Mote-Globals, calls `job_setup()` then `user_setup()` (`:165-172`) then `init_gear_sets()` (`:175`). So `user_setup()` runs in the middle of this line, before INIT_SYSTEMS and before the job facade. After `init_include()` returns, the rest of Mote-Include defines `handle_equipping_gear`, `cleanup_precast`, `cleanup_midcast` and the other default handlers, which is why no hook on them can be laid from `user_setup()`. |
@@ -137,33 +140,33 @@ Step by step, with the WAR entry (`shared/entry/war.lua`, 315 lines):
 
 ### INIT_SYSTEMS.lua, in execution order
 
-The file runs top to bottom once per load. "sync" blocks run during the `include`; scheduled blocks run later from a coroutine that is never cancelled.
+The file runs top to bottom once per load. "sync" blocks run during the `include`; scheduled blocks run later through `LoadGate.defer` (`load_gate.lua`): a block is dropped when a newer load has started or the game reports another subjob, and while the game is not yet on this load's main job (GearSwap loads the file on the change request) it waits, 0.5 s at a time and 10 s at most, then is dropped.
 
-| Lines (2026-09-28) | When | What | State touched |
+| Lines (2026-10-12) | When | What | State touched |
 |---|---|---|---|
-| 35-41 | sync | Restore `_G.UPDATE_DEBUG`, `_G.AUTOMOVE_DEBUG`, `_G.WARP_DEBUG`, `_G.PrecastDebugState`, `_G.JOBCHANGE_DEBUG`, each from its own `windower._gs_debug.*` field | reads `windower._gs_debug` |
-| 44 | sync | `windower._gs_reload_count += 1` (counts INIT runs, i.e. sandboxes that got this far) | `windower._gs_reload_count` |
-| 54-59 | sync | `ModuleCache.install()`. Normally a no-op (returns false): `config_loader` installed it at file level. Kept for an entry that does not load `config_loader` | `_G.require` |
-| 63-85 (2026-09-30) | sync | GEAR HOOKS block. `ImpactLock.install()`, `DuplicateGear.install()` then `HPPriority.apply()`, each under `pcall`; all three register an equip hook through `equip_hooks.lua`, which wraps `equip()` once per load and runs the hooks in order on every set. `impact_lock` (5): at the precast of Impact the cloak that grants it (Crepuscular / Twilight Cloak, from `sets.precast.FC.Impact`, `sets.midcast.Impact` or the bags) is locked, and every set equipped until the aftercast gets it as body and loses its head; `ImpactLock.install()` also wraps the globals `precast`, `aftercast` and `cancel_spell` to set and lift the lock (every job, since 2026-09-30). `duplicate_gear` (10): each side of a doubled ring / earring / weapon takes its own copy, by bag. `hp_priority` (20): indexes the HP / MP of the pieces the loaded sets name (Mote has already run `init_gear_sets`), then ranks each swap's pieces against the gear worn. See [equipment-and-inventory.md](equipment-and-inventory.md#equip-hooks) | `_G._equip_hooks`, `_G._equip_hooks_wrapper`, `_G.equip`, `_G._hp_priority_state`, `_G._impact_lock`, `_G.precast`, `_G.aftercast`, `_G.cancel_spell`, `_G._impact_wrapped_*` |
-| 87-102 (2026-09-30) | sync | Load `LagDebugger` if absent, `on_reload_complete(job, sub, windower._automove_seq)` | `_G.LagDebugger` |
-| 106-121 | sync | Define `ensure_message_init()` (lazy `message_init`, never returns nil) | local |
-| 127-137 | +2.0 s | `require midcast_watchdog`, `_G.MidcastWatchdog = ...`, `start()` | `_G.MidcastWatchdog`, `_G.MIDCAST_WATCHDOG_TIMER`, `windower._midcast_wd_seq` |
-| 151-156 | sync | `AutoMedicine.ensure()` (creates `state.AutoMedicine` if the job's states config did not; synchronous because PrecastGuard reads it on the first action) | `state.AutoMedicine` |
-| 165-170 | sync | `JobSyncWatchdog.start(player.main_job)` | `windower._job_sync_seq` |
-| 185-203 | sync | Dual-box sync IPC: hooks `ls`, `lockstyle`, `rf`, `refill`, then `init_listener()` (see [dualbox.md](dualbox.md)) | `_G.DUALBOX_SYNC_HOOKS`, `windower._sync_ipc_event_*` |
-| 209-258 | +0.5 s | `WarpInit.init()`; AutoMove `include` + `start()` unless `_G.DISABLE_AUTOMOVE == true`; `StateDisplayOverride.init()` | `_G.AutoMove`, `_G.display_current_state` |
-| 278-283 | sync (fires +2.0 s) | `KeybindGuard.schedule()` re-sends the job's binds once the console is quiet | `windower._keybind_guard_seq` |
-| 287-292 | sync | `StealthTimers.start()`: raw `incoming chunk` listener for Sneak / Invisible end times, see [stealth.md](stealth.md) | `_G._stealth_listener`, `windower._stealth_*` |
-| 316-323 (2026-10-01) | sync | `BuffTimers.start()` (`shared/utils/buffs/buff_timers.lua`): raw `incoming chunk` listener for the end time and length of every own buff, read by `//gs c buff` for `refresh_below`, see [midcast-and-buffs.md](midcast-and-buffs.md#refresh-before-the-end); a load failure prints `show_module_load_failed('Buff Timers', ...)` | `_G._buff_timers_listener`, `windower._buff_timers` |
-| 301-306 | sync | `ElementalBelt.install()` (chain layer 1) | `cleanup_precast`, `cleanup_midcast` |
-| 311-316 | sync | `DualWield.install()` (layer 2) + `ActionListener` key `dual_wield`, raw `gain buff`, `lose buff` listeners | `handle_equipping_gear` |
-| 321-326 | sync | `TreasureHunter.install()` (layer 3) + `TreasureHunter.init()` (`ActionListener` key `treasure_hunter`; raw `incoming chunk`, `target change`, `zone change` listeners) | all three |
-| 331-336 | sync | `MidcastFallback.install()` (layer 4) | `cleanup_midcast` |
-| 341-346 | sync | `CustomStates.install_hooks()` (layer 5; only when the job has `<JOB>_CUSTOM.lua` entries) | all three + `user_buff_change` |
-| 350-355 | sync | `CastTime.install_hook()` (layer 6) and `CastTracker.start()` (`ActionListener` key `cast_tracker`) | `cleanup_precast`; `windower._cast_tracker` |
-| 359-364 | sync | `CombatMode.install_hook()` (layer 7, outermost) | `handle_equipping_gear` |
-| 383-395 | +3.0 s | Confirm `PrecastGuard`, `CooldownChecker` and `WSPrecastHandler` load; report the ones that do not | none |
-| 407-412 | +5.0 s | `GlobalProbe.snapshot()` (baseline for the `//gs c syscheck` leak report) | `_G.__global_baseline` |
+| 41-47 | sync | Restore `_G.UPDATE_DEBUG`, `_G.AUTOMOVE_DEBUG`, `_G.WARP_DEBUG`, `_G.PrecastDebugState`, `_G.JOBCHANGE_DEBUG`, each from its own `windower._gs_debug.*` field | reads `windower._gs_debug` |
+| 50 | sync | `windower._gs_reload_count += 1` (counts INIT runs, i.e. sandboxes that got this far) | `windower._gs_reload_count` |
+| 60-65 | sync | `ModuleCache.install()`. Normally a no-op (returns false): `config_loader` installed it at file level. Kept for an entry that does not load `config_loader` | `_G.require` |
+| 71-89 | sync | GEAR HOOKS block. `ImpactLock.install()`, `DuplicateGear.install()` then `HPPriority.apply()`, each under `pcall`; all three register an equip hook through `equip_hooks.lua`, which wraps `equip()` once per load and runs the hooks in order on every set. `impact_lock` (5): at the precast of Impact the cloak that grants it (Crepuscular / Twilight Cloak, from `sets.precast.FC.Impact`, `sets.midcast.Impact` or the bags) is locked, and every set equipped until the aftercast gets it as body and loses its head; `ImpactLock.install()` also wraps the globals `precast`, `aftercast` and `cancel_spell` to set and lift the lock (every job, since 2026-09-30). `duplicate_gear` (10): each side of a doubled ring / earring / weapon takes its own copy, by bag. `hp_priority` (20): indexes the HP / MP of the pieces the loaded sets name (Mote has already run `init_gear_sets`), then ranks each swap's pieces against the gear worn. See [equipment-and-inventory.md](equipment-and-inventory.md#equip-hooks) | `_G._equip_hooks`, `_G._equip_hooks_wrapper`, `_G.equip`, `_G._hp_priority_state`, `_G._impact_lock`, `_G.precast`, `_G.aftercast`, `_G.cancel_spell`, `_G._impact_wrapped_*` |
+| 97-106 | sync | Load `LagDebugger` if absent, `on_reload_complete(job, sub, windower._automove_seq)` | `_G.LagDebugger` |
+| 124-139 | sync | Define `ensure_message_init()` (lazy `message_init`, never returns nil) | local |
+| 149-159 | +2.0 s | `require midcast_watchdog`, `_G.MidcastWatchdog = ...`, `start()` | `_G.MidcastWatchdog`, `_G.MIDCAST_WATCHDOG_TIMER`, `windower._midcast_wd_seq` |
+| 173-178 | sync | `AutoMedicine.ensure()` (creates `state.AutoMedicine` if the job's states config did not; synchronous because PrecastGuard reads it on the first action) | `state.AutoMedicine` |
+| 187-192 | sync | `JobSyncWatchdog.start(player.main_job)` | `windower._job_sync_seq` |
+| 207-229 | sync | Dual-box sync IPC: hooks `ls`, `lockstyle`, `rf`, `refill`, then `init_listener()` (see [dualbox.md](dualbox.md)) | `_G.DUALBOX_SYNC_HOOKS`, `windower._sync_ipc_event_*` |
+| 235-284 | +0.5 s | `WarpInit.init()`; AutoMove `include` + `start()` unless `_G.DISABLE_AUTOMOVE == true`; `StateDisplayOverride.init()` | `_G.AutoMove`, `_G.display_current_state` |
+| 304-309 | sync (fires +2.0 s) | `KeybindGuard.schedule()` re-sends the job's binds once the console is quiet | `windower._keybind_guard_seq` |
+| 313-318 | sync | `StealthTimers.start()`: raw `incoming chunk` listener for Sneak / Invisible end times, see [stealth.md](stealth.md) | `_G._stealth_listener`, `windower._stealth_*` |
+| 322-327 | sync | `BuffTimers.start()` (`shared/utils/buffs/buff_timers.lua`): raw `incoming chunk` listener for the end time and length of every own buff, read by `//gs c buff` for `refresh_below`, see [midcast-and-buffs.md](midcast-and-buffs.md#refresh-before-the-end); a load failure prints `show_module_load_failed('Buff Timers', ...)` | `_G._buff_timers_listener`, `windower._buff_timers` |
+| 336-341 | sync | `ElementalBelt.install()` (chain layer 1) | `cleanup_precast`, `cleanup_midcast` |
+| 346-351 | sync | `DualWield.install()` (layer 2) + `ActionListener` key `dual_wield`, raw `gain buff`, `lose buff` listeners | `handle_equipping_gear` |
+| 383-388 | sync | `TreasureHunter.install()` (layer 3), which calls `TreasureHunter.init()` (`ActionListener` key `treasure_hunter`; raw `incoming chunk`, `target change`, `zone change` listeners) | all three |
+| 393-398 | sync | `MidcastFallback.install()` (layer 4) | `cleanup_midcast` |
+| 403-408 | sync | `CustomStates.install_hooks()` (layer 5; only when the job has `<JOB>_CUSTOM.lua` entries) | all three + `user_buff_change` |
+| 412-417 | sync | `CastTime.install_hook()` (layer 6) and `CastTracker.start()` (`ActionListener` key `cast_tracker`) | `cleanup_precast`; `windower._cast_tracker` |
+| 421-426 | sync | `CombatMode.install_hook()` (layer 7, outermost) | `handle_equipping_gear` |
+| 445-457 | +3.0 s | Confirm `PrecastGuard`, `CooldownChecker` and `WSPrecastHandler` load; report the ones that do not | none |
+| 478-483 | +5.0 s | `GlobalProbe.snapshot()` (baseline for the `//gs c syscheck` leak report) | `_G.__global_baseline` |
 
 A module that fails to load is reported through `MessageInit.show_module_load_failed` (`shared/utils/messages/formatters/system/message_init.lua`), loaded lazily by `ensure_message_init()`. When `message_init` itself cannot be loaded the helper returns a stub that writes straight to chat (one of the cases where a direct `add_to_chat` is allowed, see [messages.md](messages.md#where-add_to_chat-may-be-called-directly)), so the unguarded `ensure_message_init().show_*` call sites - several inside `coroutine.schedule` blocks - never raise. Every hook layer is installed inside `pcall(function() ... end)` and reports nothing on failure: a missing layer is silent.
 
@@ -304,7 +307,7 @@ Zoning on the same job does not rebuild the sandbox, and none of the modules on 
 
 Purpose: when the aftercast packet is lost, GearSwap stays in midcast gear. The watchdog notices and sends `gs c update`.
 
-- Jobs call `_G.MidcastWatchdog.on_midcast_start(spell)` from `<JOB>_MIDCAST.lua` (all jobs except WAR: BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, SMN, THF, WHM) and `on_aftercast()` from `job_aftercast`, directly (`<JOB>_AFTERCAST.lua` of BLM, BRD, BST, COR, DNC, DRK, GEO, SMN, THF) or through `LifecycleManager.aftercast` (BLU, PLD, PUP, RDM, RUN, SAM, SMN, WHM). WAR calls neither, so WAR's subjob spells are not watched.
+- Jobs call `_G.MidcastWatchdog.on_midcast_start(spell)` from `<JOB>_MIDCAST.lua` (all 21 jobs except WAR) and `on_aftercast()` from `job_aftercast`, directly (`<JOB>_AFTERCAST.lua` of BLM, BRD, BST, COR, DNC, DRK, GEO, SMN, THF) or through `LifecycleManager.aftercast` (BLU, DRG, MNK, NIN, PLD, PUP, RDM, RNG, RUN, SAM, SCH, WHM). WAR calls neither, so WAR's subjob spells are not watched.
 - Only spell types in `MONITORED_SPELL_TYPES` (WhiteMagic, BlackMagic, BlueMagic, Ninjutsu, SummonerPact, BardSong, Geomancy, Trust) and `spell.type == 'Item'` are tracked; abilities, weaponskills, waltzes etc. return early.
 - Timeout (`calculate_timeout`): items use `res.items[id].cast_delay` (or `cast_time`) + buffer with no Fast Cast; spells use `max(res.spells[id].cast_time * (1 - FC/100), MIN_SPELL_TIME) + buffer`, where FC is `state.FastCast.value` capped at 80 (`get_fast_cast_percent`). Unknown id: `WATCHDOG_FALLBACK_TIMEOUT` (5.0 s). Buffer `WATCHDOG_BUFFER` 1.5 s. `MIN_SPELL_TIME` (1.5 s) is the shortest time counted for a spell: the aftercast of a 0.2 s Flash comes 1.0 to 2.0 s after its midcast (560 casts measured in the trace logs), so the reduced cast time alone reported short spells stuck and sent their update before they landed. `on_midcast_start` replaces that estimate by `_G._precast_cast_time` when it belongs to the same spell id: the cast time computed from the precast set GearSwap actually sent (layer 6 of the hook chain).
 - Loop: `start()` bumps the generation counter `windower._midcast_wd_seq`, sets `_G.MIDCAST_WATCHDOG_TIMER = true` and schedules a self-rescheduling callback every 0.5 s. A tick whose captured generation is no longer the current one returns without rescheduling, so every `start()` or `stop()` ends the loops started before it. Each tick runs `check_stuck()` under `pcall` (`background_check`). If `age > timeout`: message, clear, leave test mode, `send_command('gs c update')`.
@@ -341,6 +344,9 @@ Why `original`: Battlemod rebuilds 0x028 for the chat (`addons/battlemod/parse_a
 | `warp_autofix` | `ItemUser._setup_auto_fix` (one warp ring use) | `cleanup_and_restore`, `drop_stale_autofix_listeners` |
 | `cor_roll` | `PartyTracker.init_roll_listener` (COR `get_sets`) | COR `file_unload` |
 | `brd_song_owner` | `SongOwner.start` (BRD entry) | the load |
+| `fight_tracker` | `FightTracker.init` (INIT_SYSTEMS; only when the tracker is on, guard `_G._fight_tracker_listening`) | the load |
+| `random_deal_watch` | `RandomDealWatch.init` (INIT_SYSTEMS and `//gs c dealwatch on`; only while the watch is on) | `//gs c dealwatch off`, the load |
+| `jump_landing` | `JumpLanding.after` (`shared/utils/drg/jump_landing.lua`, one Jump) | itself, once the Jump's TP came or at its timeout |
 
 `lag_debugger.lua` keeps its own plain `register_event('action')` (diagnostic tool, see [commands-and-debug.md](commands-and-debug.md)).
 
@@ -370,10 +376,10 @@ Four builders, each returning a handler; the caller assigns the Mote global (`jo
 | Builder | Shared behaviour | `extra` | Used by |
 |---|---|---|---|
 | `status_change(extra)` | `DoomManager.handle_status_change(new, old)` (unlocks Doom slots after death); after `extra`, `hold_during_action` (below) | always run between the two | all 22 jobs (DRK, SMN and WAR since 2026-09-28; before, their `<JOB>_STATUS.lua` only called `DoomManager`) |
-| `buff_change(extra)` | `DoomManager.handle_buff_change(buff, gain)`; if it returns true the chain stops | skipped when Doom handled it | BLM BLU BRD BST COR DNC PLD PUP RDM RUN SAM WHM (COR passes `retire_lost_roll`, SAM and PUP a call to `refresh_after_buff`) |
-| `aftercast(extra)` | `_G.MidcastWatchdog.on_aftercast()` if the watchdog is loaded. No `gs c update` (removed 2026-06) | always run after | BLU PLD PUP RDM RUN SAM SMN WHM |
-| `state_change(extra)` | Returns immediately for `stateField == 'Moving'`; otherwise `KeybindUI.update()` | run after the UI update | BLU BRD BST COR DNC DRK GEO PLD PUP RUN SAM SMN THF |
-| `refresh_after_buff(buff)` (not a builder: called from a buff handler, returns a boolean) | For a buff in `GEAR_BUFFS` (`'Aftermath: Lv.3'`, and `'Overdrive'` for PUP's `sets.buff.Overdrive` layer), unless `buffactive['doom']`: schedules `send_command('gs c update')` 0.1 s later, skipped if `midaction()` is true at that moment (the action's aftercast rebuilds). Returns true when it scheduled the update | - | WAR DRK THF (from their own `job_buff_change`), SAM (as its `buff_change` `extra`), since 2026-09-29 |
+| `buff_change(extra)` | `DoomManager.handle_buff_change(buff, gain)`; if it returns true the chain stops | skipped when Doom handled it | BLM BLU BRD BST COR DNC DRG MNK NIN PLD PUP RDM RNG RUN SAM SCH WHM (COR passes `retire_lost_roll`, DNC `on_dance_change`; DRG, MNK, NIN, PUP, SAM and SCH a call to `refresh_after_buff`) |
+| `aftercast(extra)` | `_G.MidcastWatchdog.on_aftercast()` if the watchdog is loaded. No `gs c update` (removed 2026-06) | always run after | BLU DRG MNK NIN PLD PUP RDM RNG RUN SAM SCH WHM |
+| `state_change(extra)` | Returns immediately for `stateField == 'Moving'`; otherwise `KeybindUI.update()` | run after the UI update | BLU BRD BST COR DNC DRG DRK GEO MNK NIN PLD PUP RNG RUN SAM SCH SMN THF |
+| `refresh_after_buff(buff)` (not a builder: called from a buff handler, returns a boolean) | For a buff in `GEAR_BUFFS` (`'Aftermath: Lv.3'`, `'Aftermath'`, `'Overdrive'` for PUP's `sets.buff.Overdrive` layer, `'Spirit Surge'` (DRG), `'Sublimation: Activated'` (SCH), `'Impetus'` / `'Footwork'` / `'Hundred Fists'` / `'Counterstance'` (MNK), `'Yonin'` / `'Innin'` / `'Sange'` / `'Issekigan'` (NIN)), unless `buffactive['doom']`: schedules `send_command('gs c update')` 0.1 s later, skipped if `midaction()` is true at that moment (the action's aftercast rebuilds). Returns true when it scheduled the update | - | WAR DRK THF (from their own `job_buff_change`); SAM, PUP, DRG, MNK, NIN, SCH (as their `buff_change` `extra`) |
 
 `DoomManager` is required on first use (`doom()`), without `pcall`.
 
@@ -383,7 +389,7 @@ Four builders, each returning a handler; the caller assigns the Mote global (`jo
 
 ## CycleHandler and state display
 
-`//gs c cyclestate <State> [reverse]` is routed by every job's `<JOB>_COMMANDS.lua` (17 files) to `CycleHandler.handle_cyclestate(cmdParams, eventArgs)`:
+`//gs c cyclestate <State> [reverse]` is routed by every job's `<JOB>_COMMANDS.lua` (22 files) to `CycleHandler.handle_cyclestate(cmdParams, eventArgs)`:
 
 - Fewer than two words: error message, handled.
 - State name must match `^[%w_]+$`.
@@ -478,7 +484,7 @@ Each caller requires it at call time (no module-level require). Outside COR `_G.
 | `is_watchdog_command(command)` | `command == 'watchdog'` |
 | `handle_command(cmdParams, eventArgs)` | Returns false unless `cmdParams[1]:lower() == 'watchdog'`. `watchdog help` answers even before the watchdog exists; any other subcommand prints `show_not_loaded` until INIT has published `_G.MidcastWatchdog` (2 s after the load). Sets `eventArgs.handled = true` when handled |
 
-Callers: all 17 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
+Callers: all 22 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
 
 ### CycleHandler (returned only)
 
@@ -496,8 +502,8 @@ Callers: all 17 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
 
 | Function | Params | Returns | Callers |
 |---|---|---|---|
-| `on(key, fn)` | subscriber name; function called with the parsed packet (`actor_id`, `category`, `param`, `targets`) | nil; ignored when `fn` is not a function | the ten keys of [ActionListener](#actionlistener) |
-| `off(key)` | name given to `on` | nil | `item_user.lua`, COR `file_unload` |
+| `on(key, fn)` | subscriber name; function called with the parsed packet (`actor_id`, `category`, `param`, `targets`) | nil; ignored when `fn` is not a function | the thirteen keys of [ActionListener](#actionlistener) |
+| `off(key)` | name given to `on` | nil | `item_user.lua`, COR `file_unload`, `random_deal_watch.lua`, `jump_landing.lua` |
 
 ### AutoOptions (returned only)
 
@@ -510,7 +516,7 @@ The option names are the code's and did not change on 2026-10-10. The local tabl
 
 ### live_tp (the module is the function)
 
-`local live_tp = require('shared/utils/core/live_tp')`; `live_tp()` returns `windower.ffxi.get_player().vitals.tp`, falling back to `player.vitals.tp`, then 0. Every TP test in the project goes through it (12 requiring files under `shared/`: WS precast, auto-jump, DNC/BLU/WAR logic...). Reason: GearSwap's `player.tp` is re-read only when older than 0.5 s and never inside a `coroutine.schedule` callback.
+`local live_tp = require('shared/utils/core/live_tp')`; `live_tp()` returns `windower.ffxi.get_player().vitals.tp`, falling back to `player.vitals.tp`, then 0. Every TP test in the project goes through it (11 requiring files under `shared/`: WS precast, auto-jump, DNC/BLU/WAR logic...). Reason: GearSwap's `player.tp` is re-read only when older than 0.5 s and never inside a `coroutine.schedule` callback.
 
 ### CombatMode hook (`shared/utils/core/combat_mode.lua`)
 
@@ -582,7 +588,7 @@ Runtime changes made with `watchdog buffer/fallback/on/off/debug` live in module
 | `JobSyncWatchdog`, `LifecycleManager`, `ModuleCache`, `KeybindGuard` | module exports | no reader (in the GlobalProbe expected list) |
 | `require` (replaced), `__require_cache`, `__require_cache_installed`, `__require_cache_stats` | `ModuleCache.install` | every `require` |
 | `display_current_state` | `StateDisplayOverride.init` | Mote `handle_update` |
-| `UPDATE_DEBUG`, `AUTOMOVE_DEBUG`, `WARP_DEBUG`, `PrecastDebugState`, `JOBCHANGE_DEBUG` | INIT_SYSTEMS lines 35-41 | Mirrors of `windower._gs_debug.*`, re-seeded on every load; DebugLogger users |
+| `UPDATE_DEBUG`, `AUTOMOVE_DEBUG`, `WARP_DEBUG`, `PrecastDebugState`, `JOBCHANGE_DEBUG` | INIT_SYSTEMS lines 41-47 | Mirrors of `windower._gs_debug.*`, re-seeded on every load; DebugLogger users |
 | `keybind_ui_display`, `keybind_ui_visible`, `ui_manager_state.*` | cleared by `cleanup_all_systems` | UI manager |
 | `job_status_change`, `job_buff_change`, `job_aftercast`, `job_state_change` | job modules via `LifecycleManager` builders | Mote |
 | `handle_equipping_gear`, `cleanup_precast`, `cleanup_midcast`, `user_buff_change` (wrapped) | hook chain layers | Mote |
@@ -590,7 +596,6 @@ Runtime changes made with `watchdog buffer/fallback/on/off/debug` live in module
 | `_precast_cast_time` | `CastTime` hook | `MidcastWatchdog.on_midcast_start` |
 | `_cast_tracker_listening` | `CastTracker.start` | its own guard |
 | `_action_listener_id`, `_action_listener_subs` | `ActionListener` (`listen`, `on`) | its own guard; `dispatch`, `on`, `off` |
-| `_auto_options` | `AutoOptions.on` | same |
 
 Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_update`, `job_state_change` (CycleHandler).
 
@@ -598,8 +603,9 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 
 | Field | Owner | Purpose |
 |---|---|---|
-| `_gs_reload_count` | INIT_SYSTEMS line 44 | Count of INIT runs; read by `system_checker` (hook-chain ratio), `full_test.lua`, `dualbox_manager.lua` (one auto-init per load) and the listener load stamps |
+| `_gs_reload_count` | INIT_SYSTEMS line 50 | Count of INIT runs; read by `system_checker` (hook-chain ratio), `full_test.lua`, `dualbox_manager.lua` (one auto-init per load) and the listener load stamps |
 | `_gs_debug` | `DEBUG_COMMANDS.lua` `flip_debug` (read by INIT) | The five persisted debug toggles |
+| `_load_gen` | `LoadGate.begin` (`config_loader`, each load) | Number of the live load; `LoadGate.defer` drops work scheduled by an older one |
 | `_job_sync_seq` | `job_sync_watchdog.lua` | Invalidates older check loops |
 | `_job_sync_last_reload` | `force_reload` in `job_sync_watchdog.lua` | 30 s floor between corrective reloads |
 | `_automove_seq` | AutoMove (read by INIT for LagDebugger) | AutoMove loop generation |
@@ -617,7 +623,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 
 | Scheduled by | Callback | Invalidation |
 |---|---|---|
-| INIT_SYSTEMS +2 s, +0.5 s, +3 s, +5 s blocks | watchdog start, warp/automove/state display, precast chain check, probe snapshot | none: they run even if the sandbox was replaced. A stale watchdog start is harmless: the newer load's own start supersedes it |
+| INIT_SYSTEMS +2 s, +0.5 s, +3 s, +5 s blocks | watchdog start, warp/automove/state display, precast chain check, probe snapshot | `LoadGate.defer`: dropped when `windower._load_gen` moved (a newer load) or the game reports another job / subjob than the load's (a main job the game is not on yet is waited for, 10 s at most) |
 | `KeybindGuard.schedule` (+2 s) | re-send the binds | `windower._keybind_guard_seq` mismatch |
 | `JobChangeManager.on_job_change` | `gs reload` | `debounce_counter` mismatch (bumped by the next `on_job_change`, `force_reload`, `cancel_all`) |
 | `JobSyncWatchdog.start` | check loop | `windower._job_sync_seq` mismatch; ends after sending a reload |
@@ -694,7 +700,7 @@ JCM.initialize()
 JCM.on_job_change('SAM', 'DNC')
 JCM.on_job_change('SAM', 'WAR')
 for _, job in ipairs(queue) do job.fn() end
-print(#sent, sent[1], queue[2].t)   --> 1  gs reload  0.5
+print(#sent, sent[1], queue[2].t)   --> 1  gs reload  2
 ```
 
 - The same approach works for the hook chain: define stub `handle_equipping_gear` / `cleanup_*` that record their call, stub `equip`/`disable`/`enable`, then call each installer in INIT order and check the recorded sequence.
@@ -707,7 +713,7 @@ Adding a universal system to INIT_SYSTEMS:
 1. Decide whether it must exist before the first action (synchronous block, like AutoMedicine) or can wait (inside the 0.5 s block).
 2. Load with `pcall(require, ...)` and report failure with `ensure_message_init().show_module_load_failed(name, err)`.
 3. If it schedules a loop, capture a `windower._<name>_seq` at start and compare it on every tick, as `JobSyncWatchdog.start` does.
-4. If it lives in a deferred block, check that the sandbox is still current before doing anything (the existing blocks do not).
+4. If it is deferred, schedule it with `LoadGate.defer(delay, fn, label)`, as the existing blocks do: it does not run once a newer load has started or the job changed.
 5. Add its globals to the expected list in `shared/utils/debug/global_probe.lua` if they appear after the 5 s snapshot.
 
 Adding a gear hook layer: write an `install()` that follows invariant 3 above, and place its call in INIT_SYSTEMS between the layers it must sit between (inner layers equip first). Update the chain table on this page.

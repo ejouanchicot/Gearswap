@@ -1,7 +1,7 @@
 # BST (Beastmaster) job
 
-The BST job area is 14 hook modules plus 4 logic modules under
-`shared/jobs/bst/functions/` (about 2 600 lines), one entry point, nine config
+The BST job area is 13 hook modules, the facade and 4 logic modules under
+`shared/jobs/bst/functions/` (about 2 350 lines), one entry point, ten config
 files and one sets file. GearSwap loads it when the main job becomes BST
 (`<Char>/<Char>_BST.lua`, one `include` of `shared/entry/bst.lua`). From then
 on Mote-Include calls its hooks on every action (precast, midcast, aftercast,
@@ -58,8 +58,8 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `shared/jobs/bst/functions/BST_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/bst/functions/BST_COMMANDS.lua` | 479 | `job_self_command` router, local `display_broth_count`; `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/bst/functions/BST_MOVEMENT.lua` | 41 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/bst/functions/BST_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('BST', 'bst/display/BST_LOCKSTYLE', 1, 'SAM')` wrappers |
-| `shared/jobs/bst/functions/BST_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('BST', 'bst/display/BST_MACROBOOK', 'SAM', 1, 1)` wrapper |
+| `shared/jobs/bst/functions/BST_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('BST', 'config/bst/BST_LOCKSTYLE', 1, 'SAM')` wrappers |
+| `shared/jobs/bst/functions/BST_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('BST', 'config/bst/BST_MACROBOOK', 'SAM', 1, 1)` wrapper |
 | `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 241 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs` |
 | `shared/jobs/bst/functions/logic/pet_manager.lua` | 170 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache) |
 | `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 217 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
@@ -71,7 +71,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_LOCKSTYLE.lua` | 65 | Lockstyle 6 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/bst/BST_MACROBOOK.lua` | 61 | Book 12 page 1; `dualbox` GEO/DNC 13, COR/DNC 14, RDM/DNC 12 |
 | `_master/config/bst/BST_PET_DATA.lua` | 179 | 25 jug pets (broth, species, ecosystem, job), `ecosystems` index, three list getters -> `_G.BSTBeastPetData` |
-| `_master/config/bst/BST_TP_CONFIG.lua` | 172 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
+| `_master/config/bst/BST_TP_CONFIG.lua` | 179 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 178 | Ecosystem correlation matrix; **no reader anywhere** (its header says so) |
 | `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/Tetsouo/config/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
@@ -84,8 +84,8 @@ Live copies (gitignored): the live BST entry is one `include` of
 live `bst/*` files differ from the template only in their header
 (`@author`, `@file`) and in the two overlay files (`BST_MACROBOOK`,
 `BST_STATES`). The live sets are modular
-(`<Char>/bst/{bst_sets,armor,capes,pets,weapons}.lua`), mirrored in
-`_master/Tetsouo/config/bst/`. No other character overlay has BST files.
+(`<Char>/bst/sets/{bst_sets,armor,capes,pets,weapons}.lua`), mirrored in
+`_master/Tetsouo/sets/bst/`. No other character overlay has BST files.
 
 ## How it works
 
@@ -123,10 +123,11 @@ sequenceDiagram
 2. `EcosystemManager.initialize()` builds `state.species` and `state.ammoSet`
    from `state.Ecosystem` and schedules `equip_pet_broth()` 0.2 s later. It
    must run before the HUD so `species` exists when the HUD first reads it.
-3. `pcall(require, 'Tetsouo/bst/keys/BST_KEYBINDS')` (the clone script
-   replaces `Tetsouo` with the character), stored in the global `BSTKeybinds`,
+3. `pcall(require, CharPaths.module('job', 'BST_KEYBINDS', 'BST'))`
+   (`<Char>/bst/keys/BST_KEYBINDS`), stored in the global `BSTKeybinds`,
    then `bind_all()` (7 BST binds, the optional-state entries, `_CUSTOM` keys,
-   common keys, then `show_intro()`). A failed require prints the Lua error.
+   common keys, then `show_intro()`). A failed require shows the Lua error
+   (`MessageFormatter.show_error`).
 4. `KeybindUI.smart_init("BST", UIConfig.init_delay)`; `_G.KeybindUI` exported
    (read by `ecosystem_manager`).
 5. JobChangeManager gate: `bind_all()` -> `show_intro()` requires
@@ -298,7 +299,9 @@ once per second (`os.clock`), inside a `pcall`:
 3. `state.PetEngaged` set to the pet's status (`'false'` with no pet); on a
    change from the previous tick it sends `gs c update` (and notifies
    `_G.LagDebugger.on_prerender_check`).
-4. Errors are printed with `print('[BST] Monitor error: ...')`.
+4. An error is written to the trace log (`trace_log`, tag `BST`) each time and
+   shown once per load with `MessageFormatter.show_error('[BST] Pet monitor
+   error: ...')` (`monitor_error_shown`).
 
 It does not touch `state.Moving` (AutoMove owns it). Start: `user_setup`
 schedules it after 3 s; the closure returns if the main job is no longer BST or
@@ -323,10 +326,8 @@ Mote first runs `job_midcast`. Its early returns for pet commands (`Call
 Beast`, `Reward`, `Fight`, `Heel`...) and Ready moves do not set `handled`, so
 they change nothing: Mote's `default_midcast` still equips
 `get_midcast_set`, which for abilities resolves to the `sets.midcast` root
-(named sub-sets, no slot keys). The comments "Don't override precast set" /
-"handled in precast ONLY" describe an intent the code does not implement; the
-result is the same only because the root has no slot keys. Then
-`job_post_midcast`:
+(named sub-sets, no slot keys); the comments in `job_midcast` now say that
+`handled` is not set. Then `job_post_midcast`:
 
 - notifies `MidcastWatchdog.on_midcast_start` (it ignores non-magic);
 - returns for a Ready move (`spell.ready_move_category`);
@@ -504,7 +505,7 @@ carried, overwritten at load and read by nothing, were removed on 2026-09-28).
 | `<Char>/bst/display/BST_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 6 everywhere | file; factory fallback 1 | `LockstyleManager` ([factories](../systems/factories-and-helpers.md)) |
 | `<Char>/bst/display/BST_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 12 page 1 (GEO/DNC 13, COR/DNC 14) | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<Char>/bst/combat/BST_PET_DATA.lua` -> `_G.BSTBeastPetData` | 25 pets | file | `ecosystem_manager.lua` (`job` field unused); plain `require` in `get_sets` |
-| `<Char>/bst/combat/BST_TP_CONFIG.lua` -> `_G.BSTTPConfig` | Moonshade 250, `fencer_jp_gifts = 4` | file | `WSPrecastHandler` -> `tp_bonus_calculator.lua`; plain `require` in `get_sets` |
+| `<Char>/bst/combat/BST_TP_CONFIG.lua` -> `_G.BSTTPConfig` | Moonshade 250, `fencer_jp_gifts = 'auto'` (from the job points, `game_facts.lua` `fencer_gift_tp`; 0 to 4 forces the rank count) | file | `WSPrecastHandler` -> `tp_bonus_calculator.lua`; plain `require` in `get_sets` |
 | `<Char>/bst/combat/BST_ECOSYSTEM_DATA.lua` | correlation matrix | file | **nothing** |
 | `<Char>/bst/inventory/BST_REFILL.lua` | overlay: medicines, Pet Food Theta (`all`), food; `/DNC` variant; template: all comments | file; the common list of `REFILL_CONFIG.lua` without a list in it | refill system ([equipment and inventory](../systems/equipment-and-inventory.md)) |
 | `<Char>/_common/display/LOCKSTYLE_CONFIG.lua` | `initial_load_delay 8` | entry fallback table | entry |
@@ -517,7 +518,8 @@ or /DNC, shields included (its comment now says so).
 
 - Module state (sandbox, dies on every load): PetManager caches (pet mode 1 s,
   Ready moves 30 s); lazy-load locals;
-  the monitor's `monitor_event_id`, `last_check`, `prev_pet_eng`.
+  the monitor's `monitor_event_id`, `last_check`, `prev_pet_eng`,
+  `monitor_error_shown`.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_pet_precast`,
   `job_pet_midcast`, `job_status_change`, `job_buff_change`,
@@ -687,15 +689,8 @@ or /DNC, shields included (its comment now says so).
   Ready. The cooldown check on Sic is right.
 - `debugprecast` shadows the common command.
 - `broth` counts only items named "...Broth", in inventory only.
-- The pet monitor reports its errors with `print()` (console only), not
-  `MessageFormatter`.
-- Wrong or stale comments: `BST_MIDCAST.lua`
-  `job_midcast` ("Don't override precast set", "handled in precast ONLY": the
-  return does not stop Mote's default midcast); `BST_PET_MIDCAST.lua` (says
-  it keeps the precast set "during the ENTIRE cast"; the player's aftercast has
-  already swapped to the pet damage set by then); `BST_AFTERCAST.lua` keeps a
-  `pet_manager` require that nothing uses ("kept so the module keeps loading at
-  the same point").
+- `BST_AFTERCAST.lua` keeps a `pet_manager` require that nothing uses ("kept
+  so the module keeps loading at the same point").
 - Dead code: `job_pet_precast` (whole `BST_PET_PRECAST.lua`), the
   `_G.pet*Moves` exports, `BST_ECOSYSTEM_DATA.lua`, BST message wrappers with
   no caller.

@@ -2,8 +2,8 @@
 
 `shared/utils/messages/data/` holds every chat template used by the template path of the message
 system: 38 pure-data Lua files (8 job namespaces under `data/jobs/`, 30 system namespaces under
-`data/systems/`) returning **549 templates** (counted on 2026-09-28 by loading each file with
-`lua5.1`, less the two of `run_messages.lua`, deleted the same day). Nothing in these files runs on its own. A formatter module
+`data/systems/`) returning **548 templates** (counted on 2026-09-28 by loading each file with
+`lua5.1`, less the two of `run_messages.lua`, deleted the same day, and `BLM.buffself_error`, deleted on 2026-10-01). Nothing in these files runs on its own. A formatter module
 (`shared/utils/messages/formatters/**`), `info_block.lua`, `help_screen.lua` or a few utilities call
 `M.send(namespace, key, params)` from `shared/utils/messages/api/messages.lua`; the engine
 (`shared/utils/messages/core/message_engine.lua`) loads the namespace file on first use, fills the
@@ -24,9 +24,10 @@ with `grep -r`/Python, not ripgrep, which skips them), or when a reachable funct
 calls it. Name collisions (a generic name such as `show_buff_status`, `show_marcato_used` or
 `show_target_error` defined in two modules) and string-built dispatch
 (`DEBUG_COMMANDS.lua` `handle_message_config_generic`) were then resolved by hand. Keys built at run
-time were resolved from their builder (list under "For maintainers / AI"). Result: **402
+time were resolved from their builder (list under "For maintainers / AI"). Result: **401
 reachable, 147 unreachable** (after the 2026-09-28 removals of `ReplacementLogic.should_cancel` and
-`DualBoxManager.show_status`, whose templates lost their only caller). On 2026-10-01 the formatter
+`DualBoxManager.show_status`, whose templates lost their only caller, and the 2026-10-01 deletion of
+the reachable `BLM.buffself_error`). On 2026-10-01 the formatter
 functions without a caller were removed, with `message_drg.lua`, `message_whm.lua` and
 `message_songs.lua`; the data files were not touched, so most unreachable templates below now have no
 sender at all (each section says which).
@@ -35,7 +36,7 @@ sender at all (each section says which).
 
 | Path (under `shared/utils/messages/data/` unless stated) | Lines | Templates | Namespace and role |
 |---|---|---|---|
-| `jobs/blm_messages.lua` | 102 | 13 | `BLM` - element/storm cycles, refinement, arts, stratagems, BLM errors |
+| `jobs/blm_messages.lua` | 102 | 12 | `BLM` - element/storm cycles, refinement, arts, stratagems, BLM errors |
 | `jobs/brd_messages.lua` | 269 | 42 | `BRD` - JA, instrument lock, song packs, song refinement, BRD errors |
 | `jobs/bst_messages.lua` | 271 | 46 | `BST` - ecosystem/species, broth equip, pet engage, Ready moves, BST errors |
 | `jobs/cor_messages.lua` | 32 | 3 | `COR` - PartyTracker load failures |
@@ -158,8 +159,8 @@ key_name = {
 - `template` (string, required): literal text plus `{token}` placeholders.
 - `color` (number, optional): the chat mode passed to `add_to_chat` for every line of the message.
   It colours any text before the first inline colour token and decides which FFXI chat filter the
-  line falls under (121 is the "system" mode the help screens use). Distribution over the 549
-  templates (2026-09-28): 1 (x346), 167 (x42), 122 (x40), 158 (x34), 160 (x32), 207 (x12),
+  line falls under (121 is the "system" mode the help screens use). Distribution over the 548
+  templates (2026-10-12): 1 (x345), 167 (x42), 122 (x40), 158 (x34), 160 (x32), 207 (x12),
   121 (x12), 200 (x11), 123 (x10), 159 (x6), 8, 206 (x1 each) and two computed values:
   `MIDCAST.debug_result_fallback` and `STATUS.warning` compute their colour when the data file is
   executed, with `MessageColors.get_warning_color()` (the player's `warning`/`orange` override, else
@@ -189,15 +190,15 @@ returned by `<Char>/_common/display/REGION_CONFIG.lua` through `_G.RegionConfig`
 [messages.md](messages.md)). It is read at each render, so the frozen-orange behaviour described in
 earlier revisions of this page no longer exists.
 
-Usage over the catalogue (templates using each token at least once, 2026-09-28): `gray` 370,
-`lightblue` 309, `green` 153, `red` 124, `yellow` 91, `cyan` 78, `white` 54, `jobtag` 44,
+Usage over the catalogue (templates using each token at least once, 2026-10-12): `gray` 369,
+`lightblue` 308, `green` 153, `red` 121, `yellow` 89, `cyan` 78, `white` 52, `jobtag` 44,
 `separatorcolor` 36, `orange` 35, `purple` 18, `itemcolor` 18, `blue` 13, `spellcolor` 10, `pink` 10,
 `warningcolor` 4, the six spell-family tokens (`healgreen`, `enhancing`, `enfeebling`, `divine`,
 `dark`, `bluemagic`) 4 each, `mustard` 3, `aqua` 3, `gold` 2, `amber` 2, `darkgray` 1.
 
 Parameter conventions found in the data:
 
-- `{job}` (171 templates) carries the `MAIN/SUB` tag from `MessageCore.get_job_tag()`; formatters
+- `{job}` (170 templates) carries the `MAIN/SUB` tag from `MessageCore.get_job_tag()`; formatters
   pass it. `JA_BUFFS` (7) and `SONGS` (10) use `{job_tag}` instead. `GEO.spell_refined` /
   `no_tier_available` and the `COR`, `DRG`, `WHM` templates hard-code a label (`[GEO]`,
   `[COR PartyTracker]`, `[Jump]`).
@@ -294,7 +295,7 @@ is empty when `chat.job_tag` is false.
   (`activated_full` vs `activated_name_only`, `ws_activated_*` vs `ws_tp_*`); the data files read no
   configuration.
 - WHM: `whm_message_formatter` reads only `chat.colors` / `chat.job_tag`; `cure_manager.lua` loads
-  `<char>/whm/WHM_CURE_CONFIG`, whose `debug_messages` gates the debug lines.
+  `<char>/whm/combat/WHM_CURE_CONFIG`, whose `debug_messages` gates the debug lines.
 
 ## State & lifetime
 
@@ -335,7 +336,7 @@ their line in the data file; they have no path from any caller (see Known issues
 
 | Namespace | Templates | Reachable | Unreachable |
 |---|---|---|---|
-| `BLM` | 13 | 10 | 3 |
+| `BLM` | 12 | 9 | 3 |
 | `BRD` | 42 | 23 | 19 |
 | `BST` | 46 | 13 | 33 |
 | `COR` / `GEO` | 3 / 4 | 3 / 4 | 0 |
@@ -356,13 +357,13 @@ their line in the data file; they have no path from any caller (see Known issues
 | `SYSTEM` | 5 | 0 | 5 |
 | `WARP` | 46 | 35 | 11 |
 | `WATCHDOG` | 29 | 27 | 2 |
-| **Total** | **549** | **402** | **147** |
+| **Total** | **548** | **401** | **147** |
 
 ### `BLM`
 
-- File: `data/jobs/blm_messages.lua` - 13 templates, 10 reachable. Sender: `formatters/jobs/message_blm.lua`. Callers: `BLM_COMMANDS.lua`, `shared/utils/scholar/scholar_actions.lua`, BLM `functions/logic/spell_refiner.lua`, `storm_manager.lua`, `replacement_logic.lua`, `refiner/special_handlers.lua`, `shared/utils/precast/tier_refiner.lua`. All `color = 1`.
+- File: `data/jobs/blm_messages.lua` - 12 templates, 9 reachable. Sender: `formatters/jobs/message_blm.lua`. Callers: `BLM_COMMANDS.lua`, `shared/utils/scholar/scholar_actions.lua`, BLM `functions/logic/spell_refiner.lua`, `storm_manager.lua`, `replacement_logic.lua`, `refiner/special_handlers.lua`, `shared/utils/precast/tier_refiner.lua`. All `color = 1`.
 - Reachable: `element_cycle` (job, state_type, element_color, element); `storm_cycle` (job, element_color, storm); `spell_refinement` (job, original, recast, downgrade); `arts_already_active` (job, arts); `stratagem_no_charges` (job, stratagem, recast); `spell_replacement_error`, `spell_refinement_error`, `spell_recasts_error`, `breakga_blocked` (job).
-- Unreachable: `insufficient_mp_error`:88 (no sender: its only caller, the `ReplacementLogic.should_cancel` branch of `spell_refiner.lua`, was removed on 2026-09-28, and `show_insufficient_mp_error` on 2026-10-01), `mp_conservation`:45 (the BLM midcast router calls `MessageBLMMidcast.show_mp_conservation`, which sends `BLM_MIDCAST.mp_conservation`), `buff_status`:102 (`MessageFormatter.show_buff_status` is `MessageBuffs.show_buff_status`; nothing calls `BLMMessages.show_buff_status`). The dead-code cleanup of 2026-09-27 (`964ca51`) deleted `aja_cycle`, `tier_cycle`, `buff_activated`, `buff_cast`, `magic_burst_on`, `magic_burst_off`, `free_nuke_on`, `spell_refinement_failed`, `dark_arts_activated`, `buff_casting`, with their formatter functions and facade lines.
+- Unreachable: `insufficient_mp_error`:84 (no sender: its only caller, the `ReplacementLogic.should_cancel` branch of `spell_refiner.lua`, was removed on 2026-09-28, and `show_insufficient_mp_error` on 2026-10-01), `mp_conservation`:45 (the BLM midcast router calls `MessageBLMMidcast.show_mp_conservation`, which sends `BLM_MIDCAST.mp_conservation`), `buff_status`:98 (`MessageFormatter.show_buff_status` is `MessageBuffs.show_buff_status`; nothing calls `BLMMessages.show_buff_status`). The dead-code cleanup of 2026-09-27 (`964ca51`) deleted `aja_cycle`, `tier_cycle`, `buff_activated`, `buff_cast`, `magic_burst_on`, `magic_burst_off`, `free_nuke_on`, `spell_refinement_failed`, `dark_arts_activated`, `buff_casting`, with their formatter functions and facade lines.
 
 ### `BLM_MIDCAST`
 
@@ -448,7 +449,7 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `KEYBINDS`
 
-- File: `data/systems/keybinds_messages.lua` - 7 templates. Sender: `formatters/ui/message_keybinds.lua`. Callers: `shared/utils/keybinds/keybind_manager.lua` (every job's keybinds go through it) and the frozen `Gabvanstronger/_common/*/<JOB>_KEYBINDS.lua` files (`show_keybind_list`).
+- File: `data/systems/keybinds_messages.lua` - 7 templates. Sender: `formatters/ui/message_keybinds.lua`. Callers: `shared/utils/keybinds/keybind_manager.lua` (every job's keybinds go through it) and the frozen `Hysoka/<job>/keys/<JOB>_KEYBINDS.lua` and `Gabvanstronger/<job>/keys/<JOB>_KEYBINDS.lua` files (`show_keybind_list`).
 - Reachable: `keybind_header_separator` (separator); `keybind_header_title` (padded_title); `no_binds_error` (job_name); `bind_failed_error` (bind_key); `bind_failed_error_reason` (bind_key, reason).
 - Unreachable: `keybind_line`:28 (`format_keybind_line` builds the line itself), `invalid_bind_error`:42 (no sender since `show_invalid_bind_error` was removed on 2026-10-01).
 
@@ -484,7 +485,7 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `STATUS`
 
-- File: `data/systems/status_messages.lua` - 7 templates. Sender: `formatters/ui/message_status.lua`, used through `MessageFormatter.show_error/show_warning/show_success/show_info` by most `<JOB>_COMMANDS.lua`, `COMMON_COMMANDS.lua`, `macrobook_manager.lua` and many systems. Reachable: `error`, `warning`, `success`, `info` (message); `state_display` (state_name, value) from `shared/utils/core/state_display_override.lua`; `tp_ready` (job, tp_value). Unreachable: `tp_required`:56 (no sender since `show_tp_required` was removed on 2026-10-01). `warning` takes its colour from `MessageColors.get_warning_color()` when the file executes.
+- File: `data/systems/status_messages.lua` - 7 templates. Sender: `formatters/ui/message_status.lua`, used through `MessageFormatter.show_error/show_warning/show_success/show_info` by most `<JOB>_COMMANDS.lua`, `COMMON_COMMANDS.lua`, `macrobook_manager.lua` and many systems. Reachable: `error`, `warning`, `success`, `info` (message); `state_display` (state_name, value) from `shared/utils/core/state_display_override.lua` and BRD `functions/logic/dummy_next.lua`; `tp_ready` (job, tp_value). Unreachable: `tp_required`:56 (no sender since `show_tp_required` was removed on 2026-10-01). `warning` takes its colour from `MessageColors.get_warning_color()` when the file executes.
 
 ### `STEALTH`
 
@@ -604,8 +605,8 @@ Re-checked on 2026-09-28. Open:
 - `SONGS` namespace is a duplicate of `BRD` with no sender since `message_songs.lua` was removed - `shared/utils/messages/data/systems/songs_messages.lua`.
 - `SYSTEM` colour-test templates are unreachable (COR `testcolors` branch shadowed by the common command) - `shared/jobs/cor/functions/COR_COMMANDS.lua` `testcolors` branch.
 - Region templates orphaned since `//gs c setregion`/`detectregion` were removed - `shared/utils/messages/data/systems/commands_messages.lua` `detectregion_header`.
-- Remaining unreachable templates in BST, BRD, BLM, RDM, DRG, WHM, COMBAT, COMMANDS, DUALBOX, EQUIPMENT, WARP, INIT, JA_BUFFS, KEYBINDS, MIDCAST, PROFILER, STATUS, WATCHDOG (147 of 549 with the entries above; see the catalogue). Most have had no sender since 2026-10-01.
-- `//gs c testmsg` reports `0/0 tests PASSED`: the test directory is not on the require path - `shared/utils/messages/api/messages.lua` `Messages.test`.
+- Remaining unreachable templates in BST, BRD, BLM, RDM, DRG, WHM, COMBAT, COMMANDS, DUALBOX, EQUIPMENT, WARP, INIT, JA_BUFFS, KEYBINDS, MIDCAST, PROFILER, STATUS, WATCHDOG (147 of 548 with the entries above; see the catalogue). Most have had no sender since 2026-10-01.
+- Fixed 2026-10-01: `//gs c testmsg` reported `0/0 tests PASSED` (the test directory was not on the require path); the suites are back in `shared/utils/messages/api/tests/` - `shared/utils/messages/api/messages.lua` `Messages.test`.
 - `//gs c msgtests` fails on valid templates because its parameter whitelist does not match the templates (`instrument`, `hp`, `jug`, `tp`, `max`, `module`, `potency` missing) - `shared/utils/messages/message_validator.lua` `COMMON_PARAMS`. Fixed 2026-09-28 for colours: `VALID_COLORS` adds every key of `MessageEngine.COLOR_CODES` (27 tags, `gold`/`aqua`/`mustard`/`amber` included).
 - `M.ability` targets a namespace with no file - `shared/utils/messages/api/messages.lua` `Messages.ability` (its comment says so).
 - Fixed 2026-09-28: no more non-ASCII marks in chat lines (the FFXI chat does not render UTF-8). `equipping_piece` (`weaponskill_messages.lua`) lost its check mark, `ipc_test_received_confirm` (`warp_messages.lua`) says `OK:`, and `MessageCommands.show_warp_module_test` prints `OK` / `FAILED: <error>`.
