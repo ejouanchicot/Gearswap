@@ -15,6 +15,15 @@
 ---   - the game still reports the main job and subjob this load was for.
 --- A skipped task writes a LOAD line to //gs c trace.
 ---
+--- A main job the game does not report YET is another matter. GearSwap loads
+--- the job file on the job change request (outgoing 0x100), before the server
+--- has answered: for a moment the game still reports the job of before. A task
+--- due in that moment (AutoMove, 0.5 s after the load) was dropped as "job
+--- changed" and never run, since a main job change alone brings no second
+--- load. Seen in game on 2026-10-12 (//gs c jobtest: DRG/SAM to DRK/SAM, one
+--- load, AutoMove not started 12 s later). Such a task now waits for the game
+--- to be on the load's job, WAIT_STEP at a time, for WAIT_MAX at most.
+---
 --- @file    shared/utils/core/load_gate.lua
 --- @author  ejouanchicot
 --- @version 1.0
@@ -22,6 +31,9 @@
 ---============================================================================
 
 local LoadGate = {}
+
+-- Seconds between two looks at the game's job, and how long a task waits for it
+local WAIT_STEP, WAIT_MAX = 0.5, 10
 
 --- Start of a load: a new number, and the jobs it is for.
 function LoadGate.begin()
@@ -58,15 +70,25 @@ end
 ---   after a newer load has started is dropped as well.
 function LoadGate.defer(delay, fn, label, gen)
     gen = gen or windower._load_gen or 0
+    -- a diagnostic switch (//gs c jobtest ... skip=<labels>, job_test.lua): the tasks named are left out, to find
+    -- by elimination which one keeps something
+    local skip = windower._load_skip
+    if type(skip) == 'table' and (skip['*'] or skip[tostring(label)]) then
+        return trace('%s left out (jobtest skip)', tostring(label))
+    end
     local main, sub = player and player.main_job, player and player.sub_job
-    coroutine.schedule(function()
+    local attempt
+    attempt = function(waited)
         local ok, why = LoadGate.still_current(gen, main, sub)
-        if not ok then
-            trace('%s skipped (%s)', tostring(label), why)
-            return
+        if ok then return fn() end
+        -- the game is not on this load's main job yet: wait for it, as long as no newer load starts
+        if why == 'job changed' and waited < WAIT_MAX then
+            if waited == 0 then trace('%s waits for the game to be on %s', tostring(label), tostring(main)) end
+            return coroutine.schedule(function() attempt(waited + WAIT_STEP) end, WAIT_STEP)
         end
-        fn()
-    end, delay)
+        trace('%s skipped (%s)', tostring(label), why)
+    end
+    coroutine.schedule(function() attempt(0) end, delay)
 end
 
 _G.LoadGate = LoadGate

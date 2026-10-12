@@ -711,6 +711,9 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_debugupdate()
     elseif cmd == 'fulltest' or cmd == 'ft' then
         return CommonCommands.handle_fulltest(args[1])
+    elseif cmd == 'jobtest' then
+        -- job changes played and measured in the Mog House (shared/utils/debug/job_test.lua)
+        return require('shared/utils/debug/job_test').handle(args)
     elseif cmd == 'syscheck' or cmd == 'sc' then
         return CommonCommands.handle_syscheck(args[1])
     elseif cmd == 'lagdebug' or cmd == 'ldb' then
@@ -765,7 +768,7 @@ function CommonCommands.is_common_command(command)
 
     if cmd == 'mount' or
         cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or
-        cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'bags' or cmd == 'lockscan' or
+        cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'bags' or cmd == 'po' or cmd == 'porter' or cmd == 'jobtest' or cmd == 'lockscan' or
         cmd == 'refill' or cmd == 'rf' or
         cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
         cmd == 'automedicine' or cmd == 'am' or

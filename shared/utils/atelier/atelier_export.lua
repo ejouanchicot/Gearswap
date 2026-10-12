@@ -243,36 +243,55 @@ end
 --- The data of the loaded job, as the page reads it (the file of export(), the
 --- answer of the live link: shared/utils/atelier/atelier_live.lua). Nil outside a job.
 --- @return table|nil
-function AtelierExport.build()
+function AtelierExport.build(upto)
     if not (player and player.name and player.main_job) then return nil end
-    local data = {
-        player = player.name, job = player.main_job, sub = player.sub_job, at = os.date('%Y-%m-%d %H:%M'),
-        sets = collect_sets(), keys = collect_keys(), modes = collect_modes(),
-        macro = job_config('MACROBOOK'), lockstyle = job_config('LOCKSTYLE'),
-        macro_fallback = (factory_defaults()), lockstyle_fallback = select(2, factory_defaults()),
-        -- <job>/combat/<JOB>_WEAPONS.lua (PLD: shield per stance and weapon, stance weapon, grips):
-        -- the page puts the weapons in the sets the way the job code does
-        weapon_rules = job_config('WEAPONS'),
-    }
+    -- `upto` (a diagnostic, //gs c jobtest ... parts): the build stops after that many of its stages, to find by
+    -- elimination which one keeps something. Nil: the whole build.
+    local stage = 0
+    local function stop()
+        stage = stage + 1
+        return upto ~= nil and stage >= upto
+    end
+    local data = {player = player.name, job = player.main_job, sub = player.sub_job, at = os.date('%Y-%m-%d %H:%M')}
+    data.sets = collect_sets()
+    if stop() then return data, stage end                                            -- 1
+    data.keys = collect_keys()
+    if stop() then return data, stage end                                            -- 2
+    data.modes = collect_modes()
+    if stop() then return data, stage end                                            -- 3
+    data.macro, data.lockstyle = job_config('MACROBOOK'), job_config('LOCKSTYLE')
+    data.macro_fallback, data.lockstyle_fallback = factory_defaults()
+    -- <job>/combat/<JOB>_WEAPONS.lua (PLD: shield per stance and weapon, stance weapon, grips):
+    -- the page puts the weapons in the sets the way the job code does
+    data.weapon_rules = job_config('WEAPONS')
+    if stop() then return data, stage end                                            -- 4
     -- a weapon state's value with no set equips that weapon only when the character turned it on
     -- (shared/utils/equipment/weapon_resolver.lua, _common/gear/WEAPON_CONFIG.lua)
     local okr, WeaponResolver = pcall(require, 'shared/utils/equipment/weapon_resolver')
     data.weapon_plain = okr and WeaponResolver.equips_without_set() or false
+    if stop() then return data, stage end                                            -- 5
     data.items, data.owned = collect_items()
+    if stop() then return data, stage end                                            -- 6
     data.porter = porter_list()
+    if stop() then return data, stage end                                            -- 7
     -- PorterPacker's unpack list against the job's sets (shared/utils/atelier/porter_lists.lua): what to add, what to drop
     local okp, PorterLists = pcall(require, 'shared/utils/atelier/porter_lists')
     if okp then
         local okc, cmp = pcall(PorterLists.compare, player.main_job)
         if okc then data.porterpacker = cmp end
     end
+    if stop() then return data, stage end                                            -- 8
     data.icons = collect_icons(data.sets, data.items)
+    if stop() then return data, stage end                                            -- 9
     -- the pieces under the game's item name (shared/utils/atelier/atelier_names.lua)
     require('shared/utils/atelier/atelier_names').use_game_names(data.sets, data.icons)
+    if stop() then return data, stage end                                            -- 10
     local ids = {}
     for _, id in pairs(data.icons or {}) do ids[#ids + 1] = id end
     data.scan = collect_scan(data.icons)
+    if stop() then return data, stage end                                            -- 11
     data.char = collect_char()
+    if stop() then return data, stage end                                            -- 12
     -- the worn pieces need their description and icon too, even when no set names them
     for _, piece in pairs(data.char and data.char.worn or {}) do
         data.icons = data.icons or {}
@@ -283,18 +302,24 @@ function AtelierExport.build()
         piece.id = nil
     end
     data.descs = collect_descs(ids)
+    if stop() then return data, stage end                                            -- 13
     -- every bag as the game holds it (shared/utils/atelier/atelier_export_bags.lua). The icons of what is not
     -- equipment are not written here (hundreds at once would stall the game): the page asks for the ones it
     -- shows and misses, a few at a time (atelier_live.lua)
     local ok_b, bags = pcall(require('shared/utils/atelier/atelier_export_bags').collect, ExportChar.augments)
     data.bags = ok_b and bags or nil
+    if stop() then return data, stage end                                            -- 14
     -- the pieces of each lockstyle set seen so far (shared/utils/lockstyle/lockstyle_pieces.lua)
     local ok_l, lock = pcall(function() return require('shared/utils/lockstyle/lockstyle_pieces').read() end)
     data.lock_pieces = (ok_l and type(lock) == 'table' and next(lock)) and lock or nil
+    if stop() then return data, stage end                                            -- 15
     data.wskill = collect_weapon_skills(data.icons)
+    if stop() then return data, stage end                                            -- 16
     data.ws_by_weapon = collect_ws_by_weapon(player.main_job)
+    if stop() then return data, stage end                                            -- 17
     -- each weaponskill's combat skill and what it uses (shared/utils/atelier/atelier_ws.lua)
     data.ws_skill, data.ws_info = require('shared/utils/atelier/atelier_ws').collect(data.sets, player.main_job, player.main_job_level, player.sub_job)
+    if stop() then return data, stage end                                            -- 18
     -- the set names the job's code reads, filled with this character's modes, spells, abilities and weaponskills:
     -- what the page's "+ Set" offers (shared/utils/atelier/set_catalog.lua)
     local ok_c, catalog = pcall(function()
@@ -306,6 +331,7 @@ function AtelierExport.build()
             {sub = player.sub_job, sub_level = player.sub_job_level, ws = ws, ws_skill = data.ws_skill, families = ok_f and families or nil})
     end)
     data.catalog = ok_c and catalog or nil
+    if stop() then return data, stage end                                            -- 19
     -- the job's TP rule (its TP pieces, each held weapon's TP Bonus): the page lays Moonshade from it when the game
     -- is on another job and cannot be asked (shared/utils/atelier/atelier_sim.lua tp_rule)
     local ok_r, tp_rule = pcall(function()
@@ -316,6 +342,7 @@ function AtelierExport.build()
         return require('shared/utils/atelier/atelier_sim').tp_rule(names)
     end)
     data.tp_rule = ok_r and tp_rule or nil
+    if stop() then return data, stage end                                            -- 20
     data.export_version = EXPORT_VERSION
     -- the keys changed in the page and saved (<Char>/atelier/overrides/keybind_overrides.lua)
     local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
@@ -325,9 +352,12 @@ function AtelierExport.build()
     data.temp_binds = ok_t and TempBinds.current and TempBinds.current() or nil
     local ok_s, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
     data.set_overrides = ok_s and SetOverrides.read() or nil
+    if stop() then return data, stage end                                            -- 21
     local ok_g, configs = pcall(function() return require('shared/utils/atelier/atelier_configs').collect(player.name, player.main_job) end)
     data.configs = ok_g and configs or nil   -- every settings file, as text
+    if stop() then return data, stage end                                            -- 22
     pcall(require('shared/utils/atelier/item_icons').write_missing, ids, data_path('atelier/icons/'))
+    if stop() then return data, stage end                                            -- 23
     pcall(require('shared/utils/atelier/atelier_catalog').write_if_stale, data_path('atelier/catalog.js'), json)
     return data
 end
@@ -378,6 +408,8 @@ function AtelierExport.after_load()
     require('shared/utils/core/load_gate').defer(3, function()
         pcall(function() require('shared/utils/atelier/porter_lists').sync(player.main_job) end)
     end, 'porter sync')
+    -- a job test (//gs c jobtest: shared/utils/debug/job_test.lua) counts and times this load; the load stays a normal one
+    pcall(function() require('shared/utils/debug/job_test').on_load() end)
     -- a tour of the jobs (//gs c atelier tour: shared/utils/atelier/atelier_tour.lua) exports this load itself
     local ok_t, on_tour = pcall(function() return require('shared/utils/atelier/atelier_tour').on_load() end)
     if ok_t and on_tour then return end

@@ -260,6 +260,16 @@ local function route(req, live)
         local result = q.mode == 'write' and SetPush.delete(job, path, q.hash) or SetPush.delete_preview(job, path)
         return '200 OK', Export.json(result)
     end
+    if req.path == '/jobtest' then
+        -- //gs c jobtest: POST starts or stops it (the body: the command's words), GET says where it is
+        local JobTest = require('shared/utils/debug/job_test')
+        if req.method ~= 'POST' then return '200 OK', Export.json(JobTest.status()) end
+        local words = {}
+        for word in (req.body or ''):gmatch('%S+') do words[#words + 1] = word end
+        -- a diagnostic tool: its own error is the answer, not an empty reply
+        local ok, result = pcall(JobTest.handle, words)
+        return '200 OK', Export.json(ok and result or {ok = false, error = tostring(result)})
+    end
     if req.path == '/porter_run' and req.method == 'POST' then
         -- //gs c po asked from the page: PorterPacker, then the wardrobes and the refill (porter_run.lua)
         return '200 OK', Export.json(require('shared/utils/wardrobe/porter_run').start())

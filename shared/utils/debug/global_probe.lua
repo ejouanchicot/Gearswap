@@ -128,7 +128,8 @@ local EXPECTED = {
     SortieCommands = true, TempBinds = true, TraceLog = true,
     _alt_window_display = true, _alt_window_prefs = true, _alt_window_dead = true, _midcast_routed = true, _midcast_fallback_installed = true,
     geo_escort_on_aftercast = true, thf_range_locked = true,
-    _treasure = true, _treasure_engaged_by_job = true, _treasure_installed = true,}
+    _treasure = true, _treasure_engaged_by_job = true, _treasure_installed = true,
+    _hud_job_config = true, _lockstyle_pieces_listening = true,}
 
 -- Names the factories build at run time, which no scan of `_G.x =` can find.
 -- LockstyleManager and MacrobookManager compose them from the job code, so the

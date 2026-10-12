@@ -16,10 +16,11 @@ local EquipmentChecker = {}
 local MessageEquipment = require('shared/utils/messages/formatters/system/message_equipment')
 local res = require('resources')
 
--- Try to load slips library (optional, for Storage Slip support)
-local slips_success, slips = pcall(require, 'slips')
+-- The storage slips (slip_reader.lua, not Windower's slips library: required from a job file, that one keeps
+-- every load in memory)
+local slips_success, Slips = pcall(require, 'shared/utils/equipment/slip_reader')
 if not slips_success then
-    slips = nil
+    Slips = nil
 end
 
 -- Set to true for cache/scan trace messages (aliases then show as "detected")
@@ -159,22 +160,15 @@ local function add_bag_items(add, items, bag_names, available, in_storage)
     end
 end
 
---- Porter Moogle slips, when the slips library is loaded. Slip contents are
---- bare item ids, not item tables like a bag's.
+--- Porter Moogle slips. Slip contents are bare item ids, not item tables like a bag's.
 local function add_slip_items(add)
-    if not slips then return end
+    if not Slips then return end
 
-    local slip_storages = slips.get_player_items()
-    if not slip_storages then return end
-
-    for _, slip_id in ipairs(slips.storages) do
-        local slip_number = slips.get_slip_number_by_id(slip_id)
-        local items_in_slip = slip_number and slip_storages[slip_id]
-        if items_in_slip then
-            local slip_name = string.format('Slip %02d', slip_number)
-            for _, item_id in ipairs(items_in_slip) do
-                add(item_id, false, true, slip_name)
-            end
+    local slip_storages = Slips.player_items()
+    for _, slip in ipairs((Slips.slips())) do
+        local slip_name = string.format('Slip %02d', slip.number)
+        for _, item_id in ipairs(slip_storages[slip.id] or {}) do
+            add(item_id, false, true, slip_name)
         end
     end
 end

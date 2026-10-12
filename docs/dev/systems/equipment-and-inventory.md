@@ -132,9 +132,13 @@ flowchart TD
    - `add_bag_items` (`:149`) adds inventory and wardrobe 1-8 (`EQUIPPABLE_BAGS`, `:38`) as
      `available = true`, then `safe safe2 storage locker satchel sack case temporary` (`STORAGE_BAGS`,
      `:100`) as `in_storage = true`.
-   - `add_slip_items` (`:164`) adds Porter Moogle slip contents as storage (`bag_name = 'Slip NN'`)
-     when `pcall(require, 'slips')` succeeded at module load. Inside the sandbox this resolves to
-     Windower's `addons/libs/slips.lua` through GearSwap's path search.
+   - `add_slip_items` adds Porter Moogle slip contents as storage (`bag_name = 'Slip NN'`), read by
+     `shared/utils/equipment/slip_reader.lua` from `res.slips` and the slips' extdata in the bags. It
+     used `pcall(require, 'slips')` until 2026-10-12: Windower's `slips.lua` is not loaded by the addon,
+     so GearSwap ran it, and the `lists.lua` and `tables.lua` it requires, inside the sandbox at every
+     load, where `tables.lua` wraps the shared `table.sort` and `table.concat` around the load before's:
+     no load was ever freed again. A Windower library the addon has not loaded must not be required from
+     the job code (`slip_reader_test.lua` refuses `slips`).
    - Every name field of the resource entry in `NAME_FIELDS` (`:92`) becomes a lowercase key
      (`make_cache_adder`, `:108`). With the Windower resources library only `en`, `enl` and their
      aliases `english`, `english_log` return strings; the French and German fields do not exist. When

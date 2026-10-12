@@ -23,13 +23,14 @@ local CACHE_FILE = 'slip_items.lua'
 
 --- The slips read now: {item id = 'Slip N'}, empty when they cannot be read.
 local function read_slips()
-    local ok, slips = pcall(require, 'slips')
-    if not (ok and slips and slips.get_player_items) then return {} end
-    local ok_g, list = pcall(slips.get_player_items)
+    -- (slip_reader.lua, not Windower's slips library: required from a job file, that one keeps every load in memory)
+    local ok, Slips = pcall(require, 'shared/utils/equipment/slip_reader')
+    if not ok then return {} end
+    local ok_g, list = pcall(Slips.player_items)
     if not ok_g or type(list) ~= 'table' then return {} end
     local out = {}
     for slip_id, ids in pairs(list) do
-        local n = slips.get_slip_number_by_id and slips.get_slip_number_by_id(slip_id)
+        local n = Slips.number(slip_id)
         for _, id in ipairs(ids or {}) do
             if type(id) == 'number' and id > 0 then out[id] = 'Slip ' .. tostring(n or slip_id) end
         end
@@ -73,12 +74,12 @@ function SlipItems.bags_ready()
     local any = false
     for _, item in ipairs(items.inventory) do if type(item) == 'table' and (item.id or 0) > 0 then any = true break end end
     if not any then return false end
-    local ok_s, slips = pcall(require, 'slips')
-    if not (ok_s and slips and slips.storages and slips.default_storages) then return true end
+    local ok_s, Slips = pcall(require, 'shared/utils/equipment/slip_reader')
+    if not ok_s then return true end
     local held = false
-    for _, bag in ipairs(slips.default_storages) do
+    for _, bag in ipairs(Slips.storages) do
         for _, item in ipairs(type(items[bag]) == 'table' and items[bag] or {}) do
-            if type(item) == 'table' and slips.storages:contains(item.id) then held = true end
+            if type(item) == 'table' and Slips.number(item.id) then held = true end
         end
     end
     return not held or next(read_slips()) ~= nil

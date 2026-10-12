@@ -272,4 +272,8 @@ function AtelierTour.handle(args)
     advance()
 end
 
+--- The job changes and the choice of jobs, for what else plays job changes (shared/utils/debug/job_test.lua).
+AtelierTour.changes = {in_mog_house = in_mog_house, inject = inject, steps_to = steps_to, send_steps = send_steps,
+    jobs_wanted = jobs_wanted, export_sub = export_sub}
+
 return AtelierTour
