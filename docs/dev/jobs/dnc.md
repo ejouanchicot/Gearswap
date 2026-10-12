@@ -54,7 +54,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DNC', ...)` wrappers |
 | `shared/jobs/dnc/functions/DNC_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DNC', ...)` wrapper |
 | `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 84 | `ClimaticManager.auto_trigger`, `has_three_finishing_moves`, `WS_MIN_TP` 1000 |
-| `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 124 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
+| `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 126 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
 | `shared/jobs/dnc/functions/logic/step_manager.lua` | 97 | `execute_step`: recast check, Presto, Main/Alt rotation |
 | `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 200 | `collect_dance`, `collect_samba`, `collect_extra` (dance then samba, for `job_buff_extra`), `apply_dance`; `apply` calls the common `BuffCommand.apply()` |
 | `shared/jobs/dnc/functions/logic/set_builder.lua` | 159 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
@@ -227,7 +227,10 @@ sequenceDiagram
 `dance` is `SaberDance` if `buffactive['Saber Dance']`, else `FanDance` if
 `buffactive['Fan Dance']`. Climactic is the buff, or the precast timestamp
 younger than 5 s, consumed on first use (`climactic_active`, now read first,
-for every weaponskill). Under Climactic, `sets.buff['Climactic Flourish']` is
+for every weaponskill). The variant chosen goes through `SupportTier.engaged`
+(`shared/utils/party/support_tier.lua`): its `.Solo`, `.Group` or `.Trust`
+version is equipped when the party's support calls for one and it exists.
+Under Climactic, `sets.buff['Climactic Flourish']` is
 equipped after the variant, on any weaponskill (since 2026-09-29).
 
 `SetBuilder.select_engaged_base`:

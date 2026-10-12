@@ -19,9 +19,8 @@
 ---============================================================================
 
 return {
-    -- ws_variant_selector.lua equips a dance / Climactic version (.SaberDance, .Clim...) as it is: the support tier
-    -- (shared/utils/party/support_tier.lua) is applied to Mote's pick only, never to those
-    skip = {'precast.WS.{set:precast.WS}.{Group|Solo|Trust}'},
+    -- ws_variant_selector.lua equips a dance / Climactic version (.SaberDance, .Clim...) through the support tier too
+    -- (shared/utils/party/support_tier.lua), so the common line gives each of them its .Group / .Solo / .Trust
 
     ---------------------------------------------------------------- engaged (set_builder.lua select_engaged_base)
     -- Priority 1: Saber Dance up

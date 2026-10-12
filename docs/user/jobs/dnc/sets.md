@@ -71,6 +71,7 @@ the dance, e.g. Horos Tights), then the weapon set, then the Dual Wield tier pie
 | `sets.precast.WS['Name'].Clim` | That weaponskill with Climactic Flourish in effect |
 | `sets.precast.WS['Name'].SaberDance.Clim` | Saber Dance + Climactic Flourish |
 | `sets.precast.WS['Name'].FanDance.Clim` | Fan Dance + Climactic Flourish |
+| any of the above with `.Group`, `.Solo` or `.Trust` after it (`sets.precast.WS['Name'].Clim.Solo`) | That version with less support in your zone (Group: one of BRD / COR / GEO; Solo: none; Trust: trusts only). Not written: the version above it is worn |
 
 These variants work for **any** weaponskill that has its own `sets.precast.WS['Name']`
 (not for the plain `sets.precast.WS`). With a dance and Climactic both in effect, the

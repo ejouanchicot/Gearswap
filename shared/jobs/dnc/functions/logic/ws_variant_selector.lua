@@ -107,7 +107,9 @@ function WSVariantSelector.apply_variant(spell)
     if ws_sets then
         local variant = best_variant(ws_sets, active_dance(), climactic)
         if variant then
-            equip(variant)
+            -- the party support's version of it (.Solo, .Group, .Trust: shared/utils/party/support_tier.lua), as
+            -- for the base set: a Climactic weaponskill alone is not the one a full party buffs
+            equip(require('shared/utils/party/support_tier').engaged(variant))
         end
         -- Nothing matched: Mote has already equipped the base set.
     end
