@@ -51,9 +51,9 @@ matches wins:
 |---|---|
 | `sets.engaged.SaberDance.PDT` | Saber Dance up, `HybridMode` PDT |
 | `sets.engaged.SaberDance` | Saber Dance up (Normal, or PDT without the set above) |
-| `sets.engaged.FanDance` | Fan Dance up, `HybridMode` PDT |
+| `sets.engaged.FanDance` | Fan Dance up, in every `HybridMode` |
 | `sets.engaged.PDT` | `HybridMode` PDT, no dance up (or Fan Dance up without `sets.engaged.FanDance`) |
-| `sets.engaged.Normal` | `HybridMode` Normal (Fan Dance changes nothing in Normal) |
+| `sets.engaged.Normal` | `HybridMode` Normal, no dance up (or Fan Dance up without `sets.engaged.FanDance`) |
 | `sets.engaged` | None of the above exists |
 
 Then `sets.buff['Saber Dance']` while Saber Dance is up (only the pieces that enhance

@@ -234,10 +234,11 @@ equipped after the variant, on any weaponskill (since 2026-09-29).
 
 1. Saber Dance up and `sets.engaged.SaberDance` exists -> `.SaberDance.PDT` in
    PDT mode if defined, else `.SaberDance`.
-2. HybridMode PDT -> `sets.engaged.FanDance` if Fan Dance is up, else
-   `sets.engaged.PDT`.
-3. Other HybridMode -> `sets.engaged[mode]` (`Normal`).
-4. Otherwise Mote's set.
+2. Fan Dance up and `sets.engaged.FanDance` exists -> `.FanDance`, in every
+   HybridMode.
+3. HybridMode PDT -> `sets.engaged.PDT`.
+4. Other HybridMode -> `sets.engaged[mode]` (`Normal`).
+5. Otherwise Mote's set.
 
 Then, with Saber Dance up, `sets.buff['Saber Dance']` is combined on top
 (since 2026-09-29), then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon

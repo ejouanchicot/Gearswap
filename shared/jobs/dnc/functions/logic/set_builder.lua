@@ -34,7 +34,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   Select base engaged set based on HybridMode, Saber Dance, and Fan Dance buffs
 ---   NOTE: Saber Dance and Fan Dance are MUTUALLY EXCLUSIVE (one overwrites the other)
 ---   Saber Dance: sets.engaged.SaberDance (.PDT under HybridMode PDT)
----   Fan Dance: sets.engaged.FanDance, used only under HybridMode PDT
+---   Fan Dance: sets.engaged.FanDance, in every HybridMode (Normal and PDT are the sets of a fight with no dance)
 ---   @param base_set table Base engaged set from Mote
 ---   @return table Selected engaged set
 function SetBuilder.select_engaged_base(base_set)
@@ -55,15 +55,15 @@ function SetBuilder.select_engaged_base(base_set)
         return sets.engaged.SaberDance
     end
 
-    -- Priority 2: HybridMode (Fan Dance only changes the PDT choice)
+    -- Priority 2: Fan Dance active, whatever the HybridMode: its set is built with the dance's cut counted (it
+    -- multiplies the gear's: 37.5% of gear x 0.80 = 50% in all), which neither Normal nor PDT is
+    if has_fan_dance and sets.engaged.FanDance then
+        return sets.engaged.FanDance
+    end
+
+    -- Priority 3: HybridMode, no dance up
     if state.HybridMode and state.HybridMode.current == 'PDT' then
-        -- Fan Dance active: use FanDance set (the dance's cut multiplies the gear's: 37.5% of gear x 0.80 = 50% in all)
-        if has_fan_dance and sets.engaged.FanDance then
-            return sets.engaged.FanDance
-        else
-            -- No Fan Dance: use regular PDT set
-            return sets.engaged.PDT
-        end
+        return sets.engaged.PDT
     elseif state.HybridMode and state.HybridMode.current then
         -- Other hybrid modes (Normal, etc.)
         local hybrid_set = sets.engaged[state.HybridMode.current]

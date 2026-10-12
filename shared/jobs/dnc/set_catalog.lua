@@ -29,7 +29,7 @@ return {
     {'engaged.SaberDance.PDT', when = 'Fighting with Saber Dance up, Hybrid Mode PDT', base = 'engaged.SaberDance',
         needs = {'state:HybridMode'}},
     -- Priority 2: HybridMode PDT with Fan Dance up
-    {'engaged.FanDance', when = 'Fighting with Fan Dance up, Hybrid Mode PDT', base = 'engaged.PDT', needs = {'state:HybridMode'}},
+    {'engaged.FanDance', when = 'Fighting with Fan Dance up, in every Hybrid Mode', base = 'engaged.PDT'},
     -- HybridMode step (PDT is read even when absent: no fallback to the base set)
     {'engaged.{HybridMode}', when = 'Fighting with that Hybrid Mode, no dance up', base = 'engaged', needs = {'state:HybridMode'}},
     -- build_engaged_set: laid on top while Saber Dance is up

@@ -309,16 +309,29 @@ const ENDGAME_BUFFS = {protect: 'Protect V', shell: 'Shell V', haste: 'Haste II'
   songsPlus: '9', rollsPlus: '8', geoPlus: '10',
   // Haste Samba on its own whenever the shown subjob is DNC (a click turns it off there: jaOff)
   autoSamba: true};
-// Whether an ability counts: chosen, or Haste Samba under /DNC with the end-game default (not turned off)
+// Whether an ability counts: chosen, or Haste Samba on a DNC or under /DNC with the end-game default (not turned off;
+// never under Fan Dance, so on a DNC every set but the Fan Dance ones has it)
 // An ability is yours (your job or subjob: b.ja, the same in every support profile) or a party member's (b.pja, the
 // profile's own, none in Solo): Haste Samba ticked under /DNC is not a party DNC's once the subjob is SAM
 const jaRole = name => ((jasOf().find(j => j.name === name) || {}).as) === 'party' ? 'pja' : 'ja';
+// The dance a set is made for, from its name: sets.engaged.FanDance, sets.precast.WS['X'].SaberDance.Clim (the versions
+// DNC's set_builder.lua and ws_variant_selector.lua wear under the dance). It counts on its own on that set, the other
+// dance does not, and a click turns it off there (jaOff), as for Haste Samba under /DNC
+const SET_DANCE = {SaberDance: 'Saber Dance', FanDance: 'Fan Dance'}, SET_DANCE_NAMES = new Set(Object.values(SET_DANCE));
+function setDance(){
+  const path = S.job === 'DNC' && S._curSet ? S._curSet.path || '' : '';
+  const k = Object.keys(SET_DANCE).find(k => path.split('.').includes(k));
+  return k ? SET_DANCE[k] : '';
+}
 function jaOn(b, name){
   const role = jaRole(name);
+  if (role === 'ja' && SET_DANCE_NAMES.has(name)) { const auto = setDance(), off = b.jaOff || {};
+    if (auto === name && !off[name]) return true;
+    if (auto && auto !== name && !off[auto]) return false; }
   // Fan Dance renders your own sambas unusable (a party DNC's Haste Samba still counts)
   if (name === 'Haste Samba' && role === 'ja' && jaOn(b, 'Fan Dance')) return false;
   if ((b[role] || {})[name]) return true;
-  return role === 'ja' && name === 'Haste Samba' && !!b.autoSamba && (data() || {}).sub === 'DNC' && !(b.jaOff || {})[name];
+  return role === 'ja' && name === 'Haste Samba' && !!b.autoSamba && ((data() || {}).sub === 'DNC' || S.job === 'DNC') && !(b.jaOff || {})[name];
 }
 // A dance's floor (BG Wiki): Saber Dance's Double Attack ends at 20 % (from 50 %, in 30 s), Fan Dance's physical damage
 // cut at 20 % (from 90 %, 10 % a hit taken), with Enmity +15; each "Saber Dance" / "Fan Dance" merit level adds 1 % to it while Etoile or

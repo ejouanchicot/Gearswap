@@ -32,7 +32,7 @@ const STATE_HELP_EN = {
  },
  "BRD": {
   "IdleMode": "Idle set outside town: sets.idle.Refresh / .DT / .Regen",
-  "EngagedMode": "Engaged set: sets.engaged.STP / .Acc / .DT / .SB (Store TP, accuracy, damage taken, Subtle Blow). The provided sets have no .DT: DT uses plain sets.engaged. With Kraken Club worn in the off hand, sets.engaged.PDTKC wins over every value",
+  "EngagedMode": "Engaged set: sets.engaged.STP / .Acc / .DT / .SB (Store TP, accuracy, damage taken, Subtle Blow). In the provided sets .DT is a plain copy of sets.engaged: add your DT pieces there. With Kraken Club worn in the off hand, sets.engaged.PDTKC wins over every value",
   "SongMode": "Song pack sung by //gs c songs (list below)",
   "MainInstrument": "Instrument for buff songs that do not need a specific one",
   "VictoryMarch": "When Haste or Haste II is already on you, Victory March in the pack is replaced by Blade Madrigal, Valor Minuet III or the Etude of EtudeType. None keeps it",
@@ -65,7 +65,7 @@ const STATE_HELP_EN = {
  "DNC": {
   "MainWeapon": "Main weapon",
   "SubWeaponOverride": "Off = the off hand of the main weapon set; Blurred = the sub of sets['Blurred'] (Blurred Knife +1 in the provided sets), whatever the main weapon",
-  "HybridMode": "Idle outside town: sets.idle.PDT (or sets.idle.Normal) when it exists, else sets.idle; town idle does not change. Engaged: PDT: sets.engaged.PDT, or sets.engaged.FanDance while Fan Dance is up. Normal: sets.engaged.Normal. Under Saber Dance, sets.engaged.SaberDance (.SaberDance.PDT in PDT) wins over both",
+  "HybridMode": "Idle outside town: sets.idle.PDT (or sets.idle.Normal) when it exists, else sets.idle; town idle does not change. Engaged, with no dance up: PDT: sets.engaged.PDT. Normal: sets.engaged.Normal. Under Fan Dance, sets.engaged.FanDance in both modes. Under Saber Dance, sets.engaged.SaberDance (.SaberDance.PDT in PDT)",
   "MainStep": "Step used by //gs c step",
   "AltStep": "Second step when UseAltStep is On",
   "UseAltStep": "On: //gs c step alternates MainStep and AltStep. Off: MainStep only",
@@ -105,7 +105,7 @@ const STATE_HELP_EN = {
   "MainWeapon": "Main hand. Add your weapons in MNK_STATES.lua: each value is sets.<Weapon> from your set file (or the plain weapon, if WEAPON_CONFIG.lua has equip_without_set = true). Free keeps the weapon you wear. Monk has no off hand.",
   "WeaponskillMode": "Acc: sets.precast.WS['<name>'].Acc (or sets.precast.WS.Acc for a weaponskill without its own set) when your set file has it. With Normal, Offense Mode Acc also picks the .Acc weaponskill set (Mote's rule).",
   "OffenseMode": "Engaged gear: sets.engaged.Acc when your set file has it.",
-  "HybridMode": "DT: sets.engaged.DT and, standing, sets.idle.DT. Counter: sets.engaged.Counter (counter gear); standing, your normal idle. With Offense Mode Acc, sets.engaged.Acc.DT / .Acc.Counter are used when you add them.",
+  "HybridMode": "DT: sets.engaged.DT and, standing outside a city, sets.idle.DT. Counter: sets.engaged.Counter (counter gear); standing, your normal idle. With Offense Mode Acc, sets.engaged.Acc.DT / .Acc.Counter are used when you add them.",
   "FastCast": "Your Fast Cast %, used only by the midcast watchdog when it cannot read the Fast Cast of your precast set."
  },
  "NIN": {
@@ -119,7 +119,7 @@ const STATE_HELP_EN = {
  },
  "PLD": {
   "HybridMode": "Your stance (see below)",
-  "MainWeapon": "Weapon set to wield. The list shrinks in Sortie and under /SCH (see below). Hidden under /SCH Tanking",
+  "MainWeapon": "Weapon set to wield. The list shrinks in Sortie and in the /SCH stances (see below). Hidden under /SCH Tanking",
   "PhalanxSIRD": "On = Phalanx always uses sets.midcast.SIRDPhalanx (spell interruption down) instead of potency. The same key under every subjob",
   "Shield": "Auto = the shield your stance and weapon give (PLD_WEAPONS.lua); a shield name forces it in idle and engaged (a two-handed weapon keeps its grip). Set by //gs c sortie <target> (SORTIE_CONFIG.lua states) or //gs c set Shield <name>; only in a PLD_STATES.lua that declares it",
   "WS1": "Weaponskill of //gs c ws1 (or ws)",
@@ -130,7 +130,7 @@ const STATE_HELP_EN = {
  "PUP": {
   "MainWeapon": "Main hand. Add your weapons in PUP_STATES.lua: each value is sets.<Weapon> from your set file (or the plain weapon, if WEAPON_CONFIG.lua has equip_without_set = true). Free keeps the weapon you wear.",
   "OffenseMode": "Engaged gear: sets.engaged.Acc (or sets.engaged.Pet.Acc while the automaton fights too) when your set file has it.",
-  "HybridMode": "DT: sets.idle.DT when no automaton is out, and the .DT engaged set (sets.engaged.DT, sets.engaged.Pet.DT).",
+  "HybridMode": "DT: sets.idle.DT as your idle set (under the automaton sets while it is out), and the .DT engaged set (sets.engaged.DT, sets.engaged.Pet.DT).",
   "PetMode": "The automaton's role. Chooses sets.idle.Pet.Engaged.<Pet Mode> and sets.midcast.Pet.WeaponSkill.<Pet Mode> when they exist (Ranged: .RangedPet). Set by itself, see below.",
   "PetWS": "On: the automaton's weaponskill set goes on while it fights with enough TP. Off: never.",
   "FastCast": "Your Fast Cast %, used only by the midcast watchdog when it cannot read the Fast Cast of your precast set."

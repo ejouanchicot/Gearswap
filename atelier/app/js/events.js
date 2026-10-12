@@ -187,7 +187,7 @@ document.addEventListener('click', e => {
     else { ja[d.ja] = 1; delete off[d.ja];
       // abilities that overwrite each other (BG Wiki: Blood Rage and Warcry): turning one on turns the others off
       const ex = (JAS[d.ja] || {}).excl;
-      if (ex) for (const [n, a] of Object.entries(JAS)) if (n !== d.ja && a.excl === ex) delete ja[n]; }
+      if (ex) for (const [n, a] of Object.entries(JAS)) if (n !== d.ja && a.excl === ex) { delete ja[n]; if (n === setDance()) off[n] = 1; } }
     render(); return; }
   if (d.action==='add') { addStep = 0; renderAdd(); return; }
   if (d.action==='meritreset') { delete S.meritEdits[meritKey()]; render(); return; }

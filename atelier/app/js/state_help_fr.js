@@ -94,7 +94,7 @@ const STATE_HELP_FR = {
   DNC: {
     MainWeapon: 'L’arme de main droite.',
     SubWeaponOverride: 'Off : la main gauche du set d’arme. Blurred : la main gauche de sets[\'Blurred\'], quelle que soit l’arme.',
-    HybridMode: 'PDT : sets.idle.PDT et sets.engaged.PDT (ou le set Fan Dance sous Fan Dance). Sous Saber Dance, son set gagne.',
+    HybridMode: 'PDT : sets.idle.PDT et sets.engaged.PDT. Normal : sets.engaged.Normal. Sous Fan Dance ou Saber Dance, le set de la danse est porté dans les deux modes.',
     MainStep: 'Le step lancé par //gs c step.', AltStep: 'Le deuxième step, quand Use Alt Step est allumé.',
     UseAltStep: 'Allumé : //gs c step alterne le step principal et le deuxième. Éteint : le principal seulement.',
     ClimacticAuto: 'Allumé : avant une weaponskill listée dans DNC_WS_CONFIG.lua, avec 3 Finishing Moves ou plus, Climactic Flourish part d’abord.',
