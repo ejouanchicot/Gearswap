@@ -42,6 +42,9 @@ local STATUS_ENGAGED = 1
 local LEFT_DELAY = 2
 -- the /check, a few seconds into the fight, and how long its answer is waited for before the block shows anyway
 local CHECK_DELAY, CHECK_WAIT = 3, 2
+-- how many times a fight's /check is asked while the hits journal is on (one that fell on a weaponskill's
+-- animation got no answer: 2026-10-13, a fight of 25 weaponskills with no level)
+local CHECK_TRIES = 3
 
 -- 0x029 messages (res/action_messages.lua): the target defeated, and a /check's answer (the level in Param 1)
 local DEATH = {[6] = true, [20] = true, [97] = true, [113] = true, [406] = true, [605] = true, [646] = true}
@@ -143,14 +146,22 @@ local function engaged_target()
     return t and t.is_npc and t.hpp and t.hpp > 0 and t or nil
 end
 
---- The /check, if the fight is still on with that mob targeted; else the block without it
-local function check_later(f)
+--- The /check, if the fight is still on with that mob targeted; else the block without it. While the hits
+--- journal is on, a /check that got no answer is asked again (CHECK_TRIES in all): the journal's measures
+--- are read against that very mob's level.
+--- @param f table The fight
+--- @param try number|nil Which try this is (nil: the first)
+local function check_later(f, try)
     coroutine.schedule(function()
-        if session().fight ~= f or f.shown then return end
+        if session().fight ~= f or f.checked or (f.shown and not try) then return end
         local t = engaged_target()
         if not t or t.id ~= f.id then return announce(f) end
         windower.send_command('input /check <t>')
-        coroutine.schedule(function() if session().fight == f then announce(f) end end, CHECK_WAIT)
+        coroutine.schedule(function()
+            if session().fight ~= f then return end
+            announce(f)
+            if not f.checked and Hits.on() and (try or 1) < CHECK_TRIES then check_later(f, (try or 1) + 1) end
+        end, CHECK_WAIT)
     end, CHECK_DELAY)
 end
 
@@ -243,7 +254,10 @@ local function on_incoming(id, original)
         if mob and mob.is_npc and level and level > 0 then
             if Hits.on() then Hits.check(mob.name, level, CHECK[message]) end
             session().levels[mob.name] = {level = level, note = CHECK[message] ~= 'average' and CHECK[message] or nil}
-            if f and mob.id == f.id then announce(f) end
+            if f and mob.id == f.id then
+                f.checked = true
+                announce(f)
+            end
         end
     end
 end

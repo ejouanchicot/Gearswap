@@ -222,7 +222,8 @@ end
 local function header(f, p)
     if f.hits_started then return end
     f.hits_started = true
-    write(('FIGHT %s | %s'):format(f.name or '?', FightHits.hooks.level(f.name) or 'level not checked yet'))
+    -- the level of this very mob: the one kept by name is the last mob's of that name, of another level maybe
+    write(('FIGHT %s | %s'):format(f.name or '?', f.checked and FightHits.hooks.level(f.name) or 'level not checked yet'))
     snapshot(p)
 end
 
