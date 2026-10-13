@@ -69,7 +69,9 @@
 /* ---- the result's moogle (mogWinHTML), at the right of the value found. A better set: it marvels, jumps, then
    hops for joy without end ---- */
 .orhero:has(.mogwin){grid-template-columns:auto minmax(0,1fr) 132px}
-.mogwin{position:relative;width:132px;height:112px;user-select:none}
+/* always in the last column: with no curve beside the figure ("All versions") it took the middle one, right after
+   a text whose width changes with the figure, so it stood at another place in each result */
+.mogwin{position:relative;width:132px;height:112px;user-select:none;grid-column:3;justify-self:end}
 .mogwin img{position:absolute;left:0;bottom:-12px;width:132px;height:132px;pointer-events:none;transform-origin:50% 90%}
 .mogwin{animation:mogpop .45s cubic-bezier(.3,1.5,.5,1) both}
 /* one hop that never stops, the same for the four drawings: moogle.js shows the one that fits the
@@ -85,7 +87,7 @@
 @keyframes mogsway{from{transform:rotate(-3deg)}to{transform:rotate(3deg) translateY(-2px)}}
 @keyframes mogqm{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-6px) rotate(10deg)}}
 @keyframes mogjoy{from{transform:translateY(0) scale(1.07,.92)}to{transform:translateY(-18px) scale(.97,1.04)}}
-@media (max-width:640px){.orhero:has(.mogwin){grid-template-columns:1fr}.mogwin{justify-self:center}}
+@media (max-width:640px){.orhero:has(.mogwin){grid-template-columns:1fr}.mogwin{justify-self:center;grid-column:auto}}
 
 /* the result's changed pieces: each with the game's icon */
 .orchg li:has(.ico){grid-template-columns:30px 86px minmax(0,1fr);align-items:center}
