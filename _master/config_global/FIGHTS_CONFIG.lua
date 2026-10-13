@@ -51,6 +51,9 @@
 --- each started when the one before reached its goal, then stops the journal.
 --- //gs c fights hits run <name> plays `sequences.<name>` instead.
 --- You only engage and fight: nothing here moves or engages the character.
+--- When a sequence ends, the commands of `run_end` run on this character (a dance that
+--- forbids waltzes taken off, your modes put back), and the alt gets its stop orders
+--- 20 seconds after you stop fighting, not at the mob's death.
 ---     sequence = {'polearm', 'thrust'},
 ---     sequences = {buffed = {'rage'}},
 ---     steps = {

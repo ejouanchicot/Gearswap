@@ -67,6 +67,8 @@ local WS_RETRY, KEEP_RETRY = 3, 5
 local STRIP_DELAY = 5
 -- the set GearSwap is asked to equip to empty slots (sets.<name>, built for each such step)
 local STRIP_SET = 'FightsStrip'
+-- seconds the character must have stopped fighting before the alt gets its stop orders
+local ALT_REST = 20
 local FILE = '_hits.log'
 
 -- set by fight_tracker.lua: enable() turns the tracker on, level(name) gives a mob's checked level as
@@ -437,14 +439,21 @@ local function switch(on)
     strip(nil)
     if not FightHits.hooks.fighting() then return tell_alt(false) end
     windower._fight_hits_alt_pending = true
-    InfoBlock.show({tag = 'FIGHTS', title = 'Measure', fields = {{'Journal', 'off'}, {'Alt', 'stops when this mob is dead'}}})
+    InfoBlock.show({tag = 'FIGHTS', title = 'Measure', fields = {{'Journal', 'off'}, {'Alt', 'stops ' .. ALT_REST .. ' s after you stop fighting'}}})
 end
 
---- The fight is over (the mob dead, or left): the alt's stop orders held back by switch() go now.
+--- The fight is over (the mob dead, or left): the alt's stop orders held back by switch() go ALT_REST seconds
+--- later, if the character is not fighting again by then. Sent at the mob's death, they left the player alone
+--- with the next mob he had already engaged, the sequence's dance still on (2026-10-13: both characters died).
 function FightHits.fight_ended()
     if not windower._fight_hits_alt_pending then return end
-    windower._fight_hits_alt_pending = nil
-    tell_alt(false)
+    coroutine.schedule(function()
+        if not windower._fight_hits_alt_pending or FightHits.on() then return end
+        local p = windower.ffxi.get_player()
+        if p and p.status == 1 then return end      -- engaged again: asked again at the end of that fight
+        windower._fight_hits_alt_pending = nil
+        tell_alt(false)
+    end, ALT_REST)
 end
 
 --- The journal on or off without the alt being told, for a measure at rest (fight_sheet.lua).
@@ -588,6 +597,8 @@ function FightHits.after(p)
         run.index = run.index + 1
         if run.sequence[run.index] then return step({run.sequence[run.index]}) end
         InfoBlock.show({tag = 'FIGHTS', title = 'Measure', fields = {{'Sequence', 'finished'}}})
+        -- what the sequence leaves on the character is taken off (`run_end`: a dance that forbids waltzes, the modes)
+        for _, command in ipairs(type(config().run_end) == 'table' and config().run_end or {}) do send_command(command) end
         return switch(false)
     end
     if not c.step or c.done then return end
