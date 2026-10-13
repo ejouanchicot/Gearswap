@@ -44,7 +44,7 @@
 
     own.average_ws = function (player, enemy, ws, tp, type, metric) {
         if (player.own) {
-            var got = CALC.page.weaponskill(player.stats, enemy.stats, ws, tp, type, metric, player.gearset);
+            var got = CALC.page.weaponskill(player.stats, enemy.stats, ws, tp, type, metric, player.gearset, player.abilities);
             if (!got.unsupported) return got;
             fall(got.unsupported);
         }

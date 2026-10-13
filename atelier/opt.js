@@ -277,6 +277,9 @@
         var out = {"Base Stats": real};
         // the "Critical Hit Rate" merits the export read (none listed = none placed)
         if (m.merits) out["Crit Rate Merits"] = m.merits.critical_hit_rate || 0;
+        // every merit level read, by the export's names (exenterator: 3): a merit weaponskill's modifier follows
+        // the ones bought (atelier/calc/calc_page.js); the engine before does not read it
+        if (m.merits) out["WS Merits"] = m.merits;
         return Object.assign({}, ab, out);
     }
     // The target's resistance to the weaponskill's damage type (the page's physRes, percent: +25 takes more, -25

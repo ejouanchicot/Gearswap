@@ -48,12 +48,20 @@
         return main.Name2 || main.Name;
     }
 
-    function weaponskill(stats, enemy, name, tp, type, metric, gearset) {
+    // The merits the character bought in a weapon skill, from the levels the page read in game
+    // (abilities["WS Merits"], by the export's names: "Tachi: Shoha" is tachi_shoha); undefined when not read.
+    function meritsOf(abilities, name) {
+        var levels = (abilities || {})["WS Merits"] || {};
+        return levels[name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")];
+    }
+
+    function weaponskill(stats, enemy, name, tp, type, metric, gearset, abilities) {
         if (!(metric in WS_VALUE)) return {unsupported: "metric " + metric};
         if (type === "ranged") return {unsupported: "ranged weapon skill"};
         // the number of buffs a Naegling counts is not given by the page: taken as none
         var got = CALC.weaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), buffs: 0,
-            climactic: stats["Climactic Flourish active"] > 0, head: ((gearset || {}).head || {}).Name});
+            climactic: stats["Climactic Flourish active"] > 0, head: ((gearset || {}).head || {}).Name,
+            merits: meritsOf(abilities, name)});
         if (got.unsupported) return got;
         var values = [got.damage, got.tpReturn];
         return [values[WS_VALUE[metric]], [got.damage, got.tpReturn, 1]];

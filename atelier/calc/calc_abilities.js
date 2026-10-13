@@ -28,7 +28,7 @@
     var MAIN_LEVEL = 99;
     var JOB_POINT_RANKS = 20;
     // entries of the page's `abilities` that are measurements of the character, not abilities
-    var NOT_ABILITIES = {"Base Stats": true, "Crit Rate Merits": true};
+    var NOT_ABILITIES = {"Base Stats": true, "Crit Rate Merits": true, "WS Merits": true};
     // "Warcry (sub)": the support job's version of an ability both jobs could have
     var SUB_SUFFIX = / \(sub\)$/;
 
