@@ -69,8 +69,15 @@ div.setrow.var > code{padding-left:22px}
 .acchid{margin:14px 12px 4px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--faint)}
 
 /* ---- what a line says at its right: the version shown, a missing piece, pieces on trial, an empty set ---- */
-.setrow .rowmarks{display:flex;align-items:center;gap:5px;min-height:22px}
-.setrow .rowver{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.setrow .rowmarks{display:flex;align-items:center;gap:5px;min-height:22px;min-width:0;overflow:hidden}
+/* the version shown: cut short before it takes the name's room (a DNC weaponskill's "SaberDance · Clim · Group"): the
+   name keeps half the row, the row never grows wider than the list */
+.setrow .rowver{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.setlist div.setrow,.ofsets .scroll > div.setrow{grid-template-columns:minmax(50%,1fr) minmax(0,auto)}
+/* a row is as wide as the list less its own margins (it was 100 % plus them: 16 px too wide, which let the list slide
+   sideways whenever a row was brought into sight) */
+.ofsets .scroll > div.setrow{width:auto}
+.ofsets .scroll > .aliasfold,.ofsets .scroll > button.setrow.alias{width:calc(100% - 16px)}
 .setrow .rowmiss{flex:none;font-style:normal;font-size:12px;font-weight:800;color:var(--r-dd);opacity:.9}
 .setrow .rowtry{width:6px;height:6px;border-radius:50%;background:var(--try);box-shadow:0 0 6px var(--try)}
 .setrow .rowvoid{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}

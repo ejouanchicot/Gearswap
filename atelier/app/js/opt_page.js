@@ -50,7 +50,8 @@ function optPageHTML(s, ws){
   const kind = ws ? 'ws' : isJumpSet(s.path) ? 'jump' : roundSet(s) ? 'eng' : 'stat', act = ws ? 'optws' : kind === 'stat' ? 'optstat' : 'opteng';
   const b = buffState();
   const go = S._optBusy ? `<span class="optprog">${t('optStart')}</span>${searchParked() ? `<button class="btn" data-orshow>${t('orShow')}</button>` : ''}<button class="btn ghost" data-optstop>${t('optStop')}</button>`
-    : optGoButtons(act) + (kind === 'jump' || kind === 'stat' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>`);
+    : optGoButtons(act) + (kind === 'jump' || kind === 'stat' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
+      (ws ? `<button class="btn ghost" data-optall title="${esc(t('oaTip'))}">${t('oaBtn')}</button>` : ''));
   const head = `<header class="ophead"><button class="btn ghost" data-optback title="${esc(t('ttOptBack'))}">${t('optBack')}</button><h2 class="display">${t('optPageTitle')}</h2>` +
     `<span class="opset">${esc(shortPath(s.path))}</span><span class="muted small">${esc(buffTier())} · ${esc(enemyKey(b.enemy))}</span>` +
     `<span class="sp"></span><div class="opgo">${go}</div></header>`;

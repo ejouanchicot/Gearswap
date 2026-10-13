@@ -374,6 +374,12 @@ input[type=checkbox]{accent-color:var(--accent)}
 .orfeed s{color:var(--muted)}
 .orfwalk{font-size:11px;color:var(--faint);white-space:nowrap}
 .optrun > footer{align-items:center}
+/* the buttons hold their place: the count of tries beside them changes width at every step, so what is left of the
+   row is one spring between it and them (they moved with it under "space-between") */
+.optrun > footer{justify-content:flex-start}
+.optrun > footer .sp{flex:1}
+.optrun > footer .orrate{flex:none;white-space:nowrap}
+.optrun > footer .btn{flex:none}
 .orrate{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .optrun.finished .orclock span{color:var(--r-healer)}
 .orres{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px}

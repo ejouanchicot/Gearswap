@@ -66,6 +66,10 @@ document.addEventListener('click', e => {
   if ('orhide' in d) { closeOverlay(); return; }
   if ('orshow' in d) { searchShow(); return; }
   if (d.help) { S._help = S._help === d.help ? null : d.help; render(); return; }
+  if ('optall' in d) { optAllOpen(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
+  if ('oastop' in d) { optAllStop(); return; }
+  if ('oago' in d) { optAllGo(); return; }
+  if (d.oasel) { optAllToggle(d.oasel); return; }
   if ('tiercost' in d) { openTierCost(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('optws' in d) { S._optScratch = d.optws === 'best'; optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if (d.optobj) { S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
@@ -141,7 +145,7 @@ document.addEventListener('click', e => {
   if (d.famall) { for (const f of S._fams || []) S.famOpen[S.job + '|' + f] = d.famall === '1'; render(); return; }
   // the names a set is shared under, folded under it in the set list (sets_view.js)
   if (d.aliasfold) { const k = S.job + '|' + d.aliasfold; S._aliasOpen = Object.assign({}, S._aliasOpen, {[k]: !(S._aliasOpen || {})[k]}); render(); return; }
-  if (d.wskill) { const k = S.job + '|' + d.wskill; S._wsList = Object.assign({}, S._wsList, {[k]: !(S._wsList || {})[k]}); render(); return; }
+  if (d.wskill) { const k = S.job + '|' + d.wskill; S.wsList = Object.assign({}, S.wsList, {[k]: !(S.wsList || {})[k]}); render(); return; }
   if (d.stattab) { S._statTab = d.stattab; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if (d.fold) { S.boxOpen[d.fold] = !S.boxOpen[d.fold]; render(); return; }
@@ -184,6 +188,8 @@ document.addEventListener('click', e => {
   if (d.bufftier) { setBuffTier(d.bufftier); render(); return; }
   if (d.ja) { const b0 = buffState(), role = jaRole(d.ja), ja = b0[role] = b0[role] || {}, off = b0.jaOff = b0.jaOff || {};
     if (jaOn(b0, d.ja)) { delete ja[d.ja]; off[d.ja] = 1; }
+    // one the set's name decides (a DNC's dances, Climactic Flourish: buffs.js setNamed): only put back on, never ticked
+    else if (setNamed() && (d.ja === 'Climactic Flourish' || SET_DANCE_NAMES.has(d.ja))) delete off[d.ja];
     else { ja[d.ja] = 1; delete off[d.ja];
       // abilities that overwrite each other (BG Wiki: Blood Rage and Warcry): turning one on turns the others off
       const ex = (JAS[d.ja] || {}).excl;

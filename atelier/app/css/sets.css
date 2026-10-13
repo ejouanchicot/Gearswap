@@ -1045,6 +1045,16 @@
 .verseg button:last-child{border-right:0}
 .verseg button:hover{color:var(--ink);background:var(--hover)}
 .verseg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 0 14px -4px var(--accent)}
+/* a set with versions of two kinds (sets_view.js versionGridHTML): a line a buff version, a column a support profile */
+.setvers.grid{align-items:flex-start}
+.setvers.grid .kicker{padding-top:30px}
+.vergrid{display:grid;grid-template-columns:auto repeat(var(--n),minmax(70px,1fr));gap:4px 6px;align-items:center;flex:1;max-width:560px}
+.vergrid .vh{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
+.vergrid .vr{font-size:13px;font-weight:700;color:var(--ink);padding-right:10px;white-space:nowrap}
+.vergrid button{border:1px solid var(--line-strong);border-radius:8px;background:var(--well);color:var(--muted);font:inherit;font-size:12.5px;font-weight:700;padding:4px 6px}
+.vergrid button:hover{color:var(--ink);background:var(--hover)}
+.vergrid button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);box-shadow:0 0 14px -4px var(--accent)}
+.vergrid .vnone{text-align:center;color:var(--muted);opacity:.4;font-style:normal}
 .setsx.ui2 .setctl > .wpicks{min-height:52px}
 /* a setting that is a table of lines (module_rows.js): the TP Bonus pieces, a refill list, the Cure tiers */
 .mrwrap{display:grid;gap:8px;justify-items:start;width:100%;min-width:0}
@@ -1421,3 +1431,17 @@
 /* the chain PorterPacker, wardrobes, refill: a small button in the place line, and its steps */
 .bvplace .plrun{padding:1px 10px;font-size:11.5px}
 .plsteps{margin:0 0 10px;padding-left:20px;font-size:13.5px;line-height:1.6}
+
+/* every version of a weaponskill set (opt_all.js): the search window's dress; a mark a version under its chips while
+   it runs, then the table of the versions, the kept ones lit, scrolling inside the window */
+.oastrip{display:flex;gap:4px;margin-top:8px}
+.oastrip i{flex:1;max-width:28px;height:5px;border-radius:3px;background:var(--well)}
+.oastrip i.on{background:var(--accent)}
+.oastrip i.off{background:var(--muted);opacity:.45}
+.oastrip i.now{background:var(--accent-2);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.optrun > .body.oabody{grid-template-rows:auto minmax(0,1fr)}
+.oabody .oascroll{min-height:0;overflow:auto;display:grid;gap:10px;align-content:start}
+.oatbl{width:100%}
+.oatbl tr.oaoff td,.oatbl tr.oaoff th{opacity:.55}
+.oatbl .chip{padding:0 6px;min-width:22px}
+.oatbl .oafix{color:var(--accent)}

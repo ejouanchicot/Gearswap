@@ -330,7 +330,6 @@ function optRunStep(i, p){
   if (best && (!last || last[1] !== best.raw)) R.series.push([(performance.now() - R.t0) / 1000, best.raw]);
   // the window may be closed (Hide): the compartment's line goes on
   S._optProgress = {round: p.round, evals: optRunEvals(R), ms: performance.now() - R.t0};
-  renderOptProgress();
   optRunPaint(p.walk, p.moves || []);
 }
 // The window drawn again where it changed: the walk's card, the new moves on top of the feed, the gain, the curve
@@ -445,11 +444,6 @@ function optRunDone(){
   document.querySelector('.optrun')?.classList.add('finished');
   const k = document.querySelector('.optrun .kicker');
   if (k) k.textContent = t('orDone');
-}
-// The progress line while the worker searches (only that line is drawn again)
-function renderOptProgress(){
-  const el = document.querySelector('.optprog'), p = S._optProgress;
-  if (el && p) el.textContent = t('optProg', {r: p.round, n: p.evals.toLocaleString(), s: (p.ms / 1000).toFixed(1)});
 }
 // The result into draft B (the pieces that differ from the set itself), the message, then Compare
 function optResult(s, k, res, gains, o){

@@ -51,8 +51,19 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       for (let i = 0; i < 300 && S._optBusy; i++) await wait(200);
       if (S._optBusy) { optStop(); throw new Error('still busy after 60 s'); }
       closeOverlay(); render(); });
+    // every version of a weaponskill set in one go (opt_all.js): the four support versions of a WAR's, each searched
+    await tryIt('optimizer WS every version', async () => {
+      open('sets.precast.WS.Upheaval'); optAllOpen(shownSet(S._cards[S.sel.WAR], S.sel.WAR));
+      for (let i = 0; i < 900 && !(S._optAll && S._optAll.finished); i++) await wait(200);
+      const R = S._optAll;
+      if (!(R && R.finished)) { optAllStop(); throw new Error('not finished after 180 s'); }
+      const recs = Object.values(R.by), bad = recs.filter(r => r.error);
+      if (recs.length !== 4 || bad.length) throw new Error(recs.length + ' versions, ' + bad.map(r => r.error).join(' / '));
+      if (!recs.every(r => r.skip || r.best > 0)) throw new Error('a version without a figure');
+      if (S._optBusy) throw new Error('still busy once finished');
+      optAllStop(); render(); });
     // a click on a slot opens its menu (trial.js): lock it, then choose a piece from it
-    await tryIt('slot menu: lock, then the picker', async () => { open('sets.engaged.Naegling');
+    await tryIt('slot menu: lock, then the picker', async () => { open('sets.engaged.Naegling'); await wait(120);   // (the list scrolls to the set's row: a scroll closes a slot menu)
       const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR), slot = () => document.querySelector('.slot[data-slot="head"]');
       slot().click(); await wait(30);
       const menu = document.querySelector('#slotmenu');

@@ -190,8 +190,25 @@ function setVersionsHTML(card, ci, vi){
   if (!cur || !cur.subs.length) return `<div class="setvers none"></div>`;
   const tiers = cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
   const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}" title="${esc(T[S.lang]['ttVer' + txt] ? t('ttVer' + txt) : t('ttVer'))}">${esc(txt)}</button>`;
+  const grid = tiers ? versionGridHTML(cur, btn) : '';
+  if (grid) return `<div class="setvers grid"><span class="kicker">${esc(t('verLbl'))}</span>${grid}</div>`;
   return `<div class="setvers"><span class="kicker">${esc(t('verLbl'))}</span><div class="verseg" role="group">` +
     (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join('') + `</div></div>`;
+}
+// A set with versions of two kinds (a DNC weaponskill: a dance, Climactic Flourish, each with its support versions:
+// up to 24): a table, one line a buff version (the set itself first, then Clim, then each dance and its Clim), one
+// column a support profile; a version the file does not write is a dash. One kind only: the row of buttons above
+function versionGridHTML(cur, btn){
+  const cell = (i, label) => { const parts = label.split(' · '), tier = TIER_LABELS.includes(parts[parts.length - 1]) ? parts.pop() : 'Full'; return {i, tier, row: parts.join(' · ')}; };
+  const cells = (cur.main != null ? [{i: cur.main, tier: 'Full', row: ''}] : []).concat(cur.subs.map(x => cell(x.i, x.label)));
+  const rows = [...new Set(cells.map(c => c.row))];
+  if (rows.length < 2) return '';
+  const rank = r => !r ? '' : (r.split(' · ')[0] === 'Clim' ? '0' : '1') + r;
+  rows.sort((a, b) => rank(a).localeCompare(rank(b)));
+  const cols = ['Full'].concat(TIER_LABELS.filter(x => cells.some(c => c.tier === x)));
+  const at = (r, tier) => cells.find(c => c.row === r && c.tier === tier);
+  return `<div class="vergrid" role="group" style="--n:${cols.length}"><span></span>${cols.map(c => `<span class="vh">${esc(c)}</span>`).join('')}` +
+    rows.map(r => `<span class="vr">${esc(r || t('verSet'))}</span>` + cols.map(c => { const x = at(r, c); return x ? btn(x.i, c) : '<i class="vnone">—</i>'; }).join('')).join('') + `</div>`;
 }
 // The top of a set other than a weaponskill's: what it is on the left (its family, when it is worn, its
 // name and variant, its path), its variants and the weapons it is shown with on the right
@@ -295,6 +312,11 @@ function setListHTML(d){
   if (!vis.includes(S.sel[S.job])) S.sel[S.job] = vis[0];
   const sel = S.sel[S.job];
   if (cards[sel]) { S.selPath[S.job] = shownSet(cards[sel], sel).path; S._found = found + S.selPath[S.job]; }
+  // the set shown is in sight in the list: when it is another one than at the last redraw (a click, a reload of the
+  // page, a push that opens a version), its category and its weaponskill group open; folded by hand after, they stay so
+  const revealKey = S.char + '|' + S.job + '|' + S.selPath[S.job], reveal = S._revealed !== revealKey;
+  S._revealed = revealKey;
+  if (reveal && cards[sel]) { S.famOpen[S.job + '|' + cards[sel].fam] = true; S._revealNow = true; }
   tierFollowsSet(S.selPath[S.job], bypath);
   subFollowsSet(S.selPath[S.job], bypath);
   objFollowsSet(S.selPath[S.job], bypath);
@@ -319,7 +341,10 @@ function setListHTML(d){
   for (const i of vis) { const c = cards[i];
     if (c.fam !== fam) { if (fam) list += crossOf(fam); fam = c.fam;
       // the sets of the category (a set and its Group, Solo and Trust versions are one)
-      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + cards[k].variants.filter(v => !cards[k].variants.some(o => o !== v && tierLabel(v.label, o.label))).length, 0);
+      // (the weaponskills: one a weaponskill, as the list shows them, whatever its versions)
+      const lines = card => card.fam === 'ws' ? new Set(card.variants.map(v => wsOfSet(v.set) || v.label)).size
+        : card.variants.filter(v => !card.variants.some(o => o !== v && tierLabel(v.label, o.label))).length;
+      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + lines(cards[k]), 0);
       list += listFamHead(fam, n, cards[sel] && cards[sel].fam === fam, famOpen(fam, q)); }
     // a category is closed until opened (a search opens them all)
     if (!famOpen(c.fam, q)) continue;
@@ -376,9 +401,21 @@ function setListHTML(d){
     c.variants.forEach((v, k) => { if (!k) return; const sk = wsSkills()[wsOfSet(v.set)] || t('varOther');
       if (!bySkill.has(sk)) bySkill.set(sk, []); bySkill.get(sk).push([v, k]); });
     for (const [sk, items] of [...bySkill].sort((a, b) => a[0].localeCompare(b[0]))) {
-      const open = !!q || !!(S._wsList || {})[S.job + '|' + sk], here = i === sel && items.some(([, k]) => k === vi(i));
-      list += `<button class="wskill ${here ? 'here' : ''}" data-wskill="${esc(sk)}" aria-expanded="${open}"><span>${esc(sk)}</span><span>${items.length}</span></button>`;
-      if (open) emit(items);
+      const here = i === sel && items.some(([, k]) => k === vi(i));
+      if (reveal && here) S.wsList = Object.assign({}, S.wsList, {[S.job + '|' + sk]: true});
+      const open = !!q || !!(S.wsList || {})[S.job + '|' + sk];
+      // one row a weaponskill, whatever its versions (a dance, Climactic, the support profiles: up to 24 on a DNC):
+      // they are chosen in the set's head (versionGridHTML), as a set's support versions are; a search lists them all
+      const byWs = new Map();
+      items.forEach(x => { const ws = wsOfSet(x[0].set) || x[0].label; if (!byWs.has(ws)) byWs.set(ws, []); byWs.get(ws).push(x); });
+      list += `<button class="wskill ${here ? 'here' : ''}" data-wskill="${esc(sk)}" aria-expanded="${open}"><span>${esc(sk)}</span><span>${q ? items.length : byWs.size}</span></button>`;
+      if (!open) continue;
+      if (q) { emit(items); continue; }
+      for (const [ws, group] of byWs) {
+        const head = group.find(([v]) => v.label === ws);
+        if (!head || group.length < 2) { emit(group); continue; }
+        tierRow(head[0], head[1], group.filter(x => x !== head).map(([v, k]) => [v, k, v.label.startsWith(ws + ' · ') ? v.label.slice(ws.length + 3) : v.label]));
+      }
     }
   }
   if (fam) list += crossOf(fam);
@@ -547,6 +584,9 @@ function render(){
     if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });
   scrollPut(kept);
   scrollBack(view, set);
+  // the set shown, newly chosen: its row brought into the list's sight (nothing moves when it is already there)
+  if (S._revealNow) { S._revealNow = false; const cur = $('.setlist .setrow[aria-current="true"]'), box = cur && cur.closest('.scroll');
+    if (cur) { cur.scrollIntoView({block: 'nearest', inline: 'nearest'}); if (box) box.scrollLeft = 0; } }
   S._view = view; S._set = set;
   if (id) { const el = document.getElementById(id); if (el) { el.focus(); if (pos != null && el.setSelectionRange) el.setSelectionRange(pos, pos); } }
   if (S._buffDlg && !$('#overlay').hidden && $('.buffdlg')) openBuffs();

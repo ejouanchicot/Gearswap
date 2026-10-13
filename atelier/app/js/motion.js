@@ -11,7 +11,10 @@ const motionOn = () => S.motion !== false && !matchMedia('(prefers-reduced-motio
 function motionKey(){
   const tab = [S.char, S.job, S.section, !!S._cfg].join('|'), cur = document.querySelector('#view .setrow[aria-current="true"] code');
   const set = String((S.selPath || {})[S.job] || (cur ? cur.textContent : (S.sel || {})[S.job]));
-  return {tab, set: tab + '|' + set, base: tab + '|' + set.replace(/\.(Group|Solo|Trust|Normal)$/, '')};
+  // `win`: the set whatever its version (a support profile's, and a weaponskill's buff versions: .Clim, .FanDance.Clim.Solo
+  // are all that weaponskill's): going from a version to another is not opening another set, the window does not open again
+  const plain = set.replace(/\.(Group|Solo|Trust)$/, ''), ws = plain.match(/^sets\.precast\.WS(\["[^"]*"\]|\.[A-Za-z_]\w*)/);
+  return {tab, set: tab + '|' + set, base: tab + '|' + set.replace(/\.(Group|Solo|Trust|Normal)$/, ''), win: tab + '|' + (ws ? ws[0] : plain)};
 }
 
 Object.assign(T.fr, {cfgMotion: 'Animations', cfgMotionWhy: 'Le curseur qui glisse, les chiffres qui défilent, les fenêtres qui s’ouvrent. Coupées d’office si ton système demande moins d’animations.',
@@ -115,7 +118,7 @@ function motionAfter(){
       if (r.fill && (!same || !was || was.fill !== r.fill)) motionStart('fill', k, {from: same && was && was.fill ? was.fill : '0%', fill: r.fill});
     }
     if (key.base === was0.base) for (const [k, s] of slots) { const was = MOTION.slots.get(k); if (was && was.what !== s.what) motionStart('slot', k, {}); }
-    if (key.set !== was0.set) motionStart('win', '', {});
+    if (key.win !== was0.win) motionStart('win', '', {});
     motionApply(rows, slots);
   } else MOTION.live.clear();
   motionHands(on && same);

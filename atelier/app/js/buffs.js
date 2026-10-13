@@ -331,12 +331,13 @@ function setDance(){
 // Climactic Flourish counts on its own on the .Clim versions of a weaponskill set (ws_variant_selector.lua), a click
 // turns it off there
 const setClim = () => S.job === 'DNC' && !!S._curSet && (S._curSet.path || '').split('.').includes('Clim');
+const setNamed = () => S.job === 'DNC' && !!S._curSet && ['sets.engaged', 'sets.precast.WS'].some(p => (S._curSet.path || '').startsWith(p));
 function jaOn(b, name){
   const role = jaRole(name);
-  if (role === 'ja' && name === 'Climactic Flourish' && setClim() && !(b.jaOff || {})[name]) return true;
-  if (role === 'ja' && SET_DANCE_NAMES.has(name)) { const auto = setDance(), off = b.jaOff || {};
-    if (auto === name && !off[name]) return true;
-    if (auto && auto !== name && !off[auto]) return false; }
+  // a DNC's engaged and weaponskill sets: the dances and Climactic Flourish are the ones the set's name says, nothing
+  // else (a tick left from another set would count Fan Dance on the plain weaponskill set); a click turns the set's own off
+  if (role === 'ja' && setNamed() && (name === 'Climactic Flourish' || SET_DANCE_NAMES.has(name)))
+    return (name === 'Climactic Flourish' ? setClim() : setDance() === name) && !(b.jaOff || {})[name];
   // Fan Dance renders your own sambas unusable (a party DNC's Haste Samba still counts)
   if (name === 'Haste Samba' && role === 'ja' && jaOn(b, 'Fan Dance')) return false;
   if ((b[role] || {})[name]) return true;
