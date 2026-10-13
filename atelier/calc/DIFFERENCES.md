@@ -718,3 +718,17 @@ Tiara +3, Locus Ghost Crabs Lv 139; the ones under STR Down or with Stoneskin on
   engine before. Never on an attack round: the page takes it off a round, and no round was measured under it.
 - Dancing Edge has four weapon skills kept, from 2598 to 6066: no conclusion.
 
+
+### The artifact armor's set bonus (2026-10-13)
+
+- Measured: with Regal Ring and one Maxixi +4 piece worn (Maxixi Bangles +4 on Pyrrhic Kleos and Exenterator,
+  Maxixi Tiara +4 on an Evisceration), /checkparam gives 15 more accuracy than the pieces add up to, on both hands;
+  0 on the sets with Regal Ring and no artifact piece.
+- Ours: the reforged artifact pieces +2, +3 and +4 of the job and the Regal accessories are counted together, five
+  at most: 2 = +15, 3 = +30, 4 = +45, 5 = +60 of Accuracy, Ranged Accuracy and Magic Accuracy (the two pages of
+  SOURCES.md). Only the two-piece step is measured. Regal accessories with no artifact piece: no bonus (not on the
+  pages, and what the game showed).
+- The engine before gives nothing to a +4 piece: 24 of the 756 reference cases now differ on Accuracy, all of them
+  two sets, Tetsouo THF sets.precast.WS (Regal Ring + Pill. Culottes +4) and WAR sets.engaged (Pumm. Cuisses +4 +
+  Pumm. Calligae +4). The first is the case measured, the second follows the same page.
+- `CALC.ARTIFACT_PIECES` and `CALC.setBonusTotals` of `calc_sets.js`.
