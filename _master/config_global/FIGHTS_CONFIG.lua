@@ -40,6 +40,9 @@
 ---                           damage taken of a set, a Fan Dance)
 ---     hold = true           the weaponskill waits until every kept ability is up (a Climactic
 ---                           Flourish lasts less than its recast)
+---     late = {'Climactic Flourish'}  kept abilities used only once the weaponskill's TP is
+---                           there (its critical hits are spent by the rounds: used early, none
+---                           is left when the TP comes)
 ---     moves = 'Stutter Step'  that step is used while a kept ability is missing and no
 ---                           Finishing Move is up (Climactic Flourish needs one; Stutter Step
 ---                           lowers nothing a physical hit reads)

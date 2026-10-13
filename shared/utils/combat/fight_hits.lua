@@ -527,11 +527,21 @@ end
 --- The abilities a step keeps up (`keep`): the first one missing and ready is used, one every
 --- KEEP_RETRY seconds (a refused ability must not be asked at every swing).
 local function keep_up(p, c)
-    local up = buffs_up(p)
+    local up, short = buffs_up(p), (p.vitals and p.vitals.tp or 0) < (tonumber(c.step.tp) or 1000)
+    local late, others = table.concat(c.step.late or {}, '|'), true
     for _, name in ipairs(c.step.keep or {}) do
-        if not up[name:lower()] and os.clock() - (c.keep_asked or -KEEP_RETRY) >= KEEP_RETRY and ability_ready(name) then
+        if not late:find(name, 1, true) and not up[name:lower()] then others = false end
+    end
+    for _, name in ipairs(c.step.keep or {}) do
+        -- `late` (Climactic Flourish: the rounds spend it): used only once the weaponskill's TP is there and the
+        -- other kept abilities are up, the weaponskill sent right behind it
+        local is_late = late:find(name, 1, true)
+        local waits = is_late and (short or not others)
+        if not up[name:lower()] and not waits and os.clock() - (c.keep_asked or -KEEP_RETRY) >= KEEP_RETRY and ability_ready(name) then
             c.keep_asked = os.clock()
-            return send_command('input /ja "' .. name .. '" <me>')
+            if not (is_late and c.step.ws) then return send_command('input /ja "' .. name .. '" <me>') end
+            c.ws_asked = os.clock()
+            return send_command('input /ja "' .. name .. '" <me>; wait 2; input /ws "' .. c.step.ws .. '" <t>')
         end
     end
 end
@@ -540,7 +550,7 @@ end
 --- missing and no Finishing Move is up (Climactic Flourish needs one).
 --- @return boolean True while moves are wanted: the kept abilities wait for them
 local function feed_moves(p, c)
-    if not c.step.moves or kept_up(p, c.step) then return false end
+    if not c.step.moves or kept_up(p, c.step) or os.clock() - (c.ws_asked or -WS_RETRY) < WS_RETRY then return false end
     for name in pairs(buffs_up(p)) do
         if name:find('^finishing move') then return false end
     end
@@ -585,7 +595,10 @@ function FightHits.after(p)
     local tp = p.vitals and p.vitals.tp or 0
     local ws = step_ws(c.step, tp, p)
     -- `hold`: the weaponskill waits for the kept abilities (a Climactic Flourish that lasts less than its recast)
-    if ws and c.step.hold and not kept_up(p, c.step) then ws = nil end
+    -- (above tp_max the TP is still spent with `dump` while a `late` ability recasts: the next one finds the TP near `tp`)
+    if ws == c.step.dump and c.step.late and kept_up(p, c.step) then ws = c.step.ws end   -- under it: the step's own
+    local spends = ws == c.step.dump and c.step.late and not ability_ready(c.step.late[1])
+    if ws and c.step.hold and not kept_up(p, c.step) and not spends then ws = nil end
     if ws and os.clock() - (c.ws_asked or -WS_RETRY) >= WS_RETRY then
         c.ws_asked = os.clock()
         send_command('input /ws "' .. ws .. '" <t>')

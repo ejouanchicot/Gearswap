@@ -167,6 +167,7 @@ end
 
 local function start(mob)
     local s = session()
+    windower._fight_no_fight_said = nil
     s.fights = s.fights + 1
     s.fight = {id = mob.id, name = mob.name, start = os.time(), dmg = 0, number = s.fights,
         melee = {hits = 0, crits = 0, misses = 0, dmg = 0}, ws = {n = 0, misses = 0, dmg = 0}}
@@ -279,6 +280,13 @@ end
 
 local function on_action(act)
     local f, p = session().fight, windower.ffxi.get_player()
+    -- the journal says once when the character acts with no fight open (its swings are then lost)
+    if not f and p and act.actor_id == p.id and act.category == 1 and Hits.on() and not windower._fight_no_fight_said then
+        windower._fight_no_fight_said = true
+        Hits.note('NOFIGHT the character swings and no fight is open')
+        pcall(on_engage)
+        f = session().fight
+    end
     if not f or not p then return end
     local hits = Hits.on()
     if act.actor_id ~= p.id then
@@ -309,6 +317,7 @@ end
 function FightTracker.init()
     if not enabled() or rawget(_G, '_fight_tracker_listening') then return end
     _G._fight_tracker_listening = true
+    if Hits.on() then Hits.note('LISTEN the fight tracker listens (a load)') end
     require('shared/utils/core/action_listener').on('fight_tracker', on_action)
     windower.raw_register_event('incoming chunk', function(id, original) pcall(on_incoming, id, original) end)
     windower.raw_register_event('status change', function(new, old) pcall(on_status, new, old) end)
