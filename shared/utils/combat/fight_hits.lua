@@ -5,7 +5,7 @@
 --- actions it already listens to): what the game really answers, written to
 --- <Character>/logs/fights/<date>_hits.log so damage formulas can be checked
 --- against it afterwards.
----   SWING    one a swing: its round, hit / crit / miss, damage, TP, message
+---   SWING    one a swing: its round, hit / crit / miss, damage, TP, message, the hand (anim)
 ---   WS       one a weaponskill: name, damage, the TP before and after
 ---   WSGEAR   the pieces worn when the weaponskill is readied, and when it lands
 ---   AUGS     the augments and rank of the pieces worn that carry some (with GEAR, and
@@ -16,6 +16,7 @@
 ---   FIGHT, JOB, GEAR, PARAM   the mob, what the character is and wears, and
 ---            its accuracy / attack from a /checkparam <me> sent 3 s later
 ---   BUFFS    the buffs up, each time they change between two swings
+---   TAKEN    one a swing a mob makes at the character: hit / crit / miss, the damage taken
 ---   MOB, ON-MOB   the mob's own moves and spells, the spells others land on
 ---            it, with the status gained or removed (a Defense Boost, a Dispel)
 ---   STEP, MARK    the parts of a session (//gs c fights hits <step>)
@@ -24,7 +25,9 @@
 --- Steps come from <Character>/_common/tools/FIGHTS_CONFIG.lua (every key is
 --- explained there): commands run on this character, a goal counted in swings
 --- or weaponskills, a weaponskill used by itself at a TP, abilities kept up,
---- slots emptied and locked (to measure the hit rate at several accuracies).
+--- slots emptied and locked (to measure the hit rate at several accuracies),
+--- a goal counted in hits taken, a weaponskill held until the kept abilities
+--- are up, a step that feeds Finishing Moves.
 --- //gs c fights hits run plays its `sequence`. Nothing here moves, targets
 --- or engages the character.
 ---
@@ -56,7 +59,8 @@ local PARAM = {[712] = {'Primary Accuracy', 'Primary Attack'}, [713] = {'Auxilia
 local PARAM_DELAY = 3
 local GEAR_SLOTS = {'main', 'sub', 'range', 'ammo', 'head', 'neck', 'left_ear', 'right_ear', 'body', 'hands',
     'left_ring', 'right_ring', 'back', 'waist', 'legs', 'feet'}
-local EVERY = {swings = 50, ws = 5}
+local EVERY = {swings = 50, ws = 5, taken = 10}
+local UNIT_LABEL = {swings = 'Swings', ws = 'Weaponskills', taken = 'Hits taken'}
 -- seconds before a weaponskill or a kept ability is asked again
 local WS_RETRY, KEEP_RETRY = 3, 5
 -- seconds a step that empties slots needs before what is worn can be read (unlock, update, equip, lock)
@@ -103,7 +107,7 @@ end
 
 --- The count since the last STEP or MARK line: {swings, ws, goal, unit, label, step, last_tp}.
 local function count()
-    windower._fight_hits_count = windower._fight_hits_count or {swings = 0, ws = 0}
+    windower._fight_hits_count = windower._fight_hits_count or {swings = 0, ws = 0, taken = 0}
     return windower._fight_hits_count
 end
 
@@ -254,17 +258,17 @@ end
 
 --- One more swing or weaponskill: shown every EVERY of its kind, and when the goal is reached.
 --- In a step that keeps abilities up, only what happens under them is counted.
---- @param unit string 'swings' or 'ws'
+--- @param unit string 'swings', 'ws' or 'taken'
 --- @param p table windower.ffxi.get_player()
 local function counted(unit, p)
     local c = count()
     if not kept_up(p, c.step) then return end
-    c[unit] = c[unit] + 1
+    c[unit] = (c[unit] or 0) + 1
     local reached = c.goal and c.unit == unit and c[unit] == c.goal
     if reached then c.done = true end
     if not reached and c[unit] % EVERY[unit] ~= 0 then return end
     InfoBlock.show({tag = 'FIGHTS', title = c.label or 'Measure', fields = {
-        {unit == 'ws' and 'Weaponskills' or 'Swings', c.goal and c.unit == unit and (c[unit] .. ' / ' .. c.goal) or tostring(c[unit])},
+        {UNIT_LABEL[unit], c.goal and c.unit == unit and (c[unit] .. ' / ' .. c.goal) or tostring(c[unit])},
         reached and {'Goal', 'reached: next step'} or nil,
     }})
 end
@@ -281,8 +285,9 @@ function FightHits.line(f, p, act, a)
     local c, tp = count(), p.vitals and p.vitals.tp or '?'
     if act.category == 1 then
         local kind = FightHits.MELEE_CRIT[a.message] and 'crit' or FightHits.MELEE_HIT[a.message] and 'hit' or 'miss'
-        write(('SWING round %d | %s | dmg %d | tp %s | msg %s'):format(f.round or 0, kind,
-            kind == 'miss' and 0 or (a.param or 0), tostring(tp), tostring(a.message)))
+        -- `anim`: the hand that swung (0 main, 1 off-hand, 2 and 3 kicks): a dual wielder's hands differ in accuracy
+        write(('SWING round %d | %s | dmg %d | tp %s | msg %s | anim %s'):format(f.round or 0, kind,
+            kind == 'miss' and 0 or (a.param or 0), tostring(tp), tostring(a.message), tostring(a.animation)))
         c.last_tp = tp
         return counted('swings', p)
     end
@@ -293,11 +298,28 @@ function FightHits.line(f, p, act, a)
     counted('ws', p)
 end
 
+--- A TAKEN line for each swing anyone makes at the character (the fight's mob or a link): what the
+--- damage taken of a set is checked against. Only the swings that land count toward a goal in hits taken.
+--- @param act table A melee action (category 1) of anyone but the player
+local function taken(act)
+    local p = windower.ffxi.get_player()
+    if not p then return end
+    for _, target in ipairs(act.targets or {}) do
+        for _, a in ipairs(target.id == p.id and target.actions or {}) do
+            local kind = FightHits.MELEE_CRIT[a.message] and 'crit' or FightHits.MELEE_HIT[a.message] and 'hit' or 'miss'
+            write(('TAKEN %s | dmg %d | msg %s | reaction %s | by %s'):format(kind, kind == 'miss' and 0 or (a.param or 0),
+                tostring(a.message), tostring(a.reaction), tostring((windower.ffxi.get_mob_by_id(act.actor_id) or {}).name)))
+            if kind ~= 'miss' then counted('taken', p) end
+        end
+    end
+end
+
 --- What happens to the mob besides the player's own hits: a MOB line for each of its moves and spells,
 --- an ON-MOB line for each spell someone else lands on it, each with the message and the status named.
 --- @param f table The fight
 --- @param act table Action of anyone but the player
 function FightHits.other(f, act)
+    if act.category == 1 then return taken(act) end
     local by_mob = act.actor_id == f.id
     if act.category ~= SPELL_DONE and not (by_mob and act.category == MOB_MOVE) then return end
     local what = names_of({act.param}, act.category == SPELL_DONE and 'spells' or 'monster_abilities')[1]
@@ -337,13 +359,13 @@ end
 
 --- The goal typed after a step or a mark (`polearm 300`, `vorpal 20 ws`), else the step's own
 --- (`goal`, `unit` in FIGHTS_CONFIG.lua). A number typed alone is a mark, not a goal.
---- @return number|nil goal, string unit 'swings' or 'ws'
+--- @return number|nil goal, string unit 'swings', 'ws' or 'taken'
 local function goal_of(words, step)
     for i = 2, #words do
         local n = tonumber(words[i])
-        if n then return n, (words[i + 1] or ''):lower() == 'ws' and 'ws' or 'swings' end
+        if n then return n, UNIT_LABEL[(words[i + 1] or ''):lower()] and words[i + 1]:lower() or 'swings' end
     end
-    return tonumber(step.goal), step.unit == 'ws' and 'ws' or 'swings'
+    return tonumber(step.goal), UNIT_LABEL[step.unit] and step.unit or 'swings'
 end
 
 --- The slots a step empties (`strip`), and the ones the step before had emptied given back. The
@@ -378,7 +400,7 @@ local function step(words)
     local name = words[1]:lower()
     local commands = (config().steps or {})[name]
     local goal, unit = goal_of(words, type(commands) == 'table' and commands or {})
-    windower._fight_hits_count = {swings = 0, ws = 0, goal = goal, unit = unit, label = table.concat(words, ' '),
+    windower._fight_hits_count = {swings = 0, ws = 0, taken = 0, goal = goal, unit = unit, label = table.concat(words, ' '),
         step = type(commands) == 'table' and commands or nil}
     if type(commands) ~= 'table' then
         write('MARK ' .. table.concat(words, ' '))
@@ -513,6 +535,21 @@ local function keep_up(p, c)
     end
 end
 
+--- A step that feeds Finishing Moves (`moves`, a dance step): used on the target while a kept ability is
+--- missing and no Finishing Move is up (Climactic Flourish needs one).
+--- @return boolean True while moves are wanted: the kept abilities wait for them
+local function feed_moves(p, c)
+    if not c.step.moves or kept_up(p, c.step) then return false end
+    for name in pairs(buffs_up(p)) do
+        if name:find('^finishing move') then return false end
+    end
+    if os.clock() - (c.keep_asked or -KEEP_RETRY) >= KEEP_RETRY and ability_ready(c.step.moves) then
+        c.keep_asked = os.clock()
+        send_command('input /ja "' .. c.step.moves .. '" <t>')
+    end
+    return true
+end
+
 --- The weaponskill a step uses at this TP, or nil: its own (`ws`) from `tp` on, and above `tp_max`
 --- another one (`dump`) that only spends the TP. An Aftermath's level comes from the TP its
 --- weaponskill is used at: used above the level wanted it gives a higher one, which a lower one
@@ -543,9 +580,11 @@ function FightHits.after(p)
         return switch(false)
     end
     if not c.step or c.done then return end
-    keep_up(p, c)
+    if not feed_moves(p, c) then keep_up(p, c) end
     local tp = p.vitals and p.vitals.tp or 0
     local ws = step_ws(c.step, tp, p)
+    -- `hold`: the weaponskill waits for the kept abilities (a Climactic Flourish that lasts less than its recast)
+    if ws and c.step.hold and not kept_up(p, c.step) then ws = nil end
     if ws and os.clock() - (c.ws_asked or -WS_RETRY) >= WS_RETRY then
         c.ws_asked = os.clock()
         send_command('input /ws "' .. ws .. '" <t>')

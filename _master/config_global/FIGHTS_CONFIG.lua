@@ -36,6 +36,13 @@
 ---     strip = {'waist', 'left_ring'}   those slots are emptied and locked for the step, and
 ---                           given back at the next one: fewer pieces, less accuracy, to see
 ---                           how often you hit at each accuracy (written at each step)
+---     unit = 'taken'        the goal counts the hits the mob lands on you (TAKEN lines: the
+---                           damage taken of a set, a Fan Dance)
+---     hold = true           the weaponskill waits until every kept ability is up (a Climactic
+---                           Flourish lasts less than its recast)
+---     moves = 'Stutter Step'  that step is used while a kept ability is missing and no
+---                           Finishing Move is up (Climactic Flourish needs one; Stutter Step
+---                           lowers nothing a physical hit reads)
 ---
 --- //gs c fights hits run plays the steps of `sequence` one after the other,
 --- each started when the one before reached its goal, then stops the journal.
