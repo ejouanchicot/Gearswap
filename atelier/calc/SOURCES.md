@@ -294,3 +294,6 @@ Read and left out of the table (DIFFERENCES.md, Y3):
 
 As before, the tool returns a summary with quotes, not the page: a quote was asked a second time
 when the first answer paraphrased it, and none was checked against the page's source by another route.
+| https://www.bg-wiki.com/ffxi/Pyrrhic_Kleos | read 2026-10-13: "Delivers a fourfold attack that lowers target's evasion. Duration of effect varies with TP." ; "40% STR / 40% DEX" ; fTP 1.75 ; "This is an fTP replicating weaponskill." ; "Evasion Down effect is -10 Evasion." | calc_ws_details.js |
+| https://www.bg-wiki.com/ffxi/Exenterator | read 2026-10-13: "73~85% AGI" ; "73% AGI mod on 1st merit, +3% for 2nd-5th merits. 85% AGI mod at 5/5." ; fTP 1.1875 ; "This is an fTP replicating weaponskill." | calc_ws_details.js (weaponskillWithMerits) |
+| https://www.bg-wiki.com/ffxi/Category:Prime_Weapons | read 2026-10-13: five stages, the pages named (Incomplete) = stage 2, (Level 119) = 3, (Level 119 II) = 4, (Level 119 III) = 5 ; "Once a weapon has been upgraded to stage 3 a unique weapon skill becomes available only while in Sortie" ; "Once a weapon has been upgraded to stage 4 you will be able to use the weapon skill anywhere" ; no hidden effect on the weapons' pages | calc_round_damage.js (measured, not from a page) |

@@ -4,7 +4,7 @@
 // page and our database disagree the page wins, and DIFFERENCES.md lists the disagreement.
 //
 //   mods         attribute modifiers in percent. Merit weapon skills read "73~85%": 85 is
-//                the value "at 5/5" merits, the assumption of stage 1 (every merit bought)
+//                the value "at 5/5" merits; CALC.weaponskillWithMerits lowers it for fewer merits
 //   ftp          [at 1000 TP, at 2000, at 3000]; one number on the page = the same at every TP
 //   hits         number of hits of the weapon skill itself
 //   replicating  true when the page says "This is an fTP replicating weaponskill"
@@ -183,7 +183,30 @@
             attack: same(1.75)},
         "Shark Bite": {url: U + "Shark_Bite", type: "Physical", mods: {DEX: 40, AGI: 40}, ftp: [4.5, 6.8, 8.5],
             hits: 2},
-        "Rudra's Storm": {url: U + "Rudra%27s_Storm", type: "Physical", mods: {DEX: 80}, ftp: [5, 10.19, 13]}
+        "Rudra's Storm": {url: U + "Rudra%27s_Storm", type: "Physical", mods: {DEX: 80}, ftp: [5, 10.19, 13]},
+        // read 2026-10-13: "Delivers a fourfold attack that lowers target's evasion. Duration of effect varies
+        // with TP.", "40% STR / 40% DEX", fTP 1.75, "This is an fTP replicating weaponskill."
+        "Pyrrhic Kleos": {url: U + "Pyrrhic_Kleos", type: "Physical", mods: {STR: 40, DEX: 40}, ftp: same(1.75),
+            hits: 4, replicating: true}
+    };
+
+    // https://www.bg-wiki.com/ffxi/Exenterator (read 2026-10-13): "73~85% AGI", "73% AGI mod on 1st merit,
+    // +3% for 2nd-5th merits. 85% AGI mod at 5/5." The other merit weapon skills' pages give the same range;
+    // only Exenterator's sentence was read again that day.
+    CALC.WS_MERIT_TOP = 85;
+    CALC.WS_MERIT_STEP = 3;
+    CALC.WS_MERIT_MAX = 5;
+    // A merit weapon skill (its one modifier at CALC.WS_MERIT_TOP) with `merits` of them bought (1 to 5):
+    // the same weapon skill, its modifier 3 lower a merit missing. Any other weapon skill, or no number: as it is.
+    CALC.weaponskillWithMerits = function (info, merits) {
+        var names = Object.keys(info.mods || {});
+        if (typeof merits !== "number" || names.length !== 1 || info.mods[names[0]] !== CALC.WS_MERIT_TOP) return info;
+        var bought = Math.max(1, Math.min(CALC.WS_MERIT_MAX, Math.floor(merits)));
+        var out = {};
+        Object.keys(info).forEach(function (key) { out[key] = info[key]; });
+        out.mods = {};
+        out.mods[names[0]] = CALC.WS_MERIT_TOP - CALC.WS_MERIT_STEP * (CALC.WS_MERIT_MAX - bought);
+        return out;
     };
 
     // One weapon skill as the engine reads it: our database, then what its BG-Wiki page states.

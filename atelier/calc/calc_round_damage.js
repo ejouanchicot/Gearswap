@@ -148,8 +148,14 @@
     // weaponskill (no Disaster of 190 near twice its size). Stage IV only: another stage is not measured, and the
     // other prime weapons are not either
     var LAPHRIA = {firstSwing: {rate: 0.33, multiplier: 2}};
+    // Mpu Gandring (a prime weapon, stage IV: DMG 130, "Triple Attack"+4%): its pages carry no hidden effect either.
+    // Measured in game on 2026-10-13 (Tetsouo DNC, main hand, Locus Ghost Crabs): 156 of 424 plain first swings of a
+    // round (36.8 %, 33 to 46 % by fight) are above the largest later swing of the same fight, at twice the damage;
+    // no later swing does it. The same stage and the same effect as Laphria's, within the two measures' errors
+    var MPU_GANDRING = {firstSwing: {rate: 0.37, multiplier: 2}};
     // the stage is in the name the gear gives the weapon ("Laphria IV"): the other stages have no entry
-    CALC.RELIC_WEAPON = {"Apocalypse": APOCALYPSE, "Apocalypse R15": APOCALYPSE, "Laphria IV": LAPHRIA};
+    CALC.RELIC_WEAPON = {"Apocalypse": APOCALYPSE, "Apocalypse R15": APOCALYPSE, "Laphria IV": LAPHRIA,
+        "Mpu Gandring IV": MPU_GANDRING};
 
     // Mean damage multipliers from `options` = {aftermath: {type: "empyrean", level: 1..3,
     // multiplier: 2 or 3}, main: "Apocalypse R15"} (the main hand weapon as the gear names it).

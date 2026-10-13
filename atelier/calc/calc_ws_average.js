@@ -142,19 +142,27 @@
         // https://www.bg-wiki.com/ffxi/Weapon_Skill_Damage : Weapon Skill Damage on gear and from
         // job point gifts is additive and "affect[s] 1st hit Only".
         // https://www.bg-wiki.com/ffxi/Category:Weapon_Skills : "The first swing [...] receives a
-        // substantial (~+100) accuracy bonus, while additional swings receive no bonus": the first
-        // off-hand swing is an additional swing.
+        // substantial (~+100) accuracy bonus, while additional swings receive no bonus". The page does
+        // not say which the first off-hand swing is.
+        // measured in game 2026-10-13 (Tetsouo DNC, Mpu Gandring / Centovente, Locus Ghost Crabs, 53
+        // Rudra's Storm told by their TP return: 60 a full hit, 120 both hands, 13 an extra swing): the
+        // off-hand swing landed 31 times, 58 % (+-7), where its auto-attacks landed 23 % (175 of 768,
+        // the floor). With the bonus the formula gives 52 %, without it 20 %: the first off-hand swing
+        // has the bonus. Its extra swings were not told apart: left without.
         var kinds = [{count: 1, hand: main, ftp: ctx.ftp, bonus: percent(s, "Weapon Skill Damage"),
             accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: true}];
         kinds.push({count: hits - 1 + extra[0] + (off ? 0 : extra[1]), hand: main, ftp: later});
-        if (off) kinds.push({count: 1, hand: off, offHand: true, ftp: later, fullTP: true});
+        if (off) kinds.push({count: 1, hand: off, offHand: true, ftp: later, accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: true});
         if (off) kinds.push({count: extra[1], hand: off, offHand: true, ftp: later});
         return kinds;
     };
 
+    // `wield.merits`: the merits bought in this weapon skill (1 to 5), for the ones whose attribute
+    // modifier grows with them; left out, 5 (every merit bought, the modifier of the tables).
     CALC.weaponskillAverage = function (stats, enemy, name, tp, wield) {
         var info = CALC.weaponskillInfo(name), why = whyUnsupported(info);
         if (why) return {unsupported: why};
+        info = CALC.weaponskillWithMerits(info, (wield || {}).merits);
         var ctx = describe(stats, enemy, info, tp, wield || {});
         if (CALC.valueAtTP(info.ftp, ctx.tp) === null) return {unsupported: "fTP unknown at this TP"};
         if (Number.isNaN(ctx.crit)) return {unsupported: "critical hit rate unknown at this TP"};

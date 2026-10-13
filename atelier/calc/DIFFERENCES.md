@@ -119,7 +119,7 @@ move. These may be errors of the old engine.
 | G6 | `WS_MAX_SWINGS` | multi-attack swings "Subject to the 8-hits per round limit" | no limit that a single number reproduces: none up to 7 swings + 2, and Evisceration with Quadruple Attack sits between a limit of 8 and of 9 (Tetsouo_BRD#9, 0.2%) | 219 damage and TP, up to 2% | https://www.bg-wiki.com/ffxi/Double_Attack |
 | G7 | `wsExtraSwingTP` | the page: "a flat 10 TP" for every swing after the first of a hand; the game (P2): floor(10 x (1 + Store TP / 100)), which is what the engine does | 10 x (1 + Store TP / 100), not floored (14.8 with Store TP 48, 14 in the game) | 1465 TP, up to 26% before P2; the floor alone since | https://www.bg-wiki.com/ffxi/Tactical_Points |
 | G8 | `conserveTPAverage` | Conserve TP keeps "a random whole amount of TP between 10 and 200": 105 on average | 95 on average (Tetsouo_DNC#37: 19.95 TP for Conserve TP 21) | 297 TP, up to 5.3% | https://www.bg-wiki.com/ffxi/Conserve_TP |
-| G9 | `wsSwingKinds` | +100 accuracy on "The first swing", "additional swings receive no bonus" | the first off-hand swing gets the +100 too (Kaories_COR#23: off-hand 95% against 54%) | 105 damage and TP, up to 37% (dual wield only) | https://www.bg-wiki.com/ffxi/Category:Weapon_Skills |
+| G9 | `wsSwingKinds` | CLOSED 2026-10-13: ours now gives the first off-hand swing the +100 too, as the reference does (measured in game, section AB). Was: +100 accuracy on "The first swing", "additional swings receive no bonus" | the first off-hand swing gets the +100 too (Kaories_COR#23: off-hand 95% against 54%) | 105 damage and TP, up to 37% (dual wield only) | https://www.bg-wiki.com/ffxi/Category:Weapon_Skills |
 | G10 | `wsProcChances` | Occasionally Attacks X Times procs on weapon skills "only when provided by Mythic AM3" | "OA2 main" / "OA2 sub" 45 of Demers. Degen +1 and Blurred Knife +1 proc on the first swing of their hand, after Double Attack | 216 damage and TP, up to 29% (COR and DNC cases) | https://www.bg-wiki.com/ffxi/Multi-Attack |
 | G11 | status effects for Naegling (argument `wield.buffs`) | attack +1% per status effect; the sheet does not list them, the checker gives 0 | 13 status effects in every case, with or without party buffs, on both hands | 83 damage, up to 12.5% (Kaories_COR and Tetsouo_COR below the pDIF cap) | https://www.bg-wiki.com/ffxi/Naegling |
 | G12 | `wsMeanPdif`, "Crit Damage" | "Critical Hit Damage = (Base Damage + fSTR) x Critical pDIF x (Sum of Direct Modifiers)": the critical hits are multiplied by 1 + bonus | the whole mean, non critical hits included, is multiplied by 1 + critical hit rate x bonus. The engine is higher by bonus x rate x (1 - rate) pDIF (Tetsouo_WAR#33 Raging Rush: 0.7% at 1000 TP) | counted in G5 (the cases of WAR and THF, whose sheets have "Crit Damage") | https://www.bg-wiki.com/ffxi/Critical_Hit_Rate |
@@ -200,7 +200,7 @@ functions or constants replaced: G1 to G10, G12 being in the function of G5), `r
 1. Critical hits below the pDIF cap (G5). Chant du Cygne or Evisceration on an enemy where the attack / defense ratio is about 1: compare the size of the critical hits with the normal ones. BG-Wiki puts them about 1 pDIF apart; the reference's average is worth more than 2.
 2. "Crit Damage" (G12). Same weapon skill with and without a "Critical hit damage +%" piece: do the non critical hits change? BG-Wiki says no.
 3. TP of the extra swings (G7). A multi-hit weapon skill (Resolution, Evisceration) with high and with zero Store TP, every swing landing: is the TP return above the first hit 10 a swing, or 10 x (1 + Store TP)?
-4. Off-hand accuracy (G9). Dual wield, low accuracy against an evasive enemy: does the off-hand swing of a weapon skill land as often as the first swing, or as rarely as the others?
+4. Off-hand accuracy (G9). Dual wield, low accuracy against an evasive enemy: does the off-hand swing of a weapon skill land as often as the first swing, or as rarely as the others? ANSWERED 2026-10-13: as often as the first swing (section AB).
 5. "Occasionally attacks twice" weapons (G10). Circle Blade with Demers. Degen +1 in a hand, no Double / Triple Attack gear: does the weapon skill ever show three swings?
 6. Fast Blade, Full Swing, Heavy Swing, Retribution, Origin, Ground Strike, Spinning Slash, Tachi: Enpi, Raging Axe at 2000 and 3000 TP (H1 to H10, H18, H19): damage at 3000 TP against 1000 TP. The page and the reference differ by a factor of 1.5 to 2.6.
 7. Hit counts: Viper Bite, Spinning Axe, Hard Slash (1 on the page, 2 in the reference), Sickle Moon (2 on the page, 1 in the reference): count the swings in the log.
@@ -663,3 +663,34 @@ The same whether the swing is critical (38.7 %) or not (32.3 %), and under every
 size: it does not act on the weaponskill. Ours: `CALC.RELIC_WEAPON["Laphria IV"]`, first swing x2 at 0.33. The reference
 has nothing: on an engaged set with Laphria ours is above it by the first swing's share of the round. Not measured:
 another stage of the weapon, the other prime weapons.
+
+## AB. Measured in game, 2026-10-13 (Tetsouo DNC99/DRG55, Mpu Gandring IV and Centovente, Locus Ghost Crabs Lv 138 and 139)
+
+Journal `Tetsouo/logs/fights/2026-10-13_hits.log` from 02:13, read by `scripts/audit/dnc_ingame_export.py` and
+`scripts/audit/calc_dnc_ingame_check.js` (enemy defense and evasion fitted on the auto-attacks of each fight, nothing on
+the weapon skills). The alt gave Haste II, Protect, Shell and Regen; Haste Samba was up; no Climactic Flourish.
+
+- The sheet (attributes, attack, accuracy of both hands) equals the game's on every set worn.
+- Off-hand auto-attacks land at the 20 % floor: 175 of 768 (22.8 %), Centovente being about 229 accuracy under the main hand.
+- **First off-hand swing of a weapon skill** (G9): told by the TP a Rudra's Storm returns (60 a full hit, 120 both
+  hands, 13 an extra swing), it landed 31 times of 53 (58 %, +-7) where the formula gives 52 % with the first swing's
+  +100 and 20 % without. Ours now gives it the bonus; its extra swings stay without (not told apart).
+- **Mpu Gandring IV**: 156 of 424 plain first swings of a round deal twice the damage (36.8 %), no later swing does.
+  `CALC.RELIC_WEAPON["Mpu Gandring IV"]`, first swing x2 at 0.37. Same stage as the Laphria of section AA (0.33).
+- **Pyrrhic Kleos** had no fTP in our table and was not computed: its page (read that day) gives 1.75, replicating,
+  four hits, 40 % STR / 40 % DEX.
+- **Merit weapon skills**: `CALC.weaponskillWithMerits(info, merits)`, 85 % at 5/5 and 3 % less a merit missing
+  (Exenterator's page). The page does not pass the character's merits yet: `wield.merits` of
+  `CALC.weaponskillAverage`, 5 when left out.
+- Weapon skills near 1000 TP, measured mean against ours after these changes (standard errors of the measure):
+  Rudra's Storm 9132 / 8469 (-7.3 %, 2.0), Shark Bite 7027 / 6423 (-8.6 %, 2.7), Ruthless Stroke 9580 / 10270
+  (+7.2 %, 1.2), Dancing Edge 3293 / 3325 (+1.0 %, 0.2), Evisceration 5570 / 5898 (+5.9 %, 0.7), Pyrrhic Kleos
+  4435 / 4753 (+7.2 %, 1.4), Exenterator 3337 / 3843 at 5/5 merits (+15.1 %, 2.6), 3639 at the character's 3/5
+  (+9.1 %). Twelve of each: Shark Bite's and Exenterator's gaps are not explained.
+- Not in the engine, seen in the measure: Saber Dance (+20 Double Attack puts the swings a round on the measure),
+  the pause of the weapon skill itself and the TP of the hits taken in `timeToWeaponskill` (it gives 9.4 to 11.1 s
+  between two weapon skills where 9.8 to 14.6 s were measured), a TP of a landed swing 2 above the game in two sets.
+- Damage taken (five engaged sets, about 20 hits each): 155 to 166 a hit in the four sets at 50 to 52 % of gear, and 155
+  under Fan Dance at its floor in a set of 39 %: the dance multiplies outside the 50 % cap, as the page counts it; its
+  cut read hit after hit (13, 38, 53, 70, 84, 101, 134, then about 155) is the 90 % losing 10 a hit down to 20.
+
