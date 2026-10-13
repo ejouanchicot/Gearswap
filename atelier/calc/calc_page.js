@@ -52,7 +52,8 @@
         if (!(metric in WS_VALUE)) return {unsupported: "metric " + metric};
         if (type === "ranged") return {unsupported: "ranged weapon skill"};
         // the number of buffs a Naegling counts is not given by the page: taken as none
-        var got = CALC.weaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), buffs: 0});
+        var got = CALC.weaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), buffs: 0,
+            climactic: stats["Climactic Flourish active"] > 0, head: ((gearset || {}).head || {}).Name});
         if (got.unsupported) return got;
         var values = [got.damage, got.tpReturn];
         return [values[WS_VALUE[metric]], [got.damage, got.tpReturn, 1]];

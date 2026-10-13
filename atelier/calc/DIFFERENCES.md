@@ -694,3 +694,27 @@ the weapon skills). The alt gave Haste II, Protect, Shell and Regen; Haste Samba
   under Fan Dance at its floor in a set of 39 %: the dance multiplies outside the 50 % cap, as the page counts it; its
   cut read hit after hit (13, 38, 53, 70, 84, 101, 134, then about 155) is the 90 % losing 10 a hit down to 20.
 
+### Climactic Flourish (the same night, 04:24 to 05:15, sequence `dncclim`)
+
+Each weapon skill sent two seconds behind the ability, near 1000 TP (the off-hand's TP Bonus +1000 on top), Maculele
+Tiara +3, Locus Ghost Crabs Lv 139; the ones under STR Down or with Stoneskin on the crab set apart.
+
+| Weapon skill | Kept | Measured | Ours | The engine before, told the ability is on |
+|---|---|---|---|---|
+| Rudra's Storm | 5 | 25355 +- 520 | 26430 (+4.2 %) | 34191 (+34.9 %) |
+| Shark Bite | 6 | 20036 +- 988 | 18907 (-5.6 %) | 24211 (+20.8 %) |
+| Ruthless Stroke | 7 | 31428 +- 882 | 30153 (-4.1 %) | 38557 (+22.7 %) |
+| Dancing Edge | 4 | 4455 +- 853 | 5705 (+28.0 %, 1.5 standard errors) | 5861 (+31.5 %) |
+
+- Ours: the first hit is a critical hit (the page's "only the first hit will be forced to critical"), the head piece's
+  critical hit damage joins the sheet's on that hit, and "50% of your CHR" (70 % with the twenty job point ranks) is
+  added to the hit AFTER the fTP and the Weapon Skill Damage. The page says "base damage bonus" and no more: put
+  inside the fTP it gives 38775, 28245 and 51215 (+53 %, +41 %, +63 %), which the measure excludes. Without any CHR
+  the three would sit about 4 % lower: not told apart from "after".
+- The engine before is 21 to 35 % over on the three, and 44 % over on the 132 Evisceration that spent the TP between
+  two Climactic Flourish (6073 measured, ours 6303): its critical hits, as in section M3.
+- `CALC.CLIMACTIC`, `wield.climactic` and `wield.head` of `CALC.weaponskillAverage`; the page's ability
+  "Climactic Flourish" is known to `calc_abilities.js` (a DNC main job only) and no longer hands the weapon skill to the
+  engine before. Never on an attack round: the page takes it off a round, and no round was measured under it.
+- Dancing Edge has four weapon skills kept, from 2598 to 6066: no conclusion.
+

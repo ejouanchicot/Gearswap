@@ -179,6 +179,15 @@
             "Hasso active": 1};
     });
 
+    // https://www.bg-wiki.com/ffxi/Climactic_Flourish
+    //   "Allows you to deal critical hits. Requires at least one finishing move." ; "Works on the first hit
+    //   of any Weapon Skills (as if it were an attack round)."
+    // Nothing on the sheet: "Climactic Flourish active" tells the weapon skill its first hit is the ability's
+    // (calc_ws_average.js, CALC.CLIMACTIC). The page never gives it to an attack round.
+    ability("Climactic Flourish", "Climactic_Flourish", "dnc", 80, function () {
+        return {"Climactic Flourish active": 1};
+    }, true);
+
     // https://www.bg-wiki.com/ffxi/Hagakure
     //   "Grants "Save TP" effect and a TP bonus to your next weapon skill."
     //   "Grants 400 Save TP." ; "Grants 1000 TP Bonus."

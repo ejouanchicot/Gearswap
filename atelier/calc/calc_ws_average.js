@@ -71,7 +71,8 @@
             defense: enemy.Defense * (1 - (ignored || 0)),
             wsc: CALC.wsAttributeBonus(stats, info.mods),
             crit: critRate(stats, enemy, info, used),
-            cap: CALC.pdifCap(hold, info.skill, percent(stats, "PDL Trait"), percent(stats, "PDL"))
+            cap: CALC.pdifCap(hold, info.skill, percent(stats, "PDL Trait"), percent(stats, "PDL")),
+            climactic: climacticOf(stats, wield)
         };
     }
 
@@ -106,13 +107,43 @@
         return (1 - critRate) * normal + critRate * critical;
     };
 
-    // mean damage of one swing that is thrown: chance to land x base damage x mean pDIF
-    function swingDamage(ctx, h, ftp, bonus, accuracyBonus) {
+    // https://www.bg-wiki.com/ffxi/Climactic_Flourish (read 2026-10-13)
+    //   "Allows you to deal critical hits. Requires at least one finishing move."
+    //   "Works on the first hit of any Weapon Skills (as if it were an attack round)." ; "If stacked with
+    //   Weapon Skills, only the first hit will be forced to critical."
+    //   base damage bonus: "50% of your CHR (at the time the hit lands)" ; job points, 20 ranks:
+    //   "Increases CHR bonus by 1%"
+    //   critical hit damage with the head piece: Charis Tiara +1 +10%, +2 +20%, Maculele Tiara +22%,
+    //   +1 +25%, +2 +28%, +3 +31%
+    // On a weapon skill only: `wield.climactic` (true, or {jobPoints: ranks}; every rank when not given, as
+    // the engine's other job point categories) and `wield.head`, the head piece's name.
+    CALC.CLIMACTIC = {chrShare: 0.5, chrPerRank: 0.01, ranks: 20, critDamage: {"Charis Tiara +1": 10,
+        "Charis Tiara +2": 20, "Maculele Tiara": 22, "Maculele Tiara +1": 25, "Maculele Tiara +2": 28,
+        "Maculele Tiara +3": 31}};
+    // What it gives the first hit: {base: added to the weapon's base damage, critDamage: fraction}, or null.
+    function climacticOf(stats, wield) {
+        if (!wield.climactic) return null;
+        var ranks = typeof wield.climactic.jobPoints === "number" ? wield.climactic.jobPoints : CALC.CLIMACTIC.ranks;
+        return {base: Math.floor((stats.CHR || 0) * (CALC.CLIMACTIC.chrShare + CALC.CLIMACTIC.chrPerRank * ranks)),
+            critDamage: (CALC.CLIMACTIC.critDamage[wield.head] || 0) / 100};
+    }
+
+    // mean damage of one swing that is thrown: chance to land x base damage x mean pDIF.
+    // `forced`: the swing Climactic Flourish makes a critical hit (climacticOf), else nothing.
+    function swingDamage(ctx, h, ftp, bonus, accuracyBonus, forced) {
         // https://www.bg-wiki.com/ffxi/WS_Damage_Boost : the trait "Applies to all hits of a weapon
         // skill" and is "Multiplicative with other sources of Weapon Skill Damage listed on gear"
         var base = CALC.wsBaseDamage(h.dmg, h.fstr, ctx.wsc, ftp,
             [1 + bonus, 1 + percent(ctx.stats, "Weapon Skill Damage Trait")].concat(ctx.weaponBonus));
-        var pdif = CALC.wsMeanPdif(h.attack / ctx.defense, ctx.cap, ctx.crit, percent(ctx.stats, "Crit Damage"));
+        // Climactic Flourish's CHR: added to the hit once the fTP and the Weapon Skill Damage are in, not to
+        // the weapon's damage before them (the page says "base damage bonus" and no more).
+        // measured in game 2026-10-13 (Tetsouo DNC, Maculele Tiara +3, Locus Ghost Crabs Lv 139, near 1000 TP
+        // with a TP Bonus +1000 off-hand): Rudra's Storm 25355 (5 kept), Shark Bite 20036 (6), Ruthless Stroke
+        // 31428 (7). Added after: 26430, 18907, 30153 (+4 %, -6 %, -4 %). Inside the fTP: 38775, 28245, 51215
+        // (+53 %, +41 %, +63 %): excluded. No CHR at all would sit about 4 % under "after": not told apart
+        if (forced) base += forced.base;
+        var pdif = CALC.wsMeanPdif(h.attack / ctx.defense, ctx.cap, forced ? 1 : ctx.crit,
+            percent(ctx.stats, "Crit Damage") + (forced ? forced.critDamage : 0));
         var landed = CALC.hitRate(h.accuracy + accuracyBonus, ctx.enemy.Evasion, h.cap);
         return {landed: landed, base: base, pdif: pdif, damage: landed * base * pdif};
     }
@@ -150,7 +181,7 @@
         // the floor). With the bonus the formula gives 52 %, without it 20 %: the first off-hand swing
         // has the bonus. Its extra swings were not told apart: left without.
         var kinds = [{count: 1, hand: main, ftp: ctx.ftp, bonus: percent(s, "Weapon Skill Damage"),
-            accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: true}];
+            accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: true, forced: ctx.climactic}];
         kinds.push({count: hits - 1 + extra[0] + (off ? 0 : extra[1]), hand: main, ftp: later});
         if (off) kinds.push({count: 1, hand: off, offHand: true, ftp: later, accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: true});
         if (off) kinds.push({count: extra[1], hand: off, offHand: true, ftp: later});
@@ -171,7 +202,7 @@
         var result = {damage: 0, tpReturn: 0, swings: 0, tp: ctx.tp, ftp: ctx.ftp, critRate: ctx.crit, kinds: []};
         CALC.wsSwingKinds(ctx).forEach(function (kind) {
             if (!(kind.count > 0)) return;
-            var one = swingDamage(ctx, kind.hand, kind.ftp, kind.bonus || 0, kind.accuracy || 0);
+            var one = swingDamage(ctx, kind.hand, kind.ftp, kind.bonus || 0, kind.accuracy || 0, kind.forced);
             result.damage += kind.count * one.damage;
             result.tpReturn += kind.count * one.landed * (kind.fullTP ? full : other);
             result.swings += kind.count;
