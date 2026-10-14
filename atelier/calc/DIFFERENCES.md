@@ -123,6 +123,7 @@ move. These may be errors of the old engine.
 | G10 | `wsProcChances` | Occasionally Attacks X Times procs on weapon skills "only when provided by Mythic AM3" | "OA2 main" / "OA2 sub" 45 of Demers. Degen +1 and Blurred Knife +1 proc on the first swing of their hand, after Double Attack | 216 damage and TP, up to 29% (COR and DNC cases) | https://www.bg-wiki.com/ffxi/Multi-Attack |
 | G11 | status effects for Naegling (argument `wield.buffs`) | attack +1% per status effect; the sheet does not list them, the checker gives 0 | 13 status effects in every case, with or without party buffs, on both hands | 83 damage, up to 12.5% (Kaories_COR and Tetsouo_COR below the pDIF cap) | https://www.bg-wiki.com/ffxi/Naegling |
 | G12 | `wsMeanPdif`, "Crit Damage" | "Critical Hit Damage = (Base Damage + fSTR) x Critical pDIF x (Sum of Direct Modifiers)": the critical hits are multiplied by 1 + bonus | the whole mean, non critical hits included, is multiplied by 1 + critical hit rate x bonus. The engine is higher by bonus x rate x (1 - rate) pDIF (Tetsouo_WAR#33 Raging Rush: 0.7% at 1000 TP) | counted in G5 (the cases of WAR and THF, whose sheets have "Crit Damage") | https://www.bg-wiki.com/ffxi/Critical_Hit_Rate |
+| G13 | `wsSwingKinds` (`fullTP`) | measured in game 2026-10-13 (section AB): with two weapons, on a weapon skill of several hits, the second full hit of TP is the second main hand hit's and the off-hand swing returns the small amount. The page: "the first hit (and first Off-Hand hit) will grant full TP while each consecutive attack will grant a flat 10 TP" | the page's reading, whatever the number of hits | 57 more TP results beyond 5% (dual wield, weapon skills of several hits: Fast Blade II, Requiescat, Savage Blade, Swift Blade...); `--as-reference` unchanged | https://www.bg-wiki.com/ffxi/Tactical_Points |
 
 ## H. Weapon skill data: BG-Wiki page against the reference
 
@@ -732,3 +733,54 @@ Tiara +3, Locus Ghost Crabs Lv 139; the ones under STR Down or with Stoneskin on
   two sets, Tetsouo THF sets.precast.WS (Regal Ring + Pill. Culottes +4) and WAR sets.engaged (Pumm. Cuisses +4 +
   Pumm. Calligae +4). The first is the case measured, the second follows the same page.
 - `CALC.ARTIFACT_PIECES` and `CALC.setBonusTotals` of `calc_sets.js`.
+
+### The TP a weapon skill of several hits returns with two weapons (2026-10-13)
+
+- Measured, from the TP left after 700 weapon skills of the journal (full hit and small hit of each set as the
+  engine gives them; the off-hand swing lands about one time in two on these crabs):
+
+  | weapon skill | hits | full / small | TP left, times seen | by the page when the off-hand misses |
+  |---|---|---|---|---|
+  | Ruthless Stroke | 4 | 55 / 11 | 132 (2 full + 2) 24, 143 (2 + 3) 23, 88 (1 + 3) 2 | 88 |
+  | Exenterator | 4 | 58 / 12 | 140 (2 + 2) 11, 152 (2 + 3) 11 | 94 |
+  | Pyrrhic Kleos | 4 | 63 / 13 | 152 (2 + 2) 5, 165 (2 + 3) 6 | 102 |
+  | Shark Bite | 2 | 58 / 12 | 116 (2 + 0) 25, 128 (2 + 1) 20, 70 never | 70 |
+  | Evisceration | 5 | 73 / 15 | 191 (2 + 3) 151, 206 (2 + 4) 98 | 133 |
+  | Rudra's Storm | 1 | 60 / 13 | 60 (1 + 0) 77, 120 (2 + 0) 35, 73 (1 + 1) 5 | 60 |
+
+- So: two full hits come back on a weapon skill of several hits whether the off-hand swing landed or not, never
+  three; on Rudra's Storm (one hit) the second full hit is the off-hand's, and an extra main hand swing (73) is a
+  small one. Ours since: with two weapons and several hits, the first two main hand hits return a full hit's TP and
+  the off-hand swing the small amount; one hit, or one weapon: as before.
+- Predicted TP return, before / after, against the measure: Ruthless Stroke 121.9 / 151.1 (164 +- 18) and
+  130.5 / 158.4 (171 +- 18); Shark Bite 127.4 / 151.4 (148 +- 10) and 129.8 / 151.9 (148 +- 11).
+- Not measured: one weapon and several hits (left as the page says).
+
+### Ruthless Stroke: 12 % under the engine, cause not found (2026-10-13)
+
+- Measured (sequence `dncruth`; Centovente stayed in the off-hand in all of it, so the TP below carry its +1000):
+  9983 predicted for 8825 +- 402 at 2076 TP (+13.1 %), 15581 for 13673 +- 516 (+14.0 %), 15934 for 14401 +- 531
+  (+10.6 %) and 15934 for 14260 +- 642 (+11.7 %) at 3000 TP; earlier the same day 10184 for 9068 +- 205 under
+  Saber Dance (+12.3 %) and 10270 for 9580 +- 577 (+7.2 %). The engine before: +14 % to +17 %.
+- The gap is the same at 2000 and at 3000 TP: the two fTP of the page (14 and 23) are in the right ratio. Its
+  first hit is 87 to 91 % of the damage; taken alone (damage less the other swings' predicted mean, over its
+  predicted base) it is worth a pDIF of 0.92 (26 kept) and 0.96 (30) where the engine gives 1.06 and 1.09, and
+  where Rudra's Storm in the same fights gives 1.049 for 1.046 (92 kept) and Shark Bite 1.09 for 1.07 (38).
+- Under Climactic Flourish it is not under: 31428 +- 882 for 30153 (-4.1 %, 7 kept).
+- Looked at and ruled out: the sheet (its sixteen sets add up to the game's), the pieces' Weapon Skill Damage
+  (Maculele Tiara +3 12, Nyame rank 25 path B 12 / 10 / 11 / 10, the cape 10: as their pages), the TP Bonus (the
+  ratio between the two TP is right), the crab (Slashing, Blunt, Piercing 100 % on its page), the number of hits
+  that land (the TP returned, above).
+- Played again with Blurred Knife +1 in the off-hand (no TP Bonus, 49 weapon skills): 5809 predicted for
+  5373 +- 246 at 1155 TP (+8.1 %, 14 kept), 10562 for 9874 +- 300 at 2105 TP (+7.0 %, 13 kept), 15136 for 13256 at
+  3000 TP (+14.2 %, the 5 kept whose first hit landed and that did not kill the crab).
+- One weapon skill of that series missed its first hit (TP left 89: the second main hand hit's full 56 and three
+  small 11): 1380 of damage, where the engine gives 1373 to the three other main hand hits and the off-hand's, all
+  landed. One row, but it is the other swings alone: their base (attribute modifiers, the support job's trait)
+  is right, and what is 10 to 14 % high is the first hit, at 1000, 2000 and 3000 TP alike. Over every series the
+  gaps are compatible with one value, about 0.88 on the first hit (4.7 / 12.3 / 20.2 where the page gives
+  5.375 / 14 / 23, its first marked "Verification Needed"), or with anything else that multiplies the first hit
+  only. The weapon is Mpu Gandring (Level 119 II); whether the page's figures were measured with the Level 119 III
+  is not said.
+- Not corrected: nothing is fitted on a weapon skill's damage, and under Climactic Flourish the same first hit is
+  not high (above).

@@ -156,7 +156,8 @@
         return CALC.multiAttackChances(percent(stats, "QA"), percent(stats, "TA"), percent(stats, "DA"), 0);
     };
 
-    // The swings of the weapon skill, by kind: {count, hand, offHand, ftp, bonus, accuracy, fullTP}.
+    // The swings of the weapon skill, by kind: {count, hand, offHand, ftp, bonus, accuracy, fullTP}
+    // (fullTP: how many of its swings return a full hit's TP).
     // Double Attack "Can Proc a maximum of 2 times per Weapon Skill" and "on [...] each weapon when
     // Dual Wielding": the two swings that can proc are the first main hand swing and the off-hand
     // swing, or the first two swings of a weapon skill of several hits without an off-hand.
@@ -180,10 +181,25 @@
         // off-hand swing landed 31 times, 58 % (+-7), where its auto-attacks landed 23 % (175 of 768,
         // the floor). With the bonus the formula gives 52 %, without it 20 %: the first off-hand swing
         // has the bonus. Its extra swings were not told apart: left without.
+        // Which swings return a full hit's TP. https://www.bg-wiki.com/ffxi/Tactical_Points : "the first hit
+        // (and first Off-Hand hit) will grant full TP while each consecutive attack will grant a flat 10 TP".
+        // Measured in game 2026-10-13 with two weapons (same character, an off-hand swing that lands about
+        // one time in two): so on a weapon skill of one hit (Rudra's Storm: 60 or 120, 73 with an extra
+        // main hand swing), but on one of several hits the second full hit is the weapon skill's second
+        // main hand hit, and the off-hand swing returns the small amount. TP left, full + small:
+        //   Ruthless Stroke (4 hits, 55, 11)   132 (2 + 2) 24 times, 143 (2 + 3) 23, 88 (1 + 3) twice
+        //   Exenterator (4 hits, 58, 12)       140 (2 + 2) 11, 152 (2 + 3) 11
+        //   Pyrrhic Kleos (4 hits, 63, 13)     152 (2 + 2) 5, 165 (2 + 3) 6
+        //   Shark Bite (2 hits, 58, 12)        116 (2 + 0) 25, 128 (2 + 1) 20, 70 (1 + 1) never
+        //   Evisceration (5 hits, 73, 15)      191 (2 + 3) 151, 206 (2 + 4) 98
+        // By the page the lower value of each pair would be one full hit and the small ones (88, 94, 102,
+        // 70, 133). Not measured with one weapon: left as the page says.
+        var secondMain = off && hits > 1;
         var kinds = [{count: 1, hand: main, ftp: ctx.ftp, bonus: percent(s, "Weapon Skill Damage"),
-            accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: true, forced: ctx.climactic}];
-        kinds.push({count: hits - 1 + extra[0] + (off ? 0 : extra[1]), hand: main, ftp: later});
-        if (off) kinds.push({count: 1, hand: off, offHand: true, ftp: later, accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: true});
+            accuracy: CALC.WS_FIRST_SWING_ACCURACY, fullTP: 1, forced: ctx.climactic}];
+        kinds.push({count: hits - 1 + extra[0] + (off ? 0 : extra[1]), hand: main, ftp: later, fullTP: secondMain ? 1 : 0});
+        if (off) kinds.push({count: 1, hand: off, offHand: true, ftp: later, accuracy: CALC.WS_FIRST_SWING_ACCURACY,
+            fullTP: secondMain ? 0 : 1});
         if (off) kinds.push({count: extra[1], hand: off, offHand: true, ftp: later});
         return kinds;
     };
@@ -204,7 +220,9 @@
             if (!(kind.count > 0)) return;
             var one = swingDamage(ctx, kind.hand, kind.ftp, kind.bonus || 0, kind.accuracy || 0, kind.forced);
             result.damage += kind.count * one.damage;
-            result.tpReturn += kind.count * one.landed * (kind.fullTP ? full : other);
+            // `fullTP`: how many of the kind's swings return a full hit's TP, the others the small amount
+            var fullSwings = Math.min(kind.count, kind.fullTP || 0);
+            result.tpReturn += one.landed * (fullSwings * full + (kind.count - fullSwings) * other);
             result.swings += kind.count;
             result.kinds.push({count: kind.count, landed: one.landed, base: one.base, pdif: one.pdif});
         });
