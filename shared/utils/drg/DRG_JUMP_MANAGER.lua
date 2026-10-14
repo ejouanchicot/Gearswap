@@ -79,7 +79,10 @@ function DRGJumpManager.execute_jump()
             local second_jump_recast = (second_jump == "Jump") and (recasts[158] or 0) or (recasts[159] or 0)
 
             if is_recast_ready(second_jump_recast) then
-                send_command('input /ja "' .. second_jump .. '" <t>')
+                local command = 'input /ja "' .. second_jump .. '" <t>'
+                send_command(command)
+                -- refused when sent too soon after the first: sent once more (jump_landing.lua)
+                JumpLanding.after(second_jump, function() end, function() send_command(command) end)
             end
         end
         -- If TP ≥ 1000 after first jump, do nothing (stop chaining)

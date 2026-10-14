@@ -22,10 +22,10 @@
 ---   • Odyssey Sheol Gaol safe (subjob disabled reports level 0)
 ---
 --- Timing: each Jump's TP is read once it landed (its action packet, then the
---- TP the game shows; jump_landing.lua: at least 1.0 s, 3.0 s at most), the WS
---- replayed 1.0 s later (gear swap):
----   • Single Jump: ~2.0s
----   • Double Jump: ~3.0s
+--- TP the game shows; jump_landing.lua: no floor, 3.0 s at most), the next
+--- Jump or the WS sent at once, and once more if the game refused it.
+--- (Floors of 1.0 s until 2026-10-13: 2.0 s for one Jump and 3.0 s for two,
+--- measured in game that night; without them, not measured yet)
 ---
 --- @file    shared/utils/drg/auto_jump.lua
 --- @author  ejouanchicot
@@ -54,8 +54,11 @@ local live_tp = require('shared/utils/core/live_tp')
 -- A Jump's TP read once it landed, not after a fixed wait (shared/utils/drg/jump_landing.lua)
 local JumpLanding = require('shared/utils/drg/jump_landing')
 
---- Wait before replaying the WS so the gear swap has completed.
-local WS_DELAY_AFTER_JUMP = 1.0
+--- Wait before replaying the WS once the last Jump landed and its TP came in.
+local WS_DELAY_AFTER_JUMP = 0
+--- The WS replayed too soon after the Jump is refused by the game: the TP is
+--- still there after this long, and the WS is sent once more.
+local WS_RETRY_AFTER = 1.2
 
 --- Guard against re-entry: the replayed WS runs through precast again.
 --- Global so it survives the coroutine boundaries of the sequence.
@@ -118,11 +121,14 @@ end
 --- @param ws_name string
 --- @param ws_target string
 local function replay_ws(ws_name, ws_target)
+    local command = 'input /ws "' .. ws_name .. '" ' .. ws_target
     coroutine.schedule(function()
-        send_command('input /ws "' .. ws_name .. '" ' .. ws_target)
+        send_command(command)
         coroutine.schedule(function()
+            -- the TP is still there: the WS did not go off
+            if live_tp() >= TP_THRESHOLD then send_command(command) end
             _G.AUTO_JUMP_SEQUENCE_ACTIVE = false
-        end, 0.5)
+        end, WS_RETRY_AFTER)
     end, WS_DELAY_AFTER_JUMP)
 end
 
@@ -148,10 +154,11 @@ local function chain_second_jump(first_jump, ws_name, ws_target, tp)
         return
     end
 
-    send_command('input /ja "' .. second .. '" <t>')
+    local command = 'input /ja "' .. second .. '" <t>'
+    send_command(command)
     JumpLanding.after(second, function()
         replay_ws(ws_name, ws_target)
-    end)
+    end, function() send_command(command) end)
 end
 
 --- Cancel the WS, build TP with Jump(s), then replay the WS
