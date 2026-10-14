@@ -97,6 +97,9 @@ else {
 }
 let compiled = 0;
 const tried = new Set(); let trial = 0;
+// 4. the game takes the change: it only accepts values changed in a settings file (shared/utils/core/lua_data.lua
+// only_data_changed, asked by atelier_configs.lua before writing), checked below on every file compiled
+const pairs = [];
 for (const k of cases) {
   const text = k.f.text.slice(0, k.x.a) + k.s + k.f.text.slice(k.x.b);
   // the page reads its own writing back (a file whose root the reader finds by name)
@@ -109,8 +112,21 @@ for (const k of cases) {
     const file = path.join(tmp, 'f' + (compiled++) + '.lua'); fs.writeFileSync(file, text);
     const c = run('luac5.1', ['-p', file]);
     if (c.error || c.status !== 0) fail(k.what + ': the file no longer compiles', k.where + '\n       ' + (c.error ? c.error.message : c.stderr.trim().slice(0, 200)));
-    fs.unlinkSync(file);
+    const before = file.replace(/\.lua$/, '.before.lua'); fs.writeFileSync(before, k.f.text);
+    pairs.push({before, after: file, what: k.what, where: k.where});
   }
+}
+if (pairs.length) {
+  const list = path.join(tmp, 'pairs.lua'), luaPath = f => JSON.stringify(f.split(path.sep).join('/'));
+  const root = path.resolve(__dirname, '../..').split(path.sep).join('/');
+  fs.writeFileSync(list, `package.path = ${JSON.stringify(root + '/?.lua;')} .. package.path\n` +
+    `local D = require('shared/utils/core/lua_data')\nlocal function read(f) local h = io.open(f, 'rb') local t = h:read('*a') h:close() return t end\n` +
+    pairs.map((x, i) => `print(${i + 1}, D.only_data_changed(read(${luaPath(x.before)}), read(${luaPath(x.after)})))`).join('\n') + '\n');
+  const r = run('lua5.1', [list]);
+  if (r.error || r.status !== 0) fail('the game\'s check could not run', r.error ? r.error.message : r.stderr.slice(0, 400));
+  else r.stdout.split(/\r?\n/).filter(Boolean).forEach(l => { const [i, okv, why] = l.split('\t'); const x = pairs[+i - 1];
+    if (okv !== 'true') fail(x.what + ': the game would refuse it as code (' + why + ')', x.where); });
+  console.log(pairs.length + ' changed files asked to the game\'s check');
 }
 fs.rmSync(tmp, {recursive: true, force: true});
 const rows = cases.filter(k => k.x.kind === 'rows').length;

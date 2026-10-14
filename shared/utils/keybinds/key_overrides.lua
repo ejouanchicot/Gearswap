@@ -55,8 +55,13 @@ function KeyOverrides.read()
     local ok, CharPaths = pcall(require, 'shared/utils/core/char_paths')
     local path = ok and CharPaths and CharPaths.file('atelier', FILE)
     if not path then return nil end
-    local ok_load, data = pcall(dofile, path)
-    return (ok_load and type(data) == 'table') and data or nil
+    -- read as data, never run: the Atelier writes this file through the game's door (shared/utils/core/lua_data.lua)
+    local f = io.open(path, 'rb')
+    if not f then return nil end
+    local text = f:read('*a')
+    f:close()
+    local data = require('shared/utils/core/lua_data').parse(text)
+    return type(data) == 'table' and data or nil
 end
 
 --- Lay the overrides over a job's key list, once per list (the HUD requires

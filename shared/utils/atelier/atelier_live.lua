@@ -37,7 +37,13 @@
 ---
 --- Every request but the browser's preflight carries the token written in
 --- data/atelier/live_<Character>.js, a file only a page on this disk can read:
---- a web site cannot use the door. The door stays open across job loads
+--- a web site cannot use the door. A request a browser sends from a web site
+--- (an Origin other than "null", which is what a page opened from the disk sends)
+--- is refused before its token is looked at, and the door closes until the next
+--- load after BAD_TOKENS refused tokens in BAD_WINDOW seconds (someone guessing).
+--- What it writes is read back as data, never run (shared/utils/core/lua_data.lua):
+--- set_overrides.lua and keybind_overrides.lua must be data to be written, and
+--- a settings file may only have its values changed (atelier_configs.lua). The door stays open across job loads
 --- (windower._atelier_live) and closes with the addon.
 ---
 --- Opened at every GearSwap load (AtelierExport.after_load), for every
@@ -56,16 +62,32 @@ local FIRST_PORT, PORT_TRIES = 52740, 8
 local SAVED_FILES = {['keybind_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true, ['bag_plan.js'] = true}
 local MAX_BODY = 2 * 1024 * 1024
 local POLL_EVERY = 6   -- frames between two looks at the door
+local BAD_TOKENS, BAD_WINDOW = 30, 60   -- refused tokens that close the door, within that many seconds
 
 local function socket_lib()
     local ok, gs = pcall(function() return gearswap end)
     return ok and type(gs) == 'table' and rawget(gs, 'socket') or nil
 end
 
+--- A number from a text, below 2^31 - 1 (each step stays under 2^53: exact in Lua's numbers).
+local function digest(text, mul)
+    local h = 0
+    for i = 1, #text do h = (h * mul + text:byte(i)) % 2147483647 end
+    return h
+end
+
+--- The door's token: 32 hex digits. Not from the time alone (a page could try the few seeds a known start time
+--- leaves): the clock to the millisecond, the socket clock, and the addresses Lua gave fresh objects (the heap
+--- is not at the same place from one start to the next), mixed four ways, each seeding 8 digits.
 local function token()
-    math.randomseed(os.time() + math.floor(os.clock() * 1000))
+    local socket = socket_lib()
+    local seed = table.concat({tostring(os.time()), tostring(os.clock()), tostring({}), tostring(function() end),
+        tostring(socket and socket.gettime and socket.gettime() or ''), tostring({})}, '|')
     local out = {}
-    for i = 1, 32 do out[i] = ('%x'):format(math.random(0, 15)) end
+    for lane, mul in ipairs({31, 131, 1313, 13131}) do
+        math.randomseed(digest(seed .. lane, mul))
+        for _ = 1, 8 do out[#out + 1] = ('%x'):format(math.random(0, 15)) end
+    end
     return table.concat(out)
 end
 
@@ -86,7 +108,8 @@ end
 ---============================================================================
 
 local function respond(client, status, body)
-    local head = {'HTTP/1.1 ' .. status, 'Access-Control-Allow-Origin: *',
+    -- "null": the origin of a page opened from the disk, the only one the door answers
+    local head = {'HTTP/1.1 ' .. status, 'Access-Control-Allow-Origin: null',
         'Access-Control-Allow-Headers: X-Atelier-Token, Content-Type',
         'Access-Control-Allow-Methods: GET, POST, OPTIONS',
         -- a page from the disk asking 127.0.0.1: Chrome's private network preflight
@@ -163,9 +186,30 @@ local function equip_pieces(body)
     return n
 end
 
+--- A refused token, counted: too many in a short time closes the door until the next load (it opens again then,
+--- with a new token).
+local function refused_token(live)
+    local now = os.time()
+    if not live.bad_since or now - live.bad_since > BAD_WINDOW then live.bad_since, live.bad = now, 0 end
+    live.bad = live.bad + 1
+    if live.bad >= BAD_TOKENS then
+        coroutine.schedule(function()
+            AtelierLive.stop()
+            local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+            if ok and MessageFormatter then
+                MessageFormatter.show_warning(('Atelier: %d wrong tokens in %d s, the door is closed until the next load'):format(BAD_TOKENS, BAD_WINDOW))
+            end
+        end, 0)
+    end
+    return '403 Forbidden', '{"error":"token"}'
+end
+
 local function route(req, live)
+    -- a browser always says where a request comes from; a web site's is refused (a page from the disk sends "null")
+    local origin = req.headers['origin']
+    if origin and origin ~= 'null' then return '403 Forbidden', '{"error":"origin"}' end
     if req.method == 'OPTIONS' then return '204 No Content', '' end
-    if req.headers['x-atelier-token'] ~= live.token then return '403 Forbidden', '{"error":"token"}' end
+    if req.headers['x-atelier-token'] ~= live.token then return refused_token(live) end
     local Export = require('shared/utils/atelier/atelier_export')
     if req.path == '/ping' then
         -- the alt's job as last exchanged (dualbox_manager.lua AltJobState): the macro book GearSwap
@@ -204,6 +248,10 @@ local function route(req, live)
     if req.path == '/save' and req.method == 'POST' then
         local file = req.query:match('file=([%w_%.]+)')
         if not SAVED_FILES[file] then return '400 Bad Request', '{"error":"file"}' end
+        -- the .lua ones are read by GearSwap at each load: data only (set_overrides.lua, key_overrides.lua)
+        if file:match('%.lua$') and require('shared/utils/core/lua_data').parse(req.body) == nil then
+            return '400 Bad Request', '{"error":"not data"}'
+        end
         local CharPaths = require('shared/utils/core/char_paths')
         local path = CharPaths.writable('atelier', file)
         if not (path and write(path, req.body)) then return '500 Internal Server Error', '{"error":"write"}' end

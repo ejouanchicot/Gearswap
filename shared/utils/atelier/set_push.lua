@@ -479,8 +479,13 @@ end
 
 local function read_history()
     local path = history_path()
-    local ok, list = pcall(dofile, path)
-    return (ok and type(list) == 'table') and list or {}
+    local f = path and io.open(path, 'rb')
+    if not f then return {} end
+    local text = f:read('*a')
+    f:close()
+    -- read as data, never run: it carries text the page sent (shared/utils/core/lua_data.lua)
+    local list = require('shared/utils/core/lua_data').parse(text)
+    return type(list) == 'table' and list or {}
 end
 
 local LUA_WORDS = {}

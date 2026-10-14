@@ -99,6 +99,9 @@ function AtelierConfigs.write(char, job, file, text, hash, change)
     -- a file that no longer reads would break the next load: refused before anything is written
     local compile = rawget(_G, 'loadstring')
     if compile and not compile(text) then return {error = 'syntax'} end
+    -- the page changes values; what it sends may change nothing else: no call, no name read, no new statement
+    -- (shared/utils/core/lua_data.lua), so the door's token alone cannot make GearSwap run new code
+    if not require('shared/utils/core/lua_data').only_data_changed(before, text) then return {error = 'code'} end
     return require('shared/utils/atelier/set_push').write_file(abs, before, text,
         {job = job, path = (file:match('([^/]+)%.lua$') or file) .. '.' .. tostring(change.slot), config = true, changes = {change}})
 end

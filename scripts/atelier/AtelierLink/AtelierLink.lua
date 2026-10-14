@@ -56,10 +56,23 @@ local function json(t)
     return '{' .. table.concat(parts, ',') .. '}'
 end
 
+--- A number from a text, below 2^31 - 1 (each step stays under 2^53: exact in Lua's numbers).
+local function digest(text, mul)
+    local h = 0
+    for i = 1, #text do h = (h * mul + text:byte(i)) % 2147483647 end
+    return h
+end
+
+--- The door's token, 32 hex digits: not from the time alone, the clock to the millisecond, the socket clock and
+--- the addresses Lua gave fresh objects mixed four ways, each seeding 8 digits (as GearSwap's atelier_live.lua).
 local function new_token()
-    math.randomseed(os.time() + math.floor(os.clock() * 1000))
+    local seed = table.concat({tostring(os.time()), tostring(os.clock()), tostring({}), tostring(function() end),
+        tostring(socket.gettime and socket.gettime() or ''), tostring({})}, '|')
     local out = {}
-    for i = 1, 32 do out[i] = ('%x'):format(math.random(0, 15)) end
+    for lane, mul in ipairs({31, 131, 1313, 13131}) do
+        math.randomseed(digest(seed .. lane, mul))
+        for _ = 1, 8 do out[#out + 1] = ('%x'):format(math.random(0, 15)) end
+    end
     return table.concat(out)
 end
 
@@ -101,7 +114,8 @@ end
 ---============================================================================
 
 local function respond(client, status, body)
-    local head = {'HTTP/1.1 ' .. status, 'Access-Control-Allow-Origin: *',
+    -- "null": the origin of a page opened from the disk, the only one the door answers
+    local head = {'HTTP/1.1 ' .. status, 'Access-Control-Allow-Origin: null',
         'Access-Control-Allow-Headers: X-Atelier-Token, Content-Type',
         'Access-Control-Allow-Methods: GET, POST, OPTIONS',
         'Access-Control-Allow-Private-Network: true',
@@ -129,6 +143,9 @@ local function read_request(client)
 end
 
 local function route(req)
+    -- a browser always says where a request comes from; a web site's is refused (a page from the disk sends "null")
+    local origin = req.headers['origin']
+    if origin and origin ~= 'null' then return '403 Forbidden', '{"error":"origin"}' end
     if req.method == 'OPTIONS' then return '204 No Content', '' end
     if req.headers['x-atelier-token'] ~= token then return '403 Forbidden', '{"error":"token"}' end
     if req.path == '/ping' then
