@@ -29,6 +29,7 @@ local MELEE = 1
 --- res/action_messages.lua: "Additional effect: <n> points of damage." and "... takes <n> additional points of damage."
 local ADDED_DAMAGE = {[163] = true, [229] = true}
 local LANDED = {[1] = true, [67] = true}
+local CRIT = 67
 local COMPOSURE = 419
 local POLL = 1
 
@@ -76,8 +77,9 @@ local function finish()
     if not r then return end
     reading = nil
     ActionListener.off(KEY)
-    r.done(('ENSPELL %d procs: %s | %d hits landed, swings a round %s | Composure at %d of them | %s'):format(
-        #r.values, values_text(r.values), r.landed, rounds_text(r.rounds), r.composure, day_and_weather()))
+    r.done(('ENSPELL %d procs: %s | on a critical hit: %s | %d hits landed, swings a round %s | Composure at %d of them | %s'):format(
+        #r.values, values_text(r.values), values_text(r.on_crit), r.landed, rounds_text(r.rounds), r.composure,
+        day_and_weather()))
 end
 
 --- One melee round of the character.
@@ -92,6 +94,8 @@ local function on_action(act)
             if LANDED[a.message] then r.landed = r.landed + 1 end
             if a.has_add_effect and ADDED_DAMAGE[a.add_effect_message] then
                 r.values[#r.values + 1] = a.add_effect_param or 0
+                -- a proc twice the others came once (315 among 157s, 2026-10-14): on a critical hit?
+                if a.message == CRIT then r.on_crit[#r.on_crit + 1] = a.add_effect_param or 0 end
                 if has_buff(COMPOSURE) then r.composure = r.composure + 1 end
             end
         end
@@ -110,7 +114,7 @@ end
 --- @param done function Called once with the text
 function EnhTestFight.enspell(procs, seconds, done)
     EnhTestFight.stop()
-    local r = {values = {}, landed = 0, rounds = {}, composure = 0, procs_wanted = procs,
+    local r = {values = {}, on_crit = {}, landed = 0, rounds = {}, composure = 0, procs_wanted = procs,
         ends_at = os.time() + math.max(seconds, 10), done = done}
     reading = r
     ActionListener.on(KEY, on_action)
