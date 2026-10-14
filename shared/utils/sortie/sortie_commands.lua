@@ -171,12 +171,13 @@ local function set_known_states(settings)
     if #known > 0 then set_states(known) end
 end
 
---- The per-target states: the config's target_states, a target's own
---- `states` replacing the same state.
+--- States of every target with a target's own on top, the target's replacing the same state.
+--- @param common table|nil Array of "<state> <value>" set for every target
+--- @param own table|nil Array of "<state> <value>" of one target
 --- @return table Array of "<state> <value>"
-local function target_states(cfg, target)
+local function merged_states(common, own)
     local order, value = {}, {}
-    for _, list in ipairs({cfg.target_states or {}, target.states or {}}) do
+    for _, list in ipairs({common or {}, own or {}}) do
         for _, setting in ipairs(list) do
             local field, v = setting:match('^(%S+)%s+(.+)$')
             if field then
@@ -211,7 +212,7 @@ local function take_stance(cfg, target)
     set_states(without_lock((cfg.stances or {})[target.stance] or {}))
     -- Only the states this job has: set_states would otherwise send
     -- `gs c set` and print Mote's unknown-state error.
-    set_known_states(without_lock(target_states(cfg, target)))
+    set_known_states(without_lock(merged_states(cfg.target_states, target.states)))
     if lock and state and rawget(state, 'CombatMode') then
         local ok, CombatMode = pcall(require, 'shared/utils/core/combat_mode')
         if ok and lock:match('On$') and state.CombatMode.value ~= 'On' then CombatMode.lock_after_gear() end
@@ -286,6 +287,10 @@ local function engage_target(cfg, name, phase)
         return true
     end
     take_stance(cfg, target)
+    -- The alt's own states (cfg.alt_target_states, a target's alt_states), before its profile starts
+    for _, setting in ipairs(merged_states(cfg.alt_target_states, target.alt_states)) do
+        to_alt(cfg, 'gs c set ' .. setting)
+    end
     local step = target.prep or target
     load_profile(cfg, step.profile, step.indi)
     if messages() then
