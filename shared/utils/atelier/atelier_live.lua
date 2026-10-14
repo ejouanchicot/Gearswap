@@ -210,7 +210,13 @@ local function route(req, live)
     local origin = req.headers['origin']
     if origin and origin ~= 'null' then return '403 Forbidden', '{"error":"origin"}' end
     if req.method == 'OPTIONS' then return '204 No Content', '' end
-    if req.headers['x-atelier-token'] ~= live.token then return refused_token(live) end
+    -- only a wrong token counts: a request with none (any web page can make the browser send a plain GET here)
+    -- would otherwise close the door
+    local given = req.headers['x-atelier-token']
+    if given ~= live.token then
+        if given == nil then return '403 Forbidden', '{"error":"token"}' end
+        return refused_token(live)
+    end
     local Export = require('shared/utils/atelier/atelier_export')
     if req.path == '/ping' then
         -- the alt's job as last exchanged (dualbox_manager.lua AltJobState): the macro book GearSwap

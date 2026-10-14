@@ -42,7 +42,8 @@ local function quoted(text, at)
     while i <= #text do
         local c = text:sub(i, i)
         if c == quote then return i + 1, table.concat(out) end
-        if c == '\n' then return nil end
+        -- Lua 5.1 ends a line at "\n" and at a lone "\r" alike (llex.c): an unfinished string either way
+        if c == '\n' or c == '\r' then return nil end
         if c == '\\' then
             local n = text:sub(i + 1, i + 1)
             local digits = text:match('^%d%d?%d?', i + 1)
@@ -75,7 +76,9 @@ function LuaData.tokens(text)
             i = i + 1
         elseif text:sub(i, i + 1) == '--' then
             local after = long_bracket(text, i + 2)
-            if after then i = after else i = (text:find('\n', i, true) or n) + 1 end
+            -- a line comment ends at "\n" or at a lone "\r", as Lua's own reader has it: ended at "\n" only, code
+            -- after a "\r" was read as comment here and still ran in the game
+            if after then i = after else i = (text:find('[\r\n]', i) or n) + 1 end
         elseif c == '"' or c == "'" then
             local after, value = quoted(text, i)
             if not after then return nil, 'string' end
@@ -170,8 +173,47 @@ local function is_data(tk, k)
     return t.kind == 'name' and tk[k + 1] ~= nil and tk[k + 1].v == '='
 end
 
---- Whether text `after` differs from `before` only by data (the tokens between what they share at the start and
---- at the end).
+-- A token that a string, a table, "(", "[", "." or ":" right after it would call or index: a name, or the end of one
+local CALLABLE_END = {[')'] = true, [']'] = true, ['}'] = true}
+local CALL_OR_INDEX = {['('] = true, ['['] = true, ['{'] = true, ['.'] = true, [':'] = true}
+local function joins_into_call(x, y)
+    if not (x and y) then return false end
+    local callable = x.kind == 'name' or (x.kind == 'sym' and CALLABLE_END[x.v] == true)
+    return callable and (y.kind == 'str' or (y.kind == 'sym' and CALL_OR_INDEX[y.v] == true))
+end
+
+-- How many tables are open before token `upto`
+local function depth_before(tk, upto)
+    local depth = 0
+    for k = 1, upto - 1 do
+        if tk[k].kind == 'sym' and tk[k].v == '{' then depth = depth + 1
+        elseif tk[k].kind == 'sym' and tk[k].v == '}' then depth = depth - 1 end
+    end
+    return depth
+end
+
+-- Tokens first..last of `tk`, put in place of others: data, never closing the outer table they are in, and no "="
+-- of their own outside a table (a new statement). They may close a line they start in (lines of a list turned round:
+-- `b}, {a`) and need not close what they open (the text kept after does): the whole file compiling is checked
+-- before (atelier_configs.lua)
+local function region_is_data(tk, first, last)
+    local depth = depth_before(tk, first)
+    local start = depth
+    for k = first, last do
+        if not is_data(tk, k) then return false, tk[k].raw end
+        local v = tk[k].kind == 'sym' and tk[k].v
+        if v == '{' or v == '[' then depth = depth + 1
+        elseif v == '}' or v == ']' then
+            depth = depth - 1
+            if depth < 0 or (start > 0 and depth < 1) then return false, v end
+        elseif v == '=' and depth <= 0 then return false, v end
+    end
+    return true
+end
+
+--- Whether text `after` differs from `before` only by data: what replaced the tokens between what the two share at
+--- the start and at the end is data (region_is_data), and where it meets the text kept nothing becomes a call or an
+--- index (a value taken out of `{a = b, c = "x"}` must not leave `b "x"`, a call of b).
 --- @param before string
 --- @param after string
 --- @return boolean, string|nil reason when not
@@ -182,8 +224,12 @@ function LuaData.only_data_changed(before, after)
     while a[first] and b[first] and a[first].raw == b[first].raw do first = first + 1 end
     local ea, eb = #a, #b
     while ea >= first and eb >= first and a[ea].raw == b[eb].raw do ea, eb = ea - 1, eb - 1 end
-    for k = first, eb do
-        if not is_data(b, k) then return false, b[k].raw end
+    if ea < first and eb < first then return true end
+    local ok, why = region_is_data(b, first, eb)
+    if not ok then return false, why end
+    -- every pair of tokens that is new: inside what replaced, and where it meets the text kept on both sides
+    for k = first - 1, math.max(eb, first - 1) do
+        if joins_into_call(b[k], b[k + 1]) then return false, 'join' end
     end
     return true
 end

@@ -619,9 +619,10 @@ function enhPotencyFirst(s, input, so){
   const reached = top && top.pieces && FFXI.opt.statFigures(input.ctx.stat, top.pieces)[so.objs[0]];
   if (reached == null) return;
   // the set as it is already gives that much: the search starts from it (from the other one it lost a little of
-  // what comes after the potency, with nothing to gain)
+  // what comes after the potency, with nothing to gain); else from the pre-search's set (seed), the result still
+  // compared with the set as it is (input.start)
   const has = FFXI.opt.statFigures(input.ctx.stat, input.start)[so.objs[0]];
-  if (has == null || reached > has) input.start = top.pieces;
+  if (has == null || reached > has) input.seed = top.pieces;
   input.opts = Object.assign({}, input.opts, {floor: Object.assign({}, input.opts.floor, {min: {[so.objs[0]]: reached}})});
 }
 async function optimizeStats(s){

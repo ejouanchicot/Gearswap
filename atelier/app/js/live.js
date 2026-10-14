@@ -282,7 +282,7 @@ async function liveTick(){
         const m = ((DATA[c] = DATA[c] || {})[d.job] = DATA[c][d.job] || {});
         canonNames(d); m[d.sub || 'NONE'] = d; DATA_GEN++;
         CHARS[c] = {jobs: Object.keys(DATA[c])};
-        now.at = d.at;
+        now.at = d.at; now.fresh = true;
       }
     }
     // a new measure (the game sent the stats again: gear, buffs), fetched once it has held 3 s (not in the middle of an
@@ -299,7 +299,9 @@ async function liveTick(){
       if (seen !== String(ping.rebuild)) { try { localStorage.setItem('atelierRebuild_' + c, String(ping.rebuild)); } catch (e) {} refreshFromFiles(true); } }
     // where the character stands changed (zone, Mog House, a moogle within reach, the bags open): the Bags view says it
     const moved = typeof bvPlaceKey === 'function' && S.section === 'perso' && S.persoView === 'bags' && bvPlaceKey(ping.place) !== bvPlaceKey(was.place);
-    if (!was.ok || again || measured || tidied || settled || moved) tickRender();
+    // fresh: the export came in this tick (after "building" the load's own tick has gone by)
+    if (!was.ok || again || measured || tidied || settled || moved || now.fresh) tickRender();
+    delete now.fresh;
   } catch (e) {
     S._live[c] = {ok: false};
     if (was.ok) tickRender();

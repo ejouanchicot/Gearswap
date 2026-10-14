@@ -437,6 +437,9 @@ end
 -- seconds of work the spread export does before it leaves the game a frame, and the wait before the next
 local SPREAD_BUDGET, SPREAD_WAIT = 0.02, 0.02
 
+-- Seconds the page's /export waits for the spread export of a load (its wait for the bags is 44 s at most)
+local BUILD_WAIT = 60
+
 --- How full each bag is, as the live link's ping says it (atelier_place.lua): an export built before the bags changed
 --- is not theirs any more.
 local function bag_signature()
@@ -448,12 +451,15 @@ end
 --- data built a second time in one go froze the game 0.8 s on each load the page saw (DNC, 2026-10-13).
 ---   'ready', json   built for this load, with the bags as they are now
 ---   'building'      on its way for this load: the page asks again at its next tick
----   nil             none (export off, a tour, the bags changed since, it failed): the caller builds it
+---   nil             none (export off, a tour, the bags changed since, it failed, or BUILD_WAIT went by with
+---                   nothing: the load let its export go, a subjob changed with no new load): the caller builds it
 --- @return string|nil, string|nil
 function AtelierExport.spread_result()
     local last = windower._atelier_spread
     if type(last) ~= 'table' or last.gen ~= windower._load_gen or last.failed then return nil end
-    if not last.body then return 'building' end
+    if not last.body then
+        return os.time() - (last.at or 0) <= BUILD_WAIT and 'building' or nil
+    end
     if last.bags ~= bag_signature() or last.tidy ~= windower._bags_changed then return nil end
     return 'ready', last.body
 end
@@ -467,7 +473,7 @@ function AtelierExport.export_spread()
     local gen, stages = windower._load_gen, build_stages(data)
     local stage, keys, at, parts = 0, nil, 0, {}
     -- the bags as the build starts: moved during it, the result is not given to the page (spread_result)
-    local mark = {gen = gen, bags = bag_signature(), tidy = windower._bags_changed}
+    local mark = {gen = gen, at = os.time(), bags = bag_signature(), tidy = windower._bags_changed}
     windower._atelier_spread = mark
     local function work()
         local started = os.clock()
@@ -524,7 +530,7 @@ function AtelierExport.after_load()
     if ok_t and on_tour then return end
     if not AtelierExport.enabled() then return end
     -- from now on the page's live link waits for this export rather than building it (spread_result)
-    windower._atelier_spread = {gen = windower._load_gen}
+    windower._atelier_spread = {gen = windower._load_gen, at = os.time()}
     -- waits for the level, the bags and the Porter Moogle's slips in them (unread just after a load or a zone);
     -- past the wait, the export goes with what there is (the slips' last list: shared/utils/atelier/slip_items.lua)
     local defer, try, Slips = require('shared/utils/core/load_gate').defer, nil, require('shared/utils/atelier/slip_items')

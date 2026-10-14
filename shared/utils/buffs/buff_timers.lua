@@ -103,22 +103,25 @@ end
 
 local function on_buffs(data)
     local now = os.time()
-    local seen, known, changed = {}, store(), false
+    local seen, copies, known, changed = {}, {}, store(), false
     for _, buff in ipairs(BuffTimers.read(data)) do
         local finish = buff.finish
         -- the latest end when one id is there several times
         if not seen[buff.id] or finish > seen[buff.id] then seen[buff.id] = finish end
+        copies[buff.id] = (copies[buff.id] or 0) + 1
     end
     for id, finish in pairs(seen) do
         local entry = known[id]
-        -- cast again: its end moved, later or (a shorter cast over a longer one) earlier
-        if not entry or math.abs(finish - entry.finish) > RENEWED then
-            known[id] = {finish = finish, full = math.max(1, finish - now)}
+        -- cast again: its end moved later, or earlier (a shorter cast over a longer one) when the buff is there once
+        -- and was there once: of two copies (two Minuets share an id) the later one gone leaves an earlier end
+        local single = copies[id] == 1 and entry and (entry.copies or 1) == 1
+        if not entry or finish > entry.finish + RENEWED or (single and entry.finish - finish > RENEWED) then
+            known[id] = {finish = finish, full = math.max(1, finish - now), copies = copies[id]}
             changed = true
             -- a tool that wants every buff as it comes (shared/utils/debug/enh_test.lua)
             if BuffTimers.watcher then pcall(BuffTimers.watcher, id, known[id].full) end
         else
-            entry.finish = finish
+            entry.finish, entry.copies = finish, copies[id]
         end
     end
     for id in pairs(known) do

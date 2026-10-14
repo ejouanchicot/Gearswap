@@ -1076,23 +1076,28 @@
     }
     O.prunedChoices = function (ctx, start, choices, opts) { return prunedChoices(ctx, start, choices, opts); };
     // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices, opts, prefilter
-    // (keep each slot's best n first), starts (the walks to make, every one by default)}; its progress in opts.prog while it
-    // searches. A generator: it stops after each try of a set, so a caller can spread it over time (O.runPaced)
+    // (keep each slot's best n first), starts (the walks to make, every one by default), seed (optional: the set the
+    // walks start from instead of `start`, which stays the set the result is compared with)}; its progress in
+    // opts.prog while it searches. A generator: it stops after each try of a set, so a caller can spread it over time
+    // (O.runPaced)
     function* runGen(input) {
         var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {prog: {evals: 0, moves: []}, base: input.start});
         ctx._fast = !!input.opts.fast;
         yield opts.prog;
-        var from0 = input.opts.scratch ? bare(input.start, input.choices) : input.start;
+        var seed = input.seed || input.start;
+        var from0 = input.opts.scratch ? bare(seed, input.choices) : seed;
         var choices = input.prefilter ? yield* prefilterGen(ctx, from0, input.choices, opts, input.prefilter) : input.choices;
         // the fast search: only the pieces that can be the best of their slot
-        if (ctx._fast && ctx.mode !== "stats") choices = prunedChoices(ctx, input.start, choices, opts).choices;
+        if (ctx._fast && ctx.mode !== "stats") choices = prunedChoices(ctx, seed, choices, opts).choices;
         var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
         for (var i = 0; i < starts.length; i++) {
-            var r = yield* walk(ctx, input.start, choices, opts, starts[i]);
+            var r = yield* walk(ctx, seed, choices, opts, starts[i]);
             evals += r.evals;
             if (!res || r.score > res.score) res = r;
         }
         res.evals = evals;
+        // walked from a seed: the figures before are still those of the set itself
+        if (seed !== input.start) res.start = O.value(ctx, input.start, opts);
         keepWhatDoesNotMatter(ctx, res, input.start, opts, choices);
         tpOnlyOut(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);

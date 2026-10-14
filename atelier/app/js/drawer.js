@@ -153,7 +153,8 @@ function setWantsOf(s){
     notes: [S.lang === 'fr' ? 'HP le plus bas possible : le set de Cure les remonte, le Cure remplit l’écart' : 'HP as low as can be: the Cure set raises them, the Cure fills the gap']};
   if (WANTS[fam]) return {fam, want: add({}, WANTS[fam])};
   if (fam === 'midcast' || fam === 'ja' || fam === 'special') {
-    const kind = magicKindOf(path);
+    // a Blue Magic set wants what its spell is (Healing: a cure's stats); "blue" itself has no wants here
+    const kind = magicKindOf(path) === 'blue' ? magicKindOf(path.replace(/blue magic/ig, '')) : magicKindOf(path);
     if (kind && WANTS[kind]) return {fam, want: add({}, WANTS[kind] + (kind === 'cure' && self ? ' hp hp%' : ''))};
   }
   // no known kind: what the set's own pieces carry, the stats every piece has left out

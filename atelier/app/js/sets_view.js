@@ -421,8 +421,9 @@ function setListHTML(d){
     // name), then the spell types of the job's code (mnd_potency, macc...), then the rest (a buff's overlay), each
     // run in the list's own order: sets.midcast['Enfeebling Magic'] had its twelve in one alphabetical run
     if (c.fam === 'midcast' && !q) { const types = (window.ATELIER_FAMILIES || {})[niceName(c)] || {};
-      const rank = v => v.label === 'Base' ? -1 : listModeValue(v.label) ? 0 : types[v.label] ? 1 : 2;
-      emit(c.variants.map((v, k) => [v, k]).sort((x, y) => rank(x[0]) - rank(y[0]) || x[1] - y[1])); list += crossUnder(i); continue; }
+      // the card's own set first whatever its name: its row is the one drawn as the head (not indented)
+      const rank = (v, k) => k === 0 || v.label === 'Base' ? -1 : listModeValue(v.label) ? 0 : types[v.label] ? 1 : 2;
+      emit(c.variants.map((v, k) => [v, k]).sort((x, y) => rank(x[0], x[1]) - rank(y[0], y[1]) || x[1] - y[1])); list += crossUnder(i); continue; }
     if (c.fam !== 'ws') { emit(c.variants.map((v, k) => [v, k])); list += crossUnder(i); continue; }
     // weaponskills: the common set, then one folding group a weapon (closed until opened, a search opens them)
     row(c.variants[0], 0);
