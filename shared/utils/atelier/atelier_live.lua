@@ -8,7 +8,8 @@
 ---
 ---   GET  /ping                 player, job, subjob, version (+1 at each load), boot (when
 ---                              this door was opened: another one after //lua r gearswap)
----   GET  /export               the loaded job's data (AtelierExport.build)
+---   GET  /export               the loaded job's data: the one built after the load (AtelierExport.spread_result,
+---                              503 while it is built), else built now (AtelierExport.build)
 ---   GET  /measure              the character's stats, gear and buffs at the last status packet
 ---                              (AtelierExport.measure): fetched when /ping's `stat` count moves
 ---   POST /save?file=<name>     writes <Char>/atelier/overrides/<name>: keybind_overrides.lua,
@@ -235,6 +236,10 @@ local function route(req, live)
             end)()})
     end
     if req.path == '/export' then
+        -- the export built after the load, a little a frame (atelier_export.lua spread_result): not a second time here
+        local state, body = Export.spread_result()
+        if state == 'building' then return '503 Service Unavailable', '{"error":"building"}' end
+        if state == 'ready' then return '200 OK', body == '{}' and '{"live":true}' or body:sub(1, -2) .. ',"live":true}' end
         local data = Export.build()
         if not data then return '503 Service Unavailable', '{"error":"no job"}' end
         data.live = true

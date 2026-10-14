@@ -437,14 +437,38 @@ end
 -- seconds of work the spread export does before it leaves the game a frame, and the wait before the next
 local SPREAD_BUDGET, SPREAD_WAIT = 0.02, 0.02
 
+--- How full each bag is, as the live link's ping says it (atelier_place.lua): an export built before the bags changed
+--- is not theirs any more.
+local function bag_signature()
+    local ok, counts = pcall(function() return require('shared/utils/atelier/atelier_place').bag_counts() end)
+    return ok and counts or nil
+end
+
+--- The export the spread export built for this load, for the page's live link (atelier_live.lua /export): the same
+--- data built a second time in one go froze the game 0.8 s on each load the page saw (DNC, 2026-10-13).
+---   'ready', json   built for this load, with the bags as they are now
+---   'building'      on its way for this load: the page asks again at its next tick
+---   nil             none (export off, a tour, the bags changed since, it failed): the caller builds it
+--- @return string|nil, string|nil
+function AtelierExport.spread_result()
+    local last = windower._atelier_spread
+    if type(last) ~= 'table' or last.gen ~= windower._load_gen or last.failed then return nil end
+    if not last.body then return 'building' end
+    if last.bags ~= bag_signature() or last.tidy ~= windower._bags_changed then return nil end
+    return 'ready', last.body
+end
+
 --- Export the current job a little a frame: the same stages, the same file as export(), without the freeze
 --- of doing them in one go (0.8 s measured on DNC, 2026-10-13). For the export that follows every load, which
 --- nobody waits for. A newer load ends it: that load exports for itself.
 function AtelierExport.export_spread()
     local data = new_data()
-    if not data then return end
+    if not data then windower._atelier_spread = nil return end
     local gen, stages = windower._load_gen, build_stages(data)
     local stage, keys, at, parts = 0, nil, 0, {}
+    -- the bags as the build starts: moved during it, the result is not given to the page (spread_result)
+    local mark = {gen = gen, bags = bag_signature(), tidy = windower._bags_changed}
+    windower._atelier_spread = mark
     local function work()
         local started = os.clock()
         repeat
@@ -458,7 +482,9 @@ function AtelierExport.export_spread()
                 local text = json(data[keys[at]])
                 if text ~= 'null' then parts[#parts + 1] = json(tostring(keys[at])) .. ':' .. text end
             else
-                write_export(data, '{' .. table.concat(parts, ',') .. '}')
+                local body = '{' .. table.concat(parts, ',') .. '}'
+                write_export(data, body)
+                mark.body = body
                 return false
             end
         until os.clock() - started >= SPREAD_BUDGET
@@ -468,7 +494,10 @@ function AtelierExport.export_spread()
         if gen ~= windower._load_gen then return end
         local ok, more = pcall(work)
         if ok and more then return coroutine.schedule(step, SPREAD_WAIT) end
-        if not ok then pcall(function() require('shared/utils/debug/trace_log').log('EXPORT', 'failed: %s', tostring(more)) end) end
+        if not ok then
+            mark.failed = true
+            pcall(function() require('shared/utils/debug/trace_log').log('EXPORT', 'failed: %s', tostring(more)) end)
+        end
     end
     step()
 end
@@ -494,6 +523,8 @@ function AtelierExport.after_load()
     local ok_t, on_tour = pcall(function() return require('shared/utils/atelier/atelier_tour').on_load() end)
     if ok_t and on_tour then return end
     if not AtelierExport.enabled() then return end
+    -- from now on the page's live link waits for this export rather than building it (spread_result)
+    windower._atelier_spread = {gen = windower._load_gen}
     -- waits for the level, the bags and the Porter Moogle's slips in them (unread just after a load or a zone);
     -- past the wait, the export goes with what there is (the slips' last list: shared/utils/atelier/slip_items.lua)
     local defer, try, Slips = require('shared/utils/core/load_gate').defer, nil, require('shared/utils/atelier/slip_items')

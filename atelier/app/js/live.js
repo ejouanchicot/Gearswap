@@ -273,8 +273,10 @@ async function liveTick(){
     const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, boot: ping.boot, at: was.at, tidy: ping.tidy, place: ping.place,
       bagSig: ping.bags, bagAt, bagGot: was.bagGot,
       stat: ping.stat, statAt: ping.stat !== was.stat ? Date.now() : was.statAt, statGot: was.statGot};
-    if (ping.player === c && ping.job && (again || !was.ok || tidied || settled)) {
-      const d = await liveFetch(c, '/export', {timeout: 8000});
+    if (ping.player === c && ping.job && (again || !was.ok || tidied || settled || was.building)) {
+      // 503: the game is still building this load's export a little a frame (atelier_export.lua spread_result), asked
+      // again at the next tick; the game is there all the same
+      const d = await liveFetch(c, '/export', {timeout: 8000}).catch(e => { if (/HTTP 503/.test(e.message)) { now.building = true; return null; } throw e; });
       now.bagGot = ping.bags;
       if (d && d.sets) {
         const m = ((DATA[c] = DATA[c] || {})[d.job] = DATA[c][d.job] || {});

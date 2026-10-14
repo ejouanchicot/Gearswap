@@ -86,14 +86,15 @@ end
 
 --- A command moved things between the bags (//gs c bags go, //gs c wo). Once the game has settled them the time
 --- is kept for the live link's /ping (`tidy`: the page reads the bags again when it changes) and the export is
---- written again.
+--- written again, a little a frame (atelier_export.lua export_spread): the page's /export then gets that one rather
+--- than a second build in one go.
 --- @param delay number? seconds to wait first (2)
 function ExportBags.changed(delay)
     coroutine.schedule(function()
         windower._bags_changed = os.date('%Y-%m-%d %H:%M:%S')
         pcall(function()
             local Export = require('shared/utils/atelier/atelier_export')
-            if Export.enabled() then Export.export() end
+            if Export.enabled() then Export.export_spread() end
         end)
     end, delay or 2)
 end
