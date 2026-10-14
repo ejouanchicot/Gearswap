@@ -42,6 +42,14 @@
 ---                                    character is first emptied of every piece, then the case's pieces go on;
 ---                                    the HP they add are missing, and the Regen has something to fill. The
 ---                                    case's pieces must add more HP than the ticks watched give back.
+---   measure = 'resist', resist = 'Fire'   a Barspell: that resistance with nothing on, before the cast and after
+---                                    (stats packet 0x061, sent again by emptying the slots)
+---   measure = 'enspell', procs = 25  a tier I Enspell's damage on the next melee hits, read in the character's own
+---                                    sets (it is set at the cast): shared/utils/debug/enh_test_fight.lua
+---
+--- In a fight: fight = true waits for the character to be engaged before the case; keep_weapons = true leaves main,
+--- sub, range and ammo as they are (the other slots are emptied as usual); pause_bot = true turns Silmaril off
+--- (sm off) while the case is cast and back on after, so its own casts do not cut in.
 ---
 --- @file shared/utils/debug/enh_test.lua
 --- @author ejouanchicot
@@ -67,6 +75,12 @@ local MP_MARGIN = 150             -- MP kept above the spell's cost before a cas
 local MP_WAIT = 600               -- seconds the MP are waited for, at most
 local MP_WINDOW = 10              -- seconds the MP are watched, with the buff then without (three ticks)
 local MP_EVERY = 0.5              -- seconds between two looks at the MP
+local STATS_WAIT = 4              -- seconds for the stats packet after a change of gear (it came 2.5 s and more late)
+local BOT_SETTLE = 3              -- seconds after sm off for a cast of Silmaril's own to end
+local FIGHT_WAIT = 1800           -- seconds a case waits for the character to be engaged
+local FIGHT_MARGIN = 5            -- seconds an Enspell is read for less than its length
+local WEAPONS = {main = true, sub = true, range = true, ammo = true}
+local WEAR_TRIES = 3              -- times a case's pieces are put on again when the game does not show them
 
 local run = nil                   -- the plan being played: {cases, at, token, plan}
 local expecting = {}              -- target side: [buff id] = {caster, until}
@@ -137,6 +151,27 @@ local function worn_text()
     return #parts > 0 and table.concat(parts, ', ') or 'nothing'
 end
 
+--- "feet wants Leth. Houseaux +3": the slots of a case's set the game does not show worn, or nil when all are.
+--- A slot left out of the set (weapons kept) is not looked at.
+--- @param set table slot -> piece (a name, a table with .name, or empty)
+local function wrong_slots(set)
+    local equipment = (windower.ffxi.get_items() or {}).equipment or {}
+    local wrong = {}
+    for _, slot in ipairs(SLOTS) do
+        local wanted = set[slot]
+        if wanted ~= nil then
+            local name = wanted ~= empty and (type(wanted) == 'table' and wanted.name or wanted) or nil
+            local index, bag = equipment[slot], equipment[slot .. '_bag']
+            local item = index and index ~= 0 and bag and windower.ffxi.get_items(bag, index)
+            local known = item and item.id and item.id ~= 0 and res().items[item.id]
+            local worn_ok = name == nil and not known
+                or known and type(name) == 'string' and (known.en:lower() == name:lower() or (known.enl or ''):lower() == name:lower())
+            if not worn_ok then wrong[#wrong + 1] = slot .. ' wants ' .. tostring(name or 'nothing') end
+        end
+    end
+    return #wrong > 0 and table.concat(wrong, ', ') or nil
+end
+
 --- The MP or HP now, from the game (GearSwap's player.mp is refreshed in its own events only).
 --- @param field string 'mp' or 'hp'
 local function vital_now(field)
@@ -165,9 +200,40 @@ local function stats_text(stat)
     return table.concat(parts, ' ')
 end
 
+--- An element's resistance as the game last sent it (stats packet 0x061: 'Fire Resistance'...).
+--- @param element string 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light' or 'Dark'
+local function resist_now(element)
+    local raw = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
+    local ok, packets = pcall(require, 'packets')
+    local parsed = raw and ok and packets.parse('incoming', raw)
+    return type(parsed) == 'table' and parsed[element .. ' Resistance'] or nil
+end
+
 local function give_slots_back()
     send_command('gs enable all')
     if type(sets) == 'table' then sets.enhtest = nil end
+end
+
+--- The character's own sets, then every slot emptied, then `after` once the game sent its stats again. Through
+--- her own sets first: emptying slots already empty changes nothing, and the game would send nothing.
+local function emptied_then(token, case, after)
+    send_command('gs enable all')
+    send_command('gs c update')
+    coroutine.schedule(function()
+        if not (run and run.token == token) then return end
+        sets.enhtest = case.bare
+        send_command('gs equip sets.enhtest')
+        coroutine.schedule(function()
+            if run and run.token == token then after() end
+        end, STATS_WAIT)
+    end, GEAR_SETTLE)
+end
+
+--- Silmaril off while a case with pause_bot is cast, back on after.
+local function bot(case, on)
+    if not (case and case.pause_bot) or (case.bot_off or false) == not on then return end
+    case.bot_off = not on
+    send_command(on and 'sm on' or 'sm off')
 end
 
 local next_case
@@ -185,6 +251,7 @@ local function conclude(seconds, measured)
     write(line)
     say(line)
     give_slots_back()
+    bot(case, true)
     local token = run.token
     coroutine.schedule(function() if run and run.token == token then next_case() end end, BETWEEN)
 end
@@ -210,6 +277,25 @@ local function measure(token, case, seconds)
     case.answered = true
     if case.measure == 'stat' then
         return conclude(seconds, 'before: ' .. tostring(case.stat_before))
+    end
+    if case.measure == 'resist' then
+        -- the slots emptied again: a change of gear makes the game send its stats, the Barspell now in them
+        return emptied_then(token, case, function()
+            if run and run.case == case then
+                conclude(seconds, ('%s resistance, nothing on: %s before, %s after'):format(case.resist,
+                    tostring(case.resist_before), tostring(resist_now(case.resist))))
+            end
+        end)
+    end
+    if case.measure == 'enspell' then
+        -- her own sets back on (the damage was set at the cast), Silmaril back on to keep fighting
+        give_slots_back()
+        send_command('gs c update')
+        bot(case, true)
+        return require('shared/utils/debug/enh_test_fight').enspell(case.procs or 25,
+            (seconds or 0) - FIGHT_MARGIN, function(text)
+                if run and run.case == case then conclude(seconds, text) end
+            end)
     end
     local field = case.measure
     watch_vital(token, field, function(with)
@@ -258,8 +344,21 @@ end
 local function wear(token, case)
     if not (run and run.token == token) then return end
     local set, bare = {}, {}
-    for _, slot in ipairs(SLOTS) do set[slot], bare[slot] = case.gear[slot] or empty, empty end
+    for _, slot in ipairs(SLOTS) do
+        -- a slot left nil in a set is not touched: the weapons a fight is fought with stay
+        if not (case.keep_weapons and WEAPONS[slot]) then set[slot], bare[slot] = case.gear[slot] or empty, empty end
+    end
+    case.bare = bare
     send_command('gs enable all')
+    if case.measure == 'resist' and not case.emptied then
+        -- the Barspell taken off, the slots emptied: the resistance read before, with nothing on
+        case.emptied = true
+        if has_buff(case.buff) then windower.ffxi.cancel_buff(case.buff) end
+        return emptied_then(token, case, function()
+            case.resist_before = resist_now(case.resist)
+            wear(token, case)
+        end)
+    end
     if case.measure == 'hp' and not case.emptied then
         -- emptied first, the case's pieces a moment later: the HP they add are then missing
         case.emptied = true
@@ -277,7 +376,17 @@ local function wear(token, case)
     coroutine.schedule(function()
         if not (run and run.token == token) then return end
         send_command('gs disable all')
-        coroutine.schedule(function() drop_then_cast(token, case) end, 0.5)
+        coroutine.schedule(function()
+            if not (run and run.token == token) then return end
+            -- a cast of Silmaril's own ending in between puts her sets back over the pieces (2026-10-14): again
+            local wrong = wrong_slots(set)
+            if wrong and (case.tries or 0) < WEAR_TRIES then
+                case.tries = (case.tries or 0) + 1
+                say('pieces not on (' .. wrong .. '), put on again')
+                return wear(token, case)
+            end
+            drop_then_cast(token, case)
+        end, 0.5)
     end, GEAR_SETTLE)
 end
 
@@ -304,7 +413,9 @@ local function wait_for_mp(token, case, waited)
         if waited == 0 then say(('waiting for %d MP (%d now)'):format(need, mp_now())) end
         return coroutine.schedule(function() wait_for_mp(token, case, waited + 3) end, 3)
     end
-    set_composure(token, case)
+    run.paused = case.pause_bot and case or nil
+    bot(case, false)
+    coroutine.schedule(function() set_composure(token, case) end, case.pause_bot and BOT_SETTLE or 0)
 end
 
 --- A case is cast with almost nothing on: the MP come from a Refresh kept up between the cases, cast in the
@@ -316,6 +427,17 @@ local function keep_refresh(token, case)
         return coroutine.schedule(function() wait_for_mp(token, case, 0) end, REFRESH_CAST)
     end
     wait_for_mp(token, case, 0)
+end
+
+--- A fight case waits for the character to be engaged; then Silmaril is paused when the case asks for it.
+local function when_engaged(token, case, waited)
+    if not (run and run.token == token) then return end
+    local engaged = (windower.ffxi.get_player() or {}).status == 1
+    if case.fight and not engaged and waited < FIGHT_WAIT then
+        if waited == 0 then say('waiting for a fight') end
+        return coroutine.schedule(function() when_engaged(token, case, waited + 2) end, 2)
+    end
+    keep_refresh(token, case)
 end
 
 next_case = function()
@@ -336,10 +458,12 @@ next_case = function()
     local target = case.target and case.target ~= 'me' and case.target or player.name
     local this = {name = case.name, spell = case.spell, spell_id = spell.id, buff = spell.status, composure = case.composure,
         target_name = target, on_self = target == player.name, gear = case.gear or {}, mp_cost = spell.mp_cost, natural = case.natural,
-        measure = case.measure, stat = case.stat}
+        measure = case.measure, stat = case.stat, resist = case.resist, procs = case.procs, fight = case.fight,
+        keep_weapons = case.keep_weapons, pause_bot = case.pause_bot}
     say(('case %d/%d: %s'):format(run.at, #run.cases, case.name or '?'))
+    if case.say then say(case.say) end
     send_command('gs enable all')
-    keep_refresh(run.token, this)
+    when_engaged(run.token, this, 0)
 end
 
 --- A buff appeared or was cast again on this character (buff_timers.lua).
@@ -381,6 +505,8 @@ function EnhTest.command(args)
     if action == 'run' then
         start(args[2])
     elseif action == 'stop' then
+        if run and run.paused then bot(run.paused, true) end
+        require('shared/utils/debug/enh_test_fight').stop()
         run = nil
         give_slots_back()
         say('stopped')
