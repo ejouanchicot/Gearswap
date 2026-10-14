@@ -697,7 +697,7 @@
         "petdt", "petregen", "charm", "geoskill",
         // enhancing magic (the page's stat_opt.js statVec): duration written on the piece / in its augments, a Lethargy
         // set piece, Refresh potency and seconds received, Regen potency (% then flat) and seconds, Gain, Aquaveil
-        "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil"];
+        "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
     // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
@@ -726,7 +726,11 @@
     //   Gain     floor((skill - 300) / 10) + 5, 25 at most (500 of skill), + "Gain magic effect"   measured
     //   Temper   floor((skill - 300) / 10) %, 5 under 360 of skill; Temper II 40 at most           BG Wiki Temper, Temper_II
     //   Enspell  floor((skill - 180) / 8) + 25; floor(skill / 9) + 5 under 180                     BG Wiki Category:Enspell
+    //            + the job point gifts (b.enGifts), x1.5 under Composure on oneself                  measured
+    //            (tier I on oneself, 2026-10-14: 87 / 90 / 105 at 496 / 520 / 636 of skill, 135 / 138 / 157 with
+    //            Composure; Umuthi Hat's "+8" added nothing, so the damage gear of BG's list is not counted)
     //   Bar-element  25 + floor(skill / 4), 150 at most; 40 + floor(skill / 5) to 300 of skill     BG Wiki Category:Barspell
+    //            + the pieces' bonus over the cap (t.barplus)    measured 2026-10-14: 149 / 150 / 165 with Shedir
     //   Aquaveil 1 interruption, 2 from 301 of skill, 3 from 501, + the "Aquaveil" pieces          BG Wiki Aquaveil
     O.enhancingFigures = function (f, t, b, skill) {
         if (!b.enhKind) return;
@@ -745,8 +749,11 @@
         }
         if (kind === "gain") f.gainPot = (skill < 300 ? 5 : Math.min(25, Math.floor((skill - 300) / 10) + 5)) + t.gain;
         if (kind === "temper") f.temper = skill < 360 ? 5 : Math.min(b.temperCap || 1e9, Math.floor((skill - 300) / 10));
-        if (kind === "enspell") f.enspell = skill < 180 ? Math.floor(skill / 9) + 5 : Math.floor((skill - 180) / 8) + 25;
-        if (kind === "barele") f.barEle = Math.min(150, skill <= 300 ? 40 + Math.floor(skill / 5) : 25 + Math.floor(skill / 4));
+        if (kind === "enspell") {
+            var en = (skill < 180 ? Math.floor(skill / 9) + 5 : Math.floor((skill - 180) / 8) + 25) + (b.enGifts || 0);
+            f.enspell = b.comp === "self" ? Math.floor(en * 1.5) : en;
+        }
+        if (kind === "barele") f.barEle = Math.min(150, skill <= 300 ? 40 + Math.floor(skill / 5) : 25 + Math.floor(skill / 4)) + t.barplus;
         if (kind === "aquaveil") f.aquaveil = (skill > 500 ? 3 : skill > 300 ? 2 : 1) + t.aquaveil;
     };
     O.statFigures = function (stat, pieces) {

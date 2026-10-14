@@ -14,8 +14,8 @@ Object.assign(T.fr, {
   statObj_regenHp: 'Regen : HP par sort', statD_regenHp: 'HP par tick × nombre de ticks : la puissance et la durée ensemble',
   statObj_gainPot: 'Gain : bonus', statD_gainPot: 'floor((skill − 300) / 10) + 5, 25 au plus dès 500 de skill, + « Gain magic effect » (mesuré en jeu)',
   statObj_temper: 'Temper : %', statD_temper: 'floor((skill − 300) / 10) % d’attaque double (Temper) ou triple (Temper II, 40 au plus) : BG Wiki',
-  statObj_enspell: 'Enspell : dégâts', statD_enspell: 'floor((skill − 180) / 8) + 25 par coup, avant les bonus d’arme : BG Wiki',
-  statObj_barEle: 'Bar-élément : résistance', statD_barEle: '25 + floor(skill / 4), 150 au plus dès 500 de skill : BG Wiki',
+  statObj_enspell: 'Enspell : dégâts', statD_enspell: 'floor((skill − 180) / 8) + 25 par coup (BG Wiki), + 23 des cadeaux de Job Points à 2100 JP, ×1,5 sous Composure : mesuré en jeu',
+  statObj_barEle: 'Bar-élément : résistance', statD_barEle: '25 + floor(skill / 4), 150 au plus dès 500 de skill, + les pièces (Shedir Seraweels +15) au-dessus : BG Wiki, mesuré en jeu',
   statObj_aquaveil: 'Aquaveil : interruptions', statD_aquaveil: '2 dès 301 de skill, 3 dès 501, + les pièces « Aquaveil » : BG Wiki',
   enhTagSelf: 'sur toi', enhTagOthers: 'sur les autres', enhBtnSelf: 'Sur toi', enhBtnOthers: 'Sur les autres',
   enhWhenSelf: 'Lancé sur toi : Composure triple la durée (30 min au plus).', enhWhenOthers: 'Lancé sur un autre joueur sous Composure : pas de ×3, seulement le bonus du set Lethargy.',
@@ -80,8 +80,8 @@ Object.assign(T.en, {
   statObj_regenHp: 'Regen: HP a cast', statD_regenHp: 'HP a tick × number of ticks: potency and length together',
   statObj_gainPot: 'Gain: bonus', statD_gainPot: 'floor((skill − 300) / 10) + 5, 25 at most from 500 of skill, + “Gain magic effect” (measured in game)',
   statObj_temper: 'Temper: %', statD_temper: 'floor((skill − 300) / 10) % of Double Attack (Temper) or Triple Attack (Temper II, 40 at most): BG Wiki',
-  statObj_enspell: 'Enspell: damage', statD_enspell: 'floor((skill − 180) / 8) + 25 a hit, before the weapon’s bonuses: BG Wiki',
-  statObj_barEle: 'Bar-element: resistance', statD_barEle: '25 + floor(skill / 4), 150 at most from 500 of skill: BG Wiki',
+  statObj_enspell: 'Enspell: damage', statD_enspell: 'floor((skill − 180) / 8) + 25 a hit (BG Wiki), + 23 of the job point gifts at 2100 JP, x1.5 under Composure: measured in game',
+  statObj_barEle: 'Bar-element: resistance', statD_barEle: '25 + floor(skill / 4), 150 at most from 500 of skill, + the pieces (Shedir Seraweels +15) over it: BG Wiki, measured in game',
   statObj_aquaveil: 'Aquaveil: interruptions', statD_aquaveil: '2 from 301 of skill, 3 from 501, + the “Aquaveil” pieces: BG Wiki',
   enhTagSelf: 'on yourself', enhTagOthers: 'on the others', enhBtnSelf: 'On yourself', enhBtnOthers: 'On the others',
   enhWhenSelf: 'Cast on yourself: Composure triples its length (30 min at most).', enhWhenOthers: 'Cast on another player under Composure: no ×3, the Lethargy set’s bonus only.',
@@ -199,7 +199,10 @@ function enhContext(s){
   const master = (c.jp_spent || 0) >= 1200;
   return {kind: hit[1], comp: others ? 'others' : 'self', base: (others && hit[3] ? hit[3] : hit[2]) + seconds, name: hit[1],
     // Refresh III and Temper II come with 1200 job points; Regen II is the job's highest
-    refBase: master ? 9 : 6, regenBase: 12, temperCap: master ? 40 : 0};
+    refBase: master ? 9 : 6, regenBase: 12, temperCap: master ? 40 : 0,
+    // the "En"spell Damage gifts, 5 + 5 + 6 + 7 (atelier/calc/calc_jobs_mages.js; measured +23 on Kaories, 2026-10-14):
+    // counted once all the gifts are had (2100 spent), the spent points of each one not being known here
+    enGifts: (c.jp_spent || 0) >= 2100 ? 23 : 0};
 }
 // On whom an enhancing set is cast, for the page to say beside its name ('Self' / 'Others'), or '': a set named
 // Composure reads as "with Composure" when it means "on the others" (both are cast with Composure up)
@@ -387,8 +390,11 @@ const ENLIGHT_WEAPON = {Brilliance: 15, Honorbound: 7};
 // A piece under level 99 the search still offers from the game's items (optimizer.js gameChoices): its effect is one
 // of the above, read by name, that no level 99 piece replaces (Stone Mufflers, Siegel Sash, Earthcry Earring)
 function specialPiece(name){
-  return !!(STONESKIN_PLUS[name] || ENMITY_LOSS_GEAR[name] || ENLIGHT_WEAPON[name]);
+  return !!(STONESKIN_PLUS[name] || ENMITY_LOSS_GEAR[name] || ENLIGHT_WEAPON[name] || BAR_PLUS[name]);
 }
+// The resistance a piece adds to a Bar-element spell, over its 150 cap (BG Wiki Category:Barspell; Shedir Seraweels
+// measured in game on Kaories 2026-10-14: 150 + 15 = 165)
+const BAR_PLUS = {'Shedir Seraweels': 15, 'Piety Pantaloons +3': 36, "Cleric's Pantaloons +2": 25};
 function statVec(p, slot){
   const r = p && !isEmpty(p) ? pieceStats(p, slot) : null, v = k => r && r.stats[k] ? r.stats[k].v || 0 : 0, out = {};
   if (!r) return {};
@@ -398,6 +404,7 @@ function statVec(p, slot){
   if (v('skill:healing magic skill') + all) out.heal = v('skill:healing magic skill') + all;
   if (v('skill:divine magic skill') + all) out.div = v('skill:divine magic skill') + all;
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
+  if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
@@ -466,7 +473,7 @@ function statBase(s){
 // (an enhancing set's spell, target and base length ride with the character: opt.js O.enhancingFigures)
 function statContext(s){
   const base = statBase(s), enh = enhContext(s);
-  if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap});
+  if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts});
   return {mode: 'stats', job: S.job, stat: {base}};
 }
 const CRUSADE_ENMITY = 30;
