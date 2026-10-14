@@ -104,7 +104,7 @@ local COMMON_GROUPS = {
     ['WEAPON_CONFIG.lua'] = 'gear', ['DW_CONFIG.lua'] = 'gear',
     ['ELEMENTAL_BELT_CONFIG.lua'] = 'gear', ['HP_PRIORITY_CONFIG.lua'] = 'gear',
     ['STEALTH_CONFIG.lua'] = 'travel', ['WARP_CONFIG.lua'] = 'travel',
-    ['FIGHTS_CONFIG.lua'] = 'tools', ['SORTIE_CONFIG.lua'] = 'tools', ['ADDONS_CONFIG.lua'] = 'tools',
+    ['FIGHTS_CONFIG.lua'] = 'tools', ['SORTIE_CONFIG.lua'] = 'tools', ['ADDONS_CONFIG.lua'] = 'tools', ['ENHTEST_CONFIG.lua'] = 'tools', ['ENHTEST_SETS.lua'] = 'tools',
     -- gone on 2026-10-10 (job_config.lua), read where a folder still has them
     ['TUNING.lua'] = 'combat', ['AUTO_ABILITIES.lua'] = 'combat',
 }

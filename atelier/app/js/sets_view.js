@@ -189,7 +189,11 @@ function setVersionsHTML(card, ci, vi){
   const cur = groups.find(g => g.main === vi || g.subs.some(x => x.i === vi)) || (card.fam === 'ws' ? groups[0] : null);
   if (!cur || !cur.subs.length) return `<div class="setvers none"></div>`;
   const tiers = cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
-  const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}" title="${esc(T[S.lang]['ttVer' + txt] ? t('ttVer' + txt) : t('ttVer'))}">${esc(txt)}</button>`;
+  // an enhancing set's versions read as their target (stat_opt.js enhTarget): "Composure" is the one cast on the others
+  // (the set itself and its Composure version only: any other version keeps its own name)
+  const shown = (i, txt) => { const v = card.variants[i], on = enhTarget(v.set);
+    return on && (v.label === 'Base' || /composure/i.test(v.label)) ? t('enhBtn' + on) : txt; };
+  const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}" title="${esc(T[S.lang]['ttVer' + txt] ? t('ttVer' + txt) : t('ttVer'))}">${esc(shown(i, txt))}</button>`;
   const grid = tiers ? versionGridHTML(cur, btn) : '';
   if (grid) return `<div class="setvers grid"><span class="kicker">${esc(t('verLbl'))}</span>${grid}</div>`;
   return `<div class="setvers"><span class="kicker">${esc(t('verLbl'))}</span><div class="verseg" role="group">` +
@@ -215,9 +219,11 @@ function versionGridHTML(cur, btn){
 function setHeadHTML(card, ci, vi, s, acts){
   const when = t('famWhen.' + card.fam), label = card.variants[vi].label;
   const fam = t('fam.' + card.fam), name = niceName(card);
+  // an enhancing set: on whom it is cast, beside its name and as the line under it (stat_opt.js enhTarget)
+  const on = enhTarget(s), tag = on ? ` <span class="wsver">· ${esc(t('enhTag' + on))}</span>` : '';
   // what the set is, on the whole width in one or two lines: its family, name and variant, when it is worn, its path
-  const title = setTitleBox(fam !== name ? fam : '', esc(name) + (label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : ''),
-    when ? `<span class="muted small setwhen">${esc(when)}</span>` : '', '', s.path, acts);
+  const title = setTitleBox(fam !== name ? fam : '', esc(name) + (label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : '') + tag,
+    on ? `<span class="muted small setwhen">${esc(t('enhWhen' + on))}</span>` : when ? `<span class="muted small setwhen">${esc(when)}</span>` : '', '', s.path, acts);
   // the weapons' menus side by side under the versions, a label over each
   const pick = (lbl, body) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
   const menus = weaponMenus(s), tipOf = desc => desc && desc.replace(/\s+/g, '').toLowerCase() !== 'mainweapon' ? desc + ' · ' + t('ttWeapon') : t('ttWeapon');
@@ -338,8 +344,16 @@ function setListHTML(d){
   const aliasBtn = a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
     `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`;
 
-  for (const i of vis) { const c = cards[i];
-    if (c.fam !== fam) { if (fam) list += crossOf(fam); fam = c.fam;
+  // the spells' sets by kind of magic (list_prefs.js midcastGroup), each kind a folding group as the weapons of the
+  // weaponskills are: sorted by kind inside their category, then as midcastRank puts them inside a kind
+  const grouped = !q && vis.filter(k => cards[k].fam === 'midcast').length > MIDCAST_GROUP_FROM;
+  const kindOf = k => grouped && cards[k].fam === 'midcast' ? midcastGroup(niceName(cards[k])) : '';
+  const order = !grouped ? vis : vis.map((k, n) => [k, n]).sort((a, b) => cards[a[0]].fam === 'midcast' && cards[b[0]].fam === 'midcast'
+    ? (MIDCAST_ORDER.indexOf(kindOf(a[0])) - MIDCAST_ORDER.indexOf(kindOf(b[0])) || midcastRank(niceName(cards[a[0]])) - midcastRank(niceName(cards[b[0]])) || a[1] - b[1])
+    : a[1] - b[1]).map(x => x[0]);
+  let kind = null;
+  for (const i of order) { const c = cards[i];
+    if (c.fam !== fam) { if (fam) list += crossOf(fam); fam = c.fam; kind = null;
       // the sets of the category (a set and its Group, Solo and Trust versions are one)
       // (the weaponskills: one a weaponskill, as the list shows them, whatever its versions)
       const lines = card => card.fam === 'ws' ? new Set(card.variants.map(v => wsOfSet(v.set) || v.label)).size
@@ -348,7 +362,16 @@ function setListHTML(d){
       list += listFamHead(fam, n, cards[sel] && cards[sel].fam === fam, famOpen(fam, q)); }
     // a category is closed until opened (a search opens them all)
     if (!famOpen(c.fam, q)) continue;
-    const nameOf = (v, k) => k === 0 ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : v.label;
+    if (kindOf(i)) {
+      const mine = kindOf(i), key = S.job + '|mc:' + mine, here = !!cards[sel] && cards[sel].fam === 'midcast' && kindOf(sel) === mine;
+      if ((reveal && here) || S._openAllSub) S.wsList = Object.assign({}, S.wsList, {[key]: true});
+      if (mine !== kind) { kind = mine;
+        list += `<button class="wskill ${here ? 'here' : ''}" data-wskill="mc:${esc(mine)}" aria-expanded="${!!(S.wsList || {})[key]}"><span>${esc(t('mcGrp_' + mine))}</span>` +
+          `<span>${order.filter(k => kindOf(k) === mine).length}</span></button>`; }
+      if (!(S.wsList || {})[key]) continue;
+    }
+    // (an enhancing set's version named Composure reads as what it is: the one cast on the others, stat_opt.js enhTarget)
+    const nameOf = (v, k) => k === 0 ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : enhTarget(v.set) === 'Others' ? t('enhBtnOthers') : c.fam === 'midcast' && listModeValue(v.label) ? `${v.label} · ${t('lpModeTag')}` : v.label;
     // what a row says beside the name: pieces on trial in it, or a set written with no piece yet; its path is in
     // its tooltip, and under the name when the list is asked to show the paths (S.listPaths)
     const marks = v => listMarks(v.set);
@@ -394,6 +417,12 @@ function setListHTML(d){
         tierRow(v, k, tiers);
       });
     };
+    // a spell set's versions: the set itself, then the ones a mode picks (Potency, Magic Burst: said so beside their
+    // name), then the spell types of the job's code (mnd_potency, macc...), then the rest (a buff's overlay), each
+    // run in the list's own order: sets.midcast['Enfeebling Magic'] had its twelve in one alphabetical run
+    if (c.fam === 'midcast' && !q) { const types = (window.ATELIER_FAMILIES || {})[niceName(c)] || {};
+      const rank = v => v.label === 'Base' ? -1 : listModeValue(v.label) ? 0 : types[v.label] ? 1 : 2;
+      emit(c.variants.map((v, k) => [v, k]).sort((x, y) => rank(x[0]) - rank(y[0]) || x[1] - y[1])); list += crossUnder(i); continue; }
     if (c.fam !== 'ws') { emit(c.variants.map((v, k) => [v, k])); list += crossUnder(i); continue; }
     // weaponskills: the common set, then one folding group a weapon (closed until opened, a search opens them)
     row(c.variants[0], 0);
@@ -402,7 +431,7 @@ function setListHTML(d){
       if (!bySkill.has(sk)) bySkill.set(sk, []); bySkill.get(sk).push([v, k]); });
     for (const [sk, items] of [...bySkill].sort((a, b) => a[0].localeCompare(b[0]))) {
       const here = i === sel && items.some(([, k]) => k === vi(i));
-      if (reveal && here) S.wsList = Object.assign({}, S.wsList, {[S.job + '|' + sk]: true});
+      if ((reveal && here) || S._openAllSub) S.wsList = Object.assign({}, S.wsList, {[S.job + '|' + sk]: true});
       const open = !!q || !!(S.wsList || {})[S.job + '|' + sk];
       // one row a weaponskill, whatever its versions (a dance, Climactic, the support profiles: up to 24 on a DNC):
       // they are chosen in the set's head (versionGridHTML), as a set's support versions are; a search lists them all
@@ -424,6 +453,7 @@ function setListHTML(d){
     list += `<p class="acchid" title="${esc(t('accTip', {m: S.job, s: (data() || {}).sub || '?'}))}">${esc(t('accHidden', {n: hidden, j: who}))} ` +
       `<button class="linkbtn" data-listall>${esc(t(S._listAll ? 'accHide' : 'accShow'))}</button></p>`; }
   S._fams = [...new Set(vis.map(i => cards[i].fam))];
+  S._openAllSub = false;
   // open or close every category at once
   // the player's own sections first (pinned sets, groups: list_prefs.js), each set as one plain row
   const where = {};

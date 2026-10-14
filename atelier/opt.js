@@ -694,7 +694,10 @@
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
         "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed",
         "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark",
-        "petdt", "petregen", "charm", "geoskill"];
+        "petdt", "petregen", "charm", "geoskill",
+        // enhancing magic (the page's stat_opt.js statVec): duration written on the piece / in its augments, a Lethargy
+        // set piece, Refresh potency and seconds received, Regen potency (% then flat) and seconds, Gain, Aquaveil
+        "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
     // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
@@ -710,6 +713,42 @@
     O.phalanxPotency = function (skill) {
         return skill <= 300 ? Math.max(0, Math.floor(skill / 10) - 2) : Math.min(35, 28 + Math.floor((skill - 300.5) / 28.5));
     };
+    // Enhancing magic of a set named for it (b.enhKind, the page's stat_opt.js enhContext). Measured in game on
+    // 2026-10-14, 130 casts (Kaories RDM, //gs c enhtest, shared/utils/debug/enh_test.lua), each within 2 s of BG Wiki
+    // (Enhancing_Magic_Duration):
+    //   length = (base + seconds) x Composure x (1 + % written on the pieces) x (1 + % in augments)
+    //   seconds: the job points' (in b.enhBase), "Regen effect duration", "Duration of Refresh received" (on oneself);
+    //   Composure: x3 on oneself, 30 minutes at most; on the others the Lethargy set's 2 / 3 / 4 / 5 pieces = +10 / +20 /
+    //   +35 / +50 %, nothing without Composure.
+    // What a spell gives:
+    //   Refresh  MP a tick = the spell's (3 / 6 / 9) + "Refresh potency"                          measured
+    //   Regen    HP a tick = ceil(the spell's (5 / 12) x (1 + "Regen potency" %)) + the augments' flat  measured
+    //   Gain     floor((skill - 300) / 10) + 5, 25 at most (500 of skill), + "Gain magic effect"   measured
+    //   Temper   floor((skill - 300) / 10) %, 5 under 360 of skill; Temper II 40 at most           BG Wiki Temper, Temper_II
+    //   Enspell  floor((skill - 180) / 8) + 25; floor(skill / 9) + 5 under 180                     BG Wiki Category:Enspell
+    //   Bar-element  25 + floor(skill / 4), 150 at most; 40 + floor(skill / 5) to 300 of skill     BG Wiki Category:Barspell
+    //   Aquaveil 1 interruption, 2 from 301 of skill, 3 from 501, + the "Aquaveil" pieces          BG Wiki Aquaveil
+    O.enhancingFigures = function (f, t, b, skill) {
+        if (!b.enhKind) return;
+        var kind = b.enhKind;
+        var comp = b.comp === "self" ? 3 : b.comp === "others" ? 1 + [0, 0, 10, 20, 35, 50][Math.min(5, t.leth || 0)] / 100 : 1;
+        var seconds = (b.enhBase || 0) + (kind === "refresh" && b.comp !== "others" ? t.refsec : kind === "regen" ? t.regensec : 0);
+        var mult = comp * (1 + t.enhdurL / 100) * (1 + t.enhdurA / 100);
+        var time = Math.floor(seconds * mult + 1e-9);
+        f.enhMult = Math.round(mult * 1000) / 1000;
+        f.enhTime = b.comp === "self" ? Math.min(1800, time) : time;
+        var ticks = Math.floor(f.enhTime / 3);
+        if (kind === "refresh") { f.refreshTick = (b.refBase || 0) + t.refpot; f.refreshMp = f.refreshTick * ticks; }
+        if (kind === "regen") {
+            f.regenTick = Math.ceil((b.regenBase || 0) * (100 + t.regenpct) / 100 - 1e-9) + t.regenflat;
+            f.regenHp = f.regenTick * ticks;
+        }
+        if (kind === "gain") f.gainPot = (skill < 300 ? 5 : Math.min(25, Math.floor((skill - 300) / 10) + 5)) + t.gain;
+        if (kind === "temper") f.temper = skill < 360 ? 5 : Math.min(b.temperCap || 1e9, Math.floor((skill - 300) / 10));
+        if (kind === "enspell") f.enspell = skill < 180 ? Math.floor(skill / 9) + 5 : Math.floor((skill - 180) / 8) + 25;
+        if (kind === "barele") f.barEle = Math.min(150, skill <= 300 ? 40 + Math.floor(skill / 5) : 25 + Math.floor(skill / 4));
+        if (kind === "aquaveil") f.aquaveil = (skill > 500 ? 3 : skill > 300 ? 2 : 1) + t.aquaveil;
+    };
     O.statFigures = function (stat, pieces) {
         var t = {}, b = stat.base || {};
         STAT_KEYS.forEach(function (k) { t[k] = 0; });
@@ -721,8 +760,9 @@
             hp: Math.round(((b.hp || 0) + t.hp) * (1 + t["hp%"] / 100)),
             def: Math.floor((b.def || 0) + t.def + 1.5 * t.vit + shield), shield: shield,
             enmity: Math.min(200, t.enmity + (b.enmity || 0)),
-            phalanx: O.phalanxPotency((b.enh || 0) + t.enh) + t.phalanx, enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
-            fc: Math.min(80, t.fc), sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
+            // ("Phalanx received" is the receiver's: nothing on a set cast on the others)
+            phalanx: O.phalanxPotency((b.enh || 0) + t.enh) + (b.comp === "others" ? 0 : t.phalanx), enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
+            fc: Math.min(80, t.fc + (b.fc || 0)), fcGear: t.fc, sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
             ecrit: t.ecrit, cure: Math.min(50, t.cure), refresh: t.refresh, regen: t.regen, enhdur: t.enhdur,
             pdtAll: two(cap(t.dt + t.pdt) + t.pdt2), mdtAll: two(cap(t.dt + t.mdt + shell) + t.mdt2), bdtAll: cap(t.dt + t.bdt),
             pdt: t.dt + t.pdt, mdt: t.dt + t.mdt
@@ -742,6 +782,7 @@
         f.stoneskin = Math.min(475, Math.min(350, ss) + t.ss);
         var div = (b.div || 0) + t.div;
         f.enhSkill = enhAll; f.divSkill = div;
+        O.enhancingFigures(f, t, b, enhAll);
         // the block the gear adds (Guide_Paladin: block rate = the shield's base + (shield skill - attacker's) x 0.2325,
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;
@@ -775,7 +816,7 @@
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
@@ -790,6 +831,9 @@
         if (num("phalanx")) n += Math.max(0, fl.phalanx - f.phalanx);
         if (num("ceLoss")) n += Math.max(0, fl.ceLoss - f.ceLoss);
         if (num("luDt")) n += Math.max(0, fl.luDt - f.luDt);
+        // any figure asked to stay at a value or over (fl.min: {figure: value}): the potency a first search reached,
+        // kept while a second one looks for the longest spell (stat_opt.js optimizeStats, enhancing magic)
+        if (fl.min) for (var mk in fl.min) n += Math.max(0, fl.min[mk] - (f[mk] || 0));
         return n;
     }
     // A set's value: the objectives in their order (opts.objective, then opts.then), each well under a step of the one

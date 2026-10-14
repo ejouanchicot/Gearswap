@@ -267,3 +267,19 @@ function searchShow(){
   const ov = $('#overlay'); ov.replaceChildren(...searchPark().childNodes); ov.hidden = false;
 }
 
+// The kind of magic a set is for, read from its name or its path, the first kind that fits (the drawer's wants, the
+// list's groups of spell sets). The spells' kinds are their skill in the game's res/spells.lua (checked 2026-10-14:
+// Bio, Death, Kaustra, Klimaform are Dark Magic, Impact is Elemental, Repose Divine, Cocoon Blue). Read anywhere in
+// the text, as a path carries them (sets.midcast['Enhancing Magic'].Composure); a job ability's set falls in a kind
+// only when its name says one (Provoke: enmity)
+const MAGIC_KINDS = [
+  ['cure', /cur(e|a|aga)|healing|waltz|cursna|\braise|arise|esuna|sacrifice/i],
+  ['enhancing', /enhanc|phalanx|refresh|regen|haste|flurry|protect|shell|stoneskin|aquaveil|blink|bar(fire|blizzard|aero|stone|thunder|water|element|ailment|status|sleep|poison|paralyze|blind|silence|petrify|virus|amnesia)|storm|\bgain|boost|temper|enspell|en(fire|blizzard|aero|stone|thunder|water)|spikes|sneak|invisible|deodorize|reraise|auspice|embrava|adloquium|animus|erase/i],
+  ['enfeebling', /enfeebl|mndenf|intenf|\bdia|slow|paralyze|silence|blind|gravity|sleep|bind|break|dispel|frazzle|distract|addle|inundation|poison/i],
+  ['elemental', /elemental|magicburst|magic burst|nuke|helix|impact|burst|meteor|comet|burn|frost|choke|rasp|shock|drown/i],
+  ['dark', /dark|drain|aspir|absorb|stun|\bbio|death|kaustra|klimaform|tractor|endark/i],
+  ['divine', /divine|banish|holy|flash|enlight|repose/i],
+  ['song', /song|march|minuet|madrigal|ballad|minne|paeon|mambo|scherzo|lullaby|elegy|requiem|threnody|carol|etude|prelude|mazurka|nocturne|dirge|sirvente|hymnus|singing/i],
+  ['geomancy', /geo|indi|geomancy/i], ['ninjutsu', /ninjutsu|utsusemi|migawari|monomi|tonko|kakka|myoshu|yurin|gekka|yain/i],
+  ['blue', /blue magic|cocoon/i], ['summoning', /summoning|bloodpact|blood pact|avatar/i], ['enmity', /enmity|provoke|foil|crusade/i]];
+const magicKindOf = text => (MAGIC_KINDS.find(([, re]) => re.test(text)) || [])[0] || null;

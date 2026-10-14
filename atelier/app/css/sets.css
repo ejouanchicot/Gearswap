@@ -230,6 +230,10 @@
 .wskill[aria-expanded="true"]::before{content:'▾'}
 .wskill span:first-child{flex:1}
 .wskill:hover,.wskill.here{color:var(--accent)}
+/* open or close every category at once, under the search */
+.foldall{display:flex;gap:14px;padding:2px 12px 6px;font-size:11.5px}
+.foldall .linkbtn{color:var(--muted)}
+.foldall .linkbtn:hover{color:var(--accent)}
 .wsbase{margin:8px 0 0}
 .tptotal .tpover{color:var(--r-dd);font-weight:600}
 .tptotal b{color:var(--accent);font-size:14px}

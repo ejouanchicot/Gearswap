@@ -22,6 +22,7 @@
 ---     DebugCommands.handle_debugwarp/debugprecast/automovedebug/
 ---         debugjobchange/debugupdate()          - debug flag toggles
 ---     DebugCommands.handle_debugmsg()          - message display modes dump
+---     DebugCommands.WORDS, run(cmd, args)  - every word above and the test tools (enhtest, jobtest)
 ---
 ---   @file    shared/utils/core/DEBUG_COMMANDS.lua
 ---   @author  ejouanchicot
@@ -579,6 +580,44 @@ function DebugCommands.handle_debugmsg()
     MessageFormatter.show_debug('MSG', '  ja_mode: '    .. tostring(settings.ja_mode    or 'nil'))
     MessageFormatter.show_debug('MSG', '  ws_mode: '    .. tostring(settings.ws_mode    or 'nil'))
     return true
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND WORDS (diagnostics and in-game test tools)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Every word this module answers: the diagnostics and the in-game test tools. A function of the words after the
+--- command; COMMON_COMMANDS.lua asks here before its own router and counts these words as its own.
+local function tool(module, fn) return function(args) return require(module)[fn](args) end end
+local function first(fn) return function(args) return fn(args[1]) end end
+DebugCommands.WORDS = {
+    debugsubjob = DebugCommands.handle_debugsubjob, debugwarp = DebugCommands.handle_debugwarp,
+    debugprecast = DebugCommands.handle_debugprecast, automovedebug = DebugCommands.handle_automovedebug,
+    debugjobchange = DebugCommands.handle_debugjobchange, debugstate = DebugCommands.handle_debugstate,
+    debugupdate = DebugCommands.handle_debugupdate, debugmsg = DebugCommands.handle_debugmsg, info = DebugCommands.handle_info,
+    fulltest = first(DebugCommands.handle_fulltest), syscheck = first(DebugCommands.handle_syscheck),
+    lagdebug = first(DebugCommands.handle_lagdebug), jamsg = first(DebugCommands.handle_jamsg),
+    spellmsg = first(DebugCommands.handle_spellmsg), wsmsg = first(DebugCommands.handle_wsmsg),
+    memcheck = first(DebugCommands.handle_memcheck),
+    -- the message system's preview (//gs c testmsg [job]) and its own checks
+    testmsg = function(args) require('shared/utils/messages/api/messages').test(args[1]) return true end,
+    msgtests = function() require('shared/utils/messages/message_validator').run_all_tests() return true end,
+    enhtest = tool('shared/utils/debug/enh_test', 'command'),   -- a spell's real duration, piece by piece
+    jobtest = tool('shared/utils/debug/job_test', 'handle'),     -- job changes played and measured in the Mog House
+}
+for short, long in pairs({dsj = 'debugsubjob', amd = 'automovedebug', djc = 'debugjobchange', ds = 'debugstate', ft = 'fulltest',
+    sc = 'syscheck', ldb = 'lagdebug', mem = 'memcheck', msgtest = 'testmsg'}) do
+    DebugCommands.WORDS[short] = DebugCommands.WORDS[long]
+end
+
+--- Run the command of one of WORDS.
+--- @param cmd string Command word, lower case
+--- @param args table The words after it
+--- @return boolean|nil What it answered, nil when the word is not one of WORDS
+function DebugCommands.run(cmd, args)
+    local fn = DebugCommands.WORDS[cmd]
+    if not fn then return nil end
+    return fn(args)
 end
 
 return DebugCommands

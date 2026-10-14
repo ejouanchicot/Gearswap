@@ -138,12 +138,6 @@ const WANTS = {
   ninjutsu: 'macc mab skill:ninjutsu*',
   enmity: 'enmity sird fc',
 };
-// the midcast sets by name, the first match wins
-const MIDCAST_KINDS = [[/cur(e|a|aga)|healing|waltz/i, 'cure'], [/enhanc|phalanx|refresh|regen|haste|protect|shell|stoneskin|aquaveil|bar|storm|gain|en(fire|blizzard|aero|stone|thunder|water)/i, 'enhancing'],
-  [/enfeebl|mndenf|intenf|dia|bio|slow|paralyze|silence|blind|gravity|sleep|break|dispel|frazzle|distract|addle|inundation/i, 'enfeebling'],
-  [/elemental|magicburst|nuke|helix|impact|burst/i, 'elemental'], [/dark|drain|aspir|absorb/i, 'dark'], [/divine|banish|holy|flash/i, 'divine'],
-  [/song|march|minuet|madrigal|ballad|minne|paeon|mambo|scherzo|lullaby|elegy|requiem|threnody|carol|etude|prelude|mazurka|nocturne|dirge|sirvente|hymnus|bardsong/i, 'song'],
-  [/geo|indi|geomancy/i, 'geomancy'], [/ninjutsu|utsusemi|migawari|monomi|tonko|kakka|myoshu|yurin/i, 'ninjutsu'], [/enmity|provoke|foil|crusade/i, 'enmity']];
 // Damage taken counts in every set: a piece that lowers it is never set aside
 const ALWAYS = {dt: 0.8, pdt: 0.8, mdt: 0.8, pdt2: 0.8, mdt2: 0.8};
 function setWants(s){
@@ -159,8 +153,8 @@ function setWantsOf(s){
     notes: [S.lang === 'fr' ? 'HP le plus bas possible : le set de Cure les remonte, le Cure remplit l’écart' : 'HP as low as can be: the Cure set raises them, the Cure fills the gap']};
   if (WANTS[fam]) return {fam, want: add({}, WANTS[fam])};
   if (fam === 'midcast' || fam === 'ja' || fam === 'special') {
-    const kind = (MIDCAST_KINDS.find(([re]) => re.test(path)) || [])[1];
-    if (kind) return {fam, want: add({}, WANTS[kind] + (kind === 'cure' && self ? ' hp hp%' : ''))};
+    const kind = magicKindOf(path);
+    if (kind && WANTS[kind]) return {fam, want: add({}, WANTS[kind] + (kind === 'cure' && self ? ' hp hp%' : ''))};
   }
   // no known kind: what the set's own pieces carry, the stats every piece has left out
   const out = {};

@@ -24,7 +24,7 @@ local BuffTimers = {}
 
 local EPOCH = 1009810800            -- 2002-01-01 JST, the game's time origin
 local WRAP = 0x100000000 / 60       -- seconds before the counter wraps
---- An end time later than the known one by more than this: a recast.
+--- An end time away from the known one by more than this: a recast.
 local RENEWED = 3
 
 local function u16(data, at) return data:byte(at) + data:byte(at + 1) * 256 end
@@ -111,9 +111,12 @@ local function on_buffs(data)
     end
     for id, finish in pairs(seen) do
         local entry = known[id]
-        if not entry or finish > entry.finish + RENEWED then
+        -- cast again: its end moved, later or (a shorter cast over a longer one) earlier
+        if not entry or math.abs(finish - entry.finish) > RENEWED then
             known[id] = {finish = finish, full = math.max(1, finish - now)}
             changed = true
+            -- a tool that wants every buff as it comes (shared/utils/debug/enh_test.lua)
+            if BuffTimers.watcher then pcall(BuffTimers.watcher, id, known[id].full) end
         else
             entry.finish = finish
         end

@@ -142,7 +142,15 @@ document.addEventListener('click', e => {
   if (d.simbuff) { const st = simState(); st.buffs = toggleBuff(st.buffs || [], d.simbuff); simRun(); return; }
   if ('wstp' in d) { S.wsTp = d.wstp ? +d.wstp : null; render(); return; }
   if ('macroalt' in d) { S.macroAlt[S.char + '|' + S.job] = d.macroalt; render(); return; }
-  if (d.famall) { for (const f of S._fams || []) S.famOpen[S.job + '|' + f] = d.famall === '1'; render(); return; }
+  // every category at once, with the groups inside them (the weapons of the weaponskills, the spells by kind of
+  // magic) and the sections of the player (pinned sets, groups: open unless closed)
+  if (d.famall) { const open = d.famall === '1';
+    for (const f of S._fams || []) S.famOpen[S.job + '|' + f] = open;
+    for (const k of ['pin', ...listPrefs().groups.map(g => 'g:' + g.id)]) S.famOpen[S.job + '|' + k] = open;
+    const subs = Object.assign({}, S.wsList);
+    for (const k of Object.keys(subs)) if (k.startsWith(S.job + '|')) subs[k] = false;
+    S.wsList = subs; S._openAllSub = open;
+    render(); return; }
   // the names a set is shared under, folded under it in the set list (sets_view.js)
   if (d.aliasfold) { const k = S.job + '|' + d.aliasfold; S._aliasOpen = Object.assign({}, S._aliasOpen, {[k]: !(S._aliasOpen || {})[k]}); render(); return; }
   if (d.wskill) { const k = S.job + '|' + d.wskill; S.wsList = Object.assign({}, S.wsList, {[k]: !(S.wsList || {})[k]}); render(); return; }

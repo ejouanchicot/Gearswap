@@ -243,6 +243,9 @@ const TRAITS = {
     dnc: [[90, 20], [45, 10]], thf: [[50, 10]], nin: [[50, 10]], rdm: [[60, 10]]},
   mdb: {run: [[99, 22], [91, 20], [76, 18], [70, 16], [50, 14], [30, 12], [10, 10]], whm: [[91, 20], [81, 18], [70, 16], [50, 14], [30, 12], [10, 10]],
     rdm: [[96, 14], [45, 12], [25, 10]]},
+  // Fast Cast (BG Wiki Fast_Cast): a Red Mage's trait, as a main job or a subjob; its tiers VI to IX are job point
+  // gifts (fastCastGift). A Blue Mage's comes from its spells set, not counted
+  fc: {rdm: [[89, 30], [76, 25], [55, 20], [35, 15], [15, 10]]},
 };
 // Job point gifts of the main job, all of them (2100 job points spent)
 const GIFTS = {
@@ -261,6 +264,8 @@ function traitOf(stat, c){
   const sub = (data() || {}).sub || c.sub;
   return Math.max(tier(S.job, c.main_level || 99), tier(sub, sub === c.sub ? c.sub_level || 0 : jaLevels().sub));
 }
+// A Red Mage's Fast Cast gifts (BG Wiki Fast_Cast: 32 % at 150 job points spent, 34 at 500, 36 at 1125, 38 at 2000)
+const fastCastGift = c => S.job !== 'RDM' ? 0 : 2 * [150, 500, 1125, 2000].filter(n => (c.jp_spent || 0) >= n).length;
 const giftOf = (stat, c) => (c.jp_spent || 0) >= 2100 ? ((GIFTS[(S.job || '').toLowerCase()] || {})[stat] || 0) : 0;
 // Accuracy from a combat skill, by steps: 1 a point to 200, 0.9 to 400, 0.8 to 600, 0.9 past it
 function skillAcc(level){

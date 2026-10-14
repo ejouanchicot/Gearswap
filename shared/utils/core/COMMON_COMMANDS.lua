@@ -555,6 +555,10 @@ function CommonCommands.handle_command(command, job_name, ...)
         return require('shared/utils/equipment/elemental_belt').show_status()
     end
 
+    -- Diagnostics and in-game test tools (DEBUG_COMMANDS.lua WORDS)
+    local debug = DebugCommands.run(cmd, args)
+    if debug ~= nil then return debug end
+
     -- Temporary keybinds for a repetitive task
     if cmd == 'tb' then
         return require('shared/utils/keybinds/temp_binds').handle(args)
@@ -695,53 +699,6 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'hporder' then
         require('shared/utils/equipment/hp_priority').toggle_order_display()
         return true
-    elseif cmd == 'debugsubjob' or cmd == 'dsj' then
-        return CommonCommands.handle_debugsubjob()
-    elseif cmd == 'debugwarp' then
-        return CommonCommands.handle_debugwarp()
-    elseif cmd == 'debugprecast' then
-        return CommonCommands.handle_debugprecast()
-    elseif cmd == 'automovedebug' or cmd == 'amd' then
-        return CommonCommands.handle_automovedebug()
-    elseif cmd == 'debugjobchange' or cmd == 'djc' then
-        return CommonCommands.handle_debugjobchange()
-    elseif cmd == 'debugstate' or cmd == 'ds' then
-        return CommonCommands.handle_debugstate()
-    elseif cmd == 'debugupdate' then
-        return CommonCommands.handle_debugupdate()
-    elseif cmd == 'fulltest' or cmd == 'ft' then
-        return CommonCommands.handle_fulltest(args[1])
-    elseif cmd == 'jobtest' then
-        -- job changes played and measured in the Mog House (shared/utils/debug/job_test.lua)
-        return require('shared/utils/debug/job_test').handle(args)
-    elseif cmd == 'syscheck' or cmd == 'sc' then
-        return CommonCommands.handle_syscheck(args[1])
-    elseif cmd == 'lagdebug' or cmd == 'ldb' then
-        return CommonCommands.handle_lagdebug(args[1])
-    elseif cmd == 'jamsg' then
-        return CommonCommands.handle_jamsg(args[1])
-    elseif cmd == 'spellmsg' then
-        return CommonCommands.handle_spellmsg(args[1])
-    elseif cmd == 'wsmsg' then
-        return CommonCommands.handle_wsmsg(args[1])
-    elseif cmd == 'info' then
-        return CommonCommands.handle_info(args)
-    elseif cmd == 'debugmsg' then
-        return CommonCommands.handle_debugmsg()
-    elseif cmd == 'testmsg' or cmd == 'msgtest' then
-        -- Preview messages. Usage: //gs c testmsg [job]
-        -- (e.g. //gs c testmsg, //gs c testmsg brd, //gs c testmsg system)
-        local M = require('shared/utils/messages/api/messages')
-        local job_filter = args[1]
-        M.test(job_filter)
-        return true
-    elseif cmd == 'msgtests' then
-        -- Validate entire message system
-        local MessageValidator = require('shared/utils/messages/message_validator')
-        MessageValidator.run_all_tests()
-        return true
-    elseif cmd == 'memcheck' or cmd == 'mem' then
-        return CommonCommands.handle_memcheck(args[1])
     elseif cmd == 'commands' or cmd == 'cmds' then
         MessageCommands.show_commands_list()
         return true
@@ -755,8 +712,20 @@ end
 
 -- HELPER FUNCTIONS
 
---- Check if a word is answered by handle_command(). Must stay in step with
---- the router above.
+--- The words handle_command() answers, besides the warp aliases and the diagnostics (DEBUG_COMMANDS.lua
+--- WORDS). Must stay in step with the router above.
+local COMMON_WORDS = {}
+for word in ([[
+    mount naked equip reload checksets wardrobeaudit wa worganize wo bags po porter lockscan refill rf craft
+    uncraft fish fishing automedicine am alt altcmds altlist altbuff altbuffs altdebug altsync altbuffsync
+    lockstyle ls dressup perf testcolors colors jump waltz aoewaltz lightarts darkarts aoe smartbuff buff buffs
+    buffself selfbuff gearscan hporder sortie alts main setalt altreport altmirror altlead rollshow stealth
+    cleanse tb trace atelier combatmode keyconflicts kc belt dw support fights dealwatch th commands cmds help
+    ?
+]]):gmatch('%S+') do COMMON_WORDS[word] = true end
+for word in pairs(DebugCommands.WORDS) do COMMON_WORDS[word] = true end
+
+--- Check if a word is answered by handle_command().
 --- @param command string|nil Command word
 --- @return boolean True for a common command or a warp alias
 function CommonCommands.is_common_command(command)
@@ -766,28 +735,7 @@ function CommonCommands.is_common_command(command)
 
     local cmd = command:lower()
 
-    if cmd == 'mount' or
-        cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or
-        cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'bags' or cmd == 'po' or cmd == 'porter' or cmd == 'jobtest' or cmd == 'lockscan' or
-        cmd == 'refill' or cmd == 'rf' or
-        cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
-        cmd == 'automedicine' or cmd == 'am' or
-        cmd == 'alt' or cmd == 'altcmds' or cmd == 'altlist' or
-        cmd == 'altbuff' or cmd == 'altbuffs' or cmd == 'altdebug' or
-        cmd == 'altsync' or cmd == 'altbuffsync' or
-        cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
-        cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
-        cmd == 'aoewaltz' or cmd == 'lightarts' or cmd == 'darkarts' or cmd == 'aoe' or cmd == 'smartbuff' or
-        cmd == 'buff' or cmd == 'buffs' or cmd == 'buffself' or cmd == 'selfbuff' or cmd == 'gearscan' or cmd == 'hporder' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
-        cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
-        cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or
-        cmd == 'fulltest' or cmd == 'ft' or
-        cmd == 'syscheck' or cmd == 'sc' or
-        cmd == 'lagdebug' or cmd == 'ldb' or
-        cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
-        cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
-        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'altlead' or cmd == 'rollshow' or cmd == 'stealth' or cmd == 'cleanse' or cmd == 'tb' or cmd == 'trace' or cmd == 'atelier' or
-        cmd == 'combatmode' or cmd == 'keyconflicts' or cmd == 'kc' or cmd == 'belt' or cmd == 'dw' or cmd == 'support' or cmd == 'fights' or cmd == 'dealwatch' or cmd == 'th' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
+    if COMMON_WORDS[cmd] then
         return true
     end
 

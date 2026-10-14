@@ -7,6 +7,20 @@
 // (loaded by atelier/index.html after opt_page.js: see the list there)
 
 Object.assign(T.fr, {
+  statObj_enhTime: 'Durée du sort', statD_enhTime: 'en secondes : (base + secondes) × Composure × % écrits sur les pièces × % en augment ; ×3 sur toi (30 min au plus), set Lethargy sur les autres (mesuré en jeu)',
+  statObj_refreshTick: 'Refresh : MP par tick', statD_refreshTick: 'les MP du sort + « Refresh potency » des pièces',
+  statObj_refreshMp: 'Refresh : MP par sort', statD_refreshMp: 'MP par tick × nombre de ticks : la puissance et la durée ensemble',
+  statObj_regenTick: 'Regen : HP par tick', statD_regenTick: 'les HP du sort + « Regen potency » (le % d’abord, arrondi au-dessus, puis le chiffre fixe)',
+  statObj_regenHp: 'Regen : HP par sort', statD_regenHp: 'HP par tick × nombre de ticks : la puissance et la durée ensemble',
+  statObj_gainPot: 'Gain : bonus', statD_gainPot: 'floor((skill − 300) / 10) + 5, 25 au plus dès 500 de skill, + « Gain magic effect » (mesuré en jeu)',
+  statObj_temper: 'Temper : %', statD_temper: 'floor((skill − 300) / 10) % d’attaque double (Temper) ou triple (Temper II, 40 au plus) : BG Wiki',
+  statObj_enspell: 'Enspell : dégâts', statD_enspell: 'floor((skill − 180) / 8) + 25 par coup, avant les bonus d’arme : BG Wiki',
+  statObj_barEle: 'Bar-élément : résistance', statD_barEle: '25 + floor(skill / 4), 150 au plus dès 500 de skill : BG Wiki',
+  statObj_aquaveil: 'Aquaveil : interruptions', statD_aquaveil: '2 dès 301 de skill, 3 dès 501, + les pièces « Aquaveil » : BG Wiki',
+  enhTagSelf: 'sur toi', enhTagOthers: 'sur les autres', enhBtnSelf: 'Sur toi', enhBtnOthers: 'Sur les autres',
+  enhWhenSelf: 'Lancé sur toi : Composure triple la durée (30 min au plus).', enhWhenOthers: 'Lancé sur un autre joueur sous Composure : pas de ×3, seulement le bonus du set Lethargy.',
+  statGrp_enh: 'Magie de renfort', statEnhNote: 'Durée calculée pour {s} ({b} s de base, job points compris), {c}.',
+  statEnhSelf: 'sur toi sous Composure (×3, 30 min au plus)', statEnhOthers: 'sur les autres sous Composure (bonus du set Lethargy)', statEnhPlain: 'sans Composure',
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
@@ -35,7 +49,7 @@ Object.assign(T.fr, {
   protOther: 'Lancé par un autre', protOtherTip: 'Protect lancé par un WHM, RDM, SCH… : sans la DEF de ton bouclier (Shield Barrier ne compte que sur ton propre Protect).',
   statGap: 'HP gagnés au midcast', statGapTip: 'HP du set {m} moins ceux du Fast Cast {f} : ce qui manque au moment du Cure, donc ce qu’il peut soigner en entier (guide Paladin, CURE SELF).',
   statD_def: 'VIT × 1,5 + DEF du gear (+ bouclier sous Protect en PLD)', statD_hp: 'HP avec les HP %', statD_enmity: 'jusqu’au plafond +200, buffs compris',
-  statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %', statD_sird: 'jusqu’à 102 %',
+  statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %, le trait et les gifts du Red Mage comptés', statD_sird: 'jusqu’à 102 %',
   statD_meva: 'résister aux sorts', statD_mdb: 'divise les dégâts magiques', statD_pdtRed: 'DT+PDT plafonnés à −50 %, puis PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) plafonnés, puis MDT II', statD_ecritRed: 'réduction du gear, comptée jusqu’au plancher : 10 % → 1 %, soit −9 avec tes mérites',
   statD_cure: 'jusqu’à 50 %', statD_refresh: 'MP par tick', statD_regen: 'HP par tick',
@@ -59,6 +73,20 @@ Object.assign(T.fr, {
   tkCrit: 'Critiques ennemis', tkCritTip: '10 % au plus, 1 % au moins : mérites −{m}, gear {g}.', tkOver: '{n} de trop',
   tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup, deux réserves qui se multiplient : l’Enmity (1 % pour +2, 50 % au plus) et les pièces « Reduces Enmity loss » (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % au plus) ; −75 % au total au plus. Foe Sirvente (BRD) remplit la seconde, pas encore compté.'});
 Object.assign(T.en, {
+  statObj_enhTime: 'Spell length', statD_enhTime: 'in seconds: (base + seconds) × Composure × % written on the pieces × % in augments; ×3 on yourself (30 min at most), the Lethargy set on the others (measured in game)',
+  statObj_refreshTick: 'Refresh: MP a tick', statD_refreshTick: 'the spell’s MP + the pieces’ “Refresh potency”',
+  statObj_refreshMp: 'Refresh: MP a cast', statD_refreshMp: 'MP a tick × number of ticks: potency and length together',
+  statObj_regenTick: 'Regen: HP a tick', statD_regenTick: 'the spell’s HP + “Regen potency” (the % first, rounded up, then the flat amount)',
+  statObj_regenHp: 'Regen: HP a cast', statD_regenHp: 'HP a tick × number of ticks: potency and length together',
+  statObj_gainPot: 'Gain: bonus', statD_gainPot: 'floor((skill − 300) / 10) + 5, 25 at most from 500 of skill, + “Gain magic effect” (measured in game)',
+  statObj_temper: 'Temper: %', statD_temper: 'floor((skill − 300) / 10) % of Double Attack (Temper) or Triple Attack (Temper II, 40 at most): BG Wiki',
+  statObj_enspell: 'Enspell: damage', statD_enspell: 'floor((skill − 180) / 8) + 25 a hit, before the weapon’s bonuses: BG Wiki',
+  statObj_barEle: 'Bar-element: resistance', statD_barEle: '25 + floor(skill / 4), 150 at most from 500 of skill: BG Wiki',
+  statObj_aquaveil: 'Aquaveil: interruptions', statD_aquaveil: '2 from 301 of skill, 3 from 501, + the “Aquaveil” pieces: BG Wiki',
+  enhTagSelf: 'on yourself', enhTagOthers: 'on the others', enhBtnSelf: 'On yourself', enhBtnOthers: 'On the others',
+  enhWhenSelf: 'Cast on yourself: Composure triples its length (30 min at most).', enhWhenOthers: 'Cast on another player under Composure: no ×3, the Lethargy set’s bonus only.',
+  statGrp_enh: 'Enhancing magic', statEnhNote: 'Length worked out for {s} ({b} s of base, job points in), {c}.',
+  statEnhSelf: 'on yourself under Composure (×3, 30 min at most)', statEnhOthers: 'on the others under Composure (the Lethargy set’s bonus)', statEnhPlain: 'without Composure',
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
@@ -87,7 +115,7 @@ Object.assign(T.en, {
   protOther: 'Cast by another', protOtherTip: 'Protect cast by a WHM, RDM, SCH…: without your shield’s DEF (Shield Barrier counts on your own Protect only).',
   statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} minus those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
   statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs included',
-  statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %', statD_sird: 'up to 102 %',
+  statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %, a Red Mage’s trait and gifts counted', statD_sird: 'up to 102 %',
   statD_meva: 'resist spells', statD_mdb: 'divides magic damage', statD_pdtRed: 'DT+PDT capped at −50 %, then PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s reduction, counted down to the minimum: 10 % → 1 %, so −9 with your merits',
   statD_cure: 'up to 50 %', statD_refresh: 'MP per tick', statD_regen: 'HP per tick',
@@ -111,12 +139,14 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} over cap',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill'];
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
-const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v)
+// a spell's length reads as minutes and seconds (12:36)
+const enhTimeText = v => `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, '0')}`;
+const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' ? enhTimeText(v)
   : (k === 'ecritRed' && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
@@ -145,8 +175,52 @@ function withSird(s, list){
   if (!/sird/i.test(setNames(s)) || list[0] === 'sird') return list;
   return [list[0], 'sird', ...list.slice(1).filter(k => k !== 'sird')].slice(0, 3);
 }
+/* ---- enhancing magic: what a set is cast for, on whom, and what the spell is worth (opt.js O.enhancingFigures) ---- */
+// The set's spell by its name: [name, kind, base seconds on oneself, on the others (Phalanx II)], the first that fits.
+// Bases measured in game on 2026-10-14 (Kaories RDM), before the job points' seconds.
+const ENH_KINDS = [[/refresh/i, 'refresh', 150], [/regen/i, 'regen', 60], [/phalanx/i, 'phalanx', 180, 240], [/stoneskin/i, 'stoneskin', 300],
+  [/aquaveil/i, 'aquaveil', 600], [/gain/i, 'gain', 300], [/temper/i, 'temper', 180], [/enspell/i, 'enspell', 180], [/barelement/i, 'barele', 480],
+  [/barailment|barstatus/i, 'barail', 480], [/spikes/i, 'spikes', 180], [/blink/i, 'blink', 300], [/haste|flurry/i, 'haste', 180], [/protect|shell/i, 'protect', 1800],
+  // the job's own set, worn for every spell with no set of its own and laid under the others (set_combine): judged on
+  // its shortest spell (Regen II, 60 s), so the 30 minutes of Composure never hide what a piece adds to the longer ones
+  [/enhancing/i, 'enhancing', 60]];
+// A Red Mage's enhancing set: {kind, base, comp, name} or null. Composure is taken as always up (2 hours, 5 minutes of
+// recast): a set named Composure is the one cast on the others (shared/utils/midcast/midcast_manager.lua
+// get_enhancing_target), any other is cast on oneself. Other jobs keep their own objectives for now: their spells'
+// seconds and tiers are not this job's.
+function enhContext(s){
+  if (S.job !== 'RDM' || !s || family(s.path, s.pieces) !== 'midcast') return null;
+  const p = s.path.replace(/^sets\.midcast/, ''), hit = ENH_KINDS.find(k => k[0].test(p.replace(/composure/i, '')));
+  if (!hit) return null;
+  const c = measuredChar() || {}, others = /composure/i.test(p);
+  // the job points' seconds: Enhancing Magic Duration, 1 s a rank, 20 ranks (210 job points in all; the export has the
+  // total spent only, taken as bought from 500 spent: measured 20 on Kaories); the merits' 6 s a level
+  const seconds = ((c.jp_spent || 0) >= 500 ? 20 : 0) + 6 * ((c.merits || {}).enhancing_magic_duration || 0);
+  const master = (c.jp_spent || 0) >= 1200;
+  return {kind: hit[1], comp: others ? 'others' : 'self', base: (others && hit[3] ? hit[3] : hit[2]) + seconds, name: hit[1],
+    // Refresh III and Temper II come with 1200 job points; Regen II is the job's highest
+    refBase: master ? 9 : 6, regenBase: 12, temperCap: master ? 40 : 0};
+}
+// On whom an enhancing set is cast, for the page to say beside its name ('Self' / 'Others'), or '': a set named
+// Composure reads as "with Composure" when it means "on the others" (both are cast with Composure up)
+function enhTarget(s){
+  const e = enhContext(s);
+  return e ? (e.comp === 'others' ? 'Others' : 'Self') : '';
+}
+// Potency first, then how long it lasts, then the least damage taken with what is left (the player's order,
+// 2026-10-14). No skill after them: past what the potency
+// reads of it (500 for Phalanx, Gain and Bar-element, 501 for Aquaveil) it gives nothing, and asking for it moved
+// pieces for no gain. Refresh and Regen also have "a cast" objectives (potency x ticks) to choose instead
+const ENH_OBJS = {refresh: ['refreshTick', 'enhTime', 'pdtRed'], regen: ['regenTick', 'enhTime', 'pdtRed'], gain: ['gainPot', 'enhTime', 'pdtRed'],
+  temper: ['temper', 'enhTime', 'pdtRed'], enspell: ['enspell', 'enhTime', 'pdtRed'], barele: ['barEle', 'enhTime', 'pdtRed'],
+  aquaveil: ['aquaveil', 'enhTime', 'pdtRed'], phalanx: ['phalanx', 'enhTime', 'pdtRed'], stoneskin: ['stoneskin', 'enhTime', 'pdtRed']};
+// (a spell with no potency to look for: its length, then the damage taken, physical then magical)
+const ENH_PLAIN = ['enhTime', 'pdtRed', 'mdtRed'];
+const ENH_MORE = {refresh: ['refreshMp'], regen: ['regenHp']};
 function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
+  const enh = enhContext(s);
+  if (enh) return ENH_OBJS[enh.kind] || ENH_PLAIN;
   // a GEO's luopan sets and its Geo- / Indi- cast sets (luopan.js)
   if (luopanObjectives(s)) return luopanObjectives(s);
   // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap);
@@ -191,8 +265,13 @@ function statFloorDefault(s, first){
   // SIRD 102 on a set named for it, and on a tank's Cure sets (cast while taking hits)
   const fam = family(s.path, s.pieces), cureSet = fam === 'midcast' && /cur(e|a)/i.test(setNames(s)) && ['PLD', 'RUN'].includes(S.job);
   const sird = /sird/i.test(setNames(s)) || cureSet ? {sird: 102} : {};
-  if (first === 'fc') return {fc: 80};
-  if (!['PLD', 'RUN'].includes(S.job)) return sird;
+  // every set of the other jobs: DT+PDT -50 and DT+MDT -29 at least, whatever the set is for (the player's rule,
+  // 2026-10-14: no set worn with less, a spell's too); a tank's sets have their own floors below
+  // (not an enhancing spell's set: its potency and its length come first, the damage taken is what the pieces left
+  // give, as its last objectives: the player's rule once the floors had cost Refresh 14 % of its length)
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) ? {} : {pdt: -50, mdt: -29};
+  if (first === 'fc') return Object.assign({fc: 80}, always);
+  if (!tank) return Object.assign(always, sird);
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
   // damage taken at its cap on every tank set worn more than an instant: DT+PDT -50, DT+MDT -50 less what Shell gives
   // (Shell V -29.3 %: -21 left to the gear)
@@ -259,7 +338,7 @@ function setStatOpts(path, patch){
 }
 
 /* ---- the objectives by kind, and the ones a set is shown ---- */
-const STAT_OBJ_GROUPS = [['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'ceLoss', 'cureEnm']],
+const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'ceLoss', 'cureEnm']],
   ['cure', ['cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
   ['regen', ['refresh', 'regen']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
@@ -267,6 +346,8 @@ function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
   const add = list => list.forEach(k => out.add(k)), def = ['def', 'hp', 'pdtRed', 'mdtRed', 'meva', 'mdb', 'enmity'];
   add(luopanRelevant(s));
+  const enh = enhContext(s);
+  if (enh) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'hp']); return out; }
   if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
   else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
   else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
@@ -324,6 +405,22 @@ function statVec(p, slot){
   for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'refresh', 'regen', 'enhdur'])
     if (v(k)) out[k] = v(k);
   if (v('skill:enhancing magic skill') + all) out.enh = v('skill:enhancing magic skill') + all;
+  // Enhancing magic (opt.js O.enhancingFigures). The duration's two kinds multiply: what the description gives
+  // (Ammurapi Shield, Embla Sash, Atrophy Gloves, Sucellos's Cape...) and what the augments add (Telchine, Colada,
+  // Ghostfyre Cape, a Duelist's Torque's rank): r.base and r.aug, as measured in game on 2026-10-14
+  const base = k => r.base[k] ? r.base[k].v || 0 : 0, aug = k => r.aug[k] ? r.aug[k].v || 0 : 0;
+  if (base('enhdur')) out.enhdurL = base('enhdur');
+  if (aug('enhdur')) out.enhdurA = aug('enhdur');
+  // the Lethargy set ("Set: Augments "Composure""): its count gives Composure its length on the others
+  if (r.cond.some(c => /^Set: Augments "Composure"/i.test(c))) out.leth = 1;
+  if (v('x:refresh potency')) out.refpot = v('x:refresh potency');
+  if (v('x:duration of refresh effects received')) out.refsec = v('x:duration of refresh effects received');
+  // Regen potency: a % in a description (Bolelabunga +10 %), a flat amount in an augment (Telchine +3)
+  if (base('x:regen potency')) out.regenpct = base('x:regen potency');
+  if (aug('x:regen potency')) out.regenflat = aug('x:regen potency');
+  if (v('x:regen effect duration')) out.regensec = v('x:regen effect duration');
+  if (v('x:gain magic effect')) out.gain = v('x:gain magic effect');
+  if (v('x:aquaveil')) out.aquaveil = v('x:aquaveil');
   return out;
 }
 function withVec(p, slot){
@@ -357,9 +454,16 @@ function statBase(s){
   return {ecritRoom, cureJp, geoSkill: S.job === 'GEO' && c.skills ? skillLevel(c, 'geomancy') + skillLevel(c, 'handbell') : 0, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
     hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: (B.enmity || 0) + crusade, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
+    // the Fast Cast the job gives before any piece (a Red Mage's trait and gifts, main job or subjob)
+    fc: traitOf('fc', c) + fastCastGift(c),
     shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect] && !b.protectOther, shieldMul: protectGift()};
 }
-const statContext = s => ({mode: 'stats', job: S.job, stat: {base: statBase(s)}});
+// (an enhancing set's spell, target and base length ride with the character: opt.js O.enhancingFigures)
+function statContext(s){
+  const base = statBase(s), enh = enhContext(s);
+  if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap});
+  return {mode: 'stats', job: S.job, stat: {base}};
+}
 const CRUSADE_ENMITY = 30;
 
 /* ---- the tank figures the guide adds (Guide_Paladin 03 Defense, 02 Enmity), shown in the Tanking compartment ---- */
@@ -502,6 +606,24 @@ function statCmpRows(s, cols){
 }
 
 /* ---- the search ---- */
+// An enhancing spell's potency goes up by steps of skill (a Temper's 1 % every 10 points): from a set a step short, no
+// single piece gets there, and each one tried costs length, so the search stopped under what the gear can give (Temper
+// 34 % with 36 % within reach, 2026-10-14). The potency is searched first, with the skill after it to climb between two
+// steps; the real search then starts from that set and keeps that potency as a floor while it looks for the rest
+// (the longest spell). Only when the potency comes first and something follows it.
+const ENH_STEPPED = new Set(['temper', 'enspell', 'gainPot', 'barEle', 'aquaveil', 'phalanx', 'stoneskin']);
+function enhPotencyFirst(s, input, so){
+  if (!enhContext(s) || !ENH_STEPPED.has(so.objs[0]) || so.objs.length < 2 || input.prefilter) return;
+  let top;
+  try { top = FFXI.opt.run(Object.assign({}, input, {opts: Object.assign({}, input.opts, {then: ['enhSkill']})})); } catch (e) { return; }
+  const reached = top && top.pieces && FFXI.opt.statFigures(input.ctx.stat, top.pieces)[so.objs[0]];
+  if (reached == null) return;
+  // the set as it is already gives that much: the search starts from it (from the other one it lost a little of
+  // what comes after the potency, with nothing to gain)
+  const has = FFXI.opt.statFigures(input.ctx.stat, input.start)[so.objs[0]];
+  if (has == null || reached > has) input.start = top.pieces;
+  input.opts = Object.assign({}, input.opts, {floor: Object.assign({}, input.opts.floor, {min: {[so.objs[0]]: reached}})});
+}
 async function optimizeStats(s){
   if (!engineReady() || !statSet(s)) return;
   const k = trialKey(s), o = Object.assign({}, S.optOpts), so = statOpts(s), base = lockedBase(s, withoutTrial(() => withWeapons(s).pieces));
@@ -513,6 +635,7 @@ async function optimizeStats(s){
   const start = withVecs(startOf(base, lockedSlots(s)));
   const input = {ctx: statContext(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: so.objs[0], then: so.objs.slice(1), floor: so.floor}};
+  enhPotencyFirst(s, input, so);
   optLaunch(s, k, input, Object.assign({}, o, {stat: so.objs[0], statFloor: so.floor}));
 }
 
@@ -550,7 +673,9 @@ function statWhatHTML(s){
   const ref = cureGap(s) ? null : hpRef(s);
   const refLine = ref ? `<p class="muted small">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}</p>` : '';
   const weaponsNote = (S.optOpts || {}).freeWeapons ? `<p class="muted small">${esc(t('statWeaponsNote'))}</p>` : '';
-  const assumed = ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
+  const enh = enhContext(s);
+  const assumed = enh ? `<p class="muted small">${esc(t('statEnhNote', {s: enh.name, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : 'statEnhSelf')}))}</p>`
+    : ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
   return `${floors}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
     own + refLine + assumed + search + weaponsNote;
 }

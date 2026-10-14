@@ -7,14 +7,18 @@
 // page reads back at start (the newer of the two wins): the same arrangement in every browser.
 //   {pins: [set path], groups: [{id, name, sets: [set path]}], hide: [family], names: {family: label}}
 
-Object.assign(T.fr, {lpPinned: 'Épinglés', lpPin: 'Épingler en haut de la liste', lpUnpin: 'Retirer des épinglés', lpGroup: 'Ranger dans un groupe',
+Object.assign(T.fr, {mcGrp_enhancing: 'Renfort', mcGrp_enfeebling: 'Affaiblissement', mcGrp_elemental: 'Élémentaire', mcGrp_dark: 'Ténèbres', mcGrp_cure: 'Soin', mcGrp_divine: 'Divine',
+  mcGrp_song: 'Chants', mcGrp_blue: 'Magie bleue', mcGrp_ninjutsu: 'Ninjutsu', mcGrp_geomancy: 'Géomancie', mcGrp_summoning: 'Invocation', mcGrp_enmity: 'Inimitié', mcGrp_other: 'Autres sorts',
+  lpFoldTip: 'Ouvre ou ferme toutes les catégories et leurs groupes en une fois', lpModeTag: 'mode', lpPinned: 'Épinglés', lpPin: 'Épingler en haut de la liste', lpUnpin: 'Retirer des épinglés', lpGroup: 'Ranger dans un groupe',
   lpMenu: 'Options de la liste', lpOpenAll: 'Tout déplier', lpCloseAll: 'Tout replier', lpPaths: 'Afficher les chemins', lpPathsTip: 'Le nom de chaque set dans ton fichier (sets.engaged.Laphria…)',
   lpAll: 'Afficher les sets d’un autre sub', lpNewGroup: 'Nouveau groupe…', lpGroupName: 'Nom du groupe', lpRename: 'Renommer', lpDelete: 'Supprimer ce groupe (les sets restent)',
   lpHide: 'Masquer cette catégorie', lpHidden: 'Catégories masquées', lpShow: 'réafficher', lpOut: 'Retirer de ce groupe', lpEmptyGroup: 'Vide : passe la souris sur un set et clique ▤ pour le ranger ici.',
   lpMissing: 'Il manque au moins une pièce de ce set dans tes sacs', lpNoGroup: 'Aucun groupe encore.', lpSaveFile: 'Enregistrer dans tes fichiers', lpBrowserOnly: 'Rangement gardé dans ce navigateur seulement.',
   lpSaved: 'Rangement enregistré dans tes fichiers.', lpDeleteAsk: 'Supprimer le groupe « {n} » ? Ses sets restent dans la liste.', lpResize: 'Glisse pour régler la largeur de la liste',
   lpSearchTip: 'Chercher un set ou un objet. ↑ ↓ pour passer d’un set à l’autre.', lpHistory: 'Historique', lpHistoryTip: 'Ce que la page a écrit dans tes fichiers, avec le retour en arrière'});
-Object.assign(T.en, {lpPinned: 'Pinned', lpPin: 'Pin to the top of the list', lpUnpin: 'Unpin', lpGroup: 'Put in a group',
+Object.assign(T.en, {mcGrp_enhancing: 'Enhancing', mcGrp_enfeebling: 'Enfeebling', mcGrp_elemental: 'Elemental', mcGrp_dark: 'Dark', mcGrp_cure: 'Healing', mcGrp_divine: 'Divine',
+  mcGrp_song: 'Songs', mcGrp_blue: 'Blue magic', mcGrp_ninjutsu: 'Ninjutsu', mcGrp_geomancy: 'Geomancy', mcGrp_summoning: 'Summoning', mcGrp_enmity: 'Enmity', mcGrp_other: 'Other spells',
+  lpFoldTip: 'Opens or closes every category and its groups at once', lpModeTag: 'mode', lpPinned: 'Pinned', lpPin: 'Pin to the top of the list', lpUnpin: 'Unpin', lpGroup: 'Put in a group',
   lpMenu: 'List options', lpOpenAll: 'Open all', lpCloseAll: 'Close all', lpPaths: 'Show the paths', lpPathsTip: 'Each set’s name in your file (sets.engaged.Laphria…)',
   lpAll: 'Show another subjob’s sets', lpNewGroup: 'New group…', lpGroupName: 'Group name', lpRename: 'Rename', lpDelete: 'Delete this group (its sets stay)',
   lpHide: 'Hide this category', lpHidden: 'Hidden categories', lpShow: 'show again', lpOut: 'Take out of this group', lpEmptyGroup: 'Empty: hover a set and click ▤ to put it here.',
@@ -23,6 +27,28 @@ Object.assign(T.en, {lpPinned: 'Pinned', lpPin: 'Pin to the top of the list', lp
   lpSearchTip: 'Find a set or an item. ↑ ↓ to move between sets.', lpHistory: 'History', lpHistoryTip: 'What the page wrote to your files, with the way back'});
 
 const LIST_FILE = 'list_layout.js', LIST_W = [220, 520];
+
+/* ---- the spells' sets by kind of magic ---- */
+// A category with more spell sets than this is cut into kinds of magic (a Red Mage has 21 of them in one run)
+const MIDCAST_GROUP_FROM = 8;
+const MIDCAST_ORDER = ['enhancing', 'enfeebling', 'elemental', 'dark', 'cure', 'divine', 'song', 'blue', 'ninjutsu', 'geomancy', 'summoning', 'enmity', 'other'];
+// Inside a kind: the skill's own set first (sets.midcast['Enhancing Magic']: the one every spell without a set of
+// its own wears, and the others are laid over), then the spells by what they are for rather than by their letters
+// (what gives back, what protects, what strengthens, the bars), any other name after them as the list had it
+const MIDCAST_FIRST = ['refresh', 'regen', 'phalanx', 'stoneskin', 'aquaveil', 'blink', 'haste', 'flurry', 'gain', 'boost', 'temper', 'enspell',
+  'storm', 'spikes', 'barelement', 'barailment', 'protect', 'shell'];
+function midcastRank(name){
+  const n = name.toLowerCase().replace(/[^a-z]/g, '');
+  if (/magic$|^ninjutsu$|^geomancy$|^singing$|^bardsong$/.test(n)) return 0;
+  const at = MIDCAST_FIRST.findIndex(x => n.startsWith(x));
+  return at < 0 ? 100 : 1 + at;
+}
+// true when a version's name is the value of one of the job's modes (EnfeebleMode Potency, NukeMode Magic Burst)
+const listModeValue = label => ((data() || {}).modes || []).some(m => /mode/i.test(m.name) && (m.values || []).includes(label));
+// the kind of a spell set (core.js magicKindOf), 'other' when none fits
+function midcastGroup(name){
+  return magicKindOf(name) || 'other';
+}
 
 /* ---- the arrangement ---- */
 function listPrefs(char = S.char, job = S.job){
@@ -136,7 +162,10 @@ function listFamHead(fam, n, here, open){
 function listHeadHTML(q){
   return `<div class="search"><input id="setq" type="search" placeholder="${t('searchShort')}" title="${esc(t('lpSearchTip'))}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
     `<button class="btn ghost lbtn" data-action="add" title="${esc(t('ttAdd'))}">+</button>` +
-    `<button class="btn ghost lbtn" data-listmenu aria-expanded="${!!S._listMenu}" title="${esc(t('ttMenu'))}">⋯</button></div>${S._listMenu ? listMenuHTML() : ''}`;
+    `<button class="btn ghost lbtn" data-listmenu aria-expanded="${!!S._listMenu}" title="${esc(t('ttMenu'))}">⋯</button></div>` +
+    // open or close everything at once, in sight (they were in the list's menu only)
+    (q ? '' : `<div class="foldall" title="${esc(t('lpFoldTip'))}"><button class="linkbtn" data-famall="1">▾ ${esc(t('lpOpenAll'))}</button>` +
+      `<button class="linkbtn" data-famall="0">▸ ${esc(t('lpCloseAll'))}</button></div>`) + (S._listMenu ? listMenuHTML() : '');
 }
 function listMenuHTML(){
   const p = listPrefs(), check = on => `<i class="lmck">${on ? '✓' : ''}</i>`;

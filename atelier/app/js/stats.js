@@ -475,12 +475,6 @@ function damageTakenLines(v){
   if (v('bdt')) out += cappedLi(t('bdtEff'), v('dt') + v('bdt'), -50, `DT ${v('dt')} + BDT ${v('bdt')}`);
   return out;
 }
-// One piece's stats as label / value rows, in the groups' order
-function statRows(stats){
-  const keys = Object.keys(stats).filter(k => stats[k].v && statVisible(k)), sorter = statSorter(curSet(), stats);
-  const ordered = S.statSort === 'group' ? STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(sorter)) : keys.sort(sorter);
-  return ordered.map(k => statLi(esc(statLabel(k, stats[k])), fmtStat(stats[k]))).join('');
-}
 const STAT_ORDER = Object.keys(STAT_DEF);
 const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.indexOf(b) + 1 || 999) || a.localeCompare(b);
 // What the set's gear brings: every piece added up, the caps shown where the game has one
