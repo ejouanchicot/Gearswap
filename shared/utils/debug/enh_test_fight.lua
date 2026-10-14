@@ -7,6 +7,8 @@
 --- Enspell), so the character goes back to her own sets while it is read.
 ---
 ---   EnhTestFight.enspell(25, 180, done)   at most 25 procs or 180 s, then done(text)
+---   EnhTestFight.taken(40, 300, nil, done) the next 40 plain hits taken (Phalanx, Spikes), or 300 s
+---   EnhTestFight.taken(99, 300, 37, done)  the hits taken until Stoneskin (buff 37) is used up
 ---   EnhTestFight.stop()                   stops reading
 ---
 --- The text: every value seen and how often (a resisted proc is a half or a
@@ -121,9 +123,93 @@ function EnhTestFight.enspell(procs, seconds, done)
     coroutine.schedule(function() watch(r) end, POLL)
 end
 
+---============================================================================
+--- HITS TAKEN - Phalanx, Stoneskin and Spikes, read from the hits the character takes
+---============================================================================
+--- Every melee swing at the character is written as it came: its damage, then c a critical hit, rN a reaction other
+--- than a plain hit (a block, a parry: N as sent), s Stoneskin up, b while she was casting (her casting gear),
+--- and @HP her HP when it came (the game's HP, sent apart: the hit's own loss shows a moment later). A swing that
+--- missed or that a shadow took is counted apart. Plain hits = landed, not critical, plain reaction, not casting.
+
+local SHADOW = {[31] = true, [32] = true}   -- res/action_messages.lua: "... of <target>'s shadows absorbs the damage"
+local PLAIN_REACTION = 8                     -- category 1: 8 a hit (battlemod/statics.lua reaction_offsets)
+local STONESKIN = 37
+local CASTING, CAST_DONE = 8, 4
+local taking = nil   -- {hits, plain, spikes, missed, shadows, wanted, until_lost, busy_until, ends_at, done}
+
+local function taken_text(t)
+    local plain = {}
+    for _, d in ipairs(t.plain) do plain[#plain + 1] = d end
+    table.sort(plain)
+    local sum = 0
+    for _, d in ipairs(plain) do sum = sum + d end
+    local stats = #plain > 0 and ('min %d max %d mean %.1f'):format(plain[1], plain[#plain], sum / #plain) or 'none'
+    return ('TAKEN %d plain hits: %s | %d missed, %d to shadows | spikes: %s | every swing: %s'):format(#plain, stats,
+        t.missed, t.shadows, values_text(t.spikes), #t.hits > 0 and table.concat(t.hits, ' ') or 'none')
+end
+
+local function finish_taken()
+    local t = taking
+    if not t then return end
+    taking = nil
+    ActionListener.off(KEY)
+    t.done(taken_text(t))
+end
+
+--- A swing at the character, or her own cast starting or ending (her casting gear is not the one measured).
+local function on_taken(act)
+    local t = taking
+    local p = windower.ffxi.get_player()
+    if not (t and p) then return end
+    if act.actor_id == p.id then
+        if act.category == CASTING then t.busy_until = os.time() + 10 end
+        if act.category == CAST_DONE then t.busy_until = os.time() + 1 end
+        return
+    end
+    if act.category ~= MELEE then return end
+    local busy = os.time() <= t.busy_until
+    for _, target in ipairs(act.targets or {}) do
+        for _, a in ipairs(target.id == p.id and target.actions or {}) do
+            if SHADOW[a.message] then
+                t.shadows = t.shadows + 1
+            elseif not LANDED[a.message] then
+                t.missed = t.missed + 1
+            else
+                local mark = (a.message == CRIT and 'c' or '') .. (a.reaction ~= PLAIN_REACTION and ('r' .. tostring(a.reaction)) or '')
+                    .. (has_buff(STONESKIN) and 's' or '') .. (busy and 'b' or '')
+                t.hits[#t.hits + 1] = (a.param or 0) .. mark .. '@' .. tostring((p.vitals or {}).hp)
+                if mark == '' then t.plain[#t.plain + 1] = a.param or 0 end
+            end
+            if a.has_spike_effect then t.spikes[#t.spikes + 1] = a.spike_effect_param or 0 end
+        end
+    end
+end
+
+local function watch_taken(t)
+    if taking ~= t then return end
+    local lost = t.until_lost and #t.hits > 0 and not has_buff(t.until_lost)
+    if lost or #t.plain >= t.wanted or os.time() >= t.ends_at then return finish_taken() end
+    coroutine.schedule(function() watch_taken(t) end, POLL)
+end
+
+--- Write the next swings the character takes.
+--- @param hits number Plain hits wanted
+--- @param seconds number Longest reading
+--- @param until_lost number|nil A buff id: the reading ends once it is gone (a Stoneskin used up)
+--- @param done function Called once with the text
+function EnhTestFight.taken(hits, seconds, until_lost, done)
+    EnhTestFight.stop()
+    local t = {hits = {}, plain = {}, spikes = {}, missed = 0, shadows = 0, wanted = hits, until_lost = until_lost,
+        busy_until = 0, ends_at = os.time() + math.max(seconds, 10), done = done}
+    taking = t
+    ActionListener.on(KEY, on_taken)
+    coroutine.schedule(function() watch_taken(t) end, POLL)
+end
+
 --- Stop reading, without an answer.
 function EnhTestFight.stop()
     reading = nil
+    taking = nil
     ActionListener.off(KEY)
 end
 

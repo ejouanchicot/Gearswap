@@ -379,9 +379,9 @@ function setActions(s){
 
 /* ---- the pieces and the character, as plain data for the search (a worker has no page to ask) ---- */
 // A piece's stats the search reads (stats.js keys), the shield flagged (Shield Barrier)
-// The HP a piece adds to Stoneskin (BG Wiki Stoneskin; the game's descriptions name the effect, not always its amount;
-// Stone Mufflers as its description says it, +20)
-const STONESKIN_PLUS = {'Stone Gorget': 30, 'Nodens Gorget': 30, 'Stone Mufflers': 20, 'Siegel Sash': 20, 'Haven Hose': 20, 'Earthcry Earring': 10, 'Shedir Seraweels': 35};
+// The HP a piece adds to Stoneskin (BG Wiki Stoneskin; the game's descriptions name the effect, not always its amount:
+// Stone Mufflers +30 as BG Wiki says, confirmed by the player 2026-10-14, though their description reads +20)
+const STONESKIN_PLUS = {'Stone Gorget': 30, 'Nodens Gorget': 30, 'Stone Mufflers': 30, 'Siegel Sash': 20, 'Haven Hose': 20, 'Earthcry Earring': 10, 'Shedir Seraweels': 35};
 // The pieces that cut the enmity lost when hit (Guide_Paladin, "Reduces Enmity Loss": their descriptions name the effect
 // without its amount)
 const ENMITY_LOSS_GEAR = {'Burtgang': 20, "Chev. Cuisses +3": 14, 'Creed Collar': 5};

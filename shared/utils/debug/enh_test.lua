@@ -15,7 +15,7 @@
 --- character for a spell cast on oneself, on the target's GearSwap for a
 --- spell cast on another character of the box group, which sends it back.
 ---
----   //gs c enhtest run <plan>    plays a plan of <Char>/_common/tools/ENHTEST_CONFIG.lua
+---   //gs c enhtest run <plan> [n] plays a plan of <Char>/_common/tools/ENHTEST_CONFIG.lua (from its case n)
 ---   //gs c enhtest stop          stops and gives the slots back
 ---   //gs c enhtest plans         the plans of the config
 ---
@@ -46,6 +46,10 @@
 ---                                    (stats packet 0x061, sent again by emptying the slots)
 ---   measure = 'enspell', procs = 25  a tier I Enspell's damage on the next melee hits, read in the character's own
 ---                                    sets (it is set at the cast): shared/utils/debug/enh_test_fight.lua
+---   measure = 'taken', hits = 40     the next swings the character takes, in her own sets (Phalanx, Spikes);
+---                                    until_lost = true reads them until the buff is gone instead (Stoneskin)
+--- cast = false reads without casting (the case's spell names the buff taken off first); drop_buffs = {ids} takes
+--- other buffs off before (Blink's shadows, a Phalanx under a Stoneskin case).
 ---
 --- In a fight: fight = true waits for the character to be engaged before the case; keep_weapons = true leaves main,
 --- sub, range and ammo as they are (the other slots are emptied as usual); pause_bot = true turns Silmaril off
@@ -79,6 +83,7 @@ local STATS_WAIT = 4              -- seconds for the stats packet after a change
 local BOT_SETTLE = 3              -- seconds after sm off for a cast of Silmaril's own to end
 local FIGHT_WAIT = 1800           -- seconds a case waits for the character to be engaged
 local FIGHT_MARGIN = 5            -- seconds an Enspell is read for less than its length
+local FIGHT_READ = 300            -- seconds the hits taken are read for, at most
 local WEAPONS = {main = true, sub = true, range = true, ammo = true}
 local WEAR_TRIES = 3              -- times a case's pieces are put on again when the game does not show them
 
@@ -237,6 +242,14 @@ local function bot(case, on)
 end
 
 local next_case
+local retreat   -- below: a case's cast put off while the character is low
+
+--- The character's HP in percent, from the game.
+local function hpp_now() return ((windower.ffxi.get_player() or {}).vitals or {}).hpp or 100 end
+
+--- True when a case taking hits must not keep the character bare and unhealed any longer (Silmaril paused, the slots
+--- held): she died twice so on 2026-10-14.
+local function too_low(case) return case.abort_hpp ~= nil and hpp_now() < case.abort_hpp end
 
 --- The case's line, then the next case.
 --- @param seconds number|nil The buff's length, nil when nothing answered
@@ -246,7 +259,7 @@ local function conclude(seconds, measured)
     if not case then return end
     run.case = nil
     local line = ('CASE %s | %s on %s | Composure %s | %s | %s%s'):format(case.name or '?', case.spell, case.target_name,
-        has_buff(COMPOSURE) and 'on' or 'off', seconds and (seconds .. ' s') or 'NO ANSWER',
+        has_buff(COMPOSURE) and 'on' or 'off', seconds and (seconds .. ' s') or (case.cast == false and 'not cast' or 'NO ANSWER'),
         measured and (measured .. ' | ') or '', case.worn or '?')
     write(line)
     say(line)
@@ -297,6 +310,16 @@ local function measure(token, case, seconds)
                 if run and run.case == case then conclude(seconds, text) end
             end)
     end
+    if case.measure == 'taken' then
+        -- her own sets back on: every case is read in the same gear, only the buff changes
+        give_slots_back()
+        send_command('gs c update')
+        bot(case, true)
+        return require('shared/utils/debug/enh_test_fight').taken(case.hits or 40, FIGHT_READ,
+            case.until_lost and case.buff or nil, function(text)
+                if run and run.case == case then conclude(seconds, text) end
+            end)
+    end
     local field = case.measure
     watch_vital(token, field, function(with)
         if not (run and run.case == case) then return end
@@ -320,6 +343,7 @@ local function cast(token, case, waited)
     if recast > 0 and waited < RECAST_WAIT then
         return coroutine.schedule(function() cast(token, case, waited + 1) end, 1)
     end
+    if too_low(case) then return retreat(token, case) end
     case.worn = case.natural and 'her own sets' or worn_text()
     if case.measure == 'stat' then case.stat_before = stats_text(case.stat) end
     run.case = case
@@ -332,10 +356,21 @@ end
 --- The buff the spell gives is taken off whoever receives it, so the next one is a new buff with its full length.
 local function drop_then_cast(token, case)
     if not (run and run.token == token) then return end
+    for _, id in ipairs(case.drop_buffs or {}) do
+        if has_buff(id) then windower.ffxi.cancel_buff(id) end
+    end
     if case.on_self then
         if has_buff(case.buff) then windower.ffxi.cancel_buff(case.buff) end
     else
         send_command(('send %s gs c enhtest expect %d %s'):format(case.target_name, case.buff, player.name))
+    end
+    if case.cast == false then
+        -- read without the buff: nothing cast, the case's spell only names the buff taken off
+        case.worn = 'not cast'
+        run.case = case
+        return coroutine.schedule(function()
+            if run and run.case == case then measure(token, case, nil) end
+        end, AFTER_DROP)
     end
     coroutine.schedule(function() cast(token, case, 0) end, AFTER_DROP)
 end
@@ -379,6 +414,7 @@ local function wear(token, case)
         coroutine.schedule(function()
             if not (run and run.token == token) then return end
             -- a cast of Silmaril's own ending in between puts her sets back over the pieces (2026-10-14): again
+            if too_low(case) then return retreat(token, case) end
             local wrong = wrong_slots(set)
             if wrong and (case.tries or 0) < WEAR_TRIES then
                 case.tries = (case.tries or 0) + 1
@@ -413,6 +449,12 @@ local function wait_for_mp(token, case, waited)
         if waited == 0 then say(('waiting for %d MP (%d now)'):format(need, mp_now())) end
         return coroutine.schedule(function() wait_for_mp(token, case, waited + 3) end, 3)
     end
+    if case.min_hpp and hpp_now() < case.min_hpp then
+        -- Silmaril still on: it heals her before she is paused and bared for the cast
+        if not case.hp_said then case.hp_said = true; say(('waiting for %d %% HP (%d now)'):format(case.min_hpp, hpp_now())) end
+        return coroutine.schedule(function() wait_for_mp(token, case, waited) end, 1)
+    end
+    case.hp_said = nil
     run.paused = case.pause_bot and case or nil
     bot(case, false)
     coroutine.schedule(function() set_composure(token, case) end, case.pause_bot and BOT_SETTLE or 0)
@@ -427,6 +469,18 @@ local function keep_refresh(token, case)
         return coroutine.schedule(function() wait_for_mp(token, case, 0) end, REFRESH_CAST)
     end
     wait_for_mp(token, case, 0)
+end
+
+--- The cast put off: her sets and Silmaril back at once, the case started again once she is healed (min_hpp).
+retreat = function(token, case)
+    give_slots_back()
+    send_command('gs c update')
+    bot(case, true)
+    case.tries, case.emptied = nil, nil
+    say(('HP %d %%: cast put off until she is healed'):format(hpp_now()))
+    coroutine.schedule(function()
+        if run and run.token == token then keep_refresh(token, case) end
+    end, BOT_SETTLE)
 end
 
 --- A fight case waits for the character to be engaged; then Silmaril is paused when the case asks for it.
@@ -459,7 +513,8 @@ next_case = function()
     local this = {name = case.name, spell = case.spell, spell_id = spell.id, buff = spell.status, composure = case.composure,
         target_name = target, on_self = target == player.name, gear = case.gear or {}, mp_cost = spell.mp_cost, natural = case.natural,
         measure = case.measure, stat = case.stat, resist = case.resist, procs = case.procs, fight = case.fight,
-        keep_weapons = case.keep_weapons, pause_bot = case.pause_bot}
+        keep_weapons = case.keep_weapons, pause_bot = case.pause_bot, hits = case.hits, cast = case.cast,
+        until_lost = case.until_lost, drop_buffs = case.drop_buffs, min_hpp = case.min_hpp, abort_hpp = case.abort_hpp}
     say(('case %d/%d: %s'):format(run.at, #run.cases, case.name or '?'))
     if case.say then say(case.say) end
     send_command('gs enable all')
@@ -487,14 +542,20 @@ local function listen()
     require('shared/utils/buffs/buff_timers').watcher = EnhTest.on_buff
 end
 
-local function start(plan)
+--- @param from number|nil The case to start at (1 by default): a plan broken off is taken up where it stopped
+local function start(plan, from)
     listen()
     local cfg = config()
     local cases = cfg and cfg.plans and cfg.plans[plan or '']
     if not cases then return say('no such plan in ENHTEST_CONFIG.lua: ' .. tostring(plan)) end
-    run = {cases = cases, at = 0, token = os.clock(), plan = plan}
-    write(('START plan %s, %d cases, %s %s/%s'):format(plan, #cases, player.name, player.main_job, player.sub_job or ''))
-    next_case()
+    local first = math.max(1, math.floor(tonumber(from) or 1))
+    run = {cases = cases, at = first - 1, token = os.clock(), plan = plan}
+    write(('START plan %s, %d cases from %d, %s %s/%s'):format(plan, #cases, first, player.name, player.main_job,
+        player.sub_job or ''))
+    -- a plan's own commands first (cases.start: the Silmaril profile it is played with), then its cases
+    for _, cmd in ipairs(type(cases.start) == 'table' and cases.start or {}) do send_command(cmd) end
+    local token = run.token
+    coroutine.schedule(function() if run and run.token == token then next_case() end end, cases.start and BOT_SETTLE or 0)
 end
 
 --- //gs c enhtest ...
@@ -503,7 +564,7 @@ end
 function EnhTest.command(args)
     local action = (args[1] or ''):lower()
     if action == 'run' then
-        start(args[2])
+        start(args[2], args[3])
     elseif action == 'stop' then
         if run and run.paused then bot(run.paused, true) end
         require('shared/utils/debug/enh_test_fight').stop()
