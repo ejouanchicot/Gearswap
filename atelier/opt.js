@@ -726,9 +726,10 @@
     //   Gain     floor((skill - 300) / 10) + 5, 25 at most (500 of skill), + "Gain magic effect"   measured
     //   Temper   floor((skill - 300) / 10) %, 5 under 360 of skill; Temper II 40 at most           BG Wiki Temper, Temper_II
     //   Enspell  floor((skill - 180) / 8) + 25; floor(skill / 9) + 5 under 180                     BG Wiki Category:Enspell
-    //            + the job point gifts (b.enGifts), x1.5 under Composure on oneself                  measured
-    //            (tier I on oneself, 2026-10-14: 87 / 90 / 105 at 496 / 520 / 636 of skill, 135 / 138 / 157 with
-    //            Composure; Umuthi Hat's "+8" added nothing, so the damage gear of BG's list is not counted)
+    //            + the job point gifts (b.enGifts), x3 while Composure is up (at the hit, not the cast)  measured
+    //            (tier I on oneself, 2026-10-14: 87 / 90 / 105 at 496 / 520 / 636 of skill; with Composure 315 = 105 x 3,
+    //            its halves 135 / 138 / 157 and 1/4 to 1/32 resisted procs; Umuthi Hat's "+8" added nothing, so the
+    //            damage gear of BG's list is not counted)
     //   Bar-element  25 + floor(skill / 4), 150 at most; 40 + floor(skill / 5) to 300 of skill     BG Wiki Category:Barspell
     //            + the pieces' bonus over the cap (t.barplus)    measured 2026-10-14: 149 / 150 / 165 with Shedir
     //   Aquaveil 1 interruption, 2 from 301 of skill, 3 from 501, + the "Aquaveil" pieces          BG Wiki Aquaveil
@@ -751,7 +752,7 @@
         if (kind === "temper") f.temper = skill < 360 ? 5 : Math.min(b.temperCap || 1e9, Math.floor((skill - 300) / 10));
         if (kind === "enspell") {
             var en = (skill < 180 ? Math.floor(skill / 9) + 5 : Math.floor((skill - 180) / 8) + 25) + (b.enGifts || 0);
-            f.enspell = b.comp === "self" ? Math.floor(en * 1.5) : en;
+            f.enspell = b.comp === "self" ? en * 3 : en;
         }
         if (kind === "barele") f.barEle = Math.min(150, skill <= 300 ? 40 + Math.floor(skill / 5) : 25 + Math.floor(skill / 4)) + t.barplus;
         if (kind === "aquaveil") f.aquaveil = (skill > 500 ? 3 : skill > 300 ? 2 : 1) + t.aquaveil;
