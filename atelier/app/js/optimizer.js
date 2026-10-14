@@ -109,7 +109,8 @@ function optChoices(tpNames){
   }
   return choices;
 }
-// The game's items for a slot your job wears and you do not hold (level 99 or an item level), a rank
+// The game's items for a slot your job wears and you do not hold (level 99, an item level, or a piece whose effect the
+// search reads by name: stat_opt.js specialPiece), a rank
 // item on each of its paths at its top rank
 function gameChoices(slot, have, tpNames){
   const job = S.job.toLowerCase(), names = new Set(have.map(x => x.name)), out = [], seen = new Set();
@@ -118,7 +119,7 @@ function gameChoices(slot, have, tpNames){
   const ruledOut = name => { const g = FFXI.opt.groupOf(name); return !!g && g.items.some(n => n !== name && mine.has(n)); };
   for (const it of FFXI.CATALOG.items) {
     if (!it.slots.includes(FFXI.opt.SLOT[slot]) || !it.jobs.includes(job) || names.has(it.name) || tpNames.has(it.name) || seen.has(it.name)) continue;
-    if (!(it.level >= 99 || it.ilvl > 0) || ruledOut(it.name)) continue;
+    if (!(it.level >= 99 || it.ilvl > 0 || specialPiece(it.name)) || ruledOut(it.name)) continue;
     seen.add(it.name);
     const e = rankedEntry(it.name);
     // engineFill: what the description gives that the engine's catalogue lacks, as for your own pieces (without it

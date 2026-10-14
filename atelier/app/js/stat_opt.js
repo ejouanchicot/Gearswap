@@ -384,6 +384,11 @@ const STONESKIN_PLUS = {'Stone Gorget': 30, 'Nodens Gorget': 30, 'Stone Mufflers
 const ENMITY_LOSS_GEAR = {'Burtgang': 20, "Chev. Cuisses +3": 14, 'Creed Collar': 5};
 // The weapons that raise Enlight's bonus, in hand (BG Wiki Enlight II)
 const ENLIGHT_WEAPON = {Brilliance: 15, Honorbound: 7};
+// A piece under level 99 the search still offers from the game's items (optimizer.js gameChoices): its effect is one
+// of the above, read by name, that no level 99 piece replaces (Stone Mufflers, Siegel Sash, Earthcry Earring)
+function specialPiece(name){
+  return !!(STONESKIN_PLUS[name] || ENMITY_LOSS_GEAR[name] || ENLIGHT_WEAPON[name]);
+}
 function statVec(p, slot){
   const r = p && !isEmpty(p) ? pieceStats(p, slot) : null, v = k => r && r.stats[k] ? r.stats[k].v || 0 : 0, out = {};
   if (!r) return {};
