@@ -41,7 +41,14 @@ local RESEND_AT = 1.2
 local TP_WAIT = 0.6
 --- Longest wait in all
 local TIMEOUT = 3.0
-local KEY = 'jump_landing'
+
+--- A listener key of its own for each wait: two waits at once (//gs c jump during an automatic Jump) shared one,
+--- the second replaced the first's listener and the first, ending at TIMEOUT, took the second's off. The count lives
+--- on windower (kept across loads): a wait of the load before, still running, never meets a new one's key.
+local function new_key()
+    windower._jump_landing_n = (windower._jump_landing_n or 0) + 1
+    return 'jump_landing#' .. windower._jump_landing_n
+end
 
 local function my_id()
     local ok, me = pcall(windower.ffxi.get_player)
@@ -57,7 +64,8 @@ function JumpLanding.after(name, done, resend)
     local id, me = JUMP_IDS[name], my_id()
     -- the TP when the Jump went off: an auto-attack's TP that came before it is not the Jump's
     local landed_at, tp_then, waited, finished = nil, nil, 0, false
-    ActionListener.on(KEY, function(act)
+    local key = new_key()
+    ActionListener.on(key, function(act)
         if not landed_at and act.actor_id == me and JA_CATEGORIES[act.category] and act.param == id then
             landed_at, tp_then = waited, live_tp()
         end
@@ -73,7 +81,7 @@ function JumpLanding.after(name, done, resend)
         local tp_in = landed_at and (tp ~= tp_then or waited - landed_at >= TP_WAIT)
         if waited >= TIMEOUT or tp_in then
             finished = true
-            ActionListener.off(KEY)
+            ActionListener.off(key)
             return done(tp)
         end
         coroutine.schedule(poll, POLL)
