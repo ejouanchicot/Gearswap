@@ -91,11 +91,19 @@ local function current_mode()
 end
 
 --- The weapon a stance puts in hand, or nil when the mode keeps MainWeapon.
+--- state.StanceWeapon (pld/keys/PLD_STATES.lua), when not 'Auto', is held by
+--- such a stance instead of its own weapon; a mode that keeps MainWeapon is
+--- left to it.
 --- @return string|nil Weapon set name
 local function stance_weapon()
     local mode = current_mode()
     local by_mode = weapons_config().stance_weapon
-    return mode and type(by_mode) == 'table' and by_mode[mode] or nil
+    local weapon = mode and type(by_mode) == 'table' and by_mode[mode] or nil
+    local forced = state.StanceWeapon and state.StanceWeapon.value
+    if weapon and forced and forced ~= 'Auto' then
+        return forced
+    end
+    return weapon
 end
 
 --- The grip of the weapon in hand, or nil for a one-handed weapon.

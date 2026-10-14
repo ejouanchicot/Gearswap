@@ -222,6 +222,19 @@ function PLDStates.configure()
         'Blurred Shield +1'
     }
 
+    --- StanceWeapon: the weapon a stance that holds one puts in hand (Tanking:
+    --- pld/combat/PLD_WEAPONS.lua stance_weapon), over that stance's own.
+    --- 'Auto' leaves it to the stance. The weaponskill slots follow it. No key:
+    --- set by //gs c sortie <target> (SORTIE_CONFIG.lua states) or
+    --- //gs c set StanceWeapon <name>.
+    state.StanceWeapon =
+        M {
+        ['description'] = 'Stance Weapon',
+        'Auto',
+        'Naegling',
+        'Excalibur'
+    }
+
     --- RuneMode: Rune selection (RUN subjob)
     --- Options and their order come from RUNE_OPTIONS / SORTIE_RUNE_OPTIONS,
     --- reapplied by apply_hybrid_profile() whenever HybridMode changes.

@@ -242,7 +242,7 @@ local function on_state_change(stateField, newValue)
 
     local field = stateField:gsub(' ', '')
 
-    if field == 'MainWeapon' then
+    if field == 'MainWeapon' or field == 'StanceWeapon' then
         rebuild_ws_slots()
         return
     end
