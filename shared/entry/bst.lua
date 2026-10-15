@@ -18,6 +18,8 @@
 -- Load global configurations with fallbacks
 -- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
+-- The hooks every entry shares (job_update, subjob change, unload, keybind error)
+local EntryKit = require('shared/utils/core/entry_kit')
 
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))
 if not LockstyleConfig_ok then LockstyleConfig = nil end
@@ -153,10 +155,7 @@ function user_setup()
         BSTKeybinds = keybinds
         BSTKeybinds.bind_all()
     else
-        local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if msg_success and MessageFormatter then
-            MessageFormatter.show_error('[BST] Keybinds failed to load: ' .. tostring(keybinds))
-        end
+        EntryKit.keybind_error('BST', keybinds)
     end
 
     -- ==========================================================================
@@ -173,29 +172,8 @@ function user_setup()
     -- JOB CHANGE MANAGER INITIALIZATION
     -- ==========================================================================
     if jcm_success and JobChangeManager then
-        -- bst_functions.lua is not included yet when Mote runs user_setup();
-        -- these globals exist only because BSTKeybinds.bind_all() above
-        -- (KeybindManager show_intro) required BST_MACROBOOK / BST_LOCKSTYLE.
-        if select_default_lockstyle and select_default_macro_book then
-            JobChangeManager.initialize()
-
-            -- Trigger initial macrobook/lockstyle with delay
-            if player then
-                select_default_macro_book()
-                coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-            end
-        else
-            -- Functions not loaded yet, schedule for later
-            coroutine.schedule(function()
-                if select_default_lockstyle and select_default_macro_book then
-                    JobChangeManager.initialize()
-                    if player then
-                        select_default_macro_book()
-                        coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-                    end
-                end
-            end, 0.2)
-        end
+        JobChangeManager.initialize()
+        EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)
     end
 
     -- ==========================================================================
@@ -250,12 +228,7 @@ end
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    if _G.LagDebugger then _G.LagDebugger.on_job_update() end
-    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI and KeybindUI.update then
-        KeybindUI.update()
-    end
+    EntryKit.update_hud('BST')
 end
 
 ---============================================================================
@@ -279,14 +252,7 @@ end
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    -- Let JobChangeManager handle the full reload sequence
-    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if jcm_success and JobChangeManager then
-        local main_job = player and player.main_job or "BST"
-        JobChangeManager.on_job_change(main_job, newSubjob)
-    end
-
-    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
+    EntryKit.sub_job_change('BST', newSubjob)
 end
 
 ---============================================================================
@@ -397,19 +363,10 @@ function file_unload()
     -- Unload BST HUD addon (unless ADDONS_CONFIG.lua leaves it alone)
     require('shared/utils/core/job_addons').run('unload', 'bst-hud')
 
-    -- Cancel pending job change operations (debounce timer + lockstyles)
-    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if jcm_success and JobChangeManager then
-        JobChangeManager.cancel_all()
-    end
-
     -- Clear exported globals
     _G.KeybindUI = nil
     _G.start_pet_monitoring = nil
     _G.stop_pet_monitoring = nil
 
-    -- Unbind all keybinds (Windower binds persist across gs reload)
-    if BSTKeybinds and BSTKeybinds.unbind_all then
-        BSTKeybinds.unbind_all()
-    end
+    EntryKit.unload(BSTKeybinds)
 end

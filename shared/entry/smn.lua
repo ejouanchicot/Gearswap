@@ -18,6 +18,8 @@
 
 -- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
+-- The hooks every entry shares (job_update, subjob change, unload, keybind error)
+local EntryKit = require('shared/utils/core/entry_kit')
 
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))
 if not LockstyleConfig_ok then LockstyleConfig = nil end
@@ -105,10 +107,7 @@ end
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    if not jcm_success or not JobChangeManager then return end
-
-    local main_job = player and player.main_job or "SMN"
-    JobChangeManager.on_job_change(main_job, newSubjob)
+    EntryKit.sub_job_change('SMN', newSubjob)
 end
 
 ---============================================================================
@@ -128,10 +127,7 @@ function user_setup()
         SMNKeybinds = keybinds
         SMNKeybinds.bind_all()
     else
-        local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if msg_success and MessageFormatter then
-            MessageFormatter.show_error('[SMN] Keybinds failed to load: ' .. tostring(keybinds))
-        end
+        EntryKit.keybind_error('SMN', keybinds)
     end
 
     if ui_success and KeybindUI then
@@ -141,10 +137,7 @@ function user_setup()
     if jcm_success and JobChangeManager then
         JobChangeManager.initialize()
 
-        if player and select_default_macro_book and select_default_lockstyle then
-            select_default_macro_book()
-            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-        end
+        EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)
     end
 
     -- Auto-summon Carbuncle when no pet is out (runs on load and on every
@@ -174,11 +167,7 @@ end
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    if _G.LagDebugger then _G.LagDebugger.on_job_update() end
-    local ui_ok, KeybindUI_local = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_ok and KeybindUI_local and KeybindUI_local.update then
-        KeybindUI_local.update()
-    end
+    EntryKit.update_hud('SMN')
 end
 
 ---============================================================================
@@ -195,11 +184,5 @@ function file_unload()
         pcall(_G.cancel_smn_skillup_loop)
     end
 
-    if jcm_success and JobChangeManager then
-        JobChangeManager.cancel_all()
-    end
-
-    if SMNKeybinds and SMNKeybinds.unbind_all then
-        SMNKeybinds.unbind_all()
-    end
+    EntryKit.unload(SMNKeybinds)
 end

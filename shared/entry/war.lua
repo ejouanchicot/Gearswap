@@ -34,6 +34,8 @@
 -- Load global configurations with fallbacks
 -- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
+-- The hooks every entry shares (job_update, subjob change, unload, keybind error)
+local EntryKit = require('shared/utils/core/entry_kit')
 
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))
 if not LockstyleConfig_ok then LockstyleConfig = nil end
@@ -180,15 +182,7 @@ end
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    if not jcm_success or not JobChangeManager then
-        return
-    end
-
-    -- Let JobChangeManager handle the full reload sequence
-    local main_job = player and player.main_job or "WAR"
-    JobChangeManager.on_job_change(main_job, newSubjob)
-
-    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
+    EntryKit.sub_job_change('WAR', newSubjob)
 end
 
 ---============================================================================
@@ -222,7 +216,7 @@ function user_setup()
         WARKeybinds = keybinds
         WARKeybinds.bind_all()
     else
-        show_keybind_error(keybinds)
+        EntryKit.keybind_error('WAR', keybinds)
     end
 
     -- ==========================================================================
@@ -239,11 +233,7 @@ function user_setup()
         -- Initialize with current job state
         JobChangeManager.initialize()
 
-        -- Trigger initial macrobook/lockstyle with delay
-        if player and select_default_macro_book and select_default_lockstyle then
-            select_default_macro_book()
-            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-        end
+        EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)
     end
 
     -- ==========================================================================
@@ -265,12 +255,7 @@ end
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    if _G.LagDebugger then _G.LagDebugger.on_job_update() end
-    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI and KeybindUI.update then
-        KeybindUI.update()
-    end
+    EntryKit.update_hud('WAR')
 end
 
 --- Cleanup function called when GearSwap unloads this job file
@@ -285,31 +270,5 @@ function file_unload()
         AmpullaLock.release()
     end
 
-    -- Cancel pending job change operations (debounce timer + lockstyles)
-    if jcm_success and JobChangeManager then
-        JobChangeManager.cancel_all()
-    end
-
-    -- Unbind all keybinds (Windower binds persist across gs reload)
-    if WARKeybinds and WARKeybinds.unbind_all then
-        WARKeybinds.unbind_all()
-    end
-end
-
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
-
---- Display keybind loading error message
---- The error itself matters: a failed pcall(require) does NOT mean the
---- file is missing - in the sandbox require raises the same way for an
---- error in any dependency, so only the real message identifies it.
---- @param err any Whatever pcall returned in place of the module
---- @return void
-function show_keybind_error(err)
-    local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-    if msg_success and MessageFormatter then
-        MessageFormatter.show_error('[WAR] Keybinds failed to load: ' .. tostring(err))
-    end
-    -- Silent fallback - MessageFormatter should always be available
+    EntryKit.unload(WARKeybinds)
 end

@@ -31,6 +31,8 @@
 -- Load lockstyle timing configuration
 -- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
+-- The hooks every entry shares (job_update, subjob change, unload, keybind error)
+local EntryKit = require('shared/utils/core/entry_kit')
 
 local lockstyle_config_success, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))
 if not lockstyle_config_success or not LockstyleConfig then
@@ -101,11 +103,7 @@ end
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if success and JobChangeManager then
-        local main_job = player and player.main_job or "DRG"
-        JobChangeManager.on_job_change(main_job, newSubjob)
-    end
+    EntryKit.sub_job_change('DRG', newSubjob)
 end
 
 ---============================================================================
@@ -125,12 +123,7 @@ function user_setup()
         DRGKeybinds = keybinds
         DRGKeybinds.bind_all()
     else
-        -- Loudly: the job loads and //gs c answers, only the keys are dead.
-        -- A failed pcall may be an error in any dependency, not a missing file.
-        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if ok and MessageFormatter then
-            MessageFormatter.show_error('[DRG] Keybinds failed to load: ' .. tostring(keybinds))
-        end
+        EntryKit.keybind_error('DRG', keybinds)
     end
 
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
@@ -142,10 +135,7 @@ function user_setup()
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
         JobChangeManager.initialize()
-        if player and select_default_macro_book and select_default_lockstyle then
-            select_default_macro_book()
-            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-        end
+        EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)
     end
 
     -- DUALBOX IPC: the require() triggers dualbox_manager auto-init (once per gs reload)
@@ -162,11 +152,7 @@ end
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    if _G.LagDebugger then _G.LagDebugger.on_job_update() end
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI and KeybindUI.update then
-        KeybindUI.update()
-    end
+    EntryKit.update_hud('DRG')
 end
 
 --- Load the DRG equipment sets.
@@ -179,12 +165,5 @@ end
 --- Called by GearSwap when this job file is unloaded (job change, reload).
 --- @return void
 function file_unload()
-    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if jcm_success and JobChangeManager then
-        JobChangeManager.cancel_all()
-    end
-
-    if DRGKeybinds and DRGKeybinds.unbind_all then
-        DRGKeybinds.unbind_all()
-    end
+    EntryKit.unload(DRGKeybinds)
 end

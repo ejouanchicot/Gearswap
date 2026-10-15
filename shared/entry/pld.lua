@@ -36,6 +36,8 @@
 -- Load global configurations with fallbacks
 -- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
+-- The hooks every entry shares (job_update, subjob change, unload, keybind error)
+local EntryKit = require('shared/utils/core/entry_kit')
 
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))
 if not LockstyleConfig_ok then LockstyleConfig = nil end
@@ -144,14 +146,7 @@ end
 --- @param oldSubjob string Old subjob code
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if success and JobChangeManager then
-        -- Let JobChangeManager handle the full reload sequence
-        local main_job = player and player.main_job or "PLD"
-        JobChangeManager.on_job_change(main_job, newSubjob)
-    end
-
-    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
+    EntryKit.sub_job_change('PLD', newSubjob)
 end
 
 ---============================================================================
@@ -197,13 +192,7 @@ function user_setup()
         PLDKeybinds = keybinds
         PLDKeybinds.bind_all()
     else
-        -- Loudly, because the failure is otherwise invisible: the job loads,
-        -- //gs c commands answer, and only the keys are dead. Chased for a
-        -- long time before it was worth a line.
-        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if ok and MessageFormatter then
-            MessageFormatter.show_error('PLD keybinds failed to load: ' .. tostring(keybinds))
-        end
+        EntryKit.keybind_error('PLD', keybinds)
     end
 
     -- ==========================================================================
@@ -223,11 +212,7 @@ function user_setup()
         -- Initialize with current job state
         JobChangeManager.initialize()
 
-        -- Trigger initial macrobook/lockstyle with delay
-        if player and select_default_macro_book and select_default_lockstyle then
-            select_default_macro_book()
-            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-        end
+        EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)
     end
 
     -- ==========================================================================
@@ -249,28 +234,7 @@ end
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    if _G.LagDebugger then _G.LagDebugger.on_job_update() end
-    -- DEBUG: Trace gs c update reception
-    if _G.UPDATE_DEBUG then
-        local now = os.clock()
-        local delta = _G._update_sent_time and (now - _G._update_sent_time) or 0
-        local MessageFormatter = require('shared/utils/messages/message_formatter')
-        MessageFormatter.show_debug('PLD', string.format('[UPDATE_DEBUG] 2. job_update RECEIVED | t=%.3f | delta=%.3fms', now, delta * 1000))
-    end
-
-    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI and KeybindUI.update then
-        if _G.UPDATE_DEBUG then
-            local before = os.clock()
-            KeybindUI.update()
-            local after = os.clock()
-            local MessageFormatter = require('shared/utils/messages/message_formatter')
-            MessageFormatter.show_debug('PLD', string.format('[UPDATE_DEBUG] 3. UI.update DONE | took=%.3fms', (after - before) * 1000))
-        else
-            KeybindUI.update()
-        end
-    end
+    EntryKit.update_hud('PLD')
 end
 
 --- Load the PLD equipment sets.
@@ -296,14 +260,5 @@ function file_unload()
         AmpullaLock.release()
     end
 
-    -- Cancel pending job change operations (debounce timer + lockstyles)
-    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if jcm_success and JobChangeManager then
-        JobChangeManager.cancel_all()
-    end
-
-    -- Unbind all keybinds (Windower binds persist across gs reload)
-    if PLDKeybinds and PLDKeybinds.unbind_all then
-        PLDKeybinds.unbind_all()
-    end
+    EntryKit.unload(PLDKeybinds)
 end

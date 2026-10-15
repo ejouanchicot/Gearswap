@@ -45,6 +45,8 @@
 -- Load lockstyle timing configuration
 -- Where the character's files are (_common/, <job>/, saved/; older config/ and sets/)
 local CharPaths = require('shared/utils/core/char_paths')
+-- The hooks every entry shares (job_update, subjob change, unload, keybind error)
+local EntryKit = require('shared/utils/core/entry_kit')
 
 local lockstyle_config_success, LockstyleConfig = pcall(require, CharPaths.module('common', 'LOCKSTYLE_CONFIG'))
 if not lockstyle_config_success or not LockstyleConfig then
@@ -212,14 +214,7 @@ end
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    -- Let JobChangeManager handle the full reload sequence
-    local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if success and JobChangeManager then
-        local main_job = player and player.main_job or "COR"
-        JobChangeManager.on_job_change(main_job, newSubjob)
-    end
-
-    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
+    EntryKit.sub_job_change('COR', newSubjob)
 end
 
 ---============================================================================
@@ -245,15 +240,7 @@ function user_setup()
         CORKeybinds = keybinds
         CORKeybinds.bind_all()
     else
-        -- Loudly, because the failure is otherwise silent: the job loads,
-        -- //gs c answers, and only the keys are dead. Note that a failed
-        -- pcall here does NOT mean the file is missing - in the sandbox
-        -- require raises the same way for an error in any dependency, so
-        -- the real message is the only useful thing to show.
-        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if ok and MessageFormatter then
-            MessageFormatter.show_error('[COR] Keybinds failed to load: ' .. tostring(keybinds))
-        end
+        EntryKit.keybind_error('COR', keybinds)
     end
 
     -- ==========================================================================
@@ -283,26 +270,7 @@ function user_setup()
     -- ==========================================================================
     pcall(require, 'shared/utils/dualbox/dualbox_manager')
 
-    -- ==========================================================================
-    -- MACROBOOK / LOCKSTYLE (Always executed after reload)
-    -- ==========================================================================
-    if player then
-        -- Guarded: these globals come from the COR_MACROBOOK / COR_LOCKSTYLE
-        -- wrappers, which exist only once something has required them. Today
-        -- KeybindManager's show_intro() does, from bind_all() above; if the keybinds
-        -- failed to load they are absent, and an unguarded call would raise and
-        -- end user_setup() here.
-        if select_default_macro_book then
-            select_default_macro_book()
-        end
-
-        -- Schedule lockstyle after delay
-        coroutine.schedule(function()
-            if select_default_lockstyle then
-                select_default_lockstyle()
-            end
-        end, LockstyleConfig.initial_load_delay)
-    end
+    EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)
 end
 
 ---============================================================================
@@ -315,12 +283,7 @@ end
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    if _G.LagDebugger then _G.LagDebugger.on_job_update() end
-    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI and KeybindUI.update then
-        KeybindUI.update()
-    end
+    EntryKit.update_hud('COR')
 end
 
 ---============================================================================
@@ -363,14 +326,5 @@ function file_unload()
     -- If the user doesn't have rolltracker, this will fail silently
     require('shared/utils/core/job_addons').run('load', 'rolltracker')
 
-    -- Cancel pending job change operations (debounce timer + lockstyles)
-    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if jcm_success and JobChangeManager then
-        JobChangeManager.cancel_all()
-    end
-
-    -- Unbind all keybinds (Windower binds persist across gs reload)
-    if CORKeybinds and CORKeybinds.unbind_all then
-        CORKeybinds.unbind_all()
-    end
+    EntryKit.unload(CORKeybinds)
 end
