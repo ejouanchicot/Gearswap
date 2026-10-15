@@ -40,8 +40,10 @@
 --- data/atelier/live_<Character>.js, a file only a page on this disk can read:
 --- a web site cannot use the door. A request a browser sends from a web site
 --- (an Origin other than "null", which is what a page opened from the disk sends)
---- is refused before its token is looked at, and the door closes until the next
---- load after BAD_TOKENS refused tokens in BAD_WINDOW seconds (someone guessing).
+--- is refused before its token is looked at, and the door refuses everything for
+--- BAD_WINDOW seconds after BAD_TOKENS refused tokens in BAD_WINDOW seconds (someone
+--- guessing). A pause, not a close: a sandboxed frame of any web site also sends
+--- "null", so a close until the next load would let a site cut the link.
 --- What it writes is read back as data, never run (shared/utils/core/lua_data.lua):
 --- set_overrides.lua and keybind_overrides.lua must be data to be written, and
 --- a settings file may only have its values changed (atelier_configs.lua). The door stays open across job loads
@@ -187,18 +189,18 @@ local function equip_pieces(body)
     return n
 end
 
---- A refused token, counted: too many in a short time closes the door until the next load (it opens again then,
---- with a new token).
+--- A refused token, counted: too many in a short time pauses the door for BAD_WINDOW seconds (the same token
+--- works again after it).
 local function refused_token(live)
     local now = os.time()
     if not live.bad_since or now - live.bad_since > BAD_WINDOW then live.bad_since, live.bad = now, 0 end
     live.bad = live.bad + 1
     if live.bad >= BAD_TOKENS then
+        live.paused_until, live.bad_since, live.bad = now + BAD_WINDOW, nil, 0
         coroutine.schedule(function()
-            AtelierLive.stop()
             local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
             if ok and MessageFormatter then
-                MessageFormatter.show_warning(('Atelier: %d wrong tokens in %d s, the door is closed until the next load'):format(BAD_TOKENS, BAD_WINDOW))
+                MessageFormatter.show_warning(('Atelier: %d wrong tokens in %d s, the door is paused for %d s'):format(BAD_TOKENS, BAD_WINDOW, BAD_WINDOW))
             end
         end, 0)
     end
@@ -210,6 +212,7 @@ local function route(req, live)
     local origin = req.headers['origin']
     if origin and origin ~= 'null' then return '403 Forbidden', '{"error":"origin"}' end
     if req.method == 'OPTIONS' then return '204 No Content', '' end
+    if live.paused_until and os.time() < live.paused_until then return '429 Too Many Requests', '{"error":"paused"}' end
     -- only a wrong token counts: a request with none (any web page can make the browser send a plain GET here)
     -- would otherwise close the door
     local given = req.headers['x-atelier-token']

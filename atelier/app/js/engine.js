@@ -21,7 +21,11 @@ function loadRanked(done){
   loadScripts(ENGINE_FILES, () => {
     window.FFXI = {};
     ENGINE_PARTS = (window.FFXI_PARTS || []).slice().concat([targetsPart()]);
-    for (const part of ENGINE_PARTS) { try { part(FFXI); } catch (e) {} }
+    // a part that throws is kept, not swallowed: without it the optimizer would blame a missing engine folder
+    S._engPartErr = null;
+    for (const part of ENGINE_PARTS) {
+      try { part(FFXI); } catch (e) { console.error('engine part', e); S._engPartErr = S._engErr = e.message; }
+    }
     window.FFXI_PARTS = [];
     useEngine(S.engine);
     done();
@@ -56,6 +60,8 @@ function useEngine(name){
   OPT_WORKER_URL = null;
 }
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
+// why the optimizer is off: a part that threw while loading, or the engine folder really absent
+const noEngineText = () => S._engPartErr ? t('optEngineBroke', {e: S._engPartErr}) : t('optNoEngine');
 const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
 /* ---- the engine on the page's sets: a weaponskill's average damage, and the optimizer ---- */
 // A prime weapon's stage from your own copy: the catalogue's items of that name are its stages II to V in id order

@@ -78,31 +78,9 @@ function pbShown(b){
 // The controls (the same data-* as the old window: events.js handles them)
 const pbSel = (b, key, values, ph = '—', def = null) => `<select class="buffsel ${b[key] ? 'set' : ''}" data-buff="${key}" title="${esc(t('ttBuffSel', {n: ph}))}">` +
   (def ? values : ['', ...values]).map(v => `<option value="${esc(v)}" ${String(v) === String(b[key] ?? def ?? '') ? 'selected' : ''}>${v === '' ? esc(ph) : esc(v)}</option>`).join('') + `</select>`;
-const pbGeoSel = (b, key, ph) => `<select class="buffsel ${b[key] ? 'set' : ''}" data-buff="${key}" title="${ph}"><option value="">${ph}</option>` +
-  `<optgroup label="${t('geoOnYou')}">${Object.keys(BUBBLES).map(v => `<option ${v === b[key] ? 'selected' : ''}>${esc(v)}</option>`).join('')}</optgroup>` +
-  `<optgroup label="${t('geoOnEnemy')}">${Object.keys(GEO_DEBUFFS).map(v => `<option ${v === b[key] ? 'selected' : ''}>${esc(v)}</option>`).join('')}</optgroup></select>`;
 const pbPlus = (b, key, label, max) => `<select class="buffsel plus ${b[key] ? 'set' : ''}" data-buff="${key}" title="${label}">` +
   ['', ...Array.from({length: max}, (_, i) => i + 1)].map(v => `<option value="${v}" ${String(v) === String(b[key] ?? '') ? 'selected' : ''}>${label} +${v || 0}</option>`).join('') + `</select>`;
-const pbSeg = (b, k, tiers, short) => `<span class="fseg">${Object.keys(tiers).map(v => `<button class="chip" data-foeseg="${k}" data-v="${esc(v)}" ` +
-  `aria-pressed="${b[k] === v}" title="${esc(v + ' · ' + t('ttTierChip'))}">${esc(short ? short(v) : v)}</button>`).join('')}</span>`;
-const pbFlag = (b, k, label, tip = '', off = false) => `<button class="chip" data-buffflag="${k}" aria-pressed="${!!b[k]}" ${off ? 'disabled' : ''} title="${esc(tip)}">${esc(label)}</button>`;
-const pbRow = (label, body) => `<div class="pbrow"><span class="pblbl">${esc(label)}</span><div class="pbctl">${body}</div></div>`;
-const tierShort = v => v.replace(/^\S+\s?/, '') || 'I';
 
-// A card's controls, by job, as buttons (the same buff keys as before): a click picks, again takes off.
-// Protect / Shell sit with the WHM (with the RDM when there is no WHM), Haste with the RDM
-const pbChip = (attrs, label, on, tip = '', badge = '') => `<button class="chip pbc" ${attrs} aria-pressed="${!!on}" title="${esc(tip || label)}">` +
-  `${esc(label)}${badge ? `<i class="pbbadge">${esc(badge)}</i>` : ''}</button>`;
-const pbChips = html => `<div class="pbchips">${html}</div>`;
-const pbMini = (label, html) => `<div class="pbmini"><span class="pbminil">${esc(label)}</span>${html}</div>`;
-const GEO_MODES = [['indi', 'Indi'], ['geo', 'Geo'], ['entrust', 'Entrust']];
-const SONG_SHORT = v => v.replace(' March', '').replace(' Madrigal', ' Madr.').replace(' Etude', ' Ét.').replace('Aria of Passion', 'Aria');
-// The buttons of what a job casts on the target (FOE_JA): its names, a pet's move without its "Pet:"
-function pbFoeChips(job, b){
-  const names = Object.keys(FOE_JA[job] || {});
-  return names.length ? pbSec(t('pbOnTarget'), pbGrid(names.map(n => pbOpt(`data-foeja="${esc(n)}"`, n.includes(': ') ? n.split(': ')[1] : n,
-    (b.foeJa || []).includes(n), pbHint(FOE_JA[job][n]), '', n)).join(''))) : '';
-}
 // What a choice gives, as the small line beside its name: the stats of its table (a song, a roll, a bubble)
 const pbStat = k => ((FX_SHORT[k] || FX_LABEL[k] || [k.toUpperCase(), k.toUpperCase()])[S.lang === 'fr' ? 0 : 1]);
 // only the stats (a table's own fields, lim, shot, elem..., are left out)
@@ -179,7 +157,6 @@ const pbEff = src => PB_B ? pbGives(PB_B, src) : '';
 const pbF = (label, control, eff = '') => `<div class="pbf"><span class="pbfl">${esc(label)}</span><div class="pbfc">${control}</div><div class="pbfe">${eff}</div></div>`;
 const pbFSec = (title, rows) => rows ? `<section class="pbfsec"><h4>${esc(title)}</h4>${rows}</section>` : '';
 const pbForm = (left, right = '') => `<div class="pbform ${right ? '' : 'one'}"><div>${left}</div>${right ? `<div>${right}</div>` : ''}</div>`;
-const pbList = (b, key, values, ph, def = null) => pbSel(b, key, values, ph, def);
 // a tier list (Protect I..V): its values, an empty "—" first
 const pbTiers = (b, key, tiers) => pbSel(b, key, Object.keys(tiers), '—');
 // a debuff on the target cast by this job (FOE_JA): a switch a name
@@ -396,12 +373,6 @@ function renderCombatParty(d){
   return `<div class="ui2tab combattab">${head}${profBar()}<div class="pblayout"><div class="pbmain">${party}${other}</div>${side}</div></div>`;
 }
 
-// The party keys a saved party holds (yours and the target's stay out)
-function pbKeys(){
-  const keys = new Set(['pbMembers', 'pbGone', 'pja', 'foeJa', 'off']);
-  for (const j of PB_JOBS) for (const k of j.keys) keys.add(k);
-  return [...keys];
-}
 // The cards' clicks: add a member (its usual buffs where its keys are empty), remove one (its buffs cleared, a shared
 // one only when no other card holds it), save / load / forget a party
 function pbClick(d){

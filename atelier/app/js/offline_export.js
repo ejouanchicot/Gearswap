@@ -478,6 +478,9 @@ function oxEnv(root){
 // A page opened from the disk cannot start a worker from a file: its text is built here (the runner's own source,
 // the loader's from atelier/lua/lua51.js).
 const OX_POOL = [], OX_BYTES = new Map();
+// one load takes about 0.6 s (a few on a slow PC): a load still running after this loops, its worker is stopped and the run fails
+// (else the button stayed on "busy" until F5)
+const OX_TASK_MS = 120000;
 function oxWorker(){
   const code = `const makeLuaRunner = (${OfflineExport.luaRunnerFactory.toString()})();\nlet runner = null;\n` +
     `onmessage = async e => { const m = e.data; try {\n` +
@@ -492,7 +495,18 @@ function oxWorker(){
   w.onmessage = e => { const p = waiting.get(e.data.id); waiting.delete(e.data.id); if (p) (e.data.error ? p[1](new Error(e.data.error)) : p[0](e.data.result)); };
   w.onerror = e => { for (const p of waiting.values()) p[1](new Error(e.message || 'worker')); waiting.clear(); };
   const call = msg => new Promise((ok, ko) => { const id = ++seq; waiting.set(id, [ok, ko]); w.postMessage(Object.assign({id}, msg)); });
-  return {call, sent: new Map(), ready: call({init: {glue: ATELIER_LUA.glue, wasm: ATELIER_LUA.wasm}})};
+  const self = {call, sent: new Map(), ready: call({init: {glue: ATELIER_LUA.glue, wasm: ATELIER_LUA.wasm}})};
+  // a task with a time limit: past it the worker is ended and dropped from the pool, its tasks refused
+  self.task = (task, what) => {
+    let timer;
+    const late = new Promise((ok, ko) => { timer = setTimeout(() => {
+      w.terminate(); const i = OX_POOL.indexOf(self); if (i >= 0) OX_POOL.splice(i, 1);
+      const err = new Error(what + ': no answer after ' + OX_TASK_MS / 1000 + ' s');
+      for (const p of waiting.values()) p[1](err); waiting.clear(); ko(err);
+    }, OX_TASK_MS); });
+    return Promise.race([call({task}), late]).finally(() => clearTimeout(timer));
+  };
+  return self;
 }
 async function oxLua(env, src, tasks, onDone){
   // one worker for a few loads (about 0.6 s each), three for a sweep of every subjob
@@ -514,7 +528,7 @@ async function oxLua(env, src, tasks, onDone){
   }
   const results = new Array(tasks.length);
   let next = 0;
-  await Promise.all(pool.map(async w => { while (next < tasks.length) { const i = next++; results[i] = await w.call({task: tasks[i]}); onDone(results[i]); } }));
+  await Promise.all(pool.map(async w => { while (next < tasks.length) { const i = next++; results[i] = await w.task(tasks[i], tasks[i].job + '/' + tasks[i].sub); onDone(results[i]); } }));
   return results;
 }
 // The button: in a browser that can open a folder (Chrome, Edge), everything happens in the page; else the

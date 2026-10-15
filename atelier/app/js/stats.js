@@ -137,7 +137,9 @@ function add(out, key, v, unit, label){
 // Every stat of one piece: its description (always on part), then its augments. slot: where it is worn, for
 // an earring whose bonus works in one ear only ("Right ear: "Double Attack"+9%", the Empyrean earrings): counted
 // in that ear (ear2 is the right one, GearSwap's right_ear), a condition shown in the other or with no slot
-const PIECE_CACHE = {}, EAR_SIDE = {ear1: 'left', ear2: 'right'};
+// emptied at each data generation (as mergedOf): the stats of a piece depend on the exports read
+let PIECE_CACHE = {}, PIECE_GEN = -1;
+const EAR_SIDE = {ear1: 'left', ear2: 'right'};
 const ONLY_AUGS = {'Moonshade Earring': ['TP Bonus +250']};
 // An enchantment counted as on while the piece is worn, when its option of the optimizer's search line is ticked
 // (S.optOpts.<option>, off by default: unticked, the piece counts for nothing and is never chosen). It lasts far
@@ -166,7 +168,8 @@ function pieceStats(p, slot){
   const cat = catalog(), id = p.id || ownId(p.name, slot) || iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = descOf(id, cat);
   const side = EAR_SIDE[slot] || '';
-  const key = DATA_GEN + '|' + S.char + '|' + p.name + '|' + (id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side + (enchantKept(p.name) ? '|kept' : '');
+  if (PIECE_GEN !== DATA_GEN) { PIECE_CACHE = {}; PIECE_GEN = DATA_GEN; }
+  const key = S.char + '|' + p.name + '|' + (id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side + (enchantKept(p.name) ? '|kept' : '');
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
   const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], unity: {}, path: null, weapon: null, known: !!text};

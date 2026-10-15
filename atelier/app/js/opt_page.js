@@ -55,7 +55,7 @@ function optPageHTML(s, ws){
   const head = `<header class="ophead"><button class="btn ghost" data-optback title="${esc(t('ttOptBack'))}">${t('optBack')}</button><h2 class="display">${t('optPageTitle')}</h2>` +
     `<span class="opset">${esc(shortPath(s.path))}</span><span class="muted small">${esc(buffTier())} · ${esc(enemyKey(b.enemy))}</span>` +
     `<span class="sp"></span><div class="opgo">${go}</div></header>`;
-  if (!engineReady()) return `<article class="detail oppage">${head}<p class="tpnote">${t('optNoEngine')}</p></article>`;
+  if (!engineReady()) return `<article class="detail oppage">${head}<p class="tpnote">${esc(noEngineText())}</p></article>`;
   // a set judged by its stats (idle, Enmity, Phalanx, Fast Cast...): stat_opt.js
   const what = kind === 'stat' ? statWhatHTML(s) : opWhatHTML(s, kind), result = kind === 'stat' ? statResultHTML(s) : opResultHTML(s, kind);
   return `<article class="detail oppage">${head}<div class="opcols"><section class="opcol">${what}</section>` +
@@ -229,7 +229,7 @@ function opRows(kind, obj){
 }
 function opResultHTML(s, kind){
   const obj = opObj(kind), now = opFigures(s, kind), was = trialCount(s) ? opFigures(s, kind, true) : null;
-  if (!now) return `<h3 class="ophd">${t('opResult')}</h3><p class="tpnote">${esc(t(kind === 'eng' && obj === 'cycle' ? 'cycNoWs' : 'optNoEngine'))}</p>`;
+  if (!now) return `<h3 class="ophd">${t('opResult')}</h3><p class="tpnote">${esc(kind === 'eng' && obj === 'cycle' ? t('cycNoWs') : noEngineText())}</p>`;
   const rows = opRows(kind, obj).filter(r => r.get(now) != null || (was && r.get(was) != null)), main = rows[0];
   // the objective's figure, big, with the difference to your set and its verdict
   const v = main.get(now), w = was ? main.get(was) : null;

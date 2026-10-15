@@ -30,7 +30,7 @@ if (S.section === 'worn') S.section = 'sets';
 // drafts A / B saved by an older page: the draft not shown becomes a try kept for comparing, nothing is lost
 for (const d of Object.values(S.drafts || {})) if (d && d.cur) {
   const other = d.cur === 'A' ? 'B' : 'A';
-  if (d[other] && Object.keys(d[other]).length) d.kept = (d.kept || []).concat([{name: 'Brouillon ' + other, tr: d[other]}]);
+  if (d[other] && Object.keys(d[other]).length) d.kept = (d.kept || []).concat([{name: (S.lang === 'en' ? 'Draft ' : 'Brouillon ') + other, tr: d[other]}]);
   delete d.cur; delete d.A; delete d.B; delete d.info;
 }
 const $ = s => document.querySelector(s);

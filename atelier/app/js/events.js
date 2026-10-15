@@ -409,7 +409,7 @@ function readExports(first, done){
     for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
     for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
     if (!CHARS[S.char]) { S.char = Object.keys(CHARS)[0]; S.job = null; }
-    if (!S.char) { $('#view').innerHTML = `<div class="placeholder"><p class="display" style="font-size:22px">Atelier</p><p>${t('tagline')}</p><p>${t('none')}</p></div>`; return; }
+    if (!S.char) { $('#view').innerHTML = `<div class="placeholder"><p class="display" style="font-size:22px">Atelier</p><p>${t('tagline')}</p><p>${t('none')}</p></div>`; if (done) done(); return; }
     // back where the last visit left off, when that job is still exported
     if (S.job && !(DATA[S.char] || {})[S.job]) S.job = null;
     if (!first) canonAll();

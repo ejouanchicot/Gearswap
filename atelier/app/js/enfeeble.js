@@ -171,5 +171,5 @@ function enfNoteHTML(s){
   const kind = e.type === 'mode' ? t('enfKindMode', {m: e.mode}) : e.type === 'base' ? t('enfKindBase') : e.type === 'spell' ? t('enfKindSpell')
     : t('enfKindType', {k: e.type});
   return `<p class="small"><b>${esc(kind)}</b> ${esc(e.spells.join(', '))}</p><p class="muted small">${esc(t('enfNote', {s: e.spells.slice(0, 3).join(', '), m: e.tMnd, i: e.tInt, tg: e.target,
-    sab: e.sab ? 'Saboteur ' + (e.nm ? '×1,25 (NM)' : '×2') : t('enfNoSab'), c: e.comp ? t('enfComp') : t('enfNoComp')}))}</p>` + sab;
+    sab: e.sab ? 'Saboteur ' + (e.nm ? (S.lang === 'fr' ? '×1,25' : '×1.25') + ' (NM)' : '×2') : t('enfNoSab'), c: e.comp ? t('enfComp') : t('enfNoComp')}))}</p>` + sab;
 }
