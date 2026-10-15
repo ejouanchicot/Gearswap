@@ -1,165 +1,168 @@
-"""Check that every live character file can be regenerated from the templates.
+"""Check that a re-clone would give back every live character file as it is.
 
 Why this exists
 ---------------
 The live folders (`Tetsouo/`, `Kaories/`, ...) are gitignored. What git holds
-is the templates, and `clone_character.py` rebuilds a character from them
-through a three-layer chain:
+is the templates (`_master/`, the generic layer, and `_master/<Char>/`, the
+character's own overlay), and `clone_character.py` rebuilds a character from
+them: it copies the templates, renames the source character, writes the
+dualbox and region configs, then moves everything to the layout of 2026-09-30
+(`migrate_layout.py`: `_common/`, `<job>/`, `saved/`).
 
-    <Char>/<path>   <-  _master/<Char>/<path>   <-  _master/<path>
+Two failures hide there and neither shows up until a re-clone, which is far
+too late:
 
-with one rename on the way: a character's global configs live in `config/`,
-while the templates keep them in `config_global/`. Entry points are matched by
-job rather than by name, since `Kaories_RDM.lua` comes from
-`_master/Kaories/entry/Kaories_RDM.lua` or `_master/entry/Tetsouo_RDM.lua`.
+  * a live file that no template gives back - lost if the folder goes;
+  * a live file the re-clone would give back different - a re-clone silently
+    reverts it (the old folder goes to `clone_backups/`, nobody looks there).
+    This is how the PLD stance work of 2026-09-22 nearly went.
 
-Two failures hide in that chain and neither shows up until a redeploy, which
-is far too late:
-
-  * a live file with no layer behind it - lost for good if the folder goes;
-  * a live file that differs from its own overlay - a redeploy silently
-    reverts it. This is how the PLD stance work of 2026-09-22 nearly went:
-    written to the live folder only, absent from `_master/Tetsouo/sets/pld/`.
-
-`CharDB.validate()` does not catch either. It checks that every job is
-assigned to a character or the archive and answers "OK - all 16 jobs
-assigned" without ever asking whether a file exists.
+The check does not guess how a template maps to the live layout: it runs the
+real cloner into a temporary folder and compares the result with the live
+folder, file by file. Comparing by path alone stopped working with the layout
+of 2026-09-30, when every live file moved and the old version of this script
+called them all "without template".
 
 Usage
 -----
-    python scripts/check_overlay.py            # all characters
-    python scripts/check_overlay.py Tetsouo    # one of them
+    python scripts/check_overlay.py            # Tetsouo and Kaories
+    python scripts/check_overlay.py Kaories    # one of them
+    python scripts/check_overlay.py -d Kaories # with the differing lines
 
-Exits 1 when a live file has no template behind it.
+Exits 1 when a live file would be lost or reverted by a re-clone.
 
-Divergence is only reported when the match came from the character's **own**
-overlay (`_master/<Char>/`), because that layer exists precisely to say "this
-file belongs to this character" - so the two differing means one of them is
-stale. A live file that falls back to the generic `_master/` layer is expected
-to differ: the templates deliberately stay flat while Tetsouo's live sets are
-modular (see docs/dev section 15.1), and macrobook pages, lockstyle numbers
-and states are personal by nature. Reporting those would bury the real
-findings, which is how a check stops being run.
+Left out of the comparison: what the game writes (`saved/`, `atelier/`,
+`logs/`, the per-job HUD files a re-clone copies back), the two configs the
+cloner writes from its questions (DUALBOX_CONFIG, REGION_CONFIG), and files
+rebuilt in game (WARP_ITEMS_OWNED).
 """
+import contextlib
+import difflib
 import io
 import os
+import re
+import shutil
 import sys
+import tempfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO)
 
-# Most specific layer first. A character absent from here is not checked -
-# Hysoka and Gabvanstronger are one-shot clones, frozen by hand.
-CHAIN = {
-    'Tetsouo': ['_master/Tetsouo', '_master'],
-    'Kaories': ['_master/Kaories', '_master'],
-}
+# Hysoka and Gabvanstronger are one-shot clones, frozen by hand: not checked.
+CHARACTERS = ['Tetsouo', 'Kaories']
 
-# Live path prefix -> the name the templates use for it.
-RENAMES = {'config/': 'config_global/'}
-
-SKIP_DIRS = {'.git', 'scripts', 'node_modules'}
-
-# Regenerated in game rather than written by hand, so having no template is
-# correct: `//gs c wo scan` rebuilds this from what the character actually owns,
-# and a stale template would be worse than none.
-REGENERABLE = {'config/WARP_ITEMS_OWNED.lua'}
+GAME_WRITTEN_DIRS = ('saved/', 'atelier/', 'logs/')
+GAME_WRITTEN = re.compile(r'^[a-z]{3}/display/[A-Z]{3}_HUD\.lua$')
+CLONER_WRITTEN = {'_common/dualbox/DUALBOX_CONFIG.lua', '_common/region/REGION_CONFIG.lua'}
+CLONER_WRITTEN_NAMES = {'DUALBOX_CONFIG.lua', 'REGION_CONFIG.lua', 'WARP_ITEMS_OWNED.lua'}
 
 
 def read(path):
+    """The file's content, line endings and @author lines aside (the templates say ejouanchicot since
+    2026-09-27, files written in live before that still say Tetsouo: no change of behaviour)."""
     with io.open(path, 'rb') as fh:
-        return fh.read().replace(b'\r\n', b'\n')
+        lines = fh.read().replace(b'\r\n', b'\n').split(b'\n')
+    return b'\n'.join(l.rstrip() for l in lines if b'@author' not in l).rstrip()
 
 
-def candidates(char, rel, layers):
-    """Template paths that could supply <char>/<rel>, best layer first."""
-    out = []
-    for layer in layers:
-        out.append('%s/%s' % (layer, rel))
-
-        # A character's global config sits one directory up in the templates.
-        for live_prefix, tpl_prefix in RENAMES.items():
-            if rel.startswith(live_prefix) and '/' not in rel[len(live_prefix):]:
-                out.append('%s/%s%s' % (layer, tpl_prefix, rel[len(live_prefix):]))
-
-        # Entry point at the character root: matched by job, not by file name.
-        if '/' not in rel and rel.endswith('.lua'):
-            job = rel[:-4].split('_')[-1]
-            out.append('%s/entry/%s_%s.lua' % (layer, char, job))
-            out.append('%s/entry/Tetsouo_%s.lua' % (layer, job))
+def template_sources(char):
+    """Live path (new layout) -> the template file a re-clone takes it from, the character's own
+    overlay winning over the generic layer, as clone_character.py does."""
+    from migrate_layout import new_place
+    out = {}
+    for layer in ('_master', '_master/' + char):        # generic first, the overlay overwrites
+        base = os.path.join(REPO, layer)
+        for top in ('entry', 'sets', 'config', 'config_global'):
+            for rel, full in lua_files(os.path.join(base, top)).items():
+                if top == 'entry':
+                    old = '%s_%s' % (char, rel.split('_')[-1])
+                else:
+                    old = ('config' if top == 'config_global' else top) + '/' + rel
+                out[new_place(old) or old] = full
     return out
 
 
-def check(char, layers):
-    root = os.path.join(REPO, char)
-    if not os.path.isdir(root):
-        return None
-
-    own_overlay = layers[0]
-    missing, diverged, generic, ok = [], [], 0, 0
+def lua_files(root):
+    out = {}
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
         for name in filenames:
-            if not name.endswith('.lua'):
-                continue
-            live = os.path.join(dirpath, name)
-            rel = os.path.relpath(live, root).replace('\\', '/')
+            if name.endswith('.lua'):
+                full = os.path.join(dirpath, name)
+                out[os.path.relpath(full, root).replace('\\', '/')] = full
+    return out
 
-            found = None
-            for cand in candidates(char, rel, layers):
-                if os.path.exists(os.path.join(REPO, cand)):
-                    found = cand
-                    break
 
-            if not found:
-                if rel not in REGENERABLE:
-                    missing.append(rel)
-            elif read(live) == read(os.path.join(REPO, found)):
-                ok += 1
-            elif found.startswith(own_overlay + '/'):
-                diverged.append((rel, found))
-            else:
-                # Fell back to the generic layer, which is meant to differ.
-                generic += 1
+def ignored(rel):
+    return (rel.startswith(GAME_WRITTEN_DIRS) or GAME_WRITTEN.match(rel) or rel in CLONER_WRITTEN
+            or os.path.basename(rel) in CLONER_WRITTEN_NAMES)
 
-    return missing, diverged, generic, ok
+
+def reclone(char):
+    """Clone char from the templates into a temporary folder; returns (tmp, folder)."""
+    import clone_character as cc
+    tmp = tempfile.mkdtemp(prefix='overlay_check_')
+    shutil.copytree(os.path.join(REPO, '_master'), os.path.join(tmp, '_master'))
+    shutil.copy2(os.path.join(REPO, 'character_db.lua'), tmp)
+    db = cc.parse_character_db(cc.Path(REPO) / 'character_db.lua').get(char)
+    if not db:
+        raise SystemExit('%s: not in character_db.lua' % char)
+    cloner = cc.SmartCharacterCloner(base_dir=tmp)
+    dualbox = {'role': db['role'], 'character_name': char, 'enabled': False}
+    with contextlib.redirect_stdout(io.StringIO()):
+        ok = cloner.clone(char, db['jobs'], dualbox, 'EU')
+    if not ok:
+        raise SystemExit('%s: the cloner failed' % char)
+    return tmp, os.path.join(tmp, char)
+
+
+def check(char, show_diff):
+    live_root = os.path.join(REPO, char)
+    if not os.path.isdir(live_root):
+        print('%s: dossier absent\n' % char)
+        return False
+    tmp, clone_root = reclone(char)
+    try:
+        live = {r: p for r, p in lua_files(live_root).items() if not ignored(r)}
+        clone = lua_files(clone_root)
+        lost = sorted(r for r in live if r not in clone)
+        reverted = sorted(r for r in live if r in clone and read(live[r]) != read(clone[r]))
+        same = len(live) - len(lost) - len(reverted)
+
+        print('=== %s : %d fichiers, %d rendus tels quels par un re-clonage' % (char, len(live), same))
+        if lost:
+            print('  PERDUS (%d) - aucun modele ne les rend :' % len(lost))
+            for r in lost:
+                print('      %s' % r)
+        if reverted:
+            sources = template_sources(char)
+            print('  REMIS A L ANCIENNE VERSION (%d) - le modele differe du live :' % len(reverted))
+            for r in reverted:
+                a = read(clone[r]).decode('utf-8', 'replace').splitlines()
+                b = read(live[r]).decode('utf-8', 'replace').splitlines()
+                diff = [l for l in difflib.unified_diff(a, b, 'clone', 'live', lineterm='', n=0)
+                        if l[:1] in '+-' and not l.startswith(('+++', '---'))]
+                src = sources.get(r)
+                newer = '?' if not src else ('live' if os.path.getmtime(live[r]) > os.path.getmtime(src) else 'modele')
+                where = os.path.relpath(src, REPO).replace('\\', '/') if src else '?'
+                print('      %s  (%d lignes, plus recent : %s, modele : %s)' % (r, len(diff), newer, where))
+                if show_diff:
+                    for l in diff[:40]:
+                        print('          ' + l[:150])
+        if not lost and not reverted:
+            print('  tout est couvert et a jour')
+        print()
+        return bool(lost or reverted)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def main():
-    wanted = sys.argv[1:] or sorted(CHAIN)
+    args = sys.argv[1:]
+    show_diff = '-d' in args
+    wanted = [a for a in args if a != '-d'] or CHARACTERS
     failed = False
-
     for char in wanted:
-        if char not in CHAIN:
-            print('%s: pas dans la chaine d overlays (clone figé ?) - ignoré' % char)
-            continue
-        result = check(char, CHAIN[char])
-        if result is None:
-            print('%s: dossier absent' % char)
-            continue
-        missing, diverged, generic, ok = result
-
-        print('=== %s : %d identiques, %d sur template generique (ecart attendu)'
-              % (char, ok, generic))
-
-        if missing:
-            failed = True
-            print('  SANS TEMPLATE (%d) - perdus si le dossier disparait :' % len(missing))
-            for rel in sorted(missing):
-                print('      %s' % rel)
-
-        if diverged:
-            print('  DIVERGENTS DE LEUR PROPRE OVERLAY (%d) - un redeploiement les'
-                  % len(diverged))
-            print('  ecraserait, et cet overlay existe pour dire qu ils devraient')
-            print('  etre identiques : l un des deux est perime.')
-            for rel, src in sorted(diverged):
-                print('      %s' % rel)
-                print('          template : %s' % src)
-
-        if not missing and not diverged:
-            print('  tout est couvert et a jour')
-        print()
-
+        failed = check(char, show_diff) or failed
     return 1 if failed else 0
 
 
