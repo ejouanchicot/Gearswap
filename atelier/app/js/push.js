@@ -42,7 +42,9 @@ function pushPlan(s){
   return SLOTS.filter(slot => slot in tr || slot in was).map(slot => {
     const target = slot in tr ? tr[slot] : (isEmpty(s.pieces[slot]) ? null : s.pieces[slot]);
     const bp = base && base.pieces[slot], bEmpty = !bp || isEmpty(bp);
-    if (!target || isEmpty(target)) return {slot, kind: base && bEmpty ? 'inherit' : 'empty'};
+    // Saboteur's set is equipped over the enfeeble's (RDM_MIDCAST.lua): an `empty` there would strip the
+    // enfeeble's piece, so a slot emptied in it loses its line instead (push of 2026-10-16: all slots empty but hands)
+    if (!target || isEmpty(target)) return {slot, kind: (base && bEmpty) || sabOverlay(s) ? 'inherit' : 'empty'};
     if (base && !bEmpty && samePiece(target, bp)) return {slot, kind: 'inherit'};
     // the only copy the player owns: its name is enough, the file's variable for it can be used
     return pushEntry(slot, target, owned);

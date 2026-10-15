@@ -1152,11 +1152,12 @@
         for (var round = 0; round < rounds; round++) {
             prog.round = round + 1; prog.phase = "singles";
             yield* singles(ctx, st, slots, choices, opts);
+            var swapped = yield* sides(ctx, st, choices, opts);
             prog.phase = "shortlist";
             var list = yield* shortlist(ctx, st, slots, choices, opts, opts.top || 8, opts.extra || 4);
             prog.phase = "pairs";
             var more = yield* pairs(ctx, st, slots, list, opts);
-            if (!more) break;
+            if (!more && !swapped) break;
         }
         return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
     }
@@ -1218,6 +1219,27 @@
             }
             if (!moved) return;
         }
+    }
+    // The two earrings exchanged, and the two rings: a bonus that works on one side only (the Empyrean earrings'
+    // "Right ear:") is reached only so, as a piece worn in one ear cannot be put in the other (clashes) and the left
+    // ear is tried first. Each piece is taken from the other slot's choices, which carry that slot's figures (the
+    // stats search's vectors); true when the set changed
+    var TWINS = [["ear1", "ear2"], ["ring1", "ring2"]];
+    var sameCopy = function (x, y) { return x.name === y.name && x.rank === y.rank && (x.augs || []).join("|") === (y.augs || []).join("|"); };
+    var copyIn = function (list, p) { for (var i = 0; i < list.length; i++) if (!list[i].missing === !p.missing && sameCopy(list[i], p)) return list[i]; return null; };
+    function* sides(ctx, st, choices, opts) {
+        var moved = false;
+        for (var i = 0; i < TWINS.length; i++) {
+            var a = TWINS[i][0], b = TWINS[i][1], pa = st.best[a], pb = st.best[b];
+            if (!choices[a] || !choices[b] || !pa || !pb || sameCopy(pa, pb)) continue;
+            var na = copyIn(choices[a], pb), nb = copyIn(choices[b], pa);
+            if (!na || !nb) continue;
+            var trial = Object.assign({}, st.best);
+            trial[a] = na; trial[b] = nb;
+            if (tryMove(ctx, st, trial, opts)) moved = true;
+            yield;
+        }
+        return moved;
     }
     // The best few pieces of each slot, the others staying as they are
     // Three lists a slot, from one try of each piece on the set: the `top` best (floors counted), the

@@ -71,13 +71,22 @@ function pushButton(s, live){
   const tip = !live ? t('pushNeedsGame') : tg.create ? t('pushToVerTip', {v: tg.tier}) : full ? t('pushToFullTip') : '';
   return `<button class="btn" data-pushopen ${live ? '' : 'disabled'} ${tip ? `title="${esc(tip)}"` : ''}>${label}</button>`;
 }
-// The tried pieces as a set_combine to paste in the sets file
+// The whole set, the tried pieces in, to paste in the sets file in place of the set: every slot written out, the
+// set's own pieces with their bag and priority (the hands of a set that leaves them to the weapon modes are not a
+// try's: applyTrial)
 function trialLua(s){
   const q = v => '"' + String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
-  const tr = S.trial[trialKey(s)] || {};
-  const lines = SLOTS.filter(slot => slot in tr).map(slot => { const p = tr[slot];
-    return `    ${slot} = ${!p ? 'empty' : p.augs && p.augs.length ? `{ name = ${q(p.name)}, augments = { ${p.augs.map(q).join(', ')} } }` : q(p.name)},`; });
-  return `-- Tried in the Atelier\n${s.path} = set_combine(${s.path}, {\n${lines.join('\n')}\n})\n`;
+  const tr = S.trial[trialKey(s)] || {}, pieces = Object.assign({}, s.pieces);
+  const hands = family(s.path, s.pieces) !== 'weapons' && !handsOwn(s);
+  for (const [slot, p] of Object.entries(tr)) if (!(hands && (slot === 'main' || slot === 'sub'))) pieces[slot] = p || {name: 'empty'};
+  const lua = p => { if (isEmpty(p)) return 'empty';
+    const f = [`name = ${q(p.name)}`];
+    if (p.augs && p.augs.length) f.push(`augments = { ${p.augs.map(q).join(', ')} }`);
+    if (p.bag) f.push(`bag = ${q(p.bag)}`);
+    if (p.priority != null) f.push(`priority = ${p.priority}`);
+    return f.length > 1 ? `{ ${f.join(', ')} }` : q(p.name); };
+  const lines = SLOTS.filter(slot => pieces[slot]).map(slot => `    ${slot} = ${lua(pieces[slot])},`);
+  return `-- From the Atelier: the whole set, the tried pieces in\n${s.path} = {\n${lines.join('\n')}\n}\n`;
 }
 function openLua(s){
   $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog" role="dialog" aria-label="${t('luaTitle')}"><header><h3>${t('luaTitle')}</h3></header>

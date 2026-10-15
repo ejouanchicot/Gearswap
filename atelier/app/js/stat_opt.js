@@ -151,7 +151,11 @@ const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v) :
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
 // the weapon sets
-const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path);
+// RDM's Saboteur set is laid over the enfeeble's set while Saboteur is up (RDM_MIDCAST.lua): only Lethargy Gantherots
+// belong there ("Enhances Saboteur effect", counted at the cast: 415.5 s with them, 390.1 s without, Kaories 2026-10-14).
+// Searched as a set of its own it took HP pieces in every slot, which then replaced the enfeeble's gear in game
+const sabOverlay = s => { const p = segs(s.path); return p[p.length - 1] === 'Saboteur' && p.includes('Enfeebling Magic'); };
+const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path) && !sabOverlay(s);
 // What a set is for when nothing was chosen: the guide's profiles (idle DEF then Enmity then MDB; Enmity then DEF;
 // Phalanx then DEF; Fast Cast then HP)
 // A tank (PLD, RUN) wants Enmity on every action its set is worn for, after what the action itself needs (the
