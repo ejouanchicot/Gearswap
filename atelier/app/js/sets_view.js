@@ -1,5 +1,5 @@
 // GearSwap Atelier · sets_view.js: rendering: the side, the set list, a set's card, the Macro / Functions tabs, the job list
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- render ---- */
 // The top bar: character, job (by role, the played ones) and subjob menus, the job's macro book,
 // lockstyle and export, language and theme

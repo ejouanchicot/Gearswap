@@ -4,12 +4,15 @@
 --- Automatically wraps user_post_precast to show ability messages for ALL jobs.
 --- Simply include this file in get_sets() and it works automatically.
 ---
---- Usage in the entry point (Tetsouo_[JOB].lua), after Mote-Include:
----   function get_sets()
----       include('Mote-Include.lua')
----       include('../shared/hooks/init_ability_messages.lua')
----       include('../shared/jobs/[job]/functions/[job]_functions.lua')
----   end
+--- Included by every shared/entry/<job>.lua in get_sets(), after Mote-Include,
+--- INIT_SYSTEMS and data_loader, before the job facade (model: shared/entry/war.lua):
+---   include('Mote-Include.lua')
+---   include('../shared/utils/core/INIT_SYSTEMS.lua')
+---   require('shared/utils/data/data_loader')
+---   include('../shared/hooks/init_spell_messages.lua')
+---   include('../shared/hooks/init_ability_messages.lua')
+---   include('../shared/hooks/init_ws_messages.lua')
+---   include('../shared/jobs/[job]/functions/[job]_functions.lua')
 ---
 --- Features:
 ---   - Works for ALL jobs (WAR, DNC, PLD, BLM, RDM, etc.)

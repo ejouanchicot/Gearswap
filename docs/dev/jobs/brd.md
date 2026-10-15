@@ -41,7 +41,7 @@ function; line numbers are given only where no function name fits.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/brd.lua` | 298 | Entry point (the same for every character; `<Char>_BRD.lua` and its template `_master/entry/Tetsouo_BRD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/brd.lua` | 263 | Entry point (the same for every character; `<Char>_BRD.lua` and its template `_master/entry/Tetsouo_BRD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (song slots, then `EntryKit.update_hud`), `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/brd/functions/brd_functions.lua` | 85 | Facade: includes the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/brd/functions/BRD_PRECAST.lua` | 322 | `job_precast` (guard, `SongRefinement.refine_song`, cooldown, `job_precast_bardsong` Pianissimo, `try_marcato`, WS, `job_precast_bardsong_2` instrument lock) / `job_post_precast` (TP gear, precast debug) |
 | `shared/jobs/brd/functions/BRD_MIDCAST.lua` | 145 | `job_midcast` (empty), `job_customize_midcast_set` (passthrough, never called), `job_post_midcast` (context + skill dispatch to the router) |
@@ -116,12 +116,12 @@ sequenceDiagram
   and midcast modules get the same instance. The manager captures
   `_G.BRDSongConfig` at load, which is why the entry sets it first.
 - `user_setup()`: `BRDStates.configure()`; `BRD_KEYBINDS` ->
-  global `BRDKeybinds`, `bind_all()` (whose `show_intro` requires the macrobook
-  and lockstyle wrappers); `KeybindUI.smart_init("BRD", ...)`;
-  `JobChangeManager.initialize()` plus a 0.2 s coroutine that calls
-  `select_default_macro_book()` and schedules `select_default_lockstyle` after
-  `LockstyleConfig.initial_load_delay` (checked 0.2 s later, when the facade
-  has defined both globals); `_G.update_brd_song_slots()` after
+  global `BRDKeybinds`, `bind_all()`; `KeybindUI.smart_init("BRD", ...)`;
+  `JobChangeManager.initialize()` plus
+  `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+  (`shared/utils/core/entry_kit.lua`), which 0.2 s later, once the facade has
+  defined them, calls `select_default_macro_book()` and schedules
+  `select_default_lockstyle` after the delay; `_G.update_brd_song_slots()` after
   `UIConfig.init_delay + 0.5` s; `dualbox_manager` require.
 - BRD does not include `message_buffs.lua` (COR and DNC do).
 
@@ -549,10 +549,11 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
   raw `incoming chunk` event for 0x063 (`_G._brd_song_owner_listener`) and the
   `ActionListener` key `brd_song_owner` for 0x028, both read from `original`
   (Battlemod rewrites 0x028 for the chat).
-- Coroutines and queued commands: the 0.2 s macro/lockstyle block, the song
-  slot refresh, `nt`, `forceidle`, Marcato's step, the song queue timers
-  (each checks the queue sequence) and the AutoNitro opening (dropped when
-  `windower._brd_song_opening` changes). None is cancelled
+- Coroutines and queued commands: the 0.2 s macro/lockstyle step
+  (`EntryKit.macro_and_lockstyle`, dropped by a newer load through LoadGate),
+  the song slot refresh, `nt`, `forceidle`, Marcato's step, the song queue
+  timers (each checks the queue sequence) and the AutoNitro opening (dropped
+  when `windower._brd_song_opening` changes). The others are not cancelled
   by a reload.
 - Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - Subjob change: Mote re-runs `user_setup()`, then `job_sub_job_change` hands

@@ -93,6 +93,21 @@ local ABILITY_TYPES = {
     'sp',
 }
 
+-- The other files a job folder holds (pet commands, rolls, steps...). Only the
+-- files that exist are tried: each missing one costs a search through
+-- GearSwap's 9 base folders and a caught error (about 420 at the first
+-- //gs c info before). A new file in shared/data/job_abilities/<job>/ goes here.
+local ABILITY_SPECIALS = {
+    bst = {'pet_commands_mainjob', 'pet_commands_subjob'},
+    cor = {'rolls_mainjob', 'rolls_subjob'},
+    dnc = {'waltzes_mainjob', 'waltzes_subjob', 'steps_mainjob', 'steps_subjob',
+        'flourishes1_subjob', 'flourishes2_mainjob', 'flourishes2_subjob', 'flourishes3_mainjob',
+        'sambas_mainjob', 'sambas_subjob', 'jigs_mainjob', 'jigs_subjob'},
+    drg = {'pet_commands'},
+    pup = {'pet_commands_subjob'},
+    sch = {'black_grimoire_mainjob', 'black_grimoire_subjob', 'white_grimoire_mainjob', 'white_grimoire_subjob'},
+}
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WEAPONSKILL DATABASES (All weapon types)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -176,30 +191,11 @@ function DataLoader.load_abilities()
             end
         end
 
-        -- Special cases: Pet commands, Rolls, Steps, etc.
-        local special_patterns = {
-            string.format('shared/data/job_abilities/%s/%s_pet_commands', job, job),
-            string.format('shared/data/job_abilities/%s/%s_pet_commands_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_pet_commands_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_rolls_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_rolls_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_waltzes_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_waltzes_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_steps_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_steps_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_flourishes1_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_flourishes2_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_flourishes2_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_flourishes3_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_sambas_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_sambas_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_jigs_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_jigs_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_black_grimoire_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_black_grimoire_subjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_white_grimoire_mainjob', job, job),
-            string.format('shared/data/job_abilities/%s/%s_white_grimoire_subjob', job, job),
-        }
+        -- Special cases: Pet commands, Rolls, Steps, etc. (ABILITY_SPECIALS)
+        local special_patterns = {}
+        for _, suffix in ipairs(ABILITY_SPECIALS[job] or {}) do
+            special_patterns[#special_patterns + 1] = string.format('shared/data/job_abilities/%s/%s_%s', job, job, suffix)
+        end
 
         for _, path in ipairs(special_patterns) do
             local success, db = pcall(require, path)

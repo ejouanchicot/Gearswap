@@ -36,7 +36,7 @@ and spell messages (`NIN_JA_DATABASE`, `NINJUTSU_DATABASE`).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/nin.lua` | 190 | Entry (the same for every character; `<Char>_NIN.lua` and its template `_master/entry/Tetsouo_NIN.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/nin.lua` | 169 | Entry (the same for every character; `<Char>_NIN.lua` and its template `_master/entry/Tetsouo_NIN.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/nin/functions/nin_functions.lua` | 64 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/nin/functions/NIN_PRECAST.lua` | 108 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/nin/functions/NIN_MIDCAST.lua` | 96 | `job_midcast` (empty) / `job_post_midcast` (Ninjutsu by family + Futae, other skills on their own chain) |
@@ -79,13 +79,16 @@ Same shape as BLU ([core lifecycle](../systems/core-lifecycle.md#how-a-job-file-
 `user_setup()`: `NINStates.configure()`, `NIN_KEYBINDS` into the global
 `NINKeybinds` and `bind_all()` (a failed require prints `[NIN] Keybinds failed
 to load: <error>`), `KeybindUI.smart_init("NIN", init_delay)`,
-`JobChangeManager.initialize()` with the macro book at once and the lockstyle
-after `LockstyleConfig.initial_load_delay`, then the dual-box manager.
+`JobChangeManager.initialize()` with `EntryKit.macro_and_lockstyle` (the macro
+book 0.2 s later, once the facade exists, and the lockstyle after
+`LockstyleConfig.initial_load_delay`), then the dual-box manager.
 
 `get_sets()` sets `_G.LockstyleConfig`, `_G.RECAST_CONFIG`, `_G.NINTPConfig`,
 cancels pending job-change work, includes the facade and registers
 `cancel_nin_lockstyle_operations`. `job_update` refreshes the HUD.
 `file_unload`: `JobChangeManager.cancel_all()`, then `NINKeybinds.unbind_all()`.
+These hooks, the keybind error and `job_sub_job_change` are the shared
+`EntryKit` calls (`shared/utils/core/entry_kit.lua`).
 
 ### Precast
 

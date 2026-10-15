@@ -138,7 +138,7 @@ The per-job config is `<char>/<job>/display/<JOB>_LOCKSTYLE.lua`. The wrappers s
 | `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, DRG, MNK, NIN, PUP, RDM, RNG, SAM, SCH, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
 | `style` | no | "backward compatibility" field, no reader |
 
-`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/display/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `shared/entry/war.lua:38-42`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
+`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/display/`. The entries read its `initial_load_delay` (8.0), with an inline fallback table (see `shared/entry/war.lua:40-44`), and pass it from `user_setup()` to `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`), which schedules `select_default_lockstyle` after it. It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
 
 DressUp management flag: `_G.DRESSUP_MANAGEMENT_ENABLED`. It is initialised on each module load from the presence of `windower.addon_path .. 'data/.dressup_disabled'` (file present = off; `read_dressup_state`). The file is gitignored.
 
@@ -162,7 +162,7 @@ Each wrapper file is executed twice per sandbox:
 1. by `KeybindManager`'s `show_intro()` `require`, during `user_setup()`, which runs inside `include('Mote-Include.lua')` (see [keybinds-and-custom.md](keybinds-and-custom.md#the-intro-message));
 2. by the facade `include` in `get_sets()` (e.g. `shared/jobs/war/functions/war_functions.lua`).
 
-The two executions have separate module-locals, so each calls `create()` once. The `coroutine.schedule(select_default_lockstyle, 8)` in `user_setup()` captures the first copy's function; `JobChangeManager.register_lockstyle_cancel(job, cancel_<job>_lockstyle_operations)` in `get_sets()` captures the second's. Both copies get the same `ctx` from `create()` (one per job code in `_G.__lockstyle_contexts`). The registered cancel therefore bumps the `operation_id` of the lockstyle the first copy scheduled, whichever module instance each copy reached.
+The two executions have separate module-locals, so each calls `create()` once. The first execution no longer matters to the entry: `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`) reads `select_default_macro_book` / `select_default_lockstyle` 0.2 s after `user_setup()`, through `LoadGate.defer`, once the facade `include` has defined them again; so the lockstyle it schedules and `JobChangeManager.register_lockstyle_cancel(job, cancel_<job>_lockstyle_operations)` in `get_sets()` both come from the facade's copy. Both copies get the same `ctx` from `create()` (one per job code in `_G.__lockstyle_contexts`) anyway. Until 2026-10-15 the entry called the two globals at once in `user_setup()`, and found them only thanks to the `show_intro()` require: with keybinds that failed to load or had no key, the first macro book and lockstyle were skipped without a word.
 
 ---
 
@@ -202,8 +202,7 @@ Globals: `select_default_macro_book`, `set_<jl>_macro_book`, `get_<jl>_macro_inf
 
 Callers of the selection:
 
-- the entry's `user_setup()`, which calls `select_default_macro_book()` directly;
-- COR's second block;
+- the entry's `user_setup()`, through `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`, 0.2 s later, skipped while `player` is nil);
 - `dualbox_manager.lua`, 0.5 s after an `altjobupdate` that brings a new job or subjob.
 
 `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` on the value returned by the wrapper's `require`, which never carries it (see Known issues). The other generated globals have no caller.
@@ -793,7 +792,7 @@ Scheduled coroutines:
 
 | Coroutine | Delay | Invalidation |
 |---|---|---|
-| `select_default_lockstyle` from `user_setup()` | `initial_load_delay` (8 s) | none; returns if the main job changed |
+| `EntryKit.macro_and_lockstyle` from `user_setup()` (`shared/utils/core/entry_kit.lua`) | 0.2 s, then `select_default_lockstyle` after `initial_load_delay` (8 s) | the 0.2 s step: LoadGate; the 8 s schedule: none, `select_default_lockstyle` returns if the main job changed |
 | lockstyle apply / DressUp steps | 2.0 s, +0.3 s, +3.0 s | `STATE.operation_id` of the job's ctx; the 2.0 s step also LoadGate (`ctx.load_gen`) |
 | `apply_style` steps (craft) | 0.3 s, 3.0 s | none |
 | `set_macro_page` | 1.5 s (0.5 s manual) | `_G._macrobook_schedule_id` of the sandbox; LoadGate (`ctx.load_gen`) |
@@ -809,7 +808,7 @@ Events: DualWield (`gain buff`, `lose buff`) and TreasureHunter (`incoming chunk
 
 Transitions:
 
-- **`gs reload` / subjob change.** JobChangeManager's `cleanup_all_systems()` stops AutoMove, on the subjob path only. Every path runs `file_unload` -> `JobChangeManager.cancel_all()`. Its registered lockstyle cancel stops a lockstyle still waiting in its 2 s delay or in its DressUp steps; the raw +8 s `coroutine.schedule` itself is not tracked, but the apply it leads to goes through LoadGate with the old load's number and is dropped once a newer load has started (`set_lockstyle_with_delay`). The new sandbox then starts a new AutoMove chain at +0.5 s, a new lockstyle cycle at +8 s and a new macrobook selection at once. A running craft session loses its flag but keeps its slot locks. TH tags are lost.
+- **`gs reload` / subjob change.** JobChangeManager's `cleanup_all_systems()` stops AutoMove, on the subjob path only. Every path runs `file_unload` -> `JobChangeManager.cancel_all()`. Its registered lockstyle cancel stops a lockstyle still waiting in its 2 s delay or in its DressUp steps; the raw +8 s `coroutine.schedule` itself is not tracked, but the apply it leads to goes through LoadGate with the old load's number and is dropped once a newer load has started (`set_lockstyle_with_delay`). The new sandbox then starts a new AutoMove chain at +0.5 s, a new macrobook selection at +0.2 s and a new lockstyle cycle 8 s after that. A running craft session loses its flag but keeps its slot locks. TH tags are lost.
 - **Main job change.** Same, without `cleanup_all_systems()`. The old AutoMove chain dies when the new `start()` bumps the sequence.
 - **Zone.** AutoMove sees a jump of more than 5 yalms and sends `gs c update`. TreasureHunter forgets its tags.
 
@@ -932,6 +931,7 @@ Open:
 
 Fixed:
 
+- A job whose keybind file failed to load, or bound no key, got no first macro book and no lockstyle, without a word: the entry found the two globals only because `show_intro()` had required the wrappers. Every entry now calls `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`), which waits 0.2 s for the facade (2026-10-15).
 - CureManager's fallback config had no tier tables, so every Cure / Curaga then raised an error in precast. The fallback now carries default `cure_tiers` / `curaga_tiers` (`cure_manager.lua`, module load).
 - SAM's idle builder ends with `BaseSetBuilder.apply_movement`, so `sets.MoveSpeed` goes on while moving, as on the other jobs (2026-09-28).
 - DRK and SAM idle builders start with `BaseSetBuilder.select_idle_base_town` (DRK through `BaseSetBuilder.select_idle_base` since the same day, which also wears `sets.idle[HybridMode]` outside town): in a town the town set goes on top of the idle set and the movement layer is skipped, as on the other jobs (2026-09-29).

@@ -1,3 +1,5 @@
+// GearSwap Atelier · events.js: clicks, menus, keyboard, the hover card, start-up
+// (loaded by atelier/index.html, in the order of the list there)
 // the weapon groups of the weaponskill list stay as opened (toggle does not bubble: caught on the way down)
 document.addEventListener('toggle', e => { const g = e.target && e.target.dataset && e.target.dataset.wsgroup;
   if (g) { S._wsOpen = S._wsOpen || {}; S._wsOpen[g] = e.target.open; }

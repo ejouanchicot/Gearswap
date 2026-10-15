@@ -4,7 +4,7 @@
 --- Loader for the Puppetmaster job: Mote-Include, the shared systems, the PUP
 --- hook modules and this character's configs and sets.
 ---
---- @file <Character>_PUP.lua
+--- @file shared/entry/pup.lua
 --- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2026-09-29

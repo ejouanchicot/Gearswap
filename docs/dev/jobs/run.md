@@ -37,7 +37,7 @@ drift.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/run.lua` | 270 | Entry point (the same for every character; `<Char>_RUN.lua` and its template `_master/entry/Tetsouo_RUN.lua` are one `include` of it): same shape as PLD; BLU and TP configs loaded in `get_sets`; keybinds deferred 0.5 s; initial macro book / lockstyle deferred 0.2 s |
+| `shared/entry/run.lua` | 232 | Entry point (the same for every character; `<Char>_RUN.lua` and its template `_master/entry/Tetsouo_RUN.lua` are one `include` of it): same shape as PLD; BLU and TP configs loaded in `get_sets`; keybinds deferred 0.5 s; initial macro book / lockstyle deferred 0.2 s (`EntryKit.macro_and_lockstyle`, `shared/utils/core/entry_kit.lua`) |
 | `shared/jobs/run/functions/run_functions.lua` | 113 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/run/functions/RUN_PRECAST.lua` | 180 | `job_precast` (guard, cooldown, WS) / `job_post_precast` (TP gear, self-cure FC, precast debug display) |
 | `shared/jobs/run/functions/RUN_MIDCAST.lua` | 157 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (dispatch) |
@@ -83,7 +83,7 @@ sequenceDiagram
     GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig via ConfigLoader, REGION_CONFIG)
     GS->>E: get_sets()
     E->>M: include Mote-Include
-    M->>E: user_setup(): states, schedule keybinds +0.5 s, UI, JCM, schedule macro/lockstyle gate +0.2 s, dualbox
+    M->>E: user_setup(): states, schedule keybinds +0.5 s, UI, JCM, EntryKit.macro_and_lockstyle (+0.2 s), dualbox
     M->>E: init_gear_sets() -> include run/sets/run_sets.lua
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.BluMagicConfig = RUN_BLU_MAGIC, require RUN_TP_CONFIG (sets _G.RUNTPConfig)
@@ -99,22 +99,26 @@ sequenceDiagram
 1. `RUNStates.configure()`.
 2. Keybinds in a `coroutine.schedule(..., 0.5)`: `require` into the global
    `RUNKeybinds`, `bind_all()`; a failed `require` prints
-   `[RUN] Keybinds failed to load: <error>`. Why they are deferred is not recorded.
+   `[RUN] Keybinds failed to load: <error>` (`EntryKit.keybind_error`). Why they
+   are deferred is not recorded.
 3. `KeybindUI.smart_init("RUN", UIConfig.init_delay)`.
-4. `JobChangeManager.initialize()`, then the macrobook / lockstyle gate is scheduled
-   0.2 s later, the same pattern as BRD. At `user_setup` time nothing defines
-   `select_default_macro_book` / `select_default_lockstyle` on RUN (the keybinds,
-   whose `KeybindManager` intro requires the wrapper files, come 0.5 s later). The
-   facade defines them during the rest of `get_sets()`, so 0.2 s later the gate
-   passes: macro book at once, lockstyle after `initial_load_delay` (8 s).
+4. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`), as on every job. At `user_setup` time
+   nothing defines `select_default_macro_book` / `select_default_lockstyle`;
+   the facade defines them during the rest of `get_sets()`, and 0.2 s later
+   (`LoadGate.defer`) the macro book is set and the lockstyle scheduled after
+   `initial_load_delay` (8 s). Until 2026-10-15 RUN ran its own 0.2 s
+   coroutine for this.
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`; a dual-box alt job
    update that brings a new job or subjob later calls `select_default_macro_book()`
    (`dualbox_manager.lua` `receive_alt_job`).
 6. A commented-out WarpInit block (`WarpInit.init()` runs for every job from
    `INIT_SYSTEMS`).
 
-`file_unload` cancels pending JobChangeManager operations and calls
-`RUNKeybinds.unbind_all()` when the global exists. RUN has no ammo lock to release.
+`file_unload` is `EntryKit.unload(RUNKeybinds)`: it cancels pending
+JobChangeManager operations and calls `RUNKeybinds.unbind_all()` when the
+global exists. RUN has no ammo lock to release.
 
 `run_functions.lua` includes `message_buffs.lua`, `RUN_PRECAST`, `RUN_MIDCAST`,
 `RUN_AFTERCAST`, `RUN_IDLE`, `RUN_ENGAGED`, `RUN_STATUS`, `RUN_BUFFS`,
@@ -326,9 +330,10 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
   events.
 - Keybinds: bound 0.5 s after `user_setup`, kept at `file_unload`. `bind_all`
   unbinds only keys that no longer apply, then sends only keys that changed.
-- Coroutines: the 0.5 s keybind load and the 0.2 s macro/lockstyle gate have no
-  generation guard and are not cancelled by a reload, so a reload inside those
-  0.5 s binds from the old sandbox (still open; no managed character plays RUN).
+- Coroutines: the 0.5 s keybind load has no generation guard and is not
+  cancelled by a reload, so a reload inside those 0.5 s binds from the old
+  sandbox (still open; no managed character plays RUN). The 0.2 s macro book
+  step goes through LoadGate, which drops it after a newer load.
 - Every subjob change ends in a `gs reload`; states reset to defaults. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).
 
@@ -352,9 +357,9 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 
 - `RUNKeybinds` is nil during the first 0.5 s of every sandbox; anything that reads
   it (`file_unload`, KeybindGuard at 2 s) must guard it, and does.
-- The initial macrobook and lockstyle rely on the 0.2 s deferred gate in
-  `user_setup`, not on a `show_intro` side effect: moving that gate back to a
-  synchronous call would make it fail again.
+- The initial macrobook and lockstyle rely on the 0.2 s wait of
+  `EntryKit.macro_and_lockstyle`, not on a `show_intro` side effect: a
+  synchronous call from `user_setup` would find neither function.
 - An empty named set is not a fallback: `sets.precast.WS['X'] = {}` hides
   `sets.precast.WS`. Use `set_combine(sets.precast.WS, {})`.
 - `sets.precast.JA = {}` is intentional: runes keep the tank set.

@@ -331,7 +331,8 @@ end
 
 --- Job intro: bound keys count, macrobook and lockstyle info.
 --- Requiring the job's MACROBOOK/LOCKSTYLE modules here also defines their
---- globals, which the entry points' user_setup relies on.
+--- globals early; nothing relies on that any more (the first macro book and
+--- lockstyle wait for the facade: EntryKit.macro_and_lockstyle).
 local function show_intro(ctx)
     local jl = ctx.job:lower()
     local macro_info, lockstyle_info
@@ -401,8 +402,10 @@ end
 ---   appended to .binds
 function KeybindManager.create(job, module)
     local ctx = {job = job, module = module, applied = {}, api = module}
-    -- The HUD requires the keybind file again, making a second module: the
-    -- first one is the job's, the one bind_all lays the keys with.
+    -- The first module is the job's, the one bind_all lays the keys with. The
+    -- HUD requires the key file again; the require cache (config_loader.lua)
+    -- hands it the same module, but a require that failed is not cached and
+    -- runs again, so the first one is kept.
     if rawget(_G, '_keybind_active') == nil then _G._keybind_active = module end
     local function bind(fn) return function(...) return fn(ctx, ...) end end
     module.get_active_binds = bind(get_active_binds)

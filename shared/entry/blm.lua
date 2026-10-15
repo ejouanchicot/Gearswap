@@ -5,7 +5,7 @@
 --- This file serves as the main coordinator, delegating all specialized logic
 --- to dedicated modules for maximum maintainability and scalability.
 ---
---- @file <Character>_BLM.lua
+--- @file shared/entry/blm.lua
 --- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-15
@@ -78,27 +78,33 @@ function get_sets()
 
     mote_include_version = 2
     include('Mote-Include.lua')
+    Profiler.mark('After Mote-Include')
     include('../shared/utils/core/INIT_SYSTEMS.lua')
+    Profiler.mark('After INIT_SYSTEMS')
 
     -- ============================================
     -- UNIVERSAL DATA ACCESS (All Spells/Abilities/Weaponskills)
     -- ============================================
     require('shared/utils/data/data_loader')
+    Profiler.mark('After data_loader')
 
     -- ============================================
     -- UNIVERSAL SPELL MESSAGES (All Jobs/Subjobs)
     -- ============================================
     include('../shared/hooks/init_spell_messages.lua')
+    Profiler.mark('After spell messages')
 
     -- ============================================
     -- UNIVERSAL ABILITY MESSAGES (All Jobs/Subjobs)
     -- ============================================
     include('../shared/hooks/init_ability_messages.lua')
+    Profiler.mark('After ability messages')
 
     -- ============================================
     -- UNIVERSAL WEAPONSKILL MESSAGES (All Jobs/Subjobs)
     -- ============================================
     include('../shared/hooks/init_ws_messages.lua')
+    Profiler.mark('After WS messages')
 
     _G.LockstyleConfig = LockstyleConfig
     _G.RECAST_CONFIG = require(CharPaths.module('common', 'RECAST_CONFIG'))
@@ -106,6 +112,7 @@ function get_sets()
     -- BLM-specific configs
     -- Note: BLM_TP_CONFIG.lua exports _G.BLMTPConfig automatically
     require(CharPaths.module('job', 'BLM_TP_CONFIG', 'BLM'))
+    Profiler.mark('After configs')
 
     -- Cancel any pending operations from previous job (including ALL job lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
@@ -115,6 +122,7 @@ function get_sets()
 
     -- Load job-specific functions (AutoMove loaded via INIT_SYSTEMS)
     include('../shared/jobs/blm/functions/blm_functions.lua')
+    Profiler.mark('After blm_functions')
 
     -- Register BLM lockstyle cancel function
     if jcm_success and JobChangeManager and cancel_blm_lockstyle_operations then
@@ -123,6 +131,7 @@ function get_sets()
 
     -- Initial macrobook/lockstyle are triggered from user_setup();
     -- subjob changes go through JobChangeManager (job_sub_job_change).
+    Profiler.finish()
 end
 
 ---============================================================================

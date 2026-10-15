@@ -6,7 +6,7 @@
 --- runs the fight from there; the per-target settings live in its profiles.
 ---
 --- Everything personal (the alt, the profile folder, the stances, the
---- targets, the orders) is in the character's _common/combat/
+--- targets, the orders) is in the character's _common/tools/
 --- SORTIE_CONFIG.lua (see Tetsouo's for every key). A character without that
 --- file has no sortie command: it answers "not set up" and is hidden from
 --- the help (SortieCommands.available). Its `by_job` gives another main job

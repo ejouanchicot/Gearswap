@@ -45,7 +45,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/bst.lua` | 415 | Entry point (the same for every character; `<Char>_BST.lua` and its template `_master/entry/Tetsouo_BST.lua` are one `include` of it): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload` |
+| `shared/entry/bst.lua` | 372 | Entry point (the same for every character; `<Char>_BST.lua` and its template `_master/entry/Tetsouo_BST.lua` are one `include` of it): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/bst/functions/bst_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
 | `shared/jobs/bst/functions/BST_PRECAST.lua` | 202 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `equip_broth`, `prepare_ready_move` |
 | `shared/jobs/bst/functions/BST_MIDCAST.lua` | 204 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
@@ -108,7 +108,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>E: _G.LockstyleConfig/UIConfig/RECAST_CONFIG/BSTBeastPetData/BSTTPConfig (plain require)
     E->>M: include Mote-Include
-    M->>E: user_setup() (states, ecosystem, keybinds, UI, JCM gate, HUD reload, monitor start, dualbox require)
+    M->>E: user_setup() (states, ecosystem, keybinds, UI, JCM + EntryKit.macro_and_lockstyle, HUD reload, monitor start, dualbox require)
     M->>E: init_gear_sets() -> include sets file
     E->>E: INIT_SYSTEMS (AutoMove +0.5 s, hooks), data_loader, message hooks
     E->>E: JobChangeManager.cancel_all()
@@ -127,15 +127,14 @@ sequenceDiagram
    (`<Char>/bst/keys/BST_KEYBINDS`), stored in the global `BSTKeybinds`,
    then `bind_all()` (7 BST binds, the optional-state entries, `_CUSTOM` keys,
    common keys, then `show_intro()`). A failed require shows the Lua error
-   (`MessageFormatter.show_error`).
+   (`EntryKit.keybind_error`, `shared/utils/core/entry_kit.lua`).
 4. `KeybindUI.smart_init("BST", UIConfig.init_delay)`; `_G.KeybindUI` exported
    (read by `ecosystem_manager`).
-5. JobChangeManager gate: `bind_all()` -> `show_intro()` requires
-   `BST_MACROBOOK` / `BST_LOCKSTYLE`, so `select_default_lockstyle` /
-   `select_default_macro_book` already exist and the first branch runs:
-   `JobChangeManager.initialize()`, the macro book, and the lockstyle after
-   `LockstyleConfig.initial_load_delay` (8 s). The `else` branch (re-test in a
-   0.2 s coroutine) remains as a fallback.
+5. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`: 0.2 s
+   later (`LoadGate.defer`), once the facade has defined
+   `select_default_macro_book` / `select_default_lockstyle`, the macro book,
+   then the lockstyle after 8 s.
 6. BST-HUD: bumps `_G.bst_hud_load_id`, then after 2 s sends
    `lua unload bst-hud` and after 1.5 s more `lua load bst-hud`, each step
    guarded by the counter and `player.main_job == 'BST'`, and first by
@@ -533,7 +532,7 @@ or /DNC, shields included (its comment now says so).
   factory exports.
 - Events: one `prerender` listener (raw), removed by `file_unload` and by the
   engine at the next load.
-- Coroutines (never cancelled by the engine): 0.2 s JCM gate, 8 s lockstyle,
+- Coroutines (never cancelled by the engine): 0.2 s macro book step (LoadGate), 8 s lockstyle,
   2 s + 1.5 s HUD reload (counter-guarded), 3 s monitor start, 0.1-0.2 s broth
   equips, 2 s monitor start from aftercast, the `rdymove` steps (3.5 s, 4.5 s,
   6 s, 6.5 s).
@@ -560,13 +559,14 @@ or /DNC, shields included (its comment now says so).
 - Lockstyle / macrobook factories, `JobChangeManager`, `LifecycleManager`, HUD
   ([UI overlay](../systems/ui-overlay.md)), `CommonCommands`, `CycleHandler`,
   dual-box ([dualbox](../systems/dualbox.md)).
-- `LagDebugger.on_prerender_check` is called by the monitor and
-  `on_job_update` by `job_update`, both in `shared/entry/bst.lua`.
+- `LagDebugger.on_prerender_check` is called by the monitor in
+  `shared/entry/bst.lua`; `on_job_update` by `job_update`, through
+  `EntryKit.update_hud` (`shared/utils/core/entry_kit.lua`).
 
 ## Invariants & gotchas
 
 - `user_setup()` runs before the facade; anything it calls from the hook files
-  must be deferred (the JCM gate and the monitor start are).
+  must be deferred (the first macro book / lockstyle and the monitor start are).
 - `equip()` from a bare coroutine does nothing; use `send_command('gs c update')`
   (`equip_pet_broth` is the counter-example).
 - The spell table is shared by precast and midcast but not by aftercast: carry

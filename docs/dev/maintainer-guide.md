@@ -446,7 +446,7 @@ The coding standard, as reviews enforce it:
 | Path | Role |
 |---|---|
 | `data/<Char>/<Char>_<JOB>.lua` (template `_master/entry/Tetsouo_<JOB>.lua`, 15 lines) | Character entry, the file GearSwap opens: a header and one statement, `include('../shared/entry/<job>.lua')` |
-| `shared/entry/<job>.lua` | Entry code, the same for every character: a loader (`get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload`) that finds the character's files through `shared/utils/core/char_paths.lua` |
+| `shared/entry/<job>.lua` | Entry code, the same for every character: a loader (`get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload`) that finds the character's files through `shared/utils/core/char_paths.lua`; the parts every entry writes the same way are calls to `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/<job>/functions/<job>_functions.lua` | Facade: includes the hook modules |
 | `shared/jobs/<job>/functions/<JOB>_PRECAST.lua` ... `_MACROBOOK.lua` | 11 hook modules (PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS, COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK), plus pet modules on BST/PUP/SMN |
 | `shared/jobs/<job>/functions/logic/` | Job logic called by the hook modules |

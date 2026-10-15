@@ -46,7 +46,7 @@ the sets files (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/rdm.lua` | 304 | Entry (the same for every character; `<Char>_RDM.lua` and its template `_master/entry/Tetsouo_RDM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` |
+| `shared/entry/rdm.lua` | 273 | Entry (the same for every character; `<Char>_RDM.lua` and its template `_master/entry/Tetsouo_RDM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/rdm/functions/rdm_functions.lua` | 85 | Facade: includes the 11 hook files, then requires `dualbox_manager` |
 | `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 384 | `job_precast` as stages (guard, cooldown/refine, Phalanx, Saboteur) + WS + `SpellGearLock.begin`; `job_post_precast` (TP gear, spell FC set, lock hold, `debugprecast` trace) |
 | `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 362 | `job_midcast` (empty), `job_post_midcast` -> `route_midcast` (`SKILL_HANDLERS` table) + `SpellGearLock.hold` |
@@ -121,12 +121,13 @@ sequenceDiagram
    apply are unbound, the entries `get_active_binds()` keeps are bound, then
    `show_intro()`. `show_intro` requires `RDM_MACROBOOK.lua` and
    `RDM_LOCKSTYLE.lua`; neither returns the info table it looks for, so the
-   intro never shows the book or the style, but running them defines
-   `select_default_macro_book` and `select_default_lockstyle`, which step 4
-   needs. A failed require prints `[RDM] Keybinds failed to load: <error>`.
+   intro never shows the book or the style. A failed require prints
+   `[RDM] Keybinds failed to load: <error>` (`EntryKit.keybind_error`).
 3. `KeybindUI.smart_init("RDM", init_delay)`.
-4. `JobChangeManager.initialize()`; the macro book is set at once and the
-   lockstyle scheduled after `LockstyleConfig.initial_load_delay` (8 s).
+4. `JobChangeManager.initialize()`; `EntryKit.macro_and_lockstyle`
+   (`shared/utils/core/entry_kit.lua`) sets the macro book 0.2 s later, once
+   the facade has defined `select_default_macro_book`, and schedules the
+   lockstyle after `LockstyleConfig.initial_load_delay` (8 s).
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (its auto-init does
    the job exchange once per load).
 
@@ -447,12 +448,12 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   `disable_table` and survives `gs reload`. The shared Combat Mode records it in
   `windower._combat_mode_locked`, frees it on the next load's `attach` and lays
   it again on the first gear update if the mode is On.
-- Coroutines: the 8 s lockstyle from `user_setup`; the Saboteur `follow_up`
+- Coroutines: the 0.2 s macro book step (LoadGate) and the 8 s lockstyle from `user_setup`; the Saboteur `follow_up`
   poll; `wait` chains from the refiner sit in the Windower queue and survive a
   reload.
 - Subjob change: Mote calls `user_setup()` (states reset, Storm created or
   dropped), then `job_sub_job_change` (re-runs `configure_storm`, then
-  `JobChangeManager.on_job_change`, which reloads 2.0 s later,
+  `EntryKit.sub_job_change`: `JobChangeManager.on_job_change`, which reloads 2.0 s later,
   [job change lifecycle](../architecture/job-change-lifecycle.md)).
 
 ## Interactions

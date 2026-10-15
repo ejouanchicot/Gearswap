@@ -32,7 +32,7 @@ What RNG adds on top of the shared pipeline:
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/rng.lua` | 189 | Entry (the same for every character; `<Char>_RNG.lua` and its template `_master/entry/Tetsouo_RNG.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/rng.lua` | 168 | Entry (the same for every character; `<Char>_RNG.lua` and its template `_master/entry/Tetsouo_RNG.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/rng/functions/rng_functions.lua` | 64 | Facade: includes `message_buffs` and the hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/rng/functions/RNG_PRECAST.lua` | 123 | `job_precast` (guard, cooldown, Flurry groups, WS handler) / `job_post_precast` (TP gear, Velocity Shot layer on the aim); starts `FlurryTracker` at load |
 | `shared/jobs/rng/functions/RNG_MIDCAST.lua` | 90 | `job_midcast` (empty) / `job_post_midcast` (ranged attack and subjob magic via MidcastManager, ranged buff layers) |
@@ -75,7 +75,8 @@ files exist. The entry sets `_G.RegionConfig` first, then loads the UI config
    require prints `[RNG] Keybinds failed to load: <error>`.
 3. `KeybindUI.smart_init("RNG", init_delay)`. `ui_lifecycle.lua` waits for
    `state.RangeWeapon` before drawing the HUD of an RNG.
-4. `JobChangeManager.initialize()`; macro book at once, lockstyle after
+4. `JobChangeManager.initialize()`; `EntryKit.macro_and_lockstyle`: macro
+   book 0.2 s later, once the facade exists, lockstyle after
    `LockstyleConfig.initial_load_delay`.
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
@@ -84,7 +85,9 @@ files exist. The entry sets `_G.RegionConfig` first, then loads the UI config
 registers `cancel_rng_lockstyle_operations`.
 
 `job_update`: `KeybindUI.update()`. `file_unload`:
-`JobChangeManager.cancel_all()`, then `RNGKeybinds.unbind_all()`.
+`JobChangeManager.cancel_all()`, then `RNGKeybinds.unbind_all()`. These hooks,
+the keybind error and `job_sub_job_change` are the shared `EntryKit` calls
+(`shared/utils/core/entry_kit.lua`).
 
 ### Precast
 

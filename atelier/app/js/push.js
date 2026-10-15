@@ -1,5 +1,5 @@
 // GearSwap Atelier · push.js: push, delete, history, a new set
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- push: the set written into the player's set file (shared/utils/atelier/set_push.lua) ---- */
 // Where a push goes. Under the Group, Solo or Trust profile, a weaponskill or engaged set's draft belongs to that profile's
 // version (sets.precast.WS['X'].Solo, sets.engaged.PDT.Solo, worn by shared/utils/party/support_tier.lua): written as a new

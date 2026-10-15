@@ -1,5 +1,5 @@
 // GearSwap Atelier · core.js: state, saved settings, helpers, characters / jobs / subjobs, the exports, item icons
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 let DATA = {};
 // Moves on whenever an export is read (the start, the live link): what is worked out from the exports is kept until then
 let DATA_GEN = 0;
@@ -246,8 +246,6 @@ const samePiece = (a, b) => (!a || a.name === 'empty') ? (!b || b.name === 'empt
   && (a.rank ?? null) === (b.rank ?? null);
 
 /* ---- the windows closed ---- */
-// GearSwap Atelier · events.js: clicks, menus, keyboard, the hover card, start-up
-// (cut from atelier.html, loaded by it in order: see the list there)
 // a search still running is set aside, not destroyed: Hide (or Escape) parks its window where it goes on painting,
 // and "See the search" on the optimizer page brings it back
 function closeOverlay(){ const ov = $('#overlay');

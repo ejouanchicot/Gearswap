@@ -43,7 +43,7 @@ function; line numbers are deliberately not used.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/thf.lua` | 283 | Entry point (the same for every character; `<Char>_THF.lua` and its template `_master/entry/Tetsouo_THF.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ `RangeLock.sync_state`), `job_update`, `init_gear_sets`, `file_unload` (+ `RangeLock.release`, first) |
+| `shared/entry/thf.lua` | 252 | Entry point (the same for every character; `<Char>_THF.lua` and its template `_master/entry/Tetsouo_THF.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ `RangeLock.sync_state`), `job_update`, `init_gear_sets`, `file_unload` (+ `RangeLock.release`, first); shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/thf/functions/thf_functions.lua` | 117 | Facade: includes `message_buffs` and the 11 hook files, calls `TreasureHunter.init()` (THF layer), requires `dualbox_manager` |
 | `shared/jobs/thf/functions/THF_PRECAST.lua` | 147 | `job_precast` / `job_post_precast`: guard, cooldown, SA/TA pending flags, WS handler; post: SA/TA WS variant, then TP gear |
 | `shared/jobs/thf/functions/THF_MIDCAST.lua` | 94 | `job_midcast` (ranged lock via `RangeLock.engage`) / `job_post_midcast` (watchdog, MidcastManager for Ninjutsu, Healing, Enhancing) |
@@ -122,16 +122,18 @@ sequenceDiagram
    Abyssea keys only on /WAR) and calls `show_intro()`. `KeybindManager.create`
    has already attached the two optional states: Combat Mode (hidden,
    `!numpad0`) and Treasure Mode, which reuses THF's own `^numpad3` entry. A
-   failed `require` prints `[THF] Keybinds failed to load: <error>`.
+   failed `require` prints `[THF] Keybinds failed to load: <error>`
+   (`EntryKit.keybind_error`).
 3. `KeybindUI.smart_init("THF", ...)`. The UI waits for `state.TreasureMode`
    (`ui_lifecycle.lua` `are_states_ready`).
-4. `JobChangeManager.initialize()`, then, when `select_default_macro_book` and
-   `select_default_lockstyle` exist, the macro book is set now and the
-   lockstyle is scheduled after `LockstyleConfig.initial_load_delay` (8 s).
-   On a fresh load those two globals exist only because the `KeybindManager`
-   intro `require`s `THF_MACROBOOK.lua` and `THF_LOCKSTYLE.lua`, which define
-   them as a side effect. The facade includes the same files again, which
-   creates a second factory instance for each.
+4. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`): 0.2 s later, once the facade has
+   defined `select_default_macro_book` / `select_default_lockstyle`, the macro
+   book is set and the lockstyle scheduled after 8 s. The `KeybindManager`
+   intro also `require`s `THF_MACROBOOK.lua` and `THF_LOCKSTYLE.lua`; the
+   facade includes them again, which creates a second factory instance for
+   each.
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
 The facade includes `message_buffs.lua`, `THF_PRECAST`, `THF_MIDCAST`,
@@ -669,7 +671,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   recorded with `CombatMode.hold` and laid again after every update.
 - Midcast routing is a no-op for the three routed skills (base sets absent);
   `sets.midcast.EnhancingMagic` uses a key nothing reads.
-- Initial macrobook/lockstyle depend on the `show_intro` side effect
-  (`keybind_manager.lua` `show_intro`).
+- Fixed 2026-10-15: the initial macrobook/lockstyle no longer depend on the
+  `show_intro` side effect (`EntryKit.macro_and_lockstyle` waits for the facade).
 - `job_post_midcast` skeleton is duplicated with DNC.
 - `job_buff_change` re-implements `LifecycleManager.buff_change`.

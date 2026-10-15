@@ -30,7 +30,8 @@ local CureManager = {}
 
 -- Load configuration (character-aware: supports Tetsouo + cloned characters)
 -- Module is lazy-required from WHM_PRECAST.lua, so `player` is defined at load time.
-local char_name = require('shared/utils/core/char_paths').name() or 'Tetsouo'
+-- no name (never expected here): the built-in defaults below, not another character's file
+local char_name = require('shared/utils/core/char_paths').name()
 local config_success, WHMCureConfig = require('shared/utils/core/char_paths').load('job', 'WHM_CURE_CONFIG', 'WHM', char_name)
 if not config_success or type(WHMCureConfig) ~= 'table' then
     -- The template's tiers (_master/config/whm/WHM_CURE_CONFIG.lua): without
@@ -319,10 +320,6 @@ end
 --- MAIN CURE SELECTION LOGIC
 ---============================================================================
 
---- Select optimal Cure tier based on target HP
---- @param spell table Original spell data
---- @param target table Target entity (or nil for <me>)
---- @return string|nil new_spell_name (nil if no change needed)
 --- Whether the spell is one of the tiered cures this module re-tiers:
 --- a name that starts with Cure or Curaga. Full Cure (all MP, all HP) is a
 --- spell of its own and is never replaced.
@@ -333,6 +330,10 @@ function CureManager.is_tiered_cure(spell_name)
         and (spell_name:find('^Cure') ~= nil or spell_name:find('^Curaga') ~= nil)
 end
 
+--- Select optimal Cure tier based on target HP
+--- @param spell table Original spell data
+--- @param target table Target entity (or nil for <me>)
+--- @return string|nil new_spell_name (nil if no change needed)
 function CureManager.select_cure_tier(spell, target)
     if not spell or not spell.name then
         return nil

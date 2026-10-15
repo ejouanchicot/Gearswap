@@ -4,7 +4,7 @@
 --- Loader for the Scholar job: Mote-Include, the shared systems, the SCH
 --- hook modules and this character's configs and sets.
 ---
---- @file <Character>_SCH.lua
+--- @file shared/entry/sch.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-29

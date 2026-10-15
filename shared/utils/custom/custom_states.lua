@@ -274,8 +274,9 @@ end
 --- @param binds table The job's bind list, appended to
 --- @return number How many custom states were loaded
 function CustomStates.load(job, binds)
-    -- The HUD requires the keybind file a second time: reuse this load's
-    -- result instead of reading the file and warning twice.
+    -- Once per load: the HUD requires the keybind file a second time (the
+    -- require cache gives the same module, but a failed require runs again),
+    -- so this load's result is reused instead of reading and warning twice.
     local cache = _G._custom_state_cache
     if not cache then
         -- First load in this sandbox: free what a previous job's modes locked

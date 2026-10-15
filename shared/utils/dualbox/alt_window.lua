@@ -173,18 +173,33 @@ local function stealth_lines(lines, name)
     end
 end
 
+--- An alt's job as it last reported it (alt_states.lua keeps every box's),
+--- else the tracked partner's (_G.AltJobState) when that alt is the one the
+--- config names, or the first alt when the config names none.
+--- @param name string
+--- @param first boolean
+--- @return table|string
+local function alt_job(name, first)
+    local ok, AltStates = pcall(require, 'shared/utils/dualbox/alt_states')
+    local known = ok and AltStates and AltStates.get(name) or nil
+    if not (known and known.job) then
+        local cfg = rawget(_G, 'DualBoxConfig')
+        local tracked = cfg and (cfg.alt_character or cfg.alt_name)
+        local partner = _G.AltJobState
+        local is_partner = tracked and tracked:lower() == name:lower() or (not tracked and first)
+        known = is_partner and partner or nil
+    end
+    if not (known and known.job) then return DASH end
+    local sub = known.subjob and known.subjob ~= 'NON' and ('/' .. known.subjob) or ''
+    return {{known.job .. sub, YELLOW}}
+end
+
 --- One block per alt: its name as the title, its job, whether it is in the
---- party, its zone. The job exchange knows one partner: its last job goes
---- on the first alt.
+--- party, its zone.
 local function alt_lines(alts)
     local lines = {}
-    local job_state = _G.AltJobState
     for i, name in ipairs(alts) do
-        local job = DASH
-        if i == 1 and job_state and job_state.job then
-            local sub = job_state.subjob and job_state.subjob ~= 'NON' and ('/' .. job_state.subjob) or ''
-            job = {{job_state.job .. sub, YELLOW}}
-        end
+        local job = alt_job(name, i == 1)
         local here, zone = presence(name)
         lines[#lines + 1] = title(name)
         lines[#lines + 1] = row('Job', job)

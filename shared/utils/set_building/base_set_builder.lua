@@ -33,8 +33,8 @@ local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 ---============================================================================
 
 --- Apply movement speed gear if moving (idle state only)
---- Used by: BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, SMN, THF,
---- WAR, WHM (every job but PUP, which has no set builder)
+--- Used by: all 22 jobs (the lists below were measured 2026-10-15:
+--- grep -rlw <function> shared/jobs is the truth)
 --- @param result table Current equipment set
 --- @return table Set with movement speed applied (or unchanged if not moving)
 function BaseSetBuilder.apply_movement(result)
@@ -89,7 +89,7 @@ function BaseSetBuilder.kraken_in_offhand()
 end
 
 --- Lay the MainWeapon state's set, then the SubWeapon state's.
---- Used by: BLM, BLU, BRD, GEO, RDM, THF
+--- Used by: BLM, BLU, BRD, DRG, GEO, NIN, PUP, RDM, RNG, SCH, THF
 --- @param result table Current equipment set
 --- @return table
 function BaseSetBuilder.lay_weapons(result)
@@ -150,8 +150,8 @@ end
 --- Checks Adoulin zones first (movement bonus), then regular cities.
 --- Excludes Dynamis zones (technically cities but not safe).
 ---
---- Used by: BLM, BLU and RDM (both as SetBuilder.check_town), BRD, COR, GEO, PLD,
---- RUN, SAM, SMN, WHM; DNC, DRK, THF, WAR through select_idle_base
+--- Used by: BLM, BLU, BRD, COR, GEO, PLD, PUP, RDM, RUN, SAM, SMN, WHM; the
+--- jobs of select_idle_base through it
 ---
 --- The town set goes ON TOP of the idle set: a partial one (MoveSpeed feet,
 --- Councilor's Garb) keeps the idle pieces in the other slots. In a city
@@ -185,7 +185,7 @@ end
 --- HybridMode idle set, else Mote's base. HybridMode is what the player
 --- toggles for PDT on the melee jobs, and Mote's idle only follows IdleMode:
 --- without this, sets.idle.PDT is never worn outside town.
---- Used by: DNC, DRK, THF, WAR
+--- Used by: BLU, BRD, COR, DNC, DRG, DRK, MNK, NIN, PLD, RDM, RNG, RUN, SCH, THF, WAR
 --- @param base_set table Base idle set from Mote-Include
 --- @return table selected_set
 --- @return boolean is_in_town
@@ -200,6 +200,31 @@ function BaseSetBuilder.select_idle_base(base_set)
         return hybrid_set, false
     end
     return base_set, false
+end
+
+--- The owner's idle while a pet is out. Mote then takes the idle node's
+--- .Pet (or its .Engaged) as the base and lays defense and Kiting on it
+--- before any job hook, so its pick cannot be told by identity once Kiting
+--- is on. Its descent is replayed here (Mote-Include.lua get_idle_set): when
+--- it went through a Pet node, the node above it is returned, with defense
+--- and Kiting laid again (apply_defense, apply_kiting). The job lays its pet
+--- layer on top afterwards.
+--- Used by: DRG, PUP
+--- @param base_set table Idle set from Mote
+--- @return table
+function BaseSetBuilder.idle_without_pet(base_set)
+    local node = sets and sets.idle
+    local pet_out = (pet and pet.isvalid) or (state and state.Buff and state.Buff.Pet)
+    if type(node) ~= 'table' or not pet_out then return base_set end
+    local in_city = areas and areas.Cities and world and areas.Cities:contains(world.area)
+    local scope = (buffactive and buffactive.weakness) and 'Weak' or in_city and 'Town' or 'Field'
+    if type(node[scope]) == 'table' then node = node[scope] end
+    local mode = state.IdleMode and state.IdleMode.current
+    if mode and type(node[mode]) == 'table' then node = node[mode] end
+    if type(node.Pet) ~= 'table' then return base_set end
+    if apply_defense then node = apply_defense(node) end
+    if apply_kiting then node = apply_kiting(node) end
+    return node
 end
 
 --- Pure town detection (no set coupling). Adoulin counts as town. Dynamis

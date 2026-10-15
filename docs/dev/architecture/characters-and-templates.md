@@ -17,7 +17,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `scripts/check_syntax.py` | yes | `luac`-parses every Lua file, live folders included |
 | `.gitignore` | no (ignores itself, line 78) | Ignores the live folders and, through the same patterns, the overlays |
 | `_master/entry/Tetsouo_<JOB>.lua` | yes, 22 files | Generic entry templates, one per job (BLM BLU BRD BST COR DNC DRG DRK GEO MNK NIN PLD PUP RDM RNG RUN SAM SCH SMN THF WAR WHM). Each is 15 lines: a header and `include('../shared/entry/<job>.lua')` |
-| `shared/entry/<job>.lua` | yes, 22 files (189-415 lines) | The entry code (`get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload`), the same for every character; not copied by the clone |
+| `shared/entry/<job>.lua` | yes, 22 files (168-372 lines) | The entry code (`get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload`), the same for every character; not copied by the clone |
 | `_master/sets/<job>_sets.lua` | yes, 22 files | Generic flat set files, same 22 jobs |
 | `_master/sets/craft_sets.lua`, `fishing_sets.lua` | yes, 2 files | Generic craft (multi-variant) and fishing (single set, since 2026-09-30) set files, every slot `""` (skipped by `craft_commands.lua`). Copied to every clone as loose sets (step 3) |
 | `_master/config/<job>/` | yes, 22 dirs | Per-job configs, flat (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras; since 2026-10-10 `<JOB>_CONFIG.lua`, the job's own switches and thresholds, for blm, blu, cor, dnc, geo, pld, sam, smn, war, whm, every key written with its default); `_master/config/craft/` holds `CRAFT_REFILL.lua` |

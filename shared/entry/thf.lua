@@ -5,7 +5,7 @@
 --- This file serves as the main coordinator, delegating all specialized logic
 --- to dedicated modules for maximum maintainability and scalability.
 ---
---- @file <Character>_THF.lua
+--- @file shared/entry/thf.lua
 --- @author ejouanchicot
 --- @version 1.0.0 - Initial Release (Architecture v2.4)
 --- @date Created: 2025-10-06

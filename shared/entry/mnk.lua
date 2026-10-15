@@ -4,7 +4,7 @@
 --- Loader for the Monk job: Mote-Include, the shared systems, the MNK
 --- hook modules and this character's configs and sets.
 ---
---- @file <Character>_MNK.lua
+--- @file shared/entry/mnk.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-29

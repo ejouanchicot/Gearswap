@@ -19,8 +19,9 @@
 ---   on_attach    optional function(job) run when a job attaches
 ---
 --- Settings, native flag and entry live on the sandbox _G, not in locals:
---- user_setup requires these modules before the module cache exists, so two
---- requires can give two copies.
+--- one table per load whatever module asks for them. The require cache is
+--- installed before user_setup (config_loader.lua), so two copies of this
+--- module in one load are no longer expected; _G keeps it safe if one appears.
 ---
 --- @file    shared/utils/core/optional_state.lua
 --- @author  ejouanchicot

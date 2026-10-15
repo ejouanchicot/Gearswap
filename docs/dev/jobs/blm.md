@@ -33,7 +33,7 @@ function, not a line number.
 
 | Path | Role |
 |------|------|
-| `shared/entry/blm.lua` (286 lines) | Entry point (the same for every character; `<Char>_BLM.lua` and its template `_master/entry/Tetsouo_BLM.lua` are one `include` of it): config preload at file level, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD refresh only), `init_gear_sets`, `file_unload` |
+| `shared/entry/blm.lua` (244 lines) | Entry point (the same for every character; `<Char>_BLM.lua` and its template `_master/entry/Tetsouo_BLM.lua` are one `include` of it): config preload at file level, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD refresh only), `init_gear_sets`, `file_unload`; the hooks every entry shares come from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/blm/functions/blm_functions.lua` | Facade: includes the 11 hook files, lazy logic loaders, globals `BuffSelf` (calls the common `BuffCommand.apply()`), `refine_various_spells`, `checkArts`, `CastStorm`, requires `dualbox_manager` |
 | `shared/jobs/blm/functions/BLM_PRECAST.lua` | `job_precast` (guard, `check_recast_or_refine`, `checkArts`, WS) / `job_post_precast` (TP gear) |
 | `shared/jobs/blm/functions/BLM_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast`: builds a context and dispatches to the router |
@@ -99,7 +99,7 @@ sequenceDiagram
     GS->>E: file chunk: LOCKSTYLE_CONFIG, UIConfig (ConfigLoader), REGION_CONFIG
     GS->>E: get_sets()
     E->>M: include('Mote-Include.lua')
-    M->>E: user_setup(): states, keybinds (+ show_intro), HUD, JobChangeManager, macro book, lockstyle in 8 s, dualbox_manager
+    M->>E: user_setup(): states, keybinds (+ show_intro), HUD, JobChangeManager, EntryKit.macro_and_lockstyle, dualbox_manager
     M->>E: init_gear_sets(): include('blm/sets/blm_sets.lua')
     E->>E: INIT_SYSTEMS, data_loader, spell / ability / WS message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, require BLM_TP_CONFIG
@@ -116,17 +116,18 @@ sequenceDiagram
    `KeybindManager.create('BLM', ...)` (the player's `BLM_CUSTOM.lua` keys and
    the character's `COMMON_KEYBINDS.lua` keys are appended there), stored in
    the global `BLMKeybinds`, then `bind_all()`, which validates, binds and
-   calls `show_intro()`. A failed require prints the Lua error.
+   calls `show_intro()`. A failed require prints the Lua error
+   (`EntryKit.keybind_error`).
 3. `KeybindUI.smart_init("BLM", UIConfig.init_delay)`.
-4. `JobChangeManager.initialize()`, then, if `select_default_macro_book` and
-   `select_default_lockstyle` exist, the macro book is set now and the
-   lockstyle after `LockstyleConfig.initial_load_delay` (8 s). On a fresh load
-   those two globals exist only because `show_intro()` `require`s
-   `BLM_MACROBOOK.lua` and `BLM_LOCKSTYLE.lua`, which define them as a side
-   effect. The facade includes the same files again later: a second,
-   independent `MacrobookManager` instance, while the two
-   `LockstyleManager.create('BLM', ...)` calls share one context
-   (`_G.__lockstyle_contexts`).
+4. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`). `select_default_macro_book` and
+   `select_default_lockstyle` come from the facade, not yet included, so it
+   waits 0.2 s (`LoadGate.defer`), then sets the macro book and schedules the
+   lockstyle after 8 s. `show_intro()` also `require`s `BLM_MACROBOOK.lua`
+   and `BLM_LOCKSTYLE.lua`; the facade includes them again, and its copies
+   are the ones called. The two `LockstyleManager.create('BLM', ...)` calls
+   share one context (`_G.__lockstyle_contexts`).
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (auto-init).
 
 The entry names no character: every character file is resolved through
@@ -477,12 +478,13 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   `select_default_lockstyle`, `cancel_blm_lockstyle_operations`,
   `select_default_macro_book`, plus the factory exports.
 - `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`,
-  `PERFORMANCE_PROFILING`, `AUTOMOVE_DEBUG`, `AUTOMOVE_DEBUG_START`,
+  `PERFORMANCE_PROFILING`, `AUTOMOVE_DEBUG`,
   `CraftManager`, `is_recast_ready` (from `RECAST_CONFIG.lua`).
 - `windower.*`: BLM code writes nothing there itself (`KeybindManager`,
   `CombatMode`, `AbilityHelper` and `ScholarActions` keep their own records).
   No Windower events are registered.
-- Coroutines: the 8 s lockstyle in `user_setup` (not cancelled by a reload;
+- Coroutines: `EntryKit.macro_and_lockstyle` from `user_setup` (0.2 s through
+  `LoadGate.defer`, then the 8 s lockstyle, not cancelled by a reload;
   `LockstyleManager.select_default_lockstyle` returns if the main job changed,
   and its own 2 s `LoadGate.defer` is dropped when the load was replaced),
   the `AbilityHelper` follow-up after Dark Arts, the `ScholarActions` polls
@@ -650,8 +652,11 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   still goes out and the game refuses it, as before.
 - `checkArts` re-sends the nuke on `<t>`, whatever target the original cast
   had.
-- Initial macrobook / lockstyle depend on a side effect of
-  `KeybindManager.show_intro` requiring the wrappers.
+- Fixed 2026-10-15 (`a0b46bd7`): the initial macrobook / lockstyle depended
+  on a side effect of `KeybindManager.show_intro` requiring the wrappers, so
+  a keybind file that failed to load skipped both. `EntryKit.macro_and_lockstyle`
+  now waits for the facade. The entry's own `AUTOMOVE_DEBUG` timing in
+  `job_update` (`AUTOMOVE_DEBUG_START` was never set) went with it.
 - The Magic Burst `/p` call is sent even when the cast is then cancelled or
   cannot be paid (`announce_magic_burst` runs before the decision).
 - The -ja fallback always casts `<El>ga III` even when every -ga tier is

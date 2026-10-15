@@ -41,7 +41,7 @@ the sets files (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/blu.lua` | 205 | Entry (the same for every character; `<Char>_BLU.lua` and its template `_master/entry/Tetsouo_BLU.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ AzureSets load), `job_update` (HUD only), `init_gear_sets`, `file_unload` (+ AzureSets unload) |
+| `shared/entry/blu.lua` | 184 | Entry (the same for every character; `<Char>_BLU.lua` and its template `_master/entry/Tetsouo_BLU.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ AzureSets load), `job_update` (HUD only), `init_gear_sets`, `file_unload` (+ AzureSets unload); shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/blu/functions/blu_functions.lua` | 66 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/blu/functions/BLU_PRECAST.lua` | 130 | `job_precast` (guard, cooldown, Unbridled Learning, Expiacion hold, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/blu/functions/BLU_MIDCAST.lua` | 163 | `job_midcast` (empty) / `job_post_midcast` (Blue Magic by category + overlays, other skills) / `job_get_spell_map` |
@@ -111,14 +111,15 @@ sequenceDiagram
 1. `BLUStates.configure()` creates the states (see [Mote states](#mote-states)).
 2. `pcall(require, '<Character>/blu/keys/BLU_KEYBINDS')` into the global
    `BLUKeybinds`, then `bind_all()`; a failed require prints
-   `[BLU] Keybinds failed to load: <error>`. `bind_all` ends with
-   `show_intro()`, which requires `BLU_MACROBOOK` and `BLU_LOCKSTYLE`; neither
-   returns the info the intro looks for, but running them defines
-   `select_default_macro_book` and `select_default_lockstyle`.
+   `[BLU] Keybinds failed to load: <error>` (`EntryKit.keybind_error`).
+   `bind_all` ends with `show_intro()`, which requires `BLU_MACROBOOK` and
+   `BLU_LOCKSTYLE`; neither returns the info the intro looks for.
 3. `KeybindUI.smart_init("BLU", init_delay)`; the HUD waits for
    `state.MainWeapon` (`ui_lifecycle.lua`).
-4. `JobChangeManager.initialize()`; macro book at once, lockstyle after
-   `LockstyleConfig.initial_load_delay`.
+4. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`): 0.2 s later, once the facade has
+   defined them, the macro book, then the lockstyle after the delay.
 5. `BLUAzureSets.load()` (see [AzureSets](#azuresets)).
 6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 

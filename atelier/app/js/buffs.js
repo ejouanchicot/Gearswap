@@ -1,5 +1,5 @@
 // GearSwap Atelier · buffs.js: the buffs' tables, the support profiles, what follows the set opened
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- buffs and conditions (atelier/engine/buffs.js and its catalogue, Guide_Paladin 01_prologue, 03_magic, 03_job_ability) ---- */
 // Foods: flat stats; atkf = Attack added after the Attack % (the engine's "Food Attack"); a [%, cap] pair is a % of the stat with its cap
 const FOODS = {

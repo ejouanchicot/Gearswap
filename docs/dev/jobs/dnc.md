@@ -40,7 +40,7 @@ function; line numbers are given only where no function name fits.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/dnc.lua` | 297 | Entry point (the same for every character; `<Char>_DNC.lua` and its template `_master/entry/Tetsouo_DNC.lua` are one `include` of it): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/dnc.lua` | 266 | Entry point (the same for every character; `<Char>_DNC.lua` and its template `_master/entry/Tetsouo_DNC.lua` are one `include` of it): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/dnc/functions/dnc_functions.lua` | 107 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 206 | `refine_waltz` override, `job_precast` (guard, cooldown, `job_precast_samba`, Climactic timestamp, `job_precast_weaponskill`, WS handler), `job_post_precast` (WS variant, TP gear) |
 | `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 90 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
@@ -107,12 +107,13 @@ sequenceDiagram
 ```
 
 `user_setup()`: `DNCStates.configure()`; `DNCKeybinds.bind_all()` (the module
-is `KeybindManager.create('DNC', ...)`, whose `show_intro()`, through its
-`require`s of `DNC_MACROBOOK` / `DNC_LOCKSTYLE`, defines
-`select_default_macro_book` and `select_default_lockstyle`);
+is `KeybindManager.create('DNC', ...)`);
 `KeybindUI.smart_init("DNC", ...)` (the UI waits for `state.MainStep`);
-`JobChangeManager.initialize()` plus immediate macro book and lockstyle after
-8 s; `dualbox_manager`.
+`JobChangeManager.initialize()` plus
+`EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+(`shared/utils/core/entry_kit.lua`): 0.2 s later, once the facade has defined
+`select_default_macro_book` / `select_default_lockstyle`, the macro book, then
+the lockstyle after 8 s; `dualbox_manager`.
 
 The two Mote overrides:
 
@@ -425,7 +426,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
   `DNCWSConfig`, AbilityHelper's resource cache.
 - `windower.*`: nothing written by DNC code itself; `AbilityHelper` keeps its
   replay marker in `windower._ability_replay`. No Windower events.
-- Coroutines and command queue: 8 s lockstyle; AutoJump chain (1-3 s);
+- Coroutines and command queue: the 0.2 s macro book step (LoadGate) and 8 s lockstyle; AutoJump chain (1-3 s);
   `wait` chains of `dance`; the `buff` steps in the shared `ActionQueue`
   (`windower._action_queue`); `step` and Climactic follow-ups; the Utsusemi
   cancel. They survive a reload.
@@ -527,7 +528,8 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   Image buff 2.3 s after the midcast starts, whatever happens to the cast: a
   cast shorter than that (high Fast Cast) loses its new shadows, and an
   interrupted cast loses the old ones.
-- Initial macrobook / lockstyle depend on the `show_intro` side effect.
+- Fixed 2026-10-15: the initial macrobook / lockstyle no longer depend on the
+  `show_intro` side effect (`EntryKit.macro_and_lockstyle` waits for the facade).
 - Stale comments: the entry header claims subjob-filtered keybinds; the
   facade calls `DNC_MOVEMENT` a "movement status accessor" (it is empty).
 - Dead states: `CombatWeaponMode`, `Buff['Climactic Flourish']`.

@@ -1,8 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DebugCommands - Diagnostic / debug-toggle command handlers
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Extracted from COMMON_COMMANDS.lua to keep that file under the 600-line
----   soft limit. These are command handlers for diagnostics, performance
+---   Extracted from COMMON_COMMANDS.lua, which keeps the gameplay commands.
+---   These are command handlers for diagnostics, performance
 ---   profiling, and message-config toggles - none of them are user-facing
 ---   gameplay commands. As a diagnostic tool it may write to chat directly
 ---   (CODE_QUALITY section 6).
@@ -396,7 +396,7 @@ local function write_all_globals(w, by_type)
 end
 
 local function write_packages(w, packages)
-    w(string.format('SECTION 4 - package.loaded (%d modules)', #packages))
+    w(string.format('SECTION 4 - loaded modules, __require_cache (%d modules)', #packages))
     w(SUB_SEP)
     for _, p in ipairs(packages) do w('  ' .. p) end
     w('')
@@ -451,16 +451,16 @@ end
 --- Memory diagnostic for GearSwap.
 --- The sandbox nukes `collectgarbage`/`gcinfo` (in-process introspection is
 --- impossible) and `//lua m` output goes to Windower's console (F11) which
---- scrolls past the visible window. As a workaround we enumerate `_G` +
---- `package.loaded` from inside the addon and EXPORT the full breakdown to a
+--- scrolls past the visible window. As a workaround we enumerate `_G` and
+--- the loaded modules from inside the addon and EXPORT the full breakdown to a
 --- file for offline review.
 ---
 --- Output file: data/memcheck_<char>_<job>.txt
----   - Sorted list of package.loaded. That is Windower's own libs and nothing
----     else: GearSwap's require is include_user, which reads package.loaded
----     but never writes to it, so no project module ever appears there. The
----     project's own modules live in `_G.__require_cache` instead, and show up
----     in the _G sections below (see shared/utils/core/module_cache.lua).
+---   - Sorted list of the loaded modules. `package` is nil in the sandbox
+---     (user_env has neither a package field nor a metatable), so this is the
+---     project's own require cache, `_G.__require_cache`
+---     (shared/utils/core/module_cache.lua): the project's modules, not
+---     Windower's libs.
 ---   - Sorted list of every _G entry grouped by type
 ---   - Top tables ranked by direct child count (rough size proxy)
 ---

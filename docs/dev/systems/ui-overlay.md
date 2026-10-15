@@ -212,7 +212,7 @@ At module load `COLOR_SYSTEM.lua` loads the character's `_common/display/UI_COLO
 
 | Trigger | Path |
 |---|---|
-| `job_update` (every `gs c update`, Mote `handle_cycle` and CycleHandler -> `handle_update({'auto'})`, Mote `sub_job_change` -> `gs c update`) | every entry file's `job_update` calls `KeybindUI.update()`; BRD refreshes the song slots first |
+| `job_update` (every `gs c update`, Mote `handle_cycle` and CycleHandler -> `handle_update({'auto'})`, Mote `sub_job_change` -> `gs c update`) | every entry file's `job_update` calls `EntryKit.update_hud` (`shared/utils/core/entry_kit.lua`), which calls `KeybindUI.update()`; BRD refreshes the song slots first, PUP its PetMode and Pet WS poll |
 | `job_state_change` via `LifecycleManager.state_change` (ignores `Moving`) | BLU, BRD, BST, COR, DNC, DRG, DRK, GEO, MNK, NIN, PLD, PUP, RNG, RUN, SAM, SCH, SMN, THF `*_COMMANDS.lua` |
 | Jobs' own `job_state_change` | `RDM_COMMANDS.lua`, `WAR_COMMANDS.lua`, `WHM_COMMANDS.lua`; BLM through its local `update_ui` helper (`BLM_COMMANDS.lua`) |
 | `cyclestate` keybinds while the HUD reports visible | `shared/utils/core/CYCLE_HANDLER.lua`, after the `job_update` above |

@@ -79,14 +79,14 @@ CombatMode.settings_path = Optional.settings_path
 CombatMode.settings = Optional.settings
 CombatMode.is_shown = Optional.is_shown
 
---- Whether the weapons are locked now.
---- @return boolean
 --- Turned On together with the weapon states (//gs c sortie: the stance's weapon, the target's shield): the lock
 --- waits for the gear of the next update, so it holds the weapons those states put on, not the ones worn before.
 function CombatMode.lock_after_gear()
     windower._combat_mode_loading = true
 end
 
+--- Whether the weapons are locked now.
+--- @return boolean
 function CombatMode.is_on()
     return Optional.value() == 'On'
 end
@@ -178,7 +178,7 @@ end
 
 --- After the job's gear: dress and lock (first lock, new weapon choice, or
 --- weapons stripped).
-local function lock_after_gear()
+local function dress_and_lock()
     lock(true)
 end
 
@@ -197,19 +197,19 @@ end
 function CombatMode.apply()
     if CombatMode.is_on() then
         if weapons_stripped() then
-            return lock_after_gear
+            return dress_and_lock
         end
         if not windower._combat_mode_locked then
             if windower._combat_mode_loading then
                 windower._combat_mode_loading = nil
-                return lock_after_gear
+                return dress_and_lock
             end
             lock(true)
             return nil
         end
         if windower._combat_mode_choice ~= weapon_choice() and not craft_active() then
             enable(unpack_list(not_held_elsewhere(windower._combat_mode_locked)))
-            return lock_after_gear
+            return dress_and_lock
         end
         lock(false)
         return nil

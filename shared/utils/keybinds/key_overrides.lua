@@ -64,8 +64,8 @@ function KeyOverrides.read()
     return type(data) == 'table' and data or nil
 end
 
---- Lay the overrides over a job's key list, once per list (the HUD requires
---- the key file a second time). The key a file gave is kept in
+--- Lay the overrides over a job's key list, once per list (a list already
+--- laid is not laid again, whoever requires the key file). The key a file gave is kept in
 --- `file_key` for the Atelier export.
 --- @param job string Job code ("PLD")
 --- @param binds table The list KeybindManager.create assembled

@@ -4,7 +4,7 @@
 --- Main coordinator for Samurai job configuration. Loads Mote-Include, the
 --- shared systems and the SAM modules (shared/jobs/sam/functions/sam_functions.lua).
 ---
---- @file <Character>_SAM.lua
+--- @file shared/entry/sam.lua
 --- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-21

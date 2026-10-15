@@ -160,6 +160,12 @@ function ActionQueue.push(command, wait, opts)
     run_next(windower._action_gen_queue)
 end
 
+--- Listen again after a load: the listener lived on the previous load's _G,
+--- while the queue (on windower) goes on (called by INIT_SYSTEMS.lua).
+function ActionQueue.resume()
+    listen()
+end
+
 --- Put a step in front of the queue (next to go), or start the queue.
 --- @param command string|function
 --- @param wait number Longest wait, in seconds

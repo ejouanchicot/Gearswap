@@ -39,7 +39,7 @@ function; line numbers are deliberately not used.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/drk.lua` | 255 | Entry point (the same for every character; `<Char>_DRK.lua` and its template `_master/entry/Tetsouo_DRK.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/drk.lua` | 224 | Entry point (the same for every character; `<Char>_DRK.lua` and its template `_master/entry/Tetsouo_DRK.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/drk/functions/drk_functions.lua` | 99 | Facade: includes `message_buffs.lua` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/drk/functions/DRK_PRECAST.lua` | 132 | `job_precast` (guard, cooldown, pending flags, WS handler, JA gear, FC) / `job_post_precast` (TP gear) |
 | `shared/jobs/drk/functions/DRK_MIDCAST.lua` | 146 | `job_midcast` (empty) / `job_post_midcast`: watchdog + `JOB_POST_MIDCAST_HANDLERS` (Dark, Enfeebling, Elemental) |
@@ -93,11 +93,12 @@ sequenceDiagram
 
 `user_setup()`: `DRKStates.configure()`, the keybinds stored in the global
 `DRKKeybinds` and `bind_all()` (3 binds, the optional states, the common keys,
-then `show_intro()`, which `require`s `DRK_MACROBOOK` / `DRK_LOCKSTYLE` and so
-defines the `select_default_*` globals), `KeybindUI.smart_init`,
-`JobChangeManager` initialisation + macro book + lockstyle after 8 s, the
-`dualbox_manager` require. `job_sub_job_change` only hands the reload to
-`JobChangeManager.on_job_change`.
+then `show_intro()`), `KeybindUI.smart_init`, `JobChangeManager`
+initialisation + `EntryKit.macro_and_lockstyle` (macro book 0.2 s later, once
+the facade has defined the `select_default_*` globals, lockstyle 8 s after
+that), the `dualbox_manager` require. `job_sub_job_change` only hands the
+reload to `JobChangeManager.on_job_change` (`EntryKit.sub_job_change`,
+`shared/utils/core/entry_kit.lua`).
 
 The facade includes `message_buffs.lua` (unused by DRK), then `DRK_PRECAST`
 .. `DRK_MOVEMENT`, requires `dualbox_manager` and prints a debug line.
@@ -323,8 +324,8 @@ invisible to Mote.
   `select_default_lockstyle`, `cancel_drk_lockstyle_operations`,
   `select_default_macro_book`, `DRKKeybinds`, `DRKTPConfig`, `LockstyleConfig`,
   `RECAST_CONFIG`, `RegionConfig`, `temp_tp_bonus_gear`.
-- `windower.*`: nothing. No events, no job coroutines besides the 8 s
-  lockstyle.
+- `windower.*`: nothing. No events, no job coroutines besides the
+  0.2 s macro book step and the 8 s lockstyle.
 - Keybinds: bound in `user_setup`, kept at `file_unload` (the next load sends only what changed).
 - The pending flags live in the sandbox `_G`: the buff's loss or a
   `gs reload` (every subjob change ends in one) resets them.

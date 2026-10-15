@@ -34,7 +34,7 @@ from `H2H_WS_DATABASE.lua`.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/mnk.lua` | 190 | Entry (the same for every character; `<Char>_MNK.lua` and its template `_master/entry/Tetsouo_MNK.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/mnk.lua` | 169 | Entry (the same for every character; `<Char>_MNK.lua` and its template `_master/entry/Tetsouo_MNK.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/mnk/functions/mnk_functions.lua` | 63 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/mnk/functions/MNK_PRECAST.lua` | 119 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (WS buff layers, then TP gear) |
 | `shared/jobs/mnk/functions/MNK_MIDCAST.lua` | 75 | `job_midcast` (empty) / `job_post_midcast` (subjob magic via MidcastManager) |
@@ -85,7 +85,8 @@ files exist.
 2. `MNK_KEYBINDS` into the global `MNKKeybinds`, `bind_all()`; a failed require
    prints `[MNK] Keybinds failed to load: <error>`.
 3. `KeybindUI.smart_init("MNK", init_delay)`.
-4. `JobChangeManager.initialize()`; macro book at once, lockstyle after
+4. `JobChangeManager.initialize()`; `EntryKit.macro_and_lockstyle`: macro
+   book 0.2 s later, once the facade exists, lockstyle after
    `LockstyleConfig.initial_load_delay`.
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
@@ -94,7 +95,9 @@ files exist.
 registers `cancel_mnk_lockstyle_operations`.
 
 `job_update`: `KeybindUI.update()`. `file_unload`:
-`JobChangeManager.cancel_all()`, then `MNKKeybinds.unbind_all()`.
+`JobChangeManager.cancel_all()`, then `MNKKeybinds.unbind_all()`. These hooks,
+the keybind error and `job_sub_job_change` are the shared `EntryKit` calls
+(`shared/utils/core/entry_kit.lua`).
 
 ### Precast
 

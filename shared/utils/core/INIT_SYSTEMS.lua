@@ -416,6 +416,14 @@ pcall(function()
     if ok_c and CastTracker then CastTracker.start() end
 end)
 
+-- A queue still under way from the previous load (stealth, cleanse, buff) listens
+-- again for the end of each action; else every step waits its longest wait.
+pcall(function()
+    if windower._action_queue and windower._action_queue.busy then
+        require('shared/utils/core/action_queue').resume()
+    end
+end)
+
 -- Combat Mode lock, every job. Laid after the custom hooks so it wraps them:
 -- the lock is set before any gear goes on.
 pcall(function()
@@ -435,10 +443,10 @@ end)
 -- nicety: PrecastGuard is the Silence/Amnesia/death block, CooldownChecker is
 -- every recast message, WSPrecastHandler is the range check and the TP bonus
 -- gear. Worse, precast_guard requires message_core without a pcall, so the very
--- error that removes the guard on all 16 jobs also takes MessageFormatter down
+-- error that removes the guard on all 22 jobs also takes MessageFormatter down
 -- with it - the channel that would have said so.
 --
--- Checked here rather than in the 16 job files, and on a delay rather than
+-- Checked here rather than in the 22 job files, and on a delay rather than
 -- inline: ModuleCache means this require is the same one the job will get, so
 -- an answer here is the answer there, and waiting keeps the cost of loading
 -- the chain off the cold-load path.

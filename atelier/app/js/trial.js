@@ -1,5 +1,5 @@
 // GearSwap Atelier · trial.js: pieces tried, Compare
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- pieces tried in the page ---- */
 const trialKey = s => S.char + '|' + S.job + '|' + s.path;
 const trialCount = s => Object.entries(S.trial[trialKey(s)] || {}).filter(([slot, p]) => !heldAlready(s, slot, p)).length;

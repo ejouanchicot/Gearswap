@@ -1,5 +1,5 @@
 // GearSwap Atelier · stats.js: set families, a piece's stats (descriptions, augments, ranks, capes), the stats shown
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- set grouping ---- */
 /* ---- item stats: read from the game's descriptions and the set's augments ---- */
 // key: [group, French label, English label, cap]. A stat not listed here is still

@@ -304,10 +304,9 @@ case-insensitive scans over the three loaded tables. `display_spell` (`:245`) pa
 numbers only) and `notes` to `display_entity`, which prints the non-empty ones as one info block
 (`MessageInfo.show_entity`).
 
-`load_abilities` probes `shared/data/job_abilities/<job>/<job>_<suffix>` for 21 jobs x 24 suffixes;
-see [ability-and-weaponskill-databases.md](ability-and-weaponskill-databases.md#gs-c-info-path). Because
-the exact-name pass calls `get_ability` first, the first `//gs c info` of any kind pays for ~420 failed
-path searches.
+`load_abilities` probes `shared/data/job_abilities/<job>/<job>_<suffix>` for the 3 standard suffixes
+of 21 jobs and the special files each job has (`ABILITY_SPECIALS`, 85 probes, one missing file);
+see [ability-and-weaponskill-databases.md](ability-and-weaponskill-databases.md#gs-c-info-path).
 
 ## Entry schema
 
@@ -361,7 +360,7 @@ functions left without a caller are listed below.
 | `BLU_SPELL_DATABASE.get_spell_data(name)` | record or nil | `shared/jobs/blu/functions/logic/spell_map.lua` (`database_entry`) |
 | `RDM_ENFEEBLE_TIERS.get(family)` | tier map or nil | `RDM_PRECAST.lua` `get_spell_tiers` |
 | `NUKE_TIERS.get(family)` | tier map or nil | `RDM_PRECAST.lua` `get_spell_tiers`, `GEO_PRECAST.lua` |
-| `DataLoader.get_spell/get_ability/get_weaponskill(name)` (`:260`, `:270`, `:280`), `DataLoader.load_spells/load_abilities/load_weaponskills()` (`:122`, `:156`, `:228`) | record or nil / `true` | `search_all_databases` (`info_command.lua`) |
+| `DataLoader.get_spell/get_ability/get_weaponskill(name)` (`:256`, `:266`, `:276`), `DataLoader.load_spells/load_abilities/load_weaponskills()` (`:137`, `:171`, `:224`) | record or nil / `true` | `search_all_databases` (`info_command.lua`) |
 
 `BLM_SPELL_FILTERS` exposes three sets read by `BLM_PRECAST.lua`: `REFINEMENT_SPELLS` (keyed by spell
 name, plus the key `'Elemental Magic'` which is never looked up because `uses_refinement` checks the
@@ -396,7 +395,7 @@ The databases read no config file. Related knobs:
 - `_G.MESSAGE_SETTINGS.spell_mode` (persisted by `shared/config/message_settings.lua`) decides whether
   spell messages print and whether `description` is included.
 - `_G.DATA_DEBUG` gates the three `DebugLogger.logf_if('DATA_DEBUG', ...)` lines in `data_loader.lua`
-  (`:146`, `:218`, `:249`). No command sets it.
+  (`:161`, `:214`, `:245`). No command sets it.
 - `state.EnfeebleTier` (RDM) switches the enfeeble tier table off.
 - The character's `blu/combat/BLU_SPELL_MAP.lua` takes precedence over the BLU database category.
 

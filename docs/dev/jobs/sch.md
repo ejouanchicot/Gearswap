@@ -32,7 +32,7 @@ What SCH adds on top of the shared pipeline:
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/sch.lua` | 191 | Entry (the same for every character; `<Char>_SCH.lua` and its template `_master/entry/Tetsouo_SCH.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
+| `shared/entry/sch.lua` | 170 | Entry (the same for every character; `<Char>_SCH.lua` and its template `_master/entry/Tetsouo_SCH.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD), `init_gear_sets`, `file_unload` |
 | `shared/jobs/sch/functions/sch_functions.lua` | 62 | Facade: includes `message_buffs` and the hook files, requires `dualbox_manager` |
 | `shared/jobs/sch/functions/SCH_PRECAST.lua` | 152 | `job_precast` (guard, tier refiner or cooldown, stratagem charges, WS handler) / `job_post_precast` (TP gear, grimoire layers) |
 | `shared/jobs/sch/functions/SCH_MIDCAST.lua` | 134 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager per skill, grimoire layers) |
@@ -82,12 +82,15 @@ Same shape as PUP / BLU ([core lifecycle](../systems/core-lifecycle.md#how-a-job
 `user_setup()`: `SCHStates.configure()`, `SCH_KEYBINDS` into the global
 `SCHKeybinds` and `bind_all()` (a failed require prints
 `[SCH] Keybinds failed to load: <error>`), `KeybindUI.smart_init("SCH")`,
-`JobChangeManager.initialize()`, macro book at once and lockstyle after
-`initial_load_delay`, `dualbox_manager`. `get_sets()` sets `_G.LockstyleConfig`,
+`JobChangeManager.initialize()`, `EntryKit.macro_and_lockstyle` (macro book
+0.2 s later, once the facade exists, lockstyle after `initial_load_delay`),
+`dualbox_manager`. `get_sets()` sets `_G.LockstyleConfig`,
 `_G.RECAST_CONFIG`, `_G.SCHTPConfig`, cancels pending job-change work, includes
 the facade and registers `cancel_sch_lockstyle_operations`. `job_update`
 repaints the HUD. `file_unload`: `JobChangeManager.cancel_all()`, then
-`SCHKeybinds.unbind_all()`.
+`SCHKeybinds.unbind_all()`. These hooks, the keybind error and
+`job_sub_job_change` are the shared `EntryKit` calls
+(`shared/utils/core/entry_kit.lua`).
 
 ### Arts
 

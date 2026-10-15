@@ -4,7 +4,7 @@
 --- Loader for the Ninja job: Mote-Include, the shared systems, the NIN
 --- hook modules and this character's configs and sets.
 ---
---- @file <Character>_NIN.lua
+--- @file shared/entry/nin.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-29

@@ -41,7 +41,7 @@ function, not a line number.
 
 | Path | Role |
 |------|------|
-| `shared/entry/geo.lua` (279 lines) | Entry point (the same for every character; `<Char>_GEO.lua` and its template `_master/entry/Tetsouo_GEO.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (loads PetTP), `job_update` (HUD only), `init_gear_sets`, `file_unload` (unloads PetTP) |
+| `shared/entry/geo.lua` (252 lines) | Entry point (the same for every character; `<Char>_GEO.lua` and its template `_master/entry/Tetsouo_GEO.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (loads PetTP), `job_update` (HUD only), `init_gear_sets`, `file_unload` (unloads PetTP); shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/geo/functions/geo_functions.lua` | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` |
 | `shared/jobs/geo/functions/GEO_PRECAST.lua` | `job_precast` (guard, tier refine or cooldown, auto abilities, Entrust flag, WS) / `job_post_precast` |
 | `shared/jobs/geo/functions/GEO_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast` (`midcast_geomancy` with `geomancy_family`, Enhancing branch, `PLAIN_SKILLS`) |
@@ -96,7 +96,7 @@ sequenceDiagram
     GS->>E: file chunk: LOCKSTYLE_CONFIG, UIConfig (ConfigLoader), REGION_CONFIG
     GS->>E: get_sets()
     E->>M: include('Mote-Include.lua')
-    M->>E: user_setup(): states, lua load pettp, keybinds (+ show_intro), HUD, JobChangeManager, macro book, lockstyle in 8 s, dualbox_manager
+    M->>E: user_setup(): states, lua load pettp, keybinds (+ show_intro), HUD, JobChangeManager, EntryKit.macro_and_lockstyle, dualbox_manager
     M->>E: init_gear_sets(): include('geo/sets/geo_sets.lua')
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.GEOTPConfig
@@ -114,15 +114,15 @@ sequenceDiagram
    loads it again in the new one.
 3. `GEO_KEYBINDS` (which returns `KeybindManager.create('GEO', ...)`) ->
    global `GEOKeybinds`, `bind_all()`. `show_intro` `require`s
-   `GEO_MACROBOOK.lua` and `GEO_LOCKSTYLE.lua`; both return nothing, but
-   executing them defines `select_default_macro_book` /
-   `select_default_lockstyle` as a side effect. A failed require prints the
-   Lua error.
+   `GEO_MACROBOOK.lua` and `GEO_LOCKSTYLE.lua` (both return nothing). A
+   failed require prints the Lua error (`EntryKit.keybind_error`).
 4. `KeybindUI.smart_init("GEO", UIConfig.init_delay)`.
-5. `JobChangeManager.initialize()`, then (thanks to step 3)
-   `select_default_macro_book()` and `select_default_lockstyle` after 8 s. The
-   facade later includes the two wrapper files again, creating a second,
-   independent factory instance of each (same as [BLM](blm.md)).
+5. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`): 0.2 s later, once the facade has
+   included the two wrapper files again (a second, independent factory
+   instance of each, same as [BLM](blm.md)), `select_default_macro_book()`,
+   then `select_default_lockstyle` after 8 s.
 6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
 `geo_functions.lua` includes `message_buffs.lua`, then `GEO_PRECAST`,
@@ -518,6 +518,7 @@ T = in `_master/sets/geo_sets.lua`.
   a subjob change, and unloaded on every `file_unload`.
 - No `sets.midcast['Healing Magic']` or `['Dark Magic']` in the template:
   those `MidcastManager` routes return false.
-- Initial macrobook / lockstyle depend on `KeybindManager.show_intro`
-  requiring the wrappers.
+- Fixed 2026-10-15: the initial macrobook / lockstyle no longer depend on
+  `KeybindManager.show_intro` requiring the wrappers
+  (`EntryKit.macro_and_lockstyle` waits for the facade).
 - Dead code: `GEO_LOCKSTYLE.style` (`SetBuilder.apply_buff_gear` was removed on 2026-09-29).

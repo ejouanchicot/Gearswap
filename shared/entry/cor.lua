@@ -5,7 +5,7 @@
 --- This file serves as the main coordinator, delegating all specialized logic
 --- to dedicated modules for maximum maintainability and scalability.
 ---
---- @file <Character>_COR.lua
+--- @file shared/entry/cor.lua
 --- @author ejouanchicot
 --- @version 1.2.0
 --- @date Created: 2025-10-07

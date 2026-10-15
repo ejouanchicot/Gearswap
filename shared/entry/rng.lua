@@ -4,7 +4,7 @@
 --- Loader for the Ranger job: Mote-Include, the shared systems, the RNG hook
 --- modules and this character's configs and sets.
 ---
---- @file <Character>_RNG.lua
+--- @file shared/entry/rng.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-29

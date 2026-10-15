@@ -5,7 +5,7 @@
 --- This file serves as the main coordinator, delegating all specialized logic
 --- to dedicated modules for maximum maintainability and scalability.
 ---
---- @file <Character>_RDM.lua
+--- @file shared/entry/rdm.lua
 --- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-12

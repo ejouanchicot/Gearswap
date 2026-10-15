@@ -112,11 +112,7 @@ function SetBuilder.master_idle(base_set)
     if hybrid_dt() and idle and type(idle.DT) == 'table' then
         return idle.DT
     end
-    local pet_node = idle and idle.Pet
-    if pet_node and (base_set == pet_node or base_set == pet_node.Engaged) then
-        return idle
-    end
-    return base_set
+    return BaseSetBuilder.idle_without_pet(base_set)
 end
 
 --- The pet layer (see header, step 3).

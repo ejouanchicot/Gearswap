@@ -32,7 +32,7 @@ What PUP adds on top of the shared pipeline:
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/pup.lua` | 214 | Entry (the same for every character; `<Char>_PUP.lua` and its template `_master/entry/Tetsouo_PUP.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ first PetMode detection), `job_update` (PetMode, poll, HUD), `init_gear_sets`, `file_unload` (+ poll stop) |
+| `shared/entry/pup.lua` | 192 | Entry (the same for every character; `<Char>_PUP.lua` and its template `_master/entry/Tetsouo_PUP.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ first PetMode detection), `job_update` (PetMode, poll, HUD), `init_gear_sets`, `file_unload` (+ poll stop) |
 | `shared/jobs/pup/functions/pup_functions.lua` | 67 | Facade: includes `message_buffs` and the 12 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/pup/functions/PUP_PRECAST.lua` | 108 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (TP gear) |
 | `shared/jobs/pup/functions/PUP_MIDCAST.lua` | 99 | `job_midcast` (empty) / `job_post_midcast` (subjob magic via MidcastManager) / `job_get_spell_map` (Maneuver) |
@@ -91,11 +91,12 @@ files exist. The entry sets `_G.RegionConfig` first, then loads the UI config
 1. `PUPStates.configure()` creates the states (see [Mote states](#mote-states)).
 2. `Automaton.refresh_mode(true)`: PetMode from the automaton's head before the
    HUD first draws it (the HUD caches what it reads in `user_setup`).
-3. `PUP_KEYBINDS` into the global `PUPKeybinds`, `bind_all()` (whose intro
-   requires `PUP_MACROBOOK` / `PUP_LOCKSTYLE` and so defines their globals);
-   a failed require prints `[PUP] Keybinds failed to load: <error>`.
+3. `PUP_KEYBINDS` into the global `PUPKeybinds`, `bind_all()`; a failed
+   require prints `[PUP] Keybinds failed to load: <error>`
+   (`EntryKit.keybind_error`).
 4. `KeybindUI.smart_init("PUP", init_delay)`.
-5. `JobChangeManager.initialize()`; macro book at once, lockstyle after
+5. `JobChangeManager.initialize()`; `EntryKit.macro_and_lockstyle`: macro
+   book 0.2 s later, once the facade has defined it, lockstyle after
    `LockstyleConfig.initial_load_delay`.
 6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
@@ -104,10 +105,13 @@ files exist. The entry sets `_G.RegionConfig` first, then loads the UI config
 registers `cancel_pup_lockstyle_operations`.
 
 `job_update` (every `gs c update`, cycle, set, toggle; Mote calls it before it
-equips): `Automaton.refresh_mode()`, `PetWS.ensure_running()`, `KeybindUI.update()`.
+equips): `Automaton.refresh_mode()`, `PetWS.ensure_running()`, then
+`EntryKit.update_hud('PUP')` (`KeybindUI.update()`).
 
 `file_unload`: `PetWS.stop()` first (GearSwap runs `file_unload` under one
-`pcall`), then `JobChangeManager.cancel_all()`, then `PUPKeybinds.unbind_all()`.
+`pcall`), then `EntryKit.unload(PUPKeybinds)`: `JobChangeManager.cancel_all()`,
+then `PUPKeybinds.unbind_all()`. The shared hooks are in
+`shared/utils/core/entry_kit.lua`.
 
 ### Reading the automaton
 

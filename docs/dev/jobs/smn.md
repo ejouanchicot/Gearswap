@@ -67,7 +67,7 @@ clone of any other character printed
 
 | Path | Role |
 |------|------|
-| `shared/entry/smn.lua` (203 lines; every character's `<Char>_SMN.lua` and the template `_master/entry/Tetsouo_SMN.lua` are one `include` of it) | Entry: config preload, `get_sets`, `init_gear_sets`, `job_sub_job_change`, `user_setup` (Carbuncle auto-summon), `job_update` (HUD only), `file_unload` (stops the skill-up loop) |
+| `shared/entry/smn.lua` (188 lines; every character's `<Char>_SMN.lua` and the template `_master/entry/Tetsouo_SMN.lua` are one `include` of it) | Entry: config preload, `get_sets`, `init_gear_sets`, `job_sub_job_change`, `user_setup` (Carbuncle auto-summon), `job_update` (HUD only), `file_unload` (stops the skill-up loop); shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/smn/functions/smn_functions.lua` | Facade: `message_buffs.lua`, the 12 hook files, `dualbox_manager`, a debug line |
 | `shared/jobs/smn/functions/SMN_PRECAST.lua` | Guard, cooldown, WS; empty Blood Pact branch; `job_post_precast` (TP gear) |
 | `shared/jobs/smn/functions/SMN_MIDCAST.lua` | `job_post_midcast`: Blood Pact set via the classifier, else `JOB_POST_MIDCAST_HANDLERS` by skill |
@@ -115,15 +115,16 @@ and registers the lockstyle cancel. It also marks each step for
 
 1. `SMNStates.configure()`.
 2. `require` of `SMN_KEYBINDS` -> global `SMNKeybinds`, `bind_all()` (3 binds
-   plus the character's common keys), which calls `show_intro()`. The intro
-   `require`s `SMN_MACROBOOK` and `SMN_LOCKSTYLE`, whose bodies define
-   `select_default_macro_book` and `select_default_lockstyle`; the facade has
-   not run yet, so without this the next step would find both nil. A failed
-   require prints `[SMN] Keybinds failed to load: <error>`.
+   plus the character's common keys), which calls `show_intro()`. A failed
+   require prints `[SMN] Keybinds failed to load: <error>`
+   (`EntryKit.keybind_error`).
 3. `KeybindUI.smart_init("SMN", UIConfig.init_delay)`.
-4. `JobChangeManager.initialize()`, then `select_default_macro_book()` now and
-   `select_default_lockstyle` after `initial_load_delay` (8 s).
-5. A coroutine `initial_load_delay + 2` s later (10 s): if the main job is
+4. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`): the facade has not run yet, so it
+   waits 0.2 s for `select_default_macro_book` / `select_default_lockstyle`,
+   sets the macro book, and schedules the lockstyle after 8 s.
+5. A task `initial_load_delay + 2` s later (10 s, `LoadGate.defer(..., 'smn summon')`: dropped when a newer load came first): if the main job is
    still SMN, the player is not `Dead` and `get_mob_by_target('pet')` finds
    nothing, `input /ma "Carbuncle" <me>`.
 6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
@@ -347,11 +348,12 @@ it stays on after the first cast.
   `cancel_smn_skillup_loop`, factory globals.
 - `windower.*`: none from SMN code; no events registered.
 - Coroutines: the Carbuncle summon (10 s) and the skill-up steps. The summon
-  coroutine is not cancelled by a reload.
+  goes through LoadGate: a reload before it fires drops it.
 - Subjob change: Mote runs `user_setup()` in the current sandbox (states reset,
-  keybinds rebound, a Carbuncle coroutine scheduled), then
+  keybinds rebound, a Carbuncle summon scheduled), then
   `job_sub_job_change` calls `on_job_change`, which reloads 2.0 s later; the
-  new sandbox's `user_setup` schedules a second Carbuncle coroutine.
+  new sandbox's `user_setup` schedules its own, and the first one is dropped
+  (newer load), so a single summon goes (fixed 2026-10-15).
 - `file_unload` stops the skill-up loop, cancels `JobChangeManager` timers; keys
   stay down for the next load.
 

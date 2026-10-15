@@ -53,11 +53,11 @@ if kb_success and keybinds then
     WARKeybinds = keybinds
     WARKeybinds.bind_all()
 else
-    show_keybind_error(keybinds)
+    EntryKit.keybind_error('WAR', keybinds)
 end
 ```
 
-When the require fails, the entry prints `[<JOB>] Keybinds failed to load: <error>`, error included. `file_unload()` calls `<JOB>Keybinds.unbind_all()`.
+When the require fails, `EntryKit.keybind_error` (`shared/utils/core/entry_kit.lua`) prints `[<JOB>] Keybinds failed to load: <error>`, error included. `file_unload()` ends with `EntryKit.unload(<JOB>Keybinds)`, which calls `<JOB>Keybinds.unbind_all()`.
 
 Requiring the file runs `KeybindManager.create(job, module)`, which does the following, in this order:
 
@@ -124,7 +124,7 @@ The same function builds the line `bind_all` and `refresh` send; KeybindGuard re
 - PLD's state-change hook (`PLD_COMMANDS.lua`, after a stance change: `/SCH` Tanking hides `MainWeapon`);
 - `KeybindManager.refresh_active()`, which calls `refresh` on `_G._keybind_active`. It runs whenever `alt_states.lua` records a new job, subjob or weapon type for a box, whenever this character's main hand changes weapon type (entries with `weapon`), and after every `//gs c combatmode|th show|hide|key` (`optional_state_commands.lua` `refresh`).
 
-**`unbind_all()`** is called by every entry file from `file_unload()`. Since 2026-09-30 it sends nothing: the keys stay down for the next load, whose `bind_all` sends only the difference (unwanted keys unbound, changed keys re-bound). It logs `keys <JOB>: kept for the next load` and empties `ctx.applied`. Before, a subjob change unbound every key and bound them all again a moment later, about 390 console commands in a second; both client crashes traced on Gab's side hit inside that burst.
+**`unbind_all()`** is called by every entry file from `file_unload()`, through `EntryKit.unload`. Since 2026-09-30 it sends nothing: the keys stay down for the next load, whose `bind_all` sends only the difference (unwanted keys unbound, changed keys re-bound). It logs `keys <JOB>: kept for the next load` and empties `ctx.applied`. Before, a subjob change unbound every key and bound them all again a moment later, about 390 console commands in a second; both client crashes traced on Gab's side hit inside that burst.
 
 The keys are still removed when GearSwap itself unloads (`//lua unload gearswap`, `//lua reload gearswap`): `create` registers a raw `unload` event that sends one `unbind` per key recorded in `windower._keybind_manager_bound`, joined with `; ` into a single command, then empties the record. `file_unload` cannot tell a job change from the addon unloading; the addon's `unload` event only fires for the latter, and GearSwap drops the handler at the next file load (`refresh.lua`), so only the live file's handler is registered.
 
@@ -144,7 +144,7 @@ It only warns: the bind is still sent, in case Windower knows a key name the lis
 
 ### The intro message
 
-`show_intro()` lists the keyed active binds under `<JOB> SYSTEM LOADED`. It also requires the job's `<JOB>_MACROBOOK` and `<JOB>_LOCKSTYLE` wrapper modules and looks for `get_<job>_macro_info` and `get_info` on them. None of the 44 wrappers returns a table with those keys (30 return nothing; the 14 that return a table have neither). So `show_system_intro_complete` is never reached, and the intro never shows the macro book or the lockstyle (see Known issues). The require still matters: it defines `select_default_macro_book` and `select_default_lockstyle`, which `user_setup` calls before the facade is loaded.
+`show_intro()` lists the keyed active binds under `<JOB> SYSTEM LOADED`. It also requires the job's `<JOB>_MACROBOOK` and `<JOB>_LOCKSTYLE` wrapper modules and looks for `get_<job>_macro_info` and `get_info` on them. None of the 44 wrappers returns a table with those keys (30 return nothing; the 14 that return a table have neither). So `show_system_intro_complete` is never reached, and the intro never shows the macro book or the lockstyle (see Known issues). The require also defines `select_default_macro_book` and `select_default_lockstyle` early, but nothing relies on that any more: since 2026-10-15 the entries call them through `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`), 0.2 s later, once the facade has defined them. Before, a job whose keybind file failed to load or bound no key got no first macro book and no lockstyle. (The comment above `show_intro` in `keybind_manager.lua` still says the entries rely on it.)
 
 ### Common keys
 
@@ -577,7 +577,7 @@ Build it the way `treasure_hunter.lua` does:
 
 ## Known issues
 
-- **The intro never shows the macro book or the lockstyle** (all jobs). No wrapper returns `get_<job>_macro_info` / `get_info`, so `show_intro` always takes the short branch. Open: either the wrappers return their info, or the dead branch goes; the side effect of the require must stay.
+- **The intro never shows the macro book or the lockstyle** (all jobs). No wrapper returns `get_<job>_macro_info` / `get_info`, so `show_intro` always takes the short branch. Open: either the wrappers return their info, or the dead branch goes (the entries no longer need the require's side effect).
 - **`temp_binds.lua` restart detection is partial.** The file is dropped only when the saved `os.clock()` is larger than the current one. If the new game session has already run longer than the old one had when it saved, the stale list is kept: `tb list` shows keys that are no longer bound, and the free-key search skips them. Not verified in game.
 - Fixed 2026-09-28: `KeybindGuard` re-sent rows with an empty key (HUD only, or `combatmode` / `th key none`) as `bind  gs c ...`; it now skips them like KeybindManager, and its header comment no longer says only PLD and THF filter their binds.
 - **`eventArgs.no_overlay`** is tested in `Guards.hands_off`, but nothing sets it.

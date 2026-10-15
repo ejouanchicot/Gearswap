@@ -4,7 +4,7 @@
 --- Loader for the Dragoon job: Mote-Include, the shared systems, the DRG
 --- hook modules and this character's configs and sets.
 ---
---- @file <Character>_DRG.lua
+--- @file shared/entry/drg.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-29

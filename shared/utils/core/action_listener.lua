@@ -28,8 +28,8 @@
 local ActionListener = {}
 
 --- key -> function, and the keys in subscription order. On the sandbox _G:
---- one list per load, even when this file runs twice in a load (before
---- module_cache.lua is installed).
+--- one list per load, rebuilt with the sandbox at the next load (the require
+--- cache, installed by config_loader.lua, keeps this file to one run a load).
 local function registry()
     local r = rawget(_G, '_action_listener_subs')
     if not r then

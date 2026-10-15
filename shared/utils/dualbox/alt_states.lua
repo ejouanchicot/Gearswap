@@ -77,8 +77,9 @@ function AltStates.weapon_skill()
 end
 
 --- The listeners and the one packet hook of this load. Kept on the sandbox
---- _G, not in this module: user_setup can require the module before the
---- module cache exists, and two copies must still share one hook.
+--- _G, not in this module: one hook per load, rebuilt with the sandbox (the
+--- require cache, installed before user_setup by config_loader.lua, keeps
+--- the module to one copy a load).
 --- @return table {listeners = {key -> function}, registered = boolean}
 local function weapon_watch()
     local watch = rawget(_G, '_own_weapon_watch')

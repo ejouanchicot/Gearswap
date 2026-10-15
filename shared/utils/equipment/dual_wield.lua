@@ -16,8 +16,9 @@
 ---
 --- Magic haste is estimated from the buffs up (read from the game) and the
 --- spells that gave them (the action packet: Haste or Haste II, which March):
---- values in <Character>/_common/gear/DW_CONFIG.lua, rounded down on purpose (an
---- underestimate keeps a little more Dual Wield, the safe side).
+--- values in <Character>/_common/gear/DW_CONFIG.lua, the nominal ones (Haste
+--- 15 %: the game's 150/1024 is 14.65 %, so a hair high, under one point of
+--- Dual Wield; the Marches depend on the Bard's gear).
 --- //gs c dw shows the estimate; //gs c dw none|haste|haste2|max forces a
 --- tier, //gs c dw auto goes back to the estimate. (Not "haste": that name
 --- is the alt command that casts Haste.)

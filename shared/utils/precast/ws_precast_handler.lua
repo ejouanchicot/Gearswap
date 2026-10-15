@@ -127,7 +127,7 @@ function WSPrecastHandler.apply_tp_gear(spell)
     local tp_gear = _G.temp_tp_bonus_gear
     -- the set is on now: what it wears (GearSwap's equip list) counts its own TP pieces
     -- (Boii Cuisses in the base set), so no piece is added for a gap it already closes
-    -- gearswap is reached through the user environment's lookup, not as a field of _G
+    -- gearswap is a field of the sandbox _G (refresh.lua user_env); pcall in case it is missing outside the game
     local ok_g, list = pcall(function() return gearswap.equip_list end)
     local args = _G.temp_tp_bonus_args
     if not ok_g then list = nil end

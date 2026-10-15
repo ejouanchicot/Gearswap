@@ -87,7 +87,7 @@ function EnvWatch.stored_functions()
             local ok_e, env = pcall(getfenv_, value)
             local gen = ok_e and type(env) == 'table' and watch[env] or nil
             found[#found + 1] = {path = table.concat(path, '.'), load = gen, old = (ok_e and env ~= _G) or nil,
-                where = (tostring(info.short_src):match('[^/\]+$') or '?') .. ':' .. tostring(info.linedefined)}
+                where = (tostring(info.short_src):match('[^/\\]+$') or '?') .. ':' .. tostring(info.linedefined)}
         elseif kind == 'table' and depth < DEPTH and not seen[value] and opened < MAX_TABLES then
             seen[value] = true
             opened = opened + 1

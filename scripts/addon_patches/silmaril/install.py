@@ -22,6 +22,20 @@ ADDITIONS = {
     'StateReport': ("reports this box's state to GearSwap", [
         ('Moving.lua', 'function get_following()'),
         ('Moving.lua', 'function get_fast_follow_target()'),
+        ('Engine.lua', 'function get_enabled()'),
+        ('Mirror.lua', 'function get_mirror_on()'),
+        ('Mirror.lua', 'function get_mirroring()'),
+        ('Mirror.lua', 'function get_injecting()'),
+        ('Mirror.lua', 'function get_mirror_target()'),
+        ('Mirror.lua', 'function get_mirroring_state()'),
+        # wrapped outside a pcall: gone, it would raise at every mirror result
+        ('Connection.lua', 'function mirror_results(param)'),
+        ('Display.lua', 'function get_sm_window()'),
+        ('Display.lua', 'function set_sm_window(value)'),
+        ('Display.lua', 'function get_npc_window()'),
+        ('Display.lua', 'function set_npc_window(value)'),
+        ('Display.lua', 'function get_result_window()'),
+        ('Display.lua', 'function set_result_window(value)'),
     ]),
     'CastHold': ('no movement while a spell is cast', [
         ('Moving.lua', 'function movement()'),

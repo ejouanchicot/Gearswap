@@ -5,7 +5,7 @@
 --- This file serves as the main coordinator, delegating all specialized logic
 --- to dedicated modules for maximum maintainability and scalability.
 ---
---- @file <Character>_GEO.lua
+--- @file shared/entry/geo.lua
 --- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-09

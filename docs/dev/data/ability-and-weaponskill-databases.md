@@ -359,11 +359,12 @@ flowchart TD
 
 ### `//gs c info` path
 
-`data_loader.lua` keeps its own copy in `_G.FFXI_DATA`. `load_abilities` (`:156`) tries 21 jobs
-(`ABILITY_JOBS`) x (3 standard suffixes `ABILITY_TYPES` + 21 special suffixes listed inline:
-`pet_commands`, `pet_commands_mainjob/_subjob`, `rolls_*`, `waltzes_*`, `steps_*`, `flourishes1_subjob`,
-`flourishes2_*`, `flourishes3_mainjob`, `sambas_*`, `jigs_*`, `black_grimoire_*`, `white_grimoire_*`) =
-504 `pcall(require)` calls, of which 84 find a file, keeping the first entry for each name.
+`data_loader.lua` keeps its own copy in `_G.FFXI_DATA`. `load_abilities` (`:171`) tries 21 jobs
+(`ABILITY_JOBS`) x 3 standard suffixes (`ABILITY_TYPES`), plus, per job, the special files that exist
+(`ABILITY_SPECIALS`: BST pet commands, COR rolls, DNC waltzes / steps / flourishes / sambas / jigs, DRG
+pet commands, PUP pet commands, SCH grimoires) = 85 `pcall(require)` calls, of which 84 find a file
+(`nin_subjob` is the missing one), keeping the first entry for each name. Until 2026-10-15 it tried 21
+special suffixes for every job, 504 calls for the same 334 abilities.
 `load_weaponskills` (`:228`) loads the 13 files in its own order (`WEAPONSKILL_DATABASES`, Sword first)
 and also keeps the first entry for each name. `search_all_databases` (`info_command.lua:297`) looks up
 the exact name, then case-insensitively.
@@ -480,8 +481,8 @@ it to `<JOB>_ALT_CUSTOM.lua` if the alt should use it.
 
 **Add a module file to a job**: create `<job>/<job>_<suffix>.lua` with `.abilities`, then add the suffix
 to the wrapper's `modules` list (the default list only covers `subjob`, `mainjob`, `sp`). If the suffix
-is not one of the 24 that `data_loader.load_abilities` probes (`ABILITY_TYPES` + the inline
-`special_patterns` list), add it there too, or `info` will not see it.
+is not one that `data_loader.load_abilities` probes (`ABILITY_TYPES`, or the job's
+`ABILITY_SPECIALS` entry), add it there too, or `info` will not see it.
 
 **Add a job**: create the folder and `<JOB>_JA_DATABASE.lua`; add the code to `JOBS` in
 `ability_message_handler.lua` and `ABILITY_JOBS` in `data_loader.lua`. A job whose abilities use a `res`
@@ -573,7 +574,7 @@ Re-checked on 2026-09-28. Open:
 - DAGGER uses a different schema; `info` shows only the description (and element when set) for its 18
   WS - `shared/data/weaponskills/DAGGER_WS_DATABASE.lua`
 - `data_loader` duplicates the wrappers' suffix lists; a new suffix must be added in both places -
-  `DataLoader.load_abilities`, `shared/utils/data/data_loader.lua:156`
+  `DataLoader.load_abilities`, `shared/utils/data/data_loader.lua:171`
 - `_dev/JOB_ABILITIES_DATABASE.md` and `_dev/WS_DATABASE_SYSTEM.md` describe a design that no longer
   exists.
 - The recast and rune-text corrections of 2026-09-25 are checked against BG-Wiki only; `//gs c info`

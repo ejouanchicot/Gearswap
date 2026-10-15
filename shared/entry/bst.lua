@@ -4,7 +4,7 @@
 --- Main file for Beastmaster job with dynamic ecosystem/species/ammoSet states.
 --- CRITICAL: Uses dynamic state recreation for species and ammoSet.
 ---
---- @file <Character>_BST.lua
+--- @file shared/entry/bst.lua
 --- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-17

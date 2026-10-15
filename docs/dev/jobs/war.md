@@ -48,7 +48,7 @@ numbers are avoided because they drift.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/war.lua` | 315 | Entry point (the same for every character; `<Char>_WAR.lua` and its template `_master/entry/Tetsouo_WAR.lua` are one `include` of it): config preload, `get_sets`, `init_gear_sets` + `sync_weapon_with_hand`, `job_sub_job_change`, `user_setup` (+ `AmpullaLock.apply`), `job_update`, `file_unload` (+ `AmpullaLock.release`), `show_keybind_error` |
+| `shared/entry/war.lua` | 274 | Entry point (the same for every character; `<Char>_WAR.lua` and its template `_master/entry/Tetsouo_WAR.lua` are one `include` of it): config preload, `get_sets`, `init_gear_sets` + `sync_weapon_with_hand`, `job_sub_job_change`, `user_setup` (+ `AmpullaLock.apply`), `job_update`, `file_unload` (+ `AmpullaLock.release`); shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/war/functions/war_functions.lua` | 109 | Facade: includes `message_buffs.lua` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/war/functions/WAR_PRECAST.lua` | 138 | `job_precast` / `job_post_precast`: guard, cooldown, WS handler (which runs AutoJump), TP gear |
 | `shared/jobs/war/functions/WAR_MIDCAST.lua` | 74 | `job_midcast` (empty) / `job_post_midcast`: Healing and Enhancing routed to `MidcastManager` |
@@ -140,14 +140,14 @@ slot would show `N/A`.
    released here.
 3. `pcall(require, CharPaths.module('job', 'WAR_KEYBINDS', 'WAR'))` (the character's
    `war/keys/WAR_KEYBINDS.lua`), stored in the global `WARKeybinds`,
-   then `bind_all()`, which calls `show_intro()`. The `KeybindManager` intro
-   requires `WAR_MACROBOOK.lua` and `WAR_LOCKSTYLE.lua`; both return nothing, but the
-   requires define `select_default_macro_book` / `select_default_lockstyle` as a
-   side effect. A failed `require` goes to `show_keybind_error`, which prints
-   `[WAR] Keybinds failed to load: <error>`.
+   then `bind_all()`, which calls `show_intro()`. A failed `require` goes to
+   `EntryKit.keybind_error`, which prints `[WAR] Keybinds failed to load: <error>`.
 4. `KeybindUI.smart_init("WAR", UIConfig.init_delay)` (anchor `state.HybridMode`).
-5. `JobChangeManager.initialize()`; if both globals from step 3 exist, the macro book
-   is set now and the lockstyle is scheduled after `initial_load_delay` (8 s).
+5. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`): 0.2 s later, once the facade has defined
+   `select_default_macro_book` / `select_default_lockstyle`, the macro book is set
+   and the lockstyle scheduled after 8 s.
 6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
 The facade (`war_functions.lua`) includes `message_buffs.lua`, then `WAR_PRECAST`,
@@ -158,8 +158,9 @@ therefore run twice per sandbox (see
 [factories](../systems/factories-and-helpers.md#job-wrappers)).
 
 `file_unload` releases the ammo lock **first** (GearSwap runs `file_unload` in a
-single `pcall`), then `JobChangeManager.cancel_all()`, then
-`WARKeybinds.unbind_all()`.
+single `pcall`), then `EntryKit.unload(WARKeybinds)`: `JobChangeManager.cancel_all()`,
+then `WARKeybinds.unbind_all()`. `job_update` is `EntryKit.update_hud('WAR')` and
+`job_sub_job_change` is `EntryKit.sub_job_change('WAR', newSubjob)`.
 
 ### Precast
 
@@ -505,7 +506,7 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
   `job_post_midcast`, `job_aftercast`, `customize_idle_set`, `customize_melee_set`,
   `job_status_change`, `job_buff_change`, `job_self_command`, `job_state_change`),
   `buff_war`, `buff_sam_sub`, `build_tp`, `toggle_retaliation_debug`,
-  `get_retaliation_status`, `sync_weapon_with_hand`, `show_keybind_error`,
+  `get_retaliation_status`, `sync_weapon_with_hand`,
   `select_default_lockstyle`, `cancel_war_lockstyle_operations`,
   `select_default_macro_book`, `WARKeybinds`, `WARWSConfig`, `WARTPConfig`,
   `LockstyleConfig`, `UIConfig`, `RECAST_CONFIG`, `RegionConfig`,
@@ -515,8 +516,9 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 - `windower.*`: WAR code writes nothing there.
 - Events: none registered directly; the Retaliation callback lives in AutoMove's
   callback list (dies with the sandbox).
-- Coroutines: the 0.6 s AutoMove registration, the 8 s initial lockstyle, the
-  AutoJump chain. None is cancelled by a reload; the AutoJump chain can replay a
+- Coroutines: the 0.6 s AutoMove registration, the 0.2 s macro book step (dropped
+  by a newer load, LoadGate), the 8 s initial lockstyle, the AutoJump chain. The
+  others are not cancelled by a reload; the AutoJump chain can replay a
   weaponskill into the next sandbox.
 - Buff chains wait in the shared `ActionQueue` (`windower._action_queue`): a chain
   under way goes on across a reload or job change.

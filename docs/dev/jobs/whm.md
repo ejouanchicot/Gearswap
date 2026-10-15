@@ -37,7 +37,7 @@ the sets file (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/whm.lua` | 279 | Entry (the same for every character; `<Char>_WHM.lua` and its template `_master/entry/Tetsouo_WHM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record) |
+| `shared/entry/whm.lua` | 248 | Entry (the same for every character; `<Char>_WHM.lua` and its template `_master/entry/Tetsouo_WHM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record, then `EntryKit.unload`); shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/whm/functions/whm_functions.lua` | 51 | Facade: includes the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/whm/functions/WHM_PRECAST.lua` | 174 | `job_precast`: guard, `retier_cure`, cooldown, `paralyna_on_self`, WS; `job_post_precast` (TP gear) |
 | `shared/jobs/whm/functions/WHM_MIDCAST.lua` | 261 | `job_midcast` (Cure sets by mode), `job_post_midcast` (overlays + `MidcastManager`), `job_get_spell_map` |
@@ -87,12 +87,13 @@ facade and the lockstyle cancel registration.
    `state.CureAutoTier:set('Off')` when the character's `WHM_CURE_CONFIG.lua` has
    `auto_tier_enabled = false` (`CharPaths.load`).
 2. `pcall(require, '<Character>/whm/keys/WHM_KEYBINDS')` into the global
-   `WHMKeybinds`, then `bind_all()` (ends with `show_intro()`, whose requires of
-   `WHM_MACROBOOK.lua` and `WHM_LOCKSTYLE.lua` define
-   `select_default_macro_book` and `select_default_lockstyle`). A failed
-   require prints `[WHM] Keybinds failed to load: <error>`.
+   `WHMKeybinds`, then `bind_all()` (ends with `show_intro()`). A failed
+   require prints `[WHM] Keybinds failed to load: <error>`
+   (`EntryKit.keybind_error`).
 3. `KeybindUI.smart_init("WHM", init_delay)`.
-4. `JobChangeManager.initialize()`; macro book at once, lockstyle after 8 s.
+4. `JobChangeManager.initialize()`; `EntryKit.macro_and_lockstyle`: macro book
+   0.2 s later, once the facade has defined `select_default_macro_book`,
+   lockstyle after 8 s.
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
 `WHM_PRECAST` reads `_G.WHMTPConfig` on its first action (`ensure_modules_loaded`),

@@ -280,10 +280,6 @@ end
 ---   API
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- What to use now from a list, in order, and the state of the rest.
---- @param list table Names or entries
---- @return table to_cast Resolved entries ({name, is_ability, wait...})
---- @return table status List of {name, status, time?, value?, extra?}
 --- `$State` in a name: the value of that Mote state ('$GainSpell' ->
 --- 'Gain-STR', '$EnSpell II' -> 'Enfire II'). nil when the job has no such
 --- state or it is Off / None, so the entry is left out.
@@ -349,6 +345,10 @@ local function collect_group(group, ctx, to_cast, status)
     if items[1] then collect_item(items[1], ctx, to_cast, status) end
 end
 
+--- What to use now from a list, in order, and the state of the rest.
+--- @param list table Names or entries
+--- @return table to_cast Resolved entries ({name, is_ability, wait...})
+--- @return table status List of {name, status, time?, value?, extra?}
 function SelfBuffManager.collect(list)
     local to_cast, status = {}, {}
     local res = resources()

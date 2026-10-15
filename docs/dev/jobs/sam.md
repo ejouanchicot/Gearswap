@@ -40,7 +40,7 @@ function; line numbers are deliberately not used.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/sam.lua` | 221 | Entry point (the same for every character; `<Char>_SAM.lua` and its template `_master/entry/Tetsouo_SAM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/sam.lua` | 191 | Entry point (the same for every character; `<Char>_SAM.lua` and its template `_master/entry/Tetsouo_SAM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/sam/functions/sam_functions.lua` | 49 | Facade: includes the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/sam/functions/SAM_PRECAST.lua` | 217 | `job_precast` (guard, cooldown, `remember_stance`, auto-Seigan, WS handler, auto-Third Eye) / `job_post_precast` (TP gear, Sekkanoki, Meikyo Shisui by `buffactive`) |
 | `shared/jobs/sam/functions/SAM_MIDCAST.lua` | 75 | `job_midcast` (empty) / `job_post_midcast`: watchdog, Healing and Enhancing via `MidcastManager` |
@@ -103,13 +103,15 @@ sequenceDiagram
 
 `user_setup()`: `SAMStates.configure()`, then `SAM_KEYBINDS` stored in the
 global `SAMKeybinds` and `bind_all()` (4 binds, the optional states, the
-character's common keys, then `show_intro()`, which `require`s
-`SAM_MACROBOOK` and `SAM_LOCKSTYLE` and so defines the `select_default_*`
-globals as a side effect), `KeybindUI.smart_init('SAM', UIConfig.init_delay)`,
-`JobChangeManager.initialize()` + macro book now + lockstyle after 8 s, and the
-`dualbox_manager` require. A keybind file that fails to load prints
-`[SAM] Keybinds failed to load: <error>`. `job_sub_job_change` only hands over
-to `JobChangeManager.on_job_change`.
+character's common keys, then `show_intro()`),
+`KeybindUI.smart_init('SAM', UIConfig.init_delay)`,
+`JobChangeManager.initialize()` + `EntryKit.macro_and_lockstyle` (macro book
+0.2 s later, once the facade has defined the `select_default_*` globals,
+lockstyle 8 s after that), and the `dualbox_manager` require. A keybind file
+that fails to load prints `[SAM] Keybinds failed to load: <error>`
+(`EntryKit.keybind_error`). `job_sub_job_change` only hands over to
+`JobChangeManager.on_job_change` (`EntryKit.sub_job_change`; the shared hooks
+are in `shared/utils/core/entry_kit.lua`).
 
 The facade includes `SAM_LOCKSTYLE`, `SAM_MACROBOOK`, then `SAM_PRECAST` ..
 `SAM_MOVEMENT`, requires `dualbox_manager` and prints a debug line. It does

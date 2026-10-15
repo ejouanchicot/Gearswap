@@ -4,7 +4,7 @@
 --- Loader for the Blue Mage job: Mote-Include, the shared systems, the BLU
 --- hook modules and this character's configs and sets.
 ---
---- @file <Character>_BLU.lua
+--- @file shared/entry/blu.lua
 --- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26

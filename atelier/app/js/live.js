@@ -1,5 +1,5 @@
 // GearSwap Atelier · live.js: saving into the GearSwap folder, tried pieces saved, the live link, AtelierLink
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- saving: the page writes into the GearSwap data folder the player picks once ---- */
 const luaStr = v => "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n') + "'";
 function overridesLua(map){

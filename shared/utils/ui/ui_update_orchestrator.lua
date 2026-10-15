@@ -127,6 +127,9 @@ function Orchestrator.attach(KeybindUI)
         local check_interval = 0.2
 
         local function try_reinit()
+            if windower._ui_live_state ~= ui_state then
+                return -- Polling started by a previous file load
+            end
             -- Check if cancelled
             if ui_state.update_cancel_id ~= my_cancel_id then
                 ui_state.update_in_progress = false

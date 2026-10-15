@@ -42,7 +42,7 @@ function; line numbers are given only where no function name fits.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/cor.lua` | 389 | Entry point (the same for every character; `<Char>_COR.lua` and its template `_master/entry/Tetsouo_COR.lua` are one `include` of it): `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and `UIConfig` at file level, `init_party_tracking`, `get_sets`, `job_sub_job_change`, `user_setup` (two macro/lockstyle blocks), `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/cor.lua` | 330 | Entry point (the same for every character; `<Char>_COR.lua` and its template `_master/entry/Tetsouo_COR.lua` are one `include` of it): `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and `UIConfig` at file level, `init_party_tracking`, `get_sets`, `job_sub_job_change`, `user_setup` (ends with `EntryKit.macro_and_lockstyle`), `job_update`, `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/cor/functions/cor_functions.lua` | 132 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` (its header still says "Logic modules (4)") |
 | `shared/jobs/cor/functions/COR_PRECAST.lua` | 225 | `job_precast` (guard, `DoubleUp.redirect`, cooldown, `apply_cor_precast`, WS) / `job_post_precast` (TP gear, `apply_luzaf`, `hold_fold_gear`, `RollDebug.note_precast`, `RollHold.start`); starts `flurry_tracker` at load |
 | `shared/jobs/cor/functions/COR_MIDCAST.lua` | 103 | `job_midcast` (empty) / `job_post_midcast` (RA with `RangedMode` + Triple Shot, Enhancing, `PASSTHROUGH_SKILLS`) |
@@ -109,7 +109,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>E: clear _G.cor_party_event_id, RollTracker.cleanup()
     E->>M: include Mote-Include
-    M->>E: user_setup() (states, keybinds + show_intro, UI, JCM, macro/lockstyle x2, dualbox)
+    M->>E: user_setup() (states, keybinds + show_intro, UI, JCM, dualbox, EntryKit.macro_and_lockstyle)
     M->>E: init_gear_sets() -> include sets file
     E->>E: INIT_SYSTEMS, data_loader, message hooks
     E->>E: _G.LockstyleConfig, RECAST_CONFIG, CORTPConfig
@@ -130,13 +130,15 @@ sequenceDiagram
   on each file load, and the old sandbox's `file_unload` already removed
   both handlers. Harmless, kept.
 - `user_setup()`: `CORStates.configure()`; `COR_KEYBINDS` (which returns
-  `KeybindManager.create('COR', ...)`) -> global `CORKeybinds`, `bind_all()`,
-  whose `show_intro` `require`s `COR_MACROBOOK.lua` and `COR_LOCKSTYLE.lua` and
-  thereby defines `select_default_macro_book` / `select_default_lockstyle`;
-  `KeybindUI.smart_init("COR", ...)`; `JobChangeManager.initialize()` plus a
-  first macrobook + 8 s lockstyle; `dualbox_manager` require; a **second**
-  macrobook + 8 s lockstyle block, each call guarded. Both blocks run on a
-  fresh load.
+  `KeybindManager.create('COR', ...)`) -> global `CORKeybinds`, `bind_all()`
+  (`EntryKit.keybind_error` if the file fails to load);
+  `KeybindUI.smart_init("COR", ...)`; `JobChangeManager.initialize()`;
+  `dualbox_manager` require; then, last and outside the JobChangeManager
+  block, `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+  (`shared/utils/core/entry_kit.lua`): 0.2 s later, once the facade has
+  defined `select_default_macro_book` / `select_default_lockstyle`, the macro
+  book, then the lockstyle after 8 s. Until 2026-10-15 COR ran a second,
+  guarded macrobook + lockstyle block of its own.
 - `_G.RegionConfig` is set at file level, before `config_loader` is required,
   so `message_colors` reads the right region orange (see
   [messages](../systems/messages.md)).
@@ -466,8 +468,9 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
   `PartyTracker.cleanup` with `ActionListener.off('cor_roll')`) and the raw
   `incoming chunk` handler (unregistered by `PartyTracker.cleanup`); GearSwap
   drops the raw listeners (ActionListener's and this one) on every file load.
-- Coroutines: the two 8 s lockstyles and the 1 s pouch check after `/ra`; none
-  is cancelled by a reload.
+- Coroutines: the 0.2 s macro book step (dropped by a newer load, LoadGate),
+  the 8 s lockstyle and the 1 s pouch check after `/ra`; the last two are not
+  cancelled by a reload.
 - Outside GearSwap: `rolltracker` unloaded while COR is loaded, loaded again by
   `file_unload` (also on every subjob change), unless `_common/tools/ADDONS_CONFIG.lua` sets it `false`.
 - Subjob change: `job_sub_job_change` hands over to `JobChangeManager`, which

@@ -1,5 +1,5 @@
 // GearSwap Atelier · weapons.js: weapon modes, hands, grips, Kraken, forced weapons, the weapon menus
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
 const WEAPON_SLOTS = new Set(['main', 'sub', 'range', 'ammo']);
 const WEAPON_CACHE = new WeakMap();

@@ -101,10 +101,12 @@ flowchart TD
 - **Entry file** (`data/<Char>/<Char>_<JOB>.lua`, template
   `_master/entry/Tetsouo_<JOB>.lua`): since 2026-09-30 one statement,
   `include('../shared/entry/<job>.lua')`. The shared entry
-  (`shared/entry/<job>.lua`, 189-415 lines, the same for every character) is
+  (`shared/entry/<job>.lua`, 168-372 lines, the same for every character) is
   the loader: it defines `get_sets`, `user_setup`, `init_gear_sets`,
   `job_sub_job_change`, `job_update`, `file_unload`, and finds the
-  character's files through `shared/utils/core/char_paths.lua`. See
+  character's files through `shared/utils/core/char_paths.lua`. What every
+  entry does the same way in those hooks is in
+  `shared/utils/core/entry_kit.lua`. See
   [core-lifecycle.md](systems/core-lifecycle.md).
 - **Facade** (`shared/jobs/<job>/functions/<job>_functions.lua`): `include`s
   the 11 hook modules (PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,
@@ -147,7 +149,8 @@ includes `shared/entry/war.lua`:
 3. **`user_setup()`** (called from step 2.2, so before INIT_SYSTEMS and the
    facade): `<JOB>States.configure()`, keybinds `bind_all()`,
    `KeybindUI.smart_init()`, `JobChangeManager.initialize()` (a seed, not an
-   assignment), initial macrobook + lockstyle (8 s), `pcall(require
+   assignment), `EntryKit.macro_and_lockstyle` (macro book 0.2 s later, once
+   the facade exists; lockstyle after 8 s), `pcall(require
    dualbox_manager)`.
 
 `INIT_SYSTEMS.lua` timeline:

@@ -41,7 +41,7 @@ numbers are avoided because they drift.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/pld.lua` | 309 | Entry point (the same for every character; `<Char>_PLD.lua` and its template `_master/entry/Tetsouo_PLD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/entry/pld.lua` | 264 | Entry point (the same for every character; `<Char>_PLD.lua` and its template `_master/entry/Tetsouo_PLD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/pld/functions/pld_functions.lua` | 121 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/pld/functions/PLD_PRECAST.lua` | 209 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
 | `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 203 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
@@ -134,21 +134,24 @@ sequenceDiagram
    the global `PLDKeybinds`, then `bind_all()`: `KeybindManager` clears keys no
    longer wanted, binds the ones whose `subjob` / `exclude_subjob` / `visible`
    rules apply, then `show_intro()`. A failed require prints
-   `'PLD keybinds failed to load: ' .. <error>` through `MessageFormatter.show_error`.
+   `[PLD] Keybinds failed to load: <error>` (`EntryKit.keybind_error`, `MessageFormatter.show_error`).
 3. `KeybindUI.smart_init("PLD", _G.UIConfig.init_delay or 5)`. The UI readiness
    anchor for PLD is `state.HybridMode` (`ui_lifecycle.lua` `are_states_ready`).
-4. `JobChangeManager.initialize()`; if `select_default_macro_book` and
-   `select_default_lockstyle` exist, the macro book is set at once and the lockstyle
-   is scheduled after `LockstyleConfig.initial_load_delay` (8 s). They exist only
-   because `KeybindManager`'s `show_intro()` requires `PLD_MACROBOOK.lua` and
-   `PLD_LOCKSTYLE.lua`, which define them as a side effect and return nothing; see
+4. `JobChangeManager.initialize()`, then
+   `EntryKit.macro_and_lockstyle(LockstyleConfig.initial_load_delay)`
+   (`shared/utils/core/entry_kit.lua`): 0.2 s later (`LoadGate.defer`), once the
+   facade has defined `select_default_macro_book` / `select_default_lockstyle`,
+   the macro book is set and the lockstyle scheduled after 8 s; see
    [factories](../systems/factories-and-helpers.md#job-wrappers).
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
-`job_sub_job_change` only calls `JobChangeManager.on_job_change`. `file_unload`
-releases the ammo lock **first** (GearSwap runs the whole of `file_unload` in one
-`pcall`, so an error further down would leak the lock), then
-`JobChangeManager.cancel_all()`, then `PLDKeybinds.unbind_all()`.
+`job_sub_job_change` only calls `JobChangeManager.on_job_change`
+(`EntryKit.sub_job_change`). `file_unload` releases the ammo lock **first**
+(GearSwap runs the whole of `file_unload` in one `pcall`, so an error further
+down would leak the lock), then `EntryKit.unload(PLDKeybinds)`:
+`JobChangeManager.cancel_all()`, then `PLDKeybinds.unbind_all()`. `job_update`
+is `EntryKit.update_hud('PLD')`; its `UPDATE_DEBUG` step 2 line, once PLD's
+own, now prints for every job.
 
 `pld_functions.lua` includes `message_buffs.lua`, `PLD_PRECAST`, `PLD_MIDCAST`,
 `PLD_AFTERCAST`, `PLD_IDLE`, `PLD_ENGAGED`, `PLD_STATUS`, `PLD_BUFFS`,
@@ -639,7 +642,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
   `cancel_pld_lockstyle_operations`, `select_default_macro_book` and the factory
   exports, `temp_tp_bonus_gear` (WS only).
 - `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`, `UPDATE_DEBUG`,
-  `_update_sent_time`, `is_on_cooldown`, `is_recast_ready`, `UIConfig`.
+  `is_on_cooldown`, `is_recast_ready`, `UIConfig`.
 - `windower.*`: PLD code writes nothing there and registers no events
   (`KeybindManager` records the keys it bound in `windower._keybind_manager_bound`;
   `AbilityHelper` its replay marker in `windower._ability_replay`).
@@ -647,7 +650,8 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
   changes; released by `file_unload`, `user_setup`, a stance change and `//gs c wo`.
 - Keybinds: bound in `user_setup`, kept at `file_unload`; `bind_all` unbinds only
   keys that are no longer wanted and sends only keys that changed.
-- Coroutines: the 8 s lockstyle from `user_setup` (not cancelled by a reload), the
+- Coroutines: the 0.2 s macro book step (LoadGate) and the 8 s lockstyle from
+  `user_setup` (the lockstyle is not cancelled by a reload), the
   AmpullaLock poll (sequence-guarded, module-local), the AbilityHelper and Scholar
   chain polls. `send_command` waits sit in the Windower queue and survive a reload.
 - States reset on every load. Every subjob change ends in a `gs reload` (2.0 s,
@@ -684,7 +688,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 ## Invariants & gotchas
 
 - `user_setup()` runs before the PLD hook files exist; the initial macrobook and
-  lockstyle rely on `KeybindManager`'s `show_intro()` requiring the two wrapper files.
+  lockstyle wait 0.2 s for them (`EntryKit.macro_and_lockstyle`).
 - `job_state_change` receives the state's description (`'Hybrid Mode'`, `'Main
   Weapon'`) from every caller (Mote's cycle / set, `CycleHandler`,
   `SortieCommands`), the key only for a state with no description;

@@ -30,10 +30,11 @@ local function get_MessageFormatter()
     return MessageFormatter
 end
 
--- State lives on _G, not in a module local: the entry point requires this
--- module before ModuleCache is installed, so the same sandbox can hold two
--- instances of it (entry's and the cached one). _G is what they share. It does
--- NOT survive a job file load: the sandbox, and its _G, are rebuilt each time.
+-- State lives on _G, not in a module local. The require cache is installed
+-- before this module is first required (config_loader.lua, at the top of every
+-- entry), so a load holds one instance; _G keeps the state readable by name
+-- (//gs c debugstate, //gs c debugjobchange). It does NOT survive a job file load: the sandbox,
+-- and its _G, are rebuilt each time.
 if not _G.JobChangeManagerSTATE then
     _G.JobChangeManagerSTATE = {
         -- Current job state
@@ -114,8 +115,8 @@ end
 --- subjob-only branch could never be true and every change waited the full
 --- main-job delay. Seeding only when unset keeps the value captured at load
 --- time, which is what the comparison actually needs.
---- @param config table Ignored. Only the frozen clones (Hysoka, Gabvanstronger)
----   still pass their job modules here.
+--- @param config table Ignored; no caller passes it any more (every entry,
+---   live ones included, is one include of shared/entry/<job>.lua).
 function JobChangeManager.initialize(config)
     if not player then
         return

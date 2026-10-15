@@ -2,7 +2,7 @@
 ---   Craft Manager - Equip craft / fishing sets across any job
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   File layout (per character):
----     <charname>/sets/<name>_sets.lua  -> one file per craft kind
+---     <charname>/_common/sets/<name>_sets.lua  -> one file per craft kind
 ---       e.g. Tetsouo/_common/sets/bonecraft_sets.lua
 ---            Tetsouo/_common/sets/fishing_sets.lua
 ---   Which file //gs c craft / fish read: craft_file / fish_file in
@@ -66,7 +66,7 @@ local _state = _G.__CraftManagerState
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Load a single craft set file by name (e.g. 'bonecraft', 'fishing').
---- Path: <charname>/sets/<name>_sets.lua
+--- Path: <charname>/_common/sets/<name>_sets.lua
 --- @param name string Craft kind
 --- @return table|nil The file's table
 local function load_craft_file(name)

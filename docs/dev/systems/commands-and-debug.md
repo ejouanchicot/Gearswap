@@ -403,7 +403,7 @@ Probes called by other systems, each a no-op unless recording:
 | `on_gs_reload` | `job_change_manager.lua` |
 | `on_reload_complete` | `INIT_SYSTEMS.lua` |
 | `on_prerender_check` | the BST entry (`shared/entry/bst.lua`, pet monitor) |
-| `on_job_update` | every shared entry's `job_update` (`shared/entry/<job>.lua`, 22 files) |
+| `on_job_update` | every shared entry's `job_update` (`shared/entry/<job>.lua`, 22 files), through `EntryKit.update_hud` (`shared/utils/core/entry_kit.lua`) |
 
 ### SystemChecker, FullTest, GlobalProbe, TraceLog
 
@@ -591,7 +591,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 
 ### Adding a common command
 
-1. **Write the handler.** Put it in `COMMON_COMMANDS.lua`, or in `DEBUG_COMMANDS.lua` for a diagnostic (then alias it in the alias block of `COMMON_COMMANDS.lua`). A self-contained feature is better as its own module with a `handle(args)` returning `true`, routed in the "module commands" block the way `sortie`, `stealth`, `th`, `dw`, `tb` and `trace` are. `COMMON_COMMANDS.lua` is already past the 800-line hard limit.
+1. **Write the handler.** Put it in `COMMON_COMMANDS.lua`, or in `DEBUG_COMMANDS.lua` for a diagnostic (then alias it in the alias block of `COMMON_COMMANDS.lua`). A self-contained feature is better as its own module with a `handle(args)` returning `true`, routed in the "module commands" block the way `sortie`, `stealth`, `th`, `dw`, `tb` and `trace` are. `COMMON_COMMANDS.lua` is 782 lines (2026-10-15), close to the 800-line hard limit.
 2. **Register the name twice.** Add the branch in `handle_command` **and** the same name(s) in the `or` chain of `is_common_command`. Missing the second step makes the command unreachable from every job file. The two lists are not generated from one table.
 3. **Return a boolean.** Return `true` when handled; `nil` counts as false, which leaves `eventArgs.handled` false (harmless for a common name, since `runs_locally` stops the alt fallback, but misleading).
 4. **Lower-case what you compare.** Lower-case every argument you compare. On a word you do not recognise, print usage instead of running a mutating default.
@@ -640,7 +640,6 @@ Open:
 - `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
 - A `trace.on` marker left on a character keeps tracing across restarts; since 2026-09-29 the log is capped by moving it to `trace.old.log` past 10 MB, so at most about 20 MB stay on disk.
 - Fixed 2026-09-28: `RollShare.receive` returns true, so `rollshow` sets `eventArgs.handled` (before, it returned nothing; no visible effect, since `runs_locally` already stopped the alt fallback).
-- `COMMON_COMMANDS.lua` is 835 lines, past the 800-line hard limit.
 - Fixed: `COMMANDS_HELP` listed `memcheck | mem [gc]` although `handle_memcheck` ignores its argument; it now lists `memcheck | mem`. The Combat Mode help note named BLM and WHM for the ammo lock and left out GEO; it now names BLM, GEO and WHM (`combat_mode_commands.lua`).
 - `DebugLogger.logf_if('DATA_DEBUG', ...)` in `data_loader.lua` reads a flag that no command sets.
 

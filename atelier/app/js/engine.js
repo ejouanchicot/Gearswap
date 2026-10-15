@@ -1,5 +1,5 @@
 // GearSwap Atelier · engine.js: the damage engine and its workers, a set's context, merits, accuracy, the character's stats
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 /* ---- ranks and Ambuscade capes (atelier/engine/catalog, kept on this PC only: augments_ranked.js
    from LandSandBoat's augment bundles, capes.js), loaded when present ---- */
 // The damage engine (atelier/engine/: its formulas, its gear catalogue, ranks and capes,

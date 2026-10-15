@@ -42,7 +42,9 @@ local function store(packet, jobs)
     local main = jobs[main_id] and jobs[main_id].ens
     if not main then return end
     local sub_id = packet['Sub job']
-    cache()[id] = {id = id, name = packet['Name'], main_job = main,
+    -- 0xDF has no Name field: the name a 0xDD gave is kept (job_of looks members out of range up by name)
+    local known = cache()[id]
+    cache()[id] = {id = id, name = packet['Name'] or (known and known.name), main_job = main,
         sub_job = sub_id and jobs[sub_id] and jobs[sub_id].ens or nil, main_job_level = level}
 end
 

@@ -5,6 +5,13 @@
 ---   This module loads the UI configuration, applies fallback defaults if needed,
 ---   and sets up global variables required by the UI system.
 ---
+---   It is also the FIRST shared file of every load: every shared/entry/<job>.lua
+---   requires it at file level, and requiring it installs the require cache
+---   (module_cache.lua), starts the load's number (LoadGate.begin, which every
+---   deferred task is checked against), the trace and ghost hooks and the
+---   Atelier export. Moving or dropping that require in an entry breaks the
+---   load numbering without any error.
+---
 ---   @file    shared/utils/config/config_loader.lua
 ---   @author  ejouanchicot
 ---   @version 2.0 - Eliminated duplication (use UISettingsManager)
@@ -67,6 +74,8 @@ function ConfigLoader.load_ui_config(char_name, job_name)
 
     -- Apply fallback defaults if load failed
     if not success or not UIConfig then
+        -- the real reason (a typo shows its line), not only "failed": the HUD falls back off screen on a small window
+        local why = not success and tostring(UIConfig) or 'it returned nothing'
         UIConfig = {
             init_delay              = 5.0,
             default_position        = { x = 1600, y = 300 },
@@ -76,7 +85,7 @@ function ConfigLoader.load_ui_config(char_name, job_name)
             show_column_headers     = true,
             show_footer             = true
         }
-        MessageCore.show_config_error(job_name, 'UIConfig load failed, using defaults')
+        MessageCore.show_config_error(job_name, 'UI_CONFIG.lua not read (' .. why .. '), using defaults')
     end
 
     _G.UIConfig = UIConfig

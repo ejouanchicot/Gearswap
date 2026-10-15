@@ -1,5 +1,5 @@
 // GearSwap Atelier · optimizer.js: the searches: launch, the cost of the wrong profile, the search window, the result
-// (cut from atelier.html, loaded by it in order: see the list there)
+// (loaded by atelier/index.html, in the order of the list there)
 // The two searches' buttons: the best set possible (from nothing, the set you start from changing nothing; slower),
 // and improving the set shown (from it, quicker)
 const optGoButtons = act => `<button class="btn optgo" data-${act}="best" title="${esc(t('optBestTip'))}">${t('optBest')}</button>` +

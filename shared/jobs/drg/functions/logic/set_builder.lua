@@ -70,11 +70,7 @@ end
 --- @param base_set table What Mote built
 --- @return table
 function SetBuilder.master_idle(base_set)
-    local pet_node = sets.idle and sets.idle.Pet
-    if pet_node and (base_set == pet_node or base_set == pet_node.Engaged) then
-        return sets.idle
-    end
-    return base_set
+    return BaseSetBuilder.idle_without_pet(base_set)
 end
 
 --- The wyvern layer (see header, step 3).
