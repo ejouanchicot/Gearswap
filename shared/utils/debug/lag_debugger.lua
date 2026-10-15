@@ -115,7 +115,10 @@ local function install_stall_probe()
     S.last_frame = os.clock()
     S.frames = S.frames or { n = 0, total = 0, max = 0, buckets = {} }
 
-    S.stall_event_id = windower.register_event('prerender', function()
+    -- raw_register_event: register_event from a job file runs refresh_globals and
+    -- equip_sets before every call (GearSwap's user_equip_sets), every frame here,
+    -- which would add to the very frame times this probe measures
+    S.stall_event_id = windower.raw_register_event('prerender', function()
         if not S.enabled then return end
         local now = os.clock()
         local gap_ms = (now - (S.last_frame or now)) * 1000
@@ -155,7 +158,7 @@ local function install_action_probe()
         [9] = 'item_start', [12] = 'ranged_start', [13] = 'pet_ability',
     }
 
-    S.action_event_id = windower.register_event('action', function(act)
+    S.action_event_id = windower.raw_register_event('action', function(act)
         if not S.enabled or not act then return end
         -- Filter on the actor before touching anything else: this fires for
         -- every action in the zone, and a party in a busy camp is a lot.

@@ -121,16 +121,8 @@ function get_sets()
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
-    -- ============================================
-    -- CLEANUP OLD COR EVENTS (CRITICAL FIX)
-    -- ============================================
-    -- MUST cleanup old event handlers BEFORE loading new ones
-    -- This prevents duplicate event registration when switching jobs without reload
-    -- (e.g., WAR → COR → WAR → COR causes double messages without this)
-    if _G.cor_party_event_id then
-        windower.unregister_event(_G.cor_party_event_id)
-        _G.cor_party_event_id = nil
-    end
+    -- Old events need no cleanup here: GearSwap unregisters every event of the
+    -- previous job file at load (refresh.lua), and _G is a new environment.
     -- Clear pending roll state
     _G.cor_pending_roll_value = nil
 
@@ -278,14 +270,9 @@ function user_setup()
     -- ==========================================================================
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
-        -- Initialize with current job state
+        -- Initialize with current job state (the macro book and lockstyle are
+        -- chosen once, below)
         JobChangeManager.initialize()
-
-        -- Trigger initial macrobook/lockstyle with delay
-        if player and select_default_macro_book and select_default_lockstyle then
-            select_default_macro_book()
-            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-        end
     end
 
     -- ==========================================================================

@@ -109,6 +109,7 @@ else
     UNIVERSAL_BLOCKING_DEBUFFS = {
         ['stun'] = { priority = 1, message = "Stunned" },           -- Blocks EVERYTHING
         ['sleep'] = { priority = 2, message = "Asleep" },           -- Blocks EVERYTHING
+        ['lullaby'] = { priority = 2, message = "Asleep" },         -- buff 193: a song's sleep, its own name in res/buffs.lua
         ['petrification'] = { priority = 3, message = "Petrified" }, -- Blocks EVERYTHING
         ['terror'] = { priority = 4, message = "Terrified" }         -- Blocks EVERYTHING
     }

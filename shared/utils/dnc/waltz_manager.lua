@@ -28,20 +28,20 @@ local WaltzManager = {}
 -- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
 -- (loaded by entry point before job functions). Do not redeclare locally.
 
---- Waltz configuration (from res/job_abilities.lua)
+--- Waltz configuration: ids and recasts from res/job_abilities.lua, levels from BG Wiki Dancer (re-read 2026-10-15)
 local WALTZ_CONFIG = {
     -- Curing Waltz (Single Target) - Priority order V > IV > III > II > I
     curing = {
         { name = "Curing Waltz V",   tp = 800, recast_id = 189, level = 87 }, -- ID 311
         { name = "Curing Waltz IV",  tp = 650, recast_id = 188, level = 70 }, -- ID 193
         { name = "Curing Waltz III", tp = 500, recast_id = 187, level = 45 }, -- ID 192
-        { name = "Curing Waltz II",  tp = 350, recast_id = 186, level = 35 }, -- ID 191
+        { name = "Curing Waltz II",  tp = 350, recast_id = 186, level = 30 }, -- ID 191
         { name = "Curing Waltz",     tp = 200, recast_id = 217, level = 15 } -- ID 190
     },
     -- Divine Waltz (AOE) - Priority order II > I
     divine = {
         { name = "Divine Waltz II", tp = 800, recast_id = 190, level = 78 }, -- ID 262
-        { name = "Divine Waltz",    tp = 400, recast_id = 225, level = 40 } -- ID 195
+        { name = "Divine Waltz",    tp = 400, recast_id = 225, level = 25 } -- ID 195
     }
 }
 

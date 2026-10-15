@@ -164,20 +164,31 @@ local function run(key)
     send_command(ready)
 end
 
+--- Free a key a temporary bind held. A key the job binds too (`tb force`) gets
+--- the job's line back: KeybindManager still records it as bound to that line
+--- (windower._keybind_manager_bound, which outlives the job file), so no later
+--- load would send it again and the job's key would stay dead until a
+--- //lua r gearswap.
+--- @param key string
+local function release(key)
+    local job_line = (windower._keybind_manager_bound or {})[key]
+    send_command(job_line and ('bind ' .. key .. ' ' .. job_line) or ('unbind ' .. key))
+end
+
 local function remove(text)
     local key = Parse.key(text)
     local binds = load_binds()
     if not key or not binds[key] then return msg() and msg().show_unknown(text or '?') end
     binds[key] = nil
     save_binds(binds)
-    send_command('unbind ' .. key)
+    release(key)
     if msg() then msg().show_removed(Parse.show_key(key)) end
 end
 
 local function clear()
     local binds, n = load_binds(), 0
     for key in pairs(binds) do
-        send_command('unbind ' .. key)
+        release(key)
         n = n + 1
     end
     save_binds({})

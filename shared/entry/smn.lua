@@ -148,15 +148,17 @@ function user_setup()
     end
 
     -- Auto-summon Carbuncle when no pet is out (runs on load and on every
-    -- subjob change, since both go through user_setup)
-    coroutine.schedule(function()
+    -- subjob change, since both go through user_setup). Through LoadGate: on a
+    -- subjob change Mote runs user_setup in the old environment and again after
+    -- the reload, and only the reload's summon must go out
+    require('shared/utils/core/load_gate').defer(LockstyleConfig.initial_load_delay + 2.0, function()
         if player and player.main_job == 'SMN' and player.status ~= 'Dead' then
             local pet = windower.ffxi.get_mob_by_target('pet')
             if not pet or not pet.id or pet.id == 0 then
                 send_command('input /ma "Carbuncle" <me>')
             end
         end
-    end, LockstyleConfig.initial_load_delay + 2.0)
+    end, 'smn summon')
 
     -- DUALBOX IPC: the require() triggers dualbox_manager auto-init, which
     -- schedules the IPC call once per gs reload. Do NOT call it explicitly here.

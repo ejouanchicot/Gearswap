@@ -345,7 +345,7 @@ local function summary()
     local s, fields = session(), {}
     fields[1] = {'Tracker', enabled()}
     if Hits.on() then fields[#fields + 1] = {'Every swing', 'written to logs/fights/<date>_hits.log'} end
-    fields[2] = {'Session', string.format('%d kill(s), %d fight(s) in %s', s.total, s.fights, mmss(os.time() - s.started))}
+    fields[#fields + 1] = {'Session', string.format('%d kill(s), %d fight(s) in %s', s.total, s.fights, mmss(os.time() - s.started))}
     local names = {}
     for name in pairs(s.kills) do names[#names + 1] = name end
     table.sort(names, function(a, b) return s.kills[a] > s.kills[b] end)

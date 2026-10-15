@@ -26,50 +26,25 @@ local Lifecycle = {}
 
 local create_ui_settings = UISettingsResolver.create_ui_settings
 
+-- One state per main job that its <JOB>_STATES file creates: once it exists,
+-- Mote-Include has set the job's states up and the HUD can read them. A job
+-- missing here is ready at once; an anchor the job never creates holds the HUD
+-- until UI_CONFIG.init_delay (DRG waited 5 s on WeaponSet until 2026-10-15).
+local READY_ANCHOR = {
+    BRD = 'SongMode', BLM = 'MainLightSpell', BST = 'Ecosystem', THF = 'TreasureMode',
+    WAR = 'HybridMode', PLD = 'HybridMode', DNC = 'MainStep', RDM = 'MainLightSpell',
+    DRG = 'MainWeapon', RUN = 'RuneMode', GEO = 'MainIndi', BLU = 'MainWeapon',
+    SCH = 'Element', NIN = 'MagicBurstMode', RNG = 'RangeWeapon',
+}
+
 --- Check if critical states are ready for UI initialization.
---- Each main job exposes a different "anchor" state that signals Mote-Include
---- has fully initialized that job's state setup.
 --- @return boolean True if states are ready (or job has no anchor)
 local function are_states_ready()
     if not _G.state then
         return false
     end
-
-    local job = player and player.main_job or "UNK"
-
-    if job == "BRD" then
-        return _G.state.SongMode ~= nil
-    elseif job == "BLM" then
-        return _G.state.MainLightSpell ~= nil
-    elseif job == "BST" then
-        return _G.state.Ecosystem ~= nil
-    elseif job == "THF" then
-        return _G.state.TreasureMode ~= nil
-    elseif job == "WAR" then
-        return _G.state.HybridMode ~= nil
-    elseif job == "PLD" then
-        return _G.state.HybridMode ~= nil
-    elseif job == "DNC" then
-        return _G.state.MainStep ~= nil
-    elseif job == "RDM" then
-        return _G.state.MainLightSpell ~= nil
-    elseif job == "DRG" then
-        return _G.state.WeaponSet ~= nil
-    elseif job == "RUN" then
-        return _G.state.RuneMode ~= nil
-    elseif job == "GEO" then
-        return _G.state.MainIndi ~= nil
-    elseif job == "BLU" then
-        return _G.state.MainWeapon ~= nil
-    elseif job == "SCH" then
-        return _G.state.Element ~= nil
-    elseif job == "NIN" then
-        return _G.state.MagicBurstMode ~= nil
-    elseif job == "RNG" then
-        return _G.state.RangeWeapon ~= nil
-    end
-
-    return true
+    local anchor = READY_ANCHOR[player and player.main_job or 'UNK']
+    return anchor == nil or _G.state[anchor] ~= nil
 end
 
 --- Public exposure of are_states_ready for the orchestrator (force_reinit

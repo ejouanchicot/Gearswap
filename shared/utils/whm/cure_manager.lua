@@ -126,58 +126,58 @@ local function get_hp_missing_target_name()
     return missing, hpp
 end
 
+--- One party or alliance member's missing HP. get_party() gives each member's
+--- HP and HP percent but not the max HP, which is read from the two (as
+--- waltz_manager.lua does); 2000 max HP is assumed when the HP is not there.
+--- @param member table A member of windower.ffxi.get_party()
+--- @return number Missing HP
+--- @return number HP percent
+--- @return number Max HP used
+--- @return number Current HP used
+local function member_missing(member)
+    local hpp = member.hpp or 100
+    local max_hp = (member.hp and hpp > 0) and math.floor(member.hp * 100 / hpp + 0.5) or 2000
+    local current_hp = member.hp or math.floor(max_hp * hpp / 100)
+    return math.max(0, max_hp - current_hp), hpp, max_hp, current_hp
+end
+
+-- get_party()'s keys: p0..p5 the party, a10..a15 and a20..a25 the alliance's two other parties
+local PARTY_KEYS, ALLIANCE_KEYS = {}, {}
+for i = 0, 5 do
+    PARTY_KEYS[#PARTY_KEYS + 1] = 'p' .. i
+    ALLIANCE_KEYS[#ALLIANCE_KEYS + 1] = 'a1' .. i
+    ALLIANCE_KEYS[#ALLIANCE_KEYS + 1] = 'a2' .. i
+end
+
 --- get_hp_missing, party/alliance branch.
 --- @param party table Result of windower.ffxi.get_party() - passed in, not read
----        from a global: the keys are p0..p5 / a1p1.., which GearSwap's own
+---        from a global: the keys are p0..p5 / a10..a25, which GearSwap's own
 ---        `party` global does not have.
 --- @param target table Target being cured
 --- @return number|nil Missing HP, nil when the target is not in the party
 --- @return number|nil HP percent
 local function get_hp_missing_party(party, target)
-    if WHMCureConfig.debug_messages and WHMMessageFormatter then
+    local debug = WHMCureConfig.debug_messages and WHMMessageFormatter
+    if debug then
         local party_names = {}
-        for i = 0, 5 do
-            if party['p' .. i] and party['p' .. i].name then
-                table.insert(party_names, party['p' .. i].name)
+        for _, key in ipairs(PARTY_KEYS) do
+            if party[key] and party[key].name then
+                table.insert(party_names, party[key].name)
             end
         end
         WHMMessageFormatter.show_debug_party_members(table.concat(party_names, ', '))
     end
 
-    for i = 0, 5 do
-        local member = party['p' .. i]
-        if member and member.name == target.name then
-            -- Windower party data is unreliable for HP values in precast,
-            -- so missing HP is derived from HPP
-            local hpp = member.hpp or 100
-            local max_hp = member.max_hp or 2000  -- Estimate if not available
-
-            local current_hp = math.floor(max_hp * hpp / 100)
-            local missing = math.max(0, max_hp - current_hp)
-
-            if WHMCureConfig.debug_messages and WHMMessageFormatter then
-                WHMMessageFormatter.show_debug_party_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
-            end
-
-            return missing, hpp
-        end
-    end
-
-    -- Alliance (a1p1-a3p6)
-    for i = 1, 3 do
-        for j = 1, 6 do
-            local member = party['a' .. i .. 'p' .. j]
+    for _, keys in ipairs({PARTY_KEYS, ALLIANCE_KEYS}) do
+        for _, key in ipairs(keys) do
+            local member = party[key]
             if member and member.name == target.name then
-                local hpp = member.hpp or 100
-                local max_hp = member.max_hp or 2000
-
-                local current_hp = math.floor(max_hp * hpp / 100)
-                local missing = math.max(0, max_hp - current_hp)
-
-                if WHMCureConfig.debug_messages and WHMMessageFormatter then
-                    WHMMessageFormatter.show_debug_alliance_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
+                local missing, hpp, max_hp, current_hp = member_missing(member)
+                if debug then
+                    local show = keys == PARTY_KEYS and WHMMessageFormatter.show_debug_party_member_hp
+                        or WHMMessageFormatter.show_debug_alliance_member_hp
+                    show(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
                 end
-
                 return missing, hpp
             end
         end
