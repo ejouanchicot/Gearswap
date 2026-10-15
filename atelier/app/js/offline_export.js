@@ -410,6 +410,7 @@ if (typeof document !== 'undefined') {
     refreshP_read: 'Lecture des fichiers…', refreshP_start: 'Démarrage de Lua…', refreshP_jobs: 'Job {n} / {m} · {w}', refreshP_subs: 'Sub {n} / {m} · {w}', refreshP_write: 'Écriture…',
     refreshLast: 'Dernière lecture : {e} export(s) refait(s), {u} job(s) inchangé(s).', refreshLastFail: 'Dernière lecture : {f} job(s) en échec ({l}).',
     refreshNoLua: 'Le fichier atelier/lua/lua51.js manque : la page ne peut pas lancer Lua.',
+    refreshNeedClick: 'Le jeu a demandé de tout refaire, mais le navigateur veut ton accord pour lire le dossier Windower : clique « ⟳ Relire ».',
     wfolderTitle: 'Où est Windower ?', wfolderWrong: 'Choisis le dossier de Windower lui-même : celui qui contient « addons » et « res ».',
     wfolderWhy: 'Pour relire tes jobs sans le jeu, la page a besoin de lire tes fichiers GearSwap et les ressources de Windower. Montre-lui une fois le dossier de Windower :'});
   Object.assign(T.en, {refreshBtn: 'Reload from files', refreshNone: 'No response', refreshFail: 'Reload failed',
@@ -418,16 +419,18 @@ if (typeof document !== 'undefined') {
     refreshP_read: 'Reading the files…', refreshP_start: 'Starting Lua…', refreshP_jobs: 'Job {n} / {m} · {w}', refreshP_subs: 'Sub {n} / {m} · {w}', refreshP_write: 'Writing…',
     refreshLast: 'Last reload: {e} export(s) redone, {u} job(s) unchanged.', refreshLastFail: 'Last reload: {f} job(s) failed ({l}).',
     refreshNoLua: 'The file atelier/lua/lua51.js is missing: the page cannot run Lua.',
+    refreshNeedClick: 'The game asked for every job to be rebuilt, but the browser wants your consent to read the Windower folder: click "⟳ Read".',
     wfolderTitle: 'Where is Windower?', wfolderWrong: 'Pick the Windower folder itself: the one that holds "addons" and "res".',
     wfolderWhy: 'To reload your jobs without the game, the page needs to read your GearSwap files and Windower\'s resources. Show it the Windower folder once:'});
 }
-// The Windower folder (the one holding addons and res), kept in the browser once picked, while it still lets the page in
-async function oxWindowerFolder(){
+// The Windower folder (the one holding addons and res), kept in the browser once picked, while it still lets the page in.
+// ask = false: no question to the player (a call without a click, which the browser would refuse anyway)
+async function oxWindowerFolder(ask = true){
   let dir = null;
   try { dir = await idb('readonly', st => st.get('windower')); } catch (e) {}
   if (!dir) return null;
   let perm = await dir.queryPermission({mode: 'readwrite'});
-  if (perm !== 'granted') perm = await dir.requestPermission({mode: 'readwrite'});
+  if (perm !== 'granted' && ask) perm = await dir.requestPermission({mode: 'readwrite'});
   return perm === 'granted' ? dir : null;
 }
 async function oxPickWindower(){
@@ -515,8 +518,9 @@ async function oxLua(env, src, tasks, onDone){
   return results;
 }
 // The button: in a browser that can open a folder (Chrome, Edge), everything happens in the page; else the
-// gsatelier:// link runs the Python script (live.js refreshByLink)
-function refreshFromFiles(all){
+// gsatelier:// link runs the Python script (live.js refreshByLink). fromGame: asked by //gs c atelier all, with no click
+// of the player, so the browser lets the page neither ask for the folder nor open the folder picker: the button says so
+function refreshFromFiles(all, fromGame){
   if (S._refresh === 'busy') return;
   if (!window.showDirectoryPicker) return refreshByLink();
   const label = text => { const el = document.querySelector('[data-refreshfiles] .lbl'); if (el) el.textContent = ' ' + text; };
@@ -530,6 +534,8 @@ function refreshFromFiles(all){
       dataAgain();
     } catch (e) { S._refresh = 'fail'; S._refreshErr = String(e && e.message || e); render(); }
   };
-  oxWindowerFolder().then(root => root ? go(root)
-    : openFolderDialog(async () => { go(await oxPickWindower()); }, () => {}, {title: t('wfolderTitle'), why: t('wfolderWhy'), path: pageFolder().replace(/\\addons\\GearSwap\\data$/i, '')}));
+  const fail = err => { S._refresh = 'fail'; S._refreshErr = err; render(); };
+  oxWindowerFolder(!fromGame).then(root => root ? go(root) : fromGame ? fail(t('refreshNeedClick'))
+    : openFolderDialog(async () => { go(await oxPickWindower()); }, () => {}, {title: t('wfolderTitle'), why: t('wfolderWhy'), path: pageFolder().replace(/\\addons\\GearSwap\\data$/i, '')}))
+    .catch(e => fail(String(e && e.message || e)));
 }

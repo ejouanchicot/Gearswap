@@ -296,7 +296,7 @@ async function liveTick(){
     S._live[c] = now;
     // //gs c atelier all typed in game: every job rebuilt here, once per request (the request's time is remembered)
     if (now.ok && ping.rebuild) { let seen = ''; try { seen = localStorage.getItem('atelierRebuild_' + c) || ''; } catch (e) {}
-      if (seen !== String(ping.rebuild)) { try { localStorage.setItem('atelierRebuild_' + c, String(ping.rebuild)); } catch (e) {} refreshFromFiles(true); } }
+      if (seen !== String(ping.rebuild)) { try { localStorage.setItem('atelierRebuild_' + c, String(ping.rebuild)); } catch (e) {} refreshFromFiles(true, true); } }
     // where the character stands changed (zone, Mog House, a moogle within reach, the bags open): the Bags view says it
     const moved = typeof bvPlaceKey === 'function' && S.section === 'perso' && S.persoView === 'bags' && bvPlaceKey(ping.place) !== bvPlaceKey(was.place);
     // fresh: the export came in this tick (after "building" the load's own tick has gone by)

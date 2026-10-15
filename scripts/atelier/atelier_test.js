@@ -28,8 +28,11 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       await tryIt(`${c} ${j} every set`, async () => {
         S.char = c; S.job = j; S.section = 'sets'; render();
         const paths = (data() || {sets: []}).sets.filter(x => !x.empty).map(x => x.path);
-        for (const p of paths) { S.selPath = Object.assign({}, S.selPath, {[j]: p}); S._found = null; render(); }
-        for (const sec of ['keys', 'modes', 'macro', 'functions', 'merits', 'sim']) { S.section = sec; render(); }
+        // a figure worked out of a missing value shows as NaN / undefined, which no page error reports
+        const bad = where => { const m = (document.querySelector('#view').innerText || '').match(/.{0,40}\b(NaN|undefined|Infinity)\b.{0,20}/);
+          if (m) throw new Error(`${where} shows "${m[0].replace(/\s+/g, ' ')}"`); };
+        for (const p of paths) { S.selPath = Object.assign({}, S.selPath, {[j]: p}); S._found = null; render(); bad(p); }
+        for (const sec of ['keys', 'modes', 'macro', 'functions', 'merits', 'sim', 'combat', 'perso', 'jobcfg']) { S.section = sec; render(); bad(sec); }
         S.section = 'sets'; render();
       });
     }

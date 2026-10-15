@@ -805,9 +805,9 @@
         // +3 14, Creed Collar 5); 75 % in all (what the idle set wears when the hits land)
         var b1 = Math.max(0, Math.min(100, t.enmity + (b.enmity || 0))) / 200, b2 = Math.min(50, t.lossRed || 0) / 100;
         f.ceLoss = Math.round((1 - (1 - b1) * (1 - b2)) * 1000) / 10;
+        f.enlight = div <= 500 ? 2 * Math.floor((div + 85) / 13) + Math.floor((div + 85) / 26) : 2 * Math.floor((div + 400) / 20) + Math.floor((div + 400) / 40);
         // the weapon's own Enlight bonus (BG Wiki: Brilliance +15, Honorbound +7, their melee hits only)
         f.enlight += t.enl || 0;
-        f.enlight = div <= 500 ? 2 * Math.floor((div + 85) / 13) + Math.floor((div + 85) / 26) : 2 * Math.floor((div + 400) / 20) + Math.floor((div + 400) / 40);
         // a self Cure IV: what it would heal, and what it heals (Guide_Paladin CURE SELF: the Fast Cast of the Cure lowers
         // the max HP, so the current HP with it; the Cure set raises the max HP; the Cure heals up to the gap)
         f.cureIV = O.cureIV((b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), t.curerecv, b.cureJp);

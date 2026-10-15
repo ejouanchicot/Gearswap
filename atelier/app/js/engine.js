@@ -429,10 +429,13 @@ function charStats(s, pieces){
       return Math.round((naked + g(gear, k)) * (1 + g(gear, k + '%') / 100));
     };
     r.hp = pool(c.max_hp, 'hp'); r.mp = pool(c.max_mp, 'mp');
-    let def = (c.defense - protectAtMeasure(c) + g(gear, 'def') - g(worn, 'def') + 1.5 * (r.vit - measured('vit')) + (B.def || 0)) * (1 + (B.defp || 0));
-    if (B.deff) def += Math.min(def * B.deff[0] / 100, B.deff[1]);
-    r.def = Math.floor(def);
-    r.atk = Math.floor((c.attack + g(gear, 'atk') - g(worn, 'atk') + (r.str - measured('str')) + (B.atk || 0)) * (1 + (B.atkp || 0)) + (B.atkf || 0));
+    // a measure without Defense or Attack (an export written without the game's stats): no line rather than NaN
+    if (c.defense != null) {
+      let def = (c.defense - protectAtMeasure(c) + g(gear, 'def') - g(worn, 'def') + 1.5 * (r.vit - measured('vit')) + (B.def || 0)) * (1 + (B.defp || 0));
+      if (B.deff) def += Math.min(def * B.deff[0] / 100, B.deff[1]);
+      r.def = Math.floor(def);
+    }
+    if (c.attack != null) r.atk = Math.floor((c.attack + g(gear, 'atk') - g(worn, 'atk') + (r.str - measured('str')) + (B.atk || 0)) * (1 + (B.atkp || 0)) + (B.atkf || 0));
     // Accuracy and Evasion are not in the status window: computed for the worn gear and the set alike
     if (c.skills && Object.keys(c.skills).length) {
       const cb = combatOf(c, gear, r.dex, r.agi, mainName);
