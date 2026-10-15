@@ -58,14 +58,47 @@ const snapshot = dir => { const out = {};
   for (const n of fs.existsSync(dir) ? fs.readdirSync(dir) : []) out[n] = fs.readFileSync(path.join(dir, n), 'utf8'); return out; };
 const restore = (dir, snap) => { fs.rmSync(dir, {recursive: true, force: true}); fs.mkdirSync(dir, {recursive: true});
   for (const [n, t] of Object.entries(snap)) fs.writeFileSync(path.join(dir, n), t); };
-const isChar = n => /^[A-Z]/.test(n) && fs.statSync(path.join(DATA_ABS, n)).isDirectory() && fs.readdirSync(path.join(DATA_ABS, n)).some(f => new RegExp('^' + n + '_[A-Z]{3}\\.lua$').test(f));
+// The copies aside also go to disk, with this run's pid: a second run waits for none of it and refuses, and a run
+// stopped half way (Ctrl+C, a crash, a killed process) leaves real exports rewritten, put back by the next run
+const ASIDE = path.join(require('os').tmpdir(), 'gs_offline_export_test');
+const alive = pid => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+function takeLock(){
+  const pidFile = path.join(ASIDE, 'pid');
+  if (fs.existsSync(pidFile)) {
+    const pid = +fs.readFileSync(pidFile, 'utf8');
+    if (pid !== process.pid && alive(pid)) { console.log(`another run (pid ${pid}) is rewriting the exports: wait for it`); process.exit(2); }
+    for (const c of fs.readdirSync(ASIDE).filter(n => n !== 'pid' && n !== 'index.js')) {
+      restore(exportsDir(c), snapshot(path.join(ASIDE, c)));
+      console.log(`${c}: exports put back from a run that stopped half way`);
+    }
+    if (fs.existsSync(path.join(ASIDE, 'index.js'))) fs.copyFileSync(path.join(ASIDE, 'index.js'), path.join(DATA_ABS, 'atelier/index.js'));
+    fs.rmSync(ASIDE, {recursive: true, force: true});
+  }
+  fs.mkdirSync(ASIDE, {recursive: true});
+  fs.writeFileSync(pidFile, String(process.pid));
+  fs.copyFileSync(path.join(DATA_ABS, 'atelier/index.js'), path.join(ASIDE, 'index.js'));
+}
+const keepAside = (c, snap) => { const dir = path.join(ASIDE, c); restore(dir, snap); };
+const dropAside = c => fs.rmSync(path.join(ASIDE, c), {recursive: true, force: true});
+let current = null;
+process.on('SIGINT', () => {
+  if (current) { restore(exportsDir(current.c), current.before); console.log(`${current.c}: exports put back`); dropAside(current.c); }
+  fs.copyFileSync(path.join(ASIDE, 'index.js'), path.join(DATA_ABS, 'atelier/index.js'));
+  fs.rmSync(ASIDE, {recursive: true, force: true});
+  process.exit(130);
+});
+const isChar = n =>/^[A-Z]/.test(n) && fs.statSync(path.join(DATA_ABS, n)).isDirectory() && fs.readdirSync(path.join(DATA_ABS, n)).some(f => new RegExp('^' + n + '_[A-Z]{3}\\.lua$').test(f));
 
 (async () => {
+  // first: a run stopped half way is put back before anything is read as "before"
+  takeLock();
   const chars = fs.readdirSync(DATA_ABS).filter(isChar).filter(n => !only.length || only.includes(n));
   const index = path.join(DATA_ABS, 'atelier/index.js'), indexBefore = fs.readFileSync(index, 'utf8');
   let bad = 0;
   for (const c of chars) {
     const before = snapshot(exportsDir(c));
+    keepAside(c, before);
+    current = {c, before};
     try {
       const env = makeEnv();
       if (!args.includes('--lua-only')) {
@@ -108,8 +141,9 @@ const isChar = n => /^[A-Z]/.test(n) && fs.statSync(path.join(DATA_ABS, n)).isDi
         }
         console.log(`${c}: ${jobs.length} jobs loaded both ways`);
       }
-    } finally { restore(exportsDir(c), before); fs.writeFileSync(index, indexBefore); }
+    } finally { restore(exportsDir(c), before); fs.writeFileSync(index, indexBefore); dropAside(c); current = null; }
   }
+  fs.rmSync(ASIDE, {recursive: true, force: true});
   console.log(bad ? `${bad} difference(s)` : 'no difference');
   process.exit(bad ? 1 : 0);
 })();
