@@ -245,6 +245,9 @@ document.addEventListener('change', e => {
     S.optOpts = Object.assign({}, S.optOpts, {cycWsBy: Object.assign({}, (S.optOpts || {}).cycWsBy, {[e.target.dataset.cycws]: e.target.value})});
     save(); render(); return; }
   // the stats optimizer's next objectives and floors, kept for that set (stat_opt.js)
+  // an enfeebling set's figures with Saboteur up or not (enfeeble.js)
+  if (e.target.dataset && 'enfsab' in e.target.dataset) {
+    S.optOpts = Object.assign({}, S.optOpts, {enfSab: e.target.checked}); save(); render(); return; }
   if (e.target.dataset && 'statkeep' in e.target.dataset) {
     setStatOpts(shownSet(S._cards[S.sel[S.job]], S.sel[S.job]).path, {keepOwn: e.target.checked}); render(); return; }
   if (e.target.dataset && (e.target.dataset.statthen || e.target.dataset.statfloor)) {

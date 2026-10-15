@@ -141,7 +141,7 @@ const STATE_HELP_EN = {
   "EngagedMode": "Engaged gear: sets.engaged.DT, .Acc, .TP or .Enspell",
   "IdleMode": "Idle gear: sets.idle.Refresh or sets.idle.DT",
   "CombatMode": "On puts on sets.CombatMode if you define one, then locks main, sub and range so casting never swaps your weapons (TP kept). Off frees them, unless a craft session holds them",
-  "EnfeebleMode": "Picks sets.midcast['Enfeebling Magic'].<type>.<Mode> (for example .mnd_potency.Skill) when you add such a set. The plain .Potency / .Skill / .Duration sets only serve an enfeeble with no type (the -ga, Inundation). The template has no .<type>.<Mode> set: with it the mode changes no gear",
+  "EnfeebleMode": "Auto: each enfeeble wears its type's set (.mnd_potency, .duration...). Potency / Skill / Duration: the mode's own set (sets.midcast['Enfeebling Magic'].Potency...) on every enfeeble instead, unless its type has a set for that mode (.mnd_potency.Skill, read first). A spell with a set of its own name (sets.midcast.Dispelga) keeps it. A mode with no set changes nothing",
   "NukeMode": "Elemental midcast: sets.midcast['Elemental Magic'] or its ['Magic Burst'] variant",
   "SaboteurMode": "On = the spells listed in RDM_SABOTEUR_CONFIG.lua (template: Distract III, Gravity II) use Saboteur first when it is ready, then go out once it is up",
   "NukeTier": "Tier of the cast* nuke commands (I = base spell)",

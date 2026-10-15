@@ -81,6 +81,22 @@ end
 ---  ─────────────────────────────────────────────────────────────────────────
 ---   One function per magic skill, each returning true once it has equipped.
 
+--- Whether the Enfeeble Mode's own set takes the place of the spell's type set. Auto (the default): each spell
+--- wears its type's set (mnd_potency, duration...). Potency / Skill / Duration (/ Acc): the mode's set
+--- (sets.midcast['Enfeebling Magic'].Potency...) on every enfeeble, unless the type has a set for that mode
+--- (.mnd_potency.Skill), read first as before. A mode with no set of its own changes nothing.
+--- @param enfeebling_type string|nil The spell's type from the enfeebling database
+--- @return boolean True when the type is to be left out of the set search
+local function enfeeble_mode_forced(enfeebling_type)
+    local mode = state.EnfeebleMode and state.EnfeebleMode.value
+    local enf = sets.midcast and sets.midcast['Enfeebling Magic']
+    if not mode or mode == 'Auto' or type(enf) ~= 'table' or type(enf[mode]) ~= 'table' then
+        return false
+    end
+    local typed = enfeebling_type and enf[enfeebling_type]
+    return not (type(typed) == 'table' and type(typed[mode]) == 'table')
+end
+
 --- @param spell table Spell information from GearSwap
 --- @param debug_enabled boolean Whether //gs c debugmidcast is on
 --- @return boolean True when this handler equipped a set
@@ -93,8 +109,9 @@ local function midcast_enfeebling(spell, debug_enabled)
         )
     end
 
-    -- Only the debug trace reads this lookup: MidcastManager resolves the
-    -- type again itself through database_func.
+    -- Read by enfeeble_mode_forced (whether the type's sets are searched at
+    -- all) and by the debug trace; MidcastManager resolves the type again
+    -- itself through database_func.
     local enfeebling_type = nil
     if EnfeeblingSPELLS then
         enfeebling_type = EnfeeblingSPELLS.get_enfeebling_type(spell.name)
@@ -121,7 +138,7 @@ local function midcast_enfeebling(spell, debug_enabled)
         skill = 'Enfeebling Magic',
         spell = spell,
         mode_state = state.EnfeebleMode,
-        database_func = EnfeeblingSPELLS and EnfeeblingSPELLS.get_enfeebling_type or nil
+        database_func = (not enfeeble_mode_forced(enfeebling_type)) and EnfeeblingSPELLS and EnfeeblingSPELLS.get_enfeebling_type or nil
     })
 
     if debug_enabled then

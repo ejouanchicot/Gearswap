@@ -51,6 +51,13 @@
 --- cast = false reads without casting (the case's spell names the buff taken off first); drop_buffs = {ids} takes
 --- other buffs off before (Blink's shadows, a Phalanx under a Stoneskin case).
 ---
+---   measure = 'enfeeble'         an enfeeble cast on the party's battle target (<bt>): landed or resisted, its
+---                                    length to the wear-off, the mob's rounds and paralysis meanwhile
+---                                    (shared/utils/debug/enf_watch.lua); with cast = false, the mob's rounds alone
+---                                    for `read` seconds (the reference). A mob defeated first: the case played again
+---                                    on the next one (twice at most). saboteur = true / false: Saboteur put on or
+---                                    taken off before the pieces, like Composure
+---
 --- In a fight: fight = true waits for the character to be engaged before the case; keep_weapons = true leaves main,
 --- sub, range and ammo as they are (the other slots are emptied as usual); pause_bot = true turns Silmaril off
 --- (sm off) while the case is cast and back on after, so its own casts do not cut in.
@@ -63,9 +70,10 @@
 
 local EnhTest = {}
 
-local SLOTS = {'main', 'sub', 'range', 'ammo', 'head', 'neck', 'left_ear', 'right_ear', 'body', 'hands',
-    'left_ring', 'right_ring', 'back', 'waist', 'legs', 'feet'}
+local Read = require('shared/utils/debug/enh_test_read')
+local SLOTS = Read.SLOTS
 local COMPOSURE = 419             -- res/buffs.lua
+local SABOTEUR, SABOTEUR_RECAST = 454, 36   -- res/buffs.lua, res/job_abilities.lua recast_id
 local GEAR_SETTLE = 2.5           -- seconds for the pieces to be on before the slots are held
 local AFTER_ABILITY = 2.0         -- seconds after Composure before the cast
 local AFTER_DROP = 1.5            -- seconds for a dropped buff to be gone
@@ -86,6 +94,9 @@ local FIGHT_MARGIN = 5            -- seconds an Enspell is read for less than it
 local FIGHT_READ = 300            -- seconds the hits taken are read for, at most
 local WEAPONS = {main = true, sub = true, range = true, ammo = true}
 local WEAR_TRIES = 3              -- times a case's pieces are put on again when the game does not show them
+local ENF_WAIT = 1500             -- seconds an enfeeble is followed to its wear-off, at most
+local ENF_REPLAYS = 2             -- times a case is played again when its mob is defeated first
+local ENF_BUSY_WAIT, ENF_BUSY_TRIES = 30, 20   -- the status already on the mob: cast again after 30 s, 10 min at most
 
 local run = nil                   -- the plan being played: {cases, at, token, plan}
 local expecting = {}              -- target side: [buff id] = {caster, until}
@@ -116,11 +127,12 @@ local function tools_file(name)
 end
 
 --- The character's ENHTEST_CONFIG.lua, read again at each run (a plan is changed between two runs). A config that
---- is a function is given ENHTEST_SETS.lua's table (sets written by a script from the set file), or nil.
+--- is a function is given ENHTEST_SETS.lua's table (sets written by a script from the set file), or nil, then
+--- GearSwap's own sets (the job's sets as loaded: a case can take a real set's pieces).
 --- @return table|nil
 local function config()
     local cfg = tools_file('ENHTEST_CONFIG.lua')
-    if type(cfg) == 'function' then cfg = cfg(tools_file('ENHTEST_SETS.lua')) end
+    if type(cfg) == 'function' then cfg = cfg(tools_file('ENHTEST_SETS.lua'), sets) end
     return type(cfg) == 'table' and cfg or nil
 end
 
@@ -141,78 +153,9 @@ local function has_buff(id)
     return false
 end
 
---- "sub=Ammurapi Shield, waist=Embla Sash": what is really worn, slot by slot. Read from the game's bags:
---- GearSwap's player.equipment is only refreshed inside its own events, so from a coroutine it can still show
---- the set before.
-local function worn_text()
-    local equipment = (windower.ffxi.get_items() or {}).equipment or {}
-    local parts = {}
-    for _, slot in ipairs(SLOTS) do
-        local index, bag = equipment[slot], equipment[slot .. '_bag']
-        local item = index and index ~= 0 and bag and windower.ffxi.get_items(bag, index)
-        local known = item and item.id and res().items[item.id]
-        if known then parts[#parts + 1] = slot .. '=' .. known.en end
-    end
-    return #parts > 0 and table.concat(parts, ', ') or 'nothing'
-end
-
---- "feet wants Leth. Houseaux +3": the slots of a case's set the game does not show worn, or nil when all are.
---- A slot left out of the set (weapons kept) is not looked at.
---- @param set table slot -> piece (a name, a table with .name, or empty)
-local function wrong_slots(set)
-    local equipment = (windower.ffxi.get_items() or {}).equipment or {}
-    local wrong = {}
-    for _, slot in ipairs(SLOTS) do
-        local wanted = set[slot]
-        if wanted ~= nil then
-            local name = wanted ~= empty and (type(wanted) == 'table' and wanted.name or wanted) or nil
-            local index, bag = equipment[slot], equipment[slot .. '_bag']
-            local item = index and index ~= 0 and bag and windower.ffxi.get_items(bag, index)
-            local known = item and item.id and item.id ~= 0 and res().items[item.id]
-            local worn_ok = name == nil and not known
-                or known and type(name) == 'string' and (known.en:lower() == name:lower() or (known.enl or ''):lower() == name:lower())
-            if not worn_ok then wrong[#wrong + 1] = slot .. ' wants ' .. tostring(name or 'nothing') end
-        end
-    end
-    return #wrong > 0 and table.concat(wrong, ', ') or nil
-end
-
---- The MP or HP now, from the game (GearSwap's player.mp is refreshed in its own events only).
---- @param field string 'mp' or 'hp'
-local function vital_now(field)
-    local vitals = (windower.ffxi.get_player() or {}).vitals
-    return vitals and vitals[field] or 0
-end
-local function mp_now() return vital_now('mp') end
-
---- An attribute as the game last sent it (stats packet 0x061): its base plus what gear and buffs add.
---- @param name string 'STR', 'MND'...
---- @return number|nil
-local function stat_now(name)
-    local raw = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
-    local ok, packets = pcall(require, 'packets')
-    local parsed = raw and ok and packets.parse('incoming', raw)
-    if type(parsed) ~= 'table' then return nil end
-    return (parsed['Base ' .. name] or 0) + (parsed['Added ' .. name] or 0)
-end
-
---- "MND 173 VIT 138" for a case's `stat`: one name, or several ({'MND', 'VIT'}).
-local function stats_text(stat)
-    local parts = {}
-    for _, name in ipairs(type(stat) == 'table' and stat or {stat}) do
-        parts[#parts + 1] = name .. ' ' .. tostring(stat_now(name))
-    end
-    return table.concat(parts, ' ')
-end
-
---- An element's resistance as the game last sent it (stats packet 0x061: 'Fire Resistance'...).
---- @param element string 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light' or 'Dark'
-local function resist_now(element)
-    local raw = windower.packets and windower.packets.last_incoming and windower.packets.last_incoming(0x061)
-    local ok, packets = pcall(require, 'packets')
-    local parsed = raw and ok and packets.parse('incoming', raw)
-    return type(parsed) == 'table' and parsed[element .. ' Resistance'] or nil
-end
+local worn_text, wrong_slots, stats_text, resist_now = Read.worn_text, Read.wrong_slots, Read.stats_text, Read.resist
+local function vital_now(field) return Read.vital(field) end
+local function mp_now() return Read.vital('mp') end
 
 local function give_slots_back()
     send_command('gs enable all')
@@ -243,6 +186,7 @@ end
 
 local next_case
 local retreat   -- below: a case's cast put off while the character is low
+local follow_enfeeble, enfeeble_end   -- below, after conclude
 
 --- The character's HP in percent, from the game.
 local function hpp_now() return ((windower.ffxi.get_player() or {}).vitals or {}).hpp or 100 end
@@ -254,19 +198,49 @@ local function too_low(case) return case.abort_hpp ~= nil and hpp_now() < case.a
 --- The case's line, then the next case.
 --- @param seconds number|nil The buff's length, nil when nothing answered
 --- @param measured string|nil What a `measure` case read
-local function conclude(seconds, measured)
+local function conclude(seconds, measured, wait)
     local case = run and run.case
     if not case then return end
     run.case = nil
-    local line = ('CASE %s | %s on %s | Composure %s | %s | %s%s'):format(case.name or '?', case.spell, case.target_name,
-        has_buff(COMPOSURE) and 'on' or 'off', seconds and (seconds .. ' s') or (case.cast == false and 'not cast' or 'NO ANSWER'),
+    local line = ('CASE %s | %s on %s | Composure %s%s | %s | %s%s'):format(case.name or '?', case.spell, case.target_name,
+        has_buff(COMPOSURE) and 'on' or 'off', case.saboteur_at_cast ~= nil and (' | Saboteur ' .. (case.saboteur_at_cast and 'on' or 'off')) or '', seconds and (seconds .. ' s') or (case.cast == false and 'not cast' or 'NO ANSWER'),
         measured and (measured .. ' | ') or '', case.worn or '?')
     write(line)
     say(line)
     give_slots_back()
     bot(case, true)
     local token = run.token
-    coroutine.schedule(function() if run and run.token == token then next_case() end end, BETWEEN)
+    coroutine.schedule(function() if run and run.token == token then next_case() end end, BETWEEN + (wait or 0))
+end
+
+--- An enfeeble's line. Its mob defeated before the wear-off: the same case again on the next mob (run.replays).
+--- The same status still on the mob ("no effect", message 75: a stopped run's last cast, 2026-10-14): the case
+--- again every ENF_BUSY_WAIT seconds until it wears off.
+enfeeble_end = function(case, length, text, defeated)
+    local replays, busy = run.replays[run.at] or 0, run.busy[run.at] or 0
+    if defeated and replays < ENF_REPLAYS then
+        run.replays[run.at] = replays + 1
+        run.at = run.at - 1
+        text = text .. ' | played again'
+    elseif text:find('^NO EFFECT') and busy < ENF_BUSY_TRIES then
+        run.busy[run.at] = busy + 1
+        run.at = run.at - 1
+        return conclude(length, text .. (' | already on the mob, cast again in %d s'):format(ENF_BUSY_WAIT), ENF_BUSY_WAIT)
+    end
+    conclude(length, text)
+end
+
+--- Follow the case's enfeeble from its cast: once it landed, her own sets and Silmaril are given back for the wait.
+follow_enfeeble = function(token, case)
+    case.answered = true
+    require('shared/utils/debug/enf_watch').cast(case.spell_id, case.buff, ENF_WAIT, function()
+        if not (run and run.case == case) then return end
+        give_slots_back()
+        send_command('gs c update')
+        bot(case, true)
+    end, function(length, text, defeated)
+        if run and run.case == case then enfeeble_end(case, length, text, defeated) end
+    end)
 end
 
 --- The MP or HP gained at each tick for MP_WINDOW seconds, as "+15 +15 +15".
@@ -310,6 +284,16 @@ local function measure(token, case, seconds)
                 if run and run.case == case then conclude(seconds, text) end
             end)
     end
+    if case.measure == 'enfeeble' then
+        -- cast = false: the mob's rounds with no enfeeble of hers (the reference for Slow and Paralyze)
+        local mob = windower.ffxi.get_mob_by_target('bt')
+        if not mob then return conclude(nil, 'no battle target') end
+        give_slots_back()
+        bot(case, true)
+        return require('shared/utils/debug/enf_watch').rounds(mob.id, case.read or 180, function(length, text, defeated)
+            if run and run.case == case then enfeeble_end(case, length, text, defeated) end
+        end)
+    end
     if case.measure == 'taken' then
         -- her own sets back on: every case is read in the same gear, only the buff changes
         give_slots_back()
@@ -346,8 +330,11 @@ local function cast(token, case, waited)
     if too_low(case) then return retreat(token, case) end
     case.worn = case.natural and 'her own sets' or worn_text()
     if case.measure == 'stat' then case.stat_before = stats_text(case.stat) end
+    if case.saboteur ~= nil then case.saboteur_at_cast = has_buff(SABOTEUR) end
     run.case = case
+    if case.measure == 'enfeeble' then follow_enfeeble(token, case) end
     send_command(('input /ma "%s" %s'):format(case.spell, case.on_self and '<me>' or case.target_name))
+    if case.measure == 'enfeeble' then return end
     coroutine.schedule(function()
         if run and run.token == token and run.case == case and not case.answered then conclude(nil) end
     end, RESULT_WAIT)
@@ -361,7 +348,7 @@ local function drop_then_cast(token, case)
     end
     if case.on_self then
         if has_buff(case.buff) then windower.ffxi.cancel_buff(case.buff) end
-    else
+    elseif case.measure ~= 'enfeeble' then
         send_command(('send %s gs c enhtest expect %d %s'):format(case.target_name, case.buff, player.name))
     end
     if case.cast == false then
@@ -426,6 +413,23 @@ local function wear(token, case)
     end, GEAR_SETTLE)
 end
 
+--- Saboteur as the case wants it, after Composure and before the pieces (its recast waited for: 3 minutes).
+local function set_saboteur(token, case, waited)
+    if not (run and run.token == token) then return end
+    if case.saboteur == false and has_buff(SABOTEUR) then
+        windower.ffxi.cancel_buff(SABOTEUR)
+        return coroutine.schedule(function() wear(token, case) end, AFTER_DROP)
+    end
+    if case.saboteur ~= true or has_buff(SABOTEUR) then return wear(token, case) end
+    local recast = (windower.ffxi.get_ability_recasts() or {})[SABOTEUR_RECAST] or 0
+    if recast > 0 and waited < 300 then
+        if waited == 0 then say(('waiting %d s for Saboteur'):format(math.ceil(recast))) end
+        return coroutine.schedule(function() set_saboteur(token, case, waited + 2) end, 2)
+    end
+    send_command('input /ja "Saboteur" <me>')
+    coroutine.schedule(function() wear(token, case) end, AFTER_ABILITY)
+end
+
 --- Composure as the case wants it, BEFORE the pieces: the ability's own precast and aftercast sets would
 --- take them off.
 local function set_composure(token, case)
@@ -438,7 +442,7 @@ local function set_composure(token, case)
         windower.ffxi.cancel_buff(COMPOSURE)
         wait = AFTER_DROP
     end
-    coroutine.schedule(function() wear(token, case) end, wait)
+    coroutine.schedule(function() set_saboteur(token, case, 0) end, wait)
 end
 
 --- Enough MP for the case, waited for in the character's own sets (the slots are free between two cases).
@@ -487,8 +491,11 @@ end
 local function when_engaged(token, case, waited)
     if not (run and run.token == token) then return end
     local engaged = (windower.ffxi.get_player() or {}).status == 1
-    if case.fight and not engaged and waited < FIGHT_WAIT then
-        if waited == 0 then say('waiting for a fight') end
+    -- an enfeeble needs the party's mob: after a defeat, the next one pulled (2026-10-14, cast at nothing)
+    local mob = case.measure == 'enfeeble' and windower.ffxi.get_mob_by_target('bt')
+    local no_mob = case.measure == 'enfeeble' and not (mob and (mob.hpp or 0) > 0)
+    if (no_mob or case.fight and not engaged) and waited < FIGHT_WAIT then
+        if waited == 0 then say(no_mob and 'waiting for a mob' or 'waiting for a fight') end
         return coroutine.schedule(function() when_engaged(token, case, waited + 2) end, 2)
     end
     keep_refresh(token, case)
@@ -509,12 +516,13 @@ next_case = function()
         write(('CASE %s | unknown spell or a spell that gives no buff: %s'):format(case.name or '?', tostring(case.spell)))
         return next_case()
     end
-    local target = case.target and case.target ~= 'me' and case.target or player.name
+    local target = case.measure == 'enfeeble' and '<bt>' or case.target and case.target ~= 'me' and case.target or player.name
     local this = {name = case.name, spell = case.spell, spell_id = spell.id, buff = spell.status, composure = case.composure,
         target_name = target, on_self = target == player.name, gear = case.gear or {}, mp_cost = spell.mp_cost, natural = case.natural,
         measure = case.measure, stat = case.stat, resist = case.resist, procs = case.procs, fight = case.fight,
         keep_weapons = case.keep_weapons, pause_bot = case.pause_bot, hits = case.hits, cast = case.cast,
-        until_lost = case.until_lost, drop_buffs = case.drop_buffs, min_hpp = case.min_hpp, abort_hpp = case.abort_hpp}
+        until_lost = case.until_lost, drop_buffs = case.drop_buffs, min_hpp = case.min_hpp, abort_hpp = case.abort_hpp,
+        saboteur = case.saboteur, read = case.read}
     say(('case %d/%d: %s'):format(run.at, #run.cases, case.name or '?'))
     if case.say then say(case.say) end
     send_command('gs enable all')
@@ -549,7 +557,7 @@ local function start(plan, from)
     local cases = cfg and cfg.plans and cfg.plans[plan or '']
     if not cases then return say('no such plan in ENHTEST_CONFIG.lua: ' .. tostring(plan)) end
     local first = math.max(1, math.floor(tonumber(from) or 1))
-    run = {cases = cases, at = first - 1, token = os.clock(), plan = plan}
+    run = {cases = cases, at = first - 1, token = os.clock(), plan = plan, replays = {}, busy = {}}
     write(('START plan %s, %d cases from %d, %s %s/%s'):format(plan, #cases, first, player.name, player.main_job,
         player.sub_job or ''))
     -- a plan's own commands first (cases.start: the Silmaril profile it is played with), then its cases
@@ -568,6 +576,7 @@ function EnhTest.command(args)
     elseif action == 'stop' then
         if run and run.paused then bot(run.paused, true) end
         require('shared/utils/debug/enh_test_fight').stop()
+        require('shared/utils/debug/enf_watch').stop()
         run = nil
         give_slots_back()
         say('stopped')

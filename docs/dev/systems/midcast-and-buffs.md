@@ -189,7 +189,7 @@ Checked by loading the real `midcast_manager.lua` under `lua5.1` with stubbed `s
 | BLM Comet, MagicBurstMode On | mode `MagicBurst` | P0 `sets.midcast.Comet.MagicBurst`: `Comet` is the Elemental table itself, and P0 takes its `[mode]` child |
 | WAR/NIN Utsusemi: Ni, `sets.midcast.Ninjutsu` and `sets.midcast.Utsusemi` defined | map `Utsusemi` | P8b `sets.midcast.Utsusemi` (before 2026-09-28: P9 `Ninjutsu`) |
 | Any job, `Cure` with no `sets.midcast['Healing Magic']` | - | returns `false`, Mote's `sets.midcast.Cure` stays |
-| RDM Slow II, EnfeebleMode Potency (traced by reading) | type `mnd_potency`, mode `Potency` | P3 misses (`.mnd_potency.Potency` absent), P7 `base.mnd_potency`; the `.Potency` mode set is never reached while a type set exists |
+| RDM Slow II, EnfeebleMode Potency (traced by reading) | type `mnd_potency`, mode `Potency` | `.Potency` exists and `.mnd_potency.Potency` does not: `RDM_MIDCAST.lua` `enfeeble_mode_forced` leaves the type out, P8 `base.Potency`. With EnfeebleMode Auto (the default): P7 `base.mnd_potency` |
 
 ### Singing chain (BRD)
 

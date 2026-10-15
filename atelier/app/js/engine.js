@@ -9,7 +9,7 @@ const CALC_FILES = ['abilities', 'attributes', 'derived', 'gear', 'jobs_fighters
   'ws_tp', 'page'];
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
   .map(f => `atelier/engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
-  .map(f => `atelier/engine/${f}.js`), ['atelier/opt.js', 'atelier/cycle.js'])
+  .map(f => `atelier/engine/${f}.js`), ['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/cycle.js'])
   // our own engine (atelier/calc/: its parts, then calc_load.js builds CALC), and last the switch between the two
   // (calc_bridge.js, S.engine: 'own' or 'old')
   .concat(CALC_FILES.concat(['load', 'bridge']).map(f => `atelier/calc/calc_${f}.js`))
@@ -93,7 +93,11 @@ function optContextInput(s){
   for (const ja of jasOf()) if (jaOn(b, ja.name)) {
     const base = ja.name.replace(' · party', '');
     if (ja.as === 'party' && base === 'Warcry') { partyWarcry = warcryTp(b, true); continue; }
-    if (ja.a.eng) { Object.assign(partyStats, ja.a.eng); continue; }
+    if (ja.a.eng) {
+      const eng = typeof ja.a.eng === 'function' ? ja.a.eng() : ja.a.eng;
+      for (const [k, v] of Object.entries(eng)) partyStats[k] = (partyStats[k] || 0) + v;
+      continue;
+    }
     // Haste Samba at the page's value (merits, a party DNC main or sub), not the engine's fixed 10.1 / 5.1
     if (base === 'Haste Samba' && !strict) { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
     // the engine counts Saber Dance at 25 % (and drops a /WAR's Double Attack trait under it): its 20 % floor instead,
@@ -366,7 +370,8 @@ function offenseHTML(r, s){
     rows += statLi(t('hitRate'), `${Math.floor(rate)} %`, `cap ${cap}`, '', t('hitTip', {a: cur.acc, e: eva, n: enemyName}) + (two ? ' · ' + t('twoHand') : '')); }
   rows += statLi(t('enemyDef'), edef, B.edefp ? `−${Math.round(B.edefp * 1000) / 10} %` : '', '', t('enemyDefTip', {n: enemyName}));
   const da = v('da') + traitOf('da', c) + giftOf('da', c) + (B.da || 0);
-  if (da || v('ta') || v('qa')) rows += statLi(t('multiLbl'), `${r1(da)} · ${v('ta')} · ${v('qa')} %`, '');
+  const ta = v('ta') + (B.ta || 0);
+  if (da || ta || v('qa')) rows += statLi(t('multiLbl'), `${r1(da)} · ${ta} · ${v('qa')} %`, '');
   const crit = v('crit') + (B.crit || 0);
   if (crit) rows += statLi(t('critLbl'), `${r1(crit)} %`, '');
   return fbox('off', 'g-off', t('offTitle'), `<ul class="statlist">${rows}</ul>`, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : '');

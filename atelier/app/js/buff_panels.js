@@ -80,14 +80,14 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   atkf: ['Attaque (nourriture)', 'Attack (food)', ''], atk: ['Attaque', 'Attack', ''], acc: ['Précision', 'Accuracy', ''], racc: ['Précision à distance', 'Ranged Acc.', ''],
   ratk: ['Attaque à distance', 'Ranged Atk.', ''], macc: ['Précision magique', 'Magic Accuracy', ''], mab: ['Bonus att. magique', 'Magic Atk. Bonus', ''],
   def: ['Défense', 'Defense', ''], eva: ['Évasion', 'Evasion', ''], meva: ['Évasion magique', 'Magic Evasion', ''], mdb: ['Déf. magique', 'Magic Def. Bonus', ''],
-  stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''],
+  stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], ta: ['Triple Attack', 'Triple Attack', '%'],crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''],
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],
   block: ['Chance de blocage', 'Block rate', '%'], cure2: ['Cure potency II', 'Cure potency II', '%'], blockmul: ['Chance de blocage', 'Block rate', 'mul'],
   pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], tpb: ['TP Bonus', 'TP Bonus', ''], sb: ['Subtle Blow', 'Subtle Blow', ''], critdmg: ['Dégâts critiques', 'Critical damage', '%'], dt: ['Dégâts reçus (DT)', 'Damage taken (DT)', '%'], enspell: ['Enspell (dégâts par coup)', 'Enspell (damage a hit)', ''], mdmg: ['Dégâts magiques', 'Magic damage', '']};
 // Short labels, for a one-line summary (the party support cards)
 const FX_SHORT = {edefp: ['Déf cible', 'Tgt Def'], eeva: ['Éva cible', 'Tgt Eva'], emdb: ['Déf. mag. cible', 'Tgt MDB'], emeva: ['Éva. mag. cible (info)', 'Tgt M.Eva (info)'], atkp: ['Att', 'Atk'], atk: ['Att', 'Atk'], atkf: ['Att', 'Atk'], acc: ['Préc', 'Acc'], racc: ['Préc. dist.', 'R.Acc'], ratk: ['Att. dist.', 'R.Atk'],
   def: ['Déf', 'Def'], defp: ['Déf', 'Def'], eva: ['Éva', 'Eva'], meva: ['Éva. mag.', 'M.Eva'], mdb: ['Déf. mag.', 'MDB'], macc: ['Préc. mag.', 'M.Acc'],
-  mab: ['MAB', 'MAB'], mhaste: ['Haste', 'Haste'], jahaste: ['Haste JA', 'JA Haste'], shell: ['Shell', 'Shell'], stp: ['STP', 'STP'], da: ['DA', 'DA'],
+  mab: ['MAB', 'MAB'], mhaste: ['Haste', 'Haste'], jahaste: ['Haste JA', 'JA Haste'], shell: ['Shell', 'Shell'], stp: ['STP', 'STP'], da: ['DA', 'DA'], ta: ['TA', 'TA'],
   crit: ['Crit', 'Crit'], pdl: ['PDL', 'PDL'], mdmg: ['Dmg mag.', 'M.Dmg'], regen: ['Regen', 'Regen'], refresh: ['Refresh', 'Refresh']};
 const fxShort = (k, v) => { const full = fxText(k, v), lbl = (FX_LABEL[k] || [])[S.lang === 'fr' ? 0 : 1], sh = (FX_SHORT[k] || [])[S.lang === 'fr' ? 0 : 1];
   return lbl && sh && full.startsWith(lbl) ? sh + full.slice(lbl.length) : full; };

@@ -139,14 +139,14 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} over cap',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill'];
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
 // a spell's length reads as minutes and seconds (12:36)
 const enhTimeText = v => `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, '0')}`;
-const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' ? enhTimeText(v)
+const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' ? enhTimeText(v)
   : (k === 'ecritRed' && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
@@ -224,6 +224,9 @@ function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
   const enh = enhContext(s);
   if (enh) return ENH_OBJS[enh.kind] || ENH_PLAIN;
+  // an enfeebling set, by the spells cast in it (enfeeble.js)
+  const enf = enfObjectives(s);
+  if (enf) return enf;
   // a GEO's luopan sets and its Geo- / Indi- cast sets (luopan.js)
   if (luopanObjectives(s)) return luopanObjectives(s);
   // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap);
@@ -271,8 +274,9 @@ function statFloorDefault(s, first){
   // every set of the other jobs: DT+PDT -50 and DT+MDT -29 at least, whatever the set is for (the player's rule,
   // 2026-10-14: no set worn with less, a spell's too); a tank's sets have their own floors below
   // (not an enhancing spell's set: its potency and its length come first, the damage taken is what the pieces left
-  // give, as its last objectives: the player's rule once the floors had cost Refresh 14 % of its length)
-  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) ? {} : {pdt: -50, mdt: -29};
+  // give, as its last objectives: the player's rule once the floors had cost Refresh 14 % of its length; an
+  // enfeebling set the same, its potency, length and magic accuracy first: enfeeble.js)
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) || enfContext(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
@@ -343,7 +347,7 @@ function setStatOpts(path, patch){
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'ceLoss', 'cureEnm']],
   ['cure', ['cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
+  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
@@ -351,6 +355,7 @@ function statRelevant(s, chosen){
   add(luopanRelevant(s));
   const enh = enhContext(s);
   if (enh) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'hp']); return out; }
+  if (enfContext(s)) { add(enfRelevant(s)); return out; }
   if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
   else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
   else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
@@ -406,6 +411,7 @@ function statVec(p, slot){
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
   if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
+  Object.assign(out, enfVec(r, all, p.name));
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
   if (v('skill:shield skill')) out.shield = v('skill:shield skill');
@@ -473,6 +479,8 @@ function statBase(s){
 // (an enhancing set's spell, target and base length ride with the character: opt.js O.enhancingFigures)
 function statContext(s){
   const base = statBase(s), enh = enhContext(s);
+  const enf = enfBase(s);
+  if (enf) Object.assign(base, enf);
   if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts});
   return {mode: 'stats', job: S.job, stat: {base}};
 }
@@ -690,7 +698,7 @@ function statWhatHTML(s){
   const assumed = enh ? `<p class="muted small">${esc(t('statEnhNote', {s: enh.name, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : 'statEnhSelf')}))}</p>`
     : ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
   return `${floors}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
-    own + refLine + assumed + search + weaponsNote;
+    own + refLine + assumed + enfNoteHTML(s) + search + weaponsNote;
 }
 // The result's lines: the objectives first, then every figure, the floors marked
 function statRows(s){
@@ -710,10 +718,11 @@ function statRows(s){
   if (pair && family(s.path, s.pieces) !== 'fc') rows.push({id: 'cure4', label: t('statCure4'), get: f => f.cureIV, fmt: v => String(Math.round(v)), tip: t('statCure4Tip')});
   if (ref) rows.push({id: 'ref', label: t('statRef'), get: f => f.hp - ref.hp, fmt: v => (v > 0 ? '+' : '') + Math.round(v), tip: t('statRefTip', {f: shortPath(ref.path), h: ref.hp}),
     floor: v => v >= 0 && v <= HP_SPREAD});
+  rows.push(...enfRows(s));
   if (pair) rows.push({id: 'gap', label: t('statGap'), get: f => pair.gap(f), fmt: v => String(Math.round(v)), tip: t('statGapTip', {m: shortPath(pair.mid), f: shortPath(pair.pre)})});
   const first = so.objs.map(k => rows.find(r => r.id === k)).filter(Boolean);
   // the gap (and the Cure's power) right under the objectives: it is what the pair of sets is for; Lowest HP only as an objective
-  const near = rows.filter(r => (['gap', 'ref', 'cure4'].includes(r.id) || r.id.startsWith('act:')) && !first.includes(r));
+  const near = rows.filter(r => (['gap', 'ref', 'cure4'].includes(r.id) || r.id.startsWith('act:') || r.id.startsWith('enf:')) && !first.includes(r));
   const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow');
   return first.concat(near, rest);
 }

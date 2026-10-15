@@ -60,7 +60,7 @@ return {
     {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'An enfeeble of that kind, when sets.midcast.<kind> does not exist',
         base = 'midcast.Enfeebling Magic'},
     -- P8 resolve_mode
-    {'midcast.Enfeebling Magic.{EnfeebleMode}', when = 'An enfeeble in that Enfeeble Mode, without a set for its kind',
+    {'midcast.Enfeebling Magic.{EnfeebleMode}', when = 'Any enfeeble while that Enfeeble Mode is chosen (not Auto), unless its kind has a set for the mode',
         base = 'midcast.Enfeebling Magic'},
     -- midcast_enfeebling: laid on top while Saboteur is up
     {'midcast.Enfeebling Magic.Saboteur', when = 'Casting an enfeeble while Saboteur is up: on top of the enfeeble set',

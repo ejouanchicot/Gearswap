@@ -150,7 +150,7 @@ const STATE_HELP_FR = {
     SubWeapon: 'La main gauche. Avec une deuxième arme en /NIN ou /DNC, ton engaged prend sa version .DW si tu l’as définie.',
     EngagedMode: 'Ton set engaged : sets.engaged.DT, .Acc, .TP ou .Enspell.', IdleMode: 'Ton set idle : sets.idle.Refresh ou sets.idle.DT.',
     CombatMode: 'Allumé : verrouille main, sub et range : lancer un sort ne change jamais tes armes (le TP reste).',
-    EnfeebleMode: 'Potency, Skill ou Duration : choisit la version du set d’un affaiblissement, quand tu l’as ajoutée.',
+    EnfeebleMode: 'Auto : chaque affaiblissement prend le set de son type (mnd_potency, duration…). Potency, Skill ou Duration : le set de ce mode sur tous les affaiblissements.',
     NukeMode: 'FreeNuke : ton set de nuke normal. Magic Burst : sa version Magic Burst.',
     SaboteurMode: 'Allumé : les sorts listés dans RDM_SABOTEUR_CONFIG.lua lancent Saboteur d’abord quand il est prêt.',
     NukeTier: 'Le tier des commandes de nuke (I = le sort de base).',

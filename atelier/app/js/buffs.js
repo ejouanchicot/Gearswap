@@ -243,6 +243,10 @@ const JAS = {
   'Focus': {job: 'MNK', lvl: 25, fx: (m, l) => m ? {crit: 20, acc: 120} : {crit: 20 * (1 - (99 - l) / 100), acc: 100 * (1 - (99 - l) / 100)}},
   'Impetus': {job: 'MNK', lvl: 88, fx: () => ({crit: 45, atk: 126})},
   'Composure': {job: 'RDM', lvl: 50, mainOnly: true, fx: () => ({acc: 70})},
+  // spells on oneself only (BG Wiki Temper, Temper II): Double / Triple Attack by the skill at the cast (temperPot);
+  // eng: what the damage engine is given, the engine having no Temper of its own; jp: the job points it comes with
+  'Temper': {job: 'RDM', lvl: 95, mainOnly: true, excl: 'temper', fx: () => ({da: temperPot(false)}), eng: () => ({DA: temperPot(false)})},
+  'Temper II': {job: 'RDM', lvl: 99, jp: 1200, mainOnly: true, excl: 'temper', fx: () => ({ta: temperPot(true)}), eng: () => ({TA: temperPot(true)})},
   'Conspirator': {job: 'THF', lvl: 87, fx: () => ({acc: 45, sb: 50})},
   'Last Resort': {job: 'DRK', lvl: 15, twoHanded: ['jahaste'], fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25, jahaste: m ? 25 : 15})},
   'Sharpshot': {job: 'RNG', lvl: 1, fx: m => ({racc: 40, ratk: m ? 40 : 0})},
@@ -356,6 +360,23 @@ function danceMerit(kind){ const m = (meritList() || []).find(x => x.key === DAN
 function danceFloor(kind, pieces){
   const k = DANCE[kind], worn = pieces && k.gear.test((pieces[k.slot] || {}).name || '');
   return 20 + (worn ? danceMerit(kind) : 0);
+}
+// Temper's potency (BG Wiki Temper, Temper II): floor((Enhancing Magic skill - 300) / 10) %, 5 under 360 of skill;
+// Temper II 40 % at most (700 of skill). Gear counts at the cast only: the skill is the character's own plus the set it
+// is cast in, as MidcastManager picks it (the spell's name, the tier-less name, then the skill's set); 600 without an export
+const TEMPER_SETS = ['sets.midcast["Temper II"]', 'sets.midcast.Temper', 'sets.midcast["Enhancing Magic"]'];
+function temperSkill(two){
+  const c = measuredChar() || {}, d = data();
+  if (!c.skills || !d) return 600;
+  const find = p => d.sets.find(x => x.path === p || (x.aliases || []).includes(p));
+  const set = (two ? TEMPER_SETS : TEMPER_SETS.slice(1)).map(find).find(Boolean);
+  let skill = skillLevel(c, 'enhancing magic');
+  if (set) for (const [slot, p] of Object.entries(optPieces(withoutTrial(() => withWeapons(set).pieces)))) skill += (statVec(p, slot) || {}).enh || 0;
+  return skill;
+}
+function temperPot(two){
+  const skill = temperSkill(two), pot = skill < 360 ? 5 : Math.floor((skill - 300) / 10);
+  return two ? Math.min(40, pot) : pot;
 }
 // The pieces of the set shown (its weapons and tries in), for what depends on the gear worn
 const shownPieces = () => S._curSet ? withWeapons(S._curSet).pieces : null;
@@ -497,9 +518,10 @@ function jasOf(){
   const sub = (data() || {}).sub, fam = S._curSet ? family(S._curSet.path, S._curSet.pieces) : null;
   const key = [DATA_GEN, S.char, S.job, sub, fam].join('|');
   if (JAS_MEMO.key === key) return JAS_MEMO.out;
-  const lv = jaLevels(), out = [];
+  const lv = jaLevels(), out = [], spent = (measuredChar() || {}).jp_spent;
   for (const [name, a] of Object.entries(JAS)) {
-    const jobs = [].concat(a.job || []), asMain = jobs.includes(S.job) && a.lvl <= lv.main;
+    // (job points unknown without an export: offered)
+    const jobs = [].concat(a.job || []), asMain = jobs.includes(S.job) && a.lvl <= lv.main && !(a.jp && spent != null && spent < a.jp);
     const asSub = !asMain && !a.sp && !a.mainOnly && jobs.includes(sub) && a.lvl <= lv.sub;
     // a party buff from another job stays offered (where it serves the set shown); a WAR does not need the party
     // Warcry on top of its own

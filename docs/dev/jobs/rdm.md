@@ -312,7 +312,7 @@ every subjob change, so values reset). Keys from `RDM_KEYBINDS.lua`;
 | `MainWeapon` | Naegling, Colada, Daybreak | Naegling | `^numpad1` | `SetBuilder.apply_weapon` |
 | `SubWeapon` | Ammurapi, Genmei, Malevolence | Genmei | `^numpad2` | `SetBuilder.offhand_item`, `apply_weapon` |
 | `CombatMode` | Off, On | Off | `^numpad5` | shared Combat Mode hook, `job_precast`, `SetBuilder` |
-| `EnfeebleMode` | Potency, Skill, Duration | Potency | `^numpad3` | `midcast_enfeebling` (`mode_state`), only through `.<type>.<mode>` sets |
+| `EnfeebleMode` | Auto, Potency, Skill, Duration | Auto | `^numpad3` | `midcast_enfeebling` (`mode_state`); a mode other than Auto drops the type (`enfeeble_mode_forced`) when `.<Mode>` exists and `.<type>.<Mode>` does not |
 | `NukeMode` | FreeNuke, Magic Burst | FreeNuke | `^numpad7` | `midcast_elemental` |
 | `MainLightSpell` / `SubLightSpell` | Fire, Aero, Thunder | Fire / Thunder | none | `castlight` / `castsublight` |
 | `MainDarkSpell` / `SubDarkSpell` | Blizzard, Stone, Water | Blizzard / Stone | none | `castdark` / `castsubdark` |
@@ -395,7 +395,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 | `sets.precast.WS` + Savage Blade, Sanguine Blade, Seraph Blade, Chant du Cygne, Requiescat | Mote default precast | yes |
 | `sets.midcast.FastRecast` | Mote-Globals `user_midcast`, first for every spell | no |
 | `sets.midcast['Enfeebling Magic']` + 7 type sets | MidcastManager P7 / P9 | yes |
-| `sets.midcast['Enfeebling Magic'].Potency`, `.Skill`, `.Duration` | `EnfeebleMode` P8, for an enfeeble with no type (the -ga, Inundation) | yes |
+| `sets.midcast['Enfeebling Magic'].Potency`, `.Skill`, `.Duration` | `EnfeebleMode` P8: every enfeeble while that mode is chosen (the type left out), and an enfeeble with no type | yes |
 | `sets.midcast['Enfeebling Magic'].<type>.<Mode>` | `EnfeebleMode` P3 | no |
 | `sets.midcast.Dispelga` | MidcastManager P0 | yes |
 | `sets.midcast['Enfeebling Magic'].Saboteur` | `midcast_enfeebling` overlay | yes |
@@ -476,8 +476,8 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   `CooldownChecker`; `TierRefiner` uses recast exactly 0, without the
   `RECAST_CONFIG` tolerance.
 - The tier lookup is keyed on the first word of the name, for every spell.
-- `EnfeebleMode` only matters through `.<type>.<mode>` sets (or for a spell with
-  no type set).
+- `EnfeebleMode` Auto (the default) leaves each spell its type's set. Another mode
+  wears its own set on every enfeeble, a `.<type>.<mode>` set first (2026-10-14).
 - `state.EnhancingMode` does not exist; the Composure target is the only
   enhancing variant.
 - The template's enfeebling base set carries `main`, `sub` and `range`: with
@@ -558,8 +558,8 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - Fixed 2026-09-28: Accession + Phalanx was overridden by `MidcastFallback`
   (`sets.midcast.Phalanx` over the plain Enhancing set); the branch now calls
   `MidcastFallback.skip(spell)`.
-- `EnfeebleMode` changes no gear with the template (no `.<type>.<mode>` set).
-  Kept on purpose (player's choice, 2026-09-27).
+- `EnfeebleMode` Potency / Skill / Duration put their own set on every enfeeble
+  (player's choice, 2026-10-14; before it the mode changed no gear).
 - `stage_cooldown` ignores `TierRefiner.refine`'s return value: a spell arriving
   within 0.2 s of a replacement gets no recast check.
 - Fixed 2026-09-28: the unreachable `midcast_subjob` branch is removed (midcast simulation identical before and after); the `.DW` sets are chosen only on /NIN or /DNC.

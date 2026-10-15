@@ -329,13 +329,14 @@ sets.midcast['Enfeebling Magic'].potency = set_combine(sets.midcast['Enfeebling 
 -- Duration focus (maximize duration - composure, relic, etc.)
 sets.midcast['Enfeebling Magic'].duration = set_combine(sets.midcast['Enfeebling Magic'], {})
 
--- EnfeebleMode (Potency / Skill / Duration). The mode set is looked up UNDER
--- the spell's type first: sets.midcast['Enfeebling Magic'].mnd_potency.Skill,
--- .macc.Duration... (the type comes from the enfeebling database). Example:
+-- EnfeebleMode (Auto / Potency / Skill / Duration). Auto, the default: each
+-- spell wears its type's set (.mnd_potency, .duration...). Potency / Skill /
+-- Duration: the mode's set below on EVERY enfeeble instead, unless the type has
+-- a set for that mode, looked up first (shared/jobs/rdm/functions/RDM_MIDCAST.lua
+-- enfeeble_mode_forced). Example:
 --   sets.midcast['Enfeebling Magic'].mnd_potency.Skill =
 --       set_combine(sets.midcast['Enfeebling Magic'].mnd_potency, {hands = '...'})
--- The three below are only used by a spell with no type (Slowga, Diaga II,
--- Inundation and the other -ga).
+-- (Auto also wears them for a spell with no type: Inundation.)
 sets.midcast['Enfeebling Magic'].Potency = set_combine(sets.midcast['Enfeebling Magic'], {})
 sets.midcast['Enfeebling Magic'].Skill = set_combine(sets.midcast['Enfeebling Magic'], {})
 sets.midcast['Enfeebling Magic'].Duration = set_combine(sets.midcast['Enfeebling Magic'], {})

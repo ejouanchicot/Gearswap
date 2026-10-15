@@ -383,7 +383,8 @@ function optRunResult(s, res, tr, plain, gains){
   // the same piece in another copy (other augments, another path or rank) said so
   const changes = Object.keys(tr).map(slot => { const from = plain[slot] && !isEmpty(plain[slot]) ? plain[slot].name : '—', to = tr[slot] ? tr[slot].name : t('empty');
     return {slot, from, name: tr[slot] ? tr[slot].name : null, to: to === from ? to + ' · ' + t('orOtherCopy') : to}; });
-  const d = (R.low ? res.start.raw / res.best.raw - 1 : res.best.raw / res.start.raw - 1) * 100;
+  // (a figure at 0 on both, an enfeebling set's potency for spells that have none: no gain, not 0 / 0)
+  const dRaw = (R.low ? res.start.raw / res.best.raw - 1 : res.best.raw / res.start.raw - 1) * 100, d = isFinite(dRaw) ? dRaw : 0;
   const fig = [];
   if (res.best.round && res.start.round) for (const c of Object.values(ENG_COLS)) {
     const a = c.get(res.start.round), b = c.get(res.best.round);

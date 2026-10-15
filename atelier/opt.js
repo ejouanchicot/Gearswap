@@ -791,6 +791,8 @@
         var div = (b.div || 0) + t.div;
         f.enhSkill = enhAll; f.divSkill = div;
         O.enhancingFigures(f, t, b, enhAll);
+        // enfeebling magic (atelier/opt_enf.js, the page's app/js/enfeeble.js): a set cast for enfeebling spells
+        if (O.enfeeblingFigures) O.enfeeblingFigures(f, t, b);
         // the block the gear adds (Guide_Paladin: block rate = the shield's base + (shield skill - attacker's) x 0.2325,
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;
@@ -824,7 +826,7 @@
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };

@@ -8,7 +8,7 @@
 ---   • Engaged modes (EngagedMode: DT/Acc/TP/Enspell - melee focus)
 ---   • Idle modes (IdleMode: Refresh/DT)
 ---   • Weapon selection (MainWeapon: Naegling/Colada/Daybreak, SubWeapon: Ammurapi/Genmei/Malevolence)
----   • Enfeebling system (EnfeebleMode: Potency/Skill/Duration)
+---   • Enfeebling system (EnfeebleMode: Auto/Potency/Skill/Duration)
 ---   • Nuke system (NukeMode: FreeNuke/Magic Burst)
 ---   • Spell selection (MainLight/Dark, SubLight/Dark, NukeTier)
 ---   • Buff system (EnSpell, GainSpell, Barspell, BarAilment, Spike)
@@ -23,7 +23,7 @@
 ---   • EngagedMode: DT/Acc/TP/Enspell (melee focus when engaged)
 ---   • IdleMode: Refresh/DT (idle gear focus)
 ---   • CombatMode: Off = free swapping, On = weapon slots locked
----   • EnfeebleMode: Potency/Skill/Duration (enfeebling magic focus)
+---   • EnfeebleMode: Auto/Potency/Skill/Duration (enfeebling magic focus)
 ---   • NukeMode: FreeNuke/Magic Burst (elemental magic strategy)
 ---   • MainLightSpell: Fire/Aero/Thunder (primary light nuke)
 ---   • SubLightSpell: Fire/Aero/Thunder (secondary light nuke)
@@ -119,11 +119,12 @@ function RDMStates.configure()
     state.EnfeebleMode =
         M {
         ['description'] = 'Enfeeble Mode',
+        'Auto', -- Each spell's type set (mnd_potency, duration...); another mode puts its own set on every enfeeble
         'Potency', -- Max potency (MND/INT)
         'Skill', -- Enfeebling Skill+
         'Duration' -- Duration+ gear
     }
-    state.EnfeebleMode:set('Potency')
+    state.EnfeebleMode:set('Auto')
 
     state.NukeMode =
         M {
