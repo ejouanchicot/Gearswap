@@ -25,7 +25,7 @@ document.addEventListener('click', e => {
   if (d.lang) { S.lang = d.lang; render(); return; }
   if (d.engine) { S.engine = d.engine; useEngine(S.engine); save(); render(); return; }
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
-  if ('config' in d) { S._cfg = !S._cfg; render(); scrollTo({top: 0}); return; }
+  if ('config' in d) { S._cfg = !S._cfg; S._pkg = false; render(); scrollTo({top: 0}); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
   if (d.section) { S.section = d.section; render(); return; }
   if (d.jobtab) { S.jobTab = d.jobtab; save(); render(); return; }
@@ -411,7 +411,8 @@ function readExports(first, done){
     for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
     for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
     if (!CHARS[S.char]) { S.char = Object.keys(CHARS)[0]; S.job = null; }
-    if (!S.char) { $('#view').innerHTML = `<div class="placeholder"><p class="display" style="font-size:22px">Atelier</p><p>${t('tagline')}</p><p>${t('none')}</p></div>`; if (done) done(); return; }
+    // nothing exported yet: the welcome page (welcome.js, through renderHome)
+    if (!S.char) { S.job = null; if (done) done(); render(); return; }
     // back where the last visit left off, when that job is still exported
     if (S.job && !(DATA[S.char] || {})[S.job]) S.job = null;
     if (!first) canonAll();

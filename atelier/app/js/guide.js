@@ -182,6 +182,8 @@ function guideTourMove(d){
 function guideAfter(){
   const g = guideState(), page = guidePage();
   guideButton();
+  // nothing exported yet (the welcome page): the visit waits for something to show
+  if (!CHARS[S.char]) return;
   if (GUIDE.tour != null) return guideTourPlace();
   if (page === GUIDE.page) return;
   GUIDE.page = page; clearTimeout(GUIDE.timer); guideDrop('gnote'); guideDrop('ghelp');

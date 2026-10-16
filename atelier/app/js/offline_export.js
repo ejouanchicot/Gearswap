@@ -191,7 +191,7 @@ const OfflineExport = (() => {
   }
 
   /* ---- the run ---- */
-  // opts: {allSubs, force, onProgress(step, n, total, what)}, step = read | start | jobs | subs | write; returns {exported, failed: [[job, sub, error]], unchanged, patched}
+  // opts: {allSubs, force, mainOnly, onProgress(step, n, total, what)}, step = read | start | jobs | subs | write; returns {exported, failed: [[job, sub, error]], unchanged, patched}
   async function run(env, char, opts = {}){
     const say = opts.onProgress || (() => {}), folder = await exportFolder(env, char);
     const jobs = await jobsOf(env, char);
@@ -252,8 +252,9 @@ const OfflineExport = (() => {
       if (!data) { failed.push([r.job, r.sub, r.error || 'no export']); continue; }
       await write(r.job, r.sub, finish(data, r.sub, carry[r.job], names, true)); done.push([r.job, r.sub]);
     }
+    // mainOnly: the main subjob of each job only (a package: the game's first //gs c atelier does the others)
     const more = [];
-    for (const [job, sub] of done) for (const s of own[job] === null ? JOBS : own[job]) if (s !== job && s !== sub) more.push([job, s]);
+    if (!opts.mainOnly) for (const [job, sub] of done) for (const s of own[job] === null ? JOBS : own[job]) if (s !== job && s !== sub) more.push([job, s]);
     for (const r of more.length ? await lua(more, 'subs') : []) {
       const mine = r.text && parseExport(r.text), main = await read(r.job, first[r.job]);
       if (!mine) { failed.push([r.job, r.sub, r.error || 'no export']); continue; }

@@ -57,6 +57,21 @@
 .themecard small{display:block;padding:2px 12px 11px;color:var(--muted);font-size:12.5px;line-height:1.35}
 .cfgrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .cfgrow > span{color:var(--muted);font-size:13px}
+/* the welcome page (welcome.js) and the Packages page (packages.js): laid out as the Settings */
+.welcome{max-width:1100px}
+.welcome .lede{color:var(--muted)}
+.welcome ol{margin:0 0 8px 20px;line-height:1.8}
+.welcome code{font-family:var(--mono);color:var(--accent);background:var(--panel-2);padding:1px 6px;border-radius:4px}
+.welcome section .cfgrow{margin-top:10px}
+.pkg .lede{color:var(--muted);max-width:900px}
+.pkg section .cfgrow + .cfgrow, .pkg section .cfgrow + p, .pkg section p + .cfgrow{margin-top:9px}
+.pkg .inp{background:var(--panel-2);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--radius-s);padding:6px 10px;font-size:14px;min-width:240px}
+.pkg .inp:focus{outline:none;border-color:var(--accent)}
+.pkg .pkgjobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));margin-bottom:9px}
+.pkg .pkgjobs button{font-family:var(--mono)}
+.pkg .pkgknown{gap:8px}
+.pkg .pkgknown .btn[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.pkg ul{margin:0 0 6px 18px;line-height:1.6}
 
 /* ============================================================================ Vana'diel: the game's blue windows */
 :root[data-theme="vanadiel"]{
@@ -126,8 +141,8 @@
 .topbar .live .led{width:8px;height:8px;border-radius:50%;background:var(--r-healer);box-shadow:0 0 8px 1px var(--r-healer),inset 0 1px 1px rgba(255,255,255,.6)}
 @media (max-width:1560px){.topbar .tgrp .live.act .lbl{display:none}}
 /* the gear is known without its word, and the bar keeps its one line */
-.topbar .tgrp .live.act[data-config] .lbl{display:none}
-.topbar .tgrp .live.act[data-config]{padding:5px 9px;font-size:14px}
+.topbar .tgrp .live.act[data-config] .lbl, .topbar .tgrp .live.act[data-pkgopen] .lbl{display:none}
+.topbar .tgrp .live.act[data-config], .topbar .tgrp .live.act[data-pkgopen]{padding:5px 9px;font-size:14px}
 .topbar .live.act{letter-spacing:.06em;padding:5px 10px 5px 9px}
 .topbar{gap:10px 14px}
 
@@ -175,7 +190,7 @@
   box-sizing:border-box;height:var(--ctl);display:inline-flex;align-items:center;padding-top:0;padding-bottom:0;line-height:1}
 .topbar .hero .topsel{display:inline-block}
 .topbar .readout{justify-content:center}
-.topbar .tgrp .live.act[data-config]{width:var(--ctl);justify-content:center;padding:0}
+.topbar .tgrp .live.act[data-config], .topbar .tgrp .live.act[data-pkgopen]{width:var(--ctl);justify-content:center;padding:0}
 
 /* Settings: the two engines, each a card saying what it computes */
 .engines{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}

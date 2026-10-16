@@ -51,11 +51,15 @@ function renderSide(){
   const hero = S.char ? `<div class="hero" ${job ? `style="--role:${ROLE_COLOR[job[2]]}"` : ''}><span class="crest">${job ? emblem(job[0]) :
     '<svg width="20" height="20" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg>'}</span>` +
     `<span class="who"><b>${esc(S.char)}</b><span class="plates">${jobSel}${d ? subPicker() : ''}</span></span></div>` : '';
-  const gear = `<button class="live act ${S._cfg ? 'mid' : ''}" data-config title="${esc(t('ttGear'))}">⚙<span class="lbl"> ${esc(t('cfgOpen'))}</span></button>`;
+  // the Packages page (packages.js) is left out of a player's package (make_package.py): no button there
+  const gear = `<button class="live act ${S._cfg ? 'mid' : ''}" data-config title="${esc(t('ttGear'))}">⚙<span class="lbl"> ${esc(t('cfgOpen'))}</span></button>` +
+    (typeof renderPackages === 'function' ? `<button class="live act ${S._pkg ? 'mid' : ''}" data-pkgopen title="${esc(t('ttPkg'))}">📦<span class="lbl"> ${esc(t('pkgOpen'))}</span></button>` : '');
   patchInto($('#top'), `${brand}${hero}<span class="tsep"></span>${grp(t('grpChar'), chars)}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${grp(t('grpFiles'), refreshBadge() + historyBadge())}${grp('GearSwap', liveBadge())}${grp(t('grpPage'), gear)}`);
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
 function renderHome(){
+  // nothing exported yet: how to fill the page (welcome.js)
+  if (!CHARS[S.char]) return welcomeHTML();
   const groups = jobGroups(), jobs = groups.flatMap(g => g.jobs); let totS = 0, totK = 0;
   const dim = new Set(groups.filter(g => g.label !== null && !g.master).flatMap(g => g.jobs.map(j => j[0])));
   for (const [c] of jobs) { const n = counts(c); totS += n.sets; totK += n.keys; }
@@ -609,7 +613,7 @@ function render(){
   // a folded block the player opened stays open through a redraw of the same tab: a click inside it (a job, a
   // tab, a mode) draws the page again, and the block closed under the pointer (2026-10-10)
   const opened = S._view === view ? new Set([...document.querySelectorAll('#view details[open]')].map(foldKey)) : new Set();
-  renderSide(); $('#view').innerHTML = S._cfg ? renderConfig() : S.job ? renderJob() : renderHome(); save();
+  renderSide(); $('#view').innerHTML = S._pkg && typeof renderPackages === 'function' ? renderPackages() : S._cfg ? renderConfig() : S.job ? renderJob() : renderHome(); save();
   for (const el of document.querySelectorAll('#view details:not([open])')) if (opened.has(foldKey(el))) el.open = true;
   SCROLLERS.forEach((q, i) => { const el = $(q);
     if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });

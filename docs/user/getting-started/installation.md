@@ -2,6 +2,11 @@
 
 From a fresh Windower to your first job loaded.
 
+> **You received a zip `GearSwap_<Name>.zip`?** It already holds everything,
+> your character included: follow the `INSTALLATION.txt` inside it and skip
+> this page. Such a zip is made in the Atelier (📦 **Paquets** button) or with
+> `python make_package.py <Name>` from `data/`.
+
 ## 1. Requirements
 
 - [Windower 4](https://www.windower.net/) with the GearSwap addon.

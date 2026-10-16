@@ -12,6 +12,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 |---|---|---|
 | `clone_character.py` | yes | Interactive cloner: DB lookup, job/role/region prompts, copy + overlay + rename, generates `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua`, keeps the files written in game across a re-clone |
 | `CLONE_CHARACTER.bat` | yes | Windows launcher: checks `python`, maps a bare `fr`/`en` first argument to `--lang`, passes the rest through |
+| `make_package.py` | yes | One zip for one player: a whole `GearSwap/` folder with the character cloned by `clone_character.py` in a temporary copy of `_master/` (see [A package for a player](#a-package-for-a-player)); the Atelier's 📦 page runs this same file |
 | `character_db.lua` | yes | Roster: character -> jobs + role, archive list, all-jobs list, and a Lua query API that nothing calls |
 | `scripts/check_overlay.py` | yes | Lists the differences between a live folder and its overlay |
 | `scripts/check_syntax.py` | yes | `luac`-parses every Lua file, live folders included |
@@ -315,6 +316,32 @@ Full redeploy (`clone_character.py` on an existing character):
 4. Dual-box: a MAIN gets the `_ALT_CUSTOM` files in `_common/dualbox/alt/` from the clone; edit the partner's `_common/dualbox/DUALBOX_CONFIG.lua` (`alt_character` / `main_character` and `group`) to name the new character. For automatic HP priorities, set `unity = 'max'` in its `_common/gear/HP_PRIORITY_CONFIG.lua` if its Unity leader is rank 1, and run `//gs c gearscan` once in game.
 5. A character created without an overlay gets the commented `WARDROBE_CONFIG.lua` template (organizer defaults until a key is uncommented) and the commented `<JOB>_REFILL.lua` templates, so every job refills the common list of `REFILL_CONFIG.lua`. Edit those files by hand, or save the lists in `_master/<Name>/` and re-clone.
 6. In game: `//lua r gearswap`, `//gs c checksets`, and `//gs c wo scan` if the warp-item list is wanted.
+
+## A package for a player
+
+`make_package.py` (2026-10-16) builds what another player is sent: one zip holding `INSTALLATION.txt` (French) and a `GearSwap/` folder to drop into `Windower/addons/`.
+
+| In the zip | From |
+|---|---|
+| `GearSwap/*.lua`, `README.md`, `version_history.txt` | the addon's own files (`ADDON_FILES`) |
+| `GearSwap/libs/` | Mote's libraries |
+| `GearSwap/data/shared/` | the common code |
+| `GearSwap/data/<Name>/` | the clone: `clone_character.py` (with `migrate_layout.py`, `migrate_config.py`, `where_is_what.py`) run in a temporary copy of `_master/` and `character_db.lua`; the data folder is only read |
+| `GearSwap/data/atelier.html`, `atelier/{index.html,app,calc,lua,engine}`, `opt.js`, `opt_enf.js`, `targets.js`, `cycle.js` | the Atelier |
+| `GearSwap/data/scripts/atelier/AtelierLink/`, `load_job.lua` | the AtelierLink addon and the export the page runs without the game |
+
+Never in it: `_master/`, the overlays, any other character's folder, `atelier/link_*.js` (link keys), `atelier/live_*.js`, the rest of `atelier/icons/` (only the icons of the character's items go in, see below), `atelier/Img/`, `notes/`, the other `scripts/`, and `atelier/app/js/packages.js` with `package_exports.js` (a package has no `_master/` to make packages from: its `atelier/index.html` is written without `'packages'` in its list of scripts, and the top bar shows the 📦 button only when that file is loaded). `sources()` lists what is read; anything else of the Windower folder is not even opened.
+
+Two ways to run it, one result:
+
+- Command line, from `data/`: `python make_package.py <Name> [--region US|EU|JP] [--jobs WAR,DRK] [--alt <Name> | --main <Name>] [--out path] [--no-exports]`. Jobs and role default to the character's line in `character_db.lua`; the zip goes to `~/Downloads/GearSwap_<Name>.zip`.
+- The Atelier's 📦 **Paquets** button (`atelier/app/js/packages.js`): name, jobs, dual-box, region, then **Créer le paquet**. The page loads Pyodide 0.26.4 (Python in WebAssembly, `cdn.jsdelivr.net`, about 10 MB, cached by the browser after the first time) in a worker, copies what `sources()` names from the Windower folder already shown to the page into the worker's memory, and calls the same `build()`. Chrome or Edge only (folder access).
+
+The package also holds the Atelier's exports of the character (`<Name>/atelier/exports/<JOB>_<SUB>.js`, one per job, its main subjob, and `atelier/index.js`), so the page shows the jobs and sets the first time it opens: `atelier/app/js/package_exports.js` runs `OfflineExport` (`offline_export.js`, option `mainOnly`) on the package's own files, with only `res/` and `addons/libs/` read from the maker's Windower folder (never `addons/PorterPacker`). On the command line `add_exports()` runs it under Node (`scripts/atelier/package_exports_cli.js`; without Node, or with `--no-exports`, the package has none); in the page, the worker hands the zip's files to the page, which runs it with its Lua workers, and the worker adds what it wrote. With them go the icons of the items they name (their `icons` field): the game writes item icons only on `//gs c atelier` (`item_icons.lua`, from its DAT files), so `PackageExports.icons()` copies `data/atelier/icons/<id>.bmp` from the maker's folder (about 500 for Morph, 2 MB); an icon the maker's game never wrote stays an empty frame until the player's first export. The bags and the other subjobs come with the player's first `//gs c atelier`. A page with no export at all shows a welcome page instead (`atelier/app/js/welcome.js`): `//gs c atelier` in game, or **Lire mes fichiers** (the same export, every character of the data folder), and the moogle's visit waits.
+
+Two things differ off Windows, and both are handled so the page's zip is the command line's, byte for byte: there is no `lua5.1` (`migrate_config.read_lua` is replaced by `read_lua_table`, a reader of plain `return { ... }` tables, which is enough for the three files it reads: `TUNING`, `AUTO_ABILITIES`, `BUFF_CONFIG`), and text is written with LF (`_windows_newlines` writes the clone's text files with CRLF, as Windows does).
+
+Tests: `scripts/atelier/make_package_test.py` (every character of `character_db.lua`: the character folder of the zip is the one `clone_character.py` writes when run by hand, nothing private is in the zip, the same zip without Lua; about 2 min) and `scripts/atelier/make_package_page_test.js` (the page's worker in Chrome, Pyodide from the CDN, against the command line's zip; needs Internet and Puppeteer). Both run with `python scripts/run_tests.py --full`.
 
 ## How to add a job to the templates
 
