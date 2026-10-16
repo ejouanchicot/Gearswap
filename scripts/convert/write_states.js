@@ -55,11 +55,57 @@ for (const name of MOTE_MODES) {
   }
   if (!done) continue;
   set[name] = m.options;
-  // a default he does not have: Mote's :set() would refuse it
+  // the template's default goes (Mote's :set() would refuse one he does not have, and one he has is
+  // still not the one he starts on): his own, when it is not his first value
+  const his = m.default && m.options.includes(m.default) ? m.default : m.options[0];
   const choose = new RegExp(`^([ \\t]*)(state\\.${name}:set\\('([^']*)'\\).*)$`, 'mg');
-  text = text.replace(choose, (all, ind, line, value) => m.options.includes(value) ? all
-    : `${ind}-- ${line}  -- not one of ${data.player}'s values: his default is ${m.options[0]}`);
+  text = text.replace(choose, (all, ind, line, value) => value === his ? all
+    : `${ind}-- ${line}  -- ${data.player} starts on ${his}`);
+  if (his !== m.options[0]) {
+    const at = new RegExp(`state\\.${name}(\\s*=\\s*M\\{[^\\n]*|:options\\([^\\n]*)`, 'm').exec(text);
+    if (at) text = text.slice(0, at.index + at[0].length) + `\nstate.${name}:set(${q(his)})` + text.slice(at.index + at[0].length);
+  }
 }
+// His weapon modes (0_Shared's WeaponSet / SubSet / RangedSet: item names, 'Free' = keep what is worn) are
+// our MainWeapon / SubWeapon / RangeWeapon, laid by BaseSetBuilder.lay_weapons (an item name with no set is
+// equipped by WEAPON_CONFIG's equip_without_set). A job where he has no such mode gets 'Free' alone: the
+// template's values (another character's weapons) would otherwise go over the weapons of his own sets.
+// Left to the map when it handles the mode itself (map.modes, a states_patch of that state).
+const WEAPONS = [['WeaponSet', 'MainWeapon', 'Main Weapon'], ['SubSet', 'SubWeapon', 'Sub Weapon'], ['RangedSet', 'RangeWeapon', 'Range Weapon']];
+let lastWeapon = null;     // end of the last weapon state written: a missing one goes after it
+for (const [his, ours, label] of WEAPONS) {
+  if ((map.modes || {})[his] !== undefined || (map.states_patch || []).some(p => p.find.includes(`state.${ours}`))) continue;
+  const m = (data.modes || {})[his];
+  const opts = m && m.type === 'list' && m.options && m.options.length ? m.options : ['Free'];
+  const def = new RegExp(`^([ \\t]*)state\\.${ours}\\s*=\\s*M\\s*\\{[^}]*\\}[^\\n]*`, 'm');
+  const line = `state.${ours} = M{['description']='${label}', ${opts.map(q).join(', ')}}`;
+  const head = `-- ${data.player}'s ${his} (converted from his GearSwap)`;
+  const found = def.exec(text);
+  let ind = '';
+  if (found) {
+    ind = found[1];
+    text = text.slice(0, found.index) + `${ind}${head}\n${ind}${line}` + text.slice(found.index + found[0].length);
+    // the template's own default goes: his is the one he starts on (added below when not his first value)
+    const his = m && m.default && opts.includes(m.default) ? m.default : opts[0];
+    text = text.replace(new RegExp(`^([ \\t]*)(state\\.${ours}:set\\((['"])(.*?)\\3\\).*)$`, 'mg'),
+      (all, i, l, qq, v) => v === his ? all : `${i}-- ${l}  -- ${data.player} starts on ${his}`);
+    lastWeapon = new RegExp(`state\\.${ours}\\s*=\\s*M\\{[^\\n]*`, 'm');
+  } else if (!(opts.length === 1 && opts[0] === 'Free')) {
+    const anchor = lastWeapon && lastWeapon.exec(text);
+    if (!anchor) { notes.push(`${his}: no ${ours} in the template to put it after, left out`); continue; }
+    ind = (/^[ \t]*/.exec(text.slice(text.lastIndexOf('\n', anchor.index) + 1)) || [''])[0];
+    const at = anchor.index + anchor[0].length;
+    text = text.slice(0, at) + `\n\n${ind}${head}\n${ind}${line}` + text.slice(at);
+    lastWeapon = new RegExp(`state\\.${ours}\\s*=\\s*M\\{[^\\n]*`, 'm');
+  } else continue;
+  if (m && m.default && m.default !== opts[0] && opts.includes(m.default)) {
+    const after = new RegExp(`state\\.${ours}\\s*=\\s*M\\{[^\\n]*`, 'm').exec(text);
+    const at = after.index + after[0].length;
+    text = text.slice(0, at) + `\n${ind}state.${ours}:set(${q(m.default)})` + text.slice(at);
+  }
+  set[ours] = opts;
+}
+
 // A Hybrid Mode he never had (only Normal) while our template starts on another value (PDT): our
 // builders then read sets.engaged.PDT, which he does not have, or which is a set of another mode of
 // his (THF's Offense Mode PDT). His characters start on Normal.

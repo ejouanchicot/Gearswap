@@ -126,9 +126,13 @@ for (const [p, pieces] of Object.entries(map.add || {})) {
 
 // Mote's gear.ElementalObi and kin, named only at cast time by his code: our systems put those pieces on
 report.dynamic = [];
+// a slot given a table with no item name (feet = {} where his gear table had no such entry): no
+// piece in game either; left out and said
+report.nameless = [];
 for (const e of sets) {
   for (const [slot, p] of Object.entries(e.pieces || {})) {
     if (p === '<dynamic>') { delete e.pieces[slot]; report.dynamic.push(luaPath(e.keys) + '.' + slot); }
+    else if (p && typeof p === 'object' && !p.name) { delete e.pieces[slot]; report.nameless.push(luaPath(e.keys) + '.' + slot); }
   }
 }
 
@@ -157,6 +161,11 @@ for (const [p, base] of Object.entries(map.rebase || {})) {
   const e = byKey.get(keyOf(parsePath(p)));
   if (!e || !e.pieces) throw new Error(`rebase ${p}: no such set`);
   e.rebase = parsePath(base);
+}
+// the same for a family map, which names sets a player may not have: only those he has, over a set he has
+for (const [p, base] of Object.entries(map.rebase_if || {})) {
+  const e = byKey.get(keyOf(parsePath(p)));
+  if (e && e.pieces && byKey.has(keyOf(parsePath(base))) && !(map.rebase || {})[p]) e.rebase = parsePath(base);
 }
 // the other way round: a set his code laid OVER one of his sets at cast time (map.overlay:
 // {'midcast.Aquaveil': 'midcast.EnhancingDuration'}), written set_combine({his pieces}, <that set>)
@@ -194,10 +203,37 @@ const camel = name => {
 const LUA_WORDS = new Set(['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in',
   'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while']);
 
+// ---------------------------------------------------------------- his gear tables (write_gear.js)
+// A piece his 0_AugGear tables hold is written by its path there (HERC.Feet.TA), the one his own
+// job file writes most (then the shortest): his gear file stays the one place a piece is defined.
+// GEAR_FILE: where the converted sets include it from.
+const GEAR_FILE = `_common/sets/0_AugGear_${data.player}.lua`;
+const gearPath = new Map();     // piece signature -> path
+if ((data.gear || []).length) {
+  let source = '';
+  for (const dir of [data.source_dir + data.player + '/', data.source_dir]) {
+    if (fs.existsSync(dir + data.file)) { source = fs.readFileSync(dir + data.file, 'latin1'); break; }
+  }
+  const uses = path => source.split(path).length - 1;
+  const candidates = new Map();
+  for (const g of data.gear) {
+    if (g.piece === 'empty') continue;
+    const sig = JSON.stringify(g.piece);
+    if (!candidates.has(sig)) candidates.set(sig, []);
+    candidates.get(sig).push(g.path);
+  }
+  for (const [sig, paths] of candidates) {
+    paths.sort((a, b) => uses(b) - uses(a) || a.length - b.length || a.localeCompare(b));
+    gearPath.set(sig, paths[0]);
+  }
+}
+const gearUsed = new Set();
+
 const variants = new Map();   // item name -> Map(signature -> piece)
 for (const e of sets) {
   for (const p of Object.values(e.pieces || {})) {
     if (typeof p !== 'object') continue;
+    if (gearPath.has(JSON.stringify(p))) continue;
     const sig = JSON.stringify(p);
     if (!variants.has(p.name)) variants.set(p.name, new Map());
     variants.get(p.name).set(sig, p);
@@ -237,7 +273,12 @@ function pieceTable(p, indent) {
   if (p.priority !== undefined) lines.push(`${indent}    priority = ${p.priority},`);
   return '{\n' + lines.join('\n') + '\n' + indent + '}';
 }
-const expr = p => p === 'empty' ? 'empty' : typeof p === 'string' ? luaStr(p) : pieceVar.get(JSON.stringify(p));
+const expr = p => {
+  if (p === 'empty') return 'empty';
+  const g = gearPath.get(JSON.stringify(p));
+  if (g) { gearUsed.add(g); return g; }
+  return typeof p === 'string' ? luaStr(p) : pieceVar.get(JSON.stringify(p));
+};
 
 // ---------------------------------------------------------------- inheritance
 const sameItem = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -288,7 +329,8 @@ function writeSet(e, lines) {
     lines.push(`${path} = set_combine(${e.derived.from.map(luaPath).join(', ')}, ${body ? '{\n' + body + '\n}' : '{}'})`);
     return;
   }
-  if (isContainer(e)) {
+  // (an empty set laid over another one is that set: rebase / overlay first)
+  if (isContainer(e) && !e.rebase && !e.overlay) {
     if (!SKELETON.has(keyOf(e.keys))) lines.push(`${path} = {}`);
     return;
   }
@@ -364,6 +406,8 @@ const header = [
   '',
 ];
 const body = [];
+// filled once the sets are written (gearUsed), see below
+const gearAt = body.length;
 if (localDefs.length) {
   body.push('-- ============================================================--', '--                  EQUIPMENT DEFINITIONS                     --',
     '-- ============================================================--', '');
@@ -384,6 +428,11 @@ SECTIONS.forEach(([title], i) => {
   body.push('-- ============================================================--', `--  ${title}`.padEnd(62) + '--',
     '-- ============================================================--', '', ...lines, '');
 });
+if (gearUsed.size) {
+  body.splice(gearAt, 0, `-- His gear tables (AF, RELIC, EMPY, capes, HERC...): ${GEAR_FILE}`,
+    `-- A piece named from there (CORCape.TP) is changed there, for every job.`, `include('${GEAR_FILE}')`, '');
+}
+report.gear_used = [...gearUsed].sort();
 fs.writeFileSync(outPath, header.concat(body).join('\n'));
 
 // the report: sets the map names as not read by our code

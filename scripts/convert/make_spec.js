@@ -42,12 +42,14 @@ const modes = Object.entries(data.modes || {})
   .filter(([n, m]) => !SKIP.has(n) && m.type === 'list' && m.options && m.options.length > 1);
 const bool = Object.entries(data.modes || {}).filter(([n, m]) => !SKIP.has(n) && m.type === 'boolean');
 
+// his weapon modes are our weapon states unless the map says otherwise (write_states.js WEAPONS)
+const DEFAULT_MODES = {WeaponSet: {state: 'MainWeapon'}, SubSet: {state: 'SubWeapon'}, RangedSet: {state: 'RangeWeapon'}};
 const his = [], ours = [];
 function add(label, sc) {
   his.push({label, ...sc});
   const t = {...sc, modes: {}};
   for (const [name, value] of Object.entries(sc.modes || {})) {
-    const m = (map.modes || {})[name];
+    const m = name in (map.modes || {}) ? map.modes[name] : DEFAULT_MODES[name];
     if (m === false) continue;
     const to = (m && m.state) || name;
     t.modes[to] = (m && m.values && m.values[value]) || value;

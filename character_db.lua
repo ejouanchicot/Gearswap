@@ -54,15 +54,15 @@ local CHARACTERS = {
     ---------------------------------------------------------------------------
     -- Only the jobs converted from their own files (overlay _master/<Name>/):
     -- a job listed here without its overlay would get the template's gear
-    -- (Tetsouo's pieces). Still to convert, then to add: Gabvanstronger BRD
-    -- COR GEO SAM MNK NIN PUP RNG SCH, Blodykiller BLM GEO THF WHM MNK PUP.
+    -- (Tetsouo's pieces). RDM THF BLU and BRD COR since 2026-09-26; the others
+    -- converted on 2026-10-16 by scripts/convert (their gear only, our systems).
     Gabvanstronger = {
-        jobs = { 'RDM', 'THF', 'BLU' },
+        jobs = { 'RDM', 'THF', 'BLU', 'BRD', 'COR', 'GEO', 'MNK', 'NIN', 'PUP', 'RNG', 'SAM', 'SCH' },
         role = 'main',
     },
 
     Blodykiller = {
-        jobs = { 'BRD', 'COR' },
+        jobs = { 'BRD', 'COR', 'BLM', 'GEO', 'MNK', 'PUP', 'THF', 'WHM' },
         role = 'alt',
     },
 

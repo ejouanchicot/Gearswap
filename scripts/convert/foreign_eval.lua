@@ -78,8 +78,11 @@ local vitals = {hp = 1500, mp = 1500, tp = 0, max_hp = 1500, max_mp = 1500, hpp 
 local player = {name = PLAYER, main_job = MAIN, sub_job = SUB, main_job_full = MAIN, sub_job_full = SUB,
     main_job_level = 99, sub_job_level = 53, id = 1, index = 1, status = 'Idle', status_id = 0,
     buffs = {}, hp = 1500, mp = 1500, tp = 0, max_hp = 1500, max_mp = 1500, hpp = 100, mpp = 100,
-    vitals = vitals, skills = {}, merits = {}, job_points = {}, equipment = {}, in_combat = false, target_index = 0,
-    inventory = {}, wardrobe = {}}
+    vitals = vitals, skills = {}, merits = {}, job_points = {}, in_combat = false, target_index = 0,
+    inventory = {}, wardrobe = {},
+    -- `ranged` is no GearSwap slot (it is `range`): a file reading it gets nil in game, and fails on
+    -- `..` in a message; read as range here, so the rest of its precast is still played
+    equipment = setmetatable({}, {__index = function(t, k) if k == 'ranged' then return rawget(t, 'range') or '' end end})}
 
 local ffxi = setmetatable({
     get_player = function() return {name = PLAYER, main_job = MAIN, sub_job = SUB, main_job_level = 99,
@@ -109,12 +112,14 @@ local windower = {
     play_sound = function() end, get_mouse_position = function() return 0, 0 end,
 }
 local function obj() return setmetatable({}, {__index = function() return function() return nil end end}) end
-local texts = {new = function() return obj() end, destroy = function() end}
+local texts = setmetatable({new = function() return obj() end, destroy = function() end},
+    {__index = function() return function() end end})
 
 local env = {}
--- the foreign folder first (its globals file), then Mote's libraries; nothing else on disk
+-- as GearSwap: the player's own folder, the foreign data folder (its globals file), then Mote's
+-- libraries; nothing else on disk
 local function pathsearch(str)
-    for _, d in ipairs({FOREIGN, GS .. 'libs/'}) do if exists(d .. str) then return d .. str end end
+    for _, d in ipairs({FOREIGN .. PLAYER .. '/', FOREIGN, GS .. 'libs/'}) do if exists(d .. str) then return d .. str end end
 end
 local function include_user(str)
     if type(str) ~= 'string' then error('bad include ' .. tostring(str), 2) end
@@ -246,6 +251,14 @@ local function run(label, fn, ...)
     if not ok then report.errors[#report.errors + 1] = label .. ': ' .. tostring(err) end
     return ok
 end
+-- CONVERT_LENIENT=1: Mote's modes (M) and an empty state exist before the file runs, for a file whose
+-- top-level includes use them before its get_sets loads Mote (it fails at load in game; its gear is
+-- still read). Said in the output (lenient).
+local lenient = os.getenv('CONVERT_LENIENT') == '1'
+if lenient then
+    run('lenient', include_user, 'Modes')
+    rawset(env, 'state', {})
+end
 if run('load', include_user, FILE) and env.get_sets then run('get_sets', env.get_sets) end
 table.sort(scheduled, function(a, b) return a.delay < b.delay end)
 for i = 1, math.min(#scheduled, 400) do
@@ -294,6 +307,35 @@ for k, at in pairs(foreign_globals) do
 end
 table.sort(globals, function(a, b) return a.name < b.name end)
 
+-- his gear tables (the globals his 0_AugGear* files set: AF, RELIC, EMPY, capes, HERC...), as built for this
+-- character and job: every piece with the Lua path that names it ({path = 'HERC.Feet.TA', piece = ...})
+local gear = {}
+do
+    local function lua_key(k)
+        if type(k) == 'string' and k:match('^[%a_][%w_]*$') then return '.' .. k end
+        if type(k) == 'number' then return '[' .. k .. ']' end
+        return '[' .. string.format('%q', tostring(k)) .. ']'
+    end
+    local seen = {}
+    local function walk(v, path)
+        if type(v) == 'string' or (type(v) == 'table' and type(rawget(v, 'name')) == 'string') then
+            gear[#gear + 1] = {path = path, piece = SetDump.piece(v, empty)}
+        elseif type(v) == 'table' and v ~= empty and not seen[v] then
+            seen[v] = true
+            local keys = {}
+            for k in pairs(v) do keys[#keys + 1] = k end
+            table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+            for _, k in ipairs(keys) do walk(v[k], path .. lua_key(k)) end
+        end
+    end
+    local names = {}
+    for k, at in pairs(foreign_globals) do
+        if type(k) == 'string' and at:lower():match('^0_auggear') and type(rawget(env, k)) == 'table' then names[#names + 1] = k end
+    end
+    table.sort(names)
+    for _, k in ipairs(names) do walk(rawget(env, k), k) end
+end
+
 local custom = {}
 for _, name in ipairs({'CustomMeleeGroups', 'CustomIdleGroups', 'CustomRangedGroups', 'CustomDefenseGroups', 'CustomClass'}) do
     local c = env.classes and env.classes[name]
@@ -308,7 +350,7 @@ local f = assert(io.open(OUT, 'wb'))
 f:write(json({player = PLAYER, job = MAIN, sub = SUB, file = FILE, sets = out_sets, modes = modes,
     binds = report.binds, commands = report.commands, macro = report.macro, missing = report.missing,
     nil_args = report.nil_args, errors = report.errors, functions = functions, custom_classes = custom,
-    globals = globals}))
+    globals = globals, lenient = lenient or nil, gear = gear, source_dir = FOREIGN}))
 f:close()
 print(('%s %s: %d sets, %d errors, %d missing names, %d nil set_combine args'):format(PLAYER, MAIN, #out_sets,
     #report.errors, #report.missing, #report.nil_args))

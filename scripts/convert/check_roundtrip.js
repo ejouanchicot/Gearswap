@@ -31,12 +31,34 @@ function keys(p) {
 const got = new Map();
 for (const s of rt.sets) got.set(keys(s.path), s);
 const resolve = s => { while (s && s.same_as) s = got.get(keys(s.same_as)); return s; };
+// a set under an alias (sets.a = sets.b: one table) is dumped under whichever name was walked first:
+// sets.b.x is then found as sets.a.x
+function find(path) {
+  const k = JSON.parse(keys(path));
+  for (let n = k.length; n >= 1; n--) {
+    const head = got.get(JSON.stringify(k.slice(0, n)));
+    if (!head) continue;
+    if (n === k.length) return head;
+    if (!head.same_as) return null;
+    return got.get(JSON.stringify(JSON.parse(keys(head.same_as)).concat(k.slice(n))));
+  }
+  return null;
+}
+for (const s of rt.sets) if (s.same_as) {
+  // and the other way round: sets.a.x dumped, sets.b (the alias) asked
+  const from = JSON.parse(keys(s.same_as)), to = JSON.parse(keys(s.path));
+  for (const t of rt.sets) {
+    const k = JSON.parse(keys(t.path));
+    if (k.length > from.length && from.every((x, i) => k[i] === x) && !got.has(JSON.stringify(to.concat(k.slice(from.length)))))
+      got.set(JSON.stringify(to.concat(k.slice(from.length))), t);
+  }
+}
 
 // set_dump.lua writes an empty list as {}
 const list = x => Array.isArray(x) ? x : [];
 const fails = list(rt.errors).map(e => 'load: ' + e);
 for (const [path, want] of Object.entries(report.expected)) {
-  const s = resolve(got.get(keys(path)));
+  const s = resolve(got.get(keys(path)) || find(path));
   if (!s) { fails.push(`${path}: not built`); continue; }
   const have = s.pieces || {};
   for (const slot of new Set([...Object.keys(want || {}), ...Object.keys(have)])) {

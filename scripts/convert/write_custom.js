@@ -80,6 +80,18 @@ if (has('reive') && !map.no_reive) {
 // his job file's own Reive rule on weaponskills (map.reive_ws)
 if (map.reive_ws) entries.push({comment: "His job file: Ygnas's Resolve +1 on weaponskills during a Reive", entry:
   {when: {buff: 'Reive Mark', spell_type: 'WeaponSkill'}, weaponskill: {neck: "Ygnas's Resolve +1"}}});
+// his latent refresh pieces under N% MP (Mote's customize_idle_set: `if player.mpp < N then ... sets.latent_refresh`),
+// read from his job file, unless his map writes that rule itself
+const mapLatent = list(map.custom).some(c => JSON.stringify(c.entry || c).includes('latent_refresh'));
+if (has('latent_refresh') && !mapLatent && data.source_dir) {
+  let source = '';
+  for (const dir of [data.source_dir + data.player + '/', data.source_dir]) {
+    if (fs.existsSync(dir + data.file)) { source = fs.readFileSync(dir + data.file, 'latin1'); break; }
+  }
+  const at = source.match(/player\.mpp\s*<\s*(\d+)[^\n]*\n[^\n]*latent_refresh/);
+  if (at) entries.push({comment: `His customize_idle_set: his latent refresh pieces under ${at[1]}% MP`, entry:
+    {when: {mp_below: Number(at[1])}, idle: 'sets.latent_refresh'}});
+}
 for (const c of list(map.custom)) entries.push(c.entry ? c : {entry: c});
 
 // ---------------------------------------------------------------- text
