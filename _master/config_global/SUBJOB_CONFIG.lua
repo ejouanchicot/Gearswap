@@ -18,4 +18,13 @@ return {
     -- Stratagems (main SCH or /SCH): seconds for the whole pool to come back (the
     -- charges shown are read from it; lower with the job-point gift)
     stratagem_full_recharge = 240,
+
+    -- //gs c ja1, ja2... (or //gs c ja 1): one macro per place, the ability of the subjob you
+    -- have now. By main job (or `all` for every main job), then by subjob; the target is the
+    -- ability's own (<me> or <t>), or write {name = 'Jump', target = '<bt>'}. Example:
+    --   abilities = {
+    --       DRK = { SAM = {'Hasso', 'Meditate', 'Sekkanoki', 'Seigan'},
+    --               WAR = {'Aggressor', 'Berserk', 'Warcry'} },
+    --   },
+    abilities = {},
 }

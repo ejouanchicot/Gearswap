@@ -596,6 +596,13 @@ function CommonCommands.handle_command(command, job_name, ...)
     -- ==========================================================================
     -- OTHER COMMON COMMANDS
     -- ==========================================================================
+    -- ja1, ja2... (or ja 1): the subjob's ability at that place (SUBJOB_CONFIG.lua abilities)
+    if cmd:match('^ja%d*$') then
+        local SubAbilities = require('shared/utils/commands/sub_abilities')
+        local index = SubAbilities.index_of(cmd, args[1])
+        if index then return SubAbilities.use(index) end
+    end
+
     if cmd == 'naked' then
         return CommonCommands.handle_naked()
     elseif cmd == 'equip' and args[1] and args[1]:lower() == 'naked' then
@@ -735,7 +742,7 @@ function CommonCommands.is_common_command(command)
 
     local cmd = command:lower()
 
-    if COMMON_WORDS[cmd] then
+    if COMMON_WORDS[cmd] or cmd:match('^ja%d*$') then
         return true
     end
 

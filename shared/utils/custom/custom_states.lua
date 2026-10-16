@@ -77,10 +77,18 @@ local function read_entries(job)
     return type(entries) == 'table' and entries or {}
 end
 
---- Create the Mote state of an entry unless the job already has one.
+--- Create the Mote state of an entry unless the job already has one. A Mote mode the
+--- job never set (only 'Normal': OffenseMode, IdleMode, WeaponskillMode...) takes the
+--- entry's values, so Mote's own set lookups (sets.precast.WS[ws][WeaponskillMode]) read them.
 --- @param entry table
 local function ensure_state(entry)
-    if state[entry.state] then return end
+    local existing = state[entry.state]
+    if existing and type(entry.values) == 'table' and Validate.takes_values(existing) then
+        existing:options(table.unpack(entry.values))
+        if entry.desc then existing:describe(entry.desc) end
+        return
+    end
+    if existing then return end
     local desc = entry.desc or entry.state
     if entry.values == 'onoff' then
         state[entry.state] = M(false, desc)

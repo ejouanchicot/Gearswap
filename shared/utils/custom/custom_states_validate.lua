@@ -120,6 +120,14 @@ local function check_block(where, block, problems)
     end
 end
 
+--- Whether an existing state is one of Mote's modes the job never set (its only value
+--- 'Normal': OffenseMode, IdleMode, WeaponskillMode...): an entry may then give it values.
+--- @param existing table|nil Mote state
+--- @return boolean
+function Validate.takes_values(existing)
+    return type(existing) == 'table' and existing._type == 'list' and #existing == 1 and existing[1] == 'Normal'
+end
+
 --- Value names of a mode entry, lower-cased, as a set.
 local function value_names(entry, existing)
     local names = {}
@@ -172,6 +180,9 @@ function Validate.entry(entry, states, index)
     end
     local existing = states and states[entry.state]
     local problems = {}
+    if existing and type(entry.values) == 'table' and Validate.takes_values(existing) then
+        existing = nil
+    end
     if existing and entry.values then
         add(problems, '%s: the job already has this state, "values" is ignored', entry.state)
     elseif not existing and entry.values ~= 'onoff'

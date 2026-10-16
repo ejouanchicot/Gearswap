@@ -508,6 +508,7 @@ local COMMANDS_HELP = {
             {'//gs c jump', '', 'High Jump (DRG sub)'},
             {'//gs c waltz', '', 'Curing Waltz III <stpc> (DNC sub)'},
             {'//gs c aoewaltz', '', 'Divine Waltz <me> (DNC sub)'},
+            {'//gs c ja1, ja2...', '', 'Your subjob ability at that place (SUBJOB_CONFIG)'},
             {'//gs c lightarts', '', 'Light Arts, then Addendum: White (SCH)'},
             {'//gs c darkarts', '', 'Dark Arts, then Addendum: Black (SCH)'},
             {'//gs c aoe ', '<sneak|invi|erase>', 'Accession + the spell, party-wide (SCH)'},
