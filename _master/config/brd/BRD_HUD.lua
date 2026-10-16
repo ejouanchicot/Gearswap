@@ -24,7 +24,7 @@
 -- The commands rewrite this file; editing it by hand works too (//gs reload).
 -- States of this job (BRD_KEYBINDS.lua): IdleMode, EngagedMode, SongMode,
 --   MainInstrument, VictoryMarch, MainWeapon, SubWeapon, EtudeType,
---   CarolElement, ThrenodyElement, MarcatoSong, AutoNitro
+--   CarolElement, ThrenodyElement, MarcatoSong, AutoNitro, AutoPianissimo
 -- Also on every job: CombatMode, AutoMedicine and the common keys.
 return {
     -- section_order = {},

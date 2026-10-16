@@ -56,6 +56,9 @@ BRDKeybinds.binds = {
     -- Apps+Numpad2: Auto Nitro (Nightingale + Troubadour before //gs c songs)
     { key = "#numpad2", command = "cyclestate AutoNitro", desc = "Auto Nitro", state = "AutoNitro" },
 
+    -- Apps+Numpad3: Auto Pianissimo (Pianissimo before a song on another player)
+    { key = "#numpad3", command = "cyclestate AutoPianissimo", desc = "Auto Pianissimo", state = "AutoPianissimo" },
+
     -- No action keys (abilities, song casts) are bound in this file.
 }
 

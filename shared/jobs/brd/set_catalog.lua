@@ -72,6 +72,11 @@ return {
     -- debuff songs skip MidcastManager (is_no_weapon_song): Mote's spell map only
     -- (docs/dev/jobs/brd.md, docs/user/jobs/brd/sets.md; Mote-Mappings is not in the repo)
     {'midcast.{Lullaby|Threnody|Elegy|Requiem}', when = 'Singing a debuff song of that family with no set by name (Mote\'s spell map; no weapon swap, no instrument or Duration layer)'},
+    -- midcast_router.lua layer_lullaby: laid over Mote's set, by name, tier-less name, then Lullaby
+    {'midcast.{Lullaby|Horde Lullaby|Foe Lullaby}.{LullabyMode}', when = 'Singing that Lullaby with that Lullaby Mode (a state of your CUSTOM file): laid on top of its set',
+        base = 'midcast.Lullaby', needs = {'state:LullabyMode'}},
+    {'midcast.Lullaby.Troubadour', when = 'Singing a Lullaby while Troubadour is up: laid on top of its set (and of the Lullaby Mode set)',
+        base = 'midcast.Lullaby'},
     -- Mote get_midcast_set: sets.midcast[spell.skill] before sets.midcast.BardSong
     {'midcast.Singing', when = 'Mote\'s set for any song with no set by name or map: debuff songs keep it, the Singing chain is laid over it for the others'},
     -- step 4 (layer_instrument: InstrumentLockConfig.LOCKED_SONGS); also BRD_PRECAST instrument lock

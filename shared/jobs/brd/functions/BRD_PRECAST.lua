@@ -6,7 +6,7 @@
 ---   • PrecastGuard first (debuffs that block the action)
 ---   • Song refinement (downgrade a song on recast) BEFORE the cooldown check
 ---   • CooldownChecker for abilities and spells
----   • Pianissimo inserted for a song aimed at another player
+---   • Pianissimo inserted for a song aimed at another player (AutoPianissimo state)
 ---   • Marcato inserted before the configured song (MarcatoSong state)
 ---   • WSPrecastHandler for weaponskills
 ---   • Instrument lock for the songs listed in InstrumentLockConfig
@@ -80,6 +80,7 @@ end
 
 --- Song aimed at another player: cancel it, send Pianissimo, then re-send the
 --- song once Pianissimo is up (eventArgs.cancel is set when that happens).
+--- Off with state.AutoPianissimo Off (BRD_STATES.lua); a STATES file without it keeps it on.
 --- @param spell table Spell information from GearSwap
 --- @param eventArgs table Event arguments
 local function job_precast_bardsong(spell, eventArgs)
@@ -96,7 +97,8 @@ local function job_precast_bardsong(spell, eventArgs)
     end
 
     -- If targeting another player, add Pianissimo
-    if target_name and not buffactive['Pianissimo'] then
+    if target_name and not buffactive['Pianissimo']
+        and not (state.AutoPianissimo and state.AutoPianissimo.value == 'Off') then
         -- ANTI-LOOP: Use synchronous flag to prevent double-cast
         if _G.pianissimo_in_progress then
             return

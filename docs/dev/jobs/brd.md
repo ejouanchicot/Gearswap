@@ -347,7 +347,7 @@ flowchart TD
     D -- no --> M1[show_spell_activated]
     D -- yes --> DS[equip sets.midcast.DummySong, daurdabla_dummy message]
     M1 --> N{is_no_weapon_song}
-    N -- yes --> X[return: Mote's set stands]
+    N -- yes --> X[return: Mote's set stands, plus the Lullaby layers]
     N -- no --> MM[MidcastManager Singing chain, then locked instrument or MainInstrument range]
     S -- no --> H{Healing / Enhancing / Enfeebling / Elemental}
     H --> SS[MidcastManager.select_set skill]
@@ -368,6 +368,13 @@ flowchart TD
   both were re-picked through the Singing chain: the fifth dummy song
   (Shining Fantasia) was sung in `sets.midcast.BardSong` with Gjallarhorn, and
   debuff songs got `sets.midcast.Songs.Duration` under Troubadour.
+- **Lullaby layers** (`layer_lullaby`, 2026-10-16, for Morphetrix's converted
+  LullabyMode Harp/Horn and Marsyas under Troubadour): on a Lullaby, over Mote's
+  pick, `sets.midcast[<name>][<LullabyMode value>]` then, under Troubadour,
+  `sets.midcast[<name>].Troubadour`, each looked up by the song's name, its name
+  without " II", then `Lullaby`. `state.LullabyMode` exists only when a
+  `BRD_CUSTOM.lua` declares it; without those sets nothing changes. CUSTOM gear
+  blocks cannot do it: `custom_guards.lua` holds back `range` and `ammo` on songs.
 - Dummy detection reads `BRDSongConfig.DUMMY_SONGS.standard`
   (`is_dummy_song`); debuff detection uses `match` on `DEBUFF_SONGS` and on
   Lullaby / Threnody (`is_no_weapon_song`).
@@ -434,6 +441,7 @@ Created by `BRDStates.configure()` on every `user_setup()`. Keys from
 | `ThrenodyElement` | same | Fire | `^numpad.` | `threnody` (`THRENODIES`) |
 | `MarcatoSong` | HonorMarch, AriaPassion, Off | HonorMarch | `^numpad8` | `marcato_target_song` |
 | `AutoNitro` | On, Off | On | `#numpad2` | `SongOpening.start` |
+| `AutoPianissimo` | On, Off | On (absent = On) | `#numpad3` | `BRD_PRECAST.lua` `job_precast_bardsong` |
 | `MainWeapon` | Naegling, Twashtar, Carnwenhan, Mpu Gandring | Mpu Gandring | `^numpad1` | `SetBuilder.apply_weapons` (`BaseSetBuilder.lay_weapons`) |
 | `SubWeapon` | Kraken, Demersal, Genmei, Centovente | Genmei | `^numpad2` | `SetBuilder.apply_weapons` (`BaseSetBuilder.lay_weapons`) |
 | `BRDSong1`..`BRDSong5` | Empty (overwritten with short names) | Empty | none | HUD rows only |

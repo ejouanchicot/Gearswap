@@ -144,9 +144,19 @@ and `sub` out of these sets, so your weapons (and TP) stay where they are.
 | `sets.midcast.Lullaby`, `.Threnody`, `.Elegy`, `.Requiem`... | Its family as the GearSwap library names it (Foe Requiem I to VII are `Requiem`, Ltng. Threnody II is a `Threnody`) |
 | `sets.midcast.BardSong` | Nothing above exists. BardSong holds your song weapons: avoid landing here |
 
-These songs keep that first choice for the whole cast: no instrument and no
+These songs keep that first choice for the whole cast: no main instrument and no
 `sets.midcast.Songs.Duration` layer on top, even under Troubadour (until
 2026-09-28 a shared step re-picked them and added the Duration layer).
+
+A Lullaby may take two more layers, both optional, laid on top of the set above:
+
+| Set | Worn when |
+|---|---|
+| `sets.midcast['Horde Lullaby'].<value>`, `['Foe Lullaby'].<value>`, `sets.midcast.Lullaby.<value>` | Your `LullabyMode` has that value: the first found by the song's name, its name without " II", then `Lullaby`. `LullabyMode` is a state you add in `brd/keys/BRD_CUSTOM.lua` (example: ``{state = 'LullabyMode', desc = 'Lullaby Instrument', key = '@`', values = {'Harp', 'Horn'}}``), then `sets.midcast['Horde Lullaby'].Horn = set_combine(sets.midcast.Lullaby, {})` sings Horde Lullaby with your Foe Lullaby horn while the mode is Horn |
+| `sets.midcast.Lullaby.Troubadour` (or `['Horde Lullaby'].Troubadour`...) | Troubadour is up, after the mode's set: `set_combine(sets.midcast.Lullaby, {range = 'Marsyas'})` |
+
+Your `BRD_CUSTOM.lua` gear blocks cannot do this: they never touch a song's `range`
+or `ammo` (the instrument).
 
 The provided file builds `sets.midcast.DebuffSong` as a base and copies it into
 `Pining Nocturne`, `Magic Finale`, both Elegies, `Foe Requiem VII`, `Requiem` (every tier), `Maiden's
@@ -174,7 +184,8 @@ Magic']` as an empty set and none of the other three.
   with the next finished action; a chat line confirms the release. The two songs are
   written in the job's code, not in a file.
 - **Automatic Pianissimo.** A song aimed at another player (not charmed) without Pianissimo up is cancelled, Pianissimo is used, and the song is sung
-  again once Pianissimo is on (`sets.precast.JA.Pianissimo` if you have one).
+  again once Pianissimo is on (`sets.precast.JA.Pianissimo` if you have one). The `AutoPianissimo` mode Off
+  (Apps+Numpad3) turns it off: the song goes as sent.
 - **Automatic Marcato.** Before the song chosen by `MarcatoSong` (Honor March or Aria
   of Passion), when Nightingale and Troubadour are both up, Soul Voice is not, Marcato
   is not already up and is ready: Marcato is used first (again if the game refuses it), then the song once Marcato is up.

@@ -26,6 +26,7 @@ Set names and automatic gear: [sets.md](sets.md).
 | Ctrl+Numpad. `^numpad.` | `ThrenodyElement` | same eight, **Fire** | `//gs c threnody` casts `<Element> Threnody II` on `<stnpc>` |
 | Ctrl+Numpad8 `^numpad8` | `MarcatoSong` | **HonorMarch**, AriaPassion, Off | Marcato is used automatically before that song (then the song once Marcato is up), only on yourself, under Nightingale + Troubadour, without Soul Voice, and when Marcato is ready |
 | Apps+Numpad2 `#numpad2` | `AutoNitro` | **On**, Off | On: `//gs c songs` first uses Nightingale, then Troubadour, when each is ready or already up, and starts the songs only once both are on (a refused ability is sent again; if one never goes, nothing is sung) |
+| Apps+Numpad3 `#numpad3` | `AutoPianissimo` | **On**, Off | On: a song aimed at another player is held, Pianissimo is used, then the song is sung once Pianissimo is up. Off: the song goes as sent (send Pianissimo yourself, or the game refuses it) |
 
 BRD has no `HybridMode` key: Ctrl+Numpad9 is left free.
 
@@ -65,7 +66,7 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
 
 ## Notes
 
-- A song aimed at another player gets Pianissimo automatically.
+- A song aimed at another player gets Pianissimo automatically while `AutoPianissimo` is On.
 - A debuff song still on cooldown is sung at another tier (`SONG_REFINE` in
   `BRD_SONG_CONFIG.lua`): `lullaby` can become Horde Lullaby II, `lullaby2` Foe
   Lullaby, `elegy` Battlefield Elegy, `requiem` Foe Requiem VI, a Threnody II its

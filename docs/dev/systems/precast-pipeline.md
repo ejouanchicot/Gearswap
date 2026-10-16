@@ -418,7 +418,7 @@ that outlives the sandbox.
 | `dnc/functions/logic/step_manager.lua` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
 | `SAM_PRECAST.lua` | Third Eye (`follow_up`) | before Third Eye-gated actions |
 | `brd/functions/logic/song_opening.lua` `SongOpening.start` | Nightingale then Troubadour (`ensure`, one after the other) | before the songs, when `state.AutoNitro` is On and both are up or ready, at least one still to use |
-| `BRD_PRECAST.lua` `job_precast_bardsong` | Pianissimo (`follow_up_or_abort`) | a song aimed at another party member |
+| `BRD_PRECAST.lua` `job_precast_bardsong` | Pianissimo (`follow_up_or_abort`) | a song aimed at another party member, unless `state.AutoPianissimo` is Off (a STATES file without it keeps it on) |
 | `GEO_COMMANDS.lua` | Entrust (`follow_up_or_abort`) | `//gs c entrust` |
 | `scholar_actions.lua` `cast_under_black_addendum` | Dark Arts, Addendum: Black (`follow_up`) | e.g. Dispel on BLM/GEO |
 

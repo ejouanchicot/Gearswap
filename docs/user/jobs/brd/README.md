@@ -66,6 +66,7 @@ depends on the subjob.
 | `^numpad.` | Cycle Threnody element (same eight) | always | yes |
 | `#numpad1` | Cycle Etude type: STR, DEX, VIT, AGI, INT, MND, CHR | always | yes |
 | `#numpad2` | Auto Nitro On / Off | always | yes |
+| `#numpad3` | Auto Pianissimo On / Off | always | yes |
 | `#numpad0` | Auto Medicine on / off | always (common key) | yes |
 | `!numpad7` | Alts follow this character (press again to stop) | always (common key) | yes |
 | `!numpad8` | Alts' automation on / off | always (common key) | yes |

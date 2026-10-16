@@ -197,6 +197,36 @@ local function apply_main_instrument(spell, ctx)
     end
 end
 
+--- The set a Lullaby layer names, by the song's own name, its tier-less name, then Lullaby:
+--- sets.midcast['Horde Lullaby II'][key], sets.midcast['Horde Lullaby'][key], sets.midcast.Lullaby[key].
+--- @param spell_name string
+--- @param key string The layer (a LullabyMode value, or 'Troubadour')
+--- @return table|nil
+local function lullaby_layer(spell_name, key)
+    local mid = sets.midcast or {}
+    for _, name in ipairs({spell_name, (spell_name:gsub(' II$', '')), 'Lullaby'}) do
+        local layer = type(mid[name]) == 'table' and mid[name][key]
+        if type(layer) == 'table' then return layer end
+    end
+    return nil
+end
+
+--- A Lullaby's own instrument, over the set Mote picked: the set of the LullabyMode value
+--- (a state a player adds in <JOB>_CUSTOM.lua, e.g. Harp / Horn), then under Troubadour the
+--- Troubadour set (sets.midcast.Lullaby.Troubadour). Without those sets nothing changes.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Router context (debug_enabled, message_formatter)
+local function layer_lullaby(spell, ctx)
+    local mode = state and state.LullabyMode and state.LullabyMode.value
+    for _, key in ipairs({mode or false, buffactive and buffactive['Troubadour'] and 'Troubadour' or false}) do
+        local layer = key and lullaby_layer(spell.english, key)
+        if layer then
+            equip(layer)
+            if ctx.debug_enabled then ctx.message_formatter.show_debug('BRD', 'Lullaby layer: ' .. key) end
+        end
+    end
+end
+
 --- Equip normal song via MidcastManager + lock instrument if Honor March / Aria of Passion.
 --- MidcastManager handles: exact name -> base song -> song type -> instrument -> Troubadour -> base.
 local function equip_normal_song(spell, ctx)
@@ -248,6 +278,7 @@ function Router.handle_singing(spell, ctx)
     -- Debuff songs (Lullaby, Threnody, Elegy, Requiem, Virelai, Nocturne, Finale):
     -- NO weapon swap - let Mote-Include equip the matching dedicated set.
     if is_no_weapon_song(spell.english) then
+        if spell.english:match('Lullaby') then layer_lullaby(spell, ctx) end
         require('shared/utils/midcast/midcast_fallback').skip(spell)
         return
     end

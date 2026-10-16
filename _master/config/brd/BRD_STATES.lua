@@ -20,6 +20,7 @@
 ---   • CarolElement: Resistance buff element (Fire/Ice/Wind/Earth/Lightning/Water/Light/Dark)
 ---   • ThrenodyElement: Resistance debuff element
 ---   • MarcatoSong: song that gets Marcato automatically (or Off)
+---   • AutoPianissimo: Pianissimo before a song on another player (On/Off)
 ---   • MainWeapon / SubWeapon: melee weapon selection
 ---   • BRDSong1-5: display-only song slots for the HUD
 ---   • FastCast: Fast Cast % used by the midcast watchdog
@@ -160,6 +161,11 @@ function BRDStates.configure()
     -- are ready (song_rotation_manager.lua)
     state.AutoNitro = M {['description'] = 'Auto Nitro', 'On', 'Off'}
     state.AutoNitro:set('On')
+
+    -- AutoPianissimo: a song aimed at another player gets Pianissimo first
+    -- (BRD_PRECAST.lua); Off: the song goes as sent, you use Pianissimo yourself
+    state.AutoPianissimo = M {['description'] = 'Auto Pianissimo', 'On', 'Off'}
+    state.AutoPianissimo:set('On')
 
     -- ========================================
     -- WEAPON SELECTION
