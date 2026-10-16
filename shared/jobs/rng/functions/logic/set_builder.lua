@@ -47,8 +47,7 @@ end
 --- @param result table
 --- @return table
 function SetBuilder.apply_weapons(result)
-    result = BaseSetBuilder.lay_weapons(result)
-    return BaseSetBuilder.lay_weapon(result, 'range', state.RangeWeapon and state.RangeWeapon.current)
+    return BaseSetBuilder.lay_weapons(result)
 end
 
 --- Mote layers, weapons, and a trace line.

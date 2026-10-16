@@ -16,6 +16,8 @@
 ---                               the first item met keeps a shared name)
 ---   ItemIndex.is_weapon(name)   exact short name of an item in the Weapon
 ---                               category (grips included)
+---   ItemIndex.is_shield(name)   exact short name of a shield (an Armor item
+---                               with a shield size: the off hand, no skill)
 ---   ItemIndex.dual_wields(name) true for a weapon with a combat skill, false
 ---                               for any other known item (shield, grip...),
 ---                               nil for an unknown name; short or log form,
@@ -65,7 +67,7 @@ end
 local function build()
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.items) then return nil end
-    local ids, weapons, dual, containers, ammo = {}, {}, {}, {}, {}
+    local ids, weapons, shields, dual, containers, ammo = {}, {}, {}, {}, {}, {}
     for id, item in pairs(res.items) do
         if item then
             for _, field in ipairs(NAME_FIELDS) do
@@ -76,6 +78,7 @@ local function build()
                 end
             end
             if item.category == 'Weapon' and item.en then weapons[item.en] = true end
+            if item.shield_size and item.en then shields[item.en] = true end
             if type(item.enl) == 'string' and type(item.en) == 'string' then
                 if item.category == 'Usable' and (item.enl:find(' pouch$') or item.enl:find(' quiver$')) then
                     local key = stem(item.enl)
@@ -93,14 +96,14 @@ local function build()
             end
         end
     end
-    return {ids = ids, weapons = weapons, dual = dual, containers = pair_containers(containers, ammo)}
+    return {ids = ids, weapons = weapons, shields = shields, dual = dual, containers = pair_containers(containers, ammo)}
 end
 
 --- The lookups, built on first use and kept for the session.
 local function index()
     local cached = windower._item_index
-    -- An index kept from before `containers` existed is rebuilt once.
-    if cached and cached.containers then return cached end
+    -- An index kept from before `containers` / `shields` existed is rebuilt once.
+    if cached and cached.containers and cached.shields then return cached end
     cached = build()
     if cached then windower._item_index = cached end
     return cached
@@ -119,6 +122,13 @@ end
 function ItemIndex.is_weapon(name)
     local idx = index()
     return idx ~= nil and idx.weapons[name] == true
+end
+
+--- @param name string|nil
+--- @return boolean
+function ItemIndex.is_shield(name)
+    local idx = index()
+    return idx ~= nil and idx.shields[name] == true
 end
 
 --- @param name string|nil

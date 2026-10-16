@@ -7,9 +7,10 @@
 ---
 --- A character that turns on `equip_without_set` in
 --- <Character>/_common/gear/WEAPON_CONFIG.lua gets, per slot:
----   1. sets[value], when it exists and names that slot (main / sub);
----   2. else {main = value} / {sub = value}, when value is a weapon name in
----      the game's item list: no set to write for a plain weapon;
+---   1. sets[value], when it exists and names that slot (main / sub / range);
+---   2. else {main = value} / {sub = value} / {range = value}, when value is a
+---      weapon name in the game's item list: no set to write for a plain weapon;
+---      a shield (an Armor item) too, as the sub;
 ---   3. else nothing.
 --- Rule 1's slot check is what lets the same weapon sit in main or sub: a
 --- set written for the main hand is no longer applied as the off hand.
@@ -93,6 +94,10 @@ local function lookup(slot, value)
         return set
     end
     if type(value) == 'string' and is_weapon(value) then return {[slot] = value} end
+    -- a shield is an Armor item in the game's list, not a Weapon: as a sub value it is equipped too
+    if slot == 'sub' and type(value) == 'string' and require('shared/utils/equipment/item_index').is_shield(value) then
+        return {sub = value}
+    end
     return nil
 end
 

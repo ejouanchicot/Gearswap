@@ -24,11 +24,12 @@ local SetBuilder = {}
 ---   IDLE SET CONSTRUCTION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Put the MainWeapon state's weapon set on (it carries the sub weapon)
+---   Put the MainWeapon state's weapon set on (it carries the sub weapon), then
+---   the SubWeapon and RangeWeapon states' when the character has them
 ---   @param result table
 ---   @return table
 function SetBuilder.apply_main_weapon(result)
-    return BaseSetBuilder.lay_weapon(result, 'main', state and state.MainWeapon and state.MainWeapon.value)
+    return BaseSetBuilder.lay_weapons(result)
 end
 
 ---   Build idle set with HP-based variations and HybridMode

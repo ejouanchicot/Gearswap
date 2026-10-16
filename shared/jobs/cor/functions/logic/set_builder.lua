@@ -19,9 +19,6 @@ local SetBuilder = {}
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 
--- Load message formatter for error reporting
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   TOWN DETECTION (INHERITED FROM BASE)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -35,31 +32,15 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
 ---   Apply weapon sets to result: the MainWeapon set (its off-hand weapon only
 ---   when Dual Wield is there: /NIN or /DNC at a level that has the trait;
----   otherwise sets.SingleWield's sub, or none - WeaponResolver.set_for), then
----   the range weapon
+---   otherwise sets.SingleWield's sub, or none - WeaponResolver.set_for), the
+---   SubWeapon set when the character has that state, then the RangeWeapon set
 ---   @param result table Current equipment set
 ---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)
     if not result then
         return {}
     end
-
-    result = BaseSetBuilder.lay_weapon(result, 'main', state.MainWeapon and state.MainWeapon.current)
-
-    -- Apply range weapon separately (COR ranged focus)
-    if state.RangeWeapon and state.RangeWeapon.current then
-        local weapon_set = sets[state.RangeWeapon.current]
-        if weapon_set then
-            local success, combined = pcall(set_combine, result, weapon_set)
-            if success then
-                result = combined
-            else
-                MessageFormatter.show_error(string.format("Failed to apply range weapon: %s", combined))
-            end
-        end
-    end
-
-    return result
+    return BaseSetBuilder.lay_weapons(result)
 end
 
 ---   Apply movement speed gear to result (inherited from BaseSetBuilder)

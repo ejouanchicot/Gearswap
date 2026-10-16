@@ -351,7 +351,9 @@ end of precast by `ElementalBelt` ([factories and helpers](../systems/factories-
   `WeaponResolver.can_dual_wield()` is true (/NIN at level 10+, /DNC at level
   20+); otherwise it is replaced by `sets.SingleWield.sub`, or left out when
   that set does not exist. A shield or grip in the weapon set is kept. Then
-  `sets[RangeWeapon]` always (no resolver for the gun). Before 2026-09-29 COR
+  the `SubWeapon` state's set when the character has that state, and the
+  `RangeWeapon` one, both through the resolver (`BaseSetBuilder.lay_weapons`,
+  since 2026-10-16; before, no sub state and `sets[RangeWeapon]` read directly). Before 2026-09-29 COR
   had its own test on the subjob name: /NIN at level 0 (Sheol Gaol) still got
   the off-hand weapon, and other subjobs got no sub at all.
 - `job_status_change` is the shared handler (Doom, hold during an action).

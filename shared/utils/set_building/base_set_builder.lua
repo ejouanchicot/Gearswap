@@ -88,13 +88,15 @@ function BaseSetBuilder.kraken_in_offhand()
     return player ~= nil and player.equipment ~= nil and player.equipment.sub == 'Kraken Club'
 end
 
---- Lay the MainWeapon state's set, then the SubWeapon state's.
---- Used by: BLM, BLU, BRD, DRG, GEO, NIN, PUP, RDM, RNG, SCH, THF
+--- Lay the MainWeapon state's set, then the SubWeapon state's, then the
+--- RangeWeapon state's (a job without that state lays none).
+--- Used by: BLM, BLU, BRD, COR, DRG, GEO, NIN, PUP, RDM, RNG, SAM, SCH, THF
 --- @param result table Current equipment set
 --- @return table
 function BaseSetBuilder.lay_weapons(result)
     result = BaseSetBuilder.lay_weapon(result, 'main', state.MainWeapon and state.MainWeapon.current)
-    return BaseSetBuilder.lay_weapon(result, 'sub', state.SubWeapon and state.SubWeapon.current)
+    result = BaseSetBuilder.lay_weapon(result, 'sub', state.SubWeapon and state.SubWeapon.current)
+    return BaseSetBuilder.lay_weapon(result, 'range', state.RangeWeapon and state.RangeWeapon.current)
 end
 
 ---============================================================================
