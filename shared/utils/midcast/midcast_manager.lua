@@ -261,6 +261,16 @@ local function select_singing_set(config, base_set)
         end
     end
 
+    -- Step 6: no song set matched, so the BardSong base stands; it comes before the instrument and
+    -- Troubadour layers, which go over it (a lone sets.midcast.Songs.Loughnashade would leave Aria of
+    -- Passion with one piece)
+    if not selected_set and base_set then
+        selected_set, selected_set_path = base_set, 'sets.midcast.BardSong'
+        if is_debug_enabled() then
+            table.insert(debug_steps, {step = 6, label = "Fallback", status = "info", value = "BardSong (base)"})
+        end
+    end
+
     local step
     selected_set, step = layer_instrument(selected_set, spell_name)
     if step and is_debug_enabled() then
@@ -270,15 +280,6 @@ local function select_singing_set(config, base_set)
     selected_set, step = layer_troubadour(selected_set)
     if step and is_debug_enabled() then
         table.insert(debug_steps, step)
-    end
-
-    -- Step 6: no song set of any kind matched, so the BardSong base stands.
-    if not selected_set then
-        selected_set = base_set
-        selected_set_path = 'sets.midcast.BardSong'
-        if is_debug_enabled() then
-            table.insert(debug_steps, {step = 6, label = "Fallback", status = "info", value = "BardSong (base)"})
-        end
     end
 
     if not selected_set then

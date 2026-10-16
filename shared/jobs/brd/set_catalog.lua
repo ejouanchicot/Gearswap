@@ -10,9 +10,9 @@
 ---
 --- Song chain (shared/utils/midcast/midcast_manager.lua select_singing_set):
 --- exact name, name without spaces, tier-less name, song type (last word),
---- first word; then sets.midcast.Songs[required instrument] and, under
---- Troubadour, sets.midcast.Songs.Duration are laid on top; nothing found:
---- sets.midcast.BardSong. Not offered, although read:
+--- first word; nothing found: sets.midcast.BardSong; then
+--- sets.midcast.Songs[required instrument] and, under Troubadour,
+--- sets.midcast.Songs.Duration are laid on top. Not offered, although read:
 ---   the name without spaces (HonorMarch): no placeholder writes it, and the
 ---     spaced name (common {spell} line) is read first;
 ---   the first word (Honor, Valor, Fire...): the element words would also be
