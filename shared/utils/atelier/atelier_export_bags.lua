@@ -111,7 +111,8 @@ function ExportBags.collect(augments)
     local bags, info, ids, held = {}, {}, {}, 0
     for _, def in ipairs(BAGS) do
         local okb, bag = pcall(windower.ffxi.get_items, def.id)
-        -- a bag the game does not hold (outside the game, a wardrobe not bought) has no size
+        -- a bag the game does not hold (outside the game) has no size; a wardrobe not unlocked comes with its
+        -- size and enabled false (the page's bvBags gives it no room)
         if okb and type(bag) == 'table' and type(bag.max) == 'number' and bag.max > 0 then
             bags[#bags + 1] = {id = def.id, name = def.name, place = def.place, max = bag.max,
                 count = type(bag.count) == 'number' and bag.count or nil, enabled = bag.enabled ~= false,

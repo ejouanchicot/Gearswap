@@ -6,7 +6,7 @@
 // The bags are the character's, not a job's: the freshest export that holds them is read.
 // (loaded by atelier/index.html after module_items.js)
 
-Object.assign(T.fr, {bvStats: 'Stats & mérites', bvBags: 'Sacs', bvStatsTip: 'Tes stats mesurées en jeu, PorterPacker et tes mérites.', bvBagsTip: 'Le contenu de chacun de tes sacs, pour voir où est quoi.',
+Object.assign(T.fr, {bvLockedTip: '{b} : sac pas débloqué, il garde ses {c} objet(s) mais rien ne peut y entrer.', bvStats: 'Stats & mérites', bvBags: 'Sacs', bvStatsTip: 'Tes stats mesurées en jeu, PorterPacker et tes mérites.', bvBagsTip: 'Le contenu de chacun de tes sacs, pour voir où est quoi.',
   bvNone: 'Cet export ne contient pas tes sacs. En jeu, tape //gs c atelier (ou recharge ton job) : ils seront lus et affichés ici.',
   bvAt: 'Sacs lus en jeu le {at}. Les sacs du Mog House sont ceux de ta dernière visite.', bvSelf: 'Sur toi', bvHouse: 'Mog House', bvPorter: 'Rangé ailleurs', bvPorterTip: '{c} pièce(s) confiée(s) au Porter Moogle, sur tes slips. Clique pour les voir.', bvAll: 'Tous les sacs', bvAllSub: 'chaque objet une fois', bpPlanSub: 'est-ce que ça rentre ?',
   bvFree: '{n} libre(s)', bvFull: 'plein', bvTileTip: '{b} : {c} emplacement(s) pris sur {m}, {f} libre(s). Clique pour voir son contenu.', bvAllTip: 'Chaque objet une seule fois, avec les sacs où il se trouve.',
@@ -20,7 +20,7 @@ Object.assign(T.fr, {bvStats: 'Stats & mérites', bvBags: 'Sacs', bvStatsTip: 'T
   bvW_used: 'porté par un set : ce sac est pour ce qui ne sert pas', bvW_usedS: 'sert à un set', bvUseOne: 'Un seul job', bvUseMany: 'Plusieurs jobs', bvUseTip: 'Qui porte chaque pièce, d’après les sets des jobs exportés : {j}. Un job jamais exporté ne compte pas, et les lockstyles ne sont pas connus de la page.',
   bvEmpty: 'Ce sac est vide.', bvNoHit: 'Aucun objet ne correspond.', bvCount: '{n} objet(s) · {s} emplacement(s)', bvIn: 'Dans : ', bvAlso: 'Aussi dans : ', bvStack: 'pile de {n}',
   bvC_Weapon: 'Armes', bvC_Armor: 'Armures', bvC_Usable: 'Utilisables', bvC_General: 'Divers', bvC_Furnishing: 'Mobilier', bvC_Automaton: 'Automate', bvC_Maze: 'Labyrinthe', bvC_Gil: 'Gils'});
-Object.assign(T.en, {bvStats: 'Stats & merits', bvBags: 'Bags', bvStatsTip: 'Your stats measured in game, PorterPacker and your merits.', bvBagsTip: 'What each of your bags holds, to see where everything is.',
+Object.assign(T.en, {bvLockedTip: '{b}: bag not unlocked, it keeps its {c} item(s) but nothing can go in.', bvStats: 'Stats & merits', bvBags: 'Bags', bvStatsTip: 'Your stats measured in game, PorterPacker and your merits.', bvBagsTip: 'What each of your bags holds, to see where everything is.',
   bvNone: 'This export does not hold your bags. In game, type //gs c atelier (or reload your job): they will be read and shown here.',
   bvAt: 'Bags read in game on {at}. The Mog House bags are those of your last visit.', bvSelf: 'On you', bvHouse: 'Mog House', bvPorter: 'Stored elsewhere', bvPorterTip: '{c} piece(s) left with the Porter Moogle, on your slips. Click to see them.', bvAll: 'All the bags', bvAllSub: 'each item once', bpPlanSub: 'does it fit?',
   bvFree: '{n} free', bvFull: 'full', bvTileTip: '{b}: {c} slot(s) taken of {m}, {f} free. Click to see what it holds.', bvAllTip: 'Each item once, with the bags it is in.',
@@ -45,7 +45,11 @@ function bvBags(){
   const x = Object.values(DATA[S.char] || {}).flatMap(j => Object.values(j)).filter(e => e.bags).sort((a, b) => (b.bags.at || '').localeCompare(a.bags.at || ''))[0]; if (!x) return null;
   const px = latestExport(S.char, 'porter'), cat = typeof catalog === 'function' && catalog(), key = DATA_GEN + '|' + S.char + '|' + !!cat;
   if (BV_BAGS && BV_BAGS.key === key) return BV_BAGS.B;
-  const B = {at: x.bags.at, run: x.bags.run, bags: [...x.bags.bags], items: Object.assign({}, x.bags.items)};
+  // A wardrobe the character has not unlocked (the game sends it with its size, enabled false) takes nothing: an empty
+  // one is left out, one that still holds things is shown full, so no plan or move ever sends anything there
+  const bags = x.bags.bags.filter(b => b.enabled !== false || b.items.length)
+    .map(b => b.enabled === false ? Object.assign({}, b, {max: b.items.length, count: b.items.length, locked: true}) : b);
+  const B = {at: x.bags.at, run: x.bags.run, bags, items: Object.assign({}, x.bags.items)};
   if (px && px.porter && cat) { if (!cat.byId) { cat.byId = {}; for (const r of cat.src.items) cat.byId[r[0]] = r; }
     const items = [];
     for (const [id, slip] of Object.entries(px.porter)) { const r = cat.byId[id]; if (!r) continue;
@@ -192,6 +196,8 @@ function bvTileHTML(bag, sel){
   const lit = bvLit(bag.name);
   if (!bag.max) return `<button class="bvtile ${lit}" data-bagsel="${esc(bag.name)}" aria-pressed="${sel === bag.name}" title="${esc(t('bvPorterTip', {c: used}) + (lit ? ' ' + t(lit === 'open' ? 'plPorterOpen' : 'plPorterShut') : ''))}"><b>${esc(bag.name)}</b><span class="bvnum">${used}</span><span class="bvbar"></span>${bvTileRole(bag)}</button>`;
   const free = bag.max - used, pct = Math.round(100 * used / bag.max), shut = bvShut(bag.name);
+  if (bag.locked) return `<button class="bvtile full shut" data-bagsel="${esc(bag.name)}" aria-pressed="${sel === bag.name}" title="${esc(t('bvLockedTip', {b: bag.name, c: used}))}">` +
+    `<b>${esc(bag.name)}</b><span class="bvnum">${used}</span><span class="bvbar"></span>${bvTileRole(bag)}</button>`;
   return `<button class="bvtile ${free <= 0 ? 'full' : pct >= 90 ? 'tight' : ''} ${lit}" data-bagsel="${esc(bag.name)}" aria-pressed="${sel === bag.name}" title="${esc(t('bvTileTip', {b: bag.name, c: used, m: bag.max, f: Math.max(0, free)}) + (shut ? ' ' + t('plTileShut', {w: shut}) : lit === 'open' ? ' ' + t('plTileOpen') : ''))}">` +
     `<b>${esc(bag.name)}</b><span class="bvnum">${used}<i>/${bag.max}</i></span><span class="bvbar"><i style="width:${Math.min(100, pct)}%"></i></span>${bvTileRole(bag)}</button>`;
 }
