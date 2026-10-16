@@ -65,6 +65,16 @@ local CHARACTERS = {
         jobs = { 'BRD', 'COR' },
         role = 'alt',
     },
+
+    ---------------------------------------------------------------------------
+    -- MORPH (a friend's Mote GearSwap, converted by scripts/convert, 2026-10-16)
+    ---------------------------------------------------------------------------
+    -- Overlay _master/Morphetrix/: every job of his files (he had no SMN).
+    Morphetrix = {
+        jobs = { 'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRG', 'DRK', 'GEO', 'MNK', 'NIN',
+                 'PLD', 'PUP', 'RDM', 'RNG', 'RUN', 'SAM', 'SCH', 'THF', 'WAR', 'WHM' },
+        role = 'main',
+    },
 }
 
 ---============================================================================
