@@ -94,6 +94,8 @@ sequenceDiagram
 
 `LockstyleManager.apply_style(style)` is the stateless variant used by craft mode. It runs the same DressUp cycle (unload, +0.3 s lockstyle, +3.0 s load) with no ctx, no operation id and no debounce.
 
+Every lockstyle, the job's and `apply_style`'s, first waits for the bags to stop moving (`shared/utils/equipment/bags_quiet.lua`: bag counts read each second, sent after two equal reads, left out after 120 s, said in `//gs c trace`). A lockstyle read while items move (PorterPacker, a wardrobe tidy, a refill) can crash the game.
+
 There is no 15 s throttle anywhere in this module. The only rate limits are the per-ctx debounce above and the 0.5 s guard on DressUp commands.
 
 ### Public API

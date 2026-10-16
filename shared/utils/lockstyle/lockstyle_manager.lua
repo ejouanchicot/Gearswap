@@ -70,10 +70,18 @@ end
 --- Stateless helper usable from anywhere (craft/fish commands, debug, etc).
 --- If DressUp management is enabled, unloads dressup, applies the style,
 --- and reloads dressup after 3s. Otherwise just sends /lockstyleset directly.
+--- Either way only once the bags have stopped moving (bags_quiet.lua).
 --- @param style number Lockstyle number to apply (0-99, FFXI client limit)
 function LockstyleManager.apply_style(style)
     if not style or type(style) ~= 'number' then return end
+    require('shared/utils/equipment/bags_quiet').run(function()
+        LockstyleManager.apply_style_now(style)
+    end, 'lockstyle ' .. style)
+end
 
+--- apply_style without waiting for the bags.
+--- @param style number Lockstyle number to apply
+function LockstyleManager.apply_style_now(style)
     if _G.DRESSUP_MANAGEMENT_ENABLED == true then
         send_command('lua unload dressup')
         coroutine.schedule(function()
@@ -123,8 +131,20 @@ local function cancel_pending_operations(ctx)
     ctx.STATE.is_processing = false
 end
 
---- Send the lockstyleset command now, cycling DressUp if configured to.
+local send_lockstyle
+
+--- Send the lockstyleset command, cycling DressUp if configured to, once the
+--- bags have stopped moving (bags_quiet.lua: a lockstyle read while items move
+--- can crash the game).
 local function apply_lockstyle_immediate(ctx, style, operation_id)
+    if not ctx.STATE.enabled or operation_id ~= ctx.STATE.operation_id then return end
+    require('shared/utils/equipment/bags_quiet').run(function()
+        send_lockstyle(ctx, style, operation_id)
+    end, 'lockstyle ' .. tostring(style))
+end
+
+--- The lockstyle itself, for a load (or a command) still current.
+send_lockstyle = function(ctx, style, operation_id)
     local STATE = ctx.STATE
     if not STATE.enabled then return end
     if operation_id ~= STATE.operation_id then return end
