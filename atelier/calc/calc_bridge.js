@@ -18,7 +18,7 @@
 (globalThis.FFXI_PARTS = globalThis.FFXI_PARTS || []).push(function (FFXI) {
     var CALC = globalThis.CALC;
     if (!CALC || !CALC.page) return;
-    var NAMES = ["create_player", "average_ws", "average_attack_round", "weaponskill_info", "get_hit_rate"];
+    var NAMES = ["create_player", "average_ws", "average_attack_round", "weaponskill_info", "get_hit_rate", "cast_spell"];
     var old = {}, own = {};
     NAMES.forEach(function (name) { old[name] = FFXI[name]; });
     var E = FFXI.engine = {name: "old", fell: {}, old: old};
@@ -32,14 +32,38 @@
         return player.oldPlayer;
     }
 
+    // Whether a weapon has an aftermath: a prime weapon, or a relic, mythic, empyrean, ergon or aeonic one
+    function hasAftermath(name) {
+        var r = name && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
+        return !!name && ((FFXI.player_data && (FFXI.player_data.PRIME_WEAPONS || []).indexOf(name) !== -1) || !!(r && r.kind === "ultimate_weapon"));
+    }
+
     own.create_player = function (job, sub, ml, gearset, buffs, abilities) {
-        var sheet = CALC.page.player({job: job, sub: sub, ml: ml, gearset: gearset, buffs: buffs, abilities: abilities});
+        // a Magic Burst is the old engine's ability switch; here it is an option of the spell (cast_spell below),
+        // and the sheet does not know it as an ability. The aftermath chosen in the page with a weapon that has none
+        // (a search trying the weapons) gives nothing: left out, rather than handing the case to the old engine
+        var burst = !!(abilities && abilities["Magic Burst"]), noAm = !!(abilities && abilities.Aftermath) && !hasAftermath(((gearset || {}).main || {}).Name);
+        var sheetAbilities = abilities;
+        if (burst || noAm) { sheetAbilities = {}; for (var k in abilities) if (k !== "Magic Burst" && !(noAm && /^Aftermath/.test(k))) sheetAbilities[k] = abilities[k]; }
+        var sheet = CALC.page.player({job: job, sub: sub, ml: ml, gearset: gearset, buffs: buffs, abilities: sheetAbilities});
         if (sheet.unsupported) {
             fall(sheet.unsupported);
             return old.create_player.apply(null, arguments);
         }
-        return {stats: sheet, gearset: gearset, abilities: abilities, main_job: job, sub_job: sub, own: true,
+        return {stats: sheet, gearset: gearset, abilities: sheetAbilities, main_job: job, sub_job: sub, own: true, magicBurst: burst,
             args: Array.prototype.slice.call(arguments)};
+    };
+
+    // a damaging spell (calc_magic.js), in the old engine's shape [metric, [damage, tp_return, 1]]; options: CALC.spellDamage's
+    own.cast_spell = function (player, enemy, spell, type, metric, options) {
+        if (player.own) {
+            var o = Object.assign({}, options || {}, {magicBurst: player.magicBurst || !!(options && options.magicBurst)});
+            var got = CALC.spellDamage(player.stats, enemy.stats, spell, o, {job: player.main_job, gearset: player.gearset});
+            if (!got.error) return [got.damage, [got.damage, 0, 1], got];
+            fall("spell: " + got.error);
+        }
+        if (!old.cast_spell) return null;
+        return old.cast_spell(oldPlayer(player), enemy, spell, type, metric);
     };
 
     own.average_ws = function (player, enemy, ws, tp, type, metric) {

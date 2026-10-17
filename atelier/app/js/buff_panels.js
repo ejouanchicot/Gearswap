@@ -2,10 +2,11 @@
 // (loaded by atelier/index.html, in the order of the list there)
 /* ---- aftermath of the weapon in hand (atelier/engine/player.js) ---- */
 // Prime weapons: PDL by stage and level (Lv1 / Lv2 at 60 % between two steps, as the engine), Lorg Mor and Opashoro magic
-const PRIME_AM_PDL = {III: [2, 5, 8], IV: [4, 7, 10], V: [6, 9, 12]}, PRIME_AM_MDMG = {III: 0, IV: 20, V: 30}, PRIME_POT = .6;
+const PRIME_AM_PDL = {III: [2, 5, 8], IV: [4, 7, 10], V: [6, 9, 12]}, PRIME_POT = .6;
 const PRIME_PDL = new Set(['Caliburnus', 'Dokoku', 'Earp', 'Foenaria', 'Gae Buide', 'Helheim', 'Kusanagi-no-Tsurugi', 'Laphria',
   'Mpu Gandring', 'Pinaka', 'Spalirisos', 'Varga Purnikawa']);
-const PRIME_MAGIC = {'Lorg Mor': ['mdmg'], 'Opashoro': ['mdmg', 'mab']};
+// the magic primes: their aftermath is our engine's (atelier/calc/calc_aftermath.js), as Khatvanga's (Aeonic)
+const PRIME_MAGIC = new Set(['Lorg Mor', 'Opashoro']), AEONIC_AM = ['Khatvanga'];
 // Mythic weapons: Lv1 / Lv2 (at 85 %, as the engine), Lv3 occasionally attacks twice or thrice (not counted)
 const M49 = (49 - 30) * .85 + 30, M99 = (99 - 40) * .85 + 40;
 const MYTHIC_AM = {Conqueror: ['acc', 'atk'], Glanzfaust: ['acc', 'atk'], Vajra: ['acc', 'atk'], Burtgang: ['acc', 'atk'], Liberator: ['acc', 'atk'],
@@ -23,30 +24,43 @@ const MYTHIC_DMG3 = ['Death Penalty', 'Gastraphetes'];
 const EMPYREAN_AM = ['Verethragna', 'Twashtar', 'Almace', 'Caladbolg', 'Farsha', 'Ukonvasara', 'Redemption', 'Kannagi', 'Rhongomiant',
   'Gambanteinn', 'Masamune', 'Hvergelmir'];
 // The kind of aftermath a weapon has: prime, mythic, relic, empyrean, or none
-const amKind = w => !w ? 'none' : PRIME_PDL.has(w) || PRIME_MAGIC[w] ? 'prime' : MYTHIC_AM[w] ? 'mythic' : RELIC_AM[w] ? 'relic' : EMPYREAN_AM.includes(w) ? 'empyrean' : 'none';
+const amKind = w => !w ? 'none' : PRIME_PDL.has(w) || PRIME_MAGIC.has(w) ? 'prime' : AEONIC_AM.includes(w) ? 'aeonic' : MYTHIC_AM[w] ? 'mythic' : RELIC_AM[w] ? 'relic' : EMPYREAN_AM.includes(w) ? 'empyrean' : 'none';
 // A mythic's Lv1 / Lv2 from the TP the aftermath was made with, where BG Wiki gives the formula (119 III pages): Lv1
-// Accuracy floor(TP/50 + 10), Lv2 Attack floor(TP x 0.06 - 80), Lv2 Magic Attack floor(TP/50 - 10); else the
+// Accuracy floor(TP/50 + 10), Lv2 Attack floor(TP x 0.06 - 80) (the mage weapons' Magic Accuracy and Magic Attack:
+// calcAftermath); else the
 // engine's 85 % estimate (Magic Accuracy, Yagrush / Carnwenhan's Lv2 Accuracy BG marks unsure)
 function mythicAmValue(m, lv){
   const tp = +(buffState().amTp || 0), k = m[lv - 1], est = lv === 1 || k !== 'atk' && k !== 'ratk' ? M49 : M99;
   if (!tp) return est;
   if (lv === 1 && (k === 'acc' || k === 'racc')) return Math.floor(Math.min(1999, tp) / 50 + 10);
   if (lv === 2 && (k === 'atk' || k === 'ratk')) return Math.floor(Math.max(2000, tp) * 0.06 - 80);
-  if (lv === 2 && k === 'mab') return Math.floor(Math.max(2000, tp) / 50 - 10);
   return est;
+}
+// The engine's names of an aftermath's stats (atelier/calc/calc_aftermath.js) and the page's
+const AM_STAT_KEY = {'Magic Accuracy': 'macc', 'Magic Attack': 'mab', 'Magic Damage': 'mdmg', 'Magic Burst Damage II': 'mbd2', 'Cure Potency': 'cure'};
+// The aftermath of a weapon our engine counts (mythic Lv1 / Lv2 of the mage weapons, Opashoro and Lorg Mor, Khatvanga),
+// at the TP chosen (else the engine's guess) and the prime stage; null for another weapon, or a mythic's Lv3 (melee:
+// the mythic lines below say it). `check`: a value only one wiki gives, to check in game
+function calcAftermath(weapon, lv, b){
+  if (!(window.CALC && CALC.aftermathStats)) return null;
+  const st = ['III', 'IV', 'V'].includes(b.amStage) ? b.amStage : ownedPrimeStage(weapon) || 'V';
+  const got = CALC.aftermathStats(weapon, lv, +(b.amTp || 0), st);
+  if (!got || (!Object.keys(got).length && MYTHIC_AM[weapon])) return null;
+  const fx = Object.entries(got).map(([k, v]) => ({k: AM_STAT_KEY[k] || k, v}));
+  const check = weapon === 'Lorg Mor' || (MYTHIC_AM[weapon] && lv === 1) || (weapon === 'Opashoro' && st === 'IV' && lv === 3);
+  return {fx, note: PRIME_MAGIC.has(weapon) ? `${weapon} ${st}` : weapon, text: !fx.length ? t('amPrimeLow') : check ? t('amCheck') : ''};
 }
 // What the aftermath chosen in the page (level, prime stage) gives with this weapon: [{k, v}], and a note
 function aftermathOf(weapon){
   const b = buffState(), lv = amLevel();
   if (!lv || !weapon) return {fx: [], note: ''};
+  const ours = calcAftermath(weapon, lv, b);
+  if (ours) return ours;
   if (RELIC_AM[weapon]) return {fx: Object.entries(RELIC_AM[weapon]).map(([k, v]) => ({k, v})), note: weapon};
   if (EMPYREAN_AM.includes(weapon)) return {fx: [], note: weapon, text: t(weapon === 'Verethragna' ? 'amEmpVere' : 'amEmp', {n: lv, p: [30, 40, 50][lv - 1]})};
-  if (PRIME_PDL.has(weapon) || PRIME_MAGIC[weapon]) {
+  if (PRIME_PDL.has(weapon)) {
     const own = ownedPrimeStage(weapon), st = ['III', 'IV', 'V'].includes(b.amStage) ? b.amStage : ['III', 'IV', 'V'].includes(own) ? own : 'V', st2 = PRIME_AM_PDL[st];
     const pdl = lv === 3 ? st2[2] : lv === 2 ? (st2[2] - st2[1]) * PRIME_POT + st2[1] : (st2[1] - st2[0]) * PRIME_POT + st2[0];
-    // Opashoro V at Lv3: Magic Atk. Bonus +40, Magic Damage +80 (BG Wiki 119 III); the other levels as the engine has them
-    const opaV3 = weapon === 'Opashoro' && st === 'V' && lv === 3;
-    if (PRIME_MAGIC[weapon]) return {fx: PRIME_MAGIC[weapon].map(k => ({k, v: opaV3 ? (k === 'mab' ? 40 : 80) : PRIME_AM_MDMG[st]})), note: `${weapon} ${st}`};
     return {fx: [{k: 'pdl', v: pdl}], note: `${weapon} ${st}`};
   }
   const m = MYTHIC_AM[weapon];
@@ -59,7 +73,7 @@ function amRowHTML(sel){
   const w = shownMain(), kind = amKind(w), am = aftermathOf(w);
   const said = (isAfm3((S._curSet || {}).path) ? t('amAfm3') + ' · ' : '') + (!w ? t('amNoWeapon') : `${w} · ${t('amKind_' + kind)}` + (am.text ? ` · ${am.text}` : ''));
   return sel('am', ['1', '2', '3'], t('bAmPh')).replace(/>([123])</g, '>Lv$1<') + (kind === 'prime' ? sel('amStage', ['III', 'IV', 'V'], t('bAmStage')) : '') +
-    (kind === 'mythic' ? sel('amTp', ['1000', '1250', '1500', '1750', '1999', '2000', '2250', '2500', '2750', '3000'], t('amTpPh')) : '') +
+    (['mythic', 'prime', 'aeonic'].includes(kind) && !PRIME_PDL.has(w) ? sel('amTp', ['1000', '1250', '1500', '1750', '1999', '2000', '2250', '2500', '2750', '3000'], t('amTpPh')) : '') +
     `<span class="muted small amwho">${esc(said)}</span>`;
 }
 // The buff totals with the aftermath of a weapon added (charStats, the target window, the effects list)
@@ -79,6 +93,7 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   dmgmul: ['Dégâts reçus', 'Damage taken', 'mul'], pdmgmul: ['Dégâts physiques reçus', 'Physical damage taken', 'mul'], deff: ['Défense (nourriture)', 'Defense (food)', 'pair'], mevaf: ['Évasion magique (nourriture)', 'Magic Evasion (food)', 'pair'],
   atkf: ['Attaque (nourriture)', 'Attack (food)', ''], atk: ['Attaque', 'Attack', ''], acc: ['Précision', 'Accuracy', ''], racc: ['Précision à distance', 'Ranged Acc.', ''],
   ratk: ['Attaque à distance', 'Ranged Atk.', ''], macc: ['Précision magique', 'Magic Accuracy', ''], mab: ['Bonus att. magique', 'Magic Atk. Bonus', ''],
+  mbd2: ['Dégâts magic burst II', 'Magic burst damage II', '%'], cure: ['Cure potency', 'Cure potency', '%'],
   def: ['Défense', 'Defense', ''], eva: ['Évasion', 'Evasion', ''], meva: ['Évasion magique', 'Magic Evasion', ''], mdb: ['Déf. magique', 'Magic Def. Bonus', ''],
   stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], ta: ['Triple Attack', 'Triple Attack', '%'],crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''],
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],

@@ -255,10 +255,15 @@
         if (c.warcryTpDelta && !strict) agg[0].own_warcry = {"TP Bonus": c.warcryTpDelta};
         // a party SMN's Avatar's Favor at BG Wiki's top values (the page's partyStats; the engine's own are lower or higher)
         if (c.partyStats && Object.keys(c.partyStats).length && !strict) agg[0].party_favor = c.partyStats;
-        return {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withBase(c),
+        var out = {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withBase(c),
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: strict ? 1 : physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
-            physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0, fanDance: c.fanDance || null};
+            physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0, fanDance: c.fanDance || null,
+            spells: c.spells || null, spellType: c.spellType || "Elemental Magic", nuke: c.nuke || null,
+            layers: c.layers || null, belt: c.belt || null};
+        // a Magic Burst set (O.nuke): the old engine reads the burst as an ability, ours as the spell's option (calc_bridge.js)
+        if (out.mode === "nuke" && c.magicBurst) out.abilities = Object.assign({}, out.abilities, {"Magic Burst": true});
+        return out;
     };
     // The abilities with the character's own base attributes ("Base Stats"), from the game's status packet: c.base
     // ({main, sub, merits, str: 153, dex: 141...}), else the page's measuredBase(job). Measured with another subjob: that
@@ -592,7 +597,7 @@
     // A set's hit rates at the weaponskill, {first, rest}: the lowest over the TP looked at (a
     // weaponskill's accuracy bonus grows with TP); the floor reads `rest`
     O.hits = function (ctx, pieces, opts) {
-        if (ctx.mode === "engaged" || ctx.mode === "stats") return null;
+        if (ctx.mode === "engaged" || ctx.mode === "stats" || ctx.mode === "nuke") return null;
         var tps = opts.objective === "damage_avg" ? (opts.tps || [opts.tp]) : [opts.tp], low = null;
         for (var i = 0; i < tps.length; i++) {
             var pl = playerOf(ctx, wornAt(pieces, opts, tps[i]));
@@ -628,6 +633,50 @@
         return (cache.map[key] = {player: FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities), def: defOf(ctx, set, worn)});
     }
     // One weaponskill: the engine's [value, [damage, TP return]] for the objective
+    // ------------------------------------------------------------ damaging spells (nukes)
+    // A set of elemental magic or elemental ninjutsu (ctx.mode "nuke"): its average damage over the spells it is judged on
+    // (ctx.spells), a Magic Burst when the set is the job's burst set (O.context: ctx.abilities["Magic Burst"]). The damage
+    // is the engine's: ours (atelier/calc/calc_magic.js, through FFXI.cast_spell of calc_bridge.js) or the old one's.
+    // Returns {damage, unresisted, hitRate, macc} (the last three from our engine only), null when nothing is computed
+    // The pieces worn in game for one spell: the set, the job's sets laid over it (ctx.layers, the page's
+    // nuke_layers.js: BLM's MPConservation under its MP threshold, QuanpurStone on a Stone spell), then the belt the
+    // shared Elemental Belt puts on in the situation chosen (ctx.belt); the key tells the spells worn the same apart
+    function wornFor(ctx, pieces, spell) {
+        var out = pieces, key = "";
+        (ctx.layers || []).forEach(function (L, i) {
+            if (L.spells && L.spells.indexOf(spell) === -1) return;
+            out = Object.assign({}, out, L.pieces);
+            key += i + ",";
+        });
+        if (ctx.belt && ctx.belt.name) out = Object.assign({}, out, {waist: {name: ctx.belt.name}});
+        return {pieces: out, key: key};
+    }
+    // The spell's options in that situation: Orpheus's Sash adds its bonus at the distance chosen (+1 away, +15 next
+    // to the target: shared/utils/equipment/elemental_bonus.lua), which the catalogue's flat "Elemental Bonus" is not
+    function nukeOptions(ctx, worn) {
+        var o = ctx.nuke || {}, waist = worn.waist && worn.waist.name;
+        return waist === "Orpheus's Sash" ? Object.assign({}, o, {affinity: (o.affinity || 0) + (o.orpheus == null ? 1 : o.orpheus)}) : o;
+    }
+    O.nuke = function (ctx, pieces) {
+        if (!FFXI.cast_spell) return null;
+        var list = ctx.spells && ctx.spells.length ? ctx.spells : ["Thunder"], sum = 0, unres = 0, hit = 0, macc = 0, n = 0, own = 0;
+        var players = {}, pl = null;
+        for (var i = 0; i < list.length; i++) {
+            var w = wornFor(ctx, pieces, list[i]);
+            if (!players[w.key]) players[w.key] = {pl: playerOf(ctx, w.pieces), pieces: w.pieces};
+            var at = players[w.key];
+            if (!at.pl) return null;
+            pl = pl || at.pl;
+            var r = FFXI.cast_spell(at.pl.player, ctx.enemy, list[i], ctx.spellType, "Damage dealt", nukeOptions(ctx, at.pieces));
+            if (!r || !r[1]) continue;
+            n++; sum += r[1][0];
+            if (r[2]) { own++; unres += r[2].unresisted; hit += r[2].hitRate; macc += r[2].magicAccuracy; }
+        }
+        if (!n) return null;
+        // sheet: our engine's character sheet for the first spell (the totals the page's "In combat" tab shows)
+        return {damage: sum / n, unresisted: own ? unres / own : null, hitRate: own ? hit / own : null, macc: own ? macc / own : null, def: pl.def,
+            sheet: pl.player && pl.player.own ? pl.player.stats : null};
+    };
     function once(ctx, worn, tp, metric) {
         var pl = playerOf(ctx, worn);
         if (!pl) return null;
@@ -659,6 +708,12 @@
     };
     function valueOf(ctx, pieces, opts) {
         if (ctx.mode === "stats") return statValue(ctx, pieces, opts);
+        if (ctx.mode === "nuke") {
+            var nk = O.nuke(ctx, pieces);
+            if (!nk) return {v: -Infinity};
+            var missN = shortfall(nk.def, opts.floor, null);
+            return {v: nk.damage - 1e6 * missN + tieBreak(pieces, nk.def, opts, nk.damage), raw: nk.damage, def: nk.def, miss: missN, nuke: nk};
+        }
         if (ctx.mode === "engaged") {
             var e0 = roundValue(ctx, pieces, opts);
             if (!e0) return {v: -Infinity};
@@ -1168,9 +1223,10 @@
         var out = {}, slots = Object.keys(choices), loose = Object.assign({}, opts, {floor: null});
         if (opts.prog) opts.prog.phase = "prefilter";
         for (var s = 0; s < slots.length; s++) {
-            var slot = slots[s], rated = [];
-            for (var i = 0; i < choices[slot].length; i++) {
-                var piece = choices[slot][i], r = O.value(ctx, put(Object.assign({}, start), slot, piece), loose), d = r.def || {};
+            var slot = slots[s], rated = [], list = choices[slot];
+            if (slot === "weapons") list = yield* mainsFirst(ctx, start, list, loose, opts, keep);
+            for (var i = 0; i < list.length; i++) {
+                var piece = list[i], r = O.value(ctx, put(Object.assign({}, start), slot, piece), loose), d = r.def || {};
                 rated.push({piece: piece, v: r.v, dt: (d.pdt || 0) + (d.mdt || 0)});
                 if (opts.prog) opts.prog.evals++;
                 yield;
@@ -1182,6 +1238,27 @@
             out[slot] = rated.filter(function (x, n) { return n < keep || held(x) || byDt.indexOf(x) !== -1; }).map(function (x) { return x.piece; });
         }
         return out;
+    }
+    // Pairs of weapons from every item of the game (thousands: each main hand with each off hand it takes): each main
+    // hand rated once (with the off hand worn when it takes it, else its first), its `keep` best and yours kept with all
+    // their off hands
+    function* mainsFirst(ctx, start, pairs, loose, opts, keep) {
+        if (pairs.length <= 300) return pairs;
+        var groups = {}, order = [], worn = start.sub && start.sub.name;
+        pairs.forEach(function (x) {
+            var k = x.main.name + "|" + (x.main.augs || []).join(",");
+            if (!groups[k]) { groups[k] = {pairs: [], main: x.main}; order.push(k); }
+            groups[k].pairs.push(x);
+        });
+        var rated = [];
+        for (var i = 0; i < order.length; i++) {
+            var g = groups[order[i]], probe = g.pairs.filter(function (x) { return x.sub && x.sub.name === worn; })[0] || g.pairs[0];
+            rated.push({g: g, v: O.value(ctx, put(Object.assign({}, start), "weapons", probe), loose).v});
+            if (opts.prog) opts.prog.evals++;
+            yield;
+        }
+        rated.sort(function (a, b) { return b.v - a.v; });
+        return [].concat.apply([], rated.filter(function (x, n) { return n < keep || x.g.main.keep; }).map(function (x) { return x.g.pairs; }));
     }
     O.prefilter = function (ctx, start, choices, opts, keep) { return drain(prefilterGen(ctx, start, choices, opts, keep)); };
     // A set's value (the objective, floors counted) with one slot changed

@@ -177,15 +177,21 @@ function startOf(base, locked = []){
   return start;
 }
 // Free weapons: every main hand you hold with every off hand it can take ({main, sub}, the engine's "weapons"
-// choice), the pair worn now first; a copy in both hands only when you have two
+// choice), the pair worn now first; a copy in both hands only when you have two. Searching every item of the game
+// (S.optOpts.where 'all'), the game's weapons your job wears join yours (gameChoices: a mythic or prime too)
 function weaponPairs(base, ws){
   const owned = ownedOf() || {}, piece = x => ownRank({name: x.name, augs: x.augs, copies: x.count || (x.where || []).length, keep: true});
+  const all = (S.optOpts || {}).where === 'all', none = new Set();
+  const hand = slot => { const mine = (owned[slot] || []).map(piece); return all ? mine.concat(gameChoices(slot, mine, none)) : mine; };
   // a weaponskill set: only the weapons that open that weaponskill (its combat skill; a relic or prime's own)
-  const opens = ws ? new Set(heldChoices(ws)) : null;
-  // a hand you chose (a weaponskill's held weapon or off hand, an engaged set's forced ones) stays: only the other is searched
-  const fixMain = ws ? heldWeapon(ws) : (slotForce().main || {}).name, fixSub = ws ? ((S.heldSub || {})[heldKey(ws)] || {}).name : (slotForce().sub || {}).name;
-  const mains = (owned.main || []).filter(x => (!opens || opens.has(x.name)) && (!fixMain || x.name === fixMain)).map(piece);
-  const subs = (owned.sub || []).filter(x => !fixSub || x.name === fixSub).map(piece), out = [];
+  const opens = ws ? opensWs(ws) : null;
+  // a hand you chose (a weaponskill's held weapon or off hand, an engaged set's forced ones) stays: only the other is
+  // searched. A forced hand the set does not wear is no choice of its (a midcast set's own weapons go over the page's
+  // forced ones, weapons.js withWeapons: a BLM's nuke set kept Daybreak, forced by an older engaged search, unseen)
+  const forced = slot => { const f = slotForce()[slot]; return f && base[slot] && base[slot].name === f.name ? f.name : undefined; };
+  const fixMain = ws ? heldWeapon(ws) : forced('main'), fixSub = ws ? ((S.heldSub || {})[heldKey(ws)] || {}).name : forced('sub');
+  const mains = hand('main').filter(x => (!opens || opens(x.name)) && (!fixMain || x.name === fixMain));
+  const subs = hand('sub').filter(x => !fixSub || x.name === fixSub), out = [];
   const now = optPieces({main: base.main, sub: base.sub});
   if (now.main) out.push({main: now.main, sub: now.sub || null});
   for (const m of mains) {
@@ -210,6 +216,20 @@ async function optimizeEngaged(s){
     input.opts.cycle = cy;
   }
   optLaunch(s, k, input, Object.assign({}, o, {eng: true}));
+}
+// The nuke optimizer: a set of elemental magic or ninjutsu (opt_page.js isNukeSet), weapons kept, no defense floor (a
+// nuke set is worn for the cast only); its value is the average damage over the spells chosen (FFXI.opt.nuke)
+async function optimizeNuke(s){
+  if (!engineReady()) return;
+  const k = trialKey(s), o = S.optOpts || {}, base = lockedBase(s, withoutTrial(() => withWeapons(s).pieces));
+  const choices = lockChoices(s, optChoices(new Set(Object.keys(ONLY_AUGS))));
+  // a mage's staff and grip are part of the nuke set: with free weapons they go in the try like the other pieces
+  if (o.freeWeapons) choices.weapons = weaponPairs(base);
+  // the slots the game fills over the set in the situation chosen (nuke_layers.js: the automatic belt, MPConservation)
+  for (const slot of nukeSituation(s).fixed) delete choices[slot];
+  const input = {ctx: nukeContextInput(s), start: startOf(base, lockedSlots(s)), choices, prefilter: o.where === 'all' ? 25 : 0,
+    opts: {fast: (o.search || 'fast') !== 'classic', objective: 'nuke', floor: {}}};
+  optLaunch(s, k, input, Object.assign({}, o, {nuke: true}));
 }
 // A search in the worker (on the page when there is none), its progress, then its result
 async function optLaunch(s, k, input, o){
@@ -265,7 +285,7 @@ async function optLaunch(s, k, input, o){
 function optRunOpen(s, o, starts, cores, floor){
   const eng = !!o.eng, obj = o.stat || (eng ? (o.engObj || 'tp_real') : (o.obj || 'damage')), time = eng && /^tp_(real|time)$/.test(obj);
   const fmt = o.stat ? statFmt(obj) : time ? v => v.toFixed(2) + ' s' : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
-  const objLabel = o.stat ? t('statObj_' + obj) : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
+  const objLabel = o.nuke ? t(isBurstSet(s.path) ? 'nukeObjMb' : 'nukeObj') : o.stat ? t('statObj_' + obj) : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
   const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
     ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
     : [['pdt', pdtLabel() + ' ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
@@ -456,7 +476,7 @@ function optResult(s, k, res, gains, o){
   for (const [slot, p] of Object.entries(res.pieces)) {
     // a stats set's weapons go in its try like its other pieces (a PLD's shield is part of each set); the other
     // optimizers force them in the page (below)
-    if ((['main', 'sub'].includes(slot) && !o.stat) || slot === 'range' || !p || blocked[slot]) continue;
+    if ((['main', 'sub'].includes(slot) && !o.stat && !o.nuke) || slot === 'range' || !p || blocked[slot]) continue;
     const a = plain[slot], piece = {name: p.name, augs: p.augs};
     if (p.rank != null) piece.rank = p.rank;
     if (p.capeMax) piece.capeMax = true;
@@ -468,7 +488,7 @@ function optResult(s, k, res, gains, o){
   // free weapons: the pair found becomes the page's forced weapons (never written to a set)
   let weapons = '';
   const wsHeld = !o.eng && wsOfSet(s);
-  if (o.freeWeapons && !o.stat) for (const slot of ['main', 'sub']) {
+  if (o.freeWeapons && !o.stat && !o.nuke) for (const slot of ['main', 'sub']) {
     const p = res.pieces[slot], a = plain[slot];
     if (!p || samePiece({name: p.name, augs: p.augs}, a && !isEmpty(a) ? optPieces({x: a}).x : null)) continue;
     if (!wsHeld) setForce(slot, {name: p.name, augs: p.augs});

@@ -89,6 +89,7 @@ document.addEventListener('click', e => {
   if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
     delete by[s.path]; S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save(); render(); return; }
   if ('optstat' in d) { S._optScratch = d.optstat === 'best'; optimizeStats(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
+  if ('optnuke' in d) { S._optScratch = d.optnuke === 'best'; optimizeNuke(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   // the stats optimizer's first objective (stat_opt.js): the one chosen leaves the list of the next ones
   if (d.statobj) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), objs = statOpts(s).objs.filter(k => k !== d.statobj);
     setStatOpts(s.path, {objs: [d.statobj].concat(objs).slice(0, 3)}); render(); return; }
@@ -258,13 +259,18 @@ document.addEventListener('change', e => {
       setStatOpts(s.path, {objs: objs.filter((k, i) => i === 0 || (k && objs.indexOf(k) === i))}); }
     else setStatOpts(s.path, {floor: {[e.target.dataset.statfloor]: +e.target.value || 0}});
     render(); return; }
+  // the spells a nuke set is judged on (opt_page.js nukeSpells), kept by job and kind of set
+  if (e.target.dataset && e.target.dataset.nukespells) {
+    const picked = [...e.target.selectedOptions].map(x => x.value), all = Object.assign({}, (S.optOpts || {}).nukeSpells);
+    all[e.target.dataset.nukespells] = picked;
+    S.optOpts = Object.assign({}, S.optOpts, {nukeSpells: all}); save(); render(); return; }
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
     // a piece's stats change with it (stats.js ENCHANT_KEPT): everything worked out from them is redone
     if (ENCHANT_OPTS.includes(e.target.dataset.optopt)) { DATA_GEN++; render(); }
     // the objective shows or hides the TP range; the range reads back rounded to 250
-    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed'].includes(e.target.dataset.optopt)) render();
+    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed', 'nukeSit', 'nukeMpLow'].includes(e.target.dataset.optopt)) render();
     return; }
   if (e.target.id === 'statonly') { S.statOnlyWant = e.target.checked; S.statPreset = ''; save(); openStatPick(); render(); return; }
   if (e.target.classList.contains('statpick')) { S.statPreset = ''; const k = e.target.dataset.stat; if (e.target.checked) delete S.statHide[k]; else S.statHide[k] = 1;

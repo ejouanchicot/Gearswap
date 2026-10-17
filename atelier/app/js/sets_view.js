@@ -265,7 +265,7 @@ function cardHTML(card, ci, bypath, q){
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws', head = ws ? wsTitleHTML(s) : '';
   // the page in three bands: what the set is (a weaponskill set: the weaponskill, what its figures are worked out with),
   // the equipment beside its stats, then the optimizer on the whole width
-  const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || roundSet(s) || statSet(s));
+  const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || isNukeSet(s.path) || roundSet(s) || statSet(s));
   if (optable && optPageOpen(s)) return optPageHTML(s, ws && wsOfSet(s));
   // its actions on the title line: the optimizer, then deleting it
   const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview title="${esc(t('ttOptOpen'))}">${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;

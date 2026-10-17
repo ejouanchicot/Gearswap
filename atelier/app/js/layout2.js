@@ -76,7 +76,8 @@ function ui2CtxBar(warn = ''){
 function setPanelHTML(s){
   S._curSet = s;
   const r = charStats(s), fam = family(s.path, s.pieces);
-  const offense = r && (fam === 'ws' || fam === 'engaged') ? offenseHTML(r, s) : '';
+  // a nuke set: its damage and the totals it is worked out with (fight_stats.js), not the tanking figures
+  const offense = fightBoxHTML(s) || (r && (fam === 'ws' || fam === 'engaged') ? offenseHTML(r, s) : '');
   const defense = r && !offense ? tankHTML(r) : '';
   const all = `<details class="lgfold ui2all" data-ui2all ${S._ui2AllOpen ? 'open' : ''}><summary title="${esc(t('ttAllStats'))}">${esc(t('ui2All'))}</summary>${globalsHTML(s, 'stats')}</details>`;
   // the set's own figures in a block of fixed height (sets.css .ui2own): what follows stays where it is whatever the set

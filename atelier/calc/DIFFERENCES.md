@@ -784,3 +784,69 @@ Tiara +3, Locus Ghost Crabs Lv 139; the ones under STR Down or with Stoneskin on
   is not said.
 - Not corrected: nothing is fitted on a weapon skill's damage, and under Climactic Flourish the same first hit is
   not high (above).
+
+## AD. Stage 4, damaging spells (2026-10-17): differences with the spell battery
+
+`node scripts/audit/calc_magic_check.js` runs every result of `scripts/audit/engine_ref/spells_*.json`
+(1076 cases, 9 job files) through `CALC.spellDamage` twice: (a) fed the case's own `stats`, (b) fed
+`CALC.characterStats(input)`; (b2) is (b) given the attributes of the job pairs stage 1 lacks (AD8);
+(c) is (a) with AD1 and AD2 done the old engine's way, to show what the rest of each gap is made of.
+The battery is the old engine's numbers, not the game's. Sources and quotes: SOURCES.md, stage 4.
+Nothing below was tuned to make a number fit.
+
+What matches: with no Magic Burst, no resist and dINT of 0 or more, our unresisted damage equals the
+old engine's to the unit (sets without Sroda Tathlum), and to x1.025 = its Magic Critical Hit II
+average with it. The two worked examples of Magic_Damage (Stone II 1235, Thundaja 2452) are exact.
+
+Totals, the six files with real gear (Kaories GEO and RDM, Tetsouo BLM, GEO, RDM, WHM; 2704 results):
+(a) 580 within 1 %, 1168 within 5 % ; (c) 2312 within 1 %, the 392 left all fall under AD4 to AD6.
+
+| # | Rule | Cases | Old engine | Ours (the wikis) |
+|---|------|-------|-----------|------------------|
+| AD1 | Magic Burst multiplier | every burst | 2.2 x MBB for every spell, helix included (BLM Fire VI 15172 -> 63746 = x4.2016 = 2.2 x 1.91). Burst / no burst on average: 3.170 | 1.30 + 0.05 (first skillchain) + the rank's bonus, +0.60 at rank 100 % = 1.95, then MBB (wiki.ffo.jp 1074; BG-Wiki Magic_Burst + Resist give the same 1.35 + rank bonus). Helix: 1.35, "計略/メルトンには適用外". Burst / no burst on average: 2.596. 2.2 would be the 115 % row (+85 %); no page gives 2.2 for an ordinary enemy |
+| AD2 | resist at magic evasion 0 | the 4 enemies with "Magic Evasion" 0 | nothing resisted | the hit rate caps at 95 % (Magic_Hit_Rate), so 5 % of rolls move down at least one state: x0.97436 on average. With magic evasion 700 / 900 both sides average the same distribution |
+| AD3 | Magic Critical Hit I | sets with "Magic Crit Rate" | ignored | rate x (+10 magic attack bonus), averaged (Magic_Critical_Hit_Rate). About +0.2 % at 13 % |
+| AD4 | negative dINT | Tetsouo_WHM against the INT 340 enemies (dINT -18): 104 results | a smaller reduction (Stone II 100 - 10, Fire 55 - 8, Aero IV 480 - 19, Helix II 75 - 9: implied from its numbers) | ASSUMED: the first row's M goes on below 0 and D stops at 0 (Stone II 100 - 54, Fire 55 - 25). The page only says "reduced M values apply", without values; wiki.ffo.jp 16584 says nothing |
+| AD5 | -ja from dINT 100 | 192 results | from dINT 100 the row of dINT 200 (Aeroja at dINT 100: 1725) | the Magic_Damage table, 1335 at dINT 100; wiki.ffo.jp 16584 gives the 0 to 100 slope 4.85 = (1335 - 850) / 100, which agrees |
+| AD6 | Blizzard V, dINT 50 to 99 | 96 results | V 1170 at dINT 50 | 1070 = 850 + 50 x 4.4 (the table adds up; wiki.ffo.jp gives the same first-row 4.4) |
+| AD7 | the SCH, NIN and SMN files | 918 results (and 474 under 100) | its stats come from sets whose 16 slots are all "Empty" (INT 117 to 127, dINT -106 to -223) | not a nuking case: dINT that low gives 0 with AD4. No gap to explain beyond AD4 |
+| AD8 | stage 1 for these files | (b) | | `CALC.baseAttributes` has no row for blm/rdm, geo/dnc, geo/rdm, nin/war, rdm/nin, sch/rdm, whm/sch: (b) then works with INT from gear alone. The check script carries the rows worked out like calc_attributes.js's (one row a file, the same in every case; rdm/dnc and smn/whm come out equal to the rows already there) and uses them for (b2). Not added to calc_attributes.js: calc_check.js would print differently (STR to CHR 820 -> 1076 of 1076, Attack1 804 -> 964, Accuracy1 780 -> 908). To decide. Also left: BLM magic attack 10 under (A4), magic accuracy A5 to A7, SCH and NIN have no main job table (Elemental Magic Skill 16 against 476, Ninjutsu Skill 16 against 489), WHM Elemental Magic Skill 54 against 458 |
+| AD9 | Impact | every case | 0 to 34 damage | ASSUMED: the infobox's 939 / 2.335 read as one row without cap (the way Katon: San's 134 / 1.5 is the Ninjutsu page's San row). The check counts results under 100 apart |
+| AD10 | tables | | | kept as BG-Wiki prints them: six rows (Fire IV, Blizzard IV, Thunder IV, Firaga III, Blizzaga III, Thundaga III) are 5 under at dINT 200 and back at 300 (read twice) ; Helix II from Pyrohelix_II (0 / 50 / 100), Magic_Damage's 0 / 78 / 235 header does not add up for it ; Ninjutsu Ichi M 0.5 (BG-Wiki) against 1.0 (wiki.ffo.jp 16584) |
+
+### AD11. ASSUMED, marked in the code
+
+- `CALC.MAGIC_ASSUME.resistRank` 1 (100 %): neither wiki gives the rank of an ordinary enemy (wiki.ffo.jp
+  1074: set by race, subspecies or NM, not visible). It decides +60 % of the burst term (AD1).
+- `chainCount` 1: a burst behind the first skillchain of a run.
+- `burstMagicAccuracy` +100: "speculated" on BG-Wiki, no number on wiki.ffo.jp.
+- `dayWeatherProc` 0 without an obi: no page gives the chance (helix and an obi force it).
+- The BLM / SCH job point gifts and category "Increases magic burst damage" counted with the trait,
+  outside the 40 % cap (stage 1 already files them as "Magic Burst Damage Trait").
+- Negative dINT (AD4). Hit rate below 0 held at 0 (no floor given but at rank 10 %).
+- Ninjutsu skill held inside the potency range of its tier; Ninjutsu without cap.
+- Magic Critical Hit II applied last, with the potency multipliers (no position given).
+- Impact (AD9).
+- Not covered: the helix damage over time (initial hit only; "repeated every Tock"), Dark Arts' +24 base
+  on helix, the -ra spells (no cap on the page), Orpheus's Sash by distance (the caller gives the affinity),
+  Klimaform / Ebullience / Futae / Innin (only through `options.potency`), Twilight Cape and Sorcerer's
+  Tonban, Notorious Monsters' consecutive nuke penalty, a skillchain or Rayke lowering a rank.
+
+### AD12. What only the game can settle
+
+1. The burst term (AD1, AD11 resistRank): same set, same enemy, Fire VI (or Aero V) cast free, then
+   burst on a two-step skillchain (one skillchain, e.g. Fusion or Fragmentation closed by a WS), ten of
+   each, on an enemy with low magic evasion (Apex / Locus mobs of a family with no known elemental
+   resistance). Ratio / our MBB: 1.95 means rank 100 % and the wikis, 2.2 the old engine.
+2. The same on a helix (Pyrohelix II): 1.35 (wiki.ffo.jp, no rank bonus) or the spell's ratio above.
+3. Negative dINT (AD4): Stone II, then Fire, against one enemy, INT gear removed step by step so that
+   dINT goes 0, -10, -20, -40 (read INT on /checkparam, enemy INT from the wiki page of the mob):
+   gives the reduced M.
+4. -ja at dINT 100 to 199 (AD5): Aeroja on one target at a known dINT of about 150, no burst.
+5. Blizzard V at dINT 50 to 99 (AD6): the same at dINT about 75.
+6. The burst magic accuracy bonus: on an enemy with high magic evasion (resisting about half the free
+   nukes), count full-damage lands of bursts against free nukes in the same set.
+7. The day / weather proc chance without an obi: 50 Fire IV under single fire weather, count procs
+   (the damage jumps by 10 %).
+8. Ninjutsu: Katon: San with Ninjutsu skill under 275 and over 475 (held in range or not), and at
+   negative dINT.

@@ -143,14 +143,18 @@ function wsHeadHTML(card, ci, vi, s){
   return `<div class="wshead">${inGrid ? weapon : ''}${wsTpLine(s, line)}</div>${inGrid ? '' : weapon}`;
 }
 const itemOf = name => (window.FFXI && FFXI.opt && FFXI.opt.item && name) ? FFXI.opt.item(name) : null;
-// Your weapons that can open a weaponskill: its skill, and the weapon itself for a relic or prime one
+// Whether a weapon can open a weaponskill: its skill, and the weapon itself for a relic or prime one
+function opensWs(ws){
+  const skill = wsSkills()[ws], lock = (wsInfoOf(ws).lock || '').toLowerCase();
+  return name => { const it = itemOf(name); return !!it && it['Skill Type'] === skill && (!lock || lock.includes(name.toLowerCase())); };
+}
+// Your weapons that can open a weaponskill
 function heldChoices(ws){
-  const skill = wsSkills()[ws], lock = (wsInfoOf(ws).lock || '').toLowerCase(), seen = new Set(), out = [];
+  const opens = opensWs(ws), seen = new Set(), out = [];
   for (const x of ((ownedOf() || {}).main || [])) {
     if (seen.has(x.name)) continue;
     seen.add(x.name);
-    const it = itemOf(x.name);
-    if (it && it['Skill Type'] === skill && (!lock || lock.includes(x.name.toLowerCase()))) out.push(x.name);
+    if (opens(x.name)) out.push(x.name);
   }
   return out;
 }

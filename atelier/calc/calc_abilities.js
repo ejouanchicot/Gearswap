@@ -28,7 +28,8 @@
     var MAIN_LEVEL = 99;
     var JOB_POINT_RANKS = 20;
     // entries of the page's `abilities` that are measurements of the character, not abilities
-    var NOT_ABILITIES = {"Base Stats": true, "Crit Rate Merits": true, "WS Merits": true};
+    // "Aftermath TP" and "Aftermath Stage": what the aftermath was made with, read with "Aftermath" (below)
+    var NOT_ABILITIES = {"Base Stats": true, "Crit Rate Merits": true, "WS Merits": true, "Aftermath TP": true, "Aftermath Stage": true};
     // "Warcry (sub)": the support job's version of an ability both jobs could have
     var SUB_SUFFIX = / \(sub\)$/;
 
@@ -229,6 +230,13 @@
         return {main: main, level: level, wield: wield};
     }
 
+    // The aftermath of the weapon in the main hand (calc_aftermath.js): its stats, or null for a weapon whose
+    // aftermath this engine does not count (a melee one: the case goes to the engine before, as it did)
+    function aftermathOf(input, abilities) {
+        var main = (input.gearset && input.gearset.main) || {};
+        return CALC.aftermathStats(main.Name, abilities.Aftermath, abilities["Aftermath TP"], abilities["Aftermath Stage"]);
+    }
+
     CALC.abilityTotals = function (input) {
         var abilities = input.abilities || {}, wield = CALC.wielding(input.gearset);
         var totals = {}, unknown = [];
@@ -236,7 +244,7 @@
             if (NOT_ABILITIES[name] || !abilities[name]) return;
             var entry = A[name.replace(SUB_SUFFIX, "")];
             var who = entry ? whoOf(input, name, entry, wield) : null;
-            var gives = who ? entry.effect(who) : null;
+            var gives = name === "Aftermath" ? aftermathOf(input, abilities) : who ? entry.effect(who) : null;
             if (!gives) { unknown.push(name); return; }
             Object.keys(gives).forEach(function (stat) { totals[stat] = (totals[stat] || 0) + gives[stat]; });
         });

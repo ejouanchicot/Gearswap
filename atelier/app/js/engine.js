@@ -6,7 +6,7 @@
 // kept on this PC only) and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
 const CALC_FILES = ['abilities', 'attributes', 'derived', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
-  'ws_tp', 'page'];
+  'ws_tp', 'page', 'magic_spells', 'magic', 'aftermath'];
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
   .map(f => `atelier/engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
   .map(f => `atelier/engine/${f}.js`), ['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/cycle.js'])
@@ -87,6 +87,16 @@ function engContextInput(s){
   delete base.abilities['Climactic Flourish'];
   return Object.assign(base, {mode: 'engaged', ws: null, wsInfo: null, wsSkill: null, physRes: physResOf(b, skills[main] || ''), physResBy});
 }
+// A set of damaging spells (opt_page.js isNukeSet): the spells it is judged on and whether it is the job's Magic Burst set,
+// for FFXI.opt.nuke (atelier/opt.js) and the search's workers
+function nukeContextInput(s){
+  const base = optContextInput(s), sit = nukeSituation(s);
+  delete base.abilities['Climactic Flourish'];
+  return Object.assign(base, {mode: 'nuke', ws: null, wsInfo: null, wsSkill: null, physRes: 0, physResBy: null,
+    spells: nukeSpells(s), spellType: /Ninjutsu/.test(s.path) ? 'Ninjutsu' : 'Elemental Magic', magicBurst: isBurstSet(s.path),
+    // what the game lays over the set in the situation chosen (nuke_layers.js)
+    nuke: Object.assign({chainCount: 1}, sit.nuke), layers: sit.layers, belt: sit.belt});
+}
 // The same as plain data, for the worker
 function optContextInput(s){
   const b = liveBuffs(buffState()), d = data() || {}, lv = jaLevels(), ws = wsOfSet(s) || segs(s.path).pop();
@@ -94,6 +104,8 @@ function optContextInput(s){
   const strict = engineName() !== 'own';
   const abilities = {Aftermath: isAfm3(s && s.path) ? 3 : +(b.am || 0)};
   if (+b.amTp && !strict) abilities['Aftermath TP'] = +b.amTp;
+  // a prime weapon's stage, for our engine's aftermath (atelier/calc/calc_aftermath.js: Opashoro by stage)
+  if (abilities.Aftermath && !strict) abilities['Aftermath Stage'] = b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V';
   if (b.enspell) { abilities.EnSpell = true; abilities['Enhancing Skill'] = enSkill(b); }
   let partyWarcry = null; const partyStats = {};
   for (const ja of jasOf()) if (jaOn(b, ja.name)) {

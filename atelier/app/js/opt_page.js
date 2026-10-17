@@ -40,6 +40,45 @@ Object.assign(T.en, {optSearch_fast: 'Fast search', optSearch_classic: 'Classic 
   opHelp: 'The result compares the draft (the pieces the search suggests, colored in the set) with your set as written in the file. ★ = the objective’s row; gold = the better of the two; red = under a limit. Verdict: under 2 %, the same; 2 to 5 %, worth a try; beyond that, better or worse. Damage over a fight (TEST): ±4 % as measured in game on 2026-10-04; a weaponskill that comes back in 3 rounds misses the skillchain window (10 s, then 9 s).',
   engDone_cycle: 'Optimized: damage over a fight {a} → {b} ({g} %), {n} piece(s) changed in your draft · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.'});
 
+Object.assign(T.fr, {nukeObj: 'Dégâts du nuke', nukeObjMb: 'Dégâts en Magic Burst', objD_nuke: 'la moyenne des dégâts sur les sorts choisis',
+  objTip_nuke: 'Les dégâts moyens de chaque sort choisi lancé dans ce set (résistances et coups critiques magiques compris), puis leur moyenne. Set de Magic Burst : chaque sort en Burst derrière une skillchain.',
+  nukeSpellsLbl: 'Sorts jugés', nukeUnres: 'Dégâts sans résistance', nukeHit: 'Taux de toucher magique', nukeMacc: 'Précision magique',
+  nukeWhy: 'Un set de nuke est jugé sur les sorts que tu y lances : choisis-les (Ctrl pour en prendre plusieurs). Le set de Magic Burst du job (.MagicBurst, ["Magic Burst"]) est jugé en Burst, les autres sans. Moteur : le nôtre (BG-Wiki, wiki.ffo.jp) ou l’ancien, selon le bouton du haut.'});
+Object.assign(T.en, {nukeObj: 'Nuke damage', nukeObjMb: 'Magic Burst damage', objD_nuke: 'the average damage over the spells chosen',
+  objTip_nuke: 'The average damage of each spell chosen cast in this set (resists and magic critical hits in), then their average. A Magic Burst set: each spell bursting behind a skillchain.',
+  nukeSpellsLbl: 'Spells judged', nukeUnres: 'Unresisted damage', nukeHit: 'Magic hit rate', nukeMacc: 'Magic accuracy',
+  nukeWhy: 'A nuke set is judged on the spells you cast in it: choose them (Ctrl for several). The job’s Magic Burst set (.MagicBurst, ["Magic Burst"]) is judged as a burst, the others not. Engine: ours (BG-Wiki, wiki.ffo.jp) or the old one, by the switch on top.'});
+
+/* ---- nuke sets: elemental magic and elemental ninjutsu ---- */
+// The sets a nuke is cast in (the job's MIDCAST: BLM / SCH / NIN .MagicBurst, RDM .FreeNuke / ["Magic Burst"], GEO / WHM /
+// SMN the one set); BLM's ElementalMatch is an overlay on top of the nuke set, not a set of its own
+const isNukeSet = path => /^sets\.midcast(\["Elemental Magic"\]|\.Helix|\.Ninjutsu\.Elemental|\.Comet|\.Impact)/.test(path || '');
+const isBurstSet = path => /MagicBurst|\["Magic Burst"\]/.test(path || '');
+// The spells a nuke set can be judged on: those of our engine (atelier/calc/calc_magic_spells.js) of the set's magic (a
+// ninjutsu set: ninjutsu; the others: elemental magic) that the main job has, or the subjob at its level (job_access.js
+// accessSpell, the game's levels in job_access_data.js): no ninjutsu for a BLM/SCH, Thunder IV for a /BLM only from its level
+function nukeSpellList(s){
+  const all = Object.keys((globalThis.CALC && CALC.SPELLS) || {}), skill = /Ninjutsu/.test(s.path) ? 'Ninjutsu' : 'Elemental Magic';
+  if (typeof SPELL_ACCESS === 'undefined') return all.sort();
+  const sub = (data() || {}).sub || '', lv = jaLevels();
+  return all.filter(n => SPELL_SKILL[n] === skill && SPELL_ACCESS[n] && accessSpell(SPELL_ACCESS[n], S.job, sub, lv)).sort();
+}
+// the job's usual nuke when it can cast it, else the castable spell of the set's kind with the most base damage at dINT 100
+const NUKE_DEFAULT = {BLM: ['Thunder VI'], SCH: ['Thunder V'], RDM: ['Thunder V'], GEO: ['Thunder V'], NIN: ['Raiton: San']};
+function nukeKey(s){ return S.job + '|' + ((data() || {}).sub || '') + '|' + (/Helix/.test(s.path) ? 'helix' : /Ninjutsu/.test(s.path) ? 'nin' : /Comet/.test(s.path) ? 'comet' : /Impact/.test(s.path) ? 'impact' : 'ele'); }
+function nukeSpells(s){
+  const can = new Set(nukeSpellList(s)), ok = list => (list || []).filter(n => can.has(n));
+  const chosen = ok(((S.optOpts || {}).nukeSpells || {})[nukeKey(s)]);
+  if (chosen.length) return chosen;
+  const named = /Helix/.test(s.path) ? [/Light/.test(s.path) ? 'Luminohelix II' : /Dark/.test(s.path) ? 'Noctohelix II' : 'Pyrohelix II', 'Luminohelix', 'Noctohelix', 'Pyrohelix']
+    : /Comet/.test(s.path) ? ['Comet'] : /Impact/.test(s.path) ? ['Impact'] : NUKE_DEFAULT[S.job] || [];
+  const first = ok(named)[0];
+  if (first) return [first];
+  const base = n => { try { return CALC.spellBase(CALC.SPELLS[n], 100); } catch (e) { return 0; } };
+  const best = [...can].sort((a, b) => base(b) - base(a))[0];
+  return best ? [best] : [];
+}
+
 /* ---- opened from a set ---- */
 const optViewKey = s => S.char + '|' + S.job + '|' + s.path;
 const optPageOpen = s => !!s && S.optView === optViewKey(s);
@@ -47,10 +86,10 @@ const optPageOpen = s => !!s && S.optView === optViewKey(s);
 /* ---- the page ---- */
 const opNum = (v, n = 0) => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: n, maximumFractionDigits: n});
 function optPageHTML(s, ws){
-  const kind = ws ? 'ws' : isJumpSet(s.path) ? 'jump' : roundSet(s) ? 'eng' : 'stat', act = ws ? 'optws' : kind === 'stat' ? 'optstat' : 'opteng';
+  const kind = ws ? 'ws' : isNukeSet(s.path) ? 'nuke' : isJumpSet(s.path) ? 'jump' : roundSet(s) ? 'eng' : 'stat', act = ws ? 'optws' : kind === 'nuke' ? 'optnuke' : kind === 'stat' ? 'optstat' : 'opteng';
   const b = buffState();
   const go = S._optBusy ? `<span class="optprog">${t('optStart')}</span>${searchParked() ? `<button class="btn" data-orshow>${t('orShow')}</button>` : ''}<button class="btn ghost" data-optstop>${t('optStop')}</button>`
-    : optGoButtons(act) + (kind === 'jump' || kind === 'stat' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
+    : optGoButtons(act) + (kind === 'jump' || kind === 'stat' || kind === 'nuke' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
       (ws ? `<button class="btn ghost" data-optall title="${esc(t('oaTip'))}">${t('oaBtn')}</button>` : ''));
   const head = `<header class="ophead"><button class="btn ghost" data-optback title="${esc(t('ttOptBack'))}">${t('optBack')}</button><h2 class="display">${t('optPageTitle')}</h2>` +
     `<span class="opset">${esc(shortPath(s.path))}</span><span class="muted small">${esc(buffTier())} · ${esc(enemyKey(b.enemy))}</span>` +
@@ -67,15 +106,17 @@ const opObjKey = kind => kind === 'ws' ? 'obj' : 'engObj';
 function opObjList(kind){
   if (kind === 'ws') return ['damage', 'damage_avg', 'tp_return'];
   if (kind === 'jump') return ['jump'];
+  if (kind === 'nuke') return ['nuke'];
   return ENG_OBJS.concat(cycleReady() ? ['cycle'] : []);
 }
 function opObj(kind){
   const o = S.optOpts || {}, list = opObjList(kind), cur = kind === 'ws' ? o.obj : o.engObj;
-  return kind === 'jump' ? 'jump' : list.includes(cur) ? cur : list[0];
+  return kind === 'jump' ? 'jump' : kind === 'nuke' ? 'nuke' : list.includes(cur) ? cur : list[0];
 }
 function opObjLabel(kind, k){
   const o = S.optOpts || {}, [a, b] = avgRange(o);
   if (kind === 'ws') return t('optObj_' + k, {tp: S.wsTp || 3000, a, b});
+  if (k === 'nuke') return t(isBurstSet((S._optSet || {}).path) ? 'nukeObjMb' : 'nukeObj');
   return k === 'jump' ? t('jumpObj') : t('engObj_' + k);
 }
 function opWhatHTML(s, kind){
@@ -84,15 +125,20 @@ function opWhatHTML(s, kind){
   const objs = `<div class="opobjs" role="radiogroup">${opObjList(kind).map(k => `<button class="opobj ${k === cur ? 'on' : ''}" role="radio" aria-checked="${k === cur}" ` +
     `data-objtip="${esc(t('objTip_' + k, {tp: S.wsTp || 3000, a: avgRange(o)[0], b: avgRange(o)[1]}))}" ` +
     `${kind === 'jump' ? 'disabled' : `data-optobj="${key}" data-v="${k}"`}><b>${esc(opObjLabel(kind, k))}</b><span>${esc(t('objD_' + k))}</span></button>`).join('')}</div>`;
-  const help = S._help === 'optpage' ? `<p class="wshelp">${esc(t(kind === 'ws' ? 'optWhy' : kind === 'jump' ? 'jumpWhy' : 'engWhy', {tp: S.wsTp || 3000}))} ${esc(optSettingsHelp(kind === 'ws'))} ${esc(t('opHelp'))}</p>` : '';
+  S._optSet = s;
+  const help = S._help === 'optpage' ? `<p class="wshelp">${esc(t(kind === 'ws' ? 'optWhy' : kind === 'nuke' ? 'nukeWhy' : kind === 'jump' ? 'jumpWhy' : 'engWhy', {tp: S.wsTp || 3000}))} ${esc(optSettingsHelp(kind === 'ws'))} ${esc(t('opHelp'))}</p>` : '';
   // the limits first: what a result may never go past is read before what it maximises
   const lim = (k, label) => opLimitHTML(`data-optopt="${k}"`, label, o[k]);
   const limits = opLimitsHTML(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []));
-  return `${limits}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}${opParamsHTML(s, kind, cur)}${opSearchHTML(o, kind === 'ws')}`;
+  return `${kind === 'nuke' ? nukeSituationHTML(s) : limits}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}${opParamsHTML(s, kind, cur)}${opSearchHTML(o, kind === 'ws')}`;
 }
 // The objective's own settings: the TP the weaponskill goes at, the TP range, how a whole fight is played
 function opParamsHTML(s, kind, cur){
   const o = S.optOpts || {}, f = [];
+  if (kind === 'nuke') {
+    const mine = new Set(nukeSpells(s)), list = nukeSpellList(s);
+    f.push(`<label class="opf">${t('nukeSpellsLbl')} <select class="buffsel" multiple size="6" data-nukespells="${esc(nukeKey(s))}">${list.map(x => `<option value="${esc(x)}" ${mine.has(x) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select></label>`);
+  }
   if (kind === 'ws' && cur !== 'damage_avg') f.push(`<label class="opf">${t('opWsTp')} <input type="number" class="tpin" step="250" min="1000" max="3000" value="${esc(S.wsTp || 3000)}"></label>`);
   if (kind === 'ws' && cur === 'damage_avg') { const [a, b] = avgRange(o);
     f.push(`<label class="opf">${t('opWsTp')} ${t('optFrom')} <input type="number" step="250" min="1000" max="3000" data-optopt="tpFrom" value="${a}"></label>`,
@@ -183,7 +229,10 @@ function opFigures(s, kind, plain){
   if (key in S._opFig) return S._opFig[key];
   let f = null;
   try {
-    if (kind === 'ws') {
+    if (kind === 'nuke') {
+      const ctx = FFXI.opt.context(nukeContextInput(s)), r = FFXI.opt.nuke(ctx, optPieces(pieces));
+      if (r) f = {nuke: r.damage, unres: r.unresisted, hit: r.hitRate, macc: r.macc};
+    } else if (kind === 'ws') {
       const ctx = optContext(s), p = optPieces(pieces), tp = +(S.wsTp || 3000), r = FFXI.opt.ws(ctx, p, tp);
       if (r) { const h = FFXI.opt.hits(ctx, p, {tp}) || {}, tps = avgTps(S.optOpts || {});
         const curve = [1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000].map(x => [x, (FFXI.opt.ws(ctx, p, x) || [0, [0]])[1][0]]);
@@ -201,6 +250,14 @@ function opFigures(s, kind, plain){
 function opRows(kind, obj){
   const o = S.optOpts || {}, pc = v => opNum(100 * v) + ' %', s2 = v => v.toFixed(2) + ' s', [a, b] = avgRange(o);
   let rows;
+  if (kind === 'nuke') {
+    rows = [
+      {id: 'nuke', label: t(isBurstSet((S._optSet || {}).path) ? 'nukeObjMb' : 'nukeObj'), get: f => f.nuke, fmt: fmtDmg},
+      {id: 'unres', label: t('nukeUnres'), get: f => f.unres, fmt: fmtDmg},
+      {id: 'hit', label: t('nukeHit'), get: f => f.hit, fmt: v => opNum(100 * v, 1) + ' %'},
+      {id: 'macc', label: t('nukeMacc'), get: f => f.macc, fmt: v => opNum(v)}];
+    return rows;
+  }
   if (kind === 'ws') rows = [
     {id: 'damage', label: t('wsvDmg', {tp: S.wsTp || 3000}), get: f => f.damage, fmt: fmtDmg},
     {id: 'damage_avg', label: t('wsvAvg', {a, b}), get: f => f.avg, fmt: fmtDmg},
