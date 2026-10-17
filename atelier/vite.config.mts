@@ -5,12 +5,12 @@
 //   npm run build     after any change in src/ (scripts/atelier/atelier_build_check.js says when it was forgotten)
 // The built page carries the hash of its sources (meta atelier-build), which that check compares.
 //
-// @file    atelier/vite.config.ts
+// @file    atelier/vite.config.mts
 // @author  ejouanchicot
 import {defineConfig, type Plugin} from 'vite';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
 import {viteSingleFile} from 'vite-plugin-singlefile';
-import {sourcesHash} from './build/hash.js';
+import {sourcesHash} from './build/hash.mjs';
 
 // the hash of the sources, written into the built page
 function buildHash(): Plugin {
@@ -25,7 +25,7 @@ function buildHash(): Plugin {
 export default defineConfig({
   root: 'src',
   publicDir: false,
-  // svelte.config.js gives the plugin its settings
+  // svelte.config.mjs gives the plugin its settings
   plugins: [svelte(), viteSingleFile(), buildHash()],
   build: {
     // the built page is atelier/index.html, beside the files it reads (never empty the folder: it holds them)

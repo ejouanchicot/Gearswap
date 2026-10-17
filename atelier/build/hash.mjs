@@ -1,8 +1,8 @@
-// GearSwap Atelier · the hash of the page's sources: written into the built page by vite.config.ts, compared by
+// GearSwap Atelier · the hash of the page's sources: written into the built page by vite.config.mts, compared by
 // scripts/atelier/atelier_build_check.js (a change in src/ without `npm run build` leaves the old page in place).
 // What counts: every file of src/, the build's configuration and the locked versions of its tools.
 //
-// @file    atelier/build/hash.js
+// @file    atelier/build/hash.mjs
 // @author  ejouanchicot
 import {createHash} from 'node:crypto';
 import {readdirSync, readFileSync, statSync} from 'node:fs';
@@ -10,7 +10,7 @@ import {dirname, join, relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const FILES = ['vite.config.ts', 'svelte.config.js', 'build/hash.js', 'package.json', 'package-lock.json', 'tsconfig.json'];
+const FILES = ['vite.config.mts', 'svelte.config.mjs', 'build/hash.mjs', 'package.json', 'package-lock.json', 'tsconfig.json'];
 
 function walk(dir, out) {
   for (const name of readdirSync(dir).sort()) {

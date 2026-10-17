@@ -50,8 +50,9 @@ DATA_FILES = ['data/atelier.html', 'data/atelier/index.html', 'data/atelier/opt.
 # Never inside a package, wherever it is
 SKIP_NAMES = {'__pycache__', 'nul', '.git', 'Thumbs.db', 'desktop.ini'}
 SKIP_EXT = ('.pyc',)
-# The Atelier's Packages page makes packages from _master/, which a package has not: it is left out, and
-# the page's list of scripts is written without it (the top bar then shows no 📦 button)
+# The Atelier's Packages page makes packages from _master/, which a package has not: it is left out. The page is
+# shipped as built (atelier/src/, one file): its loader goes on past a script that is not there, and the top bar
+# shows no 📦 button without packages.js (atelier/src/screens/topbar/model.ts)
 PAGE_ONLY = ('data/atelier/app/js/packages.js', 'data/atelier/app/js/package_exports.js')
 PAGE_INDEX = 'data/atelier/index.html'
 
@@ -314,14 +315,7 @@ def build(name, data_dir=HERE, jobs=None, role=None, partner=None, region='US', 
         with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as z:
             z.writestr('INSTALLATION.txt', INSTALL.format(name=name, jobs=', '.join(jobs)).replace('\n', '\r\n'))
             for n, (src, arc) in enumerate(files, 1):
-                if arc == 'GearSwap/' + PAGE_INDEX:
-                    with open(src, encoding='utf-8', newline='') as handle:
-                        page = handle.read()
-                    info = zipfile.ZipInfo.from_file(src, arc)
-                    info.compress_type = zipfile.ZIP_DEFLATED
-                    z.writestr(info, page.replace("'packages', ", ''))
-                else:
-                    z.write(src, arc)
+                z.write(src, arc)
                 if progress and n % 200 == 0:
                     progress(n, len(files))
         return {'name': name, 'jobs': jobs, 'role': role, 'region': region, 'files': len(files) + 1}

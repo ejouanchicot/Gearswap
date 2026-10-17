@@ -1,60 +1,12 @@
 // GearSwap Atelier · sets_view.js: rendering: the side, the set list, a set's card, the Macro / Functions tabs, the job list
 // (loaded by atelier/index.html, in the order of the list there)
 /* ---- render ---- */
-// The top bar: character, job (by role, the played ones) and subjob menus, the job's macro book,
-// lockstyle and export, language and theme
-// An element brought to `html` by changing only what differs, its own elements kept. Drawing the top bar anew at
-// each redraw replaced the button under the pointer: it lost its hover and began its colour change again, a flicker
-// at every tick and at every click (2026-10-10). Same shape: attributes and texts are set; another shape: replaced
-function patchInto(el, html){
-  if (el._html === html) return;
-  el._html = html;
-  const next = document.createElement(el.tagName);
-  next.innerHTML = html;
-  patchKids(el, next);
-}
-function patchKids(a, b){
-  const xs = [...a.childNodes], ys = [...b.childNodes];
-  if (xs.length !== ys.length || xs.some((x, i) => x.nodeType !== ys[i].nodeType || x.nodeName !== ys[i].nodeName)) return a.replaceChildren(...ys);
-  xs.forEach((x, i) => patchNode(x, ys[i]));
-}
-function patchNode(x, y){
-  if (x.nodeType !== 1) { if (x.nodeValue !== y.nodeValue) x.nodeValue = y.nodeValue; return; }
-  for (const at of [...x.attributes]) if (!y.hasAttribute(at.name)) x.removeAttribute(at.name);
-  for (const at of [...y.attributes]) if (x.getAttribute(at.name) !== at.value) x.setAttribute(at.name, at.value);
-  patchKids(x, y);
-  // what the player may have changed by hand is a property, not the attribute
-  if (x.nodeName === 'OPTION') x.selected = y.hasAttribute('selected');
-  if (x.nodeName === 'INPUT') { x.value = y.getAttribute('value') || ''; x.checked = y.hasAttribute('checked'); }
-}
+// The top bar is the Svelte application's (atelier/src/screens/topbar): told that the page was drawn again, it reads
+// the state again. Here only what the whole document follows: its language and its theme
 function renderSide(){
   document.documentElement.lang = S.lang;
   document.documentElement.setAttribute('data-theme', themeNow());
-  const d = data(), job = S.job && JOBS.find(x => x[0] === S.job);
-  const chars = `<div class="seg" role="group">${Object.keys(CHARS).map(c => `<button aria-pressed="${c===S.char}" data-char="${esc(c)}" title="${esc(t(c === S.char ? 'ttCharNow' : 'ttChar', {c}))}">${esc(c)}</button>`).join('')}</div>`;
-  const opt = ([c, name]) => { const ml = masterOf(c); return `<option value="${c}" ${S.job===c?'selected':''}>${c} · ${name}${ml ? ' · ML' + ml : ''}</option>`; };
-  const jg = jobGroups();
-  const groups = jg[0].label !== null ? jg.map(g => `<optgroup label="${g.label}">${g.jobs.map(opt).join('')}</optgroup>`).join('') : ROLES.map(r => { const played = JOBS.filter(j => j[2]===r && plays(j[0]));
-    return played.length ? `<optgroup label="${t('roles.'+r)}">${played.map(([c, name]) => `<option value="${c}" ${S.job===c?'selected':''}>${c} · ${name}</option>`).join('')}</optgroup>` : ''; }).join('');
-  // the job and the subjob are chosen on the banner itself, as two plates under the name
-  const jobSel = `<select class="topsel jobsel" aria-label="${esc(t('colJob'))}" title="${esc(t('ttJob'))}">` +
-    `<option value="" ${!S.job?'selected':''}>${t('overview')}</option>${groups}</select>`;
-  // the book and the style in force, and the export's date when the game is not there: read-outs under their name
-  const out = (label, value) => `<div class="tgrp"><small>${esc(label)}</small><span><b class="readout">${value}</b></span></div>`;
-  const facts = d ? out(t('macro'), bookOf(d)) + out(t('lockstyle'), styleOf(d)) +
-    (d.live ? '' : out(t('colExport'), `${esc(d.at||'—')}${d.offline ? ` · ${t('offline')}` : ''}${(d.export_version || 1) < EXPORT_VERSION ? ` <span class="oldexport" title="${esc(t('oldExportHow'))}">· ${t('oldExport')}</span>` : ''}`)) : '';
-  // the groups of the bar, named by what they act on: icons alone told nothing (2026-10-10)
-  const grp = (label, html) => html ? `<div class="tgrp"><small>${esc(label)}</small><span>${html}</span></div>` : '';
-  const brand = `<div class="brand"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 10 H22 M13 1 L9 10 L13 25 L17 10 Z" fill="none" stroke="currentColor" stroke-width=".9" opacity=".6"/></svg><b>Atelier</b></div>`;
-  // the character shown, as a banner: its job's emblem in a ring of the role's colour, its name, then its job and
-  // subjob as plates (the two menus)
-  const hero = S.char ? `<div class="hero" ${job ? `style="--role:${ROLE_COLOR[job[2]]}"` : ''}><span class="crest">${job ? emblem(job[0]) :
-    '<svg width="20" height="20" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg>'}</span>` +
-    `<span class="who"><b>${esc(S.char)}</b><span class="plates">${jobSel}${d ? subPicker() : ''}</span></span></div>` : '';
-  // the Packages page (packages.js) is left out of a player's package (make_package.py): no button there
-  const gear = `<button class="live act ${S._cfg ? 'mid' : ''}" data-config title="${esc(t('ttGear'))}">⚙<span class="lbl"> ${esc(t('cfgOpen'))}</span></button>` +
-    (typeof renderPackages === 'function' ? `<button class="live act ${S._pkg ? 'mid' : ''}" data-pkgopen title="${esc(t('ttPkg'))}">📦<span class="lbl"> ${esc(t('pkgOpen'))}</span></button>` : '');
-  patchInto($('#top'), `${brand}${hero}<span class="tsep"></span>${grp(t('grpChar'), chars)}${facts ? `<span class="tsep"></span>${facts}` : ''}<span class="sp"></span>${grp(t('grpFiles'), refreshBadge() + historyBadge())}${grp('GearSwap', liveBadge())}${grp(t('grpPage'), gear)}`);
+  if (window.__atelier && window.__atelier.redraw) window.__atelier.redraw();
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
 function renderHome(){
@@ -503,18 +455,6 @@ function renderFunctions(d){
   return `<div class="keybar"><span>${t('fnHint', {at: esc(d.at || '—')})}</span></div><div class="boxgrid cols">` +
     box('g-mag wide', t('sectionsFunctions'), `<div class="fn2">${col(bools.slice(0, half))}${col(bools.slice(half))}</div>`, `<span class="meta">${bools.length}</span>`) + `</div>`;
 }
-// The exported subjobs of the job: one button each, the shown one pressed
-// A dot marks a subjob that shows something else than the main one (its own modes...)
-function subPicker(){
-  const subs = subsOf(S.char, S.job), cur = subOf(S.char, S.job), m = exportsOf(S.char, S.job), main = defaultSub(S.char, S.job);
-  const label = s => s === 'NONE' ? '—' : esc(s);
-  const twins = sameAsOf(S.char, S.job), own = s => s !== main && (m[s] || (twins[s] && twins[s] !== main));
-  const others = allSubs(S.char, S.job).filter(s => !subs.includes(s));
-  const opt = s => `<option value="${esc(s)}" ${s===cur?'selected':''}>${label(s)}${own(s)?' •':''}</option>`;
-  return `<label class="pick" title="${esc(t('ttSub'))}"><small>${t('colSub')}</small><select class="topsel subsel">` +
-    `<optgroup label="${t('subMine')}">${subs.map(opt).join('')}</optgroup>` +
-    (others.length ? `<optgroup label="${t('subOther')}">${others.map(opt).join('')}</optgroup>` : '') + `</select></label>`;
-}
 // The played jobs by role, the shown one marked: a click changes job and keeps the tab
 // Every job's level and master level, from the game (char.jobs of the latest in-game export of the
 // character: packet 0x01B), or null before any
@@ -548,15 +488,13 @@ function jobListHTML(){
 }
 function renderJob(){
   const c = S.job, d = data();
-  let body, sections = '', side = null;
+  let body, side = null;
   if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
     // the Merits are in My character; the keys, modes, switches and macro book are the parts of the job's settings
     // (a page kept on one of those four names, or sent there by a link, opens that part)
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
-    const list = ui2() ? ui2Sections(d) : [['sets',t('sectionsSets'),d.sets.length],['keys',t('sectionsKeys'),keysShown(d).length],['modes',t('sectionsModes'),''],['macro',t('sectionsMacro'),''],['functions',t('sectionsFunctions'),''],['merits',t('sectionsMerits'),''],['sim',t('sectionsSim'),'']];
-    sections = `<nav class="sections" role="tablist">${list.map(([k,l,n]) => `<button role="tab" aria-selected="${S.section===k}" data-section="${k}" title="${esc(T[S.lang]['ttTab_' + k] ? t('ttTab_' + k, {n}) : '')}">${l}${n!==''?'<span class="count">'+n+'</span>':''}</button>`).join('')}${ui2Toggle()}</nav>`;
     // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
     if (ui2() && ['combat', 'perso'].includes(S.section) && !(S.section === 'perso' && S.persoView === 'bags')) { side = setListHTML(d);   // (the bags are no set's)
       if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
@@ -565,7 +503,8 @@ function renderJob(){
   // every tab but Sets: the played jobs on the left, to change job and stay on the tab
   if (side) body = `<div class="tabx setside">${side.aside}<div class="tabmain">${body}</div></div>`;
   else if (d && S.section !== 'sets' && S.section !== 'sim') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
-  return `${sections}<div class="pane ${d ? 'split' : ''}">${body}</div>`;
+  // the row of the sections over it is the Svelte application's (atelier/src/screens/topbar/Sections.svelte)
+  return `<div class="pane ${d ? 'split' : ''}">${body}</div>`;
 }
 // Re-render, keeping the focus of the search box and the scroll of each block
 // while the view stays the same (the set detail goes back to its top for another set)

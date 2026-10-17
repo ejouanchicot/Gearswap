@@ -88,10 +88,10 @@ for name, info in sorted(chars.items()):
                  'GearSwap/data/scripts/atelier/AtelierLink/AtelierLink.lua', 'GearSwap/data/scripts/atelier/load_job.lua'):
         check(need in names, '%s: the package holds %s' % (name, need))
     check(any(n.startswith('GearSwap/data/atelier/engine/') for n in names), '%s: the package holds the engine' % name)
-    # the Packages page stays home: not in the zip, not in the page's list of scripts
+    # the Packages page stays home: not in the zip; the page is the built one (atelier/src/), which goes on without it
     check(not any('GearSwap/' + p in names for p in make_package.PAGE_ONLY), '%s: packages.js, package_exports.js are not in a package' % name)
     page = z.read('GearSwap/' + make_package.PAGE_INDEX).decode('utf-8')
-    check("'packages'" not in page and "'config_page', 'welcome', 'motion'" in page, '%s: the package\'s page loads no packages.js' % name)
+    check('<meta name="atelier-build"' in page, '%s: the package\'s page is the built one' % name)
     # the Atelier's exports (make_package.add_exports, Node): every job, its main subjob, listed in atelier/index.js
     if shutil.which('node'):
         tmp = tempfile.mkdtemp(prefix='gs_pkgx_')

@@ -19,6 +19,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 0 (2026-10-18)** : la base. L'application Svelte (`App.svelte`) contient l'ancienne page : son cadre, puis
   ses styles et ses scripts (`atelier/app/`), chargés dans leur ordre par `legacy/load.ts` (la liste est dans
   `legacy/files.ts`). Rien ne change à l'écran.
+- **Étape 1 (2026-10-18)** : la barre du haut (`screens/topbar/`). Svelte la dessine à chaque redessin de l'ancienne
+  page (`stores/legacy.svelte.ts`, appelé par `window.__atelier.redraw()`) à partir de son état, lu par
+  `screens/topbar/model.ts` (les noms de l'ancienne page qu'il lit sont typés dans `legacy/globals.d.ts`). Ses boutons et
+  menus gardent les attributs `data-*` et les classes que lisent encore les gestionnaires de clics de l'ancienne page
+  (`events.js`, `packages.js`) : les actions passeront en Svelte avec les écrans qui les utilisent.
 - Les étapes suivantes déplacent un écran entier à la fois dans `src/screens/` ; ses fichiers sortent alors des
   listes de `legacy/files.ts`.
 

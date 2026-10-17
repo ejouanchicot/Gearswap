@@ -36,15 +36,10 @@ Object.assign(T.en, {
 // offered); what still asks ui2() gets yes
 const ui2 = () => true;
 
-// The tabs of a job: Sets, what it is computed with (buffs, target), the character, the job's settings (its keys,
-// modes, switches, macro book and lockstyle: four small tabs until 2026-10-11, one tab with four parts since), then
-// Simulate, which only answers with the game running
+// The parts of the job's settings (its keys, modes, switches, macro book and lockstyle, modules: four small tabs until
+// 2026-10-11, one tab with its parts since). The job's tabs themselves are the Svelte application's
+// (atelier/src/screens/topbar/sections.ts)
 const JOB_CFG = ['keys', 'modes', 'functions', 'macro', 'modules'];
-function ui2Sections(d){
-  return [['sets', t('sectionsSets'), d.sets.length], ['combat', t('ui2Combat'), ''], ['perso', t('ui2Perso'), ''],
-    ['jobcfg', t('ui2JobCfg'), ''], ['sim', t('sectionsSim'), '']];
-}
-const ui2Toggle = () => '';
 // The part of the job's settings shown (S.jobTab, kept): the tab opened by one of the four old names lands on its part
 const jobCfgTab = () => JOB_CFG.includes(S.jobTab) ? S.jobTab : 'keys';
 function renderJobCfg(d){
