@@ -180,9 +180,51 @@ local function same_instance(key, set, used)
     return nil
 end
 
+-- Longest an event can hold the timers (seconds): see held_timers.
+local MAX_PAUSE = 900
+
+--- The songs whose end time moved because the game held the timers. During an Event (an NPC, a moogle's
+--- menu, a cutscene) the buffs stop running, and the next buff packet gives every song an end time later by
+--- the event's length (3 to 4 s seen on 2026-10-17, more than JITTER: the songs were taken for another
+--- bard's and //gs c songs sang the dummies again over four songs of ours). They are the same instances when
+--- every song of the last packet comes back with the same id, all later by the same time (an event moves
+--- them all: one moved alone is another song), and no song landed with them (a song sung again comes with
+--- its action packet, 0x028).
+--- @param gone table Keys of the last packet not found in this one
+--- @param new table Keys of this packet not found in the last one
+--- @param stayed number Songs of the last packet found again unchanged
+--- @return table|nil {old key = new key}, nil when it is not a held timer
+local function held_timers(gone, new, stayed)
+    if #gone == 0 or #gone ~= #new or stayed > 0 then return nil end
+    local function by_id(keys)
+        local out = {}
+        for _, key in ipairs(keys) do
+            local id, finish = key:match('^(%d+):(%d+)$')
+            out[id] = out[id] or {}
+            table.insert(out[id], {key = key, finish = tonumber(finish)})
+        end
+        for _, list in pairs(out) do table.sort(list, function(a, b) return a.finish < b.finish end) end
+        return out
+    end
+    local before, after, moved, shift = by_id(gone), by_id(new), {}, nil
+    for id, list in pairs(before) do
+        local other = after[id]
+        if not other or #other ~= #list then return nil end
+        for _, e in ipairs(live.landed) do if tostring(e.id) == id then return nil end end
+        for i, e in ipairs(list) do
+            local delta = other[i].finish - e.finish
+            shift = shift or delta
+            if delta <= JITTER or delta > MAX_PAUSE or math.abs(delta - shift) > JITTER then return nil end
+            moved[e.key] = other[i].key
+        end
+    end
+    return moved, shift
+end
+
 --- The instances of ours follow their own end time when it shifts by the
---- rounding (and after a reload, from the saved file); gone otherwise.
-local function follow_owned(current)
+--- rounding or by held timers (and after a reload, from the saved file); gone otherwise.
+--- @param moved table|nil {old key = new key} of held_timers
+local function follow_owned(current, moved)
     local owned, used, lost = load_owned(), {}, {}
     for key in pairs(owned) do
         if current[key] then used[key] = true else lost[#lost + 1] = key end
@@ -190,7 +232,7 @@ local function follow_owned(current)
     -- outside the loop over owned: a key added while pairs() runs breaks it
     for _, key in ipairs(lost) do
         owned[key] = nil
-        local now_key = same_instance(key, current, used)
+        local now_key = (moved and moved[key] and not used[moved[key]] and moved[key]) or same_instance(key, current, used)
         if now_key then owned[now_key], used[now_key] = true, true end
     end
     local changed = #lost > 0
@@ -213,12 +255,24 @@ local function on_buffs(data)
     for key in pairs(current) do
         if previous[key] then kept[key] = true end
     end
+    local gone, new, stayed = {}, {}, 0
     for key in pairs(previous) do
         if not current[key] then
             local shifted = same_instance(key, current, kept)
-            if shifted then kept[shifted] = true
-            else trace('0x063 gone %s (%s)', key, by_id[previous[key]]) end
+            if shifted then kept[shifted] = true stayed = stayed + 1 else gone[#gone + 1] = key end
+        else
+            stayed = stayed + 1
         end
+    end
+    for key in pairs(current) do
+        if not kept[key] then new[#new + 1] = key end
+    end
+    local moved, shift = held_timers(gone, new, stayed)
+    if moved then
+        trace('0x063 %d song(s) %+d s later, timers held (an event): the same songs', #gone, shift)
+        for _, key in pairs(moved) do kept[key] = true end
+    else
+        for _, key in ipairs(gone) do trace('0x063 gone %s (%s)', key, by_id[previous[key]]) end
     end
     for key, id in pairs(current) do
         if not kept[key] then
@@ -228,7 +282,7 @@ local function on_buffs(data)
             else live.appeared[#live.appeared + 1] = {key = key, id = id, at = now} end
         end
     end
-    follow_owned(current)
+    follow_owned(current, moved)
     live.snapshot = current
 end
 
