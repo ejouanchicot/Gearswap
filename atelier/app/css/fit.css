@@ -1,0 +1,97 @@
+/* GearSwap Atelier · nothing goes past its box
+   Loaded last (atelier/index.html): each rule below keeps a text or a block inside the box it belongs to, at every
+   width of the window, where the rules before it let it out. Found by scripts/atelier/atelier_layout_check.js
+   (every character, job, section and window at 1920 to 390 px); run it again after a change of layout.
+   @file    atelier/app/css/fit.css
+   @author  ejouanchicot */
+
+/* ---- the top bar: on a narrow window its groups wrap, a long name ends in "…" ---- */
+.topbar .hero,.topbar .tgrp{min-width:0;max-width:100%}
+.topbar .tgrp > span{flex-wrap:wrap;height:auto;min-height:var(--ctl)}
+.topbar .tgrp .seg{flex:0 1 auto;flex-wrap:wrap;min-width:0;max-width:100%}
+.topbar .tgrp > span{max-width:100%}
+.topbar .hero .who > b{overflow:hidden;text-overflow:ellipsis}
+.topbar .hero .plates{flex-wrap:wrap;height:auto;min-height:var(--ctl)}
+.hero .topsel{max-width:100%}
+
+/* ---- the bar over the sets: the profile's four buttons keep their width, the bar wraps on a narrow window ---- */
+.ctxbar .prsits.compact{flex:none}
+@media (max-width:760px){.ctxbar{flex-wrap:wrap;height:auto}}
+
+/* ---- the set's title: the kind and the name share the line, each ending in "…" when it lacks room ---- */
+.stname .kicker{flex:0 1 auto;min-width:3em;overflow:hidden;text-overflow:ellipsis}
+.stname h2{flex:0 1 auto}
+
+/* ---- the set's stats: tabs above the list when the column is narrow (they took the room of the values) ---- */
+.setsx .globals{container-type:inline-size}
+@container (max-width:520px){
+  .setsx.ui2 .setstats{grid-template-columns:minmax(0,1fr)}
+  .setsx.ui2 .stabs{display:flex;flex-wrap:wrap;gap:4px;grid-column:1}
+  .setsx.ui2 .stabs button{border-radius:999px;border-right:1px solid var(--line-strong);padding:3px 11px}
+  .setsx.ui2 .stabs button[aria-selected="true"]{margin-right:0;box-shadow:none}
+  .setsx.ui2 .stabbody{grid-column:1;border-radius:12px}
+  .setsx.ui2 .globalcol .stabs{height:auto}
+}
+
+/* ---- a weaponskill set's labels (StanceWeapon): on two lines rather than over the menu ---- */
+.setsx.ui2 .wslbl{white-space:normal;overflow-wrap:anywhere}
+
+/* ---- the job's settings: the part buttons wrap; tables keep to their column ---- */
+.jobcfg .seg.jobcfgtabs{flex-wrap:wrap}
+.jobcfg .tbl.in td{overflow-wrap:anywhere}
+.jobcfg .fn2 .tbl.in{table-layout:fixed;width:100%}
+@media (max-width:760px){.tbl.in{display:block;max-width:100%;overflow-x:auto}}
+.jobcfg .fn2 td.r,.jobcfg .fn2 td.r .kbd{white-space:normal}
+/* the last box of the two columns: its bottom margin was cancelled by -14px, which ran past the frame */
+.jobcfg > .boxgrid.cols{margin-bottom:0}
+
+/* ---- the big figures (macro book, lockstyle): the line as tall as the figure ---- */
+.bighead .big{line-height:1.25}
+
+/* ---- the buffs window: a long label (NOURRITURE) on its own width ---- */
+.brow{grid-template-columns:minmax(70px,max-content) minmax(0,1fr)}
+
+/* ---- the party builder: a member's effects shown whole; the Aftermath menus inside their cell ---- */
+.pbtabg{max-height:none}
+.pbfam > *{min-width:0;max-width:100%}
+.pbtabh{flex-wrap:wrap}
+/* the Aftermath row: its menus take the row, the weapon's note goes under them (beside them, the menus pushed the panel
+   out, then a column of no width wrote the note one letter a line) */
+.combattab .pbf:has(.pbfam){grid-template-columns:minmax(72px,132px) minmax(0,1fr)}
+.combattab .pbf:has(.pbfam) > .pbfe{grid-column:2}
+@container (max-width:420px){.combattab .pbf{grid-template-columns:minmax(72px,110px) minmax(0,1fr)}.combattab .pbfe{grid-column:1 / -1}.combattab .pbfe:empty{display:none}}
+
+/* ---- the target's tabs: a cell with a long line (Distract and its notes) grows its row ---- */
+.ftabgrid{grid-template-rows:repeat(3,minmax(32px,auto))}
+/* ---- a weaponskill set's TP line: the TP Bonus detail goes to the next line ---- */
+.tpbtot{white-space:normal}
+/* ---- the buffs window: a row of chips (Savagery 0 to 5) wraps ---- */
+.bctl.chips .fseg{flex-wrap:wrap;min-width:0}
+/* ---- the target's tabs: on a narrow window as many a line as fit ---- */
+@media (max-width:760px){.ftabs7{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))}}
+
+/* ---- the set's title: its name, its version and the line that says what it is for shown whole, on two lines when
+   they need it (the three rows were held to 30 / 22 / 18 px with "…": "Tes Cures : le sort sur toi ou sur un autre…") ---- */
+.stmain{grid-template-rows:auto auto auto;row-gap:2px}
+.stname{flex-wrap:wrap;white-space:normal;overflow:visible}
+.stname h2{white-space:normal;overflow:visible;overflow-wrap:anywhere}
+.stwhat{white-space:normal;overflow:visible}
+/* the weaponskill's facts (Physique, 73 % VIT, fTP...): each whole, the line breaks between them */
+.stwhat .wsfacts{display:inline-flex;flex-wrap:wrap;gap:4px 8px;max-width:100%}
+.stwhat .wsfacts > span{white-space:nowrap;margin-right:0}
+/* a narrow window: the set's buttons (Optimize, Delete) under its title rather than squeezing it */
+@media (max-width:760px){.settitle{flex-wrap:wrap}.settitle .setacts{flex:1 1 100%}}
+
+/* ---- the set's weapon lines (Main, Sub, Ammo): one column of labels, the values lined up under each other, the same
+   label width as a weaponskill set's lines (Version, Weapon, TP); .setctl .wpick put them back in a plain row ---- */
+.setsx.ui2 .setctl .wpick{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:baseline}
+.setsx.ui2 .setctl > .wpicks{align-items:start}
+@media (max-width:760px){.setsx.ui2 .setctl > .wpicks{grid-template-columns:minmax(0,1fr)}}
+
+/* ---- the sets page from 1100 to 1349 px: three columns (sets.css) but the stats column shown only from 1350 px
+   (panels.css): the right third stayed empty and the stats went under the set. The column now comes with its room ---- */
+@media (min-width:1100px){
+  .setsx.ui2 .globalcol{display:block;min-width:0}
+  .setsx.ui2 .globals-inline{display:none}
+  .split .setsx.ui2 .globalcol{max-height:100%;overflow:auto;align-self:start}
+}

@@ -63,7 +63,8 @@ button,select,input,.slot,.setrow,.fam,.chip,.seg button,.variants button{transi
 .num{font-variant-numeric:tabular-nums}
 
 /* ---- shell: a top bar, then the content on the whole window ---- */
-.app{display:grid;grid-template-rows:auto minmax(0,1fr);min-height:100vh}
+/* one column the window's width: no block can make the page wider than the window */
+.app{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);min-height:100vh}
 .topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:8px 20px;position:relative;z-index:2;
   background:linear-gradient(180deg,var(--side),color-mix(in srgb,var(--side) 82%,var(--bg)));border-bottom:1px solid var(--line)}
 /* a thin gold thread under the bar */

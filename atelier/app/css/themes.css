@@ -114,9 +114,10 @@
 
 /* the banner names the page's owner: no mark of the page beside it */
 .topbar .brand{display:none}
-.topbar{flex-wrap:nowrap}
+/* one line when it fits, two when the characters and the commands need more than the window: a bar kept on one
+   line made the whole page wider than the window (five characters at 1600 px: the stats column went off screen) */
+.topbar{flex-wrap:wrap}
 .topbar .seg{flex:none}
-@media (max-width:1500px){.topbar{flex-wrap:wrap}}
 
 /* the buttons of the right of the top bar, in groups named like the fields beside them (Job, Sub...) */
 .tgrp{display:flex;flex-direction:column;gap:2px;flex:none}
