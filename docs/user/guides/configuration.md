@@ -426,6 +426,7 @@ names are on its `sets.md` page ([jobs](../jobs/README.md)).
 | Symptom | Try |
 |---|---|
 | An edit does nothing | `//gs c reload`; look for a Lua error in the chat or console; check you edited `<YourName>/_common/...`, not `_master/` |
+| A red line `... .lua is broken (line N: ...): loaded without it` | That file has a typo (a missing `}` or `,`, a stray character) at the line shown, or it was emptied. GearSwap loaded with that file's defaults; fix it and `//lua reload gearswap`. If it is a file the job needs (its sets, its `_STATES.lua`, `rings.lua`), GearSwap stops just after, and this line tells you which file to fix |
 | Lockstyle ignores the subjob | The job's `_LOCKSTYLE.lua` has no `get_style` (see above) |
 | Macro book does not change | Check the book and page exist in game, and the subjob spelling (`'SAM'`) |
 | `//gs c wo` interrupted, slots locked | `//gs c wo recover` |

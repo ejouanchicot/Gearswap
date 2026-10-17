@@ -34,9 +34,12 @@ end
 function StealthConfig.get()
     if rawget(_G, '_stealth_settings') then return _G._stealth_settings end
     local settings = {}
-    local ok, data = pcall(dofile, StealthConfig.path() or '')
+    -- a broken file is named in chat, and the defaults apply (module_cache.lua, read_char_file)
+    local path = StealthConfig.path()
+    local data = require('shared/utils/core/module_cache').read_char_file(path,
+        path and path:match('data/(.-)%.lua$') or 'STEALTH_CONFIG')
     for key, value in pairs(StealthConfig.DEFAULTS) do
-        local saved = ok and type(data) == 'table' and data[key]
+        local saved = data and data[key]
         settings[key] = (saved ~= nil and type(saved) == type(value)) and saved or value
     end
     _G._stealth_settings = settings

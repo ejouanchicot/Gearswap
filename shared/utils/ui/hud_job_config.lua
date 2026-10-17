@@ -74,13 +74,9 @@ function HudJobConfig.get(job)
     local known = cache()[key]
     if known ~= nil then return known end
     local path = HudJobConfig.path(key)
-    local data = {}
-    local file = path and io.open(path, 'r')
-    if file then
-        file:close()
-        local ok, loaded = pcall(dofile, path)
-        if ok and type(loaded) == 'table' then data = loaded end
-    end
+    -- a broken file is named in chat, and the HUD keeps its default order (module_cache.lua, read_char_file)
+    local label = path and path:match('data/(.-)%.lua$')
+    local data = require('shared/utils/core/module_cache').read_char_file(path, label or (key .. '_HUD')) or {}
     cache()[key] = data
     return data
 end

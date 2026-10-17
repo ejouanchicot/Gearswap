@@ -294,7 +294,8 @@ function CharPaths.load(kind, name, job, char)
 end
 
 --- require() of a character module that older folders may not have: nil
---- when the file is missing, the module otherwise (a broken file still errors).
+--- when the file is missing, the module otherwise. A broken file is named in
+--- chat and also gives nil (module_cache.lua, CHARACTER FILES).
 --- @return any|nil
 function CharPaths.optional(kind, name, job, char)
     local path = CharPaths.file(kind, name .. '.lua', job, char)
@@ -424,5 +425,15 @@ function CharPaths.legacy_module(path)
 end
 
 _G.CharPaths = CharPaths
+
+-- First shared file of every entry (shared/entry/<job>.lua requires it before anything else):
+-- the require cache goes in here, so the character files an entry reads before config_loader
+-- (LOCKSTYLE_CONFIG, REGION_CONFIG) are already checked for a broken file (module_cache.lua).
+-- This file was itself loaded by the uncached require: recording it keeps it from loading twice.
+local cache_ok, ModuleCache = pcall(require, 'shared/utils/core/module_cache')
+if cache_ok and ModuleCache and ModuleCache.install then
+    ModuleCache.install()
+    ModuleCache.remember('shared/utils/core/char_paths', CharPaths)
+end
 
 return CharPaths

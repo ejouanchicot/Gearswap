@@ -22,7 +22,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `job_change_manager.lua` | 238 | Debounced `gs reload` on subjob change, cleanup before it, lockstyle-cancel registry | here |
 | `job_sync_watchdog.lua` | 165 | Compares the job the file was loaded for with the client's job every 5 s, forces `gs reload` after two mismatches | here |
 | `midcast_watchdog.lua` | 485 | Tracks the spell/item in midcast; if no aftercast arrives within cast time + buffer, sends `gs c update` | here |
-| `module_cache.lua` | 100 | Replaces the sandbox `require` with a caching wrapper, once per sandbox | here |
+| `module_cache.lua` | 213 | Replaces the sandbox `require` with a caching wrapper, once per sandbox; a broken character file is named in chat and treated as missing | here |
 | `lifecycle_manager.lua` | 174 | Factory for the four Mote hooks every job used to copy, plus `refresh_after_buff` (gear rebuild after an Aftermath Lv.3 change) | here |
 | `keybind_guard.lua` | 82 | Re-sends the job's binds 2 s after a load | here |
 | `load_gate.lua` | 96 | `LoadGate.begin()` numbers each load (`windower._load_gen`); `LoadGate.defer(delay, fn, label)` runs deferred load work only while that load is still the live one | here ([INIT_SYSTEMS](#init_systemslua-in-execution-order)) |
@@ -49,7 +49,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 
 | Path | Role |
 |---|---|
-| `shared/utils/config/config_loader.lua` | Required at file level by every entry. Its first statement installs `ModuleCache`; `load_ui_config(char, job)` `dofile`s `<char>/_common/display/UI_CONFIG.lua` and fills `_G.UIConfig` / `_G.ui_display_config` (details in [ui-overlay.md](ui-overlay.md)) |
+| `shared/utils/config/config_loader.lua` | Required at file level by every entry. Its first statement installs `ModuleCache` if `char_paths.lua` has not already; `load_ui_config(char, job)` `dofile`s `<char>/_common/display/UI_CONFIG.lua` and fills `_G.UIConfig` / `_G.ui_display_config` (details in [ui-overlay.md](ui-overlay.md)) |
 | `shared/entry/<job>.lua` (22) | Entry code, the same for every character: `get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload` |
 | `_master/entry/Tetsouo_<JOB>.lua` (22) | One-line entry templates (`include('../shared/entry/<job>.lua')`), deployed as `<Name>/<Name>_<JOB>.lua`; see [characters-and-templates.md](../architecture/characters-and-templates.md) |
 
@@ -102,9 +102,9 @@ sequenceDiagram
     participant Facade as war_functions.lua
     GS->>GS: file_unload(old), unregister events, delete texts, drop user_env
     GS->>Entry: run top level
-    Entry->>Entry: char_paths, LOCKSTYLE_CONFIG, REGION_CONFIG (uncached requires)
+    Entry->>Entry: char_paths (installs ModuleCache: require now caches), LOCKSTYLE_CONFIG, REGION_CONFIG
     Entry->>CL: require config_loader
-    CL->>CL: ModuleCache.install() (require now caches), LoadGate.begin(), load_ui_config
+    CL->>CL: ModuleCache.install() (no-op), LoadGate.begin(), load_ui_config
     Entry->>Entry: require job_change_manager, UI_MANAGER (cached)
     GS->>Entry: get_sets()
     Entry->>Mote: include Mote-Include.lua
@@ -123,8 +123,8 @@ Step by step, with the WAR entry (`shared/entry/war.lua`, 274 lines):
 
 | # | Where | What |
 |---|---|---|
-| 1 | file level, `:36-51` | `char_paths` (where the character's files are), `entry_kit` (the hooks every entry shares, `shared/utils/core/entry_kit.lua`), `LOCKSTYLE_CONFIG` (fallback table if missing) and `REGION_CONFIG` -> `_G.RegionConfig`, both through `CharPaths.module('common', ...)`. These `require`s run before the module cache exists, so they execute their file and are not cached. |
-| 2 | file level, `:57-58` | `config_loader`: its first statement is `ModuleCache.install()`, so every later `require` of this load is cached, including those made from `user_setup()`; next it calls `LoadGate.begin()`, which numbers the load. Then `load_ui_config(CharPaths.name(), 'WAR')`. |
+| 1 | file level, `:36-51` | `char_paths` (where the character's files are), `entry_kit` (the hooks every entry shares, `shared/utils/core/entry_kit.lua`), `LOCKSTYLE_CONFIG` (fallback table if missing) and `REGION_CONFIG` -> `_G.RegionConfig`, both through `CharPaths.module('common', ...)`. `char_paths.lua` installs the module cache at its end (since 2026-10-17), so these two are already cached and checked for a broken file. |
+| 2 | file level, `:57-58` | `config_loader`: its first statement is `ModuleCache.install()`, a no-op after `char_paths` (kept for an entry that would not start with it); next it calls `LoadGate.begin()`, which numbers the load. Then `load_ui_config(CharPaths.name(), 'WAR')`. |
 | 3 | file level, `:62-63` | `job_change_manager`, `UI_MANAGER` (after `config_loader` on purpose: cached, and `UI_MANAGER` reads `_G.UIConfig` at load). BST and SMN do the same; the other entries require them inside `get_sets()`/`user_setup()` instead, also after the cache exists. |
 | 4 | `get_sets`, `:83` | `_G.WARWSConfig = CharPaths.optional('job', 'WAR_WS_CONFIG', 'WAR')` set before Mote, because `user_setup()` needs it. |
 | 5 | `get_sets`, `:86` | `include('Mote-Include.lua')`. Mote runs `init_include()` at the end of its own load (`Mote-Include.lua:188`): creates `state`, `classes`, `sets.*` skeletons, includes Mote-Utility / Mote-SelfCommands / Mote-Globals, calls `job_setup()` then `user_setup()` (`:165-172`) then `init_gear_sets()` (`:175`). So `user_setup()` runs in the middle of this line, before INIT_SYSTEMS and before the job facade. After `init_include()` returns, the rest of Mote-Include defines `handle_equipping_gear`, `cleanup_precast`, `cleanup_midcast` and the other default handlers, which is why no hook on them can be laid from `user_setup()`. |
@@ -147,7 +147,7 @@ The file runs top to bottom once per load. "sync" blocks run during the `include
 | 32 | sync | `set_overrides.apply(main_job)`: the pieces changed in the Atelier page (`<Char>/atelier/overrides/set_overrides.lua`) laid over the sets `init_gear_sets` just built (`shared/utils/atelier/set_overrides.lua`) | `sets` |
 | 41-47 | sync | Restore `_G.UPDATE_DEBUG`, `_G.AUTOMOVE_DEBUG`, `_G.WARP_DEBUG`, `_G.PrecastDebugState`, `_G.JOBCHANGE_DEBUG`, each from its own `windower._gs_debug.*` field | reads `windower._gs_debug` |
 | 50 | sync | `windower._gs_reload_count += 1` (counts INIT runs, i.e. sandboxes that got this far) | `windower._gs_reload_count` |
-| 60-65 | sync | `ModuleCache.install()`. Normally a no-op (returns false): `config_loader` installed it at file level. Kept for an entry that does not load `config_loader` | `_G.require` |
+| 60-65 | sync | `ModuleCache.install()`. Normally a no-op (returns false): `char_paths.lua` installed it at file level. Kept for an entry that does not load `config_loader` | `_G.require` |
 | 71-89 | sync | GEAR HOOKS block. `ImpactLock.install()`, `DuplicateGear.install()` then `HPPriority.apply()`, each under `pcall`; all three register an equip hook through `equip_hooks.lua`, which wraps `equip()` once per load and runs the hooks in order on every set. `impact_lock` (5): at the precast of Impact the cloak that grants it (Crepuscular / Twilight Cloak, from `sets.precast.FC.Impact`, `sets.midcast.Impact` or the bags) is locked, and every set equipped until the aftercast gets it as body and loses its head; `ImpactLock.install()` also wraps the globals `precast`, `aftercast` and `cancel_spell` to set and lift the lock (every job, since 2026-09-30). `duplicate_gear` (10): each side of a doubled ring / earring / weapon takes its own copy, by bag. `hp_priority` (20): indexes the HP / MP of the pieces the loaded sets name (Mote has already run `init_gear_sets`), then ranks each swap's pieces against the gear worn. See [equipment-and-inventory.md](equipment-and-inventory.md#equip-hooks) | `_G._equip_hooks`, `_G._equip_hooks_wrapper`, `_G.equip`, `_G._hp_priority_state`, `_G._impact_lock`, `_G.precast`, `_G.aftercast`, `_G.cancel_spell`, `_G._impact_wrapped_*` |
 | 97-106 | sync | Load `LagDebugger` if absent, `on_reload_complete(job, sub, windower._automove_seq)` | `_G.LagDebugger` |
 | 124-139 | sync | Define `ensure_message_init()` (lazy `message_init`, never returns nil) | local |
@@ -360,7 +360,7 @@ Why `original`: Battlemod rebuilds 0x028 for the chat (`addons/battlemod/parse_a
 
 Inside the sandbox `require` is `include_user` (`refresh.lua:132`). It returns `package.loaded[str]` when that is a table (Windower's own libs) and otherwise loads and executes the file every time (`user_functions.lua:300-327`); it never writes `package.loaded`.
 
-`ModuleCache.install()`, called once per sandbox. The first call comes from the top of `shared/utils/config/config_loader.lua`, which every entry file requires at file level, before `get_sets()` and Mote's `user_setup()`; the call in INIT_SYSTEMS stays as a fallback for an entry file that does not load `config_loader`. A job load runs about 124 file loads with the cache installed this early (offline profile, 2026-09-27), against about 356 when it arrived after `user_setup()`.
+`ModuleCache.install()`, called once per sandbox. The first call comes from the end of `shared/utils/core/char_paths.lua`, the first file every entry requires (since 2026-10-17; before, from the top of `config_loader.lua`, which left `LOCKSTYLE_CONFIG` and `REGION_CONFIG` uncached and loaded `char_paths` and `module_cache` twice). The calls in `config_loader` and INIT_SYSTEMS stay as fallbacks. `install()` records `module_cache` itself, and `char_paths` records itself with `ModuleCache.remember`, so neither is loaded a second time. A job load runs about 124 file loads with the cache installed this early (offline profile, 2026-09-27), against about 356 when it arrived after `user_setup()`.
 
 - Guard: `rawget(_G, '__require_cache_installed')`, so a second call in the same sandbox returns false.
 - Wraps the original `require`. Calls with a second argument (include-into-table form) or a non-string path pass straight through.
@@ -371,9 +371,24 @@ Lifetime: the cache lives on the sandbox `_G` and dies with it. A module is boun
 
 `include()` is not cached: set files and `automove.lua` are meant to re-execute.
 
-`package.loaded` never holds a project module. What modules get is one instance per sandbox from `_G.__require_cache`, plus a pre-cache instance for anything an entry file requires before `config_loader` (only `LOCKSTYLE_CONFIG` and `REGION_CONFIG` in the templates, which are plain data), and a new sandbox on every main job change.
+`package.loaded` never holds a project module. What modules get is one instance per sandbox from `_G.__require_cache`, and a new sandbox on every main job change. `python scripts/loadcheck/check_load.py` lists any file loaded twice in one load (none on 2026-10-17, 1 365 loads).
 
-Gotcha: a module required before `config_loader` gets a second instance when it is required again after. Module state that must be shared between two instances has to live on `_G` or `windower.*`. `JobChangeManager` keeps its state on `_G.JobChangeManagerSTATE` for that reason (it used to be required before the cache in several entries); `alt_states.lua` keeps its weapon watch on `_G._own_weapon_watch` for the same reason.
+### Broken character files
+
+A `require` whose name starts with the player's folder (`<player.name>/`, any case) goes through `load_char_file`:
+
+- the file raises (syntax error, runtime error): chat shows `<path>.lua is broken (line N: why): loaded without it...` (`MessageFormatter.show_error`, plain `add_to_chat` if the message system cannot load), and the `require` returns nil, cached;
+- it returns something that is not a table: same message, nil;
+- it returns nil and holds only blanks and comments: `it is empty`, nil;
+- a missing file still raises `Cannot find the include file`, untouched: callers probe with `pcall(require)` (`CharPaths.load`).
+
+nil is what a caller already gets for a missing file (`CharPaths.optional`), so an optional file falls back to its defaults. A file the job cannot do without (its sets, its states, `rings.lua`) still stops the load, with the chat line above naming the real culprit. Each report is also kept in `_G.__char_file_errors` (`{path, why}`).
+
+Settings files read with `dofile` use `ModuleCache.read_char_file(path, label)` for the same message: `STEALTH_CONFIG` (`stealth_config.lua`), `<JOB>_HUD` (`hud_job_config.lua`). `UI_CONFIG` keeps its own message in `config_loader.lua` and now also refuses a value that is not a table. Files the game writes (`saved/`) and the Atelier overrides are still read silently: a broken one is rewritten, the player does not edit it.
+
+Measured with `check_load.py` (Tetsouo WAR/SAM and Kaories GEO/WHM, every character file read at load broken four ways): before, 19 cases stopped the load on an error naming another file and 6 failed a few seconds later; after, 0 and 0, and the 1 365 normal loads give the same sets, states, commands and globals.
+
+Gotcha: a module required before the cache exists gets a second instance when it is required again after (today nothing is, see above). Module state that must be shared between two instances has to live on `_G` or `windower.*`. `JobChangeManager` keeps its state on `_G.JobChangeManagerSTATE` for that reason (it used to be required before the cache in several entries); `alt_states.lua` keeps its weapon watch on `_G._own_weapon_watch` for the same reason.
 
 ## LifecycleManager
 
@@ -455,7 +470,9 @@ Every public function (module field or `_G` export) of the modules owned by this
 
 | Function | Returns | Callers |
 |---|---|---|
-| `install()` | true when installed by this call | `config_loader.lua` (file level), INIT_SYSTEMS (fallback) |
+| `install()` | true when installed by this call | `char_paths.lua` (end of file), `config_loader.lua` and INIT_SYSTEMS (fallbacks) |
+| `remember(path, module)` | nothing; records a module loaded before the cache | `char_paths.lua`, `install()` |
+| `read_char_file(path, label)` | the file's table, nil when missing or broken (broken: named in chat) | `stealth_config.lua`, `hud_job_config.lua` |
 
 `stats()` was removed on 2026-09-28 (no caller); the counters stay in `_G.__require_cache_stats`.
 

@@ -37,13 +37,19 @@ KNOWN = {
         ('Ruthless Stroke measured off the engine (documented gap, atelier/calc/DIFFERENCES.md)', 'FAILED'),
     'scripts/atelier/atelier_text_check.js':
         ('4 checks of French names failing since before 2026-10-14 (mode and settings texts)', '4 check(s) failed'),
+    'scripts/loadcheck/check_load.py':
+        ("Gab's PUP: his live folder has no pup/keys/pup_states.lua (2026-10-17, not ours to change)",
+         'gabvanstronger/pup/keys/pup_states.lua'),
 }
 REPORTS = {'scripts/audit/calc_check.js', 'scripts/audit/calc_round_check.js', 'scripts/audit/calc_ws_check.js'}
 SLOW = {'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_modules_test.js',
         'scripts/atelier/offline_export_page_test.js', 'scripts/atelier/offline_export_test.js',
-        'scripts/atelier/make_package_test.py', 'scripts/atelier/make_package_page_test.js'}
+        'scripts/atelier/make_package_test.py', 'scripts/atelier/make_package_page_test.js',
+        'scripts/loadcheck/check_load.py'}
 # A test that needs an argument to know what it tests
-ARGS = {'scripts/audit/test_automove_cast.lua': ['shared/utils/movement/automove.lua']}
+ARGS = {'scripts/audit/test_automove_cast.lua': ['shared/utils/movement/automove.lua'],
+        # every character's jobs with 2 subjobs each; the whole sweep and the broken files: run it by hand
+        'scripts/loadcheck/check_load.py': ['--quick', '--no-inject']}
 # Not tests: a tool (fight_run_check plays a run for a character given by hand)
 SKIP = {'scripts/audit/fight_run_check.lua'}
 
@@ -56,7 +62,8 @@ def tests(full):
           + ['scripts/atelier/atelier_modules_test.js', 'scripts/atelier/offline_export_page_test.js',
              'scripts/atelier/offline_export_test.js', 'scripts/atelier/atelier_test.js'])
     js += ['scripts/atelier/make_package_page_test.js']
-    out = [('python', 'scripts/check_syntax.py'), ('python', 'scripts/atelier/make_package_test.py')]
+    out = [('python', 'scripts/check_syntax.py'), ('python', 'scripts/atelier/make_package_test.py'),
+           ('python', 'scripts/loadcheck/check_load.py')]
     out += [('lua5.1', t.replace(os.sep, '/')) for t in lua]
     out += [('node', t.replace(os.sep, '/')) for t in js if os.path.exists(t)]
     return [(run, t) for run, t in out if t not in SKIP and (full or t not in SLOW)]

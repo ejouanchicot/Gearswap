@@ -54,8 +54,8 @@ windower._gs_reload_count = (windower._gs_reload_count or 0) + 1
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- GearSwap's require never populates package.loaded, so without this every
--- require re-reads and re-executes the file. config_loader, which every entry
--- file requires at file level, normally installed it already, before Mote's
+-- require re-reads and re-executes the file. char_paths.lua, which every entry
+-- file requires first, normally installed it already, before Mote's
 -- user_setup(); this call covers an entry file that does not load it.
 pcall(function()
     local ok, ModuleCache = pcall(require, 'shared/utils/core/module_cache')

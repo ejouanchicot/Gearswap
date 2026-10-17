@@ -459,9 +459,9 @@ The coding standard, as reviews enforce it:
 ### What git tracks
 
 `shared/`, `_master/` (generic templates), `character_db.lua`,
-`clone_character.py`, `docs/`, and five entries under `scripts/`
-(`check_syntax.py`, `check_overlay.py`, `item_db/`, `addon_patches/`,
-`atelier/`; `.gitignore:98-106`). Ignored (`.gitignore`):
+`clone_character.py`, `docs/`, and these entries under `scripts/`
+(`check_syntax.py`, `check_overlay.py`, `run_tests.py`, `item_db/`, `addon_patches/`,
+`atelier/`, `convert/`, `loadcheck/`; `.gitignore`, block `scripts/*`). Ignored (`.gitignore`):
 
 - every character folder the game loads (`data/<Char>/`), and, through the same
   unanchored patterns, the per-character overlays `_master/<Char>/`;
@@ -663,6 +663,16 @@ Details: [messages.md, For maintainers / AI](systems/messages.md#for-maintainers
     in the harness which ones it does not reproduce;
   - never define `handle_equipping_gear` / `cleanup_*` hooks in an order the
     engine would not.
+- **Loading.** `python scripts/loadcheck/check_load.py [Perso ...] [--quick] [--inject Perso:JOB:SUB]`
+  copies the game folder to a temporary one and loads there every job of every character
+  with every subjob (1 365 loads, about 7 min; `--quick` 2 subjobs a job). It reports load
+  errors, errors in the first 10 s, leaks into the next load (Lua's tables changed, Windower
+  libs in the sandbox, functions left on `windower.*`), files loaded twice, time, memory and
+  commands sent. It then breaks every character file read by one load, four ways, one at a
+  time, and says whether GearSwap still loads and names the file. Sets, states, commands and
+  globals of each load are kept in `scripts/loadcheck/out/fp/`: the next run lists the loads
+  whose result changed, the proof a refactor changed nothing. Report: `scripts/loadcheck/out/report.md`.
+  `run_tests.py --full` runs it with `--quick --no-inject`.
 - Differential tests (old vs new version of a module on the same cases) and
   static scans live in `scripts/audit/` (gitignored, local).
 

@@ -5,10 +5,10 @@
 ---   This module loads the UI configuration, applies fallback defaults if needed,
 ---   and sets up global variables required by the UI system.
 ---
----   It is also the FIRST shared file of every load: every shared/entry/<job>.lua
----   requires it at file level, and requiring it installs the require cache
----   (module_cache.lua), starts the load's number (LoadGate.begin, which every
----   deferred task is checked against), the trace and ghost hooks and the
+---   It also opens every load: every shared/entry/<job>.lua requires it at file
+---   level, after char_paths.lua (which installs the require cache,
+---   module_cache.lua; this file installs it if not), and requiring it starts the
+---   load's number (LoadGate.begin, which every deferred task is checked against), the trace and ghost hooks and the
 ---   Atelier export. Moving or dropping that require in an entry breaks the
 ---   load numbering without any error.
 ---
@@ -19,9 +19,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Every entry file requires this module at file level, before Mote runs
--- user_setup(). Installing the require cache here instead of waiting for
--- INIT_SYSTEMS keeps user_setup() from re-running the same modules dozens of
--- times (message_core, ui_style... about 230 extra loads per job load).
+-- user_setup(). The require cache must be in before that, or user_setup() re-runs
+-- the same modules dozens of times (message_core, ui_style... about 230 extra
+-- loads per job load). char_paths.lua, the first file of every entry, installs it;
+-- this call covers an entry that does not start with char_paths.
 local cache_ok, ModuleCache = pcall(require, 'shared/utils/core/module_cache')
 if cache_ok and ModuleCache then
     ModuleCache.install()
@@ -73,9 +74,10 @@ function ConfigLoader.load_ui_config(char_name, job_name)
     end)
 
     -- Apply fallback defaults if load failed
-    if not success or not UIConfig then
+    if not success or type(UIConfig) ~= 'table' then
         -- the real reason (a typo shows its line), not only "failed": the HUD falls back off screen on a small window
-        local why = not success and tostring(UIConfig) or 'it returned nothing'
+        local why = not success and tostring(UIConfig)
+            or (UIConfig == nil and 'it returned nothing' or ('it returned a ' .. type(UIConfig) .. ', not a table'))
         UIConfig = {
             init_delay              = 5.0,
             default_position        = { x = 1600, y = 300 },
