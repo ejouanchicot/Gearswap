@@ -130,6 +130,9 @@ function TraceHooks.install()
     hook_loads()
     if not G._trace_engine_hooked then
         G._trace_engine_hooked = true
+        -- the wrappers below are this load's functions: they keep it in memory until //lua r gearswap
+        -- (the trace's ALIVE line leaves this one load out of its old loads, trace_log.lua)
+        windower._trace_hooks_gen = windower._load_gen
         local write = make_writer(G, windower)
         wrap_events(G, windower, write)
         wrap_commands(G, windower, write)

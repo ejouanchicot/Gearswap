@@ -154,14 +154,15 @@ end
 --- The older loads not yet freed, by load number (env_watch.lua notes every load in a weak table, which the
 --- collector empties on its own: nothing is collected here). A replaced load is listed for a cycle or two
 --- (half a minute); one listed for minutes is kept in memory by something, and the trace lines of that load
---- say what it did.
+--- say what it did. The load that put the trace's engine hooks in (trace_hooks.lua) is left out: those
+--- hooks are its functions and keep it, by design, until //lua r gearswap.
 --- @return string e.g. " old 12,14", '' when none
 local function old_loads()
     local watch = rawget(windower, '_env_watch')
     if type(watch) ~= 'table' then return '' end
-    local list = {}
+    local list, hooked = {}, windower._trace_hooks_gen
     for env, gen in pairs(watch) do
-        if env ~= _G then list[#list + 1] = tonumber(gen) or 0 end
+        if env ~= _G and gen ~= hooked then list[#list + 1] = tonumber(gen) or 0 end
     end
     if #list == 0 then return '' end
     table.sort(list)
