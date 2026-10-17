@@ -160,6 +160,24 @@ local function file_copies()
     return out
 end
 
+--- The sets under a renamed one take its new name, the old one kept as an alias: BLM's `sets.midcast['Comet'] =
+--- sets.midcast['Elemental Magic']`, met first as Comet, left its Magic Burst set as sets.midcast.Comet.MagicBurst.
+local function rename_under(path_of, out, order, from, old, new)
+    for j = from, #order do
+        local path = order[j]
+        local rest = path:sub(#old + 1)
+        if path:sub(1, #old) == old and rest:match('^[%.%[]') then
+            local rec = out[path]
+            rec.path = new .. rest
+            rec.aliases = rec.aliases or {}
+            rec.aliases[#rec.aliases + 1] = path
+            out[path], out[rec.path] = nil, rec
+            order[j] = rec.path
+            for tbl, p in pairs(path_of) do if p == path then path_of[tbl] = rec.path end end
+        end
+    end
+end
+
 --- A set met under several names keeps the one it is defined under: the name the set file's copies point to
 --- (`sets.engaged.MDT = sets.idle.MDT`: idle.MDT; alphabetical order put engaged first), else the first that is not a
 --- spell, ability or weapon skill (`sets.midcast['Banishga'] = sets.midcast.SIRDEnmity`); the others become its aliases.
@@ -183,6 +201,7 @@ local function prefer_set_names(path_of, out, order)
                     out[path], out[alias] = nil, rec
                     order[i] = alias
                     for tbl, p in pairs(path_of) do if p == path then path_of[tbl] = alias end end
+                    rename_under(path_of, out, order, i + 1, path, alias)
                     break
                 end
             end
