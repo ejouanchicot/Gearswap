@@ -1,0 +1,19 @@
+{
+  "name": "gearswap-atelier",
+  "private": true,
+  "description": "GearSwap Atelier: the page's sources (src/, TypeScript + Svelte 5) built into one file, atelier/index.html. Players never need this: they open the built file.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "5.1.1",
+    "@tsconfig/svelte": "5.0.8",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.7",
+    "typescript": "5.9.3",
+    "vite": "6.4.4",
+    "vite-plugin-singlefile": "2.3.3"
+  }
+}

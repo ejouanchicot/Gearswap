@@ -127,11 +127,13 @@ function motionAfter(){
 }
 
 // A dialog opens (the overlay shown), a folded block is opened by hand (not by the redraw that opens it again)
-addEventListener('DOMContentLoaded', () => {
+// (now, when the page is already read: atelier/src/legacy/load.ts loads this file after the document's end)
+function watchDialogs(){
   const overlay = document.getElementById('overlay');
   if (overlay) new MutationObserver(() => { const d = overlay.querySelector('.dialog');
     if (d && !overlay.hidden && motionOn()) d.classList.add('opens'); }).observe(overlay, {attributes: true, attributeFilter: ['hidden']});
-});
+}
+if (document.readyState === 'loading') addEventListener('DOMContentLoaded', watchDialogs); else watchDialogs();
 document.addEventListener('toggle', e => {
   const el = e.target;
   if (el.open && motionOn() && performance.now() - MOTION.at > 120 && el.closest && el.closest('#view')) el.classList.add('unfolds');

@@ -20,6 +20,8 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|ERR_FILE_NOT_FOUND|net::/.test(m.text())) errors.push('console: ' + m.text()); });
   await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); });
   await page.goto(PAGE, {waitUntil: 'load'});
+  // the built page (atelier/src/) loads the old page's scripts after the document: drawn once its bridge says so
+  await page.waitForFunction(() => window.__atelier && window.__atelier.loaded, {timeout: 60000});
   await new Promise(r => setTimeout(r, 6000));
   const report = await page.evaluate(async () => {
     const out = [], wait = ms => new Promise(r => setTimeout(r, ms));

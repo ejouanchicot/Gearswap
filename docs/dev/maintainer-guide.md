@@ -647,6 +647,21 @@ Details: [messages.md, For maintainers / AI](systems/messages.md#for-maintainers
 
 ---
 
+### Change the Atelier page
+
+Since 2026-10-18 the page players open, `atelier/index.html`, is **built**: never edit it by hand.
+
+- [ ] Sources: `atelier/src/` (TypeScript + Svelte 5, `atelier/src/README.md`). During the move to Svelte the old
+      page still runs inside the application: its files are `atelier/app/js/` and `atelier/app/css/`, loaded in the
+      order of `atelier/src/legacy/files.ts` (a new old-page file goes in that list, not in an HTML file).
+- [ ] After any change in `atelier/src/`: `cd atelier && npm run build` (the first time: `npm install`), then
+      `npm run check` (types). `scripts/atelier/atelier_build_check.js` fails when the built page is not the
+      sources' (it runs in `scripts/run_tests.py`).
+- [ ] A change of layout or style: `node scripts/atelier/atelier_layout_check.js` (nothing past its box, 1920 to
+      390 px); a layout fix of the old styles goes in `atelier/app/css/fit.css` with its reason.
+- [ ] The page in Chrome: `node scripts/atelier/atelier_test.js`.
+- [ ] The plan of the move, screen by screen: `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.md`.
+
 ## 6. Testing and debugging
 
 ### Offline checks

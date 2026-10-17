@@ -1,6 +1,6 @@
-// GearSwap Atelier · the layout check (for the project, never shipped to players): atelier/index.html opened in
+// GearSwap Atelier Â· the layout check (for the project, never shipped to players): atelier/index.html opened in
 // Chrome at several widths, every character / job, the sections and the main windows, and each place where a text or
-// a block goes past its box: a box whose content is wider than it (and that does not scroll or end in "…"), a block
+// a block goes past its box: a box whose content is wider than it (and that does not scroll or end in "â€¦"), a block
 // that spills out of its parent, the page scrolling sideways.
 //   node scripts/atelier/atelier_layout_check.js [--widths 1920,1280,390] [--char Tetsouo] [--shots DIR]
 // Same needs as atelier_test.js (Puppeteer, Chrome). The game is never asked: the page's fetch is stubbed.
@@ -34,7 +34,7 @@ function scan(view, regions){
       if (cs.visibility === 'hidden' || cs.display === 'contents' || ['svg', 'path', 'option', 'br'].includes(el.tagName.toLowerCase())) continue;
       if (el.closest('svg')) continue;
       const scrolls = /(auto|scroll)/.test(cs.overflowX), ellipsis = cs.textOverflow === 'ellipsis';
-      // content wider than the box: past it (visible), or cut (hidden without "…")
+      // content wider than the box: past it (visible), or cut (hidden without "â€¦")
       if (!scrolls && !ellipsis && el.scrollWidth > el.clientWidth + 2 && el.clientWidth > 0 && !['inline'].includes(cs.display))
         out.push({kind: cs.overflowX === 'hidden' || cs.overflowX === 'clip' ? 'text cut' : 'content wider than its box', where: sel(el), text: text(el) + ` (${el.scrollWidth} > ${el.clientWidth})`});
       // content taller than a box held to its height: cut (hidden) or spilling over what follows (visible)
@@ -46,7 +46,7 @@ function scan(view, regions){
       if (own) for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) {
         const ps = getComputedStyle(e);
         if (/(auto|scroll)/.test(ps.overflowX)) break;
-        // a frame ending its line in "…" says that it is cut
+        // a frame ending its line in "â€¦" says that it is cut
         if (/(hidden|clip)/.test(ps.overflowX) && ps.textOverflow === 'ellipsis') break;
         if (/(hidden|clip)/.test(ps.overflowX)) {
           const pr = e.getBoundingClientRect();
@@ -69,6 +69,8 @@ function scan(view, regions){
   page.on('pageerror', e => errors.push(e.message));
   await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); } catch (e) {} });
   await page.goto(PAGE, {waitUntil: 'load'});
+  // the built page (atelier/src/) loads the old page's scripts after the document: drawn once its bridge says so
+  await page.waitForFunction(() => window.__atelier && window.__atelier.loaded, {timeout: 60000});
   await new Promise(r => setTimeout(r, 6000));
   await page.evaluate(`window.__scan = ${scan.toString()}`);
   const all = [];
@@ -125,6 +127,6 @@ function scan(view, regions){
     e.n++; e.widths.add(f.width); by.set(k, e);
   }
   const list = [...by.values()].sort((a, b) => b.n - a.n);
-  for (const e of list) console.log(`${String(e.n).padStart(4)}  ${e.kind}  [${[...e.widths].join(',')}]\n      ${e.where}\n      "${e.text}"  — ${e.view}`);
+  for (const e of list) console.log(`${String(e.n).padStart(4)}  ${e.kind}  [${[...e.widths].join(',')}]\n      ${e.where}\n      "${e.text}"  â€” ${e.view}`);
   console.log(`${list.length} problem(s), ${all.length} sightings` + (errors.length ? `; page errors: ${errors.join(' / ')}` : '; no page error'));
 })();
