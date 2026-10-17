@@ -151,6 +151,23 @@ local function memory()
     return ok and (' mem %dKB'):format(kb) or ''
 end
 
+--- The older loads not yet freed, by load number (env_watch.lua notes every load in a weak table, which the
+--- collector empties on its own: nothing is collected here). A replaced load is listed for a cycle or two
+--- (half a minute); one listed for minutes is kept in memory by something, and the trace lines of that load
+--- say what it did.
+--- @return string e.g. " old 12,14", '' when none
+local function old_loads()
+    local watch = rawget(windower, '_env_watch')
+    if type(watch) ~= 'table' then return '' end
+    local list = {}
+    for env, gen in pairs(watch) do
+        if env ~= _G then list[#list + 1] = tonumber(gen) or 0 end
+    end
+    if #list == 0 then return '' end
+    table.sort(list)
+    return ' old ' .. table.concat(list, ',')
+end
+
 --- ALIVE body: sub, memory, zone, status and the frequent events counted by
 --- trace_hooks since the previous beat.
 --- @return string
@@ -158,7 +175,7 @@ local function alive_text()
     local info = windower.ffxi.get_info()
     local hooks = rawget(_G, 'TraceHooks')
     local counts = hooks and hooks.take_counts() or ''
-    return ('sub %s%s zone %s %s%s'):format(tostring(player and player.sub_job), memory(),
+    return ('sub %s%s%s zone %s %s%s'):format(tostring(player and player.sub_job), memory(), old_loads(),
         tostring(info and info.zone), tostring(player and player.status), counts ~= '' and ' | ' .. counts or '')
 end
 

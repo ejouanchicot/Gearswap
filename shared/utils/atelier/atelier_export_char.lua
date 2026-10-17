@@ -49,19 +49,22 @@ local function wearable(info)
     return info.jobs[job] == true
 end
 
---- Owned items the main job can wear, by slot: `items` = {slot = {name, ...}} and
---- `owned` = {slot = {{name = , augs = }, ...}}, one entry per distinct copy (two capes
---- with other augments are two choices in the page).
 --- The items kept at the Porter Moogle, {item id = 'Slip N'}: the slips, or the last list read
 --- when they cannot be read yet (shared/utils/atelier/slip_items.lua).
 local function slip_items()
     local ok, SlipItems = pcall(require, 'shared/utils/atelier/slip_items')
     return ok and SlipItems.get() or {}
 end
--- the whole Porter Moogle (every job's gear, the page keeps what the shown job can wear), item ids as text keys
-local function porter_list() local out = {} for id, w in pairs(slip_items()) do out[tostring(id)] = w end return out end
+-- the whole Porter Moogle (every job's gear, the page keeps what the shown job can wear), item ids as text keys.
+-- `slips`: the list collect_items read for the same export (read once: the slips walk every bag and save a file)
+local function porter_list(slips) local out = {} for id, w in pairs(slips or slip_items()) do out[tostring(id)] = w end return out end
 
-local function collect_items()
+--- Owned items the main job can wear, by slot: `items` = {slot = {name, ...}} and
+--- `owned` = {slot = {{name = , augs = }, ...}}, one entry per distinct copy (two capes
+--- with other augments are two choices in the page).
+--- @param slips table|nil The Porter Moogle's items when the caller already read them (slip_items())
+--- @return table by_slot, table owned, table the slips read
+local function collect_items(slips)
     local ok, res = pcall(require, 'resources')
     if not ok or not res or not res.items then return nil end
     local by_slot, owned, seen, entry_of = {}, {}, {}, {}
@@ -104,10 +107,11 @@ local function collect_items()
         end
     end
     -- a slip keeps only items without augments
-    for id, where in pairs(slip_items()) do add(res.items[id], nil, where) end
+    slips = slips or slip_items()
+    for id, where in pairs(slips) do add(res.items[id], nil, where) end
     for _, names in pairs(by_slot) do table.sort(names) end
     for _, list in pairs(owned) do table.sort(list, function(a, b) return a.name < b.name end) end
-    return by_slot, owned
+    return by_slot, owned, slips
 end
 
 --- Item id of every name the page shows ({name = id}), equippable items

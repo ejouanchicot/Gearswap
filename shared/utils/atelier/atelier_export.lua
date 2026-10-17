@@ -250,7 +250,7 @@ end
 --- @param data table The export being filled
 --- @return table The stages, as functions
 local function build_stages(data)
-    local ids = {}
+    local ids, slips = {}, nil
     return {
         function() data.sets = collect_sets() end,                                   -- 1
         function() data.keys = collect_keys() end,                                   -- 2
@@ -268,8 +268,8 @@ local function build_stages(data)
             local okr, WeaponResolver = pcall(require, 'shared/utils/equipment/weapon_resolver')
             data.weapon_plain = okr and WeaponResolver.equips_without_set() or false
         end,
-        function() data.items, data.owned = collect_items() end,                     -- 6
-        function() data.porter = porter_list() end,                                  -- 7
+        function() data.items, data.owned, slips = collect_items() end,              -- 6
+        function() data.porter = porter_list(slips) end,                             -- 7
         function()                                                                   -- 8
             -- PorterPacker's unpack list against the job's sets (shared/utils/atelier/porter_lists.lua): what to add, what to drop
             local okp, PorterLists = pcall(require, 'shared/utils/atelier/porter_lists')

@@ -45,9 +45,14 @@ local function slip_lines()
     return res and res.slips or nil
 end
 
+-- res.slips never changes: built once a load. number() is asked for every item of every bag
+-- (SlipItems.bags_ready), and rebuilding the sorted list each time was most of the export's stage 7.
+local built_list, built_by_id
+
 --- The slips in their order: {{id = the slip's item id, number, items = its pieces in bit order}}, and by item id.
 --- @return table list, table by_id
 function SlipReader.slips()
+    if built_list then return built_list, built_by_id end
     local list, by_id, keys = {}, {}, {}
     local lines = slip_lines()
     for key, line in pairs(type(lines) == 'table' and lines or {}) do
@@ -59,6 +64,7 @@ function SlipReader.slips()
         local slip = {id = line.item_id, number = number, items = line.items or {}}
         list[number], by_id[slip.id] = slip, slip
     end
+    if #list > 0 then built_list, built_by_id = list, by_id end
     return list, by_id
 end
 

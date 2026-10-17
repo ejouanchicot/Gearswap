@@ -11,6 +11,9 @@
 ---                                    only; `skip=a,b`: deferred load tasks left out (load_gate.lua);
 ---                                    `gaps=2,4,6`: the main job changed to the job named and back, that many
 ---                                    seconds apart, to see at what age a load starts being kept in memory.
+--- //gs c jobtest stored              anywhere, no job change: after a full collection, the older loads still in
+---                                    memory (every load is noted, config_loader.lua), the memory held, and the
+---                                    functions kept on `windower` (env_watch.lua). POST /jobtest with `stored`.
 --- //gs c jobtest stop                stop after the step being measured and come back.
 --- //gs c jobtest                     while one runs: where it is.
 ---
@@ -413,7 +416,11 @@ function JobTest.handle(args)
     if word == 'stored' then
         -- the functions kept on `windower`, which outlives the loads (env_watch.lua: a shallow look, not a walk)
         local Watch = require('shared/utils/debug/env_watch')
-        return {ok = true, old_loads = Watch.survivors(), stored = Watch.stored_functions()}
+        local old = Watch.survivors()
+        local G = rawget(_G, 'gearswap')
+        local count = type(G) == 'table' and rawget(G, 'collectgarbage')
+        return {ok = true, old_loads = old, load = windower._load_gen, stored = Watch.stored_functions(),
+            memory_held_kb = type(count) == 'function' and math.floor(count('count')) or nil}
     end
     if word == 'stop' then
         if not JobTest.active() then say('no test is running') return {ok = false, error = 'not running'} end
