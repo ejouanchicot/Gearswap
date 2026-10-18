@@ -13,13 +13,14 @@
   import Box from '../../components/Box.svelte';
   import JobList from '../config/JobList.svelte';
   import Bags from './Bags.svelte';
+  import SetList from '../sets/SetList.svelte';
 
   const view = $derived(legacy.version > 0 ? persoView() : null);
 </script>
 
 {#if view}
   {@const h = view.head}
-  <div class="pane split"><div class="tabx" class:setside={view.sideHtml !== null}>{#if view.sideHtml !== null}{@html view.sideHtml}{:else}<JobList />{/if}<div class="tabmain"><div class="ui2tab persotab">
+  <div class="pane split"><div class="tabx" class:setside={view.side !== null}>{#if view.side !== null}<SetList view={view.side} />{:else}<JobList />{/if}<div class="tabmain"><div class="ui2tab persotab">
     <header class="tabhead"><div><h2>{h.char}</h2><p class="muted small">{h.why}</p></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl><span class="seg persoviews" role="group">{#each h.views as b (b.value)}<button data-persoview={b.value} aria-pressed={b.pressed} title={b.title}>{b.label}</button>{/each}</span></header>
     {#if view.bags !== null}<Bags view={view.bags} />{:else if view.stats}
       {@const st = view.stats}

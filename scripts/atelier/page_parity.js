@@ -82,7 +82,9 @@ function applyView(v) {
 async function open(browser, st, errs) {
   const page = await browser.newPage();
   page.on('pageerror', e => errs.push(e.message));
-  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); } catch (e) {} });
+  // the guided visit off from the start (guide.js): its Mog comes after a delay, before one capture and after the other
+  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {});
+    try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}})); } catch (e) {} });
   await page.goto(`http://127.0.0.1:${st.port}/atelier/index.html`, {waitUntil: 'load'});
   // a page from before Svelte (2026-10-17) has no __atelier: its scripts are its own tags, run by the load
   await page.waitForFunction(() => window.__atelier ? window.__atelier.loaded : typeof render === 'function', {timeout: 60000});

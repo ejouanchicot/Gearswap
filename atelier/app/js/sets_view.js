@@ -239,11 +239,6 @@ function subWarnHTML(){
   const text = t('subWarn', {g: L.job + '/' + L.sub, p: S.job + '/' + d.sub});
   return `<p class="kwarn subwarn"><span title="${esc(text)}">${esc(text)}</span> <button class="btn" data-subfix="${esc(L.sub)}">${esc(t('subFix', {s: L.sub}))}</button></p>`;
 }
-function renderSets(d){
-  const {aside, cards, sel, bypath, vis, q} = setListHTML(d);
-  return `${ui2() ? ui2CtxBar(subWarnHTML()) : subWarnHTML()}<div class="setsx ${ui2() ? 'ui2' : ''}" ${S.listW ? `style="--listw:${+S.listW}px"` : ''}>${aside}` +
-    `${vis.length ? cardHTML(cards[sel], sel, bypath, q) : ''}${vis.length ? `<aside class="globalcol">${(sv => S._globals && S._globals.s === sv ? S._globals.html : ui2() ? setPanelHTML(sv) : globalsHTML(sv))(shownSet(cards[sel], sel))}</aside>` : ''}</div>`;
-}
 // A version of a set for a party: the label of a variant against its set's ("Laphria · Group" against "Laphria",
 // "Trust" against the family's own set, "Base"); null for anything else
 const TIER_LABELS = ['Group', 'Solo', 'Trust'];
@@ -253,175 +248,6 @@ function tierLabel(label, head){
 }
 Object.assign(T.fr, {rowTry: 'Des pièces sont à l’essai dans ce set', rowVoid: 'vide', listPaths: 'Chemins', openShort: 'Déplier', closeShort: 'Replier', listPathsTip: 'Montre sous chaque set son nom dans ton fichier (sets.engaged.Laphria…)', searchShort: 'Chercher…'});
 Object.assign(T.en, {rowTry: 'Pieces are on trial in this set', rowVoid: 'empty', listPaths: 'Paths', openShort: 'Open', closeShort: 'Close', listPathsTip: 'Shows under each set its name in your file (sets.engaged.Laphria…)', searchShort: 'Search…'});
-// The list of the job's sets by family, with its search (the Sets tab's left column, and the Combat and Mon perso
-// tabs' in the new layout): picks the set shown and returns the column with what the tab needs to draw the set
-function setListHTML(d){
-  const {cards, bypath} = buildCards(d); S._cards = cards; S._bypath = bypath;
-  const q = S.q.trim().toLowerCase();
-  // only the sets the job can use with the subjob shown (job_access.js); the others are counted under the list and
-  // come back on a click, or for a search that names them
-  const usable = cards.map(c => cardUsable(c)), showAll = !!S._listAll || !!q;
-  const prefs = listPrefs();
-  const vis = cards.map((c,i) => i).filter(i => cardMatch(cards[i], q) && (showAll || usable[i]) && (!!q || !prefs.hide.includes(cards[i].fam))); S._vis = vis;
-  const hidden = cards.reduce((n, c, i) => n + (usable[i] ? 0 : c.variants.length), 0);
-  const want = S.selPath[S.job];
-  const found = S.char + '|' + S.job + '|' + ((data() || {}).sub || '') + '|';
-  if (want && S._found !== found + want) {
-    cards.forEach((c, i) => c.variants.forEach((v, k) => { if (v.set.path === want || (v.set.aliases || []).includes(want)) { S.sel[S.job] = i; S.variant[S.job + '|' + i] = k; } }));
-    S._found = found + want;
-  }
-  if (!vis.includes(S.sel[S.job])) S.sel[S.job] = vis[0];
-  const sel = S.sel[S.job];
-  if (cards[sel]) { S.selPath[S.job] = shownSet(cards[sel], sel).path; S._found = found + S.selPath[S.job]; }
-  // the set shown is in sight in the list: when it is another one than at the last redraw (a click, a reload of the
-  // page, a push that opens a version), its category and its weaponskill group open; folded by hand after, they stay so
-  const revealKey = S.char + '|' + S.job + '|' + S.selPath[S.job], reveal = S._revealed !== revealKey;
-  S._revealed = revealKey;
-  if (reveal && cards[sel]) { S.famOpen[S.job + '|' + cards[sel].fam] = true; S._revealNow = true; }
-  tierFollowsSet(S.selPath[S.job], bypath);
-  subFollowsSet(S.selPath[S.job], bypath);
-  objFollowsSet(S.selPath[S.job], bypath);
-  // one row per set: the set, then its variants (idle.Town, each weaponskill) indented under it
-  const vi = i => Math.min(S.variant[S.job + '|' + i] ?? 0, cards[i].variants.length - 1);
-  const rows = S._rows = [];
-  let list = '', fam = null;
-  // the names a set is shared under, a link to the set they are: folded right under it, whatever their family
-  // (Blank Gaze, Cocoon... under SIRDEnmity; Flash, Crusade... under FullEnmity)
-  const aliases = aliasRows(cards, q);
-  // an idle or engaged name of a set kept in another family (sets.idle.MDT = sets.engaged.MDT) shows in its own family
-  // too, at its end: those are looked for there
-  // (right under the card it is a version of, sets.idle.MDT under Idle beside PDT and Town; else at the family's end)
-  const crossAll = aliases.filter(a => ['idle', 'engaged'].includes(a.fam) && cards[a.i].fam !== a.fam);
-  const homeOf = a => cards.findIndex(c => c.fam === a.fam && c.top.join('/') === topOf(a.path, a.fam).join('/'));
-  const crossLabel = a => Object.assign({}, a, {label: segs(a.path).slice(topOf(a.path, a.fam).length).join(' · ') || shortPath(a.path)});
-  const crossUnder = i => crossAll.filter(a => homeOf(a) === i).map(a => aliasBtn(crossLabel(a))).join('');
-  const crossOf = f => famOpen(f, q) ? crossAll.filter(a => a.fam === f && !vis.includes(homeOf(a))).map(a => aliasBtn(Object.assign({}, a, {label: shortPath(a.path)}))).join('') : '';
-  const aliasBtn = a => `<button class="setrow var alias" data-pick="${a.i}" data-vpick="${a.k}" title="${esc(t('aliasTip', {a: a.path, s: a.of}))}">` +
-    `<b>${esc(a.label)}</b><code>= ${esc(shortPath(a.of))}</code></button>`;
-
-  // the spells' sets by kind of magic (list_prefs.js midcastGroup), each kind a folding group as the weapons of the
-  // weaponskills are: sorted by kind inside their category, then as midcastRank puts them inside a kind
-  const grouped = !q && vis.filter(k => cards[k].fam === 'midcast').length > MIDCAST_GROUP_FROM;
-  const kindOf = k => grouped && cards[k].fam === 'midcast' ? midcastGroup(niceName(cards[k])) : '';
-  const order = !grouped ? vis : vis.map((k, n) => [k, n]).sort((a, b) => cards[a[0]].fam === 'midcast' && cards[b[0]].fam === 'midcast'
-    ? (MIDCAST_ORDER.indexOf(kindOf(a[0])) - MIDCAST_ORDER.indexOf(kindOf(b[0])) || midcastRank(niceName(cards[a[0]])) - midcastRank(niceName(cards[b[0]])) || a[1] - b[1])
-    : a[1] - b[1]).map(x => x[0]);
-  let kind = null;
-  for (const i of order) { const c = cards[i];
-    if (c.fam !== fam) { if (fam) list += crossOf(fam); fam = c.fam; kind = null;
-      // the sets of the category (a set and its Group, Solo and Trust versions are one)
-      // (the weaponskills: one a weaponskill, as the list shows them, whatever its versions)
-      const lines = card => card.fam === 'ws' ? new Set(card.variants.map(v => wsOfSet(v.set) || v.label)).size
-        : card.variants.filter(v => !card.variants.some(o => o !== v && tierLabel(v.label, o.label))).length;
-      const n = vis.filter(k => cards[k].fam===fam).reduce((m, k) => m + lines(cards[k]), 0);
-      list += listFamHead(fam, n, cards[sel] && cards[sel].fam === fam, famOpen(fam, q)); }
-    // a category is closed until opened (a search opens them all)
-    if (!famOpen(c.fam, q)) continue;
-    if (kindOf(i)) {
-      const mine = kindOf(i), key = S.job + '|mc:' + mine, here = !!cards[sel] && cards[sel].fam === 'midcast' && kindOf(sel) === mine;
-      if ((reveal && here) || S._openAllSub) S.wsList = Object.assign({}, S.wsList, {[key]: true});
-      if (mine !== kind) { kind = mine;
-        list += `<button class="wskill ${here ? 'here' : ''}" data-wskill="mc:${esc(mine)}" aria-expanded="${!!(S.wsList || {})[key]}"><span>${esc(t('mcGrp_' + mine))}</span>` +
-          `<span>${order.filter(k => kindOf(k) === mine).length}</span></button>`; }
-      if (!(S.wsList || {})[key]) continue;
-    }
-    // (an enhancing set's version named Composure reads as what it is: the one cast on the others, stat_opt.js enhTarget)
-    const nameOf = (v, k) => k === 0 ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : enhTarget(v.set) === 'Others' ? t('enhBtnOthers') : c.fam === 'midcast' && listModeValue(v.label) ? `${v.label} · ${t('lpModeTag')}` : v.label;
-    // what a row says beside the name: pieces on trial in it, or a set written with no piece yet; its path is in
-    // its tooltip, and under the name when the list is asked to show the paths (S.listPaths)
-    const marks = v => listMarks(v.set);
-    const pathLine = v => S.listPaths ? `<code>${esc(v.set.path)}</code>` : '';
-    // its names folded under it: a line to open them (a search opens them)
-    const aliasFold = (v, k) => {
-      const mine = aliases.filter(a => a.i === i && a.k === k);
-      if (!mine.length) return;
-      const key = S.job + '|' + v.set.path, open = !!q || !!(S._aliasOpen || {})[key];
-      list += `<button class="aliasfold" data-aliasfold="${esc(v.set.path)}" aria-expanded="${open}" title="${esc(t('ttAlias'))}">${open ? '▾' : '▸'} ${esc(t('aliasCount', {n: mine.length}))}</button>` +
-        (open ? mine.map(aliasBtn).join('') : '');
-    };
-    const row = (v, k) => {
-      if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
-      const cur = i === sel && k === vi(i);
-      rows.push([i, k]);
-      list += `<div class="setrow ${k === 0 ? '' : 'var'} ${usable[i] ? '' : 'nouse'}" aria-current="${cur}" draggable="true" data-rowpath="${esc(v.set.path)}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(t('ttRow', {p: v.set.path}))}">` +
-        `<b>${esc(nameOf(v, k))}</b></button><span class="rowmarks">${marks(v)}${listRowActs(v.set.path)}</span>${pathLine(v)}</div>${listGroupPicker(v.set.path)}`;
-      aliasFold(v, k);
-    };
-    // A set and its versions for a party (Group, Solo, Trust) are ONE row, the set's name alone: the versions are
-    // chosen in the set's head (its "Full / Group / Solo / Trust" buttons), not in the list, which only says which
-    // one is shown. The row opens the version shown, else the one of the party every figure is worked out with (the
-    // Solo version while the page computes "Solo"), else the set itself
-    const tierRow = (v, k, tiers) => {
-      const all = [[v, k, 'Full']].concat(tiers), on = all.find(x => i === sel && x[1] === vi(i));
-      const go = on || all.find(x => x[2] === buffTier()) || all[0], path = go[0].set.path;
-      rows.push([i, go[1]]);
-      const tried = all.some(x => trialCount(x[0].set)) && !trialCount(go[0].set) ? `<i class="rowtry" title="${esc(t('rowTry'))}"></i>` : '';
-      list += `<div class="setrow ${k === 0 ? '' : 'var'}" aria-current="${!!on}" draggable="true" data-rowpath="${esc(path)}"><button class="tname" data-pick="${i}" data-vpick="${go[1]}" ` +
-        `title="${esc(t('ttRowVers', {v: go[2], p: path, l: all.map(x => x[2]).join(', ')}))}"><b>${esc(nameOf(v, k))}</b></button>` +
-        `<span class="rowmarks">${on && on[2] !== 'Full' ? `<small class="rowver">${esc(on[2])}</small>` : ''}${tried}${marks(go[0])}${listRowActs(path)}</span>${pathLine(go[0])}</div>${listGroupPicker(path)}`;
-      all.forEach(x => aliasFold(x[0], x[1]));
-    };
-    // the rows of a list of variants ([variant, its rank]); a search shows each version on its own line
-    const emit = items => {
-      const used = new Set();
-      items.forEach(([v, k], n) => {
-        if (used.has(k)) return;
-        const tiers = q ? [] : items.filter(([o, ok], m) => m !== n && !used.has(ok) && tierLabel(o.label, v.label)).map(([o, ok]) => [o, ok, tierLabel(o.label, v.label)]);
-        if (!tiers.length) return row(v, k);
-        tiers.forEach(x => used.add(x[1]));
-        tierRow(v, k, tiers);
-      });
-    };
-    // a spell set's versions: the set itself, then the ones a mode picks (Potency, Magic Burst: said so beside their
-    // name), then the spell types of the job's code (mnd_potency, macc...), then the rest (a buff's overlay), each
-    // run in the list's own order: sets.midcast['Enfeebling Magic'] had its twelve in one alphabetical run
-    if (c.fam === 'midcast' && !q) { const types = (window.ATELIER_FAMILIES || {})[niceName(c)] || {};
-      // the card's own set first whatever its name: its row is the one drawn as the head (not indented)
-      const rank = (v, k) => k === 0 || v.label === 'Base' ? -1 : listModeValue(v.label) ? 0 : types[v.label] ? 1 : 2;
-      emit(c.variants.map((v, k) => [v, k]).sort((x, y) => rank(x[0], x[1]) - rank(y[0], y[1]) || x[1] - y[1])); list += crossUnder(i); continue; }
-    if (c.fam !== 'ws') { emit(c.variants.map((v, k) => [v, k])); list += crossUnder(i); continue; }
-    // weaponskills: the common set, then one folding group a weapon (closed until opened, a search opens them)
-    row(c.variants[0], 0);
-    const bySkill = new Map();
-    c.variants.forEach((v, k) => { if (!k) return; const sk = wsSkills()[wsOfSet(v.set)] || t('varOther');
-      if (!bySkill.has(sk)) bySkill.set(sk, []); bySkill.get(sk).push([v, k]); });
-    for (const [sk, items] of [...bySkill].sort((a, b) => a[0].localeCompare(b[0]))) {
-      const here = i === sel && items.some(([, k]) => k === vi(i));
-      if ((reveal && here) || S._openAllSub) S.wsList = Object.assign({}, S.wsList, {[S.job + '|' + sk]: true});
-      const open = !!q || !!(S.wsList || {})[S.job + '|' + sk];
-      // one row a weaponskill, whatever its versions (a dance, Climactic, the support profiles: up to 24 on a DNC):
-      // they are chosen in the set's head (versionGridHTML), as a set's support versions are; a search lists them all
-      const byWs = new Map();
-      items.forEach(x => { const ws = wsOfSet(x[0].set) || x[0].label; if (!byWs.has(ws)) byWs.set(ws, []); byWs.get(ws).push(x); });
-      list += `<button class="wskill ${here ? 'here' : ''}" data-wskill="${esc(sk)}" aria-expanded="${open}"><span>${esc(sk)}</span><span>${q ? items.length : byWs.size}</span></button>`;
-      if (!open) continue;
-      if (q) { emit(items); continue; }
-      for (const [ws, group] of byWs) {
-        const head = group.find(([v]) => v.label === ws);
-        if (!head || group.length < 2) { emit(group); continue; }
-        tierRow(head[0], head[1], group.filter(x => x !== head).map(([v, k]) => [v, k, v.label.startsWith(ws + ' · ') ? v.label.slice(ws.length + 3) : v.label]));
-      }
-    }
-  }
-  if (fam) list += crossOf(fam);
-  if (!vis.length) list = `<div class="empty-list">${mogSorryHTML(esc(t('noMatch')))}</div>`;
-  if (hidden && !q) { const who = S.job + '/' + ((data() || {}).sub || '?');
-    list += `<p class="acchid" title="${esc(t('accTip', {m: S.job, s: (data() || {}).sub || '?'}))}">${esc(t('accHidden', {n: hidden, j: who}))} ` +
-      `<button class="linkbtn" data-listall>${esc(t(S._listAll ? 'accHide' : 'accShow'))}</button></p>`; }
-  S._fams = [...new Set(vis.map(i => cards[i].fam))];
-  S._openAllSub = false;
-  // open or close every category at once
-  // the player's own sections first (pinned sets, groups: list_prefs.js), each set as one plain row
-  const where = {};
-  cards.forEach((c, i) => c.variants.forEach((v, k) => { where[v.set.path] = [i, k]; }));
-  const ownRow = (path, group) => { const [i, k] = where[path], c = cards[i], v = c.variants[k], cur = i === sel && k === vi(i);
-    return `<div class="setrow own" aria-current="${cur}" draggable="true" data-rowpath="${esc(path)}" data-rowgroup="${esc(group)}"><button class="tname" data-pick="${i}" data-vpick="${k}" title="${esc(t('ttRow', {p: path}))}">` +
-      `<b>${esc(niceName(c) + (v.label !== 'Base' ? ' · ' + v.label : ''))}</b></button><span class="rowmarks">${listMarks(v.set)}${listRowActs(path, group)}</span>` +
-      `${S.listPaths ? `<code>${esc(path)}</code>` : ''}</div>`; };
-  const own = q ? '' : listOwnSections(ownRow, new Set(Object.keys(where)), q);
-  const aside = `<aside class="setlist ofsets">${listHeadHTML(q)}<div class="scroll">${own}${list}</div><i class="listgrip" title="${esc(t('lpResize'))}"></i></aside>`;
-  return {aside, cards, sel, bypath, vis, q};
-}
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
 
@@ -455,10 +281,10 @@ function renderJob(){
     // (a page kept on one of those four names, or sent there by a link, opens that part)
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
-    // the job's settings, My character and Buffs & target are the Svelte application's (atelier/src/screens/config,
-    // screens/perso, screens/combat)
-    if (S.section === 'jobcfg' || S.section === 'perso' || S.section === 'combat') return '';
-    body = {sets:renderSets, sim:renderSim}[S.section](d);
+    // the job's settings, My character, Buffs & target and Sets are the Svelte application's (atelier/src/screens/config,
+    // screens/perso, screens/combat, screens/sets)
+    if (S.section === 'jobcfg' || S.section === 'perso' || S.section === 'combat' || S.section === 'sets') return '';
+    body = {sim: renderSim}[S.section](d);
   }
   // the row of the sections over it is the Svelte application's (atelier/src/screens/topbar/Sections.svelte)
   return `<div class="pane ${d ? 'split' : ''}">${body}</div>`;
@@ -514,8 +340,10 @@ function render(){
   // the focus, the folded blocks and the scroll are put back: theirs too (they are in #view beside #legacyview)
   if (window.__atelier && window.__atelier.redraw) window.__atelier.redraw();
   for (const el of document.querySelectorAll('#view details:not([open])')) if (opened.has(foldKey(el))) el.open = true;
+  // another view starts at the top: a block the Svelte screens keep between redraws (the list of sets) would
+  // otherwise stay where it was scrolled for the job or tab before
   SCROLLERS.forEach((q, i) => { const el = $(q);
-    if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });
+    if (el) el.scrollTop = S._view === view && (q !== '.detail' || S._set === set) ? tops[i] : 0; });
   scrollPut(kept);
   scrollBack(view, set);
   // the set shown, newly chosen: its row brought into the list's sight (nothing moves when it is already there)

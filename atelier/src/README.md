@@ -47,6 +47,13 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   capacités). Restent à l'ancienne page, parce qu'ils y sont aussi dessinés ailleurs : la barre des profils et les
   situations (leur forme courte au-dessus des sets, étape 5), la cible et les autres debuffs (l'ancienne fenêtre des
   buffs, étape 7), la ligne de l'aftermath, les puces des rolls, Warcry et Haste Samba (`buff_panels.js`).
+- **Étape 5a (2026-10-18)** : l'écran Sets (`screens/sets/` : son cadre) et la liste des sets à gauche
+  (`setlist.ts`, `SetList.svelte`), la même pour Sets, Buffs & cible et Mon perso. Elle laisse dans l'état de la page
+  ce que l'ancienne y laissait (le set montré, les catégories ouvertes, les lignes des flèches du clavier). Une
+  autre vue repart du haut de la liste, comme quand l'ancienne page la recréait (`render`, sets_view.js). Restent à
+  l'ancienne page : la ligne au-dessus des sets (`ui2CtxBar`), la tête des catégories, les marques et actions d'une
+  ligne, tes sections à toi, le haut de la liste et son menu (`list_prefs.js`), la fiche du set (étape 5b) et la
+  colonne de ses chiffres (étape 5c).
 
 ## Vérifier une étape
 

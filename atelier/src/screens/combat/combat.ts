@@ -4,7 +4,7 @@
 // panel.ts.
 // The rules are the old page's renderCombatParty, pbGives, pbImpact, pbResult (party_builder.js). Still the old page's
 // HTML: the profiles' bar and the situations' tabs (profiles.js), the target
-// picker and the other debuffs (buff_panels.js buffPanelHTML), the sets on the left (the Sets screen's, step 5). A
+// picker and the other debuffs (buff_panels.js buffPanelHTML). A
 // field ending in Html is one of the old page's texts it wrote unescaped. The buttons keep the attributes the old
 // handlers read (data-pbtab, data-pbdel, data-pbaddopen, data-buffundo, data-buffendgame, data-buffreset,
 // data-bufftier, data-pbother).
@@ -12,6 +12,7 @@
 // @file    atelier/src/screens/combat/combat.ts
 // @author  ejouanchicot
 import {memberPanel, youPanel, type PanelView} from './panel';
+import {setList, type SetListView} from '../sets/setlist';
 
 export interface Gives { text: string; neg: boolean }
 export interface PartyTab { key: string; label: string; sub: string; emblemHtml: string; del: boolean; gives: Gives[]; selected: boolean }
@@ -19,7 +20,7 @@ export interface SumRow { name: string; value: string; low: boolean; foe: boolea
 export interface ImpactRow { tier: string; name: string; title: string; pressed: boolean; a: string; aDiff: null | {text: string; up: boolean};
   b: string; bDiff: null | {text: string; up: boolean} }
 export interface CombatView {
-  sideHtml: string;
+  side: SetListView;
   head: {title: string; why: string; undo: null | {title: string; text: string}; endgame: {title: string; textHtml: string};
     reset: {title: string; textHtml: string; disabled: boolean}};
   profBarHtml: string;
@@ -113,14 +114,14 @@ export function combatView(): CombatView | null {
   const d = data();
   if (!d) return null;
   // the sets on the left: the set picked there is the one the figures are for
-  const side = setListHTML(d);
-  if (side.vis.length) st()._curSet = shownSet(side.cards[side.sel], side.sel);
+  const L = setList(d);
+  if (L.vis.length) st()._curSet = shownSet(L.cards[L.sel], L.sel);
   const b = buffState(), n = buffCount();
   buffPanelHTML();   // its parts: your own abilities, the target picker, the other debuffs (S._bparts)
   const P = st()._bparts || {}, shown: string[] = pbShown(b), B = buffTotals();
   const undo = st()._buffUndo && st()._buffUndo.key === buffKey() ? {title: t('pbUndoTip', {w: st()._buffUndo.what}), text: t('pbUndo')} : null;
   return {
-    sideHtml: side.aside,
+    side: L.view,
     head: {title: t('ui2CombatTitle'), why: t('pbWhy'), undo, endgame: {title: t('ttBuffEndgame'), textHtml: t('bEndgame')},
       reset: {title: t('ttBuffReset'), textHtml: t('buffReset'), disabled: !n}},
     profBarHtml: profBar(), sitTabsHtml: profSituationTabs(),

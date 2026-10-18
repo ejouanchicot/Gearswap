@@ -3,13 +3,14 @@
 // merits as tabs. The sets stay on the left of the stats (the set picked there is the one the figures are for), the
 // played jobs on the left of the bags.
 // The rules are the old page's renderJob / renderPerso (sets_view.js, layout2.js), porterHTML (porter.js),
-// renderMeritTabs / meritRows / meritBar (layout2.js, engine.js). Still the old page's HTML: the list of sets and the
+// renderMeritTabs / meritRows / meritBar (layout2.js, engine.js). Still the old page's HTML: the
 // stats cards (the Sets screen's, step 5); the Bags view is bags.ts. A field ending in Html is one of the old page's
 // texts it wrote unescaped.
 //
 // @file    atelier/src/screens/perso/perso.ts
 // @author  ejouanchicot
 import {bagsView, type BagsView} from './bags';
+import {setList, type SetListView} from '../sets/setlist';
 
 export interface PorterView { title: string; meta: string; introHtml: string; newHtml: string; add: null | {labelHtml: string; names: string[]};
   remove: null | {labelHtml: string; names: string[]}; doneHtml: string; write: null | {title: string; textHtml: string}; needHtml: string }
@@ -21,7 +22,7 @@ export interface MeritsView {
   panel: {cls: string; rows: MeritRow[]};
 }
 export interface PersoView {
-  sideHtml: string | null;
+  side: SetListView | null;
   head: {char: string; why: string; facts: Array<[string, string]>; views: Array<{value: string; label: string; title: string; pressed: boolean}>};
   bags: BagsView | null;
   stats: null | {cardsHtml: string | null; noCharHtml: string; porter: PorterView | null; meritsTitle: string; merits: MeritsView};
@@ -78,18 +79,18 @@ export function persoView(): PersoView | null {
   if (!d) return null;
   const bags = S.persoView === 'bags';
   // the sets on the left of the stats: the set picked there is the one the figures are for (the bags are no set's)
-  let sideHtml: string | null = null;
+  let side: SetListView | null = null;
   if (!bags) {
-    const side = setListHTML(d);
-    if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel);
-    sideHtml = side.aside;
+    const L = setList(d);
+    if (L.vis.length) S._curSet = shownSet(L.cards[L.sel], L.sel);
+    side = L.view;
   }
   const s = ui2CurrentSet(d), c = measuredChar(), lv = jaLevels();
   const head = {char: S.char, why: t('ui2PersoWhy'),
     facts: [[t('ui2Job'), `${S.job}/${d.sub || '—'}`], ['Master Level', String(lv.ml || '—')], ['Job Points', String((c && c.jp_spent) || '—')],
       [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]] as Array<[string, string]>,
     views: [['stats', 'bvStats'], ['bags', 'bvBags']].map(([value, k]) => ({value: value!, label: t(k!), title: t(k + 'Tip'), pressed: (S.persoView || 'stats') === value}))};
-  if (bags) return {sideHtml, head, bags: bagsView(), stats: null};
-  return {sideHtml, head, bags: null, stats: {cardsHtml: s && charStats(s) ? globalsHTML(s, 'cards') : null, noCharHtml: t('noChar'),
+  if (bags) return {side, head, bags: bagsView(), stats: null};
+  return {side, head, bags: null, stats: {cardsHtml: s && charStats(s) ? globalsHTML(s, 'cards') : null, noCharHtml: t('noChar'),
     porter: porterOf(d), meritsTitle: t('sectionsMerits'), merits: meritsOf()}};
 }

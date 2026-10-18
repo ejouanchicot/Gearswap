@@ -1,6 +1,6 @@
 <!--
   GearSwap Atelier · the application: the top bar and the job's sections (Svelte, screens/topbar), the screens moved to
-  Svelte (screens/config: the job's settings, screens/perso: My character, screens/combat: Buffs & target) beside the old page's part of the view (#legacyview), and the old page
+  Svelte (screens/config: the job's settings, screens/perso: My character, screens/combat: Buffs & target, screens/sets: Sets) beside the old page's part of the view (#legacyview), and the old page
   while its screens move (notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.md): its frame (the windows, the
   tooltip), its styles and scripts, loaded in their order (legacy/load.ts).
 
@@ -16,13 +16,14 @@
   import ConfigScreen from './screens/config/ConfigScreen.svelte';
   import PersoScreen from './screens/perso/PersoScreen.svelte';
   import CombatScreen from './screens/combat/CombatScreen.svelte';
+  import SetsScreen from './screens/sets/SetsScreen.svelte';
 
   onMount(() => { loadLegacy().then(markLoaded); });
 </script>
 
 <div class="app">
   <header class="topbar" id="top"><TopBar /></header>
-  <main class="main"><div class="inner"><Sections /><div id="view"><div id="legacyview"></div><ConfigScreen /><PersoScreen /><CombatScreen /></div></div></main>
+  <main class="main"><div class="inner"><Sections /><div id="view"><div id="legacyview"></div><ConfigScreen /><PersoScreen /><CombatScreen /><SetsScreen /></div></div></main>
 </div>
 <div id="overlay" hidden></div>
 <div id="tip" class="tip" role="tooltip" hidden></div>

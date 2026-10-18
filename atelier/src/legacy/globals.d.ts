@@ -166,12 +166,41 @@ declare const JOB_GUIDE_EN: Record<string, [string, Array<[string, string]>] | u
 
 // ---- My character (layout2.js renderPerso, engine.js merits, porter.js, sets_view.js, bags_view.js) ----
 /** The list of sets on the left of a tab, as the old page's HTML, with the cards it shows (sets_view.js) */
-declare function setListHTML(d: LegacyExport): {aside: string; vis: unknown[]; cards: unknown[]; sel: number};
-declare function shownSet(card: unknown, i: number): unknown;
+/* ---- the list of sets (sets_view.js, list_prefs.js), loosely typed ---- */
+declare function buildCards(d: LegacyExport): {cards: LegacyAny[]; bypath: LegacyAny};
+declare function cardUsable(c: LegacyAny): boolean;
+declare function cardMatch(c: LegacyAny, q: string): boolean;
+declare function listPrefs(): LegacyAny;
+declare function tierFollowsSet(path: string, bypath: LegacyAny): void;
+declare function subFollowsSet(path: string, bypath: LegacyAny): void;
+declare function objFollowsSet(path: string, bypath: LegacyAny): void;
+declare function famOpen(fam: string, q: string): boolean;
+declare function topOf(path: string, fam: string): string[];
+declare function segs(path: string): string[];
+declare const MIDCAST_GROUP_FROM: number;
+declare const MIDCAST_ORDER: string[];
+declare function midcastGroup(name: string): string;
+declare function midcastRank(name: string): number;
+declare function niceName(card: LegacyAny): string;
+declare function listFamHead(fam: string, n: number, here: boolean, open: boolean): string;
+declare function enhTarget(s: LegacyAny): string;
+declare function listModeValue(label: string): unknown;
+declare function listMarks(s: LegacyAny): string;
+declare function listRowActs(path: string, group?: string): string;
+declare function listGroupPicker(path: string): string;
+declare function trialCount(s: LegacyAny): number;
+declare function wsSkills(): Record<string, string>;
+declare function mogSorryHTML(html: string): string;
+declare function listOwnSections(rowOf: (path: string, group: string) => string, known: Set<string>, q: string): string;
+declare function listHeadHTML(q: string): string;
+declare function tierLabel(label: string, head: string): string | null;
+declare function aliasRows(cards: LegacyAny[], q: string): LegacyAny[];
+interface Window { ATELIER_FAMILIES?: Record<string, Record<string, unknown>> }
+declare function shownSet(card: unknown, i: number): LegacyAny;
 declare function ui2CurrentSet(d: LegacyExport): unknown;
 declare function charStats(set: unknown): unknown;
 /** The character's stats as cards, the old page's HTML (sets_view.js) */
-declare function globalsHTML(set: unknown, only: string): string;
+declare function globalsHTML(set: unknown, only?: string): string;
 /** The character as the game measured it (engine.js) */
 declare function measuredChar(): null | {at?: string; sub?: string; jp_spent?: number; merit_list?: LegacyMerit[]};
 declare function jaLevels(): {ml?: number; sub?: number};
@@ -271,3 +300,8 @@ declare function warcryHTML(b: LegacyAny, party?: boolean): string;
 declare function sambaHTML(b: LegacyAny): string;
 declare function pbAmRow(sel: (key: string, values: string[], ph: string, def: string) => string): string;
 declare function pbSel(b: LegacyAny, key: string, values: string[], ph?: string, def?: string | null): string;
+/* ---- the Sets screen (sets_view.js, layout2.js, stats.js), loosely typed ---- */
+declare function ui2CtxBar(warn: string): string;
+declare function subWarnHTML(): string;
+declare function cardHTML(card: LegacyAny, i: number, bypath: LegacyAny, q: string): string;
+declare function setPanelHTML(s: LegacyAny): string;
