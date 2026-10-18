@@ -165,47 +165,6 @@ function bpPlan(B){
 }
 // A line that does not hold: things with no room, a category no bag takes, or the heaviest job over its bags
 function bpLineBad(l){ return !l.free && (l.over > 0 || (l.need > 0 && !l.room) || (l.id === 'job' && l.need > l.room)); }
-// One category of the plan as a card: its name, a gauge of what must be housed against the room, the bags, the verdict
-function bpCardHTML(l){
-  const name = (l.ids || [l.id]).map(bpCatName).join(' + '), bad = bpLineBad(l), pct = l.room ? Math.min(100, Math.round(100 * (l.free ? 0 : l.now) / l.room)) : 0;
-  const cats = (l.ids || [l.id]).filter(c => BP_CATS.includes(c));
-  const see = cats.map(c => `<button class="linkbtn" data-bpsee="${c}" title="${esc(t('bpSeeCat', {c: bpCatName(c)}))}">${esc(cats.length > 1 ? bpCatName(c).split(' (')[0] : t('bpSee'))}</button>`).join('');
-  // what explains the card is under the pointer, not in it: the cards stay small enough to be seen all at once
-  const tip = [name, l.reserve ? t('bpReserve', {n: l.reserve}) : '', l.note || ''].filter(Boolean).join('\n');
-  const verdict = l.free ? `<b class="ok">${esc(t('bpFrees', {n: l.need}))}</b>` : !l.room ? `<b class="bad">${esc(t('bpNoBag'))}</b>` : l.over ? `<b class="bad">${esc(t('bpOver', {n: l.over}))}</b>`
-    : l.id === 'job' && l.need > l.room ? `<b class="bad">${esc(t('bpJobOver', {n: l.need - l.room}))}</b>` : `<b class="ok">${esc(t(l.out || l.in ? 'bpOk' : 'bpDone'))}</b><span>${esc(t('bpLeft', {n: l.room - l.after - l.reserve}))}</span>`;
-  const flow = l.free || !(l.out || l.in) ? '' : `<p class="bpmove">${esc([l.out ? t('bpOutN', {n: l.out}) : '', l.in ? t('bpInN', {n: l.in}) : ''].filter(Boolean).join(' · ') + ' → ' + t('bpAfterN', {n: l.after}))}</p>`;
-  return `<div class="bpcard ${bad ? 'bad' : l.free ? 'free' : pct >= 90 ? 'tight' : 'ok'}" title="${esc(tip)}"><div class="bphead"><h4>${esc((l.ids || [l.id]).map(c => bpCatName(c).split(' (')[0]).join(' + '))}</h4>` +
-    (l.free ? `<b class="bpbig">${l.need}</b>` : `<b class="bpbig" title="${esc(t('bpNowTip'))}">${l.now}<i>/${l.room || '—'}</i></b>`) + `</div>` +
-    (l.free ? '' : `<span class="bpgauge"><i style="width:${pct}%"></i></span>`) + `<p class="bpverdict">${verdict}</p>` + flow +
-    `<p class="bpfoot">${l.bags.map(b => `<i>${esc(b)}</i>`).join('')}${l.id === 'mule' && l.need ? `<button class="linkbtn" data-bpmule title="${esc(t('bpMuleTip'))}">${esc(t('bpMuleGo'))}</button>` : ''}<span class="sp"></span>${see}</p></div>`;
-}
-// The state of the tidy-up in one line, over the list whatever is shown: does it all fit, what is left to do
-function bpStatusHTML(B){
-  const p = bpPlan(B), bad = p.lines.filter(bpLineBad), where = bvWhere(B), wrong = bvRows(B, 'all', where).filter(r => r.bad.length).length;
-  const get = id => (p.lines.find(l => l.id === id) || {need: 0}).need, chip = (n, key, attr, cls) => n ? `<button class="bpchip ${cls || ''}" ${attr}><b>${n}</b>${esc(t(key))}</button>` : '';
-  // three states: something has no room; things to move, each with a place; everything where it should be
-  const todo = bpMoves(B).moves.length, state = bad.length ? 'bad' : todo ? 'todo' : 'ok', run = B.run;
-  const last = run ? ' · ' + t(run.stopped ? 'bpRunStop' : 'bpRunDone', {at: run.at, n: run.moved, s: run.skipped}) : '';
-  return `<div class="bpstatus ${state}"><span class="bpmain"><i aria-hidden="true">${{bad: '✖', todo: '➜', ok: '✔'}[state]}</i><b>${esc(state === 'bad' ? t('bpStBad', {n: bad.length}) : state === 'todo' ? t('bpStTodo', {n: todo}) : t('bpStOk'))}</b>` +
-    `<small>${esc(state === 'bad' ? bad.map(l => (l.ids || [l.id]).map(bpCatName).join(' + ')).join(' · ') : state === 'todo' ? t('bpStTodoWhy') : t('bpStOkWhy') + last)}</small></span>` +
-    chip(p.unknown, 'bpChUnk', 'data-bpunk', 'warn') + chip(wrong, 'bpChWrong', 'data-bpwrong', 'warn') + chip(get('mule'), 'bpChMule', 'data-bpsee="mule"') + chip(get('npc'), 'bpChNpc', 'data-bpsee="npc"') +
-    (S._bagUnsaved ? `<small class="bpunsaved" title="${esc(t('bpUnsavedTip'))}">${esc(t('bpUnsaved'))}</small>` : '') + `<button class="btn ghost" data-bagsel="plan">${esc(t('bpChPlan'))}</button></div>`;
-}
-function renderBagPlan(B){
-  const p = bpPlan(B), shown = p.lines.filter(l => l.need || l.room);
-  const n = bpMoves(B).moves.length;
-  return `<div class="bpplan"><div class="bpsendbar"><p class="muted small" title="${esc(t('bpWhy'))}">${esc(t('bpWhyS'))}</p><button class="btn" data-bpopen ${n ? '' : 'disabled'} title="${esc(t('bpOpenTip'))}">${esc(t('bpOpen', {n}))}</button></div>${S.toast ? `<p class="toast">${esc(S.toast)}</p>` : ''}<div class="bpcards">${shown.map(bpCardHTML).join('')}</div>` +
-    `<p class="bpnote ${p.unknown ? 'warn' : ''}">${esc(p.unknown ? t('bpUnknown', {n: p.unknown}) : t('bpAllGood'))}${p.unknown ? ` <button class="linkbtn" data-bpunk>${esc(t('bpSee'))}</button>` : ''}${p.porter ? ' ' + esc(t('bpPorter', {n: p.porter})) : ''}</p></div>`;
-}
-// The bar over the list while things are selected: the categories to file them in
-function bpSelBarHTML(shown){
-  const n = (S._bagPick || new Set()).size;
-  const all = `<button class="btn ghost" data-bpall>${esc(t('bpSelAll', {n: shown}))}</button>`;
-  if (!n) return `<div class="bpsel idle"><span class="muted small">${esc(t('bpPickTip'))}</span><span class="sp"></span>${all}</div>`;
-  return `<div class="bpsel"><b>${esc(t('bpSel', {n}))}</b>${BP_CATS.map(c => `<button class="bpcat" data-bptag="${c}">${esc(bpCatName(c))}</button>`).join('')}` +
-    `<button class="bpcat auto" data-bptag="" title="${esc(t('bpAutoTip'))}">${esc(t('bpAuto'))}</button><span class="sp"></span>${all}<button class="btn ghost" data-bpnone>${esc(t('bpSelNone'))}</button></div>`;
-}
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-bptag],[data-bpall],[data-bpnone],[data-bpunk],[data-bpwrong],[data-bpsee],[data-bpick]'); if (!b) return; const d = b.dataset;
   S._bagPick = S._bagPick || new Set();
@@ -214,8 +173,8 @@ document.addEventListener('click', e => {
   if ('bpunk' in d) { S.bagSel = 'all'; S.bagUse = 'unk'; S.bagCat = 'all'; S.bagQ = ''; S.bagPc = ''; save(); render(); return; }
   if ('bpnone' in d) { S._bagPick.clear(); render(); return; }
   if ('bpall' in d) { document.querySelectorAll('#bvlist [data-bpick]').forEach(el => S._bagPick.add(el.dataset.bpick)); render(); return; }
-  if (d.bpick) { if (S._bagPick.has(d.bpick)) S._bagPick.delete(d.bpick); else S._bagPick.add(d.bpick); b.classList.toggle('picked');
-    const bar = document.getElementById('bpsel'); if (bar) bar.innerHTML = bpSelBarHTML(document.querySelectorAll('#bvlist [data-bpick]').length); return; }
+  // the page drawn again: the Bags view (atelier/src/screens/perso) marks the item and redraws the selection's bar only
+  if (d.bpick) { if (S._bagPick.has(d.bpick)) S._bagPick.delete(d.bpick); else S._bagPick.add(d.bpick); render(); return; }
   // file the selection: by item (every copy of it), kept by character
   const tags = Object.assign({}, bpTags()); for (const id of S._bagPick) { if (d.bptag) tags[id] = d.bptag; else delete tags[id]; }
   S.bagTags = Object.assign({}, S.bagTags, {[S.char]: tags}); S._bagPick.clear(); bpTouch(); render();

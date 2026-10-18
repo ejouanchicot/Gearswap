@@ -32,7 +32,12 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   `ctlHtml`, `modules.js` modControl et `module_ux.js`, `module_items.js`, `module_rows.js`).
 - **Étape 3a (2026-10-18)** : Mon perso (`screens/perso/` : l'en-tête, le choix Stats / Sacs, PorterPacker, les
   mérites). Restent à l'ancienne page : la liste des sets à gauche et les cartes de stats (celles de l'écran Sets,
-  étape 5), la vue Sacs (étape 3b).
+  étape 5).
+- **Étape 3b (2026-10-18)** : la vue Sacs de Mon perso (`screens/perso/bags.ts`, `Bags.svelte` : les sacs en tuiles,
+  où est le perso, l'état du rangement, la liste avec sa recherche et ses filtres, la sélection, les cartes du plan).
+  La recherche et la sélection d'objets redessinent la page (`render()`) au lieu d'écrire dans la liste : Svelte ne
+  change que ce qui bouge, le champ garde son curseur. Les données (les sacs, le plan, qui porte quoi) restent
+  celles de l'ancienne page (`bags_*.js`).
 - Les étapes suivantes déplacent un écran entier à la fois dans `src/screens/` ; ses fichiers sortent alors des
   listes de `legacy/files.ts`.
 

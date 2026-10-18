@@ -184,5 +184,42 @@ declare function meritCap(m: LegacyMerit): number;
 declare function meritEffect(m: LegacyMerit): null | {per: number; unit: string};
 declare const MERIT_GROUPS: Array<[number, number, string]>;
 declare const MERIT_COLORS: Record<string, string>;
-/** The Bags view, still the old page's HTML (bags_view.js) */
-declare function renderBags(): string;
+
+// ---- the Bags view (bags_view.js, bags_plan.js, bags_target.js, bags_place.js, module_items.js) ----
+// The bags' data is the old page's own (the export's bags, the plan's sum): typed loosely, the view reads its fields
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type LegacyAny = any;
+declare function bvBags(): LegacyAny;
+declare function bvWhere(B: LegacyAny): LegacyAny;
+declare function bvRows(B: LegacyAny, sel: string, where: LegacyAny): LegacyAny[];
+declare function bvFilter(rows: LegacyAny[]): LegacyAny[];
+declare function bvRank(cat: string): number;
+declare function bvShort(bag: string): string;
+declare function bvCatName(cat: string): string;
+declare const BV_CATS: string[];
+declare function bvLit(bag: string): string;
+declare function bvShut(bag: string): string;
+declare function bvRoleName(B: LegacyAny, bag: LegacyAny): string;
+declare function bvRoleShort(B: LegacyAny, bag: LegacyAny): string;
+declare function bvRoles(B: LegacyAny, bag: LegacyAny): string[];
+declare const BV_ROLES: string[];
+declare function bvUseTip(r: LegacyAny): string;
+declare function bvLockSets(r: LegacyAny): string[];
+declare function bvIsGear(r: LegacyAny): boolean;
+declare function bvUsage(): {jobs: string[]};
+declare function bvPlace(): LegacyAny;
+declare function bvFit(): void;
+declare function plList(v: unknown): LegacyAny[];
+declare const MOOGLE_PLACES: Record<string, Array<[string, string?]>>;
+declare function bpCat(B: LegacyAny, r: LegacyAny): string;
+declare function bpCatName(cat: string): string;
+declare function bpDest(B: LegacyAny, r: LegacyAny): string;
+declare function bpTags(): Record<string, string>;
+declare function bpNpc(name: string): string;
+declare function bpLock(): Record<string, string[]>;
+declare function bpPlan(B: LegacyAny): {lines: LegacyAny[]; unknown: number; porter: number};
+declare function bpLineBad(l: LegacyAny): boolean;
+declare function bpMoves(B: LegacyAny): {moves: LegacyAny[]};
+declare const BP_CATS: string[];
+/** An item's icon, as the old page's HTML (module_items.js) */
+declare function itemIco(name: string, id: number): string;

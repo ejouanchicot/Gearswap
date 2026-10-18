@@ -78,18 +78,3 @@ async function porterRun(){
   S.toast = r && r.ok ? t(r.porter ? 'plRunOk' : 'plRunNoMoogle') : t('plRunErr', {e: (r && r.error) || '?'}); render();
 }
 document.addEventListener('click', e => { if (e.target.closest('[data-plwhere]')) openMooglePlaces(); else if (e.target.closest('[data-plrungo]')) porterRun(); else if (e.target.closest('[data-plrun]')) openPorterRun(); });
-// The line of the Bags view: zone, Mog House, moogles, closed bags
-function bvPlaceHTML(){
-  const p = bvPlace();
-  if (!p) return '';
-  const seen = plList(p.moogles), chips = [`<b>${esc(p.zone || '?')}</b>`];
-  if (p.mog_house) chips.push(`<span class="good">${esc(t('plHouse'))}</span>`);
-  // one chip a kind of moogle: the nearest the game shows, else what BG-Wiki lists for this zone
-  const kinds = [...new Set([...seen.map(m => m.name), ...Object.keys(MOOGLE_PLACES).filter(n => MOOGLE_PLACES[n].some(([z]) => z === p.zone))])];
-  for (const n of kinds) { const m = seen.find(x => x.name === n), at = (MOOGLE_PLACES[n] || []).find(([z]) => z === p.zone);
-    chips.push(m ? `<span class="${m.near ? 'good' : ''}" ${n === 'Nomad Moogle' ? `title="${esc(t('plNomad'))}"` : ''}>${esc(t(m.near ? 'plNear' : 'plFar', {n, d: m.dist}))}</span>`
-      : `<span>${esc(t('plZone', {n, p: at && at[1] ? ' (' + at[1] + ')' : ''}))}</span>`); }
-  // with a Porter Moogle within reach: the chain PorterPacker, wardrobes, refill, asked from here
-  if (seen.some(m => m.name === 'Porter Moogle' && m.near)) chips.push(`<button class="btn plrun" data-plrun title="${esc(t('plRunTip'))}">${esc(t('plRun'))}</button>`);
-  return `<p class="bvplace" title="${esc(t('plTip'))}"><i>${esc(t('plHere'))}</i>${chips.join('')}<button class="linkbtn" data-plwhere title="${esc(t('plWhereTip'))}">${esc(t('plWhere'))}</button></p>` + (S.toast && S.bagSel !== 'plan' ? `<p class="toast">${esc(S.toast)}</p>` : '');
-}
