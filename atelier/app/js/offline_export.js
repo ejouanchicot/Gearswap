@@ -328,8 +328,15 @@ const OfflineExport = (() => {
           entries.push(entry);
         }
     const live = ((await env.list(DATA + '/atelier')) || []).filter(e => !e.dir && /^(live|link)_.+\.js$/.test(e.name)).map(e => 'atelier/' + e.name).sort();
-    const old = (await env.text(DATA + '/atelier/index.js')) || '', fam = old.match(/^window\.ATELIER_FAMILIES = .*;$/m) || (families ? [families] : null);
-    await env.write(DATA + '/atelier/index.js', `window.ATELIER_INDEX = ${JSON.stringify(entries)};\nwindow.ATELIER_LIVE_FILES = ${JSON.stringify(live)};\n${fam ? fam[0] + '\n' : ''}`);
+    // each character's files the page wrote (its list of sets, its bags plan), those that exist: the page asks only for them
+    const pageFiles = [];
+    for (const c of [...new Set(entries.map(e => e.char))].sort()) {
+      const have = new Set(((await env.list(DATA + '/' + c + '/atelier/overrides')) || []).filter(e => !e.dir).map(e => e.name));
+      for (const n of ['list_layout.js', 'bag_plan.js']) if (have.has(n)) pageFiles.push(c + '/atelier/overrides/' + n);
+    }
+    pageFiles.sort();
+    const old = (await env.text(DATA + '/atelier/index.js')) || '', fam =old.match(/^window\.ATELIER_FAMILIES = .*;$/m) || (families ? [families] : null);
+    await env.write(DATA + '/atelier/index.js', `window.ATELIER_INDEX = ${JSON.stringify(entries)};\nwindow.ATELIER_LIVE_FILES = ${JSON.stringify(live)};\nwindow.ATELIER_PAGE_FILES = ${JSON.stringify(pageFiles)};\n${fam ? fam[0] + '\n' : ''}`);
   }
   /* ---- Lua 5.1 in WebAssembly: one job loaded as scripts/atelier/load_job.lua does ---- */
   // Self-contained (its text is also the worker's): luaRunnerFactory()(glueFactory, wasmBinary) ->

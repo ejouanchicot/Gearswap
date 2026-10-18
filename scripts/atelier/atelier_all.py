@@ -449,6 +449,11 @@ def write_index():
     # the live link files that exist (live_<Char>.js, link_<Char>.js): the page loads only those
     live = sorted('atelier/' + n for n in os.listdir(os.path.join(DATA, 'atelier'))
                   if re.match(r'^(live|link)_.+\.js$', n))
+    # each character's files the page wrote (its list of sets, its bags plan), those that exist: the page asks only
+    # for them (asking for a missing one leaves an error in its console)
+    page_files = sorted(c + '/atelier/overrides/' + n for c in sorted({e['char'] for e in entries})
+                        for n in ('list_layout.js', 'bag_plan.js')
+                        if os.path.exists(os.path.join(DATA, c, 'atelier', 'overrides', n)))
     # the spell families come from the game (shared/utils/atelier/atelier_families.lua): kept as they were
     index = os.path.join(DATA, 'atelier', 'index.js')
     families = ''
@@ -456,8 +461,9 @@ def write_index():
         m = re.search(r'^window\.ATELIER_FAMILIES = .*;$', open(index, encoding='utf-8').read(), re.M)
         families = m.group(0) + '\n' if m else ''
     with open(index, 'w', encoding='utf-8', newline='\n') as f:
-        f.write('window.ATELIER_INDEX = %s;\nwindow.ATELIER_LIVE_FILES = %s;\n%s'
-                % (json.dumps(entries, separators=(',', ':')), json.dumps(live, separators=(',', ':')), families))
+        f.write('window.ATELIER_INDEX = %s;\nwindow.ATELIER_LIVE_FILES = %s;\nwindow.ATELIER_PAGE_FILES = %s;\n%s'
+                % (json.dumps(entries, separators=(',', ':')), json.dumps(live, separators=(',', ':')),
+                   json.dumps(page_files, separators=(',', ':')), families))
 
 
 def group_twins(char, job, main_sub, done, known=None):

@@ -316,8 +316,12 @@ function liveReread(c, kind = 'live', wait = 4000){
   const k = kind + '|' + c;
   if (Date.now() - (REREAD_AT[k] || 0) < wait) return;
   REREAD_AT[k] = Date.now();
+  // a door the index does not list (a character played on another PC never has one here): the index read again
+  // instead, which GearSwap rewrites when it opens its door (atelier_live.lua); asking for the missing file left an
+  // error in the console every 10 s
+  const file = `atelier/${kind}_${c}.js`, listed = !window.ATELIER_LIVE_FILES || window.ATELIER_LIVE_FILES.includes(file);
   const el = document.createElement('script');
-  el.src = `atelier/${kind}_${c}.js?t=${Date.now()}`; el.onload = el.onerror = () => el.remove();
+  el.src = `${listed ? file : 'atelier/index.js'}?t=${Date.now()}`; el.onload = el.onerror = () => el.remove();
   document.head.appendChild(el);
 }
 // Wearing in game the set shown, as the page shows it (its tried pieces, its weapons): through GearSwap's

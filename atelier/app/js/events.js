@@ -397,12 +397,12 @@ function readExports(first, done){
   const chars = [...new Set(index.map(e => (e.file.match(/^([^/]+)\/saved\//) || [])[1]).filter(Boolean))];
   // the index lists the live link files that exist; an index from before lists none: ask for every character's
   const live = window.ATELIER_LIVE_FILES || chars.map(c => `atelier/live_${c}.js`).concat(chars.map(c => `atelier/link_${c}.js`));
-  // each character's arrangement of its list of sets (list_prefs.js; absent until the page wrote one)
+  // each character's arrangement of its list of sets (list_prefs.js) and its bags plan (bags_plan.js), absent until the
+  // page wrote them: the index lists those that exist (an index from before lists none: ask for every character's)
   // (every character of the index: `chars` above only knows those whose exports are still under saved/)
-  const lists = [...new Set(index.map(e => e.char || (e.file.match(/^([^/]+)\//) || [])[1]).filter(Boolean))].map(c => `${c}/atelier/overrides/list_layout.js` + stamp);
-  // and what each bag is for and how each item is filed, for the bags plan (bags_plan.js; absent until written)
-  const plans = lists.map(f => f.replace('list_layout.js', 'bag_plan.js'));
-  loadScripts(index.map(e => e.file + stamp).concat(live, lists, plans), () => {
+  const own = window.ATELIER_PAGE_FILES || [...new Set(index.map(e => e.char || (e.file.match(/^([^/]+)\//) || [])[1]).filter(Boolean))]
+    .flatMap(c => [`${c}/atelier/overrides/list_layout.js`, `${c}/atelier/overrides/bag_plan.js`]);
+  loadScripts(index.map(e => e.file + stamp).concat(live, own.map(f => f + stamp)), () => {
     listRead(); bpRead();
     if (first) { setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
       // the game's descriptions of every item: a piece a set names but no bag holds still has its stats

@@ -239,10 +239,24 @@ local function write_index()
         if file:match('^live_.+%.js$') or file:match('^link_.+%.js$') then live[#live + 1] = 'atelier/' .. file end
     end
     table.sort(live)
+    -- each character's files the page wrote (its list of sets, its bags plan: <Char>/atelier/overrides/), those
+    -- that exist: the page asks only for them (asking for a missing one leaves an error in its console)
+    local page_files, chars = {}, {}
+    for _, e in ipairs(entries) do
+        if not chars[e.char] then
+            chars[e.char] = true
+            for _, file in ipairs({'list_layout.js', 'bag_plan.js'}) do
+                local rel = e.char .. '/atelier/overrides/' .. file
+                if windower.file_exists(data_path(rel)) then page_files[#page_files + 1] = rel end
+            end
+        end
+    end
+    table.sort(page_files)
     -- the spells behind each family set (shared/utils/atelier/atelier_families.lua)
     local ok_f, families = pcall(function() return require('shared/utils/atelier/atelier_families').collect() end)
     return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\nwindow.ATELIER_LIVE_FILES = '
-        .. json(live) .. ';\nwindow.ATELIER_FAMILIES = ' .. json(ok_f and families or {}) .. ';\n')
+        .. json(live) .. ';\nwindow.ATELIER_PAGE_FILES = ' .. json(page_files) .. ';\nwindow.ATELIER_FAMILIES = '
+        .. json(ok_f and families or {}) .. ';\n')
 end
 
 --- The stages of a build, in order: each fills `data`. Kept apart so the export after a load runs them a few
