@@ -10,10 +10,11 @@
   import {setsView} from './sets';
   import SetList from './SetList.svelte';
   import Card from './Card.svelte';
+  import Figures from './Figures.svelte';
 
   const view = $derived(legacy.version > 0 ? setsView() : null);
 </script>
 
 {#if view}
-  <div class="pane split">{@html view.ctxHtml}<div class="setsx" class:ui2={view.ui2} style={view.listW ? `--listw:${view.listW}px` : undefined}><SetList view={view.list} />{#if view.card}{#if view.card.k === 'page'}{@html view.card.html}{:else}<Card view={view.card} />{/if}{/if}{#if view.globalsHtml !== null}<aside class="globalcol">{@html view.globalsHtml}</aside>{/if}</div></div>
+  <div class="pane split">{@html view.ctxHtml}<div class="setsx" class:ui2={view.ui2} style={view.listW ? `--listw:${view.listW}px` : undefined}><SetList view={view.list} />{#if view.card}{#if view.card.k === 'page'}{@html view.card.html}{:else}<Card view={view.card} />{/if}{/if}{#if view.figures !== null}<aside class="globalcol"><Figures view={view.figures} /></aside>{/if}</div></div>
 {/if}

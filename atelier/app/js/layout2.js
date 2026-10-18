@@ -59,17 +59,6 @@ function ui2CtxBar(warn = ''){
     ` <button class="linkbtn" data-section="combat" title="${esc(t('ttCtxEdit'))}">${esc(t('ui2CtxEdit'))}</button>${warn}</div>`;
 }
 
-// The right column: this set's figures, by its kind; then the gear's stats; the rest folded
-function setPanelHTML(s){
-  S._curSet = s;
-  const r = charStats(s), fam = family(s.path, s.pieces);
-  // a nuke set: its damage and the totals it is worked out with (fight_stats.js), not the tanking figures
-  const offense = fightBoxHTML(s) || (r && (fam === 'ws' || fam === 'engaged') ? offenseHTML(r, s) : '');
-  const defense = r && !offense ? tankHTML(r) : '';
-  const all = `<details class="lgfold ui2all" data-ui2all ${S._ui2AllOpen ? 'open' : ''}><summary title="${esc(t('ttAllStats'))}">${esc(t('ui2All'))}</summary>${globalsHTML(s, 'stats')}</details>`;
-  // the set's own figures in a block of fixed height (sets.css .ui2own): what follows stays where it is whatever the set
-  return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3><div class="ui2own">${offense}${defense}${hpCycleHTML(s)}${luopanHTML(s)}</div>${setStatsHTML(s)}${all}</div>`;
-}
 
 
 // What the set is after, one line under its pieces (the stats themselves are on the right)

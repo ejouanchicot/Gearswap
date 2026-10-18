@@ -7,7 +7,7 @@
 // O.nuke: `sheet`); the magic accuracy and the hit rate are those of the first spell judged, against the target
 // chosen. Each line's tip says where its value comes from. None with the old engine: it keeps no such sheet.
 //
-//   fightBoxHTML(s)   the box for layout2.js setPanelHTML, or '' when the set is no nuke set
+//   fightBoxHTML(s)   the box for the set's figures (atelier/src/screens/sets/figures.ts), or '' when the set is no nuke set
 //
 // @file    atelier/app/js/fight_stats.js
 // @author  ejouanchicot

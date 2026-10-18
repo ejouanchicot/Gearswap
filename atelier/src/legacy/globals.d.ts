@@ -303,12 +303,11 @@ declare function pbSel(b: LegacyAny, key: string, values: string[], ph?: string,
 /* ---- the Sets screen (sets_view.js, layout2.js, stats.js), loosely typed ---- */
 declare function ui2CtxBar(warn: string): string;
 declare function subWarnHTML(): string;
-declare function setPanelHTML(s: LegacyAny): string;
 declare const SLOT_NAMES: Record<string, Record<string, string>>;
 declare const SLOTS: string[];
 declare function isLocked(s: LegacyAny, slot: string): boolean;
 declare function LOCKABLE(slot: string): boolean;
-declare function pieceStats(p: LegacyAny, slot: string): LegacyAny;
+declare function pieceStats(p: LegacyAny, slot?: string): LegacyAny;
 declare function holdState(slot: string, p: LegacyAny): string;
 declare function icon(name: string): string;
 declare function variantGroups(card: LegacyAny): {groups: Map<string, LegacyAny>; skills: Record<string, string>};
@@ -330,3 +329,20 @@ declare function familyNoteHTML(card: LegacyAny, s: LegacyAny): string;
 declare function trialBar(s: LegacyAny): string;
 declare function equipBtnHTML(): string;
 declare function ui2Wants(s: LegacyAny): string;
+/* ---- the figures of a set (engine.js, fight_stats.js, stat_opt.js, luopan.js, stats.js), loosely typed ---- */
+declare function charStats(s: LegacyAny, pieces?: LegacyAny): LegacyAny;
+declare function fightBoxHTML(s: LegacyAny): string;
+declare function hpCycleHTML(s: LegacyAny): string;
+declare function luopanHTML(s: LegacyAny): string;
+declare function setStatsHTML(s: LegacyAny): string;
+declare function statHelp(label: string, detail?: string): string;
+declare function traitOf(stat: string, c: LegacyAny): number;
+declare function giftOf(stat: string, c: LegacyAny): number;
+declare function skillLevel(c: LegacyAny, name: string): number;
+declare function phalanxPotency(skill: number): number;
+declare function tankExtraHTML(c: LegacyAny, set: LegacyAny, B: LegacyAny, enm: number): string;
+declare function tpBase(delay: number): number;
+declare const TWO_HANDED: RegExp;
+declare const ENEMIES: Record<string, LegacyAny>;
+declare function signed(n: number): string;
+interface Window { ATELIER_FIGURES?: {tankBox: unknown; offenseBox: unknown; boxHtml: unknown} }

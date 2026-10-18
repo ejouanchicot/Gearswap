@@ -309,65 +309,10 @@ function tpBase(d){
   return 173 + (d - 900) * 28 / 360;
 }
 const TWO_HANDED = /great|scythe|polearm|staff/i;
-function tankHTML(r){
-  const {c, set, B} = r, v = k => (set[k] || {}).v || 0, mul = B.dmgmul || 1, pmul = mul * (B.pdmgmul || 1);
-  const dt = v('dt'), shell = B.shell ? -B.shell / 256 * 100 : 0;
-  const pdt = Math.max(Math.max(dt + v('pdt'), -50) + v('pdt2'), -87.5);
-  const mdt = Math.max(Math.max(dt + v('mdt') + shell, -50) + v('mdt2'), -87.5);
-  const mdb = v('mdb') + traitOf('mdb', c) + giftOf('mdb', c) + (B.mdb || 0);
-  const fl = x => Math.floor(x + 1e-9);
-  const phys = fl(1000 * (1 + pdt / 100) * pmul), mag = fl(fl(1000 * (1 + mdt / 100)) / (1 + mdb / 100) * mul);
-  const breath = fl(1000 * (1 + Math.max(dt + v('bdt'), -50) / 100) * mul);
-  const pctOf = n => `${signed(Math.round((n / 1000 - 1) * 1000) / 10)} %`;
-  // what multiplies the damage taken (Rampart ×0.75, Fan Dance ×0.75...: past the -50 % cap)
-  const muls = B._by.filter(e => e.k === 'dmgmul' || e.k === 'pdmgmul').map(e => `${e.src} ×${Math.round(e.v * 100) / 100}`).join(' · ');
-  let rows = statLi(t('physHit'), phys, pctOf(phys), '', muls) +
-    statLi(t('magHit'), mag, pctOf(mag), '', t('magTip', {m: Math.round(Math.max(dt + v('mdt') + shell, -50) * 10) / 10, b: mdb})) +
-    statLi(t('breathHit'), breath, pctOf(breath));
-  const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : Math.max(1 + enm / 100, .5);
-  if (enm) rows += statLi(t('enmityLbl'), signed(enm), `×${mult.toFixed(2)}`, '', t('enmTip', {g: v('enmity'), b: B.enmity || 0}));
-  if (enm && ['PLD', 'RUN'].includes(S.job)) rows += statLi(t('flashLbl'), `${Math.floor(180 * mult)} / ${Math.floor(1280 * mult)}`, '');
-  rows += tankExtraHTML(c, set, B, enm);
-  const skill = skillLevel(c, 'enhancing magic') + v('skill:enhancing magic skill');
-  if (['PLD', 'RUN', 'RDM'].includes(S.job) && skill) {
-    const pot = phalanxPotency(skill);
-    rows += statLi('Phalanx', `−${pot + v('phalanx')}`, '', '', t('phalanxTip', {p: pot, s: skill, g: v('phalanx')}));
-  }
-  return fbox('tank', 'g-tank', t('tankTitle'), `<p class="note-m">${t('tankNote')}</p><ul class="statlist">${rows}</ul>`);
-}
-function offenseHTML(r, s){
-  const {c, set, B, cur} = r, v = k => (set[k] || {}).v || 0;
-  const pieces = withWeapons(s).pieces, rm = pieceStats(pieces.main), rs = pieceStats(pieces.sub);
-  const d1 = rm && rm.weapon && +rm.weapon.Delay;
-  if (!d1) return '';
-  const d2 = (rs && rs.weapon && +rs.weapon.Delay) || 0, dual = d2 > 0;
-  const dw = dual ? v('dw') + traitOf('dw', c) + giftOf('dw', c) : 0;
-  const gh = Math.min(v('haste'), 25), mh = Math.min(B.mhaste || 0, 43.75), jh = Math.min(B.jahaste || 0, 25), haste = gh + mh + jh;
-  const mdelay = dual ? (d1 + d2) / 2 * (1 - dw / 100) : d1;
-  const stp = v('stp') + traitOf('stp', c) + giftOf('stp', c) + (B.stp || 0);
-  const tph0 = Math.floor(tpBase(mdelay)), tph = tph0 + Math.floor(tph0 * stp / 100);
-  const delay = d1 + (dual ? d2 : 0), round = Math.max(delay * (1 - dw / 100) * (1 - haste / 100), 0.2 * delay) / 60;
-  const two = cur.wskill && TWO_HANDED.test(cur.wskill), enemyName = enemyKey(buffState().enemy);
-  const eva = Math.max(0, ENEMIES[enemyName][2] - (B.eeva || 0)), cap = two ? 95 : 99;
-  const edef = Math.round(ENEMIES[enemyName][1] * (1 - Math.min(B.edefp || 0, 1)));
-  const r1 = n => Math.round(n * 10) / 10;
-  // the accuracy the hit rate is worked out from, first: character (weapon skill, DEX, traits, gifts) + the set +
-  // food and buffs
-  const accB = Math.floor(B.acc || 0);
-  let rows = (cur.acc != null ? statLi(t('accTotal'), cur.acc, t('accTotalNote', {g: v('acc'), b: accB}), '', t('accTotalTip', {g: v('acc'), b: accB, w: cur.wskill || '—', l: cur.level || 0})) : '') +
-    statLi(t('hasteTot'), `${r1(haste)} %`, haste >= 93.75 ? 'cap' : '', '', t('hasteTip', {g: r1(gh), m: r1(mh), j: r1(jh)})) +
-    statLi(t('tpHit'), tph, '', '', t('tpTip', {d: Math.round(mdelay), s: stp})) + statLi(t('hitsTo'), Math.ceil(1000 / tph), '') +
-    statLi(t('roundLbl'), `${r1(round)} s`, '');
-  if (cur.acc != null) { const rate = Math.max(20, Math.min(cap, 75 + 0.5 * (cur.acc - eva)));
-    rows += statLi(t('hitRate'), `${Math.floor(rate)} %`, `cap ${cap}`, '', t('hitTip', {a: cur.acc, e: eva, n: enemyName}) + (two ? ' · ' + t('twoHand') : '')); }
-  rows += statLi(t('enemyDef'), edef, B.edefp ? `−${Math.round(B.edefp * 1000) / 10} %` : '', '', t('enemyDefTip', {n: enemyName}));
-  const da = v('da') + traitOf('da', c) + giftOf('da', c) + (B.da || 0);
-  const ta = v('ta') + (B.ta || 0);
-  if (da || ta || v('qa')) rows += statLi(t('multiLbl'), `${r1(da)} · ${ta} · ${v('qa')} %`, '');
-  const crit = v('crit') + (B.crit || 0);
-  if (crit) rows += statLi(t('critLbl'), `${r1(crit)} %`, '');
-  return fbox('off', 'g-off', t('offTitle'), `<ul class="statlist">${rows}</ul>`, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : '');
-}
+// The tanking and attack boxes are worked out by the Svelte application (atelier/src/screens/sets/figures.ts), drawn
+// here as HTML for the screens of the old page that still show them (the buffs window, My character's cards)
+const tankHTML = r => ATELIER_FIGURES.boxHtml(ATELIER_FIGURES.tankBox(r));
+function offenseHTML(r, s){ const b = ATELIER_FIGURES.offenseBox(r, s); return b ? ATELIER_FIGURES.boxHtml(b) : ''; }
 
 /* ---- the character's real stats with a set ---- */
 // The stats measured in game by //gs c atelier (this subjob's export, else another one's)

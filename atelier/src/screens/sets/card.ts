@@ -5,11 +5,11 @@
 // The rules are the old page's cardHTML, slotHTML, setVersionsHTML, versionGridHTML (sets_view.js), with what it
 // keeps in the page's state as it goes (S._curSet, S._globals). Still the old page's HTML: the title box and the
 // weapons' menus (setTitleBox, weaponMenus), a weaponskill's head (ws_page.js wsHeadHTML), the trial's bar
-// (trial.js), the equip button (live.js), the line of what the set is after, the legend and notes, the figures
-// (step 5c). A field ending in Html is one of the old page's texts it wrote unescaped.
+// (trial.js), the equip button (live.js), the line of what the set is after, the legend and notes; the figures are figures.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/card.ts
 // @author  ejouanchicot
+import {figuresView, type FiguresView} from './figures';
 
 export interface SlotView { slot: string; ci: number; label: string; empty: boolean; cls: string; aria: string; reset: null | {title: string}; lock: null | {title: string};
   iconHtml: string; aug: boolean; rank: number | null }
@@ -32,7 +32,7 @@ export interface CardView {
   wantsHtml: string;
   legendHtml: string;
   notesHtml: string;
-  globalsHtml: string;
+  figures: FiguresView;
 }
 export type CardOrPage = CardView | {k: 'page'; html: string};
 
@@ -134,6 +134,6 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   // a family's note and a base set's go under the gear, where nothing is left to push down
   const notesHtml = familyNoteHTML(card, s) + (locked && !ws ? `<p class="famnote">${esc(t('baseOnly', {l: (data() as LegacyAny).sets.filter((x: LegacyAny) => x.base === s.path).map((x: LegacyAny) => shortPath(x.path)).join(', ')}))}</p>` : '');
   const trialHtml = trialBar(s), equipHtml = equipBtnHTML(), wantsHtml = ui2Wants(s);
-  S0._globals = {s, html: setPanelHTML(s)};
-  return {k: 'card', ci, ws, titleHtml, versions, ctl, trialHtml, slots, equipHtml, footHtml: foot, wantsHtml, legendHtml, notesHtml, globalsHtml: S0._globals.html};
+  S0._globals = {s, view: figuresView(s)};
+  return {k: 'card', ci, ws, titleHtml, versions, ctl, trialHtml, slots, equipHtml, footHtml: foot, wantsHtml, legendHtml, notesHtml, figures: S0._globals.view};
 }

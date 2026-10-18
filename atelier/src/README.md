@@ -59,6 +59,12 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   l'ancienne page : le titre et les menus des armes (`setTitleBox`, `weaponMenus`), la tête d'un weaponskill
   (`ws_page.js`), la barre de l'essai (`trial.js`), le bouton pour équiper (`live.js`), la légende, les notes, les
   chiffres du set (étape 5c) et la page de l'optimiseur (étape 6).
+- **Étape 5c (2026-10-18)** : la colonne des chiffres du set (`screens/sets/figures.ts`, `Figures.svelte`,
+  `StatBox.svelte` : les boîtes en données, l'attaque et la défense calculées ici). L'ancienne page dessine ces
+  mêmes boîtes par ce code (`window.ATELIER_FIGURES`, engine.js `tankHTML` / `offenseHTML`) pour ses écrans à elle
+  (la fenêtre des buffs, les cartes de Mon perso) : un seul calcul. Restent à l'ancienne page : la boîte du nuke
+  (`fight_stats.js`), le cycle des HP (`stat_opt.js`), la Luopan (`luopan.js`), la feuille des stats (`stats.js`),
+  toutes les stats (`globalsHTML`), les lignes de tank en plus (`tankExtraHTML`).
 
 ## Vérifier une étape
 
