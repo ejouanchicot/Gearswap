@@ -66,13 +66,15 @@ function motionRows(){
 }
 
 /* ---- the game's hand ---- */
-// One hand a list, put where it was then sent to the chosen row: the list is new at each redraw, the hand's place is not
+// One hand a list, put where it was then sent to the chosen row: the list is new at each redraw of the old page, the
+// hand's place is not. A list the Svelte application keeps between redraws keeps its hand: that one moves (a new one
+// each time piled hands up, darker at each redraw)
 function motionHands(on){
   const tops = [];
   document.querySelectorAll('#view .setlist .scroll').forEach((box, i) => {
-    const row = box.querySelector('.setrow[aria-current="true"]');
-    if (!row) return;
-    const hand = document.createElement('i'), b = row.querySelector('b') || row;
+    const row = box.querySelector('.setrow[aria-current="true"]'), kept = box.querySelector(':scope > .hand');
+    if (!row) { if (kept) kept.remove(); return; }
+    const hand = kept || document.createElement('i'), b = row.querySelector('b') || row;
     hand.className = 'hand'; hand.setAttribute('aria-hidden', 'true');
     // b's place is counted from the list itself (the list is the positioned box, not the row)
     const top = b.offsetTop + b.offsetHeight / 2, was = MOTION.hands[i];

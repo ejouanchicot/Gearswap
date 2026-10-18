@@ -465,12 +465,12 @@ function renderJob(){
     // (a page kept on one of those four names, or sent there by a link, opens that part)
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
-    // the job's settings are the Svelte application's (atelier/src/screens/config)
-    if (S.section === 'jobcfg') return '';
+    // the job's settings and My character are the Svelte application's (atelier/src/screens/config, screens/perso)
+    if (S.section === 'jobcfg' || S.section === 'perso') return '';
     // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
     if (ui2() && ['combat', 'perso'].includes(S.section) && !(S.section === 'perso' && S.persoView === 'bags')) { side = setListHTML(d);   // (the bags are no set's)
       if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
-    body = {sets:renderSets, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
+    body = {sets:renderSets, sim:renderSim, combat:renderCombat}[S.section](d);
   }
   // every tab but Sets: the played jobs on the left, to change job and stay on the tab
   if (side) body = `<div class="tabx setside">${side.aside}<div class="tabmain">${body}</div></div>`;

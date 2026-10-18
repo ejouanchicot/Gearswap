@@ -78,38 +78,6 @@ function renderCombat(d){
   return renderCombatParty(d);
 }
 
-// My character: who (job, levels, when measured), the stats measured in game, PorterPacker, then the merits
-function renderPerso(d){
-  const s = ui2CurrentSet(d), c = measuredChar && measuredChar(), lv = jaLevels();
-  const facts = [[t('ui2Job'), `${S.job}/${d.sub || '—'}`], ['Master Level', lv.ml || '—'], ['Job Points', (c && c.jp_spent) || '—'],
-    [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]];
-  const head = `<header class="tabhead"><div><h2>${esc(S.char)}</h2><p class="muted small">${esc(t('ui2PersoWhy'))}</p></div>` +
-    `<dl class="herofacts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl>${persoViewsHTML()}</header>`;
-  // the character's bags (bags_view.js): a view of its own, the whole width
-  if (S.persoView === 'bags') return `<div class="ui2tab persotab">${head}${renderBags()}</div>`;
-  const cards = s && charStats(s) ? globalsHTML(s, 'cards') : `<p class="muted">${t('noChar')}</p>`;
-  return `<div class="ui2tab persotab">${head}<div class="persogrid">${cards}${porterHTML(true)}</div>` +
-    `<h3 class="tabsec">${esc(t('sectionsMerits'))}</h3>${renderMeritTabs()}</div>`;
-}
-
-// The merits as tabs, a group a tab (its levels spent beside its name, a dot when changed here), the chosen group's
-// rows in one panel in two columns: every panel the same width, nothing stacked in uneven columns
-function renderMeritTabs(){
-  const list = meritList();
-  if (!list) return `<div class="placeholder"><p>${t('noMerits')}</p></div>`;
-  const edits = S.meritEdits[meritKey()] || {};
-  const groups = MERIT_GROUPS.filter(([lo, hi]) => meritRows(list, lo, hi, edits));
-  const cur = groups.find(g => g[2] === S.meritTab) || groups[0];
-  // the skill groups' tab says only Combat / Magic: the full name runs out of a tab
-  const SHORT = new Set(['mgCombat', 'mgMagic']);
-  const spent = ([lo, hi]) => list.filter(m => m.id >= lo && m.id < hi && m.key !== 'maximum_merit_points').reduce((n, m) => n + meritLevel(m), 0);
-  const edited = ([lo, hi]) => list.some(m => m.id >= lo && m.id < hi && m.key in edits);
-  const tabs = groups.map(g => `<button class="mtab ${MERIT_COLORS[g[2]]}" role="tab" data-merittab="${g[2]}" aria-selected="${g === cur}" title="${esc(t('ttMeritTab'))}">` +
-    `<b>${esc(t(SHORT.has(g[2]) ? 'mtShort_' + g[2] : g[2]))}</b><small>${spent(g)}</small>${edited(g) ? '<i class="mdot"></i>' : ''}</button>`).join('');
-  return meritBar(edits) + `<div class="mwrap"><div class="mtabs" role="tablist">${tabs}</div>` +
-    `<section class="mpanel ${MERIT_COLORS[cur[2]]}"><ul class="meritlist two">${meritRows(list, cur[0], cur[1], edits)}</ul></section></div>`;
-}
-
 // What the set is after, one line under its pieces (the stats themselves are on the right)
 function ui2Wants(s){
   const w = wantsLine(s);

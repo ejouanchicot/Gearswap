@@ -26,6 +26,7 @@ interface LegacyExport {
   macro?: {default?: unknown; solo?: Record<string, LegacyBook>; dualbox?: Record<string, Record<string, LegacyBook>>};
   lockstyle?: {default?: number | string; by_subjob?: Record<string, number | string>};
   lockstyle_fallback?: number | string;
+  porterpacker?: {file: string; exists?: boolean; wanted?: string[]; add: string[]; remove: string[]};
 }
 
 /** The game's state of a character (atelier/app/js/live.js S._live) */
@@ -50,6 +51,7 @@ interface LegacyState {
   toast?: string;
   keysAll?: boolean;
   keyDirty: Record<string, boolean | undefined>;
+  meritEdits: Record<string, Record<string, number> | undefined>;
   [key: string]: unknown;
 }
 
@@ -161,3 +163,26 @@ declare const MX_MAX: number;
 declare function liveOk(char?: string): boolean;
 declare const JOB_GUIDE_FR: Record<string, [string, Array<[string, string]>] | undefined>;
 declare const JOB_GUIDE_EN: Record<string, [string, Array<[string, string]>] | undefined>;
+
+// ---- My character (layout2.js renderPerso, engine.js merits, porter.js, sets_view.js, bags_view.js) ----
+/** The list of sets on the left of a tab, as the old page's HTML, with the cards it shows (sets_view.js) */
+declare function setListHTML(d: LegacyExport): {aside: string; vis: unknown[]; cards: unknown[]; sel: number};
+declare function shownSet(card: unknown, i: number): unknown;
+declare function ui2CurrentSet(d: LegacyExport): unknown;
+declare function charStats(set: unknown): unknown;
+/** The character's stats as cards, the old page's HTML (sets_view.js) */
+declare function globalsHTML(set: unknown, only: string): string;
+/** The character as the game measured it (engine.js) */
+declare function measuredChar(): null | {at?: string; sub?: string; jp_spent?: number; merit_list?: LegacyMerit[]};
+declare function jaLevels(): {ml?: number; sub?: number};
+declare function shownJobLoaded(): boolean;
+interface LegacyMerit { id: number; key: string; en: string; desc: string; level: number }
+declare function meritList(): LegacyMerit[] | null;
+declare function meritKey(): string;
+declare function meritLevel(m: LegacyMerit): number;
+declare function meritCap(m: LegacyMerit): number;
+declare function meritEffect(m: LegacyMerit): null | {per: number; unit: string};
+declare const MERIT_GROUPS: Array<[number, number, string]>;
+declare const MERIT_COLORS: Record<string, string>;
+/** The Bags view, still the old page's HTML (bags_view.js) */
+declare function renderBags(): string;

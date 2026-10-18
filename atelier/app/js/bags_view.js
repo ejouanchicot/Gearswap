@@ -256,10 +256,6 @@ document.addEventListener('change', e => { const pc = e.target.closest && e.targ
   const B = bvBags(), bag = B && B.bags.find(b => b.name === el.dataset.bagrole), now = bag ? bvRoles(B, bag) : ['free'];
   const next = el.dataset.part === '1' ? [now[0], el.value] : [el.value, now[1]], role = next[0] === 'free' ? 'free' : next.filter((r, i) => r && (i === 0 || r !== next[0])).join('+');
   S.bagRoles = Object.assign({}, S.bagRoles); S.bagRoles[S.char] = Object.assign({}, S.bagRoles[S.char], {[el.dataset.bagrole]: role}); bpTouch(); render(); });
-// The switch between the two views of the tab
-const persoViewsHTML = () => `<span class="seg persoviews" role="group">${[['stats', 'bvStats'], ['bags', 'bvBags']].map(([v, k]) =>
-  `<button data-persoview="${v}" aria-pressed="${(S.persoView || 'stats') === v}" title="${esc(t(k + 'Tip'))}">${esc(t(k))}</button>`).join('')}</span>`;
-
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-persoview],[data-bagsel],[data-bagcat],[data-bagdup],[data-baguse]'); if (!b) return; const d = b.dataset;
   if (d.persoview) S.persoView = d.persoview; else if (d.baguse) S.bagUse = d.baguse; else if (d.bagsel) S.bagSel = d.bagsel; else if (d.bagcat) S.bagCat = d.bagcat; else S.bagDup = !S.bagDup;

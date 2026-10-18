@@ -30,6 +30,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   remette le focus, les blocs dépliés et le défilement. Restent à l'ancienne page : la fenêtre qui change une touche,
   et les contrôles des réglages de Modules (interrupteurs, nombres, listes d'objets, tableaux de lignes, couleurs :
   `ctlHtml`, `modules.js` modControl et `module_ux.js`, `module_items.js`, `module_rows.js`).
+- **Étape 3a (2026-10-18)** : Mon perso (`screens/perso/` : l'en-tête, le choix Stats / Sacs, PorterPacker, les
+  mérites). Restent à l'ancienne page : la liste des sets à gauche et les cartes de stats (celles de l'écran Sets,
+  étape 5), la vue Sacs (étape 3b).
 - Les étapes suivantes déplacent un écran entier à la fois dans `src/screens/` ; ses fichiers sortent alors des
   listes de `legacy/files.ts`.
 
