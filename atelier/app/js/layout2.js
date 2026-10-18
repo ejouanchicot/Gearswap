@@ -42,14 +42,6 @@ const ui2 = () => true;
 const JOB_CFG = ['keys', 'modes', 'functions', 'macro', 'modules'];
 // The part of the job's settings shown (S.jobTab, kept): the tab opened by one of the four old names lands on its part
 const jobCfgTab = () => JOB_CFG.includes(S.jobTab) ? S.jobTab : 'keys';
-function renderJobCfg(d){
-  const cur = jobCfgTab(), label = {keys: 'sectionsKeys', modes: 'sectionsModes', functions: 'sectionsFunctions', macro: 'sectionsMacro', modules: 'sectionsModules'};
-  const n = k => k === 'keys' ? keysShown(d).length : k === 'modules' ? modFiles(d).length || '' : '';
-  const tabs = JOB_CFG.map(k => `<button data-jobtab="${k}" aria-pressed="${k === cur}" title="${esc(t('ttTab_' + k, {n: n(k)}))}">${esc(t(label[k]))}` +
-    `${n(k) !== '' ? `<span class="count">${n(k)}</span>` : ''}</button>`).join('');
-  const body = {keys: renderKeys, modes: renderModes, functions: renderFunctions, macro: renderMacro, modules: renderModules}[cur](d);
-  return `<div class="jobcfg"><div class="seg jobcfgtabs" role="group" aria-label="${esc(t('ui2JobCfg'))}">${tabs}</div>${body}</div>`;
-}
 
 // The set shown in the Sets tab (the Combat and My character tabs work out their figures with it)
 function ui2CurrentSet(d){

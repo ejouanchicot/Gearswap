@@ -1,12 +1,11 @@
 // GearSwap Atelier · sets_view.js: rendering: the side, the set list, a set's card, the Macro / Functions tabs, the job list
 // (loaded by atelier/index.html, in the order of the list there)
 /* ---- render ---- */
-// The top bar is the Svelte application's (atelier/src/screens/topbar): told that the page was drawn again, it reads
-// the state again. Here only what the whole document follows: its language and its theme
+// The top bar is the Svelte application's (atelier/src/screens/topbar, told at the end of render). Here only what the
+// whole document follows: its language and its theme
 function renderSide(){
   document.documentElement.lang = S.lang;
   document.documentElement.setAttribute('data-theme', themeNow());
-  if (window.__atelier && window.__atelier.redraw) window.__atelier.redraw();
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
 function renderHome(){
@@ -426,35 +425,6 @@ function setListHTML(d){
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
 
-function renderMacro(d){
-  const m = d.macro || {}, l = d.lockstyle || {};
-  const rows = (obj, fmt) => Object.entries(obj||{}).map(([k,v]) => `<tr><td class="sub">${esc(k)}</td><td>${fmt(v)}</td></tr>`).join('');
-  const bp = v => v && v.book ? t('bookPage',{b:v.book,p:v.page}) : Object.entries(v||{}).map(([s,x]) => `${s === 'default' ? t('byDefault') : '/' + esc(s)} ${x.book}·${x.page}`).join(' &nbsp; ');
-  const table = (title, obj, fmt) => obj && Object.keys(obj).length ? `<div class="subh">${title}</div><table class="tbl in"><tbody>${rows(obj, fmt)}</tbody></table>` : '';
-  // the values in force for the subjob shown (and the alt chosen): its own entry, else the default
-  const alt = macroAlt(d), book = bookFor(d), style = (l.by_subjob || {})[d.sub] ?? l.default ?? d.lockstyle_fallback;
-  const du = alt && (m.dualbox || {})[alt], why = du && (du[d.sub] || du.default) ? t('bookAlt', {a: esc(alt)}) + (du[d.sub] ? '' : ' (' + t('byDefault') + ')')
-    : (m.solo || {})[d.sub] ? '/' + esc(d.sub) : m.default || (m.solo || {}).default ? t('byDefault') : t('bookFactory');
-  const whose = own => ' · ' + (own ? '/' + esc(d.sub) : style === d.lockstyle_fallback && l.default == null ? t('bookFactory') : t('byDefault'));
-  const head = (big, line) => `<div class="bighead"><span class="big">${big}</span><p>${line}</p></div>`;
-  const alts = Object.keys(m.dualbox || {}).sort();
-  const altPick = alts.length ? `<div class="variants" role="group"><span class="simtplbl">${t('bookAltPick')}</span>` +
-    [['', t('bookNoAlt')], ...alts.map(a => [a, a])].map(([v, label]) => `<button data-macroalt="${v}" aria-pressed="${(alt || '') === v}" title="${esc(t('ttMacroAlt'))}">${esc(label)}</button>`).join('') + `</div>` : '';
-  return `<div class="keybar"><span>${t('macroHint')}</span></div><div class="boxgrid cols">` +
-    box('g-tank', t('macro'), altPick + head(bookOf(d), book ? t('bookPage',{b:book.book,p:book.page}) + ' · ' + why : '') + table(t('bySub'), m.solo, bp) + table(t('byDual'), m.dualbox, bp)) +
-    box('g-buff', t('lockstyle'), head(styleOf(d), style != null ? t('style',{s:esc(style)}) + whose((l.by_subjob || {})[d.sub] != null) : '') + table(t('bySub'), l.by_subjob, v => t('style',{s:v}))) +
-    `</div>`;
-}
-function renderFunctions(d){
-  const keyOf = keyOfState(d);
-  const bools = d.modes.filter(m => m.values.length===2 && ((m.values.includes('on') && m.values.includes('off')) || (m.values.includes('On') && m.values.includes('Off'))) && !modeHidden(m) && !stateElsewhere(d, m.name));
-  const row = m => { const on = m.current.toLowerCase()==='on';
-    return `<tr><td class="swcol"><span class="sw ${on?'on':''}" aria-hidden="true"></span></td><td><b>${esc(m.desc||m.name)}</b><span class="state">state.${esc(m.name)}</span>${stateHelpHTML(m.name)}</td><td>${on?t('on'):t('off')}</td><td class="r">${keyLabel(keyOf[m.name])}</td></tr>`; };
-  // the same two columns as the other parts of the job's settings: the switches fill the left one first
-  const half = Math.ceil(bools.length / 2), col = list => `<table class="tbl in"><tbody>${list.map(row).join('')}</tbody></table>`;
-  return `<div class="keybar"><span>${t('fnHint', {at: esc(d.at || '—')})}</span></div><div class="boxgrid cols">` +
-    box('g-mag wide', t('sectionsFunctions'), `<div class="fn2">${col(bools.slice(0, half))}${col(bools.slice(half))}</div>`, `<span class="meta">${bools.length}</span>`) + `</div>`;
-}
 // The played jobs by role, the shown one marked: a click changes job and keeps the tab
 // Every job's level and master level, from the game (char.jobs of the latest in-game export of the
 // character: packet 0x01B), or null before any
@@ -495,10 +465,12 @@ function renderJob(){
     // (a page kept on one of those four names, or sent there by a link, opens that part)
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
+    // the job's settings are the Svelte application's (atelier/src/screens/config)
+    if (S.section === 'jobcfg') return '';
     // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
     if (ui2() && ['combat', 'perso'].includes(S.section) && !(S.section === 'perso' && S.persoView === 'bags')) { side = setListHTML(d);   // (the bags are no set's)
       if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
-    body = {sets:renderSets, jobcfg:renderJobCfg, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
+    body = {sets:renderSets, merits:renderMerits, sim:renderSim, combat:renderCombat, perso:renderPerso}[S.section](d);
   }
   // every tab but Sets: the played jobs on the left, to change job and stay on the tab
   if (side) body = `<div class="tabx setside">${side.aside}<div class="tabmain">${body}</div></div>`;
@@ -552,7 +524,10 @@ function render(){
   // a folded block the player opened stays open through a redraw of the same tab: a click inside it (a job, a
   // tab, a mode) draws the page again, and the block closed under the pointer (2026-10-10)
   const opened = S._view === view ? new Set([...document.querySelectorAll('#view details[open]')].map(foldKey)) : new Set();
-  renderSide(); $('#view').innerHTML = S._pkg && typeof renderPackages === 'function' ? renderPackages() : S._cfg ? renderConfig() : S.job ? renderJob() : renderHome(); save();
+  renderSide(); $('#legacyview').innerHTML = S._pkg && typeof renderPackages === 'function' ? renderPackages() : S._cfg ? renderConfig() : S.job ? renderJob() : renderHome(); save();
+  // the Svelte screens (atelier/src/: the top bar, the sections, the screens moved) read the state again now, before
+  // the focus, the folded blocks and the scroll are put back: theirs too (they are in #view beside #legacyview)
+  if (window.__atelier && window.__atelier.redraw) window.__atelier.redraw();
   for (const el of document.querySelectorAll('#view details:not([open])')) if (opened.has(foldKey(el))) el.open = true;
   SCROLLERS.forEach((q, i) => { const el = $(q);
     if (el && S._view === view && (q !== '.detail' || S._set === set)) el.scrollTop = tops[i]; });
