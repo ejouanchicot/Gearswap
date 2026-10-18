@@ -1,10 +1,17 @@
 """Run every offline test of the project and sum them up in one table.
 
-    python scripts/run_tests.py           the quick ones (about 3 min, most of it the Lua syntax check)
+    python scripts/run_tests.py           the quick ones (about 15 s)
     python scripts/run_tests.py --full    and the slow ones: the Atelier page in Chrome, the Lua the page
                                           writes, the export without the game, the packages
-                                          make_package.py builds, in Python and in the page (about 13 min)
+                                          make_package.py builds, in Python and in the page (5 to 40 min)
+    python scripts/run_tests.py --all     --full, the slowest ones run even when nothing they check changed
     python scripts/run_tests.py -v        the output of every test, not only of those that failed
+    python scripts/run_tests.py -j 1      one test at a time (by default up to 6 run together; the two
+                                          that write into the real exports always run alone, at the end)
+
+The two slowest (the export without the game, 25 min; the packages, 8 min) are skipped by --full when none
+of the files they check changed since they last passed here (WATCH below; the passes are kept in
+.git/run_tests_cache.json). The characters' own folders are not among those files: --all after changing them.
 
 Run from anywhere; the tests run from data/. Exits 1 when a test fails.
 
@@ -22,7 +29,10 @@ Needs lua5.1 and node on the PATH; --full also needs Chrome and Puppeteer (see a
 @author  ejouanchicot
 @date    Created: 2026-10-15
 """
+import concurrent.futures
 import glob
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -46,6 +56,45 @@ SLOW = {'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_modules_test
         'scripts/atelier/offline_export_page_test.js', 'scripts/atelier/offline_export_test.js',
         'scripts/atelier/make_package_test.py', 'scripts/atelier/make_package_page_test.js',
         'scripts/loadcheck/check_load.py'}
+# They write into the characters' real exports and atelier/index.js, then put them back: run alone, after the
+# others (atelier_test.js, the packages and the load check read those files)
+ALONE = {'scripts/atelier/offline_export_page_test.js', 'scripts/atelier/offline_export_test.js'}
+# The files a slow test checks (and the test itself): unchanged since it last passed, --full skips it
+WATCH = {
+    'scripts/atelier/offline_export_test.js': ['atelier/app/js/offline_export.js', 'atelier/lua/', 'scripts/atelier/atelier_all.py',
+                                               'scripts/atelier/load_job.lua', 'shared/', '_master/'],
+    'scripts/atelier/make_package_test.py': ['make_package.py', 'clone_character.py', 'migrate_layout.py', 'migrate_config.py',
+                                             'where_is_what.py', 'character_db.lua', '_master/', 'atelier/app/js/offline_export.js',
+                                             'scripts/atelier/package_exports_cli.js'],
+}
+CACHE = os.path.join(DATA, '.git', 'run_tests_cache.json')
+
+
+def fingerprint(t):
+    """What the files a test checks are now: git's id of each tracked one, the size and time of each one changed
+    or not tracked."""
+    paths = [t] + WATCH[t]
+    git = lambda *a: subprocess.run(['git'] + list(a) + ['--'] + paths, cwd=DATA, capture_output=True, text=True,
+                                    encoding='utf-8', errors='replace').stdout
+    loose = sorted(set(git('diff', '--name-only').split() + git('ls-files', '-o', '--exclude-standard').split()))
+    stamp = []
+    for rel in loose:
+        try:
+            st = os.stat(os.path.join(DATA, rel))
+            stamp.append('%s %d %d' % (rel, st.st_size, st.st_mtime_ns))
+        except OSError:
+            stamp.append(rel + ' gone')
+    return hashlib.sha1((git('ls-files', '-s') + '\n'.join(stamp)).encode('utf-8')).hexdigest()
+
+
+def read_cache():
+    try:
+        with open(CACHE, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
 # A test that needs an argument to know what it tests
 ARGS = {'scripts/audit/test_automove_cast.lua': ['shared/utils/movement/automove.lua'],
         # every character's jobs with 2 subjobs each; the whole sweep and the broken files: run it by hand
@@ -69,35 +118,66 @@ def tests(full):
     return [(run, t) for run, t in out if t not in SKIP and (full or t not in SLOW)]
 
 
+def run_one(run, t):
+    start = time.time()
+    exe = sys.executable if run == 'python' else shutil.which(run)
+    if not exe:
+        raise SystemExit('%s not found on the PATH' % run)
+    proc = subprocess.run([exe, t] + ARGS.get(t, []), capture_output=True, text=True,
+                          encoding='utf-8', errors='replace')
+    return proc, time.time() - start
+
+
+def judge(t, proc):
+    text = (proc.stdout + proc.stderr).strip()
+    if t in REPORTS:
+        return 'report', text
+    if proc.returncode == 0:
+        return ('ok' if t not in KNOWN else 'ok (was known)'), text
+    if t in KNOWN and KNOWN[t][1] in text:
+        return 'known', text
+    return 'FAIL', text
+
+
 def main():
     os.chdir(DATA)
-    full, verbose = '--full' in sys.argv, '-v' in sys.argv
+    every = '--all' in sys.argv
+    full, verbose = '--full' in sys.argv or every, '-v' in sys.argv
+    jobs = int(sys.argv[sys.argv.index('-j') + 1]) if '-j' in sys.argv else 6
+    cache, prints = read_cache(), {}
+    for t in WATCH:
+        prints[t] = fingerprint(t)
+    unchanged = {t for t in WATCH if not every and cache.get(t) == prints[t]}
+    todo = tests(full)
+    skipped = [x for x in todo if x[1] in unchanged]
+    todo = [x for x in todo if x[1] not in unchanged]
+    together, alone = [x for x in todo if x[1] not in ALONE], [x for x in todo if x[1] in ALONE]
+    done = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, jobs)) as pool:
+        for x, res in zip(together, pool.map(lambda x: run_one(*x), together)):
+            done[x] = res
+    for x in alone:
+        done[x] = run_one(*x)
     rows, failed = [], 0
-    for run, t in tests(full):
-        start = time.time()
-        exe = sys.executable if run == 'python' else shutil.which(run)
-        if not exe:
-            raise SystemExit('%s not found on the PATH' % run)
-        proc = subprocess.run([exe, t] + ARGS.get(t, []), capture_output=True, text=True,
-                              encoding='utf-8', errors='replace')
-        took = time.time() - start
-        text = (proc.stdout + proc.stderr).strip()
+    for run, t in todo:
+        proc, took = done[(run, t)]
+        state, text = judge(t, proc)
         last = text.splitlines()[-1].strip() if text else ''
-        if t in REPORTS:
-            state = 'report'
-        elif proc.returncode == 0:
-            state = 'ok' if t not in KNOWN else 'ok (was known)'
-        elif t in KNOWN and KNOWN[t][1] in text:
-            state = 'known'
-        else:
-            state = 'FAIL'
-            failed += 1
+        failed += state == 'FAIL'
         rows.append((state, took, t, KNOWN[t][0] if state == 'known' else last))
         if verbose or state == 'FAIL':
             print('---- %s %s\n%s\n' % (state, t, text[-4000:]))
+        # a pass kept with what its files were when it started
+        if t in WATCH and state == 'ok':
+            cache[t] = prints[t]
+    with open(CACHE, 'w', encoding='utf-8') as f:
+        json.dump(cache, f, indent=1)
+    for run, t in skipped:
+        rows.append(('skip', 0.0, t, 'none of its files changed since it last passed (--all runs it)'))
     for state, took, t, note in rows:
         print('%-15s %6.1fs  %-48s %s' % (state, took, t, note[:90]))
-    print('\n%d run, %d failed%s' % (len(rows), failed, '' if full else ' (quick set; --full for the slow ones)'))
+    print('\n%d run, %d failed%s%s' % (len(rows) - len(skipped), failed, ', %d skipped' % len(skipped) if skipped else '',
+                                       '' if full else ' (quick set; --full for the slow ones)'))
     return 1 if failed else 0
 
 

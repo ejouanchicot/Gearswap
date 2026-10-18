@@ -77,14 +77,19 @@ def main():
         print('aucun fichier .lua trouve%s' % (' sous ' + subtree if subtree else ''))
         return 0
 
+    # one Lua for every file (one each took minutes): it reads the paths, one a line, and writes
+    # "<path>\t<error>" for each file that does not parse
+    code = ("for p in io.stdin:lines() do local f, e = loadfile(p); "
+            "if not f then io.write(p, '\\t', (tostring(e):gsub('\\n', ' ')), '\\n') end end")
+    paths = {os.path.join(REPO, rel).replace('\\', '/'): rel for rel in files}
+    r = subprocess.run([lua, '-e', code], input='\n'.join(paths) + '\n', capture_output=True,
+                       text=True, encoding='utf-8', errors='replace', cwd=REPO)
     failures = []
-    for rel in files:
-        code = "local f, e = loadfile([[%s]]); if not f then io.write(tostring(e)) end" % (
-            os.path.join(REPO, rel).replace('\\', '/'))
-        r = subprocess.run([lua, '-e', code], capture_output=True, text=True, cwd=REPO)
-        msg = r.stdout.strip()
-        if msg:
-            failures.append((rel, msg))
+    for line in r.stdout.splitlines():
+        p, _, msg = line.partition('\t')
+        failures.append((paths.get(p, p), msg.strip()))
+    if r.returncode != 0:
+        failures.append(('(lua)', (r.stderr or 'exit %d' % r.returncode).strip()))
 
     live = sum(1 for f in files if f.split('/')[0] in LIVE_FOLDERS)
     print('%d fichiers .lua controles (%d dans les dossiers personnages)'
