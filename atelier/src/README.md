@@ -42,6 +42,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   ce que donne chaque membre, la cible, ce que ça change pour le set ouvert, le total). Restent à l'ancienne page : la
   barre des profils et les onglets des situations (`profiles.js`), le panneau du membre choisi (`pbYouBody`,
   `pbBody`), le choix de la cible et les autres debuffs (`buff_panels.js`), la liste des sets à gauche (étape 5).
+- **Étape 4b (2026-10-18)** : le panneau du membre choisi (`screens/combat/panel.ts`, `Panel.svelte` : un
+  formulaire en données, sections → lignes → contrôles, pour toi, GEO, BRD, COR, WHM, RDM, SCH et les jobs à
+  capacités). Restent à l'ancienne page, parce qu'ils y sont aussi dessinés ailleurs : la barre des profils et les
+  situations (leur forme courte au-dessus des sets, étape 5), la cible et les autres debuffs (l'ancienne fenêtre des
+  buffs, étape 7), la ligne de l'aftermath, les puces des rolls, Warcry et Haste Samba (`buff_panels.js`).
 
 ## Vérifier une étape
 

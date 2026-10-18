@@ -1,8 +1,9 @@
 // GearSwap Atelier · Buffs & target: what the page counts in all its figures, the party as the game's list (you, then
 // each member, each tab saying what it gives), the chosen member's buttons under them, the target, what all of it
-// changes for the set opened on the left (one figure a situation) and the total of every buff.
+// changes for the set opened on the left (one figure a situation) and the total of every buff; the member's panel is
+// panel.ts.
 // The rules are the old page's renderCombatParty, pbGives, pbImpact, pbResult (party_builder.js). Still the old page's
-// HTML: the profiles' bar and the situations' tabs (profiles.js), the member's panel (pbYouBody / pbBody), the target
+// HTML: the profiles' bar and the situations' tabs (profiles.js), the target
 // picker and the other debuffs (buff_panels.js buffPanelHTML), the sets on the left (the Sets screen's, step 5). A
 // field ending in Html is one of the old page's texts it wrote unescaped. The buttons keep the attributes the old
 // handlers read (data-pbtab, data-pbdel, data-pbaddopen, data-buffundo, data-buffendgame, data-buffreset,
@@ -10,6 +11,7 @@
 //
 // @file    atelier/src/screens/combat/combat.ts
 // @author  ejouanchicot
+import {memberPanel, youPanel, type PanelView} from './panel';
 
 export interface Gives { text: string; neg: boolean }
 export interface PartyTab { key: string; label: string; sub: string; emblemHtml: string; del: boolean; gives: Gives[]; selected: boolean }
@@ -22,7 +24,7 @@ export interface CombatView {
     reset: {title: string; textHtml: string; disabled: boolean}};
   profBarHtml: string;
   sitTabsHtml: string;
-  party: {title: string; count: string; tabs: PartyTab[]; add: null | {title: string; label: string; left: string}; you: boolean; bodyHtml: string;
+  party: {title: string; count: string; tabs: PartyTab[]; add: null | {title: string; label: string; left: string}; you: boolean; panel: PanelView;
     removeTitle: string; nothing: string};
   target: {title: string; meta: string; html: string};
   impact: {title: string; note: string; set: string; what: string; ws: boolean; rows: ImpactRow[]};
@@ -68,7 +70,7 @@ function partyOf(d: LegacyExport, b: LegacyAny, B: LegacyAny, shown: string[]): 
   }));
   return {title: t('pbTitle'), count: `${shown.length + 1} / ${PB_MAX}`, tabs, removeTitle: t('pbRemove'), nothing: t('pbNothing'),
     add: shown.length + 1 < PB_MAX ? {title: t('ttPbAdd'), label: t('pbAdd'), left: t('pbAddLeft', {n: PB_MAX - shown.length - 1})} : null,
-    you: cur === 'you', bodyHtml: cur === 'you' ? pbYouBody(b) : pbBody(cur, b, shown)};
+    you: cur === 'you', panel: cur === 'you' ? youPanel(b) : memberPanel(cur, b, shown)};
 }
 
 // the figure of a situation against the one in use, as a percentage (lower is better for a time)
@@ -114,7 +116,7 @@ export function combatView(): CombatView | null {
   const side = setListHTML(d);
   if (side.vis.length) st()._curSet = shownSet(side.cards[side.sel], side.sel);
   const b = buffState(), n = buffCount();
-  buffPanelHTML();   // its parts: your own abilities, the target picker, the other debuffs (st()._bparts)
+  buffPanelHTML();   // its parts: your own abilities, the target picker, the other debuffs (S._bparts)
   const P = st()._bparts || {}, shown: string[] = pbShown(b), B = buffTotals();
   const undo = st()._buffUndo && st()._buffUndo.key === buffKey() ? {title: t('pbUndoTip', {w: st()._buffUndo.what}), text: t('pbUndo')} : null;
   return {
