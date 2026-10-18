@@ -54,6 +54,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   l'ancienne page : la ligne au-dessus des sets (`ui2CtxBar`), la tête des catégories, les marques et actions d'une
   ligne, tes sections à toi, le haut de la liste et son menu (`list_prefs.js`), la fiche du set (étape 5b) et la
   colonne de ses chiffres (étape 5c).
+- **Étape 5b (2026-10-18)** : la fiche du set (`screens/sets/card.ts`, `Card.svelte` : sa tête et ses versions,
+  en rangée ou en grille pour les weaponskills DNC, les seize cases d'équipement, la ligne sous elles). Restent à
+  l'ancienne page : le titre et les menus des armes (`setTitleBox`, `weaponMenus`), la tête d'un weaponskill
+  (`ws_page.js`), la barre de l'essai (`trial.js`), le bouton pour équiper (`live.js`), la légende, les notes, les
+  chiffres du set (étape 5c) et la page de l'optimiseur (étape 6).
 
 ## Vérifier une étape
 

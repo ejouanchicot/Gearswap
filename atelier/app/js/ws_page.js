@@ -139,7 +139,7 @@ function wsHeadHTML(card, ci, vi, s){
   if (!wsOfSet(s)) return `<p class="muted small wsbase">${t('wsBaseNote')}</p>`;
   // a job with a stance or a switch on its weapons keeps the full weapon picker, under the lines
   const weapon = wsWeaponLine(s, line), inGrid = weapon.startsWith('<div class="wsline"');
-  // its versions are under the set's title (sets_view.js setVersionsHTML)
+  // its versions are under the set's title (atelier/src/screens/sets/card.ts versionsOf)
   return `<div class="wshead">${inGrid ? weapon : ''}${wsTpLine(s, line)}</div>${inGrid ? '' : weapon}`;
 }
 const itemOf = name => (window.FFXI && FFXI.opt && FFXI.opt.item && name) ? FFXI.opt.item(name) : null;

@@ -60,19 +60,6 @@ function legendHTML(holds){
     item('<i class="miss"></i>', 'lg_missing', 'lgT_missing', !holds.missing.length) + item('<i class="short"></i>', 'lg_short', 'lgT_short', !holds.short.length) +
     item('<i class="porter"></i>', 'lg_porter', 'lgT_porter', !holds.porter.length) + `</div><p class="eqhint">${t('lgHint')}</p>`;
 }
-function slotHTML(s, ci, slot, own, q, eff){
-  const p = eff.pieces[slot], label = SLOT_NAMES[S.lang][slot], tried = eff.tried[slot];
-  // locked for the optimizers (trial.js): a padlock in the corner
-  const lock = isLocked(s, slot) && LOCKABLE(slot) ? `<span class="lk" title="${esc(t('lockTip'))}"><svg viewBox="0 0 12 12" width="9" height="9" aria-hidden="true"><path d="M3.5 5V3.6a2.5 2.5 0 0 1 5 0V5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="5" width="8" height="6" rx="1.2" fill="currentColor"/></svg></span>` : '';
-  const reset = tried ? `<span class="unslot" role="button" tabindex="0" data-unslot="${slot}" data-card="${ci}" title="${t('tryReset')}">↺</span>` : '';
-  if (!p) return `<button class="slot empty ${tried?'tried':''} ${lock ? 'locked' : ''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : —">${reset}${lock}<span class="elbl">${label}</span></button>`;
-  const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot), hit = q && p.name.toLowerCase().includes(q);
-  const r = pieceStats(p, slot), augmented = r && Object.keys(r.aug).length;
-  // the name, its stats, base and augments are in the hover card (showTip)
-  const hold = holdState(slot, p);
-  return `<button class="slot ${inh?'inh':''} ${weap?'weap':''} ${hit?'hit':''} ${tried?'tried':''} ${lock ? 'locked' : ''} ${hold ? 'own-' + hold : ''}" data-card="${ci}" data-slot="${slot}" aria-label="${label} : ${esc(p.name)}${hold ? ' · ' + t('lg_' + hold) : ''}">` +
-    `${reset}${lock}${icon(p.name)}${augmented?'<span class="mk">◆</span>':''}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}</button>`;
-}
 // The variants of a card, laid out like the weapon rows: a label, then its buttons. A variant with
 // its own variants (Savage Blade · TPBonus) keeps them stuck to it; weaponskills go one row per
 // combat skill (export ws_skill), the others in one row
@@ -136,99 +123,10 @@ function wsTitleHTML(s, acts = ''){
   return setTitleBox((wsSkills()[ws] || '') + ' · ' + t('wsKickOne'), esc(ws) + (version ? ` <span class="wsver">· ${esc(version)}</span>` : ''),
     facts.length ? `<span class="wsfacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</span>` : '', facts.join(' · '), s.path, acts);
 }
-// The versions of the set shown (Full = the set itself, Group, Solo, Trust, or its other variants), right under its
-// title as one row of buttons: the list of sets has one line a set, its versions are chosen here. The row keeps its
-// place when the set has no version (nothing under it moves from a set to the next)
-function setVersionsHTML(card, ci, vi){
-  const groups = [...variantGroups(card).groups.values()];
-  const cur = groups.find(g => g.main === vi || g.subs.some(x => x.i === vi)) || (card.fam === 'ws' ? groups[0] : null);
-  if (!cur || !cur.subs.length) return `<div class="setvers none"></div>`;
-  const tiers = cur.subs.some(x => /^(Group|Solo|Trust)$/.test(x.label));
-  // an enhancing set's versions read as their target (stat_opt.js enhTarget): "Composure" is the one cast on the others
-  // (the set itself and its Composure version only: any other version keeps its own name)
-  const shown = (i, txt) => { const v = card.variants[i], on = enhTarget(v.set);
-    return on && (v.label === 'Base' || /composure/i.test(v.label)) ? t('enhBtn' + on) : txt; };
-  const btn = (i, txt) => `<button aria-pressed="${i === vi}" data-card="${ci}" data-variant="${i}" title="${esc(T[S.lang]['ttVer' + txt] ? t('ttVer' + txt) : t('ttVer'))}">${esc(shown(i, txt))}</button>`;
-  const grid = tiers ? versionGridHTML(cur, btn) : '';
-  if (grid) return `<div class="setvers grid"><span class="kicker">${esc(t('verLbl'))}</span>${grid}</div>`;
-  return `<div class="setvers"><span class="kicker">${esc(t('verLbl'))}</span><div class="verseg" role="group">` +
-    (cur.main != null ? btn(cur.main, tiers ? 'Full' : t('verSet')) : '') + cur.subs.map(x => btn(x.i, x.label)).join('') + `</div></div>`;
-}
-// A set with versions of two kinds (a DNC weaponskill: a dance, Climactic Flourish, each with its support versions:
-// up to 24): a table, one line a buff version (the set itself first, then Clim, then each dance and its Clim), one
-// column a support profile; a version the file does not write is a dash. One kind only: the row of buttons above
-function versionGridHTML(cur, btn){
-  const cell = (i, label) => { const parts = label.split(' · '), tier = TIER_LABELS.includes(parts[parts.length - 1]) ? parts.pop() : 'Full'; return {i, tier, row: parts.join(' · ')}; };
-  const cells = (cur.main != null ? [{i: cur.main, tier: 'Full', row: ''}] : []).concat(cur.subs.map(x => cell(x.i, x.label)));
-  const rows = [...new Set(cells.map(c => c.row))];
-  if (rows.length < 2) return '';
-  const rank = r => !r ? '' : (r.split(' · ')[0] === 'Clim' ? '0' : '1') + r;
-  rows.sort((a, b) => rank(a).localeCompare(rank(b)));
-  const cols = ['Full'].concat(TIER_LABELS.filter(x => cells.some(c => c.tier === x)));
-  const at = (r, tier) => cells.find(c => c.row === r && c.tier === tier);
-  return `<div class="vergrid" role="group" style="--n:${cols.length}"><span></span>${cols.map(c => `<span class="vh">${esc(c)}</span>`).join('')}` +
-    rows.map(r => `<span class="vr">${esc(r || t('verSet'))}</span>` + cols.map(c => { const x = at(r, c); return x ? btn(x.i, c) : '<i class="vnone">—</i>'; }).join('')).join('') + `</div>`;
-}
-// The top of a set other than a weaponskill's: what it is on the left (its family, when it is worn, its
-// name and variant, its path), its variants and the weapons it is shown with on the right
-function setHeadHTML(card, ci, vi, s, acts){
-  const when = t('famWhen.' + card.fam), label = card.variants[vi].label;
-  const fam = t('fam.' + card.fam), name = niceName(card);
-  // an enhancing set: on whom it is cast, beside its name and as the line under it (stat_opt.js enhTarget)
-  const on = enhTarget(s), tag = on ? ` <span class="wsver">· ${esc(t('enhTag' + on))}</span>` : '';
-  // what the set is, on the whole width in one or two lines: its family, name and variant, when it is worn, its path
-  const title = setTitleBox(fam !== name ? fam : '', esc(name) + (label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : '') + tag,
-    on ? `<span class="muted small setwhen">${esc(t('enhWhen' + on))}</span>` : when ? `<span class="muted small setwhen">${esc(when)}</span>` : '', '', s.path, acts);
-  // the weapons' menus side by side under the versions, a label over each
-  const pick = (lbl, body) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
-  const menus = weaponMenus(s), tipOf = desc => desc && desc.replace(/\s+/g, '').toLowerCase() !== 'mainweapon' ? desc + ' · ' + t('ttWeapon') : t('ttWeapon');
-  // the weapon states as in game, then what the job's GearSwap puts with them (off hand, ammo)
-  const picks = (menus ? menus.map(([name, sel, desc]) => pick(name, sel).replace('<span class="wslbl">', `<span class="wslbl" title="${esc(tipOf(desc))}">`).replace('<select class="wmenu', `<select title="${esc(tipOf(desc))}" class="wmenu`)).join('') : '') +
-    (family(s.path, s.pieces) !== 'weapons' ? weaponResultLines(s, pick) : '');
-  const bar = `<div class="setctl"><div class="wpicks">${picks}</div></div>`;
-  return `<div class="settop">${title}${setVersionsHTML(card, ci, vi)}${bar}</div>`;
-}
 function familyNoteHTML(card, s){
   if (!card.variants.some(v => familyNote(v.set))) return '';
   const text = familyNote(s);
   return `<p class="famnote ${text ? '' : 'none'}">${text}</p>`;
-}
-function cardHTML(card, ci, bypath, q){
-  const vi = Math.min(S.variant[S.job+'|'+ci] ?? 0, card.variants.length-1);
-  const s = card.variants[vi].set; const base = s.base ? bypath[s.base] : null;
-  // the set every figure of the card reads (aftermath, the abilities a family of sets offers): this one, not the last one
-  S._curSet = s;
-  const own = new Set(s.own || Object.keys(s.pieces)), eff = withWeapons(s);
-  const slots = SLOTS.map(slot => slotHTML(s, ci, slot, base ? own : new Set(SLOTS), q, eff)).join('');
-  const foot = [];
-  if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits',{b:'<b>'+esc(shortPath(s.base))+'</b>'})} · ${n?t('changed',{n}):t('nothingChanged')}`); }
-  else foot.push(`<span title="${esc(t('ttDefined'))}">${Object.keys(s.pieces).length ? t('defined',{n:'<b>'+Object.keys(s.pieces).length+'</b>'}) : t('emptySet')}</span>`);
-  if (s.aliases && s.aliases.length) foot.push(`<details><summary>${t('sharedCount', {n: s.aliases.length})}</summary><p>${s.aliases.map(a => esc(shortPath(a))).join(' · ')}</p></details>`);
-  const holds = {missing: [], short: [], porter: []};
-  for (const slot of SLOTS) { const st = holdState(slot, eff.pieces[slot]); if (st && !holds[st].includes(eff.pieces[slot].name)) holds[st].push(eff.pieces[slot].name); }
-  // at the Porter Moogle: which slip, to take it out
-  const slipOf = n => [...new Set(Object.values(ownedOf()).flat().filter(x => x.name === n).flatMap(x => x.where || []))].map(w => w.replace(/^Slip/, 'slip')).join(', ');
-  if (holds.porter.length) foot.push(`<span class="holdporter">${t('holdPorter', {l: esc(holds.porter.map(n => n + ' (' + slipOf(n) + ')').join(', '))})}</span>`);
-  if (holds.missing.length) foot.push(`<span class="holdmiss">${t('holdMissing', {l: esc(holds.missing.join(', '))})}</span>`);
-  if (holds.short.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short.join(', '))})}</span>`);
-  // the legend, always in sight on one line under the grid (legendHTML): folded, its title took the room it needs
-  const legend = legendHTML(holds);
-  const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws', head = ws ? wsTitleHTML(s) : '';
-  // the page in three bands: what the set is (a weaponskill set: the weaponskill, what its figures are worked out with),
-  // the equipment beside its stats, then the optimizer on the whole width
-  const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || isNukeSet(s.path) || roundSet(s) || statSet(s));
-  if (optable && optPageOpen(s)) return optPageHTML(s, ws && wsOfSet(s));
-  // its actions on the title line: the optimizer, then deleting it
-  const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview title="${esc(t('ttOptOpen'))}">${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;
-  const top = ws ? `<div class="settop">${wsTitleHTML(s, acts)}${wsOfSet(s) ? setVersionsHTML(card, ci, vi) : '<div class="setvers none"></div>'}` +
-      (wsOfSet(s) ? `<div class="setctl">${wsHeadHTML(card, ci, vi, s)}</div>` : '') + `</div>`
-    : setHeadHTML(card, ci, vi, s, acts);
-  // a family's note and a base set's go under the gear, where nothing is left to push down (over it, the gear moved
-  // from a set with a note to one without)
-  const notes = familyNoteHTML(card, s) + (locked && !ws ? `<p class="famnote">${esc(t('baseOnly', {l: data().sets.filter(x => x.base === s.path).map(x => shortPath(x.path)).join(', ')}))}</p>` : '');
-  return `<article class="detail"><header>${top}${trialBar(s)}</header>
-    <div class="dbody"><div class="eqcol"><div class="slotcol"><div class="slots">${slots}</div>${equipBtnHTML()}</div><footer>${foot.map(f => '<span>'+f+'</span>').join('')}</footer>${ui2() ? ui2Wants(s) : ''}${legend}${notes}</div>${ui2() ? '' : setStatsHTML(s)}</div>
-    <div class="globals-inline">${(S._globals = {s, html: ui2() ? setPanelHTML(s) : globalsHTML(s)}).html}</div></article>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 // The game on this job with another subjob than the page shows (the live link, live.js): every figure is then the other
