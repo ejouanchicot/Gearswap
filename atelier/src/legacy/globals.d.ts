@@ -111,5 +111,53 @@ declare function stateElsewhere(d: LegacyExport, name: string): boolean;
 declare function modeHidden(m: LegacyMode): boolean;
 declare function macroAlt(d: LegacyExport): string | null;
 declare function bookFor(d: LegacyExport, alt?: string | null): {book: number; page: number} | null;
-/** The Modules part, still the old page's HTML (modules.js) */
-declare function renderModules(d: LegacyExport): string;
+
+// ---- the Modules part (modules.js, module_ux.js, module_rest_fr.js, module_catalog.js) ----
+/** A setting of a config file, as the page's Lua reader gives it (modules.js luaSettings) */
+interface LegacyField {
+  key?: string; index?: number; path: string; kind: string; value: unknown; fields: LegacyField[];
+  doc?: string[]; note?: string; a: number; b: number;
+}
+/** A config file of the export (atelier_configs.lua) */
+interface LegacyConfigFile { file: string; text: string; hash?: string; scope: 'job' | 'common' }
+interface LegacyParsed { head: {name?: string; tag?: string; about?: string}; fields: LegacyField[]; byPath: Record<string, LegacyField> }
+/** An option of the catalog (module_catalog.js) */
+interface LegacyCatalogItem { file?: string; key?: string; only?: string; when?: string; choices?: unknown[]; rgb?: boolean; presets?: unknown; cols?: unknown; [k: string]: unknown }
+interface LegacyFamily { id: string; group: string; fr: string; en: string; tip: [string, string]; use?: [string, string]; items: LegacyCatalogItem[] }
+interface LegacyGroup { id: string; fr: string; en: string }
+/** One option of a family that a file of the character holds (modules.js mcRows) */
+interface LegacyCatalogRow { it: LegacyCatalogItem; f: LegacyConfigFile; x: LegacyField; id: string; title: string; desc: string }
+interface LegacyEdit { v: unknown; before: string; after: string; src: string }
+
+declare const MOD_CATALOG: LegacyFamily[];
+declare const MOD_GROUPS: LegacyGroup[];
+declare function modShown(d: LegacyExport): LegacyConfigFile;
+declare function modCount(): number;
+declare function modParsed(f: LegacyConfigFile): LegacyParsed;
+declare function modEdits(file: string): Record<string, LegacyEdit | undefined>;
+declare function modCanWrite(f: LegacyConfigFile): boolean;
+declare function modRestFr(file: string, path: string): null | {title: string; desc: string; map?: boolean};
+declare function modName(x: LegacyField): string;
+declare function modDoc(lines?: string[]): string;
+declare function modValue(file: string, path: string): unknown;
+declare function modFileInfo(f: LegacyConfigFile): {name: string; what: string};
+declare function modKnown(d: LegacyExport, f: LegacyConfigFile): Record<string, LegacyCatalogRow>;
+declare function modFileGroup(f: LegacyConfigFile): string;
+declare function modGroupName(g: LegacyGroup): string;
+declare function mcRows(d: LegacyExport, fam: LegacyFamily): LegacyCatalogRow[];
+declare function mcScope(d: LegacyExport, r: LegacyCatalogRow): {cls: string; text: string; tip: string};
+/** A setting's control (switch, choices, number, chips, rows, colour...), as the old page's HTML */
+declare function modControl(f: LegacyConfigFile, x: LegacyField, val: unknown, id: string, off: string, lopts?: unknown): string;
+declare function mcControl(r: LegacyCatalogRow, val: unknown, id: string, off: string): string;
+declare function mxColorMap(x: LegacyField): unknown;
+declare function mxColorList(f: LegacyConfigFile, x: LegacyField): boolean;
+declare function modColorMap(f: LegacyConfigFile, x: LegacyField, off: string): string;
+declare function mxTitle(file: string, path: string): string;
+declare function mxCut(text: unknown): string;
+declare function mxNorm(text: unknown): string;
+declare function mxHit(words: string[], ...texts: unknown[]): boolean;
+declare function mxValText(v: unknown): string;
+declare const MX_MAX: number;
+declare function liveOk(char?: string): boolean;
+declare const JOB_GUIDE_FR: Record<string, [string, Array<[string, string]>] | undefined>;
+declare const JOB_GUIDE_EN: Record<string, [string, Array<[string, string]>] | undefined>;

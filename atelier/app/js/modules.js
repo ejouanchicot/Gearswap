@@ -319,24 +319,6 @@ function modKnown(d, f){
   for (const fam of MOD_CATALOG) for (const r of mcRows(d, fam)) if (r.f === f) known[r.x.path] = r;
   return known;
 }
-// The rest of a file: `skip` holds the paths shown above (a table whose every setting is shown above is left out)
-let MOD_SKIP = {};
-const modAllSkipped = x => x.kind === 'map' ? x.fields.length > 0 && x.fields.every(modAllSkipped) : !!MOD_SKIP[x.path];
-function modRowHTML(f, x, depth){
-  if (modAllSkipped(x)) return '';
-  const ed = modEdits(f.file)[x.path], val = ed ? ed.v : x.value, off = modCanWrite(f) ? '' : 'disabled', id = `data-modfile="${esc(f.file)}" data-modpath="${esc(x.path)}"`;
-  // in French, the setting's name and what it does are the page's own (module_rest_fr.js); else the file's comments
-  const rest = modRestFr(f.file, x.path), fr = S.lang === 'en' ? null : rest, name = fr ? fr.title : modName(x);
-  const doc = fr ? fr.desc : [modDoc(x.doc), x.note].filter(Boolean).join('\n');
-  const key = `<div class="modk"><b>${esc(name)}</b>${x.key != null && name !== x.key ? `<code>${esc(x.key)}</code>` : ''}${doc ? `<p>${esc(doc)}</p>` : ''}</div>`;
-  // a table that holds a colour (r g b): the colour itself on its line, its three numbers under it
-  const tint = mxColorMap(x) ? `<div class="modv">${modColorMap(f, x, off)}</div>` : '';
-  if (x.kind === 'map') return `<div class="modrow grp ${tint ? 'tint' : ''}" style="--d:${depth}">${key}${tint}</div>` + x.fields.map(c => modRowHTML(f, c, depth + 1)).join('');
-  // an empty table of named entries looks like an empty list: it is shown, not changed here
-  const named = rest && rest.map && x.kind === 'list' && !x.fields.length;
-  const ctl = named ? `<details class="modadv"><summary>${esc(t('modNamed'))}</summary><pre class="modcode">${esc(f.text.slice(x.a, x.b))}</pre></details>` : modControl(f, x, val, id, off);
-  return `<div class="modrow ${ed ? 'changed' : ''} ${x.kind === 'code' || (x.kind === 'list' && !mxColorList(f, x)) || x.kind === 'rows' ? 'tall' : ''}" style="--d:${depth}">${key}<div class="modv">${ctl}</div></div>`;
-}
 // A group's name (module_catalog.js MOD_GROUPS), and the files of the advanced view ranged in the same groups
 const modGroupName = g => (S.lang === 'en' ? g.en : g.fr).split('{JOB}').join(S.job || '');
 function modFileGroup(f){
@@ -344,22 +326,8 @@ function modFileGroup(f){
   const base = f.file.split('/').pop();
   return MOD_FILE_GROUP[base] || MOD_FILE_GROUP[base.replace(/^[A-Z]{3}_/, '{JOB}_')] || 'tools';
 }
-// A group of the left column: folded until the player opens it (S.modGrp, kept), the one that holds what is shown open
-// by itself. Folded, it says how many entries it holds and how many changes wait inside
-function modGroupHTML(g, n, has, changed, inner){
-  const said = (S.modGrp || {})[g.id], open = said == null ? has : said;
-  return `<div class="modgrp ${open ? 'open' : ''}"><button class="modgrph" data-modgrp="${g.id}" data-open="${open}" aria-expanded="${open}" title="${esc(t(open ? 'ttGrpFold' : 'ttGrpOpen'))}">` +
-    `<i aria-hidden="true">▸</i><b>${esc(modGroupName(g))}</b>${changed ? `<em class="moddot">${changed}</em>` : ''}<small>${n}</small></button>${open ? inner : ''}</div>`;
-}
-function modListHTML(d, cur){
-  const files = modFiles(d);
-  return MOD_GROUPS.map(g => { const list = files.filter(f => modFileGroup(f) === g.id);
-    const changed = list.reduce((n, f) => n + Object.keys(modEdits(f.file)).length, 0);
-    return !list.length ? '' : modGroupHTML(g, list.length, list.includes(cur), changed, list.map(f => { const n = Object.keys(modEdits(f.file)).length, info = modFileInfo(f);
-      return `<button class="modfile" data-modopen="${esc(f.file)}" aria-current="${f === cur}" title="${esc(info.what || info.name)}"><b>${esc(info.name)}</b>` +
-        `<small>${esc(f.file.split('/').pop())}</small>${n ? `<i class="moddot">${n}</i>` : ''}</button>`; }).join('')); }).join('');
-}
 /* ---- the simple view: the catalog's options (module_catalog.js), by family, in the player's words ---- */
+// (the Modules part is drawn by the Svelte application: atelier/src/screens/config/modules.ts reads what follows)
 // The options of one family that this character's files hold, each with its file, its setting and its texts
 function mcRows(d, fam){
   const files = modFiles(d), job = S.job || '', sub = d.sub || '', lang = S.lang === 'en' ? 'en' : 'fr', rows = [], seen = new Set();
@@ -398,75 +366,6 @@ function mcControl(r, val, id, off){
   if (r.it.choices) return `<span class="modseg">${r.it.choices.map((c, i) => `<button data-mcchoice="${r.id}:${i}" ${id} aria-pressed="${c[0] === val}" ${off} ${modTip(off, c[0] === val ? 'ttModChosen' : c[0] === 'auto' ? 'ttModAuto' : 'ttModChoose', {v: c[lang]})}>${esc(c[lang])}</button>`).join('')}</span>`;
   if (r.it.rgb) return modColorMap(r.f, r.x, off) + (r.it.presets ? modPresets(r.f, r.x, r.it.presets, off) : '');
   return modControl(r.f, r.x, val, id, off, r.it);
-}
-function mcCardHTML(d, r){
-  const ed = modEdits(r.f.file)[r.x.path], val = ed ? ed.v : r.x.value, off = modCanWrite(r.f) ? '' : 'disabled', sc = mcScope(d, r);
-  const id = `data-modfile="${esc(r.f.file)}" data-modpath="${esc(r.x.path)}"`;
-  const part = r.it.rgb && r.x.fields.some(c => modEdits(r.f.file)[c.path]);
-  return `<div class="mccard ${ed || part ? 'changed' : ''} ${r.x.kind === 'list' || r.x.kind === 'rows' || r.it.presets ? 'tall' : ''}"><div class="mck"><b>${esc(r.title)}</b>${r.desc ? `<p>${esc(r.desc)}</p>` : ''}` +
-    `<span class="mcscope ${sc.cls}" title="${esc(sc.tip)}">${esc(sc.text)}</span></div>` +
-    `<div class="modv">${mcControl(r, val, id, off)}</div></div>`;
-}
-// The presentation: for a player who has never seen this GearSwap. What it does on the job shown (job_guide_fr.js,
-// job_guide_data.js), then each module in a sentence with the way to its options
-function mcIntroHTML(fams, name){
-  const job = S.job || '', lang = S.lang === 'en' ? 1 : 0, g = (lang ? JOB_GUIDE_EN : JOB_GUIDE_FR)[job] || (lang ? null : JOB_GUIDE_EN[job]) || ['', []];
-  const points = g[1].map(([b, text]) => `<li>${b ? `<b>${esc(b)}</b>` : ''}<span>${esc(text)}</span></li>`).join('');
-  const card = x => `<button class="mcmod" data-modfam="${x.fam.id}" title="${esc(t('ttIntroGo', {f: name(x.fam)}))}">` +
-    `<b>${esc(name(x.fam))}</b><span>${esc(x.fam.tip[lang])}</span><i>${esc(t('modSettings', {n: x.rows.length}))} →</i></button>`;
-  // every module that is not the job's own, group by group: what this GearSwap does on any job
-  const groups = MOD_GROUPS.filter(gr => gr.id !== 'job').map(gr => { const list = fams.filter(x => x.fam.group === gr.id && x.rows.length);
-    return list.length ? `<h5>${esc(modGroupName(gr))}</h5><div class="mcmods">${list.map(card).join('')}</div>` : ''; }).join('');
-  const own = fams.find(x => x.fam.id === 'job');
-  return `<div class="mccards mcintro"><section><h4>${esc(t('mcIntroJob', {j: job}))}</h4>${g[0] ? `<p class="mclead">${esc(g[0])}</p>` : ''}${points ? `<ul class="mcpoints">${points}</ul>` : ''}` +
-    `<p class="mcnext">${t('mcIntroWhere')} <button class="linkbtn" data-jobtab="keys">${esc(t('sectionsKeys'))}</button> · <button class="linkbtn" data-jobtab="modes">${esc(t('sectionsModes'))}</button> · ` +
-    `<button class="linkbtn" data-jobtab="functions">${esc(t('sectionsFunctions'))}</button>` + (own && own.rows.length ? ` · <button class="linkbtn" data-modfam="job">${esc(t('mcIntroOwn', {n: own.rows.length, j: job}))}</button>` : '') + `</p></section>` +
-    `<section><h4>${esc(t('mcIntroAll'))}</h4><p class="mclead">${esc(t('mcIntroAllWhy'))}</p>${groups}</section></div>`;
-}
-
-function renderModulesSimple(d){
-  const fams = MOD_CATALOG.map(fam => ({fam, rows: mcRows(d, fam)})), name = fam => (S.lang === 'en' ? fam.en : fam.fr).split('{JOB}').join(S.job || '');
-  const intro = !S.modFam || S.modFam === 'intro' || !fams.some(x => x.fam.id === S.modFam && x.rows.length), lang = S.lang === 'en' ? 1 : 0;
-  const cur = intro ? null : fams.find(x => x.fam.id === S.modFam);
-  const changed = x => x.rows.filter(r => modEdits(r.f.file)[r.x.path]).length;
-  // the left column: the presentation, then the modules under the group they belong to; a module with no option for this job is left out
-  const btn = x => `<button class="modfile" data-modfam="${x.fam.id}" aria-current="${x === cur}" title="${esc(x.fam.tip[lang])}"><b>${esc(name(x.fam))}</b>` +
-    `<small>${esc(t('modSettings', {n: x.rows.length}))}</small>${changed(x) ? `<i class="moddot">${changed(x)}</i>` : ''}</button>`;
-  const nav = `<button class="modfile" data-modfam="intro" aria-current="${intro}" title="${esc(t('ttIntro', {j: S.job}))}"><b>${esc(t('mcIntro'))}</b><small>${esc(t('mcIntroSub', {j: S.job}))}</small></button>` +
-    MOD_GROUPS.map(g => { const list = fams.filter(x => x.fam.group === g.id && x.rows.length);
-      return list.length ? modGroupHTML(g, list.length, list.includes(cur), list.reduce((n, x) => n + changed(x), 0), list.map(btn).join('')) : ''; }).join('');
-  if (intro) return `<div class="modlayout"><nav class="modnav box">${nav}</nav><div class="modpanel">` + box('g-attr wide', esc(t('mcIntroTitle', {j: S.job})), mcIntroHTML(fams, name)) + `</div></div>`;
-  const group = MOD_GROUPS.find(g => g.id === cur.fam.group);
-  const about = `<div class="mcabout"><p>${esc(cur.fam.tip[lang])}</p>${cur.fam.use ? `<p class="mcuse"><b>${esc(t('mcInGame'))}</b>${esc(cur.fam.use[lang])}</p>` : ''}</div>`;
-  const body = cur.rows.map(r => mcCardHTML(d, r)).join('');
-  return `<div class="modlayout"><nav class="modnav box">${nav}</nav><div class="modpanel">` +
-    box('g-attr wide', esc(name(cur.fam)), `<div class="mccards">${about}${body}</div>`, `<span class="meta">${esc((group ? modGroupName(group) + ' · ' : '') + t('modSettings', {n: cur.rows.length}))}</span>`) + `</div></div>`;
-}
-
-function renderModules(d){
-  const files = modFiles(d), cur = modShown(d), n = modCount(), all = S.modView === 'files';
-  if (!files.length) return `<div class="keybar"><span>${esc(t('modNone'))}</span></div>`;
-  const views = `<span class="seg modviews" role="group">${[['simple', 'mcSimple'], ['files', 'mcFiles']].map(([v, k]) => `<button data-modview="${v}" aria-pressed="${all === (v === 'files')}" title="${esc(t(k + 'Tip'))}">${esc(t(k))}</button>`).join('')}</span>`;
-  // the search and the views on top (module_ux.js); the changes that wait, each said, in a bar at the bottom
-  const bar = modTop(views, all ? t('modHint') : t('mcHint')), save = modSaveBar(), toast = S.toast ? `<p class="toast">${esc(S.toast)}</p>` : '';
-  if ((S.modQ || '').trim()) return `${bar}${toast}${modSearchHTML(d)}${save}`;
-  if (!all) return `${bar}${toast}${renderModulesSimple(d)}${save}`;
-  // the file opened: what it is and what a change in it reaches; the settings the Options view explains, as there;
-  // then the file's other settings in the file's own words; what is not a plain value last, folded
-  const p = modParsed(cur), info = modFileInfo(cur), known = modKnown(d, cur);
-  MOD_SKIP = known;
-  const plain = p.fields.filter(x => x.kind !== 'code'), code = p.fields.filter(x => x.kind === 'code');
-  const top = Object.values(known).map(r => mcCardHTML(d, r)).join(''), rest = plain.map(x => modRowHTML(cur, x, 0)).join(''), adv = code.map(x => modRowHTML(cur, x, 0)).join('');
-  MOD_SKIP = {};
-  const scope = cur.scope === 'job' ? {cls: 'job', text: t('mcScopeJob', {j: S.job}), tip: t('ttScopeJob', {c: S.char, j: S.job})} : {cls: 'all', text: t('mcScopeAll'), tip: t('ttScopeAll', {c: S.char})};
-  const head = `<div class="mcabout"><p>${esc(info.what)}</p><p class="mcuse"><span class="mcscope ${scope.cls}" title="${esc(scope.tip)}">${esc(scope.text)}</span></p>` +
-    (p.head.about ? `<details class="modabout"><summary>${esc(t('modManual'))}</summary><pre>${esc(p.head.about)}</pre></details>` : '') + `</div>`;
-  const part = (title, why, html) => !html ? '' : !title ? html : `<h4 class="modpart">${esc(title)}${why ? `<small>${esc(why)}</small>` : ''}</h4>${html}`;
-  const body = part(top && (rest || adv) ? t('modPartKnown') : '', '', top) + part(t(top ? 'modPartRest' : 'modPartAll'), S.lang === 'en' ? '' : t('modPartRestWhy'), rest) +
-    (adv ? `<details class="modadvall"><summary>${esc(t('modPartAdv', {n: code.length}))}</summary>${adv}</details>` : '');
-  const panel = box('g-attr wide', esc(info.name), `<div class="modrows">${head}${body || `<p class="muted modnone">${esc(t('modEmpty'))}</p>`}</div>`,
-    `<span class="meta" title="${esc(t('modPathTip'))}">${esc(S.char + '/' + cur.file)}</span>`);
-  return `${bar}${toast}<div class="modlayout"><nav class="modnav box">${modListHTML(d, cur)}</nav><div class="modpanel">${panel}</div></div>${save}`;
 }
 // The file's text with every waiting value put where the old one was (from the end, so the places stay right)
 function modNewText(f, edits){

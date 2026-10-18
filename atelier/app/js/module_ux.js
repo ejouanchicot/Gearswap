@@ -87,52 +87,13 @@ function mxTitle(file, path){
   return up && fr && own.length < 12 ? up + ' · ' + own : own;
 }
 const mxCut = s => { s = String(s); return s === '' ? t('mxEmptyVal') : s.length > 70 ? s.slice(0, 68) + '…' : s; };
-function modSaveBar(){
-  const all = (S._modEdits || {})[S.char] || {}, lines = [];
-  for (const file of Object.keys(all)) for (const path of Object.keys(all[file])) { const e = all[file][path];
-    lines.push(`<li><b>${esc(mxTitle(file, path))}</b><span class="was">${esc(mxCut(e.before))}</span><i aria-hidden="true">→</i><span class="now">${esc(mxCut(e.after))}</span>` +
-      `<button data-modrevert data-modfile="${esc(file)}" data-modpath="${esc(path)}" title="${esc(t('mxRevert'))}" aria-label="${esc(t('mxRevert'))}">×</button></li>`); }
-  if (!lines.length) return '';
-  return `<div class="modsave" role="region"><div class="mshead"><b title="${esc(t('mxWaitTip'))}">${esc(t('mxWait', {n: lines.length}))}</b><span class="sp"></span>` +
-    `<button class="btn ghost" data-modundo title="${esc(t('ttModUndo'))}">${esc(t('mxUndoAll'))}</button><button class="btn" data-modsave title="${esc(t('ttModSave'))}">${esc(t('modSave'))}</button></div><ul>${lines.join('')}</ul></div>`;
-}
 
-/* ---- the search ---- */
+/* ---- the search (what it finds: atelier/src/screens/config/modules.ts searchOf) ---- */
 const mxNorm = s => String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const mxValText = v => Array.isArray(v) ? v.map(mxValText).join(' ') : v && typeof v === 'object' ? Object.values(v).map(mxValText).join(' ') : String(v == null ? '' : v);
 // Every word typed must be found in the option: its name, what it does, its module, what it holds
 const mxHit = (words, ...texts) => { const hay = mxNorm(texts.join(' ')); return words.every(w => hay.includes(w)); };
 const MX_MAX = 60;
-function modSearch(d, q){
-  const words = mxNorm(q).split(/\s+/).filter(Boolean), groups = [], name = fam => (S.lang === 'en' ? fam.en : fam.fr).split('{JOB}').join(S.job || '');
-  let n = 0;
-  const seen = new Set();
-  for (const fam of MOD_CATALOG) {
-    const rows = mcRows(d, fam).filter(r => !seen.has(r.f.file + '|' + r.x.path) && mxHit(words, r.title, r.desc, name(fam), r.x.key, mxValText(modValue(r.f.file, r.x.path))));
-    rows.forEach(r => seen.add(r.f.file + '|' + r.x.path));
-    if (rows.length) { groups.push({title: name(fam), n: rows.length, html: () => rows.map(r => mcCardHTML(d, r)).join('')}); n += rows.length; }
-  }
-  // the settings only the Advanced view holds: by file
-  for (const f of modFiles(d)) {
-    const known = modKnown(d, f), hits = Object.values(modParsed(f).byPath).filter(x => { if (known[x.path] || x.kind === 'map' || x.kind === 'code') return false;
-      const fr = S.lang === 'en' ? null : modRestFr(f.file, x.path); return mxHit(words, fr ? fr.title : modName(x), fr ? fr.desc : modDoc(x.doc), x.key, mxValText(modValue(f.file, x.path))); });
-    if (hits.length) { groups.push({title: t('mxInAdv', {f: modFileInfo(f).name}), n: hits.length, html: () => hits.map(x => modRowHTML(f, x, 0)).join('')}); n += hits.length; }
-  }
-  return {n, groups};
-}
-function modSearchHTML(d){
-  const q = S.modQ.trim(), found = modSearch(d, q); let left = MX_MAX, html = '';
-  for (const g of found.groups) { if (left <= 0) break; html += `<h4 class="modpart">${esc(g.title)}</h4>${g.html()}`; left -= g.n; }
-  const body = found.n ? html + (found.n > MX_MAX ? `<p class="muted modnone">${esc(t('mxMore', {n: MX_MAX}))}</p>` : '') : `<p class="muted modnone">${esc(t('mxNone', {q}))}</p>`;
-  return `<div class="modpanel modfound">` + box('g-attr wide', esc(t('mxFound', {n: found.n, q})), `<div class="modrows">${body}</div>`) + `</div>`;
-}
-// The top bar: the search, the two views; under it, the banner when nothing can be changed
-function modTop(views, hint){
-  const q = S.modQ || '';
-  return `<div class="keybar modtop"><input id="modq" class="tgq" type="search" value="${esc(q)}" placeholder="${esc(t('mxSearch'))}" title="${esc(t('mxSearchTip'))}" autocomplete="off">` +
-    (q ? `<button class="btn ghost" data-modqclear title="${esc(t('mxClearTip'))}">${esc(t('mxClear'))}</button>` : `<span class="modhint">${esc(hint)}</span>`) + views + `</div>` +
-    (liveOk() ? '' : `<div class="modlock"><b>${esc(t('mxLockT'))}</b><span>${esc(t('mxLock', {c: S.char}))}</span></div>`);
-}
 let MX_Q_TIMER = 0;
 document.addEventListener('input', e => {
   if (e.target.id === 'modq') { const v = e.target.value; clearTimeout(MX_Q_TIMER);

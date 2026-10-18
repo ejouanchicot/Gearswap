@@ -8,11 +8,12 @@
 import {keysView, type KeysView} from './keys';
 import {modesView, functionsView, type ModesView, type FunctionsView} from './modes';
 import {macroView, type MacroView} from './macro';
+import {modulesView, type ModulesView} from './modules';
 
 export interface ConfigTab { key: string; label: string; count: number | ''; title: string; pressed: boolean }
 export type ConfigPart =
   | {kind: 'keys'; view: KeysView} | {kind: 'modes'; view: ModesView} | {kind: 'functions'; view: FunctionsView}
-  | {kind: 'macro'; view: MacroView} | {kind: 'modules'; html: string};
+  | {kind: 'macro'; view: MacroView} | {kind: 'modules'; view: ModulesView};
 export interface ConfigView { aria: string; tabs: ConfigTab[]; part: ConfigPart }
 
 const LABELS: Record<string, string> = {keys: 'sectionsKeys', modes: 'sectionsModes', functions: 'sectionsFunctions',
@@ -23,8 +24,7 @@ function partOf(cur: string, d: LegacyExport): ConfigPart {
   if (cur === 'modes') return {kind: 'modes', view: modesView(d)};
   if (cur === 'functions') return {kind: 'functions', view: functionsView(d)};
   if (cur === 'macro') return {kind: 'macro', view: macroView(d)};
-  // the Modules part is still the old page's (modules.js)
-  return {kind: 'modules', html: renderModules(d)};
+  return {kind: 'modules', view: modulesView(d)};
 }
 
 /** The job's settings for the old page's state now, or null when they are not shown */

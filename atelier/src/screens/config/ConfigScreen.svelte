@@ -13,6 +13,7 @@
   import Modes from './Modes.svelte';
   import Functions from './Functions.svelte';
   import Macro from './Macro.svelte';
+  import Modules from './Modules.svelte';
 
   const view = $derived(legacy.version > 0 ? configView() : null);
 </script>
@@ -24,6 +25,6 @@
     {:else if view.part.kind === 'modes'}<Modes view={view.part.view} />
     {:else if view.part.kind === 'functions'}<Functions view={view.part.view} />
     {:else if view.part.kind === 'macro'}<Macro view={view.part.view} />
-    {:else}{@html view.part.html}{/if}
+    {:else}<Modules view={view.part.view} />{/if}
   </div></div></div></div>
 {/if}

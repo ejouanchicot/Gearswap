@@ -24,6 +24,12 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   `screens/topbar/model.ts` (les noms de l'ancienne page qu'il lit sont typés dans `legacy/globals.d.ts`). Ses boutons et
   menus gardent les attributs `data-*` et les classes que lisent encore les gestionnaires de clics de l'ancienne page
   (`events.js`, `packages.js`) : les actions passeront en Svelte avec les écrans qui les utilisent.
+- **Étape 2 (2026-10-18)** : la configuration du job (`screens/config/` : Touches, Modes, Fonctions, Macrobook &
+  lockstyle, Modules, et la liste des jobs à gauche). `#view` contient la zone de l'ancienne page (`#legacyview`) et
+  les écrans Svelte, redessinés tout de suite à la fin de chaque redessin (`flushSync`), avant que l'ancienne page
+  remette le focus, les blocs dépliés et le défilement. Restent à l'ancienne page : la fenêtre qui change une touche,
+  et les contrôles des réglages de Modules (interrupteurs, nombres, listes d'objets, tableaux de lignes, couleurs :
+  `ctlHtml`, `modules.js` modControl et `module_ux.js`, `module_items.js`, `module_rows.js`).
 - Les étapes suivantes déplacent un écran entier à la fois dans `src/screens/` ; ses fichiers sortent alors des
   listes de `legacy/files.ts`.
 
