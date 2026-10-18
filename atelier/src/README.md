@@ -38,6 +38,18 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   La recherche et la sélection d'objets redessinent la page (`render()`) au lieu d'écrire dans la liste : Svelte ne
   change que ce qui bouge, le champ garde son curseur. Les données (les sacs, le plan, qui porte quoi) restent
   celles de l'ancienne page (`bags_*.js`).
+- **Étape 4a (2026-10-18)** : Buffs & cible (`screens/combat/` : l'en-tête et ses actions, le groupe en onglets avec
+  ce que donne chaque membre, la cible, ce que ça change pour le set ouvert, le total). Restent à l'ancienne page : la
+  barre des profils et les onglets des situations (`profiles.js`), le panneau du membre choisi (`pbYouBody`,
+  `pbBody`), le choix de la cible et les autres debuffs (`buff_panels.js`), la liste des sets à gauche (étape 5).
+
+## Vérifier une étape
+
+- `node scripts/atelier/page_parity.js scripts/atelier/parity/<écran>.json` : l'ancienne page (le dernier commit,
+  ou `--ref <commit>`) et la nouvelle côte à côte, sur les mêmes données figées, comparées au pixel (une vingtaine de
+  secondes par écran). `--self` mesure le bruit du contrôle, `--dom` garde le HTML des vues qui diffèrent.
+- Entre deux étapes : `python scripts/run_tests.py` (les tests rapides, une quinzaine de secondes), `npm run check`
+  et `npm run build`. La suite complète (`--full`) au moment du commit.
 - Les étapes suivantes déplacent un écran entier à la fois dans `src/screens/` ; ses fichiers sortent alors des
   listes de `legacy/files.ts`.
 

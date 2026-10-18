@@ -71,12 +71,6 @@ function setPanelHTML(s){
   return `<div class="globals"><h3 class="ui2title">${esc(t('ui2SetTitle'))}</h3><div class="ui2own">${offense}${defense}${hpCycleHTML(s)}${luopanHTML(s)}</div>${setStatsHTML(s)}${all}</div>`;
 }
 
-// Combat: a heading with the support profile and the quick actions; the buffs' editor in the page (it was a window),
-// in two columns
-function renderCombat(d){
-  // the party builder (party_builder.js): a card a member, the target and what the party gives under them
-  return renderCombatParty(d);
-}
 
 // What the set is after, one line under its pieces (the stats themselves are on the right)
 function ui2Wants(s){

@@ -274,20 +274,6 @@ function pbDlgSearch(){
     document.querySelectorAll('.pbdlg .pbpi').forEach(el => { el.hidden = !!w && !el.dataset.q.includes(w); });
     document.querySelectorAll('.pbdlg .pbpg').forEach(sec => { sec.hidden = !sec.querySelector('.pbpi:not([hidden])'); }); });
 }
-function pbResult(B){
-  const s = S._curSet, T0 = targetInfo(s);
-  const mine = Object.keys(B).filter(k => !k.startsWith('_') && !PB_FOE.includes(k) && typeof B[k] === 'number' && B[k]);
-  // one line a stat, its name at the left and its figure at the right (they were words in a row, hard to scan); what
-  // comes off the target is in the box over this one, not said twice
-  // where a figure comes from, in its tooltip: "MND −4" alone says nothing, "Sublime Sushi +1 −4" does
-  const from = k => (B._by || []).filter(e => e.k === k && typeof e.v === 'number').map(e => e.src + ' : ' + fxShort(k, e.v).replace(/^.*?\s+(?=[+−-])/, '')).join(' · ');
-  const row = foe => k => { const txt = fxShort(k, B[k]), m = txt.match(/^(.*?)\s+([+−-].*)$/), low = !foe && B[k] < 0 && !['shell', 'dt', 'pdt', 'mdt', 'bdt'].includes(k);
-    return `<li class="${low ? 'neg' : ''} ${foe ? 'foe' : ''}" title="${esc(t('pbFrom', {l: from(k)}))}"><span>${esc(m ? m[1] : txt)}</span><b>${esc(m ? m[2] : '')}</b></li>`; };
-  const foes = Object.keys(B).filter(k => PB_FOE.includes(k) && typeof B[k] === 'number' && B[k]);
-  return `<section class="box g-def"><header class="boxh"><h3>${esc(t('pbResult'))}</h3></header><div class="boxb">` +
-    `<h4 class="pbsumh">${esc(t('pbOnYou'))}</h4>` + (mine.length ? `<ul class="pbsum">${mine.map(row(false)).join('')}</ul>` : `<p class="muted small pbsumnone">${esc(t('pbNothing'))}</p>`) +
-    (foes.length ? `<h4 class="pbsumh foe">${esc(t('pbOnFoe'))}</h4><ul class="pbsum">${foes.map(row(true)).join('')}</ul>` : '') + `</div></section>`;
-}
 
 // What all of this changes for the set opened: its figure in each situation, with the version of the set GearSwap
 // wears there (tierVersions) and that situation's own buffs. A weaponskill set: its average damage at the TP chosen;
@@ -311,67 +297,15 @@ function pbImpactRows(s){
   PB_IMPACT = {key, rows: out};
   return out;
 }
-function pbImpact(){
-  const s = S._curSet, head = `<section class="box g-buff pbimpact"><header class="boxh"><h3>${esc(t('pbImpact'))}</h3></header><div class="boxb">`;
-  const kind = s && family(s.path, s.pieces);
-  if (!s || !((kind === 'ws' && wsOfSet(s)) || roundSet(s))) return `${head}<p class="muted small">${esc(t('pbImpNone'))}</p></div></section>`;
-  if (!engineReady()) return `${head}<p class="muted small">${esc(t('pbImpNoEng'))}</p></div></section>`;
-  const ws = !roundSet(s), rows = pbImpactRows(s), cur = rows.find(r => r.tier === buffTier()) || rows[0];
-  const diff = (v, ref, low) => { if (v == null || !ref || v === ref) return ''; const p = (v / ref - 1) * 100, good = low ? p < 0 : p > 0;
-    return `<i class="${good ? 'up' : 'down'}">${p > 0 ? '+' : '−'}${Math.abs(p).toFixed(1)} %</i>`; };
-  const tr = r => { const name = r.version === 'Full' ? t('pbImpItself') : '.' + r.version;
-    return `<button class="pbimprow" data-bufftier="${r.tier}" aria-pressed="${r === cur}" title="${esc(t('pbImpTip', {t: r.tier, s: name}))}"><span class="pbimpw"><b>${r.tier}</b><small>${esc(name)}</small></span>` +
-      (ws ? `<span class="pbimpv">${r.a == null ? '—' : fmtDmg(r.a)}${diff(r.a, cur.a, false)}</span>`
-        : `<span class="pbimpv">${r.a == null ? '—' : r.a.toFixed(2) + ' s'}${diff(r.a, cur.a, true)}</span><span class="pbimpv">${r.b == null ? '—' : fmtDmg(r.b) + ' DPS'}${diff(r.b, cur.b, false)}</span>`) + `</button>`; };
-  return `${head}<p class="pbimpset"><b>${esc(shortPath(s.path.replace(/\.(Group|Solo|Trust)$/, '')))}</b> · ${esc(ws ? t('pbImpWs', {tp: S.wsTp || 3000}) : t('pbImpEng'))}</p>` +
-    `<div class="pbimp ${ws ? 'one' : 'two'}">${rows.map(tr).join('')}</div></div></section>`;
-}
 
 // In the Trust situation the members are trusts: the tab of a job says whose buffs these are (the trusts of
 // TRUST_BUFFS: Sylvie's bubbles, Joachim's and Ulmia's songs, Qultada's rolls, the RDM's spells)
 const TRUST_NAMES = {GEO: 'Sylvie', BRD: 'Joachim · Ulmia', COR: 'Qultada', WHM: 'Protect · Shell', RDM: 'RDM'};
 
-// What a member gives you, for its tab and its panel's foot
-function pbGivesOf(job, b, B){
-  if (job === 'you') {
-    const ownJa = new Set(jasOf().filter(j => j.as !== 'party').map(j => j.name));
-    return pbGives(withAftermath(B, shownMain()), v => v === b.food || ownJa.has(v) || /Aftermath/.test(v));
-  }
-  const def = PB_JOBS.find(j => j.job === job), names = new Set((pbJaJobs().get(job) || []).map(x => x.name).concat(Object.keys(FOE_JA[job] || {})));
-  return pbGives(B, def ? (v => def.src(v) || names.has(v)) : v => names.has(v));
-}
 
 // The Combat tab of the new layout: the party as tabs (you first, 6 at most, each saying what it gives), the chosen
 // member's buttons in one panel under them; the total and the target beside it
 const PB_MAX = 6;
-function renderCombatParty(d){
-  const b = buffState(), n = buffCount();
-  buffPanelHTML();   // its parts: your own abilities, the target picker, the other debuffs (S._bparts)
-  const P = S._bparts || {}, shown = pbShown(b), B = buffTotals();
-  const cur = S.pbTab === 'you' || shown.includes(S.pbTab) ? S.pbTab || 'you' : 'you';
-  const head = `<header class="tabhead"><div><h2>${esc(t('ui2CombatTitle'))}</h2><p class="muted small">${esc(t('pbWhy'))}</p></div>` +
-    `<div class="tabacts">${S._buffUndo && S._buffUndo.key === buffKey() ? `<button class="btn prupd" data-buffundo title="${esc(t('pbUndoTip', {w: S._buffUndo.what}))}">${esc(t('pbUndo'))}</button>` : ''}` +
-    `<button class="btn ghost" data-buffendgame title="${esc(t('ttBuffEndgame'))}">${t('bEndgame')}</button>` +
-    `<button class="btn ghost" data-buffreset ${n ? '' : 'disabled'} title="${esc(t('ttBuffReset'))}">${t('buffReset')}</button></div></header>`;
-  const tab = (key, label, sub) => { const g = pbGivesOf(key, b, B);
-    return `<div class="pbtab" role="tab" tabindex="0" data-pbtab="${esc(key)}" aria-selected="${cur === key}">` +
-      `<span class="pbtabh">${emblem(key === 'you' ? S.job : key)}<b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}` +
-      `${key === 'you' ? '' : `<button class="pbx" data-pbdel="${esc(key)}" title="${esc(t('pbRemove'))}" aria-label="${esc(t('pbRemove'))}">×</button>`}</span>` +
-      `<span class="pbtabg">${g || `<span class="muted">${esc(t('pbNothing'))}</span>`}</span></div>`; };
-  const tabs = `<div class="pbtabs" role="tablist">${tab('you', t('pbYou'), `${S.job}/${d.sub || '—'}`)}` +
-    `${shown.map(j => { const trust = buffTier() === 'Trust' && TRUST_NAMES[j];
-      return tab(j, trust || j, trust ? j : PB_JOBS.find(x => x.job === j) ? t('pbJob_' + j) : ''); }).join('')}` +
-    (shown.length + 1 < PB_MAX ? `<button class="pbtab pbtabadd" data-pbaddopen title="${esc(t('ttPbAdd'))}"><b>+ ${esc(t('pbAdd'))}</b><small>${esc(t('pbAddLeft', {n: PB_MAX - shown.length - 1}))}</small></button>` : '') + `</div>`;
-  const full = shown.length + 1 >= PB_MAX;
-  const body = cur === 'you' ? pbYouBody(b) : pbBody(cur, b, shown);
-  const panel = `<section class="pbpanel"><div class="pbbody ${cur === 'you' ? 'pbyou' : ''}">${body}</div></section>`;
-  // one box: the situations are its tabs, the members of the situation shown are the tabs inside it
-  const party = `<section class="box cbbox">${profSituationTabs()}<div class="boxb"><div class="cbhd"><b>${esc(t('pbTitle'))}</b>` +
-    `<span class="muted small">${shown.length + 1} / ${PB_MAX}</span></div>${tabs}${panel}</div></section>`;
-  const side = `<aside class="pbside">${box('g-off', t('pbTarget'), P.tgt || '', `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}${pbImpact()}${pbResult(B)}</aside>`;
-  const other = P.foe ? `<details class="pbother" data-pbother ${S._pbOtherOpen ? 'open' : ''}><summary title="${esc(t('ttPbOther'))}"><span class="pbot"><b>${esc(t('pbOther'))}</b><small>${esc(t('pbOtherWho'))}</small></span><span class="pbosum">${P.foe.total || ''}</span><span class="pbohint"><i class="o">${esc(t('pbOtherOpen'))}</i><i class="s">${esc(t('pbOtherShut'))}</i></span></summary><div class="pbotherb">${P.foe.body}</div></details>` : '';
-  return `<div class="ui2tab combattab">${head}${profBar()}<div class="pblayout"><div class="pbmain">${party}${other}</div>${side}</div></div>`;
-}
 
 // The cards' clicks: add a member (its usual buffs where its keys are empty), remove one (its buffs cleared, a shared
 // one only when no other card holds it), save / load / forget a party

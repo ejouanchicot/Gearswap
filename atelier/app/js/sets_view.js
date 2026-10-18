@@ -446,35 +446,20 @@ function jobGroups(){
 }
 const jobBadge = c => { const L = jobLevels(), j = L && L[c];
   return j ? (j.ml ? `<span class="mlbadge" title="${t('mlTip', {n: j.ml})}">ML${j.ml}</span>` : `<span class="lvbadge">${j.level}</span>`) : ''; };
-function jobListHTML(){
-  const groups = jobGroups();
-  const row = ([c, name, r], dim) => `<button class="setrow jobrow ${dim ? 'dim' : ''}" data-jobkeep="${c}" aria-current="${S.job===c}" style="--role:${ROLE_COLOR[r]}" title="${esc(t(dim ? 'ttJobRowNo' : 'ttJobRow', {j: name}))}">` +
-    `${emblem(c)}<b>${c}</b><small>${name}</small>${jobBadge(c)}</button>`;
-  const rows = groups[0].label === null
-    ? ROLES.map(r => { const played = groups[0].jobs.filter(j => j[2] === r);
-        return played.length ? `<div class="fam static" style="--role:${ROLE_COLOR[r]}"><span>${t('roles.'+r)}</span><span>${played.length}</span></div>` + played.map(j => row(j)).join('') : ''; }).join('')
-    : groups.map(g => `<div class="fam static ${g.master ? 'mastergrp' : ''}"><span>${g.label}</span><span>${g.jobs.length}</span></div>` + g.jobs.map(j => row(j, !g.master)).join('')).join('');
-  return `<aside class="setlist joblist"><div class="scroll">${rows}</div></aside>`;
-}
 function renderJob(){
   const c = S.job, d = data();
-  let body, side = null;
+  let body;
   if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
   else {
     // the Merits are in My character; the keys, modes, switches and macro book are the parts of the job's settings
     // (a page kept on one of those four names, or sent there by a link, opens that part)
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
-    // the job's settings and My character are the Svelte application's (atelier/src/screens/config, screens/perso)
-    if (S.section === 'jobcfg' || S.section === 'perso') return '';
-    // Combat and Mon perso keep the sets on the left: the set picked there is the one their figures are for
-    if (ui2() && ['combat', 'perso'].includes(S.section) && !(S.section === 'perso' && S.persoView === 'bags')) { side = setListHTML(d);   // (the bags are no set's)
-      if (side.vis.length) S._curSet = shownSet(side.cards[side.sel], side.sel); }
-    body = {sets:renderSets, sim:renderSim, combat:renderCombat}[S.section](d);
+    // the job's settings, My character and Buffs & target are the Svelte application's (atelier/src/screens/config,
+    // screens/perso, screens/combat)
+    if (S.section === 'jobcfg' || S.section === 'perso' || S.section === 'combat') return '';
+    body = {sets:renderSets, sim:renderSim}[S.section](d);
   }
-  // every tab but Sets: the played jobs on the left, to change job and stay on the tab
-  if (side) body = `<div class="tabx setside">${side.aside}<div class="tabmain">${body}</div></div>`;
-  else if (d && S.section !== 'sets' && S.section !== 'sim') body = `<div class="tabx">${jobListHTML()}<div class="tabmain">${body}</div></div>`;
   // the row of the sections over it is the Svelte application's (atelier/src/screens/topbar/Sections.svelte)
   return `<div class="pane ${d ? 'split' : ''}">${body}</div>`;
 }

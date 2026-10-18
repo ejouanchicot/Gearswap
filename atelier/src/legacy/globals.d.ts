@@ -223,3 +223,35 @@ declare function bpMoves(B: LegacyAny): {moves: LegacyAny[]};
 declare const BP_CATS: string[];
 /** An item's icon, as the old page's HTML (module_items.js) */
 declare function itemIco(name: string, id: number): string;
+
+/* ---- Buffs & target (party_builder.js, buffs.js, buff_panels.js, profiles.js), loosely typed ---- */
+declare function ui2(): boolean;
+declare function buffState(): LegacyAny;
+declare function buffCount(): number;
+declare function buffKey(): string;
+declare function buffTier(): string;
+declare function buffTotals(): LegacyAny;
+declare function buffPanelHTML(): string;
+declare function pbShown(b: LegacyAny): string[];
+declare function pbYouBody(b: LegacyAny): string;
+declare function pbBody(job: string, b: LegacyAny, shown: string[]): string;
+declare function pbJaJobs(): Map<string, LegacyAny[]>;
+declare function pbImpactRows(s: LegacyAny): LegacyAny[];
+declare const PB_JOBS: LegacyAny[];
+declare const PB_MAX: number;
+declare const PB_FOE: string[];
+declare const TRUST_NAMES: Record<string, string | undefined>;
+declare const FOE_JA: Record<string, Record<string, LegacyAny> | undefined>;
+declare function enemyKey(enemy: unknown): string;
+declare function profBar(): string;
+declare function profSituationTabs(): string;
+declare function fxShort(key: string, value: number): string;
+declare function withAftermath(B: LegacyAny, main: unknown): LegacyAny;
+declare function shownMain(): unknown;
+declare function jasOf(): LegacyAny[];
+declare function roundSet(s: LegacyAny): boolean;
+declare function wsOfSet(s: LegacyAny): unknown;
+declare function engineReady(): boolean;
+declare function fmtDmg(n: number): string;
+declare function shortPath(path: string): string;
+declare function family(path: string, pieces?: unknown): string;

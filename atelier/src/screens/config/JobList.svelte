@@ -1,7 +1,7 @@
 <!--
   GearSwap Atelier · the played jobs on the left of a tab (the job's settings...): by master level then by role, the
   shown one marked; a click changes job and keeps the tab (the old page's handler: events.js data-jobkeep).
-  The old page's jobListHTML (sets_view.js), still used by its own tabs.
+  It was the old page's jobListHTML (sets_view.js).
 
   @file    atelier/src/screens/config/JobList.svelte
   @author  ejouanchicot
