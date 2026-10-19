@@ -12,6 +12,7 @@
 import {bagsView, type BagsView} from './bags';
 import {setList, type SetListView} from '../sets/setlist';
 
+import {globalsView, type GlobalsView} from '../sets/globals';
 export interface PorterView { title: string; meta: string; introHtml: string; newHtml: string; add: null | {labelHtml: string; names: string[]};
   remove: null | {labelHtml: string; names: string[]}; doneHtml: string; write: null | {title: string; textHtml: string}; needHtml: string }
 export interface MeritRow { key: string; name: string; desc: string; level: number; cap: number; changed: boolean; was: string; total: string; inputTitle: string }
@@ -25,7 +26,7 @@ export interface PersoView {
   side: SetListView | null;
   head: {char: string; why: string; facts: Array<[string, string]>; views: Array<{value: string; label: string; title: string; pressed: boolean}>};
   bags: BagsView | null;
-  stats: null | {cardsHtml: string | null; noCharHtml: string; porter: PorterView | null; meritsTitle: string; merits: MeritsView};
+  stats: null | {cards: GlobalsView | null; noCharHtml: string; porter: PorterView | null; meritsTitle: string; merits: MeritsView};
 }
 
 function porterOf(d: LegacyExport): PorterView | null {
@@ -91,6 +92,6 @@ export function persoView(): PersoView | null {
       [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]] as Array<[string, string]>,
     views: [['stats', 'bvStats'], ['bags', 'bvBags']].map(([value, k]) => ({value: value!, label: t(k!), title: t(k + 'Tip'), pressed: (S.persoView || 'stats') === value}))};
   if (bags) return {side, head, bags: bagsView(), stats: null};
-  return {side, head, bags: null, stats: {cardsHtml: s && charStats(s) ? globalsHTML(s, 'cards') : null, noCharHtml: t('noChar'),
+  return {side, head, bags: null, stats: {cards: s && charStats(s) ? globalsView(s, 'cards') : null, noCharHtml: t('noChar'),
     porter: porterOf(d), meritsTitle: t('sectionsMerits'), merits: meritsOf()}};
 }

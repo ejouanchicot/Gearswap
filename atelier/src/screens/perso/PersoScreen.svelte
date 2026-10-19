@@ -8,6 +8,7 @@
   @author  ejouanchicot
 -->
 <script lang="ts">
+  import Globals from '../sets/Globals.svelte';
   import {legacy} from '../../stores/legacy.svelte';
   import {persoView} from './perso';
   import Box from '../../components/Box.svelte';
@@ -24,7 +25,7 @@
     <header class="tabhead"><div><h2>{h.char}</h2><p class="muted small">{h.why}</p></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl><span class="seg persoviews" role="group">{#each h.views as b (b.value)}<button data-persoview={b.value} aria-pressed={b.pressed} title={b.title}>{b.label}</button>{/each}</span></header>
     {#if view.bags !== null}<Bags view={view.bags} />{:else if view.stats}
       {@const st = view.stats}
-      <div class="persogrid">{#if st.cardsHtml !== null}{@html st.cardsHtml}{:else}<p class="muted">{@html st.noCharHtml}</p>{/if}{#if st.porter}{@const p = st.porter}<Box cls="g-caps" title={p.title} meta={p.meta}><p class="muted small">{@html p.introHtml}</p>{#if p.newHtml}<p class="small">{@html p.newHtml}</p>{/if}{#if p.add}<p class="small"><b>+ {@html p.add.labelHtml}</b></p><ul class="statlist">{#each p.add.names as n (n)}<li class="porteradd">{n}</li>{/each}</ul>{/if}{#if p.remove}<p class="small"><b>− {@html p.remove.labelHtml}</b></p><ul class="statlist">{#each p.remove.names as n (n)}<li class="porterrm">{n}</li>{/each}</ul>{/if}{#if p.doneHtml}<p class="small">{@html p.doneHtml}</p>{/if}{#if p.write}<button class="btn" data-porterwrite title={p.write.title}>{@html p.write.textHtml}</button>{/if}{#if p.needHtml}<p class="muted small">{@html p.needHtml}</p>{/if}</Box>{/if}</div>
+      <div class="persogrid">{#if st.cards}<Globals view={st.cards} fold={false} />{:else}<p class="muted">{@html st.noCharHtml}</p>{/if}{#if st.porter}{@const p = st.porter}<Box cls="g-caps" title={p.title} meta={p.meta}><p class="muted small">{@html p.introHtml}</p>{#if p.newHtml}<p class="small">{@html p.newHtml}</p>{/if}{#if p.add}<p class="small"><b>+ {@html p.add.labelHtml}</b></p><ul class="statlist">{#each p.add.names as n (n)}<li class="porteradd">{n}</li>{/each}</ul>{/if}{#if p.remove}<p class="small"><b>− {@html p.remove.labelHtml}</b></p><ul class="statlist">{#each p.remove.names as n (n)}<li class="porterrm">{n}</li>{/each}</ul>{/if}{#if p.doneHtml}<p class="small">{@html p.doneHtml}</p>{/if}{#if p.write}<button class="btn" data-porterwrite title={p.write.title}>{@html p.write.textHtml}</button>{/if}{#if p.needHtml}<p class="muted small">{@html p.needHtml}</p>{/if}</Box>{/if}</div>
       <h3 class="tabsec">{st.meritsTitle}</h3>
       {@const m = st.merits}
       {#if m.noneHtml}<div class="placeholder"><p>{@html m.noneHtml}</p></div>{:else}

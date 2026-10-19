@@ -315,36 +315,3 @@ function sirdMeritsOf(c){
   if (m) return 2 * meritLevel(m);
   return 2 * Object.entries((c && c.merits) || {}).reduce((n, [k, lv]) => k.toLowerCase().replace(/_/g, ' ') === 'spell interruption rate' ? n + lv : n, 0);
 }
-/* ---- the column of figures beside a set ---- */
-function globalsHTML(s, only){
-  S._curSet = s;
-  const r = charStats(s);
-  if (!r) return `<div class="globals">${box('g-you', t('youTitle'), `<p class="muted">${t('noChar')}</p>`)}</div>`;
-  const {c, out, set, vsSet} = r;
-  const row = (label, o) => { const d = o.set - o.now;
-    return statLi(label, o.set, d ? `<em class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : ''); };
-  const v = k => (set[k] || {}).v || 0;
-  const pct = (label, sum, cap) => cappedLi(label, sum, cap, '');
-  const main = [['HP', out.hp], ['MP', out.mp], [t('defLabel'), out.def], [t('atkLabel'), out.atk], [t('accLabel'), out.acc], [t('evaLabel'), out.eva]]
-    .filter(([, o]) => o).map(([l, o]) => row(l, o)).join('');
-  const attrs = ATTRS.map(a => row(a.toUpperCase(), out[a])).join('');
-  // merits the game counts per level (res/merit_points.lua: "Spell Interruption Rate" 2 % a level)
-  const sirdMerits = sirdMeritsOf(c);
-  const sird = v('sird') + sirdMerits;
-  const gear = damageTakenLines(v) + pct('Haste', v('haste'), 25) + pct('Fast Cast', v('fc'), 80) +
-    (sird ? statLi('SIRD', sird + ' %', sirdMerits ? `<em class="delta">${t('withMerits')}</em>` : '', '', `${t('gearOnly')} ${v('sird')} % + ${t('merits')} ${sirdMerits} %`) : '');
-  const levels = [c.master_level ? `ML ${c.master_level}` : '', c.jp_spent ? `${c.jp_spent} JP` : ''].filter(Boolean).join(' · ');
-  const edited = Object.keys(S.meritEdits[meritKey()] || {}).length;
-  const you = fbox('you', 'g-you', t('youTitle') + (edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''),
-    `${vsSet ? `<p class="vsset">${t('vsSet')}</p>` : ''}<ul class="statlist big">${main}</ul>`);
-  // the new layout's "every stat" fold ('stats') and My character tab ('cards': open, without the note): the
-  // character's figures alone (layout2.js)
-  if (only === 'cards') return box('g-you', t('youTitle'), `<ul class="statlist big">${main}</ul>`) +
-    box('g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`) + box('g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`);
-  if (only === 'stats') return `<div class="globals">${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
-    `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
-  // (only the two above are drawn: the new layout's figures and My character's cards)
-  return '';
-}
-
-

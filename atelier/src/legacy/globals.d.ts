@@ -196,7 +196,6 @@ declare function shownSet(card: unknown, i: number): LegacyAny;
 declare function ui2CurrentSet(d: LegacyExport): unknown;
 declare function charStats(set: unknown): unknown;
 /** The character's stats as cards, the old page's HTML (sets_view.js) */
-declare function globalsHTML(set: unknown, only?: string): string;
 /** The character as the game measured it (engine.js) */
 declare function measuredChar(): null | {at?: string; sub?: string; jp_spent?: number; merit_list?: LegacyMerit[]};
 declare function jaLevels(): {ml?: number; sub?: number};
@@ -540,3 +539,4 @@ declare function optPieces(p: LegacyAny): LegacyAny;
 declare function withVec(p: LegacyAny, slot: string): LegacyAny;
 declare const CRUSADE_ENMITY: number;
 declare const ENMITY_LOSS_GEAR: Record<string, number>;
+declare const ATTRS: string[];

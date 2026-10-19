@@ -64,7 +64,7 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   mêmes boîtes par ce code (`window.ATELIER_FIGURES`, engine.js `tankHTML` / `offenseHTML`) pour ses écrans à elle
   (la fenêtre des buffs, les cartes de Mon perso) : un seul calcul. Restent à l'ancienne page : la boîte du nuke
   (`fight_stats.js`), le cycle des HP (`stat_opt.js`), la Luopan (`luopan.js`), la feuille des stats (`stats.js`),
-  toutes les stats (`globalsHTML`) ; les lignes de tank en plus (`tankExtraHTML`) sont passées en Svelte à l'étape 7v.
+  toutes les stats (`globalsHTML`, passé en Svelte à l'étape 7w) ; les lignes de tank en plus (`tankExtraHTML`) sont passées en Svelte à l'étape 7v.
 - **Étape 5d (2026-10-19)** : les situations et les profils (`screens/profiles/` : `profiles.ts`,
   `Situations.svelte`, `Picker.svelte`), la même chose dans la barre de Buffs & cible et dans la ligne au-dessus des
   sets. La recherche et le filtre de situation de la fenêtre des profils redessinent la page au lieu de cacher les
@@ -199,6 +199,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7v (2026-10-19)** : les lignes sous les dégâts subis d'un tank (blocage avec un bouclier ultime, critiques
   ennemis restants, Cure IV d'un set de Cure, Enmity perdue sur un coup : figures.ts `tankExtra`) ; `tankExtraHTML`
   (stat_opt.js) est retiré.
+- **Étape 7w (2026-10-19)** : les lignes des listes de stats (`statlines.ts`, `StatLines.svelte` : ligne simple, stat
+  plafonnée et sa jauge, dégâts subis avec leur II, dégâts multipliés) et les chiffres du perso avec un set
+  (`globals.ts`, `Globals.svelte`), repliés sous les chiffres d'un set et ouverts en cartes dans Mon perso ;
+  `globalsHTML` (sets_view.js) est retiré. `cappedLi`, `layeredLi`, `mulLi` et `damageTakenLines` (stats.js) restent
+  pour la feuille de stats, l'étape suivante.
 
 ## Vérifier une étape
 
