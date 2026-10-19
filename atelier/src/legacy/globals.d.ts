@@ -477,3 +477,6 @@ declare function engineName(): string;
 declare function guideState(): {mode: string; seen: LegacyAny};
 declare const THEMES: Array<{id: string; pv: string[]}>;
 declare function themeNow(): string;
+declare const PKG: LegacyAny;
+declare const PKG_JOBS: string[];
+declare function pkgKnownOf(name: string): LegacyAny;

@@ -132,6 +132,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   thème, langue, animations, assistant Mog, moteur de calcul. `config_page.js` garde les thèmes et les textes ;
   `themeCardHTML`, `engineCardsHTML`, `motionConfigHTML` (motion.js) et `guideConfigHTML` (guide.js) sont retirés.
   Vues dans `scripts/atelier/parity/settings.json`.
+- **Étape 7c (2026-10-19)** : la page Paquets (`screens/packages/packages.ts`, `PackagesScreen.svelte`) ;
+  `packages.js` garde `PKG`, la création du zip (Pyodide dans un worker) et les clics. Vues dans
+  `scripts/atelier/parity/packages.json`.
 
 ## Vérifier une étape
 

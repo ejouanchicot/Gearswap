@@ -82,32 +82,8 @@ function pkgSetName(v){
   if (k) { PKG.jobs = k.jobs.slice(); if (k.role === 'alt' && PKG.box === 'solo') PKG.box = 'alt'; }
 }
 
-function renderPackages(){
-  const seg = (key, opts) => `<div class="seg" role="group">${opts.map(([v, l]) => `<button data-pkgset="${key}" data-v="${v}" aria-pressed="${PKG[key] === v}">${esc(l)}</button>`).join('')}</div>`;
-  const k = PKG.name.trim() && pkgKnownOf(PKG.name);
-  const known = PKG.known ? PKG.known.map(c => `<button class="btn ghost" data-pkgchar="${esc(c.name)}" aria-pressed="${!!k && k.name === c.name}">${esc(c.name)} <small class="muted">${c.jobs.length}</small></button>`).join(' ')
-    : `<span>${esc(t('pkgNoList'))}</span>${window.showDirectoryPicker ? `<button class="btn ghost" data-pkgfolder>${esc(t('pkgFolder'))}</button>` : ''}`;
-  // prepared or new: said once the list is read (before it, every name would read as new)
-  const kind = PKG.name.trim() && PKG.known ? `<p class="small ${k && k.overlay ? '' : 'muted'}">${esc(t(k && k.overlay ? 'pkgKnown' : 'pkgNew'))}</p>` : '';
-  const jobs = PKG_JOBS.map(j => `<button data-pkgjob="${j}" aria-pressed="${PKG.jobs.includes(j)}">${j}</button>`).join('');
-  const busy = PKG.state === 'busy';
-  const status = PKG.msg ? `<p class="${PKG.state === 'fail' ? 'kwarn' : PKG.state === 'done' ? '' : 'muted'}">${esc(PKG.msg)}</p>${PKG.state === 'done' ? `<p class="muted small">${esc(t('pkgDoneHow'))}</p>` : ''}` : '';
-  return `<div class="cfg pkg"><header><h2>${esc(t('pkgTitle'))}</h2><button class="btn ghost" data-pkgopen>← ${esc(t('pkgBack'))}</button></header>` +
-    `<p class="lede">${esc(t('pkgLede'))}</p><div class="cfgcols"><div>` +
-    `<section class="box"><h3>${esc(t('pkgWho'))}</h3><p>${esc(t('pkgWhoWhy'))}</p>` +
-      `<div class="cfgrow"><input id="pkgname" class="inp" placeholder="${esc(t('pkgName'))}" value="${esc(PKG.name)}" maxlength="15" autocomplete="off"></div>${kind}` +
-      `<div class="cfgrow pkgknown">${known}</div></section>` +
-    `<section class="box"><h3>${esc(t('pkgJobs'))}</h3><p>${esc(t('pkgJobsWhy'))}</p>` +
-      `<div class="seg pkgjobs" role="group">${jobs}</div><div class="cfgrow"><button class="btn ghost" data-pkgjobs="all">${esc(t('pkgAll'))}</button><button class="btn ghost" data-pkgjobs="none">${esc(t('pkgNone'))}</button></div></section>` +
-    `</div><div>` +
-    `<section class="box"><h3>${esc(t('pkgBox'))}</h3><p>${esc(t('pkgBoxWhy'))}</p>` +
-      `<div class="cfgrow">${seg('box', [['solo', t('pkgSolo')], ['main', t('pkgMain')], ['alt', t('pkgAlt')]])}</div>` +
-      (PKG.box === 'solo' ? '' : `<div class="cfgrow"><input id="pkgpartner" class="inp" placeholder="${esc(t('pkgPartner'))}" value="${esc(PKG.partner)}" maxlength="15" autocomplete="off"></div>`) + `</section>` +
-    `<section class="box"><h3>${esc(t('pkgRegion'))}</h3><p>${esc(t('pkgRegionWhy'))}</p><div class="cfgrow">${seg('region', [['US', 'US'], ['EU', 'EU'], ['JP', 'JP']])}</div></section>` +
-    `<section class="box"><h3>${esc(t('pkgHolds'))}</h3><ul>${[1, 2, 3, 4, 5].map(n => `<li>${esc(t('pkgHold' + n))}</li>`).join('')}</ul><p class="muted small">${esc(t('pkgNever'))}</p>` +
-      `<div class="cfgrow"><button class="btn" data-pkgmake ${busy ? 'disabled' : ''}>📦 ${esc(t(busy ? 'pkgBusy' : 'pkgMake'))}</button></div>${status}</section>` +
-    `</div></div></div>`;
-}
+// The page is the Svelte application's (atelier/src/screens/packages)
+function renderPackages(){ return ''; }
 
 // The worker: Pyodide loaded once and kept, make_package.py run on a copy (in its memory) of what sources() names
 const PKG_WORKER = `importScripts(${JSON.stringify(PYODIDE_URL)});
