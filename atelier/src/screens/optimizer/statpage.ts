@@ -4,7 +4,7 @@
 // the search; on the right the result's figures against the file's set, the pieces the try changes, the trial's bar.
 // The rules are the old page's statWhatHTML and statResultHTML (stat_opt.js), which keep the options (statOpts), the
 // lines of the result (statRows) and the figures (statFigures). The minimums' tiles and the pieces changed: blocks.ts. The search too. The trial's bar: sets/trial.ts.
-// Still the old page's HTML: the enfeebles' note (enfNoteHTML). The buttons keep the attributes the old handlers read (data-statobj, data-statobjall,
+// The enfeebles' note: enfNoteHTML (enfeeble.js). The buttons keep the attributes the old handlers read (data-statobj, data-statobjall,
 // data-statthen, data-statkeep, data-statreset).
 //
 // @file    atelier/src/screens/optimizer/statpage.ts
@@ -17,12 +17,24 @@ export interface StatWhatView {
   floors: LimitsView; floorsAfterHtml: string; titleHtml: string; help: string;
   groups: Array<{label: string; objs: Array<{k: string; on: boolean; name: string; desc: string}>}>; toggle: string;
   then: {label: string; selects: Array<{i: number; options: Array<{value: string; label: string; selected: boolean}>}>};
-  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; enfHtml: string; search: SearchView; weaponsNote: string;
+  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; enf: EnfNote | null; search: SearchView; weaponsNote: string;
 }
 export interface StatResultView {
   titleHtml: string; labelHtml: string; value: string; delta: null | {up: boolean; text: string}; wasHtml: string; shield: string;
   heads: string[]; rows: Array<{obj: boolean; label: string; tip: string; cells: Array<{better: boolean; bad: boolean; text: string}>}>;
   changes: ChangesView | null; trial: TrialRow | null; noTry: string;
+}
+
+export interface EnfNote { kind: string; spells: string; note: string; sab: null | {checked: boolean; label: string} }
+// An enfeebling set: the spells it is judged on, what the figures take for granted (the target's MND / INT, Saboteur,
+// Composure), and a RDM's Saboteur box (enfeeble.js enfContext)
+function enfNote(s: LegacyAny): EnfNote | null {
+  const e = enfContext(s), lang = (S as LegacyAny).lang;
+  if (!e) return null;
+  const kind = e.type === 'mode' ? t('enfKindMode', {m: e.mode}) : e.type === 'base' ? t('enfKindBase') : e.type === 'spell' ? t('enfKindSpell') : t('enfKindType', {k: e.type});
+  return {kind, spells: e.spells.join(', '), sab: S.job === 'RDM' ? {checked: !!e.sab, label: t('enfSabBox')} : null,
+    note: t('enfNote', {s: e.spells.slice(0, 3).join(', '), m: e.tMnd, i: e.tInt, tg: e.target,
+      sab: e.sab ? 'Saboteur ' + (e.nm ? (lang === 'fr' ? '×1,25' : '×1.25') + ' (NM)' : '×2') : t('enfNoSab'), c: e.comp ? t('enfComp') : t('enfNoComp')})};
 }
 
 /** The left column of a stats search (statWhatHTML) */
@@ -54,7 +66,7 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     then: {label: t('statThen'), selects: [1, 2].map(i => ({i, options: ['', ...STAT_OBJS].filter(k => k !== cur).map(k => ({value: k, label: k ? t('statObj_' + k) : t('statNone'), selected: (so.objs[i] || '') === k}))}))},
     own: jaList.length ? {tip: t('statKeepOwnTip', {b: segs(s.path).pop()}), checked: keptSlots(s).length > 0,
       label: t('statKeepOwn', {p: jaList.map((sl: string) => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')})} : null,
-    notes, enfHtml: enfNoteHTML(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
+    notes, enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
 }
 
 /** The right column of a stats search: the first objective big, every line against the file's set (statResultHTML) */

@@ -4,12 +4,12 @@
 // window). A set whose optimizer page is open shows that page instead (optimizer/optpage.ts).
 // The rules are the old page's cardHTML, slotHTML, setVersionsHTML, versionGridHTML (sets_view.js), with what it
 // keeps in the page's state as it goes (S._curSet, S._globals). Still the old page's HTML: the title box and the
-// weapons' menus (weaponMenus), a weaponskill's head (ws_page.js wsHeadHTML), the trial's bar
-// (trial.js), the equip button (live.js), the line of what the set is after, the legend and notes; the figures are figures.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
+// weapons' menus (weaponMenus), the trial's bar (trial.js); a weaponskill's head is wshead.ts; the equip button (live.js), the line of what the set is after, the legend and notes; the figures are figures.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/card.ts
 // @author  ejouanchicot
 import {figuresView, type FiguresView} from './figures';
+import {wsHeadView, type WsHeadView} from './wshead';
 import {optPageView, type OptPageView} from '../optimizer/optpage';
 
 import {trialBarView, type TrialBar} from './trial';
@@ -26,7 +26,7 @@ export interface CardView {
   ws: boolean;
   title: TitleView;
   versions: Versions;
-  ctl: null | {picks: boolean; html: string};
+  ctl: null | {k: 'picks'; html: string} | {k: 'ws'; view: WsHeadView};
   trial: TrialBar;
   slots: SlotView[];
   equip: {on: boolean; why: string; label: string};
@@ -167,10 +167,10 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   if (ws) {
     title = wsTitle(s, acts);
     versions = wsOfSet(s) ? versionsOf(card, ci, vi) : {k: 'none'};
-    ctl = wsOfSet(s) ? {picks: false, html: wsHeadHTML(card, ci, vi, s)} : null;
+    ctl = wsOfSet(s) ? {k: 'ws', view: wsHeadView(s)} : null;
   } else {
     const head = setHeadParts(card, vi, s, acts);
-    title = head.title; versions = versionsOf(card, ci, vi); ctl = {picks: true, html: head.picks};
+    title = head.title; versions = versionsOf(card, ci, vi); ctl = {k: 'picks', html: head.picks};
   }
   // a family's note and a base set's go under the gear, where nothing is left to push down
   const notes = {fam: card.variants.some((v: LegacyAny) => familyNote(v.set)) ? {textHtml: familyNote(s), none: !familyNote(s)} : null,

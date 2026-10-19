@@ -163,13 +163,3 @@ function enfRows(s){
     get: f => (f.enfBy || {})[n] || null,
     fmt: r => r ? [enfPotText(r), r.time ? enhTimeText(r.time) : ''].filter(Boolean).join(' · ') || '—' : '—'}));
 }
-// The line under the objectives: what the figures take for granted
-function enfNoteHTML(s){
-  const e = enfContext(s);
-  if (!e) return '';
-  const sab = S.job === 'RDM' ? `<div class="opparams"><label class="opf"><input type="checkbox" data-enfsab ${e.sab ? 'checked' : ''}> ${esc(t('enfSabBox'))}</label></div>` : '';
-  const kind = e.type === 'mode' ? t('enfKindMode', {m: e.mode}) : e.type === 'base' ? t('enfKindBase') : e.type === 'spell' ? t('enfKindSpell')
-    : t('enfKindType', {k: e.type});
-  return `<p class="small"><b>${esc(kind)}</b> ${esc(e.spells.join(', '))}</p><p class="muted small">${esc(t('enfNote', {s: e.spells.slice(0, 3).join(', '), m: e.tMnd, i: e.tInt, tg: e.target,
-    sab: e.sab ? 'Saboteur ' + (e.nm ? (S.lang === 'fr' ? '×1,25' : '×1.25') + ' (NM)' : '×2') : t('enfNoSab'), c: e.comp ? t('enfComp') : t('enfNoComp')}))}</p>` + sab;
-}

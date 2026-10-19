@@ -37,7 +37,7 @@ export interface OptPageView {
   statResult: StatResultView | null;
   what: null | {top: NukeTop | {k: 'limits'; limits: LimitsView}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; search: SearchView};
   result: null | {title: string; none: string | null; big: null | {label: string; value: string; diff: null | {text: string; up: boolean}; was: string; verdict: null | {cls: string; text: string}};
-    visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changes: ChangesView | null; trial: TrialRow | null; noTry: string; notes: string; calcHtml: string};
+    visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changes: ChangesView | null; trial: TrialRow | null; noTry: string; notes: string; calc: RoundCalc | null};
 }
 
 const st = (): LegacyAny => S;
@@ -162,7 +162,7 @@ function visualOf(obj: string, main: LegacyAny, now: LegacyAny, was: LegacyAny):
 // figure of the family (opResultHTML)
 function resultOf(s: LegacyAny, kind: string): NonNullable<OptPageView['result']> {
   const obj = opObj(kind), now = opFigures(s, kind), was = trialCount(s) ? opFigures(s, kind, true) : null;
-  const base = {title: t('opResult'), none: null, big: null, visual: null, was: !!was, heads: [], rows: [], changes: null, trial: null, noTry: '', notes: '', calcHtml: ''};
+  const base = {title: t('opResult'), none: null, big: null, visual: null, was: !!was, heads: [], rows: [], changes: null, trial: null, noTry: '', notes: '', calc: null};
   if (!now) return {...base, none: kind === 'eng' && obj === 'cycle' ? t('cycNoWs') : noEngineText()};
   const rows: LegacyAny[] = opRows(kind, obj).filter((r: LegacyAny) => r.get(now) != null || (was && r.get(was) != null)), main = rows[0];
   const v = main.get(now), w = was ? main.get(was) : null;
@@ -179,7 +179,33 @@ function resultOf(s: LegacyAny, kind: string): NonNullable<OptPageView['result']
     rows: rows.map((r, i) => ({label: r.label + (i ? '' : ' ★'), obj: !i, cells: (was ? [cell(r, was, now)] : []).concat([cell(r, now, was)])})),
     changes: changesView(s), trial, noTry: trial ? '' : t('opNoTry'),
     notes: kind === 'eng' && obj === 'cycle' && cycleInput(s) && !cycleInput(s).tpRule ? t('cycNoRule') : '',
-    calcHtml: kind !== 'ws' && now.r && now.r.detail ? roundCalcHTML(now.r.detail, now.r.real) : ''};
+    calc: kind !== 'ws' && now.r && now.r.detail ? roundCalc(now.r.detail, now.r.real) : null};
+}
+
+export interface RoundCalc { open: boolean; tip: string; title: string; stepsHtml: string[]; note: string }
+// The round worked out as the engine does it (atelier/engine: average_attack_round, get_tp, get_delay_timing), each
+// step with its figures; then the rounds counted whole (the TP comes at the end of a round). A step is a translated
+// text with its figures in it (ws_page.js procsHTML gives the procs' one)
+function roundCalc(x: LegacyAny, real: LegacyAny): RoundCalc {
+  const lang = (S as LegacyAny).lang, f = (v: number, n = 0) => (+v).toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: n, maximumFractionDigits: n});
+  const pc = (v: number) => f(v * 100, 1), cap = (v: number, c: number) => Math.min(v, c), hits = (Object.values(x.hits) as number[]).reduce((a, b) => a + b, 0);
+  const tot = cap(x.haste.gear, .25) + cap(x.haste.magic, 448 / 1024) + cap(x.haste.ja, .25);
+  const delay = x.delay1 + x.delay2, rdelay = Math.max(.2 * delay, (delay - x.ma) * (1 - x.dw / 100) * (1 - tot)), rounds = (x.at - x.start) / x.tpRound;
+  const hitsP = real ? Object.keys(real.dist).filter(k => real.dist[k] >= .0005).map(k => t('rdHitN', {n: k, p: pc(real.dist[k])})).join(' · ') : '';
+  const roundsP = real ? real.probs.map((p: number, i: number) => [i + 1, p]).filter(([, p]: number[]) => p! >= .0005).map(([n, p]: number[]) => t('rdRoundN', {n, p: pc(p!)})).join(' · ') : '';
+  const extra = [x.hits.sub ? t('rdSub', {n: f(x.hits.sub, 2)}) : '', x.hits.zanshin > .005 ? 'Zanshin ' + f(x.hits.zanshin, 2) : '',
+    x.hits.kick ? t('rdKick', {n: f(x.hits.kick, 2)}) : '', x.hits.daken ? 'Daken ' + f(x.hits.daken, 2) : ''].filter(Boolean).join(' · ');
+  const stepsHtml = [
+    t('rdDelay', {d: f((x.delay1 + (x.delay2 || x.delay1)) / 2), ma: x.ma ? ` − Martial Arts ${f(x.ma)}` : '', dw: x.dw ? ` × (1 − Dual Wield ${f(x.dw)} %)` : '', m: f(x.mdelay)}),
+    t('rdTp', {m: f(x.handDelay), b: f(x.baseTp), stp: f(x.stp * 100), t: f(x.tpPerHit)}),
+    t('rdHits', {h: f(hits, 2), m: f(x.hits.main, 2), x: extra ? ' · ' + extra : '', hr: pc(x.hitRate.main) + (x.hits.sub > 0 ? ' / ' + t('rdHandSub').toLowerCase() + ' ' + pc(x.hitRate.sub) : ''), da: pc(x.multi.da), ta: pc(x.multi.ta), qa: pc(x.multi.qa)}),
+    procsHTML(x, f, pc),
+    t('rdTpRound', {h: f(hits, 2), t: f(x.tpPerHit), rg: x.regain ? t('rdRegain', {n: f(x.regain)}) : '', r: f(x.tpRound, 1)}),
+    t('rdHaste', {g: pc(x.haste.gear), m: pc(x.haste.magic), j: pc(x.haste.ja), tot: pc(tot)}),
+    t('rdTime', {d: x.ma ? `(${f(delay)} − ${f(x.ma)})` : f(delay), dw: x.dw ? ` × (1 − ${f(x.dw)} %)` : '', tot: pc(tot), rd: f(rdelay, 1), fl: f(.2 * delay, 1), s: f(x.timeRound, 3)}),
+    t('rdWs', {at: f(x.at), st: f(x.start), r: f(x.tpRound, 1), n: f(rounds, 2), s: f(x.timeRound, 3), t: f(x.timeWs, 2)}),
+    real ? t('rdReal', {h: hitsP, r: roundsP, n: f(real.rounds, 2), t: f(real.time, 2), tp: f(real.tpAt)}) : ''].filter(Boolean);
+  return {open: !!(S as LegacyAny)._rdOpen, tip: t('ttRdCalc'), title: t('rdTitle'), stepsHtml, note: t('rdNote')};
 }
 
 /** The optimizer's page of a set (optPageHTML); ws: the set's weaponskill, when it is a weaponskill set */

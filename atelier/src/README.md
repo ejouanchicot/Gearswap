@@ -227,6 +227,16 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   `TrialRow.svelte` : ce qui est essayé, son gain sur une WS, Comparer, Garder, Tester en jeu, les liens) ;
   `trialBar`, `trialRow` et `draftGainHTML` (trial.js) sont retirés. Le bouton Pousser reste le HTML de `pushButton`
   (trial.js) : le pied de la fenêtre de recherche s'en sert aussi.
+- **Étape 7ad (2026-10-19)** : la note d'un set d'enfeeble dans l'optimiseur de stats (statpage.ts `enfNote`, sa case
+  Saboteur pour un RDM) et le calcul d'un round dans l'optimiseur (optpage.ts `roundCalc`) ; `enfNoteHTML`
+  (enfeeble.js) et `roundCalcHTML` (ws_page.js) sont retirés. Les deux optimiseurs n'ont plus de bloc dessiné par
+  l'ancienne page, sauf le bouton Pousser (`pushButton`).
+- **Étape 7ae (2026-10-20)** : l'en-tête d'un set de WS (`sets/wshead.ts`, `WsHead.svelte` : l'arme tenue et l'autre
+  main, la ligne des TP, leurs ⓘ) ; `wsHeadHTML`, `wsWeaponLine`, `heldSubMenu`, `fitOptions` et `wsTpLine`
+  (ws_page.js) sont retirés, avec la note du set de base (`wsBaseNote`, `.wsbase`) que la carte n'affichait jamais.
+  PLD et THF gardent les menus d'états d'arme de l'ancienne page (`weaponMenus`, prochaine étape). Les options d'un
+  menu dont l'ordre change (le classement des armes arrive après le premier dessin) sont clées par leur valeur, pas
+  par leur rang : sinon le menu garde l'option à la place de l'ancienne et montre un mauvais choix.
 
 ## Vérifier une étape
 
