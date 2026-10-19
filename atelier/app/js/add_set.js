@@ -5,7 +5,7 @@
 // set worn in its place today, nothing, or what you wear in game). The game writes it after its parent and its base
 // (set_push.lua create_new: same preview, backup, history and undo as a push). An export with no catalog (written before
 // 2026-10-06) keeps the weaponskill list (push.js addWsList).
-// (loaded by atelier/index.html after push.js: see the list there)
+// (loaded by atelier/index.html after push.js: see the list there; the window is drawn by atelier/src/screens/dialogs/addset.ts)
 
 Object.assign(T.fr, {
   addSearch: 'Chercher un set, un sort, une ability…', addParentFirst: 'Crée d’abord {p} : ce set va dedans.',
@@ -46,60 +46,10 @@ const parentThere = e => e.parent || !parentOf(e.path) || setThere(parentOf(e.pa
 // A catalog line as the page writes it: sets.precast.JA.{ja} -> precast.JA.‹ja›
 const lineLabel = g => g.replace(/\{([^}]+)\}/g, (m, n) => /^[^:~]*\|/.test(n) ? '‹' + n.split('|').join(' | ') + '›' : '‹' + n.split(/[:~]/)[0] + '›');
 
+// The window at its step: drawn by the Svelte application (atelier/src/screens/dialogs/addset.ts)
 function renderAdd(){
-  const cat = catalogEntries(), cards = S._cards || buildCards(data()).cards;
-  const steps = [t('step1'), t('step2'), t('step3')].map((s, i) => `<span class="${i === addStep ? 'on' : ''}">${i + 1}. ${s}</span>`).join('');
-  let body;
-  if (addStep === 0) {
-    const fams = cat ? [...new Set(cat.map(catFamily))] : [...new Set(cards.map(c => c.fam))];
-    const order = ['idle', 'engaged', 'fc', 'ws', 'ja', 'cure', 'midcast', 'enmity', 'pet', 'special', 'xp', 'weapons', 'other'];
-    fams.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-    body = (cat ? '' : `<p class="kwarn small">${esc(t('addNoCatalog'))}</p>`) +
-      fams.map(f => `<button class="opt" data-addfam="${f}"><span>${t('fam.' + f)}<small>${t('famWhen.' + f)}</small></span><span>›</span></button>`).join('');
-  } else if (addStep === 1 && cat) body = addCatalogList(cat);
-  else if (addStep === 1 && addFam === 'ws') body = addWsList(cards);
-  else if (addStep === 1) body = cards.filter(c => c.fam === addFam).flatMap(c => c.variants.map(v => v.set.path)).map(p =>
-      `<button class="opt" data-addopen="${esc(p)}"><span style="font-family:var(--mono);font-size:13px">${esc(p)}</span><span class="state">${t('exists')} ›</span></button>`).join('');
-  else body = addStartList();
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog" role="dialog" aria-label="${t('addTitle')}"><header><h3>${t('addTitle')}</h3><div class="steps">${steps}</div></header>
-    <div class="body">${body}</div><footer><button class="btn ghost" data-back ${addStep === 0 ? 'disabled' : ''}>${t('back')}</button><button class="btn ghost" data-close>${t('cancel')}</button></footer></div>`;
-  $('#overlay').hidden = false;
+  ATELIER_DIALOG.show({cls: '', titleHtml: '', addSet: ATELIER_DIALOG.addStepView()});
   const q = $('#addq'); if (q) q.focus();
-}
-// Step 2: the kind's sets, one folding group a catalog line (the ones with a set there first), in each the sets to
-// create first; a search box over all of them
-function addCatalogList(cat){
-  const live = liveWrite(), rows = cat.filter(e => catFamily(e) === addFam);
-  const groups = {};
-  for (const e of rows) (groups[e.group] = groups[e.group] || []).push(e);
-  const have = list => list.filter(isThere).length;
-  const order = Object.keys(groups).sort((a, b) => (have(groups[b]) > 0) - (have(groups[a]) > 0) || groups[a].length - groups[b].length);
-  const row = e => {
-    const there = isThere(e), q = esc((shortPath(e.path) + ' ' + (e.when || '')).toLowerCase());
-    if (there) return `<button class="opt addrow" data-q="${q}" data-addopen="${esc(e.path)}"><span style="font-family:var(--mono);font-size:13px">${esc(shortPath(e.path))}</span><span class="state">${t('exists')} ›</span></button>`;
-    const parent = parentThere(e), why = !live ? t('pushNeedsGame') : !parent ? t('addParentFirst', {p: shortPath(parentOf(e.path))}) : '';
-    return `<button class="opt addrow" data-q="${q}" data-addpick="${esc(e.path)}" ${why ? `disabled title="${esc(why)}"` : ''}>` +
-      `<span style="font-family:var(--mono);font-size:13px">${esc(shortPath(e.path))}</span><span class="state new">${t('addNew')}</span></button>`;
-  };
-  return `<input id="addq" class="gpq" type="search" placeholder="${esc(t('addSearch'))}" autocomplete="off" spellcheck="false">` +
-    order.map(g => { const list = groups[g], h = have(list), one = list.length === 1;
-      const head = `<summary><b style="font-family:var(--mono)">${esc(lineLabel(g))}</b><span class="muted small">${esc(t('addCount', {n: list.length, h}))}</span>` +
-        `${list[0].when ? `<small class="muted">${esc(list[0].when)}</small>` : ''}</summary>`;
-      const sorted = list.filter(e => !isThere(e)).concat(list.filter(isThere));
-      return `<details class="wsgroup addgroup" ${one || (S._addOpen || {})[g] ? 'open' : ''} data-addgroup="${esc(g)}">${head}${sorted.map(row).join('')}</details>`; }).join('');
-}
-// Step 3: what the new set starts from
-function addStartList(){
-  const e = (catalogEntries() || []).find(x => x.path === addPath);
-  if (!e) return '';
-  const base = e.base && setThere(e.base) ? e.base : null;
-  const opts = [];
-  if (base) opts.push(['copy', t('fromCopy', {b: shortPath(base)}), t('fromCopyD')]);
-  opts.push(['empty', t('fromEmpty'), t('fromEmptyD')]);
-  opts.push(['worn', t('fromWorn'), t('fromWornD')]);
-  return `<p><code>${esc(shortPath(e.path))}</code></p>` + (e.when ? `<p class="muted small">${esc(e.when)}</p>` : '') +
-    `<p class="muted small">${esc(base ? t('addToday', {b: shortPath(base)}) : t('addTodayNone'))}</p>` +
-    opts.map(([k, a, b]) => `<button class="opt" data-addfrom="${k}"><span>${esc(a)}<small>${esc(b)}</small></span><span>›</span></button>`).join('');
 }
 // The body sent to the game: the path, #create, the base for a copy, the pieces for what you wear
 async function addFrom(kind){

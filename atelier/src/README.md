@@ -112,6 +112,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 8e partie (2026-10-19)** : « Filtrer les stats » (`statpick.ts`, `StatPick.svelte` : son cadre à lui, un
   bloc par groupe de stats ; redessiné en place, la liste garde son défilement aussi après « Tous / Aucun » d'un
   groupe, l'ancienne remontait en haut). Les outils du haut (ordre, presets) restent le HTML de `statPickTools`.
+- **Étape 6c, 9e partie (2026-10-19)** : « Ajouter un set » (`addset.ts`, `AddSet.svelte` : son cadre à lui, les trois
+  étapes ; `add_set.js` garde les étapes, la recherche qui cache des lignes en place et ce qui part au jeu). Un export
+  sans catalogue garde la liste des WS de `push.js` (`addWsList`) en HTML.
 
 ## Vérifier une étape
 
