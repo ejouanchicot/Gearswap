@@ -165,7 +165,7 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   Buffs & cible n'a plus de bloc dessiné par l'ancienne page (restent des textes traduits et l'emblème d'un job).
 - **Étape 7m (2026-10-19)** : le titre d'un set (`TitleBox.svelte`, card.ts `TitleView`, `wsTitle`) : nom, version,
   quand il se porte ou ce que fait la WS, chemin, boutons Optimiser / Supprimer ; `setTitleBox` et `wsTitleHTML`
-  (sets_view.js) sont retirés. Le bouton Supprimer reste le HTML de `delButton` (push.js).
+  (sets_view.js) sont retirés.
 - **Étape 7n (2026-10-19)** : le contrôle d'un réglage des Modules (`ModCtl.svelte`, modules.ts `ctlOf`, `mcCtl`) :
   choix en boutons, « auto » et sa valeur forcée, interrupteur, texte, réglage montré tel qu'écrit ; `modControl` et
   `mcControl` (modules.js) sont retirés. Restent le HTML de l'ancienne page : un nombre (`modNum`), une couleur
@@ -179,6 +179,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   (modules.ts `chipsOf`, `rowsCtl`, `GearList.svelte` pour la liste des pièces du jeu) ; `modChips` (module_items.js),
   `modRows`, `mrCellHTML` et `mrGearList` (module_rows.js) sont retirés. Les Modules n'ont plus de bloc dessiné par
   l'ancienne page (restent les icônes d'objets et des textes traduits).
+- **Étape 7q (2026-10-19)** : le bouton « Supprimer ce set… » du titre (card.ts `delOf`) ; `delButton` (push.js) est
+  retiré, `deletable` y reste (la fenêtre qui demande confirmation s'en sert).
 
 ## Vérifier une étape
 

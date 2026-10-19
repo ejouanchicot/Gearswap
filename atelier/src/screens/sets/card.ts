@@ -40,8 +40,16 @@ export type CardOrPage = CardView | {k: 'page'; view: OptPageView};
 const st = (): LegacyAny => S;
 const TIERS3 = ['Group', 'Solo', 'Trust'];
 
-export interface TitleActs { opt: null | {title: string; labelHtml: string}; delHtml: string }
+export interface TitleActs { opt: null | {title: string; labelHtml: string}; del: null | {off: boolean; title: string; labelHtml: string} }
 export interface TitleView extends TitleActs { kicker: string; name: string; version: string; tag: string; when: string; facts: string[]; factsTip: string; path: string; pathTip: string }
+
+// Deleting the set from its file (push.js: the window that asks first): a set the job's code needs is never deleted
+// (deletable, set_push.lua PROTECTED); only with the game, which writes the file
+function delOf(s: LegacyAny): TitleActs['del'] {
+  if (!deletable(s.path)) return null;
+  const live = liveWrite();
+  return {off: !live, title: t('ttDel') + (live ? '' : ' ' + t('pushNeedsGame')), labelHtml: t('delBtn')};
+}
 
 // The title of a weaponskill set: its weapon, its name and version, what it uses (type, attributes, hits, fTP by TP,
 // critical hits, fTP on every hit: the weaponskill database, exported as ws_info), the set's path. The common set is
@@ -153,7 +161,7 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || isNukeSet(s.path) || roundSet(s) || statSet(s));
   if (optable && optPageOpen(s)) return {k: 'page', view: optPageView(s, ws && wsOfSet(s))};
   // its actions on the title line: the optimizer, then deleting it
-  const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, delHtml: (ws && !wsOfSet(s)) || locked ? '' : delButton(s)};
+  const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s)};
   let title: TitleView, versions: Versions, ctl: CardView['ctl'];
   if (ws) {
     title = wsTitle(s, acts);

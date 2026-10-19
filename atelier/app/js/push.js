@@ -142,11 +142,6 @@ function deletable(path){
   const keys = segs(path);
   return keys.length > 1 && !PROTECTED_SETS.has(keys.join('.'));
 }
-function delButton(s){
-  if (!deletable(s.path)) return '';
-  const live = liveWrite();
-  return `<button class="linkbtn delset" data-setdel ${live ? '' : 'disabled'} title="${esc(t('ttDel') + (live ? '' : ' ' + t('pushNeedsGame')))}">${t('delBtn')}</button>`;
-}
 async function openDelete(s){
   S._del = {s};
   showDialog('pushdlg', t('delTitle'), `<p class="muted">${t('pushReading')}</p>`, '');
