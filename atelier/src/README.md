@@ -181,6 +181,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   l'ancienne page (restent les icônes d'objets et des textes traduits).
 - **Étape 7q (2026-10-19)** : le bouton « Supprimer ce set… » du titre (card.ts `delOf`) ; `delButton` (push.js) est
   retiré, `deletable` y reste (la fenêtre qui demande confirmation s'en sert).
+- **Étape 7r (2026-10-19)** : le bloc d'un set de nuke dans l'optimiseur (optpage.ts `nukeTop`) ; `nukeSituationHTML`
+  (nuke_layers.js) est retiré. Trouvé en le vérifiant : un menu Svelte dont on a choisi une valeur à la main pouvait ne
+  plus suivre une valeur changée ailleurs (Svelte met `selected` sur l'option comme choix par défaut, que le
+  navigateur ignore une fois le menu touché). Tous les menus passés en Svelte prennent maintenant leur valeur de la page
+  à chaque dessin (`components/selsync.ts`, `use:selSync`).
 
 ## Vérifier une étape
 

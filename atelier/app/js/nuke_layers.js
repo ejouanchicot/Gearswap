@@ -8,7 +8,7 @@
 //   NUKE_LAYERS[job]   the job's own sets over its nuke set, each with where the game lays it
 //   nukeSituation(s)   {layers, belt, nuke, fixed, lines}: the layers that apply, the belt chosen, the spell's
 //                      options (day, weather, Orpheus's bonus), the slots they take, the page's lines
-//   nukeSituationHTML(s)  the block shown on a nuke set
+//   (the block shown on a nuke set: atelier/src/screens/optimizer/optpage.ts nukeTop)
 //
 // @file    atelier/app/js/nuke_layers.js
 // @author  ejouanchicot
@@ -96,27 +96,3 @@ function nukeSituation(s){
   return out;
 }
 
-// The block on a nuke set: the belt and the job's layers in plain words, the situation, the slots not searched
-function nukeSituationHTML(s){
-  const o = S.optOpts || {}, sit = nukeSituation(s), belt = autoBelt(), owned = new Set(((ownedOf() || {}).waist || []).map(x => x.name));
-  const p = txt => `<p class="oplocks">${esc(txt)}</p>`, out = [];
-  const sel = `<label class="opf">${esc(t('nlSit'))} <select class="buffsel" data-optopt="nukeSit">${Object.keys(NUKE_SITS).map(k => `<option value="${k}" ${(o.nukeSit || 'far') === k ? 'selected' : ''}>${esc(t('nlSit_' + k))}</option>`).join('')}</select></label>`;
-  if (belt.on) {
-    out.push(p(t('nlBelt', {o: ORPHEUS, h: OBI, m: belt.min})));
-    out.push(p(sit.belt ? t('nlBeltOn', {b: sit.belt.name, v: sit.belt.bonus}) : t('nlBeltOff')));
-    const miss = [OBI, ORPHEUS].filter(n => !owned.has(n));
-    if (miss.length) out.push(p(t('nlBeltMiss', {l: miss.join(', ')})));
-  } else out.push(p(t('nlBeltDisabled')));
-  if (/\.acc$/.test(s.path)) out.push(p(t('nlAcc')));
-  if (nukeLayersApply(s)) for (const L of NUKE_LAYERS[S.job] || []) {
-    const pieces = setPieces(L.path);
-    if (!pieces || (L.onlyNoAutoBelt && belt.on)) continue;
-    for (const [slot, piece] of Object.entries(pieces)) {
-      const args = {slot: SLOT_NAMES[S.lang][slot] || slot, p: piece.name, set: shortSet(L.path), mp: mpThreshold(), l: (L.spells || []).slice(0, 3).join(', ') + (L.spells && L.spells.length > 3 ? '…' : '')};
-      out.push(p(t(L.spells ? 'nlLayer_spells' : 'nlLayer_' + L.when, args)));
-    }
-    if (L.when === 'mpLow') out.push(`<label class="opf"><input type="checkbox" data-optopt="nukeMpLow" ${o.nukeMpLow ? 'checked' : ''}> ${esc(t('nlMpLow', {mp: mpThreshold()}))}</label>`);
-  }
-  if (sit.fixed.length) out.push(p(t('nlFixed', {l: sit.fixed.map(x => SLOT_NAMES[S.lang][x] || x).join(', ')})));
-  return `<h3 class="ophd">${esc(t('nlTitle'))}</h3><div class="opparams">${sel}</div>${out.join('')}`;
-}

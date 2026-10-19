@@ -33,7 +33,7 @@ export interface OptPageView {
   noEngine: string | null;
   statWhatHtml: string | null;
   statResultHtml: string | null;
-  what: null | {topHtml: string; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; searchHtml: string};
+  what: null | {top: NukeTop | {k: 'html'; html: string}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; searchHtml: string};
   result: null | {title: string; none: string | null; big: null | {label: string; value: string; diff: null | {text: string; up: boolean}; was: string; verdict: null | {cls: string; text: string}};
     visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changesHtml: string; trialHtml: string; noTry: string; notes: string; calcHtml: string};
 }
@@ -50,9 +50,36 @@ function whatOf(s: LegacyAny, kind: string): NonNullable<OptPageView['what']> {
   const help = S0._help === 'optpage' ? `${t(kind === 'ws' ? 'optWhy' : kind === 'nuke' ? 'nukeWhy' : kind === 'jump' ? 'jumpWhy' : 'engWhy', {tp: S0.wsTp || 3000})} ${optSettingsHelp(kind === 'ws')} ${t('opHelp')}` : '';
   // the limits first: what a result may never go past is read before what it maximises
   const lim = (k: string, label: string) => opLimitHTML(`data-optopt="${k}"`, label, o[k]);
-  const topHtml = kind === 'nuke' ? nukeSituationHTML(s)
-    : opLimitsHTML(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []));
-  return {topHtml, title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), searchHtml: opSearchHTML(o, kind === 'ws')};
+  const top = kind === 'nuke' ? nukeTop(s)
+    : {k: 'html' as const, html: opLimitsHTML(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []))};
+  return {top, title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), searchHtml: opSearchHTML(o, kind === 'ws')};
+}
+
+// The block on a nuke set (nuke_layers.js): the situation, the belt and the job's layers in plain words, the slots
+// not searched
+export interface NukeTop { k: 'nuke'; title: string; sit: {label: string; options: Array<{value: string; label: string; selected: boolean}>};
+  lines: Array<{k: 'p'; text: string} | {k: 'mpLow'; checked: boolean; label: string}> }
+function nukeTop(s: LegacyAny): NukeTop {
+  const o = (S as LegacyAny).optOpts || {}, sit = nukeSituation(s), belt = autoBelt(), owned = new Set(((ownedOf() || {}).waist || []).map((x: LegacyAny) => x.name));
+  const lines: NukeTop['lines'] = [], p = (text: string) => lines.push({k: 'p', text});
+  if (belt.on) {
+    p(t('nlBelt', {o: ORPHEUS, h: OBI, m: belt.min}));
+    p(sit.belt ? t('nlBeltOn', {b: sit.belt.name, v: sit.belt.bonus}) : t('nlBeltOff'));
+    const miss = [OBI, ORPHEUS].filter(n => !owned.has(n));
+    if (miss.length) p(t('nlBeltMiss', {l: miss.join(', ')}));
+  } else p(t('nlBeltDisabled'));
+  if (/\.acc$/.test(s.path)) p(t('nlAcc'));
+  if (nukeLayersApply(s)) for (const L of NUKE_LAYERS[S.job as string] || []) {
+    const pieces = setPieces(L.path);
+    if (!pieces || (L.onlyNoAutoBelt && belt.on)) continue;
+    for (const [slot, piece] of Object.entries(pieces) as Array<[string, LegacyAny]>) {
+      const args = {slot: SLOT_NAMES[(S as LegacyAny).lang]![slot] || slot, p: piece.name, set: shortSet(L.path), mp: mpThreshold(), l: (L.spells || []).slice(0, 3).join(', ') + (L.spells && L.spells.length > 3 ? '…' : '')};
+      p(t(L.spells ? 'nlLayer_spells' : 'nlLayer_' + L.when, args));
+    }
+    if (L.when === 'mpLow') lines.push({k: 'mpLow', checked: !!o.nukeMpLow, label: t('nlMpLow', {mp: mpThreshold()})});
+  }
+  if (sit.fixed.length) p(t('nlFixed', {l: sit.fixed.map((x: string) => SLOT_NAMES[(S as LegacyAny).lang]![x] || x).join(', ')}));
+  return {k: 'nuke', title: t('nlTitle'), sit: {label: t('nlSit'), options: Object.keys(NUKE_SITS).map(k => ({value: k, label: t('nlSit_' + k), selected: (o.nukeSit || 'far') === k}))}, lines};
 }
 
 // the objective's own settings: the spells a nuke is judged on, the TP the weaponskill goes at or its range, how a

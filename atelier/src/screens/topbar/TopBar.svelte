@@ -9,6 +9,7 @@
   @author  ejouanchicot
 -->
 <script lang="ts">
+  import {selSync} from '../../components/selsync';
   import {legacy} from '../../stores/legacy.svelte';
   import {topBarModel, type Command} from './model';
 
@@ -31,14 +32,14 @@
         {#if h.crest}{@html h.crest}{:else}<svg width="20" height="20" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 1 L22 10 L13 25 L4 10 Z" fill="currentColor"/></svg>{/if}
       </span>
       <span class="who"><b>{h.char}</b><span class="plates">
-        <select class="topsel jobsel" aria-label={h.job.aria} title={h.job.title}>
+        <select class="topsel jobsel" aria-label={h.job.aria} title={h.job.title} use:selSync={h.job.none ? '' : (h.job.groups.flatMap(g => g.options).find(o => o.selected) || {value: undefined}).value}>
           <option value="" selected={h.job.none}>{h.job.overview}</option>
           {#each h.job.groups as g (g.label)}
             <optgroup label={g.label}>{#each g.options as o (o.value)}<option value={o.value} selected={o.selected}>{o.label}</option>{/each}</optgroup>
           {/each}
         </select>
         {#if h.sub}
-          <label class="pick" title={h.sub.title}><small>{h.sub.label}</small><select class="topsel subsel">
+          <label class="pick" title={h.sub.title}><small>{h.sub.label}</small><select class="topsel subsel" use:selSync={(h.sub.groups.flatMap(g => g.options).find(o => o.selected) || {value: undefined}).value}>
             {#each h.sub.groups as g (g.label)}
               <optgroup label={g.label}>{#each g.options as o (o.value)}<option value={o.value} selected={o.selected}>{o.label}</option>{/each}</optgroup>
             {/each}
