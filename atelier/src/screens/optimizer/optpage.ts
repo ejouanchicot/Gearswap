@@ -4,15 +4,15 @@
 // the family against your set, the pieces changed, the trial).
 // The rules are the old page's optPageHTML, opWhatHTML, opParamsHTML, opResultHTML and its pictures (opt_page.js):
 // what the figures are (opFigures, opRows, opObj...) stays theirs. Still the old page's HTML: the search buttons
-// (optimizer.js optGoButtons), the limits, the search's tabs, the pieces changed (opLimitsHTML, opSearchHTML,
-// opChangesHTML: shared with the stats optimizer, stat_opt.js, which stays whole too), a nuke's situation
-// (nuke_layers.js), the trial's row, a round's calculation (ws_page.js roundCalcHTML). A field ending in Html is one
+// (optimizer.js optGoButtons), the search's tabs (opSearchHTML: shared with the
+// stats optimizer; the limits and the pieces changed: blocks.ts), the trial's row, a round's calculation (ws_page.js roundCalcHTML). A field ending in Html is one
 // of the old page's texts it wrote unescaped. The controls keep the attributes the old handlers read (data-optback,
 // data-optobj, data-optopt, data-nukespells, data-cycws, data-help, the .tpin TP field).
 //
 // @file    atelier/src/screens/optimizer/optpage.ts
 // @author  ejouanchicot
 
+import {limitTile, limitsView, changesView, type LimitsView, type ChangesView} from './blocks';
 import {statWhatView, statResultView, type StatWhatView, type StatResultView} from './statpage';
 export interface Objective { key: string; v: string; on: boolean; tip: string; label: string; desc: string; disabled: boolean }
 export type Param =
@@ -34,9 +34,9 @@ export interface OptPageView {
   noEngine: string | null;
   statWhat: StatWhatView | null;
   statResult: StatResultView | null;
-  what: null | {top: NukeTop | {k: 'html'; html: string}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; searchHtml: string};
+  what: null | {top: NukeTop | {k: 'limits'; limits: LimitsView}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; searchHtml: string};
   result: null | {title: string; none: string | null; big: null | {label: string; value: string; diff: null | {text: string; up: boolean}; was: string; verdict: null | {cls: string; text: string}};
-    visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changesHtml: string; trialHtml: string; noTry: string; notes: string; calcHtml: string};
+    visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changes: ChangesView | null; trialHtml: string; noTry: string; notes: string; calcHtml: string};
 }
 
 const st = (): LegacyAny => S;
@@ -50,9 +50,9 @@ function whatOf(s: LegacyAny, kind: string): NonNullable<OptPageView['what']> {
   S0._optSet = s;
   const help = S0._help === 'optpage' ? `${t(kind === 'ws' ? 'optWhy' : kind === 'nuke' ? 'nukeWhy' : kind === 'jump' ? 'jumpWhy' : 'engWhy', {tp: S0.wsTp || 3000})} ${optSettingsHelp(kind === 'ws')} ${t('opHelp')}` : '';
   // the limits first: what a result may never go past is read before what it maximises
-  const lim = (k: string, label: string) => opLimitHTML(`data-optopt="${k}"`, label, o[k]);
+  const lim = (k: string, label: string) => limitTile('data-optopt', k, label, o[k]);
   const top = kind === 'nuke' ? nukeTop(s)
-    : {k: 'html' as const, html: opLimitsHTML(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []))};
+    : {k: 'limits' as const, limits: limitsView(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []))};
   return {top, title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), searchHtml: opSearchHTML(o, kind === 'ws')};
 }
 
@@ -161,7 +161,7 @@ function visualOf(obj: string, main: LegacyAny, now: LegacyAny, was: LegacyAny):
 // figure of the family (opResultHTML)
 function resultOf(s: LegacyAny, kind: string): NonNullable<OptPageView['result']> {
   const obj = opObj(kind), now = opFigures(s, kind), was = trialCount(s) ? opFigures(s, kind, true) : null;
-  const base = {title: t('opResult'), none: null, big: null, visual: null, was: !!was, heads: [], rows: [], changesHtml: '', trialHtml: '', noTry: '', notes: '', calcHtml: ''};
+  const base = {title: t('opResult'), none: null, big: null, visual: null, was: !!was, heads: [], rows: [], changes: null, trialHtml: '', noTry: '', notes: '', calcHtml: ''};
   if (!now) return {...base, none: kind === 'eng' && obj === 'cycle' ? t('cycNoWs') : noEngineText()};
   const rows: LegacyAny[] = opRows(kind, obj).filter((r: LegacyAny) => r.get(now) != null || (was && r.get(was) != null)), main = rows[0];
   const v = main.get(now), w = was ? main.get(was) : null;
@@ -176,7 +176,7 @@ function resultOf(s: LegacyAny, kind: string): NonNullable<OptPageView['result']
   const trial = trialRow(s);
   return {...base, big, visual, heads: was ? [t('rdvMine'), t('rdvTry')] : [t('rdvMine')],
     rows: rows.map((r, i) => ({label: r.label + (i ? '' : ' ★'), obj: !i, cells: (was ? [cell(r, was, now)] : []).concat([cell(r, now, was)])})),
-    changesHtml: opChangesHTML(s), trialHtml: trial || '', noTry: trial ? '' : t('opNoTry'),
+    changes: changesView(s), trialHtml: trial || '', noTry: trial ? '' : t('opNoTry'),
     notes: kind === 'eng' && obj === 'cycle' && cycleInput(s) && !cycleInput(s).tpRule ? t('cycNoRule') : '',
     calcHtml: kind !== 'ws' && now.r && now.r.detail ? roundCalcHTML(now.r.detail, now.r.real) : ''};
 }

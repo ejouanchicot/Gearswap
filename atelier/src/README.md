@@ -216,6 +216,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   contre le set du fichier) ; `statWhatHTML` et `statResultHTML` (stat_opt.js) sont retirés. Restent en HTML les blocs
   que l'optimiseur partage : les tuiles de minimums (`opLimitsHTML`), la recherche (`opSearchHTML`), les pièces
   changées (`opChangesHTML`), la barre de l'essai (`trialRow`), la note des enfeebles (`enfNoteHTML`).
+- **Étape 7aa (2026-10-19)** : les blocs que les deux optimiseurs partagent : les tuiles des limites / minimums et les
+  pièces que l'essai change (`optimizer/blocks.ts`, `OptBlocks.svelte`) ; `opLimitHTML`, `opLimitsHTML` et
+  `opChangesHTML` (opt_page.js) sont retirés.
 
 ## Vérifier une étape
 

@@ -106,22 +106,7 @@ function opObjLabel(kind, k){
   if (k === 'nuke') return t(isBurstSet((S._optSet || {}).path) ? 'nukeObjMb' : 'nukeObj');
   return k === 'jump' ? t('jumpObj') : t('engObj_' + k);
 }
-/* ---- the left column's shared blocks: limits, search, switches ---- */
-// A limit as a tile: its name above, its sign and its value below ("DT+PDT ≤" gives DT+PDT, then ≤ and the number).
-// attr: the input's own attribute (data-optopt="pdt" here, data-statfloor="hp" in stat_opt.js)
-function opLimitHTML(attr, label, value){
-  const m = String(label).match(/^(.*?)\s*([≤≥])\s*$/), name = m ? m[1] : label;
-  // what the limit does, not its name again: the limits the damage optimizer knows have their own sentence
-  const key = (String(attr).match(/data-optopt="(\w+)"/) || [])[1], tip = key && T[S.lang]['ttLim_' + key] ? t('ttLim_' + key) : t('ttLim');
-  return `<label class="oplim" title="${esc(tip)}"><span class="oplimn">${esc(name)}</span><span class="oplimv">${m ? `<i>${m[2]}</i>` : ''}` +
-    `<input type="number" step="1" ${attr} value="${esc(value)}"></span></label>`;
-}
-// The limits block, at the top of the column: seen before anything else. More than four tiles (the stats
-// optimizer's minimums) go two across, their longer names on two lines
-function opLimitsHTML(title, tiles, extra = ''){
-  const shown = tiles.filter(Boolean);
-  return `<h3 class="ophd" ${extra}>${esc(title)}</h3><div class="oplimits ${shown.length > 4 ? 'many' : ''}">${shown.join('')}</div>`;
-}
+/* ---- the left column's shared blocks: search, switches (the limits: atelier/src/screens/optimizer/blocks.ts) ---- */
 // The search's settings, in tabs: the pieces it may use, how it works them out, the special pieces. A new setting is a
 // line in OP_SWITCH (its label, its tip) and its key in a tab here; what it changes reads S.optOpts.<key>. `menu`: the
 // tab's menu (an S.optOpts key, its label, its values and their text prefix); `count`: the tab's name says how many
@@ -234,14 +219,6 @@ function opRows(kind, obj){
       floor: lim ? v => op === '≤' ? v <= lim : v >= lim : null})));
   const first = rows.find(r => r.id === obj);
   return first ? [first].concat(rows.filter(r => r !== first)) : rows;
-}
-// The pieces the try changes: the slot, your piece, the try's
-function opChangesHTML(s){
-  const tr = S.trial[trialKey(s)] || {}, plain = withoutTrial(() => withWeapons(s).pieces);
-  const list = SLOTS.filter(slot => tr[slot] && !heldAlready(s, slot, tr[slot]));
-  if (!list.length) return '';
-  return `<h4 class="ophd2">${t('opChanges')}</h4><ul class="opchg">${list.map(slot => `<li><span class="sl">${esc(SLOT_NAMES[S.lang][slot] || slot)}</span>` +
-    `<span>${esc((plain[slot] || {}).name || '—')}</span><span class="to">→ ${esc(tr[slot].name || '—')}</span></li>`).join('')}</ul>`;
 }
 
 /* ---- the whole-fight objective (atelier/cycle.js) ---- */
