@@ -588,27 +588,6 @@ function hpCycleRows(){
   }
   return [...out.values()];
 }
-function hpCycleHTML(s){
-  if (!['PLD', 'RUN'].includes(S.job) || !engineReady() || !FFXI.opt.statFigures) return '';
-  // the idle the cycle starts from: the set shown when it is one (idle.PDT, idle.MDT...), else sets.idle
-  const idle = family(s.path, s.pieces) === 'idle' ? s : (S._bypath || {})['sets.idle'];
-  if (!idle) return '';
-  const r = charStats(idle, {}), naked = r ? r.cur.hp : 0, hp = x => x ? setMaxHp(x, naked) : null, top = hp(idle), ref = hpRef(idle);
-  const rows = hpCycleRows().map(x => {
-    const a = hp(x.pre), b = hp(x.mid), low = Math.min(top, a == null ? top : a, b == null ? top : b);
-    return Object.assign(x, {a, b, loss: top - low});
-  }).sort((x, y) => y.loss - x.loss || x.names[0].localeCompare(y.names[0]));
-  const mine = x => [x.pre, x.mid].some(z => z && (z.path === s.path || (z.aliases || []).includes(s.path))) || x.names.some(n => s.path.endsWith('.' + n) || s.path.endsWith(`["${n}"]`));
-  const cls = x => x.self ? '' : x.loss > HP_SPREAD ? 'short' : x.loss > 0 ? 'warn' : 'better';
-  const names = x => (x.ja ? t('cyJa') + ' · ' : '') + x.names.sort().join(', ');
-  const refLine = ref ? `<p class="note-m">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}${top > ref.hp + HP_SPREAD ? ' ' + esc(t('cyIdleHigh', {n: top - ref.hp})) : ''}</p>` : '';
-  const body = `<p class="note-m">${esc(t('cyNote', {i: top, n: shortPath(idle.path)}))}</p>${refLine}<table class="rdvs optable hpcycle"><thead><tr><th>${t('cyAct')}</th><th>${t('cyPre')}</th><th>${t('cyMid')}</th><th>${t('cyLoss')}</th></tr></thead><tbody>` +
-    rows.map(x => `<tr class="${mine(x) ? 'obj' : ''}"><th title="${esc(x.names.join(', '))}">${esc(names(x).length > 24 ? names(x).slice(0, 23) + '…' : names(x))}</th>` +
-      `<td>${x.a ?? '—'}</td><td>${x.b ?? '—'}</td><td class="${cls(x)}">${x.self ? esc(t('cyOnPurpose')) : x.loss ? '−' + x.loss : '0'}</td></tr>`).join('') + `</tbody></table>`;
-  // open until folded: it is what a tank checks on every set
-  if (S.boxOpen.hpcycle === undefined) S.boxOpen.hpcycle = true;
-  return fbox('hpcycle', 'g-tank', t('cyTitle'), body);
-}
 
 
 /* ---- the search ---- */

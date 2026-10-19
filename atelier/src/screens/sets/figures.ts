@@ -4,8 +4,7 @@
 // The boxes are data (StatBox: its rows a label, a figure, a note, a tooltip): the tanking and attack boxes are worked
 // out here, the old page's tankHTML / offenseHTML (engine.js) draw these same boxes through boxHtml (the buffs window,
 // My character's cards). The rules are the old page's setPanelHTML (layout2.js), tankHTML, offenseHTML, fbox
-// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js). Still the old page's HTML: the HP cycle
-// (stat_opt.js), the Luopan (luopan.js), the stats sheet (stats.js setStatsHTML), every stat (globalsHTML), the
+// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js). Still the old page's HTML: the Luopan (luopan.js), the stats sheet (stats.js setStatsHTML), every stat (globalsHTML), the
 // extra tanking lines (tankExtraHTML). A field ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/figures.ts
@@ -18,7 +17,8 @@ export interface StatBox { key: string; cls: string; titleHtml: string; open: bo
 export interface FiguresView {
   title: string;
   boxes: StatBox[];
-  afterHtml: string;
+  hp: HpCycleView | null;
+  luopanHtml: string;
   sheetHtml: string;
   all: {open: boolean; title: string; label: string; html: string};
 }
@@ -133,6 +133,34 @@ function fightBox(s: LegacyAny): StatBox | null {
   return box('fight', 'g-mag', esc(t('fightTab')), rows, fmtDmg(r.damage), `<p class="note-m">${esc(t('fightHead', {sp: spells.join(', '), foe: f.input.enemy || ''}))}</p>`);
 }
 
+export interface HpCycleView { open: boolean; title: string; foldTitle: string; note: string; ref: string; heads: string[];
+  rows: Array<{mine: boolean; names: string; label: string; a: string; b: string; cls: string; loss: string}> }
+
+/** A tank's HP cycle (PLD, RUN: the Guide_Paladin's HP management): every action's sets, idle -> precast -> midcast ->
+ * idle, what each takes off the max HP, worst first; the line of the set shown marked; open until folded (it is what a
+ * tank checks on every set). Null for another job, or before the engine */
+function hpCycle(s: LegacyAny): HpCycleView | null {
+  const F = (window as LegacyAny).FFXI;
+  if (!['PLD', 'RUN'].includes(S.job as string) || !engineReady() || !F.opt.statFigures) return null;
+  // the idle the cycle starts from: the set shown when it is one (idle.PDT, idle.MDT...), else sets.idle
+  const S0 = st(), idle = family(s.path, s.pieces) === 'idle' ? s : (S0._bypath || {})['sets.idle'];
+  if (!idle) return null;
+  const r = charStats(idle, {}), naked = r ? r.cur.hp : 0, hp = (x: LegacyAny) => x ? setMaxHp(x, naked) : null, top = hp(idle) as number, ref = hpRef(idle);
+  const rows = hpCycleRows().map((x: LegacyAny) => {
+    const a = hp(x.pre), b = hp(x.mid), low = Math.min(top, a == null ? top : a, b == null ? top : b);
+    return Object.assign(x, {a, b, loss: top - low});
+  }).sort((x: LegacyAny, y: LegacyAny) => y.loss - x.loss || x.names[0].localeCompare(y.names[0]));
+  const mine = (x: LegacyAny) => [x.pre, x.mid].some(z => z && (z.path === s.path || (z.aliases || []).includes(s.path))) || x.names.some((n: string) => s.path.endsWith('.' + n) || s.path.endsWith(`["${n}"]`));
+  const cls = (x: LegacyAny) => x.self ? '' : x.loss > HP_SPREAD ? 'short' : x.loss > 0 ? 'warn' : 'better';
+  const names = (x: LegacyAny) => (x.ja ? t('cyJa') + ' · ' : '') + x.names.sort().join(', ');
+  if (S0.boxOpen.hpcycle === undefined) S0.boxOpen.hpcycle = true;
+  return {open: !!S0.boxOpen.hpcycle, title: t('cyTitle'), foldTitle: t('ttFold'), note: t('cyNote', {i: top, n: shortPath(idle.path)}),
+    ref: ref ? t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}) + (top > ref.hp + HP_SPREAD ? ' ' + t('cyIdleHigh', {n: top - ref.hp}) : '') : '',
+    heads: [t('cyAct'), t('cyPre'), t('cyMid'), t('cyLoss')],
+    rows: rows.map((x: LegacyAny) => { const n = names(x); return {mine: mine(x), names: x.names.join(', '), label: n.length > 24 ? n.slice(0, 23) + '…' : n,
+      a: String(x.a ?? '—'), b: String(x.b ?? '—'), cls: cls(x), loss: x.self ? t('cyOnPurpose') : x.loss ? '−' + x.loss : '0'}; })};
+}
+
 /** The column of figures of a set (setPanelHTML), with what it keeps in the page's state (S._curSet) */
 export function figuresView(s: LegacyAny): FiguresView {
   const S0 = st();
@@ -144,6 +172,6 @@ export function figuresView(s: LegacyAny): FiguresView {
   const boxes = fight ? [fight] : off ? [off] : r ? [tankBox(r)] : [];
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), html: globalsHTML(s, 'stats')};
-  const afterHtml = hpCycleHTML(s) + luopanHTML(s), sheetHtml = setStatsHTML(s);
-  return {title: t('ui2SetTitle'), boxes, afterHtml, sheetHtml, all};
+  const hp = hpCycle(s), luopanHtml = luopanHTML(s), sheetHtml = setStatsHTML(s);
+  return {title: t('ui2SetTitle'), boxes, hp, luopanHtml, sheetHtml, all};
 }

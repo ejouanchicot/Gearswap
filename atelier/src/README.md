@@ -192,6 +192,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   qui sait maintenant n'avoir qu'une note sans liste : `bare`) ; `fightBoxHTML` (fight_stats.js) est retiré. Comme les
   autres blocs de chiffres déjà passés en Svelte, ses chiffres défilent d'un set à l'autre (l'ancienne page les
   redessinait) : un test qui lit trop tôt voit la valeur en route (tests de clics lancés animations coupées).
+- **Étape 7t (2026-10-19)** : le cycle des HP d'un tank PLD / RUN (figures.ts `hpCycle`, dessiné par `Figures.svelte`) ;
+  `hpCycleHTML` (stat_opt.js) est retiré, `hpCycleRows`, `setMaxHp` et `hpRef` y restent (l'optimiseur de stats s'en sert).
 
 ## Vérifier une étape
 
