@@ -4,15 +4,15 @@
 // both, and the bar of the changes that wait, to save in one go.
 // The rules are the old page's renderModules, renderModulesSimple, mcIntroHTML, mcCardHTML, modRowHTML, modListHTML,
 // modGroupHTML (modules.js), modTop, modSaveBar, modSearch (module_ux.js), modControl, mcControl (modules.js: a setting's
-// control, ModCtl below). A number, a colour, a list of items and a table of lines are still the old page's HTML
-// (module_ux.js, module_items.js, module_rows.js), with the attributes their handlers read.
+// control, ModCtl below), modNum, modColorMap, modPresets (module_ux.js). A list of items and a table of lines are
+// still the old page's HTML (module_items.js, module_rows.js), with the attributes their handlers read.
 //
 // @file    atelier/src/screens/config/modules.ts
 // @author  ejouanchicot
 
 export interface ModKey { name: string; code: string | null; doc: string }
 /** A line of the Files view: a table's heading (grp), or a setting with its control */
-export interface ModRow { grp: boolean; depth: number; key: ModKey; tintHtml: string; ctl: ModCtl | null; changed: boolean; tall: boolean }
+export interface ModRow { grp: boolean; depth: number; key: ModKey; tint: ModCtl | null; ctl: ModCtl | null; changed: boolean; tall: boolean }
 /** An option of the Options view */
 export interface ModCard { title: string; desc: string; scope: {cls: string; text: string; tip: string}; ctl: ModCtl; changed: boolean; tall: boolean }
 export type ModItem = {kind: 'part'; title: string; why: string} | {kind: 'card'; card: ModCard} | {kind: 'row'; row: ModRow};
@@ -55,10 +55,43 @@ export type ModCtl = {k: 'seg'; id: Record<string, string>; off: boolean; btns: 
   | {k: 'switch'; id: Record<string, string>; off: boolean; on: boolean; tip: string; labelHtml: string}
   | {k: 'text'; id: Record<string, string>; off: boolean; value: string; tip: string}
   | {k: 'code'; summary: string; code: string}
+  | {k: 'num'; id: Record<string, string>; off: boolean; value: string; lim: Record<string, string>; tip: string; unit: string;
+      slide: null | {min: number; max: number; step: number; tip: string}; steps: Array<{step: number; sign: string; tip: string; aria: string}>;
+      std: null | {is: true; text: string} | {is: false; v: LegacyAny; text: string; tip: string}}
+  | {k: 'color'; attrs: Record<string, string>; off: boolean; hex: string; tip: string; of: string}
+  | {k: 'presets'; label: string; off: boolean; tiles: Array<{attrs: Record<string, string>; pressed: boolean; tip: string; style: string; name: string}>}
+  | {k: 'multi'; parts: ModCtl[]}
   | {k: 'html'; html: string};
 const idAttrs = (file: string, path: string) => ({'data-modfile': file, 'data-modpath': path});
 // what a control says under the pointer: what a click or a typed value does; read only, why
 const tipOf = (off: string, key: string, v?: LegacyAny) => off ? t('ttModRead') : t(key, v);
+
+// A number (module_ux.js mxNumOpts): - and + by its step, a slider when it has bounds, its unit, its standard value
+function numOf(x: LegacyField, val: LegacyAny, id: Record<string, string>, off: string, lopts?: LegacyAny): ModCtl {
+  const o = mxNumOpts(x, lopts), lim: Record<string, string> = o.range ? {'data-min': String(o.range[0]), 'data-max': String(o.range[1])} : {};
+  const step = (dir: number, sign: string, key: string) => ({step: dir * o.step, sign, tip: off ? t('ttModRead') : t(key, {s: o.step}), aria: t(key, {s: o.step})});
+  return {k: 'num', id, off: !!off, value: String(val), lim, unit: o.unit || '', tip: tipOf(off, o.range ? 'mxRange' : 'ttModNum', o.range ? {a: o.range[0], b: o.range[1]} : {}),
+    slide: o.range ? {min: o.range[0], max: o.range[1], step: o.step, tip: tipOf(off, 'mxSlide', {a: o.range[0], b: o.range[1]})} : null,
+    steps: [step(-1, '−', 'mxLess'), step(1, '+', 'mxMore1')],
+    std: o.std == null ? null : val === o.std ? {is: true, text: t('mxIsStd')} : {is: false, v: o.std, text: t('mxStd', {v: o.std}), tip: tipOf(off, 'mxStdTip', {v: o.std})}};
+}
+// A colour: its picker, its code, its three numbers
+const swatch = (rgb: number[], attrs: Record<string, string>, off: string): ModCtl => ({k: 'color', attrs, off: !!off, hex: mxHex(rgb[0], rgb[1], rgb[2]),
+  tip: tipOf(off, 'mxColor'), of: t('mxColorOf', {r: rgb[0], g: rgb[1], b: rgb[2]})});
+// A table that holds a colour as three named numbers (r g b): the colour itself
+function colorMapOf(f: LegacyConfigFile, x: LegacyField, off: string): ModCtl {
+  const keys = mxColorMap(x) as string[];
+  return swatch(keys.map(k => modValue(f.file, x.path + '.' + k) as number), {'data-modcolor': keys.join(','), 'data-modfile': f.file, 'data-modpath': x.path}, off);
+}
+// The colours a file offers ready made (its table `from`), the one in use lit
+function presetsOf(f: LegacyConfigFile, x: LegacyField, from: string, off: string): ModCtl | null {
+  const all = modParsed(f).byPath[from]; if (!all || all.kind !== 'map') return null;
+  const rgba = (p: string) => ['r', 'g', 'b', 'a'].map(k => modValue(f.file, p + '.' + k) as LegacyAny), cur = rgba(x.path).join(',');
+  const tiles = all.fields.filter((p: LegacyField) => mxColorMap(p)).map((p: LegacyField) => { const v = rgba(p.path), name = String(p.key).replace(/_/g, ' ');
+    return {attrs: {'data-modpreset': p.path, 'data-modfile': f.file, 'data-modpath': x.path}, pressed: v.join(',') === cur, tip: tipOf(off, 'mxPresetTip', {n: name, a: v[3]}),
+      style: `background:${mxHex(v[0], v[1], v[2])};opacity:${Math.max(.25, (v[3] == null ? 255 : v[3]) / 255)}`, name}; });
+  return tiles.length ? {k: 'presets', label: t('mxPresets'), off: !!off, tiles} : null;
+}
 
 // A setting's control by its kind: a value its comment names in quotes (buttons), 'auto' or a forced value, a switch,
 // a number, a colour, a text, a list of tiles, a table of lines; anything else is shown as written
@@ -69,9 +102,8 @@ function ctlOf(f: LegacyConfigFile, x: LegacyField, val: LegacyAny, file: string
   if (modAuto(x)) return {k: 'seg', id, off: !!off, btns: seg(['auto'], val, () => t('modAuto'), 'ttModAuto'), input: {value: val === 'auto' ? '' : modShow(val), ph: t('modForce'), tip: tipOf(off, 'ttModForce')}};
   if (typeof val === 'boolean') return {k: 'switch', id, off: !!off, on: val, tip: tipOf(off, val ? 'ttModTurnOff' : 'ttModTurnOn'), labelHtml: t(val ? 'modOn' : 'modOff')};
   if (opts) return {k: 'seg', id, off: !!off, btns: seg(opts, val), input: null};
-  // module_ux.js: a number with - / +, its bounds, its standard value; a colour, shown and picked as one
-  if (x.kind === 'num') return {k: 'html', html: modNum(x, val, html, off, lopts)};
-  if (mxColorList(f, x)) return {k: 'html', html: modColorList(val, html, off)};
+  if (x.kind === 'num') return numOf(x, val, id, off, lopts);
+  if (mxColorList(f, x)) return swatch(val, {'data-modcolor': 'list', ...id}, off);
   if (x.kind === 'str') return {k: 'text', id, off: !!off, value: String(val), tip: tipOf(off, 'ttModText')};
   // module_items.js: tiles to drag, items with their icons; module_rows.js: a table of lines
   if (x.kind === 'list') return {k: 'html', html: modChips(x, val, html, off, lopts)};
@@ -84,7 +116,7 @@ function mcCtl(r: LegacyCatalogRow, val: LegacyAny, off: string): ModCtl {
   const lang = S.lang === 'en' ? 2 : 1;
   if (r.it.choices) return {k: 'seg', id: idAttrs(r.f.file, r.x.path), off: !!off, input: null, btns: r.it.choices.map((c: LegacyAny, i: number) =>
     ({attrs: {'data-mcchoice': r.id + ':' + i}, label: c[lang], pressed: c[0] === val, tip: tipOf(off, c[0] === val ? 'ttModChosen' : c[0] === 'auto' ? 'ttModAuto' : 'ttModChoose', {v: c[lang]})}))};
-  if (r.it.rgb) return {k: 'html', html: modColorMap(r.f, r.x, off) + (r.it.presets ? modPresets(r.f, r.x, r.it.presets, off) : '')};
+  if (r.it.rgb) { const pre = r.it.presets ? presetsOf(r.f, r.x, r.it.presets as string, off) : null; return {k: 'multi', parts: [colorMapOf(r.f, r.x, off)].concat(pre ? [pre] : [])}; }
   return ctlOf(r.f, r.x, val, r.f.file, r.x.path, off, r.it);
 }
 
@@ -95,13 +127,13 @@ function rowsOf(f: LegacyConfigFile, x: LegacyField, depth: number, skip: Record
   const rest = modRestFr(f.file, x.path), fr = S.lang === 'en' ? null : rest, name = fr ? fr.title : modName(x);
   const key = {name, code: x.key != null && name !== x.key ? x.key : null, doc: fr ? fr.desc : [modDoc(x.doc), x.note].filter(Boolean).join('\n')};
   // a table that holds a colour (r g b): the colour itself on its line, its three numbers under it
-  const tintHtml = mxColorMap(x) ? modColorMap(f, x, off) : '';
-  if (x.kind === 'map') return ([{grp: true, depth, key, tintHtml, ctl: null, changed: false, tall: false}] as ModRow[])
+  const tint = mxColorMap(x) ? colorMapOf(f, x, off) : null;
+  if (x.kind === 'map') return ([{grp: true, depth, key, tint, ctl: null, changed: false, tall: false}] as ModRow[])
     .concat(x.fields.flatMap(c => rowsOf(f, c, depth + 1, skip)));
   // an empty table of named entries looks like an empty list: it is shown, not changed here
   const named = rest && rest.map && x.kind === 'list' && !x.fields.length;
   const ctl: ModCtl = named ? {k: 'code', summary: t('modNamed'), code: f.text.slice(x.a, x.b)} : ctlOf(f, x, val, f.file, x.path, off);
-  return [{grp: false, depth, key, tintHtml: '', ctl, changed: !!ed, tall: x.kind === 'code' || (x.kind === 'list' && !mxColorList(f, x)) || x.kind === 'rows'}];
+  return [{grp: false, depth, key, tint: null, ctl, changed: !!ed, tall: x.kind === 'code' || (x.kind === 'list' && !mxColorList(f, x)) || x.kind === 'rows'}];
 }
 
 // ---- an option of the Options view (modules.js mcCardHTML) ----

@@ -171,6 +171,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   `mcControl` (modules.js) sont retirés. Restent le HTML de l'ancienne page : un nombre (`modNum`), une couleur
   (`modColorList`, `modColorMap`, `modPresets`), une liste de tuiles (`modChips`), un tableau de lignes (`modRows`).
   Au passage, le commentaire de `cardView` (card.ts) est remis au-dessus de sa fonction.
+- **Étape 7o (2026-10-19)** : un nombre (− / +, curseur, valeur standard) et une couleur (le sélecteur, son code, les
+  couleurs toutes prêtes) dans les Modules (modules.ts `numOf`, `swatch`, `colorMapOf`, `presetsOf`) ; `modNum`,
+  `modColorList`, `modColorMap`, `modPresets` et `mxSwatch` (module_ux.js) sont retirés.
 
 ## Vérifier une étape
 

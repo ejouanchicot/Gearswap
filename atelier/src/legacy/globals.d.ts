@@ -151,7 +151,6 @@ declare function mcScope(d: LegacyExport, r: LegacyCatalogRow): {cls: string; te
 /** A setting's control (switch, choices, number, chips, rows, colour...), as the old page's HTML */
 declare function mxColorMap(x: LegacyField): unknown;
 declare function mxColorList(f: LegacyConfigFile, x: LegacyField): boolean;
-declare function modColorMap(f: LegacyConfigFile, x: LegacyField, off: string): string;
 declare function mxTitle(file: string, path: string): string;
 declare function mxCut(text: unknown): string;
 declare function mxNorm(text: unknown): string;
@@ -500,8 +499,7 @@ declare function wsInfoOf(ws: string): LegacyAny;
 declare function modOptions(x: LegacyAny): string[] | null;
 declare function modAuto(x: LegacyAny): boolean;
 declare function modShow(v: LegacyAny): string;
-declare function modNum(x: LegacyAny, val: LegacyAny, id: string, off: string, lopts?: LegacyAny): string;
-declare function modColorList(val: LegacyAny, id: string, off: string): string;
 declare function modChips(x: LegacyAny, val: LegacyAny, id: string, off: string, opts?: LegacyAny): string;
 declare function modRows(x: LegacyAny, val: LegacyAny, id: string, off: string, opts?: LegacyAny): string;
-declare function modPresets(f: LegacyAny, x: LegacyAny, from: LegacyAny, off: string): string;
+declare function mxNumOpts(x: LegacyAny, opts?: LegacyAny): {range: [number, number, number?] | null; step: number; std: LegacyAny; unit: string};
+declare function mxHex(r: LegacyAny, g: LegacyAny, b: LegacyAny): string;

@@ -30,27 +30,19 @@ Object.assign(T.en, {mxSearch: 'Search an option: a word, an item, a spell…', 
   mxWsKindAny: '{k}: jobs not told', mxWsKindOther: '{k}: those {j} does not have', mxWsJob: '{j} weaponskills', mxWsSub: 'With your /{s} subjob', mxWsFoundOk: 'Usable on {j}', mxWsFoundOther: 'Those {j} does not have',
   mxWsFrom: 'Given by: {w}.', mxWsJobs: 'Jobs: {j}.', mxWsNoJobs: 'Jobs not told.', mxActAll: 'In the whole game', mxUsedJa: 'Abilities already in your lists (all your jobs)', mxUsedMa: 'Magic already in your lists (all your jobs)', mxUsedMode: 'Spells that follow a mode', mxAllJa: 'Other abilities of the game', mxAllMa: 'Other magic of the game', mxActUse: 'Usable on {j}', mxActOther: 'Not usable on {j}', mxActHint: 'Type a few letters to search every ability and spell of the game.'});
 
-/* ---- a number with its bounds ---- */
+/* ---- a number with its bounds (its control: atelier/src/screens/config/modules.ts numOf) ---- */
 // opts: {unit, range: [min, max, step], std}. A unit in percent is 0 to 100 by itself
 function mxNumOpts(x, opts = {}){
   const range = opts.range || (opts.unit && opts.unit.includes('%') ? [0, 100] : null);
   const step = (range && range[2]) || (Number.isInteger(x.value) ? 1 : 0.1);
   return {range, step, std: opts.std, unit: opts.unit};
 }
-function modNum(x, val, id, off, opts){
-  const o = mxNumOpts(x, opts), lim = o.range ? `data-min="${o.range[0]}" data-max="${o.range[1]}"` : '';
-  const btn = (dir, sign, key) => `<button class="mcstep" data-numstep="${dir * o.step}" ${lim} ${id} ${off} title="${esc(off ? t('ttModRead') : t(key, {s: o.step}))}" aria-label="${esc(t(key, {s: o.step}))}">${sign}</button>`;
-  const slide = o.range ? `<input class="modrange" type="range" min="${o.range[0]}" max="${o.range[1]}" step="${o.step}" value="${esc(val)}" data-modrange ${id} ${off} ${modTip(off, 'mxSlide', {a: o.range[0], b: o.range[1]})}>` : '';
-  const std = o.std == null ? '' : val === o.std ? `<small class="mcstd is">${esc(t('mxIsStd'))}</small>` : `<button class="mcstd" data-modstd="${o.std}" ${id} ${off} ${modTip(off, 'mxStdTip', {v: o.std})}>${esc(t('mxStd', {v: o.std}))}</button>`;
-  return `${slide}<span class="mcfield">${btn(-1, '−', 'mxLess')}<input class="modin num" type="text" inputmode="decimal" value="${esc(val)}" ${lim} ${id} data-modin ${off} ` +
-    `${modTip(off, o.range ? 'mxRange' : 'ttModNum', o.range ? {a: o.range[0], b: o.range[1]} : {})}>${o.unit ? `<i class="mcunit">${esc(o.unit)}</i>` : ''}${btn(1, '+', 'mxMore1')}</span>${std}`;
-}
 const mxRound = v => Number(v.toFixed(4));
 const mxClamp = (v, d) => Math.min(d.max != null && d.max !== '' ? +d.max : Infinity, Math.max(d.min != null && d.min !== '' ? +d.min : -Infinity, v));
 // A typed number outside its bounds is refused (the bounds are on the field)
 const mxInRange = (el, v) => typeof v !== 'number' || el.dataset.min == null || (v >= +el.dataset.min && v <= +el.dataset.max);
 
-/* ---- a colour ---- */
+/* ---- a colour (its control: atelier/src/screens/config/modules.ts swatch, colorMapOf, presetsOf) ---- */
 const mxHex = (r, g, b) => '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(+v) || 0)).toString(16).padStart(2, '0')).join('');
 const mxRgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
 const MX_RGB = [['r', 'g', 'b'], ['red', 'green', 'blue']];
@@ -58,24 +50,7 @@ const MX_RGB = [['r', 'g', 'b'], ['red', 'green', 'blue']];
 const mxColorList = (f, x) => x.kind === 'list' && /UI_(COLOR_)?CONFIG\.lua$/.test(f.file) && x.fields.length === 3 && x.fields.every(c => c.kind === 'num' && c.value >= 0 && c.value <= 255);
 // A table that holds a colour as three named numbers (r g b, red green blue): the three names, or null
 const mxColorMap = x => x.kind === 'map' ? MX_RGB.find(keys => keys.every(k => x.fields.some(c => c.key === k && c.kind === 'num'))) || null : null;
-const mxSwatch = (rgb, attr, off) => `<span class="modcolor"><input type="color" value="${mxHex(...rgb)}" ${attr} ${off} ${modTip(off, 'mxColor')}><code>${mxHex(...rgb).toUpperCase()}</code>` +
-  `<small>${esc(t('mxColorOf', {r: rgb[0], g: rgb[1], b: rgb[2]}))}</small></span>`;
-const modColorList = (val, id, off) => mxSwatch(val, `data-modcolor="list" ${id}`, off);
-function modColorMap(f, x, off){
-  const keys = mxColorMap(x), rgb = keys.map(k => modValue(f.file, x.path + '.' + k));
-  return mxSwatch(rgb, `data-modcolor="${keys.join(',')}" data-modfile="${esc(f.file)}" data-modpath="${esc(x.path)}"`, off);
-}
 
-// The ready-made colours of the file (a table of named {r, g, b, a}: UI_CONFIG.lua background_presets), as swatches:
-// a click takes the colour and its opacity
-function modPresets(f, x, from, off){
-  const all = modParsed(f).byPath[from]; if (!all || all.kind !== 'map') return '';
-  const cur = ['r', 'g', 'b', 'a'].map(k => modValue(f.file, x.path + '.' + k)).join(',');
-  const tiles = all.fields.filter(p => mxColorMap(p)).map(p => { const v = ['r', 'g', 'b', 'a'].map(k => modValue(f.file, p.path + '.' + k)), name = p.key.replace(/_/g, ' ');
-    return `<button class="modpreset" data-modpreset="${esc(p.path)}" data-modfile="${esc(f.file)}" data-modpath="${esc(x.path)}" aria-pressed="${v.join(',') === cur}" ${off} ` +
-      `title="${esc(off ? t('ttModRead') : t('mxPresetTip', {n: name, a: v[3]}))}"><i style="background:${mxHex(v[0], v[1], v[2])};opacity:${Math.max(.25, (v[3] == null ? 255 : v[3]) / 255)}"></i><span>${esc(name)}</span></button>`; }).join('');
-  return tiles ? `<div class="modpresets"><small>${esc(t('mxPresets'))}</small>${tiles}</div>` : '';
-}
 /* ---- the bar of waiting changes ---- */
 // A setting's name for the player: the catalog's, else the Advanced view's, else the file's own
 function mxTitle(file, path){
