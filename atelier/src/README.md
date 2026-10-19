@@ -98,6 +98,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 5e partie (2026-10-19)** : pousser un set dans GearSwap, le supprimer, en ajouter un vide
   (`pushview.ts`, `PushView.svelte`), une fois que le jeu a dit ce qui changerait ; le plan, les avertissements et la
   réponse du jeu restent à `push.js`.
+- **Étape 6c, 6e partie (2026-10-19)** : « Selon la PT » (`tiercost.ts`, `TierCost.svelte` : chaque version d'un set
+  dans chaque situation) et l'historique des écritures dans GearSwap (`history.ts`, `History.svelte`).
 
 ## Vérifier une étape
 

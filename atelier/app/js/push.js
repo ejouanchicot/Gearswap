@@ -189,20 +189,8 @@ async function openHistory(){
   let r;
   try { r = await liveFetch(S.char, '/push_history', {timeout: 4000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('histdlg', t('histTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
-  const list = r.list || [];
-  const state = e => e.undone ? `<span class="muted small">${esc(t('histUndone', {d: e.undone}))}</span>`
-    : e.undoable ? `<button class="btn ghost" data-pushundo="${e.id}">${t('histUndo')}</button>`
-    : `<span class="muted small" title="${esc(t('histLaterTip'))}">${t('histLater')}</span>`;
-  // what the entry did: a set deleted, a set created, or pieces changed in a set already there
-  const kind = e => e.config ? 'config' : e.deleted ? 'delete' : e.created ? 'create' : 'pieces';
-  const tag = e => `<span class="histtag ${kind(e)}">${esc(t('histKind_' + kind(e), {n: (e.changes || []).length}))}</span>`;
-  const body = list.length ? list.map(e => `<details class="histrow ${e.undone ? 'undone' : ''}"><summary class="histhead">${tag(e)}<b>${esc(e.job)}</b>` +
-    `<code>${esc(shortPath(e.path))}</code><span class="muted small">${esc(e.at)}</span><span class="sp"></span>${state(e)}</summary>` +
-    `<p class="muted small histfile">${esc(e.file)}</p>` +
-    (e.deleted ? `<ul><li><del>${esc(e.deleted.map(shortPath).join(' · '))}</del> ${t('histDeleted')}</li></ul>` : '') +
-    `<ul>${(e.changes || []).map(c => `<li><b>${SLOT_NAMES[S.lang][c.slot] || c.slot}</b> ${c.before ? `<del>${esc(c.before)}</del> → ` : '+ '}` +
-      `<ins>${esc(c.after || t('histInherit'))}</ins></li>`).join('')}</ul></details>`).join('') : `<p class="muted">${t('histEmpty')}</p>`;
-  showDialog('histdlg', t('histTitle'), (S._histToast ? `<p class="ok">${esc(S._histToast)}</p>` : '') + body, '');
+  // the list: drawn by the Svelte application (atelier/src/screens/dialogs/history.ts)
+  ATELIER_DIALOG.show({cls: 'histdlg', titleHtml: t('histTitle'), history: ATELIER_DIALOG.historyView(r.list || [], S._histToast || '')});
   S._histToast = '';
 }
 let UNDO_BUSY = false;

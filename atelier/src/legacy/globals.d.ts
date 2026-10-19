@@ -388,7 +388,7 @@ declare function optRunBest(R: LegacyAny): LegacyAny;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
 /* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */
-interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny; update: (d: LegacyAny) => void; targetView: () => LegacyAny; pickView: (key: string) => LegacyAny; addView: () => LegacyAny; pushView: (...a: LegacyAny[]) => LegacyAny; delView: (...a: LegacyAny[]) => LegacyAny; addSetView: (...a: LegacyAny[]) => LegacyAny} }
+interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny; update: (d: LegacyAny) => void; targetView: () => LegacyAny; pickView: (key: string) => LegacyAny; addView: () => LegacyAny; pushView: (...a: LegacyAny[]) => LegacyAny; delView: (...a: LegacyAny[]) => LegacyAny; addSetView: (...a: LegacyAny[]) => LegacyAny; tierCostView: (...a: LegacyAny[]) => LegacyAny; historyView: (...a: LegacyAny[]) => LegacyAny} }
 declare function compareColumns(s: LegacyAny): LegacyAny[];
 declare function sirdMeritsOf(c: LegacyAny): number;
 declare function setWants(s: LegacyAny): {want: LegacyAny};

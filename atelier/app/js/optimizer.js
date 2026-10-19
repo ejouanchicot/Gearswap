@@ -67,28 +67,9 @@ function openTierCost(s){
     const {rows, worn} = tierVersions(s);
     if (trialCount(s)) rows.push({name: 'draft', set: s, draft: true, label: t('tcDraft', {p: shortPath(s.path)})});
     const m = tierMetric(s);
-    showDialog('cmpdlg', t('tcTitle') + ` · <code>${esc(shortPath(s.path))}</code>`, tierCostHTML(rows, worn, tierCosts(rows, m), m), '');
+    // the table: drawn by the Svelte application (atelier/src/screens/dialogs/tiercost.ts)
+    ATELIER_DIALOG.show({cls: 'cmpdlg', titleHtml: t('tcTitle') + ` · <code>${esc(shortPath(s.path))}</code>`, tierCost: ATELIER_DIALOG.tierCostView(rows, worn, tierCosts(rows, m), m)});
   }, 30);
-}
-function tierCostHTML(rows, worn, dmg, m){
-  const best = {}, label = r => r.label || (r.name === 'Full' ? t('tcSetItself') : '.' + r.name);
-  for (const tier of TIERS) { const vals = rows.map(r => dmg[r.name][tier]).filter(v => v != null && v > 0);
-    best[tier] = vals.length ? (m.low ? Math.min(...vals) : Math.max(...vals)) : null; }
-  // how much worse than the tier's best, in %: slower for a time, less for the rest
-  const lossOf = (v, b) => !v || !b ? 0 : m.low ? (v / b - 1) * 100 : (1 - v / b) * 100;
-  const cell = (r, tier) => { const v = dmg[r.name][tier];
-    if (v == null) return '<td>—</td>';
-    const loss = lossOf(v, best[tier]), on = !r.draft && worn[tier] === r.name;
-    return `<td class="${v === best[tier] ? 'best' : ''} ${on ? 'worn' : ''}">${on ? '● ' : ''}${m.fmt(v)}${loss > 0.05 ? `<i class="dv down">${m.low ? '+' : '−'}${loss.toFixed(1)} %</i>` : ''}</td>`; };
-  const table = `<table class="cmptbl tctbl"><thead><tr><th>${t('tcSet')}</th>${TIERS.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>` +
-    rows.map(r => `<tr><th>${esc(label(r))}</th>${TIERS.map(x => cell(r, x)).join('')}</tr>`).join('') + `</tbody></table>`;
-  const lines = TIERS.map(tier => {
-    const w = rows.find(r => r.name === worn[tier]), top = rows.filter(r => dmg[r.name][tier] === best[tier])[0];
-    const loss = lossOf(dmg[w.name][tier], best[tier]);
-    return loss < 0.05 || !top ? `<li>${t('tcOk', {t: tier, s: esc(label(w))})}</li>`
-      : `<li class="kwarn">${t(m.obj ? 'tcLoseEng' : 'tcLose', {t: tier, s: esc(label(w)), b: esc(label(top)), p: loss.toFixed(1)})}</li>`; }).join('');
-  const why = m.obj ? t('tcWhyEng', {o: esc(t('engObj_' + m.obj))}) : t('tcWhy', {tp: S.wsTp || 3000});
-  return `<p class="muted small">${why}</p>${table}<ul class="tclist">${lines}</ul><p class="muted small">${t(m.obj ? 'tcHowEng' : 'tcHow')}</p>`;
 }
 // The optimizer on a weaponskill set: your pieces for every slot but the weapons, the TP pieces of
 // the job's config left to its rule (never in the set), at the TP chosen; the result goes to draft B
