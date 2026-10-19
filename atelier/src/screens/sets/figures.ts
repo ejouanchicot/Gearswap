@@ -4,8 +4,7 @@
 // The boxes are data (StatBox: its rows a label, a figure, a note, a tooltip): the tanking and attack boxes are worked
 // out here, the old page's tankHTML / offenseHTML (engine.js) draw these same boxes through boxHtml (the buffs window,
 // My character's cards). The rules are the old page's setPanelHTML (layout2.js), tankHTML, offenseHTML, fbox
-// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js), luopanHTML (luopan.js). Still the old page's HTML: the stats sheet (stats.js setStatsHTML), every stat (globalsHTML), the
-// extra tanking lines (tankExtraHTML). A field ending in Html is one of the old page's texts it wrote unescaped.
+// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js), luopanHTML (luopan.js). Still the old page's HTML: the stats sheet (stats.js setStatsHTML), every stat (globalsHTML). A field ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/figures.ts
 // @author  ejouanchicot
@@ -44,6 +43,41 @@ export function boxHtml(b: StatBox): string {
     `<span class="meta">${b.summary ? `<b class="boxsum">${esc(b.summary)}</b>` : ''}${b.count || ''}</span></button>${b.open ? `<div class="boxb">${body}</div>` : ''}</section>`;
 }
 
+// The lines under the damage taken (stat_opt.js): a PLD's block with an ultimate shield, the enemy's critical hits
+// left, a Cure set's Cure IV (on yourself: within the HP its Fast Cast leaves), the Enmity a tank loses on a hit
+function tankExtra(c: LegacyAny, set: LegacyAny, B: LegacyAny, enm: number): StatRow[] {
+  const S0 = st(), v = (k: string) => (set[k] || {}).v || 0, rows: StatRow[] = [], sub = (S0._curSet ? withWeapons(S0._curSet).pieces.sub : null) || {};
+  const sh = ULTIMATE_SHIELDS[sub.name];
+  if (sh && S0.job === 'PLD') {
+    const rate = Math.min(100, (sh[0] + (B.block || 0)) * (B.blockmul || 1));
+    rows.push(row(t('tkBlock'), `${Math.round(rate)} %`, `−${sh[1]} %`, '', t('tkBlockTip', {s: sub.name, b: sh[0], r: sh[1]})));
+  }
+  const merit = ((c.merits || {}).enemy_critical_hit_rate || 0), gear = v('ecrit');
+  if (['PLD', 'RUN'].includes(S0.job) || gear) {
+    const left = Math.max(1, 10 - merit + gear), over = Math.max(0, 1 - (10 - merit + gear));
+    rows.push(row(t('tkCrit'), `${left} %`, over ? t('tkOver', {n: over}) : '', '', t('tkCritTip', {m: merit, g: gear})));
+  }
+  const cs = S0._curSet, F = (window as LegacyAny).FFXI;
+  if (cs && /cur(e|a)/i.test(cs.path) && family(cs.path, cs.pieces) !== 'fc' && engineReady() && F.opt.cureIV) {
+    const fig = statFigures(cs), pair = cureGap(cs);
+    // the figures it is worked out with, to set beside the game's (MND / VIT measured, the page's buffs in)
+    const b = statBase(cs), g: Record<string, number> = {};
+    for (const [slot, p] of Object.entries(optPieces(withWeapons(cs).pieces)) as Array<[string, LegacyAny]>) { const sv = withVec(p, slot).st; for (const k of ['mnd', 'vit', 'heal']) g[k] = (g[k] || 0) + (sv[k] || 0); }
+    const mnd = b.mnd + g.mnd, vit = b.vit + g.vit, heal = b.heal + g.heal;
+    const parts = t('tkCureParts', {m: mnd, mb: b.mnd, mg: g.mnd, v: vit, vb: b.vit, vg: g.vit, s: heal, p: Math.floor(mnd / 2) + Math.floor(vit / 4) + heal});
+    rows.push(row(t('tkCure'), `${fig.cureIV} HP`, pair ? t('tkCureSelf', {h: fig.cureSelf}) : '', '', parts + ' ' + t('statCure4Tip')));
+  }
+  if (['PLD', 'RUN'].includes(S0.job)) {
+    const held: LegacyAny = S0._curSet ? withWeapons(S0._curSet).pieces : {};
+    // Crusade counted as the optimizer counts it (statBase: always up for a tank)
+    const crusade = jaOn(buffState(), 'Crusade') ? 0 : CRUSADE_ENMITY;
+    const b1 = Math.max(0, Math.min(100, enm + crusade)) / 2, b2 = Math.min(50, Object.values(held).reduce((n: number, p: LegacyAny) => n + (p && ENMITY_LOSS_GEAR[p.name] || 0), 0));
+    const all = Math.round((1 - (1 - b1 / 100) * (1 - b2 / 100)) * 1000) / 10;
+    if (all) rows.push(row(t('tkLoss'), `−${all} %`, `${b1} % × ${b2} %`, '', t('tkLossTip')));
+  }
+  return rows;
+}
+
 /** The damage a hit does to you with the set: physical, magic, breath, enmity, Flash, Phalanx (tankHTML) */
 export function tankBox(r: LegacyAny): StatBox {
   const {c, set, B} = r, v = (k: string) => (set[k] || {}).v || 0, mul = B.dmgmul || 1, pmul = mul * (B.pdmgmul || 1);
@@ -63,8 +97,7 @@ export function tankBox(r: LegacyAny): StatBox {
   const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : Math.max(1 + enm / 100, .5);
   if (enm) items.push(row(t('enmityLbl'), signed(enm), `×${mult.toFixed(2)}`, '', t('enmTip', {g: v('enmity'), b: B.enmity || 0})));
   if (enm && ['PLD', 'RUN'].includes(st().job)) items.push(row(t('flashLbl'), `${Math.floor(180 * mult)} / ${Math.floor(1280 * mult)}`, ''));
-  const extra = tankExtraHTML(c, set, B, enm);
-  if (extra) items.push({k: 'html', html: extra});
+  items.push(...tankExtra(c, set, B, enm));
   const skill = skillLevel(c, 'enhancing magic') + v('skill:enhancing magic skill');
   if (['PLD', 'RUN', 'RDM'].includes(st().job) && skill) {
     const pot = phalanxPotency(skill);

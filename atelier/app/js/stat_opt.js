@@ -514,42 +514,8 @@ function shieldBlocksAll(s){
   return !!sh && sh[0] >= 100;
 }
 // The shields the guide gives figures for: base block rate (at the attacker's skill) and the damage a block takes off
+// (the lines that read them: atelier/src/screens/sets/figures.ts tankExtra)
 const ULTIMATE_SHIELDS = {Aegis: [50, 75], Srivatsa: [50, 75], Ochain: [108, 60], Duban: [108, 60]};
-// The lines under the damage taken: block, the enemy's critical hits left, the Enmity lost on a hit
-function tankExtraHTML(c, set, B, enm){
-  const v = k => (set[k] || {}).v || 0, rows = [], sub = (S._curSet ? withWeapons(S._curSet).pieces.sub : null) || {};
-  const sh = ULTIMATE_SHIELDS[sub.name];
-  if (sh && S.job === 'PLD') {
-    const mul = B.blockmul || 1;
-    const rate = Math.min(100, (sh[0] + (B.block || 0)) * mul);
-    rows.push(statLi(t('tkBlock'), `${Math.round(rate)} %`, `−${sh[1]} %`, '', t('tkBlockTip', {s: sub.name, b: sh[0], r: sh[1]})));
-  }
-  const merit = ((c.merits || {}).enemy_critical_hit_rate || 0), gear = v('ecrit');
-  if (['PLD', 'RUN'].includes(S.job) || gear) {
-    const left = Math.max(1, 10 - merit + gear), over = Math.max(0, 1 - (10 - merit + gear));
-    rows.push(statLi(t('tkCrit'), `${left} %`, over ? t('tkOver', {n: over}) : '', '', t('tkCritTip', {m: merit, g: gear})));
-  }
-  // a Cure set: what its Cure IV heals (on yourself: within the HP its Fast Cast leaves)
-  const cs = S._curSet;
-  if (cs && /cur(e|a)/i.test(cs.path) && family(cs.path, cs.pieces) !== 'fc' && engineReady() && FFXI.opt.cureIV) {
-    const f = statFigures(cs), pair = cureGap(cs);
-    // the figures it is worked out with, to set beside the game's (MND / VIT measured, the page's buffs in)
-    const b = statBase(cs), v = {};
-    for (const [slot, p] of Object.entries(optPieces(withWeapons(cs).pieces))) { const st = withVec(p, slot).st; for (const k of ['mnd', 'vit', 'heal']) v[k] = (v[k] || 0) + (st[k] || 0); }
-    const mnd = b.mnd + v.mnd, vit = b.vit + v.vit, heal = b.heal + v.heal;
-    const parts = t('tkCureParts', {m: mnd, mb: b.mnd, mg: v.mnd, v: vit, vb: b.vit, vg: v.vit, s: heal, p: Math.floor(mnd / 2) + Math.floor(vit / 4) + heal});
-    rows.push(statLi(t('tkCure'), `${f.cureIV} HP`, pair ? t('tkCureSelf', {h: f.cureSelf}) : '', '', parts + ' ' + t('statCure4Tip')));
-  }
-  if (['PLD', 'RUN'].includes(S.job)) {
-    const held = S._curSet ? withWeapons(S._curSet).pieces : {};
-    // Crusade counted as the optimizer counts it (statBase: always up for a tank)
-    const crusade = jaOn(buffState(), 'Crusade') ? 0 : CRUSADE_ENMITY;
-    const b1 = Math.max(0, Math.min(100, enm + crusade)) / 2, b2 = Math.min(50, Object.values(held).reduce((n, p) => n + (p && ENMITY_LOSS_GEAR[p.name] || 0), 0));
-    const all = Math.round((1 - (1 - b1 / 100) * (1 - b2 / 100)) * 1000) / 10;
-    if (all) rows.push(statLi(t('tkLoss'), `−${all} %`, `${b1} % × ${b2} %`, '', t('tkLossTip')));
-  }
-  return rows.join('');
-}
 // A set's figures (the try as shown, or plain: the file's set)
 function statFigures(s, plain){
   const pieces = plain ? withoutTrial(() => withWeapons(s).pieces) : withWeapons(s).pieces;
