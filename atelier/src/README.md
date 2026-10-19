@@ -153,6 +153,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   `mogSorryHTML` reste pour les fenêtres d'erreur de push.js.
 - **Étape 7i (2026-10-19)** : les lignes Warcry (Savagery, Agoge Mask, TP Bonus) et Haste Samba du panneau d'un membre
   (panel.ts `warcryOf`, `sambaOf`, rendues par `Panel.svelte`) ; `warcryHTML` et `sambaHTML` sont retirés.
+- **Étape 7j (2026-10-19)** : la ligne Aftermath (niveau, stade Prime, TP, ce que l'arme en main donne) et les boutons
+  d'un roll (son job, Crooked Cards) du panneau d'un membre (panel.ts `amRow`, `rollChips`) ; `amRowHTML`,
+  `rollChips` (buff_panels.js), `pbSel`, `pbAmRow` et `pbF` (party_builder.js) sont retirés. Le panneau d'un membre
+  n'a plus de HTML de l'ancienne page.
 
 ## Vérifier une étape
 

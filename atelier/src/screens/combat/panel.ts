@@ -2,8 +2,8 @@
 // a button opening a list, or a switch, then what it gives you), in titled sections on two columns at most. You:
 // food, aftermath, your own abilities; GEO: the bubbles; BRD: the songs; COR: the rolls; WHM, RDM: their spells and
 // what they cast on the target; SCH: the storm; any other job: its abilities that reach you and its debuffs.
-// The rules are the old page's pbYouBody, pbBody, pbSel, pbPlus, pbPickBtn, pbFoeRows (party_builder.js). Still the
-// old page's HTML: the aftermath's line (amRowHTML), a roll's chips (rollChips). The controls keep the attributes the old
+// The rules are the old page's pbYouBody, pbBody, pbSel, pbPlus, pbPickBtn, pbFoeRows (party_builder.js), amRowHTML and
+// rollChips (buff_panels.js). The controls keep the attributes the old
 // handlers read (data-buff, data-buffflag, data-pbpick, data-pbmarcato, data-foeja, data-foeseg, data-ja).
 //
 // @file    atelier/src/screens/combat/panel.ts
@@ -16,14 +16,14 @@ export type Control =
   | {k: 'pick'; key: string; set: boolean; label: string; title: string}
   | {k: 'switch'; attrs: Record<string, string>; on: boolean; title: string}
   | {k: 'note'; text: string}
-  | {k: 'html'; html: string};
+  | {k: 'chip'; attrs: Record<string, string>; pressed: boolean; disabled: boolean; title: string; label: string};
 export type Effect = {k: 'gives'; list: Gives[]} | {k: 'muted'; text: string} | {k: 'html'; html: string} | {k: 'fx'; controls: Control[]};
 export interface Row { k: 'row'; label: string; controls: Control[]; effects: Effect[] }
 // Warcry's line (its Savagery merits, Agoge Mask, the TP Bonus they give) and the party DNC's menu (main DNC and its
 // merits, or a /DNC)
 export type ExtraCtl = {kind: 'warcry'; party: boolean; on: boolean; lv: number; agoge: boolean; note: string}
   | {kind: 'samba'; label: string; opts: Array<{v: string; label: string; on: boolean}>};
-export type Item = Row | {k: 'extra'; label: string; ctl: ExtraCtl} | {k: 'html'; html: string};
+export type Item = Row | {k: 'extra'; label: string; ctl: ExtraCtl} | {k: 'am'; label: string; controls: Control[]; said: string};
 export type Block = {k: 'section'; title: string; items: Item[]} | {k: 'extra'; ctl: ExtraCtl};
 export interface PanelView { left: Block[]; right: Block[] }
 
@@ -97,7 +97,7 @@ function brdPanel(B: LegacyAny, b: LegacyAny): PanelView {
 function corPanel(B: LegacyAny, b: LegacyAny): PanelView {
   // the roll's list as wide as every list; its number, job bonus and Crooked Cards beside it
   const roll = (i: number) => row(`Roll ${i + 1}`, [pick(b, 'roll' + i)],
-    (b['roll' + i] ? [{k: 'fx', controls: [sel(b, 'roll' + i + 'n', ROMAN, '', 'XI'), {k: 'html', html: rollChips(b, i)}]} as Effect] : [])
+    (b['roll' + i] ? [{k: 'fx', controls: [sel(b, 'roll' + i + 'n', ROMAN, '', 'XI'), ...rollChips(b, i)]} as Effect] : [])
       .concat([gives(B, v => !!b['roll' + i] && v.startsWith(b['roll' + i] + ' Roll'))]));
   return {left: section(t('pbRolls'), [roll(0), roll(1), row(t('pGear'), [plus(b, 'rollsPlus', 'Rolls', 8)])]),
     right: section(t('pbOnTarget'), [row('Light Shot', [flag(b, 'lightshot', 'lsTip')], [gives(B, v => v === 'Light Shot')]), ...foeRows(B, 'COR', b)])};
@@ -149,6 +149,25 @@ function sambaOf(b: LegacyAny): ExtraCtl {
     label: v === 'sub' ? t('sambaSub') : t('sambaMain', {n: v ? v.slice(1) : 5, p: 5 + (v ? +v.slice(1) : 5)})}))};
 }
 
+// A roll's two buttons: its job in the party (its bonus; on by itself when it is your job), Crooked Cards (one roll)
+function rollChips(b: LegacyAny, i: number): Control[] {
+  const rj = ROLL_JOB[b['roll' + i]], mine = !!rj && rj[0] === S.job;
+  return [{k: 'chip', attrs: {'data-rolljob': String(i)}, pressed: !!rollJobOn(b, i), disabled: !rj || mine, title: rj ? t(mine ? 'rollJobMine' : 'rollJobTip', {j: rj[0]}) : '', label: rj ? rj[0] : '—'},
+    {k: 'chip', attrs: {'data-rollcc': String(i)}, pressed: b.rollCC != null && +b.rollCC === i, disabled: !b['roll' + i], title: t('rollCcTip'), label: 'CC'}];
+}
+// The Aftermath line: the level, the prime stage for a prime weapon, the TP for an aftermath that follows it, then the
+// weapon in hand and what its aftermath is
+function amRow(b: LegacyAny): Item {
+  const w = shownMain() as string | null, kind = amKind(w), am = aftermathOf(w);
+  const lv = sel(b, 'am', ['1', '2', '3'], t('bAmPh')) as LegacyAny;
+  lv.options = lv.options.map((o: LegacyAny) => /^[123]$/.test(o.label) ? Object.assign({}, o, {label: 'Lv' + o.label}) : o);
+  const controls: Control[] = [lv];
+  if (kind === 'prime') controls.push(sel(b, 'amStage', ['III', 'IV', 'V'], t('bAmStage')));
+  if (['mythic', 'prime', 'aeonic'].includes(kind) && !PRIME_PDL.has(w)) controls.push(sel(b, 'amTp', ['1000', '1250', '1500', '1750', '1999', '2000', '2250', '2500', '2750', '3000'], t('amTpPh')));
+  const said = (isAfm3(((S as LegacyAny)._curSet || {}).path) ? t('amAfm3') + ' · ' : '') + (!w ? t('amNoWeapon') : `${w} · ${t('amKind_' + kind)}` + (am.text ? ` · ${am.text}` : ''));
+  return {k: 'am', label: t('bAm'), controls, said};
+}
+
 export function memberPanel(job: string, b: LegacyAny, shown: string[]): PanelView {
   const B = buffTotals(), whm = shown.includes('WHM'), rdm = shown.includes('RDM');
   if (job === 'GEO') return geoPanel(B, b);
@@ -166,8 +185,7 @@ export function youPanel(b: LegacyAny): PanelView {
   const jas = jasOf().filter((j: LegacyAny) => j.as !== 'party');
   const rows: Item[] = jas.map((j: LegacyAny) => row(j.name + (j.as === 'sub' ? ' /' + ((data() || {}).sub || '') : ''),
     [sw({'data-ja': j.name}, jaOn(b, j.name), jaTip(j))], [gives(B, v => v === j.name)]));
-  // the aftermath's line as the old page draws it (pbAmRow), its lists the buff's own
-  const am: Item = {k: 'html', html: pbAmRow((key: string, values: string[], ph: string, def: string) => pbSel(b, key, values, ph, def))};
+  const am = amRow(b);
   if (jas.some((j: LegacyAny) => j.name === 'Warcry' && j.as === 'main') && jaOn(b, 'Warcry')) rows.push({k: 'extra', label: 'Warcry', ctl: warcryOf(b, false)});
   return {left: section(t('pbYouBase'), [row(t('bFood'), [pick(b, 'food')], [gives(B, v => v === b.food)]), am]), right: section(t('bJa'), rows)};
 }

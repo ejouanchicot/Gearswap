@@ -68,14 +68,6 @@ function aftermathOf(weapon){
     : {fx: [{k: m[lv - 1], v: mythicAmValue(m, lv)}], note: weapon};
   return {fx: [], note: weapon, text: t('amNone')};
 }
-// The Aftermath line: the level, the prime stage for a prime weapon, then the weapon in hand and what its aftermath is
-function amRowHTML(sel){
-  const w = shownMain(), kind = amKind(w), am = aftermathOf(w);
-  const said = (isAfm3((S._curSet || {}).path) ? t('amAfm3') + ' · ' : '') + (!w ? t('amNoWeapon') : `${w} · ${t('amKind_' + kind)}` + (am.text ? ` · ${am.text}` : ''));
-  return sel('am', ['1', '2', '3'], t('bAmPh')).replace(/>([123])</g, '>Lv$1<') + (kind === 'prime' ? sel('amStage', ['III', 'IV', 'V'], t('bAmStage')) : '') +
-    (['mythic', 'prime', 'aeonic'].includes(kind) && !PRIME_PDL.has(w) ? sel('amTp', ['1000', '1250', '1500', '1750', '1999', '2000', '2250', '2500', '2750', '3000'], t('amTpPh')) : '') +
-    `<span class="muted small amwho">${esc(said)}</span>`;
-}
 // The buff totals with the aftermath of a weapon added (charStats, the target window, the effects list)
 function withAftermath(B, weapon){
   const am = aftermathOf(weapon), lv = amLevel();
@@ -149,13 +141,6 @@ function ariaPdl(b){
   return (base + ariaPlus(b) * step) * songMul(b, i);
 }
 const songMul = (b, i) => b.soulVoice ? 2 : b.marcato != null && +b.marcato === i ? 1.5 : 1;
-// A roll's two buttons: its job in the party (its bonus; on by itself when it is your job), Crooked Cards (one roll)
-function rollChips(b, i){
-  const rj = ROLL_JOB[b['roll' + i]], mine = rj && rj[0] === S.job;
-  const job = `<button class="chip" data-rolljob="${i}" aria-pressed="${rollJobOn(b, i)}" ${!rj || mine ? 'disabled' : ''} title="${esc(rj ? t(mine ? 'rollJobMine' : 'rollJobTip', {j: rj[0]}) : '')}">${esc(rj ? rj[0] : '—')}</button>`;
-  const cc = `<button class="chip" data-rollcc="${i}" aria-pressed="${b.rollCC != null && +b.rollCC === i}" ${b['roll' + i] ? '' : 'disabled'} title="${esc(t('rollCcTip'))}">CC</button>`;
-  return job + cc;
-}
 // What lowers the target: the usual ones always in view (Dia, Distract with Saboteur, Light Shot), the other
 // jobs one tab each (a dot on a tab with something on); a line: its buttons (a tier is one click and again to
 // take it off) and what they take off; then every debuff on, with what it takes off; the total in the band.

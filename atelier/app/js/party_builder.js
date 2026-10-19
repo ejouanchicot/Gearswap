@@ -75,9 +75,6 @@ function pbShown(b){
   return shown;
 }
 
-// The controls (the same data-* as the old window: events.js handles them)
-const pbSel = (b, key, values, ph = '—', def = null) => `<select class="buffsel ${b[key] ? 'set' : ''}" data-buff="${key}" title="${esc(t('ttBuffSel', {n: ph}))}">` +
-  (def ? values : ['', ...values]).map(v => `<option value="${esc(v)}" ${String(v) === String(b[key] ?? def ?? '') ? 'selected' : ''}>${v === '' ? esc(ph) : esc(v)}</option>`).join('') + `</select>`;
 
 // What a choice gives, as the small line beside its name: the stats of its table (a song, a roll, a bubble)
 const pbStat = k => ((FX_SHORT[k] || FX_LABEL[k] || [k.toUpperCase(), k.toUpperCase()])[S.lang === 'fr' ? 0 : 1]);
@@ -132,14 +129,7 @@ function pbChoose(spec){
   closeOverlay(); S._globals = null; save(); render();
 }
 
-// The aftermath line: its lists in the control column, what the weapon in hand gives beside them, like every other line
-function pbAmRow(sel){
-  const html = amRowHTML(sel), at = html.indexOf('<span class="muted small amwho">');
-  return pbF(t('bAm'), `<div class="pbfam">${html.slice(0, at)}</div>`, html.slice(at));
-}
 
-// A line of a member's panel (the panel itself: atelier/src/screens/combat/panel.ts): the aftermath's, drawn here
-const pbF = (label, control, eff = '') => `<div class="pbf"><span class="pbfl">${esc(label)}</span><div class="pbfc">${control}</div><div class="pbfe">${eff}</div></div>`;
 
 
 
