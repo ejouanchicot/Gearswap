@@ -192,7 +192,6 @@ declare function trialCount(s: LegacyAny): number;
 declare function wsSkills(): Record<string, string>;
 declare function mogSorryHTML(html: string): string;
 declare function listOwnSections(rowOf: (path: string, group: string) => string, known: Set<string>, q: string): string;
-declare function listHeadHTML(q: string): string;
 declare function tierLabel(label: string, head: string): string | null;
 declare function aliasRows(cards: LegacyAny[], q: string): LegacyAny[];
 interface Window { ATELIER_FAMILIES?: Record<string, Record<string, unknown>> }
@@ -308,7 +307,6 @@ declare function icon(name: string): string;
 declare function variantGroups(card: LegacyAny): {groups: Map<string, LegacyAny>; skills: Record<string, string>};
 declare function withWeapons(s: LegacyAny): LegacyAny;
 declare function ownedOf(): Record<string, LegacyAny[]>;
-declare function legendHTML(holds: Record<string, string[]>): string;
 declare function wsTitleHTML(s: LegacyAny, acts?: string): string;
 declare function baseOnly(s: LegacyAny): boolean;
 declare function isNukeSet(path: string): boolean;
@@ -319,9 +317,7 @@ declare function wsHeadHTML(card: LegacyAny, ci: number, vi: number, s: LegacyAn
 declare function setTitleBox(kick: string, nameHtml: string, under: string, tip: string, path: string, acts: string): string;
 declare function weaponMenus(s: LegacyAny): Array<[string, string, string]> | null;
 declare function weaponResultLines(s: LegacyAny, pick: (lbl: string, body: string) => string): string;
-declare function familyNoteHTML(card: LegacyAny, s: LegacyAny): string;
 declare function trialBar(s: LegacyAny): string;
-declare function equipBtnHTML(): string;
 declare function ui2Wants(s: LegacyAny): string;
 /* ---- the figures of a set (engine.js, fight_stats.js, stat_opt.js, luopan.js, stats.js), loosely typed ---- */
 declare function charStats(s: LegacyAny, pieces?: LegacyAny): LegacyAny;
@@ -487,3 +483,5 @@ declare function simTpSteps(ws: string): number[];
 declare function simResultHTML(d: LegacyAny): string;
 declare function statPickBtn(): string;
 declare function otherChar(): string | undefined;
+declare function listFamLabel(f: string): string;
+declare function familyNote(s: LegacyAny): string;

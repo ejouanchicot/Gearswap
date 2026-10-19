@@ -332,11 +332,6 @@ Object.assign(T.fr, {equipBtn: 'Équiper en jeu', equipTip: 'Met ce set sur ton 
 Object.assign(T.en, {equipBtn: 'Equip in game', equipTip: 'Puts this set on your character now, as the page shows it (trial pieces and weapons included; changing a weapon resets your TP). It stays on until your next action or status change.',
   equipNoLive: 'The game does not answer: start GearSwap on this character', equipOtherJob: 'The game has {j} loaded: change to this job to equip its sets',
   equipDone: '{s} equipped in game ({n} pieces)', equipFailed: 'The game could not equip this set'});
-function equipBtnHTML(){
-  const on = liveOk() && shownJobLoaded();
-  const why = !liveOk() ? t('equipNoLive') : !shownJobLoaded() ? t('equipOtherJob', {j: (S._live[S.char] || {}).job || '—'}) : t('equipTip');
-  return `<button class="btn ghost eqbtn" data-equipset ${on ? '' : 'disabled'} title="${esc(why)}">${esc(t('equipBtn'))}</button>`;
-}
 async function equipShownSet(){
   const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]);
   if (!s) return;

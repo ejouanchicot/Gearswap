@@ -158,23 +158,7 @@ function listFamHead(fam, n, here, open){
     `<span class="famacts"><button class="ract" data-listedit="fam:${fam}" title="${esc(t('lpRename'))}">✎</button><button class="ract" data-listhide="${fam}" title="${esc(t('lpHide'))}">⦸</button></span></div>`;
 }
 
-/* ---- the top of the list and its menu ---- */
-function listHeadHTML(q){
-  return `<div class="search"><input id="setq" type="search" placeholder="${t('searchShort')}" title="${esc(t('lpSearchTip'))}" value="${esc(S.q)}" autocomplete="off" spellcheck="false">` +
-    `<button class="btn ghost lbtn" data-action="add" title="${esc(t('ttAdd'))}">+</button>` +
-    `<button class="btn ghost lbtn" data-listmenu aria-expanded="${!!S._listMenu}" title="${esc(t('ttMenu'))}">⋯</button></div>` +
-    // open or close everything at once, in sight (they were in the list's menu only)
-    (q ? '' : `<div class="foldall" title="${esc(t('lpFoldTip'))}"><button class="linkbtn" data-famall="1">▾ ${esc(t('lpOpenAll'))}</button>` +
-      `<button class="linkbtn" data-famall="0">▸ ${esc(t('lpCloseAll'))}</button></div>`) + (S._listMenu ? listMenuHTML() : '');
-}
-function listMenuHTML(){
-  const p = listPrefs(), check = on => `<i class="lmck">${on ? '✓' : ''}</i>`;
-  const item = (attr, label, on, tip = '') => `<button class="lmitem" ${attr} ${on == null ? '' : `aria-pressed="${!!on}"`} title="${esc(tip)}">${on == null ? '<i class="lmck"></i>' : check(on)}${esc(label)}</button>`;
-  return `<div class="listmenu">${item('data-famall="1"', t('lpOpenAll'))}${item('data-famall="0"', t('lpCloseAll'))}<hr>` +
-    item('data-listpaths', t('lpPaths'), !!S.listPaths, t('lpPathsTip')) + item('data-listall', t('lpAll'), !!S._listAll) + `<hr>${item('data-listnew', t('lpNewGroup'))}` +
-    (p.hide.length ? `<hr><small>${esc(t('lpHidden'))}</small>` + p.hide.map(f => `<button class="lmitem" data-listshow="${f}"><i class="lmck"></i>${esc(listFamLabel(f))} <em>${esc(t('lpShow'))}</em></button>`).join('') : '') +
-    (S._listUnsaved ? `<hr><small>${esc(t('lpBrowserOnly'))}</small>${item('data-listsave', t('lpSaveFile'))}` : '') + `</div>`;
-}
+/* ---- the top of the list and its menu: drawn by atelier/src/screens/sets/ListHead.svelte (setlist.ts listHead) ---- */
 // The history of what the page wrote, in the top bar beside the files it concerns (it was a link of the list)
 const historyBadge = () => S.char && S.job ? `<button class="live act" data-pushhist title="${esc(t('lpHistoryTip'))}">⟲<span class="lbl"> ${esc(t('lpHistory'))}</span></button>` : '';
 

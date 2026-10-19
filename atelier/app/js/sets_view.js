@@ -40,14 +40,6 @@ Object.assign(T.en, {lgEmpty: 'empty', lgAug: 'augmented', lgRank: 'rank',
   lgT_aug: 'The piece carries augments.', lgT_rank: 'The piece’s rank.',
   lgT_missing: 'You do not own this piece.', lgT_short: 'You have it, but not yet at this rank or with these augments.',
   lgT_porter: 'It is stored with the Porter Moogle: to take out before you can wear it.'});
-function legendHTML(holds){
-  const item = (mark, label, tip, off) => `<span class="${off ? 'off' : ''}" title="${esc(t(tip))}">${mark}${esc(t(label))}</span>`;
-  return `<div class="legend mini lgline">` + item('<i></i>', 'lgOwn', 'lgT_own') + item('<i class="inh"></i>', 'lgInh', 'lgT_inh') +
-    item('<i class="weap"></i>', 'lgWeap', 'lgT_weap') + item('<i class="try"></i>', 'lgTry', 'lgT_try') + item('<i class="empty"></i>', 'lgEmpty', 'lgT_empty') +
-    item('<i class="lock"></i>', 'lgLock', 'lgT_lock') + item('<b class="mk">◆</b>', 'lgAug', 'lgT_aug') + item('<b class="rk">R15</b>', 'lgRank', 'lgT_rank') +
-    item('<i class="miss"></i>', 'lg_missing', 'lgT_missing', !holds.missing.length) + item('<i class="short"></i>', 'lg_short', 'lgT_short', !holds.short.length) +
-    item('<i class="porter"></i>', 'lg_porter', 'lgT_porter', !holds.porter.length) + `</div><p class="eqhint">${t('lgHint')}</p>`;
-}
 // The variants of a card, laid out like the weapon rows: a label, then its buttons. A variant with
 // its own variants (Savage Blade · TPBonus) keeps them stuck to it; weaponskills go one row per
 // combat skill (export ws_skill), the others in one row
@@ -110,11 +102,6 @@ function wsTitleHTML(s, acts = ''){
     info.crit ? t('wsCritTag') : '', info.replicating ? t('wsReplTag') : '', info.element ? info.element : ''].filter(Boolean);
   return setTitleBox((wsSkills()[ws] || '') + ' · ' + t('wsKickOne'), esc(ws) + (version ? ` <span class="wsver">· ${esc(version)}</span>` : ''),
     facts.length ? `<span class="wsfacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</span>` : '', facts.join(' · '), s.path, acts);
-}
-function familyNoteHTML(card, s){
-  if (!card.variants.some(v => familyNote(v.set))) return '';
-  const text = familyNote(s);
-  return `<p class="famnote ${text ? '' : 'none'}">${text}</p>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 // A version of a set for a party: the label of a variant against its set's ("Laphria · Group" against "Laphria",

@@ -144,6 +144,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   Vues `NX_` dans `scripts/atelier/parity/home.json`.
 - **Étape 7f (2026-10-19)** : l'avertissement « en jeu tu as un autre sub » au-dessus des sets (`subWarn`, sets.ts) ;
   `subWarnHTML` est retiré. Vues `SW_` dans `scripts/atelier/parity/sets.json`.
+- **Étape 7g (2026-10-19)** : le haut de la liste des sets et son menu (`ListHead.svelte`, setlist.ts `listHead`), le
+  bouton « Équiper en jeu », la légende de la grille et les notes sous les pièces (card.ts `equipOf`, `legendOf`,
+  `notes`) ; `listHeadHTML`, `listMenuHTML`, `equipBtnHTML`, `legendHTML` et `familyNoteHTML` sont retirés. Vues
+  `LH_` dans `scripts/atelier/parity/sets.json`.
 
 ## Vérifier une étape
 

@@ -28,11 +28,11 @@ export interface CardView {
   ctl: null | {picks: boolean; html: string};
   trialHtml: string;
   slots: SlotView[];
-  equipHtml: string;
+  equip: {on: boolean; why: string; label: string};
   footHtml: string[];
   wantsHtml: string;
-  legendHtml: string;
-  notesHtml: string;
+  legend: {items: Array<{markHtml: string; label: string; tip: string; off: boolean}>; hintHtml: string};
+  notes: {fam: null | {textHtml: string; none: boolean}; base: string};
   figures: FiguresView;
 }
 export type CardOrPage = CardView | {k: 'page'; view: OptPageView};
@@ -98,6 +98,20 @@ function versionsOf(card: LegacyAny, ci: number, vi: number): Versions {
 }
 
 /** The card of a set, or its optimizer page when that is open */
+// The button that wears the set in game (live.js equipShownSet): only with the game on the job shown
+function equipOf(): CardView['equip'] {
+  const on = liveOk() && shownJobLoaded();
+  return {on, label: t('equipBtn'), why: !liveOk() ? t('equipNoLive') : !shownJobLoaded() ? t('equipOtherJob', {j: ((S as LegacyAny)._live[S.char as string] || {}).job || '—'}) : t('equipTip')};
+}
+// What the marks of the grid mean; the ones about your bags dimmed when no piece of the set has them
+function legendOf(holds: LegacyAny): CardView['legend'] {
+  const item = (markHtml: string, label: string, tip: string, off = false) => ({markHtml, label: t(label), tip: t(tip), off});
+  return {hintHtml: t('lgHint'), items: [item('<i></i>', 'lgOwn', 'lgT_own'), item('<i class="inh"></i>', 'lgInh', 'lgT_inh'), item('<i class="weap"></i>', 'lgWeap', 'lgT_weap'),
+    item('<i class="try"></i>', 'lgTry', 'lgT_try'), item('<i class="empty"></i>', 'lgEmpty', 'lgT_empty'), item('<i class="lock"></i>', 'lgLock', 'lgT_lock'),
+    item('<b class="mk">◆</b>', 'lgAug', 'lgT_aug'), item('<b class="rk">R15</b>', 'lgRank', 'lgT_rank'), item('<i class="miss"></i>', 'lg_missing', 'lgT_missing', !holds.missing.length),
+    item('<i class="short"></i>', 'lg_short', 'lgT_short', !holds.short.length), item('<i class="porter"></i>', 'lg_porter', 'lgT_porter', !holds.porter.length)]};
+}
+
 export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: string): CardOrPage {
   const S0 = st(), vi = Math.min(S0.variant[S0.job + '|' + ci] ?? 0, card.variants.length - 1);
   const s = card.variants[vi].set, base = s.base ? bypath[s.base] : null;
@@ -116,7 +130,7 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   if (holds.porter!.length) foot.push(`<span class="holdporter">${t('holdPorter', {l: esc(holds.porter!.map(n => n + ' (' + slipOf(n) + ')').join(', '))})}</span>`);
   if (holds.missing!.length) foot.push(`<span class="holdmiss">${t('holdMissing', {l: esc(holds.missing!.join(', '))})}</span>`);
   if (holds.short!.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short!.join(', '))})}</span>`);
-  const legendHtml = legendHTML(holds);
+  const legend = legendOf(holds);
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws';
   if (ws) wsTitleHTML(s);   // (worked out first as before: what it reads is kept for the head)
   const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || isNukeSet(s.path) || roundSet(s) || statSet(s));
@@ -133,8 +147,9 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
     titleHtml = head.title; versions = versionsOf(card, ci, vi); ctl = {picks: true, html: head.picks};
   }
   // a family's note and a base set's go under the gear, where nothing is left to push down
-  const notesHtml = familyNoteHTML(card, s) + (locked && !ws ? `<p class="famnote">${esc(t('baseOnly', {l: (data() as LegacyAny).sets.filter((x: LegacyAny) => x.base === s.path).map((x: LegacyAny) => shortPath(x.path)).join(', ')}))}</p>` : '');
-  const trialHtml = trialBar(s), equipHtml = equipBtnHTML(), wantsHtml = ui2Wants(s);
+  const notes = {fam: card.variants.some((v: LegacyAny) => familyNote(v.set)) ? {textHtml: familyNote(s), none: !familyNote(s)} : null,
+    base: locked && !ws ? t('baseOnly', {l: (data() as LegacyAny).sets.filter((x: LegacyAny) => x.base === s.path).map((x: LegacyAny) => shortPath(x.path)).join(', ')}) : ''};
+  const trialHtml = trialBar(s), equip = equipOf(), wantsHtml = ui2Wants(s);
   S0._globals = {s, view: figuresView(s)};
-  return {k: 'card', ci, ws, titleHtml, versions, ctl, trialHtml, slots, equipHtml, footHtml: foot, wantsHtml, legendHtml, notesHtml, figures: S0._globals.view};
+  return {k: 'card', ci, ws, titleHtml, versions, ctl, trialHtml, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view};
 }

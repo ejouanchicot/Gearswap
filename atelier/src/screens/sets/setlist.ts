@@ -19,7 +19,7 @@ export type ListEntry =
   | {k: 'aliasfold'; path: string; open: boolean; title: string; label: string}
   | {k: 'alias'; pick: number; vpick: number; title: string; label: string; of: string};
 export interface SetListView {
-  headHtml: string;
+  head: ListHead;
   ownHtml: string;
   entries: ListEntry[];
   empty: null | {html: string};
@@ -32,6 +32,26 @@ export interface SetList { view: SetListView; cards: LegacyAny[]; sel: number; b
 const st = (): LegacyAny => S;
 
 /** The list for the job shown, worked out as the old page did, with the same marks left in the page's state */
+export type ListMenuItem = {k: 'hr'} | {k: 'small'; label: string} | {k: 'show'; f: string; label: string; em: string}
+  | {k: 'item'; attrs: Record<string, string>; label: string; on: boolean | null; tip: string};
+export interface ListHead { q: string; ph: string; tip: string; addTip: string; menuOpen: boolean; menuTip: string; fold: null | {tip: string; open: string; close: string}; menu: ListMenuItem[] | null }
+
+// The list's menu (list_prefs.js keeps what each choice does): open or close all, the paths, every set, a new group,
+// the groups hidden (a button each to show it again), and saving to the files when the choices are in the browser only
+function listMenu(): ListMenuItem[] {
+  const p = listPrefs(), item = (attrs: Record<string, string>, label: string, on: boolean | null = null, tip = ''): ListMenuItem => ({k: 'item', attrs, label, on, tip});
+  const out: ListMenuItem[] = [item({'data-famall': '1'}, t('lpOpenAll')), item({'data-famall': '0'}, t('lpCloseAll')), {k: 'hr'},
+    item({'data-listpaths': ''}, t('lpPaths'), !!(S as LegacyAny).listPaths, t('lpPathsTip')), item({'data-listall': ''}, t('lpAll'), !!(S as LegacyAny)._listAll), {k: 'hr'}, item({'data-listnew': ''}, t('lpNewGroup'))];
+  if (p.hide.length) out.push({k: 'hr'}, {k: 'small', label: t('lpHidden')}, ...p.hide.map((f: string): ListMenuItem => ({k: 'show', f, label: listFamLabel(f), em: t('lpShow')})));
+  if ((S as LegacyAny)._listUnsaved) out.push({k: 'hr'}, {k: 'small', label: t('lpBrowserOnly')}, item({'data-listsave': ''}, t('lpSaveFile')));
+  return out;
+}
+// The search, + and ⋯, then open or close every group (in sight, not only in the menu), and the menu when open
+function listHead(q: string): ListHead {
+  return {q: (S as LegacyAny).q, ph: t('searchShort'), tip: t('lpSearchTip'), addTip: t('ttAdd'), menuOpen: !!(S as LegacyAny)._listMenu, menuTip: t('ttMenu'),
+    fold: q ? null : {tip: t('lpFoldTip'), open: t('lpOpenAll'), close: t('lpCloseAll')}, menu: (S as LegacyAny)._listMenu ? listMenu() : null};
+}
+
 export function setList(d: LegacyExport): SetList {
   const S0 = st(), {cards, bypath} = buildCards(d); S0._cards = cards; S0._bypath = bypath;
   const q: string = S0.q.trim().toLowerCase();
@@ -185,5 +205,5 @@ export function setList(d: LegacyExport): SetList {
       `<b>${esc(niceName(c) + (v.label !== 'Base' ? ' · ' + v.label : ''))}</b></button><span class="rowmarks">${listMarks(v.set)}${listRowActs(path, group)}</span>` +
       `${S0.listPaths ? `<code>${esc(path)}</code>` : ''}</div>`; };
   const ownHtml = q ? '' : listOwnSections(ownRow, new Set(Object.keys(where)), q);
-  return {view: {headHtml: listHeadHTML(q), ownHtml, entries: empty ? [] : out, empty, hidden: hide, grip: t('lpResize'), triedTitle: t('rowTry')}, cards, sel, bypath, vis, q};
+  return {view: {head: listHead(q), ownHtml, entries: empty ? [] : out, empty, hidden: hide, grip: t('lpResize'), triedTitle: t('rowTry')}, cards, sel, bypath, vis, q};
 }
