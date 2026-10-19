@@ -528,23 +528,11 @@ function statPickTools(){
     `<input id="statpresetname" class="nameinput" placeholder="${esc(t('statPresetName'))}" value="${esc(S.statPreset)}"><button class="btn ghost" data-statsave>${t('statSave')}</button></div></div>`;
 }
 // One column per stat group, in its colour: a title band with all / none, one tick per line
+// The picker: drawn by the Svelte application (atelier/src/screens/dialogs/statpick.ts), drawn again in place when it is
+// open already (a stat ticked: the list stays where it was scrolled)
 function openStatPick(){
-  const keys = ['dtEff'].concat(Object.keys(STAT_DEF).filter(k => !['dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt'].includes(k)));
-  const groups = STAT_GROUPS.map(([g, fr, en]) => {
-    const list = keys.filter(k => (k === 'dtEff' ? 'def' : statGroup(k)) === g);
-    if (!list.length) return '';
-    const on = list.filter(statShown).length;
-    return `<section class="box g-${g} pickcol"><header class="boxh"><h3>${S.lang === 'fr' ? fr : en}</h3>` +
-      `<span class="meta">${on}/${list.length} · <button class="linkbtn" data-statgroup="${g}|1">${t('statAll')}</button> · ` +
-      `<button class="linkbtn" data-statgroup="${g}|0">${t('statNone')}</button></span></header><div class="pickrows">` +
-      list.map(k => `<label class="pickrow"><input type="checkbox" class="statpick" data-stat="${k}" ${statShown(k) ? 'checked' : ''}>` +
-        `<span>${esc(k === 'dtEff' ? t('dtEff') : statLabel(k, {}))}</span></label>`).join('') + `</div></section>`; }).join('');
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog statpickdlg" role="dialog" aria-label="${t('statPick')}">
-    <header><h3>${t('statPick')}</h3><p class="muted small">${t('statPickWhy')}</p>${statPickTools()}</header>
-    <div class="body"><div class="pickgrid">${groups}</div></div>
-    <footer><span><button class="btn ghost" data-statall>${t('statAll')}</button> <button class="btn ghost" data-statnone>${t('statNone')}</button></span>
-      <button class="btn" data-close>${t('close')}</button></footer></div>`;
-  $('#overlay').hidden = false;
+  const spec = {cls: 'statpickdlg', titleHtml: '', statPick: ATELIER_DIALOG.statPickView()};
+  if ($('#overlay .statpickdlg') && !$('#overlay').hidden) ATELIER_DIALOG.update(spec); else ATELIER_DIALOG.show(spec);
 }
 function setStatsHTML(s){
   const {total, paths, unknown, cond} = setStats(s);

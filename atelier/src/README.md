@@ -109,6 +109,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   la carte de la cible et les autres debuffs directement (`targetCardPanel`, `foePanelHTML`). Le bouton Debug de
   l'ancienne fenêtre de la cible ne s'ouvre plus de nulle part : `openDebug` (engine.js) est gardé en attendant une
   décision.
+- **Étape 6c, 8e partie (2026-10-19)** : « Filtrer les stats » (`statpick.ts`, `StatPick.svelte` : son cadre à lui, un
+  bloc par groupe de stats ; redessiné en place, la liste garde son défilement aussi après « Tous / Aucun » d'un
+  groupe, l'ancienne remontait en haut). Les outils du haut (ordre, presets) restent le HTML de `statPickTools`.
 
 ## Vérifier une étape
 
