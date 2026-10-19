@@ -115,7 +115,6 @@ function versionsOf(card: LegacyAny, ci: number, vi: number): Versions {
   return {k: 'row', label: t('verLbl'), buttons: (cur.main != null ? [btn(cur.main, tiers ? 'Full' : t('verSet'))] : []).concat(cur.subs.map((x: LegacyAny) => btn(x.i, x.label)))};
 }
 
-/** The card of a set, or its optimizer page when that is open */
 // The button that wears the set in game (live.js equipShownSet): only with the game on the job shown
 function equipOf(): CardView['equip'] {
   const on = liveOk() && shownJobLoaded();
@@ -130,6 +129,7 @@ function legendOf(holds: LegacyAny): CardView['legend'] {
     item('<i class="short"></i>', 'lg_short', 'lgT_short', !holds.short.length), item('<i class="porter"></i>', 'lg_porter', 'lgT_porter', !holds.porter.length)]};
 }
 
+/** The card of a set, or its optimizer page when that is open */
 export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: string): CardOrPage {
   const S0 = st(), vi = Math.min(S0.variant[S0.job + '|' + ci] ?? 0, card.variants.length - 1);
   const s = card.variants[vi].set, base = s.base ? bypath[s.base] : null;

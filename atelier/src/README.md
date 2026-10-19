@@ -166,6 +166,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7m (2026-10-19)** : le titre d'un set (`TitleBox.svelte`, card.ts `TitleView`, `wsTitle`) : nom, version,
   quand il se porte ou ce que fait la WS, chemin, boutons Optimiser / Supprimer ; `setTitleBox` et `wsTitleHTML`
   (sets_view.js) sont retirés. Le bouton Supprimer reste le HTML de `delButton` (push.js).
+- **Étape 7n (2026-10-19)** : le contrôle d'un réglage des Modules (`ModCtl.svelte`, modules.ts `ctlOf`, `mcCtl`) :
+  choix en boutons, « auto » et sa valeur forcée, interrupteur, texte, réglage montré tel qu'écrit ; `modControl` et
+  `mcControl` (modules.js) sont retirés. Restent le HTML de l'ancienne page : un nombre (`modNum`), une couleur
+  (`modColorList`, `modColorMap`, `modPresets`), une liste de tuiles (`modChips`), un tableau de lignes (`modRows`).
+  Au passage, le commentaire de `cardView` (card.ts) est remis au-dessus de sa fonction.
 
 ## Vérifier une étape
 

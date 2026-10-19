@@ -294,18 +294,6 @@ function modOptions(x){
 const modName = x => x.key == null ? '#' + x.index : /[_a-z]/.test(x.key) && !/\s/.test(x.key) ? x.key.replace(/[_.]+/g, ' ').replace(/^./, c => c.toUpperCase()) : x.key;
 // What a control says under the pointer: what a click or a typed value does; read only, why
 const modTip = (off, key, v) => `title="${esc(off ? t('ttModRead') : t(key, v))}"`;
-function modControl(f, x, val, id, off, lopts){
-  const opts = modOptions(x), seg = (list, cur, label, tip) => `<span class="modseg">${list.map(o => `<button data-modopt="${esc(o)}" ${id} aria-pressed="${o === cur}" ${off} ${modTip(off, o === cur ? 'ttModChosen' : tip || 'ttModChoose', {v: label ? label(o) : o})}>${esc(label ? label(o) : o)}</button>`).join('')}</span>`;
-  if (modAuto(x)) return seg(['auto'], val, () => t('modAuto'), 'ttModAuto') + `<input class="modin num" type="text" value="${val === 'auto' ? '' : esc(modShow(val))}" placeholder="${esc(t('modForce'))}" ${id} data-modin ${off} ${modTip(off, 'ttModForce')}>`;
-  if (typeof val === 'boolean') return `<button class="modsw" role="switch" aria-checked="${val}" ${id} data-modbool ${off} ${modTip(off, val ? 'ttModTurnOff' : 'ttModTurnOn')}><span class="sw ${val ? 'on' : ''}" aria-hidden="true"></span><b>${t(val ? 'modOn' : 'modOff')}</b></button>`;
-  if (opts) return seg(opts, val);
-  if (x.kind === 'num') return modNum(x, val, id, off, lopts);       // module_ux.js: - / +, its bounds, its standard value
-  if (mxColorList(f, x)) return modColorList(val, id, off);          // module_ux.js: a colour, shown and picked as one
-  if (x.kind === 'str') return `<input class="modin" type="text" value="${esc(val)}" ${id} data-modin ${off} ${modTip(off, 'ttModText')}>`;
-  if (x.kind === 'list') return modChips(x, val, id, off, lopts);   // module_items.js: tiles to drag, items with their icons
-  if (x.kind === 'rows') return modRows(x, val, id, off, lopts);    // module_rows.js: a table of lines
-  return `<details class="modadv"><summary>${esc(t('modInFile'))}</summary><pre class="modcode">${esc(f.text.slice(x.a, x.b))}</pre></details>`;
-}
 // What a file is, for the player: its French name and purpose (module_catalog.js MOD_FILE_FR), else the file's own header
 function modFileInfo(f){
   const p = modParsed(f), base = f.file.split('/').pop(), job = (base.match(/^([A-Z]{3})_/) || [])[1] || '';
@@ -359,12 +347,6 @@ function mcScope(d, r){
   if (r.it.when === 'sub') return {cls: 'job', text: t('mcScopeWhenSub', v), tip: t('ttScopeWhenSub', v)};
   if (r.it.only) return {cls: 'all', text: t('mcScopeOnly', {j: r.it.only}), tip: t('ttScopeOnly', v)};
   return {cls: 'all', text: t('mcScopeAll'), tip: t('ttScopeAll', v)};
-}
-function mcControl(r, val, id, off){
-  const lang = S.lang === 'en' ? 2 : 1;
-  if (r.it.choices) return `<span class="modseg">${r.it.choices.map((c, i) => `<button data-mcchoice="${r.id}:${i}" ${id} aria-pressed="${c[0] === val}" ${off} ${modTip(off, c[0] === val ? 'ttModChosen' : c[0] === 'auto' ? 'ttModAuto' : 'ttModChoose', {v: c[lang]})}>${esc(c[lang])}</button>`).join('')}</span>`;
-  if (r.it.rgb) return modColorMap(r.f, r.x, off) + (r.it.presets ? modPresets(r.f, r.x, r.it.presets, off) : '');
-  return modControl(r.f, r.x, val, id, off, r.it);
 }
 // The file's text with every waiting value put where the old one was (from the end, so the places stay right)
 function modNewText(f, edits){

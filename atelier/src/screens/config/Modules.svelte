@@ -3,21 +3,22 @@
   left column, the presentation, the options, the file opened, the changes that wait. The buttons keep the attributes
   the old page's handlers read (modules.js, module_ux.js: data-modview, data-modfam, data-modopen, data-modgrp,
   data-modsave, data-modundo, data-modrevert, data-modqclear; the search box #modq); a setting's control is the old
-  page's HTML (ctlHtml).
+  page's HTML (ModCtl.svelte: numbers, colours, lists, tables).
 
   @file    atelier/src/screens/config/Modules.svelte
   @author  ejouanchicot
 -->
 <script lang="ts">
+  import ModCtl from './ModCtl.svelte';
   import Box from '../../components/Box.svelte';
   import type {ModulesView, ModItem, ModRow, ModCard, Nav} from './modules';
 
   let {view}: {view: ModulesView} = $props();
 </script>
 
-{#snippet card(c: ModCard)}<div class="mccard" class:changed={c.changed} class:tall={c.tall}><div class="mck"><b>{c.title}</b>{#if c.desc}<p>{c.desc}</p>{/if}<span class="mcscope {c.scope.cls}" title={c.scope.tip}>{c.scope.text}</span></div><div class="modv">{@html c.ctlHtml}</div></div>{/snippet}
+{#snippet card(c: ModCard)}<div class="mccard" class:changed={c.changed} class:tall={c.tall}><div class="mck"><b>{c.title}</b>{#if c.desc}<p>{c.desc}</p>{/if}<span class="mcscope {c.scope.cls}" title={c.scope.tip}>{c.scope.text}</span></div><div class="modv"><ModCtl c={c.ctl} /></div></div>{/snippet}
 {#snippet key(r: ModRow)}<div class="modk"><b>{r.key.name}</b>{#if r.key.code !== null}<code>{r.key.code}</code>{/if}{#if r.key.doc}<p>{r.key.doc}</p>{/if}</div>{/snippet}
-{#snippet row(r: ModRow)}{#if r.grp}<div class="modrow grp" class:tint={!!r.tintHtml} style="--d:{r.depth}">{@render key(r)}{#if r.tintHtml}<div class="modv">{@html r.tintHtml}</div>{/if}</div>{:else}<div class="modrow" class:changed={r.changed} class:tall={r.tall} style="--d:{r.depth}">{@render key(r)}<div class="modv">{@html r.ctlHtml}</div></div>{/if}{/snippet}
+{#snippet row(r: ModRow)}{#if r.grp}<div class="modrow grp" class:tint={!!r.tintHtml} style="--d:{r.depth}">{@render key(r)}{#if r.tintHtml}<div class="modv">{@html r.tintHtml}</div>{/if}</div>{:else}<div class="modrow" class:changed={r.changed} class:tall={r.tall} style="--d:{r.depth}">{@render key(r)}<div class="modv">{#if r.ctl}<ModCtl c={r.ctl} />{/if}</div></div>{/if}{/snippet}
 {#snippet items(list: ModItem[])}{#each list as it, i (i)}{#if it.kind === 'part'}<h4 class="modpart">{it.title}{#if it.why}<small>{it.why}</small>{/if}</h4>{:else if it.kind === 'card'}{@render card(it.card)}{:else}{@render row(it.row)}{/if}{/each}{/snippet}
 {#snippet nav(n: Nav)}<nav class="modnav box">{#if n.intro}<button class="modfile" data-modfam={n.intro.value} aria-current={n.intro.current} title={n.intro.title}><b>{n.intro.name}</b><small>{n.intro.small}</small></button>{/if}{#each n.groups as g (g.id)}<div class="modgrp" class:open={g.open}><button class="modgrph" data-modgrp={g.id} data-open={g.open} aria-expanded={g.open} title={g.title}><i aria-hidden="true">▸</i><b>{g.name}</b>{#if g.changed}<em class="moddot">{g.changed}</em>{/if}<small>{g.count}</small></button>{#if g.open}{#each g.entries as e (e.value)}{#if e.attr === 'data-modopen'}<button class="modfile" data-modopen={e.value} aria-current={e.current} title={e.title}><b>{e.name}</b><small>{e.small}</small>{#if e.dot}<i class="moddot">{e.dot}</i>{/if}</button>{:else}<button class="modfile" data-modfam={e.value} aria-current={e.current} title={e.title}><b>{e.name}</b><small>{e.small}</small>{#if e.dot}<i class="moddot">{e.dot}</i>{/if}</button>{/if}{/each}{/if}</div>{/each}</nav>{/snippet}
 

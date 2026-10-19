@@ -3,18 +3,18 @@
 // Files: one file at a time, the options the catalog explains then the rest in the file's own words. A search over
 // both, and the bar of the changes that wait, to save in one go.
 // The rules are the old page's renderModules, renderModulesSimple, mcIntroHTML, mcCardHTML, modRowHTML, modListHTML,
-// modGroupHTML (modules.js), modTop, modSaveBar, modSearch (module_ux.js). A setting's control (a switch, choices, a
-// number, items, a table of lines, a colour) is still the old page's HTML, with the attributes its handlers read
-// (modules.js modControl / mcControl and module_ux.js, module_items.js, module_rows.js): `ctlHtml` below.
+// modGroupHTML (modules.js), modTop, modSaveBar, modSearch (module_ux.js), modControl, mcControl (modules.js: a setting's
+// control, ModCtl below). A number, a colour, a list of items and a table of lines are still the old page's HTML
+// (module_ux.js, module_items.js, module_rows.js), with the attributes their handlers read.
 //
 // @file    atelier/src/screens/config/modules.ts
 // @author  ejouanchicot
 
 export interface ModKey { name: string; code: string | null; doc: string }
 /** A line of the Files view: a table's heading (grp), or a setting with its control */
-export interface ModRow { grp: boolean; depth: number; key: ModKey; tintHtml: string; ctlHtml: string; changed: boolean; tall: boolean }
+export interface ModRow { grp: boolean; depth: number; key: ModKey; tintHtml: string; ctl: ModCtl | null; changed: boolean; tall: boolean }
 /** An option of the Options view */
-export interface ModCard { title: string; desc: string; scope: {cls: string; text: string; tip: string}; ctlHtml: string; changed: boolean; tall: boolean }
+export interface ModCard { title: string; desc: string; scope: {cls: string; text: string; tip: string}; ctl: ModCtl; changed: boolean; tall: boolean }
 export type ModItem = {kind: 'part'; title: string; why: string} | {kind: 'card'; card: ModCard} | {kind: 'row'; row: ModRow};
 export interface NavEntry { attr: 'data-modfam' | 'data-modopen'; value: string; current: boolean; title: string; name: string; small: string; dot: number }
 export interface NavGroup { id: string; name: string; open: boolean; title: string; changed: number; count: number; entries: NavEntry[] }
@@ -50,6 +50,44 @@ function skipped(x: LegacyField, skip: Record<string, unknown>): boolean {
   return x.kind === 'map' ? x.fields.length > 0 && x.fields.every(c => skipped(c, skip)) : !!skip[x.path];
 }
 
+// ---- a setting's control (the old page's modControl, mcControl: modules.js) ----
+export type ModCtl = {k: 'seg'; id: Record<string, string>; off: boolean; btns: Array<{attrs: Record<string, string>; label: string; pressed: boolean; tip: string}>; input: null | {value: string; ph: string; tip: string}}
+  | {k: 'switch'; id: Record<string, string>; off: boolean; on: boolean; tip: string; labelHtml: string}
+  | {k: 'text'; id: Record<string, string>; off: boolean; value: string; tip: string}
+  | {k: 'code'; summary: string; code: string}
+  | {k: 'html'; html: string};
+const idAttrs = (file: string, path: string) => ({'data-modfile': file, 'data-modpath': path});
+// what a control says under the pointer: what a click or a typed value does; read only, why
+const tipOf = (off: string, key: string, v?: LegacyAny) => off ? t('ttModRead') : t(key, v);
+
+// A setting's control by its kind: a value its comment names in quotes (buttons), 'auto' or a forced value, a switch,
+// a number, a colour, a text, a list of tiles, a table of lines; anything else is shown as written
+function ctlOf(f: LegacyConfigFile, x: LegacyField, val: LegacyAny, file: string, path: string, off: string, lopts?: LegacyAny): ModCtl {
+  const id = idAttrs(file, path), opts = modOptions(x), html = idOf(file, path);
+  const seg = (list: string[], cur: LegacyAny, label?: (o: string) => string, tip?: string) => list.map(o =>
+    ({attrs: {'data-modopt': o}, label: label ? label(o) : o, pressed: o === cur, tip: tipOf(off, o === cur ? 'ttModChosen' : tip || 'ttModChoose', {v: label ? label(o) : o})}));
+  if (modAuto(x)) return {k: 'seg', id, off: !!off, btns: seg(['auto'], val, () => t('modAuto'), 'ttModAuto'), input: {value: val === 'auto' ? '' : modShow(val), ph: t('modForce'), tip: tipOf(off, 'ttModForce')}};
+  if (typeof val === 'boolean') return {k: 'switch', id, off: !!off, on: val, tip: tipOf(off, val ? 'ttModTurnOff' : 'ttModTurnOn'), labelHtml: t(val ? 'modOn' : 'modOff')};
+  if (opts) return {k: 'seg', id, off: !!off, btns: seg(opts, val), input: null};
+  // module_ux.js: a number with - / +, its bounds, its standard value; a colour, shown and picked as one
+  if (x.kind === 'num') return {k: 'html', html: modNum(x, val, html, off, lopts)};
+  if (mxColorList(f, x)) return {k: 'html', html: modColorList(val, html, off)};
+  if (x.kind === 'str') return {k: 'text', id, off: !!off, value: String(val), tip: tipOf(off, 'ttModText')};
+  // module_items.js: tiles to drag, items with their icons; module_rows.js: a table of lines
+  if (x.kind === 'list') return {k: 'html', html: modChips(x, val, html, off, lopts)};
+  if (x.kind === 'rows') return {k: 'html', html: modRows(x, val, html, off, lopts)};
+  return {k: 'code', summary: t('modInFile'), code: f.text.slice(x.a, x.b)};
+}
+// An option of the Options view: the catalog's own choices as buttons, a colour as its picker and presets, else the
+// setting's own control
+function mcCtl(r: LegacyCatalogRow, val: LegacyAny, off: string): ModCtl {
+  const lang = S.lang === 'en' ? 2 : 1;
+  if (r.it.choices) return {k: 'seg', id: idAttrs(r.f.file, r.x.path), off: !!off, input: null, btns: r.it.choices.map((c: LegacyAny, i: number) =>
+    ({attrs: {'data-mcchoice': r.id + ':' + i}, label: c[lang], pressed: c[0] === val, tip: tipOf(off, c[0] === val ? 'ttModChosen' : c[0] === 'auto' ? 'ttModAuto' : 'ttModChoose', {v: c[lang]})}))};
+  if (r.it.rgb) return {k: 'html', html: modColorMap(r.f, r.x, off) + (r.it.presets ? modPresets(r.f, r.x, r.it.presets, off) : '')};
+  return ctlOf(r.f, r.x, val, r.f.file, r.x.path, off, r.it);
+}
+
 function rowsOf(f: LegacyConfigFile, x: LegacyField, depth: number, skip: Record<string, unknown>): ModRow[] {
   if (skipped(x, skip)) return [];
   const ed = modEdits(f.file)[x.path], val = ed ? ed.v : x.value, off = modCanWrite(f) ? '' : 'disabled';
@@ -58,20 +96,19 @@ function rowsOf(f: LegacyConfigFile, x: LegacyField, depth: number, skip: Record
   const key = {name, code: x.key != null && name !== x.key ? x.key : null, doc: fr ? fr.desc : [modDoc(x.doc), x.note].filter(Boolean).join('\n')};
   // a table that holds a colour (r g b): the colour itself on its line, its three numbers under it
   const tintHtml = mxColorMap(x) ? modColorMap(f, x, off) : '';
-  if (x.kind === 'map') return [{grp: true, depth, key, tintHtml, ctlHtml: '', changed: false, tall: false}]
+  if (x.kind === 'map') return ([{grp: true, depth, key, tintHtml, ctl: null, changed: false, tall: false}] as ModRow[])
     .concat(x.fields.flatMap(c => rowsOf(f, c, depth + 1, skip)));
   // an empty table of named entries looks like an empty list: it is shown, not changed here
   const named = rest && rest.map && x.kind === 'list' && !x.fields.length;
-  const ctlHtml = named ? `<details class="modadv"><summary>${esc(t('modNamed'))}</summary><pre class="modcode">${esc(f.text.slice(x.a, x.b))}</pre></details>`
-    : modControl(f, x, val, idOf(f.file, x.path), off);
-  return [{grp: false, depth, key, tintHtml: '', ctlHtml, changed: !!ed, tall: x.kind === 'code' || (x.kind === 'list' && !mxColorList(f, x)) || x.kind === 'rows'}];
+  const ctl: ModCtl = named ? {k: 'code', summary: t('modNamed'), code: f.text.slice(x.a, x.b)} : ctlOf(f, x, val, f.file, x.path, off);
+  return [{grp: false, depth, key, tintHtml: '', ctl, changed: !!ed, tall: x.kind === 'code' || (x.kind === 'list' && !mxColorList(f, x)) || x.kind === 'rows'}];
 }
 
 // ---- an option of the Options view (modules.js mcCardHTML) ----
 function cardOf(d: LegacyExport, r: LegacyCatalogRow): ModCard {
   const edits = modEdits(r.f.file), ed = edits[r.x.path], val = ed ? ed.v : r.x.value, off = modCanWrite(r.f) ? '' : 'disabled';
   const part = !!r.it.rgb && r.x.fields.some(c => edits[c.path]);
-  return {title: r.title, desc: r.desc, scope: mcScope(d, r), ctlHtml: mcControl(r, val, idOf(r.f.file, r.x.path), off),
+  return {title: r.title, desc: r.desc, scope: mcScope(d, r), ctl: mcCtl(r, val, off),
     changed: !!ed || part, tall: r.x.kind === 'list' || r.x.kind === 'rows' || !!r.it.presets};
 }
 
