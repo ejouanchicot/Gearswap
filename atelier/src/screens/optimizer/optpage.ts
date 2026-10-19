@@ -13,6 +13,7 @@
 // @file    atelier/src/screens/optimizer/optpage.ts
 // @author  ejouanchicot
 
+import {statWhatView, statResultView, type StatWhatView, type StatResultView} from './statpage';
 export interface Objective { key: string; v: string; on: boolean; tip: string; label: string; desc: string; disabled: boolean }
 export type Param =
   | {k: 'spells'; label: string; key: string; options: Array<{value: string; selected: boolean}>}
@@ -31,8 +32,8 @@ export interface ResultRow { label: string; obj: boolean; cells: Array<{text: st
 export interface OptPageView {
   head: {backTitle: string; back: string; title: string; set: string; ctx: string; goHtml: string};
   noEngine: string | null;
-  statWhatHtml: string | null;
-  statResultHtml: string | null;
+  statWhat: StatWhatView | null;
+  statResult: StatResultView | null;
   what: null | {top: NukeTop | {k: 'html'; html: string}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; searchHtml: string};
   result: null | {title: string; none: string | null; big: null | {label: string; value: string; diff: null | {text: string; up: boolean}; was: string; verdict: null | {cls: string; text: string}};
     visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changesHtml: string; trialHtml: string; noTry: string; notes: string; calcHtml: string};
@@ -188,9 +189,9 @@ export function optPageView(s: LegacyAny, ws: unknown): OptPageView {
     : optGoButtons(act) + (kind === 'jump' || kind === 'stat' || kind === 'nuke' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
       (ws ? `<button class="btn ghost" data-optall title="${esc(t('oaTip'))}">${t('oaBtn')}</button>` : ''));
   const head = {backTitle: t('ttOptBack'), back: t('optBack'), title: t('optPageTitle'), set: shortPath(s.path), ctx: `${buffTier()} · ${enemyKey(b.enemy)}`, goHtml};
-  const out: OptPageView = {head, noEngine: null, statWhatHtml: null, statResultHtml: null, what: null, result: null};
+  const out: OptPageView = {head, noEngine: null, statWhat: null, statResult: null, what: null, result: null};
   if (!engineReady()) return {...out, noEngine: noEngineText()};
   // a set judged by its stats (idle, Enmity, Phalanx, Fast Cast...): stat_opt.js
-  if (kind === 'stat') return {...out, statWhatHtml: statWhatHTML(s), statResultHtml: statResultHTML(s)};
+  if (kind === 'stat') return {...out, statWhat: statWhatView(s), statResult: statResultView(s)};
   return {...out, what: whatOf(s, kind), result: resultOf(s, kind)};
 }

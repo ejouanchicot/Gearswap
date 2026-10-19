@@ -591,46 +591,7 @@ async function optimizeStats(s){
   optLaunch(s, k, input, Object.assign({}, o, {stat: so.objs[0], statFloor: so.floor}));
 }
 
-/* ---- the page: objectives, floors, the result's lines ---- */
-function statWhatHTML(s){
-  const so = statOpts(s), cur = so.objs[0];
-  // the objectives by kind, only the ones that mean something for this set (statRelevant) unless all are asked for
-  const all = !!(S.optOpts || {}).statAll, shown = all ? new Set(STAT_OBJS) : statRelevant(s, so.objs);
-  const btn = k => `<button class="opobj ${k === cur ? 'on' : ''}" role="radio" aria-checked="${k === cur}" ` +
-    `data-statobj="${k}" data-objtip="${esc(t('statD_' + k))}"><b>${esc(t('statObj_' + k))}</b><span>${esc(t('statD_' + k))}</span></button>`;
-  const groups = STAT_OBJ_GROUPS.map(([g, keys]) => { const list = keys.filter(k => shown.has(k));
-    return list.length ? `<div class="opgrp"><span class="opgrph">${esc(t('statGrp_' + g))}</span>${list.map(btn).join('')}</div>` : ''; }).join('');
-  const hidden = STAT_OBJS.length - shown.size;
-  const toggle = `<button class="linkbtn opallbtn" data-statobjall>${esc(all ? t('statFewer') : t('statAll', {n: hidden}))}</button>`;
-  const objs = `<div class="opobjs" role="radiogroup">${groups}</div>${all || hidden ? toggle : ''}`;
-  const then = i => `<select class="buffsel" data-statthen="${i}">${['', ...STAT_OBJS].filter(k => k !== cur).map(k =>
-    `<option value="${k}" ${(so.objs[i] || '') === k ? 'selected' : ''}>${esc(k ? t('statObj_' + k) : t('statNone'))}</option>`).join('')}</select>`;
-  const help = S._help === 'optpage' ? `<p class="wshelp">${esc(t('statWhy'))} ${esc(t('opHelp'))}</p>` : '';
-  const num = (k, label) => opLimitHTML(`data-statfloor="${k}"`, label, so.floor[k]);
-  // the floors of the stats this set is after (and any floor given a value), the others hidden with their objectives
-  const has = (k, obj) => all || shown.has(obj) || !!+so.floor[k], opt = (k, obj, label) => has(k, obj) ? num(k, label) : '';
-  // the set's own settings kept from an earlier visit: one click back to the defaults (they change as the page learns)
-  const kept = ((S.optOpts || {}).statBy || {})[s.path];
-  const reset = kept ? `<p class="muted small">${esc(t('statKept'))} <button class="linkbtn" data-statreset>${esc(t('statReset'))}</button></p>` : '';
-  // the minimums first, as tiles (opt_page.js opLimitHTML); what they are is the title's tooltip, and a line
-  // under it while the help is open
-  const floors = opLimitsHTML(t('statFloors'), [num('pdt', 'DT+PDT ≤'), num('mdt', 'DT+MDT ≤'), num('hp', t('statHpMin')), num('hpMax', t('statHpMax')),
-    opt('sird', 'sird', t('statSird')), opt('fc', 'fc', t('statFc')), opt('ecrit', 'ecritRed', t('statEcrit')), opt('enmity', 'enmity', t('statEnm')),
-    opt('phalanx', 'phalanx', t('statPhx')), opt('ceLoss', 'ceLoss', t('statCeLoss')), opt('luDt', 'luDt', t('statLuDt'))], `title="${esc(t('statFloorsWhy'))}"`) +
-    (S._help === 'optpage' ? `<p class="muted small">${esc(t('statFloorsWhy'))}</p>` : '') + reset;
-  const search = opSearchHTML(S.optOpts || {}, false);
-  const jaList = abilityPieces(s);
-  const own = jaList.length ? `<div class="opparams"><label class="opf opwrap" title="${esc(t('statKeepOwnTip', {b: segs(s.path).pop()}))}"><input type="checkbox" data-statkeep ${keptSlots(s).length ? 'checked' : ''}> ` +
-    `${esc(t('statKeepOwn', {p: jaList.map(sl => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')}))}</label></div>` : '';
-  const ref = cureGap(s) ? null : hpRef(s);
-  const refLine = ref ? `<p class="muted small">${esc(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}))}</p>` : '';
-  const weaponsNote = (S.optOpts || {}).freeWeapons ? `<p class="muted small">${esc(t('statWeaponsNote'))}</p>` : '';
-  const enh = enhContext(s);
-  const assumed = enh ? `<p class="muted small">${esc(t('statEnhNote', {s: enh.name, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : 'statEnhSelf')}))}</p>`
-    : ['PLD', 'RUN'].includes(S.job) ? `<p class="muted small">${esc(t('statAssumed', {m: S.job === 'PLD' ? t('statAssumedMaj') : ''}))}</p>` : '';
-  return `${floors}<h3 class="ophd">${t('opWhat')} ${helpBtn('optpage')}</h3>${help}${objs}<div class="opparams"><span class="opf">${esc(t('statThen'))}</span>${then(1)}${then(2)}</div>` +
-    own + refLine + assumed + enfNoteHTML(s) + search + weaponsNote;
-}
+/* ---- the page (atelier/src/screens/optimizer/statpage.ts): the result's lines ---- */
 // The result's lines: the objectives first, then every figure, the floors marked
 function statRows(s){
   const so = statOpts(s), fl = so.floor, on = k => +fl[k];
@@ -656,22 +617,6 @@ function statRows(s){
   const near = rows.filter(r => (['gap', 'ref', 'cure4'].includes(r.id) || r.id.startsWith('act:') || r.id.startsWith('enf:')) && !first.includes(r));
   const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow');
   return first.concat(near, rest);
-}
-function statResultHTML(s){
-  const now = statFigures(s), was = trialCount(s) ? statFigures(s, true) : null, rows = statRows(s), main = rows[0];
-  const v = main.get(now), w = was ? main.get(was) : null, d = was ? v - w : null;
-  const big = `<div class="opbig"><div><span class="muted small">${esc(main.label)}${was ? ' · ' + t('rdvTry') : ''}</span><div class="opval"><b>${main.fmt(v)}</b>` +
-    (d ? `<em class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : '−'}${main.fmt(Math.abs(d))}</em>` : '') + `</div>` +
-    (was ? `<span class="muted small">${t('opNow')} : ${main.fmt(w)}</span>` : '') +
-    (now.shield && main.id === 'def' ? `<span class="muted small"> · DEF ${esc(t('statShield', {n: now.shield}))}</span>` : '') + `</div></div>`;
-  const cell = (r, x, y) => { const a = r.get(x), b = y ? r.get(y) : null;
-    const better = b != null && (r.low ? a < b - 1e-9 : a > b + 1e-9), bad = r.floor && !r.floor(a);
-    return `<td class="${better ? 'better' : ''} ${bad ? 'short' : ''}">${r.fmt(a)}</td>`; };
-  const shown = rows.filter((r, i) => i < 3 || r.get(now) || (was && r.get(was)) || r.floor);
-  const table = `<table class="rdvs optable"><thead><tr><th></th>${was ? `<th>${t('rdvMine')}</th>` : ''}<th>${was ? t('rdvTry') : t('rdvMine')}</th></tr></thead><tbody>` +
-    shown.map((r, i) => `<tr class="${i ? '' : 'obj'}"><th ${r.tip ? `title="${esc(r.tip)}"` : ''}>${esc(r.label)}${i ? '' : ' ★'}</th>${was ? cell(r, was, now) : ''}${cell(r, now, was)}</tr>`).join('') + `</tbody></table>`;
-  return `<h3 class="ophd">${t('opResult')}</h3>${big}<div class="opres">${table}<div class="opside">${opChangesHTML(s)}</div></div>` +
-    `${trialRow(s) || `<p class="muted small">${esc(t('opNoTry'))}</p>`}`;
 }
 // The toast once a search is done
 function statDoneText(s, res, tr){

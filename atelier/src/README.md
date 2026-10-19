@@ -211,6 +211,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7y (2026-10-19)** : les lignes d'un fichier avant et après (pushview.ts `diffLines`), dans le pli des
   fenêtres Pousser / Supprimer / Ajouter, et la fenêtre qui crée un set du catalogue (`createView`, appelée par
   add_set.js `createPreview`) ; `diffHTML` (push.js) est retiré.
+- **Étape 7z (2026-10-19)** : l'optimiseur de stats, ses deux colonnes (`optimizer/statpage.ts`, `StatPage.svelte` :
+  les minimums, les objectifs par genre, « ensuite », les pièces propres au set gardées, les notes ; le résultat
+  contre le set du fichier) ; `statWhatHTML` et `statResultHTML` (stat_opt.js) sont retirés. Restent en HTML les blocs
+  que l'optimiseur partage : les tuiles de minimums (`opLimitsHTML`), la recherche (`opSearchHTML`), les pièces
+  changées (`opChangesHTML`), la barre de l'essai (`trialRow`), la note des enfeebles (`enfNoteHTML`).
 
 ## Vérifier une étape
 
