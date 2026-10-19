@@ -22,6 +22,7 @@ import {statPickView} from './screens/dialogs/statpick';
 import {addStepView} from './screens/dialogs/addset';
 import {placesView, porterView, bagSendView} from './screens/dialogs/bagdlg';
 import {modPickView} from './screens/dialogs/modpick';
+import {slotMenuView, slotMenuShow} from './screens/dialogs/slotmenus.svelte';
 
 openBridge();
 // the figures' boxes worked out here, for the old page's screens that still draw them as HTML (engine.js tankHTML,
@@ -40,5 +41,7 @@ dialogBox.className = 'dialogbox';
 dialogBox.style.display = 'contents';
 mount(Dialog, {target: dialogBox});
 window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), update: dialogUpdate, compareView, gearPickView, targetView, pickView, addView, pushView, delView, addSetView, tierCostView, historyView, optAllView, statPickView, addStepView, placesView, porterView, bagSendView, modPickView};
+// the menu of a slot of the sets' grid (trial.js openSlotMenu places it)
+window.ATELIER_SLOTMENU = {view: slotMenuView, show: slotMenuShow};
 // on the body itself: the old page's frame (.app, #overlay, #tip) stays a child of <body>, as its styles expect
 mount(App, {target: document.body});

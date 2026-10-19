@@ -121,6 +121,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 11e partie (2026-10-19)** : les fenêtres de choix des Modules (`modpick.ts`, `ModPick.svelte`, dans le
   cadre commun) : objets, abilities et sorts, weaponskills. La recherche redessine la fenêtre en place (`miShow`,
   module_items.js) ; `miGridHTML`, `mxActGrid` et `mxWsGrid` sont retirés.
+- **Étape 6c, 12e partie (2026-10-19)** : le menu d'un emplacement de la grille (`slotmenus.svelte.ts`,
+  `SlotMenu.svelte`) : fait à sa première ouverture en fin de `<body>` comme avant, dessiné tout de suite (sa taille le
+  place) ; `openSlotMenu` (trial.js) ne garde que le placement. L'infobulle (`#tip`) attend l'étape 7 avec la feuille
+  de stats, dont elle partage le code.
 
 ## Vérifier une étape
 

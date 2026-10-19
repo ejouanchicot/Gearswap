@@ -468,3 +468,5 @@ declare const WS_ACCESS: LegacyAny;
 declare function mxWsWeapon(path: string): {name: string; kind: string} | null;
 declare function mxWsGiven(): LegacyAny;
 declare function mxSpell(n: string): boolean;
+declare function isExcluded(name: string): boolean;
+interface Window { ATELIER_SLOTMENU?: {view: (ci: number, slot: string) => LegacyAny; show: (v: LegacyAny) => HTMLElement} }

@@ -154,20 +154,12 @@ function lockChoices(s, choices){
   for (const slot of lockedSlots(s)) delete choices[slot];
   return choices;
 }
-// The menu of a slot of the grid: choose a piece, lock it, empty it, put the set's piece back
+// The menu of a slot of the grid: choose a piece, lock it, empty it, put the set's piece back (drawn by the Svelte
+// application: atelier/src/screens/dialogs/slotmenus.svelte.ts), placed under the slot or above it, inside the window
 function openSlotMenu(el, ci, slot){
-  const card = S._cards[ci], s = card && shownSet(card, ci);
-  if (!s) return;
-  const eff = withWeapons(s), p = eff.pieces[slot], locked = isLocked(s, slot), tried = eff.tried[slot];
-  const item = (act, label, hint = '') => `<button data-slotact="${act}" data-card="${ci}" data-slot="${slot}">${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ''}</button>`;
-  let menu = $('#slotmenu');
-  if (!menu) { menu = document.createElement('div'); menu.id = 'slotmenu'; menu.className = 'slotmenu'; menu.setAttribute('role', 'menu'); document.body.appendChild(menu); }
-  menu.innerHTML = `<header><b>${esc(SLOT_NAMES[S.lang][slot])}</b><span>${esc(p && !isEmpty(p) ? p.name : t('empty'))}</span></header>` +
-    item('pick', t('slotPick')) +
-    (LOCKABLE(slot) ? item('lock', t(locked ? 'slotUnlock' : 'slotLock'), t(locked ? 'slotUnlockHint' : 'slotLockHint')) : '') +
-    (LOCKABLE(slot) && p && !isEmpty(p) ? item('exclude', t(isExcluded(p.name) ? 'slotInclude' : 'slotExclude'), t(isExcluded(p.name) ? 'slotIncludeHint' : 'slotExcludeHint')) : '') +
-    (LOCKABLE(slot) && p && !isEmpty(p) ? item('empty', t('tryEmpty')) : '') +
-    (tried ? item('reset', t('tryReset')) : '');
+  const v = ATELIER_SLOTMENU.view(ci, slot);
+  if (!v) return;
+  const menu = ATELIER_SLOTMENU.show(v);
   menu.hidden = false; $('#tip').hidden = true;
   const b = el.getBoundingClientRect(), w = menu.offsetWidth, h = menu.offsetHeight;
   menu.style.left = Math.max(8, Math.min(b.left, innerWidth - w - 8)) + 'px';
