@@ -129,53 +129,10 @@ function fxText(k, v){
   if (how === '-') return `${label} −${r(v)}`;
   return `${label} ${v < 0 ? '−' : '+'}${r(Math.abs(v))}${how === '%' ? ' %' : ''}`;
 }
-// The list under the panel: each active buff, what it gives
-function buffEffectsHTML(){
-  const by = withAftermath(buffTotals(), shownMain())._by, groups = new Map();
-  for (const e of by) { if (!groups.has(e.src)) groups.set(e.src, []); groups.get(e.src).push(fxText(e.k, e.v)); }
-  // always there, its list scrolling inside a fixed height: adding or taking a buff off moves nothing
-  return fbox('fx', 'g-buff', t('bEffects'), groups.size ? `<ul class="condlist fxlist fxfixed">${[...groups].map(([src, list]) =>
-    `<li><b>${esc(src)}</b><span>${list.map(esc).join(' · ')}</span></li>`).join('')}</ul>` : `<p class="muted small fxfixed">${t('bNone')}</p>`);
-}
 function buffCount(){
   const b = buffState();
   return ['food', 'protect', 'shell', 'haste', 'storm', 'song0', 'song1', 'song2', 'song3', 'song4', 'soulVoice', 'clarion', 'roll0', 'roll1', 'indi', 'geo', 'entrust', 'bolster', 'bog', 'ecliptic', 'dia', 'lightshot', 'distract', 'am'].filter(k => b[k] && (k !== 'song4' || b.clarion)).length + (b.foeJa || []).length +
     jasOf().filter(ja => jaOn(b, ja.name)).length;
-}
-function buffPanelHTML(){
-  const b = buffState(), n = buffCount();
-  // a menu; its empty choice names what it is for (Protect, Song 2...); `def` a value used while none is chosen
-  const sel = (key, values, ph = '—', def = null, cls = '') => `<select class="buffsel ${cls} ${b[key] ? 'set' : ''}" data-buff="${key}" title="${esc(t('ttBuffSel', {n: ph}))}">` +
-    (def ? values : ['', ...values]).map(v => `<option value="${esc(v)}" ${String(v) === String(b[key] ?? def ?? '') ? 'selected' : ''}>${v === '' ? esc(ph) : esc(v)}</option>`).join('') + `</select>`;
-  // a geomancy menu: the buffs on you, then the debuffs on the enemy
-  const geoSel = (key, ph) => `<select class="buffsel ${b[key] ? 'set' : ''}" data-buff="${key}" title="${ph}"><option value="">${ph}</option>` +
-    `<optgroup label="${t('geoOnYou')}">${Object.keys(BUBBLES).map(v => `<option ${v === b[key] ? 'selected' : ''}>${esc(v)}</option>`).join('')}</optgroup>` +
-    `<optgroup label="${t('geoOnEnemy')}">${Object.keys(GEO_DEBUFFS).map(v => `<option ${v === b[key] ? 'selected' : ''}>${esc(v)}</option>`).join('')}</optgroup></select>`;
-  // the + of a job's gear (Songs+, Rolls+, Geomancy+): "+0" while none is chosen
-  const plus = (key, label, max) => `<select class="buffsel plus ${b[key] ? 'set' : ''}" data-buff="${key}" title="${label}">` +
-    ['', ...Array.from({length: max}, (_, i) => i + 1)].map(v => `<option value="${v}" ${String(v) === String(b[key] ?? '') ? 'selected' : ''}>${label} +${v || 0}</option>`).join('') + `</select>`;
-  const row = (label, body, cls = '') => `<div class="brow"><span>${label}</span><div class="bctl ${cls}">${body}</div></div>`;
-  const jas = jasOf(), ownWarcry = j => j.name === 'Warcry' && j.as === 'main';
-  const chipsOf = ja => `<button class="chip ja-${ja.as}" data-ja="${esc(ja.name)}" aria-pressed="${jaOn(b, ja.name)}" title="${esc(jaTip(ja))}">` +
-    `${esc(ja.name.replace(' · party', ''))}${ja.as !== 'main' ? `<small>${ja.as === 'sub' ? '/' + esc((data() || {}).sub) : t('jaParty')}</small>` : ''}</button>`;
-  // yours: food, aftermath, your abilities (and a party WAR's Warcry, set under them)
-  const own = [
-    row(t('bFood'), sel('food', Object.keys(FOODS), t('bFood')), 'one'),
-    row(t('bAm'), amRowHTML(sel)),
-    // a WAR main's Warcry is switched in its own line, with its Savagery / Agoge Mask
-    jas.some(j => j.as !== 'party' && !ownWarcry(j)) ? row(t('bJa'), jas.filter(j => j.as !== 'party' && !ownWarcry(j)).map(chipsOf).join(''), 'chips') : '',
-    jas.some(ownWarcry) ? row('Warcry', chipsOf(jas.find(ownWarcry)) + warcryHTML(b), 'chips') : '',
-  ].join('');
-  const party = partyCardsHTML(b, sel, geoSel, plus, jas);
-  const tgt = targetCardPanel(b), foe = foePanelHTML(b);
-  // the parts, for the new layout's party builder (party_builder.js lays them out its own way)
-  S._bparts = {own, tgt, foe};
-  // the four compartments fold by their band (S.bFold, kept between visits)
-  const fold = (key, cls, title, body, meta = '') => { const shut = !!(S.bFold || {})[key];
-    return `<section class="box ${cls} bfoldbox ${shut ? 'shut' : ''}"><header class="boxh" data-bfold="${key}" role="button" aria-expanded="${!shut}">` +
-      `<h3>${title}</h3>${meta}</header>${shut ? '' : `<div class="boxb">${body}</div>`}</section>`; };
-  return `<div class="buffbody"><div class="bcol">${fold('you', 'g-buff', t('bYours'), own)}${fold('party', 'g-def', t('bParty'), party)}</div>` +
-    `<div class="bcol">${fold('target', 'g-off', t('bTarget'), tgt, `<span class="meta">${esc(enemyKey(b.enemy))}</span>`)}${fold('foe', 'g-mag', t('bDebuffsTitle'), foe.body, foe.total)}</div></div>`;
 }
 // A BRD's songs: four, five under Clarion Call; Soul Voice doubles them all, Marcato one of them x1.5, never
 // both (BG Wiki: Soul Voice cancels Marcato)
@@ -192,98 +149,12 @@ function ariaPdl(b){
   return (base + ariaPlus(b) * step) * songMul(b, i);
 }
 const songMul = (b, i) => b.soulVoice ? 2 : b.marcato != null && +b.marcato === i ? 1.5 : 1;
-function brdJaHTML(b, plusHTML){
-  const chip = (attrs, label, on, tip = '', off = false) => `<button class="chip" ${attrs} aria-pressed="${!!on}" ${off ? 'disabled' : ''} title="${esc(tip)}">${esc(label)}</button>`;
-  const m = b.marcato != null && !b.soulVoice;
-  const row = (label, body, tip = '') => `<div class="prow"><span class="flbl" ${tip ? `title="${esc(tip)}"` : ''}>${esc(label)}</span>${body}</div>`;
-  // under the songs, a line a setting: the gear's Songs+, Soul Voice / Clarion Call, Marcato's song (again to take it
-  // off; none under Soul Voice), Aria's Loughnashade stage
-  return `<div class="brdrows">${row(t('pGear'), plusHTML)}` +
-    row(t('bJa'), chip('data-buffflag="soulVoice"', 'Soul Voice', b.soulVoice, t('svTip')) + chip('data-buffflag="clarion"', 'Clarion Call', b.clarion, t('clarionTip'))) +
-    row('Marcato', `<span class="fseg">${songSlots(b).map(i => chip(`data-marcato="${i}"`, String(i + 1), m && +b.marcato === i, t('marcatoOn', {n: i + 1}), b.soulVoice)).join('')}</span>`, t('marcatoTip')) +
-    (songSlots(b).some(i => b['song' + i] === 'Aria of Passion') ? row('Aria', `<span class="fseg">` +
-      Object.keys(ARIA_HORN).map(st => chip(`data-foeseg="ariaStage" data-v="${st}"`, st, (b.ariaStage || 'V') === st, t('ariaTip', {n: ARIA_HORN[st]}))).join('') +
-      `</span><span class="muted small">Loughnashade · Songs +${ariaPlus(b)} · PDL +${Math.round(ariaPdl(b) * 10) / 10} %</span>`) : '') + `</div>`;
-}
 // A roll's two buttons: its job in the party (its bonus; on by itself when it is your job), Crooked Cards (one roll)
 function rollChips(b, i){
   const rj = ROLL_JOB[b['roll' + i]], mine = rj && rj[0] === S.job;
   const job = `<button class="chip" data-rolljob="${i}" aria-pressed="${rollJobOn(b, i)}" ${!rj || mine ? 'disabled' : ''} title="${esc(rj ? t(mine ? 'rollJobMine' : 'rollJobTip', {j: rj[0]}) : '')}">${esc(rj ? rj[0] : '—')}</button>`;
   const cc = `<button class="chip" data-rollcc="${i}" aria-pressed="${b.rollCC != null && +b.rollCC === i}" ${b['roll' + i] ? '' : 'disabled'} title="${esc(t('rollCcTip'))}">CC</button>`;
   return job + cc;
-}
-// The party's support, a card a job: its title, its choices, then what it gives you
-// (Protect, Shell and Haste a tier a click, again to take it off; songs, rolls and bubbles as menus)
-function partyCardsHTML(b, sel, geoSel, plus, jas){
-  const B = buffTotals();
-  // what a job's buffs give, each stat once (two Minuets add up), as HTML: yours first, then what comes off the
-  // target (Frailty...) in red
-  const FOE_KEYS = ['edefp', 'eeva', 'emdb', 'emeva', 'eres', 'estatp', 'ecrit', 'eatkp', 'egambit', 'eresu', 'eallstat', 'eslow', 'edot', 'estr', 'edex', 'evit', 'eagi', 'eint', 'emnd', 'echr'];
-  const gives = (src, extra = '') => { const sum = {};
-    for (const e of B._by) if (src(e.src) && typeof e.v === 'number') sum[e.k] = (sum[e.k] || 0) + e.v;
-    const keys = Object.keys(sum), mine = keys.filter(k => !FOE_KEYS.includes(k)), foe = keys.filter(k => FOE_KEYS.includes(k));
-    const parts = mine.map(k => esc(fxShort(k, sum[k]))).concat(foe.map(k => `<span class="pneg">${esc(fxShort(k, sum[k]) + extra)}</span>`));
-    return parts.join(' · '); };
-  const flag = (k, label, tip) => `<button class="chip" data-buffflag="${k}" aria-pressed="${!!b[k]}" title="${esc(tip)}">${esc(label)}</button>`;
-  const seg = (k, tiers, label) => `<div class="pseg"><span class="flbl">${esc(label)}</span><span class="fseg">${Object.keys(tiers).map(v =>
-    `<button class="chip" data-foeseg="${k}" data-v="${esc(v)}" aria-pressed="${b[k] === v}" title="${esc(v + ' · ' + t('ttTierChip'))}">${esc(v.replace(/^\S+\s?/, '') || 'I')}</button>`).join('')}</span></div>`;
-  const songs = new Set(Object.keys(SONGS)), geoName = v => v.replace(/^(Entrust )?(Indi|Geo)-/, '');
-  // who casts the WHM tab's spells (BG Wiki): Protect V WHM / RDM / SCH / PLD, Shell V WHM / RDM / SCH / RUN, Haste WHM /
-  // RDM, Haste II RDM only, Storm II SCH only, Hastega SMN (Garuda); its switch keeps its WHM key
-  const tabs = [
-    // a PLD's own Protect carries its shield's DEF (Shield Barrier): said when another job casts it
-    {key: 'WHM', label: 'WHM', body: `<div class="prow">${seg('protect', PROTECT, 'Protect')}${S.job === 'PLD' ? flag('protectOther', t('protOther'), t('protOtherTip')) : ''}<span class="pwho">WHM RDM SCH PLD</span></div>` +
-      `<div class="prow">${seg('shell', SHELL, 'Shell')}<span class="pwho">WHM RDM SCH RUN</span></div>` +
-      `<div class="prow">${seg('haste', {'Haste': 1, 'Haste II': 1}, 'Haste')}<span class="pwho">I : WHM RDM · II : RDM</span></div>` +
-      `<div class="prow">${seg('haste', {'Hastega': 1, 'Hastega II': 1}, 'Hastega')}<span class="pwho">SMN (Garuda)</span></div>` +
-      `<div class="prow"><div class="pseg"><span class="flbl">Storm</span>${sel('storm', Object.keys(STORMS), 'Storm')}</div><span class="pwho">SCH</span></div>` +
-      `<div class="prow"><div class="pseg"><span class="flbl">Auspice</span>${flag('auspice', 'Auspice', t('auspiceTip'))}` +
-      `${sel('auspiceFeet', Object.keys(AUSPICE_FEET), t('auspiceFeet'))}</div><span class="pwho">WHM</span></div>` +
-      `<div class="prow"><div class="pseg"><span class="flbl">Enspell</span>${flag('enspell', 'Enspell I', t('enspellTip'))}` +
-      `${sel('enSkill', EN_SKILLS.map(String), t('enSkillPh'), '600')}</div><span class="pwho">RDM + Accession (/SCH)</span></div>`,
-      fx: gives(v => PROTECT[v] || SHELL[v] || HASTE[v] || STORMS[v] || v === 'Auspice' || v === 'Enspell I')},
-    {key: 'BRD', label: 'BRD', body: `<div class="pgrid">${[0, 1, 2, 3, 4].map(i => { const h = sel('song' + i, Object.keys(SONGS), `${t('bSong')} ${i + 1}`);
-        return i < 4 || b.clarion ? h : h.replace('<select ', `<select disabled title="${esc(t('clarionTip'))}" `); }).join('')}` +
-      `</div>${brdJaHTML(b, plus('songsPlus', 'Songs', 9))}`, fx: gives(v => songs.has(v))},
-    {key: 'COR', label: 'COR', body: `<div class="pgrid">${[0, 1].map(i => `<div class="proll">${sel('roll' + i, Object.keys(ROLLS), `Roll ${i + 1}`)}` +
-      `${sel('roll' + i + 'n', ROMAN, '', 'XI', 'n')}${rollChips(b, i)}</div>`).join('')}${plus('rollsPlus', 'Rolls', 8)}</div>`, fx: gives(v => / Roll [IVX]+/.test(v))},
-    {key: 'GEO', label: 'GEO', body: `<div class="pgrid">${geoSel('indi', 'Indi')}${geoSel('geo', 'Geo')}${geoSel('entrust', 'Entrust')}${plus('geoPlus', 'Geomancy', 10)}</div>${geoJaHTML(b)}`,
-      // what the bubbles give you and take off the target (Frailty...), an NM's cut said
-      fx: gives(v => /^(Entrust )?(Indi|Geo)-/.test(v) && (BUBBLES[geoName(v)] || GEO_DEBUFFS[geoName(v)]),
-        geoKeep(enemyKey(b.enemy)) < 1 ? ` (NM −${Math.round((1 - geoKeep(enemyKey(b.enemy))) * 100)} %)` : '')},
-  ];
-  // the abilities another party member lays on you (a party WAR's Warcry, a DNC's Haste Samba, a SMN's blood pacts
-  // and Favor), a tab their job; a party Warcry on shows its Savagery / Agoge Mask
-  const groups = new Map();
-  for (const ja of jas.filter(j => j.as === 'party')) {
-    const job = ja.a.from || [].concat(ja.a.job)[0];
-    if (!groups.has(job)) groups.set(job, []);
-    groups.get(job).push(ja);
-  }
-  for (const [job, list] of groups) {
-    const names = new Set(list.map(j => j.name));
-    const chips = list.map(ja => `<button class="chip ja-party" data-ja="${esc(ja.name)}" aria-pressed="${jaOn(b, ja.name)}" title="${esc(jaTip(ja))}">` +
-      `${esc(ja.name.replace(' · party', ''))}</button>`).join('');
-    const extra = (names.has('Warcry · party') && jaOn(b, 'Warcry · party') ? `<div class="prow">${warcryHTML(b, true)}</div>` : '') +
-      (names.has('Haste Samba') && jaOn(b, 'Haste Samba') ? `<div class="prow">${sambaHTML(b)}</div>` : '');
-    tabs.push({key: 'p' + job, label: job, body: `<div class="bctl chips">${chips}</div>${extra}`, fx: gives(v => names.has(v))});
-  }
-  const cur = tabs.find(x => x.key === S._pTab) || tabs[0], curOn = !(b.off || {})[cur.key];
-  const isOn = x => !(b.off || {})[x.key];
-  const bar = `<div class="foetabs" role="tablist">${tabs.map(x => `<button class="foetab ${x.fx && isOn(x) ? 'on' : ''}" role="tab" data-ptab="${x.key}" ` +
-    `aria-selected="${x === cur}">${esc(x.label)}</button>`).join('')}<span class="foetabsw">${offSwitch(b, cur.key)}</span></div>`;
-  // what the whole party gives, a line a job
-  const given = tabs.filter(x => x.fx && isOn(x));
-  const recap = given.length ? `<ul class="foeon ponlist">${given.map(x => `<li><span>${esc(x.label)}</span><b>${x.fx}</b></li>`).join('')}</ul>`
-    : `<p class="muted small foeonempty">${esc(t('pNoneAll'))}</p>`;
-  return `${bar}<div class="ppane ${curOn ? '' : 'off'}">${cur.body}</div><div class="kicker foeonk">${esc(t('pGiven'))}</div>${recap}`;
-}
-// The GEO's abilities on its bubbles, under its menus: Bolster greys out the two it leaves out
-function geoJaHTML(b){
-  const btn = (k, label, tip, off) => `<button class="chip" data-buffflag="${k}" aria-pressed="${!!b[k]}" title="${esc(tip)}" ${off ? 'disabled' : ''}>${esc(label)}</button>`;
-  const m = geoMul(b), said = [m.indi !== 1 ? 'Indi ×' + m.indi : '', m.geo !== 1 ? 'Geo ×' + m.geo : ''].filter(Boolean).join(' · ');
-  return `<div class="bspan">${btn('bolster', 'Bolster', t('bolsterTip'))}${btn('bog', 'Blaze of Glory', t('bogTip'), b.bolster)}` +
-    `${btn('ecliptic', 'Ecliptic Attrition', t('eclipticTip'), b.bolster)}${said ? `<span class="muted small">${esc(said)}</span>` : ''}</div>`;
 }
 // Your own Warcry, a WAR main's: its Savagery merits (0 to 5) and Agoge Mask, and the TP Bonus they give;
 // greyed while Warcry is off (a party WAR's is counted at 5/5 with the mask: WARCRY_PARTY_TP)
@@ -379,15 +250,6 @@ function foePanelHTML(b){
   return {body: pane + `<div class="kicker foeonk">${esc(t('foeOnTitle'))}</div>` + recap,
     total: `<span class="meta ${total ? 'down' : ''}">${esc(total || t('foeNone'))}</span>`};
 }
-// The target picker, a window over the buffs: the target chosen and the reference on top, a search, then
-// Where a target's stats come from, the ones estimated, and the damage it takes by type
-function targetFactsHTML(name){
-  const x = TARGETS[name] || {}, res = x.res || {};
-  const head = [x.zone, x.job, t('tgtSrc_' + x.src)].filter(Boolean).map(esc).join(' · ');
-  const taken = Object.keys(res).filter(k => res[k]).map(k => `${t('tgtRes_' + k)} ${res[k] > 0 ? '+' : '−'}${Math.abs(res[k])} %`);
-  return `<p class="muted small">${head}</p>` + (x.est && x.est.length ? `<p class="small kwarn">${esc(t('tgtEst', {l: x.est.join(', ')}))}</p>` : '') +
-    (taken.length ? `<p class="small">${esc(t('tgtRes'))} : ${esc(taken.join(' · '))} <span class="muted">(${esc(t('tgtResNote'))})</span></p>` : '');
-}
 /* ---- the target: its stats (ENEMIES: level, Defense, Evasion), what each debuff takes off, you against it ---- */
 // The pDIF cap of a weapon's skill (atelier/engine/helpers.js melee_pdif_base_cap), before the PDL trait and gear
 const PDIF_CAP = s => /^(katana|dagger|sword|axe|club)$/i.test(s || '') ? 3.25 : /great katana|hand-to-hand/i.test(s || '') ? 3.5
@@ -408,75 +270,8 @@ function targetInfo(s){
   return {name, lv, def, eva, vit, agi, mnd, int, by, defDown, defAfter, evaAfter, B, cap, two, dual, wskill, pdlTrait, pdlGear, pdifCap,
     acc: at('acc'), atk: at('atk'), atkSrc: r && r.out.atk ? r.out.atk.src : null, str: at('str'), dex: at('dex'), pint: at('int'), pmnd: at('mnd')};
 }
-function targetCardHTML(s){
-  S._tgtSet = s;
-  const T = targetInfo(s), line = (l, a, b) => statLi(esc(l), b !== a ? `${a} → ${b}` : `${a}`);
-  const body = `<ul class="statlist">${line(t('tgtDef'), T.def, T.defAfter)}${line(t('tgtEva'), T.eva, T.evaAfter)}</ul>` +
-    `<div class="bcardacts"><button class="btn ghost" data-targetopen>${t('tgtOpen')}</button></div>`;
-  return box('g-off', t('tgtTitle'), body, `<span class="meta">${esc(T.name)}${T.lv ? ' · Lv' + T.lv : ''}</span>`);
-}
-// You against the target, a line a pair: your stat | its stat (no debuff → with) | what it gives | where you stand
-function vsTableHTML(T){
-  const r1 = n => Math.round(n * 10) / 10, r2 = n => Math.round(n * 100) / 100, sg = n => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(r1(n));
-  // its stat: the base, then with your debuffs (the same twice when none lowers it)
-  const pair = (a, b) => `<span class="base">${a}</span></td><td class="it"><b>${b}</b>`;
-  const rate = e => Math.floor(Math.max(20, Math.min(T.cap, 75 + 0.5 * (T.acc - e))));
-  const needAcc = T.evaAfter + 2 * (T.cap - 75), needAtk = Math.ceil(T.pdifCap * T.defAfter);
-  const pill = (good, text) => `<span class="vpill ${good ? 'ok' : 'short'}">${text}</span>`;
-  const row = (label, you, it, res, state = '') => `<tr><th>${label}</th><td class="me">${you}</td><td class="vs">vs</td><td class="it">${it}</td>` +
-    `<td class="res">${res}</td><td class="st">${state}</td></tr>`;
-  let rows = row(`${t('vsAcc')} / ${t('vsEva')}`, T.acc, pair(T.eva, T.evaAfter), `${t('vsHit')} <b>${rate(T.evaAfter)} %</b> <i>cap ${T.cap}</i>`,
-    pill(T.acc >= needAcc, T.acc >= needAcc ? t('vsAccSpare', {n: T.acc - needAcc}) : t('vsAccMiss', {n: needAcc - T.acc})));
-  const src = T.atkSrc === 'engine' ? `<small class="muted"> ${t('atkEngine')}</small>` : T.atkSrc ? `<small class="kwarnt"> ${esc(t('atkMeasure', {w: T.atkSrc}))}</small>` : '';
-  if (T.atk) rows += row(`${t('vsAtk')} / ${t('vsDef')}${src}`, T.atk, pair(T.def, T.defAfter), `${t('vsRatio')} <b>${r2(T.atk / T.defAfter)}</b> <i>${t('vsCap')} ${r2(T.pdifCap)}</i>`,
-    pill(T.atk >= needAtk, T.atk >= needAtk ? t('vsAtkSpare', {n: T.atk - needAtk}) : t('vsAtkMiss', {n: needAtk - T.atk})));
-  const attr = (lme, me, lit, it, note) => me != null && it != null ? row(`${lme} / ${lit}`, me, pair(it, it), `<b>${sg(me - it)}</b> <i>${note}</i>`) : '';
-  rows += attr('STR', T.str, 'VIT', T.vit, t('vsStr')) + attr('DEX', T.dex, 'AGI', T.agi, t('vsDex')) +
-    attr('INT', T.pint, 'INT', T.int, t('vsInt')) + attr('MND', T.pmnd, 'MND', T.mnd, t('vsMnd'));
-  return `<div class="vswrap"><table class="vstable"><thead><tr><th></th><th class="me">${t('vsYou')}</th><th></th><th class="it">${t('vsItBase')}</th><th class="it">${t('vsItWith')}</th><th>${t('vsResult')}</th><th></th></tr></thead>` +
-    `<tbody>${rows}</tbody></table></div>` +
-    `<p class="vsnote">${t('vsNote', {w: esc(T.wskill || '—'), c: r2(T.pdifCap), p: Math.round(T.pdlTrait * 100), g: r1(T.pdlGear)})}${T.two ? ' · ' + t('twoHand') : ''}</p>`;
-}
-function openTarget(){
-  S._tgtDlg = true;
-  const T = targetInfo(S._tgtSet), r1 = n => Math.round(n * 10) / 10;
-  const fx = T.by.length ? `<ul class="condlist fxlist">${T.by.map(e => `<li><b>${esc(e.src)}</b><span>${esc(fxText(e.k, e.v))}</span></li>`).join('')}</ul>` : `<p class="muted small">${t('tgtNoDebuff')}</p>`;
-  const row = (l, base, after, note = '') => `<tr><th>${esc(l)}</th><td class="v">${base}</td><td class="v">${after}</td><td class="d ${after !== base ? 'up' : ''}">${note}</td></tr>`;
-  const stats = `<table class="simtable"><thead><tr><th></th><th>${t('tgtBase')}</th><th>${t('tgtAfter')}</th><th></th></tr></thead><tbody>` +
-    row(t('tgtDef'), T.def, T.defAfter, T.defDown ? `−${r1(T.defDown * 100)} %` : '') +
-    row(t('tgtEva'), T.eva, T.evaAfter, T.B.eeva ? `−${r1(T.B.eeva)}` : '') +
-    row(t('tgtMdb'), '—', T.B.emdb ? `−${r1(T.B.emdb)}` : '—') + row(t('tgtMeva'), '—', T.B.emeva ? `−${r1(T.B.emeva)}` : '—') + `</tbody></table>`;
-  let you = `<p class="muted small">${t('noChar')}</p>`;
-  if (T.acc != null) you = vsTableHTML(T);
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog tgtdlg" role="dialog" aria-label="${t('tgtTitle')}">
-    <header><h3>${t('tgtTitle')} : ${esc(T.name)}${T.lv ? ' · Lv' + T.lv : ''}</h3><p class="muted small">${t('tgtWhy')}</p>${targetFactsHTML(T.name)}</header>
-    <div class="body"><div class="tgtgrid">${box('g-def', t('tgtVsYou'), you)}${box('g-buff', t('tgtDebuffs'), fx)}</div></div>
-    <footer><button class="btn ghost" data-buffopen>${t('bChoose')}</button><button class="btn ghost" data-debugcalc>Debug</button><button class="btn" data-close>${t('close')}</button></footer></div>`;
-  $('#overlay').hidden = false;
-}
-// The column's card: the buffs chosen (their names), a button that opens the window, then their effects
-function buffCardHTML(){
-  const n = buffCount(), names = [...new Set(withAftermath(buffTotals(), shownMain())._by.map(e => e.src))];
-  const body = tierBarHTML() + (names.length ? `<div class="bnames">${names.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : `<p class="muted small bnamesempty">${t('bNone')}</p>`) +
-    `<div class="bcardacts"><button class="btn" data-buffopen>${t('bChoose')}</button><button class="btn ghost" data-buffendgame>${t('bEndgame')}</button><button class="btn ghost" data-buffreset ${n ? '' : 'disabled'}>${t('buffReset')}</button></div>`;
-  return box('g-buff', t('buffsTitle'), body, `<span class="meta ${n ? 'on' : ''}">${buffTier()} · ${n ? t('buffsOn', {n}) : '—'}</span>`) + buffEffectsHTML();
-}
-// The window over the page: every buff and condition, two columns; it follows the page's changes
-function openBuffs(){
-  S._buffDlg = true;
-  const sc = ($('.buffdlg .body') || {}).scrollTop;
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog buffdlg" role="dialog" aria-label="${t('buffsTitle')}">
-    <header class="bhead"><h3>${t('buffsTitle')}</h3>${tierBarHTML()}<span class="muted small" title="${esc(t('tierNote') + ' ' + t('buffNote'))}">ⓘ</span></header>
-    <div class="body">${buffPanelHTML()}</div>
-    <footer><span><button class="btn ghost" data-buffendgame>${t('bEndgame')}</button> ${buffCount() ? `<button class="btn ghost" data-buffreset>${t('buffReset')}</button>` : ''}</span><button class="btn" data-close>${t('close')}</button></footer></div>`;
-  $('#overlay').hidden = false;
-  const b = $('.buffdlg .body'); if (b && sc) b.scrollTop = sc;
-}
 
 /* ---- the panels' controls: profile bar, switches, Haste Samba's DNC, ability tips, skill lists ---- */
-// The profile buttons, on the card and in the window
-const tierBarHTML = () => `<div class="tierbar" role="group" aria-label="${t('tierLabel')}"><span class="muted small">${t('tierLabel')}</span>` +
-  TIERS.map(x => `<button class="chip" data-bufftier="${x}" aria-pressed="${x === buffTier()}" title="${esc(t('tier' + x + 'Tip'))}">${x}</button>`).join('') + `</div>`;
 // A small on / off switch (b.off[key]): the choices stay, the sums leave them out
 function offSwitch(b, key){
   const on = !(b.off || {})[key];

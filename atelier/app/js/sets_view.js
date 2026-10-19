@@ -249,8 +249,6 @@ function render(){
     if (cur) { cur.scrollIntoView({block: 'nearest', inline: 'nearest'}); if (box) box.scrollLeft = 0; } }
   S._view = view; S._set = set;
   if (id) { const el = document.getElementById(id); if (el) { el.focus(); if (pos != null && el.setSelectionRange) el.setSelectionRange(pos, pos); } }
-  if (S._buffDlg && !$('#overlay').hidden && $('.buffdlg')) openBuffs();
-  if (S._tgtDlg && !$('#overlay').hidden && $('.tgtdlg')) openTarget();
   shapeKeep();
   motionAfter();
   guideAfter();
@@ -406,9 +404,8 @@ function globalsHTML(s, only){
     box('g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`) + box('g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`);
   if (only === 'stats') return `<div class="globals">${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
     `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
-  return `<div class="globals">${buffCardHTML()}${targetCardHTML(s)}${you}${fbox('attr', 'g-attr', t('attrTitle'), `<ul class="statlist">${attrs}</ul>`)}` +
-    `${fbox('caps', 'g-caps', t('gearKey'), `<ul class="statlist">${gear}</ul>`)}${tankHTML(r)}${hpCycleHTML(s)}${luopanHTML(s)}${offenseHTML(r, s)}${porterHTML()}` +
-    `<p class="note-m">${levels ? esc(levels) + ' · ' : ''}${t('measured', {at: esc(c.at), s: esc(c.sub || '—')})}</p></div>`;
+  // (only the two above are drawn: the new layout's figures and My character's cards)
+  return '';
 }
 
 

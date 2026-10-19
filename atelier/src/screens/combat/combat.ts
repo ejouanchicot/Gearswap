@@ -4,7 +4,7 @@
 // panel.ts.
 // The rules are the old page's renderCombatParty, pbGives, pbImpact, pbResult (party_builder.js). Still the old page's
 // HTML: the target
-// picker and the other debuffs (buff_panels.js buffPanelHTML). A
+// card and the other debuffs (target_pick.js targetCardPanel, buff_panels.js foePanelHTML). A
 // field ending in Html is one of the old page's texts it wrote unescaped. The buttons keep the attributes the old
 // handlers read (data-pbtab, data-pbdel, data-pbaddopen, data-buffundo, data-buffendgame, data-buffreset,
 // data-bufftier, data-pbother).
@@ -118,8 +118,8 @@ export function combatView(): CombatView | null {
   const L = setList(d);
   if (L.vis.length) st()._curSet = shownSet(L.cards[L.sel], L.sel);
   const b = buffState(), n = buffCount();
-  buffPanelHTML();   // its parts: your own abilities, the target picker, the other debuffs (S._bparts)
-  const P = st()._bparts || {}, shown: string[] = pbShown(b), B = buffTotals();
+  // the target's card and the other debuffs (target_pick.js targetCardPanel, buff_panels.js foePanelHTML)
+  const P = {tgt: targetCardPanel(b), foe: foePanelHTML(b)}, shown: string[] = pbShown(b), B = buffTotals();
   const undo = st()._buffUndo && st()._buffUndo.key === buffKey() ? {title: t('pbUndoTip', {w: st()._buffUndo.what}), text: t('pbUndo')} : null;
   return {
     side: L.view,

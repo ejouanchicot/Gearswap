@@ -251,7 +251,7 @@ const samePiece = (a, b) => (!a || a.name === 'empty') ? (!b || b.name === 'empt
 function closeOverlay(){ const ov = $('#overlay');
   // drawn again after, so the optimizer page shows the button that brings it back
   if (S._optRun && ov.querySelector('.optrun')) { searchPark().replaceChildren(...ov.childNodes); setTimeout(render); }
-  ov.hidden = true; ov.innerHTML = ''; KEYEDIT = null; S._buffDlg = false; S._tgtDlg = false; S._tgtPick = false;
+  ov.hidden = true; ov.innerHTML = ''; KEYEDIT = null; S._tgtPick = false;
   S._push = S._del = S._create = null; const tip = $('#tip'); if (tip) tip.hidden = true; S._tipEl = null; }
 function searchPark(){
   let park = document.getElementById('orpark');

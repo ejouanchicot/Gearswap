@@ -40,8 +40,8 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
     }
     S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets';
     const open = p => { S.selPath = Object.assign({}, S.selPath, {WAR: p}); S._found = null; render(); };
-    await tryIt('buffs window', async () => { open('sets.precast.WS.Upheaval'); openBuffs(); await wait(100); closeOverlay(); });
-    await tryIt('target window', async () => { openTarget(); await wait(100); closeOverlay(); });
+    await tryIt('buffs window', async () => { open('sets.precast.WS.Upheaval'); S.section = 'combat'; render(); await wait(100); S.section = 'sets'; render(); });
+    await tryIt('target window', async () => { openTargetPick(); await wait(100); closeOverlay(); });
     await tryIt('drawer each slot (WS)', async () => { open('sets.precast.WS.Upheaval');
       for (const sl of SLOTS) { openSlot(S.sel.WAR, sl); await wait(20); } closeOverlay(); });
     await tryIt('drawer each slot (engaged)', async () => { open('sets.engaged.NaeglingKC');

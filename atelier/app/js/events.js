@@ -178,13 +178,11 @@ document.addEventListener('click', e => {
       if (ex) for (const n of [...l]) if (n !== d.foeja && FOE_JA_FX[n] && FOE_JA_FX[n].excl === ex) l.delete(n); }
     if (l.size) b.foeJa = [...l]; else delete b.foeJa; save(); render(); return; }
   if ('tgtback' in d) { S._tgtPick = false; closeOverlay(); render(); return; }
-  if ('tgtpick' in d) { S._buffDlg = false; openTargetPick(); return; }
+  if ('tgtpick' in d) { openTargetPick(); return; }
   if (d.buffflag) { const b = buffState(); b[d.buffflag] = !b[d.buffflag]; if (!b[d.buffflag]) delete b[d.buffflag];
     const other = {auspice: 'enspell', enspell: 'auspice'}[d.buffflag];
     if (other && b[d.buffflag]) delete b[other];
     render(); return; }
-  if ('buffopen' in d) { S._tgtDlg = false; openBuffs(); return; }
-  if ('targetopen' in d) { openTarget(); return; }
   if ('debugcalc' in d) { openDebug(); return; }
   if ('dbgcopy' in d) { const ta = $('#dbgtext'); if (ta) { ta.select(); const done = () => { b.textContent = t('dbgCopied'); };
     const old = () => { if (document.execCommand('copy')) done(); };

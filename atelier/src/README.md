@@ -103,6 +103,12 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 7e partie (2026-10-19)** : « Tout optimiser » une fois cherché (`optall.ts`, `OptAll.svelte`, redessiné
   en place pendant l'écriture des versions : le tableau garde son défilement, le Mog son saut) et la fenêtre du Lua à
   coller (`openLua`, trial.js, par le cadre commun).
+- **Ménage (2026-10-19)** : l'ancienne fenêtre des buffs et l'ancienne fenêtre de la cible sont retirées (`openBuffs`,
+  `openTarget`, `buffPanelHTML` et ce qu'elles seules appelaient) : la nouvelle disposition ne les ouvrait plus
+  (`ui2()` vaut toujours vrai, la colonne complète de l'ancienne disposition n'était plus dessinée). Buffs & cible lit
+  la carte de la cible et les autres debuffs directement (`targetCardPanel`, `foePanelHTML`). Le bouton Debug de
+  l'ancienne fenêtre de la cible ne s'ouvre plus de nulle part : `openDebug` (engine.js) est gardé en attendant une
+  décision.
 
 ## Vérifier une étape
 

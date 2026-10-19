@@ -67,7 +67,7 @@ function tgMonsters(){
 // The picker: drawn by the Svelte application (atelier/src/screens/dialogs/target.ts), its search, zone and order from
 // S._tgtQ, S._tgtZone, S._tgtSort; typing and a zone draw it again in place
 function openTargetPick(){
-  S._buffDlg = false; S._tgtPick = true;
+  S._tgtPick = true;
   ATELIER_DIALOG.show({cls: 'tgdlg', titleHtml: '', target: ATELIER_DIALOG.targetView()});
   const q = $('#tgq'); if (q) q.focus();
 }

@@ -439,7 +439,6 @@ function debugReport(s){
 }
 function openDebug(){
   const text = debugReport(S._tgtSet);
-  S._tgtDlg = false;
   showDialog('dbgdlg', 'Debug', `<p class="muted small">${esc(t('dbgNote'))}</p><textarea id="dbgtext" class="dbgtext" readonly>${esc(text)}</textarea>`,
     `<button class="btn" data-dbgcopy>${esc(t('dbgCopy'))}</button>`);
 }

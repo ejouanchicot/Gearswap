@@ -231,7 +231,6 @@ function modParsed(f){
 const modFiles = d => (d && d.configs) || [];
 const modShown = d => { const list = modFiles(d); return list.find(f => f.file === S.modFile) || list.find(f => f.scope === 'job') || list[0]; };
 const modEdits = file => (((S._modEdits = S._modEdits || {})[S.char] = S._modEdits[S.char] || {})[file] = S._modEdits[S.char][file] || {});
-const modCount = () => Object.values((S._modEdits || {})[S.char] || {}).reduce((n, m) => n + Object.keys(m).length, 0);
 const modEditable = x => x.kind === 'bool' || x.kind === 'num' || x.kind === 'str' || x.kind === 'list' || x.kind === 'rows';
 // A setting of a file of the export shown, by its path
 const modField = (file, path) => { const f = modFiles(data()).find(x => x.file === file); return f && modParsed(f).byPath[path]; };
