@@ -20,37 +20,8 @@ Object.assign(T.en, {pushTitle: 'Save to GearSwap', pushGo: 'Save', addGo: 'Crea
   pvAdd: 'A set {p} will be created, empty for now: you fill it from the page afterwards.',
   pvTech: 'Technical detail: the file and the lines changed', pvFile: 'File: {f}'});
 
-// The fold with the file and its lines, before and after
-function pushTechHTML(r, after){
-  return `<details class="pushtech" data-pushtech ${S.pushTech ? 'open' : ''}><summary>${esc(t('pvTech'))}</summary>` +
-    `<p class="muted small">${t('pvFile', {f: `<code>${esc(r.file)}</code>`})}</p>${diffHTML(r.before, after)}</details>`;
-}
-// The pieces a push writes, a row a slot: the piece the file holds now, the one it takes
-function pushRowsHTML(s, plan){
-  const was = s.was || {}, base = s.base ? shortPath(s.base) : '';
-  const now = slot => { const p = slot in was ? was[slot] : s.pieces[slot]; return p && !isEmpty(p) && p.name !== 'empty' ? p.name : ''; };
-  // the icon of a row: the piece written, or the base set's piece the slot takes again (an emptied slot has none)
-  const basePiece = slot => { const b = s.base && S._bypath ? S._bypath[s.base] : null, p = b && b.pieces[slot]; return p && !isEmpty(p) ? p.name : ''; };
-  const shown = e => e.piece ? e.piece.name : e.kind === 'inherit' ? basePiece(e.slot) : '';
-  return `<ul class="orchg pushrows">${plan.map(e => {
-    const from = now(e.slot), to = e.piece ? `<b>${esc(e.piece.name)}</b>` : `<i>${esc(e.kind === 'empty' ? t('pvEmptied') : base ? t('pvInherit', {b: base}) : t('pvInheritAny'))}</i>`;
-    return `<li title="${esc(e.piece && e.piece.augs ? e.piece.augs.join(' · ') : '')}">${icon(shown(e))}<span class="orfslot">${esc(SLOT_NAMES[S.lang][e.slot] || e.slot)}</span>` +
-      `<span>${from ? `<s>${esc(from)}</s> → ` : ''}${to}</span></li>`; }).join('')}</ul>`;
-}
-// The push window: what goes into which set, the warnings, what protects the file, then the fold
-function pushViewHTML(s, tg, plan, r, warn, any){
-  const p = `<b>${esc(shortPath(s.path))}</b>`;
-  return `${mogCarryHTML(tg.create ? t('pvPushNew', {v: `<b>${esc(tg.tier)}</b>`, p}) : t('pvPush', {p}))}${pushRowsHTML(s, plan)}` +
-    warn.map(w => `<p class="kwarn">${w}</p>`).join('') + `<p class="muted small">${any ? t('pvSafe') : t('pushErr_nothing')}</p>${pushTechHTML(r, r.after)}`;
-}
-function delViewHTML(s, r, also){
-  return `<p>${t('pvDel', {p: `<b>${esc(shortPath(s.path))}</b>`})}</p>` +
-    (also.length ? `<p class="kwarn">${t('pvDelAlso', {l: esc(also.map(shortPath).join(' · '))})}</p>` : '') +
-    `<p class="muted small">${t('pvDelSafe')}</p>${pushTechHTML(r, '')}`;
-}
-function addViewHTML(path, r){
-  return `${mogCarryHTML(t('pvAdd', {p: `<b>${esc(shortPath(path))}</b>`}))}<p class="muted small">${t('pvSafe')}</p>${pushTechHTML(r, r.after)}`;
-}
+// The windows themselves are drawn by the Svelte application (atelier/src/screens/dialogs/pushview.ts); the fold's
+// state is kept here
 document.addEventListener('toggle', e => {
   if (e.target.matches && e.target.matches('[data-pushtech]')) { S.pushTech = e.target.open; save(); }
 }, true);

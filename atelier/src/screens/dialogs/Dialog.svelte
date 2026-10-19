@@ -11,9 +11,10 @@
   import GearPick from './GearPick.svelte';
   import Target from './Target.svelte';
   import PartyPick from './PartyPick.svelte';
+  import PushViewBody from './PushView.svelte';
 
   const d = $derived(dialogState.version > 0 ? currentDialog() : null);
 </script>
 
 {#key dialogState.opened}{#if d && d.target}<Target view={d.target} />{:else if d}<div class="scrim" data-close></div><div class="dialog {d.cls}" role="dialog"><header><h3>{@html d.titleHtml}</h3></header>
-    <div class="body">{#if d.compare}<Compare view={d.compare} />{:else if d.gearPick}<GearPick view={d.gearPick} />{:else if d.partyPick}<PartyPick view={d.partyPick} />{:else}{@html d.bodyHtml || ''}{/if}</div><footer><button class="btn ghost" data-close>{t('close')}</button>{@html d.buttonsHtml || ''}</footer></div>{/if}{/key}
+    <div class="body">{#if d.compare}<Compare view={d.compare} />{:else if d.gearPick}<GearPick view={d.gearPick} />{:else if d.partyPick}<PartyPick view={d.partyPick} />{:else if d.push}<PushViewBody view={d.push} />{:else}{@html d.bodyHtml || ''}{/if}</div><footer><button class="btn ghost" data-close>{t('close')}</button>{@html d.buttonsHtml || ''}</footer></div>{/if}{/key}

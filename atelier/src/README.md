@@ -95,6 +95,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 4e partie (2026-10-19)** : les fenêtres de choix du groupe (`partypick.ts`, `PartyPick.svelte` :
   une chanson, un roll, une bulle, une tempête, une nourriture, un membre à ajouter). Leur recherche est dans la
   fenêtre elle-même (`pbDlgSearch`, retiré).
+- **Étape 6c, 5e partie (2026-10-19)** : pousser un set dans GearSwap, le supprimer, en ajouter un vide
+  (`pushview.ts`, `PushView.svelte`), une fois que le jeu a dit ce qui changerait ; le plan, les avertissements et la
+  réponse du jeu restent à `push.js`.
 
 ## Vérifier une étape
 

@@ -102,8 +102,8 @@ async function openPush(s){
   if (r.error) return showDialog('pushdlg', t('pushTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   S._push.hash = r.hash;
   const warn = pushWarnings(s, plan, tg.create), any = r.changes && r.changes.length;
-  // in plain words, the file's lines in a fold (push_view.js)
-  showDialog('pushdlg', t('pushTitle'), pushViewHTML(s, tg, plan, r, warn, any), any ? `<button class="btn" data-pushgo>${t('pushGo')}</button>` : '');
+  // in plain words, the file's lines in a fold (atelier/src/screens/dialogs/pushview.ts)
+  ATELIER_DIALOG.show({cls: 'pushdlg', titleHtml: t('pushTitle'), push: ATELIER_DIALOG.pushView(s, tg, plan, r, warn, any), buttonsHtml: any ? `<button class="btn" data-pushgo>${t('pushGo')}</button>` : ''});
 }
 async function pushGo(){
   const P = S._push;
@@ -156,7 +156,7 @@ async function openDelete(s){
   if (r.error) return showDialog('pushdlg', t('delTitle'), mogSorryHTML(t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})), '');
   S._del.hash = r.hash;
   const also = (r.removed || []).filter(x => x !== s.path && shortPath(x) !== shortPath(s.path));
-  showDialog('pushdlg', t('delTitle'), delViewHTML(s, r, also), `<button class="btn danger" data-delgo>${t('delGo')}</button>`);
+  ATELIER_DIALOG.show({cls: 'pushdlg', titleHtml: t('delTitle'), push: ATELIER_DIALOG.delView(s, r, also), buttonsHtml: `<button class="btn danger" data-delgo>${t('delGo')}</button>`});
 }
 // The page forgets what it kept for the sets taken out (drafts, pieces in test)
 function forgetSets(paths){
@@ -259,7 +259,7 @@ async function openCreate(name){
   if (!S._create || S._create.path !== path) return;
   if (r.error) return showDialog('pushdlg', t('addTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   S._create.hash = r.hash;
-  showDialog('pushdlg', t('addTitle'), addViewHTML(path, r), `<button class="btn" data-creatego>${t('addGo')}</button>`);
+  ATELIER_DIALOG.show({cls: 'pushdlg', titleHtml: t('addTitle'), push: ATELIER_DIALOG.addSetView(path, r), buttonsHtml: `<button class="btn" data-creatego>${t('addGo')}</button>`});
 }
 async function createGo(){
   const C = S._create;
