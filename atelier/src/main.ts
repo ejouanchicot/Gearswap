@@ -11,6 +11,7 @@ import {runOpen, runChanged} from './screens/optimizer/run.svelte';
 import Dialog from './screens/dialogs/Dialog.svelte';
 import {dialogShow, type DialogSpec} from './screens/dialogs/dialogs.svelte';
 import {compareView} from './screens/dialogs/compare';
+import {gearPickView} from './screens/dialogs/gearpick';
 
 openBridge();
 // the figures' boxes worked out here, for the old page's screens that still draw them as HTML (engine.js tankHTML,
@@ -28,6 +29,6 @@ const dialogBox = document.createElement('div');
 dialogBox.className = 'dialogbox';
 dialogBox.style.display = 'contents';
 mount(Dialog, {target: dialogBox});
-window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), compareView};
+window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), compareView, gearPickView};
 // on the body itself: the old page's frame (.app, #overlay, #tip) stays a child of <body>, as its styles expect
 mount(App, {target: document.body});

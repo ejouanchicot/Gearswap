@@ -388,7 +388,7 @@ declare function optRunBest(R: LegacyAny): LegacyAny;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
 /* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */
-interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny} }
+interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny} }
 declare function compareColumns(s: LegacyAny): LegacyAny[];
 declare function sirdMeritsOf(c: LegacyAny): number;
 declare function setWants(s: LegacyAny): {want: LegacyAny};
@@ -409,3 +409,14 @@ declare function statFigures(s: LegacyAny): LegacyAny;
 declare function statRows(s: LegacyAny): LegacyAny[];
 declare function engRound(s: LegacyAny, plain?: boolean): LegacyAny;
 declare const FFXI: LegacyAny;
+declare function gpStats(s: LegacyAny): string[];
+declare function gpValue(p: LegacyAny, slot: string, key: string): LegacyAny;
+declare function gpInSrc(o: LegacyAny, src: string): boolean;
+declare function gpKinds(rows: LegacyAny[]): Array<[string, number]>;
+declare function gpSorts(fx: string): Array<[string, string]>;
+declare const GP_SORT: Record<string, ((a: LegacyAny, b: LegacyAny) => number) | undefined>;
+declare const GP_SRC: Array<[string, string]>;
+declare const WEAPON_SLOTS: Set<string>;
+declare function itemKind(name: string): string;
+declare function whereLabel(w: string): string;
+declare function wantsLine(s: LegacyAny): string;

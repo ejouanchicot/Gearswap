@@ -84,7 +84,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 1re partie (2026-10-19)** : les fenêtres par-dessus la page (`screens/dialogs/` : `dialogs.svelte.ts`,
   `Dialog.svelte`, montées une fois comme la fenêtre de recherche ; `showDialog`, trial.js, ne fait plus que les
   ouvrir, chaque ouverture redessinée à neuf) et Comparer (`compare.ts`, `Compare.svelte`). Les autres fenêtres
-  gardent le HTML de leur corps (le choix d'une pièce, d'une chanson, de la cible, pousser dans GearSwap...).
+  gardent le HTML de leur corps (le choix d'une chanson, de la cible, pousser dans GearSwap...).
+- **Étape 6c, 2e partie (2026-10-19)** : la fenêtre des pièces d'une case (`gearpick.ts`, `GearPick.svelte` : ses
+  filtres, les pièces en cartes avec leur valeur et leur écart). Sa recherche cache toujours les cartes sur place
+  (events.js `#drawq`) : la fenêtre n'est redessinée qu'à un filtre.
 
 ## Vérifier une étape
 

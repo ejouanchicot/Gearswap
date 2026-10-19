@@ -60,57 +60,11 @@ function gpOpen(card, s, slot, p, opts, label){
   if (!S.gpSrc) S.gpSrc = 'mine';
   // the whole game is the catalogue: loaded once, then the window comes back
   if (S.gpSrc === 'game' && !S.allItems) { S.allItems = true; save(); return loadCatalog(() => openSlot(S._drawer.ci, slot)); }
-  const fx = S._gpFx && gpStats(s).includes(S._gpFx) ? S._gpFx : '';
-  // the piece worn without the stat counts as 0 of it: every gap is then to the set as it is
-  const worn = fx && p ? gpValue(p, slot, fx) || {good: 0} : null;
-  const shown = opts.map((o, i) => [o, i]).filter(([o]) => gpInSrc(o, S.gpSrc));
-  const junk = shown.filter(([o]) => o.grp === 5).length;
-  let rows = shown.filter(([o]) => S._showJunk || o.grp !== 5);
-  // the hands and the ammo by kind (Sword, Great Axe, Shield, Grip...): the kinds among the pieces listed, with their count
-  const kinds = WEAPON_SLOTS.has(slot) ? gpKinds(rows) : [];
-  const kind = (S._gpKind || {}).slot === slot && kinds.some(([k]) => k === S._gpKind.k) ? S._gpKind.k : null;
-  if (kind != null) rows = rows.filter(([o]) => itemKind(o.piece.name) === kind);
-  if (fx) rows = rows.map(([o, i]) => [o, i, gpValue(o.piece, slot, fx)]).filter(x => x[2] && x[2].good > 0).sort((a, b) => b[2].good - a[2].good);
-  const sorts = gpSorts(fx), sort = sorts.some(([k]) => k === S.gpSort) ? S.gpSort : 'rel';
-  if (GP_SORT[sort]) rows.sort(GP_SORT[sort]);
-  // the long filters as menus (a list of buttons ran out of the column), where the pieces come from as three buttons
-  const menu = (name, list, cur) => `<select class="buffsel gpsel" data-gpsel="${name}">${list.map(([k, l]) => `<option value="${esc(k)}" ${k === cur ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-  const sortList = menu('sort', sorts.map(([k, l]) => [k, t(l)]), sort);
-  const seg = `<div class="gpseg" role="group">${GP_SRC.map(([k, l]) => `<button data-gpsrc="${k}" aria-pressed="${S.gpSrc === k}">${esc(t(l))}</button>`).join('')}</div>`;
-  const stats = [['', t('gpAny')]].concat(gpStats(s).map(k => [k, statLabel(k, {label: k.toUpperCase()})]));
-  const fxList = menu('fx', stats, fx);
-  const side = `<aside class="gpside"><input id="drawq" class="gpq" type="search" placeholder="${esc(t('gpSearch'))}" autocomplete="off" spellcheck="false">` +
-    `<h4>${esc(t('gpFrom'))}</h4>${seg}<h4>${esc(t('gpSortLbl'))}</h4>${sortList}` +
-    (kinds.length > 1 ? `<h4>${esc(t('gpKind'))}</h4>` + menu('kind', [['*', `${t('gpKindAll')} (${kinds.reduce((n, x) => n + x[1], 0)})`]]
-      .concat(kinds.map(([k, n]) => [k, `${k || t('gpKindOther')} (${n})`])), kind == null ? '*' : kind) : '') +
-    `<h4>${esc(t('gpFor'))}</h4>${fxList}` +
-    (junk ? `<label class="chk gpjunk"><input type="checkbox" data-gpjunk ${S._showJunk ? 'checked' : ''}> ${esc(t('gpJunk', {n: junk}))}</label>` : '') +
-    (p && !(['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons') ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '') + `</aside>`;
-  const item = ([o, i, v]) => gpCard(o, i, slot, v, worn);
-  const list = rows.length ? rows.map(item).join('') : `<p class="muted">${esc(t('gpNone'))}</p>`;
-  const wl = wantsLine(s);
-  const body = `<div class="gpgrid">${side}<section class="gpmain"><div class="gphead"><span class="muted small">${esc(t('gpCount', {n: rows.length}))}</span>` +
-    `${wl ? `<p class="gpwants small">${wl}</p>` : ''}</div><div class="choice gplist">${list}</div></section></div>`;
+  // the window's body: drawn by the Svelte application (atelier/src/screens/dialogs/gearpick.ts)
   const title = `${esc(label)} <span class="gpcur">${p ? esc(p.name) : '—'}</span><small>${esc(niceName(card))} · <code>${esc(s.path)}</code></small>`;
-  showDialog('gpdlg', title, body, '');
+  ATELIER_DIALOG.show({cls: 'gpdlg', titleHtml: title, gearPick: ATELIER_DIALOG.gearPickView(s, slot, p, opts)});
   const q = $('#drawq');
   if (q) q.focus();
-}
-// One piece: its icon, name and rank, its tags (the set's piece, tried, its best version), its augments, what it gives the
-// set, where it is; with a stat chosen, its value and the gap to the piece worn on the right
-function gpCard(o, i, slot, v, worn){
-  const r = o.cat ? null : pieceStats(o.piece, slot), augs = o.piece.augs || [], up = o.upgrade;
-  const where = o.cat ? [t('notOwned'), o.ilv ? 'iLv ' + o.ilv : t('lvShort', {n: o.lv})].join(' · ')
-    : [o.owned ? (o.count > 1 ? '×' + o.count + ' · ' : '') + (o.where && o.where.length ? o.where.map(whereLabel).join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
-  const tag = (o.orig ? `<em class="tag orig">${t('setPiece')}</em>` : o.cur ? `<em class="tag cur">${t('triedTag')}</em>` : o.curMax ? `<em class="tag cur">${t('triedMax')}</em>` : '') +
-    (up ? `<span class="tag up ${o.curMax ? 'on' : ''}" data-trymax="${i}" role="button" tabindex="0" title="${esc(t('maxChipTip'))}">${up.to ? `→ R${up.to}` : t('capeMaxTag')}</span>` : '');
-  const gap = v && worn ? v.good - worn.good : null;
-  const val = v ? `<span class="gpval"><b>${esc(fmtStat(v.e))}</b>${gap != null ? `<small class="${gap > 0 ? 'up' : gap < 0 ? 'down' : ''}">${gap > 0 ? '+' : gap < 0 ? '−' : '±'}${Math.abs(Math.round(gap * 10) / 10)} ${esc(t('gpVs'))}</small>` : ''}</span>` : '';
-  return `<button type="button" class="gpcard ${o.orig ? 'orig' : ''} ${o.cur || o.curMax ? 'cur' : ''} ${o.grp === 5 ? 'junk' : ''}" data-try="${i}">${icon(o.piece.name)}` +
-    `<span class="gpinfo"><span class="gpname"><b>${esc(o.piece.name)}</b>${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}${tag}</span>` +
-    (augs.length ? `<span class="augl">◆ ${esc(augs.filter(a => !/^Path:/.test(a)).join(' · ') || augs.join(' · '))}</span>` : '') +
-    (o.fit && o.fit.length ? `<span class="fitl">${esc(o.fit.join(' · '))}</span>` : o.junk && o.why ? `<span class="whyl">${esc(o.why)}</span>` : '') +
-    `<small>${esc(where)}</small></span>${val}</button>`;
 }
 // The window's filters: drawn again with the same piece list
 function gpClick(d){
