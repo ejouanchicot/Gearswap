@@ -1,6 +1,6 @@
 // GearSwap Atelier · push_view.js: what the windows of push.js show before writing (push, delete, new set). In plain
 // words first: the pieces that go into the set, slot by slot, each with the game's icon, and what protects the
-// player's file. The file's name and its lines before and after (diffHTML) are one fold below, for who wants them;
+// player's file. The file's name and its lines before and after (atelier/src/screens/dialogs/pushview.ts diffLines) are one fold below, for who wants them;
 // the fold stays as it was left (S.pushTech).
 
 Object.assign(T.fr, {pushTitle: 'Enregistrer dans GearSwap', pushGo: 'Enregistrer', addGo: 'Créer le set',

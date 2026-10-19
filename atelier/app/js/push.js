@@ -75,19 +75,6 @@ function pushWarnings(s, plan, fresh){
   if (kids.length) out.push(t('pushRicochet', {n: kids.length, l: esc(kids.slice(0, 8).map(shortPath).join(' · ') + (kids.length > 8 ? ' …' : ''))}));
   return out;
 }
-// The set's lines before and after, line by line (longest common subsequence)
-function diffHTML(before, after){
-  const a = before ? before.split(/\r?\n/) : [], b = after.split(/\r?\n/), L = [];
-  for (let i = a.length; i >= 0; i--) { L[i] = []; for (let j = b.length; j >= 0; j--)
-    L[i][j] = i === a.length || j === b.length ? 0 : a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]); }
-  const out = []; let i = 0, j = 0;
-  while (i < a.length || j < b.length) {
-    if (i < a.length && j < b.length && a[i] === b[j]) { out.push(['same', a[i]]); i++; j++; }
-    else if (j < b.length && (i === a.length || L[i][j + 1] > L[i + 1][j])) out.push(['add', b[j++]]);
-    else out.push(['del', a[i++]]);
-  }
-  return `<div class="diff">${out.map(([k, l]) => `<div class="${k}">${k === 'add' ? '+ ' : k === 'del' ? '− ' : '  '}${esc(l)}</div>`).join('')}</div>`;
-}
 async function openPush(s){
   const tg = pushTarget(s);
   if (tg.exists) return openVersion(s);

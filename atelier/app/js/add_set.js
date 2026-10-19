@@ -78,9 +78,7 @@ async function createPreview(path, body, base){
   if (!S._create || S._create.path !== path) return;
   if (r.error) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('pushErr_' + r.error))}</p>`, '');
   S._create.hash = r.hash;
-  showDialog('pushdlg', t('addTitle'), `<p>${t('addWhereAny', {p: `<code>${esc(shortPath(path))}</code>`, f: `<code>${esc(r.file)}</code>`})}</p>` +
-    diffHTML(r.before, r.after) + `<p class="muted small">${esc(base ? t('addBuiltOn', {b: shortPath(base)}) : t('addPlain'))} ${esc(t('addSafetyAny'))}</p>`,
-    `<button class="btn" data-creatego>${t('addGo')}</button>`);
+  ATELIER_DIALOG.show({cls: 'pushdlg', titleHtml: t('addTitle'), push: ATELIER_DIALOG.createView(path, r, base), buttonsHtml: `<button class="btn" data-creatego>${t('addGo')}</button>`});
 }
 // The window's clicks (events.js)
 function addClick(d){

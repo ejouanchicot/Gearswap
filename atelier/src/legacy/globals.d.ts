@@ -364,7 +364,7 @@ declare function optRunBest(R: LegacyAny): LegacyAny;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
 /* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */
-interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny; update: (d: LegacyAny) => void; targetView: () => LegacyAny; pickView: (key: string) => LegacyAny; addView: () => LegacyAny; pushView: (...a: LegacyAny[]) => LegacyAny; delView: (...a: LegacyAny[]) => LegacyAny; addSetView: (...a: LegacyAny[]) => LegacyAny; tierCostView: (...a: LegacyAny[]) => LegacyAny; historyView: (...a: LegacyAny[]) => LegacyAny; optAllView: (R: LegacyAny) => LegacyAny; statPickView: () => LegacyAny; addStepView: () => LegacyAny; placesView: () => LegacyAny; porterView: () => LegacyAny; bagSendView: (mule: boolean) => LegacyAny; modPickView: (q: string) => LegacyAny} }
+interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny; update: (d: LegacyAny) => void; targetView: () => LegacyAny; pickView: (key: string) => LegacyAny; addView: () => LegacyAny; pushView: (...a: LegacyAny[]) => LegacyAny; delView: (...a: LegacyAny[]) => LegacyAny; addSetView: (...a: LegacyAny[]) => LegacyAny; tierCostView: (...a: LegacyAny[]) => LegacyAny; historyView: (...a: LegacyAny[]) => LegacyAny; optAllView: (R: LegacyAny) => LegacyAny; statPickView: () => LegacyAny; addStepView: () => LegacyAny; placesView: () => LegacyAny; porterView: () => LegacyAny; bagSendView: (mule: boolean) => LegacyAny; modPickView: (q: string) => LegacyAny; createView: (path: string, r: LegacyAny, base: string | null) => LegacyAny} }
 declare function compareColumns(s: LegacyAny): LegacyAny[];
 declare function sirdMeritsOf(c: LegacyAny): number;
 declare function setWants(s: LegacyAny): {want: LegacyAny};
@@ -406,7 +406,6 @@ declare const TARGETS: Record<string, LegacyAny>;
 declare const DEFAULT_ENEMY: string;
 declare const PB_PICK: Record<string, LegacyAny>;
 declare function pbAddGroups(shown: string[]): Array<[string, string[], (j: string) => string]>;
-declare function diffHTML(before: string, after: string): string;
 declare function isEmpty(p: LegacyAny): boolean;
 declare function oaShort(R: LegacyAny, path: string): string;
 declare const OA_EPS: number;

@@ -208,6 +208,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   le set cherche d'abord, les effets sous condition, les notes) ; `setStatsHTML`, `cappedLi`, `layeredLi`, `mulLi` et
   `damageTakenLines` (stats.js) sont retirés, leurs textes y restent. Les chiffres d'un set (figures.ts) n'ont plus de
   HTML de l'ancienne page.
+- **Étape 7y (2026-10-19)** : les lignes d'un fichier avant et après (pushview.ts `diffLines`), dans le pli des
+  fenêtres Pousser / Supprimer / Ajouter, et la fenêtre qui crée un set du catalogue (`createView`, appelée par
+  add_set.js `createPreview`) ; `diffHTML` (push.js) est retiré.
 
 ## Vérifier une étape
 

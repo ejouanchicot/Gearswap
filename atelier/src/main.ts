@@ -14,7 +14,7 @@ import {compareView} from './screens/dialogs/compare';
 import {gearPickView} from './screens/dialogs/gearpick';
 import {targetView} from './screens/dialogs/target';
 import {pickView, addView} from './screens/dialogs/partypick';
-import {pushView, delView, addSetView} from './screens/dialogs/pushview';
+import {pushView, delView, addSetView, createView} from './screens/dialogs/pushview';
 import {tierCostView} from './screens/dialogs/tiercost';
 import {historyView} from './screens/dialogs/history';
 import {optAllView} from './screens/dialogs/optall';
@@ -40,7 +40,7 @@ const dialogBox = document.createElement('div');
 dialogBox.className = 'dialogbox';
 dialogBox.style.display = 'contents';
 mount(Dialog, {target: dialogBox});
-window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), update: dialogUpdate, compareView, gearPickView, targetView, pickView, addView, pushView, delView, addSetView, tierCostView, historyView, optAllView, statPickView, addStepView, placesView, porterView, bagSendView, modPickView};
+window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), update: dialogUpdate, compareView, gearPickView, targetView, pickView, addView, pushView, delView, addSetView, tierCostView, historyView, optAllView, statPickView, addStepView, placesView, porterView, bagSendView, modPickView, createView};
 // the menu of a slot of the sets' grid (trial.js openSlotMenu places it)
 window.ATELIER_SLOTMENU = {view: slotMenuView, show: slotMenuShow};
 // on the body itself: the old page's frame (.app, #overlay, #tip) stays a child of <body>, as its styles expect
