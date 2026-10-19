@@ -157,6 +157,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   d'un roll (son job, Crooked Cards) du panneau d'un membre (panel.ts `amRow`, `rollChips`) ; `amRowHTML`,
   `rollChips` (buff_panels.js), `pbSel`, `pbAmRow` et `pbF` (party_builder.js) sont retirés. Le panneau d'un membre
   n'a plus de HTML de l'ancienne page.
+- **Étape 7k (2026-10-19)** : ce qui baisse la cible, « Autres debuffs » de Buffs & cible (`combat/foe.ts`,
+  `FoePanel.svelte`) : un onglet par job, sa grille, ce qui est posé sur la cible, le total dans la bande ;
+  `foePanelHTML` est retiré (l'interrupteur d'un onglet reste le HTML d'`offSwitch`).
 
 ## Vérifier une étape
 

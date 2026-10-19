@@ -4,13 +4,14 @@
 // panel.ts.
 // The rules are the old page's renderCombatParty, pbGives, pbImpact, pbResult (party_builder.js). Still the old page's
 // HTML: the target
-// card and the other debuffs (target_pick.js targetCardPanel, buff_panels.js foePanelHTML). A
+// card (target_pick.js targetCardPanel); the other debuffs: foe.ts. A
 // field ending in Html is one of the old page's texts it wrote unescaped. The buttons keep the attributes the old
 // handlers read (data-pbtab, data-pbdel, data-pbaddopen, data-buffundo, data-buffendgame, data-buffreset,
 // data-bufftier, data-pbother).
 //
 // @file    atelier/src/screens/combat/combat.ts
 // @author  ejouanchicot
+import {foeView, type FoeView} from './foe';
 import {memberPanel, youPanel, type PanelView} from './panel';
 import {setList, type SetListView} from '../sets/setlist';
 import {situations, picker, type Situation, type Picker} from '../profiles/profiles';
@@ -31,7 +32,7 @@ export interface CombatView {
   target: {title: string; meta: string; html: string};
   impact: {title: string; note: string; set: string; what: string; ws: boolean; rows: ImpactRow[]};
   total: {title: string; onYou: string; onFoe: string; nothing: string; mine: SumRow[]; foes: SumRow[]};
-  other: null | {open: boolean; title: string; label: string; who: string; totalHtml: string; openText: string; shutText: string; bodyHtml: string};
+  other: null | {open: boolean; title: string; label: string; who: string; total: string; down: boolean; openText: string; shutText: string; foe: FoeView};
 }
 
 // the old page's state, its fields loosely typed (read when the screen is drawn: the old page loads after this module)
@@ -118,8 +119,8 @@ export function combatView(): CombatView | null {
   const L = setList(d);
   if (L.vis.length) st()._curSet = shownSet(L.cards[L.sel], L.sel);
   const b = buffState(), n = buffCount();
-  // the target's card and the other debuffs (target_pick.js targetCardPanel, buff_panels.js foePanelHTML)
-  const P = {tgt: targetCardPanel(b), foe: foePanelHTML(b)}, shown: string[] = pbShown(b), B = buffTotals();
+  // the target's card (target_pick.js targetCardPanel) and the other debuffs (foe.ts)
+  const P = {tgt: targetCardPanel(b), foe: foeView(b)}, shown: string[] = pbShown(b), B = buffTotals();
   const undo = st()._buffUndo && st()._buffUndo.key === buffKey() ? {title: t('pbUndoTip', {w: st()._buffUndo.what}), text: t('pbUndo')} : null;
   return {
     side: L.view,
@@ -129,7 +130,7 @@ export function combatView(): CombatView | null {
     party: partyOf(d, b, B, shown),
     target: {title: t('pbTarget'), meta: enemyKey(b.enemy), html: P.tgt || ''},
     impact: impactOf(), total: totalOf(B),
-    other: P.foe ? {open: !!st()._pbOtherOpen, title: t('ttPbOther'), label: t('pbOther'), who: t('pbOtherWho'), totalHtml: P.foe.total || '',
-      openText: t('pbOtherOpen'), shutText: t('pbOtherShut'), bodyHtml: P.foe.body} : null
+    other: P.foe ? {open: !!st()._pbOtherOpen, title: t('ttPbOther'), label: t('pbOther'), who: t('pbOtherWho'), total: P.foe.total, down: P.foe.down,
+      openText: t('pbOtherOpen'), shutText: t('pbOtherShut'), foe: P.foe} : null
   };
 }
