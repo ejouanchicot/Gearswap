@@ -292,8 +292,6 @@ declare const EN_SKILLS: number[];
 declare const DISTRACT: Record<string, number>;
 declare function jaOn(b: LegacyAny, name: string): boolean;
 declare function jaTip(ja: LegacyAny): string;
-declare function warcryHTML(b: LegacyAny, party?: boolean): string;
-declare function sambaHTML(b: LegacyAny): string;
 declare function pbAmRow(sel: (key: string, values: string[], ph: string, def: string) => string): string;
 declare function pbSel(b: LegacyAny, key: string, values: string[], ph?: string, def?: string | null): string;
 /* ---- the Sets screen (sets_view.js, layout2.js, stats.js), loosely typed ---- */
@@ -484,3 +482,4 @@ declare function statPickBtn(): string;
 declare function otherChar(): string | undefined;
 declare function listFamLabel(f: string): string;
 declare function familyNote(s: LegacyAny): string;
+declare function warcryTp(b: LegacyAny, party?: boolean): number;

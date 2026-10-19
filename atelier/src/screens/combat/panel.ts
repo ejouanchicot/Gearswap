@@ -3,8 +3,7 @@
 // food, aftermath, your own abilities; GEO: the bubbles; BRD: the songs; COR: the rolls; WHM, RDM: their spells and
 // what they cast on the target; SCH: the storm; any other job: its abilities that reach you and its debuffs.
 // The rules are the old page's pbYouBody, pbBody, pbSel, pbPlus, pbPickBtn, pbFoeRows (party_builder.js). Still the
-// old page's HTML: the aftermath's line (amRowHTML), a roll's chips (rollChips), Warcry's and Haste Samba's lines
-// (warcryHTML, sambaHTML: buff_panels.js), drawn in the old window too. The controls keep the attributes the old
+// old page's HTML: the aftermath's line (amRowHTML), a roll's chips (rollChips). The controls keep the attributes the old
 // handlers read (data-buff, data-buffflag, data-pbpick, data-pbmarcato, data-foeja, data-foeseg, data-ja).
 //
 // @file    atelier/src/screens/combat/panel.ts
@@ -20,8 +19,12 @@ export type Control =
   | {k: 'html'; html: string};
 export type Effect = {k: 'gives'; list: Gives[]} | {k: 'muted'; text: string} | {k: 'html'; html: string} | {k: 'fx'; controls: Control[]};
 export interface Row { k: 'row'; label: string; controls: Control[]; effects: Effect[] }
-export type Item = Row | {k: 'extra'; label: string; html: string} | {k: 'html'; html: string};
-export type Block = {k: 'section'; title: string; items: Item[]} | {k: 'extra'; html: string};
+// Warcry's line (its Savagery merits, Agoge Mask, the TP Bonus they give) and the party DNC's menu (main DNC and its
+// merits, or a /DNC)
+export type ExtraCtl = {kind: 'warcry'; party: boolean; on: boolean; lv: number; agoge: boolean; note: string}
+  | {kind: 'samba'; label: string; opts: Array<{v: string; label: string; on: boolean}>};
+export type Item = Row | {k: 'extra'; label: string; ctl: ExtraCtl} | {k: 'html'; html: string};
+export type Block = {k: 'section'; title: string; items: Item[]} | {k: 'extra'; ctl: ExtraCtl};
 export interface PanelView { left: Block[]; right: Block[] }
 
 const GOOD_LOW = ['shell', 'dt', 'pdt', 'mdt', 'bdt'];
@@ -127,14 +130,25 @@ function rdmPanel(B: LegacyAny, b: LegacyAny, whm: boolean): PanelView {
 function jaPanel(B: LegacyAny, b: LegacyAny, job: string): PanelView {
   const list: LegacyAny[] = pbJaJobs().get(job) || [];
   const mine = list.map(ja => row(ja.name.replace(' · party', ''), [sw({'data-ja': ja.name}, jaOn(b, ja.name), jaTip(ja))], [gives(B, v => v === ja.name)]));
-  const extra: Block[] = (list.some(x => x.name === 'Warcry · party') && jaOn(b, 'Warcry · party') ? [{k: 'extra', html: warcryHTML(b, true)} as Block] : [])
-    .concat(list.some(x => x.name === 'Haste Samba') && jaOn(b, 'Haste Samba') ? [{k: 'extra', html: sambaHTML(b)}] : []);
+  const extra: Block[] = (list.some(x => x.name === 'Warcry · party') && jaOn(b, 'Warcry · party') ? [{k: 'extra', ctl: warcryOf(b, true)} as Block] : [])
+    .concat(list.some(x => x.name === 'Haste Samba') && jaOn(b, 'Haste Samba') ? [{k: 'extra', ctl: sambaOf(b)}] : []);
   const foe = foeRows(B, job, b);
   if (mine.length && foe.length) return {left: section(t('pbBuffs'), mine).concat(extra), right: section(t('pbOnTarget'), foe)};
   return {left: section(mine.length ? t('pbBuffs') : t('pbOnTarget'), mine.length ? mine : foe).concat(extra), right: []};
 }
 
 /** The panel of a party member other than you */
+// Your own Warcry (a WAR main's) or a party WAR's (counted at 5/5 with the mask unless chosen otherwise): greyed while
+// Warcry is off
+function warcryOf(b: LegacyAny, party: boolean): ExtraCtl {
+  const on = party || jaOn(b, 'Warcry'), sv = party ? b.pSavagery : b.savagery;
+  return {kind: 'warcry', party, on, lv: sv == null ? 5 : +sv, agoge: !(party ? b.pNoAgoge : b.noAgoge), note: on ? 'TP Bonus +' + warcryTp(b, party) : t('warcryOff')};
+}
+function sambaOf(b: LegacyAny): ExtraCtl {
+  return {kind: 'samba', label: t('sambaWho'), opts: ['', 'm4', 'm3', 'm2', 'm1', 'm0', 'sub'].map(v => ({v, on: (b.pSamba || '') === v,
+    label: v === 'sub' ? t('sambaSub') : t('sambaMain', {n: v ? v.slice(1) : 5, p: 5 + (v ? +v.slice(1) : 5)})}))};
+}
+
 export function memberPanel(job: string, b: LegacyAny, shown: string[]): PanelView {
   const B = buffTotals(), whm = shown.includes('WHM'), rdm = shown.includes('RDM');
   if (job === 'GEO') return geoPanel(B, b);
@@ -154,6 +168,6 @@ export function youPanel(b: LegacyAny): PanelView {
     [sw({'data-ja': j.name}, jaOn(b, j.name), jaTip(j))], [gives(B, v => v === j.name)]));
   // the aftermath's line as the old page draws it (pbAmRow), its lists the buff's own
   const am: Item = {k: 'html', html: pbAmRow((key: string, values: string[], ph: string, def: string) => pbSel(b, key, values, ph, def))};
-  if (jas.some((j: LegacyAny) => j.name === 'Warcry' && j.as === 'main') && jaOn(b, 'Warcry')) rows.push({k: 'extra', label: 'Warcry', html: warcryHTML(b)});
+  if (jas.some((j: LegacyAny) => j.name === 'Warcry' && j.as === 'main') && jaOn(b, 'Warcry')) rows.push({k: 'extra', label: 'Warcry', ctl: warcryOf(b, false)});
   return {left: section(t('pbYouBase'), [row(t('bFood'), [pick(b, 'food')], [gives(B, v => v === b.food)]), am]), right: section(t('bJa'), rows)};
 }

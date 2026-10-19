@@ -156,15 +156,6 @@ function rollChips(b, i){
   const cc = `<button class="chip" data-rollcc="${i}" aria-pressed="${b.rollCC != null && +b.rollCC === i}" ${b['roll' + i] ? '' : 'disabled'} title="${esc(t('rollCcTip'))}">CC</button>`;
   return job + cc;
 }
-// Your own Warcry, a WAR main's: its Savagery merits (0 to 5) and Agoge Mask, and the TP Bonus they give;
-// greyed while Warcry is off (a party WAR's is counted at 5/5 with the mask: WARCRY_PARTY_TP)
-function warcryHTML(b, party){
-  const on = party || jaOn(b, 'Warcry'), sv = party ? b.pSavagery : b.savagery, lv = sv == null ? 5 : +sv, noAgoge = party ? b.pNoAgoge : b.noAgoge;
-  const btn = (attrs, label, pressed) => `<button class="chip" ${attrs} aria-pressed="${pressed}" ${on ? '' : 'disabled'}>${esc(label)}</button>`;
-  const who = party ? ' data-wparty="1"' : '';
-  return `<span class="flbl">Savagery</span><span class="fseg">${[0, 1, 2, 3, 4, 5].map(n => btn(`data-savagery="${n}"${who}`, String(n), n === lv)).join('')}</span>` +
-    btn(`data-agoge${who}`, 'Agoge Mask +3/+4', !noAgoge) + `<span class="muted small">${on ? 'TP Bonus +' + warcryTp(b, party) : esc(t('warcryOff'))}</span>`;
-}
 // What lowers the target: the usual ones always in view (Dia, Distract with Saboteur, Light Shot), the other
 // jobs one tab each (a dot on a tab with something on); a line: its buttons (a tier is one click and again to
 // take it off) and what they take off; then every debuff on, with what it takes off; the total in the band.
@@ -277,10 +268,6 @@ function offSwitch(b, key){
   const on = !(b.off || {})[key];
   return `<button class="tgl" data-poff="${esc(key)}" aria-pressed="${on}" title="${esc(t('pOffTip'))}" aria-label="${esc(key)} ${on ? 'ON' : 'OFF'}"></button>`;
 }
-// The party DNC's menu: a main DNC and its merits, or a /DNC
-const sambaHTML = b => `<span class="flbl">${esc(t('sambaWho'))}</span><select class="buffsel" data-buff="pSamba">` +
-  ['', 'm4', 'm3', 'm2', 'm1', 'm0', 'sub'].map(v => `<option value="${v}" ${(b.pSamba || '') === v ? 'selected' : ''}>` +
-    esc(v === 'sub' ? t('sambaSub') : t('sambaMain', {n: v ? v.slice(1) : 5, p: 5 + (v ? +v.slice(1) : 5)})) + `</option>`).join('') + `</select>`;
 const jaTip = ja => ja.as === 'party' ? t('jaPartyTip', {j: ja.a.from}) + (ja.a.tpParty ? ' · TP Bonus +' + tpOfParty(ja.a, buffState()) : '')
   : t('jaLvTip', {j: [].concat(ja.a.job).join('/'), l: ja.a.lvl, w: ja.as === 'main' ? t('jaMain') : t('jaSub', {l: ja.lvl})});
 // The SMN's Summoning Magic skill for Fenrir's Impact (b.smnSkill, 600 until chosen)

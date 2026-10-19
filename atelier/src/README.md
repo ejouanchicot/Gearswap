@@ -151,6 +151,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7h (2026-10-19)** : le Mog à côté d'un mot (`components/MogNote.svelte`) : « rien trouvé » sous la liste des
   sets, « il porte le gear » dans la fenêtre Pousser / Ajouter ; `mogCarryHTML` (guide.js) est retiré,
   `mogSorryHTML` reste pour les fenêtres d'erreur de push.js.
+- **Étape 7i (2026-10-19)** : les lignes Warcry (Savagery, Agoge Mask, TP Bonus) et Haste Samba du panneau d'un membre
+  (panel.ts `warcryOf`, `sambaOf`, rendues par `Panel.svelte`) ; `warcryHTML` et `sambaHTML` sont retirés.
 
 ## Vérifier une étape
 
