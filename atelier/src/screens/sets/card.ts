@@ -3,13 +3,15 @@
 // it inherits, what is shared, what is missing), the legend, the notes, and the figures (shown beside on a wide
 // window). A set whose optimizer page is open shows that page instead (optimizer/optpage.ts).
 // The rules are the old page's cardHTML, slotHTML, setVersionsHTML, versionGridHTML (sets_view.js), with what it
-// keeps in the page's state as it goes (S._curSet, S._globals). Still the old page's HTML: the title box and the
-// weapons' menus (weaponMenus), the trial's bar (trial.js); a weaponskill's head is wshead.ts; the equip button (live.js), the line of what the set is after, the legend and notes; the figures are figures.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
+// keeps in the page's state as it goes (S._curSet, S._globals). The weapons it is shown with are weapons.ts, a
+// weaponskill's head wshead.ts, the trial's bar trial.ts, the figures figures.ts. A field ending in Html is one of the
+// old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/card.ts
 // @author  ejouanchicot
 import {figuresView, type FiguresView} from './figures';
 import {wsHeadView, type WsHeadView} from './wshead';
+import {weaponMenusView, weaponResults, weaponTip, type WeaponMenu, type WeaponResult} from './weapons';
 import {optPageView, type OptPageView} from '../optimizer/optpage';
 
 import {trialBarView, type TrialBar} from './trial';
@@ -26,7 +28,7 @@ export interface CardView {
   ws: boolean;
   title: TitleView;
   versions: Versions;
-  ctl: null | {k: 'picks'; html: string} | {k: 'ws'; view: WsHeadView};
+  ctl: null | {k: 'picks'; menus: Array<{menu: WeaponMenu; tip: string}>; results: WeaponResult[]} | {k: 'ws'; view: WsHeadView};
   trial: TrialBar;
   slots: SlotView[];
   equip: {on: boolean; why: string; label: string};
@@ -69,7 +71,7 @@ function wsTitle(s: LegacyAny, acts: TitleActs): TitleView {
 
 // the head of a set other than a weaponskill's: what it is (its family, name and version, when it is worn, its path),
 // and the weapons it is shown with (setHeadHTML)
-function setHeadParts(card: LegacyAny, vi: number, s: LegacyAny, acts: TitleActs): {title: TitleView; picks: string} {
+function setHeadParts(card: LegacyAny, vi: number, s: LegacyAny, acts: TitleActs): {title: TitleView; picks: Extract<CardView['ctl'], {k: 'picks'}>} {
   const when = t('famWhen.' + card.fam), label = card.variants[vi].label;
   const fam = t('fam.' + card.fam), name = niceName(card);
   // an enhancing set: on whom it is cast, beside its name and as the line under it (stat_opt.js enhTarget)
@@ -77,10 +79,7 @@ function setHeadParts(card: LegacyAny, vi: number, s: LegacyAny, acts: TitleActs
   const title: TitleView = {...acts, kicker: fam !== name ? fam : '', name, version: label && label !== 'Base' ? label : '', tag: on ? t('enhTag' + on) : '',
     when: on ? t('enhWhen' + on) : when || '', facts: [], factsTip: '', path: s.path, pathTip: t('ttPath')};
   // the weapons' menus side by side, a label over each; then what the job's GearSwap puts with them (off hand, ammo)
-  const pick = (lbl: string, body: string) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
-  const menus = weaponMenus(s), tipOf = (desc: string) => desc && desc.replace(/\s+/g, '').toLowerCase() !== 'mainweapon' ? desc + ' · ' + t('ttWeapon') : t('ttWeapon');
-  const picks = (menus ? menus.map(([nm, sel, desc]: [string, string, string]) => pick(nm, sel).replace('<span class="wslbl">', `<span class="wslbl" title="${esc(tipOf(desc))}">`)
-    .replace('<select class="wmenu', `<select title="${esc(tipOf(desc))}" class="wmenu`)).join('') : '') + (family(s.path, s.pieces) !== 'weapons' ? weaponResultLines(s, pick) : '');
+  const picks = {k: 'picks' as const, menus: weaponMenusView(s).map(menu => ({menu, tip: weaponTip(menu.desc)})), results: weaponResults(s)};
   return {title, picks};
 }
 
@@ -170,7 +169,7 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
     ctl = wsOfSet(s) ? {k: 'ws', view: wsHeadView(s)} : null;
   } else {
     const head = setHeadParts(card, vi, s, acts);
-    title = head.title; versions = versionsOf(card, ci, vi); ctl = {k: 'picks', html: head.picks};
+    title = head.title; versions = versionsOf(card, ci, vi); ctl = head.picks;
   }
   // a family's note and a base set's go under the gear, where nothing is left to push down
   const notes = {fam: card.variants.some((v: LegacyAny) => familyNote(v.set)) ? {textHtml: familyNote(s), none: !familyNote(s)} : null,

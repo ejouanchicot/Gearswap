@@ -3,15 +3,16 @@
 // (the steps, a TP of your own, what the TP comes to with its bonus); the explanation of a line opens under it on a
 // click of its ⓘ (only a set with a weaponskill has it: the base set, sets.precast.WS, has none).
 // The rules are the old page's wsHeadHTML, wsWeaponLine, heldSubMenu, fitOptions and wsTpLine (ws_page.js). A job with
-// a stance or a gated weapon state (PLD, THF) keeps its weapon states' menus (weapons.js weaponMenus, still their
-// HTML). The controls keep the attributes the old handlers read (data-heldws, data-wstp, .tpin, data-help: events.js).
+// a stance or a gated weapon state (PLD, THF) keeps its weapon states' menus (weapons.ts). The controls keep the attributes the old handlers read (data-heldws, data-wstp, .tpin, data-help: events.js).
 //
 // @file    atelier/src/screens/sets/wshead.ts
 // @author  ejouanchicot
 
+import {weaponMenusView, type WeaponMenu} from './weapons';
+
 export interface WsOption { value: string; label: string; selected: boolean; disabled?: boolean }
 export interface WsLine { label: string; tip: string; help: string; open: boolean; helpTip: string }
-export type WsWeapon = {k: 'menus'; lines: Array<{label: string; selHtml: string}>}
+export type WsWeapon = {k: 'menus'; menus: WeaponMenu[]}
   | {k: 'held'; line: WsLine; ws: string; held: {set: boolean; title: string; options: WsOption[]}; sub: {set: boolean; title: string; options: WsOption[]}};
 export interface WsTp {
   line: WsLine; chips: Array<{v: string; label: string; pressed: boolean; title: string}>; input: {value: string; ph: string; title: string};
@@ -41,8 +42,8 @@ function weaponOf(s: LegacyAny): WsWeapon | null {
   const d = data() as LegacyAny, ws = wsOfSet(s) as string;
   // a job with a stance or a gated state on its weapons (PLD, THF): its weapon states' menus, as on any set
   if (hybridMode(d) || weaponModes(d).some((m: LegacyAny) => WEAPON_GATES[m.name])) {
-    const lines = (weaponMenus(s) || []).map(([label, selHtml]) => ({label, selHtml}));
-    return lines.length ? {k: 'menus', lines} : null;
+    const menus = weaponMenusView(s);
+    return menus.length ? {k: 'menus', menus} : null;
   }
   const auto = withWeapons(s, 'held').pieces.main, held = heldWeapon(ws), list: string[] = heldChoices(ws), rank = heldRanking(s, ws, list);
   const sorted = rank ? list.slice().sort((a, b) => (rank[b] || 0) - (rank[a] || 0)) : list;

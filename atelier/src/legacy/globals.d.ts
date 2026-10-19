@@ -302,8 +302,6 @@ declare function baseOnly(s: LegacyAny): boolean;
 declare function isNukeSet(path: string): boolean;
 declare function statSet(s: LegacyAny): boolean;
 declare function optPageOpen(s: LegacyAny): boolean;
-declare function weaponMenus(s: LegacyAny): Array<[string, string, string]> | null;
-declare function weaponResultLines(s: LegacyAny, pick: (lbl: string, body: string) => string): string;
 declare function ui2Wants(s: LegacyAny): string;
 /* ---- the figures of a set (engine.js, fight_stats.js, stat_opt.js, luopan.js, stats.js), loosely typed ---- */
 declare function charStats(s: LegacyAny, pieces?: LegacyAny): LegacyAny;
@@ -559,3 +557,8 @@ declare function tpAsk(s: LegacyAny, pieces: LegacyAny, x: LegacyAny): LegacyAny
 declare function tpSteps(r: LegacyAny, s: LegacyAny): number[];
 declare function tpTotalParts(s: LegacyAny, r: LegacyAny): LegacyAny;
 declare function tpBonusParts(s: LegacyAny, r: LegacyAny): LegacyAny;
+declare function wsWeaponFits(m: LegacyAny, v: string, ws: string): boolean;
+declare function explicitWeapon(m: LegacyAny, ignore?: string): string | null;
+declare function chosenWeapon(m: LegacyAny): string;
+declare function slotForce(): Record<string, LegacyAny>;
+declare function weaponModeSlot(m: LegacyAny): string;

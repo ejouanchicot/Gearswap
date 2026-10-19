@@ -1,4 +1,4 @@
-// GearSwap Atelier · weapons.js: weapon modes, hands, grips, Kraken, forced weapons, the weapon menus
+// GearSwap Atelier · weapons.js: weapon modes, hands, grips, Kraken, forced weapons (their menus: atelier/src/screens/sets/weapons.ts)
 // (loaded by atelier/index.html, in the order of the list there)
 /* ---- weapons: what the weapon modes put in main / sub / range / ammo ---- */
 const WEAPON_SLOTS = new Set(['main', 'sub', 'range', 'ammo']);
@@ -261,40 +261,8 @@ function forceList(slot){
   const seen = new Set();
   return ((ownedOf() || {})[slot] || []).filter(x => x && x.name && !isEmpty(x) && !seen.has(x.name) && seen.add(x.name));
 }
-// What the job's GearSwap puts in the off hand and the ammo slot with the weapon chosen: shown, not chosen (in game the
-// weapon state decides them); a piece forced in the page (a click on its slot) says so, with the way back to Auto
-function weaponResultLines(s, line){
-  const eff = withWeapons(s), f = slotForce(), stated = new Set(weaponModes(data()).filter(m => !m.onlyEmpty).map(weaponModeSlot));
-  return ['main', 'sub', 'range', 'ammo'].filter(slot => !stated.has(slot)).map(slot => { const p = eff.pieces[slot];
-    if (!p || isEmpty(p)) return '';
-    const forced = f[slot] && f[slot].name === p.name;
-    return line(SLOT_NAMES[S.lang][slot], `<span class="wauto"><b>${esc(p.name)}</b> <small class="muted" title="${esc(forced ? '' : t(eff.from[slot] ? 'ttByGs' : 'ttBySet'))}">${esc(forced ? t('forcedTag') : t(eff.from[slot] ? 'byGearSwap' : 'bySet'))}</small>` +
-      (forced ? ` <button class="linkbtn" data-unforce="${slot}">${esc(t('backToAuto'))}</button>` : '') + `</span>`); }).join('') +
-    (f.main && stated.has('main') ? line(SLOT_NAMES[S.lang].main, `<span class="wauto"><b>${esc(f.main.name)}</b> <small class="muted">${esc(t('forcedTag'))}</small> <button class="linkbtn" data-unforce="main">${esc(t('backToAuto'))}</button></span>`) : '');
-}
 // The slot a weapon state fills: MainWeapon the main hand, an Empty<Slot> switch its slot, another its first value's slot
 const weaponModeSlot = m => m.onlyEmpty ? m.name.slice(5).toLowerCase() : (m.name === 'MainWeapon' ? 'main' : Object.keys(m.sets[m.values[0]].pieces)[0]);
-function weaponMenus(s){
-  const d = data();
-  if (family(s.path, s.pieces) === 'weapons') return '';
-  // a weaponskill's set offers only the weapons that open it (its skill; the weapon itself for a relic or prime)
-  const ws = wsOfSet(s), only = m => m.name !== 'MainWeapon' || !ws ? m
-    : Object.assign({}, m, {values: m.values.filter(v => wsWeaponFits(m, v, ws) || v === explicitWeapon(m))});
-  const modes = weaponModes(d).filter(m => !m.onlyEmpty && !isEmpty(s.pieces[weaponModeSlot(m)])).map(only);
-  const hm = modes.length ? hybridMode(d) : null;
-  const opt = (v, on, label = v) => `<option value="${esc(v)}" ${on ? 'selected' : ''}>${esc(label)}</option>`;
-  // the stance the job's weapon rules hang on (PLD's HybridMode: its shield and stance weapon), always one of its values
-  const stance = hm ? [[hm.name, `<select class="wmenu buffsel" data-wmode="${esc(hm.name)}" aria-label="${esc(hm.desc)}">` +
-    hm.values.map(v => opt(v, v === chosenWeapon(hm))).join('') + `</select>`, hm.desc]] : [];
-  // each weapon state under its name in game (MainWeapon, SubWeapon...): Auto first, what the job's code puts there
-  return stance.concat(modes.map(m => { const ex = explicitWeapon(m), auto = withWeapons(s, m.name).pieces[weaponModeSlot(m)];
-    // a gated state (THF's AbyWeapon) with its switch off lays nothing: say so rather than name the main
-    const gate = WEAPON_GATES[m.name], off = gate && !/^(on|true)$/i.test((d.modes.find(x => x.name === gate.when) || {}).current || '');
-    const sel = `<select class="wmenu buffsel ${ex ? 'set' : ''}" data-wmode="${esc(m.name)}" aria-label="${esc(m.desc)}">` +
-      opt('', !ex, t('auto') + ' · ' + (off ? gate.when + ' off' : auto && !isEmpty(auto) ? auto.name : '—')) +
-      m.values.map(v => opt(v, v === ex)).join('') + `</select>`;
-    return [m.name, sel, m.desc]; }));
-}
 
 /* ---- the weapon held for a weaponskill ---- */
 // The weapon held for a weaponskill, chosen in the page for that weaponskill only and never written

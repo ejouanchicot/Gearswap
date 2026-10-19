@@ -237,6 +237,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   PLD et THF gardent les menus d'états d'arme de l'ancienne page (`weaponMenus`, prochaine étape). Les options d'un
   menu dont l'ordre change (le classement des armes arrive après le premier dessin) sont clées par leur valeur, pas
   par leur rang : sinon le menu garde l'option à la place de l'ancienne et montre un mauvais choix.
+- **Étape 7af (2026-10-20)** : les menus d'armes sous le titre d'un set et dans l'en-tête WS de PLD et THF
+  (`sets/weapons.ts`, `WeaponMenu.svelte` : un menu par état d'arme, Auto d'abord, la posture de PLD, puis ce que le
+  GearSwap du job met avec, avec « Revenir en Auto » sur une pièce forcée) ; `weaponMenus` et `weaponResultLines`
+  (weapons.js) sont retirés. La carte d'un set n'a plus de HTML de l'ancienne page.
 
 ## Vérifier une étape
 
