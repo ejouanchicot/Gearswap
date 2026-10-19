@@ -298,7 +298,6 @@ declare function sambaHTML(b: LegacyAny): string;
 declare function pbAmRow(sel: (key: string, values: string[], ph: string, def: string) => string): string;
 declare function pbSel(b: LegacyAny, key: string, values: string[], ph?: string, def?: string | null): string;
 /* ---- the Sets screen (sets_view.js, layout2.js, stats.js), loosely typed ---- */
-declare function subWarnHTML(): string;
 declare const SLOT_NAMES: Record<string, Record<string, string>>;
 declare const SLOTS: string[];
 declare function isLocked(s: LegacyAny, slot: string): boolean;

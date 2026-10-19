@@ -68,7 +68,7 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 5d (2026-10-19)** : les situations et les profils (`screens/profiles/` : `profiles.ts`,
   `Situations.svelte`, `Picker.svelte`), la même chose dans la barre de Buffs & cible et dans la ligne au-dessus des
   sets. La recherche et le filtre de situation de la fenêtre des profils redessinent la page au lieu de cacher les
-  lignes à la main (`profiles.js`). Reste à l'ancienne page : l'avertissement de sub (`subWarnHTML`).
+  lignes à la main (`profiles.js`). L'avertissement de sub (`subWarnHTML`) est passé en Svelte à l'étape 7f.
 - **Étape 6a (2026-10-19)** : la page de l'optimiseur d'un set (`screens/optimizer/optpage.ts`, `OptPage.svelte` :
   l'en-tête, les objectifs et leurs réglages, le gros chiffre et son verdict, l'image du résultat — courbe, jauge,
   rounds, facteurs, barres —, le tableau). Ce que valent les chiffres reste à `opt_page.js` (`opFigures`, `opRows`).
@@ -142,6 +142,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7e (2026-10-19)** : un job sans export (`screens/home/NoExport.svelte`) ; `renderJob` ne dessine plus rien
   (il garde le renvoi des anciens noms de section et `simPrepare`). `#legacyview` reste vide sur toutes les vues.
   Vues `NX_` dans `scripts/atelier/parity/home.json`.
+- **Étape 7f (2026-10-19)** : l'avertissement « en jeu tu as un autre sub » au-dessus des sets (`subWarn`, sets.ts) ;
+  `subWarnHTML` est retiré. Vues `SW_` dans `scripts/atelier/parity/sets.json`.
 
 ## Vérifier une étape
 

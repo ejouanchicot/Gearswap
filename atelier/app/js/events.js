@@ -77,7 +77,7 @@ document.addEventListener('click', e => {
   if (d.optobj) { S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
   if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; render(); return; }
   if ('optback' in d) { S.optView = null; render(); return; }
-  // the page's subjob set to the game's (sets_view.js subWarnHTML)
+  // the page's subjob set to the game's (atelier/src/screens/sets/sets.ts subWarn)
   if (d.subfix) { S.subs[S.char + '|' + S.job] = d.subfix; render(); return; }
   // every objective of the stats optimizer, or only the set's (stat_opt.js statRelevant)
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }

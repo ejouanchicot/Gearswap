@@ -117,14 +117,6 @@ function familyNoteHTML(card, s){
   return `<p class="famnote ${text ? '' : 'none'}">${text}</p>`;
 }
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
-// The game on this job with another subjob than the page shows (the live link, live.js): every figure is then the other
-// subjob's (its base attributes, traits, sets), said with a button to show the game's
-function subWarnHTML(){
-  const L = (S._live || {})[S.char], d = data();
-  if (!L || !L.ok || L.job !== S.job || !d || !L.sub || L.sub === 'NONE' || L.sub === d.sub) return '';
-  const text = t('subWarn', {g: L.job + '/' + L.sub, p: S.job + '/' + d.sub});
-  return `<p class="kwarn subwarn"><span title="${esc(text)}">${esc(text)}</span> <button class="btn" data-subfix="${esc(L.sub)}">${esc(t('subFix', {s: L.sub}))}</button></p>`;
-}
 // A version of a set for a party: the label of a variant against its set's ("Laphria · Group" against "Laphria",
 // "Trust" against the family's own set, "Base"); null for anything else
 const TIER_LABELS = ['Group', 'Solo', 'Trust'];
