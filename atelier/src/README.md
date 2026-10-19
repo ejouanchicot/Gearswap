@@ -186,6 +186,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   plus suivre une valeur changée ailleurs (Svelte met `selected` sur l'option comme choix par défaut, que le
   navigateur ignore une fois le menu touché). Tous les menus passés en Svelte prennent maintenant leur valeur de la page
   à chaque dessin (`components/selsync.ts`, `use:selSync`).
+  Correction juste après : un menu sans option marquée (« Tout » du filtre plan des sacs) montre sa première option,
+  comme un menu redessiné le faisait ; sans elle il gardait l'ancien choix.
 
 ## Vérifier une étape
 

@@ -185,7 +185,7 @@ export function bagsView(): BagsView {
       cats: cats.map(c => ({value: c, label: c === 'all' ? t('bvCatAll') : bvCatName(c), pressed: (S.bagCat || 'all') === c})),
       use: {title: t('bvUseTip', {j: bvUsage().jobs.join(' ') || '—'}), options: [['all', 'bvUseAll'], ['unk', 'bpUnk'], ['bad', 'bvUseBad'], ['lock', 'bvUseLock'],
         ['none', 'bvUseNone'], ['one', 'bvUseOne'], ['many', 'bvUseMany']].map(([value, k]) => ({value: value!, label: t(k!), pressed: (S.bagUse || 'all') === value}))},
-      pc: {title: t('bpPcTip'), label: t('bpPc'), options: [{value: '', label: t('bvCatAll'), selected: false}].concat([...BP_CATS, 'unknown'].map(c => ({value: c, label: bpCatName(c), selected: S.bagPc === c})))},
+      pc: {title: t('bpPcTip'), label: t('bpPc'), options: [{value: '', label: t('bvCatAll'), selected: !S.bagPc}].concat([...BP_CATS, 'unknown'].map(c => ({value: c, label: bpCatName(c), selected: S.bagPc === c})))},
       dup: {on: !!S.bagDup, title: t('bvDupTip'), label: t('bvDup')}},
     sel: {n, pickTip: t('bpPickTip'), title: t('bpSel', {n}), all: t('bpSelAll', {n: shown}), cats: BP_CATS.map(c => ({value: c, label: bpCatName(c)})),
       auto: {title: t('bpAutoTip'), text: t('bpAuto')}, none: t('bpSelNone')},
