@@ -90,25 +90,6 @@ function mrCol(x, k, opts){
   return {k, kind, title: own || (known !== 'mrC_' + k ? known : k.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())),
     many: vals.some(c => c.kind === 'list'), loose: said === 'count' || (kind === 'num' && vals.some(c => c.kind === 'str'))};
 }
-function mrCellHTML(col, r, i, id, off){
-  const v = r[col.k], at = `data-rowcell="${i}:${esc(col.k)}" ${id} ${off}`, first = Array.isArray(v) ? v[0] : v;
-  if (col.kind === 'slot') { const list = MR_SLOTS.includes(v) || mrEmpty(v) ? MR_SLOTS : [v, ...MR_SLOTS];
-    return `<select class="modin" ${at} ${modTip(off, 'mrCellSlot')}>${mrEmpty(v) ? '<option value=""></option>' : ''}${list.map(s => `<option value="${esc(s)}" ${s === v ? 'selected' : ''}>${esc(t('mrS_' + s) !== 'mrS_' + s ? t('mrS_' + s) : s)}</option>`).join('')}</select>`; }
-  if (col.kind === 'num') return `<input class="modin num" type="text" inputmode="decimal" value="${esc(mrCellShow(v))}" ${at} ${modTip(off, col.loose ? 'mrCellAll' : 'mrCellNum')}>`;
-  const ico = col.kind === 'item' || col.kind === 'gear' ? itemIco(first || '') : '';
-  return `<span class="mrname">${ico}<input class="modin" type="text" value="${esc(Array.isArray(v) ? v.join(', ') : v === undefined ? '' : v)}" ${col.kind === 'gear' ? 'list="mrgear"' : ''} ${at} ${modTip(off, col.many || col.kind === 'item' ? 'mrCellMany' : 'mrCellText')}></span>`;
-}
-// Every piece of equipment of the game, offered while a piece's name is typed (the page's gear catalog)
-const mrGearList = () => { const c = typeof catalog === 'function' && catalog(); return c ? `<datalist id="mrgear">${Object.keys(c.id).map(n => `<option value="${esc(n)}">`).join('')}</datalist>` : ''; };
-function modRows(x, val, id, off, opts = {}){
-  const cols = mrCols(x).map(k => mrCol(x, k, opts)), n = val.length, kinds = cols.map(c => c.kind);
-  const act = (what, i, label, sign, dis) => `<button data-row${what}="${i}" ${id} ${off || dis} title="${esc(off ? t('ttModRead') : t(label))}" aria-label="${esc(t(label))}">${sign}</button>`;
-  const body = val.map((r, i) => `<tr class="${r._o == null ? 'new' : ''} ${mrUnfilled(x, r) ? 'unfilled' : ''}">` + cols.map(c => `<td class="k-${c.kind}">${mrCellHTML(c, r, i, id, off)}</td>`).join('') +
-    `<td class="mract">${mrUnfilled(x, r) ? `<i title="${esc(t('mrFillTip'))}">${esc(t('mrFill'))}</i>` : ''}${act('up', i, 'mrUp', '↑', i ? '' : 'disabled')}${act('down', i, 'mrDown', '↓', i < n - 1 ? '' : 'disabled')}${act('del', i, 'mrDel', '×', '')}</td></tr>`).join('');
-  const add = kinds.includes('item') ? `<button class="modaddbtn" data-modpick data-rowpick ${id} ${off} ${modTip(off, 'miAddTip')}>${esc(t('mrAddItem'))}</button>`
-    : `<button class="modaddbtn" data-rowadd ${id} ${off} ${modTip(off, 'mrAddTip')}>${esc(t(kinds.includes('gear') ? 'mrAddGear' : 'mrAdd'))}</button>`;
-  return `<div class="mrwrap"><table class="mrtbl"><thead><tr>${cols.map(c => `<th class="k-${c.kind}">${esc(c.title)}</th>`).join('')}<th></th></tr></thead><tbody>${body}</tbody></table>${add}${kinds.includes('gear') ? mrGearList() : ''}</div>`;
-}
 
 /* ---- changing it ---- */
 // A new line: its name (when picked), the other columns as the last line has them (the same slot, the same count)

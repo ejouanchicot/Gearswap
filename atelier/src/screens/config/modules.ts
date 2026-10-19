@@ -4,8 +4,7 @@
 // both, and the bar of the changes that wait, to save in one go.
 // The rules are the old page's renderModules, renderModulesSimple, mcIntroHTML, mcCardHTML, modRowHTML, modListHTML,
 // modGroupHTML (modules.js), modTop, modSaveBar, modSearch (module_ux.js), modControl, mcControl (modules.js: a setting's
-// control, ModCtl below), modNum, modColorMap, modPresets (module_ux.js). A list of items and a table of lines are
-// still the old page's HTML (module_items.js, module_rows.js), with the attributes their handlers read.
+// control, ModCtl below), modNum, modColorMap, modPresets (module_ux.js), modChips (module_items.js), modRows (module_rows.js).
 //
 // @file    atelier/src/screens/config/modules.ts
 // @author  ejouanchicot
@@ -42,7 +41,6 @@ export interface ModulesView {
 
 const famName = (fam: LegacyFamily) => (S.lang === 'en' ? fam.en : fam.fr).split('{JOB}').join(S.job || '');
 const lang = () => S.lang === 'en' ? 1 : 0;
-const idOf = (file: string, path: string) => `data-modfile="${esc(file)}" data-modpath="${esc(path)}"`;
 
 // ---- a setting of the Files view, and the tables above it (modules.js modRowHTML) ----
 // `skip`: the paths the Options part shows above (a table whose every setting is there is left out)
@@ -61,7 +59,15 @@ export type ModCtl = {k: 'seg'; id: Record<string, string>; off: boolean; btns: 
   | {k: 'color'; attrs: Record<string, string>; off: boolean; hex: string; tip: string; of: string}
   | {k: 'presets'; label: string; off: boolean; tiles: Array<{attrs: Record<string, string>; pressed: boolean; tip: string; style: string; name: string}>}
   | {k: 'multi'; parts: ModCtl[]}
-  | {k: 'html'; html: string};
+  | {k: 'chips'; id: Record<string, string>; off: boolean; pic: boolean; dragTip: string; gear: boolean;
+      tiles: Array<{label: string; modeTip: string; icoHtml: string; del: string}>; add: ChipAdd}
+  | {k: 'rows'; id: Record<string, string>; off: boolean; cols: Array<{k: string; kind: string; title: string}>; gear: boolean;
+      rows: Array<{fresh: boolean; unfilled: boolean; cells: RowCell[]}>; fillTip: string; fill: string; acts: Array<{what: string; sign: string; tip: string; aria: string}>;
+      add: {pick: boolean; tip: string; label: string}};
+export type ChipAdd = {k: 'pick'; attrs: Record<string, string>; tip: string; label: string} | {k: 'bags'; list: Array<{b: string; tip: string}>}
+  | {k: 'input'; ph: string; gear: boolean; tip: string};
+export type RowCell = {k: 'slot'; empty: boolean; tip: string; options: Array<{value: string; label: string; selected: boolean}>}
+  | {k: 'num'; value: string; tip: string} | {k: 'text'; icoHtml: string; value: string; gear: boolean; tip: string};
 const idAttrs = (file: string, path: string) => ({'data-modfile': file, 'data-modpath': path});
 // what a control says under the pointer: what a click or a typed value does; read only, why
 const tipOf = (off: string, key: string, v?: LegacyAny) => off ? t('ttModRead') : t(key, v);
@@ -93,10 +99,41 @@ function presetsOf(f: LegacyConfigFile, x: LegacyField, from: string, off: strin
   return tiles.length ? {k: 'presets', label: t('mxPresets'), off: !!off, tiles} : null;
 }
 
+// A list (module_items.js): its entries as tiles to drag, items with their icons, a `$Mode` entry marked; then what adds
+// one (a picker of weaponskills, of abilities and spells, of items, a bag's name, or a field to type in)
+function chipsOf(val: LegacyAny[], id: Record<string, string>, off: string, opts: LegacyAny): ModCtl {
+  const pic = !!(opts.items || opts.gear);
+  const add: ChipAdd = opts.ws ? {k: 'pick', attrs: {'data-modpick': '', 'data-wspick': ''}, tip: tipOf(off, 'mxWsTip'), label: t('mxWsAdd')}
+    : opts.acts ? {k: 'pick', attrs: {'data-modpick': '', 'data-actpick': ''}, tip: tipOf(off, 'mxActTip'), label: t('mxActAdd')}
+    : opts.items ? {k: 'pick', attrs: {'data-modpick': ''}, tip: tipOf(off, 'miAddTip'), label: t('miAdd')}
+    : opts.bags ? {k: 'bags', list: opts.bags.filter((b: string) => !val.includes(b)).map((b: string) => ({b, tip: tipOf(off, 'miBagTip', {v: b})}))}
+    : {k: 'input', ph: t('modAdd'), gear: !!opts.gear, tip: tipOf(off, 'ttModAdd')};
+  return {k: 'chips', id, off: !!off, pic, dragTip: tipOf(off, 'miDragTip'), gear: !!opts.gear, add,
+    tiles: val.map(v => ({label: miLabel(v), modeTip: miIsMode(v) ? t('miModeTip', {v}) : '', icoHtml: pic ? itemIco(v) : '', del: t('modDel', {v})}))};
+}
+// A table of lines (module_rows.js): a column per field (a slot, a number, a name with its icon), each line moved or
+// taken off, then what adds one
+function rowsCtl(x: LegacyField, val: LegacyAny[], id: Record<string, string>, off: string, opts: LegacyAny): ModCtl {
+  const cols = mrCols(x).map((k: string) => mrCol(x, k, opts)), kinds = cols.map((c: LegacyAny) => c.kind);
+  const cell = (col: LegacyAny, r: LegacyAny): RowCell => {
+    const v = r[col.k], first = Array.isArray(v) ? v[0] : v;
+    if (col.kind === 'slot') { const list: string[] = MR_SLOTS.includes(v) || mrEmpty(v) ? MR_SLOTS : [v, ...MR_SLOTS];
+      return {k: 'slot', empty: mrEmpty(v), tip: tipOf(off, 'mrCellSlot'), options: list.map(s => ({value: s, label: t('mrS_' + s) !== 'mrS_' + s ? t('mrS_' + s) : s, selected: s === v}))}; }
+    if (col.kind === 'num') return {k: 'num', value: mrCellShow(v), tip: tipOf(off, col.loose ? 'mrCellAll' : 'mrCellNum')};
+    return {k: 'text', icoHtml: col.kind === 'item' || col.kind === 'gear' ? itemIco(first || '') : '', value: Array.isArray(v) ? v.join(', ') : v === undefined ? '' : String(v),
+      gear: col.kind === 'gear', tip: tipOf(off, col.many || col.kind === 'item' ? 'mrCellMany' : 'mrCellText')};
+  };
+  const act = (what: string, sign: string, label: string) => ({what, sign, tip: off ? t('ttModRead') : t(label), aria: t(label)});
+  return {k: 'rows', id, off: !!off, gear: kinds.includes('gear'), cols: cols.map((c: LegacyAny) => ({k: c.k, kind: c.kind, title: c.title})),
+    rows: val.map(r => ({fresh: r._o == null, unfilled: mrUnfilled(x, r), cells: cols.map((c: LegacyAny) => cell(c, r))})), fillTip: t('mrFillTip'), fill: t('mrFill'),
+    acts: [act('up', '↑', 'mrUp'), act('down', '↓', 'mrDown'), act('del', '×', 'mrDel')],
+    add: kinds.includes('item') ? {pick: true, tip: tipOf(off, 'miAddTip'), label: t('mrAddItem')} : {pick: false, tip: tipOf(off, 'mrAddTip'), label: t(kinds.includes('gear') ? 'mrAddGear' : 'mrAdd')}};
+}
+
 // A setting's control by its kind: a value its comment names in quotes (buttons), 'auto' or a forced value, a switch,
 // a number, a colour, a text, a list of tiles, a table of lines; anything else is shown as written
 function ctlOf(f: LegacyConfigFile, x: LegacyField, val: LegacyAny, file: string, path: string, off: string, lopts?: LegacyAny): ModCtl {
-  const id = idAttrs(file, path), opts = modOptions(x), html = idOf(file, path);
+  const id = idAttrs(file, path), opts = modOptions(x);
   const seg = (list: string[], cur: LegacyAny, label?: (o: string) => string, tip?: string) => list.map(o =>
     ({attrs: {'data-modopt': o}, label: label ? label(o) : o, pressed: o === cur, tip: tipOf(off, o === cur ? 'ttModChosen' : tip || 'ttModChoose', {v: label ? label(o) : o})}));
   if (modAuto(x)) return {k: 'seg', id, off: !!off, btns: seg(['auto'], val, () => t('modAuto'), 'ttModAuto'), input: {value: val === 'auto' ? '' : modShow(val), ph: t('modForce'), tip: tipOf(off, 'ttModForce')}};
@@ -105,9 +142,8 @@ function ctlOf(f: LegacyConfigFile, x: LegacyField, val: LegacyAny, file: string
   if (x.kind === 'num') return numOf(x, val, id, off, lopts);
   if (mxColorList(f, x)) return swatch(val, {'data-modcolor': 'list', ...id}, off);
   if (x.kind === 'str') return {k: 'text', id, off: !!off, value: String(val), tip: tipOf(off, 'ttModText')};
-  // module_items.js: tiles to drag, items with their icons; module_rows.js: a table of lines
-  if (x.kind === 'list') return {k: 'html', html: modChips(x, val, html, off, lopts)};
-  if (x.kind === 'rows') return {k: 'html', html: modRows(x, val, html, off, lopts)};
+  if (x.kind === 'list') return chipsOf(val, id, off, lopts || {});
+  if (x.kind === 'rows') return rowsCtl(x, val, id, off, lopts || {});
   return {k: 'code', summary: t('modInFile'), code: f.text.slice(x.a, x.b)};
 }
 // An option of the Options view: the catalog's own choices as buttons, a colour as its picker and presets, else the

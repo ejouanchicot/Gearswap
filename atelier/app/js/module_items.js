@@ -29,20 +29,6 @@ function miLabel(v){
   return t('miMode', {m: (mode && mode.desc) || m[1]}) + m[2];
 }
 const miIsMode = v => typeof v === 'string' && v[0] === '$';
-// A list's entries as tiles, then what adds one. opts: {items: true} (game items, with icons), {bags: [names]}
-function modChips(x, val, id, off, opts = {}){
-  const drag = off ? '' : 'draggable="true"';
-  const pic = opts.items || opts.gear;
-  const tiles = val.map((v, i) => `<span class="modchip ${pic ? 'item' : ''}" ${drag} data-moddrag="${i}" ${id} ${modTip(off, 'miDragTip')}>` +
-    `${pic ? itemIco(v) : `<i class="mcnum">${i + 1}</i>`}<span class="mcn ${miIsMode(v) ? 'mode' : ''}" ${miIsMode(v) ? `title="${esc(t('miModeTip', {v}))}"` : ''}>${esc(miLabel(v))}</span>` +
-    `<button data-moddel="${i}" ${id} ${off} title="${esc(t('modDel', {v}))}" aria-label="${esc(t('modDel', {v}))}">×</button></span>`).join('');
-  const add = opts.ws ? `<button class="modaddbtn" data-modpick data-wspick ${id} ${off} ${modTip(off, 'mxWsTip')}>${esc(t('mxWsAdd'))}</button>`
-    : opts.acts ? `<button class="modaddbtn" data-modpick data-actpick ${id} ${off} ${modTip(off, 'mxActTip')}>${esc(t('mxActAdd'))}</button>`
-    : opts.items ? `<button class="modaddbtn" data-modpick ${id} ${off} ${modTip(off, 'miAddTip')}>${esc(t('miAdd'))}</button>`
-    : opts.bags ? opts.bags.filter(b => !val.includes(b)).map(b => `<button class="modaddbtn" data-modaddv="${esc(b)}" ${id} ${off} ${modTip(off, 'miBagTip', {v: b})}>+ ${esc(b)}</button>`).join('')
-    : `<input class="modin add" type="text" placeholder="${esc(t('modAdd'))}" ${opts.gear ? 'list="mrgear"' : ''} ${id} data-modadd ${off} ${modTip(off, 'ttModAdd')}>`;
-  return `<div class="modchips">${tiles}${add}${opts.gear ? mrGearList() : ''}</div>`;
-}
 
 /* ---- the window of items ---- */
 // The items the character's settings already name (the lists of the catalog marked `items`): offered first

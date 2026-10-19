@@ -174,6 +174,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7o (2026-10-19)** : un nombre (− / +, curseur, valeur standard) et une couleur (le sélecteur, son code, les
   couleurs toutes prêtes) dans les Modules (modules.ts `numOf`, `swatch`, `colorMapOf`, `presetsOf`) ; `modNum`,
   `modColorList`, `modColorMap`, `modPresets` et `mxSwatch` (module_ux.js) sont retirés.
+- **Étape 7p (2026-10-19)** : une liste de tuiles (à glisser, objets avec leur icône, ce qui en ajoute une) et un
+  tableau de lignes (case, nombre, nom avec son icône, monter / descendre / retirer, ajouter) dans les Modules
+  (modules.ts `chipsOf`, `rowsCtl`, `GearList.svelte` pour la liste des pièces du jeu) ; `modChips` (module_items.js),
+  `modRows`, `mrCellHTML` et `mrGearList` (module_rows.js) sont retirés. Les Modules n'ont plus de bloc dessiné par
+  l'ancienne page (restent les icônes d'objets et des textes traduits).
 
 ## Vérifier une étape
 
