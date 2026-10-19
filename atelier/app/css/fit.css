@@ -95,3 +95,13 @@
   .setsx.ui2 .globals-inline{display:none}
   .split .setsx.ui2 .globalcol{max-height:100%;overflow:auto;align-self:start}
 }
+
+/* ---- the target picker on a narrow window: its tools (search, order, the reference target) on their own lines rather
+   than one line wider than the window, which widened the body and pushed the zones and the foot out of the frame ---- */
+.tgdlg > .body{grid-template-columns:minmax(0,1fr)}
+@media (max-width:640px){
+  .tgtools{flex-wrap:wrap}
+  .tgtools .tgq{flex:1 1 100%}
+  .tgsort{min-width:0;max-width:100%}
+  .tgsort select{min-width:0;max-width:100%}
+}

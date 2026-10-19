@@ -11,7 +11,8 @@
 const path = require('path'), fs = require('fs');
 const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').split(path.sep).join('/');
+// PAGE_URL: another page to check (page_parity.js --serve old: the page of the last commit)
+const PAGE = process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../atelier/index.html').split(path.sep).join('/');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
 const WIDTHS = arg('--widths', '1920,1440,1280,1024,768,390').split(',').map(Number);
 const ONLY_CHAR = arg('--char', null), SHOTS = arg('--shots', null);
@@ -107,11 +108,12 @@ function scan(view, regions){
         S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; S.selPath = Object.assign({}, S.selPath, {WAR: 'sets.precast.WS.Upheaval'}); render();
         const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR);
         const win = async (name, open) => { try { open(); await look('window ' + name); } catch (e) { out.push({kind: 'window failed', where: name, text: e.message, view: name}); } closeOverlay(); };
-        await win('buffs', () => openBuffs());
-        await win('target', () => openTarget());
+        await win('target', () => openTargetPick());
         await win('compare', () => openCompare(s));
         await win('slot head', () => openSlot(S.sel.WAR, 'head'));
         await win('slot main', () => openSlot(S.sel.WAR, 'main'));
+        // the buffs, Buffs & target's tab (the old window is gone): last, it leaves the page on that tab
+        await win('buffs', () => { closeOverlay(); S.section = 'combat'; render(); });
       }
       return out;
     }, ONLY_CHAR);
