@@ -183,10 +183,6 @@ document.addEventListener('click', e => {
     const other = {auspice: 'enspell', enspell: 'auspice'}[d.buffflag];
     if (other && b[d.buffflag]) delete b[other];
     render(); return; }
-  if ('debugcalc' in d) { openDebug(); return; }
-  if ('dbgcopy' in d) { const ta = $('#dbgtext'); if (ta) { ta.select(); const done = () => { b.textContent = t('dbgCopied'); };
-    const old = () => { if (document.execCommand('copy')) done(); };
-    try { navigator.clipboard.writeText(ta.value).then(done, old); } catch (e) { old(); } } return; }
   if ('buffreset' in d) { S._buffUndo = {key: buffKey(), state: JSON.parse(JSON.stringify(buffState())), what: b.textContent.trim()}; S.buffs[buffKey()] = {}; render(); return; }
   if ('buffundo' in d) { if (S._buffUndo && S._buffUndo.key === buffKey()) { S.buffs[buffKey()] = S._buffUndo.state; S._buffUndo = null; S._globals = null; save(); render(); } return; }
   // the profile's usual party buffs; what is yours (food, aftermath, target, abilities) stays

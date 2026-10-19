@@ -399,49 +399,6 @@ function charStats(s, pieces){
   if (out.atk) out.atk.src = eCur ? 'engine' : !engineReady() ? 'not loaded' : S._engErr || 'no result';
   return {c, out, set, B, cur, vsSet};
 }
-// Every number behind the target window, as text to copy: the measure, the set's gear, each buff, the page's
-// Attack sum and the engine's (its Attack %, flat Attack, PDL, the context it was given), and any error
-function debugReport(s){
-  const L = [], line = (k, v) => L.push(k + ': ' + (typeof v === 'string' ? v : JSON.stringify(v)));
-  const c = measuredChar() || {}, b = buffState(), B = withAftermath(buffTotals(), s ? (withWeapons(s).pieces.main || {}).name : null);
-  line('page', 'atelier ' + new Date().toISOString() + ' · ' + S.char + ' ' + S.job + '/' + ((data() || {}).sub || '?') + ' · lang ' + S.lang);
-  line('set', s ? s.path : 'none');
-  line('engineReady', engineReady());
-  line('measured', {at: c.at, attack: c.attack, defense: c.defense, base: c.base, add: c.add, main_level: c.main_level, ml: c.master_level});
-  line('worn when measured', Object.fromEntries(Object.entries(c.worn || {}).map(([k, p]) => [k, p && p.name])));
-  const pieces = s ? withWeapons(s).pieces : {};
-  line('set pieces', Object.fromEntries(Object.entries(pieces).map(([k, p]) => [k, p && p.name + (p.augs && p.augs.length ? ' [' + p.augs.join(' / ') + ']' : '')])));
-  line('buff state', b);
-  line('buff totals', Object.fromEntries(Object.entries(B).filter(([k]) => k !== '_by')));
-  B._by.forEach(e => L.push('  · ' + e.src + ' ' + e.k + ' ' + JSON.stringify(e.v)));
-  if (s) {
-    const r = charStats(s), gear = setStats(s).total, g = k => (gear[k] || {}).v || 0, worn = gearTotal(c.worn || {}), w = k => (worn[k] || {}).v || 0;
-    line('page Attack sum', {measured: c.attack, setGearAtk: g('atk'), wornGearAtk: w('atk'), buffAtk: B.atk || 0, buffAtkPct: B.atkp || 0, foodAtk: B.atkf || 0,
-      shownAtk: r && r.out.atk, shownAcc: r && r.out.acc, setPdl: g('pdl'), buffPdl: B.pdl || 0});
-    try {
-      const ci = optContextInput(s), ctx = FFXI.opt.context(ci), pc = optPieces(pieces);
-      line('engine context', {job: ci.job, sub: ci.sub, ml: ci.ml, abilities: ci.abilities, enemy: ci.enemy, evaDown: ci.evaDown, foeDown: ci.foeDown,
-        partyWarcry: ci.partyWarcry, geoMul: ci.geoMul, songs: ci.selection.songs, rolls: ci.selection.rolls, bubbles: ci.selection.bubbles});
-      const miss = Object.keys(pc).filter(k => !FFXI.opt.gear(pc[k], k, ctx));
-      line('engine: pieces not in its catalogue', miss.map(k => k + ':' + (pc[k] || {}).name));
-      for (const k of miss) if (k !== 'main') delete pc[k];
-      const set = FFXI.opt.gearset(ctx, pc), pl = set && FFXI.create_player(ctx.job, ctx.sub, ctx.ml, set, ctx.buffs, ctx.abilities);
-      if (pl) { const st = pl.stats;
-        line('engine stats', {Attack1: st.Attack1, Accuracy1: st.Accuracy1, 'Attack%': st['Attack%'], Attack: st.Attack, STR: st.STR, DEX: st.DEX, PDL: st.PDL, 'PDL Trait': st['PDL Trait'],
-          'TP Bonus': st['TP Bonus'], 'Store TP': st['Store TP'], 'Weapon Skill Damage': st['Weapon Skill Damage'], 'Magic Haste': st['Magic Haste'], 'Food Attack': st['Food Attack']});
-        line('engine buffs', ctx.buffs);
-        line('engine enemy', ctx.enemy.stats);
-      } else line('engine', 'no player (a slot the engine cannot read)');
-    } catch (e) { line('engine error', e.message + ' ' + (e.stack || '').split('\n').slice(0, 3).join(' | ')); }
-  }
-  if (S._engErr) line('last engine error', S._engErr);
-  return L.join('\n');
-}
-function openDebug(){
-  const text = debugReport(S._tgtSet);
-  showDialog('dbgdlg', 'Debug', `<p class="muted small">${esc(t('dbgNote'))}</p><textarea id="dbgtext" class="dbgtext" readonly>${esc(text)}</textarea>`,
-    `<button class="btn" data-dbgcopy>${esc(t('dbgCopy'))}</button>`);
-}
 // A set's main-hand Attack and Accuracy from the damage engine, with the page's buffs, target and weapons;
 // null while the engine is not loaded. A piece its catalogue does not have (town gear, a ring worn when measured)
 // counts as an empty slot, so the set and the gear worn when measured are always both worked out. Kept per gear and buffs
