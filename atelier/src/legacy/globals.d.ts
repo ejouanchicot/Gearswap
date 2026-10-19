@@ -473,3 +473,7 @@ interface Window { ATELIER_SLOTMENU?: {view: (ci: number, slot: string) => Legac
 declare const WELCOME: {state: string; msg: string};
 declare function counts(c: string): {sets: number; keys: number};
 declare function recordOf(c: string, j: string): LegacyAny;
+declare function engineName(): string;
+declare function guideState(): {mode: string; seen: LegacyAny};
+declare const THEMES: Array<{id: string; pv: string[]}>;
+declare function themeNow(): string;

@@ -35,12 +35,6 @@ Object.assign(T.en, {gBtn: 'Moogle help', gOk: 'Got it', gMore: 'Tell me more', 
 // Its two drawings of a pose (mouth shut, mouth open): it talks for a moment when it comes up
 const guideMogHTML = pose => `<span class="gmog talks" aria-hidden="true">${['quiet', 'talk'].map(n =>
   `<img class="g-${n}" src="atelier/app/img/mog/guide_${pose}_${n}.webp" alt="" draggable="false">`).join('')}</span>`;
-function guideConfigHTML(){
-  const mode = guideState().mode, btn = v => `<button data-guide-mode="${v}" aria-pressed="${mode === v}">${esc(t('gMode_' + v))}</button>`;
-  return `<section class="box"><h3>${esc(t('cfgGuide'))}</h3><p>${esc(t('cfgGuideWhy'))}</p><div class="cfgrow">` +
-    `<div class="seg" role="group" aria-label="${esc(t('cfgGuide'))}">${['full', 'ask', 'off'].map(btn).join('')}</div>` +
-    `<button class="btn ghost" data-guide-reset>${esc(t('gReset'))}</button></div></section>`;
-}
 const guideDrop = id => { const el = document.getElementById(id); if (el) el.remove(); };
 function guideAdd(id, cls, html){
   guideDrop(id);

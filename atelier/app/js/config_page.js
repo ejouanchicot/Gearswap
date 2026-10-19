@@ -1,4 +1,5 @@
-// GearSwap Atelier · config_page.js: the Settings page (the gear of the top bar): the theme, the language, the engine.
+// GearSwap Atelier · config_page.js: the Settings page (the gear of the top bar): the theme, the language, the engine
+// (drawn by atelier/src/screens/settings: here the themes and the texts).
 // What the page looks like and how it computes, kept in the browser with the rest of S (core.js KEEP).
 
 // The themes (atelier/app/css/themes.css gives vanadiel and grimoire, base.css dark and light). pv: the colours of
@@ -49,29 +50,6 @@ Object.assign(T.en, {grpFiles: 'Files', grpPage: 'Page', grpChar: 'Character', c
   engLink: 'The wsdist project',
   engFellNow: 'Since this choice, computed by wsdist:'});
 
-function themeCardHTML(x){
-  const [bg, panel, line, accent, ink, r] = x.pv;
-  return `<button class="themecard" data-theme-set="${x.id}" aria-pressed="${themeNow() === x.id}">` +
-    `<span class="pv" style="--pv-bg:${bg};--pv-panel:${panel};--pv-line:${line};--pv-accent:${accent};--pv-ink:${ink};--pv-r:${r}"><i></i><i></i></span>` +
-    `<b>${esc(t('theme_' + x.id))}</b><small>${esc(t('themeD_' + x.id))}</small></button>`;
-}
-// The two engines side by side: whose each is and what it computes, the one in use lit
-const WSDIST_URL = 'https://github.com/IzaKastra/wsdist_beta';
-function engineCardsHTML(){
-  if (!(window.FFXI && FFXI.engine)) return `<div class="cfgrow"><span>${esc(t('cfgEngineNone'))}</span></div>`;
-  const now = engineName(), fell = Object.entries(FFXI.engine.fell).sort((a, b) => b[1] - a[1]);
-  const card = (id, key, reco) => `<button class="engcard" data-engine="${id}" aria-pressed="${now === id}"><b>${esc(t(key + 'T'))}` +
-    `${reco ? ` <em>${esc(t('engReco'))}</em>` : ''}</b><ul>${[1, 2, 3].map(n => `<li>${esc(t(key + n))}</li>`).join('')}</ul></button>`;
-  return `<div class="engines">${card('old', 'engOld', false)}${card('own', 'engOwn', true)}</div>` +
-    `<p class="englink"><a href="${WSDIST_URL}" target="_blank" rel="noopener">${esc(t('engLink'))} ↗</a> <span>${esc(WSDIST_URL.replace('https://', ''))}</span></p>` +
-    (now === 'own' && fell.length ? `<p class="engfell">${esc(t('engFellNow'))} ${fell.map(([w, n]) => `${n} × ${esc(w)}`).join(' · ')}</p>` : '');
-}
-function renderConfig(){
-  const lang = `<div class="seg" role="group" aria-label="${esc(t('cfgLang'))}"><button data-lang="fr" aria-pressed="${S.lang === 'fr'}">Français</button>` +
-    `<button data-lang="en" aria-pressed="${S.lang === 'en'}">English</button></div>`;
-  // two columns on a wide screen, so the whole page is in sight: how it looks, then how it helps and computes
-  return `<div class="cfg"><header><h2>${esc(t('cfgTitle'))}</h2><button class="btn ghost" data-config>← ${esc(t('cfgBack'))}</button></header><div class="cfgcols"><div>` +
-    `<section class="box"><h3>${esc(t('cfgTheme'))}</h3><p>${esc(t('cfgThemeWhy'))}</p><div class="themes">${THEMES.map(themeCardHTML).join('')}</div></section>` +
-    `<div class="cfgpair"><section class="box"><h3>${esc(t('cfgLang'))}</h3><p>${esc(t('cfgLangWhy'))}</p><div class="cfgrow">${lang}</div></section>${motionConfigHTML()}</div></div><div>${guideConfigHTML()}` +
-    `<section class="box"><h3>${esc(t('cfgEngine'))}</h3><p>${esc(t('cfgEngineWhy'))}</p>${engineCardsHTML()}</section></div></div></div>`;
+// The page is the Svelte application's (atelier/src/screens/settings)
+function renderConfig(){ return '';
 }

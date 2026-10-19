@@ -21,11 +21,6 @@ Object.assign(T.fr, {cfgMotion: 'Animations', cfgMotionWhy: 'Le curseur qui glis
   cfgMotionOn: 'Activées', cfgMotionOff: 'Coupées'});
 Object.assign(T.en, {cfgMotion: 'Animations', cfgMotionWhy: 'The gliding cursor, the rolling figures, the opening windows. Always off when your system asks for reduced motion.',
   cfgMotionOn: 'On', cfgMotionOff: 'Off'});
-function motionConfigHTML(){
-  const btn = (v, on) => `<button data-motion-set="${v}" aria-pressed="${on}">${esc(t(v === 'on' ? 'cfgMotionOn' : 'cfgMotionOff'))}</button>`;
-  return `<section class="box"><h3>${esc(t('cfgMotion'))}</h3><p>${esc(t('cfgMotionWhy'))}</p><div class="cfgrow">` +
-    `<div class="seg" role="group" aria-label="${esc(t('cfgMotion'))}">${btn('on', S.motion !== false)}${btn('off', S.motion === false)}</div></div></section>`;
-}
 
 /* ---- figures ---- */
 // A figure as the page writes it: sign, digits (grouped or not), decimals, then what follows (" %", " s")

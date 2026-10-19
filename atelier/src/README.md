@@ -128,6 +128,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7a (2026-10-19)** : la page d'accueil (`screens/home/home.ts`, `HomeScreen.svelte`) : le tableau des jobs
   joués, ou la page de bienvenue quand rien n'est exporté ; `welcome.js` garde ses textes et la lecture des fichiers
   (`welcomeRead`). Vues dans `scripts/atelier/parity/home.json`.
+- **Étape 7b (2026-10-19)** : les Réglages de la page (`screens/settings/settings.ts`, `SettingsScreen.svelte`) :
+  thème, langue, animations, assistant Mog, moteur de calcul. `config_page.js` garde les thèmes et les textes ;
+  `themeCardHTML`, `engineCardsHTML`, `motionConfigHTML` (motion.js) et `guideConfigHTML` (guide.js) sont retirés.
+  Vues dans `scripts/atelier/parity/settings.json`.
 
 ## Vérifier une étape
 
