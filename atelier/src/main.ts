@@ -13,6 +13,7 @@ import {dialogShow, dialogUpdate, type DialogSpec} from './screens/dialogs/dialo
 import {compareView} from './screens/dialogs/compare';
 import {gearPickView} from './screens/dialogs/gearpick';
 import {targetView} from './screens/dialogs/target';
+import {pickView, addView} from './screens/dialogs/partypick';
 
 openBridge();
 // the figures' boxes worked out here, for the old page's screens that still draw them as HTML (engine.js tankHTML,
@@ -30,6 +31,6 @@ const dialogBox = document.createElement('div');
 dialogBox.className = 'dialogbox';
 dialogBox.style.display = 'contents';
 mount(Dialog, {target: dialogBox});
-window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), update: dialogUpdate, compareView, gearPickView, targetView};
+window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), update: dialogUpdate, compareView, gearPickView, targetView, pickView, addView};
 // on the body itself: the old page's frame (.app, #overlay, #tip) stays a child of <body>, as its styles expect
 mount(App, {target: document.body});

@@ -116,18 +116,13 @@ function pbFoodGroups(){
   for (const name of Object.keys(FOODS)) (by[pbFoodKind(FOODS[name])] = by[pbFoodKind(FOODS[name])] || []).push(name);
   return order.filter(k => by[k]).map(k => [t(k), by[k]]);
 }
-// the kind of a buff key (song2 -> song, roll1 -> roll)
-const pbPickKind = key => key.replace(/\d+$/, '');
+// The pickers: drawn by the Svelte application (atelier/src/screens/dialogs/partypick.ts), their search in the window
 function pbOpenPick(key){
-  const kind = pbPickKind(key), P = PB_PICK[kind], b = buffState(), cur = b[key];
-  if (!P) return;
-  const item = v => `<button class="pbpi ${v === cur ? 'on' : ''}" data-pbchoose="${esc(key)}|${esc(v)}" data-q="${esc(v.toLowerCase())}">` +
-    `<b>${esc(v)}</b><small>${esc((h => h && h.toLowerCase() !== v.toLowerCase() ? h : '')(P.hint(v)))}</small></button>`;
-  const body = `<input class="pbpq" type="search" placeholder="${esc(t('pbSearch'))}" autocomplete="off">` +
-    P.groups().map(([g, list]) => list.length ? `<section class="pbpg"><h4>${esc(g)}</h4><div class="pbpl">${list.map(item).join('')}</div></section>` : '').join('');
-  showDialog('pbdlg', esc(P.title(key.match(/\d+$/) ? key.match(/\d+$/)[0] : '')), body,
-    cur ? `<button class="btn ghost" data-pbchoose="${esc(key)}|">${esc(t('pbNone'))}</button>` : '');
-  pbDlgSearch();
+  const v = ATELIER_DIALOG.pickView(key);
+  if (!v) return;
+  ATELIER_DIALOG.show({cls: 'pbdlg', titleHtml: esc(v.title), partyPick: v.view,
+    buttonsHtml: v.none ? `<button class="btn ghost" data-pbchoose="${esc(v.none.value)}">${esc(v.none.label)}</button>` : ''});
+  pbDlgFocus();
 }
 function pbChoose(spec){
   const at = spec.indexOf('|'), key = spec.slice(0, at), v = spec.slice(at + 1), b = buffState();
@@ -160,23 +155,15 @@ function pbAddGroups(shown){
   return out;
 }
 function pbOpenAdd(){
-  const b = buffState(), shown = pbShown(b), left = PB_MAX - shown.length - 1;
-  if (left <= 0) return;
-  const item = hint => j => `<button class="pbpi" data-pbadd="${esc(j)}" data-q="${esc((j + ' ' + hint(j)).toLowerCase())}">` +
-    `<b>${esc(j)}</b><small>${esc(hint(j))}</small></button>`;
-  const body = `<input class="pbpq" type="search" placeholder="${esc(t('pbSearch'))}" autocomplete="off">` +
-    pbAddGroups(shown).map(([g, l, hint]) => `<section class="pbpg"><h4>${esc(g)}</h4><div class="pbpl">${l.map(item(hint)).join('')}</div></section>`).join('');
-  showDialog('pbdlg pbadddlg', esc(t('pbAddTitle', {n: left})), body, '');
-  pbDlgSearch();
+  const v = ATELIER_DIALOG.addView();
+  if (!v) return;
+  ATELIER_DIALOG.show({cls: 'pbdlg pbadddlg', titleHtml: esc(v.title), partyPick: v.view});
+  pbDlgFocus();
 }
-// the search on top of a picker window: hides the choices and the families that do not match
-function pbDlgSearch(){
+// the search on top of a picker window, focused when it opens
+function pbDlgFocus(){
   const q = $('.pbdlg .pbpq');
-  if (!q) return;
-  q.focus();
-  q.addEventListener('input', () => { const w = q.value.trim().toLowerCase();
-    document.querySelectorAll('.pbdlg .pbpi').forEach(el => { el.hidden = !!w && !el.dataset.q.includes(w); });
-    document.querySelectorAll('.pbdlg .pbpg').forEach(sec => { sec.hidden = !sec.querySelector('.pbpi:not([hidden])'); }); });
+  if (q) q.focus();
 }
 
 // What all of this changes for the set opened: its figure in each situation, with the version of the set GearSwap

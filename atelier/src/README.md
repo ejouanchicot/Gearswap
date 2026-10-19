@@ -92,6 +92,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   recherche, l'ordre, les zones, les favoris et les derniers choisis, chaque monstre). La recherche et la zone
   redessinent la fenêtre en place (`ATELIER_DIALOG.update` : le champ garde son curseur) au lieu de cacher et
   déplacer les cartes à la main (`tgFilter`, retiré).
+- **Étape 6c, 4e partie (2026-10-19)** : les fenêtres de choix du groupe (`partypick.ts`, `PartyPick.svelte` :
+  une chanson, un roll, une bulle, une tempête, une nourriture, un membre à ajouter). Leur recherche est dans la
+  fenêtre elle-même (`pbDlgSearch`, retiré).
 
 ## Vérifier une étape
 
