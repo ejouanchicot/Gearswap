@@ -192,7 +192,7 @@ export function setList(d: LegacyExport): SetList {
     }
   }
   if (fam) crossOf(fam);
-  const empty = vis.length ? null : {html: mogSorryHTML(esc(t('noMatch')))};
+  const empty = vis.length ? null : {html: esc(t('noMatch'))};
   const who = job + '/' + ((data() || {}).sub || '?');
   const hide = hidden && !q ? {title: t('accTip', {m: job, s: (data() || {}).sub || '?'}), text: t('accHidden', {n: hidden, j: who}), button: t(S0._listAll ? 'accHide' : 'accShow')} : null;
   S0._fams = [...new Set(vis.map(i => cards[i].fam))];

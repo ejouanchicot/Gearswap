@@ -148,6 +148,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   bouton « Équiper en jeu », la légende de la grille et les notes sous les pièces (card.ts `equipOf`, `legendOf`,
   `notes`) ; `listHeadHTML`, `listMenuHTML`, `equipBtnHTML`, `legendHTML` et `familyNoteHTML` sont retirés. Vues
   `LH_` dans `scripts/atelier/parity/sets.json`.
+- **Étape 7h (2026-10-19)** : le Mog à côté d'un mot (`components/MogNote.svelte`) : « rien trouvé » sous la liste des
+  sets, « il porte le gear » dans la fenêtre Pousser / Ajouter ; `mogCarryHTML` (guide.js) est retiré,
+  `mogSorryHTML` reste pour les fenêtres d'erreur de push.js.
 
 ## Vérifier une étape
 

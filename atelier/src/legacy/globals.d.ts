@@ -424,7 +424,6 @@ declare const TARGETS: Record<string, LegacyAny>;
 declare const DEFAULT_ENEMY: string;
 declare const PB_PICK: Record<string, LegacyAny>;
 declare function pbAddGroups(shown: string[]): Array<[string, string[], (j: string) => string]>;
-declare function mogCarryHTML(html: string): string;
 declare function diffHTML(before: string, after: string): string;
 declare function isEmpty(p: LegacyAny): boolean;
 declare function oaShort(R: LegacyAny, path: string): string;

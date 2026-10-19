@@ -28,7 +28,7 @@ export function pushView(s: LegacyAny, tg: LegacyAny, plan: LegacyAny[], r: Lega
   // the icon of a row: the piece written, or the base set's piece the slot takes again (an emptied slot has none)
   const basePiece = (slot: string) => { const b = s.base && S0._bypath ? S0._bypath[s.base] : null, x = b && b.pieces[slot]; return x && !isEmpty(x) ? x.name : ''; };
   const shown = (e: LegacyAny) => e.piece ? e.piece.name : e.kind === 'inherit' ? basePiece(e.slot) : '';
-  return {...blank, kind: 'push', carryHtml: mogCarryHTML(tg.create ? t('pvPushNew', {v: `<b>${esc(tg.tier)}</b>`, p}) : t('pvPush', {p})),
+  return {...blank, kind: 'push', carryHtml: tg.create ? t('pvPushNew', {v: `<b>${esc(tg.tier)}</b>`, p}) : t('pvPush', {p}),
     rows: plan.map(e => ({title: e.piece && e.piece.augs ? e.piece.augs.join(' · ') : '', iconHtml: icon(shown(e)), slot: (SLOT_NAMES[S0.lang] || {})[e.slot] || e.slot, from: now(e.slot),
       to: e.piece ? {piece: true, text: e.piece.name} : {piece: false, text: e.kind === 'empty' ? t('pvEmptied') : base ? t('pvInherit', {b: base}) : t('pvInheritAny')}})),
     warnsHtml: warn, safeHtml: any ? t('pvSafe') : t('pushErr_nothing'), tech: techOf(r, r.after)};
@@ -40,5 +40,5 @@ export function delView(s: LegacyAny, r: LegacyAny, also: string[]): PushView {
 }
 /** The window that adds an empty set */
 export function addSetView(path: string, r: LegacyAny): PushView {
-  return {...blank, kind: 'add', carryHtml: mogCarryHTML(t('pvAdd', {p: `<b>${esc(shortPath(path))}</b>`})), safeHtml: t('pvSafe'), tech: techOf(r, r.after)};
+  return {...blank, kind: 'add', carryHtml: t('pvAdd', {p: `<b>${esc(shortPath(path))}</b>`}), safeHtml: t('pvSafe'), tech: techOf(r, r.after)};
 }

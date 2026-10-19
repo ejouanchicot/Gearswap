@@ -46,10 +46,8 @@ function guideAdd(id, cls, html){
 // The moogle in a pose that moves (moogle.css .mogspr: four frames side by side in one image, scripts/atelier/
 // mog_sprites.py): idle (it flies), sleep, sorry, carry (gear in its arms)
 const mogSprite = (pose, size) => `<i class="mogspr mog-${pose}" ${size ? `style="--s:${size}px"` : ''} aria-hidden="true"></i>`;
-// Something failed or was not found: the sorry moogle beside the reason
+// Something failed or was not found: the sorry moogle beside the reason (the Svelte screens' own: atelier/src/components/MogNote.svelte)
 const mogSorryHTML = html => `<div class="mognote sorry">${mogSprite('sorry', 84)}<p>${html}</p></div>`;
-// Gear is about to go into the player's files: the moogle carries it, beside what will be written
-const mogCarryHTML = html => `<div class="mognote carry">${mogSprite('carry', 84)}<p>${html}</p></div>`;
 // Its button in the corner (not drawn when the assistant is off): it flies there, and falls asleep when nobody has
 // touched the page for a while (MOG_SLEEP_MS), until the pointer moves again
 const MOG_SLEEP_MS = 120000;
