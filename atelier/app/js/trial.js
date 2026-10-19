@@ -22,45 +22,12 @@ function setTrial(s, slot, piece){
 }
 // The same set without the tried pieces (what the differences compare to)
 function withoutTrial(fn){ S._noTrial = true; try { return fn(); } finally { S._noTrial = false; } }
-// In the three-column page the bar keeps its place when nothing is tried (a line that says how to try a piece): the
-// gear under it does not move when a first piece is tried
+// The trial's bar (drawn by atelier/src/screens/sets/trial.ts) keeps its place when nothing is tried (a line that says
+// how to try a piece): the gear under it does not move when a first piece is tried
 Object.assign(T.fr, {tryIdle: 'Rien à l’essai. Clique une pièce pour en essayer une autre : les écarts et le bouton pour l’écrire dans ton fichier viendront ici.'});
 Object.assign(T.en, {tryIdle: 'Nothing on trial. Click a piece to try another one: the differences and the button that writes it to your file will come here.'});
-function trialBar(s){
-  const row = trialRow(s);
-  if (!row && ui2() && !baseOnly(s)) return `<div class="trybar idle"><p class="tryline muted">${esc(t('tryIdle'))}</p></div>`;
-  return row ? `<div class="trybar">${row}</div>` : '';
-}
-// The pieces tried on a set (by hand or by the optimizer): what they change, then what to do with them
-function trialRow(s){
-  const n = trialCount(s), changed = Object.keys(s.was || {}), dr = S.drafts[trialKey(s)] || {};
-  const toast = S.toast && S._toastSet === s.path ? S.toast : '';
-  const kept = (dr.kept || []).length;
-  if (!n && !changed.length && !dr.info && !toast && !kept) return '';
-  const saved = n > 0 && trialSaved(s), live = liveWrite();
-  const msg = n ? (saved ? t('trySaved', {n: `<b>${n}</b>`}) : t('tryBar', {n: `<b>${n}</b>`}))
-    : changed.length ? t('setChanged', {s: changed.map(x => SLOT_NAMES[S.lang][x] || x).join(', ')}) : '';
-  const by = dr.info ? `<span class="tryby">${esc(t('tryOptBy', {t: dr.info.tier, at: dr.info.at}) + (dr.info.edited ? ' · ' + t('tryEdited') : ''))}</span>` : '';
-  const btns = [n || changed.length ? pushButton(s, live) : '',
-    n || changed.length || kept ? `<button class="btn ghost" data-cmpopen>${t('cmpBtn')}${kept ? ` <small>${t('keptN', {n: kept})}</small>` : ''}</button>` : '',
-    n ? `<button class="btn ghost" data-trykeep title="${esc(t('keepTip'))}">${t('keepBtn')}</button>` : '',
-    n && !saved ? `<button class="btn ghost" data-trysave>${t('trySave')}</button>` : ''].join('');
-  const links = [n ? `<button class="linkbtn" data-trylua>${t('tryLua')}</button>` : '',
-    dr.info && dr.prev ? `<button class="linkbtn" data-tryprev>${t('tryPrev')}</button>` : '',
-    n ? `<button class="linkbtn" data-tryundo>${t('tryUndo')}</button>` : changed.length ? `<button class="linkbtn" data-setrevert>${t('setRevert')}</button>` : '']
-    .filter(Boolean).join('<span>·</span>');
-  return `<div class="tryrow ${saved || (!n && changed.length) ? 'saved' : ''}"><p class="tryline">${by}${msg}${n ? draftGainHTML(s) : ''}</p>` +
-    `<div class="dacts">${btns}<span class="sp"></span><span class="dlinks">${links}</span></div>` + (toast ? `<p class="dtoast">${esc(toast)}</p>` : '') + `</div>`;
-}
-// On a weaponskill set, the damage with the try against your file's set (the engine present)
-function draftGainHTML(s){
-  if (!wsOfSet(s)) return '';
-  const was = withoutTrial(() => wsDamage(s)), now = wsDamage(s);
-  if (was == null || now == null || !was) return '';
-  const d = (now / was - 1) * 100;
-  return ` · ${t('draftGain', {a: fmtDmg(was), b: `<b>${fmtDmg(now)}</b>`})} <span class="${d >= 0 ? 'up' : 'down'}">(${d >= 0 ? '+' : ''}${d.toFixed(1)} %)</span>`;
-}
-// The push button: to the set, to the profile's new version, or opening the version the file has
+// The push button: to the set, to the profile's new version, or opening the version the file has (the trial's bar,
+// atelier/src/screens/sets/trial.ts, and the search window's foot, optimizer.js)
 function pushButton(s, live){
   const tg = pushTarget(s);
   if (tg.exists) return `<button class="btn" data-veropen title="${esc(t('pushVerOpenTip', {v: tg.tier}))}">${t('pushVerOpen', {v: tg.tier})}</button>`;

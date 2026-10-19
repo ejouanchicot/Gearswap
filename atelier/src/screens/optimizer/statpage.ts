@@ -3,13 +3,14 @@
 // something for the set, or all of them), what comes next when two results tie, the set's own pieces kept, the notes,
 // the search; on the right the result's figures against the file's set, the pieces the try changes, the trial's bar.
 // The rules are the old page's statWhatHTML and statResultHTML (stat_opt.js), which keep the options (statOpts), the
-// lines of the result (statRows) and the figures (statFigures). The minimums' tiles and the pieces changed: blocks.ts. The search too. Still
-// the old page's HTML: the enfeebles' note (enfNoteHTML), the trial's bar (trialRow). The buttons keep the attributes the old handlers read (data-statobj, data-statobjall,
+// lines of the result (statRows) and the figures (statFigures). The minimums' tiles and the pieces changed: blocks.ts. The search too. The trial's bar: sets/trial.ts.
+// Still the old page's HTML: the enfeebles' note (enfNoteHTML). The buttons keep the attributes the old handlers read (data-statobj, data-statobjall,
 // data-statthen, data-statkeep, data-statreset).
 //
 // @file    atelier/src/screens/optimizer/statpage.ts
 // @author  ejouanchicot
 
+import {trialRowView, type TrialRow} from '../sets/trial';
 import {limitTile, limitsView, changesView, searchView, type LimitsView, type ChangesView, type SearchView} from './blocks';
 
 export interface StatWhatView {
@@ -21,7 +22,7 @@ export interface StatWhatView {
 export interface StatResultView {
   titleHtml: string; labelHtml: string; value: string; delta: null | {up: boolean; text: string}; wasHtml: string; shield: string;
   heads: string[]; rows: Array<{obj: boolean; label: string; tip: string; cells: Array<{better: boolean; bad: boolean; text: string}>}>;
-  changes: ChangesView | null; trialHtml: string; noTry: string;
+  changes: ChangesView | null; trial: TrialRow | null; noTry: string;
 }
 
 /** The left column of a stats search (statWhatHTML) */
@@ -62,11 +63,11 @@ export function statResultView(s: LegacyAny): StatResultView {
   const v = main.get(now), w = was ? main.get(was) : null, d = was ? v - w : null;
   const cell = (r: LegacyAny, x: LegacyAny, y: LegacyAny) => { const a = r.get(x), b = y ? r.get(y) : null;
     return {better: b != null && (r.low ? a < b - 1e-9 : a > b + 1e-9), bad: !!r.floor && !r.floor(a), text: r.fmt(a)}; };
-  const shown = rows.filter((r: LegacyAny, i: number) => i < 3 || r.get(now) || (was && r.get(was)) || r.floor), trial = trialRow(s);
+  const shown = rows.filter((r: LegacyAny, i: number) => i < 3 || r.get(now) || (was && r.get(was)) || r.floor), trial = trialRowView(s);
   return {titleHtml: t('opResult'), labelHtml: esc(main.label) + (was ? ' · ' + t('rdvTry') : ''), value: main.fmt(v),
     delta: d ? {up: d >= 0, text: (d >= 0 ? '+' : '−') + main.fmt(Math.abs(d))} : null, wasHtml: was ? `${t('opNow')} : ${main.fmt(w)}` : '',
     shield: now.shield && main.id === 'def' ? ' · DEF ' + t('statShield', {n: now.shield}) : '',
     heads: was ? [t('rdvMine'), t('rdvTry')] : [t('rdvMine')],
     rows: shown.map((r: LegacyAny, i: number) => ({obj: !i, label: r.label + (i ? '' : ' ★'), tip: r.tip || '', cells: was ? [cell(r, was, now), cell(r, now, was)] : [cell(r, now, was)]})),
-    changes: changesView(s), trialHtml: trial || '', noTry: trial ? '' : t('opNoTry')};
+    changes: changesView(s), trial, noTry: trial ? '' : t('opNoTry')};
 }

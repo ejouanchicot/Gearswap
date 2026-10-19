@@ -12,6 +12,7 @@
 import {figuresView, type FiguresView} from './figures';
 import {optPageView, type OptPageView} from '../optimizer/optpage';
 
+import {trialBarView, type TrialBar} from './trial';
 export interface SlotView { slot: string; ci: number; label: string; empty: boolean; cls: string; aria: string; reset: null | {title: string}; lock: null | {title: string};
   iconHtml: string; aug: boolean; rank: number | null }
 export interface VerButton { i: number; pressed: boolean; title: string; label: string }
@@ -26,7 +27,7 @@ export interface CardView {
   title: TitleView;
   versions: Versions;
   ctl: null | {picks: boolean; html: string};
-  trialHtml: string;
+  trial: TrialBar;
   slots: SlotView[];
   equip: {on: boolean; why: string; label: string};
   footHtml: string[];
@@ -174,7 +175,7 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   // a family's note and a base set's go under the gear, where nothing is left to push down
   const notes = {fam: card.variants.some((v: LegacyAny) => familyNote(v.set)) ? {textHtml: familyNote(s), none: !familyNote(s)} : null,
     base: locked && !ws ? t('baseOnly', {l: (data() as LegacyAny).sets.filter((x: LegacyAny) => x.base === s.path).map((x: LegacyAny) => shortPath(x.path)).join(', ')}) : ''};
-  const trialHtml = trialBar(s), equip = equipOf(), wantsHtml = ui2Wants(s);
+  const trial = trialBarView(s), equip = equipOf(), wantsHtml = ui2Wants(s);
   S0._globals = {s, view: figuresView(s)};
-  return {k: 'card', ci, ws, title, versions, ctl, trialHtml, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view};
+  return {k: 'card', ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view};
 }

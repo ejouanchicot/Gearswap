@@ -12,6 +12,7 @@
 // @file    atelier/src/screens/optimizer/optpage.ts
 // @author  ejouanchicot
 
+import {trialRowView, type TrialRow} from '../sets/trial';
 import {limitTile, limitsView, changesView, searchView, type LimitsView, type ChangesView, type SearchView} from './blocks';
 import {statWhatView, statResultView, type StatWhatView, type StatResultView} from './statpage';
 export interface Objective { key: string; v: string; on: boolean; tip: string; label: string; desc: string; disabled: boolean }
@@ -36,7 +37,7 @@ export interface OptPageView {
   statResult: StatResultView | null;
   what: null | {top: NukeTop | {k: 'limits'; limits: LimitsView}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; search: SearchView};
   result: null | {title: string; none: string | null; big: null | {label: string; value: string; diff: null | {text: string; up: boolean}; was: string; verdict: null | {cls: string; text: string}};
-    visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changes: ChangesView | null; trialHtml: string; noTry: string; notes: string; calcHtml: string};
+    visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changes: ChangesView | null; trial: TrialRow | null; noTry: string; notes: string; calcHtml: string};
 }
 
 const st = (): LegacyAny => S;
@@ -161,7 +162,7 @@ function visualOf(obj: string, main: LegacyAny, now: LegacyAny, was: LegacyAny):
 // figure of the family (opResultHTML)
 function resultOf(s: LegacyAny, kind: string): NonNullable<OptPageView['result']> {
   const obj = opObj(kind), now = opFigures(s, kind), was = trialCount(s) ? opFigures(s, kind, true) : null;
-  const base = {title: t('opResult'), none: null, big: null, visual: null, was: !!was, heads: [], rows: [], changes: null, trialHtml: '', noTry: '', notes: '', calcHtml: ''};
+  const base = {title: t('opResult'), none: null, big: null, visual: null, was: !!was, heads: [], rows: [], changes: null, trial: null, noTry: '', notes: '', calcHtml: ''};
   if (!now) return {...base, none: kind === 'eng' && obj === 'cycle' ? t('cycNoWs') : noEngineText()};
   const rows: LegacyAny[] = opRows(kind, obj).filter((r: LegacyAny) => r.get(now) != null || (was && r.get(was) != null)), main = rows[0];
   const v = main.get(now), w = was ? main.get(was) : null;
@@ -173,10 +174,10 @@ function resultOf(s: LegacyAny, kind: string): NonNullable<OptPageView['result']
   const cell = (r: LegacyAny, x: LegacyAny, y: LegacyAny) => { const a = r.get(x), b = y ? r.get(y) : null;
     if (a == null) return null;
     return {text: r.fmt(a), better: b != null && (r.low ? a < b - 1e-9 : a > b + 1e-9), short: !!(r.floor && !r.floor(a))}; };
-  const trial = trialRow(s);
+  const trial = trialRowView(s);
   return {...base, big, visual, heads: was ? [t('rdvMine'), t('rdvTry')] : [t('rdvMine')],
     rows: rows.map((r, i) => ({label: r.label + (i ? '' : ' ★'), obj: !i, cells: (was ? [cell(r, was, now)] : []).concat([cell(r, now, was)])})),
-    changes: changesView(s), trialHtml: trial || '', noTry: trial ? '' : t('opNoTry'),
+    changes: changesView(s), trial, noTry: trial ? '' : t('opNoTry'),
     notes: kind === 'eng' && obj === 'cycle' && cycleInput(s) && !cycleInput(s).tpRule ? t('cycNoRule') : '',
     calcHtml: kind !== 'ws' && now.r && now.r.detail ? roundCalcHTML(now.r.detail, now.r.real) : ''};
 }

@@ -223,6 +223,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   ses onglets, le menu de l'onglet ouvert, ses interrupteurs, les cases verrouillées et les pièces exclues) ;
   `opSearchHTML`, `opMenuHTML`, `opSwitchHTML` et `opLocksHTML` (opt_page.js) sont retirés, `OP_TABS` et `OP_SWITCH`
   y restent (c'est là qu'on ajoute un interrupteur).
+- **Étape 7ac (2026-10-19)** : la barre de l'essai sous la carte d'un set et dans les deux optimiseurs (`sets/trial.ts`,
+  `TrialRow.svelte` : ce qui est essayé, son gain sur une WS, Comparer, Garder, Tester en jeu, les liens) ;
+  `trialBar`, `trialRow` et `draftGainHTML` (trial.js) sont retirés. Le bouton Pousser reste le HTML de `pushButton`
+  (trial.js) : le pied de la fenêtre de recherche s'en sert aussi.
 
 ## Vérifier une étape
 
