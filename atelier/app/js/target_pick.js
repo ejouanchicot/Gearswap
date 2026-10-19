@@ -64,54 +64,14 @@ function tgMonsters(){
     out.get(id).levels.push(x); }
   return [...out.values()];
 }
-function tgCardHTML(m, cur, you){
-  const fav = tgFavs().includes(m.id), on = m.levels.some(x => x.key === cur);
-  const rates = m.levels.map(x => tgRate(you, x.eva)), worst = rates.filter(v => v != null).length ? Math.min(...rates.filter(v => v != null)) : null;
-  const lv = m.levels.map((x, i) => { const p = rates[i], label = x.key.split(' · ')[1] || (x.lv ? 'Lv' + x.lv : x.key);
-    return `<button class="tglv ${tgTone(p)}" data-tgtgo="${esc(x.key)}" aria-pressed="${x.key === cur}" ` +
-      `title="${esc(t('tgLvTip', {k: x.key, d: x.def, e: x.eva, h: p == null ? '' : t('tgLvHit', {p})}))}">${esc(label)}</button>`; }).join('');
-  const lo = Math.min(...m.levels.map(x => x.lv || 0)), top = Math.max(...m.levels.map(x => x.lv || 0));
-  return `<div class="tgm ${on ? 'on' : ''}" data-q="${esc((m.name + ' ' + m.zone + ' ' + (m.job || '')).toLowerCase())}" data-zone="${esc(m.zone)}" data-lv="${top}" data-hit="${worst == null ? -1 : worst}">` +
-    `<button class="ract tgstar" data-tgtfav="${esc(m.id)}" aria-pressed="${fav}" title="${esc(t(fav ? 'tgUnfav' : 'tgFav'))}">${fav ? '★' : '☆'}</button>` +
-    `<div class="tgmh"><b>${esc(m.name)}${m.est.length ? ' <i title="' + esc(t('tgEst', {l: m.est.join(', ')})) + '">*</i>' : ''}</b>` +
-    `<span class="muted small">${esc([m.job, m.zone].filter(Boolean).join(' · '))}</span></div>` +
-    `<div class="tgmf"><span>Lv <b>${lo === top ? top : lo + '–' + top}</b></span><span>${esc(t('tgtDef'))} <b>${Math.min(...m.levels.map(x => x.def))}${m.levels.length > 1 ? '–' + Math.max(...m.levels.map(x => x.def)) : ''}</b></span>` +
-    `<span>${esc(t('tgtEva'))} <b>${Math.min(...m.levels.map(x => x.eva))}${m.levels.length > 1 ? '–' + Math.max(...m.levels.map(x => x.eva)) : ''}</b></span></div><div class="tglvs">${lv}</div></div>`;
-}
+// The picker: drawn by the Svelte application (atelier/src/screens/dialogs/target.ts), its search, zone and order from
+// S._tgtQ, S._tgtZone, S._tgtSort; typing and a zone draw it again in place
 function openTargetPick(){
   S._buffDlg = false; S._tgtPick = true;
-  const cur = enemyKey(buffState().enemy), you = tgYou(), all = tgMonsters(), zones = [...new Set(all.map(m => m.zone))];
-  const byId = Object.fromEntries(all.map(m => [m.id, m])), idOf = k => { const x = TARGETS[k]; return x ? x.zone + '|' + x.name : null; };
-  const favs = tgFavs().map(id => byId[id]).filter(Boolean), recent = [...new Set(tgRecents().map(idOf))].map(id => byId[id]).filter(m => m && !favs.includes(m)).slice(0, 6);
-  const strip = (label, list) => list.length ? `<section class="tgstrip"><h4>${esc(label)}</h4><div class="tggrid">${list.map(m => tgCardHTML(m, cur, you)).join('')}</div></section>` : '';
-  const zoneBtn = (z, n) => `<button class="chip" data-tgtzone="${esc(z)}" aria-pressed="${(S._tgtZone || '') === z}">${esc(z || t('tgAllZones'))}<small>${n}</small></button>`;
-  const sort = ['zone', 'lv', 'hit'].filter(k => k !== 'hit' || you).map(k => `<option value="${k}" ${(S._tgtSort || 'zone') === k ? 'selected' : ''}>${esc(t('tgSort_' + k))}</option>`).join('');
-  const body = `<div class="tgtools"><input id="tgq" class="tgq" type="search" placeholder="${esc(t('pkSearch'))}" autocomplete="off" spellcheck="false">` +
-    `<label class="tgsort muted small">${esc(t('tgSort'))} <select class="buffsel" data-tgtsort>${sort}</select></label>` +
-    `<button class="chip tgref" data-tgtgo="" aria-pressed="${cur === DEFAULT_ENEMY}" title="${esc(t('tgRef'))}">${esc(DEFAULT_ENEMY)}</button></div>` +
-    `<div class="tgzones">${zoneBtn('', all.length)}${zones.map(z => zoneBtn(z, all.filter(m => m.zone === z).length)).join('')}</div>` +
-    `<div class="tgbody">${strip(t('tgFavs'), favs)}${strip(t('tgRecent'), recent)}<section class="tgall"><div class="tggrid">${all.map(m => tgCardHTML(m, cur, you)).join('')}</div>` +
-    `<p class="muted small tgnone" hidden>${esc(t('tgNone'))}</p></section></div>` +
-    `<p class="muted small tgfoot">${esc(t('tgCount', {n: all.length, z: zones.length}))} · ${esc(t('pkStar'))}</p>`;
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog tgdlg" role="dialog" aria-label="${esc(t('pkTitle'))}">` +
-    `<header><h3>${esc(t('pkTitle'))}</h3><button class="btn ghost" data-tgtback>${esc(t('pkBack'))}</button></header><div class="body">${body}</div></div>`;
-  $('#overlay').hidden = false;
-  tgFilter();
-  const q = $('#tgq'); if (q) { q.value = S._tgtQ || ''; q.focus(); }
+  ATELIER_DIALOG.show({cls: 'tgdlg', titleHtml: '', target: ATELIER_DIALOG.targetView()});
+  const q = $('#tgq'); if (q) q.focus();
 }
-// the cards the search and the zone leave, in the order asked: hidden and moved in place (no redraw while typing)
-function tgFilter(){
-  const grid = document.querySelector('.tgall .tggrid');
-  if (!grid) return;
-  const q = (S._tgtQ || '').trim().toLowerCase(), zone = S._tgtZone || '', sort = S._tgtSort || 'zone';
-  const cards = [...grid.children];
-  if (sort !== 'zone') cards.sort((a, b) => sort === 'lv' ? +a.dataset.lv - +b.dataset.lv : +b.dataset.hit - +a.dataset.hit).forEach(c => grid.appendChild(c));
-  let left = 0;
-  for (const c of cards) { const ok = (!q || c.dataset.q.includes(q)) && (!zone || c.dataset.zone === zone); c.hidden = !ok; if (ok) left++; }
-  const none = document.querySelector('.tgnone'); if (none) none.hidden = left > 0;
-  // the favourites and the last chosen are shortcuts: out of the way while one searches
-  for (const s of document.querySelectorAll('.tgstrip')) s.hidden = !!q || !!zone;
-}
+const tgRedraw = () => ATELIER_DIALOG.update({cls: 'tgdlg', titleHtml: '', target: ATELIER_DIALOG.targetView()});
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('button'), d = b ? b.dataset : {};
   if (!b || !b.closest('.tgdlg')) return;
@@ -119,7 +79,7 @@ document.addEventListener('click', e => {
     if (d.tgtgo) { const r = tgRecents(); S.tgtRecent[S.char] = [d.tgtgo].concat(r.filter(k => k !== d.tgtgo)).slice(0, 12); }
     S._tgtPick = false; S._globals = null; save(); closeOverlay(); return render(); }
   if (d.tgtfav) { const f = tgFavs(), i = f.indexOf(d.tgtfav); if (i < 0) f.push(d.tgtfav); else f.splice(i, 1); save(); return openTargetPick(); }
-  if (d.tgtzone != null) { S._tgtZone = d.tgtzone; for (const x of b.parentElement.children) x.setAttribute('aria-pressed', String(x === b)); return tgFilter(); }
+  if (d.tgtzone != null) { S._tgtZone = d.tgtzone; return tgRedraw(); }
 });
-document.addEventListener('input', e => { if (e.target && e.target.id === 'tgq') { S._tgtQ = e.target.value; tgFilter(); } });
+document.addEventListener('input', e => { if (e.target && e.target.id === 'tgq') { S._tgtQ = e.target.value; tgRedraw(); } });
 document.addEventListener('change', e => { if (e.target && e.target.dataset && 'tgtsort' in e.target.dataset) { S._tgtSort = e.target.value; openTargetPick(); } });

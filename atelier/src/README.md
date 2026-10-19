@@ -88,6 +88,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 2e partie (2026-10-19)** : la fenêtre des pièces d'une case (`gearpick.ts`, `GearPick.svelte` : ses
   filtres, les pièces en cartes avec leur valeur et leur écart). Sa recherche cache toujours les cartes sur place
   (events.js `#drawq`) : la fenêtre n'est redessinée qu'à un filtre.
+- **Étape 6c, 3e partie (2026-10-19)** : le choix de la cible (`target.ts`, `Target.svelte` : son cadre à lui, la
+  recherche, l'ordre, les zones, les favoris et les derniers choisis, chaque monstre). La recherche et la zone
+  redessinent la fenêtre en place (`ATELIER_DIALOG.update` : le champ garde son curseur) au lieu de cacher et
+  déplacer les cartes à la main (`tgFilter`, retiré).
 
 ## Vérifier une étape
 

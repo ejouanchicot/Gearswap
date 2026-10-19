@@ -388,7 +388,7 @@ declare function optRunBest(R: LegacyAny): LegacyAny;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
 /* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */
-interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny} }
+interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny; update: (d: LegacyAny) => void; targetView: () => LegacyAny} }
 declare function compareColumns(s: LegacyAny): LegacyAny[];
 declare function sirdMeritsOf(c: LegacyAny): number;
 declare function setWants(s: LegacyAny): {want: LegacyAny};
@@ -420,3 +420,11 @@ declare const WEAPON_SLOTS: Set<string>;
 declare function itemKind(name: string): string;
 declare function whereLabel(w: string): string;
 declare function wantsLine(s: LegacyAny): string;
+declare function tgFavs(): string[];
+declare function tgRecents(): string[];
+declare function tgMonsters(): LegacyAny[];
+declare function tgRate(you: LegacyAny, eva: number): number | null;
+declare function tgTone(p: number | null): string;
+declare function tgYou(): LegacyAny;
+declare const TARGETS: Record<string, LegacyAny>;
+declare const DEFAULT_ENEMY: string;
