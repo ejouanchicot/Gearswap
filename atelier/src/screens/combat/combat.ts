@@ -3,7 +3,7 @@
 // changes for the set opened on the left (one figure a situation) and the total of every buff; the member's panel is
 // panel.ts.
 // The rules are the old page's renderCombatParty, pbGives, pbImpact, pbResult (party_builder.js). Still the old page's
-// HTML: the profiles' bar and the situations' tabs (profiles.js), the target
+// HTML: the target
 // picker and the other debuffs (buff_panels.js buffPanelHTML). A
 // field ending in Html is one of the old page's texts it wrote unescaped. The buttons keep the attributes the old
 // handlers read (data-pbtab, data-pbdel, data-pbaddopen, data-buffundo, data-buffendgame, data-buffreset,
@@ -13,6 +13,7 @@
 // @author  ejouanchicot
 import {memberPanel, youPanel, type PanelView} from './panel';
 import {setList, type SetListView} from '../sets/setlist';
+import {situations, picker, type Situation, type Picker} from '../profiles/profiles';
 
 export interface Gives { text: string; neg: boolean }
 export interface PartyTab { key: string; label: string; sub: string; emblemHtml: string; del: boolean; gives: Gives[]; selected: boolean }
@@ -23,8 +24,8 @@ export interface CombatView {
   side: SetListView;
   head: {title: string; why: string; undo: null | {title: string; text: string}; endgame: {title: string; textHtml: string};
     reset: {title: string; textHtml: string; disabled: boolean}};
-  profBarHtml: string;
-  sitTabsHtml: string;
+  profBar: {label: string; picker: Picker};
+  sits: {label: string; list: Situation[]};
   party: {title: string; count: string; tabs: PartyTab[]; add: null | {title: string; label: string; left: string}; you: boolean; panel: PanelView;
     removeTitle: string; nothing: string};
   target: {title: string; meta: string; html: string};
@@ -124,7 +125,7 @@ export function combatView(): CombatView | null {
     side: L.view,
     head: {title: t('ui2CombatTitle'), why: t('pbWhy'), undo, endgame: {title: t('ttBuffEndgame'), textHtml: t('bEndgame')},
       reset: {title: t('ttBuffReset'), textHtml: t('buffReset'), disabled: !n}},
-    profBarHtml: profBar(), sitTabsHtml: profSituationTabs(),
+    profBar: {label: t('prMine'), picker: picker(false)}, sits: {label: t('prSit'), list: situations(true)},
     party: partyOf(d, b, B, shown),
     target: {title: t('pbTarget'), meta: enemyKey(b.enemy), html: P.tgt || ''},
     impact: impactOf(), total: totalOf(B),

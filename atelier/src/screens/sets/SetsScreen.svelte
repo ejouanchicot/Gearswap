@@ -11,10 +11,13 @@
   import SetList from './SetList.svelte';
   import Card from './Card.svelte';
   import Figures from './Figures.svelte';
+  import Situations from '../profiles/Situations.svelte';
+  import Picker from '../profiles/Picker.svelte';
 
   const view = $derived(legacy.version > 0 ? setsView() : null);
 </script>
 
 {#if view}
-  <div class="pane split">{@html view.ctxHtml}<div class="setsx" class:ui2={view.ui2} style={view.listW ? `--listw:${view.listW}px` : undefined}><SetList view={view.list} />{#if view.card}{#if view.card.k === 'page'}{@html view.card.html}{:else}<Card view={view.card} />{/if}{/if}{#if view.figures !== null}<aside class="globalcol"><Figures view={view.figures} /></aside>{/if}</div></div>
+  {@const c = view.ctx}
+  <div class="pane split"><div class="ctxbar"><span class="ctxwhat" title={c.title}><span class="muted small">{c.label}</span></span><Situations list={c.sits} big={false} /><Picker view={c.picker} /><span class="ctxwhat" title={c.title}>· {c.enemy}</span> <button class="linkbtn" data-section="combat" title={c.edit.title}>{c.edit.label}</button>{@html c.warnHtml}</div><div class="setsx" class:ui2={view.ui2} style={view.listW ? `--listw:${view.listW}px` : undefined}><SetList view={view.list} />{#if view.card}{#if view.card.k === 'page'}{@html view.card.html}{:else}<Card view={view.card} />{/if}{/if}{#if view.figures !== null}<aside class="globalcol"><Figures view={view.figures} /></aside>{/if}</div></div>
 {/if}

@@ -65,6 +65,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   (la fenêtre des buffs, les cartes de Mon perso) : un seul calcul. Restent à l'ancienne page : la boîte du nuke
   (`fight_stats.js`), le cycle des HP (`stat_opt.js`), la Luopan (`luopan.js`), la feuille des stats (`stats.js`),
   toutes les stats (`globalsHTML`), les lignes de tank en plus (`tankExtraHTML`).
+- **Étape 5d (2026-10-19)** : les situations et les profils (`screens/profiles/` : `profiles.ts`,
+  `Situations.svelte`, `Picker.svelte`), la même chose dans la barre de Buffs & cible et dans la ligne au-dessus des
+  sets. La recherche et le filtre de situation de la fenêtre des profils redessinent la page au lieu de cacher les
+  lignes à la main (`profiles.js`). Reste à l'ancienne page : l'avertissement de sub (`subWarnHTML`).
 
 ## Vérifier une étape
 

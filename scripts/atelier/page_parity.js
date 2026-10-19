@@ -3,7 +3,7 @@
 // views, captured at several widths and compared pixel by pixel.
 //   node scripts/atelier/page_parity.js <views.json> [--ref HEAD] [--widths 1600,1280,390] [--only text] [--out DIR] [--dom]
 // --dom: for a view that differs, also the page's HTML of both (#view, without Svelte's comment marks), to diff
-// views.json (scripts/atelier/parity/*.json): [[name, {char, job, section, cfg, tab, set: {S fields}, code: "js"}], ...]
+// views.json (scripts/atelier/parity/*.json): [[name, {char, job, section, cfg, tab, set: {S fields}, code: "js", after: "js"}], ...]
 //
 // Nothing in the working tree is swapped: a small server gives each page its files, the commit's version of every
 // file changed since it to the old page, the disk's to the new one. Every other file (the exports, the characters'
@@ -74,9 +74,13 @@ function applyView(v) {
   if (v.alt !== undefined) S.macroAlt = Object.assign({}, S.macroAlt, {[v.char + '|' + v.job]: v.alt});
   if (v.path) S.selPath = Object.assign({}, S.selPath, {[v.job]: v.path});
   S.modView = 'simple'; S.modFam = null; S.modFile = null; S.modQ = ''; S._modEdits = {}; S.modGrp = {};
+  // the profiles' picker closed, its search empty, unless the view says otherwise
+  S._profOpen = false; S._profQ = ''; S._profTier = ''; S._profEdit = null;
   Object.assign(S, v.set || {});
   if (v.code) (new Function(v.code))();
   render();
+  // what a click or a key does after the drawing, on a page that does it then (the old profiles' filter)
+  if (v.after) (new Function(v.after))();
 }
 
 async function open(browser, st, errs) {

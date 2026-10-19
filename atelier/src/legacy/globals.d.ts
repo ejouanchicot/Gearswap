@@ -272,8 +272,6 @@ declare const PB_FOE: string[];
 declare const TRUST_NAMES: Record<string, string | undefined>;
 declare const FOE_JA: Record<string, Record<string, LegacyAny> | undefined>;
 declare function enemyKey(enemy: unknown): string;
-declare function profBar(): string;
-declare function profSituationTabs(): string;
 declare function fxShort(key: string, value: number): string;
 declare function withAftermath(B: LegacyAny, main: unknown): LegacyAny;
 declare function shownMain(): unknown;
@@ -301,7 +299,6 @@ declare function sambaHTML(b: LegacyAny): string;
 declare function pbAmRow(sel: (key: string, values: string[], ph: string, def: string) => string): string;
 declare function pbSel(b: LegacyAny, key: string, values: string[], ph?: string, def?: string | null): string;
 /* ---- the Sets screen (sets_view.js, layout2.js, stats.js), loosely typed ---- */
-declare function ui2CtxBar(warn: string): string;
 declare function subWarnHTML(): string;
 declare const SLOT_NAMES: Record<string, Record<string, string>>;
 declare const SLOTS: string[];
@@ -346,3 +343,13 @@ declare const TWO_HANDED: RegExp;
 declare const ENEMIES: Record<string, LegacyAny>;
 declare function signed(n: number): string;
 interface Window { ATELIER_FIGURES?: {tankBox: unknown; offenseBox: unknown; boxHtml: unknown} }
+/* ---- the situations and profiles (profiles.js, buffs.js), loosely typed ---- */
+declare const TIERS: string[];
+declare function tierBuffsOf(tier: string): LegacyAny;
+declare function profSummary(b: LegacyAny): string;
+declare function profAll(): Record<string, LegacyAny>;
+declare function profActive(): string | null;
+declare function profChanged(name: string): boolean;
+declare const PROF_FAVS: number;
+declare const ROLE_COLOR: Record<string, string>;
+declare const JOBS: LegacyAny[];

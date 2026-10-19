@@ -50,14 +50,6 @@ function ui2CurrentSet(d){
   return cards[i] ? shownSet(cards[i], i) : null;
 }
 
-// The bar over the sets: what every figure is worked out with, one click to the Combat tab
-// `warn`: the subjob warning, on the same line (a line of its own pushed the whole page down when it came)
-function ui2CtxBar(warn = ''){
-  const b = buffState();
-  return `<div class="ctxbar"><span class="ctxwhat" title="${esc(t('ttCtx'))}"><span class="muted small">${esc(t('ui2Ctx'))}</span></span>${profCompact()}` +
-    `<span class="ctxwhat" title="${esc(t('ttCtx'))}">· ${esc(enemyKey(b.enemy))}</span>` +
-    ` <button class="linkbtn" data-section="combat" title="${esc(t('ttCtxEdit'))}">${esc(t('ui2CtxEdit'))}</button>${warn}</div>`;
-}
 
 
 
