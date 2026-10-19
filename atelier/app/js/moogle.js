@@ -22,7 +22,6 @@ Object.assign(T.en, {mogLines: 'Show the search', mogBack: 'Show the moogle', mo
 const mogOn = () => motionOn();
 const mogScene = () => document.querySelector('#overlay .optrun .mogscene');
 const mogRand = (a, b) => a + Math.random() * (b - a);
-const mogToggleHTML = () => `<button class="btn ghost" data-moglines>${esc(t(S.mogLines ? 'mogBack' : 'mogLines'))}</button>`;
 function mogSceneHTML(){
   const img = (n, cls) => `<img class="${cls}" src="${MOG_IMG}${n}.webp" alt="" draggable="false">`;
   return `<div class="mogscene" role="img" aria-label="${esc(t('mogAlt'))}"><div class="mogstage"><i class="mogshadow"></i>${img('chest_back', 'mogback')}` +
@@ -115,8 +114,6 @@ function mogClear(dlg){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-moglines]');
   if (!b) return;
-  S.mogLines = !S.mogLines; save();
-  const body = b.closest('.optrun').querySelector('.body');
-  body.classList.toggle('lines', !!S.mogLines);
-  b.textContent = t(S.mogLines ? 'mogBack' : 'mogLines');
+  // the search window draws its body's class and this button from it (atelier/src/screens/optimizer/OptRun.svelte)
+  S.mogLines = !S.mogLines; save(); ATELIER_RUN.changed();
 });

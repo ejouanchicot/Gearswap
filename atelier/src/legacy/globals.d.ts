@@ -382,3 +382,8 @@ declare function optGoButtons(act: string): string;
 declare function noEngineText(): string;
 declare function statWhatHTML(s: LegacyAny): string;
 declare function statResultHTML(s: LegacyAny): string;
+/* ---- the search window (optimizer.js, moogle.js), loosely typed ---- */
+interface Window { ATELIER_RUN?: {open: (R: LegacyAny) => void; changed: () => void} }
+declare function optRunBest(R: LegacyAny): LegacyAny;
+declare function walkLabel(w: string): string;
+declare function mogSceneHTML(): string;

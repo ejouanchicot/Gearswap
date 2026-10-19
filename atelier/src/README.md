@@ -74,6 +74,13 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   rounds, facteurs, barres —, le tableau). Ce que valent les chiffres reste à `opt_page.js` (`opFigures`, `opRows`).
   Restent à l'ancienne page : les blocs partagés avec l'optimiseur de stats (limites, onglets de recherche, pièces
   changées) et cet optimiseur lui-même (`stat_opt.js`), les boutons de recherche, la situation d'un nuke.
+- **Étape 6b (2026-10-19)** : la fenêtre de recherche en cours (`screens/optimizer/run.svelte.ts`, `OptRun.svelte` :
+  l'horloge, le meilleur trouvé et son gain, sa courbe, une carte par marche, le fil des changements, puis le
+  résultat). Le composant est monté une fois dans une boîte à lui que l'ancienne page déplace entre `#overlay` et la
+  réserve des recherches cachées ; `optimizer.js`, `opt_all.js` et `moogle.js` changent l'état de la recherche
+  (`S._optRun`) puis le préviennent (`window.ATELIER_RUN.changed`) au lieu d'écrire dans la page. Restent à
+  l'ancienne page : les scènes du Mog (`moogle.js`), les boutons du résultat, le tableau final de « tout optimiser »
+  (`opt_all.js`).
 
 ## Vérifier une étape
 

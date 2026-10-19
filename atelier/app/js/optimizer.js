@@ -289,22 +289,13 @@ function optRunOpen(s, o, starts, cores, floor){
   const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
     ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
     : [['pdt', pdtLabel() + ' ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
-  S._optRun = {t0: performance.now(), cores, fmt, objLabel, low: time || obj === 'hpLow', done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: []};
-  const chips = [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
-  const cards = starts.map(w => `<div class="orwalk" data-orwalk="${w}"><div class="orwh"><i class="ordot"></i><b>${esc(walkLabel(w))}</b><span class="orstage"></span></div>` +
-    `<div class="orbar"><i></i></div><div class="orws"><span class="orphase">${esc(t('orStarting'))}</span><span class="orevals"></span></div><div class="orwbest">—</div></div>`).join('');
-  // the moogle's scene in place of the walks and the feed, when animations are on (moogle.js)
+  // the window is the Svelte application's (atelier/src/screens/optimizer/OptRun.svelte): it reads this, told when it
+  // changes (ATELIER_RUN.changed)
   const mog = mogOn();
+  S._optRun = {t0: performance.now(), cores, fmt, objLabel, low: time || obj === 'hpLow', done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: [],
+    path: s.path, chips: [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors], mog, sceneHtml: mog ? mogSceneHTML() : '', moves: 0};
   searchPark().replaceChildren();
-  $('#overlay').innerHTML = `<div class="scrim"></div><div class="dialog optrun" role="dialog" aria-live="polite">` +
-    `<header><div class="orhead"><div><div class="kicker">${esc(t('orKick'))}</div><h3>${esc(shortPath(s.path))}</h3></div>` +
-    `<div class="orclock"><span id="orclock">0,0 s</span><small>${esc(t('orCores', {n: cores}))}</small></div></div><div class="orchips">${chips}</div></header>` +
-    `<div class="body${mog ? ' mog' + (S.mogLines ? ' lines' : '') : ''}"><div class="orhero"><div><div class="orlbl">${esc(t('orBest'))} · <b>${esc(objLabel)}</b></div><div class="orbig" id="orbig">—</div><div class="orgain" id="orgain"></div></div>` +
-    `<svg class="orspark" id="orspark" viewBox="0 0 240 64" preserveAspectRatio="none"><path class="area"/><path class="line"/></svg></div>${mog ? mogSceneHTML() : ''}` +
-    `<div class="orwalks">${cards}</div><div class="orlbl">${esc(t('orFeed'))}</div><ol class="orfeed" id="orfeed"><li class="orempty">${esc(t('orFeedEmpty'))}</li></ol></div>` +
-    `<footer><span class="orrate" id="orrate"></span><span class="sp"></span>${mog ? mogToggleHTML() : ''}<button class="btn ghost" data-orhide>${t('orHide')}</button>` +
-    `<button class="btn" data-optstop>${t('optStop')}</button></footer></div>`;
-  $('#overlay').hidden = false;
+  ATELIER_RUN.open(S._optRun);
   mogStart();
   clearInterval(OPT_RUN_CLOCK);
   OPT_RUN_CLOCK = setInterval(optRunClock, 100);
@@ -312,16 +303,14 @@ function optRunOpen(s, o, starts, cores, floor){
 let OPT_RUN_CLOCK = null;
 // The clock, the tries a second, and the big number easing to the best found
 function optRunClock(){
-  const R = S._optRun, el = document.getElementById('orclock');
-  if (!R || !el) { clearInterval(OPT_RUN_CLOCK); return; }
+  const R = S._optRun;
+  if (!R) { clearInterval(OPT_RUN_CLOCK); return; }
   const sec = (performance.now() - R.t0) / 1000, evals = optRunEvals(R);
-  if (!R.done) el.textContent = sec.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' s';
-  const rate = document.getElementById('orrate');
-  if (rate) rate.textContent = t('orRate', {n: evals.toLocaleString(), r: Math.round(evals / Math.max(sec, .1)).toLocaleString()});
-  const best = optRunBest(R), big = document.getElementById('orbig');
-  if (!big || !best) return;
-  R.shown = R.shown == null ? best.raw : R.shown + (best.raw - R.shown) * .25;
-  big.textContent = R.fmt(Math.abs(R.shown - best.raw) < 1e-4 ? best.raw : R.shown);
+  if (!R.done) R.clockText = sec.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' s';
+  R.rateText = t('orRate', {n: evals.toLocaleString(), r: Math.round(evals / Math.max(sec, .1)).toLocaleString()});
+  const best = optRunBest(R);
+  if (best) R.shown = R.shown == null ? best.raw : R.shown + (best.raw - R.shown) * .25;
+  ATELIER_RUN.changed();
 }
 // The tries so far: each worker's count (it runs over all of that worker's walks)
 const optRunEvals = R => Object.values(R.byWorker || {}).reduce((a, n) => a + n, 0);
@@ -344,56 +333,15 @@ function optRunStep(i, p){
   w.evals = (w.evals || 0) + Math.max(0, p.evals - (R.byWorker[i] || 0));
   R.byWorker[i] = p.evals;
   R.start = R.start == null ? p.startRaw : R.start;
-  for (const m of p.moves || []) R.feed.unshift(Object.assign({walk: p.walk, at: (performance.now() - R.t0) / 1000}, m));
+  w.painted = true;
+  for (const m of p.moves || []) R.feed.unshift(Object.assign({walk: p.walk, at: (performance.now() - R.t0) / 1000, id: ++R.moves}, m));
   R.feed.length = Math.min(R.feed.length, 40);
   const best = optRunBest(R);
   const last = R.series[R.series.length - 1];
   if (best && (!last || last[1] !== best.raw)) R.series.push([(performance.now() - R.t0) / 1000, best.raw]);
   // the window may be closed (Hide): the compartment's line goes on
   S._optProgress = {round: p.round, evals: optRunEvals(R), ms: performance.now() - R.t0};
-  optRunPaint(p.walk, p.moves || []);
-}
-// The window drawn again where it changed: the walk's card, the new moves on top of the feed, the gain, the curve
-function optRunPaint(walk, moves){
-  const R = S._optRun, card = document.querySelector(`[data-orwalk="${walk}"]`);
-  if (!R || !card) return;
-  const w = R.walks[walk];
-  card.querySelector('.orstage').textContent = w.stage ? t('orStage_' + w.stage) : '';
-  card.querySelector('.orphase').textContent = (w.phase ? t('orPhase_' + w.phase) : t('orStarting')) + (w.round ? ' · ' + t('orRound', {n: w.round}) : '');
-  card.querySelector('.orevals').textContent = t('orTries', {n: (w.evals || 0).toLocaleString()});
-  card.querySelector('.orwbest').innerHTML = w.best ? `${esc(R.fmt(w.best.raw))}${w.best.miss ? ` <span class="ormiss">${esc(t('orUnder'))}</span>` : ''}` : '—';
-  const feed = document.getElementById('orfeed');
-  if (feed && moves.length) {
-    feed.querySelector('.orempty')?.remove();
-    // scrolled down the feed: what is read stays in place while new moves come in on top
-    const top = feed.scrollTop, height = feed.scrollHeight;
-    for (const m of moves) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span class="orfval">${esc(R.fmt(m.raw))}</span><span class="orfmoves">` + m.changes.map(c =>
-        `<span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span> <s>${esc(c.from)}</s> → <b>${esc(c.to)}</b>`).join(' · ') +
-        `</span><span class="orfwalk">${esc(walkLabel(walk))}${m.stage === 'nofloor' ? ' · ' + esc(t('orStage_nofloor')) : ''}${m.miss ? ' · ' + esc(t('orUnder')) : ''}</span>`;
-      feed.prepend(li);
-    }
-    while (feed.children.length > 40) feed.lastChild.remove();
-    if (top > 0) feed.scrollTop = top + feed.scrollHeight - height;
-  }
-  const best = optRunBest(R), gain = document.getElementById('orgain');
-  if (gain && best && R.start) {
-    const d = (R.low ? R.start / best.raw - 1 : best.raw / R.start - 1) * 100;
-    gain.innerHTML = `${esc(t('orFrom', {v: R.fmt(R.start)}))} <b class="${d > .05 ? 'up' : ''}">${d > 0 ? '+' : ''}${d.toFixed(1)} %</b>`;
-  }
-  optRunSpark(R);
-}
-// The best found over time, a small curve (going up when it gets better)
-function optRunSpark(R){
-  const svg = document.getElementById('orspark');
-  if (!svg || R.series.length < 2) return;
-  const xs = R.series.map(x => x[0]), ys = R.series.map(x => R.low ? -x[1] : x[1]);
-  const x0 = xs[0], x1 = Math.max(xs[xs.length - 1], x0 + 1), y0 = Math.min(...ys), y1 = Math.max(...ys, y0 + 1e-9);
-  const pt = (x, y) => `${((x - x0) / (x1 - x0) * 240).toFixed(1)},${(60 - (y - y0) / (y1 - y0) * 54).toFixed(1)}`;
-  const line = 'M' + R.series.map((x, i) => pt(xs[i], ys[i])).join(' L');
-  svg.querySelector('.line').setAttribute('d', line);
-  svg.querySelector('.area').setAttribute('d', line + ` L240,64 L0,64 Z`);
+  ATELIER_RUN.changed();
 }
 // The search window once done: the set found against yours (the value, the pieces changed, the figures, what is still
 // to get), and what to do next: Compare in detail, test it in game, push it to GearSwap
@@ -435,27 +383,20 @@ function optRunResult(s, res, tr, plain, gains){
   const live = liveWrite();
   const porter = (slot, name) => { const at = (ownedOf()[slot] || []).filter(x => x.name === name);
     return at.length && at.every(atPorter) ? ` <span class="orporter">${esc(at[0].where.map(whereLabel).join(', '))}</span>` : ''; };
-  const list = changes.map(c => `<li>${icon(c.name)}<span class="orfslot">${esc(SLOT_NAMES[S.lang][c.slot] || c.slot)}</span><span><s>${esc(c.from)}</s> → <b>${esc(c.to)}</b>${porter(c.slot, c.to)}</span></li>`).join('');
-  const rows = fig.map(([l, a, b, w]) => `<tr><th>${esc(l)}</th><td>${esc(a)}</td><td class="${w > 0 ? 'up' : w < 0 ? 'down' : ''}">${esc(b)}</td></tr>`).join('');
-  const lack = gains.length ? `<p class="orlack">${esc(t('orLack'))} ` + gains.map(g => `<b>${esc(g.piece.name)}</b> ${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`).join(' · ') + `</p>` : '';
-  // the result's own rows: the hero, the changes and figures taking what is left (scrolling inside), what is to get
+  // the window draws it (OptRun.svelte): the moogle's scene stops first, its cheering starts once it is drawn
   mogClear(dlg);
-  dlg.querySelector('.body').style.gridTemplateRows = 'auto minmax(0,1fr) auto';
-  dlg.querySelector('.body').innerHTML = `<div class="orhero"><div><div class="orlbl">${esc(t(changes.length ? 'orFound' : 'orSame'))}${R.objLabel ? ` · <b>${esc(R.objLabel)}</b>` : ''}</div>` +
-    `<div class="orbig">${esc(R.fmt(res.best.raw))}</div><div class="orgain">${esc(t('orFrom', {v: R.fmt(res.start.raw)}))} ` +
-    `<b class="${d > .05 ? 'up' : ''}">${d > 0 ? '+' : ''}${d.toFixed(1)} %</b></div></div>${dlg.querySelector('.orspark') ? dlg.querySelector('.orspark').outerHTML : ''}${mogWinHTML(changes.length > 0)}</div>` +
-    (changes.length ? `<div class="orres"><div><div class="orlbl">${esc(t('orChanged', {n: changes.length}))}</div><ul class="orchg">${list}</ul></div>` +
-      (rows ? `<div><div class="orlbl">${esc(t('orFigures'))}</div><table class="orfig"><thead><tr><th></th><th>${esc(t('rdvMine'))}</th><th>${esc(t('rdvTry'))}</th></tr></thead><tbody>${rows}</tbody></table></div>` : '') +
-      `</div>` : `<p class="muted">${esc(t('orSameWhy'))}</p>`) + lack;
+  R.result = {best: res.best.raw, start: res.start.raw, mogWinHtml: mogWinHTML(changes.length > 0), figs: fig,
+    changes: changes.map(c => ({iconHtml: icon(c.name), slot: SLOT_NAMES[S.lang][c.slot] || c.slot, from: c.from, to: c.to, porterHtml: porter(c.slot, c.to)})),
+    lack: gains.map(g => ({name: g.piece.name, gain: `${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`})),
+    footerHtml: `<button class="btn ghost" data-close>${t('close')}</button><span class="sp"></span>` +
+      (changes.length ? `<button class="btn ghost" data-cmpopen>${t('orCompare')}</button>` + (live ? `<button class="btn ghost" data-trysave>${t('trySave')}</button>` : '') + pushButton(s, live) : '')};
+  ATELIER_RUN.changed();
   mogWinStart(dlg);
-  dlg.querySelector('footer').innerHTML = `<button class="btn ghost" data-close>${t('close')}</button><span class="sp"></span>` +
-    (changes.length ? `<button class="btn ghost" data-cmpopen>${t('orCompare')}</button>` +
-      (live ? `<button class="btn ghost" data-trysave>${t('trySave')}</button>` : '') + pushButton(s, live) : '');
 }
 // A walk finished: its card says so
 function optRunWalkDone(walk){
-  const card = document.querySelector(`[data-orwalk="${walk}"]`);
-  if (card) { card.classList.add('done'); card.querySelector('.orphase').textContent = t('orWalkDone'); }
+  const R = S._optRun;
+  if (R && R.walks[walk]) { R.walks[walk].done = true; ATELIER_RUN.changed(); }
 }
 // The whole search finished: the window shows it a moment, then the result takes its place
 function optRunDone(){
@@ -463,9 +404,7 @@ function optRunDone(){
   if (!R) return;
   R.done = true; clearInterval(OPT_RUN_CLOCK); optRunClock(); mogStop();
   Object.keys(R.walks).forEach(optRunWalkDone);
-  document.querySelector('.optrun')?.classList.add('finished');
-  const k = document.querySelector('.optrun .kicker');
-  if (k) k.textContent = t('orDone');
+  ATELIER_RUN.changed();
 }
 // The result into draft B (the pieces that differ from the set itself), the message, then Compare
 function optResult(s, k, res, gains, o){

@@ -143,12 +143,12 @@ async function optAllOpen(shown){
 function oaShow(R, v, s, opts, starts, cores){
   const hidden = R.done > 0 && $('#overlay').hidden;
   optRunOpen(s, S.optOpts || {}, starts, cores, opts.floor);
-  const dlg = $('#overlay .optrun');
-  if (!dlg) return;
-  dlg.querySelector('.kicker').textContent = t('oaStep', {i: R.done + 1, n: R.list.length});
-  dlg.querySelector('h3').textContent = shortPath(R.base) + ' · ' + v.label;
+  const run = S._optRun;
+  if (!run) return;
+  // the window draws them (atelier/src/screens/optimizer/OptRun.svelte)
   const mark = x => { const rec = R.by[x.path]; return x === v ? 'now' : !rec ? 'wait' : rec.sel ? 'on' : 'off'; };
-  dlg.querySelector('.orchips').insertAdjacentHTML('afterend', `<div class="oastrip">${R.list.map(x => `<i class="${mark(x)}" title="${esc(x.label)}"></i>`).join('')}</div>`);
+  Object.assign(run, {kick: t('oaStep', {i: R.done + 1, n: R.list.length}), title: shortPath(R.base) + ' · ' + v.label, strip: R.list.map(x => ({cls: mark(x), title: x.label}))});
+  ATELIER_RUN.changed();
   if (hidden) closeOverlay();
 }
 // One version: skipped when its buff version is not there, else searched and weighed against its fallback
