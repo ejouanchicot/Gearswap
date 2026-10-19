@@ -197,16 +197,12 @@ function bpMuleMoves(B){
         free--; moves.push({id: r.id, name: r.info.name, from: from.id, to: inv.id, fromName: from.name, toName: inv.name}); } } }
   return {moves, noRoom};
 }
-// The window before sending: what goes from where to where, then the send
+// The window before sending: what goes from where to where (atelier/src/screens/dialogs/bagdlg.ts), then the send
 function openBagPlanSend(mule){
   S._bpMule = !!mule;
-  const B = bvBags(), p = mule ? bpMuleMoves(B) : bpMoves(B), by = {};
-  for (const m of p.moves) (by[m.fromName + ' → ' + m.toName] = by[m.fromName + ' → ' + m.toName] || []).push(m.name);
-  const groups = Object.entries(by).sort((a, b) => b[1].length - a[1].length).map(([k, names]) => `<details class="bpgo"><summary><b>${esc(k)}</b><i>${names.length}</i></summary><p>${esc(names.join(', '))}</p></details>`).join('');
-  const body = `<p>${esc(t(mule ? 'bpMuleWhy' : 'bpSendWhy'))}</p><ul class="bpsafe">${['bpSafe1', 'bpSafe2', 'bpSafe3', 'bpSafe4'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul>` +
-    (p.moves.length ? `<h4>${esc(t('bpSendN', {n: p.moves.length}))}</h4>${groups}` : `<p class="muted">${esc(t('bpSendNone'))}</p>`) +
-    (p.noRoom.length ? `<p class="bpnote warn">${esc(t(mule ? 'bpMuleNoRoom' : 'bpSendNoRoom', {n: p.noRoom.length, l: [...new Set(p.noRoom)].slice(0, 12).join(', ')}))}</p>` : '');
-  showDialog('midlg bpdlg', esc(t('bpSendTitle')), body, p.moves.length ? `<button class="btn" data-bpsend ${liveOk() ? '' : 'disabled'} title="${esc(liveOk() ? t('bpSendTip') : t('ttModRead'))}">${esc(t('bpSendGo'))}</button>` : '');
+  const p = mule ? bpMuleMoves(bvBags()) : bpMoves(bvBags());
+  ATELIER_DIALOG.show({cls: 'midlg bpdlg', titleHtml: esc(t('bpSendTitle')), bags: ATELIER_DIALOG.bagSendView(!!mule),
+    buttonsHtml: p.moves.length ? `<button class="btn" data-bpsend ${liveOk() ? '' : 'disabled'} title="${esc(liveOk() ? t('bpSendTip') : t('ttModRead'))}">${esc(t('bpSendGo'))}</button>` : ''});
 }
 async function bpSend(){
   const p = S._bpMule ? bpMuleMoves(bvBags()) : bpMoves(bvBags()), body = p.moves.map(m => [m.id, m.from, m.to, m.name.replace(/[\t\r\n]/g, ' ')].join('\t')).join('\n');

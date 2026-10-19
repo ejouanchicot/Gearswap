@@ -56,21 +56,15 @@ function bvLit(name){
   const bag = plList(p.bags).find(b => b.name === name);
   return !bag ? '' : bag.open ? 'open' : 'shut';
 }
-// Every place of the game's moogles, in a small window: one line a zone, one column a kind of moogle with its
-// position on the map; the zone the character stands in is marked
+// Every place of the game's moogles, in a small window (atelier/src/screens/dialogs/bagdlg.ts: one line a zone, one
+// column a kind of moogle, the zone the character stands in marked)
 function openMooglePlaces(){
-  const kinds = Object.keys(MOOGLE_PLACES), zones = [...new Set(kinds.flatMap(k => MOOGLE_PLACES[k].map(([z]) => z)))], p = bvPlace();
-  const cell = (k, z) => { const at = MOOGLE_PLACES[k].find(([n]) => n === z); return `<td class="${at ? 'yes' : ''}">${at ? '✔' + (at[1] ? ` <small>${esc(at[1])}</small>` : '') : '<i>–</i>'}</td>`; };
-  const rows = zones.map(z => `<tr class="${p && p.zone === z ? 'here' : ''}"><th>${esc(z)}${p && p.zone === z ? ` <em>${esc(t('plYouAre'))}</em>` : ''}</th>${kinds.map(k => cell(k, z)).join('')}</tr>`).join('');
-  const body = `<p>${esc(t('plDlgWhy'))}</p><table class="pltable"><thead><tr><th>${esc(t('plColZone'))}</th>${kinds.map(k => `<th>${esc(k)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>` +
-    `<h4>${esc(t('plGives'))}</h4><ul class="plgives"><li><b>Porter Moogle</b>${esc(t('plGivesPorter'))}</li><li><b>Nomad Moogle</b>${esc(t('plGivesNomad'))}</li><li><b>Mog House</b>${esc(t('plGivesHouse'))}</li></ul>` +
-    `<p class="muted small">${esc(t('plSrc'))}</p>`;
-  showDialog('midlg bpdlg pldlg', esc(t('plWhere')), body, '');
+  ATELIER_DIALOG.show({cls: 'midlg bpdlg pldlg', titleHtml: esc(t('plWhere')), bags: ATELIER_DIALOG.placesView(), buttonsHtml: ''});
 }
-// What the chain does, before it is asked: it undresses the character and trades with the Porter Moogle
+// What the chain does, before it is asked: it undresses the character and trades with the Porter Moogle (bagdlg.ts)
 function openPorterRun(){
-  const body = `<p>${esc(t('plRunWhy'))}</p><ol class="plsteps">${['plRun1', 'plRun2', 'plRun3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ol><p class="bpnote warn">${esc(t('plRunNaked'))}</p><p class="muted small">${esc(t('plRunCmd'))}</p>`;
-  showDialog('midlg bpdlg pldlg', esc(t('plRun')), body, `<button class="btn" data-plrungo ${liveOk() ? '' : 'disabled'}>${esc(t('plRunGo'))}</button>`);
+  ATELIER_DIALOG.show({cls: 'midlg bpdlg pldlg', titleHtml: esc(t('plRun')), bags: ATELIER_DIALOG.porterView(),
+    buttonsHtml: `<button class="btn" data-plrungo ${liveOk() ? '' : 'disabled'}>${esc(t('plRunGo'))}</button>`});
 }
 async function porterRun(){
   let r; try { r = await liveOrder(S.char, '/porter_run', {method: 'POST', body: '', timeout: 6000}); } catch (e) { r = {ok: false, error: e.message}; }

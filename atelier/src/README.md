@@ -115,6 +115,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 9e partie (2026-10-19)** : « Ajouter un set » (`addset.ts`, `AddSet.svelte` : son cadre à lui, les trois
   étapes ; `add_set.js` garde les étapes, la recherche qui cache des lignes en place et ce qui part au jeu). Un export
   sans catalogue garde la liste des WS de `push.js` (`addWsList`) en HTML.
+- **Étape 6c, 10e partie (2026-10-19)** : les petites fenêtres des sacs (`bagdlg.ts`, `BagDialog.svelte`, dans le
+  cadre commun) : où sont les mogs, la tournée du Porter Moogle, les déplacements du plan avant l'envoi. Leurs boutons
+  du bas restent le HTML de `bags_place.js` / `bags_plan.js`.
 
 ## Vérifier une étape
 
