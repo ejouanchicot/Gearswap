@@ -194,43 +194,15 @@ function oaDiff(ref, pieces){
 /* ---- the window ---- */
 // A version's short name from its path (the weaponskill's own set: "the set itself")
 const oaShort = (R, path) => path && path.length > R.base.length ? path.slice(R.base.length + 1) : t('oaSelf');
-function oaRowHTML(R, v){
-  const rec = R.by[v.path], pct = n => (n >= 0 ? '+' : '−') + Math.abs(n).toFixed(1) + ' %';
-  if (!rec) return `<tr class="${R.now === v ? 'oanow' : 'oawait'}"><th>${esc(v.label)}</th><td colspan="4">${R.now === v ? '…' : ''}</td></tr>`;
-  const state = rec.exists ? t('oaExists') : t('oaNew');
-  if (rec.skip) return `<tr class="oaoff"><th>${esc(v.label)}</th><td colspan="4" class="muted">${esc(t('oaSkip', {p: shortPath(rec.skip)}))}</td></tr>`;
-  if (rec.error) return `<tr class="oaoff"><th>${esc(v.label)}</th><td colspan="4" class="kwarn">${esc(t('oaFail', {e: rec.error}))}</td></tr>`;
-  const like = rec.useless ? esc(t(rec.exists ? 'oaSpare' : 'oaUseless', {p: oaShort(R, rec.fallback)})) : '';
-  // a version the file writes: what the search gains on it as it is (and, when it only does as its fallback, that it
-  // is one set too many: still written, or the file would keep the weaker one); a new one: against its fallback
-  const fixes = rec.fixes ? ` <small class="oafix">· ${esc(t('oaFixes'))}</small>` : '';
-  const vs = rec.exists ? (rec.changed ? `${pct(rec.vsNow)} <small class="muted">${esc(t('oaVsNow'))}</small>` : esc(t('oaSame'))) + fixes + (like ? ` <small class="muted">· ${like}</small>` : '')
-    : like || (rec.vsFallback != null ? pct(rec.vsFallback) : esc(t('oaSame')));
-  const tick = R.finished && rec.changed ? `<button class="chip" data-oasel="${esc(v.path)}" aria-pressed="${!!rec.sel}">${rec.sel ? '✓' : '·'}</button> ` : '';
-  return `<tr class="${rec.sel ? 'oaon' : 'oaoff'}"><th>${tick}${esc(v.label)}</th><td>${fmtDmg(rec.best)}</td><td>${vs}</td><td>${rec.changed}</td><td class="muted">${esc(state)}</td></tr>`;
-}
+// The window: drawn by the Svelte application (atelier/src/screens/dialogs/optall.ts), drawn again in place at a tick or
+// while the versions are written (the table keeps its scroll, the moogle goes on hopping)
 function oaPaint(R){
   if (S._optAll !== R) return;
-  const recs = Object.values(R.by), searched = recs.filter(x => x.res).length, n = recs.filter(x => x.sel).length;
-  const head = `<tr><th>${t('oaVer')}</th><th>${t('oaDmg')}</th><th>${t('oaVs')}</th><th>${t('oaCh')}</th><th>${t('oaState')}</th></tr>`;
-  // the result, in the search window's own dress: the header and its chips, the count of useful versions as the big
-  // figure with the result's moogle beside it (moogle.js mogWinHTML), then the table, scrolling inside
-  const o = S.optOpts || {}, obj = t('optObj_' + (o.obj || 'damage'), {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
-  const chips = [obj, t('optWhere_mine')].map(x => `<span class="orchip">${esc(x)}</span>`).join('');
-  const secs = Math.round(R.secs || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + ' s';
-  const was = $('#overlay .oadlg .oascroll'), scrolled = was ? was.scrollTop : 0, drawn = !!$('#overlay .oadlg');
-  const save = n && liveWrite() && !R.writing ? `<button class="btn" data-oago>${esc(t('oaGo', {n}))}</button>` : '';
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog optrun finished oadlg" role="dialog">` +
-    `<header><div class="orhead"><div><div class="kicker">${esc(t('oaTitle'))}</div><h3>${esc(shortPath(R.base))}</h3></div>` +
-    `<div class="orclock"><span>${secs}</span><small>${esc(t('oaRuns', {n: searched}))}</small></div></div><div class="orchips">${chips}</div></header>` +
-    `<div class="body oabody"><div class="orhero"><div><div class="orlbl">${esc(R.writing || t('oaUseful'))}</div><div class="orbig">${n} / ${searched}</div>` +
-    `<div class="orgain">${esc(t('oaSum', {n: searched, u: n, x: searched - n}))}</div></div>${drawn ? ($('#overlay .oadlg .mogwin') || {outerHTML: ''}).outerHTML : mogWinHTML(n > 0)}</div>` +
-    `<div class="oascroll"><table class="cmptbl oatbl"><thead>${head}</thead><tbody>${R.list.map(v => oaRowHTML(R, v)).join('')}</tbody></table>` +
-    `<p class="muted small">${esc(t('oaWhy', {e: OA_EPS}))}</p>${liveWrite() ? '' : `<p class="kwarn">${esc(t('oaNoLive'))}</p>`}</div></div>` +
-    `<footer><button class="btn ghost" data-close>${t('close')}</button><span class="sp"></span>${save}</footer></div>`;
-  $('#overlay').hidden = false;
-  // (drawn again at a tick or a save: the table stays where the player scrolled it, the moogle goes on hopping)
-  const now = $('#overlay .oadlg .oascroll'); if (now && scrolled) now.scrollTop = scrolled;
+  const n = Object.values(R.by).filter(x => x.sel).length, first = !$('#overlay .oadlg');
+  if (first) R.mogWinHtml = mogWinHTML(n > 0);
+  const spec = {cls: 'oadlg', titleHtml: '', optAll: ATELIER_DIALOG.optAllView(R)};
+  if (!first) return ATELIER_DIALOG.update(spec);
+  ATELIER_DIALOG.show(spec);
   mogWinStart($('#overlay .oadlg'));
 }
 function optAllStop(){ S._optAll = null; optStop(); closeOverlay(); }

@@ -88,11 +88,9 @@ function trialLua(s){
   const lines = SLOTS.filter(slot => pieces[slot]).map(slot => `    ${slot} = ${lua(pieces[slot])},`);
   return `-- From the Atelier: the whole set, the tried pieces in\n${s.path} = {\n${lines.join('\n')}\n}\n`;
 }
+// (drawn by the Svelte application: atelier/src/screens/dialogs/Dialog.svelte)
 function openLua(s){
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog" role="dialog" aria-label="${t('luaTitle')}"><header><h3>${t('luaTitle')}</h3></header>
-    <div class="body"><textarea class="luabox" id="luabox" readonly spellcheck="false">${esc(trialLua(s))}</textarea></div>
-    <footer><button class="btn ghost" data-close>${t('close')}</button><button class="btn" data-copylua>${t('copy')}</button></footer></div>`;
-  $('#overlay').hidden = false;
+  ATELIER_DIALOG.show({cls: '', titleHtml: t('luaTitle'), ariaLabel: t('luaTitle'), lua: trialLua(s), buttonsHtml: `<button class="btn" data-copylua>${t('copy')}</button>`});
 }
 // The set with other tried pieces for a moment (a draft, the file's pieces, none)
 function withTrialAs(s, tr, fn){

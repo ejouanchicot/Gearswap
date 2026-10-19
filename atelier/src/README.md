@@ -100,6 +100,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   réponse du jeu restent à `push.js`.
 - **Étape 6c, 6e partie (2026-10-19)** : « Selon la PT » (`tiercost.ts`, `TierCost.svelte` : chaque version d'un set
   dans chaque situation) et l'historique des écritures dans GearSwap (`history.ts`, `History.svelte`).
+- **Étape 6c, 7e partie (2026-10-19)** : « Tout optimiser » une fois cherché (`optall.ts`, `OptAll.svelte`, redessiné
+  en place pendant l'écriture des versions : le tableau garde son défilement, le Mog son saut) et la fenêtre du Lua à
+  coller (`openLua`, trial.js, par le cadre commun).
 
 ## Vérifier une étape
 
