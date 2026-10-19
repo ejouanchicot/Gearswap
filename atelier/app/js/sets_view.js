@@ -81,28 +81,6 @@ function familyNote(s){
   return '';
 }
 // The note's room is kept on every variant of a card that has one: switching variants moves nothing
-// The title of every set, one shape whatever its content so nothing under it moves from a set to the next: the name
-// on a line, what it is on the next (when it is worn, or a weaponskill's facts), its path on the third; each line
-// keeps its height and cuts what is too long (the whole text in its tooltip); the actions at the right
-function setTitleBox(kicker, name, what, whatTip, path, acts){
-  return `<div class="settitle"><div class="stmain"><div class="stname">${kicker ? `<span class="kicker">${esc(kicker)}</span>` : ''}<h2>${name}</h2></div>` +
-    `<div class="stwhat" ${whatTip ? `title="${esc(whatTip)}"` : ''}>${what}</div><code class="path wspath" title="${esc(t('ttPath'))}">${esc(path)}</code></div>${acts}</div>`;
-}
-// The title of a weaponskill set: its weapon, its name and version, what it uses (type, attributes, hits,
-// fTP by TP, critical hits, fTP on every hit: the weaponskill database, exported as ws_info), the set's path
-function wsTitleHTML(s, acts = ''){
-  const ws = wsOfSet(s);
-  // the common set is one of the job's base sets: never deleted from the page (set_push.lua PROTECTED)
-  if (!ws) return setTitleBox(t('wsKick'), esc(t('wsCommon')), '', '', s.path, acts);
-  const info = wsInfoOf(ws), version = segs(s.path).slice(segs(s.path).lastIndexOf(ws) + 1).join(' · ');
-  const n = v => (+v).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: 1, maximumFractionDigits: 3});
-  const mods = typeof info.mods === 'string' ? [info.mods] : Object.entries(info.mods || {}).map(([k, v]) => `${v} % ${k}`);
-  const ftp = info.ftp && info.ftp['1000'] != null ? 'fTP ' + ['1000', '2000', '3000'].map(k => info.ftp[k] != null ? n(info.ftp[k]) : '—').join(' / ') : '';
-  const facts = [info.type ? t('wsType_' + info.type) : '', mods.join(' + '), info.hits ? t(info.hits > 1 ? 'wsHitN' : 'wsHit1', {n: info.hits}) : '', ftp,
-    info.crit ? t('wsCritTag') : '', info.replicating ? t('wsReplTag') : '', info.element ? info.element : ''].filter(Boolean);
-  return setTitleBox((wsSkills()[ws] || '') + ' · ' + t('wsKickOne'), esc(ws) + (version ? ` <span class="wsver">· ${esc(version)}</span>` : ''),
-    facts.length ? `<span class="wsfacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</span>` : '', facts.join(' · '), s.path, acts);
-}
 const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 // A version of a set for a party: the label of a variant against its set's ("Laphria · Group" against "Laphria",
 // "Trust" against the family's own set, "Base"); null for anything else

@@ -4,7 +4,7 @@
 // window). A set whose optimizer page is open shows that page instead (optimizer/optpage.ts).
 // The rules are the old page's cardHTML, slotHTML, setVersionsHTML, versionGridHTML (sets_view.js), with what it
 // keeps in the page's state as it goes (S._curSet, S._globals). Still the old page's HTML: the title box and the
-// weapons' menus (setTitleBox, weaponMenus), a weaponskill's head (ws_page.js wsHeadHTML), the trial's bar
+// weapons' menus (weaponMenus), a weaponskill's head (ws_page.js wsHeadHTML), the trial's bar
 // (trial.js), the equip button (live.js), the line of what the set is after, the legend and notes; the figures are figures.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/card.ts
@@ -23,7 +23,7 @@ export interface CardView {
   k: 'card';
   ci: number;
   ws: boolean;
-  titleHtml: string;
+  title: TitleView;
   versions: Versions;
   ctl: null | {picks: boolean; html: string};
   trialHtml: string;
@@ -40,15 +40,33 @@ export type CardOrPage = CardView | {k: 'page'; view: OptPageView};
 const st = (): LegacyAny => S;
 const TIERS3 = ['Group', 'Solo', 'Trust'];
 
+export interface TitleActs { opt: null | {title: string; labelHtml: string}; delHtml: string }
+export interface TitleView extends TitleActs { kicker: string; name: string; version: string; tag: string; when: string; facts: string[]; factsTip: string; path: string; pathTip: string }
+
+// The title of a weaponskill set: its weapon, its name and version, what it uses (type, attributes, hits, fTP by TP,
+// critical hits, fTP on every hit: the weaponskill database, exported as ws_info), the set's path. The common set is
+// one of the job's base sets: never deleted from the page (set_push.lua PROTECTED)
+function wsTitle(s: LegacyAny, acts: TitleActs): TitleView {
+  const ws = wsOfSet(s) as string, base = {...acts, version: '', tag: '', when: '', facts: [] as string[], factsTip: '', path: s.path, pathTip: t('ttPath')};
+  if (!ws) return {...base, kicker: t('wsKick'), name: t('wsCommon')};
+  const info = wsInfoOf(ws), sg = segs(s.path), version = sg.slice(sg.lastIndexOf(ws) + 1).join(' · ');
+  const n = (v: LegacyAny) => (+v).toLocaleString((S as LegacyAny).lang === 'fr' ? 'fr-FR' : 'en-US', {minimumFractionDigits: 1, maximumFractionDigits: 3});
+  const mods = typeof info.mods === 'string' ? [info.mods] : Object.entries(info.mods || {}).map(([k, v]) => `${v} % ${k}`);
+  const ftp = info.ftp && info.ftp['1000'] != null ? 'fTP ' + ['1000', '2000', '3000'].map(k => info.ftp[k] != null ? n(info.ftp[k]) : '—').join(' / ') : '';
+  const facts: string[] = [info.type ? t('wsType_' + info.type) : '', mods.join(' + '), info.hits ? t(info.hits > 1 ? 'wsHitN' : 'wsHit1', {n: info.hits}) : '', ftp,
+    info.crit ? t('wsCritTag') : '', info.replicating ? t('wsReplTag') : '', info.element ? info.element : ''].filter(Boolean);
+  return {...base, kicker: (wsSkills()[ws] || '') + ' · ' + t('wsKickOne'), name: ws, version, facts, factsTip: facts.join(' · ')};
+}
+
 // the head of a set other than a weaponskill's: what it is (its family, name and version, when it is worn, its path),
 // and the weapons it is shown with (setHeadHTML)
-function setHeadParts(card: LegacyAny, vi: number, s: LegacyAny, acts: string): {title: string; picks: string} {
+function setHeadParts(card: LegacyAny, vi: number, s: LegacyAny, acts: TitleActs): {title: TitleView; picks: string} {
   const when = t('famWhen.' + card.fam), label = card.variants[vi].label;
   const fam = t('fam.' + card.fam), name = niceName(card);
   // an enhancing set: on whom it is cast, beside its name and as the line under it (stat_opt.js enhTarget)
-  const on = enhTarget(s), tag = on ? ` <span class="wsver">· ${esc(t('enhTag' + on))}</span>` : '';
-  const title = setTitleBox(fam !== name ? fam : '', esc(name) + (label && label !== 'Base' ? ` <span class="wsver">· ${esc(label)}</span>` : '') + tag,
-    on ? `<span class="muted small setwhen">${esc(t('enhWhen' + on))}</span>` : when ? `<span class="muted small setwhen">${esc(when)}</span>` : '', '', s.path, acts);
+  const on = enhTarget(s);
+  const title: TitleView = {...acts, kicker: fam !== name ? fam : '', name, version: label && label !== 'Base' ? label : '', tag: on ? t('enhTag' + on) : '',
+    when: on ? t('enhWhen' + on) : when || '', facts: [], factsTip: '', path: s.path, pathTip: t('ttPath')};
   // the weapons' menus side by side, a label over each; then what the job's GearSwap puts with them (off hand, ammo)
   const pick = (lbl: string, body: string) => `<div class="wpick"><span class="wslbl">${esc(lbl)}</span><div class="wsval">${body}</div></div>`;
   const menus = weaponMenus(s), tipOf = (desc: string) => desc && desc.replace(/\s+/g, '').toLowerCase() !== 'mainweapon' ? desc + ' · ' + t('ttWeapon') : t('ttWeapon');
@@ -132,24 +150,23 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   if (holds.short!.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short!.join(', '))})}</span>`);
   const legend = legendOf(holds);
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws';
-  if (ws) wsTitleHTML(s);   // (worked out first as before: what it reads is kept for the head)
   const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || isNukeSet(s.path) || roundSet(s) || statSet(s));
   if (optable && optPageOpen(s)) return {k: 'page', view: optPageView(s, ws && wsOfSet(s))};
   // its actions on the title line: the optimizer, then deleting it
-  const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview title="${esc(t('ttOptOpen'))}">${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;
-  let titleHtml: string, versions: Versions, ctl: CardView['ctl'];
+  const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, delHtml: (ws && !wsOfSet(s)) || locked ? '' : delButton(s)};
+  let title: TitleView, versions: Versions, ctl: CardView['ctl'];
   if (ws) {
-    titleHtml = wsTitleHTML(s, acts);
+    title = wsTitle(s, acts);
     versions = wsOfSet(s) ? versionsOf(card, ci, vi) : {k: 'none'};
     ctl = wsOfSet(s) ? {picks: false, html: wsHeadHTML(card, ci, vi, s)} : null;
   } else {
     const head = setHeadParts(card, vi, s, acts);
-    titleHtml = head.title; versions = versionsOf(card, ci, vi); ctl = {picks: true, html: head.picks};
+    title = head.title; versions = versionsOf(card, ci, vi); ctl = {picks: true, html: head.picks};
   }
   // a family's note and a base set's go under the gear, where nothing is left to push down
   const notes = {fam: card.variants.some((v: LegacyAny) => familyNote(v.set)) ? {textHtml: familyNote(s), none: !familyNote(s)} : null,
     base: locked && !ws ? t('baseOnly', {l: (data() as LegacyAny).sets.filter((x: LegacyAny) => x.base === s.path).map((x: LegacyAny) => shortPath(x.path)).join(', ')}) : ''};
   const trialHtml = trialBar(s), equip = equipOf(), wantsHtml = ui2Wants(s);
   S0._globals = {s, view: figuresView(s)};
-  return {k: 'card', ci, ws, titleHtml, versions, ctl, trialHtml, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view};
+  return {k: 'card', ci, ws, title, versions, ctl, trialHtml, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view};
 }

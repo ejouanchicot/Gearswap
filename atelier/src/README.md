@@ -56,7 +56,7 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   colonne de ses chiffres (étape 5c).
 - **Étape 5b (2026-10-18)** : la fiche du set (`screens/sets/card.ts`, `Card.svelte` : sa tête et ses versions,
   en rangée ou en grille pour les weaponskills DNC, les seize cases d'équipement, la ligne sous elles). Restent à
-  l'ancienne page : le titre et les menus des armes (`setTitleBox`, `weaponMenus`), la tête d'un weaponskill
+  l'ancienne page : les menus des armes (`weaponMenus` ; le titre, `setTitleBox`, est passé en Svelte à l'étape 7m), la tête d'un weaponskill
   (`ws_page.js`), la barre de l'essai (`trial.js`), le bouton pour équiper (`live.js`), la légende, les notes, les
   chiffres du set (étape 5c) et la page de l'optimiseur (étape 6).
 - **Étape 5c (2026-10-18)** : la colonne des chiffres du set (`screens/sets/figures.ts`, `Figures.svelte`,
@@ -163,6 +163,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7l (2026-10-19)** : la carte de la cible (`combat/targetcard.ts`, `TargetCard.svelte`) et l'interrupteur
   d'un onglet de debuffs ; `targetCardPanel` (target_pick.js) et `offSwitch` (buff_panels.js) sont retirés.
   Buffs & cible n'a plus de bloc dessiné par l'ancienne page (restent des textes traduits et l'emblème d'un job).
+- **Étape 7m (2026-10-19)** : le titre d'un set (`TitleBox.svelte`, card.ts `TitleView`, `wsTitle`) : nom, version,
+  quand il se porte ou ce que fait la WS, chemin, boutons Optimiser / Supprimer ; `setTitleBox` et `wsTitleHTML`
+  (sets_view.js) sont retirés. Le bouton Supprimer reste le HTML de `delButton` (push.js).
 
 ## Vérifier une étape
 
