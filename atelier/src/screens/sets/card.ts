@@ -1,7 +1,7 @@
 // GearSwap Atelier · the card of the set shown in the Sets screen: its head (what it is, its versions, the weapons it
 // is shown with, a weaponskill's controls), the trial's bar, the equipment as sixteen slots, the line under them (what
 // it inherits, what is shared, what is missing), the legend, the notes, and the figures (shown beside on a wide
-// window). A set whose optimizer page is open shows that page instead (step 6).
+// window). A set whose optimizer page is open shows that page instead (optimizer/optpage.ts).
 // The rules are the old page's cardHTML, slotHTML, setVersionsHTML, versionGridHTML (sets_view.js), with what it
 // keeps in the page's state as it goes (S._curSet, S._globals). Still the old page's HTML: the title box and the
 // weapons' menus (setTitleBox, weaponMenus), a weaponskill's head (ws_page.js wsHeadHTML), the trial's bar
@@ -10,6 +10,7 @@
 // @file    atelier/src/screens/sets/card.ts
 // @author  ejouanchicot
 import {figuresView, type FiguresView} from './figures';
+import {optPageView, type OptPageView} from '../optimizer/optpage';
 
 export interface SlotView { slot: string; ci: number; label: string; empty: boolean; cls: string; aria: string; reset: null | {title: string}; lock: null | {title: string};
   iconHtml: string; aug: boolean; rank: number | null }
@@ -34,7 +35,7 @@ export interface CardView {
   notesHtml: string;
   figures: FiguresView;
 }
-export type CardOrPage = CardView | {k: 'page'; html: string};
+export type CardOrPage = CardView | {k: 'page'; view: OptPageView};
 
 const st = (): LegacyAny => S;
 const TIERS3 = ['Group', 'Solo', 'Trust'];
@@ -119,7 +120,7 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws';
   if (ws) wsTitleHTML(s);   // (worked out first as before: what it reads is kept for the head)
   const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || isNukeSet(s.path) || roundSet(s) || statSet(s));
-  if (optable && optPageOpen(s)) return {k: 'page', html: optPageHTML(s, ws && wsOfSet(s))};
+  if (optable && optPageOpen(s)) return {k: 'page', view: optPageView(s, ws && wsOfSet(s))};
   // its actions on the title line: the optimizer, then deleting it
   const acts = `<span class="setacts">${optable && engineReady() ? `<button class="btn" data-optview title="${esc(t('ttOptOpen'))}">${t('optOpenBtn')}</button>` : ''}${(ws && !wsOfSet(s)) || locked ? '' : delButton(s)}</span>`;
   let titleHtml: string, versions: Versions, ctl: CardView['ctl'];

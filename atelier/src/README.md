@@ -69,6 +69,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   `Situations.svelte`, `Picker.svelte`), la même chose dans la barre de Buffs & cible et dans la ligne au-dessus des
   sets. La recherche et le filtre de situation de la fenêtre des profils redessinent la page au lieu de cacher les
   lignes à la main (`profiles.js`). Reste à l'ancienne page : l'avertissement de sub (`subWarnHTML`).
+- **Étape 6a (2026-10-19)** : la page de l'optimiseur d'un set (`screens/optimizer/optpage.ts`, `OptPage.svelte` :
+  l'en-tête, les objectifs et leurs réglages, le gros chiffre et son verdict, l'image du résultat — courbe, jauge,
+  rounds, facteurs, barres —, le tableau). Ce que valent les chiffres reste à `opt_page.js` (`opFigures`, `opRows`).
+  Restent à l'ancienne page : les blocs partagés avec l'optimiseur de stats (limites, onglets de recherche, pièces
+  changées) et cet optimiseur lui-même (`stat_opt.js`), les boutons de recherche, la situation d'un nuke.
 
 ## Vérifier une étape
 
