@@ -427,57 +427,15 @@ const statLi = (label, value, extra = '', cls = '', tip = '') =>
   `<li class="${cls}"${statTitle(label, tip)}><span>${label}</span><b>${value}</b><i>${extra}</i></li>`;
 const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
 // A stat the game stops at a cap, as a gauge: how far the set is from the cap, "max" once it is there, and under
-// the gauge what goes past it for nothing (pieces that could give something else)
+// the gauge what goes past it for nothing (pieces that could give something else): its texts, the lines themselves in
+// atelier/src/screens/sets/statlines.ts
 Object.assign(T.fr, {capOf: 'sur {c} %', capMax: 'max', capWaste: '{n} % en trop : une pièce pourrait apporter autre chose'});
 Object.assign(T.en, {capOf: 'of {c} %', capMax: 'max', capWaste: '{n} % over the cap: a piece could bring something else'});
-function cappedLi(label, sum, cap, detail, small){
-  const r = x => Math.round(x * 10) / 10, over = Math.abs(sum) > Math.abs(cap), full = Math.abs(sum) >= Math.abs(cap);
-  const fill = Math.max(0, Math.min(100, cap ? Math.round(100 * sum / cap) : 0));
-  return `<li class="capli ${full ? 'full' : ''}"${statTitle(label, detail)}><span>${label}</span>` +
-    `<b>${signed(r(over ? cap : sum))} %</b><i>${full ? `<em class="capmax">${t('capMax')}</em>` : esc(t('capOf', {c: signed(cap)}))}</i>` +
-    `<u class="gauge" style="--fill:${fill}%"></u>` +
-    (over ? `<em class="overl">${esc(t('capWaste', {n: r(Math.abs(sum - cap))}))}</em>` : small ? `<em class="overl">${esc(small)}</em>` : '') + `</li>`;
-}
-// A damage taken with its II stat on one line: the first layer stops at -50 %, the II one adds past it, -87.5 % in all
-// (the line's total; its small text: the first layer against its cap, what is wasted past it, the II)
-function layeredLi(label, raw, two, name, detail){
-  const r = x => Math.round(x * 10) / 10, first = Math.max(raw, -50), total = Math.max(first + two, -87.5), over = raw < -50 ? r(-50 - raw) : 0;
-  const extra = `${signed(r(first))} / −50` + (over ? ` (${t('cmpOver', {n: over})})` : '') + ` + ${name} ${signed(two)}`;
-  return statLi(label, signed(r(total)) + ' %', extra, '', `${detail} = ${r(raw)}, ${t('dtCapNote')} ; + ${name} ${two} = ${r(total)} % (−87,5 % max)`);
-}
 // What multiplies the damage taken past the cap (Fan Dance, Rampart: B._by, buffs.js), as a line of its own under the
 // gear's: the gear's share, capped, times each of them (BG Wiki, Fan Dance: "does not count towards the Physical Damage
-// Taken cap of 50%, but is multiplied with it"). No line when nothing multiplies
+// Taken cap of 50%, but is multiplied with it"). No line when nothing multiplies (statlines.ts mulLine: these are its texts)
 Object.assign(T.fr, {pdtWithMul: 'Physiques au total', mdtWithMul: 'Magiques au total', mulGear: 'stuff'});
 Object.assign(T.en, {pdtWithMul: 'Physical in all', mdtWithMul: 'Magic in all', mulGear: 'gear'});
-function mulLi(label, gear, keys, B){
-  const by = ((B && B._by) || []).filter(e => keys.includes(e.k) && e.v !== 1);
-  if (!by.length) return '';
-  const r = x => Math.round(x * 10) / 10, total = (by.reduce((m, e) => m * e.v, 1 + gear / 100) - 1) * 100;
-  const how = `${t('mulGear')} ${signed(r(gear))} % ` + by.map(e => `× ${e.src} ${signed(r((e.v - 1) * 100))} %`).join(' ');
-  return statLi(label, signed(r(total)) + ' %', how, '', how);
-}
-// Damage taken (Guide_Paladin, 03_defense): DT + PDT and DT + MDT stop at -50 %; PDT II
-// (Burtgang) and MDT II (Aegis) go on past it, up to -87.5 % in all
-function damageTakenLines(v){
-  // the totals before the cap, so a line shows what is wasted past it
-  // Shell (Buffs and conditions) lowers magic damage under the same -50 % cap: its share counts here
-  const B = buffTotals(), shell = B.shell ? Math.round(-B.shell / 256 * 1000) / 10 : 0;
-  const pdtRaw = v('dt') + v('pdt'), mdtRaw = v('dt') + v('mdt') + shell, pdt = Math.max(pdtRaw, -50), mdt = Math.max(mdtRaw, -50);
-  // one line a kind of damage: with a II stat (PDT II: Burtgang, MDT II: Aegis) its total, the two layers in its detail
-  const pDetail = `DT ${v('dt')} + PDT ${v('pdt')}`, mDetail = `DT ${v('dt')} + MDT ${v('mdt')}` + (shell ? ` + ${buffState().shell} ${shell}` : '');
-  // with what multiplies the damage past the cap (Fan Dance): one line, the total, its gauge against the most the gear's
-  // cap and the dance give together (-60 % for 20 %); the gear's own share and the dance's are its small text
-  const pMul = ((B && B._by) || []).filter(e => (e.k === 'dmgmul' || e.k === 'pdmgmul') && e.v !== 1), pm = pMul.reduce((m, e) => m * e.v, 1);
-  const r1 = x => Math.round(x * 10) / 10, pHow = `${t('mulGear')} ${signed(r1(pdt))} % ` + pMul.map(e => `× ${e.src} ${signed(r1((e.v - 1) * 100))} %`).join(' ');
-  let out = v('pdt2') ? layeredLi(t('pdtTotal'), pdtRaw, v('pdt2'), 'PDT II', pDetail) + mulLi(t('pdtWithMul'), Math.max(pdt + v('pdt2'), -87.5), ['dmgmul', 'pdmgmul'], B)
-    : pMul.length ? cappedLi(t('pdtEff'), r1(((1 + pdt / 100) * pm - 1) * 100), r1((.5 * pm - 1) * 100), `${pDetail} ; ${pHow}`, pHow)
-    : cappedLi(t('pdtEff'), pdtRaw, -50, pDetail);
-  out += v('mdt2') ? layeredLi(t('mdtTotal'), mdtRaw, v('mdt2'), 'MDT II', mDetail) : cappedLi(shell ? t('mdtShell') : t('mdtEff'), mdtRaw, -50, mDetail);
-  out += mulLi(t('mdtWithMul'), Math.max(mdt + v('mdt2'), -87.5), ['dmgmul'], B);
-  if (v('bdt')) out += cappedLi(t('bdtEff'), v('dt') + v('bdt'), -50, `DT ${v('dt')} + BDT ${v('bdt')}`);
-  return out;
-}
 const STAT_ORDER = Object.keys(STAT_DEF);
 const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.indexOf(b) + 1 || 999) || a.localeCompare(b);
 // What the set's gear brings: every piece added up, the caps shown where the game has one
@@ -533,39 +491,5 @@ function statPickTools(){
 function openStatPick(){
   const spec = {cls: 'statpickdlg', titleHtml: '', statPick: ATELIER_DIALOG.statPickView()};
   if ($('#overlay .statpickdlg') && !$('#overlay').hidden) ATELIER_DIALOG.update(spec); else ATELIER_DIALOG.show(spec);
-}
-function setStatsHTML(s){
-  const {total, paths, unknown, cond} = setStats(s);
-  const v = k => (total[k] || {}).v || 0;
-  const capped = (label, sum, cap, detail) => cappedLi(label, sum, cap, detail);
-  const sorter = statSorter(s, total), lineOf = k => { const cap = STAT_DEF[k] && STAT_DEF[k][3];
-    return cap ? capped(esc(statLabel(k, total[k])), total[k].v, cap, t('gearOnly')) : statLi(esc(statLabel(k, total[k])), fmtStat(total[k])); };
-  // what the set is after: a tab of its own, first and open by default, by weight (damage taken on top);
-  // the groups keep the rest
-  const wantFirst = setWants(s).want;
-  const isWanted = k => wantFirst && !DT_KEYS.includes(baseKey(k)) && wantOf(wantFirst, k) >= 0.3;
-  const wantedKeys = wantFirst ? Object.keys(total).filter(k => total[k].v && isWanted(k) && statVisible(k, s)).sort(sorter) : [];
-  const groups = STAT_GROUPS.map(([g, fr, en]) => {
-    const keys = Object.keys(total).filter(k => total[k].v && statGroup(k) === g && !isWanted(k) && statVisible(k, s)).sort(sorter);
-    let rows = keys.map(lineOf).join('');
-    // Damage taken: DT counts in both, physical and magic, up to -50 % together
-    if (g === 'def' && (v('dt') || v('pdt') || v('mdt')) && statShown('dtEff'))
-      rows = damageTakenLines(v) + rows;
-    return rows ? {key: g, label: S.lang === 'fr' ? fr : en, n: (rows.match(/<li[ >]/g) || []).length, body: `<ul class="statlist">${rows}</ul>`} : null;
-  }).filter(Boolean);
-  if (wantedKeys.length) { const dt = (v('dt') || v('pdt') || v('mdt')) && statShown('dtEff') ? damageTakenLines(v) : '', rows = dt + wantedKeys.map(lineOf).join('');
-    groups.unshift({key: 'want', label: t('cmpWanted'), n: (rows.match(/<li[ >]/g) || []).length, body: `<ul class="statlist">${rows}</ul>`}); }
-  const notes = [];
-  if (paths.length) notes.push(`<p>${t('pathNote')} ${paths.map(esc).join(', ')}</p>`);
-  if (unknown.length) notes.push(`<p>${t('unknownNote')} ${unknown.map(esc).join(', ')}</p>`);
-  // what only applies sometimes (Set:, latent, Unity, Aftermath...): a tab of its own, one line per effect, its piece first
-  if (cond.length) groups.push({key: 'cond', label: t('condTab'), n: cond.length, body: `<ul class="condlist">${cond.map(c => { const [piece, ...txt] = c.split(' — ');
-    return `<li><b>${esc(piece)}</b><span>${esc(txt.join(' — '))}</span></li>`; }).join('')}</ul>`});
-  if (!(groups.length || Object.keys(S.statHide).length || S.statOnlyWant)) return '';
-  // one group at a time, its tab kept from set to set (the first when that group is not there)
-  const cur = groups.find(g => g.key === S._statTab) || groups[0];
-  const tabs = groups.map(g => `<button role="tab" data-stattab="${g.key}" aria-selected="${g === cur}" title="${esc(T[S.lang]['ttStatTab_' + g.key] ? t('ttStatTab_' + g.key) : '')}">${esc(g.label)}<small>${g.n}</small></button>`).join('');
-  return `<div class="setstats"><div class="sshead"><span class="kicker">${t('setStats')}</span>${statPickBtn()}</div>` +
-    `<div class="stabs" role="tablist">${tabs}</div>${cur ? `<div class="stabbody">${cur.body}</div>` : ''}${notes.join('')}</div>`;
 }
 

@@ -4,12 +4,13 @@
 // The boxes are data (StatBox: its rows a label, a figure, a note, a tooltip): the tanking and attack boxes are worked
 // out here, the old page's tankHTML / offenseHTML (engine.js) draw these same boxes through boxHtml (the buffs window,
 // My character's cards). The rules are the old page's setPanelHTML (layout2.js), tankHTML, offenseHTML, fbox
-// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js), luopanHTML (luopan.js). Still the old page's HTML: the stats sheet (stats.js setStatsHTML), every stat: globals.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
+// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js), luopanHTML (luopan.js). The stats sheet: sheet.ts; every stat: globals.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/figures.ts
 // @author  ejouanchicot
 
 import {globalsView, type GlobalsView} from './globals';
+import {sheetView, type SheetView} from './sheet';
 
 export interface StatRow { k: 'row'; cls: string; title: string | undefined; labelHtml: string; valueHtml: string; extraHtml: string }
 export type BoxItem = StatRow | {k: 'html'; html: string};
@@ -20,7 +21,7 @@ export interface FiguresView {
   boxes: StatBox[];
   hp: HpCycleView | null;
   luopan: LuopanView | null;
-  sheetHtml: string;
+  sheet: SheetView | null;
   all: {open: boolean; title: string; label: string; globals: GlobalsView};
 }
 
@@ -236,6 +237,6 @@ export function figuresView(s: LegacyAny): FiguresView {
   const boxes = fight ? [fight] : off ? [off] : r ? [tankBox(r)] : [];
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), globals: globalsView(s, 'stats')};
-  const hp = hpCycle(s), luopan = luopanOf(s), sheetHtml = setStatsHTML(s);
-  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheetHtml, all};
+  const hp = hpCycle(s), luopan = luopanOf(s), sheet = sheetView(s);
+  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, all};
 }

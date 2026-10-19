@@ -204,6 +204,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   (`globals.ts`, `Globals.svelte`), repliés sous les chiffres d'un set et ouverts en cartes dans Mon perso ;
   `globalsHTML` (sets_view.js) est retiré. `cappedLi`, `layeredLi`, `mulLi` et `damageTakenLines` (stats.js) restent
   pour la feuille de stats, l'étape suivante.
+- **Étape 7x (2026-10-19)** : la feuille de stats d'un set (`sheet.ts`, `Sheet.svelte` : un onglet par groupe, ce que
+  le set cherche d'abord, les effets sous condition, les notes) ; `setStatsHTML`, `cappedLi`, `layeredLi`, `mulLi` et
+  `damageTakenLines` (stats.js) sont retirés, leurs textes y restent. Les chiffres d'un set (figures.ts) n'ont plus de
+  HTML de l'ancienne page.
 
 ## Vérifier une étape
 

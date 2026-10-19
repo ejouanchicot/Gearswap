@@ -94,13 +94,13 @@ export function compareView(s: LegacyAny): CompareView {
       return {sum: list.reduce((a, x) => a + x[1], 0) - two, two, list}; });
     if (!parts.some(x => x.sum || x.two) || !statVisible('dt', s)) return [];
     const eff = (x: {sum: number; two: number}) => Math.max(Math.max(x.sum, -50) + x.two, -87.5), best = Math.min(...parts.map(eff));
-    // with a II stat the line is the total: named as the set's stats name it (stats.js layeredLi)
+    // with a II stat the line is the total: named as the set's stats name it (sets/statlines.ts layeredLine)
     if (parts.some(x => x.two)) label = part === 'pdt' ? t('pdtTotal') : t('mdtTotal');
     return [{cls: 'want', labelHtml: esc(label), title: undefined, cells: parts.map((x, i) => { const dv = eff(x) - eff(parts[0]!);
       return cell(eff(x) === best && parts.some(y => eff(y) !== eff(x)), `${signed(r1(eff(x)))} %`, i && dv ? {up: dv < 0, text: `${signed(r1(dv))} %`} : null,
         {over: x.sum < -50 ? t('cmpOver', {n: r1(-50 - x.sum)}) : '', small: x.list.map(([n, v]) => `${n} ${signed(r1(v))}`).join(' · ')}); })}];
   };
-  // what multiplies the damage taken past the cap (Fan Dance, Rampart: stats.js mulLi), each column with its own hands
+  // what multiplies the damage taken past the cap (Fan Dance, Rampart: sets/statlines.ts mulLine), each column with its own hands
   const mulRow = (label: string, part: string, mkeys: string[], extra: (c: LegacyAny) => Array<[string, number]>): CmpRow[] => {
     const by = (B._by || []).filter((e: LegacyAny) => mkeys.includes(e.k) && e.v !== 1);
     if (!by.length || !statVisible('dt', s)) return [];

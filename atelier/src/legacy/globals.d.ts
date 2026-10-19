@@ -309,7 +309,6 @@ declare function trialBar(s: LegacyAny): string;
 declare function ui2Wants(s: LegacyAny): string;
 /* ---- the figures of a set (engine.js, fight_stats.js, stat_opt.js, luopan.js, stats.js), loosely typed ---- */
 declare function charStats(s: LegacyAny, pieces?: LegacyAny): LegacyAny;
-declare function setStatsHTML(s: LegacyAny): string;
 declare function statHelp(label: string, detail?: string): string;
 declare function traitOf(stat: string, c: LegacyAny): number;
 declare function giftOf(stat: string, c: LegacyAny): number;
