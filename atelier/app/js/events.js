@@ -269,8 +269,9 @@ document.addEventListener('change', e => {
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
     // a piece's stats change with it (stats.js ENCHANT_KEPT): everything worked out from them is redone
     if (ENCHANT_OPTS.includes(e.target.dataset.optopt)) { DATA_GEN++; render(); }
-    // the objective shows or hides the TP range; the range reads back rounded to 250
-    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed', 'nukeSit', 'nukeMpLow'].includes(e.target.dataset.optopt)) render();
+    // the objective shows or hides the TP range; the range reads back rounded to 250; a limit is written in the
+    // result's table (DT+PDT ≤ -40) and marks the figures under it
+    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed', 'nukeSit', 'nukeMpLow', 'pdt', 'mdt', 'sb', 'hit'].includes(e.target.dataset.optopt)) render();
     return; }
   if (e.target.id === 'statonly') { S.statOnlyWant = e.target.checked; S.statPreset = ''; save(); openStatPick(); render(); return; }
   if (e.target.classList.contains('statpick')) { S.statPreset = ''; const k = e.target.dataset.stat; if (e.target.checked) delete S.statHide[k]; else S.statHide[k] = 1;
