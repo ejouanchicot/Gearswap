@@ -141,37 +141,3 @@ function luopanFigures(pieces, castPieces){
 }
 const luClock = secs => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
 const luNumber = n => n.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US');
-// The cast set's box: only what the cast takes
-function luopanCastHTML(s){
-  const g = luopanGear(withWeapons(s).pieces), n = luopanCharm(g.duration);
-  const rows = statLi(t('luGeo'), `+${g.geo}`, esc(g.geo ? t('luGeoFrom', {p: g.geoFrom}) : t('luGeoNone')), '', t('luGeoTip')) +
-    statLi(t('luHp'), luNumber(LUOPAN.hp + g.hp), g.hp ? esc(t('luHpGear', {n: g.hp})) : '') +
-    (g.duration ? statLi(t('luCharm'), `−${n}`, '', '', t('luCharmTip', {p: g.duration, n})) : '');
-  return box('g-def', t('luCastTitle'), `<ul class="statlist big">${rows}</ul><p class="note-m">${esc(t('luCastOnly'))}</p>`);
-}
-// The life table of a worn set
-function luopanTableHTML(f){
-  const line = ([k, r]) => `<tr><th>${esc(t(k))}</th><td>${r.heals ? esc(t('luHeals')) : r.net}</td><td>${r.ticks == null ? '—' : r.ticks}</td>` +
-    `<td class="${r.heals || r.capped ? 'better' : ''}">${r.heals || r.capped ? esc(t('luCap')) : luClock(r.secs)}</td></tr>`;
-  return `<p class="note-m">${esc(t('luLife'))}</p><table class="rdvs optable"><thead><tr><th>${esc(t('luCase'))}</th><th>${esc(t('luLoss'))}</th>` +
-    `<th>${esc(t('luTicks'))}</th><th>${esc(t('luTime'))}</th></tr></thead><tbody>${f.rows.map(line).join('')}</tbody></table>`;
-}
-// The box, on a GEO's set: the cast set (luopanCastHTML), or a set worn with the luopan out: one that holds damage
-// taken or Regen for it, or is named for it (luopan, Pet)
-function luopanHTML(s){
-  if (S.job !== 'GEO' || !s) return '';
-  if (isLuopanCast(s)) return luopanCastHTML(s);
-  const pieces = withWeapons(s).pieces, worn = luopanGear(pieces), fam = family(s.path, s.pieces);
-  // a file with no set named for the luopan: its idle and engaged sets that hold something for it
-  const named = ((data() || {}).sets || []).some(x => !x.empty && isLuopanWorn(x));
-  if (!(named ? isLuopanWorn(s) : (worn.dt || worn.regen) && ['idle', 'engaged'].includes(fam))) return '';
-  const cast = luopanCastSet(), f = luopanFigures(pieces, cast ? withWeapons(cast).pieces : null), g = f.g;
-  const gearDt = -g.dt, miss = Math.round((f.useful - gearDt) * 10) / 10, n = luopanCharm(g.duration);
-  const dtNote = miss > 0 ? t('luDtShort', {n: miss}) : miss < 0 ? t('luDtOver', {n: -miss}) : '';
-  let rows = statLi(t('luDt'), `${signed(f.total)} %`, `${esc(t('luDtGear', {g: gearDt, n: f.useful}))}${dtNote ? ' · ' + esc(dtNote) : ''}`, miss > 0 ? 'short' : '', t('luDtTip')) +
-    statLi(t('luRegen'), signed(g.regen), '', '', t('luRegenTip')) + statLi(t('luHp'), luNumber(f.hp), g.hp ? esc(t('luHpGear', {n: g.hp})) : '');
-  if (g.duration) rows += statLi(t('luCharm'), `−${n}`, '', '', t('luCharmTip', {p: g.duration, n}));
-  const notes = (g.hp ? `<p class="note-m">${esc(t('luScaled', {n: g.hp, l: f.base}))}</p>` : '') +
-    `<p class="note-m">${esc(cast ? t('luFrom', {s: shortPath(cast.path)}) : t('luFromNone'))}</p>`;
-  return box('g-def', t('luTitle'), `<ul class="statlist big">${rows}</ul>${luopanTableHTML(f)}${notes}`);
-}

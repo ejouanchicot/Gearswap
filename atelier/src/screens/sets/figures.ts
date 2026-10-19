@@ -4,7 +4,7 @@
 // The boxes are data (StatBox: its rows a label, a figure, a note, a tooltip): the tanking and attack boxes are worked
 // out here, the old page's tankHTML / offenseHTML (engine.js) draw these same boxes through boxHtml (the buffs window,
 // My character's cards). The rules are the old page's setPanelHTML (layout2.js), tankHTML, offenseHTML, fbox
-// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js). Still the old page's HTML: the Luopan (luopan.js), the stats sheet (stats.js setStatsHTML), every stat (globalsHTML), the
+// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js), luopanHTML (luopan.js). Still the old page's HTML: the stats sheet (stats.js setStatsHTML), every stat (globalsHTML), the
 // extra tanking lines (tankExtraHTML). A field ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/figures.ts
@@ -18,7 +18,7 @@ export interface FiguresView {
   title: string;
   boxes: StatBox[];
   hp: HpCycleView | null;
-  luopanHtml: string;
+  luopan: LuopanView | null;
   sheetHtml: string;
   all: {open: boolean; title: string; label: string; html: string};
 }
@@ -161,6 +161,35 @@ function hpCycle(s: LegacyAny): HpCycleView | null {
       a: String(x.a ?? '—'), b: String(x.b ?? '—'), cls: cls(x), loss: x.self ? t('cyOnPurpose') : x.loss ? '−' + x.loss : '0'}; })};
 }
 
+export interface LuopanView { title: string; rows: StatRow[]; cast: string;
+  life: null | {note: string; heads: string[]; rows: Array<{label: string; loss: string; ticks: string; good: boolean; time: string}>}; notes: string[] }
+
+/** A GEO's Luopan (luopan.js): on the cast set what the cast takes (Geomancy, the luopan's HP, Concentric Pulse's
+ * charm); on a set worn with the luopan out (one that holds damage taken or Regen for it, or is named for it), its
+ * damage taken, Regen and HP, how long it lives in each case, where its HP come from. Null on any other set */
+function luopanOf(s: LegacyAny): LuopanView | null {
+  if (S.job !== 'GEO' || !s) return null;
+  if (isLuopanCast(s)) {
+    const g = luopanGear(withWeapons(s).pieces), n = luopanCharm(g.duration);
+    const rows = [row(t('luGeo'), `+${g.geo}`, esc(g.geo ? t('luGeoFrom', {p: g.geoFrom}) : t('luGeoNone')), '', t('luGeoTip')),
+      row(t('luHp'), luNumber(LUOPAN.hp + g.hp), g.hp ? esc(t('luHpGear', {n: g.hp})) : '')].concat(g.duration ? [row(t('luCharm'), `−${n}`, '', '', t('luCharmTip', {p: g.duration, n}))] : []);
+    return {title: t('luCastTitle'), rows, cast: t('luCastOnly'), life: null, notes: []};
+  }
+  const pieces = withWeapons(s).pieces, worn = luopanGear(pieces), fam = family(s.path, s.pieces);
+  // a file with no set named for the luopan: its idle and engaged sets that hold something for it
+  const named = (((data() as LegacyAny) || {}).sets || []).some((x: LegacyAny) => !x.empty && isLuopanWorn(x));
+  if (!(named ? isLuopanWorn(s) : (worn.dt || worn.regen) && ['idle', 'engaged'].includes(fam))) return null;
+  const cast = luopanCastSet(), f = luopanFigures(pieces, cast ? withWeapons(cast).pieces : null), g = f.g;
+  const gearDt = -g.dt, miss = Math.round((f.useful - gearDt) * 10) / 10, n = luopanCharm(g.duration);
+  const dtNote = miss > 0 ? t('luDtShort', {n: miss}) : miss < 0 ? t('luDtOver', {n: -miss}) : '';
+  const rows = [row(t('luDt'), `${signed(f.total)} %`, `${esc(t('luDtGear', {g: gearDt, n: f.useful}))}${dtNote ? ' · ' + esc(dtNote) : ''}`, miss > 0 ? 'short' : '', t('luDtTip')),
+    row(t('luRegen'), signed(g.regen), '', '', t('luRegenTip')), row(t('luHp'), luNumber(f.hp), g.hp ? esc(t('luHpGear', {n: g.hp})) : '')];
+  if (g.duration) rows.push(row(t('luCharm'), `−${n}`, '', '', t('luCharmTip', {p: g.duration, n})));
+  return {title: t('luTitle'), rows, cast: '', notes: (g.hp ? [t('luScaled', {n: g.hp, l: f.base})] : []).concat(cast ? t('luFrom', {s: shortPath(cast.path)}) : t('luFromNone')),
+    life: {note: t('luLife'), heads: [t('luCase'), t('luLoss'), t('luTicks'), t('luTime')], rows: f.rows.map(([k, r]: [string, LegacyAny]) => ({label: t(k),
+      loss: r.heals ? t('luHeals') : String(r.net), ticks: r.ticks == null ? '—' : String(r.ticks), good: !!(r.heals || r.capped), time: r.heals || r.capped ? t('luCap') : luClock(r.secs)}))}};
+}
+
 /** The column of figures of a set (setPanelHTML), with what it keeps in the page's state (S._curSet) */
 export function figuresView(s: LegacyAny): FiguresView {
   const S0 = st();
@@ -172,6 +201,6 @@ export function figuresView(s: LegacyAny): FiguresView {
   const boxes = fight ? [fight] : off ? [off] : r ? [tankBox(r)] : [];
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), html: globalsHTML(s, 'stats')};
-  const hp = hpCycle(s), luopanHtml = luopanHTML(s), sheetHtml = setStatsHTML(s);
-  return {title: t('ui2SetTitle'), boxes, hp, luopanHtml, sheetHtml, all};
+  const hp = hpCycle(s), luopan = luopanOf(s), sheetHtml = setStatsHTML(s);
+  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheetHtml, all};
 }

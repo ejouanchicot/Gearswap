@@ -194,6 +194,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   redessinait) : un test qui lit trop tôt voit la valeur en route (tests de clics lancés animations coupées).
 - **Étape 7t (2026-10-19)** : le cycle des HP d'un tank PLD / RUN (figures.ts `hpCycle`, dessiné par `Figures.svelte`) ;
   `hpCycleHTML` (stat_opt.js) est retiré, `hpCycleRows`, `setMaxHp` et `hpRef` y restent (l'optimiseur de stats s'en sert).
+- **Étape 7u (2026-10-19)** : le bloc Luopan d'un GEO, au cast et porté (figures.ts `luopanOf`) ; `luopanHTML`,
+  `luopanCastHTML` et `luopanTableHTML` (luopan.js) sont retirés, les calculs (`luopanFigures`, `luopanGear`…) y restent.
 
 ## Vérifier une étape
 
