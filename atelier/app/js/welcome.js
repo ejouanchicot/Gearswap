@@ -1,6 +1,7 @@
-// GearSwap Atelier · welcome.js: the page with nothing to show yet (no export of any character: a new install, a
-// package made without its exports). Says how to fill it: //gs c atelier in game, or the files read without the game
-// (offline_export.js, the main subjob of each job, as a package's exports are made: package_exports.js).
+// GearSwap Atelier · welcome.js: the texts and the reading of the files of the page with nothing to show yet (no
+// export of any character: a new install, a package made without its exports), drawn by atelier/src/screens/home. Says
+// how to fill it: //gs c atelier in game, or the files read without the game (offline_export.js, the main subjob of
+// each job, as a package's exports are made: package_exports.js).
 // (loaded by atelier/index.html, in the order of the list there)
 
 Object.assign(T.fr, {wcTitle: 'Bienvenue dans l’Atelier',
@@ -22,16 +23,6 @@ Object.assign(T.en, {wcTitle: 'Welcome to the Atelier',
 
 // The reading's state, while the page is open: '', 'busy', or the message of a failure
 const WELCOME = {state: '', msg: ''};
-function welcomeHTML(){
-  const code = s => `<code>${esc(s)}</code>`, busy = WELCOME.state === 'busy';
-  const steps = [t('wcGame1'), t('wcGame2', {c: '\u0001', o: '\u0002'}), t('wcGame3')].map(s =>
-    `<li>${esc(s).replace('\u0001', code('//gs c atelier')).replace('\u0002', code('//gs c atelier on'))}</li>`).join('');
-  return `<div class="cfg welcome"><header><h2>${esc(t('wcTitle'))}</h2></header><p class="lede">${esc(t('wcLede'))}</p><div class="cfgcols">` +
-    `<section class="box"><h3>${esc(t('wcGameT'))}</h3><ol>${steps}</ol><p class="muted small">${esc(t('wcGameWhy'))}</p></section>` +
-    `<section class="box"><h3>${esc(t('wcFilesT'))}</h3><p>${esc(t('wcFiles1'))}</p><p class="muted small">${esc(t('wcFilesWhy'))}</p>` +
-      `<div class="cfgrow"><button class="btn" data-wcread ${busy ? 'disabled' : ''}>${esc(t(busy ? 'wcBusy' : 'wcFilesBtn'))}</button></div>` +
-      (WELCOME.msg ? `<p class="${WELCOME.state === 'fail' ? 'kwarn' : 'muted'}">${esc(WELCOME.msg)}</p>` : '') + `</section></div></div>`;
-}
 // The characters of the data folder: a folder holding <Name>_<JOB>.lua
 async function welcomeChars(env){
   const out = [];

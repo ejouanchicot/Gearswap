@@ -125,6 +125,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   `SlotMenu.svelte`) : fait à sa première ouverture en fin de `<body>` comme avant, dessiné tout de suite (sa taille le
   place) ; `openSlotMenu` (trial.js) ne garde que le placement. L'infobulle (`#tip`) attend l'étape 7 avec la feuille
   de stats, dont elle partage le code.
+- **Étape 7a (2026-10-19)** : la page d'accueil (`screens/home/home.ts`, `HomeScreen.svelte`) : le tableau des jobs
+  joués, ou la page de bienvenue quand rien n'est exporté ; `welcome.js` garde ses textes et la lecture des fichiers
+  (`welcomeRead`). Vues dans `scripts/atelier/parity/home.json`.
 
 ## Vérifier une étape
 

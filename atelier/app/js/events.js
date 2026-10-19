@@ -416,7 +416,7 @@ function readExports(first, done){
     for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
     for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
     if (!CHARS[S.char]) { S.char = Object.keys(CHARS)[0]; S.job = null; }
-    // nothing exported yet: the welcome page (welcome.js, through renderHome)
+    // nothing exported yet: the welcome page (atelier/src/screens/home)
     if (!S.char) { S.job = null; if (done) done(); render(); return; }
     // back where the last visit left off, when that job is still exported
     if (S.job && !(DATA[S.char] || {})[S.job]) S.job = null;

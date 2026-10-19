@@ -8,20 +8,8 @@ function renderSide(){
   document.documentElement.setAttribute('data-theme', themeNow());
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
-function renderHome(){
-  // nothing exported yet: how to fill the page (welcome.js)
-  if (!CHARS[S.char]) return welcomeHTML();
-  const groups = jobGroups(), jobs = groups.flatMap(g => g.jobs); let totS = 0, totK = 0;
-  const dim = new Set(groups.filter(g => g.label !== null && !g.master).flatMap(g => g.jobs.map(j => j[0])));
-  for (const [c] of jobs) { const n = counts(c); totS += n.sets; totK += n.keys; }
-  const rows = jobs.map(([c,name,r]) => { const d = recordOf(S.char, c), n = counts(c);
-    return `<tr data-job="${c}" class="${dim.has(c) ? 'dim' : ''}" style="--role:${ROLE_COLOR[r]}"><td><span class="jobcell">${emblem(c)}<b>${c}</b><span class="muted">${name}</span>${jobBadge(c)}</span></td>
-      <td><span class="role">${t('roles.'+r)}</span></td><td class="sub">${esc(d.sub||'—')}</td><td class="num r">${n.sets}</td><td class="num r">${n.keys}</td>
-      <td class="num">${bookOf(d)}</td><td class="num">${styleOf(d)}</td><td class="num muted">${esc(d.at||'—')}${d.offline?' · '+t('offline'):''}</td></tr>`; }).join('');
-  return `<header class="pagehead"><div class="kicker">${t('overview')}</div><h1 class="display">${esc(S.char)}</h1><p class="lede">${t('summary',{j:jobs.length,s:totS,k:totK})}</p></header>
-    <div class="pane"><div class="tblwrap"><table class="tbl click"><thead><tr><th>${t('colJob')}</th><th>${t('colRole')}</th><th>${t('colSub')}</th><th class="r">${t('colSets')}</th><th class="r">${t('colKeys')}</th>
-    <th>${t('macro')}</th><th>${t('lockstyle')}</th><th>${t('colExport')}</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note-foot">${t('mock')}</p></div>`;
-}
+// The home page (the played jobs, or how to fill the page) is the Svelte application's (atelier/src/screens/home)
+function renderHome(){ return ''; }
 // Whether you hold a piece the set shows (any bag, slips and the Mog House included): 'missing' when you
 // do not, 'short' when yours is below what the page counts (a lower rank than the one counted, a cape
 // counted with its materials at their maximum), '' when yours is it or the page knows no bags (no export yet)

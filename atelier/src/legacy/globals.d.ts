@@ -470,3 +470,6 @@ declare function mxWsGiven(): LegacyAny;
 declare function mxSpell(n: string): boolean;
 declare function isExcluded(name: string): boolean;
 interface Window { ATELIER_SLOTMENU?: {view: (ci: number, slot: string) => LegacyAny; show: (v: LegacyAny) => HTMLElement} }
+declare const WELCOME: {state: string; msg: string};
+declare function counts(c: string): {sets: number; keys: number};
+declare function recordOf(c: string, j: string): LegacyAny;
