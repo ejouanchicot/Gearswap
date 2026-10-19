@@ -106,7 +106,7 @@ function opObjLabel(kind, k){
   if (k === 'nuke') return t(isBurstSet((S._optSet || {}).path) ? 'nukeObjMb' : 'nukeObj');
   return k === 'jump' ? t('jumpObj') : t('engObj_' + k);
 }
-/* ---- the left column's shared blocks: search, switches (the limits: atelier/src/screens/optimizer/blocks.ts) ---- */
+/* ---- the search's tabs and switches (drawn by atelier/src/screens/optimizer/blocks.ts, as the limits are) ---- */
 // The search's settings, in tabs: the pieces it may use, how it works them out, the special pieces. A new setting is a
 // line in OP_SWITCH (its label, its tip) and its key in a tab here; what it changes reads S.optOpts.<key>. `menu`: the
 // tab's menu (an S.optOpts key, its label, its values and their text prefix); `count`: the tab's name says how many
@@ -124,37 +124,6 @@ const OP_SWITCH = {
   fullSpeed: {label: 'fullSpeed', tip: () => t('fullSpeedTip', {n: OPT_CORES})},
   hoxne: {label: 'optHoxne', tip: () => t('optHoxneTip')},
   vim: {label: 'optVim', tip: () => t('optVimTip')}};
-// One switch; noWeapons: free weapons offered off, with why
-function opSwitchHTML(o, k, ws, noWeapons){
-  const d = OP_SWITCH[k], off = k === 'freeWeapons' && noWeapons, tip = off ? noWeapons : d.tip ? d.tip(ws) : '';
-  return `<label class="opsw ${off ? 'off' : ''}" ${tip ? `title="${esc(tip)}"` : ''}><input type="checkbox" ${off ? 'disabled' : `data-optopt="${k}" ${o[k] ? 'checked' : ''}`}>` +
-    `<span>${esc(t(d.label))}</span></label>`;
-}
-// labelled and in the text's colour (a bare grey menu read as a switched-off one, 2026-10-05)
-function opMenuHTML(o, m){
-  const opts = m.values.map(v => `<option value="${v}" ${(o[m.key] || m.dflt) === v ? 'selected' : ''}>${t(m.text + v)}</option>`).join('');
-  const tip = m.tip ? `title="${esc(t(m.tip))}"` : '';
-  return `<div class="opsels"><span ${tip}>${esc(t(m.label))}</span><select class="buffsel" data-optopt="${m.key}" ${tip}>${opts}</select></div>`;
-}
-// The slots locked on the set shown (trial.js): the search leaves them as they are
-function opLocksHTML(){
-  const s = ui2CurrentSet(data()), list = s ? lockedSlots(s) : [];
-  const locks = list.length ? `<p class="oplocks">${esc(t('locksLine', {n: list.length, l: list.map(x => SLOT_NAMES[S.lang][x] || x).join(', ')}))} <button class="linkbtn" data-locksclear>${esc(t('locksClear'))}</button></p>` : '';
-  // the pieces left out of the searches for this character: one click on a name allows it again
-  const out = Object.keys(excludedOf()).sort();
-  const excl = out.length ? `<p class="oplocks">${esc(t('exclLine'))} ${out.map(n => `<button class="opexcl" data-unexclude="${esc(n)}" title="${esc(t('exclBack', {p: n}))}">${esc(n)} ×</button>`).join(' ')}` +
-    (out.length > 1 ? ` <button class="linkbtn" data-exclclear>${esc(t('exclClear'))}</button>` : '') + `</p>` : '';
-  return locks + excl;
-}
-// The search block: its tabs, then the open tab's menu and switches
-function opSearchHTML(o, ws, noWeapons){
-  const cur = OP_TABS.find(x => x.id === S._opTab) || OP_TABS[0];
-  const tabs = OP_TABS.map(x => { const on = x.count ? x.keys.filter(k => o[k]).length : 0;
-    return `<button data-optab="${x.id}" aria-pressed="${x === cur}" title="${esc(t('ttOpTab_' + x.id))}">${esc(t(x.title))}${on ? `<small class="opon">${on}</small>` : ''}</button>`; }).join('');
-  return `<h4 class="ophd2">${t('opSearch')}</h4><div class="seg optabs" role="group">${tabs}</div>` +
-    `<div class="optab">${cur.menu ? opMenuHTML(o, cur.menu) : ''}<div class="opsws">${cur.keys.map(k => opSwitchHTML(o, k, ws, noWeapons)).join('')}</div>` +
-    (cur.id === 'special' ? `<p class="muted small">${esc(t('opSpecialWhy'))}</p>` : '') + (cur.id === 'pieces' ? opLocksHTML() : '') + `</div>`;
-}
 
 /* ---- right: the result ---- */
 // A set's figures (the try as shown, or plain: the file's set), kept while nothing they read changes

@@ -4,15 +4,15 @@
 // the family against your set, the pieces changed, the trial).
 // The rules are the old page's optPageHTML, opWhatHTML, opParamsHTML, opResultHTML and its pictures (opt_page.js):
 // what the figures are (opFigures, opRows, opObj...) stays theirs. Still the old page's HTML: the search buttons
-// (optimizer.js optGoButtons), the search's tabs (opSearchHTML: shared with the
-// stats optimizer; the limits and the pieces changed: blocks.ts), the trial's row, a round's calculation (ws_page.js roundCalcHTML). A field ending in Html is one
+// (optimizer.js optGoButtons), the search's tabs (the search, the limits and the pieces
+// changed: blocks.ts, shared with the stats optimizer), the trial's row, a round's calculation (ws_page.js roundCalcHTML). A field ending in Html is one
 // of the old page's texts it wrote unescaped. The controls keep the attributes the old handlers read (data-optback,
 // data-optobj, data-optopt, data-nukespells, data-cycws, data-help, the .tpin TP field).
 //
 // @file    atelier/src/screens/optimizer/optpage.ts
 // @author  ejouanchicot
 
-import {limitTile, limitsView, changesView, type LimitsView, type ChangesView} from './blocks';
+import {limitTile, limitsView, changesView, searchView, type LimitsView, type ChangesView, type SearchView} from './blocks';
 import {statWhatView, statResultView, type StatWhatView, type StatResultView} from './statpage';
 export interface Objective { key: string; v: string; on: boolean; tip: string; label: string; desc: string; disabled: boolean }
 export type Param =
@@ -34,7 +34,7 @@ export interface OptPageView {
   noEngine: string | null;
   statWhat: StatWhatView | null;
   statResult: StatResultView | null;
-  what: null | {top: NukeTop | {k: 'limits'; limits: LimitsView}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; searchHtml: string};
+  what: null | {top: NukeTop | {k: 'limits'; limits: LimitsView}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; search: SearchView};
   result: null | {title: string; none: string | null; big: null | {label: string; value: string; diff: null | {text: string; up: boolean}; was: string; verdict: null | {cls: string; text: string}};
     visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changes: ChangesView | null; trialHtml: string; noTry: string; notes: string; calcHtml: string};
 }
@@ -53,7 +53,7 @@ function whatOf(s: LegacyAny, kind: string): NonNullable<OptPageView['what']> {
   const lim = (k: string, label: string) => limitTile('data-optopt', k, label, o[k]);
   const top = kind === 'nuke' ? nukeTop(s)
     : {k: 'limits' as const, limits: limitsView(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []))};
-  return {top, title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), searchHtml: opSearchHTML(o, kind === 'ws')};
+  return {top, title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), search: searchView(o, kind === 'ws')};
 }
 
 // The block on a nuke set (nuke_layers.js): the situation, the belt and the job's layers in plain words, the slots

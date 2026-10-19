@@ -219,6 +219,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7aa (2026-10-19)** : les blocs que les deux optimiseurs partagent : les tuiles des limites / minimums et les
   pièces que l'essai change (`optimizer/blocks.ts`, `OptBlocks.svelte`) ; `opLimitHTML`, `opLimitsHTML` et
   `opChangesHTML` (opt_page.js) sont retirés.
+- **Étape 7ab (2026-10-19)** : la recherche des deux optimiseurs (blocks.ts `searchView`, dans `OptBlocks.svelte` :
+  ses onglets, le menu de l'onglet ouvert, ses interrupteurs, les cases verrouillées et les pièces exclues) ;
+  `opSearchHTML`, `opMenuHTML`, `opSwitchHTML` et `opLocksHTML` (opt_page.js) sont retirés, `OP_TABS` et `OP_SWITCH`
+  y restent (c'est là qu'on ajoute un interrupteur).
 
 ## Vérifier une étape
 

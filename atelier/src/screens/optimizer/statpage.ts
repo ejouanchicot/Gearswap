@@ -3,20 +3,20 @@
 // something for the set, or all of them), what comes next when two results tie, the set's own pieces kept, the notes,
 // the search; on the right the result's figures against the file's set, the pieces the try changes, the trial's bar.
 // The rules are the old page's statWhatHTML and statResultHTML (stat_opt.js), which keep the options (statOpts), the
-// lines of the result (statRows) and the figures (statFigures). The minimums' tiles and the pieces changed: blocks.ts. Still
-// the old page's HTML: the search (opSearchHTML), the enfeebles' note (enfNoteHTML), the trial's bar (trialRow). The buttons keep the attributes the old handlers read (data-statobj, data-statobjall,
+// lines of the result (statRows) and the figures (statFigures). The minimums' tiles and the pieces changed: blocks.ts. The search too. Still
+// the old page's HTML: the enfeebles' note (enfNoteHTML), the trial's bar (trialRow). The buttons keep the attributes the old handlers read (data-statobj, data-statobjall,
 // data-statthen, data-statkeep, data-statreset).
 //
 // @file    atelier/src/screens/optimizer/statpage.ts
 // @author  ejouanchicot
 
-import {limitTile, limitsView, changesView, type LimitsView, type ChangesView} from './blocks';
+import {limitTile, limitsView, changesView, searchView, type LimitsView, type ChangesView, type SearchView} from './blocks';
 
 export interface StatWhatView {
   floors: LimitsView; floorsAfterHtml: string; titleHtml: string; help: string;
   groups: Array<{label: string; objs: Array<{k: string; on: boolean; name: string; desc: string}>}>; toggle: string;
   then: {label: string; selects: Array<{i: number; options: Array<{value: string; label: string; selected: boolean}>}>};
-  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; enfHtml: string; searchHtml: string; weaponsNote: string;
+  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; enfHtml: string; search: SearchView; weaponsNote: string;
 }
 export interface StatResultView {
   titleHtml: string; labelHtml: string; value: string; delta: null | {up: boolean; text: string}; wasHtml: string; shield: string;
@@ -53,7 +53,7 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     then: {label: t('statThen'), selects: [1, 2].map(i => ({i, options: ['', ...STAT_OBJS].filter(k => k !== cur).map(k => ({value: k, label: k ? t('statObj_' + k) : t('statNone'), selected: (so.objs[i] || '') === k}))}))},
     own: jaList.length ? {tip: t('statKeepOwnTip', {b: segs(s.path).pop()}), checked: keptSlots(s).length > 0,
       label: t('statKeepOwn', {p: jaList.map((sl: string) => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')})} : null,
-    notes, enfHtml: enfNoteHTML(s), searchHtml: opSearchHTML(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
+    notes, enfHtml: enfNoteHTML(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
 }
 
 /** The right column of a stats search: the first objective big, every line against the file's set (statResultHTML) */
