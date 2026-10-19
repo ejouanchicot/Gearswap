@@ -13,4 +13,4 @@
   let {view}: {view: FiguresView} = $props();
 </script>
 
-<div class="globals"><h3 class="ui2title">{view.title}</h3><div class="ui2own">{@html view.ownHtml}{#each view.boxes as b (b.key)}<StatBox box={b} />{/each}{@html view.afterHtml}</div>{@html view.sheetHtml}<details class="lgfold ui2all" data-ui2all open={view.all.open}><summary title={view.all.title}>{view.all.label}</summary>{@html view.all.html}</details></div>
+<div class="globals"><h3 class="ui2title">{view.title}</h3><div class="ui2own">{#each view.boxes as b (b.key)}<StatBox box={b} />{/each}{@html view.afterHtml}</div>{@html view.sheetHtml}<details class="lgfold ui2all" data-ui2all open={view.all.open}><summary title={view.all.title}>{view.all.label}</summary>{@html view.all.html}</details></div>

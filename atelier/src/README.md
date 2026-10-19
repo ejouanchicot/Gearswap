@@ -188,6 +188,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   à chaque dessin (`components/selsync.ts`, `use:selSync`).
   Correction juste après : un menu sans option marquée (« Tout » du filtre plan des sacs) montre sa première option,
   comme un menu redessiné le faisait ; sans elle il gardait l'ancien choix.
+- **Étape 7s (2026-10-19)** : le bloc « En combat » d'un set de nuke (figures.ts `fightBox`, dans `StatBox.svelte`,
+  qui sait maintenant n'avoir qu'une note sans liste : `bare`) ; `fightBoxHTML` (fight_stats.js) est retiré. Comme les
+  autres blocs de chiffres déjà passés en Svelte, ses chiffres défilent d'un set à l'autre (l'ancienne page les
+  redessinait) : un test qui lit trop tôt voit la valeur en route (tests de clics lancés animations coupées).
 
 ## Vérifier une étape
 

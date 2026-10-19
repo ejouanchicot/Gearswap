@@ -310,7 +310,6 @@ declare function trialBar(s: LegacyAny): string;
 declare function ui2Wants(s: LegacyAny): string;
 /* ---- the figures of a set (engine.js, fight_stats.js, stat_opt.js, luopan.js, stats.js), loosely typed ---- */
 declare function charStats(s: LegacyAny, pieces?: LegacyAny): LegacyAny;
-declare function fightBoxHTML(s: LegacyAny): string;
 declare function hpCycleHTML(s: LegacyAny): string;
 declare function luopanHTML(s: LegacyAny): string;
 declare function setStatsHTML(s: LegacyAny): string;
@@ -517,3 +516,10 @@ declare const NUKE_LAYERS: Record<string, LegacyAny[]>;
 declare function setPieces(path: string): LegacyAny;
 declare function shortSet(path: string): string;
 declare function mpThreshold(): number;
+declare function fightFigures(s: LegacyAny): LegacyAny;
+declare function fightWhyNot(fell: LegacyAny): string;
+declare const FIGHT_LINES: LegacyAny[];
+declare function setStats(s: LegacyAny): LegacyAny;
+declare const CALC: LegacyAny;
+declare function fightMaccTip(sheet: LegacyAny, enemy: LegacyAny, spell: string, burst: boolean, macc: number): string;
+declare function isBurstSet(path: string): boolean;

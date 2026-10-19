@@ -7,7 +7,7 @@
 // O.nuke: `sheet`); the magic accuracy and the hit rate are those of the first spell judged, against the target
 // chosen. Each line's tip says where its value comes from. None with the old engine: it keeps no such sheet.
 //
-//   fightBoxHTML(s)   the box for the set's figures (atelier/src/screens/sets/figures.ts), or '' when the set is no nuke set
+//   (the box itself: atelier/src/screens/sets/figures.ts fightBox, which reads fightFigures below)
 //
 // @file    atelier/app/js/fight_stats.js
 // @author  ejouanchicot
@@ -83,27 +83,4 @@ function fightFigures(s){
     FIGHT_MEMO = {key, out};
   }
   return FIGHT_MEMO.out;
-}
-// The "In combat" box of a nuke set, open until the player folds it (core.js fbox: S.boxOpen)
-function fightBoxHTML(s){
-  if (!isNukeSet(s.path) || !engineReady()) return '';
-  const f = fightFigures(s), ctx = f && f.ctx, r = f && f.r;
-  if (!r) return '';
-  if (!('fight' in S.boxOpen)) S.boxOpen.fight = true;
-  if (!r.sheet) return fbox('fight', 'g-mag', esc(t('fightTab')), `<p class="note-m">${esc(fightWhyNot(f.fell))}</p>`, fmtDmg(r.damage));
-  const sheet = r.sheet, enemy = (ctx.enemy && ctx.enemy.stats) || {}, spells = ctx.spells && ctx.spells.length ? ctx.spells : ['Thunder'], gear = setStats(s).total;
-  const sit = nukeSituation(s), layers = sit.layers.some(L => !L.spells) || !!sit.belt ? t('fightLayers') : '';
-  const fmt = (v, pct) => Math.round(v * 10) / 10 + (pct ? ' %' : '');
-  const rows = FIGHT_LINES.filter(x => sheet[x.sheet]).map(x => {
-    const v = sheet[x.sheet], g = x.key ? (gear[x.key] || {}).v || 0 : null, cap = x.cap ? x.cap() : null;
-    const tip = (g != null ? t('fightFrom', {g: fmt(g, x.pct), r: fmt(v - g, x.pct), l: layers}) : '') + (cap != null && v > cap ? ' ' + t('fightMbdCap', {v: fmt(v), c: cap}) : '');
-    return statLi(esc(t(x.label)), fmt(cap != null ? Math.min(v, cap) : v, x.pct), cap != null && v >= cap ? `<em class="capmax">${t('capMax')}</em>` : '', '', tip);
-  });
-  // the burst's bonus as calc_magic.js burstBonusTerm counts it: the first capped, the second and the job's trait on top
-  const mb = {a: sheet['Magic Burst Damage'] || 0, b: sheet['Magic Burst Damage II'] || 0, t: sheet['Magic Burst Damage Trait'] || 0, c: CALC.BURST_GEAR_CAP};
-  if (mb.a || mb.b || mb.t) rows.splice(4, 0, statLi(esc(t('fightMbdAll')), '+' + fmt(Math.min(mb.a, mb.c) + mb.b + mb.t, true), '', '', t('fightMbdAllFrom', mb)));
-  rows.unshift(statLi(esc(t('fightMacc')), fmt(r.macc), '', '', fightMaccTip(sheet, enemy, spells[0], isBurstSet(s.path), r.macc)),
-    statLi(esc(t('fightHit')), fmt(100 * r.hitRate, true), '', '', t('fightHitCap', {e: enemy['Magic Evasion'] || 0})));
-  const head = `<p class="note-m">${esc(t('fightHead', {sp: spells.join(', '), foe: f.input.enemy || ''}))}</p>`;
-  return fbox('fight', 'g-mag', esc(t('fightTab')), head + `<ul class="statlist">${rows.join('')}</ul>`, fmtDmg(r.damage));
 }

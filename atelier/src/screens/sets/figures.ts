@@ -4,7 +4,7 @@
 // The boxes are data (StatBox: its rows a label, a figure, a note, a tooltip): the tanking and attack boxes are worked
 // out here, the old page's tankHTML / offenseHTML (engine.js) draw these same boxes through boxHtml (the buffs window,
 // My character's cards). The rules are the old page's setPanelHTML (layout2.js), tankHTML, offenseHTML, fbox
-// (core.js), statLi (stats.js). Still the old page's HTML: the fight box (fight_stats.js), the HP cycle
+// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js). Still the old page's HTML: the HP cycle
 // (stat_opt.js), the Luopan (luopan.js), the stats sheet (stats.js setStatsHTML), every stat (globalsHTML), the
 // extra tanking lines (tankExtraHTML). A field ending in Html is one of the old page's texts it wrote unescaped.
 //
@@ -13,10 +13,10 @@
 
 export interface StatRow { k: 'row'; cls: string; title: string | undefined; labelHtml: string; valueHtml: string; extraHtml: string }
 export type BoxItem = StatRow | {k: 'html'; html: string};
-export interface StatBox { key: string; cls: string; titleHtml: string; open: boolean; summary: string; count: number; noteHtml: string; items: BoxItem[]; foldTitle: string }
+// bare: only its note, no list (a nuke set the engine cannot sheet)
+export interface StatBox { key: string; cls: string; titleHtml: string; open: boolean; summary: string; count: number; noteHtml: string; items: BoxItem[]; foldTitle: string; bare?: boolean }
 export interface FiguresView {
   title: string;
-  ownHtml: string;
   boxes: StatBox[];
   afterHtml: string;
   sheetHtml: string;
@@ -107,17 +107,43 @@ export function offenseBox(r: LegacyAny, s: LegacyAny): StatBox | null {
   return box('off', 'g-off', t('offTitle'), items, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : '');
 }
 
+/** The "In combat" box of a nuke set (fight_stats.js fightFigures): the spell's damage in its band, the totals it is
+ * worked out with (magic accuracy and hit rate first, the burst's bonus as the engine counts it), each line's tooltip
+ * where its value comes from; open until the player folds it. Null for a set that is no nuke set */
+function fightBox(s: LegacyAny): StatBox | null {
+  if (!isNukeSet(s.path) || !engineReady()) return null;
+  const f = fightFigures(s), ctx = f && f.ctx, r = f && f.r;
+  if (!r) return null;
+  const S0 = st();
+  if (!('fight' in S0.boxOpen)) S0.boxOpen.fight = true;
+  if (!r.sheet) return {...box('fight', 'g-mag', esc(t('fightTab')), [], fmtDmg(r.damage), `<p class="note-m">${esc(fightWhyNot(f.fell))}</p>`), bare: true};
+  const sheet = r.sheet, enemy = (ctx.enemy && ctx.enemy.stats) || {}, spells = ctx.spells && ctx.spells.length ? ctx.spells : ['Thunder'], gear = setStats(s).total;
+  const sit = nukeSituation(s), layers = sit.layers.some((L: LegacyAny) => !L.spells) || !!sit.belt ? t('fightLayers') : '';
+  const fmt = (v: number, pct?: boolean) => Math.round(v * 10) / 10 + (pct ? ' %' : '');
+  const rows: BoxItem[] = FIGHT_LINES.filter((x: LegacyAny) => sheet[x.sheet]).map((x: LegacyAny) => {
+    const v = sheet[x.sheet], g = x.key ? (gear[x.key] || {}).v || 0 : null, cap = x.cap ? x.cap() : null;
+    const tip = (g != null ? t('fightFrom', {g: fmt(g, x.pct), r: fmt(v - g, x.pct), l: layers}) : '') + (cap != null && v > cap ? ' ' + t('fightMbdCap', {v: fmt(v), c: cap}) : '');
+    return row(esc(t(x.label)), fmt(cap != null ? Math.min(v, cap) : v, x.pct), cap != null && v >= cap ? `<em class="capmax">${t('capMax')}</em>` : '', '', tip);
+  });
+  // the burst's bonus as calc_magic.js burstBonusTerm counts it: the first capped, the second and the job's trait on top
+  const mb = {a: sheet['Magic Burst Damage'] || 0, b: sheet['Magic Burst Damage II'] || 0, t: sheet['Magic Burst Damage Trait'] || 0, c: CALC.BURST_GEAR_CAP};
+  if (mb.a || mb.b || mb.t) rows.splice(4, 0, row(esc(t('fightMbdAll')), '+' + fmt(Math.min(mb.a, mb.c) + mb.b + mb.t, true), '', '', t('fightMbdAllFrom', mb)));
+  rows.unshift(row(esc(t('fightMacc')), fmt(r.macc), '', '', fightMaccTip(sheet, enemy, spells[0], isBurstSet(s.path), r.macc)),
+    row(esc(t('fightHit')), fmt(100 * r.hitRate, true), '', '', t('fightHitCap', {e: enemy['Magic Evasion'] || 0})));
+  return box('fight', 'g-mag', esc(t('fightTab')), rows, fmtDmg(r.damage), `<p class="note-m">${esc(t('fightHead', {sp: spells.join(', '), foe: f.input.enemy || ''}))}</p>`);
+}
+
 /** The column of figures of a set (setPanelHTML), with what it keeps in the page's state (S._curSet) */
 export function figuresView(s: LegacyAny): FiguresView {
   const S0 = st();
   S0._curSet = s;
   const r = charStats(s), fam = family(s.path, s.pieces);
   // a nuke set: its damage and the totals it is worked out with (fight_stats.js), not the tanking figures
-  const fight = fightBoxHTML(s);
+  const fight = fightBox(s);
   const off = !fight && r && (fam === 'ws' || fam === 'engaged') ? offenseBox(r, s) : null;
-  const boxes = fight ? [] : off ? [off] : r ? [tankBox(r)] : [];
+  const boxes = fight ? [fight] : off ? [off] : r ? [tankBox(r)] : [];
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), html: globalsHTML(s, 'stats')};
   const afterHtml = hpCycleHTML(s) + luopanHTML(s), sheetHtml = setStatsHTML(s);
-  return {title: t('ui2SetTitle'), ownHtml: fight || '', boxes, afterHtml, sheetHtml, all};
+  return {title: t('ui2SetTitle'), boxes, afterHtml, sheetHtml, all};
 }
