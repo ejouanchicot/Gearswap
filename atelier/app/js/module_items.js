@@ -51,17 +51,15 @@ function miUsed(){
   for (const fam of MOD_CATALOG) for (const r of mcRows(d, fam)) if (r.it.items) for (const v of mrNames(modValue(r.f.file, r.x.path))) names.add(v);
   return [...names].sort();
 }
-function miGridHTML(q){
-  const has = new Set(mrNames(modValue(S._miPick.file, S._miPick.path))), needle = q.trim().toLowerCase();
-  const tile = n => `<button class="mitile" data-mipick="${esc(n)}" ${has.has(n) ? 'disabled' : ''} title="${esc(has.has(n) ? t('miHas') : t('miPickTip', {v: n}))}">${itemIco(n)}<span>${esc(n)}</span></button>`;
-  if (!needle) return `<h4>${esc(t('miUsed'))}</h4><div class="migrid">${miUsed().map(tile).join('')}</div><p class="muted small">${esc(t('miMore'))}</p>`;
-  const found = USABLE_ITEMS.filter(([, n]) => n.toLowerCase().includes(needle)).sort((a, b) => a[1].toLowerCase().indexOf(needle) - b[1].toLowerCase().indexOf(needle)).slice(0, 72);
-  return found.length ? `<h4>${esc(t('miFound'))}</h4><div class="migrid">${[...new Set(found.map(x => x[1]))].map(tile).join('')}</div>` : `<p class="muted">${esc(t('miNone'))}</p>`;
+// A picker of the Modules (S._miPick: the list it adds to): drawn by the Svelte application
+// (atelier/src/screens/dialogs/modpick.ts), opened with no search, drawn again in place for one typed
+function miShow(q){
+  const v = ATELIER_DIALOG.modPickView(q || ''), spec = {cls: 'midlg', titleHtml: esc(v.title), modPick: v, buttonsHtml: ''};
+  if (q == null) { ATELIER_DIALOG.show(spec); const el = document.getElementById('miq'); if (el) el.focus(); } else ATELIER_DIALOG.update(spec);
 }
 function openItemPick(file, path, rows){
   S._miPick = {file, path, rows};
-  showDialog('midlg', esc(t('miTitle')), `<input id="miq" class="tgq" type="search" placeholder="${esc(t('miSearch', {n: USABLE_ITEMS.length}))}" autocomplete="off"><div id="mibody" class="mibody">${miGridHTML('')}</div>`, '');
-  const q = document.getElementById('miq'); if (q) q.focus();
+  miShow();
 }
 const miAppend = (file, path, v) => { const cur = modValue(file, path) || []; if (!cur.includes(v)) modStage(file, path, [...cur, v]); };
 
@@ -71,7 +69,7 @@ document.addEventListener('click', e => {
   if (d.modaddv != null) { miAppend(d.modfile, d.modpath, d.modaddv); return; }
   if (d.mipick != null && S._miPick) { const p = S._miPick; S._miPick = null; closeOverlay(); if (p.rows) mrAdd(p.file, p.path, d.mipick); else miAppend(p.file, p.path, d.mipick); }
 });
-document.addEventListener('input', e => { if (e.target.id === 'miq' && S._miPick) document.getElementById('mibody').innerHTML = S._miPick.ws ? mxWsGrid(e.target.value) : S._miPick.acts ? mxActGrid(e.target.value) : miGridHTML(e.target.value); });
+document.addEventListener('input', e => { if (e.target.id === 'miq' && S._miPick) miShow(e.target.value); });
 
 /* ---- dragging a tile to its place ---- */
 let MOD_DRAG = null;

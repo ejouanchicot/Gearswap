@@ -135,22 +135,9 @@ function mxActsUsed(file){
   if (f) for (const x of Object.values(modParsed(f).byPath)) if (x.kind === 'list') for (const v of modValue(file, x.path) || []) if (typeof v === 'string') names.add(v);
   return [...names].sort();
 }
-function mxActGrid(q){
-  const p = S._miPick, has = new Set(modValue(p.file, p.path) || []), needle = mxNorm(q.trim()), mine = mxActs(), ok = new Set([...mine.ja, ...mine.ma]), who = {j: S.job + ((data() || {}).sub ? '/' + data().sub : '')};
-  const used = new Set(needle ? [] : mxActsUsed(p.file)), tile = n => `<button class="mitile act ${ok.has(n) || used.has(n) ? '' : 'other'}" data-mipick="${esc(n)}" ${has.has(n) ? 'disabled' : ''} title="${esc(has.has(n) ? t('miHas') : miIsMode(n) ? t('miModeTip', {v: n}) : ok.has(n) ? t('miPickTip', {v: n}) : t('mxActOther', who))}"><span>${esc(miLabel(n))}</span></button>`;
-  const part = (title, list) => list.length ? `<h4>${esc(title)}</h4><div class="migrid">${list.map(tile).join('')}</div>` : '';
-  // abilities and magic are never mixed: each list is split in two (a name that is neither, a `$Mode` entry: apart)
-  const isJa = n => typeof JA_ACCESS !== 'undefined' && !!JA_ACCESS[n], isMa = n => !isJa(n) && !miIsMode(n) && typeof SPELL_ACCESS !== 'undefined' && (!!SPELL_ACCESS[n] || accessSpellsOf(n).length > 0);   // 'Utsusemi': a family of spells
-  const split = (list, ja, ma, other) => part(ja, list.filter(isJa)) + part(ma, list.filter(isMa)) + (other ? part(other, list.filter(n => !isJa(n) && !isMa(n))) : '');
-  if (!needle) return split(mxActsUsed(p.file), t('mxUsedJa'), t('mxUsedMa'), t('mxUsedMode')) + part(t('mxActJa', who), mine.ja) + part(t('mxActMa', who), mine.ma.slice(0, 120)) + `<p class="muted small">${esc(t('mxActHint'))}</p>`;
-  const all = typeof JA_ACCESS === 'undefined' ? [] : [...new Set([...Object.keys(JA_ACCESS), ...Object.keys(SPELL_ACCESS).filter(mxSpell)])].filter(n => mxNorm(n).includes(needle));
-  const first = all.filter(n => ok.has(n)).sort(), rest = all.filter(n => !ok.has(n)).sort().slice(0, 60);
-  return first.length || rest.length ? split(first.slice(0, 120), t('mxActJa', who), t('mxActMa', who)) + split(rest, t('mxAllJa'), t('mxAllMa')) : `<p class="muted">${esc(t('miNone'))}</p>`;
-}
 function openActPick(file, path){
   S._miPick = {file, path, acts: true};
-  showDialog('midlg', esc(t('mxActTitle')), `<input id="miq" class="tgq" type="search" placeholder="${esc(t('mxActSearch'))}" autocomplete="off"><div id="mibody" class="mibody">${mxActGrid('')}</div>`, '');
-  const q = document.getElementById('miq'); if (q) q.focus();
+  miShow();
 }
 
 /* ---- the window of weaponskills ---- */
@@ -171,31 +158,8 @@ function mxWsGiven(){
     MX_WS_GIVEN = {src: c.src, by: Object.fromEntries(Object.entries(by).map(([k, v]) => [k, [...v].sort()]))}; }
   return MX_WS_GIVEN.by;
 }
-function mxWsGrid(q){
-  if (typeof WS_ACCESS === 'undefined') return `<p class="muted">${esc(t('miNone'))}</p>`;
-  const p = S._miPick, has = new Set(modValue(p.file, p.path) || []), needle = mxNorm(q.trim()), d = data() || {}, job = S.job, sub = d.sub || '', lv = jaLevels();
-  const wpn = mxWsWeapon(p.path), given = mxWsGiven(), all = Object.keys(WS_ACCESS).sort();
-  const jobs = n => WS_ACCESS[n][1], main = n => !!(jobs(n) && jobs(n)[job] != null), bySub = n => !!(jobs(n) && !main(n) && jobs(n)[sub] != null && jobs(n)[sub] <= lv.sub);
-  const mine = n => !!(wpn && (given[n] || []).includes(wpn.name));
-  // what a tile says under the pointer: the weapons that give it, the jobs that have it
-  const about = n => [given[n] ? t('mxWsFrom', {w: given[n].slice(0, 4).join(', ') + (given[n].length > 4 ? '…' : '')}) : '',
-    jobs(n) ? t('mxWsJobs', {j: Object.keys(jobs(n)).sort().join(' ')}) : t('mxWsNoJobs')].filter(Boolean).join(' ');
-  const tile = (n, dim, kind) => `<button class="mitile act ${dim ? 'other' : ''}" data-mipick="${esc(n)}" ${has.has(n) ? 'disabled' : ''} title="${esc(has.has(n) ? t('miHas') : about(n))}">` +
-    `<span>${esc(n)}${kind ? `<small> · ${esc(WS_ACCESS[n][0])}</small>` : ''}${given[n] && !mine(n) ? `<small class="wsw"> · ${esc(given[n][0])}${given[n].length > 1 ? '…' : ''}</small>` : ''}</span></button>`;
-  const part = (title, list, dim, kind) => list.length ? `<h4>${esc(title)}</h4><div class="migrid">${list.map(n => tile(n, dim, kind)).join('')}</div>` : '';
-  const who = {j: job, s: sub, k: wpn && wpn.kind, w: wpn && wpn.name};
-  if (needle) { const found = all.filter(n => mxNorm(n).includes(needle)), ok = n => main(n) || bySub(n) || !jobs(n);
-    return found.length ? part(t('mxWsFoundOk', who), found.filter(ok), false, true) + part(t('mxWsFoundOther', who), found.filter(n => !ok(n)), true, true) : `<p class="muted">${esc(t('miNone'))}</p>`; }
-  // a weapon is known: its own weaponskills first, then those of its kind by who has them
-  const kind = wpn && wpn.kind && all.some(n => WS_ACCESS[n][0] === wpn.kind) ? all.filter(n => WS_ACCESS[n][0] === wpn.kind) : null;
-  if (!kind) return part(t('mxWsJob', who), all.filter(main), false, true) + (sub ? part(t('mxWsSub', who), all.filter(bySub), false, true) : '') + `<p class="muted small">${esc(t('mxWsHint'))}</p>`;
-  const rest = kind.filter(n => !mine(n));
-  return part(t('mxWsGiven', who), kind.filter(mine)) + part(t('mxWsKindJob', who), rest.filter(main)) + (sub ? part(t('mxWsKindSub', who), rest.filter(bySub)) : '') +
-    part(t('mxWsKindAny', who), rest.filter(n => !jobs(n))) + part(t('mxWsKindOther', who), rest.filter(n => jobs(n) && !main(n) && !bySub(n)), true) + `<p class="muted small">${esc(t('mxWsHint'))}</p>`;
-}
+// (the tiles: atelier/src/screens/dialogs/modpick.ts)
 function openWsPick(file, path){
   S._miPick = {file, path, ws: true};
-  const wpn = mxWsWeapon(path);
-  showDialog('midlg', esc(wpn ? t('mxWsTitleFor', {w: wpn.name}) : t('mxWsTitle')), `<input id="miq" class="tgq" type="search" placeholder="${esc(t('mxWsSearch'))}" autocomplete="off"><div id="mibody" class="mibody">${mxWsGrid('')}</div>`, '');
-  const q = document.getElementById('miq'); if (q) q.focus();
+  miShow();
 }

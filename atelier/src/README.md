@@ -118,6 +118,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 6c, 10e partie (2026-10-19)** : les petites fenêtres des sacs (`bagdlg.ts`, `BagDialog.svelte`, dans le
   cadre commun) : où sont les mogs, la tournée du Porter Moogle, les déplacements du plan avant l'envoi. Leurs boutons
   du bas restent le HTML de `bags_place.js` / `bags_plan.js`.
+- **Étape 6c, 11e partie (2026-10-19)** : les fenêtres de choix des Modules (`modpick.ts`, `ModPick.svelte`, dans le
+  cadre commun) : objets, abilities et sorts, weaponskills. La recherche redessine la fenêtre en place (`miShow`,
+  module_items.js) ; `miGridHTML`, `mxActGrid` et `mxWsGrid` sont retirés.
 
 ## Vérifier une étape
 

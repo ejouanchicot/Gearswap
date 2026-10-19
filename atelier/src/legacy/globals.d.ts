@@ -251,7 +251,7 @@ declare function bpLineBad(l: LegacyAny): boolean;
 declare function bpMoves(B: LegacyAny): {moves: LegacyAny[]; noRoom: string[]};
 declare const BP_CATS: string[];
 /** An item's icon, as the old page's HTML (module_items.js) */
-declare function itemIco(name: string, id: number): string;
+declare function itemIco(name: string, id?: number): string;
 
 /* ---- Buffs & target (party_builder.js, buffs.js, buff_panels.js, profiles.js), loosely typed ---- */
 declare function ui2(): boolean;
@@ -387,7 +387,7 @@ declare function optRunBest(R: LegacyAny): LegacyAny;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
 /* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */
-interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny; update: (d: LegacyAny) => void; targetView: () => LegacyAny; pickView: (key: string) => LegacyAny; addView: () => LegacyAny; pushView: (...a: LegacyAny[]) => LegacyAny; delView: (...a: LegacyAny[]) => LegacyAny; addSetView: (...a: LegacyAny[]) => LegacyAny; tierCostView: (...a: LegacyAny[]) => LegacyAny; historyView: (...a: LegacyAny[]) => LegacyAny; optAllView: (R: LegacyAny) => LegacyAny; statPickView: () => LegacyAny; addStepView: () => LegacyAny; placesView: () => LegacyAny; porterView: () => LegacyAny; bagSendView: (mule: boolean) => LegacyAny} }
+interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny; gearPickView: (...a: LegacyAny[]) => LegacyAny; update: (d: LegacyAny) => void; targetView: () => LegacyAny; pickView: (key: string) => LegacyAny; addView: () => LegacyAny; pushView: (...a: LegacyAny[]) => LegacyAny; delView: (...a: LegacyAny[]) => LegacyAny; addSetView: (...a: LegacyAny[]) => LegacyAny; tierCostView: (...a: LegacyAny[]) => LegacyAny; historyView: (...a: LegacyAny[]) => LegacyAny; optAllView: (R: LegacyAny) => LegacyAny; statPickView: () => LegacyAny; addStepView: () => LegacyAny; placesView: () => LegacyAny; porterView: () => LegacyAny; bagSendView: (mule: boolean) => LegacyAny; modPickView: (q: string) => LegacyAny} }
 declare function compareColumns(s: LegacyAny): LegacyAny[];
 declare function sirdMeritsOf(c: LegacyAny): number;
 declare function setWants(s: LegacyAny): {want: LegacyAny};
@@ -454,3 +454,17 @@ declare function parentThere(e: LegacyAny): boolean;
 declare function lineLabel(g: string): string;
 declare function addWsList(cards: LegacyAny[]): string;
 declare function bpMuleMoves(B: LegacyAny): {moves: LegacyAny[]; noRoom: string[]};
+declare function mrNames(v: LegacyAny): string[];
+declare const USABLE_ITEMS: LegacyAny[];
+declare function miUsed(): string[];
+declare function mxActs(): {ja: string[]; ma: string[]};
+declare function mxActsUsed(file: string): string[];
+declare const JA_ACCESS: LegacyAny;
+declare const SPELL_ACCESS: LegacyAny;
+declare function accessSpellsOf(n: string): LegacyAny[];
+declare function miIsMode(v: LegacyAny): boolean;
+declare function miLabel(v: string): string;
+declare const WS_ACCESS: LegacyAny;
+declare function mxWsWeapon(path: string): {name: string; kind: string} | null;
+declare function mxWsGiven(): LegacyAny;
+declare function mxSpell(n: string): boolean;
