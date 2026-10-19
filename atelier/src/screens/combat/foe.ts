@@ -3,7 +3,7 @@
 // right); a tab is a grid of its abilities, each with what it takes off; then every debuff on the target, whatever its
 // tab, and the total in the band.
 // The rules are the old page's foePanelHTML (buff_panels.js). The buttons keep the attributes the old handlers read
-// (data-foetab, data-foeseg, data-foeja, data-buffflag, data-buff; the tab's switch: offSwitch, still its HTML).
+// (data-foetab, data-foeseg, data-foeja, data-buffflag, data-buff, the tab's switch data-poff).
 //
 // @file    atelier/src/screens/combat/foe.ts
 // @author  ejouanchicot
@@ -12,7 +12,7 @@ export interface FoeChip { k: 'chip'; attrs: Record<string, string>; label: stri
 export type FoeCtl = FoeChip | {k: 'seg'; chips: FoeChip[]} | {k: 'select'; attrs: Record<string, string>; title: string; options: Array<{value: string; label: string; selected: boolean}>} | {k: 'note'; text: string};
 export interface FoeCell { label: string; ctls: FoeCtl[]; fx: string[] | null; wide: string }
 export interface FoeView {
-  tabs: Array<{id: string; label: string; lit: boolean; selected: boolean; title: string}>; switchHtml: string; curOn: boolean; cells: FoeCell[];
+  tabs: Array<{id: string; label: string; lit: boolean; selected: boolean; title: string}>; sw: {key: string; on: boolean; tip: string; aria: string}; curOn: boolean; cells: FoeCell[];
   onTitle: string; on: Array<{src: string; fx: string}>; none: string; total: string; down: boolean;
 }
 type Line = [string, FoeCtl[], string[] | null, string?];
@@ -86,7 +86,7 @@ export function foeView(b: LegacyAny): FoeView {
   const bySrc = new Map<string, string[]>();
   for (const e of T.B._by.filter((e: LegacyAny) => ON_KEYS.includes(e.k))) bySrc.set(e.src, (bySrc.get(e.src) || []).concat(geoSrc(e.src) ? nmGeo(short(e.k, e.v)) : short(e.k, e.v)));
   const total = [T.defDown ? short('edefp', T.defDown) : '', T.B.eeva ? short('eeva', T.B.eeva) : ''].filter(Boolean).join(' · ');
-  return {tabs: tabs.map(x => ({id: x.id, label: x.label, lit: x.on && !offOf[x.id], selected: x === cur, title: t('ttFoeTab', {j: x.label})})), switchHtml: offSwitch(b, cur.id), curOn,
+  return {tabs: tabs.map(x => ({id: x.id, label: x.label, lit: x.on && !offOf[x.id], selected: x === cur, title: t('ttFoeTab', {j: x.label})})), sw: {key: cur.id, on: curOn, tip: t('pOffTip'), aria: `${cur.id} ${curOn ? 'ON' : 'OFF'}`}, curOn,
     cells: cur.lines.map(([label, ctls, fx, wide]) => ({label, ctls, fx, wide: wide || ''})),
     onTitle: t('foeOnTitle'), on: [...bySrc].map(([src, fx]) => ({src, fx: fx.join(' · ')})), none: t('foeNoneOn'), total: total || t('foeNone'), down: !!total};
 }

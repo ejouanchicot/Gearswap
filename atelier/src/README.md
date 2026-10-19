@@ -160,6 +160,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7k (2026-10-19)** : ce qui baisse la cible, « Autres debuffs » de Buffs & cible (`combat/foe.ts`,
   `FoePanel.svelte`) : un onglet par job, sa grille, ce qui est posé sur la cible, le total dans la bande ;
   `foePanelHTML` est retiré (l'interrupteur d'un onglet reste le HTML d'`offSwitch`).
+- **Étape 7l (2026-10-19)** : la carte de la cible (`combat/targetcard.ts`, `TargetCard.svelte`) et l'interrupteur
+  d'un onglet de debuffs ; `targetCardPanel` (target_pick.js) et `offSwitch` (buff_panels.js) sont retirés.
+  Buffs & cible n'a plus de bloc dessiné par l'ancienne page (restent des textes traduits et l'emblème d'un job).
 
 ## Vérifier une étape
 

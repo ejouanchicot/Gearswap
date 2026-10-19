@@ -162,12 +162,7 @@ function targetInfo(s){
     acc: at('acc'), atk: at('atk'), atkSrc: r && r.out.atk ? r.out.atk.src : null, str: at('str'), dex: at('dex'), pint: at('int'), pmnd: at('mnd')};
 }
 
-/* ---- the panels' controls: profile bar, switches, Haste Samba's DNC, ability tips, skill lists ---- */
-// A small on / off switch (b.off[key]): the choices stay, the sums leave them out
-function offSwitch(b, key){
-  const on = !(b.off || {})[key];
-  return `<button class="tgl" data-poff="${esc(key)}" aria-pressed="${on}" title="${esc(t('pOffTip'))}" aria-label="${esc(key)} ${on ? 'ON' : 'OFF'}"></button>`;
-}
+/* ---- the panels' helpers: ability tips, skill lists (their controls: atelier/src/screens/combat) ---- */
 const jaTip = ja => ja.as === 'party' ? t('jaPartyTip', {j: ja.a.from}) + (ja.a.tpParty ? ' · TP Bonus +' + tpOfParty(ja.a, buffState()) : '')
   : t('jaLvTip', {j: [].concat(ja.a.job).join('/'), l: ja.a.lvl, w: ja.as === 'main' ? t('jaMain') : t('jaSub', {l: ja.lvl})});
 // The SMN's Summoning Magic skill for Fenrir's Impact (b.smnSkill, 600 until chosen)

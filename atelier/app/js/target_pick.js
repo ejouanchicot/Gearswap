@@ -33,24 +33,7 @@ function tgYou(){
 const tgRate = (you, eva) => you ? Math.floor(Math.max(20, Math.min(you.cap, 75 + 0.5 * (you.acc - Math.max(0, eva - you.down))))) : null;
 const tgTone = p => p == null ? '' : p >= 90 ? 'easy' : p >= 70 ? 'mid' : 'hard';
 
-/* ---- the card ---- */
-function targetCardPanel(b){
-  const key = enemyKey(b.enemy), x = TARGETS[key] || {}, T0 = targetInfo(null), you = tgYou(), p = tgRate(you, T0.eva);
-  const defA = Math.max(1, T0.defAfter), evaA = T0.evaAfter;
-  // a gauge: the full bar is the stat at first, the lit part what is left of it
-  const gauge = (label, a, z, tip) => `<div class="tggauge" title="${esc(tip)}"><span>${esc(label)}</span><b>${a}${z !== a ? ` <i>→</i> <em>${z}</em>` : ''}</b>` +
-    `<u style="--left:${a ? Math.max(0, Math.min(100, z / a * 100)).toFixed(1) : 100}%"></u></div>`;
-  const res = Object.entries(x.res || {}).filter(([, v]) => v).map(([k, v]) => `<span class="${v < 0 ? 'bad' : 'good'}">${esc(t('tgRes_' + k))} ${v > 0 ? '+' : '−'}${Math.abs(Math.round(v * 100) / 100)} %</span>`).join('');
-  const hit = you ? `<div class="tghit ${tgTone(p)}" title="${esc(t('tgHitTip', {a: you.acc, e: evaA, c: you.cap}))}"><span>${esc(t('tgHit'))}</span><b>${p} %</b></div>`
-    : `<div class="tghit none"><span class="muted small">${esc(t('tgNoAcc'))}</span></div>`;
-  const facts = [x.lv ? 'Lv ' + x.lv : '', x.job, x.zone].filter(Boolean).join(' · ') || t('pkDefault');
-  return `<div class="tgcard"><div class="tgtop"><div class="tgname"><b>${esc(x.name || key)}</b><span class="muted small" title="${esc(x.zone ? '' : t('tgRef'))}">${esc(facts)}</span></div>${hit}</div>` +
-    gauge(t('tgtDef'), T0.def, defA, t('tgDefTip', {a: T0.def, b: defA})) + gauge(t('tgtEva'), T0.eva, evaA, t('tgEvaTip', {a: T0.eva, b: evaA})) +
-    `<div class="tgmore">${x.vit ? `<span>VIT <b>${x.vit}</b></span>` : ''}${x.hp ? `<span>HP <b>${fmtDmg(x.hp)}</b></span>` : ''}</div>` +
-    (x.zone ? `<div class="tgres" title="${esc(t('tgRes'))}">${res || `<span class="muted">${esc(t('tgNoRes'))}</span>`}</div>` : '') +
-    (x.est && x.est.length ? `<p class="muted small tgest">* ${esc(t('tgEst', {l: x.est.join(', ')}))}</p>` : '') +
-    `<button class="btn tgchange" data-tgtpick title="${esc(t('ttTgtPick'))}">${esc(t('tgChange'))}</button></div>`;
-}
+/* ---- the card: drawn by atelier/src/screens/combat/targetcard.ts (tgYou, tgRate and tgTone above are its) ---- */
 
 /* ---- the picker ---- */
 const tgFavs = () => { S.tgtFav = S.tgtFav || {}; return S.tgtFav[S.char] = S.tgtFav[S.char] || []; };
