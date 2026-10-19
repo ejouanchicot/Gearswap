@@ -135,6 +135,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7c (2026-10-19)** : la page Paquets (`screens/packages/packages.ts`, `PackagesScreen.svelte`) ;
   `packages.js` garde `PKG`, la création du zip (Pyodide dans un worker) et les clics. Vues dans
   `scripts/atelier/parity/packages.json`.
+- **Étape 7d (2026-10-19)** : Simuler (`screens/sim/sim.ts`, `SimScreen.svelte`) : les actions du job, les options,
+  les modes. Ce qu'il faut demander au jeu avant de dessiner passe par `simPrepare` (simulate.js, appelé par
+  `renderJob`) ; le résultat reste le HTML de `simResultHTML` (ses cartes partagent le code des stats). Vues dans
+  `scripts/atelier/parity/sim.json`. Plus aucun écran n'est dessiné par `#legacyview`, sauf un job sans export.
 
 ## Vérifier une étape
 

@@ -83,56 +83,17 @@ function toggleBuff(list, name){
   return list.filter(b => !gone.includes(b)).concat([name]).sort();
 }
 const simBuffOptions = () => simAsk('_simBuffs', '/sim_buffs', {buffs: []}, 'opts');
-function renderSim(d){
+// Before Simulate is drawn (atelier/src/screens/sim): the job's actions and the buffs its code reads asked of the game
+// once per GearSwap load, and the action chosen before a page reload (or under another job) run again on its own
+function simPrepare(){
   const c = S.char;
-  if (!liveOk(c) || (S._live[c] || {}).job !== S.job) return `<div class="placeholder"><p>${t('simNeedLive', {j: S.job})}</p></div>`;
+  if (!liveOk(c) || (S._live[c] || {}).job !== S.job) return;
   simActions();
   const st = simState();
-  // the action chosen before a page reload (or under another job) runs again on its own
   if (st.name && !S._simBusy && !S._simQueued && (!S._simResult || S._simResult.req !== simKey() + "?" + simQuery(st).toString()
       || S._simResult.ver !== (S._live[c] || {}).version)) {
     S._simQueued = true; setTimeout(() => { S._simQueued = false; simRun(); }); }
-  const acts = (S._simActions && S._simActions.list) || null, q = (st.q || '').toLowerCase();
-  // groups: each magic skill of the main and sub (Healing, Enhancing...), one Trust row, abilities, weaponskills
-  const row = (k, n, label) => `<button class="setrow" data-simpick="${k}|${esc(n)}" aria-current="${st.kind === k && st.name === n}"><b>${esc(label || n)}</b></button>`;
-  // closed until opened (a search opens them all); the group of the chosen action is marked
-  const group = (label, rows, names) => { if (!rows.length) return '';
-    const key = S.job + '|' + label, open = !!q || !!S.simOpen[key], here = st.name && (names || []).includes(st.name);
-    return `<button class="fam ${here ? 'here' : ''}" data-simgroup="${esc(key)}" aria-expanded="${open}"><span>${esc(label)}</span><span>${rows.length}</span></button>` + (open ? rows.join('') : ''); };
-  // the target chosen narrows the list: on me, what can aim at oneself; on the enemy, what can aim at one
-  const aimOk = n => aimHas((acts && acts.aim || {})[n], st.target);
-  const match = n => (!q || n.toLowerCase().includes(q)) && aimOk(n);
-  let pick = `<p class="muted small" style="padding:12px">${t('simLoading')}</p>`;
-  if (acts) {
-    const magic = acts.magic || (acts.ma && acts.ma.length ? {Magic: acts.ma} : {});
-    const order = Object.keys(magic).sort((a, b) => (MAGIC_ORDER.indexOf(a) + 1 || 99) - (MAGIC_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
-    pick = order.map(sk => group(magicLabel(sk), magic[sk].filter(match).map(n => row('ma', n)), magic[sk])).join('') +
-      (acts.trust && (!q || 'trust'.includes(q)) && (st.target === 'auto' || st.target === 'me') ? group('Trust', [row('ma', acts.trust, t('simTrust'))], [acts.trust]) : '') +
-      group(t('simAbilities'), (acts.ja || []).filter(match).map(n => row('ja', n)), acts.ja) +
-      group(t('simWs'), (acts.ws || []).filter(match).map(n => row('ws', n)), acts.ws) +
-      (acts.ra && (!q || t('simRanged').toLowerCase().includes(q)) && (st.target === 'auto' || st.target === 'enemy') ? group(t('simRangedGroup'), [row('ra', 'Ranged', t('simRanged'))], ['Ranged']) : '');
-  }
-  const chip = (key, v, label) => `<button data-simopt="${key}|${v}" aria-pressed="${String(st[key]) === String(v)}">${label}</button>`;
   simBuffOptions();
-  const simBuffs = ((S._simBuffs && S._simBuffs.opts) || {}).buffs || [];
-  const modes = d.modes.filter(m => m.values.length > 1 && m.values.length <= 12 && !modeHidden(m) && !/^[A-Z]{3}Song\d$/.test(m.name));
-  const modeSel = modes.map(m => { const cur = (st.states || {})[m.name] ?? m.current;
-    return `<label class="simmode ${cur !== m.current ? 'set' : ''}"><span>${esc(m.desc || m.name)}</span><select class="buffsel" data-simstate="${esc(m.name)}">` +
-      m.values.map(v => `<option ${v === cur ? 'selected' : ''}>${esc(v)}</option>`).join('') + `</select></label>`; }).join('');
-  const opts = `<div class="simopts"><div class="variants">${chip('target', 'auto', t('simAuto'))}${chip('target', 'me', t('simMe'))}${chip('target', 'ally', t('simAlly'))}${chip('target', 'enemy', t('simEnemy'))}</div>` +
-    `<div class="variants">${chip('status', 'Engaged', t('simEngaged'))}${chip('status', 'Idle', t('simIdle'))}</div>` +
-    `<label class="chip"><input type="checkbox" class="simrecasts" ${st.recasts ? 'checked' : ''}> ${t('simRecasts')}</label>` +
-    (st.kind === 'ws' ? `<div class="variants"><span class="simtplbl">TP</span>${simTpSteps(st.name).map(v => chip('tp', v, v)).join('')}` +
-      `<input class="tpin" data-sim="1" type="number" min="0" max="3000" step="10" value="${st.tp && !simTpSteps(st.name).includes(+st.tp) ? st.tp : ''}" placeholder="${t('tpOther')}" aria-label="TP"></div>` : '') + `</div>` +
-    // the buffs the job's code reads (GET /sim_buffs): only these count, never the ones on you now
-    (simBuffs.length ? `<div class="simopts"><span class="simtplbl">${t('wornBuffs')}</span><div class="variants">` +
-      simBuffs.map(b => `<button data-simbuff="${esc(b)}" aria-pressed="${(st.buffs || []).includes(b)}">${esc(b)}</button>`).join('') + `</div></div>` : '');
-  // the game runs a GearSwap from before the simulation: it answers 404 to /actions
-  if (S._simActions && S._simActions.old) return `<div class="placeholder"><p>${t('simOld')}</p><button class="btn" data-liverestart>${t('liveRestart')}</button></div>`;
-  return `<div class="simx"><aside class="setlist"><div class="search"><input id="simq" type="search" placeholder="${t('simSearch')}" value="${esc(st.q || '')}" autocomplete="off" spellcheck="false"></div>` +
-    `<div class="scroll">${pick}</div></aside><div class="simmain">` +
-    box('g-you', t('simTitle'), `${opts}<details class="simmodes"><summary>${t('simModes')}</summary><div class="simmodegrid">${modeSel}</div></details>`,
-      `<span class="meta">${S._simBusy ? t('simRunning') + ' · ' : ''}${statPickBtn()}</span>`) + simResultHTML(d) + `</div></div>`;
 }
 // The numbers that change between the steps of an action: HP / MP first (a tank's HP must not
 // drop between precast and midcast), then what the steps are for

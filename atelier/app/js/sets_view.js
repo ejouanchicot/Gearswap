@@ -167,10 +167,11 @@ function renderJob(){
     // (a page kept on one of those four names, or sent there by a link, opens that part)
     if (ui2() && S.section === 'merits') S.section = 'perso';
     if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
-    // the job's settings, My character, Buffs & target and Sets are the Svelte application's (atelier/src/screens/config,
+    // the job's settings, My character, Buffs & target, Sets and Simulate are the Svelte application's (atelier/src/screens/config,
     // screens/perso, screens/combat, screens/sets)
     if (S.section === 'jobcfg' || S.section === 'perso' || S.section === 'combat' || S.section === 'sets') return '';
-    body = {sim: renderSim}[S.section](d);
+    // Simulate too (atelier/src/screens/sim): what it asks of the game is asked now, before it is drawn
+    if (S.section === 'sim') { simPrepare(); return ''; }
   }
   // the row of the sections over it is the Svelte application's (atelier/src/screens/topbar/Sections.svelte)
   return `<div class="pane ${d ? 'split' : ''}">${body}</div>`;
