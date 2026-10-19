@@ -139,6 +139,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   les modes. Ce qu'il faut demander au jeu avant de dessiner passe par `simPrepare` (simulate.js, appelé par
   `renderJob`) ; le résultat reste le HTML de `simResultHTML` (ses cartes partagent le code des stats). Vues dans
   `scripts/atelier/parity/sim.json`. Plus aucun écran n'est dessiné par `#legacyview`, sauf un job sans export.
+- **Étape 7e (2026-10-19)** : un job sans export (`screens/home/NoExport.svelte`) ; `renderJob` ne dessine plus rien
+  (il garde le renvoi des anciens noms de section et `simPrepare`). `#legacyview` reste vide sur toutes les vues.
+  Vues `NX_` dans `scripts/atelier/parity/home.json`.
 
 ## Vérifier une étape
 

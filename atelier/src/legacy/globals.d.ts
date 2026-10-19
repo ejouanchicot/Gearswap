@@ -487,3 +487,4 @@ declare function simState(): LegacyAny;
 declare function simTpSteps(ws: string): number[];
 declare function simResultHTML(d: LegacyAny): string;
 declare function statPickBtn(): string;
+declare function otherChar(): string | undefined;

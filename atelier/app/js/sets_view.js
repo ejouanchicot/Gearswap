@@ -158,23 +158,16 @@ function jobGroups(){
 }
 const jobBadge = c => { const L = jobLevels(), j = L && L[c];
   return j ? (j.ml ? `<span class="mlbadge" title="${t('mlTip', {n: j.ml})}">ML${j.ml}</span>` : `<span class="lvbadge">${j.level}</span>`) : ''; };
+// Every view of a job is the Svelte application's (atelier/src/screens: config, perso, combat, sets, sim, and
+// home/NoExport.svelte for a job with no export); Simulate asks the game what it needs before it is drawn
 function renderJob(){
-  const c = S.job, d = data();
-  let body;
-  if (!d) body = `<div class="placeholder"><p><b>${c}</b> : ${plays(c)?t('placeholder'):t('notPlayed',{c:S.char})}</p>${otherChar()?`<button class="btn ghost" data-char="${otherChar()}">${t('seeOther',{c:otherChar()})}</button>`:''}</div>`;
-  else {
-    // the Merits are in My character; the keys, modes, switches and macro book are the parts of the job's settings
-    // (a page kept on one of those four names, or sent there by a link, opens that part)
-    if (ui2() && S.section === 'merits') S.section = 'perso';
-    if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
-    // the job's settings, My character, Buffs & target, Sets and Simulate are the Svelte application's (atelier/src/screens/config,
-    // screens/perso, screens/combat, screens/sets)
-    if (S.section === 'jobcfg' || S.section === 'perso' || S.section === 'combat' || S.section === 'sets') return '';
-    // Simulate too (atelier/src/screens/sim): what it asks of the game is asked now, before it is drawn
-    if (S.section === 'sim') { simPrepare(); return ''; }
-  }
-  // the row of the sections over it is the Svelte application's (atelier/src/screens/topbar/Sections.svelte)
-  return `<div class="pane ${d ? 'split' : ''}">${body}</div>`;
+  if (!data()) return '';
+  // the Merits are in My character; the keys, modes, switches and macro book are the parts of the job's settings
+  // (a page kept on one of those four names, or sent there by a link, opens that part)
+  if (ui2() && S.section === 'merits') S.section = 'perso';
+  if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
+  if (S.section === 'sim') simPrepare();
+  return '';
 }
 // Re-render, keeping the focus of the search box and the scroll of each block
 // while the view stays the same (the set detail goes back to its top for another set)
