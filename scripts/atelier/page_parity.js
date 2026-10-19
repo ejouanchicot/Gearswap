@@ -3,6 +3,8 @@
 // views, captured at several widths and compared pixel by pixel.
 //   node scripts/atelier/page_parity.js <views.json> [--ref HEAD] [--widths 1600,1280,390] [--only text] [--out DIR] [--dom]
 // --dom: for a view that differs, also the page's HTML of both (#view, without Svelte's comment marks), to diff
+//   node scripts/atelier/page_parity.js --serve old|now [--ref HEAD]   one page served (its address printed) for a
+//   script of clicks: PAGE_URL=<address> node <script>; the working tree is never touched
 // views.json (scripts/atelier/parity/*.json): [[name, {char, job, section, cfg, tab, set: {S fields}, code: "js", after: "js"}], ...]
 //
 // Nothing in the working tree is swapped: a small server gives each page its files, the commit's version of every
@@ -136,6 +138,14 @@ function compare(a, b) {
 }
 
 (async () => {
+  // --serve old|now: one of the two pages served until stopped, its address printed, for a script of clicks to run on
+  // the page as it was without a file of the working tree swapped
+  const serveAt = process.argv.indexOf('--serve');
+  if (serveAt > 0) {
+    const which = process.argv[serveAt + 1] === 'old', st = await serve(which);
+    console.log(`http://127.0.0.1:${st.port}/atelier/index.html (${which ? REF : 'now'})`);
+    return;
+  }
   if (!VIEWS_FILE) { console.log('usage: node scripts/atelier/page_parity.js <views.json> [--ref HEAD] [--widths 1600,1280,390] [--only text] [--out DIR]'); process.exit(2); }
   const views = JSON.parse(fs.readFileSync(VIEWS_FILE, 'utf8')).filter(([name]) => !ONLY || name.includes(ONLY));
   const started = Date.now(), errs = {old: [], now: []};

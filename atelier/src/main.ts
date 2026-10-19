@@ -8,6 +8,9 @@ import {openBridge} from './bridge';
 import {tankBox, offenseBox, boxHtml} from './screens/sets/figures';
 import OptRun from './screens/optimizer/OptRun.svelte';
 import {runOpen, runChanged} from './screens/optimizer/run.svelte';
+import Dialog from './screens/dialogs/Dialog.svelte';
+import {dialogShow, type DialogSpec} from './screens/dialogs/dialogs.svelte';
+import {compareView} from './screens/dialogs/compare';
 
 openBridge();
 // the figures' boxes worked out here, for the old page's screens that still draw them as HTML (engine.js tankHTML,
@@ -20,5 +23,11 @@ runBox.className = 'runbox';
 runBox.style.display = 'contents';
 mount(OptRun, {target: runBox});
 window.ATELIER_RUN = {open: (R: LegacyAny) => runOpen(R, runBox), changed: runChanged};
+// the windows over the page (trial.js showDialog, openCompare), the same way
+const dialogBox = document.createElement('div');
+dialogBox.className = 'dialogbox';
+dialogBox.style.display = 'contents';
+mount(Dialog, {target: dialogBox});
+window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), compareView};
 // on the body itself: the old page's frame (.app, #overlay, #tip) stays a child of <body>, as its styles expect
 mount(App, {target: document.body});

@@ -112,103 +112,14 @@ function compareColumns(s){
   ((S.drafts[trialKey(s)] || {}).kept || []).forEach((x, i) => cols.push({label: x.name, tr: x.tr, kept: i}));
   return cols.map(c => withTrialAs(s, c.tr, () => Object.assign(c, {pieces: withWeapons(s).pieces, stats: setStats(s).total})));
 }
+// Compare: drawn by the Svelte application (atelier/src/screens/dialogs/compare.ts), the columns from compareColumns above
 function openCompare(s){
-  // SIRD counted with the merits, as under the set (sets_view.js sirdMeritsOf): the cap reads 102 % all in
-  const sirdM = sirdMeritsOf(measuredChar());
-  const cols = compareColumns(s), ref = cols[0], num = (c, k) => ((c.stats[k] || {}).v || 0) + (baseKey(k) === 'sird' && c.stats[k] ? sirdM : 0);
-  const slots = SLOTS.filter(slot => cols.some(c => !samePiece(c.pieces[slot], ref.pieces[slot])));
-  // the stats the set is after first (always shown, by weight), then the others that differ
-  const {want} = setWants(s), all = [...new Set(cols.flatMap(c => Object.keys(c.stats)))];
-  const stats0 = Object.assign({}, ...cols.map(c => c.stats)), sorter = S.statSort === 'name' ? statSorter(s, stats0) : null;
-  // damage taken goes on two lines of its own (physical, magic), each part shown
-  const isDt = k => DT_KEYS.includes(baseKey(k));
-  const wanted = all.filter(k => !isDt(k) && wantOf(want, k) >= 0.3 && statVisible(k, s)).sort(sorter || ((a, b) => wantOf(want, b) - wantOf(want, a) || statOrder(a, b)));
-  const keys = all.filter(k => !isDt(k) && !wanted.includes(k) && statVisible(k, s) && cols.some(c => num(c, k) !== num(ref, k))).sort(sorter || statOrder);
-  const head = `<tr><th></th>${cols.map(c => `<th>${esc(c.label)}${c.kept != null ? `<span class="keptacts"><button class="linkbtn" data-keptload="${c.kept}">${t('keptLoad')}</button>` +
-    `<button class="linkbtn" data-keptdel="${c.kept}" aria-label="${esc(t('keptDel'))}">×</button></span>` : ''}</th>`).join('')}</tr>`;
-  const piece = p => p ? esc(p.name) + (p.rank != null ? ` <span class="rk">R${p.rank}</span>` : '') + (p.capeMax ? ` <span class="rk">max</span>` : '') +
-    (p.augs && p.augs.length ? `<small>${esc(p.augs.join(' · '))}</small>` : '') : '—';
-  const pieceRows = slots.map(slot => `<tr><th>${SLOT_NAMES[S.lang][slot] || slot}</th>` +
-    cols.map((c, i) => `<td class="${i && !samePiece(c.pieces[slot], ref.pieces[slot]) ? 'chg' : ''}">${piece(c.pieces[slot])}</td>`).join('') + `</tr>`).join('');
-  const rowsOf = (list, cls) => list.map(k => { const e = (cols.find(c => c.stats[k]) || ref).stats[k];
-    // the better column for that stat in bold (less is better for damage taken)
-    const vals = cols.map(c => num(c, k)), better = GOOD_DOWN.has(baseKey(k)) ? Math.min(...vals) : Math.max(...vals);
-    return `<tr class="${cls}"><th>${esc(statLabel(k, e))}</th>` + cols.map((c, i) => { const v = vals[i], dv = v - vals[0];
-      return `<td class="${v === better && vals.some(x => x !== v) ? 'best' : ''}">${fmtStat({v, unit: e.unit})}${i && dv ? `<i class="dv ${(GOOD_DOWN.has(baseKey(k)) ? -dv : dv) > 0 ? 'up' : 'down'}">${fmtStat({v: dv, unit: e.unit})}</i>` : ''}</td>`; }).join('') + `</tr>`; }).join('');
-  // DT + PDT and DT + MDT (Shell included, as under the set): the total against the -50 % cap, then each part
-  const B = buffTotals(), shell = B.shell ? Math.round(-B.shell / 256 * 1000) / 10 : 0;
-  // the first layer (DT, PDT or MDT, Shell) stops at -50 %, the II stat (PDT II, MDT II) adds past it, -87.5 % in all
-  const dtRow = (label, part, extra) => {
-    const parts = cols.map(c => { const v = k => num(c, k), list = [['DT', v('dt')], [part.toUpperCase(), v(part)]].concat(extra(c)).filter(x => x[1]);
-      const two = list.filter(x => / II$/.test(x[0])).reduce((a, x) => a + x[1], 0);
-      return {sum: list.reduce((a, x) => a + x[1], 0) - two, two, list}; });
-    if (!parts.some(x => x.sum || x.two) || !statVisible('dt', s)) return '';
-    const eff = x => Math.max(Math.max(x.sum, -50) + x.two, -87.5), best = Math.min(...parts.map(eff));
-    // with a II stat the line is the total: named as the set's stats name it (stats.js layeredLi)
-    if (parts.some(x => x.two)) label = part === 'pdt' ? t('pdtTotal') : t('mdtTotal');
-    return `<tr class="want"><th>${esc(label)}</th>` + parts.map((x, i) => { const dv = eff(x) - eff(parts[0]), r1 = n => Math.round(n * 10) / 10;
-      return `<td class="${eff(x) === best && parts.some(y => eff(y) !== eff(x)) ? 'best' : ''}">${signed(r1(eff(x)))} %` +
-        (x.sum < -50 ? ` <span class="overl">${t('cmpOver', {n: r1(-50 - x.sum)})}</span>` : '') +
-        (i && dv ? `<i class="dv ${dv < 0 ? 'up' : 'down'}">${signed(r1(dv))} %</i>` : '') +
-        `<small>${x.list.map(([n, v]) => `${n} ${signed(r1(v))}`).join(' · ')}</small></td>`; }).join('') + `</tr>`;
-  };
-  // what multiplies the damage taken past the cap (Fan Dance, Rampart: stats.js mulLi), a line under the gear's: each
-  // column with its own hands, so Horos Bangles show the Fan Dance merits they add
-  const mulRow = (label, part, keys, extra) => {
-    const by = (B._by || []).filter(e => keys.includes(e.k) && e.v !== 1);
-    if (!by.length || !statVisible('dt', s)) return '';
-    const mulOf = (e, c) => e.src === 'Fan Dance' ? 1 - danceFloor('fan', c.pieces) / 100 : e.v, r1 = n => Math.round(n * 10) / 10;
-    const tot = cols.map(c => { const v = k => num(c, k), two = extra(c).filter(x => / II$/.test(x[0])).reduce((a, x) => a + x[1], 0);
-      const gear = Math.max(Math.max(v('dt') + v(part) + extra(c).filter(x => !/ II$/.test(x[0])).reduce((a, x) => a + x[1], 0), -50) + two, -87.5);
-      return {gear, all: (by.reduce((m, e) => m * mulOf(e, c), 1 + gear / 100) - 1) * 100, how: by.map(e => `× ${e.src} ${signed(r1((mulOf(e, c) - 1) * 100))} %`).join(' ')}; });
-    const best = Math.min(...tot.map(x => x.all));
-    return `<tr class="want"><th>${esc(label)}</th>` + tot.map((x, i) => { const dv = x.all - tot[0].all;
-      return `<td class="${x.all === best && tot.some(y => y.all !== x.all) ? 'best' : ''}">${signed(r1(x.all))} %` +
-        (i && r1(dv) ? `<i class="dv ${dv < 0 ? 'up' : 'down'}">${signed(r1(dv))} %</i>` : '') +
-        `<small>${esc(t('mulGear'))} ${signed(r1(x.gear))} % ${esc(x.how)}</small></td>`; }).join('') + `</tr>`;
-  };
-  const pExtra = c => [['PDT II', num(c, 'pdt2')]], mExtra = c => [['MDT II', num(c, 'mdt2')], ['Shell', shell]];
-  const dtRows = dtRow(t('pdtEff'), 'pdt', pExtra) + mulRow(t('pdtWithMul'), 'pdt', ['dmgmul', 'pdmgmul'], pExtra) +
-    dtRow(shell ? t('mdtShell') : t('mdtEff'), 'mdt', mExtra) + mulRow(t('mdtWithMul'), 'mdt', ['dmgmul'], mExtra);
-  // the weaponskill's average damage per column (the engine, atelier/engine/)
-  const dmg = cols.map(c => withTrialAs(s, c.tr, () => wsDamage(s)));
-  const dmgRow = dmg.some(v => v != null) ? `<tr class="want dmgrow"><th>${t('cmpDmg', {tp: S.wsTp || 3000})}</th>` + dmg.map((v, i) => {
-    const dv = v != null && dmg[0] != null ? (v / dmg[0] - 1) * 100 : 0, best = Math.max(...dmg.filter(x => x != null));
-    return `<td class="${v === best && dmg.some(x => x !== v) ? 'best' : ''}">${v == null ? '—' : fmtDmg(v)}${i && dv ? `<i class="dv ${dv > 0 ? 'up' : 'down'}">${dv > 0 ? '+' : ''}${dv.toFixed(1)} %</i>` : ''}</td>`; }).join('') + `</tr>` : '';
-  // what the set is after: the stats that differ shown, the ones every column has alike folded with the rest
-  const differs = k => cols.some(c => num(c, k) !== num(ref, k)), wantedDiff = wanted.filter(differs), wantedSame = wanted.filter(k => !differs(k));
-  const wantRows = dmgRow + engCmpRows(s, cols) + statCmpRows(s, cols) + dtRows + rowsOf(wantedDiff, 'want'), statRows = rowsOf(wantedSame, '') + rowsOf(keys, '');
-  const folded = wantedSame.length + keys.length, cols1 = cols.length + 1;
-  // two panes side by side for two or three columns: the pieces that differ, the figures; one under the other past that
-  const pieces = pieceRows ? `<section><div class="kicker">${t('cmpPieces')}</div><table class="cmptbl"><thead>${head}</thead><tbody>${pieceRows}</tbody></table></section>` : '';
-  const figures = wantRows || statRows ? `<section><div class="kicker">${t('cmpWanted')}</div><table class="cmptbl"><thead>${head}</thead><tbody>${wantRows}` +
-    (statRows ? `<tr class="sec"><td colspan="${cols1}"><button class="linkbtn foldbtn" data-cmpmore>${S._cmpMore ? '▾' : '▸'} ${t('cmpStats')} · ${folded}</button></td></tr>` +
-      (S._cmpMore ? statRows : '') : '') + `</tbody></table></section>` : '';
-  const body = slots.length || keys.length || wanted.length
-    ? `<p class="muted small">${t('cmpWhy')}</p><div class="cmpgrid ${cols.length <= 3 && pieces && figures ? 'two' : ''}">${pieces}${figures}</div>`
-    : `<p class="muted">${t('cmpSame')}</p>`;
-  showDialog('cmpdlg', `${t('cmpTitle')} · <code>${esc(shortPath(s.path))}</code> ${statPickBtn()}`, body, '');
-}
-// An engaged set's round per column: real time, the engine's average, rounds, DPS, TP a round, the best in bold and each
-// column's gap to the first
-function engCmpRows(s, cols){
-  if (family(s.path, s.pieces) !== 'engaged') return '';
-  const rr = cols.map(c => withTrialAs(s, c.tr, () => engRound(s)));
-  if (!rr.some(Boolean)) return '';
-  const row = (label, get, fmt, low) => { const v = rr.map(r => r ? get(r) : null), ok = v.filter(x => x != null), best = low ? Math.min(...ok) : Math.max(...ok);
-    return `<tr class="want"><th>${esc(label)}</th>` + v.map((x, i) => { const dv = x != null && v[0] ? (x / v[0] - 1) * 100 : 0;
-      return `<td class="${x === best && ok.some(y => y !== x) ? 'best' : ''}">${x == null ? '—' : fmt(x)}` +
-        (i && Math.abs(dv) > .05 ? `<i class="dv ${(low ? -dv : dv) > 0 ? 'up' : 'down'}">${dv > 0 ? '+' : ''}${dv.toFixed(1)} %</i>` : '') + `</td>`; }).join('') + `</tr>`; };
-  const at = (S.optOpts || {}).engAt || 1000, sec = x => x.toFixed(2) + ' s';
-  return row(t('cmpEngReal', {at}), r => r.real ? r.real.time : r.time, sec, true) + row(t('cmpEngAvg'), r => r.time, sec, true) +
-    row(t('rdvRounds'), r => r.real ? r.real.rounds : null, x => x.toFixed(2), true) + row('DPS', r => r.dps, fmtDmg, false) + row(t('cmpEngTp'), r => r.tp, x => Math.round(x), false) +
-    row(t('rdvAttacks'), r => r.attacks ? r.attacks.swings : null, x => x.toFixed(2), false) + row(t('rdvLanded'), r => r.attacks ? r.attacks.hits : null, x => x.toFixed(2), false);
+  ATELIER_DIALOG.show({cls: 'cmpdlg', titleHtml: `${t('cmpTitle')} · <code>${esc(shortPath(s.path))}</code> ${statPickBtn()}`, compare: ATELIER_DIALOG.compareView(s)});
 }
 // A dialog over the page: title, body, the buttons beside Close
+// (drawn by the Svelte application: atelier/src/screens/dialogs/Dialog.svelte)
 function showDialog(cls, title, body, buttons){
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><div class="dialog ${cls}" role="dialog"><header><h3>${title}</h3></header>
-    <div class="body">${body}</div><footer><button class="btn ghost" data-close>${t('close')}</button>${buttons}</footer></div>`;
-  $('#overlay').hidden = false;
+  ATELIER_DIALOG.show({cls, titleHtml: title, bodyHtml: body, buttonsHtml: buttons});
 }
 
 /* ---- tried pieces saved ---- */

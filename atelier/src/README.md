@@ -81,6 +81,10 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   (`S._optRun`) puis le préviennent (`window.ATELIER_RUN.changed`) au lieu d'écrire dans la page. Restent à
   l'ancienne page : les scènes du Mog (`moogle.js`), les boutons du résultat, le tableau final de « tout optimiser »
   (`opt_all.js`).
+- **Étape 6c, 1re partie (2026-10-19)** : les fenêtres par-dessus la page (`screens/dialogs/` : `dialogs.svelte.ts`,
+  `Dialog.svelte`, montées une fois comme la fenêtre de recherche ; `showDialog`, trial.js, ne fait plus que les
+  ouvrir, chaque ouverture redessinée à neuf) et Comparer (`compare.ts`, `Compare.svelte`). Les autres fenêtres
+  gardent le HTML de leur corps (le choix d'une pièce, d'une chanson, de la cible, pousser dans GearSwap...).
 
 ## Vérifier une étape
 

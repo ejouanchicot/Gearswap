@@ -387,3 +387,25 @@ interface Window { ATELIER_RUN?: {open: (R: LegacyAny) => void; changed: () => v
 declare function optRunBest(R: LegacyAny): LegacyAny;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
+/* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */
+interface Window { ATELIER_DIALOG?: {show: (d: LegacyAny) => void; compareView: (s: LegacyAny) => LegacyAny} }
+declare function compareColumns(s: LegacyAny): LegacyAny[];
+declare function sirdMeritsOf(c: LegacyAny): number;
+declare function setWants(s: LegacyAny): {want: LegacyAny};
+declare function wantOf(want: LegacyAny, key: string): number;
+declare function statVisible(k: string, s?: LegacyAny): boolean;
+declare function statOrder(a: string, b: string): number;
+declare const DT_KEYS: string[];
+declare function baseKey(k: string): string;
+declare function samePiece(a: LegacyAny, b: LegacyAny): boolean;
+declare function statLabel(k: string, e: LegacyAny): string;
+declare function fmtStat(e: {v: number; unit?: unknown}): string;
+declare const GOOD_DOWN: Set<string>;
+declare function danceFloor(kind: string, pieces: LegacyAny): number;
+declare function wsDamage(s: LegacyAny): number | null;
+declare function withTrialAs<X>(s: LegacyAny, tr: LegacyAny, fn: () => X): X;
+declare function statSorter(s: LegacyAny, stats: LegacyAny): ((a: string, b: string) => number) | null;
+declare function statFigures(s: LegacyAny): LegacyAny;
+declare function statRows(s: LegacyAny): LegacyAny[];
+declare function engRound(s: LegacyAny, plain?: boolean): LegacyAny;
+declare const FFXI: LegacyAny;
