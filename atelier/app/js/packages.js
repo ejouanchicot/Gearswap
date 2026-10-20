@@ -82,7 +82,8 @@ function pkgSetName(v){
   if (k) { PKG.jobs = k.jobs.slice(); if (k.role === 'alt' && PKG.box === 'solo') PKG.box = 'alt'; }
 }
 
-// The page is the Svelte application's (atelier/src/screens/packages)
+// The page is the Svelte application's (atelier/src/screens/packages); this function only says the Packages page is
+// there (the screens and the top bar test it: typeof renderPackages)
 function renderPackages(){ return ''; }
 
 // The worker: Pyodide loaded once and kept, make_package.py run on a copy (in its memory) of what sources() names

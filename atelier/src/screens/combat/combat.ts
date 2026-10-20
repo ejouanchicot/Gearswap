@@ -113,7 +113,7 @@ function totalOf(B: LegacyAny): CombatView['total'] {
 
 /** Buffs & target for the old page's state now, or null when it is not shown */
 export function combatView(): CombatView | null {
-  if (st().section !== 'combat' || st()._cfg || (st()._pkg && typeof renderPackages === 'function') || !st().job || !ui2()) return null;
+  if (st().section !== 'combat' || st()._cfg || (st()._pkg && typeof renderPackages === 'function') || !st().job) return null;
   const d = data();
   if (!d) return null;
   // the sets on the left: the set picked there is the one the figures are for

@@ -29,13 +29,13 @@
 
 <div class="app">
   <header class="topbar" id="top"><TopBar /></header>
-  <main class="main"><div class="inner"><Sections /><div id="view"><div id="legacyview"></div><HomeScreen /><NoExport /><SettingsScreen /><PackagesScreen /><ConfigScreen /><PersoScreen /><CombatScreen /><SetsScreen /><SimScreen /></div></div></main>
+  <main class="main"><div class="inner"><Sections /><div id="view"><HomeScreen /><NoExport /><SettingsScreen /><PackagesScreen /><ConfigScreen /><PersoScreen /><CombatScreen /><SetsScreen /><SimScreen /></div></div></main>
 </div>
 <div id="overlay" hidden></div>
 <div id="tip" class="tip" role="tooltip" hidden><Tip /></div>
 
 <style>
-  /* the view (the old page's part, #legacyview, and the Svelte screens) lays its blocks out as the frame's own children
+  /* the view (the Svelte screens) lays its blocks out as the frame's own children
      (.inner, a column: the sections then the pane, atelier/app/css/base.css), as when the old page drew it all */
-  :global(#view), :global(#legacyview) { display: contents; }
+  :global(#view) { display: contents; }
 </style>

@@ -51,5 +51,5 @@ export function trialRowView(s: LegacyAny): TrialRow | null {
 export function trialBarView(s: LegacyAny): TrialBar {
   const row = trialRowView(s);
   if (row) return {k: 'row', row};
-  return ui2() && !baseOnly(s) ? {k: 'idle', text: t('tryIdle')} : null;
+  return !baseOnly(s) ? {k: 'idle', text: t('tryIdle')} : null;
 }

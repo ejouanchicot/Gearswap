@@ -249,6 +249,13 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - **Étape 7ah (2026-10-20)** : le bouton Pousser (`sets/push.ts`, `PushButton.svelte`) dans la barre de l'essai et au
   pied de la fenêtre de recherche, dont les boutons sont maintenant des données (`R.result.footer`, optimizer.js) ;
   `pushButton` (trial.js) est retiré. Plus aucun bloc de l'ancienne page n'est dessiné en HTML dans un écran Svelte.
+- **Étape 7ai (2026-10-20)** : le ménage de fin. `#legacyview` est retiré (`App.svelte`), `render()` ne fait plus que
+  préparer la vue d'un job (`jobViewPrepare`, sets_view.js : le renvoi des anciens noms de section, `simPrepare`) ;
+  `renderHome` et `renderConfig` sont retirés, `renderPackages` reste comme marqueur de la page Paquets. Une seule
+  mise en page depuis le 2026-10-11 : `ui2()` et l'interrupteur `S.ui2` sont retirés, avec l'ancien tiroir de pièces
+  (drawer.js `openSlot` ouvre la fenêtre de gear_pick.js), ses gestionnaires (`data-showjunk`, `data-allitems`) et
+  ses textes. La classe `.ui2` reste sur `.setsx` : les styles s'y accrochent. `fit.css` reste (les corrections du
+  contrôle de mise en page).
 
 ## Vérifier une étape
 

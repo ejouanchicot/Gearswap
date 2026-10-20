@@ -49,7 +49,3 @@ Object.assign(T.en, {grpFiles: 'Files', grpPage: 'Page', grpChar: 'Character', c
   engOwn3: 'Not yet magical, hybrid and ranged weaponskills, nor aftermaths: wsdist computes them in its place.',
   engLink: 'The wsdist project',
   engFellNow: 'Since this choice, computed by wsdist:'});
-
-// The page is the Svelte application's (atelier/src/screens/settings)
-function renderConfig(){ return '';
-}

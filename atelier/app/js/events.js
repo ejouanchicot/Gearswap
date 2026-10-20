@@ -84,7 +84,6 @@ document.addEventListener('click', e => {
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
   if (d.merittab) { S.meritTab = d.merittab; save(); render(); return; }
   if (d.pbadd || d.pbdel || d.pbopen || d.pbset || d.pbsong || d.pbroll || d.pbgeomode || d.pbtab || d.pbpick || d.pbchoose != null || d.pbaddopen != null || 'pbsavego' in d) { pbClick(d); return; }
-  if (d.ui2) { S.ui2 = d.ui2 === 'on'; S._globals = null; save(); render(); return; }
   if ('porterwrite' in d) { porterWrite(); return; }
   if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
     delete by[s.path]; S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save(); render(); return; }
@@ -98,7 +97,6 @@ document.addEventListener('click', e => {
   if ('pushhist' in d) { openHistory(); return; }
   if (d.pushundo) { e.preventDefault(); pushUndo(+d.pushundo); return; }
   if ((d.gpsrc || d.gpsort || d.gpfx != null || d.gpkind != null) && S._drawer) { gpClick(d); return; }
-  if ('showjunk' in d && S._drawer) { S._showJunk = !S._showJunk; openSlot(S._drawer.ci, S._drawer.slot); return; }
   if ('tryempty' in d && S._drawer) { setTrial(S._drawer.set, S._drawer.slot, null); closeOverlay(); render(); return; }
   if ('tryundo' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), k = trialKey(s), dr = S.drafts[k];
     delete S.trial[k]; if (dr) { delete dr.prev; delete dr.info; } render(); return; }
@@ -215,9 +213,6 @@ document.addEventListener('input', e => {
   // the picker's "every item in the game": the catalogue loads once, the drawer is drawn again
   if (e.target.dataset.gpsel && S._drawer) { gpClick({['gp' + e.target.dataset.gpsel]: e.target.value}); return; }
   if ('gpjunk' in e.target.dataset && S._drawer) { S._showJunk = e.target.checked; openSlot(S._drawer.ci, S._drawer.slot); return; }
-  if ('allitems' in e.target.dataset && S._drawer) { S.allItems = e.target.checked; save();
-    const {ci, slot} = S._drawer, reopen = () => { openSlot(ci, slot); const q = $('#drawq'); if (q) q.focus(); };
-    if (S.allItems) loadCatalog(reopen); else reopen(); return; }
   // the drawer's search: hides the pieces that do not match, nothing re-drawn
   if (e.target.id === 'drawq') { const q = e.target.value.trim().toLowerCase();
     document.querySelectorAll('.choice [data-try]').forEach(el => { el.hidden = q && !el.textContent.toLowerCase().includes(q); });

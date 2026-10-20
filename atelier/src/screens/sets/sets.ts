@@ -12,7 +12,7 @@ import {situations, picker, type Situation, type Picker} from '../profiles/profi
 
 export interface SubWarn { text: string; sub: string; fix: string }
 export interface CtxBar { title: string; label: string; sits: Situation[]; picker: Picker; enemy: string; edit: {title: string; label: string}; warn: SubWarn | null }
-export interface SetsView { ctx: CtxBar; ui2: boolean; listW: number | null; list: SetListView; card: CardOrPage | null; figures: FiguresView | null }
+export interface SetsView { ctx: CtxBar; listW: number | null; list: SetListView; card: CardOrPage | null; figures: FiguresView | null }
 
 const st = (): LegacyAny => S;
 
@@ -40,5 +40,5 @@ export function setsView(): SetsView | null {
   let figures: FiguresView | null = null;
   if (vis.length) { const sv = shownSet(cards[sel], sel);
     figures = S0._globals && S0._globals.s === sv && S0._globals.view ? S0._globals.view : figuresView(sv); }
-  return {ctx, ui2: ui2(), listW: S0.listW ? +S0.listW : null, list: view, card, figures};
+  return {ctx, listW: S0.listW ? +S0.listW : null, list: view, card, figures};
 }

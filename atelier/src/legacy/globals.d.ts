@@ -249,7 +249,6 @@ declare const BP_CATS: string[];
 declare function itemIco(name: string, id?: number): string;
 
 /* ---- Buffs & target (party_builder.js, buffs.js, buff_panels.js, profiles.js), loosely typed ---- */
-declare function ui2(): boolean;
 declare function buffState(): LegacyAny;
 declare function buffCount(): number;
 declare function buffKey(): string;

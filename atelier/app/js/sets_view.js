@@ -8,8 +8,6 @@ function renderSide(){
   document.documentElement.setAttribute('data-theme', themeNow());
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
-// The home page (the played jobs, or how to fill the page) is the Svelte application's (atelier/src/screens/home)
-function renderHome(){ return ''; }
 // Whether you hold a piece the set shows (any bag, slips and the Mog House included): 'missing' when you
 // do not, 'short' when yours is below what the page counts (a lower rank than the one counted, a cape
 // counted with its materials at their maximum), '' when yours is it or the page knows no bags (no export yet)
@@ -116,15 +114,14 @@ function jobGroups(){
 const jobBadge = c => { const L = jobLevels(), j = L && L[c];
   return j ? (j.ml ? `<span class="mlbadge" title="${t('mlTip', {n: j.ml})}">ML${j.ml}</span>` : `<span class="lvbadge">${j.level}</span>`) : ''; };
 // Every view of a job is the Svelte application's (atelier/src/screens: config, perso, combat, sets, sim, and
-// home/NoExport.svelte for a job with no export); Simulate asks the game what it needs before it is drawn
-function renderJob(){
-  if (!data()) return '';
+// home/NoExport.svelte for a job with no export). Before they are drawn: the section a page kept on an old name
+// opens, and Simulate asks the game what it needs
+function jobViewPrepare(){
+  if (!data()) return;
   // the Merits are in My character; the keys, modes, switches and macro book are the parts of the job's settings
   // (a page kept on one of those four names, or sent there by a link, opens that part)
-  if (ui2() && S.section === 'merits') S.section = 'perso';
-  if (!ui2() && ['combat', 'perso'].includes(S.section)) S.section = 'sets';
+  if (S.section === 'merits') S.section = 'perso';
   if (S.section === 'sim') simPrepare();
-  return '';
 }
 // Re-render, keeping the focus of the search box and the scroll of each block
 // while the view stays the same (the set detail goes back to its top for another set)
@@ -172,9 +169,9 @@ function render(){
   // a folded block the player opened stays open through a redraw of the same tab: a click inside it (a job, a
   // tab, a mode) draws the page again, and the block closed under the pointer (2026-10-10)
   const opened = S._view === view ? new Set([...document.querySelectorAll('#view details[open]')].map(foldKey)) : new Set();
-  renderSide(); $('#legacyview').innerHTML = S._pkg && typeof renderPackages === 'function' ? renderPackages() : S._cfg ? renderConfig() : S.job ? renderJob() : renderHome(); save();
+  renderSide(); if (!(S._pkg && typeof renderPackages === 'function') && !S._cfg && S.job) jobViewPrepare(); save();
   // the Svelte screens (atelier/src/: the top bar, the sections, the screens moved) read the state again now, before
-  // the focus, the folded blocks and the scroll are put back: theirs too (they are in #view beside #legacyview)
+  // the focus, the folded blocks and the scroll are put back: theirs too (they are in #view)
   if (window.__atelier && window.__atelier.redraw) window.__atelier.redraw();
   for (const el of document.querySelectorAll('#view details:not([open])')) if (opened.has(foldKey(el))) el.open = true;
   // another view starts at the top: a block the Svelte screens keep between redraws (the list of sets) would

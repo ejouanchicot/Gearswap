@@ -1,6 +1,6 @@
-// GearSwap Atelier · drawer.js: the drawer that picks a piece, what a set is after
+// GearSwap Atelier · drawer.js: the pieces offered for a slot (their window: gear_pick.js), what a set is after
 // (loaded by atelier/index.html, in the order of the list there)
-/* ---- drawer ---- */
+/* ---- the pieces offered for a slot ---- */
 function openSlot(ci, slot){
   if (!window.ATELIER_CATALOG && !S._catMissing) return loadCatalog(() => openSlot(ci, slot));
   if (!S._rankTried) { S._rankTried = true; return loadRanked(() => openSlot(ci, slot)); }
@@ -17,39 +17,8 @@ function openSlot(ci, slot){
   for (const o of opts) { o.orig = sameAs(o, orig); o.cur = eff.tried[slot] && sameAs(o, p);
     // the piece tried is this row's best version
     o.curMax = !!(eff.tried[slot] && o.upgrade && samePiece(o.upgrade.piece, p)); }
-  // the new layout: a window over the page with filters (gear_pick.js)
-  if (ui2()) return gpOpen(card, s, slot, p, opts, label);
-  const hand = ['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons';
-  const acts = (p && !hand ? `<button class="btn ghost" data-tryempty>${t('tryEmpty')}</button>` : '') +
-    `<label class="chk"><input type="checkbox" data-allitems ${S.allItems ? 'checked' : ''}> ${t('allItems')}</label>` +
-    (S.allItems && S._catMissing ? `<p class="note">${t('catMissing')}</p>` : '');
-  // groups, each headed with its count: the long tail of a slot is easy to miss below the fold
-  const group = o => o.grp, counts = [0, 0, 0, 0, 0, 0];
-  for (const o of opts) counts[group(o)]++;
-  // the off-topic pieces (group 5) stay folded unless asked
-  const head = (o, i) => i && group(opts[i - 1]) === group(o) || !group(o) ? ''
-    : `<div class="kicker" data-grp>${t('pickGrp' + group(o), {n: counts[group(o)]})}` +
-      (group(o) === 5 ? ` · <button class="linkbtn" data-showjunk>${S._showJunk ? t('junkHide') : t('junkShow')}</button>` : '') + `</div>`;
-  const list = opts.length ? opts.map((o, i) => o.grp === 5 && !S._showJunk ? head(o, i) : head(o, i) + (() => { const r = o.cat ? null : pieceStats(o.piece, (S._drawer || {}).slot), augs = o.piece.augs || [];
-    const where = o.cat ? [t('notOwned'), o.ilv ? 'iLv ' + o.ilv : t('lvShort', {n: o.lv})].join(' · ')
-      : [o.owned ? (o.count > 1 ? '×' + o.count + ' · ' : '') + (o.where && o.where.length ? o.where.map(whereLabel).join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
-    const up = o.upgrade;
-    const why = o.junk && o.why ? `<span class="whyl">${esc(o.why)}</span>` : '';
-    const upTag = up ? `<span class="tag up ${o.curMax ? 'on' : ''}" data-trymax="${i}" role="button" tabindex="0" title="${esc(t('maxChipTip'))}">${up.to ? `→ R${up.to}` : t('capeMaxTag')}</span>` : '';
-    const tag = (o.orig ? `<em class="tag orig">${t('setPiece')}</em>` : o.cur ? `<em class="tag cur">${t('triedTag')}</em>` : o.curMax ? `<em class="tag cur">${t('triedMax')}</em>` : '') + upTag;
-    return `<button type="button" class="${o.orig ? 'orig' : ''} ${o.cur || o.curMax ? 'cur' : ''}" data-try="${i}">${icon(o.piece.name)}<span>` +
-      `<span>${esc(o.piece.name)}${r && r.rank != null ? `<span class="rk">R${r.rank}</span>` : ''}${tag}</span>` +
-      `${augs.length ? `<span class="augl">◆ ${esc(augs.filter(a => !/^Path:/.test(a)).join(' · ') || augs.join(' · '))}</span>` : ''}` +
-      `${o.fit && o.fit.length ? `<span class="fitl">${esc(o.fit.join(' · '))}</span>` : ''}${why}<small>${esc(where)}</small></span></button>`; })()).join('')
-    : `<p class="note">${t('noOwned')}</p>`;
-  const wl = wantsLine(s);
-  let html = `<p class="muted small">${t('pickHint')}</p>` + (wl ? `<p class="wants">${wl}</p>` : '') +
-    `<div class="drawacts">${acts}</div><input id="drawq" class="drawq" type="search" placeholder="${t('drawSearch', {n: opts.length})}" autocomplete="off" spellcheck="false">` +
-    `<div class="choice">${list}</div>`;
-  $('#overlay').innerHTML = `<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="${label}">
-    <header><small>${esc(niceName(card))} · <span style="font-family:var(--mono)">${esc(s.path)}</span></small><h3>${label} : ${p?esc(p.name):'—'}</h3></header>
-    <div class="body">${html}</div><footer><button class="btn ghost" data-close>${t('close')}</button></footer></aside>`;
-  $('#overlay').hidden = false;
+  // a window over the page with filters (gear_pick.js)
+  gpOpen(card, s, slot, p, opts, label);
 }
 // What the drawer offers for a slot: each copy in the bags the job can wear (with its own
 // augments), then the pieces the job's sets name and the bags do not hold; the most used first

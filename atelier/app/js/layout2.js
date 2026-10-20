@@ -1,4 +1,4 @@
-// GearSwap Atelier · layout2.js: the page laid out again (2026-10-06, a trial: S.ui2, one link brings the old one back)
+// GearSwap Atelier · layout2.js: the page's layout (2026-10-06, the only one since 2026-10-11)
 //   Sets       the set in the middle (its pieces, what it is after); on the right the figures of THAT set only, chosen
 //              by its kind (a weaponskill: its damage; engaged: time to the WS, damage; a tank or idle set: what it
 //              takes; then the gear's stats), every other figure folded at the bottom; a bar on top says what the
@@ -6,7 +6,6 @@
 //   Combat     the buffs and conditions, the target (were the top of the right column)
 //   My char    the stats measured in game, the merits, PorterPacker's list (were spread over the right column and
 //              the Merits tab)
-// The old layout's code is left as it was: with S.ui2 off, nothing here is used.
 // (loaded by atelier/index.html after push.js: see the list there)
 
 Object.assign(T.fr, {
@@ -31,10 +30,6 @@ Object.assign(T.en, {
   ui2PersoWhy: 'What belongs to your character: your stats measured in game, your merits and Job Points, your PorterPacker list.',
   ui2CombatTitle: 'Buffs & target', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magic', ui2Job: 'Job', ui2Measured: 'Measured in game', ui2NotMeasured: 'not yet (//gs c atelier)',
 });
-
-// The page has one layout since 2026-10-11 (the one before it, everything in the right column, is no longer
-// offered); what still asks ui2() gets yes
-const ui2 = () => true;
 
 // The parts of the job's settings (its keys, modes, switches, macro book and lockstyle, modules: four small tabs until
 // 2026-10-11, one tab with its parts since). The job's tabs themselves are the Svelte application's
