@@ -223,11 +223,14 @@ local function definition_at(text, line_from, line_to)
     local open = text:sub(r, r) == '{' and r or (text:match('^set_combine%s*%(', r) and combine_table(text, r))
     local close = open and match_close(text, open)
     if not close then return nil end
-    return {keys = keys, line_from = line_from, open = open, close = close, indent = indent, entries = entries(text, open, close)}
+    local stop = open == r and close or match_close(text, text:find('(', r, true))
+    return {keys = keys, line_from = line_from, open = open, close = close, stop = stop, indent = indent,
+        entries = entries(text, open, close)}
 end
 
 --- Every set written in the file with a table of its own:
---- {keys, line_from, open, close, indent, entries}.
+--- {keys, line_from, open, close, stop, indent, entries}: close is the table's brace, stop the end of the
+--- statement (the `)` of a set_combine, which may sit on a line of its own after the brace).
 function SetWriter.definitions(text)
     local defs, pos = {}, 1
     while pos <= #text do
@@ -235,7 +238,7 @@ function SetWriter.definitions(text)
         local def = definition_at(text, pos, line_to)
         if def then
             defs[#defs + 1] = def
-            line_to = text:find('\n', def.close, true) or #text + 1
+            line_to = text:find('\n', def.stop, true) or #text + 1
         end
         pos = line_to + 1
     end
@@ -440,7 +443,7 @@ function SetWriter.create(text, base, name, changes, after)
         or ('[' .. SetWriter.quote(name) .. ']')
     local block = base.indent .. base_path .. key .. ' = set_combine(' .. base_path .. ', {' .. nl
         .. table.concat(lines, nl) .. (#lines > 0 and nl or '') .. base.indent .. '})'
-    local at = line_end(text, (after or base).close)
+    local at = line_end(text, (after or base).stop)
     local out = at <= #text and (text:sub(1, at) .. block .. nl .. text:sub(at + 1)) or (text .. nl .. block .. nl)
     local keys = {}
     for i, k in ipairs(base.keys) do keys[i] = k end
@@ -469,7 +472,7 @@ function SetWriter.create_plain(text, after, path, keys, changes)
         end
     end
     local block = base_indent .. path .. ' = {' .. nl .. table.concat(lines, nl) .. (#lines > 0 and nl or '') .. base_indent .. '}'
-    local at = after and line_end(text, after.close) or #text + 1
+    local at = after and line_end(text, after.stop) or #text + 1
     local out = at <= #text and (text:sub(1, at) .. nl .. block .. nl .. text:sub(at + 1)) or (text .. nl .. block .. nl)
     return out, done, keys
 end
@@ -501,7 +504,7 @@ function SetWriter.create_at(text, after, path, base_path, keys, changes)
     local open = base_path and (path .. ' = set_combine(' .. base_path .. ', {') or (path .. ' = {')
     local close = base_path and '})' or '}'
     local block = base_indent .. open .. nl .. table.concat(lines, nl) .. (#lines > 0 and nl or '') .. base_indent .. close
-    local at = after and line_end(text, after.close) or #text + 1
+    local at = after and line_end(text, after.stop) or #text + 1
     local out = at <= #text and (text:sub(1, at) .. nl .. block .. nl .. text:sub(at + 1)) or (text .. nl .. block .. nl)
     return out, done, keys
 end
@@ -567,7 +570,7 @@ local function span(text, def)
         if not line:match('^%s*%-%-') or banner(line) then break end
         from = prev
     end
-    return {from = from, to = math.min(line_end(text, def.close), #text)}
+    return {from = from, to = math.min(line_end(text, def.stop), #text)}
 end
 
 --- Spans that touch merged into one, in file order.
@@ -622,9 +625,9 @@ function SetWriter.literal(name, augs)
     return '{name = ' .. SetWriter.quote(name) .. ', augments = {' .. table.concat(list, ', ') .. '}}'
 end
 
---- The lines of the definition (from its first line to the line of its closing brace).
+--- The lines of the definition (from its first line to the line that ends it).
 function SetWriter.block(text, def)
-    return text:sub(def.line_from, line_end(text, def.close) - 1)
+    return text:sub(def.line_from, line_end(text, def.stop) - 1)
 end
 
 --- A short hash of a text (djb2), to tell whether a file changed.

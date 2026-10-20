@@ -355,7 +355,7 @@ local function lowest(...)
     local best
     for i = 1, select('#', ...) do
         local d = select(i, ...)
-        if d and (not best or d.close > best.close) then best = d end
+        if d and (not best or d.stop > best.stop) then best = d end
     end
     return best
 end
@@ -639,7 +639,7 @@ local function readers(text, keys)
     for _, use in ipairs(SetWriter.uses(text, keys)) do
         local name
         for _, def in ipairs(defs) do
-            if use.at >= def.line_from and use.at <= def.close then name = path_string(def.keys) end
+            if use.at >= def.line_from and use.at <= def.stop then name = path_string(def.keys) end
         end
         if not name then
             local _, n = text:sub(1, use.at):gsub('\n', '')
