@@ -274,6 +274,11 @@ document.addEventListener('change', e => {
     // free weapons) goes, or Auto would still show it
     const mode = weaponModes(data()).find(m => m.name === e.target.dataset.wmode);
     if (mode && slotForce()[weaponModeSlot(mode)]) setForce(weaponModeSlot(mode), null);
+    // so does a hand picked on a weaponskill's grid (chooseHand: S.held, S.heldSub), on every weaponskill of the job:
+    // it went over the menu, and PLD's Shield menu changed nothing once a shield had been clicked there
+    const held = mode && {main: 'held', sub: 'heldSub'}[weaponModeSlot(mode)], own = S.char + '|' + S.job + '|';
+    if (held && Object.keys(S[held] || {}).some(x => x.startsWith(own)))
+      S[held] = Object.fromEntries(Object.entries(S[held]).filter(([x]) => !x.startsWith(own)));
     save(); render(); return; }
   if (e.target.classList.contains('heldsubsel') && e.target.value === 'cur') return;
   if (e.target.classList.contains('heldsubsel')) { const k = heldKey(e.target.dataset.heldws), x = e.target.value === '' ? null : forceList('sub')[+e.target.value];
