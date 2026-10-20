@@ -515,7 +515,7 @@ the character's `_common/keys/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote's, options replaced) | PDT, MDT, Sortie; **/SCH and /RUN: PDT, MDT, DPS, Tanking, Hoxne** | PDT | `^numpad9` | Mote `get_melee_set`; `set_builder.lua` (`hybrid_set`, `stance_weapon`, `apply_mode_shield`, `apply_mode_ammo`); `enmity_override.lua` `is_active`; `on_state_change`; UI anchor |
+| `HybridMode` (Mote's, options replaced) | PDT, MDT; **/SCH and /RUN: PDT, MDT, Sortie, DPS, Tanking, Hoxne** | PDT | `^numpad9` | Mote `get_melee_set`; `set_builder.lua` (`hybrid_set`, `stance_weapon`, `apply_mode_shield`, `apply_mode_ammo`); `enmity_override.lua` `is_active`; `on_state_change`; UI anchor |
 | `MainWeapon` | Excalibur, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo (Sortie: Burtgang, Naegling; **/SCH and /RUN Sortie stances: Naegling, Excalibur**) | Excalibur (first option); Burtgang on entering Sortie (Excalibur is not in its list); **Naegling** on entering a /SCH or /RUN Sortie stance | `^numpad1`, hidden in /SCH Tanking (`visible`) | `set_builder.lua` (`current_weapon`, `apply_weapon`, `apply_shield`, `select_engaged_base`, `build_*`); WS slots |
 | `Xp` | Off, On | Off | `^numpad4` (/RDM only) | `set_builder.lua` build functions; `PLD_MIDCAST.lua` `midcast_phalanx` |
 | `RuneMode` | Ignis .. Tenebrae (8); Sortie profile, and the /RUN Sortie stances: Ignis, Tenebrae, Sulpor, Flabra, Unda | Ignis | `^numpad3` (/RUN only) | `rune_manager.lua` `execute_rune` |

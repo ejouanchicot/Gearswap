@@ -4,7 +4,7 @@
 --- Defines all PLD job states (Combat Modes, Weapon Sets, XP Mode, Rune Mode).
 ---
 --- Features:
----   • HybridMode configuration (PDT/MDT/Sortie, or DPS/Tanking/Hoxne under /SCH)
+---   • HybridMode configuration (PDT/MDT, plus Sortie/DPS/Tanking/Hoxne under /SCH and /RUN)
 ---   • MainWeapon state (full list, Burtgang/Naegling in Sortie,
 ---     Excalibur/Naegling under /SCH)
 ---   • XP Mode for Phalanx optimization (SIRD vs Potency)
@@ -67,8 +67,9 @@ local SORTIE_WEAPON_OPTIONS = {
 --- COMBAT MODE OPTIONS
 ---============================================================================
 
---- The three stances every subjob but the Sortie ones (STANCE_SUBJOBS) gets.
-local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
+--- The stances every subjob but the Sortie ones (STANCE_SUBJOBS) gets: no Sortie stance, Sortie is played
+--- under /RUN and /SCH only.
+local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT'}
 
 --- Subjobs played for Sortie and nothing else: they take the Sortie stances
 --- (STANCE_SUB_OPTIONS), its weapon list and Phalanx SIRD, and the /SCH
@@ -87,8 +88,9 @@ local REGEN_SUBJOBS = {SCH = true, RUN = true}
 --- ammo slot (shared/utils/equipment/ampulla_lock.lua), the Ampulla being swapped out by the
 --- next set the moment it is equipped otherwise.
 --- What /SCH and /RUN offer: the classic stances first (PDT, the default, and MDT, as on any subjob: weapons
---- from WEAPON_OPTIONS, the set's own shield), then the Sortie ones (Tanking: Burtgang + Aegis, DPS, Hoxne).
-local STANCE_SUB_OPTIONS = {'PDT', 'MDT', 'DPS', 'Tanking', 'Hoxne'}
+--- from WEAPON_OPTIONS, the set's own shield), then Sortie (Burtgang + Aegis or Naegling + Blurred Shield +1,
+--- SORTIE_WEAPON_OPTIONS) and the Sortie ones (Tanking: Burtgang + Aegis, DPS, Hoxne).
+local STANCE_SUB_OPTIONS = {'PDT', 'MDT', 'Sortie', 'DPS', 'Tanking', 'Hoxne'}
 
 --- Whether a HybridMode value is one of the Sortie stances.
 local SORTIE_STANCE = {DPS = true, Tanking = true, Hoxne = true}
@@ -150,12 +152,12 @@ function PLDStates.configure()
     -- ==========================================================================
 
     --- HybridMode: Defensive stance configuration
-    --- Options outside /SCH:
+    --- Options on every subjob:
     ---   • 'PDT' - Physical Damage Taken -50% (default for physical enemies)
     ---   • 'MDT' - Magic Damage Taken -50% (for magical enemies)
+    --- Options under /SCH and /RUN only (the Sortie setup):
     ---   • 'Sortie' - Mitigation + TP build (sets.engaged.TP / sets.idle.MDT),
     ---              and sets.EnmityMax replaces sets.FullEnmity
-    --- Options under /SCH (Sortie-only setup):
     ---   • 'Tanking' - Burtgang + Aegis, sets.engaged.MDT,
     ---              and sets.EnmityMax replaces sets.FullEnmity
     ---   • 'DPS'     - sets.engaged.DPS (TP build), weapon from MainWeapon
@@ -326,12 +328,12 @@ end
 ---============================================================================
 
 --- Which profile the states should hold right now.
---- The subjob decides first: /SCH and /RUN (STANCE_SUBJOBS) are the Sortie-only
---- setup and have their own stances, so the PDT/MDT/Sortie question never reaches them.
+--- The subjob decides first: under /SCH and /RUN (STANCE_SUBJOBS), the Sortie setup,
+--- DPS, Tanking and Hoxne take the /SCH profile; Sortie, PDT and MDT are decided as anywhere.
 --- @param mode string HybridMode value
 --- @return string 'sch', 'sortie' or 'standard'
 local function profile_for(mode)
-    -- under /SCH and /RUN, PDT and MDT are the classic stances (the standard profile), the others the Sortie ones
+    -- under /SCH and /RUN, DPS, Tanking and Hoxne; Sortie has its own profile, PDT and MDT the standard one
     if is_stance_sub() and SORTIE_STANCE[mode] then
         return 'sch'
     end
@@ -365,7 +367,6 @@ local function install_profile(profile)
         reshape(state.RuneMode, SORTIE_RUNE_OPTIONS)
         reshape(state.MainWeapon, SORTIE_WEAPON_OPTIONS)
         state.PhalanxSIRD:set('On')
-        state.Regen:set('Off')
         return
     end
 

@@ -25,7 +25,7 @@ local PLDKeybinds = {}
 --- Phalanx SIRD stays on Ctrl+Numpad2 under every subjob (On by default under
 --- /SCH); Regen takes Ctrl+Numpad3 under /SCH (Rune Mode's key, which only /RUN uses), Ctrl+Numpad7 under /RUN.
 --- The weapon stays cyclable: the /SCH stances pick the set, not the sword.
-PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /SCH)
+PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT, plus Sortie/DPS/Tanking/Hoxne under /SCH and /RUN)
 {
     key = "^numpad9",
     command = "cyclestate HybridMode",

@@ -13,7 +13,7 @@ Set names and automatic gear: [sets.md](sets.md).
 
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
-| `^numpad9` | `HybridMode` | **PDT**, MDT, Sortie. Under /SCH and /RUN: **PDT**, MDT, DPS, Tanking, Hoxne | Your stance (see below) |
+| `^numpad9` | `HybridMode` | **PDT**, MDT. Under /SCH and /RUN: **PDT**, MDT, Sortie, DPS, Tanking, Hoxne | Your stance (see below) |
 | `^numpad1` | `MainWeapon` | **Excalibur**, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo | Weapon set to wield. The list shrinks in Sortie and in the /SCH stances (see below). Hidden under /SCH Tanking |
 | `^numpad2` | `PhalanxSIRD` | **Off**, On. Turned On when you enter Sortie or a /SCH stance (DPS, Tanking, Hoxne) | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. The same key under every subjob |
 | no key | `Shield` | **Auto**, Duban, Aegis, Blurred Shield +1 | `Auto` = the shield your stance and weapon give (`PLD_WEAPONS.lua`); a shield name forces it in idle and engaged (a two-handed weapon keeps its grip). Set by `//gs c sortie <target>` (`SORTIE_CONFIG.lua` states) or `//gs c set Shield <name>`; only in a `PLD_STATES.lua` that declares it |

@@ -232,7 +232,7 @@ flowchart TD
 | Blue Magic | `Cocoon` pseudo-skill, else `Blue Magic` (no base set) | `Blue Magic` with a base set |
 | Enmity override | `EnmityOverride` after dispatch | none |
 | Set builder | weapon + shield, BurtgangKC, grips / shields per mode / stance weapon from `PLD_WEAPONS.lua`, XP, Regen, Sortie / /SCH maps | weapon + grip (every weapon) |
-| HybridMode | PDT, MDT, Sortie (/SCH, /RUN: PDT, MDT, DPS, Tanking, Hoxne); profile hook in `job_state_change` | PDT, MDT; HUD refresh only |
+| HybridMode | PDT, MDT (/SCH, /RUN: PDT, MDT, Sortie, DPS, Tanking, Hoxne); profile hook in `job_state_change` | PDT, MDT; HUD refresh only |
 | Subjob-filtered binds | Xp (/RDM), RuneMode (/RUN), Regen (/SCH, /RUN) | none |
 | WS slots | `WS1`, `WS2` | none |
 | /SCH helpers | `aoe sneak` / `invi` / `erase`, `lightarts`, `darkarts`: common commands on every job; RUN answers the bare `aoe` (BLU rotation) before them | none |

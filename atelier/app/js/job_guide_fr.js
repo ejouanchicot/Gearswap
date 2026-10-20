@@ -86,7 +86,7 @@ const JOB_GUIDE_FR = {
     ['Abilities automatiques', 'Divine Emblem avant Flash, Majesty avant Protect III à V et Cure III / IV.'],
     ['Soins par cible', 'Le set de Cure est choisi selon la cible.'],
     ['Phalanx SIRD', 'Un set Phalanx anti-interruption quand tu le demandes.'],
-    ['Postures selon le sub', 'PDT, MDT, Sortie en général ; DPS, Tanking, Hoxne en /SCH et /RUN (un montage fait pour Sortie).']]],
+    ['Postures selon le sub', 'PDT, MDT en général ; Sortie, DPS, Tanking, Hoxne en plus en /SCH et /RUN (le montage fait pour Sortie).']]],
   PUP: ['Puppetmaster est monté en combattant à mains nues avec un automate. Dans le modèle fourni, les sets sont vides : à toi de les remplir.', [
     ['Pet Mode d’après la tête de l’automate', 'Harlequin = Melee, Valoredge = Tank, Sharpshot = Ranged, Stormwaker = Magic, Soulsoother = Heal, Spiritreaver = Nuke.'],
     ['Équipement d’automate', 'sets.idle.Pet tant qu’il est dehors, une version par Pet Mode quand il se bat, sets.engaged.Pet quand vous vous battez tous les deux.'],
