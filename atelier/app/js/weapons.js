@@ -221,6 +221,9 @@ function withWeapons(s, ignore){
   function fill(m, v, why, onlyEmpty){
     for (const [slot, p] of Object.entries(m.sets[v].pieces)) {
       if ((onlyEmpty && pieces[slot] && !isEmpty(pieces[slot])) || blank.has(slot)) continue;
+      // nor an off hand the main hand cannot take (a grip with a one-handed sword: PLD's Naegling in PDT, where
+      // PLD_WEAPONS.lua gives it no shield, got sets.Alber's grip; GearSwap would never lay that)
+      if (onlyEmpty && slot === 'sub' && !subFits(pieces.main, p)) continue;
       pieces[slot] = p; from[slot] = why;
     }
   }
