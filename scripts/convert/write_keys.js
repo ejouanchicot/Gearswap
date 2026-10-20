@@ -52,11 +52,24 @@ if (mine.size) {
     const desc = command.replace(/^\/\w+\s+/, '').replace(/"/g, '').replace(/\s*<[^>]*>\s*$/, '') || command;
     lines.push(`    { key = ${q(key)}, command = ${q(command)}, desc = ${q(desc)} },`);
   }
-  // before the closing brace of the binds table (the last `}` before `return`)
-  const ret = text.lastIndexOf('\nreturn ');
-  const close = text.lastIndexOf('\n}', ret);
-  if (close < 0) throw new Error('no binds table in ' + templatePath);
-  text = text.slice(0, close) + '\n\n' + lines.join('\n') + text.slice(close);
+  // before the closing brace of the binds table: `<X>Keybinds.binds = {` matched brace by brace (strings and
+  // comments skipped; a template may close its last entry and the table on one line, `}}`)
+  const open = /\w+\.binds\s*=\s*\{/.exec(text);
+  if (!open) throw new Error('no binds table in ' + templatePath);
+  let depth = 0, i = open.index + open[0].length - 1, close = -1;
+  for (; i < text.length; i++) {
+    const c = text[i];
+    if (c === '-' && text[i + 1] === '-') { i = text.indexOf('\n', i); if (i < 0) break; continue; }
+    if (c === '"' || c === "'") { for (i++; i < text.length && text[i] !== c; i++) if (text[i] === '\\') i++; continue; }
+    if (c === '{') depth++;
+    else if (c === '}' && --depth === 0) { close = i; break; }
+  }
+  if (close < 0) throw new Error('binds table not closed in ' + templatePath);
+  // the entry before: a comma after it (the last one may have none)
+  let k = close - 1;
+  while (k > 0 && /\s/.test(text[k])) k--;
+  const before = text.slice(0, k + 1) + (text[k] === ',' || text[k] === '{' ? '' : ',');
+  text = before + '\n\n' + lines.join('\n') + '\n' + text.slice(close);
 }
 fs.writeFileSync(outPath, text);
 if (reportPath) fs.writeFileSync(reportPath, JSON.stringify({kept: [...mine], over_template: taken, left}, null, 1));

@@ -75,6 +75,30 @@ local CHARACTERS = {
                  'PLD', 'PUP', 'RDM', 'RNG', 'RUN', 'SAM', 'SCH', 'THF', 'WAR', 'WHM' },
         role = 'main',
     },
+
+    ---------------------------------------------------------------------------
+    -- GAB'S OTHER CHARACTERS (his old 0_Shared files, their gear converted by
+    -- scripts/convert on 2026-10-16; no dual-box role known: main)
+    ---------------------------------------------------------------------------
+    Sephiroph = {
+        jobs = { 'BLU', 'COR', 'DNC', 'GEO', 'PLD', 'PUP', 'SAM', 'THF' },
+        role = 'main',
+    },
+
+    Thyrsa = {
+        jobs = { 'COR', 'DRG', 'DRK', 'THF', 'WAR' },
+        role = 'main',
+    },
+
+    Kevvansmoothie = {
+        jobs = { 'GEO', 'SCH', 'THF' },
+        role = 'main',
+    },
+
+    Smoothastic = {
+        jobs = { 'SCH', 'THF', 'WHM' },
+        role = 'main',
+    },
 }
 
 ---============================================================================

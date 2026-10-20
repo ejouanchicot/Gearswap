@@ -259,7 +259,13 @@ if lenient then
     run('lenient', include_user, 'Modes')
     rawset(env, 'state', {})
 end
-if run('load', include_user, FILE) and env.get_sets then run('get_sets', env.get_sets) end
+if run('load', include_user, FILE) and env.get_sets then
+    -- lenient: a file whose user_setup fails (Gab's shared_load on an AF.Set his gear file never set) never
+    -- reached init_gear_sets in game either; its sets are still read, the failure kept in `errors`
+    if not run('get_sets', env.get_sets) and lenient and type(rawget(env, 'init_gear_sets')) == 'function' then
+        run('init_gear_sets (lenient)', env.init_gear_sets)
+    end
+end
 table.sort(scheduled, function(a, b) return a.delay < b.delay end)
 for i = 1, math.min(#scheduled, 400) do
     if scheduled[i].delay <= 10 then run('scheduled', scheduled[i].fn) end

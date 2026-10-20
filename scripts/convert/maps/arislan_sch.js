@@ -10,6 +10,7 @@
 //   opts.regen         his Regen Mode values, his default first (['Potency', 'Duration'])
 //   opts.helix         his Helix Mode values, his default first
 //   opts.arts          his file lays sets.LightArts / sets.DarkArts on Enfeebling Magic of the Arts up
+//   opts.helix_sets    false: his file has no LightHelix / DarkHelix / Helix sets (none derived from them)
 // A player map: module.exports = require('../arislan_sch.js')({...}) and its own fields over it.
 const STORMS = ['Firestorm', 'Hailstorm', 'Windstorm', 'Sandstorm', 'Thunderstorm', 'Rainstorm', 'Aurorastorm', 'Voidstorm'];
 const HELICES = ['Pyrohelix', 'Cryohelix', 'Anemohelix', 'Geohelix', 'Ionohelix', 'Hydrohelix', 'Luminohelix', 'Noctohelix'];
@@ -20,15 +21,16 @@ module.exports = (opts = {}) => ({
   modes: {MagicBurst: {state: 'MagicBurstMode', values: {true: 'On', false: 'Off'}}},
   // his FullSublimation set while Sublimation charges: ours lays sets.buff.Sublimation then (logic/set_builder.lua)
   rename: {'buff.FullSublimation': 'buff.Sublimation'},
-  rebase: {'midcast.Helix': 'midcast["Elemental Magic"]'},
-  derive: {
+  rebase_if: {'midcast.Helix': 'midcast["Elemental Magic"]'},
+  derive: Object.assign({
     'midcast["Elemental Magic"].MagicBurst': {from: ['midcast["Elemental Magic"]', 'magic_burst']},
+  }, opts.helix_sets === false ? {} : {
     'midcast.Helix.MagicBurst': {from: ['midcast.Helix', 'magic_burst']},
     'midcast.Helix.Light': {from: ['midcast["Elemental Magic"]', 'midcast.LightHelix']},
     'midcast.Helix.Dark': {from: ['midcast["Elemental Magic"]', 'midcast.DarkHelix']},
     'midcast.Helix.Light.MagicBurst': {from: ['midcast["Elemental Magic"]', 'midcast.LightHelix', 'magic_burst']},
     'midcast.Helix.Dark.MagicBurst': {from: ['midcast["Elemental Magic"]', 'midcast.DarkHelix', 'magic_burst']},
-  },
+  }),
   custom: [
     {comment: 'His apply_grimoire_bonuses: his Penury and Parsimony sets on every spell while the stratagem is up\n(our grimoire layers have none for them)', entry: {when: {buff: 'Penury'}, midcast: 'sets.buff.Penury'}},
     {entry: {when: {buff: 'Parsimony'}, midcast: 'sets.buff.Parsimony'}},

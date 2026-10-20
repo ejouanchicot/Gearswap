@@ -31,7 +31,8 @@ const jobs = [];
 for (const f of evals) {
   const d = JSON.parse(fs.readFileSync(f, 'utf8'));
   const errors = Array.isArray(d.errors) ? d.errors : Object.values(d.errors || {});
-  if (errors.length) throw new Error(`${f}: ${errors[0]}`);
+  // a file read leniently failed where it fails in game too: its gear tables are still the ones it built
+  if (errors.length && !d.lenient) throw new Error(`${f}: ${errors[0]}`);
   jobs.push(d.job);
   for (const g of d.gear || []) {
     if (!byPath.has(g.path)) byPath.set(g.path, new Map());
