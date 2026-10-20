@@ -160,7 +160,15 @@ function withWeapons(s, ignore){
   // a weapon mode laid only while a switch is on, in place of the usual weapons (WEAPON_GATES)
   const isOn = name => { const g = d.modes.find(x => x.name === name); return !!g && /^(on|true)$/i.test(g.current); };
   const gated = Object.entries(WEAPON_GATES).filter(([m, g]) => isOn(g.when)).map(([m]) => m);
+  // the weapon a stance puts in hand, whatever MainWeapon says (PLD's Tanking: Burtgang), and StanceWeapon in its place
+  // when not Auto; a stance with no weapon of its own keeps MainWeapon and reads no StanceWeapon (PLD set_builder.lua
+  // stance_weapon / current_weapon: checked in game 2026-10-20 with /simulate)
+  const stanceOf = hybrid && (rules.stance_weapon || {})[hybrid];
+  const swMode = weaponModes(d).find(m => m.name === 'StanceWeapon');
+  const swChosen = stanceOf && swMode ? explicitWeapon(swMode, ignore) || chosenWeapon(swMode) : null;
   for (const m of weaponModes(d)) {
+    // read only through the stance, below
+    if (m === swMode) continue;
     const gate = WEAPON_GATES[m.name];
     if (gate && !gated.includes(m.name) && !explicitWeapon(m, ignore)) continue;
     if (gated.some(g => WEAPON_GATES[g].replaces.includes(m.name)) && !explicitWeapon(m, ignore)) continue;
@@ -172,8 +180,8 @@ function withWeapons(s, ignore){
     const named = m.name === 'MainWeapon' ? weaponOfPath(s.path, m) : null;
     if (named) { v = named; why = t('weaponByVariant', {v: named}); }
     if (!v) continue;
-    const stance = !ex && !named && m.name === 'MainWeapon' && hybrid && (rules.stance_weapon || {})[hybrid];
-    if (stance && m.sets[stance]) { v = stanceWeapon = stance; why = `${hybrid} : ${v}`; }
+    const stance = !named && m.name === 'MainWeapon' && stanceOf ? swChosen || stanceOf : null;
+    if (stance && m.sets[stance]) { v = stanceWeapon = stance; why = swChosen ? `${swMode.desc} : ${v}` : `${hybrid} : ${v}`; }
     if (!ex && want && m.name === 'MainWeapon' && !wsWeaponFits(m, v, ws)) {
       const fit = m.values.find(x => wsWeaponFits(m, x, ws));
       if (fit) { v = fit; stanceWeapon = null; why = `${ws} : ${v}`; }
@@ -195,6 +203,14 @@ function withWeapons(s, ignore){
   const shield = !hsOn && !shieldChosen && weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
   if (grip && !blank.has('sub')) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield && !blank.has('sub')) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
+  // a weaponskill swaps no weapon: with no shield for the weapon in this stance (PLD_WEAPONS.lua), the off hand is
+  // the one the stance's engaged set laid (PLD set_builder.lua: other modes leave the sub to their set). Checked
+  // in game 2026-10-20 (/simulate): PDT + Naegling, Shield Auto holds sets.engaged.PDT's Duban
+  if (ws && hybrid && !hsOn && !blank.has('sub') && (!pieces.sub || isEmpty(pieces.sub))) {
+    const by = S._bypath || {}, base = by['sets.engaged.' + hybrid] ? 'sets.engaged.' + hybrid : 'sets.engaged';
+    const sp = by[base] && by[base].pieces.sub;
+    if (sp && !isEmpty(sp) && subFits(pieces.main, sp)) { pieces.sub = sp; from.sub = t('subOfStance', {s: base}); }
+  }
   // the pieces forced in the page (FORCE_SLOTS), over the job's rules (a set named after a weapon keeps its
   // weapons: only the ammo); ignore 'force' for what Auto would give. Not on a weaponskill's set: it holds the
   // weapon that opens it and the off hand chosen for it (S.held, S.heldSub), and its own ammo
