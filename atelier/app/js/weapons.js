@@ -207,8 +207,11 @@ function withWeapons(s, ignore){
   // the one the stance's engaged set laid (PLD set_builder.lua: other modes leave the sub to their set). Checked
   // in game 2026-10-20 (/simulate): PDT + Naegling, Shield Auto holds sets.engaged.PDT's Duban
   if (ws && hybrid && !hsOn && !blank.has('sub') && (!pieces.sub || isEmpty(pieces.sub))) {
-    const by = S._bypath || {}, base = by['sets.engaged.' + hybrid] ? 'sets.engaged.' + hybrid : 'sets.engaged';
-    const sp = by[base] && by[base].pieces.sub;
+    // read from the job's own sets, not S._bypath: the set list fills that during the redraw, after the weapon menus
+    // ask, so on the first redraw of a job it still held the previous job's sets
+    const named = p => d.sets.find(x => x.path === p || (x.aliases || []).includes(p));
+    const own = 'sets.engaged.' + (STANCE_ENGAGED[hybrid] || hybrid), base = named(own) ? own : 'sets.engaged';
+    const sp = named(base) && named(base).pieces.sub;
     if (sp && !isEmpty(sp) && subFits(pieces.main, sp)) { pieces.sub = sp; from.sub = t('subOfStance', {s: base}); }
   }
   // the pieces forced in the page (FORCE_SLOTS), over the job's rules (a set named after a weapon keeps its
@@ -225,6 +228,10 @@ function withWeapons(s, ignore){
   if (isKraken(s.path) && !blank.has('sub') && !(pieces.sub && pieces.sub.name === KRAKEN) && !force.sub && !force.main && !weaponModes(d).some(m => explicitWeapon(m, ignore))) {
     pieces.sub = {name: KRAKEN}; from.sub = t('weaponByVariant', {v: KRAKEN}); }
   for (const [m, v] of picks) fill(m, v, t('yourChoice', {v}), false);
+  // the Hoxne stance locks the ammo slot on its Ampulla (shared/utils/equipment/ampulla_lock.lua, PLD and WAR): every
+  // set of the stance keeps it, a weaponskill's own ammo never goes on
+  const locked = stanceAmmo(d, hm, hybrid);
+  if (locked && !blank.has('ammo')) { pieces.ammo = {name: locked}; from.ammo = t('ammoLocked', {m: 'Hoxne'}); }
   // an action's set: the hands it names itself go over what the modes laid (the job wears them for the action)
   if (ownHands) for (const slot of ['main', 'sub', 'range']) {
     const p = s.pieces[slot];
@@ -232,7 +239,7 @@ function withWeapons(s, ignore){
   }
   // the TP bonus pieces go on last, over the tried ones: the job lays them after the set (job_post_precast)
   const out = applyTrial(s, pieces, from, stanceWeapon), tpg = tpBonusGear(s, out.pieces);
-  for (const [slot, name] of Object.entries(tpg || {})) if (!blank.has(slot)) { out.pieces[slot] = {name}; out.from[slot] = t('tpFrom', {tp: S.wsTp}); }
+  for (const [slot, name] of Object.entries(tpg || {})) if (!blank.has(slot) && !(locked && slot === 'ammo')) { out.pieces[slot] = {name}; out.from[slot] = t('tpFrom', {tp: S.wsTp}); }
   return out;
   function fill(m, v, why, onlyEmpty){
     for (const [slot, p] of Object.entries(m.sets[v].pieces)) {
@@ -243,6 +250,14 @@ function withWeapons(s, ignore){
       pieces[slot] = p; from[slot] = why;
     }
   }
+}
+// The engaged set a stance wears when it borrows another's (PLD set_builder.lua ENGAGED_SET_BY_MODE)
+const STANCE_ENGAGED = {Sortie: 'TP', Tanking: 'MDT'};
+// The ammo the stance locks (ampulla_lock.lua stance_ammo): the Ampulla in Hoxne, null for any other stance. Not
+// checked against what you own: the export's owned list leaves the Ampulla out
+function stanceAmmo(d, hm, hybrid){
+  const mode = hm ? hybrid : ((d.modes.find(x => x.name === 'HybridMode') || {}).current);
+  return mode === 'Hoxne' && ['PLD', 'WAR'].includes(S.job) ? 'Hoxne Ampulla' : null;
 }
 // Weapon modes laid only while a switch is on, and the modes they replace then: THF's Abyssea
 // weapon (shared/jobs/thf/functions/logic/set_builder.lua apply_weapon)
