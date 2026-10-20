@@ -57,6 +57,7 @@ COMMON_GROUPS = {
     'ELEMENTAL_BELT_CONFIG.lua': 'gear', 'HP_PRIORITY_CONFIG.lua': 'gear',
     'STEALTH_CONFIG.lua': 'travel', 'WARP_CONFIG.lua': 'travel',
     'FIGHTS_CONFIG.lua': 'tools', 'SORTIE_CONFIG.lua': 'tools', 'ADDONS_CONFIG.lua': 'tools',
+    'ENHTEST_CONFIG.lua': 'tools', 'ENHTEST_SETS.lua': 'tools',
     # gone on 2026-10-10: migrate_config.py folds them into the job files right after the moves
     'TUNING.lua': 'combat', 'AUTO_ABILITIES.lua': 'combat',
 }
