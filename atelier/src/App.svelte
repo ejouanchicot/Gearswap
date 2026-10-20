@@ -9,6 +9,7 @@
 -->
 <script lang="ts">
   import {onMount} from 'svelte';
+  import Tip from './screens/sets/Tip.svelte';
   import {loadLegacy} from './legacy/load';
   import {markLoaded} from './bridge';
   import TopBar from './screens/topbar/TopBar.svelte';
@@ -31,7 +32,7 @@
   <main class="main"><div class="inner"><Sections /><div id="view"><div id="legacyview"></div><HomeScreen /><NoExport /><SettingsScreen /><PackagesScreen /><ConfigScreen /><PersoScreen /><CombatScreen /><SetsScreen /><SimScreen /></div></div></main>
 </div>
 <div id="overlay" hidden></div>
-<div id="tip" class="tip" role="tooltip" hidden></div>
+<div id="tip" class="tip" role="tooltip" hidden><Tip /></div>
 
 <style>
   /* the view (the old page's part, #legacyview, and the Svelte screens) lays its blocks out as the frame's own children

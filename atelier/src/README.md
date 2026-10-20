@@ -241,6 +241,11 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   (`sets/weapons.ts`, `WeaponMenu.svelte` : un menu par état d'arme, Auto d'abord, la posture de PLD, puis ce que le
   GearSwap du job met avec, avec « Revenir en Auto » sur une pièce forcée) ; `weaponMenus` et `weaponResultLines`
   (weapons.js) sont retirés. La carte d'un set n'a plus de HTML de l'ancienne page.
+- **Étape 7ag (2026-10-20)** : l'infobulle (`#tip`, `sets/tips.svelte.ts`, `Tip.svelte` monté dans le `#tip` de
+  `App.svelte`) : la carte d'une pièce d'un set, du tiroir ou de la simulation, sa version au maximum avec Maj, et
+  l'explication d'un objectif de l'optimiseur ; `tipHTML`, `pieceTip` et `maxTip` (events.js) sont retirés.
+  `showTip` (events.js) décide toujours quand elle s'ouvre et la place à côté de l'élément survolé, une fois son
+  contenu dessiné (`ATELIER_TIP.show`).
 
 ## Vérifier une étape
 

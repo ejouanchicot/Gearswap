@@ -294,7 +294,7 @@ declare function isLocked(s: LegacyAny, slot: string): boolean;
 declare function LOCKABLE(slot: string): boolean;
 declare function pieceStats(p: LegacyAny, slot?: string): LegacyAny;
 declare function holdState(slot: string, p: LegacyAny): string;
-declare function icon(name: string): string;
+declare function icon(name: string | null): string;
 declare function variantGroups(card: LegacyAny): {groups: Map<string, LegacyAny>; skills: Record<string, string>};
 declare function withWeapons(s: LegacyAny, mode?: string): LegacyAny;
 declare function ownedOf(): Record<string, LegacyAny[]>;
@@ -430,6 +430,7 @@ declare function mxWsWeapon(path: string): {name: string; kind: string} | null;
 declare function mxWsGiven(): LegacyAny;
 declare function mxSpell(n: string): boolean;
 declare function isExcluded(name: string): boolean;
+interface Window { ATELIER_TIP?: {show: (el: HTMLElement) => boolean} }
 interface Window { ATELIER_SLOTMENU?: {view: (ci: number, slot: string) => LegacyAny; show: (v: LegacyAny) => HTMLElement} }
 declare const WELCOME: {state: string; msg: string};
 declare function counts(c: string): {sets: number; keys: number};
@@ -562,3 +563,5 @@ declare function explicitWeapon(m: LegacyAny, ignore?: string): string | null;
 declare function chosenWeapon(m: LegacyAny): string;
 declare function slotForce(): Record<string, LegacyAny>;
 declare function weaponModeSlot(m: LegacyAny): string;
+declare function rareExHTML(name: string, aug: unknown): string;
+declare function upgradeOf(p: LegacyAny): LegacyAny;

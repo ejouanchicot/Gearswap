@@ -290,55 +290,11 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('buffsel')) { const b0 = buffState(), k = e.target.dataset.buff;
     if (e.target.value === '') delete b0[k]; else b0[k] = e.target.value; render(); }
 });
-/* ---- the hover card of a piece: what it brings, base and augments apart ---- */
-function tipHTML(card, slot){
-  const s = shownSet(card.c, card.i);
-  return pieceTip(withWeapons(s).pieces[slot], slot, isEmpty(s.pieces[slot]));
-}
-// The hover card of one piece (a set's, or one offered in the drawer)
-function pieceTip(p, slot, emptied){
-  const label = SLOT_NAMES[S.lang][slot];
-  // a slot the set empties (sets.naked, //gs c naked) stays empty whatever the weapon modes say
-  const none = emptied ? t('emptied') : slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty');
-  if (!p) return `<div class="th">${icon(null)}<div><b>${label}</b><small>${none}</small></div></div>`;
-  const r = pieceStats(p, slot);
-  let body = '';
-  if (r && r.known) {
-    const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
-    const order = STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder));
-    // The augment part in front of the total: the base is what remains
-    const aug = k => r.aug[k] && r.aug[k].v ? `<i class="a">◆${fmtStat(r.aug[k])}</i>` : '';
-    const attrs = order.filter(k => statGroup(k) === 'attr'), rest = order.filter(k => statGroup(k) !== 'attr');
-    if (attrs.length) body += `<div class="attrs">${attrs.map(k => `<span>${esc(statLabel(k, r.stats[k]))}${aug(k)}<b>${fmtStat(r.stats[k])}</b></span>`).join('')}</div>`;
-    body += `<div class="rows">${rest.map(k => `<div class="r"${statTitle(esc(statLabel(k, r.stats[k])), '')}><span>${esc(statLabel(k, r.stats[k]))}</span><b>${aug(k)}${fmtStat(r.stats[k])}</b></div>`).join('')}</div>`;
-    if (r.free.length) body += `<div class="k">${t('effects')}</div><ul>${r.free.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
-    if (r.cond.length) body += `<div class="k">${t('condTitle')}</div><ul>${r.cond.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
-  } else body = `<p class="muted">${t('noDesc')}</p>`;
-  const weapon = r && r.weapon ? ` · ${Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ')}` : '';
-  const rank = r && r.rank != null ? ` · <span class="rk">${r.path ? `Path ${esc(r.path)} · ` : ''}${t('rankShort', {r: r.rank})}${r.rankAssumed ? ' · ' + esc(t('rankAssumed')) : ''}</span>` : '';
-  // where GearSwap takes it from (bag = 'wardrobe 3') and its order in a swap (priority)
-  const where = [p.bag ? t('tipBag', {b: esc(p.bag)}) : '', p.priority != null ? t('tipPriority', {n: p.priority}) : ''].filter(Boolean).join(' · ');
-  return `<div class="th">${icon(p.name)}<div><b>${esc(p.name)}</b><small>${label}${weapon}${rank}${where ? ' · ' + where : ''}</small></div>${rareExHTML(p.name, r && Object.keys(r.aug).length)}</div>${body}`;
-}
+/* ---- the hover card of a piece: what it brings, base and augments apart (its content: atelier/src/screens/sets/tips.svelte.ts) ---- */
 // Placed beside the hovered slot, on the side with room, kept inside the window
 function showTip(el){
   const tip = $('#tip');
-  // an objective of the optimizer: its name, then what it is (opt_page.js objTip_*, stat_opt.js statD_*)
-  if (el.dataset.objtip != null) {
-    tip.innerHTML = `<b class="objtipn">${esc((el.querySelector('b') || el).textContent)}</b><p class="objtipd">${esc(el.dataset.objtip)}</p>`;
-  } else if (el.dataset.simp != null) {
-    const [i, slot] = el.dataset.simp.split('|'), p = ((S._simWorn || {})[i] || {})[slot];
-    tip.innerHTML = pieceTip(p && p.name !== 'empty' ? p : null, slot);
-  } else if (el.dataset.try != null) {
-    const o = (S._drawOpts || [])[+el.dataset.try];
-    if (!o || !o.piece) return;
-    tip.innerHTML = S._shift && o.upgrade ? maxTip(o.upgrade, S._drawer.slot) : pieceTip(o.piece, S._drawer.slot) + (o.upgrade ? `<p class="tiphint">${t('maxHint')}</p>` : '');
-  } else {
-    const ci = +el.dataset.card, card = S._cards && S._cards[ci];
-    if (!card) return;
-    const piece = withWeapons(shownSet(card, ci)).pieces[el.dataset.slot], up = piece && upgradeOf(piece);
-    tip.innerHTML = S._shift && up ? maxTip(up, el.dataset.slot) : tipHTML({c: card, i: ci}, el.dataset.slot) + (up ? `<p class="tiphint">${t('maxHint')}</p>` : '');
-  }
+  if (!ATELIER_TIP.show(el)) return;
   S._tipEl = el;
   tip.classList.toggle('wide', tip.querySelectorAll('.r').length > 6);
   tip.hidden = false;
@@ -346,12 +302,6 @@ function showTip(el){
   const left = b.right + 8 + w < innerWidth ? b.right + 8 : Math.max(8, b.left - 8 - w);
   tip.style.left = left + 'px';
   tip.style.top = Math.max(8, Math.min(b.top, innerHeight - h - 8)) + 'px';
-}
-// The best version's card: what is left to do, then its stats
-function maxTip(up, slot){
-  const todo = up.to ? (up.from != null ? t('upRank', {f: up.from, t: up.to}) : t('upRankUnknown', {t: up.to}))
-    : t('upCape') + (up.missing && up.missing.length ? ' · ' + t('upMissing', {m: up.missing.join(', ')}) : '');
-  return `<p class="tiphint max">${esc(todo)}</p>` + pieceTip(up.piece, slot);
 }
 // Shift held: the card shown turns to the best version, and back when released
 for (const ev of ['keydown', 'keyup']) document.addEventListener(ev, e => {
