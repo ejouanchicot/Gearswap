@@ -97,6 +97,8 @@ function MessageAltGroup.show_usage()
             {'//gs c alts do ', '<command>', 'Console command on every alt'},
             {'//gs c alts mirror', '', 'Mirror request from here'},
             {'//gs c alts window', '', 'Show / hide the alt window'},
+        }}, {title = 'ROLES', rows = {
+            {'//gs c main', '', 'I am the main, the others alts (kept after a reload)'},
         }}},
         notes = {'Alts: the group of _common/dualbox/DUALBOX_CONFIG.lua.'},
     })
