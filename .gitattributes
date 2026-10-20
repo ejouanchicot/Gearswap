@@ -1,0 +1,2 @@
+# Shell scripts keep LF: bash cannot run a script with CR at the end of its lines (core.autocrlf is true here)
+*.sh text eol=lf
