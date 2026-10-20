@@ -54,6 +54,7 @@ function, not a line number.
 | `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | Header only, kept for the 12-module layout |
 | `shared/jobs/geo/functions/GEO_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('GEO', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
+| `shared/jobs/geo/functions/logic/bolster_follow.lua` | `BolsterFollow.note_cast`, `on_buff_change`: Blaze of Glory under Bolster, Ecliptic Attrition or Full Circle once it ends (key `bolster_follow`) |
 | `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options (keys `auto_entrust`, `auto_full_circle` of `GEO_CONFIG.lua`) |
 | `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | `refine_spell` / `refine_and_cast` for the nuke commands |
 | `shared/jobs/geo/functions/logic/set_builder.lua` | HybridMode / `sets.luopan` selection, town, weapons, movement |
@@ -173,6 +174,14 @@ flowchart TD
     is cancelled (`eventArgs.cancel`), Full Circle goes out, and the Geo- is
     re-sent on the same target id 2 s later. `windower._geo_full_circle_replay`
     (5 s) lets that re-send through without a second Full Circle.
+- `logic/bolster_follow.lua` (key `bolster_follow` of `GEO_CONFIG.lua`, read by
+  `JobConfig.get`, default false): `GEO_BUFFS` hands it every buff change,
+  `GEO_PRECAST` every Geo- that goes out (`note_cast`: `windower._geo_luopan_bog`
+  = Blaze of Glory up). Bolster gained with no luopan (`get_mob_by_target('pet')`):
+  Blaze of Glory. Bolster lost with a luopan: Ecliptic Attrition if it was placed
+  with Blaze of Glory, else Full Circle. Each step is tried 3 times, 1.5 s then
+  2 s apart, until it went through; `windower._geo_bolster_seq` drops the tries of
+  an older Bolster event. Test: `scripts/atelier/bolster_follow_test.lua`.
 - `_G.geo_entrust_pending` is raised optimistically on the Entrust ability;
   aftercast lowers it again when Entrust was interrupted.
 - `job_post_precast` applies the stored TP gear. Mote's default precast picks
@@ -321,7 +330,7 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 |---------|--------|
 | `indi` | `/ma "<MainIndi>" <me>` |
 | `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS`, `<stnpc>` otherwise (`is_geo_buff`) |
-| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `JobConfig.get('GEO', 'escort_indi', 'Indi-Regen')`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; with a fourth word (a Silmaril profile folder, sent by `sortie escort` when the config has `escort.profile`), `sm load <profile>; sm follow off; sm on` replaces the `/ma` and the safety net waits 4 s more; `MessageSortie.show_alt_escort` |
+| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `JobConfig.get('GEO', 'escort_indi', 'Indi-Regen')`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; with a fourth word (a Silmaril profile folder, sent by `sortie escort` when the config has `escort.profile`), `sm off; sm load <profile>; sm follow off` is sent first and the `/ma` still goes out (since 2026-10-17: Silmaril casting it waited for the end-of-cast packet, and when Sortie lost that packet it cast the Indi- a second time; the load only makes Silmaril see the next fight profile's Indi- as new). The follow also starts on GearSwap's `indi_change` (gained, element of the escort Indi-), for the same lost packet; `MessageSortie.show_alt_escort` |
 | `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
 | `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` |
 | `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` |
@@ -364,6 +373,7 @@ T = in `_master/sets/geo_sets.lua`.
 | `<char>/geo/display/GEO_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 5 page 1; `dualbox` empty | `MacrobookManager` (factory fallback book 1) |
 | `<char>/geo/combat/GEO_TP_CONFIG.lua` -> `_G.GEOTPConfig` | Moonshade 250 in `pieces` | TP bonus calculator |
 | `<char>/geo/combat/GEO_CONFIG.lua` `auto_entrust`, `auto_full_circle` | false, false | `AutoOptions.on('geo_entrust')` / `('geo_full_circle')` from `GeoAutoAbilities.apply` |
+| `<char>/geo/combat/GEO_CONFIG.lua` `bolster_follow` | false (true in the Kaories overlay) | `logic/bolster_follow.lua` from `GEO_BUFFS` / `GEO_PRECAST` |
 | `<char>/geo/inventory/GEO_REFILL.lua` | the commented template (common list of `REFILL_CONFIG.lua` until edited); the alt overlay has its own list | refill system (the common list without a list in it) |
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
 | PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` (both skipped with `pettp = false` in `_common/tools/ADDONS_CONFIG.lua`) |

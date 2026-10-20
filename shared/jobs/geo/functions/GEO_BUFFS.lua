@@ -45,6 +45,9 @@ function job_buff_change(buff, gain, eventArgs)
     if buff == 'Entrust' and not gain then
         _G.geo_entrust_pending = false
     end
+
+    -- Blaze of Glory under Bolster, Ecliptic Attrition once it ends (geo/combat/GEO_CONFIG.lua bolster_follow)
+    require('shared/jobs/geo/functions/logic/bolster_follow').on_buff_change(buff, gain)
 end
 
 -- Export to global scope (used by Mote-Include via include())

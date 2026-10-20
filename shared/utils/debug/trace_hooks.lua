@@ -13,6 +13,8 @@
 ---   EV < name    and ends (a > without its < is where it stopped). Callbacks
 ---                registered by the project go through the same door and are
 ---                named after their event ('zone change', 'action'...).
+---   ACT what     this character's own spell packets: start, interrupted,
+---                finish (with the message), as the server sent them
 ---
 --- Very frequent events (prerender, chunks, mouse...) are only counted; the
 --- heartbeat writes the counts once per second.
@@ -119,6 +121,28 @@ local function hook_loads()
     end
 end
 
+local CAST_START, CAST_INTERRUPTED = 24931, 28787
+
+--- ACT lines for this character's own spell packets: start, interruption and
+--- finish as the server sent them. An aftercast that never comes, with no ACT
+--- finish either, means the packet itself never reached this client (Silmaril
+--- then casts the same Indi- again: it waits for that packet too).
+local function watch_own_casts()
+    local spells = rawget(_G, 'res') and res.spells or {}
+    local function name(id) return spells[id] and spells[id].english or ('spell ' .. tostring(id)) end
+    require('shared/utils/core/action_listener').on('trace_own_casts', function(act)
+        if not player or act.actor_id ~= player.id then return end
+        local first = act.targets and act.targets[1]
+        local action = first and first.actions and first.actions[1] or {}
+        if act.category == 8 then
+            local what = act.param == CAST_INTERRUPTED and 'interrupted' or act.param == CAST_START and 'start' or 'cat8 ' .. act.param
+            TraceLog.log('ACT', '%s %s', what, name(action.param))
+        elseif act.category == 4 then
+            TraceLog.log('ACT', 'finish %s msg %s', name(act.param), tostring(action.message))
+        end
+    end)
+end
+
 --- Install the hooks when the trace is on (called at the top of each load).
 --- @return boolean True when installed or already in place
 function TraceHooks.install()
@@ -128,6 +152,7 @@ function TraceHooks.install()
     TraceLog.rotate()
     windower._trace_path = TraceLog.path()
     hook_loads()
+    watch_own_casts()
     if not G._trace_engine_hooked then
         G._trace_engine_hooked = true
         -- the wrappers below are this load's functions: they keep it in memory until //lua r gearswap

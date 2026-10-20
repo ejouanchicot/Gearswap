@@ -17,6 +17,12 @@ return {
     -- A Geo- cast while a luopan is out gets Full Circle first
     auto_full_circle = false,
 
+    -- Bolster up and no luopan out: Blaze of Glory, so the next Geo- carries it.
+    -- Bolster over with a luopan still out: Ecliptic Attrition on it if it was
+    -- placed with Blaze of Glory, otherwise Full Circle (a bot such as Silmaril
+    -- places it again). For a GEO played by a bot, which skips both under Bolster.
+    bolster_follow = false,
+
     -- //gs c escort with no Indi- named
     escort_indi = 'Indi-Regen',
 }

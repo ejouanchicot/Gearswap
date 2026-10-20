@@ -27,23 +27,38 @@ local GeoSpellRefiner = nil
 local ESCORT_JA_DELAY = 2          -- Full Circle -> Indi- (job ability delay)
 local ESCORT_DEFAULT_CAST = 3      -- cast time when the spell is not found
 local ESCORT_FOLLOW_MARGIN = 3     -- safety net: follow anyway this long after the cast
-local ESCORT_PROFILE_MARGIN = 4    -- more of it when Silmaril casts the Indi- (profile load, then its own pace)
 
---- Follow waiting for the escort Indi- to finish: {spell, leader, seq}.
+--- Follow waiting for the escort Indi- to finish: {spell, element, leader, seq}.
 local escort_pending = nil
 local escort_seq = 0
+
+local function escort_follow()
+    local leader = escort_pending.leader
+    escort_pending = nil
+    send_command('sm follow ' .. leader)
+end
 
 --- Called from job_aftercast: follow the leader once the escort Indi- is over
 --- (interrupted or not - the escort goes on either way).
 --- @param spell table GearSwap spell
 function geo_escort_on_aftercast(spell)
     if escort_pending and spell and spell.english == escort_pending.spell then
-        local leader = escort_pending.leader
-        escort_pending = nil
-        send_command('sm follow ' .. leader)
+        escort_follow()
     end
 end
 _G.geo_escort_on_aftercast = geo_escort_on_aftercast
+
+--- GearSwap's indi_change event: the escort Indi- took hold. In Sortie the
+--- packet that ends the cast is sometimes lost (no aftercast: Kaories, 6 casts
+--- of 75 on 2026-10-16), while the Indi- effect itself still arrives.
+--- @param indi table GearSwap's player.indi ({element_id, ...})
+--- @param gained boolean True when the effect is the new one
+function indi_change(indi, gained)
+    if escort_pending and gained and indi and indi.element_id == escort_pending.element then
+        escort_follow()
+    end
+end
+_G.indi_change = indi_change
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -217,13 +232,15 @@ function job_self_command(cmdParams, eventArgs)
     -- cast. Without a luopan the Indi- goes out at once, since waiting after
     -- a Full Circle that has nothing to dismiss only delays it.
     -- With a Silmaril profile folder (the path `sm load` takes) that profile
-    -- is loaded and started instead of the cast: Silmaril casts its Indi-.
+    -- is loaded but Silmaril stays off: the Indi- is still cast here. The load
+    -- is only so Silmaril sees the next fight profile's Indi- as new and casts
+    -- it (it compares the names of two profiles loaded one after the other).
     if command == 'escort' then
         local indi = cmdParams[2] or require('shared/utils/core/job_config').get('GEO', 'escort_indi', 'Indi-Regen')
         local leader = cmdParams[3]
         local profile = cmdParams[4]
-        local cast = profile and ('sm load ' .. profile .. '; sm follow off; sm on')
-            or ('input /ma "' .. indi .. '" <me>')
+        local cast = 'input /ma "' .. indi .. '" <me>'
+        if profile then send_command('sm off; sm load ' .. profile .. '; sm follow off') end
         local cast_start = 0
         if pet and pet.isvalid then
             send_command('input /ja "Full Circle" <me>')
@@ -244,13 +261,10 @@ function job_self_command(cmdParams, eventArgs)
             local cast_time = spell and spell.cast_time or ESCORT_DEFAULT_CAST
             escort_seq = escort_seq + 1
             local my_seq = escort_seq
-            escort_pending = {spell = indi, leader = leader, seq = my_seq}
+            escort_pending = {spell = indi, element = spell and spell.element, leader = leader, seq = my_seq}
             coroutine.schedule(function()
-                if escort_pending and escort_pending.seq == my_seq then
-                    escort_pending = nil
-                    send_command('sm follow ' .. leader)
-                end
-            end, cast_start + cast_time + ESCORT_FOLLOW_MARGIN + (profile and ESCORT_PROFILE_MARGIN or 0))
+                if escort_pending and escort_pending.seq == my_seq then escort_follow() end
+            end, cast_start + cast_time + ESCORT_FOLLOW_MARGIN)
         end
         local ok, MessageSortie = pcall(require, 'shared/utils/messages/formatters/system/message_sortie')
         if ok and MessageSortie then

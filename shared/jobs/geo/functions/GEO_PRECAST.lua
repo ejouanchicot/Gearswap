@@ -95,6 +95,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     if eventArgs.cancel or eventArgs.handled then
         return
     end
+    require('shared/jobs/geo/functions/logic/bolster_follow').note_cast(spell)
 
     -- Raised optimistically: aftercast lowers it again if Entrust is interrupted
     if spell.type == 'JobAbility' and spell.name == 'Entrust' then

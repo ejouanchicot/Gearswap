@@ -223,9 +223,12 @@ end
 --- Seconds between Full Circle and the spell that follows it.
 local AFTER_FULL_CIRCLE = 1.5
 
---- Indi- of the profile the alt runs, as far as this module knows: nil after a reload, or once an Indi- was cast
---- by hand without a profile (escort without `escort.profile`, or with an Indi- typed).
-local profile_indi = nil
+--- Indi- of the profile the alt runs, as far as this character knows: nil after a game restart, or once an Indi-
+--- was cast by hand without a profile (escort without `escort.profile`, or with an Indi- typed). Kept on
+--- `windower`, which outlives a GearSwap reload: kept in this module, a job or subjob change of this character
+--- forgot it, and the next profile load cast its Indi- by hand while Silmaril cast it too (Kaories, 2026-10-16).
+local function profile_indi() return windower._sortie_profile_indi end
+local function set_profile_indi(indi) windower._sortie_profile_indi = indi end
 
 --- True when Silmaril looks after the Indi- itself. It casts a profile's Indi- when its name differs from the
 --- previous profile's, never from the Indi- actually up: so only with an escort profile (every Indi- then comes
@@ -233,7 +236,7 @@ local profile_indi = nil
 --- @param cfg table Sortie config
 --- @return boolean
 local function indi_by_bot(cfg)
-    return (cfg.escort or {}).profile ~= nil and profile_indi ~= nil
+    return (cfg.escort or {}).profile ~= nil and profile_indi() ~= nil
 end
 
 --- The alt loads a profile and starts it. Its Indi- is cast by hand only when Silmaril cannot be trusted to
@@ -247,7 +250,7 @@ local function load_profile(cfg, profile, indi)
     to_alt(cfg, 'sm on')
     note({on = true, follow = false})
     if indi and not indi_by_bot(cfg) then to_alt(cfg, '/ma "' .. indi .. '" <me>') end
-    profile_indi = indi
+    set_profile_indi(indi)
 end
 
 --- A target with a `prep` profile, once the fight starts (`sortie <target>
@@ -302,29 +305,30 @@ local function engage_target(cfg, name, phase)
     return true
 end
 
---- Escort with `escort.profile`: the alt dismisses its luopan, loads that profile (Silmaril casts its Indi- and
---- keeps it up, nothing else) and follows this character. Already on that profile, it only follows.
+--- Escort with `escort.profile`: the alt dismisses its luopan, casts the Indi- itself, follows this character, and
+--- loads that profile with Silmaril left off (only so Silmaril sees the next fight profile's Indi- as new and casts
+--- it). Already on that profile, it only follows.
 --- @param cfg table Sortie config
 --- @param settings table cfg.escort
 --- @param indi string The profile's Indi-
 local function escort_profile(cfg, settings, indi)
-    if profile_indi == indi then
+    if profile_indi() == indi then
         to_alt(cfg, 'sm follow ' .. me())
     else
         -- Stopped first: the fight profile would cast over Full Circle. The alt's escort command loads the profile
-        -- once the luopan is gone, and follows once the Indi- is cast.
+        -- (Silmaril stays off), casts the Indi- and follows once it is cast.
         to_alt(cfg, 'sm off')
         to_alt(cfg, 'gs c escort ' .. indi .. ' ' .. me() .. ' ' .. (cfg.profile_root or '') .. settings.profile)
     end
     note({on = true, follow = me()})
-    profile_indi = indi
+    set_profile_indi(indi)
 end
 
 --- Escort: the alt puts up an Indi- (its GearSwap dismisses the luopan first
---- only when there is one) and follows this character. With `escort.profile`
---- Silmaril casts that Indi- from the profile; without it, for an Indi- typed
---- after the command, or when this module does not know which profile runs,
---- Silmaril is stopped and the Indi- is cast by hand.
+--- only when there is one) and follows this character. Silmaril is stopped
+--- and the Indi- cast by the alt's own command; with `escort.profile` that
+--- profile is loaded too (escort_profile), unless an Indi- was typed after the
+--- command or this module does not know which profile runs.
 --- @param cfg table Sortie config
 --- @param args table Words after "escort"
 --- @return boolean handled
@@ -343,7 +347,7 @@ local function escort(cfg, args)
         -- The alt starts following only once its Indi- is cast: moving would
         -- interrupt it. Its escort command schedules the follow itself.
         to_alt(cfg, 'gs c escort ' .. indi .. ' ' .. me())
-        profile_indi = nil
+        set_profile_indi(nil)
     end
     if messages() then messages().show_escort(cfg.alt, indi, me()) end
     return true
