@@ -140,8 +140,11 @@ local function not_held_elsewhere(slot_list)
     return free
 end
 
---- The weapon states the jobs lay their weapons from.
-local WEAPON_STATES = {'MainWeapon', 'SubWeapon', 'RangeWeapon', 'WeaponSet', 'SubSet'}
+--- The weapon states the jobs lay their weapons from. PLD's Shield and StanceWeapon
+--- (pld/keys/PLD_STATES.lua) count too: //gs c sortie melee locked Naegling + Blurred Shield,
+--- then sortie aminon set Shield Aegis with Combat Mode still On, and without them the lock kept
+--- Blurred Shield until a reload (Tetsouo, 2026-10-16).
+local WEAPON_STATES = {'MainWeapon', 'SubWeapon', 'RangeWeapon', 'WeaponSet', 'SubSet', 'Shield', 'StanceWeapon'}
 
 --- The player's weapon choice now, as one comparable string.
 --- @return string
