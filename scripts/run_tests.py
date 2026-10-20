@@ -1,7 +1,7 @@
 """Run every offline test of the project and sum them up in one table.
 
     python scripts/run_tests.py           the quick ones (about 15 s)
-    python scripts/run_tests.py --full    and the slow ones: the Atelier page in Chrome, the Lua the page
+    python scripts/run_tests.py --full    and the slow ones: the Atelier page in Chrome, its click tests, the Lua the page
                                           writes, the export without the game, the packages
                                           make_package.py builds, in Python and in the page (5 to 40 min)
     python scripts/run_tests.py --all     --full, the slowest ones run even when nothing they check changed
@@ -52,7 +52,7 @@ KNOWN = {
          'gabvanstronger/pup/keys/pup_states.lua'),
 }
 REPORTS = {'scripts/audit/calc_check.js', 'scripts/audit/calc_round_check.js', 'scripts/audit/calc_ws_check.js'}
-SLOW = {'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_modules_test.js',
+SLOW = {'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_modules_test.js', 'scripts/atelier/atelier_clicks_test.js',
         'scripts/atelier/offline_export_page_test.js', 'scripts/atelier/offline_export_test.js',
         'scripts/atelier/make_package_test.py', 'scripts/atelier/make_package_page_test.js',
         'scripts/loadcheck/check_load.py'}
@@ -109,13 +109,15 @@ def tests(full):
            'scripts/atelier/atelier_items_check.js', 'scripts/atelier/bags_locked_check.js']
           + sorted(glob.glob('scripts/audit/calc_*check.js'))
           + ['scripts/atelier/atelier_modules_test.js', 'scripts/atelier/offline_export_page_test.js',
-             'scripts/atelier/offline_export_test.js', 'scripts/atelier/atelier_test.js'])
+             'scripts/atelier/offline_export_test.js', 'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_clicks_test.js'])
     js += ['scripts/atelier/make_package_page_test.js']
     out = [('python', 'scripts/check_syntax.py'), ('python', 'scripts/atelier/make_package_test.py'),
            ('python', 'scripts/loadcheck/check_load.py')]
     out += [('lua5.1', t.replace(os.sep, '/')) for t in lua]
     out += [('node', t.replace(os.sep, '/')) for t in js if os.path.exists(t)]
-    return [(run, t) for run, t in out if t not in SKIP and (full or t not in SLOW)]
+    # RUN_TESTS_SKIP: tests left out this time, comma-separated (scripts/atelier/cycle.sh has just run the click tests)
+    skip = SKIP | set(filter(None, os.environ.get('RUN_TESTS_SKIP', '').split(',')))
+    return [(run, t) for run, t in out if t not in skip and (full or t not in SLOW)]
 
 
 def run_one(run, t):

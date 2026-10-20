@@ -660,7 +660,12 @@ Since 2026-10-18 the page players open, `atelier/index.html`, is **built**: neve
 - [ ] A change of layout or style: `node scripts/atelier/atelier_layout_check.js` (nothing past its box, 1920 to
       390 px); a layout fix of the old styles goes in `atelier/app/css/fit.css` with its reason.
 - [ ] The page in Chrome: `node scripts/atelier/atelier_test.js`.
-- [ ] The plan of the move, screen by screen: `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.md`.
+- [ ] What a player reads, last commit vs now: `node scripts/atelier/atelier_clicks_test.js --compare [names]`
+      (53 click tests, `scripts/atelier/clicks/README.md`); pixel parity of a screen:
+      `node scripts/atelier/page_parity.js scripts/atelier/parity/<screen>.json`.
+- [ ] All the page's checks in one command: `bash scripts/atelier/cycle.sh quick <screens> -- <click tests>` for a
+      small change, `bash scripts/atelier/cycle.sh full` (about 30 min) before committing a change of many screens.
+- [ ] The move to Svelte is finished (2026-10-20); its log, step by step: `atelier/src/README.md`.
 
 ## 6. Testing and debugging
 

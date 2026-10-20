@@ -262,10 +262,12 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 - `node scripts/atelier/page_parity.js scripts/atelier/parity/<écran>.json` : l'ancienne page (le dernier commit,
   ou `--ref <commit>`) et la nouvelle côte à côte, sur les mêmes données figées, comparées au pixel (une vingtaine de
   secondes par écran). `--self` mesure le bruit du contrôle, `--dom` garde le HTML des vues qui diffèrent.
+- Les tests de clics (`scripts/atelier/clicks/`, leur README) : `node scripts/atelier/atelier_clicks_test.js
+  --compare [noms]` compare ce qu'un joueur lit sur la page du dernier commit et sur la page actuelle.
+- Tout en une commande : `bash scripts/atelier/cycle.sh quick <écrans> -- <tests de clics>` pour une étape (quelques
+  minutes), `bash scripts/atelier/cycle.sh full` avant un commit qui touche beaucoup d'écrans (une demi-heure).
 - Entre deux étapes : `python scripts/run_tests.py` (les tests rapides, une quinzaine de secondes), `npm run check`
   et `npm run build`. La suite complète (`--full`) au moment du commit.
-- Les étapes suivantes déplacent un écran entier à la fois dans `src/screens/` ; ses fichiers sortent alors des
-  listes de `legacy/files.ts`.
 
 ## Ce qui reste en dehors du fichier construit
 
