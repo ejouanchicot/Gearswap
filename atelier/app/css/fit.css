@@ -33,8 +33,9 @@
   .setsx.ui2 .globalcol .stabs{height:auto}
 }
 
-/* ---- a weaponskill set's labels (StanceWeapon): on two lines rather than over the menu ---- */
-.setsx.ui2 .wslbl{white-space:normal;overflow-wrap:anywhere}
+/* ---- a weaponskill set's labels (StanceWeapon): on two lines rather than over the menu, broken between the words
+   of the name (src/components/StateName.svelte), a single word too long only when nothing else fits ---- */
+.setsx.ui2 .wslbl{white-space:normal;overflow-wrap:break-word}
 
 /* ---- the job's settings: the part buttons wrap; tables keep to their column ---- */
 .jobcfg .seg.jobcfgtabs{flex-wrap:wrap}

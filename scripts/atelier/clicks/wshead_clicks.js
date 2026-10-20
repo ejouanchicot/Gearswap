@@ -16,7 +16,7 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   const head = () => page.evaluate(() => { const h = document.querySelector('.setctl'); if (!h) return 'none';
     const el = x => x.tagName === 'SELECT' ? `sel.${x.className}[${Object.entries(x.dataset).map(e => e.join('=')).join(',')}] ${x.title.slice(0, 30)} =${x.value} (${[...x.options].map(o => (o.selected ? '*' : '') + (o.disabled ? '!' : '') + o.value + ':' + o.textContent).join(' | ')})`
       : x.tagName === 'INPUT' ? `in.${x.className} =${x.value} ph ${x.placeholder}` : x.tagName === 'BUTTON' ? `btn[${Object.entries(x.dataset).map(e => e.join('=')).join(',')}] ${x.getAttribute('aria-pressed') || x.getAttribute('aria-expanded') || ''} ${x.title.slice(0, 40)} ${x.textContent}` : '';
-    return [...h.querySelectorAll('.wsline, .wshelp, .kwarn, .wsbase')].map(l => l.className + ': ' + l.textContent.replace(/\s+/g, ' ') + ' {' + [...l.querySelectorAll('select, input, button')].map(el).join(' ; ') + '}').join('\n   ') + ' || html ' + h.innerHTML.replace(/<!--[^>]*-->/g, '').length; });
+    return [...h.querySelectorAll('.wsline, .wshelp, .kwarn, .wsbase')].map(l => l.className + ': ' + l.textContent.replace(/\s+/g, ' ') + ' {' + [...l.querySelectorAll('select, input, button')].map(el).join(' ; ') + '}').join('\n   '); });
   const sets = [['Tetsouo', 'WAR'], ['Tetsouo', 'PLD'], ['Tetsouo', 'THF'], ['Tetsouo', 'DNC'], ['Kaories', 'RDM'], ['Tetsouo', 'SAM']];
   for (const [c, j] of sets) {
     const idx = await page.evaluate((c, j) => { S.char = c; S.job = j; S.section = 'sets'; render();
