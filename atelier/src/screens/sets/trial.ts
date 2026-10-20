@@ -3,17 +3,19 @@
 // what to do with them: write them into the file (or open the version the file has), compare, keep, save for the next
 // load in game, see the Lua, go back to the earlier try, undo. Under the card, a line that says what goes there when
 // nothing is tried yet.
-// The rules are the old page's trialBar, trialRow and draftGainHTML (trial.js); the push button stays its HTML
-// (trial.js pushButton: the search window's foot has it too). The buttons keep the
+// The rules are the old page's trialBar, trialRow and draftGainHTML (trial.js); the push button is push.ts (the
+// search window's foot has it too). The buttons keep the
 // attributes the old handlers read (data-pushopen, data-veropen, data-cmpopen, data-trykeep, data-trysave, data-trylua,
 // data-tryprev, data-tryundo, data-setrevert: events.js).
 //
 // @file    atelier/src/screens/sets/trial.ts
 // @author  ejouanchicot
 
+import {pushBtnView, type PushBtn} from './push';
+
 export interface TrialRow {
   saved: boolean; by: string; msgHtml: string; gain: null | {textHtml: string; up: boolean; pct: string};
-  pushHtml: string; cmp: null | {labelHtml: string; kept: string};
+  push: PushBtn | null; cmp: null | {labelHtml: string; kept: string};
   keep: null | {tip: string; labelHtml: string}; save: string; links: Array<{attr: string; labelHtml: string}>; toast: string;
 }
 export type TrialBar = {k: 'idle'; text: string} | {k: 'row'; row: TrialRow} | null;
@@ -40,7 +42,7 @@ export function trialRowView(s: LegacyAny): TrialRow | null {
   if (n) links.push({attr: 'data-tryundo', labelHtml: t('tryUndo')}); else if (changed.length) links.push({attr: 'data-setrevert', labelHtml: t('setRevert')});
   return {saved: saved || (!n && changed.length > 0), by: dr.info ? t('tryOptBy', {t: dr.info.tier, at: dr.info.at}) + (dr.info.edited ? ' · ' + t('tryEdited') : '') : '',
     msgHtml: n ? (saved ? t('trySaved', {n: `<b>${n}</b>`}) : t('tryBar', {n: `<b>${n}</b>`})) : changed.length ? t('setChanged', {s: changed.map(x => (SLOT_NAMES[S0.lang] || {})[x] || x).join(', ')}) : '',
-    gain: n ? gainOf(s) : null, pushHtml: n || changed.length ? pushButton(s, live) : '',
+    gain: n ? gainOf(s) : null, push: n || changed.length ? pushBtnView(s, live) : null,
     cmp: n || changed.length || kept ? {labelHtml: t('cmpBtn'), kept: kept ? t('keptN', {n: kept}) : ''} : null,
     keep: n ? {tip: t('keepTip'), labelHtml: t('keepBtn')} : null, save: n && !saved ? t('trySave') : '', links, toast};
 }

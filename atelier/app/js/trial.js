@@ -26,18 +26,6 @@ function withoutTrial(fn){ S._noTrial = true; try { return fn(); } finally { S._
 // how to try a piece): the gear under it does not move when a first piece is tried
 Object.assign(T.fr, {tryIdle: 'Rien à l’essai. Clique une pièce pour en essayer une autre : les écarts et le bouton pour l’écrire dans ton fichier viendront ici.'});
 Object.assign(T.en, {tryIdle: 'Nothing on trial. Click a piece to try another one: the differences and the button that writes it to your file will come here.'});
-// The push button: to the set, to the profile's new version, or opening the version the file has (the trial's bar,
-// atelier/src/screens/sets/trial.ts, and the search window's foot, optimizer.js)
-function pushButton(s, live){
-  const tg = pushTarget(s);
-  if (tg.exists) return `<button class="btn" data-veropen title="${esc(t('pushVerOpenTip', {v: tg.tier}))}">${t('pushVerOpen', {v: tg.tier})}</button>`;
-  // Full is the weaponskill set itself (GearSwap reads no .Full): said on the button
-  const full = buffTier() === 'Full' && TIERED.test(s.path) && !/\.(Group|Solo|Trust)$/.test(s.path);
-  const label = tg.create ? t('pushToVer', {v: tg.tier}) : full ? t('pushToFull') : t('pushBtn');
-  // the game writes into the files of the job it has loaded: another job there is said, not "the game is off"
-  const tip = !live ? t('pushNeedsGame') : tg.create ? t('pushToVerTip', {v: tg.tier}) : full ? t('pushToFullTip') : '';
-  return `<button class="btn" data-pushopen ${live ? '' : 'disabled'} ${tip ? `title="${esc(tip)}"` : ''}>${label}</button>`;
-}
 // The whole set, the tried pieces in, to paste in the sets file in place of the set: every slot written out, the
 // set's own pieces with their bag and priority (the hands of a set that leaves them to the weapon modes are not a
 // try's: applyTrial)

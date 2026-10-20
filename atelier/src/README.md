@@ -246,6 +246,9 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   l'explication d'un objectif de l'optimiseur ; `tipHTML`, `pieceTip` et `maxTip` (events.js) sont retirés.
   `showTip` (events.js) décide toujours quand elle s'ouvre et la place à côté de l'élément survolé, une fois son
   contenu dessiné (`ATELIER_TIP.show`).
+- **Étape 7ah (2026-10-20)** : le bouton Pousser (`sets/push.ts`, `PushButton.svelte`) dans la barre de l'essai et au
+  pied de la fenêtre de recherche, dont les boutons sont maintenant des données (`R.result.footer`, optimizer.js) ;
+  `pushButton` (trial.js) est retiré. Plus aucun bloc de l'ancienne page n'est dessiné en HTML dans un écran Svelte.
 
 ## Vérifier une étape
 

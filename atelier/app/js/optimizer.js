@@ -369,8 +369,7 @@ function optRunResult(s, res, tr, plain, gains){
   R.result = {best: res.best.raw, start: res.start.raw, mogWinHtml: mogWinHTML(changes.length > 0), figs: fig,
     changes: changes.map(c => ({iconHtml: icon(c.name), slot: SLOT_NAMES[S.lang][c.slot] || c.slot, from: c.from, to: c.to, porterHtml: porter(c.slot, c.to)})),
     lack: gains.map(g => ({name: g.piece.name, gain: `${g.gain >= 0 ? '+' : ''}${g.gain.toFixed(1)} %`})),
-    footerHtml: `<button class="btn ghost" data-close>${t('close')}</button><span class="sp"></span>` +
-      (changes.length ? `<button class="btn ghost" data-cmpopen>${t('orCompare')}</button>` + (live ? `<button class="btn ghost" data-trysave>${t('trySave')}</button>` : '') + pushButton(s, live) : '')};
+    footer: {set: s, live, changed: changes.length > 0}};
   ATELIER_RUN.changed();
   mogWinStart(dlg);
 }
