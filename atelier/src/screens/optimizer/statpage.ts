@@ -34,7 +34,7 @@ function enfNote(s: LegacyAny): EnfNote | null {
   const kind = e.type === 'mode' ? t('enfKindMode', {m: e.mode}) : e.type === 'base' ? t('enfKindBase') : e.type === 'spell' ? t('enfKindSpell')
     : e.type === 'map' ? t('enfKindMap', {m: shortPath(s.path), w: t(e.map === 'Mnd' ? 'enfWhite' : 'enfBlack')}) : t('enfKindType', {k: e.type});
   return {kind, spells: e.spells.join(', '), sab: S.job === 'RDM' ? {checked: !!e.sab, label: t('enfSabBox')} : null,
-    note: t('enfNote', {s: e.spells.slice(0, 3).join(', '), m: e.tMnd, i: e.tInt, tg: e.target,
+    note: (e.via ? t('enfVia', {j: (S as LegacyAny).job, s: (data() || {}).sub, v: e.via}) + ' ' : '') + t('enfNote', {s: e.spells.slice(0, 3).join(', '), m: e.tMnd, i: e.tInt, tg: e.target,
       sab: e.sab ? 'Saboteur ' + (e.nm ? (lang === 'fr' ? '×1,25' : '×1.25') + ' (NM)' : '×2') : t('enfNoSab'), c: e.comp ? t('enfComp') : t('enfNoComp')})};
 }
 

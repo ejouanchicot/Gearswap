@@ -10,12 +10,14 @@ Object.assign(T.fr, {enhPerpBox: 'Sous Perpetuance (×2 la durée ; ×2,25 à ×
   enhEmbBox: 'Sous Embolden (puissance +50 %, durée −50 %)',
   enhLight: 'Light Arts compté (skill de renfort au plafond B+)', enhLightRegen: ', Regen +{p} HP par tick et +{s} s',
   enhWhmRegen: 'Regen +{p} HP par tick (merits et gift du WHM)', enhWhmBar: 'Bar-element +{p} (merits du WHM)', enhRunDur: 'durée +{p} % (gifts du RUN)',
-  enhSkillOther: 'Skill de renfort lu dans l’export /{x} : fais un export avec /{s} pour celui de ce sub.'});
+  enhSkillOther: 'Skill de renfort lu dans l’export /{x} : fais un export avec /{s} pour celui de ce sub.',
+  enhVia: 'Ni {j} ni /{s} ne lancent ce sort : calculé comme avec /{v}, qui le lance.'});
 Object.assign(T.en, {enhPerpBox: 'Under Perpetuance (length ×2; ×2.25 to ×2.65 with the Bracers)',
   enhEmbBox: 'Under Embolden (potency +50 %, length −50 %)',
   enhLight: 'Light Arts counted (enhancing skill at the B+ cap)', enhLightRegen: ', Regen +{p} HP a tick and +{s} s',
   enhWhmRegen: 'Regen +{p} HP a tick (the WHM’s merits and gift)', enhWhmBar: 'Bar-element +{p} (the WHM’s merits)', enhRunDur: 'length +{p} % (the RUN’s gifts)',
-  enhSkillOther: 'Enhancing skill read in the /{x} export: export with /{s} for this subjob’s.'});
+  enhSkillOther: 'Enhancing skill read in the /{x} export: export with /{s} for this subjob’s.',
+  enhVia: 'Neither {j} nor /{s} casts this spell: worked out as with /{v}, which does.'});
 
 // The spells a set's name stands for, the first that fits: [name, kind, the spells' names (the game's), their
 // potency by tier, their base seconds on oneself by tier]. Tiers are listed lowest first; a kind of many spells of one
@@ -50,13 +52,35 @@ function enhCastable(name, job, sub, lv, jp){
   const main = L[job] != null && (L[job] <= 99 ? L[job] <= lv.main : jp >= L[job]);
   return main || (!!sub && L[sub] != null && L[sub] <= 99 && L[sub] <= lv.sub && !mainOnly.includes(sub));
 }
-// The highest tier of a kind the job can cast: [name, potency, base seconds], or null
-function enhTier(tiers, job, sub, lv, jp){
+// The highest tier of a kind the job can cast: [name, potency, base seconds, the tier's rank], or null. Of a tier of
+// several spells, the one the set is named for first (sets.midcast.Haste: Haste, not Flurry)
+function enhTier(tiers, job, sub, lv, jp, setName){
+  const want = (setName || '').toLowerCase();
   let best = null;
-  for (const [name, pot, base] of tiers) {
-    const names = typeof name === 'string' ? [name] : Object.keys(SPELL_ACCESS || {}).filter(n => name.test(n));
+  tiers.forEach(([name, pot, base], i) => {
+    const names = typeof name === 'string' ? [name] : Object.keys(SPELL_ACCESS || {}).filter(n => name.test(n))
+      .sort((a, b) => want.includes(b.toLowerCase()) - want.includes(a.toLowerCase()));
     const ok = names.find(n => enhCastable(n, job, sub, lv, jp));
-    if (ok) best = [ok, pot, base];
+    if (ok) best = [ok, pot, base, i];
+  });
+  return best;
+}
+// The subjobs a main job can take (core.js JOBS), those the character has an export of first (the ones it plays)
+function enhSubs(job){
+  const played = Object.keys((typeof exportsOf === 'function' && S.char ? exportsOf(S.char, job) : null) || {});
+  const all = JOBS.map(x => x[0]).filter(j => j !== job);
+  return all.filter(j => played.includes(j)).concat(all.filter(j => !played.includes(j)));
+}
+// The tier with the shown subjob; else, a set being there to be worn with some subjob (the player's rule,
+// 2026-10-22: every set made is optimized, whatever subjob is shown), the highest any subjob gives, the first such
+// subjob named (via). {t, via} or null when no subjob casts it
+function enhTierAny(tiers, job, sub, lv, jp, setName){
+  const t = enhTier(tiers, job, sub, lv, jp, setName);
+  if (t) return {t, via: null};
+  let best = null;
+  for (const s of enhSubs(job)) {
+    const x = enhTier(tiers, job, s, lv, jp, setName);
+    if (x && (!best || x[3] > best.t[3])) best = {t: x, via: s};
   }
   return best;
 }
@@ -70,11 +94,11 @@ function enhSpellOf(name, others){
   }
   const hit = ENH_SPELLS.find(k => k[0].test(name));
   if (hit) {
-    const t = enhTier(hit[2], job, sub, lv, jp);
-    return t && {kind: hit[1], spell: t[0], pot: t[1], base: t[2]};
+    const a = enhTierAny(hit[2], job, sub, lv, jp, name);
+    return a && {kind: hit[1], spell: a.t[0], pot: a.t[1], base: a.t[2], via: a.via};
   }
   if (!/enhancing/i.test(name)) return null;
-  const bases = ENH_SPELLS.filter(k => ENH_BASE_KINDS.includes(k[1])).map(k => enhTier(k[2], job, sub, lv, jp)).filter(Boolean).map(t => t[2]);
+  const bases = ENH_SPELLS.filter(k => ENH_BASE_KINDS.includes(k[1])).map(k => enhTierAny(k[2], job, sub, lv, jp)).filter(Boolean).map(a => a.t[2]);
   return bases.length ? {kind: 'enhancing', spell: 'enhancing', pot: 0, base: Math.min(...bases)} : null;
 }
 
@@ -87,8 +111,8 @@ const ENH_BLACK = new Set(['spikes']);
 
 // The job's bonuses on an enhancing set, beside what enhContext reads for a Red Mage: {skill (the enhancing skill to
 // use, or null), regenAdd, regenSec, barAdd, durMul, potMul, perp, notes[]}. Each from BG Wiki, main job only unless said
-function enhJobBonus(kind, c){
-  const job = S.job, sub = (data() || {}).sub, lv = jaLevels(), jp = c.jp_spent || 0, merits = c.merits || {}, o = S.optOpts || {};
+function enhJobBonus(kind, c, via){
+  const job = S.job, sub = via || (data() || {}).sub, lv = jaLevels(), jp = c.jp_spent || 0, merits = c.merits || {}, o = S.optOpts || {};
   const out = {skill: null, regenAdd: 0, regenSec: 0, barAdd: 0, durMul: 1, potMul: 1, perp: false, notes: []};
   // Light Arts held up on a SCH's white magic (the player's rule, 2026-10-22: the Arts of the set clicked), main or
   // subjob: the skill at the B+ cap; a SCH main's Regen +3 HP a tick for each 10 levels past 10, twice that in seconds
@@ -125,8 +149,8 @@ function enhJobBonus(kind, c){
     if (gift) out.notes.push(t('enhRunDur', {p: gift}));
     if (lv.main >= 60 && o.enhEmbolden) { out.potMul = 1.5; out.durMul *= 0.5; }
   }
-  // the skill of another subjob's export: said, not guessed
-  if (c.sub && sub && c.sub !== sub && !out.skill) out.notes.push(t('enhSkillOther', {x: c.sub, s: sub}));
+  // the skill of another subjob's export: said, not guessed (not when the spell is another subjob's: enhVia says it)
+  if (!via && c.sub && sub && c.sub !== sub && !out.skill) out.notes.push(t('enhSkillOther', {x: c.sub, s: sub}));
   return out;
 }
 // The checkboxes of a job's enhancing set, for the stats page (statpage.ts): [{key, checked, label}]

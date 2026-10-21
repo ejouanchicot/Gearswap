@@ -22,6 +22,7 @@ Object.assign(T.fr, {
   enfKindMode: 'Set du mode {m} (EnfeebleMode) : quand ce mode est choisi (Auto, le défaut, jamais), GearSwap le porte pour tout affaiblissement, à la place du set de son type :',
   enfKindSpell: 'Set au nom du sort : GearSwap le porte pour',
   enfKindMap: 'Set {m} : GearSwap le porte pour les affaiblissements de magie {w} sans set à leur nom, que ton job ou ton sub lance :', enfWhite: 'blanche', enfBlack: 'noire',
+  enfVia: 'Ni {j} ni /{s} ne lancent ces sorts : calculé comme avec /{v}, qui les lance.',
   enfSabBox: 'Sous Saboteur (×2 sur un monstre, ×1,25 sur un NM, + les gants)',
   enfNote: 'Calculé pour {s} contre {tg} (MND {m}, INT {i}, la cible choisie dans la page), {sab}, {c}.'});
 Object.assign(T.en, {
@@ -37,6 +38,7 @@ Object.assign(T.en, {
   enfKindMode: '{m} mode set (EnfeebleMode): while that mode is chosen (Auto, the default, never), GearSwap wears it for every enfeeble instead of its type’s set:',
   enfKindSpell: 'Set named for the spell: GearSwap wears it for',
   enfKindMap: '{m} set: GearSwap wears it for the {w} magic enfeebles with no set of their own name that your job or subjob casts:', enfWhite: 'white', enfBlack: 'black',
+  enfVia: 'Neither {j} nor /{s} casts these spells: worked out as with /{v}, which does.',
   enfSabBox: 'Under Saboteur (×2 on a monster, ×1.25 on an NM, + the gloves)',
   enfNote: 'Worked out for {s} against {tg} (MND {m}, INT {i}, the target chosen in the page), {sab}, {c}.'});
 
@@ -73,10 +75,17 @@ const ENF_MODES = {
 const ENF_MAP_RE = /^sets\.midcast\.(Int|Mnd)Enfeebles(?:\.(\w+))?$/;
 const ENF_MAP_ACC = 'Resistant';
 // The spells the shown job can cast, main job or subjob at its level (enh_jobs.js enhCastable). An export made
-// without the game (the page's offline export: no job points read) keeps the job point spells (Distract III)
+// without the game (the page's offline export: no job points read) keeps the job point spells (Distract III).
+// None with the shown subjob: those of the subjob that casts the most of them (via), a set made being worn with some
+// subjob (the player's rule, 2026-10-22: every set made is optimized). {spells, via}
 function enfCastable(spells){
   const c = measuredChar() || {}, sub = (data() || {}).sub, lv = jaLevels(), jp = c.jp_spent == null ? Infinity : c.jp_spent;
-  return spells.filter(n => enhCastable(n, S.job, sub, lv, jp));
+  const with_ = s => spells.filter(n => enhCastable(n, S.job, s, lv, jp));
+  const mine = with_(sub);
+  if (mine.length) return {spells: mine, via: null};
+  let best = {spells: [], via: null};
+  for (const s of enhSubs(S.job)) { const x = with_(s); if (x.length > best.spells.length) best = {spells: x, via: s}; }
+  return best;
 }
 // Every enfeeble the page knows, in the order of the types (the set is judged on its first)
 const enfAll = () => Object.values(ENF_TYPES).flat().concat(ENF_UNTYPED);
@@ -91,8 +100,8 @@ function enfMapSet(m, own){
   else if (ENF_TYPES[sub]) spells = ENF_TYPES[sub];
   else if (own[sub]) spells = [sub];
   else return null;
-  spells = enfCastable(spells.filter(n => types[n] === magic));
-  return spells.length ? {type: 'map', map: m[1], acc: sub === ENF_MAP_ACC, spells} : null;
+  const can = enfCastable(spells.filter(n => types[n] === magic));
+  return can.spells.length ? {type: 'map', map: m[1], acc: sub === ENF_MAP_ACC, spells: can.spells, via: can.via} : null;
 }
 // The enfeebling spells cast in this set and the kind it is: {type, spells} or null. A shared set keeps only the
 // spells the job or its subjob can cast (a BLM's sets.midcast['Enfeebling Magic'] is not judged on Slow II)
@@ -106,18 +115,18 @@ function enfSetOf(s){
     return parts.length === 2 && own[parts[1]] ? {type: 'spell', spells: [parts[1]]} : null;
   }
   const sub = m[1];
-  if (sub && ENF_TYPES[sub]) return {type: sub, spells: enfCastable(ENF_TYPES[sub])};
+  if (sub && ENF_TYPES[sub]) return Object.assign({type: sub}, enfCastable(ENF_TYPES[sub]));
   // a mode's set: every enfeeble but those with a set of their own name (Dispelga)
   if (sub && ENF_MODES[sub]) {
     const named = enfNamed();
-    return {type: 'mode', mode: sub, spells: enfCastable(ENF_MODES[sub].types.flatMap(k => ENF_TYPES[k]).concat(ENF_UNTYPED).filter(n => !named.has(n)))};
+    return Object.assign({type: 'mode', mode: sub}, enfCastable(ENF_MODES[sub].types.flatMap(k => ENF_TYPES[k]).concat(ENF_UNTYPED).filter(n => !named.has(n))));
   }
   // Saboteur's set is laid on top of the spell's (hands only): not a set of its own to fill
   if (sub) return null;
   // the job's own set: the spells of every type with no set of its own, and those of no type
   const has = new Set(((data() || {}).sets || []).map(x => x.path.replace(/'/g, '"')));
   const fall = Object.entries(ENF_TYPES).filter(([k]) => !has.has(`sets.midcast["Enfeebling Magic"].${k}`)).flatMap(([, v]) => v);
-  return {type: 'base', spells: enfCastable(fall.concat(ENF_UNTYPED))};
+  return Object.assign({type: 'base'}, enfCastable(fall.concat(ENF_UNTYPED)));
 }
 // The figures the set's spells have: a potency, a length (Dispel has neither, Inundation no potency)
 function enfHas(spells){
@@ -143,7 +152,7 @@ function enfContext(s){
   // 500 as the enhancing one, stat_opt.js enhContext); its merits' 6 s a level (a Red Mage's merit group: the export
   // lists every job's merits, so another job never counts them)
   const sec = rdm ? ((c.jp_spent || 0) >= 500 ? 20 : 0) + 6 * ((c.merits || {}).enfeebling_magic_duration || 0) : 0;
-  return {type: set.type, mode: set.mode, map: set.map, acc: set.acc, spells: set.spells, sab: rdm && !!(S.optOpts || {}).enfSab, nm: isNmTarget(key), comp: rdm,
+  return {type: set.type, mode: set.mode, map: set.map, acc: set.acc, via: set.via, spells: set.spells, sab: rdm && !!(S.optOpts || {}).enfSab, nm: isNmTarget(key), comp: rdm,
     mnd: cur.mnd || 0, int: cur.int || 0, enfSkill: c.skills ? skillLevel(c, 'enfeebling magic') : 0, enfSec: sec,
     tMnd: tgt[5] || 0, tInt: tgt[6] || 0, target: key};
 }

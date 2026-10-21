@@ -194,7 +194,9 @@ function enhContext(s){
   if (/ninjutsu|\bpet\b|blue ?magic|geomancy|singing|song/i.test(p)) return null;
   const sp = enhSpellOf(p.replace(/composure/i, ''), others);
   if (!sp) return null;
-  const c = measuredChar() || {}, jp = c.jp_spent || 0, bonus = enhJobBonus(sp.kind, c);
+  const c = measuredChar() || {}, jp = c.jp_spent || 0, bonus = enhJobBonus(sp.kind, c, sp.via);
+  // a spell neither the job nor the shown subjob casts: worked out with the subjob that does (enh_jobs.js enhTierAny)
+  if (sp.via) bonus.notes.unshift(t('enhVia', {j: S.job, s: (data() || {}).sub, v: sp.via}));
   // a Red Mage's job points' seconds: Enhancing Magic Duration, 1 s a rank, 20 ranks (210 job points in all; the export
   // has the total spent only, taken as bought from 500 spent: measured 20 on Kaories); the merits' 6 s a level
   const seconds = rdm ? (jp >= 500 ? 20 : 0) + 6 * ((c.merits || {}).enhancing_magic_duration || 0) : 0;
