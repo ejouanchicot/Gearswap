@@ -136,7 +136,7 @@ end
 --- HTTP
 ---============================================================================
 
-local function respond(client, status, body, content_type)
+local function response(status, body, content_type)
     -- "null": the origin of a page opened from the disk, the only one the door answers
     local head = {'HTTP/1.1 ' .. status, 'Access-Control-Allow-Origin: null',
         'Access-Control-Allow-Headers: X-Atelier-Token, Content-Type',
@@ -144,8 +144,7 @@ local function respond(client, status, body, content_type)
         'Access-Control-Allow-Private-Network: true',
         'Content-Type: ' .. (content_type or 'application/json; charset=utf-8'), 'Content-Length: ' .. #body,
         'Connection: close', '', ''}
-    client:settimeout(5)
-    client:send(table.concat(head, '\r\n') .. body)
+    return table.concat(head, '\r\n') .. body
 end
 
 ---============================================================================
@@ -234,27 +233,26 @@ local function file_route(req)
     return nil
 end
 
-local function read_request(client)
-    client:settimeout(0.3)
-    local line = client:receive('*l')
-    if not line then return nil end
-    local method, target = line:match('^(%u+)%s+(%S+)')
-    if not method then return nil end
+-- The request in a client's bytes so far: the request, nil while it is still arriving, false when it is not one
+local function parse_request(buf)
+    local head_end = buf:find('\r\n\r\n', 1, true)
+    if not head_end then
+        if #buf > 16384 then return false end
+        return nil
+    end
+    local head = buf:sub(1, head_end - 1)
+    local method, target = head:match('^(%u+)%s+(%S+)')
+    if not method then return false end
     local headers = {}
-    while true do
-        local h = client:receive('*l')
-        if not h or h == '' then break end
-        local k, v = h:match('^([^:]+):%s*(.-)%s*$')
+    for line in head:gmatch('\r\n([^\r\n]*)') do
+        local k, v = line:match('^([^:]+):%s*(.-)%s*$')
         if k then headers[k:lower()] = v end
     end
     local n = tonumber(headers['content-length'] or 0) or 0
-    local body
-    if n > MAX_BODY then return nil end
-    if n > 0 then
-        client:settimeout(5)
-        body = client:receive(n)
-    end
-    return {method = method, path = target:match('^[^?]*'), query = target:match('%?(.*)$') or '', headers = headers, body = body}
+    if n > MAX_BODY then return false end
+    if #buf < head_end + 3 + n then return nil end
+    return {method = method, path = target:match('^[^?]*'), query = target:match('%?(.*)$') or '', headers = headers,
+        body = n > 0 and buf:sub(head_end + 4, head_end + 3 + n) or nil}
 end
 
 local function route(req)
@@ -279,13 +277,59 @@ local function route(req)
     return '404 Not Found', '{"error":"path"}'
 end
 
-local function serve(client)
-    pcall(function()
-        local req = read_request(client)
-        if req then respond(client, route(req)) end
-    end)
-    client:close()
-    busy_until = frame + BUSY_FRAMES
+-- An error is written to data/atelier/link_errors.txt (and said once): the door stays silent otherwise
+local said_error = false
+local function note_error(where, err)
+    local f = io.open(DATA .. 'atelier/link_errors.txt', 'a')
+    if f then f:write(os.date('%Y-%m-%d %H:%M:%S ') .. where .. ': ' .. tostring(err) .. '\n'); f:close() end
+    if not said_error then
+        said_error = true
+        windower.add_to_chat(167, 'AtelierLink error (' .. where .. '): ' .. tostring(err))
+    end
+end
+
+-- Every socket is non-blocking: this runs in the game's frame, and a read or a send that waited (a page that stopped
+-- midway, a request of 300 files) froze the whole game (2026-10-21). Each frame takes what has arrived and sends
+-- what the socket takes, in bounded pieces; a client still unfinished after CLIENT_SECONDS is dropped.
+local CLIENT_SECONDS, ACCEPTS_PER_FRAME = 20, 16
+local READ_PIECE, SEND_PIECE = 65536, 262144
+local clients = {}
+
+-- One frame of one client; true once it is done (answered, gone, or not a request)
+local function step(c)
+    if not c.out then
+        local got, err, partial = c.sock:receive(READ_PIECE)
+        got = got or partial
+        if got and #got > 0 then c.buf = c.buf .. got end
+        local req = parse_request(c.buf)
+        if req == false then return true end
+        if req == nil then return err == 'closed' end
+        c.out, c.sent = response(route(req)), 0
+    end
+    local i, err, last = c.sock:send(c.out, c.sent + 1, math.min(c.sent + SEND_PIECE, #c.out))
+    c.sent = i or last or c.sent
+    return c.sent >= #c.out or err == 'closed'
+end
+
+local function poll()
+    if not written_for then write_link_file() end
+    for _ = 1, ACCEPTS_PER_FRAME do
+        local sock = server:accept()
+        if not sock then break end
+        sock:settimeout(0)
+        clients[#clients + 1] = {sock = sock, buf = '', drop_at = socket.gettime() + CLIENT_SECONDS}
+        busy_until = frame + BUSY_FRAMES
+    end
+    for i = #clients, 1, -1 do
+        local c = clients[i]
+        local ok, done = pcall(step, c)
+        if not ok then note_error('request', done) end
+        if not ok or done or socket.gettime() > c.drop_at then
+            c.sock:close()
+            table.remove(clients, i)
+        end
+    end
+    if #clients > 0 then busy_until = frame + BUSY_FRAMES end
 end
 
 ---============================================================================
@@ -298,12 +342,8 @@ windower.register_event('prerender', function()
     if not server then return end
     frame = frame + 1
     if frame % POLL_EVERY ~= 0 and frame > busy_until then return end
-    if not written_for then write_link_file() end
-    local client = server:accept()
-    while client do
-        serve(client)
-        client = server:accept()
-    end
+    local ok, err = pcall(poll)
+    if not ok then note_error('poll', err) end
 end)
 windower.register_event('unload', function() if server then server:close() end end)
 windower.register_event('addon command', function(cmd, ...)

@@ -29,6 +29,7 @@ Object.assign(T.fr, {updOpen: 'Mise à jour', ttUpd: 'Chercher une nouvelle vers
   updFailHalf: 'La mise à jour s’est arrêtée en cours : {e}. Utilise « Revenir » pour remettre tes fichiers comme avant.',
   updNoLink: 'La mise à jour passe par le jeu : lance-le, tape une fois //gs c atelier link (l’addon AtelierLink), puis Chercher.',
   updOldLink: 'AtelierLink est trop ancien pour la mise à jour : dans le jeu, tape //gs c atelier link, puis Chercher.',
+  updSlowLink: 'Le jeu ne répond pas : sa fenêtre est-elle réduite ? Laisse-la ouverte (pas réduite) pendant la mise à jour, puis Chercher.',
   updSafe: 'Avant d’écrire, tout est téléchargé et vérifié ; les fichiers remplacés sont gardés dans data/update/backup.'});
 Object.assign(T.en, {updOpen: 'Update', ttUpd: 'Look for a new GearSwap version and install it',
   ttUpdNew: 'New version available: {v}',
@@ -52,20 +53,29 @@ Object.assign(T.en, {updOpen: 'Update', ttUpd: 'Look for a new GearSwap version 
   updFailHalf: 'The update stopped halfway: {e}. Use “Go back” to put your files back as they were.',
   updNoLink: 'The update goes through the game: start it, type //gs c atelier link once (the AtelierLink addon), then Look.',
   updOldLink: 'AtelierLink is too old for the update: in game, type //gs c atelier link, then Look.',
+  updSlowLink: 'The game does not answer: is its window minimized? Keep it open (not minimized) during the update, then Look.',
   updSafe: 'Before writing, everything is downloaded and checked; the files replaced are kept in data/update/backup.'});
 
 // state: '' (not looked), busy, nolink, git, none (no release), uptodate, ready, done, fail
 const UPD = {state: '', step: null, msg: '', msgCls: '', inst: null, rel: null, remote: null, plan: null, last: null, env: null, link: null};
 const UPD_LINK = 'scripts/atelier/AtelierLink/AtelierLink.lua';
 const UPD_SEEN = 'atelierUpdSeen';
-const UPD_BATCH = 150;
+const UPD_BATCH = 60;
 
-// One request to AtelierLink's door: JSON back, or bytes
+// One request to AtelierLink's door: JSON back, or bytes. AtelierLink answers on the game's frames: a game window
+// minimized draws none, and the request waits; so each has its time, and says why when it runs out
+const UPD_WAIT_MS = 15000;
 async function updCall(conf, path, opts = {}){
-  const r = await fetch(`http://127.0.0.1:${conf.port}${path}`, {method: opts.method || 'GET', body: opts.body,
-    headers: {'X-Atelier-Token': conf.token}, cache: 'no-store'});
-  if (!r.ok) { const e = new Error('AtelierLink: HTTP ' + r.status); e.status = r.status; throw e; }
-  return opts.bytes ? new Uint8Array(await r.arrayBuffer()) : r.json();
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), opts.wait || UPD_WAIT_MS);
+  try {
+    const r = await fetch(`http://127.0.0.1:${conf.port}${path}`, {method: opts.method || 'GET', body: opts.body,
+      headers: {'X-Atelier-Token': conf.token}, cache: 'no-store', signal: ctl.signal});
+    if (!r.ok) { const e = new Error('AtelierLink: HTTP ' + r.status); e.status = r.status; throw e; }
+    return opts.bytes ? new Uint8Array(await r.arrayBuffer()) : await r.json();
+  } catch (e) {
+    if (e.name === 'AbortError') { const w = new Error(t('updSlowLink')); w.slow = true; throw w; }
+    throw e;
+  } finally { clearTimeout(timer); }
 }
 // /read's answer: per path "<size>\n<bytes>", "-1\n" when missing
 function updSplit(paths, bytes){
@@ -109,11 +119,12 @@ async function updFindLink(){
   if (S.char) await updLoadScript(`atelier/link_${S.char}.js`);
   const all = window.ATELIER_LINK || {}, names = [S.char, window.ATELIER_LINK_LAST].concat(Object.keys(all));
   let old = false;
+  let slow = false;
   for (const c of names.filter((c, i, a) => c && all[c] && a.indexOf(c) === i)) {
-    try { return {c, conf: all[c], info: await updCall(all[c], '/info')}; }
-    catch (e) { if (e.status === 404) old = true; }
+    try { return {c, conf: all[c], info: await updCall(all[c], '/info', {wait: 6000})}; }
+    catch (e) { if (e.status === 404) old = true; if (e.slow) slow = true; }
   }
-  return old ? 'old' : null;
+  return old ? 'old' : slow ? 'slow' : null;
 }
 
 const updStep = (what, n, m) => { UPD.step = {what, n, m}; render(); };
@@ -126,7 +137,10 @@ async function updCheck(){
   render();
   try {
     const link = await updFindLink();
-    if (!link || link === 'old') { Object.assign(UPD, {state: 'nolink', msg: t(link ? 'updOldLink' : 'updNoLink'), msgCls: 'kwarn'}); return render(); }
+    if (!link || typeof link === 'string') {
+      Object.assign(UPD, {state: 'nolink', msg: t({old: 'updOldLink', slow: 'updSlowLink'}[link] || 'updNoLink'), msgCls: 'kwarn'});
+      return render();
+    }
     UPD.link = link;
     UPD.env = updEnv(link.conf, !!link.info.git);
     UPD.inst = await UpdCore.installed(UPD.env);
@@ -213,7 +227,7 @@ async function updQuietCheck(){
   }
   if (!seen.v) return;
   const link = await updFindLink();
-  if (!link || link === 'old' || link.info.git) return;
+  if (!link || typeof link === 'string' || link.info.git) return;
   if (UpdCore.newer(seen.v, link.info.version)) { S._updNew = seen.v; render(); }
 }
 setTimeout(() => {
