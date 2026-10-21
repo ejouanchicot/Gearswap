@@ -25,6 +25,7 @@ Object.assign(T.fr, {updOpen: 'Mise à jour', ttUpd: 'Chercher une nouvelle vers
   updNet: 'GitHub n’a pas répondu : vérifie ta connexion. ({e})',
   updFail: 'La mise à jour n’a pas pu se faire : {e}. Rien n’a été remplacé.',
   updFailHalf: 'La mise à jour s’est arrêtée en cours : {e}. Utilise « Revenir » pour remettre tes fichiers comme avant.',
+  updOtherFolder: 'Le dossier Windower retenu est « {have} », mais cette page vient de « {want} ». Montre-lui le bon dossier.',
   updFolder: 'Pour mettre à jour, la page doit écrire dans ton dossier Windower.', updFolderBtn: 'Montrer le dossier Windower',
   updFolderWhy: 'La mise à jour écrit les nouveaux fichiers dans ton dossier Windower (addons/GearSwap/data). Montre-le-lui une fois :',
   updNeedChrome: 'Il faut Chrome ou Edge : ils seuls laissent une page écrire dans un dossier.',
@@ -49,6 +50,7 @@ Object.assign(T.en, {updOpen: 'Update', ttUpd: 'Look for a new GearSwap version 
   updNet: 'GitHub did not answer: check your connection. ({e})',
   updFail: 'The update could not be done: {e}. Nothing was replaced.',
   updFailHalf: 'The update stopped halfway: {e}. Use “Go back” to put your files back as they were.',
+  updOtherFolder: 'The Windower folder remembered is “{have}”, but this page comes from “{want}”. Show it the right folder.',
   updFolder: 'To update, the page has to write into your Windower folder.', updFolderBtn: 'Show the Windower folder',
   updFolderWhy: 'The update writes the new files into your Windower folder (addons/GearSwap/data). Show it the folder once:',
   updNeedChrome: 'Chrome or Edge is needed: only they let a page write into a folder.',
@@ -92,6 +94,14 @@ function updEnv(data){
   };
 }
 
+// The Windower folder the page was opened from (its name), null when the page is not under addons/GearSwap/data. The
+// folder remembered is the same for every Atelier page opened from the disk: from another install it is not this one
+function updPageRoot(){
+  const m = pageFolder().match(/([^\\]+)\\addons\\GearSwap\\data$/i);
+  return m ? m[1] : null;
+}
+const updSameRoot = root => { const want = updPageRoot(); return !want || root.name.toLowerCase() === want.toLowerCase(); };
+
 const updStep = (what, n, m) => { UPD.step = {what, n, m}; render(); };
 const updErr = e => String(e && e.message || e);
 
@@ -104,6 +114,10 @@ async function updCheck(ask){
   try {
     const root = await oxWindowerFolder(ask);
     if (!root) { UPD.state = 'folder'; return render(); }
+    if (!updSameRoot(root)) {
+      Object.assign(UPD, {state: 'folder', msg: t('updOtherFolder', {have: root.name, want: updPageRoot()}), msgCls: 'kwarn'});
+      return render();
+    }
     UPD.root = root;
     UPD.env = updEnv(await updDataDir(root));
     UPD.inst = await UpdCore.installed(UPD.env);
@@ -168,10 +182,10 @@ function updOpenPage(){
   render(); scrollTo({top: 0});
   if (open && (UPD.state === '' || UPD.state === 'folder')) updCheck(false);
 }
+// Always the picker: the folder remembered may be another install's (updSameRoot)
 function updFolder(){
-  oxWindowerFolder(true).then(root => root ? updCheck(false)
-    : openFolderDialog(async () => { await oxPickWindower(); updCheck(false); }, () => {}, {title: t('wfolderTitle'), why: t('updFolderWhy'), path: pageFolder().replace(/\\addons\\GearSwap\\data$/i, '')}))
-    .catch(e => { UPD.state = 'fail'; UPD.msg = updErr(e); UPD.msgCls = 'kwarn'; render(); });
+  openFolderDialog(async () => { await oxPickWindower(); updCheck(false); }, () => {},
+    {title: t('wfolderTitle'), why: t('updFolderWhy'), path: pageFolder().replace(/\\addons\\GearSwap\\data$/i, '')});
 }
 
 // Asked from the game (//gs c upgrade): the page opened with #update, or atelier/update_ask.js written within its time
@@ -193,7 +207,7 @@ async function updQuietCheck(){
   }
   if (!seen.v) return;
   const root = await oxWindowerFolder(false).catch(() => null);
-  if (!root) return;
+  if (!root || !updSameRoot(root)) return;
   const env = updEnv(await updDataDir(root)), inst = await UpdCore.installed(env);
   if (await env.exists('.git')) return;
   if (UpdCore.newer(seen.v, inst.version)) { S._updNew = seen.v; render(); }
