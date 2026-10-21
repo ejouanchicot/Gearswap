@@ -173,14 +173,29 @@ local function read_file(rel)
     return text
 end
 
--- its folders made first, one level at a time
+-- Each step of a write, in data/atelier/link_trace.txt (the last 200 kept in memory, the file rewritten): an
+-- update that stopped in game is read there, step by step
+local trace_lines = {}
+local function trace(line)
+    trace_lines[#trace_lines + 1] = os.date('%H:%M:%S ') .. line
+    if #trace_lines > 200 then table.remove(trace_lines, 1) end
+    write(DATA .. 'atelier/link_trace.txt', table.concat(trace_lines, '\n') .. '\n')
+end
+
+-- Written at once when its folder exists; else its folders are made, one level at a time, each named without a
+-- trailing slash (as the rest of the project calls create_dir), then written
 local function write_file(rel, bytes)
-    local at = data
+    trace('file ' .. rel .. ' (' .. #bytes .. ' bytes)')
+    if write(data .. rel, bytes) then trace('written') return true end
+    local at = data:gsub('/$', '')
     for part in rel:gmatch('([^/]+)/') do
-        at = at .. part .. '/'
+        at = at .. '/' .. part
+        trace('dir ' .. at)
         if not windower.dir_exists(at) then windower.create_dir(at) end
     end
-    return write(data .. rel, bytes)
+    local ok = write(data .. rel, bytes)
+    trace(ok and 'written' or 'write failed')
+    return ok
 end
 
 local function info()
