@@ -74,6 +74,12 @@ check('no remove under git', (call('POST', '/remove?path=VERSION')), '409 Confli
 check('reading still works under git', select(2, call('POST', '/read', 'VERSION')), '7\n4.0.0\r\n')
 check('unknown door', (call('GET', '/nothing')), '404 Not Found')
 
+-- folders are made only inside Windower's folder: create_dir never returned for one outside it
+check('inside Windower', Link.in_windower(root .. 'addons/GearSwap/data/x'), true)
+check('inside Windower, backslashes and case', Link.in_windower((root .. 'ADDONS/GearSwap/'):gsub('/', '\\')), true)
+check('outside Windower', Link.in_windower('D:/UpdTest/addons/GearSwap/data/'), false)
+check('a sibling folder sharing the start of the name is outside', Link.in_windower(root:gsub('/$', '') .. 'X/data/'), false)
+
 os.execute('rmdir /s /q "' .. root:gsub('/', '\\'):gsub('\\$', '') .. '" 2>nul')
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

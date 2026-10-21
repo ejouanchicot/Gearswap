@@ -182,11 +182,23 @@ local function trace(line)
     write(DATA .. 'atelier/link_trace.txt', table.concat(trace_lines, '\n') .. '\n')
 end
 
+-- Whether a path is inside Windower's folder: windower.create_dir never returned for a folder outside it (a test
+-- install in D:/UpdTest, 2026-10-21), and the addon hung there for good, its unload freezing the game
+local function with_slash(p)
+    p = p:gsub('\\', '/')
+    return p:sub(-1) == '/' and p or p .. '/'
+end
+local function in_windower(path)
+    local root = with_slash(windower.windower_path):lower()
+    return with_slash(path):lower():sub(1, #root) == root
+end
+
 -- Written at once when its folder exists; else its folders are made, one level at a time, each named without a
 -- trailing slash (as the rest of the project calls create_dir), then written
 local function write_file(rel, bytes)
     trace('file ' .. rel .. ' (' .. #bytes .. ' bytes)')
     if write(data .. rel, bytes) then trace('written') return true end
+    if not in_windower(data) then trace('no folder made outside Windower') return false end
     local at = data:gsub('/$', '')
     for part in rel:gmatch('([^/]+)/') do
         at = at .. '/' .. part
@@ -365,7 +377,12 @@ windower.register_event('addon command', function(cmd, ...)
     -- a test install's data folder (its page then finds this door in its own atelier/ folder)
     if cmd == 'testroot' then
         local path = table.concat({...}, ' ')
-        data = (path == '' or path == 'off') and DATA or (path:gsub('\\', '/'):gsub('/?$', '/'))
+        local want = (path == '' or path == 'off') and DATA or with_slash(path)
+        if not in_windower(want) then
+            windower.add_to_chat(167, 'AtelierLink: a test install must be inside the Windower folder (' .. windower.windower_path .. ')')
+            return
+        end
+        data = want
         written_for = nil
         write_link_file()
         windower.add_to_chat(207, 'AtelierLink: serving ' .. data)
@@ -375,4 +392,4 @@ windower.register_event('addon command', function(cmd, ...)
 end)
 
 -- for scripts/atelier/atelier_link_test.lua (a Windower addon's return value is not used)
-return {route = route, safe_rel = safe_rel}
+return {route = route, safe_rel = safe_rel, in_windower = in_windower}
