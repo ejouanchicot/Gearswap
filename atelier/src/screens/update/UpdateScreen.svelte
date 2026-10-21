@@ -76,4 +76,6 @@
   .updmore { margin: 10px 0 0; padding-top: 8px; border-top: 1px solid var(--line); }
   .updmore a { color: var(--accent); text-decoration: none; font-weight: 600; }
   .updmore a:hover { text-decoration: underline; }
+  /* a scroll box inside the page's own scroll hides the notes' end on a phone: there they take their full height */
+  @media (max-width: 760px) { .updnotes { max-height: none; overflow: visible; padding-right: 0; } }
 </style>
