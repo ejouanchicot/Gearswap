@@ -10,6 +10,20 @@
 ---   GET  /ping                  player, job, subjob
 ---   POST /gearswap?do=load      //lua load gearswap   (also unload, reload)
 ---
+--- The page's update screen (data/atelier/app/js/update.js) downloads a release
+--- itself and hands the files here: a file the browser writes carries the Mark
+--- of the Web, and Windows Defender took our own update.js for a trojan that way
+--- (2026-10-21). Written by Lua, a file is as a package or git leaves it.
+---   GET  /info                  player, the data folder's version, whether it is under git
+---   POST /read                  body: paths (one per line) -> per path "<size>\n<bytes>", "-1\n" when missing
+---   POST /file?path=<rel>       body: the file's bytes, written under data/
+---   POST /remove?path=<rel>     the file removed
+---   POST /relink                this addon copied from data/scripts/atelier/AtelierLink/ and
+---                               reloaded, then GearSwap reloaded
+--- Paths are relative to GearSwap's data folder, never outside it; a data folder
+--- under git (the author's) is never written. //atelierlink testroot <folder>
+--- serves another data folder (a test install) until the addon reloads.
+---
 --- Every request but the browser's preflight carries the token written in
 --- GearSwap/data/atelier/link_<Character>.js, a file only a page on this disk
 --- can read.
@@ -33,11 +47,15 @@ local socket = require('socket')
 
 local FIRST_PORT, PORT_TRIES = 52760, 8
 local POLL_EVERY = 6
+-- an update sends hundreds of requests in a row: while they come, every frame is polled
+local BUSY_FRAMES = 120
+local MAX_BODY = 8 * 1024 * 1024
 local DATA = windower.windower_path .. 'addons/GearSwap/data/'
 local ACTIONS = {load = 'lua load gearswap', unload = 'lua unload gearswap', reload = 'lua reload gearswap'}
 
 local server, port, token, written_for
-local frame = 0
+local frame, busy_until = 0, 0
+local data = DATA
 
 local function write(path, text)
     local f = io.open(path, 'wb')
@@ -77,11 +95,16 @@ local function new_token()
 end
 
 -- The file the page reads to find the door, once the character is known
+-- link_last.js names the character too: a page with no character yet (a fresh package) finds the door by it
 local function write_link_file()
     local p = windower.ffxi.get_player()
     if not (p and p.name and server) or written_for == p.name then return end
-    if write(DATA .. 'atelier/link_' .. p.name .. '.js', ('window.ATELIER_LINK = window.ATELIER_LINK || {};\nATELIER_LINK[%q] = {port: %d, token: %q};\n')
-        :format(p.name, port, token)) then written_for = p.name end
+    local text = ('window.ATELIER_LINK = window.ATELIER_LINK || {};\nATELIER_LINK[%q] = {port: %d, token: %q};\n')
+        :format(p.name, port, token)
+    if write(data .. 'atelier/link_' .. p.name .. '.js', text) then
+        write(data .. 'atelier/link_last.js', text .. ('window.ATELIER_LINK_LAST = %q;\n'):format(p.name))
+        written_for = p.name
+    end
 end
 
 -- A listening socket on that port, or nil when another program holds it. Not socket.bind():
@@ -113,15 +136,102 @@ end
 --- HTTP
 ---============================================================================
 
-local function respond(client, status, body)
+local function respond(client, status, body, content_type)
     -- "null": the origin of a page opened from the disk, the only one the door answers
     local head = {'HTTP/1.1 ' .. status, 'Access-Control-Allow-Origin: null',
         'Access-Control-Allow-Headers: X-Atelier-Token, Content-Type',
         'Access-Control-Allow-Methods: GET, POST, OPTIONS',
         'Access-Control-Allow-Private-Network: true',
-        'Content-Type: application/json; charset=utf-8', 'Content-Length: ' .. #body, 'Connection: close', '', ''}
-    client:settimeout(2)
+        'Content-Type: ' .. (content_type or 'application/json; charset=utf-8'), 'Content-Length: ' .. #body,
+        'Connection: close', '', ''}
+    client:settimeout(5)
     client:send(table.concat(head, '\r\n') .. body)
+end
+
+---============================================================================
+--- FILES OF THE DATA FOLDER (the page's update)
+---============================================================================
+
+-- A path under data/ as the page sends it (URL-encoded), or nil: no "..", no drive, no backslash, no leading slash
+local function safe_rel(rel)
+    if type(rel) ~= 'string' then return nil end
+    rel = rel:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+    if rel == '' or #rel > 300 or rel:find('..', 1, true) or rel:sub(1, 1) == '/' or not rel:match('^[%w%._%-/ ]+$') then
+        return nil
+    end
+    return rel
+end
+
+local function under_git()
+    return windower.dir_exists(data .. '.git')
+end
+
+local function read_file(rel)
+    local f = io.open(data .. rel, 'rb')
+    if not f then return nil end
+    local text = f:read('*a')
+    f:close()
+    return text
+end
+
+-- its folders made first, one level at a time
+local function write_file(rel, bytes)
+    local at = data
+    for part in rel:gmatch('([^/]+)/') do
+        at = at .. part .. '/'
+        if not windower.dir_exists(at) then windower.create_dir(at) end
+    end
+    return write(data .. rel, bytes)
+end
+
+local function info()
+    local p = windower.ffxi.get_player() or {}
+    local v = read_file('VERSION')
+    return json({player = p.name or '', version = v and v:match('^%s*(.-)%s*$') or '', git = under_git()})
+end
+
+-- per path asked: "<size>\n<bytes>", or "-1\n" for a path missing or refused
+local function read_many(body)
+    local out = {}
+    for line in (body or ''):gmatch('[^\n]+') do
+        local rel = safe_rel(line)
+        local bytes = rel and read_file(rel)
+        out[#out + 1] = bytes and (#bytes .. '\n' .. bytes) or '-1\n'
+    end
+    return table.concat(out)
+end
+
+-- This addon, as the update just left it in data/scripts/, put in addons/AtelierLink/ and loaded again (which
+-- ends this copy), then GearSwap reloaded on the new code
+local function relink()
+    local text = read_file('scripts/atelier/AtelierLink/AtelierLink.lua')
+    if not text then return false end
+    local dir = windower.windower_path .. 'addons/AtelierLink/'
+    if not write(dir .. 'AtelierLink.lua', text) then return false end
+    coroutine.schedule(function() windower.send_command('lua reload gearswap; lua reload atelierlink') end, 0.2)
+    return true
+end
+
+local function file_route(req)
+    if req.path == '/info' then return '200 OK', info() end
+    if req.method ~= 'POST' then return nil end
+    if req.path == '/read' then return '200 OK', read_many(req.body), 'application/octet-stream' end
+    if under_git() then return '409 Conflict', '{"error":"git"}' end
+    if req.path == '/relink' then
+        if relink() then return '200 OK', '{"ok":true}' end
+        return '500 Internal Server Error', '{"error":"relink"}'
+    end
+    local rel = safe_rel(req.query:match('path=([^&]*)'))
+    if (req.path == '/file' or req.path == '/remove') and not rel then return '400 Bad Request', '{"error":"path"}' end
+    if req.path == '/file' then
+        if write_file(rel, req.body or '') then return '200 OK', '{"ok":true}' end
+        return '500 Internal Server Error', '{"error":"write"}'
+    end
+    if req.path == '/remove' then
+        os.remove(data .. rel)
+        return '200 OK', '{"ok":true}'
+    end
+    return nil
 end
 
 local function read_request(client)
@@ -137,9 +247,14 @@ local function read_request(client)
         local k, v = h:match('^([^:]+):%s*(.-)%s*$')
         if k then headers[k:lower()] = v end
     end
-    local n = math.min(tonumber(headers['content-length'] or 0) or 0, 4096)
-    if n > 0 then client:receive(n) end
-    return {method = method, path = target:match('^[^?]*'), query = target:match('%?(.*)$') or '', headers = headers}
+    local n = tonumber(headers['content-length'] or 0) or 0
+    local body
+    if n > MAX_BODY then return nil end
+    if n > 0 then
+        client:settimeout(5)
+        body = client:receive(n)
+    end
+    return {method = method, path = target:match('^[^?]*'), query = target:match('%?(.*)$') or '', headers = headers, body = body}
 end
 
 local function route(req)
@@ -159,6 +274,8 @@ local function route(req)
         coroutine.schedule(function() windower.send_command(command) end, 0.2)
         return '200 OK', '{"ok":true}'
     end
+    local status, body, content_type = file_route(req)
+    if status then return status, body, content_type end
     return '404 Not Found', '{"error":"path"}'
 end
 
@@ -168,6 +285,7 @@ local function serve(client)
         if req then respond(client, route(req)) end
     end)
     client:close()
+    busy_until = frame + BUSY_FRAMES
 end
 
 ---============================================================================
@@ -179,7 +297,7 @@ windower.register_event('login', function() written_for = nil; coroutine.schedul
 windower.register_event('prerender', function()
     if not server then return end
     frame = frame + 1
-    if frame % POLL_EVERY ~= 0 then return end
+    if frame % POLL_EVERY ~= 0 and frame > busy_until then return end
     if not written_for then write_link_file() end
     local client = server:accept()
     while client do
@@ -188,6 +306,18 @@ windower.register_event('prerender', function()
     end
 end)
 windower.register_event('unload', function() if server then server:close() end end)
-windower.register_event('addon command', function()
-    windower.add_to_chat(207, ('AtelierLink: listening on 127.0.0.1:%s for data/atelier.html'):format(tostring(port)))
+windower.register_event('addon command', function(cmd, ...)
+    -- a test install's data folder (its page then finds this door in its own atelier/ folder)
+    if cmd == 'testroot' then
+        local path = table.concat({...}, ' ')
+        data = (path == '' or path == 'off') and DATA or (path:gsub('\\', '/'):gsub('/?$', '/'))
+        written_for = nil
+        write_link_file()
+        windower.add_to_chat(207, 'AtelierLink: serving ' .. data)
+        return
+    end
+    windower.add_to_chat(207, ('AtelierLink: listening on 127.0.0.1:%s for %satelier.html'):format(tostring(port), data))
 end)
+
+-- for scripts/atelier/atelier_link_test.lua (a Windower addon's return value is not used)
+return {route = route, safe_rel = safe_rel}

@@ -3,8 +3,9 @@
 ---============================================================================
 --- //gs c version   the version installed (data/VERSION, written by a release)
 --- //gs c upgrade   opens the Atelier page on its update screen: the page reads the
----                  latest release on GitHub, downloads the files that changed and
----                  asks AtelierLink to restart GearSwap (atelier/app/js/update.js)
+---                  latest release on GitHub and downloads the files that changed,
+---                  AtelierLink writes them and restarts GearSwap
+---                  (atelier/app/js/update.js, scripts/atelier/AtelierLink/)
 ---
 --- GearSwap downloads nothing itself: the browser checks GitHub's certificate,
 --- Windower's Lua does not (verify = "none" in addons/libs/ssl/https.lua).
@@ -61,11 +62,11 @@ function ReleaseInfo.handle(cmd)
     end
     write_ask()
     if type(windower.open_url) ~= 'function' then
-        MessageFormatter.show_info('Update: open data/atelier.html in Chrome or Edge, its update screen opens by itself.')
+        MessageFormatter.show_info('Update: open data/atelier.html in your browser, its update screen opens by itself.')
         return true
     end
     windower.open_url(page_url())
-    MessageFormatter.show_info(('Update: the Atelier page opens (Chrome or Edge). Installed: %s.'):format(v or 'none'))
+    MessageFormatter.show_info(('Update: the Atelier page opens. Installed: %s. AtelierLink must be loaded (//gs c atelier link).'):format(v or 'none'))
     return true
 end
 

@@ -11,7 +11,9 @@
 //   3. downloads every file first and checks each against its hash: one failure and nothing is written;
 //   4. copies what it replaces or removes into update/backup/<id>/ with undo.json, then writes, the manifest last.
 // Player folders are never in a manifest, so never touched. A folder under git (the author's) is never updated.
-// The browser downloads, so GitHub's certificate is checked (Windower's Lua does not check it).
+// The browser downloads, so GitHub's certificate is checked (Windower's Lua does not check it); the env reads and writes
+// the files through AtelierLink (update.js): a file the browser writes carries the Mark of the Web, and Windows Defender
+// took our own update.js for a trojan that way.
 
 const UpdCore = (() => {
   const REPO = 'ejouanchicot/Gearswap', MANIFEST = 'release_manifest.json', BACKUPS = 'update/backup', LAST = 'update/last.txt';
@@ -81,6 +83,8 @@ const UpdCore = (() => {
   async function plan(env, remote, inst, progress){
     const out = {add: [], update: [], remove: [], changed: [], kept: []};
     const was = inst && inst.manifest ? inst.manifest.files : null, paths = Object.keys(remote.files);
+    // an env that reads in batches (AtelierLink) reads them all first
+    if (env.preload) await env.preload(paths.concat(was ? Object.keys(was).filter(p => !(p in remote.files)) : []), progress);
     for (let i = 0; i < paths.length; i++) {
       const p = paths[i], b = await env.bytes(p);
       if (progress && i % 25 === 0) progress('scan', i, paths.length);

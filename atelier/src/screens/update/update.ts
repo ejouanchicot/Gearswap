@@ -1,7 +1,7 @@
 // GearSwap Atelier · the update screen (the ⬆ button of the top bar, or //gs c upgrade in game): the version installed
 // and the latest one, what installing it changes, the release's notes, and going back to the version before.
 // The rules are the old page's update.js (its state UPD, the clicks data-updopen, data-updcheck, data-updapply,
-// data-updundo, data-updfolder) over update_core.js; shown as a page of the Settings (S._cfg with S._upd).
+// data-updundo) over update_core.js, the files going through AtelierLink; shown as a page of the Settings (S._cfg with S._upd).
 //
 // @file    atelier/src/screens/update/update.ts
 // @author  ejouanchicot
@@ -11,7 +11,6 @@ export interface UpdateView {
   have: {label: string; v: string}; latest: {label: string; v: string};
   busy: boolean; step: string;
   check: string;
-  folder: null | {text: string; btn: string};
   plan: null | {line: string; changed: string; kept: string; apply: string};
   notes: null | {title: string; text: string; more: string; url: string};
   undo: null | {label: string; why: string};
@@ -30,7 +29,6 @@ export function updateView(): UpdateView | null {
     have: {label: t('updHave'), v: U.inst ? (U.inst.version || t('updNone')) : t('updUnknown')},
     latest: {label: t('updLatest'), v: rel ? rel.version : U.state === 'none' ? t('updNone') : t('updUnknown')},
     busy, step, check: busy && !p ? t('updChecking') : t('updCheck'),
-    folder: U.state === 'folder' ? {text: t('updFolder'), btn: t('updFolderBtn')} : null,
     plan: U.state === 'ready' && p ? {
       line: t('updReady', {n: p.add.length + p.update.length + p.remove.length, a: p.add.length, u: p.update.length, r: p.remove.length}),
       changed: p.changed.length ? t('updChanged', {l: listOf(p.changed)}) : '',

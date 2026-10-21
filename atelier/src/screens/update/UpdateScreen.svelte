@@ -22,7 +22,6 @@
           <dl class="updver"><dt>{view.have.label}</dt><dd>{view.have.v}</dd><dt>{view.latest.label}</dt><dd>{view.latest.v}</dd></dl>
           <div class="cfgrow"><button class="btn ghost" data-updcheck disabled={view.busy}>{view.check}</button></div>
           {#if view.step}<p class="muted">{view.step}</p>{/if}
-          {#if view.folder}<p>{view.folder.text}</p><div class="cfgrow"><button class="btn" data-updfolder>{view.folder.btn}</button></div>{/if}
           {#if view.msg}<p class={view.msgCls}>{view.msg}</p>{/if}
           <p class="muted small">{view.safe}</p>
         </section>
