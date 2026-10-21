@@ -9,7 +9,8 @@ only the ones that differ. Player folders (<Character>/...) are never in it.
 
 Usage (from the data folder, the tree committed):
     python scripts/release/release.py manifest   write release_manifest.json from HEAD
-    python scripts/release/release.py check      the manifest matches HEAD (run before tagging)
+    python scripts/release/release.py check      the manifest matches HEAD, and Windows Defender passes
+                                                 every file (run before tagging)
 
 Steps of a release:
     1. VERSION bumped, release notes written, everything committed
@@ -93,6 +94,32 @@ def check():
     if bad:
         sys.exit('manifest out of date:\n  ' + '\n  '.join(bad[:30]))
     print('manifest OK: version %s, %d files' % (m['version'], len(now)))
+    defender_scan(sorted(now))
+
+
+# Windows Defender's cloud once flagged our own update.js as a trojan (2026-10-21) and quarantined it on the
+# player's disk mid-update: every file of a release is scanned before it is tagged
+DEFENDER = r'C:\ProgramData\Microsoft\Windows Defender\Platform\CurrentVersion\MpCmdRun.exe'
+
+
+def defender_scan(paths, ref='HEAD'):
+    if not os.path.isfile(DEFENDER):
+        print('Defender scan skipped: no MpCmdRun.exe')
+        return
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        for path in paths:
+            blob = subprocess.run(['git', 'show', '%s:%s' % (ref, path)], cwd=DATA, check=True, capture_output=True).stdout
+            out = os.path.join(tmp, path.replace('/', os.sep))
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            with open(out, 'wb') as f:
+                f.write(blob)
+        r = subprocess.run([DEFENDER, '-Scan', '-ScanType', '3', '-File', tmp, '-DisableRemediation'],
+                           capture_output=True, text=True, errors='replace')
+    if r.returncode == 2:
+        hits = [l.strip() for l in r.stdout.splitlines() if l.strip().startswith(('Threat ', 'file '))]
+        sys.exit('Windows Defender flags files of this release (change them, scan again):\n  ' + '\n  '.join(hits))
+    print('Defender scan: %d files, no threat' % len(paths))
 
 
 if __name__ == '__main__':
