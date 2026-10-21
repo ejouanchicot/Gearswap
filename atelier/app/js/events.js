@@ -25,7 +25,7 @@ document.addEventListener('click', e => {
   if (d.lang) { S.lang = d.lang; render(); return; }
   if (d.engine) { S.engine = d.engine; useEngine(S.engine); save(); render(); return; }
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
-  if ('config' in d) { S._cfg = !S._cfg; S._pkg = false; render(); scrollTo({top: 0}); return; }
+  if ('config' in d) { S._cfg = !S._cfg; S._pkg = false; S._upd = false; render(); scrollTo({top: 0}); return; }
   if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
   if (d.section) { S.section = d.section; render(); return; }
   if (d.jobtab) { S.jobTab = d.jobtab; save(); render(); return; }

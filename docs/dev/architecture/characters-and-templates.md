@@ -329,6 +329,7 @@ Full redeploy (`clone_character.py` on an existing character):
 | `GearSwap/data/<Name>/` | the clone: `clone_character.py` (with `migrate_layout.py`, `migrate_config.py`, `where_is_what.py`) run in a temporary copy of `_master/` and `character_db.lua`; the data folder is only read |
 | `GearSwap/data/atelier.html`, `atelier/{index.html,app,calc,lua,engine}`, `opt.js`, `opt_enf.js`, `targets.js`, `cycle.js` | the Atelier |
 | `GearSwap/data/scripts/atelier/AtelierLink/`, `load_job.lua` | the AtelierLink addon and the export the page runs without the game |
+| `GearSwap/data/VERSION`, `release_manifest.json` | the version and its file list, which the update starts from ([Releases and the update](#releases-and-the-update)) |
 
 Never in it: `_master/`, the overlays, any other character's folder, `atelier/link_*.js` (link keys), `atelier/live_*.js`, the rest of `atelier/icons/` (only the icons of the character's items go in, see below), `atelier/Img/`, `notes/`, the other `scripts/`, and `atelier/app/js/packages.js` with `package_exports.js` (a package has no `_master/` to make packages from: its `atelier/index.html` is written without `'packages'` in its list of scripts, and the top bar shows the 📦 button only when that file is loaded). `sources()` lists what is read; anything else of the Windower folder is not even opened.
 
@@ -342,6 +343,18 @@ The package also holds the Atelier's exports of the character (`<Name>/atelier/e
 Two things differ off Windows, and both are handled so the page's zip is the command line's, byte for byte: there is no `lua5.1` (`migrate_config.read_lua` is replaced by `read_lua_table`, a reader of plain `return { ... }` tables, which is enough for the three files it reads: `TUNING`, `AUTO_ABILITIES`, `BUFF_CONFIG`), and text is written with LF (`_windows_newlines` writes the clone's text files with CRLF, as Windows does).
 
 Tests: `scripts/atelier/make_package_test.py` (every character of `character_db.lua`: the character folder of the zip is the one `clone_character.py` writes when run by hand, nothing private is in the zip, the same zip without Lua; about 2 min) and `scripts/atelier/make_package_page_test.js` (the page's worker in Chrome, Pyodide from the CDN, against the command line's zip; needs Internet and Puppeteer). Both run with `python scripts/run_tests.py --full`.
+
+## Releases and the update
+
+A release (2026-10-21) is a tag `v<VERSION>` on GitHub, published with `gh release create`, whose commit holds `data/VERSION` and `data/release_manifest.json`. The manifest lists every file the update replaces with its git blob hash: what a package ships from `data/` (`make_package.py`'s `DATA_FILES` and `TREES`, without `PAGE_ONLY`), restricted to the files git tracks. The Atelier engine (`atelier/engine/`, `cycle.js`) is not on GitHub, so an update never brings it: it stays as the package left it.
+
+- `python scripts/release/release.py manifest` writes the manifest from `HEAD`; `release.py check` says whether it still matches (run it before tagging). The steps are at the top of `release.py`.
+- `//gs c version` and `//gs c upgrade` (`shared/utils/core/release_info.lua`): `upgrade` writes `atelier/update_ask.js` and opens `atelier.html#update` with `windower.open_url`; the page opens its update screen when either says so. Not `update`: Mote's own command (`Mote-SelfCommands.lua`), sent everywhere to re-equip.
+- The page does the update (`atelier/app/js/update_core.js`, drawn by `update.js` and `src/screens/update/`), in the Windower folder the player showed it once: latest release from `api.github.com`, manifest and files from `raw.githubusercontent.com` at the tag (both answer `Access-Control-Allow-Origin: *`). A file is the same when its bytes, or its bytes with CRLF made LF for a text file, hash to the manifest's blob. Everything is downloaded and checked before the first write; what is replaced or removed is copied to `data/update/backup/<from>-to-<to>-<time>/` with `undo.json`, and **Revenir** puts it back. A file the last update installed and the new one drops is removed only when the player left it as it was. A folder holding `.git` is refused.
+- Afterwards the page asks AtelierLink for `//lua reload gearswap`, or tells the player to type it. A new `AtelierLink.lua` is only copied into `data/scripts/atelier/AtelierLink/`: `//gs c atelier link` installs it.
+- Why the browser and not Windower's Lua: `addons/libs/ssl/https.lua` does not check certificates (`verify = "none"`), and a Lua addon cannot start PowerShell without a console window (AioHUD's updater can, from its C++ plugin).
+
+Tests: `node scripts/atelier/update_test.js [--from <ref>] [--to <ref>]` (a player's folder made from an older commit, with CRLF, against this repository as the release: plan, failed download, install, undo, `.git` refused).
 
 ## How to add a job to the templates
 

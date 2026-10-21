@@ -466,6 +466,8 @@ local COMMANDS_HELP = {
             {'//gs c atelier live ', '[off]', 'Link the page to the game'},
             {'//gs c atelier icons', '', 'Write every equipment icon'},
             {'//gs c atelier link', '', 'Let the page reload GearSwap'},
+            {'//gs c version', '', 'The GearSwap version installed'},
+            {'//gs c upgrade', '', 'Update GearSwap (opens the page)'},
         }},
         {title = 'CRAFT & FISH', rows = {
             {'//gs c craft', '', 'Craft mode (locks weapon slots)'},

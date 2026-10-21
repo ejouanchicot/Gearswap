@@ -103,7 +103,7 @@ SKIP = {'scripts/audit/fight_run_check.lua'}
 def tests(full):
     lua = sorted(glob.glob('scripts/atelier/*_test.lua')) + sorted(glob.glob('scripts/audit/test_*.lua'))
     js = (['scripts/atelier/atelier_build_check.js', 'scripts/atelier/atelier_names_check.js', 'scripts/atelier/atelier_text_check.js',
-           'scripts/atelier/atelier_items_check.js', 'scripts/atelier/bags_locked_check.js']
+           'scripts/atelier/atelier_items_check.js', 'scripts/atelier/bags_locked_check.js', 'scripts/atelier/update_test.js']
           + sorted(glob.glob('scripts/audit/calc_*check.js'))
           + ['scripts/atelier/atelier_modules_test.js', 'scripts/atelier/offline_export_page_test.js',
              'scripts/atelier/offline_export_test.js', 'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_clicks_test.js'])

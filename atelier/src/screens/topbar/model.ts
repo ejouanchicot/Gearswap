@@ -113,7 +113,8 @@ export function topBarModel(): TopBarModel {
     files: {label: t('grpFiles'), list: filesOf()},
     live: liveOf(),
     // the Packages page (packages.js) is left out of a player's package (make_package.py): no button there
-    page: {label: t('grpPage'), list: [{attr: 'data-config', icon: '⚙', label: t('cfgOpen'), title: t('ttGear'), mid: !!S._cfg}]
+    page: {label: t('grpPage'), list: [{attr: 'data-config', icon: '⚙', label: t('cfgOpen'), title: t('ttGear'), mid: !!S._cfg && !S._upd},
+      {attr: 'data-updopen', icon: '⬆', label: t('updOpen'), title: S._updNew ? t('ttUpdNew', {v: S._updNew}) : t('ttUpd'), mid: !!(S._upd && S._cfg) || !!S._updNew}]
       .concat(typeof renderPackages === 'function' ? [{attr: 'data-pkgopen', icon: '📦', label: t('pkgOpen'), title: t('ttPkg'), mid: !!S._pkg}] : [])}
   };
 }

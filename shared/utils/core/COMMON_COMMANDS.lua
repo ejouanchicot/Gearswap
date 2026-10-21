@@ -574,6 +574,11 @@ function CommonCommands.handle_command(command, job_name, ...)
         return require('shared/utils/atelier/atelier_export').handle(args)
     end
 
+    -- The installed version, and the update through the Atelier page
+    if cmd == 'version' or cmd == 'upgrade' then
+        return require('shared/utils/core/release_info').handle(cmd)
+    end
+
     -- ==========================================================================
     -- WARP COMMANDS (every alias in warp_command_registry.COMMANDS)
     -- ==========================================================================
@@ -727,7 +732,7 @@ for word in ([[
     uncraft fish fishing automedicine am alt altcmds altlist altbuff altbuffs altdebug altsync altbuffsync
     lockstyle ls dressup perf testcolors colors jump waltz aoewaltz lightarts darkarts aoe smartbuff buff buffs
     buffself selfbuff gearscan hporder sortie alts main setalt altreport altmirror altlead rollshow stealth
-    cleanse tb trace atelier combatmode keyconflicts kc belt dw support fights dealwatch th commands cmds help
+    cleanse tb trace atelier version upgrade combatmode keyconflicts kc belt dw support fights dealwatch th commands cmds help
     ?
 ]]):gmatch('%S+') do COMMON_WORDS[word] = true end
 for word in pairs(DebugCommands.WORDS) do COMMON_WORDS[word] = true end

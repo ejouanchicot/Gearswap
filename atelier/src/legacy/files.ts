@@ -8,8 +8,9 @@
 export const LEGACY_STYLES: readonly string[] = ['base', 'sets', 'setlist', 'panels', 'combat', 'tabs', 'themes', 'motion',
   'moogle', 'guide', 'cursor', 'tips', 'fit'];
 
-/** What the game writes for the page before its code: the targets and the list of the exports (atelier/index.js) */
-export const LEGACY_DATA: readonly string[] = ['atelier/targets.js', 'atelier/index.js'];
+/** What the game writes for the page before its code: the targets, the list of the exports (atelier/index.js) and
+ *  //gs c upgrade's call to the update screen (atelier/update_ask.js, shared/utils/core/release_info.lua) */
+export const LEGACY_DATA: readonly string[] = ['atelier/targets.js', 'atelier/index.js', 'atelier/update_ask.js'];
 
 /** The old page's scripts (atelier/app/js/<name>.js); events.js last: it reads the data and draws the page */
 export const LEGACY_SCRIPTS: readonly string[] = ['i18n', 'job_icons', 'core', 'state_help_data', 'state_help_fr', 'keys',
@@ -18,5 +19,5 @@ export const LEGACY_SCRIPTS: readonly string[] = ['i18n', 'job_icons', 'core', '
   'nuke_layers', 'fight_stats', 'stat_opt', 'luopan', 'enfeeble', 'porter', 'drawer', 'trial', 'push', 'push_view',
   'opt_all', 'add_set', 'layout2', 'usables_data', 'job_guide_data', 'job_guide_fr', 'module_catalog', 'module_items',
   'bags_view', 'bags_plan', 'bags_target', 'bags_place', 'module_rows', 'module_rest_fr', 'module_ux', 'modules',
-  'party_builder', 'profiles', 'target_pick', 'gear_pick', 'config_page', 'welcome', 'packages', 'motion', 'moogle',
+  'party_builder', 'profiles', 'target_pick', 'gear_pick', 'config_page', 'welcome', 'packages', 'update_core', 'update', 'motion', 'moogle',
   'tip_texts', 'guide_texts', 'guide_bags', 'guide_context', 'guide', 'tips', 'events'];

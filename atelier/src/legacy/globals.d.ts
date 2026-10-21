@@ -44,6 +44,8 @@ interface LegacyState {
   subs: Record<string, string>;
   _cfg?: boolean;
   _pkg?: boolean;
+  _upd?: boolean;
+  _updNew?: string | null;
   _refresh?: 'busy' | 'none' | 'fail' | null;
   _refreshErr?: string;
   _live: Record<string, LegacyLive | undefined>;
@@ -439,6 +441,7 @@ declare function guideState(): {mode: string; seen: LegacyAny};
 declare const THEMES: Array<{id: string; pv: string[]}>;
 declare function themeNow(): string;
 declare const PKG: LegacyAny;
+declare const UPD: LegacyAny;
 declare const PKG_JOBS: string[];
 declare function pkgKnownOf(name: string): LegacyAny;
 declare const MAGIC_ORDER: string[];

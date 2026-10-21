@@ -30,9 +30,9 @@ function engineView(): SettingsView['engine'] {
     fell: now === 'own' && fell.length ? t('engFellNow') + ' ' + fell.map(([w, n]) => `${n} × ${w}`).join(' · ') : ''});
 }
 
-/** The Settings page, or null when it is not the one shown (the packages come first) */
+/** The Settings page, or null when it is not the one shown (the packages come first; the update screen is one of its pages) */
 export function settingsView(): SettingsView | null {
-  if (!S._cfg || (S._pkg && typeof renderPackages === 'function')) return null;
+  if (!S._cfg || S._upd || (S._pkg && typeof renderPackages === 'function')) return null;
   const mode = guideState().mode;
   return {title: t('cfgTitle'), back: t('cfgBack'),
     theme: {title: t('cfgTheme'), why: t('cfgThemeWhy'), cards: THEMES.map((x: LegacyAny) => { const [bg, panel, line, accent, ink, r] = x.pv;
