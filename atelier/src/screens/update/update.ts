@@ -19,6 +19,15 @@ export interface UpdateView {
 
 const listOf = (paths: string[]): string => paths.slice(0, 8).join(', ') + (paths.length > 8 ? ` (+${paths.length - 8})` : '');
 
+/** A release's notes in the page's language: its "## Français" or "## English" part (a release's notes are
+ *  written in both), the whole text when that part is missing */
+export function notesIn(text: string, lang: string): string {
+  const want = lang === 'en' ? 'english' : 'français';
+  const parts = text.split(/^##[ \t]+/m);
+  const mine = parts.find(p => p.split(/\r?\n/, 1)[0].trim().toLowerCase() === want);
+  return mine ? mine.slice(mine.search(/\r?\n/) + 1).trim() : text;
+}
+
 /** The update screen, or null when it is not the one shown */
 export function updateView(): UpdateView | null {
   if (!(S._cfg && S._upd) || (S._pkg && typeof renderPackages === 'function')) return null;
@@ -34,7 +43,7 @@ export function updateView(): UpdateView | null {
       changed: p.changed.length ? t('updChanged', {l: listOf(p.changed)}) : '',
       kept: p.kept.length ? t('updKept', {l: listOf(p.kept)}) : '',
       apply: busy ? t('updApplying') : t('updApply', {v: rel.version})} : null,
-    notes: rel && rel.notes && (U.state === 'ready' || U.state === 'done') ? {title: t('updNotes'), text: rel.notes, more: t('updMore'), url: rel.url} : null,
+    notes: rel && rel.notes && (U.state === 'ready' || U.state === 'done') ? {title: t('updNotes'), text: notesIn(rel.notes, S.lang), more: t('updMore'), url: rel.url} : null,
     undo: U.last && U.state !== 'git' && !busy ? {label: t('updUndo', {v: U.last.from || '?'}),
       why: t('updUndoWhy', {from: U.last.from || '?', to: U.last.to, at: String(U.last.at || '').slice(0, 16).replace('T', ' ')})} : null,
     msg, msgCls: U.msgCls || (U.state === 'git' ? 'kwarn' : '')};
