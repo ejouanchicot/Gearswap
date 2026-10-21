@@ -85,6 +85,10 @@ const isSlip = w => /^Slip \d+/.test(w);
 const atPorter = x => !!(x.where && x.where.length) && x.where.every(isSlip);
 // The character's Porter Moogle: the list of its latest export that has one
 const porterOf = c => (latestExport(c, 'porter') || {}).porter || null;
+// The character's bags as read last, by their own date (two jobs exported in one minute carry one export date; the
+// same pick as bags_view.js): [{id, name, items: [{id, n}]}] or null
+const latestBags = c => { const x = Object.values(DATA[c] || {}).flatMap(j => Object.values(j)).filter(e => e.bags && e.bags.bags)
+  .sort((a, b) => (b.bags.at || '').localeCompare(a.bags.at || ''))[0]; return x ? x.bags.bags : null; };
 function addCopy(out, slot, x){
   const mine = out[slot] = out[slot] || [];
   if (!mine.some(y => y.name === x.name && (y.id || 0) === (x.id || 0) && (y.augs || []).join('|') === (x.augs || []).join('|') && (y.where || []).join() === (x.where || []).join()))
@@ -101,6 +105,14 @@ function ownedOf(){
       const r = byId[id];
       if (!r || !r[3].split(' ').includes(S.job)) continue;
       for (const slot of r[2].split(' ')) addCopy(out, slot, {name: r[1], id: +id, where: [where], count: 1});
+    }
+    // a piece this job's export saw at the Porter that the Porter no longer holds: taken out since, into the bag the
+    // latest bags read lists (Tetsouo's Wicce +3, out of Slip 30 after the BLM's export: the search lost them, 2026-10-22)
+    const bags = latestBags(S.char);
+    for (const [slot, list] of Object.entries(cur)) for (const x of list) {
+      if (!atPorter(x) || !x.id || porter[x.id] || !bags) continue;
+      const bag = bags.find(b => (b.items || []).some(i => i.id === x.id));
+      if (bag) addCopy(out, slot, Object.assign({}, x, {where: [bag.name || 'Inventory']}));
     }
   } else {
     const hasSlips = o => Object.values(o || {}).some(list => list.some(atPorter));
