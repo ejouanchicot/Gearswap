@@ -192,7 +192,7 @@ end
 -- per path asked: "<size>\n<bytes>", or "-1\n" for a path missing or refused
 local function read_many(body)
     local out = {}
-    for line in (body or ''):gmatch('[^\n]+') do
+    for line in (body or ''):gmatch('[^\r\n]+') do
         local rel = safe_rel(line)
         local bytes = rel and read_file(rel)
         out[#out + 1] = bytes and (#bytes .. '\n' .. bytes) or '-1\n'
