@@ -12,7 +12,7 @@ export interface UpdateView {
   busy: boolean; step: string;
   check: string;
   plan: null | {line: string; changed: string; kept: string; apply: string};
-  notes: null | {title: string; text: string; more: string; url: string};
+  notes: null | {title: string; blocks: NoteBlock[]; more: string; url: string};
   undo: null | {label: string; why: string};
   msg: string; msgCls: string;
 }
@@ -24,8 +24,41 @@ const listOf = (paths: string[]): string => paths.slice(0, 8).join(', ') + (path
 export function notesIn(text: string, lang: string): string {
   const want = lang === 'en' ? 'english' : 'français';
   const parts = text.split(/^##[ \t]+/m);
-  const mine = parts.find(p => p.split(/\r?\n/, 1)[0].trim().toLowerCase() === want);
+  const mine = parts.find(p => (p.split(/\r?\n/, 1)[0] ?? '').trim().toLowerCase() === want);
   return mine ? mine.slice(mine.search(/\r?\n/) + 1).trim() : text;
+}
+
+/** A piece of a line of the notes: plain, **bold** or `code` */
+export interface NoteRun { text: string; bold?: boolean; code?: boolean }
+/** A block of the notes: a heading (a "###" line, or a line all in bold), a paragraph or a list */
+export type NoteBlock = {k: 'h'; runs: NoteRun[]} | {k: 'p'; runs: NoteRun[]} | {k: 'ul'; items: NoteRun[][]};
+
+function noteRuns(line: string): NoteRun[] {
+  return line.split(/(`[^`]+`|\*\*[^*]+\*\*)/).filter(Boolean).map(s =>
+    s.startsWith('`') && s.endsWith('`') && s.length > 2 ? {text: s.slice(1, -1), code: true}
+      : s.startsWith('**') && s.endsWith('**') && s.length > 4 ? {text: s.slice(2, -2), bold: true} : {text: s});
+}
+
+/** The notes' Markdown as GitHub writes it, cut into blocks the page draws itself (no HTML taken from the text):
+ *  headings, paragraphs, "- " lists, **bold** and `code`; anything else stays plain text */
+export function noteBlocks(text: string): NoteBlock[] {
+  const out: NoteBlock[] = [];
+  let para: string[] = [];
+  const flush = () => { if (para.length) out.push({k: 'p', runs: noteRuns(para.join(' '))}); para = []; };
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    const head = line.match(/^#{1,6}\s+(.*)$/) || line.match(/^\*\*([^*]+)\*\*:?$/);
+    const item = line.match(/^[-*]\s+(.*)$/);
+    if (!line) flush();
+    else if (head) { flush(); out.push({k: 'h', runs: noteRuns(head[1] ?? '')}); }
+    else if (item) {
+      flush();
+      const last = out[out.length - 1];
+      if (last && last.k === 'ul') last.items.push(noteRuns(item[1] ?? '')); else out.push({k: 'ul', items: [noteRuns(item[1] ?? '')]});
+    } else para.push(line);
+  }
+  flush();
+  return out;
 }
 
 /** The update screen, or null when it is not the one shown */
@@ -43,7 +76,7 @@ export function updateView(): UpdateView | null {
       changed: p.changed.length ? t('updChanged', {l: listOf(p.changed)}) : '',
       kept: p.kept.length ? t('updKept', {l: listOf(p.kept)}) : '',
       apply: busy ? t('updApplying') : t('updApply', {v: rel.version})} : null,
-    notes: rel && rel.notes && (U.state === 'ready' || U.state === 'done') ? {title: t('updNotes'), text: notesIn(rel.notes, S.lang), more: t('updMore'), url: rel.url} : null,
+    notes: rel && rel.notes && (U.state === 'ready' || U.state === 'done') ? {title: t('updNotes'), blocks: noteBlocks(notesIn(rel.notes, S.lang)), more: t('updMore'), url: rel.url} : null,
     undo: U.last && U.state !== 'git' && !busy ? {label: t('updUndo', {v: U.last.from || '?'}),
       why: t('updUndoWhy', {from: U.last.from || '?', to: U.last.to, at: String(U.last.at || '').slice(0, 16).replace('T', ' ')})} : null,
     msg, msgCls: U.msgCls || (U.state === 'git' ? 'kwarn' : '')};
