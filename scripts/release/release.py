@@ -110,10 +110,16 @@ def defender_scan(paths, ref='HEAD'):
     with tempfile.TemporaryDirectory() as tmp:
         for path in paths:
             blob = subprocess.run(['git', 'show', '%s:%s' % (ref, path)], cwd=DATA, check=True, capture_output=True).stdout
-            out = os.path.join(tmp, path.replace('/', os.sep))
-            os.makedirs(os.path.dirname(out), exist_ok=True)
-            with open(out, 'wb') as f:
-                f.write(blob)
+            # both shapes a player gets: LF as the update writes it, CRLF as a package (and a Windows checkout) has
+            # it; the verdict differs between them (the update.js of 2026-10-21 was flagged in CRLF only)
+            shapes = {'lf': blob}
+            if b'\0' not in blob[:8000]:
+                shapes['crlf'] = blob.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
+            for shape, data in shapes.items():
+                out = os.path.join(tmp, shape, path.replace('/', os.sep))
+                os.makedirs(os.path.dirname(out), exist_ok=True)
+                with open(out, 'wb') as f:
+                    f.write(data)
         r = subprocess.run([DEFENDER, '-Scan', '-ScanType', '3', '-File', tmp, '-DisableRemediation'],
                            capture_output=True, text=True, errors='replace')
     if r.returncode == 2:
