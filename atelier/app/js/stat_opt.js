@@ -7,7 +7,7 @@
 // (loaded by atelier/index.html after opt_page.js: see the list there)
 
 Object.assign(T.fr, {
-  statObj_enhTime: 'Durée du sort', statD_enhTime: 'en secondes : (base + secondes) × Composure × % écrits sur les pièces × % en augment ; ×3 sur toi (30 min au plus), set Lethargy sur les autres (mesuré en jeu)',
+  statObj_enhTime: 'Durée du sort', statD_enhTime: 'en secondes : (base + secondes) × % écrits sur les pièces × % en augment ; RDM : Composure ×3 sur toi (30 min au plus), set Lethargy sur les autres (mesuré en jeu) ; SCH : Perpetuance ; RUN : gifts et Embolden (BG Wiki)',
   statObj_refreshTick: 'Refresh : MP par tick', statD_refreshTick: 'les MP du sort + « Refresh potency » des pièces',
   statObj_refreshMp: 'Refresh : MP par sort', statD_refreshMp: 'MP par tick × nombre de ticks : la puissance et la durée ensemble',
   statObj_regenTick: 'Regen : HP par tick', statD_regenTick: 'les HP du sort + « Regen potency » (le % d’abord, arrondi au-dessus, puis le chiffre fixe)',
@@ -19,7 +19,7 @@ Object.assign(T.fr, {
   statObj_aquaveil: 'Aquaveil : interruptions', statD_aquaveil: '2 dès 301 de skill, 3 dès 501, + les pièces « Aquaveil » : BG Wiki',
   enhTagSelf: 'sur toi', enhTagOthers: 'sur les autres', enhBtnSelf: 'Sur toi', enhBtnOthers: 'Sur les autres',
   enhWhenSelf: 'Lancé sur toi : Composure triple la durée (30 min au plus).', enhWhenOthers: 'Lancé sur un autre joueur sous Composure : pas de ×3, seulement le bonus du set Lethargy.',
-  statGrp_enh: 'Magie de renfort', statEnhNote: 'Durée calculée pour {s} ({b} s de base, job points compris), {c}.',
+  statGrp_enh: 'Magie de renfort', statEnhNote: 'Durée calculée pour {s} ({b} s de base, bonus du job compris), {c}.',
   statEnhSelf: 'sur toi sous Composure (×3, 30 min au plus)', statEnhOthers: 'sur les autres sous Composure (bonus du set Lethargy)', statEnhPlain: 'sans Composure',
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
@@ -73,7 +73,7 @@ Object.assign(T.fr, {
   tkCrit: 'Critiques ennemis', tkCritTip: '10 % au plus, 1 % au moins : mérites −{m}, gear {g}.', tkOver: '{n} de trop',
   tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup, deux réserves qui se multiplient : l’Enmity (1 % pour +2, 50 % au plus) et les pièces « Reduces Enmity loss » (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % au plus) ; −75 % au total au plus. Foe Sirvente (BRD) remplit la seconde, pas encore compté.'});
 Object.assign(T.en, {
-  statObj_enhTime: 'Spell length', statD_enhTime: 'in seconds: (base + seconds) × Composure × % written on the pieces × % in augments; ×3 on yourself (30 min at most), the Lethargy set on the others (measured in game)',
+  statObj_enhTime: 'Spell length', statD_enhTime: 'in seconds: (base + seconds) × % written on the pieces × % in augments; RDM: Composure ×3 on yourself (30 min at most), the Lethargy set on the others (measured in game); SCH: Perpetuance; RUN: gifts and Embolden (BG Wiki)',
   statObj_refreshTick: 'Refresh: MP a tick', statD_refreshTick: 'the spell’s MP + the pieces’ “Refresh potency”',
   statObj_refreshMp: 'Refresh: MP a cast', statD_refreshMp: 'MP a tick × number of ticks: potency and length together',
   statObj_regenTick: 'Regen: HP a tick', statD_regenTick: 'the spell’s HP + “Regen potency” (the % first, rounded up, then the flat amount)',
@@ -85,7 +85,7 @@ Object.assign(T.en, {
   statObj_aquaveil: 'Aquaveil: interruptions', statD_aquaveil: '2 from 301 of skill, 3 from 501, + the “Aquaveil” pieces: BG Wiki',
   enhTagSelf: 'on yourself', enhTagOthers: 'on the others', enhBtnSelf: 'On yourself', enhBtnOthers: 'On the others',
   enhWhenSelf: 'Cast on yourself: Composure triples its length (30 min at most).', enhWhenOthers: 'Cast on another player under Composure: no ×3, the Lethargy set’s bonus only.',
-  statGrp_enh: 'Enhancing magic', statEnhNote: 'Length worked out for {s} ({b} s of base, job points in), {c}.',
+  statGrp_enh: 'Enhancing magic', statEnhNote: 'Length worked out for {s} ({b} s of base, the job’s bonuses in), {c}.',
   statEnhSelf: 'on yourself under Composure (×3, 30 min at most)', statEnhOthers: 'on the others under Composure (the Lethargy set’s bonus)', statEnhPlain: 'without Composure',
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
@@ -180,39 +180,38 @@ function withSird(s, list){
   return [list[0], 'sird', ...list.slice(1).filter(k => k !== 'sird')].slice(0, 3);
 }
 /* ---- enhancing magic: what a set is cast for, on whom, and what the spell is worth (opt.js O.enhancingFigures) ---- */
-// The set's spell by its name: [name, kind, base seconds on oneself, on the others (Phalanx II)], the first that fits.
-// Bases measured in game on 2026-10-14 (Kaories RDM), before the job points' seconds.
-const ENH_KINDS = [[/refresh/i, 'refresh', 150], [/regen/i, 'regen', 60], [/phalanx/i, 'phalanx', 180, 240], [/stoneskin/i, 'stoneskin', 300],
-  [/aquaveil/i, 'aquaveil', 600], [/gain/i, 'gain', 300], [/temper/i, 'temper', 180], [/enspell/i, 'enspell', 180], [/barelement/i, 'barele', 480],
-  [/barailment|barstatus/i, 'barail', 480], [/spikes/i, 'spikes', 180], [/blink/i, 'blink', 300], [/haste|flurry/i, 'haste', 180], [/protect|shell/i, 'protect', 1800],
-  // the job's own set, worn for every spell with no set of its own and laid under the others (set_combine): judged on
-  // its shortest spell (Regen II, 60 s), so the 30 minutes of Composure never hide what a piece adds to the longer ones
-  [/enhancing/i, 'enhancing', 60]];
-// A Red Mage's enhancing set: {kind, base, comp, name} or null. Composure is taken as always up (2 hours, 5 minutes of
+// Any job's enhancing set: {kind, base, comp, name, ...} or null. The set's spell, its tier and its base seconds are the
+// highest the job or its subjob can cast (enh_jobs.js enhSpellOf: "Enhancing Magic", laid under the others, on its
+// shortest spell so a long one never hides what a piece adds); the job's bonuses come with it (enhJobBonus).
+// A Red Mage's (bases measured in game 2026-10-14, Kaories): Composure taken as always up (2 hours, 5 minutes of
 // recast): a set named Composure is the one cast on the others (shared/utils/midcast/midcast_manager.lua
-// get_enhancing_target), any other is cast on oneself. Other jobs keep their own objectives for now: their spells'
-// seconds and tiers are not this job's.
+// get_enhancing_target), any other is cast on oneself. The other jobs cast without Composure (comp 'none')
 function enhContext(s){
-  if (S.job !== 'RDM' || !s || family(s.path, s.pieces) !== 'midcast') return null;
-  const p = s.path.replace(/^sets\.midcast/, ''), hit = ENH_KINDS.find(k => k[0].test(p.replace(/composure/i, '')));
-  if (!hit) return null;
-  const c = measuredChar() || {}, others = /composure/i.test(p);
-  // the job points' seconds: Enhancing Magic Duration, 1 s a rank, 20 ranks (210 job points in all; the export has the
-  // total spent only, taken as bought from 500 spent: measured 20 on Kaories); the merits' 6 s a level
-  const seconds = ((c.jp_spent || 0) >= 500 ? 20 : 0) + 6 * ((c.merits || {}).enhancing_magic_duration || 0);
-  const master = (c.jp_spent || 0) >= 1200;
-  return {kind: hit[1], comp: others ? 'others' : 'self', base: (others && hit[3] ? hit[3] : hit[2]) + seconds, name: hit[1],
-    // Refresh III and Temper II come with 1200 job points; Regen II is the job's highest
-    refBase: master ? 9 : 6, regenBase: 12, temperCap: master ? 40 : 0,
+  if (!s || family(s.path, s.pieces) !== 'midcast') return null;
+  const p = s.path.replace(/^sets\.midcast/, ''), rdm = S.job === 'RDM', others = rdm && /composure/i.test(p);
+  // not a set of another skill that names its own enhancing spells (sets.midcast.Ninjutsu.Enhancing: Utsusemi) or a
+  // pet's (sets.midcast.Pet['Enhancing Magic']: an avatar's ward)
+  if (/ninjutsu|\bpet\b|blue ?magic|geomancy|singing|song/i.test(p)) return null;
+  const sp = enhSpellOf(p.replace(/composure/i, ''), others);
+  if (!sp) return null;
+  const c = measuredChar() || {}, jp = c.jp_spent || 0, bonus = enhJobBonus(sp.kind, c);
+  // a Red Mage's job points' seconds: Enhancing Magic Duration, 1 s a rank, 20 ranks (210 job points in all; the export
+  // has the total spent only, taken as bought from 500 spent: measured 20 on Kaories); the merits' 6 s a level
+  const seconds = rdm ? (jp >= 500 ? 20 : 0) + 6 * ((c.merits || {}).enhancing_magic_duration || 0) : 0;
+  return {kind: sp.kind, spell: sp.spell, comp: rdm ? (others ? 'others' : 'self') : 'none', base: sp.base + seconds + (sp.kind === 'regen' ? bonus.regenSec : 0), name: sp.kind,
+    refBase: sp.kind === 'refresh' ? sp.pot : 0, regenBase: sp.kind === 'regen' ? sp.pot + bonus.regenAdd : 0,
+    // Temper II caps at 40 % (BG Wiki Temper_II); Temper I has no cap
+    temperCap: sp.spell === 'Temper II' ? 40 : 0,
     // the "En"spell Damage gifts, 5 + 5 + 6 + 7 (atelier/calc/calc_jobs_mages.js; measured +23 on Kaories, 2026-10-14):
     // counted once all the gifts are had (2100 spent), the spent points of each one not being known here
-    enGifts: (c.jp_spent || 0) >= 2100 ? 23 : 0};
+    enGifts: rdm && jp >= 2100 ? 23 : 0,
+    skill: bonus.skill, barAdd: bonus.barAdd, durMul: bonus.durMul, potMul: bonus.potMul, perp: bonus.perp, notes: bonus.notes};
 }
-// On whom an enhancing set is cast, for the page to say beside its name ('Self' / 'Others'), or '': a set named
-// Composure reads as "with Composure" when it means "on the others" (both are cast with Composure up)
+// On whom a Red Mage's enhancing set is cast, for the page to say beside its name ('Self' / 'Others'), or '': a set
+// named Composure reads as "with Composure" when it means "on the others" (both are cast with Composure up)
 function enhTarget(s){
   const e = enhContext(s);
-  return e ? (e.comp === 'others' ? 'Others' : 'Self') : '';
+  return e && e.comp !== 'none' ? (e.comp === 'others' ? 'Others' : 'Self') : '';
 }
 // Potency first, then how long it lasts, then the least damage taken with what is left (the player's order,
 // 2026-10-14). No skill after them: past what the potency
@@ -224,10 +223,13 @@ const ENH_OBJS = {refresh: ['refreshTick', 'enhTime', 'pdtRed'], regen: ['regenT
 // (a spell with no potency to look for: its length, then the damage taken, physical then magical)
 const ENH_PLAIN = ['enhTime', 'pdtRed', 'mdtRed'];
 const ENH_MORE = {refresh: ['refreshMp'], regen: ['regenHp']};
+// A tank's Phalanx (PLD, RUN) keeps the tank's own objectives and search (Guide_Paladin: Phalanx, then the damage
+// taken; enmity after it): its 3 minutes are recast in the rotation, their length is not what the set is for
+const tankPhalanx = (s, e) => !!e && e.kind === 'phalanx' && ['PLD', 'RUN'].includes(S.job);
 function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
   const enh = enhContext(s);
-  if (enh) return ENH_OBJS[enh.kind] || ENH_PLAIN;
+  if (enh && !tankPhalanx(s, enh)) return ENH_OBJS[enh.kind] || ENH_PLAIN;
   // an enfeebling set, by the spells cast in it (enfeeble.js)
   const enf = enfObjectives(s);
   if (enf) return enf;
@@ -358,7 +360,8 @@ function statRelevant(s, chosen){
   const add = list => list.forEach(k => out.add(k)), def = ['def', 'hp', 'pdtRed', 'mdtRed', 'meva', 'mdb', 'enmity'];
   add(luopanRelevant(s));
   const enh = enhContext(s);
-  if (enh) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'hp']); return out; }
+  if (enh && !tankPhalanx(s, enh)) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'hp',
+    ...(['PLD', 'RUN'].includes(S.job) ? ['enmity', 'def'] : [])]); return out; }
   if (enfContext(s)) { add(enfRelevant(s)); return out; }
   if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
   else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
@@ -443,6 +446,8 @@ function statVec(p, slot){
   if (v('x:regen effect duration')) out.regensec = v('x:regen effect duration');
   if (v('x:gain magic effect')) out.gain = v('x:gain magic effect');
   if (v('x:aquaveil')) out.aquaveil = v('x:aquaveil');
+  // Perpetuance's figure with the Bracers (enh_jobs.js enhPerpOf)
+  if (enhPerpOf(p.name)) out.perp = enhPerpOf(p.name);
   return out;
 }
 function withVec(p, slot){
@@ -485,7 +490,8 @@ function statContext(s){
   const base = statBase(s), enh = enhContext(s);
   const enf = enfBase(s);
   if (enf) Object.assign(base, enf);
-  if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts});
+  if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts,
+    barAdd: enh.barAdd, durMul: enh.durMul, potMul: enh.potMul, perp: enh.perp}, enh.skill != null ? {enh: enh.skill} : {});
   return {mode: 'stats', job: S.job, stat: {base}};
 }
 const CRUSADE_ENMITY = 30;
@@ -564,7 +570,8 @@ function hpCycleRows(){
 // (the longest spell). Only when the potency comes first and something follows it.
 const ENH_STEPPED = new Set(['temper', 'enspell', 'gainPot', 'barEle', 'aquaveil', 'phalanx', 'stoneskin']);
 function enhPotencyFirst(s, input, so){
-  if (!enhContext(s) || !ENH_STEPPED.has(so.objs[0]) || so.objs.length < 2 || input.prefilter) return;
+  const e = enhContext(s);
+  if (!e || tankPhalanx(s, e) || !ENH_STEPPED.has(so.objs[0]) || so.objs.length < 2 || input.prefilter) return;
   let top;
   try { top = FFXI.opt.run(Object.assign({}, input, {opts: Object.assign({}, input.opts, {then: ['enhSkill']})})); } catch (e) { return; }
   const reached = top && top.pieces && FFXI.opt.statFigures(input.ctx.stat, top.pieces)[so.objs[0]];

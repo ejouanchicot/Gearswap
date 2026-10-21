@@ -16,7 +16,7 @@ export const LEGACY_DATA: readonly string[] = ['atelier/targets.js', 'atelier/in
 export const LEGACY_SCRIPTS: readonly string[] = ['i18n', 'job_icons', 'core', 'state_help_data', 'state_help_fr', 'keys',
   'stats', 'stat_help', 'engine', 'optimizer', 'buffs', 'buff_panels', 'live', 'offline_export', 'simulate',
   'job_access_data', 'ws_access_data', 'job_access', 'list_prefs', 'sets_view', 'weapons', 'ws_page', 'opt_page',
-  'nuke_layers', 'fight_stats', 'stat_opt', 'luopan', 'enfeeble', 'porter', 'drawer', 'trial', 'push', 'push_view',
+  'nuke_layers', 'fight_stats', 'enh_jobs', 'stat_opt', 'luopan', 'enfeeble', 'porter', 'drawer', 'trial', 'push', 'push_view',
   'opt_all', 'add_set', 'layout2', 'usables_data', 'job_guide_data', 'job_guide_fr', 'module_catalog', 'module_items',
   'bags_view', 'bags_plan', 'bags_target', 'bags_place', 'module_rows', 'module_rest_fr', 'module_ux', 'modules',
   'party_builder', 'profiles', 'target_pick', 'gear_pick', 'config_page', 'welcome', 'packages', 'update_core', 'update', 'motion', 'moogle',

@@ -535,6 +535,7 @@ declare function statRelevant(s: LegacyAny, objs: string[]): Set<string>;
 declare const STAT_OBJ_GROUPS: Array<[string, string[]]>;
 declare function abilityPieces(s: LegacyAny): string[];
 declare function enhContext(s: LegacyAny): LegacyAny;
+declare function enhBoxes(s: LegacyAny): Array<{key: string; checked: boolean; label: string}>;
 declare function keptSlots(s: LegacyAny): string[];
 declare function trialKey(s: LegacyAny): string;
 declare function withoutTrial<R>(f: () => R): R;

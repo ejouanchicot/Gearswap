@@ -752,7 +752,9 @@
         "petdt", "petregen", "charm", "geoskill",
         // enhancing magic (the page's stat_opt.js statVec): duration written on the piece / in its augments, a Lethargy
         // set piece, Refresh potency and seconds received, Regen potency (% then flat) and seconds, Gain, Aquaveil
-        "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus"];
+        "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus",
+        // Perpetuance's figure of the Bracers (the page's enh_jobs.js enhPerpOf)
+        "perp"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
     // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
@@ -788,19 +790,24 @@
     //   Bar-element  25 + floor(skill / 4), 150 at most; 40 + floor(skill / 5) to 300 of skill     BG Wiki Category:Barspell
     //            + the pieces' bonus over the cap (t.barplus)    measured 2026-10-14: 149 / 150 / 165 with Shedir
     //   Aquaveil 1 interruption, 2 from 301 of skill, 3 from 501, + the "Aquaveil" pieces          BG Wiki Aquaveil
+    // The other jobs (the page's enh_jobs.js, BG Wiki read 2026-10-22, not measured in game): no Composure (b.comp
+    // "none"); the length x b.durMul (a RUN's gifts, Embolden's -50 %) and x Perpetuance (2, or the Bracers' 2.25 to
+    // 2.65: t.perp); the spell's own potency x b.potMul (Embolden +50 %) before the pieces' flat bonus; Bar-element + b.barAdd
+    // (a WHM's merits)
     O.enhancingFigures = function (f, t, b, skill) {
         if (!b.enhKind) return;
         var kind = b.enhKind;
         var comp = b.comp === "self" ? 3 : b.comp === "others" ? 1 + [0, 0, 10, 20, 35, 50][Math.min(5, t.leth || 0)] / 100 : 1;
         var seconds = (b.enhBase || 0) + (kind === "refresh" && b.comp !== "others" ? t.refsec : kind === "regen" ? t.regensec : 0);
-        var mult = comp * (1 + t.enhdurL / 100) * (1 + t.enhdurA / 100);
+        var mult = comp * (1 + t.enhdurL / 100) * (1 + t.enhdurA / 100) * (b.durMul || 1) * (b.perp ? Math.max(2, t.perp || 0) : 1);
+        var pm = b.potMul || 1;
         var time = Math.floor(seconds * mult + 1e-9);
         f.enhMult = Math.round(mult * 1000) / 1000;
         f.enhTime = b.comp === "self" ? Math.min(1800, time) : time;
         var ticks = Math.floor(f.enhTime / 3);
-        if (kind === "refresh") { f.refreshTick = (b.refBase || 0) + t.refpot; f.refreshMp = f.refreshTick * ticks; }
+        if (kind === "refresh") { f.refreshTick = Math.floor((b.refBase || 0) * pm) + t.refpot; f.refreshMp = f.refreshTick * ticks; }
         if (kind === "regen") {
-            f.regenTick = Math.ceil((b.regenBase || 0) * (100 + t.regenpct) / 100 - 1e-9) + t.regenflat;
+            f.regenTick = Math.ceil((b.regenBase || 0) * pm * (100 + t.regenpct) / 100 - 1e-9) + t.regenflat;
             f.regenHp = f.regenTick * ticks;
         }
         if (kind === "gain") f.gainPot = (skill < 300 ? 5 : Math.min(25, Math.floor((skill - 300) / 10) + 5)) + t.gain;
@@ -809,7 +816,7 @@
             var en = (skill < 180 ? Math.floor(skill / 9) + 5 : Math.floor((skill - 180) / 8) + 25) + (b.enGifts || 0);
             f.enspell = b.comp === "self" ? en * 3 : en;
         }
-        if (kind === "barele") f.barEle = Math.min(150, skill <= 300 ? 40 + Math.floor(skill / 5) : 25 + Math.floor(skill / 4)) + t.barplus;
+        if (kind === "barele") f.barEle = Math.floor(Math.min(150, skill <= 300 ? 40 + Math.floor(skill / 5) : 25 + Math.floor(skill / 4)) * pm) + t.barplus + (b.barAdd || 0);
         if (kind === "aquaveil") f.aquaveil = (skill > 500 ? 3 : skill > 300 ? 2 : 1) + t.aquaveil;
     };
     O.statFigures = function (stat, pieces) {
@@ -824,7 +831,7 @@
             def: Math.floor((b.def || 0) + t.def + 1.5 * t.vit + shield), shield: shield,
             enmity: Math.min(200, t.enmity + (b.enmity || 0)),
             // ("Phalanx received" is the receiver's: nothing on a set cast on the others)
-            phalanx: O.phalanxPotency((b.enh || 0) + t.enh) + (b.comp === "others" ? 0 : t.phalanx), enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
+            phalanx: Math.floor(O.phalanxPotency((b.enh || 0) + t.enh) * (b.potMul || 1)) + (b.comp === "others" ? 0 : t.phalanx), enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
             fc: Math.min(80, t.fc + (b.fc || 0)), fcGear: t.fc, sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
             ecrit: t.ecrit, cure: Math.min(50, t.cure), refresh: t.refresh, regen: t.regen, enhdur: t.enhdur,
             pdtAll: two(cap(t.dt + t.pdt) + t.pdt2), mdtAll: two(cap(t.dt + t.mdt + shell) + t.mdt2), bdtAll: cap(t.dt + t.bdt),

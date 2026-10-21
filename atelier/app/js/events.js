@@ -237,6 +237,9 @@ document.addEventListener('change', e => {
     S.optOpts = Object.assign({}, S.optOpts, {cycWsBy: Object.assign({}, (S.optOpts || {}).cycWsBy, {[e.target.dataset.cycws]: e.target.value})});
     save(); render(); return; }
   // the stats optimizer's next objectives and floors, kept for that set (stat_opt.js)
+  // a job's enhancing set: Perpetuance (SCH), Embolden (RUN) held up for its figures (enh_jobs.js enhBoxes)
+  if (e.target.dataset && e.target.dataset.enhbox) {
+    S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.enhbox]: e.target.checked}); save(); render(); return; }
   // an enfeebling set's figures with Saboteur up or not (enfeeble.js)
   if (e.target.dataset && 'enfsab' in e.target.dataset) {
     S.optOpts = Object.assign({}, S.optOpts, {enfSab: e.target.checked}); save(); render(); return; }

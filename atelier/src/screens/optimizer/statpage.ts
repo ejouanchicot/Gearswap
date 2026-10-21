@@ -17,7 +17,7 @@ export interface StatWhatView {
   floors: LimitsView; floorsAfterHtml: string; titleHtml: string; help: string;
   groups: Array<{label: string; objs: Array<{k: string; on: boolean; name: string; desc: string}>}>; toggle: string;
   then: {label: string; selects: Array<{i: number; options: Array<{value: string; label: string; selected: boolean}>}>};
-  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; enf: EnfNote | null; search: SearchView; weaponsNote: string;
+  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; boxes: Array<{key: string; checked: boolean; label: string}>; enf: EnfNote | null; search: SearchView; weaponsNote: string;
 }
 export interface StatResultView {
   titleHtml: string; labelHtml: string; value: string; delta: null | {up: boolean; text: string}; wasHtml: string; shield: string;
@@ -59,14 +59,15 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     (S0._help === 'optpage' ? `<p class="muted small">${esc(t('statFloorsWhy'))}</p>` : '') + reset;
   const jaList = abilityPieces(s), ref = cureGap(s) ? null : hpRef(s), enh = enhContext(s), notes: string[] = [];
   if (ref) notes.push(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}));
-  if (enh) notes.push(t('statEnhNote', {s: enh.name, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : 'statEnhSelf')}));
-  else if (['PLD', 'RUN'].includes(S0.job)) notes.push(t('statAssumed', {m: S0.job === 'PLD' ? t('statAssumedMaj') : ''}));
+  // an enhancing set: the spell and its base length, with or without Composure, and the job's bonuses counted (enh_jobs.js)
+  if (enh) notes.push(t('statEnhNote', {s: enh.spell === 'enhancing' ? enh.name : enh.spell, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : enh.comp === 'self' ? 'statEnhSelf' : 'statEnhPlain')}), ...(enh.notes || []));
+  if (['PLD', 'RUN'].includes(S0.job)) notes.push(t('statAssumed', {m: S0.job === 'PLD' ? t('statAssumedMaj') : ''}));
   return {floors, floorsAfterHtml, titleHtml: t('opWhat') + ' ' + helpBtn('optpage'), help: S0._help === 'optpage' ? t('statWhy') + ' ' + t('opHelp') : '', groups,
     toggle: all || hidden ? (all ? t('statFewer') : t('statAll', {n: hidden})) : '',
     then: {label: t('statThen'), selects: [1, 2].map(i => ({i, options: ['', ...STAT_OBJS].filter(k => k !== cur).map(k => ({value: k, label: k ? t('statObj_' + k) : t('statNone'), selected: (so.objs[i] || '') === k}))}))},
     own: jaList.length ? {tip: t('statKeepOwnTip', {b: segs(s.path).pop()}), checked: keptSlots(s).length > 0,
       label: t('statKeepOwn', {p: jaList.map((sl: string) => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')})} : null,
-    notes, enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
+    notes, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
 }
 
 /** The right column of a stats search: the first objective big, every line against the file's set (statResultHTML) */
