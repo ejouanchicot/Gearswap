@@ -1,7 +1,7 @@
 {
  "version": "4.0.1",
  "repo": "ejouanchicot/Gearswap",
- "commit": "31d4d8d1dfcd7299e1443734ebbe076857d645d0",
+ "commit": "8559ae3a60ccbbf1af9e4aeddeba077719b57889",
  "files": {
   "VERSION": "1454f6ed4b751b190ba93ad2c721979cc0977fbc",
   "atelier.html": "beb52447641df3ca177ecf612836c557c27ae478",
@@ -162,7 +162,7 @@
   "atelier/calc/calc_ws_pdif.js": "4552070c952dd4acb5d9a6f70c0acc10b639c880",
   "atelier/calc/calc_ws_table.js": "37c1ae49a866fed9144809a9aaea9bf21ff0936b",
   "atelier/calc/calc_ws_tp.js": "0f1b1f17874bb3f72488098daae4d644e7a0adc0",
-  "atelier/index.html": "e85f84bb1aededc4953265f592c7df46a1b4e055",
+  "atelier/index.html": "cda547e3287e5b36b936c84c362623be97d9ba69",
   "atelier/lua/lua51.js": "47b0f99b9d305d3e864c094d5b700289c2062527",
   "atelier/opt.js": "9c11423f5ab56f4a703f44f2170c81b000ed4c31",
   "atelier/opt_enf.js": "805f1b948453deb7842b015c3e13b8c46db4210f",
