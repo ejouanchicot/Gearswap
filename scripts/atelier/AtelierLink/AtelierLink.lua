@@ -230,6 +230,11 @@ end
 -- This addon, as the update just left it in data/scripts/, put in addons/AtelierLink/ and loaded again (which
 -- ends this copy), then GearSwap reloaded on the new code
 local function relink()
+    -- a test install's copy is never installed as Windower's own: GearSwap is reloaded, nothing more
+    if data ~= DATA then
+        coroutine.schedule(function() windower.send_command('lua reload gearswap') end, 0.2)
+        return true
+    end
     local text = read_file('scripts/atelier/AtelierLink/AtelierLink.lua')
     if not text then return false end
     local dir = windower.windower_path .. 'addons/AtelierLink/'

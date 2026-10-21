@@ -9,14 +9,16 @@
 //      version drops is removed only when the player left it as it was; a code file the player changed is replaced
 //      all the same (it is code, not a setting), its copy kept;
 //   3. downloads every file first and checks each against its hash: one failure and nothing is written;
-//   4. copies what it replaces or removes into update/backup/<id>/ with undo.json, then writes, the manifest last.
+//   4. copies what it replaces or removes into one file, atelier/update_backup.json (atelier/ always exists: no folder
+//      to make, windower.create_dir having hung AtelierLink once), then writes, the manifest last. Only the last
+//      update can be undone.
 // Player folders are never in a manifest, so never touched. A folder under git (the author's) is never updated.
 // The browser downloads, so GitHub's certificate is checked (Windower's Lua does not check it); the env reads and writes
 // the files through AtelierLink (update.js): a file the browser writes carries the Mark of the Web, and Windows Defender
 // took our own update.js for a trojan that way.
 
 const UpdCore = (() => {
-  const REPO = 'ejouanchicot/Gearswap', MANIFEST = 'release_manifest.json', BACKUPS = 'update/backup', LAST = 'update/last.txt';
+  const REPO = 'ejouanchicot/Gearswap', MANIFEST = 'release_manifest.json', BACKUP = 'atelier/update_backup.json';
   const API = 'https://api.github.com/repos/' + REPO, RAW = 'https://raw.githubusercontent.com/' + REPO + '/';
   const enc = new TextEncoder(), dec = new TextDecoder();
   const subtle = () => (globalThis.crypto && globalThis.crypto.subtle);
@@ -120,19 +122,28 @@ const UpdCore = (() => {
     return got;
   }
 
-  const stamp = d => d.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
-  /** Copies first, then the files, the manifest last; returns the backup's id */
+  // bytes <-> base64, the copies' form in the backup file (JSON holds text only)
+  function toB64(bytes){
+    let s = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+  function fromB64(text){
+    const s = atob(text), out = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+    return out;
+  }
+
+  /** The copy first, then the files, the manifest last */
   async function apply(env, pl, got, remote, inst, progress, now = new Date()){
     if (await env.exists('.git')) throw new Error('git');
-    const id = `${inst.version || 'none'}-to-${remote.m.version}-${stamp(now)}`, dir = BACKUPS + '/' + id;
-    const touched = pl.update.concat(pl.remove), had = await env.bytes(MANIFEST);
-    for (const p of touched) await env.write(dir + '/files/' + p, await env.bytes(p));
-    if (had) await env.write(dir + '/files/' + MANIFEST, had);
+    const touched = pl.update.concat(pl.remove), had = await env.bytes(MANIFEST), files = {};
+    for (const p of touched) files[p] = toB64(await env.bytes(p));
+    if (had) files[MANIFEST] = toB64(had);
     const undo = {from: inst.version || '', to: remote.m.version, at: now.toISOString(),
-      added: pl.add.concat(had ? [] : [MANIFEST]), replaced: pl.update.concat(had ? [MANIFEST] : []), removed: pl.remove};
-    await env.write(dir + '/undo.json', enc.encode(JSON.stringify(undo, null, 1)));
-    // before the first write: an update stopped halfway (a file held open) can be undone too
-    await env.write(LAST, enc.encode(id));
+      added: pl.add.concat(had ? [] : [MANIFEST]), replaced: pl.update.concat(had ? [MANIFEST] : []), removed: pl.remove, files};
+    // written before the first file: an update stopped halfway (a file held open) can be undone too
+    await env.write(BACKUP, enc.encode(JSON.stringify(undo)));
     const writes = pl.add.concat(pl.update);
     for (let i = 0; i < writes.length; i++) {
       await env.write(writes[i], got.get(writes[i]));
@@ -140,30 +151,25 @@ const UpdCore = (() => {
     }
     for (const p of pl.remove) await env.remove(p);
     await env.write(MANIFEST, enc.encode(remote.text));
-    return id;
   }
 
-  /** The last update, if it can be undone: {id, from, to, at} */
+  /** The last update, if it can be undone: {from, to, at, added, replaced, removed, files} */
   async function lastUpdate(env){
-    const id = await env.bytes(LAST);
-    if (!id) return null;
-    const name = dec.decode(id).trim(), u = await env.bytes(BACKUPS + '/' + name + '/undo.json');
-    if (!u) return null;
-    try { return Object.assign({id: name}, JSON.parse(dec.decode(u))); } catch (e) { return null; }
+    const b = await env.bytes(BACKUP);
+    if (!b) return null;
+    try { const u = JSON.parse(dec.decode(b)); return u && u.files ? u : null; } catch (e) { return null; }
   }
-  /** Puts the files of the last update back as they were; returns what it undid */
+  /** Puts the files of the last update back as they were, then drops the copy; returns what it undid */
   async function rollback(env){
     if (await env.exists('.git')) throw new Error('git');
     const u = await lastUpdate(env);
     if (!u) throw new Error('nothing');
-    const dir = BACKUPS + '/' + u.id + '/files/';
     for (const p of u.replaced.concat(u.removed)) {
-      const b = await env.bytes(dir + p);
-      if (!b) throw new Error(p + ': no copy');
-      await env.write(p, b);
+      if (!(p in u.files)) throw new Error(p + ': no copy');
+      await env.write(p, fromB64(u.files[p]));
     }
     for (const p of u.added) await env.remove(p);
-    await env.remove(LAST);
+    await env.remove(BACKUP);
     return u;
   }
 

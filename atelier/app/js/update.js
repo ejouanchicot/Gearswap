@@ -30,7 +30,7 @@ Object.assign(T.fr, {updOpen: 'Mise à jour', ttUpd: 'Chercher une nouvelle vers
   updNoLink: 'La mise à jour passe par le jeu : lance-le, tape une fois //gs c atelier link (l’addon AtelierLink), puis Chercher.',
   updOldLink: 'AtelierLink est trop ancien pour la mise à jour : dans le jeu, tape //gs c atelier link, puis Chercher.',
   updSlowLink: 'Le jeu ne répond pas : sa fenêtre est-elle réduite ? Laisse-la ouverte (pas réduite) pendant la mise à jour, puis Chercher.',
-  updSafe: 'Avant d’écrire, tout est téléchargé et vérifié ; les fichiers remplacés sont gardés dans data/update/backup.'});
+  updSafe: 'Avant d’écrire, tout est téléchargé et vérifié ; une copie des fichiers remplacés est gardée (atelier/update_backup.json) pour revenir en arrière.'});
 Object.assign(T.en, {updOpen: 'Update', ttUpd: 'Look for a new GearSwap version and install it',
   ttUpdNew: 'New version available: {v}',
   updTitle: 'Update', updBack: 'Back',
@@ -54,7 +54,7 @@ Object.assign(T.en, {updOpen: 'Update', ttUpd: 'Look for a new GearSwap version 
   updNoLink: 'The update goes through the game: start it, type //gs c atelier link once (the AtelierLink addon), then Look.',
   updOldLink: 'AtelierLink is too old for the update: in game, type //gs c atelier link, then Look.',
   updSlowLink: 'The game does not answer: is its window minimized? Keep it open (not minimized) during the update, then Look.',
-  updSafe: 'Before writing, everything is downloaded and checked; the files replaced are kept in data/update/backup.'});
+  updSafe: 'Before writing, everything is downloaded and checked; a copy of the files replaced is kept (atelier/update_backup.json) to go back.'});
 
 // state: '' (not looked), busy, nolink, git, none (no release), uptodate, ready, done, fail
 const UPD = {state: '', step: null, msg: '', msgCls: '', inst: null, rel: null, remote: null, plan: null, last: null, env: null, link: null};
@@ -82,7 +82,9 @@ function updSplit(paths, bytes){
   const out = new Map();
   let i = 0;
   for (const p of paths) {
-    const nl = bytes.indexOf(10, i), n = parseInt(new TextDecoder().decode(bytes.subarray(i, nl)), 10);
+    const nl = bytes.indexOf(10, i), n = nl < 0 ? NaN : parseInt(new TextDecoder().decode(bytes.subarray(i, nl)), 10);
+    // an answer cut short reads as an error, never as files shorter than they are
+    if (Number.isNaN(n) || nl + 1 + Math.max(n, 0) > bytes.length) throw new Error('AtelierLink: ' + p + ' cut short');
     if (n < 0) { out.set(p, null); i = nl + 1; continue; }
     out.set(p, bytes.slice(nl + 1, nl + 1 + n));
     i = nl + 1 + n;
@@ -118,8 +120,7 @@ async function updFindLink(){
   await updLoadScript('atelier/link_last.js');
   if (S.char) await updLoadScript(`atelier/link_${S.char}.js`);
   const all = window.ATELIER_LINK || {}, names = [S.char, window.ATELIER_LINK_LAST].concat(Object.keys(all));
-  let old = false;
-  let slow = false;
+  let old = false, slow = false;
   for (const c of names.filter((c, i, a) => c && all[c] && a.indexOf(c) === i)) {
     try { return {c, conf: all[c], info: await updCall(all[c], '/info', {wait: 6000})}; }
     catch (e) { if (e.status === 404) old = true; if (e.slow) slow = true; }
