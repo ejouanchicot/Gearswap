@@ -182,7 +182,8 @@ function updOpenPage(){
   render(); scrollTo({top: 0});
   if (open && (UPD.state === '' || UPD.state === 'folder')) updCheck(false);
 }
-// Always the picker: the folder remembered may be another install's (updSameRoot)
+// Always the picker: the folder remembered may belong to another install (updSameRoot), and a picker
+// started there is still free to go anywhere
 function updFolder(){
   openFolderDialog(async () => { await oxPickWindower(); updCheck(false); }, () => {},
     {title: t('wfolderTitle'), why: t('updFolderWhy'), path: pageFolder().replace(/\\addons\\GearSwap\\data$/i, '')});
