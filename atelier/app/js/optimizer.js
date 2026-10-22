@@ -90,6 +90,23 @@ function optChoices(tpNames){
   }
   return choices;
 }
+// The paths of a path piece your copies are on: 'Path: X' as Windower writes Odyssey gear, or augments written out
+// (Kaykaus: 'MP+80', '"Cure" spellcasting time -7%'...) matched against each path's stats at its top rank.
+// A copy no path matches (an older rank) is on none, so every path stays offered.
+function heldPaths(name, e, have){
+  const out = new Set();
+  for (const x of have) if (x.name === name) {
+    const tag = (x.augs || []).map(a => a.match(/^Path:\s*(\w+)/)).find(Boolean);
+    if (tag) { out.add(tag[1]); continue; }
+    if (!(x.augs && x.augs.length)) continue;
+    const read = FFXI.parse_augments(name, x.augs), got = Object.assign({}, read.extra, read.stats);
+    for (const path of Object.keys(e.paths)) {
+      const want = FFXI.ranked_stats(name, path, e.max_rank), keys = Object.keys(want);
+      if (keys.length && keys.length === Object.keys(got).length && keys.every(k => got[k] === want[k])) out.add(path);
+    }
+  }
+  return out;
+}
 // The game's items for a slot your job wears and you do not hold (level 99, an item level, or a piece whose effect the
 // search reads by name: stat_opt.js specialPiece), a rank
 // item on each of its paths at its top rank
@@ -99,13 +116,17 @@ function gameChoices(slot, have, tpNames){
   const mine = new Set(Object.values(ownedOf() || {}).flat().map(x => x.name));
   const ruledOut = name => { const g = FFXI.opt.groupOf(name); return !!g && g.items.some(n => n !== name && mine.has(n)); };
   for (const it of FFXI.CATALOG.items) {
-    if (!it.slots.includes(FFXI.opt.SLOT[slot]) || !it.jobs.includes(job) || names.has(it.name) || tpNames.has(it.name) || seen.has(it.name)) continue;
+    const e = rankedEntry(it.name);
+    // a path piece you hold: its other paths stay in the search, as a copy to get
+    const held = names.has(it.name) && e && e.paths ? heldPaths(it.name, e, have) : null;
+    if (!it.slots.includes(FFXI.opt.SLOT[slot]) || !it.jobs.includes(job) || (names.has(it.name) && !held) || tpNames.has(it.name) || seen.has(it.name)) continue;
     if (!(it.level >= 99 || it.ilvl > 0 || specialPiece(it.name)) || ruledOut(it.name)) continue;
     seen.add(it.name);
-    const e = rankedEntry(it.name);
     // engineFill: what the description gives that the engine's catalogue lacks, as for your own pieces (without it
     // a piece the catalogue reads nothing of counted for nothing: Hoxne Ampulla's Double Attack)
-    if (e && e.paths) for (const path of Object.keys(e.paths)) out.push(engineFill({name: it.name, augs: ['Path: ' + path], rank: e.max_rank, missing: true}));
+    if (e && e.paths) for (const path of Object.keys(e.paths)) {
+      if (!(held && held.has(path))) out.push(engineFill({name: it.name, augs: ['Path: ' + path], rank: e.max_rank, missing: true}));
+    }
     else out.push(engineFill({name: it.name, missing: true, copies: twoAllowed(it.name) ? 2 : 1, rare: isRare(it.name)}));
   }
   // rings and earrings: a second copy to get of one you have once, when the game lets you hold two
