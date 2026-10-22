@@ -37,9 +37,14 @@ let addStep = 0, addFam = null, addPath = null;
 const catalogEntries = () => { const d = data(); return d && Array.isArray(d.catalog) ? d.catalog : null; };
 // When the job's code wears a set, in the page's language, from its catalog line (shared/jobs/<job>/set_catalog.lua
 // `fr` / `when`); null when the catalog has no line for it, or none in French (the card keeps its family's line)
+// A line written for any spell, weaponskill or ability (its catalog line ends in one: midcast.{spell}) names it: "That
+// spell" read on the Burn set said nothing (2026-10-22); the set's last key is that name
+const CATALOG_THAT = {fr: /\b(ce sort|cette weaponskill|cette job ability|cette ability|ce nuke)\b/i, en: /\b(that spell|that weaponskill|that job ability|that ability|that nuke)\b/i};
 function catalogWhen(path){
   const e = (catalogEntries() || []).find(x => x.path === path.replace(/'/g, '"'));
-  return e ? (S.lang === 'en' ? e.when : e.fr) || null : null;
+  const line = e ? (S.lang === 'en' ? e.when : e.fr) || null : null;
+  if (!line || !/\{[^}]*\}$/.test(e.group || '')) return line;
+  return line.replace(CATALOG_THAT[S.lang === 'en' ? 'en' : 'fr'], segs(path).pop());
 }
 // A catalog line of a weapon state ({MainWeapon}, {WeaponSet}...): the weapon sets, laid on idle and engaged
 const WEAPON_LINE = /^\{(MainWeapon|SubWeapon|RangeWeapon|WeaponSet|SubSet|AbyWeapon|SubWeaponOverride)[^}]*\}$/;
