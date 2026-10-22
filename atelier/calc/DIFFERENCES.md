@@ -934,7 +934,28 @@ Without the engine before (`noengine`): every stat set now has the figure of the
 sets and 104 / 113 searches identical, all the others in the cases of Lot 4 (base attributes unknown, magical,
 hybrid and ranged weapon skills, Aftermath on, weapons attacking 3 times or more, sets without a weapon skill).
 
-Found, not changed: Gambit's "Magic DT%" (`opt.js`, the RUN ability, +10 % a rune) is taken off the target
-like a debuff, so it lowers the damage it should raise, in both engines. `app/js/buff_panels.js` PRIME_PDL
-spells "Kusanagi-no-Tsurugi" too. `targets.js` fills some AGI values from wsdist's enemy list (its header).
-For the player to decide.
+Found, not changed: `targets.js` fills some AGI values from wsdist's enemy list (its header). For the player to
+decide. (This paragraph first said Gambit was counted backwards in both engines: wrong, see AH.)
+
+## AH. The target's magic damage taken read the right way (2026-10-23)
+
+The page's target carries wsdist's "Magic DT%": a cut, positive when the target takes less (`app/js/buffs.js`
+targetsPart: minus `targets.js`'s `res.magic`, the damage taken; Apex Toad -25 % gives 25), Gambit adding
+-10 a rune (`opt.js`, taken off like a debuff). The engine before reads it so for weaponskills and Quick Draw
+(`1 - x/100`, `engine/actions.js` 434, 542) but adds it for spells (`1 + x/100`, 575 and 615, "sic"), and
+`calc_magic.js` had copied the spells' way: a target that resists magic took more, one weak to it took less.
+`calc_magic.js` now reads it as the cut it is (`tmda = 1 - x/100`, floor 0.5 kept). Gambit was right, its
+magical and hybrid weaponskills being computed by the engine before (Lot 4), and stays right once ours does.
+https://www.bg-wiki.com/ffxi/Gambit : "Increases damage taken of the appropriate element(s) by 10% per rune
+consumed."
+
+Thunder VI, same sheet, our engine, before -> after: Apex Toad Lv132 9 905 -> 5 943, Apex Matamata Lv126
+7 173 -> 11 955, Apex Chapuli Lv125 (0 %) 9 456 both, Apex Toad with one rune's Gambit 9 112 -> 6 735.
+45 of the 198 targets have a magic damage taken. The BG Wiki example of `scripts/audit/calc_magic_check.js`
+(MDT -12.5 %, 1 235) now carries the cut, 12.5: same 1 235.
+Bench before and after (`banc/mdt_*`): 3 969 / 3 969 identical, its target being "BG Wiki sets" (0 %).
+
+`app/js/buff_panels.js` PRIME_PDL: "Kusanagi-no-Tsurugi" (the catalogue's long name) is "Kusanagi", the
+name the sets and the catalogue use: Kusanagi's aftermath gave no PDL. The list is CALC.PRIME_WEAPONS less
+the magic primes, Duban and Loughnashade (checked by `scripts/audit/calc_lot3_check.js`); the page reads it
+before the engine is loaded, so it keeps its own copy.

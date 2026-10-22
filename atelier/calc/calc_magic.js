@@ -3,7 +3,8 @@
 //   CALC.spellDamage(stats, enemy, spellName, options, context)
 //       stats    the character sheet (CALC.characterStats, or any table with the same names)
 //       enemy    {INT, "Magic Evasion", "Magic Defense" (its Magic Defense Bonus), "Magic Damage Taken"}
-//                ("Magic Damage Taken" in percent, negative when the enemy takes less)
+//                ("Magic Damage Taken" in percent as the page's enemy carries it, wsdist's "Magic DT%": positive
+//                when the enemy takes less, Apex Toad 25; negative when it takes more, Gambit -10 a rune)
 //       options  all optional:
 //           magicBurst   true for a Magic Burst
 //           chainCount   skillchains in a row behind the burst (wiki.ffo.jp "renkei kaisu"), 1 = the first
@@ -216,8 +217,9 @@
             dayWeather: dayWeatherTerm(o),
             mab: magicAttack(stats, spell, o),
             mdb: mdb,
-            // "The base value of TMDA is 1"; wiki.ffo.jp 674: magic damage cut "caps at 50%"
-            tmda: Math.max(0.5, 1 + (enemy["Magic Damage Taken"] || 0) / 100),
+            // "The base value of TMDA is 1"; wiki.ffo.jp 674: magic damage cut "caps at 50%". The enemy's value is a
+            // cut (the engine before reads it so for weaponskills, 1 - x/100; its spells add it, "sic")
+            tmda: Math.max(0.5, 1 - (enemy["Magic Damage Taken"] || 0) / 100),
             potency: [ninjutsuPotency(stats, spell, job)].concat(o.potency),
             meva: (enemy["Magic Evasion"] || 0) * rank[1]
         };

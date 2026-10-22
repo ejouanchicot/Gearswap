@@ -1,9 +1,11 @@
 // GearSwap Atelier · buff_panels.js: aftermath, effect labels, the buffs / party / target panels and windows
 // (loaded by atelier/index.html, in the order of the list there)
 /* ---- aftermath of the weapon in hand (atelier/engine/player.js) ---- */
-// Prime weapons: PDL by stage and level (Lv1 / Lv2 at 60 % between two steps, as the engine), Lorg Mor and Opashoro magic
+// Prime weapons: PDL by stage and level (Lv1 / Lv2 at 60 % between two steps, as the engine), Lorg Mor and Opashoro magic.
+// The names: CALC.PRIME_WEAPONS (atelier/calc/calc_aftermath.js, loaded with the engine, after this file) without the magic
+// ones and Duban and Loughnashade (no weaponskill, so no aftermath); the catalogue's names ("Kusanagi")
 const PRIME_AM_PDL = {III: [2, 5, 8], IV: [4, 7, 10], V: [6, 9, 12]}, PRIME_POT = .6;
-const PRIME_PDL = new Set(['Caliburnus', 'Dokoku', 'Earp', 'Foenaria', 'Gae Buide', 'Helheim', 'Kusanagi-no-Tsurugi', 'Laphria',
+const PRIME_PDL = new Set(['Caliburnus', 'Dokoku', 'Earp', 'Foenaria', 'Gae Buide', 'Helheim', 'Kusanagi', 'Laphria',
   'Mpu Gandring', 'Pinaka', 'Spalirisos', 'Varga Purnikawa']);
 // the magic primes: their aftermath is our engine's (atelier/calc/calc_aftermath.js), as Khatvanga's (Aeonic)
 const PRIME_MAGIC = new Set(['Lorg Mor', 'Opashoro']), AEONIC_AM = ['Khatvanga'];
