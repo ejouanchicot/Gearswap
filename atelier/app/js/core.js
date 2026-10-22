@@ -108,11 +108,14 @@ function ownedOf(){
     }
     // a piece this job's export saw at the Porter that the Porter no longer holds: taken out since, into the bag the
     // latest bags read lists (Tetsouo's Wicce +3, out of Slip 30 after the BLM's export: the search lost them, 2026-10-22)
+    // Not in any bag read either (the bags' read is older, or gone with the export that held it): still yours, a
+    // piece taken out of a slip is in a bag, not lost; it keeps the slip it was seen in (Burn's Arch. Sabots +3,
+    // 2026-10-22: dropped, the search went without the set's own pieces)
     const bags = latestBags(S.char);
     for (const [slot, list] of Object.entries(cur)) for (const x of list) {
-      if (!atPorter(x) || !x.id || porter[x.id] || !bags) continue;
-      const bag = bags.find(b => (b.items || []).some(i => i.id === x.id));
-      if (bag) addCopy(out, slot, Object.assign({}, x, {where: [bag.name || 'Inventory']}));
+      if (!atPorter(x) || !x.id || porter[x.id]) continue;
+      const bag = bags && bags.find(b => (b.items || []).some(i => i.id === x.id));
+      addCopy(out, slot, bag ? Object.assign({}, x, {where: [bag.name || 'Inventory']}) : x);
     }
   } else {
     const hasSlips = o => Object.values(o || {}).some(list => list.some(atPorter));
