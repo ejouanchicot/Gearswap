@@ -124,7 +124,7 @@
         f.edDot = step[2] + em + (tonban ? em : 0) + Math.floor(eff / 2);
         f.edTime = 90 + 12 * dm + (tonban ? 6 * dm : 0);
         f.edAcc = (b.edSkill || 0) + g("edskill") + g("macc") + g("maccskill") + dstatAcc(int - (b.tInt || 0));
-        f.edInt = int;
+        f.edInt = int; f.edEff = eff; f.edTonban = tonban ? 1 : 0;
     };
     // The set's figures (b.enfSpells, its spells in order): the magic accuracy of the first, the length of the first
     // that has one, the potency of the first that has one (0 when none does)
