@@ -107,6 +107,8 @@ function lockedBase(s, base){
 // A search's choices without the locked slots: a slot with no choice keeps the piece the search starts with
 function lockChoices(s, choices){
   for (const slot of lockedSlots(s)) delete choices[slot];
+  // an Impact set's body and head are the cloak's (nuke_layers.js isImpactSet)
+  if (isImpactSet(s)) { delete choices.body; delete choices.head; }
   return choices;
 }
 // The menu of a slot of the grid: choose a piece, lock it, empty it, put the set's piece back (drawn by the Svelte

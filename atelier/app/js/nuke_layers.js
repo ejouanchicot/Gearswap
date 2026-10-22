@@ -22,6 +22,15 @@ const NUKE_LAYERS = {
     {path: 'sets.midcast.ElementalMatch', when: 'obi', onlyNoAutoBelt: true, src: 'apply_elemental_match'},
     {path: 'sets.midcast.QuanpurStone', spells: QUANPUR_SPELLS, src: 'apply_quanpur'}]};
 const nukeLayersApply = s => !/^sets\.midcast\.Impact/.test(s.path) && !/\.acc$/.test(s.path);
+// Impact is cast only while a cloak that grants it is worn (shared/utils/equipment/impact_lock.lua, every job): body,
+// covering the head; the lock puts the best one held on every set, Crepuscular first. The optimizers never search
+// those two slots of an Impact set (trial.js lockChoices); a nuke is judged with the cloak on (nukeSituation)
+const IMPACT_CLOAKS = ['Crepuscular Cloak', 'Twilight Cloak'];
+const isImpactSet = s => !!s && /^sets\.(midcast|precast\.FC)(\.Impact\b|\["Impact"\])/.test(s.path);
+function impactCloak(){
+  const bodies = new Set(((ownedOf() || {}).body || []).map(x => x.name));
+  return IMPACT_CLOAKS.find(n => bodies.has(n)) || null;
+}
 
 // The fight's situations the Elemental Belt reads (shared/utils/equipment/elemental_bonus.lua): Orpheus's Sash +15
 // up to 1.93 yalms, +1 from 13; the obi +10 a matching day, +10 / +25 a single / double weather (a SCH storm too)
@@ -45,7 +54,9 @@ Object.assign(T.fr, {nlTitle: 'En jeu, ton GearSwap change aussi', nlSit: 'Situa
   nlLayer_obi: '{slot} : {p} (set {set}) quand le jour ou la météo vont avec le sort.',
   nlLayer_spells: '{slot} : {p} (set {set}) sur {l}.',
   nlFixed: 'Ces pièces ne sont pas cherchées : en jeu, elles remplacent celles du set ({l}).',
-  nlAcc: 'Ce set est posé en dernier (mode Magic Burst Acc) : il passe par-dessus tout, sauf la ceinture automatique.'});
+  nlAcc: 'Ce set est posé en dernier (mode Magic Burst Acc) : il passe par-dessus tout, sauf la ceinture automatique.',
+  nlCloak: 'Corps : {c}, tête vide. Impact ne se lance qu’avec ce manteau, qui couvre aussi la tête : ces deux emplacements ne sont jamais cherchés.',
+  nlCloakSet: 'Ton set a {b} au corps : en jeu, ton GearSwap met le manteau à la place.', nlCloakMiss: 'Tu n’as ni Crepuscular Cloak ni Twilight Cloak : calculé avec le Twilight Cloak.'});
 Object.assign(T.en, {nlTitle: 'In game, your GearSwap also changes', nlSit: 'Fight situation',
   nlSit_far: 'Away from the target, nothing matching', nlSit_close: 'Next to the target', nlSit_day: 'Day of the spell’s element',
   nlSit_weather: 'Weather of the element', nlSit_storm: 'SCH storm or double weather', nlSit_daystorm: 'Day + storm',
@@ -56,7 +67,9 @@ Object.assign(T.en, {nlTitle: 'In game, your GearSwap also changes', nlSit: 'Fig
   nlLayer_obi: '{slot}: {p} ({set} set) when the day or weather match the spell.',
   nlLayer_spells: '{slot}: {p} ({set} set) on {l}.',
   nlFixed: 'These pieces are not searched: in game they replace the set’s ({l}).',
-  nlAcc: 'This set goes on last (Magic Burst Acc mode): it covers everything but the automatic belt.'});
+  nlAcc: 'This set goes on last (Magic Burst Acc mode): it covers everything but the automatic belt.',
+  nlCloak: 'Body: {c}, head empty. Impact is cast only with this cloak, which covers the head too: these two slots are never searched.',
+  nlCloakSet: 'Your set has {b} on the body: in game your GearSwap puts the cloak instead.', nlCloakMiss: 'You have neither Crepuscular Cloak nor Twilight Cloak: worked out with the Twilight Cloak.'});
 
 // A setting of a config file of the export (its text: a line `key = value` outside the comments), or null
 function cfgSetting(fileEnd, key){
@@ -83,6 +96,11 @@ function nukeSituation(s){
     if (obi >= belt.min && obi >= orp) out.belt = {name: OBI, bonus: obi};
     else if (orp >= belt.min) out.belt = {name: ORPHEUS, bonus: orp};
     if (out.belt) out.fixed.push('waist');
+  }
+  if (isImpactSet(s)) {
+    out.cloak = impactCloak() || IMPACT_CLOAKS[1];
+    out.layers.push({pieces: {body: {name: out.cloak}, head: {name: 'empty'}}, spells: null});
+    for (const slot of ['body', 'head']) if (!out.fixed.includes(slot)) out.fixed.push(slot);
   }
   if (!nukeLayersApply(s)) return out;
   for (const L of NUKE_LAYERS[S.job] || []) {

@@ -71,6 +71,13 @@ function nukeTop(s: LegacyAny): NukeTop {
     if (miss.length) p(t('nlBeltMiss', {l: miss.join(', ')}));
   } else p(t('nlBeltDisabled'));
   if (/\.acc$/.test(s.path)) p(t('nlAcc'));
+  // Impact: the cloak on the body, the head empty (nuke_layers.js)
+  if (sit.cloak) {
+    p(t('nlCloak', {c: sit.cloak}));
+    const body = (s.pieces.body || {}).name;
+    if (body && !isEmpty(s.pieces.body) && !IMPACT_CLOAKS.includes(body)) p(t('nlCloakSet', {b: body}));
+    if (!impactCloak()) p(t('nlCloakMiss'));
+  }
   if (nukeLayersApply(s)) for (const L of NUKE_LAYERS[S.job as string] || []) {
     const pieces = setPieces(L.path);
     if (!pieces || (L.onlyNoAutoBelt && belt.on)) continue;
