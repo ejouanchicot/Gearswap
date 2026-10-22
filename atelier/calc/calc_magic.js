@@ -272,4 +272,9 @@
             spell: spell
         };
     };
+
+    // shared with the magical weapon skills (calc_ws_magic.js)
+    CALC.resistRankRow = rankRow;
+    CALC.magicDayWeather = dayWeatherTerm;
+    CALC.wearsObi = wearsObi;
 });

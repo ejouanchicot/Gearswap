@@ -16,8 +16,9 @@
 (globalThis.CALC_PARTS = globalThis.CALC_PARTS || []).push(function (CALC) {
     // A Samurai's merits in Ikishoten, all bought like the other job merits (DIFFERENCES.md, D2)
     var IKISHOTEN_MERITS = 5;
-    // the page's OA list is by position: [1] "attacks twice" of the main hand, [8] of the off-hand
-    var OA_LENGTH = 14, OA2_MAIN = 1, OA2_SUB = 8;
+    // the page's OA list is by position (atelier/opt.js oaOf): "attacks N times" of the main hand at OA_MAIN[N], of the
+    // off-hand at OA_SUB[N]
+    var OA_LENGTH = 14, OA_MAIN = {2: 1, 3: 0, 4: 13, 5: 12, 6: 11, 7: 10, 8: 9}, OA_SUB = {2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2};
     var WS_VALUE = {"Damage dealt": 0, "TP return": 1};
 
     // The attributes read on the character over the table's; null when one is known by neither.
@@ -86,8 +87,10 @@
     function detailOf(stats, wield, got, start, at, timeToWs) {
         var oa = [];
         while (oa.length < OA_LENGTH) oa.push(0);
-        oa[OA2_MAIN] = (stats["OA2 main"] || 0) / 100;
-        oa[OA2_SUB] = (stats["OA2 sub"] || 0) / 100;
+        Object.keys(OA_MAIN).forEach(function (n) {
+            oa[OA_MAIN[n]] = (stats["OA" + n + " main"] || 0) / 100;
+            oa[OA_SUB[n]] = (stats["OA" + n + " sub"] || 0) / 100;
+        });
         return {
             delay1: stats["Delay1"], delay2: wield.dualWield ? stats["Delay2"] : 0, dw: stats["Dual Wield"] || 0,
             ma: stats["Martial Arts"] || 0, mdelay: wield.handToHand ? got.tpDelay * 2 : got.tpDelay,
@@ -111,14 +114,7 @@
         return null;
     }
 
-    // A weapon that attacks three times or more (Kraken Club: "OA3" to "OA8" of its hand): the round counts the
-    // "attacks twice" share only (calc_round_swings.js), not computed yet (SPEC moteur-sans-wsdist, Lot 4)
-    function manySwings(stats) {
-        return Object.keys(stats).filter(function (k) { return /^OA[3-8] (main|sub)$/.test(k) && stats[k] > 0; });
-    }
-
     function round(stats, enemy, start, at, metric, gearset, job) {
-        if (manySwings(stats).length) return {unsupported: "a weapon attacks 3 times or more"};
         var wield = CALC.wielding(gearset);
         // "Hasso active": set by the sheet when Hasso is on and works (calc_abilities.js)
         var got = CALC.attackRoundAverage(stats, enemy, {wield: wield, job: job, main: mainName(gearset),

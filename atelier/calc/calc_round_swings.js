@@ -62,11 +62,15 @@
     // sheet does not carry those weapons' rates, not computed.)
     // https://www.bg-wiki.com/ffxi/Double_Attack : "Has a chance to proc on each fist for
     //   Hand-to-Hand weapons or each weapon when Dual Wielding." (Triple_Attack: the same words.)
-    // "OA2 main" / "OA2 sub" of the sheet are the weapons' own "Occasionally attacks twice".
+    // "OA2 main" to "OA8 main" (and "sub") of the sheet are the weapons' own "Occasionally attacks N times": one
+    // roll for the hand, each share an outcome of it (Kraken Club: https://www.bg-wiki.com/ffxi/Kraken_Club, the
+    // shares of 2 to 8 attacks of its 26 327 rounds, gear/items.js).
     // `more` = {mythicAftermath3: true, hassoZanshin: true} for what the sheet does not say; both
     // are of the main hand only.
+    CALC.OA_MOST = 8;
     CALC.roundProcOutcomes = function (stats, offHand, more) {
-        var occasional = [["oa", percent(stats, offHand ? "OA2 sub" : "OA2 main"), 1]];
+        var occasional = [];
+        for (var n = 2; n <= CALC.OA_MOST; n += 1) occasional.push(["oa", percent(stats, "OA" + n + (offHand ? " sub" : " main")), n - 1]);
         var tiers = [[["qa", percent(stats, "QA"), 3]], [["ta", percent(stats, "TA"), 2]],
             [["da", percent(stats, "DA"), 1]]];
         if (more && more.mythicAftermath3 && !offHand) occasional = occasional.concat(CALC.MYTHIC_AFTERMATH_3);

@@ -971,3 +971,12 @@ Storm, WAR Laphria Disaster, SAM Masamune Tachi: Fudo, RUN Epeolatry Spinning Sl
 (Savage Blade has two hits). A set without a main weapon (mages, Morphetrix without an export) still gets none.
 
 Bench (`banc/genws_*`): 57 sets now have a figure, the 3 912 others identical; 25 + 6 still without one (no weapon).
+
+## AJ. Weapons that attack 3 to 8 times (2026-10-23, Lot 4.5 bis)
+
+`calc_round_swings.js` reads "OA2" to "OA8" of each hand as one roll, each share an outcome, in the fifth order of
+https://www.bg-wiki.com/ffxi/Multi-Attack (after Quadruple, Triple and Double Attack). Kraken Club's shares are BG
+Wiki's measure (26 327 rounds, gear/items.js): 4.048 attacks a round without Double Attack, 2.09 % of single
+attacks, the measure's 4.05 and 2.08 %. The engine before took wsdist's 5/15/25/25/15/10/3/2 % (3.82 a round).
+Bench (`banc/oa_*`): the 32 engaged sets with a Kraken Club are ours now, time to the weaponskill 8 to 11 %
+shorter than the engine before gave; the other 3 937 identical.
