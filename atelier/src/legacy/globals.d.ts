@@ -547,6 +547,7 @@ declare function lockedSlots(s: LegacyAny): string[];
 declare function excludedOf(): Record<string, LegacyAny>;
 declare function trialSaved(s: LegacyAny): boolean;
 declare function enfContext(s: LegacyAny): LegacyAny;
+declare function edNote(s: LegacyAny): string;
 declare function procsHTML(x: LegacyAny, f: (v: number, n?: number) => string, pc: (v: number) => string): string;
 declare function heldKey(ws: string): string;
 declare function subWhy(main: LegacyAny, x: LegacyAny): string;

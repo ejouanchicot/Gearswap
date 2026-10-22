@@ -59,6 +59,8 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     opt('phalanx', 'phalanx', t('statPhx')), opt('ceLoss', 'ceLoss', t('statCeLoss')), opt('luDt', 'luDt', t('statLuDt'))], t('statFloorsWhy')), floorsAfterHtml =
     (S0._help === 'optpage' ? `<p class="muted small">${esc(t('statFloorsWhy'))}</p>` : '') + reset;
   const jaList = abilityPieces(s), ref = cureGap(s) ? null : hpRef(s), enh = enhContext(s), notes: string[] = [];
+  // Burn and the other elemental debuffs: what the figures take (ele_debuff.js)
+  if (edNote(s)) notes.push(edNote(s));
   if (ref) notes.push(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}));
   // an enhancing set: the spell and its base length, with or without Composure, and the job's bonuses counted (enh_jobs.js)
   if (enh) notes.push(t('statEnhNote', {s: enh.spell === 'enhancing' ? enh.name : enh.spell, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : enh.comp === 'self' ? 'statEnhSelf' : 'statEnhPlain')}), ...(enh.notes || []));

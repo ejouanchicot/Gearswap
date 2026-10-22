@@ -753,8 +753,9 @@
         // enhancing magic (the page's stat_opt.js statVec): duration written on the piece / in its augments, a Lethargy
         // set piece, Refresh potency and seconds received, Regen potency (% then flat) and seconds, Gain, Aquaveil
         "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus",
-        // Perpetuance's figure of the Bracers (the page's enh_jobs.js enhPerpOf)
-        "perp"];
+        // Perpetuance's figure of the Bracers (the page's enh_jobs.js enhPerpOf); the elemental debuffs' effect,
+        // elemental magic skill and Tonban (the page's ele_debuff.js edVec)
+        "perp", "edeff", "edskill", "edtonban"];
     // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
     // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
     // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
@@ -855,6 +856,8 @@
         O.enhancingFigures(f, t, b, enhAll);
         // enfeebling magic (atelier/opt_enf.js, the page's app/js/enfeeble.js): a set cast for enfeebling spells
         if (O.enfeeblingFigures) O.enfeeblingFigures(f, t, b);
+        // Burn, Frost and the other elemental debuffs (atelier/opt_enf.js)
+        if (O.eleDebuffFigures) O.eleDebuffFigures(f, t, b);
         // the block the gear adds (Guide_Paladin: block rate = the shield's base + (shield skill - attacker's) x 0.2325,
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;

@@ -108,6 +108,24 @@
         out.skill = skill; out.dstat = d;
         return out;
     };
+    // The elemental debuffs (Burn, Frost, Choke, Rasp, Shock, Drown; the page's app/js/ele_debuff.js), BG Wiki
+    // Category:Elemental_Debuff read 2026-10-22: by the caster's INT, [over, stat lowered, HP a tick] (">150": 150
+    // itself falls in the step under it, the page leaving it out); + 2 / + 1 per effect merit (5 at most); the gear's
+    // "Elemental magic status ailment effects" + n / + n/2; an Archmage's / Sorcerer's Tonban + 2 / + 1 per effect merit
+    // and + 6 s per duration merit; 90 s + 12 s per duration merit. Checked on the page's own example: -23 / 10 / 150 s,
+    // with Sabots +3 -53 / 25, with the Tonban too -63 / 30 / 180 s. Magic attack does not count
+    var ED_STEPS = [[150, 13, 5], [99, 11, 4], [69, 9, 3], [39, 7, 2], [-Infinity, 5, 1]];
+    O.eleDebuffFigures = function (f, t, b) {
+        if (!b.edOn) return;
+        var g = function (k) { return t[k] || 0; };
+        var int = (b.int || 0) + g("int"), step = ED_STEPS.filter(function (x) { return int > x[0]; })[0];
+        var em = b.edEffM || 0, dm = b.edDurM || 0, tonban = g("edtonban") > 0, eff = g("edeff");
+        f.edDown = step[1] + 2 * em + (tonban ? 2 * em : 0) + eff;
+        f.edDot = step[2] + em + (tonban ? em : 0) + Math.floor(eff / 2);
+        f.edTime = 90 + 12 * dm + (tonban ? 6 * dm : 0);
+        f.edAcc = (b.edSkill || 0) + g("edskill") + g("macc") + g("maccskill") + dstatAcc(int - (b.tInt || 0));
+        f.edInt = int;
+    };
     // The set's figures (b.enfSpells, its spells in order): the magic accuracy of the first, the length of the first
     // that has one, the potency of the first that has one (0 when none does)
     O.enfeeblingFigures = function (f, t, b) {

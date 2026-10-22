@@ -139,14 +139,14 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} over cap',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill'];
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
 // a spell's length reads as minutes and seconds (12:36)
 const enhTimeText = v => `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, '0')}`;
-const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' ? enhTimeText(v)
+const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' ? enhTimeText(v)
   : (k === 'ecritRed' && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
@@ -232,6 +232,8 @@ function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
   const enh = enhContext(s);
   if (enh && !tankPhalanx(s, enh)) return ENH_OBJS[enh.kind] || ENH_PLAIN;
+  // Burn and the other elemental debuffs (ele_debuff.js)
+  if (edObjectives(s)) return edObjectives(s);
   // an enfeebling set, by the spells cast in it (enfeeble.js)
   const enf = enfObjectives(s);
   if (enf) return enf;
@@ -284,7 +286,7 @@ function statFloorDefault(s, first){
   // (not an enhancing spell's set: its potency and its length come first, the damage taken is what the pieces left
   // give, as its last objectives: the player's rule once the floors had cost Refresh 14 % of its length; an
   // enfeebling set the same, its potency, length and magic accuracy first: enfeeble.js)
-  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) || enfContext(s) ? {} : {pdt: -50, mdt: -29};
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) || enfContext(s) || edContext(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
@@ -355,7 +357,7 @@ function setStatOpts(path, patch){
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'ceLoss', 'cureEnm']],
   ['cure', ['cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
+  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
@@ -365,6 +367,7 @@ function statRelevant(s, chosen){
   if (enh && !tankPhalanx(s, enh)) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'hp',
     ...(['PLD', 'RUN'].includes(S.job) ? ['enmity', 'def'] : [])]); return out; }
   if (enfContext(s)) { add(enfRelevant(s)); return out; }
+  if (edContext(s)) { add(edRelevant()); return out; }
   if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
   else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
   else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
@@ -420,7 +423,7 @@ function statVec(p, slot){
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
   if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
-  Object.assign(out, enfVec(r, all, p.name));
+  Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name));
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
   if (v('skill:shield skill')) out.shield = v('skill:shield skill');
@@ -492,6 +495,8 @@ function statContext(s){
   const base = statBase(s), enh = enhContext(s);
   const enf = enfBase(s);
   if (enf) Object.assign(base, enf);
+  const ed = edBase(s);
+  if (ed) Object.assign(base, ed);
   if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts,
     barAdd: enh.barAdd, durMul: enh.durMul, potMul: enh.potMul, perp: enh.perp}, enh.skill != null ? {enh: enh.skill} : {});
   return {mode: 'stats', job: S.job, stat: {base}};
