@@ -1,15 +1,15 @@
 // GearSwap Atelier · engine.js: the damage engine and its workers, a set's context, merits, accuracy, the character's stats
 // (loaded by atelier/index.html, in the order of the list there)
-/* ---- ranks and Ambuscade capes (atelier/engine/catalog, kept on this PC only: augments_ranked.js
-   from LandSandBoat's augment bundles, capes.js), loaded when present ---- */
-// The damage engine (atelier/engine/: its formulas, its gear catalogue, ranks and capes,
-// kept on this PC only) and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
+/* ---- the gear catalogue (atelier/gear/: items.js, augments_ranked.js from LandSandBoat's augment bundles, the
+   Ambuscade capes capes.js, the augment reader augments_parse.js) ---- */
+// The old damage engine (atelier/engine/: wsdist's formulas, kept on this PC only, loaded when present), the gear
+// catalogue and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
 const CALC_FILES = ['abilities', 'attributes', 'derived', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
   'ws_tp', 'page', 'magic_spells', 'magic', 'aftermath'];
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
-  .map(f => `atelier/engine/${f}.js`).concat(['catalog/items', 'catalog/augments_ranked', 'catalog/capes', 'catalog/augments_parse']
-  .map(f => `atelier/engine/${f}.js`), ['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/cycle.js'])
+  .map(f => `atelier/engine/${f}.js`).concat(['items', 'augments_ranked', 'capes', 'augments_parse']
+  .map(f => `atelier/gear/${f}.js`), ['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/cycle.js'])
   // our own engine (atelier/calc/: its parts, then calc_load.js builds CALC), and last the switch between the two
   // (calc_bridge.js, S.engine: 'own' or 'old')
   .concat(CALC_FILES.concat(['load', 'bridge']).map(f => `atelier/calc/calc_${f}.js`))

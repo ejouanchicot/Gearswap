@@ -5,8 +5,9 @@
 //
 //   node scripts/atelier/engine_free_check.js <mode> [--save f.json] [--compare f.json] [--only Char/JOB] [--no-search]
 //   mode  ref     the page as it is, both engines loaded
-//         noold   the old engine's code blocked (atelier/engine/ but its catalog/, and cycle.js)
-//         noengine  all of atelier/engine/ blocked, catalog included: what the page meets when the folder is gone
+//         noold   the old engine's code blocked (atelier/engine/ but a catalog/ left in it, and cycle.js)
+//         noengine  all of atelier/engine/ blocked, and cycle.js: what the page meets when the folder is gone
+//         (the gear catalogue is atelier/gear/ since 2026-10-22: neither mode blocks it)
 //         absent  atelier/engine/ really gone: renamed to engine.__off for the run, then put back (also after a
 //                 Ctrl+C, and by the next run when one was killed half way)
 //

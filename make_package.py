@@ -47,6 +47,9 @@ TREES = ['libs', 'data/shared', 'data/atelier/app', 'data/atelier/calc', 'data/a
          'data/atelier/engine', 'data/scripts/atelier/AtelierLink']
 DATA_FILES = ['data/atelier.html', 'data/atelier/index.html', 'data/atelier/opt.js', 'data/atelier/opt_enf.js',
               'data/atelier/targets.js', 'data/atelier/cycle.js', 'data/scripts/atelier/load_job.lua',
+              # the gear catalogue the page reads (atelier/gear/: its build scripts and caches stay out)
+              'data/atelier/gear/items.js', 'data/atelier/gear/augments_ranked.js', 'data/atelier/gear/capes.js',
+              'data/atelier/gear/augments_parse.js',
               # the version shipped and its file list: the Atelier's update starts from them (scripts/release/release.py)
               'data/VERSION', 'data/release_manifest.json']
 # Never inside a package, wherever it is

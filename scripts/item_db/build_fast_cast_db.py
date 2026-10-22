@@ -1,7 +1,7 @@
 """Fast Cast the game text does not give in numbers -> shared/data/equipment/ITEM_FAST_CAST.lua
 
 Many pieces only say: Enhances "Fast Cast" effect. Their value comes from the Atelier catalogue
-(atelier/engine/catalog/items.json, itself read from BG-Wiki for those hidden values). A piece is
+(atelier/gear/items.json, itself read from BG-Wiki for those hidden values). A piece is
 written only when the catalogue holds more Fast Cast than shared/utils/precast/cast_time.lua reads
 in its description, and only the difference is written.
 
@@ -17,7 +17,7 @@ DATA = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 RES = os.path.normpath(os.path.join(DATA, '..', '..', '..', 'res'))
 if '--res' in sys.argv:
     RES = sys.argv[sys.argv.index('--res') + 1]
-CATALOG = os.path.join(DATA, 'atelier', 'engine', 'catalog', 'items.json')
+CATALOG = os.path.join(DATA, 'atelier', 'gear', 'items.json')
 OUT = os.path.join(DATA, 'shared', 'data', 'equipment', 'ITEM_FAST_CAST.lua')
 
 ENTRY = re.compile(r'\[(\d+)\] = \{id=\d+,en="((?:[^"\\]|\\.)*)"')

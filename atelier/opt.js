@@ -110,7 +110,7 @@
             if (aug["TP Bonus"] && aug["TP Bonus"] === (item.stats || {})["TP Bonus"]) { aug = Object.assign({}, aug); delete aug["TP Bonus"]; }
             add(aug);
             // what the damage formulas do not read (HP, MP, Enmity, Fast Cast...): counted too, for the tanking and
-            // magic figures (the parser keeps them apart: atelier/engine/catalog/augments_parse.js `extra`)
+            // magic figures (the parser keeps them apart: atelier/gear/augments_parse.js `extra`)
             add(parsed.extra || {});
         }
         // a path's rank stats only gearscan read (the page's extraAugs: no rank table here for that piece)
