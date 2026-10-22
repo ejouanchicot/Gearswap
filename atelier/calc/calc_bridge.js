@@ -35,7 +35,7 @@
     // Whether a weapon has an aftermath: a prime weapon, or a relic, mythic, empyrean, ergon or aeonic one
     function hasAftermath(name) {
         var r = name && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
-        return !!name && ((FFXI.player_data && (FFXI.player_data.PRIME_WEAPONS || []).indexOf(name) !== -1) || !!(r && r.kind === "ultimate_weapon"));
+        return !!name && (CALC.PRIME_WEAPONS.indexOf(name) !== -1 || !!(r && r.kind === "ultimate_weapon"));
     }
 
     own.create_player = function (job, sub, ml, gearset, buffs, abilities) {

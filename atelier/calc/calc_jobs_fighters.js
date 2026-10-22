@@ -152,11 +152,40 @@
         merits: {}
     };
 
-    // https://www.bg-wiki.com/ffxi/Dragoon (only a support job in the reference cases: its traits)
+    // https://www.bg-wiki.com/ffxi/Dragoon (only a support job in the reference cases: its traits; its skill ranks for
+    // the page's skill caps, CALC.skillCap)
     J.drg = {
-        skills: {},
+        skills: {"Polearm": "A+", "Staff": "B-", "Sword": "C-", "Dagger": "E", "Club": "E", "Evasion": "B-",
+            "Parrying": "C"},
         traits: {"Attack Bonus": [10, 91], "Accuracy Bonus": [30, 60, 76], "Damage Limit+": [30, 60, 90],
             "Smite": [40, 80], "Conserve TP": [45, 58, 71, 84, 97], "WS Damage Boost": [45, 55, 65, 75, 85, 95]},
         gifts: {}, points: {}, merits: {}, supportOnly: true
+    };
+
+    // The skill ranks only, read on the job's page: the page caps the skills an export reads with them
+    // (CALC.skillCap). The traits, gifts, job points and merits of these jobs are not read yet.
+    // https://www.bg-wiki.com/ffxi/Monk
+    J.mnk = {
+        skills: {"Hand-to-Hand": "A+", "Staff": "B", "Club": "C+", "Throwing": "E", "Evasion": "B+", "Guard": "A",
+            "Parrying": "E"},
+        traits: {}, gifts: {}, points: {}, merits: {}, skillsOnly: true
+    };
+    // https://www.bg-wiki.com/ffxi/Ranger
+    J.rng = {
+        skills: {"Dagger": "B-", "Sword": "D", "Axe": "B-", "Club": "E", "Archery": "A+", "Marksmanship": "A+",
+            "Throwing": "C-", "Evasion": "E"},
+        traits: {}, gifts: {}, points: {}, merits: {}, skillsOnly: true
+    };
+    // https://www.bg-wiki.com/ffxi/Ninja
+    J.nin = {
+        skills: {"Hand-to-Hand": "E", "Dagger": "C+", "Sword": "C", "Katana": "A+", "Great Katana": "C-", "Club": "E",
+            "Archery": "E", "Marksmanship": "C", "Throwing": "A+", "Evasion": "A", "Parrying": "A", "Ninjutsu": "A"},
+        traits: {}, gifts: {}, points: {}, merits: {}, skillsOnly: true
+    };
+    // https://www.bg-wiki.com/ffxi/Puppetmaster
+    J.pup = {
+        skills: {"Hand-to-Hand": "A+", "Dagger": "C-", "Club": "D", "Throwing": "C+", "Evasion": "B", "Guard": "B",
+            "Parrying": "D"},
+        traits: {}, gifts: {}, points: {}, merits: {}, skillsOnly: true
     };
 });

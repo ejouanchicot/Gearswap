@@ -2,6 +2,7 @@
 //
 //   CALC.baseAttributes(job, sub, ml)   {STR, DEX, VIT, AGI, INT, MND, CHR} without gear, or
 //                                       null when the job pair is not in the table below
+//   CALC.subJobShift(from, to, ml)      {STR: n, ...}: attributes measured with support job `from`, moved to `to`
 //
 // BG-Wiki gives no formula for the attributes of a race and job at a level (the race pages only
 // list the level 1 values, Category:Base_Stats likewise), so this part cannot be computed from
@@ -47,6 +48,38 @@
         var extra = (ml || 0) * CALC.MASTER_LEVEL.attributePerLevel + CALC.COMMON_MERITS.attribute;
         var out = {};
         CALC.ATTRIBUTES.forEach(function (name, i) { out[name] = row[i] + extra; });
+        return out;
+    };
+
+    // What a support job adds, to move attributes measured with one support job to another. BG-Wiki gives the
+    // rule, not the numbers: "You will receive half of the job's stat contribution when used as a subjob."
+    // (https://www.bg-wiki.com/ffxi/Support_Job). The numbers are LandSandBoat's (data/grades.yaml and
+    // data/stats.yaml, commit bd08098450, from the spreadsheet both cite: docs.google.com/spreadsheets/d/
+    // 1P1hKWKbeuUCNKoyzDGKzNE9p7K_bjX5VlqC4CSda8v0): each job's grade in each attribute, STR DEX VIT AGI INT MND
+    // CHR, and what a grade gives by level in twentieths of a point (level 1, then each level to 60). Its rule
+    // (src/map/grades.cpp GetBaseStat): "(raceHalfPoints + jobHalfPoints + subJobHalfPoints / 2) / 2", each part
+    // counted in half points rounded down, the sum rounded down once.
+    var JOB_GRADES = {
+        war: "acdcffe", mnk: "cbafgde", whm: "dfdeeac", blm: "fcfcaed", rdm: "ddeeccd", thf: "dadbcgg", pld: "beaggcc",
+        drk: "accdcgg", bst: "dcdfeea", brd: "dddfddb", rng: "eddaede", sam: "cccdeed", nin: "cbcbdgf", drg: "bdcdfec",
+        smn: "fefdbbb", blu: "eeeeeee", cor: "ecebcee", pup: "ebdcefc", dnc: "dcebffb", sch: "fdedbdc", geo: "fddebbe",
+        run: "cdebddf"
+    };
+    var GRADE_START = {a: 100, b: 80, c: 80, d: 60, e: 60, f: 40, g: 40}, GRADE_STEP = {a: 10, b: 9, c: 8, d: 7, e: 6, f: 5, g: 4};
+    function subHalfPoints(sub, i, level) {
+        var g = (JOB_GRADES[sub] || "")[i];
+        if (!g) return 0;
+        return Math.floor(Math.floor((GRADE_START[g] + GRADE_STEP[g] * (level - 1)) / 10) / 2);
+    }
+
+    // {STR: n, ...} to add to attributes measured under support job `from` to have them under `to`. The race's and
+    // the main job's half point is not known: when the change is an odd number of half points, it is taken upward.
+    CALC.subJobShift = function (from, to, ml) {
+        var level = CALC.subJobLevel(ml), out = {};
+        CALC.ATTRIBUTES.forEach(function (name, i) {
+            var d = subHalfPoints(to, i, level) - subHalfPoints(from, i, level);
+            out[name] = Math.floor((d + 1) / 2);
+        });
         return out;
     };
 });

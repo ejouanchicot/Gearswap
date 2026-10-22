@@ -92,14 +92,20 @@
     };
 
     // https://www.bg-wiki.com/ffxi/Scholar (only a support job in the reference cases: its traits;
-    // none of the traits counted here is learned before level 78)
+    // none of the traits counted here is learned before level 78). Skill ranks: the magic ones at B+, the
+    // rank a SCH has them at in its Arts ("While under the effect of one of the grimoires, related magic
+    // skills are increased to B+ rank"; Light Arts: Divine, Healing, Enhancing, Enfeebling; Dark Arts:
+    // Enfeebling, Elemental, Dark), D without them
     J.sch = {
-        skills: {},
+        skills: {"Club": "C+", "Staff": "C+", "Dagger": "D", "Throwing": "D", "Evasion": "E", "Parrying": "E",
+            "Divine Magic": "B+", "Healing Magic": "B+", "Enhancing Magic": "B+", "Enfeebling Magic": "B+",
+            "Elemental Magic": "B+", "Dark Magic": "B+"},
         traits: {"Occult Acumen": [78, 88, 98], "Mag. Burst Bonus": [79, 89, 99]},
         gifts: {}, points: {}, merits: {}, supportOnly: true
     };
 
     // https://www.bg-wiki.com/ffxi/Blue_Mage : "Blue Mage must select which spells and job traits
-    // to go into battle with": no trait without set spells, and the input carries none.
-    J.blu = {skills: {}, traits: {}, gifts: {}, points: {}, merits: {}, supportOnly: true};
+    // to go into battle with": no trait without set spells, and the input carries none. Skill ranks: the job's page.
+    J.blu = {skills: {"Sword": "A+", "Club": "B-", "Evasion": "C-", "Parrying": "D", "Blue Magic": "A+"},
+        traits: {}, gifts: {}, points: {}, merits: {}, supportOnly: true};
 });

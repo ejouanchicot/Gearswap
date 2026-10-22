@@ -2,6 +2,7 @@
 //
 //   CALC.SKILLS                   every skill name, as the stat "<name> Skill"
 //   CALC.baseSkills(job, ml)      {"Sword Skill": n, ...} for the main job
+//   CALC.skillCap(job, skill, ml) the most a weapon skill ("Sword") or Evasion can be on the main job, or null
 //
 // A skill the job has a rank in: cap of the rank at level 99, plus 1 per master level
 // ("for all weapons that a job has ranking in"), plus the merit points (+2 a level, 8 levels,
@@ -34,5 +35,19 @@
             out[name + " Skill"] = value;
         });
         return out;
+    };
+
+    // The highest a weapon skill (melee or ranged) or Evasion can be on the main job: its rank's cap, the master
+    // levels, the merits and the job point gifts of that skill; null when the job has no rank in it. The game's skill
+    // packet can read more than that (a WAR's Great Axe at 499 for 478 in the skill menu). The other skills are not
+    // capped: the exports read them above what the ranks, merits and gifts known here give (Tetsouo WHM Divine,
+    // Enhancing and Enfeebling 8 over, Kaories RDM Enfeebling 56 over, Parrying 250 to 270 over on five jobs,
+    // 2026-10-22), so a cap would cut real skill.
+    var CAPPED = CALC.WEAPON_SKILLS.concat(CALC.RANGED_SKILLS, ["Evasion"]);
+    CALC.skillCap = function (job, skill, ml) {
+        var data = CALC.JOBS[job] || {}, rank = (data.skills || {})[skill];
+        if (!rank || CAPPED.indexOf(skill) === -1) return null;
+        return CALC.SKILL_CAP_99[rank] + (ml || 0) * CALC.MASTER_LEVEL.skillPerLevel + CALC.COMMON_MERITS.skill
+            + ((data.gifts || {})[skill + " Skill"] || 0);
     };
 });

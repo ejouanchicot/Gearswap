@@ -2,6 +2,7 @@
 //
 //   CALC.SET_BONUSES             the sets known so far
 //   CALC.ARTIFACT_PIECES         the reforged artifact armor of the 22 jobs, without its "+2" / "+3" / "+4"
+//   CALC.isArtifactPiece(name)   whether a piece is one of them at +2, +3 or +4 (the ones that count)
 //   CALC.setBonusTotals(gearset) stat -> amount for the pieces equipped
 //
 // Piece names are the short names of Windower's res/items.lua, which is what the input carries.
@@ -58,12 +59,16 @@
     var REGAL = ["Regal Ring", "Regal Earring"];
     var ARTIFACT_STATS = ["Accuracy", "Ranged Accuracy", "Magic Accuracy"];
 
+    CALC.isArtifactPiece = function (name) {
+        var plus = String(name || "").match(/^(.*) \+[234]$/);
+        return !!plus && CALC.ARTIFACT_PIECES.indexOf(plus[1]) >= 0;
+    };
+
     function artifactBonus(gearset) {
         var artifact = 0, regal = 0;
         Object.keys(gearset || {}).forEach(function (slot) {
             var name = String((gearset[slot] || {}).Name || "");
-            var plus = name.match(/^(.*) \+[234]$/);
-            if (plus && CALC.ARTIFACT_PIECES.indexOf(plus[1]) >= 0) artifact += 1;
+            if (CALC.isArtifactPiece(name)) artifact += 1;
             else if (REGAL.indexOf(name) >= 0) regal += 1;
         });
         return artifact ? 15 * (Math.min(5, artifact + regal) - 1) : 0;

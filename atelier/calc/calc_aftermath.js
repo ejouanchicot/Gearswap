@@ -6,6 +6,7 @@
 //       of the sheet (a mythic's Lv3: attacks twice or thrice, melee only); null for a weapon this
 //       table does not hold (the page then hands the case to the engine before, as it did)
 //   CALC.AFTERMATH_TP                    the TP taken when the page gives none, by level
+//   CALC.PRIME_WEAPONS                   the prime weapons' names
 //
 // The aftermath's level comes from the TP of the weapon skill that made it: 1000~1999 Lv1, 2000~2999 Lv2,
 // 3000 Lv3, one effect a level (https://wiki.ffo.jp/html/15869.html "TP 1000～1999 Lv1 / 2000～2999 Lv2 /
@@ -37,6 +38,11 @@
 // @file    atelier/calc/calc_aftermath.js
 // @author  ejouanchicot
 (globalThis.CALC_PARTS = globalThis.CALC_PARTS || []).push(function (CALC) {
+    // The prime weapons, as the catalogue names them: the weapons whose stage the page reads ("Laphria IV").
+    // https://www.bg-wiki.com/ffxi/Prime_Weapons, the table of the last stage ("(Level 119 III)"), read on 2026-10-22
+    CALC.PRIME_WEAPONS = ["Caliburnus", "Dokoku", "Duban", "Earp", "Foenaria", "Gae Buide", "Helheim", "Kusanagi",
+        "Laphria", "Lorg Mor", "Loughnashade", "Mpu Gandring", "Opashoro", "Pinaka", "Spalirisos", "Varga Purnikawa"];
+
     // no TP given: 85 % of the way through the level, as the engine before takes a mythic's (Lv3 is 3000)
     CALC.AFTERMATH_TP = [1850, 2850, 3000];
 

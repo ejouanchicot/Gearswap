@@ -4,7 +4,7 @@
    Ambuscade capes capes.js, the augment reader augments_parse.js) ---- */
 // The old damage engine (atelier/engine/: wsdist's formulas, kept on this PC only, loaded when present), the gear
 // catalogue and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
-const CALC_FILES = ['abilities', 'attributes', 'buffs', 'derived', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
+const CALC_FILES = ['abilities', 'attributes', 'buffs', 'derived', 'enemy', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
   'ws_tp', 'page', 'magic_spells', 'magic', 'aftermath'];
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
@@ -68,7 +68,7 @@ const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry
 // (Laphria IV holds STR +30, V +35), and the export gives each copy its item id; null when not a prime weapon or
 // no copy with an id (an export written before ids)
 function ownedPrimeStage(name){
-  const primes = ((window.FFXI && FFXI.player_data) || {}).PRIME_WEAPONS || [];
+  const primes = window.FFXI && FFXI.opt ? FFXI.opt.primeWeapons() : [];
   if (!name || !primes.includes(name) || !(FFXI.CATALOG && FFXI.CATALOG.items)) return null;
   const copy = ((ownedOf() || {}).main || []).filter(x => x.name === name && x.id).sort((a, b) => b.id - a.id)[0];
   if (!copy) return null;
@@ -275,15 +275,15 @@ function skillAcc(level){
 }
 // Evasion from the evasion skill: 1 a point to 300, 0.8 past it
 const skillEva = level => level > 300 ? Math.floor(300 + 0.8 * (level - 300)) : level;
-// A skill level read in game, by its name ("Great Sword" and "great_sword" alike), held to the job's cap (the
-// engine's table + master level + 16 of merits): the skill packet can carry more than the job uses (Great Axe
-// 499 read for a WAR whose skill menu and Accuracy show 478)
+// A skill level read in game, by its name ("Great Sword" and "great_sword" alike), held to the job's cap (its rank,
+// master level, merits and gifts: atelier/calc/calc_skills.js CALC.skillCap): the skill packet can carry more than
+// the job uses (Great Axe 499 read for a WAR whose skill menu and Accuracy show 478)
 function skillLevel(c, name){
   const want = (name || '').toLowerCase().replace(/[^a-z]/g, '');
   // the engine's files load after the first render: no cap until they are there (the page renders again then)
-  const table = (((window.FFXI || {}).player_data || {}).JOB_COMBAT_STATS || {})[(S.job || '').toLowerCase()] || {};
-  const capKey = Object.keys(table).find(k => k.toLowerCase().replace(/[^a-z]/g, '') === want + 'skill');
-  const cap = capKey ? table[capKey] + (c.master_level || 0) + 16 : Infinity;
+  const skill = window.CALC && CALC.SKILLS ? CALC.SKILLS.find(k => k.toLowerCase().replace(/[^a-z]/g, '') === want) : null;
+  const top = skill ? CALC.skillCap((S.job || '').toLowerCase(), skill, c.master_level || 0) : null;
+  const cap = top == null ? Infinity : top;
   for (const [k, v] of Object.entries(c.skills || {})) if (k.toLowerCase().replace(/[^a-z]/g, '') === want) return Math.min(v, cap);
   return 0;
 }

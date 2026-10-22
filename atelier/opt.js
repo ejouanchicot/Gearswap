@@ -63,11 +63,13 @@
 
     O.empty = function () { return {"Name": "Empty", "Name2": "Empty", "Type": "None", "Skill Type": "None", "Jobs": ALL_JOBS.slice()}; };
 
+    // The prime weapons: ours (atelier/calc/calc_aftermath.js, BG Wiki), wsdist's own under the wsdist-only switch
+    function primeWeapons() { return wsdistOnly() ? ((FFXI.player_data || {}).PRIME_WEAPONS || []) : CALC.PRIME_WEAPONS; }
+    O.primeWeapons = primeWeapons;
     // A weapon's second name, which the engine reads: a prime weapon's stage (aftermath),
     // a relic / mythic / empyrean / ergon / aeonic at R15 (weapon skill bonus)
     function name2(item, ctx) {
-        var data = FFXI.player_data || {};
-        if ((data.PRIME_WEAPONS || []).indexOf(item.name) !== -1) return item.name + " " + (ctx.primeStage || "V");
+        if (primeWeapons().indexOf(item.name) !== -1) return item.name + " " + (ctx.primeStage || "V");
         var r = FFXI.ranked_entry ? FFXI.ranked_entry(item.name) : null;
         if (r && r.kind === "ultimate_weapon") return item.name + " R15";
         return item.name;
@@ -133,7 +135,7 @@
     // The page's buff state (atelier.html buffState) as the buff total takes it (aggregate)
     var FOOD_KEYS = {str: "STR", dex: "DEX", vit: "VIT", agi: "AGI", int: "INT", mnd: "MND", chr: "CHR", acc: "Accuracy",
         atkf: "Attack", racc: "Ranged Accuracy", ratkf: "Ranged Attack", mab: "Magic Attack", macc: "Magic Accuracy",
-        hp: "HP", mp: "MP", sb: "Subtle Blow", stp: "Store TP", da: "DA"};
+        hp: "HP", mp: "MP", sb: "Subtle Blow", stp: "Store TP", da: "DA", wsd: "Weapon Skill Damage"};
     // The songs as the engine reads them: Song1..Song4, Song5 under Clarion Call; the song under Marcato first,
     // the engine laying Marcato on Song1 (the page's b.marcato is that song's place)
     function songsOf(b) {
@@ -174,10 +176,13 @@
     // database: such a weaponskill is counted without them. Magical and hybrid ones are not made
     // (element, dINT and magic burst are no guess): false is returned.
     var STATS = {STR: "str", DEX: "dex", VIT: "vit", AGI: "agi", INT: "int", MND: "mnd", CHR: "chr"};
+    // Ours computes it from our database (CALC.weaponskillInfo); the old engine, while it is on this PC, gets its own
+    // copy too, for the cases ours hands it (calc_bridge.js). A weaponskill only the old engine knows is still its own.
     O.defineWs = function (name, info, skill) {
-        if (!FFXI.WS || FFXI.WS[name]) return !!(FFXI.WS && FFXI.WS[name]);
+        if (FFXI.WS && FFXI.WS[name]) return true;
         if (wsdistOnly()) return false;
         if (!info || (info.type && info.type !== "Physical") || !info.ftp) return false;
+        if (!FFXI.WS) return true;
         var mods = {};
         if (typeof info.mods === "string") info.mods.replace(/(\d+)\D*%?\s*(STR|DEX|VIT|AGI|INT|MND|CHR)/g, function (m, pct, st) { mods[st] = +pct; });
         else Object.keys(info.mods || {}).forEach(function (k) { mods[k.toUpperCase()] = +info.mods[k]; });
@@ -248,7 +253,7 @@
         if (c.foeDown && c.foeDown.crit && !strict) agg[0].feather_step = {"Crit Rate": c.foeDown.crit};
         // a RUN's Gambit: the magic damage of its runes' element taken +10 % a rune, for a weaponskill of that element
         var probe = wsProbe(c);
-        if (c.foeDown && c.foeDown.gambit && probe && (probe.magical || probe.hybrid) && probe.element === c.foeDown.gambit.elem)
+        if (c.foeDown && c.foeDown.gambit && probe && (probe.magical || probe.hybrid) && probe.elements.indexOf(c.foeDown.gambit.elem) !== -1)
             agg[1]["Magic DT%"] = (agg[1]["Magic DT%"] || 0) + c.foeDown.gambit.pct;
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
@@ -258,7 +263,7 @@
         // a party SMN's Avatar's Favor at BG Wiki's top values (the page's partyStats; the engine's own are lower or higher)
         if (c.partyStats && Object.keys(c.partyStats).length && !strict) agg[0].party_favor = c.partyStats;
         var out = {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withNakedHp(withBase(c), c),
-            enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
+            enemy: strict ? FFXI.make_enemy(c.enemy, agg[1]) : CALC.makeEnemy(FFXI.ENEMIES, c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: strict ? 1 : physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
             physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0, fanDance: c.fanDance || null,
             spells: c.spells || null, spellType: c.spellType || "Elemental Magic", nuke: c.nuke || null,
@@ -276,15 +281,22 @@
     function withNakedHp(ab, c) {
         return typeof c.nakedHp === "number" ? Object.assign({}, ab, {"Naked HP": c.nakedHp}) : ab;
     }
+    // What changing support job moves: ours (atelier/calc/calc_attributes.js, LandSandBoat's grades), wsdist's own
+    // table under the wsdist-only switch
+    function subShift(from, to, ml) {
+        if (!wsdistOnly()) return CALC.subJobShift(from, to, ml);
+        var SUB = FFXI.player_data.SUBJOB_PARAMETERS, a = SUB[from] || {}, b = SUB[to] || {}, out = {};
+        ATTRS.forEach(function (k) { out[k] = (b[k] || 0) - (a[k] || 0); });
+        return out;
+    }
     function withBase(c) {
         var ab = c.abilities || {}, job = c.job.toLowerCase(), sub = (c.sub || "war").toLowerCase();
         var m = c.base !== undefined ? c.base : (typeof measuredBase === "function" ? measuredBase(job) : null);
         if (!m || ab["Base Stats"] || (m.main && m.main.toLowerCase() !== job)) return ab;
-        var SUB = FFXI.player_data.SUBJOB_PARAMETERS, from = SUB[(m.sub || sub).toLowerCase()] || {}, to = SUB[sub] || {};
-        var real = {};
+        var shift = subShift((m.sub || sub).toLowerCase(), sub, c.ml), real = {};
         ATTRS.forEach(function (k) {
             var v = m[k.toLowerCase()];
-            if (typeof v === "number") real[k] = v - (from[k] || 0) + (to[k] || 0);
+            if (typeof v === "number") real[k] = v + (shift[k] || 0);
         });
         var out = {"Base Stats": real};
         // the "Critical Hit Rate" merits the export read (none listed = none placed)
@@ -300,10 +312,14 @@
     // the engine already counts a magical one's (Magic DT%)
     // A weaponskill's own flags (magical, hybrid, element), read by setting it up once on blank stats; null when it
     // cannot be read
+    // Ours from our database ("Light/Dark": either element), the old engine's for a weaponskill ours does not hold yet
     function wsProbe(c) {
-        var w = FFXI.WS[c.ws], v = {};
+        var own = !wsdistOnly() && CALC.weaponskillInfo(c.ws);
+        if (own) return {magical: own.type === "Magical", hybrid: own.type === "Hybrid", elements: String(own.element || "").split("/")};
+        var w = FFXI.WS && FFXI.WS[c.ws], v = {};
         if (!w) return null;
         try { w.set(v, 1000, {stats: {}}, {stats: {}}); } catch (e) { return null; }
+        v.elements = [v.element];
         return v;
     }
     function physMul(c) {
@@ -1153,13 +1169,13 @@
         var read = Object.keys(dir);
         var tpNames = ((opts.tpRule && opts.tpRule.pieces) || []).map(function (p) { return p.name; });
         var regal = slots.some(function (slot) { return choices[slot].some(function (p) { return /^Regal (Ring|Earring)/.test(p.name || ""); }); });
-        var af = ((FFXI.player_data && FFXI.player_data.AF_ARMOR) || {})[(ctx.job || "").toLowerCase()];
+        // the artifact pieces a Regal accessory adds to (atelier/calc/calc_sets.js), kept in the search with it
         var startNames = {};
         Object.keys(start).forEach(function (k) { if (start[k] && start[k].name) startNames[start[k].name + "|" + (start[k].augs || []).join("|")] = 1; });
         var special = function (p) {
             var n = p.name || "";
             return startNames[n + "|" + (p.augs || []).join("|")] || BONUS_SET.test(n) || tpNames.indexOf(n) !== -1 || O.groupOf(n)
-                || (regal && af && n.toLowerCase().indexOf(af.toLowerCase()) !== -1);
+                || (regal && CALC.isArtifactPiece(n));
         };
         var held = function (p) { return !p.missing && !p.maxed; };
         var beats = function (a, b) {          // a at least as good as b on every stat read

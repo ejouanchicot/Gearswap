@@ -173,6 +173,8 @@
             weapons: {"Chango R15": [1.1]}},
         "Weapon Break": {url: U + "Weapon_Break", mods: {STR: 60, VIT: 60}, ftp: same(1)},
         // Dagger: our database has no type, hits or fTP for this skill; "Class: Physical" on each page
+        // "class=Magical", "element={{wind}}": a magical weapon skill, its formula not in this engine yet
+        "Aeolian Edge": {url: U + "Aeolian_Edge", type: "Magical", element: "Wind"},
         "Evisceration": {url: U + "Evisceration", type: "Physical", mods: {DEX: 50}, ftp: same(1.25), hits: 5,
             replicating: true, crit: [10, 25, 50], unverified: "critical hit rate at 2000 and 3000 TP"},
         "Exenterator": {url: U + "Exenterator", type: "Physical", mods: {AGI: 85}, ftp: same(1.1875), hits: 4,
