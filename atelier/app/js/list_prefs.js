@@ -45,8 +45,12 @@ function midcastRank(name){
 }
 // true when a version's name is the value of one of the job's modes (EnfeebleMode Potency, NukeMode Magic Burst)
 const listModeValue = label => ((data() || {}).modes || []).some(m => /mode/i.test(m.name) && (m.values || []).includes(label));
-// the kind of a spell set (core.js magicKindOf), 'other' when none fits
-function midcastGroup(name){
+// the kind of a spell set (core.js magicKindOf), 'other' when none fits. A set the job lays over its nuke set
+// (nuke_layers.js NUKE_LAYERS: BLM's QuanpurStone, ElementalMatch, MPConservation) goes with the nukes: its name
+// names no spell, and it was left under "other" (2026-10-22)
+function midcastGroup(name, paths){
+  const layers = (typeof NUKE_LAYERS === 'object' && NUKE_LAYERS[S.job]) || [];
+  if ((paths || []).some(p => layers.some(L => L.path === p))) return 'elemental';
   return magicKindOf(name) || 'other';
 }
 

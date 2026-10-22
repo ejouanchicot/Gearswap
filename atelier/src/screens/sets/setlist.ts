@@ -96,7 +96,7 @@ export function setList(d: LegacyExport): SetList {
 
   // the spells' sets by kind of magic (list_prefs.js midcastGroup), each kind a folding group
   const grouped = !q && vis.filter(k => cards[k].fam === 'midcast').length > MIDCAST_GROUP_FROM;
-  const kindOf = (k: number) => grouped && cards[k].fam === 'midcast' ? midcastGroup(niceName(cards[k])) : '';
+  const kindOf = (k: number) => grouped && cards[k].fam === 'midcast' ? midcastGroup(niceName(cards[k]), cards[k].variants.map((v: LegacyAny) => v.set.path)) : '';
   const order = !grouped ? vis : vis.map((k, n) => [k, n] as [number, number]).sort((a, b) => cards[a[0]].fam === 'midcast' && cards[b[0]].fam === 'midcast'
     ? (MIDCAST_ORDER.indexOf(kindOf(a[0])) - MIDCAST_ORDER.indexOf(kindOf(b[0])) || midcastRank(niceName(cards[a[0]])) - midcastRank(niceName(cards[b[0]])) || a[1] - b[1])
     : a[1] - b[1]).map(x => x[0]);
