@@ -406,3 +406,14 @@ the other skills above any cap the ranks, merits and gifts give (DIFFERENCES.md 
 | https://w.atwiki.jp/bartlett3/pages/328.html 「ステータスランク」 (read 2026-10-23) | 「レベル補正が撤廃されたアドゥリン以降のエリア」; the value of ranks A to G at levels 100 to 150 (Lv132: A161 B146 C131 D117 E102 F92 G82), each job's rank (戦士 AGI C, 狩人 AGI A), each family's rank (コウモリ AGI C, トード AGI A, ギア AGI E) | atelier/targets.js AGI of 12 Apex families, MND of 3 (its header) |
 | https://w.atwiki.jp/bartlett3/pages/327.html (read again 2026-10-23) | the measured stats the rule is checked on: 314 of 330 found | atelier/targets.js |
 | https://www.bg-wiki.com/ffxi/Gambit | "Increases damage taken of the appropriate element(s) by 10% per rune consumed." | opt.js (Gambit), calc_magic.js tmda (DIFFERENCES.md AH) |
+
+## Lot 4 (2026-10-23): magical weapon skills, Kraken Club
+
+| Source | What was read | Used in |
+|---|---|---|
+| https://www.bg-wiki.com/ffxi/Weapon_Skill_Damage (last edited 2026-05-24) | "Base Magical WS Damage = floor(((152 + floor((WeaponLevel - 99) × 2.45) + WSC) × fTP) + dSTAT + MDMG Stat)"; the "< 100" line; the multipliers' order; Weapon Skill Damage "applied to all of a magic weapon skill"; the hybrid formula | calc_ws_magic.js |
+| https://wiki.ffo.jp/html/1083.html , https://wiki.ffo.jp/html/806.html | 「アイテムレベル武器: (IL-100)x2.5+154」「アイテムレベルなし: (Lv-1)x1.5+5」; gorgets and belts raise an elemental WS's power, not its accuracy | calc_ws_magic.js |
+| https://www.bg-wiki.com/ffxi/Category:Elemental_Weapon_Skill | "never miss, but are subject to magical resist states"; the ~+100 magic accuracy "assumed" | calc_ws_magic.js |
+| BG-Wiki page of each magical weapon skill (31, read 2026-10-23) | dSTAT, cap, modifiers, fTP, element, notes (Starburst / Sunburst "your level + 2") | calc_ws_magic.js CALC.MAGIC_WS |
+| https://www.bg-wiki.com/ffxi/Aymur_(Level_119_III) , Tupsimati_(Level_119_III) , Laevateinn_(Level_119_III) | Hidden "damage +30%", rank 15 "Damage +15%", "+49.5%" multiplied | calc_ws_magic.js weapons |
+| https://www.bg-wiki.com/ffxi/Multi-Attack ; https://www.bg-wiki.com/ffxi/Kraken_Club | the order of the checks; Kraken Club's measured shares | calc_round_swings.js |

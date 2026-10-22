@@ -980,3 +980,26 @@ Wiki's measure (26 327 rounds, gear/items.js): 4.048 attacks a round without Dou
 attacks, the measure's 4.05 and 2.08 %. The engine before took wsdist's 5/15/25/25/15/10/3/2 % (3.82 a round).
 Bench (`banc/oa_*`): the 32 engaged sets with a Kraken Club are ours now, time to the weaponskill 8 to 11 %
 shorter than the engine before gave; the other 3 937 identical.
+
+## AK. Magical weapon skills (2026-10-23, Lot 4.3)
+
+`calc_ws_magic.js`: the base of https://www.bg-wiki.com/ffxi/Weapon_Skill_Damage ("152 + floor((WeaponLevel - 99) ×
+2.45)", the main hand's item level, wiki.ffo.jp 1083 gives the same 201 at 119) + WSC, times fTP, plus dSTAT and Magic
+Damage, then the page's multipliers floored one after the other. dSTAT, cap and weapon bonuses read on each weapon
+skill's page (`CALC.MAGIC_WS`, 31 weapon skills; Energy Drain / Steal do no damage, Tartarus Torpor / Uriel Blade are
+Campaign only). Differences with the engine before (`scripts/audit/calc_ws_magic_check.js`, the 756 cases):
+- x0.973 on most: magic hit rate capped at 95 % (https://www.bg-wiki.com/ffxi/Magic_Hit_Rate), as our spells; the
+  engine before counts 100 % when the target has no magic evasion (every target of the page);
+- fTP: the engine before has other values for Cataclysm (2.75/4/5, BG 1.75/3.75/6.5), Dark Harvest (1/2/2.5, BG
+  1/3.54/6.07), Rock Crusher, Earth Crusher, Starburst, Sunburst: ours are BG's (our database);
+- the weapon level: the engine before takes 119 always; ours the main hand's item level, its level without one (152
+  then, the page's "WeaponLevel < 100" line). A set with no weapon able to use the weapon skill (Tetsouo SCH
+  Omniscience without Tupsimati) falls from 334 to 149: no figure means much there, in either engine;
+- Aymur / Tupsimati / Laevateinn at rank 15: their pages' +30 % and +15 %, multiplied (+49.5 %).
+ASSUMED, to check in game: magic accuracy (the weapon skill's combat skill, Magic Accuracy, dINT, +100: the page
+"assumed similar" to a physical first swing's ~+100), TP return (one full hit of the main hand: no page gives it),
+Starburst / Sunburst's Blunt Damage Taken (the target here has none: its magic one kept).
+Hybrid weapon skills stay with the engine before: BG Wiki (the first hit duplicated as a magical one) and wiki.ffo.jp
+17166 (the physical total plus 50 % to 100 % of it by TP) disagree, and no page says what the "+0.5 / +1.375 /
++2.25" fTP of their pages means. For the player to decide (Lot 4 report).
+Bench (`banc/mws_*`): 37 sets changed (the magical weapon skills, now ours), the other 3 932 identical.

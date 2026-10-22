@@ -68,7 +68,10 @@
 
     own.average_ws = function (player, enemy, ws, tp, type, metric) {
         if (player.own) {
-            var got = CALC.page.weaponskill(player.stats, enemy.stats, ws, tp, type, metric, player.gearset, player.abilities);
+            // the main hand's item level (its level without one), for a magical weapon skill (calc_ws_magic.js)
+            var main = ((player.gearset || {}).main || {}).Name, item = main && FFXI.opt && FFXI.opt.item ? FFXI.opt.item(main) : null;
+            var got = CALC.page.weaponskill(player.stats, enemy.stats, ws, tp, type, metric, player.gearset, player.abilities,
+                item ? item.ilvl || item.level : null);
             if (!got.unsupported) return got;
             fall(got.unsupported);
         }

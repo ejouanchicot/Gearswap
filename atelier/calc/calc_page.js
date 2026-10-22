@@ -71,9 +71,17 @@
         return levels[name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")];
     }
 
-    function weaponskill(stats, enemy, name, tp, type, metric, gearset, abilities) {
+    // `weaponLevel`: the main hand's item level, for a magical weapon skill (calc_ws_magic.js)
+    function weaponskill(stats, enemy, name, tp, type, metric, gearset, abilities, weaponLevel) {
         if (!(metric in WS_VALUE)) return {unsupported: "metric " + metric};
         if (type === "ranged") return {unsupported: "ranged weapon skill"};
+        var info = CALC.weaponskillInfo(name);
+        if (info && info.type === "Magical") {
+            var magic = CALC.magicWeaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), weaponLevel: weaponLevel,
+                gearset: gearset});
+            if (magic.unsupported) return magic;
+            return [[magic.damage, magic.tpReturn][WS_VALUE[metric]], [magic.damage, magic.tpReturn, 1]];
+        }
         // the number of buffs a Naegling counts is not given by the page: taken as none
         var got = CALC.weaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), buffs: 0,
             climactic: stats["Climactic Flourish active"] > 0, head: ((gearset || {}).head || {}).Name,
