@@ -643,7 +643,8 @@ function statRows(s){
   const first = so.objs.map(k => rows.find(r => r.id === k)).filter(Boolean);
   // the gap (and the Cure's power) right under the objectives: it is what the pair of sets is for; Lowest HP only as an objective
   const near = rows.filter(r => (['gap', 'ref', 'cure4'].includes(r.id) || r.id.startsWith('act:') || r.id.startsWith('enf:')) && !first.includes(r));
-  const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow');
+  // (the least enmity is the Enmity row again: shown only as an objective)
+  const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow' && r.id !== 'enmityLow');
   return first.concat(near, rest);
 }
 // The toast once a search is done
