@@ -24,6 +24,8 @@ Object.assign(T.fr, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
+  statObj_cureOther: 'Cure IV sur un autre', statD_cureOther: 'HP soignés : MND, VIT, skill de soin et Cure Potency I (50 % au plus) et II (30 %), formule de BG Wiki (vérifiée en jeu sur le PLD)',
+  statObj_enmityLow: 'Le moins d’inimitié', statD_enmityLow: 'l’Enmity des pièces, la plus basse possible : un soigneur ne veut pas que le monstre se tourne vers lui',
   statObj_cureEnm: 'Inimitié du Cure', statD_cureEnm: 'HP soignés × (1 + Enmity) : CE = soin × 0,231, VE = 6 × CE (guide Paladin) ; le soin et l’Enmity se départagent seuls',
   statObj_cureSelf: 'Cure IV sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
   statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II ; +50 du gift PLD Cure Potency Bonus dès 1200 JP, vérifié en jeu : Cure IV 1332, 1245, 1114), le jour et la météo à part.',
@@ -90,6 +92,8 @@ Object.assign(T.en, {
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
+  statObj_cureOther: 'Cure IV on someone else', statD_cureOther: 'HP healed: MND, VIT, Healing skill and Cure Potency I (50 % at most) and II (30 %), BG Wiki’s formula (checked in game on the PLD)',
+  statObj_enmityLow: 'Least enmity', statD_enmityLow: 'the pieces’ Enmity, as low as can be: a healer does not want the monster to turn to it',
   statObj_cureEnm: 'Cure enmity', statD_cureEnm: 'HP healed × (1 + Enmity): CE = heal × 0.231, VE = 6 × CE (Paladin guide); healing and Enmity balance on their own',
   statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
   statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from the PLD gift Cure Potency Bonus from 1200 JP, checked in game: Cure IV 1332, 1245, 1114), day and weather aside.',
@@ -139,14 +143,15 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} over cap',
   tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'enmity', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc'];
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enmityLow', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc'];
 const STAT_PCT = new Set(['fc', 'sird', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
 // a spell's length reads as minutes and seconds (12:36)
 const enhTimeText = v => `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, '0')}`;
-const statFmt = k => v => v == null ? '—' : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' ? enhTimeText(v)
+// (the least enmity is ranked by its opposite: shown as the Enmity it is)
+const statFmt = k => v => v == null ? '—' : k === 'enmityLow' ? statFmt('enmity')(-v) : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' ? enhTimeText(v)
   : (k === 'ecritRed' && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
@@ -248,7 +253,11 @@ function statDefaultOf(s){
   // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt.js cureEnm), then the heal itself
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return tank ? ['cureEnm', 'cureSelf', 'pdtRed'] : ['cureSelf', 'pdtRed', 'hp'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
-  if (/cur(e|a|aga)/i.test(p)) return ['cure', 'enmity', 'hp'];
+  // a Cure on the others, and the job's Healing Magic set (worn for a Cure with no set of its own): the HP it heals
+  // (its potency was capped at 50 % on every healer's set, then the search added Enmity: Kaories' RDM, 2026-10-22);
+  // a healer then wants as little enmity as it can. A tank keeps its own order (its Cure's enmity before the HP it
+  // heals: the HP healed first cost a PLD's CureOther 63 Enmity, 2026-10-22)
+  if (/cur(e|a|aga)/i.test(p) || (fam === 'midcast' && /healing magic/i.test(p))) return tank ? ['cure', 'enmity', 'hp'] : ['cureOther', 'enmityLow', 'pdtRed'];
   if (/stoneskin/i.test(p) && fam !== 'fc') return ['stoneskin', 'enhSkill', 'hp'];
   // Enlight II: its bonus, then how long it lasts (enhancing duration: not confirmed by BG Wiki on this divine spell), then Enmity
   if (/enlight/i.test(p) && fam !== 'fc') return ['enlight', 'enhdur', 'enmity'];
@@ -277,6 +286,9 @@ function statOpts(s){
 // the gear's enemy critical hit rate -5 beside the -5 of the merits); 0 (no floor) elsewhere
 // (SIRD sets and Cures: SIRD 102 with the merits, the guide's benchmark; a Fast Cast: capped at 80)
 // A tank's other sets: their HP between the reference and 200 more (hpRef)
+// A healer's set for its Cures on the others (not a tank's, not a self Cure's, not a SIRD one: those keep their floors)
+const healerCure = s => !['PLD', 'RUN'].includes(S.job) && family(s.path, s.pieces) === 'midcast' && !/self|sird/i.test(setNames(s))
+  && (/cur(e|a|aga)/i.test(setNames(s)) || /healing magic/i.test(s.path));
 function statFloorDefault(s, first){
   // SIRD 102 on a set named for it, and on a tank's Cure sets (cast while taking hits)
   const fam = family(s.path, s.pieces), cureSet = fam === 'midcast' && /cur(e|a)/i.test(setNames(s)) && ['PLD', 'RUN'].includes(S.job);
@@ -286,7 +298,8 @@ function statFloorDefault(s, first){
   // (not an enhancing spell's set: its potency and its length come first, the damage taken is what the pieces left
   // give, as its last objectives: the player's rule once the floors had cost Refresh 14 % of its length; an
   // enfeebling set the same, its potency, length and magic accuracy first: enfeeble.js)
-  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) || enfContext(s) || edContext(s) ? {} : {pdt: -50, mdt: -29};
+  // (a healer's Cure set the same: the floors cost Tetsouo's WHM 154 HP of its Cure IV, 2026-10-22)
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) || enfContext(s) || edContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
@@ -355,8 +368,8 @@ function setStatOpts(path, patch){
 }
 
 /* ---- the objectives by kind, and the ones a set is shown ---- */
-const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'ceLoss', 'cureEnm']],
-  ['cure', ['cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
+const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
+  ['cure', ['cureOther', 'cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
   ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
@@ -369,7 +382,8 @@ function statRelevant(s, chosen){
   if (enfContext(s)) { add(enfRelevant(s)); return out; }
   if (edContext(s)) { add(edRelevant()); return out; }
   if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
-  else if (/cur(e|a)/i.test(p)) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'] : ['cure', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
+  else if (/cur(e|a)/i.test(p) || (fam === 'midcast' && /healing magic/i.test(p))) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']
+    : ['cureOther', 'cure', 'enmityLow', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
   else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
   else if (/stoneskin/i.test(p)) add(['stoneskin', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
   else if (/enlight/i.test(p)) add(['enlight', 'enhdur', 'divSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
