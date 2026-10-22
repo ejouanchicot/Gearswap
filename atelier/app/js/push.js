@@ -129,15 +129,34 @@ function pushedKeep(s, plan){
     plan: plan.map(e => ({slot: e.slot, kind: e.kind, piece: e.piece ? {name: e.piece.name, augs: e.piece.augs} : null}))});
   pushedApply();
 }
-// Each kept push on the exports of its job not newer than it; a push every export of its job is newer than is
-// dropped (the files hold it, and maybe more since)
+// A delete kept the same way: the set and the names that went with it leave the page's copies (x.gone)
+function deletedKeep(paths){
+  const gone = [...new Set(paths)];
+  S.pushed = (S.pushed || []).filter(x => !(x.c === S.char && x.j === S.job && gone.includes(x.path)));
+  S.pushed.push({c: S.char, j: S.job, path: gone[0], at: stamp(), gone});
+  pushedApply();
+}
+// Each kept push or delete on the exports of its job not newer than it; one every export of its job is newer than
+// is dropped (the files hold it, and maybe more since)
 function pushedApply(){
   if (!S.pushed || !S.pushed.length) return;
   S.pushed = S.pushed.filter(x => {
     const old = Object.values(exportsOf(x.c, x.j)).filter(d => (d.at || '') <= x.at);
-    for (const d of old) { const s = (d.sets || []).find(y => y.path === x.path); if (s) patchSet(s, x.plan); }
+    for (const d of old) {
+      if (x.gone) { dropSets(d, x.gone); continue; }
+      const s = (d.sets || []).find(y => y.path === x.path);
+      if (s) patchSet(s, x.plan);
+    }
     return old.length > 0;
   });
+}
+// An export's copy without the sets deleted: theirs and the names they went by
+function dropSets(d, gone){
+  if (!d.sets) return;
+  const before = d.sets.length;
+  d.sets = d.sets.filter(x => !gone.includes(x.path)).map(x => x.aliases && x.aliases.some(a => gone.includes(a))
+    ? Object.assign({}, x, {aliases: x.aliases.filter(a => !gone.includes(a))}) : x);
+  if (d.sets.length !== before) DATA_GEN++;
 }
 // The page's copy of a set given the pieces a push wrote
 function patchSet(s, plan){
@@ -184,6 +203,8 @@ async function delGo(){
   try { r = await liveFetch(S.char, '/delete?mode=write&hash=' + encodeURIComponent(D.hash) + jobQuery(), {method: 'POST', body: D.s.path, timeout: 6000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('delTitle'), mogSorryHTML(t('pushErr_' + r.error, {l: esc((r.users || []).map(shortPath).join(' · '))})), '');
   forgetSets((r.entry.deleted || []).concat([D.s.path]));
+  // gone from the page at once and after a reload, loaded job or not (deletedKeep)
+  deletedKeep([D.s.path].concat(r.entry.deleted || []));
   if (S.setOv[S.char]) S.setOv[S.char].at = stamp();
   S.selPath[S.job] = null; S._found = null;
   S.toast = doneText('delDone', r.entry.file); S._toastSet = null;
