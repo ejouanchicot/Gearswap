@@ -902,3 +902,39 @@ Found, not changed (the page's own food table, `app/js/buffs.js` FOODS, read on 
 "Weapon skill damage +5 %" / +6 % is in the table but `opt.js` FOOD_KEYS does not pass it, so no engine
 counts it; Grape Daifuku, Red Curry Bun, Omelette Sandwich, Miso Ramen and Altana's Repast lack some of
 their effects (HP, the ranged ones, DEF). For the player to decide.
+
+Gyudon: fixed with Lot 3 (`opt.js` FOOD_KEYS passes `wsd` as "Weapon Skill Damage"). The other foods: still open.
+
+## AG. The target, the weapon skills' flags and the job tables (2026-10-22, Lot 3 of notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md)
+
+What `opt.js` and the page read of the engine before, now ours (the engine before's own stays under the
+wsdist-only switch). `scripts/audit/calc_lot3_check.js` compares them entry by entry:
+
+| Table | Engine before | Now | Compared | Differences |
+|---|---|---|---|---|
+| The target (`make_enemy`) | wsdist's GUI enemy | `calc_enemy.js` `CALC.makeEnemy`, BG Wiki Defense_Down: "Defense = Base_Defense * (1 - (Dia + Box Step + Defense Down + Frailty)) >= 1" | 199 targets x 7 debuff sets | none (1 393 identical) |
+| Weapon skill flags (`FFXI.WS`: magical, hybrid, element) | wsdist's list | `CALC.weaponskillInfo` (our database + `calc_ws_details.js`) | the 171 in both lists (169 identical); 13 only in the old one (the gun weapon skills, Imperator: still the old engine's until Lots 4-5) | Starburst, Sunburst: element "Light" -> "Light/Dark" (their pages: "Delivers a light/dark attack"), a Gambit of either element counts. Aeolian Edge: no type in our database, "class=Magical" on its page, added to `calc_ws_details.js` (it was handed to the engine before as "no type", now as "Magical") |
+| Support job attributes (`SUBJOB_PARAMETERS`) | one number per job and attribute | `calc_attributes.js` `CALC.subJobShift`: LandSandBoat's grades and per level table at the real support job level (49 + ML/5) | every pair of jobs, ML 0 / 20 / 50 | 1 or 2 points on most pairs (1 909 of 3 234 identical at ML 20); BST and BRD 3 to 7 (wsdist gives them 9 everywhere, LandSandBoat a grade per attribute: BST CHR A, BRD CHR B) |
+| Skill caps (`JOB_COMBAT_STATS`) | rank cap + ML + 16, its own list of skills | `calc_skills.js` `CALC.skillCap`: weapon skills and Evasion only, rank (job pages) + ML + merits + gifts | 207 job / skill pairs | magic skills no longer capped (17, "Blue Magci" and GEO "Dark" among them): the exports read them above any cap we can work out (WHM 8 over, RDM Enfeebling 56 over); BST Scythe C- -> B- (Beastmaster page) |
+| Prime weapons (`PRIME_WEAPONS`) | 14 names | `calc_aftermath.js` `CALC.PRIME_WEAPONS`, BG Wiki Prime_Weapons | the lists | "Kusanagi-no-Tsurugi" never matched (the catalogue says "Kusanagi"); Duban and Loughnashade added |
+| Artifact pieces kept with a Regal accessory (`AF_ARMOR`) | a name containing the job's AF word | `calc_sets.js` `CALC.isArtifactPiece`: the reforged pieces at +2 / +3 / +4, those Regal counts | the catalogue | the word test missed 196 shortened names ("Pumm. Lorica +3") and took 120 others ("Morion" holds "orion", pieces below +2) |
+
+Also: the skill ranks of MNK, RNG, NIN, PUP, DRG, BLU and SCH were missing from `calc_jobs_*.js` (read on
+their job pages; SCH's magic at B+, its rank under its Arts). With an export of one of these jobs as main,
+our engine counted their skills at the merits alone (16).
+
+Bench, before and after on the same exports (`banc/lot3_*`): 3 725 / 3 969 identical. The others: Divine
+Magic no longer capped (PLD and WHM, 174 sets: `divSkill`, `enlight`), BLM elemental (2), MNK / NIN / PUP
+weapon skills and rounds with their skills (29), NIN and SCH magic accuracy (5), sets of a character measured
+under another support job (Kaories RDM and GEO, Tetsouo RDM, 20, 0.4 % at most), Aeolian Edge's reason (7),
+and 7 searches with them. MNK / PUP / NIN figures are still far too low (Asuran Fists ~240): another cause,
+not looked at in this lot.
+
+Without the engine before (`noengine`): every stat set now has the figure of the reference; 3 324 / 3 856
+sets and 104 / 113 searches identical, all the others in the cases of Lot 4 (base attributes unknown, magical,
+hybrid and ranged weapon skills, Aftermath on, weapons attacking 3 times or more, sets without a weapon skill).
+
+Found, not changed: Gambit's "Magic DT%" (`opt.js`, the RUN ability, +10 % a rune) is taken off the target
+like a debuff, so it lowers the damage it should raise, in both engines. `app/js/buff_panels.js` PRIME_PDL
+spells "Kusanagi-no-Tsurugi" too. `targets.js` fills some AGI values from wsdist's enemy list (its header).
+For the player to decide.

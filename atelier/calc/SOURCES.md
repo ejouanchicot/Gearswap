@@ -382,3 +382,19 @@ Refresh): a weapon outside calc_aftermath.js with an aftermath on still goes to 
 Read and not used: the songs the page does not offer (Minuets I and II, the lower Etudes, Preludes), Aria
 of Passion, Bolster and Blaze of Glory (the page works them out), Madrigal's merits (a trust's Madrigal has
 none). What changed against the engine before: DIFFERENCES.md section AF.
+
+## The target, the weapon skills' flags and the job tables (Lot 3, read on 2026-10-22)
+
+| Page | What it says | Used in |
+|---|---|---|
+| https://www.bg-wiki.com/ffxi/Defense_Down | "Dia, Box Step, Defense Down, and Geo-Frailty all stack together additively to a minimum of 1 defense." ; "Defense = Base_Defense * (1 - (Dia + Box Step + Defense Down + Frailty)) >= 1" | calc_enemy.js |
+| https://www.bg-wiki.com/ffxi/Magic_Damage | "Note that the target's MDB is always floored at 0.5." | calc_enemy.js (CALC.MDB_FLOOR) |
+| https://www.bg-wiki.com/ffxi/Aeolian_Edge ; Starburst ; Sunburst | "class=Magical", "element={{wind}}" ; "Delivers a light/dark attack", "element={{light}}/{{dark}}" | calc_ws_details.js (Aeolian Edge), opt.js wsProbe |
+| https://www.bg-wiki.com/ffxi/Support_Job | "You will receive half of the job's stat contribution when used as a subjob." ; "Support Job = 49 + floor(Master Level/5)" | calc_attributes.js subJobShift |
+| LandSandBoat data/grades.yaml, data/stats.yaml, src/map/grades.cpp (commit bd08098450, 2026-09-04; their source: docs.google.com/spreadsheets/d/1P1hKWKbeuUCNKoyzDGKzNE9p7K_bjX5VlqC4CSda8v0) | each job's grade in STR ... CHR; "Twentieths of a point": level 1 a 100, b 80, c 80, d 60, e 60, f 40, g 40, then 10 / 9 / 8 / 7 / 6 / 5 / 4 a level to 60; "(raceHalfPoints + jobHalfPoints + subJobHalfPoints / 2) / 2" | calc_attributes.js JOB_GRADES, subJobShift |
+| https://www.bg-wiki.com/ffxi/Monk ; Ranger ; Ninja ; Dragoon ; Blue_Mage ; Puppetmaster ; Scholar | each page's skill table (Skill / Rank); Scholar: "While under the effect of one of the grimoires, related magic skills are increased to B+ rank", Light Arts "Divine, Healing, Enhancing, and Enfeebling magic", Dark Arts "Enfeebling, Elemental, and Dark magic" | calc_jobs_fighters.js, calc_jobs_mages.js |
+| https://www.bg-wiki.com/ffxi/Combat_Skills | "Job Skill Ranks" for the 22 jobs: the same as the job pages but DRG Evasion / Parrying (B, B- against the Dragoon page's B-, C), PLD Evasion / Parrying (C- against C), DNC Evasion (B against B+); the job pages are kept | checked only |
+| https://www.bg-wiki.com/ffxi/Prime_Weapons | the sixteen weapons of the "(Level 119 III)" table | calc_aftermath.js PRIME_WEAPONS |
+
+The skill caps (calc_skills.js skillCap) are held to weapon skills and Evasion: the exports of 2026-10-22 read
+the other skills above any cap the ranks, merits and gifts give (DIFFERENCES.md section AG).
