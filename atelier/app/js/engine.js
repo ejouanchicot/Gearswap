@@ -99,7 +99,7 @@ function nukeContextInput(s){
 }
 // The same as plain data, for the worker
 function optContextInput(s){
-  const b = liveBuffs(buffState()), d = data() || {}, lv = jaLevels(), ws = wsOfSet(s) || segs(s.path).pop();
+  const b = liveBuffs(buffState()), d = data() || {}, lv = jaLevels(), ws = wsForSet(s);
   // the old engine is wsdist's: its own Haste Samba and Saber Dance, nothing of the page's (atelier/opt.js wsdistOnly)
   const strict = engineName() !== 'own';
   const abilities = {Aftermath: isAfm3(s && s.path) ? 3 : +(b.am || 0)};

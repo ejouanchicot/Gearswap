@@ -287,6 +287,7 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('heldsubsel')) { const k = heldKey(e.target.dataset.heldws), x = e.target.value === '' ? null : forceList('sub')[+e.target.value];
     S.heldSub = Object.assign({}, S.heldSub); if (x) S.heldSub[k] = optPieces({sub: {name: x.name, augs: x.augs}}).sub; else delete S.heldSub[k];
     save(); render(); return; }
+  if (e.target.classList.contains('genwssel')) { S.genericWs = Object.assign({}, S.genericWs, {[e.target.dataset.genws]: e.target.value}); save(); render(); return; }
   if (e.target.classList.contains('heldsel')) { const k = heldKey(e.target.dataset.heldws);
     if (e.target.value) S.held[k] = e.target.value; else delete S.held[k]; render(); return; }
   if ('pbmarcato' in e.target.dataset) { const b0 = buffState(); if (e.target.value === '') delete b0.marcato; else b0.marcato = e.target.value; save(); render(); return; }

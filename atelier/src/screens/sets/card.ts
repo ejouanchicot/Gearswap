@@ -159,15 +159,17 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   if (holds.short!.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short!.join(', '))})}</span>`);
   const legend = legendOf(holds);
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws';
-  const locked = baseOnly(s), optable = !locked && ((ws && wsOfSet(s)) || isNukeSet(s.path) || roundSet(s) || statSet(s));
-  if (optable && optPageOpen(s)) return {k: 'page', view: optPageView(s, ws && wsOfSet(s))};
+  // a set for weaponskills in general is worked out on one of its weapon's (ws_page.js genericWsOf)
+  const wsName = ws && (wsOfSet(s) || genericWsOf(s));
+  const locked = baseOnly(s), optable = !locked && (wsName || isNukeSet(s.path) || roundSet(s) || statSet(s));
+  if (optable && optPageOpen(s)) return {k: 'page', view: optPageView(s, wsName)};
   // its actions on the title line: the optimizer, then deleting it
   const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s)};
   let title: TitleView, versions: Versions, ctl: CardView['ctl'];
   if (ws) {
     title = wsTitle(s, acts);
     versions = wsOfSet(s) ? versionsOf(card, ci, vi) : {k: 'none'};
-    ctl = wsOfSet(s) ? {k: 'ws', view: wsHeadView(s)} : null;
+    ctl = wsName ? {k: 'ws', view: wsHeadView(s)} : null;
   } else {
     const head = setHeadParts(card, vi, s, acts);
     title = head.title; versions = versionsOf(card, ci, vi); ctl = head.picks;

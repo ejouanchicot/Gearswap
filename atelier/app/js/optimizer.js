@@ -147,7 +147,7 @@ async function optimizeWs(s){
   if (!engineReady()) return;
   // a weaponskill the engine does not work out (the engine leaves it out and it is not a physical one the
   // project's database can describe): said plainly rather than a search over nothing
-  const ws = wsOfSet(s) || segs(s.path).pop();
+  const ws = wsForSet(s);
   if (!FFXI.opt.defineWs(ws, wsInfoOf(ws), wsSkills()[ws])) { S._toastSet = s.path; S.toast = t('optNoWs', {ws}); render(); return; }
   // the search starts from the set itself (the file, or what is in test in game), never from a draft:
   // a draft can hold pieces this search may not use (not yours, another reward of a one-choice group)

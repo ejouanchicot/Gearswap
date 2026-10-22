@@ -959,3 +959,15 @@ Bench before and after (`banc/mdt_*`): 3 969 / 3 969 identical, its target being
 name the sets and the catalogue use: Kusanagi's aftermath gave no PDL. The list is CALC.PRIME_WEAPONS less
 the magic primes, Duban and Loughnashade (checked by `scripts/audit/calc_lot3_check.js`); the page reads it
 before the engine is loaded, so it keeps its own copy.
+
+## AI. Sets for weaponskills in general (2026-10-23, Lot 4.2 of notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md)
+
+Neither engine computed a set without a weaponskill in its path (sets.precast.WS, .Acc, .SA...). The page now works
+them out on one weaponskill of the set's main weapon, the player's rule (`app/js/ws_page.js` genericWsOf): of the
+job's weaponskills of that weapon's skill it can open, the physical ones of one hit as `CALC.weaponskillInfo` reads
+them (hits not given: one, as `calc_ws_average.js` counts them), the biggest fTP at 3000 TP first. The set's head shows
+it ("Calculé sur") and lets the player pick another one (S.genericWs, page only). Some picks: THF Vajra Rudra's
+Storm, WAR Laphria Disaster, SAM Masamune Tachi: Fudo, RUN Epeolatry Spinning Slash; a sword gives Circle Blade
+(Savage Blade has two hits). A set without a main weapon (mages, Morphetrix without an export) still gets none.
+
+Bench (`banc/genws_*`): 57 sets now have a figure, the 3 912 others identical; 25 + 6 still without one (no weapon).

@@ -134,6 +134,30 @@ function opensWs(ws){
   const skill = wsSkills()[ws], lock = (wsInfoOf(ws).lock || '').toLowerCase();
   return name => { const it = itemOf(name); return !!it && it['Skill Type'] === skill && (!lock || lock.includes(name.toLowerCase())); };
 }
+// A set for weaponskills in general (sets.precast.WS, sets.precast.WS.Acc: no weaponskill in its path) is worked out on
+// one weaponskill of its main weapon (the player's rule, notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md Lot 4.2):
+// the job's weaponskills of that weapon's skill (export ws_skill) the weapon can open, the physical ones of one hit as
+// the engine reads them (atelier/calc/calc_ws_details.js weaponskillInfo: a weaponskill whose hits are not given is one
+// hit there too) with the biggest fTP at 3000 TP first, then by name; the player can pick another one of them
+// (S.genericWs, by character, job and set). None without the engine, or without a weapon in the set
+const ruleWs = ws => { const i = window.CALC && CALC.weaponskillInfo ? CALC.weaponskillInfo(ws) : null;
+  return i && i.type === 'Physical' && (i.hits || 1) === 1 ? +((i.ftp || [])[2] || 0) : -1; };
+function genericWsAll(s){
+  if (!s || !window.CALC || family(s.path, s.pieces) !== 'ws' || wsOfSet(s)) return [];
+  const main = (withWeapons(s).pieces.main || {}).name, skill = main && weaponSkills()[main], skills = wsSkills();
+  if (!skill) return [];
+  const opens = ws => { const lock = (wsInfoOf(ws).lock || '').toLowerCase(); return !lock || lock.includes(main.toLowerCase()); };
+  return Object.keys(skills).filter(ws => skills[ws] === skill && opens(ws)).sort((a, b) => ruleWs(b) - ruleWs(a) || a.localeCompare(b));
+}
+const genericWsKey = s => S.char + '|' + S.job + '|' + s.path;
+// The weaponskill such a set is worked out on (null for a set with its own, or none of the rule's)
+function genericWsOf(s){
+  const all = genericWsAll(s), picked = (S.genericWs || {})[genericWsKey(s)];
+  if (picked && all.includes(picked)) return picked;
+  return all.length && ruleWs(all[0]) >= 0 ? all[0] : null;
+}
+// The weaponskill a set's figures and searches are for: its own, else the one above, else its path's last part
+function wsForSet(s){ return wsOfSet(s) || genericWsOf(s) || segs(s.path).pop(); }
 // Your weapons that can open a weaponskill
 function heldChoices(ws){
   const opens = opensWs(ws), seen = new Set(), out = [];

@@ -22,7 +22,7 @@ export type TrialBar = {k: 'idle'; text: string} | {k: 'row'; row: TrialRow} | n
 
 // on a weaponskill set, the damage with the try against your file's set (the engine present)
 function gainOf(s: LegacyAny): TrialRow['gain'] {
-  if (!wsOfSet(s)) return null;
+  if (!(wsOfSet(s) || genericWsOf(s))) return null;
   const was = withoutTrial(() => wsDamage(s)), now = wsDamage(s);
   if (was == null || now == null || !was) return null;
   const d = (now / was - 1) * 100;

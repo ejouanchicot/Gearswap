@@ -18,7 +18,9 @@ export interface WsTp {
   line: WsLine; chips: Array<{v: string; label: string; pressed: boolean; title: string}>; input: {value: string; ph: string; title: string};
   res: null | {total: number; over: string}; fallback: string; tb: {total: number; bits: string}; old: string;
 }
-export interface WsHeadView { weapon: WsWeapon | null; tp: WsTp }
+/** A set for weaponskills in general: the weaponskill it is worked out on, and the others it can be */
+export interface WsGeneric { line: WsLine; key: string; options: WsOption[] }
+export interface WsHeadView { generic: WsGeneric | null; weapon: WsWeapon | null; tp: WsTp }
 
 const S0 = (): LegacyAny => S;
 // a line of the head: its label, its ⓘ and its explanation, open under it on a click
@@ -72,7 +74,17 @@ function tpOf(s: LegacyAny): WsTp {
     fallback: !r ? t(live ? 'tpAsking' : 'tpDefault') : '', tb: {total: tb.total, bits}, old: parts && r && !r.worn_aware ? t('tpOldCode') : ''};
 }
 
-/** The head of a weaponskill set (wsHeadHTML) */
+// the weaponskill a set for weaponskills in general is worked out on (ws_page.js genericWsOf): the rule's by default
+function genericOf(s: LegacyAny): WsGeneric | null {
+  const all: string[] = genericWsAll(s), cur = genericWsOf(s), picked = (S0().genericWs || {})[genericWsKey(s)];
+  if (!all.length || !cur) return null;
+  const auto = !(picked && all.includes(picked));
+  const options: WsOption[] = all.map(ws => ({value: ws, label: ws + (auto && ws === cur ? ' · ' + t('auto') : ''), selected: ws === cur}));
+  return {line: lineOf(t('genWsLbl'), t('genWsTip'), 'genws'), key: genericWsKey(s), options};
+}
+
+/** The head of a weaponskill set (wsHeadHTML); a set for weaponskills in general holds the weapon mode's weapon */
 export function wsHeadView(s: LegacyAny): WsHeadView {
-  return {weapon: weaponOf(s), tp: tpOf(s)};
+  const generic = genericOf(s);
+  return {generic, weapon: generic ? null : weaponOf(s), tp: tpOf(s)};
 }
