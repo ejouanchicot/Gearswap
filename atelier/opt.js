@@ -4,7 +4,7 @@
 // also runs in a Web Worker (FFXI.workerSource).
 //
 //   FFXI.opt.gear(piece, slot, ctx)   one piece as the engine reads it (catalogue + its augments)
-//   FFXI.opt.selection(b)             the page's buff state as FFXI.aggregate_buffs takes it
+//   FFXI.opt.selection(b)             the page's buff state as the buff total takes it (aggregate below)
 //   FFXI.opt.context(...)             player, buffs, target and weaponskill of one evaluation
 //   FFXI.opt.ws(ctx, pieces, tp)      the weaponskill's average damage with those pieces
 //   FFXI.opt.round(ctx, pieces, opts)  an engaged set's attack round: time to the weaponskill, DPS, TP a round
@@ -30,6 +30,8 @@
     // know, the base attributes and merits measured in game). The target's own stats after the debuffs are an
     // input as in wsdist, whose window takes them typed.
     function wsdistOnly() { return !FFXI.engine || FFXI.engine.name !== "own"; }
+    // The party's buffs added up: ours (atelier/calc/calc_buffs.js, BG Wiki), wsdist's own under the wsdist-only switch
+    function aggregate(sel) { return wsdistOnly() ? FFXI.aggregate_buffs(sel) : CALC.aggregateBuffs(sel); }
 
     // ------------------------------------------------------------ catalogue
     var byId = null, byName = null;
@@ -128,7 +130,7 @@
     var ONLY_STATS = {"Moonshade Earring": {"TP Bonus": 250}};
 
     // ------------------------------------------------------------ buffs
-    // The page's buff state (atelier.html buffState) as FFXI.aggregate_buffs takes it
+    // The page's buff state (atelier.html buffState) as the buff total takes it (aggregate)
     var FOOD_KEYS = {str: "STR", dex: "DEX", vit: "VIT", agi: "AGI", int: "INT", mnd: "MND", chr: "CHR", acc: "Accuracy",
         atkf: "Attack", racc: "Ranged Accuracy", ratkf: "Ranged Attack", mab: "Magic Attack", macc: "Magic Accuracy",
         hp: "HP", mp: "MP", sb: "Subtle Blow", stp: "Store TP", da: "DA"};
@@ -193,7 +195,7 @@
     // NM's resistance to the debuffs: the page's geoMul): everything but the bubbles, then each bubble alone, scaled
     var GEO_SLOTS = {"Indi-": "indi", "Geo-": "geo", "Entrust-": "entrust"};
     function geoScaled(sel, mul) {
-        var agg = FFXI.aggregate_buffs(Object.assign({}, sel, {geo: false}));
+        var agg = aggregate(Object.assign({}, sel, {geo: false}));
         agg[0].geo = agg[0].geo || {};
         // each bubble alone, scaled; the same effect twice (Indi- and Geo- Fury) does not stack: the strongest counts
         var best = {};
@@ -201,7 +203,7 @@
             var bubbles = {"Indi-": "None", "Geo-": "None", "Entrust-": "None"}, name = (sel.bubbles || {})[slot] || "None";
             bubbles[slot] = name;
             if (name === "None") return;
-            var one = FFXI.aggregate_buffs({geo: true, bubbles: bubbles, bubble_bonus: sel.bubble_bonus, bolster: false, bog: false,
+            var one = aggregate({geo: true, bubbles: bubbles, bubble_bonus: sel.bubble_bonus, bolster: false, bog: false,
                 bubble_potency: sel.bubble_potency, food: null, toggles: {}});
             var m = mul[GEO_SLOTS[slot]] || 1, size = 0, k, effect = name.split("-").pop();
             for (k in one[0].geo || {}) size += Math.abs(m * one[0].geo[k]);
@@ -221,8 +223,8 @@
         if (c.wsInfo) O.defineWs(c.ws, c.wsInfo, c.wsSkill);
         var strict = wsdistOnly(), agg;
         // wsdist: its own bubbles, an NM's resistance as its "bubble potency"
-        if (strict) agg = FFXI.aggregate_buffs(c.geoMul && c.geoMul.foe != null ? Object.assign({}, c.selection, {bubble_potency: 100 * c.geoMul.foe}) : c.selection);
-        else agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : FFXI.aggregate_buffs(c.selection);
+        if (strict) agg = aggregate(c.geoMul && c.geoMul.foe != null ? Object.assign({}, c.selection, {bubble_potency: 100 * c.geoMul.foe}) : c.selection);
+        else agg = c.geoMul ? geoScaled(c.selection, c.geoMul) : aggregate(c.selection);
         // Distract's Evasion down, worked out by the page (its tier, Saboteur on a monster or an NM)
         if (c.evaDown) agg[1].Evasion = (agg[1].Evasion || 0) + c.evaDown;
         if (c.ariaPdl && !strict) agg[0].brd.PDL = (agg[0].brd.PDL || 0) + c.ariaPdl;
@@ -233,7 +235,7 @@
             [1, 2].forEach(function (n, i) {
                 var roll = (c.selection.rolls || {})["Roll" + n], opt = c.rollOpts[i] || {};
                 if (!roll || roll.name === "None") return;
-                var one = FFXI.aggregate_buffs({cor: true, rolls: {Roll1: roll}, roll_bonus: c.selection.roll_bonus, job_bonus: !!opt.job,
+                var one = aggregate({cor: true, rolls: {Roll1: roll}, roll_bonus: c.selection.roll_bonus, job_bonus: !!opt.job,
                     crooked: !!opt.cc, light_shot: false, food: null, toggles: {}});
                 for (var k in one[0].cor) agg[0].cor[k] = (agg[0].cor[k] || 0) + one[0].cor[k];
             });

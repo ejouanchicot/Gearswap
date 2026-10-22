@@ -361,3 +361,24 @@ the consecutive nuke penalty on Notorious Monsters.
 Read and not used: the Empyrean aftermaths of Hvergelmir and Gambanteinn (30 / 40 / 50 % triple damage,
 melee only), Claustrum (Damage taken -20 %, Refresh) and Mjollnir (Accuracy and Magic Accuracy +20,
 Refresh): a weapon outside calc_aftermath.js with an aftermath on still goes to the engine before.
+
+## The party's buffs (calc_buffs.js, read on 2026-10-22)
+
+| Page | What it says | Used in |
+|---|---|---|
+| https://www.bg-wiki.com/ffxi/BGWiki:SongPotency | "Potency per equipment bonus": Honor March 126 ... 174 /1024, Attack 168 ... 232, Acc. 42 ... 58; Victory March 163 ... 293; Advancing March 108 ... 194; Valor Minuet V 124 ... 223, IV 112 ... 201, III 96 ... 172; Blade Madrigal 60 ... 114; Sword Madrigal 45 ... 85; Etudes 15 ... 24 | calc_buffs.js SONGS |
+| https://www.bg-wiki.com/ffxi/March ; Minuet ; Madrigal ; Etude | "Every March +1 given through equipment increases song duration and potency by 10%", "maximum March bonus ... +8", "In the case of Honor March, the maximum bonus is +4"; Minuet +8, Madrigal +9, Etude +9 "and potency by 1" | the caps of SONGS |
+| https://www.bg-wiki.com/ffxi/Minuet ; https://www.bg-wiki.com/ffxi/Bard | merits "+5 Attack per Minuet applied after the percentage bonus from +song", job points "+20 Attack per Minuet"; "Soul Voice doubles the potency of this type of song after Merit Point and Job Point bonuses"; Bard's gifts: none on a Minuet | MINUET_MERITS (25) |
+| https://www.bg-wiki.com/ffxi/Soul_Voice ; https://www.bg-wiki.com/ffxi/Marcato | "Doubles the effect", "Multiplies by 1.5x the effect" of Minuet, Madrigal, March, Etude...; "Does NOT stack with Soul Voice" | songs() |
+| https://www.bg-wiki.com/ffxi/Chaos_Roll (and Samurai, Rogue's, Monk's, Fighter's, Hunter's, Wizard's, Warlock's, Tactician's) | mod1 ... mod11, rollplus, bonus (Chaos "mod2=7.81% (80/1024)", "bonus=9.76% (100/1024)", "rollplus=3.12% (32/1024)") | ROLLS |
+| https://www.bg-wiki.com/ffxi/Crooked_Cards | "Phantom roll effect +20%", "Crooked card bonus applies after Roll+ gear and job bonus" | rolls() |
+| https://www.bg-wiki.com/ffxi/Indi-Fury (and Haste, Precision, Focus, Acumen, STR..., Frailty, Torpor, Malaise, Languor) | "With 900 skill (maximum potency): +34.7%"; "Idris grants an additional: +27%" (Geomancy +10) | BUBBLES, FOE_BUBBLES |
+| https://www.bg-wiki.com/ffxi/Geomancy_Skill | "Geomancy+ items do not affect Entrusted spells." | bubbles() |
+| https://www.bg-wiki.com/ffxi/Haste ; Haste_II | "15% Magic haste (150/1024)", "30% Magic haste (307/1024)" | SPELLS |
+| https://www.bg-wiki.com/ffxi/Dia ; Dia_II ; Dia_III | "-10.16% defense reduction (-104/1024)", "(-156/1024)", "(-208/1024)"; Light Shot "an additional +2.73% (28/1024)" after a Dia | DIA, LIGHT_SHOT |
+| https://www.bg-wiki.com/ffxi/Storm | 5/5 Stormsurge: "+7" of the element's stat, Voidstorm "+3 All Stats" | SPELLS (storms II) |
+| https://www.bg-wiki.com/ffxi/Shell_V | "Reduces magic damage taken by -75/256 (-29%)" | SHELL_V |
+
+Read and not used: the songs the page does not offer (Minuets I and II, the lower Etudes, Preludes), Aria
+of Passion, Bolster and Blaze of Glory (the page works them out), Madrigal's merits (a trust's Madrigal has
+none). What changed against the engine before: DIFFERENCES.md section AF.

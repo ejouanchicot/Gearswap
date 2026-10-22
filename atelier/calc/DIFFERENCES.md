@@ -875,3 +875,30 @@ Found on the way: our attack round reads "OA2" of a hand only (`calc_round_swing
 3 to 8 swings were left out without a word, its round about half the swings it has. Since this change
 such a round says "a weapon attacks 3 times or more" and goes to the engine before (28 engaged sets of
 Tetsouo, Kaories and Gab: +0.3 to +12 % damage, more TP a round). To compute before Lot 5 (SPEC, Lot 4).
+
+## AF. The party's buffs added up by our engine (2026-10-22, Lot 2 of notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md)
+
+`calc_buffs.js` (`CALC.aggregateBuffs`) replaces the engine before's `aggregate_buffs` (wsdist's
+`gui_main.py`). Same input (the page's choice, `FFXI.opt.selection`) and output (`[buffs, enemyDown]`),
+every value read on BG Wiki (sources in the file). `scripts/audit/calc_buffs_check.js` compares both on
+542 choices (each buff alone at every Songs+ / number / Geomancy+, then the page's profiles): 468
+identical; the 74 others are these four:
+
+| What | Engine before | Now | Why |
+|---|---|---|---|
+| Each Minuet | +20 Attack more than its table and merits | merits + job points +25 (5/5, 20/20) only | wsdist adds "+20 Attack to Minuets from Job Point gifts" on top of its own +25; BG Wiki Bard: the job point category "Minuet Effect" (+1 a level, 20 levels) is that +20, no gift raises a Minuet. Full profile: Attack 746 -> 706 |
+| Advancing March | 108 + 11.8 a Songs+ point (/1024) | BG Wiki's table, 108 ... 194 at +8 | BGWiki:SongPotency; +10 % a point. At +8: 19.77 % -> 18.95 % Magic Haste |
+| Victory March, Minuet IV, Minuet III, Sword Madrigal | a straight line through the cap | BG Wiki's table (integers) | the same page; at most 1/1024 of haste or 1 of attack / accuracy apart |
+| Chaos Roll | 4 decimals (0.0781) | the page's 1024ths (80/1024 = 0.078125) | Chaos Roll page, "mod2=7.81% (80/1024)" |
+
+Also read and the same as before: Honor March, Etudes, Blade Madrigal, Soul Voice x2, Marcato x1.5, the
+nine rolls and Crooked Cards x1.2 after Rolls+ and the job bonus, the bubbles (900 skill, a tenth of
+Idris's bonus a Geomancy+ point, none on an Entrust), Haste, Haste II, Dia, Light Shot, storms II (5/5
+Stormsurge), Shell V. Madrigal's merits (+5) are not counted, as before: the Trust profile's Madrigals
+are a trust's. The engine before also had Bolster, Blaze of Glory and Aria of Passion: the page works
+them out itself (`opt.js` geoScaled, `ariaPdl`), they stay with the wsdist-only switch.
+
+Found, not changed (the page's own food table, `app/js/buffs.js` FOODS, read on BG Wiki): Gyudon's
+"Weapon skill damage +5 %" / +6 % is in the table but `opt.js` FOOD_KEYS does not pass it, so no engine
+counts it; Grape Daifuku, Red Curry Bun, Omelette Sandwich, Miso Ramen and Altana's Repast lack some of
+their effects (HP, the ranged ones, DEF). For the player to decide.

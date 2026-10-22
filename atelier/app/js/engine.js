@@ -4,7 +4,7 @@
    Ambuscade capes capes.js, the augment reader augments_parse.js) ---- */
 // The old damage engine (atelier/engine/: wsdist's formulas, kept on this PC only, loaded when present), the gear
 // catalogue and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
-const CALC_FILES = ['abilities', 'attributes', 'derived', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
+const CALC_FILES = ['abilities', 'attributes', 'buffs', 'derived', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
   'ws_tp', 'page', 'magic_spells', 'magic', 'aftermath'];
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
