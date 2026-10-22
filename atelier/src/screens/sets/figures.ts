@@ -226,6 +226,26 @@ function luopanOf(s: LegacyAny): LuopanView | null {
       loss: r.heals ? t('luHeals') : String(r.net), ticks: r.ticks == null ? '—' : String(r.ticks), good: !!(r.heals || r.capped), time: r.heals || r.capped ? t('luCap') : luClock(r.secs)}))}};
 }
 
+/** A Cure set's healing (a Cure on the others, the Healing Magic set; not a self Cure's, the tank box has it): the HP
+ *  a Cure IV heals and what it is worked out with (atelier/opt.js statFigures cureOther). Open unless closed */
+function cureBox(s: LegacyAny): StatBox | null {
+  if (family(s.path, s.pieces) !== 'midcast' || !/cur(e|a|aga)|healing magic/i.test([s.path, ...(s.aliases || [])].join(' ')) || /self/i.test(s.path)) return null;
+  const f = statFigures(s);
+  if (!f || f.cureOther == null) return null;
+  const pct = (v: number, m: number) => `+${v} %`, of = (m: number) => t('cbOf', {m});
+  const lost = (raw: number, cap: number) => raw > cap ? t('cbLost', {n: raw - cap}) : of(cap);
+  const items: BoxItem[] = [
+    row(t('cbHeal'), `<b>${f.cureOther}</b>`, t('cbHealX')),
+    row(t('cbCp'), pct(Math.min(50, f.cureRaw), 50), lost(f.cureRaw, 50), f.cureRaw > 50 ? 'over' : ''),
+    row(t('cbCp2'), pct(f.cure2, 30), lost(f.cure2Raw, 30), f.cure2Raw > 30 ? 'over' : ''),
+    row(t('cbPower'), String(f.curePower), t('cbPowerX', {m: f.cureMnd, v: f.cureVit, s: f.cureSkill})),
+    row(t('cbEnm'), String(f.enmity))];
+  // open until closed: its fold key notes the closing (events.js flips S.boxOpen[key], unset at first)
+  const b = box('cureShut', 'g-skill', t('cbTitle'), items, String(f.cureOther), `<p class="note-m">${esc(t('cbNote'))}</p>`);
+  b.open = !st().boxOpen.cureShut;
+  return b;
+}
+
 /** The column of figures of a set (setPanelHTML), with what it keeps in the page's state (S._curSet) */
 export function figuresView(s: LegacyAny): FiguresView {
   const S0 = st();
@@ -234,7 +254,7 @@ export function figuresView(s: LegacyAny): FiguresView {
   // a nuke set: its damage and the totals it is worked out with (fight_stats.js), not the tanking figures
   const fight = fightBox(s);
   const off = !fight && r && (fam === 'ws' || fam === 'engaged') ? offenseBox(r, s) : null;
-  const boxes = fight ? [fight] : off ? [off] : r ? [tankBox(r)] : [];
+  const cure = cureBox(s), boxes = [...(cure ? [cure] : []), ...(fight ? [fight] : off ? [off] : r ? [tankBox(r)] : [])];
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), globals: globalsView(s, 'stats')};
   const hp = hpCycle(s), luopan = luopanOf(s), sheet = sheetView(s);
