@@ -237,7 +237,7 @@ function cureBox(s: LegacyAny): StatBox | null {
   const items: BoxItem[] = [
     row(t('cbHeal'), `<b>${f.cureOther}</b>`, t('cbHealX')),
     row(t('cbCp'), pct(Math.min(50, f.cureRaw), 50), lost(f.cureRaw, 50), f.cureRaw > 50 ? 'over' : ''),
-    row(t('cbCp2'), pct(f.cure2, 30), lost(f.cure2Raw, 30), f.cure2Raw > 30 ? 'over' : ''),
+    row(t('cbCp2'), pct(f.cure2, 30), [lost(f.cure2Raw, 30), ...Object.entries(f.setBonuses || {}).map(([sn, x]: [string, LegacyAny]) => t('cbSet', {s: sn, n: x.count, b: x.bonus}))].join(' · '), f.cure2Raw > 30 ? 'over' : ''),
     row(t('cbPower'), String(f.curePower), t('cbPowerX', {m: f.cureMnd, v: f.cureVit, s: f.cureSkill})),
     row(t('cbEnm'), String(f.enmity))];
   // open until closed: its fold key notes the closing (events.js flips S.boxOpen[key], unset at first)
