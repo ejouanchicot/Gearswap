@@ -21,8 +21,13 @@ import sys
 ENTRY = re.compile(r"""\{\s*'((?:[^'\\]|\\.)*)'\s*,\s*when\s*=\s*'((?:[^'\\]|\\.)*)'(\s*,\s*fr\s*=\s*'(?:[^'\\]|\\.)*')?""")
 
 
+# every `when = '...'` or `when = "..."`, whatever its path is written as (a path built with `..`), and whether a
+# `fr` follows it: what the entry regex above cannot see is still counted (two RDM, two COR lines, 2026-10-22)
+WHEN = re.compile(r"""\bwhen\s*=\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")(\s*,\s*fr\s*=)?""")
+
+
 def missing(text):
-    return [m.group(1) for m in ENTRY.finditer(text) if not m.group(3)]
+    return [m.group(1)[:60] for m in WHEN.finditer(text) if not m.group(2)]
 
 
 def main():

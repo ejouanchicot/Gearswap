@@ -30,40 +30,40 @@ local COMPOSURE_SPELLS = '{Deodorize|Flurry|Haste|Invisible|Phalanx|Protect|Refr
 return {
     ---------------------------------------------------------------- idle (set_builder.lua build_idle_set)
     -- set_builder.lua select_idle_base: sets.idle[IdleMode] (Mote reads it too), else below
-    {'idle.{IdleMode}', when = 'Standing, not fighting, in that Idle Mode', base = 'idle'},
+    {'idle.{IdleMode}', when = 'Standing, not fighting, in that Idle Mode', fr = 'Quand tu ne combats pas, avec ce Idle Mode.', base = 'idle'},
     -- select_idle_base: HybridMode PDT, read only while sets.idle.<IdleMode> does not exist
-    {'idle.PDT', when = 'Standing with Hybrid Mode PDT, only while the Idle Mode has no set of its own',
+    {'idle.PDT', when = 'Standing with Hybrid Mode PDT, only while the Idle Mode has no set of its own', fr = 'Quand tu ne combats pas, avec l’Hybrid Mode sur PDT, si ton Idle Mode n’a pas son propre set.',
         base = 'idle', needs = {'state:HybridMode'}},
 
     ---------------------------------------------------------------- engaged (set_builder.lua build_engaged_set)
     -- set_builder.lua select_engaged_base: sets.engaged[EngagedMode] with a shield / one weapon
-    {'engaged.{EngagedMode}', when = 'Fighting in that Engaged Mode, shield or nothing in the off hand', base = 'engaged'},
+    {'engaged.{EngagedMode}', when = 'Fighting in that Engaged Mode, shield or nothing in the off hand', fr = 'Quand tu combats avec cet Engaged Mode, avec un bouclier ou rien dans l’autre main.', base = 'engaged'},
     -- select_engaged_base: .DW when has_shield_equipped says two weapons (only /NIN, /DNC)
-    {'engaged.{EngagedMode}.DW', when = 'Fighting in that Engaged Mode with a weapon in each hand',
+    {'engaged.{EngagedMode}.DW', when = 'Fighting in that Engaged Mode with a weapon in each hand', fr = 'Quand tu combats avec cet Engaged Mode et une arme dans chaque main.',
         base = {'engaged.{EngagedMode}', 'engaged'}, needs = {'dw'}},
     -- select_engaged_base: HybridMode PDT, read only while sets.engaged.<EngagedMode> does not exist
-    {'engaged.PDT', when = 'Fighting with Hybrid Mode PDT, only while the Engaged Mode has no set of its own',
+    {'engaged.PDT', when = 'Fighting with Hybrid Mode PDT, only while the Engaged Mode has no set of its own', fr = 'Quand tu combats avec l’Hybrid Mode sur PDT, si ton Engaged Mode n’a pas son propre set.',
         base = 'engaged', needs = {'state:HybridMode'}},
 
     ---------------------------------------------------------------- Enfeebling (RDM_MIDCAST.lua midcast_enfeebling)
     -- select_set{skill='Enfeebling Magic', mode_state=EnfeebleMode, database_func=get_enfeebling_type}
     -- P0 resolve_exact_spell: the spell's own set, then its EnfeebleMode child
-    {'midcast.{spell:Enfeebling Magic}.{EnfeebleMode}', when = 'Casting that enfeeble in that Enfeeble Mode (read only when sets.midcast.<spell> exists)',
+    {'midcast.{spell:Enfeebling Magic}.{EnfeebleMode}', when = 'Casting that enfeeble in that Enfeeble Mode (read only when sets.midcast.<spell> exists)', fr = 'Quand tu lances cet affaiblissement avec cet Enfeeble Mode, si tu as un set au nom du sort.',
         base = 'midcast.{spell}'},
     -- P3 resolve_type_mode
-    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}.{EnfeebleMode}', when = 'An enfeeble of that kind in that Enfeeble Mode (read only when sets.midcast.Enfeebling Magic exists)',
+    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}.{EnfeebleMode}', when = 'An enfeeble of that kind in that Enfeeble Mode (read only when sets.midcast.Enfeebling Magic exists)', fr = 'Quand tu lances un affaiblissement de ce genre avec cet Enfeeble Mode, si tu as un set Enfeebling Magic.',
         base = {'midcast.Enfeebling Magic.{type}', 'midcast.Enfeebling Magic'}},
     -- P6 resolve_type_root
-    {'midcast.{type:Enfeebling Magic}', when = 'An enfeeble of that kind (read only when sets.midcast.Enfeebling Magic exists)',
+    {'midcast.{type:Enfeebling Magic}', when = 'An enfeeble of that kind (read only when sets.midcast.Enfeebling Magic exists)', fr = 'Quand tu lances un affaiblissement de ce genre, si tu as un set Enfeebling Magic.',
         base = 'midcast.Enfeebling Magic'},
     -- P7 resolve_type_under_skill
-    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'An enfeeble of that kind, when sets.midcast.<kind> does not exist',
+    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'An enfeeble of that kind, when sets.midcast.<kind> does not exist', fr = 'Quand tu lances un affaiblissement de ce genre, si tu n’as pas de set plus précis pour ce genre.',
         base = 'midcast.Enfeebling Magic'},
     -- P8 resolve_mode
-    {'midcast.Enfeebling Magic.{EnfeebleMode}', when = 'Any enfeeble while that Enfeeble Mode is chosen (not Auto), unless its kind has a set for the mode',
+    {'midcast.Enfeebling Magic.{EnfeebleMode}', when = 'Any enfeeble while that Enfeeble Mode is chosen (not Auto), unless its kind has a set for the mode', fr = 'Quand tu lances n’importe quel affaiblissement avec cet Enfeeble Mode choisi (pas Auto), sauf si son genre a un set pour ce mode.',
         base = 'midcast.Enfeebling Magic'},
     -- midcast_enfeebling: laid on top while Saboteur is up
-    {'midcast.Enfeebling Magic.Saboteur', when = 'Casting an enfeeble while Saboteur is up: on top of the enfeeble set',
+    {'midcast.Enfeebling Magic.Saboteur', when = 'Casting an enfeeble while Saboteur is up: on top of the enfeeble set', fr = 'Quand tu lances un affaiblissement avec Saboteur actif : mis par-dessus ton set d’affaiblissement.',
         base = 'midcast.Enfeebling Magic'},
 
     ---------------------------------------------------------------- Enhancing (RDM_MIDCAST.lua midcast_enhancing)
@@ -71,53 +71,53 @@ return {
     -- database_func=get_spell_family}. The target is 'Composure' (Composure up, target not you) or nothing.
     -- state.EnhancingMode is defined by no config: the {EnhancingMode} lines give nothing until it is.
     -- P0 resolve_exact_spell
-    {'midcast.{spell:Enhancing Magic}.{EnhancingMode}', when = 'Casting that spell in that Enhancing Mode (read only when sets.midcast.<spell> exists)',
+    {'midcast.{spell:Enhancing Magic}.{EnhancingMode}', when = 'Casting that spell in that Enhancing Mode (read only when sets.midcast.<spell> exists)', fr = 'Quand tu lances ce sort avec cet Enhancing Mode, si tu as un set au nom du sort.',
         base = 'midcast.{spell}'},
     -- P1 resolve_base_name with the Composure target
-    {'midcast.' .. COMPOSURE_SPELLS .. '.Composure', when = 'Any tier of that spell on someone else under Composure',
+    {'midcast.' .. COMPOSURE_SPELLS .. '.Composure', when = 'Any tier of that spell on someone else under Composure', fr = 'Quand tu lances ce sort, à n’importe quel tier, sur quelqu’un d’autre avec Composure actif.',
         base = {'midcast.' .. COMPOSURE_SPELLS, 'midcast.Enhancing Magic'}},
-    {'midcast.Composure.' .. COMPOSURE_SPELLS, when = 'Any tier of that spell on someone else under Composure (read only when sets.midcast.Enhancing Magic exists)',
+    {'midcast.Composure.' .. COMPOSURE_SPELLS, when = 'Any tier of that spell on someone else under Composure (read only when sets.midcast.Enhancing Magic exists)', fr = 'Quand tu lances ce sort, à n’importe quel tier, sur quelqu’un d’autre avec Composure actif, si tu as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic'},
-    {'midcast.Enhancing Magic.' .. COMPOSURE_SPELLS .. '.Composure', when = 'Any tier of that spell on someone else under Composure (read only when sets.midcast.Enhancing Magic exists)',
+    {'midcast.Enhancing Magic.' .. COMPOSURE_SPELLS .. '.Composure', when = 'Any tier of that spell on someone else under Composure (read only when sets.midcast.Enhancing Magic exists)', fr = 'Quand tu lances ce sort, à n’importe quel tier, sur quelqu’un d’autre avec Composure actif, si tu as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic'},
-    {'midcast.Enhancing Magic.Composure.' .. COMPOSURE_SPELLS, when = 'Any tier of that spell on someone else under Composure (read only when sets.midcast.Enhancing Magic exists)',
+    {'midcast.Enhancing Magic.Composure.' .. COMPOSURE_SPELLS, when = 'Any tier of that spell on someone else under Composure (read only when sets.midcast.Enhancing Magic exists)', fr = 'Quand tu lances ce sort, à n’importe quel tier, sur quelqu’un d’autre avec Composure actif, si tu as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic'},
     -- P2 resolve_type_target_mode (needs EnhancingMode)
-    {'midcast.Enhancing Magic.{type:Enhancing Magic}.Composure.{EnhancingMode}', when = 'A spell of that family on someone else under Composure, in that Enhancing Mode',
+    {'midcast.Enhancing Magic.{type:Enhancing Magic}.Composure.{EnhancingMode}', when = 'A spell of that family on someone else under Composure, in that Enhancing Mode', fr = 'Quand tu lances un sort de cette famille sur quelqu’un d’autre avec Composure actif, avec cet Enhancing Mode.',
         base = 'midcast.Enhancing Magic'},
     -- P3 resolve_type_mode (needs EnhancingMode)
-    {'midcast.Enhancing Magic.{type:Enhancing Magic}.{EnhancingMode}', when = 'A spell of that family in that Enhancing Mode',
+    {'midcast.Enhancing Magic.{type:Enhancing Magic}.{EnhancingMode}', when = 'A spell of that family in that Enhancing Mode', fr = 'Quand tu lances un sort de cette famille avec cet Enhancing Mode.',
         base = 'midcast.Enhancing Magic'},
     -- P4 resolve_target_mode (needs EnhancingMode)
-    {'midcast.Enhancing Magic.Composure.{EnhancingMode}', when = 'An enhancing spell on someone else under Composure, in that Enhancing Mode',
+    {'midcast.Enhancing Magic.Composure.{EnhancingMode}', when = 'An enhancing spell on someone else under Composure, in that Enhancing Mode', fr = 'Quand tu lances un sort d’Enhancing Magic sur quelqu’un d’autre avec Composure actif, avec cet Enhancing Mode.',
         base = 'midcast.Enhancing Magic'},
     -- P5 resolve_target: under the skill, then at the root
-    {'midcast.Enhancing Magic.Composure', when = 'An enhancing spell on someone else under Composure, without a set of its own',
+    {'midcast.Enhancing Magic.Composure', when = 'An enhancing spell on someone else under Composure, without a set of its own', fr = 'Quand tu lances un sort d’Enhancing Magic sur quelqu’un d’autre avec Composure actif, si ce sort n’a pas de set à lui.',
         base = 'midcast.Enhancing Magic'},
-    {'midcast.Composure', when = 'An enhancing spell on someone else under Composure, when sets.midcast.Enhancing Magic.Composure does not exist (read only when sets.midcast.Enhancing Magic exists)',
+    {'midcast.Composure', when = 'An enhancing spell on someone else under Composure, when sets.midcast.Enhancing Magic.Composure does not exist (read only when sets.midcast.Enhancing Magic exists)', fr = 'Quand tu lances un sort d’Enhancing Magic sur quelqu’un d’autre avec Composure actif, si tu n’as pas de set Enhancing Magic.Composure mais as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic'},
     -- P6 resolve_type_root
-    {'midcast.{type:Enhancing Magic}', when = 'A spell of that family (Enspell, Gain, BarElement...) (read only when sets.midcast.Enhancing Magic exists)',
+    {'midcast.{type:Enhancing Magic}', when = 'A spell of that family (Enspell, Gain, BarElement...) (read only when sets.midcast.Enhancing Magic exists)', fr = 'Quand tu lances un sort de cette famille (Enspell, Gain, BarElement…), si tu as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic'},
     -- P7 resolve_type_under_skill
-    {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'A spell of that family, when sets.midcast.<family> does not exist',
+    {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'A spell of that family, when sets.midcast.<family> does not exist', fr = 'Quand tu lances un sort de cette famille, si tu n’as pas de set plus précis pour cette famille.',
         base = 'midcast.Enhancing Magic'},
     -- P8 resolve_mode (needs EnhancingMode)
-    {'midcast.Enhancing Magic.{EnhancingMode}', when = 'An enhancing spell in that Enhancing Mode, without a set for its family',
+    {'midcast.Enhancing Magic.{EnhancingMode}', when = 'An enhancing spell in that Enhancing Mode, without a set for its family', fr = 'Quand tu lances un sort d’Enhancing Magic avec cet Enhancing Mode, si sa famille n’a pas de set.',
         base = 'midcast.Enhancing Magic'},
 
     ---------------------------------------------------------------- Healing (RDM_MIDCAST.lua midcast_healing)
     -- select_set{skill='Healing Magic'}: P0, P1, P8b, P9 only (common lines).
     -- Then sets.midcast.CureSelf on top for a Cure (not a Curaga) cast on yourself.
-    {'midcast.CureSelf', when = 'Casting a Cure (not a Curaga) on yourself: on top of the cure set'},
+    {'midcast.CureSelf', when = 'Casting a Cure (not a Curaga) on yourself: on top of the cure set', fr = 'Quand tu lances une Cure (pas une Curaga) sur toi-même : mis par-dessus ton set de Cure.'},
 
     ---------------------------------------------------------------- Elemental (RDM_MIDCAST.lua midcast_elemental)
     -- select_set{skill='Elemental Magic', mode_state=NukeMode}
     -- P0 resolve_exact_spell
-    {'midcast.{spell:Elemental Magic}.{NukeMode}', when = 'Casting that nuke in that Nuke Mode (read only when sets.midcast.<spell> exists)',
+    {'midcast.{spell:Elemental Magic}.{NukeMode}', when = 'Casting that nuke in that Nuke Mode (read only when sets.midcast.<spell> exists)', fr = 'Quand tu lances ce nuke avec ce Nuke Mode, si tu as un set au nom du sort.',
         base = 'midcast.{spell}'},
     -- P8 resolve_mode
-    {'midcast.Elemental Magic.{NukeMode}', when = 'A nuke in that Nuke Mode (read only when sets.midcast.Elemental Magic exists)',
+    {'midcast.Elemental Magic.{NukeMode}', when = 'A nuke in that Nuke Mode (read only when sets.midcast.Elemental Magic exists)', fr = 'Quand tu lances un nuke avec ce Nuke Mode, si tu as un set Elemental Magic.',
         base = 'midcast.Elemental Magic'},
 
     -- Dark Magic (midcast_dark, select_set{skill='Dark Magic'}): P0, P1, P8b, P9 only, no line of its own.

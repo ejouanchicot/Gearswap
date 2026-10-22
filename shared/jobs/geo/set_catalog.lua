@@ -29,37 +29,37 @@ return {
 
     ---------------------------------------------------------------- idle (set_builder.lua build_idle_set)
     -- select_hybrid_base fallback, and the luopan's fallback
-    {'me.idle', when = 'Standing, no luopan out, when the Hybrid Mode has no idle set'},
+    {'me.idle', when = 'Standing, no luopan out, when the Hybrid Mode has no idle set', fr = 'Quand tu ne combats pas, sans luopan sorti, si ton Hybrid Mode n’a pas de set idle.'},
     -- select_hybrid_base(sets.idle, sets.me.idle)
-    {'idle.{HybridMode}', when = 'Standing, no luopan out, in that Hybrid Mode', base = 'me.idle', needs = {'state:HybridMode'}},
-    {'luopan.idle', when = 'Standing with a luopan out (pet survival)', base = 'me.idle'},
+    {'idle.{HybridMode}', when = 'Standing, no luopan out, in that Hybrid Mode', fr = 'Quand tu ne combats pas, sans luopan sorti, avec cet Hybrid Mode.', base = 'me.idle', needs = {'state:HybridMode'}},
+    {'luopan.idle', when = 'Standing with a luopan out (pet survival)', fr = 'Quand tu ne combats pas, avec un luopan sorti (pour sa survie).', base = 'me.idle'},
     -- base_set_builder.lua select_idle_base_town: on top of whichever idle above (sets.me.idle.Town is not read)
-    {'idle.Town', when = 'Idle in a town (Dynamis excluded), laid on top of the idle set', base = {'me.idle'}},
+    {'idle.Town', when = 'Idle in a town (Dynamis excluded), laid on top of the idle set', fr = 'En ville (sauf Dynamis), quand tu ne combats pas : mis par-dessus ton set idle.', base = {'me.idle'}},
 
     ---------------------------------------------------------------- engaged (set_builder.lua build_engaged_set)
-    {'me.engaged', when = 'Fighting, no luopan out, when the Hybrid Mode has no engaged set; also with a luopan when sets.luopan.engaged.DT is missing'},
-    {'engaged.{HybridMode}', when = 'Fighting, no luopan out, in that Hybrid Mode', base = 'me.engaged', needs = {'state:HybridMode'}},
+    {'me.engaged', when = 'Fighting, no luopan out, when the Hybrid Mode has no engaged set; also with a luopan when sets.luopan.engaged.DT is missing', fr = 'Quand tu combats sans luopan sorti, si ton Hybrid Mode n’a pas de set engaged ; aussi avec un luopan si tu n’as pas de set luopan.engaged.DT.'},
+    {'engaged.{HybridMode}', when = 'Fighting, no luopan out, in that Hybrid Mode', fr = 'Quand tu combats sans luopan sorti, avec cet Hybrid Mode.', base = 'me.engaged', needs = {'state:HybridMode'}},
     -- LuopanMode DT, and the fallback of any other value
-    {'luopan.engaged.DT', when = 'Fighting with a luopan out, Luopan Mode DT (also when the DPS set is missing)', base = 'me.engaged'},
-    {'luopan.engaged.DPS', when = 'Fighting with a luopan out, Luopan Mode DPS', base = {'luopan.engaged.DT', 'me.engaged'},
+    {'luopan.engaged.DT', when = 'Fighting with a luopan out, Luopan Mode DT (also when the DPS set is missing)', fr = 'Quand tu combats avec un luopan sorti et le Luopan Mode sur DT (aussi sur DPS si tu n’as pas de set DPS).', base = 'me.engaged'},
+    {'luopan.engaged.DPS', when = 'Fighting with a luopan out, Luopan Mode DPS', fr = 'Quand tu combats avec un luopan sorti et le Luopan Mode sur DPS.', base = {'luopan.engaged.DT', 'me.engaged'},
         needs = {'state:LuopanMode'}},
     -- shared/utils/party/support_tier.lua SupportTier.engaged on the set chosen above
-    {'me.engaged.{Group|Solo|Trust}', when = 'That engaged set with less support in your zone (same tiers as the weaponskills)',
+    {'me.engaged.{Group|Solo|Trust}', when = 'That engaged set with less support in your zone (same tiers as the weaponskills)', fr = 'Quand tu combats avec moins de soutien dans ta zone : version de ton set engaged (mêmes paliers que pour les weaponskills).',
         base = 'me.engaged'},
-    {'luopan.engaged.{DT|DPS}.{Group|Solo|Trust}', when = 'That engaged set with less support in your zone (same tiers as the weaponskills)',
+    {'luopan.engaged.{DT|DPS}.{Group|Solo|Trust}', when = 'That engaged set with less support in your zone (same tiers as the weaponskills)', fr = 'Quand tu combats avec un luopan et moins de soutien dans ta zone : version de ce set engaged (mêmes paliers que pour les weaponskills).',
         base = 'luopan.engaged.{DT|DPS}'},
 
     ---------------------------------------------------------------- Geomancy (GEO_MIDCAST.lua midcast_geomancy)
     -- select_set{skill='Geomancy', database_func=geomancy_family ('Indi' / 'Geo')}
     -- P1 resolve_base_name {skill, base}: the common {spellplain} line (Indi- / Geo- names have no tier)
     -- P6 resolve_type_root
-    {'midcast.{Indi|Geo}', when = 'Any Indi- (or Geo-) spell without a set of its own (read only when sets.midcast.Geomancy exists)',
+    {'midcast.{Indi|Geo}', when = 'Any Indi- (or Geo-) spell without a set of its own (read only when sets.midcast.Geomancy exists)', fr = 'Quand tu lances un sort Indi- (ou Geo-) qui n’a pas son propre set, si tu as un set Geomancy.',
         base = 'midcast.Geomancy'},
     -- P7 resolve_type_under_skill
-    {'midcast.Geomancy.{Indi|Geo}', when = 'Any Indi- (or Geo-) spell, when sets.midcast.Indi (or .Geo) does not exist',
+    {'midcast.Geomancy.{Indi|Geo}', when = 'Any Indi- (or Geo-) spell, when sets.midcast.Indi (or .Geo) does not exist', fr = 'Quand tu lances un sort Indi- (ou Geo-), si tu n’as pas de set midcast.Indi (ou midcast.Geo).',
         base = 'midcast.Geomancy'},
     -- midcast_geomancy: instead of the chain, read only when sets.midcast.Indi exists
-    {'midcast.Indi.Entrust', when = 'An Indi- spell cast on a party member while Entrust is up (or just used): replaces the Geomancy set',
+    {'midcast.Indi.Entrust', when = 'An Indi- spell cast on a party member while Entrust is up (or just used): replaces the Geomancy set', fr = 'Quand tu lances un sort Indi- sur un membre du groupe avec Entrust actif (ou juste utilisé) : remplace ton set Geomancy.',
         base = 'midcast.Indi'},
 
     ---------------------------------------------------------------- Enhancing (GEO_MIDCAST.lua job_post_midcast)
@@ -67,10 +67,10 @@ return {
     -- The target is 'Composure' only with the RDM main job's Composure (shared/data/job_abilities/rdm/rdm_mainjob.lua,
     -- main_job_only): no target levels on GEO.
     -- P6 resolve_type_root
-    {'midcast.{type:Enhancing Magic}', when = 'An enhancing spell of that family (read only when sets.midcast.Enhancing Magic exists)',
+    {'midcast.{type:Enhancing Magic}', when = 'An enhancing spell of that family (read only when sets.midcast.Enhancing Magic exists)', fr = 'Quand tu lances un sort d’Enhancing Magic de cette famille, si tu as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic', needs = {'skill:Enhancing Magic'}},
     -- P7 resolve_type_under_skill
-    {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'An enhancing spell of that family, when sets.midcast.<family> does not exist',
+    {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'An enhancing spell of that family, when sets.midcast.<family> does not exist', fr = 'Quand tu lances un sort d’Enhancing Magic de cette famille, si tu n’as pas de set plus précis pour cette famille.',
         base = 'midcast.Enhancing Magic', needs = {'skill:Enhancing Magic'}},
 
     -- Healing, Enfeebling, Elemental, Dark (PLAIN_SKILLS, select_set{skill, spell}): P0, P1, P8b, P9 only.

@@ -24,37 +24,37 @@ return {
 
     ---------------------------------------------------------------- engaged (set_builder.lua select_engaged_base)
     -- Priority 1: Saber Dance up
-    {'engaged.SaberDance', when = 'Fighting with Saber Dance up', base = 'engaged'},
-    {'engaged.SaberDance.PDT', when = 'Fighting with Saber Dance up, Hybrid Mode PDT', base = 'engaged.SaberDance',
+    {'engaged.SaberDance', when = 'Fighting with Saber Dance up', fr = 'Quand tu combats avec Saber Dance actif.', base = 'engaged'},
+    {'engaged.SaberDance.PDT', when = 'Fighting with Saber Dance up, Hybrid Mode PDT', fr = 'Quand tu combats avec Saber Dance actif et l’Hybrid Mode sur PDT.', base = 'engaged.SaberDance',
         needs = {'state:HybridMode'}},
     -- Priority 2: HybridMode PDT with Fan Dance up
-    {'engaged.FanDance', when = 'Fighting with Fan Dance up, in every Hybrid Mode', base = 'engaged.PDT'},
+    {'engaged.FanDance', when = 'Fighting with Fan Dance up, in every Hybrid Mode', fr = 'Quand tu combats avec Fan Dance actif, quel que soit l’Hybrid Mode.', base = 'engaged.PDT'},
     -- HybridMode step (PDT is read even when absent: no fallback to the base set)
-    {'engaged.{HybridMode}', when = 'Fighting with that Hybrid Mode, no dance up', base = 'engaged', needs = {'state:HybridMode'}},
+    {'engaged.{HybridMode}', when = 'Fighting with that Hybrid Mode, no dance up', fr = 'Quand tu combats avec cet Hybrid Mode, sans danse active.', base = 'engaged', needs = {'state:HybridMode'}},
     -- build_engaged_set: laid on top while Saber Dance is up
-    {'buff.Saber Dance', when = 'Fighting with Saber Dance up: on top of the engaged set'},
+    {'buff.Saber Dance', when = 'Fighting with Saber Dance up: on top of the engaged set', fr = 'Quand tu combats avec Saber Dance actif : mis par-dessus ton set engaged.'},
 
     ---------------------------------------------------------------- idle (base_set_builder.lua select_idle_base)
-    {'idle.{HybridMode}', when = 'Standing outside a town with that Hybrid Mode', base = 'idle', needs = {'state:HybridMode'}},
+    {'idle.{HybridMode}', when = 'Standing outside a town with that Hybrid Mode', fr = 'Quand tu ne combats pas, hors de la ville, avec cet Hybrid Mode.', base = 'idle', needs = {'state:HybridMode'}},
 
     ---------------------------------------------------------------- weapons (set_builder.lua apply_weapon)
     -- only its sub is read, laid over the Main Weapon set's sub
-    {'{SubWeaponOverride~Off}', when = 'That Sub Override value: its sub replaces the Main Weapon set\'s sub, idle and engaged',
+    {'{SubWeaponOverride~Off}', when = 'That Sub Override value: its sub replaces the Main Weapon set\'s sub, idle and engaged', fr = 'Avec cette valeur de Sub Override : son arme secondaire (sub) remplace celle du set de Main Weapon, que tu combattes ou non.',
         needs = {'state:SubWeaponOverride'}},
 
     ---------------------------------------------------------------- weaponskills (ws_variant_selector.lua best_variant)
     -- read only when sets.precast.WS[<ws>] exists; dance + Climactic: <dance>.Clim, else <dance>, else Clim
-    {'precast.WS.{ws}.{SaberDance|FanDance}', when = 'That weaponskill with that dance up', base = 'precast.WS.{ws}'},
-    {'precast.WS.{ws}.Clim', when = 'That weaponskill under Climactic Flourish', base = 'precast.WS.{ws}'},
-    {'precast.WS.{ws}.{SaberDance|FanDance}.Clim', when = 'That weaponskill with that dance up and Climactic Flourish',
+    {'precast.WS.{ws}.{SaberDance|FanDance}', when = 'That weaponskill with that dance up', fr = 'Pour cette weaponskill, avec cette danse active.', base = 'precast.WS.{ws}'},
+    {'precast.WS.{ws}.Clim', when = 'That weaponskill under Climactic Flourish', fr = 'Pour cette weaponskill, sous Climactic Flourish.', base = 'precast.WS.{ws}'},
+    {'precast.WS.{ws}.{SaberDance|FanDance}.Clim', when = 'That weaponskill with that dance up and Climactic Flourish', fr = 'Pour cette weaponskill, avec cette danse active et sous Climactic Flourish.',
         base = {'precast.WS.{ws}.{SaberDance|FanDance}', 'precast.WS.{ws}.Clim', 'precast.WS.{ws}'}},
     -- apply_variant: on top of the weaponskill set under Climactic Flourish
-    {'buff.Climactic Flourish', when = 'Weaponskill under Climactic Flourish: on top of the weaponskill set'},
+    {'buff.Climactic Flourish', when = 'Weaponskill under Climactic Flourish: on top of the weaponskill set', fr = 'Pour une weaponskill sous Climactic Flourish : mis par-dessus ton set de weaponskill.'},
 
     ---------------------------------------------------------------- spells (subjob magic)
     -- DNC_MIDCAST.lua Enhancing Magic: database_func EnhancingSPELLS.get_spell_family (P6 root, P7 under the skill)
-    {'midcast.{type:Enhancing Magic}', when = 'Any Enhancing spell of that family (read only when sets.midcast[\'Enhancing Magic\'] exists)',
+    {'midcast.{type:Enhancing Magic}', when = 'Any Enhancing spell of that family (read only when sets.midcast[\'Enhancing Magic\'] exists)', fr = 'Quand tu lances un sort d’Enhancing Magic de cette famille, si tu as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic', needs = {'skill:Enhancing Magic'}},
-    {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'Any Enhancing spell of that family (read only when sets.midcast[\'Enhancing Magic\'] exists)',
+    {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'Any Enhancing spell of that family (read only when sets.midcast[\'Enhancing Magic\'] exists)', fr = 'Quand tu lances un sort d’Enhancing Magic de cette famille, si tu as un set Enhancing Magic.',
         base = 'midcast.Enhancing Magic', needs = {'skill:Enhancing Magic'}},
 }
