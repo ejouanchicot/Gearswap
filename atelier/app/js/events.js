@@ -369,6 +369,8 @@ function readExports(first, done){
     if (!S.char) { S.job = null; if (done) done(); render(); return; }
     // back where the last visit left off, when that job is still exported
     if (S.job && !(DATA[S.char] || {})[S.job]) S.job = null;
+    // the pushes newer than their job's exports, laid on them again (push.js pushedApply)
+    pushedApply();
     if (!first) canonAll();
     if (done) done();
     render();

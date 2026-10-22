@@ -91,6 +91,10 @@ async function openPush(s){
   const warn = pushWarnings(s, plan, tg.create), any = r.changes && r.changes.length;
   // in plain words, the file's lines in a fold (atelier/src/screens/dialogs/pushview.ts)
   ATELIER_DIALOG.show({cls: 'pushdlg', titleHtml: t('pushTitle'), push: ATELIER_DIALOG.pushView(s, tg, plan, r, warn, any), buttonsHtml: any ? `<button class="btn" data-pushgo>${t('pushGo')}</button>` : ''});
+  // nothing to change: the file holds these pieces already (pushed before the page kept its pushes, or written by
+  // hand), so the page's copies of the set take them, the trial with them (after the window
+  // is drawn: its rows say what the file held)
+  if (!any && !tg.create) { pushedKeep(s, plan); delete S.trial[trialKey(s)]; save(); render(); }
 }
 async function pushGo(){
   const P = S._push;
@@ -106,14 +110,36 @@ async function pushGo(){
   if (map[S.job] && !(P.tg && P.tg.create)) { delete map[S.job][s.path]; if (!Object.keys(map[S.job]).length) delete map[S.job]; }
   S.setOv[S.char].at = stamp();
   S._toastSet = s.path; S.toast = doneText('pushDone', r.entry.file);
-  // a job the game has not loaded: its export is not read again, the page's copy of the set takes the pieces written
-  // (a new version shows once that job is loaded)
-  if (!shownJobLoaded()) { if (P.tg && P.tg.create) S.toast += ' ' + t('pushLater', {j: S.job}); else patchSet(s, P.plan); }
+  // the page's copies of the set take the pieces written now and after a reload, loaded job or not (pushedKeep);
+  // a new version shows once that job is exported again
+  if (P.tg && P.tg.create) { if (!shownJobLoaded()) S.toast += ' ' + t('pushLater', {j: S.job}); }
+  else pushedKeep(s, P.plan);
   S._push = null; closeOverlay(); save();
   await reloadIfLoaded();
   render();
 }
-// The page's copy of a set given the pieces a push wrote (a job the game has not loaded: no new export of it comes)
+/* ---- what a push wrote, kept until that job's exports are newer (S.pushed, kept with the page's state) ---- */
+// A push is seen at once and stays seen: the page lays what was written on every copy of the set (each subjob's
+// export of that job) older than the push, at each read of the exports, until the game or Relire exports that job
+// again. Without it a job the game had not loaded showed its old set again once the page was reloaded, its search
+// offered the pieces written again and the push said "nothing to change" (Tetsouo's BLM IntEnfeebles, 2026-10-22)
+function pushedKeep(s, plan){
+  S.pushed = (S.pushed || []).filter(x => !(x.c === S.char && x.j === S.job && x.path === s.path));
+  S.pushed.push({c: S.char, j: S.job, path: s.path, at: stamp(),
+    plan: plan.map(e => ({slot: e.slot, kind: e.kind, piece: e.piece ? {name: e.piece.name, augs: e.piece.augs} : null}))});
+  pushedApply();
+}
+// Each kept push on the exports of its job not newer than it; a push every export of its job is newer than is
+// dropped (the files hold it, and maybe more since)
+function pushedApply(){
+  if (!S.pushed || !S.pushed.length) return;
+  S.pushed = S.pushed.filter(x => {
+    const old = Object.values(exportsOf(x.c, x.j)).filter(d => (d.at || '') <= x.at);
+    for (const d of old) { const s = (d.sets || []).find(y => y.path === x.path); if (s) patchSet(s, x.plan); }
+    return old.length > 0;
+  });
+}
+// The page's copy of a set given the pieces a push wrote
 function patchSet(s, plan){
   for (const e of plan) {
     if (e.kind === 'inherit') delete s.pieces[e.slot];
