@@ -538,8 +538,13 @@
         {name: "The Voracious Resurgence 11-2", items: ["Medada's Ring", "Gurebu's Ring", "Cornelia's Ring", "Ragelise's Ring", "Lehko's Ring", "Fickblix's Ring", "Ephramad's Ring"]},
         {name: "Seekers of Adoulin 4-3-8", items: ["Adoulin's Refuge", "Ygnas's Resolve", "Arciela's Grace"]},
         {name: "Seekers of Adoulin 4-6-1", items: ["Adoulin's Refuge +1", "Ygnas's Resolve +1", "Arciela's Grace +1"]},
-        {name: "Seekers of Adoulin 5-5-1", items: ["Adoulin Ring", "Gorney Ring", "Haverton Ring", "Janniston Ring", "Karieyh Ring", "Orvail Ring", "Renaye Ring", "Shneddick Ring", "Thurandaut Ring", "Vocane Ring", "Weather. Ring"]},
-        {name: "Seekers of Adoulin epilogue", items: ["Adoulin Ring +1", "Gorney Ring +1", "Haverton Ring +1", "Janniston Ring +1", "Karieyh Ring +1", "Orvail Ring +1", "Renaye Ring +1", "Shneddick Ring +1", "Thurandaut Ring +1", "Vocane Ring +1", "Weather. Ring +1"]},
+        // the scenario reward ring (BG Wiki Woltaris_Ring, Janniston_Ring, Jann._Ring_+1: "The Light Within", one ring
+        // chosen, exchanged at Ploh Trishbahk for "a choice of a new NQ Ring"; the +1 is that ring "reforged and upgraded
+        // to its corresponding HQ version", not a second one): one of the 24 in all, by the game's short names
+        {name: "Seekers of Adoulin ring", items: ["Adoulin Ring", "Gorney Ring", "Haverton Ring", "Janniston Ring", "Karieyh Ring", "Orvail Ring",
+            "Renaye Ring", "Shneddick Ring", "Thurandaut Ring", "Vocane Ring", "Weather. Ring", "Woltaris Ring",
+            "Adoulin Ring +1", "Gorney Ring +1", "Haverton Ring +1", "Jann. Ring +1", "Karieyh Ring +1", "Orvail Ring +1",
+            "Renaye Ring +1", "Shneddick Ring +1", "Thur. Ring +1", "Vocane Ring +1", "Weather. Ring +1", "Woltaris Ring +1"]},
         {name: "Rhapsodies of Vana'diel epilogue", items: ["Ligeia Ring", "Ligeia Sash", "Ligeia Scythe"]}
     ];
     O.groupOf = function (name) {
