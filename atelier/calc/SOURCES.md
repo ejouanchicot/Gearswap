@@ -398,3 +398,11 @@ none). What changed against the engine before: DIFFERENCES.md section AF.
 
 The skill caps (calc_skills.js skillCap) are held to weapon skills and Evasion: the exports of 2026-10-22 read
 the other skills above any cap the ranks, merits and gifts give (DIFFERENCES.md section AG).
+
+## The targets' estimated AGI and the magic damage they take (2026-10-23)
+
+| Source | What was read | Used in |
+|---|---|---|
+| https://w.atwiki.jp/bartlett3/pages/328.html 「ステータスランク」 (read 2026-10-23) | 「レベル補正が撤廃されたアドゥリン以降のエリア」; the value of ranks A to G at levels 100 to 150 (Lv132: A161 B146 C131 D117 E102 F92 G82), each job's rank (戦士 AGI C, 狩人 AGI A), each family's rank (コウモリ AGI C, トード AGI A, ギア AGI E) | atelier/targets.js AGI of 12 Apex families (its header) |
+| https://w.atwiki.jp/bartlett3/pages/327.html (read again 2026-10-23) | the measured stats the rule is checked on: 314 of 330 found | atelier/targets.js |
+| https://www.bg-wiki.com/ffxi/Gambit | "Increases damage taken of the appropriate element(s) by 10% per rune consumed." | opt.js (Gambit), calc_magic.js tmda (DIFFERENCES.md AH) |
