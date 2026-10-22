@@ -1,0 +1,2866 @@
+{
+ "source": "BG Wiki (bg-wiki.com) item pages, notes section; see hidden_review.py",
+ "count": 282,
+ "items": {
+  "10281": {
+   "name": "Manasa Chasuble",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Manasa_Chasuble",
+   "notes": {
+    "Refresh": "Refresh effect is 2 MP per tick."
+   }
+  },
+  "10282": {
+   "name": "Krabat Jacket",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Krabat_Jacket",
+   "notes": {
+    "Refresh": "Refresh effect is 1 MP/tick"
+   }
+  },
+  "10288": {
+   "name": "Baalmuian Robe",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Baalmuian_Robe",
+   "notes": {
+    "Refresh": "Refresh effect is 2 MP/tick."
+   }
+  },
+  "10322": {
+   "name": "Murzim Manopolas",
+   "stats": {
+    "Crit Damage": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Murzim_Manopolas",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +2%."
+   }
+  },
+  "10326": {
+   "name": "Enif Cosciales",
+   "stats": {
+    "Fast Cast": 8
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Enif_Cosciales",
+   "notes": {
+    "Fast Cast": "The Fast Cast effect is 8%."
+   }
+  },
+  "10348": {
+   "name": "Chelona Trousers",
+   "stats": {
+    "Magic Burst Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Chelona_Trousers",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +10%"
+   }
+  },
+  "10349": {
+   "name": "Chl. Trousers +1",
+   "stats": {
+    "Magic Burst Damage": 11
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Chl._Trousers_%2B1",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +11%."
+   }
+  },
+  "10365": {
+   "name": "Chelona Boots",
+   "stats": {
+    "Fast Cast": 4
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Chelona_Boots",
+   "notes": {
+    "Fast Cast": "Fast Cast+4%"
+   }
+  },
+  "10366": {
+   "name": "Chelona Boots +1",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Chelona_Boots_%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast+5%"
+   }
+  },
+  "10394": {
+   "name": "Orunmila's Torque",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orunmila%27s_Torque",
+   "notes": {
+    "Fast Cast": "Fast Cast +5%."
+   }
+  },
+  "10452": {
+   "name": "Rubeus Jacket",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Rubeus_Jacket",
+   "notes": {
+    "Refresh": "Refresh effect is 1 MP/tick."
+   }
+  },
+  "10467": {
+   "name": "Pharmakeia Robe",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Pharmakeia_Robe",
+   "notes": {
+    "Refresh": "Refresh effect is 1 MP/tick."
+   }
+  },
+  "10468": {
+   "name": "Kumarbi's Akar",
+   "stats": {
+    "Regen": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kumarbi%27s_Akar",
+   "notes": {
+    "Regen": "Regen effect is 3 HP/tick."
+   }
+  },
+  "10469": {
+   "name": "Eirene's Manteel",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Eirene%27s_Manteel",
+   "notes": {
+    "Fast Cast": "Fast Cast +10%"
+   }
+  },
+  "10491": {
+   "name": "Khepri Jacket",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Khepri_Jacket",
+   "notes": {
+    "Regen": "Regen +2HP/tick."
+   }
+  },
+  "10492": {
+   "name": "Spurrina Doublet",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Spurrina_Doublet",
+   "notes": {
+    "Refresh": "Refresh effect is 1MP/tick."
+   }
+  },
+  "10514": {
+   "name": "Magavan Mitts",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Magavan_Mitts",
+   "notes": {
+    "Fast Cast": "Fast Cast+2%"
+   }
+  },
+  "10516": {
+   "name": "Antias Mitts",
+   "stats": {
+    "Zanshin": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Antias_Mitts",
+   "notes": {
+    "Zanshin": "Zanshin rate +1%"
+   }
+  },
+  "10517": {
+   "name": "Repartie Gloves",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Repartie_Gloves",
+   "notes": {
+    "Fast Cast": "2% Fast Cast"
+   }
+  },
+  "10528": {
+   "name": "Thaumas Gloves",
+   "stats": {
+    "Fast Cast": 4
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Thaumas_Gloves",
+   "notes": {
+    "Fast Cast": "Fast Cast +4%"
+   }
+  },
+  "10615": {
+   "name": "Wurrukatte Boots",
+   "stats": {
+    "Snapshot": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Wurrukatte_Boots",
+   "notes": {
+    "Snapshot": "Snapshot effect is +3%."
+   }
+  },
+  "10654": {
+   "name": "Dls. Chapeau +2",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Dls._Chapeau_%2B2",
+   "notes": {
+    "Refresh": "Refresh potency is 2MP/tick"
+   }
+  },
+  "10667": {
+   "name": "Pantin Taj +2",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Pantin_Taj_%2B2",
+   "notes": {
+    "Regen": "read by hand"
+   }
+  },
+  "10671": {
+   "name": "Mel. Cyclas +2",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Mel._Cyclas_%2B2",
+   "notes": {
+    "Regen": "Regen effect is 2 HP/tick"
+   }
+  },
+  "10672": {
+   "name": "Clr. Bliaut +2",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Clr._Bliaut_%2B2",
+   "notes": {
+    "Refresh": "Refresh effect is 2MP/tick."
+   }
+  },
+  "10673": {
+   "name": "Src. Coat +2",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Src._Coat_%2B2",
+   "notes": {
+    "Refresh": "Refresh effect is 2 MP/tick"
+   }
+  },
+  "10674": {
+   "name": "Dls. Tabard +2",
+   "stats": {
+    "Fast Cast": 12
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Dls._Tabard_%2B2",
+   "notes": {
+    "Fast Cast": "Enhances Fast Cast by 12%."
+   }
+  },
+  "10675": {
+   "name": "Asn. Vest +2",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Asn._Vest_%2B2",
+   "notes": {
+    "Crit Damage": "Increases Critical Hit Damage by 3%."
+   }
+  },
+  "10682": {
+   "name": "Kog. Chainmail +2",
+   "stats": {
+    "Dual Wield": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kog._Chainmail_%2B2",
+   "notes": {
+    "Dual Wield": "3% Dual Wield"
+   }
+  },
+  "10685": {
+   "name": "Mirage Jubbah +2",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Mirage_Jubbah_%2B2",
+   "notes": {
+    "Refresh": "Refresh effect is 2 MP/tick"
+   }
+  },
+  "10693": {
+   "name": "Src. Gloves +2",
+   "stats": {
+    "Magic Burst Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Src._Gloves_%2B2",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +10%."
+   }
+  },
+  "10706": {
+   "name": "Comm. Gants +2",
+   "stats": {
+    "Snapshot": 7
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Comm._Gants_%2B2",
+   "notes": {
+    "Snapshot": "Snapshot +7%"
+   }
+  },
+  "10722": {
+   "name": "Kog. Hakama +2",
+   "stats": {
+    "Dual Wield": 7
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kog._Hakama_%2B2",
+   "notes": {
+    "Dual Wield": "Dual Wield +7%"
+   }
+  },
+  "10749": {
+   "name": "Argute Loafers +2",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Argute_Loafers_%2B2",
+   "notes": {
+    "Fast Cast": "Likely Fast Cast +5%"
+   }
+  },
+  "10752": {
+   "name": "Prolix Ring",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Prolix_Ring",
+   "notes": {
+    "Fast Cast": "Fast Cast +2%"
+   }
+  },
+  "10753": {
+   "name": "Paguroidea Ring",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Paguroidea_Ring",
+   "notes": {
+    "Regen": "Regen effect is 2 HP/tick."
+   }
+  },
+  "10802": {
+   "name": "Majorelle Shield",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Majorelle_Shield",
+   "notes": {
+    "Fast Cast": "Fast Cast+5%"
+   }
+  },
+  "10826": {
+   "name": "Witful Belt",
+   "stats": {
+    "Fast Cast": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Witful_Belt",
+   "notes": {
+    "Fast Cast": "Fast Cast 3%"
+   }
+  },
+  "10838": {
+   "name": "Patentia Sash",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Patentia_Sash",
+   "notes": {
+    "Dual Wield": "Tested to be 5% Dual Wield"
+   }
+  },
+  "10864": {
+   "name": "Ocelo. Headpiece",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ocelo._Headpiece",
+   "notes": {
+    "Regen": "Regen effect is +1 HP/tick"
+   }
+  },
+  "10867": {
+   "name": "Oce. Headpiece +1",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Oce._Headpiece_%2B1",
+   "notes": {
+    "Regen": "Regen effect is +2 HP/tick"
+   }
+  },
+  "10877": {
+   "name": "Athos's Chapeau",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Athos%27s_Chapeau",
+   "notes": {
+    "Fast Cast": "Fast Cast effect +2%"
+   }
+  },
+  "10910": {
+   "name": "Tethyan Cap +3",
+   "stats": {
+    "Fast Cast": 7
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Tethyan_Cap_%2B3",
+   "notes": {
+    "Fast Cast": "Fast Cast +7%"
+   }
+  },
+  "10911": {
+   "name": "Nares Cap",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nares_Cap",
+   "notes": {
+    "Fast Cast": "10% Fast Cast"
+   }
+  },
+  "10913": {
+   "name": "Hyaline Hat",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Hyaline_Hat",
+   "notes": {
+    "Fast Cast": "Fast Cast +10%"
+   }
+  },
+  "10933": {
+   "name": "Mujin Necklace",
+   "stats": {
+    "Zanshin": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Mujin_Necklace",
+   "notes": {
+    "Zanshin": "Zanshin rate +5%"
+   }
+  },
+  "10946": {
+   "name": "Coatl Gorget",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Coatl_Gorget",
+   "notes": {
+    "Refresh": "Refresh: 1 MP/tic"
+   }
+  },
+  "10970": {
+   "name": "Scuta Cape",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Scuta_Cape",
+   "notes": {
+    "Regen": "Regen is 2 HP/tick."
+   }
+  },
+  "11000": {
+   "name": "Swith Cape",
+   "stats": {
+    "Fast Cast": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Swith_Cape",
+   "notes": {
+    "Fast Cast": "Fast Cast +3%"
+   }
+  },
+  "11001": {
+   "name": "Swith Cape +1",
+   "stats": {
+    "Fast Cast": 4
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Swith_Cape_%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast +4%"
+   }
+  },
+  "11070": {
+   "name": "Creed Armet +2",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Creed_Armet_%2B2",
+   "notes": {
+    "Fast Cast": "Fast Cast+5%"
+   }
+  },
+  "11076": {
+   "name": "Iga Zukin +2",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Iga_Zukin_%2B2",
+   "notes": {
+    "Dual Wield": "Dual Wield +5%."
+   }
+  },
+  "11078": {
+   "name": "Caller's Horn +2",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Caller%27s_Horn_%2B2",
+   "notes": {
+    "Refresh": "Refresh effect is 2MP/tick"
+   }
+  },
+  "11083": {
+   "name": "Svnt. Bonnet +2",
+   "stats": {
+    "Ebullience Bonus": 10,
+    "Rapture Bonus": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Svnt._Bonnet_%2B2",
+   "notes": {
+    "Ebullience Bonus": "read by hand",
+    "Rapture Bonus": "read by hand"
+   }
+  },
+  "11085": {
+   "name": "Tantra Cyclas +2",
+   "stats": {
+    "Martial Arts": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Tantra_Cyclas_%2B2",
+   "notes": {
+    "Martial Arts": "Martial Arts+5"
+   }
+  },
+  "11086": {
+   "name": "Orison Bliaut +2",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orison_Bliaut_%2B2",
+   "notes": {
+    "Refresh": "Refresh is 2MP/tick."
+   }
+  },
+  "11093": {
+   "name": "Aoidos' Hngrln. +2",
+   "stats": {
+    "Song Duration": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Aoidos%27_Hngrln._%2B2",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "11095": {
+   "name": "Unkai Domaru +2",
+   "stats": {
+    "Zanshin": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Unkai_Domaru_%2B2",
+   "notes": {
+    "Zanshin": "Zanshin Rate +10%."
+   }
+  },
+  "11100": {
+   "name": "Nvrch. Frac +2",
+   "stats": {
+    "Triple Shot": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nvrch._Frac_%2B2",
+   "notes": {
+    "Triple Shot": "Triple Shot activation rate +10%."
+   }
+  },
+  "11102": {
+   "name": "Charis Casaque +2",
+   "stats": {
+    "Dual Wield": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Charis_Casaque_%2B2",
+   "notes": {
+    "Dual Wield": "\"Dual Wield\"+10."
+   }
+  },
+  "11103": {
+   "name": "Savant's Gown +2",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Savant%27s_Gown_%2B2",
+   "notes": {
+    "Refresh": "Refresh is 1MP/tick."
+   }
+  },
+  "11116": {
+   "name": "Iga Tekko +2",
+   "stats": {
+    "Futae Bonus": 20
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Iga_Tekko_%2B2",
+   "notes": {
+    "Futae Bonus": "read by hand"
+   }
+  },
+  "11122": {
+   "name": "Charis Bangles +2",
+   "stats": {
+    "Skillchain Bonus": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Charis_Bangles_%2B2",
+   "notes": {
+    "Skillchain Bonus": "Grant +10% Skillchain Bonus damage."
+   }
+  },
+  "11135": {
+   "name": "Unkai Haidate +2",
+   "stats": {
+    "Hasso+ JA Haste": 2.5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Unkai_Haidate_%2B2",
+   "notes": {
+    "Hasso+ JA Haste": "read by hand"
+   }
+  },
+  "11137": {
+   "name": "Lncr. Cuissots +2",
+   "stats": {
+    "Crit Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Lncr._Cuissots_%2B2",
+   "notes": {
+    "Crit Damage": "Increases critical hit damage by 10%."
+   }
+  },
+  "11140": {
+   "name": "Nvrch. Culottes +2",
+   "stats": {
+    "Snapshot": 6.5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nvrch._Culottes_%2B2",
+   "notes": {
+    "Snapshot": "Snapshot +6.5%."
+   }
+  },
+  "11141": {
+   "name": "Cirq. Pantaloni +2",
+   "stats": {
+    "Martial Arts": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Cirq._Pantaloni_%2B2",
+   "notes": {
+    "Martial Arts": "Enhances Martial Arts gives Delay -10."
+   }
+  },
+  "11144": {
+   "name": "Rvg. Calligae +2",
+   "stats": {
+    "Crit Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Rvg._Calligae_%2B2",
+   "notes": {
+    "Crit Damage": "Enhances critical hit damage by 10%."
+   }
+  },
+  "11148": {
+   "name": "Estq. Houseaux +2",
+   "stats": {
+    "Enhancing Magic Duration": 20
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Estq._Houseaux_%2B2",
+   "notes": {
+    "Enhancing Magic Duration": "read by hand"
+   }
+  },
+  "11151": {
+   "name": "Bale Sollerets +2",
+   "stats": {
+    "Occult Acumen": 25
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Bale_Sollerets_%2B2",
+   "notes": {
+    "Occult Acumen": "read by hand"
+   }
+  },
+  "11163": {
+   "name": "Svnt. Loafers +2",
+   "stats": {
+    "Klimaform Damage%": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Svnt._Loafers_%2B2",
+   "notes": {
+    "Klimaform Damage%": "read by hand"
+   }
+  },
+  "11174": {
+   "name": "Sylvan Gapette +1",
+   "stats": {
+    "Snapshot": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Sylvan_Gapette_%2B1",
+   "notes": {
+    "Snapshot": "Enhances Snapshot gives -5% ranged aiming delay."
+   }
+  },
+  "11183": {
+   "name": "Svnt. Bonnet +1",
+   "stats": {
+    "Ebullience Bonus": 5,
+    "Rapture Bonus": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Svnt._Bonnet_%2B1",
+   "notes": {
+    "Ebullience Bonus": "read by hand",
+    "Rapture Bonus": "read by hand"
+   }
+  },
+  "11186": {
+   "name": "Orison Bliaut +1",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orison_Bliaut_%2B1",
+   "notes": {
+    "Refresh": "Refresh is 1MP/tick"
+   }
+  },
+  "11188": {
+   "name": "Estq. Sayon +1",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Estq._Sayon_%2B1",
+   "notes": {
+    "Refresh": "Refresh potency is 1MP/tick"
+   }
+  },
+  "11193": {
+   "name": "Aoidos' Hngrln. +1",
+   "stats": {
+    "Song Duration": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Aoidos%27_Hngrln._%2B1",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "11195": {
+   "name": "Unkai Domaru +1",
+   "stats": {
+    "Zanshin": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Unkai_Domaru_%2B1",
+   "notes": {
+    "Zanshin": "Zanshin rate +5% {{question}}"
+   }
+  },
+  "11200": {
+   "name": "Navarch's Frac +1",
+   "stats": {
+    "Triple Shot": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Navarch%27s_Frac_%2B1",
+   "notes": {
+    "Triple Shot": "Triple Shot activation rate +5%."
+   }
+  },
+  "11202": {
+   "name": "Charis Casaque +1",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Charis_Casaque_%2B1",
+   "notes": {
+    "Dual Wield": "\"Dual Wield\"+5"
+   }
+  },
+  "11216": {
+   "name": "Iga Tekko +1",
+   "stats": {
+    "Futae Bonus": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Iga_Tekko_%2B1",
+   "notes": {
+    "Futae Bonus": "read by hand"
+   }
+  },
+  "11222": {
+   "name": "Charis Bangles +1",
+   "stats": {
+    "Skillchain Bonus": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Charis_Bangles_%2B1",
+   "notes": {
+    "Skillchain Bonus": "Grant +5% Skillchain Bonus damage."
+   }
+  },
+  "11235": {
+   "name": "Unkai Haidate +1",
+   "stats": {
+    "Hasso+ JA Haste": 1.5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Unkai_Haidate_%2B1",
+   "notes": {
+    "Hasso+ JA Haste": "read by hand"
+   }
+  },
+  "11237": {
+   "name": "Lncr. Cuissots +1",
+   "stats": {
+    "Crit Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Lncr._Cuissots_%2B1",
+   "notes": {
+    "Crit Damage": "Increases critical hit damage by 5%"
+   }
+  },
+  "11240": {
+   "name": "Nvrch. Culottes +1",
+   "stats": {
+    "Snapshot": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nvrch._Culottes_%2B1",
+   "notes": {
+    "Snapshot": "Snapshot +5%"
+   }
+  },
+  "11241": {
+   "name": "Cirq. Pantaloni +1",
+   "stats": {
+    "Martial Arts": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Cirq._Pantaloni_%2B1",
+   "notes": {
+    "Martial Arts": "Enhances Martial Arts gives -5 Delay"
+   }
+  },
+  "11248": {
+   "name": "Estq. Houseaux +1",
+   "stats": {
+    "Enhancing Magic Duration": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Estq._Houseaux_%2B1",
+   "notes": {
+    "Enhancing Magic Duration": "read by hand"
+   }
+  },
+  "11251": {
+   "name": "Bale Sollerets +1",
+   "stats": {
+    "Occult Acumen": 15
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Bale_Sollerets_%2B1",
+   "notes": {
+    "Occult Acumen": "read by hand"
+   }
+  },
+  "11263": {
+   "name": "Svnt. Loafers +1",
+   "stats": {
+    "Klimaform Damage%": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Svnt._Loafers_%2B1",
+   "notes": {
+    "Klimaform Damage%": "read by hand"
+   }
+  },
+  "11281": {
+   "name": "Hachiryu Haramaki",
+   "stats": {
+    "Zanshin": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Hachiryu_Haramaki",
+   "notes": {
+    "Zanshin": "Zanshin +5"
+   }
+  },
+  "11339": {
+   "name": "Channeling Robe",
+   "stats": {
+    "Magic Burst Damage": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Channeling_Robe",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +2%"
+   }
+  },
+  "11455": {
+   "name": "Menhit Leggings",
+   "stats": {
+    "Magic Burst Damage": 4
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Menhit_Leggings",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +4%"
+   }
+  },
+  "11467": {
+   "name": "Cor. Tricorne +1",
+   "stats": {
+    "Quick Draw Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Cor._Tricorne_%2B1",
+   "notes": {
+    "Quick Draw Damage": "read by hand"
+   }
+  },
+  "11471": {
+   "name": "Pantin Taj",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Pantin_Taj",
+   "notes": {
+    "Regen": "Regen effect is 1/tick for both Master and Automaton."
+   }
+  },
+  "11529": {
+   "name": "Frugal Cape",
+   "stats": {
+    "Recycle": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Frugal_Cape",
+   "notes": {
+    "Recycle": "Recycle +5."
+   }
+  },
+  "11544": {
+   "name": "Veela Cape",
+   "stats": {
+    "Fast Cast": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Veela_Cape",
+   "notes": {
+    "Fast Cast": "Fast Cast+1%"
+   }
+  },
+  "11553": {
+   "name": "Cavaros Mantle",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Cavaros_Mantle",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +3%"
+   }
+  },
+  "11598": {
+   "name": "Iga Erimaki",
+   "stats": {
+    "Crit Damage": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Iga_Erimaki",
+   "notes": {
+    "Crit Damage": "Critical hit damage +2%."
+   }
+  },
+  "11602": {
+   "name": "Cirque Necklace",
+   "stats": {
+    "Martial Arts": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Cirque_Necklace",
+   "notes": {
+    "Martial Arts": "Enhances Martial Arts: Delay -10"
+   }
+  },
+  "11603": {
+   "name": "Charis Necklace",
+   "stats": {
+    "Dual Wield": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Charis_Necklace",
+   "notes": {
+    "Dual Wield": "Dual Wield +3%"
+   }
+  },
+  "11615": {
+   "name": "Orison Locket",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orison_Locket",
+   "notes": {
+    "Fast Cast": "Fast Cast +5%."
+   }
+  },
+  "11616": {
+   "name": "Bale Choker",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Bale_Choker",
+   "notes": {
+    "Refresh": "Refresh+1"
+   }
+  },
+  "11618": {
+   "name": "Aoidos' Matinee",
+   "stats": {
+    "Song Duration": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Aoidos%27_Matinee",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "11707": {
+   "name": "Estq. Earring",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Estq._Earring",
+   "notes": {
+    "Fast Cast": "Fast Cast +2%"
+   }
+  },
+  "11714": {
+   "name": "Unkai Mimikazari",
+   "stats": {
+    "Zanshin": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Unkai_Mimikazari",
+   "notes": {
+    "Zanshin": "Zanshin + 2~3%"
+   }
+  },
+  "11715": {
+   "name": "Iga Mimikazari",
+   "stats": {
+    "Dual Wield": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Iga_Mimikazari",
+   "notes": {
+    "Dual Wield": "Enhances Dual Wield: grants +1% to the effect"
+   }
+  },
+  "11732": {
+   "name": "Nusku's Sash",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nusku%27s_Sash",
+   "notes": {
+    "Dual Wield": "Dual Wield +5%"
+   }
+  },
+  "11734": {
+   "name": "Shaolin Belt",
+   "stats": {
+    "Martial Arts": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Shaolin_Belt",
+   "notes": {
+    "Martial Arts": "Enhances Martial Arts gives Delay -10"
+   }
+  },
+  "11735": {
+   "name": "Impulse Belt",
+   "stats": {
+    "Snapshot": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Impulse_Belt",
+   "notes": {
+    "Snapshot": "Enhances Snapshot gives -3% ranged aiming delay."
+   }
+  },
+  "11775": {
+   "name": "Oneiros Rope",
+   "stats": {
+    "Occult Acumen": 20
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Oneiros_Rope",
+   "notes": {
+    "Occult Acumen": "Enhances Occult Acumen effect by +20 TP/MP"
+   }
+  },
+  "11816": {
+   "name": "Oneiros Helm",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Oneiros_Helm",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +3%"
+   }
+  },
+  "11849": {
+   "name": "Nebula Hpl. +1",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nebula_Hpl._%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast +5%"
+   }
+  },
+  "11855": {
+   "name": "Mextli Harness",
+   "stats": {
+    "Dual Wield": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Mextli_Harness",
+   "notes": {
+    "Dual Wield": "Dual Wield+3%"
+   }
+  },
+  "11856": {
+   "name": "Anhur Robe",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Anhur_Robe",
+   "notes": {
+    "Fast Cast": "Fast Cast +10%"
+   }
+  },
+  "11875": {
+   "name": "Kheper Jacket",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kheper_Jacket",
+   "notes": {
+    "Regen": "Regen +1HP/tick."
+   }
+  },
+  "11876": {
+   "name": "Auspex Doublet",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Auspex_Doublet",
+   "notes": {
+    "Refresh": "Refresh effect is +1MP/tick."
+   }
+  },
+  "11896": {
+   "name": "Ace's Mufflers",
+   "stats": {
+    "Zanshin": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ace%27s_Mufflers",
+   "notes": {
+    "Zanshin": "Zanshin proc rate +3%"
+   }
+  },
+  "11916": {
+   "name": "Nebula Cuffs +1",
+   "stats": {
+    "Fast Cast": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nebula_Cuffs_%2B1",
+   "notes": {
+    "Fast Cast": "1% Fast Cast"
+   }
+  },
+  "11955": {
+   "name": "Nebula Slops +1",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nebula_Slops_%2B1",
+   "notes": {
+    "Fast Cast": "2% Fast Cast"
+   }
+  },
+  "11960": {
+   "name": "Jingang Hose",
+   "stats": {
+    "Zanshin": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Jingang_Hose",
+   "notes": {
+    "Zanshin": "Zanshin rate +2%"
+   }
+  },
+  "12132": {
+   "name": "Ebon Tam",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ebon_Tam",
+   "notes": {
+    "Fast Cast": "Fast Cast +2%"
+   }
+  },
+  "12133": {
+   "name": "Furia Tam",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Furia_Tam",
+   "notes": {
+    "Fast Cast": "Fast Cast +2%"
+   }
+  },
+  "12134": {
+   "name": "Ebur Tam",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ebur_Tam",
+   "notes": {
+    "Fast Cast": "Fast Cast +2%"
+   }
+  },
+  "12170": {
+   "name": "Ebur Talar",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ebur_Talar",
+   "notes": {
+    "Fast Cast": "Fast Cast is 5%"
+   }
+  },
+  "12513": {
+   "name": "Warlock's Chapeau",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Warlock%27s_Chapeau",
+   "notes": {
+    "Fast Cast": "read by hand"
+   }
+  },
+  "12605": {
+   "name": "Noble's Tunic",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Noble%27s_Tunic",
+   "notes": {
+    "Refresh": "Adds \"Refresh\" effect: 1MP/Tick"
+   }
+  },
+  "12649": {
+   "name": "Drachen Mail",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Drachen_Mail",
+   "notes": {
+    "Regen": "read by hand"
+   }
+  },
+  "13001": {
+   "name": "Augur's Gaiters",
+   "stats": {
+    "Fast Cast": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Augur%27s_Gaiters",
+   "notes": {
+    "Fast Cast": "3% Fast Cast"
+   }
+  },
+  "13909": {
+   "name": "Blood Mask",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Blood_Mask",
+   "notes": {
+    "Regen": "Regen effect is 1 HP/tick."
+   }
+  },
+  "14089": {
+   "name": "Fighter's Calligae",
+   "stats": {
+    "DA": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Fighter%27s_Calligae",
+   "notes": {
+    "DA": "read by hand"
+   }
+  },
+  "14391": {
+   "name": "Dusk Jerkin +1",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Dusk_Jerkin_%2B1",
+   "notes": {
+    "Regen": "Regen effect is 2 HP/tick"
+   }
+  },
+  "14416": {
+   "name": "Barone Corazza",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Barone_Corazza",
+   "notes": {
+    "Regen": "read by hand"
+   }
+  },
+  "14417": {
+   "name": "Conte Corazza",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Conte_Corazza",
+   "notes": {
+    "Regen": "read by hand"
+   }
+  },
+  "14448": {
+   "name": "Unicorn Harness",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Unicorn_Harness",
+   "notes": {
+    "Regen": "Potency: Regen 1 HP/tic"
+   }
+  },
+  "14449": {
+   "name": "Ucn. Harness +1",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ucn._Harness_%2B1",
+   "notes": {
+    "Regen": "Potency: Regen 1 HP/tic"
+   }
+  },
+  "14468": {
+   "name": "Yinyang Robe",
+   "stats": {
+    "Refresh": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Yinyang_Robe",
+   "notes": {
+    "Refresh": "Adds \"Refresh\" effect: 1MP/Tick"
+   }
+  },
+  "14488": {
+   "name": "Homam Corazza",
+   "stats": {
+    "TA": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Homam_Corazza",
+   "notes": {
+    "TA": "Triple Attack rate +1%"
+   }
+  },
+  "14501": {
+   "name": "Mel. Cyclas +1",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Mel._Cyclas_%2B1",
+   "notes": {
+    "Regen": "Regen effect is 1 HP/tick"
+   }
+  },
+  "14504": {
+   "name": "Dls. Tabard +1",
+   "stats": {
+    "Fast Cast": 11
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Dls._Tabard_%2B1",
+   "notes": {
+    "Fast Cast": "Enhances Fast Cast effect is 11%."
+   }
+  },
+  "14525": {
+   "name": "Amir Korazin",
+   "stats": {
+    "Zanshin": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Amir_Korazin",
+   "notes": {
+    "Zanshin": "Zanshin rate +5%"
+   }
+  },
+  "14739": {
+   "name": "Suppanomimi",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Suppanomimi",
+   "notes": {
+    "Dual Wield": "Dual Wield +5%"
+   }
+  },
+  "14812": {
+   "name": "Loquac. Earring",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Loquac._Earring",
+   "notes": {
+    "Fast Cast": "2% Fast Cast"
+   }
+  },
+  "14813": {
+   "name": "Brutal Earring",
+   "stats": {
+    "DA": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Brutal_Earring",
+   "notes": {
+    "DA": "Adds 5% Double Attack."
+   }
+  },
+  "14900": {
+   "name": "Htr. Bracers +1",
+   "stats": {
+    "Barrage": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Htr._Bracers_%2B1",
+   "notes": {
+    "Barrage": "read by hand"
+   }
+  },
+  "14912": {
+   "name": "Src. Gloves +1",
+   "stats": {
+    "Magic Burst Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Src._Gloves_%2B1",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst Damage +5%."
+   }
+  },
+  "15015": {
+   "name": "Hachiryu Kote",
+   "stats": {
+    "Zanshin": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Hachiryu_Kote",
+   "notes": {
+    "Zanshin": "Zanshin +2"
+   }
+  },
+  "15028": {
+   "name": "Commodore Gants",
+   "stats": {
+    "Snapshot": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Commodore_Gants",
+   "notes": {
+    "Snapshot": "Snapshot +5%."
+   }
+  },
+  "15029": {
+   "name": "Comm. Gants +1",
+   "stats": {
+    "Snapshot": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Comm._Gants_%2B1",
+   "notes": {
+    "Snapshot": "Snapshot +5%."
+   }
+  },
+  "15088": {
+   "name": "Melee Cyclas",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Melee_Cyclas",
+   "notes": {
+    "Regen": "Regen effect is 1 HP/tick"
+   }
+  },
+  "15091": {
+   "name": "Duelist's Tabard",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Duelist%27s_Tabard",
+   "notes": {
+    "Fast Cast": "Enhances Fast Cast effect is 10%."
+   }
+  },
+  "15105": {
+   "name": "Sorcerer's Gloves",
+   "stats": {
+    "Magic Burst Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Sorcerer%27s_Gloves",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +5%."
+   }
+  },
+  "15129": {
+   "name": "Koga Hakama",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Koga_Hakama",
+   "notes": {
+    "Dual Wield": "Increases Dual Wield by 5."
+   }
+  },
+  "15229": {
+   "name": "Wlk. Chapeau +1",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Wlk._Chapeau_%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast: 10%"
+   }
+  },
+  "15266": {
+   "name": "Corsair's Tricorne",
+   "stats": {
+    "Quick Draw Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Corsair%27s_Tricorne",
+   "notes": {
+    "Quick Draw Damage": "read by hand"
+   }
+  },
+  "15350": {
+   "name": "Rostrum Pumps",
+   "stats": {
+    "Fast Cast": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Rostrum_Pumps",
+   "notes": {
+    "Fast Cast": "Fast Cast+3%"
+   }
+  },
+  "15576": {
+   "name": "Homam Cosciales",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Homam_Cosciales",
+   "notes": {
+    "Fast Cast": "The Fast Cast effect is 5%."
+   }
+  },
+  "15592": {
+   "name": "Kog. Hakama +1",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kog._Hakama_%2B1",
+   "notes": {
+    "Dual Wield": "Dual Wield +5%"
+   }
+  },
+  "15962": {
+   "name": "Static Earring",
+   "stats": {
+    "Magic Burst Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Static_Earring",
+   "notes": {
+    "Magic Burst Damage": "read by hand"
+   }
+  },
+  "16159": {
+   "name": "Zha'Go's Barbut",
+   "stats": {
+    "Snapshot": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Zha%27Go%27s_Barbut",
+   "notes": {
+    "Snapshot": "Enhances Snapshot gives -3% ranged aiming delay."
+   }
+  },
+  "16190": {
+   "name": "Bloom Buckler",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Bloom_Buckler",
+   "notes": {
+    "Regen": "Regen +1"
+   }
+  },
+  "16204": {
+   "name": "Estoqueur's Cape",
+   "stats": {
+    "Enhancing Magic Duration": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Estoqueur%27s_Cape",
+   "notes": {
+    "Enhancing Magic Duration": "read by hand"
+   }
+  },
+  "16206": {
+   "name": "Unkai Sugemino",
+   "stats": {
+    "Zanshin": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Unkai_Sugemino",
+   "notes": {
+    "Zanshin": "Zanshin rate +5%"
+   }
+  },
+  "16209": {
+   "name": "Navarch's Mantle",
+   "stats": {
+    "Snapshot": 6.5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Navarch%27s_Mantle",
+   "notes": {
+    "Snapshot": "Snapshot+6.5%"
+   }
+  },
+  "16339": {
+   "name": "Paddock Trousers",
+   "stats": {
+    "Recycle": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Paddock_Trousers",
+   "notes": {
+    "Recycle": "Recycle rate +1~2%"
+   }
+  },
+  "16380": {
+   "name": "Entois Trousers",
+   "stats": {
+    "Recycle": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Entois_Trousers",
+   "notes": {
+    "Recycle": "Recycle rate +3%."
+   }
+  },
+  "16500": {
+   "name": "Aluh Jambiya",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Aluh_Jambiya",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage+3%"
+   }
+  },
+  "17079": {
+   "name": "Winged Wand",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Winged_Wand",
+   "notes": {
+    "Fast Cast": "Fast Cast +2%"
+   }
+  },
+  "17273": {
+   "name": "Phineus' Gun",
+   "stats": {
+    "Barrage": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Phineus%27_Gun",
+   "notes": {
+    "Barrage": "read by hand"
+   }
+  },
+  "17358": {
+   "name": "Oneiros Harp",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Oneiros_Harp",
+   "notes": {
+    "Regen": "Regen effect is 1HP/tick."
+   }
+  },
+  "17440": {
+   "name": "Kraken Club",
+   "stats": {
+    "OA2": 10.66,
+    "OA3": 22.78,
+    "OA4": 28.44,
+    "OA5": 21.36,
+    "OA6": 10.83,
+    "OA7": 3.17,
+    "OA8": 0.67
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kraken_Club",
+   "notes": {
+    "OA2": "BG Wiki's count of 26,327 rounds (action packet), not measured by us (https://www.bg-wiki.com/ffxi/Kraken_Club)",
+    "OA3": "BG Wiki's count of 26,327 rounds (action packet), not measured by us (https://www.bg-wiki.com/ffxi/Kraken_Club)",
+    "OA4": "BG Wiki's count of 26,327 rounds (action packet), not measured by us (https://www.bg-wiki.com/ffxi/Kraken_Club)",
+    "OA5": "BG Wiki's count of 26,327 rounds (action packet), not measured by us (https://www.bg-wiki.com/ffxi/Kraken_Club)",
+    "OA6": "BG Wiki's count of 26,327 rounds (action packet), not measured by us (https://www.bg-wiki.com/ffxi/Kraken_Club)",
+    "OA7": "BG Wiki's count of 26,327 rounds (action packet), not measured by us (https://www.bg-wiki.com/ffxi/Kraken_Club)",
+    "OA8": "BG Wiki's count of 26,327 rounds (action packet), not measured by us (https://www.bg-wiki.com/ffxi/Kraken_Club)"
+   }
+  },
+  "17626": {
+   "name": "Auric Dagger",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Auric_Dagger",
+   "notes": {
+    "Dual Wield": "Dual Wield+5%"
+   }
+  },
+  "17652": {
+   "name": "Joyeuse",
+   "stats": {
+    "OA2": 45
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Joyeuse",
+   "notes": {
+    "OA2": "Occasionally attacks twice effect has an activation rate of 45%."
+   }
+  },
+  "17969": {
+   "name": "Fendoir",
+   "stats": {
+    "OA2": 45
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Fendoir",
+   "notes": {
+    "OA2": "Occasionally attacks twice effect has an activation rate of 45%. {{verification}}"
+   }
+  },
+  "18019": {
+   "name": "X's Knife",
+   "stats": {
+    "Crit Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/X%27s_Knife",
+   "notes": {
+    "Crit Damage": "Increases critical hit damage by 10%."
+   }
+  },
+  "18461": {
+   "name": "Nikko-ichimonji",
+   "stats": {
+    "Zanshin": 4
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nikko-ichimonji",
+   "notes": {
+    "Zanshin": "Zanshin rate +4% (Approximate)"
+   }
+  },
+  "18521": {
+   "name": "Dies Irae",
+   "stats": {
+    "Crit Damage": 9
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Dies_Irae",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +9~10%"
+   }
+  },
+  "18557": {
+   "name": "Sortilege Scythe",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Sortilege_Scythe",
+   "notes": {
+    "Fast Cast": "Fast Cast +10%"
+   }
+  },
+  "18558": {
+   "name": "Wroth Scythe",
+   "stats": {
+    "Crit Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Wroth_Scythe",
+   "notes": {
+    "Crit Damage": "Increases Critical Hit Damage by 5%."
+   }
+  },
+  "18597": {
+   "name": "Catalyst",
+   "stats": {
+    "Magic Burst Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Catalyst",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +5%."
+   }
+  },
+  "18708": {
+   "name": "Snakeeye",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Snakeeye",
+   "notes": {
+    "Regen": "Regen: 1 HP/tic."
+   }
+  },
+  "18709": {
+   "name": "Snakeeye +1",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Snakeeye_%2B1",
+   "notes": {
+    "Regen": "Regen: 1 HP/tic."
+   }
+  },
+  "18811": {
+   "name": "Oneiros Grip",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Oneiros_Grip",
+   "notes": {
+    "Regen": "Potency: Regen: 1 HP/tick"
+   }
+  },
+  "18858": {
+   "name": "Flanged Mace",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Flanged_Mace",
+   "notes": {
+    "Regen": "Regen effect is 1 HP per tic."
+   }
+  },
+  "18860": {
+   "name": "Flanged Mace +1",
+   "stats": {
+    "Regen": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Flanged_Mace_%2B1",
+   "notes": {
+    "Regen": "Regen effect is 1 HP per tic. {{Verification}}"
+   }
+  },
+  "18897": {
+   "name": "Isador",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Isador",
+   "notes": {
+    "Fast Cast": "Fast Cast+5%"
+   }
+  },
+  "19021": {
+   "name": "Katana Strap",
+   "stats": {
+    "Zanshin": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Katana_Strap",
+   "notes": {
+    "Zanshin": "Zanshin +3%"
+   }
+  },
+  "19029": {
+   "name": "Brave Grip",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Brave_Grip",
+   "notes": {
+    "Crit Damage": "Critical hit damage +3%."
+   }
+  },
+  "19049": {
+   "name": "Vivid Strap",
+   "stats": {
+    "Fast Cast": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Vivid_Strap",
+   "notes": {
+    "Fast Cast": "Fast Cast+1%"
+   }
+  },
+  "19051": {
+   "name": "Vivid Strap +1",
+   "stats": {
+    "Fast Cast": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Vivid_Strap_%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast +1%"
+   }
+  },
+  "19135": {
+   "name": "Acinaces",
+   "stats": {
+    "Snapshot": 6.5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Acinaces",
+   "notes": {
+    "Snapshot": "Snapshot +6.5%"
+   }
+  },
+  "19141": {
+   "name": "Oneiros Knife",
+   "stats": {
+    "Crit Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Oneiros_Knife",
+   "notes": {
+    "Crit Damage": "read by hand"
+   }
+  },
+  "19164": {
+   "name": "Ferus Algol",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ferus_Algol",
+   "notes": {
+    "Crit Damage": "Increases critical hit damage by 3%"
+   }
+  },
+  "19256": {
+   "name": "Charis Feather",
+   "stats": {
+    "Crit Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Charis_Feather",
+   "notes": {
+    "Crit Damage": "read by hand"
+   }
+  },
+  "19257": {
+   "name": "Incantor Stone",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Incantor_Stone",
+   "notes": {
+    "Fast Cast": "Fast Cast +2%"
+   }
+  },
+  "19258": {
+   "name": "Qirmiz Tathlum",
+   "stats": {
+    "Crit Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Qirmiz_Tathlum",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +5%"
+   }
+  },
+  "19260": {
+   "name": "Raider's Bmrng.",
+   "stats": {
+    "Dual Wield": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Raider%27s_Bmrng.",
+   "notes": {
+    "Dual Wield": "Dual Wield +3%"
+   }
+  },
+  "19282": {
+   "name": "Hochomasamune",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Hochomasamune",
+   "notes": {
+    "Fast Cast": "10% Fast Cast"
+   }
+  },
+  "19287": {
+   "name": "Kamome",
+   "stats": {
+    "Crit Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kamome",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +10%, applies to both hands."
+   }
+  },
+  "19302": {
+   "name": "Uguisu",
+   "stats": {
+    "Dual Wield": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Uguisu",
+   "notes": {
+    "Dual Wield": "read by hand"
+   }
+  },
+  "19741": {
+   "name": "Handgonne",
+   "stats": {
+    "Recycle": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Handgonne",
+   "notes": {
+    "Recycle": "Recycle rate +5%"
+   }
+  },
+  "19742": {
+   "name": "Handgonne +1",
+   "stats": {
+    "Recycle": 6
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Handgonne_%2B1",
+   "notes": {
+    "Recycle": "Recycle rate +6%"
+   }
+  },
+  "20480": {
+   "name": "Spharai",
+   "stats": {
+    "Counter": 14
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Spharai_%28Level_119%29",
+   "notes": {
+    "Counter": "read by hand"
+   }
+  },
+  "20481": {
+   "name": "Spharai",
+   "stats": {
+    "Counter": 14
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Spharai_%28Level_119_II%29",
+   "notes": {
+    "Counter": "read by hand"
+   }
+  },
+  "20484": {
+   "name": "Kenkonken",
+   "stats": {
+    "Martial Arts": 55
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kenkonken_%28Level_119%29",
+   "notes": {
+    "Martial Arts": "read by hand"
+   }
+  },
+  "20485": {
+   "name": "Kenkonken",
+   "stats": {
+    "Martial Arts": 55
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kenkonken_%28Level_119_II%29",
+   "notes": {
+    "Martial Arts": "read by hand"
+   }
+  },
+  "20509": {
+   "name": "Spharai",
+   "stats": {
+    "Counter": 14
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Spharai_%28Level_119_III%29",
+   "notes": {
+    "Counter": "read by hand"
+   }
+  },
+  "20511": {
+   "name": "Kenkonken",
+   "stats": {
+    "Martial Arts": 55
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Kenkonken_%28Level_119_III%29",
+   "notes": {
+    "Martial Arts": "read by hand"
+   }
+  },
+  "20561": {
+   "name": "Carnwenhan",
+   "stats": {
+    "Song Duration": 50
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Carnwenhan_%28Level_119%29",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "20562": {
+   "name": "Carnwenhan",
+   "stats": {
+    "Song Duration": 50
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Carnwenhan_%28Level_119_II%29",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "20602": {
+   "name": "Blurred Knife +1",
+   "stats": {
+    "OA2": 45
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Joyeuse",
+   "notes": {
+    "OA2": "Joyeuse's rate (the same effect), ASSUMED for this knife (https://www.bg-wiki.com/ffxi/Joyeuse)"
+   }
+  },
+  "20627": {
+   "name": "Surcouf's Jambiya",
+   "stats": {
+    "Recycle": 20
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Surcouf%27s_Jambiya",
+   "notes": {
+    "Recycle": "Recycle rate +20%."
+   }
+  },
+  "20629": {
+   "name": "Legato Dagger",
+   "stats": {
+    "Song Duration": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Legato_Dagger",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "20709": {
+   "name": "Demers. Degen +1",
+   "stats": {
+    "OA2": 45
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Demers._Degen_%2B1",
+   "notes": {
+    "OA2": "Occasionally attacks twice effect has an activation rate of 45%."
+   }
+  },
+  "20729": {
+   "name": "Vivifiante",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Vivifiante",
+   "notes": {
+    "Regen": "Regen +2 HP/tick"
+   }
+  },
+  "20745": {
+   "name": "Ragnarok",
+   "stats": {
+    "Crit Rate": 14
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ragnarok_%28Level_119%29",
+   "notes": {
+    "Crit Rate": "read by hand"
+   }
+  },
+  "20746": {
+   "name": "Ragnarok",
+   "stats": {
+    "Crit Rate": 14
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ragnarok_%28Level_119_II%29",
+   "notes": {
+    "Crit Rate": "read by hand"
+   }
+  },
+  "21047": {
+   "name": "Azukinagamitsu",
+   "stats": {
+    "Skillchain Bonus": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Azukinagamitsu",
+   "notes": {
+    "Skillchain Bonus": "Enhances Skillchain Bonus by 5%."
+   }
+  },
+  "21201": {
+   "name": "Atinian Staff +1",
+   "stats": {
+    "Fast Cast": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Atinian_Staff_%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast+2%"
+   }
+  },
+  "21233": {
+   "name": "Ajjub Bow",
+   "stats": {
+    "Double Shot Damage%": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ajjub_Bow",
+   "notes": {
+    "Double Shot Damage%": "Double Shot damage +3%"
+   }
+  },
+  "21246": {
+   "name": "Gastraphetes",
+   "stats": {
+    "Snapshot": 10,
+    "Barrage Ranged Accuracy": 70
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Gastraphetes_%28Level_119%29",
+   "notes": {
+    "Snapshot": "read by hand",
+    "Barrage Ranged Accuracy": "read by hand"
+   }
+  },
+  "21247": {
+   "name": "Gastraphetes",
+   "stats": {
+    "Snapshot": 10,
+    "Barrage Ranged Accuracy": 70
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Gastraphetes_%28Level_119_II%29",
+   "notes": {
+    "Snapshot": "read by hand",
+    "Barrage Ranged Accuracy": "read by hand"
+   }
+  },
+  "21262": {
+   "name": "Death Penalty",
+   "stats": {
+    "Quick Draw Damage%": 60,
+    "Quick Draw Magic Accuracy": 60
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Death_Penalty_%28Level_119%29",
+   "notes": {
+    "Quick Draw Damage%": "read by hand",
+    "Quick Draw Magic Accuracy": "read by hand"
+   }
+  },
+  "21263": {
+   "name": "Death Penalty",
+   "stats": {
+    "Quick Draw Damage%": 60,
+    "Quick Draw Magic Accuracy": 60
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Death_Penalty_%28Level_119_II%29",
+   "notes": {
+    "Quick Draw Damage%": "read by hand",
+    "Quick Draw Magic Accuracy": "read by hand"
+   }
+  },
+  "21266": {
+   "name": "Gastraphetes",
+   "stats": {
+    "Snapshot": 10,
+    "Barrage Ranged Accuracy": 70
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Gastraphetes_%28Level_119_III%29",
+   "notes": {
+    "Snapshot": "read by hand",
+    "Barrage Ranged Accuracy": "read by hand"
+   }
+  },
+  "21268": {
+   "name": "Death Penalty",
+   "stats": {
+    "Quick Draw Damage%": 60,
+    "Quick Draw Magic Accuracy": 60
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Death_Penalty_%28Level_119_III%29",
+   "notes": {
+    "Quick Draw Damage%": "read by hand",
+    "Quick Draw Magic Accuracy": "read by hand"
+   }
+  },
+  "21683": {
+   "name": "Ragnarok",
+   "stats": {
+    "Crit Rate": 14
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ragnarok_%28Level_119_III%29",
+   "notes": {
+    "Crit Rate": "read by hand"
+   }
+  },
+  "21991": {
+   "name": "Wizard's Rod",
+   "stats": {
+    "Magic Burst Damage II": 30
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Wizard%27s_Rod",
+   "notes": {
+    "Magic Burst Damage II": "the maximum of +1~+30, by timing (https://www.bg-wiki.com/ffxi/Wizard%27s_Rod)"
+   }
+  },
+  "22031": {
+   "name": "Maxentius",
+   "stats": {
+    "Magic Burst Damage": 4
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Maxentius",
+   "notes": {
+    "Magic Burst Damage": "read by hand"
+   }
+  },
+  "22042": {
+   "name": "Wizard's Rod",
+   "stats": {
+    "Magic Burst Damage II": 30
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Wizard%27s_Rod",
+   "notes": {
+    "Magic Burst Damage II": "the maximum of +1~+30, by timing (https://www.bg-wiki.com/ffxi/Wizard%27s_Rod)"
+   }
+  },
+  "22139": {
+   "name": "Gastraphetes",
+   "stats": {
+    "Snapshot": 10,
+    "Barrage Ranged Accuracy": 70
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Gastraphetes_%28Augmented%29",
+   "notes": {
+    "Snapshot": "read by hand",
+    "Barrage Ranged Accuracy": "read by hand"
+   }
+  },
+  "22141": {
+   "name": "Death Penalty",
+   "stats": {
+    "Quick Draw Damage%": 60,
+    "Quick Draw Magic Accuracy": 60
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Death_Penalty_%28Augmented%29",
+   "notes": {
+    "Quick Draw Damage%": "read by hand",
+    "Quick Draw Magic Accuracy": "read by hand"
+   }
+  },
+  "26172": {
+   "name": "Begrudging Ring",
+   "stats": {
+    "Crit Rate": 5,
+    "DT": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Begrudging_Ring",
+   "notes": {
+    "Crit Rate": "read by hand",
+    "DT": "read by hand"
+   }
+  },
+  "26359": {
+   "name": "Orpheus's Sash",
+   "stats": {
+    "Elemental Bonus": 15
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orpheus%27s_Sash",
+   "notes": {
+    "Elemental Bonus": "read by hand"
+   }
+  },
+  "27510": {
+   "name": "Fotia Gorget",
+   "stats": {
+    "ftp": 0.09765625
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Fotia_Gorget",
+   "notes": {
+    "ftp": "read by hand"
+   }
+  },
+  "27667": {
+   "name": "Atrophy Chapeau",
+   "stats": {
+    "Fast Cast": 11
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Atrophy_Chapeau",
+   "notes": {
+    "Fast Cast": "Fast Cast +11%"
+   }
+  },
+  "27668": {
+   "name": "Pillager's Bonnet",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Pillager%27s_Bonnet",
+   "notes": {
+    "Crit Damage": "Critical hit damage +3%."
+   }
+  },
+  "27679": {
+   "name": "Laksa. Tricorne",
+   "stats": {
+    "Quick Draw Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Laksa._Tricorne",
+   "notes": {
+    "Quick Draw Damage": "read by hand"
+   }
+  },
+  "27753": {
+   "name": "Thur. Chapeau +1",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Thur._Chapeau_%2B1",
+   "notes": {
+    "Dual Wield": "Dual Wield +5%"
+   }
+  },
+  "27768": {
+   "name": "Cizin Helm",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Cizin_Helm",
+   "notes": {
+    "Fast Cast": "Fast Cast +5%"
+   }
+  },
+  "27775": {
+   "name": "Nahtirah Hat",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nahtirah_Hat",
+   "notes": {
+    "Fast Cast": "10% Fast Cast"
+   }
+  },
+  "27784": {
+   "name": "Thurandaut Chapeau",
+   "stats": {
+    "Dual Wield": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Thurandaut_Chapeau",
+   "notes": {
+    "Dual Wield": "Dual Wield +5%"
+   }
+  },
+  "27787": {
+   "name": "Runeist Bandeau",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Runeist_Bandeau",
+   "notes": {
+    "Fast Cast": "Fast Cast effect: +10"
+   }
+  },
+  "27788": {
+   "name": "Ares' Cuirass +1",
+   "stats": {
+    "Regen": 2,
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Ares%27_Cuirass_%2B1",
+   "notes": {
+    "Regen": "read by hand",
+    "Refresh": "read by hand"
+   }
+  },
+  "27789": {
+   "name": "Skadi's Cuirie +1",
+   "stats": {
+    "Dual Wield": 7
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Skadi%27s_Cuirie_%2B1",
+   "notes": {
+    "Dual Wield": "Dual Wield +7%"
+   }
+  },
+  "27791": {
+   "name": "Marduk's Jubbah +1",
+   "stats": {
+    "Fast Cast": 11,
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Marduk%27s_Jubbah_%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast effect is 11%.",
+    "Refresh": "Refresh effect is 2 MP/tick."
+   }
+  },
+  "27792": {
+   "name": "Morrigan's Robe +1",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Morrigan%27s_Robe_%2B1",
+   "notes": {
+    "Refresh": "Refresh effect is 2 MP/tick."
+   }
+  },
+  "27795": {
+   "name": "Omodaka Haramaki",
+   "stats": {
+    "Zanshin": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Omodaka_Haramaki",
+   "notes": {
+    "Zanshin": "Zanshin rate +10%"
+   }
+  },
+  "27797": {
+   "name": "Fea's Robe",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Fea%27s_Robe",
+   "notes": {
+    "Refresh": "Refresh effect is 2 MP/tick."
+   }
+  },
+  "27809": {
+   "name": "Theo. Bliaut",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Theo._Bliaut",
+   "notes": {
+    "Refresh": "\"Refresh\" effect is 2MP/tick."
+   }
+  },
+  "27811": {
+   "name": "Atrophy Tabard",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Atrophy_Tabard",
+   "notes": {
+    "Refresh": "\"Refresh\" effect is 2 MP/tick."
+   }
+  },
+  "27812": {
+   "name": "Pillager's Vest",
+   "stats": {
+    "Crit Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Pillager%27s_Vest",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +5%"
+   }
+  },
+  "27819": {
+   "name": "Hachi. Chainmail",
+   "stats": {
+    "Dual Wield": 7
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Hachi._Chainmail",
+   "notes": {
+    "Dual Wield": "Dual Wield +7%"
+   }
+  },
+  "27820": {
+   "name": "Vishap Mail",
+   "stats": {
+    "Regen": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Vishap_Mail",
+   "notes": {
+    "Regen": "read by hand"
+   }
+  },
+  "27822": {
+   "name": "Assim. Jubbah",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Assim._Jubbah",
+   "notes": {
+    "Refresh": "\"Refresh\" effect is 2MP/tick."
+   }
+  },
+  "27823": {
+   "name": "Laksa. Frac",
+   "stats": {
+    "Recycle": 15
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Laksa._Frac",
+   "notes": {
+    "Recycle": "Recycle +15%"
+   }
+  },
+  "27827": {
+   "name": "Academic's Gown",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Academic%27s_Gown",
+   "notes": {
+    "Refresh": "\"Refresh\" effect is 2 MP/tick."
+   }
+  },
+  "27897": {
+   "name": "Orvail Robe +1",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orvail_Robe_%2B1",
+   "notes": {
+    "Refresh": "Refresh effect is 2/tic"
+   }
+  },
+  "27915": {
+   "name": "Gendewitha Bliaut",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Gendewitha_Bliaut",
+   "notes": {
+    "Refresh": "\"Refresh\" effect is 2MP/tick."
+   }
+  },
+  "27919": {
+   "name": "Bokwus Robe",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Bokwus_Robe",
+   "notes": {
+    "Refresh": "Refresh effect is 2 MP/tick."
+   }
+  },
+  "27922": {
+   "name": "Orvail Robe",
+   "stats": {
+    "Refresh": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orvail_Robe",
+   "notes": {
+    "Refresh": "read by hand"
+   }
+  },
+  "27947": {
+   "name": "Atrophy Gloves",
+   "stats": {
+    "Enhancing Magic Duration": 15
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Atrophy_Gloves",
+   "notes": {
+    "Enhancing Magic Duration": "read by hand"
+   }
+  },
+  "27948": {
+   "name": "Pillager's Armlets",
+   "stats": {
+    "Crit Damage": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Pillager%27s_Armlets",
+   "notes": {
+    "Crit Damage": "Critical Hit Damage +2%"
+   }
+  },
+  "27953": {
+   "name": "Orion Bracers",
+   "stats": {
+    "Barrage": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orion_Bracers",
+   "notes": {
+    "Barrage": "read by hand"
+   }
+  },
+  "27954": {
+   "name": "Wakido Kote",
+   "stats": {
+    "Hasso+ JA Haste": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Wakido_Kote",
+   "notes": {
+    "Hasso+ JA Haste": "read by hand"
+   }
+  },
+  "27963": {
+   "name": "Acad. Bracers",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Acad._Bracers",
+   "notes": {
+    "Fast Cast": "Appear to give 5% Fast Cast.{{question}}"
+   }
+  },
+  "28054": {
+   "name": "Gendewitha Gages",
+   "stats": {
+    "Fast Cast": 7
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Gendewitha_Gages",
+   "notes": {
+    "Fast Cast": "Fast Cast+7%"
+   }
+  },
+  "28058": {
+   "name": "Manibozho Gloves",
+   "stats": {
+    "Snapshot": 4,
+    "Recycle": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Manibozho_Gloves",
+   "notes": {
+    "Snapshot": "Snapshot +4%",
+    "Recycle": "Recycle Rate +10%"
+   }
+  },
+  "28074": {
+   "name": "Mdk. Shalwar +1",
+   "stats": {
+    "Song Duration": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Mdk._Shalwar_%2B1",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "28080": {
+   "name": "Fea's Slops",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Fea%27s_Slops",
+   "notes": {
+    "Fast Cast": "Fast Cast +5%"
+   }
+  },
+  "28085": {
+   "name": "Neit's Slops",
+   "stats": {
+    "Fast Cast": 1
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Neit%27s_Slops",
+   "notes": {
+    "Fast Cast": "Fast Cast +1%"
+   }
+  },
+  "28095": {
+   "name": "Pillager's Culottes",
+   "stats": {
+    "Crit Damage": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Pillager%27s_Culottes",
+   "notes": {
+    "Crit Damage": "Critical hit damage +3%"
+   }
+  },
+  "28102": {
+   "name": "Hachiya Hakama",
+   "stats": {
+    "Dual Wield": 3
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Hachiya_Hakama",
+   "notes": {
+    "Dual Wield": "Dual Wield +3%"
+   }
+  },
+  "28184": {
+   "name": "Orvail Pants +1",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orvail_Pants_%2B1",
+   "notes": {
+    "Fast Cast": "Fast Cast+5%"
+   }
+  },
+  "28197": {
+   "name": "Nahtirah Trousers",
+   "stats": {
+    "Snapshot": 9
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nahtirah_Trousers",
+   "notes": {
+    "Snapshot": "+9% Snapshot"
+   }
+  },
+  "28203": {
+   "name": "Orvail Pants",
+   "stats": {
+    "Fast Cast": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Orvail_Pants",
+   "notes": {
+    "Fast Cast": "Fast Cast +5%"
+   }
+  },
+  "28206": {
+   "name": "Geomancy Pants",
+   "stats": {
+    "Fast Cast": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Geomancy_Pants",
+   "notes": {
+    "Fast Cast": "Fast Cast +10%."
+   }
+  },
+  "28216": {
+   "name": "Nabu's Crackows",
+   "stats": {
+    "Fast Cast": 4
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Nabu%27s_Crackows",
+   "notes": {
+    "Fast Cast": "4% Fast Cast"
+   }
+  },
+  "28232": {
+   "name": "Brioso Slippers",
+   "stats": {
+    "Song Duration": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Brioso_Slippers",
+   "notes": {
+    "Song Duration": "read by hand"
+   }
+  },
+  "28234": {
+   "name": "Wakido Sune-Ate",
+   "stats": {
+    "Zanshin": 2
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Wakido_Sune-Ate",
+   "notes": {
+    "Zanshin": "Likely +2% Zanshin. {{verification}}"
+   }
+  },
+  "28239": {
+   "name": "Laksa. Bottes",
+   "stats": {
+    "Quick Draw Damage": 10
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Laksa._Bottes",
+   "notes": {
+    "Quick Draw Damage": "read by hand"
+   }
+  },
+  "28420": {
+   "name": "Fotia Belt",
+   "stats": {
+    "ftp": 0.09765625
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Fotia_Belt",
+   "notes": {
+    "ftp": "read by hand"
+   }
+  },
+  "28582": {
+   "name": "Locus Ring",
+   "stats": {
+    "Magic Burst Damage": 5
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Locus_Ring",
+   "notes": {
+    "Magic Burst Damage": "Magic Burst damage +5%."
+   }
+  },
+  "28637": {
+   "name": "Lifestream Cape",
+   "stats": {
+    "Fast Cast": 7
+   },
+   "source": "https://www.bg-wiki.com/ffxi/Lifestream_Cape",
+   "notes": {
+    "Fast Cast": "Fast Cast +7%"
+   }
+  }
+ }
+}
