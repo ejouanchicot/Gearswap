@@ -160,8 +160,13 @@ function pageSearch(c, j, sub, p, kind){
 }
 
 /* ---- the run ---- */
+// index.js and every export file it lists: the game rewrites an export when the job loads, index.js can stay the same
 const fingerprint = () => { const f = path.join(ATELIER, 'index.js');
-  return fs.existsSync(f) ? crypto.createHash('sha1').update(fs.readFileSync(f)).digest('hex').slice(0, 12) : null; };
+  if (!fs.existsSync(f)) return null;
+  const index = fs.readFileSync(f), hash = crypto.createHash('sha1').update(index);
+  const files = [...new Set((String(index).match(/"file":"[^"]+"/g) || []).map(m => m.slice(8, -1)))].sort();
+  for (const rel of files) { const p = path.join(ATELIER, '..', rel); hash.update(rel).update(fs.existsSync(p) ? fs.readFileSync(p) : ''); }
+  return hash.digest('hex').slice(0, 12); };
 
 async function snapshot(){
   const t0 = Date.now();
