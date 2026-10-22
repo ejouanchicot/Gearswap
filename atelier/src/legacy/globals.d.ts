@@ -178,6 +178,7 @@ declare function topOf(path: string, fam: string): string[];
 declare function segs(path: string): string[];
 declare const MIDCAST_GROUP_FROM: number;
 declare const MIDCAST_ORDER: string[];
+declare function catalogWhen(path: string): string | null;
 declare function midcastGroup(name: string, paths?: string[]): string;
 declare function midcastRank(name: string): number;
 declare function niceName(card: LegacyAny): string;

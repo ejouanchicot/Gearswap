@@ -21,88 +21,88 @@
 
 return {
     ---------------------------------------------------------------- idle, moving, town
-    {'idle', when = 'Standing, not fighting'},
+    {'idle', when = 'Standing, not fighting', fr = 'Quand tu ne combats pas.'},
     -- shared/utils/set_building/base_set_builder.lua (select_idle_base_town, lay_town_set)
-    {'idle.Town', when = 'Idle in a town (Dynamis excluded), laid on top of the idle set', base = 'idle'},
-    {'Adoulin', when = 'Idle in Western / Eastern Adoulin, before sets.idle.Town, laid on top of the idle set'},
+    {'idle.Town', when = 'Idle in a town (Dynamis excluded), laid on top of the idle set', fr = 'En ville (sauf Dynamis) : mis par-dessus ton set idle.', base = 'idle'},
+    {'Adoulin', when = 'Idle in Western / Eastern Adoulin, before sets.idle.Town, laid on top of the idle set', fr = 'À Adoulin (est ou ouest) : mis par-dessus ton set idle, avant celui de la ville.'},
     -- base_set_builder.lua apply_movement
-    {'MoveSpeed', when = 'Running outside a town, not fighting: on top of the idle set'},
-    {'resting', when = 'Resting (/heal)'},
-    {'engaged', when = 'Weapon out, fighting'},
+    {'MoveSpeed', when = 'Running outside a town, not fighting: on top of the idle set', fr = 'Quand tu cours hors de la ville sans combattre : mis par-dessus ton set idle.'},
+    {'resting', when = 'Resting (/heal)', fr = 'Quand tu te reposes (/heal).'},
+    {'engaged', when = 'Weapon out, fighting', fr = 'Quand tu combats, arme sortie.'},
 
     ---------------------------------------------------------------- Fast Cast (Mote get_precast_set)
-    {'precast.FC', when = 'Casting any spell (Fast Cast); also forced on warp spells', needs = {'spells'}},
-    {'precast.FC.{skill}', when = 'Casting a spell of that skill', base = 'precast.FC'},
+    {'precast.FC', when = 'Casting any spell (Fast Cast); also forced on warp spells', fr = 'Au début de chaque sort, pour le lancer plus vite (Fast Cast). Aussi mis pour les sorts de téléportation.', needs = {'spells'}},
+    {'precast.FC.{skill}', when = 'Casting a spell of that skill', fr = 'Au début d’un sort de cette magie, pour le lancer plus vite.', base = 'precast.FC'},
     -- Mote finds a Fast Cast set by the spell's exact name, then its spell map (Mote-Mappings: Cure, Utsusemi...), then
     -- its skill, then its type: never by the name without its tier
-    {'precast.FC.{spellmap}', when = 'Casting any spell of that group (Mote\'s spell map)', base = {'precast.FC.{spellmap.skill}', 'precast.FC'}},
-    {'precast.FC.{spell}', when = 'Casting that spell', base = {'precast.FC.{spell.skill}', 'precast.FC'}},
-    {'precast.FC.{spelltype}', when = 'Casting a spell of that type, while no Fast Cast set matches its name, group or skill', base = 'precast.FC'},
-    {'precast.FC.{CastingMode~Normal}', when = 'Casting with that Casting Mode (applied to the Fast Cast set chosen)', base = 'precast.FC',
+    {'precast.FC.{spellmap}', when = 'Casting any spell of that group (Mote\'s spell map)', fr = 'Au début d’un sort de ce groupe, pour le lancer plus vite.', base = {'precast.FC.{spellmap.skill}', 'precast.FC'}},
+    {'precast.FC.{spell}', when = 'Casting that spell', fr = 'Au début de ce sort, pour le lancer plus vite.', base = {'precast.FC.{spell.skill}', 'precast.FC'}},
+    {'precast.FC.{spelltype}', when = 'Casting a spell of that type, while no Fast Cast set matches its name, group or skill', fr = 'Au début d’un sort de ce type, quand aucun autre set de Fast Cast ne lui correspond.', base = 'precast.FC'},
+    {'precast.FC.{CastingMode~Normal}', when = 'Casting with that Casting Mode (applied to the Fast Cast set chosen)', fr = 'Au début d’un sort, avec ce Casting Mode.', base = 'precast.FC',
         needs = {'spells'}},
 
     ---------------------------------------------------------------- abilities (Mote get_precast_set)
-    {'precast.JA.{ja}', when = 'Using that job ability'},
-    {'precast.{abilitytype}', when = 'Using any ability of that kind (Waltz, Step, CorsairRoll...)'},
-    {'precast.{ability.type}.{ability}', when = 'Using that ability', base = 'precast.{ability.type}'},
+    {'precast.JA.{ja}', when = 'Using that job ability', fr = 'Quand tu utilises cette job ability.'},
+    {'precast.{abilitytype}', when = 'Using any ability of that kind (Waltz, Step, CorsairRoll...)', fr = 'Quand tu utilises une ability de ce genre (Waltz, Step, Roll…).'},
+    {'precast.{ability.type}.{ability}', when = 'Using that ability', fr = 'Quand tu utilises cette ability.', base = 'precast.{ability.type}'},
     -- with no sets.precast.<type>, Mote looks the ability up under JA
-    {'precast.JA.{ability}', when = 'Using that ability (read only while sets.precast.<its kind> does not exist)',
+    {'precast.JA.{ability}', when = 'Using that ability (read only while sets.precast.<its kind> does not exist)', fr = 'Quand tu utilises cette ability (si son genre n’a pas de set).',
         needs = {'absent:precast.{ability.type}'}},
 
     ---------------------------------------------------------------- weaponskills
-    {'precast.WS', when = 'Any weaponskill without its own set'},
-    {'precast.WS.{ws}', when = 'That weaponskill', base = {'precast.WS.{ws.skill}', 'precast.WS'}},
+    {'precast.WS', when = 'Any weaponskill without its own set', fr = 'Pour toute weaponskill qui n’a pas son propre set.'},
+    {'precast.WS.{ws}', when = 'That weaponskill', fr = 'Pour cette weaponskill.', base = {'precast.WS.{ws.skill}', 'precast.WS'}},
     -- Mote: no set by the weaponskill's name -> its combat skill, then sets.precast.WS
-    {'precast.WS.{wsskill}', when = 'Any weaponskill of that weapon type without its own set', base = 'precast.WS'},
-    {'precast.WS.{ws}.{WeaponskillMode}', when = 'That weaponskill with that Weaponskill Mode', base = 'precast.WS.{ws}'},
+    {'precast.WS.{wsskill}', when = 'Any weaponskill of that weapon type without its own set', fr = 'Pour toute weaponskill de ce type d’arme qui n’a pas son propre set.', base = 'precast.WS'},
+    {'precast.WS.{ws}.{WeaponskillMode}', when = 'That weaponskill with that Weaponskill Mode', fr = 'Pour cette weaponskill, avec ce Weaponskill Mode.', base = 'precast.WS.{ws}'},
     -- shared/utils/party/support_tier.lua (wraps Mote get_weaponskill_set; Solo falls back to Group)
-    {'precast.WS.{Group|Solo|Trust}', when = 'Any weaponskill without its own set, with less support in your zone', base = 'precast.WS'},
-    {'precast.WS.{ws}.{Group|Solo|Trust}', when = 'That weaponskill with less support in your zone (Group: one of BRD/COR/GEO; Solo: none; Trust: trusts only)',
+    {'precast.WS.{Group|Solo|Trust}', when = 'Any weaponskill without its own set, with less support in your zone', fr = 'Pour toute weaponskill sans set à elle, quand tu as moins de soutien dans la zone.', base = 'precast.WS'},
+    {'precast.WS.{ws}.{Group|Solo|Trust}', when = 'That weaponskill with less support in your zone (Group: one of BRD/COR/GEO; Solo: none; Trust: trusts only)', fr = 'Pour cette weaponskill quand tu as moins de soutien (Group : un BRD, COR ou GEO ; Solo : personne ; Trust : seulement des trusts).',
         base = {'precast.WS.{ws}'}},
-    {'precast.WS.{set:precast.WS}.{Group|Solo|Trust}', when = 'That set with less support in your zone (Group: one of BRD/COR/GEO; Solo: none; Trust: trusts only)',
+    {'precast.WS.{set:precast.WS}.{Group|Solo|Trust}', when = 'That set with less support in your zone (Group: one of BRD/COR/GEO; Solo: none; Trust: trusts only)', fr = 'Ce set de weaponskill, quand tu as moins de soutien (Group : un BRD, COR ou GEO ; Solo : personne ; Trust : seulement des trusts).',
         base = 'precast.WS.{set}'},
     -- shared/utils/party/support_tier.lua SupportTier.engaged: every engaged set the job picks
-    {'engaged.{set:engaged}.{Group|Solo|Trust}', when = 'That engaged set with less support in your zone (same tiers as the weaponskills)',
+    {'engaged.{set:engaged}.{Group|Solo|Trust}', when = 'That engaged set with less support in your zone (same tiers as the weaponskills)', fr = 'Ce set de combat, quand tu as moins de soutien dans la zone.',
         base = 'engaged.{set}'},
 
     ---------------------------------------------------------------- spells (Mote get_midcast_set, MidcastManager P0 / P1 / P9)
-    {'midcast.FastRecast', when = 'Put on first at the start of every spell, under the spell\'s own set', needs = {'spells'}},
-    {'midcast.{skill}', when = 'Any spell of that skill'},
+    {'midcast.FastRecast', when = 'Put on first at the start of every spell, under the spell\'s own set', fr = 'Mis au tout début de chaque sort, sous le set propre du sort.', needs = {'spells'}},
+    {'midcast.{skill}', when = 'Any spell of that skill', fr = 'Quand tu lances un sort de cette magie.'},
     -- MidcastManager P1 (read while sets.midcast[skill] exists, before the mode and family sets of the job); Mote never
     -- reads the name without its tier
-    {'midcast.{spellbase}', when = 'Any tier of that spell, over the job\'s mode and family sets (read while the skill\'s set exists)',
+    {'midcast.{spellbase}', when = 'Any tier of that spell, over the job\'s mode and family sets (read while the skill\'s set exists)', fr = 'Quand tu lances ce sort, à n’importe quel tier.',
         base = 'midcast.{spellbase.skill}'},
     -- Mote's spell map at the root (Mote get_midcast_set), then MidcastManager P8b at the root and under the skill
-    {'midcast.{spellmap}', when = 'Any spell of that group (Mote\'s spell map), when no set matches its name', base = 'midcast.{spellmap.skill}'},
-    {'midcast.{spellmap.skill}.{spellmap}', when = 'Any spell of that group, when the root has no set for it (read while the skill\'s set exists)',
+    {'midcast.{spellmap}', when = 'Any spell of that group (Mote\'s spell map), when no set matches its name', fr = 'Quand tu lances un sort de ce groupe, s’il n’a pas de set à son nom.', base = 'midcast.{spellmap.skill}'},
+    {'midcast.{spellmap.skill}.{spellmap}', when = 'Any spell of that group, when the root has no set for it (read while the skill\'s set exists)', fr = 'Quand tu lances un sort de ce groupe, s’il n’a pas de set plus direct.',
         base = 'midcast.{spellmap.skill}', needs = {'absent:midcast.{spellmap}'}},
-    {'midcast.{spell}', when = 'That spell', base = {'midcast.{spell.base}', 'midcast.{spell.skill}'}},
+    {'midcast.{spell}', when = 'That spell', fr = 'Quand tu lances ce sort.', base = {'midcast.{spell.base}', 'midcast.{spell.skill}'}},
     -- MidcastManager P1 [skill][base]: every spell goes through select_set (the job's, or
     -- shared/utils/midcast/midcast_fallback.lua), which reads nothing while sets.midcast[skill] is missing
     -- (P1 reads [base] at the root first: under the skill only while the root has none)
-    {'midcast.{spellbase.skill}.{spellbase}', when = 'Any tier of that spell (read while the skill\'s set exists)', base = 'midcast.{spellbase.skill}',
+    {'midcast.{spellbase.skill}.{spellbase}', when = 'Any tier of that spell (read while the skill\'s set exists)', fr = 'Quand tu lances ce sort, à n’importe quel tier.', base = 'midcast.{spellbase.skill}',
         needs = {'absent:midcast.{spellbase}'}},
-    {'midcast.{spellplain.skill}.{spellplain}', when = 'That spell (read while the skill\'s set exists)', base = 'midcast.{spellplain.skill}',
+    {'midcast.{spellplain.skill}.{spellplain}', when = 'That spell (read while the skill\'s set exists)', fr = 'Quand tu lances ce sort.', base = 'midcast.{spellplain.skill}',
         needs = {'absent:midcast.{spellplain}'}},
     -- Mote's spell map Utsusemi (Ichi, Ni, San): precast under FC, midcast at the root (MidcastManager P8b)
-    {'precast.FC.Utsusemi', when = 'Casting any Utsusemi', base = {'precast.FC.Ninjutsu', 'precast.FC'}, needs = {'spell:Utsusemi: Ichi'}},
-    {'midcast.Utsusemi', when = 'Casting any Utsusemi', base = 'midcast.Ninjutsu', needs = {'spell:Utsusemi: Ichi'}},
-    {'midcast.Ninjutsu.Utsusemi', when = 'Casting any Utsusemi (read while sets.midcast.Ninjutsu exists and sets.midcast.Utsusemi does not)',
+    {'precast.FC.Utsusemi', when = 'Casting any Utsusemi', fr = 'Au début de chaque Utsusemi, pour le lancer plus vite.', base = {'precast.FC.Ninjutsu', 'precast.FC'}, needs = {'spell:Utsusemi: Ichi'}},
+    {'midcast.Utsusemi', when = 'Casting any Utsusemi', fr = 'Quand tu lances Utsusemi.', base = 'midcast.Ninjutsu', needs = {'spell:Utsusemi: Ichi'}},
+    {'midcast.Ninjutsu.Utsusemi', when = 'Casting any Utsusemi (read while sets.midcast.Ninjutsu exists and sets.midcast.Utsusemi does not)', fr = 'Quand tu lances Utsusemi (si tu n’as pas de set Utsusemi à part).',
         base = 'midcast.Ninjutsu', needs = {'spell:Utsusemi: Ichi', 'absent:midcast.Utsusemi'}},
 
     ---------------------------------------------------------------- put on by the shared systems
     -- shared/utils/debuff/doom_manager.lua
-    {'buff.Doom', when = 'You are Doomed: neck, rings and belt stay locked until Doom is gone'},
+    {'buff.Doom', when = 'You are Doomed: neck, rings and belt stay locked until Doom is gone', fr = 'Quand tu as Doom : cou, bagues et ceinture restent bloqués jusqu’à la fin du Doom.'},
     -- shared/utils/equipment/dual_wield.lua (engaged only, after the job's set)
-    {'DW.{NoHaste|Haste|HasteII|MaxHaste}', when = 'Two weapons held, fighting: Dual Wield pieces by your magic haste', needs = {'dw'}},
+    {'DW.{NoHaste|Haste|HasteII|MaxHaste}', when = 'Two weapons held, fighting: Dual Wield pieces by your magic haste', fr = 'Quand tu combats avec deux armes : les pièces de Dual Wield selon ton haste magique.', needs = {'dw'}},
     -- shared/utils/equipment/weapon_resolver.lua
-    {'SingleWield', when = 'A weapon set holds an off-hand weapon you cannot dual wield: only its sub is read',
+    {'SingleWield', when = 'A weapon set holds an off-hand weapon you cannot dual wield: only its sub is read', fr = 'Quand l’arme de la main gauche ne se tient pas à deux armes : seule la main gauche de ce set est prise.',
         needs = {'state:MainWeapon'}},
     -- shared/utils/core/combat_mode.lua
-    {'CombatMode', when = 'Turning Combat Mode On: put on, then held by the weapon lock', needs = {'state:CombatMode'}},
+    {'CombatMode', when = 'Turning Combat Mode On: put on, then held by the weapon lock', fr = 'Quand tu actives le Combat Mode : mis, puis gardé par le verrou d’arme.', needs = {'state:CombatMode'}},
     -- shared/utils/equipment/treasure_hunter.lua
-    {'TreasureHunter', when = 'Treasure Mode on, against a mob not tagged yet'},
+    {'TreasureHunter', when = 'Treasure Mode on, against a mob not tagged yet', fr = 'Avec le Treasure Mode, contre un monstre pas encore tagué.'},
     -- base_set_builder.lua lay_weapons / weapon_resolver.lua
-    {'{MainWeapon}', when = 'That Main Weapon value: laid on the idle and engaged sets', needs = {'state:MainWeapon'}},
-    {'{SubWeapon}', when = 'That Sub Weapon value: laid on the idle and engaged sets', needs = {'state:SubWeapon'}},
+    {'{MainWeapon}', when = 'That Main Weapon value: laid on the idle and engaged sets', fr = 'Cette arme principale : mise sur tes sets idle et de combat.', needs = {'state:MainWeapon'}},
+    {'{SubWeapon}', when = 'That Sub Weapon value: laid on the idle and engaged sets', fr = 'Cette arme secondaire : mise sur tes sets idle et de combat.', needs = {'state:SubWeapon'}},
 }

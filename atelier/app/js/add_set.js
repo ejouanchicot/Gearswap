@@ -35,6 +35,12 @@ Object.assign(T.en, {
 let addStep = 0, addFam = null, addPath = null;
 // The export's catalog (an older export has none)
 const catalogEntries = () => { const d = data(); return d && Array.isArray(d.catalog) ? d.catalog : null; };
+// When the job's code wears a set, in the page's language, from its catalog line (shared/jobs/<job>/set_catalog.lua
+// `fr` / `when`); null when the catalog has no line for it, or none in French (the card keeps its family's line)
+function catalogWhen(path){
+  const e = (catalogEntries() || []).find(x => x.path === path.replace(/'/g, '"'));
+  return e ? (S.lang === 'en' ? e.when : e.fr) || null : null;
+}
 // A catalog line of a weapon state ({MainWeapon}, {WeaponSet}...): the weapon sets, laid on idle and engaged
 const WEAPON_LINE = /^\{(MainWeapon|SubWeapon|RangeWeapon|WeaponSet|SubSet|AbyWeapon|SubWeaponOverride)[^}]*\}$/;
 const catFamily = e => WEAPON_LINE.test(e.group) ? 'weapons' : cardFamily(e.path, {});

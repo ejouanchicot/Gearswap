@@ -9,6 +9,7 @@
 --- Each entry of those files:
 ---   { 'midcast.Enfeebling Magic.{type:Enfeebling Magic}.{EnfeebleMode}',
 ---     when  = 'Worn while casting ...',        -- one line, shown in the page
+---     fr    = 'Porté quand tu lances ...',     -- the same line in French, for a newcomer (no code names)
 ---     base  = 'midcast.Enfeebling Magic',      -- the set worn in its place today
 ---     needs = {'state:EnfeebleMode'} }         -- optional, all must hold
 --- A path is the keys under `sets`, separated by dots. A part in braces is
@@ -490,7 +491,7 @@ local function expand(line, ctx, from, out, seen)
                 end
                 local parent = {}
                 for i = 1, #keys - 1 do parent[i] = keys[i] end
-                out[#out + 1] = {path = path, when = line.when, base = base, group = line[1], from = from,
+                out[#out + 1] = {path = path, when = line.when, fr = line.fr, base = base, group = line[1], from = from,
                     exists = node(keys) ~= nil or nil, parent = (#parent == 0 or node(parent) ~= nil) or nil}
             end
         end
@@ -498,7 +499,7 @@ local function expand(line, ctx, from, out, seen)
 end
 
 --- The sets the job's code reads, filled with the character's data: a list of
---- {path, when, base, group, from = 'job'|'common', exists, parent}. `exists`: the set is
+--- {path, when, fr, base, group, from = 'job'|'common', exists, parent}. `exists`: the set is
 --- there already; `parent`: the table it goes in exists (it can be written with no other set).
 --- @param job string Main job (WAR)
 --- @param opts table|nil {sub, sub_level, ws = {names}, ws_skill = {name = combat skill}, families = AtelierFamilies.collect()}

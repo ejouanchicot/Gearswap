@@ -72,7 +72,8 @@ function wsTitle(s: LegacyAny, acts: TitleActs): TitleView {
 // the head of a set other than a weaponskill's: what it is (its family, name and version, when it is worn, its path),
 // and the weapons it is shown with (setHeadHTML)
 function setHeadParts(card: LegacyAny, vi: number, s: LegacyAny, acts: TitleActs): {title: TitleView; picks: Extract<CardView['ctl'], {k: 'picks'}>} {
-  const when = t('famWhen.' + card.fam), label = card.variants[vi].label;
+  // when the code wears it: its catalog line (add_set.js catalogWhen), else its family's
+  const when = catalogWhen(s.path) || t('famWhen.' + card.fam), label = card.variants[vi].label;
   const fam = t('fam.' + card.fam), name = niceName(card);
   // an enhancing set: on whom it is cast, beside its name and as the line under it (stat_opt.js enhTarget)
   const on = enhTarget(s);
