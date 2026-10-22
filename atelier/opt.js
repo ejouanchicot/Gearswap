@@ -255,7 +255,7 @@
         if (c.warcryTpDelta && !strict) agg[0].own_warcry = {"TP Bonus": c.warcryTpDelta};
         // a party SMN's Avatar's Favor at BG Wiki's top values (the page's partyStats; the engine's own are lower or higher)
         if (c.partyStats && Object.keys(c.partyStats).length && !strict) agg[0].party_favor = c.partyStats;
-        var out = {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withBase(c),
+        var out = {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withNakedHp(withBase(c), c),
             enemy: FFXI.make_enemy(c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: strict ? 1 : physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
             physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0, fanDance: c.fanDance || null,
@@ -269,6 +269,11 @@
     // ({main, sub, merits, str: 153, dex: 141...}), else the page's measuredBase(job). Measured with another subjob: that
     // subjob's attribute bonus swapped for this one's (create_player's tables). Same main job only.
     var ATTRS = ["STR", "DEX", "VIT", "AGI", "INT", "MND", "CHR"];
+    // The HP without gear the page worked out (atelier/app/js/engine.js optContextInput): Lycurgos's TP Bonus
+    // (atelier/calc/calc_page.js); the engine before does not read it
+    function withNakedHp(ab, c) {
+        return typeof c.nakedHp === "number" ? Object.assign({}, ab, {"Naked HP": c.nakedHp}) : ab;
+    }
     function withBase(c) {
         var ab = c.abilities || {}, job = c.job.toLowerCase(), sub = (c.sub || "war").toLowerCase();
         var m = c.base !== undefined ? c.base : (typeof measuredBase === "function" ? measuredBase(job) : null);
@@ -362,8 +367,8 @@
     // (3 more), else a Triple (2), else a Double Attack (1), each swing landing at the hand's hit rate
     // A hand's swings in one round, as a distribution {swings: chance}, in the game's order (BG Wiki Multi-Attack):
     // Quadruple, Triple, Double Attack, then, when none of them happened, the weapon's "Occasionally attacks X times":
-    // one draw among its outcomes (a Kraken Club's 2 to 8 at 15/25/25/15/10/3/2 %, else one; a mythic's aftermath
-    // twice 40 %, thrice 20 %), as BG Wiki measured it (Kraken Club: 4.05 attacks a swing).
+    // one draw among its outcomes (a Kraken Club's 2 to 8 at 10.66/22.78/28.44/21.36/10.83/3.17/0.67 %, else one: BG
+    // Wiki's count of 26,327 rounds, atelier/gear/hidden_review.py; a mythic's aftermath twice 40 %, thrice 20 %).
     // oa: [[extra swings, chance], ...]
     function swingsOf(ma, oa) {
         var out = {4: ma.qa, 3: (1 - ma.qa) * ma.ta, 2: (1 - ma.qa) * (1 - ma.ta) * ma.da}, f = (1 - ma.qa) * (1 - ma.ta) * (1 - ma.da), none = 1;

@@ -38,9 +38,24 @@
         if (unknown.length) return {unsupported: "ability on: " + unknown.join(", ")};
         var base = baseOf(input);
         if (!base) return {unsupported: "base attributes unknown for " + input.job + "/" + input.sub};
-        return CALC.characterStats({job: input.job, sub: input.sub, ml: input.ml, gearset: input.gearset,
+        var stats = CALC.characterStats({job: input.job, sub: input.sub, ml: input.ml, gearset: input.gearset,
             buffs: input.buffs, abilities: input.abilities, baseAttributes: base,
             critRateMerits: (input.abilities || {})["Crit Rate Merits"]});
+        stats["TP Bonus"] += lycurgosTpBonus(input);
+        return stats;
+    }
+
+    // https://www.bg-wiki.com/ffxi/Lycurgos (read 2026-10-22): '"TP Bonus based on current HP" is: TP Bonus =
+    // Current HP / 5'; "This caps at +1000 TP Bonus (current HP at 5000+)." The HP are the set's at full: the HP
+    // without gear the page worked out (abilities["Naked HP"], atelier/opt.js), then the set's HP and HP %, as the
+    // page counts them (atelier/app/js/engine.js charStats). Without that figure, nothing (not guessed).
+    var LYCURGOS_TP_BONUS_CAP = 1000;
+    function lycurgosTpBonus(input) {
+        var naked = (input.abilities || {})["Naked HP"];
+        if (mainName(input.gearset) !== "Lycurgos" || typeof naked !== "number") return 0;
+        var gear = CALC.gearTotals(input.gearset);
+        var hp = Math.round((naked + (gear.HP || 0)) * (1 + (gear["HP%"] || 0) / 100));
+        return Math.min(LYCURGOS_TP_BONUS_CAP, Math.floor(hp / 5));
     }
 
     function mainName(gearset) {
@@ -96,7 +111,14 @@
         return null;
     }
 
+    // A weapon that attacks three times or more (Kraken Club: "OA3" to "OA8" of its hand): the round counts the
+    // "attacks twice" share only (calc_round_swings.js), not computed yet (SPEC moteur-sans-wsdist, Lot 4)
+    function manySwings(stats) {
+        return Object.keys(stats).filter(function (k) { return /^OA[3-8] (main|sub)$/.test(k) && stats[k] > 0; });
+    }
+
     function round(stats, enemy, start, at, metric, gearset, job) {
+        if (manySwings(stats).length) return {unsupported: "a weapon attacks 3 times or more"};
         var wield = CALC.wielding(gearset);
         // "Hasso active": set by the sheet when Hasso is on and works (calc_abilities.js)
         var got = CALC.attackRoundAverage(stats, enemy, {wield: wield, job: job, main: mainName(gearset),

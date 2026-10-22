@@ -850,3 +850,28 @@ Totals, the six files with real gear (Kaories GEO and RDM, Tetsouo BLM, GEO, RDM
    (the damage jumps by 10 %).
 8. Ninjutsu: Katon: San with Ninjutsu skill under 275 and over 475 (held in range or not), and at
    negative dINT.
+
+## AE. Values that came from wsdist's gear.py, replaced (2026-10-22, Lot 1 of notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md)
+
+The gear catalogue (`atelier/gear/`, `hidden_review.py` ELSEWHERE) held nine values read in wsdist's
+gear.py. Each page was read again on BG Wiki (API, raw wikitext):
+
+| Piece | gear.py | Now | Where |
+|---|---|---|---|
+| Kraken Club | OA2-8 15/25/25/15/10/3/2 % | OA2-8 10.66/22.78/28.44/21.36/10.83/3.17/0.67 % (BG Wiki's count of 26,327 rounds) | catalogue |
+| Blurred Knife +1 | OA2 45 % | 45 %, Joyeuse's page ("activation rate of 45%"), ASSUMED the same for this knife | catalogue |
+| Wizard's Rod (both) | Magic Burst Damage II +8 | +30, the maximum of the page's "+1 ~ +30" by timing (the player's choice) | catalogue |
+| Mandau | TA Damage% +10 | first swing x3 13 %, Mercy Stroke x1.4 (x1.68 at R15) | `CALC.RELIC_WEAPON`, `CALC.WS_DETAILS` |
+| Bravura | DA Damage% +20 | first swing x2 20 %, Metatron Torment x1.4 (x1.68 at R15) | idem |
+| Ragnarok | Crit Damage +5 | first swing x2.5 16 %, Scourge x1.4 (x1.68 at R15); its Crit Rate +14 stays (read on its page) | idem |
+| Lycurgos | TP Bonus +400 | TP Bonus = the set's HP / 5, capped at 1000 (`calc_page.js`, HP without gear from the page) | engine |
+| Yoichinoyumi | Crit Rate +5 | nothing: its effects are a first shot x3 13 % and Namas Arrow +40 %, ranged (Lot 4) | — |
+
+The augments at rank 15 (Mandau's "Triple Attack" Damage +10 %...) come from the augment bundles
+(LandSandBoat), not from these values. The engine before reads the catalogue too: it lost the gear.py
+values and gets the new ones. None of it is measured by us.
+
+Found on the way: our attack round reads "OA2" of a hand only (`calc_round_swings.js`); a Kraken Club's
+3 to 8 swings were left out without a word, its round about half the swings it has. Since this change
+such a round says "a weapon attacks 3 times or more" and goes to the engine before (28 engaged sets of
+Tetsouo, Kaories and Gab: +0.3 to +12 % damage, more TP a round). To compute before Lot 5 (SPEC, Lot 4).

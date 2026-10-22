@@ -153,9 +153,22 @@
     // round (36.8 %, 33 to 46 % by fight) are above the largest later swing of the same fight, at twice the damage;
     // no later swing does it. The same stage and the same effect as Laphria's, within the two measures' errors
     var MPU_GANDRING = {firstSwing: {rate: 0.37, multiplier: 2}};
+    // Read on 2026-10-22, each "Hidden Effect" followed on its page by "Will never activate on hits from Double
+    // Attack, Triple Attack, etc.":
+    // https://www.bg-wiki.com/ffxi/Mandau_(Level_119_III)
+    //   "Does Triple Damage on the first swing of an attack round 13% of the time."
+    // https://www.bg-wiki.com/ffxi/Bravura_(Level_119_III)
+    //   "Does Double Damage on the first swing of an attack round 20% of the time."
+    // https://www.bg-wiki.com/ffxi/Ragnarok_(Level_119_III)
+    //   "Does 2.5x Damage on the first swing of an attack round 16% of the time."
+    // Not measured by us. Their aftermaths are not here (the case goes to the engine before, as without an entry)
+    var MANDAU = {firstSwing: {rate: 0.13, multiplier: 3}};
+    var BRAVURA = {firstSwing: {rate: 0.2, multiplier: 2}};
+    var RAGNAROK = {firstSwing: {rate: 0.16, multiplier: 2.5}};
     // the stage is in the name the gear gives the weapon ("Laphria IV"): the other stages have no entry
     CALC.RELIC_WEAPON = {"Apocalypse": APOCALYPSE, "Apocalypse R15": APOCALYPSE, "Laphria IV": LAPHRIA,
-        "Mpu Gandring IV": MPU_GANDRING};
+        "Mpu Gandring IV": MPU_GANDRING, "Mandau": MANDAU, "Mandau R15": MANDAU, "Bravura": BRAVURA,
+        "Bravura R15": BRAVURA, "Ragnarok": RAGNAROK, "Ragnarok R15": RAGNAROK};
 
     // Mean damage multipliers from `options` = {aftermath: {type: "empyrean", level: 1..3,
     // multiplier: 2 or 3}, main: "Apocalypse R15"} (the main hand weapon as the gear names it).

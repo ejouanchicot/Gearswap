@@ -29,7 +29,9 @@
     var JOB_POINT_RANKS = 20;
     // entries of the page's `abilities` that are measurements of the character, not abilities
     // "Aftermath TP" and "Aftermath Stage": what the aftermath was made with, read with "Aftermath" (below)
-    var NOT_ABILITIES = {"Base Stats": true, "Crit Rate Merits": true, "WS Merits": true, "Aftermath TP": true, "Aftermath Stage": true};
+    // "Naked HP": the HP without gear, for Lycurgos (calc_page.js)
+    var NOT_ABILITIES = {"Base Stats": true, "Crit Rate Merits": true, "WS Merits": true, "Aftermath TP": true, "Aftermath Stage": true,
+        "Naked HP": true};
     // "Warcry (sub)": the support job's version of an ability both jobs could have
     var SUB_SUFFIX = / \(sub\)$/;
 

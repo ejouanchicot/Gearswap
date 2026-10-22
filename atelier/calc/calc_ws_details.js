@@ -107,6 +107,11 @@
         "Ground Strike": {url: U + "Ground_Strike", mods: {STR: 50, INT: 50}, ftp: [1.5, 3, 5], attack: same(1.75)},
         "Hard Slash": {url: U + "Hard_Slash", mods: {STR: 100}, ftp: [1.5, 2.5, 3.5], hits: 1,
             unverified: "fTP at 2000 and 3000 TP"},
+        // Scourge's own page not read: everything else from our database (calc_ws_table.js)
+        // https://www.bg-wiki.com/ffxi/Ragnarok_(Level_119_III) : "Hidden Effect: Scourge damage +40%"; "At Rank 15
+        // Augment level, total damage bonus is +68% because they are different terms in the equation that get
+        // multiplied together." (1.4 x 1.2)
+        "Scourge": {url: U + "Ragnarok_(Level_119_III)", weapons: {"Ragnarok": [1.4], "Ragnarok R15": [1.4, 1.2]}},
         "Resolution": {url: U + "Resolution", mods: {STR: 85}, ftp: [0.71875, 1.5, 2.25], hits: 5, replicating: true,
             attack: same(0.85)},
         "Shockwave": {url: U + "Shockwave", mods: {STR: 30, MND: 30}, ftp: same(1)},
@@ -150,7 +155,11 @@
         "Iron Tempest": {url: U + "Iron_Tempest", mods: {STR: 60}, ftp: same(1), hits: 1, attack: [1, 2, 3.5],
             unverified: "attack bonus at 2000 and 3000 TP"},
         "King's Justice": {url: U + "King%27s_Justice", mods: {STR: 50}, ftp: [1, 3, 5], hits: 3},
-        "Metatron Torment": {url: U + "Metatron_Torment", mods: {STR: 80}, ftp: same(2.75), hits: 1},
+        // https://www.bg-wiki.com/ffxi/Bravura_(Level_119_III) : "Hidden Effect: Metatron Torment damage +40%.";
+        // "At Rank 15 Augment level, total damage bonus is +68% because they are different terms in the equation
+        // that get multiplied together." (1.4 x 1.2)
+        "Metatron Torment": {url: U + "Metatron_Torment", mods: {STR: 80}, ftp: same(2.75), hits: 1,
+            weapons: {"Bravura": [1.4], "Bravura R15": [1.4, 1.2]}},
         "Raging Rush": {url: U + "Raging_Rush", mods: {STR: 50}, ftp: same(1), hits: 3, crit: [15, 30, 50],
             unverified: "critical hit rate at 2000 and 3000 TP; page marked outdated"},
         "Shield Break": {url: U + "Shield_Break", mods: {STR: 60, VIT: 60}, ftp: same(1)},
@@ -168,7 +177,10 @@
             replicating: true, crit: [10, 25, 50], unverified: "critical hit rate at 2000 and 3000 TP"},
         "Exenterator": {url: U + "Exenterator", type: "Physical", mods: {AGI: 85}, ftp: same(1.1875), hits: 4,
             replicating: true},
-        "Mercy Stroke": {url: U + "Mercy_Stroke", type: "Physical", mods: {STR: 80}, ftp: same(5)},
+        // https://www.bg-wiki.com/ffxi/Mandau_(Level_119_III) : "Hidden Effect: Mercy Stroke damage +40%"; rank 15
+        // augment "Mercy Stroke: DMG:+20%", "total damage bonus is +68%" (multiplied together)
+        "Mercy Stroke": {url: U + "Mercy_Stroke", type: "Physical", mods: {STR: 80}, ftp: same(5),
+            weapons: {"Mandau": [1.4], "Mandau R15": [1.4, 1.2]}},
         // https://www.bg-wiki.com/ffxi/Carnwenhan_(Level_119_III) : hidden "Mordant Rime damage +30%";
         // rank 15 augment "Mordant Rime: Damage +15%", multiplied together (+49.5%)
         "Mordant Rime": {url: U + "Mordant_Rime", type: "Physical", mods: {CHR: 70, DEX: 30}, ftp: same(5), hits: 2,

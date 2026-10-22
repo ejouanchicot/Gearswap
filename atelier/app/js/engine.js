@@ -133,7 +133,9 @@ function optContextInput(s){
     fanDance: abilities['Fan Dance'] ? {merit: danceMerit('fan')} : null,
     warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws,
     // your measured base attributes and merits, as data: a worker has no page to ask (atelier/opt.js withBase)
-    base: measuredBase((S.job || '').toLowerCase()), wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V'};
+    base: measuredBase((S.job || '').toLowerCase()),
+    // the HP without gear (merits and buffs in), for Lycurgos's TP Bonus (atelier/calc/calc_page.js lycurgosTpBonus)
+    nakedHp: ((charStats(s, {}) || {}).cur || {}).hp, wsType: /archery|marksmanship/i.test(skill) ? 'ranged' : 'melee', primeStage: b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V'};
 }
 // A set's pieces as the engine reads them: a piece named without augments is your copy of it (its
 // augments, path and the rank //gs c gearscan read)

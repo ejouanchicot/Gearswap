@@ -170,7 +170,7 @@ const fingerprint = () => { const f = path.join(ATELIER, 'index.js');
   return hash.digest('hex').slice(0, 12); };
 
 async function snapshot(){
-  const t0 = Date.now();
+  const t0 = Date.now(), exportsAtStart = fingerprint();
   const browser = await puppeteer.launch({executablePath: CHROME, headless: 'new', protocolTimeout: 0, args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(), errors = [], blocked = new Set();
   page.setDefaultTimeout(0);
@@ -221,7 +221,9 @@ async function snapshot(){
     process.stderr.write('\n');
   }
   await browser.close();
-  return {mode, at: new Date().toISOString(), exports: fingerprint(), engine, blocked: [...blocked].sort(), errors, seconds: Math.round((Date.now() - t0) / 1000), sets, searches};
+  // the game rewrites an export when a job loads: one rewritten during the run leaves the run with both
+  const exports = fingerprint();
+  return {mode, at: new Date().toISOString(), exports: exports === exportsAtStart ? exports : exportsAtStart + '>' + exports, engine, blocked: [...blocked].sort(), errors, seconds: Math.round((Date.now() - t0) / 1000), sets, searches};
 }
 
 function summary(snap){
@@ -235,6 +237,7 @@ function summary(snap){
   const line = o => Object.entries(o).map(([k, v]) => `${k} ${v}`).join(', ');
   const total = o => Object.values(o).reduce((a, b) => a + b, 0);
   console.log(`mode ${snap.mode}, ${snap.seconds} s, exports ${snap.exports}; engine ${JSON.stringify(snap.engine)}`);
+  if (snap.exports.includes('>')) console.log('WARNING: an export was rewritten during this run (the game loaded a job): run it again');
   if (snap.blocked.length) console.log(`blocked: ${snap.blocked.join(' ')}`);
   console.log('sets by sort:'); for (const k of Object.keys(count).sort()) console.log(`  ${k} ${total(count[k])} (${line(count[k])})`);
   console.log('handed to the old engine (sets):'); for (const k of Object.keys(fell).sort()) console.log(`  ${k}: ${total(fell[k])} (${line(fell[k])})`);
