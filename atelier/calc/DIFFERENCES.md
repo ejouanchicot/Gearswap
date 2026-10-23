@@ -1068,9 +1068,13 @@ fTP × physical outside them, × resist × TMDA. Measured on FFXIAH (Bahadir 201
 before: x0.97 to x0.98 (the 95 % magic hit cap); one Koki case x0.72 from the physical part (256 against more).
 Orpheus's Sash ("Elemental Bonus" of every element) now counts on the magical and hybrid weapon skills, at the catalogue's
 15 (its closest distance: ASSUMED, no distance is given for a weapon skill); the engine before counted it the same way.
-Ranged first shot: no bonus (BG Category:Weapon_Skills "Ranged weapon skills do not gain this bonus accuracy"), except
-the measured ones (FFXIAH #3726841, 2024-12-26): Detonator +100, Split Shot +30, and Empyreal Arrow +100 / Piercing Arrow
-+30 as their twins. Last Stand and the others lose the +100 AN gave them.
+Ranged first shot: no bonus at all, the developers' answer (forum.square-enix.com t-353 p=576688, Chcayne, 2016-04-20,
+read through the Wayback Machine): 「射撃／弓術のウェポンスキルには、近接武器のウェポンスキルのような命中補正はありません。」,
+as BG Category:Weapon_Skills. A player's measure says otherwise (Detonator about +100, Split Shot +30 to 40, FFXIAH topic
+52018 page 127 #3726841, 2024-12-26, small samples): the player's choice (2026-10-23) is the developers', to measure in
+game later (Kaories COR, Detonator and Last Stand). Last Stand and the others lose the +100 AN gave them. Apex Arrow: the
+test behind BG's 15 % (BlueGartr 104123 page 6, Byrthnoth 2012) gives "at least 25~30%" at 300 TP from one capped shot,
+nothing at 200: still not computed.
 Aftermath: aeonic weapons (BG Category:Aeonic_Weapons) have no melee effect (BG Aeonic_Aftermath, wiki.ffo.jp 34909; the
 engine before gave them none either); Verethragna's triple damage on its second fist's first swing (FFXIclopedia: "only
 trigger on the first offhand hit of every attack round"); Kenkonken's Lv3 on the second fist only; Tizona Lv2,
