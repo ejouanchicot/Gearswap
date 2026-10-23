@@ -101,4 +101,7 @@
         var spike = critical ? 0 : CALC.pdifSpikeShare(wRatio);
         return (spike * Math.min(1, cap) + (1 - spike) * mean) * CALC.PDIF_FINAL_DRAW_MEAN;
     };
+
+    // shared with the ranged weapon skills (calc_ws_ranged.js)
+    CALC.pdifMeanBelowCap = meanBelowCap;
 });

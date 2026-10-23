@@ -71,16 +71,27 @@
         return levels[name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")];
     }
 
-    // `weaponLevel`: the main hand's item level, for a magical weapon skill (calc_ws_magic.js)
+    function pieceName(gearset, slot) {
+        var p = (gearset || {})[slot] || {};
+        return p.Name2 || p.Name;
+    }
+
+    function wsValue(got, metric) {
+        return got.unsupported ? got : [[got.damage, got.tpReturn][WS_VALUE[metric]], [got.damage, got.tpReturn, 1]];
+    }
+
+    // `weaponLevel`: the item level of the weapon that uses it (the ranged one for a ranged weapon skill), for a magical
+    // weapon skill (calc_ws_magic.js); a ranged physical one: calc_ws_ranged.js
     function weaponskill(stats, enemy, name, tp, type, metric, gearset, abilities, weaponLevel) {
         if (!(metric in WS_VALUE)) return {unsupported: "metric " + metric};
-        if (type === "ranged") return {unsupported: "ranged weapon skill"};
-        var info = CALC.weaponskillInfo(name);
-        if (info && info.type === "Magical") {
-            var magic = CALC.magicWeaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), weaponLevel: weaponLevel,
-                gearset: gearset});
-            if (magic.unsupported) return magic;
-            return [[magic.damage, magic.tpReturn][WS_VALUE[metric]], [magic.damage, magic.tpReturn, 1]];
+        var info = CALC.weaponskillInfo(name), page = CALC.MAGIC_WS[name] || {};
+        if ((info && info.type === "Magical") || page.type === "Magical") {
+            return wsValue(CALC.magicWeaponskillAverage(stats, enemy, name, tp, {main: pieceName(gearset, type === "ranged" ? "ranged" : "main"),
+                weaponLevel: weaponLevel, gearset: gearset}), metric);
+        }
+        if (type === "ranged") {
+            return wsValue(CALC.rangedWeaponskillAverage(stats, enemy, name, tp, {ranged: pieceName(gearset, "ranged"),
+                sharpshot: !!(abilities || {}).Sharpshot, merits: meritsOf(abilities, name)}), metric);
         }
         // the number of buffs a Naegling counts is not given by the page: taken as none
         var got = CALC.weaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), buffs: 0,

@@ -80,7 +80,17 @@
         "Starburst": {url: U + "Starburst", dstat: INT_HALF, base: "level"},
         "Sunburst": {url: U + "Sunburst", dstat: INT_HALF, base: "level"},
         "Thunder Thrust": {url: U + "Thunder_Thrust", dstat: INT_HALF, unverified: "fTP at 2000 and 3000 TP"},
-        "Vidohunir": {url: U + "Vidohunir", dstat: d("INT", "INT", 2), weapons: {"Laevateinn": [1.3], "Laevateinn R15": [1.3, 1.15]}}
+        "Vidohunir": {url: U + "Vidohunir", dstat: d("INT", "INT", 2), weapons: {"Laevateinn": [1.3], "Laevateinn R15": [1.3, 1.15]}},
+        // ranged ones (our database has no Marksmanship file): the ranged weapon's item level, "メインウェポン（遠隔の
+        // 場合はレンジウェポン）" (https://wiki.ffo.jp/html/806.html); Death Penalty and Gastraphetes "(Level 119 III)":
+        // "damage +30%", "+49.5%" at rank 15. Leaden Salute's and Trueflight's dSTAT caps: "Information Needed", none here
+        "Leaden Salute": {url: U + "Leaden_Salute", skill: "Marksmanship", type: "Magical", mods: {AGI: 100}, ftp: [4, 6.7, 10],
+            element: "Dark", dstat: d("AGI", "INT", 2), weapons: {"Death Penalty": [1.3], "Death Penalty R15": [1.3, 1.15]}},
+        "Wildfire": {url: U + "Wildfire", skill: "Marksmanship", type: "Magical", mods: {AGI: 60}, ftp: same(5.5), element: "Fire",
+            dstat: d("AGI", "INT", 2, 0, 1276)},
+        "Trueflight": {url: U + "Trueflight", skill: "Marksmanship", type: "Magical", mods: {AGI: 100},
+            ftp: [3.890625, 6.4921875, 9.671875], element: "Light", dstat: d("AGI", "INT", 2),
+            weapons: {"Gastraphetes": [1.3], "Gastraphetes R15": [1.3, 1.15]}}
     };
     // "Does not do damage" (Energy Drain, Energy Steal); only in a Campaign battle (Tartarus Torpor, Uriel Blade)
     var NO_DAMAGE = {"Energy Drain": "it does no damage", "Energy Steal": "it does no damage",
@@ -156,8 +166,11 @@
                 });
             });
         });
+        // a ranged one: one full shot, the ranged weapon's delay and the ammunition's (https://www.bg-wiki.com/ffxi/Tactical_Points)
         var hold = CALC.TWO_HANDED.indexOf(info.skill) !== -1 ? "twoHanded" : info.skill === "Hand-to-Hand" ? "handToHand" : "oneHanded";
-        var full = CALC.tpPerHit(CALC.wsDelayForTP(stats, hold, hold === "oneHanded" && (stats["DMG2"] || 0) > 0), stats["Store TP"] || 0);
+        var delay = CALC.RANGED_SKILLS.indexOf(info.skill) !== -1 ? (stats["Ranged Delay"] || 0) + (stats["Ammo Delay"] || 0)
+            : CALC.wsDelayForTP(stats, hold, hold === "oneHanded" && (stats["DMG2"] || 0) > 0);
+        var full = CALC.tpPerHit(delay, stats["Store TP"] || 0);
         return {damage: total, tpReturn: full + CALC.conserveTPAverage(stats["Conserve TP"] || 0),
             unresisted: chain(base, stats, enemy, info, elements[0], 1, false, 1, w), hitRate: rate, magicAccuracy: macc, base: base};
     };

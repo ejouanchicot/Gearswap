@@ -6,7 +6,7 @@
 // catalogue and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
 const CALC_FILES = ['abilities', 'attributes', 'buffs', 'derived', 'enemy', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
-  'ws_tp', 'ws_magic', 'page', 'magic_spells', 'magic', 'aftermath'];
+  'ws_tp', 'ws_magic', 'ws_ranged', 'page', 'magic_spells', 'magic', 'aftermath'];
 const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
   .map(f => `atelier/engine/${f}.js`).concat(['items', 'augments_ranked', 'capes', 'augments_parse']
   .map(f => `atelier/gear/${f}.js`), ['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/cycle.js'])

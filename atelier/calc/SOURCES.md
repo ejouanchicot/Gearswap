@@ -417,3 +417,7 @@ the other skills above any cap the ranks, merits and gifts give (DIFFERENCES.md 
 | BG-Wiki page of each magical weapon skill (31, read 2026-10-23) | dSTAT, cap, modifiers, fTP, element, notes (Starburst / Sunburst "your level + 2") | calc_ws_magic.js CALC.MAGIC_WS |
 | https://www.bg-wiki.com/ffxi/Aymur_(Level_119_III) , Tupsimati_(Level_119_III) , Laevateinn_(Level_119_III) | Hidden "damage +30%", rank 15 "Damage +15%", "+49.5%" multiplied | calc_ws_magic.js weapons |
 | https://www.bg-wiki.com/ffxi/Multi-Attack ; https://www.bg-wiki.com/ffxi/Kraken_Club | the order of the checks; Kraken Club's measured shares | calc_round_swings.js |
+| https://www.bg-wiki.com/ffxi/FSTR (fSTR2) , https://www.bg-wiki.com/ffxi/PDIF (ranged) , Ranged_Accuracy , Ranged_Attack , Hit_Rate , True_Shot , Double_Shot , Triple_Shot , Tactical_Points | the ranged rules quoted in calc_ws_ranged.js's header | calc_ws_ranged.js |
+| BG-Wiki page of each ranged weapon skill; Annihilator / Yoichinoyumi / Death Penalty / Gastraphetes "(Level 119 III)"; Fomalhaut_(Augmented) | modifiers, fTP, hits, defense ignored, weapon bonuses | calc_ws_ranged.js CALC.RANGED_WS, calc_ws_magic.js |
+| BG-Wiki Relic_Aftermath , Mythic_Aftermath , Empyrean_Aftermath , Aftermath (prime) | the melee aftermaths | calc_aftermath.js meleeAftermath |
+| BG-Wiki Brazen_Rush , Impetus , Conspirator , Innin , Saber_Dance , Swordplay , Building_Flourish , Last_Resort | the effects at their most | calc_abilities.js |

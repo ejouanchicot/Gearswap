@@ -1034,3 +1034,25 @@ Accuracy / Attack% / Crit Rate / Damage" of the sheet, calc_ws_average.js): 3 fi
 crit 45 / Attack 126, Conspirator 45, Swordplay 54, Innin 24, Saber Dance its 20 % floor): now the same numbers as ours.
 Saber Dance's floor and the Tights' merit bonus to it are no longer counted (opt.js, engine.js): at 50 % they do not apply.
 Bench: nothing changes (no ability is on in it); each one checked with CALC.abilityTotals.
+
+## AN. Ranged weapon skills (2026-10-23, Lot 4.5)
+
+Physical ones: `calc_ws_ranged.js`, BG Wiki's ranged base ("Weapon Base Damage + (Ammo Damage) + fSTR(2) + WSC") × fTP,
+fSTR2 (FSTR page: halved steps, caps -(rank) × 2 and (rank + 8) × 2), the ranged pDIF limits and caps (Archery 3.25,
+Marksmanship 3.5, critical × 1.25), ranged accuracy (AGI × 0.75 + the skill's steps) and attack (8 + skill + STR), hit
+cap 95 % (99 % under Sharpshot), True Shot on the damage, the first shot full TP from the ranged weapon's and the
+ammunition's delay, 10 TP each next one. Each weapon skill's numbers read on its page (`CALC.RANGED_WS`); Fomalhaut's
+rank 15 "Last Stand: Damage +10%" (Fomalhaut_(Augmented)). Magical ones (Leaden Salute, Wildfire, Trueflight) in
+`calc_ws_magic.js`, by the ranged weapon's item level (wiki.ffo.jp 806).
+Against the engine before (`scripts/audit/calc_ws_ranged_check.js`, Kaories COR given Fomalhaut or Death Penalty):
+Last Stand and Detonator the same to 0.04 %; the magical ones x0.97 (the 95 % magic hit cap, AK) and their TP return
+280 to 310 where the engine before gives 111 to 117 (it reads the melee delay, "sic" in its code; ours one full shot of
+the ranged weapon, ASSUMED, no page gives a magical one's).
+ASSUMED: the first shot's ~+100 accuracy (Category:Weapon_Skills: "The first swing of any physical Weapon Skill"); no
+distance penalty, no level correction of the ratio (the target's level is not on the engine's enemy); one hit where the
+page gives none (Coronach, Numbing Shot...). Not computed, a number missing on the page: Apex Arrow (defense ignored at
+2000 / 3000 TP), Jishnu's Radiance, Sniper Shot, Arching / Dulling Arrow (critical hit rate by TP), Blast Shot / Arrow,
+Slug Shot, Sidewinder (accuracy by TP). Hover Shot (an ability) is unknown: the case goes to the engine before.
+True Shot: what the gear gives; the jobs' traits and gifts (RNG, COR) are not on the sheet yet.
+Bench (`banc/rng_*`): the Tetsouo RNG sets have no ranged weapon (both engines' figures mean nothing there), Kaories's
+Blast Shot is "not computed": 9 sets changed, the other 3 960 identical.
