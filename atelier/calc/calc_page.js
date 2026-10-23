@@ -89,17 +89,13 @@
             return wsValue(CALC.magicWeaponskillAverage(stats, enemy, name, tp, {main: pieceName(gearset, type === "ranged" ? "ranged" : "main"),
                 weaponLevel: weaponLevel, gearset: gearset}), metric);
         }
-        if (type === "ranged") {
-            return wsValue(CALC.rangedWeaponskillAverage(stats, enemy, name, tp, {ranged: pieceName(gearset, "ranged"),
-                sharpshot: !!(abilities || {}).Sharpshot, merits: meritsOf(abilities, name)}), metric);
-        }
+        var ranged = type === "ranged", hybrid = ((ranged ? CALC.RANGED_WS[name] : info) || {}).type === "Hybrid";
         // the number of buffs a Naegling counts is not given by the page: taken as none
-        var got = CALC.weaponskillAverage(stats, enemy, name, tp, {main: mainName(gearset), buffs: 0,
-            climactic: stats["Climactic Flourish active"] > 0, head: ((gearset || {}).head || {}).Name,
-            merits: meritsOf(abilities, name)});
-        if (got.unsupported) return got;
-        var values = [got.damage, got.tpReturn];
-        return [values[WS_VALUE[metric]], [got.damage, got.tpReturn, 1]];
+        var wield = ranged ? {ranged: pieceName(gearset, "ranged"), sharpshot: !!(abilities || {}).Sharpshot, merits: meritsOf(abilities, name)}
+            : {main: mainName(gearset), buffs: 0, climactic: stats["Climactic Flourish active"] > 0, head: ((gearset || {}).head || {}).Name,
+                merits: meritsOf(abilities, name)};
+        if (hybrid) return wsValue(CALC.hybridWeaponskillAverage(stats, enemy, name, tp, wield, ranged), metric);
+        return wsValue(ranged ? CALC.rangedWeaponskillAverage(stats, enemy, name, tp, wield) : CALC.weaponskillAverage(stats, enemy, name, tp, wield), metric);
     }
 
     // The steps of a round under the names the page shows them with.

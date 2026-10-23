@@ -93,17 +93,33 @@
     // https://www.bg-wiki.com/ffxi/Mythic_Aftermath "(95~119/III)": Accuracy 30~49, Attack 40~99, "Occasionally attacks
     //   twice or thrice | 40% 2x 20% 3x"; each weapon's (Level 119 III) page: Lv1 "floor( TP÷50 + 10 ) Accuracy", Lv2
     //   "floor( TP×0.06 - 80 ) Attack". Nirvana's page writes ÷10 + 20 and ×0.6, out of the table's own 30~49 and
-    //   40~99: the table's formulas taken. Kenkonken's Lv3 is "(Offhand Only)": not here. Tizona, Carnwenhan and
-    //   Yagrush have a "?" level: not here
-    var MYTHIC = ["Conqueror", "Glanzfaust", "Vajra", "Burtgang", "Liberator", "Aymur", "Kogarasumaru", "Nagi", "Nirvana",
-        "Ryunohige", "Terpsichore", "Epeolatry"];
-    function mythicMelee(level, tp) {
-        if (level === 1) return {stats: {Accuracy: Math.floor(tp / 50 + 10)}, round: null};
-        if (level === 2) return {stats: {Attack: Math.floor(tp * 0.06 - 80)}, round: null};
-        return {stats: {}, round: {type: "mythic", level: 3}};
+    //   40~99: the table's formulas taken. Kenkonken's Lv3 is "(Offhand Only)": its second fist's (calc_round_swings.js).
+    //   The levels BG Wiki marks "?" (Tizona Lv2, Carnwenhan and Yagrush Lv1, Gastraphetes Lv1 / Lv2): the
+    //   Mythic_Aftermath table's 30~49 / 40~99 with the formulas of the same table's other weapons, as LandSandBoat's
+    //   scripts/globals/aftermath.lua writes them (Tizona Lv2 "MACC math.floor(tp / 50 - 10)", Carnwenhan / Yagrush Lv1
+    //   "MACC math.floor(tp / 50 + 10)" and Lv2 "ACC math.floor(tp / 50 - 10)", where BG's Lv2 "TP÷10 + 10" would give
+    //   210, "Verification Needed"); a ranged mythic's Lv3 doubles or triples its shots' damage: nothing for a melee round
+    var ACC1 = function (tp) { return Math.floor(tp / 50 + 10); }, LV2 = function (tp) { return Math.floor(tp / 50 - 10); };
+    var ATT2 = function (tp) { return Math.floor(tp * 0.06 - 80); };
+    var MYTHIC = {Tizona: [["Accuracy", ACC1], ["Magic Accuracy", LV2]], Carnwenhan: [["Magic Accuracy", ACC1], ["Accuracy", LV2]],
+        Yagrush: [["Magic Accuracy", ACC1], ["Accuracy", LV2]], "Death Penalty": [["Ranged Accuracy", ACC1], ["Ranged Attack", ATT2]],
+        Gastraphetes: [["Ranged Accuracy", ACC1], ["Ranged Attack", ATT2]]};
+    ["Conqueror", "Glanzfaust", "Vajra", "Burtgang", "Liberator", "Aymur", "Kogarasumaru", "Nagi", "Nirvana", "Ryunohige",
+        "Terpsichore", "Epeolatry", "Kenkonken"].forEach(function (w) { MYTHIC[w] = [["Accuracy", ACC1], ["Attack", ATT2]]; });
+    var RANGED_MYTHIC = ["Death Penalty", "Gastraphetes"];
+    function mythicMelee(weapon, level, tp) {
+        if (level < 3) {
+            var stats = {}, e = MYTHIC[weapon][level - 1];
+            stats[e[0]] = e[1](tp);
+            return {stats: stats, round: null};
+        }
+        if (RANGED_MYTHIC.indexOf(weapon) !== -1) return {stats: {}, round: null};
+        return {stats: {}, round: {type: "mythic", level: 3, offhandOnly: weapon === "Kenkonken"}};
     }
     // https://www.bg-wiki.com/ffxi/Empyrean_Aftermath (last edited 2026-05-24) "Occ. Triples Damage (Level 119 III)":
-    //   30 / 40 / 50 % by level, the rate in calc_round_damage.js; Verethragna's is "on offhand (first hit only)": not here
+    //   30 / 40 / 50 % by level, the rate in calc_round_damage.js; Verethragna's (Level 119 III) "30%/40%/50% Triple
+    //   Damage on offhand (first hit only)", "it can only trigger on the first offhand hit of every attack round"
+    //   (FFXIclopedia, Verethragna 119-3): its second fist's first swing (calc_round_average.js)
     var EMPYREAN = ["Twashtar", "Almace", "Caladbolg", "Farsha", "Ukonvasara", "Redemption", "Kannagi", "Rhongomiant",
         "Gambanteinn", "Masamune", "Hvergelmir"];
     // https://www.bg-wiki.com/ffxi/Aftermath (last edited 2026-08-23): prime melee and ranged weapons "scale the PDL+
@@ -111,14 +127,21 @@
     //   to 12%" (stage 5 = "(Level 119 III)", Category:Prime Weapons), from an FFXIAH test
     var PRIME_PDL = {III: [2, 8], IV: [4, 10], V: [6, 12]};
     var PRIME_MAGIC = ["Lorg Mor", "Opashoro", "Duban", "Loughnashade"];
+    // https://www.bg-wiki.com/ffxi/Aeonic_Aftermath : skillchain and magic burst bonus, Ultimate Skillchain, "180 Seconds";
+    //   wiki.ffo.jp 34909 the same: nothing for a melee round or a weapon skill alone (Khatvanga's burst part:
+    //   CALC.AFTERMATH). The weapons: BG Category:Aeonic_Weapons
+    var AEONIC = ["Godhands", "Aeneas", "Sequence", "Lionheart", "Tri-edge", "Chango", "Anguta", "Trishula", "Heishi Shorinken",
+        "Dojikiri Yasutsuna", "Tishtrya", "Khatvanga", "Fail-Not", "Fomalhaut"];
 
     CALC.meleeAftermath = function (weapon, level, tp, stage) {
         level = Math.max(1, Math.min(3, Math.round(level || 0)));
         var lo = [1000, 2000, 3000][level - 1], hi = [1999, 2999, 3000][level - 1];
         var at = tp >= lo && tp <= hi ? tp : CALC.AFTERMATH_TP[level - 1];
         if (RELIC[weapon]) return {stats: RELIC[weapon], round: null};
-        if (MYTHIC.indexOf(weapon) !== -1) return mythicMelee(level, at);
+        if (MYTHIC[weapon]) return mythicMelee(weapon, level, at);
         if (EMPYREAN.indexOf(weapon) !== -1) return {stats: {}, round: {type: "empyrean", level: level, multiplier: 3}};
+        if (weapon === "Verethragna") return {stats: {}, round: {type: "empyrean", level: level, multiplier: 3, offhandFirst: true}};
+        if (AEONIC.indexOf(weapon) !== -1) return {stats: {}, round: null};
         if (CALC.PRIME_WEAPONS.indexOf(weapon) !== -1 && PRIME_MAGIC.indexOf(weapon) === -1) {
             var range = PRIME_PDL[stage || "V"];
             if (!range) return null;

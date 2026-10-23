@@ -25,9 +25,13 @@
 // https://www.bg-wiki.com/ffxi/Tactical_Points   "TP gain is based on the sum of the ranged weapon delay and their respective
 //   ammo delay"; "the first hit ... will grant full TP while each consecutive attack will grant a flat 10 TP".
 //
-// ASSUMED (DIFFERENCES.md AN): the first shot's ~+100 accuracy ("The first swing of any physical Weapon Skill",
-// Category:Weapon_Skills); no distance penalty (at the right distance) and no level correction of the ratio (the target's
-// level is not on the engine's enemy), as the melee weapon skills; a weapon skill whose hits the page leaves out has one.
+// First shot: "Ranged weapon skills do not gain this bonus accuracy" (https://www.bg-wiki.com/ffxi/Category:Weapon_Skills),
+// but a measure finds one on some: Detonator about +100 ("~95.9 %", 187 of 194 shots, then ~46 % on a harder target),
+// Split Shot "≥ 30 ≤ 40" (https://www.ffxiah.com/forum/topic/52018/luck-of-the-draw-a-corsairs-guide-new/127/ #3726841,
+// 2024-12-26); `firstShot` below: those two, and Empyreal Arrow / Piercing Arrow as their twins (LandSandBoat gives them
+// the same), no bonus on the others.
+// ASSUMED (DIFFERENCES.md AN): no distance penalty (at the right distance) and no level correction of the ratio (the
+// target's level is not on the engine's enemy), as the melee weapon skills.
 //
 // @file    atelier/calc/calc_ws_ranged.js
 // @author  ejouanchicot
@@ -41,19 +45,26 @@
         // https://www.bg-wiki.com/ffxi/Fomalhaut_(Augmented) rank 15: "Last Stand: Damage +10%"
         "Last Stand": {url: U + "Last_Stand", skill: "Marksmanship", mods: {AGI: 85}, ftp: [2, 3, 4], hits: 2, replicating: true,
             weapons: {"Fomalhaut R15": [1.1]}},
-        "Detonator": {url: U + "Detonator", skill: "Marksmanship", mods: {AGI: 70}, ftp: [1.5, 2.5, 5], attack: same(2)},
+        "Detonator": {url: U + "Detonator", skill: "Marksmanship", mods: {AGI: 70}, ftp: [1.5, 2.5, 5], attack: same(2), firstShot: 100},
         "Coronach": {url: U + "Coronach", skill: "Marksmanship", mods: {DEX: 40, AGI: 40}, ftp: same(3),
             weapons: {"Annihilator": [1.4], "Annihilator R15": [1.4]}},
-        "Split Shot": {url: U + "Split_Shot", skill: "Marksmanship", mods: {AGI: 70}, ftp: same(1), ignoreDefense: [0, 0.35, 0.5]},
+        "Split Shot": {url: U + "Split_Shot", skill: "Marksmanship", mods: {AGI: 70}, ftp: same(1), ignoreDefense: [0, 0.35, 0.5],
+            firstShot: 30},
         "Numbing Shot": {url: U + "Numbing_Shot", skill: "Marksmanship", mods: {AGI: 80}, ftp: same(3)},
         "Terminus": {url: U + "Terminus", skill: "Marksmanship", mods: {DEX: 70, AGI: 70}, ftp: [2.5, 5, 7.5]},
         "Empyreal Arrow": {url: U + "Empyreal_Arrow", skill: "Archery", mods: {AGI: 50, STR: 20}, ftp: [1.5, 2.5, 5], attack: same(2),
-            weapons: {"Kaja Bow": [1.5], "Ullr": [1.5]}},
+            weapons: {"Kaja Bow": [1.5], "Ullr": [1.5]}, firstShot: 100},
         "Namas Arrow": {url: U + "Namas_Arrow", skill: "Archery", mods: {STR: 40, AGI: 40}, ftp: same(2.75),
             weapons: {"Yoichinoyumi": [1.4], "Yoichinoyumi R15": [1.4, 1.2]}},
         // "Seems to be only a one-hit attack" (its description says "twofold")
         "Refulgent Arrow": {url: U + "Refulgent_Arrow", skill: "Archery", mods: {STR: 60}, ftp: [3, 4.25, 7]},
-        "Piercing Arrow": {url: U + "Piercing_Arrow", skill: "Archery", mods: {AGI: 50, STR: 20}, ftp: same(1), ignoreDefense: [0, 0.35, 0.5]},
+        "Piercing Arrow": {url: U + "Piercing_Arrow", skill: "Archery", mods: {AGI: 50, STR: 20}, ftp: same(1), ignoreDefense: [0, 0.35, 0.5],
+            firstShot: 30},
+        // hybrid (calc_ws_magic.js): `ftp` is the magical part's, the physical one's is 1 (https://wiki.ffo.jp/html/2544.html
+        // "+0.50 / +1.55 / +2.10")
+        "Hot Shot": {url: U + "Hot_Shot", skill: "Marksmanship", type: "Hybrid", element: "Fire", mods: {AGI: 70}, ftp: [0.5, 1.55, 2.1]},
+        "Flaming Arrow": {url: U + "Flaming_Arrow", skill: "Archery", type: "Hybrid", element: "Fire", mods: {AGI: 50, STR: 20},
+            ftp: [0.5, 1.55, 2.1]},
         "Sarv": {url: U + "Sarv", skill: "Archery", mods: {STR: 65, AGI: 65}, ftp: [2.75, 5.5, 8.25]},
         // the pages leave a number out: not computed
         "Apex Arrow": {url: U + "Apex_Arrow", skill: "Archery", missing: "defense ignored at 2000 and 3000 TP"},
@@ -95,8 +106,9 @@
         return page ? Object.assign({name: name}, page) : null;
     }
 
+    // `wield.info`: the weapon skill as given instead of the table's (a hybrid one's physical part, calc_ws_magic.js)
     CALC.rangedWeaponskillAverage = function (stats, enemy, name, tp, wield) {
-        var info = infoOf(name), w = wield || {};
+        var w = wield || {}, info = w.info || infoOf(name);
         if (!info) return {unsupported: "ranged weapon skill not read on its page yet"};
         if (info.missing) return {unsupported: "ranged weapon skill: " + info.missing + " not on its page"};
         info = CALC.weaponskillWithMerits(info, w.merits);
@@ -116,7 +128,7 @@
         var all = [1 + (stats["Weapon Skill Damage Trait"] || 0) / 100].concat(weapon);
         var first = CALC.wsBaseDamage(dmg + (stats["Ammo DMG"] || 0), fstr2, wsc, ftp, [1 + (stats["Weapon Skill Damage"] || 0) / 100].concat(all));
         var other = CALC.wsBaseDamage(dmg + (stats["Ammo DMG"] || 0), fstr2, wsc, later, all);
-        var hit1 = CALC.hitRate(accuracy + CALC.WS_FIRST_SWING_ACCURACY, enemy.Evasion, cap), hitN = CALC.hitRate(accuracy, enemy.Evasion, cap);
+        var hit1 = CALC.hitRate(accuracy + (info.firstShot || 0), enemy.Evasion, cap), hitN = CALC.hitRate(accuracy, enemy.Evasion, cap);
         var hits = info.hits || 1;
         var damage = (hit1 * first + (hits - 1) * hitN * other) * pdif * trueShot;
         var full = CALC.tpPerHit((stats["Ranged Delay"] || 0) + (stats["Ammo Delay"] || 0), stats["Store TP"] || 0);

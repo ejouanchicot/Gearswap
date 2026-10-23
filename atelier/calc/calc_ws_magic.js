@@ -1,6 +1,8 @@
 // Atelier calculation engine, stage 2 (magic): the average damage and TP return of a magical weapon skill.
 //
 //   CALC.MAGIC_WS                          what each magical weapon skill's BG-Wiki page adds to our database
+//   CALC.hybridWeaponskillAverage(stats, enemy, name, tp, wield, ranged)
+//       a hybrid one: its physical part (calc_ws_average.js, or calc_ws_ranged.js when `ranged`) and its magical one
 //   CALC.magicWeaponskillAverage(stats, enemy, name, tp, wield)
 //       stats   the character sheet; enemy {INT, MND, AGI, "Magic Evasion", "Magic Defense", "Magic Damage Taken"}
 //       wield   {main: the main hand's name as calc_ws_average.js reads it, weaponLevel: its item level (its level
@@ -119,6 +121,12 @@
         return wl < 100 ? 5 + Math.floor((wl - 1) * 1.5) : 152 + Math.floor((wl - 99) * 2.45);
     }
 
+    // the element's affinity on the gear, and "Elemental Bonus" of every element: Orpheus's Sash, "1 to 15, by distance"
+    // (calc_magic.js); a weapon skill is given no distance: ASSUMED at its closest, the catalogue's 15
+    function affinityOf(stats, element) {
+        return 1 + ((stats[element + " Elemental Bonus"] || 0) + (stats["Elemental Bonus"] || 0)) / 100;
+    }
+
     function magicAccuracy(stats, enemy, info) {
         return (stats[info.skill + " Skill"] || 0) + (stats["main Magic Accuracy Skill"] || 0) + (stats["Magic Accuracy"] || 0) +
             CALC.dIntMagicAccuracy((stats.INT || 0) - (enemy.INT || 0)) + CALC.MAGIC_WS_ACCURACY_BONUS;
@@ -128,7 +136,7 @@
     // the average of both)
     function chain(base, stats, enemy, info, element, resist, critTwo, dayWeather, wield) {
         var mdb = Math.max(0.5, 1 + (enemy["Magic Defense"] || 0) / 100);
-        var steps = [1 + (stats[element + " Elemental Bonus"] || 0) / 100, resist, dayWeather,
+        var steps = [affinityOf(stats, element), resist, dayWeather,
             (1 + (stats["Magic Attack"] || 0) / 100) / mdb, Math.max(0.5, 1 - (enemy["Magic Damage Taken"] || 0) / 100)];
         if (critTwo) steps.push(CALC.MAGIC_CRIT.twoMultiplier);
         steps.push(1 + (stats["Weapon Skill Damage"] || 0) / 100, 1 + (stats["Weapon Skill Damage Trait"] || 0) / 100);
@@ -142,6 +150,39 @@
         if (!CALC.MAGIC_WS[name]) return "magical weapon skill not read on its page yet";
         return null;
     }
+
+    // Hybrid weapon skills. https://www.bg-wiki.com/ffxi/Weapon_Skill_Damage : "Base damage for these weaponskills is
+    // calculated exactly the same as for Physical Weapon Skills", the magical part "affected by modifiers of magic damage".
+    // How, measured (FFXIAH): Bahadir, Blade: To, "TotalDmg = PhysDmg + (PhysDmg*fTP+mDmg)*MAB/MDB", "fTP is only applied
+    // to magical dmg, NOT physical one", 492 / 851 / 1203 measured against 486 / 847 / 1208 at 1000 / 2000 / 3000 TP
+    // (https://www.ffxiah.com/forum/topic/49614/blade-chi-damage-formula/2/ #3171538, 2016-10-07); Snapster, "Magical Hit =
+    // ((Magic Base + mDMG) * MAB * (1/MDB)* Affinity * Day/Weather * SDT * TMDA * WSD + Physical Hit * Modifier", the
+    // Modifier being the gorget's and belt's fTP, "not multiplied by fTP/MAB/WSD", Blade: Chi 6777 against 6763 at 3000 TP
+    // (https://www.ffxiah.com/forum/topic/33470/the-sealed-dagger-a-ninja-guide/151/ #3420722, #3420836, 152/ #3423103,
+    // 2019). The physical part is a physical weapon skill at fTP 1.0 (wiki.ffo.jp 720 / 1261: "倍率 1.0"), all its hits; the
+    // magical one the whole of it times the page's "+0.5 / +1.375 / +2.25" ("TP:ダメージ修正": the share added as magic),
+    // only when it lands. Blade: Chi's and Teki's +1.375 at 2000 TP is Snapster's line, "I didn't test the 2000 TP scaling
+    // values for Chi and Teki" (wiki.ffo.jp writes +1.5).
+    // ASSUMED: its magic accuracy is a magical weapon skill's (above); the Magic Damage stat comes in as often as the first
+    // hit lands; the floors of the game are not averaged (the mean of the physical part is multiplied).
+    CALC.hybridWeaponskillAverage = function (stats, enemy, name, tp, wield, ranged) {
+        var base = ranged ? CALC.RANGED_WS[name] : CALC.weaponskillInfo(name);
+        if (!base || base.type !== "Hybrid" || !base.ftp || !base.element) return {unsupported: "hybrid weapon skill without its numbers"};
+        var physicalInfo = Object.assign({name: name}, base, {type: "Physical", ftp: same(1), replicating: false});
+        var w = Object.assign({}, wield || {}, {info: physicalInfo});
+        var physical = ranged ? CALC.rangedWeaponskillAverage(stats, enemy, name, tp, w) : CALC.weaponskillAverage(stats, enemy, name, tp, w);
+        if (physical.unsupported) return physical;
+        var used = Math.min(3000, tp + (stats["TP Bonus"] || 0));
+        var landed = ranged ? physical.hitRate : physical.kinds[0].landed;
+        var macc = magicAccuracy(stats, enemy, base), chances = CALC.resistChances(CALC.magicHitRate(macc, enemy["Magic Evasion"] || 0));
+        var resist = chances.reduce(function (s, c, i) { return s + c * CALC.RESIST_STATES[i]; }, 0);
+        var mdb = Math.max(0.5, 1 + (enemy["Magic Defense"] || 0) / 100);
+        var magic = (physical.damage * CALC.valueAtTP(base.ftp, used) + landed * (stats["Magic Damage"] || 0)) *
+            (1 + (stats["Weapon Skill Damage"] || 0) / 100) * affinityOf(stats, base.element) *
+            (1 + (stats["Magic Attack"] || 0) / 100) / mdb + physical.damage * (stats["ftp"] || 0);
+        magic *= resist * Math.max(0.5, 1 - (enemy["Magic Damage Taken"] || 0) / 100);
+        return {damage: physical.damage + magic, tpReturn: physical.tpReturn, physical: physical.damage, magic: magic};
+    };
 
     CALC.magicWeaponskillAverage = function (stats, enemy, name, tp, wield) {
         var info = infoOf(name), w = wield || {}, why = whyNot(info, name);

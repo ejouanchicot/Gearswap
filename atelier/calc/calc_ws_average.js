@@ -208,8 +208,9 @@
 
     // `wield.merits`: the merits bought in this weapon skill (1 to 5), for the ones whose attribute
     // modifier grows with them; left out, 5 (every merit bought, the modifier of the tables).
+    // `wield.info`: the weapon skill as given instead of our database's (a hybrid one's physical part, calc_ws_magic.js)
     CALC.weaponskillAverage = function (stats, enemy, name, tp, wield) {
-        var info = CALC.weaponskillInfo(name), why = whyUnsupported(info);
+        var info = (wield && wield.info) || CALC.weaponskillInfo(name), why = whyUnsupported(info);
         if (why) return {unsupported: why};
         info = CALC.weaponskillWithMerits(info, (wield || {}).merits);
         var ctx = describe(stats, enemy, info, tp, wield || {});

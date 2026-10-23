@@ -38,7 +38,8 @@
         var hassoZanshin = !!options.hasso && options.job === "sam" && shape.hold === "twoHanded";
         return {
             stats: stats, enemy: enemy, options: options, shape: shape, hold: shape.hold,
-            more: {mythicAftermath3: am.type === "mythic" && am.level === 3, hassoZanshin: hassoZanshin},
+            more: {mythicAftermath3: am.type === "mythic" && am.level === 3 && !am.offhandOnly,
+                mythicAftermath3Other: am.type === "mythic" && am.level === 3 && !!am.offhandOnly, hassoZanshin: hassoZanshin},
             crit: CALC.roundCritRate(stats, enemy),
             pdifCap: CALC.pdifCap(shape.hold, shape.skill, (stats["PDL Trait"] || 0) / 100, (stats["PDL"] || 0) / 100),
             multipliers: CALC.aftermathMultipliers(options), kinds: []
@@ -59,7 +60,7 @@
     function addHand(ctx, hand, tp) {
         var name = hand.offHand ? "sub" : "main", m = ctx.multipliers;
         var attacker = CALC.roundAttacker(ctx, name);
-        var weapon = hand.offHand ? 1 : m.mainHand, first = hand.offHand || hand.secondFist ? 1 : m.firstSwing;
+        var weapon = hand.offHand ? 1 : m.mainHand, first = hand.offHand || hand.secondFist ? m.otherFirst : m.firstSwing;
         hand.outcomes.forEach(function (o) {
             var rule = CALC.SWING_RULES[o.kind], opening = CALC.SWING_RULES.first[o.kind] || CALC.SWING_RULES.none;
             add(ctx, name, o.chance, attacker, opening, weapon * first, tp.full);

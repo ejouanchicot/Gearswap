@@ -1056,3 +1056,25 @@ Slug Shot, Sidewinder (accuracy by TP). Hover Shot (an ability) is unknown: the 
 True Shot: what the gear gives; the jobs' traits and gifts (RNG, COR) are not on the sheet yet.
 Bench (`banc/rng_*`): the Tetsouo RNG sets have no ranged weapon (both engines' figures mean nothing there), Kaories's
 Blast Shot is "not computed": 9 sets changed, the other 3 960 identical.
+
+## AO. Hybrid weapon skills, the ranged first shot, aeonic and the "?" aftermaths (2026-10-23, after more sources)
+
+Hybrid (`calc_ws_magic.js` CALC.hybridWeaponskillAverage): the physical weapon skill at fTP 1.0, all its hits, plus
+(physical × the page's "+0.5 / +1.375 / +2.25" + Magic Damage) × Weapon Skill Damage × affinity × MAB/MDB, the gorget's
+fTP × physical outside them, × resist × TMDA. Measured on FFXIAH (Bahadir 2016, Blade: To at 1000 / 2000 / 3000 TP within
+1.2 %; Snapster 2019, Blade: Chi and To at 3000 TP within 0.5 %, the gorget's part); the "+" is wiki.ffo.jp's "TP:ダメージ
+修正" column next to "倍率 1.0"; ffo 17166's "50 % to 100 %" is the pre-2014 table. Not measured: Chi and Teki at 2000 TP
+(+1.375, Snapster's line; ffo writes +1.5), Goten / Kagero / Koki / Jinpu's values (the tables). Against the engine
+before: x0.97 to x0.98 (the 95 % magic hit cap); one Koki case x0.72 from the physical part (256 against more).
+Orpheus's Sash ("Elemental Bonus" of every element) now counts on the magical and hybrid weapon skills, at the catalogue's
+15 (its closest distance: ASSUMED, no distance is given for a weapon skill); the engine before counted it the same way.
+Ranged first shot: no bonus (BG Category:Weapon_Skills "Ranged weapon skills do not gain this bonus accuracy"), except
+the measured ones (FFXIAH #3726841, 2024-12-26): Detonator +100, Split Shot +30, and Empyreal Arrow +100 / Piercing Arrow
++30 as their twins. Last Stand and the others lose the +100 AN gave them.
+Aftermath: aeonic weapons (BG Category:Aeonic_Weapons) have no melee effect (BG Aeonic_Aftermath, wiki.ffo.jp 34909; the
+engine before gave them none either); Verethragna's triple damage on its second fist's first swing (FFXIclopedia: "only
+trigger on the first offhand hit of every attack round"); Kenkonken's Lv3 on the second fist only; Tizona Lv2,
+Carnwenhan / Yagrush Lv1 and Lv2, Gastraphetes / Death Penalty Lv1 / Lv2 by the Mythic_Aftermath ranges with
+LandSandBoat's formulas (aftermath.lua; its Gastraphetes "tp * 0.6" read as Death Penalty's 0.06), not measured.
+Bench (`banc/hyb_*`): the 7 hybrid sets are ours, the magical weapon skills' sets with an Orpheus's Sash +15 %, 23
+changed, the other 3 946 identical.

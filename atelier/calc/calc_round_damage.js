@@ -168,13 +168,16 @@
         "Bravura R15": BRAVURA, "Ragnarok": RAGNAROK, "Ragnarok R15": RAGNAROK};
 
     // Mean damage multipliers from `options` = {aftermath: {type: "empyrean", level: 1..3,
-    // multiplier: 2 or 3}, main: "Apocalypse R15"} (the main hand weapon as the gear names it).
-    // Returns {mainHand: every swing of the main hand weapon, firstSwing: its first swing only}.
+    // multiplier: 2 or 3, offhandFirst: Verethragna's, on the other hand's first swing only}, main: "Apocalypse R15"}
+    // (the main hand weapon as the gear names it).
+    // Returns {mainHand: every swing of the main hand weapon, firstSwing: its first swing only, otherFirst: the
+    // first swing of the off-hand or second fist}.
     CALC.aftermathMultipliers = function (options) {
         var am = options.aftermath || {}, hidden = (CALC.RELIC_WEAPON[options.main] || {}).firstSwing;
-        var result = {mainHand: 1, firstSwing: 1};
+        var result = {mainHand: 1, firstSwing: 1, otherFirst: 1};
         if (am.type === "empyrean" && CALC.EMPYREAN_AFTERMATH_RATE[am.level - 1]) {
-            result.mainHand = 1 + CALC.EMPYREAN_AFTERMATH_RATE[am.level - 1] * ((am.multiplier || 2) - 1);
+            var mean = 1 + CALC.EMPYREAN_AFTERMATH_RATE[am.level - 1] * ((am.multiplier || 2) - 1);
+            if (am.offhandFirst) result.otherFirst = mean; else result.mainHand = mean;
         }
         if (hidden) result.firstSwing = 1 + hidden.rate * (hidden.multiplier - 1);
         return result;

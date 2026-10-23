@@ -66,7 +66,7 @@
     // roll for the hand, each share an outcome of it (Kraken Club: https://www.bg-wiki.com/ffxi/Kraken_Club, the
     // shares of 2 to 8 attacks of its 26 327 rounds, gear/items.js).
     // `more` = {mythicAftermath3: true, hassoZanshin: true} for what the sheet does not say; both
-    // are of the main hand only.
+    // are of the main hand only (mythicAftermath3Other: Kenkonken's "(Offhand Only)", the second fist's, CALC.roundHands).
     CALC.OA_MOST = 8;
     CALC.roundProcOutcomes = function (stats, offHand, more) {
         var occasional = [];
@@ -106,10 +106,12 @@
     CALC.roundHands = function (stats, shape, more) {
         var two = shape.dualWield || shape.handToHand;
         var room = Math.max(0, CALC.WS_MAX_SWINGS - (two ? 2 : 1));
-        var first = CALC.roundProcOutcomes(stats, false, more);
+        // Kenkonken: its Lv3 on the second fist only
+        var other = more && more.mythicAftermath3Other;
+        var first = CALC.roundProcOutcomes(stats, false, other ? Object.assign({}, more, {mythicAftermath3: false}) : more);
         first.forEach(function (o) { o.taken = o.chance * Math.min(o.extra, room); });
         if (!two) return [{offHand: false, outcomes: first}];
-        var second = CALC.roundProcOutcomes(stats, shape.dualWield, shape.dualWield ? null : more);
+        var second = CALC.roundProcOutcomes(stats, shape.dualWield, other ? {mythicAftermath3: true} : shape.dualWield ? null : more);
         second.forEach(function (o) {
             o.taken = o.chance * CALC.wsExtraSwings(byExtra(first), certain(o.extra), room)[1];
         });
