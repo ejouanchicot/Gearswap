@@ -1,7 +1,7 @@
 {
  "version": "4.1.0",
  "repo": "ejouanchicot/Gearswap",
- "commit": "602ccf10bd3d5f7b742b576e469e701ce9b777a5",
+ "commit": "1bbc148ed5e1e1b17693f88825bd4d0848c2a31e",
  "files": {
   "VERSION": "ee74734aa2258df77aa09402d55798a1e2e55212",
   "atelier.html": "beb52447641df3ca177ecf612836c557c27ae478",
@@ -119,7 +119,7 @@
   "atelier/app/js/sets_view.js": "4d33061fc4e066672ee12edd86250a94a8d974ab",
   "atelier/app/js/simulate.js": "864a51ad0fc8f08c43680dae05db81a38a1555bf",
   "atelier/app/js/stat_help.js": "0832e5bd0266da48632f19169c83ff7ce904b5b2",
-  "atelier/app/js/stat_opt.js": "5bc4cad2f6f54fccc630a4f224347e060d1f95c5",
+  "atelier/app/js/stat_opt.js": "d5ee4ccf9fb09ba686de846e0cf4f6068861943c",
   "atelier/app/js/state_help_data.js": "bb3d95111c0c1902011dc3a7be6594da1a740ff8",
   "atelier/app/js/state_help_fr.js": "ef6650d7c119ad1f8c74cb5fec354a63c7c51b17",
   "atelier/app/js/stats.js": "3bb85fcbebadfd4580019af47d3cf201f3d4a27b",
@@ -172,7 +172,7 @@
   "atelier/gear/augments_ranked.js": "885190476a687085687161f43302e82a9b881d9b",
   "atelier/gear/capes.js": "fbc05940e183582a86b1fbdee54020505d0f752b",
   "atelier/gear/items.js": "252277f235c5afe6ad1cb2de870b82d6fa4b2c3e",
-  "atelier/index.html": "2a9551737b35585e892d1dc1e927cf9d517bc3a5",
+  "atelier/index.html": "198b04f536ca5cb4238f97dcb78443c3e4340d2a",
   "atelier/lua/lua51.js": "47b0f99b9d305d3e864c094d5b700289c2062527",
   "atelier/opt.js": "b852659de6a6a9d1cdea8e622abcc2e2cc3d00b2",
   "atelier/opt_enf.js": "9428baf7646623946dce38a28b4f092575dc3f56",
