@@ -1003,3 +1003,18 @@ Hybrid weapon skills stay with the engine before: BG Wiki (the first hit duplica
 17166 (the physical total plus 50 % to 100 % of it by TP) disagree, and no page says what the "+0.5 / +1.375 /
 +2.25" fTP of their pages means. For the player to decide (Lot 4 report).
 Bench (`banc/mws_*`): 37 sets changed (the magical weapon skills, now ours), the other 3 932 identical.
+
+## AL. Melee aftermaths (2026-10-23, Lot 4.6)
+
+`calc_aftermath.js` CALC.meleeAftermath, read on BG Wiki's Relic_Aftermath ("119 III", constant), Mythic_Aftermath and
+the mythics' "(Level 119 III)" pages (Lv1 floor(TP÷50 + 10) Accuracy, Lv2 floor(TP×0.06 - 80) Attack, Lv3 40 % twice /
+20 % thrice), Empyrean_Aftermath (triple damage 30 / 40 / 50 %) and Aftermath (prime PDL+, "linear" from 1000 to 3000
+TP, stage 5 6 % to 12 %). Its stats go on the sheet like an ability (calc_abilities.js), a mythic's Lv3 and an
+empyrean's triple damage into the round (calc_page.js, the round already counted them). The round's own relic path
+(Apocalypse's haste and accuracy, never called) is gone: the relics' aftermath is on the sheet now.
+Not here, still with the engine before: aeonic weapons (no melee effect on their page, and no list of them read),
+Verethragna (off-hand first hit), Kenkonken's Lv3 (off-hand only), Tizona / Carnwenhan / Yagrush ("?" levels),
+Gastraphetes. A mythic's Lv3 on a weaponskill ("can trigger once on any physical Weapon Skills") is not counted.
+Nirvana: its page's ÷10 + 20 and ×0.6 fall out of the Mythic_Aftermath table's own 30~49 / 40~99: the table's taken.
+Bench (`banc/am_*`): the 30 engaged sets with an aftermath are ours (Laphria, Ukonvasara, Hoxne: damage a round 0.1 %
+to 3.3 % under the engine before's; Tetsouo THF PDTAFM3 +3.7 %), the other 3 939 identical.

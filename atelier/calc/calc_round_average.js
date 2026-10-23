@@ -11,8 +11,8 @@
 //           main       the main hand weapon as the gear names it ("Apocalypse R15"): a relic's
 //                      hidden effect on the first swing (CALC.RELIC_WEAPON)
 //           aftermath  {type: "empyrean", level: 1..3, multiplier: 2 | 3} damage of the main hand,
-//                      {type: "mythic", level: 3} attacks twice or thrice,
-//                      {type: "relic"} the haste and accuracy of the relic named by `main`
+//                      {type: "mythic", level: 3} attacks twice or thrice (calc_aftermath.js meleeAftermath;
+//                      the other aftermaths are on the sheet)
 //           ikishoten  merit levels of Ikishoten (0 to 5), TP of the Zanshin swings
 //       returns {swings, landed, hitRate, damage, tp, time, tpPerHit, ...}: see `finish` below
 //
@@ -34,13 +34,12 @@
 
     function describe(stats, enemy, options) {
         var shape = shapeOf(stats, options.wield), am = options.aftermath || {};
-        var relic = am.type === "relic" ? (CALC.RELIC_WEAPON[options.main] || {}).aftermath || {} : {};
         // Hasso's extra swing: "Only works for SAM main job", "only with two-handed weapons"
         var hassoZanshin = !!options.hasso && options.job === "sam" && shape.hold === "twoHanded";
         return {
             stats: stats, enemy: enemy, options: options, shape: shape, hold: shape.hold,
             more: {mythicAftermath3: am.type === "mythic" && am.level === 3, hassoZanshin: hassoZanshin},
-            crit: CALC.roundCritRate(stats, enemy), accuracy: relic.accuracy || 0, haste: relic.haste || 0,
+            crit: CALC.roundCritRate(stats, enemy),
             pdifCap: CALC.pdifCap(shape.hold, shape.skill, (stats["PDL Trait"] || 0) / 100, (stats["PDL"] || 0) / 100),
             multipliers: CALC.aftermathMultipliers(options), kinds: []
         };
@@ -60,7 +59,6 @@
     function addHand(ctx, hand, tp) {
         var name = hand.offHand ? "sub" : "main", m = ctx.multipliers;
         var attacker = CALC.roundAttacker(ctx, name);
-        attacker.accuracy += ctx.accuracy;
         var weapon = hand.offHand ? 1 : m.mainHand, first = hand.offHand || hand.secondFist ? 1 : m.firstSwing;
         hand.outcomes.forEach(function (o) {
             var rule = CALC.SWING_RULES[o.kind], opening = CALC.SWING_RULES.first[o.kind] || CALC.SWING_RULES.none;
@@ -149,7 +147,7 @@
     // each hand; `procs`: chance of each outcome of the multi-attack check, by hand; `kinds`: the
     // detail, one line per kind of swing; `time` in seconds; `tp` and `damage` of a mean round.
     function finish(ctx, hands, attackers, tp) {
-        var time = CALC.roundTime(ctx.stats, ctx.shape.dualWield, ctx.haste);
+        var time = CALC.roundTime(ctx.stats, ctx.shape.dualWield);
         var result = {
             swings: byName(ctx, function (k) { return k.count; }),
             landed: byName(ctx, function (k) { return k.count * k.landed; }),

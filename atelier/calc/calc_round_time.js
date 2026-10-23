@@ -2,7 +2,7 @@
 // to reach a weapon skill's TP.
 //
 //   CALC.roundDelay(stats, dualWield)         delay of one round before any reduction
-//   CALC.roundTime(stats, dualWield, haste)   {delay, reduction, remaining, seconds} of one round
+//   CALC.roundTime(stats, dualWield)          {delay, reduction, remaining, seconds} of one round
 //   CALC.regainPerSecond(regain)              TP a second from "Regain"
 //   CALC.timeToWeaponskill(round, startTP, targetTP)   seconds from one TP to another
 //
@@ -39,12 +39,10 @@
     // So the delay left is never under 20% of the delay before Martial Arts. (The Martial_Arts
     // page says "the minimum H2H delay is 96 delay per round", 20% of 480 without the weapon: the
     // Attack_Speed example, which counts the weapon, is followed. DIFFERENCES.md, T2.)
-    // `jobAbilityHaste` (optional) is added to the sheet's "JA Haste" (an aftermath, an ability
-    // the sheet does not carry), as a fraction.
-    CALC.roundTime = function (stats, dualWield, jobAbilityHaste) {
+    CALC.roundTime = function (stats, dualWield) {
         var delay = CALC.roundDelay(stats, dualWield);
         var reduction = CALC.delayReduction(stats["Dual Wield"] || 0, stats["Gear Haste"] || 0,
-            stats["Magic Haste"] || 0, (stats["JA Haste"] || 0) + (jobAbilityHaste || 0));
+            stats["Magic Haste"] || 0, stats["JA Haste"] || 0);
         var floor = (delay + (stats["Martial Arts"] || 0)) * (1 - CALC.DELAY_REDUCTION_CAP);
         var remaining = Math.max(delay * (1 - reduction), floor);
         return {delay: delay, reduction: reduction, remaining: remaining, seconds: remaining / CALC.DELAY_PER_SECOND};

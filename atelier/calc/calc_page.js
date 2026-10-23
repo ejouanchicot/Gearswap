@@ -122,11 +122,21 @@
         return null;
     }
 
-    function round(stats, enemy, start, at, metric, gearset, job) {
+    // What a melee weapon's aftermath does to the round (a mythic's Lv3, an empyrean's triple damage:
+    // calc_aftermath.js meleeAftermath); its stats are on the sheet already (calc_abilities.js)
+    function roundAftermath(gearset, abilities) {
+        var ab = abilities || {}, main = ((gearset || {}).main || {}).Name;
+        if (!ab.Aftermath || !main) return null;
+        var am = CALC.meleeAftermath(main, ab.Aftermath, ab["Aftermath TP"], ab["Aftermath Stage"]);
+        return am && am.round;
+    }
+
+    function round(stats, enemy, start, at, metric, gearset, job, abilities) {
         var wield = CALC.wielding(gearset);
         // "Hasso active": set by the sheet when Hasso is on and works (calc_abilities.js)
         var got = CALC.attackRoundAverage(stats, enemy, {wield: wield, job: job, main: mainName(gearset),
-            hasso: stats["Hasso active"] > 0, ikishoten: job === "sam" ? IKISHOTEN_MERITS : 0});
+            hasso: stats["Hasso active"] > 0, ikishoten: job === "sam" ? IKISHOTEN_MERITS : 0,
+            aftermath: roundAftermath(gearset, abilities)});
         var detail = detailOf(stats, wield, got, start, at, CALC.timeToWeaponskill(got, start, at));
         var value = roundValue(metric, detail);
         if (!value) return {unsupported: "metric " + metric};

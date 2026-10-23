@@ -7,6 +7,9 @@
 //       table does not hold (the page then hands the case to the engine before, as it did)
 //   CALC.AFTERMATH_TP                    the TP taken when the page gives none, by level
 //   CALC.PRIME_WEAPONS                   the prime weapons' names
+//   CALC.meleeAftermath(weapon, level, tp, stage)
+//       a melee weapon's aftermath: {stats: what it adds to the sheet, round: what it does to the auto-attack round
+//       (calc_round_average.js options.aftermath) or null}; null for a weapon this table does not hold
 //
 // The aftermath's level comes from the TP of the weapon skill that made it: 1000~1999 Lv1, 2000~2999 Lv2,
 // 3000 Lv3, one effect a level (https://wiki.ffo.jp/html/15869.html "TP 1000～1999 Lv1 / 2000～2999 Lv2 /
@@ -75,6 +78,54 @@
 
     CALC.AFTERMATH = {Laevateinn: mythicMagic, Tupsimati: mythicMagic, Idris: mythicMagic, Murgleis: mythicMagic,
         Opashoro: opashoro, "Lorg Mor": lorgMor, Khatvanga: khatvanga};
+
+    // Melee aftermaths, read on 2026-10-23 (DIFFERENCES.md AL):
+    // https://www.bg-wiki.com/ffxi/Relic_Aftermath (last edited 2021-01-14), the "119 III" table, "Potency is constant
+    //   regardless of TP": Spharai "Subtle Blow+10 / Kick Attacks+15%", Mandau "Critical Hit Rate+5% / Critical Hit
+    //   Damage+5%", Ragnarok "Critical Hit Rate+10% / Accuracy+15", Guttler "Attack+10%", Apocalypse "Haste+10%" (Job
+    //   Ability) "/ Accuracy+15", Gungnir "Attack+5% / Double Attack+5%", Kikoku "Subtle Blow+10 / Attack+10%",
+    //   Amanomurakumo "Store TP+10 / Zanshin+10%", Mjollnir "Accuracy+20 / Magic Accuracy+20"; Excalibur, Bravura and
+    //   Claustrum give regen, refresh or damage taken only: nothing on this sheet
+    var RELIC = {Spharai: {"Kick Attacks": 15, "Subtle Blow": 10}, Mandau: {"Crit Rate": 5, "Crit Damage": 5},
+        Ragnarok: {"Crit Rate": 10, Accuracy: 15}, Guttler: {"Attack%": 0.1}, Apocalypse: {"JA Haste": 0.1, Accuracy: 15},
+        Gungnir: {"Attack%": 0.05, DA: 5}, Kikoku: {"Attack%": 0.1, "Subtle Blow": 10}, Amanomurakumo: {"Store TP": 10, Zanshin: 10},
+        Mjollnir: {Accuracy: 20, "Magic Accuracy": 20}, Excalibur: {}, Bravura: {}, Claustrum: {}};
+    // https://www.bg-wiki.com/ffxi/Mythic_Aftermath "(95~119/III)": Accuracy 30~49, Attack 40~99, "Occasionally attacks
+    //   twice or thrice | 40% 2x 20% 3x"; each weapon's (Level 119 III) page: Lv1 "floor( TP÷50 + 10 ) Accuracy", Lv2
+    //   "floor( TP×0.06 - 80 ) Attack". Nirvana's page writes ÷10 + 20 and ×0.6, out of the table's own 30~49 and
+    //   40~99: the table's formulas taken. Kenkonken's Lv3 is "(Offhand Only)": not here. Tizona, Carnwenhan and
+    //   Yagrush have a "?" level: not here
+    var MYTHIC = ["Conqueror", "Glanzfaust", "Vajra", "Burtgang", "Liberator", "Aymur", "Kogarasumaru", "Nagi", "Nirvana",
+        "Ryunohige", "Terpsichore", "Epeolatry"];
+    function mythicMelee(level, tp) {
+        if (level === 1) return {stats: {Accuracy: Math.floor(tp / 50 + 10)}, round: null};
+        if (level === 2) return {stats: {Attack: Math.floor(tp * 0.06 - 80)}, round: null};
+        return {stats: {}, round: {type: "mythic", level: 3}};
+    }
+    // https://www.bg-wiki.com/ffxi/Empyrean_Aftermath (last edited 2026-05-24) "Occ. Triples Damage (Level 119 III)":
+    //   30 / 40 / 50 % by level, the rate in calc_round_damage.js; Verethragna's is "on offhand (first hit only)": not here
+    var EMPYREAN = ["Twashtar", "Almace", "Caladbolg", "Farsha", "Ukonvasara", "Redemption", "Kannagi", "Rhongomiant",
+        "Gambanteinn", "Masamune", "Hvergelmir"];
+    // https://www.bg-wiki.com/ffxi/Aftermath (last edited 2026-08-23): prime melee and ranged weapons "scale the PDL+
+    //   amount from 1000 to 3000 TP in a linear fashion"; "Stage 3 = 2% to 8%", "Stage 4 = 4% to 10%", "Stage 5 = 6%
+    //   to 12%" (stage 5 = "(Level 119 III)", Category:Prime Weapons), from an FFXIAH test
+    var PRIME_PDL = {III: [2, 8], IV: [4, 10], V: [6, 12]};
+    var PRIME_MAGIC = ["Lorg Mor", "Opashoro", "Duban", "Loughnashade"];
+
+    CALC.meleeAftermath = function (weapon, level, tp, stage) {
+        level = Math.max(1, Math.min(3, Math.round(level || 0)));
+        var lo = [1000, 2000, 3000][level - 1], hi = [1999, 2999, 3000][level - 1];
+        var at = tp >= lo && tp <= hi ? tp : CALC.AFTERMATH_TP[level - 1];
+        if (RELIC[weapon]) return {stats: RELIC[weapon], round: null};
+        if (MYTHIC.indexOf(weapon) !== -1) return mythicMelee(level, at);
+        if (EMPYREAN.indexOf(weapon) !== -1) return {stats: {}, round: {type: "empyrean", level: level, multiplier: 3}};
+        if (CALC.PRIME_WEAPONS.indexOf(weapon) !== -1 && PRIME_MAGIC.indexOf(weapon) === -1) {
+            var range = PRIME_PDL[stage || "V"];
+            if (!range) return null;
+            return {stats: {PDL: range[0] + (range[1] - range[0]) * (at - 1000) / 2000}, round: null};
+        }
+        return null;
+    };
 
     CALC.aftermathStats = function (weapon, level, tp, stage) {
         var f = CALC.AFTERMATH[weapon];

@@ -135,11 +135,8 @@
     // https://www.bg-wiki.com/ffxi/Apocalypse_(Level_119_III)
     //   "Hidden Effect: Does Double Damage on the first swing of an attack round 20% of the time."
     //   "Will never activate on hits from Double Attack, Triple Attack, etc."
-    //   "Unlike its predecessors, Aftermath on this version of the weapon gives 10% Job Ability
-    //   Haste and 15 Accuracy."
-    // Only the relics whose page was read are here; `haste` is taken as 10 / 100 of the delay
-    // (the page gives a percentage, not 1024ths).
-    var APOCALYPSE = {firstSwing: {rate: 0.2, multiplier: 2}, aftermath: {haste: 0.1, accuracy: 15}};
+    // (its aftermath, 10% Job Ability Haste and 15 Accuracy: calc_aftermath.js, on the sheet)
+    var APOCALYPSE = {firstSwing: {rate: 0.2, multiplier: 2}};
     // Laphria (a prime weapon, stage IV): no page gives this (the weapon's pages carry no hidden effect and the
     // Disaster page says "Information Needed" for the aftermath). Measured in game on 2026-10-10 and 11 (Tetsouo WAR,
     // 767 first swings of a round, each set against the later swings of the same fight, which never double: 0 of

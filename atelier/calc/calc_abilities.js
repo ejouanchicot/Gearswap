@@ -232,11 +232,16 @@
         return {main: main, level: level, wield: wield};
     }
 
-    // The aftermath of the weapon in the main hand (calc_aftermath.js): its stats, or null for a weapon whose
-    // aftermath this engine does not count (a melee one: the case goes to the engine before, as it did)
+    // The aftermath of the weapon in the main hand (calc_aftermath.js): a mage's weapon's stats, or a melee one's
+    // (its round part is read by calc_page.js), or null for a weapon whose aftermath this engine does not count (the
+    // case goes to the engine before, as it did)
     function aftermathOf(input, abilities) {
         var main = (input.gearset && input.gearset.main) || {};
-        return CALC.aftermathStats(main.Name, abilities.Aftermath, abilities["Aftermath TP"], abilities["Aftermath Stage"]);
+        var args = [main.Name, abilities.Aftermath, abilities["Aftermath TP"], abilities["Aftermath Stage"]];
+        var magic = CALC.aftermathStats.apply(null, args);
+        if (magic) return magic;
+        var melee = CALC.meleeAftermath.apply(null, args);
+        return melee ? melee.stats : null;
     }
 
     CALC.abilityTotals = function (input) {

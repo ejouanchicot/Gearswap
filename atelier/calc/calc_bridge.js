@@ -80,7 +80,8 @@
 
     own.average_attack_round = function (player, enemy, start, at, metric) {
         if (player.own) {
-            var got = CALC.page.round(player.stats, enemy.stats, start, at, metric, player.gearset, player.main_job);
+            var got = CALC.page.round(player.stats, enemy.stats, start, at, metric, player.gearset, player.main_job,
+                player.abilities);
             if (!got.unsupported) {
                 FFXI.lastRound = got.detail;
                 return got.result;
