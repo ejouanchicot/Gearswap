@@ -1018,3 +1018,19 @@ Gastraphetes. A mythic's Lv3 on a weaponskill ("can trigger once on any physical
 Nirvana: its page's ÷10 + 20 and ×0.6 fall out of the Mythic_Aftermath table's own 30~49 / 40~99: the table's taken.
 Bench (`banc/am_*`): the 30 engaged sets with an aftermath are ours (Laphria, Ukonvasara, Hoxne: damage a round 0.1 %
 to 3.3 % under the engine before's; Tetsouo THF PDTAFM3 +3.7 %), the other 3 939 identical.
+
+## AM. The job abilities of Y3, counted at their most (2026-10-23, Lot 4.7)
+
+The player's rule (SPEC 4.7): what changes during a fight is counted at its peak, and the page says so in the ability's
+tip (`app/js/i18n.js` jaMax_*). Read on each ability's BG Wiki page on 2026-10-23 (`calc_abilities.js`):
+Brazen Rush DA 100, Attack +80 (job points) | Impetus Attack +100, crit +50 (its job points "maximum physical attack
+by 2": the page does not say they raise the cap, not added) | Conspirator Accuracy +49 (+20 job points), Subtle Blow 50 |
+Innin crit +30, Evasion -30, Accuracy +20 (job points), main job only ("Not available via support job"; the page offered
+it to a /NIN before) | Saber Dance DA 50 (the Double Attack trait it "overwrites" is not taken off) | Swordplay Accuracy
+and Evasion +60, +80 with the job points as main job | Building Flourish, on the weaponskill only ("Weapon Skill
+Accuracy / Attack% / Crit Rate / Damage" of the sheet, calc_ws_average.js): 3 finishing moves, 5/5 merits, 20 job points:
++50, +30 %, +15 % (one that can crit), +20 % (ASSUMED: added to the gear's Weapon Skill Damage) | Last Resort as main job:
+89/256, +40, 25 % job ability haste with a two-handed weapon. The page's display of these was the engine before's (Impetus
+crit 45 / Attack 126, Conspirator 45, Swordplay 54, Innin 24, Saber Dance its 20 % floor): now the same numbers as ours.
+Saber Dance's floor and the Tights' merit bonus to it are no longer counted (opt.js, engine.js): at 50 % they do not apply.
+Bench: nothing changes (no ability is on in it); each one checked with CALC.abilityTotals.

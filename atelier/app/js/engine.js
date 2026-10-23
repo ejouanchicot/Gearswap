@@ -118,9 +118,9 @@ function optContextInput(s){
     }
     // Haste Samba at the page's value (merits, a party DNC main or sub), not the engine's fixed 10.1 / 5.1
     if (base === 'Haste Samba' && !strict) { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
-    // the engine counts Saber Dance at 25 % (and drops a /WAR's Double Attack trait under it): its 20 % floor instead,
-    // the legs' bonus counted by the engine on the legs worn (ctx.saberMerit, atelier/opt.js gearset)
-    if (base === 'Saber Dance') partyStats.DA = (partyStats.DA || 0) + 20 - 25;
+    // the engine before counts Saber Dance at 25 % (and drops a /WAR's Double Attack trait under it): its 20 % floor
+    // instead; ours counts it at its most, 50 % (atelier/calc/calc_abilities.js, the player's rule)
+    if (base === 'Saber Dance' && strict) partyStats.DA = (partyStats.DA || 0) + 20 - 25;
     abilities[ja.as === 'sub' && (base === 'Warcry' || (strict && base === 'Haste Samba')) ? base + ' (sub)' : base] = true;
   }
   const skill = wsSkills()[ws] || '';
@@ -128,7 +128,6 @@ function optContextInput(s){
     wsInfo: wsInfoOf(ws), wsSkill: wsSkills()[ws],
     enemy: enemyKey(b.enemy), evaDown: foeEva(b), physRes: physResOf(b, skill), tomahawk: foeJaActive(b).includes('Tomahawk'), banish: foeJaActive(b).includes('Banish II'), partyWarcry, geoMul: geoMul(b), ariaPdl: ariaPdl(b),
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
-    saberMerit: abilities['Saber Dance'] ? danceMerit('saber') : 0,
     // Fan Dance's cut of the physical damage taken, counted by the search in the DT + PDT it is asked for (atelier/opt.js defOf)
     fanDance: abilities['Fan Dance'] ? {merit: danceMerit('fan')} : null,
     warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws,

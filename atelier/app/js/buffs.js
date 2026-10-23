@@ -239,23 +239,24 @@ const JAS = {
   'Blood Rage': {job: 'WAR', lvl: 87, excl: 'warcry', fx: m => ({crit: m ? 40 : 20})},
   'Mighty Strikes': {job: 'WAR', lvl: 1, sp: true, fx: () => ({crit: 100, acc: 40})},
   // Double Attack +100 % at its start, nothing after 30 s; +80 Attack from its job points (atelier/engine/player.js)
-  'Brazen Rush': {job: 'WAR', lvl: 96, sp: true, mainOnly: true, fx: () => ({da: 100, atk: 80})},
+  'Brazen Rush': {job: 'WAR', lvl: 96, sp: true, mainOnly: true, max: 'brazen', fx: () => ({da: 100, atk: 80})},
   'Focus': {job: 'MNK', lvl: 25, fx: (m, l) => m ? {crit: 20, acc: 120} : {crit: 20 * (1 - (99 - l) / 100), acc: 100 * (1 - (99 - l) / 100)}},
-  'Impetus': {job: 'MNK', lvl: 88, fx: () => ({crit: 45, atk: 126})},
+  // max: counted at its most (atelier/calc/calc_abilities.js, the player's rule), what the tip says (jaMax_<key>, i18n.js)
+  'Impetus': {job: 'MNK', lvl: 88, max: 'impetus', fx: () => ({crit: 50, atk: 100})},
   'Composure': {job: 'RDM', lvl: 50, mainOnly: true, fx: () => ({acc: 70})},
   // spells on oneself only (BG Wiki Temper, Temper II): Double / Triple Attack by the skill at the cast (temperPot);
   // eng: what the damage engine is given, the engine having no Temper of its own; jp: the job points it comes with
   'Temper': {job: 'RDM', lvl: 95, mainOnly: true, excl: 'temper', fx: () => ({da: temperPot(false)}), eng: () => ({DA: temperPot(false)})},
   'Temper II': {job: 'RDM', lvl: 99, jp: 1200, mainOnly: true, excl: 'temper', fx: () => ({ta: temperPot(true)}), eng: () => ({TA: temperPot(true)})},
-  'Conspirator': {job: 'THF', lvl: 87, fx: () => ({acc: 45, sb: 50})},
-  'Last Resort': {job: 'DRK', lvl: 15, twoHanded: ['jahaste'], fx: m => ({atkp: .25 + (m ? 100 / 1024 : 0), atk: m ? 40 : 0, defp: -.25, jahaste: m ? 25 : 15})},
+  'Conspirator': {job: 'THF', lvl: 87, max: 'conspirator', fx: m => ({acc: 49 + (m ? 20 : 0), sb: 50})},
+  'Last Resort': {job: 'DRK', lvl: 15, twoHanded: ['jahaste'], max: 'lastResort', fx: m => ({atkp: m ? 89 / 256 : .25, atk: m ? 40 : 0, defp: -.25, jahaste: m ? 25 : 15})},
   'Sharpshot': {job: 'RNG', lvl: 1, fx: m => ({racc: 40, ratk: m ? 40 : 0})},
   'Hasso': {job: 'SAM', lvl: 25, twoHanded: true, fx: (m, l) => ({str: m ? 34 : Math.trunc(l / 7), jahaste: 10, acc: 10})},
   'Hagakure': {job: 'SAM', lvl: 95, tp: true, fx: () => ({})},
-  'Innin': {job: 'NIN', lvl: 40, fx: m => m ? {acc: 20, scb: 5, crit: 24, eva: -24} : {crit: 24, eva: -24}},
-  'Building Flourish': {job: 'DNC', lvl: 50, fx: () => ({crit: 10, acc: 40, atkp: .25})},
+  'Innin': {job: 'NIN', lvl: 40, mainOnly: true, max: 'innin', fx: () => ({acc: 20, scb: 5, crit: 30, eva: -30})},
+  'Building Flourish': {job: 'DNC', lvl: 50, max: 'building', fx: m => m ? {crit: 15, acc: 50, atkp: .30, wsd: 20} : {crit: 10, acc: 40, atkp: .25}},
   // the dances (BG Wiki), a main DNC's merit abilities, one at a time: their floor, what holds through the effect
-  'Saber Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({da: danceFloor('saber', shownPieces())})},
+  'Saber Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', max: 'saber', fx: () => ({da: 50})},
   'Fan Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({pdmgmul: 1 - danceFloor('fan', shownPieces()) / 100, enmity: 15})},
   // BG Wiki, Climactic Flourish: "Forces the first swing of the next X attack rounds to critical hit and grants them a
   // base damage bonus equal to 50% of your CHR", "Works on the first hit of any Weapon Skills"; job points "Increases CHR
@@ -263,7 +264,7 @@ const JAS = {
   // abilities["Climactic Flourish"]), on a weaponskill set only (engine.js engContextInput leaves it out of a round)
   'Climactic Flourish': {job: 'DNC', lvl: 80, mainOnly: true, fx: () => ({})},
   'Haste Samba': {job: 'DNC', from: 'DNC', lvl: 45, party: true, fx: (m, l, ja) => ({jahaste: sambaHaste(ja)})},
-  'Swordplay': {job: 'RUN', lvl: 20, fx: () => ({acc: 54, eva: 54})},
+  'Swordplay': {job: 'RUN', lvl: 20, max: 'swordplay', fx: m => ({acc: 60 + (m ? 20 : 0), eva: 60 + (m ? 20 : 0)})},
   'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
   'Rampart': {job: 'PLD', lvl: 62, fx: () => ({dmgmul: .75})},
   'Crusade': {job: ['PLD', 'RUN'], lvl: 88, fx: () => ({enmity: 30})},
@@ -347,12 +348,10 @@ function jaOn(b, name){
   if ((b[role] || {})[name]) return true;
   return role === 'ja' && name === 'Haste Samba' && !!b.autoSamba && ((data() || {}).sub === 'DNC' || S.job === 'DNC') && !(b.jaOff || {})[name];
 }
-// A dance's floor (BG Wiki): Saber Dance's Double Attack ends at 20 % (from 50 %, in 30 s), Fan Dance's physical damage
-// cut at 20 % (from 90 %, 10 % a hit taken), with Enmity +15; each "Saber Dance" / "Fan Dance" merit level adds 1 % to it while Etoile or
-// Horos Tights / Horos Bangles or Etoile Bangles +2 are worn: counted on the pieces of the set shown (the search weighs the Tights against any
-// other legs: atelier/opt.js gearset)
-const DANCE = {saber: {merit: 'saber_dance', slot: 'legs', gear: /^(Horos|Etoile) Tights/},
-  fan: {merit: 'fan_dance', slot: 'hands', gear: /^(Horos Bangles|Etoile Bangles \+2)/}};
+// A dance's floor (BG Wiki): Fan Dance's physical damage cut at 20 % (from 90 %, 10 % a hit taken), with Enmity +15; each
+// "Fan Dance" merit level adds 1 % to it while Horos Bangles or Etoile Bangles +2 are worn: counted on the pieces of the set shown.
+// (Saber Dance is counted at its most, 50 %: atelier/calc/calc_abilities.js)
+const DANCE = {fan: {merit: 'fan_dance', slot: 'hands', gear: /^(Horos Bangles|Etoile Bangles \+2)/}};
 // Fan Dance on for the set shown: the DT + PDT of a search is then the physical damage taken with the dance (pdtLabel)
 const fanOn = () => jaOn(liveBuffs(buffState()), 'Fan Dance');
 const pdtLabel = () => fanOn() ? t('pdtFan') : 'DT+PDT';

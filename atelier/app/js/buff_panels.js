@@ -166,7 +166,8 @@ function targetInfo(s){
 
 /* ---- the panels' helpers: ability tips, skill lists (their controls: atelier/src/screens/combat) ---- */
 const jaTip = ja => ja.as === 'party' ? t('jaPartyTip', {j: ja.a.from}) + (ja.a.tpParty ? ' · TP Bonus +' + tpOfParty(ja.a, buffState()) : '')
-  : t('jaLvTip', {j: [].concat(ja.a.job).join('/'), l: ja.a.lvl, w: ja.as === 'main' ? t('jaMain') : t('jaSub', {l: ja.lvl})});
+  : t('jaLvTip', {j: [].concat(ja.a.job).join('/'), l: ja.a.lvl, w: ja.as === 'main' ? t('jaMain') : t('jaSub', {l: ja.lvl})})
+    + (ja.a.max ? ' · ' + t('jaMax_' + ja.a.max) : '');
 // The SMN's Summoning Magic skill for Fenrir's Impact (b.smnSkill, 600 until chosen)
 const SMN_SKILLS = [400, 450, 500, 550, 600, 650, 700, 750, 800];
 // A RDM's tier I Enspell given to the party with Accession (/SCH): its base damage from the caster's Enhancing Magic

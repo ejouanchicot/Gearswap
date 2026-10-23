@@ -46,7 +46,8 @@
     function critRate(stats, enemy, info, tp) {
         var bonus = CALC.valueAtTP(info.crit, tp);
         if (bonus === null) return info.crit ? NaN : 0;
-        var rate = (stats["Crit Rate"] || 0) + CALC.critRateFromDex(stats.DEX, enemy.AGI) + bonus;
+        // "Weapon Skill Crit Rate": Building Flourish's, on a weapon skill that can land critical hits (calc_abilities.js)
+        var rate = (stats["Crit Rate"] || 0) + CALC.critRateFromDex(stats.DEX, enemy.AGI) + bonus + (stats["Weapon Skill Crit Rate"] || 0);
         return Math.max(0, Math.min(1, rate / 100));
     }
 
@@ -58,7 +59,8 @@
         var hold = holdOf(info.skill), used = Math.min(MAX_TP, tp + (stats["TP Bonus"] || 0));
         var attack = CALC.valueAtTP(info.attack, used), ignored = CALC.valueAtTP(info.ignoreDefense, used);
         var perBuff = CALC.WS_ATTACK_PER_BUFF[wield.main] || 0;
-        attack = (attack === null ? 1 : attack) * (1 + perBuff * (wield.buffs || 0));
+        // "Weapon Skill Attack%": Building Flourish's (calc_abilities.js)
+        attack = (attack === null ? 1 : attack) * (1 + perBuff * (wield.buffs || 0)) * (1 + (stats["Weapon Skill Attack%"] || 0));
         return {
             stats: stats, enemy: enemy, info: info, hold: hold, tp: used,
             // the weapon's own bonus to this weapon skill: steps multiplied one after the other

@@ -18,8 +18,9 @@
 // Job points belong to the main job, all 20 ranks bought, like the engine's other job point
 // categories (DIFFERENCES.md, D5). An ability that only changes enmity, blocking, cures or the
 // damage taken has an empty effect: it is known and adds nothing. An ability whose amount depends
-// on time, on a count or on merits the input does not give is not in the table: it comes back in
-// `unknown` (DIFFERENCES.md, section Y).
+// on time, on a count or on merits the input does not give is counted at its most, the player's
+// rule (notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md, 4.7; the page says so beside it);
+// the others come back in `unknown` (DIFFERENCES.md, sections Y and AM).
 //
 // @file    atelier/calc/calc_abilities.js
 // @author  ejouanchicot
@@ -144,14 +145,17 @@
     //   Resort Effect Merits."
     //   "Up to 25% Job Ability Haste can be added to Last Resort through Desperate Blows merits."
     //   job points "Last Resort Effect": "Increases physical attack by 2."
-    // As main job both the attack and the haste depend on merits the input does not give: no
-    // answer (null). As a support job there are no merits, and the trait comes at the support
-    // job's level (https://www.bg-wiki.com/ffxi/Support_Job : "you will receive all spells,
-    // traits, and abilities available to your sub job at its level").
+    // As main job: at its most, 5/5 "Last Resort Effect" merits (89/256), the 20 job point ranks and
+    // the 25 % haste of Desperate Blows' 5/5 merits with a two-handed weapon (the player's rule for an
+    // amount the input does not give, SPEC 4.7). As a support job there are no merits, and the trait
+    // comes at the support job's level (https://www.bg-wiki.com/ffxi/Support_Job : "you will receive
+    // all spells, traits, and abilities available to your sub job at its level").
     // ASSUMED: a percentage of job ability haste is that share of 1 (10% = 0.1; the page gives
     // no value in 1024ths), as for Apocalypse's aftermath (DIFFERENCES.md, T11).
+    var LAST_RESORT_MAIN = {attack: 89 / 256, haste: 0.25};
     ability("Last Resort", "Last_Resort", "drk", 15, function (who) {
-        if (who.main) return null;
+        if (who.main) return {"Attack%": LAST_RESORT_MAIN.attack, "Attack": jobPoints(who, 2),
+            "JA Haste": who.wield.twoHanded ? LAST_RESORT_MAIN.haste : 0};
         var tier = CALC.traitTier(DESPERATE_BLOWS.levels, who.level);
         var haste = tier && who.wield.twoHanded ? DESPERATE_BLOWS.haste[tier - 1] : 0;
         return {"Attack%": 64 / 256, "JA Haste": haste};
@@ -199,6 +203,52 @@
     // is given by the caller.
     ability("Hagakure", "Hagakure", "sam", 95, function (who) {
         return {"TP Bonus": 1000 + jobPoints(who, 10)};
+    });
+
+    // At their most (the player's rule, SPEC 4.7: what changes in a fight is counted at its peak, and
+    // the page says so beside the ability). Read on 2026-10-23:
+    // https://www.bg-wiki.com/ffxi/Brazen_Rush   "The effect begins at 100% double attack rate and
+    //   diminishes over the duration of the effect."; job points "Increase physical attack by 4."
+    ability("Brazen Rush", "Brazen_Rush", "war", 96, function (who) {
+        return {"DA": 100, "Attack": jobPoints(who, 4)};
+    }, true);
+    // https://www.bg-wiki.com/ffxi/Impetus   "+2 Attack and +1% Critical Hit Rate for each consecutive
+    //   successful attack", "Bonuses cap at +100 Attack and +50% Critical Hit Rate after landing 50
+    //   consecutive hits." Its job points "Increase maximum physical attack by 2": the page does not say
+    //   they raise the cap of 100, not added.
+    ability("Impetus", "Impetus", "mnk", 88, function () {
+        return {"Attack": 100, "Crit Rate": 50};
+    });
+    // https://www.bg-wiki.com/ffxi/Conspirator   by the number of enmity holders, at most +50 Subtle Blow
+    //   and +49 accuracy (18 of them); job points "Increase physical accuracy by 1."
+    ability("Conspirator", "Conspirator", "thf", 87, function (who) {
+        return {"Accuracy": 49 + jobPoints(who, 1), "Subtle Blow": 50};
+    });
+    // https://www.bg-wiki.com/ffxi/Innin   "+30% Critical Hit Rate, and -30 Evasion to start, all of which
+    //   decay to ±10 over time." "Not available via support job." job points "Increases accuracy by 1."
+    //   (from behind, as CALC.ASSUME.behindTarget)
+    ability("Innin", "Innin", "nin", 40, function (who) {
+        return {"Crit Rate": 30, "Evasion": -30, "Accuracy": jobPoints(who, 1)};
+    }, true);
+    // https://www.bg-wiki.com/ffxi/Saber_Dance   50 % Double Attack at first, 20 % after 30 seconds; it
+    //   "overwrites" the Double Attack trait: not taken off here (the effect does not see the traits)
+    ability("Saber Dance", "Saber_Dance", "dnc", 75, function () {
+        return {"DA": 50};
+    }, true);
+    // https://www.bg-wiki.com/ffxi/Swordplay   "+3/tick", "Caps at +60 Evasion/Accuracy regardless of being
+    //   main or sub RUN."; job points "Increase maximum amounts of accuracy and evasion by 1."
+    ability("Swordplay", "Swordplay", "run", 20, function (who) {
+        return {"Accuracy": 60 + jobPoints(who, 1), "Evasion": 60 + jobPoints(who, 1)};
+    });
+    // https://www.bg-wiki.com/ffxi/Building_Flourish   the next weapon skill: 3 finishing moves give +40
+    //   accuracy, +25 % attack and +10 % critical hit rate (on one that can land them); merits "accuracy by 2,
+    //   attack power by 1%, and critical hit rating by 1%" a level, 5; job points "Increase weapon skill
+    //   damage by 1 percent", 20. On the weapon skill only ("Weapon Skill ..." of the sheet: calc_ws_average.js);
+    //   ASSUMED: its weapon skill damage adds to the gear's.
+    ability("Building Flourish", "Building_Flourish", "dnc", 50, function (who) {
+        var merits = who.main ? 5 : 0;
+        return {"Weapon Skill Accuracy": 40 + 2 * merits, "Weapon Skill Attack%": 0.25 + 0.01 * merits,
+            "Weapon Skill Crit Rate": 10 + merits, "Weapon Skill Damage": jobPoints(who, 1)};
     });
 
     // Known, and nothing for the sheet: what each does, in the page's words.

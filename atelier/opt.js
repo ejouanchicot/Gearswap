@@ -265,7 +265,7 @@
         var out = {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: strict ? c.abilities || {} : withNakedHp(withBase(c), c),
             enemy: strict ? FFXI.make_enemy(c.enemy, agg[1]) : CALC.makeEnemy(FFXI.ENEMIES, c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: strict ? 1 : physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
-            physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, saberMerit: strict ? 0 : c.saberMerit || 0, fanDance: c.fanDance || null,
+            physResBy: strict ? null : c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, fanDance: c.fanDance || null,
             spells: c.spells || null, spellType: c.spellType || "Elemental Magic", nuke: c.nuke || null,
             layers: c.layers || null, belt: c.belt || null};
         // a Magic Burst set (O.nuke): the old engine reads the burst as an ability, ours as the spell's option (calc_bridge.js)
@@ -372,10 +372,6 @@
             if (!g) return null;
             set[O.SLOT[slot]] = g;
         }
-        // Saber Dance up: Etoile / Horos Tights worn raise its Double Attack floor 1 % a "Saber Dance" merit level (BG Wiki),
-        // counted on the legs worn, so the search weighs them against any other legs
-        var legs = pieces.legs && pieces.legs.name;
-        if (ctx && ctx.saberMerit && legs && /^(Horos|Etoile) Tights/.test(legs)) set[O.SLOT.legs] = Object.assign({}, set[O.SLOT.legs], {DA: ((set[O.SLOT.legs] || {}).DA || 0) + ctx.saberMerit});
         return set;
     };
     // An engaged set's attack round (the engine's average_attack_round, from 0 TP to the weaponskill at opts.wsAt, 1000
