@@ -68,7 +68,7 @@ function tankExtra(c: LegacyAny, set: LegacyAny, B: LegacyAny, enm: number): Sta
     for (const [slot, p] of Object.entries(optPieces(withWeapons(cs).pieces)) as Array<[string, LegacyAny]>) { const sv = withVec(p, slot).st; for (const k of ['mnd', 'vit', 'heal']) g[k] = (g[k] || 0) + (sv[k] || 0); }
     const mnd = b.mnd + g.mnd, vit = b.vit + g.vit, heal = b.heal + g.heal;
     const parts = t('tkCureParts', {m: mnd, mb: b.mnd, mg: g.mnd, v: vit, vb: b.vit, vg: g.vit, s: heal, p: Math.floor(mnd / 2) + Math.floor(vit / 4) + heal});
-    rows.push(row(t('tkCure'), `${fig.cureIV} HP`, pair ? t('tkCureSelf', {h: fig.cureSelf}) : '', '', parts + ' ' + t('statCure4Tip')));
+    rows.push(row(t('tkCure', {s: b.cureSpell || 'Cure IV'}), `${fig.cureIV} HP`, pair ? t('tkCureSelf', {h: fig.cureSelf}) : '', '', parts + ' ' + t('statCure4Tip')));
   }
   if (['PLD', 'RUN'].includes(S0.job)) {
     const held: LegacyAny = S0._curSet ? withWeapons(S0._curSet).pieces : {};
@@ -236,7 +236,7 @@ function cureBox(s: LegacyAny): StatBox | null {
   const pct = (v: number, m: number) => `+${v} %`, of = (m: number) => t('cbOf', {m});
   const lost = (raw: number, cap: number) => raw > cap ? t('cbLost', {n: raw - cap}) : of(cap);
   const items: BoxItem[] = [
-    row(t('cbHeal'), `<b>${f.cureOther}</b>`, t('cbHealX')),
+    row(t('cbHeal', {s: statBase(s).cureSpell || 'Cure IV'}), `<b>${f.cureOther}</b>`, t('cbHealX')),
     row(t('cbCp'), pct(Math.min(50, f.cureRaw), 50), lost(f.cureRaw, 50), f.cureRaw > 50 ? 'over' : ''),
     row(t('cbCp2'), pct(f.cure2, 30), [lost(f.cure2Raw, 30), ...Object.entries(f.setBonuses || {}).map(([sn, x]: [string, LegacyAny]) => t('cbSet', {s: sn, n: x.count, b: x.bonus}))].join(' · '), f.cure2Raw > 30 ? 'over' : ''),
     row(t('cbPower'), String(f.curePower), t('cbPowerX', {m: f.cureMnd, v: f.cureVit, s: f.cureSkill})),

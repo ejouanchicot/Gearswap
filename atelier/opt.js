@@ -735,18 +735,26 @@
         // Perpetuance's figure of the Bracers (the page's enh_jobs.js enhPerpOf); the elemental debuffs' effect,
         // elemental magic skill and Tonban (the page's ele_debuff.js edVec)
         "perp", "edeff", "edskill", "edtonban"];
-    // Cure IV on yourself (BG Wiki Cure Formula): Power = MND/2 + VIT/4 + Healing Magic skill; the base by power steps
-    // [power floor, rate, HP floor], 640 at most; + jp (the Cure potency of job points and gifts: a PLD's gift Cure Potency
-    // Bonus +50 from 1200 JP, BG Wiki Paladin; checked in game 2026-10-05, Cure IV 1332, 1245 and 1114); then x (1 + Cure Potency (50 % cap) + Cure
-    // Potency II (30 %)), then x (1 + Cure Potency Received (30 %)). Day and weather left out
-    var CURE4 = [[400, 2.5, 520], [300, 1.43, 450], [200, 2, 400], [70, 1, 270]];
-    O.cureIV = function (mnd, vit, skill, cp, cp2, recv, jp) {
-        var power = Math.floor(mnd / 2) + Math.floor(vit / 4) + skill, base = 270;
-        for (var i = 0; i < CURE4.length; i++) if (power >= CURE4[i][0]) { base = Math.floor((power - CURE4[i][0]) / CURE4[i][1]) + CURE4[i][2]; break; }
-        base = Math.min(640, base) + (jp || 0);
+    // A single target Cure (BG Wiki Cure_Formula, last edited 2026-02-09): Power = MND/2 + VIT/4 + Healing Magic skill;
+    // the base by power steps [power floor, rate, HP floor], highest first, up to the spell's hard cap; + jp (the Cure
+    // potency of job points and gifts: a PLD's gift Cure Potency Bonus +50 from 1200 JP, BG Wiki Paladin, checked in game
+    // 2026-10-05, Cure IV 1332, 1245 and 1114; a mastered WHM's 23, 63 under Afflatus Solace); then x (1 + Cure Potency
+    // (50 % cap) + Cure Potency II (30 %)), then x (1 + Cure Potency Received (30 %)). Day and weather left out
+    var CURES = {
+        1: {cap: 65, steps: [[200, 20, 45], [125, 15, 40], [40, 8.5, 30], [20, 1.33, 15], [0, 4, 10]]},
+        2: {cap: 145, steps: [[400, 20, 130], [200, 10, 110], [125, 7.5, 100], [70, 5.5, 90], [40, 1, 60]]},
+        3: {cap: 340, steps: [[300, 5, 260], [200, 2.5, 220], [125, 1.15, 155], [70, 2.2, 130]]},
+        4: {cap: 640, steps: [[400, 2.5, 520], [300, 1.43, 450], [200, 2, 400], [70, 1, 270]]},
+        5: {cap: 780, steps: [[500, 3.33, 720], [300, 2.5, 640], [260, 2, 620], [190, 1.84, 582], [150, 1.25, 550], [80, 0.7, 450]]},
+        6: {cap: 1010, steps: [[500, 1.67, 890], [400, 2.5, 850], [300, 1.43, 780], [210, 0.9, 680], [90, 1.5, 600]]}};
+    O.cure = function (tier, mnd, vit, skill, cp, cp2, recv, jp) {
+        var c = CURES[tier] || CURES[4], power = Math.floor(mnd / 2) + Math.floor(vit / 4) + skill, base = c.steps[c.steps.length - 1][2];
+        for (var i = 0; i < c.steps.length; i++) if (power >= c.steps[i][0]) { base = Math.floor((power - c.steps[i][0]) / c.steps[i][1]) + c.steps[i][2]; break; }
+        base = Math.min(c.cap, base) + (jp || 0);
         var pot = 1 + Math.min(50, cp) / 100 + Math.min(30, cp2) / 100;
         return Math.floor(Math.floor(base * pot) * (1 + Math.min(30, recv) / 100));
     };
+    O.cureIV = function (mnd, vit, skill, cp, cp2, recv, jp) { return O.cure(4, mnd, vit, skill, cp, cp2, recv, jp); };
     O.phalanxPotency = function (skill) {
         return skill <= 300 ? Math.max(0, Math.floor(skill / 10) - 2) : Math.min(35, 28 + Math.floor((skill - 300.5) / 28.5));
     };
@@ -875,10 +883,10 @@
         f.enlight += t.enl || 0;
         // a self Cure IV: what it would heal, and what it heals (Guide_Paladin CURE SELF: the Fast Cast of the Cure lowers
         // the max HP, so the current HP with it; the Cure set raises the max HP; the Cure heals up to the gap)
-        f.cureIV = O.cureIV((b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), t.curerecv, b.cureJp);
+        f.cureIV = O.cure(b.cureTier || 4, (b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), t.curerecv, b.cureJp);
         // the same Cure IV cast on someone else: the caster's "Cure potency received" is the receiver's, not counted;
         // past the 50 % cap of Cure Potency it still parts two sets by MND, VIT and Healing skill (the Cure's power)
-        f.cureOther = O.cureIV((b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), 0, b.cureJp);
+        f.cureOther = O.cure(b.cureTier || 4, (b.mnd || 0) + t.mnd, (b.vit || 0) + t.vit, (b.heal || 0) + t.heal, t.cure, t.cure2 + (b.cure2 || 0), 0, b.cureJp);
         // what the Cure is worked out with, for the page's Cure box: Cure Potency as the gear gives it (its cap
         // 50 %) and II (30 %), MND, VIT and Healing skill, the power they make
         f.cureRaw = t.cure; f.cure2 = Math.min(30, t.cure2 + (b.cure2 || 0)); f.cure2Raw = t.cure2 + (b.cure2 || 0);

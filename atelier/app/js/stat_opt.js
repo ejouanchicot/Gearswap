@@ -25,14 +25,14 @@ Object.assign(T.fr, {
   statObj_cmp: 'Conserve MP', statD_cmp: 'chance de payer moins de MP (6,25 à 50 % de moins) : équipement + trait du job (GEO, BLM, SCH), 100 % au plus',
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
-  statObj_cureOther: 'Cure IV sur un autre', statD_cureOther: 'HP soignés : MND, VIT, skill de soin et Cure Potency I (50 % au plus) et II (30 %), formule de BG Wiki (vérifiée en jeu sur le PLD)',
-  cbTitle: 'Soin', cbHeal: 'Cure IV sur un autre', cbHealX: 'HP soignés', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'sur {m} %',
+  statObj_cureOther: 'Soin du Cure', statD_cureOther: 'HP soignés par le meilleur Cure que ton job lance (Cure VI sur WHM, Cure IV sur RDM, PLD, SCH) : MND, VIT, skill de soin et Cure Potency I (50 % au plus) et II (30 %), formule de BG Wiki (vérifiée en jeu sur le PLD) ; le Cure potency received de la cible n’est pas compté',
+  cbTitle: 'Soin', cbHeal: '{s}', cbHealX: 'HP soignés', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'sur {m} %',
   cbLost: '{n} % perdus au-delà du plafond', cbSet: 'dont bonus de set {s} ({n} pièces) : +{b} %', cbPower: 'Puissance du sort', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + skill de soin {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'équipement {g} % + trait du job {t} %', cbCmpCap: 'plafond 100 %',
   cbNote: 'Formule de BG Wiki (vérifiée en jeu sur le PLD) : la puissance donne le soin de base, puis × (1 + Cure potency + Cure potency II). Le Cure potency II passe au-dessus des 50 % du I. Le « Cure potency received » est celui de la cible : pas compté ici.',
   statObj_enmityLow: 'Le moins d’inimitié', statD_enmityLow: 'l’Enmity des pièces, la plus basse possible : un soigneur ne veut pas que le monstre se tourne vers lui',
   statObj_cureEnm: 'Inimitié du Cure', statD_cureEnm: 'HP soignés × (1 + Enmity) : CE = soin × 0,231, VE = 6 × CE (guide Paladin) ; le soin et l’Enmity se départagent seuls',
-  statObj_cureSelf: 'Cure IV sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
-  statCure4: 'Puissance du Cure IV', statCure4Tip: 'Ce que ton Cure IV soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II ; +50 du gift PLD Cure Potency Bonus dès 1200 JP, vérifié en jeu : Cure IV 1332, 1245, 1114), le jour et la météo à part.',
+  statObj_cureSelf: 'Soin du Cure sur toi', statD_cureSelf: 'HP vraiment soignés : la puissance du Cure (MND, VIT, skill, Cure Potency) dans l’écart de HP ouvert par le Fast Cast',
+  statCure4: 'Soin du Cure sans limite', statCure4Tip: 'Ce que ton meilleur Cure soignerait sans limite (BG Wiki, Cure Formula ; en PLD Majesty toujours compté, +25 de Cure Potency II ; +50 du gift PLD Cure Potency Bonus dès 1200 JP, vérifié en jeu : Cure IV 1332, 1245, 1114), le jour et la météo à part.',
   statObj_enhdur: 'Durée renfort', statD_enhdur: 'Enhancing magic duration : Protect, Shell, Reprisal… durent plus longtemps',
   statObj_enhSkill: 'Skill de renfort', statD_enhSkill: 'le tien + le gear : Phalanx, Stoneskin, Barspells… en dépendent',
   statObj_divSkill: 'Skill divin', statD_divSkill: 'le tien + le gear : Enlight II, Flash (Cécité), Banish, Holy',
@@ -77,7 +77,7 @@ Object.assign(T.fr, {
   statSame: 'Ton set est déjà le meilleur trouvé : {o} {v}.', statThenShort: 'puis', statShield: 'dont bouclier (Shield Barrier) +{n}',
   tkBlock: 'Blocage', tkBlockTip: '{s} : {b} % de base à skill égal à celui du monstre (+0,2325 % par point d’écart), Palisade +30, Reprisal ×1,5 (×3 avec Priwen) ; un coup bloqué perd {r} % (guide Paladin).',
   tkCrit: 'Critiques ennemis', tkCritTip: '10 % au plus, 1 % au moins : mérites −{m}, gear {g}.', tkOver: '{n} de trop',
-  tkCure: 'Cure IV', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup, deux réserves qui se multiplient : l’Enmity (1 % pour +2, 50 % au plus) et les pièces « Reduces Enmity loss » (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % au plus) ; −75 % au total au plus. Foe Sirvente (BRD) remplit la seconde, pas encore compté.'});
+  tkCure: '{s}', tkCureSelf: 'sur toi : {h} soignés', tkCureParts: 'MND {m} (sans gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, puissance {p}. Sans gear = ta mesure en jeu, avec les buffs choisis dans la page (une nourriture choisie mais absente en jeu fausse le chiffre).', tkLoss: 'Perte d’inimitié', tkLossTip: 'Réduction de la perte d’inimitié quand tu prends un coup, deux réserves qui se multiplient : l’Enmity (1 % pour +2, 50 % au plus) et les pièces « Reduces Enmity loss » (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % au plus) ; −75 % au total au plus. Foe Sirvente (BRD) remplit la seconde, pas encore compté.'});
 Object.assign(T.en, {
   statObj_enhTime: 'Spell length', statD_enhTime: 'in seconds: (base + seconds) × % written on the pieces × % in augments; RDM: Composure ×3 on yourself (30 min at most), the Lethargy set on the others (measured in game); SCH: Perpetuance; RUN: gifts and Embolden (BG Wiki)',
   statObj_refreshTick: 'Refresh: MP a tick', statD_refreshTick: 'the spell’s MP + the pieces’ “Refresh potency”',
@@ -97,14 +97,14 @@ Object.assign(T.en, {
   statObj_cmp: 'Conserve MP', statD_cmp: 'chance to pay less MP (6.25 to 50 % less): gear + the job’s trait (GEO, BLM, SCH), 100 % at most',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
-  statObj_cureOther: 'Cure IV on someone else', statD_cureOther: 'HP healed: MND, VIT, Healing skill and Cure Potency I (50 % at most) and II (30 %), BG Wiki’s formula (checked in game on the PLD)',
-  cbTitle: 'Healing', cbHeal: 'Cure IV on someone else', cbHealX: 'HP healed', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'of {m} %',
+  statObj_cureOther: 'Cure heal', statD_cureOther: 'HP healed by the best Cure your job casts (Cure VI on WHM, Cure IV on RDM, PLD, SCH): MND, VIT, Healing skill and Cure Potency I (50 % at most) and II (30 %), BG Wiki’s formula (checked in game on the PLD); the target’s Cure potency received is not counted',
+  cbTitle: 'Healing', cbHeal: '{s}', cbHealX: 'HP healed', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'of {m} %',
   cbLost: '{n} % lost over the cap', cbSet: 'with the {s} set bonus ({n} pieces): +{b} %', cbPower: 'The spell’s power', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + Healing skill {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'gear {g} % + job trait {t} %', cbCmpCap: '100 % cap',
   cbNote: 'BG Wiki’s formula (checked in game on the PLD): the power gives the base heal, then × (1 + Cure potency + Cure potency II). Cure potency II goes over the I’s 50 %. “Cure potency received” is the target’s: not counted here.',
   statObj_enmityLow: 'Least enmity', statD_enmityLow: 'the pieces’ Enmity, as low as can be: a healer does not want the monster to turn to it',
   statObj_cureEnm: 'Cure enmity', statD_cureEnm: 'HP healed × (1 + Enmity): CE = heal × 0.231, VE = 6 × CE (Paladin guide); healing and Enmity balance on their own',
-  statObj_cureSelf: 'Cure IV on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
-  statCure4: 'Cure IV power', statCure4Tip: 'What your Cure IV would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from the PLD gift Cure Potency Bonus from 1200 JP, checked in game: Cure IV 1332, 1245, 1114), day and weather aside.',
+  statObj_cureSelf: 'Cure heal on yourself', statD_cureSelf: 'HP really healed: the Cure’s power (MND, VIT, skill, Cure Potency) within the HP gap the Fast Cast opened',
+  statCure4: 'Cure heal with no limit', statCure4Tip: 'What your best Cure would heal with no limit (BG Wiki, Cure Formula; on PLD Majesty always counted, Cure Potency II +25; +50 from the PLD gift Cure Potency Bonus from 1200 JP, checked in game: Cure IV 1332, 1245, 1114), day and weather aside.',
   statObj_enhdur: 'Enhancing duration', statD_enhdur: 'Enhancing magic duration: Protect, Shell, Reprisal… last longer',
   statObj_enhSkill: 'Enhancing skill', statD_enhSkill: 'yours + the gear: Phalanx, Stoneskin, Barspells… depend on it',
   statObj_divSkill: 'Divine skill', statD_divSkill: 'yours + the gear: Enlight II, Flash (Blind), Banish, Holy',
@@ -149,7 +149,7 @@ Object.assign(T.en, {
   statSame: 'Your set is already the best found: {o} {v}.', statThenShort: 'then', statShield: 'with the shield (Shield Barrier) +{n}',
   tkBlock: 'Block', tkBlockTip: '{s}: {b} % at the monster’s own skill (+0.2325 % per point of difference), Palisade +30, Reprisal ×1.5 (×3 with Priwen); a blocked hit loses {r} % (Paladin guide).',
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} over cap',
-  tkCure: 'Cure IV', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
+  tkCure: '{s}', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enmityLow', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'cmp', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc'];
 const STAT_PCT = new Set(['fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
@@ -375,6 +375,15 @@ function setStatOpts(path, patch){
   S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save();
 }
 
+// The single target Cure the job casts highest (main job at its level, or its subjob: enh_jobs.js enhTierAny):
+// {name, tier}; a job that casts none with the subjob shown is judged with the subjob that gives the most (a RUN's
+// Cure sets: /WHM). Cure IV when no subjob casts one either
+const CURE_TIERS = [['Cure', 0, 0], ['Cure II', 0, 0], ['Cure III', 0, 0], ['Cure IV', 0, 0], ['Cure V', 0, 0], ['Cure VI', 0, 0]];
+function cureSpellOf(){
+  const got = enhTierAny(CURE_TIERS, S.job, (data() || {}).sub, jaLevels(), (measuredChar() || {}).jp_spent || 0, '');
+  return got ? {name: got.t[0], tier: got.t[3] + 1} : {name: 'Cure IV', tier: 4};
+}
+
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
   ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
@@ -499,13 +508,16 @@ function statBase(s){
   const pair = s && cureGap(s), pre = pair && family(s.path, s.pieces) !== 'fc' ? statFigures(pair.other, true).hp : null;
   // the enemy's critical hits the gear can still take off: 10 % to the 1 % floor, less the merits
   const ecritRoom = Math.max(0, 9 - ((c.merits || {}).enemy_critical_hit_rate || 0));
-  // a PLD's job gift Cure Potency Bonus (BG Wiki Paladin: Cures heal 50 more, from 1200 job points spent), added to a
-  // Cure's base (opt.js O.cureIV)
-  const cureJp = S.job === 'PLD' && (c.jp_spent || 0) >= 1200 ? 50 : 0;
+  // the job points added to a Cure's base (opt.js O.cure): a PLD's gift Cure Potency Bonus (BG Wiki Paladin: 50 more,
+  // from 1200 job points spent); a mastered WHM's 23, 63 in a set worn under Afflatus Solace (BG Wiki Cure_Formula)
+  const whmJp = S.job === 'WHM' && (c.jp_spent || 0) >= 2100 ? (s && /solace/i.test(setNames(s)) ? 63 : 23) : 0;
+  const cureJp = S.job === 'PLD' && (c.jp_spent || 0) >= 1200 ? 50 : whmJp;
+  // the Cure the figures are for: the highest the job or its subjob casts (cureSpellOf)
+  const cure = cureSpellOf();
   // a tank (PLD, RUN): Crusade's Enmity +30 counted, on or not (the guide: "essentially always up", 5 min, refreshed in
   // the rotation), in the equipment Enmity capped at +200
   const crusade = ['PLD', 'RUN'].includes(S.job) && !jaOn(buffState(), 'Crusade') ? CRUSADE_ENMITY : 0;
-  return {ecritRoom, cureJp, geoSkill: S.job === 'GEO' && c.skills ? skillLevel(c, 'geomancy') + skillLevel(c, 'handbell') : 0, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
+  return {ecritRoom, cureJp, cureTier: cure.tier, cureSpell: cure.name, geoSkill: S.job === 'GEO' && c.skills ? skillLevel(c, 'geomancy') + skillLevel(c, 'handbell') : 0, div: c.skills ? skillLevel(c, 'divine magic') : 0, preHp: pre, mnd: cur.mnd || 0, vit: cur.vit || 0, heal: c.skills ? skillLevel(c, 'healing magic') : 0, cure2: Math.max(B.cure2 || 0, S.job === 'PLD' ? 25 : 0),
     hp: cur.hp || 0, def: cur.def || 0, enh: c.skills ? skillLevel(c, 'enhancing magic') : 0, enmity: (B.enmity || 0) + crusade, sird: 2 * ((c.merits || {}).spell_interruption_rate || 0),
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
     // the Fast Cast the job gives before any piece (a Red Mage's trait and gifts, main job or subjob)
