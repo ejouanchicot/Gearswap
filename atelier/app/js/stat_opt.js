@@ -625,6 +625,9 @@ async function optimizeStats(s){
   const start = withVecs(startOf(base, lockedSlots(s)));
   const input = {ctx: statContext(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: so.objs[0], then: so.objs.slice(1), floor: so.floor}};
+  // a healer's Cure set: the least enmity parts what the chosen objectives leave tied (a Kaykaus path that gives none
+  // of them: its Enmity-6 path rather than any other)
+  if (healerCure(s) && !so.objs.some(k => k === 'enmity' || k === 'enmityLow')) input.opts.then = input.opts.then.concat('enmityLow');
   enhPotencyFirst(s, input, so);
   optLaunch(s, k, input, Object.assign({}, o, {stat: so.objs[0], statFloor: so.floor}));
 }

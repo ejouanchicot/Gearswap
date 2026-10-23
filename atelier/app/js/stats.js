@@ -290,6 +290,7 @@ const RANK_KEYS = {Accuracy: 'acc', 'Ranged Accuracy': 'racc', 'Magic Accuracy':
   MND: 'mnd', CHR: 'chr', 'Subtle Blow': 'sb', 'Subtle Blow II': 'sb2', 'TP Bonus': 'tpb', DT: 'dt', PDT: 'pdt', Counter: 'counter', Regen: 'regen',
   Refresh: 'refresh', Evasion: 'eva', 'Magic Evasion': 'meva', 'Magic Defense': 'mdb', Defense: 'def', HP: 'hp', MP: 'mp', 'Cure Potency': 'cure',
   'Skillchain Bonus': 'scb', Enmity: 'enmity', 'Spell Interruption Down': 'sird', 'Fast Cast': 'fc', 'Enhancing Duration': 'enhdur',
+  'Conserve MP': 'cmp', 'Cure Casting Time': 'curecast',
   'Gear Haste': 'haste', 'Block Rate': 'block', 'Dual Wield': 'dw', 'Healing Magic Skill': 'skill:healing magic skill',
   'Enhancing Magic Skill': 'skill:enhancing magic skill', 'Enfeebling Magic Skill': 'skill:enfeebling magic skill',
   'Dark Magic Skill': 'skill:dark magic skill', 'Shield Skill': 'skill:shield skill', 'Parrying Skill': 'skill:parrying skill'};
