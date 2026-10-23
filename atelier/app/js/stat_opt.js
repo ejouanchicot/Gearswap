@@ -27,7 +27,7 @@ Object.assign(T.fr, {
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureOther: 'Cure IV sur un autre', statD_cureOther: 'HP soignés : MND, VIT, skill de soin et Cure Potency I (50 % au plus) et II (30 %), formule de BG Wiki (vérifiée en jeu sur le PLD)',
   cbTitle: 'Soin', cbHeal: 'Cure IV sur un autre', cbHealX: 'HP soignés', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'sur {m} %',
-  cbLost: '{n} % perdus au-delà du plafond', cbSet: 'dont bonus de set {s} ({n} pièces) : +{b} %', cbPower: 'Puissance du sort', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + skill de soin {s}', cbEnm: 'Enmity',
+  cbLost: '{n} % perdus au-delà du plafond', cbSet: 'dont bonus de set {s} ({n} pièces) : +{b} %', cbPower: 'Puissance du sort', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + skill de soin {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'équipement seul, sans le trait du job',
   cbNote: 'Formule de BG Wiki (vérifiée en jeu sur le PLD) : la puissance donne le soin de base, puis × (1 + Cure potency + Cure potency II). Le Cure potency II passe au-dessus des 50 % du I. Le « Cure potency received » est celui de la cible : pas compté ici.',
   statObj_enmityLow: 'Le moins d’inimitié', statD_enmityLow: 'l’Enmity des pièces, la plus basse possible : un soigneur ne veut pas que le monstre se tourne vers lui',
   statObj_cureEnm: 'Inimitié du Cure', statD_cureEnm: 'HP soignés × (1 + Enmity) : CE = soin × 0,231, VE = 6 × CE (guide Paladin) ; le soin et l’Enmity se départagent seuls',
@@ -99,7 +99,7 @@ Object.assign(T.en, {
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureOther: 'Cure IV on someone else', statD_cureOther: 'HP healed: MND, VIT, Healing skill and Cure Potency I (50 % at most) and II (30 %), BG Wiki’s formula (checked in game on the PLD)',
   cbTitle: 'Healing', cbHeal: 'Cure IV on someone else', cbHealX: 'HP healed', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'of {m} %',
-  cbLost: '{n} % lost over the cap', cbSet: 'with the {s} set bonus ({n} pieces): +{b} %', cbPower: 'The spell’s power', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + Healing skill {s}', cbEnm: 'Enmity',
+  cbLost: '{n} % lost over the cap', cbSet: 'with the {s} set bonus ({n} pieces): +{b} %', cbPower: 'The spell’s power', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + Healing skill {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'the gear only, not the job’s trait',
   cbNote: 'BG Wiki’s formula (checked in game on the PLD): the power gives the base heal, then × (1 + Cure potency + Cure potency II). Cure potency II goes over the I’s 50 %. “Cure potency received” is the target’s: not counted here.',
   statObj_enmityLow: 'Least enmity', statD_enmityLow: 'the pieces’ Enmity, as low as can be: a healer does not want the monster to turn to it',
   statObj_cureEnm: 'Cure enmity', statD_cureEnm: 'HP healed × (1 + Enmity): CE = heal × 0.231, VE = 6 × CE (Paladin guide); healing and Enmity balance on their own',
@@ -377,7 +377,7 @@ function setStatOpts(path, patch){
 
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
-  ['cure', ['cureOther', 'cureSelf', 'cure', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird', 'cmp']],
+  ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
   ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
