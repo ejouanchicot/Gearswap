@@ -41,10 +41,17 @@ function pieceChoices(slot, current, orig, s){
   // your pieces not at their best yet: the same copy at its highest rank, a cape at each material's
   // maximum, kept on your row (its chip, Shift while hovering, Shift+click)
   for (const o of list) if (o.owned) o.upgrade = upgradeOf(o.piece);
-  // the game's other items for this slot and this job
+  // a path piece listed: its other paths at their top rank, as copies to get (shown with the whole game)
+  const mine = list.filter(o => o.owned).map(o => o.piece);
+  for (const name of new Set(list.map(o => o.piece.name))) for (const o of pathCopies(name, mine) || [])
+    if (!list.some(x => sameCopy(x, o.piece))) list.push(o);
+  // the game's other items for this slot and this job; a path piece on each of its paths
   const cat = S.allItems && window.ATELIER_CATALOG, all = new Set(list.map(o => o.piece.name));
   if (cat) for (const r of cat.items) if (!all.has(r[1]) && r[2].split(' ').includes(slot) && r[3].split(' ').includes(S.job)) {
-    all.add(r[1]); list.push({piece: {name: r[1]}, owned: false, cat: true, lv: r[4], ilv: r[5]}); }
+    all.add(r[1]);
+    const paths = pathCopies(r[1], mine);
+    if (paths) for (const o of paths) list.push(Object.assign(o, {lv: r[4], ilv: r[5]}));
+    else list.push({piece: {name: r[1]}, owned: false, cat: true, lv: r[4], ilv: r[5]}); }
   // below level 99 with no item level: costumes, crafting smocks, old gear; a piece a set names stays in its group
   const isOrig = isOrigOf(list, orig), rows = (catalog() || {}).row || {};
   for (const o of list) { const r = rows[o.piece.name];
@@ -67,6 +74,14 @@ function pieceChoices(slot, current, orig, s){
     o.junk = !o.orig && !kin[o.piece.name] && !!o.why;
     o.grp = o.orig ? 0 : o.junk ? 5 : o.cat ? 4 : !o.owned ? 3 : o.seen ? 1 : 2; }
   return list.sort((a, b) => (a.grp - b.grp) || ((b.score || 0) - (a.score || 0)) || (b.seen - a.seen) || a.piece.name.localeCompare(b.piece.name));
+}
+// The paths of a path piece (Kaykaus, Odyssey...) your copies are not on (heldPaths, optimizer.js), each at its top
+// rank; null when the piece has no paths
+function pathCopies(name, mine){
+  const e = rankedEntry(name);
+  if (!(e && e.paths)) return null;
+  const held = heldPaths(name, e, mine);
+  return Object.keys(e.paths).filter(path => !held.has(path)).map(path => ({piece: {name, augs: ['Path: ' + path], rank: e.max_rank}, owned: false}));
 }
 // Why a weapon cannot go in a hand of this set ('' when it can): a weaponskill's main hand takes the weapons that
 // open it, an off hand what the main hand takes (subWhy)
