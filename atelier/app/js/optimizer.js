@@ -145,10 +145,9 @@ function avgRange(o){
 function avgTps(o){ const [a, b] = avgRange(o), out = []; for (let x = a; x <= b; x += 250) out.push(x); return out; }
 async function optimizeWs(s){
   if (!engineReady()) return;
-  // a weaponskill the engine does not work out (the engine leaves it out and it is not a physical one the
-  // project's database can describe): said plainly rather than a search over nothing
+  // a weaponskill our engine does not know: said plainly rather than a search over nothing
   const ws = wsForSet(s);
-  if (!FFXI.opt.defineWs(ws, wsInfoOf(ws), wsSkills()[ws])) { S._toastSet = s.path; S.toast = t('optNoWs', {ws}); render(); return; }
+  if (!FFXI.opt.knowsWs(ws)) { S._toastSet = s.path; S.toast = t('optNoWs', {ws}); render(); return; }
   // the search starts from the set itself (the file, or what is in test in game), never from a draft:
   // a draft can hold pieces this search may not use (not yours, another reward of a one-choice group)
   const k = trialKey(s), base = lockedBase(s, withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } }));
@@ -237,7 +236,10 @@ async function optimizeNuke(s){
 async function optLaunch(s, k, input, o){
   S._optBusy = true; S._optProgress = null; render();
   const seq = ++OPT_SEQ, at = S.char + '|' + S.job, mine = () => seq === OPT_SEQ && S._optBusy;
-  const fail = msg => { if (!mine()) return; optStop(); S._toastSet = s.path; S.toast = t('optFail', {e: msg}); render(); };
+  // a case our engine does not compute says why (atelier/calc/calc_bridge.js; fight_stats.js notComputedText)
+  const fail = msg => { if (!mine()) return; optStop(); S._toastSet = s.path; S.toast = notComputedText(msg); render(); };
+  const why = notComputedFor(input);
+  if (why) return fail(why);
   // the walks shared among the cores, round robin
   input.opts.scratch = !!S._optScratch;
   const starts = optWalks(input), n = optCores(starts.length), shares = [...Array(n)].map(() => []);

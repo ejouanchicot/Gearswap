@@ -327,7 +327,7 @@ Full redeploy (`clone_character.py` on an existing character):
 | `GearSwap/libs/` | Mote's libraries |
 | `GearSwap/data/shared/` | the common code |
 | `GearSwap/data/<Name>/` | the clone: `clone_character.py` (with `migrate_layout.py`, `migrate_config.py`, `where_is_what.py`) run in a temporary copy of `_master/` and `character_db.lua`; the data folder is only read |
-| `GearSwap/data/atelier.html`, `atelier/{index.html,app,calc,lua,engine}`, `opt.js`, `opt_enf.js`, `targets.js`, `cycle.js` | the Atelier |
+| `GearSwap/data/atelier.html`, `atelier/{index.html,app,calc,lua}`, the catalogue's four files of `atelier/gear/`, `opt.js`, `opt_enf.js`, `targets.js` | the Atelier (the engine before, `atelier/engine/`, and `cycle.js` stay on the PC that builds: the page no longer loads them) |
 | `GearSwap/data/scripts/atelier/AtelierLink/`, `load_job.lua` | the AtelierLink addon and the export the page runs without the game |
 | `GearSwap/data/VERSION`, `release_manifest.json` | the version and its file list, which the update starts from ([Releases and the update](#releases-and-the-update)) |
 

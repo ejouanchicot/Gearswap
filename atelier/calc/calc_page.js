@@ -143,7 +143,9 @@
         // "Hasso active": set by the sheet when Hasso is on and works (calc_abilities.js)
         var got = CALC.attackRoundAverage(stats, enemy, {wield: wield, job: job, main: mainName(gearset),
             hasso: stats["Hasso active"] > 0, ikishoten: job === "sam" ? IKISHOTEN_MERITS : 0,
-            aftermath: roundAftermath(gearset, abilities)});
+            aftermath: roundAftermath(gearset, abilities),
+            // a tier I Enspell (the page's: a RDM gives it with Accession), at the caster's Enhancing Magic skill
+            enspell: (abilities || {}).EnSpell ? {skill: +(abilities || {})["Enhancing Skill"] || 0} : null});
         var detail = detailOf(stats, wield, got, start, at, CALC.timeToWeaponskill(got, start, at));
         var value = roundValue(metric, detail);
         if (!value) return {unsupported: "metric " + metric};

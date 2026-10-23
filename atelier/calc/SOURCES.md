@@ -421,3 +421,4 @@ the other skills above any cap the ranks, merits and gifts give (DIFFERENCES.md 
 | BG-Wiki page of each ranged weapon skill; Annihilator / Yoichinoyumi / Death Penalty / Gastraphetes "(Level 119 III)"; Fomalhaut_(Augmented) | modifiers, fTP, hits, defense ignored, weapon bonuses | calc_ws_ranged.js CALC.RANGED_WS, calc_ws_magic.js |
 | BG-Wiki Relic_Aftermath , Mythic_Aftermath , Empyrean_Aftermath , Aftermath (prime) | the melee aftermaths | calc_aftermath.js meleeAftermath |
 | BG-Wiki Brazen_Rush , Impetus , Conspirator , Innin , Saber_Dance , Swordplay , Building_Flourish , Last_Resort | the effects at their most | calc_abilities.js |
+| https://www.bg-wiki.com/ffxi/Category:Enspell (last edited 2026-08-25) | the tier I enspell's base by Enhancing skill, the gear's +n and +n %, no Magic Damage / MAB / MDB, all melee strikes; Accession: the caster's skill | calc_round_average.js CALC.enspellDamage |

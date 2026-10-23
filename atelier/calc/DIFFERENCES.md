@@ -1082,3 +1082,24 @@ Carnwenhan / Yagrush Lv1 and Lv2, Gastraphetes / Death Penalty Lv1 / Lv2 by the 
 LandSandBoat's formulas (aftermath.lua; its Gastraphetes "tp * 0.6" read as Death Penalty's 0.06), not measured.
 Bench (`banc/hyb_*`): the 7 hybrid sets are ours, the magical weapon skills' sets with an Orpheus's Sash +15 %, 23
 changed, the other 3 946 identical.
+
+## AP. Lot 5: the page without the engine before (2026-10-23)
+
+The page no longer loads `atelier/engine/` nor `cycle.js` (its fight model needs the engine before: the optimizer's
+experimental "Damage over a fight" is gone with it); the packages hold neither (make_package.py). `calc_bridge.js` hands
+nothing over: a case not computed throws its reason, and the page says it instead of a figure (`app/js/fight_stats.js`
+notComputedText: a search's message, the "In combat" box, Settings' list). The engine choice of Settings is gone, and
+opt.js's wsdist-only branches with it. The node checks (scripts/audit/*.js) still load the engine before to compare.
+What our engine did not do and the page offered, found once the fallback was gone (the bench turns no buff on):
+- EnSpell (a RDM's tier I Enspell given with Accession): now in the round (calc_round_average.js CALC.enspellDamage),
+  https://www.bg-wiki.com/ffxi/Category:Enspell (2026-08-25): base "Floor((Enhancing Skill - 180) / 8) + 25" (77 at
+  600, the page showed 78 by another line), plus "Sword Enhancement Spell Damage +n" ("EnSpell Damage"), times the
+  target's magic damage taken; "not affected by the Magic Damage statistic or Magic Attack Bonus/Magic Defense Bonus";
+  "applied to all physical melee strikes of an attack round". ASSUMED: no resist (no magic accuracy given), no
+  element, kicks are strikes. Tetsouo WAR with a RDM's Enspell I at skill 650: 10.69 s / 586 DPS, the engine before
+  10.77 s / 665 DPS.
+- Crimson Howl (a party SMN): its attack (the page's value, Warcry's at 99) given as the party's stats; Crystal Blessing:
+  its TP Bonus, which the page's TP steps count already.
+Bench (`banc/lot5_*`): 3 566 / 3 969 identical; the others are the cases not computed (the 383 sets of characters with
+no export, the weapon skills whose numbers no source gives, the sets without a weapon). Blocked mode (no file of
+`atelier/engine/` reachable): 3 969 / 3 969 identical, no request to it. 113 searches, 2 not computed (said why).

@@ -149,10 +149,11 @@ export function offenseBox(r: LegacyAny, s: LegacyAny): StatBox | null {
 function fightBox(s: LegacyAny): StatBox | null {
   if (!isNukeSet(s.path) || !engineReady()) return null;
   const f = fightFigures(s), ctx = f && f.ctx, r = f && f.r;
-  if (!r) return null;
   const S0 = st();
   if (!('fight' in S0.boxOpen)) S0.boxOpen.fight = true;
-  if (!r.sheet) return {...box('fight', 'g-mag', esc(t('fightTab')), [], fmtDmg(r.damage), `<p class="note-m">${esc(fightWhyNot(f.fell))}</p>`), bare: true};
+  // a case our engine does not compute says why (fight_stats.js notComputedText)
+  if (f && f.why) return {...box('fight', 'g-mag', esc(t('fightTab')), [], '', `<p class="note-m">${esc(notComputedText(f.why))}</p>`), bare: true};
+  if (!r || !r.sheet) return null;
   const sheet = r.sheet, enemy = (ctx.enemy && ctx.enemy.stats) || {}, spells = ctx.spells && ctx.spells.length ? ctx.spells : ['Thunder'], gear = setStats(s).total;
   const sit = nukeSituation(s), layers = sit.layers.some((L: LegacyAny) => !L.spells) || !!sit.belt ? t('fightLayers') : '';
   const fmt = (v: number, pct?: boolean) => Math.round(v * 10) / 10 + (pct ? ' %' : '');

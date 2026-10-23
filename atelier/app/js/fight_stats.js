@@ -22,10 +22,13 @@ Object.assign(T.fr, {fightTab: 'En combat : dégâts du sort et totaux',
   fightMaccMb: ' + Magic Burst {b}', fightMaccRest: ' + autre {o}',
   fightHitCap: 'Plafond du jeu : 95 %. La cible a {e} en évasion magique.', fightMbdCap: 'Tes pièces font {v} % : le jeu en compte {c} au plus.',
   fightMbdAll: 'Bonus magic burst total', fightMbdAllFrom: 'Magic burst damage {a} % (plafonné à {c}) + magic burst damage II {b} % + trait, gifts et job points du job {t} %',
-  fightNone: 'Le détail en combat vient de notre moteur : choisis-le en haut de la page.',
-  fightFell: 'Notre moteur ne sait pas encore compter ce cas, l’ancien a fait le calcul (sans ce détail). La raison : {w}.',
-  fightWhyAbil: '{a} est activé dans Buffs & cible et notre moteur ne le connaît pas encore : coupe-le pour voir le détail',
-  fightWhyBase: 'les stats de base de {j} ne sont pas dans ton export : refais //gs c atelier sur ce job'});
+  ncAbil: 'Non calculé : {a} est activé dans Buffs & cible et le moteur ne le connaît pas. Coupe-le pour avoir ce calcul.',
+  ncBase: 'Non calculé : les stats de base de {j} ne sont pas dans ton export. Fais un export en jeu (//gs c atelier sur ce job) pour avoir ce calcul.',
+  ncNoWs: 'Non calculé : aucune WS connue pour ce set (pas d’arme qui en ouvre une).',
+  ncRanged: 'Non calculé : pour cette WS à distance, aucune source (BG Wiki, wiki.ffo.jp, FFXIAH) ne donne {w}.',
+  ncNoDamage: 'Non calculé : cette WS ne fait pas de dégâts.', ncCampaign: 'Non calculé : cette WS n’existe qu’en Campagne.',
+  ncOther: 'Non calculé : {w}.',
+  ncWhat_acc: 'sa précision selon le TP', ncWhat_crit: 'son taux de critique selon le TP', ncWhat_def: 'la défense ignorée à 2000 et 3000 TP'});
 Object.assign(T.en, {fightTab: 'In combat: the spell’s damage and totals',
   fightHead: 'For {sp} against {foe}', fightMab: 'Magic attack bonus', fightMacc: 'Magic accuracy', fightHit: 'Hit rate',
   fightMdmg: 'Magic Damage', fightMbd: 'Magic burst damage', fightMbd2: 'Magic burst damage II', fightCrit: 'Magic critical hit',
@@ -36,10 +39,13 @@ Object.assign(T.en, {fightTab: 'In combat: the spell’s damage and totals',
   fightMaccMb: ' + Magic Burst {b}', fightMaccRest: ' + other {o}',
   fightHitCap: 'The game’s cap: 95 %. The target has {e} magic evasion.', fightMbdCap: 'Your pieces make {v} %: the game counts {c} at most.',
   fightMbdAll: 'Total magic burst bonus', fightMbdAllFrom: 'Magic burst damage {a} % (capped at {c}) + magic burst damage II {b} % + the job’s trait, gifts and job points {t} %',
-  fightNone: 'The combat detail comes from our engine: choose it at the top of the page.',
-  fightFell: 'Our engine does not count this case yet, the old one worked it out (without this detail). The reason: {w}.',
-  fightWhyAbil: '{a} is on in Buffs & target and our engine does not know it yet: turn it off to see the detail',
-  fightWhyBase: '{j}’s base stats are not in your export: run //gs c atelier again on this job'});
+  ncAbil: 'Not computed: {a} is on in Buffs & target and the engine does not know it. Turn it off to get this figure.',
+  ncBase: 'Not computed: {j}’s base stats are not in your export. Export in game (//gs c atelier on this job) to get this figure.',
+  ncNoWs: 'Not computed: no known weaponskill for this set (no weapon that opens one).',
+  ncRanged: 'Not computed: for this ranged weaponskill, no source (BG Wiki, wiki.ffo.jp, FFXIAH) gives {w}.',
+  ncNoDamage: 'Not computed: this weaponskill does no damage.', ncCampaign: 'Not computed: this weaponskill exists in Campaign only.',
+  ncOther: 'Not computed: {w}.',
+  ncWhat_acc: 'its accuracy by TP', ncWhat_crit: 'its critical hit rate by TP', ncWhat_def: 'the defense it ignores at 2000 and 3000 TP'});
 
 // The sheet's names and the stats tab's keys (stats.js STAT_DEF) of the lines shown, in order; pct: a percent
 const FIGHT_LINES = [
@@ -61,25 +67,35 @@ function fightMaccTip(sheet, enemy, name, burst, total){
     x: (burst ? t('fightMaccMb', {b: parts.b}) : '') + (other ? t('fightMaccRest', {o: other}) : '')});
 }
 
-// Why the totals cannot be shown: the old engine chosen, or the reason our engine handed the case to it
-function fightWhyNot(fell){
-  if (engineName() !== 'own') return t('fightNone');
-  const why = (fell || []).map(x => { let m;
-    if ((m = /^ability on: (.+)$/.exec(x))) return t('fightWhyAbil', {a: m[1]});
-    if ((m = /^base attributes unknown for (.+)$/.exec(x))) return t('fightWhyBase', {j: m[1].toUpperCase()});
-    return x; });
-  return t('fightFell', {w: why.join(' ; ') || '?'});
+// What a case our engine does not compute says instead of a figure, by its reason (atelier/calc/calc_bridge.js: an
+// Error's notComputed; the reasons are calc_page.js's, calc_ws_ranged.js's and calc_ws_magic.js's)
+function notComputedText(why){
+  let m;
+  why = String(why || '');
+  if ((m = /^ability on: (.+)$/.exec(why))) return t('ncAbil', {a: m[1]});
+  if ((m = /^base attributes unknown for (.+)$/.exec(why))) return t('ncBase', {j: m[1].toUpperCase()});
+  if (/^unknown weapon skill/.test(why)) return t('ncNoWs');
+  if ((m = /^ranged weapon skill: (.+) not on its page$/.exec(why)))
+    return t('ncRanged', {w: /critical/.test(m[1]) ? t('ncWhat_crit') : /defense/.test(m[1]) ? t('ncWhat_def') : t('ncWhat_acc')});
+  if (/does no damage|\(None\)/.test(why)) return t('ncNoDamage');
+  if (/Campaign only/.test(why)) return t('ncCampaign');
+  return t('ncOther', {w: why});
+}
+// Why our engine does not compute a search's set ('' when it does): the set itself worked out once on the page, before
+// the workers start (a case not computed would fail in each of them)
+function notComputedFor(input){
+  try { FFXI.opt.value(FFXI.opt.context(input.ctx), input.start, input.opts); return ''; }
+  catch (e) { return e && e.notComputed ? e.notComputed : ''; }
 }
 // The engine's figures for the set as shown, worked out again only when the set, the situation or the page's inputs change
 let FIGHT_MEMO = {key: null, out: null};
 function fightFigures(s){
-  const input = nukeContextInput(s), pieces = optPieces(withWeapons(s).pieces), key = JSON.stringify([engineName(), input, pieces]);
+  const input = nukeContextInput(s), pieces = optPieces(withWeapons(s).pieces), key = JSON.stringify([input, pieces]);
   if (FIGHT_MEMO.key !== key) {
     let out = null;
-    // what made our engine hand the case to the old one (calc_bridge.js FFXI.engine.fell: the counts that went up)
-    const E = FFXI.engine || {fell: {}}, before = Object.assign({}, E.fell);
-    try { const ctx = FFXI.opt.context(input); out = {ctx, input, r: FFXI.opt.nuke(ctx, pieces)}; } catch (e) { out = null; }
-    if (out) out.fell = Object.keys(E.fell || {}).filter(k => E.fell[k] > (before[k] || 0));
+    // a case our engine does not compute: its reason (atelier/calc/calc_bridge.js)
+    try { const ctx = FFXI.opt.context(input); out = {ctx, input, r: FFXI.opt.nuke(ctx, pieces)}; }
+    catch (e) { out = e && e.notComputed ? {why: e.notComputed} : null; }
     FIGHT_MEMO = {key, out};
   }
   return FIGHT_MEMO.out;

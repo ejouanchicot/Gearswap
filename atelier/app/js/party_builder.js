@@ -169,7 +169,7 @@ Object.assign(T.en, {pbImpact: 'What it changes for your set', pbImpWs: 'average
 let PB_IMPACT = {key: null, rows: null};
 function pbImpactRows(s){
   const ws = !roundSet(s), {rows, worn} = tierVersions(s);
-  const key = JSON.stringify([s.path, DATA_GEN, engineName(), ws ? S.wsTp || 3000 : (S.optOpts || {}).engAt, (data() || {}).sub, S.trial, S.weapons, S.held, TIERS.map(x => tierBuffsOf(x))]);
+  const key = JSON.stringify([s.path, DATA_GEN, ws ? S.wsTp || 3000 : (S.optOpts || {}).engAt, (data() || {}).sub, S.trial, S.weapons, S.held, TIERS.map(x => tierBuffsOf(x))]);
   if (PB_IMPACT.key === key) return PB_IMPACT.rows;
   const out = TIERS.map(tier => { const v = rows.find(r => r.name === worn[tier]) || rows[0];
     let a = null, b = null;

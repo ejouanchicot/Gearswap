@@ -139,8 +139,8 @@ function pageSearch(c, j, sub, p, kind){
         opts: {fast, objective: so.objs[0], then: so.objs.slice(1), floor: so.floor}};
       enhPotencyFirst(s, input, so);
     } else if (kind === 'ws') {
-      const ws = wsOfSet(s) || segs(s.path).pop();
-      if (!FFXI.opt.defineWs(ws, wsInfoOf(ws), wsSkills()[ws])) return {err: 'no ws ' + ws};
+      const ws = wsForSet(s);
+      if (!FFXI.opt.knowsWs(ws)) return {err: 'no ws ' + ws};
       const wsBase = lockedBase(s, withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } }));
       const r = tpAsk(s, wsBase, null), tpNames = new Set(((r && r.piece_list) || []).map(q => q.name).concat(Object.keys(ONLY_AUGS)));
       input = {ctx: optContextInput(s), start: startOf(wsBase, lockedSlots(s)), choices: lockChoices(s, optChoices(tpNames)), prefilter: 0,
@@ -184,7 +184,7 @@ async function snapshot(){
   // the engine loads 300 ms after the exports (app/js/events.js loadRanked); without the old one it never gets ready
   await page.waitForFunction(() => engineReady(), {timeout: mode === 'ref' ? 60000 : 15000}).catch(() => {});
   await new Promise(r => setTimeout(r, 2000));
-  const engine = await page.evaluate(() => ({ready: engineReady(), name: engineName(), partErr: S._engPartErr || null,
+  const engine = await page.evaluate(() => ({ready: engineReady(), name: FFXI.engine ? FFXI.engine.name : null, partErr: S._engPartErr || null,
     has: Object.fromEntries(['CATALOG', 'RANKED', 'aggregate_buffs', 'make_enemy', 'WS', 'player_data', 'average_ws', 'opt'].map(k => [k, !!(window.FFXI && FFXI[k])]))}));
   await page.evaluate(pageSetup);
   await page.evaluate(`window.__bench = {sets: ${pageSets.toString()}, search: ${pageSearch.toString()}}`);

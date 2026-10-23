@@ -14,6 +14,7 @@
 //                      {type: "mythic", level: 3} attacks twice or thrice (calc_aftermath.js meleeAftermath;
 //                      the other aftermaths are on the sheet)
 //           ikishoten  merit levels of Ikishoten (0 to 5), TP of the Zanshin swings
+//           enspell    {skill: the caster's Enhancing Magic skill}: a tier I Enspell on the character (CALC.enspellDamage)
 //       returns {swings, landed, hitRate, damage, tp, time, tpPerHit, ...}: see `finish` below
 //
 // An expected value, like the weapon skill's: each kind of swing is worth
@@ -167,12 +168,34 @@
         return result;
     }
 
+    // https://www.bg-wiki.com/ffxi/Category:Enspell (last edited 2026-08-25)
+    //   base: "< 180" Floor(Enhancing Skill / 9) + 5, "> 180" Floor((Enhancing Skill - 180) / 8) + 25; for one who receives
+    //   it through Accession "their base Enspell damage is determined by the caster's Enhancing Magic Skill"
+    //   "(((Base Enspell damage + RDM Group 2 Merit Points + RDM Enspell Job Point Gifts + Sword Enhancement Spell Damage +n)
+    //   × (Composure + Sword Enhancement Spell Damage +n%)) × Staff × Affinity × Resist × ..." (TMDA among them)
+    //   "Enspells are not affected by the Magic Damage statistic or Magic Attack Bonus/Magic Defense Bonus."
+    //   "The additional effect damage of tier I Enspells is applied to all physical melee strikes of an attack round."
+    // "EnSpell Damage" of the sheet holds the gear's +n and a RDM's merits and gifts (calc_jobs_mages.js).
+    // ASSUMED (DIFFERENCES.md AP): no resist (its magic accuracy is given nowhere), no element (the page does not say
+    // which), no Composure (the one who receives it does not have it), a kick is one of the "melee strikes".
+    CALC.enspellDamage = function (stats, enemy, skill) {
+        var base = skill < 180 ? Math.floor(skill / 9) + 5 : Math.floor((skill - 180) / 8) + 25;
+        var hit = Math.floor((base + (stats["EnSpell Damage"] || 0)) * (1 + (stats["EnSpell Damage%"] || 0) / 100));
+        return Math.floor(hit * Math.max(0.5, 1 - (enemy["Magic Damage Taken"] || 0) / 100));
+    };
+
     CALC.attackRoundAverage = function (stats, enemy, options) {
         var ctx = describe(stats, enemy, options || {});
         var tp = tpOf(ctx), hands = CALC.roundHands(stats, ctx.shape, ctx.more);
         var attackers = hands.map(function (hand) { return addHand(ctx, hand, tp); });
         addZanshin(ctx, hands, attackers[0], tp);
         addKick(ctx, hands, tp);
-        return finish(ctx, hands, attackers, tp);
+        var result = finish(ctx, hands, attackers, tp);
+        if (ctx.options.enspell) {
+            var l = result.landed;
+            result.enspell = CALC.enspellDamage(stats, enemy, ctx.options.enspell.skill);
+            result.damage += ((l.main || 0) + (l.sub || 0) + (l.zanshin || 0) + (l.kick || 0)) * result.enspell;
+        }
+        return result;
     };
 });

@@ -114,7 +114,7 @@ const oaRaw = (ctx, pieces, opts) => { const r = pieces && FFXI.opt.value(FFXI.o
 async function optAllOpen(shown){
   if (!engineReady() || S._optBusy) return;
   const base = oaBase(shown.path), root = S._bypath[base], ws = root && wsForSet(root);
-  if (!root || !FFXI.opt.defineWs(ws, wsInfoOf(ws), wsSkills()[ws])) { S._toastSet = shown.path; S.toast = t('optNoWs', {ws: ws || shortPath(base)}); render(); return; }
+  if (!root || !FFXI.opt.knowsWs(ws)) { S._toastSet = shown.path; S.toast = t('optNoWs', {ws: ws || shortPath(base)}); render(); return; }
   const R = S._optAll = {base, list: oaVersions(base), by: {}, done: 0, at: S.char + '|' + S.job, t0: performance.now()};
   S._optBusy = true; render();
   const seq = ++OPT_SEQ, mine = () => seq === OPT_SEQ && S._optAll === R && R.at === S.char + '|' + S.job;

@@ -441,7 +441,6 @@ interface Window { ATELIER_SLOTMENU?: {view: (ci: number, slot: string) => Legac
 declare const WELCOME: {state: string; msg: string};
 declare function counts(c: string): {sets: number; keys: number};
 declare function recordOf(c: string, j: string): LegacyAny;
-declare function engineName(): string;
 declare function guideState(): {mode: string; seen: LegacyAny};
 declare const THEMES: Array<{id: string; pv: string[]}>;
 declare function themeNow(): string;
@@ -507,7 +506,7 @@ declare function setPieces(path: string): LegacyAny;
 declare function shortSet(path: string): string;
 declare function mpThreshold(): number;
 declare function fightFigures(s: LegacyAny): LegacyAny;
-declare function fightWhyNot(fell: LegacyAny): string;
+declare function notComputedText(why: LegacyAny): string;
 declare const FIGHT_LINES: LegacyAny[];
 declare function setStats(s: LegacyAny): LegacyAny;
 declare const CALC: LegacyAny;

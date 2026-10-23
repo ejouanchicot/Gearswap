@@ -31,8 +31,10 @@
     // entries of the page's `abilities` that are measurements of the character, not abilities
     // "Aftermath TP" and "Aftermath Stage": what the aftermath was made with, read with "Aftermath" (below)
     // "Naked HP": the HP without gear, for Lycurgos (calc_page.js)
+    // "EnSpell" and "Enhancing Skill": a tier I Enspell on the character and its caster's skill, read by the round
+    // (calc_page.js, calc_round_average.js CALC.enspellDamage)
     var NOT_ABILITIES = {"Base Stats": true, "Crit Rate Merits": true, "WS Merits": true, "Aftermath TP": true, "Aftermath Stage": true,
-        "Naked HP": true};
+        "Naked HP": true, "EnSpell": true, "Enhancing Skill": true};
     // "Warcry (sub)": the support job's version of an ability both jobs could have
     var SUB_SUFFIX = / \(sub\)$/;
 

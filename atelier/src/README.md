@@ -272,8 +272,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 ## Ce qui reste en dehors du fichier construit
 
 Lu par la page au moment où elle tourne, comme avant : les exports (`<Perso>/atelier/exports/*.js`,
-`atelier/index.js`), le lien au jeu (`atelier/live_*.js`, `atelier/link_*.js`), les moteurs (`atelier/engine/`,
-`atelier/calc/`, `atelier/opt.js`), Lua (`atelier/lua/`) et, pendant la migration, l'ancienne page (`atelier/app/`).
+`atelier/index.js`), le lien au jeu (`atelier/live_*.js`, `atelier/link_*.js`), le moteur (`atelier/calc/`,
+`atelier/opt.js` ; l'ancien, `atelier/engine/`, n'est plus chargé depuis le Lot 5), Lua (`atelier/lua/`) et, pendant la migration, l'ancienne page (`atelier/app/`).
 
 ## Les vérifications
 

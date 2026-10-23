@@ -219,7 +219,8 @@ const AUSPICE_SB = 10, AUSPICE_FEET = {'Orison Duckbills +1': 5, 'Orison Duckbil
   'Ebers Duckbills +2': 17, 'Ebers Duckbills +3': 19};
 const auspiceSb = b => b.auspice ? AUSPICE_SB + (AUSPICE_FEET[b.auspiceFeet] || 0) : 0;
 const enSkill = b => +(b.enSkill || 600);
-const enspellDmg = k => k < 600 ? Math.trunc((k - 223) / 7.70) + 29 : Math.trunc((k - 202.5) / 8.05) + 29;
+// BG Wiki Category:Enspell, as atelier/calc/calc_round_average.js CALC.enspellDamage counts it
+const enspellDmg = k => k < 180 ? Math.floor(k / 9) + 5 : Math.floor((k - 180) / 8) + 25;
 const PROTECT = {'Protect': 20, 'Protect II': 50, 'Protect III': 90, 'Protect IV': 140, 'Protect V': 220};
 const SHELL = {'Shell': 27, 'Shell II': 42, 'Shell III': 56, 'Shell IV': 67, 'Shell V': 75};
 // Haste spells and Garuda's blood pacts (BG Wiki: Hastega 153/1024, Hastega II 307/1024): one Haste effect, one at a time
@@ -283,8 +284,10 @@ const JAS = {
   // TP Bonus +250, and one avatar's Favor at its top (Ifrit DA +23 %, Ramuh crit +25 %, Shiva MAB +57, Siren Subtle
   // Blow II +27, Garuda Evasion +55, Titan Defense +127). fams: the set families where it serves; eng: what the damage
   // engine is given instead of its own Favor values
-  'Crimson Howl · party': {party: true, excl: 'warcry', from: 'SMN', fams: ['ws', 'engaged'], fx: () => ({atkp: Math.trunc(99 / 4 + 4.75) / 256})},
-  'Crystal Blessing · party': {party: true, from: 'SMN', fams: ['ws'], tpParty: 250, fx: () => ({})},
+  // eng: given to the engine as the party's stats (Crystal Blessing's TP Bonus: the TP steps count it already)
+  'Crimson Howl · party': {party: true, excl: 'warcry', from: 'SMN', fams: ['ws', 'engaged'], fx: () => ({atkp: Math.trunc(99 / 4 + 4.75) / 256}),
+    eng: () => ({'Attack%': Math.trunc(99 / 4 + 4.75) / 256})},
+  'Crystal Blessing · party': {party: true, from: 'SMN', fams: ['ws'], tpParty: 250, fx: () => ({}), eng: {}},
   "Ifrit's Favor · party": {party: true, excl: 'favor', from: 'SMN', fams: ['ws', 'engaged'], fx: () => ({da: 23}), eng: {DA: 23}},
   "Ramuh's Favor · party": {party: true, excl: 'favor', from: 'SMN', fams: ['ws', 'engaged'], fx: () => ({crit: 25}), eng: {'Crit Rate': 25}},
   "Siren's Favor · party": {party: true, excl: 'favor', from: 'SMN', fams: ['engaged'], fx: () => ({sb: 27}), eng: {'Subtle Blow II': 27}},

@@ -1,9 +1,9 @@
 // GearSwap Atelier · the page's Settings (the gear of the top bar): the theme (a card each, its small preview), the
-// language, the motion, the moogle assistant, the calculation engine (the two side by side, the one in use lit, and
-// what fell back to wsdist since the Atelier's engine was chosen).
+// language, the motion, the moogle assistant, the calculation engine (where it comes from, and what it did not compute
+// since the page was opened).
 // The rules are the old page's renderConfig (config_page.js), motionConfigHTML (motion.js) and guideConfigHTML
 // (guide.js), which keep the themes, the texts and the clicks (data-theme-set, data-lang, data-motion-set,
-// data-guide-mode, data-guide-reset, data-engine, data-config).
+// data-guide-mode, data-guide-reset, data-config).
 //
 // @file    atelier/src/screens/settings/settings.ts
 // @author  ejouanchicot
@@ -14,20 +14,15 @@ export interface SettingsView {
   lang: {title: string; why: string; fr: boolean; en: boolean};
   motion: {title: string; why: string; on: boolean; onLabel: string; offLabel: string};
   guide: {title: string; why: string; modes: Array<{v: string; on: boolean; label: string}>; reset: string};
-  engine: {title: string; why: string; none: string; cards: Array<{id: string; on: boolean; title: string; reco: string; lines: string[]}>; link: string; url: string; fell: string};
+  engine: {title: string; why: string; fell: string};
 }
 
-const WSDIST_URL = 'https://github.com/IzaKastra/wsdist_beta';
-
-// The two engines: whose each is and what it computes, the one in use lit; none until the engine is loaded
+// The engine: where it comes from, and what it did not compute since the page was opened (calc_bridge.js
+// FFXI.engine.fell: the reasons, each said as the page says it)
 function engineView(): SettingsView['engine'] {
-  const base = {title: t('cfgEngine'), why: t('cfgEngineWhy'), link: t('engLink'), url: WSDIST_URL, fell: ''};
-  const F = (window as LegacyAny).FFXI;
-  if (!(F && F.engine)) return Object.assign(base, {none: t('cfgEngineNone'), cards: []});
-  const now = engineName(), fell = (Object.entries(F.engine.fell) as Array<[string, number]>).sort((a, b) => b[1] - a[1]);
-  const card = (id: string, key: string, reco: boolean) => ({id, on: now === id, title: t(key + 'T'), reco: reco ? t('engReco') : '', lines: [1, 2, 3].map(n => t(key + n))});
-  return Object.assign(base, {none: '', cards: [card('old', 'engOld', false), card('own', 'engOwn', true)],
-    fell: now === 'own' && fell.length ? t('engFellNow') + ' ' + fell.map(([w, n]) => `${n} × ${w}`).join(' · ') : ''});
+  const F = (window as LegacyAny).FFXI, fell = (Object.entries((F && F.engine && F.engine.fell) || {}) as Array<[string, number]>).sort((a, b) => b[1] - a[1]);
+  return {title: t('cfgEngine'), why: t('cfgEngineWhy'),
+    fell: fell.length ? t('engFellNow') + ' ' + fell.map(([w, n]) => `${n} × ${notComputedText(w).replace(/^[^:]+: /, '')}`).join(' · ') : ''};
 }
 
 /** The Settings page, or null when it is not the one shown (the packages come first; the update screen is one of its pages) */

@@ -2,16 +2,16 @@
 // (loaded by atelier/index.html, in the order of the list there)
 /* ---- the gear catalogue (atelier/gear/: items.js, augments_ranked.js from LandSandBoat's augment bundles, the
    Ambuscade capes capes.js, the augment reader augments_parse.js) ---- */
-// The old damage engine (atelier/engine/: wsdist's formulas, kept on this PC only, loaded when present), the gear
-// catalogue and the optimizer (atelier/opt.js): loaded once, run into window.FFXI
+// The gear catalogue, the optimizer (atelier/opt.js) and our engine (atelier/calc/): loaded once, run into window.FFXI.
+// The engine before (atelier/engine/, wsdist's formulas) is no longer loaded: it stays on this PC for the tests only
+// (notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md, Lot 5)
 const CALC_FILES = ['abilities', 'attributes', 'buffs', 'derived', 'enemy', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
   'ws_tp', 'ws_magic', 'ws_ranged', 'page', 'magic_spells', 'magic', 'aftermath'];
-const ENGINE_FILES = ['math', 'helpers', 'weaponskills', 'buffs', 'player_data', 'player', 'actions', 'enemies']
-  .map(f => `atelier/engine/${f}.js`).concat(['items', 'augments_ranked', 'capes', 'augments_parse']
-  .map(f => `atelier/gear/${f}.js`), ['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/cycle.js'])
-  // our own engine (atelier/calc/: its parts, then calc_load.js builds CALC), and last the switch between the two
-  // (calc_bridge.js, S.engine: 'own' or 'old')
+const ENGINE_FILES = ['items', 'augments_ranked', 'capes', 'augments_parse'].map(f => `atelier/gear/${f}.js`)
+  .concat(['atelier/opt.js', 'atelier/opt_enf.js'])
+  // our engine (atelier/calc/: its parts, then calc_load.js builds CALC), and last the functions the page calls
+  // (calc_bridge.js)
   .concat(CALC_FILES.concat(['load', 'bridge']).map(f => `atelier/calc/calc_${f}.js`))
   // read again at each page load: a browser keeps an older copy of a script otherwise
   .map(f => f + '?v=' + Date.now());
@@ -27,7 +27,6 @@ function loadRanked(done){
       try { part(FFXI); } catch (e) { console.error('engine part', e); S._engPartErr = S._engErr = e.message; }
     }
     window.FFXI_PARTS = [];
-    useEngine(S.engine);
     done();
   });
 }
@@ -39,7 +38,6 @@ function optWorker(){
   if (!OPT_WORKER_URL) {
     const src = 'var CALC = {};\n' + (window.CALC_PARTS || []).map(p => '(' + p.toString() + ')(CALC);').join('\n') +
       `\nvar FFXI = {};\n` + ENGINE_PARTS.map(p => '(' + p.toString() + ')(FFXI);').join('\n') +
-      `\nif (FFXI.engine) FFXI.engine.use(${JSON.stringify(engineName())});` +
       '\nself.onmessage = function (e) { var pace = e.data.pace || {}; FFXI.opt.runPaced(e.data, function (p) { self.postMessage({progress: p}); },' +
       ' function (r) { self.postMessage({done: r}); }, function (err) { self.postMessage({error: String(err && err.message || err)}); }, pace.work, pace.rest); };';
     OPT_WORKER_URL = URL.createObjectURL(new Blob([src], {type: 'text/javascript'}));
@@ -47,17 +45,6 @@ function optWorker(){
   const w = new Worker(OPT_WORKER_URL);
   OPT_WORKERS.push(w);
   return w;
-}
-// Which engine computes: ours (atelier/calc/, 'own') or the one before it ('old'). Ours hands a case it does not
-// compute yet to the old one (FFXI.engine.fell: the reasons). The workers are built for one engine: made again
-function engineName(){ return window.FFXI && FFXI.engine ? FFXI.engine.name : 'old'; }
-function useEngine(name){
-  if (!(window.FFXI && FFXI.engine)) return;
-  FFXI.engine.use(name === 'own' ? 'own' : 'old');
-  for (const w of OPT_WORKERS) w.terminate();
-  OPT_WORKERS = [];
-  if (OPT_WORKER_URL) URL.revokeObjectURL(OPT_WORKER_URL);
-  OPT_WORKER_URL = null;
 }
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
 // why the optimizer is off: a part that threw while loading, or the engine folder really absent
@@ -85,14 +72,14 @@ function engContextInput(s){
   const base = optContextInput(s);
   // Climactic Flourish is a weaponskill's first hit here, never an average round's
   delete base.abilities['Climactic Flourish'];
-  return Object.assign(base, {mode: 'engaged', ws: null, wsInfo: null, wsSkill: null, physRes: physResOf(b, skills[main] || ''), physResBy});
+  return Object.assign(base, {mode: 'engaged', ws: null, physRes: physResOf(b, skills[main] || ''), physResBy});
 }
 // A set of damaging spells (opt_page.js isNukeSet): the spells it is judged on and whether it is the job's Magic Burst set,
 // for FFXI.opt.nuke (atelier/opt.js) and the search's workers
 function nukeContextInput(s){
   const base = optContextInput(s), sit = nukeSituation(s);
   delete base.abilities['Climactic Flourish'];
-  return Object.assign(base, {mode: 'nuke', ws: null, wsInfo: null, wsSkill: null, physRes: 0, physResBy: null,
+  return Object.assign(base, {mode: 'nuke', ws: null, physRes: 0, physResBy: null,
     spells: nukeSpells(s), spellType: /Ninjutsu/.test(s.path) ? 'Ninjutsu' : 'Elemental Magic', magicBurst: isBurstSet(s.path),
     // what the game lays over the set in the situation chosen (nuke_layers.js)
     nuke: Object.assign({chainCount: 1}, sit.nuke), layers: sit.layers, belt: sit.belt});
@@ -100,12 +87,10 @@ function nukeContextInput(s){
 // The same as plain data, for the worker
 function optContextInput(s){
   const b = liveBuffs(buffState()), d = data() || {}, lv = jaLevels(), ws = wsForSet(s);
-  // the old engine is wsdist's: its own Haste Samba and Saber Dance, nothing of the page's (atelier/opt.js wsdistOnly)
-  const strict = engineName() !== 'own';
   const abilities = {Aftermath: isAfm3(s && s.path) ? 3 : +(b.am || 0)};
-  if (+b.amTp && !strict) abilities['Aftermath TP'] = +b.amTp;
+  if (+b.amTp) abilities['Aftermath TP'] = +b.amTp;
   // a prime weapon's stage, for our engine's aftermath (atelier/calc/calc_aftermath.js: Opashoro by stage)
-  if (abilities.Aftermath && !strict) abilities['Aftermath Stage'] = b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V';
+  if (abilities.Aftermath) abilities['Aftermath Stage'] = b.amStage || ownedPrimeStage((withWeapons(s).pieces.main || {}).name) || 'V';
   if (b.enspell) { abilities.EnSpell = true; abilities['Enhancing Skill'] = enSkill(b); }
   let partyWarcry = null; const partyStats = {};
   for (const ja of jasOf()) if (jaOn(b, ja.name)) {
@@ -116,16 +101,12 @@ function optContextInput(s){
       for (const [k, v] of Object.entries(eng)) partyStats[k] = (partyStats[k] || 0) + v;
       continue;
     }
-    // Haste Samba at the page's value (merits, a party DNC main or sub), not the engine's fixed 10.1 / 5.1
-    if (base === 'Haste Samba' && !strict) { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
-    // the engine before counts Saber Dance at 25 % (and drops a /WAR's Double Attack trait under it): its 20 % floor
-    // instead; ours counts it at its most, 50 % (atelier/calc/calc_abilities.js, the player's rule)
-    if (base === 'Saber Dance' && strict) partyStats.DA = (partyStats.DA || 0) + 20 - 25;
-    abilities[ja.as === 'sub' && (base === 'Warcry' || (strict && base === 'Haste Samba')) ? base + ' (sub)' : base] = true;
+    // Haste Samba at the page's value (merits, a party DNC main or sub)
+    if (base === 'Haste Samba') { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
+    abilities[ja.as === 'sub' && base === 'Warcry' ? base + ' (sub)' : base] = true;
   }
   const skill = wsSkills()[ws] || '';
   return {job: S.job, sub: d.sub || 'WAR', ml: lv.ml, selection: FFXI.opt.selection(b, FOODS[b.food]), abilities, foeDown: foeJaDown(b),
-    wsInfo: wsInfoOf(ws), wsSkill: wsSkills()[ws],
     enemy: enemyKey(b.enemy), evaDown: foeEva(b), physRes: physResOf(b, skill), tomahawk: foeJaActive(b).includes('Tomahawk'), banish: foeJaActive(b).includes('Banish II'), partyWarcry, geoMul: geoMul(b), ariaPdl: ariaPdl(b),
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
     // Fan Dance's cut of the physical damage taken, counted by the search in the DT + PDT it is asked for (atelier/opt.js defOf)

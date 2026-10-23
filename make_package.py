@@ -1,7 +1,7 @@
 """
 Build a ready-to-send GearSwap for one character: one zip holding a whole
 GearSwap folder (the addon, Mote's libraries, our shared code, the character
-cloned from _master/, the Atelier page with its engine) and an INSTALLATION.txt.
+cloned from _master/, the Atelier page with its engine, atelier/calc/) and an INSTALLATION.txt.
 
 The character is cloned by clone_character.py itself (with migrate_layout.py,
 migrate_config.py and where_is_what.py), in a copy of _master/ made in a
@@ -43,10 +43,12 @@ CLONE_FILES = ['clone_character.py', 'migrate_layout.py', 'migrate_config.py', '
 ADDON_FILES = ['equip_processing.lua', 'export.lua', 'flow.lua', 'gearswap.lua', 'helper_functions.lua',
                'packet_parsing.lua', 'refresh.lua', 'statics.lua', 'targets.lua', 'triggers.lua',
                'user_functions.lua', 'validate.lua', 'README.md', 'version_history.txt']
+# the engine before (data/atelier/engine/, wsdist's) and its fight model (cycle.js) stay on this PC: the page no longer
+# loads them (notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md, Lot 5)
 TREES = ['libs', 'data/shared', 'data/atelier/app', 'data/atelier/calc', 'data/atelier/lua',
-         'data/atelier/engine', 'data/scripts/atelier/AtelierLink']
+         'data/scripts/atelier/AtelierLink']
 DATA_FILES = ['data/atelier.html', 'data/atelier/index.html', 'data/atelier/opt.js', 'data/atelier/opt_enf.js',
-              'data/atelier/targets.js', 'data/atelier/cycle.js', 'data/scripts/atelier/load_job.lua',
+              'data/atelier/targets.js', 'data/scripts/atelier/load_job.lua',
               # the gear catalogue the page reads (atelier/gear/: its build scripts and caches stay out)
               'data/atelier/gear/items.js', 'data/atelier/gear/augments_ranked.js', 'data/atelier/gear/capes.js',
               'data/atelier/gear/augments_parse.js',
