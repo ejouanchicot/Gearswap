@@ -22,12 +22,12 @@ Object.assign(T.fr, {
   statGrp_enh: 'Magie de renfort', statEnhNote: 'Durée calculée pour {s} ({b} s de base, bonus du job compris), {c}.',
   statEnhSelf: 'sur toi sous Composure (×3, 30 min au plus)', statEnhOthers: 'sur les autres sous Composure (bonus du set Lethargy)', statEnhPlain: 'sans Composure',
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
-  statObj_cmp: 'Conserve MP', statD_cmp: 'chance de ne pas payer une partie des MP du sort ; l’équipement seul (le trait du job n’est pas compté), sans plafond connu',
+  statObj_cmp: 'Conserve MP', statD_cmp: 'chance de payer moins de MP (6,25 à 50 % de moins) : équipement + trait du job (GEO, BLM, SCH), 100 % au plus',
   statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureOther: 'Cure IV sur un autre', statD_cureOther: 'HP soignés : MND, VIT, skill de soin et Cure Potency I (50 % au plus) et II (30 %), formule de BG Wiki (vérifiée en jeu sur le PLD)',
   cbTitle: 'Soin', cbHeal: 'Cure IV sur un autre', cbHealX: 'HP soignés', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'sur {m} %',
-  cbLost: '{n} % perdus au-delà du plafond', cbSet: 'dont bonus de set {s} ({n} pièces) : +{b} %', cbPower: 'Puissance du sort', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + skill de soin {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'équipement seul, sans le trait du job',
+  cbLost: '{n} % perdus au-delà du plafond', cbSet: 'dont bonus de set {s} ({n} pièces) : +{b} %', cbPower: 'Puissance du sort', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + skill de soin {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'équipement {g} % + trait du job {t} %', cbCmpCap: 'plafond 100 %',
   cbNote: 'Formule de BG Wiki (vérifiée en jeu sur le PLD) : la puissance donne le soin de base, puis × (1 + Cure potency + Cure potency II). Le Cure potency II passe au-dessus des 50 % du I. Le « Cure potency received » est celui de la cible : pas compté ici.',
   statObj_enmityLow: 'Le moins d’inimitié', statD_enmityLow: 'l’Enmity des pièces, la plus basse possible : un soigneur ne veut pas que le monstre se tourne vers lui',
   statObj_cureEnm: 'Inimitié du Cure', statD_cureEnm: 'HP soignés × (1 + Enmity) : CE = soin × 0,231, VE = 6 × CE (guide Paladin) ; le soin et l’Enmity se départagent seuls',
@@ -94,12 +94,12 @@ Object.assign(T.en, {
   statGrp_enh: 'Enhancing magic', statEnhNote: 'Length worked out for {s} ({b} s of base, the job’s bonuses in), {c}.',
   statEnhSelf: 'on yourself under Composure (×3, 30 min at most)', statEnhOthers: 'on the others under Composure (the Lethargy set’s bonus)', statEnhPlain: 'without Composure',
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
-  statObj_cmp: 'Conserve MP', statD_cmp: 'chance not to pay part of the spell’s MP; the gear only (the job’s trait is not counted), no known cap',
+  statObj_cmp: 'Conserve MP', statD_cmp: 'chance to pay less MP (6.25 to 50 % less): gear + the job’s trait (GEO, BLM, SCH), 100 % at most',
   statObj_meva: 'Magic evasion', statObj_mdb: 'Magic def. bonus', statObj_pdtRed: 'Physical damage taken', statObj_mdtRed: 'Magic damage taken',
   statObj_ecritRed: 'Enemy critical hits', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureOther: 'Cure IV on someone else', statD_cureOther: 'HP healed: MND, VIT, Healing skill and Cure Potency I (50 % at most) and II (30 %), BG Wiki’s formula (checked in game on the PLD)',
   cbTitle: 'Healing', cbHeal: 'Cure IV on someone else', cbHealX: 'HP healed', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'of {m} %',
-  cbLost: '{n} % lost over the cap', cbSet: 'with the {s} set bonus ({n} pieces): +{b} %', cbPower: 'The spell’s power', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + Healing skill {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'the gear only, not the job’s trait',
+  cbLost: '{n} % lost over the cap', cbSet: 'with the {s} set bonus ({n} pieces): +{b} %', cbPower: 'The spell’s power', cbPowerX: 'MND {m} ÷ 2 + VIT {v} ÷ 4 + Healing skill {s}', cbEnm: 'Enmity', cbCmp: 'Conserve MP', cbCmpX: 'gear {g} % + job trait {t} %', cbCmpCap: '100 % cap',
   cbNote: 'BG Wiki’s formula (checked in game on the PLD): the power gives the base heal, then × (1 + Cure potency + Cure potency II). Cure potency II goes over the I’s 50 %. “Cure potency received” is the target’s: not counted here.',
   statObj_enmityLow: 'Least enmity', statD_enmityLow: 'the pieces’ Enmity, as low as can be: a healer does not want the monster to turn to it',
   statObj_cureEnm: 'Cure enmity', statD_cureEnm: 'HP healed × (1 + Enmity): CE = heal × 0.231, VE = 6 × CE (Paladin guide); healing and Enmity balance on their own',
@@ -510,6 +510,8 @@ function statBase(s){
     shell: B.shell || 0, mdb: (B.mdb || 0) + (r ? traitOf('mdb', c) + giftOf('mdb', c) : 0), meva: 0,
     // the Fast Cast the job gives before any piece (a Red Mage's trait and gifts, main job or subjob)
     fc: traitOf('fc', c) + fastCastGift(c),
+    // the Conserve MP of the job's trait (main job or subjob: engine.js TRAITS)
+    cmp: traitOf('cmp', c),
     shieldBarrier: S.job === 'PLD' && !!PROTECT[b.protect] && !b.protectOther, shieldMul: protectGift()};
 }
 // (an enhancing set's spell, target and base length ride with the character: opt.js O.enhancingFigures)

@@ -224,6 +224,10 @@ const TRAITS = {
   // Fast Cast (BG Wiki Fast_Cast): a Red Mage's trait, as a main job or a subjob; its tiers VI to IX are job point
   // gifts (fastCastGift). A Blue Mage's comes from its spells set, not counted
   fc: {rdm: [[89, 30], [76, 25], [55, 20], [35, 15], [15, 10]]},
+  // Conserve MP (BG Wiki Conserve_MP, last edited 2026-08-05): a proc rate in %, the gear's "Conserve MP+N" being +N %
+  // of it. A Blue Mage's comes from its spells set, not counted
+  cmp: {geo: [[99, 43], [85, 40], [70, 37], [55, 34], [40, 31], [25, 28], [10, 25]], blm: [[86, 31], [76, 28], [20, 25]],
+    sch: [[96, 28], [25, 25]]},
 };
 // Job point gifts of the main job, all of them (2100 job points spent)
 const GIFTS = {

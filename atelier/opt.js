@@ -833,8 +833,8 @@
             phalanx: Math.floor(O.phalanxPotency((b.enh || 0) + t.enh) * (b.potMul || 1)) + (b.comp === "others" ? 0 : t.phalanx), enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
             fc: Math.min(80, t.fc + (b.fc || 0)), fcGear: t.fc, sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
             ecrit: t.ecrit, cure: Math.min(50, t.cure), refresh: t.refresh, regen: t.regen, enhdur: t.enhdur,
-            // Conserve MP: the gear's only (no cap is known; a job's trait is left out)
-            cmp: t.cmp,
+            // Conserve MP (BG Wiki Conserve_MP): the gear's + the job's trait (b.cmp), a proc rate "capped" at 100 %
+            cmp: Math.min(100, t.cmp + (b.cmp || 0)), cmpGear: t.cmp,
             pdtAll: two(cap(t.dt + t.pdt) + t.pdt2), mdtAll: two(cap(t.dt + t.mdt + shell) + t.mdt2), bdtAll: cap(t.dt + t.bdt),
             pdt: t.dt + t.pdt, mdt: t.dt + t.mdt
         };

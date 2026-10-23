@@ -241,7 +241,7 @@ function cureBox(s: LegacyAny): StatBox | null {
     row(t('cbCp2'), pct(f.cure2, 30), [lost(f.cure2Raw, 30), ...Object.entries(f.setBonuses || {}).map(([sn, x]: [string, LegacyAny]) => t('cbSet', {s: sn, n: x.count, b: x.bonus}))].join(' · '), f.cure2Raw > 30 ? 'over' : ''),
     row(t('cbPower'), String(f.curePower), t('cbPowerX', {m: f.cureMnd, v: f.cureVit, s: f.cureSkill})),
     row(t('cbEnm'), String(f.enmity)),
-    row(t('cbCmp'), `+${f.cmp || 0} %`, t('cbCmpX'))];
+    row(t('cbCmp'), `+${f.cmp || 0} %`, t('cbCmpX', {g: f.cmpGear || 0, t: (f.cmp || 0) - (f.cmpGear || 0)}) + (f.cmp >= 100 ? ' · ' + t('cbCmpCap') : ''))];
   // open until closed: its fold key notes the closing (events.js flips S.boxOpen[key], unset at first)
   const b = box('cureShut', 'g-skill', t('cbTitle'), items, String(f.cureOther), `<p class="note-m">${esc(t('cbNote'))}</p>`);
   b.open = !st().boxOpen.cureShut;
