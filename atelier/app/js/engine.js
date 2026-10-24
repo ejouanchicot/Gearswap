@@ -120,24 +120,29 @@ function optContextInput(s){
 // A set's pieces as the engine reads them: a piece named without augments is your copy of it (its
 // augments, path and the rank //gs c gearscan read)
 function optPieces(pieces){
-  const owned = ownedOf() || {}, out = {};
+  const out = {};
   for (const [slot, p] of Object.entries(pieces)) {
     if (!p || isEmpty(p)) continue;
-    let q = Object.assign({}, p);
-    // your copy: its augments, and its item id (one name, several items: a prime weapon's stages), the highest of them
-    // when you hold several
-    const mine = (owned[slot] || []).filter(x => x.name === q.name).sort((a, b) => (b.id || 0) - (a.id || 0))[0];
-    if (!(q.augs && q.augs.length) && mine && mine.augs) q.augs = mine.augs;
-    if (!q.id && mine && mine.id) q.id = mine.id;
-    // else what //gs c gearscan read on your copy (a path): the engine then knows its rank, as the page's stats do
-    const sc = scanOf()[q.name];
-    if (!(q.augs && q.augs.length) && sc && !sc.differ && sc.augments) q.augs = sc.augments;
+    const q = ownCopy(slot, p), sc = scanOf()[q.name];
     // a path's rank stats only gearscan knows (no table of the engine for that piece: Cacoethic Ring +1)
     if (sc && sc.rank_stats && !rankedEntry(q.name) && (q.augs || []).includes('Path: ' + sc.path)) q.extraAugs = sc.rank_stats;
     if (isRare(q.name)) q.rare = true;
     out[slot] = ownRank(q);
   }
   return out;
+}
+// A piece named without augments as your copy of it (the engine's pieces, and the set's stats sheet: stats.js setStats)
+function ownCopy(slot, p){
+  const q = Object.assign({}, p), owned = (ownedOf() || {})[slot] || [];
+  // your copy: its augments, and its item id (one name, several items: a prime weapon's stages), the highest of them
+  // when you hold several
+  const mine = owned.filter(x => x.name === q.name).sort((a, b) => (b.id || 0) - (a.id || 0))[0];
+  if (!(q.augs && q.augs.length) && mine && mine.augs) q.augs = mine.augs;
+  if (!q.id && mine && mine.id) q.id = mine.id;
+  // else what //gs c gearscan read on your copy (a path): the engine then knows its rank, as the page's stats do
+  const sc = scanOf()[q.name];
+  if (!(q.augs && q.augs.length) && sc && !sc.differ && sc.augments) q.augs = sc.augments;
+  return q;
 }
 // Your copy's rank (//gs c gearscan, same path): without it the engine counts a rank item at its top rank
 function ownRank(q){

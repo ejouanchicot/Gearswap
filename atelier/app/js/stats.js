@@ -439,11 +439,12 @@ Object.assign(T.fr, {pdtWithMul: 'Physiques au total', mdtWithMul: 'Magiques au 
 Object.assign(T.en, {pdtWithMul: 'Physical in all', mdtWithMul: 'Magic in all', mulGear: 'gear'});
 const STAT_ORDER = Object.keys(STAT_DEF);
 const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.indexOf(b) + 1 || 999) || a.localeCompare(b);
-// What the set's gear brings: every piece added up, the caps shown where the game has one
+// What the set's gear brings: every piece added up (a piece named without augments as your copy, as the engine
+// counts it: engine.js ownCopy), the caps shown where the game has one
 function setStats(s){
   const total = {}, paths = [], unknown = [], cond = [], pieces = withWeapons(s).pieces;
   for (const slot of SLOTS) {
-    const p = pieces[slot], r = pieceStats(p, slot);
+    const p = pieces[slot] && !isEmpty(pieces[slot]) ? ownCopy(slot, pieces[slot]) : pieces[slot], r = pieceStats(p, slot);
     if (!r) continue;
     if (!r.known) unknown.push(p.name);
     if (r.path && !r.rankStats) paths.push(`${p.name} (Path ${r.path})`);

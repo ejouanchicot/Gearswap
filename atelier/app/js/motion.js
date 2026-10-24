@@ -36,14 +36,19 @@ function motionNumText(f, v){
   const grouped = f.sep ? int.replace(/\B(?=(\d{3})+$)/g, f.sep) : int;
   return (v < 0 ? '−' : f.plus && v > 0 ? '+' : '') + grouped + (dec ? f.dot + dec : '') + f.tail;
 }
-// The figure rolls from what it was to what it is, and ends on the page's own text
+// The figure rolls from what it was to what it is, and ends on the page's own text. It writes in the figure's own text
+// node, never a new one: the Svelte application keeps that node and writes the next set's figure in it (a new node left
+// the figure stuck on a rolled value, −40 % in place of −50 %, until the page was reloaded). A figure written again
+// meanwhile stops the roll: the page's text stands
 function motionRoll(el, before, text, t0){
   const a = motionNum(before), b = motionNum(text), ms = 340;
-  if (!a || !b || a.tail !== b.tail || el.children.length) return;
+  const nodes = [...el.childNodes].filter(n => n.nodeType !== Node.COMMENT_NODE), node = nodes[0];
+  if (!a || !b || a.tail !== b.tail || el.children.length || nodes.length !== 1 || node.nodeType !== Node.TEXT_NODE) return;
+  let last = node.data;
   const step = now => {
-    if (!el.isConnected) return;
+    if (!node.isConnected || node.data !== last) return;
     const k = Math.min(1, (now - t0) / ms), ease = 1 - Math.pow(1 - k, 3);
-    el.textContent = k < 1 ? motionNumText(b, a.v + (b.v - a.v) * ease) : text;
+    last = node.data = k < 1 ? motionNumText(b, a.v + (b.v - a.v) * ease) : text;
     if (k < 1) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
