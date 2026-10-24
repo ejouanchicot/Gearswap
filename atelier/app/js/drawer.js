@@ -58,6 +58,9 @@ function pieceChoices(slot, current, orig, s){
     o.orig = isOrig(o); o.lv = o.lv ?? (r && r[4]); o.ilv = o.ilv ?? (r && r[5]);
     o.low = o.lv != null && o.lv < 99 && !o.ilv; }
   if (s) relevance(s, slot, list);
+  // an effect that holds only in a place the set is named after (Councilor's Garb, "While in Adoulin:", in
+  // sets.Adoulin): the set is worn there, so the piece is of use whatever its level, first of its group
+  if (s) placeEffects(s, slot, list);
   // of no use for the set (never the set's own piece): below level 99 with no item level; armour
   // with no item level (level 119 armour replaced it); none of the stats the set is after; or less
   // than a quarter of what the best choice for the slot gives of them
@@ -67,13 +70,24 @@ function pieceChoices(slot, current, orig, s){
   // like the armour (only that rule: a level 99 weapon with no item level can still be the right one)
   if (WEAPON_SLOTS.has(slot) && slot !== 'ammo') weaponRanks(s, slot, list);
   for (const o of list) {
-    o.why = WEAPON_SLOTS.has(slot) && slot !== 'ammo' ? (o.low ? t('whyLow', {n: o.lv}) : weaponWhy(s, slot, o.piece))
+    if (o.placed) o.score = Math.max(o.score || 0, best);
+    o.why = o.placed ? '' : WEAPON_SLOTS.has(slot) && slot !== 'ammo' ? (o.low ? t('whyLow', {n: o.lv}) : weaponWhy(s, slot, o.piece))
       : o.low ? t('whyLow', {n: o.lv}) : armour && o.lv != null && !o.ilv ? t('whyNoIlv') : o.lowersDamage ? ''
       : o.offTopic ? t('whyNone') : best && (o.score || 0) < best / 4 ? t('whyWeak') : '';
     // a piece you wear in a set of the same kind is never set aside: you chose it for such sets
     o.junk = !o.orig && !kin[o.piece.name] && !!o.why;
     o.grp = o.orig ? 0 : o.junk ? 5 : o.cat ? 4 : !o.owned ? 3 : o.seen ? 1 : 2; }
   return list.sort((a, b) => (a.grp - b.grp) || ((b.score || 0) - (a.score || 0)) || (b.seen - a.seen) || a.piece.name.localeCompare(b.piece.name));
+}
+// The pieces whose effect holds only in a place the set's name says (its path: sets.Adoulin, "While in Adoulin:"):
+// marked placed, that effect added to what they bring the set
+function placeEffects(s, slot, list){
+  const where = s.path.toLowerCase();
+  for (const o of list) {
+    const r = !o.cat && pieceStats(o.piece, slot);
+    const hits = ((r && r.cond) || []).map(c => /^While in ([^:]+):\s*(.+)$/i.exec(c)).filter(m => m && where.includes(m[1].trim().toLowerCase()));
+    if (hits.length) { o.placed = true; o.fit = (o.fit || []).concat(hits.map(m => m[2])); }
+  }
 }
 // The paths of a path piece (Kaykaus, Odyssey...) your copies are not on (heldPaths, optimizer.js), each at its top
 // rank; null when the piece has no paths
