@@ -1456,3 +1456,7 @@
 .bagside .bvtop .bvgroup .bvtiles{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto;gap:5px}
 .bagside .bvtile,.bagside .bvtile.all{min-height:0;height:auto;padding:5px 8px}
 @media (max-width:900px){.bagside .bvtop .bvgroup .bvtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* an item's line: its name whole; what does not fit beside it (the category filed, the misplaced chip, the bags) goes
+   under it instead of cutting the name ("Bonanza ...", the Misplaced filter) */
+.bvitem{height:auto;min-height:26px;flex-wrap:wrap;row-gap:2px;padding-top:2px;padding-bottom:2px}
+.bvitem b{flex:0 0 auto;max-width:100%}
