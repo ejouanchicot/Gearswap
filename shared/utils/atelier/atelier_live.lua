@@ -66,6 +66,7 @@ local SAVED_FILES = {['keybind_overrides.lua'] = true, ['set_overrides.lua'] = t
 local MAX_BODY = 2 * 1024 * 1024
 local POLL_EVERY = 6   -- frames between two looks at the door
 local BAD_TOKENS, BAD_WINDOW = 30, 60   -- refused tokens that close the door, within that many seconds
+local BAGS_CALM = 4     -- seconds the bags hold still before /export builds again for them (the page waits as long)
 
 local function socket_lib()
     local ok, gs = pcall(function() return gearswap end)
@@ -221,6 +222,8 @@ local function route(req, live)
         return refused_token(live)
     end
     local Export = require('shared/utils/atelier/atelier_export')
+    -- a built export as the page gets it from here: marked live
+    local function live_body(body) return body == '{}' and '{"live":true}' or body:sub(1, -2) .. ',"live":true}' end
     if req.path == '/ping' then
         -- the alt's job as last exchanged (dualbox_manager.lua AltJobState): the macro book GearSwap
         -- picks at the load depends on it. Not is_alt_online(): the state is only refreshed at a job
@@ -248,7 +251,21 @@ local function route(req, live)
         -- the export built after the load, a little a frame (atelier_export.lua spread_result): not a second time here
         local state, body = Export.spread_result()
         if state == 'building' then return '503 Service Unavailable', '{"error":"building"}' end
-        if state == 'ready' then return '200 OK', body == '{}' and '{"live":true}' or body:sub(1, -2) .. ',"live":true}' end
+        if state == 'ready' then return '200 OK', live_body(body) end
+        -- none for the bags as they are now (a synthesis, a loot, a refill moved things): built again a little a
+        -- frame, the page asks at its next tick. Built here in one go it froze the game 0.3 to 0.9 s at each of
+        -- those moves while the page was open (trace, 2026-10-24)
+        -- not while the bags still move (a craft, //gs c wo, PorterPacker): 4 s of calm first, as the page waits
+        -- before it asks, or each tick would start the export again
+        local ok_c, counts = pcall(function() return require('shared/utils/atelier/atelier_place').bag_counts() end)
+        local sig = ok_c and counts or nil
+        if sig ~= live.bag_sig then live.bag_sig, live.bag_at = sig, os.time() end
+        if os.time() - (live.bag_at or 0) < BAGS_CALM then return '503 Service Unavailable', '{"error":"building"}' end
+        Export.export_spread(not Export.enabled())
+        state, body = Export.spread_result()
+        if state == 'building' then return '503 Service Unavailable', '{"error":"building"}' end
+        if state == 'ready' then return '200 OK', live_body(body) end
+        -- (the spread export could not start: no job loaded yet, or it failed at once) built here, as before
         local data = Export.build()
         if not data then return '503 Service Unavailable', '{"error":"no job"}' end
         data.live = true

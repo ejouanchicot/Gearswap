@@ -480,8 +480,10 @@ end
 
 --- Export the current job a little a frame: the same stages, the same file as export(), without the freeze
 --- of doing them in one go (0.8 s measured on DNC, 2026-10-13). For the export that follows every load, which
---- nobody waits for. A newer load ends it: that load exports for itself.
-function AtelierExport.export_spread()
+--- nobody waits for, and for the page's live link once the bags moved (atelier_live.lua /export). A newer load
+--- ends it: that load exports for itself.
+--- @param no_file boolean|nil true: the result for the page only, no export file written (the export switch is off)
+function AtelierExport.export_spread(no_file)
     local data = new_data()
     if not data then windower._atelier_spread = nil return end
     local gen, stages = windower._load_gen, build_stages(data)
@@ -503,7 +505,7 @@ function AtelierExport.export_spread()
                 if text ~= 'null' then parts[#parts + 1] = json(tostring(keys[at])) .. ':' .. text end
             else
                 local body = '{' .. table.concat(parts, ',') .. '}'
-                write_export(data, body)
+                if not no_file then write_export(data, body) end
                 mark.body = body
                 return false
             end
@@ -511,7 +513,8 @@ function AtelierExport.export_spread()
         return true
     end
     local function step()
-        if gen ~= windower._load_gen then return end
+        -- a newer load, or a newer spread export of this one (the page's, //gs c bags go's): this one stops
+        if gen ~= windower._load_gen or windower._atelier_spread ~= mark then return end
         local ok, more = pcall(work)
         if ok and more then return coroutine.schedule(step, SPREAD_WAIT) end
         if not ok then
