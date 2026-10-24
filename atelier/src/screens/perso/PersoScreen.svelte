@@ -1,5 +1,5 @@
 <!--
-  GearSwap Atelier · My character (perso.ts): the sets or the played jobs on the left, who the character is, the two
+  GearSwap Atelier · My character (perso.ts): the sets, the bags (Bags view) or the played jobs on the left, who the character is, the two
   views, the stats cards, PorterPacker, the merits. The buttons and inputs keep the attributes the old page's
   handlers read (bags_view.js data-persoview, porter.js data-porterwrite, engine.js data-merittab / data-merit,
   data-action="meritreset").
@@ -14,6 +14,7 @@
   import Box from '../../components/Box.svelte';
   import JobList from '../config/JobList.svelte';
   import Bags from './Bags.svelte';
+  import BagSide from './BagSide.svelte';
   import SetList from '../sets/SetList.svelte';
 
   const view = $derived(legacy.version > 0 ? persoView() : null);
@@ -21,7 +22,7 @@
 
 {#if view}
   {@const h = view.head}
-  <div class="pane split"><div class="tabx" class:setside={view.side !== null}>{#if view.side !== null}<SetList view={view.side} />{:else}<JobList />{/if}<div class="tabmain"><div class="ui2tab persotab">
+  <div class="pane split"><div class="tabx" class:setside={view.side !== null}>{#if view.bags !== null && view.bags.none === null}<BagSide view={view.bags} />{:else if view.side !== null}<SetList view={view.side} />{:else}<JobList />{/if}<div class="tabmain"><div class="ui2tab persotab">
     <header class="tabhead"><div><h2>{h.char}</h2><p class="muted small">{h.why}</p></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl><span class="seg persoviews" role="group">{#each h.views as b (b.value)}<button data-persoview={b.value} aria-pressed={b.pressed} title={b.title}>{b.label}</button>{/each}</span></header>
     {#if view.bags !== null}<Bags view={view.bags} />{:else if view.stats}
       {@const st = view.stats}

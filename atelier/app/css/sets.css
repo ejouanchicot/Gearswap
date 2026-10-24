@@ -1450,3 +1450,9 @@
 .oatbl tr.oaoff td,.oatbl tr.oaoff th{opacity:.55}
 .oatbl .chip{padding:0 6px;min-width:22px}
 .oatbl .oafix{color:var(--accent)}
+/* My character > Bags: the bags in the left column (BagSide.svelte), one under the other, the middle left to the list */
+.bagside .bvtop{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:start}
+.bagside .bvtop > .bvgroup{flex:none;order:0;min-width:0;padding:7px 8px;gap:5px}
+.bagside .bvtop .bvgroup .bvtiles{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto;gap:5px}
+.bagside .bvtile,.bagside .bvtile.all{min-height:0;height:auto;padding:5px 8px}
+@media (max-width:900px){.bagside .bvtop .bvgroup .bvtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
