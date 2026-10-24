@@ -147,13 +147,15 @@ function listOf(B: LegacyAny, sel: string): Extract<BagsView['body'], {kind: 'li
 
 // what the bag shown is for: one menu, two for a bag that is not a wardrobe (bvRolePick)
 function rolesOf(B: LegacyAny, bag: LegacyAny): Extract<BagsView['body'], {kind: 'list'}>['roles'] {
-  const [cur, also] = bvRoles(B, bag), wardrobe = /^Wardrobe/.test(bag.name);
+  const roles = bvRoles(B, bag), cur = roles[0], wardrobe = /^Wardrobe/.test(bag.name);
+  // (a wardrobe takes equipment only: the roles of other things would count its room for what can never go there)
   const list = wardrobe ? ['free', 'job', 'gear', 'spare', 'unused', 'craft'] : bag.place === 'porter' ? ['archive'] : BV_ROLES.filter(r => r !== 'job');
-  const opts = (sel: string | undefined, none: boolean) => (none ? [{value: '', label: '—', selected: false}] : [])
-    .concat(list.filter(r => !none || (r !== 'free' && r !== cur)).map(r => ({value: r, label: t('bvR_' + r), selected: r === sel})));
-  const out = [{label: t('bvRoleOf'), title: t('bvRoleTip'), bag: bag.name, part: '0', options: opts(cur, false)}];
-  // a second role for a bag that is not a wardrobe: two kinds of things share its room
-  if (!(wardrobe || bag.place === 'porter' || cur === 'free')) out.push({label: t('bvRole2'), title: t('bvRole2Tip'), bag: bag.name, part: '1', options: opts(also, true)});
+  const opts = (part: number) => (part ? [{value: '', label: '—', selected: false}] : [])
+    .concat(list.filter(r => !part || (r !== 'free' && !roles.some((x, i) => i !== part && x === r))).map(r => ({value: r, label: t('bvR_' + r), selected: r === roles[part]})));
+  const out = [{label: t('bvRoleOf'), title: t('bvRoleTip'), bag: bag.name, part: '0', options: opts(0)}];
+  // up to two more roles (BV_MAX_ROLES): kinds of things that share the bag's room
+  if (!(bag.place === 'porter' || cur === 'free')) for (let part = 1; part < BV_MAX_ROLES && part <= roles.length; part++)
+    out.push({label: t('bvRole2'), title: t('bvRole2Tip'), bag: bag.name, part: String(part), options: opts(part)});
   return out;
 }
 

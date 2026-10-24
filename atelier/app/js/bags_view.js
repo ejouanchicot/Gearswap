@@ -159,6 +159,8 @@ function bvWrong(r, bagName, role){
 }
 // The bags a row is misplaced in: [{bag, why, to}], from the plan's one sum (bags_target.js bpTarget)
 const bvRoles = (B, bag) => bvRole(B, bag).split('+');
+// The roles a bag can hold at once (three kinds of things sharing its room)
+const BV_MAX_ROLES = 3;
 const bvRoleName = (B, bag) => bvRoles(B, bag).map(r => t('bvR_' + r)).join(' + ');
 const bvRoleShort = (B, bag) => bvRoles(B, bag).map(r => t('bvRs_' + r)).join(' · ');
 const bvBad = (B, r) => bpTarget(B).bad[r.key] || [];
@@ -176,8 +178,10 @@ function bvFit(){
 window.addEventListener('resize', bvFit);
 document.addEventListener('change', e => { const pc = e.target.closest && e.target.closest('[data-bagpc]'); if (pc) { S.bagPc = pc.value; render(); return; }
   const el = e.target.closest && e.target.closest('[data-bagrole]'); if (!el) return;
-  const B = bvBags(), bag = B && B.bags.find(b => b.name === el.dataset.bagrole), now = bag ? bvRoles(B, bag) : ['free'];
-  const next = el.dataset.part === '1' ? [now[0], el.value] : [el.value, now[1]], role = next[0] === 'free' ? 'free' : next.filter((r, i) => r && (i === 0 || r !== next[0])).join('+');
+  const B = bvBags(), bag = B && B.bags.find(b => b.name === el.dataset.bagrole), next = bag ? bvRoles(B, bag).slice() : ['free'];
+  // the menu changed, the others kept; an emptied menu ('—') and a role said twice drop out
+  next[+el.dataset.part || 0] = el.value;
+  const role = next[0] === 'free' ? 'free' : next.filter((r, i) => r && r !== 'free' && next.indexOf(r) === i).slice(0, BV_MAX_ROLES).join('+');
   S.bagRoles = Object.assign({}, S.bagRoles); S.bagRoles[S.char] = Object.assign({}, S.bagRoles[S.char], {[el.dataset.bagrole]: role}); bpTouch(); render(); });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-persoview],[data-bagsel],[data-bagcat],[data-bagdup],[data-baguse]'); if (!b) return; const d = b.dataset;

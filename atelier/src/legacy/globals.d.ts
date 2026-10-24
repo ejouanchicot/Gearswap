@@ -230,6 +230,7 @@ declare function bvRoleName(B: LegacyAny, bag: LegacyAny): string;
 declare function bvRoleShort(B: LegacyAny, bag: LegacyAny): string;
 declare function bvRoles(B: LegacyAny, bag: LegacyAny): string[];
 declare const BV_ROLES: string[];
+declare const BV_MAX_ROLES: number;
 declare function bvUseTip(r: LegacyAny): string;
 declare function bvLockSets(r: LegacyAny): string[];
 declare function bvIsGear(r: LegacyAny): boolean;

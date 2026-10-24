@@ -149,8 +149,9 @@ function bpPlan(B){
     Object.assign(line('spare', lock + spill, ['spare'], by.lock), {note: spill ? t('bpSpareNote', {n: spill}) : ''}),
     // (the slips' bag is not the furniture's: a bag that keeps the slips beside something else stays that thing's card)
     ...['craft', 'unused', 'usable', 'mats', 'currency', 'keys', 'furnish'].map(c => line(c, sum(by[c], slots), c === 'furnish' ? ['furnish'] : BP_ROLES[c], by[c]))];
-  // the categories that share a bag (a bag with two roles) are one line: their things against the room they share
-  for (let i = 4; i < out.length; i++) for (let j = i + 1; j < out.length; j++) if (out[i].names.some(n => out[j].names.includes(n))) {
+  // the categories that share a bag (a bag with two or three roles, a wardrobe too) are one line: their things against
+  // the room they share
+  for (let i = 0; i < out.length; i++) for (let j = i + 1; j < out.length; j++) if (out[i].names.some(n => out[j].names.includes(n))) {
     const a = out[i], b = out.splice(j, 1)[0], names = [...new Set([...a.names, ...b.names])];
     out[i] = {id: a.id, ids: [...(a.ids || [a.id]), ...(b.ids || [b.id])], need: a.need + b.need, names, bags: names.map(bvShort), room: names.reduce((n, x) => n + B.bags.find(g => g.name === x).max, 0)};
     j = i; }
