@@ -1,9 +1,9 @@
 {
- "version": "4.1.1",
+ "version": "4.1.2",
  "repo": "ejouanchicot/Gearswap",
- "commit": "10ab3f1dc5d69c8112c07351159fbb1eadd75bd3",
+ "commit": "ea68de12d8dee29d37f8987e7b6f63b9b0b4d68e",
  "files": {
-  "VERSION": "627a3f43a64f9d878a1143f59bea46e1970d0320",
+  "VERSION": "4d0dcda01c4c26f4ff62563255b4801ec3ca7c63",
   "atelier.html": "beb52447641df3ca177ecf612836c557c27ae478",
   "atelier/app/css/base.css": "006183f72af91954e81255063131b71fab6a0397",
   "atelier/app/css/combat.css": "ab25b5c21fb5358867053d8b3b18fb3190cf20ad",
@@ -75,7 +75,7 @@
   "atelier/app/js/buffs.js": "2a565eca7cae7c119baa3584a1a80f87d731543b",
   "atelier/app/js/config_page.js": "0337bc74c13ddc51a13a091f19e9fe83c9dcc877",
   "atelier/app/js/core.js": "288ede0b4cd92c843e59f7b88f0d4fcbaaec327d",
-  "atelier/app/js/drawer.js": "94abf1f6f5cdaead342c3379d1470749bf1497fd",
+  "atelier/app/js/drawer.js": "15666e32ca2d9d1a16efcc08a5b002750c056254",
   "atelier/app/js/ele_debuff.js": "865e74020cc323f6a124ce743e82acffab1aae74",
   "atelier/app/js/enfeeble.js": "26b32aa7ba6fbf444df672a63fe0bd4129f5c44f",
   "atelier/app/js/engine.js": "dd12fe8d0fce3bb53dc40c19f4852f690db59af0",
