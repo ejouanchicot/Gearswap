@@ -19,7 +19,7 @@ Object.assign(T.fr, {bvLockedTip: '{b} : sac pas débloqué, il garde ses {c} ob
   bvW_role: 'pas dans un sac de sa catégorie', bvW_spare: 'en surplus ici alors qu’il reste de la place dans les sacs des jobs', bvW_inv: 'rangé par le plan hors de l’inventaire', bvW_far: 'porté par un set, mais ne peut pas être équipé depuis ce sac', bvW_farS: 'pas équipable ici', bvW_type: 'pas le type d’objet de ce sac', bvW_typeS: 'pas à sa place', bvW_unused: 'dans aucun set : ce sac est pour l’équipement qui sert', bvW_unusedS: 'ne sert pas',
   bvW_used: 'porté par un set : ce sac est pour ce qui ne sert pas', bvW_usedS: 'sert à un set', bvUseOne: 'Un seul job', bvUseMany: 'Plusieurs jobs', bvUseTip: 'Qui porte chaque pièce, d’après les sets des jobs exportés : {j}. Un job jamais exporté ne compte pas, et les lockstyles ne sont pas connus de la page.',
   bvEmpty: 'Ce sac est vide.', bvNoHit: 'Aucun objet ne correspond.', bvCount: '{n} objet(s) · {s} emplacement(s)', bvIn: 'Dans : ', bvAlso: 'Aussi dans : ', bvStack: 'pile de {n}',
-  bvC_Weapon: 'Armes', bvC_Armor: 'Armures', bvC_Usable: 'Utilisables', bvC_General: 'Divers', bvC_Furnishing: 'Mobilier', bvC_Automaton: 'Automate', bvC_Maze: 'Labyrinthe', bvC_Gil: 'Gils'});
+  bvC_Weapon: 'Armes', bvC_Armor: 'Armures', bvC_Usable: 'Utilisables', bvC_General: 'Divers', bvC_Furnishing: 'Mobilier', bvC_Automaton: 'Automate', bvC_Maze: 'Labyrinthe', bvC_Slips: 'Storage Slips', bvC_Gil: 'Gils'});
 Object.assign(T.en, {bvLockedTip: '{b}: bag not unlocked, it keeps its {c} item(s) but nothing can go in.', bvStats: 'Stats & merits', bvBags: 'Bags', bvStatsTip: 'Your stats measured in game, PorterPacker and your merits.', bvBagsTip: 'What each of your bags holds, to see where everything is.',
   bvNone: 'This export does not hold your bags. In game, type //gs c atelier (or reload your job): they will be read and shown here.',
   bvAt: 'Bags read in game on {at}. The Mog House bags are those of your last visit.', bvSelf: 'On you', bvHouse: 'Mog House', bvPorter: 'Stored elsewhere', bvPorterTip: '{c} piece(s) left with the Porter Moogle, on your slips. Click to see them.', bvAll: 'All the bags', bvAllSub: 'each item once', bpPlanSub: 'does it fit?',
@@ -33,9 +33,9 @@ Object.assign(T.en, {bvLockedTip: '{b}: bag not unlocked, it keeps its {c} item(
   bvW_role: 'not in a bag of its category', bvW_spare: 'overflow here while the jobs’ bags have room', bvW_inv: 'filed by the plan out of the inventory', bvW_far: 'worn by a set, but cannot be put on from this bag', bvW_farS: 'not wearable here', bvW_type: 'not this bag’s kind of item', bvW_typeS: 'out of place', bvW_unused: 'in no set: this bag is for the gear in use', bvW_unusedS: 'not used',
   bvW_used: 'worn by a set: this bag is for what is not used', bvW_usedS: 'used by a set', bvUseOne: 'One job only', bvUseMany: 'Several jobs', bvUseTip: 'Who wears each piece, from the sets of the jobs exported: {j}. A job never exported does not count, and the page does not know the lockstyles.',
   bvEmpty: 'This bag is empty.', bvNoHit: 'No item matches.', bvCount: '{n} item(s) · {s} slot(s)', bvIn: 'In: ', bvAlso: 'Also in: ', bvStack: 'stack of {n}',
-  bvC_Weapon: 'Weapons', bvC_Armor: 'Armor', bvC_Usable: 'Usable', bvC_General: 'Misc', bvC_Furnishing: 'Furnishing', bvC_Automaton: 'Automaton', bvC_Maze: 'Maze', bvC_Gil: 'Gil'});
+  bvC_Weapon: 'Weapons', bvC_Armor: 'Armor', bvC_Usable: 'Usable', bvC_General: 'Misc', bvC_Furnishing: 'Furnishing', bvC_Automaton: 'Automaton', bvC_Maze: 'Maze', bvC_Slips: 'Storage Slips', bvC_Gil: 'Gil'});
 
-const BV_CATS = ['Weapon', 'Armor', 'Usable', 'General', 'Furnishing', 'Automaton', 'Maze'];
+const BV_CATS = ['Weapon', 'Armor', 'Usable', 'General', 'Slips', 'Furnishing', 'Automaton', 'Maze'];
 const bvCatName = c => t('bvC_' + c) !== 'bvC_' + c ? t('bvC_' + c) : c || '?';
 // The bags of the freshest export that holds them, with what is kept at the Porter Moogle as one more "bag" (export
 // `porter`: {item id: 'Slip N'}; the names come from the page's gear catalog)
@@ -50,6 +50,8 @@ function bvBags(){
   const bags = x.bags.bags.filter(b => b.enabled !== false || b.items.length)
     .map(b => b.enabled === false ? Object.assign({}, b, {max: b.items.length, count: b.items.length, locked: true}) : b);
   const B = {at: x.bags.at, run: x.bags.run, bags, items: Object.assign({}, x.bags.items)};
+  // the Storage Slips: a kind of their own in the list (the game files them as Maze, the Maze Mongers' kind)
+  for (const [id, it] of Object.entries(B.items)) if (it && /^Storage Slip/.test(it.name)) B.items[id] = Object.assign({}, it, {cat: 'Slips'});
   if (px && px.porter && cat) { if (!cat.byId) { cat.byId = {}; for (const r of cat.src.items) cat.byId[r[0]] = r; }
     const items = [];
     for (const [id, slip] of Object.entries(px.porter)) { const r = cat.byId[id]; if (!r) continue;
