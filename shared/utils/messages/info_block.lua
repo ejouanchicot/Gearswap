@@ -122,9 +122,11 @@ function InfoBlock.footer()
 end
 
 --- A whole block.
---- @param spec table {tag, title, fields?, lines?, width?, channel?}
+--- @param spec table {tag, title, fields?, lines?, width?, channel?, head?, foot?}
 ---   lines: texts, or {text, kind} pairs, printed after the fields
 ---   channel: the chat channel of every line (121: the synthesis messages' window)
+---   head / foot: false leaves out the title or the closing line (a block shown in
+---   two times: its title when it starts, the rest when it is known)
 function InfoBlock.show(spec)
     channel = spec.channel
     local ok, err = pcall(InfoBlock.draw, spec)
@@ -135,7 +137,7 @@ end
 --- The lines of a block (InfoBlock.show, which sets its channel first).
 --- @param spec table See InfoBlock.show
 function InfoBlock.draw(spec)
-    InfoBlock.header(spec.tag, spec.title)
+    if spec.head ~= false then InfoBlock.header(spec.tag, spec.title) end
     if spec.fields then InfoBlock.fields(spec.fields, spec.width) end
     for _, line in ipairs(spec.lines or {}) do
         if type(line) == 'table' then
@@ -144,7 +146,7 @@ function InfoBlock.draw(spec)
             InfoBlock.text(line)
         end
     end
-    InfoBlock.footer()
+    if spec.foot ~= false then InfoBlock.footer() end
 end
 
 return InfoBlock

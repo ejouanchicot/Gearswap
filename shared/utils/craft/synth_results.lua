@@ -2,7 +2,9 @@
 --- Synth Results - a coloured line after each of the character's synthesis
 ---============================================================================
 --- NQ, HQ 1, HQ 2, HQ 3 or Break, with the item made and, on a break, the
---- ingredients lost (shared/utils/messages/formatters/ui/message_synth.lua).
+--- ingredients lost (shared/utils/messages/formatters/ui/message_synth.lua): the
+--- block's title as soon as the animation starts, the rest with the result.
+--- It replaces battlemod's crafting lines (its `crafting` setting is off).
 --- Shown for every synthesis, by hand or through the craft addon, crafting
 --- gear on or not; the game's own messages and battlemod's stay as they are.
 ---
@@ -16,7 +18,7 @@
 ---
 --- @file shared/utils/craft/synth_results.lua
 --- @author ejouanchicot
---- @version 1.0
+--- @version 1.1
 --- @date Created: 2026-10-24
 ---============================================================================
 
@@ -67,11 +69,23 @@ function SynthResults.classify(result, quality, lost, param)
     return 'NQ'
 end
 
+-- What the animation already says (0x030 param): the block's title as it starts
+local ANIMATION_RESULT = {[0] = 'NQ', [1] = 'Break', [2] = 'HQ'}
+
+--- The packet's bytes in hex, for the journal (the 0x030 may hold more than its param).
+local function hex(s)
+    return (s:gsub('.', function(c) return ('%02X'):format(c:byte()) end))
+end
+
 local function on_animation(original)
     local me = windower.ffxi.get_player()
     if not me or original:unpack('I', 0x05) ~= me.id then return end
     animation = {param = original:byte(0x0D), at = os.time()}
-    journal('0x030 param=%d', animation.param)
+    journal('0x030 param=%d bytes=%s', animation.param, hex(original))
+    local early = ANIMATION_RESULT[animation.param]
+    if not early then return end
+    animation.shown = true
+    require('shared/utils/messages/formatters/ui/message_synth').show_start(early)
 end
 
 local function on_result(original)
@@ -83,14 +97,16 @@ local function on_result(original)
         local id = original:unpack('H', 0x0B + 2 * i)
         if id ~= 0 then lost[#lost + 1] = item_name(id); lost_ids[#lost_ids + 1] = id end
     end
-    local param = animation and os.time() - animation.at <= ANIMATION_MAX_AGE and animation.param or nil
+    local fresh = animation and os.time() - animation.at <= ANIMATION_MAX_AGE and animation or nil
+    local param, started = fresh and fresh.param, fresh and fresh.shown or false
     animation = nil
     local shown = SynthResults.classify(result, quality, lost, param)
     journal('0x06F result=%d quality=%d count=%d item=%d (%s) lost=[%s] animation=%s -> %s', result, quality, count, item,
         item_name(item) or '-', table.concat(lost_ids, ','), tostring(param), tostring(shown))
-    if not shown then return end
+    -- a cancel says nothing, but closes a block its animation opened
+    if not shown and not started then return end
     local MessageSynth = require('shared/utils/messages/formatters/ui/message_synth')
-    MessageSynth.show_result(shown, shown ~= 'Break' and item_name(item) or nil, count, lost)
+    MessageSynth.show_result(shown, shown and shown ~= 'Break' and item_name(item) or nil, count, lost, started)
 end
 
 --- Listen to the synthesis packets, once per load (a raw event: a plain one
