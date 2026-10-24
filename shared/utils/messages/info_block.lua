@@ -34,9 +34,15 @@ local MessageCore = require('shared/utils/messages/message_core')
 
 local KINDS = {good = true, bad = true, warn = true, spell = true, dim = true}
 
+-- The chat channel of the block being shown (spec.channel), nil for the templates' own
+local channel = nil
+local function send(key, params)
+    M.send('BLOCK', key, params, channel and {channel = channel} or nil)
+end
+
 --- Separator line at the chat width in use.
 function InfoBlock.separator()
-    M.send('BLOCK', 'separator', {separator = string.rep('=', MessageCore.SEPARATOR_WIDTH)})
+    send('separator', {separator = string.rep('=', MessageCore.SEPARATOR_WIDTH)})
 end
 
 --- Separator, "  TAG :: title", separator.
@@ -44,7 +50,7 @@ end
 --- @param title string
 function InfoBlock.header(tag, title)
     InfoBlock.separator()
-    M.send('BLOCK', 'title', {tag = tag, title = title})
+    send('title', {tag = tag, title = title})
     InfoBlock.separator()
 end
 
@@ -53,10 +59,10 @@ end
 --- @param value any
 --- @param kind string|nil good / bad / warn / spell / dim
 function InfoBlock.field(label, value, kind)
-    if value == true then return M.send('BLOCK', 'field_on', {label = label}) end
-    if value == false then return M.send('BLOCK', 'field_off', {label = label}) end
+    if value == true then return send('field_on', {label = label}) end
+    if value == false then return send('field_off', {label = label}) end
     local key = KINDS[kind] and ('field_' .. kind) or 'field'
-    M.send('BLOCK', key, {label = label, value = tostring(value)})
+    send(key, {label = label, value = tostring(value)})
 end
 
 --- Width of the widest label of a field list.
@@ -107,7 +113,7 @@ end
 --- @param kind string|nil 'dim' (gray) or 'bad' (red); white otherwise
 function InfoBlock.text(text, kind)
     local key = (kind == 'dim' or kind == 'bad') and ('text_' .. kind) or 'text'
-    M.send('BLOCK', key, {text = text})
+    send(key, {text = text})
 end
 
 --- Closing separator.
@@ -116,9 +122,19 @@ function InfoBlock.footer()
 end
 
 --- A whole block.
---- @param spec table {tag, title, fields?, lines?, width?}
+--- @param spec table {tag, title, fields?, lines?, width?, channel?}
 ---   lines: texts, or {text, kind} pairs, printed after the fields
+---   channel: the chat channel of every line (121: the synthesis messages' window)
 function InfoBlock.show(spec)
+    channel = spec.channel
+    local ok, err = pcall(InfoBlock.draw, spec)
+    channel = nil
+    if not ok then error(err, 0) end
+end
+
+--- The lines of a block (InfoBlock.show, which sets its channel first).
+--- @param spec table See InfoBlock.show
+function InfoBlock.draw(spec)
     InfoBlock.header(spec.tag, spec.title)
     if spec.fields then InfoBlock.fields(spec.fields, spec.width) end
     for _, line in ipairs(spec.lines or {}) do

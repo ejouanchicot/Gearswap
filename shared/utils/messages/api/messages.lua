@@ -48,7 +48,7 @@ local MessageCore = require('shared/utils/messages/message_core')
 --- @param namespace string "BLM", "COMBAT", "SYSTEM", etc.
 --- @param key string Message key
 --- @param params table? Parameters to inject into template
---- @param options table? Rendering options {level, timestamp}
+--- @param options table? Rendering options {level, timestamp, channel}
 --- @return boolean success, number? message_length Length of visible message (excluding color codes)
 function Messages.send(namespace, key, params, options)
     params = params or {}

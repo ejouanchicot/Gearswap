@@ -84,7 +84,7 @@ local _stats = {
 --- Send message to chat with rendering options
 --- @param message string The formatted message
 --- @param color number FFXI color code
---- @param options table? {level = number (filter level), namespace = string (stats)}
+--- @param options table? {level = number (filter level), namespace = string (stats), channel = number (chat channel in place of the template's)}
 function MessageRenderer.send(message, color, options)
     options = options or {}
 
@@ -102,6 +102,11 @@ function MessageRenderer.send(message, color, options)
     -- Apply color scheme transformation
     if _config.color_mode ~= "normal" then
         color = MessageRenderer.transform_color(color)
+    end
+    -- A chat channel chosen by the caller (a block shown in the synthesis window:
+    -- info_block.lua spec.channel); the template's own colour codes stay
+    if options.channel then
+        color = options.channel
     end
 
     -- Ensure message is a string
