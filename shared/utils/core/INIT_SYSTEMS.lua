@@ -387,6 +387,15 @@ pcall(function()
     end
 end)
 
+-- A coloured line after each synthesis: NQ, HQ 1 to 3, Break and what it
+-- lost (shared/utils/craft/synth_results.lua), every job.
+pcall(function()
+    local ok, SynthResults = pcall(require, 'shared/utils/craft/synth_results')
+    if ok and SynthResults then
+        SynthResults.init()
+    end
+end)
+
 -- Spells a job's midcast does not route (a subjob's magic) go through
 -- MidcastManager anyway. Laid before the custom states hook below, which
 -- wraps it, so the player's custom gear still goes on last.
