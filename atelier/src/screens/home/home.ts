@@ -10,7 +10,7 @@
 export interface HomeRow { c: string; name: string; dim: boolean; role: string; roleColor: string; emblemHtml: string; badgeHtml: string; sub: string; sets: number; keys: number; bookHtml: string; styleHtml: string; atHtml: string }
 export interface HomeView {
   welcome: null | {title: string; lede: string; gameT: string; steps: string[][]; gameWhy: string; filesT: string; files1: string; filesWhy: string; busy: boolean; btn: string; msg: string; fail: boolean};
-  table: null | {kicker: string; char: string; summary: string; heads: string[]; rows: HomeRow[]; foot: string};
+  table: null | {kicker: string; char: string; summary: string; heads: string[]; rows: HomeRow[]; foot: string; add: {on: boolean; label: string; title: string}};
 }
 
 // The page shown when nothing is exported yet: the steps in game, the commands set in them
@@ -35,5 +35,7 @@ export function homeView(): HomeView | null {
     return {c, name, dim: dim.has(c), role: t('roles.' + r), roleColor: ROLE_COLOR[r] || '', emblemHtml: emblem(c), badgeHtml: jobBadge(c), sub: d.sub || '—',
       sets: n.sets, keys: n.keys, bookHtml: bookOf(d), styleHtml: styleOf(d), atHtml: esc(d.at || '—') + (d.offline ? ' · ' + t('offline') : '')}; });
   return {welcome: null, table: {kicker: t('overview'), char: S.char, summary: t('summary', {j: jobs.length, s: totS, k: totK}), rows, foot: t('mock'),
+    // "Add a job" (atelier/app/js/add_job.js): GearSwap makes the files, so the game must run on this character
+    add: {on: liveOk(S.char), label: t('ajAdd'), title: liveOk(S.char) ? t('ajAddTip', {c: S.char}) : t('ajNoLive', {c: S.char})},
     heads: [t('colJob'), t('colRole'), t('colSub'), t('colSets'), t('colKeys'), t('macro'), t('lockstyle'), t('colExport')]}};
 }

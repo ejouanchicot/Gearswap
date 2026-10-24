@@ -1,6 +1,7 @@
 <!--
   GearSwap Atelier · the played jobs on the left of a tab (the job's settings...): by master level then by role, the
-  shown one marked; a click changes job and keeps the tab (the old page's handler: events.js data-jobkeep).
+  shown one marked; a click changes job and keeps the tab (the old page's handler: events.js data-jobkeep). Under them,
+  "Add a job" (add_job.js data-addjob).
   It was the old page's jobListHTML (sets_view.js).
 
   @file    atelier/src/screens/config/JobList.svelte
@@ -25,6 +26,9 @@
     }
     return all.map(g => ({key: g.label || '', label: g.label || '', role: null, master: !!g.master, count: g.jobs.length, rows: g.jobs.map(j => row(j, !g.master))}));
   });
+  // "Add a job" (atelier/app/js/add_job.js): GearSwap makes the files, so the game must run on this character
+  const add = $derived.by(() => { legacy.version; const c = S.char, on = liveOk(c);
+    return {on, label: t('ajAdd'), title: on ? t('ajAddTip', {c}) : t('ajNoLive', {c})}; });
 </script>
 
 <aside class="setlist joblist"><div class="scroll">
@@ -34,4 +38,5 @@
       <button class="setrow jobrow" class:dim={r.dim} data-jobkeep={r.job} aria-current={r.current} style:--role={ROLE_COLOR[r.role]} title={r.title}>{@html r.emblem}<b>{r.job}</b><small>{r.name}</small>{@html r.badge}</button>
     {/each}
   {/each}
+  <button class="linkbtn addjobbtn" data-addjob disabled={!add.on} title={add.title}>{add.label}</button>
 </div></aside>

@@ -1464,3 +1464,12 @@
 .bvroles{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px 16px;margin-left:auto;min-width:0}
 .bvroles .bvpick{white-space:nowrap}
 .bvroles .bvpick select{max-width:min(330px,60vw)}
+/* "Add a job" (add_job.js): the button under the played jobs, the jobs to pick in its window */
+.joblist .addjobbtn{display:block;margin:10px 8px 4px;font-size:12px;text-align:left}
+.joblist .addjobbtn:disabled{opacity:.5;cursor:default}
+.ajgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:10px}
+.ajgrid .btn{display:flex;align-items:center;gap:6px;justify-content:flex-start;padding:5px 8px;text-align:left;min-width:0}
+.ajgrid .btn small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ajgrid .btn svg,.ajgrid .btn img{width:18px;height:18px;flex:none}
+.note-foot .addjobhome{margin-right:10px;padding:3px 10px;font-size:12px}
+.note-foot .addjobhome:disabled{opacity:.5;cursor:default}

@@ -18,6 +18,8 @@
 ---                              arranged) only
 ---   GET  /actions              the job's spells, abilities and weapon skills
 ---   GET  /sim_buffs            the buffs the job's code reads (Simulate's buff choices)
+---   POST /addjob?job=WHM        a job added to this character from the templates (job_adder.lua): its entry,
+---                              its settings, its sets without pieces, character_db.lua; nothing written over
 ---   POST /bag_plan              the page's tidy-up plan (id, from bag, to bag, name a line), kept for
 ---                              //gs c bags (shared/utils/wardrobe/bag_mover.lua)
 ---   POST /icons?ids=1,2,3      writes the icons of those items the page lacks (pieces you
@@ -367,6 +369,12 @@ local function route(req, live)
         local result = require('shared/utils/atelier/porter_lists').write(job)
         if result.ok then result.porterpacker = require('shared/utils/atelier/porter_lists').compare(job) end
         return '200 OK', Export.json(result)
+    end
+    if req.path == '/addjob' and req.method == 'POST' then
+        -- a job added to this character from the templates (shared/utils/atelier/job_adder.lua); the player then
+        -- changes to it in game
+        -- (a refusal is an answer too: {ok = false, error = 'exists' | 'template' | 'job' | 'char'})
+        return '200 OK', Export.json(require('shared/utils/atelier/job_adder').add(query_table(req.query).job))
     end
     if req.path == '/bag_plan' and req.method == 'POST' then
         -- the page's tidy-up plan, one move a line; played by //gs c bags go (shared/utils/wardrobe/bag_mover.lua)

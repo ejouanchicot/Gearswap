@@ -75,7 +75,8 @@ function LogKeeper.prune(char, now)
     local limit, gone, seen = (now or os.time()) - LogKeeper.KEEP_DAYS * 86400, 0, 0
     local base = windower.addon_path .. 'data/' .. char .. '/logs/'
     for _, topic in ipairs(LogKeeper.DATED) do
-        for _, name in ipairs(windower.get_dir(base .. topic) or {}) do
+        local ok, names = pcall(windower.get_dir, base .. topic)
+        for _, name in ipairs(ok and names or {}) do
             local at = dated(name)
             if at then seen = seen + 1 end
             if at and at < limit and os.remove(base .. topic .. '/' .. name) then gone = gone + 1 end
