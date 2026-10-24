@@ -166,19 +166,27 @@ function bpPlan(B){
 }
 // A line that does not hold: things with no room, a category no bag takes, or the heaviest job over its bags
 function bpLineBad(l){ return !l.free && (l.over > 0 || (l.need > 0 && !l.room) || (l.id === 'job' && l.need > l.room)); }
+// Where the list and the tab are scrolled, put back after a redraw: picking things and filing them must leave the list
+// where the player is (it went back to its top, the player, 2026-10-24); again a frame later, after bvFit sized it
+function bpKeepScroll(){
+  const at = ['#bvlist', '.tabmain'].map(q => { const el = document.querySelector(q); return el ? [q, el.scrollTop] : null; }).filter(Boolean);
+  const put = () => at.forEach(([q, top]) => { const el = document.querySelector(q); if (el && el.scrollTop !== top) el.scrollTop = top; });
+  return () => { put(); requestAnimationFrame(put); };
+}
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-bptag],[data-bpall],[data-bpnone],[data-bpunk],[data-bpwrong],[data-bpsee],[data-bpick]'); if (!b) return; const d = b.dataset;
   S._bagPick = S._bagPick || new Set();
+  const back = bpKeepScroll(), redraw = () => { render(); back(); };
   if (d.bpsee) { S.bagSel = 'all'; S.bagUse = 'all'; S.bagCat = 'all'; S.bagQ = ''; S.bagPc = d.bpsee; save(); render(); return; }
   if ('bpwrong' in d) { S.bagSel = 'all'; S.bagUse = 'bad'; S.bagCat = 'all'; S.bagQ = ''; S.bagPc = ''; save(); render(); return; }
   if ('bpunk' in d) { S.bagSel = 'all'; S.bagUse = 'unk'; S.bagCat = 'all'; S.bagQ = ''; S.bagPc = ''; save(); render(); return; }
-  if ('bpnone' in d) { S._bagPick.clear(); render(); return; }
-  if ('bpall' in d) { document.querySelectorAll('#bvlist [data-bpick]').forEach(el => S._bagPick.add(el.dataset.bpick)); render(); return; }
+  if ('bpnone' in d) { S._bagPick.clear(); redraw(); return; }
+  if ('bpall' in d) { document.querySelectorAll('#bvlist [data-bpick]').forEach(el => S._bagPick.add(el.dataset.bpick)); redraw(); return; }
   // the page drawn again: the Bags view (atelier/src/screens/perso) marks the item and redraws the selection's bar only
-  if (d.bpick) { if (S._bagPick.has(d.bpick)) S._bagPick.delete(d.bpick); else S._bagPick.add(d.bpick); render(); return; }
+  if (d.bpick) { if (S._bagPick.has(d.bpick)) S._bagPick.delete(d.bpick); else S._bagPick.add(d.bpick); redraw(); return; }
   // file the selection: by item (every copy of it), kept by character
   const tags = Object.assign({}, bpTags()); for (const id of S._bagPick) { if (d.bptag) tags[id] = d.bptag; else delete tags[id]; }
-  S.bagTags = Object.assign({}, S.bagTags, {[S.char]: tags}); S._bagPick.clear(); bpTouch(); render();
+  S.bagTags = Object.assign({}, S.bagTags, {[S.char]: tags}); S._bagPick.clear(); bpTouch(); redraw();
 });
 
 /* ---- the moves of the plan, sent to the game ---- */
