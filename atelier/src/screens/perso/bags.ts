@@ -14,7 +14,7 @@
 export interface BagTile { name: string; kind: 'porter' | 'locked' | 'bag'; cls: string; pressed: boolean; title: string; used: number; max: number; pct: number;
   role: {title: string; short: string; bad: null | {title: string; n: number}} }
 export interface BagGroup { place: string; state: string; title: string; mark: null | {title: string; text: string}; tiles: BagTile[] }
-export interface BagItem { id: string; split: boolean; bad: boolean; picked: boolean; unk: boolean; title: string; iconHtml: string; name: string;
+export interface BagItem { id: string; split: boolean; bad: boolean; picked: boolean; unk: boolean; title: string; iconHtml: string; name: string; mine: string;
   badLine: string; augs: string; use: null | {none: string} | {lock: string; jobs: string[]; more: number; cfg: string}; places: null | {prefix: string; bags: string[]}; n: number }
 export interface PlanCard { key: string; cls: string; tip: string; title: string; free: boolean; need: number; now: number; room: string; nowTip: string;
   pct: number; verdict: {ok: boolean; text: string; left: string}; flow: string; bags: string[]; mule: null | {title: string; text: string};
@@ -129,7 +129,8 @@ function itemOf(B: LegacyAny, r: LegacyAny, sel: string): BagItem {
   return {id: String(r.id), split: r.where.length > 1, bad: r.bad.length > 0, picked: ((S._bagPick || new Set()) as Set<string>).has(String(r.id)), unk: cat === 'unknown',
     title: tip + '\n' + t('bpCatTip', {c: bpCatName(cat), m: mine ? t('bpByYou') : ''}) + (cat === 'npc' && bpNpc(r.info.name) ? '\n' + t('bpNpcAt', {n: bpNpc(r.info.name)}) : '')
       + (lock ? '\n' + t('bpLockOf', {l: lock.join(', ')}) : '') + (why ? '\n⚠ ' + why : ''),
-    iconHtml: itemIco(r.info.name, r.id), name: r.info.name,
+    // a category filed by hand, shown on the line (the page's own guess shows in the tooltip only)
+    iconHtml: itemIco(r.info.name, r.id), name: r.info.name, mine: mine ? bpCatName(cat).split(' (')[0]! : '',
     badLine: r.bad.length ? (sel === 'all' ? r.bad.map((x: LegacyAny) => bvShort(x.bag)).join(', ') + ' ' : '') + '→ ' + bpDest(B, r) : '',
     augs: r.augs ? r.augs.join(' · ') : '', use: useOf(r), places: others.length ? {prefix: sel === 'all' ? '' : '+ ', bags: others.map((w: LegacyAny) => bvShort(w.bag))} : null, n: r.n};
 }

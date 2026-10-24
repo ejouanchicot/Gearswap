@@ -1275,6 +1275,9 @@
 .bvpick select{font:inherit;font-size:12.5px;padding:3px 8px;border:1px solid var(--line-strong);border-radius:var(--radius-s);background:var(--well);color:var(--ink)}
 .bvitem.bad{box-shadow:inset 2px 0 0 var(--warn,#e3b341)}
 .bvitem .bvx{flex:none;padding:0 5px;border-radius:4px;font-size:10px;font-weight:700;background:color-mix(in srgb,var(--warn,#e3b341) 20%,transparent);color:var(--warn,#e3b341);overflow:visible}
+/* a category filed by hand (bags_plan.js S.bagTags): its name on the line; what comes after it keeps its place on the right */
+.bvitem .bvt{flex:none;padding:0 5px;border-radius:4px;font-size:10px;font-weight:600;background:var(--accent-soft);color:var(--accent);overflow:visible}
+.bvitem .bvt + .bvu,.bvitem .bvt + .bvw,.bvitem .bvt + em{margin-left:auto}
 /* the bags' tiles all the same size, in columns that line up: one grid a group */
 .bvtop{display:grid;grid-template-columns:150px minmax(0,1fr) 316px 150px;gap:10px;align-items:stretch}
 .bvtop > .bvgroup,.bvtop > .bvgroup.self,.bvtop > .bvgroup.house,.bvtop > .bvgroup.porter{flex:none;min-width:0}
