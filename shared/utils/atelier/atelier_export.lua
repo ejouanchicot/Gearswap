@@ -420,7 +420,7 @@ end
 --- @param data table The export
 --- @param body string json(data)
 --- @return string|nil The file written, relative to data/
-local function write_export(data, body)
+local function write_export(data, body, no_index)
     -- <Char>/atelier/exports/ (char_paths.lua), the old saved/atelier/ copy of the same file taken out after
     local dir, old = require('shared/utils/core/char_paths').atelier_dir('exports')
     if not dir then return nil end
@@ -436,7 +436,7 @@ local function write_export(data, body)
     if not write(data_path(rel), text) then return nil end
     os.remove(data_path(folder .. player.main_job .. '.js'))
     if old then os.remove(old .. '/' .. player.main_job .. '_' .. sub .. '.js'); os.remove(old .. '/' .. player.main_job .. '.js') end
-    write_index()
+    if not no_index then write_index() end
     return rel
 end
 
@@ -487,7 +487,7 @@ function AtelierExport.export_spread(no_file)
     local data = new_data()
     if not data then windower._atelier_spread = nil return end
     local gen, stages = windower._load_gen, build_stages(data)
-    local stage, keys, at, parts = 0, nil, 0, {}
+    local stage, keys, at, parts, body, written = 0, nil, 0, {}, nil, false
     -- the bags as the build starts: moved during it, the result is not given to the page (spread_result)
     local mark = {gen = gen, at = os.time(), bags = bag_signature(), tidy = windower._bags_changed}
     windower._atelier_spread = mark
@@ -503,9 +503,16 @@ function AtelierExport.export_spread(no_file)
                 at = at + 1
                 local text = json(data[keys[at]])
                 if text ~= 'null' then parts[#parts + 1] = json(tostring(keys[at])) .. ':' .. text end
+            -- the end on three frames: the text, the file, the index of the exports (one frame froze 0.1 to 0.4 s)
+            elseif not body then
+                body = '{' .. table.concat(parts, ',') .. '}'
+                return true
+            elseif not written then
+                written = true
+                if not no_file then write_export(data, body, true) end
+                return true
             else
-                local body = '{' .. table.concat(parts, ',') .. '}'
-                if not no_file then write_export(data, body) end
+                if not no_file then write_index() end
                 mark.body = body
                 return false
             end

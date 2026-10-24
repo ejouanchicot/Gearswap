@@ -387,6 +387,16 @@ pcall(function()
     end
 end)
 
+-- The dated journals (logs/fights, enhtest, sortie) older than 60 days deleted,
+-- once a session, a moment after the load (shared/utils/core/log_keeper.lua).
+pcall(function()
+    require('shared/utils/core/load_gate').defer(30, function()
+        pcall(function()
+            require('shared/utils/core/log_keeper').prune_once(require('shared/utils/core/char_paths').name())
+        end)
+    end, 'log prune')
+end)
+
 -- A coloured line after each synthesis: NQ, HQ 1 to 3, Break and what it
 -- lost (shared/utils/craft/synth_results.lua), every job.
 pcall(function()

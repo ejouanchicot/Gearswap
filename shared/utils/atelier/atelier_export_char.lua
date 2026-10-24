@@ -119,8 +119,12 @@ end
 --- The game's description of each item ({["id"] = text}, string keys so the JSON
 --- stays an object): the page reads every piece's stats from it.
 local function collect_descs(ids)
-    local ok, res = pcall(require, 'resources')
+    -- GearSwap's own resources, kept across loads: the item descriptions are read once a session, not at every
+    -- load's export (0.15 to 0.3 s of this stage after each load)
+    local ok, res = pcall(function() return (type(gearswap) == 'table' and gearswap.res) or require('resources') end)
     local book = ok and res and res.item_descriptions
+    -- (GearSwap's resources without the descriptions: the library's own, as before)
+    if not book then local okr, lib = pcall(require, 'resources'); book = okr and lib and lib.item_descriptions end
     if not book then return nil end
     local descs = {}
     for _, id in ipairs(ids) do

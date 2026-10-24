@@ -84,9 +84,14 @@ local function say(title, fields, lines)
     require('shared/utils/messages/info_block').show({tag = 'BAGS', title = title, fields = fields, lines = lines})
 end
 
---- One line in the journal of moves.
+--- One line in the journal of moves (past 2 MB it goes to bag_moves.old.log, looked at once a load: log_keeper.lua).
+local journal_checked = false
 local function journal(text)
     local ok, path = pcall(function() return require('shared/utils/core/char_paths').writable('atelier', 'bag_moves.log') end)
+    if ok and path and not journal_checked then
+        journal_checked = true
+        pcall(function() require('shared/utils/core/log_keeper').rotate(path) end)
+    end
     local file = ok and path and io.open(path, 'a')
     if not file then return end
     file:write(os.date('%Y-%m-%d %H:%M:%S') .. '  ' .. text .. '\n')

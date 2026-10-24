@@ -140,9 +140,16 @@ when its command runs, so any of them can be deleted:
 | `logs/rolls/` | `rolldebug.log`: COR roll check | `//gs c rolldebug` |
 | `logs/dualbox/` | `altbuff.log`: alt buff reports | `//gs c altdebug` |
 | `logs/wardrobe/` | `wardrobe_debug.log`: the last wardrobe organizer run | `//gs c wo` |
+| `logs/craft/` | `synth.log`: every synthesis result packet as the game sent it (NQ, HQ tier, break, what was lost) | every synthesis, always |
 
 A journal left in `saved/` or in `data/` by an older version moves there the next
 time it is written.
+
+**They never grow without end** (`shared/utils/core/log_keeper.lua`): a journal written line after line
+(`synth.log`, `rolldebug.log`, `altbuff.log`, `atelier/bag_moves.log`...) is moved to `<name>.old.log` once it passes
+2 MB, one old copy kept; the trace keeps its own 10 MB rule. In `logs/fights/`, `logs/enhtest/` and `logs/sortie/`,
+a day's or a run's file is never cut in two; the files dated more than 60 days ago are deleted, once a session, half a
+minute after GearSwap loads.
 
 `dualbox_role.lua` is written by `//gs c main` and `setalt`: it wins over the
 role in `DUALBOX_CONFIG.lua`. A re-clone does **not** keep it, on purpose: the

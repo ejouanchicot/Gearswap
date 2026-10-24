@@ -208,6 +208,18 @@ local function refused_token(live)
     return '403 Forbidden', '{"error":"token"}'
 end
 
+--- How full each bag is now (atelier_place.lua bag_counts), and since when it holds (live.bag_at): read at every
+--- /ping, so /export knows the bags have been still for long without making the page wait first.
+--- @param live table The door's state
+--- @return string|nil
+local function bags_seen(live)
+    local ok, counts = pcall(function() return require('shared/utils/atelier/atelier_place').bag_counts() end)
+    local sig = ok and counts or nil
+    -- (the first look is no move: the bags as the door opened; a nil after it, a zone, is no first look)
+    if sig ~= live.bag_sig then live.bag_at = live.bag_seen and os.time() or 0; live.bag_sig, live.bag_seen = sig, true end
+    return sig
+end
+
 local function route(req, live)
     -- a browser always says where a request comes from; a web site's is refused (a page from the disk sends "null")
     local origin = req.headers['origin']
@@ -237,10 +249,7 @@ local function route(req, live)
             -- ExportBags.changed): the page reads the bags again
             tidy = windower._bags_changed,
             -- how full each bag is: the page reads the bags again when it changed and has settled
-            bags = (function()
-                local ok, counts = pcall(function() return require('shared/utils/atelier/atelier_place').bag_counts() end)
-                return ok and counts or nil
-            end)(),
+            bags = bags_seen(live),
             -- where the character stands: zone, Mog House, moogles around, bags open there (atelier_place.lua)
             place = (function()
                 local ok, place = pcall(function() return require('shared/utils/atelier/atelier_place').read() end)
@@ -257,9 +266,7 @@ local function route(req, live)
         -- those moves while the page was open (trace, 2026-10-24)
         -- not while the bags still move (a craft, //gs c wo, PorterPacker): 4 s of calm first, as the page waits
         -- before it asks, or each tick would start the export again
-        local ok_c, counts = pcall(function() return require('shared/utils/atelier/atelier_place').bag_counts() end)
-        local sig = ok_c and counts or nil
-        if sig ~= live.bag_sig then live.bag_sig, live.bag_at = sig, os.time() end
+        bags_seen(live)
         if os.time() - (live.bag_at or 0) < BAGS_CALM then return '503 Service Unavailable', '{"error":"building"}' end
         Export.export_spread(not Export.enabled())
         state, body = Export.spread_result()

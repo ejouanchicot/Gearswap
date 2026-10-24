@@ -38,6 +38,9 @@
 ---       rolls/                   rolldebug.log (COR //gs c rolldebug)
 ---       dualbox/                 altbuff.log (//gs c altdebug)
 ---       wardrobe/                wardrobe_debug.log (//gs c wo)
+---       craft/                   synth.log (every synthesis: craft/synth_results.lua)
+---                                (past 2 MB a journal goes to <name>.old.log; dated
+---                                files older than 60 days are deleted: log_keeper.lua)
 ---                                (before 2026-10-07 in saved/ or in data/: moved
 ---                                here when written again)
 ---   <Char>/atelier/              what the Atelier page (data/atelier.html) writes
@@ -375,6 +378,11 @@ function CharPaths.log(topic, file, char, old)
             if exists(before) then os.rename(before, path) break end
         end
     end
+    -- a journal past 2 MB goes to <name>.old.log, once a load (log_keeper.lua); not the trace nor the dated files
+    pcall(function()
+        local LogKeeper = require('shared/utils/core/log_keeper')
+        if LogKeeper.rotates(topic) then LogKeeper.rotate(path) end
+    end)
     log_paths[key] = path
     return path
 end
