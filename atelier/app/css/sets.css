@@ -1460,3 +1460,7 @@
    under it instead of cutting the name ("Bonanza ...", the Misplaced filter) */
 .bvitem{height:auto;min-height:26px;flex-wrap:wrap;row-gap:2px;padding-top:2px;padding-bottom:2px}
 .bvitem b{flex:0 0 auto;max-width:100%}
+/* the menus of what a bag is for, side by side on the right of the band, together (the band spreads its children) */
+.bvroles{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px 16px;margin-left:auto;min-width:0}
+.bvroles .bvpick{white-space:nowrap}
+.bvroles .bvpick select{max-width:min(330px,60vw)}
