@@ -16,7 +16,7 @@ import {limitTile, limitsView, changesView, searchView, type LimitsView, type Ch
 export interface StatWhatView {
   floors: LimitsView; floorsAfterHtml: string; titleHtml: string; help: string;
   groups: Array<{label: string; objs: Array<{k: string; on: boolean; name: string; desc: string}>}>; toggle: string;
-  then: {label: string; selects: Array<{i: number; options: Array<{value: string; label: string; selected: boolean}>}>};
+  then: {label: string; selects: Array<{i: number; value: string; none: {value: string; label: string; selected: boolean}; groups: Array<{label: string; options: Array<{value: string; label: string; selected: boolean}>}>}>};
   own: null | {tip: string; checked: boolean; label: string}; notes: string[]; boxes: Array<{key: string; checked: boolean; label: string}>; enf: EnfNote | null; search: SearchView; weaponsNote: string;
 }
 export interface StatResultView {
@@ -36,6 +36,17 @@ function enfNote(s: LegacyAny): EnfNote | null {
   return {kind, spells: e.spells.join(', '), sab: S.job === 'RDM' ? {checked: !!e.sab, label: t('enfSabBox')} : null,
     note: (e.via ? t('enfVia', {j: (S as LegacyAny).job, s: (data() || {}).sub, v: e.via}) + ' ' : '') + t('enfNote', {s: e.spells.slice(0, 3).join(', '), m: e.tMnd, i: e.tInt, tg: e.target,
       sab: e.sab ? 'Saboteur ' + (e.nm ? (lang === 'fr' ? '×1,25' : '×1.25') + ' (NM)' : '×2') : t('enfNoSab'), c: e.comp ? t('enfComp') : t('enfNoComp')})};
+}
+
+// A "then, as tiebreakers" menu: by kind like the objectives above (STAT_OBJ_GROUPS), only the ones that mean
+// something for this set (shown), the one already chosen kept wherever it is
+function thenSelect(i: number, objs: string[], cur: string, shown: Set<string>) {
+  const sel = objs[i] || '', opt = (k: string) => ({value: k, label: t('statObj_' + k), selected: sel === k});
+  const keep = (k: string) => k !== cur && (shown.has(k) || k === sel);
+  const grouped = new Set<string>(STAT_OBJ_GROUPS.flatMap(([, keys]: [string, string[]]) => keys));
+  const groups = STAT_OBJ_GROUPS.map(([g, keys]: [string, string[]]) => ({label: t('statGrp_' + g), options: keys.filter(keep).map(opt)}))
+    .concat([{label: '…', options: STAT_OBJS.filter((k: string) => !grouped.has(k) && keep(k)).map(opt)}]).filter((g: LegacyAny) => g.options.length);
+  return {i, value: sel, none: {value: '', label: t('statNone'), selected: sel === ''}, groups};
 }
 
 /** The left column of a stats search (statWhatHTML) */
@@ -67,7 +78,7 @@ export function statWhatView(s: LegacyAny): StatWhatView {
   if (['PLD', 'RUN'].includes(S0.job)) notes.push(t('statAssumed', {m: S0.job === 'PLD' ? t('statAssumedMaj') : ''}));
   return {floors, floorsAfterHtml, titleHtml: t('opWhat') + ' ' + helpBtn('optpage'), help: S0._help === 'optpage' ? t('statWhy') + ' ' + t('opHelp') : '', groups,
     toggle: all || hidden ? (all ? t('statFewer') : t('statAll', {n: hidden})) : '',
-    then: {label: t('statThen'), selects: [1, 2].map(i => ({i, options: ['', ...STAT_OBJS].filter(k => k !== cur).map(k => ({value: k, label: k ? t('statObj_' + k) : t('statNone'), selected: (so.objs[i] || '') === k}))}))},
+    then: {label: t('statThen'), selects: [1, 2].map(i => thenSelect(i, so.objs, cur, shown))},
     own: jaList.length ? {tip: t('statKeepOwnTip', {b: segs(s.path).pop()}), checked: keptSlots(s).length > 0,
       label: t('statKeepOwn', {p: jaList.map((sl: string) => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')})} : null,
     notes, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
