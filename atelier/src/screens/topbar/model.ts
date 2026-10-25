@@ -96,6 +96,9 @@ function liveOf(): TopBarModel['live'] {
     busy && what === busy.what ? {attr: '', icon, label, title: t('busy_' + what), mid: true, busy: true, disabled: true}
       : {attr, icon, label, title, disabled: !!busy};
   const out = {label: 'GearSwap', lamp: null, state: null, list: [] as Command[]};
+  // a job with no file (data/default.lua): nothing to jump to, Reload once the job is added
+  if (ok && L.nofile && !busy) return Object.assign(out, {lamp: {text: `${t('liveOn')} · ${job}/${sub} · ${t('liveNoFile')}`, title: t('liveNoFileTip', {j: job}), disabled: true},
+    list: [cmd('data-livereload', '⟳', t('cmdReload'), t('cmdReloadTip'), 'reload')]});
   if (ok) return Object.assign(out, {lamp: {text: `${t('liveOn')} · ${job}/${sub}`, title: t('liveJump'), disabled: !!busy},
     list: [cmd('data-livereload', '⟳', t('cmdReload'), t('cmdReloadTip'), 'reload'), cmd('data-liverestart', '↺', t('cmdRestart'), t('cmdRestartTip'), 'restart')]});
   if (linked) return Object.assign(out, {state: {text: `● ${t('linkOnly')}`, title: t('linkOnlyHow'), linked: true},

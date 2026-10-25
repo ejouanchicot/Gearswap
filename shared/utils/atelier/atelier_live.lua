@@ -51,7 +51,9 @@
 --- a settings file may only have its values changed (atelier_configs.lua). The door stays open across job loads
 --- (windower._atelier_live) and closes with the addon.
 ---
---- Opened at every GearSwap load (AtelierExport.after_load), for every
+--- For a job with no file (data/default.lua), /ping (with nofile = true), /addjob and /reload only.
+---
+--- Opened at every GearSwap load (AtelierExport.after_load, or shared/entry/no_job_file.lua), for every
 --- character: //gs c atelier live off closes it for this character (marker
 --- <Char>/atelier/live.off), //gs c atelier live opens it again.
 ---
@@ -69,6 +71,8 @@ local MAX_BODY = 2 * 1024 * 1024
 local POLL_EVERY = 6   -- frames between two looks at the door
 local BAD_TOKENS, BAD_WINDOW = 30, 60   -- refused tokens that close the door, within that many seconds
 local BAGS_CALM = 4     -- seconds the bags hold still before /export builds again for them (the page waits as long)
+-- what the door answers for a job with no file (shared/entry/no_job_file.lua)
+local NO_FILE_PATHS = {['/ping'] = true, ['/addjob'] = true, ['/reload'] = true}
 
 local function socket_lib()
     local ok, gs = pcall(function() return gearswap end)
@@ -235,6 +239,9 @@ local function route(req, live)
         if given == nil then return '403 Forbidden', '{"error":"token"}' end
         return refused_token(live)
     end
+    -- a job with no file (data/default.lua: shared/entry/no_job_file.lua): no job code to export or simulate
+    local no_file = rawget(_G, 'AtelierNoJobFile') == true
+    if no_file and not NO_FILE_PATHS[req.path] then return '503 Service Unavailable', '{"error":"no job file"}' end
     local Export = require('shared/utils/atelier/atelier_export')
     -- a built export as the page gets it from here: marked live
     local function live_body(body) return body == '{}' and '{"live":true}' or body:sub(1, -2) .. ',"live":true}' end
@@ -245,7 +252,7 @@ local function route(req, live)
         local alt_state = rawget(_G, 'AltJobState')
         local alt = type(alt_state) == 'table' and alt_state.online ~= nil and alt_state.job or nil
         return '200 OK', Export.json({player = player and player.name, job = player and player.main_job,
-            sub = player and player.sub_job, version = live.version, boot = live.boot, alt = alt,
+            sub = player and player.sub_job, version = live.version, boot = live.boot, alt = alt, nofile = no_file or nil,
             stat = windower._atelier_stat_seq or 0, rebuild = windower._atelier_rebuild,
             -- when a command last moved things between the bags (//gs c bags go, //gs c wo:
             -- ExportBags.changed): the page reads the bags again

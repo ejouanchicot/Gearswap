@@ -52,6 +52,8 @@ DATA_FILES = ['data/atelier.html', 'data/atelier/index.html', 'data/atelier/opt.
               # the gear catalogue the page reads (atelier/gear/: its build scripts and caches stay out)
               'data/atelier/gear/items.js', 'data/atelier/gear/augments_ranked.js', 'data/atelier/gear/capes.js',
               'data/atelier/gear/augments_parse.js',
+              # what GearSwap loads for a job with no file: the Atelier's live link only (shared/entry/no_job_file.lua)
+              'data/default.lua',
               # the version shipped and its file list: the Atelier's update starts from them (scripts/release/release.py)
               'data/VERSION', 'data/release_manifest.json']
 # Never inside a package, wherever it is

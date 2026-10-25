@@ -456,6 +456,22 @@ end
 --- Keys in conflict at the last bind_all / refresh of the job loaded now
 --- (shared/utils/keybinds/key_conflicts.lua), for the HUD.
 --- @return table Set: key -> true
+--- Every key this manager laid down taken off, through the paced queue: for a load that binds none of its own
+--- (shared/entry/no_job_file.lua), where the keys the last job file kept for the next load would stay live. A
+--- pending re-assert of the last load's keys (keybind_guard.lua) is cancelled first.
+--- @return number Keys unbound
+function KeybindManager.release_all()
+    windower._keybind_guard_seq = (windower._keybind_guard_seq or 0) + 1
+    windower._keybind_sent_this_load = {}
+    local keys = {}
+    for key in pairs(bound_keys()) do keys[#keys + 1] = key end
+    for _, key in ipairs(keys) do
+        send_unbind(key)
+        bound_keys()[key] = nil
+    end
+    return #keys
+end
+
 function KeybindManager.conflict_keys()
     local module = rawget(_G, '_keybind_active')
     return module and module._conflict_keys or {}

@@ -9,12 +9,14 @@ Object.assign(T.fr, {ajAdd: '+ Ajouter un job', ajAddTip: 'Crée un job de plus 
   ajNoLive: 'Le jeu doit tourner sur {c} : c’est GearSwap qui crée les fichiers.', ajTitle: 'Ajouter un job à {c}',
   ajWhy: 'GearSwap crée le job à partir des modèles : son entrée, ses réglages (touches, HUD, macros, lockstyle…) et ses sets, avec tous leurs noms mais sans pièces : tu les remplis ici (Optimiser ce set). Aucun fichier existant n’est remplacé, aucun autre job n’est touché.',
   ajDone: '{j} ajouté à {c} ({n} fichier(s) créé(s){k}). Passe {c} en {j} en jeu : GearSwap le charge, et il arrive ici avec son premier export.',
+  ajDoneNow: '{j} ajouté à {c} ({n} fichier(s) créé(s){k}). Appuie sur Recharger en haut (ou //gs reload en jeu) : GearSwap charge le {j}, et il arrive ici avec son premier export.',
   ajKept: ', {n} déjà là gardé(s)', ajExists: '{c} a déjà un {j} ({c}_{j}.lua existe) : rien n’a été créé.', ajNoTemplate: 'Pas de modèle pour {j} : rien n’a été créé.',
   ajFail: 'Le jeu n’a pas répondu : rien n’a été créé.'});
 Object.assign(T.en, {ajAdd: '+ Add a job', ajAddTip: 'Makes one more job for {c} from the templates: its settings and its sets (empty, to fill here). Nothing that exists is touched.',
   ajNoLive: 'The game must run on {c}: GearSwap makes the files.', ajTitle: 'Add a job to {c}',
   ajWhy: 'GearSwap makes the job from the templates: its entry, its settings (keys, HUD, macros, lockstyle...) and its sets, every name but no piece: you fill them here (Optimize this set). No file that exists is replaced, no other job is touched.',
   ajDone: '{j} added to {c} ({n} file(s) made{k}). Change {c} to {j} in game: GearSwap loads it, and it comes here with its first export.',
+  ajDoneNow: '{j} added to {c} ({n} file(s) made{k}). Press Reload at the top (or //gs reload in game): GearSwap loads the {j}, and it comes here with its first export.',
   ajKept: ', {n} already there kept', ajExists: '{c} has a {j} already ({c}_{j}.lua exists): nothing was made.', ajNoTemplate: 'No template for {j}: nothing was made.',
   ajFail: 'The game did not answer: nothing was made.'});
 
@@ -32,7 +34,9 @@ async function addJob(job){
   let r;
   try { r = await liveOrder(c, '/addjob?job=' + encodeURIComponent(job), {method: 'POST', body: '', timeout: 8000}); } catch (e) { r = null; }
   // the answer in the same window (the list of the jobs has no message line of its own)
-  const msg = !r ? t('ajFail') : r.ok ? t('ajDone', {j: job, c, n: (r.files || []).length, k: (r.kept || []).length ? t('ajKept', {n: r.kept.length}) : ''})
+  // the job played with no file (data/default.lua): a reload loads it, no job change needed
+  const L = S._live[c] || {}, now = r && r.ok && L.nofile && L.job === job;
+  const msg = !r ? t('ajFail') : r.ok ? t(now ? 'ajDoneNow' : 'ajDone', {j: job, c, n: (r.files || []).length, k: (r.kept || []).length ? t('ajKept', {n: r.kept.length}) : ''})
     : r.error === 'exists' ? t('ajExists', {j: job, c}) : r.error === 'template' ? t('ajNoTemplate', {j: job}) : t('ajFail');
   ATELIER_DIALOG.show({cls: 'midlg ajdlg', titleHtml: esc(t('ajTitle', {c})), bodyHtml: `<p class="toast">${esc(msg)}</p>`});
 }

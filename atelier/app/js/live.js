@@ -205,6 +205,8 @@ Object.assign(T.fr, {cmdReload: 'Recharger', cmdRestart: 'Redémarrer', cmdFiles
 Object.assign(T.en, {cmdReload: 'Reload', cmdRestart: 'Restart', cmdFiles: 'Read',
   cmdReloadTip: 'Reload (//gs reload): reads your sets, your settings and the code again. Quick: use it after changing a piece, a key or a setting.',
   cmdRestartTip: 'Restart (//lua r gearswap): unloads then loads all of GearSwap, nothing is kept in memory. Use it when something behaves oddly, or after a code update.'});
+Object.assign(T.fr, {liveNoFile: 'pas de fichier', liveNoFileTip: 'GearSwap n’a pas de fichier pour {j} : rien n’est équipé. Ajoute-le (Vue d’ensemble : + Ajouter un job), puis Recharger.'});
+Object.assign(T.en, {liveNoFile: 'no file', liveNoFileTip: 'GearSwap has no file for {j}: nothing is equipped. Add it (Overview: + Add a job), then Reload.'});
 const BUSY_MS = {reload: 8000, restart: 30000, load: 30000, unload: 8000};
 Object.assign(T.fr, {busy_reload: 'Rechargement des fichiers…', busy_restart: 'GearSwap redémarre…', busy_load: 'GearSwap se charge…', busy_unload: 'Déchargement…'});
 Object.assign(T.en, {busy_reload: 'Reloading the files…', busy_restart: 'GearSwap restarts…', busy_load: 'GearSwap is loading…', busy_unload: 'Unloading…'});
@@ -272,8 +274,10 @@ async function liveTick(){
     const bagAt = ping.bags !== was.bagSig ? Date.now() : was.bagAt, settled = !!was.ok && ping.bags != null && was.bagGot != null && ping.bags !== was.bagGot && Date.now() - (bagAt || 0) >= 4000;
     const now = {ok: ping.player === c, job: ping.job, sub: ping.sub || 'NONE', version: ping.version, boot: ping.boot, at: was.at, tidy: ping.tidy, place: ping.place,
       bagSig: ping.bags, bagAt, bagGot: was.bagGot,
-      stat: ping.stat, statAt: ping.stat !== was.stat ? Date.now() : was.statAt, statGot: was.statGot};
-    if (ping.player === c && ping.job && (again || !was.ok || tidied || settled || was.building)) {
+      stat: ping.stat, statAt: ping.stat !== was.stat ? Date.now() : was.statAt, statGot: was.statGot,
+      // a job with no file (data/default.lua): nothing to export, only "+ Add a job" (add_job.js)
+      nofile: !!ping.nofile};
+    if (ping.player === c && ping.job && !ping.nofile && (again || !was.ok || tidied || settled || was.building)) {
       // 503: the game is still building this load's export a little a frame (atelier_export.lua spread_result), asked
       // again at the next tick; the game is there all the same
       const d = await liveFetch(c, '/export', {timeout: 8000}).catch(e => { if (/HTTP 503/.test(e.message)) { now.building = true; return null; } throw e; });
