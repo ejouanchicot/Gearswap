@@ -45,7 +45,7 @@ local CHARACTERS = {
     -- ALT CHARACTER
     ---------------------------------------------------------------------------
     Kaories = {
-        jobs = { 'RDM', 'COR', 'GEO', 'PLD' },
+        jobs = { 'RDM', 'COR', 'GEO', 'PLD', 'WHM' },
         role = 'alt',
     },
 
