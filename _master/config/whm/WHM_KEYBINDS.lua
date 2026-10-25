@@ -68,6 +68,11 @@ WHMKeybinds.binds = {
         state = "CastingMode"
     },
 
+    -- Weapons (WHM_STATES.lua MainWeapon / SubWeapon). Not on ^numpad1/^numpad2
+    -- as on the other weapon jobs: those keep Idle Mode and Combat Mode
+    { key = "^numpad7", command = "cyclestate MainWeapon", desc = "Main Weapon", state = "MainWeapon" },
+    { key = "^numpad8", command = "cyclestate SubWeapon", desc = "Sub Weapon", state = "SubWeapon" },
+
     -- Additional keybinds can be added here:
     -- Examples:
     --   • Auto-Devotion toggle

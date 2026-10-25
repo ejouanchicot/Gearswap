@@ -16,6 +16,15 @@ Object.assign(T.fr, {
   statObj_temper: 'Temper : %', statD_temper: 'floor((skill − 300) / 10) % d’attaque double (Temper) ou triple (Temper II, 40 au plus) : BG Wiki',
   statObj_enspell: 'Enspell : dégâts', statD_enspell: 'floor((skill − 180) / 8) + 25 par coup (BG Wiki), + 23 des cadeaux de Job Points à 2100 JP, ×3 sous Composure : mesuré en jeu',
   statObj_barEle: 'Bar-élément : résistance', statD_barEle: '25 + floor(skill / 4), 150 au plus dès 500 de skill, + les pièces (Shedir Seraweels +15) au-dessus : BG Wiki, mesuré en jeu',
+  statObj_cursna: 'Cursna+', statD_cursna: 'le Cursna+ des pièces (Gambanteinn +100, Alaunus’s Cape +25, Menelaus’s Ring +20…) : la chance de retirer Doom et Curse est multipliée par 1 + Cursna+ / 100 (BG Wiki Cursna, formule non confirmée)',
+  statObj_healSkill: 'Skill de soin', statD_healSkill: 'Healing Magic skill, sans gear + gear : la chance de Cursna en dépend (BG Wiki Cursna)',
+  statObj_auspice: 'Auspice : Subtle Blow', statD_auspice: 'Subtle Blow +10 donné par Auspice, + « Auspice » des pieds (Ebers Duckbills +3 +19, Orison Duckbills +2 +10…) : BG Wiki Auspice',
+  statObj_barStatus: 'Bar-statut : résistance', statD_barStatus: 'fixe : +30 sur toi, +20 en -ra, le skill n’y change rien ; + Sroda Necklace +20 (BG Wiki Category:Barspell)',
+  statObj_esunaPlus: 'Esuna : effets en plus', statD_esunaPlus: 'sous Afflatus Misery, les effets qu’Esuna retire en plus : Asclepius +3, Piety Wand +2, Cleric’s Wand +1 (BG Wiki Esuna)',
+  statObj_erasePlus: 'Erase : effets en plus', statD_erasePlus: 'les effets qu’Erase retire en plus : Cleric’s Torque +1 (BG Wiki Erase)',
+  statObj_naVeil: '-na : étendu', statD_naVeil: 'la tête Empyrean (Ebers Cap, Orison Cap) portée au cast étend le -na aux membres autour de la cible, à coup sûr avec Yagrush : 1 par pièce (ton guide WHM, §4.9)',
+  statObj_divAcc: 'Précision divine', statD_divAcc: 'skill Divine + précision magique + MND (sans gear + gear) : ce qui fait toucher Repose, Flash et Banish. Hypothèse : BG Wiki ne donne pas la formule de ces sorts',
+  statObj_mab: 'Bonus att. magique', statD_mab: 'Magic Attack Bonus des pièces. Hypothèse pour Banish et Holy : BG Wiki ne donne pas leur formule de dégâts',
   statObj_aquaveil: 'Aquaveil : interruptions', statD_aquaveil: '2 dès 301 de skill, 3 dès 501, + les pièces « Aquaveil » : BG Wiki',
   enhTagSelf: 'sur toi', enhTagOthers: 'sur les autres', enhBtnSelf: 'Sur toi', enhBtnOthers: 'Sur les autres',
   enhWhenSelf: 'Lancé sur toi : Composure triple la durée (30 min au plus).', enhWhenOthers: 'Lancé sur un autre joueur sous Composure : pas de ×3, seulement le bonus du set Lethargy.',
@@ -88,6 +97,15 @@ Object.assign(T.en, {
   statObj_temper: 'Temper: %', statD_temper: 'floor((skill − 300) / 10) % of Double Attack (Temper) or Triple Attack (Temper II, 40 at most): BG Wiki',
   statObj_enspell: 'Enspell: damage', statD_enspell: 'floor((skill − 180) / 8) + 25 a hit (BG Wiki), + 23 of the job point gifts at 2100 JP, x3 under Composure: measured in game',
   statObj_barEle: 'Bar-element: resistance', statD_barEle: '25 + floor(skill / 4), 150 at most from 500 of skill, + the pieces (Shedir Seraweels +15) over it: BG Wiki, measured in game',
+  statObj_cursna: 'Cursna+', statD_cursna: 'the pieces’ Cursna+ (Gambanteinn +100, Alaunus’s Cape +25, Menelaus’s Ring +20...): the chance to remove Doom and Curse is multiplied by 1 + Cursna+ / 100 (BG Wiki Cursna, formula not confirmed)',
+  statObj_healSkill: 'Healing skill', statD_healSkill: 'Healing Magic skill, without gear + gear: Cursna’s chance depends on it (BG Wiki Cursna)',
+  statObj_auspice: 'Auspice: Subtle Blow', statD_auspice: 'Subtle Blow +10 given by Auspice, + the feet’s “Auspice” (Ebers Duckbills +3 +19, Orison Duckbills +2 +10...): BG Wiki Auspice',
+  statObj_barStatus: 'Bar-status: resistance', statD_barStatus: 'fixed: +30 on yourself, +20 for the -ra, the skill changes nothing; + Sroda Necklace +20 (BG Wiki Category:Barspell)',
+  statObj_esunaPlus: 'Esuna: extra effects', statD_esunaPlus: 'under Afflatus Misery, the effects Esuna removes on top: Asclepius +3, Piety Wand +2, Cleric’s Wand +1 (BG Wiki Esuna)',
+  statObj_erasePlus: 'Erase: extra effects', statD_erasePlus: 'the effects Erase removes on top: Cleric’s Torque +1 (BG Wiki Erase)',
+  statObj_naVeil: '-na: spread', statD_naVeil: 'the Empyrean head (Ebers Cap, Orison Cap) worn at the cast spreads the -na to the members around its target, every time with Yagrush: 1 a piece (your WHM guide, §4.9)',
+  statObj_divAcc: 'Divine accuracy', statD_divAcc: 'Divine skill + magic accuracy + MND (without gear + gear): what lands Repose, Flash and Banish. Assumed: BG Wiki gives no formula for these spells',
+  statObj_mab: 'Magic attack bonus', statD_mab: 'the pieces’ Magic Attack Bonus. Assumed for Banish and Holy: BG Wiki gives no damage formula for them',
   statObj_aquaveil: 'Aquaveil: interruptions', statD_aquaveil: '2 from 301 of skill, 3 from 501, + the “Aquaveil” pieces: BG Wiki',
   enhTagSelf: 'on yourself', enhTagOthers: 'on the others', enhBtnSelf: 'On yourself', enhBtnOthers: 'On the others',
   enhWhenSelf: 'Cast on yourself: Composure triples its length (30 min at most).', enhWhenOthers: 'Cast on another player under Composure: no ×3, the Lethargy set’s bonus only.',
@@ -151,7 +169,8 @@ Object.assign(T.en, {
   tkCrit: 'Enemy critical hits', tkCritTip: '10 % at most, 1 % at least: merits −{m}, gear {g}.', tkOver: '{n} over cap',
   tkCure: '{s}', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
-const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enmityLow', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'cmp', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc'];
+const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enmityLow', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'cmp', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc',
+  'cursna', 'healSkill', 'auspice', 'barStatus', 'esunaPlus', 'erasePlus', 'naVeil', 'divAcc', 'mab'];
 const STAT_PCT = new Set(['fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
@@ -234,13 +253,33 @@ function enhTarget(s){
 // pieces for no gain. Refresh and Regen also have "a cast" objectives (potency x ticks) to choose instead
 const ENH_OBJS = {refresh: ['refreshTick', 'enhTime', 'pdtRed'], regen: ['regenTick', 'enhTime', 'pdtRed'], gain: ['gainPot', 'enhTime', 'pdtRed'],
   temper: ['temper', 'enhTime', 'pdtRed'], enspell: ['enspell', 'enhTime', 'pdtRed'], barele: ['barEle', 'enhTime', 'pdtRed'],
-  aquaveil: ['aquaveil', 'enhTime', 'pdtRed'], phalanx: ['phalanx', 'enhTime', 'pdtRed'], stoneskin: ['stoneskin', 'enhTime', 'pdtRed']};
+  aquaveil: ['aquaveil', 'enhTime', 'pdtRed'], phalanx: ['phalanx', 'enhTime', 'pdtRed'], stoneskin: ['stoneskin', 'enhTime', 'pdtRed'],
+  // Bar-status: its fixed resistance + Sroda Necklace; Auspice: its Subtle Blow. Their length (and Sneak's,
+  // Invisible's, ENH_PLAIN with the Dream pieces' seconds) by the enhancing duration: assumed, BG Wiki's pages are silent
+  barail: ['barStatus', 'enhTime', 'pdtRed'], auspice: ['auspice', 'enhTime', 'pdtRed']};
 // (a spell with no potency to look for: its length, then the damage taken, physical then magical)
 const ENH_PLAIN = ['enhTime', 'pdtRed', 'mdtRed'];
 const ENH_MORE = {refresh: ['refreshMp'], regen: ['regenHp']};
 // A tank's Phalanx (PLD, RUN) keeps the tank's own objectives and search (Guide_Paladin: Phalanx, then the damage
 // taken; enmity after it): its 3 minutes are recast in the rotation, their length is not what the set is for
 const tankPhalanx = (s, e) => !!e && e.kind === 'phalanx' && ['PLD', 'RUN'].includes(S.job);
+// A healer's spell set the formulas above do not take (notes/docs-perso/sorts-whm-2026-10-25/SPEC.md, the player's
+// rule 2026-10-25): what the spell gains first, then the damage taken and the MP saved; a spell with nothing to gain
+// (Raise, the -na, Teleport) wears defence and Conserve MP, its Fast Cast being the precast's. A tank's divine sets
+// (Flash, Banish: Enmity) keep its own rules. The first that fits
+const SPELL_OBJS = [[/cursna/i, ['cursna', 'healSkill', 'pdtRed']], [/esuna/i, ['esunaPlus', 'pdtRed', 'cmp']],
+  [/\berase\b/i, ['erasePlus', 'pdtRed', 'cmp']], [/repose/i, ['divAcc', 'pdtRed', 'cmp']], [/flash/i, ['divAcc', 'enmity', 'pdtRed']],
+  // Holy and Banish: their damage first (the player's guide, WHM_Guide_Technique.md §9.7: MAB, Magic Damage, MND),
+  // then landing; the Divine set (Flash and Banish without a set of their own) landing first
+  [/banish|holy/i, ['mab', 'divAcc', 'pdtRed']], [/divine magic/i, ['divAcc', 'mab', 'pdtRed']],
+  // a -na: the Empyrean head spreads it around its target, every time with Yagrush (the player's guide §4.9)
+  [/statusremoval|poisona|paralyna|blindna|silena|stona|viruna/i, ['naVeil', 'pdtRed', 'cmp']],
+  [/\b(raise|arise|reraise)\b|teleport|recall|warp|retrace|escape|deodorize/i, ['pdtRed', 'mdtRed', 'cmp']]];
+function spellObjectives(s){
+  if (['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) !== 'midcast') return null;
+  const p = setNames(s), hit = SPELL_OBJS.find(([re]) => re.test(p));
+  return hit ? hit[1] : null;
+}
 function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
   const enh = enhContext(s);
@@ -252,6 +291,8 @@ function statDefaultOf(s){
   if (enf) return enf;
   // a GEO's luopan sets and its Geo- / Indi- cast sets (luopan.js)
   if (luopanObjectives(s)) return luopanObjectives(s);
+  const sp = spellObjectives(s);
+  if (sp) return sp;
   // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap);
   // a Fast Cast set first (it is named for the spells it serves: precast.FC.Phalanx)
   if (fam === 'fc' && /cure/i.test(p) && /self/i.test(p)) return ['fc', 'hpLow'];
@@ -307,7 +348,10 @@ function statFloorDefault(s, first){
   // give, as its last objectives: the player's rule once the floors had cost Refresh 14 % of its length; an
   // enfeebling set the same, its potency, length and magic accuracy first: enfeeble.js)
   // (a healer's Cure set the same: the floors cost Tetsouo's WHM 154 HP of its Cure IV, 2026-10-22)
-  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || enhContext(s) || enfContext(s) || edContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
+  // (a healer's spell with something to gain the same, Cursna+, divine accuracy...: SPELL_OBJS; Raise and the others
+  // with nothing to gain keep the floors)
+  const sp = spellObjectives(s), gains = !!sp && sp[0] !== 'pdtRed';
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
   const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
@@ -385,8 +429,8 @@ function cureSpellOf(){
 }
 
 /* ---- the objectives by kind, and the ones a set is shown ---- */
-const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
-  ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'fc', 'sird']],
+const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
+  ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow', 'cursna', 'healSkill', 'esunaPlus', 'erasePlus', 'naVeil']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'divAcc', 'mab', 'fc', 'sird']],
   ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
@@ -398,6 +442,8 @@ function statRelevant(s, chosen){
     ...(['PLD', 'RUN'].includes(S.job) ? ['enmity', 'def'] : [])]); return out; }
   if (enfContext(s)) { add(enfRelevant(s)); return out; }
   if (edContext(s)) { add(edRelevant()); return out; }
+  const sp = spellObjectives(s);
+  if (sp) { add([...sp, 'pdtRed', 'mdtRed', 'cmp', 'hp', 'sird', 'divSkill', 'healSkill', 'enmity']); return out; }
   if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
   else if (/cur(e|a)/i.test(p) || (fam === 'midcast' && /healing magic/i.test(p))) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'cure', 'cmp', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']
     : ['cureOther', 'cure', 'cmp', 'enmityLow', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
@@ -438,7 +484,39 @@ const ENLIGHT_WEAPON = {Brilliance: 15, Honorbound: 7};
 // A piece under level 99 the search still offers from the game's items (optimizer.js gameChoices): its effect is one
 // of the above, read by name, that no level 99 piece replaces (Stone Mufflers, Siegel Sash, Earthcry Earring)
 function specialPiece(name){
-  return !!(STONESKIN_PLUS[name] || ENMITY_LOSS_GEAR[name] || ENLIGHT_WEAPON[name] || BAR_PLUS[name]);
+  return !!(STONESKIN_PLUS[name] || ENMITY_LOSS_GEAR[name] || ENLIGHT_WEAPON[name] || BAR_PLUS[name] || HEALER_PLUS[name]);
+}
+// A healer's spell pieces, read by their game names (their descriptions name the effect, not always its amount):
+// [stat key, amount]. BG Wiki read 2026-10-25 (notes/docs-perso/sorts-whm-2026-10-25/SPEC.md):
+//   Cursna+ (Cursna; the page marks Haoma's, Ephedra, Debilis, Malison, Hieros as the 2013 guide's, "known to be
+//   incorrect"; Theophany Pantaloons +4 not listed)          cursna
+//   "Auspice"+ (Auspice): Subtle Blow given                   auspice
+//   Sneak / Invisible: Dream +1 pieces, the length set to its 600 s top then +30; Skulker's Cape +30 to both   sneaksec / invissec
+//   Bar-status: Sroda Necklace +20 (Category:Barspell)        barstat
+//   Esuna under Afflatus Misery: the weapons' extra effects   esuna (main hand)
+//   Erase: Cleric's Torque, one more effect                   erase
+//   a -na spread to the party by the Empyrean head, every time with Yagrush (the player's WHM guide §4.9)   naveil
+const HEALER_PLUS = {
+  Gambanteinn: [['cursna', 100]], "Menelaus's Ring": [['cursna', 20]], "Haoma's Ring": [['cursna', 15]], 'Ephedra Ring': [['cursna', 10]],
+  'Debilis Medallion': [['cursna', 15]], 'Malison Medallion': [['cursna', 10]], "Alaunus's Cape": [['cursna', 25]], 'Mending Cape': [['cursna', 15]],
+  'Oretan. Cape +1': [['cursna', 5]], 'Fanatic Gloves': [['cursna', 15]], 'Hieros Mittens': [['cursna', 10]], 'Theo. Pantaloons': [['cursna', 15]],
+  'Theo. Pant. +1': [['cursna', 15]], 'Th. Pantaloons +2': [['cursna', 17]], 'Th. Pant. +3': [['cursna', 21]], 'Gende. Galosh. +1': [['cursna', 10]],
+  'Vanya Clogs': [['cursna', 5]],
+  'Orsn. Duckbills +1': [['auspice', 5]], 'Orsn. Duckbills +2': [['auspice', 10]], 'Ebers Duckbills': [['auspice', 13]], 'Ebers Duckbills +1': [['auspice', 15]],
+  'Ebers Duckbills +2': [['auspice', 17]], 'Ebers Duckbills +3': [['auspice', 19]],
+  'Dream Boots +1': [['sneaksec', 30]], 'Dream Mittens +1': [['invissec', 30]], "Skulker's Cape": [['sneaksec', 30], ['invissec', 30]],
+  'Sroda Necklace': [['barstat', 20]],
+  Asclepius: [['esuna', 3]], 'Piety Wand': [['esuna', 2]], "Cleric's Wand": [['esuna', 1]],
+  "Cleric's Torque": [['erase', 1]], 'Clr. Torque +1': [['erase', 1]], 'Clr. Torque +2': [['erase', 1]],
+  'Orison Cap': [['naveil', 1]], 'Orison Cap +1': [['naveil', 1]], 'Orison Cap +2': [['naveil', 1]], 'Ebers Cap': [['naveil', 1]],
+  'Ebers Cap +1': [['naveil', 1]], 'Ebers Cap +2': [['naveil', 1]], 'Ebers Cap +3': [['naveil', 1]], Yagrush: [['naveil', 1]]};
+// The weapons whose effect is theirs in the main hand only (Gambanteinn counts in either hand: the player's guide §11.4)
+const HEALER_MAIN_ONLY = new Set(['Asclepius', 'Piety Wand', "Cleric's Wand", 'Yagrush']);
+function healerVec(name, slot){
+  const out = {};
+  if (HEALER_MAIN_ONLY.has(name) && slot !== 'main') return out;
+  for (const [k, n] of HEALER_PLUS[name] || []) out[k] = n;
+  return out;
 }
 // The resistance a piece adds to a Bar-element spell, over its 150 cap (BG Wiki Category:Barspell; Shedir Seraweels
 // measured in game on Kaories 2026-10-14: 150 + 15 = 165)
@@ -454,7 +532,8 @@ function statVec(p, slot){
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
   if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
-  Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name));
+  Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name), healerVec(p.name, slot));
+  if (v('mab')) out.mab = v('mab');
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
   if (v('skill:shield skill')) out.shield = v('skill:shield skill');
@@ -534,7 +613,10 @@ function statContext(s){
   const ed = edBase(s);
   if (ed) Object.assign(base, ed);
   if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts,
-    barAdd: enh.barAdd, durMul: enh.durMul, potMul: enh.potMul, perp: enh.perp}, enh.skill != null ? {enh: enh.skill} : {});
+    barAdd: enh.barAdd, durMul: enh.durMul, potMul: enh.potMul, perp: enh.perp,
+    // Bar-status: +30 on oneself, +20 for the -ra (BG Wiki Category:Barspell); a WHM's set is for the -ra it casts on
+    // the party (the player's guide §4.6)
+    barailBase: enh.kind === 'barail' ? (S.job === 'WHM' || /ra$/i.test(enh.spell) ? 20 : 30) : 0}, enh.skill != null ? {enh: enh.skill} : {});
   return {mode: 'stats', job: S.job, stat: {base}};
 }
 const CRUSADE_ENMITY = 30;

@@ -20,6 +20,8 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | `^numpad5` | Afflatus Mode (`AfflatusMode`) | **Solace**, Misery | Which stance `//gs c afflatus` uses. |
 | `^numpad1` | Idle Mode (`IdleMode`) | **PDT**, Refresh | Idle set: `sets.idle.PDT` or `sets.idle.Refresh`. |
 | `^numpad2` | Combat Mode (`CombatMode`) | **Off**, On | On locks main, sub, range and ammo so your weapons stay on. If you define `sets.CombatMode`, it is put on first. |
+| `^numpad7` | Main Weapon (`MainWeapon`) | **Free** | `Free` keeps the weapon you wear. Add your weapons in `WHM_STATES.lua` (`'Free', 'Maxentius', 'Yagrush'`), each with a set of its name in `whm_sets.lua` ([sets](sets.md#weapons)): laid on the idle and engaged sets. |
+| `^numpad8` | Sub Weapon (`SubWeapon`) | **Free** | The same for the off hand (`'Free', 'Genmei Shield'`). |
 | `^numpad6` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Resistant: enfeebles and Divine Magic wear the `.Resistant` version of their set (`sets.midcast.MndEnfeebles.Resistant`, `.IntEnfeebles.Resistant`, `['Divine Magic'].Resistant`). A spell with a set of its own name uses that set's `.Resistant` version when it has one (`sets.midcast.Repose.Resistant`), else keeps its own set (Holy, Holy II). Cures ignore it. In the template the `.Resistant` sets are copies of the normal ones until you add magic accuracy pieces. |
 
 ## Other modes (no key)

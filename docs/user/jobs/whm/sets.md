@@ -8,6 +8,17 @@ Orpheus): [set names](../../guides/sets.md).
 Your file: `<YourName>/whm/sets/whm_sets.lua`. `//gs c debugmidcast` shows, for each
 spell, which set was chosen and why.
 
+## Weapons
+
+| Set | Worn when |
+|---|---|
+| `sets['<Weapon>']` | Main Weapon (`^numpad7`) is that value: one set per value you add in `WHM_STATES.lua`, named exactly like the value (`sets['Maxentius'] = {main = 'Maxentius'}`) |
+| `sets['<Shield>']` | Sub Weapon (`^numpad8`) is that value (`sets['Genmei Shield'] = {sub = 'Genmei Shield'}`) |
+
+`Free` (default) has no set: you keep what you wear. The weapon sets go on top
+of the idle and engaged sets, in town too. A spell set with its own weapon
+(Yagrush for Cursna) still wears it for the spell, unless Combat Mode is On.
+
 ## Idle
 
 | Set | Worn when |
@@ -108,7 +119,9 @@ Esuna and Sacrifice are not in this group: see "Other Healing Magic".
 
 Chosen by Mote only, by name or family: `sets.midcast.Raise` (Raise, Raise II,
 Raise III, Arise), `sets.midcast.Reraise` (Reraise ... IV), or the exact name
-(`sets.midcast['Arise']`, `sets.midcast.Esuna`, `sets.midcast.Sacrifice`). Then
+(`sets.midcast['Arise']`, `sets.midcast.Esuna` (empty in the provided file: under
+Afflatus Misery, Asclepius, Piety Wand and Cleric's Wand remove more effects),
+`sets.midcast.Sacrifice`). Then
 the skill set `sets.midcast['Healing Magic']` (not in the provided file), then
 `sets.midcast.WhiteMagic` (any white magic without a set). Casting Mode
 `Resistant` picks a `.Resistant` child of that set when it exists, as long as
@@ -124,10 +137,13 @@ Order, first found wins:
 1. `sets.midcast['Spell Name']` (the provided file: Haste, Sneak, Invisible,
    Stoneskin, Aquaveil, Refresh, Auspice)
 2. the name without tier: `sets.midcast.Regen` (Regen ... Regen V),
-   `sets.midcast.Protect`, `sets.midcast.Shell`, `sets.midcast.Protectra`...
+   `sets.midcast.Protect`, `.Protectra`, `.Shell`, `.Shellra` (all four in the
+   provided file, copies of the Enhancing set)
 3. the family: `sets.midcast.BarElement` (Barfire ... Barwatera),
    `sets.midcast.BarAilment` (Barsleep ... Barvira), `sets.midcast.Boost`
-   (Boost-STR ...), then the same names under `sets.midcast['Enhancing Magic']`
+   (Boost-STR ...), then the same names under `sets.midcast['Enhancing Magic']`.
+   The provided file has `BarElement`, `BarAilment` and `Boost`. Bar-status
+   resistance is fixed (+30, +20 for the -ra): only Sroda Necklace adds to it
 4. `sets.midcast['Enhancing Magic']`
 
 Then `sets.buff['Afflatus Solace']` on top of every spell whose name starts with
@@ -137,14 +153,18 @@ There is no self / others split on WHM and no mode for enhancing.
 
 ### Divine Magic
 
-1. `sets.midcast['Spell Name']` (the provided file: Holy, Holy II, Repose)
-2. the name without tier: `sets.midcast.Banish` (Banish, II, III), `sets.midcast.Holy`
+1. `sets.midcast['Spell Name']` (the provided file: Holy, Holy II, Repose, Flash)
+2. the name without tier: `sets.midcast.Banish` (Banish, II, III), `sets.midcast.Banishga`
+   (Banishga, II), `sets.midcast.Holy`
 3. `sets.midcast['Divine Magic'].Resistant` with Casting Mode `Resistant`
-4. `sets.midcast.Banish` again for Banishga and Banishga II (their family)
-5. `sets.midcast['Divine Magic']` (Flash...)
+4. `sets.midcast.Banish` again for Banishga and Banishga II (their family), when
+   you have no `Banishga` set
+5. `sets.midcast['Divine Magic']`
 
-A spell with its own set uses that set's `.Resistant` version in Resistant:
-`sets.midcast['Repose'].Resistant` (a copy of the Repose set in the provided file).
+A set found at step 1 or 2 uses its `.Resistant` version in Resistant when it has
+one: `sets.midcast['Repose'].Resistant`, `sets.midcast.Banish.Resistant`. In the
+provided file, Banish, Banishga and Flash (and their `.Resistant`) are copies of the
+Divine sets.
 
 ### Enfeebling Magic
 
@@ -155,7 +175,12 @@ Enfeebles are split by the kind of magic, not by the enfeebling type list:
 | `MndEnfeebles` | White Magic enfeebles: Paralyze, Slow, Silence, Addle, Dia, Diaga... |
 | `IntEnfeebles` | Black Magic enfeebles: Dispelga, and from a subjob Blind, Poison, Bind, Sleep, Gravity, Break, Dispel... |
 
-1. `sets.midcast['Spell Name']`, then the name without tier (`sets.midcast.Slow`)
+1. `sets.midcast['Spell Name']`, then the name without tier (`sets.midcast.Slow`),
+   its `.Resistant` version in Resistant when it has one. The provided file has
+   `sets.midcast.Dia` (Dia, Dia II) and `sets.midcast.Diaga` (Diaga, Diaga II),
+   copies of `MndEnfeebles` with their `.Resistant`: Dia's damage and Defense
+   Down are fixed and never resisted, only Dia Wand adds to them. Treasure Hunter
+   comes from Treasure Mode (`sets.TreasureHunter`)
 2. `sets.midcast.MndEnfeebles.Resistant` / `sets.midcast.IntEnfeebles.Resistant`
    with Casting Mode `Resistant`
 3. `sets.midcast.MndEnfeebles` / `sets.midcast.IntEnfeebles`
@@ -213,9 +238,7 @@ provided file), and any other ability by its name (`['Divine Caress']`,
 
 ## Names the code reads that the provided file lacks
 
-- `sets.midcast['Healing Magic']` (Esuna, Sacrifice), `sets.midcast.Protect`,
-  `.Shell`, `.BarAilment`, `.Boost`.
-- `sets.midcast.Banish` (Banish goes to the Divine base).
+- `sets.midcast['Healing Magic']` (Sacrifice).
 - `sets.Adoulin`, `sets.idle.Weak`, `sets.defense.PDT` / `.MDT`.
 - `.Resistant` children of the Fast Cast sets.
 - `sets.DW.*`, `sets.TreasureHunter` (see [set names](../../guides/sets.md)).

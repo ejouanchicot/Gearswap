@@ -49,6 +49,8 @@ the job.
 | `^numpad4` | Cure Auto-Tier: On, Off | always | yes |
 | `^numpad5` | Afflatus Mode for `//gs c afflatus`: Solace, Misery | always | yes |
 | `^numpad6` | Casting Mode: Normal, Resistant | always | yes |
+| `^numpad7` | Main Weapon: Free, then the weapons you add | always | yes |
+| `^numpad8` | Sub Weapon: Free, then the shields you add | always | yes |
 | `!numpad.` | Treasure Mode: Off, Tag, Full | after `//gs c th show` | no |
 | `#numpad0` | Auto Medicine on / off (common key) | always | yes |
 | `!numpad7` | Your other boxes follow you (common key) | always | yes |

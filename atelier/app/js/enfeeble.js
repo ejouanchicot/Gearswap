@@ -162,6 +162,10 @@ function enfObjectives(s){
   // a spell's own set (Dispelga): potency first when it has one, else its length, else its magic accuracy
   // a Mnd / IntEnfeebles set: magic accuracy first (it carries every spell of its magic: sleeps, binds and
   // potencies), then the length, then the potency
+  // Dia and Diaga cannot be resisted (BG Wiki Dia II): their potency, their length, then the damage taken
+  // (notes/docs-perso/sorts-whm-2026-10-25/SPEC.md)
+  const own = FFXI.opt.ENF_SPELLS;
+  if (e.type === 'spell' && e.spells.every(n => own[n] && own[n].dia)) return ['enfPot', 'enfTime', 'pdtRed'];
   const objs = e.type === 'spell' ? ['enfPot', 'enfTime', 'enfAcc'] : e.type === 'mode' ? ENF_MODES[e.mode].objs
     : e.type === 'map' ? ENF_OBJS.map : ENF_OBJS[e.type] || ENF_OBJS.base;
   return objs.filter(k => enfUseful(e, k));

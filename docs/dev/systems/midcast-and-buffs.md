@@ -121,7 +121,7 @@ No states file in `_master/`, `Tetsouo/`, `Kaories/` or `shared/` defines `state
 | Level | Resolver | Runs when | Paths tried, in order |
 |---|---|---|---|
 | P0 | `resolve_exact_spell` | `spell.english` set | `sets.midcast[spell.english]`, or its `[mode]` child when it has one (`sets.midcast['Repose'].Resistant`), as Mote picks it (since 2026-09-29; before, P0 laid the plain set back over Mote's mode variant) |
-| P1 | `resolve_base_name` | `spell.english` set | `name` = `spell.english` with a trailing space-separated word made only of the letters I, V, X removed (pattern `%s+[IVX]+$`). If a target exists: `sets.midcast[name][target]`, `sets.midcast[target][name]`, `base[name][target]`, `base[target][name]`. Then, unless target is `'others'`: `sets.midcast[name]`, `base[name]` |
+| P1 | `resolve_base_name` | `spell.english` set | `name` = `spell.english` with a trailing space-separated word made only of the letters I, V, X removed (pattern `%s+[IVX]+$`). If a target exists: `sets.midcast[name][target]`, `sets.midcast[target][name]`, `base[name][target]`, `base[target][name]`. Then, unless target is `'others'`: `sets.midcast[name]`, `base[name]`. The set found is replaced by its `[mode]` child when it has one, as at P0 (since 2026-10-25: `sets.midcast.Banish.Resistant` for Banish II) |
 | P2 | `resolve_type_target_mode` | type, target and mode all set | `base[type][target][mode]` |
 | P3 | `resolve_type_mode` | type and mode | `base[type][mode]` |
 | P4 | `resolve_target_mode` | target and mode | `base[target][mode]` |
@@ -171,8 +171,8 @@ flowchart TD
 
 Properties that follow from the order:
 
-- A spell-name set (P0) or a tier-less name set (P1) beats every type, target and mode set. Only P0 looks up `sets.midcast[spell][mode]` (exact spell name); a mode sub-table hung under a tier-less name set (P1) is never selected.
-- When a spell's tier-less name equals its database family (Refresh, Regen, Phalanx, Stoneskin, Aquaveil in `ENHANCING_MAGIC_DATABASE`), P1 finds `sets.midcast[family]` or `base[family]` before P2-P4, so mode-specific family sets are unreachable for those spells.
+- A spell-name set (P0) or a tier-less name set (P1) beats every type, target and mode set. P0 and P1 both take the found set's `[mode]` child when it has one (`sets.midcast['Repose'].Resistant`, `sets.midcast.Banish.Resistant`).
+- When a spell's tier-less name equals its database family (Refresh, Regen, Phalanx, Stoneskin, Aquaveil in `ENHANCING_MAGIC_DATABASE`), P1 finds `sets.midcast[family]` or `base[family]` before P2-P4, so the mode sets under the skill (`base[type][mode]`) are unreachable for those spells; a `[mode]` child of the P1 set itself is taken.
 - Target beats type (P5 before P6/P7) and type beats mode (P6/P7 before P8).
 - The spell map (P8b) only matters when nothing above matched: it cannot change a choice made before 2026-09-28, it only stops P9 from replacing the map set Mote had already put on.
 - The chain picks one set and never combines. Inheritance from the base set has to be written into the set file with `set_combine`.

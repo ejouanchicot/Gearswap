@@ -29,6 +29,16 @@
 
 --============================================================--
 
+--                      WEAPON SETS                           --
+--============================================================--
+-- One per MainWeapon / SubWeapon value of config/whm/WHM_STATES.lua, unless
+-- _common/gear/WEAPON_CONFIG.lua turns equip_without_set on. Laid on the idle and
+-- engaged sets (shared/jobs/whm/functions/logic/set_builder.lua). Examples:
+--   sets['Maxentius'] = {main = 'Maxentius'}
+--   sets['Genmei Shield'] = {sub = 'Genmei Shield'}
+
+--============================================================--
+
 --                      IDLE SETS                             --
 --============================================================--
 
@@ -529,6 +539,10 @@ sets.midcast.StatusRemoval = {
     legs = 'Orison Pantaloons +2'
 }
 
+-- Esuna: worn nothing of its own before (no Healing Magic set). Under Afflatus
+-- Misery it removes more effects with Asclepius (+3), Piety Wand (+2), Cleric's Wand (+1).
+sets.midcast.Esuna = {}
+
 -- ==========================================================================
 -- ENHANCING MAGIC
 -- ==========================================================================
@@ -611,6 +625,20 @@ sets.midcast.BarElement = {
     left_ring = 'Stikini Ring +1',
     back = {name = "Alaunus's Cape", augments = {'MND+18', '"Fast Cast"+10', 'Occ. inc. resist. to stat. ailments+10'}}
 }
+
+-- Bar-status spells (Barparalyze, Barsleepra...): their resistance is fixed
+-- (+30, +20 for the -ra), Enhancing skill does not change it; only Sroda
+-- Necklace adds +20 (BG Wiki Category:Barspell). Then their duration.
+sets.midcast.BarAilment = set_combine(sets.midcast['Enhancing Magic'], {})
+
+-- Boost-STR, Boost-DEX...: potency from Enhancing Magic skill, then duration
+sets.midcast.Boost = set_combine(sets.midcast['Enhancing Magic'], {})
+
+-- Protect, Protectra, Shell, Shellra (every tier): duration
+sets.midcast.Protect = set_combine(sets.midcast['Enhancing Magic'], {})
+sets.midcast.Protectra = set_combine(sets.midcast['Enhancing Magic'], {})
+sets.midcast.Shell = set_combine(sets.midcast['Enhancing Magic'], {})
+sets.midcast.Shellra = set_combine(sets.midcast['Enhancing Magic'], {})
 
 -- Auspice (WHM-specific buff)
 sets.midcast['Auspice'] = {
@@ -703,6 +731,17 @@ sets.midcast['Divine Magic'] = {
 -- Holy and Holy II keep their own sets). A copy until pieces go in the {}.
 sets.midcast['Divine Magic'].Resistant = set_combine(sets.midcast['Divine Magic'], {})
 
+-- Banish, Banish II, Banish III, Banishga: more damage against Undead only
+-- (Piety Mitts, Ipoca Beret, Fanatic Gloves: BG Wiki Banish III)
+sets.midcast.Banish = set_combine(sets.midcast['Divine Magic'], {})
+sets.midcast.Banish.Resistant = set_combine(sets.midcast['Divine Magic'].Resistant, {})
+sets.midcast.Banishga = set_combine(sets.midcast.Banish, {})
+sets.midcast.Banishga.Resistant = set_combine(sets.midcast.Banish.Resistant, {})
+
+-- Flash: lands on magic accuracy, then Enmity
+sets.midcast.Flash = set_combine(sets.midcast['Divine Magic'], {})
+sets.midcast.Flash.Resistant = set_combine(sets.midcast['Divine Magic'].Resistant, {})
+
 -- Holy (WHM nuke - enhanced by Afflatus Solace)
 -- Piety Duckbills +3 gives +MAB per merit when Afflatus Solace is active
 sets.midcast['Holy'] =
@@ -762,6 +801,14 @@ sets.midcast.IntEnfeebles = set_combine(sets.midcast['Repose'], {})
 sets.midcast['Repose'].Resistant = set_combine(sets.midcast['Repose'], {})
 sets.midcast.MndEnfeebles.Resistant = set_combine(sets.midcast.MndEnfeebles, {})
 sets.midcast.IntEnfeebles.Resistant = set_combine(sets.midcast.IntEnfeebles, {})
+
+-- Dia, Dia II (and Diaga, Diaga II): fixed damage and Defense Down, never
+-- resisted; only Dia Wand adds +1 HP/tick (BG Wiki Dia II). Treasure Hunter
+-- comes from Treasure Mode (sets.TreasureHunter), not from this set.
+sets.midcast.Dia = set_combine(sets.midcast.MndEnfeebles, {})
+sets.midcast.Dia.Resistant = set_combine(sets.midcast.MndEnfeebles.Resistant, {})
+sets.midcast.Diaga = set_combine(sets.midcast.Dia, {})
+sets.midcast.Diaga.Resistant = set_combine(sets.midcast.Dia.Resistant, {})
 
 --============================================================--
 

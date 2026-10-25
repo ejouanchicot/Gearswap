@@ -38,6 +38,11 @@ const ENH_SPELLS = [
   [/spikes/i, 'spikes', [[/^(Blaze|Ice|Shock) Spikes$/, 0, 180]]],
   [/blink/i, 'blink', [['Blink', 0, 300]]],
   [/haste|flurry/i, 'haste', [[/^(Haste|Flurry)( II)?$/, 0, 180]]],
+  // Sneak and Invisible: 450 to 600 s, the Dream +1 pieces setting it to 600 (BG Wiki Sneak, Invisible); Auspice 3 min
+  // (BG Wiki Auspice). The enhancing duration's part in them: not on those pages (notes/docs-perso/sorts-whm-2026-10-25)
+  [/\bsneak\b(?! attack)/i, 'sneak', [['Sneak', 0, 600]]],
+  [/invisible/i, 'invis', [['Invisible', 0, 600]]],
+  [/auspice/i, 'auspice', [['Auspice', 0, 180]]],
   [/protect|shell/i, 'protect', [[/^(Protect|Shell)(ra)?( II| III| IV| V)?$/, 0, 1800]]]];
 // Phalanx II: 240 s, cast on the others (a Red Mage's Composure set)
 const ENH_PHALANX_OTHERS = ['Phalanx II', 0, 240];

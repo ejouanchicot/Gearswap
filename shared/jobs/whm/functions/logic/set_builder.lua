@@ -5,6 +5,7 @@
 ---   Handles:
 ---   • Town detection (safe zones with optimized gear)
 ---   • MP recovery optimization (latent refresh)
+---   • Weapon sets (MainWeapon / SubWeapon states, 'Free' lays none)
 ---   • Movement speed gear application
 ---   Unlike the other jobs, latent refresh and movement gear are applied in
 ---   town too (in_town is not used).
@@ -33,7 +34,8 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 ---   Priority:
 ---   1. Town detection >> sets.idle.Town / sets.Adoulin
 ---   2. MP recovery (< 51%) >> sets.latent_refresh
----   3. Movement speed >> movement gear
+---   3. Weapons >> sets[MainWeapon], sets[SubWeapon]
+---   4. Movement speed >> movement gear
 ---
 ---   @param base_set table Base idle set from whm_sets.lua
 ---   @return table Complete idle set with all modifications
@@ -59,6 +61,10 @@ function SetBuilder.build_idle_set(base_set)
         end
     end
 
+    -- Weapons: laid under Combat Mode too, whose lock (shared/utils/core/combat_mode.lua)
+    -- keeps what is worn; after a strip (//po) these dress the weapon slots again
+    result = BaseSetBuilder.lay_weapons(result)
+
     -- ══════════════════════════════════════════════════════════════════════════
     -- MOVEMENT SPEED
     -- ══════════════════════════════════════════════════════════════════════════
@@ -73,14 +79,15 @@ end
 
 ---   Build engaged set for WHM (minimal - WHM rarely melees)
 ---   @param base_set table Base engaged set from whm_sets.lua
----   @return table Complete engaged set (usually unchanged for WHM)
+---   @return table Complete engaged set, with the weapon states' sets laid on it
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then
         return {}
     end
 
     -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
-    return require('shared/utils/party/support_tier').engaged(base_set)
+    local result = require('shared/utils/party/support_tier').engaged(base_set)
+    return BaseSetBuilder.lay_weapons(result)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

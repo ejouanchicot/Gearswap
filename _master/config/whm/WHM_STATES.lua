@@ -8,6 +8,11 @@
 ---   • CastingMode configuration (Normal/Resistant) - spell accuracy
 ---   • IdleMode configuration (PDT/Refresh) - defensive idle
 ---   • CureMode, AfflatusMode, CureAutoTier, CombatMode, FastCast, AutoMedicine
+---   • MainWeapon / SubWeapon: sets[value] in whm_sets.lua, or the plain weapon
+---     when _common/gear/WEAPON_CONFIG.lua turns equip_without_set on. 'Free' has no
+---     set: the weapon worn stays. Example:
+---       state.MainWeapon = M { ['description'] = 'Main Weapon', 'Free', 'Maxentius', 'Yagrush' }
+---       state.SubWeapon = M { ['description'] = 'Sub Weapon', 'Free', 'Genmei Shield' }
 ---   • Keybind integration (see WHM_KEYBINDS.lua)
 ---   • Validation function to verify state configuration
 ---
@@ -108,6 +113,16 @@ function WHMStates.configure()
         'On'   -- Weapons locked (main/sub/range/ammo)
     }
     state.CombatMode:set('Off')
+
+    -- ==========================================================================
+    -- WEAPON SELECTION
+    -- ==========================================================================
+
+    -- Add your weapons: {'Free', 'Maxentius', ...}. Each value is sets[value]
+    -- in whm_sets.lua, or the plain weapon with equip_without_set.
+    -- Keybind: Ctrl+Numpad7 (main), Ctrl+Numpad8 (sub)
+    state.MainWeapon = M { ['description'] = 'Main Weapon', 'Free' }
+    state.SubWeapon = M { ['description'] = 'Sub Weapon', 'Free' }
 
     -- ==========================================================================
     -- FAST CAST (WATCHDOG SYSTEM)

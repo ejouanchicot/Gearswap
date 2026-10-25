@@ -173,6 +173,18 @@ function startOf(base, locked = []){
   const start = optPieces(base), owned = ownedOf() || {}, excl = excludedOf();
   // a piece left out of the searches is not started from either (a locked slot keeps its piece)
   for (const slot of Object.keys(start)) if (!['main', 'sub', 'range'].includes(slot) && !locked.includes(slot) && excl[start[slot].name]) delete start[slot];
+  // a piece in both ears (both rings) held once: the search's moves check the piece they bring, never the two the set
+  // starts with, so a set written so (an older search, a copy upgraded since: Kaories' WHM idle.Refresh with two
+  // Ebers Earring +1, 2026-10-25) stayed as it was. Kept in the first slot, the other one searched. Only when the
+  // export counts the copies: a piece listed with no count nor bag (Moonlight Ring, held twice, each written with its
+  // wardrobe) or the two in different bags stay
+  for (const [a, b] of [['ear1', 'ear2'], ['ring1', 'ring2']]) {
+    if (!start[a] || !start[b] || start[a].name !== start[b].name || locked.includes(b)) continue;
+    if (start[a].bag && start[b].bag && start[a].bag !== start[b].bag) continue;
+    const list = (owned[a] || []).filter(x => x.name === start[a].name);
+    if (!list.length || list.some(x => x.count == null && !(x.where || []).length)) continue;
+    if (list.reduce((n, x) => n + (x.count || x.where.length), 0) < 2) delete start[b];
+  }
   if ((S.optOpts || {}).where === 'all') return start;
   for (const slot of Object.keys(start)) if (!['main', 'sub', 'range'].includes(slot) && !locked.includes(slot) && !(owned[slot] || []).some(x => x.name === start[slot].name)) delete start[slot];
   return start;

@@ -734,7 +734,9 @@
         "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus",
         // Perpetuance's figure of the Bracers (the page's enh_jobs.js enhPerpOf); the elemental debuffs' effect,
         // elemental magic skill and Tonban (the page's ele_debuff.js edVec)
-        "perp", "edeff", "edskill", "edtonban"];
+        "perp", "edeff", "edskill", "edtonban",
+        // a healer's spell pieces read by name (the page's stat_opt.js HEALER_PLUS), Magic Attack Bonus, magic accuracy
+        "cursna", "auspice", "sneaksec", "invissec", "barstat", "esuna", "erase", "naveil", "mab", "macc"];
     // A single target Cure (BG Wiki Cure_Formula, last edited 2026-02-09): Power = MND/2 + VIT/4 + Healing Magic skill;
     // the base by power steps [power floor, rate, HP floor], highest first, up to the spell's hard cap; + jp (the Cure
     // potency of job points and gifts: a PLD's gift Cure Potency Bonus +50 from 1200 JP, BG Wiki Paladin, checked in game
@@ -786,7 +788,10 @@
         if (!b.enhKind) return;
         var kind = b.enhKind;
         var comp = b.comp === "self" ? 3 : b.comp === "others" ? 1 + [0, 0, 10, 20, 35, 50][Math.min(5, t.leth || 0)] / 100 : 1;
-        var seconds = (b.enhBase || 0) + (kind === "refresh" && b.comp !== "others" ? t.refsec : kind === "regen" ? t.regensec : 0);
+        // Sneak / Invisible: the Dream +1 pieces and Skulker's Cape add their seconds to the spell's 600 s top (BG Wiki Sneak,
+        // Invisible); whether the enhancing duration then multiplies them is not on the pages (assumed, as every spell)
+        var seconds = (b.enhBase || 0) + (kind === "refresh" && b.comp !== "others" ? t.refsec : kind === "regen" ? t.regensec
+            : kind === "sneak" ? t.sneaksec : kind === "invis" ? t.invissec : 0);
         var mult = comp * (1 + t.enhdurL / 100) * (1 + t.enhdurA / 100) * (b.durMul || 1) * (b.perp ? Math.max(2, t.perp || 0) : 1);
         var pm = b.potMul || 1;
         var time = Math.floor(seconds * mult + 1e-9);
@@ -806,6 +811,9 @@
         }
         if (kind === "barele") f.barEle = Math.floor(Math.min(150, skill <= 300 ? 40 + Math.floor(skill / 5) : 25 + Math.floor(skill / 4)) * pm) + t.barplus + (b.barAdd || 0);
         if (kind === "aquaveil") f.aquaveil = (skill > 500 ? 3 : skill > 300 ? 2 : 1) + t.aquaveil;
+        // Bar-status: fixed, +30 on oneself, +20 for the -ra (b.barailBase), the skill changes nothing; + Sroda Necklace
+        // (BG Wiki Category:Barspell)
+        if (kind === "barail") f.barStatus = (b.barailBase || 30) + t.barstat;
     };
     // Set bonuses the stats sets count, by the pieces worn (their game names): [pieces, stat key, bonus by count]
     //   Kaykaus Attire +1: "Cure" potency II +4 / 6 / 8 / 10 % for 2 / 3 / 4 / 5 pieces, the +1 only (BG Wiki
@@ -861,6 +869,13 @@
         f.stoneskin = Math.min(475, Math.min(350, ss) + t.ss);
         var div = (b.div || 0) + t.div;
         f.enhSkill = enhAll; f.divSkill = div;
+        // a healer's spells (the page's stat_opt.js SPELL_OBJS, BG Wiki 2026-10-25): Cursna+ and the Healing skill its chance
+        // rests on; the Subtle Blow Auspice gives (+10, + the feet's "Auspice"); the effects Esuna (under Afflatus Misery)
+        // and Erase remove on top; the -na spread pieces; Divine landing as skill + magic accuracy + MND (assumed: BG Wiki
+        // gives no formula for Repose, Flash, Banish), Magic Attack Bonus (assumed for Holy and Banish's damage)
+        f.cursna = t.cursna; f.healSkill = (b.heal || 0) + t.heal; f.auspice = 10 + t.auspice;
+        f.esunaPlus = t.esuna; f.erasePlus = t.erase; f.naVeil = t.naveil;
+        f.divAcc = div + t.macc + (b.mnd || 0) + t.mnd; f.mab = t.mab;
         O.enhancingFigures(f, t, b, enhAll);
         // enfeebling magic (atelier/opt_enf.js, the page's app/js/enfeeble.js): a set cast for enfeebling spells
         if (O.enfeeblingFigures) O.enfeeblingFigures(f, t, b);
@@ -910,7 +925,7 @@
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };

@@ -90,7 +90,7 @@ end
 
 --- Lay the MainWeapon state's set, then the SubWeapon state's, then the
 --- RangeWeapon state's (a job without that state lays none).
---- Used by: BLM, BLU, BRD, COR, DRG, GEO, NIN, PUP, RDM, RNG, SAM, SCH, THF
+--- Used by: BLM, BLU, BRD, COR, DRG, GEO, NIN, PUP, RDM, RNG, SAM, SCH, THF, WHM
 --- @param result table Current equipment set
 --- @return table
 function BaseSetBuilder.lay_weapons(result)

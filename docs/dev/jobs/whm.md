@@ -50,7 +50,7 @@ the sets file (structure and set names only).
 | `shared/jobs/whm/functions/WHM_MOVEMENT.lua` | 39 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'config/whm/WHM_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'config/whm/WHM_MACROBOOK', 'SAM', 1, 1)` |
-| `shared/jobs/whm/functions/logic/set_builder.lua` | 90 | Idle: town, latent refresh, movement; engaged: `SupportTier.engaged` (the set's `.Solo` / `.Group` version when it has one) |
+| `shared/jobs/whm/functions/logic/set_builder.lua` | 90 | Idle: town, latent refresh, weapons, movement; engaged: `SupportTier.engaged` (the set's `.Solo` / `.Group` version when it has one), weapons |
 | `shared/utils/whm/cure_manager.lua` | 421 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
 | `shared/utils/whm/whm_message_formatter.lua` | 262 | Cure tier / Afflatus messages and CureManager debug lines (direct `add_to_chat`, a documented exception: it is a formatter stored outside `utils/messages/`) |
 | `shared/utils/messages/data/jobs/whm_messages.lua` | 22 | One template (`curemanager_not_loaded`), no sender since its formatter `message_whm.lua` was removed (2026-10-01) |
@@ -239,11 +239,12 @@ flowchart TD
   (no `sets.Adoulin` in the template, so Adoulin uses `sets.idle.Town`; the
   Town set goes on top of `sets.idle[IdleMode]`, rebuilt from Mote's town pick;
   with a defense or Kiting layer on, on top of Mote's layered Town set) -> `sets.latent_refresh`
-  when `player.mpp < JobConfig.get('WHM', 'refresh_mp_below', 51)` (empty in the template) -> `sets.MoveSpeed` while
+  when `player.mpp < JobConfig.get('WHM', 'refresh_mp_below', 51)` (empty in the template) -> the weapon
+  states' sets (`BaseSetBuilder.lay_weapons`: `sets[MainWeapon]`, `sets[SubWeapon]`, none for `Free`) -> `sets.MoveSpeed` while
   moving, in town too.
 - `customize_melee_set` returns Mote's set through `SupportTier.engaged`
   (`logic/set_builder.lua` `build_engaged_set`: its `.Solo` / `.Group` version when
-  the set has one, else the set itself). Mote picks
+  the set has one, else the set itself), then the weapon states' sets (`BaseSetBuilder.lay_weapons`). Mote picks
   `sets.engaged[OffenseMode]` (no `None` or `Melee ON` set), then
   `sets.engaged[HybridMode]` (`Normal`, Mote's only default value), so
   `sets.engaged.Normal` is always used, with Mote's defense / Kiting layers.
@@ -264,6 +265,8 @@ Created by `WHMStates.configure()` on every `user_setup()`. Keys from
 | `AfflatusMode` | Solace, Misery | Solace | `^numpad5` | `afflatus` command |
 | `CureAutoTier` | On, Off | On; Off when `WHM_CURE_CONFIG.lua` has `auto_tier_enabled = false` (entry `user_setup`) | `^numpad4` | `CureManager.select_cure_tier` |
 | `CombatMode` | Off, On | Off | `^numpad2` | shared Combat Mode lock (main / sub / range / ammo) |
+| `MainWeapon` | Free | Free | `^numpad7` | `BaseSetBuilder.lay_weapons` (idle and engaged): `sets[value]`, none for `Free` |
+| `SubWeapon` | Free | Free | `^numpad8` | the same, off hand |
 | `FastCast` | 0..80 by 10 | 80 | none | midcast watchdog fallback estimate |
 | `AutoMedicine` | ON, OFF | persisted | `#numpad0` (common key) | `AutoMedicine.init` at the end of `configure` |
 | `TreasureMode` (optional state) | Off, Tag, Full | Off | `!numpad.` once shown | shared Treasure Hunter |

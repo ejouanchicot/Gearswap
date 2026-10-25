@@ -407,7 +407,9 @@ local function resolve_exact_spell(ctx)
     return nil
 end
 
---- P1: the tier-less spell name, crossed with target and skill.
+--- P1: the tier-less spell name, crossed with target and skill; its variant
+--- for the current mode when it has one, as at P0 (sets.midcast.Banish.Resistant
+--- for Banish II), else a set named for a spell family hid the mode's set.
 local function resolve_base_name(ctx)
     if not (ctx.config.spell and ctx.config.spell.english) then
         return nil
@@ -434,6 +436,9 @@ local function resolve_base_name(ctx)
 
     for i, path_parts in ipairs(paths_to_try) do
         local found_set, found_path, success = try_path(unpack(path_parts))
+        if success and ctx.mode and type(found_set[ctx.mode]) == 'table' then
+            found_set, found_path = found_set[ctx.mode], found_path .. '.' .. tostring(ctx.mode)
+        end
         if success then
             if is_debug_enabled() then
                 MessageMidcast.show_priority_check(1, table.concat(path_parts, '.'), true)
