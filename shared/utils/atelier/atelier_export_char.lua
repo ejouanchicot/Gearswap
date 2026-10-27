@@ -38,11 +38,28 @@ local function copy_augments(item)
     return #augs > 0 and augs or nil
 end
 
+--- Whether an ammo is a BST jug broth (Meaty Broth: "Calls Blackbeard Randy."): ammo with damage and no
+--- skill like pet food, but only the Beastmaster (job 9) can hold it, where every job can hold pet food
+--- (res/items.lua: Meaty Broth jobs=512, Pet Food Alpha jobs=8388606).
+local function jug_broth(info)
+    local jobs = info.jobs
+    if type(jobs) == 'number' then return jobs == 512 end
+    if type(jobs) ~= 'table' then return false end
+    local n = 0
+    for job, on in pairs(jobs) do
+        if on then
+            if job ~= 9 then return false end
+            n = n + 1
+        end
+    end
+    return n == 1
+end
+
 --- Whether the main job can wear an item (res.items jobs: a set of job ids, or the raw bitmask).
 --- Every job can "wear" fishing bait (skill 48) and pet food (ammo with damage but no skill):
---- neither is gear.
+--- neither is gear. A jug broth is kept: the page counts the jugs a BST holds (its pets' sets).
 local function wearable(info)
-    if info.skill == 48 or (info.skill == 0 and (info.damage or 0) > 0) then return false end
+    if info.skill == 48 or (info.skill == 0 and (info.damage or 0) > 0 and not jug_broth(info)) then return false end
     local job = player and player.main_job_id
     if not (job and info.jobs) then return true end
     if type(info.jobs) == 'number' then return math.floor(info.jobs / 2 ^ job) % 2 == 1 end
