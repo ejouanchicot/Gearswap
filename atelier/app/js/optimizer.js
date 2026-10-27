@@ -80,8 +80,11 @@ function optChoices(tpNames){
   const reach = x => !o.wardOnly || !(x.where && x.where.length) || x.where.some(w => /^(Inventory|Wardrobe)/.test(w));
   // the pieces the player left out of the searches (trial.js)
   const excl = excludedOf();
+  // a BST's jug broths are held ammo ("Calls Blackbeard Randy.", shared/utils/atelier/atelier_export_char.lua jug_broth) :
+  // worn at Call Beast only (BST_PRECAST.lua equip_broth), never a search's piece
+  const broth = (x, slot) => slot === 'ammo' && /^Calls /.test((pieceStats({name: x.name, id: x.id}, 'ammo') || {}).text || '');
   for (const slot of SLOTS) if (!['main', 'sub', 'range'].includes(slot)) {
-    choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && !excl[x.name] && reach(x)).map(x => {
+    choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && !excl[x.name] && reach(x) && !broth(x, slot)).map(x => {
       // how many you have (an export before 2026-10-03 counts the bags they are in)
       const mine = ownRank({name: x.name, id: x.id, augs: x.augs, copies: x.count || (x.where || []).length, keep: true, rare: isRare(x.name)});
       const up = o.where === 'mine_max' ? upgradeOf(mine) : null;
@@ -222,6 +225,14 @@ async function optimizeEngaged(s){
   if (o.freeWeapons) choices.weapons = weaponPairs(base);
   const input = {ctx: engContextInput(s), start: startOf(base, lockedSlots(s)), choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
+  // a BST's set worn while both fight: the pieces carry their Pet damage taken and the levels they give the pet, which
+  // the search adds once the master's set is found, within 0.1 % of its figure (bst_pet.js, opt.js petDtPass)
+  if (isPetBoth(s)) {
+    const withDt = (p, slot) => p && !isEmpty(p) ? Object.assign({}, p, {petdt: petDtOf(p, slot), petlv: petLvOf(p, slot)}) : p;
+    for (const slot of Object.keys(choices)) if (slot !== 'weapons') choices[slot] = choices[slot].map(p => withDt(p, slot));
+    for (const slot of Object.keys(input.start)) input.start[slot] = withDt(input.start[slot], slot);
+    input.opts.petDtTol = PET_ENG.bothTol;
+  }
   // the whole fight (opt_page.js, atelier/cycle.js): its weaponskill set and how you play, as data for the workers
   if (o.engObj === 'cycle') {
     const cy = cycleReady() && !isJumpSet(s.path) ? cycleInput(s) : null;

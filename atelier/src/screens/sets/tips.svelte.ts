@@ -13,7 +13,7 @@ export interface StatCell { label: string; aug: string; value: string; title: st
 export type PieceCard =
   | {k: 'none'; iconHtml: string; label: string; none: string}
   | {k: 'piece'; iconHtml: string; name: string; label: string; weapon: string; rank: null | {text: string}; where: string; badgesHtml: string;
-      known: boolean; attrs: StatCell[]; rows: StatCell[]; free: string[]; cond: string[]; effects: string; condTitle: string; noDesc: string};
+      known: boolean; attrs: StatCell[]; rows: StatCell[]; pet: StatCell[]; petTitle: string; free: string[]; cond: string[]; effects: string; condTitle: string; noDesc: string};
 export type TipView =
   | {k: 'obj'; name: string; desc: string}
   | {k: 'piece'; max: string; card: PieceCard; hint: string};
@@ -27,7 +27,7 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
   // a slot the set empties (sets.naked, //gs c naked) stays empty whatever the weapon modes say
   if (!p) return {k: 'none', iconHtml: icon(null), label, none: emptied ? t('emptied') : slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty')};
   const r = pieceStats(p, slot), known = !!(r && r.known);
-  let attrs: StatCell[] = [], rows: StatCell[] = [];
+  let attrs: StatCell[] = [], rows: StatCell[] = [], pet: StatCell[] = [];
   if (known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
     const order = STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder));
@@ -36,13 +36,15 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
       return {label: lb, aug: r.aug[k] && r.aug[k].v ? '◆' + fmtStat(r.aug[k]) : '', value: fmtStat(r.stats[k]), title: statHelp(esc(lb), '')}; };
     attrs = order.filter(k => statGroup(k) === 'attr').map(cell);
     rows = order.filter(k => statGroup(k) !== 'attr').map(cell);
+    // the pet's stats (its "Pet:" lines and augments: stats.js r.pet), apart: Hija Earring has only those
+    pet = Object.keys(r.pet || {}).filter(k => r.pet[k].v).sort(statOrder).map(k => ({label: statLabel(k, r.pet[k]), aug: '', value: fmtStat(r.pet[k]), title: ''}));
   }
   const weapon = r && r.weapon ? ' · ' + Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ') : '';
   const rank = r && r.rank != null ? {text: (r.path ? `Path ${r.path} · ` : '') + t('rankShort', {r: r.rank}) + (r.rankAssumed ? ' · ' + t('rankAssumed') : '')} : null;
   // where GearSwap takes it from (bag = 'wardrobe 3') and its order in a swap (priority)
   const where = [p.bag ? t('tipBag', {b: p.bag}) : '', p.priority != null ? t('tipPriority', {n: p.priority}) : ''].filter(Boolean).join(' · ');
   return {k: 'piece', iconHtml: icon(p.name), name: p.name, label, weapon, rank, where, badgesHtml: rareExHTML(p.name, r && Object.keys(r.aug).length),
-    known, attrs, rows, free: known ? r.free : [], cond: known ? r.cond : [], effects: t('effects'), condTitle: t('condTitle'), noDesc: t('noDesc')};
+    known, attrs, rows, pet, petTitle: t('tipPet'), free: known ? r.free : [], cond: known ? r.cond : [], effects: t('effects'), condTitle: t('condTitle'), noDesc: t('noDesc')};
 }
 // the piece at its best: what is left to do, then its card (maxTip)
 function maxOf(up: LegacyAny, slot: string): TipView {

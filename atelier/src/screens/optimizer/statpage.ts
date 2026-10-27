@@ -67,7 +67,7 @@ export function statWhatView(s: LegacyAny): StatWhatView {
   // help is open
   const floors = limitsView(t('statFloors'), [num('pdt', 'DT+PDT ≤'), num('mdt', 'DT+MDT ≤'), num('hp', t('statHpMin')), num('hpMax', t('statHpMax')),
     opt('sird', 'sird', t('statSird')), opt('fc', 'fc', t('statFc')), opt('ecrit', 'ecritRed', t('statEcrit')), opt('enmity', 'enmity', t('statEnm')),
-    opt('phalanx', 'phalanx', t('statPhx')), opt('ceLoss', 'ceLoss', t('statCeLoss')), opt('luDt', 'luDt', t('statLuDt'))], t('statFloorsWhy')), floorsAfterHtml =
+    opt('phalanx', 'phalanx', t('statPhx')), opt('ceLoss', 'ceLoss', t('statCeLoss')), opt('luDt', 'luDt', t('statLuDt')), opt('petAccBase', 'petAcc', t('statPetBase'))], t('statFloorsWhy')), floorsAfterHtml =
     (S0._help === 'optpage' ? `<p class="muted small">${esc(t('statFloorsWhy'))}</p>` : '') + reset;
   const jaList = abilityPieces(s), ref = cureGap(s) ? null : hpRef(s), enh = enhContext(s), notes: string[] = [];
   // Burn and the other elemental debuffs: what the figures take (ele_debuff.js)

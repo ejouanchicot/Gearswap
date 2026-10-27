@@ -510,6 +510,8 @@ declare function fightFigures(s: LegacyAny): LegacyAny;
 declare function notComputedText(why: LegacyAny): string;
 declare const FIGHT_LINES: LegacyAny[];
 declare function setStats(s: LegacyAny): LegacyAny;
+/** a pet's two damage taken lines of a set (bst_pet.js) */
+declare function petDefense(pet: LegacyAny, stats: LegacyAny): {pdt: number; mdt: number; pDetail: string; mDetail: string; on: boolean};
 declare const CALC: LegacyAny;
 declare function fightMaccTip(sheet: LegacyAny, enemy: LegacyAny, spell: string, burst: boolean, macc: number): string;
 declare function isBurstSet(path: string): boolean;

@@ -17,7 +17,7 @@ export interface SheetView {
 
 /** The stats sheet of the set s, or null when it has nothing to show (and no filter to undo) */
 export function sheetView(s: LegacyAny): SheetView | null {
-  const S0 = S as LegacyAny, {total, paths, unknown, cond} = setStats(s);
+  const S0 = S as LegacyAny, {total, pet, paths, unknown, cond} = setStats(s);
   const v = (k: string) => (total[k] || {}).v || 0, dtOn = (v('dt') || v('pdt') || v('mdt')) && statShown('dtEff');
   const sorter = statSorter(s, total) as LegacyAny, lineOf = (k: string): Line => { const cap = STAT_DEF[k] && STAT_DEF[k][3];
     return cap ? capLine(esc(statLabel(k, total[k])), total[k].v, cap, t('gearOnly')) : row(esc(statLabel(k, total[k])), fmtStat(total[k])); };
@@ -35,6 +35,15 @@ export function sheetView(s: LegacyAny): SheetView | null {
   }) as Array<Group | null>).filter((x): x is Group => !!x);
   if (wantedKeys.length) { const lines = (dtOn ? damageTaken(v) : []).concat(wantedKeys.map(lineOf));
     groups.unshift({key: 'want', label: t('cmpWanted'), n: lines.length, body: {k: 'lines', lines}}); }
+  // the pet's stats added up (Pet: Accuracy, Attack, Haste...): a tab of its own, after the player's groups
+  // its damage taken first, as the player's own: physical and magic, the Stout Servant trait and gear in (bst_pet.js
+  // petDefense), -87.5 % for pets; Pet: DT, PDT and MDT then not again on lines of their own
+  const petKeys = Object.keys(pet).filter(k => pet[k].v && !['dt', 'pdt', 'mdt'].includes(k)).sort(statOrder);
+  const pd = petDefense(pet, total), stout = (total['x:stout servant'] || {}).v || 0;
+  if (petKeys.length || stout || pd.on && Object.keys(pet).length) {
+    const lines: Line[] = [capLine(esc(t('petPdtLine')), pd.pdt, -87.5, pd.pDetail), capLine(esc(t('petMdtLine')), pd.mdt, -87.5, pd.mDetail),
+      ...petKeys.map(k => row(esc(statLabel(k, pet[k])), fmtStat(pet[k])))];
+    groups.push({key: 'pet', label: t('petTab'), n: lines.length, body: {k: 'lines', lines}}); }
   const notesHtml: string[] = [];
   if (paths.length) notesHtml.push(`${t('pathNote')} ${paths.map(esc).join(', ')}`);
   if (unknown.length) notesHtml.push(`${t('unknownNote')} ${unknown.map(esc).join(', ')}`);

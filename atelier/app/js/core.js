@@ -196,7 +196,9 @@ function family(path, pieces){
   if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
   // GEO keeps its own sets (sets.me.*) and the ones with a luopan out (sets.luopan.*)
   if (/^sets\.(idle|Adoulin|Town|me\.idle|luopan\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
-  if (/^sets\.(engaged|me\.engaged|luopan\.engaged)/.test(p)) return 'engaged';
+  // (a BST's sets.pet.engagedBoth: worn while master and pet both fight, the master's engaged figures and optimizer;
+  // what is left goes to the pet's damage taken, bst_pet.js)
+  if (/^sets\.(engaged|me\.engaged|luopan\.engaged|pet\.engagedBoth\b)/.test(p)) return 'engaged';
   if (/^sets\.pet|Pet|pet_/.test(p)) return 'pet';
   // the enmity sets a tank wears for its job abilities and spells (sets.FullEnmity, EnmityMax, midcast.SIRDEnmity)
   if (/^sets\.(midcast\.)?\w*Enmity\w*$/.test(p)) return 'enmity';
@@ -215,6 +217,10 @@ function cardFamily(path, pieces){
   if (f !== 'weapons' && CURE_SET.test(path)) return 'cure';
   // the experience sets laid over the others when the Xp state is On (PLD: sets.idleXp, sets.meleeXp)
   if (/^sets\.\w+Xp$/.test(path)) return 'xp';
+  // BST: what is worn with the pet idle / fighting alone (shared/jobs/bst/functions/logic/set_builder.lua) sits with
+  // the master's idle / engaged sets; the figures keep them 'pet' (the pet's stats optimizer: bst_pet.js)
+  if (/^sets\.pet\.idle\b/.test(path)) return 'idle';
+  if (/^sets\.pet\.engaged\b/.test(path)) return 'engaged';
   return f;
 }
 // A Cure set named at the top (sets.Cure) that other sets are built on: never worn (GearSwap wears the sets.midcast

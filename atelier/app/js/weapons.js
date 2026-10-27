@@ -15,7 +15,12 @@ function weaponModes(d){
     if (m && slots.length && slots.every(k => WEAPON_SLOTS.has(k))) top[m[1] || m[2]] = s;
   }
   const rank = n => /sub/i.test(n) ? 2 : /range|ammo/i.test(n) ? 3 : /main/i.test(n) ? 0 : 1;
-  const modes = d.modes.filter(m => m.values.some(v => top[v]))
+  // a BST's ammoSet names the jug pet to call: its broth sets (<Perso>/bst/sets/pets.lua) are worn at Call Beast / Bestial
+  // Loyalty only (shared/jobs/bst/functions/BST_PRECAST.lua equip_broth), never laid on the other sets
+  // (ammoSet lists the pets of the species chosen only: a broth is known by its description, "Calls Blackbeard Randy.")
+  const broth = s => { const a = s.pieces.ammo, r = a && Object.keys(s.pieces).length === 1 ? pieceStats(a, 'ammo') : null; return !!r && /^Calls /.test(r.text || ''); };
+  const broths = new Set(Object.keys(top).filter(n => broth(top[n])));
+  const modes = d.modes.filter(m => m.name !== 'ammoSet' && m.values.some(v => top[v]))
     .map(m => ({name: m.name, desc: m.desc || m.name, values: m.values.filter(v => top[v]), current: m.current, sets: top}))
     .sort((a, b) => rank(a.name) - rank(b.name));
   // One-piece weapon sets no mode names (PLD's sets.Duban, sets.Aegis...): a choice per slot,
@@ -25,7 +30,7 @@ function weaponModes(d){
   // Shining One, <job>/combat/<JOB>_WEAPONS.lua grips): it showed as an off hand to choose beside the Shield mode
   const stances = Object.values((d.weapon_rules || {}).stance_weapon || {});
   const grips = new Set(Object.values((d.weapon_rules || {}).grips || {}));
-  const named = new Set(modes.flatMap(m => m.values).concat(stances)), free = {};
+  const named = new Set(modes.flatMap(m => m.values).concat(stances, [...broths])), free = {};
   for (const [name, s] of Object.entries(top)) {
     const slots = Object.keys(s.pieces);
     if (named.has(name) || slots.length !== 1 || slots[0] === 'main' || grips.has((s.pieces[slots[0]] || {}).name)) continue;
@@ -145,6 +150,8 @@ const krakenWeapon = m => m.values.find(v => { const sub = ((m.sets[v] || {}).pi
 // sets, HoxneAFM3, under Ukonvasara: shared/jobs/war/functions/logic/set_builder.lua)
 const AFM3_WEAPON = {WAR: 'Ukonvasara'};
 const isAfm3 = path => /AFM3\b/.test(path || '');
+// The mode that holds the main hand: MainWeapon, or BST's WeaponSet (shared/jobs/bst/functions/logic/set_builder.lua)
+const isMainMode = m => m.name === 'MainWeapon' || m.name === 'WeaponSet';
 function withWeapons(s, ignore){
   const d = data(), rules = (d && d.weapon_rules) || {}, hm = hybridMode(d), hybrid = hm && chosenWeapon(hm);
   const pieces = Object.assign({}, s.pieces), from = {}, picks = [];
@@ -177,17 +184,17 @@ function withWeapons(s, ignore){
     let v = ex || chosenWeapon(m), why = `${m.desc} : ${v}`;
     // a variant named after a weapon (sets.engaged.Naegling, .NaeglingKC, .LaphriaAFM3) is worn with that weapon,
     // whatever weapon is chosen in the page
-    const named = m.name === 'MainWeapon' ? weaponOfPath(s.path, m) : null;
+    const named = isMainMode(m) ? weaponOfPath(s.path, m) : null;
     if (named) { v = named; why = t('weaponByVariant', {v: named}); }
     if (!v) continue;
-    const stance = !named && m.name === 'MainWeapon' && stanceOf ? swChosen || stanceOf : null;
+    const stance = !named && isMainMode(m) && stanceOf ? swChosen || stanceOf : null;
     if (stance && m.sets[stance]) { v = stanceWeapon = stance; why = swChosen ? `${swMode.desc} : ${v}` : `${hybrid} : ${v}`; }
-    if (!ex && want && m.name === 'MainWeapon' && !wsWeaponFits(m, v, ws)) {
+    if (!ex && want && isMainMode(m) && !wsWeaponFits(m, v, ws)) {
       const fit = m.values.find(x => wsWeaponFits(m, x, ws));
       if (fit) { v = fit; stanceWeapon = null; why = `${ws} : ${v}`; }
     }
     fill(m, v, why, false);
-    if (m.name === 'MainWeapon') weapon = v;
+    if (isMainMode(m)) weapon = v;
   }
   const held = ws && ignore !== 'held' && ignore !== 'force' && heldWeapon(ws);
   if (held && !blank.has('main')) { holdWeapon(d, pieces, from, held); weapon = null; stanceWeapon = null; }
@@ -218,7 +225,7 @@ function withWeapons(s, ignore){
   // weapons: only the ammo); ignore 'force' for what Auto would give. Not on a weaponskill's set: it holds the
   // weapon that opens it and the off hand chosen for it (S.held, S.heldSub), and its own ammo
   const force = Object.assign({}, ignore === 'force' || ws ? {} : slotForce());
-  if (weapon && weaponModes(d).some(m => m.name === 'MainWeapon' && weaponOfPath(s.path, m))) { delete force.main; delete force.sub; }
+  if (weapon && weaponModes(d).some(m => isMainMode(m) && weaponOfPath(s.path, m))) { delete force.main; delete force.sub; }
   // a forced off hand the main hand cannot take is passed over (a grip the optimizer's free weapons paired with a
   // staff, the main hand since put back on a club: it stayed in the off hand whatever the menus said)
   for (const slot of FORCE_SLOTS) if (force[slot] && !blank.has(slot) && !(slot === 'sub' && !subFits(pieces.main, force.sub))) {

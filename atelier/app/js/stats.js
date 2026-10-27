@@ -442,16 +442,18 @@ const statOrder = (a, b) => (STAT_ORDER.indexOf(a) + 1 || 999) - (STAT_ORDER.ind
 // What the set's gear brings: every piece added up (a piece named without augments as your copy, as the engine
 // counts it: engine.js ownCopy), the caps shown where the game has one
 function setStats(s){
-  const total = {}, paths = [], unknown = [], cond = [], pieces = withWeapons(s).pieces;
+  const total = {}, pet = {}, paths = [], unknown = [], cond = [], pieces = withWeapons(s).pieces;
   for (const slot of SLOTS) {
     const p = pieces[slot] && !isEmpty(pieces[slot]) ? ownCopy(slot, pieces[slot]) : pieces[slot], r = pieceStats(p, slot);
     if (!r) continue;
     if (!r.known) unknown.push(p.name);
     if (r.path && !r.rankStats) paths.push(`${p.name} (Path ${r.path})`);
     for (const [k, e] of Object.entries(r.stats)) add(total, k, e.v, e.unit, e.label);
+    // the pet's (its "Pet:" lines and augments), apart: the sheet's Pet tab
+    for (const [k, e] of Object.entries(r.pet || {})) add(pet, k, e.v, e.unit, e.label);
     for (const c of r.cond) cond.push(`${p.name} — ${c}`);
   }
-  return {total, paths, unknown, cond};
+  return {total, pet, paths, unknown, cond};
 }
 /* ---- which stats the set stats and the simulation show (S.statHide: the keys left out) ---- */
 // 'dtEff' stands for the damage taken lines (DT+PDT, DT+MDT, PDT II / MDT II, breath)

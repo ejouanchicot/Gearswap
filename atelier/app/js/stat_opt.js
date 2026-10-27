@@ -64,7 +64,7 @@ Object.assign(T.fr, {
   protOther: 'Lancé par un autre', protOtherTip: 'Protect lancé par un WHM, RDM, SCH… : sans la DEF de ton bouclier (Shield Barrier ne compte que sur ton propre Protect).',
   statGap: 'HP gagnés au midcast', statGapTip: 'HP du set {m} moins ceux du Fast Cast {f} : ce qui manque au moment du Cure, donc ce qu’il peut soigner en entier (guide Paladin, CURE SELF).',
   statD_def: 'VIT × 1,5 + DEF du gear (+ bouclier sous Protect en PLD)', statD_hp: 'HP avec les HP %', statD_enmity: 'jusqu’au plafond +200, buffs compris',
-  statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 %, le trait et les gifts du Red Mage comptés', statD_sird: 'jusqu’à 102 %',
+  statD_phalanx: 'palier du skill de renfort + Phalanx reçu', statD_fc: 'jusqu’à 80 % avec les réductions du temps d’incantation des sorts du set (Cure, Song, Elemental, Enhancing…, BG Wiki : « Casting Time reduction cap is 80% »), le trait et les gifts du Red Mage comptés', statD_sird: 'jusqu’à 102 %',
   statD_meva: 'résister aux sorts', statD_mdb: 'divise les dégâts magiques', statD_pdtRed: 'DT+PDT plafonnés à −50 %, puis PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) plafonnés, puis MDT II', statD_ecritRed: 'réduction du gear, comptée jusqu’au plancher : 10 % → 1 %, soit −9 avec tes mérites',
   statD_cure: 'jusqu’à 50 %', statD_refresh: 'MP par tick', statD_regen: 'HP par tick',
@@ -145,7 +145,7 @@ Object.assign(T.en, {
   protOther: 'Cast by another', protOtherTip: 'Protect cast by a WHM, RDM, SCH…: without your shield’s DEF (Shield Barrier counts on your own Protect only).',
   statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} minus those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
   statD_def: 'VIT × 1.5 + gear DEF (+ the shield under Protect on PLD)', statD_hp: 'HP with HP %', statD_enmity: 'up to the +200 cap, buffs included',
-  statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 %, a Red Mage’s trait and gifts counted', statD_sird: 'up to 102 %',
+  statD_phalanx: 'the enhancing skill’s step + Phalanx received', statD_fc: 'up to 80 % with the casting time cuts of the set’s spells (Cure, Song, Elemental, Enhancing..., BG Wiki: “Casting Time reduction cap is 80%”), a Red Mage’s trait and gifts counted', statD_sird: 'up to 102 %',
   statD_meva: 'resist spells', statD_mdb: 'divides magic damage', statD_pdtRed: 'DT+PDT capped at −50 %, then PDT II',
   statD_mdtRed: 'DT+MDT (+ Shell) capped, then MDT II', statD_ecritRed: 'the gear’s reduction, counted down to the minimum: 10 % → 1 %, so −9 with your merits',
   statD_cure: 'up to 50 %', statD_refresh: 'MP per tick', statD_regen: 'HP per tick',
@@ -170,8 +170,10 @@ Object.assign(T.en, {
   tkCure: '{s}', tkCureSelf: 'on yourself: {h} healed', tkCureParts: 'MND {m} (no gear {mb} + gear {mg}), VIT {v} ({vb} + {vg}), skill {s}, power {p}. No gear = your in-game measurement, with the buffs chosen in the page (a food chosen but not active in game skews it).', tkLoss: 'Enmity lost', tkLossTip: 'Reduction of the enmity lost when you take a hit, two buckets that multiply: Enmity (1 % per +2, 50 % at most) and the “Reduces Enmity loss” pieces (Burtgang 20 %, Chev. Cuisses +3 14 %, Creed Collar 5 %, 50 % at most); −75 % in all at most. Foe Sirvente (BRD) fills the second, not counted yet.'});
 
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enmityLow', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'cmp', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc',
-  'cursna', 'healSkill', 'auspice', 'barStatus', 'esunaPlus', 'erasePlus', 'naVeil', 'divAcc', 'mab'];
-const STAT_PCT = new Set(['fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt']);
+  'cursna', 'healSkill', 'auspice', 'barStatus', 'esunaPlus', 'erasePlus', 'naVeil', 'divAcc', 'mab',
+  // a BST's pet (bst_pet.js)
+  'petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb'];
+const STAT_PCT = new Set(['fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt', 'petHaste', 'petDt', 'petMdt']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
@@ -187,7 +189,8 @@ const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleStri
 // belong there ("Enhances Saboteur effect", counted at the cast: 415.5 s with them, 390.1 s without, Kaories 2026-10-14).
 // Searched as a set of its own it took HP pieces in every slot, which then replaced the enfeeble's gear in game
 const sabOverlay = s => { const p = segs(s.path); return p[p.length - 1] === 'Saboteur' && p.includes('Enfeebling Magic'); };
-const statSet = s => !!s && !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path) && !sabOverlay(s);
+// (a BST's sets.pet.engaged is one: the pet's stats, bst_pet.js; its Ready move sets are not)
+const statSet = s => !!s && (isPetSet(s) || !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces))) && !isJumpSet(s.path) && !sabOverlay(s);
 // What a set is for when nothing was chosen: the guide's profiles (idle DEF then Enmity then MDB; Enmity then DEF;
 // Phalanx then DEF; Fast Cast then HP)
 // A tank (PLD, RUN) wants Enmity on every action its set is worn for, after what the action itself needs (the
@@ -291,6 +294,8 @@ function statDefaultOf(s){
   if (enf) return enf;
   // a GEO's luopan sets and its Geo- / Indi- cast sets (luopan.js)
   if (luopanObjectives(s)) return luopanObjectives(s);
+  // a BST's set worn while the pet fights alone (bst_pet.js)
+  if (petObjectives(s)) return petObjectives(s);
   const sp = spellObjectives(s);
   if (sp) return sp;
   // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap);
@@ -351,6 +356,11 @@ function statFloorDefault(s, first){
   // (a healer's spell with something to gain the same, Cursna+, divine accuracy...: SPELL_OBJS; Raise and the others
   // with nothing to gain keep the floors)
   const sp = spellObjectives(s), gains = !!sp && sp[0] !== 'pdtRed';
+  // (a BST's set worn while the pet fights alone the same: the pet is the one hit, its own damage taken an objective)
+  if (isPetEngaged(s)) return {petAccBase: PET_ENG.accBase};
+  if (isPetIdle(s)) return {};
+  // a Ready set : worn for the move's instant, no damage taken floor ; a physical one starts from the pet's Accuracy
+  if (readyKind(s)) return readyKind(s) === 'phys' || readyKind(s) === 'multi' ? {petAccBase: PET_ENG.accBase} : {};
   const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
@@ -431,12 +441,13 @@ function cureSpellOf(){
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
   ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow', 'cursna', 'healSkill', 'esunaPlus', 'erasePlus', 'naVeil']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'divAcc', 'mab', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']]];
+  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
   const add = list => list.forEach(k => out.add(k)), def = ['def', 'hp', 'pdtRed', 'mdtRed', 'meva', 'mdb', 'enmity'];
   add(luopanRelevant(s));
+  if (isPetSet(s)) { add([...petRelevant(s), 'pdtRed', 'mdtRed', 'hp']); return out; }
   const enh = enhContext(s);
   if (enh && !tankPhalanx(s, enh)) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'cmp', 'hp',
     ...(['PLD', 'RUN'].includes(S.job) ? ['enmity', 'def'] : [])]); return out; }
@@ -512,6 +523,45 @@ const HEALER_PLUS = {
   'Ebers Cap +1': [['naveil', 1]], 'Ebers Cap +2': [['naveil', 1]], 'Ebers Cap +3': [['naveil', 1]], Yagrush: [['naveil', 1]]};
 // The weapons whose effect is theirs in the main hand only (Gambanteinn counts in either hand: the player's guide §11.4)
 const HEALER_MAIN_ONLY = new Set(['Asclepius', 'Piety Wand', "Cleric's Wand", 'Yagrush']);
+// A casting time cut of one kind of spell ("Cure" spellcasting time, Song, Elemental magic... casting time: the
+// pieces' stats as stats.js reads them, x:<what> casting time, curecast) and its kind, the stat key cc_<kind> it adds to
+const CAST_CUTS = [[/^curecast$|cure (spell)?casting/, 'cure'], [/healing magic/, 'healing'], [/enhancing magic/, 'enhancing'],
+  [/stoneskin/, 'stoneskin'], [/enfeebling magic/, 'enfeebling'], [/elemental magic/, 'elemental'], [/dark magic/, 'dark'],
+  [/black magic/, 'black'], [/blue magic/, 'blue'], [/song (spell)?casting/, 'song'], [/utsusemi/, 'utsusemi'], [/summoning magic/, 'summoning'],
+  [/arts casting/, 'arts']];
+function castVec(r){
+  const out = {};
+  for (const [k, e] of Object.entries(r.stats)) {
+    if (k !== 'curecast' && !/casting time/.test(k)) continue;
+    const hit = CAST_CUTS.find(([re]) => re.test(k));
+    if (hit && e.v < 0) out['cc_' + hit[1]] = (out['cc_' + hit[1]] || 0) - e.v;
+  }
+  // a SCH's "Grimoire: Spellcasting time -12%" (Pedagogy Mortarboard): a condition the page shows as text, its figure
+  // read from it ("Reduces spellcasting time" with no figure counts nothing)
+  for (const c of r.cond || []) { const m = /^Grimoire: Spellcasting time -(\d+)%/i.exec(c); if (m) out.cc_grimoire = (out.cc_grimoire || 0) + +m[1]; }
+  return out;
+}
+// The kinds of casting time cut a Fast Cast set counts, by the spells it is named for (core.js magicKindOf): a Cure's
+// own and Healing magic's, a nuke's Elemental and Black magic's... A SCH's Arts cut on every spell (its Arts held up:
+// the player's rule, 2026-10-22), and its Grimoire cut on the set named for it. A Fast Cast set of no kind
+// (sets.precast.FC) counts none. Its own name only: the names it is shared under (BLM's sets.precast.FC is also its
+// FC.Cure) are spells it is worn for among others
+function castKindsOf(s){
+  if (family(s.path, s.pieces) !== 'fc') return [];
+  const p = s.path, kind = /statusremoval/i.test(p) ? 'cure' : magicKindOf(p), out = [];
+  if (kind === 'cure') out.push(...(/cur(e|a)/i.test(p) ? ['cure', 'healing'] : ['healing']));
+  if (kind === 'enhancing') out.push('enhancing', ...(/stoneskin/i.test(p) ? ['stoneskin'] : []));
+  if (kind === 'enfeebling') out.push('enfeebling');
+  if (kind === 'elemental') out.push('elemental', 'black');
+  if (kind === 'dark') out.push('dark', 'black');
+  if (kind === 'song') out.push('song');
+  if (kind === 'ninjutsu' && /utsusemi/i.test(p)) out.push('utsusemi');
+  if (kind === 'blue') out.push('blue');
+  if (kind === 'summoning') out.push('summoning');
+  if (S.job === 'SCH' && kind) out.push('arts');
+  if (S.job === 'SCH' && /grimoire/i.test(p)) out.push('grimoire');
+  return out;
+}
 function healerVec(name, slot){
   const out = {};
   if (HEALER_MAIN_ONLY.has(name) && slot !== 'main') return out;
@@ -532,7 +582,8 @@ function statVec(p, slot){
   if (STONESKIN_PLUS[p.name]) out.ss = STONESKIN_PLUS[p.name];
   if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
-  Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name), healerVec(p.name, slot));
+  if (S.job === 'BST') Object.assign(out, petVec(r, slot));
+  Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name), healerVec(p.name, slot), castVec(r));
   if (v('mab')) out.mab = v('mab');
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
@@ -612,11 +663,14 @@ function statContext(s){
   if (enf) Object.assign(base, enf);
   const ed = edBase(s);
   if (ed) Object.assign(base, ed);
+  const pet = petBase(s);
+  if (pet) Object.assign(base, pet);
   if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts,
     barAdd: enh.barAdd, durMul: enh.durMul, potMul: enh.potMul, perp: enh.perp,
     // Bar-status: +30 on oneself, +20 for the -ra (BG Wiki Category:Barspell); a WHM's set is for the -ra it casts on
     // the party (the player's guide §4.6)
     barailBase: enh.kind === 'barail' ? (S.job === 'WHM' || /ra$/i.test(enh.spell) ? 20 : 30) : 0}, enh.skill != null ? {enh: enh.skill} : {});
+  base.castKinds = castKindsOf(s);
   return {mode: 'stats', job: S.job, stat: {base}};
 }
 const CRUSADE_ENMITY = 30;

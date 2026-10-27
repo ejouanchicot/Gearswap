@@ -729,6 +729,9 @@
         "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed",
         "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark",
         "petdt", "petregen", "charm", "geoskill",
+        // a BST's pet (the page's bst_pet.js): Accuracy, Attack, Haste, Store TP, Double Attack, levels (a weapon's apart)
+        "petacc", "petatk", "pethaste", "petstp", "petda", "petlv", "petlvw", "petpdt", "petmdt", "petstout",
+        "petmab", "petmacc", "petint", "petmelee", "pettpb",
         // enhancing magic (the page's stat_opt.js statVec): duration written on the piece / in its augments, a Lethargy
         // set piece, Refresh potency and seconds received, Regen potency (% then flat) and seconds, Gain, Aquaveil
         "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus",
@@ -736,7 +739,10 @@
         // elemental magic skill and Tonban (the page's ele_debuff.js edVec)
         "perp", "edeff", "edskill", "edtonban",
         // a healer's spell pieces read by name (the page's stat_opt.js HEALER_PLUS), Magic Attack Bonus, magic accuracy
-        "cursna", "auspice", "sneaksec", "invissec", "barstat", "esuna", "erase", "naveil", "mab", "macc"];
+        "cursna", "auspice", "sneaksec", "invissec", "barstat", "esuna", "erase", "naveil", "mab", "macc",
+        // the casting time cuts of one kind of spell (the page's stat_opt.js castVec): cc_<kind>
+        "cc_cure", "cc_healing", "cc_enhancing", "cc_stoneskin", "cc_enfeebling", "cc_elemental", "cc_dark", "cc_black", "cc_blue",
+        "cc_song", "cc_utsusemi", "cc_summoning", "cc_arts", "cc_grimoire"];
     // A single target Cure (BG Wiki Cure_Formula, last edited 2026-02-09): Power = MND/2 + VIT/4 + Healing Magic skill;
     // the base by power steps [power floor, rate, HP floor], highest first, up to the spell's hard cap; + jp (the Cure
     // potency of job points and gifts: a PLD's gift Cure Potency Bonus +50 from 1200 JP, BG Wiki Paladin, checked in game
@@ -833,6 +839,7 @@
         });
         return out;
     }
+    function castCut(t, b) { return (b.castKinds || []).reduce(function (n, k) { return n + (t["cc_" + k] || 0); }, 0); }
     O.statFigures = function (stat, pieces) {
         var t = {}, b = stat.base || {};
         STAT_KEYS.forEach(function (k) { t[k] = 0; });
@@ -847,7 +854,10 @@
             enmity: Math.min(200, t.enmity + (b.enmity || 0)),
             // ("Phalanx received" is the receiver's: nothing on a set cast on the others)
             phalanx: Math.floor(O.phalanxPotency((b.enh || 0) + t.enh) * (b.potMul || 1)) + (b.comp === "others" ? 0 : t.phalanx), enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
-            fc: Math.min(80, t.fc + (b.fc || 0)), fcGear: t.fc, sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
+            // Fast Cast with the casting time cuts of the set's spells (b.castKinds: a Cure's "Cure" spellcasting time and
+            // Healing magic's), under one cap: BG Wiki Fast_Cast "Casting Time reduction cap is 80%" (how they add: not
+            // on the page; added, as the player's WHM guide says of Cure: 80 % combined)
+            fc: Math.min(80, t.fc + (b.fc || 0) + castCut(t, b)), fcGear: t.fc, fcSpell: castCut(t, b), sird: Math.min(102, t.sird + (b.sird || 0)), meva: (b.meva || 0) + t.meva, mdb: t.mdb + (b.mdb || 0),
             ecrit: t.ecrit, cure: Math.min(50, t.cure), refresh: t.refresh, regen: t.regen, enhdur: t.enhdur,
             // Conserve MP (BG Wiki Conserve_MP): the gear's + the job's trait (b.cmp), a proc rate "capped" at 100 %
             cmp: Math.min(100, t.cmp + (b.cmp || 0)), cmpGear: t.cmp,
@@ -864,6 +874,22 @@
         for (var gs in pieces) { var gv = pieces[gs] && pieces[gs].st && pieces[gs].st.geo; if (gv > geo) geo = gv; }
         f.luDt = Math.min(37.5, -t.petdt); f.luRegen = t.petregen; f.luCharm = t.charm; f.geomancy = geo;
         f.geoSkill = (b.geoSkill || 0) + t.geoskill;
+        // a BST's pet in a fight (the page's bst_pet.js, players' readings): its Accuracy without gear + the pieces + a
+        // level's worth for each level over 119 (only the best weapon's), counted up to what hits the target; Attack the
+        // same; Haste capped at 25 % from gear; damage taken at -87.5 %
+        var petW = 0;
+        ["main", "sub"].forEach(function (ws) { var w = pieces[ws] && pieces[ws].st && pieces[ws].st.petlvw; if (w > petW) petW = w; });
+        var petLv = t.petlv + petW, petAcc = (b.petAccBase || 0) + t.petacc + petLv * (b.lvAcc || 0);
+        f.petLv = petLv; f.petAccAll = petAcc; f.petAcc = b.petNeed ? Math.min(petAcc, b.petNeed) : petAcc;
+        f.petAtk = t.petatk + petLv * (b.lvAtk || 0); f.petHaste = Math.min(25, t.pethaste); f.petStp = t.petstp; f.petDa = t.petda;
+        // its damage taken, physical and magic, as positive %: the Stout Servant trait (b.petTrait), the gear's "Stout
+        // Servant"+N, its Pet: DT and PDT / MDT (BG Wiki Stout_Servant, Damage_Taken: -87.5 % for pets)
+        f.petDt = Math.min(87.5, (b.petTrait || 0) + t.petstout - t.petdt - t.petpdt);
+        f.petMdt = Math.min(87.5, (b.petTrait || 0) + t.petstout - t.petdt - t.petmdt);
+        // the Ready move sets (the page's bst_pet.js) : MAB, Magic Accuracy (+1 a pet level over 119), INT, Melee DMG,
+        // the "Ready" TP Bonus
+        f.petMab = t.petmab; f.petMacc = t.petmacc + petLv * (b.lvMacc || 0); f.petInt = t.petint; f.petMelee = t.petmelee; f.petTpb = t.pettpb;
+        f.petRegen = t.petregen;   // its Regen from gear (Pet: Regen ; the same key as a luopan's, never both)
         var enhAll = (b.enh || 0) + t.enh, mndAll = (b.mnd || 0) + t.mnd, x = Math.floor(enhAll / 3) + mndAll;
         var ss = x < 80 ? x : x <= 130 ? Math.floor(2 * enhAll / 3) + 2 * mndAll - 60 : enhAll + 3 * mndAll - 190;
         f.stoneskin = Math.min(475, Math.min(350, ss) + t.ss);
@@ -925,7 +951,8 @@
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab"];
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
+        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
@@ -1010,6 +1037,69 @@
             var r = O.value(ctx, trial, opts);
             if (r.v >= res.score - 1e-13) { res.pieces = trial; res.score = r.v; res.best = r; }
         });
+    }
+    // The walk only takes a move that gains, so two things it leaves (the player, 2026-10-25, Kaories' WHM: a dozen
+    // enhancing sets with no back, Ambuscade capes not had yet; an Empyrean earring in the left ear): each done here
+    // when the set loses nothing by it.
+    // A slot left empty in a set of 9 pieces or more (an overlay of a few pieces, sets.buff.Doom, stays as it is):
+    // the best piece for the objectives, then the most damage taken off (DT+PDT and DT+MDT before their caps), the
+    // most HP, the most magic evasion (the stats search's figures; the defense alone in the other searches)
+    var GEAR_SLOTS = ["ammo", "head", "neck", "ear1", "ear2", "body", "hands", "ring1", "ring2", "back", "waist", "legs", "feet"];
+    function fillGaps(ctx, res, choices, opts) {
+        if (GEAR_SLOTS.filter(function (s) { return res.pieces[s]; }).length < 9) return;
+        GEAR_SLOTS.forEach(function (slot) {
+            if (res.pieces[slot] || !(choices[slot] || []).length) return;
+            var best = null, key = null, tol = Math.abs(res.score) * 1e-12 + 1e-13;
+            choices[slot].forEach(function (p) {
+                if (p.missing || clashes(res.pieces, slot, p)) return;
+                var trial = put(Object.assign({}, res.pieces), slot, p), r = O.value(ctx, trial, opts), f = r.stats || {}, d = r.def || {};
+                if (!(r.v >= res.score - tol)) return;
+                var k = [r.v, -((f.pdt != null ? f.pdt : d.pdt || 0) + (f.mdt != null ? f.mdt : d.mdt || 0)), f.hp || 0, f.meva || 0];
+                var more = !key || k.some(function (x, i) { return k.slice(0, i).every(function (y, j) { return y === key[j]; }) && x > key[i]; });
+                if (more) { best = {trial: trial, r: r}; key = k; }
+            });
+            if (best) { res.pieces = best.trial; res.best = best.r; res.score = best.r.v; }
+        });
+    }
+    // An earring whose bonus works in one ear only (O.item's slot_stats: the Empyrean "Right ear:") worn in the
+    // other, the two earrings exchanged (each copy taken from the other slot's choices, which carry that slot's figures)
+    function rightSides(ctx, res, choices, opts) {
+        var sideOf = function (p) { var it = p && O.item(p.name, p.id), ss = it && it.slot_stats; return ss ? (ss.ear2 ? "ear2" : ss.ear1 ? "ear1" : null) : null; };
+        var pa = res.pieces.ear1, pb = res.pieces.ear2;
+        if (!pa || sideOf(pa) !== "ear2" || sideOf(pb) === "ear2" || !choices.ear1 || !choices.ear2) return;
+        // the copy held when the set names another one (augments of an older copy: Kaories' Aquaveil, Acc+14 written,
+        // Acc+15 held)
+        var held = function (list, p) { return copyIn(list, p) || list.filter(function (x) { return x.name === p.name && !x.missing; })[0] || null; };
+        var nb = held(choices.ear2, pa), na = pb ? held(choices.ear1, pb) : null;
+        if (!nb || (pb && !na)) return;
+        var trial = Object.assign({}, res.pieces);
+        trial.ear2 = nb;
+        if (na) trial.ear1 = na; else delete trial.ear1;
+        var r = O.value(ctx, trial, opts);
+        if (r.v >= res.score - (Math.abs(res.score) * 1e-12 + 1e-13)) { res.pieces = trial; res.best = r; res.score = r.v; }
+    }
+    // A BST's set worn while both fight (the page's bst_pet.js, the player's rules 2026-10-26): once the master's set is
+    // found, what is left goes to the pet: first the pieces with more Pet damage taken (piece.petdt, a positive %), then
+    // the ones that raise its level (piece.petlv) without taking any of that damage taken back; slot by slot, the most
+    // first, while the master's value stays within opts.petDtTol (0.1 %) of the one found and the floors hold
+    function petDtPass(ctx, res, choices, opts) {
+        if (!opts.petDtTol || !choices) return;
+        var top = res.score, low = top - Math.abs(top) * opts.petDtTol;
+        var of = function (k) { return function (p) { return (p && p[k]) || 0; }; }, dt = of("petdt"), lv = of("petlv");
+        var pass = function (gain, keep) {
+            Object.keys(choices).forEach(function (slot) {
+                if (slot === "weapons" || slot === "main" || slot === "sub" || !choices[slot]) return;
+                var cur = res.pieces[slot];
+                var more = choices[slot].filter(function (x) { return gain(x) > gain(cur) && (!keep || keep(x) >= keep(cur)) && !clashes(res.pieces, slot, x); })
+                    .sort(function (a, b) { return gain(b) - gain(a); });
+                for (var i = 0; i < more.length; i++) {
+                    var r = O.valueWith(ctx, res.pieces, slot, more[i], opts);
+                    if (r.v >= low && !(r.miss > 0)) { res.pieces = Object.assign({}, res.pieces); res.pieces[slot] = more[i]; res.best = O.value(ctx, res.pieces, opts); res.score = res.best.v; return; }
+                }
+            });
+        };
+        pass(dt, null);
+        pass(lv, dt);
     }
     // A piece of the job's TP config stays in the result only when it brings more than its TP Bonus:
     // when your best other piece for that slot does as well (the job's rule laying it at the TP when
@@ -1209,6 +1299,9 @@
         if (seed !== input.start) res.start = O.value(ctx, input.start, opts);
         keepWhatDoesNotMatter(ctx, res, input.start, opts, choices);
         tpOnlyOut(ctx, res, choices, opts);
+        rightSides(ctx, res, choices, opts);
+        fillGaps(ctx, res, choices, opts);
+        petDtPass(ctx, res, input.choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
         // an engaged set's round before and after, the real time worked out whatever the objective
