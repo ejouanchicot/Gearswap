@@ -732,6 +732,8 @@
         // a BST's pet (the page's bst_pet.js): Accuracy, Attack, Haste, Store TP, Double Attack, levels (a weapon's apart)
         "petacc", "petatk", "pethaste", "petstp", "petda", "petlv", "petlvw", "petpdt", "petmdt", "petstout",
         "petmab", "petmacc", "petint", "petmelee", "pettpb",
+        // a BST's Charm set (the page's bst_pet.js): CHR and "Charm"+N
+        "chr", "charmplus",
         // enhancing magic (the page's stat_opt.js statVec): duration written on the piece / in its augments, a Lethargy
         // set piece, Refresh potency and seconds received, Regen potency (% then flat) and seconds, Gain, Aquaveil
         "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus",
@@ -889,6 +891,10 @@
         // the Ready move sets (the page's bst_pet.js) : MAB, Magic Accuracy (+1 a pet level over 119), INT, Melee DMG,
         // the "Ready" TP Bonus
         f.petMab = t.petmab; f.petMacc = t.petmacc + petLv * (b.lvMacc || 0); f.petInt = t.petint; f.petMelee = t.petmelee; f.petTpb = t.pettpb;
+        // a BST's Charm set: CHR, the gear's Magic Accuracy, Charm+ (no published formula for the success), and the
+        // length at an even level (BG Wiki Charm Duration: floor(1.25 x CHR + 150) s, x (1 + 0.05 x Charm+))
+        f.chr = (b.chr || 0) + t.chr; f.charmPlus = t.charmplus; f.macc = t.macc;
+        f.charmDur = Math.floor(Math.floor(1.25 * f.chr + 150) * (1 + 0.05 * t.charmplus));
         f.petRegen = t.petregen;   // its Regen from gear (Pet: Regen ; the same key as a luopan's, never both)
         var enhAll = (b.enh || 0) + t.enh, mndAll = (b.mnd || 0) + t.mnd, x = Math.floor(enhAll / 3) + mndAll;
         var ss = x < 80 ? x : x <= 130 ? Math.floor(2 * enhAll / 3) + 2 * mndAll - 60 : enhAll + 3 * mndAll - 190;
@@ -952,7 +958,7 @@
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
-        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb"];
+        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
@@ -1100,6 +1106,30 @@
         };
         pass(dt, null);
         pass(lv, dt);
+    }
+    // A stats search's figure traded for a lesser one (opts.tolGain {gain, keep, tol}, the page's bst_pet.js: a BST's Charm
+    // set, the player's rule 2026-10-27): once the set is found, the pieces with more of piece.st[gain] go in, the most
+    // first, slot by slot, while each figure of keep stays within tol of the one found and the floors hold; again until
+    // none fits (Ankusa Gaiters' Charm+12 back for a few CHR)
+    function tolGainPass(ctx, res, choices, opts) {
+        var g = opts.tolGain;
+        if (!g || !choices || !res.best.stats) return;
+        var top = {}, of = function (p) { return (p && p.st && p.st[g.gain]) || 0; };
+        g.keep.forEach(function (k) { top[k] = res.best.stats[k]; });
+        var holds = function (r) { return !(r.miss > 0) && g.keep.every(function (k) { return r.stats[k] >= top[k] - Math.abs(top[k]) * g.tol; }); };
+        for (var round = 0, moved = true; moved && round < 16; round++) {
+            moved = false;
+            Object.keys(choices).forEach(function (slot) {
+                if (slot === "weapons" || slot === "main" || slot === "sub" || !choices[slot]) return;
+                var cur = res.pieces[slot];
+                var more = choices[slot].filter(function (x) { return of(x) > of(cur) && !clashes(res.pieces, slot, x); })
+                    .sort(function (a, b) { return of(b) - of(a); });
+                for (var i = 0; i < more.length; i++) {
+                    var r = O.valueWith(ctx, res.pieces, slot, more[i], opts);
+                    if (holds(r)) { res.pieces = Object.assign({}, res.pieces); res.pieces[slot] = more[i]; res.best = O.value(ctx, res.pieces, opts); res.score = res.best.v; moved = true; return; }
+                }
+            });
+        }
     }
     // A piece of the job's TP config stays in the result only when it brings more than its TP Bonus:
     // when your best other piece for that slot does as well (the job's rule laying it at the TP when
@@ -1302,6 +1332,7 @@
         rightSides(ctx, res, choices, opts);
         fillGaps(ctx, res, choices, opts);
         petDtPass(ctx, res, input.choices, opts);
+        tolGainPass(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
         // an engaged set's round before and after, the real time worked out whatever the objective

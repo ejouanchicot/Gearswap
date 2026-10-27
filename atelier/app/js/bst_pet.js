@@ -34,6 +34,10 @@ Object.assign(T.fr, {
   statObj_petMelee: 'Melee DMG du pet', statD_petMelee: 'Pet: Melee DMG des pièces : compte pour les moves physiques (tests de Beanen, chiffres non publiés)',
   statObj_petTpb: 'Ready TP Bonus', statD_petTpb: '"Ready" TP Bonus des pièces + Pet: TP Bonus ; compté au départ du move (wiki JP)',
   statObj_petMdt: 'MDT du pet', statD_petMdt: 'dégâts magiques reçus par le pet : Stout Servant + "Stout Servant"+N + Pet: DT et MDT des pièces, -87,5 % au plus',
+  statObj_chr: 'CHR', statD_chr: 'ton CHR (mesuré en jeu) + celui des pièces : la réussite et la durée de Charm (BG Wiki, sans formule publiée)',
+  statObj_charmPlus: 'Charm+', statD_charmPlus: '"Charm"+N des pièces : la durée de Charm (BG Wiki) ; un "Vs. beasts: Charm" n’est pas compté',
+  statObj_macc: 'Précision magique', statD_macc: 'la Magic Accuracy des pièces : celle de Charm, où ton CHR entre aussi (BG Wiki CHR ; le set du guide FFXIAH : CHR, puis M.Acc, puis Charm+)',
+  statObj_charmDur: 'Durée de Charm (niveau égal)', statD_charmDur: '(150 + 1,25 × CHR) × (1 + 5 % par Charm+), BG Wiki Charm Duration ; contre un mob plus bas ×3 à +5 niveaux, ×6 à +9 et plus ; plus haut ×0,04 à -6',
   petPdtLine: 'PDT du pet', petMdtLine: 'MDT du pet', petTrait: 'Stout Servant (trait)',
   statPetBase: 'Préc. du pet sans gear (niv. 119) =',
   // a piece's pet stats in its tip, and the set sheet's tab of them (any job with a pet: tips.svelte.ts, sheet.ts)
@@ -54,6 +58,10 @@ Object.assign(T.en, {
   statObj_petMelee: 'Pet Melee DMG', statD_petMelee: 'the pieces’ Pet: Melee DMG : counts for physical moves (Beanen’s tests, figures not published)',
   statObj_petTpb: 'Ready TP Bonus', statD_petTpb: 'the pieces’ "Ready" TP Bonus + Pet: TP Bonus ; counted when the move goes off (JP wiki)',
   statObj_petMdt: 'Pet MDT', statD_petMdt: 'magic damage the pet takes: Stout Servant + "Stout Servant"+N + the pieces’ Pet: DT and MDT, -87.5 % at most',
+  statObj_chr: 'CHR', statD_chr: 'your CHR (measured in game) + the pieces’: Charm’s success and length (BG Wiki, no published formula)',
+  statObj_charmPlus: 'Charm+', statD_charmPlus: 'the pieces’ "Charm"+N: Charm’s length (BG Wiki); a "Vs. beasts: Charm" is not counted',
+  statObj_macc: 'Magic accuracy', statD_macc: 'the pieces’ Magic Accuracy: Charm’s, which your CHR feeds too (BG Wiki CHR; the FFXIAH guide’s set: CHR, then M.Acc, then Charm+)',
+  statObj_charmDur: 'Charm length (even level)', statD_charmDur: '(150 + 1.25 × CHR) × (1 + 5 % a Charm+), BG Wiki Charm Duration; on a lower mob ×3 at +5 levels, ×6 at +9 or more; on a higher one ×0.04 at -6',
   petPdtLine: 'Pet PDT', petMdtLine: 'Pet MDT', petTrait: 'Stout Servant (trait)',
   statPetBase: 'Pet acc. without gear (lv. 119) =',
   tipPet: 'Pet', petTab: 'Pet',
@@ -80,6 +88,16 @@ function readyKind(s){
 }
 // a set the pet's stats optimizer takes
 const isPetSet = s => isPetEngaged(s) || isPetIdle(s) || !!readyKind(s);
+// The Charm set (sets.precast.JA.Charm, worn by Mote when the ability goes off): BG Wiki Charm (2026-10-27) -- the
+// success rests on the level gap first, then CHR (and maybe magic accuracy, not settled); the length on the level gap,
+// CHR and the "Charm"+N pieces. No formula published for the success: CHR, then Magic Accuracy (CHR feeds Charm's
+// magic accuracy, BG Wiki CHR), then Charm+, the order of the FFXIAH Beastmaster Compendium's set (item set 311276,
+// 2025-06: CHR +233, M.Acc +189, Charm +87, no weapon, no defense). Worn for the ability's instant: no damage taken
+// floor (stat_opt.js statFloorDefault), the weapons never searched (optimizeStats: the TP stays)
+// then Charm+ given back where CHR and Magic Accuracy lose 2 % at most (the player's rule, 2026-10-27: CHR strictly
+// first traded An. Jackcoat +3 and Ankusa Gaiters +3, 41 Charm+, for 9 CHR): opt.js tolGainPass
+const CHARM_TOL = {gain: 'charmplus', keep: ['chr', 'macc'], tol: 0.02};
+const isCharmSet = s => S.job === 'BST' && !!s && /^sets\.precast\.JA\.Charm$/.test(s.path);
 // The set worn while both fight (sets.pet.engagedBoth and its versions)
 const isPetBoth = s => S.job === 'BST' && !!s && /^sets\.pet\.engagedBoth(\.|$)/.test(s.path);
 
@@ -91,12 +109,14 @@ const isPetBoth = s => S.job === 'BST' && !!s && /^sets\.pet\.engagedBoth(\.|$)/
 // +25 %) ; a magic one by MAB first (measured x1.8) ; a debuff by M.Acc
 const READY_OBJS = {phys: ['petAcc', 'petAtk', 'petTpb'], multi: ['petAcc', 'petDa', 'petAtk'], matk: ['petMab', 'petMacc', 'petTpb'], macc: ['petMacc', 'petTpb', 'petInt']};
 function petObjectives(s){
+  if (isCharmSet(s)) return ['chr', 'macc', 'charmPlus'];
   if (readyKind(s)) return READY_OBJS[readyKind(s)];
   if (isPetIdle(s)) return ['petDt', 'petRegen', 'pdtRed'];
   if (!isPetEngaged(s)) return null;
   return /\.PDT\b/.test(s.path) ? ['petDt', 'petRegen', 'petAcc'] : ['petAcc', 'petAtk', 'petHaste'];
 }
 const petRelevant = s => isPetSet(s) ? PET_OBJS : [];
+const charmRelevant = s => isCharmSet(s) ? ['chr', 'macc', 'charmPlus', 'charmDur', 'pdtRed', 'mdtRed', 'hp'] : [];
 
 // The levels a piece gives the pet: "Summoned Pet: Lv.+N" (Nukumi Earring, Gleti's Boots) or, under its "Pet:" lines,
 // "Lv. +N" (Spalirisos); a piece whose bonus is the right ear's (Nukumi Earring) gives it in that ear only
@@ -127,6 +147,10 @@ function petVec(r, slot){
   if (rtp) out.pettpb = (out.pettpb || 0) + rtp;
   for (const [k, key] of [['dt', 'petdt'], ['pdt', 'petpdt'], ['mdt', 'petmdt']]) if (pet(k)) out[key] = pet(k);
   if (stoutOf(r)) out.petstout = stoutOf(r);
+  // the Charm set: CHR and "Charm"+N (a "Vs. beasts:" one is a condition, never in r.stats)
+  const chr = ((r.stats || {}).chr || {}).v || 0, charm = (((r.stats || {})['x:charm'] || {}).v) || 0;
+  if (chr) out.chr = chr;
+  if (charm) out.charmplus = charm;
   if (lv) out[slot === 'main' || slot === 'sub' ? 'petlvw' : 'petlv'] = lv;
   return out;
 }

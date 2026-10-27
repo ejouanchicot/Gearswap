@@ -16,59 +16,31 @@ local BSTEcosystemData = {}
 --- ECOSYSTEM CORRELATION MATRIX
 ---============================================================================
 
---- Ecosystem strengths and weaknesses (circular and reciprocal)
---- First Group (Circular): Aquan >> Amorph >> Bird >> Aquan
---- Second Group (Circular): Beast >> Lizard >> Plantoid >> Beast
---- Third Group (Reciprocal): Vermin ↔ All Others (special case)
+--- Monster correlation (who intimidates whom), checked 2026-10-27 on BG-Wiki's eleven
+--- "<Family> Killer" pages ("All Beasts have this trait" on Lizard Killer...) and the
+--- JP wiki's chart (wiki.ffo.jp/html/3253.html):
+---   Beast >> Lizard >> Vermin >> Plantoid >> Beast   (four, circular)
+---   Bird >> Aquan >> Amorph >> Bird                  (three, circular)
+---   Undead <> Arcana, Demon <> Dragon                (each strong AND weak against the other)
+--- The same family: neither. Luminian / Luminion, elementals, beastmen: none.
+--- (Until 2026-10-27 this table had Lizard >> Plantoid and no relation for Vermin.)
 BSTEcosystemData.correlation_matrix = {
-    -- FIRST GROUP: Aquan >> Amorph >> Bird >> Aquan (Circular)
-    ["Aquan"] = {
-        strong_against = { "Amorph" },
-        weak_to = { "Bird" },
-        cycle_type = "circular",
-        group = 1
-    },
-    ["Amorph"] = {
-        strong_against = { "Bird" },
-        weak_to = { "Aquan" },
-        cycle_type = "circular",
-        group = 1
-    },
-    ["Bird"] = {
-        strong_against = { "Aquan" },
-        weak_to = { "Amorph" },
-        cycle_type = "circular",
-        group = 1
-    },
+    -- Beast >> Lizard >> Vermin >> Plantoid >> Beast
+    ["Beast"]    = { strong_against = { "Lizard" },   weak_to = { "Plantoid" }, cycle_type = "circular", group = 1 },
+    ["Lizard"]   = { strong_against = { "Vermin" },   weak_to = { "Beast" },    cycle_type = "circular", group = 1 },
+    ["Vermin"]   = { strong_against = { "Plantoid" }, weak_to = { "Lizard" },   cycle_type = "circular", group = 1 },
+    ["Plantoid"] = { strong_against = { "Beast" },    weak_to = { "Vermin" },   cycle_type = "circular", group = 1 },
 
-    -- SECOND GROUP: Beast >> Lizard >> Plantoid >> Beast (Circular)
-    ["Beast"] = {
-        strong_against = { "Lizard" },
-        weak_to = { "Plantoid" },
-        cycle_type = "circular",
-        group = 2
-    },
-    ["Lizard"] = {
-        strong_against = { "Plantoid" },
-        weak_to = { "Beast" },
-        cycle_type = "circular",
-        group = 2
-    },
-    ["Plantoid"] = {
-        strong_against = { "Beast" },
-        weak_to = { "Lizard" },
-        cycle_type = "circular",
-        group = 2
-    },
+    -- Bird >> Aquan >> Amorph >> Bird
+    ["Bird"]     = { strong_against = { "Aquan" },    weak_to = { "Amorph" },   cycle_type = "circular", group = 2 },
+    ["Aquan"]    = { strong_against = { "Amorph" },   weak_to = { "Bird" },     cycle_type = "circular", group = 2 },
+    ["Amorph"]   = { strong_against = { "Bird" },     weak_to = { "Aquan" },    cycle_type = "circular", group = 2 },
 
-    -- THIRD GROUP: Vermin (Reciprocal with all)
-    ["Vermin"] = {
-        strong_against = {}, -- No innate strengths
-        weak_to = {},        -- No innate weaknesses
-        cycle_type = "reciprocal",
-        group = 3,
-        note = "Vermin has special reciprocal relationships with all ecosystems"
-    }
+    -- each pair strong and weak against the other
+    ["Undead"]   = { strong_against = { "Arcana" },   weak_to = { "Arcana" },   cycle_type = "reciprocal", group = 3 },
+    ["Arcana"]   = { strong_against = { "Undead" },   weak_to = { "Undead" },   cycle_type = "reciprocal", group = 3 },
+    ["Demon"]    = { strong_against = { "Dragon" },   weak_to = { "Dragon" },   cycle_type = "reciprocal", group = 4 },
+    ["Dragon"]   = { strong_against = { "Demon" },    weak_to = { "Demon" },    cycle_type = "reciprocal", group = 4 },
 }
 
 ---============================================================================
@@ -123,7 +95,7 @@ end
 
 --- Get ecosystem correlation group (1, 2, or 3)
 --- @param ecosystem string Ecosystem name
---- @return number group Group number (1-3) or nil if not found
+--- @return number group Group number (1-4) or nil if not found
 function BSTEcosystemData.get_correlation_group(ecosystem)
     if not BSTEcosystemData.correlation_matrix[ecosystem] then
         return nil

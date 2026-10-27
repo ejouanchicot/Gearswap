@@ -499,6 +499,11 @@ sets.precast.JA['Spur'] = {
     back = Artio.PETSTP
 }
 
+-- Charm (worn as the ability goes off). Success: the level gap, then CHR;
+-- length: the level gap, CHR and "Charm"+N pieces (BG Wiki Charm). Left
+-- empty: fill it, or let the Atelier's optimizer do it (CHR, M.Acc, Charm+).
+sets.precast.JA['Charm'] = {}
+
 -- An ability without a set of its own keeps the gear you wear: Mote has no
 -- default ability set (a 'Default' / 'Misc Idle' name is never read).
 

@@ -31,6 +31,7 @@ after `--` in `quick`).
 | `as`, `create`, `del`, `card`, `title` | adding a set, creating and deleting one, a set's card and title |
 | `bd` | where a piece goes in the bags (placement window) |
 | `bstpet` | a BST's pet engaged sets: their optimizer, objectives, pet figures, a stats search to its end |
+| `bstcharm` | a BST's Charm set: laid in the page if the export has none, its objectives (CHR, then Charm+), figures, a stats search to its end |
 | `sm`, `sp`, `gp` | the slot menu, the stat picker, the piece picker |
 | `mp`, `chiprows`, `modctl`, `numcol` | the Modules: their pickers (weaponskills, abilities, modules) and controls |
 | `combat`, `panel`, `foe`, `tcard`, `tg`, `selreset`, `pb` | Buffs & target: panels, the foe, the target card and picker, a buff menu reset, the party |
