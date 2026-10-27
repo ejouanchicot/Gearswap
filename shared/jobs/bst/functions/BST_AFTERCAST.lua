@@ -79,6 +79,10 @@ function job_aftercast(spell, action, spellMap, eventArgs)
 
             if set then
                 equip(set)
+                -- kept on until the pet's move lands (its gear counts at the impact) : a re-equip meanwhile
+                -- (AutoMove, an engage) keeps it (logic/ready_hold.lua, released by job_pet_aftercast below)
+                local ok_rh, ReadyHold = pcall(require, 'shared/jobs/bst/functions/logic/ready_hold')
+                if ok_rh and ReadyHold then ReadyHold.start(set, spell.name) end
             end
 
             eventArgs.handled = true
@@ -107,6 +111,17 @@ end
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   The pet's action is over (GearSwap pet_aftercast, its move landed or failed):
+---   the Ready move's set is let go before Mote's default pet aftercast puts the
+---   idle / engaged set back (logic/ready_hold.lua).
+---   @param spell table The pet's action
+---   @return void
+function job_pet_aftercast(spell)
+    local ok_rh, ReadyHold = pcall(require, 'shared/jobs/bst/functions/logic/ready_hold')
+    if ok_rh and ReadyHold then ReadyHold.release('pet action done ' .. tostring(spell and spell.name)) end
+end
+
 -- Export globally for GearSwap
 _G.job_aftercast = job_aftercast
+_G.job_pet_aftercast = job_pet_aftercast
 

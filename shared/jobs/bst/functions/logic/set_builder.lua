@@ -129,6 +129,21 @@ local function apply_common_overlays(final_set)
     return final_set
 end
 
+--- A Ready move landing (logic/ready_hold.lua): its set stays over whatever is
+--- rebuilt meanwhile (AutoMove's //gs c update, an engage) until the pet's move
+--- lands. Weapons left out: swapping them would cost the master's TP.
+--- @return table
+local function with_ready_hold(final_set)
+    local ok, ReadyHold = pcall(require, 'shared/jobs/bst/functions/logic/ready_hold')
+    local held = ok and ReadyHold and ReadyHold.held()
+    if not held then return final_set end
+    local armour = {}
+    for slot, piece in pairs(held) do
+        if slot ~= 'main' and slot ~= 'sub' and slot ~= 'range' then armour[slot] = piece end
+    end
+    return set_combine(final_set, armour)
+end
+
 --- Build the idle set (pet or master branch, then town set, weapons, movement).
 --- @param base_idle_set table Idle set selected by Mote
 --- @return table
@@ -142,7 +157,7 @@ function SetBuilder.build_idle_set(base_idle_set)
                       and idle_with_pet(base_idle_set)
                       or idle_without_pet(base_idle_set)
 
-    return apply_common_overlays(final_set)
+    return with_ready_hold(apply_common_overlays(final_set))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -187,8 +202,8 @@ function SetBuilder.build_engaged_set(base_engaged_set)
     PetManager.update_pet_mode(_G.pet)
     local pet_mode = PetManager.get_pet_mode()
 
-    return apply_weapon_sets(
-        engaged_for_situation(base_engaged_set, pet_mode.pet_valid))
+    return with_ready_hold(apply_weapon_sets(
+        engaged_for_situation(base_engaged_set, pet_mode.pet_valid)))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
