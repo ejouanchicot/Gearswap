@@ -12,7 +12,9 @@
 //   the effect only on the spells BG lists (eff below). Per spell, from its BG Wiki page:
 //   Paralyze / II   rate 5-25 % / 14-34 % over dMND -40..+40 (BG gives the ends only: a straight line between them is
 //                   ours); Paralyze II at most 50 % (Japanese measures, sazitouhuu.blogspot 2019-02: 87/160 with
-//                   Saboteur; Kaories 2026-10-14: 45 % and 49 % with Saboteur, Paralyze I 40 %)
+//                   Saboteur). Measured ABOVE this formula, not in support of it (Kaories 2026-10-14, Locus Ghost
+//                   Crab): Paralyze II 45 % without Saboteur (39/86), 49 % with it (46/94), Paralyze I 40 % (21/52),
+//                   where the formula gives 34 % at most before the gear (atelier/calc/DIFFERENCES.md AR)
 //   Slow            (dMND > 0 ? 150 + 2 dMND : 150 + dMND), dMND within +-75, out of 1024. Saboteur on the whole and
 //                   not the base only: measured on Kaories (Locus Ghost Crab, its rounds x1.42 / x1.60 / x2.30 under
 //                   Slow / Slow II / Slow II + Saboteur, a mob's delay x (1 + Slow): the formula below gives 1.43 /

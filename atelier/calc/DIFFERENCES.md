@@ -1103,3 +1103,22 @@ What our engine did not do and the page offered, found once the fallback was gon
 Bench (`banc/lot5_*`): 3 566 / 3 969 identical; the others are the cases not computed (the 383 sets of characters with
 no export, the weapon skills whose numbers no source gives, the sets without a weapon). Blocked mode (no file of
 `atelier/engine/` reachable): 3 969 / 3 969 identical, no request to it. 113 searches, 2 not computed (said why).
+
+## AQ. DNC measured in game: gaps still open (audit 2026-10-28)
+
+`node scripts/audit/calc_dnc_ingame_check.js` (gitignored) ends in FAILED on these lines, all more than 3 standard
+errors (se) from the measure. Written here so a new gap does not hide under a permanent red; their cause is not
+looked for yet:
+- Ruthless Stroke: +12 %, 5.5 se, see "Ruthless Stroke: 12 % under the engine, cause not found" above;
+- Rudra's Storm under Climactic Flourish with Saber Dance (`q_saber`) and with Fan Dance (`cf_rudra`): the engine
+  -12 % and -15 % (4.8 and 4.1 se); the Climactic table above holds the cases without a dance only;
+- the engaged set "of the weaponskill steps", 1 837 rounds (the strongest sample of the file): hits per round 3.18
+  measured, 3.07 by the engine (-8.5 se); off hand 23.8 % against 27.9 % (+8.4 se); seconds per round 1.42 against
+  1.37 (-6.7 se). The Attack bonus section does not name this set.
+
+## AR. Paralyze measured above BG-Wiki's rate (Kaories, 2026-10-14)
+
+`atelier/opt_enf.js` uses BG-Wiki's rates (Paralyze 5-25 %, Paralyze II 14-34 % over dMND -40..+40, x Saboteur,
+Paralyze II 50 % at most). Measured on a Locus Ghost Crab (attacks lost): Paralyze II 45 % without Saboteur (39/86),
+49 % with it (46/94), Paralyze I 40 % (21/52). Saboteur changed the rate barely, the base is well above the formula's
+34 %. Small samples; the formula is kept (it orders the sets the same way: MND first), the figure shown is low.
