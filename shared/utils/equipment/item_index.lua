@@ -25,6 +25,11 @@
 ---   ItemIndex.ammo_container(name)  short name of the pouch / quiver that
 ---                               holds this ammo ('Bronze Bullet' ->
 ---                               'Brz. Bull. Pouch'), nil when none
+---   ItemIndex.newest_weapon(name)  id of the newest weapon of that name
+---                               (several stages share one: Ukonvasara
+---                               from 75 to 119), short or log form, any
+---                               case; the cast time and weapon TP Bonus
+---                               lookups (audit 2026-10-28 J)
 ---
 --- @file    shared/utils/equipment/item_index.lua
 --- @author  ejouanchicot
@@ -67,7 +72,7 @@ end
 local function build()
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.items) then return nil end
-    local ids, weapons, shields, dual, containers, ammo = {}, {}, {}, {}, {}, {}
+    local ids, weapons, shields, dual, containers, ammo, newest = {}, {}, {}, {}, {}, {}, {}
     for id, item in pairs(res.items) do
         if item then
             for _, field in ipairs(NAME_FIELDS) do
@@ -87,6 +92,12 @@ local function build()
                     ammo[#ammo + 1] = item
                 end
             end
+            if item.category == 'Weapon' then
+                for _, n in ipairs({item.en, item.enl}) do
+                    local key = type(n) == 'string' and n:lower()
+                    if key and (not newest[key] or id > newest[key]) then newest[key] = id end
+                end
+            end
             local wields = item.category == 'Weapon' and (item.skill or 0) > 0
             for _, n in ipairs({item.en, item.enl}) do
                 if type(n) == 'string' then
@@ -96,14 +107,15 @@ local function build()
             end
         end
     end
-    return {ids = ids, weapons = weapons, shields = shields, dual = dual, containers = pair_containers(containers, ammo)}
+    return {ids = ids, weapons = weapons, shields = shields, dual = dual, containers = pair_containers(containers, ammo),
+        newest = newest}
 end
 
 --- The lookups, built on first use and kept for the session.
 local function index()
     local cached = windower._item_index
-    -- An index kept from before `containers` / `shields` existed is rebuilt once.
-    if cached and cached.containers and cached.shields then return cached end
+    -- An index kept from before `containers` / `shields` / `newest` existed is rebuilt once.
+    if cached and cached.containers and cached.shields and cached.newest then return cached end
     cached = build()
     if cached then windower._item_index = cached end
     return cached
@@ -145,6 +157,21 @@ function ItemIndex.ammo_container(name)
     if type(name) ~= 'string' then return nil end
     local idx = index()
     return idx and idx.containers[name:lower()]
+end
+
+--- @param name string|nil Weapon name, short or log form
+--- @return number|nil Id of the newest weapon of that name
+function ItemIndex.newest_weapon(name)
+    if type(name) ~= 'string' then return nil end
+    local idx = index()
+    return idx and idx.newest[name:lower()]
+end
+
+--- True when the index can be built here (the game's resources are loaded): a caller with its own resource
+--- table (the Atelier's offline export) keeps its own walk otherwise.
+function ItemIndex.ready()
+    local ok, idx = pcall(index)   -- (outside the game `windower` may be missing)
+    return ok and idx ~= nil
 end
 
 return ItemIndex

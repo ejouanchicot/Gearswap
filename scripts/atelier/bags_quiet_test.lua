@@ -75,6 +75,17 @@ run_until(300)
 check('moving all along: never run', ran(), nil)
 check('moving all along: traced', traced[1] and traced[1]:find('lockstyle 7 left out', 1, true) ~= nil, true)
 
+-- 3b. a job change while the bags move (a new load: LoadGate's number on windower): the old load's action is
+--     dropped, said in the trace (audit 2026-10-28 K)
+windower._load_gen = 1
+ran = start(5)
+run_until(3)
+windower._load_gen = 2
+run_until(30)
+check('new load during the wait: never run', ran(), nil)
+check('new load during the wait: traced', traced[1] and traced[1]:find('lockstyle 7 dropped', 1, true) ~= nil, true)
+windower._load_gen = nil
+
 -- 4. outside the game (no bag info): at once
 in_game = false
 ran = start(0)

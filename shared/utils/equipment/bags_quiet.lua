@@ -35,7 +35,15 @@ function BagsQuiet.run(fn, label)
     local last = counts()
     if last == nil then return fn() end
     local same, waited = 0, 0
+    -- the load that asked (LoadGate's number, on windower): a job change during the wait drops the old load's
+    -- action, so the lockstyle of the job left never goes out after the new one's (audit 2026-10-28 K)
+    local gen = windower._load_gen
     local function check()
+        if windower._load_gen ~= gen then
+            require('shared/utils/debug/trace_log').log('LOAD', '%s dropped: a new load began while the bags moved',
+                tostring(label or 'action'))
+            return
+        end
         local now = counts()
         if now == last then same = same + 1 else same, last = 0, now end
         if same >= QUIET then return fn() end

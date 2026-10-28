@@ -15,7 +15,19 @@
 --- @date Created: 2026-10-25
 ---============================================================================
 
+--- The last job file's loops are this load's to stop: none of this file's code would. Their counters live on
+--- `windower` (they outlive the sandbox): moved on, every loop of the old load sees it is stale and ends. Left
+--- running, the job watchdog saw "file WHM, you are WAR" and sent a stray gs reload, and AutoMove kept sending
+--- gs c update (audit 2026-10-28 C). LoadGate's number: every task deferred by the old load is dropped.
+local function stop_last_load()
+    pcall(function() require('shared/utils/core/load_gate').begin() end)
+    for _, key in ipairs({'_job_sync_seq', '_automove_seq', '_midcast_wd_seq'}) do
+        if type(windower[key]) == 'number' then windower[key] = windower[key] + 1 end
+    end
+end
+
 function get_sets()
+    stop_last_load()
     AtelierNoJobFile = true
     -- GearSwap's require reads the file again at each call: the link's modules would be read at every ping
     pcall(function() require('shared/utils/core/module_cache').install() end)

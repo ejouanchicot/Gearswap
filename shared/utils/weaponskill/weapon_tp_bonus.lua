@@ -56,7 +56,10 @@ local function description(name)
         res = ok and lib or nil
     end
     if not (res and res.items and res.item_descriptions) then return {} end
-    local best = weapon_ids(res)[name:lower()]
+    -- the session's index first (ItemIndex, kept on windower: one walk per lua load, audit 2026-10-28 J), our
+    -- own walk of `res` when it is not there (the Atelier's offline export brings its own resources)
+    local ok, ItemIndex = pcall(require, 'shared/utils/equipment/item_index')
+    local best = (ok and ItemIndex and ItemIndex.ready()) and ItemIndex.newest_weapon(name) or weapon_ids(res)[name:lower()]
     local d = best and res.item_descriptions[best]
     return {d and d.en or ''}
 end

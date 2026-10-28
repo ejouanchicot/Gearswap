@@ -62,10 +62,16 @@ env._G = env
 
 -- the keys the last job file kept down for the next load (keybind_manager.lua unbind_all)
 windower._keybind_manager_bound = {['^f1'] = 'gs c cycle CureMode', ['!f2'] = 'gs c afflatus'}
+-- the last job file's loops: their counters on windower (job watchdog, AutoMove, midcast watchdog, LoadGate)
+windower._job_sync_seq, windower._automove_seq, windower._midcast_wd_seq, windower._load_gen = 4, 7, 2, 9
 load_in_env('default.lua')
 local ok, err = pcall(env.get_sets)
 check('get_sets runs', ok, true)
 if not ok then print('  ' .. tostring(err)) end
+check('the job watchdog of the last file stops', windower._job_sync_seq, 5)
+check('its AutoMove stops', windower._automove_seq, 8)
+check('its midcast watchdog stops', windower._midcast_wd_seq, 3)
+check('its deferred tasks are dropped (LoadGate)', windower._load_gen, 10)
 check('the flag is set', env.AtelierNoJobFile, true)
 check('the door is open', prerender ~= nil, true)
 check('the last job keys are released', next(windower._keybind_manager_bound), nil)

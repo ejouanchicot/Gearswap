@@ -70,8 +70,11 @@ local function resources()
     return res
 end
 
---- Item id from its name (short or long), built once.
+--- Item id from its name (short or long): the session's index (ItemIndex, kept on windower: one walk per
+--- lua load, not one per job load, audit 2026-10-28 J), else a walk of our own built once a load.
 local function item_id(name)
+    local ok, ItemIndex = pcall(require, 'shared/utils/equipment/item_index')
+    if ok and ItemIndex and ItemIndex.ready() then return ItemIndex.id(name) end
     if not by_name then
         by_name = {}
         for id, item in pairs(resources().items or {}) do
