@@ -31,8 +31,8 @@ a name would not locate the spot (they move often in this folder).
 | Path | Lines | Role |
 |------|------:|------|
 | `shared/utils/dualbox/dualbox_manager.lua` | 479 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
-| `shared/utils/dualbox/alt_states.lua` | 188 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
-| `shared/utils/dualbox/alt_commands.lua` | 574 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
+| `shared/utils/dualbox/alt_states.lua` | 193 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
+| `shared/utils/dualbox/alt_commands.lua` | 567 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 359 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 189 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
 | `shared/utils/dualbox/alt_group.lua` | 477 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `altreport`, `altmirror`, `altlead`, `main`, `setalt` |
@@ -512,7 +512,6 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 | `install_fallback(maps, runs_locally?)` | Sets an `__index` on Mote's `selfCommandMaps` that runs an alt key nothing local answers. Does nothing if `maps` is not a table or already has a metatable | end of `COMMON_COMMANDS.lua`, at module load |
 | `list(filter?, runs_locally?)` | Splits the names into bare-reachable and `runs_locally` ones, calls `MessageAltCommands.show_list` | `handle` |
 | `token_for(target)` | Target to wire token | internal (public for tests) |
-| `clear_cache()` | Resets the config cache | none |
 
 ### `AltBuffReporter` (`_G.AltBuffReporter`, returned)
 
@@ -833,7 +832,7 @@ Still open:
 
 - `_G.AltBuffState` is not re-synced after a MAIN reload, and `assume()` stays disabled - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua`
 - `altlight`/`altdark` send tier I spells when the MAIN is BLM - `_master/config/alt/GEO_ALT_CUSTOM.lua` `altlight` / `altdark` (same in BLM/RDM/SCH CUSTOM)
-- Dead API: `clear_cache` - `alt_commands.lua`. Fixed 2026-09-28: `DualBoxManager.show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update` removed (their `MessageDualbox.show_status_*` / `show_not_initialized` formatters followed on 2026-10-01; the `DUALBOX.status_*` templates have no sender, see [messages-catalog.md](messages-catalog.md)). `RollShare.receive` returns true, so `rollshow` counts as handled.
+- Dead API: none left (`AltCommands.clear_cache` removed 2026-10-28). Fixed 2026-09-28: `DualBoxManager.show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update` removed (their `MessageDualbox.show_status_*` / `show_not_initialized` formatters followed on 2026-10-01; the `DUALBOX.status_*` templates have no sender, see [messages-catalog.md](messages-catalog.md)). `RollShare.receive` returns true, so `rollshow` counts as handled.
 - `_G.DUALBOX_SYNC_DEBUG` is never set, so sync hook errors never print in chat (the comment says so); they are written to `//gs c trace` as a `SYNC` line - `_on_ipc_message`, `shared/utils/dualbox/dualbox_sync_ipc.lua`
 - `Composure` and `Bolter's Roll` are tracked by default but never reported on change and never read - `DEFAULT_TRACKED`, `shared/utils/dualbox/alt_buff_reporter.lua`
 - `//gs c alt <unknown>` prints nothing - `AltCommands.execute`, `shared/utils/dualbox/alt_commands.lua`

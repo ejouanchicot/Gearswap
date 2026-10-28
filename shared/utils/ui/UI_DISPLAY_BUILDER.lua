@@ -142,21 +142,27 @@ end
 --- DISPLAY KEY EXTRACTION
 ---============================================================================
 
+--- The HUD section of one row (spell, ja, weapon, mode, other), for the
+--- renderer: a row without a key ('') is drawn only in its own section.
+--- @param bind table Keybind entry
+--- @return string
+function UIDisplayBuilder.categorize(bind)
+    return categorize_keybind(bind)
+end
+
 --- Extract display keys for each category from job keybinds
 --- @param job string The job abbreviation
+--- @param keybinds table|nil The rows ui_display already built (BRD song slots
+---   included); read from the job's keybind file when not given
 --- @return table Categories with their respective keys
-function UIDisplayBuilder.extract_display_keys(job)
-    local keybinds = KeybindLoader.get_job_keybinds(job)
-
+function UIDisplayBuilder.extract_display_keys(job, keybinds)
     if not keybinds then
-        -- Use fallbacks if no config available
-        keybinds = KeybindLoader.get_fallback_keybinds(job)
-    end
-
-    -- Add job-specific elements (like BRD song slots). Must stay in step with
-    -- ui_display.get_current_job_keybinds(), which feeds the rendered rows.
-    if keybinds then
-        keybinds = KeybindLoader.add_job_specific_elements(job, keybinds)
+        keybinds = KeybindLoader.get_job_keybinds(job)
+        -- Add job-specific elements (like BRD song slots), as
+        -- ui_display.get_current_job_keybinds() does for the rendered rows.
+        if keybinds then
+            keybinds = KeybindLoader.add_job_specific_elements(job, keybinds)
+        end
     end
 
     if not keybinds then
@@ -193,66 +199,6 @@ function UIDisplayBuilder.extract_display_keys(job)
         end
     end
 
-    -- Special handling for BRD song slots (display only)
-    if job == "BRD" then
-        -- Add empty key for song slots (handled by special display logic)
-        table.insert(categories.ja_keys, "")
-    end
-
-    return categories
-end
-
----============================================================================
---- JOB-SPECIFIC ENHANCEMENTS
----============================================================================
-
--- Job-specific enhancement rules.
--- NOTE: RDM's enhancing_keys ("Ctrl+6"..) match no key in RDM_KEYBINDS.lua
--- (keys use the ^numpadX form), so the enhancing section never renders.
-local job_enhancements = {
-    BRD = {
-        enhancing_keys = nil, -- BRD doesn't use enhancing section
-        special_handling = function(categories)
-            -- BRD song slots are handled in ja_keys with empty key
-            return categories
-        end
-    },
-
-    RDM = {
-        enhancing_keys = function()
-            -- RDM has specific enhancing spell keys
-            return { "Ctrl+6", "Ctrl+7", "Ctrl+8", "Ctrl+9", "Ctrl+0" }
-        end,
-        special_handling = function(categories)
-            return categories
-        end
-    },
-
-    default = {
-        enhancing_keys = nil,
-        special_handling = function(categories)
-            return categories
-        end
-    }
-}
-
---- Apply job-specific enhancements to display categories
---- @param job string The job abbreviation
---- @param categories table Base categories
---- @return table Enhanced categories
-function UIDisplayBuilder.apply_job_enhancements(job, categories)
-    local enhancement = job_enhancements[job] or job_enhancements.default
-
-    -- Apply special handling
-    if enhancement.special_handling then
-        categories = enhancement.special_handling(categories)
-    end
-
-    -- Add enhancing keys if available
-    if enhancement.enhancing_keys then
-        categories.enhancing_keys = enhancement.enhancing_keys()
-    end
-
     return categories
 end
 
@@ -260,23 +206,18 @@ end
 --- MAIN DISPLAY BUILDER FUNCTION
 ---============================================================================
 
---- Build complete display key structure for a job
+--- Build complete display key structure for a job. No row is ever sorted
+--- into the enhancing section: the name stays accepted in the section order
+--- (UI_CONFIG.lua, <JOB>_HUD.lua) and draws nothing.
 --- @param job string The job abbreviation
+--- @param keybinds table|nil Rows already built by the caller (see extract_display_keys)
 --- @return table Complete display structure with all key categories
-function UIDisplayBuilder.build_display_structure(job)
-    -- Extract base categories
-    local categories = UIDisplayBuilder.extract_display_keys(job)
-
-    -- Apply job-specific enhancements
-    categories = UIDisplayBuilder.apply_job_enhancements(job, categories)
-
-    -- Ensure all required categories exist
+function UIDisplayBuilder.build_display_structure(job, keybinds)
+    local categories = UIDisplayBuilder.extract_display_keys(job, keybinds)
     categories.spell_keys = categories.spell_keys or {}
     categories.ja_keys = categories.ja_keys or {}
     categories.weapon_keys = categories.weapon_keys or {}
     categories.mode_keys = categories.mode_keys or {}
-    categories.enhancing_keys = categories.enhancing_keys or nil
-
     return categories
 end
 

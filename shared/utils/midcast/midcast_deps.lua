@@ -1,13 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Midcast Dependencies - Shared Lazy Loader
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Seven jobs need the same two modules at midcast and nothing else:
+---   Fourteen jobs need the same two modules at midcast and nothing else:
 ---   MidcastManager to pick the set, and the enhancing database so an
 ---   Enhancing spell routes on its family rather than on its name.
 ---
----   Both are loaded on first call, not at file load, and kept for the rest of
----   the session. The database is large and a job may go a whole session
----   without casting anything that reads it.
+---   Both are loaded on first call, not at file load, and kept until the next
+---   job file load (module locals: a reload starts over). The database is large
+---   and a job may go a whole load without casting anything that reads it.
 ---
 ---   @file    shared/utils/midcast/midcast_deps.lua
 ---   @author  ejouanchicot

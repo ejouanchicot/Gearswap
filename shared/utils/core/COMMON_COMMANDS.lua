@@ -400,26 +400,9 @@ end
 
 -- DIAGNOSTIC COMMANDS
 
--- Diagnostic / debug-toggle handlers live in DEBUG_COMMANDS.lua.
--- Aliases preserve the existing CommonCommands.handle_X public surface.
+-- Diagnostic / debug-toggle handlers live in DEBUG_COMMANDS.lua; the router
+-- reaches them through DebugCommands.WORDS / DebugCommands.run.
 local DebugCommands = require('shared/utils/core/DEBUG_COMMANDS')
-CommonCommands.handle_perf        = DebugCommands.handle_perf
-CommonCommands.handle_fulltest    = DebugCommands.handle_fulltest
-CommonCommands.handle_syscheck    = DebugCommands.handle_syscheck
-CommonCommands.handle_lagdebug    = DebugCommands.handle_lagdebug
-CommonCommands.handle_debugsubjob = DebugCommands.handle_debugsubjob
-CommonCommands.handle_jamsg       = DebugCommands.handle_jamsg
-CommonCommands.handle_spellmsg    = DebugCommands.handle_spellmsg
-CommonCommands.handle_wsmsg       = DebugCommands.handle_wsmsg
-CommonCommands.handle_info        = DebugCommands.handle_info
-CommonCommands.handle_debugstate  = DebugCommands.handle_debugstate
-CommonCommands.handle_memcheck    = DebugCommands.handle_memcheck
-CommonCommands.handle_debugwarp      = DebugCommands.handle_debugwarp
-CommonCommands.handle_debugprecast   = DebugCommands.handle_debugprecast
-CommonCommands.handle_automovedebug  = DebugCommands.handle_automovedebug
-CommonCommands.handle_debugjobchange = DebugCommands.handle_debugjobchange
-CommonCommands.handle_debugupdate    = DebugCommands.handle_debugupdate
-CommonCommands.handle_debugmsg       = DebugCommands.handle_debugmsg
 
 -- WARP COMMANDS (Universal Warp/Teleport System)
 
@@ -606,6 +589,7 @@ function CommonCommands.handle_command(command, job_name, ...)
         local SubAbilities = require('shared/utils/commands/sub_abilities')
         local index = SubAbilities.index_of(cmd, args[1])
         if index then return SubAbilities.use(index) end
+        return SubAbilities.usage()
     end
 
     if cmd == 'naked' then
@@ -692,7 +676,7 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'dressup' then
         return CommonCommands.handle_dressup()
     elseif cmd == 'perf' then
-        return CommonCommands.handle_perf(args[1])
+        return DebugCommands.handle_perf(args[1])
     elseif cmd == 'testcolors' or cmd == 'colors' then
         return CommonCommands.handle_testcolors()
     elseif cmd == 'jump' then

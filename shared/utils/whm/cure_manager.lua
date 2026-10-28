@@ -352,13 +352,15 @@ function CureManager.select_cure_tier(spell, target)
     -- ==========================================================================
 
     local optimal_spell = spell_name
+    -- read once: each read walks get_party() and repeats the debug lines
+    local hp_missing
 
     if auto_tier_enabled then
         if not target then
             target = windower.ffxi.get_mob_by_target('me')
         end
 
-        local hp_missing = get_hp_missing(target)
+        hp_missing = get_hp_missing(target)
 
         -- Full HP: lowest tier, the cast is wanted for something other than
         -- healing (Stoneskin farming, waking a sleeping member...)
@@ -390,26 +392,12 @@ function CureManager.select_cure_tier(spell, target)
     -- FORMATTED OUTPUT
     -- ==========================================================================
 
-    if WHMMessageFormatter then
-        local display_reason = nil
-
-        if recast_reason then
-            display_reason = recast_reason
-        elseif auto_tier_enabled and optimal_spell ~= spell_name then
-            local hp_missing = target and get_hp_missing(target) or 0
-            if hp_missing == 0 then
-                display_reason = "Target full HP"
-            end
-            -- else: display_reason = nil (will use default "Target missing X HP")
-        end
-
-        if recast_reason or (auto_tier_enabled and optimal_spell ~= spell_name) then
-            local hp_missing = target and get_hp_missing(target) or 0
-            WHMMessageFormatter.show_cure_tier_change(spell_name, available_spell, hp_missing, display_reason)
-        end
-    elseif WHMCureConfig.debug_messages and WHMMessageFormatter then
-        local hp_missing = target and get_hp_missing(target) or 0
-        WHMMessageFormatter.show_cure_tier_change(spell_name, available_spell, hp_missing, recast_reason)
+    local tier_changed = auto_tier_enabled and optimal_spell ~= spell_name
+    if WHMMessageFormatter and (recast_reason or tier_changed) then
+        local shown_missing = (target and hp_missing) or (target and get_hp_missing(target)) or 0
+        -- nil: the default "Target missing X HP"
+        local display_reason = recast_reason or (shown_missing == 0 and "Target full HP" or nil)
+        WHMMessageFormatter.show_cure_tier_change(spell_name, available_spell, shown_missing, display_reason)
     end
 
     return available_spell

@@ -174,15 +174,16 @@ local function curing_priority(effective_level, preferred_waltz)
 end
 
 --- Why nothing fired: a cooldown per tier, and the TP shortfall once.
+--- @param list table WALTZ_CONFIG.curing or WALTZ_CONFIG.divine
 --- @param effective_level number DNC level, main or sub
 --- @param ability_recasts table windower.ffxi.get_ability_recasts()
 --- @param current_tp number
 --- @return table Array of message descriptors for show_multi_status
-local function curing_blockers(effective_level, ability_recasts, current_tp)
+local function waltz_blockers(list, effective_level, ability_recasts, current_tp)
     local messages = {}
     local tp_message_added = false
 
-    for _, waltz in ipairs(WALTZ_CONFIG.curing) do
+    for _, waltz in ipairs(list) do
         if effective_level >= waltz.level then
             local recast = ability_recasts[waltz.recast_id] or 0
             if is_on_cooldown(recast) then
@@ -222,7 +223,7 @@ function WaltzManager.cast_curing_waltz(target_type)
         end
     end
 
-    local messages = curing_blockers(effective_level, ability_recasts, current_tp)
+    local messages = waltz_blockers(WALTZ_CONFIG.curing, effective_level, ability_recasts, current_tp)
     if #messages > 0 then
         MessageFormatter.show_multi_status(messages, job_tag)
     end
@@ -249,23 +250,7 @@ function WaltzManager.cast_divine_waltz()
         end
     end
 
-    -- Nothing fired: same blocker report as curing_blockers, on the divine list
-    local messages = {}
-    local tp_message_added = false
-
-    for _, waltz in ipairs(WALTZ_CONFIG.divine) do
-        if effective_level >= waltz.level then
-            local recast = ability_recasts[waltz.recast_id] or 0
-
-            if is_on_cooldown(recast) then
-                table.insert(messages, { type = "cooldown", name = waltz.name, value = recast })
-            elseif current_tp < waltz.tp and not tp_message_added then
-                table.insert(messages, { type = "tp", name = waltz.name, value = current_tp, extra = waltz.tp })
-                tp_message_added = true
-            end
-        end
-    end
-
+    local messages = waltz_blockers(WALTZ_CONFIG.divine, effective_level, ability_recasts, current_tp)
     if #messages > 0 then
         MessageFormatter.show_multi_status(messages, job_tag)
     end

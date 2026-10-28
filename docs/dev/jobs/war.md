@@ -65,9 +65,9 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 123 | `buff_war`, `buff_sam_sub`, `build_tp`: lists sent through the shared buff engine; `WAR_CHAINS`, the default chains of `berserk` / `defender` |
 | `shared/utils/buffs/self_buff_manager.lua`, `buff_config.lua` | 438, 88 | The buff engine and the `BUFF_CONFIG.lua` settings (`refresh_below`, `cancel_first`, the waits; the chains themselves are in `war/combat/WAR_CONFIG.lua` since 2026-10-10), shared with `//gs c buff` ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)) |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
-| `shared/utils/drg/auto_jump.lua` | 219 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
-| `shared/utils/drg/jump_landing.lua` | 73 | `JumpLanding.after(name, done)`: a Jump's TP read once it landed (its action packet through `ActionListener`, then the TP moving, 0.6 s at most after it; sent again at 1.2 s if it did not go off; 3.0 s at most), used by Auto-Jump and `//gs c jump` / `tp` |
-| `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 89 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
+| `shared/utils/drg/auto_jump.lua` | 226 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
+| `shared/utils/drg/jump_landing.lua` | 92 | `JumpLanding.after(name, done)`: a Jump's TP read once it landed (its action packet through `ActionListener`, then the TP moving, 0.6 s at most after it; sent again at 1.2 s if it did not go off; 3.0 s at most), used by Auto-Jump and `//gs c jump` / `tp` |
+| `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 92 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 239 | TP bonus piece selection (shared) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
 | `_master/config/war/WAR_STATES.lua` | 125 | All WAR states (`WARStates.configure()`) |

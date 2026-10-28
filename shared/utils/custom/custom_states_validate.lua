@@ -35,6 +35,8 @@ local MOMENT_LIST = 'idle, engaged, weaponskill, ability, precast, midcast, all'
 local SECTIONS = {mode = true, spell = true, ability = true, weapon = true}
 
 --- Expected type of each condition value ('list' = string/number or a list).
+--- Whether a condition exists is custom_conditions.lua's KEYS: one added there
+--- and not here is accepted, only its value goes unchecked.
 local WHEN_TYPES = {
     buff = 'list', no_buff = 'list', weapon = 'list', sub = 'list', range = 'list',
     ammo = 'list', subjob = 'list', no_subjob = 'list', spell = 'list', skill = 'list',
@@ -65,8 +67,10 @@ local function check_when(where, when, problems)
     for key, value in pairs(when) do
         local expected = WHEN_TYPES[key]
         local t = type(value)
-        if not expected then
+        if not Conditions.KEYS[key] then
             add(problems, '%s: unknown condition "%s" - this gear will never go on', where, tostring(key))
+        elseif not expected then
+            -- a condition with no declared type: nothing to check
         elseif expected == 'list' and t ~= 'string' and t ~= 'number' and t ~= 'table' then
             add(problems, '%s: %s expects a name or a list of names', where, key)
         elseif expected ~= 'list' and t ~= expected then

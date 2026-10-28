@@ -7,7 +7,8 @@
 ---   gameplay commands. As a diagnostic tool it may write to chat directly
 ---   (CODE_QUALITY section 6).
 ---
----   Public API (re-exposed as CommonCommands.handle_* by COMMON_COMMANDS.lua):
+---   Public API (COMMON_COMMANDS.lua routes every word through WORDS / run;
+---   a new diagnostic needs only its entry in WORDS):
 ---     DebugCommands.handle_perf(action)        - performance profiler control
 ---     DebugCommands.handle_fulltest(action)    - full system test runner
 ---     DebugCommands.handle_syscheck(action)    - system health check
@@ -274,7 +275,6 @@ function DebugCommands.handle_debugstate()
     if _G.ui_manager_state then
         local U = _G.ui_manager_state
         add_to_chat(207, string.format('UI smart_init_id: %d', U.smart_init_id or 0))
-        add_to_chat(207, string.format('UI pending_update_id: %d', U.pending_update_id or 0))
         add_to_chat(207, string.format('UI update_cancel_id: %d', U.update_cancel_id or 0))
         add_to_chat(207, string.format('UI consecutive_failures: %d', U.consecutive_failures or 0))
     end

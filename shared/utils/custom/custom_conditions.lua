@@ -20,11 +20,16 @@
 ---   day_weather = true     spell element matches the day or the weather
 ---   target                 'self', 'other' (another player), 'enemy'
 ---   distance_below         yalms to the action's target
+---   obi_better / orpheus_better = true   Hachirin-no-Obi (or Orpheus's Sash)
+---                          gives this spell more than the other belt
+---   obi_bonus_above        the Obi's bonus for this spell is above N percent
 ---   town / moving / pet    true or false
 ---   engaged                true = fighting, false = not (Engaged status)
 ---   zone                   zone name
 ---
---- Spell keys never hold at idle/engaged (no action then).
+--- Spell keys never hold at idle/engaged (no action then). A new key is a
+--- function in TESTS below; give it a type in custom_states_validate.lua
+--- WHEN_TYPES to have its value checked.
 ---
 --- @file    shared/utils/custom/custom_conditions.lua
 --- @author  ejouanchicot

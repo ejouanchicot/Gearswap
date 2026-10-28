@@ -1,9 +1,10 @@
 ---============================================================================
 --- Keybind Configuration Loader - Character-Aware System
 ---============================================================================
---- Loads a job's keybind configuration with require('config/<job>/<JOB>_KEYBINDS').
---- GearSwap's search path checks data/<character>/ before data/, so each
---- character gets its own file without any detection here.
+--- Loads a job's keybind configuration, <Character>/<job>/keys/<JOB>_KEYBINDS.lua
+--- (CharPaths.module('job', ...), shared/utils/core/char_paths.lua). When it
+--- does not load, the HUD shows no rows: EntryKit.keybind_error has already
+--- said why in the chat.
 ---
 --- @file shared/utils/ui/UI_LOADER.lua
 --- @author ejouanchicot
@@ -46,36 +47,6 @@ function KeybindLoader.get_job_keybinds(job)
     -- require failed (missing file OR an error inside the file), or the
     -- module exposes neither get_active_binds nor binds. The error is not kept.
     return nil
-end
-
----============================================================================
---- FALLBACK KEYBINDS
----============================================================================
-
---- Get fallback keybinds for jobs without configuration files
---- @param job string The job abbreviation
---- @return table Default keybind configuration
-function KeybindLoader.get_fallback_keybinds(job)
-    local fallbacks = {
-        -- Corsair fallback
-        COR = {
-            { key = "Alt+1", desc = "Main Weapon", state = "WeaponSet" },
-            { key = "Alt+2", desc = "Sub Weapon",  state = "SubSet" },
-        },
-
-        -- Geomancer fallback (should use geo/keys/GEO_KEYBINDS.lua instead)
-        GEO = {
-            { key = "Alt+1", desc = "Main Indi",   state = "MainIndi" },
-            { key = "Alt+2", desc = "Main Geo",    state = "MainGeo" },
-            { key = "Alt+3", desc = "Light Spell", state = "MainLightSpell" },
-            { key = "Alt+4", desc = "Dark Spell",  state = "MainDarkSpell" },
-            { key = "Alt+5", desc = "Light AOE",   state = "MainLightAOE" },
-            { key = "Alt+6", desc = "Dark AOE",    state = "MainDarkAOE" },
-            { key = "Alt+7", desc = "Hybrid Mode", state = "HybridMode" },
-        },
-    }
-
-    return fallbacks[job] or {}
 end
 
 ---============================================================================

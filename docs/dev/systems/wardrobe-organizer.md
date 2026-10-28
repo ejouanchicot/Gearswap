@@ -15,7 +15,7 @@ Re-checked against the code on 2026-09-30, after commit `1c42340` ("the organize
 | `shared/utils/wardrobe/lib/rules.lua` | 161 | `PLACE` / `JOBS` / `TYPES` of the config turned into pins and merged with the sets' own `bag = '...'` pins and the doubled-item pins (`Rules.pins`); item type from `res.items` slots (`Rules.item_type`). New 2026-09-30 (`1c42340`; doubled items `2588c3c`) |
 | `shared/utils/wardrobe/lib/phases.lua` | 760 | Phase 0 (unequip + lock), shared burst loop, Phase 2/3/3.5/3.6/4, `enable_slots`, `force_enable_all`, `count_unpacked` |
 | `shared/utils/wardrobe/lib/state.lua` | 283 | Snapshot of the bags into a state table, pin resolution (`pin_target_for`) |
-| `shared/utils/wardrobe/lib/moves.lua` | 162 | Packet primitives `pull_slot` / `push_slot`, `space_in`, pin-bag ordering (`unclaimed_pins_first`) |
+| `shared/utils/wardrobe/lib/moves.lua` | 159 | Packet primitives `pull_slot` / `push_slot`, `space_in`, pin-bag ordering (`unclaimed_pins_first`) |
 | `shared/utils/wardrobe/lib/items.lua` | 185 | `res.items` helpers, `NEVER_MOVE` filter (`is_equipment`), used names of the scope (`_G.sets` walk, plus every job's set files when `SCOPE = 'all_jobs'`), always-kept items (`KEEP`, warp rings) |
 | `shared/utils/wardrobe/lib/reports.lua` | 267 | `wo scan` and `wo keep` |
 | `shared/utils/wardrobe/lib/warp_owned.lua` | 118 | Scan / load / save of the warp items the character owns (`WARP_ITEMS_OWNED.lua`) |

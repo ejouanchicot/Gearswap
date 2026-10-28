@@ -10,9 +10,6 @@
 ---   Moves.space_in(bag_id)             - free slots in a bag (0 if bag disabled)
 ---   Moves.pull_slot(src_bag, src_slot) - get_item from a specific source slot
 ---   Moves.push_slot(inv_slot, dst_bag) - put_item from a specific inv slot
----   Moves.find_inv_slot(item_id)       - first inv slot containing item_id
----   Moves.first_pinned_bag(id, pinned_bags)
----                                      - resolve first pin bag for an item id
 ---   Moves.all_pinned_bags(id, pinned_bags)
 ---                                      - every pin bag for an item id
 ---   Moves.unclaimed_pins_first(id, pinned_bags)

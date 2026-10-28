@@ -32,7 +32,9 @@ local SynthResults = {}
 -- 0x06F results: 0 a success, 1 and 5 a break; any other is a cancelled synthesis
 -- (wrong recipe, skill too low, missing materials...): the game says why, nothing was
 -- made or lost. Not a list of the cancels: 13 was not in the old one (3 4 6 7) and read
--- as an NQ of the last break's Mangled Mess (journal 2026-10-28)
+-- as an NQ of the last break's Mangled Mess (journal 2026-10-28). 2 is "Fail, interrupted"
+-- in Windower's fields.lua and may lose materials, but has never been seen in either journal:
+-- it stays a cancel until the first result=2 of synth.log says what it does
 local SUCCESS, FAILED = 0, {[1] = true, [5] = true}
 -- An animation older than this is not the one of the result that arrives
 local ANIMATION_MAX_AGE = 30

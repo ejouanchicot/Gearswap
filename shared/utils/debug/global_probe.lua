@@ -134,10 +134,9 @@ local EXPECTED = {
 -- Names the factories build at run time, which no scan of `_G.x =` can find.
 -- LockstyleManager and MacrobookManager compose them from the job code, so the
 -- shape is the only thing that can be checked: get_rdm_lockstyle_info,
--- set_war_dressup_management, cancel_cor_lockstyle_operations and so on.
+-- cancel_cor_lockstyle_operations and so on.
 local GENERATED = {
-    '^get_%a%a%a_lockstyle', '^set_%a%a%a_lockstyle', '^show_%a%a%a_lockstyle',
-    '^cancel_%a%a%a_lockstyle', '^set_%a%a%a_dressup', '^get_%a%a%a_dressup',
+    '^get_%a%a%a_lockstyle', '^cancel_%a%a%a_lockstyle',
     '^get_%a%a%a_movement', '^%a%a%a_lockstyle',
 }
 

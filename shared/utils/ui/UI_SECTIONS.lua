@@ -30,6 +30,14 @@ end
 local UIFormatter = require('shared/utils/ui/UI_FORMATTER')
 local UIStyle = require('shared/utils/ui/ui_style')
 
+--- The section a row belongs to (UI_DISPLAY_BUILDER.lua categorize).
+--- @param bind table
+--- @return string|nil
+local function row_section(bind)
+    local ok, Builder = pcall(require, 'shared/utils/ui/UI_DISPLAY_BUILDER')
+    return ok and Builder and Builder.categorize and Builder.categorize(bind) or nil
+end
+
 ---============================================================================
 --- SECTION RENDERING ENGINE
 ---============================================================================
@@ -56,7 +64,10 @@ local function render_section(section_name, keys, keybinds, job, key_column_widt
 
     for _, bind in ipairs(keybinds) do
         for _, section_key in ipairs(keys) do
-            if bind.key == section_key then
+            -- Every row without a key shares the key '': matching on the key
+            -- alone drew each one in every section that had one (BRD's song
+            -- slots under Modes as soon as a mode had no key)
+            if bind.key == section_key and (bind.key ~= '' or row_section(bind) == section_name) then
                 -- A list of subjobs was already filtered by get_active_binds;
                 -- only the single-subjob form is left to test here, for bind
                 -- files that do not go through it.
@@ -72,43 +83,6 @@ local function render_section(section_name, keys, keybinds, job, key_column_widt
                 end
 
                 -- Add the keybind line (with fixed value column width)
-                text = text .. UIFormatter.format_keybind_line(bind, key_column_width, function_column_width, get_state_value_func, value_column_width)
-                break
-            end
-        end
-    end
-
-    return text
-end
-
---- Render special display-only keybinds (like BRD song slots)
---- @param keys table List of keys (can include empty keys for display-only)
---- @param keybinds table All keybinds
---- @param job string Current job
---- @param key_column_width number Column width for alignment
---- @param function_column_width number Function column width for alignment
---- @param get_state_value_func function Function to get state values
---- @param section_title string Title for the section
---- @param content_width number Total UI content width for centering
---- @param value_column_width number Value column width for fixed padding
---- @return string Rendered section text
-local function render_display_only_section(keys, keybinds, job, key_column_width, function_column_width, get_state_value_func, section_title, content_width, value_column_width)
-    if not keys or #keys == 0 then
-        return ""
-    end
-
-    local text = ""
-    local section_found = false
-
-    for _, bind in ipairs(keybinds) do
-        -- Handle display-only items (empty keys) and regular keys
-        for _, section_key in ipairs(keys) do
-            if (bind.key == section_key) or (section_key == "" and (bind.key == "" and (bind.desc:find("Spell") or bind.desc:find("Gain")))) then
-                if not section_found then
-                    text = text .. UIFormatter.create_colored_section_header(section_title, content_width)
-                    section_found = true
-                end
-
                 text = text .. UIFormatter.format_keybind_line(bind, key_column_width, function_column_width, get_state_value_func, value_column_width)
                 break
             end
@@ -173,13 +147,7 @@ function UISections.render_ja_section(display_structure, keybinds, job, key_colu
         return ""
     end
 
-    -- Special handling for BRD song slots (display-only)
-    if job == "BRD" then
-        return render_display_only_section(display_structure.ja_keys, keybinds, job, key_column_width, function_column_width,
-            get_state_value_func, UIFormatter.get_section_title(job, "ja"), content_width, value_column_width)
-    else
-        return render_section("ja", display_structure.ja_keys, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
-    end
+    return render_section("ja", display_structure.ja_keys, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
 end
 
 --- Render weapons section

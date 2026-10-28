@@ -54,10 +54,6 @@ function WSSlots.rebuild(ws_list, max_slots)
     end
 end
 
---- Match the weapon actually equipped back to one of the weapon state's options
---- Each option names an equipment set (sets[key] = {main = ..., sub = ...}), so
---- the equipped main/sub pair identifies which option is really in hand.
---- Options sharing a main are told apart by the sub (Naegling vs NaeglingKC).
 --- Whether a set's slot names the item in hand. A set may write the item as
 --- a string or as a table {name = ..., augments = ...}, in either case and
 --- with its short or long name; GearSwap's player.equipment holds the short
@@ -76,6 +72,10 @@ local function same_item(set_item, equipped)
     return id ~= nil and id == Items.id(equipped)
 end
 
+--- Match the weapon actually equipped back to one of the weapon state's options
+--- Each option names an equipment set (sets[key] = {main = ..., sub = ...}), so
+--- the equipped main/sub pair identifies which option is really in hand.
+--- Options sharing a main are told apart by the sub (Naegling vs NaeglingKC).
 --- @param weapon_state table Mote state listing the weapon keys
 --- @return string|nil Matching option, nil when nothing matches
 function WSSlots.detect_weapon(weapon_state)

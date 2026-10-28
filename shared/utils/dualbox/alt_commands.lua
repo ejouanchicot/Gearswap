@@ -291,13 +291,6 @@ local function load_config()
     return commands, job
 end
 
---- Drop the cached merged table so the next lookup rebuilds it (the config
---- files themselves stay in the require cache). No caller today.
-function AltCommands.clear_cache()
-    cache.key = nil
-    cache.commands = nil
-end
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   ACTION BUILDING
 ---  ═══════════════════════════════════════════════════════════════════════════

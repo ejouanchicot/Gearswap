@@ -68,6 +68,26 @@ function SubAbilities.use(index)
     return true
 end
 
+--- Answer to ja without a number (//gs c ja, //gs c ja x): what it takes and
+--- what the current subjob has, instead of nothing at all.
+--- @return boolean true (the command is answered)
+function SubAbilities.usage()
+    local list = current_list() or {}
+    local sub = tostring(player and player.sub_job)
+    if #list == 0 then
+        MessageFormatter.show_warning(('Usage: //gs c ja1, ja2... (or ja <n>): nothing listed for /%s (SUBJOB_CONFIG.lua abilities)')
+            :format(sub))
+        return true
+    end
+    local names = {}
+    for i, entry in ipairs(list) do
+        names[#names + 1] = ('%d %s'):format(i, type(entry) == 'table' and tostring(entry.name) or tostring(entry))
+    end
+    MessageFormatter.show_warning(('Usage: //gs c ja1..ja%d (or ja <n>), /%s: %s')
+        :format(#list, sub, table.concat(names, ', ')))
+    return true
+end
+
 --- The place a command word names: ja3 -> 3, ja + '3' -> 3, else nil.
 --- @param cmd string Lower-cased command word
 --- @param arg string|nil Its first argument

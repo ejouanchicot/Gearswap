@@ -7,17 +7,11 @@
 ---
 ---   @file    shared/utils/macrobook/macrobook_manager.lua
 ---   @author  ejouanchicot
----   @version 1.2 - create() split into ctx-taking operations (parity with LockstyleManager)
----   @date    Created: 2025-10-05 | Updated: 2026-08-10
+---   @version 1.3 - set_macro_book / show_macro_configs removed (no caller)
+---   @date    Created: 2025-10-05 | Updated: 2026-10-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local MacrobookManager = {}
-
----  ═══════════════════════════════════════════════════════════════════════════
----   SHARED DEPENDENCIES (loaded once, reused by every per-job ctx)
----  ═══════════════════════════════════════════════════════════════════════════
-
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 -- Names of globals set by the most recent create() call, cleared at the top
 -- of the next create(). A job change or gs reload builds a new sandbox with a
@@ -161,24 +155,6 @@ local function select_default_macro_book(ctx)
     set_macro_with_delay(ctx, config.book, config.page, 1.5)
 end
 
---- Manually set macro book for specific subjob
---- @param ctx table Per-job context
---- @param subjob string Subjob code
-local function set_macro_book(ctx, subjob)
-    if not subjob then return end
-
-    subjob = string.upper(subjob)
-    local config = ctx.MACROBOOKS.solo and ctx.MACROBOOKS.solo[subjob]
-
-    if not config then
-        MessageFormatter.show_error(string.format("%s: Unknown subjob '%s' for macro book",
-            ctx.job_code, subjob))
-        return
-    end
-
-    set_macro_with_delay(ctx, config.book, config.page, 0.5)
-end
-
 --- Get current macro book info for display
 --- @param ctx table Per-job context
 --- @return table|nil Macro book info {book, page, subjob}
@@ -193,32 +169,6 @@ local function get_macro_info(ctx)
         page = config.page,
         subjob = sub_job
     }
-end
-
---- Display available macro book configurations
---- @param ctx table Per-job context
-local function show_macro_configs(ctx)
-    MessageFormatter.show_success(string.format("%s Macro Book Configurations:", ctx.job_code))
-
-    if ctx.MACROBOOKS.solo then
-        MessageFormatter.show_info("  Solo Configurations:")
-        for subjob, config in pairs(ctx.MACROBOOKS.solo) do
-            if subjob ~= 'default' then
-                MessageFormatter.show_info(string.format("    %s/%s: Book %d Page %d",
-                    ctx.job_code, subjob, config.book, config.page))
-            end
-        end
-    end
-
-    if ctx.MACROBOOKS.dualbox and next(ctx.MACROBOOKS.dualbox) then
-        MessageFormatter.show_info("  Dual-Boxing Configurations:")
-        for alt_job, subjob_configs in pairs(ctx.MACROBOOKS.dualbox) do
-            for subjob, config in pairs(subjob_configs) do
-                MessageFormatter.show_info(string.format("    %s/%s + Alt %s: Book %d Page %d",
-                    ctx.job_code, subjob, alt_job, config.book, config.page))
-            end
-        end
-    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -246,9 +196,7 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
 
     local api = {
         select_default_macro_book = bind(select_default_macro_book),
-        set_macro_book            = bind(set_macro_book),
         get_macro_info            = bind(get_macro_info),
-        show_macro_configs        = bind(show_macro_configs),
     }
 
     -- Clear globals registered by the previous create() call (same scheme as
@@ -262,9 +210,7 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
     local jl = string.lower(job_code)
     local exports = {
         ['select_default_macro_book']        = api.select_default_macro_book,
-        ['set_'  .. jl .. '_macro_book']     = api.set_macro_book,
         ['get_'  .. jl .. '_macro_info']     = api.get_macro_info,
-        ['show_' .. jl .. '_macro_configs']  = api.show_macro_configs,
     }
     for name, fn in pairs(exports) do
         _G[name] = fn
@@ -273,16 +219,10 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
 
     -- Also return as module for require() usage
     return {
-        -- Public API
         select_default_macro_book = api.select_default_macro_book,
-        set_macro_book = api.set_macro_book,
         get_macro_info = api.get_macro_info,
-        show_macro_configs = api.show_macro_configs,
-
-        -- Legacy function names for compatibility
-        ['set_' .. jl .. '_macro_book'] = api.set_macro_book,
+        -- the name the keybind intro and older keybind files ask for (keybind_manager.lua show_intro)
         ['get_' .. jl .. '_macro_info'] = api.get_macro_info,
-        ['show_' .. jl .. '_macro_configs'] = api.show_macro_configs
     }
 end
 

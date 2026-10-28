@@ -1,7 +1,7 @@
 ---============================================================================
 --- HUD Job Config - a job's own HUD settings, in its config folder
 ---============================================================================
---- <Character>/config/<job>/<JOB>_HUD.lua holds what the HUD does on that
+--- <Character>/<job>/display/<JOB>_HUD.lua holds what the HUD does on that
 --- job only: its section order and its row order. Each list, when not
 --- empty, replaces UI_CONFIG.lua's layout.section_order / layout.row_order
 --- (the defaults of every job) on that job.
@@ -29,8 +29,8 @@ local HEADER = [[
 -- empty replaces the default on this job. Empty or missing = the default.
 --
 -- section_order: order of the HUD sections on this job. Names: spells,
---   enhancing, abilities, weapons, modes. Those left out follow in the
---   standard order.
+--   abilities, weapons, modes (enhancing is accepted and stays empty). Those
+--   left out follow in the standard order.
 -- row_order: order of the rows inside each section on this job. The rows
 --   named come first in their section, in this order; the others follow in
 --   the order of the job's _KEYBINDS file. Names = the states as written in
@@ -52,7 +52,7 @@ local HEADER = [[
 
 local FIELDS = {'section_order', 'row_order'}
 
---- <Character>/config/<job>/<JOB>_HUD.lua, or nil before the player is known.
+--- <Character>/<job>/display/<JOB>_HUD.lua, or nil before the player is known.
 --- @param job string Job code
 --- @return string|nil
 function HudJobConfig.path(job)

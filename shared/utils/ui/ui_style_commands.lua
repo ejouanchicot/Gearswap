@@ -211,7 +211,7 @@ local function take_scope(args)
 end
 
 --- Save an order: the default in UI_CONFIG.lua layout.<field> for 'all', else
---- the job's config/<job>/<JOB>_HUD.lua (list nil = back to the default).
+--- the job's <Character>/<job>/display/<JOB>_HUD.lua (list nil = back to the default).
 local function save_order(scope, field, list)
     if scope == 'all' then return apply('layout', field, list) end
     local saved, err = require('shared/utils/ui/hud_job_config').set_list(scope, field, list)
@@ -310,7 +310,7 @@ end
 
 --- //gs c ui roworder [all|<JOB>] <state> <state> ... | [all|<JOB>] reset
 --- The job played now by default; `all` = the default of every job
---- (UI_CONFIG.lua); a job code = that job's config/<job>/<JOB>_HUD.lua.
+--- (UI_CONFIG.lua); a job code = that job's <Character>/<job>/display/<JOB>_HUD.lua.
 --- The names typed come first; the others of the list in force follow.
 local function run_row_order(args)
     local scope = take_scope(args)

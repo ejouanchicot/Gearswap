@@ -58,8 +58,8 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/dnc/functions/logic/step_manager.lua` | 97 | `execute_step`: recast check, Presto, Main/Alt rotation |
 | `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 200 | `collect_dance`, `collect_samba`, `collect_extra` (dance then samba, for `job_buff_extra`), `apply_dance`; `apply` calls the common `BuffCommand.apply()` |
 | `shared/jobs/dnc/functions/logic/set_builder.lua` | 159 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
-| `shared/utils/dnc/waltz_manager.lua` | 274 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
-| `shared/utils/drg/auto_jump.lua` | 219 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
+| `shared/utils/dnc/waltz_manager.lua` | 259 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
+| `shared/utils/drg/auto_jump.lua` | 226 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
 | `shared/utils/precast/ability_helper.lua` | 465 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
 | `shared/utils/buffs/buff_command.lua` | 70 | `//gs c buff` of every job: `_G.job_buff_extra` (DNC), then the `job` and `subjob` lists of `_common/combat/BUFF_CONFIG.lua`, through `self_buff_manager.lua` |
 | `_master/config/dnc/DNC_STATES.lua` | 212 | All Mote states |

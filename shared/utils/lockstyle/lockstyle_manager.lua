@@ -8,8 +8,8 @@
 ---
 ---   @file    shared/utils/lockstyle/lockstyle_manager.lua
 ---   @author  ejouanchicot
----   @version 1.2 - Add persistent DressUp toggle (//gs c dressup)
----   @date    Created: 2025-10-05 | Updated: 2025-11-26
+---   @version 1.3 - Setters and config display removed (no caller)
+---   @date    Created: 2025-10-05 | Updated: 2026-10-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local LockstyleManager = {}
@@ -98,12 +98,6 @@ function LockstyleManager.apply_style_now(style)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   SHARED DEPENDENCIES (loaded once, reused by every per-job ctx)
----  ═══════════════════════════════════════════════════════════════════════════
-
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   PER-INSTANCE OPERATIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---
@@ -116,8 +110,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---     ctx.load_gen           number  - LoadGate number of the load that made it
 ---
 ---   STATE shape:
----     enabled, is_processing, dressup_state,
----     last_dressup_command_time, operation_id
+---     enabled, dressup_state, last_dressup_command_time, operation_id
 
 --- @return boolean True when DressUp is cycled around each lockstyle
 local function get_manage_dressup()
@@ -127,8 +120,7 @@ end
 --- Bump operation_id so any in-flight coroutine.schedule callback aborts on its
 --- next `operation_id ~= STATE.operation_id` check.
 local function cancel_pending_operations(ctx)
-    ctx.STATE.operation_id  = ctx.STATE.operation_id + 1
-    ctx.STATE.is_processing = false
+    ctx.STATE.operation_id = ctx.STATE.operation_id + 1
 end
 
 local send_lockstyle
@@ -155,7 +147,6 @@ send_lockstyle = function(ctx, style, operation_id)
     if not get_manage_dressup() then
         require('shared/utils/lockstyle/lockstyle_pieces').expect(style)
         send_command('input /lockstyleset ' .. style)
-        STATE.is_processing = false
         return
     end
 
@@ -182,7 +173,6 @@ send_lockstyle = function(ctx, style, operation_id)
             send_command('lua load dressup')
             STATE.last_dressup_command_time = reload_time
             STATE.dressup_state             = 'loaded'
-            STATE.is_processing             = false
         end
     end, 3.0)
 end
@@ -193,7 +183,6 @@ local function set_lockstyle_with_delay(ctx, style, delay)
     if not ctx.STATE.enabled then return end
     delay = delay or 2.0
     cancel_pending_operations(ctx)
-    ctx.STATE.is_processing = true
     local current_operation = ctx.STATE.operation_id
     -- LoadGate: operation_id lives in this job file's memory, which a reload
     -- replaces. Keyed on the load that made ctx, so the entry's raw +8 s
@@ -233,29 +222,6 @@ local function get_lockstyle_info(ctx)
     }
 end
 
-local function show_lockstyle_config(ctx)
-    local info = get_lockstyle_info(ctx)
-    local msg  = string.format(
-        "[%s] Lockstyle: %s | DressUp: %s | Style: %d",
-        info.job,
-        info.enabled and "ON" or "OFF",
-        info.manage_dressup and "Managed" or "Manual",
-        info.style
-    )
-    MessageFormatter.show_info(msg)
-end
-
-local function set_lockstyle_enabled(ctx, enabled)
-    ctx.STATE.enabled = enabled
-    show_lockstyle_config(ctx)
-end
-
-local function set_dressup_management(ctx, manage_dressup)
-    _G.DRESSUP_MANAGEMENT_ENABLED = manage_dressup
-    if manage_dressup then save_dressup_enabled() else save_dressup_disabled() end
-    show_lockstyle_config(ctx)
-end
-
 --- Load per-job lockstyle config, or build a minimal fallback that always
 --- returns `default_lockstyle` so callers can rely on .default / .get_style.
 local function load_config_or_fallback(config_path, default_lockstyle)
@@ -272,8 +238,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Names of globals set by the most recent create() call, cleared at the top
--- of the next create() so a previous job's _G.cancel_<job>_*, _G.set_<job>_*
--- etc. do not linger. Note: a job change or gs reload builds a new sandbox,
+-- of the next create() so a previous job's _G.cancel_<job>_* and
+-- _G.get_<job>_* do not linger. Note: a job change or gs reload builds a new sandbox,
 -- with a fresh _G and a fresh copy of this file (ModuleCache lives on the
 -- sandbox _G), so this list only ever sees the create() calls of one load.
 local last_registered_globals = {}
@@ -313,7 +279,6 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
             load_gen          = windower._load_gen,
             STATE = {
                 enabled                   = true,
-                is_processing             = false,
                 dressup_state             = 'unknown',
                 last_dressup_command_time = 0,
                 operation_id              = 0,
@@ -327,15 +292,11 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
 
     local api = {
         select_default_lockstyle  = bind(select_default_lockstyle),
-        set_lockstyle_with_delay  = bind(set_lockstyle_with_delay),
         get_lockstyle_info        = bind(get_lockstyle_info),
-        show_lockstyle_config     = bind(show_lockstyle_config),
-        set_lockstyle_enabled     = bind(set_lockstyle_enabled),
-        set_dressup_management    = bind(set_dressup_management),
         cancel_pending_operations = bind(cancel_pending_operations),
-        get_state                 = function() return ctx.STATE end,
     }
-    api.get_info = api.get_lockstyle_info  -- backward-compat alias
+    -- the name the keybind intro asks for (keybind_manager.lua show_intro)
+    api.get_info = api.get_lockstyle_info
     -- The name every <JOB>_LOCKSTYLE.lua wrapper calls on this table.
     api['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations
 
@@ -351,10 +312,7 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
     local exports = {
         ['select_default_lockstyle']                 = api.select_default_lockstyle,
         ['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations,
-        ['set_'    .. jl .. '_lockstyle_enabled']    = api.set_lockstyle_enabled,
-        ['set_'    .. jl .. '_dressup_management']   = api.set_dressup_management,
         ['get_'    .. jl .. '_lockstyle_info']       = api.get_lockstyle_info,
-        ['show_'   .. jl .. '_lockstyle_config']     = api.show_lockstyle_config,
     }
     for name, fn in pairs(exports) do
         _G[name] = fn

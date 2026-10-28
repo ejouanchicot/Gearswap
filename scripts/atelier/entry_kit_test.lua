@@ -3,7 +3,8 @@
 ---============================================================================
 --- The first macro book and lockstyle come even when the keybinds did not
 --- load (the facade defines them only after user_setup), and a newer load
---- drops them; unload cancels then unbinds; a subjob change goes to
+--- drops them, and so does the old sandbox's user_setup() on a subjob change;
+--- unload cancels then unbinds; a subjob change goes to
 --- JobChangeManager with the job of the game.
 ---
 --- Run from data/: lua5.1 scripts/atelier/entry_kit_test.lua
@@ -71,6 +72,35 @@ EntryKit.macro_and_lockstyle(8)
 windower._load_gen = 2
 run_until(20)
 check('a newer load drops the old macro book', #calls, 0)
+
+-- 2b. a subjob change: Mote calls user_setup() again in the old sandbox, with
+-- player.sub_job already the new one; the reload sends the book, not this call
+calls = {}
+windower._load_gen = 3
+_G.JobChangeManagerSTATE = {current_sub_job = 'SAM'}
+player = {main_job = 'WAR', sub_job = 'DNC'}
+EntryKit.macro_and_lockstyle(8)
+run_until(40)
+check('no macro book from the old sandbox on a subjob change', #calls, 0)
+check('reload pending seen', EntryKit.reload_pending(), true)
+
+-- 2c. the reload (state seeded with the new subjob): the book goes out
+_G.JobChangeManagerSTATE = {current_sub_job = 'DNC'}
+windower.ffxi.get_player = function() return {main_job = 'WAR', sub_job = 'DNC'} end
+EntryKit.macro_and_lockstyle(8)
+run_until(60)
+check('macro book from the reload', calls[1], 'macro')
+check('lockstyle from the reload', calls[2], 'lockstyle')
+
+-- 2d. no subjob in the game, or no state seeded: never taken for a change
+_G.JobChangeManagerSTATE = {current_sub_job = 'DNC'}
+player = {main_job = 'WAR', sub_job = nil}
+check('no subjob: no reload pending', EntryKit.reload_pending(), false)
+_G.JobChangeManagerSTATE = nil
+player = {main_job = 'WAR', sub_job = 'DNC'}
+check('no state: no reload pending', EntryKit.reload_pending(), false)
+windower.ffxi.get_player = function() return {main_job = 'WAR', sub_job = 'SAM'} end
+player = {main_job = 'WAR', sub_job = 'SAM'}
 
 -- 3. unload: cancel first, then the keys
 calls = {}

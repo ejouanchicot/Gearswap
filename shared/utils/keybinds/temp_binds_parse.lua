@@ -35,7 +35,10 @@ local Parse = {}
 
 local KeyValidator = require('shared/utils/keybinds/key_validator')
 
-local MODIFIER_WORDS = {ctrl = '^', alt = '!', shift = '~', win = '@', apps = '#'}
+-- A list, not a map: pairs() order gave ctrl+alt+f1 as !^f1 but caf1 as ^!f1,
+-- two names for one key (tb del, taken_by). Same order as the letter form and
+-- the keybind files: Ctrl, Alt, Shift, Win, Apps.
+local MODIFIER_WORDS = {{'ctrl', '^'}, {'alt', '!'}, {'shift', '~'}, {'win', '@'}, {'apps', '#'}}
 local MODIFIER_NAMES = {['^'] = 'Ctrl', ['!'] = 'Alt', ['~'] = 'Shift', ['@'] = 'Win', ['#'] = 'Apps'}
 
 local GAME_TOKENS = {
@@ -88,21 +91,38 @@ local function letter_key(text)
     return nil
 end
 
+local MODIFIER_RANK = {['^'] = 1, ['!'] = 2, ['~'] = 3, ['@'] = 4, ['#'] = 5}
+
+--- The modifiers of a Windower key in one fixed order (^!~@#), so "!^f1",
+--- "alt+ctrl+f1" and "acf1" all name the key "^!f1".
+--- @param key string|nil
+--- @return string|nil
+local function canonical(key)
+    if not key then return nil end
+    local mods, rest = key:match('^([%^!~@#]*)(.*)$')
+    if #mods < 2 or rest == '' then return key end
+    local list = {}
+    for c in mods:gmatch('.') do list[#list + 1] = c end
+    table.sort(list, function(a, b) return MODIFIER_RANK[a] < MODIFIER_RANK[b] end)
+    return table.concat(list) .. rest
+end
+
 --- Windower key from what the player typed: "^f1", "ctrl+f1", "cf1", "F3".
 --- @param text string
 --- @return string|nil Windower form, nil when not a valid key
 function Parse.key(text)
     if type(text) ~= 'string' or text == '' then return nil end
     local key, prefix = text:lower(), ''
-    for word, symbol in pairs(MODIFIER_WORDS) do
+    for _, pair in ipairs(MODIFIER_WORDS) do
+        local word, symbol = pair[1], pair[2]
         while key:find(word .. '%+') do
             key = key:gsub(word .. '%+', '', 1)
             prefix = prefix .. symbol
         end
     end
     key = prefix .. key
-    if KeyValidator.is_valid_key(key) then return key end
-    return letter_key(text:lower())
+    if KeyValidator.is_valid_key(key) then return canonical(key) end
+    return canonical(letter_key(text:lower()))
 end
 
 --- Whether a word was meant as a key even though it is not a valid one

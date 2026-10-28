@@ -373,7 +373,11 @@ The key itself is bound to `gs c tb run <key>`. The stored command is resolved w
 - Reserved keys (`RESERVED`): Mote's F9-F12 block with every modifier, plus `^-` and `^=`, and `^v` (Windower paste).
 - A key in the current job's active binds is reported with its owner. Common keys count too, since they are merged into the job's list.
 
-`force` skips that check. A job key taken with `force` is bound by `tb` directly (`send_command`), without touching `windower._keybind_manager_bound`: `bind_all` does not send again a key recorded there with the same line, and KeybindGuard re-sends only the keys the load sent, so the job's command comes back only when its line changes or when GearSwap is reloaded.
+`force` skips that check. `tb` sends its `bind` / `unbind` through the paced queue (`command_queue.lua`), so a job command still waiting there for the same key is replaced instead of landing after it, and drops the key from `windower._keybind_sent_this_load` so KeybindGuard does not re-send the job's line over it. It never touches `windower._keybind_manager_bound`.
+
+KeybindManager leaves the keys `tb` holds alone (`temp_held`, read from `TempBinds.current()`): `clear_unwanted`, `refresh` and `release_all` do not unbind them, and `lay_down` / `refresh` do not bind a job key over them but still record its line in `_keybind_manager_bound`, so `tb del` / `tb clear` gives that line back (`release`). `scripts/atelier/keybind_temp_test.lua`.
+
+A key has one name whatever order its modifiers were typed in: `Parse.key` writes them `^ ! ~ @ #` (Ctrl, Alt, Shift, Win, Apps), the order of the keybind files, so `ctrl+alt+f1`, `alt+ctrl+f1`, `caf1` and `!^f1` are all `^!f1`.
 
 **Storage.** The binds are kept in `<addon>/data/<Char>/saved/temp_binds.lua` (`CharPaths.writable('saved', 'temp_binds.lua')`), rewritten on every change. The file holds `clock = os.clock()` and the key -> command table. It is a file because `//lua r gearswap` wipes GearSwap's memory but not Windower's binds, and `clear` must still find them. On read, a saved clock larger than the current `os.clock()` means the game was restarted (its binds are gone), and the list is treated as empty. The decision is traced under `TB`.
 

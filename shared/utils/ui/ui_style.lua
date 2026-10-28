@@ -519,7 +519,7 @@ function UIStyle.visible_rows(keybinds)
 end
 
 --- The section order of `job` (default: the job played now): its own list
---- in config/<job>/<JOB>_HUD.lua when not empty, else layout.section_order.
+--- in <Character>/<job>/display/<JOB>_HUD.lua when not empty, else layout.section_order.
 --- @param job string|nil
 --- @return table Section buckets in order
 function UIStyle.section_order(job)
@@ -538,7 +538,7 @@ end
 function UIStyle.ordered_rows(keybinds)
     local order = UIStyle.get().layout.row_order
     local job = player and player.main_job
-    -- The job's own list (config/<job>/<JOB>_HUD.lua) replaces the default
+    -- The job's own list (<Character>/<job>/display/<JOB>_HUD.lua) replaces the default
     local ok, HudJobConfig = pcall(require, 'shared/utils/ui/hud_job_config')
     local own = ok and HudJobConfig and job and HudJobConfig.row_order(job)
     local rank = own and rank_of(own) or (job and order.jobs[job]) or order.all

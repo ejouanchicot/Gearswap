@@ -12,7 +12,7 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/midcast/midcast_manager.lua` | 758 | `select_set()` with the standard chain (P0-P9, plus P8b) and the Singing chain, persistent debug toggle, Composure target helper, song helpers |
+| `shared/utils/midcast/midcast_manager.lua` | 764 | `select_set()` with the standard chain (P0-P9, plus P8b) and the Singing chain, persistent debug toggle, Composure target helper, song helpers |
 | `shared/utils/midcast/midcast_fallback.lua` | 62 | Routes a spell no job midcast handed to `select_set` (a subjob's magic), on Mote's `cleanup_midcast` |
 | `shared/utils/midcast/midcast_trace.lua` | 81 | `MIDCAST` lines in `<Character>/logs/trace/trace.log` (chosen path and pieces, or "no set"); slot-name aliasing |
 | `shared/utils/midcast/utsusemi_shadows.lua` | 32 | Cancels Copy Image buffs 2.3 s into Utsusemi: Ichi (Cancel addon) |
@@ -20,12 +20,12 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 130 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 438 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first; `$State` names, groups of alternatives; a buff under `refresh_below` recast), `cast(to_cast)` (shared action queue, `cancel_first`, buff guard), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
-| `shared/utils/buffs/buff_timers.lua` | 154 | `BuffTimers`: decodes packet 0x063 order 9 (`read`, also used by `stealth_timers.lua`), keeps each own buff's end time and full length, `left(id)`, `fraction_left(id)`, `start()` |
+| `shared/utils/buffs/buff_timers.lua` | 160 | `BuffTimers`: decodes packet 0x063 order 9 (`read`, also used by `stealth_timers.lua`), keeps each own buff's end time and full length, `left(id)`, `fraction_left(id)`, `start()` |
 | `shared/utils/buffs/buff_guard.lua` | 141 | `BuffGuard.check(step)`: the `ActionQueue` guard of each `//gs c buff` step, also called by BRD `song_queue.lua` before each song (debuff landed: stop, skip, drop the spells, or cure first); `reset()` per press |
 | `shared/utils/buffs/buff_command.lua` | 70 | `BuffCommand.apply()`: `//gs c buff` on every job (`_G.job_buff_extra`, then `job[main]`, then `weapon[<main hand>]`, then `subjob[sub]`) |
 | `shared/utils/buffs/buff_config.lua` | 88 | `BuffConfig.DEFAULTS` and `get()`: the character's `_common/combat/BUFF_CONFIG.lua` over the defaults |
 | `_master/config_global/BUFF_CONFIG.lua` | 88 | Template of `<Character>/_common/combat/BUFF_CONFIG.lua`, every key set to its default (the same lists as `BuffConfig.DEFAULTS`), a comment naming the jobs without a list |
-| `shared/utils/scholar/scholar_actions.lua` | 398 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
+| `shared/utils/scholar/scholar_actions.lua` | 391 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 109 | Stratagem charge count derived from recast id 231 |
 
 Also on the midcast path, documented on [precast-pipeline.md](precast-pipeline.md#message-hooks-sharedhooks): `shared/hooks/init_spell_messages.lua` (wraps `user_post_midcast`) and the cleanup wrappers (Obi/Orpheus, Treasure Hunter, custom states).
@@ -435,7 +435,6 @@ Example with 2 charges: recast 0 -> 2 available; 120 -> 1 available, next in 2.0
 
 | Function | Behaviour | Callers |
 |---|---|---|
-| `chain(steps)` | joins steps with `; wait 2; ` (`STEP_SPACING`); kept only as the spacing value passed to `AbilityHelper.follow_up` | none building a chain |
 | `warn_no_charge(stratagem)` | `MessageFormatter.show_stratagem_no_charges(stratagem, next_charge_minutes())` | the chains |
 | `is_on(mode)` | true when the state is missing or its value is not `Off` | `cast_with_stratagems`, BLM `klima` (`KlimaformAOE`) |
 | `light_arts()` / `dark_arts()` | Addendum already up -> message; Arts up -> Addendum; otherwise Arts. Addendum is tested first because it replaces the Arts buff in `buffactive` | BLM, PLD (`lightarts`) |

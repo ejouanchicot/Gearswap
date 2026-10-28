@@ -93,8 +93,6 @@ local function cleanup_all_systems()
     if _G.ui_manager_state then
         _G.ui_manager_state.current_job = nil
         _G.ui_manager_state.current_subjob = nil
-        _G.ui_manager_state.pending_update_id = 0
-        _G.ui_manager_state.update_in_progress = false
     end
 
     -- 6. Stop any pending smart_init coroutines

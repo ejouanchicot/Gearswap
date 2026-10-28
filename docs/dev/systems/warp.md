@@ -117,7 +117,7 @@ Every job's `job_self_command` calls `CommonCommands.is_common_command(command)`
 1. `is_common_command()` accepts the hand-written list (it contains `mount` and `debugwarp`), then any registry alias, then any word ending in `all` whose base is an alias (two loops over `WARP_COMMANDS`, the registry's `COMMANDS` read at `COMMON_COMMANDS.lua:25`).
 2. `handle_command()` rebuilds `cmdParams = {command, args...}`, answers `sortie`, `alts` / `main` / `setalt` / `altreport` / `altmirror` / `altlead`, `rollshow`, `stealth`, `cleanse`, `combatmode`, `keyconflicts` / `kc`, `th`, `dw`, `support`, `fights`, `dealwatch`, `belt`, `tb`, `trace` and `atelier` first, then checks the warp aliases (and `<alias>all`) before every other common command. Alt commands are Mote's last lookup (`AltCommands.install_fallback`), so a warp alias always runs locally even when the dual-box alt config has a key of the same name (the generated BLM alt config `shared/data/alt/BLM_ALT_COMMANDS.lua` defines `warp`, `escape`, `retrace`; they are reachable only as `//gs c alt warp`).
 3. `handle_warp_commands(cmdParams)` requires `warp_commands` and returns `WarpCommands.handle_command(cmdParams)`; when the module fails to load it prints the error and a module test (see Known issues for a stale path in that test).
-4. `debugwarp` is routed to `CommonCommands.handle_debugwarp`, which is `DebugCommands.handle_debugwarp` (`DEBUG_COMMANDS.lua`, flag kept in `windower._gs_debug.WARP`); `mount` calls `handle_mount()`.
+4. `debugwarp` is routed through `DebugCommands.WORDS` to `DebugCommands.handle_debugwarp` (`DEBUG_COMMANDS.lua`, flag kept in `windower._gs_debug.WARP`); `mount` calls `handle_mount()`.
 
 `WarpCommands.handle_command(cmdParams)` (`warp_commands.lua`):
 

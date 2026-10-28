@@ -150,6 +150,16 @@ local function send_unbind(key)
     pcall(require('shared/utils/core/command_queue').push, key, 'unbind ' .. key)
 end
 
+--- Keys //gs c tb holds this session (temp_binds.lua), key -> command. They
+--- are left alone: a job key that is not wanted any more is not unbound
+--- under them, and one that comes back is not bound over them. Its line is
+--- still recorded in bound_keys(), so `tb del` gives it back.
+--- @return table
+local function temp_held()
+    local ok, held = pcall(function() return require('shared/utils/keybinds/temp_binds').current() end)
+    return ok and type(held) == 'table' and held or {}
+end
+
 --- Keys sent by the latest load, for KeybindGuard's re-assert.
 local function sent_this_load()
     windower._keybind_sent_this_load = windower._keybind_sent_this_load or {}
@@ -207,13 +217,15 @@ end
 local function redraw_hud()
     if not rawget(_G, 'keybind_ui_display') then return end
     local ok, Display = pcall(require, 'shared/utils/ui/ui_display')
-    if ok and Display and Display.update_display then pcall(Display.update_display) end
+    if not (ok and Display and Display.update_display) then return end
+    local drawn, err = pcall(Display.update_display)
+    if not drawn and Display.report_error then Display.report_error(err) end
 end
 
 --- Unbind what is down but no longer wanted. The keys about to be bound are
 --- left alone: a bind overwrites, and unbinding first opened the window in
 --- which ^numpad9 went dead after a reload (see keybind_guard.lua).
-local function clear_unwanted(ctx, desired)
+local function clear_unwanted(ctx, desired, held)
     local stale = {}
     for _, bind in ipairs(ctx.module.binds or {}) do
         if bind.key and bind.key ~= '' then stale[bind.key] = true end
@@ -222,7 +234,7 @@ local function clear_unwanted(ctx, desired)
     for key in pairs(bound_keys()) do stale[key] = true end
     for key in pairs(stale) do
         if not desired[key] then
-            send_unbind(key)
+            if not held[key] then send_unbind(key) end
             bound_keys()[key] = nil
         end
     end
@@ -232,13 +244,15 @@ end
 --- with the same command (recorded on `windower`, which outlives the job
 --- file) is not sent again: a subjob change re-binds only what changed.
 --- @return number Keys wanted, number keys sent
-local function lay_down(active, desired)
+local function lay_down(active, desired, held)
     local wanted, sent = 0, 0
     for _, b in ipairs(active) do
         local line = b.command and KeybindManager.bind_line(b)
         if line and desired[b.key] == line then
             wanted = wanted + 1
-            if bound_keys()[b.key] ~= line then
+            if held[b.key] then
+                bound_keys()[b.key] = line
+            elseif bound_keys()[b.key] ~= line then
                 local ok, err = send_bind(b.key, line)
                 if ok then
                     sent = sent + 1
@@ -270,8 +284,9 @@ local function bind_all(ctx, silent)
     if note_conflicts(ctx, active, yielded) then redraw_hud() end
     local desired = key_map(active)
     windower._keybind_sent_this_load = {}
-    clear_unwanted(ctx, desired)
-    local bound, sent = lay_down(active, desired)
+    local held = temp_held()
+    clear_unwanted(ctx, desired, held)
+    local bound, sent = lay_down(active, desired, held)
     ctx.applied = desired
     require('shared/utils/debug/trace_log').log('LOAD', 'keys %s: %d wanted, %d sent', ctx.job, bound, sent)
     if bound > 0 then
@@ -286,6 +301,16 @@ local function bind_all(ctx, silent)
     return false
 end
 
+--- Record a key's job line (nil: unbound) and send it, unless //gs c tb
+--- holds the key: then only the record changes, for `tb del` to give back.
+--- @return number Commands sent (0 or 1)
+local function put_key(key, command, held)
+    bound_keys()[key] = command
+    if held[key] then return 0 end
+    if command then send_bind(key, command) else send_unbind(key) end
+    return 1
+end
+
 --- Send only what changed since the last bind_all/refresh: a `visible` bind
 --- can come and go while the job stays the same.
 --- @return number Commands sent
@@ -293,27 +318,23 @@ local function refresh(ctx)
     local active, yielded = get_active_binds(ctx)
     local conflicts_moved = note_conflicts(ctx, active, yielded)
     local desired = key_map(active)
-    local sent = 0
+    local held, moved, sent = temp_held(), 0, 0
     for key in pairs(ctx.applied) do
         -- A key that stays, with another command, is only re-bound below:
         -- unbinding first leaves it dead in between (see clear_unwanted)
         if desired[key] == nil then
-            send_unbind(key)
-            bound_keys()[key] = nil
-            sent = sent + 1
+            moved, sent = moved + 1, sent + put_key(key, nil, held)
         end
     end
     for key, command in pairs(desired) do
         if ctx.applied[key] ~= command then
-            send_bind(key, command)
-            bound_keys()[key] = command
-            sent = sent + 1
+            moved, sent = moved + 1, sent + put_key(key, command, held)
         end
     end
     ctx.applied = desired
     -- A partner's job or a Combat Mode change moved keys or conflicts: the
     -- HUD rows and their red keys follow at once
-    if sent > 0 or conflicts_moved then redraw_hud() end
+    if moved > 0 or conflicts_moved then redraw_hud() end
     return sent
 end
 
@@ -453,9 +474,6 @@ function KeybindManager.create(job, module)
     return module
 end
 
---- Keys in conflict at the last bind_all / refresh of the job loaded now
---- (shared/utils/keybinds/key_conflicts.lua), for the HUD.
---- @return table Set: key -> true
 --- Every key this manager laid down taken off, through the paced queue: for a load that binds none of its own
 --- (shared/entry/no_job_file.lua), where the keys the last job file kept for the next load would stay live. A
 --- pending re-assert of the last load's keys (keybind_guard.lua) is cancelled first.
@@ -463,15 +481,18 @@ end
 function KeybindManager.release_all()
     windower._keybind_guard_seq = (windower._keybind_guard_seq or 0) + 1
     windower._keybind_sent_this_load = {}
-    local keys = {}
+    local keys, held = {}, temp_held()
     for key in pairs(bound_keys()) do keys[#keys + 1] = key end
     for _, key in ipairs(keys) do
-        send_unbind(key)
+        if not held[key] then send_unbind(key) end
         bound_keys()[key] = nil
     end
     return #keys
 end
 
+--- Keys in conflict at the last bind_all / refresh of the job loaded now
+--- (shared/utils/keybinds/key_conflicts.lua), for the HUD.
+--- @return table Set: key -> true
 function KeybindManager.conflict_keys()
     local module = rawget(_G, '_keybind_active')
     return module and module._conflict_keys or {}

@@ -92,24 +92,15 @@ if not _G.ui_manager_state then
         -- Current configuration
         current_job = nil,
         current_subjob = nil,
-        last_update = 0,
 
         -- Update tracking
-        pending_update_id = 0,
-        update_in_progress = false,
         update_cancel_id = 0,  -- Cancel ID for force_reinit (similar to JCM counter)
-        last_successful_update = 0,
 
         -- Smart init tracking (prevent coroutine accumulation)
         smart_init_id = 0,
 
-        -- Error handling
+        -- Error handling (render_error_told: the first render error of this load was said)
         consecutive_failures = 0,
-        last_error = nil,
-
-        -- Performance tracking
-        update_count = 0,
-        total_update_time = 0,
 
         -- State change tracking (prevent unnecessary redraws)
         cached_states = {}

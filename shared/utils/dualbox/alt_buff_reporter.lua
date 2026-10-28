@@ -184,7 +184,7 @@ function AltBuffReporter.report_all()
 
     local count = 0
     for _, buff in pairs(tracked()) do
-        -- buffactive returns a count or `false`, never nil-vs-value, so coerce.
+        -- buffactive gives a count, or nil for a buff that is not up: coerce to a boolean
         local up = buffactive[buff] and true or false
         if AltBuffReporter.report(buff, up) then
             count = count + 1

@@ -65,11 +65,15 @@ end
 --- Skill name of the weapon in this character's main hand, spaces removed.
 --- @return string "Sword", "GreatKatana"... or "None"
 function AltStates.weapon_skill()
-    local items = windower.ffxi.get_items()
-    local equipment = items and items.equipment
+    -- the worn slots only: get_items() with no argument builds every bag, and
+    -- this runs at each job update and each key pass of a job with `weapon` keys
+    local equipment = windower.ffxi.get_items('equipment')
     if not equipment or not equipment.main or equipment.main == 0 then return 'None' end
     local item = windower.ffxi.get_items(equipment.main_bag, equipment.main)
-    local ok, res = pcall(require, 'resources')
+    local gs = rawget(_G, 'gearswap')
+    local ok, res = pcall(function()
+        return rawget(_G, 'res') or (type(gs) == 'table' and gs.res) or require('resources')
+    end)
     local info = ok and res and item and item.id and res.items[item.id]
     local skill = info and info.skill and res.skills[info.skill]
     if not skill or not skill.en then return 'None' end

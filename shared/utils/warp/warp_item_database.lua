@@ -4,7 +4,7 @@
 --- This file is now a thin wrapper that redirects to the modular database system.
 --- The actual data is split across 6 specialized modules in database/ folder.
 ---
---- @file warp_item_database.lua
+--- @file shared/utils/warp/warp_item_database.lua
 --- @author ejouanchicot
 --- @version 4.0 - Modular Architecture (WRAPPER)
 --- @date 2025-10-28

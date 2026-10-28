@@ -67,7 +67,7 @@ Other helpers in `shared/utils/equipment/` are documented elsewhere:
    - the job code and the defaults;
    - the config returned by `pcall(require, CharPaths.legacy_module(config_path))`, or a fallback that always answers `default_lockstyle` (`load_config_or_fallback`);
    - `load_gen`, the LoadGate number of the load that made it (`windower._load_gen`);
-   - a `STATE` table: `enabled`, `is_processing`, `dressup_state`, `last_dressup_command_time`, `operation_id`.
+   - a `STATE` table: `enabled`, `dressup_state`, `last_dressup_command_time`, `operation_id`.
 2. Every operation is a module-level function taking `ctx` first, bound with a local `bind()`. The API also carries the job-suffixed key `cancel_<jl>_lockstyle_operations`, the name the job wrappers call. `create()` then deletes the globals it registered on its previous call in this module instance (`last_registered_globals`) and writes six job-suffixed globals.
 3. `select_default_lockstyle()` returns silently unless `player.main_job == ctx.job_code`. Otherwise it resolves the style (`resolve_style`: `LockstyleConfig.default or default_lockstyle`, then `LockstyleConfig.get_style(subjob)` if the config defines it, with `subjob = player.sub_job or default_subjob`) and calls `set_lockstyle_with_delay(style, 2.0)`.
 4. `set_lockstyle_with_delay` is a debounce. It calls `cancel_pending_operations` (which bumps `STATE.operation_id`), captures the new id and schedules `apply_lockstyle_immediate` after `delay` through `LoadGate.defer(delay, ..., 'lockstyle', ctx.load_gen)` (`shared/utils/core/load_gate.lua`), which drops it when a newer load than the one that made the ctx has started or the game is on another job.
@@ -111,21 +111,16 @@ Per-job API returned by `create()`:
 | Function | Behaviour |
 |---|---|
 | `select_default_lockstyle()` | Resolve the style and schedule it (steps 3-4 above) |
-| `set_lockstyle_with_delay(style, delay)` | The debounce |
 | `get_lockstyle_info()` (alias `get_info`) | `{job, subjob, style, enabled, manage_dressup}` |
-| `show_lockstyle_config()` | Prints through `MessageFormatter.show_info` |
-| `set_lockstyle_enabled(bool)` | Sets `STATE.enabled` |
-| `set_dressup_management(bool)` | Writes the global flag and the file |
 | `cancel_pending_operations()` | Bumps `operation_id`; also under the key `cancel_<jl>_lockstyle_operations`, which the wrappers call |
-| `get_state()` | The ctx's `STATE` |
 
 The wrappers do not return this table (those of BLU, DRG, MNK, NIN, PUP, RNG and SCH return only their two wrapper functions), so outside the factory only the globals are reachable.
 
-Generated globals (`jl` = lower-case job code): `select_default_lockstyle`, `cancel_<jl>_lockstyle_operations`, `set_<jl>_lockstyle_enabled`, `set_<jl>_dressup_management`, `get_<jl>_lockstyle_info`, `show_<jl>_lockstyle_config`. Their callers:
+Generated globals (`jl` = lower-case job code): `select_default_lockstyle`, `cancel_<jl>_lockstyle_operations`, `get_<jl>_lockstyle_info`. Their callers:
 
 - `select_default_lockstyle` is called by the entries, `COMMON_COMMANDS.lua` `handle_lockstyle`, the `ls` / `lockstyle` IPC hooks registered in `INIT_SYSTEMS.lua`, and `craft_commands.lua` `restore_job_lockstyle`.
 - `cancel_<jl>_lockstyle_operations` is read once by each entry's `get_sets()` for the JobChangeManager registration. At that moment it is still the wrapper's function, not the factory's; the wrapper calls the API key of the same name.
-- The other four globals have no reader.
+- `get_<jl>_lockstyle_info` has no reader; the keybind intro asks the job's LOCKSTYLE module for `get_info` (`keybind_manager.lua` `show_intro`). The setters, the config display and `get_state`, which had no caller, were removed on 2026-10-28.
 
 `global_probe.lua` `GENERATED` whitelists the generated shapes.
 
@@ -186,7 +181,7 @@ The two executions have separate module-locals, so each calls `create()` once. T
    - else the factory defaults.
 
    There is no main-job guard, unlike lockstyle. When `player` is nil it retries 0.5 s later.
-3. `set_macro_with_delay` bumps `_G._macrobook_schedule_id` and schedules Mote's `set_macro_page(page, book)` after 1.5 s (0.5 s when called from `set_macro_book`), through `LoadGate.defer(delay, ..., 'macro book', ctx.load_gen)`, which drops it when a newer load than the one that made the ctx has started or the game is on another job. Mote sends `input /macro book B; wait 1.1; input /macro set P`, and rejects books outside 1-40 and pages outside 1-10 (`libs/Mote-Utility.lua`).
+3. `set_macro_with_delay` bumps `_G._macrobook_schedule_id` and schedules Mote's `set_macro_page(page, book)` after 1.5 s, through `LoadGate.defer(delay, ..., 'macro book', ctx.load_gen)`, which drops it when a newer load than the one that made the ctx has started or the game is on another job. Mote sends `input /macro book B; wait 1.1; input /macro set P`, and rejects books outside 1-40 and pages outside 1-10 (`libs/Mote-Utility.lua`).
 
 ### Public API
 
@@ -195,16 +190,14 @@ The two executions have separate module-locals, so each calls `create()` once. T
 | Function | Behaviour |
 |---|---|
 | `select_default_macro_book()` | Resolve and schedule |
-| `set_macro_book(subjob)` | Solo table only; error message on an unknown subjob |
 | `get_macro_info()` -> `{book, page, subjob}` | Same resolver as the selection, so it reports the dual-box book when one applies |
-| `show_macro_configs()` | Lists solo and dual-box books |
-| legacy keys `set_<jl>_macro_book`, `get_<jl>_macro_info`, `show_<jl>_macro_configs` | Same functions |
+| key `get_<jl>_macro_info` | Same function, the name the keybind intro asks for |
 
-Globals: `select_default_macro_book`, `set_<jl>_macro_book`, `get_<jl>_macro_info`, `show_<jl>_macro_configs`.
+Globals: `select_default_macro_book`, `get_<jl>_macro_info` (`set_macro_book` and `show_macro_configs`, which had no caller, were removed on 2026-10-28).
 
 Callers of the selection:
 
-- the entry's `user_setup()`, through `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`, 0.2 s later, skipped while `player` is nil);
+- the entry's `user_setup()`, through `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`, 0.2 s later, skipped while `player` is nil). Not from the `user_setup()` Mote calls again in the old sandbox on a subjob change: `EntryKit.reload_pending()` sees the game's subjob differ from the one `JobChangeManager.initialize` seeded at load, and leaves the book to the reload (one `/macro book` + `/macro set` per subjob change, not two; `scripts/atelier/entry_kit_test.lua`);
 - `dualbox_manager.lua`, 0.5 s after an `altjobupdate` that brings a new job or subjob.
 
 `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` on the value returned by the wrapper's `require`, which never carries it (see Known issues). The other generated globals have no caller.
@@ -427,7 +420,7 @@ It does not replay anything. Callers: `//gs c jump` (`COMMON_COMMANDS.lua` `hand
    - no target: self.
 3. `preferred_curing_waltz`. With HP known, the tier whose band contains it (`curing_hp_brackets()`, rebuilt at each call from `DEFAULT_WALTZ_FROM` with `waltz_from` of `_common/combat/SUBJOB_CONFIG.lua` over it, see [JobConfig](#jobconfig-sharedutilscorejob_configlua): I < 200, II 200-600, III 600-1100, IV 1100-1500, V ≥ 1500 by default). With HP unknown, the highest tier the level allows.
 4. `curing_priority`: the preferred tier first, then every other castable tier from highest down. The first one with its recast ready (`is_recast_ready`) and enough TP is sent as `/ja "<name>" <stpc>`, with `show_waltz_heal`.
-5. If none fires, `curing_blockers` builds one cooldown line per tier and one TP line, shown with `show_multi_status`.
+5. If none fires, `waltz_blockers` (shared with Divine Waltz, on its own list) builds one cooldown line per tier and one TP line, shown with `show_multi_status`.
 
 `cast_divine_waltz()` tries Divine Waltz II, then I, on `<me>`, with the same readiness rules and an inline copy of the blocker loop.
 

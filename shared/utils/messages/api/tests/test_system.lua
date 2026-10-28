@@ -154,9 +154,12 @@ function TestSystem.run(test)
     add_to_chat(121, " ")
     add_to_chat(121, cyan .. "Error Handling (2):")
 
+    -- test() counts a pass when the function does not raise: what it returns
+    -- is not read, so the check has to raise. An unknown key must come back
+    -- false (the engine raises, send catches and reports it)
     test(function()
-        local ok = M.send('BLM', 'buff_cast', {job = 'BLM', buff = 'Haste'})
-        return ok
+        local ok = M.send('BLM', 'no_such_message', {job = 'BLM', buff = 'Haste'})
+        assert(ok == false, 'an unknown message key was sent as if it existed')
     end)
     test(function()
         M.error("Namespace error test")

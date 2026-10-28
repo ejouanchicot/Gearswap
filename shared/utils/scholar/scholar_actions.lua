@@ -34,13 +34,6 @@ local function get_formatter()
     return MessageFormatter
 end
 
---- Chain actions with the standard spacing
---- @param steps table List of `input /ja ...` / `input /ma ...` strings
---- @return string Command ready for send_command
-function ScholarActions.chain(steps)
-    return table.concat(steps, '; wait ' .. STEP_SPACING .. '; ')
-end
-
 --- Report that a stratagem cannot be used right now
 --- @param stratagem string Stratagem that was skipped
 function ScholarActions.warn_no_charge(stratagem)

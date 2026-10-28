@@ -3,7 +3,9 @@
 ---============================================================================
 --- //gs c tb force over a key of the job, then tb del or tb clear: the job's
 --- own bind comes back (KeybindManager records the key as bound to it and
---- would never send it again); a key of nobody is unbound.
+--- would never send it again); a key of nobody is unbound. Everything goes
+--- through the paced queue, and a key has one name whatever the order of its
+--- modifiers.
 ---
 --- Run from data/: lua5.1 scripts/atelier/temp_binds_test.lua
 ---
@@ -35,7 +37,8 @@ package.loaded['shared/utils/messages/formatters/system/message_tempbind'] =
 res = {job_abilities = {[35] = {en = 'Provoke'}}, spells = {}, weapon_skills = {}, items = {}}
 
 local sent = {}
-send_command = function(cmd) sent[#sent + 1] = cmd end
+-- tb sends through the paced queue, the one the job's keys use
+package.loaded['shared/utils/core/command_queue'] = {push = function(_, cmd) sent[#sent + 1] = cmd end}
 player = {name = 'Tester', main_job = 'PLD'}
 -- the job's keys as KeybindManager laid them down (PLD_KEYBINDS: ^numpad9 cycles HybridMode)
 PLDKeybinds = {binds = {{key = '^numpad9', desc = 'HybridMode'}}}
@@ -69,6 +72,23 @@ table.sort(sent)
 check('clear: two commands', #sent, 2)
 check('clear gives the job its key back', sent[1], 'bind ^numpad9 gs c cycle HybridMode')
 check('clear unbinds the free key', sent[2], 'unbind ^f3')
+
+-- 5. one name per key, whatever the order the modifiers were typed in
+local Parse = require('shared/utils/keybinds/temp_binds_parse')
+check('ctrl+alt+f1', Parse.key('ctrl+alt+f1'), '^!f1')
+check('alt+ctrl+f1', Parse.key('alt+ctrl+f1'), '^!f1')
+check('caf1', Parse.key('caf1'), '^!f1')
+check('acf1', Parse.key('acf1'), '^!f1')
+check('!^f1', Parse.key('!^f1'), '^!f1')
+check('ctrl+shift+f2', Parse.key('ctrl+shift+f2'), '^~f2')
+check('plain f3', Parse.key('F3'), 'f3')
+
+-- 6. a key bound by tb is not re-sent by KeybindGuard over it
+sent = {}
+windower._keybind_sent_this_load = {['^f4'] = 'gs c something'}
+TempBinds.handle({'^f4', '/ja', 'Provoke', '<t>'})
+check('KeybindGuard forgets a key tb took', windower._keybind_sent_this_load['^f4'], nil)
+TempBinds.handle({'clear'})
 
 os.remove(scratch)
 print(('%d checks, %d failed'):format(done, failed))

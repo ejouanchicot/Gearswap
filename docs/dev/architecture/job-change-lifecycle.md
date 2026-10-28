@@ -18,17 +18,17 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | `shared/entry/<job>.lua` (22) | 189-415 | Entry code: `get_sets`, `user_setup`, `job_sub_job_change`, `file_unload` |
 | `shared/utils/core/job_change_manager.lua` | 238 | Debounced subjob change: cleanup, then `gs reload` |
 | `shared/utils/core/job_sync_watchdog.lua` | 165 | Reloads when the loaded file's job differs from the client's job |
-| `shared/utils/core/INIT_SYSTEMS.lua` | 483 | Per-load bootstrap of the universal systems (sync and deferred) and of the gear hook chain |
+| `shared/utils/core/INIT_SYSTEMS.lua` | 523 | Per-load bootstrap of the universal systems (sync and deferred) and of the gear hook chain |
 | `shared/utils/core/keybind_guard.lua` | 82 | Re-sends the job's binds 2 s after a load, sequence-guarded on `windower._keybind_guard_seq` |
 | `shared/utils/core/module_cache.lua` | 100 | Makes `require` cache per environment |
 | `shared/utils/core/lifecycle_manager.lua` | 174 | Shared builders for `job_status_change`/`job_buff_change`/`job_aftercast`/`job_state_change`, plus `refresh_after_buff` |
 | `shared/utils/core/midcast_watchdog.lua` | 485 | 0.5 s polling loop that clears stuck midcasts, generation-guarded on `windower._midcast_wd_seq` |
 | `shared/utils/movement/automove.lua` | 405 | Movement polling loop, sequence-guarded on `windower._automove_seq` |
-| `shared/utils/lockstyle/lockstyle_manager.lua` | 347 | Lockstyle factory (per-job ctx on `_G.__lockstyle_contexts`, DressUp handling) |
-| `shared/utils/macrobook/macrobook_manager.lua` | 289 | Macrobook factory (solo/dual-box books) |
+| `shared/utils/lockstyle/lockstyle_manager.lua` | 325 | Lockstyle factory (per-job ctx on `_G.__lockstyle_contexts`, DressUp handling) |
+| `shared/utils/macrobook/macrobook_manager.lua` | 229 | Macrobook factory (solo/dual-box books) |
 | `shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua`, `<JOB>_MACROBOOK.lua` | 36-55 | Lazy wrappers that export `select_default_lockstyle`, `select_default_macro_book`, `cancel_<job>_lockstyle_operations` |
 | `_master/config/<job>/<JOB>_KEYBINDS.lua` | 33-80 | Bind lists, turned into `bind_all`/`unbind_all`/`show_intro` by `KeybindManager.create` |
-| `shared/utils/keybinds/keybind_manager.lua` | 483 | `bind_all` (unbind only what is no longer wanted, then bind), `show_intro` |
+| `shared/utils/keybinds/keybind_manager.lua` | 523 | `bind_all` (unbind only what is no longer wanted, then bind), `show_intro` |
 | `shared/utils/ui/UI_MANAGER.lua`, `ui_lifecycle.lua`, `ui_update_orchestrator.lua` | 165 / 210 / 170 | Keybind HUD state, `smart_init`, `destroy`, `update` |
 | `shared/utils/dualbox/dualbox_manager.lua` | 479 | Job exchange between the boxes, auto-init 2 s after load |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 189 | IPC mirror of `ls`/`rf` between the instances of the box group |
@@ -109,7 +109,7 @@ Order inside one load of `Tetsouo_PLD.lua`, whose only statement includes `share
 `user_setup()` therefore runs **before** `INIT_SYSTEMS` and before the job facade. Two consequences:
 
 - The require cache already exists during `user_setup()` (installed by `config_loader` at chunk level since 2026-09-27), so a module first required there is the instance the rest of the load gets. It must not read, when it loads, a global that is only set later in `get_sets()`. The only uncached modules are those an entry requires before `config_loader` (`char_paths`, `LOCKSTYLE_CONFIG`, and `REGION_CONFIG` in the entries that load it first, such as WAR). State that must be shared between two instances of one module lives on `_G` (`_G.JobChangeManagerSTATE`, `_G.ui_manager_state`, ...).
-- `select_default_macro_book` and `select_default_lockstyle` are defined by the facade (`shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua`, `<JOB>_LOCKSTYLE.lua`), which has not been included yet. Since 2026-10-15 every entry calls `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`), which waits 0.2 s, after `get_sets()` has included the facade. Before, the call was made at once and found the two globals only because `show_intro()` had required the wrappers as a side effect: a job whose keybinds failed to load (or held no key) got neither its macro book nor its lockstyle, without a word.
+- `select_default_macro_book` and `select_default_lockstyle` are defined by the facade (`shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua`, `<JOB>_LOCKSTYLE.lua`), which has not been included yet. Since 2026-10-15 every entry calls `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`), which waits 0.2 s, after `get_sets()` has included the facade. Before, the call was made at once and found the two globals only because `show_intro()` had required the wrappers as a side effect: a job whose keybinds failed to load (or held no key) got neither its macro book nor its lockstyle, without a word. On a subjob change Mote calls `user_setup()` again in the old sandbox with `player.sub_job` already the new one; since 2026-10-28 `macro_and_lockstyle` schedules nothing then (`EntryKit.reload_pending`: the subjob JobChangeManager seeded at load differs from the game's) and the reload sends the book once.
 
 #### INIT_SYSTEMS timeline
 
@@ -133,11 +133,11 @@ No template sets `_G.DISABLE_AUTOMOVE` any more (removed for BST in commit 0563f
 
 | t | Event | Source |
 |---|---|---|
-| +0 | keys bound, HUD `smart_init`, `select_default_macro_book()` schedules `set_macro_page` at +1.5 s | `set_macro_with_delay`, `macrobook_manager.lua:98-115` |
+| +0 | keys bound, HUD `smart_init`, `select_default_macro_book()` schedules `set_macro_page` at +1.5 s | `set_macro_with_delay`, `macrobook_manager.lua:92-109` |
 | +0.5 | Warp, AutoMove, state display override | INIT_SYSTEMS +0.5 s block |
 | +2 | dual-box auto-init (retries every 1 s, 8 attempts), alt window start | `run_auto_init` in `dualbox_manager.lua` |
 | +2 | MidcastWatchdog loop starts; KeybindGuard re-sends the binds | INIT_SYSTEMS +2 s block, `KeybindGuard.schedule` |
-| +8 | `select_default_lockstyle()` -> apply at +10: `lua unload dressup`, +0.3 `/lockstyleset`, +3 `lua load dressup` | `set_lockstyle_with_delay` / `apply_lockstyle_immediate`, `lockstyle_manager.lua:127-185` |
+| +8 | `select_default_lockstyle()` -> apply at +10: `lua unload dressup`, +0.3 `/lockstyleset`, +3 `lua load dressup` | `set_lockstyle_with_delay` / `apply_lockstyle_immediate`, `lockstyle_manager.lua:122-196` |
 | +8 | JobSyncWatchdog first check, then every 5 s | `JobSyncWatchdog.start` (TUNING block of `job_sync_watchdog.lua`) |
 
 ### Scenario 1 - cold load
@@ -317,9 +317,9 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 
 ### LockstyleManager / MacrobookManager (lifecycle-relevant parts)
 
-- `LockstyleManager.create(job, config_path, default_style, default_sub)` (`lockstyle_manager.lua:285`) returns `{select_default_lockstyle, set_lockstyle_with_delay, get_lockstyle_info, show_lockstyle_config, set_lockstyle_enabled, set_dressup_management, cancel_pending_operations, get_state, get_info, cancel_<job>_lockstyle_operations}` and exports the matching `_G.*` functions. Pending work is invalidated through `ctx.STATE.operation_id` (`cancel_pending_operations`, `:121`). The ctx is kept per job code in `_G.__lockstyle_contexts` (`contexts()`, `:270`), so both wrapper copies of an environment share it; it is environment state. The globals of a previous `create()` are cleared at the next one (`last_registered_globals`, `:259`; its comment now says the list only sees the calls of one load).
-- The job wrappers (`shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua`) create the module lazily on first call and export `select_default_lockstyle` and `cancel_<job>_lockstyle_operations`; the latter calls `get_lockstyle_module().cancel_<job>_lockstyle_operations()`, the key the factory adds for that purpose (`lockstyle_manager.lua:320`).
-- `MacrobookManager.create(...)` (`macrobook_manager.lua:235`); `set_macro_with_delay` invalidates on `_G._macrobook_schedule_id` (`:98-113`), which is per environment (the comment says a coroutine scheduled before a reload is not cancelled).
+- `LockstyleManager.create(job, config_path, default_style, default_sub)` (`lockstyle_manager.lua:271`) returns `{select_default_lockstyle, get_lockstyle_info, cancel_pending_operations, get_info, cancel_<job>_lockstyle_operations}` and exports `select_default_lockstyle`, `cancel_<job>_lockstyle_operations` and `get_<job>_lockstyle_info`. Pending work is invalidated through `ctx.STATE.operation_id` (`cancel_pending_operations`, `:122`). The ctx is kept per job code in `_G.__lockstyle_contexts` (`contexts()`, `:256`), so both wrapper copies of an environment share it; it is environment state. The globals of a previous `create()` are cleared at the next one (`last_registered_globals`, `:245`; its comment now says the list only sees the calls of one load).
+- The job wrappers (`shared/jobs/<job>/functions/<JOB>_LOCKSTYLE.lua`) create the module lazily on first call and export `select_default_lockstyle` and `cancel_<job>_lockstyle_operations`; the latter calls `get_lockstyle_module().cancel_<job>_lockstyle_operations()`, the key the factory adds for that purpose (`lockstyle_manager.lua` `create`).
+- `MacrobookManager.create(...)` (`macrobook_manager.lua:185`); `set_macro_with_delay` invalidates on `_G._macrobook_schedule_id` (`:92-109`), which is per environment (the comment says a coroutine scheduled before a reload is not cancelled).
 - `LockstyleManager.apply_style(style)` is the stateless variant used by craft commands (`apply_style_now` without the wait below).
 - Both send `/lockstyleset` only once the bags have stopped moving (`shared/utils/equipment/bags_quiet.lua`, 2026-10-16): the item count of every bag read each second, the style sent after two equal reads, left out (traced) after 120 s of movement. A lockstyle read while PorterPacker moved items after a job change crashed the game in `FFXiMain.dll` (Kaories, 2026-10-16).
 

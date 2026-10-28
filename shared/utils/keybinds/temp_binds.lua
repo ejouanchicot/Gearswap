@@ -135,6 +135,16 @@ local function free_key()
     return nil
 end
 
+--- Send a bind / unbind through the paced queue (command_queue.lua), the
+--- queue the job's own keys use: a job command still waiting there for the
+--- same key (the first seconds after a load) is replaced instead of landing
+--- after this one and undoing it.
+--- @param key string
+--- @param command string
+local function send_key(key, command)
+    pcall(require('shared/utils/core/command_queue').push, key, command)
+end
+
 local function add(words, force)
     local key = Parse.key(words[1])
     if key then
@@ -152,7 +162,9 @@ local function add(words, force)
     local binds = load_binds()
     binds[key] = command
     save_binds(binds)
-    send_command('bind ' .. key .. ' gs c tb run ' .. key)
+    -- KeybindGuard re-sends what the last load bound, 2 s after it: not over this key
+    if windower._keybind_sent_this_load then windower._keybind_sent_this_load[key] = nil end
+    send_key(key, 'bind ' .. key .. ' gs c tb run ' .. key)
     if msg() then msg().show_added(Parse.show_key(key), Parse.show_command(command)) end
 end
 
@@ -172,7 +184,7 @@ end
 --- @param key string
 local function release(key)
     local job_line = (windower._keybind_manager_bound or {})[key]
-    send_command(job_line and ('bind ' .. key .. ' ' .. job_line) or ('unbind ' .. key))
+    send_key(key, job_line and ('bind ' .. key .. ' ' .. job_line) or ('unbind ' .. key))
 end
 
 local function remove(text)
@@ -208,16 +220,17 @@ end
 --- PUBLIC API
 ---============================================================================
 
---- Handle //gs c tb ...
---- @param args table Words after "tb"
---- @return boolean handled
 --- The temp keys bound in this game session, {key = command} (read by the Atelier
---- page's export, shared/utils/atelier/atelier_export.lua).
+--- page's export, shared/utils/atelier/atelier_export.lua, and by KeybindManager,
+--- which leaves these keys alone).
 --- @return table
 function TempBinds.current()
     return load_binds()
 end
 
+--- Handle //gs c tb ...
+--- @param args table Words after "tb"
+--- @return boolean handled
 function TempBinds.handle(args)
     local words = {}
     for i, w in ipairs(args or {}) do words[i] = w end

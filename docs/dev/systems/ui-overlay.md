@@ -10,16 +10,16 @@ Line counts re-measured on 2026-09-28 (`wc -l`); the files trimmed on 2026-10-01
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/ui/UI_MANAGER.lua` | 165 | Facade. Seeds the `_G` UI globals (stub `UIConfig` keys, `ui_display_config`, `ui_manager_state`), records the live load in `windower._ui_live_state`, loads the sub-modules and builds the `KeybindUI` table that jobs call |
+| `shared/utils/ui/UI_MANAGER.lua` | 156 | Facade. Seeds the `_G` UI globals (stub `UIConfig` keys, `ui_display_config`, `ui_manager_state`), records the live load in `windower._ui_live_state`, loads the sub-modules and builds the `KeybindUI` table that jobs call |
 | `shared/utils/ui/ui_lifecycle.lua` | 210 | `init`, `smart_init`, `safe_init`, `destroy`; per-job readiness anchors; creates and destroys the `texts` object |
-| `shared/utils/ui/ui_update_orchestrator.lua` | 170 | `update` (repaint only when states changed), `force_reinit` |
+| `shared/utils/ui/ui_update_orchestrator.lua` | 161 | `update` (repaint only when states changed), `force_reinit` |
 | `shared/utils/ui/ui_visibility.lua` | 149 | `toggle`, `show`, `hide`, `is_visible`, `enable`, `disable`, `save_position` |
 | `shared/utils/ui/ui_section_toggles.lua` | 194 | Header / legend / column-header / footer toggles; moves the box by the measured height change |
 | `shared/utils/ui/ui_appearance.lua` | 155 | Background preset, custom RGBA, background toggle, font |
-| `shared/utils/ui/ui_display.lua` | 72 | Collects the keybinds and pushes the rendered string to the `texts` object |
-| `shared/utils/ui/UI_LOADER.lua` | 117 | Requires `<job>/keys/<JOB>_KEYBINDS`, hard-coded COR/GEO fallbacks, appends the BRD song-slot rows |
-| `shared/utils/ui/UI_DISPLAY_BUILDER.lua` | 283 | Sorts binds into spell / ja / weapon / mode: `layout.move_to_section`, then `bind.section`, then substring rules on `bind.state` |
-| `shared/utils/ui/UI_SECTIONS.lua` | 380 | Filters the rows (`hud_rows`, hidden rows, row order), renders the full text: header, column headers, sections in the player's order, footer |
+| `shared/utils/ui/ui_display.lua` | 74 | Collects the keybinds and pushes the rendered string to the `texts` object |
+| `shared/utils/ui/UI_LOADER.lua` | 88 | Requires `<job>/keys/<JOB>_KEYBINDS`, hard-coded COR/GEO fallbacks, appends the BRD song-slot rows |
+| `shared/utils/ui/UI_DISPLAY_BUILDER.lua` | 224 | Sorts binds into spell / ja / weapon / mode: `layout.move_to_section`, then `bind.section`, then substring rules on `bind.state` |
+| `shared/utils/ui/UI_SECTIONS.lua` | 348 | Filters the rows (`hud_rows`, hidden rows, row order), renders the full text: header, column headers, sections in the player's order, footer |
 | `shared/utils/ui/UI_FORMATTER.lua` | 367 | Line formatting, column widths, header / legend text, section titles |
 | `shared/utils/ui/COLOR_SYSTEM.lua` | 505 | Picks the colour code for each value, with per-character overrides from `UI_COLOR_CONFIG.lua` |
 | `shared/utils/ui/ui_state_value.lua` | 119 | Reads a state's current value and all its possible values (the latter sizes the value column) |
@@ -30,7 +30,7 @@ Line counts re-measured on 2026-09-28 (`wc -l`); the files trimmed on 2026-10-01
 | `shared/utils/ui/ui_style.lua` | 576 | Player look options from `UI_CONFIG.lua` (`layout`, `colors`, `chat`, `rolls`): checked, cached per `_G.UIConfig` table, one chat warning per wrong value |
 | `shared/utils/ui/ui_style_commands.lua` | 479 | In-game look commands (`//gs c ui gap 3`, `compact`, `chatwidth`, `rollstyle`, `order`...): check, apply live, save |
 | `shared/utils/ui/ui_config_writer.lua` | 179 | Saves one look option into `UI_CONFIG.lua` by rewriting its line only |
-| `shared/utils/ui/hud_job_config.lua` | 211 | A job's own HUD settings, `<Character>/<job>/display/<JOB>_HUD.lua` (section and row order that replace the `UI_CONFIG.lua` defaults on that job); writes the file with its explanation |
+| `shared/utils/ui/hud_job_config.lua` | 207 | A job's own HUD settings, `<Character>/<job>/display/<JOB>_HUD.lua` (section and row order that replace the `UI_CONFIG.lua` defaults on that job); writes the file with its explanation |
 | `shared/config/ui_settings.lua` | 364 | Per-character store: `_G.UI_SETTINGS` plus file I/O (`dofile` / `io.open`). The saved file wins over `UI_CONFIG.lua`, but it keeps a `seed` block, what `UI_CONFIG.lua` said when the two were last lined up: at a load, a setting whose config value no longer matches its seed was changed in `UI_CONFIG.lua` since (by hand, or from the Atelier page) and follows the config, the others keep what the game saved (`follow_config`; a file saved before the seed existed only records it; nothing is done at a load that has not read `UI_CONFIG.lua`). Test: `lua5.1 scripts/atelier/ui_settings_test.lua` |
 | `shared/utils/config/config_loader.lua` | 101 | Installs the require cache, then `load_ui_config(char, job)`: `dofile` of `UI_CONFIG.lua`, fills `_G.UIConfig` and `_G.ui_display_config` |
 | `shared/utils/core/state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (see Interactions) |
@@ -131,8 +131,8 @@ flowchart TD
 | 4 | weapon | `Weapon WeaponSet SubSet Proc Instrument` |
 | 5 | mode (default) | any other state name. A bind with no `state` and no `section` goes nowhere. |
 
-   So `NukeTier` is a mode (`Nuke` before `Tier`), `KlimaformAOE` a mode, `WeaponskillMode` a mode (`Mode` before `Weapon`). Binds whose `desc` contains `←` are dropped (`filter_reverse_keybinds`); on BRD an empty key `""` is added to the JA bucket so the song-slot rows show. The builder stores **keys**, not binds. It loads the keybinds a second time (same path as `ui_display.lua`), so the bucket lists come from the unfiltered-by-style list; that is harmless because rendering walks the filtered list.
-7. **Rendering a section** (`render_section`): walk the filtered list in order, print each bind whose key is in the bucket. A string `subjob` is compared with `player.sub_job` once more (lists were already filtered). The section title is printed before its first row, so an empty section prints nothing.
+   So `NukeTier` is a mode (`Nuke` before `Tier`), `KlimaformAOE` a mode, `WeaponskillMode` a mode (`Mode` before `Weapon`). Binds whose `desc` contains `←` are dropped (`filter_reverse_keybinds`); the song-slot rows (key `""`) land in the JA bucket by their `BRDSong` state. The builder stores **keys**, not binds, from the list `update_display` built (one pass over the keys, not two), before the style filters; that is harmless because rendering walks the filtered list.
+7. **Rendering a section** (`render_section`): walk the filtered list in order, print each bind whose key is in the bucket; a bind without a key (`""`) only in the section `UIDisplayBuilder.categorize` gives it. A string `subjob` is compared with `player.sub_job` once more (lists were already filtered). The section title is printed before its first row, so an empty section prints nothing.
 
 The HUD each template produces (running the real classifier over `_master/config/*/*_KEYBINDS.lua`; the AutoMedicine row comes from `COMMON_KEYBINDS.lua`, Combat Mode and Treasure Mode rows follow their settings, and a character's `<JOB>_CUSTOM.lua` can add rows):
 
@@ -302,12 +302,11 @@ Callers were found with `grep -r` over `shared/`, `_master/`, `Tetsouo/` and `Ka
 | Module / function | Behaviour | Callers |
 |---|---|---|
 | `Display.update_display()` (`ui_display.lua`) | Full render into `_G.keybind_ui_display`; no-op without a display. No diff | lifecycle, visibility, section toggles, style commands, orchestrator, `keybind_manager.lua` `redraw_hud`, `optional_state_commands.lua` |
-| `Display.get_current_job_keybinds()` | Loader chain (job file, fallback, BRD slots); `{}` when nothing | `update_display` |
+| `Display.get_current_job_keybinds()` | The job file's rows plus the BRD slots; only those slots (or `{}`) when the file does not load | `update_display` |
 | `KeybindLoader.get_job_keybinds(job)` | `require` of `CharPaths.module('job', '<JOB>_KEYBINDS', job)` (`<Char>/<job>/keys/<JOB>_KEYBINDS`), `get_active_binds()` or `.binds`, else nil | `ui_display.lua`, `UI_DISPLAY_BUILDER.lua` |
-| `KeybindLoader.get_fallback_keybinds(job)` | Hard-coded COR and GEO lists, else `{}` | same |
 | `KeybindLoader.add_job_specific_elements(job, binds)` | Copy + BRD slot rows | same |
-| `UIDisplayBuilder.build_display_structure(job)` | `{spell_keys, ja_keys, weapon_keys, mode_keys, enhancing_keys?}` | `ui_display.lua` |
-| `UIDisplayBuilder.extract_display_keys(job)`, `.apply_job_enhancements(job, cats)` | Bucketing; RDM gets `enhancing_keys = {"Ctrl+6".."Ctrl+0"}`, which match no Windower key | internal |
+| `UIDisplayBuilder.build_display_structure(job, binds?)` | `{spell_keys, ja_keys, weapon_keys, mode_keys}` from the rows `update_display` already built (read again from the file only without them) | `ui_display.lua` |
+| `UIDisplayBuilder.extract_display_keys(job, binds?)`, `.categorize(bind)` | Bucketing; `categorize` also tells `render_section` the section of a row without a key. No row goes to `enhancing` (the name stays accepted in a section order and draws nothing) | internal, `UI_SECTIONS.lua` |
 | `UISections.render_complete_ui(ds, binds, job, get_value, get_all_values)` | Returns the whole HUD string (row filters, widths, header, sections, footer) | `ui_display.lua` |
 | `UISections.render_spells/enhancing/ja/weapons/modes_section(...)` | One section each; skipped when `UIConfig.sections.<name>` is false (captured at module load) | internal (`SECTION_RENDERERS`) |
 | `UISections.render_commands_footer(job, width)` | Separator + centred `//gs c ui`, only with `show_footer` | internal |
@@ -503,7 +502,7 @@ Open:
 - `section_*` settings are persisted but never read, and `UIConfig.sections` is captured when `UI_SECTIONS.lua` loads (`shared/config/ui_settings.lua` `save_to_file`).
 - `toggle_background` flips `UIConfig.background.visible`, not the persisted `bg_visible` (`ui_appearance.lua` `toggle_background`).
 - `KeybindSettings.save` rewrites the settings file up to nine times per command (`UI_SETTINGS.lua`).
-- RDM `enhancing_keys` can never match (`UI_DISPLAY_BUILDER.lua` `job_enhancements`).
+- Fixed 2026-10-28: rows without a key (`''`) were drawn in every section holding one (BRD's song slots under Modes once a mode had no key); `render_section` now draws such a row only in its own section (`scripts/atelier/hud_keyless_rows_test.lua`). The dead RDM `enhancing_keys` and the COR / GEO fallback rows went with it. A render error is now said once a load in the chat and each time in the trace (`Display.report_error`).
 - The `display_current_state` override prints `State: Unknown` on F12 while the HUD is disabled (`state_display_override.lua`).
 - `UI_CONFIG.lua` has keys nothing reads (`auto_save_position`, `auto_save_delay`, `debug`, `update_throttle`), and `validate` has no callers.
 - In `UI_COLOR_CONFIG.lua`, `bar_spells.ailment` and `special.default` have no effect (`COLOR_SYSTEM.lua`).

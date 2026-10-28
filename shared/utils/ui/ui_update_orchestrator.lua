@@ -63,7 +63,7 @@ function Orchestrator.attach(KeybindUI)
         local success, error_msg = pcall(Display.update_display)
         if not success then
             ui_state.consecutive_failures = ui_state.consecutive_failures + 1
-            ui_state.last_error = error_msg
+            Display.report_error(error_msg)
 
             -- Try to recover if too many failures
             if ui_state.consecutive_failures > 5 then
@@ -76,7 +76,6 @@ function Orchestrator.attach(KeybindUI)
             end
         else
             ui_state.consecutive_failures = 0
-            ui_state.last_update = os.clock()
             -- Cache states for next comparison
             ui_state.cached_states = current_states
         end
@@ -100,25 +99,20 @@ function Orchestrator.attach(KeybindUI)
         ui_state.update_cancel_id = ui_state.update_cancel_id + 1
         local my_cancel_id = ui_state.update_cancel_id
 
-        -- Always destroy UI first (even if update_in_progress from previous call)
+        -- Always destroy UI first, even while a previous call is still polling
         KeybindUI.destroy()
 
-        -- Mark as updating
-        ui_state.update_in_progress = true
         max_wait_time = max_wait_time or 3
 
         -- If states are ready, initialize immediately
         if Lifecycle.are_states_ready() then
             local success = pcall(KeybindUI.init)
             if success then
-                ui_state.last_successful_update = os.clock()
                 ui_state.consecutive_failures = 0
-                ui_state.update_count = ui_state.update_count + 1
                 ui_state.cached_states = {}
             else
                 ui_state.consecutive_failures = ui_state.consecutive_failures + 1
             end
-            ui_state.update_in_progress = false
             return success
         end
 
@@ -132,7 +126,6 @@ function Orchestrator.attach(KeybindUI)
             end
             -- Check if cancelled
             if ui_state.update_cancel_id ~= my_cancel_id then
-                ui_state.update_in_progress = false
                 return false
             end
 
@@ -140,23 +133,18 @@ function Orchestrator.attach(KeybindUI)
             if Lifecycle.are_states_ready() then
                 local success = pcall(KeybindUI.init)
                 if success then
-                    ui_state.last_successful_update = os.clock()
                     ui_state.consecutive_failures = 0
-                    ui_state.update_count = ui_state.update_count + 1
                     ui_state.cached_states = {}
                 else
                     ui_state.consecutive_failures = ui_state.consecutive_failures + 1
                 end
-                ui_state.update_in_progress = false
                 return success
             end
 
             -- Check timeout
             if (os.clock() - start_time) > max_wait_time then
                 -- Timeout, init anyway
-                local success = pcall(KeybindUI.init)
-                ui_state.update_in_progress = false
-                return success
+                return (pcall(KeybindUI.init))
             end
 
             -- Reschedule

@@ -92,15 +92,39 @@ function EntryKit.keybind_error(job, err)
     end
 end
 
+--- True when this sandbox was loaded for another subjob than the game's: a
+--- subjob change is under way and JobChangeManager will reload the file.
+--- Compares only when both name a subjob (no subjob reads differently in
+--- GearSwap and in the game, as in LoadGate.still_current).
+--- @return boolean
+function EntryKit.reload_pending()
+    local state = rawget(_G, 'JobChangeManagerSTATE')
+    local loaded_for = state and state.current_sub_job
+    local now = player and player.sub_job
+    return loaded_for ~= nil and now ~= nil and loaded_for ~= now
+end
+
 --- First macro book, then the lockstyle `lockstyle_delay` seconds later.
 --- Waits for the job facade: user_setup() runs inside include('Mote-Include.lua'),
 --- before get_sets() includes it, and the two functions came early only when
 --- the keybinds loaded (KeybindManager's intro requires them). Without keys,
 --- both used to be skipped without a word. Through LoadGate: a newer load or a
 --- job change drops it.
+---
+--- On a subjob change Mote calls user_setup() again in the OLD sandbox, before
+--- job_sub_job_change (Mote-Include.lua:981-989), with player.sub_job already
+--- the new one: LoadGate sees nothing to drop, and the macro book went out
+--- twice (now, and again from the reload 2 s later). The load-time subjob
+--- JobChangeManager seeded tells the two calls apart.
 --- @param lockstyle_delay number Seconds (LOCKSTYLE_CONFIG initial_load_delay)
 --- @return void
 function EntryKit.macro_and_lockstyle(lockstyle_delay)
+    if EntryKit.reload_pending() then
+        pcall(function()
+            require('shared/utils/debug/trace_log').log('LOAD', 'macro book left to the reload (subjob changed)')
+        end)
+        return
+    end
     require('shared/utils/core/load_gate').defer(FACADE_WAIT, function()
         if player and select_default_macro_book then
             select_default_macro_book()

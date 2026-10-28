@@ -5,7 +5,7 @@
 ---   get_sets(), after include('Mote-Include.lua') has returned, so Mote has
 ---   already run user_setup() and init_gear_sets() by the time this file runs.
 ---
----   Usage in an entry point (e.g. Tetsouo_WAR.lua):
+---   Usage in the common entry of a job (shared/entry/<job>.lua, get_sets()):
 ---     include('../shared/utils/core/INIT_SYSTEMS.lua')
 ---
 ---   Order of what it starts:
@@ -18,11 +18,12 @@
 ---     +3.0 s     load check of the PrecastGuard / CooldownChecker /
 ---                WSPrecastHandler chain
 ---     +5.0 s     GlobalProbe baseline snapshot
+---     +30 s      dated journals older than 60 days deleted (once a session)
 ---
 ---   @file    shared/utils/core/INIT_SYSTEMS.lua
 ---   @author  ejouanchicot
 ---   @version 1.4
----   @date    Created: 2025-10-28 | Updated: 2026-09-25
+---   @date    Created: 2025-10-28 | Updated: 2026-10-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 pcall(function() require('shared/utils/debug/trace_log').log('LOAD', 'INIT_SYSTEMS start (Mote and user_setup done)') end)
@@ -138,6 +139,16 @@ local function ensure_message_init()
     return MessageInit
 end
 
+-- A start() that raises would climb out through this include and stop
+-- get_sets() before the job facade: no precast, no midcast for the whole job.
+-- Only the require used to be protected.
+local function start_safely(name, fn, ...)
+    local ok, err = pcall(fn, ...)
+    if not ok then
+        ensure_message_init().show_module_load_failed(name, err)
+    end
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MIDCAST WATCHDOG (+2.0 s, kept off the cold-load path)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -172,7 +183,7 @@ end, 'watchdog')
 -- action, which can land before a deferred block would have run.
 local am_ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
 if am_ok and AutoMedicine then
-    AutoMedicine.ensure()
+    start_safely('Auto Medicine', AutoMedicine.ensure)
 else
     ensure_message_init().show_module_load_failed('Auto Medicine', AutoMedicine)
 end
@@ -186,7 +197,7 @@ end
 -- loaded for; the watchdog compares it against the client from then on.
 local jsw_ok, JobSyncWatchdog = pcall(require, 'shared/utils/core/job_sync_watchdog')
 if jsw_ok and JobSyncWatchdog then
-    JobSyncWatchdog.start(player and player.main_job)
+    start_safely('Job Sync Watchdog', JobSyncWatchdog.start, player and player.main_job)
 else
     ensure_message_init().show_module_load_failed('Job Sync Watchdog', JobSyncWatchdog)
 end
@@ -206,24 +217,26 @@ end
 -- GearSwap globals for the current job.
 local sync_ok, SyncIPC = pcall(require, 'shared/utils/dualbox/dualbox_sync_ipc')
 if sync_ok and SyncIPC then
-    -- The same "reapplying" line as the box that pressed the key, so this
-    -- window shows the order arrived (the style itself may not change)
-    local lockstyle_hook = function()
-        if not select_default_lockstyle then return end
-        local ok, MessageCommands = pcall(require, 'shared/utils/messages/formatters/ui/message_commands')
-        if ok and MessageCommands then MessageCommands.show_lockstyle_reapplying() end
-        select_default_lockstyle()
-    end
-    SyncIPC.register_hook('ls', lockstyle_hook)
-    SyncIPC.register_hook('lockstyle', lockstyle_hook)
-    -- Refill: each instance pulls its own consumables from Case/Sack.
-    local refill_hook = function()
-        local ok, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
-        if ok and RefillManager and RefillManager.refill then RefillManager.refill() end
-    end
-    SyncIPC.register_hook('rf', refill_hook)
-    SyncIPC.register_hook('refill', refill_hook)
-    SyncIPC.init_listener()
+    start_safely('DualBox Sync IPC', function()
+        -- The same "reapplying" line as the box that pressed the key, so this
+        -- window shows the order arrived (the style itself may not change)
+        local lockstyle_hook = function()
+            if not select_default_lockstyle then return end
+            local ok, MessageCommands = pcall(require, 'shared/utils/messages/formatters/ui/message_commands')
+            if ok and MessageCommands then MessageCommands.show_lockstyle_reapplying() end
+            select_default_lockstyle()
+        end
+        SyncIPC.register_hook('ls', lockstyle_hook)
+        SyncIPC.register_hook('lockstyle', lockstyle_hook)
+        -- Refill: each instance pulls its own consumables from Case/Sack.
+        local refill_hook = function()
+            local ok, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
+            if ok and RefillManager and RefillManager.refill then RefillManager.refill() end
+        end
+        SyncIPC.register_hook('rf', refill_hook)
+        SyncIPC.register_hook('refill', refill_hook)
+        SyncIPC.init_listener()
+    end)
 else
     ensure_message_init().show_module_load_failed('DualBox Sync IPC', SyncIPC)
 end
@@ -303,7 +316,7 @@ end, 'deferred systems')
 -- Hook.dll. See keybind_guard.lua for what was observed and ruled out.
 local kg_ok, KeybindGuard = pcall(require, 'shared/utils/core/keybind_guard')
 if kg_ok and KeybindGuard then
-    KeybindGuard.schedule()
+    start_safely('Keybind Guard', KeybindGuard.schedule)
 else
     ensure_message_init().show_module_load_failed('Keybind Guard', KeybindGuard)
 end
@@ -312,7 +325,7 @@ end
 -- to the box group, wear-off warnings (//gs c stealth)
 local st_ok, StealthTimers = pcall(require, 'shared/utils/stealth/stealth_timers')
 if st_ok and StealthTimers then
-    StealthTimers.start()
+    start_safely('Stealth Timers', StealthTimers.start)
 else
     ensure_message_init().show_module_load_failed('Stealth Timers', StealthTimers)
 end
@@ -321,7 +334,7 @@ end
 -- BUFF_CONFIG.lua refresh_below
 local bt_ok, BuffTimers = pcall(require, 'shared/utils/buffs/buff_timers')
 if bt_ok and BuffTimers then
-    BuffTimers.start()
+    start_safely('Buff Timers', BuffTimers.start)
 else
     ensure_message_init().show_module_load_failed('Buff Timers', BuffTimers)
 end

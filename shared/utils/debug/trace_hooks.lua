@@ -128,8 +128,16 @@ local CAST_START, CAST_INTERRUPTED = 24931, 28787
 --- finish either, means the packet itself never reached this client (Silmaril
 --- then casts the same Indi- again: it waits for that packet too).
 local function watch_own_casts()
-    local spells = rawget(_G, 'res') and res.spells or {}
-    local function name(id) return spells[id] and spells[id].english or ('spell ' .. tostring(id)) end
+    -- res is not in a job file's environment: GearSwap's own copy is. Not
+    -- require('resources'): a Windower lib required in the sandbox stacks a
+    -- new set of wrappers at every load.
+    local gs = rawget(_G, 'gearswap')
+    local r = rawget(_G, 'res') or (type(gs) == 'table' and gs.res)
+    local spells = type(r) == 'table' and r.spells or {}
+    local function name(id)
+        local s = spells[id]
+        return s and (s.en or s.english) or ('spell ' .. tostring(id))
+    end
     require('shared/utils/core/action_listener').on('trace_own_casts', function(act)
         if not player or act.actor_id ~= player.id then return end
         local first = act.targets and act.targets[1]
