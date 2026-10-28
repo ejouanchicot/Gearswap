@@ -87,10 +87,14 @@ end
 --- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_enfeebling_magic(spell)
+    -- the enfeebling families (ENFEEBLING_MAGIC_DATABASE get_enfeebling_type, as RDM and SCH): the enhancing
+    -- database read here before gave no family for an enfeeble, so a set per family was never picked (audit
+    -- 2026-10-28)
+    local ok, db = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
     MidcastManager.select_set({
         skill = 'Enfeebling Magic',
         spell = spell,
-        database_func = EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+        database_func = ok and db and db.get_enfeebling_type or nil
     })
     return true
 end
