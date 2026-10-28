@@ -109,8 +109,14 @@ def tests(full):
           + ['scripts/atelier/atelier_modules_test.js', 'scripts/atelier/offline_export_page_test.js',
              'scripts/atelier/offline_export_test.js', 'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_clicks_test.js'])
     js += ['scripts/atelier/make_package_page_test.js']
+    # check_overlay.py: a re-clone would give every live file back as it is (the overlays had fallen behind the
+    # live again with nothing to say so, audit 2026-10-28 E); it reads the gitignored live folders, so it only runs
+    # where they are
     out = [('python', 'scripts/check_syntax.py'), ('python', 'scripts/atelier/make_package_test.py'),
+           ('python', 'scripts/check_overlay.py'),
            ('python', 'scripts/loadcheck/check_load.py')]
+    if not all(os.path.isdir(c) for c in ('Tetsouo', 'Kaories')):
+        out = [x for x in out if x[1] != 'scripts/check_overlay.py']
     out += [('lua5.1', t.replace(os.sep, '/')) for t in lua]
     out += [('node', t.replace(os.sep, '/')) for t in js if os.path.exists(t)]
     # RUN_TESTS_SKIP: tests left out this time, comma-separated (scripts/atelier/cycle.sh has just run the click tests)
