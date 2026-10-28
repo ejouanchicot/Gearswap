@@ -485,7 +485,12 @@ local function read_history()
     f:close()
     -- read as data, never run: it carries text the page sent (shared/utils/core/lua_data.lua)
     local list = require('shared/utils/core/lua_data').parse(text)
-    return type(list) == 'table' and list or {}
+    if type(list) == 'table' then return list end
+    -- unreadable (cut by a crash while written, edited by hand): kept aside as .bad to look at, the next write
+    -- starts a new history (the copies it named stay: prune_backups only deletes what it drops itself)
+    pcall(os.rename, path, path .. '.bad')
+    pcall(function() require('shared/utils/debug/trace_log').log('ATELIER', 'push history unreadable, kept as %s.bad', path) end)
+    return {}
 end
 
 local LUA_WORDS = {}
@@ -506,10 +511,13 @@ local function lua_value(v, indent)
     return '{\n' .. table.concat(parts, '\n') .. '\n' .. indent .. '}'
 end
 
---- The copies in atelier/backups/ beyond the last BACKUPS_PER_FILE of each set file, and the ones no history entry
---- names any more, deleted (their entries lose their copy: nothing to undo them with).
+--- The copies in atelier/backups/ beyond the last BACKUPS_PER_FILE of each set file, and the copies of the entries
+--- the history dropped (`dropped`), deleted (their entries lose their copy: nothing to undo them with). A copy no
+--- entry names is never deleted for that alone: an unreadable history read as empty made every copy of the folder
+--- look unnamed, and the next push deleted them all (audit 2026-10-28)
 --- @param list table The history, oldest first
-local function prune_backups(list)
+--- @param dropped table|nil The entries taken out of it (the oldest, past HISTORY_MAX)
+local function prune_backups(list, dropped)
     local kept, count = {}, {}
     for i = #list, 1, -1 do
         local e = list[i]
@@ -523,21 +531,17 @@ local function prune_backups(list)
             end
         end
     end
-    -- both folders: atelier/backups/ and the saved/backups/ of before 2026-10-05
-    local dir, old = require('shared/utils/core/char_paths').atelier_dir('backups')
-    for _, d in ipairs({dir, old}) do
-        local ok, files = pcall(windower.get_dir, d)
-        if ok and type(files) == 'table' then
-            for _, name in ipairs(files) do
-                if name:match('%.lua$') and not kept[name] then os.remove(d .. '/' .. name) end
-            end
-        end
+    -- the dropped entries' copies, unless a kept entry names the same file
+    for _, e in ipairs(dropped or {}) do
+        local name = e.backup and (e.backup:match('([^/]+)$') or e.backup)
+        if name and not kept[name] then os.remove(data_dir() .. e.backup) end
     end
 end
 
 local function write_history(list)
-    while #list > HISTORY_MAX do table.remove(list, 1) end
-    pcall(prune_backups, list)
+    local dropped = {}
+    while #list > HISTORY_MAX do dropped[#dropped + 1] = table.remove(list, 1) end
+    pcall(prune_backups, list, dropped)
     local ok = write(history_path(true), '-- Sets pushed from the Atelier page into the set files (shared/utils/atelier/set_push.lua).\n'
         .. '-- Each push: the file, its copy before the push (atelier/backups/), what changed.\nreturn ' .. lua_value(list, '') .. '\n')
     if ok then require('shared/utils/core/char_paths').retire(HISTORY_FILE) end

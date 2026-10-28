@@ -426,16 +426,18 @@ local function write_export(data, body, no_index)
     if not dir then return nil end
     windower.create_dir(dir)
     local folder = dir:sub(#data_path('') + 1) .. '/'
-    -- one file per subjob: the modes, weapons and WS a job offers can depend on it
-    local sub = player.sub_job or 'NONE'
-    local rel = folder .. player.main_job .. '_' .. sub .. '.js'
-    local c, j, s = json(player.name), json(player.main_job), json(sub)
+    -- one file per subjob: the modes, weapons and WS a job offers can depend on it. The job and subjob the data was
+    -- read for (new_data), not the ones of now: a spread export ends a few frames after it began, and a subjob
+    -- changed meanwhile wrote the old subjob's data into the new one's file (audit 2026-10-28)
+    local job, sub = data.job or player.main_job, data.sub or player.sub_job or 'NONE'
+    local rel = folder .. job .. '_' .. sub .. '.js'
+    local c, j, s = json(data.player or player.name), json(job), json(sub)
     local text = ('window.ATELIER_SUBS = window.ATELIER_SUBS || {};\nATELIER_SUBS[%s] = ATELIER_SUBS[%s] || {};\n'
         .. 'ATELIER_SUBS[%s][%s] = ATELIER_SUBS[%s][%s] || {};\nATELIER_SUBS[%s][%s][%s] = %s;\n')
         :format(c, c, c, j, c, j, c, j, s, body)
     if not write(data_path(rel), text) then return nil end
-    os.remove(data_path(folder .. player.main_job .. '.js'))
-    if old then os.remove(old .. '/' .. player.main_job .. '_' .. sub .. '.js'); os.remove(old .. '/' .. player.main_job .. '.js') end
+    os.remove(data_path(folder .. job .. '.js'))
+    if old then os.remove(old .. '/' .. job .. '_' .. sub .. '.js'); os.remove(old .. '/' .. job .. '.js') end
     if not no_index then write_index() end
     return rel
 end
