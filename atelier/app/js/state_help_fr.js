@@ -62,6 +62,7 @@ const STATE_HELP_FR = {
     IdleMode: 'Ton set idle hors ville : sets.idle.Refresh, .DT ou .Regen.',
     EngagedMode: 'Ton set engaged : STP (Store TP), Acc (précision), DT (dégâts subis) ou SB (Subtle Blow).',
     SongMode: 'Le pack de chants chanté par //gs c songs.',
+    AutoPianissimo: 'Allumé : un chant visé sur un autre joueur attend, Pianissimo part, puis le chant. Éteint : le chant part tel quel (envoie Pianissimo toi-même).',
     MainInstrument: 'L’instrument des chants de buff qui n’en demandent pas un précis.',
     VictoryMarch: 'Quand tu as déjà Haste, Victory March est remplacé dans le pack par Blade Madrigal, Valor Minuet III ou un Etude. None le garde.',
     MainWeapon: 'L’arme de main droite.', SubWeapon: 'La main gauche.',
@@ -216,6 +217,8 @@ const STATE_HELP_FR = {
     CombatMode: 'Allumé : verrouille main, sub, range et ammo, pour garder tes armes.',
     CastingMode: 'Resistant : les affaiblissements et Divine Magic portent la version .Resistant de leur set. Les Cures l’ignorent.',
     OffenseMode: 'Melee ON verrouille main, sub et range. Il ne change aucun équipement.',
+    MainWeapon: 'L’arme de main droite : un set de son nom dans ton fichier de sets, posé sur l’idle et l’engaged. « Free » garde l’arme que tu portes.',
+    SubWeapon: 'La main gauche, de la même façon (« Free » : celle que tu portes).',
   },
 };
 

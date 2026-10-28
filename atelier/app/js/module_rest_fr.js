@@ -211,7 +211,7 @@ const MOD_REST_FR = {
   '{JOB}_HUD.lua': [['*', '{1}', ''], ['*.*', '{2}', '']],
   '{JOB}_CUSTOM.lua': [['*', '{1}', ''], ['*.*', '{2}', ''], ['*.*.*', '{3}', '']],
   '{JOB}_ECOSYSTEM_DATA.lua': [
-    ['correlation_matrix', 'Forces et faiblesses des écosystèmes', 'Aquan bat Amorph, qui bat Bird, qui bat Aquan ; Beast bat Lizard, qui bat Plantoid, qui bat Beast. Aucun module ne lit ce fichier aujourd’hui.'],
+    ['correlation_matrix', 'Forces et faiblesses des écosystèmes', 'Beast bat Lizard, qui bat Vermin, qui bat Plantoid, qui bat Beast ; Bird bat Aquan, qui bat Amorph, qui bat Bird ; Undead et Arcana, Demon et Dragon se battent l’un l’autre (pages Killer de BG-Wiki). Dit dans le chat quand tu changes d’écosystème et quand un pet sort.'],
     ['correlation_matrix.*', '{1}', ''], ['correlation_matrix.*.strong_against', 'Fort contre', ''], ['correlation_matrix.*.weak_to', 'Faible contre', ''],
     ['correlation_matrix.*.cycle_type', 'Type de cycle', ''], ['correlation_matrix.*.group', 'Groupe', ''], ['correlation_matrix.*.note', 'Note', ''],
   ],

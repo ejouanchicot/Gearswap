@@ -49,18 +49,18 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `shared/jobs/bst/functions/bst_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
 | `shared/jobs/bst/functions/BST_PRECAST.lua` | 202 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `equip_broth`, `prepare_ready_move` |
 | `shared/jobs/bst/functions/BST_MIDCAST.lua` | 204 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
-| `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 112 | `job_aftercast`: pet damage set for Ready moves that were not interrupted, delayed `start_pet_monitoring` |
-| `shared/jobs/bst/functions/BST_PET_PRECAST.lua` | 105 | `job_pet_precast`: never called (no such hook in Mote or GearSwap; the file header says so) |
+| `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 112 | `job_aftercast`: pet damage set for Ready moves that were not interrupted (held by `ReadyHold`), delayed `start_pet_monitoring`; `job_pet_aftercast` lets the hold go |
 | `shared/jobs/bst/functions/BST_PET_MIDCAST.lua` | 57 | `job_pet_midcast`: returns without doing anything |
 | `shared/jobs/bst/functions/BST_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/bst/functions/BST_ENGAGED.lua` | 41 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
-| `shared/jobs/bst/functions/BST_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
+| `shared/jobs/bst/functions/BST_STATUS.lua` | 33 | `job_status_change = LifecycleManager.status_change()`; `job_pet_change`: a pet out says its correlation in the chat |
 | `shared/jobs/bst/functions/BST_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/bst/functions/BST_COMMANDS.lua` | 479 | `job_self_command` router, local `display_broth_count`; `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/bst/functions/BST_MOVEMENT.lua` | 41 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/bst/functions/BST_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('BST', 'config/bst/BST_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/bst/functions/BST_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('BST', 'config/bst/BST_MACROBOOK', 'SAM', 1, 1)` wrapper |
-| `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 241 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs` |
+| `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 280 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs`; `correlation(eco)`, `show_correlation(eco, pet)`, `ecosystem_of(name)` (the game's pet name has no spaces: letters and digits compared) |
+| `shared/jobs/bst/functions/logic/ready_hold.lua` | 70 | `ReadyHold`: a Ready move's set held until the pet's move lands (8 s at most, LoadGate), laid over any idle / engaged set rebuilt meanwhile (weapons left out) |
 | `shared/jobs/bst/functions/logic/pet_manager.lua` | 170 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache) |
 | `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 217 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
 | `shared/jobs/bst/functions/logic/set_builder.lua` | 198 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
@@ -72,7 +72,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_MACROBOOK.lua` | 61 | Book 12 page 1; `dualbox` GEO/DNC 13, COR/DNC 14, RDM/DNC 12 |
 | `_master/config/bst/BST_PET_DATA.lua` | 179 | 25 jug pets (broth, species, ecosystem, job), `ecosystems` index, three list getters -> `_G.BSTBeastPetData` |
 | `_master/config/bst/BST_TP_CONFIG.lua` | 179 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
-| `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 178 | Ecosystem correlation matrix; **no reader anywhere** (its header says so) |
+| `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 151 | Monster correlation matrix (BG-Wiki Killer pages, 2026-10-27), loaded by the entry into `_G.BSTEcosystemData` (optional): said in the chat on an `Ecosystem` change and when a pet comes out |
 | `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/Tetsouo/config/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
 | `_master/sets/bst_sets.lua` | 685 | Template sets (flat) |
@@ -148,7 +148,7 @@ sequenceDiagram
    `job_sub_job_change` does not call it again.
 
 The facade includes, in order: `message_buffs.lua`, `BST_PRECAST`,
-`BST_MIDCAST`, `BST_AFTERCAST`, `BST_PET_PRECAST`, `BST_PET_MIDCAST`,
+`BST_MIDCAST`, `BST_AFTERCAST`, `BST_PET_MIDCAST`,
 `BST_IDLE`, `BST_ENGAGED`, `BST_STATUS`, `BST_BUFFS`, `BST_LOCKSTYLE`,
 `BST_MACROBOOK`, `BST_COMMANDS`, `BST_MOVEMENT`. `BST_AFTERCAST` and
 `BST_PET_MIDCAST` require `pet_manager` / `ready_move_categorizer` at include
@@ -237,8 +237,8 @@ sequenceDiagram
   `default_pet_midcast` / `default_pet_aftercast`. `job_pet_midcast` returns
   without `handled`, so Mote equips `get_pet_midcast_set` = `sets.midcast.Pet`,
   which BST never defines (Mote's empty table): no change.
-- There is no pet precast event in GearSwap or Mote, so `job_pet_precast` is
-  never called. Reward, Killer Instinct and Spur get their gear from Mote's
+- There is no pet precast event in GearSwap or Mote, so BST has no pet precast
+  module (`BST_PET_PRECAST.lua`, never called, removed on 2026-10-28). Reward, Killer Instinct and Spur get their gear from Mote's
   default precast (`sets.precast.JA[name]`).
 - The ordering above (player aftercast before the pet readies) is what the code
   assumes; it has not been traced in game for this document.
@@ -275,10 +275,17 @@ sequenceDiagram
   `_G.start_pet_monitoring()` 2 s later. The monitor is already running from
   `user_setup`, so this call is a no-op.
 - Pet gain and loss: GearSwap fires `pet_change`; Mote's `pet_change` calls
-  `handle_equipping_gear` because BST defines no `job_pet_change`. BST defines
-  no `job_pet_status_change` either, so the engine's pet status events do
-  nothing; `PetEngaged` is driven only by the monitor (and by `pet engage` /
-  `pet disengage`).
+  BST's `job_pet_change` (`BST_STATUS.lua`: on a gain, the pet's family and
+  correlation in the chat), then `handle_equipping_gear` (eventArgs left as
+  they are). BST defines no `job_pet_status_change`, so the engine's pet
+  status events do nothing; `PetEngaged` is driven only by the monitor (and
+  by `pet engage` / `pet disengage`).
+- Ready Hold (`logic/ready_hold.lua`, 2026-10-26): `job_aftercast` holds the
+  Ready move's set until the pet's move lands; `set_builder` lays it (weapons
+  left out) over any idle / engaged set rebuilt meanwhile (AutoMove's
+  `gs c update`, an engage); `job_pet_aftercast` lets it go before Mote's
+  default re-equip; 8 s at most (LoadGate), with one `gs c update` when the
+  move never lands. READY lines in `//gs c trace`.
 
 ### Pet monitor
 
@@ -505,7 +512,7 @@ carried, overwritten at load and read by nothing, were removed on 2026-09-28).
 | `<Char>/bst/display/BST_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 12 page 1 (GEO/DNC 13, COR/DNC 14) | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<Char>/bst/combat/BST_PET_DATA.lua` -> `_G.BSTBeastPetData` | 25 pets | file | `ecosystem_manager.lua` (`job` field unused); plain `require` in `get_sets` |
 | `<Char>/bst/combat/BST_TP_CONFIG.lua` -> `_G.BSTTPConfig` | Moonshade 250, `fencer_jp_gifts = 'auto'` (from the job points, `game_facts.lua` `fencer_gift_tp`; 0 to 4 forces the rank count) | file | `WSPrecastHandler` -> `tp_bonus_calculator.lua`; plain `require` in `get_sets` |
-| `<Char>/bst/combat/BST_ECOSYSTEM_DATA.lua` | correlation matrix | file | **nothing** |
+| `<Char>/bst/combat/BST_ECOSYSTEM_DATA.lua` -> `_G.BSTEcosystemData` | correlation matrix | file; missing: no correlation line | `ecosystem_manager.lua` (`correlation`, `show_correlation`); `CharPaths.load` in `get_sets` |
 | `<Char>/bst/inventory/BST_REFILL.lua` | overlay: medicines, Pet Food Theta (`all`), food; `/DNC` variant; template: all comments | file; the common list of `REFILL_CONFIG.lua` without a list in it | refill system ([equipment and inventory](../systems/equipment-and-inventory.md)) |
 | `<Char>/_common/display/LOCKSTYLE_CONFIG.lua` | `initial_load_delay 8` | entry fallback table | entry |
 | `<Char>/_common/combat/RECAST_CONFIG.lua` (plain `require`), `REGION_CONFIG.lua`, `UI_CONFIG.lua` | - | shared | entry |
@@ -520,7 +527,7 @@ or /DNC, shields included (its comment now says so).
   the monitor's `monitor_event_id`, `last_check`, `prev_pet_eng`,
   `monitor_error_shown`.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
-  `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_pet_precast`,
+  `job_midcast`, `job_post_midcast`, `job_aftercast`,
   `job_pet_midcast`, `job_status_change`, `job_buff_change`,
   `customize_idle_set`, `customize_melee_set`, `job_self_command`,
   `job_state_change`, `job_handle_equipping_gear`), `BSTBeastPetData`,
@@ -691,7 +698,7 @@ or /DNC, shields included (its comment now says so).
 - `broth` counts only items named "...Broth", in inventory only.
 - `BST_AFTERCAST.lua` keeps a `pet_manager` require that nothing uses ("kept
   so the module keeps loading at the same point").
-- Dead code: `job_pet_precast` (whole `BST_PET_PRECAST.lua`), the
+- Dead code: the
   `_G.pet*Moves` exports, `BST_ECOSYSTEM_DATA.lua`, BST message wrappers with
   no caller.
 - Fixed, no longer issues: the template's pet monitor re-sending Fight every

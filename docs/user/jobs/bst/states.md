@@ -64,5 +64,6 @@ can still show the previous pet's moves for up to 30 s.
 own modes and keys, see [keybinds](../../guides/keybinds.md)), `BST_PET_DATA.lua`
 (pets, species, jugs), `BST_LOCKSTYLE.lua` (style 6), `BST_MACROBOOK.lua` (book 12
 page 1; book 13 or 14 with a GEO or COR partner while /DNC), `BST_TP_CONFIG.lua`,
-`BST_HUD.lua`. `BST_ECOSYSTEM_DATA.lua` is not read by anything. Details:
+`BST_HUD.lua`, `BST_ECOSYSTEM_DATA.lua` (which family beats which, said in the chat
+when you change Ecosystem and when a pet comes out). Details:
 [README.md](README.md#configuration-files-for-this-job).

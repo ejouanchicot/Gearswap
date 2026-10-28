@@ -203,7 +203,7 @@ All in `<YourName>/bst/` (plain Lua files; `//gs c reload` after an edit).
 | `BST_MACROBOOK.lua` | Macro book and page, per subjob and per dual-box partner job |
 | `BST_HUD.lua` | Order of the HUD sections and rows on BST |
 | `BST_REFILL.lua` | What `//gs c rf` restocks on BST on top of or in place of the common list (every line commented in the generic template: the common list) |
-| `BST_ECOSYSTEM_DATA.lua` | Ecosystem strengths and weaknesses. Nothing reads it today |
+| `BST_ECOSYSTEM_DATA.lua` | Which family beats which (Beast > Lizard > Vermin > Plantoid > Beast, Bird > Aquan > Amorph > Bird, Undead / Arcana, Demon / Dragon). Said in the chat when you change Ecosystem and when a pet comes out: `Warlike Patrick (Lizard) >> strong vs Vermin \| weak to Beast` |
 
 Your sets are in `<YourName>/bst/sets/bst_sets.lua`. Files shared by every job
 (common keys, Combat Mode, Treasure Mode, belts, Dual Wield...) are in

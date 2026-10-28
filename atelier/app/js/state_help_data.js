@@ -42,7 +42,8 @@ const STATE_HELP_EN = {
   "CarolElement": "//gs c carol sings <Element> Carol II",
   "ThrenodyElement": "//gs c threnody casts <Element> Threnody II on <stnpc>",
   "MarcatoSong": "Marcato is used automatically before that song (then the song once Marcato is up), only on yourself, under Nightingale + Troubadour, without Soul Voice, and when Marcato is ready",
-  "AutoNitro": "On: //gs c songs first uses Nightingale, then Troubadour, when each is ready or already up, and starts the songs only once both are on (a refused ability is sent again; if one never goes, nothing is sung)"
+  "AutoNitro": "On: //gs c songs first uses Nightingale, then Troubadour, when each is ready or already up, and starts the songs only once both are on (a refused ability is sent again; if one never goes, nothing is sung)",
+  "AutoPianissimo": "On: a song aimed at another player is held, Pianissimo is used, then the song is sung once Pianissimo is up. Off: the song goes as sent (send Pianissimo yourself, or the game refuses it)"
  },
  "BST": {
   "WeaponSet": "Main weapon, put on in idle and engaged gear (set named after the value)",
@@ -224,6 +225,8 @@ const STATE_HELP_EN = {
   "AfflatusMode": "Which stance //gs c afflatus uses.",
   "IdleMode": "Idle set: sets.idle.PDT or sets.idle.Refresh.",
   "CombatMode": "On locks main, sub, range and ammo so your weapons stay on. If you define sets.CombatMode, it is put on first.",
+  "MainWeapon": "Free keeps the weapon you wear. Add your weapons in WHM_STATES.lua ('Free', 'Maxentius', 'Yagrush'), each with a set of its name in whm_sets.lua (sets): laid on the idle and engaged sets.",
+  "SubWeapon": "The same for the off hand ('Free', 'Genmei Shield').",
   "CastingMode": "Resistant: enfeebles and Divine Magic wear the .Resistant version of their set (sets.midcast.MndEnfeebles.Resistant, .IntEnfeebles.Resistant, ['Divine Magic'].Resistant). A spell with a set of its own name uses that set's .Resistant version when it has one (sets.midcast.Repose.Resistant), else keeps its own set (Holy, Holy II). Cures ignore it. In the template the .Resistant sets are copies of the normal ones until you add magic accuracy pieces.",
   "OffenseMode": "Melee ON locks main, sub and range. Cycle it with F9 (Mote's key) or //gs c cycle OffenseMode. It changes no gear: the engaged set is always sets.engaged.Normal.",
   "FastCast": "Fast Cast %, used by the midcast watchdog to time your casts when it cannot read the Fast Cast of your precast set."

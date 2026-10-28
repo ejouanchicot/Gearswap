@@ -375,7 +375,7 @@ Tetsouo's `bonecraft_sets.lua` defines `hq` (default), `nq`, `success`, `wood`, 
 
 ## /DRG jumps
 
-Two modules implement the same Jump -> High Jump chain: recast ids 158 / 159, 1000 TP threshold, 1.0 s between steps, Sheol Gaol level-0 check.
+Two modules implement the same Jump -> High Jump chain: recast ids 158 / 159, 1000 TP threshold, Sheol Gaol level-0 check. No fixed wait between the steps since 2026-10-13: each Jump is followed until it landed by `JumpLanding.after` (`shared/utils/drg/jump_landing.lua`: the Jump's own action packet, then the TP the game shows once it moved, 0.6 s at most after it; sent again at 1.2 s when it did not go off; 3.0 s at most in all).
 
 ### AutoJump (`shared/utils/drg/auto_jump.lua`)
 
@@ -392,11 +392,10 @@ sequenceDiagram
     J->>J: "JumpAuto On, no sequence running, /DRG level > 0, TP below 1000, a jump ready"
     J->>P: "eventArgs.cancel = true, _G.AUTO_JUMP_SEQUENCE_ACTIVE = true"
     J->>G: "/ja Jump on current target (else High Jump)"
-    Note over J: "+1.0 s"
-    J->>G: "other jump if TP still below 1000 and it is ready"
-    Note over J: "WS replay at +2.0 s after the first jump (single) or +3.0 s (double)"
-    J->>G: "/ws name original_target"
-    Note over J: "+0.5 s: _G.AUTO_JUMP_SEQUENCE_ACTIVE = false"
+    Note over J: "JumpLanding.after: the Jump landed and its TP came in"
+    J->>G: "other jump if TP still below 1000 and it is ready (followed the same way)"
+    J->>G: "/ws name original_target, at once (WS_DELAY_AFTER_JUMP 0)"
+    Note over J: "+1.2 s: sent once more if the TP is still there; _G.AUTO_JUMP_SEQUENCE_ACTIVE = false"
 ```
 
 TP is read from the game (`shared/utils/core/live_tp.lua`), both in the WS test and in the coroutine that decides the second jump; in a coroutine, GearSwap's `player.tp` is never refreshed. The replayed WS goes through precast again while the flag is set, so it cannot start a second sequence. Readiness uses the global `is_recast_ready` from `RECAST_CONFIG.lua` (tolerance 2.0 s).
@@ -407,7 +406,7 @@ TP is read from the game (`shared/utils/core/live_tp.lua`), both in the WS test 
 
 - errors unless `player.sub_job == 'DRG'` and its level is above 0;
 - prints "TP ready" if TP is at least 1000;
-- otherwise uses Jump (or High Jump) now, and the other one 1.0 s later if TP is still short and it is ready;
+- otherwise uses Jump (or High Jump) now, and the other one once the first landed (`JumpLanding.after`) if TP is still short and it is ready;
 - if both are on recast, prints one grouped cooldown message through `MessageCooldowns.show_multi_status`.
 
 It does not replay anything. Callers: `//gs c jump` (`COMMON_COMMANDS.lua` `handle_jump`) and WAR's subjob TP ability on /DRG (`war/functions/logic/smartbuff_manager.lua`).
