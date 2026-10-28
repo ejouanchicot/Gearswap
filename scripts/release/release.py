@@ -125,6 +125,10 @@ def defender_scan(paths, ref='HEAD'):
     if r.returncode == 2:
         hits = [l.strip() for l in r.stdout.splitlines() if l.strip().startswith(('Threat ', 'file '))]
         sys.exit('Windows Defender flags files of this release (change them, scan again):\n  ' + '\n  '.join(hits))
+    # MpCmdRun: 0 nothing found, 2 a threat; any other code is a scan that did not run to its end (service off,
+    # bad argument...): "no threat" would be a guess, so the release stops (audit 2026-10-28 I)
+    if r.returncode != 0:
+        sys.exit('Windows Defender scan did not finish (code %d), scan again:\n%s' % (r.returncode, (r.stdout + r.stderr).strip()[-1500:]))
     print('Defender scan: %d files, no threat' % len(paths))
 
 

@@ -46,7 +46,11 @@ ADDON_FILES = ['equip_processing.lua', 'export.lua', 'flow.lua', 'gearswap.lua',
 # the engine before (data/atelier/engine/, wsdist's) and its fight model (cycle.js) stay on this PC: the page no longer
 # loads them (notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md, Lot 5)
 TREES = ['libs', 'data/shared', 'data/atelier/app', 'data/atelier/calc', 'data/atelier/lua',
-         'data/scripts/atelier/AtelierLink']
+         'data/scripts/atelier/AtelierLink',
+         # the job templates the Atelier's "+ Add a job" makes a job from (shared/utils/atelier/job_adder.lua: entry,
+         # settings, sets); never the characters' overlays (_master/<Char>/): without them the button answered
+         # "No template" in every package (audit 2026-10-28 H, the player's choice)
+         'data/_master/entry', 'data/_master/config', 'data/_master/sets']
 DATA_FILES = ['data/atelier.html', 'data/atelier/index.html', 'data/atelier/opt.js', 'data/atelier/opt_enf.js',
               'data/atelier/targets.js', 'data/scripts/atelier/load_job.lua',
               # the gear catalogue the page reads (atelier/gear/: its build scripts and caches stay out)

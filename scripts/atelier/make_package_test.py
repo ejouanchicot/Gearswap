@@ -92,6 +92,8 @@ for name, info in sorted(chars.items()):
     check(any(n.startswith('GearSwap/data/atelier/calc/') for n in names), '%s: the package holds the engine (atelier/calc/)' % name)
     check(not any(n.startswith('GearSwap/data/atelier/engine/') for n in names), '%s: the package leaves the engine before (atelier/engine/) out' % name)
     # the Packages page stays home: not in the zip; the page is the built one (atelier/src/), which goes on without it
+    check(any(n.startswith('GearSwap/data/_master/entry/') for n in names) and any(n.startswith('GearSwap/data/_master/config/war/') for n in names),
+          '%s: the package holds the job templates (+ Add a job)' % name)
     check(not any('GearSwap/' + p in names for p in make_package.PAGE_ONLY), '%s: packages.js, package_exports.js are not in a package' % name)
     page = z.read('GearSwap/' + make_package.PAGE_INDEX).decode('utf-8')
     check('<meta name="atelier-build"' in page, '%s: the package\'s page is the built one' % name)
@@ -123,7 +125,9 @@ for name, info in sorted(chars.items()):
     others = [o for o in chars if o != name]
     for n in names:
         bad = (re.match(r'GearSwap/data/atelier/(link_|live_)', n) or n.startswith('GearSwap/data/atelier/icons/')
-               or n.startswith('GearSwap/data/_master/') or n.startswith('GearSwap/data/notes/')
+               # _master/: its job templates only (entry, config, sets: "+ Add a job"), never an overlay _master/<Char>/
+               or (n.startswith('GearSwap/data/_master/') and not re.match(r'GearSwap/data/_master/(entry|config|sets)/', n))
+               or n.startswith('GearSwap/data/notes/')
                or n.startswith('GearSwap/data/atelier/Img/')
                or (n.startswith('GearSwap/data/scripts/') and '/AtelierLink/' not in n and not n.endswith('load_job.lua'))
                or any(n.startswith('GearSwap/data/%s/' % o) for o in others + ['Tetsouo', 'Kaories', 'Hysoka'] if o != name))

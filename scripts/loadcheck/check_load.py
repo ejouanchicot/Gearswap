@@ -374,15 +374,18 @@ def main():
     t0 = time.time()
     print('copy of the game folder ...', flush=True)
     lab = make_lab(sorted(set(chars) | {s.split(':')[0] for s in specs}))
-    print('loads: %s%s' % (', '.join(chars), ' (quick)' if args.quick else ''), flush=True)
-    results = sweep(lua, lab, chars, args.quick)
-    injected = {}
-    for spec in specs:
-        print('broken files: %s ...' % spec, flush=True)
-        injected[spec] = inject(lua, lab, spec)
-    changed, new_fp = fingerprint_changes(results)
-    fatal, fresh, unclear, messages = write_report(results, injected, changed, new_fp, time.time() - t0)
-    shutil.rmtree(lab, ignore_errors=True)
+    # the copy in %TEMP% goes whatever happens (a stopped or failed run left it there: audit 2026-10-28)
+    try:
+        print('loads: %s%s' % (', '.join(chars), ' (quick)' if args.quick else ''), flush=True)
+        results = sweep(lua, lab, chars, args.quick)
+        injected = {}
+        for spec in specs:
+            print('broken files: %s ...' % spec, flush=True)
+            injected[spec] = inject(lua, lab, spec)
+        changed, new_fp = fingerprint_changes(results)
+        fatal, fresh, unclear, messages = write_report(results, injected, changed, new_fp, time.time() - t0)
+    finally:
+        shutil.rmtree(lab, ignore_errors=True)
     for m in messages[:8]:
         print('  ' + m[:200])
     print('\n%d loads, %d problems%s, %d broken-file cases that do not name the file, %d loads changed since last run'
