@@ -122,6 +122,52 @@ local function display_broth_count()
     MessageFormatter.show_bst_broth_list(broth_counts)
 end
 
+-- Numbers each rdymove sequence: only the latest one clears the pause flag
+-- or sends Heel, so an earlier sequence ending cannot let the auto-engage
+-- loop send Fight (or recall the pet) in the middle of a newer one.
+local rdymove_seq = 0
+
+---   True when the game reports the player engaged right now (player.status
+---   would be the value captured when the command was typed)
+---   @return boolean
+local function player_engaged_now()
+    local p = windower.ffxi.get_player()
+    return p ~= nil and p.status == 1
+end
+
+---   Fight, then the Ready move 3.5 s later, then Heel at 6 s when asked.
+---   _G.bst_rdymove_active pauses the BST entry file's pet auto-engage loop
+---   meanwhile. Every delayed step goes through LoadGate: a reload or a job
+---   change in between drops it.
+---   @param move_name string Ready move to use
+---   @param heel boolean Recall the pet afterwards (player was idle)
+---   @return void
+local function run_rdymove_sequence(move_name, heel)
+    local LoadGate = require('shared/utils/core/load_gate')
+    rdymove_seq = rdymove_seq + 1
+    local my_seq = rdymove_seq
+    _G.bst_rdymove_active = true
+
+    send_command('input /pet "Fight" <stnpc>')
+    LoadGate.defer(3.5, function()
+        send_command('input /pet "' .. move_name .. '" <me>')
+    end, 'bst_rdymove_move')
+
+    if heel then
+        LoadGate.defer(6, function()
+            -- The player may have engaged since the command: the pet then
+            -- stays in the fight
+            if my_seq == rdymove_seq and not player_engaged_now() then
+                send_command('input /pet "Heel" <me>')
+            end
+        end, 'bst_rdymove_heel')
+    end
+
+    LoadGate.defer(heel and 6.5 or 4.5, function()
+        if my_seq == rdymove_seq then _G.bst_rdymove_active = false end
+    end, 'bst_rdymove_done')
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COMMAND HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -411,50 +457,11 @@ function job_self_command(cmdParams, eventArgs)
             if player_engaged then
                 -- Player engaged + Pet idle >> Fight + Ready Move (NO Heel)
                 MessageFormatter.show_bst_ready_move_auto_engage(index, move_name)
-
-                -- Pauses the background auto-engage while the sequence runs
-                -- (read by the BST entry file's pet auto-engage loop)
-                _G.bst_rdymove_active = true
-
-                -- Step 1: Engage pet (0s delay)
-                send_command('input /pet "Fight" <stnpc>')
-
-                -- Step 2: Execute Ready Move (3.5s delay for pet to engage)
-                coroutine.schedule(function()
-                    send_command('input /pet "' .. move_name .. '" <me>')
-                end, 3.5)
-
-                -- Step 3: Clear the flag (4.5s delay)
-                coroutine.schedule(function()
-                    _G.bst_rdymove_active = false
-                end, 4.5)
-
-                -- NO Step 4: Pet stays engaged (player is fighting)
+                run_rdymove_sequence(move_name, false)
             else
                 -- Player idle + Pet idle >> Fight + Ready Move + Heel
                 MessageFormatter.show_bst_ready_move_auto_sequence(index, move_name)
-
-                -- Pauses the background auto-engage while the sequence runs
-                -- (read by the BST entry file's pet auto-engage loop)
-                _G.bst_rdymove_active = true
-
-                -- Step 1: Engage pet (0s delay)
-                send_command('input /pet "Fight" <stnpc>')
-
-                -- Step 2: Execute Ready Move (3.5s delay for pet to engage)
-                coroutine.schedule(function()
-                    send_command('input /pet "' .. move_name .. '" <me>')
-                end, 3.5)
-
-                -- Step 3: Disengage pet (6s delay - 2.5s after Ready Move)
-                coroutine.schedule(function()
-                    send_command('input /pet "Heel" <me>')
-                end, 6)
-
-                -- Step 4: Clear the flag (6.5s delay)
-                coroutine.schedule(function()
-                    _G.bst_rdymove_active = false
-                end, 6.5)
+                run_rdymove_sequence(move_name, true)
             end
         end
 

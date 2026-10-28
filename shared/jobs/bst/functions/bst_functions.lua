@@ -32,9 +32,8 @@ TIMER('BST_MIDCAST')
 include('../shared/jobs/bst/functions/BST_AFTERCAST.lua')
 TIMER('BST_AFTERCAST')
 
--- Pet-specific hooks (for Ready Moves and pet abilities)
-include('../shared/jobs/bst/functions/BST_PET_PRECAST.lua')
-TIMER('BST_PET_PRECAST')
+-- Pet-specific hooks (Ready Moves). No pet precast module: neither GearSwap
+-- nor Mote has a pet_precast event (BST_PRECAST equips the Sic set itself).
 include('../shared/jobs/bst/functions/BST_PET_MIDCAST.lua')
 TIMER('BST_PET_MIDCAST')
 
@@ -105,6 +104,6 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('BST', 'All functions loaded (13 hooks + 4 logic modules)')
+MessageFormatter.show_debug('BST', 'All functions loaded (12 hooks + 4 logic modules)')
 
 TIMER('TOTAL BST_functions', true)

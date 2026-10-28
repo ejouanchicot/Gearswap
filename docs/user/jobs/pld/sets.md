@@ -250,7 +250,6 @@ the `//gs c aoe` rotation).
 
 - `sets.precast.FC.CureSelf` (Cure III/IV on yourself, Fast Cast)
 - `sets.precast.WS.SCH['Name']` (/SCH weaponskill versions)
-- `sets.idleRegen` (/SCH `Regen` mode: the mode does nothing without it)
 - `sets.midcast['Healing Magic']`, `sets.midcast['Divine Magic']`,
   `sets.midcast['Blue Magic']` (Curaga and -na spells, Banish and Holy, blue spells
   without their own set)

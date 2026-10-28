@@ -195,6 +195,13 @@ sets.idleXp =
     }
 )
 
+-- • Regen Idle (/SCH Regen mode, idle only)
+-- Laid over the idle set the stance chose while the Regen mode is On
+-- (shared/jobs/pld/functions/logic/set_builder.lua): put only the slots you want
+-- to change, every other slot stays as it was. Empty: the mode changes nothing.
+-- Example: sets.idleRegen = { body = 'Sacro Breastplate', neck = 'Bathy Choker +1' }
+sets.idleRegen = {}
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ENGAGED SETS
 -- ═══════════════════════════════════════════════════════════════════════════

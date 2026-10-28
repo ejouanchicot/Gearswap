@@ -46,34 +46,6 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
--- Scholar Stratagems skipped from cooldown check (charge-based, player manages manually)
-local cooldown_exclusions = {
-    -- Scholar Stratagems (charge-based abilities)
-    ['Light Arts'] = true,
-    ['Dark Arts'] = true,
-    ['Addendum: White'] = true,
-    ['Addendum: Black'] = true,
-    ['Stratagem'] = true,
-    ['Tabula Rasa'] = true,
-    -- Individual stratagems
-    ['Ebullience'] = true,
-    ['Rapture'] = true,
-    ['Altruism'] = true,
-    ['Tranquility'] = true,
-    ['Perpetuance'] = true,
-    ['Immanence'] = true,
-    ['Accession'] = true,
-    ['Manifestation'] = true,
-    ['Parsimony'] = true,
-    ['Penury'] = true,
-    ['Celerity'] = true,
-    ['Alacrity'] = true,
-    ['Focalization'] = true,
-    ['Equanimity'] = true,
-    ['Enlightenment'] = true,
-    ['Klimaform'] = true
-}
-
 --- Precast order: debuff guard → cooldown → WS handler
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
@@ -87,9 +59,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- Cooldown check (skip Scholar Stratagems)
-    local is_excluded = cooldown_exclusions[spell.name]
-    if not is_excluded and CooldownChecker then
+    -- Cooldown check (stratagems, which share one charge pool, are exempt
+    -- inside CooldownChecker: shared/utils/precast/cooldown_checker.lua)
+    if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         elseif spell.action_type == 'Magic' then

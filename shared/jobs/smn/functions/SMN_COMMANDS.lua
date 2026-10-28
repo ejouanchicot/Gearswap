@@ -179,13 +179,21 @@ local function start_skillup()
     skillup_iteration(my_counter)
 end
 
+--- Halt the loop without a word: invalidates its pending coroutines.
+--- @return boolean True if the loop was running
+local function halt_skillup()
+    if not SKILLUP_STATE.active then return false end
+    SKILLUP_STATE.active = false
+    SKILLUP_STATE.counter = SKILLUP_STATE.counter + 1  -- invalidate pending coroutines
+    return true
+end
+
 local function stop_skillup()
     if not SKILLUP_STATE.active then
         MessageFormatter.show_info('[SMN] Skillup loop is not running')
         return
     end
-    SKILLUP_STATE.active = false
-    SKILLUP_STATE.counter = SKILLUP_STATE.counter + 1  -- invalidate pending coroutines
+    halt_skillup()
     MessageFormatter.show_success('[SMN] Skillup loop stopped')
 end
 
@@ -432,7 +440,8 @@ job_state_change = require('shared/utils/core/lifecycle_manager').state_change()
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 
--- Expose skillup stop globally so Tetsouo_SMN.file_unload() can halt the loop
--- before the SMN module is unloaded on job change (otherwise orphan coroutines
--- captured by the old closure would keep spamming Siren).
-_G.cancel_smn_skillup_loop = stop_skillup
+-- Expose the silent halt so file_unload() of shared/entry/smn.lua can stop the
+-- loop before the SMN module is unloaded on job change (otherwise orphan
+-- coroutines captured by the old closure would keep spamming Siren). Silent:
+-- it runs on every unload, loop or not, and must not print "not running".
+_G.cancel_smn_skillup_loop = halt_skillup

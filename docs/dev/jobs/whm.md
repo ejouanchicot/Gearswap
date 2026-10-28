@@ -133,8 +133,9 @@ flowchart TD
   every tier is on recast (CureManager tests for exactly 0) the checker cancels
   it with its usual message and the `RECAST_CONFIG` tolerance.
 - `paralyna_on_self` sets `eventArgs.handled` for Paralyna while
-  `buffactive['paralysis']`: Mote skips its default precast, so no gear swaps
-  while the spell is retried. It does not check the target.
+  `buffactive['paralysis']`: Mote skips its default precast, so no precast set
+  while the spell is retried. The midcast still dresses it (another event with
+  its own `eventArgs`: `job_post_midcast_statusremoval`). It does not check the target.
 - `job_post_precast` only applies the TP bonus gear.
 - Mote's default precast picks `sets.precast.FC[...]` by spell name, spell map
   (`Cure`, `Curaga`, `CureSolace`, `StatusRemoval`...) or skill, then

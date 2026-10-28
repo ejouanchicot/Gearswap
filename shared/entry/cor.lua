@@ -181,9 +181,14 @@ function get_sets()
     end
 
     -- Unload external rolltracker addon (prevents conflict with integrated roll tracker)
-    -- Will be reloaded automatically in file_unload() when changing away from COR
-    -- (both skipped with rolltracker = false in _common/tools/ADDONS_CONFIG.lua)
-    require('shared/utils/core/job_addons').run('unload', 'rolltracker')
+    -- Will be reloaded in file_unload() once the game is off COR
+    -- (both skipped with rolltracker = false in _common/tools/ADDONS_CONFIG.lua).
+    -- The flag lives on `windower`, which outlives the job sandbox: a subjob
+    -- change or //gs reload of COR sends neither the load nor the unload again
+    -- (same pattern as BLU, shared/jobs/blu/functions/logic/azure_sets.lua).
+    if not windower._cor_rolltracker_off then
+        windower._cor_rolltracker_off = require('shared/utils/core/job_addons').run('unload', 'rolltracker')
+    end
 
     -- Load job-specific functions (AutoMove loaded via INIT_SYSTEMS)
     include('../shared/jobs/cor/functions/cor_functions.lua')
@@ -301,11 +306,38 @@ end
 -- CLEANUP
 ---============================================================================
 
+--- Load rolltracker back once the game is off COR (COR unloads it on load to
+--- prevent conflicts with the integrated tracker). If the user doesn't have
+--- rolltracker, this fails silently.
+--- @param next_file string|nil See file_unload
+--- @return void
+local function release_rolltracker(next_file)
+    if not windower._cor_rolltracker_off then return end
+    local function reload_rolltracker()
+        windower._cor_rolltracker_off = nil
+        windower.send_command('lua load rolltracker')
+    end
+    if next_file == nil then
+        -- GearSwap itself is unloading: no later check would ever run
+        return reload_rolltracker()
+    end
+    -- GearSwap still reports the old job here, and the next file may be COR
+    -- again (subjob change, //gs reload): ask the game 2 s later. Only
+    -- windower.* in this coroutine: it runs after the sandbox is gone.
+    coroutine.schedule(function()
+        local me = windower.ffxi.get_player()
+        if me and me.main_job == 'COR' then return end
+        reload_rolltracker()
+    end, 2)
+end
+
 --- Called by GearSwap when this job file is unloaded (job change, reload).
 --- Removes roll/party tracking, reloads the rolltracker addon, cancels
 --- pending job-change operations and unbinds keys.
+--- @param next_file string|nil Job file GearSwap loads next (engine
+---   refresh.lua); nil when the GearSwap addon itself is unloaded
 --- @return void
-function file_unload()
+function file_unload(next_file)
     -- Cleanup roll detection handler (PartyTracker.init_roll_listener, from get_sets)
     pcall(function() require('shared/utils/core/action_listener').off('cor_roll') end)
 
@@ -321,10 +353,7 @@ function file_unload()
         PartyTracker.cleanup()
     end
 
-    -- Reload external rolltracker addon when changing away from COR
-    -- (COR unloads it on load to prevent conflicts with integrated tracker)
-    -- If the user doesn't have rolltracker, this will fail silently
-    require('shared/utils/core/job_addons').run('load', 'rolltracker')
+    release_rolltracker(next_file)
 
     EntryKit.unload(CORKeybinds)
 end

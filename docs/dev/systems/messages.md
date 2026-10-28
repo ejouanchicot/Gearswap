@@ -673,7 +673,7 @@ The full per-module list is in [messages-formatters.md](messages-formatters.md).
 | `SEPARATOR_WIDTH` (metatable) | `chat.width` or 69, read at each use | 15 files (InfoBlock, HelpScreen, formatters, test runner) |
 | `create_color_code(n)` | `string.char(0x1F, n)`; raises on a non-number | 103 call sites in 8 files |
 | `convert_key_display(key)` | `!`->`ALT+`, `^`->`CTRL+`, `~`->`SHIFT+`, `@`->`WIN+`, `fN`->`FN`, upper-cased | `key_conflicts.lua`, `message_keybinds.lua`, `ui_style.lua` (`display_key`), facade |
-| `show_separator(len)` | `len` ignored; nothing when `chat.separators` is false; else `add_to_chat(1, color .. line)` with `chat.separator_char` (default `=`), `chat.separator_color` or `COLORS.SEPARATOR`, `SEPARATOR_WIDTH` characters | both handlers, BST `BST_PET_PRECAST.lua`, PLD/RUN `aoe_manager.lua`, facade |
+| `show_separator(len)` | `len` ignored; nothing when `chat.separators` is false; else `add_to_chat(1, color .. line)` with `chat.separator_char` (default `=`), `chat.separator_color` or `COLORS.SEPARATOR`, `SEPARATOR_WIDTH` characters | both handlers, PLD/RUN `aoe_manager.lua`, facade |
 | `job_prefix()` | `"[MAIN/SUB] "` or `""` when `chat.job_tag` is false | `info/success/error/warning`, `message_cooldowns.lua`, `roll_messages.lua` |
 | `get_job_tag()` | "Colours, palette and chat options" | 91 call sites |
 | `info(msg)`, `success(msg)`, `error(msg)`, `warning(msg)` | `add_to_chat(121 / 158 / 167 / MessageColors.WARNING, job_prefix() .. msg)` | info: `party_messages.lua`, `roll_messages.lua`; success: none; error: `roll_messages.lua` and four warp files; warning: `BLM_COMMANDS.lua`, `roll_messages.lua` |
@@ -756,7 +756,7 @@ call them; `DebugCommands.handle_debugmsg` reads `_G.MESSAGE_SETTINGS` directly.
 
 | Command | Handler | Effect |
 |---|---|---|
-| `//gs c jamsg [full\|f\|on\|name\|nameonly\|name_only\|n\|off\|disabled\|disable\|d\|help]` | `CommonCommands.handle_jamsg` = `DebugCommands.handle_jamsg` -> local `handle_message_config_generic('ja', mode)` | No argument or `help`: `MessageCommands.show_message_mode_help` (a HelpScreen with the current mode). Otherwise normalises to `full/on/off`, `Config.set_display_mode`, writes the settings file, prints `show_jamsg_mode_changed(mode)`; an unknown mode prints `show_jamsg_invalid_mode`. |
+| `//gs c jamsg [full\|f\|on\|name\|nameonly\|name_only\|n\|off\|disabled\|disable\|d\|help]` | `DebugCommands.handle_jamsg` (through `DebugCommands.WORDS`) -> local `handle_message_config_generic('ja', mode)` | No argument or `help`: `MessageCommands.show_message_mode_help` (a HelpScreen with the current mode). Otherwise normalises to `full/on/off`, `Config.set_display_mode`, writes the settings file, prints `show_jamsg_mode_changed(mode)`; an unknown mode prints `show_jamsg_invalid_mode`. |
 | `//gs c spellmsg <same>` | `DebugCommands.handle_spellmsg` | Same through `ENHANCING_MESSAGES_CONFIG`; changes `spell_mode`, which also governs Enfeebling. BRD songs and Geomancy lines are printed by their job code regardless. |
 | `//gs c wsmsg <same> \| tp\|tponly\|tp_only\|t` | `DebugCommands.handle_wsmsg` | Same for `ws_mode`; the `tp` aliases map to `on`. |
 | `//gs c debugmsg` | `DebugCommands.handle_debugmsg` | Prints `_G.MESSAGE_SETTINGS` through `show_debug`. Before `message_settings.lua` has loaded in the current sandbox it prints `Error: MSG: MESSAGE_SETTINGS is nil`. |

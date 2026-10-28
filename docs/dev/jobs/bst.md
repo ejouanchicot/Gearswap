@@ -458,7 +458,7 @@ dual-box partner's alt config. See
 | `broth` / `broths` | Count items whose name contains "Broth" in inventory only (misses Crumbly Soil, Aged Humus, Gassy Sap, Windy Greens, T. Pristine Sap) | `display_broth_count` |
 | `pet engage` / `pet disengage` | `/pet "Fight" <t>` / `/pet "Heel" <me>` and set `PetEngaged` | `PetManager.engage_pet` / `disengage_pet` |
 | `rdylist` | List the current pet's Ready moves, numbered by ability id | `PetManager.get_ready_moves` -> `show_bst_ready_moves_list` |
-| `rdymove N` | Pet engaged: `/pet "<move>" <me>`. Pet idle, player engaged: `Fight <stnpc>`, move after 3.5 s, `_G.bst_rdymove_active` for 4.5 s. Both idle: `Fight <stnpc>`, move after 3.5 s, `Heel` after 6 s, flag for 6.5 s | router branch |
+| `rdymove N` | Pet engaged: `/pet "<move>" <me>`. Pet idle, player engaged: `Fight <stnpc>`, move after 3.5 s, `_G.bst_rdymove_active` for 4.5 s. Both idle: `Fight <stnpc>`, move after 3.5 s, `Heel` after 6 s, flag for 6.5 s. Every delayed step goes through `LoadGate.defer` (dropped by a reload or job change); `Heel` is skipped when the game reports the player engaged by then; sequences are numbered and only the latest sends `Heel` or lowers the flag (2026-10-28) | `run_rdymove_sequence` |
 
 `PetManager.update_ready_moves` takes every id in
 `windower.ffxi.get_abilities().job_abilities` with type `Monster` and id

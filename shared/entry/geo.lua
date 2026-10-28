@@ -161,10 +161,15 @@ function user_setup()
     GEOStates.configure()
 
     -- ==========================================================================
-    -- ADDON LOADING - PetTP for Luopan management (Always executed after reload)
+    -- ADDON LOADING - PetTP for Luopan management
     -- ==========================================================================
     -- (pettp = false in _common/tools/ADDONS_CONFIG.lua: left alone)
-    require('shared/utils/core/job_addons').run('load', 'pettp')
+    -- The flag lives on `windower`, which outlives the job sandbox: a subjob
+    -- change or //gs reload of GEO sends neither the unload nor the load again
+    -- (same pattern as BLU, shared/jobs/blu/functions/logic/azure_sets.lua).
+    if not windower._geo_pettp_loaded then
+        windower._geo_pettp_loaded = require('shared/utils/core/job_addons').run('load', 'pettp')
+    end
     -- Silent load - PetTP addon handles its own messaging
 
     -- ==========================================================================
@@ -242,11 +247,31 @@ end
 
 --- Called by GearSwap when this job file is unloaded (job change, reload).
 --- Cancels pending job-change operations, unloads PetTP and unbinds the job keys.
+--- @param next_file string|nil Job file GearSwap loads next (engine
+---   refresh.lua); nil when the GearSwap addon itself is unloaded
 --- @return void
-function file_unload()
+function file_unload(next_file)
     -- Unload PetTP addon (external addon, must be unloaded manually)
-    require('shared/utils/core/job_addons').run('unload', 'pettp')
     -- Silent unload - addon handles its own messaging
+    if windower._geo_pettp_loaded then
+        local function unload_pettp()
+            windower._geo_pettp_loaded = nil
+            windower.send_command('lua unload pettp')
+        end
+        if next_file == nil then
+            -- GearSwap itself is unloading: no later check would ever run
+            unload_pettp()
+        else
+            -- GearSwap still reports the old job here, and the next file may
+            -- be GEO again (subjob change, //gs reload): ask the game 2 s later.
+            -- Only windower.* in this coroutine: it runs after the sandbox is gone.
+            coroutine.schedule(function()
+                local me = windower.ffxi.get_player()
+                if me and me.main_job == 'GEO' then return end
+                unload_pettp()
+            end, 2)
+        end
+    end
 
     EntryKit.unload(GEOKeybinds)
 end

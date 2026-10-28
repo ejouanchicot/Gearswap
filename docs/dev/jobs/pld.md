@@ -168,10 +168,8 @@ the hooks (`ensure_modules_loaded`, `ensure_commands_loaded`, first idle/engage)
 flowchart TD
     A[job_precast] --> B{PrecastGuard.guard_precast}
     B -- blocked --> Z[return]
-    B -- ok --> C{name in cooldown_exclusions}
-    C -- no, Ability --> D[CooldownChecker ability]
-    C -- no, Magic --> E[CooldownChecker spell]
-    C -- yes --> F
+    B -- ok, Ability --> D[CooldownChecker ability]
+    B -- ok, Magic --> E[CooldownChecker spell]
     D --> G{eventArgs.cancel}
     E --> G
     G -- yes --> Z
@@ -185,8 +183,9 @@ flowchart TD
     L --> M[job_post_precast: apply_sch_ws_set, apply_tp_gear, FC.CureSelf, EnmityOverride.apply_precast]
 ```
 
-- `cooldown_exclusions` lists 22 Scholar names; `CooldownChecker` already skips
+- No exclusion list of its own since 2026-10-28: `CooldownChecker` skips the
   stratagems itself (see [precast pipeline](../systems/precast-pipeline.md#recast-check)).
+  Light Arts, Dark Arts and Enlightenment (/SCH) are refused on recast, as on every job.
   Weaponskills have `action_type == 'Ability'`, so they pass
   `check_ability_cooldown` too.
 - The helper abilities (each one an option of `PLD_CONFIG.lua`, on unless set false:
@@ -529,7 +528,8 @@ the character's `_common/keys/COMMON_KEYBINDS.lua`.
 
 `Regen` is idle-only; in the live Tetsouo sets `sets.idleRegen` is seven slots
 (Regen+34 and Refresh+1 in total) laid over whatever the stance chose. The template
-has no `sets.idleRegen`, so the key does nothing until the player adds one.
+has an empty, commented `sets.idleRegen` (since 2026-10-28), so the key does nothing
+until the player fills it.
 
 Optional states added to every job: `CombatMode` (hidden on PLD, default key
 `!numpad0`) and `TreasureMode` (hidden, `!numpad.`), see
@@ -585,7 +585,7 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 | `sets.precast.WS.SCH['<ws>']` | `PLD_PRECAST.lua` `apply_sch_ws_set` | **absent** | **absent** | Knights of Round |
 | `sets.engaged.BurtgangKC` | `select_engaged_base` | yes | yes | yes |
 | `sets.idleXp`, `sets.meleeXp` | build functions (Xp On) | yes | yes | yes |
-| `sets.idleRegen` | `build_idle_set` (Regen On) | **absent** | **absent** | yes |
+| `sets.idleRegen` | `build_idle_set` (Regen On) | empty | **absent** | yes |
 | `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | BaseSetBuilder, movement | Town = `sets.MoveSpeed` | yes | Town = `idle.PDT + MoveSpeed` |
 | `sets.FullEnmity` | identity test `uses_full_enmity`, `enmity_max_extra` | yes | yes | yes |
 | `sets.EnmityMax` | `enmity_override.lua` | `FullEnmity + Srivatsa` | **absent** | yes |
@@ -790,9 +790,9 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
   `sets.midcast.Stoneskin`, `sets.precast.FC.CureSelf`, `sets.idleRegen` or
   `sets.precast.WS.SCH`, so in Sortie she keeps her normal sets. Left as is on
   purpose (player's decision, 2026-09-19).
-- The template has no `sets.idleRegen`, `sets.precast.FC.CureSelf` or
-  `sets.precast.WS.SCH`: the `Regen` key and those code paths do nothing until the
-  player adds them.
+- The template has no `sets.precast.FC.CureSelf` or `sets.precast.WS.SCH`, and an
+  empty `sets.idleRegen`: the `Regen` key and those code paths do nothing until the
+  player fills them.
 - Fixed 2026-09-29 (checked offline, not yet in game): a pending Hoxne ammo check
   scheduled before a job change could still lock in the new sandbox (its sequence
   counter is a module local). Every job load now bumps `windower._weapon_lock_gen`
@@ -827,8 +827,7 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
   selects `sets.engaged.BurtgangKC` when the new weapon set names a `sub`
   (`select_engaged_base`), so the new weapon and its shield go on at once. A club
   equipped by hand with a weapon set that has no `sub` still selects it.
-- Dead or unread: `sets.Duban/Aegis/['Blurred Shield +1']`, `sets.Alber` (since 2026-09-30), `cooldown_exclusions` (duplicates
-  CooldownChecker), the `require` of `message_formatter` kept in `set_builder.lua`.
+- Dead or unread: `sets.Duban/Aegis/['Blurred Shield +1']`, `sets.Alber` (since 2026-09-30), the `require` of `message_formatter` kept in `set_builder.lua`.
 - With the generic template (`PLD_WEAPONS.lua` all comments), `sets.engaged.TP`,
   `.DPS` and `.Hoxne` name no `sub` (their comments in `_master/sets/pld_sets.lua`
   still say the shield is decided by SetBuilder), so in Sortie, DPS and Hoxne the

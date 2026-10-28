@@ -27,7 +27,7 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 |------|------:|------|
 | `shared/utils/debuff/precast_guard.lua` | 511 | PrecastGuard: routes by `spell.type`, cancels blocked actions, sends Echo Drops/Remedy |
 | `shared/utils/debuff/uncurable_debuffs.lua` | 173 | UncurableDebuffs: 4 s after each cure item, marks a debuff the item did not take off (an aura keeps it on); no more item for it while marked (60 s at most) |
-| `shared/utils/debuff/debuff_checker.lua` | 239 | Blocking-debuff tables (production and test mode) and lookups |
+| `shared/utils/debuff/debuff_checker.lua` | 240 | Blocking-debuff tables (production and test mode) and lookups |
 | `shared/utils/debuff/auto_medicine.lua` | 235 | `state.AutoMedicine` On/Off, persisted in `windower._auto_medicine`, `//gs c am`, `//gs c am debuffs`; cold-load value from `auto_medicine_start` |
 | `shared/utils/debuff/doom_manager.lua` | 139 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
 | `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 74 | Shared defaults: auto-cure switches, cure item lists, test mode |
@@ -53,7 +53,7 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/hooks/init_spell_messages.lua` | 97 | Wraps `user_post_midcast`: spell messages, Utsusemi: Ichi shadow cancel |
 
 Job files used to document the contract: every `shared/jobs/<job>/functions/<JOB>_PRECAST.lua`
-(22 files, one per job; BST also has `BST_PET_PRECAST.lua`, which does not run this pipeline).
+(22 files, one per job).
 
 ## Action lifecycle, end to end
 
@@ -1006,9 +1006,8 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
   Auto-cure for a new debuff needs a new branch in `check_and_block` / `check_ja` and
   a message pair in `message_debuffs.lua`.
 - **New multi-charge ability**: add it to `MULTI_CHARGE_ABILITIES`
-  (`cooldown_checker.lua`). PLD, RUN, DRK and BLM keep their own lists
-  (`cooldown_exclusions` in `PLD_PRECAST.lua`, `RUN_PRECAST.lua` and `DRK_PRECAST.lua`,
-  `BLM_SPELL_FILTERS.CHARGE_ABILITIES`).
+  (`cooldown_checker.lua`). BLM keeps its own list
+  (`BLM_SPELL_FILTERS.CHARGE_ABILITIES`).
 - **New auto-trigger ability**: call `AbilityHelper.try_ability_smart` after the
   cooldown check in the job's `job_precast`; return after it if the rest of the job
   logic must not run for the cancelled spell.

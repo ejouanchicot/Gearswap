@@ -134,18 +134,17 @@ global exists. RUN has no ammo lock to release.
 flowchart TD
     A[job_precast] --> B{PrecastGuard.guard_precast}
     B -- blocked --> Z[return]
-    B -- ok --> C{name in cooldown_exclusions}
-    C -- no --> D[CooldownChecker ability or spell]
+    B -- ok --> D[CooldownChecker ability or spell]
     D --> E{eventArgs.cancel}
     E -- yes --> Z
-    E -- no --> G
-    C -- yes --> G[WSPrecastHandler.handle with RUNTPConfig]
+    E -- no --> G[WSPrecastHandler.handle with RUNTPConfig]
     G --> H[Mote default_precast]
     H --> I[job_post_precast: apply_tp_gear, apply_cure_self_fc, debug display if PrecastDebugState]
 ```
 
-- `cooldown_exclusions` is the same 22-name Scholar list as PLD's, redundant with
-  `CooldownChecker` ([precast pipeline](../systems/precast-pipeline.md#recast-check)).
+- No exclusion list of its own since 2026-10-28: `CooldownChecker` skips the
+  stratagems itself ([precast pipeline](../systems/precast-pipeline.md#recast-check)).
+  Light Arts, Dark Arts and Enlightenment (/SCH) are refused on recast, as on every job.
 - `RUNTPConfig = _G.RUNTPConfig or {}` is captured on the first action. The entry
   requires `RUN_TP_CONFIG.lua` in `get_sets`, and that file sets `_G.RUNTPConfig`,
   so the TP bonus is computed (Moonshade +250, Lionheart +500); `{}` is only the
@@ -430,7 +429,7 @@ RUN weaponskills. There is no RUN-specific differential test.
 - BLU dynamic rotation reads the main job's data (`RUN_BLU_MAGIC.lua`
   `get_equipped_blu_spells`), as on PLD, so it always uses the manual list.
 - Duplicated with PLD: `aoe_manager`, `cure_set_builder`, `rune_manager`,
-  `RUN_BLU_MAGIC`, `cooldown_exclusions`, the `job_midcast` skeleton.
+  `RUN_BLU_MAGIC`, the `job_midcast` skeleton.
 - Dead: the commented WarpInit block in the entry. Removed 2026-09-28:
   `run_messages.lua` (nothing sent its keys; no `RUN` message namespace any more)
   and the `_G.DEBUG_RUN_WEAPONS` debug blocks of `set_builder.lua` (nothing set

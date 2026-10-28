@@ -42,10 +42,6 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
--- Spell/ability names that skip CooldownChecker (none today)
-local cooldown_exclusions = {
-}
-
 ---   Handle precast actions
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
@@ -59,9 +55,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- Cooldown check (with exclusions)
-    local is_excluded = cooldown_exclusions[spell.name]
-    if not is_excluded and CooldownChecker then
+    -- Cooldown check (stratagems, which share one charge pool, are exempt
+    -- inside CooldownChecker: shared/utils/precast/cooldown_checker.lua)
+    if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         elseif spell.action_type == 'Magic' then

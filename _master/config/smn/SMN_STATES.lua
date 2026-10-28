@@ -2,7 +2,7 @@
 --- SMN States Configuration
 ---============================================================================
 --- State definitions for Summoner job.
---- Loaded by user_setup() in Tetsouo_SMN.lua
+--- Loaded by user_setup() in shared/entry/smn.lua
 ---
 --- @file config/smn/SMN_STATES.lua
 --- @author ejouanchicot

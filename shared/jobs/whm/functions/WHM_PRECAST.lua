@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles all precast actions for White Mage job:
 ---   • Cure re-tiering by the target's need (CureManager)
----   • Paralyna on self while paralyzed: no gear swap
+---   • Paralyna while paralyzed: no precast set (the midcast set still goes on)
 ---   • Weaponskill validation and range checking
 ---   Fast Cast and job ability sets are left to Mote-Include.
 ---
@@ -88,12 +88,15 @@ local function retier_cure(spell, eventArgs)
     return true
 end
 
---- Curing your own paralysis: cast in whatever is worn, swap nothing.
+--- Curing your own paralysis: no precast set.
 ---
 --- Paralysis blocks the spell, never the equipment change - so this is not
 --- about protecting the cast. It is about the blinking: a paralyzed Paralyna
---- is retried until it lands, and each attempt would swap the set on and off
---- again. (Timara WHM pattern.)
+--- is retried until it lands, and each attempt swaps sets on and off again.
+--- (Timara WHM pattern.) Only the precast swap is saved: eventArgs.handled
+--- here skips Mote's default precast, but the midcast is another event with
+--- its own eventArgs, and job_post_midcast still puts on the StatusRemoval /
+--- Paralyna set. The target is not checked.
 --- @param spell table Spell data from GearSwap
 --- @param eventArgs table Event arguments (handled is set when it applies)
 --- @return boolean True when this case applies

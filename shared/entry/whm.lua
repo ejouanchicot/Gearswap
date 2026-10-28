@@ -239,8 +239,7 @@ function file_unload()
         if windower._whm_melee_lock or (state and state.OffenseMode and state.OffenseMode.value == 'Melee ON') then
             enable('main', 'sub', 'range')
             windower._whm_melee_lock = nil
-            windower._weapon_locks = windower._weapon_locks or {}
-            windower._weapon_locks.whm_melee = nil
+            pcall(function() require('shared/utils/core/combat_mode').release('whm_melee') end)
         end
     end
 

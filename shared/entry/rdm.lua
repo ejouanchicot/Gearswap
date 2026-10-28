@@ -156,24 +156,9 @@ end
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    -- Create/destroy Storm state based on SCH subjob (handled in RDM_STATES.lua)
-    local RDMStates = require(CharPaths.module('job', 'RDM_STATES', 'RDM'))
-    if RDMStates and RDMStates.configure_storm then
-        local had_storm = state.Storm ~= nil
-        RDMStates.configure_storm()
-        local has_storm = state.Storm ~= nil
-
-        -- Display messages only when state changes
-        local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if msg_success and MessageFormatter then
-            if has_storm and not had_storm then
-                MessageFormatter.show_info('[RDM] Storm spells enabled (SCH subjob)')
-            elseif not has_storm and had_storm then
-                MessageFormatter.show_info('[RDM] Storm spells disabled (no SCH subjob)')
-            end
-        end
-    end
-
+    -- No Storm state work here: Mote runs user_setup() before this hook
+    -- (libs/Mote-Include.lua), and RDMStates.configure() there has already
+    -- created or removed state.Storm for the new subjob (configure_storm).
     EntryKit.sub_job_change('RDM', newSubjob)
 end
 
@@ -195,7 +180,7 @@ function user_setup()
     RDMStates.configure()
 
     -- Note: configure() also creates the Storm state when the subjob is SCH
-    -- (configure_storm); job_sub_job_change() re-checks it.
+    -- (configure_storm), on every load and every subjob change.
 
     -- ==========================================================================
     -- KEYBIND LOADING (Always executed after reload)

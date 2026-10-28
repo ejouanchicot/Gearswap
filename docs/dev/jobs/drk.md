@@ -111,11 +111,9 @@ The facade includes `message_buffs.lua` (unused by DRK), then `DRK_PRECAST`
 flowchart TD
     A[job_precast] --> B{PrecastGuard.guard_precast}
     B -- blocked --> Z[return]
-    B -- ok --> C{name in cooldown_exclusions}
-    C -- no --> D[CooldownChecker by action_type]
+    B -- ok --> D[CooldownChecker by action_type]
     D --> E{eventArgs.cancel}
     E -- yes --> Z
-    C -- yes --> F
     E -- no --> F{JobAbility Dark Seal / Nether Void}
     F -- yes --> G[set _G.drk_*_pending = true]
     F -- no --> H
@@ -125,7 +123,7 @@ flowchart TD
     I --> J[equip sets.precast.FC for Magic]
 ```
 
-- `cooldown_exclusions` is empty.
+- The cooldown check has no list of its own (removed 2026-10-28: it was empty).
 - The explicit `equip` calls run before Mote's `default_precast`, which equips
   `get_precast_set` afterwards: the same `sets.precast.JA[name]` for the four
   JAs, and `sets.precast.FC` or a more specific FC child for spells. They
@@ -414,7 +412,7 @@ invisible to Mote.
 - Elemental Magic routing is a no-op: no `sets.midcast['Elemental Magic']`.
 - Nether Void set applied to Absorb-TP too (the set comment in
   `drk_sets.lua` now says so).
-- Redundant JA/FC equips in `job_precast`; empty `cooldown_exclusions`.
+- Redundant JA/FC equips in `job_precast`.
 - Fixed 2026-09-28: `DRK_STATUS` is `LifecycleManager.status_change()` (an
   engage during an action waits for the aftercast); the Aftermath Lv.3
   refresh waits for the action too; `apply_weapon` goes through

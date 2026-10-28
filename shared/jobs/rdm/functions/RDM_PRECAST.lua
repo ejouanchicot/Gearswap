@@ -94,7 +94,8 @@ end
 ---   DEPENDENCIES - RDM SPECIFIC
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Both are set by the entry point (Tetsouo_RDM.lua) before this file is included.
+-- Both are set before this file is included: RDM_TP_CONFIG.lua sets _G.RDMTPConfig
+-- itself, shared/entry/rdm.lua (get_sets) sets _G.RDMSaboteurConfig.
 local RDMTPConfig = _G.RDMTPConfig or {}
 
 local RDMSaboteurConfig = _G.RDMSaboteurConfig or {

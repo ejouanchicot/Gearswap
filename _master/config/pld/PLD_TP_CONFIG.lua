@@ -69,7 +69,7 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
--- Global export: the entry file also assigns it, PLD_PRECAST reads _G.PLDTPConfig
+-- Global export: the entry file only requires this file, PLD_PRECAST reads _G.PLDTPConfig
 _G.PLDTPConfig = PLDTPConfig
 
 return PLDTPConfig

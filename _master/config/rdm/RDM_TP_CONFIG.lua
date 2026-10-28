@@ -69,7 +69,7 @@ function RDMTPConfig.get_weapon_bonus(weapon_name)
     return 0
 end
 
--- Global export: the entry file also assigns it, RDM_PRECAST reads _G.RDMTPConfig
+-- Global export: the entry file only requires this file, RDM_PRECAST reads _G.RDMTPConfig
 _G.RDMTPConfig = RDMTPConfig
 
 return RDMTPConfig
