@@ -102,7 +102,8 @@ SKIP = {'scripts/audit/fight_run_check.lua'}
 
 def tests(full):
     lua = sorted(glob.glob('scripts/atelier/*_test.lua')) + sorted(glob.glob('scripts/audit/test_*.lua'))
-    js = (['scripts/atelier/atelier_build_check.js', 'scripts/atelier/atelier_names_check.js', 'scripts/atelier/atelier_text_check.js',
+    js = (['scripts/atelier/atelier_build_check.js', 'scripts/atelier/atelier_types_check.js', 'scripts/atelier/atelier_names_check.js',
+           'scripts/atelier/atelier_text_check.js',
            'scripts/atelier/atelier_items_check.js', 'scripts/atelier/bags_locked_check.js', 'scripts/atelier/update_test.js']
           + sorted(glob.glob('scripts/audit/calc_*check.js'))
           + ['scripts/atelier/atelier_modules_test.js', 'scripts/atelier/offline_export_page_test.js',
@@ -117,13 +118,23 @@ def tests(full):
     return [(run, t) for run, t in out if t not in skip and (full or t not in SLOW)]
 
 
+# The longest a test may run before it is stopped and counted failed (a hung browser or worker held the whole
+# run before: audit 2026-10-28); the slow ones take up to ~15 min today
+TIMEOUT_QUICK, TIMEOUT_SLOW = 600, 1800
+
+
 def run_one(run, t):
     start = time.time()
     exe = sys.executable if run == 'python' else shutil.which(run)
     if not exe:
         raise SystemExit('%s not found on the PATH' % run)
-    proc = subprocess.run([exe, t] + ARGS.get(t, []), capture_output=True, text=True,
-                          encoding='utf-8', errors='replace')
+    limit = TIMEOUT_SLOW if t in SLOW else TIMEOUT_QUICK
+    try:
+        proc = subprocess.run([exe, t] + ARGS.get(t, []), capture_output=True, text=True,
+                              encoding='utf-8', errors='replace', timeout=limit)
+    except subprocess.TimeoutExpired as e:
+        out = e.stdout.decode('utf-8', 'replace') if isinstance(e.stdout, bytes) else (e.stdout or '')
+        proc = subprocess.CompletedProcess(e.cmd, 1, out, 'stopped after %d s (run_tests.py TIMEOUT)' % limit)
     return proc, time.time() - start
 
 

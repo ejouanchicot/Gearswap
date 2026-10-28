@@ -1331,13 +1331,18 @@
         tpOnlyOut(ctx, res, choices, opts);
         rightSides(ctx, res, choices, opts);
         fillGaps(ctx, res, choices, opts);
+        // the walks' result is ranked BEFORE the passes below: they lower the score on purpose (Pet DT for a few
+        // points of the master's figure, Charm+ for a few CHR), so ranked after them the page's merge of the
+        // workers (optimizer.js) kept a walk whose pass found nothing and the player's rule was lost (audit
+        // 2026-10-28 A)
+        var rank = res.score;
         petDtPass(ctx, res, input.choices, opts);
         tolGainPass(ctx, res, choices, opts);
         res.best.hits = O.hits(ctx, res.pieces, opts);
         res.start.hits = O.hits(ctx, input.start, opts);
         // an engaged set's round before and after, the real time worked out whatever the objective
         if (ctx.mode === "engaged") { res.best.round = O.round(ctx, res.pieces, opts); res.start.round = O.round(ctx, input.start, opts); }
-        return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, score: res.score, gains: O.gains(ctx, res, choices, opts)};
+        return {pieces: res.pieces, best: res.best, start: res.start, evals: res.evals, score: res.score, rank: rank, gains: O.gains(ctx, res, choices, opts)};
     }
     // A generator run to its end at once
     function drain(gen) { var x = gen.next(); while (!x.done) x = gen.next(); return x.value; }

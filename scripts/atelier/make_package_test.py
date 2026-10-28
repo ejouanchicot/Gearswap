@@ -87,7 +87,10 @@ for name, info in sorted(chars.items()):
                  'GearSwap/data/atelier/app/js/core.js', 'GearSwap/data/atelier/lua/lua51.js',
                  'GearSwap/data/scripts/atelier/AtelierLink/AtelierLink.lua', 'GearSwap/data/scripts/atelier/load_job.lua'):
         check(need in names, '%s: the package holds %s' % (name, need))
-    check(any(n.startswith('GearSwap/data/atelier/engine/') for n in names), '%s: the package holds the engine' % name)
+    # the engine before (atelier/engine/, wsdist's) stays on this PC since the page runs on its own one (Lot 5,
+    # 51b26474, make_package.py): the package holds atelier/calc/ and never atelier/engine/
+    check(any(n.startswith('GearSwap/data/atelier/calc/') for n in names), '%s: the package holds the engine (atelier/calc/)' % name)
+    check(not any(n.startswith('GearSwap/data/atelier/engine/') for n in names), '%s: the package leaves the engine before (atelier/engine/) out' % name)
     # the Packages page stays home: not in the zip; the page is the built one (atelier/src/), which goes on without it
     check(not any('GearSwap/' + p in names for p in make_package.PAGE_ONLY), '%s: packages.js, package_exports.js are not in a package' % name)
     page = z.read('GearSwap/' + make_package.PAGE_INDEX).decode('utf-8')

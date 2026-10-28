@@ -30,7 +30,7 @@ interface LegacyExport {
 }
 
 /** The game's state of a character (atelier/app/js/live.js S._live) */
-interface LegacyLive { ok?: boolean; job?: string; sub?: string }
+interface LegacyLive { ok?: boolean; job?: string; sub?: string; nofile?: boolean }   // nofile: the job has no file (shared/entry/no_job_file.lua)
 
 /** An order to the game under way (live.js liveBusyStart) */
 interface LegacyBusy { what: string; until: number; was: {ok: boolean; job?: string; sub?: string; link: boolean} }

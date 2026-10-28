@@ -398,7 +398,9 @@ function engineStats(s, pieces){
   if (!engineReady() || !s || !pieces || !Object.keys(pieces).length) return null;
   try {
     const ci = optContextInput(s), pc = optPieces(pieces);
-    const key = JSON.stringify([S.char, S.job, ci.sub, ci.selection, ci.abilities, ci.geoMul, ci.partyWarcry, pc]);
+    // the whole context in the key: a roll's job bonus, Crooked Cards, Fan Dance, the target... each changes the
+    // figures, and a key made of some fields kept the card still when one of the others changed (audit 2026-10-28 G)
+    const key = JSON.stringify([S.char, S.job, ci, pc]);
     if (ENG_STATS.has(key)) return ENG_STATS.get(key);
     const ctx = FFXI.opt.context(ci);
     for (const sl of Object.keys(pc)) if (sl !== 'main' && !FFXI.opt.gear(pc[sl], sl, ctx)) delete pc[sl];

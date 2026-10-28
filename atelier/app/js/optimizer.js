@@ -288,7 +288,9 @@ async function optLaunch(s, k, input, o){
   // the shuffled ones are the ones that find a set behind a step
   const outs = [], left = new Set(input.opts.fast ? starts : starts.filter(x => !/^mix\d+$/.test(x)));
   const end = () => {
-    const best = outs.reduce((a, b) => b.score > a.score ? b : a);
+    // ranked on the score before the Pet DT / Charm+ passes (opt.js runGen `rank`), which lower it on purpose
+    const rk = o => o.rank != null ? o.rank : o.score;
+    const best = outs.reduce((a, b) => rk(b) > rk(a) ? b : a);
     best.evals = outs.reduce((a, b) => a + b.evals, 0);
     OPT_WORKERS.forEach(x => x.terminate()); OPT_WORKERS = [];
     finish(best);
