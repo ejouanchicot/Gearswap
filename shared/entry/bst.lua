@@ -70,6 +70,10 @@ function get_sets()
     _G.UIConfig = UIConfig
     _G.RECAST_CONFIG = require(CharPaths.module('common', 'RECAST_CONFIG'))
     _G.BSTBeastPetData = require(CharPaths.module('job', 'BST_PET_DATA', 'BST'))
+    -- the monster correlation, said in the chat on an ecosystem change and when a pet comes out
+    -- (logic/ecosystem_manager.lua); optional: a character without the file only loses those lines
+    local eco_ok, eco_data = CharPaths.load('job', 'BST_ECOSYSTEM_DATA', 'BST')
+    _G.BSTEcosystemData = eco_ok and eco_data or nil
     _G.BSTTPConfig = require(CharPaths.module('job', 'BST_TP_CONFIG', 'BST'))
 
     include('Mote-Include.lua')

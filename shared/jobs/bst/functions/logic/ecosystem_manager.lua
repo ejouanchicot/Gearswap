@@ -51,12 +51,51 @@ function EcosystemManager.change_ecosystem()
     end, 0.1)
 
     MessageFormatter.show_bst_ecosystem_change(eco, #species_list)
+    EcosystemManager.show_correlation(eco)
 
     if _G.KeybindUI and _G.KeybindUI.update then
         _G.KeybindUI.update()
     end
 
     return eco, #species_list
+end
+
+--- The family `eco` beats and the one that beats it, from BST_ECOSYSTEM_DATA.lua (loaded by the entry into
+--- _G.BSTEcosystemData); nil when it has none (Luminian, elementals...) or the file is missing.
+--- @param eco string|nil
+--- @return string|nil strong, string|nil weak
+function EcosystemManager.correlation(eco)
+    local data = rawget(_G, 'BSTEcosystemData')
+    local row = eco and data and data.correlation_matrix and data.correlation_matrix[eco]
+    if not row or not row.strong_against or not row.weak_to then return nil end
+    return table.concat(row.strong_against, ', '), table.concat(row.weak_to, ', ')
+end
+
+--- Say in the chat what `eco` beats and what beats it (the player's ask, 2026-10-28: AioHUD shows it in its box,
+--- not every player has AioHUD). `pet`: the pet just out, named in the line.
+--- @param eco string|nil
+--- @param pet string|nil
+function EcosystemManager.show_correlation(eco, pet)
+    local strong, weak = EcosystemManager.correlation(eco)
+    if strong then MessageFormatter.show_bst_correlation(eco, strong, weak, pet) end
+end
+
+local function letters(s) return (tostring(s or ''):gsub('%W', ''):lower()) end
+
+--- The ecosystem of a pet by its name. The game writes a pet's name without its spaces ('BlackbeardRandy'),
+--- BST_PET_DATA keys keep them and add the species ('Blackbeard Randy (Tiger)'): both compared on their
+--- letters and digits, the species left out.
+--- @param name string|nil
+--- @return string|nil ecosystem, string|nil the name as the data spells it ('Blackbeard Randy')
+function EcosystemManager.ecosystem_of(name)
+    local data = rawget(_G, 'BSTBeastPetData')
+    local want = letters(name)
+    if want == '' or not data or not data.pets then return nil end
+    for key, info in pairs(data.pets) do
+        local plain = key:gsub('%s*%b()%s*$', '')
+        if letters(plain) == want then return info.ecosystem, plain end
+    end
+    return nil
 end
 
 ---   Change species (cycle through species for current ecosystem)

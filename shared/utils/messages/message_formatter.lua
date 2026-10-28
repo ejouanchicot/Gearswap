@@ -261,6 +261,7 @@ MessageFormatter.show_breakga_blocked = function(...) return get_BLMMessages().s
 -- Ecosystem Messages
 MessageFormatter.show_bst_ecosystem_change = function(...) return get_MessageBST().show_ecosystem_change(...) end
 MessageFormatter.show_bst_species_change = function(...) return get_MessageBST().show_species_change(...) end
+MessageFormatter.show_bst_correlation = function(...) return get_MessageBST().show_correlation(...) end
 
 -- Broth/Jug Messages
 MessageFormatter.show_bst_broth_equip = function(...) return get_MessageBST().show_broth_equip(...) end

@@ -79,6 +79,17 @@ return {
         color = 1
     },
 
+    -- the monster correlation (BST_ECOSYSTEM_DATA.lua): what the family beats, what beats it
+    ecosystem_correlation = {
+        template = "{gray}[{lightblue}{job}{gray}] {yellow}{ecosystem}{gray} >> strong vs {green}{strong}{gray} | weak to {red}{weak}",
+        color = 1
+    },
+
+    pet_correlation = {
+        template = "{gray}[{lightblue}{job}{gray}] {yellow}{pet}{gray} ({ecosystem}) >> strong vs {green}{strong}{gray} | weak to {red}{weak}",
+        color = 1
+    },
+
     species_change = {
         template = "{gray}[{lightblue}{job}{gray}] {gray}Species >> {yellow}{species}{gray} {gray}({green}{count} {jug_text}{gray})",
         color = 1

@@ -47,6 +47,18 @@ function MessageBST.show_ecosystem_change(ecosystem, num_species)
     })
 end
 
+--- The monster correlation of an ecosystem, or of the pet just out
+--- @param ecosystem string Its family ('Beast')
+--- @param strong string The family it beats
+--- @param weak string The family that beats it
+--- @param pet string|nil The pet's name, when it is about a pet
+--- @return void
+function MessageBST.show_correlation(ecosystem, strong, weak, pet)
+    M.job('BST', pet and 'pet_correlation' or 'ecosystem_correlation', {
+        job = get_job_tag(), ecosystem = ecosystem, strong = strong, weak = weak, pet = pet,
+    })
+end
+
 --- Display species change message
 --- @param species string Species name ("Fish", "Tiger", etc.)
 --- @param num_jugs number Number of jugs in inventory

@@ -2,7 +2,8 @@
 --- BST Ecosystem Correlation Database
 ---============================================================================
 --- Monster ecosystem correlation data (strengths and weaknesses).
---- Not loaded by any file today (no require of BST_ECOSYSTEM_DATA).
+--- Loaded by shared/entry/bst.lua into _G.BSTEcosystemData: the correlation said in the chat on an
+--- ecosystem change and when a pet comes out (shared/jobs/bst/functions/logic/ecosystem_manager.lua).
 ---
 --- @file config/bst/BST_ECOSYSTEM_DATA.lua
 --- @author ejouanchicot
