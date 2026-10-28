@@ -439,8 +439,13 @@ function KeybindManager.create(job, module)
     -- clears them. file_unload cannot tell the two apart, the addon's unload
     -- event can: GearSwap drops this handler at the next file load.
     pcall(windower.raw_register_event, 'unload', function()
-        local lines = {}
-        for key in pairs(bound_keys()) do lines[#lines + 1] = 'unbind ' .. key end
+        -- (a key //gs c tb holds is tb's: its bind stays, and lay_down sends nothing over it at the next load; unbound
+        -- here, the key did neither tb's command nor the job's after //lua reload gearswap)
+        local lines, ok_h, held = {}, pcall(temp_held)
+        held = ok_h and held or {}
+        for key in pairs(bound_keys()) do
+            if not held[key] then lines[#lines + 1] = 'unbind ' .. key end
+        end
         if #lines > 0 then windower.send_command(table.concat(lines, '; ')) end
         windower._keybind_manager_bound = {}
     end)

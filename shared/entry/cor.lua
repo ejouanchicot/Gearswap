@@ -334,8 +334,9 @@ end
 --- Called by GearSwap when this job file is unloaded (job change, reload).
 --- Removes roll/party tracking, reloads the rolltracker addon, cancels
 --- pending job-change operations and unbinds keys.
---- @param next_file string|nil Job file GearSwap loads next (engine
----   refresh.lua); nil when the GearSwap addon itself is unloaded
+--- @param next_file string|nil The job file being unloaded, as GearSwap passes it (refresh.lua
+---   user_pcall2('file_unload', current_file)); nil when the GearSwap addon itself is unloaded
+---   (gearswap.lua): only that nil is read here
 --- @return void
 function file_unload(next_file)
     -- Cleanup roll detection handler (PartyTracker.init_roll_listener, from get_sets)

@@ -25,7 +25,8 @@ local UtsusemiShadows = {}
 
 -- Copy Image, Copy Image (2), (3), (4+)
 local SHADOW_BUFF_IDS = {66, 444, 445, 446}
-local CANCEL_DELAY, MARGIN, EARLIEST = 2.3, 0.8, 0.2
+-- (EARLIEST 0.5: a cancel at once left no shadow at all when the cast was then interrupted)
+local CANCEL_DELAY, MARGIN, EARLIEST = 2.3, 0.8, 0.5
 
 --- Seconds into the cast to cancel the shadows: before its end by MARGIN, never
 --- later than CANCEL_DELAY, never before EARLIEST.

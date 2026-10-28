@@ -3,7 +3,7 @@
 ---============================================================================
 --- The shadows are cancelled during Utsusemi: Ichi's cast, before its end: from
 --- the precast's cast time, at most 2.3 s, 0.8 s before the end, never before
---- 0.2 s; 2.3 s when no cast time is known; nothing for another spell.
+--- 0.5 s; 2.3 s when no cast time is known; nothing for another spell.
 ---
 --- Run from data/: lua5.1 scripts/atelier/utsusemi_shadows_test.lua
 ---
@@ -31,7 +31,7 @@ end
 
 check('no Fast Cast (4 s): 2.3 s as before', first_wait({id = 338, seconds = 4.0}), '2.3')
 check('50 % Fast Cast (2 s): 1.2 s, before the end', first_wait({id = 338, seconds = 2.0}), '1.2')
-check('80 % Fast Cast (0.8 s): at the earliest', first_wait({id = 338, seconds = 0.8}), '0.2')
+check('80 % Fast Cast (0.8 s): at the earliest', first_wait({id = 338, seconds = 0.8}), '0.5')
 check('cast time of another spell: 2.3 s', first_wait({id = 339, seconds = 1.0}), '2.3')
 check('no cast time: 2.3 s', first_wait(nil), '2.3')
 check('four buffs cancelled', (function() first_wait(nil) return #sent end)(), 4)

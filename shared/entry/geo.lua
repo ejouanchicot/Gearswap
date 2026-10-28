@@ -247,8 +247,9 @@ end
 
 --- Called by GearSwap when this job file is unloaded (job change, reload).
 --- Cancels pending job-change operations, unloads PetTP and unbinds the job keys.
---- @param next_file string|nil Job file GearSwap loads next (engine
----   refresh.lua); nil when the GearSwap addon itself is unloaded
+--- @param next_file string|nil The job file being unloaded, as GearSwap passes it (refresh.lua
+---   user_pcall2('file_unload', current_file)); nil when the GearSwap addon itself is unloaded
+---   (gearswap.lua): only that nil is read here
 --- @return void
 function file_unload(next_file)
     -- Unload PetTP addon (external addon, must be unloaded manually)
