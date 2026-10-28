@@ -10,7 +10,7 @@
 Object.assign(T.fr, {mcGrp_enhancing: 'Renfort', mcGrp_enfeebling: 'Affaiblissement', mcGrp_elemental: 'Élémentaire', mcGrp_dark: 'Ténèbres', mcGrp_cure: 'Soin', mcGrp_divine: 'Divine',
   mcGrp_song: 'Chants', mcGrp_blue: 'Magie bleue', mcGrp_ninjutsu: 'Ninjutsu', mcGrp_geomancy: 'Géomancie', mcGrp_summoning: 'Invocation', mcGrp_enmity: 'Inimitié', mcGrp_other: 'Autres sorts',
   lpFoldTip: 'Ouvre ou ferme toutes les catégories et leurs groupes en une fois', lpModeTag: 'mode', lpPinned: 'Épinglés', lpPin: 'Épingler en haut de la liste', lpUnpin: 'Retirer des épinglés', lpGroup: 'Ranger dans un groupe',
-  lpMenu: 'Options de la liste', lpOpenAll: 'Tout déplier', lpCloseAll: 'Tout replier', lpPaths: 'Afficher les chemins', lpPathsTip: 'Le nom de chaque set dans ton fichier (sets.engaged.Laphria…)',
+  lpOpenAll: 'Tout déplier', lpCloseAll: 'Tout replier', lpPaths: 'Afficher les chemins', lpPathsTip: 'Le nom de chaque set dans ton fichier (sets.engaged.Laphria…)',
   lpAll: 'Afficher les sets d’un autre sub', lpNewGroup: 'Nouveau groupe…', lpGroupName: 'Nom du groupe', lpRename: 'Renommer', lpDelete: 'Supprimer ce groupe (les sets restent)',
   lpHide: 'Masquer cette catégorie', lpHidden: 'Catégories masquées', lpShow: 'réafficher', lpOut: 'Retirer de ce groupe', lpEmptyGroup: 'Vide : passe la souris sur un set et clique ▤ pour le ranger ici.',
   lpMissing: 'Il manque au moins une pièce de ce set dans tes sacs', lpNoGroup: 'Aucun groupe encore.', lpSaveFile: 'Enregistrer dans tes fichiers', lpBrowserOnly: 'Rangement gardé dans ce navigateur seulement.',
@@ -19,7 +19,7 @@ Object.assign(T.fr, {mcGrp_enhancing: 'Renfort', mcGrp_enfeebling: 'Affaiblissem
 Object.assign(T.en, {mcGrp_enhancing: 'Enhancing', mcGrp_enfeebling: 'Enfeebling', mcGrp_elemental: 'Elemental', mcGrp_dark: 'Dark', mcGrp_cure: 'Healing', mcGrp_divine: 'Divine',
   mcGrp_song: 'Songs', mcGrp_blue: 'Blue magic', mcGrp_ninjutsu: 'Ninjutsu', mcGrp_geomancy: 'Geomancy', mcGrp_summoning: 'Summoning', mcGrp_enmity: 'Enmity', mcGrp_other: 'Other spells',
   lpFoldTip: 'Opens or closes every category and its groups at once', lpModeTag: 'mode', lpPinned: 'Pinned', lpPin: 'Pin to the top of the list', lpUnpin: 'Unpin', lpGroup: 'Put in a group',
-  lpMenu: 'List options', lpOpenAll: 'Open all', lpCloseAll: 'Close all', lpPaths: 'Show the paths', lpPathsTip: 'Each set’s name in your file (sets.engaged.Laphria…)',
+  lpOpenAll: 'Open all', lpCloseAll: 'Close all', lpPaths: 'Show the paths', lpPathsTip: 'Each set’s name in your file (sets.engaged.Laphria…)',
   lpAll: 'Show another subjob’s sets', lpNewGroup: 'New group…', lpGroupName: 'Group name', lpRename: 'Rename', lpDelete: 'Delete this group (its sets stay)',
   lpHide: 'Hide this category', lpHidden: 'Hidden categories', lpShow: 'show again', lpOut: 'Take out of this group', lpEmptyGroup: 'Empty: hover a set and click ▤ to put it here.',
   lpMissing: 'At least one piece of this set is not in your bags', lpNoGroup: 'No group yet.', lpSaveFile: 'Save to your files', lpBrowserOnly: 'Arrangement kept in this browser only.',
@@ -163,8 +163,6 @@ function listFamHead(fam, n, here, open){
 }
 
 /* ---- the top of the list and its menu: drawn by atelier/src/screens/sets/ListHead.svelte (setlist.ts listHead) ---- */
-// The history of what the page wrote, in the top bar beside the files it concerns (it was a link of the list)
-const historyBadge = () => S.char && S.job ? `<button class="live act" data-pushhist title="${esc(t('lpHistoryTip'))}">⟲<span class="lbl"> ${esc(t('lpHistory'))}</span></button>` : '';
 
 /* ---- clicks, names typed, the width ---- */
 function listApplyName(what, value){

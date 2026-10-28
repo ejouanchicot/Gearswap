@@ -5,7 +5,7 @@
 // set worn in its place today, nothing, or what you wear in game). The game writes it after its parent and its base
 // (set_push.lua create_new: same preview, backup, history and undo as a push). An export with no catalog (written before
 // 2026-10-06) keeps the weaponskill list (push.js addWsList).
-// (loaded by atelier/index.html after push.js: see the list there; the window is drawn by atelier/src/screens/dialogs/addset.ts)
+// (loaded after push.js: see atelier/src/legacy/files.ts; the window is drawn by atelier/src/screens/dialogs/addset.ts)
 
 Object.assign(T.fr, {
   addSearch: 'Chercher un set, un sort, une ability…', addParentFirst: 'Crée d’abord {p} : ce set va dedans.',

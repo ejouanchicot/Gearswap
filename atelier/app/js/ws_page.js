@@ -1,5 +1,5 @@
 // GearSwap Atelier · ws_page.js: TP bonus, the weaponskill page, the engaged / Jump round
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 // The figures of an engaged set's round, worse to better (low: smaller is better), in the search window (optimizer.js)
 const ENG_COLS = {
   tp_real: {key: 'rdvReal', get: r => r.real ? r.real.time : r.time, fmt: v => v.toFixed(2) + ' s', low: true},

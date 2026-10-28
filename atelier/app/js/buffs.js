@@ -1,5 +1,5 @@
 // GearSwap Atelier · buffs.js: the buffs' tables, the support profiles, what follows the set opened
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- buffs and conditions (atelier/engine/buffs.js and its catalogue, Guide_Paladin 01_prologue, 03_magic, 03_job_ability) ---- */
 // Foods: flat stats; atkf = Attack added after the Attack % (the engine's "Food Attack"); a [%, cap] pair is a % of the stat with its cap
 const FOODS = {
@@ -269,7 +269,7 @@ const JAS = {
   'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
   'Rampart': {job: 'PLD', lvl: 62, fx: () => ({dmgmul: .75})},
   'Crusade': {job: ['PLD', 'RUN'], lvl: 88, fx: () => ({enmity: 30})},
-  // the shield's block (Guide_Paladin: Palisade +30 % block rate, Reprisal the block rate x1.5, x3 with Priwen: tankHTML)
+  // the shield's block (Guide_Paladin: Palisade +30 % block rate, Reprisal the block rate x1.5, x3 with Priwen: figures.ts tankBox)
   'Palisade': {job: 'PLD', lvl: 95, mainOnly: true, fx: () => ({block: 30})},
   'Majesty': {job: 'PLD', lvl: 70, mainOnly: true, fx: () => ({cure2: 25})},
   'Reprisal': {job: 'PLD', lvl: 61, fx: () => ({blockmul: 1.5})},

@@ -3,7 +3,7 @@
 // then what the job does by itself, [title, what it means]. The texts are the French of the "Overview" of
 // docs/user/jobs/<job>/README.md (the English shown by the page is taken from those pages by
 // scripts/atelier/build_job_guides.py): when a job's page changes, its entry here follows.
-// (loaded by atelier/index.html before modules.js)
+// (loaded before modules.js: see atelier/src/legacy/files.ts)
 
 const JOB_GUIDE_FR = {
   BLM: ['BLM choisit ses nukes par des modes plutôt que par des macros : un élément par « emplacement » (principal ou secondaire, lumière ou ténèbres, cible unique ou zone) et un tier, puis une commande lance le résultat sur la cible que tu choisis.', [

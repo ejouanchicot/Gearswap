@@ -2,7 +2,7 @@
 // each entry a tile that is dragged to its place (the order of a list is the order GearSwap uses), an item with the
 // game's own icon, a new item picked in a window of icons, a bag picked among the bags that exist.
 // The usable items (medicine, food, tools) come from usables_data.js; equipment from the page's catalog and exports.
-// (loaded by atelier/index.html before modules.js)
+// (loaded before modules.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {miAdd: '+ Ajouter un objet', miAddTip: 'Ouvre la liste des objets du jeu, avec leurs icônes : clique sur celui à ajouter.',
   miTitle: 'Ajouter un objet', miSearch: 'Chercher parmi {n} objets…', miUsed: 'Déjà dans tes listes', miFound: 'Objets du jeu', miMore: 'Tape quelques lettres pour chercher dans tous les objets utilisables du jeu.',

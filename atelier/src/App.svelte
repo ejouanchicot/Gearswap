@@ -1,8 +1,8 @@
 <!--
   GearSwap Atelier · the application: the top bar and the job's sections (Svelte, screens/topbar), the screens moved to
-  Svelte (screens/config: the job's settings, screens/perso: My character, screens/combat: Buffs & target, screens/sets: Sets, screens/home: the home page and a job with no export, screens/settings: the page's Settings, screens/packages: the Packages page, screens/update: the update screen, screens/sim: Simulate) beside the old page's part of the view (#legacyview), and the old page
-  while its screens move (notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.md): its frame (the windows, the
-  tooltip), its styles and scripts, loaded in their order (legacy/load.ts).
+  Svelte (screens/config: the job's settings, screens/perso: My character, screens/combat: Buffs & target, screens/sets: Sets, screens/home: the home page and a job with no export, screens/settings: the page's Settings, screens/packages: the Packages page, screens/update: the update screen, screens/sim: Simulate), and what is left of the old page
+  (atelier/app, its state, data and clicks; atelier/src/README.md): its frame (the windows, the tooltip), its styles and
+  scripts, loaded in their order (legacy/load.ts, legacy/files.ts).
 
   @file    atelier/src/App.svelte
   @author  ejouanchicot

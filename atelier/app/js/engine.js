@@ -1,5 +1,5 @@
 // GearSwap Atelier · engine.js: the damage engine and its workers, a set's context, merits, accuracy, the character's stats
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- the gear catalogue (atelier/gear/: items.js, augments_ranked.js from LandSandBoat's augment bundles, the
    Ambuscade capes capes.js, the augment reader augments_parse.js) ---- */
 // The gear catalogue, the optimizer (atelier/opt.js) and our engine (atelier/calc/): loaded once, run into window.FFXI.
@@ -300,10 +300,6 @@ function tpBase(d){
   return 173 + (d - 900) * 28 / 360;
 }
 const TWO_HANDED = /great|scythe|polearm|staff/i;
-// The tanking and attack boxes are worked out by the Svelte application (atelier/src/screens/sets/figures.ts), drawn
-// here as HTML for the screens of the old page that still show them (the buffs window, My character's cards)
-const tankHTML = r => ATELIER_FIGURES.boxHtml(ATELIER_FIGURES.tankBox(r));
-function offenseHTML(r, s){ const b = ATELIER_FIGURES.offenseBox(r, s); return b ? ATELIER_FIGURES.boxHtml(b) : ''; }
 
 /* ---- the character's real stats with a set ---- */
 // The stats measured in game by //gs c atelier (this subjob's export, else another one's)

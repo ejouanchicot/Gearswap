@@ -4,20 +4,19 @@
 // written over it, so the page explains what the file explains, in the file's own words.
 // A setting changed here waits (S._modEdits) until "Save": the page then puts the new value in the file's text, at the
 // place the old one was, and the game writes the file (a copy first, the change in the history: /config_write).
-// (loaded by atelier/index.html after layout2.js)
+// (loaded after layout2.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {sectionsModules: 'Modules', ttTab_modules: 'Les réglages de chaque module de GearSwap (Auto Medicine, Refill, Dual-box, HUD…) : ceux du perso et ceux de ce job.',
   modHint: 'Vue avancée : chaque fichier de réglages en entier. Pour les options courantes, reviens sur « Options ».',
-  modRead: 'Le jeu n’est pas connecté : lecture seule. Lance GearSwap sur ce perso pour changer un réglage ici.',
-  modDirty: '{n} réglage(s) changé(s), pas encore écrit(s).', modSave: 'Enregistrer', modUndo: 'Annuler',
+  modSave: 'Enregistrer',
   modSaved: 'Écrit dans {f}. Une copie est gardée : l’historique (en haut) peut annuler. GearSwap se recharge.',
   modNone: 'Cet export ne contient pas encore les fichiers de réglages : clique « Relire » en haut de la page, ou charge ce job en jeu.',
-  modJob: 'Ce job ({j})', modChar: 'Tout le perso', modInFile: 'Ce réglage est du code : il se change dans le fichier', modAuto: 'Auto (lu en jeu)', modForce: 'ou forcer…', modAdd: '+ ajouter', modDel: 'Retirer {v}',
+  modInFile: 'Ce réglage est du code : il se change dans le fichier', modAuto: 'Auto (lu en jeu)', modForce: 'ou forcer…', modAdd: '+ ajouter', modDel: 'Retirer {v}',
   modEmpty: 'Aucun réglage simple dans ce fichier : il se change à la main.', modBad: 'Valeur refusée : {v}', modOn: 'Allumé', modOff: 'Éteint',
   modErr_changed: 'Le fichier a changé depuis la lecture : clique « Relire », puis recommence.', modErr_syntax: 'Le fichier ne se lirait plus avec cette valeur : rien n’a été écrit.', modErr_code: 'Le jeu n’accepte de changer que des valeurs (texte, nombre, oui/non, liste) : ce changement touchait au code du fichier, rien n’a été écrit.',
   modErr_file: 'Ce fichier ne peut pas être écrit depuis la page.', modErr_live: 'Le jeu n’a pas répondu : rien n’a été écrit.', modErr_other: 'Rien n’a été écrit ({e}).',
-  ttGrpOpen: 'Déplier ce groupe.', ttGrpFold: 'Replier ce groupe.', modG_combat: 'Combat', modG_display: 'Affichage', modG_dualbox: 'Dual-box', modG_gear: 'Équipement', modG_inventory: 'Inventaire', modG_keys: 'Touches',
-  modG_tools: 'Outils', modG_travel: 'Déplacements', modG_: 'Autres', histKind_config: 'réglage', modSettings: '{n} réglage(s)',
+  ttGrpOpen: 'Déplier ce groupe.', ttGrpFold: 'Replier ce groupe.',
+  histKind_config: 'réglage', modSettings: '{n} réglage(s)',
   mcSimple: 'Options', mcSimpleTip: 'Les options qu’on a envie de régler, rangées par module et expliquées.', mcFiles: 'Avancé', mcFilesTip: 'Pour aller plus loin : chaque fichier de réglages en entier, avec tout ce qu’il contient.',
   modManual: 'Le mode d’emploi écrit dans le fichier (en anglais)', modPartKnown: 'Les options courantes', modPartRest: 'Le reste du fichier', modPartAll: 'Les réglages du fichier',
   modPartRestWhy: '', modNamed: 'Des entrées nommées : elles s’ajoutent dans le fichier', modPartAdv: 'Réglages écrits comme du code ({n}) : ils se changent dans le fichier, pas ici',
@@ -29,7 +28,7 @@ Object.assign(T.fr, {sectionsModules: 'Modules', ttTab_modules: 'Les réglages d
   ttModChoose: 'Choisir « {v} ». Rien n’est écrit avant « Enregistrer ».', ttModChosen: '« {v} » est le choix actuel.',
   ttModAuto: 'Laisser GearSwap lire cette valeur en jeu : rien à tenir à jour toi-même.', ttModForce: 'Pour imposer une valeur à la place de celle lue en jeu : tape-la, puis Entrée. Vide : retour à Auto.',
   ttModNum: 'Tape le nouveau nombre, puis Entrée.', ttModText: 'Tape la nouvelle valeur, puis Entrée. Les noms s’écrivent comme dans le jeu.',
-  ttModChip: 'N° {n} sur {m} : l’ordre de la liste est l’ordre utilisé. La croix le retire.', ttModAdd: 'Tape un nom comme dans le jeu, puis Entrée : il s’ajoute à la fin de la liste.',
+  ttModAdd: 'Tape un nom comme dans le jeu, puis Entrée : il s’ajoute à la fin de la liste.',
   ttModSave: 'Écrit les changements dans tes fichiers de réglages. Une copie de chaque fichier est gardée, l’Historique (en haut) peut annuler, et GearSwap se recharge pour les prendre.',
   ttModUndo: 'Oublie les changements en attente. Tes fichiers n’ont pas été touchés.',
   ttScopeAll: 'Vaut pour tous les jobs de {c}. Tes autres persos ont chacun leur propre réglage.',
@@ -37,23 +36,20 @@ Object.assign(T.fr, {sectionsModules: 'Modules', ttTab_modules: 'Les réglages d
   ttScopeWhenJob: 'Cette liste ne sert que quand {c} est {j}. Chaque job a la sienne.',
   ttScopeWhenSub: 'Cette liste ne sert qu’avec le sub /{s}, quel que soit le job principal de {c}.',
   ttScopeOnly: 'Réglage de {c}, mais il n’a d’effet que quand tu joues {o}.',
-  ttFamNone: 'Aucune option de cette famille pour {j}.',
   mcIntro: 'Présentation', mcIntroSub: 'ce que GearSwap fait en {j}', mcIntroTitle: 'GearSwap en {j} : ce qu’il fait pour toi', mcIntroJob: 'Sur ce job ({j})',
   mcIntroWhere: 'Pour t’en servir :', mcIntroOwn: 'les options de {j} ({n})', mcIntroAll: 'Sur tous tes jobs', mcIntroAllWhy: 'Ces modules marchent quel que soit le job, rangés par ce à quoi ils servent. Clique sur l’un d’eux pour voir ce qu’il fait et le régler.',
-  mcInGame: 'En jeu : ', ttIntro: 'Ce que ce GearSwap fait tout seul en {j}, et les modules communs à tous les jobs. À lire en premier.', ttIntroGo: 'Voir ce que fait « {f} » et ses options.',
-  mcWhere: 'Écrit dans {f} ({k})', mcNoJob: '{j} n’a pas d’option simple de plus : ses touches, modes et interrupteurs sont dans les autres parties de cet onglet.'});
+  mcInGame: 'En jeu : ', ttIntro: 'Ce que ce GearSwap fait tout seul en {j}, et les modules communs à tous les jobs. À lire en premier.', ttIntroGo: 'Voir ce que fait « {f} » et ses options.'});
 Object.assign(T.en, {sectionsModules: 'Modules', ttTab_modules: 'The settings of each GearSwap module (Auto Medicine, Refill, Dual-box, HUD…): the character’s and this job’s.',
   modHint: 'Advanced view: each settings file whole. For the usual options, go back to "Options".',
-  modRead: 'The game is not connected: read only. Start GearSwap on this character to change a setting here.',
-  modDirty: '{n} setting(s) changed, not written yet.', modSave: 'Save', modUndo: 'Undo',
+  modSave: 'Save',
   modSaved: 'Written in {f}. A copy is kept: the history (top bar) can undo it. GearSwap reloads.',
   modNone: 'This export does not hold the settings files yet: click "Reread" at the top of the page, or load this job in game.',
-  modJob: 'This job ({j})', modChar: 'The whole character', modInFile: 'This setting is code: it is changed in the file', modAuto: 'Auto (read in game)', modForce: 'or force…', modAdd: '+ add', modDel: 'Remove {v}',
+  modInFile: 'This setting is code: it is changed in the file', modAuto: 'Auto (read in game)', modForce: 'or force…', modAdd: '+ add', modDel: 'Remove {v}',
   modEmpty: 'No simple setting in this file: it is changed by hand.', modBad: 'Value refused: {v}', modOn: 'On', modOff: 'Off',
   modErr_changed: 'The file changed since it was read: click "Reread", then do it again.', modErr_syntax: 'The file would no longer read with this value: nothing was written.', modErr_code: 'The game only accepts values being changed (text, number, yes/no, list): this change touched the file’s code, nothing was written.',
   modErr_file: 'This file cannot be written from the page.', modErr_live: 'The game did not answer: nothing was written.', modErr_other: 'Nothing was written ({e}).',
-  ttGrpOpen: 'Unfold this group.', ttGrpFold: 'Fold this group.', modG_combat: 'Combat', modG_display: 'Display', modG_dualbox: 'Dual-box', modG_gear: 'Gear', modG_inventory: 'Inventory', modG_keys: 'Keys',
-  modG_tools: 'Tools', modG_travel: 'Travel', modG_: 'Others', histKind_config: 'setting', modSettings: '{n} setting(s)',
+  ttGrpOpen: 'Unfold this group.', ttGrpFold: 'Fold this group.',
+  histKind_config: 'setting', modSettings: '{n} setting(s)',
   mcSimple: 'Options', mcSimpleTip: 'The options one wants to set, by module, explained.', mcFiles: 'Advanced', mcFilesTip: 'To go further: each settings file whole, with everything it holds.',
   modManual: 'The manual written in the file', modPartKnown: 'The usual options', modPartRest: 'The rest of the file', modPartAll: 'The file’s settings',
   modPartRestWhy: '', modNamed: 'Named entries: added in the file', modPartAdv: 'Settings written as code ({n}): changed in the file, not here',
@@ -65,7 +61,7 @@ Object.assign(T.en, {sectionsModules: 'Modules', ttTab_modules: 'The settings of
   ttModChoose: 'Choose "{v}". Nothing is written before "Save".', ttModChosen: '"{v}" is the current choice.',
   ttModAuto: 'Let GearSwap read this value in game: nothing to keep up to date yourself.', ttModForce: 'To force a value in place of the one read in game: type it, then Enter. Empty: back to Auto.',
   ttModNum: 'Type the new number, then Enter.', ttModText: 'Type the new value, then Enter. Names are written as in the game.',
-  ttModChip: 'No. {n} of {m}: the order of the list is the order used. The cross removes it.', ttModAdd: 'Type a name as in the game, then Enter: it is added at the end of the list.',
+  ttModAdd: 'Type a name as in the game, then Enter: it is added at the end of the list.',
   ttModSave: 'Writes the changes into your settings files. A copy of each file is kept, the History (top bar) can undo, and GearSwap reloads to take them.',
   ttModUndo: 'Forgets the waiting changes. Your files were not touched.',
   ttScopeAll: 'Holds for every job of {c}. Each of your other characters has its own setting.',
@@ -73,11 +69,9 @@ Object.assign(T.en, {sectionsModules: 'Modules', ttTab_modules: 'The settings of
   ttScopeWhenJob: 'This list is used only when {c} is {j}. Each job has its own.',
   ttScopeWhenSub: 'This list is used only with the /{s} subjob, whatever the main job of {c}.',
   ttScopeOnly: 'A setting of {c}, but it only has an effect when you play {o}.',
-  ttFamNone: 'No option of this family for {j}.',
   mcIntro: 'Presentation', mcIntroSub: 'what GearSwap does on {j}', mcIntroTitle: 'GearSwap on {j}: what it does for you', mcIntroJob: 'On this job ({j})',
   mcIntroWhere: 'To use it:', mcIntroOwn: 'the options of {j} ({n})', mcIntroAll: 'On all your jobs', mcIntroAllWhy: 'These modules work whatever the job, ranged by what they are for. Click one to see what it does and set it.',
-  mcInGame: 'In game: ', ttIntro: 'What this GearSwap does by itself on {j}, and the modules shared by every job. Read this first.', ttIntroGo: 'See what "{f}" does and its options.',
-  mcWhere: 'Written in {f} ({k})', mcNoJob: '{j} has no other simple option: its keys, modes and switches are in the other parts of this tab.'});
+  mcInGame: 'In game: ', ttIntro: 'What this GearSwap does by itself on {j}, and the modules shared by every job. Read this first.', ttIntroGo: 'See what "{f}" does and its options.'});
 
 /* ---- reading a Lua settings file: its tokens, then its values with the comments around them ---- */
 // A token: {t: 'com'|'str'|'num'|'name'|'op', v, a, b (its place in the text), nl (line breaks before it)}
@@ -292,8 +286,6 @@ function modOptions(x){
 }
 // A setting's name as words: auto_cure_silence -> Auto cure silence (the file's own name stays beside it, small)
 const modName = x => x.key == null ? '#' + x.index : /[_a-z]/.test(x.key) && !/\s/.test(x.key) ? x.key.replace(/[_.]+/g, ' ').replace(/^./, c => c.toUpperCase()) : x.key;
-// What a control says under the pointer: what a click or a typed value does; read only, why
-const modTip = (off, key, v) => `title="${esc(off ? t('ttModRead') : t(key, v))}"`;
 // What a file is, for the player: its French name and purpose (module_catalog.js MOD_FILE_FR), else the file's own header
 function modFileInfo(f){
   const p = modParsed(f), base = f.file.split('/').pop(), job = (base.match(/^([A-Z]{3})_/) || [])[1] || '';

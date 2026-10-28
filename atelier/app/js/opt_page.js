@@ -6,7 +6,7 @@
 // The page itself is drawn by the Svelte application (atelier/src/screens/optimizer/optpage.ts): what stays here is
 // what its figures are (opFigures, opRows, the objectives, the whole fight) and the blocks it shares with the stats
 // optimizer (stat_opt.js: the limits, the search's tabs, the pieces changed).
-// (loaded by atelier.html after ws_page.js: see the list there)
+// (loaded after ws_page.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {optSearch_fast: 'Recherche rapide', optSearch_classic: 'Recherche classique', optSearchTip: 'Rapide : garde en mémoire ce qui est déjà calculé et écarte les pièces qui ne peuvent jamais gagner (une autre pièce du même emplacement fait au moins aussi bien sur tout ce que l’objectif compte). Classique : l’ancienne recherche, pour comparer.',
   opHow: 'Méthode', optOpenBtn: 'Optimiser ce set →', orShow: 'Voir la recherche',

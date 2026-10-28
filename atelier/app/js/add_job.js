@@ -3,7 +3,7 @@
 // templates, through the live link (shared/utils/atelier/job_adder.lua, POST /addjob): its entry, its settings, its
 // sets without pieces and character_db.lua, nothing written over. The player then changes to it in game, and it
 // comes here with its first export.
-// (loaded by atelier/index.html after packages.js: see atelier/src/legacy/files.ts)
+// (loaded after packages.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {ajAdd: '+ Ajouter un job', ajAddTip: 'Crée un job de plus pour {c} à partir des modèles : ses réglages et ses sets (vides, à remplir ici). Rien d’existant n’est touché.',
   ajNoLive: 'Le jeu doit tourner sur {c} : c’est GearSwap qui crée les fichiers.', ajTitle: 'Ajouter un job à {c}',

@@ -1,5 +1,5 @@
 // GearSwap Atelier · events.js: clicks, menus, keyboard, the hover card, start-up
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 // the weapon groups of the weaponskill list stay as opened (toggle does not bubble: caught on the way down)
 document.addEventListener('toggle', e => { const g = e.target && e.target.dataset && e.target.dataset.wsgroup;
   if (g) { S._wsOpen = S._wsOpen || {}; S._wsOpen[g] = e.target.open; }
@@ -13,7 +13,7 @@ document.addEventListener('toggle', e => { const g = e.target && e.target.datase
 document.addEventListener('click', e => {
   // a click anywhere else closes the slot's menu
   if (!e.target.closest('#slotmenu')) closeSlotMenu();
-  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-bfold],[data-pbopen],[data-pbtab]'); if (!b) return; const d = b.dataset;
+  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-pbtab]'); if (!b) return; const d = b.dataset;
   if (d.slotact) { slotMenuAct(d.slotact, +d.card, d.slot); return; }
   if (d.unexclude) { setExcluded(d.unexclude, false); render(); return; }
   if ('listall' in d) { S._listAll = !S._listAll; render(); return; }
@@ -68,7 +68,6 @@ document.addEventListener('click', e => {
   if ('orshow' in d) { searchShow(); return; }
   if (d.help) { S._help = S._help === d.help ? null : d.help; render(); return; }
   if ('optall' in d) { optAllOpen(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
-  if ('oastop' in d) { optAllStop(); return; }
   if ('oago' in d) { optAllGo(); return; }
   if (d.oasel) { optAllToggle(d.oasel); return; }
   if ('tiercost' in d) { openTierCost(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
@@ -82,7 +81,7 @@ document.addEventListener('click', e => {
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
   if (d.merittab) { S.meritTab = d.merittab; save(); render(); return; }
-  if (d.pbadd || d.pbdel || d.pbopen || d.pbset || d.pbsong || d.pbroll || d.pbgeomode || d.pbtab || d.pbpick || d.pbchoose != null || d.pbaddopen != null || 'pbsavego' in d) { pbClick(d); return; }
+  if (d.pbadd || d.pbdel || d.pbtab || d.pbpick || d.pbchoose != null || d.pbaddopen != null) { pbClick(d); return; }
   if ('porterwrite' in d) { porterWrite(); return; }
   if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
     delete by[s.path]; S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save(); render(); return; }
@@ -157,16 +156,11 @@ document.addEventListener('click', e => {
   if (d.stattab) { S._statTab = d.stattab; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if (d.fold) { S.boxOpen[d.fold] = !S.boxOpen[d.fold]; render(); return; }
-  if (d.marcato != null) { const b = buffState();
-    if (d.marcato === '' || b.marcato === +d.marcato) { if (b.marcato != null) delete b.marcato; else b.marcato = 0; } else b.marcato = +d.marcato;
-    save(); render(); return; }
   if (d.savagery != null) { const b = buffState(); b[d.wparty ? 'pSavagery' : 'savagery'] = +d.savagery; save(); render(); return; }
   if ('agoge' in d) { const b = buffState(), k = d.wparty ? 'pNoAgoge' : 'noAgoge'; if (b[k]) delete b[k]; else b[k] = true; save(); render(); return; }
   if (d.poff) { const b = buffState(); b.off = Object.assign({}, b.off); b.off[d.poff] = !b.off[d.poff]; if (!b.off[d.poff]) delete b.off[d.poff]; save(); render(); return; }
   if (d.rolljob != null) { const b = buffState(), k = 'roll' + d.rolljob + 'job'; if (b[k]) delete b[k]; else b[k] = true; save(); render(); return; }
   if (d.rollcc != null) { const b = buffState(); if (b.rollCC != null && +b.rollCC === +d.rollcc) delete b.rollCC; else b.rollCC = +d.rollcc; save(); render(); return; }
-  if (d.bfold) { S.bFold = Object.assign({}, S.bFold); S.bFold[d.bfold] = !S.bFold[d.bfold]; save(); render(); return; }
-  if (d.ptab) { S._pTab = d.ptab; render(); return; }
   if (d.foetab) { S._foeTab = d.foetab; render(); return; }
   if (d.foeseg) { const b = buffState(); if (b[d.foeseg] === d.v) delete b[d.foeseg]; else b[d.foeseg] = d.v; save(); render(); return; }
   if (d.foeja) { const b = buffState(), l = new Set(b.foeJa || []);

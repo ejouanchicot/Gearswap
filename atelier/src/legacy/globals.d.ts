@@ -136,7 +136,6 @@ interface LegacyEdit { v: unknown; before: string; after: string; src: string }
 declare const MOD_CATALOG: LegacyFamily[];
 declare const MOD_GROUPS: LegacyGroup[];
 declare function modShown(d: LegacyExport): LegacyConfigFile;
-declare function modCount(): number;
 declare function modParsed(f: LegacyConfigFile): LegacyParsed;
 declare function modEdits(file: string): Record<string, LegacyEdit | undefined>;
 declare function modCanWrite(f: LegacyConfigFile): boolean;
@@ -259,8 +258,6 @@ declare function buffKey(): string;
 declare function buffTier(): string;
 declare function buffTotals(): LegacyAny;
 declare function pbShown(b: LegacyAny): string[];
-declare function pbYouBody(b: LegacyAny): string;
-declare function pbBody(job: string, b: LegacyAny, shown: string[]): string;
 declare function pbJaJobs(): Map<string, LegacyAny[]>;
 declare function pbImpactRows(s: LegacyAny): LegacyAny[];
 declare const PB_JOBS: LegacyAny[];
@@ -310,7 +307,7 @@ declare function isNukeSet(path: string): boolean;
 declare function statSet(s: LegacyAny): boolean;
 declare function optPageOpen(s: LegacyAny): boolean;
 declare function ui2Wants(s: LegacyAny): string;
-/* ---- the figures of a set (engine.js, fight_stats.js, stat_opt.js, luopan.js, stats.js), loosely typed ---- */
+/* ---- the figures of a set (engine.js, fight_stats.js, stat_opt.js, stat_figures.js, luopan.js, stats.js), loosely typed ---- */
 declare function charStats(s: LegacyAny, pieces?: LegacyAny): LegacyAny;
 declare function statHelp(label: string, detail?: string): string;
 declare function traitOf(stat: string, c: LegacyAny): number;
@@ -321,7 +318,6 @@ declare function tpBase(delay: number): number;
 declare const TWO_HANDED: RegExp;
 declare const ENEMIES: Record<string, LegacyAny>;
 declare function signed(n: number): string;
-interface Window { ATELIER_FIGURES?: {tankBox: unknown; offenseBox: unknown; boxHtml: unknown} }
 /* ---- the situations and profiles (profiles.js, buffs.js), loosely typed ---- */
 declare const TIERS: string[];
 declare function tierBuffsOf(tier: string): LegacyAny;

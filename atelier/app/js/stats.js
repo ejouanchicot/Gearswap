@@ -1,5 +1,5 @@
 // GearSwap Atelier · stats.js: set families, a piece's stats (descriptions, augments, ranks, capes), the stats shown
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- set grouping ---- */
 /* ---- item stats: read from the game's descriptions and the set's augments ---- */
 // key: [group, French label, English label, cap]. A stat not listed here is still
@@ -421,11 +421,6 @@ const baseKey = key => key.endsWith('%') ? key.slice(0, -1) : key;
 const statLabel = (key, e) => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][S.lang === 'fr' ? 1 : 2] + (key.endsWith('%') ? ' %' : '') : e.label;
 const statGroup = key => STAT_DEF[baseKey(key)] ? STAT_DEF[baseKey(key)][0] : key.startsWith('skill:') ? 'skill' : 'other';
 const fmtStat = e => (e.v > 0 ? '+' : e.v < 0 ? '−' : '') + Math.abs(e.v) + (e.unit ? ' %' : '');
-// One stat row, three aligned columns: name, value, then the difference or the cap. Its tooltip: what the stat does
-// (stat_help.js), then `tip`, how this set gets its figure
-const statTitle = (label, tip) => { const text = statHelp(label, tip); return text ? ` title="${esc(text)}"` : ''; };
-const statLi = (label, value, extra = '', cls = '', tip = '') =>
-  `<li class="${cls}"${statTitle(label, tip)}><span>${label}</span><b>${value}</b><i>${extra}</i></li>`;
 const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
 // A stat the game stops at a cap, as a gauge: how far the set is from the cap, "max" once it is there, and under
 // the gauge what goes past it for nothing (pieces that could give something else): its texts, the lines themselves in

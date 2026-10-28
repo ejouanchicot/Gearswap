@@ -2,7 +2,7 @@
 /* GearSwap Atelier - where the character stands, in the Bags view: the zone, the moogles around and the bags the
    game opens there, as the live link's ping says them (`place`: shared/utils/atelier/atelier_place.lua), and where
    the game's moogles are (BG-Wiki). Shown only while the game is connected; it changes nothing.
-   Loaded by ../../index.html (after bags_view.js, whose helpers it uses). */
+   Loaded after bags_view.js, whose helpers it uses (atelier/src/legacy/files.ts). */
 
 // Where the moogles are: [zone as the game names it, position on the map]. BG-Wiki, pages "Porter Moogle" and
 // "Nomad Moogle", read on 2026-10-12. What a Nomad Moogle gives, same page: Mog Safe, Mog Safe 2, Mog Locker,

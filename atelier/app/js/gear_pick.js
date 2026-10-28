@@ -3,7 +3,7 @@
 // chosen for, the pieces of no use hidden), the pieces on the right as cards, each with what it gives the set and,
 // when a stat is chosen, its value and the gap to the piece worn. The choices are the drawer's (pieceChoices, drawer.js)
 // and a click tries a piece the same way (data-try, events.js); the old layout keeps the drawer.
-// (loaded by atelier/index.html after party_builder.js: see the list there)
+// (loaded after party_builder.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {
   gpFrom: 'Provenance', gpMine: 'Mes pièces', gpSets: 'Dans mes sets', gpGame: 'Tout le jeu', gpFor: 'Choisie pour', gpAny: 'Ce que le set cherche',

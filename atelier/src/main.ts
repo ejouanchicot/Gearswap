@@ -5,7 +5,6 @@
 import {mount} from 'svelte';
 import App from './App.svelte';
 import {openBridge} from './bridge';
-import {tankBox, offenseBox, boxHtml} from './screens/sets/figures';
 import OptRun from './screens/optimizer/OptRun.svelte';
 import {runOpen, runChanged} from './screens/optimizer/run.svelte';
 import Dialog from './screens/dialogs/Dialog.svelte';
@@ -26,9 +25,6 @@ import {slotMenuView, slotMenuShow} from './screens/dialogs/slotmenus.svelte';
 import {tipShow} from './screens/sets/tips.svelte';
 
 openBridge();
-// the figures' boxes worked out here, for the old page's screens that still draw them as HTML (engine.js tankHTML,
-// offenseHTML)
-window.ATELIER_FIGURES = {tankBox, offenseBox, boxHtml};
 // the search window, one component in a box of its own: the old page moves that box between #overlay and the box of
 // hidden searches (core.js searchPark); optimizer.js tells it when the search changes
 const runBox = document.createElement('div');

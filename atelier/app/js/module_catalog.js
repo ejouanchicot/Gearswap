@@ -9,7 +9,7 @@
 //   range: [min, max, step] of a number (a unit in % is 0 to 100 by itself); std: its standard value; acts: a list of abilities and spells (picked in a window); rgb: a colour held as r, g, b
 //   ws: a list of weaponskills (picked in a window, by the weapon's kind and the job); a key ending in `.*`: one option for each name under that table, said back as {1}
 //   tip (a family): what the module does, said on its button and at the top of its options; use: how it is used in game; items: a list of game items (icons, picked in a window); bags: the bags a list may hold; unit: said after a number; only: the job the setting matters on; choices: [value, fr, en] for a closed choice
-// (loaded by atelier/index.html before modules.js)
+// (loaded before modules.js: see atelier/src/legacy/files.ts)
 
 const MC = (file, key, fr, frd, en, end, more) => Object.assign({file, key, fr: [fr, frd], en: [en, end]}, more);
 const MC_ONOFF = [['On', 'Allumé', 'On'], ['Off', 'Éteint', 'Off']];
@@ -61,7 +61,7 @@ const MOD_FILE_FR = {
   'BLU_SPELL_MAP.lua': ['Catégories de Blue Magic', 'Quel sort de Blue Magic porte quel set de midcast.'],
   'BRD_SONG_CONFIG.lua': ['Chants (BRD)', 'Les rotations et les packs de chants de //gs c songs.'],
   'BRD_TIMING_CONFIG.lua': ['Rythme des chants (BRD)', 'Les pauses d’une rotation de chants.'],
-  'BST_ECOSYSTEM_DATA.lua': ['Écosystèmes (BST)', 'Des données sur les écosystèmes des monstres. Aucun module ne lit ce fichier aujourd’hui.'],
+  'BST_ECOSYSTEM_DATA.lua': ['Écosystèmes (BST)', 'Qui bat qui parmi les familles de monstres (corrélation) : dit dans le chat quand tu changes d’écosystème et quand un pet sort.'],
   'BST_PET_DATA.lua': ['Pets à jug (BST)', 'La liste des pets : leur jug, leur espèce, leur écosystème.'],
   'PLD_BLU_MAGIC.lua': ['Blue Magic d’enmity (PLD)', 'Les sorts de Blue Magic de zone utilisés en /BLU : détectés d’après tes sorts équipés, sinon ceux listés ici.'],
   'RUN_BLU_MAGIC.lua': ['Blue Magic d’enmity (RUN)', 'Les sorts de Blue Magic de zone utilisés en /BLU : détectés d’après tes sorts équipés, sinon ceux listés ici.'],

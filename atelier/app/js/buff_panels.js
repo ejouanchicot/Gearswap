@@ -1,5 +1,5 @@
 // GearSwap Atelier · buff_panels.js: aftermath, effect labels, the buffs / party / target panels and windows
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- aftermath of the weapon in hand (atelier/engine/player.js) ---- */
 // Prime weapons: PDL by stage and level (Lv1 / Lv2 at 60 % between two steps, as the engine), Lorg Mor and Opashoro magic.
 // The names: CALC.PRIME_WEAPONS (atelier/calc/calc_aftermath.js, loaded with the engine, after this file) without the magic

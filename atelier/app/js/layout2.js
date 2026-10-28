@@ -6,7 +6,7 @@
 //   Combat     the buffs and conditions, the target (were the top of the right column)
 //   My char    the stats measured in game, the merits, PorterPacker's list (were spread over the right column and
 //              the Merits tab)
-// (loaded by atelier/index.html after push.js: see the list there)
+// (loaded after push.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {
   ui2Combat: 'Buffs & cible', ui2Perso: 'Mon perso', ui2JobCfg: 'Configuration',
@@ -15,7 +15,6 @@ Object.assign(T.fr, {
   macroHint: 'Le livre de macros et le lockstyle pris avec le sub affiché, puis ce que tes fichiers disent pour chaque sub.',
   ui2OldTip: 'Revenir à la page d’avant (tout dans la colonne de droite)', ui2NewTip: 'La page réorganisée : le set au centre, ses stats à droite, Combat et Mon perso dans leurs onglets',
   ui2Ctx: 'Calculé avec', ui2CtxEdit: 'Changer', ui2SetTitle: 'Stats de ce set', ui2All: 'Toutes les stats (perso, attributs, plafonds)',
-  ui2CombatWhy: 'Les buffs, la cible et le groupe avec lesquels la page calcule tout (dégâts, temps jusqu’à la WS, optimiseur). Ils valent pour tous tes sets.',
   ui2PersoWhy: 'Ce qui est propre à ton perso : tes stats mesurées en jeu, tes mérites et Job Points, ta liste PorterPacker.',
   ui2CombatTitle: 'Buffs & cible', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magie', ui2Job: 'Job', ui2Measured: 'Mesuré en jeu', ui2NotMeasured: 'pas encore (//gs c atelier)',
 });
@@ -26,7 +25,6 @@ Object.assign(T.en, {
   macroHint: 'The macro book and the lockstyle taken with the subjob shown, then what your files say for each subjob.',
   ui2OldTip: 'Back to the page as before (everything in the right column)', ui2NewTip: 'The redesigned page: the set in the middle, its stats on the right, Combat and My character in their tabs',
   ui2Ctx: 'Calculated with', ui2CtxEdit: 'Change', ui2SetTitle: 'This set’s stats', ui2All: 'Every stat (character, attributes, caps)',
-  ui2CombatWhy: 'The buffs, target and party the page uses for every calculation (damage, time to WS, optimizer). They apply to all your sets.',
   ui2PersoWhy: 'What belongs to your character: your stats measured in game, your merits and Job Points, your PorterPacker list.',
   ui2CombatTitle: 'Buffs & target', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magic', ui2Job: 'Job', ui2Measured: 'Measured in game', ui2NotMeasured: 'not yet (//gs c atelier)',
 });

@@ -2,7 +2,7 @@
 /* GearSwap Atelier - where every thing of the bags should be: the one sum the Bags view reads.
    The cards of the plan, the "misplaced" marks of the list and the moves sent to the game all come from bpTarget:
    what the cards say will move is what //gs c bags go moves, counted against the room there really is.
-   Loaded by ../../index.html (after bags_view.js and bags_plan.js, whose helpers it uses). */
+   Loaded after bags_view.js and bags_plan.js, whose helpers it uses (atelier/src/legacy/files.ts). */
 
 // From the inventory everything that has bags of its own leaves, but what is carried there to be used: gear a set
 // wears, pieces to activate, consumables. (What waits for an NPC or a mule, and what the player filed as kept on the

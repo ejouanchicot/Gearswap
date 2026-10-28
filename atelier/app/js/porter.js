@@ -4,7 +4,7 @@
 // pulled out for nothing. The export compares them (shared/utils/atelier/porter_lists.lua: the sets in memory, the
 // states' options, <JOB>_WEAPONS.lua, kept when a storage slip holds them); the button writes the unpack list
 // (POST /porter_write, the job loaded in game only; the pack list is left as it is, the file before kept as .bak)
-// (loaded by atelier/index.html after stat_opt.js: see the list there)
+// (loaded after stat_opt.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {
   baseOnly: 'Jamais porté : GearSwap ne met jamais ce set, il sert seulement de base à {l}. Changer une pièce ici changerait ces sets-là : modifie-les eux.',
@@ -36,27 +36,6 @@ Object.assign(T.en, {
   porterDone: 'PorterPacker list updated: {a} added, {r} removed. //po applies it.',
   porterFail: 'PorterPacker list not written: {e}',
 });
-
-// The compartment beside the sets: what the unpack list misses and holds for nothing
-function porterHTML(open){
-  const p = (data() || {}).porterpacker;
-  if (!p || !p.wanted) return '';
-  const todo = p.add.length + p.remove.length;
-  const li = (names, cls) => names.map(n => `<li class="${cls}">${esc(n)}</li>`).join('');
-  let body = `<p class="muted small">${t('porterIntro', {f: esc(p.file)})}</p>`;
-  if (!p.exists) body += `<p class="small">${t('porterNew', {f: esc(p.file)})}</p>`;
-  if (p.add.length) body += `<p class="small"><b>+ ${t('porterAdd')}</b></p><ul class="statlist">${li(p.add, 'porteradd')}</ul>`;
-  if (p.remove.length) body += `<p class="small"><b>− ${t('porterRemove')}</b></p><ul class="statlist">${li(p.remove, 'porterrm')}</ul>`;
-  if (!todo) body += `<p class="small">${p.wanted.length ? t('porterAllOk', {n: p.wanted.length}) : t('porterNone')}</p>`;
-  if (todo) body += shownJobLoaded()
-    ? `<button class="btn" data-porterwrite title="${esc(t('porterWriteTip', {f: p.file}))}">${t('porterWrite')}</button>`
-    : `<p class="muted small">${t('porterNeedJob', {j: esc(S.job)})}</p>`;
-  const meta = todo ? t('porterToDo', {n: todo}) : t('porterOk');
-  // open: always unfolded (the My character tab of the new layout)
-  if (open) return box('g-caps', t('porterTitle'), body, `<span class="meta">${esc(meta)}</span>`);
-  return `<section class="box g-caps"><button class="boxh bufftoggle" data-fold="porter" aria-expanded="${!!S.boxOpen.porter}">` +
-    `<h3>${t('porterTitle')}</h3><span class="meta">${esc(meta)}</span></button>${S.boxOpen.porter ? `<div class="boxb">${body}</div>` : ''}</section>`;
-}
 
 // The button: GearSwap writes the list from the sets it has loaded, the export's comparison is refreshed with it
 async function porterWrite(){

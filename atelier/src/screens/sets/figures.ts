@@ -1,10 +1,10 @@
 // GearSwap Atelier · the figures of a set, the column beside its card (the Sets screen): its own figures in a block of
 // fixed height (the attack of an engaged or weaponskill set, the damage taken of the others, a nuke's fight box, the
 // HP cycle, the Luopan), then its stats sheet, then every stat folded.
-// The boxes are data (StatBox: its rows a label, a figure, a note, a tooltip): the tanking and attack boxes are worked
-// out here, the old page's tankHTML / offenseHTML (engine.js) draw these same boxes through boxHtml (the buffs window,
-// My character's cards). The rules are the old page's setPanelHTML (layout2.js), tankHTML, offenseHTML, fbox
-// (core.js), statLi (stats.js), fightBoxHTML (fight_stats.js), hpCycleHTML (stat_opt.js), luopanHTML (luopan.js). The stats sheet: sheet.ts; every stat: globals.ts. A field ending in Html is one of the old page's texts it wrote unescaped.
+// The boxes are data (StatBox: its rows a label, a figure, a note, a tooltip), drawn by StatBox.svelte. The rules
+// are the old page's setPanelHTML (layout2.js), tankHTML, offenseHTML, fbox, statLi, fightBoxHTML (fight_stats.js),
+// hpCycleHTML and luopanHTML (luopan.js), all retired. The stats sheet: sheet.ts; every stat: globals.ts. A field
+// ending in Html is one of the old page's texts it wrote unescaped.
 //
 // @file    atelier/src/screens/sets/figures.ts
 // @author  ejouanchicot
@@ -35,15 +35,6 @@ export function row(label: string, value: unknown, extra = '', cls = '', tip = '
 function box(key: string, cls: string, title: string, items: BoxItem[], summary = '', noteHtml = ''): StatBox {
   const count = items.reduce((n, x) => n + (x.k === 'row' ? 1 : (x.html.match(/<li[ >]/g) || []).length), 0);
   return {key, cls, titleHtml: title, open: !!st().boxOpen[key], summary, count, noteHtml, items, foldTitle: t('ttFold')};
-}
-
-/** A box drawn as the old page's HTML, for the old page's own screens */
-export function boxHtml(b: StatBox): string {
-  const li = (x: BoxItem) => x.k === 'html' ? x.html
-    : `<li class="${x.cls}"${x.title ? ` title="${esc(x.title)}"` : ''}><span>${x.labelHtml}</span><b>${x.valueHtml}</b><i>${x.extraHtml}</i></li>`;
-  const body = `${b.noteHtml}<ul class="statlist">${b.items.map(li).join('')}</ul>`;
-  return `<section class="box ${b.cls}"><button class="boxh bufftoggle" data-fold="${esc(b.key)}" aria-expanded="${b.open}" title="${esc(b.foldTitle)}"><h3>${b.titleHtml}</h3>` +
-    `<span class="meta">${b.summary ? `<b class="boxsum">${esc(b.summary)}</b>` : ''}${b.count || ''}</span></button>${b.open ? `<div class="boxb">${body}</div>` : ''}</section>`;
 }
 
 // The lines under the damage taken (stat_opt.js): a PLD's block with an ultimate shield, the enemy's critical hits
@@ -81,8 +72,8 @@ function tankExtra(c: LegacyAny, set: LegacyAny, B: LegacyAny, enm: number): Sta
   return rows;
 }
 
-/** The damage a hit does to you with the set: physical, magic, breath, enmity, Flash, Phalanx (tankHTML) */
-export function tankBox(r: LegacyAny): StatBox {
+/** The damage a hit does to you with the set: physical, magic, breath, enmity, Flash, Phalanx */
+function tankBox(r: LegacyAny): StatBox {
   const {c, set, B} = r, v = (k: string) => (set[k] || {}).v || 0, mul = B.dmgmul || 1, pmul = mul * (B.pdmgmul || 1);
   const dt = v('dt'), shell = B.shell ? -B.shell / 256 * 100 : 0;
   const pdt = Math.max(Math.max(dt + v('pdt'), -50) + v('pdt2'), -87.5);
@@ -110,8 +101,8 @@ export function tankBox(r: LegacyAny): StatBox {
 }
 
 /** The attack of the set: accuracy, haste, TP a hit, a round, the hit rate, the target's defense, multi-attacks,
- * critical rate (offenseHTML); null without a weapon's delay */
-export function offenseBox(r: LegacyAny, s: LegacyAny): StatBox | null {
+ * critical rate; null without a weapon's delay */
+function offenseBox(r: LegacyAny, s: LegacyAny): StatBox | null {
   const {c, set, B, cur} = r, v = (k: string) => (set[k] || {}).v || 0;
   const pieces = withWeapons(s).pieces, rm = pieceStats(pieces.main), rs = pieceStats(pieces.sub);
   const d1 = rm && rm.weapon && +rm.weapon.Delay;

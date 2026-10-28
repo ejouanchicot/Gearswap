@@ -1,5 +1,5 @@
 // GearSwap Atelier · drawer.js: the pieces offered for a slot (their window: gear_pick.js), what a set is after
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- the pieces offered for a slot ---- */
 function openSlot(ci, slot){
   if (!window.ATELIER_CATALOG && !S._catMissing) return loadCatalog(() => openSlot(ci, slot));

@@ -256,6 +256,13 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
   (drawer.js `openSlot` ouvre la fenêtre de gear_pick.js), ses gestionnaires (`data-showjunk`, `data-allitems`) et
   ses textes. La classe `.ui2` reste sur `.setsx` : les styles s'y accrochent. `fit.css` reste (les corrections du
   contrôle de mise en page).
+- **Ménage (2026-10-28, audit du jour, zone 7)** : les copies HTML laissées par la migration sont retirées
+  (`liveBadge`, `refreshBadge`, `historyBadge`, `porterHTML`, `tankHTML`, `offenseHTML`, `fbox`, `statLi`,
+  `statTitle`, `modTip`), avec le pont `window.ATELIER_FIGURES` et `boxHtml` (figures.ts) ; les gestionnaires de
+  clics sans bouton (`pbset`, `pbsong`, `pbroll`, `pbgeomode`, `pbopen`, `pbsavego`, `bfold`, `ptab`, `marcato`,
+  `oastop`) et les états jamais lus (`S.bFold`, `S._pTab`, `S._pbGeoMode`) ; 176 textes FR / EN que rien ne lit.
+  `stat_opt.js` est coupé en trois : ses textes (`stat_opt_texts.js`), les chiffres d'un set et du tank avec le cycle
+  des HP (`stat_figures.js`), l'optimiseur.
 
 ## Vérifier une étape
 

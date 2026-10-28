@@ -1,5 +1,5 @@
 // GearSwap Atelier · offline_export.js: every job of a character exported from its files, inside the page
-// (loaded by atelier/index.html after live.js; also by scripts/atelier/offline_export_test.js under Node)
+// (loaded after live.js, see atelier/src/legacy/files.ts; also by scripts/atelier/offline_export_test.js under Node)
 //
 // What scripts/atelier/atelier_all.py does with Python and lua5.1, done here with nothing to install: the job files
 // are run by Lua 5.1 compiled to WebAssembly (atelier/lua/lua51.js), read from the Windower folder the player picked
@@ -412,7 +412,7 @@ if (typeof module !== 'undefined') module.exports = OfflineExport;
 
 /* ---- in the page: the Windower folder, a worker for Lua, the button ---- */
 if (typeof document !== 'undefined') {
-  Object.assign(T.fr, {refreshBtn: 'Relire les fichiers', refreshNone: 'Rien reçu', refreshFail: 'Lecture échouée',
+  Object.assign(T.fr, {refreshNone: 'Rien reçu', refreshFail: 'Lecture échouée',
     refreshTip: 'Relit les jobs de ce perso depuis ses fichiers, sans le jeu : seuls les jobs modifiés sont refaits (Maj+clic : tous, avec tous leurs subs). Le contenu des sacs reste celui du dernier //gs c atelier en jeu',
     refreshNoneTip: 'Aucune réponse en 3 minutes. Lance une fois « Atelier - export all jobs.bat » dans le dossier data : il active ce bouton',
     refreshP_read: 'Lecture des fichiers…', refreshP_start: 'Démarrage de Lua…', refreshP_jobs: 'Job {n} / {m} · {w}', refreshP_subs: 'Sub {n} / {m} · {w}', refreshP_write: 'Écriture…',
@@ -421,7 +421,7 @@ if (typeof document !== 'undefined') {
     refreshNeedClick: 'Le jeu a demandé de tout refaire, mais le navigateur veut ton accord pour lire le dossier Windower : clique « ⟳ Relire ».',
     wfolderTitle: 'Où est Windower ?', wfolderWrong: 'Choisis le dossier de Windower lui-même : celui qui contient « addons » et « res ».',
     wfolderWhy: 'Pour relire tes jobs sans le jeu, la page a besoin de lire tes fichiers GearSwap et les ressources de Windower. Montre-lui une fois le dossier de Windower :'});
-  Object.assign(T.en, {refreshBtn: 'Reload from files', refreshNone: 'No response', refreshFail: 'Reload failed',
+  Object.assign(T.en, {refreshNone: 'No response', refreshFail: 'Reload failed',
     refreshTip: 'Reloads this character\'s jobs from the files, without the game: only the jobs that changed are redone (Shift+click: all of them, with every subjob). The bags stay as of the last //gs c atelier in game',
     refreshNoneTip: 'No response after 3 minutes. Run "Atelier - export all jobs.bat" in the data folder once: it enables this button',
     refreshP_read: 'Reading the files…', refreshP_start: 'Starting Lua…', refreshP_jobs: 'Job {n} / {m} · {w}', refreshP_subs: 'Sub {n} / {m} · {w}', refreshP_write: 'Writing…',

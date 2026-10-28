@@ -14,7 +14,7 @@
 // split (stat_opt.js: luDt and luRegen for the worn sets, geomancy, geoSkill and luCharm for the cast set).
 // With HP from the gear the loss a tick rises about as much (the guide: "the luopan is bigger, not longer lived"):
 // the page scales it by the same share and says so.
-// (loaded by atelier/index.html after stat_opt.js: see the list there)
+// (loaded after stat_opt.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {
   luTitle: 'Luopan', luCastTitle: 'Luopan (au cast)', luDt: 'Dégâts subis', luDtGear: 'pièces {g} % sur {n} utiles', luDtShort: 'il manque {n} %', luDtOver: '{n} % en trop',

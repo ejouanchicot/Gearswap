@@ -4,33 +4,29 @@
 // Dia, Distract) is on its card. Under the cards, the target and what the whole party gives you. Saved parties come back
 // in one click. The values are the same buff state as before (buffState(): every page figure reads it), only the way
 // of choosing changes; the old window stays (the Old layout).
-// (loaded by atelier/index.html after layout2.js: see the list there)
+// (loaded after layout2.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {
   pbTitle: 'Le groupe et ses buffs', pbWhy: 'Ce que la page compte dans tous ses calculs : ton groupe et ses buffs, ta cible et les debuffs posés dessus. Rien ici ne change ce que tu portes en jeu.',
-  pbYou: 'Toi', pbAdd: 'Ajouter', pbAddWhy: 'Un membre du groupe', pbRemove: 'Retirer ce membre', pbGives: 'Te donne', pbNothing: 'rien pour l’instant',
-  pbResult: 'Le total', pbOnYou: 'Sur toi (groupe, nourriture, tes abilities)', pbOnFoe: 'Sur la cible', pbFrom: 'Vient de : {l}', pbTarget: 'Cible', pbSaved: 'Buffs enregistrés', pbSave: '+ Enregistrer ces buffs', pbSaveAsk: 'Nom (Sortie, Odyssey, Trusts XP…)', pbSaveTitle: 'Enregistrer ces buffs et débuffs', pbSaveGo: 'Enregistrer', pbSaveHave: 'Déjà enregistrés (un même nom remplace) :', pbSavedAs: 'Buffs « {n} » enregistrés',
+  pbYou: 'Toi', pbAdd: 'Ajouter', pbRemove: 'Retirer ce membre', pbGives: 'Te donne', pbNothing: 'rien pour l’instant',
+  pbResult: 'Le total', pbOnYou: 'Sur toi (groupe, nourriture, tes abilities)', pbOnFoe: 'Sur la cible', pbFrom: 'Vient de : {l}', pbTarget: 'Cible',
   pbAddTitle: 'Ajouter les buffs d’un job ({n} place(s))', pbAddLeft: '{n} place(s)', pbAddSupport: 'Buffs de soutien', pbAddJa: 'Capacités de groupe', pbAddFoe: 'Débuffs sur la cible',
-  pbForget: 'Oublier ces buffs', pbLoaded: 'Buffs « {n} » remis.', pbNoSaved: 'aucun : choisis les buffs puis enregistre-les',
-  pbOther: 'Autres debuffs sur la cible', pbOtherWho: 'Dia, Distract, Light Shot, et ce que posent les jobs qui ne sont pas dans le groupe (THF, BLM, NIN, BLU, BST…)', pbOtherOpen: 'Déplier', pbOtherShut: 'Replier', pbDefNow: 'Défense {a} → {b}', pbEvaNow: 'Évasion {a} → {b}',
+  pbOther: 'Autres debuffs sur la cible', pbOtherWho: 'Dia, Distract, Light Shot, et ce que posent les jobs qui ne sont pas dans le groupe (THF, BLM, NIN, BLU, BST…)', pbOtherOpen: 'Déplier', pbOtherShut: 'Replier',
   pbFoodAtk: 'Attaque', pbFoodAcc: 'Précision', pbFoodBoth: 'Attaque et précision', pbFoodWs: 'Double Attack et WS', pbFoodMagic: 'Magie', pbFoodTank: 'Défense (tank)',
-  pbChoose: 'Choisir…', pbSearch: 'Chercher…', pbNone: 'Aucune', pbBubbles: 'Bulles', pbYouBase: 'Repas et aftermath', pbGeoHelp: 'Une ligne par bulle : clique dans la colonne Indi, Geo ou Entrust ; un autre clic la retire.', pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbOffense: 'Combat', pbAttrs: 'Attributs', pbGear: 'Équipement et capacités', pbOther2: 'Autres',
-  pbSongs: 'Chansons', pbSongsNote: '{n} / {m} : un clic place la chanson, un autre la retire', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Valeur de chaque roll',
-  pbIndiNote: 'sur le GEO et le groupe proche', pbGeoNote: 'la luopan, sur la cible ou le groupe', pbEntrustNote: 'une Indi donnée à un allié',
-  pbSvHint: 'chansons ×2', pbClarionHint: '+1 chanson', pbLsHint: 'renforce Dia', pbEnHint: 'dégâts en plus', pbDefDown: 'Déf cible −', pbAtkDown: 'Att cible −', pbEvaDown: 'Éva cible −', pbJob_GEO: 'Bulles', pbJob_BRD: 'Chansons', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
+  pbChoose: 'Choisir…', pbSearch: 'Chercher…', pbNone: 'Aucune', pbBubbles: 'Bulles', pbYouBase: 'Repas et aftermath', pbBuffs: 'Sur toi', pbOnTarget: 'Sur la cible', pbOffense: 'Combat', pbAttrs: 'Attributs', pbGear: 'Équipement et capacités', pbOther2: 'Autres',
+  pbSongs: 'Chansons', pbRolls: 'Rolls',
+  pbSvHint: 'chansons ×2', pbClarionHint: '+1 chanson', pbJob_GEO: 'Bulles', pbJob_BRD: 'Chansons', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
 });
 Object.assign(T.en, {
   pbTitle: 'The party and its buffs', pbWhy: 'What the page counts in all its figures: your party and its buffs, your target and the debuffs on it. Nothing here changes what you wear in game.',
-  pbYou: 'You', pbAdd: 'Add', pbAddWhy: 'A party member', pbRemove: 'Remove this member', pbGives: 'Gives you', pbNothing: 'nothing yet',
-  pbResult: 'The total', pbOnYou: 'On you (party, food, your abilities)', pbOnFoe: 'On the target', pbFrom: 'Comes from: {l}', pbTarget: 'Target', pbSaved: 'Saved buffs', pbSave: '+ Save these buffs', pbSaveAsk: 'Name (Sortie, Odyssey, Trusts XP…)', pbSaveTitle: 'Save these buffs and debuffs', pbSaveGo: 'Save', pbSaveHave: 'Already saved (the same name replaces it):', pbSavedAs: 'Buffs “{n}” saved',
+  pbYou: 'You', pbAdd: 'Add', pbRemove: 'Remove this member', pbGives: 'Gives you', pbNothing: 'nothing yet',
+  pbResult: 'The total', pbOnYou: 'On you (party, food, your abilities)', pbOnFoe: 'On the target', pbFrom: 'Comes from: {l}', pbTarget: 'Target',
   pbAddTitle: 'Add a job’s buffs ({n} slot(s) left)', pbAddLeft: '{n} slot(s)', pbAddSupport: 'Support buffs', pbAddJa: 'Party abilities', pbAddFoe: 'Debuffs on the target',
-  pbForget: 'Forget these buffs', pbLoaded: 'Buffs “{n}” restored.', pbNoSaved: 'none: pick the buffs, then save them',
-  pbOther: 'Other debuffs on the target', pbOtherWho: 'Dia, Distract, Light Shot, and what the jobs that are not in the party lay (THF, BLM, NIN, BLU, BST…)', pbOtherOpen: 'Unfold', pbOtherShut: 'Fold', pbDefNow: 'Defense {a} → {b}', pbEvaNow: 'Evasion {a} → {b}',
+  pbOther: 'Other debuffs on the target', pbOtherWho: 'Dia, Distract, Light Shot, and what the jobs that are not in the party lay (THF, BLM, NIN, BLU, BST…)', pbOtherOpen: 'Unfold', pbOtherShut: 'Fold',
   pbFoodAtk: 'Attack', pbFoodAcc: 'Accuracy', pbFoodBoth: 'Attack and accuracy', pbFoodWs: 'Double Attack and WS', pbFoodMagic: 'Magic', pbFoodTank: 'Defense (tank)',
-  pbChoose: 'Choose…', pbSearch: 'Search…', pbNone: 'None', pbBubbles: 'Bubbles', pbYouBase: 'Food and aftermath', pbGeoHelp: 'One row per bubble: click in its Indi, Geo or Entrust column; click again to remove it.', pbBuffs: 'On you', pbOnTarget: 'On the target', pbOffense: 'Combat', pbAttrs: 'Attributes', pbGear: 'Gear and abilities', pbOther2: 'Others',
-  pbSongs: 'Songs', pbSongsNote: '{n} / {m}: one click places the song, another removes it', pbRolls: 'Rolls', pbRollsNote: '{n} / 2', pbRollValues: 'Each roll’s number',
-  pbIndiNote: 'on the GEO and nearby party members', pbGeoNote: 'the luopan, on the target or the party', pbEntrustNote: 'an Indi given to an ally',
-  pbSvHint: 'songs ×2', pbClarionHint: '+1 song', pbLsHint: 'strengthens Dia', pbEnHint: 'extra damage', pbDefDown: 'Tgt Def −', pbAtkDown: 'Tgt Atk −', pbEvaDown: 'Tgt Eva −', pbJob_GEO: 'Bubbles', pbJob_BRD: 'Songs', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
+  pbChoose: 'Choose…', pbSearch: 'Search…', pbNone: 'None', pbBubbles: 'Bubbles', pbYouBase: 'Food and aftermath', pbBuffs: 'On you', pbOnTarget: 'On the target', pbOffense: 'Combat', pbAttrs: 'Attributes', pbGear: 'Gear and abilities', pbOther2: 'Others',
+  pbSongs: 'Songs', pbRolls: 'Rolls',
+  pbSvHint: 'songs ×2', pbClarionHint: '+1 song', pbJob_GEO: 'Bubbles', pbJob_BRD: 'Songs', pbJob_COR: 'Rolls', pbJob_WHM: 'Protect, Shell, Haste', pbJob_RDM: 'Haste II, Dia, Distract', pbJob_SCH: 'Storm',
 });
 
 const PB_FOE = ['edefp', 'eeva', 'emdb', 'emeva', 'eres', 'estatp', 'ecrit', 'eatkp', 'egambit', 'eresu', 'eallstat', 'eslow', 'edot', 'estr', 'edex', 'evit', 'eagi', 'eint', 'emnd', 'echr'];
@@ -160,10 +156,10 @@ function pbDlgFocus(){
 // wears there (tierVersions) and that situation's own buffs. A weaponskill set: its average damage at the TP chosen;
 // an engaged set: the time to the weaponskill and its DPS. Worked out once for a state (four runs of the engine a
 // redraw would be felt while the game redraws the page every two seconds)
-Object.assign(T.fr, {pbImpact: 'Ce que ça change pour ton set', pbImpWs: 'dégâts moyens à {tp} TP', pbImpEng: 'temps jusqu’à la WS · DPS', pbImpSet: 'set porté',
+Object.assign(T.fr, {pbImpact: 'Ce que ça change pour ton set', pbImpWs: 'dégâts moyens à {tp} TP', pbImpEng: 'temps jusqu’à la WS · DPS',
   pbImpNone: 'Ouvre un set Engaged ou de weaponskill dans la liste : je te dirai ce qu’il vaut dans chaque situation.', pbImpNoEng: 'Le moteur n’est pas encore chargé.',
   pbImpItself: 'le set', pbImpTip: 'En {t}, GearSwap porte {s} : son chiffre avec les buffs de cette situation.', pbUndo: '↶ Annuler', pbUndoTip: 'Remet les buffs de cette situation comme ils étaient avant « {w} ».'});
-Object.assign(T.en, {pbImpact: 'What it changes for your set', pbImpWs: 'average damage at {tp} TP', pbImpEng: 'time to the weaponskill · DPS', pbImpSet: 'set worn',
+Object.assign(T.en, {pbImpact: 'What it changes for your set', pbImpWs: 'average damage at {tp} TP', pbImpEng: 'time to the weaponskill · DPS',
   pbImpNone: 'Open an Engaged or a weaponskill set in the list: I will tell you what it is worth in each situation.', pbImpNoEng: 'The engine is not loaded yet.',
   pbImpItself: 'the set', pbImpTip: 'In {t}, GearSwap wears {s}: its figure with that situation’s buffs.', pbUndo: '↶ Undo', pbUndoTip: 'Puts this situation’s buffs back as they were before "{w}".'});
 let PB_IMPACT = {key: null, rows: null};
@@ -189,27 +185,15 @@ const TRUST_NAMES = {GEO: 'Sylvie', BRD: 'Joachim · Ulmia', COR: 'Qultada', WHM
 const PB_MAX = 6;
 
 // The cards' clicks: add a member (its usual buffs where its keys are empty), remove one (its buffs cleared, a shared
-// one only when no other card holds it), save / load / forget a party
+// one only when no other card holds it)
 function pbClick(d){
   const b = buffState();
   // the member's tab shown is kept with the page's state (core.js KEEP): a reload comes back to it
   if (d.pbtab) { S.pbTab = d.pbtab; save(); render(); return; }
   if (d.pbpick) { pbOpenPick(d.pbpick); return; }
   if (d.pbchoose != null) { pbChoose(d.pbchoose); return; }
-  if (d.pbgeomode) { S._pbGeoMode = d.pbgeomode; render(); return; }
-  if (d.pbset) { const [k, v] = d.pbset.split('|'); if (b[k] === v) delete b[k]; else b[k] = v; }
-  else if (d.pbsong) {
-    // a song picked goes to the first free slot (4, 5 with Clarion Call), again takes it off and the next ones move up
-    const slots = songSlots(b), list = slots.map(i => b['song' + i]).filter(Boolean), at = list.indexOf(d.pbsong);
-    if (at >= 0) list.splice(at, 1); else if (list.length < slots.length) list.push(d.pbsong);
-    slots.forEach((i, n) => { if (list[n]) b['song' + i] = list[n]; else delete b['song' + i]; });
-  } else if (d.pbroll) {
-    const at = [0, 1].find(i => b['roll' + i] === d.pbroll);
-    if (at != null) { delete b['roll' + at]; delete b['roll' + at + 'n']; }
-    else { const free = [0, 1].find(i => !b['roll' + i]); if (free == null) return; b['roll' + free] = d.pbroll; b['roll' + free + 'n'] = 'XI'; }
-  }
-  else if (d.pbaddopen != null) { pbOpenAdd(); return; }
-  else if (d.pbadd) {
+  if (d.pbaddopen != null) { pbOpenAdd(); return; }
+  if (d.pbadd) {
     if (pbShown(b).length + 1 >= PB_MAX) return;
     closeOverlay();
     S.pbTab = d.pbadd;

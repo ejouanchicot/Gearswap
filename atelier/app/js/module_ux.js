@@ -3,7 +3,7 @@
 //   a number with its bounds (- / +, a slider when the bounds are known, back to the standard value);
 //   a colour shown as a colour, changed with the system's colour picker;
 //   the window that picks an ability or a spell among those the job can use; the read-only banner.
-// (loaded by atelier/index.html after module_rows.js, before modules.js)
+// (loaded after module_rows.js, before modules.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {mxSearch: 'Chercher une option : un mot, un objet, un sort…', mxSearchTip: 'Cherche dans le nom et l’explication de chaque option de chaque module, et dans les objets et sorts de tes listes.',
   mxFound: '{n} option(s) pour « {q} »', mxNone: 'Aucune option pour « {q} ». Essaie un autre mot, ou efface la recherche pour revoir les modules.', mxClear: 'Effacer', mxClearTip: 'Efface la recherche et revient aux modules.',
@@ -16,7 +16,7 @@ Object.assign(T.fr, {mxSearch: 'Chercher une option : un mot, un objet, un sort�
   mxActSearch: 'Chercher une ability ou un sort…', mxActJa: 'Abilities de {j}', mxActMa: 'Magie de {j}', mxWsAdd: '+ Ajouter une weaponskill', mxWsTip: 'Ouvre la liste des weaponskills : clique sur celle à ajouter.', mxWsTitle: 'Ajouter une weaponskill', mxWsTitleFor: 'Ajouter une weaponskill pour {w}',
   mxWsSearch: 'Chercher une weaponskill…', mxWsHint: 'Tape quelques lettres pour chercher dans toutes les weaponskills du jeu.', mxWsGiven: 'Données par {w}', mxWsKindJob: '{k} : celles de {j}', mxWsKindSub: '{k} : avec ton sub /{s}',
   mxWsKindAny: '{k} : jobs non renseignés', mxWsKindOther: '{k} : celles que {j} n’a pas', mxWsJob: 'Weaponskills de {j}', mxWsSub: 'Avec ton sub /{s}', mxWsFoundOk: 'Utilisables en {j}', mxWsFoundOther: 'Celles que {j} n’a pas',
-  mxWsFrom: 'Donnée par : {w}.', mxWsJobs: 'Jobs : {j}.', mxWsNoJobs: 'Jobs non renseignés.', mxActAll: 'Dans tout le jeu', mxUsedJa: 'Abilities déjà dans tes listes (tous tes jobs)', mxUsedMa: 'Magie déjà dans tes listes (tous tes jobs)', mxUsedMode: 'Sorts qui suivent un mode', mxAllJa: 'Autres abilities du jeu', mxAllMa: 'Autre magie du jeu', mxActUse: 'Utilisable en {j}', mxActOther: 'Pas utilisable en {j}', mxActHint: 'Tape quelques lettres pour chercher dans toutes les abilities et tous les sorts du jeu.'});
+  mxWsFrom: 'Donnée par : {w}.', mxWsJobs: 'Jobs : {j}.', mxWsNoJobs: 'Jobs non renseignés.', mxUsedJa: 'Abilities déjà dans tes listes (tous tes jobs)', mxUsedMa: 'Magie déjà dans tes listes (tous tes jobs)', mxUsedMode: 'Sorts qui suivent un mode', mxAllJa: 'Autres abilities du jeu', mxAllMa: 'Autre magie du jeu', mxActOther: 'Pas utilisable en {j}', mxActHint: 'Tape quelques lettres pour chercher dans toutes les abilities et tous les sorts du jeu.'});
 Object.assign(T.en, {mxSearch: 'Search an option: a word, an item, a spell…', mxSearchTip: 'Searches the name and the explanation of every option of every module, and the items and spells of your lists.',
   mxFound: '{n} option(s) for "{q}"', mxNone: 'No option for "{q}". Try another word, or clear the search to see the modules again.', mxClear: 'Clear', mxClearTip: 'Clears the search and goes back to the modules.',
   mxInAdv: 'Advanced · {f}', mxMore: 'The first {n} are shown: narrow the search to see the others.',
@@ -28,7 +28,7 @@ Object.assign(T.en, {mxSearch: 'Search an option: a word, an item, a spell…', 
   mxActSearch: 'Search an ability or a spell…', mxActJa: '{j} abilities', mxActMa: '{j} magic', mxWsAdd: '+ Add a weaponskill', mxWsTip: 'Opens the list of weaponskills: click the one to add.', mxWsTitle: 'Add a weaponskill', mxWsTitleFor: 'Add a weaponskill for {w}',
   mxWsSearch: 'Search a weaponskill…', mxWsHint: 'Type a few letters to search every weaponskill of the game.', mxWsGiven: 'Given by {w}', mxWsKindJob: '{k}: those {j} has', mxWsKindSub: '{k}: with your /{s} subjob',
   mxWsKindAny: '{k}: jobs not told', mxWsKindOther: '{k}: those {j} does not have', mxWsJob: '{j} weaponskills', mxWsSub: 'With your /{s} subjob', mxWsFoundOk: 'Usable on {j}', mxWsFoundOther: 'Those {j} does not have',
-  mxWsFrom: 'Given by: {w}.', mxWsJobs: 'Jobs: {j}.', mxWsNoJobs: 'Jobs not told.', mxActAll: 'In the whole game', mxUsedJa: 'Abilities already in your lists (all your jobs)', mxUsedMa: 'Magic already in your lists (all your jobs)', mxUsedMode: 'Spells that follow a mode', mxAllJa: 'Other abilities of the game', mxAllMa: 'Other magic of the game', mxActUse: 'Usable on {j}', mxActOther: 'Not usable on {j}', mxActHint: 'Type a few letters to search every ability and spell of the game.'});
+  mxWsFrom: 'Given by: {w}.', mxWsJobs: 'Jobs: {j}.', mxWsNoJobs: 'Jobs not told.', mxUsedJa: 'Abilities already in your lists (all your jobs)', mxUsedMa: 'Magic already in your lists (all your jobs)', mxUsedMode: 'Spells that follow a mode', mxAllJa: 'Other abilities of the game', mxAllMa: 'Other magic of the game', mxActOther: 'Not usable on {j}', mxActHint: 'Type a few letters to search every ability and spell of the game.'});
 
 /* ---- a number with its bounds (its control: atelier/src/screens/config/modules.ts numOf) ---- */
 // opts: {unit, range: [min, max, step], std}. A unit in percent is 0 to 100 by itself

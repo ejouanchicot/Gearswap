@@ -2,7 +2,7 @@
 // export of any character: a new install, a package made without its exports), drawn by atelier/src/screens/home. Says
 // how to fill it: //gs c atelier in game, or the files read without the game (offline_export.js, the main subjob of
 // each job, as a package's exports are made: package_exports.js).
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {wcTitle: 'Bienvenue dans l’Atelier',
   wcLede: 'L’Atelier n’a encore rien à montrer : il affiche ce que ton GearSwap lui envoie. Deux façons de le remplir :',

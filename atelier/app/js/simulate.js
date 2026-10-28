@@ -1,5 +1,5 @@
 // GearSwap Atelier · simulate.js: Simulate, the game's own GearSwap running an action without doing it
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- Simulate: the game's own GearSwap runs an action without doing it (shared/utils/atelier/atelier_sim.lua) ---- */
 // The magic skills in the order a player thinks of them, and their French names
 const MAGIC_ORDER = ['Healing Magic', 'Enhancing Magic', 'Enfeebling Magic', 'Elemental Magic', 'Dark Magic', 'Divine Magic',

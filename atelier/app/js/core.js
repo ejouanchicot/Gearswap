@@ -1,5 +1,5 @@
 // GearSwap Atelier · core.js: state, saved settings, helpers, characters / jobs / subjobs, the exports, item icons
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 let DATA = {};
 // Moves on whenever an export is read (the start, the live link): what is worked out from the exports is kept until then
 let DATA_GEN = 0;
@@ -23,7 +23,7 @@ let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons
   trial:{}, drafts:{}, buffs:{}, buffTier:{}, held:{}, famOpen:{}, wsList:{}, keyOv:{}, keyDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}, statHide:{}, statSort:'group', statOnlyWant:false, statPresets:{}, statPreset:'', optOpts:{obj: 'damage', pdt: -50, mdt: -21, sb: 0}, boxOpen:{}, wsTp:null, _tpb:{}, macroAlt:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['modFile', 'modView', 'modFam', 'modGrp', 'persoView', 'bagSel', 'bagRoles', 'bagTags', 'bagAt', 'tgtFav', 'tgtRecent', 'pbActive', 'jobTab', 'listPrefs', 'listW', 'listPaths', 'shapes', 'motion', 'guide', 'mogLines', 'pushTech', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'genericWs', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'wsList', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'bFold', 'pushed'];
+const KEEP = ['modFile', 'modView', 'modFam', 'modGrp', 'persoView', 'bagSel', 'bagRoles', 'bagTags', 'bagAt', 'tgtFav', 'tgtRecent', 'pbActive', 'jobTab', 'listPrefs', 'listW', 'listPaths', 'shapes', 'motion', 'guide', 'mogLines', 'pushTech', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'genericWs', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'wsList', 'keyOv', 'keyDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'pushed'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 if (S.section === 'worn') S.section = 'sets';
@@ -254,13 +254,6 @@ const weaponSkills = () => mergedOf('wskill');
 // A compartment: a card with a title band in its section's colour (g-def, g-tank...)
 const box = (cls, title, body, meta = '') =>
   `<section class="box ${cls}"><header class="boxh"><h3>${title}</h3>${meta}</header><div class="boxb">${body}</div></section>`;
-// A stats compartment that folds: closed until opened (S.boxOpen[key]); closed, its band says how many lines it holds
-// summary: a figure said in the header, so it is read with the card closed too (the Attack card's total accuracy)
-function fbox(key, cls, title, body, summary){
-  const open = !!S.boxOpen[key], n = (body.match(/<li[ >]/g) || []).length;
-  return `<section class="box ${cls}"><button class="boxh bufftoggle" data-fold="${esc(key)}" aria-expanded="${open}" title="${esc(t('ttFold'))}"><h3>${title}</h3>` +
-    `<span class="meta">${summary ? `<b class="boxsum">${esc(summary)}</b>` : ''}${n || ''}</span></button>${open ? `<div class="boxb">${body}</div>` : ''}</section>`;
-}
 const fmtDmg = n => Math.round(n).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US');
 
 /* ---- two pieces compared ---- */

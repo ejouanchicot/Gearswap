@@ -1,5 +1,5 @@
 // GearSwap Atelier · keys.js: key names, keys changed in the page, the key editor, the Keys and Modes tabs
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- keys: Windower names, physical keys, the player's keyboard layout ---- */
 // Windower binds physical keys (DirectInput scan codes, Hook.dll's table) named as on a US
 // keyboard; KeyboardEvent.code names the same physical keys, whatever the layout

@@ -3,7 +3,7 @@
 // ({min, max, spell}). Shown as a table: a cell is typed or picked, a line is added, moved, removed.
 // In the file, a line that was there keeps its own text (only the cells changed are rewritten, its comments stay);
 // the table itself is laid out again only when a line is added, moved or removed.
-// (loaded by atelier/index.html after module_items.js, before modules.js)
+// (loaded after module_items.js, before modules.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {mrAdd: '+ Ajouter une ligne', mrAddItem: '+ Ajouter un objet', mrAddGear: '+ Ajouter une pièce', mrAddTip: 'Ajoute une ligne à la fin. Rien n’est écrit avant « Enregistrer ».',
   mrUp: 'Monter cette ligne', mrDown: 'Descendre cette ligne', mrDel: 'Retirer cette ligne', mrFill: 'à remplir', mrFillTip: 'Une ligne sans nom n’est pas écrite : tape son nom.',

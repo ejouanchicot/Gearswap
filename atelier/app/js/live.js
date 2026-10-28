@@ -1,5 +1,5 @@
 // GearSwap Atelier · live.js: saving into the GearSwap folder, tried pieces saved, the live link, AtelierLink
-// (loaded by atelier/index.html, in the order of the list there)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- saving: the page writes into the GearSwap data folder the player picks once ---- */
 const luaStr = v => "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n') + "'";
 function overridesLua(map){
@@ -358,48 +358,18 @@ async function liveReload(full){
   catch (e) { S.toast = t('liveLost'); S._liveBusy = null; }
   render();
 }
-function liveBadge(){
-  const c = S.char, L = S._live[c] || {}, link = linkOk(c);
-  if (!liveConf(c) && !linkConf(c)) return '';
-  // an order under way: the bar stays as it was at the press (nothing moves), its buttons off, the one pressed lit
-  // and saying what goes on; they come back with the game
-  if (S._liveBusy && Date.now() > S._liveBusy.until) S._liveBusy = null;
-  const busy = S._liveBusy, was = busy ? busy.was : null, ok = busy ? was.ok : L.ok, linked = busy ? was.link : link;
-  const job = busy ? was.job : L.job, sub = busy ? was.sub : L.sub, off = busy ? 'disabled' : '';
-  // a command: its word, and in its tooltip when to use it and what it sends
-  const btn = (attr, icon, label, title, what) => busy && what === busy.what
-    ? `<button class="live act mid busy" disabled title="${esc(t('busy_' + what))}">${icon}<span class="lbl"> ${label}</span></button>`
-    : `<button class="live act" ${attr} ${off} title="${esc(title)}">${icon}<span class="lbl"> ${label}</span></button>`;
-  // GearSwap answers: the job it has loaded, then the two ways to make it read again. Reload (//gs reload) reads the
-  // sets, the settings and the code again and keeps what the addon holds between two loads; Restart (//lua r
-  // gearswap) is an unload and a load: nothing is kept. Unloading alone served nothing from the page: left out
-  if (ok) return `<button class="live on" data-livejump ${off} title="${esc(t('liveJump'))}"><i class="led"></i>${t('liveOn')} · ${esc(job)}/${esc(sub)}</button>` +
-    btn('data-livereload', '⟳', t('cmdReload'), t('cmdReloadTip'), 'reload') + btn('data-liverestart', '↺', t('cmdRestart'), t('cmdRestartTip'), 'restart');
-  // only the addon answers: GearSwap is unloaded (or its link is off), it can be loaded
-  if (linked) return `<span class="live mid" title="${esc(t('linkOnlyHow'))}">● ${t('linkOnly')}</span>` + btn('data-gsload', '▶', t('gsLoad'), '//lua l gearswap', 'load');
-  return `<span class="live" title="${esc(t('liveHow'))}">○ ${t('liveOff')}</span>`;
-}
 
 /* ---- the files read again, without the game ---- */
 // The button opens gsatelier://refresh/<Character>: Windows runs scripts/atelier/atelier_all.py (the link is
 // registered by a first run of "Atelier - export all jobs.bat"), which exports the jobs whose files changed and
 // writes atelier/refresh.js; the page reloads when that file changes. A page cannot run a program by itself.
-Object.assign(T.fr, {refreshBtn: 'Relire les fichiers', refreshBusy: 'Lecture des fichiers…', refreshNone: 'Rien reçu',
+Object.assign(T.fr, {refreshBusy: 'Lecture des fichiers…', refreshNone: 'Rien reçu',
   refreshTip: 'Relit les jobs de ce perso depuis ses fichiers, sans le jeu (seuls les jobs modifiés sont refaits). Le contenu des sacs reste celui du dernier //gs c atelier en jeu',
   refreshNoneTip: 'Aucune réponse en 3 minutes. Lance une fois « Atelier - export all jobs.bat » dans le dossier data : il active ce bouton'});
-Object.assign(T.en, {refreshBtn: 'Reload from files', refreshBusy: 'Reloading files…', refreshNone: 'No response',
+Object.assign(T.en, {refreshBusy: 'Reloading files…', refreshNone: 'No response',
   refreshTip: 'Reloads this character\'s jobs from the files, without the game (only the jobs that changed are redone). The bags stay as of the last //gs c atelier in game',
   refreshNoneTip: 'No response after 3 minutes. Run "Atelier - export all jobs.bat" in the data folder once: it enables this button'});
 const REFRESH_POLL_MS = 1500, REFRESH_GIVE_UP_MS = 180000;
-function refreshBadge(){
-  if (!S.char) return '';
-  const busy = S._refresh === 'busy', none = S._refresh === 'none', fail = S._refresh === 'fail';
-  // what the last run in this tab did (offline_export.js), said after the button's tip
-  let last = null; try { last = JSON.parse(sessionStorage.getItem('atelierRefresh') || 'null'); } catch (e) {}
-  const lastTip = !last ? '' : ' · ' + (last.failed.length ? t('refreshLastFail', {f: last.failed.length, l: last.failed.join(', ')}) : t('refreshLast', {e: last.e, u: last.u}));
-  const tip = fail ? S._refreshErr || '' : t(none ? 'refreshNoneTip' : 'refreshTip') + lastTip, warn = fail || (last && last.failed.length);
-  return `<button class="live act ${warn ? 'mid' : ''}" data-refreshfiles ${busy ? 'disabled' : ''} title="${esc(tip)}">⟳<span class="lbl"> ${t(busy ? 'refreshBusy' : none ? 'refreshNone' : fail ? 'refreshFail' : 'cmdFiles')}</span></button>`;
-}
 // The way without folder access (Firefox): the gsatelier:// link, see above. The page's own way: offline_export.js
 function refreshByLink(){
   if (S._refresh === 'busy') return;

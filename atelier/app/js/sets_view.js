@@ -1,5 +1,7 @@
-// GearSwap Atelier · sets_view.js: rendering: the side, the set list, a set's card, the Macro / Functions tabs, the job list
-// (loaded by atelier/index.html, in the order of the list there)
+// GearSwap Atelier · sets_view.js: render() and a job view's preparation, the scroll and the shapes kept across a
+// redraw, the set list's cards (their names, families, variants, the search), the job list's levels and emblems; the
+// screens themselves are Svelte (atelier/src/screens)
+// (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- render ---- */
 // The top bar is the Svelte application's (atelier/src/screens/topbar, told at the end of render). Here only what the
 // whole document follows: its language and its theme
@@ -87,8 +89,8 @@ function tierLabel(label, head){
   const rest = head === 'Base' ? label : label.startsWith(head + ' · ') ? label.slice(head.length + 3) : '';
   return TIER_LABELS.includes(rest) ? rest : null;
 }
-Object.assign(T.fr, {rowTry: 'Des pièces sont à l’essai dans ce set', rowVoid: 'vide', listPaths: 'Chemins', openShort: 'Déplier', closeShort: 'Replier', listPathsTip: 'Montre sous chaque set son nom dans ton fichier (sets.engaged.Laphria…)', searchShort: 'Chercher…'});
-Object.assign(T.en, {rowTry: 'Pieces are on trial in this set', rowVoid: 'empty', listPaths: 'Paths', openShort: 'Open', closeShort: 'Close', listPathsTip: 'Shows under each set its name in your file (sets.engaged.Laphria…)', searchShort: 'Search…'});
+Object.assign(T.fr, {rowTry: 'Des pièces sont à l’essai dans ce set', rowVoid: 'vide', listPaths: 'Chemins', listPathsTip: 'Montre sous chaque set son nom dans ton fichier (sets.engaged.Laphria…)', searchShort: 'Chercher…'});
+Object.assign(T.en, {rowTry: 'Pieces are on trial in this set', rowVoid: 'empty', listPaths: 'Paths', listPathsTip: 'Shows under each set its name in your file (sets.engaged.Laphria…)', searchShort: 'Search…'});
 // The variant of a card shown in its detail
 function shownSet(card, ci){ return card.variants[Math.min(S.variant[S.job + '|' + ci] ?? 0, card.variants.length - 1)].set; }
 

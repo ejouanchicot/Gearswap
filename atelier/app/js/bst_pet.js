@@ -17,7 +17,7 @@
 //   - a level over 119 ("Summoned Pet: Lv.+N", Spalirisos' "Lv. +N"): +37 Accuracy and +30 Attack (Welf's /checkparam,
 //     Square Enix forum 2022-09-23; Suspicious Alice 119 to 124, FFXIAH p. 171), counted while worn (FFXIAH p. 170-171);
 //     a Nukumi Earring in the right ear only, the best weapon only (wiki.ffo.jp 19758).
-// (loaded by atelier/index.html after luopan.js: atelier/src/legacy/files.ts)
+// (loaded after luopan.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {
   statGrp_pet: 'Pet (BST)',
