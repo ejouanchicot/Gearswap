@@ -53,6 +53,12 @@ local cases = {
     {'someone else animates, mine NQ', {anim(OTHER, 2), result(0, 0, 1, 100)}, '121   SYNTH :: NQ | 121 Result : NQ | 121 Item   : Bone Hairpin'},
     {'cancelled after an animation', {anim(ME, 0), result(6, 0, 0, 0)}, '121   SYNTH :: NQ | 121 Result : cancelled'},
     {'cancelled, no animation', {result(6, 0, 0, 0)}, nil},
+    -- a cancel the old list did not know (13, journal 2026-10-28), the last break's item still in the packet
+    {'cancelled 13, stale item', {result(13, 255, 1, 100)}, nil},
+    {'cancelled 13 after an animation', {anim(ME, 0), result(13, 255, 1, 100)}, '121   SYNTH :: NQ | 121 Result : cancelled'},
+    -- the server leaves the last break's ingredients in a success's lost slots (journal 2026-10-28)
+    {'NQ after a break, stale lost slots', {anim(ME, 0), result(0, 0, 3, 100, {200, 201})}, '121   SYNTH :: NQ | 121 Result : NQ | 121 Item   : Bone Hairpin x3'},
+    {'HQ after a break, stale lost slots', {anim(ME, 2), result(0, 1, 1, 101, {200})}, '121   SYNTH :: HQ | 121 Result : HQ 1 | 121 Item   : Bone Hairpin +1'},
 }
 local fails = 0
 for _, c in ipairs(cases) do

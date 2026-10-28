@@ -10,23 +10,30 @@
 ---
 --- Two packets (Windower addons/libs/packets/fields.lua):
 ---   0x030 Synth Animation: the player, then at 0x0C 0 NQ, 1 break, 2 HQ
----   0x06F Self Synth Result: result at 0x04 (0 success, 1 and 5 fail, 3 4 6 7
----         cancelled), quality at 0x05 (the HQ tier), count at 0x06, the item
+---   0x06F Self Synth Result: result at 0x04 (0 success, 1 and 5 fail, any other
+---         a cancel: 3 4 6 7 listed, 13 seen in game 2026-10-28 with the last
+---         break's item still in the packet), quality at 0x05 (the HQ tier), count at 0x06, the item
 ---         at 0x08, the 8 lost ingredients from 0x0A
 --- What the tier reads is not measured in game yet: every packet goes to
 --- <Character>/logs/craft/synth.log as it came, to check the lines against.
+--- The 8 lost ingredients are NOT cleared by the server after a break: every
+--- success after it still carries them (journal 2026-10-28: result=0 Cyan Orb,
+--- lost=[760] from the break before), so they are read on a failed result only
+--- and never decide that a synthesis broke.
 ---
 --- @file shared/utils/craft/synth_results.lua
 --- @author ejouanchicot
---- @version 1.1
+--- @version 1.2
 --- @date Created: 2026-10-24
 ---============================================================================
 
 local SynthResults = {}
 
--- 0x06F results that are a cancelled synthesis (wrong recipe, skill too low...):
--- the game says why, nothing was made or lost
-local CANCELLED = {[3] = true, [4] = true, [6] = true, [7] = true}
+-- 0x06F results: 0 a success, 1 and 5 a break; any other is a cancelled synthesis
+-- (wrong recipe, skill too low, missing materials...): the game says why, nothing was
+-- made or lost. Not a list of the cancels: 13 was not in the old one (3 4 6 7) and read
+-- as an NQ of the last break's Mangled Mess (journal 2026-10-28)
+local SUCCESS, FAILED = 0, {[1] = true, [5] = true}
 -- An animation older than this is not the one of the result that arrives
 local ANIMATION_MAX_AGE = 30
 
@@ -63,8 +70,8 @@ end
 --- @param param number|nil 0x030 param of the same synthesis (0 NQ, 1 break, 2 HQ)
 --- @return string|nil
 function SynthResults.classify(result, quality, lost, param)
-    if CANCELLED[result] then return nil end
-    if result == 1 or result == 5 or param == 1 or #lost > 0 then return 'Break' end
+    if FAILED[result] or (result == SUCCESS and param == 1) then return 'Break' end
+    if result ~= SUCCESS then return nil end
     if quality > 0 or param == 2 then return 'HQ' .. math.min(3, math.max(1, quality)) end
     return 'NQ'
 end
@@ -93,7 +100,9 @@ local function on_result(original)
     if quality > 127 then quality = quality - 256 end
     local count, item = original:byte(0x07), original:unpack('H', 0x09)
     local lost, lost_ids = {}, {}
-    for i = 0, 7 do
+    -- (the lost slots keep the last break's ingredients on a success: read on a fail only)
+    local failed = FAILED[result] or false
+    for i = 0, (failed and 7 or -1) do
         local id = original:unpack('H', 0x0B + 2 * i)
         if id ~= 0 then lost[#lost + 1] = item_name(id); lost_ids[#lost_ids + 1] = id end
     end
