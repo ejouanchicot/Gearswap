@@ -119,6 +119,7 @@ function setMissing(s){
   return LIST_MISS.out[s.path];
 }
 const listMarks = s => (setMissing(s) ? `<i class="rowmiss" title="${esc(t('lpMissing'))}">!</i>` : '') + (trialCount(s) ? `<i class="rowtry" title="${esc(t('rowTry'))}"></i>` : '') +
+  (keyMissing(s.path, s.pieces || {}).length ? `<i class="rowkey" title="${esc(t('rowKey'))}"></i>` : '') +
   (Object.keys(s.pieces || {}).length ? '' : `<small class="rowvoid">${esc(t('rowVoid'))}</small>`);
 // the two actions of a row, shown when the pointer is on it (the star stays when the set is pinned)
 function listRowActs(path, group){

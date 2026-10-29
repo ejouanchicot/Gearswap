@@ -157,6 +157,10 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   if (holds.porter!.length) foot.push(`<span class="holdporter">${t('holdPorter', {l: esc(holds.porter!.map(n => n + ' (' + slipOf(n) + ')').join(', '))})}</span>`);
   if (holds.missing!.length) foot.push(`<span class="holdmiss">${t('holdMissing', {l: esc(holds.missing!.join(', '))})}</span>`);
   if (holds.short!.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short!.join(', '))})}</span>`);
+  // a piece that gives the set its effect, missing while you own it (catalog `key`, add_set.js keyMissing)
+  for (const k of keyMissing(s.path, eff.pieces))
+    foot.push(`<span class="keymiss">${t('keyMissing', {p: esc(k.names[0]), e: esc(k.effect),
+      h: `<button type="button" class="linkbtn" data-keyput="${esc(k.slot + '|' + k.name)}" title="${esc(t('keyTip'))}">${esc(k.name)}</button>`, w: k.where ? ' (' + esc(k.where) + ')' : ''})}</span>`);
   const legend = legendOf(holds);
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws';
   // a set for weaponskills in general is worked out on one of its weapon's (ws_page.js genericWsOf)

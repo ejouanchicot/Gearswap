@@ -206,6 +206,8 @@
 .holdmiss{color:var(--r-dd)}
 .holdshort{color:var(--g-off)}
 .holdporter{color:var(--g-mag)}
+.keymiss{color:var(--g-off)}
+.keymiss .linkbtn{font-weight:700;text-decoration:underline;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 .slot.own-porter{box-shadow:0 0 0 2px var(--g-mag)}
 .legend i.porter{border:2px solid var(--g-mag)}
 .orporter{font-size:11.5px;color:var(--g-mag);margin-left:6px}

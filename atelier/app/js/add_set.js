@@ -46,6 +46,26 @@ function catalogWhen(path){
   if (!line || !/\{[^}]*\}$/.test(e.group || '')) return line;
   return line.replace(CATALOG_THAT[S.lang === 'en' ? 'en' : 'fr'], segs(path).pop());
 }
+// The pieces that give a set its effect (catalog `key`, shared/utils/atelier/set_catalog.lua) that the set lacks while
+// the character owns a version of one (any +N of the name): [{slot, name (the owned copy, best version), where, effect,
+// names}]. Nothing for a piece the character does not own: the page does not push to buy (SPEC pieces-cles-2026-10-29)
+const isVersionOf = (name, base) => name === base || name.startsWith(base + ' +');
+function keyMissing(path, pieces){
+  const e = (catalogEntries() || []).find(x => x.path === path.replace(/'/g, '"'));
+  if (!e || !Array.isArray(e.key)) return [];
+  const owned = ownedOf() || {}, out = [];
+  for (const k of e.key) {
+    const names = k.names || [], slots = k.slots || [k.slot];
+    if (slots.some(sl => pieces[sl] && names.some(n => isVersionOf(pieces[sl].name, n)))) continue;
+    let have = null;
+    for (const sl of slots) for (const x of owned[sl] || [])
+      if (names.some(n => isVersionOf(x.name, n)) && (!have || x.name > have.name)) have = {slot: sl, name: x.name, where: (x.where || []).join(', ')};
+    if (have) out.push(Object.assign(have, {effect: (S.lang === 'en' ? k.en : k.fr) || '', names}));
+  }
+  return out;
+}
+Object.assign(T.fr, {keyMissing: '⚠ Pièce clé absente : <b>{p}</b> ({e}). Tu as {h}{w} : clique pour l’essayer.', keyTip: 'Mettre cette pièce à l’essai dans le set (puis écris-la dans ton fichier comme d’habitude)', rowKey: 'Une pièce clé manque, et tu l’as'});
+Object.assign(T.en, {keyMissing: '⚠ Key piece missing: <b>{p}</b> ({e}). You have {h}{w}: click to try it.', keyTip: 'Try this piece in the set (then write it to your file as usual)', rowKey: 'A key piece is missing, and you have it'});
 // A catalog line of a weapon state ({MainWeapon}, {WeaponSet}...): the weapon sets, laid on idle and engaged
 const WEAPON_LINE = /^\{(MainWeapon|SubWeapon|RangeWeapon|WeaponSet|SubSet|AbyWeapon|SubWeaponOverride)[^}]*\}$/;
 const catFamily = e => WEAPON_LINE.test(e.group) ? 'weapons' : cardFamily(e.path, {});

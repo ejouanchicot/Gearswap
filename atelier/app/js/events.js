@@ -45,6 +45,9 @@ document.addEventListener('click', e => {
       chooseHand(S._drawer.set, S._drawer.slot, best ? Object.assign({}, o.upgrade.piece) : o.orig ? null : {name: o.piece.name, augs: o.piece.augs});
     else setTrial(S._drawer.set, S._drawer.slot, best ? Object.assign({}, o.upgrade.piece) : o.orig ? undefined : Object.assign({}, o.piece));
     $('#tip').hidden = true; closeOverlay(); render(); return; }
+  // a key piece the set lacks (card.ts keyMissing line): tried in its slot, written to the file by the usual push
+  if (d.keyput) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), i = d.keyput.indexOf('|');
+    setTrial(s, d.keyput.slice(0, i), {name: d.keyput.slice(i + 1)}); render(); return; }
   if ('trykeep' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), k = trialKey(s), dr = S.drafts[k] = S.drafts[k] || {};
     const now = new Date(), hm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     dr.kept = (dr.kept || []).concat([{name: t('keptName', {n: (dr.kept || []).length + 1, t: buffTier(), at: hm}), tr: JSON.parse(JSON.stringify(S.trial[k] || {}))}]);

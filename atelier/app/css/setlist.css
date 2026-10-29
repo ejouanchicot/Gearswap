@@ -80,6 +80,7 @@ div.setrow.var > code{padding-left:22px}
 .ofsets .scroll > .aliasfold,.ofsets .scroll > button.setrow.alias{width:calc(100% - 16px)}
 .setrow .rowmiss{flex:none;font-style:normal;font-size:12px;font-weight:800;color:var(--r-dd);opacity:.9}
 .setrow .rowtry{width:6px;height:6px;border-radius:50%;background:var(--try);box-shadow:0 0 6px var(--try)}
+.setrow .rowkey{flex:none;width:6px;height:6px;border-radius:50%;background:var(--g-off)}
 .setrow .rowvoid{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
 /* its two actions (pin, put in a group), shown when the pointer is on the line; the star stays on a pinned set */
 .rowacts{display:none;align-items:center;gap:1px}

@@ -45,6 +45,10 @@
 ---   value:State=A|B   the state has one of those values (a mode a player may not have)
 ---   not:name:A|B the value bound to that part (or name.attr) holds none of those words
 --- A job's file can also list `skip = {'<common path>', ...}`: common entries its code never reads.
+--- `key` (optional): the pieces that give the set its effect, for the page's "key piece" warning:
+---   key = {{slot = 'body', names = {'Piety Bliaut', 'Clr. Bliaut +2'}, en = 'Enmity -50', fr = 'Enmity −50'}, ...}
+---   (`slots = {'hands', 'back'}` for several; a name is the game's, any +N version of it counts). The page warns
+---   when the set holds none of them while the character owns one (atelier/app/js/add_set.js keyMissing).
 ---
 --- @file    shared/utils/atelier/set_catalog.lua
 --- @author  ejouanchicot
@@ -492,7 +496,7 @@ local function expand(line, ctx, from, out, seen)
                 local parent = {}
                 for i = 1, #keys - 1 do parent[i] = keys[i] end
                 out[#out + 1] = {path = path, when = line.when, fr = line.fr, base = base, group = line[1], from = from,
-                    exists = node(keys) ~= nil or nil, parent = (#parent == 0 or node(parent) ~= nil) or nil}
+                    exists = node(keys) ~= nil or nil, parent = (#parent == 0 or node(parent) ~= nil) or nil, key = line.key}
             end
         end
     end

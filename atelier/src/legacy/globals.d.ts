@@ -178,6 +178,7 @@ declare function segs(path: string): string[];
 declare const MIDCAST_GROUP_FROM: number;
 declare const MIDCAST_ORDER: string[];
 declare function catalogWhen(path: string): string | null;
+declare function keyMissing(path: string, pieces: LegacyAny): Array<{slot: string; name: string; where: string; effect: string; names: string[]}>;
 declare function midcastGroup(name: string, paths?: string[]): string;
 declare function midcastRank(name: string): number;
 declare function niceName(card: LegacyAny): string;
