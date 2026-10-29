@@ -44,8 +44,8 @@
 ---                                (before 2026-10-07 in saved/ or in data/: moved
 ---                                here when written again)
 ---   <Char>/atelier/              what the Atelier page (data/atelier.html) writes
----       overrides/               set_overrides.lua, keybind_overrides.lua: pieces
----                                and keys changed in the page, laid over your files
+---       overrides/               set_overrides.lua, keybind_overrides.lua, mode_overrides.lua: pieces,
+---                                keys and mode start values changed in the page, laid over your files
 ---       exports/                 <JOB>_<SUB>.js: the page's data (//gs c atelier)
 ---       backups/                 set files before each push (last 20 each)
 ---       history.lua              every push (the page's History)
@@ -158,6 +158,7 @@ local LEGACY_DEFAULT = {
 local ATELIER = {
     ['set_overrides.lua'] = 'atelier/overrides/set_overrides.lua',
     ['keybind_overrides.lua'] = 'atelier/overrides/keybind_overrides.lua',
+    ['mode_overrides.lua'] = 'atelier/overrides/mode_overrides.lua',
     ['list_layout.js'] = 'atelier/overrides/list_layout.js',
     ['bag_plan.js'] = 'atelier/overrides/bag_plan.js',
     ['set_push_history.lua'] = 'atelier/history.lua',

@@ -6,7 +6,7 @@
 // place the old one was, and the game writes the file (a copy first, the change in the history: /config_write).
 // (loaded after layout2.js: see atelier/src/legacy/files.ts)
 
-Object.assign(T.fr, {sectionsModules: 'Modules', ttTab_modules: 'Les réglages de chaque module de GearSwap (Auto Medicine, Refill, Dual-box, HUD…) : ceux du perso et ceux de ce job.',
+Object.assign(T.fr, {sectionsModules: 'Réglages', ttTab_modules: 'Les réglages de chaque module de GearSwap (Auto Medicine, Refill, Dual-box, HUD…) : ceux du perso et ceux de ce job.',
   modHint: 'Vue avancée : chaque fichier de réglages en entier. Pour les options courantes, reviens sur « Options ».',
   modSave: 'Enregistrer',
   modSaved: 'Écrit dans {f}. Une copie est gardée : l’historique (en haut) peut annuler. GearSwap se recharge.',
@@ -39,7 +39,7 @@ Object.assign(T.fr, {sectionsModules: 'Modules', ttTab_modules: 'Les réglages d
   mcIntro: 'Présentation', mcIntroSub: 'ce que GearSwap fait en {j}', mcIntroTitle: 'GearSwap en {j} : ce qu’il fait pour toi', mcIntroJob: 'Sur ce job ({j})',
   mcIntroWhere: 'Pour t’en servir :', mcIntroOwn: 'les options de {j} ({n})', mcIntroAll: 'Sur tous tes jobs', mcIntroAllWhy: 'Ces modules marchent quel que soit le job, rangés par ce à quoi ils servent. Clique sur l’un d’eux pour voir ce qu’il fait et le régler.',
   mcInGame: 'En jeu : ', ttIntro: 'Ce que ce GearSwap fait tout seul en {j}, et les modules communs à tous les jobs. À lire en premier.', ttIntroGo: 'Voir ce que fait « {f} » et ses options.'});
-Object.assign(T.en, {sectionsModules: 'Modules', ttTab_modules: 'The settings of each GearSwap module (Auto Medicine, Refill, Dual-box, HUD…): the character’s and this job’s.',
+Object.assign(T.en, {sectionsModules: 'Settings', ttTab_modules: 'The settings of each GearSwap module (Auto Medicine, Refill, Dual-box, HUD…): the character’s and this job’s.',
   modHint: 'Advanced view: each settings file whole. For the usual options, go back to "Options".',
   modSave: 'Save',
   modSaved: 'Written in {f}. A copy is kept: the history (top bar) can undo it. GearSwap reloads.',

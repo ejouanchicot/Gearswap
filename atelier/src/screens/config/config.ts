@@ -1,28 +1,23 @@
-// GearSwap Atelier · the job's settings, as one tab with its parts: Keys, Modes, Functions, Macro book & lockstyle,
-// Modules. Shown on a job with an export when its section is the job's settings (never over the page's settings or
+// GearSwap Atelier · the job's settings, as one tab with its parts: Modes & keys, Settings (the modules), Macros &
+// lockstyle (three since 2026-10-29: the Keys, Modes and Functions parts showed the same modes three times). Shown on a job with an export when its section is the job's settings (never over the page's settings or
 // the packages). The part chosen is the old page's S.jobTab (layout2.js jobCfgTab); the parts' buttons keep the
 // attribute its handler reads (events.js data-jobtab).
 //
 // @file    atelier/src/screens/config/config.ts
 // @author  ejouanchicot
 import {keysView, type KeysView} from './keys';
-import {modesView, functionsView, type ModesView, type FunctionsView} from './modes';
 import {macroView, type MacroView} from './macro';
 import {modulesView, type ModulesView} from './modules';
 
 export interface ConfigTab { key: string; label: string; count: number | ''; title: string; pressed: boolean }
 export type ConfigPart =
-  | {kind: 'keys'; view: KeysView} | {kind: 'modes'; view: ModesView} | {kind: 'functions'; view: FunctionsView}
-  | {kind: 'macro'; view: MacroView} | {kind: 'modules'; view: ModulesView};
+  | {kind: 'keys'; view: KeysView} | {kind: 'macro'; view: MacroView} | {kind: 'modules'; view: ModulesView};
 export interface ConfigView { aria: string; tabs: ConfigTab[]; part: ConfigPart }
 
-const LABELS: Record<string, string> = {keys: 'sectionsKeys', modes: 'sectionsModes', functions: 'sectionsFunctions',
-  macro: 'sectionsMacro', modules: 'sectionsModules'};
+const LABELS: Record<string, string> = {keys: 'sectionsKeys', macro: 'sectionsMacro', modules: 'sectionsModules'};
 
 function partOf(cur: string, d: LegacyExport): ConfigPart {
   if (cur === 'keys') return {kind: 'keys', view: keysView(d)};
-  if (cur === 'modes') return {kind: 'modes', view: modesView(d)};
-  if (cur === 'functions') return {kind: 'functions', view: functionsView(d)};
   if (cur === 'macro') return {kind: 'macro', view: macroView(d)};
   return {kind: 'modules', view: modulesView(d)};
 }

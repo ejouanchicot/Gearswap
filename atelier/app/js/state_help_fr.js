@@ -1,5 +1,5 @@
 // GearSwap Atelier · state_help_fr.js: what each mode does, in French, for a player who has never seen this GearSwap.
-// Shown under each mode of the Configuration tab (Modes, Keys, Switches). STATE_HELP_FR[JOB][State] says it for a job;
+// Shown under each mode of the Configuration tab (Modes & keys). STATE_HELP_FR[JOB][State] says it for a job;
 // STATE_HELP_FR['*'][State] for a mode that means the same on every job (a job's own text wins). The texts are the
 // French, made short, of the "What it does" column of docs/user/jobs/<job>/states.md (the English shown by the page is
 // taken from those pages by scripts/atelier/build_state_help.py), and of Mote's own modes for the ones every job has.

@@ -50,6 +50,12 @@ kbd{font-family:var(--mono);font-size:11.5px;padding:1px 6px;border:1px solid va
 .values{display:flex;flex-wrap:wrap;gap:4px}
 .values span{font-size:12.5px;padding:1px 8px;border:1px solid var(--line);border-radius:5px;color:var(--muted);background:var(--panel-2)}
 .values span.def{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 60%,transparent);background:var(--accent-soft);font-weight:600}
+/* a mode's start value (Modes & keys): the values are buttons; the start one as .def, the file's outlined with dots */
+.values.mstart button{font:inherit;font-size:12.5px;padding:1px 8px;border:1px solid var(--line);border-radius:5px;color:var(--muted);background:var(--panel-2);cursor:pointer}
+.values.mstart button:hover{color:var(--text);border-color:var(--accent)}
+.values.mstart button.def{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 60%,transparent);background:var(--accent-soft);font-weight:600}
+.values.mstart button.file{border-style:dashed;border-color:var(--accent)}
+.mhint{display:block;margin:0 0 6px}
 details.more{margin-top:16px}
 details.more summary{cursor:pointer;color:var(--muted);font-size:13px;padding:6px 0;margin-bottom:6px}
 .sw{display:inline-block;width:32px;height:18px;border-radius:9px;background:var(--line-strong);position:relative;vertical-align:middle}

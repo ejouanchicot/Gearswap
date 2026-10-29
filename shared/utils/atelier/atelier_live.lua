@@ -66,7 +66,7 @@
 local AtelierLive = {}
 
 local FIRST_PORT, PORT_TRIES = 52740, 8
-local SAVED_FILES = {['keybind_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true, ['bag_plan.js'] = true}
+local SAVED_FILES = {['keybind_overrides.lua'] = true, ['mode_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true, ['bag_plan.js'] = true}
 local MAX_BODY = 2 * 1024 * 1024
 local POLL_EVERY = 6   -- frames between two looks at the door
 local BAD_TOKENS, BAD_WINDOW = 30, 60   -- refused tokens that close the door, within that many seconds

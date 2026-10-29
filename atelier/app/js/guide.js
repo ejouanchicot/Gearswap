@@ -16,7 +16,7 @@ function guidePage(){
   if (S._cfg) return 'config';
   if (!S.job || !data()) return 'home';
   if (document.querySelector('#view .oppage')) return 'opt';
-  // the job's settings: the help is that of the part shown (keys, modes, switches, macro book)
+  // the job's settings: the help is that of the part shown (modes & keys, settings, macro book)
   if (S.section === 'jobcfg') return jobCfgTab();
   if (S.section === 'perso' && S.persoView === 'bags' && GUIDE_PAGES.fr.bags) return 'bags';
   return GUIDE_PAGES.fr[S.section] ? S.section : S.section === 'merits' ? 'perso' : 'sets';

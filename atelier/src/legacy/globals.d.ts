@@ -53,6 +53,8 @@ interface LegacyState {
   toast?: string;
   keysAll?: boolean;
   keyDirty: Record<string, boolean | undefined>;
+  modeDirty: Record<string, boolean | undefined>;
+  modeOv: Record<string, LegacyAny>;
   meritEdits: Record<string, Record<string, number> | undefined>;
   [key: string]: unknown;
 }
@@ -178,6 +180,10 @@ declare function segs(path: string): string[];
 declare const MIDCAST_GROUP_FROM: number;
 declare const MIDCAST_ORDER: string[];
 declare function catalogWhen(path: string): string | null;
+declare function modeStart(d: LegacyAny, m: LegacyAny): string;
+declare function modeFileStart(d: LegacyAny, m: LegacyAny): string;
+declare function modeChanges(): number;
+declare const COMMON_MODES: Set<string>;
 declare function keyMissing(path: string, pieces: LegacyAny): Array<{slot: string; name: string; where: string; effect: string; names: string[]}>;
 declare function midcastGroup(name: string, paths?: string[]): string;
 declare function midcastRank(name: string): number;

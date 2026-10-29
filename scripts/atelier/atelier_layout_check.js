@@ -99,7 +99,7 @@ function scan(view, regions){
             if (cur) { S.optView = optViewKey(cur); render(); await look(`${c} ${j} optimizer ${s.path}`); S.optView = null; render(); }
           }
           for (const sec of ['combat', 'perso', 'sim']) { S.section = sec; render(); await look(`${c} ${j} ${sec}`); }
-          for (const tab of ['keys', 'modes', 'functions', 'macro', 'modules']) { S.section = 'jobcfg'; S.jobTab = tab; render(); await look(`${c} ${j} config ${tab}`); }
+          for (const tab of ['keys', 'modules', 'macro']) { S.section = 'jobcfg'; S.jobTab = tab; render(); await look(`${c} ${j} config ${tab}`); }
           S.section = 'sets'; render();
         }
       }

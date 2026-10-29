@@ -164,6 +164,7 @@ function render(){
   // one of the four old tab names (a page kept on it, a link): the job's settings, on that part; settled before the
   // view is named, so that the scroll kept for this view is found again
   if (JOB_CFG.includes(S.section)) { S.jobTab = S.section; S.section = 'jobcfg'; }
+  else if (S.section === 'modes' || S.section === 'functions') { S.jobTab = 'keys'; S.section = 'jobcfg'; }
   const view = [S.char, S.job, S.section, S.section === 'jobcfg' ? S.jobTab : ''].join('|'), set = view + '|' + S.sel[S.job];
   const tops = SCROLLERS.map(q => { const el = $(q); return el ? el.scrollTop : 0; });
   const kept = S._view === view ? scrollKeep() : [];

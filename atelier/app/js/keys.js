@@ -78,6 +78,47 @@ function setKey(k, key){
   if (!Object.keys(map[scope]).length) delete map[scope];
   S.keyDirty[S.char] = true;
 }
+/* ---- mode start values chosen in the page, saved into <Char>/atelier/overrides/mode_overrides.lua ---- */
+// S.modeOv[char] = {at, map: {common: {Mode: value}, <JOB>: {Mode: value}}}: the whole file, from what the last export
+// read in it (mode_overrides), a later save wins. GearSwap lays it over the states files when a job loads
+// (shared/utils/core/mode_overrides.lua).
+// The modes every job has (the shared systems): one start value for every job
+const COMMON_MODES = new Set(['AutoMedicine', 'CombatMode', 'TreasureMode', 'JumpAuto']);
+const plainMap = m => m && !Array.isArray(m) && typeof m === 'object' ? m : {};
+function modeOverrides(){
+  const c = S.char, mine = S.modeOv[c];
+  const latest = latestExport(c, 'mode_overrides');
+  if (!mine || (latest && !S.modeDirty[c] && (latest.at || '') > (mine.at || ''))) {
+    S.modeOv[c] = {at: latest ? latest.at : '', map: JSON.parse(JSON.stringify(plainMap(latest && latest.mode_overrides)))};
+  }
+  return S.modeOv[c].map;
+}
+const modeScope = name => COMMON_MODES.has(name) ? 'common' : S.job;
+// The value a mode starts with from its states file: what the export saw before the page's override, else its value then
+const modeFileStart = (d, m) => plainMap(d.mode_file)[m.name] ?? m.current;
+// The start value now: the page's choice (the mode's own spelling: the game matches without case), else the file's
+function modeStart(d, m){
+  const ov = (modeOverrides()[modeScope(m.name)] || {})[m.name];
+  if (ov === undefined) return modeFileStart(d, m);
+  return m.values.find(v => v.toLowerCase() === String(ov).toLowerCase()) || ov;
+}
+// Choose a start value; the file's own removes the page's choice
+function setModeStart(d, name, value){
+  const m = d.modes.find(x => x.name === name);
+  if (!m) return;
+  const map = modeOverrides(), scope = modeScope(name);
+  map[scope] = map[scope] || {};
+  if (value.toLowerCase() === String(modeFileStart(d, m)).toLowerCase()) delete map[scope][name]; else map[scope][name] = value;
+  if (!Object.keys(map[scope]).length) delete map[scope];
+  S.modeDirty[S.char] = true;
+}
+const modeChanges = () => Object.values(modeOverrides()).reduce((n, m) => n + Object.keys(m).length, 0);
+Object.assign(T.fr, {modesTitle: 'Modes : valeur de départ et touche', modesHint: 'Clique une valeur : le mode la prendra à chaque chargement du job. La valeur entourée en pointillé est celle de ton fichier ; la choisir à nouveau enlève ton choix. En jeu, la touche fait toujours défiler le mode.',
+  modesAway: 'Modes d’un autre subjob que {s}', modeCommon: 'tous les jobs', modeFileTip: 'Valeur de départ dans ton fichier', modeStartTip: 'Valeur de départ choisie', modePickTip: 'Démarrer sur cette valeur',
+  modesSaved: '{n} valeur(s) de départ choisie(s) (atelier/overrides/mode_overrides.lua).', savedModes: 'Enregistré dans {p}. En jeu : //gs reload ou change de job.', modesDirty: 'Valeurs de départ changées, pas encore enregistrées.', keysOther: 'Autres touches'});
+Object.assign(T.en, {modesTitle: 'Modes: start value and key', modesHint: 'Click a value: the mode takes it at every load of the job. The value outlined with dots is your file’s; choosing it again removes your choice. In game, the key still cycles the mode.',
+  modesAway: 'Modes of another subjob than {s}', modeCommon: 'every job', modeFileTip: 'Start value in your file', modeStartTip: 'Start value chosen', modePickTip: 'Start on this value',
+  modesSaved: '{n} start value(s) chosen (atelier/overrides/mode_overrides.lua).', savedModes: 'Saved in {p}. In game: //gs reload or change job.', modesDirty: 'Start values changed, not saved yet.', keysOther: 'Other keys'});
 // A key bound with the subjob shown: its subjob(s), less the ones it excludes (exclude_subjob), and not
 // hidden by its own condition when the game exported it (visible: CombatMode where its settings hide it,
 // PLD's MainWeapon in the Tanking stance)

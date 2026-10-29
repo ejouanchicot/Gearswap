@@ -83,7 +83,7 @@ GEAR = {
 SAVED = ('Written by GearSwap itself (window positions, HUD and chat settings, dual-box role, '
          'gear augments of //gs c gearscan, traces). No need to edit.')
 ATELIER_LINES = [
-    'overrides/     pieces (set_overrides.lua) and keys (keybind_overrides.lua) changed in the',
+    'overrides/     pieces (set_overrides.lua), keys (keybind_overrides.lua) and mode start values (mode_overrides.lua) changed in the',
     '               Atelier page, laid over your files at every load: delete one to go back to your files',
     'exports/       the page data, one file per job and subjob (//gs c atelier)',
     'backups/       your set files as they were before each push from the page (last 20 each)',

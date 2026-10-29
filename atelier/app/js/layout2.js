@@ -32,8 +32,10 @@ Object.assign(T.en, {
 // The parts of the job's settings (its keys, modes, switches, macro book and lockstyle, modules: four small tabs until
 // 2026-10-11, one tab with its parts since). The job's tabs themselves are the Svelte application's
 // (atelier/src/screens/topbar/sections.ts)
-const JOB_CFG = ['keys', 'modes', 'functions', 'macro', 'modules'];
-// The part of the job's settings shown (S.jobTab, kept): the tab opened by one of the four old names lands on its part
+// Since 2026-10-29: three parts (the modes, their start values and every key in one; the modules' settings; the macro
+// book and lockstyle); the old Modes and Functions parts land on the first
+const JOB_CFG = ['keys', 'modules', 'macro'];
+// The part of the job's settings shown (S.jobTab, kept): the tab opened by one of the old names lands on its part
 const jobCfgTab = () => JOB_CFG.includes(S.jobTab) ? S.jobTab : 'keys';
 
 // The set shown in the Sets tab (the Combat and My character tabs work out their figures with it)

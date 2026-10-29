@@ -247,7 +247,7 @@ after 3 minutes without any action from or on it.
 
 ## Changing keys from the Atelier page
 
-Open `data/atelier.html`, tab **Keys**, and click ✎ on a key:
+Open `data/atelier.html`, a job's settings, part **Modes & keys**, and click ✎ on a key:
 
 1. Click the box, then press the keys you want. The page reads the key's
    position, as Windower does: on an AZERTY keyboard, press your own keys,
@@ -268,6 +268,21 @@ Open `data/atelier.html`, tab **Keys**, and click ✎ on a key:
 Your key files are never rewritten. A common key changed in the page changes
 on every job; a job key on that job only. Delete `keybind_overrides.lua` to go
 back to the keys of your files.
+
+## A mode's start value from the Atelier
+
+The same part lists every mode first, with its values: click one and the mode
+starts on it at every load of the job (Idle Mode on Refresh instead of PDT, for
+example). The value outlined with dots is your states file's; clicking it again
+removes your choice. The shared modes (Auto Medicine, Combat Mode, Treasure
+Mode, Jump Auto) take one start value for every job.
+
+**Save** writes `<YourName>/atelier/overrides/mode_overrides.lua` (with the
+keys, if you changed some too); in game, `//gs reload` or change job. Your
+states files (`<job>/keys/<JOB>_STATES.lua`) are never rewritten: delete
+`mode_overrides.lua` to go back to their values. In game the key still cycles
+the mode as before; the start value only counts when the job loads. A value
+the mode no longer has is ignored and named once in the chat.
 
 ## Temporary keys (`//gs c tb`)
 

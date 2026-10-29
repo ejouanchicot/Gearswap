@@ -322,6 +322,7 @@ KEPT_ON_RECLONE = [
     # what the Atelier page changed (shared/utils/core/char_paths.lua, 2026-10-05; saved/ before)
     ('atelier', 'overrides', 'set_overrides.lua'),
     ('atelier', 'overrides', 'keybind_overrides.lua'),
+    ('atelier', 'overrides', 'mode_overrides.lua'),   # mode start values (2026-10-29)
     ('atelier', 'export.on'),
     ('saved', 'set_overrides.lua'),
     ('saved', 'keybind_overrides.lua'),

@@ -9,6 +9,13 @@ function overridesLua(map){
     `-- (shared/utils/keybinds/key_overrides.lua). Delete this file to go back to the files' keys.\n` +
     `-- '' = no key. Written ${stamp()}.\nreturn {\n${Object.keys(map).sort().map(block).join('\n')}\n}\n`;
 }
+const luaKey = k => /^[A-Za-z_]\w*$/.test(k) ? k : '[' + luaStr(k) + ']';
+function modesLua(map){
+  const block = scope => `    ${luaKey(scope)} = {\n` + Object.keys(map[scope]).sort().map(n => `        ${luaKey(n)} = ${luaStr(map[scope][n])},`).join('\n') + `\n    },`;
+  return `-- Mode start values chosen in the Atelier page (data/atelier.html, Modes & keys tab), laid over the states\n` +
+    `-- files when a job loads (shared/utils/core/mode_overrides.lua). Delete this file to go back to them.\n` +
+    `-- Written ${stamp()}.\nreturn {\n${Object.keys(map).sort().map(block).join('\n')}\n}\n`;
+}
 // The data folder handle, kept in the browser (IndexedDB) once the player has picked it
 function idb(mode, fn){
   return new Promise((ok, ko) => { const r = indexedDB.open('atelier', 1);
@@ -59,12 +66,13 @@ function download(file, text){
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 // Write a file of <Char>/atelier/overrides/; true when written in the folder (else downloaded, or cancelled)
-async function saveFile(file, text){
+// noReload: another file follows in the same save (it reloads the game once, after both)
+async function saveFile(file, text, noReload){
   const c = S.char;
   if (liveOk(c)) {
     try {
       await liveFetch(c, '/save?file=' + encodeURIComponent(file), {method: 'POST', body: text});
-      try { await liveFetch(c, '/reload', {method: 'POST'}); } catch (e) {}
+      if (!noReload) try { await liveFetch(c, '/reload', {method: 'POST'}); } catch (e) {}
       return 'live';
     } catch (e) {}
   }
@@ -102,6 +110,17 @@ async function saveKeys(){
   S.keyDirty[c] = false; S.keyOv[c].at = stamp();
   if (done) S.toast = done === 'live' ? t('savedLive') : t('savedKeys', {p: `${c}/atelier/overrides/${file}`});
   render();
+}
+// The Modes & keys bar: the start values, then the keys, in one go (the game reloads once)
+async function saveModesKeys(){
+  const c = S.char, modes = !!S.modeDirty[c], keys = !!S.keyDirty[c];
+  if (modes) {
+    const file = 'mode_overrides.lua', done = await saveFile(file, modesLua(modeOverrides()), keys);
+    if (done === null) return;
+    S.modeDirty[c] = false; S.modeOv[c].at = stamp();
+    if (!keys) { if (done) S.toast = done === 'live' ? t('savedLive') : t('savedModes', {p: `${c}/atelier/overrides/${file}`}); render(); return; }
+  }
+  if (keys) await saveKeys();
 }
 /* ---- sets: the tried pieces saved into <Char>/atelier/overrides/set_overrides.lua ---- */
 // S.setOv[char] = {at, map: {<JOB>: {path: {slot: piece}}}}: the whole file, from the latest export, a later save wins

@@ -362,6 +362,11 @@ local function build_stages(data)
             -- the keys changed in the page and saved (<Char>/atelier/overrides/keybind_overrides.lua)
             local ok_o, KeyOverrides = pcall(require, 'shared/utils/keybinds/key_overrides')
             data.key_overrides = ok_o and KeyOverrides.read() or nil
+            -- the start values chosen in the page (<Char>/atelier/overrides/mode_overrides.lua), and what the states
+            -- files gave those modes before (the page shows both)
+            local ok_m, ModeOverrides = pcall(require, 'shared/utils/core/mode_overrides')
+            data.mode_overrides = ok_m and ModeOverrides.read() or nil
+            data.mode_file = ok_m and ModeOverrides.file_values() or nil
             -- the keys //gs c tb bound for this game session (shared/utils/keybinds/temp_binds.lua)
             local ok_t, TempBinds = pcall(require, 'shared/utils/keybinds/temp_binds')
             data.temp_binds = ok_t and TempBinds.current and TempBinds.current() or nil
