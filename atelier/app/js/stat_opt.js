@@ -135,14 +135,16 @@ function statDefaultOf(s){
   if (petObjectives(s)) return petObjectives(s);
   const sp = spellObjectives(s);
   if (sp) return sp;
-  // a self Cure's Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the gap);
-  // a Fast Cast set first (it is named for the spells it serves: precast.FC.Phalanx)
-  if (fam === 'fc' && /cure/i.test(p) && /self/i.test(p)) return ['fc', 'hpLow'];
+  // a tank's self Cure Fast Cast: capped, then as few HP as can be (Guide_Paladin CURE SELF: the midcast's HP open the
+  // gap); a Fast Cast set first (it is named for the spells it serves: precast.FC.Phalanx). A healer heals the same
+  // whatever its HP: its self Cure's Fast Cast is a Fast Cast set like any (the player, 2026-10-29)
+  if (tank && fam === 'fc' && /cure/i.test(p) && /self/i.test(p)) return ['fc', 'hpLow'];
   if (fam === 'fc') return ['fc', 'hp', 'pdtRed'];
   // Phalanx first, then the damage taken (no DT floor: the Phalanx comes before it)
   if (/phalanx/i.test(p)) return ['phalanx', 'pdtRed', 'mdtRed'];
-  // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt.js cureEnm), then the heal itself
-  if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return tank ? ['cureEnm', 'cureSelf', 'pdtRed'] : ['cureSelf', 'pdtRed', 'hp'];
+  // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt.js cureEnm), then the heal
+  // itself; a healer the heal (its own Cure potency received in), then as little enmity as its Cure on the others
+  if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return tank ? ['cureEnm', 'cureSelf', 'pdtRed'] : ['cureSelf', 'enmityLow', 'pdtRed'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
   // a Cure on the others, and the job's Healing Magic set (worn for a Cure with no set of its own): the HP it heals
   // (its potency was capped at 50 % on every healer's set, then the search added Enmity: Kaories' RDM, 2026-10-22);
@@ -253,10 +255,11 @@ function abilityPieces(s){
   }
   return out;
 }
-// The HP a self Cure's midcast set opens over its Fast Cast (the other set of the pair: sets.precast.FC.CureSelf and
-// sets.midcast.CureSelf, any names with Cure and Self), or null
+// The HP a tank's self Cure midcast set opens over its Fast Cast (the other set of the pair: sets.precast.FC.CureSelf
+// and sets.midcast.CureSelf, any names with Cure and Self), or null; null off PLD / RUN: the gap is the tank's trick
+// (Guide_Paladin CURE SELF), a healer's self Cure heals the same whatever its HP
 function cureGap(s){
-  if (!/cure/i.test(s.path) || !/self/i.test(s.path)) return null;
+  if (!['PLD', 'RUN'].includes(S.job) || !/cure/i.test(s.path) || !/self/i.test(s.path)) return null;
   const fc = family(s.path, s.pieces) === 'fc', d = data();
   const other = d && d.sets.find(x => x.path !== s.path && /cure/i.test(x.path) && /self/i.test(x.path) && (family(x.path, x.pieces) === 'fc') !== fc && family(x.path, x.pieces) !== 'ws');
   if (!other) return null;
@@ -296,8 +299,10 @@ function statRelevant(s, chosen){
   if (edContext(s)) { add(edRelevant()); return out; }
   const sp = spellObjectives(s);
   if (sp) { add([...sp, 'pdtRed', 'mdtRed', 'cmp', 'hp', 'sird', 'divSkill', 'healSkill', 'enmity']); return out; }
-  if (fam === 'fc') add(/cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
-  else if (/cur(e|a)/i.test(p) || (fam === 'midcast' && /healing magic/i.test(p))) add(/self/i.test(p) ? ['cureEnm', 'cureSelf', 'cure', 'cmp', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']
+  const tank = ['PLD', 'RUN'].includes(S.job);
+  if (fam === 'fc') add(tank && /cure/i.test(p) && /self/i.test(p) ? ['fc', 'hpLow', 'hp'] : ['fc', 'hp', 'pdtRed', 'mdtRed']);
+  else if (/cur(e|a)/i.test(p) || (fam === 'midcast' && /healing magic/i.test(p))) add(/self/i.test(p) ? (tank ? ['cureEnm', 'cureSelf', 'cure', 'cmp', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']
+      : ['cureSelf', 'cure', 'cmp', 'enmityLow', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed'])
     : ['cureOther', 'cure', 'cmp', 'enmityLow', 'enmity', 'hp', 'sird', 'pdtRed', 'mdtRed']);
   else if (/phalanx/i.test(p)) add(['phalanx', 'enhSkill', 'sird', 'enmity', 'def', 'hp', 'pdtRed']);
   else if (/stoneskin/i.test(p)) add(['stoneskin', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
