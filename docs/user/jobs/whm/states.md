@@ -48,11 +48,10 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   says why.
 - **Full Cure** is never touched by the auto-tier: it always goes as Full Cure.
 - **Engaged cures** use `sets.midcast.CureMelee` when that set has gear in it.
-- **Afflatus Solace up**: a Cure (not a Curaga) uses `sets.midcast.CureSolace`,
-  and `sets.buff['Afflatus Solace']` goes on top of Cures, Curagas and
-  Bar-spells.
+- **Afflatus Solace up**: a Cure (not a Curaga) uses `sets.midcast.CureSolace`
+  (`CureSIRD.Solace` in SIRD), an element Bar-spell `sets.midcast.BarElement.Solace`.
 - Status removal spells use `sets.midcast.StatusRemoval` (Cursna its own set),
-  plus the Divine Caress set when that buff is up.
+  or their Caress version when Divine Caress is up (-na spells only).
 - Paralyna while you are paralysed skips its precast gear.
 - The two locks are separate: with Melee ON, turning Combat Mode Off leaves
   main, sub and range locked (only the ammo is freed) until you turn Melee ON

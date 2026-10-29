@@ -48,7 +48,7 @@ const STATE_HELP_EN = {
  "BST": {
   "WeaponSet": "Main weapon, put on in idle and engaged gear (set named after the value)",
   "SubSet": "Off-hand or shield, same way",
-  "HybridMode": "PDT adds the .PDT version of the set in use (idle and engaged); Normal leaves it out. Exception: while you idle with a pet out that is not fighting, the base is a .PDT set whatever this says (see PetIdleMode)",
+  "HybridMode": "Who the DT gear protects. PDT adds the .PDT version of the set in use (idle and engaged): you are protected. PetDT protects the pet while you fight with it out: sets.pet.engaged.PDT when the pet fights, else sets.pet.idle.PDT (then sets.pet.idle), worn alone instead of your engaged set; everywhere else (no pet out, your pet fighting while you idle) it acts like PDT. Normal leaves the DT gear out. Exception: while you idle with a pet out that is not fighting, the base is a .PDT set whatever this says (see PetIdleMode). Example: PetIdleMode PetPDT + HybridMode PDT = the pet protected at rest, you protected in a fight",
   "AutoPetEngage": "On: once per second, if you are engaged and the pet is not fighting, /pet \"Fight\" <t> is sent. A Heel while you fight is undone within a second. Paused while rdymove runs",
   "PetIdleMode": "You idle, pet out and not fighting: MasterPDT wears sets.me.idle.PDT (protects you), PetPDT wears sets.pet.idle.PDT (protects the pet). Pet fighting: sets.pet.engaged whatever this says",
   "Ecosystem": "Runs //gs c ecosystem: next ecosystem; the species list is rebuilt and the jug choice goes to that ecosystem's first pet",
@@ -146,6 +146,7 @@ const STATE_HELP_EN = {
   "NukeMode": "Elemental midcast: sets.midcast['Elemental Magic'] or its ['Magic Burst'] variant",
   "SaboteurMode": "On = the spells listed in RDM_SABOTEUR_CONFIG.lua (template: Distract III, Gravity II) use Saboteur first when it is ready, then go out once it is up",
   "NukeTier": "Tier of the cast* nuke commands (I = base spell)",
+  "CureAutoTier": "Only with rdm/combat/RDM_CURE_CONFIG.lua. On: a Cure goes out as the smallest tier that covers the HP the target misses (Cure IV into 150 HP -> Cure II). Off: the tier you cast is kept. A tier on recast is swapped for a ready one either way (auto-tier)",
   "EnfeebleTier": "On: an enfeeble with tiers (Gravity II, Distract III...) that is on recast or short of MP drops to the next tier that can go. Off: it is cancelled and its recast shown, so you keep control of the tier. Nukes step down either way",
   "EnSpell": "Spell of //gs c castenspell, and of //gs c buff (tier I only: Enfire...; tier I hits every swing)",
   "GainSpell": "Spell of //gs c castgain, and of //gs c buff",

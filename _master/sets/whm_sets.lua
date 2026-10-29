@@ -171,56 +171,32 @@ sets.precast.JA['Benediction'] = {
     body = 'Piety Bliaut +3' -- Enhances Benediction effect
 }
 
--- Devotion (MP transfer - maximize HP for more MP transferred)
--- Formula: MP transferred = HP * 0.425 (with 5 merits + Piety Cap +3)
+-- Devotion: gives the target MP from your CURRENT HP (25 % of them sacrificed; MP
+-- given: 25 % of them, 30 % with 5 merits, 42.5 % with Piety Cap). HP gear put on at the ability does
+-- not raise your current HP (only the max), so only the Piety piece goes here:
+-- be at full HP in a high-HP idle set before using it.
 sets.precast.JA['Devotion'] = {
-    -- Maximize HP in all other slots for bigger MP transfer
-    main = 'Septoptic',
-    sub = 'Culminus',
-    ammo = 'Ombre Tathlum +1',
-    head = 'Piety Cap +3', -- +50% MP transferred (10% per merit level, 5 merits max)
-    body = 'Adamantite Armor',
-    hands = {name = 'Nyame Gauntlets', augments = {'Path: B'}},
-    legs = {name = 'Nyame Flanchard', augments = {'Path: B'}},
-    feet = 'Theo. Duckbills +3',
-    neck = 'Null Loop',
-    waist = 'Plat. Mog. Belt',
-    left_ear = 'Etiolation Earring',
-    right_ear = 'Odnowa Earring',
-    left_ring = {name = 'Gelatinous Ring +1', augments = {'Path: A'}},
-    right_ring = "K'ayres Ring",
-    back = 'Moonbeam Cape'
+    head = 'Piety Cap +3', -- +10 % per merit (BG Wiki Devotion)
 }
 
--- Martyr (HP transfer - maximize HP for more HP restored)
--- Formula: HP restored = HP * 0.75 (with 5 merits + Piety Mitts +3)
--- HP sacrificed = HP * 0.25 (always, mitigated by Stoneskin)
+-- Martyr: heals the target from your CURRENT HP (25 % sacrificed, twice that
+-- restored; up to 75 % of your HP with 5 merits and Piety Mitts). HP gear put on at
+-- the ability does not raise your current HP (only the max), so only the Piety
+-- piece goes here: be at full HP in a high-HP idle set before using it.
+-- The HP cost is absorbed by Stoneskin without lowering the heal.
 sets.precast.JA['Martyr'] = {
-    -- Maximize HP in all slots for bigger HP transfer
-    main = 'Septoptic',
-    sub = 'Culminus',
-    ammo = 'Ombre Tathlum +1',
-    head = {name = 'Nyame Helm', augments = {'Path: B'}},
-    body = 'Adamantite Armor',
-    hands = 'Piety Mitts +3', -- +50% HP restored (10% per merit level, 5 merits max)
-    legs = {name = 'Nyame Flanchard', augments = {'Path: B'}},
-    feet = 'Theo. Duckbills +3',
-    neck = 'Null Loop',
-    waist = 'Plat. Mog. Belt',
-    left_ear = 'Etiolation Earring',
-    right_ear = 'Odnowa Earring',
-    left_ring = {name = 'Gelatinous Ring +1', augments = {'Path: A'}},
-    right_ring = "K'ayres Ring",
-    back = 'Moonbeam Cape'
+    hands = 'Piety Mitts +3', -- +10 % per merit (BG Wiki Martyr)
 }
 
 -- Afflatus Solace (Cure-focused stance)
 -- Effects: Stoneskin on Cure spells, Bar-spell MDB+, Sacrifice removes 7 effects
 -- Note: Ebers Bliaut +3 equipped in midcast for Cure/Barspell bonuses
+-- No piece acts when the stance is used: its pieces go in the sets of the spells it changes (CureSolace, CureSIRD.Solace, BarElement.Solace)
 sets.precast.JA['Afflatus Solace'] = {}
 
 -- Afflatus Misery (Damage-focused stance)
 -- Effects: Cura potency boost, Banish damage boost, Esuna removes 2 effects, Auspice grants Enlight
+-- No piece acts when the stance is used: Piety Pantaloons goes in sets.midcast.Banish.Misery (worn during Banish)
 sets.precast.JA['Afflatus Misery'] = {}
 
 --============================================================--
@@ -410,6 +386,11 @@ sets.midcast.CureSIRD = {
         augments = {'MND+20', 'Eva.+20 /Mag. Eva.+20', 'MND+10', '"Cure" potency +10%', 'Damage taken-5%'}
     }
 }
+-- CureSIRD.Solace: Cure Mode SIRD under Afflatus Solace (a Cure, not a Curaga).
+-- The Solace pieces: Ebers Bliaut (up to 18 % of the Cure as Stoneskin),
+-- Alaunus's Cape (10 %). Missing: sets.midcast.CureSIRD.
+sets.midcast.CureSIRD.Solace = set_combine(sets.midcast.CureSIRD, {})
+
 
 -- Cure (Potency mode - party/alliance cures - maximum cure potency)
 sets.midcast.Cure = {
@@ -466,6 +447,12 @@ sets.midcast.Curaga = {
         augments = {'MND+20', 'Eva.+20 /Mag. Eva.+20', 'MND+10', '"Cure" potency +10%', 'Damage taken-5%'}
     }
 }
+
+-- CureMPConservation: on top of your Cure / Curaga set while your MP is under
+-- mp_conservation_below of WHM_CURE_CONFIG.lua (40 % by default). Empty = nothing
+-- changes. Put here what spares MP, e.g. a cheaper Cure weapon when your Cure
+-- sets hold an MP-hungry one:  main = 'Daybreak'
+sets.midcast.CureMPConservation = {}
 
 -- CuragaSIRD (SIRD mode - for casting Curaga under attack)
 sets.midcast.CuragaSIRD = {
@@ -538,6 +525,12 @@ sets.midcast.StatusRemoval = {
     head = 'Ebers Cap +3',
     legs = 'Orison Pantaloons +2'
 }
+
+-- StatusRemoval.Caress: a -na spell (Paralyna, Silena...; not Erase, Esuna nor
+-- Sacrifice) under Divine Caress. The pieces: Ebers Mitts (up to +5 resistances),
+-- Mending Cape (+1), worn during the -na, not when the ability is used.
+-- A spell's own version wins (sets.midcast.Cursna.Caress).
+sets.midcast.StatusRemoval.Caress = set_combine(sets.midcast.StatusRemoval, {})
 
 -- Esuna: worn nothing of its own before (no Healing Magic set). Under Afflatus
 -- Misery it removes more effects with Asclepius (+3), Piety Wand (+2), Cleric's Wand (+1).
@@ -625,6 +618,10 @@ sets.midcast.BarElement = {
     left_ring = 'Stikini Ring +1',
     back = {name = "Alaunus's Cape", augments = {'MND+18', '"Fast Cast"+10', 'Occ. inc. resist. to stat. ailments+10'}}
 }
+-- BarElement.Solace: an element Bar-spell under Afflatus Solace (+MDB). The pieces:
+-- Ebers Bliaut (up to +18 MDB), Alaunus's Cape (+10).
+sets.midcast.BarElement.Solace = set_combine(sets.midcast.BarElement, {})
+
 
 -- Bar-status spells (Barparalyze, Barsleepra...): their resistance is fixed
 -- (+30, +20 for the -ra), Enhancing skill does not change it; only Sroda
@@ -738,6 +735,12 @@ sets.midcast.Banish.Resistant = set_combine(sets.midcast['Divine Magic'].Resista
 sets.midcast.Banishga = set_combine(sets.midcast.Banish, {})
 sets.midcast.Banishga.Resistant = set_combine(sets.midcast.Banish.Resistant, {})
 
+-- Banish.Misery: Banish, Banishga under Afflatus Misery. The piece: Piety
+-- Pantaloons (Magic Attack Bonus on the Banish family per Animus Misery merit,
+-- value not known: "Question" on BG Wiki), e.g. legs = 'Piety Pantaloons +3'.
+-- A spell's own version wins (sets.midcast.Banishga.Misery).
+sets.midcast.Banish.Misery = set_combine(sets.midcast.Banish, {})
+
 -- Flash: lands on magic accuracy, then Enmity
 sets.midcast.Flash = set_combine(sets.midcast['Divine Magic'], {})
 sets.midcast.Flash.Resistant = set_combine(sets.midcast['Divine Magic'].Resistant, {})
@@ -832,21 +835,12 @@ sets.MoveSpeed = {
 
 sets.buff = {}
 
--- Divine Caress buff (enhances status removal)
--- Gear must be worn during MIDCAST of status removal spell (Paralyna, Silena, etc.)
--- NOT during JA activation. Worn over the status removal set while the buff
--- is up: empty until your Divine Caress pieces go here (e.g. hands = 'Ebers Mitts +3').
-sets.buff['Divine Caress'] = {}
+-- The abilities that change a spell (Divine Caress, Afflatus Solace, Afflatus
+-- Misery) have no set of their own: the spell's set has a version named after
+-- it, worn under the ability (sets.midcast.StatusRemoval.Caress,
+-- sets.midcast.BarElement.Solace, sets.midcast.CureSIRD.Solace,
+-- sets.midcast.Banish.Misery; a Cure under Solace wears sets.midcast.CureSolace).
 
--- Afflatus Solace buff (enhances Cure/Barspell when active)
--- Cure: Ebers Bliaut +3 (+18% HP as Stoneskin) + Alaunus's Cape (+10% HP as Stoneskin) = +28% total
--- Barspell: Ebers Bliaut +3 (+18 MDB) + Alaunus's Cape (+10 MDB) = +28 MDB total
--- Sacrifice: Removes 7 status effects instead of 1 (Ebers Bliaut +3 enhances)
--- Worn during MIDCAST of Cure/Curaga/Barspells when Afflatus Solace is active
-sets.buff['Afflatus Solace'] = {
-    body = 'Ebers Bliaut +3',
-    back = "Alaunus's Cape" -- +10% Cure Stoneskin, +10 MDB to Barspells
-}
 
 --============================================================--
 --                     RESTING SETS                           --

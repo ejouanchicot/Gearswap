@@ -22,10 +22,23 @@ the job does these things by itself:
   recast is replaced by the next ready lower tier, then a higher one.
 - **Cure gear by mode.** Cure Mode Potency or SIRD (spell interruption down)
   picks the Cure / Curaga set; engaged cures use `sets.midcast.CureMelee` when
-  you fill it; under Afflatus Solace a Cure uses `sets.midcast.CureSolace` and
-  the Afflatus Solace set goes on top of cures and Bar-spells.
-- **Status removal** (Paralyna, Cursna, Erase...) uses its own sets, with the
-  Divine Caress set on top while that buff is up. Paralyna on yourself while
+  you fill it; under Afflatus Solace a Cure uses `sets.midcast.CureSolace`
+  (`sets.midcast.CureSIRD.Solace` in SIRD), where the Solace pieces go (not on
+  Curagas: Solace gives them no Stoneskin).
+- **Versions named by the spell** for the abilities that change a spell: an
+  element Bar-spell under Afflatus Solace wears `sets.midcast.BarElement.Solace`,
+  a -na under Divine Caress `sets.midcast.StatusRemoval.Caress`, Banish /
+  Banishga under Afflatus Misery `sets.midcast.Banish.Misery`. A spell's own
+  version wins (`sets.midcast.Cursna.Caress`); without a version the spell's set
+  stays.
+- **MP economy on cures**: under `mp_conservation_below` (40 % MP) of
+  `WHM_CURE_CONFIG.lua`, `sets.midcast.CureMPConservation` goes on top of your
+  Cure / Curaga set (not the engaged CureMelee one). It names no item: put in it
+  what spares MP, e.g. a cheaper weapon when your Cure sets hold an MP-hungry
+  one (`main = 'Daybreak'` against a Raetic Rod +1). Empty or missing: nothing.
+- **Status removal** (Paralyna, Cursna, Erase...) uses its own sets, with their
+  Caress version while Divine Caress is up (the -na spells only: Divine Caress
+  does nothing for Erase, Esuna or Sacrifice). Paralyna on yourself while
   paralysed swaps no gear.
 - **Enfeebles by stat**: White Magic enfeebles wear `sets.midcast.MndEnfeebles`,
   Black Magic ones `sets.midcast.IntEnfeebles`.
@@ -170,7 +183,7 @@ for refill, `combat/` for the rest):
 |---|---|
 | `WHM_STATES.lua` | Every mode: values and defaults |
 | `WHM_KEYBINDS.lua` | The job keys above |
-| `WHM_CURE_CONFIG.lua` | Cure and Curaga tier thresholds (missing HP ranges), `safety_margin` (50 HP added before choosing), `debug_messages` |
+| `WHM_CURE_CONFIG.lua` | Cure and Curaga tier thresholds (missing HP ranges), `safety_margin` (50 HP added before choosing), `mp_conservation_below` (40: the MP % under which `sets.midcast.CureMPConservation` goes on the cures), `debug_messages` |
 | `WHM_CUSTOM.lua` | Your own modes, keys and gear rules (commented examples only) |
 | `WHM_LOCKSTYLE.lua` | Lockstyle number: `default = 3` is the one used; the per-subjob list is not read |
 | `WHM_MACROBOOK.lua` | Macro book and page per subjob (book 11, pages 1-5 by subjob in the template), and per alt job |

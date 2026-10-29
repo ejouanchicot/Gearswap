@@ -367,7 +367,7 @@ const JOB_GUIDE_EN = {
    ],
    [
     "Midcast by spell family",
-    "Each enfeeble wears the set of its type (MND potency, INT potency, magic accuracy...), each enhancing spell the set of its family (Enspell, Gain, Bar-element, Refresh, Regen...), with a Composure version on others. The Saboteur set goes on top while Saboteur is up. A Cure on yourself adds sets.midcast.CureSelf when you have it."
+    "Each enfeeble wears the set of its type (MND potency, INT potency, magic accuracy...), each enhancing spell the set of its family (Enspell, Gain, Bar-element, Refresh, Regen...), with a Composure version on others. The Saboteur set goes on top while Saboteur is up. A Cure on yourself adds sets.midcast.CureSelf when you have it; under mp_conservation_below of RDM_CURE_CONFIG.lua (40 % MP) a Cure adds sets.midcast.CureMPConservation when you fill it."
    ],
    [
     "Weapons from modes",
@@ -545,11 +545,19 @@ const JOB_GUIDE_EN = {
    ],
    [
     "Cure gear by mode",
-    "Cure Mode Potency or SIRD (spell interruption down) picks the Cure / Curaga set; engaged cures use sets.midcast.CureMelee when you fill it; under Afflatus Solace a Cure uses sets.midcast.CureSolace and the Afflatus Solace set goes on top of cures and Bar-spells."
+    "Cure Mode Potency or SIRD (spell interruption down) picks the Cure / Curaga set; engaged cures use sets.midcast.CureMelee when you fill it; under Afflatus Solace a Cure uses sets.midcast.CureSolace (sets.midcast.CureSIRD.Solace in SIRD), where the Solace pieces go (not on Curagas: Solace gives them no Stoneskin)."
+   ],
+   [
+    "Versions named by the spell",
+    "for the abilities that change a spell: an element Bar-spell under Afflatus Solace wears sets.midcast.BarElement.Solace, a -na under Divine Caress sets.midcast.StatusRemoval.Caress, Banish / Banishga under Afflatus Misery sets.midcast.Banish.Misery. A spell's own version wins (sets.midcast.Cursna.Caress); without a version the spell's set stays."
+   ],
+   [
+    "MP economy on cures",
+    "under mp_conservation_below (40 % MP) of WHM_CURE_CONFIG.lua, sets.midcast.CureMPConservation goes on top of your Cure / Curaga set (not the engaged CureMelee one). It names no item: put in it what spares MP, e.g. a cheaper weapon when your Cure sets hold an MP-hungry one (main = 'Daybreak' against a Raetic Rod +1). Empty or missing: nothing."
    ],
    [
     "Status removal",
-    "(Paralyna, Cursna, Erase...) uses its own sets, with the Divine Caress set on top while that buff is up. Paralyna on yourself while paralysed swaps no gear."
+    "(Paralyna, Cursna, Erase...) uses its own sets, with their Caress version while Divine Caress is up (the -na spells only: Divine Caress does nothing for Erase, Esuna or Sacrifice). Paralyna on yourself while paralysed swaps no gear."
    ],
    [
     "Enfeebles by stat",

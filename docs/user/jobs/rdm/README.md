@@ -25,7 +25,9 @@ engaged and casting gear, the job does these things by itself:
   (MND potency, INT potency, magic accuracy...), each enhancing spell the set of
   its family (Enspell, Gain, Bar-element, Refresh, Regen...), with a Composure
   version on others. The Saboteur set goes on top while Saboteur is up. A Cure
-  on yourself adds `sets.midcast.CureSelf` when you have it.
+  on yourself adds `sets.midcast.CureSelf` when you have it; under
+  `mp_conservation_below` of `RDM_CURE_CONFIG.lua` (40 % MP) a Cure adds
+  `sets.midcast.CureMPConservation` when you fill it.
 - **Weapons from modes**, with single-wield or dual-wield engaged sets chosen
   from what is in your off hand and your subjob (dual wield on /NIN or /DNC).
 - **Cast commands** that read a mode (nuke element and tier, enspell, gain,

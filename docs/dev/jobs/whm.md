@@ -27,6 +27,9 @@ What WHM adds on top of the shared pipeline:
   `MndEnfeebles` / `IntEnfeebles` by spell type.
 - **Pseudo-skill routing** through `MidcastManager`: `StatusRemoval`,
   `MndEnfeebles`, `IntEnfeebles` (and a `Repose` branch that is never used).
+- **MP economy on cures**: `job_post_midcast` lays `sets.midcast.CureMPConservation`
+  on a Cure / Curaga / CureSolace (not CureMelee) under `mp_conservation_below`
+  (`player.mpp`, `CureManager.lay_mp_conservation`, `shared/utils/whm/cure_manager.lua`).
 - **Latent-refresh idle** below 51 % MP (`refresh_mp_below` in `whm/combat/WHM_CONFIG.lua`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)), an `afflatus` command, and an
   `OffenseMode = 'Melee ON'` weapon lock beside the shared Combat Mode.
 
@@ -59,7 +62,7 @@ the sets file (structure and set names only).
 | `_master/config/whm/WHM_KEYBINDS.lua` | 78 | Data only: 6 entries handed to `KeybindManager.create('WHM', ...)` |
 | `_master/config/whm/WHM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
 | `_master/config/whm/WHM_CONFIG.lua` | 16 | `refresh_mp_below = 51` (read through `JobConfig`) |
-| `_master/config/whm/WHM_CURE_CONFIG.lua` | 104 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages`, `auto_tier_enabled` (what `CureAutoTier` starts on, read by the entry's `user_setup`) (+ unread `message_color`) |
+| `_master/config/whm/WHM_CURE_CONFIG.lua` | 104 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages`, `auto_tier_enabled` (what `CureAutoTier` starts on, read by the entry's `user_setup`), `mp_conservation_below` (40, `CureManager.lay_mp_conservation`) (+ unread `message_color`) |
 | `_master/config/whm/WHM_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/whm/WHM_LOCKSTYLE.lua` | 52 | `default = 3`, `by_subjob` (never read by `LockstyleManager`; `//gs c lockscan` and `//gs c jobtest` read it) |
 | `_master/config/whm/WHM_MACROBOOK.lua` | 85 | `default` book 11 page 1, `solo[sub]` pages 1-5, empty `dualbox` |
@@ -192,11 +195,11 @@ gives the rest (`Full Cure` -> `Cure`, `Cura` -> `Curaga`, Poisona..Erase ->
 ```mermaid
 flowchart TD
     A[job_post_midcast] --> H{eventArgs.handled - a Cure}
-    H -- yes --> O[Afflatus Solace set for Cure/Curaga/CureSolace if the buff is up]
+    H -- yes --> O[CureMPConservation under its MP threshold]
     H -- no --> S{spellMap StatusRemoval}
-    S -- yes --> SR[MidcastManager skill StatusRemoval + Divine Caress set if up]
+    S -- yes --> SR[MidcastManager skill StatusRemoval, then its .Caress version under Divine Caress]
     S -- no --> E{spell.skill}
-    E -- Enhancing --> EN[MidcastManager Enhancing, target_func, get_spell_family; Solace set on ^Bar spells]
+    E -- Enhancing --> EN[MidcastManager Enhancing, target_func, get_spell_family; BarElement .Solace version under Solace]
     E -- Divine --> DV[MidcastManager Divine Magic, mode_state CastingMode]
     E -- Enfeebling --> EF[MidcastManager skill MndEnfeebles / IntEnfeebles, mode_state CastingMode]
     E -- Dark --> DK[MidcastManager Dark Magic]
@@ -213,13 +216,19 @@ flowchart TD
   nothing for Esuna or Sacrifice). `//gs c debugmidcast` now reports these
   spells ("missing - Mote's set stays").
 - **StatusRemoval**: P0 `sets.midcast.Cursna`, otherwise the `StatusRemoval`
-  base, then `sets.buff['Divine Caress']` while the buff is up.
+  base, then its `.Caress` version while Divine Caress is up and the spell is
+  not Erase, Esuna nor Sacrifice (`caress_applies`, `NOT_CARESSED`;
+  `version_of`: `sets.midcast[<spell>].Caress`, then the tier-less name, then
+  `StatusRemoval.Caress`).
 - **Enhancing**: P0 by name (`Haste`, `Sneak`, `Invisible`, `Stoneskin`,
   `Aquaveil`, `Refresh`, `Auspice`), P1 `Regen` for Regen II-IV, P6
   `sets.midcast.BarElement` for Bar-element spells, otherwise the base. No
   `mode_state`; the Composure target never occurs on WHM. Then
-  `sets.buff['Afflatus Solace']` on any `^Bar` spell (elemental and ailment)
-  while Solace is up.
+  the `.Solace` version (`version_of`: the spell, then `BarElement.Solace`) on
+  an element Bar-spell (`get_spell_family` = `BarElement`) while Solace is up.
+  Banish family under Afflatus Misery: the `.Misery` version (`Banish.Misery`).
+  The old `sets.buff['Afflatus Solace' / 'Divine Caress' / 'Afflatus Misery']`
+  layers are gone (2026-10-29): a set is named by the spell it changes.
 - **Divine**: `CastingMode` is `mode_state`. Repose, Holy and Holy II have name
   sets (P0), which win before any mode level; P0 takes the name set's mode
   child when there is one, so `sets.midcast.Repose.Resistant` is worn in
@@ -340,7 +349,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 | `sets.midcast.MndEnfeebles`, `.IntEnfeebles` (+ `.Resistant`) | MidcastManager pseudo-skills | yes |
 | `sets.midcast['Enfeebling Magic']` | only when the spell map is neither (never) | no |
 | `sets.midcast['Dark Magic']`, `['Elemental Magic']` | MidcastManager | yes |
-| `sets.buff['Divine Caress']`, `['Afflatus Solace']` | `job_post_midcast` overlays | yes (Divine Caress empty) |
+| `sets.midcast.StatusRemoval.Caress`, `BarElement.Solace`, `Banish.Misery`, `CureSIRD.Solace` | versions worn under Divine Caress / Afflatus Solace / Afflatus Misery (`version_of`, `wear_version`; CureSIRD.Solace in `job_midcast`) | yes (copies of their base) |
 | `sets.resting`, `sets.buff.Doom` | Mote resting, DoomManager | yes |
 | `sets.TreasureHunter`, `sets.DW` | shared Treasure Hunter, DualWield | no |
 

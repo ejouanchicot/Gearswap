@@ -67,7 +67,8 @@ const MOD_FILE_FR = {
   'RUN_BLU_MAGIC.lua': ['Blue Magic d’enmity (RUN)', 'Les sorts de Blue Magic de zone utilisés en /BLU : détectés d’après tes sorts équipés, sinon ceux listés ici.'],
   'PLD_WEAPONS.lua': ['Armes et boucliers (PLD)', 'Le bouclier que prend chaque arme, par posture.'],
   'RDM_SABOTEUR_CONFIG.lua': ['Saboteur automatique (RDM)', 'Les affaiblissements avant lesquels Saboteur part tout seul.'],
-  'WHM_CURE_CONFIG.lua': ['Tiers de Cure (WHM)', 'Les seuils de HP manquants qui choisissent le tier de Cure.'],
+  'WHM_CURE_CONFIG.lua': ['Tiers de Cure (WHM)', 'Les seuils de HP manquants qui choisissent le tier de Cure, et le seuil de MP de l’économie de MP des Cure.'],
+  'RDM_CURE_CONFIG.lua': ['Tiers de Cure (RDM)', 'Les seuils de HP manquants qui choisissent le tier de Cure, et le seuil de MP de l’économie de MP des Cure.'],
 };
 
 // The groups the modules (and, in the advanced view, the files) are ranged in, by what they are for
@@ -125,6 +126,10 @@ const MOD_CATALOG = [
       'Cure tier choice at load', 'On: the Cure Auto-Tier mode starts On, and the Cure cast is replaced by the one that fits the HP the target is missing. Off: it starts Off, the tier you cast is kept. Its key turns it on and off afterwards, until the next load.'),
     MC('WHM_CURE_CONFIG.lua', 'cure_tiers', 'Paliers de Cure', 'Avec le choix du tier allumé (le mode Cure Auto-Tier), une ligne par Cure : quand les HP qui manquent à la cible sont dans cette plage, c’est ce sort qui part.', 'Cure tiers', 'With the tier choice on (the Cure Auto-Tier mode), one line a Cure: when the HP the target is missing are in this range, this spell goes.', {cols: MC_CURE_COLS}),
     MC('WHM_CURE_CONFIG.lua', 'curaga_tiers', 'Paliers de Curaga', 'Pareil pour les Curaga.', 'Curaga tiers', 'The same for the Curagas.', {cols: MC_CURE_COLS}),
+    MC('WHM_CURE_CONFIG.lua', 'mp_conservation_below', 'Économie de MP des Cure sous', 'Sous ce pourcentage de MP, sets.midcast.CureMPConservation se pose sur ton set de Cure / Curaga. Mets-y ce qui économise du MP, par exemple une arme moins gourmande si tes sets de Cure en portent une qui coûte plus de MP. Set vide ou absent : rien ne change. 0 : éteint.',
+      'Cure MP economy under', 'Under this MP percent, sets.midcast.CureMPConservation goes on your Cure / Curaga set. Put in it what spares MP, e.g. a cheaper weapon when your Cure sets hold an MP-hungry one. Empty or missing set: nothing changes. 0: off.', {unit: '% MP'}),
+    MC('RDM_CURE_CONFIG.lua', 'mp_conservation_below', 'Économie de MP des Cure sous', 'Sous ce pourcentage de MP, sets.midcast.CureMPConservation se pose sur ton set de Cure. Set vide ou absent : rien ne change. 0 : éteint.',
+      'Cure MP economy under', 'Under this MP percent, sets.midcast.CureMPConservation goes on your Cure set. Empty or missing set: nothing changes. 0: off.', {unit: '% MP'}),
     MC('WHM_CURE_CONFIG.lua', 'safety_margin', 'Marge de sécurité', 'Ajoutée aux HP manquants avant de choisir le tier, pour ne pas soigner trop juste.', 'Safety margin', 'Added to the missing HP before the tier is picked, so a heal does not fall just short.', {unit: 'HP'}),
     MC('{JOB}_BLU_MAGIC.lua', 'aoe_spell_database', 'Sorts de zone en /BLU', 'Les sorts de Blue Magic de zone lancés pour l’enmity. Parmi ceux que tu as équipés, celui qui a le plus d’enmity par seconde part en premier.', 'Area spells on /BLU', 'The area Blue Magic spells cast for enmity. Among those you have set, the one with the most enmity per second goes first.',
       {cols: {name: ['text', 'Sort', 'Spell'], enmity: ['num'], recast: ['num'], priority: ['num']}}),

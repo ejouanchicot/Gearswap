@@ -27,6 +27,37 @@ local MidcastDeps = require('shared/utils/midcast/midcast_deps')
 local MidcastManager = nil
 local EnhancingSPELLS = nil
 
+-- Divine Caress works with the -na spells only: not Erase, Esuna nor Sacrifice (BG Wiki Divine Caress)
+local NOT_CARESSED = {['Erase'] = true, ['Esuna'] = true, ['Sacrifice'] = true}
+
+--- Whether Divine Caress acts on this status removal: the buff is up and the spell is a -na.
+--- @param spell table Spell information from GearSwap
+--- @return boolean
+local function caress_applies(spell)
+    return buffactive['Divine Caress'] and spell and not NOT_CARESSED[spell.english] or false
+end
+
+--- The version of a spell's own set for an ability that changes that spell, named by the spell:
+--- sets.midcast[<spell>][version], then [<spell without its tier>], then [group] (Banish.Misery for
+--- Banish II, StatusRemoval.Caress for Paralyna, BarElement.Solace for Barfire).
+--- @param spell table Spell information from GearSwap
+--- @param group string The spell's group set (StatusRemoval, BarElement, Banish)
+--- @param version string Solace, Caress, Misery
+--- @return table|nil nil when no such version exists (the spell's set stays)
+local function version_of(spell, group, version)
+    for _, key in ipairs({spell.english, (spell.english:gsub(' [IVX]+$', '')), group}) do
+        local set = sets.midcast[key]
+        if type(set) == 'table' and type(set[version]) == 'table' then return set[version] end
+    end
+    return nil
+end
+
+--- Equip that version when there is one.
+local function wear_version(spell, group, version)
+    local set = version_of(spell, group, version)
+    if set then equip(set) end
+end
+
 ---   Pre-midcast hook (CureMode SIRD/Potency selection for Cure and Curaga)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
@@ -59,10 +90,11 @@ function job_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- CureSolace - apply CureMode even with Afflatus Solace
+    -- CureSolace - apply CureMode even with Afflatus Solace (SIRD: CureSIRD.Solace when it exists)
     if spellMap == 'CureSolace' then
         if state.CureMode and state.CureMode.current == 'SIRD' then
-            equip(sets.midcast.CureSIRD or sets.midcast.CureSolace)
+            local sird = sets.midcast.CureSIRD
+            equip((sird and sird.Solace) or sird or sets.midcast.CureSolace)
         else
             equip(sets.midcast.CureSolace)
         end
@@ -78,23 +110,26 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
---- Buff layers for a cast job_midcast already dressed (eventArgs.handled).
+--- Layers for a cast job_midcast already dressed (eventArgs.handled). The Solace pieces of a
+--- Cure are in sets.midcast.CureSolace itself (its Stoneskin comes on a single-target Cure only).
+--- @param spell table Spell information from GearSwap
 --- @param spellMap string Spell mapping (Cure, Curaga, CureSolace, ...)
-local function job_post_midcast_eventargs_handled(spellMap)
-    -- Apply Divine Caress boosting if StatusRemoval
-    if spellMap == 'StatusRemoval' and buffactive['Divine Caress'] then
-        equip(sets.buff['Divine Caress'])
+local function job_post_midcast_eventargs_handled(spell, spellMap)
+    if spellMap == 'StatusRemoval' and caress_applies(spell) then
+        wear_version(spell, 'StatusRemoval', 'Caress')
     end
 
-    -- Apply Afflatus Solace gear bonuses
-    if buffactive['Afflatus Solace'] then
-        if spellMap == 'Cure' or spellMap == 'Curaga' or spellMap == 'CureSolace' then
-            equip(sets.buff['Afflatus Solace'])
+    -- Low MP: sets.midcast.CureMPConservation on top (WHM_CURE_CONFIG mp_conservation_below,
+    -- shared/utils/whm/cure_manager.lua). Not CureMelee: a weapon swap there would cost the TP.
+    if spellMap == 'Cure' or spellMap == 'Curaga' or spellMap == 'CureSolace' then
+        local ok, CureManager = pcall(require, 'shared/utils/whm/cure_manager')
+        if ok and CureManager and CureManager.lay_mp_conservation then
+            CureManager.lay_mp_conservation(spell)
         end
     end
 end
 
---- Status removal: MidcastManager set, then the Divine Caress layer.
+--- Status removal: MidcastManager set, then its Caress version under Divine Caress (-na spells only).
 --- @param spell table Spell information from GearSwap
 local function job_post_midcast_statusremoval(spell)
     MidcastManager.select_set({
@@ -102,13 +137,12 @@ local function job_post_midcast_statusremoval(spell)
         spell = spell
     })
 
-    -- Apply Divine Caress boosting if buff is active
-    if buffactive['Divine Caress'] then
-        equip(sets.buff['Divine Caress'])
+    if caress_applies(spell) then
+        wear_version(spell, 'StatusRemoval', 'Caress')
     end
 end
 
---- Enhancing Magic: spell-family routing, then the Solace layer on Bar-spells.
+--- Enhancing Magic: spell-family routing, then the Solace version of an element Bar-spell.
 --- @param spell table Spell information from GearSwap
 local function job_post_midcast_enhancing_magic(spell)
     -- Use database-driven spell_family routing (replaces manual pattern matching)
@@ -120,11 +154,11 @@ local function job_post_midcast_enhancing_magic(spell)
         database_func = EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
     })
 
-    -- Apply Afflatus Solace bonus for Bar-element spells
-    if spell.name:match('^Bar') and buffactive['Afflatus Solace'] then
-        equip(sets.buff['Afflatus Solace'])
+    -- Afflatus Solace adds MDB to the element Bar-spells only (BG Wiki Afflatus Solace)
+    if buffactive['Afflatus Solace'] and EnhancingSPELLS and EnhancingSPELLS.get_spell_family
+        and EnhancingSPELLS.get_spell_family(spell.english) == 'BarElement' then
+        wear_version(spell, 'BarElement', 'Solace')
     end
-
 end
 
 --- Which set an enfeeble wants, by what it scales on.
@@ -180,7 +214,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Cures are already dressed by job_midcast (CureMode, Solace,
     -- CureMelee); re-selecting here would undo that.
     if eventArgs.handled then
-        job_post_midcast_eventargs_handled(spellMap)
+        job_post_midcast_eventargs_handled(spell, spellMap)
         return
     end
 
@@ -190,6 +224,10 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         job_post_midcast_enhancing_magic(spell)
     elseif spell.skill == 'Divine Magic' then
         MidcastManager.select_set({skill = 'Divine Magic', spell = spell, mode_state = state.CastingMode})
+        -- Afflatus Misery changes the Banish family (Piety Pantaloons): its Misery version
+        if buffactive['Afflatus Misery'] and spell.english:find('^Banish') then
+            wear_version(spell, 'Banish', 'Misery')
+        end
     elseif spell.skill == 'Enfeebling Magic' then
         midcast_enfeebling(spell, spellMap)
     elseif spell.skill == 'Dark Magic' then

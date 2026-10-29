@@ -110,6 +110,8 @@ return {
     -- select_set{skill='Healing Magic'}: P0, P1, P8b, P9 only (common lines).
     -- Then sets.midcast.CureSelf on top for a Cure (not a Curaga) cast on yourself.
     {'midcast.CureSelf', when = 'Casting a Cure (not a Curaga) on yourself: on top of the cure set', fr = 'Quand tu lances une Cure (pas une Curaga) sur toi-même : mis par-dessus ton set de Cure.'},
+    -- Then shared/utils/whm/cure_manager.lua lay_mp_conservation (RDM_CURE_CONFIG mp_conservation_below)
+    {'midcast.CureMPConservation', when = 'A Cure or Curaga while your MP is under mp_conservation_below of RDM_CURE_CONFIG.lua: on top of the cure set', fr = 'Quand tu lances une Cure ou une Curaga avec ton MP sous le seuil mp_conservation_below de RDM_CURE_CONFIG.lua : mis par-dessus ton set de Cure.'},
 
     ---------------------------------------------------------------- Elemental (RDM_MIDCAST.lua midcast_elemental)
     -- select_set{skill='Elemental Magic', mode_state=NukeMode}

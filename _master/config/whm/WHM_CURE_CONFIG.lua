@@ -86,6 +86,20 @@ WHMCureConfig.auto_tier_enabled = true
 WHMCureConfig.safety_margin = 50
 
 ---============================================================================
+--- MP ECONOMY
+---============================================================================
+
+--- Under this MP percent, sets.midcast.CureMPConservation (your whm_sets.lua)
+--- goes on top of your Cure / Curaga set. Nothing happens without that set, or
+--- with it empty: the code names no item, your sets say what is worn.
+--- Example: a strong but MP-hungry Cure weapon in sets.midcast.Cure and
+--- CureSolace (main = 'Raetic Rod +1'), a cheaper one here:
+---   sets.midcast.CureMPConservation = { main = 'Daybreak' }
+--- so the Cures heal harder while MP is high and spare MP once it runs low.
+--- Delete the line (or set it to 0) to turn it off.
+WHMCureConfig.mp_conservation_below = 40
+
+---============================================================================
 --- DEBUG SETTINGS
 ---============================================================================
 

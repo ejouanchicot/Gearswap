@@ -455,6 +455,29 @@ function CureManager.retier(spell, eventArgs)
     return true
 end
 
+--- MP economy for the Cures: sets.midcast.CureMPConservation on top of the Cure / Curaga set while the MP percent is
+--- under the config's mp_conservation_below. The code names no item: the player's sets say what is worn (a strong
+--- Cure weapon in the Cure sets, a cheaper one in this set, e.g.). No threshold, no set or an empty set: nothing.
+--- @param spell table Spell data from GearSwap
+--- @return boolean True when the set was laid
+function CureManager.lay_mp_conservation(spell)
+    local below = WHMCureConfig and tonumber(WHMCureConfig.mp_conservation_below)
+    local set = sets.midcast and sets.midcast.CureMPConservation
+    if not (below and set and next(set) ~= nil and spell and CureManager.is_tiered_cure(spell.english)) then
+        return false
+    end
+    local mpp = player and player.mpp
+    if not mpp or mpp >= below then
+        return false
+    end
+    equip(set)
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok_t and Trace and Trace.enabled and Trace.enabled() then
+        Trace.log('MIDCAST', '%s -> sets.midcast.CureMPConservation (MP %d%% < %d%%)', spell.english, mpp, below)
+    end
+    return true
+end
+
 --- The Cure Auto-Tier mode (state.CureAutoTier) of a job whose STATES file does not declare it (the WHM's does):
 --- created On / Off once per job load, started as the config says (auto_tier_enabled = false: Off); a subjob change
 --- keeps the player's choice. Called from user_setup before the keybinds, so the keybind HUD reads it from the start.

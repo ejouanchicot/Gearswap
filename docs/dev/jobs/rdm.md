@@ -211,7 +211,7 @@ midcast (spell name, spell map, skill, `CastingMode`), then
 |-------|---------|------------------------------------|-------------------|
 | Enfeebling Magic | `midcast_enfeebling` | `mode_state = EnfeebleMode`, `database_func = get_enfeebling_type` | `sets.midcast['Enfeebling Magic'].Saboteur` while `buffactive['Saboteur']` |
 | Enhancing Magic | `midcast_enhancing` | `mode_state = state.EnhancingMode` (never defined, nil), `target_func = get_enhancing_target`, `database_func = get_spell_family` | Before the manager: Accession + `^Phalanx` equips `sets.midcast['Enhancing Magic']` and returns and calls `MidcastFallback.skip(spell)` so the fallback leaves it alone |
-| Healing Magic | `midcast_healing` | skill + spell | `sets.midcast.CureSelf` for a Cure (not a Curaga: `^Cure`) on oneself, when the set exists |
+| Healing Magic | `midcast_healing` | skill + spell | `sets.midcast.CureSelf` for a Cure (not a Curaga: `^Cure`) on oneself, when the set exists; then `CureManager.lay_mp_conservation` (`sets.midcast.CureMPConservation` on a tiered Cure / Curaga under `RDM_CURE_CONFIG.mp_conservation_below` % MP) |
 | Elemental Magic | `midcast_elemental` | `mode_state = NukeMode` | - |
 | Dark Magic | `midcast_dark` | skill + spell | - |
 | any other skill | none in RDM | - | the shared `MidcastFallback` routes the spell with its own skill from `cleanup_midcast` |
@@ -406,6 +406,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 | `sets.midcast.Enspell/Gain/BarElement/BarAilment/Spikes/Aquaveil` | P6 family | yes |
 | `sets.midcast['Healing Magic']`, `.Cure`, `.Curaga` | MidcastManager | yes |
 | `sets.midcast.CureSelf` | `midcast_healing` overlay (Cure on oneself) | yes |
+| `sets.midcast.CureMPConservation` | `midcast_healing` overlay under the MP threshold (`cure_manager.lua`) | yes (empty) |
 | `sets.midcast['Elemental Magic']`, `.FreeNuke`, `['Magic Burst']` | `NukeMode` P8 | yes |
 | `sets.midcast['Dark Magic']`, `.Impact`, `.Stun`, `.Drain`, `.Aspir` | MidcastManager | yes |
 | `sets.buff.Doom` | shared DoomManager | yes |

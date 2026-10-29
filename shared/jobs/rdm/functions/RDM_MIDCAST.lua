@@ -270,6 +270,13 @@ local function midcast_healing(spell, debug_enabled)
         end
     end
 
+    -- Low MP: sets.midcast.CureMPConservation on top, with an RDM_CURE_CONFIG mp_conservation_below
+    -- (shared/utils/whm/cure_manager.lua lay_mp_conservation)
+    local ok_c, CureManager = pcall(require, 'shared/utils/whm/cure_manager')
+    if ok_c and CureManager and CureManager.lay_mp_conservation then
+        CureManager.lay_mp_conservation(spell)
+    end
+
     if debug_enabled then
         MessageFormatter.show_debug('RDM Midcast', 'Healing Magic result: ' .. tostring(success))
     end

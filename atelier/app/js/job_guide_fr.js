@@ -149,6 +149,7 @@ const JOB_GUIDE_FR = {
     ['Tier de Cure selon les HP manquants', 'Cure Auto-Tier allumé : un Cure ou Curaga est remplacé par le tier qui correspond aux HP manquants de la cible (seuils dans WHM_CURE_CONFIG.lua).'],
     ['Tier de Cure en recast', 'Toujours : un tier en recast est remplacé par le tier inférieur prêt, sinon un supérieur.'],
     ['Équipement de Cure par mode', 'Cure Mode Potency ou SIRD choisit le set ; sous Afflatus Solace, un Cure prend sets.midcast.CureSolace.'],
+    ['Économie de MP des Cure', 'Sous 40 % de MP (mp_conservation_below, WHM_CURE_CONFIG.lua), sets.midcast.CureMPConservation se pose sur ton set de Cure / Curaga : par exemple une arme moins gourmande en MP. Vide : rien ne change.'],
     ['Retrait de statuts', 'Paralyna, Cursna, Erase… ont leurs sets, avec celui de Divine Caress par-dessus tant qu’il est actif.'],
     ['Affaiblissements par stat', 'Ceux de White Magic portent sets.midcast.MndEnfeebles, ceux de Black Magic sets.midcast.IntEnfeebles.'],
     ['Deux verrous d’armes', 'Combat Mode (main, sub, range, ammo) et Offense Mode « Melee ON » (main, sub, range).'],

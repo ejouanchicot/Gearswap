@@ -285,6 +285,12 @@ sets.midcast.Curaga = set_combine(sets.midcast['Healing Magic'], {})
 -- Cure Self (self-target cure - can add defensive gear here)
 sets.midcast.CureSelf = set_combine(sets.midcast['Healing Magic'], {})
 
+-- CureMPConservation: on top of your Cure set while your MP is under
+-- mp_conservation_below of RDM_CURE_CONFIG.lua (40 % by default). Empty = nothing
+-- changes. Put here what spares MP, e.g. a cheaper Cure weapon when your Cure
+-- sets hold an MP-hungry one:  main = 'Daybreak'
+sets.midcast.CureMPConservation = {}
+
 --╭──────────────────────────────────────────────────────────────────────────────╮
 --│ ENFEEBLING MAGIC (DEBUFFS)                                                   │
 --╰──────────────────────────────────────────────────────────────────────────────╯

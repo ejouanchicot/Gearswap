@@ -93,8 +93,9 @@ Chosen by the job itself, before anything else:
 | `sets.midcast.Curaga` | Curaga ..., Cura ..., Cure Mode `Potency` |
 | `sets.midcast.CuragaSIRD` | Same, Cure Mode `SIRD`. Missing: `sets.midcast.Curaga` |
 | `sets.midcast.CureSolace` | A Cure (not a Curaga) while Afflatus Solace is up, Cure Mode `Potency`. In `SIRD`: `sets.midcast.CureSIRD` (missing: `CureSolace`) |
+| `sets.midcast.CureMPConservation` | Put on top of the Cure / Curaga set (any of the above but CureMelee) while your MP is under `mp_conservation_below` of `WHM_CURE_CONFIG.lua` (40 %). Empty in the provided file: nothing changes. Example: `main = 'Daybreak'` when your Cure sets hold a Raetic Rod +1 (stronger cures, 30 % more MP) |
 | `sets.midcast.CureMelee` | Any Cure or Curaga while you are engaged, but only when this set has at least one piece. It wins over Cure Mode and Afflatus Solace. Missing or empty (as in the provided file): the normal choice above |
-| `sets.buff['Afflatus Solace']` | On top of the Cure, Curaga or CureSolace set while Afflatus Solace is up (not on top of CureMelee) |
+| `sets.midcast.CureSIRD.Solace` | A Cure under Afflatus Solace, Cure Mode `SIRD`. Missing: `sets.midcast.CureSIRD`. Key pieces of Solace (here and in CureSolace): Ebers Bliaut, Alaunus's Cape. Not on a Curaga, which gets no Solace Stoneskin |
 
 - These sets are equipped as they are: nothing else fills their empty slots
   (only FastRecast and precast gear remain there). Make them full sets.
@@ -110,8 +111,12 @@ Poisona, Paralyna, Blindna, Silena, Stona, Viruna, Cursna, Erase:
 2. `sets.midcast.StatusRemoval` (the provided file holds 3 slots: the others
    keep the Fast Cast gear)
 
-Then `sets.buff['Divine Caress']` on top while Divine Caress is up (empty in
-the provided file: put your Divine Caress pieces there, such as Ebers Mitts).
+Then, while Divine Caress is up and the spell is a -na (not Erase, Esuna nor
+Sacrifice, which Divine Caress does not affect), its Caress version:
+`sets.midcast.<spell>.Caress` (`Cursna.Caress`), else
+`sets.midcast.StatusRemoval.Caress`. A copy of StatusRemoval in the provided
+file: put your Divine Caress pieces in it, such as Ebers Mitts (worn during the
+-na, not when you use the ability).
 
 Esuna and Sacrifice are not in this group: see "Other Healing Magic".
 
@@ -146,8 +151,10 @@ Order, first found wins:
    resistance is fixed (+30, +20 for the -ra): only Sroda Necklace adds to it
 4. `sets.midcast['Enhancing Magic']`
 
-Then `sets.buff['Afflatus Solace']` on top of every spell whose name starts with
-"Bar" (Bar-element and Bar-ailment spells) while Afflatus Solace is up.
+Then, while Afflatus Solace is up and the spell is an element Bar-spell
+(Barfire...; Solace adds nothing to the Bar-ailment ones), its Solace version:
+`sets.midcast.<spell>.Solace`, else `sets.midcast.BarElement.Solace` (a copy of
+BarElement in the provided file; key pieces: Ebers Bliaut, Alaunus's Cape).
 
 There is no self / others split on WHM and no mode for enhancing.
 
@@ -211,6 +218,17 @@ step: [TP bonus](../../features/tp-bonus.md) (`WHM_TP_CONFIG.lua`).
 provided file), and any other ability by its name (`['Divine Caress']`,
 `['Sacrosanctity']`...). `sets.precast.Waltz` is in the provided file for /DNC.
 
+The piece that gives each its effect, worn when you use it: Piety Bliaut
+(Benediction: Enmity -50), Piety Mitts (Martyr: up to 75 % of your HP instead of
+50 %), Piety Cap (Devotion: up to 42.5 % of your HP as MP instead of 30 %).
+Martyr and Devotion count your **current** HP: HP gear put on when you use them
+raises only your max HP, not the current, so their provided sets hold the Piety
+piece alone. Be at full HP in a high-HP idle set before using them.
+Divine Caress and the Afflatus stances have no piece at the ability: theirs go
+in the version of the spell they change (CureSolace, CureSIRD.Solace,
+BarElement.Solace, StatusRemoval.Caress, Banish.Misery). The Atelier flags a set
+that lacks its key piece while you own one.
+
 ## What the job does by itself
 
 - **Cure tier by missing HP** (Cure Auto-Tier On, `^numpad4`): the Cure or
@@ -221,10 +239,14 @@ provided file), and any other ability by its name (`['Divine Caress']`,
 - **Full Cure** is never replaced: the auto-tier only handles Cure and Curaga.
 - **CureMelee** on engaged cures, once that set has gear. Leave it empty to
   keep the normal cure sets while engaged.
-- **Afflatus Solace set** on cures and Bar-spells while the buff is up;
-  **CureSolace** for Cures. Empty `sets.buff['Afflatus Solace']` turns the
-  layer off.
-- **Divine Caress set** on status removal while the buff is up.
+- **Banish.Misery** on Banish and Banishga while Afflatus Misery is up
+  (Piety Pantaloons; empty copy of Banish in the provided file).
+- **CureSolace** (CureSIRD.Solace in SIRD) for Cures and **BarElement.Solace**
+  for element Bar-spells while Afflatus Solace is up.
+- **StatusRemoval.Caress** on the -na spells while Divine Caress is up (not
+  Erase, Esuna, Sacrifice).
+- **MP economy on cures**: `sets.midcast.CureMPConservation` on top of the
+  cure set under 40 % MP (`mp_conservation_below`, `WHM_CURE_CONFIG.lua`).
 - **Latent refresh** below 51 % MP while idle.
 - **Paralyna while paralysed**: no precast gear swap.
 - `//gs c afflatus` casts the stance chosen by Afflatus Mode.
@@ -233,7 +255,7 @@ provided file), and any other ability by its name (`['Divine Caress']`,
 
 - `sets.engaged.PDT`: Mote's hybrid mode has no `PDT` value on WHM.
 - `sets.midcast.CureMelee`, `sets.latent_refresh`, `sets.midcast.FastRecast`,
-  `sets.buff['Divine Caress']`, `sets.resting`, `sets.precast.JA['Afflatus Solace']`
+  `sets.resting`, `sets.precast.JA['Afflatus Solace']`
   / `['Afflatus Misery']`: read, but empty until you fill them.
 
 ## Names the code reads that the provided file lacks

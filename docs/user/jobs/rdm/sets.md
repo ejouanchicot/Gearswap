@@ -188,6 +188,7 @@ others during the cast.
 | `sets.midcast.Cure` | Cure, Cure II ... (name without tier) |
 | `sets.midcast.Curaga` | Curaga ..., Cura ... |
 | `sets.midcast.CureSelf` | A Cure (not a Curaga) cast on yourself: put on top of the Cure set. The provided file's is a full set, so on yourself it replaces the Cure set; give it only the pieces that differ |
+| `sets.midcast.CureMPConservation` | A Cure or Curaga while your MP is under `mp_conservation_below` of `rdm/combat/RDM_CURE_CONFIG.lua` (40 %, only with that file): put on top of the cure set, after CureSelf. Empty in the provided file: nothing changes. Example: `main = 'Daybreak'` when your Cure set holds a Raetic Rod +1 |
 | `sets.midcast.StatusRemoval` | Poisona, Paralyna, Cursna... (/WHM) |
 | `sets.midcast['Healing Magic']` | Any other healing spell (Raise...), and the base the others fall back to. Without it the job adds nothing: only the set picked by spell name or map (`sets.midcast.Cure`...) stays, plus `CureSelf` |
 
@@ -241,6 +242,8 @@ provided file), and by the same rule `sets.precast.JA['Saboteur']`,
   `sets.midcast['Enfeebling Magic'].Saboteur` to turn it off.
 - **CureSelf** on your own Cures (see above). Remove `sets.midcast.CureSelf` to
   turn it off.
+- **CureMPConservation** on cures under 40 % MP (see above). Leave the set
+  empty, or remove `mp_conservation_below`, to turn it off.
 - **Daybreak for Dispelga**, held through the cast and given back after (see
   above). Always on for Dispelga.
 - **Composure sets** on buffs cast on others while Composure is up.

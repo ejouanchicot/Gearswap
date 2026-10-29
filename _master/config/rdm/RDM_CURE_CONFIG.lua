@@ -61,6 +61,18 @@ RDMCureConfig.auto_tier_enabled = true
 RDMCureConfig.safety_margin = 50
 
 ---============================================================================
+--- MP ECONOMY
+---============================================================================
+
+--- Under this MP percent, sets.midcast.CureMPConservation (your rdm_sets.lua)
+--- goes on top of your Cure set. Nothing happens without that set, or with it
+--- empty: the code names no item, your sets say what is worn.
+--- Example: main = 'Raetic Rod +1' in sets.midcast.Cure, and
+---   sets.midcast.CureMPConservation = { main = 'Daybreak' }
+--- Delete the line (or set it to 0) to turn it off.
+RDMCureConfig.mp_conservation_below = 40
+
+---============================================================================
 --- DEBUG SETTINGS
 ---============================================================================
 
