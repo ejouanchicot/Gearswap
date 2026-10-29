@@ -12,14 +12,19 @@
 ---   • Configurable HP thresholds per Cure tier (WHM_CURE_CONFIG)
 ---   • Debug messages for tier selection
 ---
---- Usage (WHM_PRECAST.lua):
----   local new_spell = CureManager.select_cure_tier(spell, target)
----   -- nil = keep the spell as cast; otherwise recast with new_spell
+--- Usage (WHM_PRECAST.lua, RDM_PRECAST.lua, before the cooldown check):
+---   if CureManager.retier(spell, eventArgs) then return end
+---
+--- Jobs: the main job's <JOB>_CURE_CONFIG.lua (<Char>/<job>/combat/, templates
+--- in _master/config/<job>/). WHM without the file: the default tiers below.
+--- Any other job without it (a character not set up for it): no re-tiering at
+--- all, its Cures go out as cast. Kept under utils/whm/ where it was born.
 ---
 --- @file    shared/utils/whm/cure_manager.lua
 --- @author  ejouanchicot
---- @version 1.0.0
+--- @version 1.1.0
 --- @date    Created: 2025-10-21
+--- @date    Updated: 2026-10-29 - any job with a <JOB>_CURE_CONFIG (RDM)
 ---============================================================================
 
 local CureManager = {}
@@ -28,38 +33,52 @@ local CureManager = {}
 --- DEPENDENCIES
 ---============================================================================
 
--- Load configuration (character-aware: supports Tetsouo + cloned characters)
--- Module is lazy-required from WHM_PRECAST.lua, so `player` is defined at load time.
--- no name (never expected here): the built-in defaults below, not another character's file
-local char_name = require('shared/utils/core/char_paths').name()
-local config_success, WHMCureConfig = require('shared/utils/core/char_paths').load('job', 'WHM_CURE_CONFIG', 'WHM', char_name)
-if not config_success or type(WHMCureConfig) ~= 'table' then
-    -- The template's tiers (_master/config/whm/WHM_CURE_CONFIG.lua): without
-    -- them the first Cure raised in select_cure_tier (ipairs(nil)).
+-- The template's tiers (_master/config/whm/WHM_CURE_CONFIG.lua), for a WHM whose file does not load
+local DEFAULT_TIERS = {
+    debug_messages = false,
+    safety_margin = 50,
+    cure_tiers = {
+        {min = 0, max = 200, spell = 'Cure'},
+        {min = 200, max = 400, spell = 'Cure II'},
+        {min = 400, max = 700, spell = 'Cure III'},
+        {min = 700, max = 1100, spell = 'Cure IV'},
+        {min = 1100, max = 1600, spell = 'Cure V'},
+        {min = 1600, max = 99999, spell = 'Cure VI'},
+    },
+    curaga_tiers = {
+        {min = 0, max = 300, spell = 'Curaga'},
+        {min = 300, max = 600, spell = 'Curaga II'},
+        {min = 600, max = 1000, spell = 'Curaga III'},
+        {min = 1000, max = 1400, spell = 'Curaga IV'},
+        {min = 1400, max = 99999, spell = 'Curaga V'},
+    },
+}
+
+--- The main job's tiers (character-aware: supports Tetsouo + cloned characters). The module is lazy-required from
+--- the job's PRECAST or its entry's user_setup, so `player` is defined at load time; a job load is one main job.
+--- @return table|nil The <JOB>_CURE_CONFIG table; nil for a job other than WHM whose character has no such file
+local function load_config()
+    local CharPaths = require('shared/utils/core/char_paths')
+    local job = (player and player.main_job) or 'WHM'
+    if job ~= 'WHM' then
+        local ok, config = pcall(CharPaths.optional, 'job', job .. '_CURE_CONFIG', job)
+        return ok and type(config) == 'table' and config or nil
+    end
+    -- no name (never expected here): the built-in defaults, not another character's file
+    local ok, config = CharPaths.load('job', 'WHM_CURE_CONFIG', 'WHM', CharPaths.name())
+    if ok and type(config) == 'table' then
+        return config
+    end
+    -- without tiers the first Cure raised in select_cure_tier (ipairs(nil))
     local ok_mf, MF = pcall(require, 'shared/utils/messages/message_formatter')
     if ok_mf and MF and MF.show_error then
         MF.show_error('CureManager: WHM_CURE_CONFIG not loaded, default cure tiers used')
     end
-    WHMCureConfig = {
-        debug_messages = false,
-        safety_margin = 50,
-        cure_tiers = {
-            {min = 0, max = 200, spell = 'Cure'},
-            {min = 200, max = 400, spell = 'Cure II'},
-            {min = 400, max = 700, spell = 'Cure III'},
-            {min = 700, max = 1100, spell = 'Cure IV'},
-            {min = 1100, max = 1600, spell = 'Cure V'},
-            {min = 1600, max = 99999, spell = 'Cure VI'},
-        },
-        curaga_tiers = {
-            {min = 0, max = 300, spell = 'Curaga'},
-            {min = 300, max = 600, spell = 'Curaga II'},
-            {min = 600, max = 1000, spell = 'Curaga III'},
-            {min = 1000, max = 1400, spell = 'Curaga IV'},
-            {min = 1400, max = 99999, spell = 'Curaga V'},
-        },
-    }
+    return DEFAULT_TIERS
 end
+
+-- nil: this job's Cures are never re-tiered (CureManager.enabled)
+local WHMCureConfig = load_config()
 
 local formatter_success, WHMMessageFormatter = pcall(require, 'shared/utils/whm/whm_message_formatter')
 if not formatter_success then
@@ -238,7 +257,7 @@ end
 
 --- Get Cure tier config based on spell name
 --- @param spell_name string Original spell name (e.g., "Cure IV")
---- @return table tier_config (cure_tiers or curaga_tiers)
+--- @return table|nil tier_config (cure_tiers or curaga_tiers; nil when the job's file has none, a RDM's Curaga)
 local function get_tier_config(spell_name)
     if spell_name:find('Curaga') then
         return WHMCureConfig.curaga_tiers
@@ -340,11 +359,14 @@ function CureManager.select_cure_tier(spell, target)
     end
 
     local spell_name = spell.name
-    if not CureManager.is_tiered_cure(spell_name) then
+    if not (WHMCureConfig and CureManager.is_tiered_cure(spell_name)) then
         return nil
     end
 
     local tier_config = get_tier_config(spell_name)
+    if not tier_config then
+        return nil
+    end
     local auto_tier_enabled = state and state.CureAutoTier and state.CureAutoTier.value == 'On'
 
     -- ==========================================================================
@@ -401,6 +423,48 @@ function CureManager.select_cure_tier(spell, target)
     end
 
     return available_spell
+end
+
+--- Whether this job re-tiers its Cures: a WHM always, another job when its character has a <JOB>_CURE_CONFIG.lua.
+--- @return boolean
+function CureManager.enabled()
+    return WHMCureConfig ~= nil
+end
+
+--- Swap a cure for the tier the target actually needs, or for a ready tier when the one cast is on recast.
+---
+--- Casting Cure VI into a scratch wastes the MP and the cast time both. The replacement goes out as a fresh command
+--- rather than editing the spell, because by precast the tier is already fixed. Runs before the cooldown check: the
+--- checker would cancel a tier on recast before it could be swapped for a ready one (CODE_QUALITY.md 4.1).
+--- @param spell table Spell data from GearSwap
+--- @param eventArgs table Event arguments (cancel is set when replaced)
+--- @return boolean True when the cast was replaced
+function CureManager.retier(spell, eventArgs)
+    if not (WHMCureConfig and spell.action_type == 'Magic' and CureManager.is_tiered_cure(spell.name)) then
+        return false
+    end
+
+    local target = spell.target and windower.ffxi.get_mob_by_id(spell.target.id)
+    local new_spell = CureManager.select_cure_tier(spell, target)
+    if not new_spell or new_spell == spell.name then
+        return false
+    end
+
+    eventArgs.cancel = true
+    send_command('input /ma "' .. new_spell .. '" ' .. spell.target.raw)
+    return true
+end
+
+--- The Cure Auto-Tier mode (state.CureAutoTier) of a job whose STATES file does not declare it (the WHM's does):
+--- created On / Off once per job load, started as the config says (auto_tier_enabled = false: Off); a subjob change
+--- keeps the player's choice. Called from user_setup before the keybinds, so the keybind HUD reads it from the start.
+--- A job without a <JOB>_CURE_CONFIG gets no mode.
+function CureManager.setup_state()
+    if not WHMCureConfig or state.CureAutoTier then
+        return
+    end
+    state.CureAutoTier = M {['description'] = 'Cure Auto-Tier', 'On', 'Off'}
+    state.CureAutoTier:set(WHMCureConfig.auto_tier_enabled == false and 'Off' or 'On')
 end
 
 ---============================================================================

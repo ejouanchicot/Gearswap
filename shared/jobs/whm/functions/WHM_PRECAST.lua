@@ -61,33 +61,6 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Swap a cure for the tier the target actually needs.
----
---- Casting Cure VI into a scratch wastes the MP and the cast time both. The
---- replacement goes out as a fresh command rather than editing the spell,
---- because by precast the tier is already fixed.
---- @param spell table Spell data from GearSwap
---- @param eventArgs table Event arguments (cancel is set when replaced)
---- @return boolean True when the cast was replaced
-local function retier_cure(spell, eventArgs)
-    if not (CureManager and spell.action_type == 'Magic') then
-        return false
-    end
-    if not CureManager.is_tiered_cure(spell.name) then
-        return false
-    end
-
-    local target = spell.target and windower.ffxi.get_mob_by_id(spell.target.id)
-    local new_spell = CureManager.select_cure_tier(spell, target)
-    if not new_spell or new_spell == spell.name then
-        return false
-    end
-
-    eventArgs.cancel = true
-    send_command('input /ma "' .. new_spell .. '" ' .. spell.target.raw)
-    return true
-end
-
 --- Curing your own paralysis: no precast set.
 ---
 --- Paralysis blocks the spell, never the equipment change - so this is not
@@ -123,7 +96,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- Cures are re-tiered before the recast check: the checker would cancel
     -- a tier on recast before CureManager could swap it for a ready one.
     -- A cure left as it is still goes through the check below.
-    if retier_cure(spell, eventArgs) then
+    if CureManager and CureManager.retier(spell, eventArgs) then
         return
     end
 

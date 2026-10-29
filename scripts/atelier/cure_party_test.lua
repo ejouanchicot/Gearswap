@@ -81,5 +81,68 @@ check('the mage at 50 % (300 missing): Cure II', tier_for('Mage'), 'Cure II')
 check('alliance a10 (3600 missing): Cure VI', tier_for('Other'), 'Cure VI')
 check('alliance a23 (210 missing): Cure II', tier_for('Far'), 'Cure II')
 
+-- RDM (2026-10-29): the tiers of RDM_CURE_CONFIG.lua when the character has the file (CharPaths.optional), no
+-- re-tiering at all without it; retier() cancels the cast and sends the new tier; setup_state() makes the mode
+local RDM_CONFIG = dofile('_master/config/rdm/RDM_CURE_CONFIG.lua')
+
+--- cure_manager.lua loaded as a RDM's, `config` what CharPaths.optional gives (nil: no file).
+local function rdm_module(config, sent)
+    local target = {name = 'Mage', id = 9, hpp = 50}
+    local env = setmetatable({}, {__index = _G})
+    env._G = env
+    env.player = {name = 'Healer', id = 1, hp = 1800, max_hp = 1800, main_job = 'RDM', sub_job = 'WHM'}
+    env.state = {}
+    env.M = function(t)
+        local m = {description = t.description, value = t[1]}
+        function m:set(v) self.value = v end
+        return m
+    end
+    env.send_command = function(cmd) sent[#sent + 1] = cmd end
+    env.windower = {
+        addon_path = './', register_event = function() end,
+        ffxi = {
+            get_party = function() return PARTY end,
+            get_spell_recasts = function() return {} end,
+            get_mob_by_target = function() return target end,
+            get_mob_by_id = function() return target end,
+        },
+    }
+    env.require = function(name)
+        if name == 'shared/utils/core/char_paths' then
+            return {optional = function(kind, file, job) return file == 'RDM_CURE_CONFIG' and job == 'RDM' and config or nil end}
+        end
+        return setmetatable({}, {__index = function() return function() end end})
+    end
+    local chunk = assert(loadfile('shared/utils/whm/cure_manager.lua'))
+    setfenv(chunk, env)
+    return chunk(), env
+end
+
+local sent = {}
+local mod, env = rdm_module(RDM_CONFIG, sent)
+check('RDM with its file: enabled', mod.enabled(), true)
+mod.setup_state()
+check('RDM: the mode made, On', env.state.CureAutoTier and env.state.CureAutoTier.value, 'On')
+env.state.CureAutoTier:set('Off')
+mod.setup_state()
+check('RDM: a subjob change keeps the choice', env.state.CureAutoTier.value, 'Off')
+env.state.CureAutoTier:set('On')
+local args = {}
+local spell = {name = 'Cure IV', action_type = 'Magic', target = {id = 9, raw = '<t>'}}
+check('RDM: Cure IV on the mage (300 missing): replaced', mod.retier(spell, args), true)
+check('RDM: the cast cancelled', args.cancel, true)
+check('RDM: Cure III sent', sent[1], 'input /ma "Cure III" <t>')
+check('RDM: Curaga III asked, 300 missing: Curaga II', mod.select_cure_tier({name = 'Curaga III'}, {name = 'Mage', id = 9, hpp = 50}), 'Curaga II')
+env.state.CureAutoTier:set('Off')
+check('RDM, mode Off: Cure IV kept', mod.select_cure_tier({name = 'Cure IV'}, {name = 'Mage', id = 9, hpp = 50}), nil)
+
+sent = {}
+mod, env = rdm_module(nil, sent)
+check('RDM without the file: not enabled', mod.enabled(), false)
+mod.setup_state()
+check('RDM without the file: no mode', env.state.CureAutoTier, nil)
+check('RDM without the file: Cure IV left', mod.retier({name = 'Cure IV', action_type = 'Magic', target = {id = 9, raw = '<t>'}}, {}), false)
+check('RDM without the file: nothing sent', #sent, 0)
+
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

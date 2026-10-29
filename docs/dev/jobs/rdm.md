@@ -319,6 +319,7 @@ every subjob change, so values reset). Keys from `RDM_KEYBINDS.lua`;
 | `MainDarkSpell` / `SubDarkSpell` | Blizzard, Stone, Water | Blizzard / Stone | none | `castdark` / `castsubdark` |
 | `NukeTier` | V, IV, III, II, I | V | `^numpad8` | the four nuke commands (`I` = base spell) |
 | `EnfeebleTier` | On, Off | On | `^numpad9` | `get_spell_tiers` |
+| `CureAutoTier` | On, Off | `RDM_CURE_CONFIG.auto_tier_enabled` | `#numpad2` | `shared/utils/whm/cure_manager.lua` (made by `setup_state` in `shared/entry/rdm.lua`, only with that file) |
 | `EnSpell` | Enfire..Enwater (6) | Enfire | `^numpad.` | `castenspell`, `enspell` (no argument) |
 | `GainSpell` | Gain-STR..Gain-CHR (7) | Gain-STR | `^numpad+` | `castgain` |
 | `Barspell` | Barfire..Barwater (6) | Barfire | `^numpad-` | `castbar` |

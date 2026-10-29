@@ -182,6 +182,13 @@ function user_setup()
     -- Note: configure() also creates the Storm state when the subjob is SCH
     -- (configure_storm), on every load and every subjob change.
 
+    -- Cure Auto-Tier mode (state.CureAutoTier), when the character has a RDM_CURE_CONFIG.lua (<Char>/rdm/combat/):
+    -- made in shared/utils/whm/cure_manager.lua setup_state, before the keybinds so the HUD shows it
+    local cure_ok, CureManager = pcall(require, 'shared/utils/whm/cure_manager')
+    if cure_ok and CureManager then
+        CureManager.setup_state()
+    end
+
     -- ==========================================================================
     -- KEYBIND LOADING (Always executed after reload)
     -- ==========================================================================

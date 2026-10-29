@@ -24,7 +24,7 @@
 -- The commands rewrite this file; editing it by hand works too (//gs reload).
 -- States of this job (RDM_KEYBINDS.lua): MainWeapon, SubWeapon,
 --   EngagedMode, IdleMode, CombatMode, EnfeebleMode, NukeMode,
---   SaboteurMode, EnfeebleTier, NukeTier, Storm, EnSpell, GainSpell,
+--   SaboteurMode, EnfeebleTier, NukeTier, Storm, CureAutoTier, EnSpell, GainSpell,
 --   Barspell, BarAilment, Spike
 -- Also on every job: CombatMode, AutoMedicine and the common keys.
 return {

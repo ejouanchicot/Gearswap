@@ -1,8 +1,8 @@
-# Auto-tier: WHM Cures, DNC Waltzes, BLM, RDM and GEO spells
+# Auto-tier: WHM and RDM Cures, DNC Waltzes, BLM, RDM and GEO spells
 
 Two kinds of automatic tier choice:
 
-- **Heals** (WHM Cure, DNC Waltz): the tier is picked from the HP the target
+- **Heals** (WHM and RDM Cure, DNC Waltz): the tier is picked from the HP the target
   is missing, so you can put one macro on the top tier and spend less MP or TP.
 - **Step-down** (BLM, RDM, GEO): a spell on recast or too expensive is
   replaced by the next lower tier that can go.
@@ -16,8 +16,9 @@ Macro the tier you like (Cure VI, Curaga V...). Before it goes off:
 - **Recast fallback** (always on, even with auto-tier Off): if the tier is on
   recast, the next ready one is used, lower tiers first, then higher.
 
-Missing HP: exact for yourself; for a party or alliance member it is estimated
-from their HP % as if they had 2000 max HP. 50 HP are added as a safety
+Missing HP: exact for yourself; for a party or alliance member it is worked
+out from their HP and HP %; 2000 max HP is assumed only for a target outside
+the party. 50 HP are added as a safety
 margin before the lookup.
 
 Tiers, from `<YourName>/whm/combat/WHM_CURE_CONFIG.lua` (edit them there):
@@ -32,8 +33,30 @@ Tiers, from `<YourName>/whm/combat/WHM_CURE_CONFIG.lua` (edit them there):
 | 1600+ | Cure VI | | | |
 
 The thresholds are fixed numbers; they do not follow your Cure Potency gear.
-The `auto_tier_enabled` line of that file is not what turns auto-tier on or
-off: the `CureAutoTier` mode is.
+The `auto_tier_enabled` line of that file only sets how the `CureAutoTier`
+mode starts when the job loads; the key turns it on and off afterwards.
+
+## RDM: Cure and Curaga
+
+The same choice as the WHM, on RDM, when your character has
+`<YourName>/rdm/combat/RDM_CURE_CONFIG.lua` (the template is
+`_master/config/rdm/RDM_CURE_CONFIG.lua`). Without that file the RDM never
+changes a Cure, and has no `CureAutoTier` mode.
+
+- **Auto-tier** (mode `CureAutoTier`, key Apps+Numpad2, On / Off): Cure IV
+  into a scratch goes out as the smallest tier that covers it.
+- **Recast fallback** (always on): a tier on recast is swapped for a ready one.
+
+| Missing HP + 50 | Cure | | Missing HP + 50 | Curaga (/WHM) |
+|---|---|---|---|---|
+| 0-150 | Cure | | 0-300 | Curaga |
+| 150-290 | Cure II | | 300+ | Curaga II |
+| 290-610 | Cure III | | | |
+| 610+ | Cure IV | | | |
+
+The numbers follow a Cure set that heals Cure IV 1056 HP (Kaories, measured in
+game); lower the maxima if yours heals less. A subjob change keeps the mode as
+you left it.
 
 ## DNC: `//gs c waltz` and `//gs c aoewaltz`
 

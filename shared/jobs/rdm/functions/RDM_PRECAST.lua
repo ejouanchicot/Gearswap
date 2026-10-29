@@ -3,6 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Precast pipeline for Red Mage (the gear itself comes from Mote's sets):
 ---     • PrecastGuard (blocking debuffs)
+---     • Cure re-tiering by the target's need (CureManager, the WHM's), with a
+---       RDM_CURE_CONFIG.lua and state.CureAutoTier; before the cooldown check
 ---     • Cooldown check, or tier downgrade for tiered enfeebles and nukes (TierRefiner)
 ---     • Phalanx / Phalanx II swap depending on the target
 ---     • Auto-Saboteur before the configured enfeebles
@@ -29,6 +31,7 @@ local WSPrecastHandler = nil
 local TierRefiner = nil
 local RDMEnfeebleTiers = nil
 local NukeTiers = nil
+local CureManager = nil
 
 local modules_loaded = false
 
@@ -70,6 +73,9 @@ local function ensure_modules_loaded()
 
     local nuke_ok, nukes = pcall(require, 'shared/data/spells/NUKE_TIERS')
     NukeTiers = nuke_ok and nukes or nil
+
+    local cm_ok, cm = pcall(require, 'shared/utils/whm/cure_manager')
+    CureManager = cm_ok and cm or nil
 
     modules_loaded = true
 end
@@ -279,9 +285,12 @@ function job_precast(spell, action, spellMap, eventArgs)
         MessagePrecast.show_debug_header(action_name, action_type)
     end
 
-    -- Guard >> Cooldown >> job logic >> WS. This order is the contract; moving
+    -- Guard >> (Cure tier) >> Cooldown >> job logic >> WS. This order is the contract; moving
     -- a line here changes behaviour even though nothing looks broken.
     if stage_guard(spell, eventArgs, debug_enabled) then return end
+    -- Cures are re-tiered before the recast check: the checker would cancel a tier on recast before CureManager could
+    -- swap it for a ready one. A Cure left as it is still goes through the check (no RDM_CURE_CONFIG: always left).
+    if CureManager and CureManager.retier(spell, eventArgs) then return end
     if stage_cooldown(spell, eventArgs, debug_enabled) then return end
     if stage_phalanx(spell, eventArgs) then return end
 

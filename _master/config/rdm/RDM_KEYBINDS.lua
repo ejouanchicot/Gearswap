@@ -13,7 +13,7 @@
 
 local RDMKeybinds = {}
 
--- Keybind definitions - numpad only (Ctrl+Numpad, Apps+Numpad for Storm; AutoMedicine is in config/COMMON_KEYBINDS.lua)
+-- Keybind definitions - numpad only (Ctrl+Numpad, Apps+Numpad for Storm and Cure Auto-Tier; AutoMedicine is in config/COMMON_KEYBINDS.lua)
 -- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 RDMKeybinds.binds = {
     ---========================================================================
@@ -34,6 +34,8 @@ RDMKeybinds.binds = {
     { key = "^numpad9", command = "cyclestate EnfeebleTier", desc = "Enfeeble Tier", state = "EnfeebleTier" },
     { key = "^numpad8", command = "cyclestate NukeTier",       desc = "Nuke Tier",       state = "NukeTier" },
     { key = "#numpad1", command = "cyclestate Storm",          desc = "Storm (SCH)",     state = "Storm",    subjob = "SCH" },
+    -- Cure tier by the HP the target misses (RDM_CURE_CONFIG.lua; the mode exists only with that file)
+    { key = "#numpad2", command = "cyclestate CureAutoTier",   desc = "Cure Auto-Tier",  state = "CureAutoTier" },
 
     ---========================================================================
     --- CTRL+NUMPAD OPERATORS (Enhancement States)
