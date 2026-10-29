@@ -28,9 +28,9 @@ return {
     -- set_builder.lua idle_with_pet
     {'pet.idle', when = 'Pet out, not fighting, Pet Idle Mode PetPDT (when pet.idle.PDT is absent); pet fighting without a pet.engaged set', fr = 'Quand ton pet est sorti et que tu ne combats pas, avec le Pet Idle Mode sur PetPDT, si tu n’as pas de set pet.idle.PDT ; aussi quand ton pet combat, si tu n’as pas de set pet.engaged.',
         base = {'me.idle', 'idle'}},
-    {'pet.idle.PDT', when = 'Pet out and not fighting with Pet Idle Mode PetPDT', fr = 'Quand ton pet est sorti et que tu ne combats pas, avec le Pet Idle Mode sur PetPDT.', base = {'pet.idle', 'idle'}},
+    {'pet.idle.PDT', when = 'Pet out and not fighting with Pet Idle Mode PetPDT; also while you fight with Hybrid Mode PetDT and your pet does not fight', fr = 'Quand ton pet est sorti et que tu ne combats pas, avec le Pet Idle Mode sur PetPDT ; aussi quand tu combats avec l’Hybrid Mode sur PetDT et que ton pet ne combat pas.', base = {'pet.idle', 'idle'}},
     {'pet.engaged', when = 'Your pet fights while you stand idle', fr = 'Quand ton pet combat et que toi, tu ne combats pas.', base = {'pet.idle', 'idle'}},
-    {'pet.engaged.PDT', when = 'Your pet fights while you stand idle, Hybrid Mode PDT: laid on top of pet.engaged', fr = 'Quand ton pet combat et pas toi, avec l’Hybrid Mode sur PDT : mis par-dessus ton set pet.engaged.', base = 'pet.engaged'},
+    {'pet.engaged.PDT', when = 'Your pet fights while you stand idle, Hybrid Mode PDT or PetDT: laid on top of pet.engaged; also worn alone while you both fight with Hybrid Mode PetDT', fr = 'Quand ton pet combat et pas toi, avec l’Hybrid Mode sur PDT ou PetDT : mis par-dessus ton set pet.engaged ; aussi porté seul quand vous combattez tous les deux avec l’Hybrid Mode sur PetDT.', base = 'pet.engaged'},
     -- set_builder.lua with_pdt: catch-all PDT of the pet sets
     {'pet.PDT', when = 'Hybrid Mode PDT with a pet set that has no PDT version of its own (pet idle, pet fighting, both fighting)', fr = 'Avec l’Hybrid Mode sur PDT, quand ton set de pet (pet au repos, pet en combat ou vous deux en combat) n’a pas sa propre version PDT.'},
 

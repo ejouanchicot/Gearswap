@@ -26,9 +26,12 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 ---   IDLE SET BUILDER (Pet vs Master Bifurcation)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Is the hybrid mode asking for damage taken gear?
+--- Is the hybrid mode asking for damage taken gear? PetDT does too: where it
+--- does not pick the pet's DT set (engaged_for_situation), the DT overlay is
+--- the safe choice, never bare damage gear.
 local function wants_pdt()
-    return state.HybridMode ~= nil and state.HybridMode.value == "PDT"
+    local mode = state.HybridMode and state.HybridMode.value
+    return mode == "PDT" or mode == "PetDT"
 end
 
 --- The PDT overlay for a group of sets, preferring the specific one.
@@ -164,6 +167,17 @@ end
 ---   ENGAGED SET BUILDER (Pet vs Master Bifurcation)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- HybridMode PetDT: the pet's damage taken gear while you fight, the pet
+--- being the one kept alive. Its PDT set for what it is doing: pet.engaged.PDT
+--- when it fights, else pet.idle.PDT (the PetIdleMode PetPDT set).
+--- @param pet_engaged boolean Whether the pet is fighting
+--- @return table|nil nil when no pet DT set exists
+local function pet_dt_set(pet_engaged)
+    local engaged_dt = pet_engaged and sets.pet.engaged and sets.pet.engaged.PDT
+    local idle = sets.pet.idle
+    return engaged_dt or (idle and idle.PDT) or idle
+end
+
 --- Melee gear, chosen by who is actually fighting.
 ---
 --- Three situations and they are not interchangeable. engagedBoth is for when
@@ -180,6 +194,12 @@ local function engaged_for_situation(base_engaged_set, pet_valid)
     local master_engaged = _G.player and _G.player.status == 'Engaged'
     -- the party support's version of each set (.Solo, .Group: shared/utils/party/support_tier.lua)
     local tier = require('shared/utils/party/support_tier').engaged
+
+    -- HybridMode PetDT (BST_STATES.lua): the pet's DT set rather than the sets below
+    if pet_valid and state.HybridMode and state.HybridMode.value == "PetDT" then
+        local dt_set = pet_dt_set(pet_engaged)
+        if dt_set then return tier(dt_set) end
+    end
 
     if master_engaged and pet_valid and pet_engaged then
         local final_set = sets.pet.engagedBoth or sets.me.engaged or base_engaged_set

@@ -394,6 +394,9 @@ flowchart TD
   for 1.0 s. A rebuild within 1 s of the previous one reuses the old answer
   even if the pet appeared or vanished in between.
 - `customize_melee_set` -> `build_engaged_set` (`engaged_for_situation`):
+  with a pet out and `HybridMode` PetDT, `pet_dt_set`: `sets.pet.engaged.PDT`
+  when the pet fights, else `sets.pet.idle.PDT` (then `sets.pet.idle`), its
+  support-tier version, no other overlay; otherwise
   `sets.pet.engagedBoth` when the master is engaged and the pet is valid and
   engaged, else `sets.me.engaged`, with the PDT overlay, then weapons. The
   "pet only" branch cannot run from here because Mote calls
@@ -424,7 +427,7 @@ Created by `BSTStates.configure()` on every `user_setup()`; `species` and
 | `PetEngaged` | 'false', 'true' (strings) | 'false' | none | `set_builder.lua` `idle_with_pet`, `engaged_for_situation`; written by the monitor, `engage_pet` / `disengage_pet` |
 | `WeaponSet` | Aymur, Tauret | Aymur | `^numpad1` | `set_builder.lua` `apply_weapon_sets` (`sets[value]`) |
 | `SubSet` | Agwu's Axe, Adapa Shield, Diamond Aspis, Kraken Club | Agwu's Axe | `^numpad2` | `apply_weapon_sets` |
-| `HybridMode` | PDT, Normal | PDT | `^numpad9` (also Mote's `^f9`) | `set_builder.lua` `wants_pdt` |
+| `HybridMode` | PDT, PetDT, Normal | PDT | `^numpad9` (also Mote's `^f9`) | `set_builder.lua` `wants_pdt` (true for PDT and PetDT), `engaged_for_situation` (PetDT with a pet out: `pet_dt_set`) |
 | `Moving` | 'false', 'true' | 'false' | none | AutoMove (reuses this state), `apply_common_overlays` |
 | `FastCast` | 0..80 step 10 | 0 | none | `MidcastWatchdog` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (common key) | `AutoMedicine.init(state, M)` at the end of `configure` |

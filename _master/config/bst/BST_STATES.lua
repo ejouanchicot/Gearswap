@@ -42,8 +42,11 @@ function BSTStates.configure()
     state.SubSet = M{['description']='Sub', "Agwu's Axe", 'Adapa Shield', 'Diamond Aspis', 'Kraken Club'}
     state.SubSet:set("Agwu's Axe")
 
-    -- Hybrid mode (PDT/Normal)
-    state.HybridMode = M{['description']='Hybrid Mode', 'PDT', 'Normal'}
+    -- Hybrid mode: who the DT gear protects. PDT = you (idle and engaged),
+    -- PetDT = your pet while you fight with it out (pet.engaged.PDT when it
+    -- fights, else pet.idle.PDT ; you without a pet), Normal = no DT gear.
+    -- At rest with a pet out, PetIdleMode decides instead.
+    state.HybridMode = M{['description']='Hybrid Mode', 'PDT', 'PetDT', 'Normal'}
     state.HybridMode:set('PDT')
 
     -- Moving state: kept up to date by AutoMove (enabled on BST); read by

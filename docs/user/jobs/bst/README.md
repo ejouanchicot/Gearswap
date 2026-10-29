@@ -51,7 +51,7 @@ starts again on **Aquan**, Auto Pet Engage on **On**.
 | Ctrl+Numpad4 | Auto Pet Engage: On / Off (`AutoPetEngage`) | Always |
 | Ctrl+Numpad5 | Next ecosystem, rebuilds the species list (`//gs c ecosystem`) | Always |
 | Ctrl+Numpad6 | Next species of the ecosystem; its jug is used by Call Beast (`//gs c species`) | Always |
-| Ctrl+Numpad9 | Hybrid Mode: PDT / Normal (`HybridMode`) | Always |
+| Ctrl+Numpad9 | Hybrid Mode: PDT (protects you) / PetDT (protects the pet while you fight) / Normal (`HybridMode`) | Always |
 | Apps+Numpad0 | Auto Medicine on / off (Echo Drops, Remedy... used when a debuff blocks your action) | Always (common key) |
 | Alt+Numpad7 | Your other boxes follow you (press again to stop) | Always (common key) |
 | Alt+Numpad8 | Your other boxes' automation on / off | Always (common key) |
