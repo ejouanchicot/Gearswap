@@ -20,6 +20,20 @@
 local BagsQuiet = {}
 
 local STEP, QUIET, LIMIT = 1.0, 2, 120
+-- Seconds the bags count as moving after mark_busy: a //po undresses first (`gs c naked`, no bag count changes)
+-- and starts moving a few seconds later, so two calm reads in that gap let a lockstyle out in the middle of the
+-- moves (Kaories, 2026-10-29 07:36: naked at :28, lockstyle at :32, the game crashed)
+local BUSY_FOR = 15
+
+--- The bags are about to move (a //po starting): BagsQuiet.run waits BUSY_FOR seconds whatever their counts say,
+--- then for them to be calm as usual. Kept on windower: the //po outlives a job load.
+function BagsQuiet.mark_busy()
+    windower._bags_busy_until = os.clock() + BUSY_FOR
+end
+
+local function busy()
+    return (windower._bags_busy_until or 0) > os.clock()
+end
 
 --- The item count of every bag, as one text; nil outside the game.
 --- @return string|nil
@@ -33,7 +47,7 @@ end
 --- @param label string|nil What it is, for the trace ('lockstyle 12')
 function BagsQuiet.run(fn, label)
     local last = counts()
-    if last == nil then return fn() end
+    if last == nil and not busy() then return fn() end
     local same, waited = 0, 0
     -- the load that asked (LoadGate's number, on windower): a job change during the wait drops the old load's
     -- action, so the lockstyle of the job left never goes out after the new one's (audit 2026-10-28 K)
@@ -45,7 +59,8 @@ function BagsQuiet.run(fn, label)
             return
         end
         local now = counts()
-        if now == last then same = same + 1 else same, last = 0, now end
+        if busy() then same = 0
+        elseif now == last then same = same + 1 else same, last = 0, now end
         if same >= QUIET then return fn() end
         waited = waited + STEP
         if waited >= LIMIT then

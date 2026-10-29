@@ -86,6 +86,21 @@ check('new load during the wait: never run', ran(), nil)
 check('new load during the wait: traced', traced[1] and traced[1]:find('lockstyle 7 dropped', 1, true) ~= nil, true)
 windower._load_gen = nil
 
+-- 3c. a //po starting (gs c naked -> mark_busy): the bags stay calm, the action still waits the busy window, then
+--     two calm reads (Kaories crashed on a lockstyle sent 4 s after the naked, 2026-10-29)
+do
+    local clock = os.clock
+    os.clock = function() return now end
+    ran = start(0)
+    BagsQuiet.mark_busy()
+    run_until(10)
+    check('busy (//po starting): not within the window', ran(), nil)
+    run_until(60)
+    check('busy: once the window is over and the bags calm', ran(), 16)
+    windower._bags_busy_until = nil
+    os.clock = clock
+end
+
 -- 4. outside the game (no bag info): at once
 in_game = false
 ran = start(0)

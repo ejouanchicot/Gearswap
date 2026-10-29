@@ -335,6 +335,10 @@ end
 --- Strip all equipment slots (//gs c naked or //gs c equip naked).
 --- @return boolean Always true
 function CommonCommands.handle_naked()
+    -- PorterPacker sends `gs c naked` before its //po moves: the bags are about to move while their counts are still
+    -- the same, so an action that reads them waits (shared/utils/equipment/bags_quiet.lua mark_busy; Kaories crashed
+    -- on a lockstyle sent 4 s after the naked of a //po, 2026-10-29)
+    pcall(function() require('shared/utils/equipment/bags_quiet').mark_busy() end)
     local all_slots = {
         'main', 'sub', 'range', 'ammo',
         'head', 'neck', 'ear1', 'ear2',
