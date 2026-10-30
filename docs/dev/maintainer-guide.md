@@ -655,11 +655,23 @@ Since 2026-10-18 the page players open, `atelier/index.html`, is **built**: neve
       page still runs inside the application: its files are `atelier/app/js/` and `atelier/app/css/`, loaded in the
       order of `atelier/src/legacy/files.ts` (a new old-page file goes in that list, not in an HTML file).
 - [ ] After any change in `atelier/src/`: `cd atelier && npm run build` (the first time: `npm install`), then
-      `npm run check` (types). `scripts/atelier/atelier_build_check.js` fails when the built page is not the
+      `npm run check` (types). The build first runs `scripts/atelier/gen_hud_sources.py`, which embeds GearSwap's HUD
+      Lua in `atelier/app/js/hud_sources.js` for the Display preview (it renders once with `lua5.1` through
+      `scripts/atelier/hud_harness.lua`; without `lua5.1` the old file is kept): rebuild after any change to the HUD code
+      (`shared/utils/ui/`) or the preview shows the old HUD. `scripts/atelier/atelier_build_check.js` fails when the built page is not the
       sources' (it runs in `scripts/run_tests.py`).
 - [ ] A change of layout or style: `node scripts/atelier/atelier_layout_check.js` (nothing past its box, 1920 to
       390 px); a layout fix of the old styles goes in `atelier/app/css/fit.css` with its reason.
 - [ ] The page in Chrome: `node scripts/atelier/atelier_test.js`.
+- [ ] A change to the Macro book & lockstyle part (`atelier/app/js/macro_edit.js`), to how a settings file is written,
+      or to `shared/utils/core/lua_data.lua` `only_data_changed`: `node scripts/atelier/macro_edit_test.js` (needs
+      `lua5.1`) and `node scripts/atelier/atelier_modules_test.js`.
+- [ ] Item icons: the game writes `atelier/icons/<id>.bmp` and beside it `<id>.js` (`ATELIER_ICON(id, base64)`, the same
+      bytes: `shared/utils/atelier/item_icons.lua`, 8 icons at once and the rest in the background, 8 a step,
+      `scripts/atelier/item_icons_test.lua`). The page shows the `.bmp`, then makes its HD icon from the `.js`
+      (`atelier/app/js/icon_cache.js` with `icon_hd.js`; a page opened from the disk may not read an image's pixels)
+      and keeps it in IndexedDB (`atelier-icons`, key `v1:<id>`: change `ICON_HD_KEY` when `icon_hd.js` draws
+      differently). Packages carry both files. The folder is gitignored.
 - [ ] What a player reads, last commit vs now: `node scripts/atelier/atelier_clicks_test.js --compare [names]`
       (53 click tests, `scripts/atelier/clicks/README.md`); pixel parity of a screen:
       `node scripts/atelier/page_parity.js scripts/atelier/parity/<screen>.json`.

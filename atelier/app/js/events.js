@@ -115,7 +115,7 @@ document.addEventListener('click', e => {
   if ('keyssave' in d) { saveModesKeys(); return; }
   if ('keysundo' in d) { delete S.keyOv[S.char]; S.keyDirty[S.char] = false; delete S.modeOv[S.char]; S.modeDirty[S.char] = false; S.toast = ''; render(); return; }
   // a mode's start value (keys.ts modes box)
-  if (d.modestart) { const i = d.modestart.indexOf('|'); setModeStart(data(), d.modestart.slice(0, i), d.modestart.slice(i + 1)); S.toast = ''; render(); return; }
+  if (d.modestart) { const i = d.modestart.indexOf('|'); S._modeSel = d.modestart.slice(0, i); setModeStart(data(), d.modestart.slice(0, i), d.modestart.slice(i + 1)); S.toast = ''; render(); return; }
   if (d.unforce) { setForce(d.unforce, null); save(); render(); return; }
   if (d.jobkeep) { S.job = d.jobkeep; S.q = ''; render(); return; }
   if (d.simpick) { const [k, ...n] = d.simpick.split('|'); Object.assign(simState(), {kind: k, name: n.join('|')}); simRun(); return; }

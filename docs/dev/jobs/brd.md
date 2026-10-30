@@ -71,7 +71,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/brd/BRD_SONG_CONFIG.lua` | 305 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
 | `_master/config/brd/BRD_TIMING_CONFIG.lua` | 30 | `ROTATION_DELAYS.after_song` 3.0 / `after_locked_song` 1.0 (song queue), `ABILITY_DELAYS.nt_combo_delay` 2.0 (`//gs c nt`) |
 | `_master/config/brd/BRD_TP_CONFIG.lua` | 70 | `_G.BRDTPConfig` (Moonshade, Aeneas, Centovente) |
-| `_master/config/brd/BRD_LOCKSTYLE.lua` | 26 | `default = 7`, `by_subjob` (never applied: no `get_style`; only `lockstyle_pieces.lua` reads it, for `//gs c lockscan`) |
+| `_master/config/brd/BRD_LOCKSTYLE.lua` | 26 | `default = 7`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30; also by `lockstyle_pieces.lua`, for `//gs c lockscan`) |
 | `_master/config/brd/BRD_MACROBOOK.lua` | 46 | Book/page per subjob and per dual-box partner job |
 | `_master/config/brd/BRD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/brd_sets.lua` | 519 | Template sets (flat) |
@@ -528,7 +528,7 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
 | `<char>/brd/keys/BRD_KEYBINDS.lua` | 12 binds | entry `user_setup`, `file_unload`, KeybindGuard |
 | `<char>/brd/keys/BRD_CUSTOM.lua` | nothing active | `CustomStates`; `custom_guards.lua` keeps `range` / `ammo` out of every `BardSong` |
 | `<char>/brd/display/BRD_HUD.lua` | empty lists | HUD section / row order |
-| `<char>/brd/display/BRD_LOCKSTYLE.lua` `default`, `by_subjob` | 7 (factory fallback 1) | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never applied |
+| `<char>/brd/display/BRD_LOCKSTYLE.lua` `default`, `by_subjob` | 7 (factory fallback 1) | `LockstyleManager`: `by_subjob[sub]`, else `default` (no `get_style`; `by_subjob` read by the factory itself since 2026-10-30) |
 | `<char>/brd/display/BRD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 40 page 1 (factory fallback book 1 page 1) | `MacrobookManager` |
 | `<char>/brd/combat/BRD_SONG_CONFIG.lua` -> `_G.BRDSongConfig` | 11 packs, 5 dummies, Etudes, `VICTORY_MARCH_REPLACE`, `SHORT_NAMES`, `SONG_REFINE` | rotation manager, refinement, router (`is_dummy_song`), commands (`ETUDES`) |
 | `<char>/brd/combat/BRD_TIMING_CONFIG.lua` -> `_G.BRDTimingConfig` | `after_song` 3.0, `after_locked_song` 1.0, `nt_combo_delay` 2.0 | song queue `gap()`, `//gs c nt` |
@@ -694,7 +694,6 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
   `spawn_type == 13` or party / alliance) and the command target
   (`cast_song_to_target`, `spawn_type == 13`).
 - `forceidle` has no sender (manual use only).
-- `BRD_LOCKSTYLE.by_subjob` is never applied (only `lockstyle_pieces.lua` reads it, for `//gs c lockscan`).
 - `song1`..`song5` are five copies of the same branch in `BRD_COMMANDS.lua`
   (duplication); the header does not list `songs full`.
 - Dead code: `SongRefinement.is_enabled` and several BRD message keys

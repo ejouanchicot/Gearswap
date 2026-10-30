@@ -17,10 +17,10 @@ RDMLockstyleConfig.default = 1
 -- Lockstyle per subjob (optional - fallback to default if not specified)
 RDMLockstyleConfig.by_subjob = {
     ['NIN'] = 1,  -- Dualwield melee build
-    ['WHM'] = 2,  -- Support/healing build
-    ['BLM'] = 3,  -- Nuking build
-    ['SCH'] = 4,  -- Hybrid magic build
-    ['DNC'] = 5,  -- Melee/support build
+    ['WHM'] = 1,  -- Support/healing build
+    ['BLM'] = 1,  -- Nuking build
+    ['SCH'] = 1,  -- Hybrid magic build
+    ['DNC'] = 1,  -- Melee/support build
 }
 
 return RDMLockstyleConfig

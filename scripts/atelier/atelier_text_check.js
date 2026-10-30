@@ -46,13 +46,15 @@ for (const c of chars) {
       const en = (api.STATE_HELP_EN[d.job] || {})[m.name] || (api.STATE_HELP_MORE_EN[d.job] || {})[m.name] || api.STATE_HELP_COMMON_EN[m.name];
       if (!fr || !en) { const k = m.name + ' (' + (m.desc || '') + ')' + (fr ? ' no English' : en ? ' no French' : ''); noHelp.set(k, (noHelp.get(k) || new Set()).add(d.job)); }
     }
-    for (const cf of d.configs || []) {
+    // the macro book and lockstyle files are the Macro book part's (part = 'macro'), not settings
+    const cfgs = (d.configs || []).filter(cf => cf.part !== 'macro');
+    for (const cf of cfgs) {
       files++;
       const base = cf.file.split('/').pop(), pat = base.replace(/^[A-Z]{3}_/, '{JOB}_');
       if (!api.MOD_FILE_FR[base] && !api.MOD_FILE_FR[pat]) noFile.add(base);
       if (cf.scope !== 'job' && !api.MOD_FILE_GROUP[base] && !api.MOD_FILE_GROUP[pat]) noGroup.add(base);
     }
-    for (const cf of d.configs || []) { const known = api.modKnown(d, cf), base = cf.file.split('/').pop().replace(/^[A-Z]{3}_/, '{JOB}_');
+    for (const cf of cfgs) { const known = api.modKnown(d, cf), base = cf.file.split('/').pop().replace(/^[A-Z]{3}_/, '{JOB}_');
       for (const x of Object.values(api.modParsed(cf).byPath)) if (!known[x.path]) { rest++; if (!api.modRestFr(cf.file, x.path)) noRest.add(base + '  ' + x.path); } }
     if (d.configs) for (const fam of api.MOD_CATALOG) for (const r of api.mcRows(d, fam)) if (r.id) shown.add(r.id);
   }

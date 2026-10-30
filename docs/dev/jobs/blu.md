@@ -435,7 +435,7 @@ and a few sets nothing reaches, each marked so in the file.
 | `<char>/blu/keys/BLU_CUSTOM.lua` | examples only | file | custom states |
 | `<char>/blu/combat/BLU_SPELL_MAP.lua` | 26 categories | file; no map = base set only | `spell_map.lua` |
 | `<char>/blu/display/BLU_HUD.lua` | empty | file | HUD layout |
-| `<char>/blu/display/BLU_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` and `get_style` only, so `by_subjob` is never applied (only `lockstyle_pieces.lua` reads it, for `//gs c lockscan`) |
+| `<char>/blu/display/BLU_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager`: `by_subjob[sub]`, else `default` (no `get_style`; `by_subjob` read by the factory itself since 2026-10-30); `lockstyle_pieces.lua` reads it too, for `//gs c lockscan` |
 | `<char>/blu/display/BLU_MACROBOOK.lua` | book 1 page 1 | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
 | `<char>/blu/combat/BLU_TP_CONFIG.lua` -> `_G.BLUTPConfig` | Moonshade ear1 +250, no weapon | file | `WSPrecastHandler` / TP bonus calculator |
 | `<char>/blu/combat/BLU_CONFIG.lua` `auto_unbridled`, `expiacion_window` (options `blu_unbridled`, `blu_expiacion_window`) | `false` | `AutoOptions.on` (`== true`) | `BLUUnbridled.apply`, `BLUExpiacionGuard.check` |
@@ -588,8 +588,6 @@ Unbridled Learning, the Expiacion window, the AzureSets load and unload.
 
 ## Known issues
 
-- `BLU_LOCKSTYLE.lua` describes per-subjob overrides, but `by_subjob` is never
-  read (no `get_style`), as on the other jobs.
 - The lockstyle and macrobook wrappers each run twice (intro `require` +
   facade `include`): two `MacrobookManager` instances; the two lockstyle
   `create()` calls share one context.

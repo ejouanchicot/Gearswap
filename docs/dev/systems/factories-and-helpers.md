@@ -69,7 +69,7 @@ Other helpers in `shared/utils/equipment/` are documented elsewhere:
    - `load_gen`, the LoadGate number of the load that made it (`windower._load_gen`);
    - a `STATE` table: `enabled`, `dressup_state`, `last_dressup_command_time`, `operation_id`.
 2. Every operation is a module-level function taking `ctx` first, bound with a local `bind()`. The API also carries the job-suffixed key `cancel_<jl>_lockstyle_operations`, the name the job wrappers call. `create()` then deletes the globals it registered on its previous call in this module instance (`last_registered_globals`) and writes six job-suffixed globals.
-3. `select_default_lockstyle()` returns silently unless `player.main_job == ctx.job_code`. Otherwise it resolves the style (`resolve_style`: `LockstyleConfig.default or default_lockstyle`, then `LockstyleConfig.get_style(subjob)` if the config defines it, with `subjob = player.sub_job or default_subjob`) and calls `set_lockstyle_with_delay(style, 2.0)`.
+3. `select_default_lockstyle()` returns silently unless `player.main_job == ctx.job_code`. Otherwise it resolves the style (`resolve_style`: `LockstyleConfig.default or default_lockstyle`, then `LockstyleConfig.get_style(subjob)` if the config defines it, else `LockstyleConfig.by_subjob[subjob]` (since 2026-10-30), with `subjob = player.sub_job or default_subjob`) and calls `set_lockstyle_with_delay(style, 2.0)`.
 4. `set_lockstyle_with_delay` is a debounce. It calls `cancel_pending_operations` (which bumps `STATE.operation_id`), captures the new id and schedules `apply_lockstyle_immediate` after `delay` through `LoadGate.defer(delay, ..., 'lockstyle', ctx.load_gen)` (`shared/utils/core/load_gate.lua`), which drops it when a newer load than the one that made the ctx has started or the game is on another job.
 5. `apply_lockstyle_immediate` returns if disabled or superseded. Without DressUp management it sends `input /lockstyleset N` at once. With DressUp management:
    - it sends `lua unload dressup`, unless `dressup_state == 'unloaded'` or the last DressUp command is less than 0.5 s old;
@@ -132,7 +132,7 @@ The per-job config is `<char>/<job>/display/<JOB>_LOCKSTYLE.lua`. The wrappers s
 |---|---|---|
 | `default` | yes | wins over the `default_lockstyle` argument |
 | `get_style(subjob)` | yes, if present | defined by 9 of the 22 generic templates: BST, COR, DNC, DRK, GEO, PLD, RUN, SMN, WAR. It reads `by_subjob` |
-| `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, DRG, MNK, NIN, PUP, RDM, RNG, SAM, SCH, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
+| `by_subjob` | yes, when there is no `get_style` | since 2026-10-30 `resolve_style` reads `by_subjob[subjob]` itself when the config has no `get_style` (the BLM, BLU, BRD, DRG, MNK, NIN, PUP, RDM, RNG, SAM, SCH, THF and WHM templates); before, their `by_subjob` did nothing. The Atelier's Macros & lockstyle part writes this table (`atelier/app/js/macro_edit.js`) |
 | `style` | no | "backward compatibility" field, no reader |
 
 `_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/_common/display/`. The entries read its `initial_load_delay` (8.0), with an inline fallback table (see `shared/entry/war.lua:40-44`), and pass it from `user_setup()` to `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`), which schedules `select_default_lockstyle` after it. It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
@@ -874,7 +874,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 ## Invariants and gotchas
 
-1. A per-job lockstyle config must define `get_style` for its `by_subjob` to have any effect: the factory never reads `by_subjob` itself (`resolve_style`).
+1. A per-job lockstyle config with a `get_style` is read through it alone: its `by_subjob` counts only as far as `get_style` reads it. Without `get_style`, `resolve_style` reads `by_subjob[subjob]` itself (since 2026-10-30).
 2. `select_default_lockstyle` does nothing when `player.main_job` is not the factory's job; `select_default_macro_book` has no such guard.
 3. A lockstyle debounce only covers operations of the same job `ctx`, which both wrapper copies of a sandbox share. `apply_style` is not debounced against it.
 4. `equip()` from a coroutine does nothing. AutoMove, DualWield and TreasureHunter send `gs c update`; craft uses `gs disable` commands, or synchronous `enable()` / `equip()` inside the command handler.
@@ -891,7 +891,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 ## For maintainers / AI
 
-- **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/display/<JOB>_LOCKSTYLE.lua` with `default`, `by_subjob` **and** `get_style`, and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand: lockstyle and macro book always go through the two factories.
+- **New job lockstyle / macrobook.** Copy `WAR_LOCKSTYLE.lua` / `WAR_MACROBOOK.lua` and change the job code, config path and defaults. `include` both from the facade. Add `<char>/<job>/display/<JOB>_LOCKSTYLE.lua` with `default` and `by_subjob` (`get_style` is optional since 2026-10-30: the factory reads `by_subjob` without it), and `<JOB>_MACROBOOK.lua` with `solo`, `dualbox` and `default`. Register the cancel in the entry's `get_sets()` like the others. Never write `/lockstyleset` or `/macro book` by hand: lockstyle and macro book always go through the two factories.
 - **New craft.** Add `<char>/_common/sets/<name>_sets.lua` in either shape, and a command branch that calls `CraftManager.resolve_set('<name>', variant)` through `equip_craft_gear`, the way `handle_fish` does.
 - **New waltz or cure tier.** WaltzManager tiers live in `WALTZ_CONFIG` + `CURING_TIERS` / `DEFAULT_WALTZ_FROM` (and the `waltz_from` line of `_master/config_global/SUBJOB_CONFIG.lua`). Cure tiers live in the character's `WHM_CURE_CONFIG.lua` (`cure_tiers` / `curaga_tiers`, ascending), plus `CURE_IDS` for the recast lookup.
 - **New AutoMove consumer.** Read `state.Moving.value` in the set builder (or go through `base_set_builder.lua`), or register a callback from a coroutine scheduled after 0.5 s.
@@ -907,7 +907,6 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 Open:
 
-- `by_subjob` is ignored when a lockstyle config has no `get_style`: the BLM, BLU, BRD, DRG, MNK, NIN, PUP, RDM, RNG, SAM, SCH, THF and WHM templates, and the overlays copied from them (`lockstyle_manager.lua` `resolve_style`).
 - Craft slot locks outlive the session flag (after a reload, or an uncraft within 2 s of craft), and `//gs c uncraft` then refuses to unlock (`craft_manager.lua` `CraftManager.unequip`).
 - `//gs c waltz` / `aoewaltz` cancel Saber Dance before knowing whether any waltz can be used (`COMMON_COMMANDS.lua` `handle_waltz_generic`).
 - CureManager treats a spell with any recast left as unavailable, unlike CooldownChecker's 2.0 s tolerance (`cure_manager.lua` `is_spell_available`).
@@ -925,6 +924,7 @@ Open:
 
 Fixed:
 
+- `by_subjob` was ignored when a lockstyle config had no `get_style` (the BLM, BLU, BRD, DRG, MNK, NIN, PUP, RDM, RNG, SAM, SCH, THF and WHM templates, and the overlays copied from them): `resolve_style` now reads it itself (`lockstyle_manager.lua`, 2026-10-30, checked offline only).
 - A job whose keybind file failed to load, or bound no key, got no first macro book and no lockstyle, without a word: the entry found the two globals only because `show_intro()` had required the wrappers. Every entry now calls `EntryKit.macro_and_lockstyle` (`shared/utils/core/entry_kit.lua`), which waits 0.2 s for the facade (2026-10-15).
 - CureManager's fallback config had no tier tables, so every Cure / Curaga then raised an error in precast. The fallback now carries default `cure_tiers` / `curaga_tiers` (`cure_manager.lua`, module load).
 - SAM's idle builder ends with `BaseSetBuilder.apply_movement`, so `sets.MoveSpeed` goes on while moving, as on the other jobs (2026-09-28).

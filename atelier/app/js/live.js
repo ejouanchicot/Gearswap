@@ -37,6 +37,19 @@ async function findData(dir){
   }
   return null;
 }
+// The folder kept stopped answering (moved, copied back, the browser updated: NotFoundError, 2026-10-30): the window
+// that asks for it again says so (openFolderDialog), until it is picked
+let FOLDER_LOST = false;
+// A refused read or write said in plain words, with what to do; the browser's own name of it after, for whoever helps
+function folderError(e, rel){
+  const name = (e && e.name) || '', file = rel ? rel.split('/').pop() : '';
+  const key = name === 'NotFoundError' ? 'lost' : /NoModificationAllowed|InvalidModification|InvalidState/.test(name) ? 'locked'
+    : /NotAllowed|Security/.test(name) ? 'denied' : 'other';
+  if (key === 'lost') FOLDER_LOST = true;
+  const err = new Error(t('fsErr_' + key, {f: file}) + (name ? ` (${t('fsErr_detail')} : ${name}${rel ? ', ' + rel : ''})` : ''));
+  err.folderLost = key === 'lost';
+  return err;
+}
 // The data folder kept from the first time, when the browser still lets the page write in it
 async function dataFolder(){
   let dir = null;
@@ -44,7 +57,11 @@ async function dataFolder(){
   if (!dir) return null;
   let perm = await dir.queryPermission({mode: 'readwrite'});
   if (perm !== 'granted') perm = await dir.requestPermission({mode: 'readwrite'});
-  return perm === 'granted' ? dir : null;
+  if (perm !== 'granted') return null;
+  // a folder kept that is no longer there (moved, renamed): forgotten, asked for again (offline_export.js oxWindowerFolder)
+  try { await dir.getFileHandle('atelier.html'); }
+  catch (e) { FOLDER_LOST = true; try { await idb('readwrite', st => st.delete('data')); } catch (x) {} return null; }
+  return dir;
 }
 async function pickFolder(){
   const dir = await findData(await window.showDirectoryPicker({id: 'atelier-data', mode: 'readwrite'}));
@@ -66,13 +83,42 @@ function download(file, text){
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 // Write a file of <Char>/atelier/overrides/; true when written in the folder (else downloaded, or cancelled)
+// A settings file of <Char>/ (rel: _common/combat/BUFF_CONFIG.lua) written by the page itself, when the game cannot:
+// not connected, or a statement uncommented that the game's door refuses (lua_data.lua only_data_changed). The file is
+// read again first and left alone when it changed since `before` (the export's text); a copy of it goes into
+// <Char>/atelier/backups/ (<name>_<YYYYMMDD-HHMMSS>.lua, as the sets'); then the new text.
+// true: written; 'changed'; false: downloaded (a browser without folder access); null: cancelled
+async function writeCharFile(char, rel, before, text){
+  try { return await writeCharFileRaw(char, rel, before, text); }
+  catch (e) { throw e && e.name && e.name !== 'Error' ? folderError(e, char + '/' + rel) : e; }
+}
+async function writeCharFileRaw(char, rel, before, text){
+  const name = rel.split('/').pop();
+  if (!window.showDirectoryPicker) { download(name, text); return false; }
+  let dir = null;
+  try { dir = await dataFolder(); } catch (e) {}
+  if (!dir) dir = await new Promise(done => openFolderDialog(async () => done(await pickFolder()), () => done(null)));
+  if (!dir) return null;
+  const mine = await dir.getDirectoryHandle(char);
+  let d = mine;
+  for (const part of rel.split('/').slice(0, -1)) d = await d.getDirectoryHandle(part);
+  const fh = await d.getFileHandle(name);
+  if (await (await fh.getFile()).text() !== before) return 'changed';
+  const z = n => String(n).padStart(2, '0'), now = new Date();
+  const at = `${now.getFullYear()}${z(now.getMonth() + 1)}${z(now.getDate())}-${z(now.getHours())}${z(now.getMinutes())}${z(now.getSeconds())}`;
+  const backups = await (await mine.getDirectoryHandle('atelier', {create: true})).getDirectoryHandle('backups', {create: true});
+  const bw = await (await backups.getFileHandle(name.replace(/\.lua$/, '') + '_' + at + '.lua', {create: true})).createWritable();
+  await bw.write(before); await bw.close();
+  const w = await fh.createWritable(); await w.write(text); await w.close();
+  return true;
+}
 // noReload: another file follows in the same save (it reloads the game once, after both)
 async function saveFile(file, text, noReload){
   const c = S.char;
   if (liveOk(c)) {
     try {
       await liveFetch(c, '/save?file=' + encodeURIComponent(file), {method: 'POST', body: text});
-      if (!noReload) try { await liveFetch(c, '/reload', {method: 'POST'}); } catch (e) {}
+      if (!noReload) try { await liveOrder(c, '/reload', {method: 'POST'}); } catch (e) {}
       return 'live';
     } catch (e) {}
   }
@@ -95,12 +141,13 @@ function openFolderDialog(pick, cancel, what){
   const show = err => {
     $('#overlay').innerHTML = `<div class="scrim" data-folderno></div><div class="dialog folderdlg" role="dialog" aria-label="${esc((what || {}).title || t('folderTitle'))}">
       <header><h3>${esc((what || {}).title || t('folderTitle'))}</h3></header>
-      <div class="body"><p>${esc((what || {}).why || t('folderWhy'))}</p><code class="folderpath">${esc((what || {}).path || pageFolder())}</code><p class="muted small">${t('folderOnce')}</p>
+      <div class="body">${FOLDER_LOST ? `<p class="kwarn">${esc(t('folderLost'))}</p>` : ''}<p>${esc((what || {}).why || t('folderWhy'))}</p><code class="folderpath">${esc((what || {}).path || pageFolder())}</code><p class="muted small">${t('folderOnce')}</p>
       ${err ? `<p class="kwarn">${esc(err)}</p>` : ''}</div>
       <footer><button class="btn ghost" data-folderno>${t('cancel')}</button><button class="btn" data-folderpick>${t('folderPick')}</button></footer></div>`;
     $('#overlay').hidden = false;
   };
-  S._folder = {pick: async () => { try { await pick(); closeOverlay(); S._folder = null; } catch (e) { if (!(e && e.name === 'AbortError')) show(e && e.message || String(e)); } },
+  S._folder = {pick: async () => { try { await pick(); FOLDER_LOST = false; closeOverlay(); S._folder = null; }
+      catch (e) { if (!(e && e.name === 'AbortError')) show((e && e.name && e.name !== 'Error' ? folderError(e).message : e && e.message) || String(e)); } },
     cancel: () => { closeOverlay(); S._folder = null; cancel(); }};
   show('');
 }
@@ -176,7 +223,7 @@ const jobQuery = () => '&job=' + encodeURIComponent(S.job || '');
 const shownJobLoaded = () => (S._live[S.char] || {}).job === S.job;
 // The message of a write: GearSwap reloads (the job it has loaded), or the file waits for that job to be loaded
 const doneText = (key, f) => shownJobLoaded() ? t(key, {f}) : t(key + 'Later', {f, j: S.job});
-async function reloadIfLoaded(){ if (shownJobLoaded()) try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {} }
+async function reloadIfLoaded(){ if (shownJobLoaded()) try { await liveOrder(S.char, '/reload', {method: 'POST'}); } catch (e) {} }
 // A page opened with ?nolive never talks to the game (a test of the page must not write a character's files)
 const LIVE_OFF = /[?&]nolive\b/.test(location.search);
 async function liveFetch(c, path, opts = {}){
@@ -401,3 +448,13 @@ function refreshByLink(){
     setTimeout(poll, REFRESH_POLL_MS); });
   setTimeout(poll, REFRESH_POLL_MS);
 }
+Object.assign(T.fr, {folderLost: 'Ton navigateur ne retrouve plus ce dossier. Ça arrive après une mise à jour du navigateur ou une copie du dossier ; rien n’est cassé. Montre-le à nouveau : il sera retenu.',
+  fsErr_lost: 'Ton navigateur ne retrouve plus ton dossier : clique à nouveau, il te demandera de le montrer (une fois).',
+  fsErr_locked: 'Le fichier {f} est en lecture seule ou ouvert par un autre programme : ferme ce programme (ou enlève la lecture seule), puis recommence.',
+  fsErr_denied: 'Le navigateur n’a pas le droit d’écrire dans ce dossier : recommence et accepte quand il demande l’autorisation de modifier les fichiers.',
+  fsErr_other: 'Impossible d’écrire {f} : recommence ; si ça se répète, envoie ce message à qui t’aide.', fsErr_detail: 'détail'});
+Object.assign(T.en, {folderLost: 'Your browser no longer finds this folder. It happens after a browser update or a copy of the folder; nothing is broken. Show it again: it will be kept.',
+  fsErr_lost: 'Your browser no longer finds your folder: click again, it will ask you to show it (once).',
+  fsErr_locked: 'The file {f} is read-only or open in another program: close that program (or remove read-only), then try again.',
+  fsErr_denied: 'The browser may not write in this folder: try again and accept when it asks to let the page edit files.',
+  fsErr_other: 'Could not write {f}: try again; if it happens again, send this message to whoever helps you.', fsErr_detail: 'detail'});

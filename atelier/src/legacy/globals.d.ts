@@ -95,6 +95,10 @@ declare const JOB_CFG: string[];
 declare function jobCfgTab(): string;
 declare function keysShown(d: LegacyExport): LegacyKey[];
 declare function modFiles(d: LegacyExport): unknown[];
+declare function modAllFiles(d: LegacyExport): unknown[];
+declare const MOD_TOOL_FILE: RegExp;
+declare function modAdds(): Record<string, Record<string, boolean>>;
+declare function modExamples(text: string): Array<{id: string; key: string; stmt: boolean; a: number; b: number; code: string}>;
 /** A job's level badge (ML or level), as HTML */
 declare function jobBadge(job: string): string;
 declare function keyOf(k: LegacyKey): string | undefined;
@@ -125,7 +129,7 @@ interface LegacyField {
   doc?: string[]; note?: string; a: number; b: number;
 }
 /** A config file of the export (atelier_configs.lua) */
-interface LegacyConfigFile { file: string; text: string; hash?: string; scope: 'job' | 'common' }
+interface LegacyConfigFile { file: string; text: string; hash?: string; scope: 'job' | 'common'; orig?: LegacyConfigFile; part?: string }
 interface LegacyParsed { head: {name?: string; tag?: string; about?: string}; fields: LegacyField[]; byPath: Record<string, LegacyField> }
 /** An option of the catalog (module_catalog.js) */
 interface LegacyCatalogItem { file?: string; key?: string; only?: string; when?: string; choices?: unknown[]; rgb?: boolean; presets?: unknown; cols?: unknown; [k: string]: unknown }
@@ -137,12 +141,27 @@ interface LegacyEdit { v: unknown; before: string; after: string; src: string }
 
 declare const MOD_CATALOG: LegacyFamily[];
 declare const MOD_GROUPS: LegacyGroup[];
-declare function modShown(d: LegacyExport): LegacyConfigFile;
 declare function modParsed(f: LegacyConfigFile): LegacyParsed;
 declare function modEdits(file: string): Record<string, LegacyEdit | undefined>;
 declare function modCanWrite(f: LegacyConfigFile): boolean;
+/** macro_edit.js: the job's macro book and lockstyle files, their numbers with the changes waiting */
+interface LegacyMacroModel { def: LegacyAny; subs: Record<string, LegacyAny>; table: boolean; dirty: boolean; file: string; canWrite: boolean }
+/** reg_special.js: the job's HUD order and refill list cards */
+declare const REG_SPECIAL: RegExp;
+/** hud_preview.js: the HUD drawn by GearSwap's own code */
+declare function hudColorModel(d: LegacyExport): {parts: Array<{id: string; rgb: number[] | null; auto: boolean; set: boolean}>; values: Array<{file: string; path: string; id: string; rgb: number[]}>};
+declare function hudHex(rgb: number[]): string;
+declare function hudPreview(d: LegacyExport): null | {key: string; error: string | null; html: string; meta: LegacyAny};
+declare const HUD_SECTIONS: string[];
+declare function hudOrder(d: LegacyExport, file: string, field: string): {order: string[]; own: boolean};
+declare function refillNow(d: LegacyExport, file: string): {mode: 'own' | 'common'; list: Array<{name: string | string[]; target: number}>};
+declare function refillSubs(file: string): Record<string, Array<{name: string | string[]; target: number}>>;
+declare function macroFiles(d: LegacyExport): {book: LegacyConfigFile | null; style: LegacyConfigFile | null};
+declare function macroModel(kind: 'book' | 'style', f: LegacyConfigFile, own?: boolean): LegacyMacroModel;
+declare const MACRO_MAX: {book: number; page: number; style: number};
+declare const MACRO_JOBS: string[];
 declare function modRestFr(file: string, path: string): null | {title: string; desc: string; map?: boolean};
-declare function modName(x: LegacyField): string;
+declare function modName(x: {key?: string | null; index?: number}): string;
 declare function modDoc(lines?: string[]): string;
 declare function modValue(file: string, path: string): unknown;
 declare function modFileInfo(f: LegacyConfigFile): {name: string; what: string};
@@ -150,7 +169,6 @@ declare function modKnown(d: LegacyExport, f: LegacyConfigFile): Record<string, 
 declare function modFileGroup(f: LegacyConfigFile): string;
 declare function modGroupName(g: LegacyGroup): string;
 declare function mcRows(d: LegacyExport, fam: LegacyFamily): LegacyCatalogRow[];
-declare function mcScope(d: LegacyExport, r: LegacyCatalogRow): {cls: string; text: string; tip: string};
 /** A setting's control (switch, choices, number, chips, rows, colour...), as the old page's HTML */
 declare function mxColorMap(x: LegacyField): unknown;
 declare function mxColorList(f: LegacyConfigFile, x: LegacyField): boolean;
@@ -181,6 +199,13 @@ declare const MIDCAST_GROUP_FROM: number;
 declare const MIDCAST_ORDER: string[];
 declare function catalogWhen(path: string): string | null;
 declare function modeStart(d: LegacyAny, m: LegacyAny): string;
+declare function playerMode(name: string, job: string | null): null | {name: string; desc: string; icon: LegacyAny; vals: Record<string, string>; group: string};
+declare const PLAYER_GROUPS: Array<[string, string, string, string]>;
+declare function playerIcon(id: number | string | null | undefined): string;
+declare const ICONS: Record<string, string>;
+declare const GAME_ICONS: {size: number; credit: string; icons: Record<string, string>};
+declare function iconIds(): Record<string, number>;
+declare const PLAYER_WORDS: {modes: Record<string, Record<string, LegacyAny>>};
 declare function modeFileStart(d: LegacyAny, m: LegacyAny): string;
 declare function modeChanges(): number;
 declare const COMMON_MODES: Set<string>;
@@ -257,6 +282,8 @@ declare function bpMoves(B: LegacyAny): {moves: LegacyAny[]; noRoom: string[]};
 declare const BP_CATS: string[];
 /** An item's icon, as the old page's HTML (module_items.js) */
 declare function itemIco(name: string, id?: number): string;
+declare function itemIconId(name: string): number | undefined;
+declare function itemImg(id: number | string): string;
 
 /* ---- Buffs & target (party_builder.js, buffs.js, buff_panels.js, profiles.js), loosely typed ---- */
 declare function buffState(): LegacyAny;

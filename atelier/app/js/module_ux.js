@@ -9,7 +9,7 @@ Object.assign(T.fr, {mxSearch: 'Chercher une option : un mot, un objet, un sort�
   mxFound: '{n} option(s) pour « {q} »', mxNone: 'Aucune option pour « {q} ». Essaie un autre mot, ou efface la recherche pour revoir les modules.', mxClear: 'Effacer', mxClearTip: 'Efface la recherche et revient aux modules.',
   mxInAdv: 'Avancé · {f}', mxMore: 'Les {n} premières sont affichées : précise ta recherche pour voir les autres.',
   mxWait: '{n} changement(s) à enregistrer', mxWaitTip: 'Rien n’est écrit tant que tu n’as pas cliqué « Enregistrer ».', mxRevert: 'Annuler ce changement', mxUndoAll: 'Tout annuler', mxEmptyVal: '(vide)',
-  mxLockT: 'Lecture seule', mxLock: 'Le jeu n’est pas connecté : tu peux tout lire, mais pas modifier. Pour changer un réglage, lance le jeu avec GearSwap chargé sur {c} : la page s’y connecte toute seule, et les options se déverrouillent.',
+
   mxLess: 'Baisser de {s}', mxMore1: 'Monter de {s}', mxSlide: 'Glisse pour choisir entre {a} et {b}.', mxStd: 'Standard : {v}', mxStdTip: 'Remettre la valeur standard ({v}).', mxIsStd: 'valeur standard', mxRange: 'Entre {a} et {b}.',
   mxColor: 'Clique pour ouvrir le nuancier et choisir la couleur.', mxColorOf: 'Rouge {r} · Vert {g} · Bleu {b}', mxPresets: 'Couleurs toutes prêtes :', mxPresetTip: 'Prendre le fond « {n} » (opacité {a}).',
   mxActAdd: '+ Ajouter une ability ou un sort', mxActTip: 'Ouvre la liste des abilities et des sorts : clique sur celui à ajouter.', mxActTitle: 'Ajouter une ability ou un sort',
@@ -21,7 +21,7 @@ Object.assign(T.en, {mxSearch: 'Search an option: a word, an item, a spell…', 
   mxFound: '{n} option(s) for "{q}"', mxNone: 'No option for "{q}". Try another word, or clear the search to see the modules again.', mxClear: 'Clear', mxClearTip: 'Clears the search and goes back to the modules.',
   mxInAdv: 'Advanced · {f}', mxMore: 'The first {n} are shown: narrow the search to see the others.',
   mxWait: '{n} change(s) to save', mxWaitTip: 'Nothing is written until you click "Save".', mxRevert: 'Undo this change', mxUndoAll: 'Undo all', mxEmptyVal: '(empty)',
-  mxLockT: 'Read only', mxLock: 'The game is not connected: everything can be read, nothing changed. To change a setting, start the game with GearSwap loaded on {c}: the page connects by itself, and the options unlock.',
+
   mxLess: 'Lower by {s}', mxMore1: 'Raise by {s}', mxSlide: 'Drag to choose between {a} and {b}.', mxStd: 'Standard: {v}', mxStdTip: 'Back to the standard value ({v}).', mxIsStd: 'standard value', mxRange: 'Between {a} and {b}.',
   mxColor: 'Click to open the colour picker and choose the colour.', mxColorOf: 'Red {r} · Green {g} · Blue {b}', mxPresets: 'Ready-made colours:', mxPresetTip: 'Take the {n} background (opacity {a}).',
   mxActAdd: '+ Add an ability or a spell', mxActTip: 'Opens the list of abilities and spells: click the one to add.', mxActTitle: 'Add an ability or a spell',

@@ -61,7 +61,7 @@ function, not a line number.
 | `_master/config/blm/BLM_KEYBINDS.lua` | 17 numpad binds, data only; `KeybindManager.create('BLM', ...)` ([keybinds](../systems/keybinds-and-custom.md)) |
 | `_master/config/blm/BLM_CUSTOM.lua` | Player modes and gear rules (all examples commented out) |
 | `_master/config/blm/BLM_HUD.lua` | Per-job HUD section / row order (empty = defaults), rewritten by `//gs c ui order` |
-| `_master/config/blm/BLM_LOCKSTYLE.lua` | `default = 5`, `by_subjob` (not applied: no `get_style`; only `lockstyle_pieces.lua` reads it, for `//gs c lockscan`) |
+| `_master/config/blm/BLM_LOCKSTYLE.lua` | `default = 5`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30; also by `lockstyle_pieces.lua`, for `//gs c lockscan`) |
 | `_master/config/blm/BLM_MACROBOOK.lua` | `default` book 8 page 1, `solo[sub]`, `dualbox[partner_job][sub]` |
 | `_master/config/blm/BLM_MP_CONFIG.lua` | `mp_threshold = 1000` |
 | `_master/config/blm/BLM_ELEMENTAL_CONFIG.lua` | `auto_hachirin`, `check_storm`, `check_day`, `check_weather` |
@@ -450,7 +450,7 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 | `<char>/blm/keys/BLM_KEYBINDS.lua` | 17 binds | file | entry `user_setup`, `file_unload` |
 | `<char>/blm/keys/BLM_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` |
 | `<char>/blm/display/BLM_HUD.lua` | empty | file | HUD section / row order |
-| `<char>/blm/display/BLM_LOCKSTYLE.lua` `default`, `by_subjob` | 5 | file; factory fallback 1 (`BLM_LOCKSTYLE.lua` wrapper) | `LockstyleManager`: `default` only (no `get_style`) |
+| `<char>/blm/display/BLM_LOCKSTYLE.lua` `default`, `by_subjob` | 5 | file; factory fallback 1 (`BLM_LOCKSTYLE.lua` wrapper) | `LockstyleManager`: `by_subjob[sub]`, else `default` (no `get_style`; `by_subjob` read by the factory itself since 2026-10-30) |
 | `<char>/blm/display/BLM_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | book 8 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/blm/combat/BLM_MP_CONFIG.lua` `mp_threshold` | 1000 | file; fallback in `BLM_MIDCAST.lua` `ensure_modules_loaded` | `apply_mp_conservation` |
 | `<char>/blm/combat/BLM_ELEMENTAL_CONFIG.lua` | all true | file; same fallback | `apply_elemental_match` (only when `ElementalBelt` is off) |
@@ -664,8 +664,6 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
 - `MagicBurstMode = Acc` is ignored by the `/p` call and by Impact, and its
   overlay also replaces the Burn / Frost sets.
 - `BLM_TP_CONFIG` is never read by the TP calculator (no `pieces`).
-- `BLM_LOCKSTYLE.by_subjob` is never applied (no `get_style`); only
-  `lockstyle_pieces.lua` reads it (`//gs c lockscan`, `of_job`).
 - Template `sets.idle.Town` / `sets.Adoulin` are 1-2 slot sets; since
   2026-09-29 `BaseSetBuilder.select_idle_base_town` lays them on top of the
   idle set instead of using them as full idle bases.

@@ -1,46 +1,46 @@
 <!--
-  GearSwap Atelier · the Modules part of the job's settings (modules.ts): the search and the two views on top, the
-  left column, the presentation, the options, the file opened, the changes that wait. The buttons keep the attributes
-  the old page's handlers read (modules.js, module_ux.js: data-modview, data-modfam, data-modopen, data-modgrp,
-  data-modsave, data-modundo, data-modrevert, data-modqclear; the search box #modq); a setting's control is the old
-  page's HTML (ModCtl.svelte: numbers, colours, lists, tables).
+  GearSwap Atelier · the Settings part of the job's settings (modules.ts), in the frame of the three parts
+  (ProFrame.svelte; SPEC notes/docs-perso/config-pro-2026-10-30): a section a subject, a line an option (its icon, its
+  name, a plain sentence, its control), the job's refill and the HUD's colours as sections of their own. The controls keep the
+  attributes the old page's handlers read (modules.js, module_ux.js, reg_special.js: data-modtheme, data-regsel,
+  data-modsave, data-modundo, data-modrevert, data-modstd, data-modqclear, data-hudcolor*, data-hudresetall, data-refill*; the search box
+  #modq); a setting's control is ModCtl.svelte.
 
   @file    atelier/src/screens/config/Modules.svelte
   @author  ejouanchicot
 -->
 <script lang="ts">
   import ModCtl from './ModCtl.svelte';
-  import Box from '../../components/Box.svelte';
-  import type {ModulesView, ModItem, ModRow, ModCard, Nav} from './modules';
+  import ProFrame from './ProFrame.svelte';
+  import type {ModulesView, RegRow, RegCard, RefillSpecial, HudColors} from './modules';
 
   let {view}: {view: ModulesView} = $props();
 </script>
 
-{#snippet card(c: ModCard)}<div class="mccard" class:changed={c.changed} class:tall={c.tall}><div class="mck"><b>{c.title}</b>{#if c.desc}<p>{c.desc}</p>{/if}<span class="mcscope {c.scope.cls}" title={c.scope.tip}>{c.scope.text}</span></div><div class="modv"><ModCtl c={c.ctl} /></div></div>{/snippet}
-{#snippet key(r: ModRow)}<div class="modk"><b>{r.key.name}</b>{#if r.key.code !== null}<code>{r.key.code}</code>{/if}{#if r.key.doc}<p>{r.key.doc}</p>{/if}</div>{/snippet}
-{#snippet row(r: ModRow)}{#if r.grp}<div class="modrow grp" class:tint={!!r.tint} style="--d:{r.depth}">{@render key(r)}{#if r.tint}<div class="modv"><ModCtl c={r.tint} /></div>{/if}</div>{:else}<div class="modrow" class:changed={r.changed} class:tall={r.tall} style="--d:{r.depth}">{@render key(r)}<div class="modv">{#if r.ctl}<ModCtl c={r.ctl} />{/if}</div></div>{/if}{/snippet}
-{#snippet items(list: ModItem[])}{#each list as it, i (i)}{#if it.kind === 'part'}<h4 class="modpart">{it.title}{#if it.why}<small>{it.why}</small>{/if}</h4>{:else if it.kind === 'card'}{@render card(it.card)}{:else}{@render row(it.row)}{/if}{/each}{/snippet}
-{#snippet nav(n: Nav)}<nav class="modnav box">{#if n.intro}<button class="modfile" data-modfam={n.intro.value} aria-current={n.intro.current} title={n.intro.title}><b>{n.intro.name}</b><small>{n.intro.small}</small></button>{/if}{#each n.groups as g (g.id)}<div class="modgrp" class:open={g.open}><button class="modgrph" data-modgrp={g.id} data-open={g.open} aria-expanded={g.open} title={g.title}><i aria-hidden="true">▸</i><b>{g.name}</b>{#if g.changed}<em class="moddot">{g.changed}</em>{/if}<small>{g.count}</small></button>{#if g.open}{#each g.entries as e (e.value)}{#if e.attr === 'data-modopen'}<button class="modfile" data-modopen={e.value} aria-current={e.current} title={e.title}><b>{e.name}</b><small>{e.small}</small>{#if e.dot}<i class="moddot">{e.dot}</i>{/if}</button>{:else}<button class="modfile" data-modfam={e.value} aria-current={e.current} title={e.title}><b>{e.name}</b><small>{e.small}</small>{#if e.dot}<i class="moddot">{e.dot}</i>{/if}</button>{/if}{/each}{/if}</div>{/each}</nav>{/snippet}
+{#snippet gauge(r: RegRow)}{@const gg = r.gauge!}<div class="rgauge" data-gauge={gg.attr} class:off={gg.off}><div class="rgbar">{#each gg.parts as p, i (i)}<span class="rgpart" style="flex:{p.flex}" title={p.tip}><b>{p.label}</b>{#if i < gg.parts.length - 1 && !gg.off}<i class="rghandle" data-gaugeat={i} title={p.tip}></i>{/if}</span>{/each}</div><div class="rgticks">{#each gg.parts as p, i (i)}<span style="flex:{p.flex}">{p.from}</span>{/each}<span class="rgend">{gg.end}</span></div></div><details class="rgfix"><summary>{gg.fix}</summary><ModCtl c={r.ctl} /></details>{/snippet}
+{#snippet opt(r: RegRow)}<div class="cfg-r" class:sel={r.sel} class:chg={r.changed} class:tall={r.tall || !!r.gauge} data-regsel={r.key}>
+  <span class="cfg-ri">{@html r.iconHtml}</span>
+  <div class="cfg-rt"><b>{r.label}</b>{#if r.sub}<span>{r.sub}</span>{/if}</div>
+  <div class="cfg-c">{#if r.gauge}{@render gauge(r)}{:else}<ModCtl c={r.ctl} />{/if}</div>
+</div>{/snippet}
+{#snippet refill(s: RefillSpecial)}<div class="rfnow"><small>{s.now}</small><div class="rfitems">{#each s.items as it, i (i)}<span class="rfitem">{@html it.icoHtml}{it.label}<b>×{it.count}</b></span>{:else}<i>{s.empty}</i>{/each}</div></div>
+  <div class="rfmodes"><span class="aseg">{#each s.modes as m (m.attr)}<button type="button" class:on={m.on} data-refillmode={m.attr} title={m.tip}>{m.label}</button>{/each}</span></div>
+  {#if s.list}<div class="rflist"><ModCtl c={s.list.ctl} /></div>{:else if s.addExtra}<div class="rfadd"><button type="button" class="modaddbtn" data-refillmode={s.addExtra.attr}>{s.addExtra.label}</button></div>{/if}
+  <div class="rfsubs"><b title={s.subs.tip}>{s.subs.title}</b>{#if s.subs.wait}<small class="rfwait">{s.subs.wait}</small>{/if}
+    {#each s.subs.rows as sr (sr.del)}<div class="rfsub"><div class="rfsubh"><span>{sr.label}</span><button type="button" class="medel" data-refilldelsub={sr.del} title={sr.delTip} aria-label={sr.delTip}>×</button></div>{#if sr.row}<div class="rctl"><ModCtl c={sr.row.ctl} /></div>{:else}<small>{sr.summary}</small>{/if}</div>{/each}
+    {#if s.subs.add}<select class="meadd" data-refilladdsub={s.subs.add.attr}><option value="">{s.subs.add.label}</option>{#each s.subs.add.options as o (o)}<option value={o}>/{o}</option>{/each}</select>{/if}</div>{/snippet}
+{#snippet colors(s: HudColors)}<div class="hcol">{#each s.parts as p (p.attr)}<label class="hcsw" title={p.label}><input type="color" value={p.hex} data-hudcolor={p.attr}><span>{p.label}</span>{#if p.auto}<em>{p.auto}</em>{/if}{#if p.reset}<button type="button" data-hudcolorreset={p.reset} title={p.resetTip} aria-label={p.resetTip}>↺</button>{/if}</label>{/each}</div>
+  {#if s.values.length}<div class="hcolt">{s.valuesTitle}</div><div class="hcol">{#each s.values as v (v.attr)}<label class="hcsw"><input type="color" value={v.hex} data-hudcolor={v.attr}><span>{v.label}</span></label>{/each}</div>{/if}{/snippet}
+{#snippet section(c: RegCard)}<div class="cfg-sec"><span>{c.title}</span>{#if c.small}<small>{c.small}</small>{/if}{#if c.own}<em>{c.own}</em>{/if}</div>
+  <div class="cfg-grp">{#if c.special}<div class="cfg-r tall special" class:sel={view.detail && view.detail.title === c.title} data-regsel={c.id}><div class="cfg-c">{#if c.special.k === 'colors'}{@render colors(c.special)}{:else}{@render refill(c.special)}{/if}</div></div>{:else}{#each c.rows as r (r.key)}{@render opt(r)}{/each}{/if}</div>{/snippet}
 
-{#if view.none !== null}
-  <div class="keybar"><span>{view.none}</span></div>
-{:else}
-  <div class="keybar modtop"><input id="modq" class="tgq" type="search" value={view.top.q} placeholder={view.top.placeholder} title={view.top.title} autocomplete="off">{#if view.top.clear}<button class="btn ghost" data-modqclear title={view.top.clear.title}>{view.top.clear.text}</button>{:else}<span class="modhint">{view.top.hint}</span>{/if}<span class="seg modviews" role="group">{#each view.top.views as v (v.value)}<button data-modview={v.value} aria-pressed={v.pressed} title={v.title}>{v.label}</button>{/each}</span></div>
-  {#if view.top.lock}<div class="modlock"><b>{view.top.lock.title}</b><span>{view.top.lock.text}</span></div>{/if}
-  {#if view.toast}<p class="toast">{view.toast}</p>{/if}
-  {#if view.body}
-    {@const b = view.body}
-    {#if b.kind === 'search'}
-      <div class="modpanel modfound"><Box cls="g-attr wide" title={b.title}><div class="modrows">{@render items(b.items)}{#if b.more}<p class="muted modnone">{b.more}</p>{/if}{#if b.none}<p class="muted modnone">{b.none}</p>{/if}</div></Box></div>
-    {:else if b.kind === 'intro'}
-      <div class="modlayout">{@render nav(b.nav)}<div class="modpanel"><Box cls="g-attr wide" title={b.intro.title}><div class="mccards mcintro"><section><h4>{b.intro.job}</h4>{#if b.intro.lead}<p class="mclead">{b.intro.lead}</p>{/if}{#if b.intro.points.length}<ul class="mcpoints">{#each b.intro.points as pt, i (i)}<li>{#if pt.b}<b>{pt.b}</b>{/if}<span>{pt.text}</span></li>{/each}</ul>{/if}<p class="mcnext">{@html b.intro.where}{' '}{#each b.intro.links as l, i (l.tab)}{#if i}{' · '}{/if}<button class="linkbtn" data-jobtab={l.tab}>{l.label}</button>{/each}{#if b.intro.own}{' · '}<button class="linkbtn" data-modfam="job">{b.intro.own.label}</button>{/if}</p></section><section><h4>{b.intro.allTitle}</h4><p class="mclead">{b.intro.allWhy}</p>{#each b.intro.groups as g (g.name)}<h5>{g.name}</h5><div class="mcmods">{#each g.mods as m (m.fam)}<button class="mcmod" data-modfam={m.fam} title={m.title}><b>{m.name}</b><span>{m.tip}</span><i>{m.count + ' →'}</i></button>{/each}</div>{/each}</section></div></Box></div></div>
-    {:else if b.kind === 'family'}
-      <div class="modlayout">{@render nav(b.nav)}<div class="modpanel"><Box cls="g-attr wide" title={b.title} meta={b.meta}><div class="mccards"><div class="mcabout"><p>{b.tip}</p>{#if b.use}<p class="mcuse"><b>{b.use.label}</b>{b.use.text}</p>{/if}</div>{#each b.cards as c, i (i)}{@render card(c)}{/each}</div></Box></div></div>
-    {:else}
-      <div class="modlayout">{@render nav(b.nav)}<div class="modpanel"><Box cls="g-attr wide" title={b.title} meta={b.meta} metaTitle={b.metaTitle}><div class="modrows"><div class="mcabout"><p>{b.what}</p><p class="mcuse"><span class="mcscope {b.scope.cls}" title={b.scope.tip}>{b.scope.text}</span></p>{#if b.manual}<details class="modabout"><summary>{b.manual.summary}</summary><pre>{b.manual.text}</pre></details>{/if}</div>{@render items(b.items)}{#if b.adv}<details class="modadvall"><summary>{b.adv.summary}</summary>{#each b.adv.rows as r, i (i)}{@render row(r)}{/each}</details>{/if}{#if b.empty}<p class="muted modnone">{b.empty}</p>{/if}</div></Box></div></div>
-    {/if}
-  {/if}
-  {#if view.save}
-    <div class="modsave" role="region"><div class="mshead"><b title={view.save.tip}>{view.save.title}</b><span class="sp"></span><button class="btn ghost" data-modundo title={view.save.undo.title}>{view.save.undo.text}</button><button class="btn" data-modsave title={view.save.save.title}>{view.save.save.text}</button></div><ul>{#each view.save.lines as l (l.file + '|' + l.path)}<li><b>{l.title}</b><span class="was">{l.was}</span><i aria-hidden="true">→</i><span class="now">{l.now}</span><button data-modrevert data-modfile={l.file} data-modpath={l.path} title={view.save.revert} aria-label={view.save.revert}>×</button></li>{/each}</ul></div>
-  {/if}
-{/if}
+<ProFrame nav={view.nav} head={view.head} detail={view.detail} foot={view.foot} credit={view.credit}>
+  {#if view.none}<p class="cfg-empty">{view.none}</p>{/if}
+  {#if view.empty}<p class="cfg-empty">{view.empty}</p>{/if}
+  {#if view.hud}
+    <div class="hudstage"><div class="hudscreen"><small>{view.hud.title} · {view.hud.note}</small>{#if view.hud.error}<p class="huderr">{view.hud.error}</p>{:else if view.hud.html}<div class="hudtext" style={view.hud.style}>{@html view.hud.html}</div>{:else}<p class="hudwait">…</p>{/if}
+      <p class="hudhint">{view.hud.hint}{#if view.hud.reset} <button type="button" class="rgo" {...view.hud.reset.attrs}>{view.hud.reset.label}</button>{/if}</p></div>
+      <div class="hudside">{#each view.sections.filter(c => c.id.startsWith('hud|') && !c.special) as c (c.id)}{@render section(c)}{/each}</div></div>
+    {#each view.sections.filter(c => !c.id.startsWith('hud|') || c.special) as c (c.id)}{@render section(c)}{/each}
+  {:else}{#each view.sections as c (c.id)}{@render section(c)}{/each}{/if}
+</ProFrame>

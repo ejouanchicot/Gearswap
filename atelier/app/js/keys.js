@@ -113,6 +113,44 @@ function setModeStart(d, name, value){
   S.modeDirty[S.char] = true;
 }
 const modeChanges = () => Object.values(modeOverrides()).reduce((n, m) => n + Object.keys(m).length, 0);
+Object.assign(T.fr, {gModes: 'Mes modes', gModesSmall: 'ce que je change en jeu', gKeys: 'Autres touches', gKeysSmall: 'commandes en un appui',
+  gAway: 'Modes d’un autre sub', gAwaySmall: 'quand tu n’es pas /{s}', gModesHead: 'La valeur choisie ici est celle de départ ; en jeu, la touche la change.',
+  gKeysHead: 'Toutes tes touches, et si deux se marchent dessus. Clique une touche pour la changer.', gKeysDesc: 'Clique une touche (« Changer »), puis appuie simplement sur la nouvelle.',
+  gNoDesc: 'Choisis sa valeur de départ avec ◀ ▶.', gDirty: 'Des changements attendent d’être enregistrés.', gClean: 'Tout est enregistré.',
+  gCredit: 'Icônes : {c}', gMore: 'Modes avancés', gMoreSmall: 'rarement utiles', gMoreHead: 'Des modes plus techniques : la plupart du temps, on n’y touche pas.'});
+Object.assign(T.en, {gModes: 'My modes', gModesSmall: 'what I change in game', gKeys: 'Other keys', gKeysSmall: 'one-press commands',
+  gAway: 'Modes of another subjob', gAwaySmall: 'when you are not /{s}', gModesHead: 'The value chosen here is the start one; in game, the key changes it.',
+  gKeysHead: 'All your keys, and whether two clash. Click a key to change it.', gKeysDesc: 'Click a key (“Change”), then just press the new one.',
+  gNoDesc: 'Choose its start value with ◀ ▶.', gDirty: 'Changes wait to be saved.', gClean: 'Everything is saved.',
+  gCredit: 'Icons: {c}', gMore: 'More modes', gMoreSmall: 'seldom needed', gMoreHead: 'More technical modes: most of the time, leave them alone.'});
+// "Other keys" as one list (SPEC notes/docs-perso/maquette-config-2026-10-30, touches variante A): each key's state,
+// the conflicts first, a filter by kind
+Object.assign(T.fr, {stOk: '✓ Sans conflit', stClash: 'Conflit', stYield: 'Cédée', stTaken: 'Remplacée par toi', stOther: 'autre sub', stHidden: 'pas posée',
+  stNone: 'pas de touche', stOkTip: 'Une seule action sur cette touche.', stClashTip: 'Même touche que : {d}. Une seule des deux part en jeu.',
+  stYieldTip: 'Ta touche « {d} » est sur la même touche : celle-ci n’est pas posée (voulu).', stTakenTip: 'Ta touche « {d} » remplace celle de Mote (voulu).',
+  stOtherTip: 'Posée seulement avec un autre sub.', stHiddenTip: 'Pas posée en ce moment (sa condition n’est pas remplie).',
+  kcTitle: '⚠ {n} conflit(s) à régler', kcWhy: 'deux actions sur la même touche : une seule part en jeu. Clique « Changer » sur l’une des deux.',
+  kcNone: '✓ Aucun conflit : chaque touche fait une seule chose.', kfAll: 'Toutes', kfClash: '⚠ Conflits', kgModes: 'Mes modes', kMoteWhy: 'posées par GearSwap sur tous les jobs ; pour en libérer une, mets une de tes touches dessus', kChange: 'Changer', kChangeTip: 'Clique, puis appuie sur la nouvelle touche.', kNoKey: 'Choisir une touche'});
+Object.assign(T.en, {stOk: '✓ No conflict', stClash: 'Conflict', stYield: 'Gives way', stTaken: 'Replaced by yours', stOther: 'other subjob', stHidden: 'not bound',
+  stNone: 'no key', stOkTip: 'One action on this key.', stClashTip: 'Same key as: {d}. Only one of them fires in game.',
+  stYieldTip: 'Your key “{d}” is on the same key: this one is not bound (meant).', stTakenTip: 'Your key “{d}” replaces Mote’s (meant).',
+  stOtherTip: 'Bound with another subjob only.', stHiddenTip: 'Not bound right now (its condition is not met).',
+  kcTitle: '⚠ {n} conflict(s) to fix', kcWhy: 'two actions on the same key: only one fires in game. Click “Change” on one of them.',
+  kcNone: '✓ No conflict: each key does one thing.', kfAll: 'All', kfClash: '⚠ Conflicts', kgModes: 'My modes', kMoteWhy: 'bound by GearSwap on every job; to free one, put one of your keys on it', kChange: 'Change', kChangeTip: 'Click, then press the new key.', kNoKey: 'Pick a key'});
+// the options screen: a value chosen in a mode's list (Fast Cast 0..80)
+document.addEventListener('change', e => {
+  const sel = e.target.closest('select[data-modelist]'); if (!sel) return;
+  S._modeSel = sel.dataset.modelist; setModeStart(data(), sel.dataset.modelist, sel.value); S.toast = ''; render();
+});
+// the options screen: a row chosen (its sentence below), a tile (my modes, other keys, another subjob's modes)
+document.addEventListener('click', e => {
+  const tile = e.target.closest('[data-keyspart]');
+  if (tile) { S.keysPart = tile.dataset.keyspart; S.toast = ''; save(); render(); return; }
+  const flt = e.target.closest('[data-keysfilter]');
+  if (flt) { S.keysFilter = flt.dataset.keysfilter; save(); render(); return; }
+  const row = e.target.closest('[data-modesel]');
+  if (row && !e.target.closest('button')) { S._modeSel = row.dataset.modesel; render(); }
+});
 Object.assign(T.fr, {modesTitle: 'Modes : valeur de départ et touche', modesHint: 'Clique une valeur : le mode la prendra à chaque chargement du job. La valeur entourée en pointillé est celle de ton fichier ; la choisir à nouveau enlève ton choix. En jeu, la touche fait toujours défiler le mode.',
   modesAway: 'Modes d’un autre subjob que {s}', modeCommon: 'tous les jobs', modeFileTip: 'Valeur de départ dans ton fichier', modeStartTip: 'Valeur de départ choisie', modePickTip: 'Démarrer sur cette valeur',
   modesSaved: '{n} valeur(s) de départ choisie(s) (atelier/overrides/mode_overrides.lua).', savedModes: 'Enregistré dans {p}. En jeu : //gs reload ou change de job.', modesDirty: 'Valeurs de départ changées, pas encore enregistrées.', keysOther: 'Autres touches'});

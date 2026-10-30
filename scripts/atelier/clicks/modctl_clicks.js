@@ -14,7 +14,9 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   const edits = () => page.evaluate(() => { const e = (S._modEdits || {})[S.char] || {}; return Object.entries(e).map(([f, x]) => f.split('/').pop() + ':' + Object.entries(x).map(([k, v]) => k + '=' + JSON.stringify(v.v)).join(',')).filter(s => !s.endsWith(':')).join(' | '); });
   const counts = () => page.evaluate(() => `sw ${document.querySelectorAll('#view .modsw').length} seg ${document.querySelectorAll('#view .modseg button').length} in ${document.querySelectorAll('#view .modin').length} adv ${document.querySelectorAll('#view .modadv').length} pressed ${[...document.querySelectorAll('#view .modseg [aria-pressed="true"]')].length} on ${document.querySelectorAll('#view .modsw[aria-checked="true"]').length} off ${document.querySelectorAll('#view .modsw[disabled], #view .modseg [disabled], #view .modin[disabled]').length}`);
   for (const [view, fam] of [['simple', 'job'], ['simple', 'automed'], ['simple', 'hud'], ['files', null]]) {
-    await page.evaluate((view, fam) => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'jobcfg'; S.jobTab = 'modules'; S.modView = view; S.modFam = fam; S.modFile = null; S._modEdits = {};
+    await page.evaluate((view, fam) => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'jobcfg'; S.jobTab = 'modules'; S.modView = view; S.modFam = fam; S._modEdits = {};
+      // 'files': the job's first file (the one view of the Settings, 2026-10-29: no file chosen is the presentation)
+      S.modFile = view === 'files' ? (modFiles(data()).find(f => f.scope === 'job') || {}).file || null : null;
       S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, write: true})}); render(); }, view, fam); await wait(300);
     out.push(`${view} ${fam}: ` + await counts());
     await page.evaluate(() => { const b = document.querySelector('#view .modsw:not([disabled])'); if (b) b.click(); }); await wait(250);

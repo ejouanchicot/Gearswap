@@ -185,7 +185,7 @@ for refill, `combat/` for the rest):
 | `WHM_KEYBINDS.lua` | The job keys above |
 | `WHM_CURE_CONFIG.lua` | Cure and Curaga tier thresholds (missing HP ranges), `safety_margin` (50 HP added before choosing), `mp_conservation_below` (40: the MP % under which `sets.midcast.CureMPConservation` goes on the cures), `debug_messages` |
 | `WHM_CUSTOM.lua` | Your own modes, keys and gear rules (commented examples only) |
-| `WHM_LOCKSTYLE.lua` | Lockstyle number: `default = 3` is the one used; the per-subjob list is not read |
+| `WHM_LOCKSTYLE.lua` | Lockstyle number (`default = 3`), per subjob if you want (`by_subjob`) |
 | `WHM_MACROBOOK.lua` | Macro book and page per subjob (book 11, pages 1-5 by subjob in the template), and per alt job |
 | `WHM_TP_CONFIG.lua` | TP bonus pieces for weaponskills (Moonshade Earring +250) |
 | `WHM_HUD.lua` | Order of this job's HUD sections and rows |

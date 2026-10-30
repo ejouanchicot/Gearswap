@@ -439,7 +439,12 @@ async function oxWindowerFolder(ask = true){
   if (!dir) return null;
   let perm = await dir.queryPermission({mode: 'readwrite'});
   if (perm !== 'granted' && ask) perm = await dir.requestPermission({mode: 'readwrite'});
-  return perm === 'granted' ? dir : null;
+  if (perm !== 'granted') return null;
+  // a folder kept that no longer is where it was (moved, renamed: NotFoundError at each read and write, 2026-10-30):
+  // forgotten, so that the folder is asked for again, the window saying why (live.js FOLDER_LOST)
+  try { await dir.getDirectoryHandle('addons'); await dir.getDirectoryHandle('res'); }
+  catch (e) { FOLDER_LOST = true; try { await idb('readwrite', st => st.delete('windower')); await idb('readwrite', st => st.delete('data')); } catch (x) {} return null; }
+  return dir;
 }
 async function oxPickWindower(){
   const dir = await window.showDirectoryPicker({id: 'atelier-windower', mode: 'readwrite'});
@@ -454,18 +459,20 @@ async function oxPickWindower(){
 // OfflineExport's `env` over a folder handle (paths relative to it, with '/')
 function oxEnv(root){
   const dirs = new Map([['', root]]), handles = new Map();
+  // why the last folder or file could not be opened (a write says it instead of failing on a null handle)
+  let why = null;
   const split = rel => { const i = rel.lastIndexOf('/'); return [i < 0 ? '' : rel.slice(0, i), rel.slice(i + 1)]; };
   const dirOf = async (rel, create) => {
     if (dirs.has(rel)) return dirs.get(rel);
     const [up, name] = split(rel), parent = await dirOf(up, create);
     if (!parent) return null;
-    try { const h = await parent.getDirectoryHandle(name, {create: !!create}); dirs.set(rel, h); return h; } catch (e) { return null; }
+    try { const h = await parent.getDirectoryHandle(name, {create: !!create}); dirs.set(rel, h); return h; } catch (e) { why = e; return null; }
   };
   const fileOf = async (rel, create) => {
     if (handles.has(rel)) return handles.get(rel);
     const [up, name] = split(rel), parent = await dirOf(up, create);
     if (!parent) return null;
-    try { const h = await parent.getFileHandle(name, {create: !!create}); handles.set(rel, h); return h; } catch (e) { return null; }
+    try { const h = await parent.getFileHandle(name, {create: !!create}); handles.set(rel, h); return h; } catch (e) { why = e; return null; }
   };
   const file = async rel => { const h = await fileOf(rel); try { return h ? await h.getFile() : null; } catch (e) { handles.delete(rel); return null; } };
   return {
@@ -477,7 +484,12 @@ function oxEnv(root){
     async meta(rel){ const f = await file(rel); return f ? {size: f.size, mtime: f.lastModified} : null; },
     async bytes(rel){ const f = await file(rel); return f ? new Uint8Array(await f.arrayBuffer()) : new Uint8Array(0); },
     async text(rel){ const f = await file(rel); return f ? f.text() : null; },
-    async write(rel, text){ const h = await fileOf(rel, true), w = await h.createWritable(); await w.write(text); await w.close(); },
+    async write(rel, text){
+      why = null;
+      const h = await fileOf(rel, true);
+      if (!h) throw folderError(why, rel);
+      try { const w = await h.createWritable(); await w.write(text); await w.close(); } catch (e) { throw folderError(e, rel); }
+    },
     async remove(rel){ const [up, name] = split(rel), d = await dirOf(up); handles.delete(rel); try { if (d) await d.removeEntry(name); } catch (e) {} },
     lua(src, tasks, onDone){ return oxLua(this, src, tasks, onDone); },
   };
@@ -554,10 +566,16 @@ function refreshFromFiles(all, fromGame){
       const res = await OfflineExport.run(oxEnv(root), S.char, {allSubs: !!all, force: !!all, onProgress: (k, a, b, w) => label(t('refreshP_' + k, {n: a, m: b, w}))});
       try { sessionStorage.setItem('atelierRefresh', JSON.stringify({e: res.exported, u: res.unchanged, failed: res.failed.map(f => f[0] + '/' + f[1])})); } catch (e) {}
       dataAgain();
-    } catch (e) { S._refresh = 'fail'; S._refreshErr = String(e && e.message || e); render(); }
+    } catch (e) {
+      S._refresh = 'fail'; S._refreshErr = String(e && e.message || e); render();
+      // the folder stopped answering while it ran: forgotten, and asked for again at once (a click on the window's
+      // button is the player's: the browser then lets the picker open)
+      if (e && e.folderLost) { try { await idb('readwrite', st => st.delete('windower')); } catch (x) {} askWindower(); }
+    }
   };
+  const askWindower = () => openFolderDialog(async () => { go(await oxPickWindower()); }, () => {},
+    {title: t('wfolderTitle'), why: t('wfolderWhy'), path: pageFolder().replace(/\\addons\\GearSwap\\data$/i, '')});
   const fail = err => { S._refresh = 'fail'; S._refreshErr = err; render(); };
   oxWindowerFolder(!fromGame).then(root => root ? go(root) : fromGame ? fail(t('refreshNeedClick'))
-    : openFolderDialog(async () => { go(await oxPickWindower()); }, () => {}, {title: t('wfolderTitle'), why: t('wfolderWhy'), path: pageFolder().replace(/\\addons\\GearSwap\\data$/i, '')}))
-    .catch(e => fail(String(e && e.message || e)));
+    : askWindower()).catch(e => fail(String(e && e.message || e)));
 }

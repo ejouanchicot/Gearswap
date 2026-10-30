@@ -39,7 +39,8 @@ const PackageExports = (() => {
     };
   }
   // The icons of the items the exports name (their "icons" field), copied from the maker's data/atelier/icons/: the
-  // game writes them there (//gs c atelier), the player's own only after a first export in game. [[rel, bytes]]
+  // game writes them there (//gs c atelier), the player's own only after a first export in game. With each one its .js
+  // (the same bytes as text), from which the page makes its HD icon (icon_cache.js). [[rel, bytes]]
   async function icons(written, outside){
     const ids = new Set();
     for (const [rel, text] of written) {
@@ -49,7 +50,10 @@ const PackageExports = (() => {
     const out = [];
     for (const id of [...ids].sort((a, b) => a - b)) {
       const rel = `${GS}/data/atelier/icons/${id}.bmp`, b = await outside.bytes(rel);
-      if (b && b.length) out.push([rel, b]);
+      if (!b || !b.length) continue;
+      out.push([rel, b]);
+      const js = await outside.bytes(rel.replace(/\.bmp$/, '.js'));
+      if (js && js.length) out.push([rel.replace(/\.bmp$/, '.js'), js]);
     }
     return out;
   }

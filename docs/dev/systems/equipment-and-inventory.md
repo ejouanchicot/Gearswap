@@ -288,7 +288,8 @@ sequenceDiagram
    - Job file: `pcall(require, ...)` of `<Char>/<job>/inventory/<JOB>_REFILL` (`CharPaths.module('job', ...)`).
      A missing file, a file that throws or one that returns no table counts as no job file.
      `subjobs[<SUB>]` when present (label `<JOB>/<SUB>`), else `default`, the job's own list in place of
-     the common one (label `<JOB>/default`).
+     the common one (label `<JOB>/default`). An empty list counts as none (since 2026-10-30): the Atelier's refill
+     card writes `default = {}` for "back to the common list", so `{}` falls through to the common list.
    - Common list, from `<Char>/_common/inventory/REFILL_CONFIG.lua` (`common_list`): its
      `subjobs[<SUB>]` (label `common/<SUB>`), else its `default_list` (label `common`). When the job
      file has `extra`, it is added to that list (`with_extra`, label `<common label> + <JOB> extra`,

@@ -1,7 +1,10 @@
-// GearSwap Atelier · the Modules part of the job's settings: the character's config files, shown two ways. Options:
-// the catalog's options by family, in the player's words (module_catalog.js), with a presentation of the job first.
-// Files: one file at a time, the options the catalog explains then the rest in the file's own words. A search over
-// both, and the bar of the changes that wait, to save in one go.
+// GearSwap Atelier · the Settings part of the job's settings, in the frame of the three parts (ProFrame.svelte; SPEC
+// notes/docs-perso/config-pro-2026-10-30): the categories on the left (this job, then the themes of every job:
+// module_catalog.js MOD_GROUPS), the options of the one chosen in the middle (a section a subject of the catalog, a
+// line an option: its name, a plain sentence, its control), the detail of the option chosen on the right (what it
+// does, its value, its default to set back), the changes that wait at the bottom, saved in one go (the game writes,
+// or the page itself when it is not connected: modules.js modSave). Only what the page can set is shown: the settings
+// the catalog does not explain stay in their files.
 // The rules are the old page's renderModules, renderModulesSimple, mcIntroHTML, mcCardHTML, modRowHTML, modListHTML,
 // modGroupHTML (modules.js), modTop, modSaveBar, modSearch (module_ux.js), modControl, mcControl (modules.js: a setting's
 // control, ModCtl below), modNum, modColorMap, modPresets (module_ux.js), modChips (module_items.js), modRows (module_rows.js).
@@ -9,44 +12,43 @@
 // @file    atelier/src/screens/config/modules.ts
 // @author  ejouanchicot
 
-export interface ModKey { name: string; code: string | null; doc: string }
-/** A line of the Files view: a table's heading (grp), or a setting with its control */
-export interface ModRow { grp: boolean; depth: number; key: ModKey; tint: ModCtl | null; ctl: ModCtl | null; changed: boolean; tall: boolean }
-/** An option of the Options view */
-export interface ModCard { title: string; desc: string; scope: {cls: string; text: string; tip: string}; ctl: ModCtl; changed: boolean; tall: boolean }
-export type ModItem = {kind: 'part'; title: string; why: string} | {kind: 'card'; card: ModCard} | {kind: 'row'; row: ModRow};
-export interface NavEntry { attr: 'data-modfam' | 'data-modopen'; value: string; current: boolean; title: string; name: string; small: string; dot: number }
-export interface NavGroup { id: string; name: string; open: boolean; title: string; changed: number; count: number; entries: NavEntry[] }
-export interface Nav { intro: NavEntry | null; groups: NavGroup[] }
-export interface Intro {
-  title: string; job: string; lead: string; points: Array<{b: string; text: string}>; where: string; links: Array<{tab: string; label: string}>;
-  own: null | {label: string}; allTitle: string; allWhy: string;
-  groups: Array<{name: string; mods: Array<{fam: string; title: string; name: string; tip: string; count: string}>}>;
+export interface SaveLine { title: string; was: string; now: string; file: string; path: string; ex: string }
+/** An option on one line: its icon, its name, a plain sentence, its control (lists, tables, the gauge under it); what
+ *  the detail on the right says of it */
+export interface RegRow { key: string; iconHtml: string; label: string; sub: string; sel: boolean; changed: boolean; tall: boolean; ctl: ModCtl; gauge: Gauge | null; info: RowInfo }
+export interface RowInfo { what: string; example: string; value: string; std: string; reset: null | Record<string, string>; tag: string; path: string }
+export interface HudColors { k: 'colors'; parts: Array<{label: string; hex: string; auto: string; attr: string; reset: string; resetTip: string}>; values: Array<{label: string; hex: string; attr: string}>; valuesTitle: string }
+export interface RefillSpecial {
+  k: 'refill'; now: string; items: Array<{label: string; count: number; icoHtml: string}>; empty: string;
+  modes: Array<{label: string; tip: string; attr: string; on: boolean}>;
+  list: null | RegRow; addExtra: null | {label: string; attr: string};
+  subs: {title: string; tip: string; wait: string; rows: Array<{label: string; row: {ctl: ModCtl} | null; summary: string; del: string; delTip: string}>; add: null | {label: string; attr: string; options: string[]}};
 }
-export interface SaveLine { title: string; was: string; now: string; file: string; path: string }
-export type ModBody =
-  | {kind: 'search'; title: string; items: ModItem[]; more: string; none: string}
-  | {kind: 'intro'; nav: Nav; intro: Intro}
-  | {kind: 'family'; nav: Nav; title: string; meta: string; tip: string; use: null | {label: string; text: string}; cards: ModCard[]}
-  | {kind: 'file'; nav: Nav; title: string; meta: string; metaTitle: string; what: string; scope: {cls: string; text: string; tip: string};
-      manual: null | {summary: string; text: string}; items: ModItem[]; adv: null | {summary: string; rows: ModRow[]}; empty: string};
+/** A table of tiers {min, max, spell} (the Cure tiers) as an HP gauge: a part a tier, a handle between two to drag */
+export interface Gauge { attr: string; off: boolean; parts: Array<{label: string; from: number; flex: number; tip: string}>; end: string; fix: string }
+/** A section: a subject of the catalog in one file (or a card of its own: the job's refill, the HUD's colours) */
+export interface RegCard { id: string; title: string; iconHtml: string; small: string; rows: RegRow[]; own?: string; special?: RefillSpecial | HudColors; info?: RowInfo }
 export interface ModulesView {
   none: string | null;
-  top: {q: string; placeholder: string; title: string; clear: null | {title: string; text: string}; hint: string;
-    views: Array<{value: string; label: string; title: string; pressed: boolean}>; lock: null | {title: string; text: string}};
-  toast: string;
-  body: ModBody | null;
-  save: null | {title: string; tip: string; undo: {title: string; text: string}; save: {title: string; text: string}; revert: string; lines: SaveLine[]};
+  nav: ProNav;
+  head: {iconHtml: string; title: string; sub: string};
+  sections: RegCard[];
+  empty: string;
+  detail: ProDetail | null;
+  foot: ProFoot;
+  /** the Display's live preview of the HUD (hud_preview.js): its HTML, the style of its box; null while drawn */
+  hud: null | {html: string; style: string; error: string; note: string; title: string; hint: string; reset: null | {label: string; attrs: Record<string, string>}};
+  /** the icons' authors, under the categories (pro.ts iconCredit) */
+  credit: string;
 }
+
+import type {ProNav, ProDetail, ProFoot} from './pro';
+import {iconCredit} from './pro';
 
 const famName = (fam: LegacyFamily) => (S.lang === 'en' ? fam.en : fam.fr).split('{JOB}').join(S.job || '');
 const lang = () => S.lang === 'en' ? 1 : 0;
-
-// ---- a setting of the Files view, and the tables above it (modules.js modRowHTML) ----
-// `skip`: the paths the Options part shows above (a table whose every setting is there is left out)
-function skipped(x: LegacyField, skip: Record<string, unknown>): boolean {
-  return x.kind === 'map' ? x.fields.length > 0 && x.fields.every(c => skipped(c, skip)) : !!skip[x.path];
-}
+// a job's name in full (core.js JOBS): "White Mage"
+const jobName = (j: string) => ((JOBS as unknown as Array<[string, string, string]>).find(x => x[0] === j) || [j, j])[1];
 
 // ---- a setting's control (the old page's modControl, mcControl: modules.js) ----
 export type ModCtl = {k: 'seg'; id: Record<string, string>; off: boolean; btns: Array<{attrs: Record<string, string>; label: string; pressed: boolean; tip: string}>; input: null | {value: string; ph: string; tip: string}}
@@ -144,159 +146,261 @@ function ctlOf(f: LegacyConfigFile, x: LegacyField, val: LegacyAny, file: string
   if (x.kind === 'str') return {k: 'text', id, off: !!off, value: String(val), tip: tipOf(off, 'ttModText')};
   if (x.kind === 'list') return chipsOf(val, id, off, lopts || {});
   if (x.kind === 'rows') return rowsCtl(x, val, id, off, lopts || {});
-  return {k: 'code', summary: t('modInFile'), code: f.text.slice(x.a, x.b)};
+  return {k: 'code', summary: t('modInFileLine', {f: f.file, l: f.text.slice(0, x.a).split('\n').length}), code: f.text.slice(x.a, x.b)};
 }
 // An option of the Options view: the catalog's own choices as buttons, a colour as its picker and presets, else the
 // setting's own control
 function mcCtl(r: LegacyCatalogRow, val: LegacyAny, off: string): ModCtl {
-  const lang = S.lang === 'en' ? 2 : 1;
+  const col = S.lang === 'en' ? 2 : 1;
   if (r.it.choices) return {k: 'seg', id: idAttrs(r.f.file, r.x.path), off: !!off, input: null, btns: r.it.choices.map((c: LegacyAny, i: number) =>
-    ({attrs: {'data-mcchoice': r.id + ':' + i}, label: c[lang], pressed: c[0] === val, tip: tipOf(off, c[0] === val ? 'ttModChosen' : c[0] === 'auto' ? 'ttModAuto' : 'ttModChoose', {v: c[lang]})}))};
+    ({attrs: {'data-mcchoice': r.id + ':' + i}, label: c[col], pressed: c[0] === val, tip: tipOf(off, c[0] === val ? 'ttModChosen' : c[0] === 'auto' ? 'ttModAuto' : 'ttModChoose', {v: c[col]})}))};
   if (r.it.rgb) { const pre = r.it.presets ? presetsOf(r.f, r.x, r.it.presets as string, off) : null; return {k: 'multi', parts: [colorMapOf(r.f, r.x, off)].concat(pre ? [pre] : [])}; }
   return ctlOf(r.f, r.x, val, r.f.file, r.x.path, off, r.it);
 }
 
-function rowsOf(f: LegacyConfigFile, x: LegacyField, depth: number, skip: Record<string, unknown>): ModRow[] {
-  if (skipped(x, skip)) return [];
-  const ed = modEdits(f.file)[x.path], val = ed ? ed.v : x.value, off = modCanWrite(f) ? '' : 'disabled';
-  // in French, the setting's name and what it does are the page's own (module_rest_fr.js); else the file's comments
-  const rest = modRestFr(f.file, x.path), fr = S.lang === 'en' ? null : rest, name = fr ? fr.title : modName(x);
-  const key = {name, code: x.key != null && name !== x.key ? x.key : null, doc: fr ? fr.desc : [modDoc(x.doc), x.note].filter(Boolean).join('\n')};
-  // a table that holds a colour (r g b): the colour itself on its line, its three numbers under it
-  const tint = mxColorMap(x) ? colorMapOf(f, x, off) : null;
-  if (x.kind === 'map') return ([{grp: true, depth, key, tint, ctl: null, changed: false, tall: false}] as ModRow[])
-    .concat(x.fields.flatMap(c => rowsOf(f, c, depth + 1, skip)));
-  // an empty table of named entries looks like an empty list: it is shown, not changed here
-  const named = rest && rest.map && x.kind === 'list' && !x.fields.length;
-  const ctl: ModCtl = named ? {k: 'code', summary: t('modNamed'), code: f.text.slice(x.a, x.b)} : ctlOf(f, x, val, f.file, x.path, off);
-  return [{grp: false, depth, key, tint: null, ctl, changed: !!ed, tall: x.kind === 'code' || (x.kind === 'list' && !mxColorList(f, x)) || x.kind === 'rows'}];
+// ---- the categories and their subjects ----
+// One idea, one icon, everywhere (game-icons.net, game_icons.js): a category's, its subjects' (an option takes its
+// subject's), and the Modes themes' (player_words.js PLAYER_GROUPS) agree; "This job" is the job's own emblem
+const THEME_ICON: Record<string, string> = {auto: 'gi:gears', gear: 'gi:armor-vest', cmd: 'gi:tied-scroll', bags: 'gi:backpack',
+  display: 'gi:tv', multi: 'gi:two-shadows', tools: 'gi:plug'};
+const FAM_ICON: Record<string, string> = {automed: 'gi:standing-potion', recast: 'gi:hourglass', subjob: 'gi:two-shadows', dw: 'gi:crossed-swords',
+  belt: 'gi:belt', hporder: 'gi:heart-plus', weapon: 'gi:crossed-swords', buff: 'gi:sunbeams', cleanse: 'gi:standing-potion', stealth: 'gi:invisible',
+  warp: 'gi:magic-portal', refill: 'gi:backpack', wardrobe: 'gi:chest-armor', craft: 'gi:gear-hammer', hud: 'gi:tv', chat: 'gi:chat-bubble',
+  lockstyle: 'gi:chest-armor', dualbox: 'gi:two-shadows', addons: 'gi:plug'};
+// a subject of this job by what it sets (the catalog's job family holds several)
+const JOB_ICON: Array<[RegExp, string]> = [[/cure|curaga|soin/i, 'gi:heart-bottle'], [/refresh|mp/i, 'gi:magic-potion'], [/tp bonus|weaponskill|fencer/i, 'gi:sword-brandish']];
+const themeIcon = (id: string) => id === 'job' ? emblem(S.job || '') : playerIcon(THEME_ICON[id] || 'gi:cog');
+// An option's icon: its subject's (one idea, one icon), except the three universal ones: a time, a share of MP, HP
+function famIcon(r: LegacyCatalogRow): string {
+  const fam = r.id.split('.')[0] || '';
+  if (fam === 'job') { const hit = JOB_ICON.find(([re]) => re.test(r.title)); return hit ? hit[1] : 'gi:cog'; }
+  return FAM_ICON[fam] || 'gi:cog';
+}
+function rowIcon(r: LegacyCatalogRow, unit: string): string {
+  const u = unit.toLowerCase();
+  return playerIcon(u === 's' ? 'gi:hourglass' : /mp/.test(u) ? 'gi:magic-potion' : /hp/.test(u) ? 'gi:heart-plus' : famIcon(r));
 }
 
-// ---- an option of the Options view (modules.js mcCardHTML) ----
-function cardOf(d: LegacyExport, r: LegacyCatalogRow): ModCard {
+// Which card shows a file's other settings: the first card of the first theme that reaches the file (a file is folded
+// once). The files no subject reaches get a card of their own, in their file's theme
+interface Plan { cards: Map<string, Array<{fam: LegacyFamily | null; f: LegacyConfigFile; rows: LegacyCatalogRow[]}>>; special: LegacyConfigFile[] }
+function planOf(d: LegacyExport): Plan {
+  const files = modFiles(d) as LegacyConfigFile[], cards = new Map<string, Array<{fam: LegacyFamily | null; f: LegacyConfigFile; rows: LegacyCatalogRow[]}>>();
+  const folded = new Set<string>(), special = files.filter(f => f.scope === 'job' && REG_SPECIAL.test(f.file));
+  special.forEach(f => folded.add(f.file));
+  for (const g of MOD_GROUPS) cards.set(g.id, []);
+  for (const g of MOD_GROUPS) for (const fam of MOD_CATALOG.filter(x => x.group === g.id)) {
+    const byFile = new Map<string, LegacyCatalogRow[]>();
+    for (const r of mcRows(d, fam)) { if (!byFile.has(r.f.file)) byFile.set(r.f.file, []); byFile.get(r.f.file)!.push(r); }
+    for (const [file, rows] of byFile) {
+      const f = files.find(x => x.file === file); if (!f || special.includes(f)) continue;
+      cards.get(g.id)!.push({fam, f, rows}); folded.add(file);
+    }
+  }
+  for (const f of files) if (!folded.has(f.file)) { const g = cards.has(modFileGroup(f)) ? modFileGroup(f) : 'tools'; cards.get(g)!.push({fam: null, f, rows: []}); folded.add(f.file); }
+  return {cards, special};
+}
+
+// a table of tiers: every line a {min, max, spell}, back to back (the Cure / Curaga tiers of WHM_CURE_CONFIG.lua)
+function gaugeOf(r: LegacyCatalogRow, val: LegacyAny, off: string): Gauge | null {
+  const rows = Array.isArray(val) ? val as Array<Record<string, LegacyAny>> : [];
+  if (r.x.kind !== 'rows' || rows.length < 2 || !rows.every(x => typeof x.min === 'number' && typeof x.max === 'number' && typeof x.spell === 'string')) return null;
+  // the last tier is open ended (99999): drawn as wide as the tier before it
+  const last = rows[rows.length - 1]!, prev = rows[rows.length - 2]!, cap = last.min + Math.max(200, prev.max - prev.min);
+  return {attr: r.f.file + '|' + r.x.path, off: !!off, end: last.max >= 99999 ? cap + '+' : String(last.max), fix: t('regGaugeFix'),
+    // a tier too narrow for its name keeps it in its tooltip
+    parts: rows.map((x, i) => ({label: (Math.min(x.max, cap) - x.min) / cap < 0.07 ? '' : i && /\s[IVX]+$/.test(x.spell) ? x.spell.split(' ').pop()! : x.spell, from: x.min, flex: Math.max(1, Math.min(x.max, cap) - x.min), tip: t('regGaugeTip', {s: x.spell, a: x.min, b: x.max >= 99999 ? '∞' : x.max})}))};
+}
+// a name that repeats its card's ("HUD : titre" in the HUD card): the card says it once
+const bare = (title: string, card: string) => { const m = /^([^:]{2,14}) : (.+)$/.exec(title); return m && card.toLowerCase().includes(m[1]!.toLowerCase()) ? m[2]!.replace(/^./, c => c.toUpperCase()) : title; };
+// an option's plain sentence: the catalog's own (`short`), else the first sentence of what it does
+function shortOf(r: LegacyCatalogRow): string {
+  const own = (r.it as LegacyAny).short as [string, string] | undefined;
+  if (own) return own[lang()] || '';
+  const first = String(r.desc || '').split(/(?<=[.!?])\s/)[0] || '';
+  return first.length > 96 ? first.slice(0, 94).replace(/\s+\S*$/, '') + '…' : first.replace(/[.:]$/, '');
+}
+const scopeTag = (f: LegacyConfigFile) => f.scope === 'job' ? t('regOwn', {j: jobName(S.job || '')}) : t('cfgEveryJob');
+function infoOf(r: LegacyCatalogRow, ctl: ModCtl, val: LegacyAny): RowInfo {
+  const unit = ctl.k === 'num' && ctl.unit ? ' ' + ctl.unit : '', show = (v: LegacyAny) => typeof v === 'boolean' ? t(v ? 'modOn' : 'modOff').replace(/<[^>]+>/g, '') : mxCut(mxValText(v)) + unit;
+  const std = ctl.k === 'num' && ctl.std ? (ctl.std.is ? val : ctl.std.v) : (r.it as LegacyAny).std;
+  const ex = (r.it as LegacyAny).ex as [string, string] | undefined;
+  // a list: its entries; a table of lines: how many (the lines are in the middle)
+  const value = Array.isArray(val) && !val.length ? t('cfgNone') : r.x.kind === 'rows' ? t('cfgLines', {n: (val as unknown[]).length})
+    : Array.isArray(val) ? mxCut(val.map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).join(', ')) : show(val);
+  return {what: r.desc || '', example: ex ? ex[lang()] || '' : '', value, std: std == null ? '' : show(std),
+    reset: ctl.k === 'num' && ctl.std && !ctl.std.is ? {'data-modstd': String(ctl.std.v), ...idAttrs(r.f.file, r.x.path)} : null,
+    tag: scopeTag(r.f), path: S.char + '/' + r.f.file};
+}
+function regRow(d: LegacyExport, r: LegacyCatalogRow, card: string): RegRow {
   const edits = modEdits(r.f.file), ed = edits[r.x.path], val = ed ? ed.v : r.x.value, off = modCanWrite(r.f) ? '' : 'disabled';
-  const part = !!r.it.rgb && r.x.fields.some(c => edits[c.path]);
-  return {title: r.title, desc: r.desc, scope: mcScope(d, r), ctl: mcCtl(r, val, off),
-    changed: !!ed || part, tall: r.x.kind === 'list' || r.x.kind === 'rows' || !!r.it.presets};
+  const ctl = mcCtl(r, val, off), key = r.f.file + '|' + r.x.path;
+  // a short list stays on its line; a long one, a table, a colour and its presets go under the name
+  const tall = ctl.k === 'chips' ? ctl.tiles.length > 2 || ctl.add.k === 'bags' : ctl.k === 'seg' ? ctl.btns.length > 4 : ['rows', 'multi', 'presets', 'code'].includes(ctl.k);
+  return {key, iconHtml: rowIcon(r, ctl.k === 'num' ? ctl.unit : ''), label: bare(r.title, card), sub: shortOf(r), sel: S._regSel === key,
+    changed: !!ed || (!!r.it.rgb && r.x.fields.some(c => edits[c.path])), tall, ctl, gauge: gaugeOf(r, val, off), info: infoOf(r, ctl, val)};
+}
+type CardSrc = {fam: LegacyFamily | null; f: LegacyConfigFile; rows: LegacyCatalogRow[]; part?: string};
+// a subject too long for one card, cut by what its options set: [test on the setting's path, the card's name]
+const SPLIT: Record<string, Array<[RegExp, string]>> = {hud: [[/^(enabled|show_|sections\.)/, 'regHudShow'], [/./, 'regHudLook']]};
+function splitOf(c: CardSrc): CardSrc[] {
+  const cuts = c.fam && SPLIT[c.fam.id]; if (!cuts) return [c];
+  const out: CardSrc[] = [], left = [...c.rows];
+  cuts.forEach(([re, name]) => { const mine = left.filter(r => re.test(r.x.path)); mine.forEach(r => left.splice(left.indexOf(r), 1));
+    if (mine.length) out.push({...c, rows: mine, part: name}); });
+  return out.length ? out : [c];
+}
+function regCard(d: LegacyExport, c: CardSrc, many: boolean): RegCard {
+  const id = (c.fam ? c.fam.id : 'file') + '|' + c.f.file + (c.part ? '|' + c.part : '');
+  const title = c.part ? t(c.part) : c.fam && !many ? famName(c.fam) : fileTitle(d, c.f).name;
+  return {id, title, small: c.fam && c.fam.use ? (/\/\/gs c \w+/.exec(c.fam.use[lang()] || '') || [''])[0] : '',
+    iconHtml: playerIcon(c.fam ? (c.fam.id === 'job' && c.rows[0] ? famIcon(c.rows[0]) : FAM_ICON[c.fam.id] || THEME_ICON[c.fam.group] || 'gi:cog') : THEME_ICON[modFileGroup(c.f)] || 'gi:cog'),
+    rows: c.rows.map(r => regRow(d, r, c.fam ? famName(c.fam) + ' ' + title : title))};
+}
+// ---- the job's refill list (reg_special.js) ----
+function refillCard(d: LegacyExport, f: LegacyConfigFile): RegCard {
+  const j = S.job || '', file = f.file, now = refillNow(d, file), fam = MOD_CATALOG.find(x => x.id === 'refill')!;
+  const rowOf = (key: string) => { const r = mcRows(d, fam).find(x => x.f.file === file && x.x.path === key); return r ? regRow(d, r, '') : null; };
+  const label = (n: string | string[]) => Array.isArray(n) ? n[0]! : n;
+  const p = modParsed((modFiles(d) as LegacyConfigFile[]).find(x => x.file === file) || f), extra = rowOf('extra');
+  const subs = refillSubs(file), waiting = !!modEdits(file).subjobs, opts = (fam.items.find(it => it.key === 'default') || {}) as LegacyAny;
+  const subRows = Object.keys(subs).sort().map(s => {
+    const x = p.byPath['subjobs.' + s], ed = modEdits(file)['subjobs.' + s], off = modCanWrite(f) ? '' : 'disabled';
+    const row = !waiting && x ? {ctl: ctlOf(f, x, ed ? ed.v : x.value, file, x.path, off, opts)} : null;
+    return {label: t('rfSub', {s}), row, summary: row ? '' : subs[s]!.map(e => label(e.name) + ' ×' + e.target).join(', ') || t('rfEmpty'), del: file + '|' + s, delTip: t('rfDelSub')};
+  });
+  const missing = MACRO_JOBS.filter(s => s !== j && !subs[s]);
+  return {id: 'refill|' + file, title: t('rfTitle', {j}), small: '//gs c rf', own: t('regOwn', {j}), iconHtml: playerIcon('gi:backpack'), rows: [],
+    info: {what: t('rfModeCommonTip') + ' ' + t('rfModeOwnTip', {j}), example: t('rfEx', {j}), value: t(now.mode === 'own' ? 'rfModeOwn' : 'rfModeCommon'), std: t('rfModeCommon'),
+      reset: null, tag: t('regOwn', {j}), path: S.char + '/' + file},
+    special: {k: 'refill', now: t('rfNow', {j}), empty: t('rfEmpty'),
+      items: now.list.map(e => ({label: label(e.name), count: e.target, icoHtml: itemIco(label(e.name))})),
+      modes: [{label: t('rfModeCommon'), tip: t('rfModeCommonTip'), attr: file + '|common', on: now.mode === 'common'}, {label: t('rfModeOwn'), tip: t('rfModeOwnTip', {j}), attr: file + '|own', on: now.mode === 'own'}],
+      list: now.mode === 'own' ? rowOf('default') : extra, addExtra: now.mode === 'common' && !extra ? {label: t('rfAddExtra'), attr: file + '|extra'} : null,
+      subs: {title: t('rfSubs'), tip: t('rfSubsTip'), wait: waiting ? t('rfSubWait') : '', rows: subRows, add: modCanWrite(f) ? {label: t('rfAddSub'), attr: file, options: missing} : null}}};
 }
 
-// ---- the left column (modules.js modGroupHTML, modListHTML, renderModulesSimple) ----
-// a group is folded until the player opens it (S.modGrp, kept), the one that holds what is shown open by itself
-function groupOf(g: LegacyGroup, count: number, has: boolean, changed: number, entries: NavEntry[]): NavGroup {
-  const said = ((S.modGrp || {}) as Record<string, boolean | undefined>)[g.id], open = said == null ? has : said;
-  return {id: g.id, name: modGroupName(g), open, title: t(open ? 'ttGrpFold' : 'ttGrpOpen'), changed, count, entries};
+// the subjects that reach several files: a section a file, each named by its file
+function manyOf(list: Array<{fam: LegacyFamily | null}>): Set<string> {
+  const n = new Map<string, number>();
+  for (const c of list) if (c.fam) n.set(c.fam.id, (n.get(c.fam.id) || 0) + 1);
+  return new Set([...n].filter(([, k]) => k > 1).map(([id]) => id));
 }
-
-type Fam = {fam: LegacyFamily; rows: LegacyCatalogRow[]};
-const changedIn = (x: Fam) => x.rows.filter(r => modEdits(r.f.file)[r.x.path]).length;
-
-function familyNav(fams: Fam[], cur: Fam | null, intro: boolean): Nav {
-  const entry = (x: Fam): NavEntry => ({attr: 'data-modfam', value: x.fam.id, current: x === cur, title: x.fam.tip[lang()],
-    name: famName(x.fam), small: t('modSettings', {n: x.rows.length}), dot: changedIn(x)});
-  return {
-    intro: {attr: 'data-modfam', value: 'intro', current: intro, title: t('ttIntro', {j: S.job}), name: t('mcIntro'), small: t('mcIntroSub', {j: S.job}), dot: 0},
-    groups: MOD_GROUPS.flatMap(g => { const list = fams.filter(x => x.fam.group === g.id && x.rows.length);
-      return list.length ? [groupOf(g, list.length, !!cur && list.includes(cur), list.reduce((n, x) => n + changedIn(x), 0), list.map(entry))] : []; })
-  };
+// A category's sections: its subjects (the job's refill card near its kind), the empty ones left out
+function sectionsOf(d: LegacyExport, plan: Plan, g: LegacyGroup): RegCard[] {
+  const list = (plan.cards.get(g.id) || []).filter(c => c.rows.length), many = manyOf(list);
+  let cards = list.flatMap(splitOf).map(c => regCard(d, c, !!c.fam && many.has(c.fam.id)));
+  // a section of one option named like it (a small file named by its option): the options of such sections together,
+  // first, under "General"
+  const lone = (c: RegCard) => c.rows.length === 1 && c.rows[0]!.label === c.title;
+  const solo = cards.filter(lone);
+  if (solo.length) cards = [{id: 'general|' + g.id, title: t('cfgGeneral'), iconHtml: '', small: '', rows: solo.flatMap(c => c.rows)} as RegCard].concat(cards.filter(c => !lone(c)));
+  // the job's HUD order (<JOB>_HUD.lua) is set by dragging in the live preview (hud_preview.js), not in a card
+  for (const f of plan.special.filter(x => modFileGroup(x) === g.id && !/_HUD\.lua$/.test(x.file)))
+    cards.splice(cards.map(c => c.id.startsWith('refill|')).lastIndexOf(true) + 1, 0, refillCard(d, f));
+  if (g.id === 'display') { const at = cards.map(c => c.id.startsWith('hud|')).lastIndexOf(true); cards.splice(at + 1, 0, colorsCard(d)); }
+  return cards;
 }
-
-function fileNav(d: LegacyExport, cur: LegacyConfigFile): Nav {
-  const files = modFiles(d) as LegacyConfigFile[];
-  return {intro: null, groups: MOD_GROUPS.flatMap(g => {
-    const list = files.filter(f => modFileGroup(f) === g.id);
-    if (!list.length) return [];
-    const changed = list.reduce((n, f) => n + Object.keys(modEdits(f.file)).length, 0);
-    return [groupOf(g, list.length, list.includes(cur), changed, list.map(f => { const info = modFileInfo(f);
-      return {attr: 'data-modopen' as const, value: f.file, current: f === cur, title: info.what || info.name, name: info.name,
-        small: f.file.split('/').pop() || '', dot: Object.keys(modEdits(f.file)).length}; }))];
-  })};
+// the HUD's colours (hud_preview.js hudColorModel): a swatch a part of the HUD, then the values ON / OFF, PDT / MDT
+function colorsCard(d: LegacyExport): RegCard {
+  const m = hudColorModel(d);
+  return {id: 'hudcolors', title: t('hudColors'), small: '', iconHtml: playerIcon('gi:tv'), rows: [],
+    special: {k: 'colors', valuesTitle: t('hudColValues'),
+      parts: m.parts.map(p => ({label: t('hudCol_' + p.id), hex: p.rgb ? hudHex(p.rgb) : '#ffffff', auto: p.auto ? t('hudColAuto') : '', attr: 'part|' + p.id,
+        reset: p.set ? p.id : '', resetTip: t('hudColReset')})),
+      values: m.values.map(v => ({label: t('hudVal_' + v.id) !== 'hudVal_' + v.id ? t('hudVal_' + v.id) : v.id, hex: hudHex(v.rgb), attr: 'value|' + v.file + '|' + v.path}))},
+    info: {what: t('hudColorsWhat'), example: t('hudColorsEx'), value: '', std: '', reset: null, tag: t('cfgEveryJob'), path: S.char + '/_common/display/UI_CONFIG.lua'}};
 }
+// a category's short name on the left (its long one heads the list)
+const catName = (g: LegacyGroup) => t('cfgCat_' + g.id) !== 'cfgCat_' + g.id ? t('cfgCat_' + g.id) : modGroupName(g);
+const countIn = (cards: RegCard[]) => cards.reduce((n, c) => n + (c.special ? 1 : c.rows.length), 0);
 
-// ---- the presentation: what the job does with this GearSwap, then each module in a sentence (mcIntroHTML) ----
-function introOf(fams: Fam[]): Intro {
-  const job = S.job || '', l = lang(), g = (l ? JOB_GUIDE_EN : JOB_GUIDE_FR)[job] || (l ? null : JOB_GUIDE_EN[job]) || ['', []];
-  const own = fams.find(x => x.fam.id === 'job');
-  return {
-    title: t('mcIntroTitle', {j: job}), job: t('mcIntroJob', {j: job}), lead: g[0], points: g[1].map(([b, text]) => ({b, text})),
-    where: t('mcIntroWhere'), links: [['keys', 'sectionsKeys'], ['modes', 'sectionsModes'], ['functions', 'sectionsFunctions']].map(([tab, k]) => ({tab: tab!, label: t(k!)})),
-    own: own && own.rows.length ? {label: t('mcIntroOwn', {n: own.rows.length, j: job})} : null,
-    allTitle: t('mcIntroAll'), allWhy: t('mcIntroAllWhy'),
-    // every module that is not the job's own, group by group: what this GearSwap does on any job
-    groups: MOD_GROUPS.filter(gr => gr.id !== 'job').map(gr => ({name: modGroupName(gr), mods: fams.filter(x => x.fam.group === gr.id && x.rows.length)
-      .map(x => ({fam: x.fam.id, title: t('ttIntroGo', {f: famName(x.fam)}), name: famName(x.fam), tip: x.fam.tip[l], count: t('modSettings', {n: x.rows.length})}))}))
-      .filter(gr => gr.mods.length)
-  };
-}
-
-// ---- the search: every word typed in an option's name, what it does, its module or its value (modSearch) ----
-function searchOf(d: LegacyExport): ModBody {
-  const q = String(S.modQ || '').trim(), words = mxNorm(q).split(/\s+/).filter(Boolean), items: ModItem[] = [], seen = new Set<string>();
-  let n = 0, left = MX_MAX;
-  const add = (title: string, list: ModItem[]) => { n += list.length; if (left > 0) items.push({kind: 'part', title, why: ''}, ...list); left -= list.length; };
-  for (const fam of MOD_CATALOG) {
-    const rows = mcRows(d, fam).filter(r => !seen.has(r.f.file + '|' + r.x.path) && mxHit(words, r.title, r.desc, famName(fam), r.x.key, mxValText(modValue(r.f.file, r.x.path))));
-    rows.forEach(r => seen.add(r.f.file + '|' + r.x.path));
-    if (rows.length) add(famName(fam), rows.map(r => ({kind: 'card' as const, card: cardOf(d, r)})));
+// What a file is called (a section's title): its catalog name, except a job's small options file, named by the options it holds
+// ("Set Refresh latent sous" rather than "Options de WHM")
+function fileTitle(d: LegacyExport, f: LegacyConfigFile): {name: string; what: string} {
+  const info = modFileInfo(f), base = f.file.split('/').pop() || '';
+  if (/^[A-Z]{3}_CONFIG\.lua$/.test(base)) {
+    const known = Object.values(modKnown(d, f)) as LegacyCatalogRow[];
+    if (known.length >= 1 && known.length <= 2) return {name: known.map(r => r.title).join(' · '), what: ''};
   }
-  // the settings only the Files view holds: by file
-  for (const f of modFiles(d) as LegacyConfigFile[]) {
-    const known = modKnown(d, f), hits = Object.values(modParsed(f).byPath).filter(x => {
-      if (known[x.path] || x.kind === 'map' || x.kind === 'code') return false;
-      const fr = S.lang === 'en' ? null : modRestFr(f.file, x.path);
-      return mxHit(words, fr ? fr.title : modName(x), fr ? fr.desc : modDoc(x.doc), x.key, mxValText(modValue(f.file, x.path)));
-    });
-    if (hits.length) add(t('mxInAdv', {f: modFileInfo(f).name}), hits.flatMap(x => rowsOf(f, x, 0, {})).map(row => ({kind: 'row' as const, row})));
+  return info;
+}
+// the changes waiting in a file: its values, and its examples added
+const waiting = (file: string) => Object.keys(modEdits(file)).length + Object.keys(modAdds()[file] || {}).length;
+const filesOf = (plan: Plan, g: string) => [...new Set((plan.cards.get(g) || []).map(c => c.f.file).concat(plan.special.filter(f => modFileGroup(f) === g).map(f => f.file)))];
+
+// ---- the search: the options of every category whose words hold what is typed ----
+function foundOf(secs: Map<string, RegCard[]>, q: string): RegCard[] {
+  const words = mxNorm(q).split(/\s+/).filter(Boolean), out: RegCard[] = [];
+  for (const g of MOD_GROUPS) for (const c of secs.get(g.id)!) {
+    if (c.special) { if (mxHit(words, c.title, c.info ? c.info.what : '')) out.push(c); continue; }
+    const rows = c.rows.filter(r => mxHit(words, r.label, r.sub, r.info.what, c.title, r.info.value));
+    if (rows.length) out.push({...c, small: modGroupName(g), rows});
   }
-  return {kind: 'search', title: t('mxFound', {n, q}), items, more: n > MX_MAX ? t('mxMore', {n: MX_MAX}) : '', none: n ? '' : t('mxNone', {q})};
+  return out;
 }
 
-// ---- the Options view: the presentation, or one family's options (renderModulesSimple) ----
-function optionsOf(d: LegacyExport): ModBody {
-  const fams: Fam[] = MOD_CATALOG.map(fam => ({fam, rows: mcRows(d, fam)}));
-  const intro = !S.modFam || S.modFam === 'intro' || !fams.some(x => x.fam.id === S.modFam && x.rows.length);
-  const cur = intro ? null : fams.find(x => x.fam.id === S.modFam) || null;
-  const nav = familyNav(fams, cur, intro);
-  if (!cur) return {kind: 'intro', nav, intro: introOf(fams)};
-  const group = MOD_GROUPS.find(g => g.id === cur.fam.group), l = lang();
-  return {kind: 'family', nav, title: famName(cur.fam), meta: (group ? modGroupName(group) + ' · ' : '') + t('modSettings', {n: cur.rows.length}),
-    tip: cur.fam.tip[l], use: cur.fam.use ? {label: t('mcInGame'), text: cur.fam.use[l]} : null, cards: cur.rows.map(r => cardOf(d, r))};
+// ---- the detail on the right: the option chosen (else the category's first) ----
+function detailOf(sections: RegCard[]): ProDetail | null {
+  const rows = sections.flatMap(c => c.special ? [] : c.rows.map(r => ({c, r})));
+  const sel = String(S._regSel || ''), card = sections.find(c => c.special && c.id === sel), hit = rows.find(x => x.r.key === sel) || (card ? null : rows[0]);
+  const kv = (i: RowInfo): Array<[string, string]> => ([[t('cfgValue'), i.value], [t('cfgDefault'), i.std]] as Array<[string, string]>).filter(([, v]) => v);
+  if (card && card.info) return {iconHtml: card.iconHtml, title: card.title, tag: card.info.tag, what: card.info.what, example: card.info.example, exampleTitle: t('cfgExample'),
+    kv: kv(card.info), reset: null, foot: card.info.path};
+  if (!hit) return null;
+  const i = hit.r.info;
+  return {iconHtml: hit.r.iconHtml, title: hit.r.label, tag: i.tag, what: i.what, example: i.example, exampleTitle: t('cfgExample'), kv: kv(i).concat([[t('cfgWhen'), t('cfgWhenReload')]]),
+    reset: i.reset ? {label: t('cfgReset', {v: i.std}), attrs: i.reset} : null, foot: i.path};
 }
 
-// ---- the Files view: the file opened, what it is and what a change reaches (renderModules) ----
-function fileOf(d: LegacyExport): ModBody {
-  const cur = modShown(d), p = modParsed(cur), info = modFileInfo(cur), known = modKnown(d, cur);
-  const plain = p.fields.filter(x => x.kind !== 'code'), code = p.fields.filter(x => x.kind === 'code');
-  const top = Object.values(known).map(r => ({kind: 'card' as const, card: cardOf(d, r)}));
-  const rest = plain.flatMap(x => rowsOf(cur, x, 0, known)).map(row => ({kind: 'row' as const, row}));
-  const adv = code.flatMap(x => rowsOf(cur, x, 0, known));
-  const items: ModItem[] = [];
-  if (top.length) { if (rest.length || adv.length) items.push({kind: 'part', title: t('modPartKnown'), why: ''}); items.push(...top); }
-  if (rest.length) items.push({kind: 'part', title: t(top.length ? 'modPartRest' : 'modPartAll'), why: S.lang === 'en' ? '' : t('modPartRestWhy')}, ...rest);
-  const job = cur.scope === 'job';
-  return {kind: 'file', nav: fileNav(d, cur), title: info.name, meta: S.char + '/' + cur.file, metaTitle: t('modPathTip'), what: info.what,
-    scope: job ? {cls: 'job', text: t('mcScopeJob', {j: S.job}), tip: t('ttScopeJob', {c: S.char, j: S.job})} : {cls: 'all', text: t('mcScopeAll'), tip: t('ttScopeAll', {c: S.char})},
-    manual: p.head.about ? {summary: t('modManual'), text: p.head.about} : null, items,
-    adv: adv.length ? {summary: t('modPartAdv', {n: code.length}), rows: adv} : null, empty: items.length || adv.length ? '' : t('modEmpty')};
-}
-
-// ---- the bar of the changes that wait (module_ux.js modSaveBar) ----
-function saveOf(): ModulesView['save'] {
-  const all = ((S._modEdits || {}) as Record<string, Record<string, Record<string, LegacyEdit>>>)[S.char] || {}, lines: SaveLine[] = [];
+// ---- the bar of the changes that wait ----
+function footOf(): ProFoot {
+  const all = ((S._modEdits || {}) as Record<string, Record<string, Record<string, LegacyEdit>>>)[S.char] || {}, lines: ProFoot['lines'] = [];
   for (const file of Object.keys(all)) for (const path of Object.keys(all[file]!)) { const e = all[file]![path]!;
-    lines.push({title: mxTitle(file, path), was: mxCut(e.before), now: mxCut(e.after), file, path}); }
-  if (!lines.length) return null;
-  return {title: t('mxWait', {n: lines.length}), tip: t('mxWaitTip'), undo: {title: t('ttModUndo'), text: t('mxUndoAll')},
-    save: {title: t('ttModSave'), text: t('modSave')}, revert: t('mxRevert'), lines};
+    lines.push({title: mxTitle(file, path), was: mxCut(e.before), now: mxCut(e.after), revert: {'data-modrevert': '', 'data-modfile': file, 'data-modpath': path}}); }
+  // a setting of a job file written for the first time (its line uncommented: reg_special.js) is part of its change
+  const n = lines.length + Object.keys(modAdds()).filter(f => !all[f] || !Object.keys(all[f]!).length).length;
+  return {msg: S.toast || '', n, text: t('cfgWaiting', {n}), ok: t('cfgSaved'), undo: n ? {label: t('mxUndoAll'), attrs: {'data-modundo': ''}} : null,
+    save: n ? {label: t('modSave'), attrs: {'data-modsave': ''}} : null, lines, revertTip: t('mxRevert')};
 }
 
-/** The Modules part for the export shown */
+/** The Settings part for the export shown */
 export function modulesView(d: LegacyExport): ModulesView {
-  const files = modFiles(d), filesView = S.modView === 'files', q = String(S.modQ || '');
-  const top: ModulesView['top'] = {q, placeholder: t('mxSearch'), title: t('mxSearchTip'), clear: q ? {title: t('mxClearTip'), text: t('mxClear')} : null,
-    hint: filesView ? t('modHint') : t('mcHint'),
-    views: [['simple', 'mcSimple'], ['files', 'mcFiles']].map(([value, k]) => ({value: value!, label: t(k!), title: t(k + 'Tip'), pressed: filesView === (value === 'files')})),
-    lock: liveOk() ? null : {title: t('mxLockT'), text: t('mxLock', {c: S.char})}};
-  if (!files.length) return {none: t('modNone'), top, toast: '', body: null, save: null};
-  const body = q.trim() ? searchOf(d) : filesView ? fileOf(d) : optionsOf(d);
-  return {none: null, top, toast: S.toast || '', body, save: saveOf()};
+  const files = modFiles(d) as LegacyConfigFile[], q = String(S.modQ || '').trim();
+  // every category's sections, built once for this drawing
+  const plan = planOf(d), secs = new Map(MOD_GROUPS.map(g => [g.id, sectionsOf(d, plan, g)])), shown = MOD_GROUPS.filter(g => secs.get(g.id)!.length);
+  // the category chosen (S.modTheme, kept): a file or a subject opened before 2026-10-30 (S.modFile, S.modFam) opens
+  // its own; else this job's, else the first
+  const old = S.modFile && S.modFile !== 'intro' ? [...plan.cards].find(([, cs]) => cs.some(c => c.f.file === S.modFile)) : null;
+  const oldFam = S.modFam && S.modFam !== 'intro' ? MOD_CATALOG.find(x => x.id === S.modFam) : null;
+  const g = shown.find(x => x.id === (S.modTheme || (old ? old[0] : oldFam ? oldFam.group : ''))) || shown[0];
+  const item = (x: LegacyGroup) => { const n = countIn(secs.get(x.id)!);
+    return {id: x.id, iconHtml: themeIcon(x.id), name: x.id === 'job' ? jobName(S.job || '') : catName(x), count: String(n), dot: filesOf(plan, x.id).some(f => waiting(f) > 0),
+      current: !q && !!g && x.id === g.id, attr: {'data-modtheme': x.id}}; };
+  const nav: ProNav = {search: {value: String(S.modQ || ''), placeholder: t('cfgSearch'), id: 'modq', clear: t('mxClear')},
+    groups: [{label: t('cfgThisJob'), items: shown.filter(x => x.id === 'job').map(item)}, {label: t('cfgAllJobs'), items: shown.filter(x => x.id !== 'job').map(item)}].filter(x => x.items.length)};
+  const foot = footOf();
+  if (!files.length || !g) return {none: t('modNone'), nav, head: {iconHtml: '', title: '', sub: ''}, sections: [], empty: '', detail: null, foot, hud: null, credit: iconCredit()};
+  const sections = q ? foundOf(secs, q) : secs.get(g.id)!;
+  const head = q ? {iconHtml: playerIcon('gi:on-target'), title: t('mxFound', {n: countIn(sections), q}), sub: ''}
+    : {iconHtml: themeIcon(g.id), title: g.id === 'job' ? jobName(S.job || '') : catName(g), sub: t('regSub_' + g.id, {j: jobName(S.job || '')})};
+  return {none: null, nav, head, sections, empty: q && !sections.length ? t('mxNone', {q}) : '', detail: detailOf(sections), foot,
+    hud: !q && g.id === 'display' ? hudView(d) : null, credit: iconCredit()};
+}
+
+// The HUD as the game draws it: its font and size, its black outline, its background and opacity (UI_CONFIG.lua,
+// as ui_settings.lua reads it), around the text GearSwap's code returned
+function hudView(d: LegacyExport): ModulesView['hud'] {
+  const r = hudPreview(d);
+  if (!r) return {html: '', style: '', error: '', note: t('hudDrawing'), title: t('hudTitle'), hint: '', reset: null};
+  const m = r.meta || {}, bg = m.bg || [15, 15, 35, 180], sw = Math.max(0, Number(m.stroke_width) || 0);
+  const st = m.stroke || [0, 0, 0], sa = (Number(m.stroke_alpha) || 255) / 255, sc = `rgba(${st[0]},${st[1]},${st[2]},${sa})`;
+  const shadow = sw ? ([[1, 1], [-1, 1], [1, -1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]] as Array<[number, number]>).map(([x, y]) => `${x * sw}px ${y * sw}px 0 ${sc}`).join(',') : 'none';
+  const style = `font-family:'${String(m.font || 'Consolas').replace(/'/g, '')}',Consolas,monospace;font-size:${(Number(m.size) || 10) * 4 / 3}px;font-weight:${m.bold ? 700 : 400};`
+    + `text-shadow:${shadow};background:${m.bg_visible === false ? 'transparent' : `rgba(${bg[0]},${bg[1]},${bg[2]},${(bg[3] ?? 180) / 255})`}`;
+  // the job's own order (its <JOB>_HUD.lua), to set back from under the preview
+  const hf = (modAllFiles(d) as LegacyConfigFile[]).find(f => /\/[A-Z]{3}_HUD\.lua$/.test(f.file));
+  const own = hf ? ['section_order', 'row_order'].filter(k => hudOrder(d, hf.file, k).own) : [];
+  return {html: r.html, style, error: r.error ? t('hudError', {e: r.error}) : '', note: m.enabled === false ? t('hudOff') : t('hudNote'), title: t('hudTitle'),
+    hint: t('hudHint', {j: S.job}), reset: own.length ? {label: t('hudOrderReset'), attrs: {'data-hudresetall': hf!.file}} : null};
 }

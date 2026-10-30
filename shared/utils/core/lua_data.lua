@@ -211,25 +211,98 @@ local function region_is_data(tk, first, last)
     return true
 end
 
---- Whether text `after` differs from `before` only by data: what replaced the tokens between what the two share at
---- the start and at the end is data (region_is_data), and where it meets the text kept nothing becomes a call or an
---- index (a value taken out of `{a = b, c = "x"}` must not leave `b "x"`, a call of b).
+-- Past this many tokens taken out and put in, the two texts are compared as one place (what they share at the start and
+-- at the end around it): a page writes a few values, never most of a file
+local MAX_CHANGED = 400
+
+-- What differs between two token lists: the tokens of b put in (inb[j]) and the places of b where tokens of a were
+-- taken out (cut[j]: between b[j] and b[j + 1]); everything else is the same token for token, in the same order.
+-- Myers' diff (the one of git): the fewest tokens taken out and put in. nil when more than MAX_CHANGED differ
+local function diff(a, b)
+    local n, m = #a, #b
+    local v, trace, last = {[1] = 0}, {}, nil
+    for d = 0, math.min(MAX_CHANGED, n + m) do
+        local copy = {}
+        for k, x in pairs(v) do copy[k] = x end
+        trace[d] = copy
+        for k = -d, d, 2 do
+            local x
+            if k == -d or (k ~= d and v[k - 1] < v[k + 1]) then x = v[k + 1] else x = v[k - 1] + 1 end
+            local y = x - k
+            while x < n and y < m and a[x + 1].raw == b[y + 1].raw do x, y = x + 1, y + 1 end
+            v[k] = x
+            if x >= n and y >= m then last = d break end
+        end
+        if last then break end
+    end
+    if not last then return nil end
+    local inb, cut, x, y = {}, {}, n, m
+    for d = last, 0, -1 do
+        local vd, k = trace[d], x - y
+        local pk = (k == -d or (k ~= d and vd[k - 1] < vd[k + 1])) and k + 1 or k - 1
+        local px = vd[pk]
+        local py = px - pk
+        while x > px and y > py do x, y = x - 1, y - 1 end     -- tokens both share
+        if d > 0 then
+            if x == px then inb[y] = true
+            else
+                -- a token taken out must be data too: taking out `function`, `if`, `end` or a name read would let
+                -- code of the file that never ran run (a body freed from its function)
+                if not is_data(a, x) then return nil, a[x].raw end
+                cut[y] = true
+            end
+        end
+        x, y = px, py
+    end
+    return inb, cut
+end
+
+-- Tokens first..last of b put in place of others: data (region_is_data), and nothing becomes a call or an index where
+-- they meet the text kept (a value taken out of `{a = b, c = "x"}` must not leave `b "x"`, a call of b)
+local function place_is_data(b, first, last)
+    if last >= first then
+        local ok, why = region_is_data(b, first, last)
+        if not ok then return false, why end
+    end
+    for k = first - 1, math.max(last, first - 1) do
+        if joins_into_call(b[k], b[k + 1]) then return false, 'join' end
+    end
+    return true
+end
+
+--- Whether text `after` differs from `before` only by data. Each run of tokens put in (several settings changed in one
+--- file are several runs) must be data (place_is_data), and where tokens were only taken out, the two tokens that now
+--- meet must not become a call or an index; the text between is the file's own, token for token.
 --- @param before string
 --- @param after string
 --- @return boolean, string|nil reason when not
 function LuaData.only_data_changed(before, after)
     local a, b = LuaData.tokens(before or ''), LuaData.tokens(after or '')
     if not (a and b) then return false, 'syntax' end
+    -- one place between what both share at the start and at the end: enough for one setting, or a table rewritten
     local first = 1
     while a[first] and b[first] and a[first].raw == b[first].raw do first = first + 1 end
     local ea, eb = #a, #b
     while ea >= first and eb >= first and a[ea].raw == b[eb].raw do ea, eb = ea - 1, eb - 1 end
     if ea < first and eb < first then return true end
-    local ok, why = region_is_data(b, first, eb)
-    if not ok then return false, why end
-    -- every pair of tokens that is new: inside what replaced, and where it meets the text kept on both sides
-    for k = first - 1, math.max(eb, first - 1) do
-        if joins_into_call(b[k], b[k + 1]) then return false, 'join' end
+    local whole, why_whole = place_is_data(b, first, eb)
+    if whole then return true end
+    -- several settings changed, with the file's own text between them: each place checked alone (both ways are
+    -- sound: each says the new text is the old one's tokens, in order, with only data put in or taken out)
+    local inb, cut = diff(a, b)
+    if not inb then return false, cut or why_whole end
+    local k = 1
+    while k <= #b do
+        if inb[k] then
+            local first = k
+            while inb[k + 1] do k = k + 1 end
+            local ok, why = place_is_data(b, first, k)
+            if not ok then return false, why end
+        end
+        k = k + 1
+    end
+    for j in pairs(cut) do
+        if joins_into_call(b[j], b[j + 1]) then return false, 'join' end
     end
     return true
 end

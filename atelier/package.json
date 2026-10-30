@@ -3,7 +3,7 @@
   "private": true,
   "description": "GearSwap Atelier: the page's sources (src/, TypeScript + Svelte 5) built into one file, atelier/index.html. Players never need this: they open the built file.",
   "scripts": {
-    "build": "vite build",
+    "build": "python ../scripts/atelier/gen_hud_sources.py && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {

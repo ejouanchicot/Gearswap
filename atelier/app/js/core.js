@@ -23,7 +23,7 @@ let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons
   trial:{}, drafts:{}, buffs:{}, buffTier:{}, held:{}, famOpen:{}, wsList:{}, keyOv:{}, keyDirty:{}, modeOv:{}, modeDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}, statHide:{}, statSort:'group', statOnlyWant:false, statPresets:{}, statPreset:'', optOpts:{obj: 'damage', pdt: -50, mdt: -21, sb: 0}, boxOpen:{}, wsTp:null, _tpb:{}, macroAlt:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['modFile', 'modView', 'modFam', 'modGrp', 'persoView', 'bagSel', 'bagRoles', 'bagTags', 'bagAt', 'tgtFav', 'tgtRecent', 'pbActive', 'jobTab', 'listPrefs', 'listW', 'listPaths', 'shapes', 'motion', 'guide', 'mogLines', 'pushTech', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'genericWs', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'wsList', 'keyOv', 'keyDirty', 'modeOv', 'modeDirty', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'pushed'];
+const KEEP = ['modFile', 'modFam', 'persoView', 'bagSel', 'bagRoles', 'bagTags', 'bagAt', 'tgtFav', 'tgtRecent', 'pbActive', 'jobTab', 'listPrefs', 'listW', 'listPaths', 'shapes', 'motion', 'guide', 'mogLines', 'pushTech', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'genericWs', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'wsList', 'keyOv', 'keyDirty', 'modeOv', 'modeDirty', 'keysPart', 'keysFilter', 'modTheme', 'macroPart', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'pushed'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 if (S.section === 'worn') S.section = 'sets';
@@ -150,9 +150,14 @@ const iconIds = () => mergedOf('icons');
 const latestExport = (c, field) => Object.values(DATA[c] || {}).flatMap(j => Object.values(j)).filter(x => x[field] !== undefined)
   .sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
 function save(){ try { localStorage.setItem('atelier', JSON.stringify(Object.fromEntries(KEEP.map(k => [k, S[k]])))); } catch(e) {} }
-// The game's icon of an item (data/atelier/icons/<id>.bmp, written by the export); an empty frame without one
+// The image of an item: its HD icon once the page made it (icon_cache.js), else the game's own
+// (data/atelier/icons/<id>.bmp, written by the export), its HD one made once it is shown (iconHd), else asked to the
+// game (iconMiss)
+const itemImg = id => ICON_HD.has(+id) ? `<img src="${ICON_HD.get(+id)}" alt="">`
+  : `<img src="atelier/icons/${+id}.bmp" alt="" data-hd="${+id}" onload="iconHd(this)" onerror="iconMiss(this, ${+id})">`;
+// The game's icon of an item; an empty frame without one
 const icon = name => { const id = name && (iconIds()[name] || (catalog() || {id: {}}).id[name]);
-  return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="iconMiss(this, ${+id})">` : ''}</span>`; };
+  return `<span class="ico" aria-hidden="true">${id ? itemImg(id) : ''}</span>`; };
 // An icon not on the disk yet (a piece you do not hold: the export writes only yours and your sets'):
 // the game writes it on demand (POST /icons, item_icons.lua), the ids gathered for a moment, then the
 // page is drawn again; an id already asked for is not asked again
@@ -171,11 +176,25 @@ async function iconFetch(){
   const ids = [...ICON_WANT].slice(0, 300);
   ids.forEach(id => { ICON_WANT.delete(id); ICON_ASKED.add(id); });
   if (!ids.length) return;
-  try { await liveFetch(S.char, '/icons?ids=' + ids.join(','), {method: 'POST', timeout: 15000}); }
+  let r = null;
+  try { r = await liveFetch(S.char, '/icons?ids=' + ids.join(','), {method: 'POST', timeout: 15000}); }
   catch (e) { ids.forEach(id => { ICON_ASKED.delete(id); ICON_WANT.add(id); }); clearTimeout(ICON_TIMER); ICON_TIMER = setTimeout(iconFetch, 10000); return; }
   render();
-  document.querySelectorAll('img[data-miss]').forEach(img => { img.hidden = false; img.src = img.src.split('?')[0] + '?again'; });
+  iconsAgain();
+  // the game writes 8 at once and the others in the background (item_icons.lua write_missing, 8 about every 0.15 s):
+  // looked for again once they should be there
+  if (r && r.queued) setTimeout(iconsAgain, Math.min(60000, 800 + r.queued * 20));
   if (ICON_WANT.size) iconFetch();
+}
+// the icons the game was asked for, read again: the missing images, then the HD ones without their .js
+function iconsAgain(){
+  document.querySelectorAll('img[data-miss]').forEach(img => { img.hidden = false; img.src = img.src.split('?')[0] + '?again'; });
+  iconHdAgain();
+}
+// An icon without its .js (written before 2026-10-30): the game asked to write it, as a missing one
+function iconAskGame(id){
+  if (!liveOk() || ICON_ASKED.has(id)) return;
+  ICON_WANT.add(id); clearTimeout(ICON_TIMER); ICON_TIMER = setTimeout(iconFetch, 150);
 }
 // Macro book and lockstyle in force for the export's subjob: its own setting, else the default
 // The alt the book is shown for: the page's choice, else the one online in game (ping), else none

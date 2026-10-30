@@ -208,7 +208,7 @@ for refill, `combat/` for the rest):
 | `BLM_KEYBINDS.lua` | The BLM keys above |
 | `BLM_CUSTOM.lua` | Your own modes, keys and gear rules, without code (empty in the template) |
 | `BLM_HUD.lua` | Order of the HUD sections and rows on BLM (also written by `//gs c ui order`) |
-| `BLM_LOCKSTYLE.lua` | Lockstyle number (`default` = 5; `by_subjob` is not read, see [configuration](../../guides/configuration.md)) |
+| `BLM_LOCKSTYLE.lua` | Lockstyle number (`default` = 5), per subjob if you want (`by_subjob`, see [configuration](../../guides/configuration.md)) |
 | `BLM_MACROBOOK.lua` | Macro book and page per subjob, and per dual-box partner job |
 | `BLM_MP_CONFIG.lua` | `mp_threshold` (1000): under it, `sets.midcast.MPConservation` goes on a nuke |
 | `BLM_ELEMENTAL_CONFIG.lua` | BLM's own Obi rule (storm, day, weather); only used when the shared belt is off |

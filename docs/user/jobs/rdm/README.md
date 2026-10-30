@@ -198,7 +198,7 @@ for refill, `combat/` for the rest):
 | `RDM_KEYBINDS.lua` | The job keys above |
 | `RDM_CUSTOM.lua` | Your own modes, keys and gear rules (commented examples only) |
 | `RDM_SABOTEUR_CONFIG.lua` | Spells that get an automatic Saboteur (Distract III, Gravity II) and the wait (2 s) |
-| `RDM_LOCKSTYLE.lua` | Lockstyle number: `default = 1` is the one used; the per-subjob list is not read |
+| `RDM_LOCKSTYLE.lua` | Lockstyle number (`default = 1`), per subjob if you want (`by_subjob`) |
 | `RDM_MACROBOOK.lua` | Macro book and page per subjob (book 2, page 1 in the template), and per alt job |
 | `RDM_TP_CONFIG.lua` | TP bonus pieces for weaponskills (Moonshade Earring +250) |
 | `RDM_HUD.lua` | Order of this job's HUD sections and rows |

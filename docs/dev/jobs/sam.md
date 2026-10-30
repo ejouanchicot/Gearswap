@@ -59,7 +59,7 @@ function; line numbers are deliberately not used.
 | `_master/config/sam/SAM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/sam/SAM_HUD.lua` | 30 | Per-job HUD section / row order (empty lists) |
 | `_master/config/sam/SAM_TP_CONFIG.lua` | 110 | `_G.SAMTPConfig`: `hagakure_jp_gifts`, pieces, weapons, `get_weapon_bonus`, `get_hagakure_bonus` |
-| `_master/config/sam/SAM_LOCKSTYLE.lua` | 32 | `default = 2`, `by_subjob` (no `get_style`) |
+| `_master/config/sam/SAM_LOCKSTYLE.lua` | 32 | `default = 2`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30) |
 | `_master/config/sam/SAM_MACROBOOK.lua` | 62 | `default`, `solo[sub]` (book 2 page 1), empty `dualbox` |
 | `_master/config/sam/SAM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/sam_sets.lua` | 533 | Template sets (flat) |
@@ -322,7 +322,7 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 | `<char>/sam/keys/SAM_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
 | `<char>/sam/display/SAM_HUD.lua` | empty orders | file | `hud_job_config.lua` |
 | `<char>/sam/combat/SAM_TP_CONFIG.lua` | `hagakure_jp_gifts = 0`; Moonshade +250, Mpaca's Cap +200; Dojikiri Yasutsuna +500 | file | `WSPrecastHandler` via `_G.SAMTPConfig`; `TPBonusCalculator` adds `get_hagakure_bonus()` (1000 + 10 x gifts while Hagakure is up) |
-| `<char>/sam/display/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager` uses `default` only (no `get_style`) |
+| `<char>/sam/display/SAM_LOCKSTYLE.lua` `default`, `by_subjob` | 2 | file; factory fallback 1 | `LockstyleManager`: `by_subjob[sub]`, else `default` (no `get_style`; `by_subjob` read by the factory itself since 2026-10-30) |
 | `<char>/sam/display/SAM_MACROBOOK.lua` | book 2 page 1 for every listed subjob | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/sam/combat/SAM_CONFIG.lua` `auto_hasso` (option `sam_hasso`) | false | file | `SAM_STATUS.lua` `auto_hasso` |
 | `<char>/sam/combat/SAM_CONFIG.lua` `auto_third_eye_ws` (option `sam_third_eye_ws`) | true | file | `SAM_PRECAST.lua` `try_third_eye_ws` |
@@ -443,7 +443,5 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
   Aftermath Lv.3 did not rebuild the gear, so `sets.engaged.AM3` waited for the
   next gear change; `job_buff_change` now calls
   `LifecycleManager.refresh_after_buff`.
-- `SAM_LOCKSTYLE.by_subjob` is not read by `LockstyleManager` (no `get_style`); only
-  `lockstyle_pieces.lua` and `job_test.lua` read it.
 - Dead code: `job_handle_equipping_gear`, `sets.buff.Sengikori`.
 - `SAM_COMMANDS` duplicates most of `DRK_COMMANDS` (open finding).

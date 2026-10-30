@@ -199,7 +199,7 @@ for refill, `combat/` for the rest):
 | `BRD_SONG_CONFIG.lua` | The song packs, dummy songs, Etudes, Victory March replacements, HUD short names, song tier fallback (`SONG_REFINE`, `enabled = false` turns it off), the spells of the debuff commands (`DEBUFF_SONGS`), the time left under which `//gs c songs` sings again (`REFRESH_BELOW`, 180 s) |
 | `BRD_TIMING_CONFIG.lua` | Gap after each song of a rotation (3.0 s, +1.0 s after Honor March / Aria of Passion) and the `nt` delay (2.0 s) |
 | `BRD_HUD.lua` | HUD section and row order for BRD (written by `//gs c ui order` / `roworder`) |
-| `BRD_LOCKSTYLE.lua` | Lockstyle number (template: 7). Its `by_subjob` table is not used: the file has no `get_style` |
+| `BRD_LOCKSTYLE.lua` | Lockstyle number (template: 7), and one per subjob in `by_subjob` |
 | `BRD_MACROBOOK.lua` | Macro book / page per subjob and per dual-box alt job (template: book 40 page 1) |
 | `BRD_TP_CONFIG.lua` | TP bonus pieces and weapons ([TP bonus](../../features/tp-bonus.md)) |
 | `BRD_REFILL.lua` | What `//gs c rf` restocks on BRD on top of or in place of the common list (every line commented at first: the common list) ([configuration](../../guides/configuration.md#refill-job_refilllua)) |

@@ -247,7 +247,11 @@ after 3 minutes without any action from or on it.
 
 ## Changing keys from the Atelier page
 
-Open `data/atelier.html`, a job's settings, part **Modes & keys**, and click ✎ on a key:
+Open `data/atelier.html`, the **Configuration** tab, part **Modes & keys**,
+then **Other keys**. Every key of the job is in one list, the conflicts first
+(two actions on one key: only one fires in game); the filters at the top show
+all keys, only the conflicts, or one kind of key. The keys GearSwap binds on
+every job (Mote's) are folded at the bottom. Click **Change** on a key:
 
 1. Click the box, then press the keys you want. The page reads the key's
    position, as Windower does: on an AZERTY keyboard, press your own keys,
@@ -271,7 +275,9 @@ back to the keys of your files.
 
 ## A mode's start value from the Atelier
 
-The same part lists every mode first, with its values: click one and the mode
+The same part lists your modes first (**My modes**), under the name the HUD
+gives them (Cure Mode, with its values Potency / SIRD), with a plain sentence
+underneath and the values' meaning in their tooltip. Click a value and the mode
 starts on it at every load of the job (Idle Mode on Refresh instead of PDT, for
 example). The value outlined with dots is your states file's; clicking it again
 removes your choice. The shared modes (Auto Medicine, Combat Mode, Treasure

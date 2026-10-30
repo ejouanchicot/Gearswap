@@ -368,7 +368,7 @@ def add_exports(out, name, windower=None):
         add_files(out, [(arc(rel), text) for rel, text in written['files']]
                   + [(arc(rel), base64.b64decode(b)) for rel, b in written['icons']])
         done = json.loads(run.stdout.strip().splitlines()[-1])
-        done['icons'] = len(written['icons'])
+        done['icons'] = sum(1 for rel, _ in written['icons'] if rel.endswith('.bmp'))   # each with its .js
         return done
     finally:
         shutil.rmtree(work, ignore_errors=True)

@@ -1475,3 +1475,171 @@
 .ajgrid .btn svg,.ajgrid .btn img{width:18px;height:18px;flex:none}
 .note-foot .addjobhome{margin-right:10px;padding:3px 10px;font-size:12px}
 .note-foot .addjobhome:disabled{opacity:.5;cursor:default}
+/* ==== the job's settings as a game's options screen (Modes & keys first; SPEC notes/docs-perso/maquette-config-2026-10-30) ==== */
+.gpick{justify-self:end;display:grid;grid-template-columns:34px minmax(0,1fr) 34px;align-items:center;width:250px;border:1px solid var(--line-strong);border-radius:10px;background:var(--well)}
+.gpick.file{border-color:var(--accent)}
+.gpick button{border:0;background:none;color:var(--muted);font-size:14px;padding:6px 0;cursor:pointer}.gpick button:hover{color:var(--accent)}
+.gpick span{text-align:center;font-weight:700;color:var(--accent-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ==== Mes modes, variant A (2026-10-30): a card per theme, compact rows, two columns ==== */
+.aseg{display:inline-flex;padding:3px;gap:2px;border-radius:9px;background:var(--well);border:1px solid var(--line)}
+.aseg button{border:0;background:none;padding:4px 11px;border-radius:7px;font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;cursor:pointer}
+.aseg button:hover{color:var(--ink)}
+.aseg button.on{background:var(--accent);color:var(--accent-ink)}
+.aseg button.file:not(.on){box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 55%,transparent)}
+/* the job's settings use the whole page width (no 1240 px column in the middle) */
+.jobcfg{max-width:none}
+/* ---- the same look on every part of the job's settings (Réglages, Macros): a dark floor, lighter raised cards with
+   the accent edge, the gold header ---- */
+.jobcfg .jobcfgtabs{justify-self:stretch;display:flex}
+.jobcfg .jobcfgtabs button{flex:1}
+.jobcfg .box,.jobcfg .keybar{background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 10%,var(--panel-2)),color-mix(in srgb,var(--ink) 5%,var(--panel-2)) 220px);border:1px solid var(--line-strong);border-top:2px solid var(--accent);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.5),inset 0 1px 0 color-mix(in srgb,var(--ink) 10%,transparent)}
+.jobcfg .box > .boxh{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 22%,var(--panel)),color-mix(in srgb,var(--accent) 6%,var(--panel)));border-bottom:1px solid var(--line-strong);padding:10px 16px}
+.jobcfg .box > .boxh::before{display:none}
+.jobcfg .box > .boxh h3{color:var(--accent-2);font-size:13px;letter-spacing:.04em}
+/* "Other keys" as one list (variant A): the filter chips, the conflicts card in red, one row per key with its state */
+.kfilters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.kfilters button{padding:6px 14px;border-radius:99px;border:1px solid var(--line-strong);background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.kfilters button:hover{color:var(--ink)}
+.kfilters button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.kfilters button.bad:not(.on){color:#ff8a8a;border-color:rgba(255,93,93,.6)}
+.kgood{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:rgba(63,191,122,.12);color:#7be0a6;font-weight:600;border:1px solid rgba(63,191,122,.35)}
+.kst{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;color:var(--muted);background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.kst.ok{color:#5fd896;background:rgba(63,191,122,.13)}
+.kst.clash{color:#fff;background:#ff5d5d}
+.kst.taken,.kst.yield{color:#1a1000;background:#ffb648}
+/* the key is the button that changes it: its caps in a framed button, "Change" beside, lit on hover */
+.kbtn{display:inline-flex;align-items:center;gap:8px;padding:4px 6px 4px 8px;border-radius:9px;border:1px solid var(--line-strong);background:color-mix(in srgb,#000 25%,var(--panel));color:var(--ink);font:inherit;cursor:pointer;transition:border-color .12s,background .12s}
+.kbtn .kcaps{display:inline-flex;gap:3px;align-items:center}
+.kbtn .kcaps i{font-style:normal;font-size:12px;color:var(--faint)}
+.kbtn .kgo{padding:2px 9px;border-radius:6px;font-size:11.5px;font-weight:700;color:var(--accent-2);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.kbtn:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--panel))}
+.kbtn:hover .kgo{background:var(--accent);color:var(--accent-ink)}
+.kbtn kbd{font-size:11px;padding:1px 5px;opacity:1}
+/* Mote's keys: folded, quiet, at the bottom (the page cannot change them) */
+.kmote{margin-top:2px;border:1px dashed var(--line-strong);border-radius:12px;color:var(--muted)}
+.kmote > summary{cursor:pointer;padding:10px 14px;font-size:13px;list-style:none;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.kmote > summary::-webkit-details-marker{display:none}
+.kmote > summary::before{content:"▸";color:var(--faint);transition:transform .15s}
+.kmote[open] > summary::before{transform:rotate(90deg)}
+.kmote > summary b{font-weight:600}
+.kmote > summary small{color:var(--faint);font-size:12px;margin-left:6px}
+.kmotegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 18px;padding:2px 14px 12px}
+.kmrow{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12.5px;opacity:.8}
+.kmrow .kcaps kbd{font-size:10.5px;padding:0 4px;opacity:.8}
+.kmrow .kmd{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kmrow .kst{margin-left:auto}
+.kmrow.taken .kmd{text-decoration:line-through;opacity:.7}
+/* ---- compact options screen: everything fits on one screen without scrolling (1080p) ---- */
+.aseg{padding:2px}
+.aseg button{padding:3px 9px;font-size:12px}
+.kbtn{padding:2px 4px 2px 6px;gap:6px;border-radius:7px}
+.kbtn .kgo{padding:1px 7px;font-size:11px}
+.kbtn kbd{font-size:10px;padding:0 4px}
+/* Other keys: one line per key (its help in the tooltip and after the name, faint) */
+.kfilters{margin-bottom:10px;gap:6px}
+.kfilters button{padding:4px 11px;font-size:12px}
+.kgood{margin:0 0 10px;padding:6px 12px;font-size:12.5px}
+.kst{padding:2px 8px;font-size:11px}
+.kmote > summary{padding:7px 12px}
+/* ---- Réglages, compact and in two columns of cards (like the modes): fits one screen as much as it can ---- */
+/* the list on the left: names only (the file's name is a technical detail: in the tooltip) */
+.modfile{padding:5px 26px 5px 9px}
+.modfile b{font-size:12.5px}
+.jobcfg .modin{padding:3px 8px;font-size:12.5px}
+.jobcfg .mrtbl td{padding:2px 6px 2px 0}
+.jobcfg .mrtbl td.k-num .modin{width:78px}
+.jobcfg .mrtbl td.k-text .modin{width:190px}
+.jobcfg .mrtbl td.k-slot .modin{width:170px}
+.jobcfg .mrtbl th{font-size:10px}
+.jobcfg .mract button{width:22px;height:22px}
+.jobcfg .modsw{padding:2px 9px;font-size:12px}
+.jobcfg .mrwrap{gap:5px}
+.jobcfg .mrtbl{width:auto}
+/* Macro book & lockstyle: the numbers changed in the page (macro_edit.js) */
+.medel{width:24px;height:24px;border-radius:7px;border:1px solid var(--line-strong);background:none;color:var(--muted);cursor:pointer}
+.medel:hover{border-color:#ff5d5d;color:#ff8a8a}
+.meadd{margin:2px 0 8px;font:inherit;font-size:12.5px;padding:4px 8px;border-radius:8px;border:1px dashed var(--line-strong);background:var(--well);color:var(--accent-2);cursor:pointer}
+.menote{margin:6px 0;color:var(--muted);font-size:12.5px}
+/* the macro lines: compact, a rule between them; the one in force marked by a gold edge and a small badge, no frame */
+.medel{width:22px;height:22px;opacity:.55}
+/* ---- Macro book & lockstyle as a game screen: the hero (big icon, the number in force), a tile a subjob ---- */
+.jobcfg .box:has(.mhero) > .boxb{padding:0 0 14px}
+.mhero{display:flex;align-items:center;gap:18px;padding:16px 18px;margin-bottom:12px;background:radial-gradient(420px 140px at 0% 50%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%),color-mix(in srgb,#000 25%,var(--panel));border-bottom:1px solid var(--line-strong)}
+.mhero > .ico{width:64px;height:64px;flex:none;border-radius:16px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--accent) 30%,var(--well)),var(--well) 75%);box-shadow:0 0 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.mhero > .ico svg.gi{width:70%;height:70%;color:var(--accent-2);filter:drop-shadow(0 1px 2px #000)}
+.mhero small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.mhero .mbig{display:block;font-family:var(--display);font-size:40px;line-height:1.05;color:var(--accent-2);text-shadow:0 0 18px color-mix(in srgb,var(--accent) 45%,transparent)}
+.mhero p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.mtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:0 14px}
+.mtile{position:relative;display:grid;gap:7px;align-content:start;padding:10px 10px 11px;border-radius:12px;border:1px solid var(--line-strong);background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 9%,var(--panel-2)),color-mix(in srgb,#000 15%,var(--panel)));box-shadow:0 4px 12px rgba(0,0,0,.4);transition:border-color .12s,transform .12s}
+.mtile:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line-strong));transform:translateY(-1px)}
+.mtile.def{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 10%,var(--panel-2)),color-mix(in srgb,#000 15%,var(--panel)))}
+.mtile.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 22px color-mix(in srgb,var(--accent) 35%,transparent),0 4px 12px rgba(0,0,0,.4)}
+.mribbon{position:absolute;top:-9px;right:10px;padding:2px 9px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.mtile header{display:flex;align-items:center;gap:8px;min-height:24px}
+.mtile header .em{--role:var(--accent-2);width:22px;height:22px}
+.mtile header .ico{width:20px;height:20px;border:0;background:none;box-shadow:none}
+.mtile header .ico svg.gi{width:100%;height:100%;color:var(--accent-2)}
+.mtile header b{flex:1;font-size:14px;font-weight:700}
+.mtile .medel{width:20px;height:20px;font-size:11px;opacity:0}
+.mtile:hover .medel{opacity:.9}
+.mstep{display:grid;grid-template-columns:38px 24px minmax(0,1fr) 24px;align-items:center;gap:4px}
+.mstep small{font-size:11px;color:var(--muted)}
+.mstep button{height:24px;border-radius:7px;border:1px solid var(--line-strong);background:color-mix(in srgb,#000 25%,var(--panel));color:var(--accent-2);font-weight:800;cursor:pointer}
+.mstep button:hover:not([disabled]){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--panel))}
+.mstep input{width:100%;min-width:0;height:24px;text-align:center;font-family:var(--display);font-size:16px;font-weight:600;color:var(--ink);background:var(--well);border:1px solid var(--line);border-radius:7px;-moz-appearance:textfield}
+.mstep input::-webkit-inner-spin-button,.mstep input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.mstep input:focus{outline:none;border-color:var(--accent)}
+.madd{place-items:center;align-content:center;min-height:96px;border-style:dashed;background:none;box-shadow:none;cursor:pointer;color:var(--accent-2)}
+.madd .maddplus{font-size:28px;line-height:1;font-weight:300}
+.madd select{max-width:100%;font:inherit;font-size:12px;border:0;background:none;color:var(--accent-2);cursor:pointer;text-align:center}
+.madd select option{background:var(--panel);color:var(--ink)}
+.mtiles{row-gap:16px}
+/* Réglages, lot 3: the HP gauge of a table of tiers (Cure, Curaga) */
+.rgauge{flex:1 1 100%;min-width:0}
+.rgbar{display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--line-strong);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.rgpart{position:relative;display:grid;place-items:center;min-width:26px;border-right:1px solid rgba(0,0,0,.4)}
+.rgpart:last-child{border-right:0}
+.rgpart b{font-size:11px;font-weight:800;color:#0b1a33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 4px}
+.rgpart:nth-child(6n+1){background:#7be0a6}.rgpart:nth-child(6n+2){background:#5fd896}.rgpart:nth-child(6n+3){background:#4fc7a8}
+.rgpart:nth-child(6n+4){background:#62b6e8}.rgpart:nth-child(6n+5){background:#8a9cf0}.rgpart:nth-child(6n+6){background:#c39bf5}
+.rghandle{position:absolute;top:-2px;right:-6px;width:12px;bottom:-2px;cursor:ew-resize;z-index:2}
+.rghandle::after{content:"";position:absolute;left:4px;top:4px;bottom:4px;width:4px;border-radius:2px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.7);opacity:.7}
+.rghandle:hover::after{opacity:1;background:var(--accent)}
+.rgticks{display:flex;font:600 10.5px var(--mono);color:var(--faint);margin-top:3px}
+.rgticks .rgend{flex:none}
+.rgauge.off .rgbar{opacity:.7}
+.rgfix{flex:1 1 100%}
+.rgfix > summary{cursor:pointer;font-size:11.5px;color:var(--faint);list-style:none;margin-top:4px}
+.rgfix > summary::before{content:"▸ "}.rgfix[open] > summary::before{content:"▾ "}
+.rgo{margin-left:auto;padding:1px 9px;border-radius:99px;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);background:none;color:var(--accent-2);font:inherit;font-size:11px;font-weight:700;text-transform:none;letter-spacing:0;cursor:pointer}
+.rgo:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+/* layout check fixes: the big number's glyphs, an item icon in a 17 px frame, narrow screens (tiles above, one column) */
+.mhero .mbig{line-height:1.25}
+@media (max-width:560px){
+  .aseg{flex-wrap:wrap}
+  .mtiles{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .mhero{flex-wrap:wrap}
+}
+/* the job's refill card (reg_special.js) */
+.rfnow{padding:8px 14px;border-bottom:1px solid var(--line);background:color-mix(in srgb,#000 18%,transparent)}
+.rfnow small{display:block;color:var(--muted);font-size:11.5px;margin-bottom:5px}
+.rfitems{display:flex;flex-wrap:wrap;gap:5px}
+.rfitem{display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 3px;border-radius:99px;border:1px solid var(--line);background:var(--well);font-size:11.5px;font-weight:600}
+.rfitem .ico{width:18px;height:18px;border-radius:50%;overflow:hidden}.rfitem .ico img{width:100%;height:100%}
+.rfitem b{color:var(--accent-2);font-weight:700}
+.rfmodes{padding:8px 14px 4px}
+.rfadd{padding:4px 14px 8px}
+.rfsubs{padding:8px 14px;border-top:1px dashed var(--line-strong);display:grid;gap:6px}
+.rfsubs > b{font-size:13px;font-weight:600}
+.rfwait{color:#ffb648;font-size:11.5px}
+.rfsub{display:grid;gap:4px;padding:6px 8px;border-radius:9px;border:1px solid var(--line)}
+.rfsubh{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:600}
+.rfsub > small{color:var(--muted);font-size:11.5px}
+/* the gauge's bubble while a handle is dragged */
+.rgauge{position:relative}
+.rgbubble{position:absolute;bottom:calc(100% - 4px);transform:translateX(-50%);white-space:nowrap;padding:4px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--accent);box-shadow:0 6px 16px rgba(0,0,0,.6);font-size:12px;color:var(--muted);pointer-events:none;z-index:6}
+.rgbubble b{color:var(--ink)}.rgbubble em{font-style:normal;font-weight:800;color:var(--accent-2);font-size:13px}
+/* ---- a number as one game stepper: [ − | 50 % MP | + ], same size on every line ---- */
+/* value and unit centred together between − and + */
+.mcval{display:inline-flex;align-items:baseline}

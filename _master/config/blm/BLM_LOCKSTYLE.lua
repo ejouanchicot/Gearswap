@@ -14,8 +14,8 @@ local BLMLockstyleConfig = {}
 -- Lockstyle applied on BLM, whatever the subjob
 BLMLockstyleConfig.default = 5
 
--- Not read: LockstyleManager only uses .default and .get_style(subjob).
--- This table would need a get_style() function (see BST_LOCKSTYLE.lua) to apply.
+-- Lockstyle per subjob (shared/utils/lockstyle/lockstyle_manager.lua resolve_style): a subjob
+-- listed here wears its set, any other subjob the default
 BLMLockstyleConfig.by_subjob = {
     ['SCH'] = 5,  -- BLM/SCH
     ['RDM'] = 5,  -- BLM/RDM

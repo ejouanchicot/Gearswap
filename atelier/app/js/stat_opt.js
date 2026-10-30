@@ -109,7 +109,7 @@ const tankPhalanx = (s, e) => !!e && e.kind === 'phalanx' && ['PLD', 'RUN'].incl
 // (Flash, Banish: Enmity) keep its own rules. The first that fits
 const SPELL_OBJS = [[/cursna/i, ['cursna', 'healSkill', 'pdtRed']], [/esuna/i, ['esunaPlus', 'pdtRed', 'cmp']],
   [/\berase\b/i, ['erasePlus', 'pdtRed', 'cmp']], [/repose/i, ['divAcc', 'pdtRed', 'cmp']], [/flash/i, ['divAcc', 'enmity', 'pdtRed']],
-  // Holy and Banish: their damage first (the player's guide, WHM_Guide_Technique.md §9.7: MAB, Magic Damage, MND),
+  // Holy and Banish: their damage first (the player's guide, notes/docs-perso/whm-guide/WHM_Guide_Technique.md §9.7: MAB, Magic Damage, MND),
   // then landing; the Divine set (Flash and Banish without a set of their own) landing first
   [/banish|holy/i, ['mab', 'divAcc', 'pdtRed']], [/divine magic/i, ['divAcc', 'mab', 'pdtRed']],
   // a -na: the Empyrean head spreads it around its target, every time with Yagrush (the player's guide §4.9)

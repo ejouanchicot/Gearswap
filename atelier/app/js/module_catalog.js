@@ -45,6 +45,8 @@ const MOD_FILE_FR = {
   'CRAFT_REFILL.lua': ['Refill du craft', 'La liste de refill qui remplace celle du job pendant que tu craftes.'],
   'REFILL_CONFIG.lua': ['Refill (sacs et liste commune)', 'Les sacs que //gs c rf utilise, et ce que tous les jobs gardent dans l’inventaire.'],
   'WARDROBE_CONFIG.lua': ['Rangement des wardrobes', 'Où //gs c wo range ton équipement.'],
+  'ENHTEST_CONFIG.lua': ['Mesure de l’enhancing (outil)', 'Les réglages de //gs c enhtest : mesurer en jeu la durée et la puissance de tes sorts de renfort. Pour tester, pas pour jouer.'],
+  'ENHTEST_SETS.lua': ['Sets de la mesure (outil)', 'Les sets que //gs c enhtest compare. Écrit par l’outil.'],
   'ADDONS_CONFIG.lua': ['Addons Windower', 'Les addons que certains jobs chargent ou déchargent pour toi.'],
   'FIGHTS_CONFIG.lua': ['Suivi des combats', 'Ce que le suivi des combats (//gs c fights) fait pour ce perso. Un outil de mesure, pas un réglage de jeu.'],
   'SORTIE_CONFIG.lua': ['Sortie', '//gs c sortie <cible> : ta posture et le profil de ton alt pour chaque cible de Sortie.'],
@@ -89,7 +91,11 @@ const MOD_FILE_GROUP = {'AUTO_MEDICINE_CONFIG.lua': 'auto', 'RECAST_CONFIG.lua':
   'REFILL_CONFIG.lua': 'bags', 'CRAFT_REFILL.lua': 'bags', 'WARDROBE_CONFIG.lua': 'bags', 'CRAFT_CONFIG.lua': 'bags',
   'UI_CONFIG.lua': 'display', 'UI_COLOR_CONFIG.lua': 'display', 'LOCKSTYLE_CONFIG.lua': 'display', 'REGION_CONFIG.lua': 'display',
   'DUALBOX_CONFIG.lua': 'multi', '{JOB}_ALT_CUSTOM.lua': 'multi',
-  'ADDONS_CONFIG.lua': 'tools', 'FIGHTS_CONFIG.lua': 'tools', 'SORTIE_CONFIG.lua': 'tools'};
+  // a job's own files with a subject of their own: in that theme, marked "<JOB> only" (modules.js modFileGroup)
+  '{JOB}_HUD.lua': 'display', '{JOB}_REFILL.lua': 'bags',
+  'ADDONS_CONFIG.lua': 'tools', 'FIGHTS_CONFIG.lua': 'tools', 'SORTIE_CONFIG.lua': 'tools',
+  // the measuring tools (shown only on demand: modules.js MOD_TOOL_FILE)
+  'ENHTEST_CONFIG.lua': 'tools', 'ENHTEST_SETS.lua': 'tools'};
 
 const MOD_CATALOG = [
   {id: 'job', group: 'job', tip: ['Les options propres au job affiché en haut de la page. Changer de job dans la liste de gauche change ce module.', 'The options of the job shown at the top of the page. Picking another job in the list on the left changes this module.'], fr: 'Options de {JOB}', en: '{JOB} options', items: [
@@ -232,6 +238,8 @@ const MOD_CATALOG = [
   {id: 'refill', group: 'bags', use: ['//gs c rf', '//gs c rf'], tip: ['Une commande remet dans ton inventaire ce que la liste du job demande (médecine, nourriture, munitions) et range le surplus.', 'One command puts back in your inventory what the job’s list asks for (medicine, food, ammo) and stores the surplus.'], fr: 'Refill (remplir l’inventaire)', en: 'Refill (fill the inventory)', items: [
     MC('{JOB}_REFILL.lua', 'default', 'Ta liste en {JOB}', 'Ce que //gs c rf garde dans ton inventaire quand tu es {JOB} : l’objet et combien en garder. Plusieurs variantes dans une case (Sublime Sushi +1, Sublime Sushi) : la première est prise d’abord, la suivante complète.',
       'Your list on {JOB}', 'What //gs c rf keeps in your inventory when you are {JOB}: the item and how many to keep. Several variants in a cell (Sublime Sushi +1, Sublime Sushi): the first is taken first, the next fills the gap.', {items: true, cols: MC_REFILL_COLS}),
+    MC('{JOB}_REFILL.lua', 'extra', 'Tes objets en plus en {JOB}', 'Ajoutés à la liste commune sur {JOB} ; un objet déjà dans la liste commune prend la quantité écrite ici.',
+      'Your extra items on {JOB}', 'Added to the common list on {JOB}; an item already in the common list takes the count written here.', {items: true, cols: MC_REFILL_COLS}),
     MC('{JOB}_REFILL.lua', 'subjobs.{SUB}', 'Ta liste en {JOB}/{SUB}', 'Avec ce sub, cette liste remplace celle du dessus.', 'Your list on {JOB}/{SUB}', 'With this subjob, this list replaces the one above.', {items: true, cols: MC_REFILL_COLS}),
     MC('REFILL_CONFIG.lua', 'default_list', 'Liste commune à tous les jobs', 'Ce que chaque job garde dans l’inventaire, sauf si le job la complète ou la remplace dans sa propre liste.', 'The list shared by every job', 'What every job keeps in the inventory, unless the job adds to it or replaces it in a list of its own.', {items: true, cols: MC_REFILL_COLS}),
     MC('CRAFT_REFILL.lua', 'default', 'Liste pendant le craft', 'Remplace la liste du job tant que tu es en tenue de craft ou de pêche (//gs c craft, //gs c fish).', 'The list while crafting', 'Replaces the job’s list while you wear the craft or fishing gear (//gs c craft, //gs c fish).', {items: true, cols: MC_REFILL_COLS}),

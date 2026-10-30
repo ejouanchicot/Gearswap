@@ -369,10 +369,11 @@ function ConfigResolver.resolve_list_for_player()
     if not ok or type(cfg) ~= 'table' then cfg = nil end
 
     local bags = resolve_bags(cfg, global_cfg)
-    if cfg and sub and type(cfg.subjobs) == 'table' and type(cfg.subjobs[sub]) == 'table' then
+    -- an empty list counts as none: the Atelier writes `default = {}` for "back to the common list"
+    if cfg and sub and type(cfg.subjobs) == 'table' and type(cfg.subjobs[sub]) == 'table' and #cfg.subjobs[sub] > 0 then
         return cfg.subjobs[sub], ('%s/%s'):format(job, sub), bags
     end
-    if cfg and type(cfg.default) == 'table' then
+    if cfg and type(cfg.default) == 'table' and #cfg.default > 0 then
         return cfg.default, ('%s/default'):format(job), bags
     end
     local common, common_label = common_list(global_cfg, sub)

@@ -19,7 +19,7 @@ const USABLE_ID = (() => { const m = {}; for (const [id, n] of (typeof USABLE_IT
 // The icon of an item by its name (a usable item, a piece of an export, a piece of the gear catalog), or by its id
 const itemIconId = name => USABLE_ID[name] || iconIds()[name] || ((catalog() || {id: {}}).id || {})[name];
 const itemIco = (name, id) => { id = id || itemIconId(name);
-  return `<span class="ico" aria-hidden="true">${id ? `<img src="atelier/icons/${id}.bmp" alt="" onerror="iconMiss(this, ${+id})">` : ''}</span>`; };
+  return `<span class="ico" aria-hidden="true">${id ? itemImg(id) : ''}</span>`; };
 
 // An entry written `$Mode` in a list of buffs stands for the spell chosen in that mode at the moment (the mode's own
 // name when the job shown has it): shown in words, written back as it is

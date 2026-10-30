@@ -314,8 +314,9 @@ local function route(req, live)
             if #ids < 300 then ids[#ids + 1] = tonumber(id) end
         end
         local folder = windower.addon_path .. 'data/atelier/icons/'
-        local ok, n = pcall(require('shared/utils/atelier/item_icons').write_missing, ids, folder)
-        return '200 OK', Export.json({ok = ok, written = ok and n or 0})
+        -- some written now, the others in the background (queued): the page looks for them again later
+        local ok, n, queued = pcall(require('shared/utils/atelier/item_icons').write_missing, ids, folder)
+        return '200 OK', Export.json({ok = ok, written = ok and n or 0, queued = ok and queued or 0})
     end
     if req.path == '/sim_buffs' then
         return '200 OK', Export.json(require('shared/utils/atelier/atelier_sim').sim_buffs())

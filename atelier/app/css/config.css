@@ -1,0 +1,334 @@
+/* GearSwap Atelier · config.css: the job's settings in one frame for its three parts (ProFrame.svelte; SPEC
+   notes/docs-perso/config-pro-2026-10-30): the categories on the left, one column of options in the middle, the
+   detail on the right, the bar of the changes at the bottom. Theme colours only (base.css / themes.css tokens).
+   @author ejouanchicot */
+
+/* the part fills the tab: the three tabs on top, the frame under them */
+.tabmain:has(.cfgx){overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
+.tabmain:has(.cfgx) > .jobcfg{flex:1;min-height:0;max-width:none;display:flex;flex-direction:column;gap:0}
+.tabmain:has(.cfgx) > .jobcfg > *{flex:none}
+.tabmain:has(.cfgx) > .jobcfg > .cfgx{flex:1;min-height:0}
+
+/* the three tabs: text underlined in gold */
+.jobcfg:has(.cfgx) .jobcfgtabs{display:flex;justify-content:flex-start;gap:28px;padding:0 6px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;box-shadow:none}
+.jobcfg:has(.cfgx) .jobcfgtabs button{flex:none;position:relative;height:48px;padding:0 2px;border:0;border-radius:0;background:none;box-shadow:none;color:var(--muted);font-size:14px;font-weight:600}
+.jobcfg:has(.cfgx) .jobcfgtabs button[aria-pressed="true"]{color:var(--ink);background:none}
+.jobcfg:has(.cfgx) .jobcfgtabs button[aria-pressed="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)}
+.jobcfg:has(.cfgx) .jobcfgtabs .count{color:var(--faint)}
+
+/* the frame */
+.cfgx{--cfg-row:color-mix(in srgb,var(--ink) 6%,var(--panel));--cfg-rowh:color-mix(in srgb,var(--ink) 10%,var(--panel));
+  display:grid;grid-template-columns:240px minmax(0,1fr) 340px;grid-template-rows:minmax(0,1fr) auto;min-height:0;
+  background:radial-gradient(1100px 380px at 40% -12%,color-mix(in srgb,var(--accent) 6%,transparent),transparent 60%)}
+.cfgx .gi{width:100%;height:100%;display:block}
+
+/* left: search, categories */
+.cfg-nav{grid-row:1;overflow:auto;padding:16px 12px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.cfg-search{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;margin:0 0 12px;border-radius:9px;border:1px solid var(--line-strong);background:var(--well);color:var(--faint)}
+.cfg-search:focus-within{border-color:var(--accent)}
+.cfg-search input{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:inherit;font-size:13px;outline:none}
+.cfg-search button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px}
+.cfg-nl{padding:12px 10px 6px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.cfg-ni{position:relative;display:flex;align-items:center;gap:11px;height:40px;padding:0 10px;border:0;border-radius:8px;background:none;color:var(--ink-2,var(--muted));font:inherit;font-size:13.5px;font-weight:500;text-align:left;cursor:pointer}
+.cfg-ni > .ico,.cfg-ni > .em{width:18px;height:18px;flex:none;border:0;background:none;box-shadow:none}
+.cfg-ni > .ico svg.gi{color:var(--muted)}
+.cfg-ni > .em{--role:var(--muted)}
+.cfg-ni span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.cfg-ni small{color:var(--faint);font-size:12px;font-variant-numeric:tabular-nums}
+.cfg-ni:hover{background:var(--hover)}
+.cfg-ni.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.cfg-ni.on::before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+.cfg-ni.on > .ico svg.gi{color:var(--accent)}.cfg-ni.on > .em{--role:var(--accent)}
+.cfg-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+/* the icons' authors (CC BY 3.0 asks it): small, at the bottom of the categories */
+.cfg-credit{margin-top:auto;padding:14px 10px 0;font-size:10.5px;color:var(--faint);opacity:.8}
+
+/* middle: the options */
+.cfg-list{grid-row:1;overflow:auto;padding:24px 36px 28px;min-width:0}
+.cfg-head{display:flex;align-items:center;gap:14px;margin:0 0 14px}
+.cfg-hic{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--accent) 26%,var(--well)),var(--well) 72%)}
+.cfg-hic > .ico,.cfg-hic > .em{width:24px;height:24px;border:0;background:none;box-shadow:none}
+.cfg-hic > .ico svg.gi{color:var(--accent-2)}.cfg-hic > .em{--role:var(--accent-2)}
+.cfg-hic.big{width:56px;height:56px;border-radius:14px;box-shadow:0 0 22px color-mix(in srgb,var(--accent) 18%,transparent)}
+.cfg-hic.big > .ico,.cfg-hic.big > .em{width:30px;height:30px}
+.cfg-hic.big > .ico img{width:100%;height:100%}
+.cfg-head h1{margin:0;font-family:var(--display);font-size:23px;font-weight:600;line-height:1.15;color:var(--ink)}
+.cfg-head p{margin:3px 0 0;color:var(--muted);font-size:13px;max-width:760px}
+.cfg-sec{display:flex;align-items:center;gap:10px;margin:22px 0 8px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.cfg-sec::after{content:"";flex:1;height:1px;background:var(--line-strong)}
+.cfg-sec small{font-size:11px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--faint);font-family:var(--mono)}
+.cfg-sec em{font-style:normal;font-size:10px;letter-spacing:.04em;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-2)}
+.cfg-head + .cfg-sec{margin-top:6px}
+.cfg-grp{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--cfg-row)}
+.cfg-r{position:relative;display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:14px;min-height:58px;padding:9px 16px;border-top:1px solid var(--line);cursor:pointer;transition:background .12s}
+.cfg-r:first-child{border-top:0}
+.cfg-r.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;background:var(--accent)}
+.cfg-ri{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--well);border:1px solid var(--line)}
+.cfg-ri > .ico{width:18px;height:18px}
+.cfg-ri > .ico svg.gi{color:var(--accent)}
+.cfg-rt b{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
+.cfg-r.chg .cfg-rt b::after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;border-radius:50%;background:var(--accent);vertical-align:middle}
+.cfg-rt span{display:block;margin-top:1px;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cfg-c{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:6px 8px;cursor:default;min-width:0}
+.cfg-r.tall{grid-template-columns:36px minmax(0,1fr)}
+.cfg-r.tall .cfg-c{grid-column:2;justify-content:flex-start}
+.cfg-r.special{grid-template-columns:minmax(0,1fr);padding:4px 0}
+.cfg-r.special .cfg-c{grid-column:1;display:block}
+.cfg-empty{color:var(--muted);margin:20px 0}
+
+/* the controls, one size everywhere */
+.cfg-c .modsw{padding:0;border:0;background:none}.cfg-c .modsw b{display:none}
+.cfg-c .modsw .sw{width:42px;height:24px}
+.cfg-c .modrange,.cfg-c .mcstd{display:none}
+.cfg-c .mcfield{display:inline-grid;grid-template-columns:30px minmax(max-content,1fr) 30px;width:auto;min-width:176px;height:32px;border:1px solid var(--line-strong);border-radius:9px;background:var(--well);overflow:hidden}
+.cfg-c .mcfield:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 22%,transparent)}
+.cfg-c .mcstep{width:auto;height:auto;padding:0;border:0;border-radius:0;background:color-mix(in srgb,var(--accent) 7%,transparent);color:var(--accent-2);font-size:16px;font-weight:700;cursor:pointer}
+.cfg-c .mcstep:first-child{border-right:1px solid var(--line)}.cfg-c .mcstep:last-child{border-left:1px solid var(--line)}
+.cfg-c .mcstep:hover:not([disabled]){background:var(--accent);color:var(--accent-ink)}
+.cfg-c .mcval{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+.cfg-c .mcval .modin.num{width:auto;field-sizing:content;min-width:1ch;height:auto;padding:0;border:0;border-radius:0;background:none;box-shadow:none;text-align:center;font-family:var(--display);font-size:16px;font-weight:700;color:var(--ink)}
+.cfg-c .mcval .mcunit{font-style:normal;font-size:11px;font-weight:600;color:var(--faint);margin-top:2px}
+.cfg-c .modseg{display:inline-flex;padding:3px;gap:2px;border-radius:9px;background:var(--well);border:1px solid var(--line-strong)}
+.cfg-c .modseg button{padding:5px 12px;border:0;border-radius:7px;background:none;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.cfg-c .modseg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.cfg-c .modin{height:32px;padding:0 10px;border-radius:9px;border:1px solid var(--line-strong);background:var(--well);color:var(--ink);font:inherit;font-size:13px}
+.cfg-c .modchips{display:flex;gap:6px;align-items:center}
+.cfg-c .modchip{display:inline-flex;align-items:center;border:1px solid var(--line-strong);background:var(--well);font-size:12.5px;font-weight:600}
+.cfg-c .modchip .mcnum{display:none}
+.cfg-c .modchip.item .ico{width:20px;height:20px;border-radius:50%;overflow:hidden}
+.cfg-c .modchip button{width:16px;height:16px;padding:0;border:0;background:none;color:var(--faint);opacity:0;cursor:pointer}
+.cfg-c .modchip:hover button{opacity:1;color:#ff8a8a}
+.cfg-c .modaddbtn{padding:0 12px;border:1px dashed color-mix(in srgb,var(--accent) 50%,transparent);background:none;color:var(--accent-2);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.cfg-c .modin.add{height:28px;width:130px;border-radius:99px;border-style:dashed;font-size:12px}
+.cfg-c .modcolor{display:inline-flex;align-items:center;gap:8px}
+.cfg-c .modcolor small{display:none}
+.cfg-c .rgauge{width:100%}
+.cfg-c .rgfix{width:100%}
+
+/* right: the detail */
+.cfg-det{grid-row:1;overflow:auto;padding:24px 26px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:16px;background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 2%,transparent),transparent)}
+.cfg-hero{display:flex;align-items:center;gap:14px}
+.cfg-hero h2{margin:0;font-family:var(--display);font-size:19px;font-weight:600;line-height:1.2}
+.cfg-tag{display:inline-block;margin-top:5px;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-2);font-size:11px;font-weight:700}
+.cfg-what{margin:0;color:var(--ink);opacity:.88;font-size:13.5px;line-height:1.55}
+.cfg-box{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--well)}
+.cfg-box h4{margin:0 0 6px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.cfg-box p{margin:0;font-size:13px;line-height:1.5;color:var(--ink);opacity:.88}
+.cfg-kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:13px}
+.cfg-kv dt{color:var(--faint)}.cfg-kv dd{margin:0;font-weight:600;color:var(--ink)}
+.cfg-reset{align-self:flex-start;height:32px;padding:0 14px;border-radius:8px;border:1px solid var(--line-strong);background:none;color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.cfg-reset:hover{border-color:var(--accent);color:var(--accent-2)}
+.cfg-dfoot{margin-top:auto;color:var(--faint);font-size:11px;font-family:var(--mono);word-break:break-all}
+
+/* bottom: the changes */
+.cfg-foot{grid-column:1/-1;grid-row:2;display:flex;align-items:center;gap:12px;height:58px;padding:0 24px;border-top:1px solid var(--line);background:color-mix(in srgb,#000 30%,var(--panel))}
+.cfg-ok{color:var(--faint);font-size:13px}
+.cfg-sp{flex:1}
+.cfg-wait{position:relative}
+.cfg-wait > summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;color:var(--ink);font-size:13px}
+.cfg-wait > summary::-webkit-details-marker{display:none}
+.cfg-wait > summary i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.cfg-wait ul{position:absolute;bottom:150%;left:0;width:560px;max-height:320px;overflow:auto;margin:0;padding:10px 14px;list-style:none;border:1px solid var(--accent);border-radius:12px;background:var(--panel);box-shadow:0 12px 30px rgba(0,0,0,.6);z-index:8}
+.cfg-wait li{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12.5px}
+.cfg-wait li b{flex:1}.cfg-wait .was{color:var(--faint);text-decoration:line-through}.cfg-wait .now{color:var(--accent-2)}
+.cfg-wait li button{border:0;background:none;color:var(--faint);cursor:pointer}
+.cfg-btn{height:36px;padding:0 18px;border-radius:9px;border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.cfg-btn.ghost{background:none;border:1px solid var(--line-strong);color:var(--ink)}
+
+/* narrower screens: the detail under the list, then the categories on top */
+@media (max-width:1500px){.cfgx{grid-template-columns:220px minmax(0,1fr) 300px}.cfg-list{padding:20px 24px}}
+@media (max-width:1200px){
+  .cfgx{grid-template-columns:200px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto auto}
+  .cfg-det{grid-column:1/-1;grid-row:2;border-left:0;border-top:1px solid var(--line)}
+  .cfg-foot{grid-row:3}
+}
+@media (max-width:800px){
+  .tabmain:has(.cfgx){overflow:auto}
+  .cfgx{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto}
+  .cfg-nav{grid-row:1;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line)}
+  .cfg-nav .cfg-search,.cfg-credit{flex-basis:100%}.cfg-nl{display:none}
+  .cfg-list{grid-row:2;padding:16px}.cfg-det{grid-row:3}.cfg-foot{grid-row:4;height:auto;flex-wrap:wrap;padding:10px 16px}
+  .cfg-r{grid-template-columns:32px minmax(0,1fr)}.cfg-r .cfg-c{grid-column:1/-1;justify-content:flex-start}
+  .cfg-wait ul{width:min(560px,90vw)}
+}
+@media (prefers-reduced-motion:reduce){.cfg-r{transition:none}}
+.cfgx .em{display:inline-block}
+.cfg-c .modsw .sw{position:relative;border-radius:99px;background:color-mix(in srgb,var(--ink) 16%,transparent)}
+.cfg-c .modsw .sw.on{background:#3fbf7a}
+.cfg-c .modsw .sw::after{background:#d5ddf2}
+.cfg-c .modsw .sw.on::after{background:#fff}
+.cfg-c .modsw .sw{box-shadow:none}
+.cfg-c .modsw .sw::after{top:3px;left:3px;width:18px;height:18px}
+.cfg-c .modsw .sw.on::after{left:21px}
+.cfgx .em,.cfgx .cfg-ni > .em,.cfgx .cfg-hic > .em{background:var(--role)}
+/* tables and long controls stay inside the list */
+.cfg-c .mrwrap,.cfg-c .mrtbl{width:100%;max-width:100%}
+.cfg-c .mrtbl .mrname{display:flex;gap:6px;align-items:center;min-width:0}
+.cfg-c .modchip .mcn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.cfg-c .mrtbl{table-layout:auto}
+.cfg-c .mrwrap{overflow-x:auto}
+.cfg-c .mrtbl td.k-num,.cfg-c .mrtbl td.k-slot,.cfg-c .mrtbl td.mract{width:auto}
+.cfg-c .mrtbl td .modin,.cfg-c .mrtbl td select.modin{width:auto;min-width:64px}
+.cfg-c .mrtbl td.k-text .modin,.cfg-c .mrtbl td.k-item .modin,.cfg-c .mrtbl td.k-gear .modin{min-width:150px}
+.cfg-c .mrtbl th{white-space:nowrap}
+.cfg-c .rgpart{min-width:0;overflow:hidden}
+.cfg-rt{min-width:170px}
+.cfg-r:not(.tall){grid-template-columns:36px minmax(170px,1fr) auto}
+.cfg-c .mcval .modin.num{max-width:6ch}
+.cfg-c .modchips{min-height:28px}
+.cfg-c .mcval .mcunit{white-space:nowrap;flex:none}
+.cfg-c .modchips .modaddbtn,.cfg-c .modaddbtn{height:auto;min-height:28px;white-space:nowrap}
+.cfg-c .rgpart b{min-width:0;text-overflow:clip;padding:0 2px;font-size:10.5px}
+
+.cfg-ri > img,.cfg-ri > .ico > img{border-radius:4px}
+
+/* ---- Modes & keys in the frame ---- */
+.cfg-c .sw-btn{padding:0;border:0;background:none;cursor:pointer}
+.cfg-c .kbtn{height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 4px 0 8px;border-radius:9px;border:1px solid var(--line-strong);background:var(--well);color:var(--ink);font:inherit;cursor:pointer}
+.cfg-c .kbtn .kgo{padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:700;color:var(--accent-2);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.cfg-c .kbtn:hover{border-color:var(--accent)}.cfg-c .kbtn:hover .kgo{background:var(--accent);color:var(--accent-ink)}
+.cfg-c .kbtn kbd,.cfg-c .kcaps kbd{font-size:11px;padding:1px 6px}
+.cfg-c > .kcaps{display:inline-flex;gap:3px;align-items:center;min-width:120px;justify-content:flex-end}
+.cfg-c select.modin{min-width:170px}
+.cfgx .cfg-ri{font-size:15px;color:var(--accent)}
+.cfgx .cfg-ri.bad{color:#fff;background:#d94848;border-color:#d94848;font-weight:800}
+.cfgx .cfg-sec.bad{color:#ff8a8a}
+.cfgx .cfg-sec.bad small{font-family:inherit;color:var(--muted)}
+.cfgx .kfilters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.cfgx .kfilters button{height:30px;padding:0 12px;border-radius:99px;border:1px solid var(--line-strong);background:none;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.cfgx .kfilters button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.cfgx .kfilters button.bad:not(.on){color:#ff8a8a;border-color:rgba(255,93,93,.6)}
+.cfgx .kfilters .kothers{margin-left:auto;border-style:dashed}
+.cfgx .kgood{margin:12px 0;padding:10px 14px;border-radius:10px;background:rgba(63,191,122,.1);border:1px solid rgba(63,191,122,.35);color:#7be0a6;font-weight:600}
+.cfgx .krow2.dim{opacity:.5}
+.cfgx .krow2 .ksub{font-style:normal;font-size:11.5px;color:var(--faint);margin-left:8px}
+.cfgx .kst{height:24px;display:inline-flex;align-items:center;padding:0 10px;border-radius:99px;font-size:11.5px;font-weight:700}
+.cfgx .kmote{margin-top:22px}
+
+/* ---- Macro book & lockstyle in the frame ---- */
+.cfgx .mhero{margin:0 0 16px;border:1px solid var(--line);border-radius:12px}
+.cfgx .mtiles{padding:0}
+.cfgx .mtile{background:var(--cfg-row)}
+.cfgx .variants{margin:0 0 12px}
+
+/* ---- one line per option: the control and the key side by side, never wrapped under each other ---- */
+.cfg-r:not(.tall) .cfg-c{flex-wrap:nowrap;max-width:none}
+.cfg-c .modseg{flex-wrap:nowrap;white-space:nowrap;width:auto}
+.cfg-c .modseg button{white-space:nowrap}
+.cfg-c .modchips{flex-wrap:wrap;justify-content:flex-end;max-width:520px}
+.cfg-r.tall .cfg-c .modchips{justify-content:flex-start;max-width:none}
+.cfg-c .kbtn{flex:none}
+/* a key column the same width on every line */
+.cfgx .cfg-c > .kbtn,.cfgx .cfg-c > .kcaps{min-width:150px;justify-content:space-between}
+.cfgx .cfg-c > .kcaps:empty::before{content:"—";color:var(--faint)}
+.cfgx .krow2 .cfg-c .kst{min-width:118px;justify-content:center}
+/* the icons of the keys list: the keyboard of the game-icons set */
+.cfgx .krow2 .cfg-ri{font-size:16px}
+
+/* the chips and the tables of lines: rounded chips, the fields' widths */
+.cfg-c .modchip,.cfg-c .modchip.item{border-radius:10px;padding:0 8px 0 3px;gap:8px}
+.cfg-c .modchip:not(.item){padding:0 8px 0 12px}
+.cfg-c .modaddbtn{border-radius:10px}
+.cfgx .rfitem{border-radius:10px;padding:0 10px 0 3px;gap:8px}
+.cfg-c .mrtbl{min-width:0;width:auto}
+.cfg-c .mrtbl td.k-item .modin,.cfg-c .mrtbl td.k-text .modin,.cfg-c .mrtbl td.k-gear .modin{width:300px}
+.cfg-c .mrtbl td.k-num .modin{width:76px;text-align:center}
+.cfg-c .mrtbl td{padding:3px 10px 3px 0}
+.cfg-c .mrtbl .mract button{width:26px;height:26px;border-radius:7px}
+
+/* the chips' heights; the icon of an option's line */
+.cfg-c .modchip,.cfg-c .modchip.item,.cfgx .rfitem{height:46px}
+.cfg-ri > .ico img{width:28px;height:28px;image-rendering:auto}
+.cfg-c .modchip:not(.item){height:32px}
+.cfg-c .modaddbtn{height:32px;align-self:center}
+
+/* item icons without a frame: the item itself on the chip, no border, no box behind it */
+.cfgx .modchip.item .ico,.cfgx .rfitem .ico,.cfgx .mrname .ico,.cfg-ri > .ico{border:0;background:none;box-shadow:none;border-radius:0}
+.cfg-c .modchip.item{padding-left:6px}
+/* item icons at the game's own size, 32 px: the HD image (64 px) drawn smooth, the game's own .bmp as a fallback;
+   never cropped */
+.cfgx .modchip.item .ico,.cfgx .rfitem .ico,.cfgx .mrname .ico{flex:none;width:32px;height:32px;padding:0;display:grid;place-items:center;overflow:hidden}
+.cfgx .modchip.item .ico img,.cfgx .rfitem .ico img,.cfgx .mrname .ico img{width:32px;height:32px;max-width:none;border-radius:0;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+.cfg-c .modchip.item,.cfgx .rfitem{height:38px}
+
+/* a line is clickable: on hover it lights and a chevron shows its detail opens on the right; the line chosen is
+   tinted gold, outlined, its name gold, its chevron lit (the same on the three parts) */
+.cfg-r{padding-right:40px}
+.cfg-r::after{content:"›";position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:22px;line-height:1;color:var(--faint);opacity:0;transition:opacity .12s,color .12s,right .12s}
+.cfg-r:hover::after{opacity:.8}
+.cfg-r:hover{background:color-mix(in srgb,var(--accent) 6%,var(--cfg-rowh))}
+.cfg-r:hover .cfg-ri{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.cfg-r.sel{background:color-mix(in srgb,var(--accent) 13%,var(--cfg-rowh));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 55%,transparent)}
+.cfg-r.sel::before{width:4px}
+.cfg-r.sel::after{opacity:1;color:var(--accent);right:10px}
+.cfg-r.sel .cfg-rt b{color:var(--accent-2)}
+.cfg-r.sel .cfg-ri{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--well))}
+.cfg-r.special{padding-right:16px}.cfg-r.special::after{display:none}
+/* the detail answers the line chosen: its frame takes the same gold edge */
+.cfg-det{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}
+
+/* the HUD's live preview (hud_preview.js): the text GearSwap's code draws, on a dark game-like backdrop */
+.hudscreen{position:relative;display:inline-block;max-width:100%;overflow:auto;padding:34px 30px 26px;border-radius:14px;border:1px solid var(--line-strong);
+  background:radial-gradient(520px 320px at 30% 20%,#2c3d5c,#0f1522 72%),#0f1522;box-shadow:inset 0 0 40px rgba(0,0,0,.5)}
+.hudscreen > small{position:absolute;top:9px;left:14px;right:14px;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hudtext{margin:0;padding:0;line-height:1.22;white-space:pre;color:#fff}
+.huderr{color:#ff8a8a;margin:0}.hudwait{color:var(--faint);margin:0}
+/* the preview beside the HUD's own settings; its colours as swatches */
+.hudstage{margin:4px 0 18px;display:grid;gap:20px;align-items:start}
+.hudstage .hudscreen{position:sticky;top:0}
+.hudside .cfg-sec:first-child{margin-top:0}
+.hcol{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;padding:12px 14px}
+.hcolt{padding:2px 14px 0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.hcsw{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:9px;border:1px solid var(--line);background:var(--well);cursor:pointer;min-width:0}
+.hcsw:hover{border-color:var(--accent)}
+.hcsw input[type=color]{width:28px;height:28px;padding:0;border:1px solid var(--line-strong);border-radius:7px;background:none;cursor:pointer;flex:none}
+.hcsw input[type=color]::-webkit-color-swatch-wrapper{padding:2px}.hcsw input[type=color]::-webkit-color-swatch{border:0;border-radius:5px}
+.hcsw span{flex:1;min-width:0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcsw em{font-style:normal;font-size:10.5px;color:var(--faint)}
+.hcsw button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px}
+@media (max-width:1500px){.hudstage{grid-template-columns:minmax(0,1fr)}.hudstage .hudscreen{position:static}}
+/* the preview's lines: a section title and a row can be dragged, a part clicked */
+.hudtext .hl{white-space:pre;min-height:1.22em}
+.hudtext [data-hudpart]{cursor:pointer;border-radius:2px}
+.hudtext [data-hudpart]:hover{outline:1px solid rgba(242,204,107,.85);background:rgba(242,204,107,.12)}
+.hudtext .hsec,.hudtext .hrow{cursor:grab}
+.hudtext .hsec:hover,.hudtext .hrow:hover{background:rgba(255,255,255,.05)}
+.hudtext .dragging{opacity:.35}
+.hudtext .over{box-shadow:inset 0 2px 0 #F2CC6B}
+.hudhint{margin:10px 0 0;font-size:11.5px;color:var(--muted);white-space:normal;max-width:520px}
+/* the colour window opened by a click on a part of the preview (hud_preview.js hudPop) */
+.hudpop{position:fixed;z-index:50;width:236px;padding:10px 12px 12px;border-radius:12px;border:1px solid var(--accent);background:var(--panel);box-shadow:0 14px 34px rgba(0,0,0,.65)}
+.hudpop header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hudpop header b{font-size:13px}
+.hudpop header button{border:0;background:none;color:var(--muted);font-size:16px;cursor:pointer}
+.hudpop .hpcur{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:9px;border:1px solid var(--line-strong);background:var(--well);cursor:pointer}
+.hudpop .hpcur input{width:34px;height:28px;padding:0;border:0;background:none;cursor:pointer}
+.hudpop .hpcur span{font-size:12.5px;color:var(--ink)}
+.hudpop .hppre{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
+.hudpop .hppre button{height:24px;border-radius:6px;border:1px solid rgba(255,255,255,.25);cursor:pointer}
+.hudpop .hppre button:hover{outline:2px solid var(--accent)}
+.hudpop .hpreset{margin-top:10px;width:100%;height:28px;border-radius:8px;border:1px solid var(--line-strong);background:none;color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+/* what the last save said, in the bar where the player looks */
+.cfg-msg{max-width:52%;padding:6px 12px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);color:var(--ink);font-size:12.5px;line-height:1.35}
+
+/* ready-made background colours: a regular grid of swatches (the name in the tooltip), the one in use outlined */
+.cfg-c .modpresets{display:grid;grid-template-columns:repeat(auto-fill,34px);gap:6px;width:100%;margin-top:6px}
+.cfg-c .modpresets > small{grid-column:1/-1;font-size:11.5px;color:var(--faint)}
+.cfg-c .modpreset{display:block;width:34px;height:26px;padding:0;gap:0;border:1px solid var(--line-strong);border-radius:7px;background:none;overflow:hidden;cursor:pointer;position:relative}
+.cfg-c .modpreset i{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;border-radius:6px;opacity:1 !important}
+.cfg-c .modpreset span{display:none}
+.cfg-c .modpreset:hover{outline:2px solid var(--accent);outline-offset:1px}
+.cfg-c .modpreset[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:2px}
+.cfg-c .modcolor input[type=color]{width:46px;height:30px;padding:0;border:1px solid var(--line-strong);border-radius:8px;background:none;cursor:pointer}
+.cfg-c .modcolor code{font-size:12px;color:var(--muted)}
+/* the column beside the preview: names cut with … rather than under the controls */
+.hudside .cfg-r:not(.tall){grid-template-columns:36px minmax(0,1fr) auto}
+.hudside .cfg-rt{min-width:0}
+.hudside .cfg-rt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hudstage{grid-template-columns:auto minmax(400px,1fr)}
+
+/* every colour box filled by its colour, edge to edge (the browser's own colour input keeps an inner margin) */
+.cfgx input[type=color],.hudpop input[type=color]{-webkit-appearance:none;appearance:none;padding:0;border:1px solid var(--line-strong);border-radius:7px;background:none;overflow:hidden;cursor:pointer}
+.cfgx input[type=color]::-webkit-color-swatch-wrapper,.hudpop input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.cfgx input[type=color]::-webkit-color-swatch,.hudpop input[type=color]::-webkit-color-swatch{border:0;border-radius:6px}
+.cfgx input[type=color]::-moz-color-swatch,.hudpop input[type=color]::-moz-color-swatch{border:0;border-radius:6px}

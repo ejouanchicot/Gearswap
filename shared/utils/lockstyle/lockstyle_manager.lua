@@ -200,6 +200,9 @@ local function resolve_style(ctx)
     local style  = ctx.LockstyleConfig.default or ctx.default_lockstyle
     if ctx.LockstyleConfig.get_style then
         style = ctx.LockstyleConfig.get_style(subjob) or style
+    elseif type(ctx.LockstyleConfig.by_subjob) == 'table' then
+        -- half the job templates have no get_style helper: their by_subjob table was never read
+        style = ctx.LockstyleConfig.by_subjob[subjob] or style
     end
     return style, subjob
 end

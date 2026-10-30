@@ -115,6 +115,28 @@ or subjob change, except Auto Medicine. Change the default in
 `<JOB>_STATES.lua` (Auto Medicine: `auto_medicine_start` in
 `_common/combat/AUTO_MEDICINE_CONFIG.lua`, read when the game starts).
 
+## Atelier page
+
+**The page asks for my Windower folder again / "Reload from files" fails.** Your
+browser keeps the folder you showed it the first time, and that memory can stop
+working (a browser update, a copy or restore of the folder), even with the same
+path. Nothing is broken:
+
+1. Click **⟳ Reload from files** again (or Save again).
+2. When the page asks "Where is Windower?", pick your Windower folder (the one
+   that holds `addons` and `res`). It is kept for the next times.
+
+If the message says a file is **read-only or open in another program**, close
+that program (or remove the file's read-only box in Windows), then try again. If
+it says the browser **may not write**, try again and accept when the browser asks
+to let the page edit files. The text in brackets after the message (`NotFoundError`
+and the file) is for whoever helps you.
+
+**The item icons look blurry or pixelated.** The page makes a sharper copy of
+each icon by itself, the first time it shows it, from a file the game writes
+beside the icon; an icon written by an older version stays as it is until the
+game writes it again (`//gs c atelier` on the job).
+
 ## Quick table
 
 | Problem | Command |

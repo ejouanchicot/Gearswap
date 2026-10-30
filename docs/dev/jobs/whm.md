@@ -64,7 +64,7 @@ the sets file (structure and set names only).
 | `_master/config/whm/WHM_CONFIG.lua` | 16 | `refresh_mp_below = 51` (read through `JobConfig`) |
 | `_master/config/whm/WHM_CURE_CONFIG.lua` | 104 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages`, `auto_tier_enabled` (what `CureAutoTier` starts on, read by the entry's `user_setup`), `mp_conservation_below` (40, `CureManager.lay_mp_conservation`) (+ unread `message_color`) |
 | `_master/config/whm/WHM_HUD.lua` | 31 | HUD section / row order (empty = default) |
-| `_master/config/whm/WHM_LOCKSTYLE.lua` | 52 | `default = 3`, `by_subjob` (never read by `LockstyleManager`; `//gs c lockscan` and `//gs c jobtest` read it) |
+| `_master/config/whm/WHM_LOCKSTYLE.lua` | 52 | `default = 3`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30; `//gs c lockscan` and `//gs c jobtest` read it too) |
 | `_master/config/whm/WHM_MACROBOOK.lua` | 85 | `default` book 11 page 1, `solo[sub]` pages 1-5, empty `dualbox` |
 | `_master/config/whm/WHM_TP_CONFIG.lua` | 73 | `pieces` (Moonshade 250), `get_weapon_bonus`, sets `_G.WHMTPConfig` |
 | `_master/config/whm/WHM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
@@ -364,7 +364,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 | `<char>/whm/combat/WHM_CURE_CONFIG.lua` `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages` | Cure 0-200 .. VI 1600+; Curaga 0-300 .. V 1400+; 50; false | file; the failure fallback in `cure_manager.lua` holds the same tiers and margin | `CureManager` |
 | same, `auto_tier_enabled` | true | file | entry `user_setup`: `false` starts `state.CureAutoTier` on Off |
 | same, `message_color` | 8 | file | nothing |
-| `<char>/whm/display/WHM_LOCKSTYLE.lua` `default`, `by_subjob` | 3 | file; factory argument 1 | `LockstyleManager`: `default` only (no `get_style`) |
+| `<char>/whm/display/WHM_LOCKSTYLE.lua` `default`, `by_subjob` | 3 | file; factory argument 1 | `LockstyleManager`: `by_subjob[sub]`, else `default` (no `get_style`; `by_subjob` read by the factory itself since 2026-10-30) |
 | `<char>/whm/display/WHM_MACROBOOK.lua` | book 11: page 1 RDM, 2 SCH, 3 BLM, 4 BLU, 5 GEO | file; factory fallback 1/1 | `MacrobookManager` |
 | `<char>/whm/combat/WHM_TP_CONFIG.lua` -> `_G.WHMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` |
 | `<char>/saved/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
@@ -515,8 +515,5 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   WHMCureConfig.debug_messages` branch at the end of `select_cure_tier` is
   unreachable (the branch before it already covers a loaded formatter).
 - `message_color` in `WHM_CURE_CONFIG.lua` is not read.
-- `by_subjob` in `WHM_LOCKSTYLE.lua` is never read by `LockstyleManager` (the
-  style applied is always `default`); `lockstyle_pieces.lua` (`//gs c lockscan`)
-  and `job_test.lua` read it.
 - Standards: the Cure sets are chosen by a manual `or` fallback in `job_midcast`
   instead of `MidcastManager`.

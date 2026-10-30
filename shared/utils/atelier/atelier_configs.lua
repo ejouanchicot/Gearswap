@@ -11,8 +11,10 @@
 --- the change goes into the page's history, where it can be undone
 --- (shared/utils/atelier/set_push.lua write_file).
 ---
---- Left out: the equipment (sets/), and the job's keys, states, macro book and
---- lockstyle, which the page already shows in parts of their own.
+--- Left out: the equipment (sets/), and the job's keys and states, which the
+--- page shows in a part of their own. The macro book and lockstyle files come
+--- with part = 'macro': the page edits them in its Macro book part, not with
+--- the other settings.
 ---
 --- @file    shared/utils/atelier/atelier_configs.lua
 --- @author  ejouanchicot
@@ -22,8 +24,10 @@
 
 local AtelierConfigs = {}
 
--- shown by the page's Keys, Modes and Macro book parts
-local SHOWN_ELSEWHERE = {'_KEYBINDS%.lua$', '_STATES%.lua$', '_LOCKSTYLE%.lua$', '_MACROBOOK%.lua$'}
+-- shown by the page's Keys and Modes parts
+local SHOWN_ELSEWHERE = {'_KEYBINDS%.lua$', '_STATES%.lua$'}
+-- edited in the page's Macro book part (atelier/app/js/macro_edit.js)
+local MACRO_PART = {'_LOCKSTYLE%.lua$', '_MACROBOOK%.lua$'}
 -- a theme folder inside a theme folder (_common/dualbox/alt/)
 local MAX_DEPTH = 2
 
@@ -33,6 +37,13 @@ local function read(path)
     local text = file:read('*a')
     file:close()
     return text
+end
+
+local function in_macro_part(name)
+    for _, pattern in ipairs(MACRO_PART) do
+        if name:match(pattern) then return true end
+    end
+    return false
 end
 
 local function wanted(name)
@@ -58,7 +69,7 @@ local function add_folder(out, base, rel, scope, depth)
             local text = read(base .. path)
             if text then
                 out[#out + 1] = {file = path, scope = scope, group = depth > 0 and rel:match('^[^/]+/([^/]+)') or '', text = text,
-                    hash = require('shared/utils/atelier/set_writer').hash(text)}
+                    hash = require('shared/utils/atelier/set_writer').hash(text), part = in_macro_part(name) and 'macro' or nil}
             end
         elseif not name:find('%.') and name ~= 'sets' and depth < MAX_DEPTH then
             add_folder(out, base, path, scope, depth + 1)
@@ -70,7 +81,7 @@ end
 --- @param char string Character name (its folder under data/)
 --- @param job string Job (three letters)
 --- @return table List of {file = path under the character folder, scope = 'common'|'job', group = theme folder,
----   text = content, hash = what write() asks back}
+---   text = content, hash = what write() asks back, part = 'macro' for the macro book and lockstyle files}
 function AtelierConfigs.collect(char, job)
     local out = {}
     if not (char and job) then return out end

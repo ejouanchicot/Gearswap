@@ -412,9 +412,9 @@ Related commands outside `ui`: `//gs c combatmode ...` and `//gs c th ...` (opti
 
 Keys: `pos_x, pos_y, enabled, show_header, show_legend, show_column_headers, show_footer, bg_r, bg_g, bg_b, bg_a, bg_visible, font_size, font_name, section_spells, section_enhancing, section_job_abilities, section_weapons, section_modes`, plus the `seed` table (the same 19 keys as `UI_CONFIG.lua` last gave them; not in the template, written at the first load that has read `UI_CONFIG.lua`). The `section_*` keys are written but never read by the renderer. `font_size` has no command. A first clone copies the template (position 1600, 300); a re-clone keeps the character's own file.
 
-### `data/<char>/<job>/display/<JOB>_HUD.lua` (written by `ui order` / `roworder`)
+### `data/<char>/<job>/display/<JOB>_HUD.lua` (written by `ui order` / `roworder`, or by the Atelier page)
 
-`return {section_order = {...}, row_order = {...}}` with an explanatory header and the job's state names as a comment. An empty or missing list means the `UI_CONFIG.lua` default. Kept on re-clone.
+`return {section_order = {...}, row_order = {...}}` with an explanatory header and the job's state names as a comment. An empty or missing list means the `UI_CONFIG.lua` default. Kept on re-clone. The Atelier's Settings > Display writes it too (a section title or a row dragged in its preview, or its order card; "Default order" writes empty lists).
 
 ### `data/<char>/saved/combat_mode.lua`, `treasure_mode.lua`
 
@@ -467,6 +467,8 @@ Binds whose `desc` contains `←` are dropped.
 - `visible` functions are evaluated at render time, but a render is only triggered by a state change: a `visible` that depends on something other than a state will not update the HUD by itself.
 
 ## For maintainers / AI
+
+**The Atelier's HUD preview runs this code.** `scripts/atelier/hud_harness.lua` renders the HUD outside the game the way `ui_display.lua` does (`UI_DISPLAY_BUILDER` + `UI_SECTIONS`, the player's `UI_CONFIG.lua`, `ui_settings.lua`, `UI_COLOR_CONFIG.lua`, `<JOB>_HUD.lua`) from an export's rows and mode values (`HUD_IN`), and sets `HUD_OUT = {text, meta}`. `scripts/atelier/gen_hud_sources.py` (run by `cd atelier && npm run build`, needs `lua5.1`) embeds every module that render loads in `atelier/app/js/hud_sources.js`; the page runs them in Lua 5.1 WebAssembly (`atelier/app/js/hud_preview.js`). A HUD module that starts reading a new engine global must get it stubbed in the harness, and a change to the HUD code needs a rebuild of the page.
 
 **Add a HUD row for a new state**
 1. Create the state in the job's STATES module (or `<JOB>_CUSTOM.lua` for player states).

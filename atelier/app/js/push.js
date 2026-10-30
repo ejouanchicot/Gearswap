@@ -231,7 +231,7 @@ async function pushUndo(id){
   UNDO_BUSY = false;
   if (r.error) return showDialog('histdlg', t('histTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
   S._histToast = t('histUndoDone');
-  try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {}
+  try { await liveOrder(S.char, '/reload', {method: 'POST'}); } catch (e) {}
   // GearSwap reloads: the door comes back on the next load, the list is read again then
   setTimeout(openHistory, 2500);
 }

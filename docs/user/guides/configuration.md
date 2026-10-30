@@ -235,11 +235,11 @@ end
 return WARLockstyleConfig
 ```
 
-`default` is always used. `by_subjob` counts only when the file also has the
-`get_style` function: BST, COR, DNC, DRK, GEO, PLD, RUN, WAR and SMN have it; on
-the other jobs `by_subjob` is ignored until you add one (copy it from
-`WAR_LOCKSTYLE.lua`). The lockstyle is sent 8 s after each load, and again with
-`//gs c ls`.
+`by_subjob` gives a subjob its own lockstyle; a subjob without a line takes
+`default`. A file with a `get_style` function (BST, COR, DNC, DRK, GEO, PLD, RUN,
+WAR and SMN) goes through it; the files without one are read the same way. The
+lockstyle is sent 8 s after each load, and again with `//gs c ls`. The Atelier
+page changes these numbers too (Configuration, **Macros & lockstyle**).
 
 ## Macro book (`<JOB>_MACROBOOK.lua`)
 
@@ -260,6 +260,10 @@ With dual-box on and the partner online (it reported its job in the last
 30 s), `dualbox[partner job][your
 subjob]` is used; otherwise `solo[your subjob]`, then `solo.default`, then
 `default`.
+
+The Atelier page changes `default` and `solo` (Configuration, **Macros &
+lockstyle**: a tile a subjob with − / +, book 1-40, page 1-10); the dual-box
+books stay in the file.
 
 ## Refill (`<JOB>_REFILL.lua`)
 
@@ -305,12 +309,17 @@ return M
 An `extra` item that is already in the common list (same name, or same first
 name for variants) replaces it, so the `target` you write in `extra` wins.
 
+The Atelier page shows this file as a **<JOB> refill** card (Configuration >
+Settings > Inventory, marked "<JOB> only"): pick **Common list + my items**
+(`extra`) or **My own list** (`default`), add items, and add or remove a list for
+a subjob (`subjobs`). The card says at its top what `rf` keeps on that job.
+
 Which list `rf` uses, first match (the start of the `rf` report shows it as
 `Config`):
 
 1. The craft list, while a craft set is on (below).
 2. The job's `subjobs` list for your subjob (`WAR/DNC`), then its `default`
-   (`WAR/default`).
+   (`WAR/default`). An empty list (`{}`) counts as no list: the next step is used.
 3. The common list: its `subjobs` list for your subjob (`common/DNC`), else
    `default_list` (`common`), plus the job's `extra` if it has one
    (`common + WAR extra`).
@@ -434,6 +443,6 @@ names are on its `sets.md` page ([jobs](../jobs/README.md)).
 |---|---|
 | An edit does nothing | `//gs c reload`; look for a Lua error in the chat or console; check you edited `<YourName>/_common/...`, not `_master/` |
 | A red line `... .lua is broken (line N: ...): loaded without it` | That file has a typo (a missing `}` or `,`, a stray character) at the line shown, or it was emptied. GearSwap loaded with that file's defaults; fix it and `//lua reload gearswap`. If it is a file the job needs (its sets, its `_STATES.lua`, `rings.lua`), GearSwap stops just after, and this line tells you which file to fix |
-| Lockstyle ignores the subjob | The job's `_LOCKSTYLE.lua` has no `get_style` (see above) |
+| Lockstyle ignores the subjob | The subjob has no line in `by_subjob` of the job's `_LOCKSTYLE.lua`, or its `get_style` does not read it (see above) |
 | Macro book does not change | Check the book and page exist in game, and the subjob spelling (`'SAM'`) |
 | `//gs c wo` interrupted, slots locked | `//gs c wo recover` |

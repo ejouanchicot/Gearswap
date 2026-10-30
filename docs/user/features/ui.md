@@ -53,6 +53,32 @@ A command puts the names typed first and keeps the other names of the list
 after them, in their order: `ui roworder AbyProc` moves AbyProc to the top
 without losing the rest.
 
+The Atelier page does the same with the mouse (Configuration > Settings >
+Display): drag a section title or a row in its HUD preview to change that
+job's order (written to its `<JOB>_HUD.lua`), or use the **<JOB> HUD: order**
+card ("<JOB> only") and its arrows; **Default order** empties the job's lists.
+
+## The HUD in the Atelier page
+
+Configuration > Settings > **Display** shows a **Live preview** of your HUD for
+the job and subjob shown. It is drawn by GearSwap's own HUD code, run inside
+the page, with your settings files as they would be after Save: a change you
+have not saved yet shows at once.
+
+- Click a part of the preview (title, section titles, keys, row names, values,
+  legend...): a small window opens next to it with the current colour, 12 ready
+  colours and a full colour picker. A changed part has "Back to the standard
+  colour".
+- Drag a section title or a row: the order changes for that job only (see
+  above).
+- The **HUD: colours** card lists the same colours: the parts of the HUD
+  (`colors` in `UI_CONFIG.lua`; "auto" means the colour follows the value) and
+  the colours of the values On / Off and PDT / MDT / Normal
+  (`UI_COLOR_CONFIG.lua`).
+
+As for every setting, nothing is written before **Save**; then `//gs reload`
+in game if the game was closed.
+
 ## Key conflicts
 
 When two actions can sit on one key at the same time (a job key and a
@@ -105,8 +131,9 @@ Defaults in the template `UI_CONFIG.lua`:
 | `sections` | `spells`, `enhancing`, `job_abilities`, `weapons`, `modes`: all `true` |
 | `init_delay` | `5.0` (seconds the HUD waits for the job's modes) |
 
-`auto_save_position`, `auto_save_delay`, `debug`, `update_throttle` and
-`colors` are in the file but not used. A new character starts at position
+`auto_save_position`, `auto_save_delay`, `debug` and `update_throttle` are in
+the file but not used. `colors` sets the colour of each part of the HUD (title,
+section titles, keys, row names...; a part not set keeps its standard colour). A new character starts at position
 1600, 300 (from `ui_settings.lua`).
 
 ## Troubleshooting

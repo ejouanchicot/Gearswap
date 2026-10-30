@@ -14,8 +14,8 @@ local BRDLockstyleConfig = {}
 -- Lockstyle applied on BRD, whatever the subjob
 BRDLockstyleConfig.default = 7
 
--- Not read: LockstyleManager only uses .default and .get_style(subjob).
--- This table would need a get_style() function (see BST_LOCKSTYLE.lua) to apply.
+-- Lockstyle per subjob (shared/utils/lockstyle/lockstyle_manager.lua resolve_style): a subjob
+-- listed here wears its set, any other subjob the default
 BRDLockstyleConfig.by_subjob = {
     ['WHM'] = 7,  -- Bard/White Mage
     ['RDM'] = 7,  -- Bard/Red Mage

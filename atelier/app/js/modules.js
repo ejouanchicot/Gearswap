@@ -3,75 +3,49 @@
 // shared/utils/atelier/atelier_configs.lua). A file is read the way a player reads it: each setting with the comment
 // written over it, so the page explains what the file explains, in the file's own words.
 // A setting changed here waits (S._modEdits) until "Save": the page then puts the new value in the file's text, at the
-// place the old one was, and the game writes the file (a copy first, the change in the history: /config_write).
+// place the old one was, and the game writes the file (a copy first, the change in the history: /config_write). With
+// the game not connected (or an example uncommented that the game's door refuses: a statement), the page writes the
+// file itself in the data folder, a copy kept in <Char>/atelier/backups/ (live.js writeCharFile; since 2026-10-29).
+// A setting the file only gives as an example in a comment is offered as "not set" with "Add" (modExamples): the
+// example is uncommented in the text kept aside (S._modAdds), then set like the others.
 // (loaded after layout2.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {sectionsModules: 'Réglages', ttTab_modules: 'Les réglages de chaque module de GearSwap (Auto Medicine, Refill, Dual-box, HUD…) : ceux du perso et ceux de ce job.',
-  modHint: 'Vue avancée : chaque fichier de réglages en entier. Pour les options courantes, reviens sur « Options ».',
   modSave: 'Enregistrer',
   modSaved: 'Écrit dans {f}. Une copie est gardée : l’historique (en haut) peut annuler. GearSwap se recharge.',
+  modSavedLocal: 'Écrit dans {f} (une copie de l’ancien est dans atelier/backups). En jeu : //gs reload ou change de job.',
+  modSavedDownload: '{f} téléchargé : mets-le à la place de l’ancien dans {p}, puis //gs reload en jeu.',
+  modInFileLine: 'Écrit en code : à changer dans le fichier {f}, ligne {l}',
   modNone: 'Cet export ne contient pas encore les fichiers de réglages : clique « Relire » en haut de la page, ou charge ce job en jeu.',
-  modInFile: 'Ce réglage est du code : il se change dans le fichier', modAuto: 'Auto (lu en jeu)', modForce: 'ou forcer…', modAdd: '+ ajouter', modDel: 'Retirer {v}',
-  modEmpty: 'Aucun réglage simple dans ce fichier : il se change à la main.', modBad: 'Valeur refusée : {v}', modOn: 'Allumé', modOff: 'Éteint',
-  modErr_changed: 'Le fichier a changé depuis la lecture : clique « Relire », puis recommence.', modErr_syntax: 'Le fichier ne se lirait plus avec cette valeur : rien n’a été écrit.', modErr_code: 'Le jeu n’accepte de changer que des valeurs (texte, nombre, oui/non, liste) : ce changement touchait au code du fichier, rien n’a été écrit.',
+  modAuto: 'Auto (lu en jeu)', modForce: 'ou forcer…', modAdd: '+ ajouter', modDel: 'Retirer {v}',
+  modBad: 'Valeur refusée : {v}', modOn: 'Allumé', modOff: 'Éteint',
+  modErr_nofile: '{f} n’est pas dans l’export affiché (autre job ou sub ?) : rien n’a été écrit, tes changements attendent.', modErr_changed: 'Le fichier a changé depuis la lecture : clique « Relire », puis recommence.', modErr_syntax: 'Le fichier ne se lirait plus avec cette valeur : rien n’a été écrit.', modErr_code: 'Le jeu n’accepte de changer que des valeurs (texte, nombre, oui/non, liste) : ce changement touchait au code du fichier, rien n’a été écrit.',
   modErr_file: 'Ce fichier ne peut pas être écrit depuis la page.', modErr_live: 'Le jeu n’a pas répondu : rien n’a été écrit.', modErr_other: 'Rien n’a été écrit ({e}).',
-  ttGrpOpen: 'Déplier ce groupe.', ttGrpFold: 'Replier ce groupe.',
-  histKind_config: 'réglage', modSettings: '{n} réglage(s)',
-  mcSimple: 'Options', mcSimpleTip: 'Les options qu’on a envie de régler, rangées par module et expliquées.', mcFiles: 'Avancé', mcFilesTip: 'Pour aller plus loin : chaque fichier de réglages en entier, avec tout ce qu’il contient.',
-  modManual: 'Le mode d’emploi écrit dans le fichier (en anglais)', modPartKnown: 'Les options courantes', modPartRest: 'Le reste du fichier', modPartAll: 'Les réglages du fichier',
-  modPartRestWhy: '', modNamed: 'Des entrées nommées : elles s’ajoutent dans le fichier', modPartAdv: 'Réglages écrits comme du code ({n}) : ils se changent dans le fichier, pas ici',
-  modPathTip: 'Où est ce fichier, dans le dossier data de GearSwap : pour l’ouvrir dans un éditeur.',
-  mcHint: 'Choisis un module à gauche. Chaque option dit ce qu’elle change et pour qui. Rien n’est écrit avant « Enregistrer ».',
-  mcScopeAll: 'Tout le perso · tous les jobs', mcScopeJob: 'Ce job seulement · {j}', mcScopeWhenJob: 'Seulement quand tu es {j}', mcScopeWhenSub: 'Seulement avec le sub /{s}', mcScopeOnly: 'Tout le perso · sert en {j}',
-  ttModRead: 'Lecture seule : le jeu n’est pas connecté. Lance GearSwap sur ce perso pour changer cette option ici.',
+  histKind_config: 'réglage',
+  ttModRead: 'Ce fichier ne se lit pas correctement (un caractère illisible) : il se change à la main.',
   ttModTurnOn: 'Clique pour l’allumer. Rien n’est écrit avant « Enregistrer ».', ttModTurnOff: 'Clique pour l’éteindre. Rien n’est écrit avant « Enregistrer ».',
   ttModChoose: 'Choisir « {v} ». Rien n’est écrit avant « Enregistrer ».', ttModChosen: '« {v} » est le choix actuel.',
   ttModAuto: 'Laisser GearSwap lire cette valeur en jeu : rien à tenir à jour toi-même.', ttModForce: 'Pour imposer une valeur à la place de celle lue en jeu : tape-la, puis Entrée. Vide : retour à Auto.',
   ttModNum: 'Tape le nouveau nombre, puis Entrée.', ttModText: 'Tape la nouvelle valeur, puis Entrée. Les noms s’écrivent comme dans le jeu.',
-  ttModAdd: 'Tape un nom comme dans le jeu, puis Entrée : il s’ajoute à la fin de la liste.',
-  ttModSave: 'Écrit les changements dans tes fichiers de réglages. Une copie de chaque fichier est gardée, l’Historique (en haut) peut annuler, et GearSwap se recharge pour les prendre.',
-  ttModUndo: 'Oublie les changements en attente. Tes fichiers n’ont pas été touchés.',
-  ttScopeAll: 'Vaut pour tous les jobs de {c}. Tes autres persos ont chacun leur propre réglage.',
-  ttScopeJob: 'Ne change que {j} sur {c}. Tes autres jobs et tes autres persos ne bougent pas.',
-  ttScopeWhenJob: 'Cette liste ne sert que quand {c} est {j}. Chaque job a la sienne.',
-  ttScopeWhenSub: 'Cette liste ne sert qu’avec le sub /{s}, quel que soit le job principal de {c}.',
-  ttScopeOnly: 'Réglage de {c}, mais il n’a d’effet que quand tu joues {o}.',
-  mcIntro: 'Présentation', mcIntroSub: 'ce que GearSwap fait en {j}', mcIntroTitle: 'GearSwap en {j} : ce qu’il fait pour toi', mcIntroJob: 'Sur ce job ({j})',
-  mcIntroWhere: 'Pour t’en servir :', mcIntroOwn: 'les options de {j} ({n})', mcIntroAll: 'Sur tous tes jobs', mcIntroAllWhy: 'Ces modules marchent quel que soit le job, rangés par ce à quoi ils servent. Clique sur l’un d’eux pour voir ce qu’il fait et le régler.',
-  mcInGame: 'En jeu : ', ttIntro: 'Ce que ce GearSwap fait tout seul en {j}, et les modules communs à tous les jobs. À lire en premier.', ttIntroGo: 'Voir ce que fait « {f} » et ses options.'});
+  ttModAdd: 'Tape un nom comme dans le jeu, puis Entrée : il s’ajoute à la fin de la liste.'});
 Object.assign(T.en, {sectionsModules: 'Settings', ttTab_modules: 'The settings of each GearSwap module (Auto Medicine, Refill, Dual-box, HUD…): the character’s and this job’s.',
-  modHint: 'Advanced view: each settings file whole. For the usual options, go back to "Options".',
   modSave: 'Save',
   modSaved: 'Written in {f}. A copy is kept: the history (top bar) can undo it. GearSwap reloads.',
+  modSavedLocal: 'Written in {f} (a copy of the old one is in atelier/backups). In game: //gs reload or change job.',
+  modSavedDownload: '{f} downloaded: put it in place of the old one in {p}, then //gs reload in game.',
+  modInFileLine: 'Written as code: changed in the file {f}, line {l}',
   modNone: 'This export does not hold the settings files yet: click "Reread" at the top of the page, or load this job in game.',
-  modInFile: 'This setting is code: it is changed in the file', modAuto: 'Auto (read in game)', modForce: 'or force…', modAdd: '+ add', modDel: 'Remove {v}',
-  modEmpty: 'No simple setting in this file: it is changed by hand.', modBad: 'Value refused: {v}', modOn: 'On', modOff: 'Off',
-  modErr_changed: 'The file changed since it was read: click "Reread", then do it again.', modErr_syntax: 'The file would no longer read with this value: nothing was written.', modErr_code: 'The game only accepts values being changed (text, number, yes/no, list): this change touched the file’s code, nothing was written.',
+  modAuto: 'Auto (read in game)', modForce: 'or force…', modAdd: '+ add', modDel: 'Remove {v}',
+  modBad: 'Value refused: {v}', modOn: 'On', modOff: 'Off',
+  modErr_nofile: '{f} is not in the export shown (another job or subjob?): nothing was written, your changes wait.', modErr_changed: 'The file changed since it was read: click "Reread", then do it again.', modErr_syntax: 'The file would no longer read with this value: nothing was written.', modErr_code: 'The game only accepts values being changed (text, number, yes/no, list): this change touched the file’s code, nothing was written.',
   modErr_file: 'This file cannot be written from the page.', modErr_live: 'The game did not answer: nothing was written.', modErr_other: 'Nothing was written ({e}).',
-  ttGrpOpen: 'Unfold this group.', ttGrpFold: 'Fold this group.',
-  histKind_config: 'setting', modSettings: '{n} setting(s)',
-  mcSimple: 'Options', mcSimpleTip: 'The options one wants to set, by module, explained.', mcFiles: 'Advanced', mcFilesTip: 'To go further: each settings file whole, with everything it holds.',
-  modManual: 'The manual written in the file', modPartKnown: 'The usual options', modPartRest: 'The rest of the file', modPartAll: 'The file’s settings',
-  modPartRestWhy: '', modNamed: 'Named entries: added in the file', modPartAdv: 'Settings written as code ({n}): changed in the file, not here',
-  modPathTip: 'Where this file is, in GearSwap’s data folder: to open it in an editor.',
-  mcHint: 'Pick a module on the left. Each option says what it changes and for whom. Nothing is written before "Save".',
-  mcScopeAll: 'The whole character · every job', mcScopeJob: 'This job only · {j}', mcScopeWhenJob: 'Only when you are {j}', mcScopeWhenSub: 'Only with the /{s} subjob', mcScopeOnly: 'The whole character · used on {j}',
-  ttModRead: 'Read only: the game is not connected. Start GearSwap on this character to change this option here.',
+  histKind_config: 'setting',
+  ttModRead: 'This file does not read correctly (a broken character): it is changed by hand.',
   ttModTurnOn: 'Click to turn it on. Nothing is written before "Save".', ttModTurnOff: 'Click to turn it off. Nothing is written before "Save".',
   ttModChoose: 'Choose "{v}". Nothing is written before "Save".', ttModChosen: '"{v}" is the current choice.',
   ttModAuto: 'Let GearSwap read this value in game: nothing to keep up to date yourself.', ttModForce: 'To force a value in place of the one read in game: type it, then Enter. Empty: back to Auto.',
   ttModNum: 'Type the new number, then Enter.', ttModText: 'Type the new value, then Enter. Names are written as in the game.',
-  ttModAdd: 'Type a name as in the game, then Enter: it is added at the end of the list.',
-  ttModSave: 'Writes the changes into your settings files. A copy of each file is kept, the History (top bar) can undo, and GearSwap reloads to take them.',
-  ttModUndo: 'Forgets the waiting changes. Your files were not touched.',
-  ttScopeAll: 'Holds for every job of {c}. Each of your other characters has its own setting.',
-  ttScopeJob: 'Changes {j} only, on {c}. Your other jobs and characters do not move.',
-  ttScopeWhenJob: 'This list is used only when {c} is {j}. Each job has its own.',
-  ttScopeWhenSub: 'This list is used only with the /{s} subjob, whatever the main job of {c}.',
-  ttScopeOnly: 'A setting of {c}, but it only has an effect when you play {o}.',
-  mcIntro: 'Presentation', mcIntroSub: 'what GearSwap does on {j}', mcIntroTitle: 'GearSwap on {j}: what it does for you', mcIntroJob: 'On this job ({j})',
-  mcIntroWhere: 'To use it:', mcIntroOwn: 'the options of {j} ({n})', mcIntroAll: 'On all your jobs', mcIntroAllWhy: 'These modules work whatever the job, ranged by what they are for. Click one to see what it does and set it.',
-  mcInGame: 'In game: ', ttIntro: 'What this GearSwap does by itself on {j}, and the modules shared by every job. Read this first.', ttIntroGo: 'See what "{f}" does and its options.'});
+  ttModAdd: 'Type a name as in the game, then Enter: it is added at the end of the list.'});
 
 /* ---- reading a Lua settings file: its tokens, then its values with the comments around them ---- */
 // A token: {t: 'com'|'str'|'num'|'name'|'op', v, a, b (its place in the text), nl (line breaks before it)}
@@ -209,11 +183,72 @@ function luaHeader(src){
   return {name, tag: rest.join(' - '), about: body.join('\n')};
 }
 
+/* ---- the examples a file gives in comments: a setting it can hold, offered as "not set" ---- */
+// A commented assignment whose text, uncommented, is a plain value: inside the table the file returns (`-- key = v,`,
+// one line or a block whose braces close), or a statement on a table the file declares (`-- M.extra = {`...`-- }`).
+// The page uncomments it on "Add" (a statement: written by the page itself, the game's door refuses one).
+// Each: {id (its first character), key, stmt, a, b (the lines), code (uncommented)}. Read once per text (the same
+// file is asked again on each change and save): the cache is emptied past 50 texts
+const MOD_EXAMPLES = new Map();
+function modExamples(text){
+  if (MOD_EXAMPLES.has(text)) return MOD_EXAMPLES.get(text);
+  if (MOD_EXAMPLES.size > 50) MOD_EXAMPLES.clear();
+  const out = modExamplesOf(text);
+  MOD_EXAMPLES.set(text, out);
+  return out;
+}
+function modExamplesOf(text){
+  const out = [], lines = [], re = /[^\n]*(?:\n|$)/g; let m, at = 0;
+  while ((m = re.exec(text)) && m[0] !== '') { lines.push({a: at, s: m[0]}); at += m[0].length; }
+  const tk = luaTokens(text);
+  // the returned table's place, and the tables the file declares (local M = {})
+  let table = null; const roots = {};
+  for (let i = 0; i < tk.length; i++) {
+    if (luaIs(tk[i], 'name', 'return') && luaIs(tk[i + 1], 'op', '{')) { const tb = luaTable(tk, i + 1); if (tb) table = {a: tb.a, b: tb.b}; }
+    if (luaIs(tk[i], 'name', 'local') && luaIs(tk[i + 1], 'name') && luaIs(tk[i + 2], 'op', '=') && luaIs(tk[i + 3], 'op', '{')) roots[tk[i + 1].v] = tk[i].a;
+  }
+  const have = new Set(luaSettings(text).map(f => f.key));
+  const uncomment = s => s.replace(/^(\s*)--[ ]?/, '$1');
+  const braces = s => (s.replace(/(["'])(?:\\.|(?!\1).)*\1/g, '').match(/[{}]/g) || []).reduce((n, c) => n + (c === '{' ? 1 : -1), 0);
+  for (let i = 0; i < lines.length; i++) {
+    const c = lines[i].s.match(/^\s*--[ ]?(\s*)([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?)\s*=\s*(.*?)\s*$/);
+    if (!c || /^-/.test(c[3])) continue;
+    const key = c[2], dot = key.indexOf('.'), stmt = dot > 0;
+    let j = i, depth = braces(uncomment(lines[i].s)), ok = true;
+    while (depth > 0 && ok) { j++; if (j >= lines.length || !/^\s*--/.test(lines[j].s)) ok = false; else depth += braces(uncomment(lines[j].s)); }
+    if (!ok || depth < 0) continue;
+    const a = lines[i].a, b = lines[j].a + lines[j].s.length, code = lines.slice(i, j + 1).map(l => uncomment(l.s)).join('');
+    const name = stmt ? key.slice(dot + 1) : key;
+    if (have.has(name) || (stmt ? !(key.slice(0, dot) in roots) || a < roots[key.slice(0, dot)] : !table || a < table.a || b > table.b)) continue;
+    // its text, uncommented, must read as a value of the kind the page sets
+    const probe = luaSettings(stmt ? 'local ' + key.slice(0, dot) + ' = {}\n' + code : 'return {\n' + code + '\n}').find(f => f.key === name);
+    if (!probe || probe.kind === 'code') continue;
+    out.push({id: String(a), key: name, stmt, a, b, code});
+    i = j;
+  }
+  return out;
+}
+// The examples added and not saved yet: {file: {id: true}}
+const modAdds = () => ((S._modAdds = S._modAdds || {})[S.char] = S._modAdds[S.char] || {});
+// A file with its examples added uncommented (the same object while nothing changes): `orig` is the export's
+const MOD_DRAFT = new WeakMap();
+function modDrafted(f){
+  const ids = Object.keys(modAdds()[f.file] || {});
+  if (!ids.length) return f;
+  const key = ids.sort().join(',') + '|' + f.text.length + '|' + (f.hash || ''), had = MOD_DRAFT.get(f);
+  if (had && had.key === key) return had.copy;
+  let text = f.text;
+  modExamples(f.text).filter(e => ids.includes(e.id)).sort((x, y) => y.a - x.a).forEach(e => { text = text.slice(0, e.a) + e.code + text.slice(e.b); });
+  const copy = Object.assign({}, f, {text, orig: f});
+  MOD_DRAFT.set(f, {key, copy});
+  return copy;
+}
+
 /* ---- the part of the tab ---- */
 const MOD_CACHE = new Map();
 // A file parsed once per text: {head, fields, byPath}
 function modParsed(f){
-  const k = f.file + '|' + (f.hash || f.text.length);
+  const k = f.file + '|' + (f.hash || '') + '|' + f.text.length + (f.orig ? '|draft' : '');
   if (!MOD_CACHE.has(k)) {
     let fields = []; try { fields = luaSettings(f.text); } catch (e) { fields = []; }
     const byPath = {}, walk = (list, pre) => list.forEach(x => { x.path = pre + (x.key != null ? x.key : '[' + x.index + ']'); byPath[x.path] = x; if (x.kind === 'map') walk(x.fields, x.path + '.'); });
@@ -222,8 +257,13 @@ function modParsed(f){
   }
   return MOD_CACHE.get(k);
 }
-const modFiles = d => (d && d.configs) || [];
-const modShown = d => { const list = modFiles(d); return list.find(f => f.file === S.modFile) || list.find(f => f.scope === 'job') || list[0]; };
+// the files as the page shows them: with the examples added (modDrafted); the measuring tools only on demand; the macro
+// book and lockstyle files are the Macro book part's (macro_edit.js)
+const MOD_TOOL_FILE = /\/ENHTEST_[A-Z_]+\.lua$/;
+const modAllFiles = d => ((d && d.configs) || []).map(modDrafted);
+// (nothing sets S.modTools since the Settings' redesign of 2026-10-30: the ENHTEST files stay hidden, they hold no
+// value to set — a function returning the test plans, and sets written by a script)
+const modFiles = d => modAllFiles(d).filter(f => f.part !== 'macro' && (S.modTools || !MOD_TOOL_FILE.test(f.file)));
 const modEdits = file => (((S._modEdits = S._modEdits || {})[S.char] = S._modEdits[S.char] || {})[file] = S._modEdits[S.char][file] || {});
 const modEditable = x => x.kind === 'bool' || x.kind === 'num' || x.kind === 'str' || x.kind === 'list' || x.kind === 'rows';
 // A setting of a file of the export shown, by its path
@@ -233,7 +273,8 @@ function mcItem(file, path){
   for (const fam of MOD_CATALOG) for (const r of mcRows(data(), fam)) if (r.f.file === file && r.x.path === path) return r.it;
   return {};
 }
-const modCanWrite = f => liveOk() && !f.text.includes('�');
+// the game writes it when connected, else the page itself (live.js writeCharFile); never a file read with a broken character
+const modCanWrite = f => !f.text.includes('�');
 const luaQuote = (s, q) => q + String(s).replace(/\\/g, '\\\\').split(q).join('\\' + q).replace(/\n/g, '\\n') + q;
 // A value as Lua text, written the way the file wrote the old one (its quotes)
 function modSource(x, v){
@@ -300,10 +341,12 @@ function modKnown(d, f){
 }
 // A group's name (module_catalog.js MOD_GROUPS), and the files of the advanced view ranged in the same groups
 const modGroupName = g => (S.lang === 'en' ? g.en : g.fr).split('{JOB}').join(S.job || '');
+const MOD_FILE_JOB_THEMED = ['{JOB}_HUD.lua', '{JOB}_REFILL.lua'];
 function modFileGroup(f){
-  if (f.scope === 'job') return 'job';
-  const base = f.file.split('/').pop();
-  return MOD_FILE_GROUP[base] || MOD_FILE_GROUP[base.replace(/^[A-Z]{3}_/, '{JOB}_')] || 'tools';
+  const base = f.file.split('/').pop(), pat = base.replace(/^[A-Z]{3}_/, '{JOB}_');
+  // a job's own file goes to "This job", unless it has a subject of its own (its HUD order, its refill list)
+  if (f.scope === 'job') return (MOD_FILE_JOB_THEMED.includes(pat) && MOD_FILE_GROUP[pat]) || 'job';
+  return MOD_FILE_GROUP[base] || MOD_FILE_GROUP[pat] || 'tools';
 }
 /* ---- the simple view: the catalog's options (module_catalog.js), by family, in the player's words ---- */
 // (the Modules part is drawn by the Svelte application: atelier/src/screens/config/modules.ts reads what follows)
@@ -331,51 +374,121 @@ function mcRows(d, fam){
     for (const x of modParsed(f).fields) if (modEditable(x) && !seen.has(f.file + '|' + x.path)) rows.push({it: {}, f, x, id: '', title: modName(x), desc: modDoc(x.doc)});
   return rows;
 }
-// What a change reaches: said on every option, since a player must know it before touching it
-function mcScope(d, r){
-  const v = {c: S.char, j: S.job, s: d.sub, o: r.it.only};
-  if (r.f.scope === 'job') return {cls: 'job', text: t('mcScopeJob', v), tip: t('ttScopeJob', v)};
-  if (r.it.when === 'job') return {cls: 'job', text: t('mcScopeWhenJob', v), tip: t('ttScopeWhenJob', v)};
-  if (r.it.when === 'sub') return {cls: 'job', text: t('mcScopeWhenSub', v), tip: t('ttScopeWhenSub', v)};
-  if (r.it.only) return {cls: 'all', text: t('mcScopeOnly', {j: r.it.only}), tip: t('ttScopeOnly', v)};
-  return {cls: 'all', text: t('mcScopeAll'), tip: t('ttScopeAll', v)};
-}
 // The file's text with every waiting value put where the old one was (from the end, so the places stay right)
 function modNewText(f, edits){
   const p = modParsed(f); let text = f.text;
   Object.keys(edits).map(k => ({x: p.byPath[k], e: edits[k]})).filter(o => o.x).sort((a, b) => b.x.a - a.x.a).forEach(o => { text = text.slice(0, o.x.a) + o.e.src + text.slice(o.x.b); });
   return text;
 }
-async function modSave(){
-  const d = data(), all = (S._modEdits || {})[S.char] || {}, done = [];
-  for (const file of Object.keys(all)) {
-    const f = modFiles(d).find(x => x.file === file), edits = all[file], keys = Object.keys(edits);
-    if (!f || !keys.length) { delete all[file]; continue; }
-    const text = modNewText(f, edits);
-    if (text === f.text) { delete all[file]; continue; }   // a line added and left empty: nothing to write
-    const q = new URLSearchParams({job: S.job || '', file, hash: f.hash || '', key: keys.join(', '),
-      before: keys.map(k => edits[k].before).join(' | '), after: keys.map(k => edits[k].after).join(' | ')});
+// What a save says when it fails: the game's reason, or the page's own
+const modErr = e => t('modErr_' + e) === 'modErr_' + e ? t('modErr_other', {e}) : t('modErr_' + e);
+// One file written: by the game when it is connected and the change is only values (its door checks it), else by the
+// page itself. {ok, how: 'live' | 'folder' | 'download', hash} or {error}
+// each trial read of a new text its own cache entry (the cache knows a file by its name, hash and length: two texts of
+// one length would share one)
+let MOD_TRIAL = 0;
+async function modWriteOne(f, orig, text, edits, keys){
+  const stmt = Object.keys(modAdds()[f.file] || {}).some(id => (modExamples(orig.text).find(e => e.id === id) || {}).stmt);
+  if (liveOk() && !stmt) {
+    const q = new URLSearchParams({job: S.job || '', file: f.file, hash: orig.hash || '', key: keys.join(', '),
+      before: keys.map(k => (edits[k] || {}).before || '').join(' | '), after: keys.map(k => (edits[k] || {}).after || '+').join(' | ')});
     let r; try { r = await liveOrder(S.char, '/config_write?' + q, {method: 'POST', body: text, timeout: 5000}); } catch (e) { r = {error: 'live'}; }
-    if (!r || !r.ok) { const e = (r && r.error) || 'live'; S.toast = t('modErr_' + e) === 'modErr_' + e ? t('modErr_other', {e}) : t('modErr_' + e); render(); return; }
-    f.text = text; f.hash = r.entry.hash_after; delete all[file]; done.push(file.split('/').pop());
+    return r && r.ok ? {ok: true, how: 'live', hash: r.entry.hash_after} : {error: (r && r.error) || 'live'};
   }
-  if (done.length) { S.toast = t('modSaved', {f: done.join(', ')}); try { await liveFetch(S.char, '/reload', {method: 'POST'}); } catch (e) {} }
+  // the page writes it: the new text must still read with every setting it held (the game's own check is not there);
+  // a table written whole may lose lines (macro_edit.js: a subjob removed)
+  const whole = Object.keys(edits).filter(k => edits[k].table), gone = p => whole.some(k => p.startsWith(k + '.'));
+  const was = new Set(Object.keys(modParsed(f).byPath)), now = new Set(Object.keys(modParsed({file: f.file + '#new', text, hash: 'w' + (++MOD_TRIAL)}).byPath));
+  if ([...was].some(p => !now.has(p) && !gone(p))) return {error: 'syntax'};
+  let w; try { w = await writeCharFile(S.char, f.file, orig.text, text); } catch (e) { return {error: (e && e.message) || 'folder'}; }
+  if (w === null) return {error: 'cancel'};
+  if (w === 'changed') return {error: 'changed'};
+  return {ok: true, how: w ? 'folder' : 'download', hash: ''};
+}
+async function modSave(){
+  const d = data(), all = ((S._modEdits = S._modEdits || {})[S.char] = S._modEdits[S.char] || {}), adds = modAdds(), done = [];
+  let how = 'live';
+  for (const file of [...new Set([...Object.keys(all), ...Object.keys(adds)])]) {
+    const f = modAllFiles(d).find(x => x.file === file), edits = all[file] || {}, orig = f && (f.orig || f);
+    // reading a file's edits leaves an empty entry (modEdits): nothing waits there, whatever job it belongs to
+    if (!Object.keys(edits).length && !Object.values(adds[file] || {}).some(Boolean)) { delete all[file]; delete adds[file]; continue; }
+    // a file the export shown no longer holds: said, never dropped in silence (the changes stay, to save on its job)
+    if (!f) { S.toast = t('modErr_nofile', {f: file}); render(); return; }
+    const text = modNewText(f, edits);
+    if (text === orig.text) { delete all[file]; delete adds[file]; continue; }   // a line added and left empty: nothing to write
+    const keys = Object.keys(edits).concat(modExamples(orig.text).filter(e => (adds[file] || {})[e.id]).map(e => e.key));
+    const r = await modWriteOne(f, orig, text, edits, keys);
+    if (!r.ok) { if (r.error !== 'cancel') S.toast = modErr(r.error); render(); return; }
+    orig.text = text; orig.hash = r.hash || ''; delete all[file]; delete adds[file]; done.push(file.split('/').pop());
+    if (r.how !== 'live') how = r.how;
+  }
+  if (done.length) {
+    if (how === 'live') { S.toast = t('modSaved', {f: done.join(', ')}); try { await liveOrder(S.char, '/reload', {method: 'POST'}); } catch (e) {} }
+    else S.toast = t(how === 'folder' ? 'modSavedLocal' : 'modSavedDownload', {f: done.join(', '), p: S.char + '/'});
+  }
   render();
 }
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-modgrp],[data-modopen],[data-modbool],[data-modsave],[data-modundo],[data-modopt],[data-moddel],[data-modview],[data-modfam],[data-mcchoice]'); if (!b) return; const d = b.dataset;
-  if (d.modgrp) { S.modGrp = Object.assign({}, S.modGrp, {[d.modgrp]: d.open !== 'true'}); render(); return; }
-  if (d.modview) { S.modView = d.modview; S.toast = ''; render(); return; }
-  if (d.modfam) { S.modFam = d.modfam; S.toast = ''; render(); return; }
+  const b = e.target.closest('[data-modbool],[data-modsave],[data-modundo],[data-modopt],[data-moddel],[data-mcchoice]'); if (!b) return; const d = b.dataset;
   // a closed choice of the catalog: the value itself (a text, or false) is the catalog's, by its place
   if (d.mcchoice) { const [fam, i, c] = d.mcchoice.split(/[.:]/), it = (MOD_CATALOG.find(x => x.id === fam) || {items: []}).items[+i];
     if (it && it.choices && it.choices[+c]) modStage(d.modfile, d.modpath, it.choices[+c][0]); return; }
   if (d.modopt != null) { modStage(d.modfile, d.modpath, d.modopt); return; }
   if (d.moddel != null) { modStage(d.modfile, d.modpath, modValue(d.modfile, d.modpath).filter((v, i) => i !== +d.moddel)); return; }
-  if (d.modopen) { S.modFile = d.modopen; S.toast = ''; render(); return; }
   if ('modsave' in d) { modSave(); return; }
-  if ('modundo' in d) { if (S._modEdits) delete S._modEdits[S.char]; S.toast = ''; render(); return; }
+  if ('modundo' in d) { if (S._modEdits) delete S._modEdits[S.char]; if (S._modAdds) delete S._modAdds[S.char]; S.toast = ''; render(); return; }
   if ('modbool' in d) modStage(d.modfile, d.modpath, b.getAttribute('aria-checked') !== 'true');
+});
+// The settings in the frame of the three parts (atelier/src/screens/config/modules.ts): a category opened (S.modTheme,
+// kept), an option chosen (S._regSel: its detail on the right)
+Object.assign(T.fr, {regGaugeTip: '{s} : de {a} à {b} HP manquants', regGaugeFix: 'Taper les chiffres',
+  regHudShow: 'HUD : ce qui est affiché', regHudLook: 'HUD : apparence',
+  regSub_job: 'Ce que GearSwap fait de plus en {j}.', regSub_auto: 'Ce qui part tout seul pendant le combat.', regSub_gear: 'L’équipement que GearSwap choisit pour toi.',
+  regSub_cmd: 'Ce que font tes macros //gs c buff, cleanse, sneak, warp…', regSub_bags: 'Remplir l’inventaire, ranger les wardrobes.',
+  regSub_display: 'Le HUD, le chat, les couleurs.', regSub_multi: 'Jouer plusieurs persos ensemble.', regSub_tools: 'Les addons et les outils de suivi.'});
+Object.assign(T.en, {regGaugeTip: '{s}: from {a} to {b} HP missing', regGaugeFix: 'Type the numbers',
+  regHudShow: 'HUD: what is shown', regHudLook: 'HUD: how it looks',
+  regSub_job: 'What GearSwap does on top in {j}.', regSub_auto: 'What goes by itself in a fight.', regSub_gear: 'The gear GearSwap picks for you.',
+  regSub_cmd: 'What your //gs c buff, cleanse, sneak, warp… macros do.', regSub_bags: 'Filling the inventory, tidying the wardrobes.',
+  regSub_display: 'The HUD, the chat, the colours.', regSub_multi: 'Playing several characters together.', regSub_tools: 'The addons and the tracking tools.'});
+document.addEventListener('click', e => {
+  const th = e.target.closest('[data-modtheme]');
+  if (th) { S.modTheme = th.dataset.modtheme; S.modFile = ''; S.modFam = null; S._regSel = ''; S.modQ = ''; S.toast = ''; save(); render(); return; }
+  const row = e.target.closest('[data-regsel]');
+  // a click on the line chooses it (its detail on the right); a click in its control chooses it too, shown at the
+  // control's own redraw (no redraw here: a field being typed in keeps its focus)
+  if (row) { const was = S._regSel; S._regSel = row.dataset.regsel; if (was !== S._regSel && !e.target.closest('button, input, select, label, a, summary, .cfg-c')) render(); }
+});
+// the HP gauge of a table of tiers (modules.ts gaugeOf): a handle dragged moves the end of a tier and the start of the
+// next together, by steps of 10 HP, never past the tiers around it; let go, the new table waits with the other changes
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest('.rghandle'); if (!h) return;
+  const box = h.closest('[data-gauge]'), bar = box.querySelector('.rgbar'), [file, path] = box.dataset.gauge.split('|'), i = +h.dataset.gaugeat;
+  const rows = (modValue(file, path) || []).map(r => Object.assign({}, r)), parts = [...bar.children];
+  if (!rows[i + 1]) return;
+  e.preventDefault(); h.setPointerCapture(e.pointerId);
+  const total = parts.reduce((n, p) => n + parseFloat(p.style.flex), 0), width = bar.getBoundingClientRect().width;
+  const lo = rows[i].min + 10, hi = rows[i + 1].max >= 99999 ? rows[i + 1].min + 2000 : rows[i + 1].max - 10, start = rows[i].max, x0 = e.clientX;
+  let v = start;
+  // what is being chosen, shown while dragging: a bubble over the handle, the number under the bar follows
+  const ticks = box.querySelectorAll('.rgticks span'), bubble = document.createElement('div');
+  bubble.className = 'rgbubble'; box.appendChild(bubble);
+  const show = () => { const bx = box.getBoundingClientRect(), hx = h.getBoundingClientRect();
+    bubble.innerHTML = `<b>${rows[i].spell}</b> ${rows[i].min} → <em>${v}</em> HP · <b>${rows[i + 1].spell}</b> ${v} →`;
+    bubble.style.left = (hx.left + hx.width / 2 - bx.left) + 'px'; if (ticks[i + 1]) ticks[i + 1].textContent = v; };
+  const move = ev => {
+    v = Math.min(hi, Math.max(lo, Math.round((start + (ev.clientX - x0) / width * total) / 10) * 10));
+    parts[i].style.flex = String(v - rows[i].min);
+    if (rows[i + 1].max < 99999) parts[i + 1].style.flex = String(rows[i + 1].max - v);
+    if (ticks[i]) ticks[i].style.flex = parts[i].style.flex;
+    if (ticks[i + 1] && rows[i + 1].max < 99999) ticks[i + 1].style.flex = parts[i + 1].style.flex;
+    show();
+  };
+  show();
+  const up = () => { h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); bubble.remove();
+    if (v === start) return;
+    rows[i].max = v; rows[i + 1].min = v; modStage(file, path, rows); };
+  h.addEventListener('pointermove', move); h.addEventListener('pointerup', up);
 });
 // The value shown for a setting: the one waiting, else the file's
 function modValue(file, path){

@@ -421,7 +421,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 | `<char>/rdm/keys/RDM_KEYBINDS.lua` | 16 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
 | `<char>/rdm/keys/RDM_CUSTOM.lua` | examples only | file | custom states ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `<char>/rdm/display/RDM_HUD.lua` | empty lists | file | HUD layout |
-| `<char>/rdm/display/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` (and `get_style`, absent), never `by_subjob`; `lockstyle_pieces.lua` (`//gs c lockscan`, the pieces of a job's sets) and `job_test.lua` read both |
+| `<char>/rdm/display/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager`: `by_subjob[sub]`, else `default` (no `get_style`; `by_subjob` read by the factory itself since 2026-10-30); `lockstyle_pieces.lua` (`//gs c lockscan`, the pieces of a job's sets) and `job_test.lua` read both |
 | `<char>/rdm/display/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
 | `<char>/rdm/combat/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
 | `<char>/rdm/combat/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
@@ -576,9 +576,6 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - `message_rdm_midcast.lua` uses emoji and describes priority orders that differ
   from the real chain (its 49 `MessageRenderer.send(text, CHAT_*)` calls now
   match the signature `send(message, color)`).
-- `by_subjob` in `RDM_LOCKSTYLE.lua` is never read by `LockstyleManager` (no
-  `get_style`): the lockstyle applied is always `default`. Only
-  `lockstyle_pieces.lua` (`//gs c lockscan`) and `job_test.lua` read it.
 - Dead: `HybridMode` (in practice), the `check_off` path
   of `castenspell` (no `EnSpell` value is `Off`).
 - Stale text: `no_enspell_selected` says "Alt+8" (`rdm_messages.lua`; the key

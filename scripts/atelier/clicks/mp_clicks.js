@@ -14,8 +14,10 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   const info = () => page.evaluate(() => { const ov = document.querySelector('#overlay'); const d = ov.querySelector('.dialog'); if (!d || ov.hidden) return 'closed';
     return `${d.querySelector('h3').textContent} | q "${(document.querySelector('#miq') || {}).value}" focus ${document.activeElement.id} caret ${(document.querySelector('#miq') || {}).selectionStart} h4 ${[...d.querySelectorAll('h4')].map(h => h.textContent).join(' / ')} | tiles ${d.querySelectorAll('.mitile').length} off ${d.querySelectorAll('.mitile[disabled]').length} other ${d.querySelectorAll('.mitile.other').length} p ${[...d.querySelectorAll('.mibody > p')].map(p => p.textContent.slice(0, 30)).join(' / ')}`; });
   const staged = () => page.evaluate(() => JSON.stringify(S.modEdits || S._modEdits || null).slice(0, 200));
-  const go = async (fam, sel, i, q) => {
-    await page.evaluate(f => { closeOverlay(); S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'jobcfg'; S.jobTab = 'modules'; S.modFam = f; S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, write: true})}); render(); }, fam); await wait(300);
+  // a family of options (its first file since the one-view Settings, 2026-10-29), or a file by its name
+  const go = async (fam, sel, i, q, file) => {
+    await page.evaluate((f, file) => { closeOverlay(); S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'jobcfg'; S.jobTab = 'modules'; S.modFam = f;
+      S.modFile = file ? (modFiles(data()).find(x => x.file.endsWith('/' + file)) || {}).file || null : null; S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, write: true})}); render(); }, fam, file || null); await wait(300);
     await page.evaluate((s, i) => document.querySelectorAll(s)[i].click(), sel, i); await wait(300);
     out.push(`${fam} ${sel} open: ` + await info());
     if (q) { await page.type('#miq', q); await wait(300); out.push(`  typed: ` + await info()); }
@@ -26,8 +28,8 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   await go('refill', '[data-modpick]:not([data-wspick]):not([data-actpick])', 1);
   await go('buff', '[data-actpick]', 0, 'pro');
   await go('job', '[data-actpick]', 0);
-  await go('job', '[data-wspick]', 0, 'bla');
-  await go('job', '[data-wspick]', 3);
+  await go('job', '[data-wspick]', 0, 'bla', 'WAR_WS_CONFIG.lua');
+  await go('job', '[data-wspick]', 3, '', 'WAR_WS_CONFIG.lua');
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));
   await browser.close();
 })();
