@@ -135,6 +135,40 @@ local r2 = JobAdder.add('WHM', 'Kaories')
 check('re-add keeps the player file', read(data .. 'Kaories/whm/keys/WHM_KEYBINDS.lua'), '-- mine')
 check('  and says it', #r2.kept > 0, true)
 check('character_db not doubled', select(2, (read(data .. 'character_db.lua') or ''):gsub("'WHM'", '')), 1)
+check('a character with its settings gets no _common/ files', read(data .. 'Kaories/_common/combat/RECAST_CONFIG.lua'), nil)
+
+-- 3. a character with no folder at all: its settings come with its first job, and it goes into character_db
+os.execute('xcopy /e /i /q "' .. win('_master/config_global') .. '" "' .. win(data .. '_master/config_global') .. '" >nul')
+f = io.open(data .. 'character_db.lua', 'wb')
+f:write("local CharDB = {}\nlocal CHARACTERS = {\n    Kaories = {\n        jobs = { 'RDM' },\n        role = 'alt',\n    },\n}\nreturn CharDB\n"); f:close()
+local r3 = JobAdder.add('WHM', 'Newbie')
+check('new character: added', r3.ok, true)
+check('  recast settings in _common/combat/', read(data .. 'Newbie/_common/combat/RECAST_CONFIG.lua') ~= nil, true)
+check('  common keys in _common/keys/', read(data .. 'Newbie/_common/keys/COMMON_KEYBINDS.lua') ~= nil, true)
+check('  UI in _common/display/', read(data .. 'Newbie/_common/display/UI_CONFIG.lua') ~= nil, true)
+check('  a file the game writes in saved/', read(data .. 'Newbie/saved/ui_settings.lua') ~= nil, true)
+check('  not in _common/ too', read(data .. 'Newbie/_common/ui_settings.lua'), nil)
+local leftover = 0
+for _, name in ipairs(list(data .. '_master/config_global')) do
+    local group = require('shared/utils/core/char_paths').COMMON_GROUPS[name]
+    local text = read(data .. 'Newbie/' .. ((name == 'ui_settings.lua' or name == 'message_modes.lua') and 'saved/'
+        or '_common/' .. (group and group .. '/' or '')) .. name)
+    if not text then leftover = leftover + 1
+    else for line in text:gmatch('[^\n]+') do if line:find('Tetsouo', 1, true) and not line:find('@author', 1, true) then leftover = leftover + 1 end end end
+end
+check('  every template there, Tetsouo renamed', leftover, 0)
+local db = read(data .. 'character_db.lua') or ''
+check('  in character_db with its job', db:find("    Newbie = {\n        jobs = { 'WHM' },\n        role = 'main',\n    },\n}", 1, true) ~= nil, true)
+check('  the other characters kept', db:find("Kaories = {\n        jobs = { 'RDM' },", 1, true) ~= nil, true)
+os.remove(data .. 'Newbie/Newbie_WHM.lua')
+mark = io.open(data .. 'Newbie/_common/combat/RECAST_CONFIG.lua', 'wb'); mark:write('-- mine'); mark:close()
+JobAdder.add('WHM', 'Newbie')
+check('  its settings kept on a second add', read(data .. 'Newbie/_common/combat/RECAST_CONFIG.lua'), '-- mine')
+check('  not added twice to character_db', select(2, (read(data .. 'character_db.lua') or ''):gsub('Newbie = {', '')), 1)
+-- a folder in the older layout (config/ at its root) gets no _common/: CharPaths would then look there for all
+os.execute('mkdir "' .. win(data .. 'Oldone/config') .. '" 2>nul')
+JobAdder.add('WHM', 'Oldone')
+check('old layout: no _common/ made', read(data .. 'Oldone/_common/combat/RECAST_CONFIG.lua'), nil)
 os.execute('rmdir /s /q "' .. win(root) .. '" 2>nul')
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

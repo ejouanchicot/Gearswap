@@ -9,7 +9,9 @@
 ---                                     folder (CharPaths.job_group: display, keys, inventory, combat)
 ---   <Char>/<job>/sets/<job>_sets.lua  the template's sets with every piece taken out: the set names,
 ---                                     sub-sets and set_combine stay, the gear is the player's to choose
----   character_db.lua                  the job added to the character's list
+---   character_db.lua                  the job added to the character's list, the character added if missing
+---   <Char>/_common/<group>/<FILE>.lua the character's own settings, with its first job only
+---                                     (_master/config_global/, as clone_character.py makes them)
 --- The character's own overlay (_master/<Char>/) wins file by file, its sets kept as they are. The
 --- template's name (Tetsouo) becomes the character's, but on @author lines (as the clone does). A file that
 --- exists is never written over; an entry that exists stops it all.
@@ -201,13 +203,20 @@ end
 --- ADD
 ---============================================================================
 
---- The job added to the character's list in character_db.lua (nothing when the character or the job is there).
+--- The job added to the character's list in character_db.lua (nothing when the job is there). A character not
+--- listed yet is added at the end of CHARACTERS, in the shape clone_character.py parses (parse_character_db).
 local function add_to_db(char, job)
     local path = data_dir() .. 'character_db.lua'
     local text = read(path)
     if not text then return false end
     local s = text:find('\n%s*' .. char .. '%s*=%s*{')
-    if not s then return false end
+    if not s then
+        local a = text:find('local CHARACTERS%s*=%s*{')
+        if not a then return false end
+        local close = closing(text, text:find('{', a, true))
+        return write(path, text:sub(1, close - 1) .. '\n    ' .. char .. " = {\n        jobs = { '" .. job ..
+            "' },\n        role = 'main',\n    },\n" .. text:sub(close))
+    end
     local a = text:find('jobs%s*=%s*{', s)
     if not a then return false end
     local open = text:find('{', a, true)
@@ -217,6 +226,31 @@ local function add_to_db(char, job)
     local body = list:gsub('%s+$', '')
     local new = text:sub(1, open) .. body .. (body:match(',%s*$') and ' ' or ', ') .. "'" .. job .. "' " .. text:sub(close)
     return write(path, new)
+end
+
+-- The files of _master/config_global/ the game writes: in saved/, not _common/ (migrate_layout.py SAVED_CONFIG)
+local SAVED = {['ui_settings.lua'] = true, ['message_modes.lua'] = true}
+
+--- A character's own settings, made with its first job: every job file requires some of them (RECAST_CONFIG,
+--- COMMON_KEYBINDS...), so a job added to a character with none of them did not load. The templates of
+--- _master/config_global/, the character's overlay winning file by file, each in its theme folder
+--- (CharPaths.COMMON_GROUPS). Nothing for a character that has its settings, or keeps them in an older layout
+--- (config/): a _common/ there would move where CharPaths looks for every file of it.
+local function add_common(char, base, own, put)
+    if windower.dir_exists(base .. '_common') or windower.dir_exists(base .. 'common')
+        or windower.dir_exists(base .. 'config') then return end
+    local CharPaths = require('shared/utils/core/char_paths')
+    local master = data_dir() .. '_master/config_global/'
+    local names = {}
+    for _, dir in ipairs({master, own .. 'config_global/'}) do
+        local ok, names_in = pcall(windower.get_dir, dir)
+        for _, name in ipairs(ok and names_in or {}) do if name:match('%.lua$') then names[name] = true end end
+    end
+    for name in pairs(names) do
+        local text = read(own .. 'config_global/' .. name) or JobAdder.rename(read(master .. name) or '', char)
+        local group = CharPaths.COMMON_GROUPS[name]
+        put(base .. (SAVED[name] and 'saved/' or '_common/' .. (group and group .. '/' or '')) .. name, text)
+    end
 end
 
 --- Add a job to a character.
@@ -241,6 +275,7 @@ function JobAdder.add(job, char)
         if exists(path) then kept[#kept + 1] = rel return end
         if write(path, text) then files[#files + 1] = rel end
     end
+    add_common(char, base, own, put)
     -- the settings: the template's files, the character's own overlay winning file by file
     local names = {}
     for _, dir in ipairs({master .. 'config/' .. lower, own .. 'config/' .. lower}) do
