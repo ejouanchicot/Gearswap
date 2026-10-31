@@ -296,7 +296,7 @@ function niceName(card){
 // (sets.midcast.Flash = sets.FullEnmity) or in a piece name
 function cardMatch(card, q){
   return !q || card.variants.some(v => v.set.path.toLowerCase().includes(q) || (v.set.aliases || []).some(a => a.toLowerCase().includes(q))
-    || Object.values(v.set.pieces).some(p => p.name.toLowerCase().includes(q)));
+    || Object.values(v.set.pieces).some(p => nameHas(p.name, q)));
 }
 // The names a set is shared under, each in the family its own name belongs to (sets.midcast.Flash = sets.FullEnmity
 // is a spell's set: listed with the spells), a link to the set it is: [{fam, label, path, of, i, k}]

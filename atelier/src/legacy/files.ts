@@ -17,7 +17,7 @@ export const LEGACY_SCRIPTS: readonly string[] = ['i18n', 'job_icons', 'core', '
   'stats', 'stat_help', 'engine', 'optimizer', 'buffs', 'buff_panels', 'live', 'offline_export', 'simulate',
   'job_access_data', 'ws_access_data', 'job_access', 'list_prefs', 'sets_view', 'weapons', 'ws_page', 'opt_page',
   'nuke_layers', 'fight_stats', 'enh_jobs', 'stat_opt_texts', 'stat_figures', 'stat_opt', 'luopan', 'bst_pet', 'enfeeble', 'ele_debuff', 'porter', 'drawer', 'trial', 'push', 'push_view',
-  'opt_all', 'add_set', 'layout2', 'usables_data', 'job_guide_data', 'job_guide_fr', 'module_catalog', 'module_items',
+  'opt_all', 'add_set', 'layout2', 'usables_data', 'long_names_data','job_guide_data', 'job_guide_fr', 'module_catalog', 'module_items',
   'bags_view', 'bags_plan', 'bags_target', 'bags_place', 'module_rows', 'module_rest_fr', 'module_ux', 'modules', 'reg_special', 'hud_sources', 'hud_preview', 'macro_edit',
   'party_builder', 'profiles', 'target_pick', 'gear_pick', 'config_page', 'welcome', 'packages', 'add_job', 'update_core', 'update', 'motion', 'moogle',
   'tip_texts', 'guide_texts', 'guide_bags', 'guide_context', 'guide', 'tips', 'events'];

@@ -189,6 +189,7 @@ declare const JOB_GUIDE_EN: Record<string, [string, Array<[string, string]>] | u
 declare function buildCards(d: LegacyExport): {cards: LegacyAny[]; bypath: LegacyAny};
 declare function cardUsable(c: LegacyAny): boolean;
 declare function cardMatch(c: LegacyAny, q: string): boolean;
+declare function nameHas(name: string | null | undefined, q: string): boolean;
 declare function listPrefs(): LegacyAny;
 declare function tierFollowsSet(path: string, bypath: LegacyAny): void;
 declare function subFollowsSet(path: string, bypath: LegacyAny): void;

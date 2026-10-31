@@ -156,6 +156,9 @@ function save(){ try { localStorage.setItem('atelier', JSON.stringify(Object.fro
 const itemImg = id => ICON_HD.has(+id) ? `<img src="${ICON_HD.get(+id)}" alt="">`
   : `<img src="atelier/icons/${+id}.bmp" alt="" data-hd="${+id}" onload="iconHd(this)" onerror="iconMiss(this, ${+id})">`;
 // The game's icon of an item; an empty frame without one
+// Whether a piece's name holds the search (lower case): its short name or, cut by the game ("Clr. Torque +2"), its
+// long one (long_names_data.js)
+const nameHas = (name, q) => !!name && (name.toLowerCase().includes(q) || (typeof GEAR_LONG !== 'undefined' && (GEAR_LONG[name] || '').includes(q)));
 const icon = name => { const id = name && (iconIds()[name] || (catalog() || {id: {}}).id[name]);
   return `<span class="ico" aria-hidden="true">${id ? itemImg(id) : ''}</span>`; };
 // An icon not on the disk yet (a piece you do not hold: the export writes only yours and your sets'):

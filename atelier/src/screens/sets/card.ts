@@ -91,7 +91,7 @@ function slotOf(s: LegacyAny, ci: number, slot: string, own: Set<string>, q: str
   const lock = isLocked(s, slot) && LOCKABLE(slot) ? {title: t('lockTip')} : null;
   const reset = tried ? {title: t('tryReset')} : null;
   if (!p) return {slot, ci, label, empty: true, cls: `slot empty ${tried ? 'tried' : ''} ${lock ? 'locked' : ''}`, aria: `${label} : —`, reset, lock, iconHtml: '', aug: false, rank: null};
-  const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot), hit = q && p.name.toLowerCase().includes(q);
+  const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot), hit = q && nameHas(p.name, q);
   const r = pieceStats(p, slot), hold = holdState(slot, p);
   return {slot, ci, label, empty: false, cls: `slot ${inh ? 'inh' : ''} ${weap ? 'weap' : ''} ${hit ? 'hit' : ''} ${tried ? 'tried' : ''} ${lock ? 'locked' : ''} ${hold ? 'own-' + hold : ''}`,
     aria: `${label} : ${p.name}${hold ? ' · ' + t('lg_' + hold) : ''}`, reset, lock, iconHtml: icon(p.name), aug: !!(r && Object.keys(r.aug).length), rank: r && r.rank != null ? r.rank : null};

@@ -11,7 +11,8 @@
 
 export interface GpOption { k: string; label: string; selected: boolean }
 export interface GpItem { i: number; orig: boolean; cur: boolean; junk: boolean; iconHtml: string; name: string; rank: number | null; tagHtml: string;
-  up: null | {on: boolean; title: string; text: string}; augs: string; fit: string; why: string; where: string; val: null | {text: string; gap: null | {cls: string; text: string}} }
+  up: null | {on: boolean; title: string; text: string}; augs: string; fit: string; why: string; where: string; val: null | {text: string; gap: null | {cls: string; text: string}};
+  hide?: boolean }
 export interface GearPickView {
   qPh: string;
   fromLabel: string; src: Array<{k: string; label: string; pressed: boolean}>;
@@ -48,6 +49,8 @@ export function gearPickView(s: LegacyAny, slot: string, p: LegacyAny, opts: Leg
   const shown = opts.map((o, i) => [o, i] as [LegacyAny, number]).filter(([o]) => gpInSrc(o, S0.gpSrc));
   const junk = shown.filter(([o]) => o.grp === 5).length;
   let rows: LegacyAny[] = shown.filter(([o]) => S0._showJunk || o.grp !== 5);
+  // the pieces of no use to the set, when not shown: drawn hidden, so that a search by name still finds them (events.js #drawq)
+  const hid: LegacyAny[] = S0._showJunk ? [] : shown.filter(([o]) => o.grp === 5);
   // the hands and the ammo by kind (Sword, Great Axe, Shield, Grip...): the kinds among the pieces listed, with their count
   const kinds: Array<[string, number]> = WEAPON_SLOTS.has(slot) ? gpKinds(rows) : [];
   const kind = (S0._gpKind || {}).slot === slot && kinds.some(([k]) => k === S0._gpKind.k) ? S0._gpKind.k : null;
@@ -64,5 +67,6 @@ export function gearPickView(s: LegacyAny, slot: string, p: LegacyAny, opts: Leg
     fxLabel: t('gpFor'), fxs: opt(stats, fx),
     junk: junk ? {checked: !!S0._showJunk, label: t('gpJunk', {n: junk})} : null,
     emptyHtml: p && !(['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons') ? t('tryEmpty') : null,
-    count: t('gpCount', {n: rows.length}), wantsHtml: wantsLine(s), items: rows.map(([o, i, v]) => itemOf(o, i, slot, v, worn)), none: t('gpNone')};
+    count: t('gpCount', {n: rows.length}), wantsHtml: wantsLine(s), items: [...rows.map(([o, i, v]) => itemOf(o, i, slot, v, worn)),
+      ...(fx ? [] : hid.filter(([o]) => kind == null || itemKind(o.piece.name) === kind).map(([o, i]) => Object.assign(itemOf(o, i, slot, null, worn), {hide: true})))], none: t('gpNone')};
 }

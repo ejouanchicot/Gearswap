@@ -34,6 +34,7 @@ after `--` in `quick`).
 | `bstcharm` | a BST's Charm set: laid in the page if the export has none, its objectives (CHR, then Charm+), figures, a stats search to its end |
 | `sm`, `sp`, `gp` | the slot menu, the stat picker, the piece picker |
 | `mp`, `chiprows`, `modctl`, `numcol` | the Modules: their pickers (weaponskills, abilities, modules) and controls |
+| `longname` | a piece found by its long name (Clr. Torque +2 by "cleric"), also among the pieces of no use |
 | `rfsub` | the refill card's lists by subjob: one added and edited before any save, Shihei in the window of items |
 | `combat`, `panel`, `foe`, `tcard`, `tg`, `selreset`, `pb` | Buffs & target: panels, the foe, the target card and picker, a buff menu reset, the party |
 | `dlg`, `oa`, `run`, `search`, `opt`, `statopt` | the compare window, optimize-all and its Lua, the search window, both optimizers |

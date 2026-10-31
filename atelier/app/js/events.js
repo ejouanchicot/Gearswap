@@ -213,7 +213,9 @@ document.addEventListener('input', e => {
   if ('gpjunk' in e.target.dataset && S._drawer) { S._showJunk = e.target.checked; openSlot(S._drawer.ci, S._drawer.slot); return; }
   // the drawer's search: hides the pieces that do not match, nothing re-drawn
   if (e.target.id === 'drawq') { const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll('.choice [data-try]').forEach(el => { el.hidden = q && !el.textContent.toLowerCase().includes(q); });
+    // a piece of no use to the set (drawn hidden: gearpick.ts) comes out for a search that names it
+    document.querySelectorAll('.choice [data-try]').forEach(el => { const n = el.querySelector('.gpname b');
+      el.hidden = q ? !el.textContent.toLowerCase().includes(q) && !nameHas(n && n.textContent, q) : 'junkhid' in el.dataset; });
     document.querySelectorAll('.choice [data-grp]').forEach(el => { el.hidden = !!q; }); }
   // a merit level typed in the Merits tab: kept while it differs from the game's
   if (e.target.classList.contains('meritin')) {
