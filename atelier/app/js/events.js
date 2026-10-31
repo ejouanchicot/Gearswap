@@ -365,6 +365,9 @@ function readExports(first, done){
     for (const c in legacy) for (const j in legacy[c]) put(c, j, legacy[c][j]);
     for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
     for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
+    // a character the game opened its door for with nothing exported yet (a new player, its job with no file:
+    // data/default.lua): listed with no job, so that the page reaches the game and offers "+ Add a job" (add_job.js)
+    for (const c in window.ATELIER_LIVE || {}) if (!CHARS[c]) CHARS[c] = {jobs: []};
     if (!CHARS[S.char]) { S.char = Object.keys(CHARS)[0]; S.job = null; }
     // nothing exported yet: the welcome page (atelier/src/screens/home)
     if (!S.char) { S.job = null; if (done) done(); render(); return; }

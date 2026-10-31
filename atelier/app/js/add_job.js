@@ -11,14 +11,18 @@ Object.assign(T.fr, {ajAdd: '+ Ajouter un job', ajAddTip: 'Crée un job de plus 
   ajDone: '{j} ajouté à {c} ({n} fichier(s) créé(s){k}). Passe {c} en {j} en jeu : GearSwap le charge, et il arrive ici avec son premier export.',
   ajDoneNow: '{j} ajouté à {c} ({n} fichier(s) créé(s){k}). Appuie sur Recharger en haut (ou //gs reload en jeu) : GearSwap charge le {j}, et il arrive ici avec son premier export.',
   ajKept: ', {n} déjà là gardé(s)', ajExists: '{c} a déjà un {j} ({c}_{j}.lua existe) : rien n’a été créé.', ajNoTemplate: 'Pas de modèle pour {j} : rien n’a été créé.',
-  ajFail: 'Le jeu n’a pas répondu : rien n’a été créé.'});
+  ajFail: 'Le jeu n’a pas répondu : rien n’a été créé.',
+  ajFirstNoFile: 'GearSwap tourne sur {c} en {j}/{s}, mais ce job n’a pas encore de fichier : rien n’est équipé. « + Ajouter un job » le crée (et tes réglages communs, au premier job), puis appuie sur Recharger en haut.',
+  ajFirst: '{c} n’a encore aucun job ici. Lance le jeu sur {c} : « + Ajouter un job » crée le premier.'});
 Object.assign(T.en, {ajAdd: '+ Add a job', ajAddTip: 'Makes one more job for {c} from the templates: its settings and its sets (empty, to fill here). Nothing that exists is touched.',
   ajNoLive: 'The game must run on {c}: GearSwap makes the files.', ajTitle: 'Add a job to {c}',
   ajWhy: 'GearSwap makes the job from the templates: its entry, its settings (keys, HUD, macros, lockstyle...) and its sets, every name but no piece: you fill them here (Optimize this set). No file that exists is replaced, no other job is touched.',
   ajDone: '{j} added to {c} ({n} file(s) made{k}). Change {c} to {j} in game: GearSwap loads it, and it comes here with its first export.',
   ajDoneNow: '{j} added to {c} ({n} file(s) made{k}). Press Reload at the top (or //gs reload in game): GearSwap loads the {j}, and it comes here with its first export.',
   ajKept: ', {n} already there kept', ajExists: '{c} has a {j} already ({c}_{j}.lua exists): nothing was made.', ajNoTemplate: 'No template for {j}: nothing was made.',
-  ajFail: 'The game did not answer: nothing was made.'});
+  ajFail: 'The game did not answer: nothing was made.',
+  ajFirstNoFile: 'GearSwap runs on {c} as {j}/{s}, but this job has no file yet: nothing is equipped. “+ Add a job” makes it (and your common settings, with the first job), then press Reload at the top.',
+  ajFirst: '{c} has no job here yet. Start the game on {c}: “+ Add a job” makes the first one.'});
 
 // The jobs the character does not play yet (core.js JOBS, sets_view.js plays)
 const ajMissing = () => JOBS.filter(j => !plays(j[0]));

@@ -10,7 +10,8 @@
 export interface HomeRow { c: string; name: string; dim: boolean; role: string; roleColor: string; emblemHtml: string; badgeHtml: string; sub: string; sets: number; keys: number; bookHtml: string; styleHtml: string; atHtml: string }
 export interface HomeView {
   welcome: null | {title: string; lede: string; gameT: string; steps: string[][]; gameWhy: string; filesT: string; files1: string; filesWhy: string; busy: boolean; btn: string; msg: string; fail: boolean};
-  table: null | {kicker: string; char: string; summary: string; heads: string[]; rows: HomeRow[]; foot: string; add: {on: boolean; label: string; title: string}};
+  table: null | {kicker: string; char: string; summary: string; heads: string[]; rows: HomeRow[]; foot: string; add: {on: boolean; label: string; title: string};
+    first: string};
 }
 
 // The page shown when nothing is exported yet: the steps in game, the commands set in them
@@ -37,5 +38,7 @@ export function homeView(): HomeView | null {
   return {welcome: null, table: {kicker: t('overview'), char: S.char, summary: t('summary', {j: jobs.length, s: totS, k: totK}), rows, foot: t('mock'),
     // "Add a job" (atelier/app/js/add_job.js): GearSwap makes the files, so the game must run on this character
     add: {on: liveOk(S.char), label: t('ajAdd'), title: liveOk(S.char) ? t('ajAddTip', {c: S.char}) : t('ajNoLive', {c: S.char})},
+    // a character with no job yet (events.js readExports: the game's door, nothing exported): what to do first
+    first: jobs.length ? '' : (L => L.ok && L.nofile ? t('ajFirstNoFile', {c: S.char, j: L.job, s: L.sub}) : t('ajFirst', {c: S.char}))(S._live[S.char] || {}),
     heads: [t('colJob'), t('colRole'), t('colSub'), t('colSets'), t('colKeys'), t('macro'), t('lockstyle'), t('colExport')]}};
 }
