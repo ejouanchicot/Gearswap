@@ -66,7 +66,8 @@ function tankExtra(c: LegacyAny, set: LegacyAny, B: LegacyAny, enm: number): Sta
     const held: LegacyAny = S0._curSet ? withWeapons(S0._curSet).pieces : {};
     // Crusade counted as the optimizer counts it (statBase: always up for a tank)
     const crusade = jaOn(buffState(), 'Crusade') ? 0 : CRUSADE_ENMITY;
-    const b1 = Math.max(0, Math.min(100, enm + crusade)) / 2, b2 = Math.min(50, Object.values(held).reduce((n: number, p: LegacyAny) => n + (p && ENMITY_LOSS_GEAR[p.name] || 0), 0));
+    // (the gear's and the spells' Enmity, as the optimizer counts it: opt.js ceLoss; not a job ability's, outside their cap)
+    const b1 = Math.max(0, Math.min(100, enm - (B.enmityJa || 0) + crusade)) / 2, b2 = Math.min(50, Object.values(held).reduce((n: number, p: LegacyAny) => n + (p && ENMITY_LOSS_GEAR[p.name] || 0), 0));
     const all = Math.round((1 - (1 - b1 / 100) * (1 - b2 / 100)) * 1000) / 10;
     if (all) rows.push(row(t('tkLoss'), `−${all} %`, `${b1} % × ${b2} %`, '', t('tkLossTip')));
   }
@@ -89,8 +90,9 @@ function tankBox(r: LegacyAny): StatBox {
   const items: BoxItem[] = [row(t('physHit'), phys, pctOf(phys), '', muls),
     row(t('magHit'), mag, pctOf(mag), '', t('magTip', {m: Math.round(Math.max(dt + v('mdt') + shell, -50) * 10) / 10, b: mdb})),
     row(t('breathHit'), breath, pctOf(breath))];
-  const enm = v('enmity') + (B.enmity || 0), mult = enm >= 0 ? Math.min(1 + enm / 100, 3) : Math.max(1 + enm / 100, .5);
-  if (enm) items.push(row(t('enmityLbl'), signed(enm), `×${mult.toFixed(2)}`, '', t('enmTip', {g: v('enmity'), b: B.enmity || 0})));
+  // the gear's and the spells' Enmity between -50 and +200, a job ability's (Sentinel) on top, outside that cap (opt.js)
+  const enm = Math.max(-50, Math.min(200, v('enmity') + (B.enmity || 0))) + (B.enmityJa || 0), mult = Math.max(1 + enm / 100, .5);
+  if (enm) items.push(row(t('enmityLbl'), signed(enm), `×${mult.toFixed(2)}`, '', t('enmTip', {g: v('enmity'), b: B.enmity || 0, j: B.enmityJa || 0})));
   if (enm && ['PLD', 'RUN'].includes(st().job)) items.push(row(t('flashLbl'), `${Math.floor(180 * mult)} / ${Math.floor(1280 * mult)}`, ''));
   items.push(...tankExtra(c, set, B, enm));
   const skill = skillLevel(c, 'enhancing magic') + v('skill:enhancing magic skill');

@@ -89,7 +89,7 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   ratk: ['Attaque à distance', 'Ranged Atk.', ''], macc: ['Précision magique', 'Magic Accuracy', ''], mab: ['Bonus att. magique', 'Magic Atk. Bonus', ''],
   mbd2: ['Dégâts magic burst II', 'Magic burst damage II', '%'], cure: ['Cure potency', 'Cure potency', '%'],
   def: ['Défense', 'Defense', ''], eva: ['Évasion', 'Evasion', ''], meva: ['Évasion magique', 'Magic Evasion', ''], mdb: ['Déf. magique', 'Magic Def. Bonus', ''],
-  stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], ta: ['Triple Attack', 'Triple Attack', '%'],crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''],
+  stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], ta: ['Triple Attack', 'Triple Attack', '%'],crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''], enmityJa: ['Enmity (hors plafond)', 'Enmity (past the cap)', ''],
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],
   block: ['Chance de blocage', 'Block rate', '%'], cure2: ['Cure potency II', 'Cure potency II', '%'], blockmul: ['Chance de blocage', 'Block rate', 'mul'],
   pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], tpb: ['TP Bonus', 'TP Bonus', ''], sb: ['Subtle Blow', 'Subtle Blow', ''], critdmg: ['Dégâts critiques', 'Critical damage', '%'], dt: ['Dégâts reçus (DT)', 'Damage taken (DT)', '%'], enspell: ['Enspell (dégâts par coup)', 'Enspell (damage a hit)', ''], mdmg: ['Dégâts magiques', 'Magic damage', '']};

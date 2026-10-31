@@ -227,6 +227,16 @@ function pieceStats(p, slot){
     const free = parseLine(line, r.base);
     if (free) r.free.push(free);
   }
+  // Doom removal: Holy Water and Cursna received as figures (DOOM_GEAR), in place of the description's lines
+  const doom = DOOM_GEAR[p.name];
+  if (doom) {
+    // (the lines the description gives a figure, read above: replaced, not added to: Purity Ring counted +14 %)
+    for (const k of Object.keys(r.base)) if (/holy water|cursna/i.test(k)) delete r.base[k];
+    if (doom.hw) add(r.base, 'x:holy water', doom.hw, '%', 'Holy Water');
+    if (doom.crecv) add(r.base, 'x:cursna received', doom.crecv, doom.pct ? '%' : '', S.lang === 'fr' ? 'Cursna reçue' : 'Cursna received');
+    r.free = r.free.filter(f => !/Holy Water|Cursna/i.test(f));
+    r.hidden = true;
+  }
   // Fast Cast the description only names ("Enhances "Fast Cast" effect"): its value, from BG-Wiki
   const hidden = HIDDEN_FC[p.name];
   if (hidden && r.free.some(f => /(Enhances|Increases) "Fast Cast" effect/.test(f))) {
@@ -353,6 +363,14 @@ function addAugment(a, r){
     if (free) r.free.push(free);
   }
 }
+// The pieces that help remove Doom: Holy Water's bonus (BG Wiki Holy_Water: "a 33% chance to remove Doom" with
+// Nicander's Necklace +30 %, Blenmot's Ring +1 +10 %, Blenmot's Ring +5 %, Purity Ring +7 %; Blenmot's from the FFXI
+// Premium Guide 2013 quoted there, its description gives no figure) and the Cursna received (the item pages: Eshmun's
+// and Saida's from the same guide, in %, pct; the others written "+N", unit not given). Shown on the piece's card and
+// counted by the Doom set's optimizer (stat_opt.js doomSet)
+const DOOM_GEAR = {"Nicander's Necklace": {hw: 30, crecv: 20}, "Blenmot's Ring +1": {hw: 10}, "Blenmot's Ring": {hw: 5},
+  'Purity Ring': {hw: 7, crecv: 7}, "Eshmun's Ring": {crecv: 20, pct: true}, 'Saida Ring': {crecv: 15, pct: true},
+  'Shabti Cuisses +1': {crecv: 15}, 'Shabti Cuisses': {crecv: 10}, 'Gishdubar Sash': {crecv: 10}};
 // Fast Cast hidden behind "Enhances "Fast Cast" effect" (BG-Wiki; Guide_Paladin gear_pld.py)
 const HIDDEN_FC = {"Loquac. Earring": 2, "Prolix Ring": 2, "Orunmila's Torque": 5};
 // Effects a description names without a value (Brutal Earring, Charis Feather, Locus Ring, Lycurgos...): the stat

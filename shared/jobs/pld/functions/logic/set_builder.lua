@@ -228,6 +228,19 @@ function SetBuilder.apply_mode_shield(result)
     return result
 end
 
+---   An experience set's own off hand over the stance's shield (Xp On): the pull is a setup of its own, its weapons
+---   written in sets.idleXp / sets.meleeXp (Burtgang or Malevolence with Duban, the player's rule 2026-11-01). The
+---   main hand needs nothing: the set is laid after the weapon mode's
+---   @param result table The set built so far
+---   @param xp table|nil sets.idleXp or sets.meleeXp
+---   @return table
+local function xp_off_hand(result, xp)
+    if state.Xp and state.Xp.value == 'On' and type(xp) == 'table' and xp.sub then
+        result = set_combine(result, {sub = xp.sub})
+    end
+    return result
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MOVEMENT SPEED (INHERITED FROM BASE)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -318,8 +331,8 @@ function SetBuilder.build_engaged_set(base_set)
         result = set_combine(result, sets.meleeXp)
     end
 
-    -- Step 5: Mode shield (PLD_WEAPONS.lua shields, weapon-driven)
-    result = SetBuilder.apply_mode_shield(result)
+    -- Step 5: Mode shield (PLD_WEAPONS.lua shields, weapon-driven), then the meleeXp set's own
+    result = xp_off_hand(SetBuilder.apply_mode_shield(result), sets.meleeXp)
     result = SetBuilder.apply_mode_ammo(result)
 
     return result
@@ -388,8 +401,8 @@ function SetBuilder.build_idle_set(base_set)
     -- Step 7: Apply movement speed
     result = SetBuilder.apply_movement(result)
 
-    -- Step 8: Mode shield (PLD_WEAPONS.lua shields, weapon-driven)
-    result = SetBuilder.apply_mode_shield(result)
+    -- Step 8: Mode shield (PLD_WEAPONS.lua shields, weapon-driven), then the idleXp set's own
+    result = xp_off_hand(SetBuilder.apply_mode_shield(result), sets.idleXp)
     result = SetBuilder.apply_mode_ammo(result)
 
     return result

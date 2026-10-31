@@ -729,7 +729,7 @@
     //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
-        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed", "move", "ja",
+        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed", "move", "ja", "hw", "crecv", "absorb",
         "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark",
         "petdt", "petregen", "charm", "geoskill",
         // a BST's pet (the page's bst_pet.js): Accuracy, Attack, Haste, Store TP, Double Attack, levels (a weapon's apart)
@@ -831,7 +831,13 @@
     //   Kaykaus_Attire_Set); taken as Cure potency II like any, under its 30 % cap (the page does not say)
     var STAT_SETS = [
         {name: "Kaykaus", pieces: ["Kaykaus Mitra +1", "Kaykaus Bliaut +1", "Kaykaus Cuffs +1", "Kaykaus Tights +1", "Kaykaus Boots +1"],
-            key: "cure2", byCount: {2: 4, 3: 6, 4: 8, 5: 10}}
+            key: "cure2", byCount: {2: 4, 3: 6, 4: 8, 5: 10}},
+        //   Chevalier's (PLD Empyrean +2, Reforged NQ to +3): "Occasionally absorbs damage taken", +2 / 3 / 4 / 5 % for
+        //   2 / 3 / 4 / 5 pieces (BG Wiki Chevalier's_Armor_Set: "Each separate piece provides an additional +1% chance
+        //   of activation (minimum +2% from wearing two pieces), up to a maximum of +5%"); the absorbed hit heals its
+        //   damage before damage taken cuts, a whole hit when the shield did not block it (block, then absorb, then DT)
+        {name: "Chevalier's", pieces: ["Chev. Armet", "Chevalier's Armet", "Chev. Armet +1", "Chev. Armet +2", "Chev. Armet +3", "Creed Armet +2", "Chev. Cuirass", "Chevalier's Cuirass", "Chev. Cuirass +1", "Chev. Cuirass +2", "Chev. Cuirass +3", "Creed Cuirass +2", "Chev. Gauntlets", "Chevalier's Gauntlets", "Chev. Gauntlets +1", "Chev. Gauntlets +2", "Chev. Gauntlets +3", "Creed Gauntlets +2", "Chev. Cuisses", "Chevalier's Cuisses", "Chev. Cuisses +1", "Chev. Cuisses +2", "Chev. Cuisses +3", "Creed Cuisses +2", "Chev. Sabatons", "Chevalier's Sabatons", "Chev. Sabatons +1", "Chev. Sabatons +2", "Chev. Sabatons +3", "Creed Sabatons +2"],
+            key: "absorb", byCount: {2: 2, 3: 3, 4: 4, 5: 5}}
     ];
     // {name: {count, bonus}} of the sets worn, their bonus added to the totals t
     function statSetBonuses(t, pieces) {
@@ -877,7 +883,9 @@
         var f = {
             hp: Math.round(((b.hp || 0) + t.hp) * (1 + t["hp%"] / 100)),
             def: Math.floor((b.def || 0) + t.def + 1.5 * t.vit + shield), shield: shield,
-            enmity: Math.min(200, t.enmity + (b.enmity || 0)),
+            // the gear's and the spells' (Crusade) up to +200, a job ability's on top (Sentinel: b.enmityJa, the page's
+            // buffs.js; BG Wiki Enmity: "not subject to these caps"; added to them here, how they combine not on the page)
+            enmity: Math.min(200, t.enmity + (b.enmity || 0)) + (b.enmityJa || 0),
             // ("Phalanx received" is the receiver's: nothing on a set cast on the others)
             phalanx: Math.floor(O.phalanxPotency((b.enh || 0) + t.enh) * (b.potMul || 1)) + (b.comp === "others" ? 0 : t.phalanx), enh: (b.enh || 0) + t.enh, phalanxGear: t.phalanx,
             // Fast Cast with the casting time cuts of the set's spells (b.castKinds: a Cure's "Cure" spellcasting time and
@@ -944,6 +952,11 @@
         // the block the gear adds (Guide_Paladin: block rate = the shield's base + (shield skill - attacker's) x 0.2325,
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;
+        // Doom removal (the page's stats.js DOOM_GEAR): Holy Water's 33 % with the pieces' bonus, 100 % at most;
+        // the Cursna received the pieces add
+        f.holyWater = Math.min(100, 33 + t.hw); f.cursnaRecv = t.crecv;
+        // the chance the Chevalier's set adds to absorb a hit (STAT_SETS)
+        f.absorb = t.absorb || 0;
         f.statusRes = t.statusRes; f.eleRes = Math.round(t.eleRes / 8 * 10) / 10;
         // the elements whose resistance is positive (Guide_Paladin, Magical Damage Mitigation: a positive resistance is
         // what lets magic evasion reach the full resist, 1/8; a negative one forces 1/2 at least): 0 to 8
@@ -986,7 +999,7 @@
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
-        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "move", "jaPlus"];
+        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };

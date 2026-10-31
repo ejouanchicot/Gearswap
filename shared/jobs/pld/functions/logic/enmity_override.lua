@@ -6,12 +6,11 @@
 ---   sets.EnmityMax instead. Spells swap to it whole; abilities keep their own
 ---   pieces and only gain what EnmityMax adds.
 ---
----   sets.EnmityMax differs from sets.FullEnmity by owning the sub slot: in
----   that stance the shield is part of the enmity build, not left to whatever
----   the engaged set holds. It owns no main slot - a main hand change zeroes
----   TP. /SCH's 'DPS' and 'Hoxne' stances are left out for the same reason
----   the main hand is: they are the TP builds, and swapping their shield
----   mid-fight is a cost the stance was chosen to avoid.
+---   sets.EnmityMax is the most Enmity there is, with no concession (the
+---   player's rule, 2026-10-31): its shield and its sword are part of it when
+---   it names them, the TP a main hand change costs accepted. /SCH's 'DPS' and
+---   'Hoxne' stances are left out: they are the TP builds, and swapping their
+---   weapons mid-fight is a cost the stance was chosen to avoid.
 ---
 ---   Scope - exactly what wore sets.FullEnmity:
 ---   • Job abilities  -> all of them; every PLD JA set is FullEnmity-based
@@ -84,7 +83,7 @@ local function item_name(item)
     return item
 end
 
----   What sets.EnmityMax adds on top of sets.FullEnmity (today: the shield)
+---   What sets.EnmityMax adds on top of sets.FullEnmity (the shield, the sword when it names one)
 ---   Both go through set_combine first so their slot names match (GearSwap
 ---   normalises slot aliases there).
 ---   @return table Slots to lay over an ability's own set

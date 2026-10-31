@@ -309,7 +309,8 @@ sets.meleeXp =
     set_combine(
     sets.idleXp,
     {
-        main = {name = 'Malevolence', augments = {'INT+10', 'Mag. Acc.+10', '"Mag.Atk.Bns."+8', '"Fast Cast"+5'}}
+        main = {name = 'Malevolence', augments = {'INT+10', 'Mag. Acc.+10', '"Mag.Atk.Bns."+8', '"Fast Cast"+5'}},
+        sub = {name = 'Duban'}
     }
 )
 
@@ -339,8 +340,8 @@ sets.FullEnmity = {
 }
 
 -- • Tanking Enmity (HybridMode 'Tanking', /SCH and /RUN - the JAs and spells that wore FullEnmity)
--- FullEnmity plus the shield: in that stance the sub is part of the enmity build.
--- No main slot on purpose: a main hand change zeroes TP. Only the shield moves.
+-- The most Enmity there is, no concession: the shield and the sword are part of it (a main hand change costs
+-- the TP, accepted). The Atelier's optimizer searches it for Enmity alone, weapons included.
 sets.EnmityMax = set_combine(sets.FullEnmity, {sub = 'Srivatsa'})
 
 -- • Job Abilities

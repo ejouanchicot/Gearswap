@@ -98,6 +98,17 @@ check('Aminon: fights in idle.MDT', aminon.body, 'idle.MDT')
 state = {HybridMode = mode('Tanking'), MainWeapon = mode('Naegling'), StanceWeapon = mode('Auto'), Shield = mode('Auto')}
 local tank = SetBuilder.build_engaged_set(engaged_base)
 check('Tanking otherwise: Burtgang + Aegis', tank.main .. ' + ' .. tank.sub, 'Burtgang + Aegis')
+-- Xp On (a Crawlers' Nest pull): sets.idleXp / sets.meleeXp hold their own weapons, Duban over the stance's shield
+sets.idleXp = {main = 'Burtgang', sub = 'Duban', body = 'idleXp'}
+sets.meleeXp = {main = 'Malevolence', sub = 'Duban', body = 'meleeXp'}
+state = {HybridMode = mode('MDT'), MainWeapon = mode('Burtgang'), Xp = mode('On')}
+local xi, xe = SetBuilder.build_idle_set(idle_base), SetBuilder.build_engaged_set(engaged_base)
+check("Xp On idle: Burtgang + Duban, not MDT's Aegis", xi.main .. ' + ' .. xi.sub, 'Burtgang + Duban')
+check('Xp On fighting: Malevolence + Duban', xe.main .. ' + ' .. xe.sub, 'Malevolence + Duban')
+check('Xp On fighting: meleeXp laid over', xe.body, 'meleeXp')
+state.Xp = mode('Off')
+check("Xp Off: the stance's shield again (MDT: Aegis)", SetBuilder.build_idle_set(idle_base).sub, 'Aegis')
+sets.idleXp, sets.meleeXp = nil, nil
 -- an idle set missing: Mote's set stays
 sets.idle.PDT = nil
 e, i = wear('PDT', 'MDT')

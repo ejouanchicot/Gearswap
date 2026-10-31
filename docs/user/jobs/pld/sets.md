@@ -125,7 +125,10 @@ optimizer of such a set only looks for those pieces and leaves the rest to `sets
 Tanking, every job ability (not weaponskills) keeps its own set and also gets
 the slots where `sets.EnmityMax` differs from `sets.FullEnmity`. The provided
 `sets.EnmityMax` is `sets.FullEnmity` plus the Srivatsa shield, so in that stance every
-ability swaps your shield to Srivatsa. Spells: see *Enmity spells* below.
+ability swaps your shield to Srivatsa. It is meant as the most Enmity you can wear, with no
+concession: a sword written in it is worn too (changing the main hand loses your TP). In the
+Atelier its optimizer looks for Enmity alone, with no damage taken or HP minimum, sword and
+shield included. Spells: see *Enmity spells* below.
 
 ## Spells
 

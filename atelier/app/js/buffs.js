@@ -258,7 +258,7 @@ const JAS = {
   'Building Flourish': {job: 'DNC', lvl: 50, max: 'building', fx: m => m ? {crit: 15, acc: 50, atkp: .30, wsd: 20} : {crit: 10, acc: 40, atkp: .25}},
   // the dances (BG Wiki), a main DNC's merit abilities, one at a time: their floor, what holds through the effect
   'Saber Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', max: 'saber', fx: () => ({da: 50})},
-  'Fan Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({pdmgmul: 1 - danceFloor('fan', shownPieces()) / 100, enmity: 15})},
+  'Fan Dance': {job: 'DNC', lvl: 75, mainOnly: true, excl: 'dance', fx: () => ({pdmgmul: 1 - danceFloor('fan', shownPieces()) / 100, enmityJa: 15})},
   // BG Wiki, Climactic Flourish: "Forces the first swing of the next X attack rounds to critical hit and grants them a
   // base damage bonus equal to 50% of your CHR", "Works on the first hit of any Weapon Skills"; job points "Increases CHR
   // bonus by 1%"; the Maculele Tiara's damage bonus. Nothing on the sheet: the weaponskill's damage counts it (the engine,
@@ -266,7 +266,9 @@ const JAS = {
   'Climactic Flourish': {job: 'DNC', lvl: 80, mainOnly: true, fx: () => ({})},
   'Haste Samba': {job: 'DNC', from: 'DNC', lvl: 45, party: true, fx: (m, l, ja) => ({jahaste: sambaHaste(ja)})},
   'Swordplay': {job: 'RUN', lvl: 20, max: 'swordplay', fx: m => ({acc: 60 + (m ? 20 : 0), eva: 60 + (m ? 20 : 0)})},
-  'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmity: m ? 100 : 50})},
+  // (a job ability's Enmity is outside the +200 of the gear and the spells, enmityJa: BG Wiki Enmity, "Job Ability
+  // Enmity changes are applied in a separate step from gear, and are not subject to these caps")
+  'Sentinel': {job: 'PLD', lvl: 30, fx: m => ({enmityJa: m ? 100 : 50})},
   'Rampart': {job: 'PLD', lvl: 62, fx: () => ({dmgmul: .75})},
   'Crusade': {job: ['PLD', 'RUN'], lvl: 88, fx: () => ({enmity: 30})},
   // the shield's block (Guide_Paladin: Palisade +30 % block rate, Reprisal the block rate x1.5, x3 with Priwen: figures.ts tankBox)
