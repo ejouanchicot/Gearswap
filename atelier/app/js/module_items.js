@@ -1,16 +1,16 @@
 // GearSwap Atelier · module_items.js: the lists of the Modules part (modules.js), made to be handled rather than typed:
 // each entry a tile that is dragged to its place (the order of a list is the order GearSwap uses), an item with the
 // game's own icon, a new item picked in a window of icons, a bag picked among the bags that exist.
-// The usable items (medicine, food, tools) come from usables_data.js; equipment from the page's catalog and exports.
+// The items a list can name (medicine, food, ninja tools, ammo, materials) come from usables_data.js; equipment from the page's catalog and exports.
 // (loaded before modules.js: see atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {miAdd: '+ Ajouter un objet', miAddTip: 'Ouvre la liste des objets du jeu, avec leurs icônes : clique sur celui à ajouter.',
-  miTitle: 'Ajouter un objet', miSearch: 'Chercher parmi {n} objets…', miUsed: 'Déjà dans tes listes', miFound: 'Objets du jeu', miMore: 'Tape quelques lettres pour chercher dans tous les objets utilisables du jeu.',
+  miTitle: 'Ajouter un objet', miSearch: 'Chercher parmi {n} objets…', miUsed: 'Déjà dans tes listes', miFound: 'Objets du jeu', miMore: 'Tape quelques lettres pour chercher dans les objets du jeu : médecine, nourriture, outils ninja, munitions, matériaux.',
   miNone: 'Aucun objet à ce nom.', miPickTip: 'Ajouter {v} à la fin de la liste.', miHas: 'Déjà dans cette liste', miBagTip: 'Ajouter {v} à la fin de la liste.',
   miDragTip: 'Glisse-le pour changer sa place : l’ordre de la liste est l’ordre utilisé. La croix le retire.',
   miMode: 'Sort du mode {m}', miModeTip: 'Pas un sort fixe : celui qui est choisi dans ce mode au moment où tu lances la commande. Écrit « {v} » dans le fichier.'});
 Object.assign(T.en, {miAdd: '+ Add an item', miAddTip: 'Opens the list of the game\'s items, with their icons: click the one to add.',
-  miTitle: 'Add an item', miSearch: 'Search {n} items…', miUsed: 'Already in your lists', miFound: 'Items of the game', miMore: 'Type a few letters to search every usable item of the game.',
+  miTitle: 'Add an item', miSearch: 'Search {n} items…', miUsed: 'Already in your lists', miFound: 'Items of the game', miMore: 'Type a few letters to search the game’s items: medicine, food, ninja tools, ammo, materials.',
   miNone: 'No item of that name.', miPickTip: 'Add {v} at the end of the list.', miHas: 'Already in this list', miBagTip: 'Add {v} at the end of the list.',
   miDragTip: 'Drag it to change its place: the order of the list is the order used. The cross removes it.',
   miMode: 'Spell of the {m} mode', miModeTip: 'Not a fixed spell: the one chosen in that mode when you use the command. Written "{v}" in the file.'});

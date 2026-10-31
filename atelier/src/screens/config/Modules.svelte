@@ -26,7 +26,7 @@
 {#snippet refill(s: RefillSpecial)}<div class="rfnow"><small>{s.now}</small><div class="rfitems">{#each s.items as it, i (i)}<span class="rfitem">{@html it.icoHtml}{it.label}<b>×{it.count}</b></span>{:else}<i>{s.empty}</i>{/each}</div></div>
   <div class="rfmodes"><span class="aseg">{#each s.modes as m (m.attr)}<button type="button" class:on={m.on} data-refillmode={m.attr} title={m.tip}>{m.label}</button>{/each}</span></div>
   {#if s.list}<div class="rflist"><ModCtl c={s.list.ctl} /></div>{:else if s.addExtra}<div class="rfadd"><button type="button" class="modaddbtn" data-refillmode={s.addExtra.attr}>{s.addExtra.label}</button></div>{/if}
-  <div class="rfsubs"><b title={s.subs.tip}>{s.subs.title}</b>{#if s.subs.wait}<small class="rfwait">{s.subs.wait}</small>{/if}
+  <div class="rfsubs"><b title={s.subs.tip}>{s.subs.title}</b>
     {#each s.subs.rows as sr (sr.del)}<div class="rfsub"><div class="rfsubh"><span>{sr.label}</span><button type="button" class="medel" data-refilldelsub={sr.del} title={sr.delTip} aria-label={sr.delTip}>×</button></div>{#if sr.row}<div class="rctl"><ModCtl c={sr.row.ctl} /></div>{:else}<small>{sr.summary}</small>{/if}</div>{/each}
     {#if s.subs.add}<select class="meadd" data-refilladdsub={s.subs.add.attr}><option value="">{s.subs.add.label}</option>{#each s.subs.add.options as o (o)}<option value={o}>/{o}</option>{/each}</select>{/if}</div>{/snippet}
 {#snippet colors(s: HudColors)}<div class="hcol">{#each s.parts as p (p.attr)}<label class="hcsw" title={p.label}><input type="color" value={p.hex} data-hudcolor={p.attr}><span>{p.label}</span>{#if p.auto}<em>{p.auto}</em>{/if}{#if p.reset}<button type="button" data-hudcolorreset={p.reset} title={p.resetTip} aria-label={p.resetTip}>↺</button>{/if}</label>{/each}</div>

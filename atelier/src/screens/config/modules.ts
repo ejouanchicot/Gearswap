@@ -22,7 +22,7 @@ export interface RefillSpecial {
   k: 'refill'; now: string; items: Array<{label: string; count: number; icoHtml: string}>; empty: string;
   modes: Array<{label: string; tip: string; attr: string; on: boolean}>;
   list: null | RegRow; addExtra: null | {label: string; attr: string};
-  subs: {title: string; tip: string; wait: string; rows: Array<{label: string; row: {ctl: ModCtl} | null; summary: string; del: string; delTip: string}>; add: null | {label: string; attr: string; options: string[]}};
+  subs: {title: string; tip: string; rows: Array<{label: string; row: {ctl: ModCtl} | null; summary: string; del: string; delTip: string}>; add: null | {label: string; attr: string; options: string[]}};
 }
 /** A table of tiers {min, max, spell} (the Cure tiers) as an HP gauge: a part a tier, a handle between two to drag */
 export interface Gauge { attr: string; off: boolean; parts: Array<{label: string; from: number; flex: number; tip: string}>; end: string; fix: string }
@@ -262,11 +262,12 @@ function refillCard(d: LegacyExport, f: LegacyConfigFile): RegCard {
   const j = S.job || '', file = f.file, now = refillNow(d, file), fam = MOD_CATALOG.find(x => x.id === 'refill')!;
   const rowOf = (key: string) => { const r = mcRows(d, fam).find(x => x.f.file === file && x.x.path === key); return r ? regRow(d, r, '') : null; };
   const label = (n: string | string[]) => Array.isArray(n) ? n[0]! : n;
-  const p = modParsed((modFiles(d) as LegacyConfigFile[]).find(x => x.file === file) || f), extra = rowOf('extra');
-  const subs = refillSubs(file), waiting = !!modEdits(file).subjobs, opts = (fam.items.find(it => it.key === 'default') || {}) as LegacyAny;
+  const extra = rowOf('extra');
+  const subs = refillSubs(file), opts = (fam.items.find(it => it.key === 'default') || {}) as LegacyAny;
   const subRows = Object.keys(subs).sort().map(s => {
-    const x = p.byPath['subjobs.' + s], ed = modEdits(file)['subjobs.' + s], off = modCanWrite(f) ? '' : 'disabled';
-    const row = !waiting && x ? {ctl: ctlOf(f, x, ed ? ed.v : x.value, file, x.path, off, opts)} : null;
+    // a list of the table waiting to be saved too (reg_special.js rfStagedSub)
+    const x = modField(file, 'subjobs.' + s), off = modCanWrite(f) ? '' : 'disabled';
+    const row = x ? {ctl: ctlOf(f, x, modValue(file, x.path), file, x.path, off, opts)} : null;
     return {label: t('rfSub', {s}), row, summary: row ? '' : subs[s]!.map(e => label(e.name) + ' ×' + e.target).join(', ') || t('rfEmpty'), del: file + '|' + s, delTip: t('rfDelSub')};
   });
   const missing = MACRO_JOBS.filter(s => s !== j && !subs[s]);
@@ -277,7 +278,7 @@ function refillCard(d: LegacyExport, f: LegacyConfigFile): RegCard {
       items: now.list.map(e => ({label: label(e.name), count: e.target, icoHtml: itemIco(label(e.name))})),
       modes: [{label: t('rfModeCommon'), tip: t('rfModeCommonTip'), attr: file + '|common', on: now.mode === 'common'}, {label: t('rfModeOwn'), tip: t('rfModeOwnTip', {j}), attr: file + '|own', on: now.mode === 'own'}],
       list: now.mode === 'own' ? rowOf('default') : extra, addExtra: now.mode === 'common' && !extra ? {label: t('rfAddExtra'), attr: file + '|extra'} : null,
-      subs: {title: t('rfSubs'), tip: t('rfSubsTip'), wait: waiting ? t('rfSubWait') : '', rows: subRows, add: modCanWrite(f) ? {label: t('rfAddSub'), attr: file, options: missing} : null}}};
+      subs: {title: t('rfSubs'), tip: t('rfSubsTip'), rows: subRows, add: modCanWrite(f) ? {label: t('rfAddSub'), attr: file, options: missing} : null}}};
 }
 
 // the subjects that reach several files: a section a file, each named by its file

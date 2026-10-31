@@ -164,6 +164,7 @@ declare function modRestFr(file: string, path: string): null | {title: string; d
 declare function modName(x: {key?: string | null; index?: number}): string;
 declare function modDoc(lines?: string[]): string;
 declare function modValue(file: string, path: string): unknown;
+declare function modField(file: string, path: string): LegacyField | undefined;
 declare function modFileInfo(f: LegacyConfigFile): {name: string; what: string};
 declare function modKnown(d: LegacyExport, f: LegacyConfigFile): Record<string, LegacyCatalogRow>;
 declare function modFileGroup(f: LegacyConfigFile): string;

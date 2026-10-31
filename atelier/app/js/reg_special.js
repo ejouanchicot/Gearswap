@@ -12,7 +12,7 @@ Object.assign(T.fr, {regOwn: '{j} seulement',
   rfTitle: 'Refill de {j}', rfNow: 'Sur {j}, //gs c rf garde dans ton inventaire :', rfEmpty: 'rien', rfModeCommon: 'Liste commune + mes objets', rfModeOwn: 'Ma propre liste',
   rfModeCommonTip: 'La liste de tous les jobs (Inventaire → Refill), plus les objets ajoutés ici.', rfModeOwnTip: 'Une liste à toi sur {j}, à la place de la liste commune.',
   rfExtra: 'Mes objets en plus', rfOwn: 'Ma liste sur {j}', rfAddExtra: '+ Ajouter des objets', rfSubs: 'Listes par sub', rfSubsTip: 'Avec ce sub, sa liste remplace celle du dessus.',
-  rfSub: 'Avec le sub /{s}', rfAddSub: '+ Une liste pour un sub…', rfDelSub: 'Retirer la liste de ce sub', rfSubWait: 'Enregistre d’abord pour modifier les objets des listes par sub.',
+  rfSub: 'Avec le sub /{s}', rfAddSub: '+ Une liste pour un sub…', rfDelSub: 'Retirer la liste de ce sub',
   rfSubCopy: 'commence avec ta liste actuelle',
   hudColors: 'HUD : couleurs', hudColValues: 'Couleur des valeurs', hudColAuto: 'auto', hudColReset: 'Revenir à la couleur standard',
   hudCol_title: 'Titre', hudCol_section_title: 'Titres de section', hudCol_description: 'Noms des lignes', hudCol_key: 'Touches', hudCol_value: 'Valeurs',
@@ -33,7 +33,7 @@ Object.assign(T.en, {regOwn: '{j} only',
   rfTitle: '{j} refill', rfNow: 'On {j}, //gs c rf keeps in your inventory:', rfEmpty: 'nothing', rfModeCommon: 'Common list + my items', rfModeOwn: 'My own list',
   rfModeCommonTip: 'The list of every job (Inventory → Refill), plus the items added here.', rfModeOwnTip: 'A list of your own on {j}, in place of the common one.',
   rfExtra: 'My extra items', rfOwn: 'My list on {j}', rfAddExtra: '+ Add items', rfSubs: 'Lists by subjob', rfSubsTip: 'With this subjob, its list replaces the one above.',
-  rfSub: 'With /{s}', rfAddSub: '+ A list for a subjob…', rfDelSub: 'Remove this subjob’s list', rfSubWait: 'Save first to change the items of the subjob lists.',
+  rfSub: 'With /{s}', rfAddSub: '+ A list for a subjob…', rfDelSub: 'Remove this subjob’s list',
   rfSubCopy: 'starts with your current list',
   hudColors: 'HUD: colours', hudColValues: 'Colour of the values', hudColAuto: 'auto', hudColReset: 'Back to the standard colour',
   hudCol_title: 'Title', hudCol_section_title: 'Section titles', hudCol_description: 'Row names', hudCol_key: 'Keys', hudCol_value: 'Values',
@@ -128,10 +128,18 @@ function refillSubs(file){
   if (x && x.kind === 'map') for (const c of x.fields) out[c.key] = rfPlain(modValue(file, c.path));
   return out;
 }
+// While the table of subjob lists waits to be saved (a subjob added or removed), a subjob's list is a part of it: its
+// table of lines reads and changes it there (modules.js modField, modValue, modStage), so a list just added is edited
+// before any save
+function rfStagedSub(file, path){
+  const m = /^subjobs\.([A-Z]{3})$/.exec(path), ed = m && /_REFILL\.lua$/.test(file) ? modEdits(file).subjobs : null;
+  if (!ed || !ed.v[m[1]]) return null;
+  return {kind: 'rows', cols: ['name', 'target'], fields: [], path, value: ed.v[m[1]], sub: m[1]};
+}
 function refillLua(subs, nl){
   const item = e => `{name = ${Array.isArray(e.name) ? '{' + e.name.map(n => luaQuote(n, "'")).join(', ') + '}' : luaQuote(e.name, "'")}, target = ${Number(e.target) || 0}}`;
   const keys = Object.keys(subs);
-  return keys.length ? '{' + nl + keys.map(k => `    ${/^[A-Z]{3}$/.test(k) ? k : '[' + luaQuote(k, "'") + ']'} = {` + nl + subs[k].map(e => '        ' + item(e)).join(',' + nl) + nl + '    },').join(nl) + nl + '}' : '{}';
+  return keys.length ? '{' + nl + keys.map(k => `    ${/^[A-Z]{3}$/.test(k) ? k : '[' + luaQuote(k, "'") + ']'} = {` + nl + subs[k].filter(e => !mrEmpty(e.name)).map(e => '        ' + item(e)).join(',' + nl) + nl + '    },').join(nl) + nl + '}' : '{}';
 }
 function refillStageSubs(file, subs){
   if (!regEnsure(file, 'subjobs')) return;

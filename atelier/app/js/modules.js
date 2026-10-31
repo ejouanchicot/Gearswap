@@ -267,7 +267,7 @@ const modFiles = d => modAllFiles(d).filter(f => f.part !== 'macro' && (S.modToo
 const modEdits = file => (((S._modEdits = S._modEdits || {})[S.char] = S._modEdits[S.char] || {})[file] = S._modEdits[S.char][file] || {});
 const modEditable = x => x.kind === 'bool' || x.kind === 'num' || x.kind === 'str' || x.kind === 'list' || x.kind === 'rows';
 // A setting of a file of the export shown, by its path
-const modField = (file, path) => { const f = modFiles(data()).find(x => x.file === file); return f && modParsed(f).byPath[path]; };
+const modField = (file, path) => { const f = modFiles(data()).find(x => x.file === file); return rfStagedSub(file, path) || (f && modParsed(f).byPath[path]); };
 // The catalog's entry for a setting (its columns, its kind of list), when it has one
 function mcItem(file, path){
   for (const fam of MOD_CATALOG) for (const r of mcRows(data(), fam)) if (r.f.file === file && r.x.path === path) return r.it;
@@ -287,6 +287,7 @@ function modSource(x, v){
 const modShow = v => Array.isArray(v) ? v.join(', ') : typeof v === 'boolean' ? (v ? 'true' : 'false') : String(v);
 // A new value for a setting: kept aside until "Save" (back to the file's own value: nothing kept)
 function modStage(file, path, v){
+  const sub = rfStagedSub(file, path); if (sub) { const subs = refillSubs(file); subs[sub.sub] = v; refillStageSubs(file, subs); return; }
   const f = modFiles(data()).find(x => x.file === file), x = f && modParsed(f).byPath[path], edits = modEdits(file);
   if (!x || !modEditable(x)) return;
   const rows = x.kind === 'rows';
@@ -492,6 +493,7 @@ document.addEventListener('pointerdown', e => {
 });
 // The value shown for a setting: the one waiting, else the file's
 function modValue(file, path){
+  const sub = rfStagedSub(file, path); if (sub) return sub.value;
   const f = modFiles(data()).find(x => x.file === file), x = f && modParsed(f).byPath[path], ed = modEdits(file)[path];
   return ed ? ed.v : x && x.value;
 }
