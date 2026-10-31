@@ -10,7 +10,7 @@ every shared feature that works on PLD, and the files you can edit.
 
 PLD is set up as a tank. A stance mode (`HybridMode`) chooses your idle and engaged
 sets; a weapon mode chooses the sword, and in the stances you list in `PLD_WEAPONS.lua`
-the shield follows the weapon (the author's file: Sortie and the /SCH stances). Two weaponskill slots follow the weapon in hand, so two macros cover every
+the shield follows the weapon (the author's file: the /SCH stances). Two weaponskill slots follow the weapon in hand, so two macros cover every
 sword. GearSwap also fires Divine Emblem before Flash and Majesty before Protect III-V
 and Cure III / IV, picks your cure set by target, and swaps to a SIRD Phalanx set when
 you ask for it.
@@ -19,8 +19,8 @@ The stance list depends on your subjob:
 
 | Subjob | Stances (default in **bold**) | Notes |
 |---|---|---|
-| Any but /SCH and /RUN | **PDT**, MDT | No Sortie stance: Sortie is played under /SCH or /RUN |
-| /SCH, /RUN | **PDT**, MDT, Sortie, DPS, Tanking, Hoxne | PDT and MDT as on any subjob; Sortie narrows the weapon and rune lists and turns Phalanx SIRD On; DPS, Tanking and Hoxne (the "/SCH stances" of this page) are a Sortie-only setup (everything this page says of the /SCH stances holds for /RUN too, which keeps the Sortie runes; Accession sneak/invi stays /SCH only): with the author's `PLD_WEAPONS.lua` Tanking always holds Burtgang + Aegis; Hoxne keeps the Hoxne Ampulla in the ammo slot |
+| Any but /SCH and /RUN | **PDT**, MDT, DPS | PDT and MDT fight in their idle set (`sets.idle.PDT` / `sets.idle.MDT`): the tanking comes first; DPS is the TP build (`sets.engaged.DPS`, Naegling or Excalibur) |
+| /SCH, /RUN | **PDT**, MDT, DPS, Tanking, Hoxne | PDT, MDT and DPS as on any subjob; DPS, Tanking and Hoxne (the "/SCH stances" of this page) are a Sortie-only setup (everything this page says of the /SCH stances holds for /RUN too, which keeps the Sortie runes; Accession sneak/invi stays /SCH only): with the author's `PLD_WEAPONS.lua` Tanking always holds Burtgang + Aegis; Hoxne keeps the Hoxne Ampulla in the ammo slot |
 
 ## All keys on this job
 
@@ -30,14 +30,16 @@ the keys that are bound now, with the current value of each mode.
 | Key | Does | Condition / default |
 |---|---|---|
 | `^numpad9` | Cycle `HybridMode` (your stance) | Every subjob; the list and default depend on the subjob (above) |
-| `^numpad1` | Cycle `MainWeapon` | Default Excalibur (put on Naegling when you enter a /SCH stance). **Unbound and hidden in the /SCH Tanking stance** |
-| `^numpad2` | Cycle `PhalanxSIRD` (Off, On) | Every subjob. Default Off (On in the /SCH stances and in the Sortie stance) |
+| `^numpad1` | Cycle `MainWeapon` | Default Burtgang (put on Naegling when you enter DPS or a /SCH stance). **In the Tanking stance this key cycles `StanceWeapon` instead** (Auto = Burtgang, Naegling, Excalibur: the weapon Tanking holds) |
+| `^numpad0` | Cycle `Shield` (Auto, Duban, Aegis, Blurred Shield +1) | Every stance. Auto = the shield the stance and weapon give (`PLD_WEAPONS.lua`) |
+| `^numpad2` | Cycle `PhalanxSIRD` (Off, On) | Every subjob. Default Off (On in the /SCH stances) |
 | `^numpad3` | Cycle `RuneMode` (Ignis ... Tenebrae) | /RUN only. Default Ignis; used by `//gs c rune` |
 | `^numpad3` | Cycle `Regen` (Off, On) | /SCH only. Default Off |
 | `^numpad4` | Cycle `Xp` (Off, On) | /RDM only. Default Off |
 | `^numpad5` | Cycle `WS1`: the weaponskill of `//gs c ws1` | Every subjob; the list follows the weapon in hand |
 | `^numpad6` | Cycle `WS2`: the weaponskill of `//gs c ws2` | Every subjob; the list follows the weapon in hand |
 | `^numpad7` | Cycle `Regen` (Off, On) | /RUN only. Default Off |
+| `^numpad8` | Cycle `IdleDefense` (MDT, PDT): the idle set of DPS and Hoxne | Shown in DPS and Hoxne only. Default MDT |
 | `#numpad0` | Auto Medicine on / off | Common key, every job |
 | `!numpad7` | Your other characters follow you (toggle) | Common key; needs a box group ([dual-box](../../guides/dualbox.md)) |
 | `!numpad8` | Other characters' automation on / off | Common key; box group |
@@ -135,7 +137,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Feature | On PLD |
 |---|---|
 | Automatic abilities | Divine Emblem before Flash; Majesty before Protect III / IV / V and Cure III / IV. Each is fired only when ready and its buff is down, then the spell is sent again once the buff is up. Tried once per spell. Both on by default: `auto_divine_emblem = false` / `auto_majesty = false` in `pld/combat/PLD_CONFIG.lua` turns one off |
-| Enmity in Sortie | In the Sortie stance and the /SCH Tanking stance, spells that wear `sets.FullEnmity` wear `sets.EnmityMax`, and job abilities get the pieces `sets.EnmityMax` adds ([sets.md](sets.md)) |
+| Enmity in the Tanking stance | In the /SCH Tanking stance, spells that wear `sets.FullEnmity` wear `sets.EnmityMax`, and job abilities get the pieces `sets.EnmityMax` adds ([sets.md](sets.md)) |
 | Hoxne stance (/SCH) | The ammo slot stays on the Hoxne Ampulla while the stance is on; freed when you leave it, change job, reload or run `//gs c wo` |
 | Movement speed | `sets.MoveSpeed` is added to your idle gear while you run outside town; in town you wear `sets.idle.Town` (Adoulin: `sets.Adoulin`) with your weapon and shield |
 | Sneak / Invisible | Alt+Z / Alt+X cover you and the group. With /SCH and a stratagem charge, PLD covers the whole group with Accession unless `SneakInviAOE` is Off ([guide](../../guides/stealth.md)) |
@@ -160,7 +162,7 @@ for refill, `combat/` for the rest):
 
 | File | What you change there |
 |---|---|
-| `PLD_STATES.lua` | Modes, their values and defaults, the Sortie and /SCH lists |
+| `PLD_STATES.lua` | Modes, their values and defaults, the /SCH lists |
 | `PLD_KEYBINDS.lua` | The PLD keys |
 | `PLD_CUSTOM.lua` | Your own modes, keys and gear rules (empty by default) |
 | `PLD_HUD.lua` | Order of the HUD sections and rows on PLD (also written by `//gs c ui order` / `roworder`) |

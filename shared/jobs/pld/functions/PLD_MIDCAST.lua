@@ -7,7 +7,7 @@
 ---   - Cure to Cure IV: CureSelf/CureOther by target via CureSetBuilder
 ---   - Enmity spells: Flash, Enlight
 ---   - Phalanx: SIRD set when PhalanxSIRD or Xp is On, else Phalanx set
----   - EnmityOverride: sets.EnmityMax in Sortie / Tanking
+---   - EnmityOverride: sets.EnmityMax in the Tanking stance
 ---   - Enhancing Magic: Database-driven spell_family routing
 ---   - Divine Magic, Blue Magic support (PLD/BLU subjob)
 ---

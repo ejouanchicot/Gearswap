@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Debuff guard, cooldown check, auto-abilities (Majesty/Divine Emblem),
 ---   WS handling (with /SCH weaponskill variants), max-enmity override
----   (Sortie / Tanking).
+---   (the Tanking stance).
 ---
 ---   @file    shared/jobs/pld/functions/PLD_PRECAST.lua
 ---   @author  ejouanchicot

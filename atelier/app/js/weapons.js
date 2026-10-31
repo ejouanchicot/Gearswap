@@ -107,7 +107,9 @@ function holdWeapon(d, pieces, from, held){
 // The weapon of a weapon mode a set's path names: a part equal to one of its values (Naegling), else
 // the longest value a part starts with (LaphriaAFM3: Laphria); null when none
 function weaponOfPath(path, m){
-  const parts = segs(path), exact = parts.find(p => m.values.includes(p));
+  // (any weapon set of the file, not only the mode's list of now: PLD's DPS lists Naegling and Excalibur, and
+  // sets.engaged.BurtgangKC is still worn with BurtgangKC)
+  const parts = segs(path), exact = parts.find(p => m.values.includes(p)) || (m.sets ? parts.find(p => m.sets[p]) : null);
   if (exact) return exact;
   let best = null;
   for (const p of parts) for (const v of m.values) if (p.startsWith(v) && (!best || v.length > best.length)) best = v;
@@ -152,8 +154,24 @@ const AFM3_WEAPON = {WAR: 'Ukonvasara'};
 const isAfm3 = path => /AFM3\b/.test(path || '');
 // The mode that holds the main hand: MainWeapon, or BST's WeaponSet (shared/jobs/bst/functions/logic/set_builder.lua)
 const isMainMode = m => m.name === 'MainWeapon' || m.name === 'WeaponSet';
+// The stance a set's name says it is worn in (sets.engaged.DPS, sets.idle.PDT: a value of the stance mode right under
+// engaged or idle), or null: such a set is shown in its own stance, not in the one the game is in
+function setStance(path, hm){
+  const p = hm ? segs(path) : [];
+  return p.length === 2 && (p[0] === 'engaged' || p[0] === 'idle') && hm.values.includes(p[1]) ? p[1] : null;
+}
+// PLD: the weapon a stance puts in hand on entering it, when the stance the game is in is of the other kind
+// (pld/keys/PLD_STATES.lua install_profile: the TP stances take Naegling, back to a tank stance Burtgang)
+const PLD_STANCE_KIND = {PDT: 'tank', MDT: 'tank', Tanking: 'tank', DPS: 'tp', Hoxne: 'tp'};
+const PLD_KIND_WEAPON = {tank: 'Burtgang', tp: 'Naegling'};
 function withWeapons(s, ignore){
-  const d = data(), rules = (d && d.weapon_rules) || {}, hm = hybridMode(d), hybrid = hm && chosenWeapon(hm);
+  const d = data(), rules = (d && d.weapon_rules) || {}, hm = hybridMode(d);
+  // the stance shown: the set's own (its name), else the one chosen in the page's menu, else the game's
+  const ownStance = setStance(s.path, hm), hybrid = ownStance || (hm && chosenWeapon(hm));
+  // shown in a stance of another kind than the one the game is in (a tank set looked at while in DPS, DPS picked in
+  // the menu while the game is in PDT): the weapon that stance takes on entering it, not the game's
+  const kindOf = v => PLD_STANCE_KIND[v], gameStance = hm && hm.current;
+  const kindWeapon = S.job === 'PLD' && kindOf(hybrid) && kindOf(hybrid) !== kindOf(gameStance) ? PLD_KIND_WEAPON[kindOf(hybrid)] : null;
   const pieces = Object.assign({}, s.pieces), from = {}, picks = [];
   if (family(s.path, s.pieces) === 'weapons') return applyTrial(s, pieces, from, null);
   // a slot the set empties on purpose (GearSwap's `empty`, sets.naked) stays empty: no weapon mode fills it
@@ -182,6 +200,7 @@ function withWeapons(s, ignore){
     const ex = explicitWeapon(m, ignore);
     if (m.onlyEmpty) { if (ex) picks.push([m, ex]); else fill(m, chosenWeapon(m), `${m.desc} : ${chosenWeapon(m)}`, true); continue; }
     let v = ex || chosenWeapon(m), why = `${m.desc} : ${v}`;
+    if (!ex && kindWeapon && isMainMode(m) && m.sets[kindWeapon]) { v = kindWeapon; why = `${hybrid} : ${v}`; }
     // a variant named after a weapon (sets.engaged.Naegling, .NaeglingKC, .LaphriaAFM3) is worn with that weapon,
     // whatever weapon is chosen in the page
     const named = isMainMode(m) ? weaponOfPath(s.path, m) : null;
@@ -207,7 +226,11 @@ function withWeapons(s, ignore){
   // set_builder.lua apply_mode_shield): the mode laid it above; a two-handed weapon keeps its grip
   const shieldMode = weaponModes(d).find(m => m.name === 'Shield');
   const shieldChosen = shieldMode && (explicitWeapon(shieldMode, ignore) || chosenWeapon(shieldMode));
-  const shield = !hsOn && !shieldChosen && weapon && hybrid && ((rules.shields || {})[hybrid] || {})[weapon];
+  // the stance's default shield for a weapon without its own line, but a two-handed one and a weapon set holding its
+  // own off hand (PLD set_builder.lua apply_mode_shield: shields.<mode>.default)
+  const byWeapon = (rules.shields || {})[hybrid] || {}, weaponSet = weapon && d.sets.find(x => x.path === 'sets.' + weapon);
+  const shield = !hsOn && !shieldChosen && weapon && hybrid && (byWeapon[weapon]
+    || (!grip && !(weaponSet && weaponSet.pieces.sub && !isEmpty(weaponSet.pieces.sub)) && byWeapon.default));
   if (grip && !blank.has('sub')) { pieces.sub = {name: grip}; from.sub = t('gripFor', {w: weapon}); }
   else if (shield && !blank.has('sub')) { pieces.sub = {name: shield}; from.sub = t('shieldFor', {w: weapon, m: hybrid}); }
   // a weaponskill swaps no weapon: with no shield for the weapon in this stance (PLD_WEAPONS.lua), the off hand is
@@ -217,7 +240,7 @@ function withWeapons(s, ignore){
     // read from the job's own sets, not S._bypath: the set list fills that during the redraw, after the weapon menus
     // ask, so on the first redraw of a job it still held the previous job's sets
     const named = p => d.sets.find(x => x.path === p || (x.aliases || []).includes(p));
-    const own = 'sets.engaged.' + (STANCE_ENGAGED[hybrid] || hybrid), base = named(own) ? own : 'sets.engaged';
+    const own = (S.job === 'PLD' && PLD_STANCE_FIGHTS[hybrid]) || 'sets.engaged.' + hybrid, base = named(own) ? own : 'sets.engaged';
     const sp = named(base) && named(base).pieces.sub;
     if (sp && !isEmpty(sp) && subFits(pieces.main, sp)) { pieces.sub = sp; from.sub = t('subOfStance', {s: base}); }
   }
@@ -258,8 +281,9 @@ function withWeapons(s, ignore){
     }
   }
 }
-// The engaged set a stance wears when it borrows another's (PLD set_builder.lua ENGAGED_SET_BY_MODE)
-const STANCE_ENGAGED = {Sortie: 'TP', Tanking: 'MDT'};
+// The set a PLD stance fights in when it is not its own engaged set (shared/jobs/pld/functions/logic/set_builder.lua
+// ENGAGED_SET_BY_MODE): the tank stances fight in their idle set (2026-10-31)
+const PLD_STANCE_FIGHTS = {PDT: 'sets.idle.PDT', MDT: 'sets.idle.MDT', Tanking: 'sets.idle.MDT'};
 // The ammo the stance locks (ampulla_lock.lua stance_ammo): the Ampulla in Hoxne, null for any other stance. Not
 // checked against what you own: the export's owned list leaves the Ampulla out
 function stanceAmmo(d, hm, hybrid){

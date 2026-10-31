@@ -318,7 +318,7 @@ const JOB_GUIDE_EN = {
   ]
  ],
  "PLD": [
-  "PLD is set up as a tank. A stance mode (HybridMode) chooses your idle and engaged sets; a weapon mode chooses the sword, and in the stances you list in PLD_WEAPONS.lua the shield follows the weapon (the author's file: Sortie and the /SCH stances). Two weaponskill slots follow the weapon in hand, so two macros cover every sword. GearSwap also fires Divine Emblem before Flash and Majesty before Protect III-V and Cure III / IV, picks your cure set by target, and swaps to a SIRD Phalanx set when you ask for it. The stance list depends on your subjob:",
+  "PLD is set up as a tank. A stance mode (HybridMode) chooses your idle and engaged sets; a weapon mode chooses the sword, and in the stances you list in PLD_WEAPONS.lua the shield follows the weapon (the author's file: the /SCH stances). Two weaponskill slots follow the weapon in hand, so two macros cover every sword. GearSwap also fires Divine Emblem before Flash and Majesty before Protect III-V and Cure III / IV, picks your cure set by target, and swaps to a SIRD Phalanx set when you ask for it. The stance list depends on your subjob:",
   []
  ],
  "PUP": [

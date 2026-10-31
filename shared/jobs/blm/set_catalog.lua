@@ -105,11 +105,11 @@ return {
     {'midcast.IntEnfeebles', when = 'Casting a black magic enfeeble (the game lists the spell as Black Magic)', fr = 'Quand tu lances un affaiblissement de magie noire (Sleep, Bind, Blind, Poison…).', base = 'midcast.Enfeebling Magic'},
     {'midcast.MndEnfeebles', when = 'Casting a white magic enfeeble (the game lists the spell as White Magic)', fr = 'Quand tu lances un affaiblissement de magie blanche (Slow, Paralyze, Silence, Dia…).', base = 'midcast.Enfeebling Magic'},
     -- P7 [skill][type], type from ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type
-    {'midcast.IntEnfeebles.{type:IntEnfeebles}', when = 'Casting a black magic enfeeble of that kind (read only when sets.midcast.IntEnfeebles exists)', fr = 'Quand tu lances un affaiblissement de magie noire de ce genre.',
+    {'midcast.IntEnfeebles.{type:IntEnfeebles}', when = 'Casting a black magic enfeeble of that kind (read only when sets.midcast.IntEnfeebles exists)', fr = 'Quand tu lances un affaiblissement de magie noire de ce type.',
         base = 'midcast.IntEnfeebles'},
-    {'midcast.MndEnfeebles.{type:MndEnfeebles}', when = 'Casting a white magic enfeeble of that kind (read only when sets.midcast.MndEnfeebles exists)', fr = 'Quand tu lances un affaiblissement de magie blanche de ce genre.',
+    {'midcast.MndEnfeebles.{type:MndEnfeebles}', when = 'Casting a white magic enfeeble of that kind (read only when sets.midcast.MndEnfeebles exists)', fr = 'Quand tu lances un affaiblissement de magie blanche de ce type.',
         base = 'midcast.MndEnfeebles'},
     -- enfeeble_set_for falls back to 'Enfeebling Magic' when the MND / INT set is missing
-    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'Casting an enfeeble of that kind while its MndEnfeebles / IntEnfeebles set is missing (read only when sets.midcast[\'Enfeebling Magic\'] exists)', fr = 'Quand tu lances un affaiblissement de ce genre, si tu n’as pas de set MndEnfeebles ou IntEnfeebles.',
+    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'Casting an enfeeble of that kind while its MndEnfeebles / IntEnfeebles set is missing (read only when sets.midcast[\'Enfeebling Magic\'] exists)', fr = 'Quand tu lances un affaiblissement de ce type, si tu n’as pas de set MndEnfeebles ou IntEnfeebles.',
         base = 'midcast.Enfeebling Magic'},
 }

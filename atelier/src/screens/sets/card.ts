@@ -169,6 +169,12 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   if (optable && optPageOpen(s)) return {k: 'page', view: optPageView(s, wsName)};
   // its actions on the title line: the optimizer, then deleting it
   const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s)};
+  // a job ability's set on sets.precast.JA that none of your pieces can boost: nothing to optimize here, the gear it
+  // wears is sets.precast.JA's (stat_opt.js jaOverlayBase, jaBoostOwned)
+  if (acts.opt && jaOverlayBase(s) && !jaBoostOwned(s)) {
+    acts.opt = null;
+    foot.push(`<span class="keymiss">${t('jaNoPiece', {a: esc(segs(s.path).pop() as string), b: `<button type="button" class="linkbtn" data-addopen="sets.precast.JA">sets.precast.JA</button>`})}</span>`);
+  }
   let title: TitleView, versions: Versions, ctl: CardView['ctl'];
   if (ws) {
     title = wsTitle(s, acts);

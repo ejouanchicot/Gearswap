@@ -452,6 +452,10 @@ function optResult(s, k, res, gains, o){
       && ((ownedOf() || {})[slot] || []).filter(x => x.name === p.name).length <= 1) continue;
     if (!samePiece(piece, a && !isEmpty(a) ? optPieces({x: a}).x : null)) tr[slot] = piece;
   }
+  // a movement set's search started empty (stat_opt.js moveSet): a piece of the set it did not keep is taken out, and
+  // an `empty` the file writes too (laid over the idle set, it strips the idle's piece: push.js overlaySet)
+  // (withWeapons leaves the `empty` out: the set's own pieces bring them back)
+  if (o.clearRest) for (const [slot, a] of Object.entries(Object.assign({}, s.pieces, plain))) if (!res.pieces[slot] && a && !['main', 'sub', 'range'].includes(slot)) tr[slot] = null;
   // free weapons: the pair found becomes the page's forced weapons (never written to a set)
   let weapons = '';
   const wsHeld = !o.eng && wsOfSet(s);

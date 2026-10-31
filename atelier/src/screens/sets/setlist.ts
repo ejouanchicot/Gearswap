@@ -122,7 +122,11 @@ export function setList(d: LegacyExport): SetList {
       if (!(S0.wsList || {})[key]) continue;
     }
     // (an enhancing set's version named Composure reads as what it is: the one cast on the others, stat_opt.js enhTarget)
-    const nameOf = (v: LegacyAny, k: number) => k === 0 ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : enhTarget(v.set) === 'Others' ? t('enhBtnOthers')
+    // the card of a whole category (Idle, Engaged: its category's head names it already) with no set of its own (an
+    // empty sets.idle): its versions side by side under that head, each by its name alone (MDT, PDT, Regen), not
+    // "Idle · MDT" over the others
+    const flat = c.top.length === 1 && c.top[0] === c.fam && !c.variants.some((v: LegacyAny) => v.label === 'Base');
+    const nameOf = (v: LegacyAny, k: number) => k === 0 && !flat ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : enhTarget(v.set) === 'Others' ? t('enhBtnOthers')
       : c.fam === 'midcast' && listModeValue(v.label) ? `${v.label} · ${t('lpModeTag')}` : v.label;
     const code = (v: LegacyAny) => S0.listPaths ? v.set.path : null;
     // its names folded under it: a line to open them (a search opens them)
@@ -136,7 +140,7 @@ export function setList(d: LegacyExport): SetList {
     const row = (v: LegacyAny, k: number) => {
       if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
       rows.push([i, k]);
-      out.push({k: 'row', cls: `setrow ${k === 0 ? '' : 'var'} ${usable[i] ? '' : 'nouse'}`, current: i === sel && k === vi(i), path: v.set.path, group: null, pick: i, vpick: k,
+      out.push({k: 'row', cls: `setrow ${k === 0 || flat ? '' : 'var'} ${usable[i] ? '' : 'nouse'}`, current: i === sel && k === vi(i), path: v.set.path, group: null, pick: i, vpick: k,
         title: t('ttRow', {p: v.set.path}), name: nameOf(v, k), ver: '', tried: false, marksHtml: listMarks(v.set) + listRowActs(v.set.path), code: code(v), pickerHtml: listGroupPicker(v.set.path)});
       aliasFold(v, k);
     };
@@ -147,7 +151,7 @@ export function setList(d: LegacyExport): SetList {
       const all: Array<[LegacyAny, number, string]> = [[v, k, 'Full'] as [LegacyAny, number, string]].concat(tiers), on = all.find(x => i === sel && x[1] === vi(i));
       const go = on || all.find(x => x[2] === buffTier()) || all[0]!, path = go[0].set.path;
       rows.push([i, go[1]]);
-      out.push({k: 'row', cls: `setrow ${k === 0 ? '' : 'var'}`, current: !!on, path, group: null, pick: i, vpick: go[1],
+      out.push({k: 'row', cls: `setrow ${k === 0 || flat ? '' : 'var'}`, current: !!on, path, group: null, pick: i, vpick: go[1],
         title: t('ttRowVers', {v: go[2], p: path, l: all.map(x => x[2]).join(', ')}), name: nameOf(v, k), ver: on && on[2] !== 'Full' ? on[2] : '',
         tried: all.some(x => trialCount(x[0].set)) && !trialCount(go[0].set), marksHtml: listMarks(go[0].set) + listRowActs(path), code: code(go[0]), pickerHtml: listGroupPicker(path)});
       all.forEach(x => aliasFold(x[0], x[1]));

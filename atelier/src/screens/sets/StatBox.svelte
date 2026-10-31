@@ -9,7 +9,9 @@
 <script lang="ts">
   import type {StatBox} from './figures';
 
-  let {box}: {box: StatBox} = $props();
+  // tabbed: one tab of the set's figures (Figures.svelte): its lines only, no band to fold it by
+  let {box, tabbed = false}: {box: StatBox; tabbed?: boolean} = $props();
 </script>
 
-<section class="box {box.cls}"><button class="boxh bufftoggle" data-fold={box.key} aria-expanded={box.open} title={box.foldTitle}><h3>{@html box.titleHtml}</h3><span class="meta">{#if box.summary}<b class="boxsum">{box.summary}</b>{/if}{box.count || ''}</span></button>{#if box.open}<div class="boxb">{@html box.noteHtml}{#if !box.bare}<ul class="statlist">{#each box.items as x, i (i)}{#if x.k === 'row'}<li class={x.cls} title={x.title}><span>{@html x.labelHtml}</span><b>{@html x.valueHtml}</b><i>{@html x.extraHtml}</i></li>{:else}{@html x.html}{/if}{/each}</ul>{/if}</div>{/if}</section>
+{#snippet body()}<div class="boxb">{@html box.noteHtml}{#if !box.bare}<ul class="statlist">{#each box.items as x, i (i)}{#if x.k === 'row'}<li class={x.cls} title={x.title}><span>{@html x.labelHtml}</span><b>{@html x.valueHtml}</b><i>{@html x.extraHtml}</i></li>{:else}{@html x.html}{/if}{/each}</ul>{/if}</div>{/snippet}
+{#if tabbed}{@render body()}{:else}<section class="box {box.cls}"><button class="boxh bufftoggle" data-fold={box.key} aria-expanded={box.open} title={box.foldTitle}><h3>{@html box.titleHtml}</h3><span class="meta">{#if box.summary}<b class="boxsum">{box.summary}</b>{/if}{box.count || ''}</span></button>{#if box.open}<div class="boxb">{@html box.noteHtml}{#if !box.bare}<ul class="statlist">{#each box.items as x, i (i)}{#if x.k === 'row'}<li class={x.cls} title={x.title}><span>{@html x.labelHtml}</span><b>{@html x.valueHtml}</b><i>{@html x.extraHtml}</i></li>{:else}{@html x.html}{/if}{/each}</ul>{/if}</div>{/if}</section>{/if}

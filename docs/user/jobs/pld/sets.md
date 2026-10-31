@@ -25,22 +25,24 @@ the value. PLD always needs the set: `equip_without_set` in `WEAPON_CONFIG.lua` 
 apply to it.
 
 **The shield** normally comes from the stance's set (`sub` in `sets.idle.PDT`,
-`sets.engaged.MDT`...). `PLD_WEAPONS.lua` (in `<YourName>/pld/combat/`) can decide it
-by the weapon in given stances instead, and then wins over the set. The provided file
+`sets.engaged.DPS`...). `PLD_WEAPONS.lua` (in `<YourName>/pld/combat/`) can decide it
+by the weapon in given stances instead, and then wins over the set; a stance's `default`
+shield goes with any weapon that has no line of its own, but a two-handed one (its grip)
+and a weapon set holding its own off hand (`sets.BurtgangKC`'s Kraken Club). The provided file
 has every line commented: nothing is forced, each stance wears its set's `sub`. The
 author's file has:
 
 | Stance | Weapon | Shield put on |
 |---|---|---|
-| Sortie | Burtgang | Aegis |
-| Sortie | Naegling | Blurred Shield +1 |
-| DPS, Tanking, Hoxne (/SCH) | Excalibur or Naegling | Duban |
+| PDT | Burtgang, or any weapon without its own line (`default`) | Duban |
+| MDT | Burtgang, or any weapon without its own line (`default`) | Aegis |
+| DPS, Tanking, Hoxne (/SCH) | Excalibur or Naegling, or any other (`default`) | Duban |
 | DPS, Tanking, Hoxne (/SCH) | Burtgang | Aegis |
 
 ```lua
 return {
     shields = {                  -- [stance] = {[weapon] = shield}
-        Sortie  = {Burtgang = 'Aegis', Naegling = 'Blurred Shield +1'},
+        PDT     = {Burtgang = 'Duban', default = 'Duban'},  -- default: any other weapon
         Tanking = {Excalibur = 'Duban', Naegling = 'Duban', Burtgang = 'Aegis'},
     },
     stance_weapon = {Tanking = 'Burtgang'},  -- the weapon a stance holds
@@ -59,8 +61,8 @@ keep Shining in it. The file is read when the job loads: reload after an edit.
 
 | Set | Worn when |
 |---|---|
-| `sets.idle.PDT` | Stance PDT |
-| `sets.idle.MDT` | Stance MDT, Sortie, and all three /SCH stances (DPS, Tanking, Hoxne) |
+| `sets.idle.PDT` (fighting too) | Stance PDT, standing and fighting; DPS and Hoxne standing with `IdleDefense` PDT |
+| `sets.idle.MDT` (fighting too) | Stance MDT and Tanking, standing and fighting; DPS and Hoxne standing with `IdleDefense` MDT (the default) |
 | `sets.idle` | Only if the stance's set above is missing |
 | `sets.idleXp` | `Xp` On (/RDM, Ctrl+Numpad4): laid over the idle set |
 | `sets.idleRegen` | `Regen` On (/SCH Ctrl+Numpad3, /RUN Ctrl+Numpad7): laid over the idle set |
@@ -79,10 +81,7 @@ legs, so the other slots keep your `sets.idle` pieces.
 
 | Set | Worn when |
 |---|---|
-| `sets.engaged.PDT` | Stance PDT |
-| `sets.engaged.MDT` | Stance MDT, and /SCH Tanking |
-| `sets.engaged.TP` | Stance Sortie |
-| `sets.engaged.DPS` | /SCH stance DPS |
+| `sets.engaged.DPS` | Stance DPS, every subjob: the TP build |
 | `sets.engaged.Hoxne` | /SCH stance Hoxne |
 | `sets.engaged.BurtgangKC` | `MainWeapon` BurtgangKC, **or a Kraken Club in your off hand** when the chosen weapon set has no `sub` of its own, whatever the stance |
 | `sets.engaged` | Only if the stance's set above is missing |
@@ -111,18 +110,21 @@ not by a set: see [TP bonus gear](../../features/tp-bonus.md).
 
 | Set | Worn when |
 |---|---|
-| `sets.precast.JA['Name']` | That ability. Provided: Divine Emblem, Palisade, Cover, Provoke, Majesty, Chivalry, Vallation, Valiance, Pflug, Fealty, Invincible, Holy Circle, Shield Bash, Sentinel, Rampart |
-| `sets.precast.JA` | Any job ability without its own set, including subjob abilities (Berserk, runes, Waltzes... when their own family set is missing) |
-| `sets.FullEnmity` | Not read by name for abilities: it is the base the provided ability sets are built on |
-| `sets.EnmityMax` | Stance Sortie or /SCH Tanking: see below |
+| `sets.precast.JA['Name']` | That ability. Provided for every PLD ability (Divine Emblem, Palisade, Cover, Provoke, Majesty, Chivalry, Vallation, Valiance, Pflug, Fealty, Invincible, Holy Circle, Shield Bash, Sentinel, Rampart), each `set_combine(sets.precast.JA, {...})` holding only the piece that boosts it, or empty |
+| `sets.precast.JA` | Any job ability without its own set (Provoke, Palisade, Cover, Majesty, Chivalry, the runes...), including subjob abilities (Berserk, Waltzes... when their own family set is missing) |
+| `sets.FullEnmity` | Not read by name for abilities: `sets.precast.JA` is built on it |
+| `sets.EnmityMax` | /SCH stance Tanking: see below |
 
 In the provided file `sets.precast.JA` is `sets.FullEnmity`, so every ability without a
-set of its own wears full enmity gear.
+set of its own wears full enmity gear. An ability's own set is that same gear plus the
+piece that boosts it (Cab. Surcoat for Fealty, Cab. Leggings for Sentinel...); the ones
+with no such piece are there empty, so that each ability shows in the Atelier. There, the
+optimizer of such a set only looks for those pieces and leaves the rest to `sets.precast.JA`.
 
-**`sets.EnmityMax` (Sortie and /SCH Tanking only).** When it exists and the stance is
-Sortie or Tanking, every job ability (not weaponskills) keeps its own set and also gets
+**`sets.EnmityMax` (/SCH Tanking only).** When it exists and the stance is
+Tanking, every job ability (not weaponskills) keeps its own set and also gets
 the slots where `sets.EnmityMax` differs from `sets.FullEnmity`. The provided
-`sets.EnmityMax` is `sets.FullEnmity` plus the Srivatsa shield, so in those stances every
+`sets.EnmityMax` is `sets.FullEnmity` plus the Srivatsa shield, so in that stance every
 ability swaps your shield to Srivatsa. Spells: see *Enmity spells* below.
 
 ## Spells
@@ -161,7 +163,7 @@ These two replace `sets.midcast.Cure` on PLD: the PLD code does not read
 
 In the provided file `sets.midcast.Flash`, `sets.midcast.Enmity` and
 `sets.midcast.Jettatura` **are** `sets.FullEnmity` (the same set, not a copy). That
-matters in Sortie and /SCH Tanking: every spell whose set is exactly `sets.FullEnmity`
+matters in /SCH Tanking: every spell whose set is exactly `sets.FullEnmity`
 is cast in `sets.EnmityMax` instead. Write `sets.midcast.X = sets.FullEnmity` to add a
 spell to that list; a `set_combine(sets.FullEnmity, {...})` copy is left out.
 
@@ -204,12 +206,8 @@ the `//gs c aoe` rotation).
 - **Shining One**: the stance's shield is removed from your idle and engaged sets and
   the Alber Strap is worn in its place (a weapon listed under `grips` in
   `PLD_WEAPONS.lua`, with its grip). BurtgangKC also keeps its off hand in idle.
-- **Sortie stance**: with the author's `PLD_WEAPONS.lua`, the shield follows the weapon
-  (Aegis with Burtgang, Blurred Shield +1 with Naegling); abilities add
-  `sets.EnmityMax`'s shield; spells worn in
-  `sets.FullEnmity` are cast in `sets.EnmityMax`. The weapon and rune lists shrink and
-  `PhalanxSIRD` turns On ([states.md](states.md)).
-- **/SCH stances**: Tanking gets the same `sets.EnmityMax` treatment as Sortie; DPS and
+- **/SCH stances**: Tanking: abilities add `sets.EnmityMax`'s shield, spells worn in
+  `sets.FullEnmity` are cast in `sets.EnmityMax`; DPS and
   Hoxne wield your weapon mode and do not use `sets.EnmityMax`. With the author's
   `PLD_WEAPONS.lua`, Tanking always wields Burtgang (weapon mode ignored) with Aegis,
   DPS and Hoxne take Duban.
@@ -222,7 +220,7 @@ the `//gs c aoe` rotation).
   the Ampulla goes back on and is locked again the next time GearSwap changes your gear (an
   action, engaging, a mode change).
 - **Phalanx SIRD**: `PhalanxSIRD` On or `Xp` On casts Phalanx in
-  `sets.midcast.SIRDPhalanx`. `PhalanxSIRD` turns On by itself when you enter Sortie or
+  `sets.midcast.SIRDPhalanx`. `PhalanxSIRD` turns On by itself when you enter
   a /SCH stance (DPS, Tanking, Hoxne) and Off when you go back to PDT/MDT. `//gs c sortie <target>` also sets it
   when your `SORTIE_CONFIG.lua` says so (Tetsouo's: Off for Aminon, On for the others).
 - **Weaponskill slots follow the weapon actually in hand** (the `stance_weapon` of
@@ -239,12 +237,15 @@ the `//gs c aoe` rotation).
 
 ## Sets in the provided file that nothing reads
 
-- `sets.Duban`, `sets.Aegis`, `sets['Blurred Shield +1']`, `sets.Alber`: shields come
+- `sets.Duban`, `sets.Aegis`, `sets['Blurred Shield +1']`: shields come
   from the stance sets or from `PLD_WEAPONS.lua`, the grip from its `grips` (table
   above). Use them in your own sets if you like.
-- `sets.idleNormal`, `sets.midcast.SIRDEnmity`, `sets.midcast.PhalanxPotency`,
+- `sets.midcast.SIRDEnmity`, `sets.midcast.PhalanxPotency`,
   `sets.Cure`, `sets.FullEnmity`: building blocks that other sets are made from (and
-  `sets.FullEnmity` is compared against for the Sortie / Tanking enmity swap).
+  `sets.FullEnmity` is compared against for the Tanking enmity swap).
+- The engaged sets (DPS, Hoxne, BurtgangKC) are built on `sets.idle.PDT`: a slot one
+  leaves out is the PDT idle's. There is no `sets.engaged.PDT` / `.MDT`: PDT, MDT and
+  Tanking fight in their idle set.
 
 ## Names the code reads that the provided file lacks
 

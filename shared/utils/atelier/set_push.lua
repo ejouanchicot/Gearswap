@@ -183,10 +183,16 @@ local function piece_key(value)
     return value.name .. '|' .. table.concat(type(value.augments) == 'table' and value.augments or {}, '|')
 end
 
-local function note(by_copy, by_name, value, expr)
+local function note(by_copy, by_name, value, expr, all)
     local key = piece_key(value)
     if not key then return end
     if not by_copy[key] then by_copy[key] = expr end
+    if all then
+        all[key] = all[key] or {}
+        local seen = false
+        for _, e in ipairs(all[key]) do if e == expr then seen = true end end
+        if not seen then table.insert(all[key], expr) end
+    end
     -- a piece written by its name alone is a string: Windower's string library refuses s.name
     local name = type(value) == 'table' and value.name or value
     if key:sub(-1) == '|' and not by_name[name] then by_name[name] = expr end
@@ -194,7 +200,7 @@ end
 
 --- The pieces of the gear modules the file requires (`local Armor = require('.../armor')`),
 --- through the names the file gives them (`local Nyame = Armor.Nyame` -> Nyame.feet_b).
-local function module_pieces(text, by_copy, by_name)
+local function module_pieces(text, by_copy, by_name, all)
     local modules = {}
     for name, mod in text:gmatch('local%s+([%a_][%w_]*)%s*=%s*require%s*%(?%s*[\'"]([^\'"]+)[\'"]') do
         local ok, m = pcall(require, mod)
@@ -206,7 +212,7 @@ local function module_pieces(text, by_copy, by_name)
         table.sort(keys)
         for _, k in ipairs(keys) do
             local v = tbl[k]
-            if type(v) == 'table' and type(v.name) == 'string' then note(by_copy, by_name, v, prefix .. '.' .. k) end
+            if type(v) == 'table' and type(v.name) == 'string' then note(by_copy, by_name, v, prefix .. '.' .. k, all) end
         end
     end
     for alias, root, field in text:gmatch('local%s+([%a_][%w_]*)%s*=%s*([%a_][%w_]*)%.([%a_][%w_]*)') do
@@ -231,25 +237,26 @@ end
 
 --- The pieces the file itself defines (`local SouvHead = {name = ...}`, `Cichol.da = {name = ...}`), read from its text:
 --- a job the game has not loaded has no sets in memory to tell what each variable holds.
-local function text_pieces(text, by_copy, by_name)
+local function text_pieces(text, by_copy, by_name, all)
     for var, tbl in text:gmatch('\n%s*local%s+([%a_][%w_]*)%s*=%s*(%b{})') do
         local p = text_piece(tbl)
-        if p then note(by_copy, by_name, p, var) end
+        if p then note(by_copy, by_name, p, var, all) end
     end
     for var, key, tbl in text:gmatch('\n%s*([%a_][%w_]*)%.([%a_][%w_]*)%s*=%s*(%b{})') do
         local p = var ~= 'sets' and text_piece(tbl)
-        if p then note(by_copy, by_name, p, var .. '.' .. key) end
+        if p then note(by_copy, by_name, p, var .. '.' .. key, all) end
     end
 end
 
 --- What the file's sets write through a variable: {copy key = expr}, {name = expr} for those
 --- without augments; then the pieces of its gear modules and the ones the file defines (read from its text).
 --- loaded: the job is the one in memory, its sets also tell what each variable they use holds (that wins).
+--- Third: {copy key = every name the file has for it}, for the two copies of a ring kept apart by their bag.
 local function variables(text, loaded)
-    local by_copy, by_name = {}, {}
-    module_pieces(text, by_copy, by_name)
-    text_pieces(text, by_copy, by_name)
-    if not loaded then return by_copy, by_name end
+    local by_copy, by_name, all = {}, {}, {}
+    module_pieces(text, by_copy, by_name, all)
+    text_pieces(text, by_copy, by_name, all)
+    if not loaded then return by_copy, by_name, all end
     local used_copy, used_name = {}, {}
     for _, def in ipairs(SetWriter.definitions(text)) do
         for _, e in ipairs(def.entries) do
@@ -257,14 +264,14 @@ local function variables(text, loaded)
             -- another set's piece (sets.Cure.left_ear) only exists below that set's definition: written into a
             -- set above it, the file stops loading (PLD FC.CureSelf, 2026-10-06); the piece is written plainly
             if expr and expr:match('^[%a_][%w_]*[%.%[][%w_%.%[%]\'"]*$') and expr ~= 'empty' and not expr:match('^sets[%.%[]') then
-                note(used_copy, used_name, loaded_piece(def.keys, e.slot), expr)
+                note(used_copy, used_name, loaded_piece(def.keys, e.slot), expr, all)
             end
         end
     end
     -- what the sets already write wins over the modules' other names for the same piece
     for k, v in pairs(used_copy) do by_copy[k] = v end
     for k, v in pairs(used_name) do by_name[k] = v end
-    return by_copy, by_name
+    return by_copy, by_name, all
 end
 
 --- The request body as {path, slots = {slot = {kind, name, augs}}}.
@@ -291,9 +298,12 @@ local function parse_body(body)
     return req
 end
 
+-- The slots of a pair (SetWriter.ORDER names), the second one by the first
+local PAIRS = {ear2 = 'ear1', ring2 = 'ring1'}
+
 --- {slot = expr | false} for SetWriter.edit.
 local function changes_of(req, text, loaded)
-    local by_copy, by_name = variables(text, loaded)
+    local by_copy, by_name, all = variables(text, loaded)
     local out = {}
     for slot, p in pairs(req.slots) do
         if p.kind == 'inherit' then out[slot] = false
@@ -302,6 +312,17 @@ local function changes_of(req, text, loaded)
             local key = p.name .. '|' .. table.concat(p.augs, '|')
             out[slot] = by_copy[key] or (p.kind == 'one' and (by_name[p.name] or SetWriter.literal(p.name)))
                 or SetWriter.literal(p.name, p.augs)
+        end
+    end
+    -- the same piece in both slots of a pair, the file naming its copies apart (ChirichRing1 in wardrobe 1,
+    -- ChirichRing2 in wardrobe 2): one name for both asked twice for the copy of one bag, and the game equipped
+    -- one ring; the second slot takes the file's other name for that piece
+    for second, first in pairs(PAIRS) do
+        local p = req.slots[second]
+        if p and out[second] and out[second] == out[first] and p.name and p.name ~= '' then
+            for _, expr in ipairs(all[p.name .. '|' .. table.concat(p.augs, '|')] or {}) do
+                if expr ~= out[first] then out[second] = expr break end
+            end
         end
     end
     return out

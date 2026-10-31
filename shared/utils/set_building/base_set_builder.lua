@@ -120,14 +120,17 @@ local function town_zone()
 end
 
 --- Lay a town set ON TOP of an idle set: sets.Adoulin in Adoulin when it
---- exists, else `town_set` in any city (Adoulin included). A partial town set
---- (movement feet, Councilor's Garb) keeps the idle pieces in its other slots.
+--- holds a piece, else `town_set` in any city (Adoulin included). A partial
+--- town set (movement feet, Councilor's Garb) keeps the idle pieces in its
+--- other slots. An empty sets.Adoulin ("+ Add a job" writes the sets without
+--- their pieces: shared/utils/atelier/job_adder.lua) leaves the town set worn,
+--- not the idle alone.
 --- @param idle table Idle set underneath
 --- @param town_set table|nil The job's town set
 --- @return table|nil set Idle with the town set on top, nil when not applied
 local function lay_town(idle, town_set)
     local zone = town_zone()
-    if zone == 'adoulin' and sets and sets.Adoulin then
+    if zone == 'adoulin' and sets and type(sets.Adoulin) == 'table' and next(sets.Adoulin) ~= nil then
         return set_combine(idle, sets.Adoulin)
     end
     if zone and town_set then

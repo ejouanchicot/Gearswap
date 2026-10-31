@@ -89,7 +89,7 @@ TIMER('PLD_MOVEMENT')
 ---     • Cure to Cure IV: sets.midcast.CureSelf vs CureOther by target
 ---
 ---   logic/enmity_override.lua
----     • Sortie and /SCH Tanking: spells that wore sets.FullEnmity wear
+---     • /SCH and /RUN Tanking: spells that wore sets.FullEnmity wear
 ---       sets.EnmityMax; job abilities keep their own set and gain what
 ---       EnmityMax adds to FullEnmity (the shield)
 ---
@@ -99,7 +99,7 @@ TIMER('PLD_MOVEMENT')
 ---
 ---   logic/set_builder.lua
 ---     • Engaged and idle set construction
----     • Hybrid mode application (PDT/MDT/Sortie, DPS/Tanking/Hoxne)
+---     • Hybrid mode application (PDT/MDT, DPS/Tanking/Hoxne)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════

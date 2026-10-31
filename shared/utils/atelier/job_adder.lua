@@ -112,8 +112,19 @@ end
 
 local rewrite_expr
 
+-- The slots a weapon set fills (sets.Burtgang = {main = 'Burtgang'})
+local HANDS = {main = true, sub = true, range = true, ranged = true, ammo = true}
+
+--- Whether a field is the weapon a set is named for (`main = 'Burtgang'` in sets.Burtgang): kept, the set's name
+--- being that weapon; the page's weapon menus are built from those sets (atelier/app/js/core.js namedForWeapon).
+local function own_weapon(key, value, own)
+    local _, name = (value or ''):match('^(["\'])(.*)%1$')
+    return own ~= nil and HANDS[key] and name == own
+end
+
 --- A table's fields, its gear taken out, its sub-tables rewritten the same way.
-local function rewrite_table(inner)
+--- own: the set's name, for the weapon it is named for (own_weapon)
+local function rewrite_table(inner, own)
     local fields, start, depth, j = {}, 1, 0, 1
     while j <= #inner do
         local lit = skip_literal(inner, j)
@@ -132,7 +143,8 @@ local function rewrite_table(inner)
         local body = f:gsub('%-%-[^\n]*', ''):match('^%s*(.-)%s*$')
         if body ~= '' then
             local key = body:match('^([%a_][%w_]*)%s*=') or body:match('^%[%s*["\']([^"\']+)["\']%s*%]%s*=')
-            if not (key and SLOTS[key]) then
+            if key and own_weapon(key, body:match('=%s*(.-)%s*$'), own) then kept[#kept + 1] = body
+            elseif not (key and SLOTS[key]) then
                 local k, v = body:match('^(.-=)%s*(.*)$')
                 if k and not k:find('[{(]') then kept[#kept + 1] = k .. ' ' .. rewrite_expr(v)
                 else kept[#kept + 1] = rewrite_expr(body) end
@@ -144,14 +156,15 @@ local function rewrite_table(inner)
 end
 
 --- An expression with every table in it rewritten (set_combine(sets.x, {...}) keeps its call).
-rewrite_expr = function(e)
+--- own: the set's name, passed to its own tables only (rewrite_table)
+rewrite_expr = function(e, own)
     local out, j = {}, 1
     while j <= #e do
         local lit = skip_literal(e, j)
         if lit then out[#out + 1] = e:sub(j, lit); j = lit + 1
         elseif e:sub(j, j) == '{' then
             local k = closing(e, j)
-            out[#out + 1] = rewrite_table(e:sub(j + 1, k - 1)); j = k + 1
+            out[#out + 1] = rewrite_table(e:sub(j + 1, k - 1), own); j = k + 1
         else out[#out + 1] = e:sub(j, j); j = j + 1 end
     end
     return table.concat(out)
@@ -189,7 +202,9 @@ function JobAdder.empty_sets(text)
                 end
             end
             local last = head:match('%.([%a_][%w_]*)%s*=$') or head:match('%[%s*["\']([%a_][%w_]*)["\']%s*%]%s*=$')
-            out[#out + 1] = head .. ((last and SLOTS[last]) and ' nil' or rewrite_expr(text:sub(eq + 1, j - 1)))
+            -- a set straight under sets (sets.Burtgang, sets['Blurred Shield +1']): its name, for the weapon it is named for
+            local own = head:match('^%s*sets%.([%a_][%w_]*)%s*=$') or head:match('^%s*sets%[%s*["\']([^"\']+)["\']%s*%]%s*=$')
+            out[#out + 1] = head .. ((last and SLOTS[last]) and ' nil' or rewrite_expr(text:sub(eq + 1, j - 1), own))
             i = j
         else
             out[#out + 1] = text:sub(i, line_end)
@@ -276,6 +291,12 @@ function JobAdder.add(job, char)
         if write(path, text) then files[#files + 1] = rel end
     end
     add_common(char, base, own, put)
+    -- the Atelier export on (//gs c atelier on: atelier_export.lua): without it the game does not say which set a set is
+    -- built on, and the page's optimizer and push treat sets.precast.JA['Fealty'] as a set of its own
+    put(base .. 'atelier/export.on', 'on')
+    -- (read once per addon load and kept on windower: told now for the character logged in, whose job loads next)
+    local ok_me, me = pcall(CharPaths.name)
+    if ok_me and char == me then windower._atelier_on = true end
     -- the settings: the template's files, the character's own overlay winning file by file
     local names = {}
     for _, dir in ipairs({master .. 'config/' .. lower, own .. 'config/' .. lower}) do

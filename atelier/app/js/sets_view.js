@@ -274,9 +274,11 @@ function buildCards(d){
   const cards = [], index = {};
   for (const s of d.sets) {
     const fam = cardFamily(s.path, s.pieces);
-    const top = topOf(s.path, fam); const key = fam + '|' + top.join('/');
+    // a set named on its family's word (sets.idleRegen) is a version of that family's card: "Regen" under Idle
+    const glued = /^sets\.(idle|engaged)([A-Z]\w*)$/.exec(s.path), own = glued && glued[1] === fam;
+    const top = own ? [fam] : topOf(s.path, fam); const key = fam + '|' + top.join('/');
     if (!index[key]) { index[key] = {fam, name: top[top.length-1], top, variants:[]}; cards.push(index[key]); }
-    const rest = segs(s.path).slice(top.length).join(' · ');
+    const rest = own ? glued[2] : segs(s.path).slice(top.length).join(' · ');
     index[key].variants.push({label: rest || 'Base', set: s});
   }
   for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));

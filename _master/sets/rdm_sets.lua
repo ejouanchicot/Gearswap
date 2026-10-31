@@ -526,9 +526,10 @@ sets.MoveSpeed = {
 }
 
 -- Adoulin Movement (City-specific speed boost)
-sets.Adoulin = set_combine(sets.MoveSpeed, {
-    body = "Councilor's Garb" -- Speed bonus in Adoulin city
-})
+-- Councilor's Garb: Movement speed +25% in Adoulin only. Only the fastest piece of
+-- equipment counts (no stacking): nothing else goes here, every other slot stays
+-- the idle set's. Left empty, the town set (sets.idle.Town) is worn in Adoulin too.
+sets.Adoulin = {body = "Councilor's Garb"}
 
 -- Town Idle
 sets.idle.Town = set_combine(sets.idle.DT, sets.MoveSpeed, {

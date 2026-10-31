@@ -9,8 +9,12 @@
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enmityLow', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'cmp', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc',
   'cursna', 'healSkill', 'auspice', 'barStatus', 'esunaPlus', 'erasePlus', 'naVeil', 'divAcc', 'mab',
   // a BST's pet (bst_pet.js)
-  'petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur'];
-const STAT_PCT = new Set(['fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt', 'petHaste', 'petDt', 'petMdt']);
+  'petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur',
+  // a movement set's (moveSet)
+  'move',
+  // a job ability's set: its pieces that boost that ability (abilityName)
+  'jaPlus'];
+const STAT_PCT = new Set(['fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt', 'petHaste', 'petDt', 'petMdt', 'move']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
@@ -26,6 +30,15 @@ const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleStri
 // belong there ("Enhances Saboteur effect", counted at the cast: 415.5 s with them, 390.1 s without, Kaories 2026-10-14).
 // Searched as a set of its own it took HP pieces in every slot, which then replaced the enfeeble's gear in game
 const sabOverlay = s => { const p = segs(s.path); return p[p.length - 1] === 'Saboteur' && p.includes('Enfeebling Magic'); };
+// A movement set, laid over the idle set while running (sets.MoveSpeed), kiting (Mote's sets.Kiting) or in Adoulin
+// (sets.Adoulin: base_set_builder.lua lay_town): only the equipment's highest Movement speed counts (BG Wiki
+// Movement_Speed: "Only the highest value from equipment counts"), so its search starts empty and keeps the one
+// fastest piece; every other slot is left to the idle set under it
+const moveSet = s => ['MoveSpeed', 'Kiting', 'Adoulin'].includes(segs(s.path)[0]);
+// Movement speed a piece gives in one city only (res/item_descriptions.lua: Councilor's Garb "While in Adoulin:
+// Movement speed +25%", the only one; read by no stat parser), counted in that city's set
+const CITY_MOVE = {Adoulin: {"Councilor's Garb": 25}};
+const cityMove = (p, s) => { const m = s && CITY_MOVE[segs(s.path)[0]]; return (m && p && m[p.name]) || 0; };
 // (a BST's sets.pet.engaged is one: the pet's stats, bst_pet.js; its Ready move sets are not)
 const statSet = s => !!s && (isPetSet(s) || !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces))) && !isJumpSet(s.path) && !sabOverlay(s);
 // What a set is for when nothing was chosen: the guide's profiles (idle DEF then Enmity then MDB; Enmity then DEF;
@@ -35,6 +48,9 @@ const statSet = s => !!s && (isPetSet(s) || !['ws', 'engaged', 'weapons', 'pet']
 // midcast. A job ability's set: Enmity first, its own piece kept (keptSlots)
 function statDefault(s){
   const list = withSird(s, statDefaultOf(s)), fam = family(s.path, s.pieces);
+  // a job ability's set: the pieces that boost that ability first (Cab. Surcoat's Fealty, Cab. Leggings' Sentinel); a
+  // tank's then Enmity and DEF
+  if (abilityName(s)) return ['PLD', 'RUN'].includes(S.job) ? ['jaPlus', 'enmity', 'def'] : ['jaPlus', ...list.filter(k => k !== 'jaPlus')].slice(0, 3);
   // (the Cure's enmity counts Enmity already)
   if (!['PLD', 'RUN'].includes(S.job) || ['fc', 'idle', 'special'].includes(fam) || list.includes('enmity') || list[0] === 'cureEnm' || list[0] === 'phalanx') return list;
   if (fam === 'ja') return ['enmity', 'def', 'hp'];
@@ -122,6 +138,7 @@ function spellObjectives(s){
 }
 function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
+  if (moveSet(s)) return ['move'];
   const enh = enhContext(s);
   if (enh && !tankPhalanx(s, enh)) return ENH_OBJS[enh.kind] || ENH_PLAIN;
   // Burn and the other elemental debuffs (ele_debuff.js)
@@ -161,8 +178,9 @@ function statDefaultOf(s){
   // a magic-defense set by its name (idle.MDT, MEva): not every set with Magic in it (Enhancing Magic). Guide_Paladin
   // (Idle MDT, Magical Damage Mitigation): resist first (magic evasion and the elemental resistances move the resist
   // steps 1, 1/2, 1/4, 1/8), then the Magic Defense Bonus divides what lands; the MDT at its cap is a floor
-  // (and the enmity kept when hit, as on any tank idle: Chev. Cuisses +3)
-  if (/meva|mdt/i.test(p)) return ['PLD', 'RUN'].includes(S.job) ? ['eleCover', 'meva', 'ceLoss'] : ['eleCover', 'meva', 'mdb'];
+  // (Guide_Paladin tools/solve_idle.py idle_meva: Carrier's Sash, then Magic Evasion, then MDB; the enmity kept when
+  // hit is no objective there: Creed Collar took the neck from the magic evasion, the player's rule of 2026-10-31)
+  if (/meva|mdt/i.test(p)) return ['eleCover', 'meva', 'mdb'];
   // a tank's idle (Guide_Paladin idle sets): PDT / MDT capped, the HP pool and the enemy's crits as floors; then a PLD's
   // block (the shield skill and block chance of the gear), the DEF, the magic evasion
   // (the block only with a shield that does not block every hit already: Duban and Ochain, ~108 % at base, do)
@@ -172,7 +190,15 @@ function statDefaultOf(s){
 }
 // The objectives and floors kept for that set (S.optOpts.statBy[path]: {objs, floor})
 function statOpts(s){
-  const by = (S.optOpts || {}).statBy || {}, mine = by[s.path] || {}, objs = (mine.objs || statDefault(s)).slice(0, 3);
+  const by = (S.optOpts || {}).statBy || {};
+  // a movement set's choices kept from before it was searched for its speed (the idle's objectives and floors, saved
+  // on sets.Adoulin: the whole set filled with damage taken pieces, 2026-10-31) are left: its own apply
+  let mine = by[s.path] || {};
+  if (moveSet(s) && mine.objs && !mine.objs.includes('move')) mine = {};
+  // a job ability's set kept on the objectives it had before the pieces boosting the ability were searched for (Enmity,
+  // DEF, HP: the Cab. Surcoat never taken for Fealty, 2026-10-31) takes the new ones; any other choice stays
+  if (abilityName(s) && mine.objs && mine.objs.join() === 'enmity,def,hp') mine = Object.assign({}, mine, {objs: null});
+  const objs = (mine.objs || statDefault(s)).slice(0, 3);
   return {objs, floor: Object.assign({pdt: 0, mdt: 0, hp: 0, hpMax: 0, sird: 0, fc: 0, ecrit: 0, enmity: 0, phalanx: 0, ceLoss: 0, luDt: 0}, statFloorDefault(s, objs[0]), mine.floor || {})};
 }
 // The floors a tank's idle and Enmity sets start with (the guide's solve_idle / solve_enmity: DT+PDT at the -50 % cap,
@@ -198,6 +224,8 @@ function statFloorDefault(s, first){
   // (a BST's set worn while the pet fights alone the same: the pet is the one hit, its own damage taken an objective)
   if (isPetEngaged(s)) return {petAccBase: PET_ENG.accBase};
   if (isPetIdle(s)) return {};
+  // a movement set: laid over the idle set, which keeps its damage taken (moveSet)
+  if (moveSet(s)) return {};
   // a BST's Charm set: worn for the ability's instant (bst_pet.js isCharmSet)
   if (isCharmSet(s)) return {};
   // a Ready set : worn for the move's instant, no damage taken floor ; a physical one starts from the pet's Accuracy
@@ -209,13 +237,15 @@ function statFloorDefault(s, first){
   // damage taken at its cap on every tank set worn more than an instant: DT+PDT -50, DT+MDT -50 less what Shell gives
   // (Shell V -29.3 %: -21 left to the gear)
   // (not on a Phalanx set: its Phalanx comes first, the damage taken after it as objectives)
-  const shell = buffTotals().shell || 0, dt = first === 'phalanx' ? {} : {pdt: -50, mdt: -Math.ceil(50 - shell / 256 * 100)};
+  // A II layer (Aegis' "Magic damage taken II -50%", Burtgang's PDT II) adds past the first one's -50 %, the whole
+  // stopping at -87.5 % (statlines.ts layeredLine): the first layer only needs what takes the total to that cap (with
+  // Aegis -37.5, Shell V then leaves -9 to the gear in place of -21). The set's pieces as shown: a shield tried counts
+  const worn = Object.entries(withWeapons(s).pieces), two = k => Math.abs(worn.reduce((n, [slot, p]) => n + (statVec(p, slot)[k] || 0), 0));
+  const layer1 = k => Math.min(50, 87.5 - two(k));
+  const shell = buffTotals().shell || 0, dt = first === 'phalanx' ? {} : {pdt: -Math.ceil(layer1('pdt2')), mdt: -Math.max(0, Math.ceil(layer1('mdt2') - shell / 256 * 100))};
   // the gear's cut of the enemy's crits the idle needs: 10 % to the 1 % floor is 9, less the merits (5/5: 4)
   const need = 9 - (((measuredChar() || {}).merits || {}).enemy_critical_hit_rate || 0);
   const ecrit = ['idle', 'special'].includes(fam) && need > 0 ? {ecrit: -need} : {};
-  // a magic-defense idle keeps 60 % of enmity loss cut (Chev. Cuisses +3): 31 magic evasion for 8 % of enmity kept and
-  // 5 MDB on Tetsouo's (2026-10-05), magic evasion after it
-  if (['idle', 'special'].includes(fam) && /meva|mdt/i.test(setNames(s))) ecrit.ceLoss = 60;
   return Object.assign(dt, ecrit, sird, hp);
 }
 // The reference HP of a tank's sets (Guide_Paladin HP Management): the lowest of the classic Fast Cast sets
@@ -244,16 +274,47 @@ function keptSlots(s){
 // (Rev. Leggings +4 "Holy Circle", Cab. Leggings "Sentinel", Chev. Sabatons "Divine Emblem"); not the set's other
 // pieces, which only differ from the set it is laid over (Cryptic Earring in Holy Circle's)
 function abilityPieces(s){
-  // (not a BST's Charm set: every piece there is for the ability, "Charm"+N ones included, all searched)
-  if (family(s.path, s.pieces) !== 'ja' || isCharmSet(s)) return [];
-  const ja = segs(s.path).pop().toLowerCase(), cat = catalog(), out = [];
-  for (const [slot, p] of Object.entries(withoutTrial(() => withWeapons(s).pieces))) {
-    if (!p || isEmpty(p)) continue;
-    const id = p.id || ownId(p.name, slot) || (cat && cat.id[p.name]);
-    const text = (descOf(id, cat) || '') + ' ' + (p.augs || []).join(' ');
-    if (text.toLowerCase().includes(ja)) out.push(slot);
-  }
+  const ja = abilityName(s), out = [];
+  if (!ja) return [];
+  for (const [slot, p] of Object.entries(withoutTrial(() => withWeapons(s).pieces))) if (boostsAbility(p, slot, ja)) out.push(slot);
   return out;
+}
+// The job ability a set is worn for, lower case, or null (not a BST's Charm set: every piece there is for the ability,
+// "Charm"+N ones included, all searched)
+// (null on sets.precast.JA itself: the set of every ability with none of its own, named for none)
+function abilityName(s){
+  const sg = s ? segs(s.path) : [];
+  return s && family(s.path, s.pieces) === 'ja' && !isCharmSet(s) && !(sg.length === 2 && sg[1] === 'JA') ? sg[sg.length - 1].toLowerCase() : null;
+}
+// Whether a piece boosts that ability: its description or its augments name it. Cab. Surcoat's Fealty is an augment
+// only (BG Wiki Cab._Surcoat_+3: "Enhances 'Fealty' effect", 4 s a merit level), on no description
+// (a piece the set names without augments read as your copy of it, as the set's figures are: engine.js ownCopy)
+// Not a line telling what happens to the hits taken while the effect lasts (Cab. Surcoat '"Cover": Physical damage
+// converted to MP', Sahip Helm '"Cover": Damage taken-12%'): worn then, in the idle or engaged set, not in the
+// ability's own set, worn for its use only (the player, 2026-10-31). '"Shield Bash": "Dispel"' acts at the use: kept
+function boostsAbility(p, slot, ja){
+  if (!p || isEmpty(p)) return false;
+  const q = p.augs && p.augs.length ? p : ownCopy(slot, p), cat = catalog(), id = q.id || ownId(q.name, slot) || (cat && cat.id[q.name]);
+  const lines = (descOf(id, cat) || '').split('\n').concat(q.augs || []).map(l => l.toLowerCase().trim());
+  const during = l => (l.startsWith(`"${ja}":`) || l.startsWith(`${ja}:`)) && /damage taken|converted/.test(l);
+  return lines.some(l => l.includes(ja) && !during(l));
+}
+// A job ability's set built on sets.precast.JA (set_combine: the job's full Enmity set, worn by every ability with no
+// set of its own): only the pieces that boost that ability are its own, the rest is the base's (the player's rule,
+// 2026-10-31). Its base set, or null
+function jaOverlayBase(s){
+  return abilityName(s) && s.base === 'sets.precast.JA' ? ((S._bypath || {})[s.base] || null) : null;
+}
+// Whether any piece of yours boosts that set's ability (its description or augments name it: boostsAbility): with
+// none, its optimizer has nothing to look for (card.ts sends the player to sets.precast.JA). Kept per set until the
+// data change
+let JA_OWNED_MEMO = {gen: -1, out: {}};
+function jaBoostOwned(s){
+  if (JA_OWNED_MEMO.gen !== DATA_GEN) JA_OWNED_MEMO = {gen: DATA_GEN, out: {}};
+  const ja = abilityName(s), memo = JA_OWNED_MEMO.out;
+  if (!ja) return false;
+  if (!(ja in memo)) memo[ja] = Object.entries(ownedOf() || {}).some(([slot, list]) => list.some(x => boostsAbility(x, slot, ja)));
+  return memo[ja];
 }
 // The HP a tank's self Cure midcast set opens over its Fast Cast (the other set of the pair: sets.precast.FC.CureSelf
 // and sets.midcast.CureSelf, any names with Cure and Self), or null; null off PLD / RUN: the gap is the tank's trick
@@ -282,13 +343,14 @@ function cureSpellOf(){
 }
 
 /* ---- the objectives by kind, and the ones a set is shown ---- */
-const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
+const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['jaPlus', 'enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
   ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow', 'cursna', 'healSkill', 'esunaPlus', 'erasePlus', 'naVeil']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'divAcc', 'mab', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']]];
+  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']], ['move', ['move']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
   const add = list => list.forEach(k => out.add(k)), def = ['def', 'hp', 'pdtRed', 'mdtRed', 'meva', 'mdb', 'enmity'];
+  if (moveSet(s)) { add(['move']); return out; }
   add(luopanRelevant(s));
   if (isPetSet(s)) { add([...petRelevant(s), 'pdtRed', 'mdtRed', 'hp']); return out; }
   if (isCharmSet(s)) { add(charmRelevant(s)); return out; }
@@ -308,7 +370,7 @@ function statRelevant(s, chosen){
   else if (/stoneskin/i.test(p)) add(['stoneskin', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
   else if (/enlight/i.test(p)) add(['enlight', 'enhdur', 'divSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
   else if (fam === 'midcast' && /enhancing|protect|shell|reprisal/i.test(s.path)) add(['enhdur', 'enhSkill', 'sird', 'enmity', 'hp', 'pdtRed']);
-  else if (fam === 'enmity' || fam === 'ja') add(['enmity', 'sird', ...def]);
+  else if (fam === 'enmity' || fam === 'ja') add([...(abilityName(s) ? ['jaPlus'] : []), 'enmity', 'sird', ...def]);
   else if (fam === 'idle' || fam === 'special') add([...def, 'ceLoss', 'ecritRed', 'statusRes', 'eleCover', 'eleRes', 'refresh', 'regen', ...(S.job === 'PLD' ? ['blockGear'] : [])]);
   else add([...def, 'refresh', 'regen']);
   return out;
@@ -439,7 +501,7 @@ function statVec(p, slot){
   if (sr) out.statusRes = sr;
   const er = ['fire', 'ice', 'wind', 'earth', 'lightning', 'water', 'light', 'dark'].reduce((n, e) => { if (v('res_' + e)) out['res_' + e] = v('res_' + e); return n + v('res_' + e); }, 0);
   if (er) out.eleRes = er;
-  for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'cmp', 'refresh', 'regen', 'enhdur'])
+  for (const k of ['hp', 'hp%', 'def', 'vit', 'mnd', 'cure2', 'dt', 'pdt', 'mdt', 'pdt2', 'mdt2', 'bdt', 'enmity', 'phalanx', 'sird', 'fc', 'meva', 'mdb', 'ecrit', 'cure', 'cmp', 'refresh', 'regen', 'enhdur', 'move'])
     if (v(k)) out[k] = v(k);
   if (v('skill:enhancing magic skill') + all) out.enh = v('skill:enhancing magic skill') + all;
   // Enhancing magic (opt.js O.enhancingFigures). The duration's two kinds multiply: what the description gives
@@ -462,15 +524,18 @@ function statVec(p, slot){
   if (enhPerpOf(p.name)) out.perp = enhPerpOf(p.name);
   return out;
 }
-function withVec(p, slot){
+// s: the set the piece is weighed in (a city's set counts the movement speed of that city: CITY_MOVE)
+function withVec(p, slot, s){
   if (!p) return p;
-  const q = Object.assign({}, p, {st: statVec(p, slot)});
+  const q = Object.assign({}, p, {st: statVec(p, slot)}), city = cityMove(p, s), ja = abilityName(s);
+  if (city > (q.st.move || 0)) q.st = Object.assign({}, q.st, {move: city});
+  if (ja && boostsAbility(p, slot, ja)) q.st = Object.assign({}, q.st, {ja: 1});
   if (slot === 'sub') { const it = itemOf(p.name); if (it && it.Type === 'Shield') q.shield = true; }
   return q;
 }
-function withVecs(pieces){
+function withVecs(pieces, s){
   const out = {};
-  for (const [slot, p] of Object.entries(pieces || {})) out[slot] = withVec(p, slot);
+  for (const [slot, p] of Object.entries(pieces || {})) out[slot] = withVec(p, slot, s);
   return out;
 }
 // The character without gear: HP before the gear's HP %, DEF (Protect in), the enhancing skill, the buffs' Enmity
@@ -547,19 +612,35 @@ async function optimizeStats(s){
   const choices = optChoices(new Set(Object.keys(ONLY_AUGS)));
   for (const slot of keptSlots(s)) delete choices[slot];
   lockChoices(s, choices);
-  for (const slot of Object.keys(choices)) choices[slot] = choices[slot].map(p => withVec(p, slot));
+  for (const slot of Object.keys(choices)) choices[slot] = choices[slot].map(p => withVec(p, slot, s));
   // (never a BST's Charm set's: a weapon change loses the TP, the guide's set has none)
   if (o.freeWeapons && !isCharmSet(s) && !keptSlots(s).some(x => x === 'main' || x === 'sub')) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
-  const start = withVecs(startOf(base, lockedSlots(s)));
+  // a movement set starts empty but for its locked slots (moveSet): its other pieces go, left to the idle set
+  const move = moveSet(s);
+  let from = move ? Object.fromEntries(lockedSlots(s).filter(x => base[x]).map(x => [x, base[x]])) : base;
+  // a job ability's set on sets.precast.JA (jaOverlayBase): from the base's pieces, only the ones that boost the
+  // ability tried; a slot with none keeps the base's piece (pushed as `inherit`: push.js pushPlan)
+  const over = jaOverlayBase(s);
+  if (over) {
+    const ja = abilityName(s), mine = withoutTrial(() => withWeapons(s).pieces);
+    from = Object.assign({}, withoutTrial(() => withWeapons(over).pieces));
+    for (const slot of keptSlots(s)) from[slot] = mine[slot];
+    for (const slot of Object.keys(choices)) {
+      if (slot === 'weapons') { delete choices[slot]; continue; }
+      choices[slot] = choices[slot].filter(p => boostsAbility(p, slot, ja));
+      if (!choices[slot].length) delete choices[slot];
+    }
+  }
+  const start = withVecs(startOf(from, lockedSlots(s)), s);
   const input = {ctx: statContext(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
-    opts: {fast: (o.search || 'fast') !== 'classic', objective: so.objs[0], then: so.objs.slice(1), floor: so.floor}};
+    opts: {fast: (o.search || 'fast') !== 'classic', objective: so.objs[0], then: so.objs.slice(1), floor: so.floor, bare: move}};
   // a healer's Cure set: the least enmity parts what the chosen objectives leave tied (a Kaykaus path that gives none
   // of them: its Enmity-6 path rather than any other)
   if (healerCure(s) && !so.objs.some(k => k === 'enmity' || k === 'enmityLow')) input.opts.then = input.opts.then.concat('enmityLow');
   // a BST's Charm set: Charm+ given back for 2 % of CHR and Magic Accuracy at most, on its default objectives (bst_pet.js)
   if (isCharmSet(s) && so.objs[0] === 'chr') input.opts.tolGain = CHARM_TOL;
   enhPotencyFirst(s, input, so);
-  optLaunch(s, k, input, Object.assign({}, o, {stat: so.objs[0], statFloor: so.floor}));
+  optLaunch(s, k, input, Object.assign({}, o, {stat: so.objs[0], statFloor: so.floor, clearRest: move}));
 }
 
 /* ---- the page (atelier/src/screens/optimizer/statpage.ts): the result's lines ---- */
@@ -587,7 +668,7 @@ function statRows(s){
   // the gap (and the Cure's power) right under the objectives: it is what the pair of sets is for; Lowest HP only as an objective
   const near = rows.filter(r => (['gap', 'ref', 'cure4'].includes(r.id) || r.id.startsWith('act:') || r.id.startsWith('enf:')) && !first.includes(r));
   // (the least enmity is the Enmity row again: shown only as an objective)
-  const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow' && r.id !== 'enmityLow');
+  const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow' && r.id !== 'enmityLow' && (r.id !== 'move' || moveSet(s)));
   return first.concat(near, rest);
 }
 // The toast once a search is done
@@ -597,6 +678,8 @@ function statDoneText(s, res, tr){
   const k2 = objs[1], now = k2 && statFigures(s), was = k2 && Object.keys(tr).length ? statFigures(s, true) : null;
   const then = !k2 || !now ? '' : ` ${t('statThenShort')} ${t('statObj_' + k2)} ${statFmt(k2)(now[k2])}` +
     (was && was[k2] !== now[k2] ? ` (${statFmt(k2)(was[k2])})` : '');
-  return Object.keys(tr).length ? t('statDone', {o: label, a: f(res.start.raw), b: f(res.best.raw) + then, n: Object.keys(tr).length, p: Math.round(def.pdt || 0), m: Math.round(def.mdt || 0)})
+  // (a movement set's search starts empty: the figure before is the set's as it is)
+  const before = moveSet(s) ? statFigures(s, true)[k] : res.start.raw;
+  return Object.keys(tr).length ? t('statDone', {o: label, a: f(before), b: f(res.best.raw) + then, n: Object.keys(tr).length, p: Math.round(def.pdt || 0), m: Math.round(def.mdt || 0)})
     : t('statSame', {o: label, v: f(res.best.raw) + then});
 }

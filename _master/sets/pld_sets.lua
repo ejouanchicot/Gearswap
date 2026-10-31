@@ -18,10 +18,11 @@
 ---   • Movement speed optimization (Adoulin city support)
 ---   • Rudianos capes (5 variants: tank, FCSIRD, STP, WS, cure)
 ---
---- HybridMode picks the engaged set. PDT / MDT / Sortie (sets.engaged.TP) on
---- most subjobs; under /SCH, three stances of their own:
----   • DPS     -> sets.engaged.DPS     Sakpata's, Coiste Bodhar
----   • Tanking -> sets.engaged.MDT     mitigation, Burtgang + Aegis
+--- HybridMode picks the engaged set. PDT and MDT fight in their idle set
+--- (sets.idle.PDT / .MDT), DPS is the TP build, on every subjob; under /SCH
+--- and /RUN, two stances more:
+---   • DPS     -> sets.engaged.DPS     Sakpata's, Coiste Bodhar (every subjob)
+---   • Tanking -> sets.idle.MDT        mitigation, Burtgang + Aegis
 ---   • Hoxne   -> sets.engaged.Hoxne   Hoxne Ampulla, ammo slot frozen
 --- The mapping itself lives in shared/jobs/pld/functions/logic/set_builder.lua.
 ---
@@ -29,7 +30,7 @@
 ---   • Equipment definitions (Rudianos capes, Jumalik augments, wardrobe rings)
 ---   • Weapon sets (main weapons + shields)
 ---   • Idle sets (Normal, PDT, MDT, Town, XP)
----   • Engaged sets (PDT, MDT, TP for Sortie, BurtgangKC, Melee XP, /SCH stances)
+---   • Engaged sets (PDT, MDT, BurtgangKC, Melee XP, /SCH stances)
 ---   • Precast sets (Job abilities, Fast Cast, Weaponskills with TP bonus)
 ---   • Midcast sets (Enmity, SIRD+Enmity, Phalanx, Cure, Enhancing Magic)
 ---   • Movement sets (Base speed, Adoulin city boost)
@@ -110,7 +111,6 @@ sets.Malevo = {
 -- • Sub Weapons
 sets.Duban = {sub = 'Duban'}
 sets.Aegis = {sub = 'Aegis'}
-sets.Alber = {sub = 'Alber Strap'}
 sets['Blurred Shield +1'] = {sub = 'Blurred Shield +1'}
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -123,7 +123,7 @@ sets['Blurred Shield +1'] = {sub = 'Blurred Shield +1'}
 -- .Town), and set_combine copies every key of its source - so deriving from
 -- sets.idle would carry those variants into the derived set as slots that are
 -- not slots. GearSwap ignores them, but they read as intentional and follow
--- the chain all the way down (idleNormal -> engaged -> engaged.DPS -> ...).
+-- the chain all the way down (idle.PDT -> engaged -> engaged.DPS -> ...).
 local IdleBase = {
     ammo = {name = 'Staunch Tathlum +1'}, -- DT -3%, Status resistance +11, Spell interruption rate -11%
     head = {name = 'Chev. Armet +3'},
@@ -169,21 +169,6 @@ sets.idle.MDT = {
     sub = 'Aegis' -- MDT shield
 }
 
--- • Normal Idle (Balanced)
-sets.idleNormal =
-    set_combine(
-    IdleBase,
-    {
-        head = {name = 'Chev. Armet +3'},
-        body = {name = 'Adamantite Armor'},
-        legs = {name = 'Chev. Cuisses +3'},
-        neck = {name = 'Kgt. Beads +2'},
-        waist = {name = 'Creed Baudrier'},
-        left_ring = Moonlight1,
-        right_ring = Moonlight2
-    }
-)
-
 -- • XP Idle (Experience points focus)
 sets.idleXp =
     set_combine(
@@ -207,12 +192,13 @@ sets.idleRegen = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Engaged Set
--- Local for the same reason IdleBase is: the stances below hang off
--- sets.engaged, and deriving from it would hand each of them the ones
--- declared before it.
+-- Built on the PDT idle: a slot the engaged sets leave out is the idle.PDT's
+-- (the tank stances fight in their idle set itself: no sets.engaged.PDT / .MDT).
+-- Local for the same reason IdleBase is: the stances below hang off sets.engaged, and deriving from it
+-- would hand each of them the ones declared before it.
 local EngagedBase =
     set_combine(
-    sets.idleNormal,
+    sets.idle.PDT,
     {
         ammo = {name = 'Staunch Tathlum +1'}, -- DT -3%, Status resistance +11, Spell interruption rate -11%
         head = {name = 'Chev. Armet +3'},
@@ -232,40 +218,7 @@ local EngagedBase =
 
 sets.engaged = set_combine(EngagedBase, {})
 
--- • PDT Engaged
-sets.engaged.PDT =
-    set_combine(
-    EngagedBase,
-    {
-        sub = 'Duban' -- PDT shield for engaged
-    }
-)
-
--- • MDT Engaged (HybridMode 'MDT', and the 'Tanking' stance under /SCH)
--- The idle mitigation set doubles as the engaged one: holding hate does not
--- ask for different gear, only for the shield it already carries.
-sets.engaged.MDT = sets.idle.MDT -- Already has Aegis shield
-
--- • Sortie (HybridMode 'Sortie', subjobs other than /SCH)
--- Mitigation body/head/legs kept, accessories traded for Store TP: the mode is
--- meant to hold hate while still feeding weaponskills.
--- No sub slot: the shield can follow the weapon in this mode
--- (pld/combat/PLD_WEAPONS.lua shields.Sortie); without it, write a sub here.
--- Otherwise the off hand stays what is worn.
-sets.engaged.TP =
-    set_combine(
-    EngagedBase,
-    {
-        ammo = "Aurgelmir Orb +1",
-        left_ear = "Crep. Earring",
-        right_ear = "Dedition Earring",
-        left_ring = ChirichRing1,
-        right_ring = ChirichRing2,
-        back = Rudianos.STP
-    }
-)
-
--- • DPS (HybridMode 'DPS', /SCH only)
+-- • DPS (HybridMode 'DPS', every subjob: the TP build)
 -- The damage stance: full Sakpata's for the damage taken floor, every
 -- accessory traded for Store TP. Tanking is what holds hate; this one is
 -- what spends the TP.
@@ -385,29 +338,31 @@ sets.FullEnmity = {
     -- Crusade Enmity 189
 }
 
--- • Sortie Enmity (HybridMode 'Sortie' - the JAs and spells that wore FullEnmity)
--- FullEnmity plus the shield: in Sortie the sub is part of the enmity build.
--- No main slot on purpose: a main hand change zeroes TP, and Sortie is a mode
--- that builds it. Only the shield moves.
+-- • Tanking Enmity (HybridMode 'Tanking', /SCH and /RUN - the JAs and spells that wore FullEnmity)
+-- FullEnmity plus the shield: in that stance the sub is part of the enmity build.
+-- No main slot on purpose: a main hand change zeroes TP. Only the shield moves.
 sets.EnmityMax = set_combine(sets.FullEnmity, {sub = 'Srivatsa'})
 
 -- • Job Abilities
+-- sets.precast.JA: full Enmity, worn by every job ability with no piece of its own (Provoke, Palisade, Cover,
+-- Majesty, the runes' Vallation / Valiance / Pflug...). An ability's own set adds only the piece that boosts it;
+-- the empty ones are listed so that every ability shows in the Atelier, ready for a piece.
 sets.precast.JA = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Divine Emblem'] = set_combine(sets.FullEnmity, {feet = {name = "Chevalier's Sabatons +3"}})
-sets.precast.JA['Palisade'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Cover'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Provoke'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Majesty'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Chivalry'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Vallation'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Valiance'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Pflug'] = set_combine(sets.FullEnmity, {})
-sets.precast.JA['Fealty'] = set_combine(sets.FullEnmity, {body = {name = 'Cab. Surcoat'}})
-sets.precast.JA['Invincible'] = set_combine(sets.FullEnmity, {legs = {name = 'Caballarius Breeches +3'}})
-sets.precast.JA['Holy Circle'] = set_combine(sets.FullEnmity, {feet = {name = 'Rev. Leggings +4'}})
-sets.precast.JA['Shield Bash'] = set_combine(sets.FullEnmity, {hands = {name = 'Cab. Gauntlets +4'}})
-sets.precast.JA['Sentinel'] = set_combine(sets.FullEnmity, {feet = {name = 'Cab. Leggings +4'}})
-sets.precast.JA['Rampart'] = set_combine(sets.FullEnmity, {head = {name = 'Cab. Coronet +4'}})
+sets.precast.JA['Palisade'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Cover'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Provoke'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Majesty'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Chivalry'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Vallation'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Valiance'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Pflug'] = set_combine(sets.precast.JA, {})
+sets.precast.JA['Divine Emblem'] = set_combine(sets.precast.JA, {feet = {name = "Chevalier's Sabatons +3"}})
+sets.precast.JA['Fealty'] = set_combine(sets.precast.JA, {body = {name = 'Cab. Surcoat'}})
+sets.precast.JA['Invincible'] = set_combine(sets.precast.JA, {legs = {name = 'Caballarius Breeches +3'}})
+sets.precast.JA['Holy Circle'] = set_combine(sets.precast.JA, {feet = {name = 'Rev. Leggings +4'}})
+sets.precast.JA['Shield Bash'] = set_combine(sets.precast.JA, {hands = {name = 'Cab. Gauntlets +4'}})
+sets.precast.JA['Sentinel'] = set_combine(sets.precast.JA, {feet = {name = 'Cab. Leggings +4'}})
+sets.precast.JA['Rampart'] = set_combine(sets.precast.JA, {head = {name = 'Cab. Coronet +4'}})
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PRECAST: FAST CAST
@@ -428,6 +383,10 @@ sets.precast.FC = {
     legs = {name = 'Enif Cosciales'},
     feet = {name = "Chevalier's Sabatons +3"}
 }
+
+-- • Cure Self FC: Cure III / IV cast on yourself, put on over the Fast Cast set (PLD_PRECAST.lua).
+--   Keep its HP low: the Cure set's HP then opens the gap the Cure fills.
+sets.precast.FC.CureSelf = set_combine(sets.precast.FC, {})
 
 sets.precast.FC['Healing Magic'] = sets.precast.FC
 sets.precast.FC['Enhancing Magic'] = sets.precast.FC
@@ -818,13 +777,10 @@ sets.MoveSpeed = {
 sets.idle.Town = sets.MoveSpeed
 
 -- • Adoulin Movement (City-specific speed boost)
-sets.Adoulin =
-    set_combine(
-    sets.MoveSpeed,
-    {
-        body = "Councilor's Garb" -- Speed bonus in Adoulin city
-    }
-)
+-- Councilor's Garb: Movement speed +25% in Adoulin only. Only the fastest piece of
+-- equipment counts (no stacking): nothing else goes here, every other slot stays
+-- the idle set's. Left empty, the town set (sets.idle.Town) is worn in Adoulin too.
+sets.Adoulin = {body = "Councilor's Garb"}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- BUFF SETS

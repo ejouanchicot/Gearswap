@@ -34,17 +34,23 @@ function openVersion(s){
   if (tr) S.trial[S.char + '|' + S.job + '|' + tg.path] = Object.assign({}, S.trial[S.char + '|' + S.job + '|' + tg.path], tr);
   S.selPath[S.job] = tg.path; S._found = null; save(); render();
 }
+// A set laid on top of another one: the catalog's "on top of the idle set" (shared/utils/atelier/set_catalog_common.lua:
+// MoveSpeed, Adoulin), Mote's sets.Kiting (libs/Mote-Include.lua), TreasureHunter, the buffs' sets.buff.X, RDM's
+// Saboteur. An `empty` there strips the piece of the set under it
+const OVERLAY_SETS = new Set(['MoveSpeed', 'Adoulin', 'Kiting', 'TreasureHunter', 'buff']);
+const overlaySet = s => sabOverlay(s) || OVERLAY_SETS.has(segs(s.path)[0]);
 // One entry per slot the draft or the saved pieces change: the piece, `empty`, or `inherit`
 // (the line goes, the set takes its base's piece again)
 function pushPlan(s){
   const tr = S.trial[trialKey(s)] || {}, was = s.was || {}, owned = ownedOf() || {};
-  const base = s.base && S._bypath ? S._bypath[s.base] : null;
-  return SLOTS.filter(slot => slot in tr || slot in was).map(slot => {
+  const base = s.base && S._bypath ? S._bypath[s.base] : null, over = overlaySet(s);
+  // a laid-on-top set's `empty` already in the file goes with the next push too
+  return SLOTS.filter(slot => slot in tr || slot in was || (over && isEmpty(s.pieces[slot]))).map(slot => {
     const target = slot in tr ? tr[slot] : (isEmpty(s.pieces[slot]) ? null : s.pieces[slot]);
     const bp = base && base.pieces[slot], bEmpty = !bp || isEmpty(bp);
-    // Saboteur's set is equipped over the enfeeble's (RDM_MIDCAST.lua): an `empty` there would strip the
-    // enfeeble's piece, so a slot emptied in it loses its line instead (push of 2026-10-16: all slots empty but hands)
-    if (!target || isEmpty(target)) return {slot, kind: (base && bEmpty) || sabOverlay(s) ? 'inherit' : 'empty'};
+    // a set laid on top of another (overlaySet): a slot emptied in it loses its line instead (pushes of 2026-10-16,
+    // Saboteur: all slots empty but hands; 2026-10-31, sets.MoveSpeed with the legs only: 12 slots empty)
+    if (!target || isEmpty(target)) return {slot, kind: (base && bEmpty) || over ? 'inherit' : 'empty'};
     if (base && !bEmpty && samePiece(target, bp)) return {slot, kind: 'inherit'};
     // the only copy the player owns: its name is enough, the file's variable for it can be used
     return pushEntry(slot, target, owned);

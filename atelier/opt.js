@@ -671,6 +671,9 @@
         for (var k in base) if (pieces[k] && base[k] && pieces[k].name === base[k].name) keep++;
         // relative to the value: a fixed 1e-12 is lost to rounding on a 50 000 damage value
         var sc = Math.max(1, Math.abs(v || 0));
+        // a set laid over another one (the page's stat_opt.js moveSet): the fewest pieces part the sets as good, every
+        // slot left out is the set's under it (the damage taken added Defending Ring and co to sets.MoveSpeed)
+        if (opts.bare) { var n = 0; for (var sl in pieces) if (pieces[sl]) n++; return sc * (-n * 1e-13 + keep * 1e-15); }
         return sc * (-((def && def.pdt) || 0) * 1e-13 - ((def && def.mdt) || 0) * 1e-13 + keep * 1e-15);
     }
     O.value = function (ctx, pieces, opts) {
@@ -726,7 +729,7 @@
     //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
-        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed",
+        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed", "move", "ja",
         "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark",
         "petdt", "petregen", "charm", "geoskill",
         // a BST's pet (the page's bst_pet.js): Accuracy, Attack, Haste, Store TP, Double Attack, levels (a weapon's apart)
@@ -842,7 +845,28 @@
         return out;
     }
     function castCut(t, b) { return (b.castKinds || []).reduce(function (n, k) { return n + (t["cc_" + k] || 0); }, 0); }
+    function gearMove(pieces) {
+        var m = 0;
+        for (var sl in pieces) { var st = pieces[sl] && pieces[sl].st; if (st && st.move > m) m = st.move; }
+        return m;
+    }
+    // The pieces worn: none in a slot another piece blocks (O.blocks: an Onca Suit's hands, legs and feet). Counted
+    // in the stats too, they gave the suit's +252 Magic Evasion on top of the three pieces it takes off (2026-10-31)
+    function wornPieces(pieces) {
+        var blocked = null;
+        for (var s in pieces) {
+            var p = pieces[s];
+            if (!p) continue;
+            if (!p._blk) p._blk = O.blocks(p);
+            for (var i = 0; i < p._blk.length; i++) (blocked = blocked || {})[p._blk[i]] = true;
+        }
+        if (!blocked) return pieces;
+        var out = {};
+        for (var k in pieces) if (!blocked[k]) out[k] = pieces[k];
+        return out;
+    }
     O.statFigures = function (stat, pieces) {
+        pieces = wornPieces(pieces);
         var t = {}, b = stat.base || {};
         STAT_KEYS.forEach(function (k) { t[k] = 0; });
         for (var sl in pieces) { var st = pieces[sl] && pieces[sl].st; if (st) for (var k in st) t[k] = (t[k] || 0) + st[k]; }
@@ -864,7 +888,11 @@
             // Conserve MP (BG Wiki Conserve_MP): the gear's + the job's trait (b.cmp), a proc rate "capped" at 100 %
             cmp: Math.min(100, t.cmp + (b.cmp || 0)), cmpGear: t.cmp,
             pdtAll: two(cap(t.dt + t.pdt) + t.pdt2), mdtAll: two(cap(t.dt + t.mdt + shell) + t.mdt2), bdtAll: cap(t.dt + t.bdt),
-            pdt: t.dt + t.pdt, mdt: t.dt + t.mdt
+            pdt: t.dt + t.pdt, mdt: t.dt + t.mdt,
+            // Movement speed: the highest piece only (BG Wiki Movement_Speed: "Only the highest value from equipment counts")
+            move: gearMove(pieces),
+            // a job ability's set: the pieces worn that boost that ability (the page's stat_opt.js boostsAbility)
+            jaPlus: t.ja
         };
         // Stoneskin (BG Wiki): x = enhancing skill / 3 + MND; under 80 x, to 130 2 x skill / 3 + 2 x MND - 60, past it skill +
         // 3 x MND - 190; 350 at most, the "Stoneskin" gear over the cap, 475 at most. Enlight II (BG Wiki): 2 x floor((divine
@@ -958,7 +986,7 @@
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
-        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur"];
+        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "move", "jaPlus"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };

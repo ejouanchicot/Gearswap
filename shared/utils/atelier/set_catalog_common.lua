@@ -43,10 +43,11 @@ return {
 
     ---------------------------------------------------------------- abilities (Mote get_precast_set)
     {'precast.JA.{ja}', when = 'Using that job ability', fr = 'Quand tu utilises cette job ability.'},
-    {'precast.{abilitytype}', when = 'Using any ability of that kind (Waltz, Step, CorsairRoll...)', fr = 'Quand tu utilises une ability de ce genre (Waltz, Step, Roll…).'},
+    {'precast.{abilitytype}', when = 'Using any ability of that type (Waltz, Step, CorsairRoll...)', fr = 'Quand tu utilises une ability de ce type (Waltz, Step, Roll…).'},
     {'precast.{ability.type}.{ability}', when = 'Using that ability', fr = 'Quand tu utilises cette ability.', base = 'precast.{ability.type}'},
     -- with no sets.precast.<type>, Mote looks the ability up under JA
-    {'precast.JA.{ability}', when = 'Using that ability (read only while sets.precast.<its kind> does not exist)', fr = 'Quand tu utilises cette ability (si son genre n’a pas de set).',
+    {'precast.JA.{ability}', when = 'Using that ability, as long as your file has no sets.precast.{ability.type} (the set of every {ability.type} ability)',
+        fr = 'Quand tu utilises cette ability, tant que ton fichier n’a pas de sets.precast.{ability.type} (le set de toutes les abilities de type {ability.type}).',
         needs = {'absent:precast.{ability.type}'}},
 
     ---------------------------------------------------------------- weaponskills

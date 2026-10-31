@@ -198,6 +198,11 @@
 .stabs button[aria-selected="true"] small{color:var(--accent)}
 .stabbody .statlist{columns:2 230px;column-gap:28px}
 .stabbody .statlist li{break-inside:avoid}
+/* the set's figures as tabs of one box (Figures.svelte): the tab bar in a row where a box has its band, not the stats
+   sheet's tabs down the side (.setsx.ui2 .stabs) */
+.setsx.ui2 .globalcol .figtabs>.stabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px 0;height:auto;overflow:visible}
+.setsx.ui2 .globalcol .figtabs>.stabs button{border-radius:999px;border-right:1px solid var(--line-strong);padding:3px 11px;justify-content:center}
+.setsx.ui2 .globalcol .figtabs>.stabs button[aria-selected="true"]{margin-right:0;box-shadow:none}
 .legend.mini{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px}
 .slot.own-missing{box-shadow:0 0 0 2px var(--r-dd)}
 .slot.own-short{box-shadow:0 0 0 2px var(--g-off)}
@@ -899,6 +904,19 @@
 .setsx.ui2 .eqcol > .slotcol{order:-2}
 .setsx.ui2 .eqcol > .ui2wants{order:-1;margin-top:0}
 .setsx.ui2 .globalcol .setstats{min-height:552px;box-sizing:border-box}
+/* the stats sheet as the figures' first tab (Figures.svelte): its groups in a row above one column of stats (each line
+   gets the width: its note no longer cut), the stats scrolled under them; the other tabs scrolled as a whole */
+.setsx.ui2 .globalcol .figtabs .setstats{grid-template-columns:minmax(0,1fr);min-height:0;border:0;padding:6px 0 0;background:none}
+.setsx.ui2 .globalcol .figtabs .setstats .stabs{display:flex;flex-wrap:wrap;gap:4px;height:auto;overflow:visible;grid-column:1}
+.setsx.ui2 .globalcol .figtabs .setstats .stabs button{border-radius:999px;border-right:1px solid var(--line-strong);padding:3px 11px;margin-right:0;box-shadow:none}
+.setsx.ui2 .globalcol .figtabs .setstats .stabbody{grid-column:1;height:auto;min-height:0;max-height:440px;border-radius:12px}
+.setsx.ui2 .globalcol .figtabs .stabbody .statlist{columns:1}
+.setsx.ui2 .globalcol .figtabs > .boxb:not(.figsheet){max-height:520px;overflow:auto;scrollbar-gutter:stable}
+/* the HP cycle's groups (abilities, Cure, Enmity...): a title row that folds its actions */
+.hpcycle .cygroup th{padding:8px 0 2px;text-align:left}
+.hpcycle .cygroup button{border:0;background:none;padding:0;font:inherit;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);cursor:pointer}
+.hpcycle .cygroup button small{color:var(--muted);letter-spacing:0;margin-left:4px}
+.hpcycle .cygroup button[aria-expanded="false"]::before{content:"▸ "} .hpcycle .cygroup button[aria-expanded="true"]::before{content:"▾ "}
 .setsx:not(.ui2) .setctl > :empty{display:none}
 .setsx:not(.ui2) .setctl:not(:has(> :not(:empty))){display:none}
 /* ---- the job's settings: its four parts as one row of buttons over the part shown ---- */

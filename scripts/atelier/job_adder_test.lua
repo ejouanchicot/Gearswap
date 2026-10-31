@@ -65,13 +65,16 @@ local function names(t, prefix, out, stack)
     stack[t] = nil
     return out
 end
-local function slots_left(t, stack)
+-- (but the weapon a set straight under sets is named for: sets.Burtgang's main = 'Burtgang', kept on purpose)
+local HANDS = {main = 1, sub = 1, range = 1, ranged = 1, ammo = 1}
+local function slots_left(t, stack, own)
     stack = stack or {}
     if stack[t] then return 0 end
     stack[t] = true
     local n = 0
     for k, v in pairs(t) do
-        if SLOTS[k] then n = n + 1 elseif type(v) == 'table' then n = n + slots_left(v, stack) end
+        if SLOTS[k] then n = n + ((own and HANDS[k] and v == own) and 0 or 1)
+        elseif type(v) == 'table' then n = n + slots_left(v, stack) end
     end
     stack[t] = nil
     return n
@@ -91,7 +94,18 @@ for _, file in ipairs(list('_master/sets')) do
                 for p in pairs(b) do if not a[p] then extra = extra + 1 end end
                 check(file .. ' set names kept', missing, 0)
                 check(file .. ' no new name', extra, 0)
-                check(file .. ' no piece left', slots_left(after), 0)
+                local left, seen = 0, {}
+                for k, v in pairs(after) do if type(v) == 'table' then left = left + slots_left(v, seen, k) elseif SLOTS[k] then left = left + 1 end end
+                check(file .. ' no piece left', left, 0)
+                if file == 'pld_sets.lua' then
+                    check('pld: sets.Burtgang keeps Burtgang', after.Burtgang.main, 'Burtgang')
+                    check('pld: sets.Aegis keeps Aegis', after.Aegis.sub, 'Aegis')
+                    check('pld: sets.Duban keeps Duban', after.Duban.sub, 'Duban')
+                    check("pld: sets['Blurred Shield +1'] keeps it", after['Blurred Shield +1'].sub, 'Blurred Shield +1')
+                    check('pld: sets.KC (not a weapon name) emptied', after.KC.main, nil)
+                    check('pld: sets.BurtgangKC emptied', after.BurtgangKC.main, nil)
+                    check('pld: sets.Malevo (augmented) emptied', after.Malevo.main, nil)
+                end
             end
         else print('(template not loadable alone: ' .. file .. ': ' .. tostring(why) .. ')') end
     end
@@ -125,6 +139,8 @@ check('sets written', #sets > 0, true)
 check('sets say where they come from', sets:find('made by the Atelier', 1, true) ~= nil, true)
 check('no Tetsouo piece left', sets:find("'Nyame Helm'", 1, true) == nil and sets:find('Queller Rod', 1, true) == nil, true)
 check('character_db has WHM', (read(data .. 'character_db.lua') or ''):find("'PLD', 'WHM'", 1, true) ~= nil, true)
+-- the Atelier export on, so that the page knows which set each set is built on (atelier_export.lua //gs c atelier on)
+check('Atelier export switched on', read(data .. 'Kaories/atelier/export.on'), 'on')
 local again = JobAdder.add('WHM', 'Kaories')
 check('a second add is refused', again.error, 'exists')
 check('unknown job refused', JobAdder.add('XYZ', 'Kaories').error, 'job')

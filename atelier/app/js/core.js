@@ -23,7 +23,7 @@ let S = {char:'', job:null, section:'sets', variant:{}, sel:{}, subs:{}, weapons
   trial:{}, drafts:{}, buffs:{}, buffTier:{}, held:{}, famOpen:{}, wsList:{}, keyOv:{}, keyDirty:{}, modeOv:{}, modeDirty:{}, setOv:{}, layout:'auto', toast:'', _live:{}, _link:{}, sim:{}, simOpen:{}, statHide:{}, statSort:'group', statOnlyWant:false, statPresets:{}, statPreset:'', optOpts:{obj: 'damage', pdt: -50, mdt: -21, sb: 0}, boxOpen:{}, wsTp:null, _tpb:{}, macroAlt:{}};
 // What a reload keeps: where you were (character, job, tab, set, subjob), what you were trying
 // (weapons, pieces, merits, buffs) and the open categories
-const KEEP = ['modFile', 'modFam', 'persoView', 'bagSel', 'bagRoles', 'bagTags', 'bagAt', 'tgtFav', 'tgtRecent', 'pbActive', 'jobTab', 'listPrefs', 'listW', 'listPaths', 'shapes', 'motion', 'guide', 'mogLines', 'pushTech', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'genericWs', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'wsList', 'keyOv', 'keyDirty', 'modeOv', 'modeDirty', 'keysPart', 'keysFilter', 'modTheme', 'macroPart', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'pushed'];
+const KEEP = ['modFile', 'modFam', 'persoView', 'bagSel', 'bagRoles', 'bagTags', 'bagAt', 'tgtFav', 'tgtRecent', 'pbActive', 'jobTab', 'listPrefs', 'listW', 'listPaths', 'shapes', 'motion', 'guide', 'mogLines', 'pushTech', 'pbPresets', 'pbTab', 'meritTab', 'gpSrc', 'gpSort', 'lang', 'theme', 'char', 'job', 'section', 'selPath', 'subs', 'weapons', 'slotForce', 'locks', 'excluded', 'heldSub', 'genericWs', 'meritEdits', 'trial', 'buffs', 'buffTier', 'held', 'famOpen', 'wsList', 'keyOv', 'keyDirty', 'modeOv', 'modeDirty', 'keysPart', 'keysFilter', 'modTheme', 'macroPart', 'setOv', 'layout', 'sim', 'simOpen', 'statHide', 'boxOpen', 'wsTp', 'allItems', 'drafts', 'statSort', 'statOnlyWant', 'statPresets', 'statPreset', 'optOpts', 'macroAlt', 'pushed', 'backTo'];
 S.selPath = {};
 try { const s = JSON.parse(localStorage.getItem('atelier') || '{}'); for (const k of KEEP) if (s[k] != null) S[k] = s[k]; } catch(e) {}
 if (S.section === 'worn') S.section = 'sets';
@@ -212,10 +212,26 @@ function bookFor(d, alt = macroAlt(d)){
 }
 
 /* ---- the set's path and family, read by every part of the page ---- */
+// A set named for a weapon or a shield of the game (sets.Burtgang, sets.Aegis), or a value of a weapon mode (the
+// export's set catalog: group {MainWeapon}, sets.KC, sets.Shining: shared/utils/set_building/base_set_builder.lua wears
+// sets[state.MainWeapon]) is a weapons set even with no piece yet: "+ Add a job" writes them empty
+// (shared/utils/atelier/job_adder.lua), and by its pieces alone an empty set went to the other sets, where no weapon
+// can be tried (weapons.js applyTrial)
+const MODE_SETS = new WeakMap();
+const weaponModeSets = d => { if (!d) return null;
+  if (!MODE_SETS.has(d)) MODE_SETS.set(d, new Set((d.catalog || []).filter(e => /^\{\w*Weapon\w*\}$/.test(e.group || '')).map(e => e.path)));
+  return MODE_SETS.get(d); };
+const namedForWeapon = p => { const m = /^sets\.(\w+)$/.exec(p) || /^sets\["([^"]+)"\]$/.exec(p);
+  if (!m) return false;
+  const modes = typeof data === 'function' ? weaponModeSets(data()) : null;
+  if (modes && modes.has(p)) return true;
+  const it = typeof itemOf === 'function' ? itemOf(m[1]) : null;
+  return !!it && (it.slots || []).some(s => ['main', 'sub', 'range', 'ammo'].includes(s)); };
 function family(path, pieces){
   const p = path;
   const slots = Object.keys(pieces||{});
   if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
+  if (!slots.length && namedForWeapon(p)) return 'weapons';
   // GEO keeps its own sets (sets.me.*) and the ones with a luopan out (sets.luopan.*)
   if (/^sets\.(idle|Adoulin|Town|me\.idle|luopan\.idle|resting|MoveSpeed|Kiting)/.test(p)) return 'idle';
   // (a BST's sets.pet.engagedBoth: worn while master and pet both fight, the master's engaged figures and optimizer;

@@ -1,13 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Enmity Override - Maximum Enmity Routing (PLD)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   While HybridMode is on a hate-holding mode - 'Sortie', or 'Tanking' in
----   the /SCH setup - whatever would have worn sets.FullEnmity wears
+---   While HybridMode is on the hate-holding stance - 'Tanking', in the /SCH
+---   and /RUN setup - whatever would have worn sets.FullEnmity wears
 ---   sets.EnmityMax instead. Spells swap to it whole; abilities keep their own
 ---   pieces and only gain what EnmityMax adds.
 ---
 ---   sets.EnmityMax differs from sets.FullEnmity by owning the sub slot: in
----   those modes the shield is part of the enmity build, not left to whatever
+---   that stance the shield is part of the enmity build, not left to whatever
 ---   the engaged set holds. It owns no main slot - a main hand change zeroes
 ---   TP. /SCH's 'DPS' and 'Hoxne' stances are left out for the same reason
 ---   the main hand is: they are the TP builds, and swapping their shield
@@ -29,10 +29,9 @@ local EnmityOverride = {}
 ---   CONFIGURATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- The modes that route through sets.EnmityMax: Sortie on the general
---- profile, Tanking on the /SCH one.
+--- The modes that route through sets.EnmityMax: Tanking, the /SCH and /RUN
+--- hate stance.
 local ENMITY_MAX_MODES = {
-    Sortie  = true,
     Tanking = true
 }
 

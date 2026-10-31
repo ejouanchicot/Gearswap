@@ -26,7 +26,9 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
   const label = (SLOT_NAMES[S0().lang] as Record<string, string>)[slot]!;
   // a slot the set empties (sets.naked, //gs c naked) stays empty whatever the weapon modes say
   if (!p) return {k: 'none', iconHtml: icon(null), label, none: emptied ? t('emptied') : slot === 'main' || slot === 'sub' ? t('emptyWeapon') : t('empty')};
-  const r = pieceStats(p, slot), known = !!(r && r.known);
+  // a piece the set names without augments read as your copy of it, as the set's figures are (stats.js setStats): its
+  // augments shown, the ones only named included (Cab. Breeches +4: Enhances "Invincible" effect)
+  const r = pieceStats(ownCopy(slot, p), slot), known = !!(r && r.known);
   let attrs: StatCell[] = [], rows: StatCell[] = [], pet: StatCell[] = [];
   if (known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);

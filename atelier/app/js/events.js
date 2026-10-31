@@ -21,11 +21,11 @@ document.addEventListener('click', e => {
   if ('exclclear' in d) { S.excluded = Object.assign({}, S.excluded, {[S.char]: {}}); save(); render(); return; }
   if ('locksclear' in d) { const s = ui2CurrentSet(data()); if (s) { unlockAll(s); render(); } return; }
   if (d.unslot) { setTrial(shownSet(S._cards[+d.card], +d.card), d.unslot, undefined); $('#tip').hidden = true; render(); return; }
-  if (d.char) { S.char = d.char; S.job = null; closeOverlay(); render(); return; }
+  if (d.char) { S.char = d.char; S.job = null; S.backTo = null; closeOverlay(); render(); return; }
   if (d.lang) { S.lang = d.lang; render(); return; }
   if (d.themeSet) { S.theme = d.themeSet; render(); return; }
   if ('config' in d) { S._cfg = !S._cfg; S._pkg = false; S._upd = false; render(); scrollTo({top: 0}); return; }
-  if ('job' in d) { S.job = d.job || null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
+  if ('job' in d) { S.job = d.job || null; S.backTo = null; S.section = 'sets'; S.q = ''; render(); scrollTo({top:0}); return; }
   if (d.section) { S.section = d.section; render(); return; }
   if (d.jobtab) { S.jobTab = d.jobtab; save(); render(); return; }
   if (d.pick) { S.sel[S.job] = +d.pick; if (d.vpick != null) S.variant[S.job+'|'+d.pick] = +d.vpick; render(); return; }
@@ -161,6 +161,8 @@ document.addEventListener('click', e => {
   if (d.stattab) { S._statTab = d.stattab; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if (d.fold) { S.boxOpen[d.fold] = !S.boxOpen[d.fold]; render(); return; }
+  // a tab of the set's figures (Figures.svelte): kept for the next set shown
+  if (d.figtab) { S.boxOpen = Object.assign({}, S.boxOpen, {figtab: d.figtab}); render(); return; }
   if (d.savagery != null) { const b = buffState(); b[d.wparty ? 'pSavagery' : 'savagery'] = +d.savagery; save(); render(); return; }
   if ('agoge' in d) { const b = buffState(), k = d.wparty ? 'pNoAgoge' : 'noAgoge'; if (b[k]) delete b[k]; else b[k] = true; save(); render(); return; }
   if (d.poff) { const b = buffState(); b.off = Object.assign({}, b.off); b.off[d.poff] = !b.off[d.poff]; if (!b.off[d.poff]) delete b.off[d.poff]; save(); render(); return; }
@@ -228,7 +230,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
-  if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.section = 'sets'; S.q = ''; render(); }
+  if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.backTo = null; S.section = 'sets'; S.q = ''; render(); }
   if (e.target.classList.contains('kmod') || e.target.classList.contains('kname')) manualKey();
   if (e.target.classList.contains('tpin')) { const v = Math.max(0, Math.min(3000, Math.round(+e.target.value || 0)));
     if (e.target.dataset.sim) { simState().tp = v || 3000; simRun(); } else { S.wsTp = v || null; render(); } return; }
@@ -371,8 +373,12 @@ function readExports(first, done){
     if (!CHARS[S.char]) { S.char = Object.keys(CHARS)[0]; S.job = null; }
     // nothing exported yet: the welcome page (atelier/src/screens/home)
     if (!S.char) { S.job = null; if (done) done(); render(); return; }
-    // back where the last visit left off, when that job is still exported
-    if (S.job && !(DATA[S.char] || {})[S.job]) S.job = null;
+    // back where the last visit left off, when that job is still exported; a job the game sends with no file (a new
+    // character's: live.js) comes a few seconds later, and the page goes back to it then (S.backTo, live.js)
+    if (S.job && !(DATA[S.char] || {})[S.job]) {
+      if ((window.ATELIER_LIVE || {})[S.char]) S.backTo = {char: S.char, job: S.job, section: S.section};
+      S.job = null;
+    }
     // the pushes newer than their job's exports, laid on them again (push.js pushedApply)
     pushedApply();
     if (!first) canonAll();

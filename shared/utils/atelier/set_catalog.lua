@@ -475,6 +475,14 @@ local function load_list(path)
     return ok and type(list) == 'table' and list or {}
 end
 
+-- A line's text with the attributes it names filled ({ability.type}: Waltz, Rune...); one not bound stays as written
+local function filled_text(text, b)
+    return text and (text:gsub('{([%w_]+)%.([%w_]+)}', function(nm, attr)
+        local v = b[nm] and b[nm].attrs and b[nm].attrs[attr]
+        return v ~= nil and tostring(v) or nil
+    end))
+end
+
 -- One catalog line, filled: its entries added to `out` (a path met already keeps its first entry)
 local function expand(line, ctx, from, out, seen)
     for _, b in ipairs(bindings(line[1], ctx)) do
@@ -495,7 +503,7 @@ local function expand(line, ctx, from, out, seen)
                 end
                 local parent = {}
                 for i = 1, #keys - 1 do parent[i] = keys[i] end
-                out[#out + 1] = {path = path, when = line.when, fr = line.fr, base = base, group = line[1], from = from,
+                out[#out + 1] = {path = path, when = filled_text(line.when, b), fr = filled_text(line.fr, b), base = base, group = line[1], from = from,
                     exists = node(keys) ~= nil or nil, parent = (#parent == 0 or node(parent) ~= nil) or nil, key = line.key}
             end
         end

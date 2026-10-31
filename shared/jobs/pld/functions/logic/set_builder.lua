@@ -6,8 +6,8 @@
 ---   • Main weapon selection (MainWeapon state, a stance's own weapon)
 ---   • Shield per weapon for the modes that own it, and the grip of a
 ---     two-handed weapon: the player's PLD_WEAPONS.lua (weapons_config below)
----   • HybridMode application (PDT/MDT/Sortie, or DPS/Tanking/Hoxne
----     under /SCH, with shield awareness)
+---   • HybridMode application (PDT/MDT, or DPS/Tanking/Hoxne
+---     under /SCH and /RUN, with shield awareness)
 ---   • XP mode support (idleXp/meleeXp sets)
 ---   • Movement speed gear (idle only)
 ---   • Town detection and town gear (idle only)
@@ -37,35 +37,37 @@ require('shared/utils/messages/message_formatter')
 ---   HYBRIDMODE → SET MAPPING
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Which set each HybridMode wears. Most modes name their own set, but some
---- borrow: Sortie wants the mitigation/TP mix while engaged and the magic
---- mitigation set while idle, and /SCH's Tanking and Hoxne stances idle in
---- that same magic mitigation set - all of which already exist. DPS and Hoxne
---- each own their engaged build: the Ampulla's charge supplies the Double
---- Attack that DPS has to buy with gear.
+--- Which set each HybridMode fights in: the tank stances in their idle set
+--- (PDT, MDT and Tanking: holding hate comes first, the gear stays what it is
+--- standing; the player's rule of 2026-10-31, sets.engaged.PDT / .MDT gone),
+--- the TP stances in their own engaged build: the Ampulla's charge supplies
+--- Hoxne the Double Attack that DPS has to buy with gear.
 local ENGAGED_SET_BY_MODE = {
-    PDT     = 'PDT',
-    MDT     = 'MDT',
-    Sortie  = 'TP',
-    DPS     = 'DPS',
-    Tanking = 'MDT',
-    Hoxne   = 'Hoxne'
+    PDT     = {'idle', 'PDT'},
+    MDT     = {'idle', 'MDT'},
+    Tanking = {'idle', 'MDT'},
+    DPS     = {'engaged', 'DPS'},
+    Hoxne   = {'engaged', 'Hoxne'}
 }
+
+--- The idle set of the TP stances: the defense their Idle Defense mode names
+--- (pld/keys/PLD_STATES.lua, 'MDT' or 'PDT'), MDT in a file without it.
+local function tp_stance_idle()
+    return state.IdleDefense and state.IdleDefense.value or 'MDT'
+end
 
 local IDLE_SET_BY_MODE = {
     PDT     = 'PDT',
     MDT     = 'MDT',
-    Sortie  = 'MDT',
-    DPS     = 'MDT',
+    DPS     = tp_stance_idle,
     Tanking = 'MDT',
-    Hoxne   = 'MDT'
+    Hoxne   = tp_stance_idle
 }
 
 --- The player's pld/combat/PLD_WEAPONS.lua (see the template for examples):
 ---   shields        {[HybridMode] = {[weapon] = shield}}: in those modes the
----                  shield follows the weapon, winning over the set's sub
----                  (Sortie shares the mitigation sets of the other modes,
----                  which carry their own sub). Other modes: the set's sub.
+---                  shield follows the weapon, winning over the set's sub.
+---                  Other modes: the set's sub.
 ---   stance_weapon  {[HybridMode] = weapon}: the weapon a mode puts in hand
 ---                  whatever MainWeapon says (the hate stance's weapon)
 ---   grips          {[weapon] = grip}: two-handed weapons take a grip, not a
@@ -115,14 +117,21 @@ local function grip_for(weapon)
 end
 
 
----   Resolve the set a HybridMode maps to, or nil when the mode names no set
----   @param source table Set container (sets.engaged or sets.idle)
----   @param mode_map table ENGAGED_SET_BY_MODE or IDLE_SET_BY_MODE
----   @return table|nil Set for the active HybridMode
-local function hybrid_set(source, mode_map)
+---   Resolve the idle set a HybridMode maps to, or nil when the mode names no set
+---   @return table|nil Set for the active HybridMode (IDLE_SET_BY_MODE)
+local function hybrid_set()
     local mode = state.HybridMode and state.HybridMode.value
-    local set_name = mode and mode_map[mode]
-    return set_name and source[set_name] or nil
+    local set_name = mode and IDLE_SET_BY_MODE[mode]
+    if type(set_name) == 'function' then set_name = set_name() end
+    return set_name and sets.idle and sets.idle[set_name] or nil
+end
+
+---   The set the active HybridMode fights in (ENGAGED_SET_BY_MODE), or nil
+---   @return table|nil
+local function engaged_mode_set()
+    local mode = state.HybridMode and state.HybridMode.value
+    local where = mode and ENGAGED_SET_BY_MODE[mode]
+    return where and sets[where[1]] and sets[where[1]][where[2]] or nil
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -172,7 +181,7 @@ function SetBuilder.apply_shield(result, in_town)
 
     -- Exception 2: In town, use HybridMode shield
     if in_town then
-        local idle_set = hybrid_set(sets.idle, IDLE_SET_BY_MODE)
+        local idle_set = hybrid_set()
         if idle_set and idle_set.sub then
             result = set_combine(result, {
                 sub = idle_set.sub
@@ -201,6 +210,12 @@ function SetBuilder.apply_mode_shield(result)
     local by_weapon = mode and type(shields) == 'table' and shields[mode]
     local weapon = SetBuilder.current_weapon() or ''
     local shield = type(by_weapon) == 'table' and by_weapon[weapon] or nil
+    -- the stance's shield for any weapon without its own (shields.<mode>.default: Malevolence, KC...), but a
+    -- two-handed weapon (its grip) and a weapon set that holds its own off hand (BurtgangKC's Kraken Club)
+    if not shield and type(by_weapon) == 'table' and by_weapon.default and not grip_for(weapon)
+        and not (type(sets[weapon]) == 'table' and sets[weapon].sub) then
+        shield = by_weapon.default
+    end
     -- state.Shield (pld/keys/PLD_STATES.lua), when not 'Auto', forces its shield
     -- over the mode's; a two-handed weapon keeps its grip
     local forced = state.Shield and state.Shield.value
@@ -235,7 +250,7 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 ---   Priority order:
 ---   1. BurtgangKC weapon set, or Kraken Club already in the sub slot
 ---                                  >> sets.engaged.BurtgangKC
----   2. HybridMode                  >> sets.engaged[ENGAGED_SET_BY_MODE[mode]]
+---   2. HybridMode                  >> ENGAGED_SET_BY_MODE[mode] (sets.idle.PDT / .MDT, sets.engaged.DPS / .Hoxne)
 ---   3. Fallback                    >> base_set
 ---
 ---   @param base_set table Base engaged set from pld_sets.lua
@@ -251,8 +266,8 @@ function SetBuilder.select_engaged_base(base_set)
         return sets.engaged.BurtgangKC
     end
 
-    -- PRIORITY 3: HybridMode set (ENGAGED_SET_BY_MODE)
-    local mode_set = hybrid_set(sets.engaged, ENGAGED_SET_BY_MODE)
+    -- PRIORITY 3: HybridMode set (ENGAGED_SET_BY_MODE: a tank stance's idle set, a TP stance's engaged build)
+    local mode_set = engaged_mode_set()
     if mode_set then
         -- A two-handed weapon: the HybridMode set WITHOUT sub (its grip goes on after)
         if grip_for(state.MainWeapon and state.MainWeapon.current) then
@@ -342,7 +357,7 @@ function SetBuilder.build_idle_set(base_set)
     end
 
     -- Step 5: Apply HybridMode set (IDLE_SET_BY_MODE) outside of town - SKIP sub if two-handed or BurtgangKC
-    local mode_set = hybrid_set(sets.idle, IDLE_SET_BY_MODE)
+    local mode_set = hybrid_set()
     if mode_set then
         if is_two_handed or is_burtgang_kc then
             -- Two-handed / BurtgangKC: HybridMode WITHOUT sub (keep the grip / Kraken Club)

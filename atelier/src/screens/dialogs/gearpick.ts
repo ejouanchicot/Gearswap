@@ -66,7 +66,9 @@ export function gearPickView(s: LegacyAny, slot: string, p: LegacyAny, opts: Leg
       .concat(kinds.map(([k, n]) => [k, `${k || t('gpKindOther')} (${n})`] as [string, string])), kind == null ? '*' : kind)} : null,
     fxLabel: t('gpFor'), fxs: opt(stats, fx),
     junk: junk ? {checked: !!S0._showJunk, label: t('gpJunk', {n: junk})} : null,
-    emptyHtml: p && !(['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons') ? t('tryEmpty') : null,
+    // "empty" offered on a slot with no piece too (a set "+ Add a job" wrote empty: nothing to empty it from), but in a
+    // set laid on top of another, where an `empty` strips the piece under it (push.js overlaySet)
+    emptyHtml: (p || !overlaySet(s)) && !(['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons') ? t('tryEmpty') : null,
     count: t('gpCount', {n: rows.length}), wantsHtml: wantsLine(s), items: [...rows.map(([o, i, v]) => itemOf(o, i, slot, v, worn)),
       ...(fx ? [] : hid.filter(([o]) => kind == null || itemKind(o.piece.name) === kind).map(([o, i]) => Object.assign(itemOf(o, i, slot, null, worn), {hide: true})))], none: t('gpNone')};
 }

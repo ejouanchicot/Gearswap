@@ -50,8 +50,8 @@ return {
     {'midcast.Enhancing Magic.{type:Enhancing Magic}', when = 'Any Enhancing spell of that family, no family set at the root', fr = 'Quand tu lances un sort d’Enhancing Magic de cette famille, si tu n’as pas de set plus précis pour cette famille.',
         base = 'midcast.Enhancing Magic', needs = {'skill:Enhancing Magic'}},
     -- Enfeebling Magic: database_func get_enfeebling_type, no mode (P6, P7)
-    {'midcast.{type:Enfeebling Magic}', when = 'An enfeeble of that kind (read only when sets.midcast[\'Enfeebling Magic\'] exists)', fr = 'Quand tu lances un affaiblissement de ce genre, si tu as un set Enfeebling Magic.',
+    {'midcast.{type:Enfeebling Magic}', when = 'An enfeeble of that kind (read only when sets.midcast[\'Enfeebling Magic\'] exists)', fr = 'Quand tu lances un affaiblissement de ce type, si tu as un set Enfeebling Magic.',
         base = 'midcast.Enfeebling Magic', needs = {'skill:Enfeebling Magic'}},
-    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'An enfeeble of that kind, when sets.midcast.<kind> does not exist', fr = 'Quand tu lances un affaiblissement de ce genre, si tu n’as pas de set plus précis pour ce genre.',
+    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'An enfeeble of that kind, when sets.midcast.<kind> does not exist', fr = 'Quand tu lances un affaiblissement de ce type, si tu n’as pas de set plus précis pour ce type.',
         base = 'midcast.Enfeebling Magic', needs = {'skill:Enfeebling Magic'}},
 }

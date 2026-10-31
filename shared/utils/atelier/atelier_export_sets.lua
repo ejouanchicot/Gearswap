@@ -22,6 +22,10 @@ local SLOT_ALIAS = {
 }
 local MAX_DEPTH = 7
 
+--- Mote's fallback sets: worn when nothing more precise matches, so they are sets even
+--- empty and holding others (an empty sets.precast.FC with FC.CureSelf, or FC['Flash'] = sets.precast.FC).
+local BASE_SETS = {['sets.precast.FC'] = true, ['sets.precast.WS'] = true, ['sets.idle'] = true, ['sets.engaged'] = true}
+
 local function child_path(path, key)
     if type(key) == 'string' and key:match('^[%a_][%w_]*$') then return path .. '.' .. key end
     return path .. '["' .. tostring(key):gsub('"', '\\"') .. '"]'
@@ -71,6 +75,7 @@ local function walk_sets(root)
         end
         path_of[tbl] = path
         local pieces = pieces_of(tbl)
+        if not pieces and BASE_SETS[path] then pieces = {} end
         if not pieces and path ~= 'sets' then
             local leaf = true
             for key, value in pairs(tbl) do

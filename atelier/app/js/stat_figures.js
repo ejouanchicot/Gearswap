@@ -35,7 +35,7 @@ const ULTIMATE_SHIELDS = {Aegis: [50, 75], Srivatsa: [50, 75], Ochain: [108, 60]
 function statFigures(s, plain){
   const pieces = plain ? withoutTrial(() => withWeapons(s).pieces) : withWeapons(s).pieces;
   const v = {};
-  for (const [slot, p] of Object.entries(optPieces(pieces))) v[slot] = withVec(p, slot);
+  for (const [slot, p] of Object.entries(optPieces(pieces))) v[slot] = withVec(p, slot, s);
   return FFXI.opt.statFigures(statContext(s).stat, v);
 }
 

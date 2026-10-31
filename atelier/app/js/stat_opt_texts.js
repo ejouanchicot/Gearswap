@@ -53,9 +53,10 @@ Object.assign(T.fr, {
   statRef: 'HP vs Fast Cast', statRefTip: 'HP du set moins ceux du Fast Cast {f} ({h} HP), le set classique le plus bas en HP, porté avant chaque sort : '
     + 'les autres sets visent entre lui et lui + 200 pour qu’un changement de set ne fasse pas perdre de HP (guide Paladin, HP Management : écart de 200 au plus).',
   statRefLine: 'HP de référence : {h} (Fast Cast {f}) · les sets tank visent {a} à {b}.',
-  cyTitle: 'Cycle des HP', cyNote: 'HP max de chaque set, repos {n} ({i}) → precast → midcast → repos. Passer à un set plus bas fait tomber tes HP, '
+  figSheetTab: 'Stats du set', cyTitle: 'Cycle des HP',
+  jaNoPiece: 'Aucune de tes pièces ne renforce {a} : ce set porte celles de {b}, c’est lui qu’il faut optimiser.', cyNote: 'HP max de chaque set, repos {n} ({i}) → precast → midcast → repos. Passer à un set plus bas fait tomber tes HP, '
     + 'revenir ne les rend pas : la perte, c’est ce qui manque en revenant au repos (avant tout soin). Le guide vise 200 d’écart au plus. Tes pièces à l’essai comptent.',
-  cyIdleHigh: 'Ton repos est {n} au-dessus : chaque sort te coûte cette différence.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Perte', cyOnPurpose: 'voulu', cyJa: 'JA',
+  cyIdleHigh: 'Ton repos est {n} au-dessus : chaque sort te coûte cette différence.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Perte', cyOnPurpose: 'voulu',
   statAct: 'Inimitié de {a}', statActTip: '{a} : {ve} VE et {ce} CE de base, × (1 + Enmity / 100), Enmity du gear + Crusade + Sentinel plafonnée à +200 (guide Paladin, Enmity Generation).',
   protOtherTip: 'Protect lancé par un WHM, RDM, SCH… : sans la DEF de ton bouclier (Shield Barrier ne compte que sur ton propre Protect).',
   statGap: 'HP gagnés au midcast', statGapTip: 'HP du set {m} moins ceux du Fast Cast {f} : ce qui manque au moment du Cure, donc ce qu’il peut soigner en entier (guide Paladin, CURE SELF).',
@@ -68,6 +69,9 @@ Object.assign(T.fr, {
   ownWeapon: 'arme du set (portée le temps de l’action)',
   statWeaponsNote: 'Armes libres : l’arme et le bouclier trouvés vont dans ce set, portés le temps de l’action (en idle, tes modes les remettent). Changer l’arme principale fait perdre le TP, le bouclier non.',
   statGrp_def: 'Défense', statGrp_enm: 'Inimitié', statGrp_cure: 'Soin', statGrp_magic: 'Magie', statGrp_regen: 'Récupération',
+  statGrp_move: 'Déplacement', statObj_move: 'Vitesse de déplacement',
+  statD_move: 'seule la pièce la plus rapide compte (BG Wiki) : la recherche en garde une et laisse les autres slots à ton set idle',
+  statObj_jaPlus: 'Pièces de l’ability', statD_jaPlus: 'les pièces dont la description ou les augments nomment cette ability (Cab. Surcoat pour Fealty, Cab. Leggings pour Sentinel) : autant que possible',
   statAll: 'Tous les objectifs (+{n})', statFewer: 'Seulement ceux de ce set',
   statKept: 'Objectifs ou planchers changés à la main sur ce set.', statReset: 'Réglages par défaut',
   subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.', subFix: 'Passer en /{s}',
@@ -134,9 +138,10 @@ Object.assign(T.en, {
   statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set minus those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
     + 'the other sets aim between it and it + 200 so a set change loses no HP (Paladin guide, HP Management: 200 apart at most).',
   statRefLine: 'Reference HP: {h} (Fast Cast {f}) · the tank sets aim at {a} to {b}.',
-  cyTitle: 'HP cycle', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
+  figSheetTab: 'Set stats', cyTitle: 'HP cycle',
+  jaNoPiece: 'None of your pieces boosts {a}: this set wears {b}’s, that is the one to optimize.', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
     + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your trial pieces count.',
-  cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose', cyJa: 'JA',
+  cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose',
   statAct: '{a} enmity', statActTip: '{a}: {ve} VE and {ce} CE at base, × (1 + Enmity / 100), the Enmity of gear + Crusade + Sentinel capped at +200 (Paladin guide, Enmity Generation).',
   protOtherTip: 'Protect cast by a WHM, RDM, SCH…: without your shield’s DEF (Shield Barrier counts on your own Protect only).',
   statGap: 'HP gained at midcast', statGapTip: 'HP of the set {m} minus those of the Fast Cast {f}: what is missing when the Cure lands, so what it can heal in full (Paladin guide, CURE SELF).',
@@ -149,6 +154,9 @@ Object.assign(T.en, {
   ownWeapon: 'the set’s own (worn for the action)',
   statWeaponsNote: 'Free weapons: the weapon and shield found go in this set, worn for the action (at idle your weapon modes put theirs back). Changing the main weapon loses your TP, the shield does not.',
   statGrp_def: 'Defense', statGrp_enm: 'Enmity', statGrp_cure: 'Healing', statGrp_magic: 'Magic', statGrp_regen: 'Recovery',
+  statGrp_move: 'Movement', statObj_move: 'Movement speed',
+  statD_move: 'only the fastest piece counts (BG Wiki): the search keeps one and leaves the other slots to your idle set',
+  statObj_jaPlus: 'Ability pieces', statD_jaPlus: 'the pieces whose description or augments name this ability (Cab. Surcoat for Fealty, Cab. Leggings for Sentinel): as many as can be',
   statAll: 'All objectives (+{n})', statFewer: 'Only this set’s',
   statKept: 'Objectives or limits changed by hand on this set.', statReset: 'Back to the defaults',
   subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',

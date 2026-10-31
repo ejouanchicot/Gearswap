@@ -353,6 +353,10 @@ async function liveTick(){
         canonNames(d); m[d.sub || 'NONE'] = d; DATA_GEN++;
         CHARS[c] = {jobs: Object.keys(DATA[c])};
         now.at = d.at; now.fresh = true;
+        // the job a reload left with no file to show (events.js readData): back to it, where it was, unless another
+        // job was picked meanwhile
+        const back = S.backTo;
+        if (back && back.char === c && back.job === d.job && S.char === c && !S.job) { S.job = back.job; S.section = back.section || 'sets'; S.backTo = null; save(); }
       }
     }
     // a new measure (the game sent the stats again: gear, buffs), fetched once it has held 3 s (not in the middle of an

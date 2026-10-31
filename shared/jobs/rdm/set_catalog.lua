@@ -51,16 +51,16 @@ return {
     {'midcast.{spell:Enfeebling Magic}.{EnfeebleMode}', when = 'Casting that enfeeble in that Enfeeble Mode (read only when sets.midcast.<spell> exists)', fr = 'Quand tu lances cet affaiblissement avec cet Enfeeble Mode, si tu as un set au nom du sort.',
         base = 'midcast.{spell}'},
     -- P3 resolve_type_mode
-    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}.{EnfeebleMode}', when = 'An enfeeble of that kind in that Enfeeble Mode (read only when sets.midcast.Enfeebling Magic exists)', fr = 'Quand tu lances un affaiblissement de ce genre avec cet Enfeeble Mode, si tu as un set Enfeebling Magic.',
+    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}.{EnfeebleMode}', when = 'An enfeeble of that kind in that Enfeeble Mode (read only when sets.midcast.Enfeebling Magic exists)', fr = 'Quand tu lances un affaiblissement de ce type avec cet Enfeeble Mode, si tu as un set Enfeebling Magic.',
         base = {'midcast.Enfeebling Magic.{type}', 'midcast.Enfeebling Magic'}},
     -- P6 resolve_type_root
-    {'midcast.{type:Enfeebling Magic}', when = 'An enfeeble of that kind (read only when sets.midcast.Enfeebling Magic exists)', fr = 'Quand tu lances un affaiblissement de ce genre, si tu as un set Enfeebling Magic.',
+    {'midcast.{type:Enfeebling Magic}', when = 'An enfeeble of that kind (read only when sets.midcast.Enfeebling Magic exists)', fr = 'Quand tu lances un affaiblissement de ce type, si tu as un set Enfeebling Magic.',
         base = 'midcast.Enfeebling Magic'},
     -- P7 resolve_type_under_skill
-    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'An enfeeble of that kind, when sets.midcast.<kind> does not exist', fr = 'Quand tu lances un affaiblissement de ce genre, si tu n’as pas de set plus précis pour ce genre.',
+    {'midcast.Enfeebling Magic.{type:Enfeebling Magic}', when = 'An enfeeble of that kind, when sets.midcast.<kind> does not exist', fr = 'Quand tu lances un affaiblissement de ce type, si tu n’as pas de set plus précis pour ce type.',
         base = 'midcast.Enfeebling Magic'},
     -- P8 resolve_mode
-    {'midcast.Enfeebling Magic.{EnfeebleMode}', when = 'Any enfeeble while that Enfeeble Mode is chosen (not Auto), unless its kind has a set for the mode', fr = 'Quand tu lances n’importe quel affaiblissement avec cet Enfeeble Mode choisi (pas Auto), sauf si son genre a un set pour ce mode.',
+    {'midcast.Enfeebling Magic.{EnfeebleMode}', when = 'Any enfeeble while that Enfeeble Mode is chosen (not Auto), unless its kind has a set for the mode', fr = 'Quand tu lances n’importe quel affaiblissement avec cet Enfeeble Mode choisi (pas Auto), sauf si son type d’affaiblissement a un set pour ce mode.',
         base = 'midcast.Enfeebling Magic'},
     -- midcast_enfeebling: laid on top while Saboteur is up
     {'midcast.Enfeebling Magic.Saboteur', when = 'Casting an enfeeble while Saboteur is up: on top of the enfeeble set', fr = 'Quand tu lances un affaiblissement avec Saboteur actif : mis par-dessus ton set d’affaiblissement.',

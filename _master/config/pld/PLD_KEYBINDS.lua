@@ -25,7 +25,7 @@ local PLDKeybinds = {}
 --- Phalanx SIRD stays on Ctrl+Numpad2 under every subjob (On by default under
 --- /SCH); Regen takes Ctrl+Numpad3 under /SCH (Rune Mode's key, which only /RUN uses), Ctrl+Numpad7 under /RUN.
 --- The weapon stays cyclable: the /SCH stances pick the set, not the sword.
-PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT, plus Sortie/DPS/Tanking/Hoxne under /SCH and /RUN)
+PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT, plus DPS/Tanking/Hoxne under /SCH and /RUN)
 {
     key = "^numpad9",
     command = "cyclestate HybridMode",
@@ -37,15 +37,23 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT, plus Sortie/DPS/Tanking/Hoxne und
     command = "cyclestate MainWeapon",
     desc = "Main Weapon",
     state = "MainWeapon",
-    -- Under /SCH the Tanking stance holds Burtgang whatever this says, so the
-    -- choice has nothing to act on there: hide the row and drop the key rather
-    -- than leave a live-looking control that changes nothing until you leave
-    -- the stance.
+    -- The Tanking stance holds its own weapon whatever this says (StanceWeapon,
+    -- below, on the same key there): the row and the key go in that stance.
     visible = function()
-        return not (player and player.sub_job == 'SCH'
-            and state and state.HybridMode and state.HybridMode.value == 'Tanking')
+        return not (state and state.HybridMode and state.HybridMode.value == 'Tanking')
     end
-}, -- XP Mode (PLD/RDM subjob only)
+}, -- The Tanking stance's weapon (Auto: the stance's own, Burtgang), on the weapon key in that stance
+{
+    key = "^numpad1",
+    command = "cyclestate StanceWeapon",
+    desc = "Tanking Weapon",
+    state = "StanceWeapon",
+    visible = function()
+        return state and state.HybridMode and state.HybridMode.value == 'Tanking'
+    end
+}, -- The shield over the stance's (Auto: the stance and weapon decide, PLD_WEAPONS.lua)
+{ key = "^numpad0", command = "cyclestate Shield", desc = "Shield", state = "Shield" },
+-- XP Mode (PLD/RDM subjob only)
 {
     key = "^numpad4",
     command = "cyclestate Xp",
@@ -69,6 +77,12 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT, plus Sortie/DPS/Tanking/Hoxne und
     { key = "^numpad7", command = "cyclestate Regen", desc = "Regen", state = "Regen", subjob = "RUN" },
     { key = "^numpad5", command = "cyclestate WS1", desc = "WS Slot 1", state = "WS1" },
     { key = "^numpad6", command = "cyclestate WS2", desc = "WS Slot 2", state = "WS2" },
+    -- Idle Defense: the idle set of the TP stances (PLD_STATES.lua), shown where it acts: DPS and Hoxne
+    { key = "^numpad8", command = "cyclestate IdleDefense", desc = "Idle Defense", state = "IdleDefense",
+      visible = function()
+          local mode = state and state.HybridMode and state.HybridMode.value
+          return mode == "DPS" or mode == "Hoxne"
+      end },
 }
 
 --- Keys this file used to bind and no longer does, unbound on every load (^numpad7, SneakInviAOE's until /SCH

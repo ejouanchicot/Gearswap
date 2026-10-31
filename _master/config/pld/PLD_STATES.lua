@@ -4,9 +4,8 @@
 --- Defines all PLD job states (Combat Modes, Weapon Sets, XP Mode, Rune Mode).
 ---
 --- Features:
----   • HybridMode configuration (PDT/MDT, plus Sortie/DPS/Tanking/Hoxne under /SCH and /RUN)
----   • MainWeapon state (full list, Burtgang/Naegling in Sortie,
----     Excalibur/Naegling under /SCH)
+---   • HybridMode configuration (PDT/MDT, plus DPS/Tanking/Hoxne under /SCH and /RUN)
+---   • MainWeapon state (full list, Excalibur/Naegling under /SCH and /RUN)
 ---   • XP Mode for Phalanx optimization (SIRD vs Potency)
 ---   • RuneMode for RUN subjob (Ignis/Gelus/Flabra/Tellus/Sulpor/Unda/Lux/Tenebrae)
 ---   • SneakInviAOE for SCH subjob (Accession on Sneak/Invisible)
@@ -47,32 +46,26 @@ local SORTIE_RUNE_OPTIONS = {
 --- WEAPON OPTIONS
 ---============================================================================
 
---- Every weapon set, in cycle order.
---- Excalibur (relic, Knights of Round)
---- Burtgang (mythic, enmity tank)  KC (Kraken Club, multi-attack)
+--- Every weapon set, in cycle order: Burtgang first, the weapon a tank holds by default.
+--- Burtgang (mythic, enmity tank)  Excalibur (relic, Knights of Round)
+--- KC (Kraken Club, multi-attack)
 --- BurtgangKC (PLD/DNC combo)      Naegling (Savage Blade)
 --- Shining (Shining One, polearm)  Malevo (Malevolence, club)
 local WEAPON_OPTIONS = {
-    'Excalibur', 'Burtgang', 'KC', 'BurtgangKC', 'Naegling', 'Shining', 'Malevo'
-}
-
---- Sortie runs on two weapons only. Their shields can follow the weapon
---- (pld/combat/PLD_WEAPONS.lua, shields.Sortie), so no Sortie set has to
---- carry a sub slot.
-local SORTIE_WEAPON_OPTIONS = {
-    'Burtgang', 'Naegling'
+    'Burtgang', 'Excalibur', 'KC', 'BurtgangKC', 'Naegling', 'Shining', 'Malevo'
 }
 
 ---============================================================================
 --- COMBAT MODE OPTIONS
 ---============================================================================
 
---- The stances every subjob but the Sortie ones (STANCE_SUBJOBS) gets: no Sortie stance, Sortie is played
---- under /RUN and /SCH only.
-local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT'}
+--- The stances every subjob but /SCH and /RUN (STANCE_SUBJOBS) gets: the tank ones (they fight in their idle
+--- set) and DPS, the TP build (sets.engaged.DPS, Naegling or Excalibur). Tanking and Hoxne are played under
+--- /RUN and /SCH only.
+local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'DPS'}
 
 --- Subjobs played for Sortie and nothing else: they take the Sortie stances
---- (STANCE_SUB_OPTIONS), its weapon list and Phalanx SIRD, and the /SCH
+--- (STANCE_SUB_OPTIONS), their weapon list and Phalanx SIRD, and the /SCH
 --- weaponskill variants (sets.precast.WS.SCH, PLD_PRECAST.lua). What only one
 --- of them has stays its own: Accession sneak/invi and Regen under /SCH, the
 --- Sortie runes under /RUN.
@@ -88,9 +81,8 @@ local REGEN_SUBJOBS = {SCH = true, RUN = true}
 --- ammo slot (shared/utils/equipment/ampulla_lock.lua), the Ampulla being swapped out by the
 --- next set the moment it is equipped otherwise.
 --- What /SCH and /RUN offer: the classic stances first (PDT, the default, and MDT, as on any subjob: weapons
---- from WEAPON_OPTIONS, the set's own shield), then Sortie (Burtgang + Aegis or Naegling + Blurred Shield +1,
---- SORTIE_WEAPON_OPTIONS) and the Sortie ones (Tanking: Burtgang + Aegis, DPS, Hoxne).
-local STANCE_SUB_OPTIONS = {'PDT', 'MDT', 'Sortie', 'DPS', 'Tanking', 'Hoxne'}
+--- from WEAPON_OPTIONS, the set's own shield), then the Sortie ones (Tanking: Burtgang + Aegis, DPS, Hoxne).
+local STANCE_SUB_OPTIONS = {'PDT', 'MDT', 'DPS', 'Tanking', 'Hoxne'}
 
 --- Whether a HybridMode value is one of the Sortie stances.
 local SORTIE_STANCE = {DPS = true, Tanking = true, Hoxne = true}
@@ -108,7 +100,7 @@ local SCH_WEAPON_OPTIONS = {
     'Naegling', 'Excalibur'
 }
 
---- Which lists the states hold: 'sch', 'sortie', 'standard', or nil when
+--- Which lists the states hold: 'sch', 'dps', 'standard', or nil when
 --- configure() has created the states without applying a profile yet.
 local active_profile = nil
 
@@ -153,14 +145,13 @@ function PLDStates.configure()
 
     --- HybridMode: Defensive stance configuration
     --- Options on every subjob:
-    ---   • 'PDT' - Physical Damage Taken -50% (default for physical enemies)
-    ---   • 'MDT' - Magic Damage Taken -50% (for magical enemies)
-    --- Options under /SCH and /RUN only (the Sortie setup):
-    ---   • 'Sortie' - Mitigation + TP build (sets.engaged.TP / sets.idle.MDT),
+    ---   • 'PDT' - fights and idles in sets.idle.PDT (default)
+    ---   • 'MDT' - fights and idles in sets.idle.MDT
+    ---   • 'DPS' - the TP build (sets.engaged.DPS), Naegling or Excalibur; idles in
+    ---            the set its Idle Defense mode names (below)
+    --- Options under /SCH and /RUN only (the Sortie setup; DPS there takes Phalanx SIRD):
+    ---   • 'Tanking' - Burtgang + Aegis, fights and idles in sets.idle.MDT,
     ---              and sets.EnmityMax replaces sets.FullEnmity
-    ---   • 'Tanking' - Burtgang + Aegis, sets.engaged.MDT,
-    ---              and sets.EnmityMax replaces sets.FullEnmity
-    ---   • 'DPS'     - sets.engaged.DPS (TP build), weapon from MainWeapon
     ---   • 'Hoxne'   - sets.engaged.Hoxne, weapon from MainWeapon, ammo
     ---              frozen on Hoxne Ampulla so nothing swaps the charge away
     --- Keybind: Ctrl+Numpad9 to cycle
@@ -173,13 +164,22 @@ function PLDStates.configure()
         state.HybridMode:set('PDT') -- Default to PDT
     end
 
+    --- IdleDefense: the idle set of the TP stances (DPS; Hoxne under /SCH and /RUN), whose
+    --- engaged builds leave the standing defense to choose. The tank stances idle in
+    --- their own set (PDT: sets.idle.PDT; MDT, Tanking: sets.idle.MDT).
+    ---   • 'MDT' - sets.idle.MDT (default)
+    ---   • 'PDT' - sets.idle.PDT
+    --- Read by logic/set_builder.lua (IDLE_SET_BY_MODE). Keybind: Ctrl+Numpad8, shown
+    --- in DPS and Hoxne only (PLD_KEYBINDS.lua); //gs c set IdleDefense PDT|MDT too.
+    state.IdleDefense = M {['description'] = 'Idle Defense', 'MDT', 'PDT'}
+
     -- ==========================================================================
     -- WEAPON SETS
     -- ==========================================================================
 
     --- MainWeapon: Primary weapon selection
-    --- Options and their order come from WEAPON_OPTIONS / SORTIE_WEAPON_OPTIONS
-    --- / SCH_WEAPON_OPTIONS, reapplied by apply_hybrid_profile().
+    --- Options and their order come from WEAPON_OPTIONS / SCH_WEAPON_OPTIONS,
+    --- reapplied by apply_hybrid_profile().
     --- Keybind: Ctrl+Numpad1 to cycle
     state.MainWeapon =
         M {
@@ -213,7 +213,7 @@ function PLDStates.configure()
 
     --- Shield: the shield in the off hand, over the one the stance and weapon give
     --- (pld/combat/PLD_WEAPONS.lua shields). 'Auto' leaves it to them; a shield
-    --- name forces it (a two-handed weapon keeps its grip). No key: set by
+    --- name forces it (a two-handed weapon keeps its grip). Keybind: Ctrl+Numpad0; also set by
     --- //gs c sortie <target> (SORTIE_CONFIG.lua states) or //gs c set Shield <name>.
     state.Shield =
         M {
@@ -226,9 +226,9 @@ function PLDStates.configure()
 
     --- StanceWeapon: the weapon a stance that holds one puts in hand (Tanking:
     --- pld/combat/PLD_WEAPONS.lua stance_weapon), over that stance's own.
-    --- 'Auto' leaves it to the stance. The weaponskill slots follow it. No key:
-    --- set by //gs c sortie <target> (SORTIE_CONFIG.lua states) or
-    --- //gs c set StanceWeapon <name>.
+    --- 'Auto' leaves it to the stance. The weaponskill slots follow it. Keybind:
+    --- Ctrl+Numpad1 in the Tanking stance (MainWeapon's key elsewhere); also set by
+    --- //gs c sortie <target> (SORTIE_CONFIG.lua states) or //gs c set StanceWeapon <name>.
     state.StanceWeapon =
         M {
         ['description'] = 'Stance Weapon',
@@ -329,21 +329,22 @@ end
 
 --- Which profile the states should hold right now.
 --- The subjob decides first: under /SCH and /RUN (STANCE_SUBJOBS), the Sortie setup,
---- DPS, Tanking and Hoxne take the /SCH profile; Sortie, PDT and MDT are decided as anywhere.
+--- DPS, Tanking and Hoxne take the /SCH profile; on any other subjob DPS takes the dps one (the
+--- same two weapons, nothing of the Sortie setup); PDT and MDT the standard one, as anywhere.
 --- @param mode string HybridMode value
---- @return string 'sch', 'sortie' or 'standard'
+--- @return string 'sch', 'dps' or 'standard'
 local function profile_for(mode)
-    -- under /SCH and /RUN, DPS, Tanking and Hoxne; Sortie has its own profile, PDT and MDT the standard one
     if is_stance_sub() and SORTIE_STANCE[mode] then
         return 'sch'
     end
-    return (mode == 'Sortie') and 'sortie' or 'standard'
+    return mode == 'DPS' and 'dps' or 'standard'
 end
 
 --- Install the option lists and forced toggles a profile owns.
---- @param profile string 'sch', 'sortie' or 'standard'
+--- @param profile string 'sch', 'dps' or 'standard'
+--- @param was string|nil The profile in place before (nil on a load)
 --- @return void
-local function install_profile(profile)
+local function install_profile(profile, was)
     if profile == 'sch' then
         reshape(state.MainWeapon, SCH_WEAPON_OPTIONS)
 
@@ -363,15 +364,17 @@ local function install_profile(profile)
         return
     end
 
-    if profile == 'sortie' then
-        reshape(state.RuneMode, SORTIE_RUNE_OPTIONS)
-        reshape(state.MainWeapon, SORTIE_WEAPON_OPTIONS)
-        state.PhalanxSIRD:set('On')
-        return
-    end
-
     reshape(state.RuneMode, RUNE_OPTIONS)
-    reshape(state.MainWeapon, WEAPON_OPTIONS)
+    if profile == 'dps' then
+        -- the TP build's two weapons, Naegling first (as entering the /SCH setup)
+        reshape(state.MainWeapon, SCH_WEAPON_OPTIONS)
+        state.MainWeapon:set(SCH_WEAPON_OPTIONS[1])
+    else
+        reshape(state.MainWeapon, WEAPON_OPTIONS)
+        -- back from a TP stance (DPS, Hoxne) to a tank one: the tank's weapon again, Burtgang (the list's first),
+        -- its TP lost rather than tanking with Naegling (the player's rule, 2026-10-31)
+        if was == 'sch' or was == 'dps' then state.MainWeapon:set(WEAPON_OPTIONS[1]) end
+    end
     state.PhalanxSIRD:set('Off')
     -- Not shown in the HUD outside /SCH and /RUN: turned Off there rather than left On unseen.
     if not (player and REGEN_SUBJOBS[player.sub_job]) then state.Regen:set('Off') end
@@ -379,20 +382,18 @@ end
 
 --- Reshape the states that depend on the subjob and on HybridMode.
 ---
---- Sortie is a fixed rotation: five runes and two weapons are ever wanted
---- there, and Phalanx is cast under fire, so SIRD is the default rather than
---- potency. Any other mode restores the full lists and potency Phalanx.
----
---- /SCH is that same content with its own stances, so it holds Phalanx SIRD
---- and the Accession sneak/invi on for good, and offers the two weapons its
---- DPS and Hoxne stances swing (the Tanking stance brings its own).
+--- The Sortie stances of /SCH and /RUN (DPS, Tanking, Hoxne) are a fixed
+--- rotation, Phalanx cast under fire: they hold Phalanx SIRD on, /SCH the
+--- Accession sneak/invi and /RUN the five Sortie runes, and offer the two
+--- weapons the DPS and Hoxne stances swing (the Tanking stance brings its own).
+--- PDT and MDT restore the full lists and potency Phalanx.
 ---
 --- Installing a profile is skipped while it is already the one in place:
 --- PDT <-> MDT keeps every choice, the Phalanx SIRD toggle included. When the
 --- lists do change, the weapon and rune in use are kept if the new list has
 --- them; a weapon the new list lacks falls back to its first entry.
 ---
---- @param mode string HybridMode value ('PDT'/'MDT'/'Sortie', or 'DPS'/'Tanking'/'Hoxne')
+--- @param mode string HybridMode value ('PDT'/'MDT', or 'DPS'/'Tanking'/'Hoxne')
 --- @return void
 function PLDStates.apply_hybrid_profile(mode)
     if not (state.RuneMode and state.PhalanxSIRD and state.MainWeapon and state.SneakInviAOE
@@ -402,8 +403,9 @@ function PLDStates.apply_hybrid_profile(mode)
 
     local profile = profile_for(mode)
     if profile ~= active_profile then
+        local was = active_profile
         active_profile = profile
-        install_profile(profile)
+        install_profile(profile, was)
     end
 end
 

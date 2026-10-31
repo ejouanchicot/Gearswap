@@ -120,11 +120,13 @@ const STATE_HELP_EN = {
  },
  "PLD": {
   "HybridMode": "Your stance (see below)",
-  "MainWeapon": "Weapon set to wield. The list shrinks in Sortie and in the /SCH stances (see below). Hidden under /SCH Tanking",
+  "MainWeapon": "Weapon set to wield. The list shrinks in DPS and the /SCH stances (see below). Hidden under /SCH Tanking",
   "PhalanxSIRD": "On = Phalanx always uses sets.midcast.SIRDPhalanx (spell interruption down) instead of potency. The same key under every subjob",
   "Shield": "Auto = the shield your stance and weapon give (PLD_WEAPONS.lua); a shield name forces it in idle and engaged (a two-handed weapon keeps its grip). Set by //gs c sortie <target> (SORTIE_CONFIG.lua states) or //gs c set Shield <name>; only in a PLD_STATES.lua that declares it",
+  "StanceWeapon": "The weapon the Tanking stance holds: Auto = its own (Burtgang). On the weapon key in that stance; //gs c sortie aminon sets Naegling",
   "WS1": "Weaponskill of //gs c ws1 (or ws)",
   "WS2": "Weaponskill of //gs c ws2",
+  "IdleDefense": "The idle set of DPS and Hoxne, standing: sets.idle.MDT or sets.idle.PDT. Shown in those stances only; //gs c set IdleDefense PDT from a macro",
   "RuneMode": "Rune used by //gs c rune",
   "Xp": "On adds sets.meleeXp / sets.idleXp over your gear, and Phalanx uses the SIRD set"
  },

@@ -13,12 +13,14 @@ Set names and automatic gear: [sets.md](sets.md).
 
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
-| `^numpad9` | `HybridMode` | **PDT**, MDT. Under /SCH and /RUN: **PDT**, MDT, Sortie, DPS, Tanking, Hoxne | Your stance (see below) |
-| `^numpad1` | `MainWeapon` | **Excalibur**, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo | Weapon set to wield. The list shrinks in Sortie and in the /SCH stances (see below). Hidden under /SCH Tanking |
-| `^numpad2` | `PhalanxSIRD` | **Off**, On. Turned On when you enter Sortie or a /SCH stance (DPS, Tanking, Hoxne) | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. The same key under every subjob |
-| no key | `Shield` | **Auto**, Duban, Aegis, Blurred Shield +1 | `Auto` = the shield your stance and weapon give (`PLD_WEAPONS.lua`); a shield name forces it in idle and engaged (a two-handed weapon keeps its grip). Set by `//gs c sortie <target>` (`SORTIE_CONFIG.lua` states) or `//gs c set Shield <name>`; only in a `PLD_STATES.lua` that declares it |
+| `^numpad9` | `HybridMode` | **PDT**, MDT, DPS. Under /SCH and /RUN: **PDT**, MDT, DPS, Tanking, Hoxne | Your stance (see below) |
+| `^numpad1` | `MainWeapon` | **Burtgang**, Excalibur, KC, BurtgangKC, Naegling, Shining, Malevo | Weapon set to wield. The list shrinks in DPS and the /SCH stances (see below). Hidden under /SCH Tanking |
+| `^numpad2` | `PhalanxSIRD` | **Off**, On. Turned On when you enter a /SCH stance (DPS, Tanking, Hoxne) | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. The same key under every subjob |
+| `^numpad0` | `Shield` | **Auto**, Duban, Aegis, Blurred Shield +1 | `Auto` = the shield your stance and weapon give (`PLD_WEAPONS.lua`); a shield name forces it in idle and engaged (a two-handed weapon keeps its grip). Set by `//gs c sortie <target>` (`SORTIE_CONFIG.lua` states) or `//gs c set Shield <name>`; only in a `PLD_STATES.lua` that declares it |
+| `^numpad1` (Tanking) | `StanceWeapon` | **Auto**, Naegling, Excalibur | The weapon the Tanking stance holds: Auto = its own (Burtgang). On the weapon key in that stance; `//gs c sortie aminon` sets Naegling |
 | `^numpad5` | `WS1` | depends on the weapon | Weaponskill of `//gs c ws1` (or `ws`) |
 | `^numpad6` | `WS2` | depends on the weapon | Weaponskill of `//gs c ws2` |
+| `^numpad8` | `IdleDefense` | **MDT**, PDT | The idle set of DPS and Hoxne, standing: `sets.idle.MDT` or `sets.idle.PDT`. Shown in those stances only; `//gs c set IdleDefense PDT` from a macro |
 | `^numpad3` (/RUN) | `RuneMode` | **Ignis**, Gelus, Flabra, Tellus, Sulpor, Unda, Lux, Tenebrae | Rune used by `//gs c rune` |
 | `^numpad4` (/RDM) | `Xp` | **Off**, On | `On` adds `sets.meleeXp` / `sets.idleXp` over your gear, and Phalanx uses the SIRD set |
 
@@ -26,14 +28,13 @@ Set names and automatic gear: [sets.md](sets.md).
 
 | Stance | Engaged set | Idle set | Shield (with the author's `PLD_WEAPONS.lua`) | Notes |
 |---|---|---|---|---|
-| PDT | `sets.engaged.PDT` | `sets.idle.PDT` | from the set | |
-| MDT | `sets.engaged.MDT` | `sets.idle.MDT` | from the set | |
-| Sortie | `sets.engaged.TP` | `sets.idle.MDT` | follows the weapon: Burtgang > Aegis, Naegling > Blurred Shield +1 | Weapons shrink to Burtgang and Naegling, runes to Ignis, Tenebrae, Sulpor, Flabra, Unda; `PhalanxSIRD` turns On, `Regen` Off. Enmity spells and abilities use `sets.EnmityMax` |
-| DPS (/SCH) | `sets.engaged.DPS` | `sets.idle.MDT` | Duban | Swings `MainWeapon` |
-| Tanking (/SCH) | `sets.engaged.MDT` | `sets.idle.MDT` | Aegis | Always Burtgang, whatever `MainWeapon` says (its key is hidden). Enmity spells and abilities use `sets.EnmityMax` |
-| Hoxne (/SCH) | `sets.engaged.Hoxne` | `sets.idle.MDT` | Duban | Swings `MainWeapon`, wears the Hoxne Ampulla and locks the ammo slot while the stance is on |
+| PDT | `sets.idle.PDT` | `sets.idle.PDT` | from the set | The tanking comes first: the same gear standing and fighting |
+| MDT | `sets.idle.MDT` | `sets.idle.MDT` | from the set | The same |
+| DPS | `sets.engaged.DPS` | `IdleDefense`: `sets.idle.MDT` or `sets.idle.PDT` | Duban | The TP build, every subjob. Swings Naegling or Excalibur |
+| Tanking (/SCH) | `sets.idle.MDT` | `sets.idle.MDT` | Aegis | Always Burtgang, whatever `MainWeapon` says (its key is hidden). Enmity spells and abilities use `sets.EnmityMax` |
+| Hoxne (/SCH) | `sets.engaged.Hoxne` | `IdleDefense`: `sets.idle.MDT` or `sets.idle.PDT` | Duban | Swings `MainWeapon`, wears the Hoxne Ampulla and locks the ammo slot while the stance is on |
 
-The shields of Sortie and the /SCH stances, and Burtgang in Tanking, come from
+The shields of the /SCH stances, and Burtgang in Tanking, come from
 `PLD_WEAPONS.lua` (see [sets.md](sets.md#weapons)). The provided file forces none of
 them: each stance then wears the `sub` of its own set and swings `MainWeapon`, Tanking
 included (its weapon key stays hidden).
@@ -45,8 +46,9 @@ its own) uses `sets.engaged.BurtgangKC` in every stance.
 Under /SCH and /RUN, PDT and MDT work as on any subjob (full weapon list). In the DPS,
 Tanking and Hoxne stances the weapon list is Naegling and Excalibur (both with Duban in the author's
 `PLD_WEAPONS.lua`); entering them from PDT or MDT puts the weapon
-on Naegling and turns `PhalanxSIRD` On (Ctrl+Numpad2 turns it Off). Leaving the
-Sortie stance or those stances for PDT or MDT restores the full lists and turns `PhalanxSIRD` Off;
+on Naegling and turns `PhalanxSIRD` On (Ctrl+Numpad2 turns it Off). Leaving
+those stances (or DPS on any subjob) for PDT or MDT restores the full lists, puts Burtgang back in
+hand (its TP is lost) and turns `PhalanxSIRD` Off;
 PDT <-> MDT keeps every choice.
 
 `//gs c sortie <target>` (Sortie orders, only on a character with a `SORTIE_CONFIG.lua`;
@@ -81,7 +83,7 @@ Savage Blade / Chant du Cygne.
 
 - Every mode except `AutoMedicine` goes back to its default on every job change,
   subjob change and reload, so a subjob change always lands on PDT.
-- The author's alt overlay keeps PDT/MDT/Sortie only and has
+- The author's alt overlay has PDT, MDT and DPS (Naegling only) and has
   no Excalibur.
 
 ## Files
@@ -90,7 +92,7 @@ In `<YourChar>/pld/`:
 
 | File | Content |
 |---|---|
-| `PLD_STATES.lua` | Modes, their values and defaults, the Sortie and /SCH lists |
+| `PLD_STATES.lua` | Modes, their values and defaults, the /SCH lists |
 | `PLD_KEYBINDS.lua` | The keys above |
 | `PLD_CUSTOM.lua` | Your own modes, keys and gear rules, without code (empty by default) |
 | `PLD_HUD.lua` | Order of the HUD sections and rows on PLD |

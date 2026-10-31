@@ -3,7 +3,7 @@
 ---============================================================================
 --- What PLD's own code reads on top of shared/utils/atelier/set_catalog_common.lua
 --- (format: shared/utils/atelier/set_catalog.lua). The stances are HybridMode:
---- PDT / MDT / Sortie on most subjobs, PDT / MDT / DPS / Tanking / Hoxne under
+--- PDT / MDT / DPS on most subjobs, PDT / MDT / DPS / Tanking / Hoxne under
 --- /SCH and /RUN (_master/config/pld/PLD_STATES.lua STANCE_SUBJOBS). The set a
 --- stance wears is not always named after it (set_builder.lua
 --- ENGAGED_SET_BY_MODE / IDLE_SET_BY_MODE), hence the literal names below.
@@ -14,16 +14,14 @@
 --- @date    Created: 2026-10-06
 ---============================================================================
 
--- Every subjob but the stance ones (/SCH, /RUN): they get the PDT / MDT / Sortie stances
-local CLASSIC_SUBS = 'sub:WAR|MNK|WHM|BLM|RDM|THF|DRK|BST|BRD|RNG|SAM|NIN|DRG|SMN|BLU|COR|PUP|DNC|GEO|NONE'
-
 return {
     ---------------------------------------------------------------- idle
-    -- logic/set_builder.lua build_idle_set step 5 (IDLE_SET_BY_MODE: PDT -> idle.PDT, every other stance -> idle.MDT),
-    -- laid on Mote's idle outside town; in town only its sub is read (apply_shield)
-    {'idle.PDT', when = 'Standing outside town, stance PDT (in town: only its shield is used)', fr = 'Quand tu ne combats pas, hors de la ville, en stance PDT (en ville, seul son bouclier sert).', base = 'idle',
+    -- logic/set_builder.lua build_idle_set step 5 (IDLE_SET_BY_MODE: PDT -> idle.PDT, MDT and Tanking -> idle.MDT, DPS and
+    -- Hoxne -> the Idle Defense mode's), laid on Mote's idle outside town; in town only its sub is read (apply_shield).
+    -- The tank stances also fight in it (ENGAGED_SET_BY_MODE: no sets.engaged.PDT / .MDT since 2026-10-31)
+    {'idle.PDT', when = 'Stance PDT, standing outside town and fighting; DPS or Hoxne with Idle Defense PDT, standing (in town: only its shield is used)', fr = 'En stance PDT, hors de la ville et en combat ; en DPS ou Hoxne avec Idle Defense sur PDT, quand tu ne combats pas (en ville, seul son bouclier sert).', base = 'idle',
         needs = {'state:HybridMode'}},
-    {'idle.MDT', when = 'Standing outside town, stance MDT, Sortie, DPS, Tanking or Hoxne (in town: only its shield is used)', fr = 'Quand tu ne combats pas, hors de la ville, en stance MDT, Sortie, DPS, Tanking ou Hoxne (en ville, seul son bouclier sert).',
+    {'idle.MDT', when = 'Stance MDT or Tanking, standing outside town and fighting; DPS or Hoxne with Idle Defense MDT, standing (in town: only its shield is used)', fr = 'En stance MDT ou Tanking, hors de la ville et en combat ; en DPS ou Hoxne avec Idle Defense sur MDT, quand tu ne combats pas (en ville, seul son bouclier sert).',
         base = 'idle', needs = {'state:HybridMode'}},
     -- set_builder.lua build_idle_set step 6 (outside town)
     {'idleXp', when = 'Xp On, standing outside town: laid over the stance\'s idle set', fr = 'Avec Xp sur On, quand tu ne combats pas hors de la ville : mis par-dessus le set idle de ta stance.', needs = {'state:Xp'}},
@@ -32,11 +30,8 @@ return {
         needs = {'state:Regen', 'sub:SCH|RUN'}},
 
     ---------------------------------------------------------------- engaged
-    -- set_builder.lua select_engaged_base priority 3 (ENGAGED_SET_BY_MODE), Mote's engaged set when missing
-    {'engaged.PDT', when = 'Fighting, stance PDT', fr = 'Quand tu combats en stance PDT.', base = 'engaged', needs = {'state:HybridMode'}},
-    {'engaged.MDT', when = 'Fighting, stance MDT, or Tanking (/SCH, /RUN)', fr = 'Quand tu combats en stance MDT, ou Tanking (/SCH, /RUN).', base = 'engaged', needs = {'state:HybridMode'}},
-    {'engaged.TP', when = 'Fighting, stance Sortie', fr = 'Quand tu combats en stance Sortie.', base = 'engaged', needs = {'state:HybridMode', CLASSIC_SUBS}},
-    {'engaged.DPS', when = 'Fighting, stance DPS (/SCH, /RUN)', fr = 'Quand tu combats en stance DPS (/SCH, /RUN).', base = 'engaged', needs = {'state:HybridMode', 'sub:SCH|RUN'}},
+    -- set_builder.lua select_engaged_base priority 3 (ENGAGED_SET_BY_MODE: the TP stances), Mote's engaged set when missing
+    {'engaged.DPS', when = 'Fighting, stance DPS (the TP build, every subjob)', fr = 'Quand tu combats en stance DPS (le build TP, avec tous les subs).', base = 'engaged', needs = {'state:HybridMode'}},
     {'engaged.Hoxne', when = 'Fighting, stance Hoxne (/SCH, /RUN): the ammo slot then stays on Hoxne Ampulla', fr = 'Quand tu combats en stance Hoxne (/SCH, /RUN) : l’emplacement ammo reste alors sur Hoxne Ampulla.',
         base = 'engaged', needs = {'state:HybridMode', 'sub:SCH|RUN'}},
     -- set_builder.lua select_engaged_base priorities 1-2 (before the stance's set)
@@ -52,11 +47,11 @@ return {
         needs = {'state:MainWeapon'}},
 
     ---------------------------------------------------------------- enmity (logic/enmity_override.lua)
-    -- is_active / apply_precast / apply_midcast: stance Sortie (classic subjobs) or Tanking (/SCH, /RUN)
-    {'EnmityMax', when = 'Stance Sortie or Tanking: job abilities add the pieces where it differs from FullEnmity; spells whose set is FullEnmity itself are cast in it', fr = 'En stance Sortie ou Tanking : tes job abilities ajoutent ses pièces qui diffèrent de FullEnmity, et un sort dont le set est FullEnmity est lancé avec celui-ci.',
+    -- is_active / apply_precast / apply_midcast: stance Tanking (/SCH, /RUN)
+    {'EnmityMax', when = 'Stance Tanking (/SCH, /RUN): job abilities add the pieces where it differs from FullEnmity; spells whose set is FullEnmity itself are cast in it', fr = 'En stance Tanking (/SCH, /RUN) : tes job abilities ajoutent ses pièces qui diffèrent de FullEnmity, et un sort dont le set est FullEnmity est lancé avec celui-ci.',
         base = 'FullEnmity', needs = {'state:HybridMode'}},
     -- uses_full_enmity (identity test) and enmity_max_extra (the slots EnmityMax changes)
-    {'FullEnmity', when = 'Not worn by name: in Sortie / Tanking, EnmityMax only adds the slots where it differs from this set', fr = 'Jamais mis tel quel : en Sortie ou Tanking, EnmityMax n’ajoute que les emplacements où il diffère de ce set.',
+    {'FullEnmity', when = 'Not worn by name: in Tanking, EnmityMax only adds the slots where it differs from this set', fr = 'Jamais mis tel quel : en Tanking, EnmityMax n’ajoute que les emplacements où il diffère de ce set.',
         needs = {'state:HybridMode'}},
 
     ---------------------------------------------------------------- precast

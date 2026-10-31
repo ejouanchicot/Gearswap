@@ -22,6 +22,7 @@ export interface FiguresView {
   hp: HpCycleView | null;
   luopan: LuopanView | null;
   sheet: SheetView | null;
+  sheetTab: string;
   all: {open: boolean; title: string; label: string; globals: GlobalsView};
 }
 
@@ -162,7 +163,10 @@ function fightBox(s: LegacyAny): StatBox | null {
 }
 
 export interface HpCycleView { open: boolean; title: string; foldTitle: string; note: string; ref: string; heads: string[];
-  rows: Array<{mine: boolean; names: string; label: string; a: string; b: string; cls: string; loss: string}> }
+  groups: Array<{key: string; label: string; open: boolean; rows: Array<{mine: boolean; names: string; label: string; a: string; b: string; cls: string; loss: string}>}> }
+// the HP cycle's groups, as the set list orders its families (the abilities, then the spells by the family of their
+// midcast set)
+const CYCLE_FAMS = ['ja', 'cure', 'enmity', 'midcast', 'fc', 'special', 'other'];
 
 /** A tank's HP cycle (PLD, RUN: the Guide_Paladin's HP management): every action's sets, idle -> precast -> midcast ->
  * idle, what each takes off the max HP, worst first; the line of the set shown marked; open until folded (it is what a
@@ -180,13 +184,21 @@ function hpCycle(s: LegacyAny): HpCycleView | null {
   }).sort((x: LegacyAny, y: LegacyAny) => y.loss - x.loss || x.names[0].localeCompare(y.names[0]));
   const mine = (x: LegacyAny) => [x.pre, x.mid].some(z => z && (z.path === s.path || (z.aliases || []).includes(s.path))) || x.names.some((n: string) => s.path.endsWith('.' + n) || s.path.endsWith(`["${n}"]`));
   const cls = (x: LegacyAny) => x.self ? '' : x.loss > HP_SPREAD ? 'short' : x.loss > 0 ? 'warn' : 'better';
-  const names = (x: LegacyAny) => (x.ja ? t('cyJa') + ' · ' : '') + x.names.sort().join(', ');
+  const names = (x: LegacyAny) => x.names.sort().join(', ');
+  // an ability's group: ja; a spell's: its midcast set's family as the set list shows it (cardFamily: Cure, Enmity,
+  // Midcast), else its Fast Cast's
+  const famOf = (x: LegacyAny) => x.ja ? 'ja' : (z => CYCLE_FAMS.includes(z) ? z : 'other')(cardFamily((x.mid || x.pre).path, (x.mid || x.pre).pieces));
+  const row = (x: LegacyAny) => { const n = names(x); return {mine: mine(x), names: x.names.join(', '), label: n.length > 24 ? n.slice(0, 23) + '…' : n,
+    a: String(x.a ?? '—'), b: String(x.b ?? '—'), cls: cls(x), loss: x.self ? t('cyOnPurpose') : x.loss ? '−' + x.loss : '0'}; };
+  // (the worst loss first in each group; the group of the set shown first, open unless folded: S.boxOpen['cyc:<fam>'])
+  const keys = CYCLE_FAMS.filter(f => rows.some((x: LegacyAny) => famOf(x) === f));
+  const here = keys.find(f => rows.some((x: LegacyAny) => famOf(x) === f && mine(x)));
+  const groups = (here ? [here, ...keys.filter(f => f !== here)] : keys).map(f => ({key: f, label: listFamLabel(f), open: !S0.boxOpen['cyc:' + f],
+    rows: rows.filter((x: LegacyAny) => famOf(x) === f).map(row)}));
   if (S0.boxOpen.hpcycle === undefined) S0.boxOpen.hpcycle = true;
   return {open: !!S0.boxOpen.hpcycle, title: t('cyTitle'), foldTitle: t('ttFold'), note: t('cyNote', {i: top, n: shortPath(idle.path)}),
     ref: ref ? t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}) + (top > ref.hp + HP_SPREAD ? ' ' + t('cyIdleHigh', {n: top - ref.hp}) : '') : '',
-    heads: [t('cyAct'), t('cyPre'), t('cyMid'), t('cyLoss')],
-    rows: rows.map((x: LegacyAny) => { const n = names(x); return {mine: mine(x), names: x.names.join(', '), label: n.length > 24 ? n.slice(0, 23) + '…' : n,
-      a: String(x.a ?? '—'), b: String(x.b ?? '—'), cls: cls(x), loss: x.self ? t('cyOnPurpose') : x.loss ? '−' + x.loss : '0'}; })};
+    heads: [t('cyAct'), t('cyPre'), t('cyMid'), t('cyLoss')], groups};
 }
 
 export interface LuopanView { title: string; rows: StatRow[]; cast: string;
@@ -251,5 +263,5 @@ export function figuresView(s: LegacyAny): FiguresView {
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), globals: globalsView(s, 'stats')};
   const hp = hpCycle(s), luopan = luopanOf(s), sheet = sheetView(s);
-  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, all};
+  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, sheetTab: t('figSheetTab'), all};
 }

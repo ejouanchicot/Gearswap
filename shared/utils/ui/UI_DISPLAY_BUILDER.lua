@@ -40,6 +40,7 @@ local categorization_rules = {
 
     weapon_patterns = {
         "Weapon", "WeaponSet", "SubSet", "Proc",
+        "Shield",  -- PLD Shield: the off hand next to the weapon
         "Instrument"  -- BRD MainInstrument: the instrument IS the range slot
     },
 
