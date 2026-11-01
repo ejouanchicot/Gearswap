@@ -228,7 +228,7 @@ function oldBody(cards: LegacyAny[]): AddBody {
 // The summary of a weapon added to a cycle (add_wizard.js awAddWeapon / awDelWeapon)
 function addwBody(): AddBody {
   const w = A().addw, cycle = awWeaponCycles().find((c: LegacyAny) => c.name === w.mode), last = cycle && cycle.values.length ? cycle.values[cycle.values.length - 1] : '';
-  const set = `${awWeaponPath(w.name)} = { ${w.slot} = '${w.name}' }`;
+  const there = setThere(awWeaponPath(w.name)), set = there ? t('awSetThere') : `${awWeaponPath(w.name)} = { ${w.slot} = '${w.name}' }`;
   return w.added ? {kind: 'addw', say: t('awAddedSay', {w: w.name, m: w.desc}), set: '', why: t('awDelWhy'), added: true, go: t('awDelGo'), block: ''}
     : {kind: 'addw', say: last ? t('awAddSay', {w: w.name, m: w.desc, a: last}) : t('awAddSayFirst', {w: w.name, m: w.desc}), set, why: t('awAddWhy'), added: false,
       go: t('awAddGo'), block: liveWrite() ? '' : t('awNoWay')};

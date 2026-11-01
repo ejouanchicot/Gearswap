@@ -81,11 +81,13 @@ end
 
 --- Lay one scope's values; the names refused are added to `bad`. A '+Mode' entry adds its values to the mode
 --- (an Atelier weapon added to MainWeapon: notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md).
-local function lay(st, values, silent_missing, bad)
+local function lay(st, values, silent_missing, bad, adding)
     for name, value in pairs(type(values) == 'table' and values or {}) do
         local plus = type(name) == 'string' and name:match('^%+(.+)$')
         local mode = type(name) == 'string' and mode_of(st, plus or name)
-        if plus then
+        if (plus ~= nil) ~= adding then
+            -- the other pass's entry
+        elseif plus then
             if not (mode and type(value) == 'table' and add_values(mode, plus, value)) and not (silent_missing and not mode) then
                 bad[#bad + 1] = name
             end
@@ -111,8 +113,11 @@ function ModeOverrides.apply(job)
     local data = ModeOverrides.read()
     if not data then return end
     local bad = {}
-    lay(st, data.common, true, bad)
-    lay(st, data[job], false, bad)
+    -- the values added first ('+Mode'): a start value may name one of them
+    lay(st, data.common, true, bad, true)
+    lay(st, data[job], false, bad, true)
+    lay(st, data.common, true, bad, false)
+    lay(st, data[job], false, bad, false)
     if #bad > 0 then
         local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if ok and MessageFormatter and MessageFormatter.show_error then

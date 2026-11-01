@@ -67,5 +67,13 @@ ModeOverrides.read = function() return {RDM = {['+MainWeapon'] = {'Daybreak'}}} 
 ModeOverrides.apply('RDM'); ModeOverrides.apply('RDM')
 check('applied once', list(state.MainWeapon), 'Naegling,Daybreak')
 
+-- 5. a start value naming the weapon added: the values are added first, the start value then holds
+state = {MainWeapon = M{'Naegling', 'Colada'}}
+errors = {}
+ModeOverrides.read = function() return {RDM = {MainWeapon = 'Daybreak', ['+MainWeapon'] = {'Daybreak'}}} end
+ModeOverrides.apply('RDM')
+check('start value on the weapon added', state.MainWeapon.current, 'Daybreak')
+check('start value not refused', #errors, 0)
+
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

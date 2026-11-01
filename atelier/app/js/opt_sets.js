@@ -167,16 +167,17 @@ function optSetsUndo(){
 // GearSwap reloaded after a set written, and waited for: with the job loaded, set_push.lua reads the loaded sets to name
 // a piece by the file's variable (variables, loaded_piece). Left on the sets before the write, the next set could be
 // given another piece's variable, silently (ingame-risk-reviewer, 2026-11-01). Its door is back when /ping says a new
-// boot, or answers again after 3 s; 15 s at most
+// load (version) or a new start (boot), or answers again after 3 s; 15 s at most
 async function osReloadWait(){
   if (!shownJobLoaded()) return;
   let was = null;
-  try { was = (await liveFetch(S.char, '/ping', {timeout: 1500})).boot; } catch (e) {}
+  try { const p0 = await liveFetch(S.char, '/ping', {timeout: 1500}); was = p0.boot + '|' + p0.version; } catch (e) {}
   await reloadIfLoaded();
   const t0 = Date.now();
   while (Date.now() - t0 < 15000) {
     await new Promise(r => setTimeout(r, 500));
-    try { const p = await liveFetch(S.char, '/ping', {timeout: 1500}); if (p.boot !== was || Date.now() - t0 > 3000) return; } catch (e) {}
+    // (a gs reload raises `version`; `boot` moves only when the addon restarts: atelier_live.lua)
+    try { const p = await liveFetch(S.char, '/ping', {timeout: 1500}); if (p.boot + '|' + p.version !== was || Date.now() - t0 > 3000) return; } catch (e) {}
   }
 }
 async function optSetsWrite(){

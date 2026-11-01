@@ -221,11 +221,11 @@ function awFilter(q){
 Object.assign(T.fr, {awAddW: 'Ajouter une arme', awAddSay: '{w} sera ajoutée à ton cycle {m}, après {a}, et son set créé :', awAddSayFirst: '{w} sera ajoutée à ton cycle {m}, et son set créé :',
   awAddWhy: 'Le cycle est changé dans atelier/overrides/mode_overrides.lua, par-dessus ton fichier de modes (jamais réécrit) : retirer l’arme le rend tel quel.',
   awAddGo: 'Ajouter', awAddedSay: '{w} a été ajoutée à ton cycle {m} depuis l’Atelier.', awDelGo: 'Retirer du cycle', awDelWhy: 'Son set reste (supprimable par le menu « ⋯ » du set).',
-  awAdding: 'Ajout au cycle {m}, GearSwap recharge…', awAddFail: 'Le jeu n’a pas pris l’ajout au cycle : rien n’a été créé.', awRemoved: '{w} retirée du cycle {m}.'});
+  awAdding: 'Ajout au cycle {m}, GearSwap recharge…', awAddLater: '{w} ajoutée au cycle {m} dans ton fichier : elle sera là au prochain chargement du job (//gs reload). Son set n’a pas été créé : refais-le avec le jeu connecté.', awAddedOnly: '{w} ajoutée à ton cycle {m} (son set existait déjà). GearSwap recharge.', awSetThere: 'Son set existe déjà : seul le cycle change.', awAddFail: 'Le jeu n’a pas pris l’ajout au cycle : rien n’a été créé.', awRemoved: '{w} retirée du cycle {m}.'});
 Object.assign(T.en, {awAddW: 'Add a weapon', awAddSay: '{w} will join your {m} cycle, after {a}, and its set be created:', awAddSayFirst: '{w} will join your {m} cycle, and its set be created:',
   awAddWhy: 'The cycle changes in atelier/overrides/mode_overrides.lua, over your modes file (never rewritten): removing the weapon puts it back as it was.',
   awAddGo: 'Add', awAddedSay: '{w} was added to your {m} cycle from the Atelier.', awDelGo: 'Remove from the cycle', awDelWhy: 'Its set stays (deleted from the set’s “⋯” menu).',
-  awAdding: 'Adding to the {m} cycle, GearSwap reloads…', awAddFail: 'The game did not take the cycle change: nothing was created.', awRemoved: '{w} removed from the {m} cycle.'});
+  awAdding: 'Adding to the {m} cycle, GearSwap reloads…', awAddLater: '{w} added to the {m} cycle in your file: it is there at the job\u2019s next load (//gs reload). Its set was not created: do it again with the game linked.', awAddedOnly: '{w} added to your {m} cycle (its set was there already). GearSwap reloads.', awSetThere: 'Its set is there already: only the cycle changes.', awAddFail: 'The game did not take the cycle change: nothing was created.', awRemoved: '{w} removed from the {m} cycle.'});
 // The job's weapon cycles and the slot each fills (its values' sets), the values from the states file
 function awWeaponCycles(){
   const d = data();
@@ -262,11 +262,15 @@ async function awAddWeapon(){
   map[scope] = map[scope] || {};
   map[scope][key] = awAdded(w.mode).concat([w.name]);
   const done = await saveFile('mode_overrides.lua', modesLua(map), true);
-  if (done !== 'live') { A.busy = false; S.toast = t('awAddFail'); render(); return; }
+  if (done === null) { A.busy = false; S.toast = t('awAddFail'); render(); return; }
   S.modeDirty[S.char] = false; S.modeOv[S.char].at = stamp();
+  // written through the folder (the game's door did not answer): applied at the next load, no set created now
+  if (done !== 'live') { A.busy = false; S._aw = null; closeOverlay(); S.toast = t('awAddLater', {w: w.name, m: w.desc}); render(); return; }
+  const path = awWeaponPath(w.name), owned = ownedOf() || {};
+  // its set there already (Kaories' sets['Daybreak']): only the cycle changes, GearSwap reloaded to take it
+  if (setThere(path)) { await reloadIfLoaded(); A.busy = false; S._aw = null; closeOverlay(); S.toast = t('awAddedOnly', {w: w.name, m: w.desc}); render(); return; }
   await osReloadWait();
   A.busy = false;
-  const path = awWeaponPath(w.name), owned = ownedOf() || {};
   createPreview(path, [path, '#create', pushLine(pushEntry(w.slot, {name: w.name}, owned))].join('\n') + '\n', null);
 }
 // Remove: the weapon leaves the layer, GearSwap reloads; its set stays
