@@ -318,7 +318,7 @@ declare function shortPath(path: string): string;
 declare function family(path: string, pieces?: unknown): string;
 declare function cardFamily(path: string, pieces?: unknown): string;
 declare function jaOverlayBase(s: LegacyAny): LegacyAny;
-declare function jaBoostOwned(s: LegacyAny): boolean;
+declare function jaBoostable(s: LegacyAny): boolean;
 declare function overlaySet(s: LegacyAny): boolean;
 declare function songSlots(b: LegacyAny): number[];
 declare const ARIA_HORN: Record<string, number>;

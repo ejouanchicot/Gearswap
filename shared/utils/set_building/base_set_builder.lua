@@ -130,8 +130,10 @@ end
 --- @return table|nil set Idle with the town set on top, nil when not applied
 local function lay_town(idle, town_set)
     local zone = town_zone()
+    -- (Adoulin's set over the town set, not in its place: the town set is the city's look, Adoulin's only the
+    -- Councilor's Garb's speed there)
     if zone == 'adoulin' and sets and type(sets.Adoulin) == 'table' and next(sets.Adoulin) ~= nil then
-        return set_combine(idle, sets.Adoulin)
+        return set_combine(idle, town_set or {}, sets.Adoulin)
     end
     if zone and town_set then
         return set_combine(idle, town_set)

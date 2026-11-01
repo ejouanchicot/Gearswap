@@ -52,6 +52,10 @@ function listHead(q: string): ListHead {
     fold: q ? null : {tip: t('lpFoldTip'), open: t('lpOpenAll'), close: t('lpCloseAll')}, menu: (S as LegacyAny)._listMenu ? listMenu() : null};
 }
 
+// A base set the job never wears by itself, left out of the list: a PLD's sets.idle (its stance wears idle.PDT /
+// idle.MDT outside town, sets.idle.Town in town), only the table its idle sets hang from (the player, 2026-11-01)
+const hiddenBase = (s: LegacyAny) => !!s && (S as LegacyAny).job === 'PLD' && s.path === 'sets.idle';
+
 export function setList(d: LegacyExport): SetList {
   const S0 = st(), {cards, bypath} = buildCards(d); S0._cards = cards; S0._bypath = bypath;
   const q: string = S0.q.trim().toLowerCase();
@@ -70,6 +74,11 @@ export function setList(d: LegacyExport): SetList {
   }
   if (!vis.includes(S0.sel[job])) S0.sel[job] = vis[0];
   const sel: number = S0.sel[job];
+  // (a hidden base, a PLD's sets.idle: its card opens on its first version shown, idle.MDT, not on it)
+  if (cards[sel] && hiddenBase(shownSet(cards[sel], sel))) {
+    const k = cards[sel].variants.findIndex((v: LegacyAny) => !hiddenBase(v.set));
+    if (k >= 0) S0.variant[job + '|' + sel] = k;
+  }
   if (cards[sel]) { S0.selPath[job] = shownSet(cards[sel], sel).path; S0._found = found + S0.selPath[job]; }
   // the set shown is in sight in the list: when it is another one than at the last redraw (a click, a reload of the
   // page, a push that opens a version), its category and its weaponskill group open; folded by hand after, they stay so
@@ -125,7 +134,7 @@ export function setList(d: LegacyExport): SetList {
     // the card of a whole category (Idle, Engaged: its category's head names it already) with no set of its own (an
     // empty sets.idle): its versions side by side under that head, each by its name alone (MDT, PDT, Regen), not
     // "Idle · MDT" over the others
-    const flat = c.top.length === 1 && c.top[0] === c.fam && !c.variants.some((v: LegacyAny) => v.label === 'Base');
+    const flat = c.top.length === 1 && c.top[0] === c.fam && !c.variants.some((v: LegacyAny) => v.label === 'Base' && !hiddenBase(v.set));
     const nameOf = (v: LegacyAny, k: number) => k === 0 && !flat ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : enhTarget(v.set) === 'Others' ? t('enhBtnOthers')
       : c.fam === 'midcast' && listModeValue(v.label) ? `${v.label} · ${t('lpModeTag')}` : v.label;
     const code = (v: LegacyAny) => S0.listPaths ? v.set.path : null;
@@ -145,6 +154,7 @@ export function setList(d: LegacyExport): SetList {
     };
     const row = (v: LegacyAny, k: number) => {
       if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
+      if (hiddenBase(v.set)) return;
       rows.push([i, k]);
       out.push({k: 'row', cls: `setrow ${k === 0 || flat ? '' : 'var'} ${usable[i] ? '' : 'nouse'}`, current: i === sel && k === vi(i), path: v.set.path, group: null, pick: i, vpick: k,
         title: t('ttRow', {p: v.set.path}), name: nameOf(v, k), ver: '', tried: false, marksHtml: listMarks(v.set) + listRowActs(v.set.path), code: code(v), pickerHtml: listGroupPicker(v.set.path)});

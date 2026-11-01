@@ -54,7 +54,7 @@ Object.assign(T.fr, {
     + 'les autres sets visent entre lui et lui + 200 pour qu’un changement de set ne fasse pas perdre de HP (guide Paladin, HP Management : écart de 200 au plus).',
   statRefLine: 'HP de référence : {h} (Fast Cast {f}) · les sets tank visent {a} à {b}.',
   figSheetTab: 'Stats du set', cyTitle: 'Cycle des HP',
-  jaNoPiece: 'Aucune de tes pièces ne renforce {a} : ce set porte celles de {b}, c’est lui qu’il faut optimiser.', cyNote: 'HP max de chaque set, repos {n} ({i}) → precast → midcast → repos. Passer à un set plus bas fait tomber tes HP, '
+  jaNoPiece: 'Aucune pièce du jeu ne renforce {a} : ce set porte celles de {b}, c’est lui qu’il faut optimiser.', cyNote: 'HP max de chaque set, repos {n} ({i}) → precast → midcast → repos. Passer à un set plus bas fait tomber tes HP, '
     + 'revenir ne les rend pas : la perte, c’est ce qui manque en revenant au repos (avant tout soin). Le guide vise 200 d’écart au plus. Tes pièces à l’essai comptent.',
   cyIdleHigh: 'Ton repos est {n} au-dessus : chaque sort te coûte cette différence.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Perte', cyOnPurpose: 'voulu',
   statAct: 'Inimitié de {a}', statActTip: '{a} : {ve} VE et {ce} CE de base, × (1 + Enmity / 100), Enmity du gear + Crusade + Sentinel plafonnée à +200 (guide Paladin, Enmity Generation).',
@@ -142,7 +142,7 @@ Object.assign(T.en, {
     + 'the other sets aim between it and it + 200 so a set change loses no HP (Paladin guide, HP Management: 200 apart at most).',
   statRefLine: 'Reference HP: {h} (Fast Cast {f}) · the tank sets aim at {a} to {b}.',
   figSheetTab: 'Set stats', cyTitle: 'HP cycle',
-  jaNoPiece: 'None of your pieces boosts {a}: this set wears {b}’s, that is the one to optimize.', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
+  jaNoPiece: 'No piece of the game boosts {a}: this set wears {b}’s, that is the one to optimize.', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
     + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your trial pieces count.',
   cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose',
   statAct: '{a} enmity', statActTip: '{a}: {ve} VE and {ce} CE at base, × (1 + Enmity / 100), the Enmity of gear + Crusade + Sentinel capped at +200 (Paladin guide, Enmity Generation).',

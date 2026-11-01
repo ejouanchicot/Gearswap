@@ -779,13 +779,14 @@ sets.MoveSpeed = {
     legs = 'Carmine Cuisses +1' -- Common item for speed
 }
 
--- • Town Idle (Movement speed)
-sets.idle.Town = sets.MoveSpeed
+-- • Town Idle: what you wear in a city (the stance's idle sets are for outside), laid over sets.idle; built on the
+--   movement set, fill the other slots as you like (no hits taken there)
+sets.idle.Town = set_combine(sets.MoveSpeed, {})
 
 -- • Adoulin Movement (City-specific speed boost)
 -- Councilor's Garb: Movement speed +25% in Adoulin only. Only the fastest piece of
--- equipment counts (no stacking): nothing else goes here, every other slot stays
--- the idle set's. Left empty, the town set (sets.idle.Town) is worn in Adoulin too.
+-- equipment counts (no stacking): nothing else goes here, laid over the town set
+-- (sets.idle.Town). Left empty, the town set alone is worn in Adoulin too.
 sets.Adoulin = {body = "Councilor's Garb"}
 
 -- ═══════════════════════════════════════════════════════════════════════════

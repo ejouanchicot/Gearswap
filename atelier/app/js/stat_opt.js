@@ -255,6 +255,9 @@ function statFloorDefault(s, first){
   if (isPetIdle(s)) return {};
   // a movement set: laid over the idle set, which keeps its damage taken (moveSet)
   if (moveSet(s) || doomSet(s)) return {};
+  // a job ability's set on sets.precast.JA: only its boosting pieces over the base, worn for the use alone; the base
+  // holds the floors (Rev. Coronet took Cover to DT+PDT -37: "floors not reached", 2026-11-01)
+  if (jaOverlayBase(s)) return {};
   if (enmityMaxSet(s)) return {};
   // a BST's Charm set: worn for the ability's instant (bst_pet.js isCharmSet)
   if (isCharmSet(s)) return {};
@@ -312,9 +315,11 @@ function abilityPieces(s){
 // The job ability a set is worn for, lower case, or null (not a BST's Charm set: every piece there is for the ability,
 // "Charm"+N ones included, all searched)
 // (null on sets.precast.JA itself: the set of every ability with none of its own, named for none)
+// (sets.precast.JA.<name> by its path too: Provoke's set is in the Enmity family, by its name, and missed every rule
+// of the ability sets, 2026-11-01)
 function abilityName(s){
-  const sg = s ? segs(s.path) : [];
-  return s && family(s.path, s.pieces) === 'ja' && !isCharmSet(s) && !(sg.length === 2 && sg[1] === 'JA') ? sg[sg.length - 1].toLowerCase() : null;
+  const sg = s ? segs(s.path) : [], jaPath = sg.length === 3 && sg[0] === 'precast' && sg[1] === 'JA';
+  return s && (family(s.path, s.pieces) === 'ja' || jaPath) && !isCharmSet(s) && !(sg.length === 2 && sg[1] === 'JA') ? sg[sg.length - 1].toLowerCase() : null;
 }
 // Whether a piece boosts that ability: its description or its augments name it. Cab. Surcoat's Fealty is an augment
 // only (BG Wiki Cab._Surcoat_+3: "Enhances 'Fealty' effect", 4 s a merit level), on no description
@@ -322,12 +327,19 @@ function abilityName(s){
 // Not a line telling what happens to the hits taken while the effect lasts (Cab. Surcoat '"Cover": Physical damage
 // converted to MP', Sahip Helm '"Cover": Damage taken-12%'): worn then, in the idle or engaged set, not in the
 // ability's own set, worn for its use only (the player, 2026-10-31). '"Shield Bash": "Dispel"' acts at the use: kept
+// Pieces whose line names the ability with no figure but acts while it lasts, read on BG Wiki: Valor Surcoat's
+// "Augments "Cover"" converts 20 % of the intercepted damage to MP (+2: 30 %), as Cab. Surcoat does
+const ABILITY_DURING = {'Valor Surcoat': 'cover', 'Vlr. Surcoat +1': 'cover', 'Vlr. Surcoat +2': 'cover'};
 function boostsAbility(p, slot, ja){
-  if (!p || isEmpty(p)) return false;
+  if (!p || isEmpty(p) || ABILITY_DURING[p.name] === ja) return false;
   const q = p.augs && p.augs.length ? p : ownCopy(slot, p), cat = catalog(), id = q.id || ownId(q.name, slot) || (cat && cat.id[q.name]);
   const lines = (descOf(id, cat) || '').split('\n').concat(q.augs || []).map(l => l.toLowerCase().trim());
   const during = l => (l.startsWith(`"${ja}":`) || l.startsWith(`${ja}:`)) && /damage taken|converted/.test(l);
-  return lines.some(l => l.includes(ja) && !during(l));
+  // the name as a word of its own: "cover" is in "MP recovered while healing" (Austerity Belt counted for Cover)
+  const named = new RegExp(`(^|[^a-z])${ja}([^a-z]|$)`);
+  // nor a piece that casts it (Reviler's Helm 'Enchantment: "Provoke"', Imperial Egg 'Additional effect: "Provoke"')
+  const casts = l => /(enchantment|additional effect):/.test(l);
+  return lines.some(l => named.test(l) && !during(l) && !casts(l));
 }
 // A job ability's set built on sets.precast.JA (set_combine: the job's full Enmity set, worn by every ability with no
 // set of its own): only the pieces that boost that ability are its own, the rest is the base's (the player's rule,
@@ -335,15 +347,18 @@ function boostsAbility(p, slot, ja){
 function jaOverlayBase(s){
   return abilityName(s) && s.base === 'sets.precast.JA' ? ((S._bypath || {})[s.base] || null) : null;
 }
-// Whether any piece of yours boosts that set's ability (its description or augments name it: boostsAbility): with
-// none, its optimizer has nothing to look for (card.ts sends the player to sets.precast.JA). Kept per set until the
-// data change
-let JA_OWNED_MEMO = {gen: -1, out: {}};
-function jaBoostOwned(s){
-  if (JA_OWNED_MEMO.gen !== DATA_GEN) JA_OWNED_MEMO = {gen: DATA_GEN, out: {}};
-  const ja = abilityName(s), memo = JA_OWNED_MEMO.out;
+// Whether a piece boosts that set's ability (its description or augments name it: boostsAbility), yours or any of the
+// game your job can wear (the optimizer's "Every item in the game" shows it to get: Rev. Coronet for Cover, the
+// player's rule 2026-11-01): with none, its optimizer has nothing to look for (card.ts sends the player to
+// sets.precast.JA). Kept per ability until the data or the catalog change
+let JA_BOOST_MEMO = {key: '', out: {}};
+function jaBoostable(s){
+  const cat = catalog(), key = DATA_GEN + '|' + S.job + '|' + !!cat;
+  if (JA_BOOST_MEMO.key !== key) JA_BOOST_MEMO = {key, out: {}};
+  const ja = abilityName(s), memo = JA_BOOST_MEMO.out;
   if (!ja) return false;
-  if (!(ja in memo)) memo[ja] = Object.entries(ownedOf() || {}).some(([slot, list]) => list.some(x => boostsAbility(x, slot, ja)));
+  if (!(ja in memo)) memo[ja] = Object.entries(ownedOf() || {}).some(([slot, list]) => list.some(x => boostsAbility(x, slot, ja)))
+    || (!!cat && Object.values(cat.row).some(r => (r[3] || '').split(' ').includes(S.job) && boostsAbility({name: r[1]}, (r[2] || '').split(' ')[0], ja)));
   return memo[ja];
 }
 // The HP a tank's self Cure midcast set opens over its Fast Cast (the other set of the pair: sets.precast.FC.CureSelf

@@ -23,7 +23,11 @@
       return {w, label: walkLabel(w), done: !!x.done, stage: x.stage ? t('orStage_' + x.stage) : '',
         phase: x.done ? t('orWalkDone') : (x.phase ? t('orPhase_' + x.phase) : t('orStarting')) + (x.round ? ' · ' + t('orRound', {n: x.round}) : ''),
         evals: x.painted ? t('orTries', {n: (x.evals || 0).toLocaleString()}) : '', best: x.best ? R.fmt(x.best.raw) : '—', miss: !!(x.best && x.best.miss)}; });
+    // (from a start of 0, a gain in % means nothing, 0 / 0: Cover's "Ability pieces" from 0 read "NaN %"; the figure's
+    // own gain then, +1)
     const gainOf = (from: number, to: number) => { const d = (R.low ? from / to - 1 : to / from - 1) * 100;
+      if (!from || !to || !isFinite(d)) { const n = R.low ? from - to : to - from;
+        return {from: t('orFrom', {v: R.fmt(from)}), up: n > 0, pct: n ? `${n > 0 ? '+' : '−'}${R.fmt(Math.abs(n))}` : '='}; }
       return {from: t('orFrom', {v: R.fmt(from)}), up: d > .05, pct: `${d > 0 ? '+' : ''}${d.toFixed(1)} %`}; };
     let spark: null | {line: string; area: string} = null;
     if (R.series.length >= 2) {

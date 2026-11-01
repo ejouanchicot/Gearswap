@@ -2,10 +2,10 @@
 --- Test of the town set laid on the idle in Adoulin (base_set_builder.lua)
 ---============================================================================
 --- In Adoulin, sets.Adoulin (Councilor's Garb: Movement speed +25% there) goes on
---- top of the idle set. Empty, as "+ Add a job" writes it (job_adder.lua: the sets
---- without their pieces), it once left the idle alone there: the town set
---- (sets.idle.Town, the movement legs) is worn instead. In any other city the
---- town set, out of town nothing.
+--- top of the town set (sets.idle.Town, the city's set since 2026-11-01), itself on
+--- the idle set. Empty, as "+ Add a job" writes it (job_adder.lua: the sets without
+--- their pieces), it once left the idle alone there: the town set alone is worn
+--- then. In any other city the town set, out of town nothing.
 ---
 --- Run from data/: lua5.1 scripts/atelier/adoulin_town_test.lua
 ---
@@ -52,7 +52,7 @@ sets = {Adoulin = {body = "Councilor's Garb"}}
 local r, t = lay('Western Adoulin')
 check('Adoulin with the Garb: laid', t, true)
 check('  its body', r.body, "Councilor's Garb")
-check('  the idle legs kept (no movement legs on top)', r.legs, 'Idle Legs')
+check('  over the town set (its legs)', r.legs, 'Carmine Cuisses +1')
 
 sets = {Adoulin = {}}
 r, t = lay('Eastern Adoulin')
